@@ -19,13 +19,13 @@
 #include "gof2/game/core/String.h"
 #include "gof2/game/mission/Status.h"
 // gof2/TouchButton.h and gof2/Station.h (pulled in via Mission.h above) both define
-// `struct RetStr` unconditionally with identical layout, which is a C++ redefinition error.
+// `struct String` unconditionally with identical layout, which is a C++ redefinition error.
 // We need TouchButton.h for the TouchButton struct/methods used below, so include it with
-// its RetStr renamed out of the way (it is never referenced in this translation unit; the
-// canonical RetStr is the one already provided by Station.h).
-#define RetStr RetStr
+// its String renamed out of the way (it is never referenced in this translation unit; the
+// canonical String is the one already provided by Station.h).
+#define String String
 #include "gof2/game/ui/TouchButton.h"
-#undef RetStr
+#undef String
 
 // This translation unit pulls in externs.h/fwd.h (which forward-declares the global
 // `PaintCanvas` type) and additionally used `AbyssEngine::PaintCanvas` as a *namespace*

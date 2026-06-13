@@ -103,16 +103,12 @@ struct String {
     // with operator delete[]); transliterates Cyrillic to Latin approximations.
     static uint16_t * getWCharFromUtf8(char *utf8, int len);
 };
-struct String12 { uint32_t a, b, c; };   // 12-byte by-value String aggregate (sret/stack ABI)
 
 // AbyssEngine::operator+(String const&, String const&) - concatenate (body in src/AbyssEngine.cpp).
 String operator+(const String &a, const String &b);
 } // namespace AbyssEngine
 
 using AbyssEngine::String;
-using AbyssEngine::String12;
-// RetStr: a String returned by value through a hidden sret pointer (12-byte aggregate). One definition.
-struct RetStr { uint32_t a, b, c; };
 
 // ---- global aliases so recovered code's short type names resolve --------------------------
 namespace AEMath = AbyssEngine::AEMath;   // so global `AEMath::Vector` resolves

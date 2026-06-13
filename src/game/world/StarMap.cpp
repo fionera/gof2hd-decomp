@@ -41,22 +41,22 @@ public:
 #undef __aeabi_memcpy
 #include "gof2/engine/core/GameText.h"
 #include "gof2/game/ui/Layout.h"
-#include "gof2/game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical RetStr
+#include "gof2/game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical String
 #include "gof2/game/world/Station.h"
 // Agent.h (via Station.h above), SolarSystem.h and TouchButton.h each define an
-// identical, layout-compatible `struct RetStr` at global scope. Including more than
-// one in a single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and
-// rename the duplicates from the other two headers. Their renamed RetStr is
-// ABI-identical and the only RetStr-returning calls used here (Station::getName(),
+// identical, layout-compatible `struct String` at global scope. Including more than
+// one in a single TU is a C++ redefinition. Let Agent.h own the canonical String and
+// rename the duplicates from the other two headers. Their renamed String is
+// ABI-identical and the only String-returning calls used here (Station::getName(),
 // SolarSystem::getName()) discard their results, so the ABI is unaffected.
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef RetStr
+#undef String
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/core/String.h"
-#define RetStr RetStr
+#define String String
 #include "gof2/game/ui/TouchButton.h"
-#undef RetStr
+#undef String
 
 extern "C" __attribute__((visibility("hidden"))) uint32_t *g_StarMap_render_canvas;
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);

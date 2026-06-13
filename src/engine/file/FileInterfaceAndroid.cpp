@@ -5,7 +5,7 @@
 #include <new>
 
 struct zip_file;
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
@@ -25,9 +25,9 @@ extern "C" void String_ctor_wide(void *out, const unsigned short *w, bool);
 // The copy ctor returns void, so the compiler keeps a frame and restores the sret pointer.
 extern const char kDirPreFix[] __attribute__((visibility("hidden")));
 
-RetStr FileInterfaceAndroid_GetDirPreFix()
+String FileInterfaceAndroid_GetDirPreFix()
 {
-    RetStr r;
+    String r;
     String_ctor_cstr(&r, kDirPreFix, false);
     return r;
 }
@@ -225,7 +225,7 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
 // by-value String through the prologue push {r0-r3} and overlaps the temp at sp+0, giving a
 // 16-byte frame; clang -Oz lays the temp out at a higher slot with a 32-byte frame. The
 // by-value-aggregate homing/frame layout is not reachable from source form.
-void FileInterfaceAndroid_FileDelete(String12 s)
+void FileInterfaceAndroid_FileDelete(String s)
 {
     char tmp[12];
     ((String *)(tmp))->ctor_copy((String *)(&s), false);
@@ -244,7 +244,7 @@ extern const char *gZipPrefixA __attribute__((visibility("hidden")));
 extern const char *gZipPrefixB __attribute__((visibility("hidden")));
 extern const char *gModeRb __attribute__((visibility("hidden")));
 
-bool FileInterfaceAndroid::FileExist(String12 name) {
+bool FileInterfaceAndroid::FileExist(String name) {
     char a[12], b[12];
     String_ctor_cstr(a, gZipPrefixA, false);
     String_append(a, &name);
@@ -370,7 +370,7 @@ extern const char *gModeRbR __attribute__((visibility("hidden")));
 extern void *gFIAVtable_or __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_or __attribute__((visibility("hidden")));
 
-FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String12 name, int p2, bool p3, int p4, int p5, unsigned int p6) {
+FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) {
     const unsigned short *w = String_GetAEWChar(&name);
     if (this->alive == 0)
         return 0;
@@ -433,7 +433,7 @@ extern void *gFIAVtable_ow __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_ow __attribute__((visibility("hidden")));
 extern const char *gModeWb __attribute__((visibility("hidden")));
 
-FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String12 name, int, bool, unsigned int) {
+FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
     const unsigned short *w = String_GetAEWChar(&name);
     while (*w)
         ++w;

@@ -1,7 +1,7 @@
 #ifndef GOF2_PLAYERFIXEDOBJECT_H
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "gof2/common.h"
-#include "gof2/game/world/Station.h"   // provides the single shared `struct RetStr`
+#include "gof2/game/world/Station.h"   // provides the single shared `struct String`
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 - PlayerFixedObject class. Android libgof2hdaa.so, armv7 Thumb.
 // Top-level class (no AbyssEngine namespace). Field offsets recovered per-method from the
@@ -13,7 +13,7 @@ struct BoundingVolume;
 struct AEGeometry;
 struct Player;
 
-// `struct RetStr` (3-word by-value String ABI aggregate) is provided by gof2/Station.h.
+// `struct String` (3-word by-value String ABI aggregate) is provided by gof2/Station.h.
 // V3: 3-float vector return type (AbyssEngine::AEMath::Vector ABI).
 typedef AbyssEngine::AEMath::Vector V3;
 typedef AbyssEngine::AEMath::Vector Vector;
@@ -85,7 +85,7 @@ public:
     int collide(float x, float y, float z);
     void ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz);
     int getDockingType();
-    RetStr getName();
+    String getName();
     V3 getPosition();
     V3 getProjectionVector();
     int getTransportID();

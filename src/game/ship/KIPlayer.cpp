@@ -266,7 +266,7 @@ void KIPlayer::setDead() {
     return ((Player *)(this))->setDead();
 }
 
-// String12 is provided by gof2/common.h.
+// String is provided by gof2/common.h.
 
 extern "C" {
 extern char KIPlayer_vtable[];                                   // KIPlayer vtable
@@ -336,7 +336,7 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     this->jumpDone = 0;
 
     {
-        String12 tmp;
+        String tmp;
         ((String *)(&tmp))->ctor_char("", false);
         ((String *)((char *)this + 0x18))->assign((String *)&tmp);
         ((String *)(&tmp))->dtor();

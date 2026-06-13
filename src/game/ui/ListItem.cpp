@@ -198,7 +198,7 @@ ListItem * ListItem::ctor_Item(Item *it) {
 
 // ListItem::ListItem(Array<String*>*)  -> field 0x00, selectable=0
 
-ListItem * ListItem::ctor_Array(Array<AbyssEngine::String12 *> *arr) {
+ListItem * ListItem::ctor_Array(Array<AbyssEngine::String *> *arr) {
     ((ListItem *)(this))->init();
     this->field_0x24 = 0;
     this->field_0x0 = arr;

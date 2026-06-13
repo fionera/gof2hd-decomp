@@ -62,7 +62,7 @@ public:
     // original fragment took the ship (not the ListItem) as its first argument.
     static int sortCmp(Ship *ship, int sort);
     ListItem * ctor_Agent(Agent *a);
-    ListItem * ctor_Array(Array<AbyssEngine::String12 *> *arr);
+    ListItem * ctor_Array(Array<AbyssEngine::String *> *arr);
     ListItem * ctor_BluePrint(BluePrint *bp);
     ListItem * ctor_Item(Item *it);
     ListItem * ctor_Mission(Mission *m);

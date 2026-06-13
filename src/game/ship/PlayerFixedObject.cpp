@@ -86,10 +86,10 @@ void PlayerFixedObject::translate(const Vector &d) {
 // AbyssEngine::String::String(String* out, const String* src, bool) -> void.
 // Returns String by value (sret r0, this r1). Copy-ctor returns void, so the
 // compiler keeps a frame + restores the sret pointer.
-// `struct RetStr` is provided by gof2/Station.h via the class header.
+// `struct String` is provided by gof2/Station.h via the class header.
 
-RetStr PlayerFixedObject::getName() {
-    RetStr r;
+String PlayerFixedObject::getName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x1ac), false);
     return r;
 }

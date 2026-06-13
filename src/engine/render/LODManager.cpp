@@ -62,7 +62,7 @@ struct PaintCanvas;
 __attribute__((visibility("hidden"))) extern void **g_LOD_canvas;   // *holder = PaintCanvas*
 __attribute__((visibility("hidden"))) extern void *g_LOD_settings;  // float at +0x28 = LOD factor
 
-void MatrixGetPosition(void *out, const Matrix *m);     // RetStr
+void MatrixGetPosition(void *out, const Matrix *m);     // String
 
 void LODManager::forceUpdate(int dt, bool useParent)
 {

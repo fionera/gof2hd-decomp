@@ -1,4 +1,4 @@
-#include "gof2/game/core/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (RetStr + SolarSystem)
+#include "gof2/game/core/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (String + SolarSystem)
 #include "gof2/engine/core/GameText.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/world/Level.h"
@@ -9,12 +9,12 @@
 #include "gof2/game/core/PaintCanvasClass.h"
 
 // Station is declared minimally here rather than via gof2/Station.h: that header
-// defines RetStr unconditionally, which would clash with the identical definition
+// defines String unconditionally, which would clash with the identical definition
 // from gof2/SolarSystem.h (already in scope) within this single TU. Only Station's
 // getName() accessor is used, and the decomp accesses Station through byte-offset
 // casts, so a minimal forward declaration is sufficient and ABI-safe.
 struct Station {
-    RetStr getName();
+    String getName();
 };
 
 extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
@@ -74,8 +74,8 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 // AutoPilotList::getTargetString() -> String by value (sret in r0, this in r1).
 // Returns a copy of the selected entry's String if the index is in range, else the
 // fallback literal.
-RetStr AutoPilotList::getTargetString() {
-    RetStr r;
+String AutoPilotList::getTargetString() {
+    String r;
     int idx = this->selected;
     Array<String *> *entries = this->entries;
     if (idx >= 0 && (uint32_t)idx < entries->size())

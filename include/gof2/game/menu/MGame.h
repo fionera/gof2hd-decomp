@@ -65,8 +65,8 @@ struct Cfg;
 //   void useCloak();
 struct EnemyList { uint32_t size; KIPlayer **data; };
 
-// The recovered code uses the bare name String12 for the 12-byte stack String temp.
-using AbyssEngine::String12;
+// The recovered code uses the bare name String for the 12-byte stack String temp.
+using AbyssEngine::String;
 
 // Field accessor via byte offset.
 

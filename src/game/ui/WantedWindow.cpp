@@ -7,27 +7,27 @@
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/render/ImageFactory.h"
 #include "gof2/game/ui/Layout.h"
-#include "gof2/game/world/SolarSystem.h"   // defines the canonical global `struct RetStr` (12-byte String sret)
+#include "gof2/game/world/SolarSystem.h"   // defines the canonical global `struct String` (12-byte String sret)
 // Station.h, TouchButton.h and Wanted.h each redefine the identical (token-for-token,
-// 12-byte aligned aggregate) global `struct RetStr` already provided by SolarSystem.h.
-// Rename their duplicate definitions so they don't collide; the only RetStr-returning
+// 12-byte aligned aggregate) global `struct String` already provided by SolarSystem.h.
+// Rename their duplicate definitions so they don't collide; the only String-returning
 // methods used here (getName/getText) have their results discarded, so the distinct-but-
 // identical return type is harmless. (Those headers are out of this batch's edit scope.)
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/Station.h"
-#undef RetStr
-#define RetStr RetStr
+#undef String
+#define String String
 #define B B_TouchButton
 #define I I_TouchButton
 #define P P_TouchButton
 #include "gof2/game/ui/TouchButton.h"
-#undef RetStr
+#undef String
 #undef B
 #undef I
 #undef P
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/Wanted.h"
-#undef RetStr
+#undef String
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 

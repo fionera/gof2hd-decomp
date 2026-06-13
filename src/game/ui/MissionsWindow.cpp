@@ -13,8 +13,8 @@
 #include "gof2/game/core/String.h"
 #include "gof2/game/mission/Achievements.h"
 
-// RetStr is now centralized (gof2/common.h), so the full type headers below coexist
-// without the historical "redefinition of RetStr" collision.
+// String is now centralized (gof2/common.h), so the full type headers below coexist
+// without the historical "redefinition of String" collision.
 #include "gof2/game/ui/TouchButton.h"
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/ship/Agent.h"

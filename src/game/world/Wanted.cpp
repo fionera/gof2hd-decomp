@@ -1,7 +1,7 @@
 #include "gof2/game/world/Wanted.h"
 #include "gof2/game/core/String.h"
 
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 extern "C" Wanted *String_default_ctor(Wanted *self);
 
@@ -50,11 +50,11 @@ void Wanted::setActive(bool v) {
 
 // Returns the name String (stored at offset 0x0) by value. The copy-ctor returns
 // void, so the compiler keeps a frame + restores the sret pointer (r0).
-// RetStr is defined in gof2/Wanted.h.
+// String is defined in gof2/Wanted.h.
 
-RetStr Wanted::getName() {
+String Wanted::getName() {
     Wanted *self = this;
-    RetStr r;
+    String r;
     ((String *)(&r))->ctor_copy((String *)(&self->name), false);
     return r;
 }
@@ -64,7 +64,7 @@ RetStr Wanted::getName() {
 
 // The String argument has a non-trivial copy ctor/dtor in the real engine, so the
 // C++ ABI passes it by invisible reference -> it arrives as a pointer in r2.
-Wanted * Wanted::ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
+Wanted * Wanted::ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
     Wanted *r = String_default_ctor(this);
     r->index = p1;
     ((String *)(r))->assign((String *)&p2);

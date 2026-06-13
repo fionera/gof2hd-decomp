@@ -16,24 +16,24 @@ struct FileRead;
 // locally below with the decompiler-observed ABI (int* path, opaque void* systems).
 #include "gof2/game/mission/Achievements.h"
 // Agent.h, Station.h, SolarSystem.h and Wanted.h each define an identical,
-// layout-compatible `struct RetStr` at global scope. Including more than one in a
-// single TU is a C++ redefinition. Let Agent.h own the canonical RetStr and rename
+// layout-compatible `struct String` at global scope. Including more than one in a
+// single TU is a C++ redefinition. Let Agent.h own the canonical String and rename
 // the duplicates from the other three headers (Station.h is pulled in transitively by
-// Mission.h). Their renamed RetStr is unused here: the only RetStr-returning call,
+// Mission.h). Their renamed String is unused here: the only String-returning call,
 // Station::getName(), discards its result, so the ABI is unaffected.
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/mission/BluePrint.h"
-#define RetStr RetStr
+#define String String
 #include "gof2/game/mission/Mission.h"   // pulls in Station.h
 #include "gof2/game/world/Station.h"
-#undef RetStr
-#define RetStr RetStr
+#undef String
+#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef RetStr
-#define RetStr RetStr
+#undef String
+#define String String
 #include "gof2/game/world/Wanted.h"
 #include "gof2/game/ship/Ship.h"
-#undef RetStr
+#undef String
 
 extern "C" int AEString_IndexOf(String *haystack, String *needle);
 extern "C" void *Ship_dtor(Ship *);
@@ -1534,7 +1534,7 @@ void Status::setStation(Station *s) {
 }
 
 // 12-byte AbyssEngine::String, built/destroyed via engine wrappers. Modeled locally as
-// Str12 (text*, size, ...) — distinct from AbyssEngine::String12 (char16_t buf[6]) which
+// Str12 (text*, size, ...) — distinct from AbyssEngine::String (char16_t buf[6]) which
 // the included headers pull into scope; the recovered code accesses .a/.b/.c by offset.
 struct Str12 { uint32_t a, b, c; };
 

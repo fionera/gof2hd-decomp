@@ -20,9 +20,9 @@
 //   0x34 void* ZipDirectory
 
 // AbyssEngine::String passed/returned by value: 12-byte trivially-copied aggregate.
-// String12 lives in namespace AbyssEngine (see common.h) and is not pulled in by a
+// String lives in namespace AbyssEngine (see common.h) and is not pulled in by a
 // global using-declaration there, so bring it into scope for this header's signatures.
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // JNI handle: only ever used through a pointer here, so a forward declaration is enough.
 struct _jobject;
@@ -54,10 +54,10 @@ public:
 
     // ---- methods (converted from free functions) ----
     void Close();
-    bool FileExist(String12 name);
+    bool FileExist(String name);
     int GetFileSize();
-    FileInterfaceAndroid * OpenRead(String12 name, int p2, bool p3, int p4, int p5, unsigned int p6);
-    FileInterfaceAndroid * OpenWrite(String12 name, int, bool, unsigned int);
+    FileInterfaceAndroid * OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6);
+    FileInterfaceAndroid * OpenWrite(String name, int, bool, unsigned int);
     bool Read(unsigned int n, void *buf);
     bool Seek(unsigned int n);
     void SetAppRootDir(void *p);

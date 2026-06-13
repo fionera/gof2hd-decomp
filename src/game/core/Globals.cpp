@@ -8,19 +8,19 @@
 // collide with the canonical Station.h/Agent.h definitions this file relies on. FileRead
 // is only used here as an opaque handle via local extern "C" declarations.
 #include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Agent.h"          // defines the canonical global `struct RetStr` (12-byte String sret)
+#include "gof2/game/ship/Agent.h"          // defines the canonical global `struct String` (12-byte String sret)
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/render/ImageFactory.h"
 #include "gof2/game/ui/Layout.h"
 // Mission.h transitively pulls Station.h, which redefines the identical (token-for-token,
-// 12-byte aligned aggregate) global `struct RetStr` already provided by Agent.h. Rename the
-// duplicate so it doesn't collide. Station::getName()'s return type becomes RetStr,
+// 12-byte aligned aggregate) global `struct String` already provided by Agent.h. Rename the
+// duplicate so it doesn't collide. Station::getName()'s return type becomes String,
 // which is layout-identical and only ever discarded here. (Other headers are out of edit scope.)
-#define RetStr RetStr
+#define String String
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/world/Station.h"
-#undef RetStr
+#undef String
 #include "gof2/game/mission/RecordHandler.h"
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/core/String.h"
@@ -135,14 +135,14 @@ void Globals_startNewSoundResourceList(void *self)
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
 extern void *const gItemNameGameText __attribute__((visibility("hidden")));
 
-// RetStr (12-byte String sret aggregate) is provided by gof2/Agent.h above.
+// String (12-byte String sret aggregate) is provided by gof2/Agent.h above.
 
 // r0=sret, r1=unused, r2=item id.
-RetStr Globals_getItemName(void *unused, int item)
+String Globals_getItemName(void *unused, int item)
 {
     (void)unused;
     String *src = (String *)((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
-    RetStr r;
+    String r;
     return r;
 }
 
@@ -150,10 +150,10 @@ RetStr Globals_getItemName(void *unused, int item)
 // so the compiler keeps a frame and restores the sret pointer (no tail call). The int arg
 // is unused.
 
-RetStr Globals_getKeyActionName(int action)
+String Globals_getKeyActionName(int action)
 {
     (void)action;
-    RetStr r;
+    String r;
     AEString_ctor_default(&r);
     return r;
 }
@@ -199,10 +199,10 @@ void Globals_addSoundResourceToList(void *self, int val)
 // Body copy-constructs the return slot from the source string (in r2), flag=false.
 // The copy-ctor returns void -> frame kept, sret pointer restored (no tail call).
 
-RetStr Globals_replaceKeyBindingTokens(void *unused, void *src)
+String Globals_replaceKeyBindingTokens(void *unused, void *src)
 {
     (void)unused;
-    RetStr r;
+    String r;
     return r;
 }
 
@@ -766,14 +766,14 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
 
 // Default-construct a temp String, upper-case it, copy-construct the result into the sret
 // blob, then destroy the temp.
-RetStr Globals_getKeyBindingReplaceString(Globals *, int key)
+String Globals_getKeyBindingReplaceString(Globals *, int key)
 {
     (void)key;
 
-    RetStr tmp;
+    String tmp;
     AEString_ctor_default(&tmp);
     ((String *)((String *)&tmp))->ToUpperCase();   // in-place; returns void
-    RetStr result;
+    String result;
     return result;
 }
 

@@ -22,12 +22,12 @@ public:
 #include "gof2/game/ship/PlayerEgo.h"     // defines B()
 #include "gof2/game/ship/PlayerFighter.h"
 #include "gof2/game/world/Route.h"
-#include "gof2/game/world/SolarSystem.h"   // first to define struct RetStr
-// Station.h also defines an identical struct RetStr; rename it inside that
+#include "gof2/game/world/SolarSystem.h"   // first to define struct String
+// Station.h also defines an identical struct String; rename it inside that
 // header so it doesn't collide with SolarSystem.h's copy within this TU.
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/Station.h"
-#undef RetStr
+#undef String
 
 // A by-value 3-float vector passed to the camera helpers (a math Vector laid out
 // as 3 contiguous floats). Defined once here so all uses agree.

@@ -89,10 +89,10 @@ uint8_t TouchButton::isTouched() {
 
 // Returns the text String (stored at offset 0xc) by value. The copy-ctor returns
 // void, so the compiler keeps a frame + restores the sret pointer (r0).
-// `struct RetStr` is provided by gof2/TouchButton.h (single shared definition).
+// `struct String` is provided by gof2/TouchButton.h (single shared definition).
 
-RetStr TouchButton::getText() {
-    RetStr r;
+String TouchButton::getText() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0xc), false);
     return r;
 }

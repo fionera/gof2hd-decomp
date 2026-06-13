@@ -22,7 +22,7 @@ struct Station;
 struct Blk16 { int a, b, c, d; };
 #endif
 
-// String12 is provided by gof2/common.h.
+// String is provided by gof2/common.h.
 
 // Typed byte-offset accessors for opaque (void*) referenced objects whose full
 // layout is not modeled in this translation unit. Return references so call sites
@@ -66,7 +66,7 @@ struct Layout {
 
     // ---- methods used by HangarWindow (signatures match the call sites in
     // HangarWindow.cpp; gof2/Layout.h is intentionally NOT included here because it
-    // redefines this struct and pulls in conflicting RetStr/B/I/P helpers). ----
+    // redefines this struct and pulls in conflicting String/B/I/P helpers). ----
     void drawBG();
     void drawBox(int style, int x, int y, int h, int w, void *text);
     void drawFooter();
@@ -85,7 +85,7 @@ extern "C" int Layout_getHelpButtonOffset();
 extern "C" int Layout_getFooterTransitionWidth();
 
 // TouchButton - opaque; only ever reached via ((TouchButton*)ptr)->method(...).
-// Declared locally (gof2/TouchButton.h is NOT included: it redefines the RetStr/B/I/P
+// Declared locally (gof2/TouchButton.h is NOT included: it redefines the String/B/I/P
 // helpers that Station.h/RecordHandler.h also provide, and several of its method
 // signatures disagree with the call sites here). Signatures mirror the call sites.
 struct TouchButton {

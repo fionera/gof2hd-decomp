@@ -29,7 +29,7 @@ namespace AbyssEngine {
 String operator+(const String &left, const String &right);
 } // namespace AbyssEngine
 using AbyssEngine::String;
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // placement new is provided by <new> (pulled in via common.h's standard headers).
 

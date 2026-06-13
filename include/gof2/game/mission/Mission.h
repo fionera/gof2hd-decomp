@@ -1,7 +1,7 @@
 #ifndef GOF2_MISSION_H
 #define GOF2_MISSION_H
 #include "gof2/common.h"
-#include "gof2/game/world/Station.h"   // provides struct RetStr (single shared definition)
+#include "gof2/game/world/Station.h"   // provides struct String (single shared definition)
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Mission class (Android libgof2hdaa.so, armv7 Thumb).
 // Top-level class (no AbyssEngine:: namespace). Field offsets recovered from the
@@ -22,11 +22,11 @@ struct Agent;
 // AbyssEngine::String passed by value is a 12-byte aggregate. In the engine it has
 // a non-trivial copy ctor/dtor, so by-value params are passed by invisible
 // reference (a pointer). Model it opaquely.
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // String returned by value (12-byte aggregate, matches AbyssEngine::String layout).
 // Returned through a hidden sret pointer in the decompiled getters below.
-// `struct RetStr` is provided by gof2/Station.h (single shared definition).
+// `struct String` is provided by gof2/Station.h (single shared definition).
 
 // Full Mission layout recovered from the per-method disassembly. The four embedded
 // String members (0x10/0x1c/0x40/0x4c) are reached via byte-offset casts, so they are
@@ -77,21 +77,21 @@ public:
                        int reward, int targetStation, int difficulty);
     void setCampaign_akw(int flag);
     void setWon_akw(int flag);
-    RetStr getClientName();
-    RetStr getDescription();
-    RetStr getName();
-    RetStr getTargetName();
-    RetStr getTargetStationName();
-    RetStr getTargetSystemName();
+    String getClientName();
+    String getDescription();
+    String getName();
+    String getTargetName();
+    String getTargetStationName();
+    String getTargetSystemName();
     bool isCampaignMission();
     bool isEmpty();
     uint8_t isInstantActionMission();
     uint8_t isVisible();
     void setInstantActionMission(bool v);
     void setProductionGoods(int a, int b);
-    void * setTargetName(const String12 &rhs);
+    void * setTargetName(const String &rhs);
     void setTargetStation(int idx);
-    void * setTargetSystemName(const String12 &rhs);
+    void * setTargetSystemName(const String &rhs);
     void setVisible(bool v);
 
     // ---- recovered accessors / mutators ----

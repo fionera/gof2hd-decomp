@@ -8,10 +8,10 @@
 #include "gof2/game/core/String.h"
 
 // NOTE: Station's name is an AbyssEngine::String passed/returned BY VALUE through the engine's
-// 12-byte RetStr/String12 aggregate ABI (getName() returns RetStr, callers do `*(RetStr*)tmp = ...`).
+// 12-byte String/String aggregate ABI (getName() returns String, callers do `*(String*)tmp = ...`).
 // That trivially-copied 12-byte aggregate does not match our 24-byte std::u16string-backed String,
 // so these by-value-String copy/format entry points are kept as documented engine externs rather
-// than rewritten to std::u16string methods (doing so would require rewriting the whole RetStr ABI).
+// than rewritten to std::u16string methods (doing so would require rewriting the whole String ABI).
 extern "C" void String_copy_ctor(void *out, void *src, bool);
 extern "C" void *Agent_dtor(Agent *a) __attribute__((nothrow));
 
@@ -107,11 +107,11 @@ void Station::visit() {
     ((Galaxy *)(*gGalaxyVisit))->setSystemVisited(this->index);
 }
 
-// RetStr is declared in gof2/Station.h (via gof2/Agent.h).
+// String is declared in gof2/Station.h (via gof2/Agent.h).
 
 // Station::getName() -> String by value (sret in r0, this in r1).
-RetStr Station::getName() {
-    RetStr r;
+String Station::getName() {
+    String r;
     String_copy_ctor(&r, this, false);
     return r;
 }

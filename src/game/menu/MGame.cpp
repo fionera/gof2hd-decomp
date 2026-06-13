@@ -109,9 +109,9 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 extern "C" void *MGame_opnew(unsigned sz);
-extern "C" void String_cstr_ctor(String12 *out, const char *s, bool copy);
-extern "C" void String_concat(String12 *out, String12 *lhs, String12 *rhs);
-extern "C" void String_int_ctor(String12 *out, int v);
+extern "C" void String_cstr_ctor(String *out, const char *s, bool copy);
+extern "C" void String_concat(String *out, String *lhs, String *rhs);
+extern "C" void String_int_ctor(String *out, int v);
 void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
@@ -534,9 +534,9 @@ void MGame::useCloak() {
     int attr = eq == 0 ? 0 : ((Item *)(eq))->getAttribute(0x26);
     ChoiceWindow *cw = this->field_0x94;
     void *txt = ((GameText *)(*g_gameText))->getText(0x247);
-    String12 s0, s1, s2, s3, s4, s5;
+    String s0, s1, s2, s3, s4, s5;
     String_cstr_ctor(&s2, "", false);
-    String_concat(&s3, (String12 *)txt, &s2);
+    String_concat(&s3, (String *)txt, &s2);
     String_int_ctor(&s1, attr);
     String_concat(&s4, &s3, &s1);
     String_cstr_ctor(&s0, "", false);
@@ -851,15 +851,15 @@ void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
     ChoiceWindow *cw = this->field_0x94;
 
     void *txt = ((GameText *)(*g_gameText))->getText(textId);
-    RetStr name = ((Station *)((*g_status)->getStation()))->getName();
+    String name = ((Station *)((*g_status)->getStation()))->getName();
 
-    String12 sPrefix, sSuffix, t1, t2, t3, result;
+    String sPrefix, sSuffix, t1, t2, t3, result;
     String_cstr_ctor(&sPrefix, (const char *)(intptr_t)prefixLit, false);
-    String_concat(&t1, (String12 *)txt, &sPrefix);                 // text + prefix
-    String_concat(&t2, &t1, (String12 *)&name);                    // + station name
+    String_concat(&t1, (String *)txt, &sPrefix);                 // text + prefix
+    String_concat(&t2, &t1, (String *)&name);                    // + station name
     String_cstr_ctor(&sSuffix, (const char *)(intptr_t)suffixLit, false);
     String_concat(&t3, &t2, &sSuffix);                             // + suffix
-    String_concat(&result, &t3, (String12 *)txt);                  // + trailing text
+    String_concat(&result, &t3, (String *)txt);                  // + trailing text
 
     ((ChoiceWindow *)(cw))->set(*(String *)&result, true);
 
@@ -1680,9 +1680,9 @@ static void bindDlg(MGame *self) {
 // Mission::setType
 extern "C" void    *Objective_dtor(Objective *o);                   // Objective::~Objective
 // Status::replaceHash(String haystack, String needle, String replacement) -> String (sret),
-// modelled as a free function on String12 like the other TUs (see HangarWindow.cpp/Status.cpp).
-extern "C" void     Status_replaceHash(String12 *out, Status *self, String12 *haystack,
-                                       String12 *needle, String12 *repl);
+// modelled as a free function on String like the other TUs (see HangarWindow.cpp/Status.cpp).
+extern "C" void     Status_replaceHash(String *out, Status *self, String *haystack,
+                                       String *needle, String *repl);
 __attribute__((visibility("hidden"))) extern int  g_scFollowTextKey; // @0x1900c2 (briefing text key)
 __attribute__((visibility("hidden"))) extern int  g_scFollowHashLit; // @0x1900f8 ("#station" token literal)
 
@@ -1716,11 +1716,11 @@ void MGame::buildMissionFollowup() {
 
     // Rebuild the agent's mission text: take the template and substitute the target station.
     void *tmpl = ((GameText *)(*g_gameText))->getText(g_scFollowTextKey);
-    String12 sTmpl, sHash, sStation, sResult;
-    sTmpl = *(String12 *)tmpl;
+    String sTmpl, sHash, sStation, sResult;
+    sTmpl = *(String *)tmpl;
     String_cstr_ctor(&sHash, (const char *)(intptr_t)g_scFollowHashLit, false);
-    RetStr station = (status->getMission())->getTargetStationName();
-    sStation = *(String12 *)&station;
+    String station = (status->getMission())->getTargetStationName();
+    sStation = *(String *)&station;
     Status_replaceHash(&sResult, status, &sTmpl, &sStation, &sHash);
     ((String *)(&sHash))->dtor();
 

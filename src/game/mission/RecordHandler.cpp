@@ -10,22 +10,22 @@
 #include "gof2/engine/file/AEFile.h"
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/game/mission/Status.h"
-// Station.h is the canonical home of `struct RetStr`; pull it in first so the
+// Station.h is the canonical home of `struct String`; pull it in first so the
 // shared definition wins. SolarSystem.h / Wanted.h / Agent.h each redefine an
-// identical `struct RetStr` unguarded, which would be a redefinition error here.
+// identical `struct String` unguarded, which would be a redefinition error here.
 // Rename their local copies during inclusion so only Station.h's definition is
 // used (the value is layout-identical and always discarded at the call sites).
 #include "gof2/game/world/Station.h"
 #include "gof2/game/mission/Mission.h"
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef RetStr
-#define RetStr RetStr
+#undef String
+#define String String
 #include "gof2/game/world/Wanted.h"
-#undef RetStr
-#define RetStr RetStr
+#undef String
+#define String String
 #include "gof2/game/ship/Agent.h"
-#undef RetStr
+#undef String
 #include "gof2/game/core/String.h"
 
 extern "C" void *RH_op_new(unsigned int sz);
@@ -326,7 +326,7 @@ void * RecordHandler::readWanted(unsigned int fd) {
     AEFile_ReadInt(&numWingmen, fd);
 
     void *w = RH_op_new(0x54);
-    String12 nameCopy;
+    String nameCopy;
     AEString_copy_ctor(&nameCopy, name, 0);
     ((Wanted *)(w))->ctor(idx, nameCopy, board, race, male, ship, weapon, hp, loot, lootAmt, reward, reqBounties, reqMission, numWingmen);
 
@@ -951,7 +951,7 @@ void * RecordHandler::readMission(unsigned int fd) {
         ((Mission *)(mission))->setVisible(visible);
         ((Mission *)(mission))->setAgent((Agent *)agent);
 
-        String12 tgtNameCopy;
+        String tgtNameCopy;
         AEString_copy_ctor(&tgtNameCopy, targetName, 0);
         ((Mission *)(mission))->setTargetName(tgtNameCopy);
 
@@ -1155,7 +1155,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
     ((Agent *)(agent))->setOfferAccepted(accepted);
     ((Agent *)(agent))->setImageParts(img);
 
-    String12 tmp;
+    String tmp;
     AEString_copy_ctor(&tmp, missionStr, 0);
     ((Agent *)(agent))->setMissionString(&tmp);
     AEString_copy_ctor(&tmp, stationName, 0);

@@ -8,7 +8,7 @@ extern "C" int Station_getIndex(Station *st);
 // SolarSystem::~SolarSystem() — real C++ destructor so the demangled symbol contains "~SolarSystem".
 // Releases the three Array<int> members at +0x38, +0x3c, +0x40, then the String at +0xc.
 
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // AbyssEngine::String::~String(String*) on the member at +0xc.
 // SolarSystem::~SolarSystem() — releases the three Array<int> members at +0x38,
@@ -136,10 +136,10 @@ uint32_t SolarSystem::getStationEnumIndex(int idx) {
 // SolarSystem::getName() -> String by value (sret in r0, this in r1).
 // Copies the String member at +0xc. The copy-ctor returns void, so the compiler
 // keeps a frame and restores the sret pointer.
-// RetStr is defined in gof2/SolarSystem.h.
+// String is defined in gof2/SolarSystem.h.
 
-RetStr SolarSystem::getName() {
-    RetStr r;
+String SolarSystem::getName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0xc), false);
     return r;
 }
@@ -224,7 +224,7 @@ extern "C" void *String_default_ctor(void *self);                 // 0x6efbc -> 
 // consecutive stacked-arg loads/field stores into ldmia/stmia + strd pairs, whereas
 // the target keeps them as discrete ldr/str. This is dominated by register-allocation
 // and frame-layout choices not reachable from source form.
-SolarSystem * SolarSystem::ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14) {
+SolarSystem * SolarSystem::ctor(int p1, const String &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14) {
     String_default_ctor((char *)this + 0xc);
     this->systemId = p1;
     char tmp[12];

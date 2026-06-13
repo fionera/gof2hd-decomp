@@ -13,7 +13,7 @@ struct SolarSystem;
 struct Station;
 
 // Bring the small stack-string temp into scope (declared in common.h).
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // AbyssEngine::String passed/returned by value is a 12-byte trivially-copied
 // aggregate (text*, size, ...). Model it opaquely so the ABI matches the target.
@@ -38,7 +38,7 @@ public:
     Array<int>* linkedSystemIds;        // +0x40
 
     // ---- methods (converted from free functions) ----
-    SolarSystem * ctor(int p1, const String12 &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);
+    SolarSystem * ctor(int p1, const String &p2, int p3, bool p4, int p5, int p6, int p7, int p8, int p9, int p10, int *p11, void *p12, void *p13, void *p14);
     bool currentOrbitHasWarpGate();
     void dtor();
     int getAttackRace();
@@ -55,7 +55,7 @@ public:
     // getStations()); callers read the embedded data pointer at +4.
     uint32_t *getStations_i();
     uint32_t *getRoutes();
-    RetStr getName();
+    String getName();
     uint32_t getStationEnumIndex(int idx);
     int getWarpGateEnumIndex();
     // Resolve the warp-gate's enum index — the same table lookup as an ordinary

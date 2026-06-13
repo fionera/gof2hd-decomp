@@ -11,9 +11,9 @@ struct Agent;
 // AbyssEngine::String passed by value is a 12-byte trivially-copied aggregate
 // (text*, size, ...). Model it opaquely so it is passed on the stack/regs the
 // same way as the target ABI (struct >8 bytes by value).
-// (String12 is provided globally by gof2/common.h)
+// (String is provided globally by gof2/common.h)
 
-// RetStr is provided by gof2/common.h.
+// String is provided by gof2/common.h.
 
 // Sell-item data triple returned by setSellItemData (item/price/percentage),
 // reached via byte-offset casts at the call sites; modelled as three ints.
@@ -59,13 +59,13 @@ public:
     Agent * ctor(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11);
     int * getImageParts();
     Mission * getMission();
-    RetStr getMissionString();
+    String getMissionString();
     int getModPricePercentage();
-    RetStr getName();
+    String getName();
     int getSellModIndex();
-    RetStr getStationName();
-    RetStr getSystemName();
-    RetStr getWingmanName(int idx);
+    String getStationName();
+    String getSystemName();
+    String getWingmanName(int idx);
     void * getWingmanNames();
     void giveRewardAtNextChat(bool v);
     uint8_t hasAcceptedOffer();
@@ -81,8 +81,8 @@ public:
     void setMissionString(void *src);
     void setOfferAccepted(bool v);
     Triple * setSellItemData(int a, int b, int c);
-    void setStationName(String12 src);
-    void setSystemName(String12 src);
+    void setStationName(String src);
+    void setSystemName(String src);
     void setWingmanFriendNames(Array<AbyssEngine::String*> *param);
 
     // ---- simple field accessors (recovered) ----

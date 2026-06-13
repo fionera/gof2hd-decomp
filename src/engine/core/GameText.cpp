@@ -49,9 +49,9 @@ int GameText_getLanguage()
 extern const char gRegionCodeStr[] __attribute__((visibility("hidden")));
 
 // GameText::getRegionCode() -> returns an AbyssEngine::String by value (sret).
-RetStr GameText_getRegionCode()
+String GameText_getRegionCode()
 {
-    RetStr r;
+    String r;
     AEString_ctor_cstr(&r, gRegionCodeStr, false);
     return r;
 }

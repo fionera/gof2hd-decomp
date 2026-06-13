@@ -55,7 +55,7 @@ public:
     bool isUnlocked();
     int getIngredientsValue();
     int getRemainingAmount(int item);
-    AbyssEngine::String12 getStationName();
+    AbyssEngine::String getStationName();
     int getTotalAmount(int item);
     bool isCompleted();
     bool isEmpty();

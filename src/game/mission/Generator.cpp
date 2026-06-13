@@ -6,24 +6,24 @@
 #include "gof2/game/mission/Item.h"
 #include "gof2/game/mission/Achievements.h"
 // Several headers (Agent/SolarSystem/Station/Wanted) each define an identical
-// global `struct RetStr` (the 12-byte by-value String aggregate) unconditionally.
+// global `struct String` (the 12-byte by-value String aggregate) unconditionally.
 // Station.h provides the canonical one (Mission.h delegates to it); rename the
-// `RetStr` tag to a unique name for the other headers so their definitions don't
-// collide. Generator never names RetStr directly and discards these getters'
+// `String` tag to a unique name for the other headers so their definitions don't
+// collide. Generator never names String directly and discards these getters'
 // return values, so the distinct tags are harmless.
-#define RetStr RetStr
+#define String String
 #include "gof2/game/ship/Agent.h"
-#undef RetStr
+#undef String
 #include "gof2/game/core/Globals.h"
 #include "gof2/game/world/Station.h"
 #include "gof2/game/mission/Mission.h"
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/SolarSystem.h"
-#undef RetStr
+#undef String
 #include "gof2/game/world/Standing.h"
-#define RetStr RetStr
+#define String String
 #include "gof2/game/world/Wanted.h"
-#undef RetStr
+#undef String
 #include "gof2/game/mission/Status.h"
 
 // ---- ctor/dtor ----
@@ -597,7 +597,7 @@ Mission *Generator::createMission(Agent *agent,
         AbyssEngine::String targetName;
         Globals_getRandomName(&targetName, *g_Generator_targetNames, 0, 1);
         // String passed by value via its 12-byte aggregate ABI representation.
-        ((Mission *)(mission))->setTargetName(*(const AbyssEngine::String12 *)&targetName);
+        ((Mission *)(mission))->setTargetName(*(const AbyssEngine::String *)&targetName);
         AbyssEngine_String_dtor(&targetName);
     }
     int costRem = costs % 50;
@@ -613,7 +613,7 @@ Mission *Generator::createMission(Agent *agent,
         if (((SolarSystem *)(systems->data()[i]))->stationIsInSystem_int(targetStation)) {
             AbyssEngine::String systemName;
             ((SolarSystem *)(&systemName))->getName();
-            ((Mission *)(mission))->setTargetSystemName(*(const AbyssEngine::String12 *)&systemName);
+            ((Mission *)(mission))->setTargetSystemName(*(const AbyssEngine::String *)&systemName);
             AbyssEngine_String_dtor(&systemName);
             break;
         }

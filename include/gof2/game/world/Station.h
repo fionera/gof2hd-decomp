@@ -1,7 +1,7 @@
 #ifndef GOF2_STATION_H
 #define GOF2_STATION_H
 #include "gof2/common.h"
-#include "gof2/game/ship/Agent.h"   // provides the shared RetStr aggregate
+#include "gof2/game/ship/Agent.h"   // provides the shared String aggregate
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 — Station class. Top-level, no namespace.
 // Field offsets recovered from per-method target disassembly. Methods access
@@ -9,7 +9,7 @@
 
 struct Station;
 
-// RetStr (AbyssEngine::String by value: 12-byte trivially-copied aggregate)
+// String (AbyssEngine::String by value: 12-byte trivially-copied aggregate)
 // is provided by gof2/Agent.h (included above) to avoid a duplicate definition.
 
 class Station {
@@ -41,7 +41,7 @@ public:
     void dtor();
     bool equals(Station *other);
     uint32_t getHiddenBlueprintIndex();
-    RetStr getName();
+    String getName();
     uint32_t getPirateStationIndex();
     uint8_t hasAttackedFriends();
     uint32_t hasItem(int index);

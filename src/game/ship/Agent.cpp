@@ -1,15 +1,15 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
 
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
-// RetStr (the 12-byte aggregate returned via sret) is declared in Agent.h.
+// String (the 12-byte aggregate returned via sret) is declared in Agent.h.
 
 // Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
 struct VObj { void (*vt[8])(void *); };
 
-RetStr Agent::getStationName() {
-    RetStr r;
+String Agent::getStationName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x78), false);
     return r;
 }
@@ -50,12 +50,12 @@ int Agent::getSellModIndex() {
 
 // Agent::setStationName(String) — this in r0, String by value in r1..r3.
 // Tail-calls operator= on the field at +0x78.
-void Agent::setStationName(String12 src) {
+void Agent::setStationName(String src) {
     ((String *)((char *)this + 0x78))->assign((String *)&src);
 }
 
-RetStr Agent::getMissionString() {
-    RetStr r;
+String Agent::getMissionString() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x6c), false);
     return r;
 }
@@ -68,8 +68,8 @@ uint8_t Agent::isMale() {
 
 // Returns String by value. The copy-ctor returns void, so the compiler cannot
 // assume r0 survives the call and must keep a frame + restore the sret pointer.
-RetStr Agent::getName() {
-    RetStr r;
+String Agent::getName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x00), false);
     return r;
 }
@@ -120,8 +120,8 @@ bool Agent::isGenericAgent() {
     return this->category == 1;
 }
 
-RetStr Agent::getSystemName() {
-    RetStr r;
+String Agent::getSystemName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x18), false);
     return r;
 }
@@ -191,7 +191,7 @@ void Agent::finishWingman(Array<AbyssEngine::String*> *consumedArray) {
     delete consumedArray;
 }
 
-RetStr Agent::getWingmanName(int idx) {
+String Agent::getWingmanName(int idx) {
     void *src;
     if (idx == 1) {
         src = this->wingman1;
@@ -200,12 +200,12 @@ RetStr Agent::getWingmanName(int idx) {
     } else {
         src = this->wingman2;
     }
-    RetStr r;
+    String r;
     ((String *)(&r))->ctor_copy((String *)(src), false);
     return r;
 }
 
-void Agent::setSystemName(String12 src) {
+void Agent::setSystemName(String src) {
     ((String *)((char *)this + 0x18))->assign((String *)&src);
 }
 
@@ -237,7 +237,7 @@ __attribute__((minsize)) Agent::~Agent() noexcept(false)
 
 // Agent::setMissionString(String) — this in r0, source String* in r1.
 void Agent::setMissionString(void *src) {
-    String12 tmp;
+    String tmp;
     ((String *)(&tmp))->ctor_copy((String *)(src), false);
     ((String *)((char *)this + 0x6c))->assign((String *)&tmp);
     ((String *)(&tmp))->dtor();

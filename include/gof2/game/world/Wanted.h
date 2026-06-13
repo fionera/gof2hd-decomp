@@ -14,9 +14,9 @@ struct Wanted;
 // (text*, size, ...). Model it opaquely so it is passed the same way as the
 // target ABI (struct > 8 bytes by value -> on the stack / sret-style).
 
-// The recovered code uses the bare name String12 for the 12-byte stack String
+// The recovered code uses the bare name String for the 12-byte stack String
 // temp. It lives in namespace AbyssEngine (see common.h); pull it into scope.
-using AbyssEngine::String12;
+using AbyssEngine::String;
 
 // 12-byte by-value String return aggregate (sret on the target ABI): getName()
 // returns a 12-byte String temp. Modeled the same way as in Agent.h/Mission.h.
@@ -47,10 +47,10 @@ public:
     uint8_t active;                 // +0x51
 
     // ---- methods (converted from free functions) ----
-    Wanted * ctor(int p1, const String12 &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);
+    Wanted * ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);
     Wanted * dtor();
     Wanted * base_dtor();   // base subobject dtor: destroys `name`, returns this
-    RetStr getName();
+    String getName();
     uint8_t isActive();
     uint8_t isTerminated();
     void setActive(bool v);

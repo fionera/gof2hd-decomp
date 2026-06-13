@@ -8,7 +8,7 @@
 struct Systems;
 
 extern "C" void String_cstr_ctor(void *out, const char *s, bool);
-extern "C" void *String_assign_ref(void *self, const String12 &rhs);
+extern "C" void *String_assign_ref(void *self, const String &rhs);
 extern "C" void String_default_ctor(void *s);
 extern "C" int Station_getSystem(Station *s);
 extern "C" void Station_dtor_finish(Station *s);
@@ -17,10 +17,10 @@ uint8_t Mission::isInstantActionMission() {
     return this->instantAction;
 }
 
-// `struct RetStr` provided by gof2/Station.h (via Mission.h).
+// `struct String` provided by gof2/Station.h (via Mission.h).
 
-RetStr Mission::getTargetStationName() {
-    RetStr r;
+String Mission::getTargetStationName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x40), false);
     return r;
 }
@@ -32,14 +32,14 @@ bool Mission::isCampaignMission() {
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> 0x6ee18
 
 // Returns a fixed description String built from a string literal.
-RetStr Mission::getDescription() {
-    RetStr r;
+String Mission::getDescription() {
+    String r;
     String_cstr_ctor(&r, "", false);
     return r;
 }
 
-RetStr Mission::getTargetSystemName() {
-    RetStr r;
+String Mission::getTargetSystemName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x4c), false);
     return r;
 }
@@ -54,8 +54,8 @@ __attribute__((visibility("hidden"))) extern GameText **g_gameText;
 
 // Mission::getName(): campaign missions use a fixed literal name; freelance ones
 // look up "<id+0x162>" in the global text table.
-RetStr Mission::getName() {
-    RetStr r;
+String Mission::getName() {
+    String r;
     if (this->campaign != 0) {
         String_cstr_ctor(&r, "", false);
     } else {
@@ -74,7 +74,7 @@ void Mission::setProductionGoods(int a, int b) {
 
 // Mission::setTargetName(String by value): the String has a non-trivial copy
 // ctor/dtor so it is passed by invisible reference (pointer in r1).
-void * Mission::setTargetName(const String12 &rhs) {
+void * Mission::setTargetName(const String &rhs) {
     return String_assign_ref((char *)this + 0x1c, rhs);
 }
 
@@ -82,8 +82,8 @@ void * Mission::setTargetName(const String12 &rhs) {
 
 // Returns the client name String (offset 0x10) by value. The void copy-ctor forces
 // a frame + non-tail blx (the sret r0 must be restored).
-RetStr Mission::getClientName() {
-    RetStr r;
+String Mission::getClientName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x10), false);
     return r;
 }
@@ -96,8 +96,8 @@ bool Mission::isEmpty() {
     return this->id == -1;
 }
 
-RetStr Mission::getTargetName() {
-    RetStr r;
+String Mission::getTargetName() {
+    String r;
     ((String *)(&r))->ctor_copy((String *)((char *)this + 0x1c), false);
     return r;
 }
@@ -108,7 +108,7 @@ void Mission::setInstantActionMission(bool v) {
 
 // AbyssEngine::String::operator=(String* this, const String& rhs) -> 0x1ac548
 
-void * Mission::setTargetSystemName(const String12 &rhs) {
+void * Mission::setTargetSystemName(const String &rhs) {
     return String_assign_ref((char *)this + 0x4c, rhs);
 }
 
@@ -123,7 +123,7 @@ void Mission::setVisible(bool v) {
 // the 7-arg constructor, then copies the instant-action flag. The on-stack String
 // temp triggers the -Oz stack-protector canary.
 Mission * Mission::clone() {
-    unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char name[sizeof(String)] __attribute__((aligned(4)));
     Mission *m = (Mission *)::operator new(0x78);
     int id = this->id;
     ((String *)(name))->ctor_copy((String *)((char *)this + 0x10), false);
@@ -143,7 +143,7 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 // targetStationName String (+0x40). The char-array-backed String temp triggers
 // the -Oz/-fstack-protector canary the target emits.
 void Mission::setTargetStation(int idx) {
-    unsigned char name[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char name[sizeof(String)] __attribute__((aligned(4)));
     Galaxy **gp = g_galaxy;
     this->targetStation = idx;
     Station *st = (Station *)((Galaxy *)(*gp))->getStation(idx);
@@ -171,7 +171,7 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 // — the freelance-mission constructor.
 Mission * Mission::ctor7(int id, const void *client, int a, int b, int c, int station, int reward) {
     Mission *self = this;
-    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
     String_default_ctor((char *)self + 0x1c);
@@ -206,7 +206,7 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 // Mission::Mission(int) — like the default ctor but stores the given id at +0xc.
 Mission * Mission::ctor_int(int id) {
     Mission *self = this;
-    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
     String_default_ctor((char *)self + 0x1c);
@@ -269,7 +269,7 @@ __attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 // Mission::Mission(int id, int goods, int station) — the campaign-mission constructor.
 Mission * Mission::ctor3(int id, int goods, int station) {
     Mission *self = this;
-    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
     String_default_ctor((char *)self + 0x1c);
@@ -331,7 +331,7 @@ __attribute__((visibility("hidden"))) extern void *Mission_vtable;
 // The on-stack String temp triggers the -Oz stack-protector canary.
 Mission * Mission::ctor_default() {
     Mission *self = this;
-    unsigned char tmp[sizeof(String12)] __attribute__((aligned(4)));
+    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
     *(void **)self = (char *)Mission_vtable + 8;
     String_default_ctor((char *)self + 0x10);
     String_default_ctor((char *)self + 0x1c);

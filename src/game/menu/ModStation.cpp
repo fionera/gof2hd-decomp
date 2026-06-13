@@ -22,7 +22,7 @@ struct Radio { unsigned char lastMessageShown(); };
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/mission/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
 // SpaceLounge.h and TouchButton.h define their own (unguarded) copies of the B/I/P
-// offset helpers, and TouchButton.h redefines `RetStr` (already provided by Station.h).
+// offset helpers, and TouchButton.h redefines `String` (already provided by Station.h).
 // Rename those tokens for the duration of these two includes so the duplicates land on
 // throwaway names instead of colliding; ModStation uses neither from these headers.
 #define B  B_SpaceLounge
@@ -38,18 +38,18 @@ struct Radio { unsigned char lastMessageShown(); };
 #define B      B_TouchButton
 #define I      I_TouchButton
 #define P      P_TouchButton
-#define RetStr RetStr
+#define String String
 #include "gof2/game/ui/TouchButton.h"
 #undef B
 #undef I
 #undef P
-#undef RetStr
+#undef String
 #include "gof2/game/ui/MenuTouchWindow.h"
 
 // HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
 // converted methods into the `AbyssEngine` namespace as free functions (a decompiler
 // artifact), which collide with each other across the two headers, and HangarWindow.h
-// also redefines `Layout`/`String12`. ModStation only ever dispatches OnTouchBegin/
+// also redefines `Layout`/`String`. ModStation only ever dispatches OnTouchBegin/
 // OnTouchMove on these via byte-offset casts, so minimal local definitions suffice.
 struct HangarWindow {
     void OnTouchBegin(int touch, int coord);

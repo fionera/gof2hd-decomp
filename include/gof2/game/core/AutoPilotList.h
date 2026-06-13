@@ -1,10 +1,10 @@
 #ifndef GOF2_AUTOPILOTLIST_H
 #define GOF2_AUTOPILOTLIST_H
 #include "gof2/common.h"
-// RetStr (12-byte by-value String aggregate) and the SolarSystem class are sourced
-// from a single header to avoid the duplicate-RetStr ODR clash that arises when
-// SolarSystem.h and Station.h (both define RetStr unconditionally) are pulled into
-// one TU. getTargetString() below returns RetStr by value, so its definition must be
+// String (12-byte by-value String aggregate) and the SolarSystem class are sourced
+// from a single header to avoid the duplicate-String ODR clash that arises when
+// SolarSystem.h and Station.h (both define String unconditionally) are pulled into
+// one TU. getTargetString() below returns String by value, so its definition must be
 // in scope here.
 #include "gof2/game/world/SolarSystem.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
@@ -33,7 +33,7 @@ struct EngString {
 };
 void *operator new(__SIZE_TYPE__);
 
-// RetStr is provided by gof2/SolarSystem.h (included above).
+// String is provided by gof2/SolarSystem.h (included above).
 
 // Field accessor via byte offset.
 
@@ -49,7 +49,7 @@ public:
     void draw();
 
     // ---- methods (converted from free functions) ----
-    RetStr getTargetString();
+    String getTargetString();
     int touch(int p1, int p2);
 };
 #endif
