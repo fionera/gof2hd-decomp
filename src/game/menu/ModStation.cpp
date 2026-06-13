@@ -22,9 +22,9 @@ struct Radio { unsigned char lastMessageShown(); };
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/mission/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
 // SpaceLounge.h and TouchButton.h define their own (unguarded) copies of the B/I/P
-// offset helpers, and TouchButton.h redefines `String` (already provided by Station.h).
-// Rename those tokens for the duration of these two includes so the duplicates land on
-// throwaway names instead of colliding; ModStation uses neither from these headers.
+// offset helpers. Rename those tokens for the duration of these two includes so the
+// duplicates land on throwaway names instead of colliding; ModStation uses neither from
+// these headers.
 #define B  B_SpaceLounge
 #define I  I_SpaceLounge
 #define P  P_SpaceLounge
@@ -38,12 +38,10 @@ struct Radio { unsigned char lastMessageShown(); };
 #define B      B_TouchButton
 #define I      I_TouchButton
 #define P      P_TouchButton
-#define String String
 #include "gof2/game/ui/TouchButton.h"
 #undef B
 #undef I
 #undef P
-#undef String
 #include "gof2/game/ui/MenuTouchWindow.h"
 
 // HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
@@ -429,7 +427,6 @@ __attribute__((visibility("hidden"))) extern int   g_msc_vtable;    // [DAT_000e
 __attribute__((visibility("hidden"))) extern int **g_msc_canvas;    // [DAT_000e56bc] PaintCanvas holder
 
 extern "C" {
-void  String_ctor_default_msc(String *s);
 int   Status_getStation_msc();
 int   Station_getIndex_msc(Station *s);
 int   Status_getSystem_msc();
@@ -446,7 +443,7 @@ EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race);
 // station's race, and sets up the hangar idle camera tween.
 ModStation::ModStation() {
     I(this, 0x00) = g_msc_vtable + 8;          // vtable
-    String_ctor_default_msc((String *)B(this, 0x38));
+    ((String *)B(this, 0x38))->ctor();
 
     // zero / default field block.
     I(this, 0x28) = 0;
@@ -3100,8 +3097,6 @@ __attribute__((visibility("hidden"))) extern int *g_cbs_stack;    // [DAT_000ec1
 __attribute__((visibility("hidden"))) extern int **g_cbs_textId;  // [DAT_000ec1b0]
 
 extern "C" {
-void  String_ctor_lit_cbs(String *s, const char *lit, int own);
-void  String_dtor_cbs(String *s);
 int   GameText_getText_cbs(int id);
 void  ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int modal,
                           String *a, String *b, String *c, int d, int e);
@@ -3110,24 +3105,15 @@ void  ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int moda
 // ModStation::showCBSMessage() — pops the "Cross-Buy Support" notice via the station's choice
 // window and flags it as open.
 void ModStation::showCBSMessage() {
-    // String is opaque (0xc bytes); use raw storage for the stack temporaries.
-    char emptyA[12], emptyB[12], ok[12];
-    String_ctor_lit_cbs((String *)emptyA, "", 0);
-    String_ctor_lit_cbs((String *)emptyB, "", 0);
+    String emptyA, emptyB, ok;
 
     ChoiceWindow *cw = (ChoiceWindow *)P(this, 0x70);
     String *title = (String *)GameText_getText_cbs(**g_cbs_textId);
-    String_ctor_lit_cbs((String *)ok, "", 0);
-    ChoiceWindow_set_cbs(cw, title, (String *)ok, 1, (String *)emptyA, (String *)emptyB,
-                         (String *)emptyA, -1, -1);
-    String_dtor_cbs((String *)ok);
+    ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
 
     // mark both "CBS message open" flags.
     C(this, 0xc1) = 1;   // this[1].field_4C + 1
     C(this, 0x6b) = 1;   // m_nStarMapWindowOpen + 3
-
-    String_dtor_cbs((String *)emptyB);
-    String_dtor_cbs((String *)emptyA);
 }
 
 // ===========================================================================

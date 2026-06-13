@@ -109,9 +109,6 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 extern "C" void *MGame_opnew(unsigned sz);
-extern "C" void String_cstr_ctor(String *out, const char *s, bool copy);
-extern "C" void String_concat(String *out, String *lhs, String *rhs);
-extern "C" void String_int_ctor(String *out, int v);
 void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
@@ -535,19 +532,13 @@ void MGame::useCloak() {
     ChoiceWindow *cw = this->field_0x94;
     void *txt = ((GameText *)(*g_gameText))->getText(0x247);
     String s0, s1, s2, s3, s4, s5;
-    String_cstr_ctor(&s2, "", false);
-    String_concat(&s3, (String *)txt, &s2);
-    String_int_ctor(&s1, attr);
-    String_concat(&s4, &s3, &s1);
-    String_cstr_ctor(&s0, "", false);
-    String_concat(&s5, &s4, &s0);
+    s2.ctor_char("", false);
+    s3 = *(String *)txt + s2;
+    s1.ctor_int(attr);
+    s4 = s3 + s1;
+    s0.ctor_char("", false);
+    s5 = s4 + s0;
     ((ChoiceWindow *)(cw))->set(*(String *)&s5);
-    ((String *)(&s5))->dtor();
-    ((String *)(&s0))->dtor();
-    ((String *)(&s4))->dtor();
-    ((String *)(&s1))->dtor();
-    ((String *)(&s3))->dtor();
-    ((String *)(&s2))->dtor();
     this->field_0x5d = 1;
     this->field_0xce = 1;
     ((MGame *)(this))->pauseSounds();
@@ -854,21 +845,14 @@ void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
     String name = ((Station *)((*g_status)->getStation()))->getName();
 
     String sPrefix, sSuffix, t1, t2, t3, result;
-    String_cstr_ctor(&sPrefix, (const char *)(intptr_t)prefixLit, false);
-    String_concat(&t1, (String *)txt, &sPrefix);                 // text + prefix
-    String_concat(&t2, &t1, (String *)&name);                    // + station name
-    String_cstr_ctor(&sSuffix, (const char *)(intptr_t)suffixLit, false);
-    String_concat(&t3, &t2, &sSuffix);                             // + suffix
-    String_concat(&result, &t3, (String *)txt);                  // + trailing text
+    sPrefix.ctor_char((const char *)(intptr_t)prefixLit, false);
+    t1 = *(String *)txt + sPrefix;                 // text + prefix
+    t2 = t1 + name;                                // + station name
+    sSuffix.ctor_char((const char *)(intptr_t)suffixLit, false);
+    t3 = t2 + sSuffix;                             // + suffix
+    result = t3 + *(String *)txt;                  // + trailing text
 
     ((ChoiceWindow *)(cw))->set(*(String *)&result, true);
-
-    ((String *)(&result))->dtor();
-    ((String *)(&t3))->dtor();
-    ((String *)(&sSuffix))->dtor();
-    ((String *)(&t2))->dtor();
-    ((String *)(&t1))->dtor();
-    ((String *)(&sPrefix))->dtor();
 
     ((ChoiceWindow *)(cw))->left();
 }
@@ -1718,15 +1702,13 @@ void MGame::buildMissionFollowup() {
     void *tmpl = ((GameText *)(*g_gameText))->getText(g_scFollowTextKey);
     String sTmpl, sHash, sStation, sResult;
     sTmpl = *(String *)tmpl;
-    String_cstr_ctor(&sHash, (const char *)(intptr_t)g_scFollowHashLit, false);
+    sHash.ctor_char((const char *)(intptr_t)g_scFollowHashLit, false);
     String station = (status->getMission())->getTargetStationName();
     sStation = *(String *)&station;
     Status_replaceHash(&sResult, status, &sTmpl, &sStation, &sHash);
-    ((String *)(&sHash))->dtor();
 
     Agent *missionAgent = ((Mission *)(status->getMission()))->getAgent();
     ((Agent *)(missionAgent))->setMissionString(&sResult);
-    ((String *)(&sResult))->dtor();
 
     status->setMission(((Status *)(status))->getCampaignMissionPtr());
 
@@ -2481,14 +2463,13 @@ done:
     
 }
 
-extern "C" void String_default_ctor(void *s);
 __attribute__((visibility("hidden"))) extern int g_mgameVtable; // @0x187b3c ([0]=vtable base)
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
 MGame * MGame::ctor() {
     this->field_0x0 = g_mgameVtable + 8;
-    String_default_ctor((char *)this + 0x64);
+    ((String *)((char *)this + 0x64))->ctor();
 
     int z = 0;
     int initVal = g_mgameInitVal;

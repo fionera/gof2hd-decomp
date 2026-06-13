@@ -37,9 +37,6 @@ void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 extern "C" V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
 extern "C" void *Explosion_dtor(void *p);
-extern "C" void String_ctor_empty(void *s);
-extern "C" void String_ctor_cstr(void *s, const char *cstr, bool b);
-extern "C" void *String_op_assign(void *dst, void *src);
 extern "C" void Generator_ctor(void *g);
 extern "C" void *Generator_dtor(void *g);
 
@@ -89,9 +86,7 @@ void PlayerFixedObject::translate(const Vector &d) {
 // `struct String` is provided by gof2/Station.h via the class header.
 
 String PlayerFixedObject::getName() {
-    String r;
-    ((String *)(&r))->ctor_copy((String *)((char *)this + 0x1ac), false);
-    return r;
+    return *(String *)((char *)this + 0x1ac);
 }
 
 // Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
@@ -827,7 +822,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     *(void **)self = &PlayerFixedObject_vtable + 8;
 
-    String_ctor_empty((char *)self + 0x1ac);
+    ((String *)((char *)self + 0x1ac))->ctor();
     self->explosion = 0;
     self->wreckMeshId = 0;
     self->faction = param2;
@@ -860,10 +855,8 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     // Name string from a fixed literal.
     {
-        char tmp[12];
-        String_ctor_cstr(tmp, "", false);
-        String_op_assign((char *)self + 0x1ac, tmp);
-        ((String *)(tmp))->dtor();
+        String tmp("", false);
+        *(String *)((char *)self + 0x1ac) = tmp;
     }
 
     void *mission = ((Status *)(*g_pfo_status))->getMission();

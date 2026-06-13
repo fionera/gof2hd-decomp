@@ -18,14 +18,7 @@
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/core/String.h"
 #include "gof2/game/mission/Status.h"
-// gof2/TouchButton.h and gof2/Station.h (pulled in via Mission.h above) both define
-// `struct String` unconditionally with identical layout, which is a C++ redefinition error.
-// We need TouchButton.h for the TouchButton struct/methods used below, so include it with
-// its String renamed out of the way (it is never referenced in this translation unit; the
-// canonical String is the one already provided by Station.h).
-#define String String
 #include "gof2/game/ui/TouchButton.h"
-#undef String
 
 // This translation unit pulls in externs.h/fwd.h (which forward-declares the global
 // `PaintCanvas` type) and additionally used `AbyssEngine::PaintCanvas` as a *namespace*
@@ -97,8 +90,6 @@ void MatrixGetDir(void *out, void *matrix);
 extern "C" void *SpaceLounge_screen_level_slot;
 extern "C" void *SpaceLounge_screen_canvas_slot;
 extern "C" void *SpaceLounge_screen_projector;
-extern "C" void *String_ctor_cstr(void *dst, const char *src, bool copy);
-extern "C" void String_add(void *dst, void *a, void *b);
 extern "C" void *SpaceLounge_lounge_canvas_slot;
 extern "C" void *SpaceLounge_lounge_layout_slot;
 extern "C" void *SpaceLounge_lounge_image_factory_slot;
@@ -111,7 +102,6 @@ extern "C" void *ScrollTouchWindow_ctor(void *scroll, int x, int y, int w, int h
 extern "C" void *SpaceLounge_init_layout_slot;
 extern "C" void *SpaceLounge_init_text_slot;
 extern "C" void *SpaceLounge_init_camera_slot;
-extern "C" void String_ctor_default(void *s);
 extern "C" void CutScene_ctor(void *cutscene, int id);
 extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
 extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration);
@@ -366,8 +356,8 @@ static inline bool hit_agent(SpaceLounge *self, int x, int y, int i)
 }
 
 void SpaceLounge::OnTouchEnd(int x, int y) {
-    char helpBig[924];
-    char helpSmall[12];
+    String helpBig;
+    String helpSmall;
     char matrix[60];
 
     UC(this, 0xb2) = 0;
@@ -414,9 +404,8 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         if (((Layout *)(layout))->helpPressed() != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);
-            ((String *)(helpSmall))->ctor_copy((String *)text, false);
-            ((Layout *)(layout))->initHelpWindow(helpSmall);
-            ((String *)(helpSmall))->dtor();
+            helpSmall.ctor_copy((String *)text, false);
+            ((Layout *)(layout))->initHelpWindow(&helpSmall);
         }
         return;
     }
@@ -480,9 +469,8 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     if (((Layout *)(layout))->helpPressed() != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
-        ((String *)(helpBig))->ctor_copy((String *)text, false);
-        ((Layout *)(layout))->initHelpWindow(helpBig);
-        ((String *)(helpBig))->dtor();
+        helpBig.ctor_copy((String *)text, false);
+        ((Layout *)(layout))->initHelpWindow(&helpBig);
     }
 }
 
@@ -493,7 +481,7 @@ static inline int random_from(void *slot, int limit)
 
 int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
 {
-    char missionText[12];
+    String missionText;
 
     int race = ((Agent *)(agent))->getRace();
     bool male = ((Agent *)(agent))->isMale();
@@ -512,7 +500,7 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
         }
     }
 
-    Globals_getAgentMissionText(missionText, *SpaceLounge_getSoundId_missionText, agent);
+    Globals_getAgentMissionText(&missionText, *SpaceLounge_getSoundId_missionText, agent);
 
     bool checkSpecialText = true;
     int soundId;
@@ -576,13 +564,13 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
     if (checkSpecialText) {
         void *texts = *(void **)&SpaceLounge_getSoundId_specialText;
         void *text = ((GameText *)(*(void **)texts))->getText(0x334);
-        if (((String *)missionText)->Compare_str((String *)text) != 0) {
+        if (missionText.Compare_str((String *)text) != 0) {
             text = ((GameText *)(*(void **)texts))->getText(0x338);
-            if (((String *)missionText)->Compare_str((String *)text) != 0) {
+            if (missionText.Compare_str((String *)text) != 0) {
                 text = ((GameText *)(*(void **)texts))->getText(0x33b);
-                if (((String *)missionText)->Compare_str((String *)text) != 0) {
+                if (missionText.Compare_str((String *)text) != 0) {
                     text = ((GameText *)(*(void **)texts))->getText(0x341);
-                    dummy = ((String *)missionText)->Compare_str((String *)text);
+                    dummy = missionText.Compare_str((String *)text);
                     if (dummy != 0) {
                         goto special_done;
                     }
@@ -610,7 +598,6 @@ special_done:
     }
 
     int result = SpaceLounge_getSpecificSoundForRace(dummy, soundId, race, male);
-    ((String *)(missionText))->dtor();
     return result;
 }
 
@@ -767,7 +754,7 @@ static inline void *button_at(SpaceLounge *self, unsigned i)
 }
 
 void SpaceLounge::drawLounge() {
-    char s0[12], s1[12], s2[12], s3[12], s4[12], s5[12], s6[12];
+    String s0, s1, s2, s3, s4, s5, s6;
 
     void *canvasSlot = *(void **)&SpaceLounge_lounge_canvas_slot;
     void *canvas = *(void **)canvasSlot;
@@ -789,18 +776,18 @@ void SpaceLounge::drawLounge() {
 
             ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
             if (((Agent *)(agent))->isKnown() != 0 || ((Agent *)(agent))->isStoryAgent() != 0) {
-                ((Agent *)(agent))->getName();
+                s0 = ((Agent *)(agent))->getName();
             } else {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *)(*(void **)texts))->getText(((Agent *)(agent))->getRace() + 0x196);
-                ((String *)(s0))->ctor_copy((String *)text, false);
+                s0.ctor_copy((String *)text, false);
             }
 
             void *mission = ((Agent *)(agent))->getMission();
             if (mission != 0) {
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *)(*(void **)texts))->getText(((Mission *)(mission))->getType() + 0x162);
-                ((String *)(s1))->ctor_copy((String *)text, false);
+                s1.ctor_copy((String *)text, false);
             } else {
                 int offer = ((Agent *)(agent))->getOffer();
                 void *texts = *(void **)&SpaceLounge_lounge_text_slot;
@@ -813,9 +800,9 @@ void SpaceLounge::drawLounge() {
                     id = 0x130;
                 }
                 if (id != 0) {
-                    ((String *)(s1))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(id), false);
+                    s1.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(id), false);
                 } else {
-                    String_ctor_cstr(s1, "", false);
+                    s1 = "";
                 }
             }
 
@@ -824,36 +811,27 @@ void SpaceLounge::drawLounge() {
             int boxX = cx - pad;
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
-            String_ctor_cstr(s2, "", false);
-            ((Layout *)(layout))->drawBox6(2, boxX, boxY, width, I(layout, 0x30), s2);
-            ((String *)(s2))->dtor();
+            s2 = "";
+            ((Layout *)(layout))->drawBox6(2, boxX, boxY, width, I(layout, 0x30), &s2);
             ((PaintCanvas *)canvas)->DrawRectangle(boxX, boxY, width, I(layout, 0x30));
 
-            String_ctor_cstr(s3, ((Agent *)(agent))->isKnown() == 0 ? "?" : "", false);
-            String_add(s4, s3, s0);
-            ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, s4, cx, y + I(layout, 0x2c0), false);
-            ((String *)(s4))->dtor();
-            ((String *)(s3))->dtor();
+            s3 = ((Agent *)(agent))->isKnown() == 0 ? "?" : "";
+            s4 = s3 + s0;
+            ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, &s4, cx, y + I(layout, 0x2c0), false);
 
             if (((Agent *)(agent))->isKnown() != 0) {
-                String_ctor_cstr(s5, " ", false);
-                String_add(s6, s5, s0);
+                s5 = " ";
+                s6 = s5 + s0;
                 int nameWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(long)canvas, font);
-                ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, s1, cx + nameWidth, y + I(layout, 0x2c0), false);
-                ((String *)(s6))->dtor();
-                ((String *)(s5))->dtor();
+                ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, &s1, cx + nameWidth, y + I(layout, 0x2c0), false);
             }
-
-            ((String *)(s1))->dtor();
-            ((String *)(s0))->dtor();
         }
         return;
     }
 
     ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
-    String_ctor_cstr(s0, "", false);
-    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x74), I(layout, 0x68), I(layout, 0x6c), s0);
-    ((String *)(s0))->dtor();
+    s0 = "";
+    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x74), I(layout, 0x68), I(layout, 0x6c), &s0);
     ((PaintCanvas *)canvas)->DrawRectangle(I(this, 0x70), I(this, 0x74), I(layout, 0x68), I(layout, 0x6c));
     ((ImageFactory *)(factory))->drawChar((*((Array<Array<ImagePart *> *> *)P(this, 0x38)))[I(this, 0x20)], I(layout, 0x4c) + I(this, 0x70), I(layout, 0x4c) + I(this, 0x74), false);
     ((ScrollTouchWindow *)(P(this, 0x60)))->draw();
@@ -896,9 +874,8 @@ void SpaceLounge::drawLounge() {
         }
     }
     int panelHeight = I(layout, 0x4c) * 2 + buttonHeight;
-    String_ctor_cstr(s0, "", false);
-    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x78), I(layout, 0x68), panelHeight, s0);
-    ((String *)(s0))->dtor();
+    s0 = "";
+    ((Layout *)(layout))->drawBox6(2, I(this, 0x70), I(this, 0x78), I(layout, 0x68), panelHeight, &s0);
     ((PaintCanvas *)canvas)->DrawRectangle(I(this, 0x70), I(this, 0x78), I(layout, 0x68), panelHeight);
     ((ImageFactory *)(factory))->drawChar((Array<ImagePart *> *)P(this, 0x3c), I(layout, 0x4c) + I(this, 0x70), I(this, 0x78) + I(layout, 0x4c), true);
 
@@ -1010,7 +987,7 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
     I(self, 0x54) = 0;
     I(self, 0x9c) = 0;
     I(self, 0xa0) = 0;
-    String_ctor_default(B(self, 0xa4));
+    ((String *)B(self, 0xa4))->ctor();
     ((Matrix*)(B(self, 0xc8)))->initIdentity();
 
     UC(self, 0xb0) = 0;
@@ -1084,12 +1061,10 @@ SpaceLounge *_ZN11SpaceLoungeC2Ev(SpaceLounge *self)
 }
 
 void SpaceLounge::startChat() {
-    char title[12];
-    char body[12];
-    char left[12];
-    char right[12];
-    char scratch[1900];
-    (void)scratch;
+    String title;
+    String body;
+    String left;
+    String right;
 
     if (P(this, 0x24) == 0 || I(this, 0x20) < 0) {
         return;
@@ -1113,10 +1088,10 @@ void SpaceLounge::startChat() {
         bodyId = 0x133;
     }
 
-    ((String *)(title))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(titleId), false);
-    ((String *)(body))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(bodyId), false);
-    ((String *)(left))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
-    ((String *)(right))->ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
+    title.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(titleId), false);
+    body.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(bodyId), false);
+    left.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
+    right.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
     ((ChoiceWindow *)(P(this, 0x8)))->setText(title, body);
     ((ChoiceWindow *)(P(this, 0x8)))->setButtonText(left, right);
@@ -1135,11 +1110,6 @@ void SpaceLounge::startChat() {
     } else if (((Agent *)(agent))->isGenericAgent() != 0) {
         ((Agent *)(agent))->setEvent(1);
     }
-
-    ((String *)(right))->dtor();
-    ((String *)(left))->dtor();
-    ((String *)(body))->dtor();
-    ((String *)(title))->dtor();
 }
 
 // SpaceLounge::~SpaceLounge() — tears down the owned ChoiceWindow / CutScene, the
@@ -1226,7 +1196,7 @@ SpaceLounge::~SpaceLounge()
 }
 
 void SpaceLounge::draw() {
-    char title[12];
+    String title;
 
     if (UC(this, 0x1c) != 0) {
         if (((ListItemWindow *)(P(this, 0xc)))->shows3DShip() != 0) {
@@ -1251,9 +1221,8 @@ void SpaceLounge::draw() {
     void *layout = *(void **)layoutSlot;
     void *textsSlot = *(void **)&SpaceLounge_draw_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0x18e);
-    ((String *)(title))->ctor_copy((String *)text, false);
-    ((Layout *)(layout))->drawHeader_call(title);
-    ((String *)(title))->dtor();
+    title.ctor_copy((String *)text, false);
+    ((Layout *)(layout))->drawHeader_call(&title);
 
     ((SpaceLounge *)(this))->drawLounge();
 

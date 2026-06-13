@@ -2,18 +2,7 @@
 #include "gof2/engine/file/AEFile.h"
 
 extern "C" __attribute__((visibility("hidden"))) short *g_GameText_language;
-extern "C" void AEString_ctor_cstr(void *self, const char *text, bool copy);
-extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);
-extern "C" void  AEString_assign(void *dst, void *src);
-extern "C" void  AEString_dtor(void *s);
-extern "C" char *AEString_GetAEChar(void *s);
-extern "C" void AEString_dtor(void *s);
-extern "C" void AEString_ctor_default(void *s);
-extern "C" void AEString_ctor_cstr(void *s, const char *text, bool copy);
-extern "C" void AEString_assign(void *dst, void *src);
 extern "C" __attribute__((visibility("hidden"))) unsigned short *g_GameText_langReset;
-extern "C" void  AEString_ctor_wide(void *s, const unsigned short *text, bool copy);
-extern "C" void  AEString_SubString(void *out, void *s, unsigned int a, unsigned int b);
 extern "C" void *memcpy(void *, const void *, unsigned long);
 void  GameText_convertStringFromArabic(void *out, int pad, void *in);
 
@@ -51,9 +40,7 @@ extern const char gRegionCodeStr[] __attribute__((visibility("hidden")));
 // GameText::getRegionCode() -> returns an AbyssEngine::String by value (sret).
 String GameText_getRegionCode()
 {
-    String r;
-    AEString_ctor_cstr(&r, gRegionCodeStr, false);
-    return r;
+    return String(gRegionCodeStr);
 }
 
 // GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
@@ -96,8 +83,7 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     for (int i = 0; i < stringCount; ++i)
         table[i] = 0;
 
-    String path;
-    AEString_ctor_cstr(&path, gLangPathDefault, false);
+    String path(gLangPathDefault);
 
     // Arabic-class languages (1..9, 12..15) retain their id for shaping; others map to 0.
     unsigned short code;
@@ -121,17 +107,12 @@ void GameText::setLanguage_si(int stringCount, int langId) {
     case 15: p = gLangPaths[15]; code = 15; break;
     default: p = gLangPaths[16]; code = 0;  break;
     }
-    {
-        String tmp;
-        AEString_ctor_cstr(&tmp, p, false);
-    }
+    path = String(p);
     *g_langCode = code;
 
     // Fall back to English when the selected file is absent.
     if (AEFile::FileExist(path) == 0) {
-        operator delete[](AEString_GetAEChar(&path));
-        String eng;
-        AEString_ctor_cstr(&eng, gLangPathEnglish, false);
+        path = String(gLangPathEnglish);
         *g_langCode = 0;
     }
 
@@ -189,12 +170,11 @@ extern const char gInitLangStr[] __attribute__((visibility("hidden")));
 void GameText::ctor() {
     GameText *self = this;
     new (&self->substitutes) Array<int>();
-    AEString_ctor_default((char *)self->fallbackText);
+    ((String *)self->fallbackText)->ctor();
     *g_GameText_langReset = 0xffff;
     self->textTable = 0;
     self->textCount = 0;
-    String tmp;
-    AEString_ctor_cstr(&tmp, gInitLangStr, false);
+    String tmp(gInitLangStr);
 }
 
 // GameText::convertStringFromArabic(String in) -> String (sret)
@@ -208,10 +188,6 @@ void GameText::ctor() {
 //   gLamAlef   : rows of 5 u32 {base, ...} for the 10 LAM-ALEF combinations.
 //
 // out is sret; `pad` is the hidden alignment argument from the {String} by-value ABI.
-
-extern "C" unsigned short *AEString_data(void *s);                 // operator cast to ushort*
-extern "C" unsigned short *AEString_index(void *s, unsigned int i);// operator[](i)
-extern "C" void  AEString_append(void *dst, void *src);           // operator+=
 
 // Substitution tables (see header comment for row layout).
 __attribute__((visibility("hidden"))) extern const unsigned int gArabForms[];  // 41 rows * 5
@@ -229,29 +205,29 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
 
     // Working copy of the wide buffer (length + NUL).
     String work;
-    AEString_ctor_wide(&work, AEString_data(in), false);
-    unsigned int len = u32(&work, 8);          // character count
+    work.ctor_wchar((unsigned short *)((String *)in)->index(0), false);
+    unsigned int len = work.size();            // character count
 
     unsigned int cap = (len + 1) * 2;
     unsigned short *buf = (unsigned short *)operator new[](cap);
-    memcpy(buf, AEString_data(&work), (unsigned long)(len * 2 + 2));
+    memcpy(buf, work.index(0), (unsigned long)(len * 2 + 2));
 
-    int inLen = i32(in, 8);
+    int inLen = (int)((String *)in)->size();
     unsigned int hi = (unsigned int)(inLen - 1);
     unsigned int i = hi;
 
     while (true) {
         if (i > 0x7fffffff) {
             // Underflowed past 0: finished. Emit the reshaped buffer.
-            AEString_ctor_wide(out, buf, false);
+            ((String *)out)->ctor_wchar(buf, false);
             if (buf != 0)
                 operator delete[](buf);
             return;
         }
 
         if (i != 0) {
-            unsigned short prev = *AEString_index(in, i - 1);
-            unsigned short cur  = *AEString_index(in, i);
+            unsigned short prev = *((String *)in)->index(i - 1);
+            unsigned short cur  = *((String *)in)->index(i);
             if (prev == 0x644) {
                 // LAM + ALEF-family ligature.
                 unsigned short form = 2;
@@ -265,17 +241,19 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
 
                 // Splice: keep [0,i-1) and [i+1,end), join via SubString + operator+=.
                 String merged;
-                AEString_ctor_wide(&merged, buf, false);
+                merged.ctor_wchar(buf, false);
                 String head, tail;
-                AEString_append(&head, &tail);
+                head.SubString(&merged, 0, i);
+                tail.SubString(&merged, i + 1, merged.size());
+                head.addAssign_str(&tail);
 
                 if (buf != 0)
                     operator delete[](buf);
 
-                unsigned int mLen = u32(&head, 8);
+                unsigned int mLen = head.size();
                 unsigned int mCap = (mLen + 1) * 2;
                 buf = (unsigned short *)operator new[](mCap);
-                memcpy(buf, AEString_data(&head), (unsigned long)(mLen * 2 + 2));
+                memcpy(buf, head.index(0), (unsigned long)(mLen * 2 + 2));
                 --i;
             }
 
@@ -347,13 +325,13 @@ void * GameText::getText(int key) {
     if (key == 5000) {
         static String s5000;   // function-local guarded static
         const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
-        AEString_ctor_cstr(&s5000, txt, false);
+        s5000.ctor_char(txt, false);
         return &s5000;
     }
     if (key == 5001) {
         static String s5001;
         const char *txt = (*g_langCode != 1) ? gLang5001Fallback : gLang5001Primary;
-        AEString_ctor_cstr(&s5001, txt, false);
+        s5001.ctor_char(txt, false);
         return &s5001;
     }
 
@@ -382,8 +360,6 @@ void * GameText::getText(int key) {
 // a heap String (run through convertStringFromArabic when the active language is Arabic == 9),
 // and stored into the text table at +0x0c. On a short read the table is released and the file
 // is closed. file == 0 is a no-op early exit.
-
-extern "C" void  AEString_ctor_cstr(void *s, const char *text, bool copy);     // wchar ctor (text*, copy)
 
 // Active language code; 9 == Arabic.
 __attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
@@ -416,11 +392,11 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         String **table = (String **)this->textTable;
         if (lang == 9) {
             String tmp;
-            AEString_ctor_wide(&tmp, wide, false);
+            tmp.ctor_wchar(wide, false);
             GameText_convertStringFromArabic(s, 0, &tmp);
             table[i] = s;
         } else {
-            AEString_ctor_wide(s, wide, false);
+            s->ctor_wchar(wide, false);
             table[i] = s;
         }
 

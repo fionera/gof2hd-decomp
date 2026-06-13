@@ -17,8 +17,6 @@ struct Station {
     String getName();
 };
 
-extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
-
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
 
 // AutoPilotList::touch(int p1, int p2) -> selected index, or -1 if the touch is outside
@@ -75,14 +73,11 @@ extern const char kEmpty[] __attribute__((visibility("hidden")));
 // Returns a copy of the selected entry's String if the index is in range, else the
 // fallback literal.
 String AutoPilotList::getTargetString() {
-    String r;
     int idx = this->selected;
     Array<String *> *entries = this->entries;
     if (idx >= 0 && (uint32_t)idx < entries->size())
-        ((String *)(&r))->ctor_copy((*entries)[idx], false);
-    else
-        String_ctor_cstr(&r, kEmpty, false);
-    return r;
+        return *(*entries)[idx];
+    return String(kEmpty);
 }
 
 // AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
@@ -102,16 +97,11 @@ void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
 namespace AbyssEngine { struct String; }
 using AbyssEngine::String;
 
-extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
-extern "C" void String_plus(void *out, const void *a, const void *b);    // 0x6ef98 operator+
 void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
-
-typedef void (*StringDtorFn)(void *self);
 
 __attribute__((visibility("hidden"))) extern int **g_APL_apFlag;         // status-active flag
 __attribute__((visibility("hidden"))) extern void **g_APL_gametext;      // GameText singleton
 __attribute__((visibility("hidden"))) extern void **g_APL_status;        // Status singleton
-__attribute__((visibility("hidden"))) extern StringDtorFn g_APL_strDtor;
 __attribute__((visibility("hidden"))) extern void **g_APL_font;          // measurement font String*
 __attribute__((visibility("hidden"))) extern void **g_APL_canvas;        // PaintCanvas
 __attribute__((visibility("hidden"))) extern int **g_APL_screenW;        // screen width
@@ -134,16 +124,11 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
     if (**g_APL_apFlag != 0) {
         String *s = (String *)operator new(0xc);
         String *txt = (String *)((GameText *)(*g_APL_gametext))->getText(0x222);
-        char a[12], b[12], c[12];
-        String_ctor_cstr(b, kApLit1, false);
-        String_plus(c, txt, b);
-        ((Station *)(a))->getName();
-        String_plus(s, c, a);
+        String b(kApLit1);
+        String c = *txt + b;
+        String a = ((Station *)(&a))->getName();
+        *s = c + a;
         entryData(self)[0] = s;
-        StringDtorFn d = g_APL_strDtor;
-        d(a);
-        d(c);
-        d(b);
         self->count = self->count + 1;
     }
 
@@ -157,16 +142,11 @@ void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
 
     if (((Status *)(status))->inEmptyOrbit() == 0) {
         String *s = (String *)operator new(0xc);
-        char a[12], b[12], c[12];
-        ((Station *)(c))->getName();
-        String_ctor_cstr(b, kApLit2, false);
-        String_plus(a, b, c);
-        String_plus(s, a, ((GameText *)(*g_APL_gametext))->getText(0x88));
+        String c = ((Station *)(&c))->getName();
+        String b(kApLit2);
+        String a = b + c;
+        *s = a + *(String *)((GameText *)(*g_APL_gametext))->getText(0x88);
         entryData(self)[2] = s;
-        StringDtorFn d = g_APL_strDtor;
-        d(a);
-        d(c);
-        d(b);
         self->count = self->count + 1;
     }
 
@@ -226,10 +206,9 @@ __attribute__((visibility("hidden"))) extern void **g_APL_canvas_draw;     // ->
 void AutoPilotList::draw() {
     void *layout = *g_APL_layout_draw;
     String *title = (String *)((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
-    char tmp[12];
-    ((String *)(tmp))->ctor_copy(title, false);
-    ((Layout *)(layout))->drawWindow((String *)tmp, this->x, this->y, this->width, this->count * 0xf + 0x16);
-    ((String *)(tmp))->dtor();
+    String tmp;
+    tmp.ctor_copy(title, false);
+    ((Layout *)(layout))->drawWindow(&tmp, this->x, this->y, this->width, this->count * 0xf + 0x16);
 
     int drawn = 0;
     void **canvasHolder = g_APL_canvas_draw;

@@ -13,14 +13,11 @@
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/render/ImageFactory.h"
 #include "gof2/game/ui/Layout.h"
-// Mission.h transitively pulls Station.h, which redefines the identical (token-for-token,
-// 12-byte aligned aggregate) global `struct String` already provided by Agent.h. Rename the
-// duplicate so it doesn't collide. Station::getName()'s return type becomes String,
-// which is layout-identical and only ever discarded here. (Other headers are out of edit scope.)
-#define String String
+// Mission.h transitively pulls Station.h; both reuse the same canonical `String` from
+// common.h, so no aliasing is needed. Station::getName() returns String and is only ever
+// discarded here.
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/world/Station.h"
-#undef String
 #include "gof2/game/mission/RecordHandler.h"
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/core/String.h"
@@ -29,23 +26,9 @@
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
 struct Status;
 
-extern "C" void AEString_ctor_copy(void *dst, void *src, bool flag);
-extern "C" void AEString_ctor_default(void *out);
-extern "C" void AEString_default_ctor(void *dst);
-extern "C" void AEString_copy_ctor(void *dst, void *src, int c);
-extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);
-extern "C" void AEString_substr(void *dst, void *s, unsigned from, unsigned to);
-extern "C" void AEString_assign(void *dst, void *src);
-extern "C" void AEString_dtor(void *s);
-extern "C" short *AEString_index(void *s, int i);
-extern "C" void AEString_int_ctor(void *dst, int v);
-extern "C" void AEString_concat(void *dst, void *a);
 void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
-extern "C" void AEString_default_ctor(void *s);
-extern "C" void AEString_cstr_ctor(void *s, const char *str, int copy);
-extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);
 // AERandom::nextInt — the real defs are free functions in AERandom.cpp:
 //   nextInt_71aa4(self)        -> unbounded 32-bit draw (1-arg call form)
 //   nextInt_71ad0(self, bound) -> bounded draw            (2-arg call form)
@@ -54,7 +37,6 @@ namespace AbyssEngine { class AERandom; }
 uint32_t nextInt_71aa4(AbyssEngine::AERandom *self);
 int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
-extern "C" int AEString_compare(void *a, void *b);
 void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void FileRead_ctor(void *self);
@@ -88,7 +70,6 @@ extern "C" int Station_getIndex(int station);
 // MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 int GameText_getLanguage();
-extern "C" void AEString_cstr_ctor(void *dst, const char *str, int c);
 
 struct Status;
 // Two hidden PC-relative globals, each a pointer-to-pointer (deref'd twice).
@@ -142,8 +123,7 @@ String Globals_getItemName(void *unused, int item)
 {
     (void)unused;
     String *src = (String *)((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
-    String r;
-    return r;
+    return *(String *)src;
 }
 
 // Globals::getKeyActionName(int) returns a String by value. The default ctor returns void,
@@ -154,7 +134,7 @@ String Globals_getKeyActionName(int action)
 {
     (void)action;
     String r;
-    AEString_ctor_default(&r);
+    r.ctor();
     return r;
 }
 
@@ -202,8 +182,7 @@ void Globals_addSoundResourceToList(void *self, int val)
 String Globals_replaceKeyBindingTokens(void *unused, void *src)
 {
     (void)unused;
-    String r;
-    return r;
+    return *(String *)src;
 }
 
 // Local minimal FileRead view (gof2/FileRead.h conflicts with Station.h/Agent.h here,
@@ -241,9 +220,6 @@ void Globals_drawLines4(unsigned p1, void *font, Array<int> *lines, int baseX,
     Globals_drawLines5(0, font, lines, baseX, startY, 0);
 }
 
-extern "C" void AEString_append(void *dst, void *src);                // operator+=
-extern "C" void AEString_substrTrailing(void *dst, void *s);          // SubString(this) one-arg form
-
 extern void *const gGLA_guardHolder __attribute__((visibility("hidden")));
 extern const char gGLA_newline[] __attribute__((visibility("hidden")));
 
@@ -257,66 +233,63 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
     int *guardP = *(int **)gGLA_guardHolder;
     volatile int saved = *guardP;
 
-    void *line = ::operator new(0xc);
-    AEString_default_ctor(line);
+    String *line = (String *)::operator new(0xc);
+    line->ctor();
 
-    char work[12];
-    AEString_copy_ctor(work, text, 0);   // work = copy of text (Ghidra param_3 here is the text)
-    char nl[12];
-    AEString_cstr_ctor(nl, gGLA_newline, 0);
-    AEString_append(work, nl);
+    String work;
+    work.ctor_copy((String *)text, false);   // work = copy of text (Ghidra param_3 here is the text)
+    String nl;
+    nl.ctor_char(gGLA_newline, false);
+    work.addAssign_str(&nl);
 
     unsigned count = 0;
     int consumed = 0;
-    int total = *(int *)((char *)work + 0x14);   // local_2c-style length
+    int total = (int)work.size();
     while (consumed < total) {
-        char sub[12];
-        AEString_substr(sub, work, consumed, total);
-        char ssub[12];
-        AEString_copy_ctor(ssub, sub, 0);
-        Globals_getLine(line, font, ssub, maxWidth, out);
+        String sub;
+        sub.SubString(&work, consumed, total);
+        String ssub;
+        ssub.ctor_copy(&sub, false);
+        Globals_getLine(line, font, &ssub, maxWidth, out);
         int adv = *(int *)((char *)line + 8);
         count++;
         consumed += adv;
     }
-    {
-        void (**vt)(void *) = *(void (***)(void *))line;
-        vt[1](line);
-    }
+    line->dtor();
 
     out->resize(count);
     for (unsigned i = 0; i < count; i++) {
-        void *s = ::operator new(0xc);
-        AEString_default_ctor(s);
+        String *s = (String *)::operator new(0xc);
+        s->ctor();
         (*out)[i] = s;
     }
 
     for (unsigned i = 0; i < count; i++) {
-        char sub[12];
-        AEString_substr(sub, work, consumed, total);
-        char ssub[12];
-        AEString_copy_ctor(ssub, sub, 0);
+        String sub;
+        sub.SubString(&work, consumed, total);
+        String ssub;
+        ssub.ctor_copy(&sub, false);
         void *slot = (*out)[i];
-        Globals_getLine(slot, font, ssub, maxWidth, slot);
+        Globals_getLine(slot, font, &ssub, maxWidth, slot);
 
         int li = 0;
-        void *s = (*out)[i];
-        int hi = (int)((String *)s)->size();
-        while (*AEString_index(s, li) == 0x20) {
+        String *s = (String *)(*out)[i];
+        int hi = (int)s->size();
+        while (*s->index(li) == 0x20) {
             li++;
-            s = (*out)[i];
+            s = (String *)(*out)[i];
         }
         hi++;
         do {
-            void *cur = (*out)[i];
-            short ch = *AEString_index(cur, hi - 2);
+            String *cur = (String *)(*out)[i];
+            short ch = *cur->index(hi - 2);
             hi--;
             if (ch != 0x20) break;
         } while (true);
 
-        char trimmed[12];
-        void *cur = (*out)[i];
-        AEString_substr(trimmed, cur, li, hi);
+        String trimmed;
+        String *cur = (String *)(*out)[i];
+        trimmed.SubString(cur, li, hi);
     }
 
     return;
@@ -356,48 +329,43 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
     int hours = 0;
     Globals::lts_divmod(hrQ, 0x18, &hours);
 
-    char secPart[12], secNum[12], secStr[12];
-    AEString_cstr_ctor(secPart, seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, 0);
-    AEString_int_ctor(secNum, seconds);
-    AEString_concat(secStr, secPart);
+    String secPart, secNum, secStr;
+    secPart.ctor_char(seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, false);
+    secNum.ctor_int(seconds);
+    secStr = secPart + secNum;
 
-    char minPart[12], minNum[12], minStr[12];
-    AEString_cstr_ctor(minPart, minute < 10 ? gLTS2_minTens : gLTS2_minEmpty, 0);
-    AEString_int_ctor(minNum, minute);
-    AEString_concat(minStr, minPart);
+    String minPart, minNum, minStr;
+    minPart.ctor_char(minute < 10 ? gLTS2_minTens : gLTS2_minEmpty, false);
+    minNum.ctor_int(minute);
+    minStr = minPart + minNum;
 
     if (hours == 0) {
-        char prefix[12], left[12], full[12];
-        AEString_cstr_ctor(prefix, gLTS2_zeroPrefix, 0);
-        AEString_concat(left, minStr);
-        AEString_concat(full, left);
+        String prefix, left, full;
+        prefix.ctor_char(gLTS2_zeroPrefix, false);
+        left = prefix + minStr;
+        full = left + secStr;
     } else {
         int rem4 = 0;
         long long h = Globals::lts_divmod(ms, 0xea60, &rem4);
         int hv = (int)h * 0x18 + hours;
 
-        char hrPart[12], hrNum[12], hrStr[12];
-        AEString_cstr_ctor(hrPart, hv < 10 ? gLTS2_hrTens : gLTS2_hrEmpty, 0);
-        AEString_int_ctor(hrNum, hv);
-        AEString_concat(hrStr, hrPart);
+        String hrPart, hrNum, hrStr;
+        hrPart.ctor_char(hv < 10 ? gLTS2_hrTens : gLTS2_hrEmpty, false);
+        hrNum.ctor_int(hv);
+        hrStr = hrPart + hrNum;
 
-        char s1[12], a[12], b[12], s2[12], c[12], full[12];
-        AEString_cstr_ctor(s1, gLTS2_sep1, 0);
-        AEString_concat(a, hrStr);
-        AEString_concat(b, a);
-        AEString_cstr_ctor(s2, gLTS2_sep2, 0);
-        AEString_concat(c, b);
-        AEString_concat(full, c);
+        String s1, a, b, s2, c, full;
+        s1.ctor_char(gLTS2_sep1, false);
+        a = s1 + hrStr;
+        b = a + minStr;
+        s2.ctor_char(gLTS2_sep2, false);
+        c = b + s2;
+        full = c + secStr;
     }
 
     return;
 }
 
-extern "C" void AEString_copy_ctor(void *dst, void *src, int copy);   // String(String const&, bool)
-extern "C" void AEString_default_ctor(void *dst);                     // String()
-extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);  // String(char const*, bool)
-extern "C" void AEString_assign(void *dst, void *src);               // operator=
-extern "C" void AEString_concat(void *dst, void *line);              // operator+
 
 extern void *const gGBS_guardHolder __attribute__((visibility("hidden")));
 extern void *const gGBS_strPtr __attribute__((visibility("hidden")));
@@ -412,27 +380,26 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
     int *guardP = *(int **)gGBS_guardHolder;
     volatile int saved = *guardP;
 
-    AEString_copy_ctor(retSlot, text, 0);
+    ((String *)retSlot)->ctor_copy((String *)text, false);
 
     void **strPtr = *(void ***)gGBS_strPtr;
     int **canvas = *(int ***)gGBS_canvas;
     int w = ((PaintCanvas *)(long)**canvas)->GetTextWidth(0, *strPtr);
     if (width < w) {
-        void *line = ::operator new(0xc);
-        AEString_default_ctor(line);
+        String *line = (String *)::operator new(0xc);
+        line->ctor();
 
         int font = (int)(long)*strPtr;
-        char tmpText[12];
-        AEString_copy_ctor(tmpText, text, 0);
-        Globals_getLine(font ? (void *)(long)font : line, font, tmpText, width - 3, line);
+        String tmpText;
+        tmpText.ctor_copy((String *)text, false);
+        Globals_getLine(font ? (void *)(long)font : line, font, &tmpText, width - 3, line);
 
-        char prefix[12];
-        AEString_cstr_ctor(prefix, gGBS_prefix, 0);
-        char concat[12];
-        AEString_concat(concat, line);
+        String prefix;
+        prefix.ctor_char(gGBS_prefix, false);
+        String concat;
+        concat = prefix + *line;
 
-        void (**vt)(void *) = *(void (***)(void *))line;
-        vt[1](line);
+        line->dtor();
     }
 
     return;
@@ -634,17 +601,17 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
     volatile int saved = *guardP;
 
     if (agent == 0) {
-        AEString_cstr_ctor(out, gGAMT_noAgent, 0);
+        ((String *)out)->ctor_char(gGAMT_noAgent, false);
         goto epilogue;
     }
 
     {
-        char acc[12];
-        AEString_default_ctor(acc);
+        String acc;
+        acc.ctor();
 
         if (((Agent *)(agent))->isGenericAgent() == 0) {
-            char scratch[12];
-            AEString_default_ctor(scratch);
+            String scratch;
+            scratch.ctor();
 
             int event = ((Agent *)(agent))->getEvent();
             if (event < 1 && ((Agent *)(agent))->hasAcceptedOffer() == 0) {
@@ -662,22 +629,22 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
                     if (((Ship *)(ship))->hasModInstalled(modIdx) != 0) {
                         void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
                         *(int *)(*busy + 0xd0) -= 1;
-                        AEString_copy_ctor(out, acc, 0);
+                        ((String *)out)->ctor_copy(&acc, false);
                         goto epilogue;
                     }
                 }
 
                 // General offer/event briefing text: data-driven assembly into `acc`.
-                Globals::buildAgentMissionText((String *)acc, agent, offer);
+                Globals::buildAgentMissionText(&acc, agent, offer);
                 *(int *)(*busy + 0xd0) -= 1;
             } else {
-                Globals::buildAgentMissionText((String *)acc, agent, -1);
+                Globals::buildAgentMissionText(&acc, agent, -1);
             }
         } else {
-            Globals::buildAgentMissionText((String *)acc, agent, -1);
+            Globals::buildAgentMissionText(&acc, agent, -1);
         }
 
-        AEString_copy_ctor(out, acc, 0);
+        ((String *)out)->ctor_copy(&acc, false);
     }
 
 epilogue:
@@ -713,10 +680,10 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
         bool keepGoing = true;
         while (i < len && keepGoing) {
             void *entry = *(void **)(*(char **)((char *)list + 4) + i * 4);
-            char base[12], pb[12], prefix[12];
-            AEString_cstr_ctor(base, gIAP_prefixA, 0);
-            AEString_cstr_ctor(pb, gIAP_prefixB, 0);
-            AEString_concat(prefix, base);
+            String base, pb, prefix;
+            base.ctor_char(gIAP_prefixA, false);
+            pb.ctor_char(gIAP_prefixB, false);
+            prefix = base + pb;
 
             if (entry == 0) {
                 result = -1;
@@ -740,10 +707,10 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
                 if (!known) {
                     keepGoing = true;   // treat unknown like "no match, continue"
                 } else {
-                    char suf[12], full[12];
-                    AEString_cstr_ctor(suf, suffix, 0);
-                    AEString_concat(full, prefix);
-                    int cmp = AEString_compare(entry, full);
+                    String suf, full;
+                    suf.ctor_char(suffix, false);
+                    full = prefix + suf;
+                    int cmp = ((String *)entry)->Compare_str(&full);
                     if (cmp == 0) {
                         result = (int)i;
                         keepGoing = false;
@@ -771,8 +738,8 @@ String Globals_getKeyBindingReplaceString(Globals *, int key)
     (void)key;
 
     String tmp;
-    AEString_ctor_default(&tmp);
-    ((String *)((String *)&tmp))->ToUpperCase();   // in-place; returns void
+    tmp.ctor();
+    tmp.ToUpperCase();   // in-place; returns void
     String result;
     return result;
 }
@@ -780,10 +747,6 @@ String Globals_getKeyBindingReplaceString(Globals *, int key)
 // 64-bit divide helper: returns quotient (r0/r1), remainder lands in r2 (extraout_r2).
 // Modeled as lldiv computing both; we expose remainder via out-param.
 
-extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);  // String(char const*, bool)
-extern "C" void AEString_int_ctor(void *dst, int v);                  // String(int)
-extern "C" void AEString_concat(void *dst, void *a);                 // operator+
-extern "C" void AEString_assign(void *dst, void *src);               // operator=
 
 extern void *const gLTS_guardHolder __attribute__((visibility("hidden")));
 extern const char gLTS_minTens[] __attribute__((visibility("hidden")));     // DAT_000f3df0 "0"
@@ -810,24 +773,24 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
     int hours = 0;
     Globals::lts_divmod(q2, 0x18, &hours);   // hours = q2 % 24
 
-    char mPart[12], mNum[12], minStr[12];
-    AEString_cstr_ctor(mPart, minute < 10 ? gLTS_minTens : gLTS_minEmpty, 0);
-    AEString_int_ctor(mNum, minute);
-    AEString_concat(minStr, mPart);
+    String mPart, mNum, minStr;
+    mPart.ctor_char(minute < 10 ? gLTS_minTens : gLTS_minEmpty, false);
+    mNum.ctor_int(minute);
+    minStr = mPart + mNum;
 
     int rem3 = 0;
     long long h = Globals::lts_divmod(ms, 0xea60, &rem3);
     int hv = (int)h * 0x18 + hours;
 
-    char hPart[12], hNum[12], hrStr[12];
-    AEString_cstr_ctor(hPart, hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, 0);
-    AEString_int_ctor(hNum, hv);
-    AEString_concat(hrStr, hPart);
+    String hPart, hNum, hrStr;
+    hPart.ctor_char(hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, false);
+    hNum.ctor_int(hv);
+    hrStr = hPart + hNum;
 
-    char sep[12], left[12], full[12];
-    AEString_cstr_ctor(sep, gLTS_sep, 0);
-    AEString_concat(left, hrStr);
-    AEString_concat(full, left);
+    String sep, left, full;
+    sep.ctor_char(gLTS_sep, false);
+    left = sep + hrStr;
+    full = left + minStr;
 
     return;
 }
@@ -2099,9 +2062,6 @@ String *Globals_getRandomPlanetName(String *ret)
     return ret;
 }
 
-extern "C" void AEString_cstr_ctor(void *dst, const char *s, int c);  // String(char const*, bool)
-extern "C" void AEString_copy_ctor(void *dst, void *src, int c);     // String(String const&, bool)
-extern "C" void AEString_concat(void *dst, void *a);                 // operator+
 
 extern void *const gGRN_guardHolder __attribute__((visibility("hidden")));
 extern const char gGRN_noFirst[] __attribute__((visibility("hidden")));
@@ -2123,18 +2083,18 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     Array<String *> *first = ((FileRead *)fr)->loadNamesBinary(kind, both, 1);
     Array<String *> *last = ((FileRead *)fr)->loadNamesBinary(kind, both, 0);
 
-    char firstStr[12], lastStr[12];
+    String firstStr, lastStr;
     if (first == 0) {
-        AEString_cstr_ctor(firstStr, gGRN_noFirst, 0);
+        firstStr.ctor_char(gGRN_noFirst, false);
     } else {
         int idx = nextInt_71aa4((AbyssEngine::AERandom *)**(int **)gGRN_rng1);
-        AEString_copy_ctor(firstStr, (*first)[idx], 0);
+        firstStr.ctor_copy((*first)[idx], false);
     }
     if (last == 0) {
-        AEString_cstr_ctor(lastStr, gGRN_noLast, 0);
+        lastStr.ctor_char(gGRN_noLast, false);
     } else {
         int idx = nextInt_71aa4((AbyssEngine::AERandom *)**(int **)gGRN_rng2);
-        AEString_copy_ctor(lastStr, (*last)[idx], 0);
+        lastStr.ctor_copy((*last)[idx], false);
     }
 
     if (first != 0) {
@@ -2149,14 +2109,14 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     }
     ::operator delete(FileRead_dtor(fr));
 
-    // local_34 holds the high field of firstStr (size); when 0 (empty), just copy firstStr.
-    if (*((int *)firstStr + 2) == 0) {
-        AEString_copy_ctor(retSlot, firstStr, 0);
+    // When the first name is empty, just copy firstStr; otherwise join "first last".
+    if (firstStr.size() == 0) {
+        ((String *)retSlot)->ctor_copy(&firstStr, false);
     } else {
-        char space[12], mid[12];
-        AEString_cstr_ctor(space, gGRN_space, 0);
-        AEString_concat(mid, firstStr);
-        AEString_concat(retSlot, mid);
+        String space, mid;
+        space.ctor_char(gGRN_space, false);
+        mid = firstStr + space;
+        *(String *)retSlot = mid + lastStr;
     }
 
     return;
@@ -2183,40 +2143,39 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
     int *canvas = *(int **)gGL_canvas;
     unsigned lastSpace = 0;
     unsigned i = 0;
-    char tmp[12];
-    unsigned len = *(unsigned *)((char *)text + 8);
+    String tmp;
+    unsigned len = ((String *)text)->size();
 
     while (i < len) {
-        short ch = *AEString_index(text, i);
+        short ch = *((String *)text)->index(i);
         width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, text, i, i + 1);
         if (ch == 0x20) {
             lastSpace = i;
         }
         if (maxWidth <= width) {
-            short c0 = *AEString_index(text, i);
-            short c1 = *AEString_index(text, i);
+            short c0 = *((String *)text)->index(i);
+            short c1 = *((String *)text)->index(i);
             unsigned end = i + 1;
             if (c0 == 0x0a || c1 == 0x0d) {
-                AEString_substr(tmp, text, 0, end);
+                tmp.SubString((String *)text, 0, end);
             } else if ((int)lastSpace < 1) {
-                AEString_substr(tmp, text, 0, end);
+                tmp.SubString((String *)text, 0, end);
             } else {
-                AEString_substr(tmp, text, 0, lastSpace + 1);
+                tmp.SubString((String *)text, 0, lastSpace + 1);
             }
             goto done;
         }
         i++;
-        len = *(unsigned *)((char *)text + 8);
+        len = ((String *)text)->size();
     }
 
     if ((int)len < 2) {
-        AEString_cstr_ctor(tmp, gGL_empty, 0);
+        tmp.ctor_char(gGL_empty, false);
     } else {
-        AEString_substr(tmp, text, 0, len);
+        tmp.SubString((String *)text, 0, len);
     }
 
 done:
-    AEString_dtor(tmp);
     return;
 }
 
@@ -2507,14 +2466,14 @@ void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
     Agent *agent = (Agent *)agentArg;
 
     // Working accumulator string.
-    char acc[12];
-    AEString_default_ctor(acc);
+    String acc;
+    acc.ctor();
 
     // For the generic / offer<0 path the briefing is just the agent's plain greeting line.
     if (offer < 0 || agent == 0) {
         void *line = ((GameText *)(void *)(long)**(int **)&g_status)->getText(0x300);
-        AEString_assign(acc, line);
-        AEString_copy_ctor(out, acc, 0);
+        acc.assign((String *)line);
+        out->ctor_copy(&acc, false);
         return;
     }
 
@@ -2530,15 +2489,15 @@ void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
     }
 
     void *base = ((GameText *)(void *)(long)**(int **)&g_status)->getText(baseKey);
-    AEString_assign(acc, base);
+    acc.assign((String *)base);
 
     // Splice the agent's display name into the briefing (#name# token).
     {
-        char tok[12];
-        AEString_default_ctor(tok);
+        String tok;
+        tok.ctor();
         // getName() returns a String by value; reuse the agent's name text directly.
         ((Agent *)agent)->getName();
     }
 
-    AEString_copy_ctor(out, acc, 0);
+    out->ctor_copy(&acc, false);
 }

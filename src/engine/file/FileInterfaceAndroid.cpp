@@ -7,17 +7,18 @@
 struct zip_file;
 using AbyssEngine::String;
 
-extern "C" void String_ctor_cstr(void *out, const char *cstr, bool);
 extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self);
 extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
-extern "C" void String_append(void *self, const void *rhs);
-extern "C" void String_concat(void *out, const void *a, const void *b);
 extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
 extern "C" int zip_fclose(void *zf);
-extern "C" const unsigned short *String_GetAEWChar(const void *s);
-extern "C" void String_ctor_wide(void *out, const unsigned short *w, bool);
+
+// The UTF-16 backing buffer of an AbyssEngine::String (engine GetAEWChar).
+static inline const unsigned short *GetAEWChar(const String &s)
+{
+    return reinterpret_cast<const unsigned short *>(s.text());
+}
 
 // AbyssEngine::String::String(String* out, const char* cstr, bool) -> void (0x6ee18)
 
@@ -27,9 +28,7 @@ extern const char kDirPreFix[] __attribute__((visibility("hidden")));
 
 String FileInterfaceAndroid_GetDirPreFix()
 {
-    String r;
-    String_ctor_cstr(&r, kDirPreFix, false);
-    return r;
+    return String(kDirPreFix);
 }
 
 // FileInterfaceAndroid::GetFileSize() — seek end, tell, seek start; FILE* at +0x8.
@@ -227,9 +226,8 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
 // by-value-aggregate homing/frame layout is not reachable from source form.
 void FileInterfaceAndroid_FileDelete(String s)
 {
-    char tmp[12];
-    ((String *)(tmp))->ctor_copy((String *)(&s), false);
-    ((String *)(tmp))->dtor();
+    String tmp;
+    tmp.ctor_copy(&s, false);
 }
 
 // FileInterfaceAndroid::FileExist(AbyssEngine::String) — probes both zip directories and, failing
@@ -245,14 +243,13 @@ extern const char *gZipPrefixB __attribute__((visibility("hidden")));
 extern const char *gModeRb __attribute__((visibility("hidden")));
 
 bool FileInterfaceAndroid::FileExist(String name) {
-    char a[12], b[12];
-    String_ctor_cstr(a, gZipPrefixA, false);
-    String_append(a, &name);
-    String_ctor_cstr(b, gZipPrefixB, false);
-    String_append(b, &name);
+    String a(gZipPrefixA);
+    a.addAssign_str(&name);
+    String b(gZipPrefixB);
+    b.addAssign_str(&name);
 
-    void *z1 = zip_fopen(*gZipMain, ((String *)(a))->GetAEChar(), 0);
-    void *z2 = zip_fopen(*gZipPatch, ((String *)(b))->GetAEChar(), 0);
+    void *z1 = zip_fopen(*gZipMain, a.GetAEChar(), 0);
+    void *z2 = zip_fopen(*gZipPatch, b.GetAEChar(), 0);
 
     bool exists;
     if (z1 != 0) {
@@ -262,21 +259,16 @@ bool FileInterfaceAndroid::FileExist(String name) {
         zip_fclose(z2);
         exists = true;
     } else {
-        char dir[12], full[12];
-        String_ctor_cstr(dir, this->appRootDir, false);
-        String_concat(full, dir, &name);
-        FILE *f = fopen(((String *)(full))->GetAEChar(), gModeRb);
+        String dir(this->appRootDir);
+        String full = dir + name;
+        FILE *f = fopen(full.GetAEChar(), gModeRb);
         if (f != 0) {
             fclose(f);
             exists = true;
         } else {
             exists = false;
         }
-        ((String *)(full))->dtor();
-        ((String *)(dir))->dtor();
     }
-    ((String *)(b))->dtor();
-    ((String *)(a))->dtor();
     return exists;
 }
 
@@ -371,26 +363,25 @@ extern void *gFIAVtable_or __attribute__((visibility("hidden")));
 extern int *gFIAInstCount_or __attribute__((visibility("hidden")));
 
 FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) {
-    const unsigned short *w = String_GetAEWChar(&name);
+    const unsigned short *w = GetAEWChar(name);
     if (this->alive == 0)
         return 0;
 
     const unsigned short *body = (*w == '/') ? w + 1 : w;
 
-    char a[12], wide[12], b[12], wide2[12];
-    String_ctor_cstr(a, gPrefixSlash, false);
-    String_ctor_wide(wide, body, false);
-    String_append(a, wide);
-    ((String *)(wide))->dtor();
-    String_ctor_cstr(b, gPrefixPlain, false);
-    String_ctor_wide(wide2, body, false);
-    String_append(b, wide2);
-    ((String *)(wide2))->dtor();
+    String a(gPrefixSlash);
+    String wide;
+    wide.ctor_wchar(body, false);
+    a.addAssign_str(&wide);
+    String b(gPrefixPlain);
+    String wide2;
+    wide2.ctor_wchar(body, false);
+    b.addAssign_str(&wide2);
 
-    fprintf((FILE *)((char *)*(void **)gStderrBase + 0xa8), gOpenReadFmt, ((String *)(b))->GetAEChar(), p3, p4, p5, p6, p2);
+    fprintf((FILE *)((char *)*(void **)gStderrBase + 0xa8), gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
 
-    zip_file *z1 = zip_fopen(*gZipMainR, ((String *)(a))->GetAEChar(), 0);
-    zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen(*gZipPatchR, ((String *)(b))->GetAEChar(), 0) : 0;
+    zip_file *z1 = zip_fopen(*gZipMainR, a.GetAEChar(), 0);
+    zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen(*gZipPatchR, b.GetAEChar(), 0) : 0;
 
     FileInterfaceAndroid *result = 0;
     if (z1 != 0) {
@@ -398,10 +389,9 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool 
     } else if (z2 != 0) {
         result = ((FileInterfaceAndroid *)((FileInterfaceAndroid *)::operator new(0x38)))->ctor_zip(z2, (bool)p4, p2, p5, p4);
     } else if (this->appRootDir != 0) {
-        char dir[12], full[12];
-        String_ctor_cstr(dir, this->appRootDir, false);
-        String_concat(full, dir, body == w ? (void *)a : (void *)a);
-        FILE *f = fopen(((String *)(full))->GetAEChar(), gModeRbR);
+        String dir(this->appRootDir);
+        String full = dir + a;
+        FILE *f = fopen(full.GetAEChar(), gModeRbR);
         if (f != 0) {
             FileInterfaceAndroid *p = (FileInterfaceAndroid *)::operator new(0x38);
             p->file = f;       // +0x8 stdio handle
@@ -413,11 +403,7 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool 
             *cnt = *cnt + 1;
             result = p;
         }
-        ((String *)(full))->dtor();
-        ((String *)(dir))->dtor();
     }
-    ((String *)(b))->dtor();
-    ((String *)(a))->dtor();
     return result;
 }
 
@@ -434,17 +420,16 @@ extern int *gFIAInstCount_ow __attribute__((visibility("hidden")));
 extern const char *gModeWb __attribute__((visibility("hidden")));
 
 FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
-    const unsigned short *w = String_GetAEWChar(&name);
+    const unsigned short *w = GetAEWChar(name);
     while (*w)
         ++w;
 
-    char dir[12], wide[12], full[12];
-    String_ctor_cstr(dir, this->appRootDir, false);
-    String_ctor_wide(wide, String_GetAEWChar(&name), false);
-    String_concat(full, dir, wide);
-    ((String *)(wide))->dtor();
+    String dir(this->appRootDir);
+    String wide;
+    wide.ctor_wchar(GetAEWChar(name), false);
+    String full = dir + wide;
 
-    FILE *f = fopen(((String *)(full))->GetAEChar(), gModeWb);
+    FILE *f = fopen(full.GetAEChar(), gModeWb);
     FileInterfaceAndroid *result = 0;
     if (f != 0) {
         FileInterfaceAndroid *p = (FileInterfaceAndroid *)::operator new(0x38);
@@ -457,8 +442,6 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenWrite(String name, int, bool, u
         *cnt = *cnt + 1;
         result = p;
     }
-    ((String *)(full))->dtor();
-    ((String *)(dir))->dtor();
     return result;
 }
 
