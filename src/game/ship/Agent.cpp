@@ -296,12 +296,10 @@ int Agent::getWingmanFriendsCount() {
 // Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
 //              int p8, int p9, int p10, int p11)
 Agent::Agent(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
-    ((String *)((char *)this + 0x00))->ctor();
-    (&this->systemName)->ctor();
-    (&this->missionString)->ctor();
-    (&this->stationName)->ctor();
+    // name / systemName / missionString / stationName are real String members,
+    // default-constructed before this body runs.
     this->type = kind;
-    ((String *)(this))->assign((String *)name);
+    this->name.assign((String *)name);
     this->station = p4;
     this->system = p5;
     this->race = p6;
