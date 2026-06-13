@@ -304,7 +304,7 @@ void * RecordHandler::readWanted(unsigned int fd) {
     void *w = RH_op_new(0x54);
     String nameCopy;
     nameCopy.ctor_copy(&name, false);
-    ((Wanted *)(w))->ctor(idx, nameCopy, board, race, male, ship, weapon, hp, loot, lootAmt, reward, reqBounties, reqMission, numWingmen);
+    new (w) Wanted(idx, nameCopy, board, race, male, ship, weapon, hp, loot, lootAmt, reward, reqBounties, reqMission, numWingmen);
 
     int *parts = (int *)RH_op_new_arr(0x14);
     int *p = parts;
