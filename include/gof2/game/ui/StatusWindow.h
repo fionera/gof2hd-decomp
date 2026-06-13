@@ -1,8 +1,8 @@
 #ifndef GOF2_STATUSWINDOW_H
 #define GOF2_STATUSWINDOW_H
 #include "gof2/common.h"
-// ImageFactory.h provides the shared `struct Arr` { size, data, size2 } view; reuse it here so
-// the two definitions don't collide at global scope when both headers are pulled into a TU.
+// ImageFactory.h provides the ImageFactory class and forward-declares ImagePart, which the
+// imageParts member (Array<ImagePart*>*) and drawChar() path need.
 #include "gof2/engine/render/ImageFactory.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 -- StatusWindow (Android libgof2hdaa.so, armv7 Thumb).
@@ -20,19 +20,18 @@
 //   +0x5c  int   content height-ish (b)
 
 struct StatusWindow;
+class TouchButton;
 
 typedef AbyssEngine::String String;
 
 // Field accessors via byte offset.
 
-// Engine Array<T> header layout { length, data, cap } — `struct Arr` comes from ImageFactory.h.
-
 class StatusWindow {
 public:
-    Arr* tabButtons;                     // +0x4
-    Arr* medalButtons;                     // +0x8
-    void* field_0xc;                    // +0xc
-    void* detailLines;                   // +0x10
+    Array<TouchButton*>* tabButtons;     // +0x4
+    Array<TouchButton*>* medalButtons;   // +0x8
+    Array<ImagePart*>* imageParts;       // +0xc  (glyph image tiles for drawChar)
+    Array<String*>* detailLines;         // +0x10
     unsigned char isDragging;           // +0x54
 
     // ---- methods (converted from free functions) ----

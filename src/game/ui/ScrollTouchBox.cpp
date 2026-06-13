@@ -2,14 +2,10 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-extern "C" void ArrayReleaseClasses_StringPtr(void *self);
-extern "C" void *Array_StringPtr_dtor(void *self);
 extern "C" void String_ctor_string(void *self, String *src, bool copy);
 int GameText_getLanguage();
-extern "C" void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
 extern "C" void String_ctor_cstr(void *self, char const *text, bool copy);
-extern "C" void ArrayAdd_StringPtr(String *value, void *array);
 
 // font-line-height accessor: the engine's font object stores its line height at +0x4.
 // Modeled as a small opaque struct accessed via a typed helper.
@@ -33,12 +29,11 @@ float ScrollTouchBox::getRelativeScrollStartPos()
 
 ScrollTouchBox::~ScrollTouchBox()
 {
-    void *lines = this->lines;
-    if (lines != 0) {
-        ArrayReleaseClasses_StringPtr(lines);
-        lines = this->lines;
-        if (lines != 0)
-            operator delete(Array_StringPtr_dtor(lines));
+    if (this->lines != 0) {
+        for (String *line : *this->lines)
+            delete line;
+        this->lines->clear();
+        delete this->lines;
         this->lines = 0;
     }
 }
@@ -233,12 +228,11 @@ __attribute__((visibility("hidden"))) extern char g_ScrollTouchBox_empty_135600[
 
 void ScrollTouchBox::setText(AbyssEngine::String text, int font)
 {
-    void *lines = this->lines;
-    if (lines != 0) {
-        ArrayReleaseClasses_StringPtr(lines);
-        lines = this->lines;
-        if (lines != 0)
-            operator delete(Array_StringPtr_dtor(lines));
+    if (this->lines != 0) {
+        for (String *line : *this->lines)
+            delete line;
+        this->lines->clear();
+        delete this->lines;
         this->lines = 0;
     }
 
@@ -259,10 +253,10 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     if (contentHeight > boxHeight) {
         this->width = this->textWidth - *(int *)((char *)fontObj + 0x48);
         if (curLines != 0) {
-            ArrayReleaseClasses_StringPtr(curLines);
-            lines = this->lines;
-            if (lines != 0)
-                operator delete(Array_StringPtr_dtor(lines));
+            for (String *line : *curLines)
+                delete line;
+            curLines->clear();
+            delete curLines;
             this->lines = 0;
         }
 
@@ -276,7 +270,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
         char const *emptyText = g_ScrollTouchBox_empty_135600;
         bool copy = false;
         String_ctor_cstr(empty, emptyText, copy);
-        ArrayAdd_StringPtr(empty, this->lines);
+        this->lines->push_back(empty);
         Array<String*> *finalLines = this->lines;
         FontMetrics *finalFont = *fontHolder;
         int finalCount = (int)finalLines->size();

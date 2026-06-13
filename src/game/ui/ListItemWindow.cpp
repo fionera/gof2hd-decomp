@@ -135,11 +135,6 @@ void ListItemWindow::render()
 // regions are reached through helpers that take the window, the item and the
 // already-resolved layout pointer.
 
-// ---- String / Array runtime ---------------------------------------------------
-extern "C" void  Array_releaseClasses(void *arr);     // ArrayReleaseClasses<String*>
-extern "C" void *Array_dtor(void *arr);               // Array<String*>::~Array
-extern "C" void  Array_ctor(void *arr);               // Array<T>::Array()
-
 // ---- callees ------------------------------------------------------------------
 
 // Heavy data-driven regions (own the corrupted FP / attribute code).
@@ -206,22 +201,22 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     ((Layout *)(layout))->setWindowDimensions(x, y, h, w);
 
     // Tear down the label array (+0x0).
-    if (pp(this, 0x0) != 0) {
-        Array_releaseClasses(pp(this, 0x0));
-        if (pp(this, 0x0) != 0)
-            ::operator delete(Array_dtor(pp(this, 0x0)));
+    if (this->labels != 0) {
+        for (String *s : *this->labels) delete s;
+        this->labels->clear();
+        delete this->labels;
     }
-    pp(this, 0x0) = 0;
+    this->labels = 0;
     // Tear down the value array (+0x4).
-    if (pp(this, 0x4) != 0) {
-        Array_releaseClasses(pp(this, 0x4));
-        if (pp(this, 0x4) != 0)
-            ::operator delete(Array_dtor(pp(this, 0x4)));
+    if (this->values != 0) {
+        for (String *s : *this->values) delete s;
+        this->values->clear();
+        delete this->values;
     }
-    pp(this, 0x4) = 0;
+    this->values = 0;
 
-    void *a0 = operator new(0xc); Array_ctor(a0); pp(this, 0x0) = a0;
-    void *a1 = operator new(0xc); Array_ctor(a1); pp(this, 0x4) = a1;
+    this->labels = new Array<String *>();
+    this->values = new Array<String *>();
 
     int isShip = ((ListItem *)(item))->isShip();
     if (isShip == 0) {
@@ -238,8 +233,8 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
         liw_set_buildShipPreview(this, item, layout);
 
         // ship stat rows need the two int arrays too.
-        void *i0 = operator new(0xc); Array_ctor(i0); pp(this, 0x8) = i0;
-        void *i1 = operator new(0xc); Array_ctor(i1); pp(this, 0xc) = i1;
+        this->statsCur  = new Array<int>();
+        this->statsPrev = new Array<int>();
     }
 
     // Inner scroll window, positioned below the preview / header.
@@ -274,35 +269,33 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     u32(this, 0x134) = 0;
 }
 
-extern "C" void  _liw_ArrayReleaseClasses(void *a);
-extern "C" void  _liw_ArrayRelease(void *a);
-extern "C" void *_liw_StringArray_dtor(void *a);
-extern "C" void *_liw_IntArray_dtor(void *a);
 extern "C" void *_liw_STW_dtor(void *w);
 extern "C" void  _liw_String_dtor(void *s);
 
 // ListItemWindow::~ListItemWindow()
 ListItemWindow::~ListItemWindow()
 {
-    if (pp(this, 0x0)) {
-        _liw_ArrayReleaseClasses(pp(this, 0x0));
-        if (pp(this, 0x0)) operator delete(_liw_StringArray_dtor(pp(this, 0x0)));
-        pp(this, 0x0) = 0;
+    if (this->labels) {
+        for (String *s : *this->labels) delete s;
+        this->labels->clear();
+        delete this->labels;
+        this->labels = 0;
     }
-    if (pp(this, 0x4)) {
-        _liw_ArrayReleaseClasses(pp(this, 0x4));
-        if (pp(this, 0x4)) operator delete(_liw_StringArray_dtor(pp(this, 0x4)));
-        pp(this, 0x4) = 0;
+    if (this->values) {
+        for (String *s : *this->values) delete s;
+        this->values->clear();
+        delete this->values;
+        this->values = 0;
     }
-    if (pp(this, 0x8)) {
-        _liw_ArrayRelease(pp(this, 0x8));
-        if (pp(this, 0x8)) operator delete(_liw_IntArray_dtor(pp(this, 0x8)));
-        pp(this, 0x8) = 0;
+    if (this->statsCur) {
+        this->statsCur->clear();
+        delete this->statsCur;
+        this->statsCur = 0;
     }
-    if (pp(this, 0xc)) {
-        _liw_ArrayRelease(pp(this, 0xc));
-        if (pp(this, 0xc)) operator delete(_liw_IntArray_dtor(pp(this, 0xc)));
-        pp(this, 0xc) = 0;
+    if (this->statsPrev) {
+        this->statsPrev->clear();
+        delete this->statsPrev;
+        this->statsPrev = 0;
     }
     if (pp(this, 0x18)) operator delete(_liw_STW_dtor(pp(this, 0x18)));
     pp(this, 0x18) = 0;
@@ -417,9 +410,9 @@ void ListItemWindow::draw()
 
     // Visible value rows.
     char *L = (char *)layout;
-    void **rows = (void **)pp(this, 0x0);
+    Array<String *> *rows = this->labels;
     if (rows != 0) {
-        uint32_t n = *(uint32_t *)rows;
+        uint32_t n = rows->size();
         int rowH = i32(L, 0x2c);
         int yTop = i32(L, 0x5c) + i32(L, 0xc) + i32(this, 0x68) + i32(L, 0x20) + rowH;
         if ((uint32_t)(*g_liw_d_scrollLimit - i32(L, 0x10)) < (uint32_t)((i32(L, 0x1c) + rowH) * n + yTop))
@@ -429,7 +422,7 @@ void ListItemWindow::draw()
             ((PaintCanvas *)(long)canvas)->SetColor(canvas);
             int color = i32(L, 0x1c);
             Str s;
-            Str_ctor_copy(&s, *(void **)(*(int *)((char *)rows + 4) + i * 4), false);
+            Str_ctor_copy(&s, (*rows)[i], false);
             ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
             Str_dtor(&s);
             ((PaintCanvas *)(long)canvas)->SetColor(canvas);
@@ -439,11 +432,11 @@ void ListItemWindow::draw()
             bool centered;
             bool drewArrow = false;
             if (isShip != 0) {
-                uint32_t cur = *(uint32_t *)pp(this, 0x8);
+                uint32_t cur = this->statsCur->size();
                 if (i < cur) {
                     if (i < cur - 1) {
-                        int a = *(int *)(((int *)pp(this, 0x8))[1] + i * 4);
-                        int b = *(int *)(*(int *)(i32(this, 0xc) + 4) + i * 4);
+                        int a = (*this->statsCur)[i];
+                        int b = (*this->statsPrev)[i];
                         int img = 0x50;        // equal
                         if (a < b) img = 0x4c; // down
                         if (b < a) img = 0x48; // up
@@ -451,7 +444,7 @@ void ListItemWindow::draw()
                             ((i32(this, 0x64) + (i32(this, 0x6c) >> 1)) - i32(L, 0x2c)) - i32(this, 0x60), 0);
                     }
                     int sep = i32(this, 0x60);
-                    valStr = *(void **)(*(int *)(i32(this, 0x4) + 4) + i * 4);
+                    valStr = (*this->values)[i];
                     void *arrowStr = *g_liw_d_arrowR;
                     int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
                     centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));
@@ -461,7 +454,7 @@ void ListItemWindow::draw()
                 }
             }
             if (!drewArrow) {
-                valStr = *(void **)(*(int *)(i32(this, 0x4) + 4) + i * 4);
+                valStr = (*this->values)[i];
                 void *arrowStr = *g_liw_d_arrowL;
                 int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
                 centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)i32(this, 0x1c));

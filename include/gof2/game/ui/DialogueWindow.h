@@ -14,7 +14,7 @@ public:
     void* prevButton;                    // +0x0
     void* nextButton;                    // +0x4
     void* moreButton;                    // +0x8
-    void* faceParts;                    // +0xc
+    Array<ImagePart*>* faceParts;        // +0xc  face image-part list (loadChar result)
     int campaignMission;                     // +0x10
     int frameX;                     // +0x14
     int frameY;                     // +0x18

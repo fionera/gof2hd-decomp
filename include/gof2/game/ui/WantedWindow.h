@@ -18,6 +18,7 @@ struct Mission;
 struct StarMap;
 struct ScrollTouchWindow;
 struct TouchButton;
+struct ImagePart;
 struct Layout;
 struct PaintCanvas;
 struct ImageFactory;
@@ -45,8 +46,8 @@ class WantedWindow {
 public:
     uint32_t field_0x0;                 // +0x0
     void* starMap;                    // +0x4
-    void* imageParts;                    // +0x8
-    void* buttons;                    // +0xc
+    Array<ImagePart*>* imageParts;       // +0x8
+    Array<TouchButton*>* buttons;        // +0xc
     int halfTextHeight;                     // +0x10
     uint8_t showingMap;                 // +0x14
     uint8_t field_0x15;                 // +0x15
@@ -58,7 +59,7 @@ public:
     void* scrollWindow;                   // +0x2c
     uint32_t selectedWanted;                // +0x30
     uint32_t highlightedWanted;                // +0x34
-    void* wantedList;                   // +0x38
+    Array<Wanted*>* wantedList;          // +0x38
     int scrollOffset;                     // +0x84
     int lastDragY;                     // +0x88
     int scrollOffsetSnapshot;                     // +0x8c

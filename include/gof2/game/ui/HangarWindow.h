@@ -119,15 +119,15 @@ struct GameText {
 class HangarWindow {
 public:
     uint8_t field_0x0;                  // +0x0
-    void* tabButtons;                    // +0x4
+    Array<TouchButton*>* tabButtons;     // +0x4
     int lastDelta;                      // +0x8
     uint8_t active;                  // +0xc
-    void* itemList;                   // +0x10
+    Array<Item*>* itemList;              // +0x10  (== ItemArray*)
     void* hangarList;                   // +0x14
     void* listItemWindow;                   // +0x18
     void* choiceWindow;                   // +0x1c
     void* dialog;                   // +0x20
-    void* buttons;                   // +0x24
+    Array<TouchButton*>* buttons;        // +0x24
     void* pendingMountItem;                   // +0x28
     void* pendingDemountItem;                   // +0x2c
     void* tabIcons;                   // +0x30

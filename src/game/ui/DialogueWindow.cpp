@@ -6,6 +6,7 @@
 #include "gof2/game/ship/Agent.h"   // defines the canonical (identical-layout) `struct RetStr`
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/render/ImageFactory.h"
+#include "gof2/engine/render/ImagePart.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/engine/render/PaintCanvas.h"
 // Mission.h (-> Station.h) and TouchButton.h each re-declare an identical, unguarded
@@ -23,8 +24,6 @@
 // Layout's drawMask/drawBox are used via the local extern "C" prototypes below;
 // the full Layout.h is not required here.
 
-extern "C" void ArrayReleaseClasses_ImagePartPtr(void *self);
-extern "C" void *Array_ImagePartPtr_dtor(void *self);
 extern "C" void *ScrollTouchWindow_dtor(void *self);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 int GameText_getLanguage(void);
@@ -106,17 +105,15 @@ bool DialogueWindow::hasLevel() {
 
 DialogueWindow *_ZN14DialogueWindowD2Ev(DialogueWindow *self)
 {
-    void *p = self->faceParts;
-    if (p != 0) {
-        ArrayReleaseClasses_ImagePartPtr(p);
-        p = self->faceParts;
-        if (p != 0) {
-            ::operator delete(Array_ImagePartPtr_dtor(p));
-        }
+    Array<ImagePart *> *parts = self->faceParts;
+    if (parts != 0) {
+        for (ImagePart *part : *parts) delete part;
+        parts->clear();
+        delete self->faceParts;
     }
     self->faceParts = 0;
 
-    p = self->briefingOffsets;
+    void *p = self->briefingOffsets;
     if (p != 0) ::operator delete[](p);
     self->briefingOffsets = 0;
 
@@ -268,11 +265,11 @@ void DialogueWindow::loadContent() {
     self->voiceSound = -1;
     ((TouchButton *)(self->nextButton))->setPressProgress(0);
 
-    void *parts = self->faceParts;
+    Array<ImagePart *> *parts = self->faceParts;
     if (parts != 0) {
-        ArrayReleaseClasses_ImagePartPtr(parts);
-        parts = self->faceParts;
-        if (parts != 0) ::operator delete(Array_ImagePartPtr_dtor(parts));
+        for (ImagePart *part : *parts) delete part;
+        parts->clear();
+        delete self->faceParts;
     }
     self->faceParts = 0;
 

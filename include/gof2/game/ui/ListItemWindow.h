@@ -16,9 +16,21 @@ void operator delete(void *ptr) noexcept;
 // Engine String is a 12-byte trivially-copyable value (ctor/dtor are engine calls).
 struct Str { uint32_t a, b, c; };
 
-// ListItemWindow instance: opaque storage reached via the typed offset helpers.
+// ListItemWindow instance: the four leading container members (the label/value
+// String* arrays and the ship-stat int arrays) are modelled as real Array<T>*
+// fields so the recovered code can drive them through std::vector operations; the
+// remaining instance state is still reached via the typed byte-offset helpers.
 class ListItemWindow {
 public:
+    // +0x0  label-row String* array (owns its elements).
+    Array<AbyssEngine::String *> *labels;
+    // +0x4  value-row String* array (owns its elements).
+    Array<AbyssEngine::String *> *values;
+    // +0x8  current ship-stat int array (ship items only).
+    Array<int> *statsCur;
+    // +0xc  previous ship-stat int array (ship items only).
+    Array<int> *statsPrev;
+
     ListItemWindow();
     ~ListItemWindow();
     void OnTouchBegin(int x, int y);

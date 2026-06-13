@@ -153,7 +153,7 @@ public:
     void* helpButton;                  // +0x3bc
     uint8_t helpPressedFlag;                // +0x3c0
     void* choiceWindow;                  // +0x3c4
-    int* tipLines;                   // +0x3c8 (tip line-array; deref'd for line count)
+    Array<String*>* tipLines;        // +0x3c8 (tip line-array; size() == line count)
     uint8_t helpButtonEnabled;                // +0x3cc
     int rewardMessageTimer;                    // +0x3d0
     int rewardCredits;                    // +0x3d4

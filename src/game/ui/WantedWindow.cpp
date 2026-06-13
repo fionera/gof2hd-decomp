@@ -39,15 +39,6 @@ extern "C" int Station_getSystem(void *station);
 extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
 extern "C" void String_cstr_ctor(String *s, const char *text, bool copy);
 extern "C" void String_plus(String *out, String *a, String *b);
-extern "C" void Array_Wanted_ctor(void *arr);
-extern "C" void ArrayAdd_Wanted(void *wanted, void *arr);
-extern "C" void Array_TouchButton_ctor(void *arr);
-extern "C" void ArraySetLength_TouchButton(int length, void *arr);
-extern "C" void ArrayReleaseClasses_ImagePart(void *arr);
-extern "C" void *Array_ImagePart_dtor(void *arr);
-extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
-extern "C" void *Array_TouchButton_dtor(void *arr);
-extern "C" void *Array_Wanted_dtor(void *arr);
 extern "C" void *ScrollTouchWindow_dtor(void *window);
 extern "C" void String_int_ctor(String *s, int value);
 extern "C" void String_plusAssign(String *dst, String *src);
@@ -84,14 +75,14 @@ int WantedWindow::OnTouchMove(int x, int y) {
     }
 
     uint32_t i = 0;
-    while (i < F<uint32_t>(self->buttons, 0x0)) {
-        ((TouchButton *)(ArrayItem(self->buttons, i)))->OnTouchMove(x, y);
+    while (i < self->buttons->size()) {
+        (*self->buttons)[i]->OnTouchMove(x, y);
         ++i;
     }
 
     ((Layout *)(*layoutHolder))->OnTouchMove(x, y);
     if (self->detailButton != 0) {
-        void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
+        Wanted *wanted = (*self->wantedList)[self->selectedWanted];
         if (((Wanted *)(wanted))->isActive() != 0) {
             ((TouchButton *)(self->detailButton))->OnTouchMove(x, y);
         }
@@ -115,7 +106,7 @@ void WantedWindow::update(int dt) {
         return this->update_tail(self->starMap, dt);
     }
 
-    ((TouchButton *)(*(void **)((char *)F<void *>(self->buttons, 0x4) + 4)))->setAlwaysPressed(true);
+    (*self->buttons)[1]->setAlwaysPressed(true);
     ((ScrollTouchWindow *)(self->scrollWindow))->update(dt);
 
     if (self->dragging == 0) {
@@ -166,14 +157,14 @@ int WantedWindow::OnTouchBegin(int x, int y) {
     ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchBegin(x, y);
 
     uint32_t i = 0;
-    while (i < F<uint32_t>(self->buttons, 0x0)) {
-        ((TouchButton *)(ArrayItem(self->buttons, i)))->OnTouchBegin(x, y);
+    while (i < self->buttons->size()) {
+        (*self->buttons)[i]->OnTouchBegin(x, y);
         ++i;
     }
 
     ((Layout *)(*g_WantedWindow_touch_layout))->OnTouchBegin(x, y);
     if (self->detailButton != 0) {
-        void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
+        Wanted *wanted = (*self->wantedList)[self->selectedWanted];
         if (((Wanted *)(wanted))->isActive() != 0) {
             ((TouchButton *)(self->detailButton))->OnTouchBegin(x, y);
         }
@@ -209,7 +200,7 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
         return 0xffffffffu;
     }
 
-    void *list = self->wantedList;
+    Array<Wanted*> *list = self->wantedList;
     void *layout = *g_WantedWindow_hit_layout;
     int numerator = y - self->windowY;
     numerator -= F<int>(layout, 0xc);
@@ -217,7 +208,7 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     numerator -= F<int>(layout, 0x5c);
     numerator -= self->scrollOffset;
     int idx = __aeabi_idiv(numerator, F<int>(layout, 0x70) + F<int>(layout, 0x34));
-    if ((uint32_t)idx > (uint32_t)(F<int>(list, 0x0) - 1)) {
+    if ((uint32_t)idx > (uint32_t)((int)list->size() - 1)) {
         return 0xffffffffu;
     }
     return (uint32_t)idx;
@@ -289,8 +280,8 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         self->scrollVelocity = velocity;
 
         ((ScrollTouchWindow *)(self->scrollWindow))->OnTouchEnd(x, y);
-        for (uint32_t i = 0; i < F<uint32_t>(self->buttons, 0x0); ++i) {
-            if (((TouchButton *)(ArrayItem(self->buttons, i)))->OnTouchEnd(x, y) != 0) {
+        for (uint32_t i = 0; i < self->buttons->size(); ++i) {
+            if ((*self->buttons)[i]->OnTouchEnd(x, y) != 0) {
                 self->field_0x0 = i;
             }
         }
@@ -304,7 +295,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
 
         bool openMap = false;
         if (self->detailButton != 0) {
-            void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
+            Wanted *wanted = (*self->wantedList)[self->selectedWanted];
             if (((Wanted *)(wanted))->isActive() != 0 &&
                 ((TouchButton *)(self->detailButton))->OnTouchEnd(x, y) != 0) {
                 openMap = true;
@@ -315,7 +306,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
             void **appHolder = g_WantedWindow_end_app;
             void *module = ((ApplicationManager *)(*appHolder))->GetApplicationModule(5);
             self->starMap = F<void *>(module, 0x10);
-            void *wanted = ArrayItem(self->wantedList, self->selectedWanted);
+            Wanted *wanted = (*self->wantedList)[self->selectedWanted];
             int lastSeen = ((Wanted *)(wanted))->getLastSeen();
             void *station = (void *)(long)((Galaxy *)(*g_WantedWindow_end_galaxy))->getStation(lastSeen);
             void *oldMission = self->mission;
@@ -376,9 +367,9 @@ __attribute__((visibility("hidden"))) extern const char g_WantedWindow_draw_empt
 __attribute__((visibility("hidden"))) extern const char g_WantedWindow_draw_label_a[];
 __attribute__((visibility("hidden"))) extern const char g_WantedWindow_draw_label_b[];
 
-static inline void *draw_wanted_at(WantedWindow *self, int idx)
+static inline Wanted *draw_wanted_at(WantedWindow *self, int idx)
 {
-    return ArrayItem(self->wantedList, idx);
+    return (*self->wantedList)[idx];
 }
 
 void WantedWindow::draw() {
@@ -425,14 +416,14 @@ void WantedWindow::draw() {
             F<int>(layout, 0x5c) + F<int>(layout, 0x2c) + self->scrollOffset;
     int inset = barSize < 1 ? 0 : F<int>(layout, 0x2c) + F<int>(layout, 0x48);
 
-    for (uint32_t i = 0; i < F<uint32_t>(self->wantedList, 0x0); ++i) {
+    for (uint32_t i = 0; i < self->wantedList->size(); ++i) {
         int style = (i == self->selectedWanted || i == self->highlightedWanted) ? 4 : 3;
         String_cstr_ctor(&s40, g_WantedWindow_draw_empty_a, false);
         ((Layout *)(layout))->drawBox(style, F<int>(layout, 0x28) + self->windowX, y, (self->windowWidth >> 1) -
                            (inset + F<int>(layout, 0x28) + F<int>(layout, 0x2c)), F<int>(layout, 0x70), &s40, 0);
         ((String *)(&s40))->dtor();
 
-        void *wanted = draw_wanted_at(self, i);
+        Wanted *wanted = draw_wanted_at(self, i);
         ((PaintCanvas *)canvas)->SetColor(((Wanted *)(wanted))->isActive() ? 0xffffffffu : 0xff808080u);
         ((Wanted *)(&s4c))->getName();
         int textY = y + F<int>(layout, 0x70) / 2 -
@@ -468,8 +459,8 @@ void WantedWindow::draw() {
     ((Layout *)layout)->drawHeader1(&s70);
     ((String *)(&s70))->dtor();
 
-    for (uint32_t i = 0; i < F<uint32_t>(self->buttons, 0x0); ++i) {
-        ((TouchButton *)(ArrayItem(self->buttons, i)))->draw();
+    for (uint32_t i = 0; i < self->buttons->size(); ++i) {
+        (*self->buttons)[i]->draw();
     }
 
     ((String *)(&s7c))->ctor_copy((String *)((GameText *)(*g_WantedWindow_draw_text))->getText(0xc95), false);
@@ -556,12 +547,10 @@ int WantedWindow::init() {
     self->scrollOffsetSnapshot = 0;
     self->dragDelta = 0;
 
-    void *wantedList = ::operator new(0x0c);
-    Array_Wanted_ctor(wantedList);
-    self->wantedList = wantedList;
+    self->wantedList = new Array<Wanted*>();
 
     void *status = *g_WantedWindow_init_status;
-    void *allWanted = ((Status *)status)->getWanted();
+    Array<Wanted*> *allWanted = ((Status *)status)->getWanted();
     void **layoutHolder = g_WantedWindow_init_layout;
     void *layout = *layoutHolder;
     int wBase = F<int>(layout, 0x28);
@@ -569,18 +558,18 @@ int WantedWindow::init() {
     int wExtra = F<int>(layout, 0x4c);
     int activeWidth = wLimit - wBase - wExtra;
 
-    for (uint32_t i = 0; i < F<uint32_t>(allWanted, 0x0); ++i) {
+    for (uint32_t i = 0; i < allWanted->size(); ++i) {
         int race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
-        void *wanted = ArrayItem(allWanted, i);
+        Wanted *wanted = (*allWanted)[i];
         if (race == ((Wanted *)(wanted))->getBoard()) {
             race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
             if (race != 0 || ((Status *)(status))->getCurrentCampaignMission() < 0x80) {
                 race = ((SolarSystem *)((SolarSystem *)(long)((Status *)(status))->getSystem()))->getRace();
                 if (race == 0 && ((Status *)(status))->getCurrentCampaignMission() >= 0xa2) {
-                    ArrayAdd_Wanted(wanted, self->wantedList);
+                    self->wantedList->push_back(wanted);
                 }
             } else {
-                ArrayAdd_Wanted(wanted, self->wantedList);
+                self->wantedList->push_back(wanted);
             }
         }
     }
@@ -617,12 +606,12 @@ int WantedWindow::init() {
 
     uint32_t selected = 0;
     for (;;) {
-        void *arr = self->wantedList;
-        uint32_t count = F<uint32_t>(arr, 0x0);
+        Array<Wanted*> *arr = self->wantedList;
+        uint32_t count = arr->size();
         if (selected >= count) {
             selected = self->selectedWanted;
             if (selected == count - 1) {
-                if (((Wanted *)(ArrayItem(arr, selected)))->isActive() == 0) {
+                if (((Wanted *)((*arr)[selected]))->isActive() == 0) {
                     selected = 0;
                     self->selectedWanted = 0;
                 } else {
@@ -631,12 +620,12 @@ int WantedWindow::init() {
             }
             break;
         }
-        if (((Wanted *)(ArrayItem(arr, selected)))->isActive() != 0) {
+        if (((Wanted *)((*arr)[selected]))->isActive() != 0) {
             self->selectedWanted = selected;
             arr = self->wantedList;
-            count = F<uint32_t>(arr, 0x0);
+            count = arr->size();
             if (selected == count - 1) {
-                if (((Wanted *)(ArrayItem(arr, selected)))->isActive() == 0) {
+                if (((Wanted *)((*arr)[selected]))->isActive() == 0) {
                     selected = 0;
                     self->selectedWanted = 0;
                 } else {
@@ -651,36 +640,35 @@ int WantedWindow::init() {
     self->highlightedWanted = selected;
     ((WantedWindow *)(self))->selectWanted(selected);
 
-    void *buttons = ::operator new(0x0c);
-    Array_TouchButton_ctor(buttons);
+    Array<TouchButton*> *buttons = new Array<TouchButton*>();
     self->buttons = buttons;
-    ArraySetLength_TouchButton(2, buttons);
+    buttons->resize(2);
 
     void **textHolder = g_WantedWindow_init_text;
-    void *button = ::operator new(0xc8);
+    TouchButton *button = (TouchButton *)::operator new(0xc8);
     String *text = (String *)((GameText *)(*textHolder))->getText(0xc93);
     int x = self->windowX;
     int bw = self->windowWidth;
     int help = ((Layout *)(layout))->getHelpButtonOffset();
     // ctor6 header order is (x, y, text, p4, p5, p6); decomp call passed (text, kind, x, y, flags).
     ((TouchButton *)(button))->ctor6(x + bw - help, self->windowY, text, 3, 0x12, 0);
-    *(void **)((char *)F<void *>(buttons, 0x4) + 4) = button;
+    (*buttons)[1] = button;
 
-    button = ::operator new(0xc8);
+    button = (TouchButton *)::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x81);
     x = self->windowX;
     bw = self->windowWidth;
     help = ((Layout *)(layout))->getHelpButtonOffset();
-    int width = ((TouchButton *)(*(void **)((char *)F<void *>(buttons, 0x4) + 4)))->getWidth();
+    int width = ((TouchButton *)((*buttons)[1]))->getWidth();
     ((TouchButton *)(button))->ctor6(x + bw - help - width + F<int>(layout, 0x38), self->windowY, text, 3, 0x12, 0);
-    *(void **)F<void *>(buttons, 0x4) = button;
+    (*buttons)[0] = button;
 
-    ((TouchButton *)(*(void **)((char *)F<void *>(buttons, 0x4) + 4)))->setAlwaysPressed(true);
+    ((TouchButton *)((*buttons)[1]))->setAlwaysPressed(true);
     ((Layout *)(layout))->setWindowDimensions(self->windowX, self->windowY, self->windowWidth, self->windowHeight);
 
     layout = *layoutHolder;
     self->contentHeight = (F<int>(layout, 0x34) + F<int>(layout, 0x70)) *
-                         F<int>(self->wantedList, 0x0);
+                         (int)self->wantedList->size();
     self->visibleHeight =
         (((((self->windowHeight - F<int>(layout, 0x10)) - F<int>(layout, 0xc)) -
            F<int>(layout, 0x20)) - F<int>(layout, 0x24)) - F<int>(layout, 0x5c)) +
@@ -693,7 +681,7 @@ int WantedWindow::init() {
     self->detailButton = 0;
     self->showingMap = 0;
 
-    button = ::operator new(0xc8);
+    button = (TouchButton *)::operator new(0xc8);
     text = (String *)((GameText *)(*textHolder))->getText(0x1a8);
     layout = *layoutHolder;
     ((TouchButton *)(button))->ctor8(text, 0, self->windowX + (self->windowWidth >> 1) + F<int>(layout, 0x2c), (((self->windowY - F<int>(layout, 0x2c)) + self->windowHeight) -
@@ -708,36 +696,27 @@ __attribute__((visibility("hidden"))) extern void (*g_WantedWindow_string_dtor)(
 
 WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 {
-    void *p = self->imageParts;
-    if (p != 0) {
-        ArrayReleaseClasses_ImagePart(p);
-        p = self->imageParts;
-        if (p != 0) {
-            ::operator delete(Array_ImagePart_dtor(p));
-        }
+    if (self->imageParts != 0) {
+        for (ImagePart *part : *self->imageParts) delete part;
+        self->imageParts->clear();
+        delete self->imageParts;
     }
     self->imageParts = 0;
 
-    p = self->buttons;
-    if (p != 0) {
-        ArrayReleaseClasses_TouchButton(p);
-        p = self->buttons;
-        if (p != 0) {
-            ::operator delete(Array_TouchButton_dtor(p));
-        }
+    if (self->buttons != 0) {
+        for (TouchButton *btn : *self->buttons) delete btn;
+        self->buttons->clear();
+        delete self->buttons;
     }
     self->buttons = 0;
 
-    p = self->detailButton;
+    void *p = self->detailButton;
     if (p != 0) {
         ((TouchButton *)(p))->dtor(); ::operator delete(p);
     }
     self->detailButton = 0;
 
-    p = self->wantedList;
-    if (p != 0) {
-        ::operator delete(Array_Wanted_dtor(p));
-    }
+    delete self->wantedList;
     self->wantedList = 0;
 
     p = self->mission;
@@ -844,9 +823,9 @@ __attribute__((visibility("hidden"))) extern const char g_WantedWindow_s_line_c[
 __attribute__((visibility("hidden"))) extern const char g_WantedWindow_s_line_d[];
 __attribute__((visibility("hidden"))) extern const char g_WantedWindow_s_empty[];
 
-static inline void *wanted_at(WantedWindow *self, int idx)
+static inline Wanted *wanted_at(WantedWindow *self, int idx)
 {
-    return ArrayItem(self->wantedList, idx);
+    return (*self->wantedList)[idx];
 }
 
 static inline void append_label(String *dst, const char *prefix, String *value)
@@ -873,7 +852,7 @@ void WantedWindow::selectWanted(int idx) {
     String s94;
 
     if (self->imageParts != 0) {
-        ::operator delete(Array_ImagePart_dtor(self->imageParts));
+        delete self->imageParts;
     }
     self->imageParts = 0;
 
@@ -882,7 +861,7 @@ void WantedWindow::selectWanted(int idx) {
     }
     self->scrollWindow = 0;
 
-    void *wanted = wanted_at(self, idx);
+    Wanted *wanted = wanted_at(self, idx);
     self->imageParts = ((ImageFactory *)(*g_WantedWindow_select_factory))->loadChar((int *)((Wanted *)(wanted))->getImageParts());
 
     ((Wanted *)(&s34))->getName();

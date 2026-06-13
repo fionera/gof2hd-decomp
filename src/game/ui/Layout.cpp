@@ -261,10 +261,6 @@ void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     self->fadeDuration = duration;
 }
 
-extern "C" void ArrayReleaseClasses_StringPtr(void *arr);
-extern "C" void *ArrayStringPtr_dtor(void *arr);
-extern "C" void ArrayStringPtr_ctor(void *arr);
-
 // Hidden PC-relative globals from initTip disasm:
 //   g_tipColor  : *(uint**) @0xe499c — color value (read [0]).
 //   g_tipTextId : *(int**)  @0xe49a0 — text-table id (read **).
@@ -280,15 +276,13 @@ __attribute__((visibility("hidden"))) extern int **g_tipMetric;
 // Layout::initTip(): rebuild the random "tip" string line array.
 void Layout::initTip() {
     Layout *self = this;
-    void **tipArr = (void **)((char *)self + 0x3c8);
-    if (*tipArr != 0) {
-        ArrayReleaseClasses_StringPtr(*tipArr);
-        if (*tipArr != 0)
-            ::operator delete(ArrayStringPtr_dtor(*tipArr));
-        *tipArr = 0;
+    if (self->tipLines != 0) {
+        for (String *line : *self->tipLines) delete line;   // releaseClasses
+        self->tipLines->clear();
+        delete self->tipLines;
+        self->tipLines = 0;
     }
-    void *arr = ::operator new(0xc);
-    ArrayStringPtr_ctor(arr);
+    Array<String*> *arr = new Array<String*>();
 
     unsigned color = *g_tipColor;
     int textId = **g_tipTextId;
@@ -296,10 +290,10 @@ void Layout::initTip() {
     ((AbyssEngine::AERandom *)(**g_tipRandN))->nextInt();
     void *str = gGameText->obj->getText(textId);
 
-    *tipArr = arr;
+    self->tipLines = arr;
     int *m = *g_tipMetric;
     int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    ((PaintCanvas*)(canvas))->GetLineArray(color, str, width, (char *)*tipArr);
+    ((PaintCanvas*)(canvas))->GetLineArray(color, str, width, (char *)self->tipLines);
 }
 
 struct TouchButton;
@@ -1093,7 +1087,7 @@ void Layout::drawTip() {
         ((PaintCanvas*)((PaintCanvas *)*g_dtColor))->DrawImage2D(self->tipBoxImage,
                                  dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char)(0x11));
 
-        int lineCount = *self->tipLines;
+        int lineCount = (int)self->tipLines->size();
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
         Globals_drawLines(*g_dtLinesB, *(void **)g_dtLinesA, self->tipLines,
                           dimH >> 1, y);

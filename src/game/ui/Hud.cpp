@@ -39,16 +39,27 @@ extern "C" void String_concat(void *out, void *lhs, void *rhs);
 extern "C" int __aeabi_idiv(int a, int b);
 extern "C" void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
-extern "C" void Array_void_ctor(void *arr);
-extern "C" void ArraySetLength_void(int n, void *arr);
 extern "C" int  String_length(void *s);
-extern "C" void ArrayReleaseClasses_TouchButton(void *arr);
-extern "C" void *Array_TouchButton_dtor(void *arr);
-extern "C" void *Array_Item_dtor(void *arr);
-extern "C" void Array_TouchButton_ctor(void *arr);
-extern "C" void *Array_Item_dtor(void *p);
-extern "C" void *Array_ListItem_dtor(void *p);
-extern "C" void *Array_uint_dtor(void *p);
+
+// ---- typed Array<T> accessors over the offset-addressed Hud fields ----------
+// The Hud object is offset-addressed (opaque struct), so these helpers reinterpret
+// the pointer slot at `off` as the real Array<T>* it holds and let the standard
+// std::vector operations replace the decompiler's Array_* container externs.
+static inline Array<TouchButton *> *&menuButtons(Hud *self) {   // +0x18
+    return *(Array<TouchButton *> **)((char *)self + 0x18);
+}
+static inline Array<Item *> *&equipmentArray(Hud *self) {       // +0x25c
+    return *(Array<Item *> **)((char *)self + 0x25c);
+}
+static inline Array<ListItem *> *&eventQueue(Hud *self) {       // +0x264
+    return *(Array<ListItem *> **)((char *)self + 0x264);
+}
+static inline Array<int> *&keyArray(Hud *self) {                // +0x28c
+    return *(Array<int> **)((char *)self + 0x28c);
+}
+static inline Array<unsigned int> *&uintArray(Hud *self) {      // +0x530
+    return *(Array<unsigned int> **)((char *)self + 0x530);
+}
 
 void Hud::enableFireForTutorial(bool value) {
     Hud *self = this;
@@ -74,19 +85,15 @@ void Hud::playerHit() {
 
 void Hud::addToEventQueue(ListItem *item) {
     Hud *self = this;
+    Array<ListItem *> *q = eventQueue(self);
     unsigned int idx = 0;
-    unsigned int data;
-    int off;
     do {
         unsigned int next = idx + 1;
-        unsigned int *arr = (unsigned int *)P(self, 0x264);
-        if (next >= arr[0])
+        if (next >= q->size())
             return;
-        data = arr[1];
-        off = idx * 4;
         idx = next;
-    } while (I((void *)data, off + 4) != 0);
-    P((void *)data, idx * 4) = item;
+    } while ((*q)[idx] != 0);
+    (*q)[idx] = item;
     UC(self, 0x26c) = 1;
 }
 
@@ -117,20 +124,19 @@ unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
     int i = 0;
     unsigned int ret = 0;
     for (; i != 0x19; i = i + 1) {
-        int arr = I((void *)I(self, 0x28c), 4);
-        if (I((void *)arr, i * 4) == key) {
+        if ((*keyArray(self))[i] == key) {
             ret = U((void *)I(self, 0x290), i * 4);
             U(self, 0x284) = U(self, 0x284) & ~ret;
-            I((void *)arr, i * 4) = 0;
+            (*keyArray(self))[i] = 0;
             I((void *)I(self, 0x290), i * 4) = 0;
         }
     }
     if (UC(self, 0x282) != 0) {
-        unsigned int *btns = (unsigned int *)P(self, 0x18);
+        Array<TouchButton *> *btns = menuButtons(self);
         if (btns != 0) {
-            for (unsigned int j = 0; j < btns[0]; j = j + 1) {
-                ((TouchButton *)(((int *)btns[1])[j]))->OnTouchEnd((int)a, (int)(long)b);
-                btns = (unsigned int *)P(self, 0x18);
+            for (unsigned int j = 0; j < btns->size(); j = j + 1) {
+                (*btns)[j]->OnTouchEnd((int)a, (int)(long)b);
+                btns = menuButtons(self);
             }
         }
     }
@@ -141,11 +147,10 @@ void Hud::releaseAllKeys() {
     Hud *self = this;
     I(self, 0x284) = 0;
     for (int i = 0; i != 0x19; i++) {
-        int *p = *(int *volatile *)((char *)self + 0x28c);
+        Array<int> *p = keyArray(self);
         if (p != 0) {
-            int *a = (int *)p[1];
-            if (a[i] != 0)
-                a[i] = 0;
+            if ((*p)[i] != 0)
+                (*p)[i] = 0;
         }
         int *q = *(int *volatile *)((char *)self + 0x290);
         q[i] = 0;
@@ -153,18 +158,13 @@ void Hud::releaseAllKeys() {
     I(self, 0x288) = 0;
 }
 
-extern "C" void ArrayReleaseClasses_TouchButton(void *arr);   // ArrayReleaseClasses<TouchButton*>
-extern "C" void *Array_TouchButton_dtor(void *arr);           // Array<TouchButton*>::~Array
-
 void Hud::closeHudMenu() {
     Hud *self = this;
-    if (P(self, 0x18) != 0) {
-        ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) {
-            void *p = Array_TouchButton_dtor(P(self, 0x18));
-            ::operator delete(p);
-        }
-        P(self, 0x18) = 0;
+    if (menuButtons(self) != 0) {
+        for (TouchButton *b : *menuButtons(self)) delete b;
+        menuButtons(self)->clear();
+        delete menuButtons(self);
+        menuButtons(self) = 0;
     }
     UC(self, 0x282) = 0;
 }
@@ -254,23 +254,20 @@ void Hud::updateQueue(int dt) {
     int v;
     if (t >= 0xfa1) {
         I(self, 0x268) = 0;
-        int *p = (int *)I(P(self, 0x264), 4);
-        if ((void *)p[0] != 0) {
-            ((ListItem *)p[0])->~ListItem();
-            ::operator delete((void *)p[0]);
-            p = (int *)I(P(self, 0x264), 4);
+        Array<ListItem *> *q = eventQueue(self);
+        if ((*q)[0] != 0) {
+            (*q)[0]->~ListItem();
+            ::operator delete((void *)(*q)[0]);
         }
-        p[0] = 0;
+        (*q)[0] = 0;
         unsigned int i = 0;
-        unsigned int d;
         while (true) {
-            d = ((unsigned int *)P(self, 0x264))[1];
-            if (*(unsigned int *)P(self, 0x264) <= i + 1)
+            if (q->size() <= i + 1)
                 break;
-            *(int *)(d + i * 4) = *(int *)(d + i * 4 + 4);
+            (*q)[i] = (*q)[i + 1];
             i = i + 1;
         }
-        if (*(int *)(d + 4) == 0) {
+        if ((*q)[1] == 0) {
             UC(self, 0x26c) = 0;
         }
         v = 0;
@@ -358,10 +355,9 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_globals;
 
 unsigned int Hud::touchMove(unsigned int a, void *b, int key) {
     Hud *self = this;
-    int arr = I((void *)I(self, 0x28c), 4);
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
-        if (I((void *)arr, i * 4) == key && I((void *)I(self, 0x290), i * 4) == 0x20)
+        if ((*keyArray(self))[i] == key && I((void *)I(self, 0x290), i * 4) == 0x20)
             goto found;
     }
     return ((Hud *)(self))->touchMoveFallback(a, b);
@@ -407,13 +403,13 @@ static inline bool cspan(Hud *self, int off, int w, unsigned int v) {
 
 unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     Hud *self = this;
-    unsigned int *menu = (unsigned int *)P(self, 0x18);
+    Array<TouchButton *> *menu = menuButtons(self);
     if (UC(self, 0x282) != 0 && menu != 0) {
         // quick-menu open: delegate to its buttons
-        for (unsigned int i = 0; i < menu[0]; i++) {
-            if (((TouchButton *)(*(void **)(menu[1] + i * 4)))->OnTouchBegin((int)x, (int)y) != 0)
-                return *(unsigned int *)*(void **)(I(P(self, 0x18), 4) + i * 4);
-            menu = (unsigned int *)P(self, 0x18);
+        for (unsigned int i = 0; i < menu->size(); i++) {
+            if ((*menu)[i]->OnTouchBegin((int)x, (int)y) != 0)
+                return *(unsigned int *)(*menuButtons(self))[i];
+            menu = menuButtons(self);
         }
         return 0;
     }
@@ -582,7 +578,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
             char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
             void *u2 = ((GameText *)(gt))->getText(0);
             char n88[12]; String_concat(n88, n94, u2);
-            ((String *)(*(void **)(*(int *)(I(P(self, 0x264), 4) + idx * 4) + 0x1c)))->assign((String *)(n88));
+            ((String *)(*(void **)((char *)(*eventQueue(self))[idx] + 0x1c)))->assign((String *)(n88));
             ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
             ((String *)(k34))->dtor();
             return;
@@ -656,13 +652,14 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
 
 int Hud::sameHudEventAsBeforeAggregate(String *str) {
     Hud *self = this;
-    int i = *(int *)P(self, 0x264);
-    int e;
+    Array<ListItem *> *q = eventQueue(self);
+    int i = (int)q->size();
+    ListItem *e;
     do {
         i = i + -1;
         if (i < 1)
             return -1;
-        e = I((void *)(I(P(self, 0x264), 4)), i * 4);
+        e = (*q)[i];
     } while (e == 0 || ((String *)I((void *)e, 0x1c))->Compare_str(str) != 0);
     return i;
 }
@@ -736,7 +733,7 @@ void Hud::drawEventQueue() {
 
     ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x354), US(self, 0x3e0), 0);
 
-    int item = *(int *)(I(P(self, 0x264), 4) + 4);
+    char *item = (char *)(*eventQueue(self))[1];
     if (item != 0) {
         int kind = *(int *)(item + 0x30);
         int b2, b3, b4;
@@ -761,18 +758,16 @@ unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
     unsigned int e = ((Hud *)(self))->touchedElement(a, (unsigned int)(uintptr_t)b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
-            int arr = I((void *)I(self, 0x28c), 4);
-            if (I((void *)arr, i * 4) == key) {
+            if ((*keyArray(self))[i] == key) {
                 U(self, 0x284) = U(self, 0x284) & ~U((void *)I(self, 0x290), i * 4);
                 I((void *)I(self, 0x290), i * 4) = 0;
-                I((void *)arr, i * 4) = 0;
+                (*keyArray(self))[i] = 0;
             }
         }
     } else {
-        int arr = I((void *)I(self, 0x28c), 4);
         unsigned int j;
         for (j = 0; j < 0x19; j = j + 1) {
-            if (I((void *)arr, j * 4) == key) {
+            if ((*keyArray(self))[j] == (int)key) {
                 unsigned int v = U((void *)I(self, 0x290), j * 4);
                 if (e == v)
                     v = U(self, 0x284);
@@ -784,8 +779,8 @@ unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
             }
         }
         for (j = 0; j < 0x19; j = j + 1) {
-            if (I((void *)arr, j * 4) == 0) {
-                I((void *)arr, j * 4) = key;
+            if ((*keyArray(self))[j] == 0) {
+                (*keyArray(self))[j] = key;
                 U((void *)I(self, 0x290), j * 4) = e;
                 U(self, 0x284) = e | U(self, 0x284);
                 break;
@@ -798,9 +793,10 @@ done:
 
 unsigned int Hud::sameHudEventAsBefore(String *str) {
     Hud *self = this;
-    int i = *(int *)P(self, 0x264);
+    Array<ListItem *> *q = eventQueue(self);
+    int i = (int)q->size();
     while (--i >= 1) {
-        int e = ((int *)I(P(self, 0x264), 4))[i];
+        ListItem *e = (*q)[i];
         if (e != 0 && ((String *)I((void *)e, 0x1c))->Compare_str(str) == 0)
             return 1;
     }
@@ -832,14 +828,12 @@ int Hud::init() {
     UC(self, 0x528) = 0;
 
     // key-state arrays: 0x19 slots each
-    void *keys = ::operator new(0xc);
-    Array_void_ctor(keys);
-    P(self, 0x28c) = keys;
-    ArraySetLength_void(0x19, keys);
+    keyArray(self) = new Array<int>();
+    keyArray(self)->resize(0x19);
     void *bits = ::operator new[](100);
     P(self, 0x290) = bits;
     for (int i = 0; i != 0x19; i++) {
-        *(int *)(I(P(self, 0x28c), 4) + i * 4) = 0;
+        (*keyArray(self))[i] = 0;
         *(int *)(I(self, 0x290) + i * 4) = 0;
     }
     I(self, 0x284) = 0;
@@ -865,7 +859,7 @@ int Hud::init() {
     ((Hud *)(self))->closeHudMenu();
     ((Hud *)(self))->checkIfQuickMenuIsEmpty();
     ((Hud *)(self))->releaseAllKeys();
-    P(self, 0x530) = 0;
+    uintArray(self) = 0;
 
     int *layout = (int *)*g_Hud_initLayout;
     int w = ((PaintCanvas*)(long)(*g_Hud_initCanvas))->GetImage2DWidth((unsigned)(0));
@@ -898,14 +892,14 @@ void Hud::drawPauseButton() {
 Hud * Hud::checkIfQuickMenuIsEmpty() {
     Hud *self = this;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    unsigned int *equip = (unsigned int *)(void *)((Ship*)(ship))->getEquipment(1);
-    P(self, 0x25c) = equip;
+    Array<Item *> *equip = ((Ship*)(ship))->getEquipment(1);
+    equipmentArray(self) = equip;
 
     unsigned char empty;
     bool hasSecondary = false;
     if (equip != 0) {
-        for (unsigned int i = 0; i < equip[0]; i++) {
-            if (*(int *)(equip[1] + i * 4) != 0) { hasSecondary = true; break; }
+        for (unsigned int i = 0; i < equip->size(); i++) {
+            if ((*equip)[i] != 0) { hasSecondary = true; break; }
         }
     }
     if (hasSecondary) {
@@ -949,23 +943,23 @@ void Hud::drawMenu() {
 
     int y = I(self, 0x3c8) + I(self, 0x4d0) + I(self, 0x3cc);
     // repeated middle slices (one per button beyond the first)
-    if (P(self, 0x18) != 0 && *(int *)P(self, 0x18) != 0) {
-        int count = *(int *)P(self, 0x18);
-        for (unsigned int i = 0; i < (unsigned int)(count - 1); i++) {
+    if (menuButtons(self) != 0 && menuButtons(self)->size() != 0) {
+        unsigned int count = (unsigned int)menuButtons(self)->size();
+        for (unsigned int i = 0; i < count - 1; i++) {
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x2a0), I(self, 0x3c4) + I(self, 0x4cc), 0);
             y += I(self, 0x3d0);
-            count = *(int *)P(self, 0x18);
+            count = (unsigned int)menuButtons(self)->size();
         }
     }
     // bottom cap
     ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned)I(self, 0x29c), I(self, 0x3c4) + I(self, 0x4cc), 0);
 
     // the actual buttons
-    if (P(self, 0x18) != 0 && *(unsigned int *)P(self, 0x18) != 0) {
-        unsigned int n = *(unsigned int *)P(self, 0x18);
+    if (menuButtons(self) != 0 && menuButtons(self)->size() != 0) {
+        unsigned int n = (unsigned int)menuButtons(self)->size();
         for (unsigned int i = 0; i < n; i++) {
-            ((TouchButton *)(((void **)I(P(self, 0x18), 4))[i]))->draw();
-            n = *(unsigned int *)P(self, 0x18);
+            (*menuButtons(self))[i]->draw();
+            n = (unsigned int)menuButtons(self)->size();
         }
     }
 
@@ -1003,21 +997,13 @@ void Hud::drawMenu() {
 void Hud::clearQueue() {
     Hud *self = this;
     unsigned int i = 1;
-    int off = 4;
-    unsigned int *arr;
-    while (arr = (unsigned int *)P(self, 0x264), i < arr[0]) {
-        unsigned int data = arr[1];
-        void *item = *(void **)(data + off);
-        int *dst;
-        if (item == 0) {
-            dst = (int *)(data + i * 4);
-        } else {
-            ((ListItem *)item)->~ListItem();
+    while (i < eventQueue(self)->size()) {
+        ListItem *item = (*eventQueue(self))[i];
+        if (item != 0) {
+            item->~ListItem();
             ::operator delete(item);
-            dst = (int *)(I(P(self, 0x264), 4) + off);
         }
-        *dst = 0;
-        off = off + 4;
+        (*eventQueue(self))[i] = 0;
         i = i + 1;
     }
     I(self, 0x270) = 0;
@@ -1249,21 +1235,21 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *hold
 void Hud::initHudMenu(int menuType, void *lvl) {
     Hud *self = this;
     // tear down old menu buttons
-    if (P(self, 0x18) != 0) {
-        ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) ::operator delete(Array_TouchButton_dtor(P(self, 0x18)));
-        P(self, 0x18) = 0;
+    if (menuButtons(self) != 0) {
+        for (TouchButton *b : *menuButtons(self)) delete b;
+        menuButtons(self)->clear();
+        delete menuButtons(self);
+        menuButtons(self) = 0;
     }
-    void *arr = ::operator new(0xc);
-    Array_TouchButton_ctor(arr);
     P(self, 0x238) = lvl;
-    P(self, 0x18) = arr;
+    menuButtons(self) = new Array<TouchButton *>();
 
-    // refresh secondary-weapon equipment + label
-    if (P(self, 0x25c) != 0) ::operator delete(Array_Item_dtor(P(self, 0x25c)));
-    P(self, 0x25c) = 0;
+    // refresh secondary-weapon equipment + label (equipment is owned by the Ship,
+    // so the Array<Item*> wrapper itself is released but not its elements)
+    if (equipmentArray(self) != 0) delete equipmentArray(self);
+    equipmentArray(self) = 0;
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    P(self, 0x25c) = (void *)((Ship*)(ship))->getEquipment(1);
+    equipmentArray(self) = ((Ship*)(ship))->getEquipment(1);
     ((Hud *)(self))->updateSecondaryWeaponString();
 
     I(self, 0x4cc) = 0;
@@ -1314,20 +1300,21 @@ void Hud::initHudMenu(int menuType, void *lvl) {
 
 Hud * Hud::dtor() {
     Hud *self = this;
-    if (P(self, 0x25c) != 0) ::operator delete(Array_Item_dtor(P(self, 0x25c)));
-    P(self, 0x25c) = 0;
+    if (equipmentArray(self) != 0) delete equipmentArray(self);
+    equipmentArray(self) = 0;
 
-    if (P(self, 0x264) != 0) ::operator delete(Array_ListItem_dtor(P(self, 0x264)));
-    P(self, 0x264) = 0;
+    if (eventQueue(self) != 0) delete eventQueue(self);
+    eventQueue(self) = 0;
 
-    if (P(self, 0x18) != 0) {
-        ArrayReleaseClasses_TouchButton(P(self, 0x18));
-        if (P(self, 0x18) != 0) ::operator delete(Array_TouchButton_dtor(P(self, 0x18)));
+    if (menuButtons(self) != 0) {
+        for (TouchButton *b : *menuButtons(self)) delete b;
+        menuButtons(self)->clear();
+        delete menuButtons(self);
     }
-    P(self, 0x18) = 0;
+    menuButtons(self) = 0;
 
-    if (P(self, 0x530) != 0) ::operator delete(Array_uint_dtor(P(self, 0x530)));
-    P(self, 0x530) = 0;
+    if (uintArray(self) != 0) delete uintArray(self);
+    uintArray(self) = 0;
 
     self->subObjectDtor(B(self, 0x51c));
     self->subObjectDtor(B(self, 0x3b4));
@@ -1376,13 +1363,13 @@ void Hud::refreshQuickMenu() {
     updateSecondaryWeaponString();
 
     void *ship = (void *)((Status *)(*gStatus))->getShip();
-    unsigned int *equip = (unsigned int *)(void *)((Ship *)(ship))->getEquipment(1);
-    P(self, 0x25c) = equip;
+    Array<Item *> *equip = ((Ship *)(ship))->getEquipment(1);
+    equipmentArray(self) = equip;
 
     bool hasSecondary = false;
     if (equip != 0) {
-        for (unsigned int i = 0; i < equip[0]; i++) {
-            if (*(int *)(equip[1] + i * 4) != 0) { hasSecondary = true; break; }
+        for (unsigned int i = 0; i < equip->size(); i++) {
+            if ((*equip)[i] != 0) { hasSecondary = true; break; }
         }
     }
     unsigned char empty;

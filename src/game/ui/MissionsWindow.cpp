@@ -41,7 +41,15 @@ extern "C" void _mw_m_STW(void *w, int p1, int p2);
 __attribute__((visibility("hidden"))) extern void **g_mw_m_status;
 __attribute__((visibility("hidden"))) extern void **g_mw_m_layout;
 
-struct ArrHdr { unsigned len; void **data; };
+// Typed view of the tab-button array member (+0x14) and the freelance-agent
+// image-part array member (+0x18). Both are owned Array<T*>* members reached via
+// byte offset (this file uses offset-cast field access throughout).
+static inline Array<TouchButton *> *&tabButtons(void *self) {
+    return *(Array<TouchButton *> **)((char *)self + 0x14);
+}
+static inline Array<ImagePart *> *&agentImageParts(void *self) {
+    return *(Array<ImagePart *> **)((char *)self + 0x18);
+}
 
 // MissionsWindow::OnTouchMove(int, int)
 int MissionsWindow::OnTouchMove(int p1, int p2)
@@ -54,11 +62,9 @@ int MissionsWindow::OnTouchMove(int p1, int p2)
         _mw_m_StarMap(pp(this, 0x8), p1, p2);
     } else {
         if (_mw_m_wantedBoardAccessible(*g_mw_m_status)) {
-            for (unsigned i = 0;; i++) {
-                ArrHdr *arr = (ArrHdr *)pp(this, 0x14);
-                if (i >= arr->len) break;
-                _mw_m_Button(arr->data[i], p1, p2);
-            }
+            Array<TouchButton *> *arr = tabButtons(this);
+            for (unsigned i = 0; i < arr->size(); i++)
+                _mw_m_Button((*arr)[i], p1, p2);
         }
         _mw_m_Layout(*g_mw_m_layout, p1, p2);
         _mw_m_STW(pp(this, 0x0), p1, p2);
@@ -76,10 +82,6 @@ void MissionsWindow::setHangarUpdate(bool v)
     u8(this, 0x23) = v;
 }
 
-extern "C" void  _mw_ArrayReleaseImagePart(void *a);
-extern "C" void *_mw_ImagePartArray_dtor(void *a);
-extern "C" void  _mw_ArrayReleaseTouchButton(void *a);
-extern "C" void *_mw_TouchButtonArray_dtor(void *a);
 extern "C" void *_mw_STW_dtor(void *w);
 extern "C" void *_mw_ChoiceWindow_dtor(void *w);
 extern "C" void *_mw_TouchButton_dtor(void *b);
@@ -88,14 +90,16 @@ extern "C" void *_mw_WantedWindow_dtor(void *w);
 // MissionsWindow::~MissionsWindow()
 MissionsWindow::~MissionsWindow()
 {
-    if (pp(this, 0x18)) {
-        _mw_ArrayReleaseImagePart(pp(this, 0x18));
-        if (pp(this, 0x18)) operator delete(_mw_ImagePartArray_dtor(pp(this, 0x18)));
+    if (agentImageParts(this)) {
+        for (ImagePart *e : *agentImageParts(this)) delete e;
+        agentImageParts(this)->clear();
+        delete agentImageParts(this);
     }
     pp(this, 0x18) = 0;
-    if (pp(this, 0x14)) {
-        _mw_ArrayReleaseTouchButton(pp(this, 0x14));
-        if (pp(this, 0x14)) operator delete(_mw_TouchButtonArray_dtor(pp(this, 0x14)));
+    if (tabButtons(this)) {
+        for (TouchButton *e : *tabButtons(this)) delete e;
+        tabButtons(this)->clear();
+        delete tabButtons(this);
     }
     pp(this, 0x14) = 0;
     if (pp(this, 0x0)) operator delete(_mw_STW_dtor(pp(this, 0x0)));
@@ -142,11 +146,9 @@ int MissionsWindow::OnTouchBegin(int p1, int p2)
         _mw_b_StarMap(pp(this, 0x8), p1, p2);
     } else {
         if (_mw_b_wantedBoardAccessible(*g_mw_b_status)) {
-            for (unsigned i = 0;; i++) {
-                ArrHdr *arr = (ArrHdr *)pp(this, 0x14);
-                if (i >= arr->len) break;
-                _mw_b_Button(arr->data[i], p1, p2);
-            }
+            Array<TouchButton *> *arr = tabButtons(this);
+            for (unsigned i = 0; i < arr->size(); i++)
+                _mw_b_Button((*arr)[i], p1, p2);
         }
         _mw_b_Layout(*g_mw_b_layout, p1, p2);
         _mw_b_STW(pp(this, 0x0), p1, p2);
@@ -159,11 +161,6 @@ int MissionsWindow::OnTouchBegin(int p1, int p2)
 }
 
 extern "C" {
-
-void  ArrayTB_ctor(void *self);
-void  ArrayTB_setLength(int n, void *self);
-void  ArrayImg_releaseClasses(void *self);
-void *ArrayImg_dtor(void *self);
 
 void  TouchButton_ctorTab(void *self, void *text, int kind, int x, int y, char flags);
 
@@ -232,16 +229,15 @@ int MissionsWindow::init() {
     }
 
     // --- two tab buttons ---
-    void *tabs = ::operator new(0xc);
-    ArrayTB_ctor(tabs);
-    pp(self, 0x14) = tabs;
-    ArrayTB_setLength(2, tabs);
+    Array<TouchButton *> *tabs = new Array<TouchButton *>();
+    tabButtons(self) = tabs;
+    tabs->resize(2);
 
     void *b0 = ::operator new(200);
     void *t0 = ((GameText *)g_mw_gameText)->getText(titleId);
     int helpOff = ((Layout *)layout)->getHelpButtonOffset();
     TouchButton_ctorTab(b0, t0, 3, (i32(self, 0x38) + i32(self, 0x30)) - helpOff, i32(self, 0x34), 0x12);
-    *(void **)(*(int *)(pp(self, 0x14)) + 4 + 4) = b0;
+    (*tabs)[1] = (TouchButton *)b0;
 
     void *b1 = ::operator new(200);
     void *t1 = ((GameText *)g_mw_gameText)->getText(titleId);
@@ -250,15 +246,16 @@ int MissionsWindow::init() {
     TouchButton_ctorTab(b1, t1, 3,
                         (((i32(self, 0x38) + i32(self, 0x30)) - helpOff2) - w1) +
                             i32(layout, 0x38), i32(self, 0x34), 0x12);
-    *(void **)(*(int *)(pp(self, 0x14)) + 4) = b1;
-    ((TouchButton *)(*(void **)(*(int *)(pp(self, 0x14)) + 4)))->setAlwaysPressed(true);
+    (*tabs)[0] = (TouchButton *)b1;
+    (*tabs)[0]->setAlwaysPressed(true);
 
     ((Layout *)(layout))->setWindowDimensions(i32(self, 0x30), i32(self, 0x34), i32(self, 0x38), i32(self, 0x3c));
 
     // --- tear down any previous sub-objects ---
-    if (pp(self, 0x18) != 0) {
-        ArrayImg_releaseClasses(pp(self, 0x18));
-        if (pp(self, 0x18) != 0) ::operator delete(ArrayImg_dtor(pp(self, 0x18)));
+    if (agentImageParts(self) != 0) {
+        for (ImagePart *e : *agentImageParts(self)) delete e;
+        agentImageParts(self)->clear();
+        delete agentImageParts(self);
     }
     pp(self, 0x18) = 0;
     if (pp(self, 0x0) != 0) ::operator delete(ScrollTouchWindow_dtor(pp(self, 0x0)));
@@ -370,7 +367,7 @@ int MissionsWindow::init() {
         ((String *)(b))->dtor(); ((String *)(a))->dtor();
 
         void *parts = ((Agent *)(((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->getAgent()))->getImageParts();
-        pp(self, 0x18) = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar((int *)parts);
+        agentImageParts(self) = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar((int *)parts);
         ((String *)(text))->dtor();
     } else {
         ScrollTouchWindow_ctor(sw1, rx, topY, (half - pad) - i32(layout, 0x28),
@@ -477,9 +474,9 @@ void MissionsWindow::draw() {
     ((String *)(header))->dtor();
 
     if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
-        void **tabs = (void **)pp(self, 0x14);
-        for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
-            ((TouchButton *)(((void **)tabs[1])[i]))->draw();
+        Array<TouchButton *> *tabs = tabButtons(self);
+        for (unsigned int i = 0; i < tabs->size(); i++)
+            (*tabs)[i]->draw();
     }
 
     int ox = i32(self, 0x30), oy = i32(self, 0x34);
@@ -689,9 +686,9 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
     // Normal (no dialog) path, unless StarMap is showing.
     if (u8(self, 0x22) == 0) {
         if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
-            void **tabs = (void **)pp(self, 0x14);
-            for (unsigned int i = 0; i < *(unsigned int *)tabs; i++) {
-                if (((TouchButton *)(((void **)tabs[1])[i]))->OnTouchEnd(y, z) != 0)
+            Array<TouchButton *> *tabs = tabButtons(self);
+            for (unsigned int i = 0; i < tabs->size(); i++) {
+                if ((*tabs)[i]->OnTouchEnd(y, z) != 0)
                     u32(self, 0x40) = i;
             }
         }
@@ -865,9 +862,9 @@ void MissionsWindow::update(int dt) {
     }
 
     // Highlight the selected tab.
-    void **tabs = (void **)pp(self, 0x14);
-    for (unsigned int i = 0; i < *(unsigned int *)tabs; i++)
-        ((TouchButton *)(((void **)tabs[1])[i]))->setAlwaysPressed(i == u32(self, 0x40));
+    Array<TouchButton *> *tabs = tabButtons(self);
+    for (unsigned int i = 0; i < tabs->size(); i++)
+        (*tabs)[i]->setAlwaysPressed(i == u32(self, 0x40));
 
 }
 

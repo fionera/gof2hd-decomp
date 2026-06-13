@@ -14,11 +14,8 @@
 // ---- foreign helpers (defined in the engine; linked elsewhere) -----------------------
 extern "C" {
 void *ScrollTouchWindow_dtor(void *self);
-void Array_StringPtr_ctor(void *self);
 void Globals_getLineArray(void *self, void *font, String const &text, int width, void *array);
 void ScrollTouchWindow_ctor(void *self, int x, int y, int width, int height, bool centered);
-void ArrayReleaseClasses_StringPtr(void *self);
-void *Array_StringPtr_dtor(void *self);
 void Layout_formatCredits(String *out, void *layout, int value);
 void TouchButton_getPosition(float *out, void *self);
 // Status::replaceHash(String pattern, String value) -> String
@@ -312,8 +309,9 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
 
     ((ScrollTouchWindow *)(scroll))->setText(title, message);
 
-    ArrayReleaseClasses_StringPtr(lines);
-    operator delete(Array_StringPtr_dtor(lines));
+    for (String *line : *lines) delete line;
+    lines->clear();
+    delete lines;
 
     if (this->leftButton != 0) { ((TouchButton *)(this->leftButton))->dtor(); operator delete(this->leftButton); }
     this->leftButton = 0;
