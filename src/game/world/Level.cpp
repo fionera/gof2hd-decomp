@@ -1543,15 +1543,15 @@ void Level::createFighterTurrets()
             int kind = *(int *)(ki + 0x7c);
             if (kind == 0x2d || kind == 0x33) {
                 PlayerTurret *t = (PlayerTurret *)this->createStaticObject_cft(0, 0x1a74, 1);
-                Player_setVulnerable_cft(*(Player **)((char *)t + 0x4), 0);
-                Player *pp = *(Player **)((char *)t + 0x4);
+                Player_setVulnerable_cft(t->player, 0);
+                Player *pp = t->player;
                 int hp = Player_getMaxHitpoints_cft();
                 Player_setMaxHitpoints_cft(pp, hp);
                 char offset[12] = {0};
                 PlayerTurret_setHost_cft(t, (KIPlayer *)ki, offset);
                 *(PlayerTurret **)(ki + 0x10) = t;
-                *(int *)((char *)t + 0x28) = (kind == 0x2d) ? 8 : 0;
-                *(int *)((char *)t + 0x74) = 1;
+                t->standing = (kind == 0x2d) ? 8 : 0;
+                t->field_0x74 = 1;
                 ArrayAdd_KIPlayer_cft((KIPlayer *)t, *(void **)(self + 0xf8));
             }
         }
@@ -3626,7 +3626,7 @@ void Level::assignGuns()
 
             int camp2 = Status_getCurrentCampaignMission_ag();
             PlayerTurret *turret = *(PlayerTurret **)(*(int *)(*(int *)(self + 0xf8) + 4) + i * 4);
-            if (*(unsigned char *)((char *)turret + 0x3e) != 0) {
+            if (turret->field_0x3e != 0) {
                 int host = PlayerTurret_getHost_ag(turret);
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
                     gun->weaponType = 2; Gun_setIndex_ag(gun, 0x16); res = 0x1a8e;

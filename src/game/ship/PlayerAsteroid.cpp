@@ -223,7 +223,7 @@ void PlayerAsteroid::update(int delta)
     }
 
     if (this->rotationEnabled != 0) {
-        Vector rotation = *(const Vector*)((char *)this + 0x140) * ((float)delta * 0.001f);
+        Vector rotation = this->spin * ((float)delta * 0.001f);
         ((AEGeometry *)(this->geometry))->rotate(rotation);
     }
 
@@ -231,7 +231,7 @@ void PlayerAsteroid::update(int delta)
     if (bombForce > 0.0f && this->state == 3) {
         Vector hit;
         ((Player *)(player))->getHitVector(&hit);
-        Vector *hitSlot = (Vector *)((char *)this + 0x90);
+        Vector *hitSlot = &this->bombHitVector;
         *(Vector*)(hitSlot) = *(const Vector*)(&hit);
         float scaling = this->scaling;
         float clamped = scaling;
@@ -289,9 +289,9 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     ((Player *)(player))->ctor(0x5dc, 0x1e, 0, 0, 0);
 
     this->vtable = (char *)PlayerAsteroid_vtable + 8;
-    this->spinX = 0;
-    this->spinY = 0;
-    this->spinZ = 0;
+    this->spin.x = 0;
+    this->spin.y = 0;
+    this->spin.z = 0;
     this->field_0x164 = 0;
     this->field_0x168 = 0;
     this->field_0x16c = 0;
@@ -337,7 +337,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
         (float)(AbyssEngine::AERandom::nextInt((int)(intptr_t)random, 3) - 1),
     };
     Vector scaledAxis = *(const Vector*)(&axis) * (1.0f);
-    *(Vector*)((char *)this + 0x140) = *(const Vector*)(&scaledAxis);
+    this->spin = scaledAxis;
 
     this->dropsLoot = 1;
     this->field_0x3c = 1;
@@ -410,8 +410,8 @@ void PlayerAsteroid::push(int delta)
             for (int i = 0; i < 16; ++i) identity.m[i] = kIdentity[i];
         }
         Matrix rotation;
-        MatrixSetRotation(&rotation, &identity, t * this->pushSpinX,
-                          t * this->pushSpinY, t * this->pushSpinZ);
+        MatrixSetRotation(&rotation, &identity, t * this->pushSpin.x,
+                          t * this->pushSpin.y, t * this->pushSpin.z);
 
         int frameDelta = this->lastDelta;
         AEGeometry *geometry = this->geometry;
@@ -422,7 +422,7 @@ void PlayerAsteroid::push(int delta)
             frameDelta = this->lastDelta;
         }
 
-        Vector baseMove = *(const Vector*)((char *)this + 0x10c) * ((float)frameDelta);
+        Vector baseMove = this->pushDirection * ((float)frameDelta);
         float scale = (2.0f - t) * 3.0f * ((float)this->pushDuration / 1000.0f);
         Vector move = *(const Vector*)(&baseMove) * (scale);
         ((AEGeometry *)(geometry))->translate(move);
@@ -463,7 +463,7 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
     Vector here = getVector(this);
     Vector directionSource = *(const Vector*)(&here) - *(const Vector*)(&target);
     Vector direction = VectorNormalize(&directionSource);
-    *(Vector*)((char *)this + 0x10c) = *(const Vector*)(&direction);
+    this->pushDirection = direction;
 
     void *random = PlayerAsteroid_random;
     Vector randomVector = {
@@ -473,7 +473,7 @@ void PlayerAsteroid::initPush(const Vector &target, int duration)
     };
     Vector randomDirection = VectorNormalize(&randomVector);
     Vector randomScaled = *(const Vector*)(&randomDirection) * (0.01f);
-    *(Vector*)((char *)this + 0x118) = *(const Vector*)(&randomScaled);
+    this->pushSpin = randomScaled;
 }
 
 // ---- ~PlayerAsteroid_f2980.cpp ----

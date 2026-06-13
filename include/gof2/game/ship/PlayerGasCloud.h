@@ -24,12 +24,11 @@ public:
     uint8_t field_0x25;                 // +0x25
     uint8_t field_0x44;                 // +0x44
     uint8_t field_0x4c;                 // +0x4c
+    Level* level;                       // +0x54  owning level (inherited base region)
     int field_0x78;                     // +0x78
     int state;                     // +0x88
     uint8_t active;                 // +0xf5
-    float centerX;                  // +0x128
-    float centerY;                  // +0x12c
-    float centerZ;                  // +0x130
+    Vector center;                  // +0x128  cloud centre (centerX/centerY/centerZ)
     void* modelGeometry;                  // +0x134
     Array<AEGeometry*>* sparkGeometries;    // +0x138  per-spark render geometry
     Array<Vector*>* sparkVelocities;        // +0x13c  per-spark velocity (owned Vector*)

@@ -32,21 +32,19 @@ public:
     Array<int>* loot;               // +0x50  dropped-loot {itemId, count} list
     AEGeometry* secondaryGeometry;             // +0x78
     int state;                     // +0x88
+    Vector bombHitVector;            // +0x90  scratch vector for the bomb-force push impulse
     uint8_t visible;                 // +0xf5
     int pushTimer;                    // +0x104
     int pushDuration;                    // +0x108
-    float pushSpinX;                  // +0x118
-    float pushSpinY;                  // +0x11c
-    float pushSpinZ;                  // +0x120
+    Vector pushDirection;            // +0x10c  normalized push movement direction
+    Vector pushSpin;                  // +0x118  per-axis push rotation rate
     uint8_t field_0x124;                // +0x124
     int asteroidIndex;                    // +0x128
     Explosion* explosion;             // +0x12c
     int lastDelta;                    // +0x134
     float scaling;                  // +0x138
     uint8_t minable;                // +0x13c
-    int spinX;                    // +0x140
-    int spinY;                    // +0x144
-    int spinZ;                    // +0x148
+    Vector spin;                     // +0x140  per-axis idle rotation rate
     uint8_t rotationEnabled;                // +0x14c
     int quality;                    // +0x150
     int lastHitpoints;                    // +0x158

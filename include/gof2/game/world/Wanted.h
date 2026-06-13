@@ -46,10 +46,12 @@ public:
     uint8_t terminated;                 // +0x50
     uint8_t active;                 // +0x51
 
-    // ---- methods (converted from free functions) ----
-    Wanted * ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);
-    Wanted * dtor();
-    Wanted * base_dtor();   // base subobject dtor: destroys `name`, returns this
+    // ---- constructor / destructor (demangle to Wanted::Wanted / ~Wanted) ----
+    // The leading `name` String subobject is constructed/destroyed by the normal C++
+    // member init/teardown, so the recovered base_dtor (which ran String::~String on
+    // `name`) folds into the implicit member destruction.
+    Wanted(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14);
+    ~Wanted();
     String getName();
     uint8_t isActive();
     uint8_t isTerminated();

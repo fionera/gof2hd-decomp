@@ -60,8 +60,8 @@ String Wanted::getName() {
 
 // The String argument has a non-trivial copy ctor/dtor in the real engine, so the
 // C++ ABI passes it by invisible reference -> it arrives as a pointer in r2.
-Wanted * Wanted::ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
-    this->name.ctor();
+Wanted::Wanted(int p1, const String &p2, int p3, int p4, bool p5, int p6, int p7, int p8, int p9, int p10, int p11, int p12, int p13, int p14) {
+    // `name` (a String member) is default-constructed by the C++ member init.
     this->index = p1;
     this->name.assign((String *)&p2);
     this->board = p3;
@@ -81,28 +81,14 @@ Wanted * Wanted::ctor(int p1, const String &p2, int p3, int p4, bool p5, int p6,
     this->requiredBounties = p12;
     this->requiredMission = p13;
     this->numWingmen = p14;
-    return this;
 }
 
-// operator delete[](void*) -> 0x6ebfc
-// Base subobject destructor (String::~String at offset 0), returns the object pointer.
-
-// Frees the buffer at +0x40 (array delete), clears it, then tail-calls the base dtor.
-Wanted * Wanted::dtor() {
+// ~Wanted(): frees the imageParts buffer at +0x40; the leading `name` String member is
+// destroyed by the implicit member teardown (the recovered base_dtor / String::~String).
+Wanted::~Wanted() {
     void *p = this->imageParts;
     if (p != 0) {
         ::operator delete[](p);
     }
     this->imageParts = 0;
-    return ((Wanted *)(this))->base_dtor();
-}
-
-// ---- ((Wanted *)(base subobject destructor))->base_dtor() ----
-// Wanted's only base subobject is its leading AbyssEngine::String `name` (offset 0x0).
-// The compiler-generated base-object destructor therefore just runs String::~String on
-// `name` and returns the (Wanted*) object pointer for the destructor chain. Wanted::dtor()
-// above frees the imageParts buffer first, then tail-calls this.
-Wanted * Wanted::base_dtor() {
-    name.dtor();
-    return this;
 }

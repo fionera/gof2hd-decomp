@@ -91,50 +91,50 @@ extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
 
 bool PlayerJumpgate::timeToJump()
 {
-    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->field_0x144);
+    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->transformHandle);
     return transform->field_0x110 > 1000LL;
 }
 
 void PlayerJumpgate::activate()
 {
-    if (this->field_0x140 != 0) {
+    if (this->activated != 0) {
         return;
     }
 
-    uint32_t handle = this->field_0x144;
+    uint32_t handle = this->transformHandle;
     if (handle != 0xffffffffU) {
         void **canvasOwner = (void **)g_PaintCanvas;
         Transform *transform = (Transform *)((PaintCanvas*)*canvasOwner)->TransformGetTransform(handle);
         ((Transform *)(transform))->SetAnimationState(1, 0);
 
-        AEGeometry *geometry = this->field_0x8;
+        AEGeometry *geometry = this->geometry;
         ((PaintCanvas*)*canvasOwner)->TransformRemoveChild(geometry->transform,
                                          geometry->childTransform);
-        ((AEGeometry *)(this->field_0x8))->addChild(this->field_0x144);
+        ((AEGeometry *)(this->geometry))->addChild(this->transformHandle);
     }
 
-    this->field_0x140 = 1;
+    this->activated = 1;
 }
 
 void PlayerJumpgate::addJumpAnimationHandle(uint32_t handle)
 {
-    this->field_0x144 = handle;
+    this->transformHandle = handle;
 }
 
 bool PlayerJumpgate::animationEnded()
 {
-    if (this->field_0x140 == 0) {
+    if (this->activated == 0) {
         return false;
     }
 
-    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->field_0x144);
+    Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(this->transformHandle);
     return transform->field_0xed == 0;
 }
 
 void PlayerJumpgate::update(int delta)
 {
-    if (this->field_0xf5 != 0) {
-        AEGeometry *geometry = this->field_0x8;
+    if (this->visible != 0) {
+        AEGeometry *geometry = this->geometry;
         Transform *transform = (Transform *)((PaintCanvas*)*(void **)g_PaintCanvas)->TransformGetTransform(geometry->transform);
         bool active = true;
         int64_t wideDelta = delta;
@@ -144,11 +144,11 @@ void PlayerJumpgate::update(int delta)
 
 void PlayerJumpgate::setPosition(float x, float y, float z)
 {
-    this->field_0x124 = (int32_t)x;
-    this->field_0x128 = (int32_t)y;
-    this->field_0x12c = (int32_t)z;
+    this->posX = (int32_t)x;
+    this->posY = (int32_t)y;
+    this->posZ = (int32_t)z;
     Vector pos = { x, y, z };
-    this->field_0x8->setPosition(pos);
+    this->geometry->setPosition(pos);
 }
 
 extern "C" void PlayerStaticFar_ctor(PlayerStaticFar *self, int playerId, AEGeometry *geometry,
@@ -163,12 +163,12 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
     PlayerStaticFar_ctor((PlayerStaticFar *)this, playerId, geometry, x, y, z);
 
     void *vtable = g_PlayerJumpgate_vtable;
-    this->field_0x0 = (char *)vtable + 8;
+    this->vtable = (char *)vtable + 8;
     ((KIPlayer *)(this))->setVisible(visible);
 
     if (visible) {
         Array<BoundingVolume *> *volumes = new Array<BoundingVolume *>();
-        this->field_0x130 = volumes;
+        this->boundingVolumes = volumes;
         volumes->resize(1);
 
         void **statusOwner = (void **)g_Status;
@@ -183,14 +183,14 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
             }
         }
 
-        ((Player *)(this->field_0x4))->setRadius(radius);
+        ((Player *)(this->player))->setRadius(radius);
 
         BoundingSphere *sphere = (BoundingSphere *)::operator new(0x48);
         new (sphere) BoundingSphere(x, y, z, 0.0f, 0.0f, 0.0f, (float)radius);
-        (*this->field_0x130)[0] = (BoundingVolume *)sphere;
+        (*this->boundingVolumes)[0] = (BoundingVolume *)sphere;
     }
 
-    this->field_0x144 = 0xffffffffU;
-    this->field_0x140 = 0;
-    ((AEGeometry *)(this->field_0x8))->setRotation(0.0f, 3.1415927f, 0.0f);
+    this->transformHandle = 0xffffffffU;
+    this->activated = 0;
+    ((AEGeometry *)(this->geometry))->setRotation(0.0f, 3.1415927f, 0.0f);
 }

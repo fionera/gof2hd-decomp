@@ -89,9 +89,9 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     ((Player *)(this_00))->ctor(0, 9999999, 0, 0, 0);
 
     *(void **)this = &PlayerGasCloud_vtable + 8;
-    this->centerX = 0;
-    this->centerY = 0;
-    this->centerZ = 0;
+    this->center.x = 0;
+    this->center.y = 0;
+    this->center.z = 0;
     ((Player *)(this->player))->setKIPlayer((KIPlayer *)this);
     ((Player *)(this->player))->setMaxHitpoints(1);
 
@@ -124,7 +124,7 @@ PlayerGasCloud::PlayerGasCloud(int param_1, ParticleSystemManager *param_2, AEGe
     this->sparkInSight = 0;
     this->exploded = 0;
 
-    *(Vector *)((char *)this + 0x128) = param_4;
+    this->center = param_4;
 
     void *geom = ::operator new(0xc0);
     new (geom) AEGeometry(this->cloudMeshId, (PaintCanvas *)*g_pgc_canvas, false);
@@ -282,9 +282,9 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
         self->sparkInSight = new Array<bool>();
         self->sparkScale = new Array<float>();
 
-        // Distance from the explosion source to the cloud centre (+0x128).
+        // Distance from the explosion source to the cloud centre.
         Vector delta;
-        delta = src - *(Vector *)((Vector *)((char *)self + 0x128));
+        delta = src - self->center;
         float dist = VectorLength(&delta);
         float t = 1.5f - dist / radius;
         float countBase = t * g_pgc_countScale;
@@ -302,7 +302,7 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             void *shard = ::operator new(0xc0);
             new (shard) AEGeometry(self->sparkMeshId,
                             (PaintCanvas *)*(void **)g_pgc_canvasRoot, false);
-            ((AEGeometry *)(shard))->setPosition(*(Vector *)((char *)self + 0x128));
+            ((AEGeometry *)(shard))->setPosition(self->center);
 
             void *rng = *(void **)g_pgc_rng;
             float jx = (float)((AbyssEngine::AERandom *)(rng))->next(10000);
@@ -310,13 +310,13 @@ void PlayerGasCloud_explode(void *selfv, int itemIndex, Vector src, float radius
             float jz = (float)((AbyssEngine::AERandom *)(rng))->next(10000);
 
             Vector p;
-            p.x = ((self->centerX + delta.x) - spread) + t * jx;
-            p.y = ((self->centerY + delta.y) - spread) + t * jy;
-            p.z = ((self->centerZ + delta.z) - spread) + t * jz;
+            p.x = ((self->center.x + delta.x) - spread) + t * jx;
+            p.y = ((self->center.y + delta.y) - spread) + t * jy;
+            p.z = ((self->center.z + delta.z) - spread) + t * jz;
 
             // Direction = normalized (p - center).
             Vector d, dn;
-            d = p - *(Vector *)((Vector *)((char *)self + 0x128));
+            d = p - self->center;
             VectorNormalize(&dn, &d);
 
             float life = ((float)((AbyssEngine::AERandom *)(rng))->next(200) / lifeDiv) * 3.0f + 3.0f;
@@ -374,19 +374,18 @@ extern float g_pgcu_growDiv;
 void PlayerGasCloud_update(void *selfv, int dt)
 {
     PlayerGasCloud *self = (PlayerGasCloud *)selfv;
-    char *s = (char *)selfv;
 
     if (dt != 0) {
         Array<AEGeometry*> *arr = self->sparkGeometries;
-        if (*(char *)(s + 0x154) == 0 || *(char *)(s + 0x15c) != 0 || arr == 0) {
+        if (self->exploded == 0 || self->settled != 0 || arr == 0) {
             // Idle / pre-explosion: just advance the bound transform.
             void *t = ((PaintCanvas *)*(void **)g_pgcu_canvasRoot)->TransformGetTransform(
-                          *(unsigned int *)((char *)*(void **)(s + 0x134) + 0xc));
+                          *(unsigned int *)((char *)self->modelGeometry + 0xc));
             ((AbyssEngine::Transform *)(t))->Update(1, (bool)dt);
         } else {
             float dtf = (float)dt;
-            *(unsigned char *)(s + 0x15c) = 1;
-            *(int *)(s + 0x158) += dt;
+            self->settled = 1;
+            self->elapsedSinceExplosion += dt;
             float velStep = dtf * g_pgcu_velScale;
 
             unsigned int i = 0;
@@ -402,7 +401,7 @@ void PlayerGasCloud_update(void *selfv, int dt)
                     *life = lifeMin;
 
                 // Distance from this shard to the player's turret.
-                void *player = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
+                void *player = (void *)(intptr_t)self->level->getPlayer();
                 Vector turretPos, shardPos, delta;
                 PlayerEgo_getTurretPosition(player, &turretPos);
                 void *geom = (*self->sparkGeometries)[i];
@@ -411,28 +410,28 @@ void PlayerGasCloud_update(void *selfv, int dt)
                 float dist = VectorLength(&delta);
 
                 bool collected = false;
-                if (dist < g_pgcu_catchDist && *(int *)(s + 0x158) >= 2000) {
-                    void *p2 = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
+                if (dist < g_pgcu_catchDist && self->elapsedSinceExplosion >= 2000) {
+                    void *p2 = (void *)(intptr_t)self->level->getPlayer();
                     if (((PlayerEgo *)(p2))->isInTurretMode() != 0 &&
                         (*self->sparkTimers)[i] >= g_pgcu_minTimer) {
                         (*self->sparkTimers)[i] = g_pgcu_resetTimer;
                         void *ship = ((Status *)(*gStatus))->getShip();
-                        int itemId = *(int *)(s + 0x160);
+                        int itemId = self->itemId;
                         if (((Ship *)(ship))->getFreeSpace() < 1) {
-                            if (((Level *)(*(void **)(s + 0x54)))->getPlayer() != 0) {
+                            if (self->level->getPlayer() != 0) {
                                 ((FModSound *)(g_pgcu_pickupSound))->stop(0x8d0);
                                 ((FModSound *)(g_pgcu_pickupSound))->play(0x8d0, 0, 0, 0.0f);
-                                void *ego = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
+                                void *ego = (void *)(intptr_t)self->level->getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
-                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), false, true, false, true, false, 0, 0);
+                                ((Hud *)(hud))->catchCargo(self->itemId, false, true, false, true, false, 0, 0);
                             }
                         } else {
                             void *def = *(void **)(*(int *)(*(int *)g_pgcu_itemDefs + 4) + itemId * 4);
                             ((Item *)(def))->makeItem();
-                            if (((Level *)(*(void **)(s + 0x54)))->getPlayer() != 0) {
-                                void *ego = (void *)(intptr_t)((Level *)(*(void **)(s + 0x54)))->getPlayer();
+                            if (self->level->getPlayer() != 0) {
+                                void *ego = (void *)(intptr_t)self->level->getPlayer();
                                 int hud = ((PlayerEgo *)(ego))->getHUD();
-                                ((Hud *)(hud))->catchCargo(*(int *)(s + 0x160), true, false, false, false, false, 0, 0);
+                                ((Hud *)(hud))->catchCargo(self->itemId, true, false, false, false, false, 0, 0);
 
                                 void *camp = *(void **)g_pgcu_campaign;
                                 if (*(char *)((char *)camp + 0x2d) == 0 &&
@@ -440,9 +439,9 @@ void PlayerGasCloud_update(void *selfv, int dt)
                                     Vector missionBuf;
                                     ((Status *)(&missionBuf))->getMission();
                                     if (((Mission *)(&missionBuf))->isEmpty() != 0 &&
-                                        *(int *)(s + 0x160) == 0xcc) {
+                                        self->itemId == 0xcc) {
                                         *(char *)((char *)camp + 0x2d) = 1;
-                                        ((Level *)(*(void **)(s + 0x54)))->createRadioMessage(0x1a, 0);
+                                        self->level->createRadioMessage(0x1a, 0);
                                     }
                                 }
                             }
@@ -477,7 +476,7 @@ void PlayerGasCloud_update(void *selfv, int dt)
                 void *moveGeom;
                 Vector moved;
                 bool homing = (*self->sparkInSight)[i] != 0 &&
-                              *(int *)(s + 0x158) >= 2000;
+                              self->elapsedSinceExplosion >= 2000;
                 if (homing) {
                     void *ship = ((Status *)(*gStatus))->getShip();
                     if (((Ship *)(ship))->getFirstEquipmentOfSort(0x23) != 0) {
@@ -512,13 +511,13 @@ void PlayerGasCloud_update(void *selfv, int dt)
 
             advance:
                 if (g_pgcu_minTimer <= (*self->sparkTimers)[i])
-                    *(unsigned char *)(s + 0x15c) = 0;
+                    self->settled = 0;
                 i++;
                 arr = self->sparkGeometries;
             }
 
-            if (*(char *)(s + 0x15c) != 0)
-                *(unsigned char *)(s + 0xf5) = 0;
+            if (self->settled != 0)
+                self->active = 0;
         }
     }
 

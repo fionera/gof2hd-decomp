@@ -2,8 +2,9 @@
 #define GOF2_PLAYERTURRET_H
 #include "gof2/common.h"
 // Galaxy on Fire 2 - PlayerTurret (a KIPlayer subclass: sentry guns / turrets).
-// One unified layout. Pointer-typed slots are named f_<off>; scalar fields that the
-// code reads through the offset helpers below keep the deterministic field_0xNN scheme.
+// Full named layout recovered from per-method usage and the KIPlayer/Player base
+// layouts. Trailing comments are the original 32-bit field offsets, kept for
+// cross-reference; the live layout is natural 64-bit.
 struct PlayerTurret;
 struct Player;
 struct KIPlayer;
@@ -18,8 +19,8 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// Byte-offset accessors used for fields whose individual names were not recovered and
-// for reads/writes into cross-class objects (Player/AEGeometry/Level/...).
+// Byte-offset accessors still used for reads/writes into cross-class objects
+// (Player/AEGeometry/Level/...), never for PlayerTurret's own members.
 static inline char *B(void *self, uint32_t off) { return (char *)self + off; }
 static inline const char *B(const void *self, uint32_t off) { return (const char *)self + off; }
 static inline int32_t &I(void *self, uint32_t off) { return *(int32_t *)((char *)self + off); }
@@ -35,29 +36,61 @@ extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
 
 class PlayerTurret {
 public:
-    // Named pointer slots (offset encoded in the name). Padding keeps every named slot
-    // at its real byte offset so the I()/P()/UC()/TP() helpers and the named members
-    // address the same storage.
-    void *f_0;                          // 0x0  vtable
+    // ---- inherited KIPlayer/Player base sub-object region (named at the offsets
+    // this class actually touches; padding keeps every member at its real byte offset) ----
+    void *vtable;                       // +0x0   vtable
     unsigned char _pad_4[4];
-    void *f_8;                          // 0x8  main geometry
-    void *f_c;                          // 0xc
-    unsigned char _pad_10[0x50 - 0x10];
-    Array<int> *f_50;                   // 0x50 loot/crate id list
-    void *f_54;                         // 0x54 level / particle-system manager
-    unsigned char _pad_58[0x78 - 0x58];
-    void *f_78;                         // 0x78 visible geometry
-    unsigned char _pad_7c[0x13c - 0x7c];
-    void *f_13c;                        // 0x13c explosion
-    void *f_140;                        // 0x140 base geometry
-    void *f_144;                        // 0x144 turret geometry
-    void *f_148;                        // 0x148 helper geometry
-    void *f_14c;                        // 0x14c current enemy
-    void *f_150;                        // 0x150 previous enemy
-    void *f_154;                        // 0x154 host KIPlayer
-    void *f_158;                        // 0x158 host offset Vector
-    void *f_15c;
-    unsigned char _pad_160[0x168 - 0x160];
+    Player *player;                     // +0x4   underlying Player
+    AEGeometry *geometry;               // +0x8   main geometry
+    AEGeometry *parentGeometry;         // +0xc   parent/owner geometry
+    unsigned char _pad_10[0x25 - 0x10];
+    uint8_t turretEnabled;              // +0x25  turret logic active flag
+    unsigned char _pad_26[0x28 - 0x26];
+    uint32_t standing;                  // +0x28  faction/standing id (KIPlayer shipGroup)
+    unsigned char _pad_2c[0x2c - 0x2c];
+    AbyssEngine::AEMath::Vector position; // +0x2c  cached world position
+    unsigned char _pad_38[0x3e - 0x38];
+    uint8_t field_0x3e;                 // +0x3e  set in ctor
+    uint8_t isSentryGun;                // +0x3f  sentry-gun vs turret discriminator
+    unsigned char _pad_40[0x4c - 0x40];
+    uint8_t lootSpawned;                // +0x4c  crate/loot spawned flag
+    unsigned char _pad_4d[0x50 - 0x4d];
+    Array<int> *loot;                   // +0x50  loot/crate id list (KIPlayer cargo)
+    void *level;                        // +0x54  Level / particle-system manager
+    float posX;                         // +0x58  KIPlayer cached position X
+    float posY;                         // +0x5c  KIPlayer cached position Y
+    float posZ;                         // +0x60  KIPlayer cached position Z
+    unsigned char _pad_64[0x74 - 0x64];
+    int field_0x74;                     // +0x74  KIPlayer flag (set on fighter-turret creation)
+    AEGeometry *visibleGeometry;        // +0x78  visible geometry (KIPlayer crateGeometry)
+    unsigned char _pad_7c[0x88 - 0x7c];
+    int state;                          // +0x88  render/lifecycle state
+    unsigned char _pad_8c[0x90 - 0x8c];
+    AbyssEngine::AEMath::Vector hostWorldOffset; // +0x90  host offset rotated into world space
+    unsigned char _pad_9c[0x9c - 0x9c];
+    AbyssEngine::AEMath::Vector aimPoint; // +0x9c  current aim/target point
+    unsigned char _pad_a8[0xd8 - 0xa8];
+    int field_0xd8;                     // +0xd8  reset to 0 on revive
+    unsigned char _pad_dc[0xf5 - 0xdc];
+    uint8_t visibleFlag;                // +0xf5  KIPlayer visibility flag
+    unsigned char _pad_f6[0x124 - 0xf6];
+
+    // ---- PlayerTurret-specific members ----
+    int frameDelta;                     // +0x124 last update delta (ms)
+    int spawnInvulnTimer;               // +0x128 spawn invulnerability timer
+    int explosionTimer;                 // +0x12c death/explosion timer
+    int pickEnemyTimer;                 // +0x130 enemy re-acquisition / fire timer
+    int rotationAccum;                  // +0x134 main-geometry rotation accumulator
+    int particleSystemId;               // +0x138 engine/death particle system id
+    Explosion *explosion;               // +0x13c death explosion
+    AEGeometry *baseGeometry;           // +0x140 base geometry
+    AEGeometry *turretGeometry;         // +0x144 turret (barrel) geometry
+    AEGeometry *helperGeometry;         // +0x148 helper/pivot geometry
+    Player *currentEnemy;               // +0x14c current target
+    Player *previousEnemy;              // +0x150 previous target
+    KIPlayer *host;                     // +0x154 host KIPlayer (mounted ship)
+    AbyssEngine::AEMath::Vector hostOffset; // +0x158 mount offset relative to host
+    int turretRange;                    // +0x164 max acquisition range
 
     PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z);
     ~PlayerTurret() noexcept(false);
