@@ -8,8 +8,6 @@
 using AbyssEngine::PaintCanvas;
 
 extern "C" void *ScrollTouchBox_dtor(void *self);
-extern "C" void String_ctor_cstr(void *dst, const char *text, bool copy);
-extern "C" void String_ctor_default(void *self);
 extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
 
 // Layout fields (a global UI metrics object) are still accessed by byte offset since the
@@ -66,7 +64,7 @@ ScrollTouchWindow::~ScrollTouchWindow()
         ::operator delete(ScrollTouchBox_dtor(box));
     }
     this->scrollBox = 0;
-    ((String *)(&this->title))->dtor();
+    this->title.dtor();
 }
 
 void ScrollTouchWindow::update(int dt)
@@ -120,11 +118,10 @@ void ScrollTouchWindow::draw()
         void **layoutHolder = g_STW_layout_draw_window;
         void *layout = *layoutHolder;
         {
-            char title[sizeof(AbyssEngine::String)];
-            ((String *)(title))->ctor_copy(&this->title, false);
-            ((Layout *)layout)->drawWindow7((AbyssEngine::String *)title, this->x, this->y,
+            String title;
+            title.ctor_copy(&this->title, false);
+            ((Layout *)layout)->drawWindow7(&title, this->x, this->y,
                               this->width, this->height, 1);
-            ((String *)(title))->dtor();
         }
         layout = *layoutHolder;
         contentHeight = this->height - LayoutI(layout, 0x2c) * 2;
@@ -182,20 +179,17 @@ void ScrollTouchWindow::drawTextBG()
         heightInset = p * 2;
     }
     int h = this->height;
-    char text[sizeof(AbyssEngine::String)];
-    String_ctor_cstr(text, g_STW_empty_drawTextBG, false);
-    ((Layout *)(layout))->drawBox(5, x, pad + y, w - widthInset, h - heightInset, (AbyssEngine::String *)text, 0);
-    ((String *)(text))->dtor();
+    String text(g_STW_empty_drawTextBG);
+    ((Layout *)(layout))->drawBox(5, x, pad + y, w - widthInset, h - heightInset, &text, 0);
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text)
 {
     {
         void *box = this->scrollBox;
-        char tmp[sizeof(AbyssEngine::String)];
-        ((String *)(tmp))->ctor_copy(&text, false);
-        ((ScrollTouchBox *)(box))->setText(*(AbyssEngine::String *)tmp);
-        ((String *)(tmp))->dtor();
+        String tmp;
+        tmp.ctor_copy(&text, false);
+        ((ScrollTouchBox *)(box))->setText(tmp);
     }
     this->title = title;
 }
@@ -204,7 +198,7 @@ __attribute__((visibility("hidden"))) extern void **g_STW_layout_174128;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
 {
-    String_ctor_default(&this->title);
+    this->title.ctor();
     this->x = x;
     this->y = y;
     this->width = w;
@@ -234,10 +228,9 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
 {
     {
         void *box = this->scrollBox;
-        char tmp[sizeof(AbyssEngine::String)];
-        ((String *)(tmp))->ctor_copy(&text, false);
-        ((ScrollTouchBox *)(box))->setTextColor((AbyssEngine::String *)tmp, color);
-        ((String *)(tmp))->dtor();
+        String tmp;
+        tmp.ctor_copy(&text, false);
+        ((ScrollTouchBox *)(box))->setTextColor(&tmp, color);
     }
     this->title = title;
 }
@@ -246,7 +239,7 @@ __attribute__((visibility("hidden"))) extern void **g_STW_layout_1741c0;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h)
 {
-    String_ctor_default(&this->title);
+    this->title.ctor();
     this->x = x;
     this->y = y;
     this->width = w;

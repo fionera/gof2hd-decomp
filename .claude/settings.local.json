@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ghidra__list_open_programs",
+      "mcp__ghidra__search_functions"
+    ]
+  }
+}

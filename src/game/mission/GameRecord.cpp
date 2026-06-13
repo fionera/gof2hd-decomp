@@ -17,8 +17,8 @@ GameRecord::~GameRecord()
 
     // Destroy the two embedded AbyssEngine::String members (last constructed
     // first): the slot at +0x194 then the slot at +0x188.
-    AEString_dtor(t + 0x194);
-    AEString_dtor(t + 0x188);
+    ((String *)(t + 0x194))->dtor();
+    ((String *)(t + 0x188))->dtor();
 }
 
 // GameRecord::GameRecord()
@@ -27,8 +27,8 @@ GameRecord::GameRecord()
     char *t = (char *)this;
 
     // Two embedded AbyssEngine::String members, default-constructed first.
-    AEString_ctor(t + 0x188);
-    AEString_ctor(t + 0x194);
+    ((String *)(t + 0x188))->ctor();
+    ((String *)(t + 0x194))->ctor();
 
     // Heap buffer at +0x00.
     void *buf = ::operator new[](0x87);
@@ -85,8 +85,6 @@ static inline uint64_t CONCAT44(uint32_t hi, uint32_t lo)
 static inline uint8_t SUB41(uint32_t v, int) { return (uint8_t)v; }
 
 extern "C" {
-void *AEString_assign(void *self, const void *other);
-void AEString_dtor(void *self);
 long Array_dtor(void *self);
 long Mission_ctor(...);
 long Station_getIndex(...);
@@ -108,7 +106,6 @@ extern uint32_t DAT_00166470;
 
 void GameRecord::load() {
     uint32_t *in_r0 = (uint32_t *)this;
-    char gr_tmpstr[12];  // hidden String return slot (Station::getName)
     bool bVar1;
     int iVar2;
     char *pMVar3;

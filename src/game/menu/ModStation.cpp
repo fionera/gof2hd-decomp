@@ -65,7 +65,6 @@ extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
 extern "C" void ModStation_dtor_finish(ModStation *self);
-extern "C" void ModStation_String_dtor(void *s);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
 extern "C" void *cm_op_new(unsigned int sz);
@@ -504,7 +503,7 @@ ModStation * ModStation::dtor_inner() {
     ModStation *self = this;
     *(void **)self = (char *)ModStation_vtable + 8;
     ((ModStation *)(self))->OnRelease();
-    ModStation_String_dtor((char *)self + 0x38);
+    ((String *)((char *)self + 0x38))->dtor();
     return self;
 }
 
@@ -3145,11 +3144,6 @@ extern "C" void ModStation_op_delete(void *p) {
 // returned `this`; the terminal tail-branch releases the storage.
 extern "C" void ModStation_dtor_finish(ModStation *self) {
     ::operator delete(self);
-}
-
-// The String member at +0x38 is torn down through its destructor.
-extern "C" void ModStation_String_dtor(void *s) {
-    ((String *)s)->~String();
 }
 
 // autosave(): once the slot-0 record + preview have been written, the docked

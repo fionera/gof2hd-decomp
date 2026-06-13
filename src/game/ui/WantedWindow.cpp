@@ -673,8 +673,6 @@ int WantedWindow::init() {
     return 1;
 }
 
-__attribute__((visibility("hidden"))) extern void (*g_WantedWindow_string_dtor)(void *);
-
 WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
 {
     if (self->imageParts != 0) {
@@ -712,13 +710,12 @@ WantedWindow *_ZN12WantedWindowD2Ev(WantedWindow *self)
     }
     self->scrollWindow = 0;
 
-    void (*stringDtor)(void *) = g_WantedWindow_string_dtor;
-    stringDtor((char *)self + 0x78);
-    stringDtor((char *)self + 0x6c);
-    stringDtor((char *)self + 0x60);
-    stringDtor((char *)self + 0x54);
-    stringDtor((char *)self + 0x48);
-    stringDtor((char *)self + 0x3c);
+    ((String *)((char *)self + 0x78))->dtor();
+    ((String *)((char *)self + 0x6c))->dtor();
+    ((String *)((char *)self + 0x60))->dtor();
+    ((String *)((char *)self + 0x54))->dtor();
+    ((String *)((char *)self + 0x48))->dtor();
+    ((String *)((char *)self + 0x3c))->dtor();
     return self;
 }
 

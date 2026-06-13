@@ -228,14 +228,8 @@ extern "C" int paintcanvas_ext_fc_fontheight(void *font);
 extern "C" void paintcanvas_ext_set_reslist(void *, unsigned int, void *);
 extern "C" void paintcanvas_ext_child_link(void *, void *, void *);
 extern "C" void paintcanvas_ext_transform_dirty(void *);
-extern "C" char *tcg_String_GetAEChar(AbyssEngine::String *name);
 extern "C" void tcg_glActiveTexture(unsigned unit);
 extern "C" void tcg_glBindTexture(unsigned target, unsigned tex);
-extern "C" void grs_String_ctor_copy(String *self, const String *other, bool copy);
-extern "C" void grs_String_ctor_cstr(String *self, const char *text, bool copy);
-extern "C" void grs_String_substr(String *out, const String *self, unsigned begin, unsigned end);
-extern "C" void grs_String_append(String *self, const String *other);
-extern "C" void grs_String_dtor(String *self);
 extern "C" int paintcanvas_ext_ss2_sscreate(void *eng, unsigned short id, bool b, void **out);
 extern "C" void paintcanvas_ext_ss2_matcreate(void *self, unsigned short id, unsigned int *out);
 extern "C" void paintcanvas_ext_gsp_vec_assign(void *dst, void *src);
@@ -258,8 +252,6 @@ extern "C" void paintcanvas_ext_tami_bsphere_merge(void *dst, void *src);
 extern "C" void paintcanvas_ext_tami_setanimlen(void *tf, int hi, int lo);
 extern "C" void paintcanvas_ext_tami_setanimstate(void *tf, int a, int b);
 extern "C" void paintcanvas_ext_tami_finalize(void *tf);
-extern "C" void grs2_String_ctor_copy(String *self, const String *other, bool copy);
-extern "C" void grs2_String_dtor(String *self);
 extern "C" void grs2_GetReverseString_impl(String *out, unsigned r1, String *tmp, int reverse);
 extern "C" void paintcanvas_ext_get_accel(void *);
 extern "C" int paintcanvas_ext_rpm_dispwidth(void *eng);
@@ -2175,7 +2167,7 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String *name, int unit)
     int *canary = *g_tcg_canary;
     int saved = *canary;
 
-    char *path = tcg_String_GetAEChar(name);
+    char *path = ((String *)name)->GetAEChar();
     unsigned outId;
     int rc = tcg_TextureCreateFromFile(this->field_0x34, path, 0, 0, &outId, false,
                                        0.0f);
@@ -2242,15 +2234,14 @@ void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine
     int saved = *canary;
 
     if (reverse == 0) {
-        grs_String_ctor_copy(out, in, false);
+        ((String *)out)->ctor_copy((String *)in, false);
     } else {
-        grs_String_ctor_cstr(out, g_grs_empty, false);
+        ((String *)out)->ctor_char(g_grs_empty, false);
         int i = (int)in->size();
         while (--i >= 0) {
             String piece;
-            grs_String_substr(&piece, in, (unsigned)i, (unsigned)(i + 1));
-            grs_String_append(out, &piece);
-            grs_String_dtor(&piece);
+            ((String *)&piece)->SubString((String *)in, (unsigned)i, (unsigned)(i + 1));
+            ((String *)out)->addAssign_str((String *)&piece);
         }
     }
 
@@ -2525,9 +2516,9 @@ void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String 
     int saved = *canary;
 
     String tmp;
-    grs2_String_ctor_copy(&tmp, in, false);
+    ((String *)&tmp)->ctor_copy((String *)in, false);
     grs2_GetReverseString_impl(out, 0, &tmp, *(char *)((char *)(unsigned long)param2 + 0x1c) == 0);
-    grs2_String_dtor(&tmp);
+    ((String *)&tmp)->dtor();
 
     
 }

@@ -5,9 +5,6 @@
 static inline void *&meshPtr(void *m, int off) { return *(void **)((char *)m + off); }
 static inline unsigned int &meshU32(void *m, int off) { return *(unsigned int *)((char *)m + off); }
 
-// String(const char*, bool) ctor -- provided by the engine (no in-tree definition).
-extern "C" void String_ctor_cstr(String *self, const char *text, bool copy);
-
 void TextureAlphaTestShader::Init(Engine *)
 {
     int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("TextureAlphaTestShader.vsh", "TextureAlphaTestShader.fsh");
@@ -110,15 +107,14 @@ void TextureAlphaTestShader::ConnectShaderComponents(int program, int index)
 
 TextureAlphaTestShader::TextureAlphaTestShader()
 {
-    uint32_t storage[4];
+    String name;
 
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
     *(char *volatile *)this = g_TextureAlphaTestShader_vtable + 8;
     g_TextureAlphaTestShader_staticDest = g_TextureAlphaTestShader_staticSource;
 
-    String_ctor_cstr((String *)storage, "TextureAlphaTestShader", false);
-    string_at(this, 0x0c) = *(String *)storage;
-    ((String *)storage)->~String();
+    name.ctor_char("TextureAlphaTestShader", false);
+    string_at(this, 0x0c) = name;
 
     return;
 }

@@ -8,7 +8,6 @@
 
 extern "C" void glDisableVertexAttribArray(unsigned int index);
 extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
-extern "C" void String_ctor_text(void *self, const char *text, bool copy);
 extern "C" char BlurShader_vtable[];
 extern "C" void *BlurShader_typeinfo_source[];
 extern "C" void *BlurShader_typeinfo_dest[];
@@ -48,9 +47,8 @@ AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
     void **dest = BlurShader_typeinfo_dest;
     *(void **)self = BlurShader_vtable + 8;
     *dest = *source;
-    ((String *)(&name))->ctor_char("BlurShader", false);
+    name.ctor_char("BlurShader", false);
     ((String *)((char *)self + 0xc))->assign(&name);
-    ((String *)(&name))->dtor();
     self->strength = 0x92006800;
     self->blurScale = 0x40000000;
     return self;

@@ -31,11 +31,6 @@ extern "C" void _mtw_Array_StrArr_ctor(void *p);
 extern "C" void _mtw_Array_Str_ctor(void *p);
 extern "C" void _mtw_ArraySetLength_StrArr(int n, void *arr);
 extern "C" void _mtw_ArraySetLength_Str(int n, void *arr);
-extern "C" void _mtw_String_ctor_empty(void *s);
-extern "C" void _mtw_String_ctor_copy(void *s, void *src, bool b);
-extern "C" void _mtw_String_ctor_cstr(void *s, const char *cstr, bool b);
-extern "C" void _mtw_String_ctor_from(void *s, int src);
-extern "C" void _mtw_String_dtor(void *s);
 extern "C" void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out);
 extern "C" void _mtw_Layout_formatCredits(void *out);
 extern "C" void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type);
@@ -475,52 +470,52 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
         *(void **)(i32(pp(this, 0x100), 4) + i * 4) = row;
         _mtw_ArraySetLength_Str(6, *(void **)(i32(pp(this, 0x100), 4) + i * 4));
 
-        char s48[12]; _mtw_String_ctor_empty(s48);
-        char s54[12];
+        String s48; s48.ctor();
+        String s54;
 
         void *rec = pp(this, 0xbc);
         bool empty = (rec == 0) || (*(int *)(i32(rec, 4) + i * 4) == 0);
 
         if (empty) {
-            _mtw_String_ctor_empty(s54);
+            s54.ctor();
             _mtw_Globals_longToTimeStringNoSeconds((long long)(int)(long)timeHolder, 0);
             void *e;
             int *rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4);
 
-            e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false); ((void **)rowData)[0] = e;
-            e = ::operator new(0xc); _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
+            e = ::operator new(0xc); ((String *)e)->ctor_copy(&s54, false); ((void **)rowData)[0] = e;
+            e = ::operator new(0xc); ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
-            if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
-            else _mtw_String_ctor_cstr(e, gCrbDash, false);
+            if (i == 0) ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
+            else ((String *)e)->ctor_char(gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
-            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[3] = e;
 
-            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = e;
 
-            e = ::operator new(0xc); _mtw_String_ctor_cstr(e, gCrbDash, false);
+            e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
         } else {
-            _mtw_String_ctor_empty(s54);
+            s54.ctor();
             int slot = *(int *)(i32(rec, 4) + i * 4);
             _mtw_Globals_longToTimeStringNoSeconds((long long)slot, *(void **)(slot + 0x10));
             void *e;
             int *rowData;
 
-            e = ::operator new(0xc); _mtw_String_ctor_copy(e, s54, false);
+            e = ::operator new(0xc); ((String *)e)->ctor_copy(&s54, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[0] = e;
 
             e = ::operator new(0xc);
-            _mtw_String_ctor_copy(e, (void *)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x194), false);
+            ((String *)e)->ctor_copy((String *)(void *)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x194), false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
-            if (i == 0) _mtw_String_ctor_copy(e, _mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
-            else _mtw_String_ctor_cstr(e, gCrbDash, false);
+            if (i == 0) ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
+            else ((String *)e)->ctor_char(gCrbDash, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[2] = e;
 
             void *credits = ::operator new(0xc);
@@ -530,14 +525,11 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             // build "Kills: " + value string
             void *combined = ::operator new(0xc);
             void *label = _mtw_GameText_getText(*(void **)gtHolder, 0x141);
-            char s6c[12]; _mtw_String_ctor_cstr(s6c, gCrbDash, false);
-            char s60[12]; _mtw_String_op_plus(s60, label);
-            char s78[12]; _mtw_String_ctor_from(s78, *(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x20);
-            _mtw_String_op_plus(combined, s60);
+            String s6c; s6c.ctor_char(gCrbDash, false);
+            String s60; _mtw_String_op_plus(&s60, label);
+            String s78; s78.ctor_copy((String *)(long)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x20), false);
+            _mtw_String_op_plus(combined, &s60);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[4] = combined;
-            _mtw_String_dtor(s78);
-            _mtw_String_dtor(s60);
-            _mtw_String_dtor(s6c);
 
             e = ::operator new(0xc);
             float rank = *(float *)(*(int *)(i32(pp(this, 0xbc), 4) + i * 4) + 0x11c);
@@ -546,12 +538,9 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             else if (rank <= 0.5f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else if (rank <= 1.0f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x19);
-            _mtw_String_ctor_copy(e, rankTxt, false);
+            ((String *)e)->ctor_copy((String *)rankTxt, false);
             rowData = (int *)i32(*(void **)(i32(pp(this, 0x100), 4) + i * 4), 4); ((void **)rowData)[5] = e;
         }
-
-        _mtw_String_dtor(s54);
-        _mtw_String_dtor(s48);
     }
 
     // OK button (+0xc4)
@@ -1809,10 +1798,9 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 
         ((PaintCanvas *)canvas)->SetColor(color);
         int boxX = layout[0xa] + i32(this, 0x198);
-        char box[12]; _mtw_String_ctor_cstr(box, gDlsBoxStr, false);
+        String box; box.ctor_char(gDlsBoxStr, false);
         int mode = (i == i32(this, 0x18c)) ? 4 : 3;
-        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout[0x1c], box);
-        _mtw_String_dtor(box);
+        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout[0x1c], &box);
 
         void *font = *(void **)*(void **)gDlsFont;
         int yName = strip58 + rowY;

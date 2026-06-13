@@ -440,9 +440,6 @@ extern FileInterface *g_AEFile_fileInterface;
 extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 extern char g_AELowLevelNativeFile_vtable[];
 
-typedef void (*StringDestructor)(String *);
-extern StringDestructor g_AEString_destructor;
-
 __attribute__((minsize)) uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
@@ -470,10 +467,6 @@ __attribute__((minsize)) uint32_t AEFile::Open(String &path, FileOpenType openTy
                     String oldPath; AEStr_init(&oldPath, path);
                     String newPath = prefix + oldPath;
                     path = newPath;
-                    StringDestructor destruct = g_AEString_destructor;
-                    destruct(&newPath);
-                    destruct(&oldPath);
-                    destruct(&prefix);
                 }
                 file = findPakFile(path);
                 if (file == 0) {

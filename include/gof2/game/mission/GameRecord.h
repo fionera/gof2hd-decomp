@@ -15,13 +15,6 @@ void __aeabi_memcpy(void *dst, const void *src, uint32_t n);
 void __aeabi_memclr8(void *dst, uint32_t n);
 void __aeabi_memclr4(void *dst, uint32_t n);
 void __aeabi_memclr(void *dst, uint32_t n);
-
-// AbyssEngine::String methods operating on a raw String slot (12-byte aggregate).
-void *AEString_ctor(void *self);
-void *AEString_ctor_cstr(void *self, const char *text, bool copy);
-void *AEString_assign(void *self, const void *other);
-void AEString_dtor(void *self);
-uint32_t AEString_GetStringLength(const char *s);
 }
 
 class GameRecord {

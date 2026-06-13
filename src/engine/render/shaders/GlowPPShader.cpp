@@ -8,18 +8,10 @@ extern "C" void *operator_new_0(uint32_t size);
 extern "C" void *operator_new_1(uint32_t size);
 extern "C" void *operator_new_2(uint32_t size);
 extern "C" void *operator_new_3(uint32_t size);
-extern "C" void String_ctor_char_0(String *self, const char *text, bool copy);
-extern "C" void String_ctor_char_1(String *self, const char *text, bool copy);
-extern "C" void String_ctor_char_2(String *self, const char *text, bool copy);
-extern "C" void String_ctor_char_3(String *self, const char *text, bool copy);
 extern "C" void FBOContainer_ctor_0(FBOContainer *self, Engine *engine, String *name);
 extern "C" void FBOContainer_ctor_1(FBOContainer *self, Engine *engine, String *name);
 extern "C" void FBOContainer_ctor_2(FBOContainer *self, Engine *engine, String *name);
 extern "C" void FBOContainer_ctor_3(FBOContainer *self, Engine *engine, String *name);
-extern "C" void String_dtor_0(String *self);
-extern "C" void String_dtor_1(String *self);
-extern "C" void String_dtor_2(String *self);
-extern "C" void String_dtor_3(String *self);
 extern "C" void FBOContainer_Create_0(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
 extern "C" void FBOContainer_Create_1(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
 extern "C" void FBOContainer_Create_2(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
@@ -256,31 +248,31 @@ void GlowPPShader::InternalInit(Engine *engine) {
     String name3;
 
     FBOContainer *fbo = (FBOContainer *)operator_new_0(0x38);
-    String_ctor_char_0(&name0, "GlowPPShader0", false);
+    name0.ctor_char("GlowPPShader0", false);
     FBOContainer_ctor_0(fbo, engine, &name0);
     this->copyTarget = fbo;
-    String_dtor_0(&name0);
+    name0.dtor();
     FBOContainer_Create_0(this->copyTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_1(0x38);
-    String_ctor_char_1(&name1, "GlowPPShader1", false);
+    name1.ctor_char("GlowPPShader1", false);
     FBOContainer_ctor_1(fbo, engine, &name1);
     this->blurXTarget = fbo;
-    String_dtor_1(&name1);
+    name1.dtor();
     FBOContainer_Create_1(this->blurXTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_2(0x38);
-    String_ctor_char_2(&name2, "GlowPPShader2", false);
+    name2.ctor_char("GlowPPShader2", false);
     FBOContainer_ctor_2(fbo, engine, &name2);
     this->blurYTarget = fbo;
-    String_dtor_2(&name2);
+    name2.dtor();
     FBOContainer_Create_2(this->blurYTarget, 0x200, 0x200, true, false);
 
     fbo = (FBOContainer *)operator_new_3(0x38);
-    String_ctor_char_3(&name3, "GlowPPShader3", false);
+    name3.ctor_char("GlowPPShader3", false);
     FBOContainer_ctor_3(fbo, engine, &name3);
     this->backgroundTarget = fbo;
-    String_dtor_3(&name3);
+    name3.dtor();
     FBOContainer_Create_3(this->backgroundTarget, 0x200, 0x200, true, false);
 
     return;
@@ -346,15 +338,14 @@ void GlowPPShader::Init() {
 
 GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
 {
-    void *name[3];
-    name[0] = self;
+    String name;
     new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
     void **source = (void **)GlowPPShader_typeinfo_source;
     void **dest = (void **)GlowPPShader_typeinfo_dest;
     *(void **)self = (char *)GlowPPShader_vtable + 8;
     *dest = *source;
-    ((String *)((String *)name))->ctor_char("GlowPPShader", false);
-    ((String *)((String *)((char *)self + 0xc)))->assign((String *)name);
-    ((String *)((String *)name))->dtor();
+    name.ctor_char("GlowPPShader", false);
+    ((String *)((String *)((char *)self + 0xc)))->assign(&name);
+    name.dtor();
     return self;
 }

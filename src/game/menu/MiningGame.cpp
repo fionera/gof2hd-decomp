@@ -26,11 +26,6 @@ extern "C" void MiningGame_MarqueeImage_draw(void *self);
 extern "C" void MiningGame_MarqueeImage_drawAt(void *self, int x, int y);
 extern "C" void MiningGame_Sprite_setRefPixelPosition(void *sprite, int x, int y);
 extern "C" void MiningGame_Sprite_draw(void *sprite, float sx, float sy);
-extern "C" void MiningGame_String_ctor_int(String *self, int value);
-extern "C" void MiningGame_String_ctor_char(String *self, const char *text, bool copy);
-extern "C" void MiningGame_String_ctor_copy(String *self, const String *other, bool copy);
-extern "C" void MiningGame_String_plus(String *out, const String *lhs, const String *rhs);
-extern "C" void MiningGame_String_dtor(String *self);
 extern "C" void *MiningGame_Status_getShip_render(void *status);
 extern "C" int MiningGame_Ship_getFreeSpace(void *ship);
 extern "C" int MiningGame_Status_getCurrentCampaignMission_render(void *status);
@@ -495,11 +490,11 @@ void MiningGame::render2D()
                                          (int)((this->posX + (float)this->oreIconOffsetX) - (float)I(layout, 0xfc)),
                                          (int)(this->posY - (float)I(layout, 0x100)));
 
-    MiningGame_String_ctor_int(amountText, (int)this->oreAmount);
-    MiningGame_String_ctor_char(suffixText, g_MiningGame_oreSuffix, false);
-    MiningGame_String_plus(oreText, amountText, suffixText);
-    MiningGame_String_dtor(suffixText);
-    MiningGame_String_dtor(amountText);
+    amountText->ctor_int((int)this->oreAmount);
+    suffixText->ctor_char(g_MiningGame_oreSuffix, false);
+    *oreText = *amountText + *suffixText;
+    suffixText->dtor();
+    amountText->dtor();
 
     void *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
@@ -526,15 +521,15 @@ void MiningGame::render2D()
         }
         ((PaintCanvas *)canvas)->SetColor((unsigned char)0xff, (unsigned char)0xff, (unsigned char)0xff, (unsigned char)(uint8_t)promptAlpha);
         String *prompt = MiningGame_GameText_getText(*g_MiningGame_gameText, 0x268);
-        MiningGame_String_ctor_copy(amountText, prompt, false);
+        amountText->ctor_copy(prompt, false);
         int promptWidth = ((PaintCanvas *)canvas)->GetTextWidth((unsigned int)(long)font, amountText);
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, (void *)amountText, *g_MiningGame_screenWRender / 2 - promptWidth / 2,
                                             I(layout, 0x70) + this->progressBarY, false);
         ((PaintCanvas *)canvas)->SetColor((unsigned int)-1);
-        MiningGame_String_dtor(amountText);
+        amountText->dtor();
     }
 
-    MiningGame_String_dtor(oreText);
+    oreText->dtor();
 }
 
 // ---- C-ABI ctor/dtor/arith wrappers (recovered shims) ----

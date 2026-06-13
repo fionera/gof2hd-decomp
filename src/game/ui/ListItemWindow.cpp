@@ -15,9 +15,7 @@ extern "C" void _liw_stw_OnTouchMove(void *stw, int y);
 extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
 extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
 extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
-extern "C" void  Str_dtor(Str *s);
 extern "C" int   aeabi_idiv_(int a, int b);
-extern "C" void _liw_String_ctor(void *s);
 extern "C" void _liw_Matrix_ctor(void *m);
 
 // Base sub-window at +0x18.
@@ -270,7 +268,6 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
 }
 
 extern "C" void *_liw_STW_dtor(void *w);
-extern "C" void  _liw_String_dtor(void *s);
 
 // ListItemWindow::~ListItemWindow()
 ListItemWindow::~ListItemWindow()
@@ -299,13 +296,9 @@ ListItemWindow::~ListItemWindow()
     }
     if (pp(this, 0x18)) operator delete(_liw_STW_dtor(pp(this, 0x18)));
     pp(this, 0x18) = 0;
-    _liw_String_dtor((char *)this + 0x80);
-    _liw_String_dtor((char *)this + 0x74);
+    ((String *)((char *)this + 0x80))->dtor();
+    ((String *)((char *)this + 0x74))->dtor();
 }
-
-// String is a 12-byte trivially-copyable value (ctor/dtor are engine calls).
-extern "C" void  Str_ctor_cstr(Str *s, const char *text, bool copy); // 0x6ee18 family
-extern "C" void  Str_ctor_copy(Str *s, const void *src, bool copy);  // String(String&)
 
 // Layout / drawing callees (resolved blx targets).
 // 8-arg form
@@ -339,20 +332,17 @@ void ListItemWindow::draw()
     ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c));
 
     {
-        Str s; Str_ctor_cstr(&s, "", false);
+        String s; s.ctor_char("", false);
         ((Layout *)(layout))->drawBox(2, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
-        Str_dtor(&s);
     }
     if (masked) {
-        Str s; Str_ctor_cstr(&s, "", false);
+        String s; s.ctor_char("", false);
         ((Layout *)(layout))->drawBox(7, i32(this, 0x64), i32(this, 0x68), i32(this, 0x6c), i32(this, 0x70), &s, 0);
-        Str_dtor(&s);
     }
 
     {
-        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
         ((Layout *)(layout))->drawHeader1(&s);
-        Str_dtor(&s);
     }
 
     void *li = pp(this, 0x14);
@@ -368,9 +358,8 @@ void ListItemWindow::draw()
             int color = i32(L, 0x5c);
             int textId = *g_liw_d_headerId;
             ((Ship *)(0))->getIndex();
-            Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+            String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(textId), false);
             ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
-            Str_dtor(&s);
 
             void *fac = *g_liw_d_imageFactory;
             int shipIdx = ((Ship *)(0))->getIndex();
@@ -383,9 +372,8 @@ void ListItemWindow::draw()
         int color = i32(L, 0x5c);
         int textId = *g_liw_d_headerId;
         ((ListItem *)(li))->getIndex();
-        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(textId), false);
         ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
-        Str_dtor(&s);
 
         void *itemPtr;
         if (((ListItem *)(li))->isItem() == 0) {
@@ -421,10 +409,9 @@ void ListItemWindow::draw()
         for (uint32_t i = 0; i < n; i++) {
             ((PaintCanvas *)(long)canvas)->SetColor(canvas);
             int color = i32(L, 0x1c);
-            Str s;
-            Str_ctor_copy(&s, (*rows)[i], false);
+            String s;
+            s.ctor_copy((*rows)[i], false);
             ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + i32(this, 0x64), ycur, (i32(this, 0x6c) >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
-            Str_dtor(&s);
             ((PaintCanvas *)(long)canvas)->SetColor(canvas);
 
             int textX, textY;
@@ -468,23 +455,20 @@ void ListItemWindow::draw()
 
     // Footer / progress.
     if (i32(this, 0x20) < 1) {
-        Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
         ((Layout *)(layout))->drawBox(1, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
-        Str_dtor(&s);
     } else {
         ((PaintCanvas *)(long)canvas)->SetColor(canvas);
         {
-            Str s; Str_ctor_cstr(&s, "", false);
+            String s; s.ctor_char("", false);
             ((Layout *)(layout))->drawBox(8, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20), ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(this, 0x20), &s, 0);
-            Str_dtor(&s);
         }
         int prog = i32(this, 0x20);
         int yBox = i32(this, 0x68) + i32(L, 0xc) + i32(L, 0x20);
         if (prog > 0) yBox = yBox + prog + i32(L, 0x2c);
         {
-            Str s; Str_ctor_copy(&s, ((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+            String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
             ((Layout *)(layout))->drawBox(0, i32(this, 0x64) + (i32(this, 0x6c) >> 1) + i32(L, 0x2c), yBox, ((i32(this, 0x6c) >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
-            Str_dtor(&s);
         }
         ((PaintCanvas *)(long)canvas)->SetColor(canvas);
         aeabi_idiv_(i32(this, 0x30), 3);
@@ -580,8 +564,8 @@ struct Vec4 { int a, b, c, d; };
 // ListItemWindow::ListItemWindow()
 ListItemWindow::ListItemWindow()
 {
-    _liw_String_ctor((char *)this + 0x74);
-    _liw_String_ctor((char *)this + 0x80);
+    ((String *)((char *)this + 0x74))->ctor();
+    ((String *)((char *)this + 0x80))->ctor();
     _liw_Matrix_ctor((char *)this + 0x98);
     _liw_Matrix_ctor((char *)this + 0xd4);
 

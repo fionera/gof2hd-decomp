@@ -3097,9 +3097,6 @@ void StarSystem_getLightDirection_cso(void *dst);
 // UNRECOVERED up-vector: AEGeometry::setDirection takes (dir, up); the binary's `up`
 // argument was not recovered at this call, so the single-direction shim is retained.
 int  GameText_getText_cso(int id);
-void String_assign_cso(String *dst, String *src);
-void String_ctor_cso(String *dst, String *src, int own);
-void String_dtor_cso(String *s);
 void PlayerFixedObject_setName_cso(PlayerFixedObject *o, String *n);
 void PlayerFixedObject_setDockingType_cso(PlayerFixedObject *o, int t);
 void Player_setAlwaysFriend_cso(Player *p, int flag);
@@ -3136,7 +3133,7 @@ void Level::createStaticObjects()
                 StarSystem_getLightDirection_cso(dir);
                 AEGeometry_setDirection_cso(geo, (Vector *)dir);
                 String *txt = (String *)GameText_getText_cso(**g_cso_textA);
-                String_assign_cso((String *)(o + 0x18), txt);
+                *(String *)(o + 0x18) = *txt;
                 Player_setAlwaysFriend_cso(*(Player **)(o + 4), 1);
                 void *arr = *(void **)(self + 0xf8);
                 if (arr == 0) {
@@ -3163,10 +3160,9 @@ void Level::createStaticObjects()
             PlayerFixedObject_setMoving_cso((PlayerFixedObject *)o, 0);
             *(char *)(o + 0x70) = 1;
             String *txt = (String *)GameText_getText_cso(**g_cso_textB);
-            char name[12];
-            String_ctor_cso((String *)name, txt, 0);
-            PlayerFixedObject_setName_cso((PlayerFixedObject *)o, (String *)name);
-            String_dtor_cso((String *)name);
+            String name;
+            name.ctor_copy(txt, 0);
+            PlayerFixedObject_setName_cso((PlayerFixedObject *)o, &name);
             PlayerFixedObject_setDockingType_cso((PlayerFixedObject *)o, 1);
             if (*(void **)(o + 0x50) != 0)
                 operator_delete_cso(Array_int_dtor_cso(*(void **)(o + 0x50)));
@@ -4072,7 +4068,6 @@ int  Globals_getRandomEnemyFighter_cwm(Globals *g, int race);
 void KIPlayer_setWingman_cwm(KIPlayer *k, int flag, unsigned slot);
 void Player_setAlwaysFriend_cwm(Player *p, int flag);
 void Player_setHitpoints_cwm(int p);
-void String_assign_cwm(String *dst, String *src);
 int  Status_getMission_cwm();
 int  Mission_getType_cwm();
 // Positions wingman `i` relative to the player's geometry (right/forward offsets) and sets its
@@ -4114,8 +4109,8 @@ void Level::createWingmen()
         Player_setHitpoints_cwm(*(int *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4));
 
         int wmList = Status_getWingmen_cwm();
-        String_assign_cwm((String *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x18),
-                          *(String **)(*(int *)(wmList + 4) + i * 4));
+        *(String *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x18) =
+            **(String **)(*(int *)(wmList + 4) + i * 4);
         *(int *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x28) = *(int *)(*statusB + 0x2c);
 
         Status_getMission_cwm();

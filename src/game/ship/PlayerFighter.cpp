@@ -73,9 +73,6 @@ static inline float AEMath_VectorLength(void *v) {
 }
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
-extern "C" void AEString_ctor_default(void *s);
-extern "C" void AEString_assign(void *dst, void *src);
-extern "C" void AEString_dtor(void *s);
 
 // Status singleton holder. The original code loads the Status* receiver from a PC-relative
 // global before each of these calls; the decompiler dropped that first (self) arg. We recover
@@ -1092,7 +1089,7 @@ void PlayerFighter::revive()
     }
     {
         String s;
-        AEString_ctor_default(&s);
+        s.ctor();
     }
     this->field_0x78 = 0;
     this->state = 1;

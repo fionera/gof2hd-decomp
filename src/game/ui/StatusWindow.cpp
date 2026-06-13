@@ -113,10 +113,6 @@ float StatusWindow::getRelativeScrollStartPos() {
 
 extern "C" {
 
-void String_fromC(void *s, const char *text, bool copy);
-void String_fromText(void *s, void *text, bool copy);
-void String_appendAssign(void *self, void *rhs);
-
 void Status_replaceHash(void *out, void *key, void *a, void *b);
 
 void Globals_getLineArray(void *globals, void *font, void *text, void *outArr);
@@ -185,27 +181,21 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 
                     int count = (elite == 0) ? medals[i32(this, 0x34)] : 1;
 
-                    char hdr[0xc], hdrTxt[0xc], valStr[0xc], valTmp[0xc], full[0xc], hint[0xc];
+                    String hdr, valStr, valTmp, full, hint;
                     void *key = *(void **)g_swe_status;
                     void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(i32(this, 0x34) + 0x610);
-                    String_fromText(hdr, t, false);
+                    hdr.ctor_copy((String *)t, false);
                     void *val = (void *)(__INTPTR_TYPE__)((Achievements *)(ach))->getValue(i32(this, 0x34), count);
-                    String_fromText(valStr, val, false);
-                    String_fromText(valTmp, valStr, false);
-                    Status_replaceHash(full, key, hdr, valTmp);
-                    ((String *)(valTmp))->dtor();
-                    ((String *)(valStr))->dtor();
-                    ((String *)(hdr))->dtor();
+                    valStr.ctor_copy((String *)val, false);
+                    valTmp.ctor_copy(&valStr, false);
+                    Status_replaceHash(&full, key, &hdr, &valTmp);
 
-                    StatusWindow_getMedalHintText(hint, i32(this, 0x34));
-                    String_appendAssign(full, hint);
-                    ((String *)(hint))->dtor();
+                    StatusWindow_getMedalHintText(&hint, i32(this, 0x34));
+                    full.addAssign_str(&hint);
 
-                    Globals_getLineArray(*(void **)g_swe_globals, *(void **)g_swe_font, full,
+                    Globals_getLineArray(*(void **)g_swe_globals, *(void **)g_swe_font, &full,
                                          (void *)(i32(this, 0x6c) - layout->field_0x4c * 2));
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
-                    ((String *)(full))->dtor();
-                    (void)hdrTxt;
                 }
                 break;
             }
@@ -215,17 +205,15 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     // Help button -> contextual help window for the current tab.
     if (((Layout *)(layout))->helpPressed() != 0) {
         if (i32(this, 0x30) == 1) {
-            char title[0xc];
+            String title;
             void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x287);
-            String_fromText(title, t, false);
-            ((Layout *)(layout))->initHelpWindow(title);
-            ((String *)(title))->dtor();
+            title.ctor_copy((String *)t, false);
+            ((Layout *)(layout))->initHelpWindow(&title);
         } else if (i32(this, 0x30) == 0) {
-            char title[0xc];
+            String title;
             void *t = ((GameText *)(*(void **)g_swe_gameText))->getText(0x280);
-            String_fromText(title, t, false);
-            ((Layout *)(layout))->initHelpWindow(title);
-            ((String *)(title))->dtor();
+            title.ctor_copy((String *)t, false);
+            ((Layout *)(layout))->initHelpWindow(&title);
         }
     }
 
@@ -315,14 +303,7 @@ void StatusWindow::update() {
     }
 }
 
-// Stack String slots are 0xc bytes; we drive them via the engine's String entry points.
 extern "C" {
-
-void String_default(void *s);                              // String::String()
-void String_fromC(void *s, const char *text, bool copy);   // String::String(char*, bool)
-// String::~String()
-void String_concat(void *out, void *lhs, void *rhs);       // out = lhs + rhs (operator+)
-void String_appendAssign(void *self, void *rhs);           // self += rhs (operator+=)
 
 extern void *g_swh_achievements; // *(DAT_169f68): achievements root
 extern void *g_swh_status;       // various *(DAT...): status/campaign singletons share this base
@@ -336,115 +317,95 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
     int *medals = ((Achievements *)(*(void **)g_swh_achievements))->getMedals();
     int state = medals[medalIndex];
 
-    String_default(outStr);
+    ((String *)outStr)->ctor();
 
     // Only "in-progress" (state == 2) medals get a detailed checklist.
     if (state != 0) {
-        char tmpA[0xc];  // intro/prefix line
-        char tmpB[0xc];  // concatenation scratch
+        String tmpA;  // intro/prefix line
+        String tmpB;  // concatenation scratch
 
         // Helper macro-ish: append GameText(id) prefixed by 'lead'.
         // Each branch builds one header then iterates over a sub-goal list.
         if (medalIndex == 2 && state == 2) {
-            String_fromC(tmpA, "\n", false);
+            tmpA.ctor_char("\n", false);
             void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
-            String_concat(tmpB, tmpA, hdr);
-            String_appendAssign(outStr, tmpB);
-            ((String *)(tmpB))->dtor();
-            ((String *)(tmpA))->dtor();
+            tmpB = tmpA + *(String *)hdr;
+            ((String *)outStr)->addAssign_str(&tmpB);
 
             void *base = *(void **)g_swh_status;
             unsigned int *list = *(unsigned int **)((char *)base + 0x94);
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
-                    String_fromC(tmpA, "\n", false);
+                    tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x594 + (int)i);
-                    String_concat(tmpB, tmpA, t);
-                    String_appendAssign(outStr, tmpB);
-                    ((String *)(tmpB))->dtor();
-                    ((String *)(tmpA))->dtor();
+                    tmpB = tmpA + *(String *)t;
+                    ((String *)outStr)->addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 3 && state == 2) {
-            String_fromC(tmpA, "\n", false);
+            tmpA.ctor_char("\n", false);
             void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
-            String_concat(tmpB, tmpA, hdr);
-            String_appendAssign(outStr, tmpB);
-            ((String *)(tmpB))->dtor();
-            ((String *)(tmpA))->dtor();
+            tmpB = tmpA + *(String *)hdr;
+            ((String *)outStr)->addAssign_str(&tmpB);
 
             void *base = *(void **)g_swh_status;
             unsigned int *list = *(unsigned int **)((char *)base + 0x98);
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
-                    String_fromC(tmpA, "\n", false);
+                    tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x59f + (int)i);
-                    String_concat(tmpB, tmpA, t);
-                    String_appendAssign(outStr, tmpB);
-                    ((String *)(tmpB))->dtor();
-                    ((String *)(tmpA))->dtor();
+                    tmpB = tmpA + *(String *)t;
+                    ((String *)outStr)->addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 9 && state == 2) {
-            String_fromC(tmpA, "\n", false);
+            tmpA.ctor_char("\n", false);
             void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
-            String_concat(tmpB, tmpA, hdr);
-            String_appendAssign(outStr, tmpB);
-            ((String *)(tmpB))->dtor();
-            ((String *)(tmpA))->dtor();
+            tmpB = tmpA + *(String *)hdr;
+            ((String *)outStr)->addAssign_str(&tmpB);
 
             void *base = *(void **)g_swh_status;
             unsigned int *list = *(unsigned int **)((char *)base + 0xac);
             for (unsigned int i = 0; i < *list; i++) {
                 if (*(char *)(list[1] + i) == 0) {
-                    String_fromC(tmpA, "\n", false);
+                    tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x57e + (int)i);
-                    String_concat(tmpB, tmpA, t);
-                    String_appendAssign(outStr, tmpB);
-                    ((String *)(tmpB))->dtor();
-                    ((String *)(tmpA))->dtor();
+                    tmpB = tmpA + *(String *)t;
+                    ((String *)outStr)->addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 0xd && state == 2) {
-            String_fromC(tmpA, "\n", false);
+            tmpA.ctor_char("\n", false);
             void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
-            String_concat(tmpB, tmpA, hdr);
-            String_appendAssign(outStr, tmpB);
-            ((String *)(tmpB))->dtor();
-            ((String *)(tmpA))->dtor();
+            tmpB = tmpA + *(String *)hdr;
+            ((String *)outStr)->addAssign_str(&tmpB);
 
             void *root = *(void **)g_swh_status;
             for (unsigned int i = 0; i < 0xd; i++) {
                 void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
                 if (*(char *)((char *)bp + 8) == 0) {
-                    String_fromC(tmpA, "\n", false);
+                    tmpA.ctor_char("\n", false);
                     int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
-                    String_concat(tmpB, tmpA, t);
-                    String_appendAssign(outStr, tmpB);
-                    ((String *)(tmpB))->dtor();
-                    ((String *)(tmpA))->dtor();
+                    tmpB = tmpA + *(String *)t;
+                    ((String *)outStr)->addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 0xe && state == 2) {
-            String_fromC(tmpA, "\n", false);
+            tmpA.ctor_char("\n", false);
             void *hdr = ((GameText *)(*(void **)g_swh_gameText))->getText(0x114);
-            String_concat(tmpB, tmpA, hdr);
-            String_appendAssign(outStr, tmpB);
-            ((String *)(tmpB))->dtor();
-            ((String *)(tmpA))->dtor();
+            tmpB = tmpA + *(String *)hdr;
+            ((String *)outStr)->addAssign_str(&tmpB);
 
             void *root = *(void **)g_swh_status;
             for (unsigned int i = 0; i < 0xd; i++) {
                 void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
                 if (*(int *)((char *)bp + 0xc) == 0) {
-                    String_fromC(tmpA, "\n", false);
+                    tmpA.ctor_char("\n", false);
                     int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
-                    String_concat(tmpB, tmpA, t);
-                    String_appendAssign(outStr, tmpB);
-                    ((String *)(tmpB))->dtor();
-                    ((String *)(tmpA))->dtor();
+                    tmpB = tmpA + *(String *)t;
+                    ((String *)outStr)->addAssign_str(&tmpB);
                 }
             }
         }
@@ -505,15 +466,6 @@ void StatusWindow::reInit() {
 // calls are reproduced faithfully. Repetitive DrawString blocks share the local helpers below.
 
 extern "C" {
-
-// String slots are 0xc bytes, driven via engine entry points.
-void String_default(void *s);
-void String_fromC(void *s, const char *text, bool copy);
-void String_fromInt(void *s, int value);
-void String_fromText(void *s, void *text, bool copy);
-void String_concatText(void *out, void *lhs);          // operator+(String, text)
-void String_concatInt(void *out, void *lhs, int *v);   // operator+(String, int)
-void String_subString(void *self, void *other);
 
 int   GameText_getLanguage();
 
@@ -577,13 +529,13 @@ void StatusWindow::draw() {
         colW = (colW - layout->field_0x48) - layout->field_0x2c;
     i32(this, 0x6c) = colW + layout->field_0x28 * -2;
 
-    char creditStr[0xc];
-    String_default(creditStr);
-    char sep[0xc];
+    String creditStr;
+    creditStr.ctor();
+    String sep;
     if (GameText_getLanguage() == 9)
-        String_fromC(sep, "\xa1", false);
+        sep.ctor_char("\xa1", false);
     else
-        String_fromC(sep, ":", false);
+        sep.ctor_char(":", false);
 
     int tab = i32(this, 0x30);
     char drewStats = 0;
@@ -593,73 +545,68 @@ void StatusWindow::draw() {
         int boxW = i32(this, 0x6c);
         int x0 = layout->field_0x28;
         int pad = layout->field_0x2c;
-        char lbl[0xc];
+        String lbl;
 
         void *t = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
-        String_fromText(lbl, t, false);
-        ((Layout *)(layout))->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl, 0);
-        ((String *)(lbl))->dtor();
+        lbl.ctor_copy((String *)t, false);
+        ((Layout *)(layout))->drawBox(0, x0, top, boxW, layout->field_0x1c, &lbl, 0);
 
         int y = layout->field_0x1c + top + pad;
 
         // Credits panel.
-        String_fromC(lbl, "", false);
-        ((Layout *)(layout))->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
-        ((String *)(lbl))->dtor();
+        lbl.ctor_char("", false);
+        ((Layout *)(layout))->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
         ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
-        char credTmp[0xc];
-        Layout_formatCredits(credTmp, ((Status *)(*(void **)g_swd_status))->getCredits());
-        ((String *)(creditStr))->assign((String *)credTmp);
-        ((String *)(credTmp))->dtor();
-        int tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
-        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        String credTmp;
+        Layout_formatCredits(&credTmp, ((Status *)(*(void **)g_swd_status))->getCredits());
+        creditStr.assign(&credTmp);
+        int tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Level line.
-        char lvlPrefix[0xc], lvlText[0xc], lvlFull[0xc];
+        String lvlPrefix, lvlText, lvlFull;
         void *lt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
-        String_fromC(lvlPrefix, " ", false);
-        String_concatText(lvlText, lt);
+        lvlPrefix.ctor_char(" ", false);
+        lvlText = *(String *)lt;
         int lvl = ((Status *)(*(void **)g_swd_status))->getLevel();
-        String_concatInt(lvlFull, lvlText, &lvl);
-        ((String *)(creditStr))->assign((String *)lvlFull);
-        ((String *)(lvlFull))->dtor(); ((String *)(lvlText))->dtor(); ((String *)(lvlPrefix))->dtor();
-        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
-        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        lvlFull = lvlText;
+        lvlFull.addAssign_int(&lvl);
+        creditStr.assign(&lvlFull);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Playing-time line.
-        char timeStr[0xc];
-        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, timeStr, ((Status *)(*(void **)g_swd_status))->getPlayingTime());
-        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
-        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        String timeStr;
+        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, &timeStr, ((Status *)(*(void **)g_swd_status))->getPlayingTime());
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Ship picture panel.
-        String_fromC(lbl, "", false);
-        ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
-        ((String *)(lbl))->dtor();
+        lbl.ctor_char("", false);
+        ((Layout *)(layout))->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
         ((ImageFactory *)(*(void **)g_swd_imageFactory))->drawShip(((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
         void *shipNameTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getIndex());
         ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
                                x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         // Fire-power line.
-        char fpStr[0xc], fpPre[0xc], fpFull[0xc];
+        String fpStr, fpPre, fpFull;
         int firePow = ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getFirePower();
-        String_fromInt(fpStr, (int)((float)firePow * 1.0f));
+        fpStr.ctor_int((int)((float)firePow * 1.0f));
         int fp2 = ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getFirePower();
-        String_fromC(fpPre, "%", false);
-        String_concatInt(fpFull, fpPre, &fp2);
-        String_concatText(fpStr, fpFull);
-        ((String *)(creditStr))->assign((String *)fpStr);
-        ((String *)(fpFull))->dtor(); ((String *)(fpPre))->dtor(); ((String *)(fpStr))->dtor();
-        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
-        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, creditStr, ((y + x0) - pad) - tw, y, false);
+        fpPre.ctor_char("%", false);
+        fpFull = fpPre;
+        fpFull.addAssign_int(&fp2);
+        fpStr = fpFull;
+        creditStr.assign(&fpStr);
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &creditStr, ((y + x0) - pad) - tw, y, false);
 
         // Combined-HP line.
-        char hpStr[0xc];
-        String_fromInt(hpStr, ((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getCombinedHP());
-        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, hpStr);
-        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, hpStr, ((y + x0) - pad) - tw, y, false);
-        ((String *)(hpStr))->dtor();
+        String hpStr;
+        hpStr.ctor_int(((Ship *)(((Status *)(*(void **)g_swd_status))->getShip()))->getCombinedHP());
+        tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &hpStr);
+        ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &hpStr, ((y + x0) - pad) - tw, y, false);
 
         // Standing emblem panel + bars.
         void *standing = (void *)(intptr_t)((Status *)(*(void **)g_swd_status))->getStanding();
@@ -672,7 +619,7 @@ void StatusWindow::draw() {
 
         // Career-stat rows from the Status singleton.
         Status *st = (Status *)(*(void **)g_swd_status);
-        char rowStr[0xc];
+        String rowStr;
         int rowX = layout->field_0x4c + x0;
         for (unsigned r = 0; r < 6; r++) {
             int rowVal;
@@ -686,10 +633,9 @@ void StatusWindow::draw() {
             }
             void *labelTxt = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, labelTxt, rowX, y, false);
-            String_fromInt(rowStr, rowVal);
-            tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, rowStr);
-            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, rowStr, ((y + x0) - pad) - tw, y, false);
-            ((String *)(rowStr))->dtor();
+            rowStr.ctor_int(rowVal);
+            tw = ((PaintCanvas *)canvas)->GetTextWidth((unsigned)(uintptr_t)font, &rowStr);
+            ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)font, &rowStr, ((y + x0) - pad) - tw, y, false);
         }
 
         drewStats = *land;
@@ -706,11 +652,10 @@ void StatusWindow::draw() {
         int gridY0 = layout->field_0xc + (rowH >> 1) + layout->field_0x2c;
 
         if (drewStats != 0) {
-            char hdr[0xc];
+            String hdr;
             void *t = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
-            String_fromText(hdr, t, false);
-            ((Layout *)(layout))->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
-            ((String *)(hdr))->dtor();
+            hdr.ctor_copy((String *)t, false);
+            ((Layout *)(layout))->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, &hdr, 0);
             gridY0 += layout->field_0x1c + layout->field_0x2c;
         }
 
@@ -727,18 +672,16 @@ void StatusWindow::draw() {
             ((PaintCanvas *)canvas)->SetColor(0u);
             int lines = (int)this->detailLines->size();
             int lineH = layout->field_0x4;
-            char lbl[0xc];
-            String_fromC(lbl, "", false);
+            String lbl;
+            lbl.ctor_char("", false);
             ((Layout *)(layout))->drawBox(2, layout->field_0x28, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl, 0);
-            ((String *)(lbl))->dtor();
+                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
 
-            String_fromC(lbl, "", false);
+            lbl.ctor_char("", false);
             ((Layout *)(layout))->drawBox(5, layout->field_0x28, (((screenH - layout->field_0x10) -
                              layout->field_0x24) - lineH * lines) +
-                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, lbl, 0);
-            ((String *)(lbl))->dtor();
+                               layout->field_0x4c * -2, i32(this, 0x6c), layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
 
             Globals_drawLines(*(void **)g_swd_globals, font, this->detailLines,
                               layout->field_0x4c + layout->field_0x28,
@@ -747,22 +690,16 @@ void StatusWindow::draw() {
     }
 
     // --- header / footer / tab buttons ---
-    char header[0xc];
+    String header;
     void *ht = ((GameText *)(*(void **)g_swd_gameText))->getText(*g_swd_textId);
-    String_fromText(header, ht, false);
-    Layout_drawHeader(layout, header);
-    ((String *)(header))->dtor();
+    header.ctor_copy((String *)ht, false);
+    Layout_drawHeader(layout, &header);
     ((Layout *)(layout))->drawFooter();
 
     if (*land == 0) {
         for (unsigned int i = 0; i < this->tabButtons->size(); i++)
             (*this->tabButtons)[i]->draw();
     }
-
-    ((String *)(sep))->dtor();
-    ((String *)(creditStr))->dtor();
-
-    
 }
 
 extern "C" {

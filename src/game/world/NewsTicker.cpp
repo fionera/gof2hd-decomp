@@ -24,9 +24,6 @@ using AbyssEngine::NewsItemView;
 
 extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
 int GameText_getLanguage();
-extern "C" void String_cstr_ctor(void *self, const char *text, bool copy);
-extern "C" void String_plus(void *out, void *left, void *right);
-extern "C" void String_plusAssign(void *self, void *other);
 typedef Array<NewsItem *> NewsItemArray;
 // Minimal view of FileRead so loadTicker() resolves to the real FileRead::loadTicker.
 class FileRead {
@@ -167,9 +164,7 @@ int NewsTicker::getHeight()
 
 String NewsTicker::replaceTokens(String text)
 {
-    String out;
-    ((String *)(&out))->ctor_copy((String *)(&text), false);
-    return out;
+    return text;
 }
 
 #include <new>
@@ -192,9 +187,8 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     this->width = width;
 
     String empty;
-    String_cstr_ctor(&empty, g_NewsTicker_ctor_empty, false);
+    empty.ctor_char(g_NewsTicker_ctor_empty, false);
     ((String *)(tickerText))->assign(&empty);
-    ((String *)(&empty))->dtor();
     this->textWidth = 0;
 
     void *reader = operator new(1);
@@ -255,7 +249,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     }
 
     String separator;
-    String_cstr_ctor(&separator, g_NewsTicker_ctor_separator, false);
+    separator.ctor_char(g_NewsTicker_ctor_separator, false);
     for (uint32_t i = 0; i < items->size(); ++i) {
         NewsItemView *item = (NewsItemView *)(*items)[i];
         String line;
@@ -273,9 +267,8 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         }
 
         String combined;
-        String_plus(&combined, &replaced, &separator);
-        String_plusAssign(tickerText, &combined);
-        ((String *)(&combined))->dtor();
+        combined = replaced + separator;
+        ((String *)(tickerText))->addAssign_str(&combined);
         ((String *)(&replaced))->dtor();
     }
 
@@ -284,8 +277,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     if (this->textWidth < width) {
         String copy;
         ((String *)(&copy))->ctor_copy((String *)(tickerText), false);
-        String_plusAssign(tickerText, &copy);
-        ((String *)(&copy))->dtor();
+        ((String *)(tickerText))->addAssign_str(&copy);
         this->textWidth = ((PaintCanvas *)*g_NewsTicker_ctor_canvas)->GetTextWidth(
                               (unsigned int)(unsigned long)*g_NewsTicker_ctor_font, (void *)tickerText);
     }

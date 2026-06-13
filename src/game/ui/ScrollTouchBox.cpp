@@ -2,10 +2,8 @@
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-extern "C" void String_ctor_string(void *self, String *src, bool copy);
 int GameText_getLanguage();
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
-extern "C" void String_ctor_cstr(void *self, char const *text, bool copy);
 
 // font-line-height accessor: the engine's font object stores its line height at +0x4.
 // Modeled as a small opaque struct accessed via a typed helper.
@@ -106,10 +104,8 @@ __attribute__((visibility("hidden"))) extern int **g_ScrollTouchBox_defaultWidth
 void ScrollTouchBox::setText(AbyssEngine::String text)
 {
     String tmp;
-
-    String_ctor_string(&tmp, &text, false);
+    tmp.ctor_copy(&text, false);
     ((ScrollTouchBox *)(this))->setText2(&tmp, **g_ScrollTouchBox_defaultWidth_13570c);
-    ((String *)(&tmp))->dtor();
 }
 
 void ScrollTouchBox::update(int dt)
@@ -269,7 +265,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
         String *empty = (String *)operator new(sizeof(String));
         char const *emptyText = g_ScrollTouchBox_empty_135600;
         bool copy = false;
-        String_ctor_cstr(empty, emptyText, copy);
+        empty->ctor_char(emptyText, copy);
         this->lines->push_back(empty);
         Array<String*> *finalLines = this->lines;
         FontMetrics *finalFont = *fontHolder;
