@@ -1,12 +1,5 @@
 #include "gof2/engine/audio/AESoundRessource.h"
 
-extern "C" char AESoundInterface_vtable[];
-
-typedef void (*SoundVoidMethod)(void *);
-typedef void (*SoundIntMethod)(void *, int);
-typedef void (*SoundFloatMethod)(void *, float);
-typedef void (*SoundPointerMethod)(void *, const char *);
-typedef int (*SoundIntReturnMethod)(void *);
 
 static const char defaultSoundName[] = "";
 
@@ -24,9 +17,9 @@ AESoundRessource::~AESoundRessource()
 {
     freeAllRessources();
     for (uint32_t i = 0; i < sounds->size(); ++i) {
-        void *sound = (*sounds)[i];
+        AESoundInterface *sound = (*sounds)[i];
         if (sound != nullptr)
-            ::operator delete(sound);
+            delete sound;
         (*sounds)[i] = nullptr;
     }
     delete sounds;
@@ -35,9 +28,9 @@ AESoundRessource::~AESoundRessource()
 void AESoundRessource::freeAllRessources()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            ::operator delete(sound);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            delete sound;
             (*this->sounds)[i] = nullptr;
         }
     }
@@ -76,16 +69,13 @@ void AESoundRessource::init(int id)
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = (*this->sounds)[index];
-        if (sound == 0) {
-            sound = ::operator new(4);
-            *(void **)sound = AESoundInterface_vtable + 8;
-            (*this->sounds)[index] = (AESoundInterface *)sound;
-            sound = (*this->sounds)[index];
+        AESoundInterface *sound = (*this->sounds)[index];
+        if (sound == nullptr) {
+            sound = new AESoundInterface();
+            (*this->sounds)[index] = sound;
         }
-        (*(SoundPointerMethod *)*(void **)sound)(sound, *(const char **)(frame.info + 4));
-        sound = (*this->sounds)[index];
-        (*(SoundIntMethod *)((char *)*(void **)sound + 0x24))(sound, *(int *)(frame.info + 8));
+        sound->load(*(const char **)(frame.info + 4));
+        sound->setType(*(int *)(frame.info + 8));
     }
 }
 
@@ -109,9 +99,7 @@ void AESoundRessource::initWithoutLoading(int id)
     int index = frame.index;
     if (index != -1) {
         if ((*this->sounds)[index] == nullptr) {
-            void *sound = ::operator new(4);
-            *(void **)sound = AESoundInterface_vtable + 8;
-            (*this->sounds)[index] = (AESoundInterface *)sound;
+            (*this->sounds)[index] = new AESoundInterface();
         }
     }
 }
@@ -124,13 +112,13 @@ void AESoundRessource::play(int id, float volume)
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = (*this->sounds)[index];
-        if ((*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x38))(sound) == 0) {
+        AESoundInterface *sound = (*this->sounds)[index];
+        if (sound->isLoaded() == 0) {
             this->init(savedId);
         }
         sound = (*this->sounds)[index];
-        if (sound != 0) {
-            (*(SoundFloatMethod *)((char *)*(void **)sound + 0xc))(sound, savedVolume);
+        if (sound != nullptr) {
+            sound->play(savedVolume);
         }
     }
 }
@@ -141,10 +129,10 @@ void AESoundRessource::playLoop(int id)
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = (*this->sounds)[index];
-        if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
+        AESoundInterface *sound = (*this->sounds)[index];
+        if (sound != nullptr && sound->isPlaying() == 0) {
             sound = (*this->sounds)[index];
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
+            sound->playLooping();
         }
     }
 }
@@ -155,10 +143,10 @@ void AESoundRessource::playMusic(int id)
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = (*this->sounds)[index];
-        if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
+        AESoundInterface *sound = (*this->sounds)[index];
+        if (sound != nullptr && sound->isPlaying() == 0) {
             sound = (*this->sounds)[index];
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 8))(sound);
+            sound->play();
         }
     }
 }
@@ -169,10 +157,10 @@ void AESoundRessource::playMusicLoop(int id)
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     int index = frame.index;
     if (index != -1) {
-        void *sound = (*this->sounds)[index];
-        if (sound != 0 && (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound) == 0) {
+        AESoundInterface *sound = (*this->sounds)[index];
+        if (sound != nullptr && sound->isPlaying() == 0) {
             sound = (*this->sounds)[index];
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x10))(sound);
+            sound->playLooping();
         }
     }
 }
@@ -183,9 +171,9 @@ void AESoundRessource::stop(int id)
     AESoundStackFrame frame;
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = (*this->sounds)[frame.index];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x1c))(sound);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        if (sound != nullptr) {
+            sound->stop();
         }
     }
 }
@@ -193,9 +181,9 @@ void AESoundRessource::stop(int id)
 void AESoundRessource::stopAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x1c))(sound);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->stop();
         }
     }
 }
@@ -205,9 +193,9 @@ void AESoundRessource::pause(int id)
     AESoundStackFrame frame;
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = (*this->sounds)[frame.index];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x14))(sound);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        if (sound != nullptr) {
+            sound->pause();
         }
     }
 }
@@ -215,9 +203,9 @@ void AESoundRessource::pause(int id)
 int AESoundRessource::pauseAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x14))(sound);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->pause();
         }
     }
     return this->sounds->size();
@@ -228,9 +216,9 @@ void AESoundRessource::resume(int id)
     AESoundStackFrame frame;
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = (*this->sounds)[frame.index];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x18))(sound);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        if (sound != nullptr) {
+            sound->resume();
         }
     }
 }
@@ -238,9 +226,9 @@ void AESoundRessource::resume(int id)
 void AESoundRessource::resumeAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 0x18))(sound);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->resume();
         }
     }
 }
@@ -248,9 +236,9 @@ void AESoundRessource::resumeAll()
 void AESoundRessource::suspendAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundVoidMethod *)((char *)*(void **)sound + 4))(sound);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->suspend();
         }
     }
 }
@@ -260,8 +248,8 @@ void AESoundRessource::release(int id)
     AESoundStackFrame frame;
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = (*this->sounds)[frame.index];
-        (*(SoundVoidMethod *)((char *)*(void **)sound + 0x34))(sound);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        sound->release();
     }
 }
 
@@ -273,8 +261,8 @@ bool AESoundRessource::isPlaying(int id)
     if (frame.index == -1) {
         result = 0;
     } else {
-        void *sound = (*this->sounds)[frame.index];
-        result = (*(SoundIntReturnMethod *)((char *)*(void **)sound + 0x20))(sound);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        result = sound->isPlaying();
     }
     return result != 0;
 }
@@ -286,9 +274,9 @@ void AESoundRessource::setVolume(int id, int volume)
     AESoundStackFrame frame;
     this->getSoundInfo(id, (AESoundInfo *)frame.info, &frame.index);
     if (frame.index != -1) {
-        void *sound = (*this->sounds)[frame.index];
-        if (sound != 0) {
-            (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, savedVolume);
+        AESoundInterface *sound = (*this->sounds)[frame.index];
+        if (sound != nullptr) {
+            sound->setVolume(savedVolume);
         }
     }
 }
@@ -296,9 +284,9 @@ void AESoundRessource::setVolume(int id, int volume)
 void AESoundRessource::setVolume(int volume)
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundIntMethod *)((char *)*(void **)sound + 0x28))(sound, volume);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->setVolume(volume);
         }
     }
 }
@@ -306,9 +294,9 @@ void AESoundRessource::setVolume(int volume)
 void AESoundRessource::setSoundVolume(int volume)
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundIntMethod *)((char *)*(void **)sound + 0x2c))(sound, volume);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->setSoundVolume(volume);
         }
     }
 }
@@ -316,9 +304,9 @@ void AESoundRessource::setSoundVolume(int volume)
 void AESoundRessource::setMusicVolume(int volume)
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        void *sound = (*this->sounds)[i];
-        if (sound != 0) {
-            (*(SoundIntMethod *)((char *)*(void **)sound + 0x30))(sound, volume);
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->setMusicVolume(volume);
         }
     }
 }

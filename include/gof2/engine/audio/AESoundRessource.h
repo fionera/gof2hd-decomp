@@ -9,7 +9,28 @@ struct AESoundInfo {
     int field_4;
     int field_8;
 };
-struct AESoundInterface;
+// One platform-mixer sound voice. The engine's audio backend provides the concrete
+// implementation (its vtable lives in the runtime); the object itself carries no state
+// beyond its vptr, so AESoundRessource allocates bare instances and drives them through
+// these virtuals. Slot comments are the recovered vtable offsets (4-byte ARM entries).
+class AESoundInterface {
+public:
+    virtual void load(const char *name);      // +0x00  open/prepare the named sample
+    virtual void suspend();                   // +0x04  engine focus-loss hook
+    virtual void play();                      // +0x08  start (music / no explicit volume)
+    virtual void play(float volume);          // +0x0c  start at the given volume
+    virtual void playLooping();               // +0x10  start looping
+    virtual void pause();                     // +0x14
+    virtual void resume();                    // +0x18
+    virtual void stop();                      // +0x1c
+    virtual int  isPlaying();                 // +0x20
+    virtual void setType(int type);           // +0x24  configured from AESoundInfo.field_8 at load
+    virtual void setVolume(int volume);       // +0x28
+    virtual void setSoundVolume(int volume);  // +0x2c  SFX-channel volume
+    virtual void setMusicVolume(int volume);  // +0x30  music-channel volume
+    virtual void release();                   // +0x34  free the backing resource
+    virtual int  isLoaded();                  // +0x38
+};
 
 class AESoundRessource {
 public:
