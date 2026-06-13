@@ -34,7 +34,7 @@ extern "C" void SMM_MeshSetTriangle(unsigned canvas, unsigned short meshId, unsi
 
 __attribute__((visibility("hidden"))) extern int **g_SMM_canary;
 
-SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transforms, void *canvas, float factor) {
+SimpleMeshMerger::SimpleMeshMerger(unsigned *meshIds, unsigned *transforms, void *canvas, float factor) {
     int *canary = *g_SMM_canary;
     int saved = *canary;
 
@@ -139,7 +139,4 @@ SimpleMeshMerger * SimpleMeshMerger::ctor(unsigned *meshIds, unsigned *transform
     SMM_TransformCreate(canvas, (unsigned *)((char *)this + 0x1c));
     SMM_TransformAddMeshId(canvas, this->f_1c, this->f_18);
     this->valid = 1;
-
-    
-    return this;
 }

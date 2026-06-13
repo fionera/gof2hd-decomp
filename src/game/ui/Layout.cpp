@@ -333,7 +333,7 @@ __attribute__((visibility("hidden"))) extern char *g_cfgD;       // @0xe27a8
 
 // Bulk constant-block initializer for the SIMD-copied header region (0x04..0x2d8).
 
-void Layout::ctor() {
+Layout::Layout() {
     int hd    = (*g_cfgHd != 0);
     int wide  = (*g_cfgWide != 0);
     int scale = (*g_cfgScale != 0);

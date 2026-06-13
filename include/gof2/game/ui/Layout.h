@@ -180,7 +180,7 @@ public:
     int OnTouchBegin(int x, int y);
     int OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);
-    void ctor();
+    Layout();
     void drawBG();
     void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
     void drawBGPattern(unsigned img, int x, int y, int w, int h);

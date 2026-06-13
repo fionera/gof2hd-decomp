@@ -1881,7 +1881,7 @@ int Globals::init(void *app) {
     **gI_g383a = 0;
 
     void *layout = ::operator new(0x414);
-    ((Layout *)(layout))->ctor();
+    new (layout) Layout();
     **gI_layout = layout;
     ((Layout *)(layout))->reload();
     ParticleSettingsRef_initialize();
