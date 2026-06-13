@@ -504,7 +504,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         void *item = ::operator new(0x48);
         void *str = ::operator new(0xc);
         ((String *)(str))->ctor_copy((String *)(dst), false);
-        ((ListItem *)item)->ctor_String_int(str, 0);
+        new (item) ListItem(str, 0);
         ((ListItem *)item)->field_0x2c = cargoVal;
         ((Hud *)(this))->addToEventQueue((ListItem *)item);
         return;
@@ -518,7 +518,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         void *item = ::operator new(0x48);
         void *str = ::operator new(0xc);
         ((String *)(str))->ctor_copy((String *)(B(this, 0x1f4)), false);
-        ((ListItem *)item)->ctor_String_int(str, 1);
+        new (item) ListItem(str, 1);
         ((Hud *)(this))->catchCargoFinish((ListItem *)item);
         return;
     }
@@ -572,7 +572,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     void *item = ::operator new(0x48);
     void *str = ::operator new(0xc);
     ((String *)(str))->ctor_copy((String *)(B(this, 0x1f4)), false);
-    ((ListItem *)item)->ctor_String_int(str, 0);
+    new (item) ListItem(str, 0);
     ((ListItem *)item)->field_0x2c = cargoVal;
     if (!p7 || p6) ((ListItem *)item)->field_0x30 = 2;
     if (p7) ((ListItem *)item)->field_0x24 = 1;
@@ -1162,7 +1162,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     void *item = ::operator new(0x48);
     void *str = ::operator new(0xc);
     ((String *)(str))->ctor_copy((String *)(dst), false);
-    ((ListItem *)item)->ctor_String_int(str, 3);
+    new (item) ListItem(str, 3);
     ((Hud *)(this))->addToEventQueue((ListItem *)item);
 
     int w = ((PaintCanvas*)g_PaintCanvas)->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), (*g_Hud_meFont));
@@ -1395,9 +1395,9 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     // "important" ids get the alternate ListItem ctor that marks them priority.
     unsigned int idBit = (unsigned int)(eventId - 1);
     if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
-        ((ListItem *)item)->ctor_String_int(str, 1);
+        new (item) ListItem(str, 1);
     else
-        ((ListItem *)item)->ctor_String_int(str, 0);
+        new (item) ListItem(str, 0);
     addToEventQueue((ListItem *)item);
 
     void *canvas = *g_Hud_canvas;

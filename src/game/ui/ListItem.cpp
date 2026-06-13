@@ -19,11 +19,10 @@ bool ListItem::isItem() {
 
 // ListItem::ListItem(BluePrint*)
 
-ListItem * ListItem::ctor_BluePrint(BluePrint *bp) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(BluePrint *bp) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x8 = bp;
-    return this;
 }
 
 extern "C" int Item_getSort_li(Item *it);              // blx 0x71908
@@ -48,12 +47,11 @@ int ListItem::sortCmp(Ship *ship, int sort) {
 
 // ListItem::ListItem(int, int) -> 0x28 = second arg, 0x2c = first arg, selectable=1
 
-ListItem * ListItem::ctor_int_int(int a, int b) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(int a, int b) {
+    this->init();
     this->field_0x28 = b;
     this->field_0x2c = a;
     this->field_0x24 = 1;
-    return this;
 }
 
 // ListItem::~ListItem() — for each of the two owned String* (at 0x1c, 0x20):
@@ -95,11 +93,10 @@ uint8_t ListItem::isSelectable() {
 
 // ListItem::ListItem(Ship*)
 
-ListItem * ListItem::ctor_Ship(Ship *s) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(Ship *s) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0xc = s;
-    return this;
 }
 
 extern "C" int Item_getType_li(Item *it);                  // blx 0x718fc
@@ -118,34 +115,31 @@ int ListItem::checkSlot() {
 }
 
 // ListItem::ListItem(String*, int) -> 0x30=int, 0x1c=new String, selectable=0
-ListItem * ListItem::ctor_String_int(const void *src, int v) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(const void *src, int v) {
+    this->init();
     EngString *s = new EngString(src, false);
     this->field_0x1c = s;
     this->field_0x30 = v;
     this->field_0x24 = 0;
-    return this;
 }
 
 // ListItem::ListItem(int)  -> field 0x28
 
-ListItem * ListItem::ctor_int(int v) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(int v) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x28 = v;
-    return this;
 }
 
 // ListItem::ListItem(String* p1, String* p2): 0x1c=new String(p1), 0x20=new String(p2),
 // selectable=0.
-ListItem * ListItem::ctor_String_String(const void *p1, const void *p2) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(const void *p1, const void *p2) {
+    this->init();
     EngString *s1 = new EngString(p1, false);
     this->field_0x1c = s1;
     EngString *s2 = new EngString(p2, false);
     this->field_0x20 = s2;
     this->field_0x24 = 0;
-    return this;
 }
 
 // ldr r1,[r0,#0x34]; movs r0,#0; cmp.w r1,#0xffffffff; it gt; mov.gt r0,#1
@@ -155,14 +149,13 @@ bool ListItem::isImage() {
 
 // ListItem::ListItem(int p1, int p2, String* p3): 0x34=p1, new String(p3), 0x28=p2,
 // 0x1c=s, selectable=1.
-ListItem * ListItem::ctor_int_int_String(int a, int b, const void *src) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(int a, int b, const void *src) {
+    this->init();
     this->field_0x34 = a;
     EngString *s = new EngString(src, false);
     this->field_0x1c = s;
     this->field_0x28 = b;
     this->field_0x24 = 1;
-    return this;
 }
 
 extern "C" int Ship_getIndex_li(Ship *s);    // tail b.w 0x1abe58
@@ -189,29 +182,26 @@ int ListItem::getIndex() {
 
 // ListItem::ListItem(Item*)
 
-ListItem * ListItem::ctor_Item(Item *it) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(Item *it) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x10 = it;
-    return this;
 }
 
 // ListItem::ListItem(Array<String*>*)  -> field 0x00, selectable=0
 
-ListItem * ListItem::ctor_Array(Array<AbyssEngine::String *> *arr) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(Array<AbyssEngine::String *> *arr) {
+    this->init();
     this->field_0x24 = 0;
     this->field_0x0 = arr;
-    return this;
 }
 
 // ListItem::ListItem(Mission*)
 
-ListItem * ListItem::ctor_Mission(Mission *m) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(Mission *m) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x14 = m;
-    return this;
 }
 
 // ldrb.w r0,[r0,#0x38]; bx lr
@@ -244,13 +234,12 @@ bool ListItem::checkCredits() {
 }
 
 // ListItem::ListItem(String*, bool) -> 0x44=bool, 0x1c=new String, selectable=0
-ListItem * ListItem::ctor_String_bool(const void *src, bool b) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(const void *src, bool b) {
+    this->init();
     EngString *s = new EngString(src, false);
     this->field_0x1c = s;
     this->field_0x44 = b;
     this->field_0x24 = 0;
-    return this;
 }
 
 // (Ship_getPrice_li / Item_getSinglePrice_li(Item*) already declared above.)
@@ -302,42 +291,38 @@ bool ListItem::isSellButton() {
 
 // ListItem::ListItem(String*) -> new String at 0x1c, selectable=0
 
-ListItem * ListItem::ctor_String(const void *src) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(const void *src) {
+    this->init();
     EngString *s = new EngString(src, false);
     this->field_0x1c = s;
     this->field_0x24 = 0;
-    return this;
 }
 
 // ListItem::ListItem(PendingProduct*)
 
-ListItem * ListItem::ctor_PendingProduct(PendingProduct *pp) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(PendingProduct *pp) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x18 = pp;
-    return this;
 }
 
 // ListItem::ListItem(Agent*)
 
-ListItem * ListItem::ctor_Agent(Agent *a) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(Agent *a) {
+    this->init();
     this->field_0x24 = 1;
     this->field_0x4 = a;
-    return this;
 }
 
 // ListItem::ListItem(String*, bool p2, int p3): 0x38=1, 0x1c=new String, 0x30=p3,
 // selectable=p2.
-ListItem * ListItem::ctor_String_bool_int(const void *src, bool b, int v) {
-    ((ListItem *)(this))->init();
+ListItem::ListItem(const void *src, bool b, int v) {
+    this->init();
     EngString *s = new EngString(src, false);
     this->field_0x38 = 1;
     this->field_0x1c = s;
     this->field_0x30 = v;
     this->field_0x24 = b;
-    return this;
 }
 
 // ListItem::init() — zero/sentinel-init all fields. Returns this+4.
@@ -366,50 +351,31 @@ void * ListItem::init() {
 // ListItem::ListItem(ListItem* src) — copy constructor. Pointer/value fields are
 // bulk-copied (16-byte NEON for 0x4..0x14 and 0x28..0x38); the two owned Strings
 // at 0x1c/0x20 are deep-cloned when present.
-ListItem * ListItem::ctor_copy(ListItem *src) {
-    ((ListItem *)(this))->init();
-    this->field_0x4 = src->field_0x4;
-    this->field_0x14 = src->field_0x14;
-    this->field_0x24 = src->field_0x24;
+ListItem::ListItem(const ListItem &src) {
+    this->init();
+    this->field_0x4 = src.field_0x4;
+    this->field_0x14 = src.field_0x14;
+    this->field_0x24 = src.field_0x24;
 
-    void *p = src->field_0x1c;
+    const void *p = src.field_0x1c;
     if (p)
         this->field_0x1c = new EngString(p, false);
     else
         this->field_0x1c = 0;
-    p = src->field_0x20;
+    p = src.field_0x20;
     if (p)
         this->field_0x20 = new EngString(p, false);
     else
         this->field_0x20 = 0;
 
-    this->field_0x28 = src->field_0x28;
-    this->field_0x38 = src->field_0x38;
-    this->field_0x3c = src->field_0x3c;
-    this->field_0x40 = src->field_0x40;
-    this->field_0x18 = src->field_0x18;
-    return this;
+    this->field_0x28 = src.field_0x28;
+    this->field_0x38 = src.field_0x38;
+    this->field_0x3c = src.field_0x3c;
+    this->field_0x40 = src.field_0x40;
+    this->field_0x18 = src.field_0x18;
 }
 
-// ---- ctor_Slot (b6688) ----
-// ListItem::ListItem(int slot) used for cargo/equipment slots. A slot stores its
-// non-negative key in field_0x28 (isSlot() reads it back) and is always selectable;
-// this is the same body as ctor_int, named here for the slot call site.
-ListItem * ListItem::ctor_Slot(int slot) {
-    return this->ctor_int(slot);
-}
-
-// ---- ctor_TextButton (b6572) ----
-// ListItem::ListItem(String*, bool, int) — a footer/action button entry: owns a copy
-// of the label String, raises the textButton flag and stores the action id. Identical
-// to ctor_String_bool_int; exposed under the call-site's name.
-ListItem * ListItem::ctor_TextButton(const void *text, bool enabled, int action) {
-    return this->ctor_String_bool_int(text, enabled, action);
-}
-
-// ---- ctor_ListItem (b645a) ----
-// ListItem::ListItem(const ListItem&) — copy-wraps the payload pointers and owned name
-// Strings of another entry. Same body as ctor_copy.
-ListItem * ListItem::ctor_ListItem(ListItem *src) {
-    return this->ctor_copy(src);
-}
+// The decompiler's ctor_Slot (b6688), ctor_TextButton (b6572) and ctor_ListItem
+// (b645a) were per-call-site aliases with bodies identical to ListItem(int),
+// ListItem(String*,bool,int) and the copy constructor respectively; they collapse
+// into those overloads. Their call sites now construct the canonical overload.

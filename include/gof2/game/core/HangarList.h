@@ -20,17 +20,8 @@ extern "C" void operator_delete(void *ptr);
 
 extern "C" String *GameText_getText(GameText *texts, int id);
 
-extern "C" ListItem *ListItem_ctor_String(ListItem *self, String *text);
-extern "C" ListItem *ListItem_ctor_String_int(ListItem *self, String *text, int kind);
-extern "C" ListItem *ListItem_ctor_Ship(ListItem *self, Ship *ship);
-extern "C" ListItem *ListItem_ctor_Item(ListItem *self, Item *item);
-extern "C" ListItem *ListItem_ctor_Slot(ListItem *self, uint32_t kind);
-extern "C" ListItem *ListItem_ctor_BluePrint(ListItem *self, BluePrint *blueprint);
-extern "C" ListItem *ListItem_ctor_PendingProduct(ListItem *self,
-                                                  PendingProduct *product);
-extern "C" ListItem *ListItem_ctor_ListItem(ListItem *self, ListItem *item);
-extern "C" ListItem *ListItem_ctor_TextButton(ListItem *self, const void *text,
-                                               bool enabled, int mode);
+// ListItem is constructed in-place via its real C++ constructors (placement new);
+// the former extern "C" ListItem_ctor_* shims are gone.
 extern "C" bool ListItem_isShip(ListItem *self);
 extern "C" bool ListItem_isSlot(ListItem *self);
 
