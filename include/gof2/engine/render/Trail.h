@@ -41,11 +41,22 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas **gTrailCa
 
 static inline void *&ptr(void *self, uint32_t off) { return *(void **)((char *)self + off); }
 
-// Trail: fields accessed via i32/u32/ptr offset helpers (deterministic field_0xNN layout).
-// Method signatures recovered from the decompiled bodies in src/Trail.cpp and cross-checked
+// Trail: named layout recovered from the decompiled bodies in src/Trail.cpp and cross-checked
 // against Ghidra (Trail @ 0016bd58, ~Trail @ 0016bf8c, changeType @ 0016bef4, setWidth @ 0016c184).
+// Trailing comments are the original 32-bit field offsets, kept for cross-reference.
 class Trail {
 public:
+    uint32_t field_0x00;     // +0x00  zeroed in ctor, otherwise unused
+    uint32_t field_0x04;     // +0x04  zeroed in ctor, otherwise unused
+    uint32_t field_0x08;     // +0x08  zeroed in ctor, otherwise unused
+    int width;               // +0x0c  half-width of the trail strip
+    uint32_t meshId;         // +0x10  PaintCanvas mesh id
+    uint32_t transformId;    // +0x14  PaintCanvas transform id
+    int *points;             // +0x18  absolute vertex points buffer (x,y,z triples)
+    int *relativePoints;     // +0x1c  vertex points relative to the head buffer
+    int pointCount;          // +0x20  number of ints in the point buffers
+    int segments;            // +0x24  number of trail segments
+
     Trail(int type, int segments);
     ~Trail();
 

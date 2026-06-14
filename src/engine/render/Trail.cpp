@@ -12,7 +12,7 @@ void Trail::update(const Vector &a, const Vector &b)
 
 void Trail::render()
 {
-    return Trail_renderTransform(*gTrailCanvasRender, u32(this, 0x14), 0);
+    return Trail_renderTransform(*gTrailCanvasRender, this->transformId, 0);
 }
 
 using AbyssEngine::AEMath::Vector;
@@ -23,8 +23,8 @@ void Trail::translate(const Vector &delta)
     float dy = delta.y;
     float dz = delta.z;
 
-    for (int i = 0; i < i32(this, 0x20); i += 3) {
-        int *point = (int *)((char *)ptr(this, 0x18) + i * 4);
+    for (int i = 0; i < this->pointCount; i += 3) {
+        int *point = (int *)((char *)this->points + i * 4);
         int x = (int)(dx + (float)point[0]);
         int y = (int)(dy + (float)point[1]);
         int z = (int)(dz + (float)point[2]);
@@ -36,47 +36,45 @@ void Trail::translate(const Vector &delta)
 
 Trail::~Trail()
 {
-    void *first = ptr(this, 0x18);
-    if (first != 0) {
-        operator delete(first);
+    if (this->points != 0) {
+        operator delete(this->points);
     }
-    ptr(this, 0x18) = 0;
+    this->points = 0;
 
-    void *second = ptr(this, 0x1c);
-    if (second != 0) {
-        operator delete(second);
+    if (this->relativePoints != 0) {
+        operator delete(this->relativePoints);
     }
-    ptr(this, 0x1c) = 0;
+    this->relativePoints = 0;
 }
 
 using AbyssEngine::AEMath::Matrix;
 
 void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
 {
-    int *points = (int *)ptr(this, 0x18);
-    float width = (float)i32(this, 0x0c);
+    int *points = this->points;
+    float width = (float)this->width;
 
     points[0] = (int)(ax - width);
     points[1] = (int)ay;
     points[2] = (int)az;
 
-    width = (float)i32(this, 0x0c);
+    width = (float)this->width;
     points[3] = (int)(width + ax);
     points[4] = (int)ay;
     points[5] = (int)az;
 
-    width = (float)i32(this, 0x0c);
+    width = (float)this->width;
     points[6] = (int)(bx - width);
     points[7] = (int)by;
     points[8] = (int)bz;
 
-    width = (float)i32(this, 0x0c);
+    width = (float)this->width;
     points[9] = (int)(width + bx);
     points[10] = (int)by;
     points[11] = (int)bz;
 
-    int *copy = points + i32(this, 0x20);
-    for (int i = i32(this, 0x20) - 1; 10 < i; i -= 6) {
+    int *copy = points + this->pointCount;
+    for (int i = this->pointCount - 1; 10 < i; i -= 6) {
         copy[-2] = copy[-8];
         copy[-1] = copy[-7];
         *(uint64_t *)(copy - 6) = *(uint64_t *)(copy - 12);
@@ -86,9 +84,9 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
 
     int byteOffset = 0;
     int pointIndex = 0;
-    while (pointIndex < i32(this, 0x20)) {
+    while (pointIndex < this->pointCount) {
         int *source = (int *)((char *)points + byteOffset);
-        int *relative = (int *)((char *)ptr(this, 0x1c) + byteOffset);
+        int *relative = (int *)((char *)this->relativePoints + byteOffset);
         pointIndex += 3;
         relative[0] = (int)((float)source[0] - ax);
         relative[1] = (int)((float)source[1] - ay);
@@ -99,27 +97,27 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
     byteOffset = 0;
     int vertex = 0;
     AbyssEngine::PaintCanvas **canvas = gTrailCanvasUpdate;
-    while (vertex < (i32(this, 0x24) + 1) * 2) {
-        int *point = (int *)((char *)ptr(this, 0x1c) + byteOffset);
+    while (vertex < (this->segments + 1) * 2) {
+        int *point = (int *)((char *)this->relativePoints + byteOffset);
         float x = (float)point[0];
         float z = (float)point[2];
         float y = (float)point[1];
-        (*canvas)->MeshSetPoint(u32(this, 0x10), (uint16_t)vertex, x, y, z);
+        (*canvas)->MeshSetPoint(this->meshId, (uint16_t)vertex, x, y, z);
         byteOffset += 0x0c;
         vertex++;
     }
 
     char matrixStorage[sizeof(Matrix)];
-    Matrix *local = (Matrix *)(*canvas)->TransformGetLocal(u32(this, 0x14));
+    Matrix *local = (Matrix *)(*canvas)->TransformGetLocal(this->transformId);
     Trail_MatrixSetTranslation(matrixStorage, local, ax, ay, az);
 }
 
 Trail::Trail(int type, int segments)
 {
-    u32(this, 0x00) = 0;
-    u32(this, 0x04) = 0;
-    u32(this, 0x08) = 0;
-    i32(this, 0x24) = segments;
+    this->field_0x00 = 0;
+    this->field_0x04 = 0;
+    this->field_0x08 = 0;
+    this->segments = segments;
 
     float uvSide = 0.0f;
     if ((type & ~3) != 4) {
@@ -130,43 +128,43 @@ Trail::Trail(int type, int segments)
     }
 
     AbyssEngine::PaintCanvas *canvas = *gTrailCanvasCtor;
-    i32(this, 0x0c) = 0x3c;
+    this->width = 0x3c;
     canvas->MeshCreate((uint16_t)(segments * 2 + 2),
                        (uint16_t)(segments * 2),
                        0x13,
                        0x4e77,
-                       u32(this, 0x10));
+                       this->meshId);
 
     for (int i = 2; i - 2 < segments * 2 - 2; i += 2) {
         uint16_t tri = (uint16_t)(i - 2);
         uint16_t odd = (uint16_t)(tri | 1);
         uint16_t current = (uint16_t)i;
-        canvas->MeshSetTriangle(u32(this, 0x10), tri, tri, odd, current);
-        canvas->MeshSetTriangle(u32(this, 0x10), odd, (uint16_t)(tri + 3), current, odd);
+        canvas->MeshSetTriangle(this->meshId, tri, tri, odd, current);
+        canvas->MeshSetTriangle(this->meshId, odd, (uint16_t)(tri + 3), current, odd);
     }
 
     float uvScale = 0.0f;
     int point = 0;
     for (int i = 0; i < segments * 2 + 2; i += 2) {
         float u = (float)-(int)(((float)point / (float)(segments + 1)) * uvScale);
-        canvas->MeshSetUv(u32(this, 0x10), (uint16_t)i, uvSide, u);
-        canvas->MeshSetUv(u32(this, 0x10), (uint16_t)(i | 1), uvSide, u);
+        canvas->MeshSetUv(this->meshId, (uint16_t)i, uvSide, u);
+        canvas->MeshSetUv(this->meshId, (uint16_t)(i | 1), uvSide, u);
         point++;
-        segments = i32(this, 0x24);
+        segments = this->segments;
     }
 
     uint32_t count = (uint32_t)((segments * 2 + 2) * 3);
-    u32(this, 0x20) = count;
+    this->pointCount = count;
     uint64_t bytes64 = (uint64_t)count * 4u;
     uint32_t bytes = (uint32_t)bytes64;
     if ((uint32_t)(bytes64 >> 32) != 0) {
         bytes = 0xffffffffu;
     }
 
-    ptr(this, 0x18) = operator new(bytes);
-    ptr(this, 0x1c) = operator new(bytes);
-    canvas->TransformCreate(&u32(this, 0x14));
-    canvas->TransformAddMeshId(u32(this, 0x14), u32(this, 0x10));
+    this->points = (int *)operator new(bytes);
+    this->relativePoints = (int *)operator new(bytes);
+    canvas->TransformCreate(&this->transformId);
+    canvas->TransformAddMeshId(this->transformId, this->meshId);
     changeType(type);
 }
 
@@ -188,24 +186,24 @@ void Trail::update(const Matrix &a, const Matrix &b, const Vector &v)
 
 void Trail::setWidth(int width)
 {
-    int oldWidth = i32(this, 0x0c);
+    int oldWidth = this->width;
     int byteOffset = 0;
     int delta = oldWidth - width;
     AbyssEngine::PaintCanvas **canvas = gTrailCanvasSetWidth;
     int vertex = 0;
-    while (vertex < (i32(this, 0x24) + 1) * 2) {
-        int *point = (int *)((char *)ptr(this, 0x18) + byteOffset);
+    while (vertex < (this->segments + 1) * 2) {
+        int *point = (int *)((char *)this->points + byteOffset);
         int x = point[0] + delta;
         float fx = (float)x;
         float fz = (float)point[2];
         float fy = (float)point[1];
         point[0] = x;
-        (*canvas)->MeshSetPoint(u32(this, 0x10), (uint16_t)vertex, fx, fy, fz);
+        (*canvas)->MeshSetPoint(this->meshId, (uint16_t)vertex, fx, fy, fz);
         vertex++;
         byteOffset += 0x0c;
     }
 
-    i32(this, 0x0c) = width;
+    this->width = width;
 }
 
 void Trail::changeType(int type)
@@ -214,20 +212,20 @@ void Trail::changeType(int type)
     case 1:
     case 7:
     case 11:
-        return Trail_transformSetColor(*gTrailCanvasType1, u32(this, 0x14), 0xff0000ffu);
+        return Trail_transformSetColor(*gTrailCanvasType1, this->transformId, 0xff0000ffu);
     case 2:
     case 9:
-        return Trail_transformSetColor(*gTrailCanvasType2, u32(this, 0x14), 0x00ff00ffu);
+        return Trail_transformSetColor(*gTrailCanvasType2, this->transformId, 0x00ff00ffu);
     case 3:
     case 6:
     case 10:
-        return Trail_transformSetColor(*gTrailCanvasType3, u32(this, 0x14), 0xffff00ffu);
+        return Trail_transformSetColor(*gTrailCanvasType3, this->transformId, 0xffff00ffu);
     case 5:
-        return Trail_transformSetColor(*gTrailCanvasType5, u32(this, 0x14), 0x00ff0000u);
+        return Trail_transformSetColor(*gTrailCanvasType5, this->transformId, 0x00ff0000u);
     case 8:
-        return Trail_transformSetColor(*gTrailCanvasType8, u32(this, 0x14), 0xff4000ffu);
+        return Trail_transformSetColor(*gTrailCanvasType8, this->transformId, 0xff4000ffu);
     default:
-        return Trail_transformSetColor(*gTrailCanvasTypeDefault, u32(this, 0x14), 0xffffffffu);
+        return Trail_transformSetColor(*gTrailCanvasTypeDefault, this->transformId, 0xffffffffu);
     }
 }
 
@@ -239,8 +237,8 @@ void Trail::reset(Vector value)
     int y = (int)value.y;
     int x = (int)value.x;
 
-    for (int i = 0; i < i32(this, 0x20); i += 3) {
-        int *point = (int *)((char *)ptr(this, 0x18) + i * 4);
+    for (int i = 0; i < this->pointCount; i += 3) {
+        int *point = (int *)((char *)this->points + i * 4);
         point[0] = x;
         point[1] = y;
         point[2] = z;

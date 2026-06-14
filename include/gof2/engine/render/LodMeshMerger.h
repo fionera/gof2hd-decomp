@@ -55,7 +55,6 @@ public:
     void setEnabled(int index, bool enabled);
     void setLod(int index, signed char lod);
     void setMatrix(int index, const Matrix &m);
-    void setMatrix_tail(const Matrix &m);   // setMatrix tail: copy `m` into the slot (`this` == &slot)
     void setMesh(int index, signed char lod, uint16_t meshId);
     void update();
     int  init();

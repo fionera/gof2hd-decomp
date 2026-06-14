@@ -26,21 +26,11 @@ void LodMeshMerger::setLod(int index, signed char lod)
     }
 }
 
-// setMatrix(index, m): tail-call the engine matrix-assign with the per-index
-// slot (matrices[index], each 0x3c bytes) and the source matrix.
-
+// setMatrix(index, m): store the source transform into its per-row matrix slot.
+// The merger keeps a packed table of 0x3c-byte matrices (field_0x28).
 void LodMeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)field_0x28;
-    return ((LodMeshMerger *)(base + index * 0x3c))->setMatrix_tail(m);
-}
-
-// setMatrix() tail: store the source transform into its per-row matrix slot. The
-// merger keeps a packed table of 0x3c-byte matrices (field_0x28); `this` is the
-// address of the target slot computed by setMatrix().
-void LodMeshMerger::setMatrix_tail(const Matrix &m)
-{
-    *(Matrix *)this = m;
+    *(Matrix *)((char *)field_0x28 + index * 0x3c) = m;
 }
 
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
@@ -260,7 +250,7 @@ int LodMeshMerger::init()
     field_0x14->TransformCreate(&field_0x1c);
     field_0x14->TransformAddMeshId(field_0x1c, field_0x18);
     field_0x3c = 1;
-    return ((LodMeshMerger *)(this))->init_tail(0, flags, &field_0x18);
+    return this->init_tail(0, flags, &field_0x18);
 }
 
 // init() tail: the merged mesh, its pointer and the shared transform have all been
@@ -435,7 +425,7 @@ LodMeshMerger::~LodMeshMerger()
 
     if (field_0x28 != 0) ::operator delete[](field_0x28);
     field_0x28 = 0;
-    ((LodMeshMerger *)(this))->base_dtor();
+    this->base_dtor();
 }
 
 // ~LodMeshMerger() tail: the final owned member is the embedded source-mesh array

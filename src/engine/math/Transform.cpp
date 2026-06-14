@@ -45,7 +45,7 @@ void Transform::SetVFCFlag(bool value) {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);
+            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->SetVFCFlag(value);
             }
@@ -102,10 +102,10 @@ void Transform::CollectAnimationData() {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);
+            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->CollectAnimationData();
-                child = *(Transform **)((char *)(*this->meshes)[i] + 0x34);
+                child = *(Transform **)((char *)(*this->meshes)[i] + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
                 longlong childLength = child->animationLength;
                 if (*length < childLength) {
                     *length = childLength;
@@ -139,15 +139,13 @@ void Transform::CollectAnimationData() {
 namespace AbyssEngine {
 
 Transform::~Transform() {
-    char *self = (char *)this;
-    if (*(bool *)(self + 0x17d) == false) {
+    if (this->keyFramesShared == false) {
         for (KeyFrame *kf : *this->keyFrames) {
             delete kf;
         }
         this->keyFrames->clear();
     }
-    ((Quaternion *)(self + 0x150))->~Quaternion();
-    ((Quaternion *)(self + 0x128))->~Quaternion();
+    // rotation / localRotation are real members; their dtors run automatically.
     delete this->keyFrames;
     delete this->children;
     delete this->meshes;
@@ -171,7 +169,7 @@ void Transform::InitAnimationRangeInTime() {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);
+            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->InitAnimationRangeInTime();
             }
@@ -207,8 +205,7 @@ static float lerp_float(float from, float to, float t) {
 }
 
 void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-    char *self = (char *)this;
-    char *key = (char *)keyFrame;
+    char *key = (char *)keyFrame; // RAWREAD: KeyFrame fields accessed via key+0xNN
 
     Array<KeyFrame *> &items = *this->keyFrames;
     int i = 0;
@@ -288,8 +285,7 @@ void Transform::SetAnimationLength(longlong value) {
 namespace AbyssEngine {
 
 void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
-    char *self = (char *)this;
-    longlong length = *(longlong *)(self + 0xf8);
+    longlong length = this->animationLength;
     if (length == 0) {
         return;
     }
@@ -298,27 +294,27 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     if (end < 0 || length < end) {
         rangeEnd = length;
     }
-    *(longlong *)(self + 0x108) = rangeEnd;
+    this->rangeEnd = rangeEnd;
 
     longlong rangeStart = start;
     if (length < start || start < 0) {
         rangeStart = 0;
     }
-    *(longlong *)(self + 0x100) = rangeStart;
+    this->rangeStart = rangeStart;
 
-    longlong current = *(longlong *)(self + 0x110);
+    longlong current = this->currentTime;
     if (end < current) {
         current = end;
     }
     if (current < start) {
         current = start;
     }
-    *(longlong *)(self + 0x110) = current;
+    this->currentTime = current;
 
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);
+            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->SetAnimationRangeInTime(start, end);
             }
@@ -387,51 +383,43 @@ void Transform::setExhaustVisible(bool visible) {
 namespace AbyssEngine {
 
 Transform::Transform(Transform *other) {
-    char *self = (char *)this;
-
-    new ((AEMath::Matrix *)(self + 0x00)) AEMath::Matrix();
+    // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
+    // real members and are default-constructed automatically.
     this->meshes = new Array<Mesh *>();
     this->children = new Array<Transform *>();
-    new ((AEMath::Matrix *)(self + 0x5c)) AEMath::Matrix();
-    new ((AEMath::Matrix *)(self + 0x98)) AEMath::Matrix();
 
-    *(float *)(self + 0xd4) = 0.0f;
-    *(float *)(self + 0xd8) = 0.0f;
-    *(float *)(self + 0xdc) = 0.0f;
-    *(float *)(self + 0xe0) = 0.0f;
-    *(float *)(self + 0xe4) = 1.0f;
+    this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
+    this->boundingRadius = 0.0f;
+    this->field_0xe4 = 1.0f;
 
     this->keyFrames = new Array<KeyFrame *>();
-    new ((Quaternion *)(self + 0x128)) Quaternion();
-    *(longlong *)(self + 0x148) = 0;
-    *(AEMath::Vector *)(self + 0x138) = AEMath::Vector{0.0f, 0.0f, 0.0f};
-    new ((Quaternion *)(self + 0x150)) Quaternion();
-    *(longlong *)(self + 0x170) = 0;
-    *(AEMath::Vector *)(self + 0x160) = AEMath::Vector{0.0f, 0.0f, 0.0f};
+    this->scale.y = 0.0f;
+    this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
+    this->localScale.y = 0.0f;
+    this->localTranslation = AEMath::Vector{0.0f, 0.0f, 0.0f};
 
     if (other == 0) {
         Transform temp;
         temp.~Transform();
     } else {
-        char *src = (char *)other;
-        *(bool *)(self + 0xed) = true;
-        *(int *)(self + 0xe8) = *(int *)(src + 0xe8);
-        *(float *)(self + 0xf0) = 1.0f;
-        *(int *)(self + 0x48) = -1;
-        *(longlong *)(self + 0xf8) = *(longlong *)(src + 0xf8);
-        *(longlong *)(self + 0x100) = *(longlong *)(src + 0x100);
-        *(longlong *)(self + 0x108) = *(longlong *)(src + 0x108);
-        *(longlong *)(self + 0x110) = *(longlong *)(src + 0x110);
-        *(int *)(self + 0x118) = *(int *)(src + 0x118);
-        *(Quaternion *)(self + 0x128) = *(Quaternion *)(src + 0x128);
-        *(AEMath::Vector *)(self + 0x138) = *(AEMath::Vector *)(src + 0x138);
-        *(AEMath::Vector *)(self + 0x144) = *(AEMath::Vector *)(src + 0x144);
-        *(AEMath::Matrix *)(self + 0x5c) = *(AEMath::Matrix *)(src + 0x5c);
-        *(Quaternion *)(self + 0x150) = *(Quaternion *)(src + 0x150);
-        *(AEMath::Vector *)(self + 0x160) = *(AEMath::Vector *)(src + 0x160);
-        *(AEMath::Vector *)(self + 0x16c) = *(AEMath::Vector *)(src + 0x16c);
-        *(AEMath::Matrix *)(self + 0x98) = *(AEMath::Matrix *)(src + 0x98);
-        *(int *)(self + 0x58) = *(int *)(src + 0x58);
+        this->animating = true;
+        this->animationStart = other->animationStart;
+        this->animationSpeed = 1.0f;
+        this->color = -1;
+        this->animationLength = other->animationLength;
+        this->rangeStart = other->rangeStart;
+        this->rangeEnd = other->rangeEnd;
+        this->currentTime = other->currentTime;
+        this->currentKeyFrameIndex = other->currentKeyFrameIndex;
+        this->rotation = other->rotation;
+        this->translation = other->translation;
+        this->scale = other->scale;
+        this->rotationMatrix = other->rotationMatrix;
+        this->localRotation = other->localRotation;
+        this->localTranslation = other->localTranslation;
+        this->localScale = other->localScale;
+        this->localMatrix = other->localMatrix;
+        this->field_0x58 = other->field_0x58;
 
         for (uint i = 0; i < other->meshes->size(); ++i) {
             Mesh *mesh = (Mesh *)operator new(0x88);
@@ -444,9 +432,10 @@ Transform::Transform(Transform *other) {
             new (child) Transform((*other->children)[i]);
             this->children->push_back(child);
         }
-        *(AEMath::BSphere *)(self + 0xd4) = *(AEMath::BSphere *)(src + 0xd4);
-        *(bool *)(self + 0xec) = true;
-        *(uint16_t *)(self + 0x17c) = 0x101;
+        this->bounds() = other->bounds();
+        this->visible = true;
+        this->vfcEnabled = true;
+        this->keyFramesShared = true;
     }
 }
 
@@ -472,61 +461,52 @@ static void make_identity(AEMath::Matrix &m) {
 }
 
 Transform::Transform() {
-    char *self = (char *)this;
-
-    new ((AEMath::Matrix *)(self + 0x00)) AEMath::Matrix();
+    // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
+    // real members and are default-constructed automatically.
     this->meshes = new Array<Mesh *>();
     this->children = new Array<Transform *>();
-    new ((AEMath::Matrix *)(self + 0x5c)) AEMath::Matrix();
-    new ((AEMath::Matrix *)(self + 0x98)) AEMath::Matrix();
 
-    *(float *)(self + 0xd4) = 0.0f;
-    *(float *)(self + 0xd8) = 0.0f;
-    *(float *)(self + 0xdc) = 0.0f;
-    *(float *)(self + 0xe0) = 0.0f;
-    *(float *)(self + 0xe4) = 1.0f;
+    this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
+    this->boundingRadius = 0.0f;
+    this->field_0xe4 = 1.0f;
 
     this->keyFrames = new Array<KeyFrame *>();
-    new ((Quaternion *)(self + 0x128)) Quaternion();
-    *(float *)(self + 0x138) = 0.0f;
-    *(float *)(self + 0x13c) = 0.0f;
-    *(float *)(self + 0x140) = 0.0f;
-    *(float *)(self + 0x144) = 0.0f;
-    *(longlong *)(self + 0x148) = 0;
-    new ((Quaternion *)(self + 0x150)) Quaternion();
+    this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
+    this->scale.x = 0.0f;
+    this->scale.y = 0.0f;
 
-    *(longlong *)(self + 0xf8) = 0;
-    *(longlong *)(self + 0x170) = 0;
-    *(int *)(self + 0x48) = -1;
-    *(bool *)(self + 0xed) = true;
-    *(float *)(self + 0xf0) = 1.0f;
-    *(longlong *)(self + 0x110) = 0;
-    *(int *)(self + 0x118) = 0;
-    *(longlong *)(self + 0x100) = 0;
-    *(longlong *)(self + 0x108) = 0;
+    this->animationLength = 0;
+    this->localScale.y = 0.0f;
+    this->color = -1;
+    this->animating = true;
+    this->animationSpeed = 1.0f;
+    this->currentTime = 0;
+    this->currentKeyFrameIndex = 0;
+    this->rangeStart = 0;
+    this->rangeEnd = 0;
 
     Quaternion q;
-    *(Quaternion *)(self + 0x150) = q;
-    *(Quaternion *)(self + 0x128) = q;
-    q.~Quaternion();
+    this->localRotation = q;
+    this->rotation = q;
 
     AEMath::Vector zero = {0.0f, 0.0f, 0.0f};
-    *(AEMath::Vector *)(self + 0x160) = zero;
-    *(AEMath::Vector *)(self + 0x138) = zero;
+    this->localTranslation = zero;
+    this->translation = zero;
     AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-    *(AEMath::Vector *)(self + 0x16c) = one;
-    *(AEMath::Vector *)(self + 0x144) = one;
+    this->localScale = one;
+    this->scale = one;
 
     AEMath::Matrix identity;
     make_identity(identity);
-    *(AEMath::Matrix *)(self + 0x98) = identity;
-    *(AEMath::Matrix *)(self + 0x5c) = identity;
+    this->localMatrix = identity;
+    this->rotationMatrix = identity;
 
-    *(int *)(self + 0x58) = 2;
-    *(float *)(self + 0xac) = 1.0f;
-    *(uint16_t *)(self + 0x17c) = 1;
-    *(bool *)(self + 0xec) = true;
-    *(int *)(self + 0xe8) = 0;
+    this->field_0x58 = 2;
+    this->localMatrix.m[5] = 1.0f;
+    this->vfcEnabled = true;
+    this->keyFramesShared = false;
+    this->visible = true;
+    this->animationStart = 0;
 }
 
 } // namespace AbyssEngine
@@ -547,45 +527,41 @@ static float clamp_positive_byte(float value) {
 }
 
 void Transform::InternUpdate(longlong time, bool updateBounds) {
-    char *self = (char *)this;
-
     if (this->keyFrames->size() != 0) {
-        longlong current = *(longlong *)(self + 0x100);
+        longlong current = this->rangeStart;
         if (current < time) current = time;
 
         Array<KeyFrame *> &items = *this->keyFrames;
         char *last = (char *)items[items.size() - 1];
-        if (*(longlong *)(last + 0x50) < current) {
-            current = *(longlong *)(last + 0x50);
+        if (*(longlong *)(last + 0x50) < current) { // RAWREAD: KeyFrame+0x50 (timestamp)
+            current = *(longlong *)(last + 0x50);    // RAWREAD: KeyFrame+0x50
         }
 
         int index = 0;
-        while (*(longlong *)((char *)items[index] + 0x50) < current) {
+        while (*(longlong *)((char *)items[index] + 0x50) < current) { // RAWREAD: KeyFrame+0x50
             ++index;
         }
-        *(int *)(self + 0x118) = index;
+        this->currentKeyFrameIndex = index;
 
         if (index == 0) {
             AEMath::Matrix identity;
             identity_matrix(identity);
-            *(AEMath::Matrix *)(self + 0x98) = identity;
+            this->localMatrix = identity;
             if (!g_transform_matrix_flag) {
-                *(float *)(self + 0xac) = 1.0f;
+                this->localMatrix.m[5] = 1.0f;
             }
         } else if (current == 0) {
+            // RAWREAD: KeyFrame fields below (+0x18 rot, +0x00 pos, +0x0c scale, +0x48 alpha, +0x3c/+0x24/+0x30)
             char *key = (char *)items[index];
-            Quaternion q; q.Set(*(float *)(key + 0x18), *(float *)(key + 0x1c), *(float *)(key + 0x20));
-            *(Quaternion *)(self + 0x128) = q;
-            q.~Quaternion();
-            *(AEMath::Vector *)(self + 0x138) = *(AEMath::Vector *)(key + 0x00);
-            *(AEMath::Vector *)(self + 0x144) = *(AEMath::Vector *)(key + 0x0c);
-            *(float *)(self + 0x178) = *(float *)(key + 0x48);
-            Quaternion q2; q2.Set(*(float *)(key + 0x3c), *(float *)(key + 0x40), *(float *)(key + 0x44));
-            *(Quaternion *)(self + 0x150) = q2;
-            q2.~Quaternion();
-            *(AEMath::Vector *)(self + 0x160) = *(AEMath::Vector *)(key + 0x24);
-            *(AEMath::Vector *)(self + 0x16c) = *(AEMath::Vector *)(key + 0x30);
+            this->rotation.Set(*(float *)(key + 0x18), *(float *)(key + 0x1c), *(float *)(key + 0x20));
+            this->translation = *(AEMath::Vector *)(key + 0x00);
+            this->scale = *(AEMath::Vector *)(key + 0x0c);
+            this->alpha = *(float *)(key + 0x48);
+            this->localRotation.Set(*(float *)(key + 0x3c), *(float *)(key + 0x40), *(float *)(key + 0x44));
+            this->localTranslation = *(AEMath::Vector *)(key + 0x24);
+            this->localScale = *(AEMath::Vector *)(key + 0x30);
         } else {
+            // RAWREAD: KeyFrame fields (prev/next) below
             char *prev = (char *)items[index - 1];
             char *next = (char *)items[index];
             float t = (float)(current - *(longlong *)(prev + 0x50)) /
@@ -593,53 +569,42 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
 
             Quaternion qa; qa.Set(*(float *)(prev + 0x18), *(float *)(prev + 0x1c), *(float *)(prev + 0x20));
             Quaternion qb; qb.Set(*(float *)(next + 0x18), *(float *)(next + 0x1c), *(float *)(next + 0x20));
-            Quaternion q;
-            q.Lerp(qa, qb, t);
-            *(Quaternion *)(self + 0x128) = q;
-            q.~Quaternion();
-            qb.~Quaternion();
-            qa.~Quaternion();
+            this->rotation.Lerp(qa, qb, t);
 
-            *(AEMath::Vector *)(self + 0x138) = AEMath::VectorLerp(
+            this->translation = AEMath::VectorLerp(
                 *(AEMath::Vector *)(prev + 0x00), *(AEMath::Vector *)(next + 0x00), t);
-            *(AEMath::Vector *)(self + 0x144) = AEMath::VectorLerp(
+            this->scale = AEMath::VectorLerp(
                 *(AEMath::Vector *)(prev + 0x0c), *(AEMath::Vector *)(next + 0x0c), t);
-            *(float *)(self + 0x178) = *(float *)(prev + 0x48) +
-                                       t * (*(float *)(next + 0x48) - *(float *)(prev + 0x48));
+            this->alpha = *(float *)(prev + 0x48) +
+                          t * (*(float *)(next + 0x48) - *(float *)(prev + 0x48));
 
             Quaternion qc; qc.Set(*(float *)(prev + 0x3c), *(float *)(prev + 0x40), *(float *)(prev + 0x44));
             Quaternion qd; qd.Set(*(float *)(next + 0x3c), *(float *)(next + 0x40), *(float *)(next + 0x44));
-            Quaternion qout;
-            qout.Lerp(qc, qd, t);
-            *(Quaternion *)(self + 0x150) = qout;
-            qout.~Quaternion();
-            qd.~Quaternion();
-            qc.~Quaternion();
+            this->localRotation.Lerp(qc, qd, t);
 
-            *(AEMath::Vector *)(self + 0x160) = AEMath::VectorLerp(
+            this->localTranslation = AEMath::VectorLerp(
                 *(AEMath::Vector *)(prev + 0x24), *(AEMath::Vector *)(next + 0x24), t);
-            *(AEMath::Vector *)(self + 0x16c) = AEMath::VectorLerp(
+            this->localScale = AEMath::VectorLerp(
                 *(AEMath::Vector *)(prev + 0x30), *(AEMath::Vector *)(next + 0x30), t);
         }
 
-        uint alpha = (uint)clamp_positive_byte(*(float *)(self + 0x178));
-        *(uint *)(self + 0x48) = alpha | (alpha << 8) | (alpha << 16) | (alpha << 24);
+        uint a = (uint)clamp_positive_byte(this->alpha);
+        this->color = (int)(a | (a << 8) | (a << 16) | (a << 24));
 
-        AEMath::Matrix rotation;
-        identity_matrix(rotation);
-        ((Quaternion *)(self + 0x128))->Convert(rotation);
-        *(AEMath::Matrix *)(self + 0x5c) = rotation;
+        AEMath::Matrix rotationMat;
+        identity_matrix(rotationMat);
+        this->rotation.Convert(rotationMat);
+        this->rotationMatrix = rotationMat;
 
-        AEMath::Matrix scale;
-        AEMath::MatrixSetScaling(scale, *(float *)(self + 0x144),
-                                 *(float *)(self + 0x148), *(float *)(self + 0x14c));
-        AEMath::MatrixSetTranslation(scale, *(float *)(self + 0x138),
-                                     *(float *)(self + 0x13c), *(float *)(self + 0x140));
+        AEMath::Matrix scaleMat;
+        AEMath::MatrixSetScaling(scaleMat, this->scale.x, this->scale.y, this->scale.z);
+        AEMath::MatrixSetTranslation(scaleMat, this->translation.x,
+                                     this->translation.y, this->translation.z);
 
         AEMath::Matrix local;
-        ((Quaternion *)(self + 0x150))->Convert(local);
-        AEMath::Matrix composed = AEMath::operator*(local, scale);
-        *(AEMath::Matrix *)(self + 0x98) = composed;
+        this->localRotation.Convert(local);
+        AEMath::Matrix composed = AEMath::operator*(local, scaleMat);
+        this->localMatrix = composed;
     }
 
     if (!updateBounds) {
@@ -649,23 +614,23 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
         sphere.center.z = 0.0f;
         sphere.radius = 0.0f;
         sphere.radius2 = 1.0f;
-        *(AEMath::BSphere *)(self + 0xd4) = sphere;
+        this->bounds() = sphere;
 
         for (uint i = 0; i < this->meshes->size(); ++i) {
             char *mesh = (char *)(*this->meshes)[i];
             AEMath::BSphere childSphere;
-            if (mesh != 0 && *(Transform **)(mesh + 0x34) != 0) {
-                (*(Transform **)(mesh + 0x34))->InternUpdate(time, updateBounds);
+            if (mesh != 0 && *(Transform **)(mesh + 0x34) != 0) { // RAWREAD: Mesh+0x34 (child Transform*)
+                (*(Transform **)(mesh + 0x34))->InternUpdate(time, updateBounds); // RAWREAD: Mesh+0x34
             }
-            childSphere = *(AEMath::BSphere *)(mesh + 0x3c);
-            ((AEMath::BSphere *)(self + 0xd4))->Merge(childSphere);
+            childSphere = *(AEMath::BSphere *)(mesh + 0x3c); // RAWREAD: Mesh+0x3c (BSphere bounds)
+            this->bounds().Merge(childSphere);
         }
 
         for (uint i = 0; i < this->children->size(); ++i) {
             Transform *child = (*this->children)[i];
             child->InternUpdate(time, updateBounds);
-            AEMath::BSphere childSphere = *(AEMath::BSphere *)((char *)child + 0xd4);
-            ((AEMath::BSphere *)(self + 0xd4))->Merge(childSphere);
+            AEMath::BSphere childSphere = child->bounds();
+            this->bounds().Merge(childSphere);
         }
     }
 }
@@ -772,10 +737,9 @@ static void apply_value_new(Transform *owner, char *key, const float *values, lo
 void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
     ++*g_transform_insert_counter;
 
-    char *self = (char *)this;
     longlong timestamp = time;
-    if (*(longlong *)(self + 0xf8) < timestamp) {
-        *(longlong *)(self + 0xf8) = timestamp;
+    if (this->animationLength < timestamp) {
+        this->animationLength = timestamp;
     }
 
     uint index = 0;
@@ -902,10 +866,9 @@ static void apply_value_old(Transform *owner, char *key, const float *values, lo
 void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time) {
     ++*g_transform_insert_counter;
 
-    char *self = (char *)this;
     longlong timestamp = time;
-    if (*(longlong *)(self + 0xf8) < timestamp) {
-        *(longlong *)(self + 0xf8) = timestamp;
+    if (this->animationLength < timestamp) {
+        this->animationLength = timestamp;
     }
 
     uint index = 0;
@@ -980,15 +943,15 @@ int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
     AEMath::Vector rotated;
     if (matrix == 0) {
         AEMath::Vector transformed = AEMath::MatrixTransformVector(
-            *(AEMath::Matrix *)this, this->boundingCenter);
+            this->worldMatrix, this->boundingCenter);
         center = transformed;
-        rotated = AEMath::MatrixRotateVector(*(AEMath::Matrix *)this, radiusVector);
+        rotated = AEMath::MatrixRotateVector(this->worldMatrix, radiusVector);
     } else {
-        AEMath::Matrix combined = AEMath::operator*(*matrix, *(AEMath::Matrix *)this);
+        AEMath::Matrix combined = AEMath::operator*(*matrix, this->worldMatrix);
         AEMath::Vector transformed = AEMath::MatrixTransformVector(
             combined, this->boundingCenter);
         center = transformed;
-        combined = AEMath::operator*(*matrix, *(AEMath::Matrix *)this);
+        combined = AEMath::operator*(*matrix, this->worldMatrix);
         rotated = AEMath::MatrixRotateVector(combined, radiusVector);
     }
 

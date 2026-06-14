@@ -8,14 +8,14 @@ extern "C" int MovingStars_kSpawnI_value;
 // MovingStars::~MovingStars() -> delete[] four arrays in order 0x0,0x4,0xc,0x10; returns this.
 MovingStars::~MovingStars()
 {
-    if (pp(this, 0x0)) operator delete[](pp(this, 0x0));
-    pp(this, 0x0) = 0;
-    if (pp(this, 0x4)) operator delete[](pp(this, 0x4));
-    pp(this, 0x4) = 0;
-    if (pp(this, 0xc)) operator delete[](pp(this, 0xc));
-    pp(this, 0xc) = 0;
-    if (pp(this, 0x10)) operator delete[](pp(this, 0x10));
-    pp(this, 0x10) = 0;
+    if (this->billboardIds) operator delete[](this->billboardIds);
+    this->billboardIds = 0;
+    if (this->transformHandles) operator delete[](this->transformHandles);
+    this->transformHandles = 0;
+    if (this->lifeArray) operator delete[](this->lifeArray);
+    this->lifeArray = 0;
+    if (this->velocityArray) operator delete[](this->velocityArray);
+    this->velocityArray = 0;
 }
 
 using AbyssEngine::AEMath::Matrix;
@@ -46,17 +46,17 @@ MovingStars::MovingStars()
 
     AllocFn alloc = g_MovingStars_alloc;
 
-    u32(this, 0x0) = 0;
-    u32(this, 0x4) = 0;
-    u32(this, 0x8) = 0;
-    u32(this, 0xc) = 0;
-    u32(this, 0x10) = 0;
+    this->billboardIds = 0;
+    this->transformHandles = 0;
+    this->textureHandle = 0;
+    this->lifeArray = 0;
+    this->velocityArray = 0;
 
-    u32(this, 0x0) = (uint32_t)(uintptr_t)alloc(200);
-    u32(this, 0x4) = (uint32_t)(uintptr_t)alloc(200);
-    u32(this, 0x10) = (uint32_t)(uintptr_t)alloc(200);
+    this->billboardIds = (uint32_t *)alloc(200);
+    this->transformHandles = (uint32_t *)alloc(200);
+    this->velocityArray = (int *)alloc(200);
     int *arr = (int *)alloc(200);
-    u32(this, 0xc) = (uint32_t)(uintptr_t)arr;
+    this->lifeArray = arr;
     for (int i = 0; i != 0x32; i = i + 1)
         arr[i] = 0xffffffff;
 
@@ -64,20 +64,21 @@ MovingStars::MovingStars()
     int *globals = g_MovingStars_globals_ctor;
     void **canvas = g_MovingStars_canvas_ctor;
 
-    for (int j = 0; j != 200; j = j + 4) {
+    for (int j = 0; j != 50; j = j + 1) {
         MovingStars_nextIntBounded(*rng, 4);
         uint32_t bb = MovingStars_createBillBoard(*globals, 0x46, kBB0, kBB1, kBB2, kBB3, 500);
-        *(uint32_t *)(u32(this, 0x0) + j) = bb;
-        MovingStars_TransformCreate(*canvas, (uint32_t *)(u32(this, 0x4) + j));
-        MovingStars_TransformAddMeshId(*canvas, *(uint32_t *)(u32(this, 0x4) + j),
-                                       *(uint32_t *)(u32(this, 0x0) + j));
-        uint32_t loc = MovingStars_TransformGetLocal(*canvas, *(uint32_t *)(u32(this, 0x4) + j));
+        this->billboardIds[j] = bb;
+        MovingStars_TransformCreate(*canvas, &this->transformHandles[j]);
+        MovingStars_TransformAddMeshId(*canvas, this->transformHandles[j],
+                                       this->billboardIds[j]);
+        uint32_t loc = MovingStars_TransformGetLocal(*canvas, this->transformHandles[j]);
         MovingStars_MatrixSetTranslationFrom(mat, (const void *)loc, 0, 0, 0);
     }
 
-    MovingStars_TextureCreate(*canvas, 0x2711, (char *)this + 8, 0);
-    u32(this, 0x18) = 0;
-    u16(this, 0x14) = 0;
+    MovingStars_TextureCreate(*canvas, 0x2711, &this->textureHandle, 0);
+    this->tickAccumulator = 0;
+    this->animResetFlag = 0;
+    this->animActiveFlag = 0;
 }
 
 using AbyssEngine::AEMath::Vector;
@@ -110,19 +111,18 @@ extern float MovingStars_kSpeed, MovingStars_kVel, MovingStars_kZSpawn;
 
 void MovingStars::update(const Matrix &m, bool flag, float param19)
 {
-    int *self = (int *)this;
     int delta = (int)m.m[0]; // param_2: delta time (passed in r1 ahead of the matrix)
 
-    self[6] += delta;
+    this->tickAccumulator += delta;
 
     void *canvas = *g_MovingStars_canvas;
 
     if (!flag) {
-        u8(self, 0x14) = 0;
-        if (u8(self, 0x15) != 0) {
-            u8(self, 0x15) = 0;
-            for (int i = 0; i != 200; i += 4) {
-                uint32_t tf = *(uint32_t *)(self[0] + i);
+        this->animResetFlag = 0;
+        if (this->animActiveFlag != 0) {
+            this->animActiveFlag = 0;
+            for (int i = 0; i != 50; i += 1) {
+                uint32_t tf = this->billboardIds[i];
                 MovingStars_SetAnimVec(canvas, tf, 0,  MovingStars_kA, 0, MovingStars_kB);
                 MovingStars_SetAnimVec(canvas, tf, 1,  MovingStars_kA, 0, MovingStars_kC);
                 MovingStars_SetAnimVec(canvas, tf, 2,  MovingStars_kD, 0, MovingStars_kB);
@@ -143,8 +143,8 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
         float b = VectorSignedToFloat((int)(param19 * MovingStars_kZ) + 500, 0);
         float c = VectorSignedToFloat((int)(param19 * -20.0f) + 0x46, 0);
         float d = VectorSignedToFloat(-0x46 - (int)(param19 * -20.0f), 0);
-        for (int i = 0; i != 200; i += 4) {
-            uint32_t tf = *(uint32_t *)(self[0] + i);
+        for (int i = 0; i != 50; i += 1) {
+            uint32_t tf = this->billboardIds[i];
             MovingStars_SetAnimVec(canvas, tf, 0,  d, 0, b);
             MovingStars_SetAnimVec(canvas, tf, 1,  d, 0, a);
             MovingStars_SetAnimVec(canvas, tf, 2,  c, 0, b);
@@ -157,9 +157,10 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
             MovingStars_SetAnimVec(canvas, tf, 9,  d, d, 0);
             MovingStars_SetAnimVec(canvas, tf, 10, c, c, 0);
             MovingStars_SetAnimVec(canvas, tf, 11, c, d, 0);
-            *(int *)(self[4] + i) = (int)fv + 1000;
+            this->velocityArray[i] = (int)fv + 1000;
         }
-        u16(self, 0x14) = 0x101;
+        this->animResetFlag = 0x01;
+        this->animActiveFlag = 0x01;
     }
 
     param19 = param19 * MovingStars_kVel;
@@ -167,18 +168,18 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
 
     char localMatrix[0x3c];
     for (int i = 0; i != 0x32; i++) {
-        int life = *(int *)(self[3] + i * 4);
-        if ((life > 0 || respawned) || (!flag && self[6] < 0x29)) {
-            *(int *)(self[3] + i * 4) = life - delta;
+        int life = this->lifeArray[i];
+        if ((life > 0 || respawned) || (!flag && (int)this->tickAccumulator < 0x29)) {
+            this->lifeArray[i] = life - delta;
             __aeabi_memcpy(localMatrix, (const void *)MovingStars_TransformGetLocal(canvas, 0), 0x3c);
-            float f = VectorSignedToFloat(*(int *)(self[4] + i * 4), 0);
+            float f = VectorSignedToFloat(this->velocityArray[i], 0);
             // pos -= velocity * f  (three rows of the translation column)
             *(float *)(localMatrix + 0x24) -= *(float *)(localMatrix + 0x18) * f;
             *(float *)(localMatrix + 0x28) -= *(float *)(localMatrix + 0x1c) * f;
             *(float *)(localMatrix + 0x2c) -= *(float *)(localMatrix + 0x20) * f;
-            MovingStars_TransformSetLocal(canvas, *(void **)(self[1] + i * 4));
+            MovingStars_TransformSetLocal(canvas, (void *)this->transformHandles[i]);
         } else {
-            self[6] = 0;
+            this->tickAccumulator = 0;
             void *rng = *g_MovingStars_random;
             int r0 = MovingStars_nextInt(rng);
             int r1 = MovingStars_nextInt(rng);
@@ -189,7 +190,7 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
             *(Vector *)localMatrix =
                 AEMath::MatrixTransformVector(*(const Matrix *)localMatrix, spawn);
             spawn = *(const Vector *)localMatrix;
-            MovingStars_TransformSetLocal(canvas, *(void **)(self[1] + i * 4));
+            MovingStars_TransformSetLocal(canvas, (void *)this->transformHandles[i]);
             MovingStars_TransformGetLocal(canvas, 0);
             MovingStars_MatrixSetTranslation(localMatrix, spawn.z, 0.0f, 0.0f);
 
@@ -203,8 +204,8 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
                 newLife = (int)param19 + 1000;
             }
             respawned = true;
-            *(int *)(self[4] + i * 4) = newLife;
-            *(int *)(self[3] + i * 4) = newTimer;
+            this->velocityArray[i] = newLife;
+            this->lifeArray[i] = newTimer;
         }
     }
 }

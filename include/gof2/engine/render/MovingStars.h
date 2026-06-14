@@ -1,11 +1,9 @@
 #ifndef GOF2_MOVINGSTARS_H
 #define GOF2_MOVINGSTARS_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 -- MovingStars (Android libgof2hdaa.so, armv7 Thumb).
 // Qualified target names are top-level: "MovingStars::render()" (no AbyssEngine:: on the class).
 // Vector/Matrix params are AbyssEngine::AEMath::Vector / ::Matrix.
-// Field offsets recovered per-method from the target disasm; accessed via byte-offset casts.
 
 #include <new>
 
@@ -19,23 +17,21 @@ namespace AEMath {
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// Field accessors --------------------------------------------------------------
-
 // MovingStars — animated starfield rendered through PaintCanvas billboards/transforms.
-// Top-level class (not in AbyssEngine namespace). Field offsets are recovered from disasm;
-// the four parallel arrays at 0x0/0x4/0xc/0x10 plus the texture handle (0x8) keep named fields,
-// remaining scratch is reached through the i32/u32/u8/u16 helpers above.
+// Top-level class (not in AbyssEngine namespace). Four parallel 50-entry (200-byte) arrays
+// hold the per-star billboard ids, transform handles, lifetimes and velocities.
 class MovingStars {
 public:
-    void *billboardIds;                    // +0x0  billboard ids array
-    uint32_t *transformHandles;                // +0x4  transform handles array
-    uint32_t textureHandle;                 // +0x8  texture handle
-    void *lifeArray;                    // +0xc  life array
-    void *velocityArray;                   // +0x10 velocity array
-    uint16_t field_0x14;                // +0x14 anim flags
-    char field_0x16[2];                 // +0x16 padding
-    uint32_t tickAccumulator;                // +0x18 tick accumulator
-    char field_0x1c[4];                 // +0x1c
+    uint32_t *billboardIds;      // +0x0  billboard ids array (50 entries)
+    uint32_t *transformHandles;  // +0x4  transform handles array (50 entries)
+    uint32_t textureHandle;      // +0x8  texture handle
+    int      *lifeArray;         // +0xc  per-star lifetime/timer array (50 entries)
+    int      *velocityArray;     // +0x10 per-star velocity array (50 entries)
+    uint8_t   animResetFlag;     // +0x14 anim flag: low byte of the 0x101 anim word
+    uint8_t   animActiveFlag;    // +0x15 anim flag: high byte of the 0x101 anim word
+    char      field_0x16[2];     // +0x16 padding
+    uint32_t  tickAccumulator;   // +0x18 tick accumulator
+    char      field_0x1c[4];     // +0x1c
 
     MovingStars();
     ~MovingStars();

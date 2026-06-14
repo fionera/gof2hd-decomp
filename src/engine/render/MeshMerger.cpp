@@ -76,8 +76,9 @@ void MeshMerger::setMatrixTail(void *matrixSlot, const Matrix &m)
 
 void MeshMerger::setMatrix(int index, const Matrix &m)
 {
-    char *base = (char *)this->matrices;
-    return setMatrixTail(base + index * 0x3c, m);
+    void *matricesBase = this->matrices;
+    char *matrices = (char *)matricesBase;
+    return setMatrixTail(matrices + index * 0x3c, m);
 }
 
 void MeshMerger::setLod(int index, signed char lod)
@@ -298,6 +299,7 @@ int MeshMerger::init()
         return this->initialized;
     }
 
+    void *matricesBase = this->matrices;
     int rows;
     for (int i = 0; i < (rows = this->rows); i++) {
         int8_t *lods = (int8_t *)this->lods;
@@ -308,7 +310,8 @@ int MeshMerger::init()
         for (int c = 0; c < this->cols; c++) {
             void *mesh = ((void **)this->sourceMeshes)[this->rows * c + i];
             if (mesh != 0) {
-                void *t = this->transformMesh((Mesh *)mesh, *(const Matrix *)((char *)this->matrices + i * 0x3c));
+                char *matrices = (char *)matricesBase;
+                void *t = this->transformMesh((Mesh *)mesh, *(const Matrix *)(matrices + i * 0x3c));
                 ((void **)this->transformedMeshes)[this->rows * c + i] = t;
             }
         }
@@ -380,7 +383,7 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
 
     Matrix ident;   // engine identity matrix
     int n = this->rows;
-    char *mp = (char *)this->matrices;
+    char *mp = matrices;
     for (int i = 0, off = 0; i < n; i++, off += 0x3c)
         *(Matrix *)(mp + off) = ident;
 
@@ -506,20 +509,20 @@ MeshMerger::~MeshMerger()
         void **m4 = (void **)((char *)*cell + 4);
         if (*m4 != 0) {
             ::operator delete[](*m4);
-            cell = (void **)((char *)this->transformedMeshes + idx);
+            cell = (void **)((char *)slots + idx);
             m4 = (void **)((char *)*cell + 4);
         }
         *m4 = 0;
         void **m10 = (void **)((char *)*cell + 0x10);
         if (*m10 != 0) {
             ::operator delete[](*m10);
-            cell = (void **)((char *)this->transformedMeshes + idx);
+            cell = (void **)((char *)slots + idx);
             m10 = (void **)((char *)*cell + 0x10);
         }
         *m10 = 0;
         if (*cell != 0) {
             ::operator delete(*cell);
-            cell = (void **)((char *)this->transformedMeshes + idx);
+            cell = (void **)((char *)slots + idx);
         }
         *cell = 0;
 

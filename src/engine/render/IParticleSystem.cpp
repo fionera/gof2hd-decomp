@@ -41,7 +41,9 @@ void IParticleSystem::update(int delta)
         float fdelta = (float)delta;
         for (int i = 0; i < this->maxParticles; ++i) {
             if (((int *)this->particleAges)[i] != -1) {
-                UpdateParticleFn fn = *(UpdateParticleFn *)((char *)this->vtable + 0x14);
+                void *vtableBase = this->vtable;
+                char *vtbl = (char *)vtableBase;
+                UpdateParticleFn fn = *(UpdateParticleFn *)(vtbl + 0x14);
                 fn(this, i, fdelta);
             }
         }
@@ -64,7 +66,9 @@ typedef void (*RenderOffFn)(IParticleSystem *);
 void IParticleSystem::enableRender(bool enabled)
 {
     if (!enabled && this->renderEnabled != 0) {
-        RenderOffFn fn = *(RenderOffFn *)((char *)this->vtable + 8);
+        void *vtableBase = this->vtable;
+        char *vtbl = (char *)vtableBase;
+        RenderOffFn fn = *(RenderOffFn *)(vtbl + 8);
         fn(this);
     }
     this->renderEnabled = enabled;
@@ -216,7 +220,9 @@ void IParticleSystem::emit(int delta)
                                      (float)(AbyssEngine::AERandom::nextInt(this->random, range) - velSpread);
         }
 
-        void *slot = (char *)this->particleVelocities + current * 12;
+        void *velocityBufferBase = this->particleVelocities;
+        char *velocityBuffer = (char *)velocityBufferBase;
+        void *slot = velocityBuffer + current * 12;
         *(Vector *)(slot) = *(Vector *)(velocity);
 
         float drag = *(float *)(def + 0x64);
@@ -325,7 +331,9 @@ void IParticleSystem::emit(int delta)
             colorFlag = (*(float *)(def + 0x40) > 0.0f) ? 1 : 0;
         }
 
-        EmitParticleFn emitFn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
+        void *vtableBase = this->vtable;
+        char *vtbl = (char *)vtableBase;
+        EmitParticleFn emitFn = *(EmitParticleFn *)(vtbl + 0x18);
         emitFn(this, particlePos, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                colorFlag, size0, size1, emitVelocity);
 
@@ -339,7 +347,9 @@ void IParticleSystem::emit(int delta)
         if (remaining > fdelta) {
             remaining = fdelta;
         }
-        UpdateParticleFn updateFn = *(UpdateParticleFn *)((char *)this->vtable + 0x14);
+        void *updateVtableBase = this->vtable;
+        char *updateVtbl = (char *)updateVtableBase;
+        UpdateParticleFn updateFn = *(UpdateParticleFn *)(updateVtbl + 0x14);
         updateFn(this, current, remaining);
 
         current = this->currentParticle + 1;
@@ -534,7 +544,9 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
             ((float *)randomVelocity)[2] = (float)(AbyssEngine::AERandom::nextInt(this->random, range) - spread);
         }
 
-        void *slot = (char *)this->particleVelocities + current * 12;
+        void *velocityBufferBase = this->particleVelocities;
+        char *velocityBuffer = (char *)velocityBufferBase;
+        void *slot = velocityBuffer + current * 12;
         *(Vector *)(slot) = *(Vector *)(randomVelocity);
 
         if (velocity != 0) {
@@ -578,7 +590,9 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
+            void *vtableBase = this->vtable;
+            char *vtbl = (char *)vtableBase;
+            EmitParticleFn fn = *(EmitParticleFn *)(vtbl + 0x18);
             fn(this, &position, lifetime, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, *(float *)(def + 0x1c), *(float *)(def + 0x20), emitVelocity);
         } else {
@@ -594,7 +608,9 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * *(const Vector *)slot;
             }
 
-            EmitParticleFn fn = *(EmitParticleFn *)((char *)this->vtable + 0x18);
+            void *vtableBase = this->vtable;
+            char *vtbl = (char *)vtableBase;
+            EmitParticleFn fn = *(EmitParticleFn *)(vtbl + 0x18);
             fn(this, &position, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
                *(int *)(def + 0x3c) > 0, size0, size1, emitVelocity);
         }

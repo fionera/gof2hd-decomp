@@ -25,6 +25,7 @@ public:
     uint8_t field_0xc;                  // +0xc
     uint8_t field_0xd;                  // +0xd
     void* matrix;                   // +0x18 Matrix*
+    Vector field_0x1c;                  // +0x1c embedded direction/motion vector (scaled in updateUsualEdges)
     uint32_t flags;                // +0x34 flags
     uint8_t field_0x35;                 // +0x35
     uint8_t field_0x36;                 // +0x36
@@ -36,9 +37,9 @@ public:
     uint32_t firstPoint;                // +0x58 first point
     uint8_t field_0x5c;                 // +0x5c
     uint32_t field_0x60;                // +0x60
-    void* positions;                   // +0x64 positions buffer
-    void* ages;                   // +0x68 ages array
-    void* setIds;                   // +0x6c set-id array
+    Vector* positions;                 // +0x64 positions/edge-vector buffer (12-byte elements)
+    int* ages;                         // +0x68 per-particle age array
+    int8_t* setIds;                    // +0x6c per-particle set-id array
     uint32_t pointCount;                // +0x70 point count
     uint8_t wide;                 // +0x74 wide
     uint32_t field_0x78;                // +0x78

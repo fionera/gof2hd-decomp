@@ -70,17 +70,17 @@ void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
 
 void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first, const Vector &second)
 {
-    *(uint8_t *)((char *)this->setIds + id) = (uint8_t)set;
-    *(int *)((char *)this->ages + (uint32_t)id * 4) = 0;
+    this->setIds[id] = (int8_t)set;
+    this->ages[id] = 0;
 
     uint32_t flags = this->flags;
     uint32_t offset = (this->edgeCount * id * 2) | 1;
-    Vector *dst = (Vector *)((char *)this->positions + offset * 12);
+    Vector *dst = this->positions + offset;
 
     if ((flags & 0x1000) != 0) {
         *dst = first;
         flags = this->flags;
-        dst = (Vector *)((char *)dst + 0x18);
+        dst += 2;
     }
     if ((int)(flags << 18) < 0)
         *dst = second;
@@ -102,7 +102,7 @@ void ParticleSystemMesh::reset()
     }
 
     for (int i = 0; i < (int)this->particleCount; i++)
-        *(int *)((char *)this->ages + (uint32_t)i * 4) = -1;
+        this->ages[i] = -1;
 
     this->field_0x94 = 0;
     this->currentId = 0;
@@ -224,7 +224,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         __aeabi_memclr4(positions, (n - rem) + 12u);
     }
 
-    this->positions = positions;
+    this->positions = (Vector *)positions;
     this->field_0x78 = 0;
     this->field_0x7c = 0;
 }
@@ -354,11 +354,11 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta)
     float scale = (float)delta * 0.001f;
     const Vector *src;
     if ((int)(this->field_0x36 << 28) < 0) {
-        const Vector *trail = (const Vector *)((char *)this->positions + id * 12);
-        src = (const Vector *)((char *)this + 0x1c);
+        const Vector *trail = this->positions + id;
+        src = &this->field_0x1c;
         scale *= trail->y;
     } else {
-        src = (const Vector *)((char *)this->positions + id * 12);
+        src = this->positions + id;
     }
 
     _psm_vectorScale(&tmp, src, scale);
@@ -381,8 +381,8 @@ void ParticleSystemMesh::updateSingleColor(int id)
     int stride = (int)this->stride;
     if ((int)(this->field_0x35 << 24) < 0) {
         int prev = id == 0 ? (int)this->particleCount : id;
-        if (*(int *)((char *)this->ages + (uint32_t)(prev - 1) * 4) == -1) {
-            int set = *(signed char *)((char *)this->setIds + id);
+        if (this->ages[prev - 1] == -1) {
+            int set = this->setIds[id];
             uint32_t color = *(uint32_t *)(g_ParticleSetData + set * 160 + 0x38);
             uint32_t mask = this->colorMask == 0 ? 0xffffff00u : 0xffu;
             color &= mask;
@@ -406,7 +406,7 @@ void ParticleSystemMesh::updateSingleColor(int id)
 
     if ((int)(this->field_0x35 << 24) < 0) {
         int next = (id == (int)this->particleCount - 1) ? 0 : id + 1;
-        if (*(int *)((char *)this->ages + (uint32_t)next * 4) == -1)
+        if (this->ages[next] == -1)
             return;
         point = (int)this->firstPoint + (int)this->stride * next * 4;
         for (int i = 0; i < (int)this->stride; i++) {
@@ -442,10 +442,10 @@ void ParticleSystemMesh::emitTrail(int)
 void ParticleSystemMesh::updateSingle(int id, float delta)
 {
     int intDelta = (int)delta;
-    int set = *(signed char *)((char *)this->setIds + id);
+    int set = this->setIds[id];
     if ((int)(this->field_0x35 << 24) < 0) {
         _psm_updateTrailEdges(this, id, intDelta);
-        if (*(int *)((char *)this->ages + (uint32_t)id * 4) == -2 && this->newSectionStarted != 0) {
+        if (this->ages[id] == -2 && this->newSectionStarted != 0) {
             Vector right;
             Vector scaledRight;
             Vector up;
@@ -462,14 +462,14 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
         _psm_updateUsualEdges(this, id, intDelta);
     }
 
-    int age = *(int *)((char *)this->ages + (uint32_t)id * 4);
+    int age = this->ages[id];
     age = (int)((float)age + delta);
-    *(int *)((char *)this->ages + (uint32_t)id * 4) = age;
+    this->ages[id] = age;
     _psm_updateSingleColor(this, id);
 
     int lifetime = *(int32_t *)(g_ParticleSetData + set * 160 + 0x28);
     if (age > lifetime) {
-        *(int *)((char *)this->ages + (uint32_t)id * 4) = -1;
+        this->ages[id] = -1;
         int point = (int)this->firstPoint + (int)this->stride * id * 4;
         for (int i = 0; i < (int)this->stride * 4; i++)
             _psm_meshSetPoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + i), 0.0f, 0.0f,
@@ -482,7 +482,7 @@ void ParticleSystemMesh::updateTrailEdges(int id, int delta)
     int edgeCount = (int)this->edgeCount;
     int stride = (int)this->stride;
     int point = (int)this->firstPoint + id * stride * 4;
-    Vector *edge = (Vector *)((char *)this->positions + id * edgeCount * 24);
+    Vector *edge = this->positions + id * edgeCount * 2;
     float scale = (float)delta * 0.001f;
 
     for (int i = 0; i < edgeCount; i++) {
@@ -494,7 +494,7 @@ void ParticleSystemMesh::updateTrailEdges(int id, int delta)
         _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + span), move.x,
                                 move.y, move.z);
 
-        if (*(int *)((char *)this->ages + (uint32_t)id * 4) != -2 || (int)(this->field_0x35 << 24) >= 0) {
+        if (this->ages[id] != -2 || (int)(this->field_0x35 << 24) >= 0) {
             Vector move2;
             _psm_vectorScale(&move2, edge + 1, scale);
             _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 2),
