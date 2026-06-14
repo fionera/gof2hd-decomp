@@ -5,16 +5,16 @@ extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engin
 #include "gof2/externs.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/engine/render/AEGeometry.h"
-// NOTE: ParticleSystemManager / KIPlayer / RadioMessage are intentionally NOT
-// included from their real headers — their real signatures drift from the
-// recovered call sites (PSM's enable* are non-static (handle,bool) member fns vs
-// the recovered static (mgr,id[,enable]) helpers; KIPlayer::isWingMan() is a
-// receiver-less thiscall here; ...). They keep local minimal interface structs
-// (below) that match the recovered code. The real Status / SolarSystem / Route /
-// Wanted / Objective / Station / LODManager classes ARE adopted (included above);
-// the few accessor return-type drifts (e.g. Status::getSystem() -> int system
-// index reinterpreted as a SolarSystem*) are reconciled with minimal casts at the
-// call sites, preserving the original int-handle behaviour.
+// NOTE: ParticleSystemManager / RadioMessage are intentionally NOT included from
+// their real headers — PSM's enable* are non-static (handle,bool) member fns vs
+// the recovered static (mgr,id[,enable]) helpers, and RadioMessage's real header
+// redefines sibling types that clash with this include set. They keep local
+// minimal interface structs (below) that match the recovered code. The real
+// Status / SolarSystem / Route / Wanted / Objective / Station / LODManager /
+// KIPlayer classes ARE adopted (included above); accessor return-type drifts
+// (e.g. Status::getSystem() -> int system index reinterpreted as a SolarSystem*)
+// are reconciled with minimal casts at the call sites, preserving the original
+// int-handle behaviour.
 #include "gof2/game/mission/Achievements.h"
 #include "gof2/game/ui/Hud.h"
 #include "gof2/game/ship/Player.h"
@@ -29,19 +29,14 @@ extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engin
 #include "gof2/engine/render/LODManager.h"
 #include "gof2/game/world/Wanted.h"
 #include "gof2/game/mission/Status.h"
+#include "gof2/game/ship/KIPlayer.h"
 
-// KIPlayer / RadioMessage / ParticleSystemManager are reached only through a few
-// accessor methods and opaque pointers; their real headers drift from the
-// recovered call sites (see note above), so the minimal interfaces Level needs
-// are declared locally here (one definition each).
+// RadioMessage / ParticleSystemManager are reached only through a few accessor
+// methods and opaque pointers; their real headers drift from the recovered call
+// sites (see note above), so the minimal interfaces Level needs are declared
+// locally here (one definition each).
 
 static unsigned int g_level_texOutScratch;
-
-struct KIPlayer {
-    void reset();
-    static void setDead(KIPlayer *self);
-    static int isWingMan();
-};
 
 struct RadioMessage {
     void reset();
@@ -275,7 +270,7 @@ void Level::switchSkyboxForIntro() {
     RawArray *list = (RawArray *)(intptr_t)asteroids;
     if (list != 0) {
         for (unsigned int i = 0; i < list->size; i = i + 1) {
-            KIPlayer::setDead(((KIPlayer **)list->data)[i]);
+            ((KIPlayer **)list->data)[i]->setDead();
             list = (RawArray *)(intptr_t)asteroids;
         }
     }
@@ -2098,7 +2093,10 @@ void Level::reset() {
         for (unsigned int i = 0; i < *list; i = i + 1) {
             int e = ((int *)list[1])[i];
             if (*(char *)(e + 0x41) == 0 && *(char *)(e + 0x71) == 0 && *(char *)(e + 0x3f) == 0) {
-                int wm = KIPlayer::isWingMan();
+                // The original passes the enemy being examined as the receiver; the
+                // decompiler dropped it (ambient-register thiscall). isWingMan reads
+                // wingmanFlag at +0xdc of this enemy KIPlayer.
+                int wm = ((KIPlayer *)(intptr_t)e)->isWingMan();
                 list = (unsigned int *)(intptr_t)enemies;
                 list = (unsigned int *)(intptr_t)enemies;
                 if (wm == 0) {
