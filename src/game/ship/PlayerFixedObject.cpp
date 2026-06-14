@@ -173,32 +173,31 @@ void PlayerFixedObject::update(int dt) {
     bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->moving != 0);
     ((Player *)(self->player))->update(dt, kiFlag);
 
-    // Player::field_0x5c/0x5d (enemy/friend flags) are not modelled in Player.h
-    // (out-of-batch header) -> byte-offset accessed.
-    void *player = self->player;
+    // Player::enemyFlags (+0x5c): low byte = alwaysEnemy, high byte (+0x5d) = alwaysFriend.
+    Player *player = (Player *)self->player;
     unsigned char enemyFlag = 0;
     if ((self->faction & 0xfffffffe) == 8) {
-        F<unsigned char>(player, 0x5c) = 1;
+        F<unsigned char>(player, 0x5c) = 1; // RAWREAD: Player+0x5c (low byte of uint16 enemyFlags)
         enemyFlag = 0;
     } else {
         int st = ((Status *)(*g_pfo_status))->getStanding();
         unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->faction);
-        player = self->player;
-        F<unsigned char>(player, 0x5c) = e;
+        player = (Player *)self->player;
+        F<unsigned char>(player, 0x5c) = e; // RAWREAD: Player+0x5c (low byte of uint16 enemyFlags)
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
             void *st2 = (void *)(long)((Status *)(*g_pfo_status))->getStanding();
             enemyFlag = ((Standing *)(st2))->isFriend(self->faction);
-            player = self->player;
+            player = (Player *)self->player;
         }
     }
-    F<unsigned char>(player, 0x5d) = enemyFlag;
+    F<unsigned char>(player, 0x5d) = enemyFlag; // RAWREAD: Player+0x5d (high byte of uint16 enemyFlags)
 
     if (Player_turnedEnemy((Player *)self->player) != 0)
-        F<unsigned short>(self->player, 0x5c) = 1;
+        ((Player *)self->player)->enemyFlags = 1;
     if (((Player *)(self->player))->isAlwaysFriend() != 0)
-        F<unsigned short>(self->player, 0x5c) = 0x100;
+        ((Player *)self->player)->enemyFlags = 0x100;
 
     if (self->state != 6) {
         float bomb = ((Player *)(self->player))->getBombForce();
@@ -233,7 +232,7 @@ void PlayerFixedObject::update(int dt) {
             }
             if (k2 != 0x4220) {
                 void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
-                            *(int *)((char *)self->geometry + 0xc));
+                            ((AEGeometry *)self->geometry)->transform);
                 ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
             }
         }
@@ -242,7 +241,7 @@ afterMotion:
 
     if (((Player *)(self->player))->getHitpoints() < 1 && (unsigned int)(self->state - 3) >= 2) {
         // ---- death transition ----
-        if (F<char>(self->player, 0x5c) == 0) {
+        if ((char)((Player *)self->player)->enemyFlags == 0) {
             ((Level *)(self->level))->friendDied();
         } else {
             ((Level *)((int)(__INTPTR_TYPE__)self->level))->enemyDied(0, (bool)(unsigned char)self->kind);
@@ -265,30 +264,30 @@ afterMotion:
         if (wreck != 0) {
             ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
             void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
-                        *(int *)((char *)wreck + 0xc));
+                        ((AEGeometry *)wreck)->transform);
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
             if (self->faction == 3 && self->moving != 0 &&
-                *(int *)((char *)self->geometry + 0x10) != -1) {
+                (int)((AEGeometry *)self->geometry)->parentTransform != -1) {
                 ((AEGeometry *)(self->geometry))->addChild((uint32_t)(uintptr_t)self->wreckGeometry);
             }
         }
 
         // particle + sound for the explosion (shared tail for both branches)
-        void *lod = self->level;
-        void *mgr = *(void **)((char *)lod + 0x74);
+        Level *lod = (Level *)self->level;
+        void *mgr = *(void **)&lod->field_74;
         int sysOff = typeIsPirateOrE(self) ? 0x54 : 0x50;
-        int sys = *(int *)((char *)lod + sysOff);
+        int sys = *(int *)((char *)lod + sysOff); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
         void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
         ((ParticleSystemManager *)(mgr))->systemSetMatrix(sys, m);
         int sndHandle = sys;
         Vector *pos = 0;
-        if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
+        if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0) // RAWREAD: audioFlag+0xf (untyped engine singleton, class unmodeled)
             pos = &self->position;
         ((FModSound *)(*g_pfo_fmod))->play(0x14, pos, (Vector *)0, (float)sndHandle);
-        lod = self->level;
+        lod = (Level *)self->level;
         {
-            int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
-            ((ParticleSystemManager *)(*(void **)((char *)lod + 0x74)))->enableSystemEmit(emitHandle, true);
+            int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
+            ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
         }
 
         expl = ::operator new(0x68);
@@ -305,26 +304,26 @@ afterMotion:
             unsigned int *enemies = (unsigned int *)(intptr_t)((Level *)self->level)->getEnemies();
             for (unsigned int i = 0; i < enemies[0]; i++) {
                 void *en = (void *)(intptr_t)((Level *)self->level)->getEnemies();
-                void *obj = *(void **)(*(int *)((char *)en + 4) + i * 4);
-                if (*(char *)((char *)obj + 0x3e) != 0) {
+                void *obj = *(void **)(*(int *)((char *)en + 4) + i * 4); // RAWREAD: enemies Array+4 (untyped engine Array data ptr)
+                if (*(char *)((char *)obj + 0x3e) != 0) { // RAWREAD: obj+0x3e (untyped enemy handle, class unmodeled)
                     en = (void *)(intptr_t)((Level *)self->level)->getEnemies();
-                    obj = *(void **)(*(int *)((char *)en + 4) + i * 4);
-                    ((Player *)(*(void **)((char *)obj + 4)))->damage(g_pfo_dmgVal);
+                    obj = *(void **)(*(int *)((char *)en + 4) + i * 4); // RAWREAD: enemies Array+4 (untyped engine Array data ptr)
+                    ((Player *)(*(void **)((char *)obj + 4)))->damage(g_pfo_dmgVal); // RAWREAD: obj+4 (untyped enemy handle -> Player*)
                 }
                 enemies = (unsigned int *)(intptr_t)((Level *)self->level)->getEnemies();
             }
             if (self->kind == 0xe &&
-                *(char *)((char *)self->player + 0x44) == 0) {
+                (char)((Player *)self->player)->field_44 == 0) {
                 void *egoObj = *g_pfo_egoA;
                 void *ach = *g_pfo_achievements;
-                *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
+                *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1; // RAWREAD: egoObj+0x118 (untyped singleton handle; PlayerEgo+0x118 is yawRate, semantic mismatch)
                 if (((Achievements *)(ach))->hasMedal(0x27, 1) == 0) {
-                    float cur = (float)*(int *)((char *)egoObj + 0x118);
+                    float cur = (float)*(int *)((char *)egoObj + 0x118); // RAWREAD: egoObj+0x118 (untyped singleton handle)
                     float val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                     if ((int)(cur / val) < 2) {
                         void *ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                         void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                        cur = (float)*(int *)((char *)egoObj + 0x118);
+                        cur = (float)*(int *)((char *)egoObj + 0x118); // RAWREAD: egoObj+0x118 (untyped singleton handle)
                         val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                         ((Hud *)(hud))->hudEventMedal(0x27, (int)((cur / val) * 100.0f));
                     }
@@ -348,7 +347,7 @@ afterMotion:
                     ((AEGeometry *)self->secondaryGeometry)->moveForward((float)dt);
             }
             Matrix &m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
-            *(Matrix *)((char *)self->player + 0x4) = m;
+            *(Matrix *)((Player *)self->player)->transform = m;
             Vector pos = ((AEGeometry *)(self->wreckGeometry))->getPosition();
             *&self->position = pos;
             Array<BoundingVolume *> *bv = self->boundingVolumes;
@@ -364,16 +363,16 @@ afterMotion:
         }
         self->finished = 0;
         void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
-                    *(int *)((char *)self->wreckGeometry + 0xc));
+                    ((AEGeometry *)self->wreckGeometry)->transform);
         ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
         t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
-                    *(int *)((char *)self->wreckGeometry + 0xc));
-        if (*(char *)((char *)t + 0xed) == 0) {
-            void *lod = self->level;
+                    ((AEGeometry *)self->wreckGeometry)->transform);
+        if (((AbyssEngine::Transform *)t)->animating == 0) {
+            Level *lod = (Level *)self->level;
             self->state = 4;
             {
-                int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
-                ((ParticleSystemManager *)(*(void **)((char *)lod + 0x74)))->enableSystemEmit(emitHandle, true);
+                int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
+                ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
             }
             ((Explosion *)(self->explosion))->reset();
             float scale = 6.0f;
@@ -450,7 +449,7 @@ afterMotion:
                 char matOut[4];
                 ((PaintCanvas*)pc)->MaterialCreate(mat, (unsigned int *)matOut);
                 ((PaintCanvas*)pc)->MeshChangeMaterial(
-                    *(unsigned int *)((char *)self->wreckGeometry + 0x1c),
+                    ((AEGeometry *)self->wreckGeometry)->meshId,
                     *(unsigned short *)matOut);
             }
             // rumble ramp
@@ -515,9 +514,9 @@ afterMotion:
 
     // mirror the integer position into the Player object
     void *p = self->player;
-    *(int *)((char *)p + 0x48) = self->intPosX;
-    *(int *)((char *)p + 0x4c) = self->intPosY;
-    *(int *)((char *)p + 0x50) = self->intPosZ;
+    *(int *)((char *)p + 0x48) = self->intPosX; // RAWREAD: Player+0x48 (unmodeled, falls in pad_46 region)
+    *(int *)((char *)p + 0x4c) = self->intPosY; // RAWREAD: Player+0x4c (unmodeled, falls in pad_46 region)
+    *(int *)((char *)p + 0x50) = self->intPosZ; // RAWREAD: Player+0x50 (unmodeled, falls in pad_46 region)
 }
 
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
@@ -526,10 +525,10 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 // NEAR: target keeps the frame up-front (no shrink-wrap, bool saved to r4 before the
 // field checks). clang shrink-wraps here (checks before push, bx lr early-exit).
 void PlayerFixedObject::setExhaustVisible(bool v) {
-    void *geom = this->geometry;
-    if (geom != 0 && *(int *)((char *)geom + 0x14) != -1) {
+    AEGeometry *geom = (AEGeometry *)this->geometry;
+    if (geom != 0 && (int)geom->childTransform != -1) {
         void **holder = g_pfo_canvas;
-        return ((AbyssEngine::Transform *)(((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc))))->setExhaustVisible(v);
+        return ((AbyssEngine::Transform *)(((PaintCanvas*)*holder)->TransformGetTransform(geom->transform)))->setExhaustVisible(v);
     }
 }
 
@@ -631,8 +630,8 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     void **holder = g_pfo_canvas2;
     new ((void *)geom) AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
     this->wreckGeometry = geom;
-    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)geom + 0xc));
-    *(int *)((char *)t + 0xe0) = 0x48f42400; // 500000.0f far-clip constant (raw bits)
+    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)geom)->transform);
+    *(int *)&((AbyssEngine::Transform *)t)->boundingRadius = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
     int kind = this->kind;
     int sel;
@@ -914,7 +913,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         ::operator delete(Generator_dtor(gen));
     }
 
-    *(uint8_t *)((char *)self->player + 0x45) = 1;
+    *(uint8_t *)((char *)self->player + 0x45) = 1; // RAWREAD: Player+0x45 (high byte of uint16 field_44)
     if (kind != 0x37a3) {
         self->field_0xf8 = 0x2f;
         if (kind == 0xe) {
@@ -938,7 +937,7 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     Vector posVec = {x, y, z};
     ((AEGeometry *)(this->geometry))->setPosition(posVec);
     void *m = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
-    *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)(m);
+    *(Matrix *)((Player *)this->player)->transform = *(const Matrix *)(m);
 
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
@@ -976,10 +975,10 @@ void PlayerFixedObject::setDeadButSelectable() {
     void **holder = g_pfo_canvas3;
     void *newGeom = this->wreckGeometry;
     this->geometry = newGeom;
-    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(*(int *)((char *)newGeom + 0xc));
+    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)newGeom)->transform);
     // NOTE: the decompiler emitted a single 64-bit argument; SetAnimationRangeInTime
     // takes (start, end). Passing the recovered value as start and 0 as end.
-    ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(*(long long *)((char *)t + 0xf8), 0);
+    ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(((AbyssEngine::Transform *)t)->animationLength, 0);
 }
 
 // outerCollide(float,float,float): iterate the active bounding-volume array, calling each
@@ -1025,7 +1024,7 @@ void PlayerFixedObject::moveForward(int amount) {
     this->intPosZ = amount + this->intPosZ;
     ((AEGeometry *)(this->geometry))->moveForward(d);
     void *m = ((AEGeometry *)(this->geometry))->getMatrix();
-    *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)(m);
+    *(Matrix *)((Player *)this->player)->transform = *(const Matrix *)(m);
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();
     this->position = *(const Vector *)((Vector *)buf);

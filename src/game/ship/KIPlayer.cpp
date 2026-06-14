@@ -6,6 +6,7 @@
 #include "gof2/game/ui/Hud.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/world/Route.h"
+#include "gof2/game/world/SpacePoint.h"
 #include "gof2/game/world/Standing.h"
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/AEGeometry.h"
@@ -68,7 +69,7 @@ void KIPlayer::setRotationSpeed(float speed) {
 }
 
 uint8_t KIPlayer::isEnemy() {
-    return *(uint8_t *)((char *)this->player + 0x5c);
+    return (uint8_t)((Player *)this->player)->enemyFlags;
 }
 
 bool KIPlayer::isDocked() {
@@ -91,7 +92,7 @@ void KIPlayer::translate(const Vector &v) {
 // Returns the ship position by value (sret in r0, this in r1).
 Vector KIPlayer::getPosition() {
     Vector v;
-    MatrixGetPosition(&v, (float *)((char *)this->player + 0x4));
+    MatrixGetPosition(&v, ((Player *)this->player)->transform);
     return v;
 }
 
@@ -300,14 +301,14 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
     this->spacePoints = 0;
 
     // geometry: when a parent geometry is supplied (and it has children) build a child group.
-    bool haveChild = (geom != 0) && (*(void **)((char *)geom + 0x18) != 0);
+    bool haveChild = (geom != 0) && (((AEGeometry *)geom)->baseTransform != 0);
     if (geom != 0 && haveChild) {
         this->parentGeometry = geom;
         void *child = ::operator new(0xc0);
         new ((void *)child) AEGeometry((PaintCanvas *)*(void **)gCanvas);
         this->geometry = child;
-        ((AEGeometry *)(child))->addChild(*(int *)((char *)this->parentGeometry + 0xc));
-        *(int *)((char *)this->parentGeometry + 0x24) = *(int *)((char *)this->geometry + 0xc);
+        ((AEGeometry *)(child))->addChild(((AEGeometry *)this->parentGeometry)->transform);
+        ((AEGeometry *)this->parentGeometry)->altTransform = ((AEGeometry *)this->geometry)->transform;
     } else {
         this->geometry = geom;
         this->parentGeometry = 0;
@@ -362,9 +363,9 @@ void KIPlayer::ctor(int faction, int group, void *player, void *geom, float x, f
 
     if (geom != 0) {
         ((AEGeometry *)(geom))->setPosition((float)x, (float)y, (float)z);
-        *(Matrix *)((char *)this->player + 4) = ((AEGeometry *)(geom))->getMatrix();
+        *(Matrix *)((Player *)this->player)->transform = ((AEGeometry *)(geom))->getMatrix();
         if (this->parentGeometry != 0)
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 4), ((AEGeometry *)(this->parentGeometry))->getMatrix());
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((Player *)this->player)->transform, ((AEGeometry *)(this->parentGeometry))->getMatrix());
     }
 
     this->posX = x;
@@ -457,7 +458,7 @@ void * KIPlayer::getNearestDockingPoint(Vector *dir) {
     unsigned count = arr->size();
     for (unsigned i = 0; i < count; i = i + 1) {
         void *pt = (*arr)[i];
-        if (*(int *)((char *)pt + 0x18) != 2)
+        if (((SpacePoint *)pt)->type != 2)
             continue;
 
         void *mat = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
@@ -565,12 +566,14 @@ void KIPlayer::captureCrate(void *hud) {
 
         // resolve the item info and decrement the crate's remaining count.
         int itemId = (*this->cargo)[i];
+        // RAWREAD: gItemDb internal table (untyped ItemDb handle; no modeled class/layout)
         int infoPtr = *(int *)(*(char **)(*(char **)gItemDb + 4) + itemId * 4);
         void *item = ((Item *)(infoPtr))->makeItem();
         (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
         if (item == 0)
             return;
 
+        // RAWREAD: player+0x5d (high byte of Player::enemyFlags @ +0x5c; no member at exactly +0x5d)
         if (*(char *)((char *)this->player + 0x5d) != 0)
             ((Level *)(this->level))->stealFriendCargo();
 
@@ -610,14 +613,14 @@ void KIPlayer::captureCrate(void *hud) {
 
         bool merged = false;
         if (((Item *)(item))->getType() == 1) {
-            void *equip = ((Ship*)(((Status *)status)->getShip()))->getEquipment();
+            Array<Item *> *equip = ((Ship*)(((Status *)status)->getShip()))->getEquipment();
             if (equip != 0) {
-                unsigned ecount = *(unsigned *)equip;
+                unsigned ecount = equip->size();
                 for (unsigned j = 0; j < ecount; j = j + 1) {
-                    void *e = ((void **)(*(char **)((char *)equip + 4)))[j];
-                    if (e != 0 && ((Item *)(e))->getIndex() == ((Item *)(item))->getIndex()) {
-                        void *e2 = ((void **)(*(char **)((char *)equip + 4)))[j];
-                        ((Item *)(e2))->changeAmount(((Item *)(item))->getAmount());
+                    Item *e = (*equip)[j];
+                    if (e != 0 && e->getIndex() == ((Item *)(item))->getIndex()) {
+                        Item *e2 = (*equip)[j];
+                        e2->changeAmount(((Item *)(item))->getAmount());
                         merged = true;
                     }
                 }
@@ -626,20 +629,19 @@ void KIPlayer::captureCrate(void *hud) {
         if (!merged)
             ((Ship *)(((Status *)status)->getShip()))->addCargo((Item *)item);
 
-        *(int *)((char *)this->level + 0x1c) =
-            ((Item *)(item))->getAmount() + *(int *)((char *)this->level + 0x1c);
+        ((Level *)this->level)->field_1c =
+            ((Item *)(item))->getAmount() + ((Level *)this->level)->field_1c;
 
         if (special) {
             this->field_0x69 = 1;
         } else if (this->shipGroup == 9) {
-            void *st = *(void **)gStatus;
-            *(int *)((char *)st + 0xcc) = ((Item *)(item))->getAmount() + *(int *)((char *)st + 0xcc);
+            Status *st = (Status *)*(void **)gStatus;
+            st->field_cc = ((Item *)(item))->getAmount() + st->field_cc;
         } else {
             int idx = ((Item *)(item))->getIndex();
             if (idx >= 0x84 && ((Item *)(item))->getIndex() < 0x9a) {
-                void *st = *(void **)gStatus;
-                char *tbl = *(char **)((char *)st + 0xac);
-                *(char *)(*(char **)(tbl + 4) + ((Item *)(item))->getIndex() - 0x84) = 1;
+                Status *st = (Status *)*(void **)gStatus;
+                (*st->field_ac)[((Item *)(item))->getIndex() - 0x84] = true;
             }
         }
 
@@ -675,7 +677,7 @@ void * KIPlayer::getNearestNavigationPoint(Vector *dir, void *target) {
     unsigned count = arr->size();
     for (unsigned i = 0; i < count; i = i + 1) {
         void *pt = (*arr)[i];
-        if (*(int *)((char *)pt + 0x18) != 1)
+        if (((SpacePoint *)pt)->type != 1)
             continue;
 
         void *mat = (void *)&((AEGeometry *)(this->geometry))->getMatrix();
@@ -720,15 +722,15 @@ void KIPlayer::setShipGroup(int param2, int flag, int cond) {
             new ((void *)grp) AEGeometry((PaintCanvas *)gCanvas);
             this->geometry = grp;
         }
-        ((AEGeometry *)(grp))->addChild(*(int *)((char *)this->parentGeometry + 0xc));
-        *(int *)((char *)this->parentGeometry + 0x24) = *(int *)((char *)this->geometry + 0xc);
+        ((AEGeometry *)(grp))->addChild(((AEGeometry *)this->parentGeometry)->transform);
+        ((AEGeometry *)this->parentGeometry)->altTransform = ((AEGeometry *)this->geometry)->transform;
     }
     ((AEGeometry *)(this->geometry))->setPosition((float)this->posX,
                             (float)this->posY,
                             (float)this->posZ);
-    *(Matrix *)((char *)this->player + 0x4) = ((AEGeometry *)(this->geometry))->getMatrix();
+    *(Matrix *)((Player *)this->player)->transform = ((AEGeometry *)(this->geometry))->getMatrix();
     if (this->parentGeometry != 0) {
-        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 0x4), ((AEGeometry *)(this->parentGeometry))->getMatrix());
+        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((Player *)this->player)->transform, ((AEGeometry *)(this->parentGeometry))->getMatrix());
     }
 }
 
@@ -737,11 +739,11 @@ void KIPlayer::setPosition_vec(const Vector &v) {
     if (geom != 0) {
         ((AEGeometry *)(geom))->setPosition(v);
         void *m = ((AEGeometry *)(this->geometry))->getMatrix();
-        *(Matrix *)((char *)this->player + 0x4) = *(const Matrix *)m;
+        *(Matrix *)((Player *)this->player)->transform = *(const Matrix *)m;
         void *cond = this->parentGeometry;
         if (cond != 0) {
             void *m2 = ((AEGeometry *)(cond))->getMatrix();
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((char *)this->player + 0x4), *(const Matrix *)m2);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)((Player *)this->player)->transform, *(const Matrix *)m2);
         }
     }
 }
@@ -779,7 +781,7 @@ void KIPlayer::createCrate(int type) {
     Vector pos;
     ((AEGeometry *)(&pos))->getPosition();
     ((AEGeometry *)(crate))->setPosition(*(const AbyssEngine::AEMath::Vector *)&pos);
-    *(Matrix *)((char *)this->player + 0x4) = ((AEGeometry *)(crate))->getMatrix();
+    *(Matrix *)((Player *)this->player)->transform = ((AEGeometry *)(crate))->getMatrix();
     ((Player *)(this->player))->setKIPlayer(this);
 }
 
@@ -865,10 +867,11 @@ void KIPlayer::setAutoPilot(KIPlayer *target) {
 
     // Engage: mark "following hostile" when the target itself is hostile (+0x72),
     // reset the engine's frame accumulator and apply full forward thrust.
-    if (*(char *)(reinterpret_cast<char *>(target) + 0x72) != 0) {
+    if (target->field_0x72 != 0) {
         *(uint8_t *)(ego + 0x160) = 1;
     }
     void *engine = AppManager_GetEngine();
+    // RAWREAD: engine+0x360 (AppManager_GetEngine() returns untyped void*; engine class not modeled)
     *(uint32_t *)((char *)engine + 0x360) = 0;
     *(uint32_t *)(ego + 0xbc) = 0x3f800000;   // 1.0f
 }

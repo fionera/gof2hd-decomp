@@ -895,7 +895,7 @@ void ModStation::OnUpdate() {
             CutScene_ctor_ou(cs, 2);
             this->starMap = (StarMap*)cs;
             CutScene_initialize_ou(cs);
-            *(int *)((char *)this->starMap + 9 * 4) = 0;
+            cs->rotationSpeed = 0;   // CutScene+0x24
             t = *(int *)&this->spaceLounge;
             ((char*)&this->m_nStarMapWindowOpen)[0] = 1;
         }
@@ -1280,7 +1280,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
 
     void **layoutHolder = g_ModStation_tm_layout;
     void *layoutObj = *layoutHolder;
-    if (*(char *)layoutObj != 0) {
+    if (((Layout *)layoutObj)->choiceWindowOpen != 0) {   // Layout+0x0
         ((Layout *)(layoutObj))->OnTouchMove(x, y);
         return;
     }
@@ -1329,10 +1329,10 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     ((Layout *)(layoutObj))->OnTouchMove(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchMove(x, y) != 0)
         return;
-    int *layout = (int *)layoutObj;
-    if (y <= layout[0xc / 4])
+    Layout *layout = (Layout *)layoutObj;
+    if (y <= layout->field_0xc)
         return;
-    if (*(int *)*g_ModStation_tm_screenH - layout[0x10 / 4] <= y)
+    if (*(int *)*g_ModStation_tm_screenH - layout->field_0x10 <= y)
         return;
     if (x <= *(int*)&this->hangarShipGeom)
         return;
@@ -1636,9 +1636,9 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
 
     // help window takes priority.
     int *help = *(int **)g_ote_helpLayout;
-    if (*(char *)*help != 0) {
+    if (((Layout *)*help)->choiceWindowOpen != 0) {   // Layout+0x0
         if (Layout_OnTouchEndR_ote((Layout *)*help, param_1, param_2) != 0)
-            *(char *)*help = 0;
+            ((Layout *)*help)->choiceWindowOpen = 0;
         return;
     }
 
@@ -2267,7 +2267,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     }
     void **layoutHolder = g_ModStation_tb_layout;
     void *layoutObj = *layoutHolder;
-    if (*(char *)layoutObj != 0) {
+    if (((Layout *)layoutObj)->choiceWindowOpen != 0) {   // Layout+0x0
         ((Layout *)(layoutObj))->OnTouchBegin(x, y);
         return;
     }
@@ -2316,10 +2316,10 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     ((Layout *)(layoutObj))->OnTouchBegin(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchBegin(x, y) != 0)
         return;
-    int *layout = (int *)layoutObj;
-    if (y <= layout[0xc / 4])
+    Layout *layout = (Layout *)layoutObj;
+    if (y <= layout->field_0xc)
         return;
-    if (*(int *)*g_ModStation_tb_screenH - layout[0x10 / 4] <= y)
+    if (*(int *)*g_ModStation_tb_screenH - layout->field_0x10 <= y)
         return;
     if (x <= *(int*)&this->hangarShipGeom)
         return;
@@ -2390,17 +2390,17 @@ void ModStation::OnRender2D() {
         DialogueWindow_draw_r2d(this);
 
     Layout **help = (Layout **)g_r2d_helpLayout;
-    if (*(char *)*help != 0)
+    if ((*help)->choiceWindowOpen != 0)   // Layout+0x0
         Layout_drawHelpWindow_r2d((Layout *)*help);
 
     ((PaintCanvas *)g_PaintCanvas)->End2d();
 
     // 3D hangar/ship pass when no help window is up.
-    if (*(char *)*help == 0) {
+    if ((*help)->choiceWindowOpen == 0) {   // Layout+0x0
         if (((char*)&this->field_0x64)[2] != 0) {
             HangarWindow_render3D_r2d();
         }
-        if (*(char *)*help == 0 && ((char*)&this->field_0x64)[1] != 0)
+        if ((*help)->choiceWindowOpen == 0 && ((char*)&this->field_0x64)[1] != 0)
             SpaceLounge_draw3DShip_r2d();
     }
 

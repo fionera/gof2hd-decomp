@@ -1175,7 +1175,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
 
-    AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
+    AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);   // RAWREAD: GameRecord+0x10 (blob; no member at offset, only _opaque/Strings modeled)
     AEFile_Write_i32(I(rec, 0x8), fd);
 
     num = ((Station *)(&num))->getName();
@@ -1185,7 +1185,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
     AEFile_Write_i32(I(rec, 0x40), fd);
     AEFile_Write_i32(I(rec, 0x20), fd);
     AEFile_Write_f32(I(rec, 0x11c), fd);
-    AEFile_Write_i32(((Ship *)(*(Ship **)((char *)rec + 0x130)))->getIndex(), fd);
+    AEFile_Write_i32(((Ship *)(*(Ship **)((char *)rec + 0x130)))->getIndex(), fd);   // RAWREAD: GameRecord+0x130 (blob; Ship* slot not modeled in GameRecord.h)
     AEFile::Close(fd);
     return 1;
 }
@@ -1238,7 +1238,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(((Status *)(st))->getCapturedCrates(), fd);
     AEFile_WriteInt(((Status *)(st))->getBoughtEquipment(), fd);
     AEFile_WriteInt(((Status *)(st))->getPirateKills(), fd);
-    AEFile_WriteInt(*(int *)(*status + 0x80), fd);
+    AEFile_WriteInt(st->field_80, fd);
 
     // Remaining object-graph serialization.
     ((RecordHandler *)(this))->recordStoreWrite_body(fd);
@@ -1326,22 +1326,22 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     char *ui = (char *)g_RSW_uiFlags;       // secondary flag block
 
     // Standings unlock bitmap and the various progress / discovery bitmaps.
-    AEFile_WriteInt(*(int *)((char *)status + 0x7c), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x84), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x88), fd);
+    AEFile_WriteInt(((Status *)status)->field_7c, fd);
+    AEFile_WriteInt(((Status *)status)->field_84, fd);
+    AEFile_WriteInt(((Status *)status)->field_88, fd);
     RSW_writeBoolArray(status, 0x94, fd);
     RSW_writeBoolArray(status, 0x98, fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x9c), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0xa0), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0xa4), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0xa8), fd);
+    AEFile_WriteInt(((Status *)status)->field_9c, fd);
+    AEFile_WriteInt(((Status *)status)->field_a0, fd);
+    AEFile_WriteInt(((Status *)status)->field_a4, fd);
+    AEFile_WriteInt(((Status *)status)->field_a8, fd);
     RSW_writeBoolArray(status, 0xac, fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0xb0), fd);
+    AEFile_WriteInt(((Status *)status)->field_b0, fd);
     RSW_writeBoolArray(status, 0xb4, fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0xb8), fd);
-    AEFile_WriteLong(*(long long *)((char *)status + 0xc0), fd);
+    AEFile_WriteInt(((Status *)status)->field_b8, fd);
+    AEFile_WriteLong(*(long long *)((char *)status + 0xc0), fd);   // RAWREAD: Status+0xc0 (i64 spans field_c0/field_c4 int32 members)
     for (int off = 0xc8; off <= 0xec; off += 4) {
-        AEFile_WriteInt(*(int *)((char *)status + off), fd);
+        AEFile_WriteInt(*(int *)((char *)status + off), fd);       // RAWREAD: Status+0xc8..0xec (loop over field_c8..field_ec)
     }
 
     // Achievement medals (0x2d entries).
@@ -1446,22 +1446,22 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Wingmen list (String[]) + its trailing scalar fields, or -1 when absent.
-    unsigned int *wingmen = *(unsigned int **)((char *)status + 0x24);
+    unsigned int *wingmen = *(unsigned int **)((char *)status + 0x24);  // RAWREAD: Status+0x24 (wingmen field is int32 reinterpreted as Array<String*>*)
     if (wingmen == 0) { AEFile_WriteInt(-1, fd); }
     else {
         AEFile_WriteInt(*wingmen, fd);
         for (unsigned i = 0; i < *wingmen; i++) {
             AEFile_WriteString(*(char **)(wingmen[1] + i * 4), fd, true);
         }
-        AEFile_WriteInt(*(int *)((char *)status + 0x2c), fd);
-        AEFile_WriteInt(*(int *)((char *)status + 0x30), fd);
+        AEFile_WriteInt(*(int *)((char *)status + 0x2c), fd);     // RAWREAD: Status+0x2c (no named member; between field_0x28 and field_0x30)
+        AEFile_WriteInt(((Status *)status)->field_0x30, fd);
         AEFile_WriteInt(5, fd);
         for (unsigned i = 0; i < 5; i++) {
-            AEFile_WriteInt(*(int *)(*(int *)((char *)status + 0x28) + i * 4), fd);
+            AEFile_WriteInt(*(int *)(*(int *)((char *)status + 0x28) + i * 4), fd);  // RAWREAD: Status+0x28 (field_0x28 int32 reinterpreted as int[] base)
         }
     }
 
-    AEFile_WriteInt(*(int *)((char *)status + 0x34), fd);
+    AEFile_WriteInt(((Status *)status)->passengers, fd);
     RSW_writeBoolArray(status, 0x38, fd);
     RSW_writeIntArray(status, 0x40, fd);
     RSW_writeIntArray(status, 0x3c, fd);
@@ -1486,12 +1486,12 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     AEFile_WriteBool(*(bool *)(flags + 0x23), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x24), fd);
 
-    AEFile_WriteLong(*(long long *)((char *)status + 0x100), fd);
+    AEFile_WriteLong(*(long long *)((char *)status + 0x100), fd);   // RAWREAD: Status+0x100 (i64 spans field_0x100/field_0x104 int32 members)
     AEFile_WriteBool(*(bool *)(flags + 0x25), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x26), fd);
 
     // Optional wingman ship (index, race, equipment, cargo) or 0.
-    Ship *wingShip = *(Ship **)((char *)status + 0x8c);
+    Ship *wingShip = *(Ship **)((char *)status + 0x8c);   // RAWREAD: Status+0x8c (field_8c int32 reinterpreted as Ship*)
     if (wingShip == 0) { AEFile_WriteInt(0, fd); }
     else {
         AEFile_WriteInt(1, fd);
@@ -1502,10 +1502,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     RSW_writeIntArray(status, 0x90, fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x10c), fd);
-    AEFile_WriteBool(*(bool *)((char *)status + 0x110), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x114), fd);
-    AEFile_WriteBool(*(bool *)((char *)status + 0x111), fd);
+    AEFile_WriteInt(((Status *)status)->field_10c, fd);
+    AEFile_WriteBool(((Status *)status)->field_110, fd);
+    AEFile_WriteInt(((Status *)status)->field_114, fd);
+    AEFile_WriteBool(((Status *)status)->field_0x111, fd);
 
     // Current station's items / ships (re-read off the current station).
     Station *station = (Station *)((Status *)status)->getStation();
@@ -1570,7 +1570,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
         AEFile_WriteInt(((Status *)status)->getCollectedBounties(i), fd);
     }
     AEFile_WriteBool(*(bool *)(ui + 0x37), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x178), fd);
+    AEFile_WriteInt(((Status *)status)->field_178, fd);
     AEFile_WriteBool(*(bool *)(flags + 0x28), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x29), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x2c), fd);
@@ -1583,7 +1583,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     AEFile_WriteBool(*(bool *)(flags + 0x31), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x2d), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x32), fd);
-    AEFile_WriteInt(*(int *)((char *)status + 0x118), fd);
+    AEFile_WriteInt(((Status *)status)->field_118, fd);
     AEFile_WriteBool(*(bool *)(flags + 0x33), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x34), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x35), fd);

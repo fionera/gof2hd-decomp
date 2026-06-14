@@ -251,7 +251,7 @@ bool Player::isAsteroid() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
-        result = *((char *)ki + 0x3c) != 0;
+        result = ki->stealFlag != 0;
     }
     return result;
 }
@@ -368,7 +368,7 @@ bool Player::isGasCloud() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
     if (ki != 0) {
-        result = *((char *)ki + 0x44) != 0;
+        result = ki->field_0x44 != 0;
     }
     return result;
 }
@@ -606,14 +606,14 @@ void Player::damageEmp(int amount, bool flag) {
     }
 
     if (!flag && self->kiPlayer != 0 && self->alwaysEnemy == 0) {
-        char *ki = (char *)self->kiPlayer;
+        KIPlayer *ki = self->kiPlayer;
         bool runLab = true;
-        if ((unsigned int)(*(int *)(ki + 0x28) - 9) >= 2) {
+        if ((unsigned int)(ki->shipGroup - 9) >= 2) {
             int sys = ((Status *)(*gStatus))->getSystem();
-            ki = (char *)self->kiPlayer;
-            if (sys != 0 && *(char *)(ki + 0x42) != 0) {
+            ki = self->kiPlayer;
+            if (sys != 0 && ki->field_0x42 != 0) {
                 if (amount > 0) {
-                    ((Level *)(*(void **)(ki + 0x54)))->attackWanted(*(int *)(ki + 0x48));
+                    ((Level *)(ki->level))->attackWanted(ki->field_0x48);
                 }
                 runLab = false;
             } else if (self->kiPlayer == 0) {
@@ -621,17 +621,17 @@ void Player::damageEmp(int amount, bool flag) {
             }
         }
         // LAB_000b3016
-        if (runLab && self->alwaysEnemy == 0 && ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 &&
-            (unsigned int)(*(int *)((char *)self->kiPlayer + 0x28) - 9) > 1 &&
+        if (runLab && self->alwaysEnemy == 0 && self->kiPlayer->isWingMan() == 0 &&
+            (unsigned int)(self->kiPlayer->shipGroup - 9) > 1 &&
             ((Status *)(*gStatus))->getSystem() != 0) {
-            int race = *(int *)((char *)self->kiPlayer + 0x28);
+            int race = self->kiPlayer->shipGroup;
             ((Status *)(*gStatus))->getSystem();
             if (race == ((SolarSystem *)(intptr_t)((Status *)(*gStatus))->getSystem())->getRace()) {
                 int prev = self->field_dc;
                 self->field_dc = prev + amount;
                 if (__aeabi_idiv(self->maxEmpPoints, 3) < prev + amount) {
                     self->turnedEnemy = 1;
-                    ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->friendTurnedEnemy();
+                    ((Level *)(self->kiPlayer->level))->friendTurnedEnemy();
                 }
             }
         }
@@ -647,28 +647,28 @@ void Player::damageEmp(int amount, bool flag) {
     }
     if (!flag && self->kiPlayer != 0) {
         if (self->alwaysEnemy == 0 &&
-            (unsigned int)(*(int *)((char *)self->kiPlayer + 0x28) - 9) > 1 &&
+            (unsigned int)(self->kiPlayer->shipGroup - 9) > 1 &&
             ((Status *)(*gStatus))->getSystem() != 0) {
-            int race = *(int *)((char *)self->kiPlayer + 0x28);
+            int race = self->kiPlayer->shipGroup;
             ((Status *)(*gStatus))->getSystem();
             if (race == ((SolarSystem *)(intptr_t)((Status *)(*gStatus))->getSystem())->getRace()) {
-                ((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->alarmAllFriends(*(int *)((char *)self->kiPlayer + 0x28), false);
+                ((Level *)(self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, false);
             }
         }
-        char *ki = (char *)self->kiPlayer;
-        if (*(char *)(ki + 0x3c) != 0) {
+        KIPlayer *ki = self->kiPlayer;
+        if (ki->stealFlag != 0) {
             goto lab_30e2;
         }
-        if (*(char *)(ki + 0x3d) != 0) {
+        if (*(char *)((char *)ki + 0x3d) != 0) {  // RAWREAD: ki+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
             goto lab_30f4;
         }
-        if (*(char *)(ki + 0x42) != 0) {
+        if (ki->field_0x42 != 0) {
             goto lab_30f4;
         }
         {
             void *st = (void *)(long)((Status *)(*gStatus))->getStanding();
-            ((Standing *)(st))->applyDisable(*(int *)((char *)self->kiPlayer + 0x28));
-            ki = (char *)self->kiPlayer;
+            ((Standing *)(st))->applyDisable(self->kiPlayer->shipGroup);
+            ki = self->kiPlayer;
         }
     lab_30e2:
         if (ki == 0) {
@@ -688,7 +688,7 @@ void Player::damageEmp(int amount, bool flag) {
                 int cnt = *(int *)((char *)(*g_damageEmp_progress) + 0x134) + 1;
                 *(int *)((char *)(*g_damageEmp_progress) + 0x134) = cnt;
                 if (((Achievements *)(*g_damageEmp_achievements))->getValue(0x2a, 1) <= cnt) {
-                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
+                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                     void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     ((Hud *)(hud))->hudEventMedal(0x2a, 100);
                     *(char *)((char *)(*g_damageEmp_progress) + 0x138) = 1;
@@ -792,7 +792,7 @@ void Player::stopShootSound(int index, int channel) {
     if (((1 << channel) & 0x10c) != 0) {
         void *sound;
         int id;
-        if (this->kiPlayer != 0 && *(int *)((char *)this->kiPlayer + 0x28) == 9) {
+        if (this->kiPlayer != 0 && this->kiPlayer->shipGroup == 9) {
             id = 0x3e;
             sound = gFModSoundAlt;
         } else {
@@ -983,7 +983,7 @@ __attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int
     if (self->kiPlayer == 0) {
         soundId = gShootSoundsByIndex[type];
     } else {
-        unsigned int kind = *(unsigned int *)((char *)self->kiPlayer + 0x28);
+        unsigned int kind = (unsigned int)self->kiPlayer->shipGroup;
         if (kind < 0xb) {
             soundId = gShootSoundsByType[kind];
         } else {
@@ -1070,32 +1070,32 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
     if (self->hitpoints < 1) return;
 
     if (flag == 0 && self->kiPlayer != 0) {
-        char *ki = (char *)self->kiPlayer;
+        KIPlayer *ki = self->kiPlayer;
         if (self->alwaysEnemy == 0 &&
-            (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
+            (unsigned int)(ki->shipGroup - 9) > 1 &&
             ((Status *)(*gStatus))->getSystem() != 0 &&
             ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
-            ki = (char *)self->kiPlayer;
-            if (*(char *)(ki + 0x42) != 0) {
+            ki = self->kiPlayer;
+            if (ki->field_0x42 != 0) {
                 if (amount > 0) {
                     self->damageDoneByPlayer = self->damageDoneByPlayer + amount;
-                    ((Level *)(*(void **)(ki + 0x54)))->attackWanted(*(int *)(ki + 0x48));
+                    ((Level *)(ki->level))->attackWanted(ki->field_0x48);
                 }
                 goto LAB_3488;
             }
         } else {
-            ki = (char *)self->kiPlayer;
+            ki = self->kiPlayer;
         }
 
         if (ki != 0 && self->alwaysEnemy == 0 &&
-            (unsigned int)(*(int *)(ki + 0x28) - 9) > 1 &&
-            ((KIPlayer *)self->kiPlayer)->isWingMan() == 0 && ((Status *)(*gStatus))->getSystem() != 0 &&
+            (unsigned int)(ki->shipGroup - 9) > 1 &&
+            self->kiPlayer->isWingMan() == 0 && ((Status *)(*gStatus))->getSystem() != 0 &&
             ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
-            int race = *(int *)((char *)self->kiPlayer + 0x28);
+            int race = self->kiPlayer->shipGroup;
             ((Status *)(*gStatus))->getSystem();
             bool sameRace = (race == ((SolarSystem *)(intptr_t)((Status *)(*gStatus))->getSystem())->getRace());
             if (!sameRace) {
-                int race2 = *(int *)((char *)self->kiPlayer + 0x28);
+                int race2 = self->kiPlayer->shipGroup;
                 void *sys = (void *)(long)((Status *)(*gStatus))->getSystem();
                 if (race2 != ((SolarSystem *)(sys))->getAttackRace()) {
                     goto LAB_342a;
@@ -1110,23 +1110,23 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float thr3 = (hc != 0) ? k_damage_hc2 : k_damage_full2;
 
             if (f1 < dmgF) {
-                ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->friendTurnedEnemy();
+                ((Level *)(self->kiPlayer->level))->friendTurnedEnemy();
                 void *ship = (void *)((Status *)(*gStatus))->getShip();
                 void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
                 if (((Ship *)(ship))->getSignatureRace() >= 0) {
                     bool match = ((unsigned int)((Ship *)(ship))->getSignatureRace() ==
-                                  *(unsigned int *)((char *)self->kiPlayer + 0x28));
+                                  (unsigned int)self->kiPlayer->shipGroup);
                     unsigned int dis = 0;
-                    if (match) dis = *(unsigned char *)((char *)self->kiPlayer + 0x42);
+                    if (match) dis = (unsigned char)self->kiPlayer->field_0x42;
                     if (match && dis == 0) {
                         Item *item = ((Ship *)(ship))->getFirstEquipmentOfSort(0x1d);
                         ((Ship *)(ship))->removeEquipment(item);
                         void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                         ((Standing *)(st2))->applyDelict(((Ship *)(ship))->getSignatureRace(), 100);
                         ((Standing *)(standing))->setPlayerSignatureRace(-1);
-                        void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
+                        void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                         int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                        int p = (int)(long)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
+                        int p = (int)(long)((Level *)(self->kiPlayer->level))->getPlayer();
                         ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                     }
                 }
@@ -1138,16 +1138,16 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                 void *ship = (void *)((Status *)(*gStatus))->getShip();
                 void *standing = (void *)(long)((Status *)(*gStatus))->getStanding();
                 if (((Ship *)(ship))->getSignatureRace() >= 0 &&
-                    *(int *)((char *)self->kiPlayer + 0x28) < 4 &&
-                    *(char *)((char *)self->kiPlayer + 0x42) == 0) {
+                    self->kiPlayer->shipGroup < 4 &&
+                    self->kiPlayer->field_0x42 == 0) {
                     Item *item = ((Ship *)(ship))->getFirstEquipmentOfSort(0x1d);
                     ((Ship *)(ship))->removeEquipment(item);
                     void *st2 = (void *)(long)((Status *)(*gStatus))->getStanding();
                     ((Standing *)(st2))->applyDelict(((Ship *)(ship))->getSignatureRace(), 100);
                     ((Standing *)(standing))->setPlayerSignatureRace(-1);
-                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
+                    void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                     int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                    int p = (int)(long)((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->getPlayer();
+                    int p = (int)(long)((Level *)(self->kiPlayer->level))->getPlayer();
                     ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
                 }
                 self->turnedEnemy = 1;
@@ -1156,7 +1156,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float f4a = (float)self->maxHitpoints;
             float dmgF4 = (float)self->damageDoneByPlayer;
             if (thr3 * f4a < dmgF4) {
-                ((Level *)(*(void **)((char *)self->kiPlayer + 0x54)))->alarmAllFriends(*(int *)((char *)self->kiPlayer + 0x28), true);
+                ((Level *)(self->kiPlayer->level))->alarmAllFriends(self->kiPlayer->shipGroup, true);
             }
             goto LAB_3488;
         }
@@ -1166,19 +1166,19 @@ LAB_342a:
     {
         Globals *globals = (Globals *)*g_damage_globals;
         if (((Status *)(*gStatus))->inBlackMarketSystem() != 0) {
-            char *ki = (char *)self->kiPlayer;
-            if (ki != 0 && *(int *)(ki + 0x28) == 8) {
+            KIPlayer *ki = self->kiPlayer;
+            if (ki != 0 && ki->shipGroup == 8) {
                 self->turnedEnemy = 1;
-                ((Level *)(*(void **)(ki + 0x54)))->alarmAllFriends(8, true);
-                int *enemies = (int *)(__INTPTR_TYPE__)((Level *)(*(void **)(ki + 0x54)))->getEnemies();
+                ((Level *)(ki->level))->alarmAllFriends(8, true);
+                int *enemies = (int *)(__INTPTR_TYPE__)((Level *)(ki->level))->getEnemies();
                 if (enemies != 0) {
                     int count = enemies[0];
                     int i = 0;
                     while (count != i) {
                         int e = *(int *)(enemies[1] + i * 4);
                         i++;
-                        if (*(int *)(e + 0x28) == 8) {
-                            *(char *)(e + 0x25) = 1;
+                        if (*(int *)(e + 0x28) == 8) {  // RAWREAD: e+0x28 (enemies[] element is an untyped int handle, not a typed KIPlayer*)
+                            *(char *)(e + 0x25) = 1;     // RAWREAD: e+0x25 (untyped int handle)
                         }
                     }
                 }
@@ -1209,12 +1209,12 @@ LAB_3488:
 
     {
         int hp;
-        char *ki = (char *)self->kiPlayer;
-        if (ki != 0 && *(char *)(ki + 0x3c) == 0 && *(char *)(ki + 0x3d) == 0 &&
-            *(char *)(ki + 0x42) != 0) {
+        KIPlayer *ki = self->kiPlayer;
+        if (ki != 0 && ki->stealFlag == 0 && *(char *)((char *)ki + 0x3d) == 0 &&  // RAWREAD: ki+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
+            ki->field_0x42 != 0) {
             hp = self->hitpoints;
             if (__aeabi_idiv(self->maxHitpoints, 3) > hp) {
-                ((Level *)(*(int *)(ki + 0x54)))->almostKillWanted(*(int *)(ki + 0x48));
+                ((Level *)(ki->level))->almostKillWanted(ki->field_0x48);
             } else {
                 goto LAB_34f8_hp;
             }
@@ -1226,26 +1226,26 @@ LAB_3488:
             if (flag != 0) {
                 self->field_44 = 1;
             } else {
-                char *ki2 = (char *)self->kiPlayer;
-                if (ki2 != 0 && *(char *)(ki2 + 0x3c) == 0 && *(char *)(ki2 + 0x3d) == 0 &&
+                KIPlayer *ki2 = self->kiPlayer;
+                if (ki2 != 0 && ki2->stealFlag == 0 && *(char *)((char *)ki2 + 0x3d) == 0 &&  // RAWREAD: ki2+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
                     ((Status *)(*gStatus))->inBlackMarketSystem() == 0) {
-                    if (*(char *)((char *)self->kiPlayer + 0x42) == 0) {
+                    if (self->kiPlayer->field_0x42 == 0) {
                         void *st = (void *)(long)((Status *)(*gStatus))->getStanding();
-                        ((Standing *)(st))->applyKill(*(int *)((char *)self->kiPlayer + 0x28));
+                        ((Standing *)(st))->applyKill(self->kiPlayer->shipGroup);
                     }
                     int mission = ((Status *)(*gStatus))->getCampaignMission();
-                    char *ki3 = (char *)self->kiPlayer;
+                    KIPlayer *ki3 = self->kiPlayer;
                     // NOTE: original text-table key for this name lookup was dropped by the
                     // decompiler; using missionId (the only contextual id) to keep it compiling.
                     void *txt = ((GameText *)(*g_damage_text[0]))->getText(missionId);
-                    int cmp = ((String *)(ki3 + 0x18))->Compare_str((String *)txt);
+                    int cmp = (&ki3->name)->Compare_str((String *)txt);
                     if (missionId == 0xb3 && cmp == 0) {
                         // Ghidra: mission->setStatusValue(mission->getStatusValue() + 1)
                         ((Mission *)(intptr_t)mission)->setStatusValue(
                             ((Mission *)(intptr_t)mission)->getStatusValue() + 1);
                     }
-                    if (*(char *)((char *)self->kiPlayer + 0x42) != 0) {
-                        ((Level *)(*(int *)((char *)self->kiPlayer + 0x54)))->killWanted();
+                    if (self->kiPlayer->field_0x42 != 0) {
+                        ((Level *)(self->kiPlayer->level))->killWanted();
                     }
                 }
             }
@@ -1256,12 +1256,12 @@ LAB_3488:
     *(float *)&self->field_60 = *(float *)&self->field_60 + k_damage_regen;
     ((Player *)(self))->updateDamageRate();
     if (self->kiPlayer != 0) {
-        int slave = *(int *)((char *)self->kiPlayer + 0x10);
+        int slave = self->kiPlayer->field_0x10;
         if (slave != 0) {
-            Player *other = *(Player **)(slave + 4);
+            Player *other = *(Player **)(slave + 4);     // RAWREAD: slave+4 (slave is an untyped int handle, not a modeled class)
             other->vulnerable = 1;
             other->damage(amount);
-            *(char *)(*(int *)(*(int *)((char *)self->kiPlayer + 0x10) + 4) + 0xc2) = 0;
+            *(char *)(*(int *)(self->kiPlayer->field_0x10 + 4) + 0xc2) = 0;  // RAWREAD: slave+4, +0xc2 (untyped int handle)
         }
     }
 }
