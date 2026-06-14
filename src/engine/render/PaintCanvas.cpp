@@ -198,7 +198,7 @@ extern "C" void paintcanvas_ext_gl_str_fromchar(void *out, const char *s, bool c
 extern "C" void paintcanvas_ext_gl_str_assign(void *dst, void *src);
 extern "C" void paintcanvas_ext_gl_str_dtor(void *s);
 extern "C" void paintcanvas_ext_dl_glLineWidth(float w);
-extern "C" void paintcanvas_ext_dl_glEnable(unsigned int eng, bool on);
+extern "C" void paintcanvas_ext_dl_glEnable(void *eng, bool on);
 extern "C" float paintcanvas_ext_dl_signedtofloat(int v, unsigned int mode);
 extern "C" void paintcanvas_ext_dl_setwvm(void *self, void *m);
 extern "C" void paintcanvas_ext_dl_glVertexPointer(int a, int b, int c, void *p);
@@ -1058,12 +1058,11 @@ extern float *paintcanvas_g_pom_b HIDDEN;
 
 void PaintCanvas::SetProjOrthoMatrix()
 {
-    char *t = (char *)this;
     float g = *paintcanvas_g_pom_persp;
     if (g != -1.0f) {
         paintcanvas_ext_setprojmatrix3d(this, g, *paintcanvas_g_pom_a, *paintcanvas_g_pom_b);
     }
-    void *eng = *(void **)&this->field_0x34;
+    void *eng = this->field_0x34;
     float *r;
     r = &this->projOrthoMatrix.m[12]; r[0] = 0.0f; r[1] = 0.0f; r[2] = 0.0f; r[3] = 0.0f;
     r = &this->projOrthoMatrix.m[8]; r[0] = 0.0f; r[1] = 0.0f; r[2] = 0.0f; r[3] = 0.0f;
@@ -1073,7 +1072,7 @@ void PaintCanvas::SetProjOrthoMatrix()
     int w = paintcanvas_ext_getdisplaywidth(eng);
     this->projOrthoMatrix.m[0] = (float)(2.0 / (double)w);
 
-    int h = paintcanvas_ext_getdisplayheight(*(void **)&this->field_0x34);
+    int h = paintcanvas_ext_getdisplayheight(this->field_0x34);
     this->projOrthoMatrix.m[10] = -0.05f;
     this->projOrthoMatrix.m[15] = 1.0f;
     this->projOrthoMatrix.m[12] = -1.0f;
@@ -1285,14 +1284,13 @@ __attribute__((visibility("hidden"))) extern const float g_di2_def_88d94;
 void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
                  unsigned char param_4)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x14c) {
+    if (param_1 >= this->field_0x14c) {
         return;
     }
-    char *img = (*(char ***)&this->field_0x150)[param_1];
+    char *img = ((char **)this->field_0x150)[param_1];
     if (*(unsigned char *)(img + 0x14) != 0) {
         paintcanvas_ext_di2_restore(*(unsigned char *)(img + 0x14), img);
-        img = (*(char ***)&this->field_0x150)[param_1];
+        img = ((char **)this->field_0x150)[param_1];
     }
     paintcanvas_ext_di2_settexture(this, *(unsigned int *)(img + 4), -1);
 
@@ -1309,8 +1307,8 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
     if (param_4 & 1) {
         m[0] = g_di2_one_88d90;
         float off = g_di2_def_88d94;
-        if (param_1 < *(unsigned int *)&this->field_0x14c) {
-            unsigned short w = *(unsigned short *)((*(char ***)&this->field_0x150)[param_1] + 0x10);
+        if (param_1 < this->field_0x14c) {
+            unsigned short w = *(unsigned short *)(((char **)this->field_0x150)[param_1] + 0x10);
             off = paintcanvas_ext_di2_unsignedtofloat(w, 0);
         }
         fx = off + fx;
@@ -1318,8 +1316,8 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
     if (param_4 & 2) {
         m[5] = g_di2_one_88d90;
         float off = g_di2_def_88d94;
-        if (param_1 < *(unsigned int *)&this->field_0x14c) {
-            unsigned short h = *(unsigned short *)((*(char ***)&this->field_0x150)[param_1] + 0x12);
+        if (param_1 < this->field_0x14c) {
+            unsigned short h = *(unsigned short *)(((char **)this->field_0x150)[param_1] + 0x12);
             off = paintcanvas_ext_di2_unsignedtofloat(h, 0);
         }
         fy = off + fy;
@@ -1329,8 +1327,8 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
 
     paintcanvas_ext_di2_setwvm(this, m);
     paintcanvas_ext_di2_gldisable(0xb44);
-    paintcanvas_ext_di2_meshdraw(*(void **)&this->field_0x34,
-                                 *(void **)((*(char ***)&this->field_0x150)[param_1]));
+    paintcanvas_ext_di2_meshdraw(this->field_0x34,
+                                 *(void **)(((char **)this->field_0x150)[param_1]));
     paintcanvas_ext_di2_glenable(0xb44);
 }
 
@@ -1347,12 +1345,11 @@ __attribute__((visibility("hidden"))) extern const unsigned int g_sbm_const_8ce3
 
 void PaintCanvas::SetBlendMode(int param_2)
 {
-    char *t = (char *)this;
-    paintcanvas_ext_sbm_lightenable(*(void **)&this->field_0x34, 0);
+    paintcanvas_ext_sbm_lightenable(this->field_0x34, 0);
 
     char *flag = g_sbm_flag_8cb62;
     if (*flag != 0) {
-        paintcanvas_ext_sbm_glenablecap(*(void **)&this->field_0x34, g_sbm_const_8ce34, 0);
+        paintcanvas_ext_sbm_glenablecap(this->field_0x34, g_sbm_const_8ce34, 0);
     } else {
         paintcanvas_ext_sbm_glTexEnvi(0x2300, 0x2200, 0x2100);
     }
@@ -1384,8 +1381,8 @@ void PaintCanvas::SetBlendMode(int param_2)
         paintcanvas_ext_sbm_setlight(0);
         return;
     case 6:
-        paintcanvas_ext_sbm_lightenable(*(void **)&this->field_0x34, 1);
-        paintcanvas_ext_sbm_lightsetlight(*(void **)&this->field_0x34, 0x4000);
+        paintcanvas_ext_sbm_lightenable(this->field_0x34, 1);
+        paintcanvas_ext_sbm_lightsetlight(this->field_0x34, 0x4000);
         /* fallthrough */
     case 0:
         paintcanvas_ext_sbm_glEnable(0xb44);
@@ -1393,24 +1390,24 @@ void PaintCanvas::SetBlendMode(int param_2)
         paintcanvas_ext_sbm_setlight(1);
         return;
     case 7:
-        paintcanvas_ext_sbm_lightenable(*(void **)&this->field_0x34, 1);
-        paintcanvas_ext_sbm_lightsetlight(*(void **)&this->field_0x34, 0x4000);
+        paintcanvas_ext_sbm_lightenable(this->field_0x34, 1);
+        paintcanvas_ext_sbm_lightsetlight(this->field_0x34, 0x4000);
         paintcanvas_ext_sbm_glEnable(0xb44);
         paintcanvas_ext_sbm_glEnable(0xbe2);
         paintcanvas_ext_sbm_glBlendFunc(1, 1);
         paintcanvas_ext_sbm_setlight(0);
         return;
     case 8:
-        paintcanvas_ext_sbm_lightenable(*(void **)&this->field_0x34, 1);
-        paintcanvas_ext_sbm_lightsetlight(*(void **)&this->field_0x34, 0x4000);
+        paintcanvas_ext_sbm_lightenable(this->field_0x34, 1);
+        paintcanvas_ext_sbm_lightsetlight(this->field_0x34, 0x4000);
         paintcanvas_ext_sbm_glEnable(0xb44);
         paintcanvas_ext_sbm_glEnable(0xbe2);
         paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
         paintcanvas_ext_sbm_setlight(0);
         return;
     case 9:
-        paintcanvas_ext_sbm_lightenable(*(void **)&this->field_0x34, 1);
-        paintcanvas_ext_sbm_lightsetlight(*(void **)&this->field_0x34, 0x4000);
+        paintcanvas_ext_sbm_lightenable(this->field_0x34, 1);
+        paintcanvas_ext_sbm_lightsetlight(this->field_0x34, 0x4000);
         paintcanvas_ext_sbm_glEnable(0xb44);
         paintcanvas_ext_sbm_glEnable(0xbe2);
         paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
@@ -1420,7 +1417,7 @@ void PaintCanvas::SetBlendMode(int param_2)
         paintcanvas_ext_sbm_glEnable(0xb44);
         paintcanvas_ext_sbm_glDisable(0xbe2);
         paintcanvas_ext_sbm_glDepthMask(1);
-        paintcanvas_ext_sbm_setalpha(*(void **)&this->field_0x34, 0x1000000, 1);
+        paintcanvas_ext_sbm_setalpha(this->field_0x34, 0x1000000, 1);
         if (*flag == 0) {
             paintcanvas_ext_sbm_glAlphaFunc(0x204, 0.5f);
         }
@@ -1431,7 +1428,7 @@ void PaintCanvas::SetBlendMode(int param_2)
         paintcanvas_ext_sbm_glBlendFunc(0x302, 0x303);
         paintcanvas_ext_sbm_glDepthMask(0);
         if (*flag != 0) {
-            paintcanvas_ext_sbm_setalpha(*(void **)&this->field_0x34, g_sbm_const_8ce34, 1);
+            paintcanvas_ext_sbm_setalpha(this->field_0x34, g_sbm_const_8ce34, 1);
             return;
         }
         paintcanvas_ext_sbm_texcombine(0x2300, 0x2200, 0x8570);
@@ -1666,9 +1663,8 @@ __attribute__((visibility("hidden"))) extern const unsigned int g_init_const_7e7
 
 void PaintCanvas::Initialize(bool param_1)
 {
-    char *t = (char *)this;
-    *(unsigned int *)&this->field_0x30 = param_1 ? 2 : 0;
-    paintcanvas_ext_init_setorientation(*(void **)&this->field_0x34);
+    this->field_0x30 = param_1 ? 2 : 0;
+    paintcanvas_ext_init_setorientation(this->field_0x34);
 
     // zero out the four 4-float blocks at 0x78, 0x88, 0x98, 0xa8
     memset(&this->projOrthoMatrix.m[0], 0, 0x10);
@@ -1676,10 +1672,10 @@ void PaintCanvas::Initialize(bool param_1)
     memset(&this->projOrthoMatrix.m[8], 0, 0x10);
     memset(&this->projOrthoMatrix.m[12], 0, 0x10);
 
-    int orient = *(int *)&this->field_0x30;
-    int w = paintcanvas_ext_init_dispwidth(*(void **)&this->field_0x34);
+    int orient = this->field_0x30;
+    int w = paintcanvas_ext_init_dispwidth(this->field_0x34);
     float fw = paintcanvas_ext_init_signedtofloat(w, 0);
-    int h = paintcanvas_ext_init_dispheight(*(void **)&this->field_0x34);
+    int h = paintcanvas_ext_init_dispheight(this->field_0x34);
     float fh = paintcanvas_ext_init_signedtofloat(h, 0);
 
     float ymul;
@@ -1750,7 +1746,6 @@ __attribute__((visibility("hidden"))) extern const unsigned int g_spm_const_7b95
 void PaintCanvas::SetProjectionMatrix3d(float param_1, float param_2,
                            float param_3)
 {
-    char *t = (char *)this;
 
     // stash parameters into the engine globals
     *g_spm_p0_7b826 = param_3;
@@ -1759,8 +1754,8 @@ void PaintCanvas::SetProjectionMatrix3d(float param_1, float param_2,
     *g_spm_p2_7b82c = param_2;
     *g_spm_p3_7b82e = param_3;
 
-    int w = paintcanvas_ext_spm_dispwidth(*(void **)&this->field_0x34);
-    int h = paintcanvas_ext_spm_dispheight(*(void **)&this->field_0x34);
+    int w = paintcanvas_ext_spm_dispwidth(this->field_0x34);
+    int h = paintcanvas_ext_spm_dispheight(this->field_0x34);
     float half = param_1 * 0.5f;
     float s = paintcanvas_ext_spm_sinf(half);
     float c = paintcanvas_ext_spm_cosf(half);
@@ -1773,10 +1768,10 @@ void PaintCanvas::SetProjectionMatrix3d(float param_1, float param_2,
     memset(&this->projMatrix3d.m[4], 0, 0x10);
     memset(&this->projMatrix3d.m[0], 0, 0x10);
 
-    if (*(unsigned int *)&this->field_0x30 <= 3) {
+    if (this->field_0x30 <= 3) {
         float aspect = fw / fh;
         float f = 1.0f / (s / c);
-        switch (*(unsigned int *)&this->field_0x30) {
+        switch (this->field_0x30) {
         case 0:
             this->projMatrix3d.m[4] = f / aspect;
             this->projMatrix3d.m[1] = -f;
@@ -1805,11 +1800,10 @@ __attribute__((visibility("hidden"))) extern const double g_dss1_gravscale_8ac10
 
 void PaintCanvas::DrawSpriteSystem(unsigned int param_1)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x180) {
+    if (param_1 >= this->field_0x180) {
         return;
     }
-    if ((*(void ***)&this->field_0x184)[param_1] == 0) {
+    if (((void **)this->field_0x184)[param_1] == 0) {
         return;
     }
 
@@ -1819,8 +1813,8 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1)
     worldM[5] = 1.0f;
     worldM[14] = 1.0f;
 
-    if (*(unsigned int *)&this->field_0x170 < *(unsigned int *)&this->field_0x164) {
-        if (*t == 0) {
+    if (this->field_0x170 < this->field_0x164) {
+        if (this->field_0x0 == 0) {
             float inv[16];
             memset(inv, 0, sizeof(inv));
             inv[0] = 1.0f;
@@ -1837,10 +1831,10 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1)
             rotM[14] = 1.0f;
             paintcanvas_ext_dss1_matidentity(scratch, rotM);
 
-            void *grav = paintcanvas_ext_dss1_getgrav(*(void **)&this->field_0x34);
+            void *grav = paintcanvas_ext_dss1_getgrav(this->field_0x34);
             double angle = *(double *)((char *)grav + 8) * g_dss1_gravscale_8ac10;
             float a = (float)angle;
-            int orient = *(int *)&this->field_0x30;
+            int orient = this->field_0x30;
             float rot = (orient == 1) ? a : -a;
             float s = paintcanvas_ext_dss1_sinf(rot);
             float c = paintcanvas_ext_dss1_cosf(rot);
@@ -1850,7 +1844,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1)
             rotM[4] = s;
 
             // copy the active camera's view matrix (at cam+0xc) into scratch
-            char *cam = (*(char ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+            char *cam = ((char **)this->field_0x168)[this->field_0x170];
             paintcanvas_ext_dss1_memcpy(scratch, cam + 0xc, 0x3c);
             paintcanvas_ext_dss1_mtx_muleq(scratch, rotM);
             paintcanvas_ext_dss1_mtx_getinv(scratch, scratch);
@@ -1863,8 +1857,8 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1)
     ident[0] = 1.0f;
     ident[5] = 1.0f;
     ident[14] = 1.0f;
-    paintcanvas_ext_dss1_ssdraw(*(void **)&this->field_0x34, ident, worldM,
-                                (*(void ***)&this->field_0x184)[param_1]);
+    paintcanvas_ext_dss1_ssdraw(this->field_0x34, ident, worldM,
+                                ((void **)this->field_0x184)[param_1]);
 }
 
 float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
@@ -1946,7 +1940,6 @@ __attribute__((visibility("hidden"))) extern char *const g_dl_flag_794ee;
 
 void PaintCanvas::DrawLine(int param_1, int param_2, int param_3, int param_4)
 {
-    char *t = (char *)this;
     char abuf[60];
 
     float x1 = paintcanvas_ext_dl_signedtofloat(param_1 + 1, 0);
@@ -1965,26 +1958,26 @@ void PaintCanvas::DrawLine(int param_1, int param_2, int param_3, int param_4)
 
     if (*g_dl_flag_794ee == 0) {
         paintcanvas_ext_dl_glLineWidth(1.0f);
-        paintcanvas_ext_dl_glEnable(*(unsigned int *)&this->field_0x34, true);
+        paintcanvas_ext_dl_glEnable(this->field_0x34, true);
         v[0] = x1;
         v[1] = y1;
         v[2] = x2;
         v[3] = y2;
         paintcanvas_ext_dl_setwvm(this, abuf);
         paintcanvas_ext_dl_glVertexPointer(2, 0x1406, 0, this->lineVerts);
-        paintcanvas_ext_dl_glColorMask(*(void **)&this->field_0x34, 0x8074, 1);
-        paintcanvas_ext_dl_glColorMask(*(void **)&this->field_0x34, 0x8078, 0);
-        paintcanvas_ext_dl_glColorMask(*(void **)&this->field_0x34, 0x8075, 0);
-        paintcanvas_ext_dl_glColorMask(*(void **)&this->field_0x34, 0x8076, 0);
+        paintcanvas_ext_dl_glColorMask(this->field_0x34, 0x8074, 1);
+        paintcanvas_ext_dl_glColorMask(this->field_0x34, 0x8078, 0);
+        paintcanvas_ext_dl_glColorMask(this->field_0x34, 0x8075, 0);
+        paintcanvas_ext_dl_glColorMask(this->field_0x34, 0x8076, 0);
         paintcanvas_ext_dl_glDrawArrays(1, 0, 2);
-        paintcanvas_ext_dl_glEnable(*(unsigned int *)&this->field_0x34, true);
+        paintcanvas_ext_dl_glEnable(this->field_0x34, true);
     } else {
         paintcanvas_ext_dl_setwvm(this, abuf);
         v[0] = x1;
         v[1] = y1;
         v[2] = x2;
         v[3] = y2;
-        paintcanvas_ext_dl_drawline2d(*(void **)&this->field_0x34, this->lineVerts, true);
+        paintcanvas_ext_dl_drawline2d(this->field_0x34, this->lineVerts, true);
     }
 }
 
@@ -2289,8 +2282,7 @@ void PaintCanvas::SpriteSystemCreate(unsigned short param_1, bool param_2,
 
 void PaintCanvas::GetScreenPosition(char *param_1, char *param_2)
 {
-    char *t = (char *)this;
-    if (*(unsigned int *)&this->field_0x170 >= *(unsigned int *)&this->field_0x164) {
+    if (this->field_0x170 >= this->field_0x164) {
         return;
     }
 
@@ -2301,7 +2293,7 @@ void PaintCanvas::GetScreenPosition(char *param_1, char *param_2)
     src[2] = *(float *)(param_1 + 0x2c);
     paintcanvas_ext_gsp_vec_assign(param_2, src);
 
-    char *cam = (*(char ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    char *cam = ((char **)this->field_0x168)[this->field_0x170];
     float z = *(float *)(param_2 + 8);
     float denomX = *(float *)(cam + 0x4c) * z;
     if (denomX == 0.0f) {
@@ -2328,7 +2320,7 @@ void PaintCanvas::GetScreenPosition(char *param_1, char *param_2)
 
     // remaining clamp/visibility checks have no observable side-effects on output
     // (they compute booleans only); reproduce the visible reads to keep behavior.
-    char *cam2 = (*(char ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    char *cam2 = ((char **)this->field_0x168)[this->field_0x170];
     if (*(float *)(param_2 + 8) <= *(float *)(cam2 + 4)) {
         float fy = *(float *)(param_2 + 4);
         if (fy >= 0.0f) {
@@ -2391,9 +2383,8 @@ __attribute__((visibility("hidden"))) extern const double g_cisvf_gravscale_7bcd
 
 int PaintCanvas::CameraIsSphereinViewFrustum(void *param_1, float param_2)
 {
-    char *t = (char *)this;
     if (param_2 == 0.0f ||
-        *(unsigned int *)&this->field_0x164 <= *(unsigned int *)&this->field_0x170) {
+        this->field_0x164 <= this->field_0x170) {
         return 1;
     }
 
@@ -2405,10 +2396,10 @@ int PaintCanvas::CameraIsSphereinViewFrustum(void *param_1, float param_2)
     char scratch[60];
     paintcanvas_ext_cisvf_matidentity(scratch, m);
 
-    void *grav = paintcanvas_ext_cisvf_getgrav(*(void **)&this->field_0x34);
+    void *grav = paintcanvas_ext_cisvf_getgrav(this->field_0x34);
     double angle = *(double *)((char *)grav + 8) * g_cisvf_gravscale_7bcd8;
     float a = (float)angle;
-    int orient = *(int *)&this->field_0x30;
+    int orient = this->field_0x30;
     float rot = (orient == 1) ? a : -a;
     float s = paintcanvas_ext_cisvf_sinf(rot);
     float c = paintcanvas_ext_cisvf_cosf(rot);
@@ -2417,7 +2408,7 @@ int PaintCanvas::CameraIsSphereinViewFrustum(void *param_1, float param_2)
     *(unsigned int *)&m[1] = *(unsigned int *)&s ^ 0x80000000;
     m[4] = s;
 
-    void *cam = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    void *cam = ((void **)this->field_0x168)[this->field_0x170];
     return paintcanvas_ext_cisvf_inner(param_1, param_2, m, cam);
 }
 
@@ -2536,9 +2527,8 @@ __attribute__((visibility("hidden"))) extern char *const g_rpm_flag_8d1b8;
 
 void PaintCanvas::ResetPersMatrix()
 {
-    char *t = (char *)this;
-    int w = paintcanvas_ext_rpm_dispwidth(*(void **)&this->field_0x34);
-    int h = paintcanvas_ext_rpm_dispheight(*(void **)&this->field_0x34);
+    int w = paintcanvas_ext_rpm_dispwidth(this->field_0x34);
+    int h = paintcanvas_ext_rpm_dispheight(this->field_0x34);
     float fov = *g_rpm_fov_8d0dc;
     float s = paintcanvas_ext_rpm_sinf(fov * 0.5f);
     float c = paintcanvas_ext_rpm_cosf(fov * 0.5f);
@@ -2550,10 +2540,10 @@ void PaintCanvas::ResetPersMatrix()
     memset(&this->projMatrix3d.m[8], 0, 0x10);
     memset(&this->projMatrix3d.m[4], 0, 0x10);
 
-    if (*(unsigned int *)&this->field_0x30 <= 3) {
+    if (this->field_0x30 <= 3) {
         float aspect = fw / fh;
         float f = 1.0f / (s / c);
-        switch (*(unsigned int *)&this->field_0x30) {
+        switch (this->field_0x30) {
         case 0:
             this->projMatrix3d.m[4] = f / aspect;
             this->projMatrix3d.m[1] = -f;
@@ -2590,7 +2580,7 @@ void PaintCanvas::ResetPersMatrix()
         paintcanvas_ext_rpm_glMatrixMode(0x1700);
         paintcanvas_ext_rpm_glFinish();
     } else {
-        paintcanvas_ext_rpm_loadproj(*(void **)&this->field_0x34, &this->projMatrix3d.m[0]);
+        paintcanvas_ext_rpm_loadproj(this->field_0x34, &this->projMatrix3d.m[0]);
     }
 }
 
@@ -2598,8 +2588,7 @@ __attribute__((visibility("hidden"))) extern const double g_cipvf_gravscale_7bba
 
 int PaintCanvas::CameraIsPointinViewFrustum(void *param_1)
 {
-    char *t = (char *)this;
-    if (*(unsigned int *)&this->field_0x170 >= *(unsigned int *)&this->field_0x164) {
+    if (this->field_0x170 >= this->field_0x164) {
         return 1;
     }
 
@@ -2612,10 +2601,10 @@ int PaintCanvas::CameraIsPointinViewFrustum(void *param_1)
     char scratch[60];
     paintcanvas_ext_cipvf_matidentity(scratch, m);
 
-    void *grav = paintcanvas_ext_cipvf_getgrav(*(void **)&this->field_0x34);
+    void *grav = paintcanvas_ext_cipvf_getgrav(this->field_0x34);
     double angle = *(double *)((char *)grav + 8) * g_cipvf_gravscale_7bba8;
     float a = (float)angle;
-    int orient = *(int *)&this->field_0x30;
+    int orient = this->field_0x30;
     float rot = (orient == 1) ? a : -a;
     float s = paintcanvas_ext_cipvf_sinf(rot);
     float c = paintcanvas_ext_cipvf_cosf(rot);
@@ -2624,7 +2613,7 @@ int PaintCanvas::CameraIsPointinViewFrustum(void *param_1)
     *(unsigned int *)&m[1] = *(unsigned int *)&s ^ 0x80000000;
     m[4] = s;
 
-    void *cam = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    void *cam = ((void **)this->field_0x168)[this->field_0x170];
     return paintcanvas_ext_cipvf_inner(param_1, m, cam);
 }
 
@@ -2635,7 +2624,6 @@ void PaintCanvas::SetTexture(unsigned int, unsigned int)
 
 PaintCanvas::~PaintCanvas()
 {
-    char *t = (char *)this;
     paintcanvas_ext_dtor_releaseall(this);
 
     // Walk the resource list (count at 0x134, array at 0x138), releasing each.
@@ -2683,7 +2671,7 @@ PaintCanvas::~PaintCanvas()
         }
     }
 
-    paintcanvas_ext_dtor_meshrelease(this->field_0x34, t + 8);
+    paintcanvas_ext_dtor_meshrelease(this->field_0x34, &this->field_0x8);
     paintcanvas_ext_dtor_meshrelease(this->field_0x34, &this->field_0x1c8);
 
     // Release the loaded-texture name strings (count at 0x10, array at 0x14).
@@ -2753,19 +2741,18 @@ __attribute__((visibility("hidden"))) extern const double g_gsp2_gravscale_8bfa8
 
 void PaintCanvas::GetScreenPosition(void *param_1, void *param_2, char *param_3)
 {
-    char *t = (char *)this;
 
     // first transform the input world position
     char transformed[16];
     paintcanvas_ext_gsp2_transformvec(transformed, param_1);
 
-    if (*(unsigned int *)&this->field_0x170 >= *(unsigned int *)&this->field_0x164) {
+    if (this->field_0x170 >= this->field_0x164) {
         return;
     }
 
     char invMat[60];
-    void *cam = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
-    if (*t == 0) {
+    void *cam = ((void **)this->field_0x168)[this->field_0x170];
+    if (this->field_0x0 == 0) {
         paintcanvas_ext_gsp2_invtransformvec(invMat, (char *)cam + 0xc);
         paintcanvas_ext_gsp2_vec_assign(param_3, invMat);
     } else {
@@ -2775,10 +2762,10 @@ void PaintCanvas::GetScreenPosition(void *param_1, void *param_2, char *param_3)
         m[0] = 1.0f; m[5] = 1.0f; m[14] = 1.0f;
         paintcanvas_ext_gsp2_matidentity(scratch, m);
 
-        void *grav = paintcanvas_ext_gsp2_getgrav(*(void **)&this->field_0x34);
+        void *grav = paintcanvas_ext_gsp2_getgrav(this->field_0x34);
         double angle = *(double *)((char *)grav + 8) * g_gsp2_gravscale_8bfa8;
         float a = (float)angle;
-        int orient = *(int *)&this->field_0x30;
+        int orient = this->field_0x30;
         float rot = (orient == 1) ? a : -a;
         float s = paintcanvas_ext_gsp2_sinf(rot);
         float c = paintcanvas_ext_gsp2_cosf(rot);
@@ -2794,7 +2781,7 @@ void PaintCanvas::GetScreenPosition(void *param_1, void *param_2, char *param_3)
     }
 
     float z = *(float *)(param_3 + 8);
-    char *cam2 = (*(char ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    char *cam2 = ((char **)this->field_0x168)[this->field_0x170];
     if (z > *(float *)(cam2 + 4)) {
         return;
     }
@@ -2934,7 +2921,6 @@ extern "C" void paintcanvas_ext_meshcreate5(void *, unsigned short, unsigned sho
 
 PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine)
 {
-    char *t = (char *)this;
     PCArrayCtor(&this->field_0x10);   // loaded-texture-name list
     PCArrayCtor(&this->field_0x24);   // meshes
     paintcanvas_ctor_matrix(&this->identityMatrix);
@@ -2951,30 +2937,30 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine)
     PCArrayCtor(&this->glowUints_count);  // glow uints
     PCArrayCtor(&this->glowMatC_count);  // glow matrices
 
-    *(unsigned char *)&this->field_0x1f1 = 0;
-    *(unsigned int *)&this->field_0x20 = 0;
-    *(unsigned int *)&this->field_0x1f4 = 1;
-    *(unsigned int *)&this->field_0x4 = 0;
-    *(unsigned char *)&this->field_0x0 = 0;
-    *(AbyssEngine::Engine **)&this->field_0x34 = engine;
-    *(unsigned int *)&this->field_0x170 = 0xffffffff;
+    this->field_0x1f1 = 0;
+    this->field_0x20 = 0;
+    this->field_0x1f4 = 1;
+    this->field_0x4 = 0;
+    this->field_0x0 = 0;
+    this->field_0x34 = engine;
+    this->field_0x170 = 0xffffffff;
 
     paintcanvas_ext_meshcreate5(engine, 4, 2, 0x11, &this->field_0x1c8);
 
-    int *p = *(int **)(*(char **)&this->field_0x1c8 + 0x2c);
+    int *p = *(int **)(this->field_0x1c8 + 0x2c);
     p[0] = 0x20000;
     p[1] = 1;
     p[2] = *(int *)0x87878;
-    *(float *)&this->field_0x1fc = 1.0f;
-    *(float *)&this->field_0x200 = 1.0f;
-    *(float *)&this->field_0x204 = 1.0f;
-    *(float *)&this->field_0x208 = 1.0f;
-    *(unsigned char *)&this->field_0x1c = 1;
+    this->field_0x1fc = 1.0f;
+    this->field_0x200 = 1.0f;
+    this->field_0x204 = 1.0f;
+    this->field_0x208 = 1.0f;
+    this->field_0x1c = 1;
     engine->field_0xfc = 1;
 
     paintcanvas_ext_meshcreate5(engine, 400, 200, 0x1b, &this->field_0x8);
 
-    short *buf = *(short **)(*(char **)&this->field_0x8 + 0x2c);
+    short *buf = *(short **)(this->field_0x8 + 0x2c);
     int j = 0;
     for (int i = 0; i != 0x4b0; i += 0xc) {
         short *e = buf + i / 2;
@@ -2987,8 +2973,8 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine)
         e[5] = (short)((j << 2) | 2);
         j++;
     }
-    *(unsigned char *)&this->field_0x1f8 = 1;
-    *(unsigned int *)&this->field_0x1cc = 0;
+    this->field_0x1f8 = 1;
+    this->field_0x1cc = 0;
 }
 
 void PaintCanvas::TransformRemoveMesh(unsigned int transformIndex, void *mesh)
@@ -3123,14 +3109,13 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
                  int param_4, int param_5, unsigned char param_6, unsigned char param_7,
                  unsigned char param_8)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x14c) {
+    if (param_1 >= this->field_0x14c) {
         return;
     }
-    char *img = (*(char ***)&this->field_0x150)[param_1];
+    char *img = ((char **)this->field_0x150)[param_1];
     if (*(unsigned char *)(img + 0x14) != 0) {
         paintcanvas_ext_di4_restore(*(unsigned char *)(img + 0x14), img);
-        img = (*(char ***)&this->field_0x150)[param_1];
+        img = ((char **)this->field_0x150)[param_1];
     }
     paintcanvas_ext_di4_settexture(this, *(unsigned int *)(img + 4));
 
@@ -3152,14 +3137,14 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
         spanW = paintcanvas_ext_di4_getwidth(this) - (param_4 + param_2);
     }
     float fSpanW = paintcanvas_ext_di4_signedtofloat(spanW, 0);
-    char *region = *(char **)(*(char **)((*(char ***)&this->field_0x150)[param_1]) + 4);
+    char *region = *(char **)(*(char **)(((char **)this->field_0x150)[param_1]) + 4);
     float regW = *(float *)(region + 0xc);
 
     // vertical flip-span (param_6 bit 7)
     int spanH = param_5;
     if (param_6 & 0x80) {
         spanH = paintcanvas_ext_di4_getheight(this) - (param_5 + param_3);
-        region = *(char **)(*(char **)((*(char ***)&this->field_0x150)[param_1]) + 4);
+        region = *(char **)(*(char **)(((char **)this->field_0x150)[param_1]) + 4);
     }
     float fSpanH = paintcanvas_ext_di4_signedtofloat(spanH, 0);
     float regH = *(float *)(region + 0x1c);
@@ -3236,8 +3221,8 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
 
     paintcanvas_ext_di4_setwvm(this, m);
     paintcanvas_ext_di4_gldisable(0xb44);
-    paintcanvas_ext_di4_meshdraw(*(void **)&this->field_0x34,
-                                 *(void **)((*(char ***)&this->field_0x150)[param_1]));
+    paintcanvas_ext_di4_meshdraw(this->field_0x34,
+                                 *(void **)(((char **)this->field_0x150)[param_1]));
     paintcanvas_ext_di4_glenable(0xb44);
 }
 
@@ -3257,14 +3242,13 @@ void PaintCanvas::CameraSetPerspective(unsigned int index, float fov, float aspe
 void PaintCanvas::DrawRegion2D(unsigned int param_1, float param_2, int param_3,
                   int param_4, int param_5, int param_6, float param_7, float param_8)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x14c) {
+    if (param_1 >= this->field_0x14c) {
         return;
     }
-    char *img = (*(char ***)&this->field_0x150)[param_1];
+    char *img = ((char **)this->field_0x150)[param_1];
     if (*(unsigned char *)(img + 0x14) != 0) {
         paintcanvas_ext_dr2_restore(*(unsigned char *)(img + 0x14), img);
-        img = (*(char ***)&this->field_0x150)[param_1];
+        img = ((char **)this->field_0x150)[param_1];
     }
     paintcanvas_ext_dr2_settexture(this, *(unsigned int *)(img + 4));
 
@@ -3316,8 +3300,8 @@ void PaintCanvas::DrawRegion2D(unsigned int param_1, float param_2, int param_3,
 
     paintcanvas_ext_dr2_setwvm(this, local138);
     paintcanvas_ext_dr2_gldisable(0xb44);
-    paintcanvas_ext_dr2_meshdraw(*(void **)&this->field_0x34,
-                                 *(void **)((*(char ***)&this->field_0x150)[param_1]));
+    paintcanvas_ext_dr2_meshdraw(this->field_0x34,
+                                 *(void **)(((char **)this->field_0x150)[param_1]));
     paintcanvas_ext_dr2_glenable(0xb44);
 }
 
@@ -3347,19 +3331,18 @@ static void zero16(void *p)
 
 void PaintCanvas::SetGameOrientation(int param_2)
 {
-    char *t = (char *)this;
-    if (*(int *)&this->field_0x30 == param_2) {
+    if (this->field_0x30 == param_2) {
         return;
     }
-    *(int *)&this->field_0x30 = param_2;
-    paintcanvas_ext_sgo_setorientation(*(void **)&this->field_0x34, param_2);
+    this->field_0x30 = param_2;
+    paintcanvas_ext_sgo_setorientation(this->field_0x34, param_2);
 
     this->projMatrix3d.m[1] = -this->projMatrix3d.m[1];
     this->projMatrix3d.m[4] = -this->projMatrix3d.m[4];
 
-    int w = paintcanvas_ext_sgo_dispwidth(*(void **)&this->field_0x34);
+    int w = paintcanvas_ext_sgo_dispwidth(this->field_0x34);
     float fw = paintcanvas_ext_sgo_signedtofloat(w, 0);
-    int h = paintcanvas_ext_sgo_dispheight(*(void **)&this->field_0x34);
+    int h = paintcanvas_ext_sgo_dispheight(this->field_0x34);
     float fh = paintcanvas_ext_sgo_signedtofloat(h, 0);
 
     if (param_2 == 3) {
@@ -3379,9 +3362,9 @@ void PaintCanvas::SetGameOrientation(int param_2)
         this->projOrthoMatrix.m[0] = 2.0f / fw;
         this->projOrthoMatrix.m[5] = -(2.0f / fh);
         this->worldViewMatrix.m[15] = 1.0f;
-        int w2 = paintcanvas_ext_sgo_dispwidth(*(void **)&this->field_0x34);
+        int w2 = paintcanvas_ext_sgo_dispwidth(this->field_0x34);
         this->worldViewMatrix.m[12] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
-        int h2 = paintcanvas_ext_sgo_dispheight(*(void **)&this->field_0x34);
+        int h2 = paintcanvas_ext_sgo_dispheight(this->field_0x34);
         this->worldViewMatrix.m[13] = paintcanvas_ext_sgo_signedtofloat(h2, 0);
     } else if (param_2 == 1) {
         zero16(&this->projOrthoMatrix.m[9]); zero16(&this->worldViewMatrix.m[8]); zero16(&this->worldViewMatrix.m[4]);
@@ -3397,7 +3380,7 @@ void PaintCanvas::SetGameOrientation(int param_2)
         this->projOrthoMatrix.m[0] = 2.0f / fh;
         this->projOrthoMatrix.m[5] = -(2.0f / fw);
         this->worldViewMatrix.m[15] = 1.0f;
-        int h2 = paintcanvas_ext_sgo_dispheight(*(void **)&this->field_0x34);
+        int h2 = paintcanvas_ext_sgo_dispheight(this->field_0x34);
         this->worldViewMatrix.m[12] = paintcanvas_ext_sgo_signedtofloat(h2, 0);
     } else if (param_2 != 0) {
         zero16(&this->projOrthoMatrix.m[9]); zero16(&this->worldViewMatrix.m[8]); zero16(&this->worldViewMatrix.m[4]);
@@ -3429,14 +3412,14 @@ void PaintCanvas::SetGameOrientation(int param_2)
         this->projOrthoMatrix.m[0] = 2.0f / fh;
         this->projOrthoMatrix.m[5] = -(2.0f / fw);
         this->worldViewMatrix.m[15] = 1.0f;
-        int w2 = paintcanvas_ext_sgo_dispwidth(*(void **)&this->field_0x34);
+        int w2 = paintcanvas_ext_sgo_dispwidth(this->field_0x34);
         this->worldViewMatrix.m[13] = paintcanvas_ext_sgo_signedtofloat(w2, 0);
     }
 
-    if (*(int *)&this->field_0x170 == -1) {
+    if (this->field_0x170 == -1) {
         return;
     }
-    float *cam = (*(float ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+    float *cam = ((float **)this->field_0x168)[this->field_0x170];
     paintcanvas_ext_sgo_setpersp(this, cam[0], cam[1], cam[2]);
 }
 
@@ -3484,7 +3467,6 @@ static unsigned int mulColors(unsigned int a, unsigned int b)
 void PaintCanvas::DrawMesh(char *param_1, const float *param_2,
               const float *param_3, unsigned int param_4, const float *param_5)
 {
-    char *t = (char *)this;
 
     float worldM[15];
     float uvM[15];
@@ -3547,7 +3529,7 @@ void PaintCanvas::DrawMesh(char *param_1, const float *param_2,
         float r2 = maxxy > az ? maxxy : az;
         int vis = paintcanvas_ext_dm_spherefrustum(this, uvM, r2 * *(float *)(param_1 + 0x4c));
         if (vis == 0) {
-            *(int *)(t + 4) += 1;
+            this->field_0x4 += 1;
             return;
         }
         if (*(short *)(param_1 + 2) != 0) {
@@ -3557,16 +3539,16 @@ void PaintCanvas::DrawMesh(char *param_1, const float *param_2,
                 paintcanvas_ext_dm_unsignedtofloat((color >> 8) & 0xff, 0);
                 paintcanvas_ext_dm_unsignedtofloat(color & 0xff, 0);
                 paintcanvas_ext_dm_setcolor(
-                    *(void **)&this->field_0x34,
-                    (*(float *)&this->field_0x1fc * fr) / g_dm_255_8ee80, 0.0f,
-                    (*(float *)&this->field_0x200 * fg) / g_dm_255_8ee80, 0.0f);
+                    this->field_0x34,
+                    (this->field_0x1fc * fr) / g_dm_255_8ee80, 0.0f,
+                    (this->field_0x200 * fg) / g_dm_255_8ee80, 0.0f);
 
                 paintcanvas_ext_dm_mtx_muleq(worldM, param_3);
                 paintcanvas_ext_dm_setwvm(this, worldM);
-                paintcanvas_ext_dm_setmodelmatrix(*(void **)&this->field_0x34);
-                paintcanvas_ext_dm_setuvmatrix(*(void **)&this->field_0x34, uvM);
-                paintcanvas_ext_dm_meshdraw(*(void **)&this->field_0x34, param_1);
-                paintcanvas_ext_dm_resetuvmatrix(*(void **)&this->field_0x34);
+                paintcanvas_ext_dm_setmodelmatrix(this->field_0x34);
+                paintcanvas_ext_dm_setuvmatrix(this->field_0x34, uvM);
+                paintcanvas_ext_dm_meshdraw(this->field_0x34, param_1);
+                paintcanvas_ext_dm_resetuvmatrix(this->field_0x34);
             } else {
                 // batch into the glow target at resource+0x44/0x2c/0x38/0x5c/0x50
                 char *res = *(char **)(param_1 + 0x30);
@@ -3588,8 +3570,8 @@ void PaintCanvas::DrawMesh(char *param_1, const float *param_2,
             this->DrawMesh(child, worldM, param_3, param_4, uvM);
         }
         for (unsigned int i = 0; i < *(unsigned int *)(res + 0x4c); i++) {
-            if (*(unsigned int *)&this->field_0x170 < *(unsigned int *)&this->field_0x164) {
-                void *cam = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
+            if (this->field_0x170 < this->field_0x164) {
+                void *cam = ((void **)this->field_0x168)[this->field_0x170];
                 char *tf = (*(char ***)(res + 0x50))[i];
                 if (paintcanvas_ext_dm_incamvf(tf, (void *)param_2, cam)) {
                     paintcanvas_ext_dm_drawtransform(this, (*(void ***)(res + 0x50))[i],
@@ -3655,11 +3637,10 @@ extern "C" void paintcanvas_ext_dsc_fontdraw(void *font, unsigned short *txt, un
 void PaintCanvas::DrawStringColor(unsigned int param_1, void *param_2,
                      int param_3, int param_4, bool param_5)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x140) {
+    if (param_1 >= this->field_0x140) {
         return;
     }
-    void *font0 = (*(char ***)&this->field_0x144)[param_1];
+    void *font0 = ((char **)this->field_0x144)[param_1];
     paintcanvas_ext_dsc_settexture(this, *(unsigned int *)((char *)font0 + 8));
     paintcanvas_ext_dsc_getcolor(this);
 
@@ -3676,10 +3657,10 @@ void PaintCanvas::DrawStringColor(unsigned int param_1, void *param_2,
             char **data = *(char ***)(parts + 4);
             char *part = data[i];
             if (draw) {
-                void *font = (*(char ***)&this->field_0x144)[param_1];
+                void *font = ((char **)this->field_0x144)[param_1];
                 unsigned short *txt = paintcanvas_ext_dsc_str_cast(part);
                 paintcanvas_ext_dsc_fontdraw(font, txt, *(unsigned int *)(part + 8), param_3,
-                                             param_4, this, *(void **)&this->field_0x34, param_5);
+                                             param_4, this, this->field_0x34, param_5);
                 param_3 += paintcanvas_ext_dsc_textwidth(this, param_1, part);
             } else if (*(int *)(part + 8) == 0) {
                 paintcanvas_ext_dsc_setcolor(this);
@@ -3706,7 +3687,6 @@ namespace AbyssEngine {
 
 void PaintCanvas::SetMatForGlow(char *param_1)
 {
-    char *t = (char *)this;
     int off = 0x38;
     for (unsigned int i = 0; i < *(unsigned int *)(param_1 + 0x44); i++) {
         // meshes array at 0x48 -> list at this+0x18c
@@ -3776,11 +3756,10 @@ void PaintCanvas::EnableClip(int param_1, int param_2, int param_3, int param_4)
 void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
                  unsigned char param_4, unsigned char param_5)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x14c) {
+    if (param_1 >= this->field_0x14c) {
         return;
     }
-    char *img = (*(char ***)&this->field_0x150)[param_1];
+    char *img = ((char **)this->field_0x150)[param_1];
     if (*(unsigned char *)(img + 0x14) != 0) {
         paintcanvas_ext_di3_restore(*(unsigned char *)(img + 0x14), img);
     }
@@ -3820,7 +3799,7 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
     }
 
     int ry;
-    char *region2 = *(char **)((*(char ***)&this->field_0x150)[param_1] + 4);
+    char *region2 = *(char **)(((char **)this->field_0x150)[param_1] + 4);
     if ((param_4 & 0x70) == 0x20) {
         ry = -(int)*(float *)(region2 + 0x1c);
     } else if ((param_4 & 0x70) == 0x40) {
@@ -3830,7 +3809,7 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
         ry = 0;
     }
 
-    char *img2 = (*(char ***)&this->field_0x150)[param_1];
+    char *img2 = ((char **)this->field_0x150)[param_1];
     paintcanvas_ext_di3_settexture(this, *(unsigned int *)(img2 + 4));
 
     float fx = paintcanvas_ext_di3_signedtofloat(hOff + param_3 + rx, 0);
@@ -3846,8 +3825,8 @@ void PaintCanvas::DrawImage2D(unsigned int param_1, int param_2, int param_3,
     m[7] = fy;
 
     paintcanvas_ext_di3_setwvm(this, m);
-    paintcanvas_ext_di3_meshdraw(*(void **)&this->field_0x34,
-                                 *(void **)((*(char ***)&this->field_0x150)[param_1]));
+    paintcanvas_ext_di3_meshdraw(this->field_0x34,
+                                 *(void **)(((char **)this->field_0x150)[param_1]));
 }
 
 void PaintCanvas::MeshCreate(unsigned short a, unsigned short b,
@@ -3942,7 +3921,6 @@ __attribute__((visibility("hidden"))) extern const float g_fsp_255f_8d078;
 void PaintCanvas::FogSetParameter(int param_1, float param_2, float param_3,
                      float param_4, unsigned int param_5)
 {
-    char *t = (char *)this;
     float col[4];
     if (*g_fsp_flag_8cf40 == 0) {
         float density = paintcanvas_ext_fsp_unsignedtofloat((unsigned int)param_1, 0);
@@ -3965,7 +3943,7 @@ void PaintCanvas::FogSetParameter(int param_1, float param_2, float param_3,
         r = r / g_fsp_255d_8d070;
         paintcanvas_ext_fsp_unsignedtofloat(param_5 >> 24, 0);
         double g = (double)paintcanvas_ext_fsp_unsignedtofloat((param_5 >> 8) & 0xff, 0);
-        char *eng = *(char **)&this->field_0x34;
+        char *eng = (char *)this->field_0x34;
         g = g / g_fsp_255d_8d070;
         *(float *)(eng + 1000) = param_2;
         *(float *)(eng + 0x3ec) = param_3;
@@ -3981,13 +3959,12 @@ void PaintCanvas::DrawRegion2D(unsigned int param_1, int param_2, int param_3,
                   int param_4, int param_5, float param_6, int param_7, int param_8, int param_9,
                   int param_10)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x14c) {
+    if (param_1 >= this->field_0x14c) {
         return;
     }
-    char *img = (*(char ***)&this->field_0x150)[param_1];
+    char *img = ((char **)this->field_0x150)[param_1];
     paintcanvas_ext_dr3_settexture(this, *(unsigned int *)(img + 4));
-    char *mesh = (*(char ***)&this->field_0x150)[param_1];
+    char *mesh = ((char **)this->field_0x150)[param_1];
     char *meshObj = *(char **)mesh;
 
     *(unsigned char *)(mesh + 0x14) = 1;
@@ -4069,8 +4046,8 @@ void PaintCanvas::DrawRegion2D(unsigned int param_1, int param_2, int param_3,
 
     paintcanvas_ext_dr3_setwvm(this, local130);
     paintcanvas_ext_dr3_gldisable(0xb44);
-    paintcanvas_ext_dr3_meshdraw(*(void **)&this->field_0x34,
-                                 *(void **)((*(char ***)&this->field_0x150)[param_1]));
+    paintcanvas_ext_dr3_meshdraw(this->field_0x34,
+                                 *(void **)(((char **)this->field_0x150)[param_1]));
     paintcanvas_ext_dr3_glenable(0xb44);
 }
 
@@ -4170,104 +4147,103 @@ __attribute__((visibility("hidden"))) extern int *const g_rar_tricount_87d96;
 
 void PaintCanvas::ReleaseAllResources()
 {
-    char *t = (char *)this;
     *g_rar_curtex_87c98 = 0;
 
     // mark all resources as unloaded
-    for (int i = 0; i < *(int *)&this->field_0x134; i++) {
-        char *res = (*(char ***)&this->field_0x138)[i];
+    for (int i = 0; i < this->field_0x134; i++) {
+        char *res = ((char **)this->field_0x138)[i];
         *(int *)(res + 8) = -1;
     }
 
     // textures
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x10; i++) {
-        int *tex = (*(int ***)&this->field_0x14)[i];
+    for (unsigned int i = 0; i < this->field_0x10; i++) {
+        int *tex = ((int **)this->field_0x14)[i];
         if (*tex != -1) {
             unsigned int id = (unsigned int)*tex;
             paintcanvas_ext_rar_gldeltex(1, &id);
             *g_rar_texcount_87cce = *g_rar_texcount_87cce - 1;
-            char *eng = *(char **)&this->field_0x34;
-            char *texEntry = (*(char ***)&this->field_0x14)[i];
+            char *eng = (char *)this->field_0x34;
+            char *texEntry = ((char **)this->field_0x14)[i];
             *(int *)(eng + 0x70) = *(int *)(eng + 0x70) - *(int *)(texEntry + 0x18);
-            tex = (*(int ***)&this->field_0x14)[i];
+            tex = ((int **)this->field_0x14)[i];
         }
         if (tex != 0) {
             paintcanvas_ext_rar_str_dtor((char *)tex + 4);
             paintcanvas_ext_rar_op_delete(tex);
         }
-        (*(int ***)&this->field_0x14)[i] = 0;
+        ((int **)this->field_0x14)[i] = 0;
     }
-    *(int *)&this->field_0x10 = 0;
+    this->field_0x10 = 0;
 
     // fonts
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x140; i++) {
-        if ((*(void ***)&this->field_0x144)[i] != 0) {
-            paintcanvas_ext_rar_fontrelease(*(void **)&this->field_0x34,
-                                            &(*(void ***)&this->field_0x144)[i]);
+    for (unsigned int i = 0; i < this->field_0x140; i++) {
+        if (((void **)this->field_0x144)[i] != 0) {
+            paintcanvas_ext_rar_fontrelease(this->field_0x34,
+                                            &((void **)this->field_0x144)[i]);
         }
     }
     PCArrayRemoveAll(&this->field_0x140);
 
     // image2D
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x14c; i++) {
-        if ((*(void ***)&this->field_0x150)[i] != 0) {
-            paintcanvas_ext_rar_img2drelease(*(void **)&this->field_0x34,
-                                             &(*(void ***)&this->field_0x150)[i]);
+    for (unsigned int i = 0; i < this->field_0x14c; i++) {
+        if (((void **)this->field_0x150)[i] != 0) {
+            paintcanvas_ext_rar_img2drelease(this->field_0x34,
+                                             &((void **)this->field_0x150)[i]);
         }
     }
     PCArrayRemoveAll(&this->field_0x14c);
 
     // meshes
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x24; i++) {
-        char *mesh = (*(char ***)&this->field_0x28)[i];
+    for (unsigned int i = 0; i < this->field_0x24; i++) {
+        char *mesh = ((char **)this->field_0x28)[i];
         if (mesh != 0) {
             *g_rar_tricount_87d96 = *g_rar_tricount_87d96 - *(int *)(mesh + 0x7c);
-            paintcanvas_ext_rar_meshrelease(*(void **)&this->field_0x34,
-                                            &(*(void ***)&this->field_0x28)[i]);
+            paintcanvas_ext_rar_meshrelease(this->field_0x34,
+                                            &((void **)this->field_0x28)[i]);
         }
     }
     PCArrayRemoveAll(&this->field_0x24);
 
     // transforms
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x158; i++) {
-        void *tf = (*(void ***)&this->field_0x15c)[i];
+    for (unsigned int i = 0; i < this->field_0x158; i++) {
+        void *tf = ((void **)this->field_0x15c)[i];
         if (tf != 0) {
             paintcanvas_ext_rar_op_delete(paintcanvas_ext_rar_transform_dtor(tf));
-            (*(void ***)&this->field_0x15c)[i] = 0;
+            ((void **)this->field_0x15c)[i] = 0;
         }
     }
     PCArrayRemoveAll(&this->field_0x158);
 
     // cameras
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x164; i++) {
-        void *cam = (*(void ***)&this->field_0x168)[i];
+    for (unsigned int i = 0; i < this->field_0x164; i++) {
+        void *cam = ((void **)this->field_0x168)[i];
         if (cam != 0) {
             paintcanvas_ext_rar_op_delete(cam);
-            (*(void ***)&this->field_0x168)[i] = 0;
+            ((void **)this->field_0x168)[i] = 0;
         }
     }
     PCArrayRemoveAll(&this->field_0x164);
-    *(int *)&this->field_0x170 = -1;
+    this->field_0x170 = -1;
 
     // materials
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x174; i++) {
-        void *mat = (*(void ***)&this->field_0x178)[i];
+    for (unsigned int i = 0; i < this->field_0x174; i++) {
+        void *mat = ((void **)this->field_0x178)[i];
         if (mat != 0) {
             paintcanvas_ext_rar_op_delete(paintcanvas_ext_rar_material_dtor(mat));
-            (*(void ***)&this->field_0x178)[i] = 0;
+            ((void **)this->field_0x178)[i] = 0;
         }
     }
     PCArrayRemoveAll(&this->field_0x174);
 
     // sprite systems
-    for (unsigned int i = 0; i < *(unsigned int *)&this->field_0x180; i++) {
-        if ((*(void ***)&this->field_0x184)[i] != 0) {
-            paintcanvas_ext_rar_ssrelease(*(void **)&this->field_0x34,
-                                          &(*(void ***)&this->field_0x184)[i]);
+    for (unsigned int i = 0; i < this->field_0x180; i++) {
+        if (((void **)this->field_0x184)[i] != 0) {
+            paintcanvas_ext_rar_ssrelease(this->field_0x34,
+                                          &((void **)this->field_0x184)[i]);
         }
     }
     PCArrayRemoveAll(&this->field_0x180);
-    *(int *)&this->field_0x1cc = 0;
+    this->field_0x1cc = 0;
 }
 
 __attribute__((visibility("hidden"))) extern const unsigned int g_tg2d_defval_7b590;
@@ -4427,11 +4403,10 @@ __attribute__((visibility("hidden"))) extern const double g_dt_gravscale_898d8;
 
 void PaintCanvas::DrawTransform(unsigned int param_1, const float *param_2)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x158) {
+    if (param_1 >= this->field_0x158) {
         return;
     }
-    char *tf = (*(char ***)&this->field_0x15c)[param_1];
+    char *tf = ((char **)this->field_0x15c)[param_1];
     if (*(unsigned char *)(tf + 0xec) == 0) {
         return;
     }
@@ -4440,12 +4415,12 @@ void PaintCanvas::DrawTransform(unsigned int param_1, const float *param_2)
     memset(worldM, 0, sizeof(worldM));
     worldM[0] = 1.0f; worldM[5] = 1.0f; worldM[14] = 1.0f;
 
-    if (*(unsigned int *)&this->field_0x170 < *(unsigned int *)&this->field_0x164) {
-        void *cam = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
-        if (*t == 0) {
-            int vis = paintcanvas_ext_dt2_incamvf((*(void ***)&this->field_0x15c)[param_1], 0, cam);
+    if (this->field_0x170 < this->field_0x164) {
+        void *cam = ((void **)this->field_0x168)[this->field_0x170];
+        if (this->field_0x0 == 0) {
+            int vis = paintcanvas_ext_dt2_incamvf(((void **)this->field_0x15c)[param_1], 0, cam);
             if (vis == 0) {
-                *(int *)(t + 4) += 1;
+                this->field_0x4 += 1;
                 return;
             }
             float inv[16];
@@ -4458,10 +4433,10 @@ void PaintCanvas::DrawTransform(unsigned int param_1, const float *param_2)
             rotM[0] = 1.0f; rotM[5] = 1.0f; rotM[14] = 1.0f;
             paintcanvas_ext_dt2_matidentity(scratch, rotM);
 
-            void *grav = paintcanvas_ext_dt2_getgrav(*(void **)&this->field_0x34);
+            void *grav = paintcanvas_ext_dt2_getgrav(this->field_0x34);
             double angle = *(double *)((char *)grav + 8) * g_dt_gravscale_898d8;
             float a = (float)angle;
-            int orient = *(int *)&this->field_0x30;
+            int orient = this->field_0x30;
             float ang = (orient == 1) ? a : -a;
             float s = paintcanvas_ext_dt2_sinf(ang);
             float c = paintcanvas_ext_dt2_cosf(ang);
@@ -4470,28 +4445,28 @@ void PaintCanvas::DrawTransform(unsigned int param_1, const float *param_2)
             *(unsigned int *)&rotM[1] = *(unsigned int *)&s ^ 0x80000000;
             rotM[4] = s;
 
-            int vis = paintcanvas_ext_dt2_incamvf((*(void ***)&this->field_0x15c)[param_1], rotM, cam);
+            int vis = paintcanvas_ext_dt2_incamvf(((void **)this->field_0x15c)[param_1], rotM, cam);
             if (vis == 0) {
-                *(int *)(t + 4) += 1;
+                this->field_0x4 += 1;
                 return;
             }
 
             float viewM[16];
             const float *src = param_2;
             if (src == 0) {
-                src = (const float *)((*(char ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170] + 0xc);
+                src = (const float *)(((char **)this->field_0x168)[this->field_0x170] + 0xc);
             }
             paintcanvas_ext_dt2_mtx_assign(viewM, src);
             paintcanvas_ext_dt2_mtx_muleq(viewM, rotM);
             paintcanvas_ext_dt2_mtx_getinv(scratch, viewM);
             paintcanvas_ext_dt2_mtx_assign(worldM, scratch);
         }
-        void *cam2 = (*(void ***)&this->field_0x168)[*(unsigned int *)&this->field_0x170];
-        paintcanvas_ext_dt2_seteye(*(void **)&this->field_0x34,
+        void *cam2 = ((void **)this->field_0x168)[this->field_0x170];
+        paintcanvas_ext_dt2_seteye(this->field_0x34,
                                    *(float *)((char *)cam2 + 0x18),
                                    *(float *)((char *)cam2 + 0x28),
                                    *(float *)((char *)cam2 + 0x38));
-        tf = (*(char ***)&this->field_0x15c)[param_1];
+        tf = ((char **)this->field_0x15c)[param_1];
     }
 
     float ident[16];
@@ -4530,11 +4505,10 @@ __attribute__((visibility("hidden"))) extern const double g_dss_gravscale_8ada0;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int param_1, const float *mat)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x180) {
+    if (param_1 >= this->field_0x180) {
         return;
     }
-    void *ss = (*(void ***)&this->field_0x184)[param_1];
+    void *ss = ((void **)this->field_0x184)[param_1];
     if (ss == 0) {
         return;
     }
@@ -4547,7 +4521,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1, const float *mat)
     char scratch[60];
     float inv[16];
 
-    if (*t == 0) {
+    if (this->field_0x0 == 0) {
         paintcanvas_ext_dss_mtx_getinv(inv, local);
         paintcanvas_ext_dss_mtx_assign(local, inv);
     } else {
@@ -4557,10 +4531,10 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1, const float *mat)
         identbuf[14] = 1.0f;
         paintcanvas_ext_dss_matidentity(scratch, identbuf);
 
-        void *grav = paintcanvas_ext_dss_getgrav(*(void **)&this->field_0x34);
+        void *grav = paintcanvas_ext_dss_getgrav(this->field_0x34);
         double angle = *(double *)((char *)grav + 8) * g_dss_gravscale_8ada0;
         float a = (float)angle;
-        int orient = *(int *)&this->field_0x30;
+        int orient = this->field_0x30;
         float rot = (orient == 1) ? a : -a;
         float s = paintcanvas_ext_dss_sinf(rot);
         float c = paintcanvas_ext_dss_cosf(rot);
@@ -4579,8 +4553,8 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1, const float *mat)
     ident2[0] = 1.0f;
     ident2[5] = 1.0f;
     ident2[14] = 1.0f;
-    paintcanvas_ext_dss_ssdraw(*(void **)&this->field_0x34, ident2, local,
-                               (*(void ***)&this->field_0x184)[param_1]);
+    paintcanvas_ext_dss_ssdraw(this->field_0x34, ident2, local,
+                               ((void **)this->field_0x184)[param_1]);
 }
 
 extern "C" void paintcanvas_ext_drawstring_str(void *, unsigned int, unsigned int, int, int,
@@ -4649,11 +4623,10 @@ __attribute__((visibility("hidden"))) extern const double g_dss2_gravscale_8af58
 void PaintCanvas::DrawSpriteSystem(unsigned int param_1,
                       const float *matA, const float *matB)
 {
-    char *t = (char *)this;
-    if (param_1 >= *(unsigned int *)&this->field_0x180) {
+    if (param_1 >= this->field_0x180) {
         return;
     }
-    if ((*(void ***)&this->field_0x184)[param_1] == 0) {
+    if (((void **)this->field_0x184)[param_1] == 0) {
         return;
     }
 
@@ -4663,7 +4636,7 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1,
     memcpy(world, matA, sizeof(world));
     memcpy(view, matB, sizeof(view));
 
-    if (*t == 0) {
+    if (this->field_0x0 == 0) {
         float inv[16];
         memset(inv, 0, sizeof(inv));
         inv[0] = 1.0f;
@@ -4680,10 +4653,10 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1,
         rotM[14] = 1.0f;
         paintcanvas_ext_dss2_matidentity(scratch, rotM);
 
-        void *grav = paintcanvas_ext_dss2_getgrav(*(void **)&this->field_0x34);
+        void *grav = paintcanvas_ext_dss2_getgrav(this->field_0x34);
         double angle = *(double *)((char *)grav + 8) * g_dss2_gravscale_8af58;
         int ia = (int)(long long)angle;
-        if (*(int *)&this->field_0x30 == 1) {
+        if (this->field_0x30 == 1) {
             ia = -ia;
         }
         float a = paintcanvas_ext_dss2_signedtofloat(ia, 0);
@@ -4700,6 +4673,6 @@ void PaintCanvas::DrawSpriteSystem(unsigned int param_1,
         paintcanvas_ext_dss2_mtx_muleq(world, rotM);
     }
 
-    paintcanvas_ext_dss2_ssdraw(*(void **)&this->field_0x34, world, view,
-                                (*(void ***)&this->field_0x184)[param_1]);
+    paintcanvas_ext_dss2_ssdraw(this->field_0x34, world, view,
+                                ((void **)this->field_0x184)[param_1]);
 }

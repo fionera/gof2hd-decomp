@@ -25,20 +25,17 @@ Material::Material(Material *other)
     this->arr_50 = new Array<uint32_t>();
     this->arr_5c = new Array<Matrix>();
 
-    Vector *vec = (Vector *)((char *)this + 0x68);
-    this->f_68 = 0;
-    this->f_6c = 0;
-    this->f_70 = 0;
+    this->vec_68.x = 0;
+    this->vec_68.y = 0;
+    this->vec_68.z = 0;
 
     if (other == 0) {
         this->f_20 = 0;
-        int zero[3] = {0, 0, 0};
-        *(Vector *)vec = *(const Vector *)zero;
         for (int i = 0; i != 8; ++i)
-            i32(this, i * 4) = -1;
+            this->textures[i] = -1;
     } else {
         for (int i = 0; i != 8; ++i)
-            i32(this, i * 4) = i32(other, i * 4);
+            this->textures[i] = other->textures[i];
         this->f_20 = other->f_20;
         uint32_t size = other->f_28;
         this->f_28 = size;
@@ -47,8 +44,8 @@ Material::Material(Material *other)
             buf = 0;
         else
             buf = ::operator new[](size | ((int)size >> 31));
-        pptr(this, 0x24) = buf;
-        *(Vector *)vec = *(const Vector *)((char *)other + 0x68);
+        this->f_24 = buf;
+        this->vec_68 = other->vec_68;
     }
 }
 
@@ -66,14 +63,14 @@ Material::Material()
     this->arr_50 = new Array<uint32_t>();
     this->arr_5c = new Array<Matrix>();
 
-    this->f_68 = Material_defaultVectorX;
-    this->f_6c = 0;
-    this->f_70 = 0;
+    this->vec_68.x = Material_defaultVectorX;
+    this->vec_68.y = 0;
+    this->vec_68.z = 0;
 
     for (int i = 0; i != 8; ++i)
-        i32(this, i * 4) = -1;
+        this->textures[i] = -1;
 
-    this->f_0 = 0;
+    this->textures[0] = 0;
     this->f_24 = 0;
     this->f_28 = 0;
 }

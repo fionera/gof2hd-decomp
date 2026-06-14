@@ -29,6 +29,15 @@ void MatrixGetGL(const Matrix &matrix, float *out);
 extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 
+// Per-light fixed-function color slot (GL light color: rgba). 0x10 bytes; the engine keeps
+// up to 8 of these contiguously (one per GL light) and indexes them by (light - GL_LIGHT0).
+struct LightColor {
+    float r;
+    float g;
+    float b;
+    float a;
+};
+
 // Engine is defined at top level (matches fwd.h ::Engine).
 class Engine {
 public:
@@ -38,6 +47,7 @@ public:
     uint8_t field_0x8;                  // +0x8  isPad
     uint32_t field_0xc;                 // +0xc
     uint32_t field_0x10;                // +0x10
+    String str_0x14;                    // +0x14  embedded String (auto ctor/dtor)
     uint8_t field_0x20;                 // +0x20
     void* field_0x24;                   // +0x24
     uint8_t field_0x25;                 // +0x25
@@ -45,7 +55,9 @@ public:
     bool field_0x2c;                    // +0x2c
     char** field_0x30;                  // +0x30
     uint32_t field_0x34;                // +0x34
+    String str_0x3c;                    // +0x3c  embedded String (auto ctor/dtor)
     uint8_t field_0x40;                 // +0x40
+    String str_0x4c;                    // +0x4c  embedded String (auto ctor/dtor)
     uint64_t field_0x58;                // +0x58
     uint64_t field_0x68;                // +0x68
     uint32_t field_0x70;                // +0x70
@@ -74,9 +86,13 @@ public:
     uint32_t field_0x21c;               // +0x21c
     uint32_t field_0x220;               // +0x220
     uint32_t field_0x224;               // +0x224
-    uint64_t field_0x268;               // +0x268
-    uint32_t field_0x270;               // +0x270
-    uint32_t field_0x274;               // +0x274
+    LightColor lightDiffuse;            // +0x228  per-light diffuse color (rgba, stride 0x10);
+                                        //         indexed (&lightDiffuse)[light-0x4000]
+    LightColor lightSpecular;           // +0x248  per-light specular color (rgba, stride 0x10);
+                                        //         indexed (&lightSpecular)[light-0x4000]
+    LightColor lightAmbient;            // +0x268  per-light ambient color (rgba, stride 0x10);
+                                        //         indexed (&lightAmbient)[light-0x4000]
+                                        //         (legacy field_0x268/0x270/0x274 = [0])
     float field_0x288;                  // +0x288
     float field_0x28c;                  // +0x28c
     float field_0x290;                  // +0x290
@@ -94,6 +110,12 @@ public:
     float field_0x2c0;                  // +0x2c0
     uint32_t field_0x2c4;               // +0x2c4
     float field_0x2c8;                  // +0x2c8
+    Vector lightAmbientShaded;          // +0x2cc  per-light shaded ambient (rgb, stride 0x0c);
+                                        //         indexed (&lightAmbientShaded)[light-0x4000]
+    Vector lightSpecularShaded;         // +0x2e4  per-light shaded specular (rgb, stride 0x0c);
+                                        //         indexed (&lightSpecularShaded)[light-0x4000]
+    Vector lightDiffuseShaded;          // +0x2fc  per-light shaded diffuse (rgb, stride 0x0c);
+                                        //         indexed (&lightDiffuseShaded)[light-0x4000]
     Vector particleAmbient;             // +0x314  particle ambient color (rgb)
     float field_0x320;                  // +0x320
     float field_0x324;                  // +0x324
@@ -113,8 +135,10 @@ public:
     int field_0x36c;                    // +0x36c
     int field_0x370;                    // +0x370
     int field_0x374;                    // +0x374
-    uint32_t field_0x378;               // +0x378
-    uint32_t field_0x37c;               // +0x37c
+    float lightDirty[2];                // +0x378  per-light "direction is in eye space" flag
+                                        //         (0.0f = needs inverse-rotate, 1.0f = raw);
+                                        //         indexed lightDirty[light-0x4000]
+                                        //         (legacy field_0x378 / field_0x37c)
     char* field_0x380;                  // +0x380  quad mesh (DrawQuad)
     float projMatrix[16];               // +0x384  projection / ortho matrix (shader path)
     uint8_t field_0x3c4;                // +0x3c4
@@ -126,6 +150,7 @@ public:
     uint32_t field_0x3e8;               // +0x3e8
     uint32_t field_0x3ec;               // +0x3ec
     Vector field_0x3f0;                 // +0x3f0
+    Vector eyePosition;                 // +0x3fc  eye/camera position (SetEyePosition)
     uint64_t field_0x400;               // +0x400
     uint32_t field_0x40c;               // +0x40c
     uint32_t field_0x410;               // +0x410

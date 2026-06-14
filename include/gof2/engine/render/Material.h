@@ -26,20 +26,16 @@ struct Matrix;
 //   +0x68  Vector (3 floats)
 class Material {
 public:
-    // @portable-fields
-    int f_0; // 0x0
-    unsigned char _pad_4[28];
-    int f_20; // 0x20
-    int f_24; // 0x24
-    int f_28; // 0x28
-    Array<Matrix> *arr_2c;   // 0x2c  Array<Matrix>
-    Array<Matrix> *arr_38;   // 0x38  Array<Matrix>
-    Array<Mesh *> *meshes;   // 0x44  Array<Mesh*>
-    Array<uint32_t> *arr_50; // 0x50  Array<uint32_t>
-    Array<Matrix> *arr_5c;   // 0x5c  Array<Matrix>
-    int f_68; // 0x68
-    int f_6c; // 0x6c
-    int f_70; // 0x70
+    int textures[8];         // +0x00  texture handles (-1 = unset)
+    int f_20;                // +0x20
+    void *f_24;              // +0x24  scratch buffer (operator new[])
+    int f_28;                // +0x28
+    Array<Matrix> *arr_2c;   // +0x2c  Array<Matrix>
+    Array<Matrix> *arr_38;   // +0x38  Array<Matrix>
+    Array<Mesh *> *meshes;   // +0x44  Array<Mesh*>
+    Array<uint32_t> *arr_50; // +0x50  Array<uint32_t>
+    Array<Matrix> *arr_5c;   // +0x5c  Array<Matrix>
+    AEMath::Vector vec_68;   // +0x68  (3 floats)
 
     Material();
     Material(Material *other);

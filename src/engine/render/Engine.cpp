@@ -487,8 +487,8 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
         input.y = y;
         input.z = z;
         Vector normalized = AbyssEngine::AEMath::VectorNormalize(input);
-        *(Vector *)((char *)this + 0x468 + index * 0x0c) = normalized;
-        *(uint32_t *)((char *)this + 0x378 + index * 4) = 0;
+        (&this->field_0x468)[index] = normalized;
+        this->lightDirty[index] = 0.0f;
     }
     return;
 }
@@ -657,9 +657,7 @@ Engine::~Engine()
     this->ReleaseGL();
     delete this->shaders;
     delete this->triangleCounts;
-    ((String *)((String *)((char *)this + 0x4c)))->dtor();
-    ((String *)((String *)((char *)this + 0x3c)))->dtor();
-    ((String *)((String *)((char *)this + 0x14)))->dtor();
+    // str_0x4c / str_0x3c / str_0x14 are real String members: auto-destructed.
     ((String *)((String *)this))->dtor();
 }
 
@@ -888,16 +886,12 @@ void Engine::LightSetMaterialColorSpecular(float red, float green, float blue) {
     }
 
     int count = this->field_0x32c;
-    int sourceOffset = 0;
-    int destOffset = 0;
     for (int index = 0; index < count; index += 1) {
-        char *source = (char *)this + sourceOffset;
-        char *dest = (char *)this + destOffset;
-        sourceOffset += 0x10;
-        destOffset += 0x0c;
-        *(float *)(dest + 0x2e4) = *(float *)(source + 0x248) * red;
-        *(float *)(dest + 0x2e8) = *(float *)(source + 0x24c) * green;
-        *(float *)(dest + 0x2ec) = *(float *)(source + 0x250) * blue;
+        const LightColor &src = (&this->lightSpecular)[index];
+        Vector &dst = (&this->lightSpecularShaded)[index];
+        dst.x = src.r * red;
+        dst.y = src.g * green;
+        dst.z = src.b * blue;
     }
     return ShaderUpdateMaterialColor();
 }
@@ -913,19 +907,12 @@ void Engine::LightSetGlobalSceneColorAmbient(float red, float green, float blue)
     }
 
     int count = this->field_0x32c;
-    int sourceOffset = 0;
-    int destOffset = 0;
     for (int index = 0; index < count; index += 1) {
-        char *source = (char *)this + sourceOffset;
-        char *dest = (char *)this + destOffset;
-        sourceOffset += 0x10;
-        destOffset += 0x0c;
-        *(float *)(dest + 0x2cc) =
-            (*(float *)(source + 0x268) + red) * this->field_0x2a8;
-        *(float *)(dest + 0x2d0) =
-            (*(float *)(source + 0x26c) + green) * this->field_0x2ac;
-        *(float *)(dest + 0x2d4) =
-            (*(float *)(source + 0x270) + blue) * this->field_0x2b0;
+        const LightColor &src = (&this->lightAmbient)[index];
+        Vector &dst = (&this->lightAmbientShaded)[index];
+        dst.x = (src.r + red) * this->field_0x2a8;
+        dst.y = (src.g + green) * this->field_0x2ac;
+        dst.z = (src.b + blue) * this->field_0x2b0;
     }
     return ShaderUpdateMaterialColor();
 }
@@ -987,16 +974,12 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
     }
 
     int lightCount = this->field_0x32c;
-    int sourceOffset = 0;
-    int destOffset = 0;
     for (int i = 0; i < lightCount; i += 1) {
-        char *source = (char *)this + sourceOffset;
-        char *dest = (char *)this + destOffset;
-        sourceOffset += 0x10;
-        destOffset += 0x0c;
-        *(float *)(dest + 0x2fc) = *(float *)(source + 0x228) * red;
-        *(float *)(dest + 0x300) = *(float *)(source + 0x22c) * green;
-        *(float *)(dest + 0x304) = *(float *)(source + 0x230) * blue;
+        const LightColor &src = (&this->lightDiffuse)[i];
+        Vector &dst = (&this->lightDiffuseShaded)[i];
+        dst.x = src.r * red;
+        dst.y = src.g * green;
+        dst.z = src.b * blue;
     }
     return ShaderUpdateMaterialColor();
 }
@@ -1056,9 +1039,9 @@ int Engine::InitGL(bool shaders, int width, int height) {
     value.y = 1.0f;
     value.z = 0.0f;
     this->field_0x468 = value;
-    this->field_0x378 = 0;
+    this->lightDirty[0] = 0.0f;
     this->field_0x474 = value;
-    this->field_0x37c = 0;
+    this->lightDirty[1] = 0.0f;
 
     glEnable(0xb71);
     ((Engine *)(this))->GlEnable(0xde1, true);
@@ -1109,8 +1092,8 @@ void Engine::LightSetLightPosition(float x, float y, float z, unsigned int light
         value.x = x;
         value.y = y;
         value.z = z;
-        *(Vector *)((char *)this + 0x468 + index * 0x0c) = value;
-        *(uint32_t *)((char *)this + 0x378 + index * 4) = 0x3f800000;
+        (&this->field_0x468)[index] = value;
+        this->lightDirty[index] = 1.0f;
     }
     return;
 }
@@ -1127,23 +1110,18 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     }
     this->field_0x32c = count;
 
-    char *src = (char *)this + index * 0x10;
-    *(float *)(src + 0x268) = red;
-    *(float *)(src + 0x26c) = green;
-    *(float *)(src + 0x270) = blue;
-    *(uint32_t *)(src + 0x274) = 0x3f800000;
+    LightColor &src = (&this->lightAmbient)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
     if (g_Engine_useShaders == 0) {
-        return glLightfv(light, 0x1200, src + 0x268);
+        return glLightfv(light, 0x1200, &src.r);
     }
-    char *dst = (char *)this + index * 0x0c;
-    *(float *)(dst + 0x2cc) =
-        (this->field_0x288 + red) * this->field_0x2a8;
-    *(float *)(dst + 0x2d0) =
-        (this->field_0x28c + *(float *)(src + 0x26c)) *
-        this->field_0x2ac;
-    *(float *)(dst + 0x2d4) =
-        (this->field_0x290 + *(float *)(src + 0x270)) *
-        this->field_0x2b0;
+    Vector &dst = (&this->lightAmbientShaded)[index];
+    dst.x = (this->field_0x288 + red) * this->field_0x2a8;
+    dst.y = (this->field_0x28c + src.g) * this->field_0x2ac;
+    dst.z = (this->field_0x290 + src.b) * this->field_0x2b0;
     return ShaderUpdateMaterialColor();
 }
 
@@ -1167,27 +1145,25 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
     }
     this->field_0x32c = count;
 
-    char *src = (char *)this + index * 0x10;
-    *(float *)(src + 0x228) = red;
-    *(float *)(src + 0x22c) = green;
-    *(float *)(src + 0x230) = blue;
-    *(uint32_t *)(src + 0x234) = 0x3f800000;
+    LightColor &src = (&this->lightDiffuse)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
     if (g_Engine_useShaders == 0) {
-        return glLightfv(light, 0x1201, src + 0x228);
+        return glLightfv(light, 0x1201, &src.r);
     }
-    char *dst = (char *)this + index * 0x0c;
-    *(float *)(dst + 0x2fc) = this->field_0x298 * red;
-    *(float *)(dst + 0x300) = *(float *)(src + 0x22c) * this->field_0x29c;
-    *(float *)(dst + 0x304) = *(float *)(src + 0x230) * this->field_0x2a0;
+    Vector &dst = (&this->lightDiffuseShaded)[index];
+    dst.x = this->field_0x298 * red;
+    dst.y = src.g * this->field_0x29c;
+    dst.z = src.b * this->field_0x2a0;
     return ShaderUpdateMaterialColor();
 }
 
 Engine::Engine() {
     Engine *self = this;
     ((String *)((String *)self))->ctor();
-    ((String *)((String *)((char *)self + 0x14)))->ctor();
-    ((String *)((String *)((char *)self + 0x3c)))->ctor();
-    ((String *)((String *)((char *)self + 0x4c)))->ctor();
+    // str_0x14 / str_0x3c / str_0x4c are real String members: auto-constructed.
     self->field_0x340 = 0;
     self->field_0x34c = 0;
     self->field_0x354 = 0;
@@ -1318,7 +1294,7 @@ uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
     buf[0] = x;
     buf[1] = y;
     buf[2] = z;
-    *(Vector *)((char *)this + 0x3fc) = *(const Vector *)buf;
+    this->eyePosition = *(const Vector *)buf;
     return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
 }
 
@@ -1342,18 +1318,18 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         };
         __aeabi_memcpy(self->modelMatrixGL, gl, 0x40);
         Vector tmp;
-        if (self->field_0x378 == 0.0f) {
+        if (self->lightDirty[0] == 0.0f) {
             tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x468));
+                *(const Matrix *)matrix, self->field_0x468);
             tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
             self->field_0x330 = tmp;
         } else {
             self->field_0x330 = self->field_0x468;
         }
         if (self->field_0x32c > 1) {
-            if (self->field_0x37c == 0.0f) {
+            if (self->lightDirty[1] == 0.0f) {
                 tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                    *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x474));
+                    *(const Matrix *)matrix, self->field_0x474);
                 tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
                 self->field_0x33c = tmp;
             } else {
@@ -1362,7 +1338,7 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         }
         ((Engine *)(self))->ShaderUpdate();
         tmp = AbyssEngine::AEMath::MatrixInverseTransformVector(
-            *(const Matrix *)matrix, *(const Vector *)((char *)self + 0x3fc));
+            *(const Matrix *)matrix, self->eyePosition);
         *(Vector *)&self->field_0x34c = tmp;
         self->field_0x34c /= *(float *)(matrix + 12);
         self->field_0x350 /= *(float *)(matrix + 13);
@@ -1382,11 +1358,11 @@ void Engine::LightSetLight(unsigned int light) {
         }
         this->field_0x32c = count;
 
-        char *vector = (char *)this + 0x468 + index * 0x0c;
-        values[0] = *(uint32_t *)(vector + 0x0);
-        values[1] = *(uint32_t *)(vector + 0x4);
-        values[2] = *(uint32_t *)(vector + 0x8);
-        values[3] = *(uint32_t *)((char *)this + 0x378 + index * 4);
+        const Vector &dir = (&this->field_0x468)[index];
+        values[0] = *(const uint32_t *)&dir.x;
+        values[1] = *(const uint32_t *)&dir.y;
+        values[2] = *(const uint32_t *)&dir.z;
+        values[3] = *(const uint32_t *)&this->lightDirty[index];
         if (g_Engine_useShaders == 0) {
             glLightfv(light, 0x1203, values);
         }
@@ -1444,9 +1420,10 @@ void Engine::ResetLightParam() {
     this->field_0x2b8 = 0;
     this->field_0x2c0 = 0x3f800000ULL;
     this->field_0x2c8 = 0;
-    this->field_0x268 = 0;
-    this->field_0x270 = 0;
-    this->field_0x274 = 0x3f800000;
+    this->lightAmbient.r = 0.0f;
+    this->lightAmbient.g = 0.0f;
+    this->lightAmbient.b = 0.0f;
+    this->lightAmbient.a = 1.0f;
 
     Vector up;
     up.x = 0.0f;
@@ -1454,13 +1431,13 @@ void Engine::ResetLightParam() {
     up.z = 0.0f;
     this->field_0x468 = up;
     this->field_0x474 = up;
-    this->field_0x378 = 0;
-    this->field_0x37c = 0;
+    this->lightDirty[0] = 0.0f;
+    this->lightDirty[1] = 0.0f;
 
     if (g_Engine_useShaders == 0) {
-        glLightfv(0x4000, 0x1200, &this->field_0x268);
-        glLightfv(0x4000, 0x1201, (char *)this + 0x228);
-        glLightfv(0x4000, 0x1202, (char *)this + 0x248);
+        glLightfv(0x4000, 0x1200, &this->lightAmbient.r);
+        glLightfv(0x4000, 0x1201, &this->lightDiffuse.r);
+        glLightfv(0x4000, 0x1202, &this->lightSpecular.r);
         glMaterialfv(0x408, 0x1200, &this->field_0x2a8);
         glMaterialfv(0x408, 0x1201, &this->field_0x298);
         glMaterialfv(0x408, 0x1202, &this->field_0x2b8);
@@ -1481,18 +1458,18 @@ void Engine::LightSetLightColorSpecular(float red, float green, float blue, unsi
     }
     this->field_0x32c = count;
 
-    char *src = (char *)this + index * 0x10;
-    *(float *)(src + 0x248) = red;
-    *(float *)(src + 0x24c) = green;
-    *(float *)(src + 0x250) = blue;
-    *(uint32_t *)(src + 0x254) = 0x3f800000;
+    LightColor &src = (&this->lightSpecular)[index];
+    src.r = red;
+    src.g = green;
+    src.b = blue;
+    src.a = 1.0f;
     if (g_Engine_useShaders == 0) {
-        return glLightfv(light, 0x1202, src + 0x248);
+        return glLightfv(light, 0x1202, &src.r);
     }
-    char *dst = (char *)this + index * 0x0c;
-    *(float *)(dst + 0x2e4) = this->field_0x2b8 * red;
-    *(float *)(dst + 0x2e8) = *(float *)(src + 0x24c) * this->field_0x2bc;
-    *(float *)(dst + 0x2ec) = *(float *)(src + 0x250) * this->field_0x2c0;
+    Vector &dst = (&this->lightSpecularShaded)[index];
+    dst.x = this->field_0x2b8 * red;
+    dst.y = src.g * this->field_0x2bc;
+    dst.z = src.b * this->field_0x2c0;
     return ShaderUpdateMaterialColor();
 }
 
@@ -1547,19 +1524,12 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     }
 
     int count = this->field_0x32c;
-    int sourceOffset = 0;
-    int destOffset = 0;
     for (int index = 0; index < count; index += 1) {
-        char *source = (char *)this + sourceOffset;
-        char *dest = (char *)this + destOffset;
-        sourceOffset += 0x10;
-        destOffset += 0x0c;
-        *(float *)(dest + 0x2cc) =
-            (this->field_0x288 + *(float *)(source + 0x268)) * red;
-        *(float *)(dest + 0x2d0) =
-            (this->field_0x28c + *(float *)(source + 0x26c)) * green;
-        *(float *)(dest + 0x2d4) =
-            (this->field_0x290 + *(float *)(source + 0x270)) * blue;
+        const LightColor &src = (&this->lightAmbient)[index];
+        Vector &dst = (&this->lightAmbientShaded)[index];
+        dst.x = (this->field_0x288 + src.r) * red;
+        dst.y = (this->field_0x28c + src.g) * green;
+        dst.z = (this->field_0x290 + src.b) * blue;
     }
     return ShaderUpdateMaterialColor();
 }
