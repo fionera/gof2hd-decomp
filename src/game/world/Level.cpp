@@ -93,54 +93,18 @@ struct RawArray {
 // the call site the decompiler inlined it at. Consolidated here as forward
 // declarations so the call sites below resolve.
 struct ObjectGun;
+// Generic Array<T> special members over the engine's RawArray {size,data,capacity}
+// layout (defined in the anonymous namespace near the end of this file). Element
+// size is a 4-byte handle for every instantiation, so one set serves every type;
+// the Level methods below call these directly at each container-op site.
+namespace {
+void  arrayCtor(void *p);
+void *arrayDtor(void *p);
+void  arraySetLength(unsigned n, void *p);
+void  arrayAdd(int item, void *p);
+}
 extern "C" {
-// Array<T>::Array()
-void  ArrayKIPlayer_ctor_ca(void *a);
-void  ArrayKIPlayer_ctor_ccm(void *a);
-void  ArrayKIPlayer_ctor_cm(void *a);
-void  ArrayKIPlayer_ctor_csc(void *a);
-void  ArrayKIPlayer_ctor_cso(void *a);
-void  ArrayKIPlayer_ctor_csp(void *a);
-void  ArrayKIPlayer_ctor_cwm(void *a);
-void  ArrayPlayer_ctor_cp(void *a);
-void  ArrayRadio_ctor_crm(void *a);
-void  ArrayRadio_ctor_crms(void *a);
-void  ArrayGasCloud_ctor_cgc(void *a);
-void  ArrayBV_ctor_gbv(void *a);
-void  Array_int_ctor_ips(void *a);
-void  ArrayAGun_ctor_cg(void *a);
-void  ArrayAGun_ctor_ag(void *a);
-// Array<T>::~Array() (returns this)
-void *ArrayKIPlayer_dtor_csc(void *a);
-void *ArrayPlayer_dtor_cp(void *a);
-void *ArrayRadio_dtor_crm(void *a);
-void *ArrayInt_dtor_gbv(void *a);
-void *Array_int_dtor_cs(void *a);
-void *Array_int_dtor_cso(void *a);
-void *ArrayAGun_dtor_ag(void *a);
-// Array<T>::setLength(n)
-void  ArraySetLength_KIPlayer_ca(int n, void *a);
-void  ArraySetLength_KIPlayer_ccm(unsigned n, void *a);
-void  ArraySetLength_KIPlayer_cm(unsigned n, void *a);
-void  ArraySetLength_KIPlayer_csc(unsigned n, void *a);
-void  ArraySetLength_KIPlayer_csp(unsigned n, void *a);
-void  ArraySetLength_KIPlayer_cwm(unsigned n, void *a);
-void  ArraySetLength_Player_cp(unsigned n, void *a);
-void  ArraySetLength_Radio_crms(unsigned n, void *a);
-void  ArraySetLength_GasCloud_cgc(int n, void *a);
-void  ArraySetLength_BV_gbv(unsigned n, void *a);
-void  ArraySetLength_int_ips(unsigned n, void *a);
-void  ArraySetLength_AGun_ag(unsigned n, void *a);
-// Array<T>::add(item)
-void  ArrayAdd_KIPlayer_cft(KIPlayer *k, void *a);
-void  ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a);
-void  ArrayAdd_KIPlayer_cso(KIPlayer *k, void *a);
-void  ArrayAdd_KIPlayer_cwm(KIPlayer *k, void *a);
-void  ArrayAdd_Radio_crm(RadioMessage *m, void *a);
-void  ArrayAdd_AGun_cg(ObjectGun *o, void *a);
-void  ArrayAdd_AGun_ag(ObjectGun *o, void *a);
-// Array<int>::release() / Array<T>::releaseClasses()
-void  ArrayRelease_int_gbv(void *a);
+// Array<T>::releaseClasses()
 void  ArrayReleaseClasses_AGun_ag(void *a);
 void  ArrayReleaseClasses_KIPlayer_csc(void *a);
 // generic (untyped, int-handle) Array helpers used by createSentryGuns
@@ -661,66 +625,64 @@ int Level::getNumDeliveredPassengers() {
     return numDeliveredPassengers;
 }
 
-// ARM ABI destructors return `this`; model them as functions returning the pointer
-// so the result feeds operator delete without a reload.
+// Owned members are stored as opaque int handles. release+free a single owned
+// object, or an owned Array<T> (whose elements are released first). The ARM ABI
+// destructors return `this`, so their result feeds operator delete directly.
+template <class Handle>
+static void releaseObject(Handle &member, void *(*objectDtor)(void *)) {
+    if (member != 0) {
+        ::operator delete(objectDtor((void *)(intptr_t)member));
+    }
+    member = 0;
+}
 
-#define SIMPLE(member, dtor) \
-    if ((this->member) != 0) { \
-        operator delete(dtor((void *)(intptr_t)(this->member))); \
-    } \
-    this->member = 0;
-
-#define ARR(member, release, dtor) \
-    if ((this->member) != 0) { \
-        release((void *)(intptr_t)(this->member)); \
-        if ((this->member) != 0) { \
-            operator delete(dtor((void *)(intptr_t)(this->member))); \
-        } \
-    } \
-    this->member = 0;
+template <class Handle>
+static void releaseArray(Handle &member, void (*releaseElements)(void *),
+                         void *(*arrayDtor)(void *)) {
+    if (member != 0) {
+        releaseElements((void *)(intptr_t)member);
+        ::operator delete(arrayDtor((void *)(intptr_t)member));
+    }
+    member = 0;
+}
 
 Level::~Level() {
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
-    SIMPLE(objectivesA, dtor_Objective)
-    SIMPLE(objectivesB, dtor_Objective)
-    SIMPLE(collisionVolume, dtor_BoundingVolume)
-    {
-        int *p = (int *)(intptr_t)asteroidWaypoint;
-        if (p != 0) {
-            (*(void (**)(int *))(*p + 4))(p);
-        }
+    releaseObject(objectivesA, dtor_Objective);
+    releaseObject(objectivesB, dtor_Objective);
+    releaseObject(collisionVolume, dtor_BoundingVolume);
+    // asteroidWaypoint is destroyed through its own vtable deleting-dtor (slot +4).
+    if (int *wp = (int *)(intptr_t)asteroidWaypoint) {
+        (*(void (**)(int *))(*wp + 4))(wp);
     }
     asteroidWaypoint = 0;
-    SIMPLE(starSystem, dtor_StarSystem)
-    SIMPLE(player, dtor_PlayerEgo)
-    SIMPLE(field_180, dtor_Route)
-    SIMPLE(field_80, dtor_PSM)
-    SIMPLE(skybox2Mesh, dtor_PSM)
-    SIMPLE(field_74, dtor_PSM)
-    SIMPLE(particleEmitBoolPtr, dtor_PSM)
-    SIMPLE(particleSystemMgr, dtor_PSM)
-    SIMPLE(field_90, dtor_PSM)
-    SIMPLE(particleRenderBoolPtr, dtor_PSM)
-    SIMPLE(field_98, dtor_PSM)
-    SIMPLE(field_9c, dtor_PSM)
-    ARR(field_a4, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
-    ARR(field_a8, Level_releaseInt, dtor_ArrayInt)
-    ARR(playerGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
-    ARR(enemyGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
-    ARR(enemies, Level_releaseKI, dtor_ArrayKI)
-    ARR(asteroids, Level_releaseKI, dtor_ArrayKI)
-    ARR(gasClouds, Level_releaseKI, dtor_ArrayKI)
-    ARR(landmarks, Level_releaseKI, dtor_ArrayKI)
-    ARR(messages, Level_releaseRadioMessage, dtor_ArrayRadioMessage)
-    ARR(field_104, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
-    SIMPLE(vtable, dtor_LODManager)
-    SIMPLE(field_a0, dtor_LodMeshMerger)
-    if (field_b0 != 0) {
-        operator delete(dtor_ArrayKI((void *)(intptr_t)field_b0));
-    }
-    field_b0 = 0;
+    releaseObject(starSystem, dtor_StarSystem);
+    releaseObject(player, dtor_PlayerEgo);
+    releaseObject(field_180, dtor_Route);
+    releaseObject(field_80, dtor_PSM);
+    releaseObject(skybox2Mesh, dtor_PSM);
+    releaseObject(field_74, dtor_PSM);
+    releaseObject(particleEmitBoolPtr, dtor_PSM);
+    releaseObject(particleSystemMgr, dtor_PSM);
+    releaseObject(field_90, dtor_PSM);
+    releaseObject(particleRenderBoolPtr, dtor_PSM);
+    releaseObject(field_98, dtor_PSM);
+    releaseObject(field_9c, dtor_PSM);
+    releaseArray(field_a4, Level_releaseAEGeometry, dtor_ArrayAEGeometry);
+    releaseArray(field_a8, Level_releaseInt, dtor_ArrayInt);
+    releaseArray(playerGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun);
+    releaseArray(enemyGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun);
+    releaseArray(enemies, Level_releaseKI, dtor_ArrayKI);
+    releaseArray(asteroids, Level_releaseKI, dtor_ArrayKI);
+    releaseArray(gasClouds, Level_releaseKI, dtor_ArrayKI);
+    releaseArray(landmarks, Level_releaseKI, dtor_ArrayKI);
+    releaseArray(messages, Level_releaseRadioMessage, dtor_ArrayRadioMessage);
+    releaseArray(field_104, Level_releaseAEGeometry, dtor_ArrayAEGeometry);
+    releaseObject(vtable, dtor_LODManager);
+    releaseObject(field_a0, dtor_LodMeshMerger);
+    releaseObject(field_b0, dtor_ArrayKI);
 }
 
 void Level::incNumDeliveredPassengers(int delta) {
@@ -1004,10 +966,10 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     void *guns = *(void **)&this->playerGuns;
     if (guns == 0) {
         guns = ::operator new(0xc);
-        ArrayAGun_ctor_cg(guns);
+        arrayCtor(guns);
         *(void **)&this->playerGuns = guns;
     }
-    ArrayAdd_AGun_cg(obj, guns);
+    arrayAdd((int)(intptr_t)(obj), guns);
     return gun;
 }
 
@@ -1101,9 +1063,9 @@ void Level::createSpace()
     Status **status = g_csp_status;
     (void)status;
     void *players = ::operator new(0xc);
-    ArrayKIPlayer_ctor_csp(players);
+    arrayCtor(players);
     *(void **)&this->landmarks = players;
-    ArraySetLength_KIPlayer_csp(4, players);
+    arraySetLength((unsigned)(4), players);
 
     this->csp_buildStationAndGates();
 }
@@ -1145,11 +1107,11 @@ void Level::createRadioMessage(int type, int sub) {
 
     // fresh message queue.
     if (*(void **)&this->messages != 0) {
-        operator_delete_crm(ArrayRadio_dtor_crm(*(void **)&this->messages));
+        operator_delete_crm(arrayDtor(*(void **)&this->messages));
         this->messages = 0;
     }
     void *queue = ::operator new(0xc);
-    ArrayRadio_ctor_crm(queue);
+    arrayCtor(queue);
     *(void **)&this->messages = queue;
 
     // resolve the speaker portrait from the sub-parameter.
@@ -1230,7 +1192,7 @@ void Level::createRadioMessage(int type, int sub) {
             RadioMessage *m = (RadioMessage *)::operator new(0x28);
             int kind = (k == 0) ? 5 : 6;
             RadioMessage_ctor_crm(m, tbl[k * 2 + 1], arg, kind, delay);
-            ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+            arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
         }
         builtInline = true;
         break;
@@ -1239,10 +1201,10 @@ void Level::createRadioMessage(int type, int sub) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         int rng = *g_crm_rngStorm;
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xaf4, 0, 5, 0x5dc);
-        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
         m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xafa, 0, 6, 0);
-        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
         builtInline = true;
         break;
     }
@@ -1255,10 +1217,10 @@ void Level::createRadioMessage(int type, int sub) {
     case 0x1b: {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc60, 6, 5, 0x5dc);
-        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
         m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc61, 0, 6, 0);
-        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
         builtInline = true;
         break;
     }
@@ -1279,7 +1241,7 @@ void Level::createRadioMessage(int type, int sub) {
 
     if (aborted) {
         if (*(void **)&this->messages != 0)
-            operator_delete_crm(ArrayRadio_dtor_crm(*(void **)&this->messages));
+            operator_delete_crm(arrayDtor(*(void **)&this->messages));
         int ego = this->player;
         this->messages = 0;
         this->crm_dispatch(*(int *)(ego + 0x18), 0);
@@ -1289,7 +1251,7 @@ void Level::createRadioMessage(int type, int sub) {
     if (!builtInline) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, id, speaker, 5, extraDelay);
-        ArrayAdd_Radio_crm(m, *(void **)&this->messages);
+        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
     }
 
     int ego = this->player;
@@ -1558,7 +1520,7 @@ void Level::createFighterTurrets()
                 *(PlayerTurret **)(ki + 0x10) = t;
                 t->standing = (kind == 0x2d) ? 8 : 0;
                 t->field_0x74 = 1;
-                ArrayAdd_KIPlayer_cft((KIPlayer *)t, *(void **)&this->enemies);
+                arrayAdd((int)(intptr_t)((KIPlayer *)t), *(void **)&this->enemies);
             }
         }
         list = *(unsigned **)&this->enemies;
@@ -1672,9 +1634,9 @@ void Level::createMission()
         if (campA == 0x44) count = 2;
 
         void *arr = ::operator new(0xc);
-        ArrayKIPlayer_ctor_cm(arr);
+        arrayCtor(arr);
         *(void **)&this->enemies = arr;
-        ArraySetLength_KIPlayer_cm(count, arr);
+        arraySetLength((unsigned)(count), arr);
 
         Globals *globals = *g_cm_globals;
         for (unsigned i = 0; i < count; i = i + 1) {
@@ -1757,7 +1719,7 @@ void Level::createAsteroids()
 
     // asteroid container.
     void *arr = ::operator new(0xc);
-    ArrayKIPlayer_ctor_ca(arr);
+    arrayCtor(arr);
     *(void **)&this->asteroids = arr;
 
     Galaxy *gal = (Galaxy *)**g_ca_galaxy;
@@ -1772,7 +1734,7 @@ void Level::createAsteroids()
     AERandom_setSeed_ca((long long)seed);
 
     int countRoll = AERandom_nextIntBound_ca(*rngObj, 0x28);
-    ArraySetLength_KIPlayer_ca(countRoll + 0x28, *(void **)&this->asteroids);
+    arraySetLength((unsigned)(countRoll + 0x28), *(void **)&this->asteroids);
 
     int rx = AERandom_nextIntBound_ca(*rngObj, 0x4e20); // DAT_000bf990 == 0x4e20
     int ry = AERandom_nextIntBound_ca(*rngObj, 0x4e20);
@@ -1982,9 +1944,9 @@ void Level::createCampaignMission()
     if (idx == 0) {
         // mission 0 — the tutorial ambush: three sleeping enemy fighters at a fixed point.
         void *arr = ::operator new(0xc);
-        ArrayKIPlayer_ctor_ccm(arr);
+        arrayCtor(arr);
         *(void **)&this->enemies = arr;
-        ArraySetLength_KIPlayer_ccm(3, arr);
+        arraySetLength((unsigned)(3), arr);
         float c = g_ccm_pos0;
         for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
@@ -2438,37 +2400,37 @@ void Level::connectPlayers()
     // player's enemy list from the enemy array.
     if (this->enemies != 0 && this->player != 0) {
         void *arr = ::operator new(0xc);
-        ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)&this->enemies, arr);
+        arrayCtor(arr);
+        arraySetLength((unsigned)(**(unsigned **)&this->enemies), arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(this->enemies + 4) + j * 4) + 4);
         ((Player *)**(int **)&this->player)->setEnemies((Array<Player *> *)arr);
-        operator_delete_cp(ArrayPlayer_dtor_cp(arr));
+        operator_delete_cp(arrayDtor(arr));
     }
     // add asteroids/landmarks arrays as additional enemies.
     if (this->asteroids != 0 && this->player != 0) {
         void *arr = ::operator new(0xc);
-        ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)&this->asteroids, arr);
+        arrayCtor(arr);
+        arraySetLength((unsigned)(**(unsigned **)&this->asteroids), arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(this->asteroids + 4) + j * 4) + 4);
         ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(ArrayPlayer_dtor_cp(arr));
+        operator_delete_cp(arrayDtor(arr));
     }
     if (this->gasClouds != 0 && this->player != 0) {
         void *arr = ::operator new(0xc);
-        ArrayPlayer_ctor_cp(arr);
-        ArraySetLength_Player_cp(**(unsigned **)&this->gasClouds, arr);
+        arrayCtor(arr);
+        arraySetLength((unsigned)(**(unsigned **)&this->gasClouds), arr);
         int n = *(int *)arr;
         for (int j = 0; j != n; j = j + 1)
             *(int *)(*(int *)((char *)arr + 4) + j * 4) =
                 *(int *)(*(int *)(*(int *)(this->gasClouds + 4) + j * 4) + 4);
         ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(ArrayPlayer_dtor_cp(arr));
+        operator_delete_cp(arrayDtor(arr));
     }
 
     if (this->enemies == 0)
@@ -2514,10 +2476,10 @@ void Level::connectPlayers()
         }
 
         void *arr = ::operator new(0xc);
-        ArrayPlayer_ctor_cp(arr);
+        arrayCtor(arr);
         if (this->player != 0)
             count = count + 1;
-        ArraySetLength_Player_cp(count, arr);
+        arraySetLength((unsigned)(count), arr);
 
         Mission *m = (Mission *)Status_getMission_cp();
         int mtype = Mission_getType_cp();
@@ -2609,16 +2571,16 @@ void Level::connectPlayers()
                     }
                 }
             } else {
-                operator_delete_cp(ArrayPlayer_dtor_cp(arr));
+                operator_delete_cp(arrayDtor(arr));
                 arr = ::operator new(0xc);
-                ArrayPlayer_ctor_cp(arr);
-                ArraySetLength_Player_cp(1, arr);
+                arrayCtor(arr);
+                arraySetLength((unsigned)(1), arr);
             }
             *(int *)(*(int *)((char *)arr + 4) + *(int *)arr * 4 - 4) = **(int **)&this->player;
         }
 
         (*(Player **)(e + 4))->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(ArrayPlayer_dtor_cp(arr));
+        operator_delete_cp(arrayDtor(arr));
 
         Status_getMission_cp();
         if (eFaction == 10 && Mission_isEmpty_cp() != 0)
@@ -2720,9 +2682,9 @@ struct RMSpec { int id, speaker, kind, delay; };
 static void buildQueue(Level *self, const RMSpec *specs, unsigned n)
 {
     void *arr = ::operator new(0xc);
-    ArrayRadio_ctor_crms(arr);
+    arrayCtor(arr);
     self->messages = (int)(intptr_t)arr;
-    ArraySetLength_Radio_crms(n, arr);
+    arraySetLength((unsigned)(n), arr);
     for (unsigned i = 0; i < n; i = i + 1) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crms(m, specs[i].id, specs[i].speaker, specs[i].kind, specs[i].delay);
@@ -3112,12 +3074,12 @@ void Level::createStaticObjects()
                 void *arr = *(void **)&this->enemies;
                 if (arr == 0) {
                     arr = ::operator new(0xc);
-                    ArrayKIPlayer_ctor_cso(arr);
+                    arrayCtor(arr);
                     *(void **)&this->enemies = arr;
                 }
-                ArrayAdd_KIPlayer_cso((KIPlayer *)o, arr);
+                arrayAdd((int)(intptr_t)((KIPlayer *)o), arr);
                 if (*(void **)(o + 0x50) != 0)
-                    operator_delete_cso(Array_int_dtor_cso(*(void **)(o + 0x50)));
+                    operator_delete_cso(arrayDtor(*(void **)(o + 0x50)));
                 *(int *)(o + 0x50) = 0;
             }
         }
@@ -3139,16 +3101,16 @@ void Level::createStaticObjects()
             PlayerFixedObject_setName_cso((PlayerFixedObject *)o, &name);
             PlayerFixedObject_setDockingType_cso((PlayerFixedObject *)o, 1);
             if (*(void **)(o + 0x50) != 0)
-                operator_delete_cso(Array_int_dtor_cso(*(void **)(o + 0x50)));
+                operator_delete_cso(arrayDtor(*(void **)(o + 0x50)));
             *(int *)(o + 0x50) = 0;
             (*(Player **)(o + 4))->setAlwaysFriend(1);
             void *arr = *(void **)&this->enemies;
             if (arr == 0) {
                 arr = ::operator new(0xc);
-                ArrayKIPlayer_ctor_cso(arr);
+                arrayCtor(arr);
                 *(void **)&this->enemies = arr;
             }
-            ArrayAdd_KIPlayer_cso((KIPlayer *)o, arr);
+            arrayAdd((int)(intptr_t)((KIPlayer *)o), arr);
         }
     }
 }
@@ -3231,8 +3193,8 @@ void *Level_getBoundingVolume(int idx, int kind)
     if (coll != 0) {
         unsigned n = *(unsigned *)coll[1];   // entry count
         void *arr = ::operator new(0xc);
-        ArrayBV_ctor_gbv(arr);
-        ArraySetLength_BV_gbv(n, arr);
+        arrayCtor(arr);
+        arraySetLength((unsigned)(n), arr);
         result = arr;
 
         int cursor = 1;
@@ -3253,8 +3215,8 @@ void *Level_getBoundingVolume(int idx, int kind)
             ((BoundingVolume **)(*(int *)((char *)arr + 4)))[i] = bv;
         }
 
-        ArrayRelease_int_gbv(coll);
-        operator_delete_gbv(ArrayInt_dtor_gbv(coll));
+        Level_releaseInt(coll);
+        operator_delete_gbv(arrayDtor(coll));
     }
     return result;
 }
@@ -3363,7 +3325,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         if (type == 0x2c || type == 0x31 || type == 0x33) {
             if (type == 0x33) *(unsigned char *)((char *)obj + 0x25) = 0;
             if (type != 0x33 && *(void **)((char *)obj + 0x50) != 0) {
-                operator_delete_cs(Array_int_dtor_cs(*(void **)((char *)obj + 0x50)));
+                operator_delete_cs(arrayDtor(*(void **)((char *)obj + 0x50)));
                 *(void **)((char *)obj + 0x50) = 0;
             }
         }
@@ -3475,7 +3437,7 @@ void Level::assignGuns()
     if (*(void **)&this->enemyGuns != 0) {
         ArrayReleaseClasses_AGun_ag(*(void **)&this->enemyGuns);
         if (*(void **)&this->enemyGuns != 0)
-            operator_delete_ag(ArrayAGun_dtor_ag(*(void **)&this->enemyGuns));
+            operator_delete_ag(arrayDtor(*(void **)&this->enemyGuns));
         this->enemyGuns = 0;
     }
     Status **status = g_ag_status;
@@ -3507,9 +3469,9 @@ void Level::assignGuns()
     }
 
     void *guns = ::operator new(0xc);
-    ArrayAGun_ctor_ag(guns);
+    arrayCtor(guns);
     *(void **)&this->enemyGuns = guns;
-    ArraySetLength_AGun_ag(slots, guns);
+    arraySetLength((unsigned)(slots), guns);
 
     int baseDmg = (basePower == 0) ? 3 : (basePower + 2);
     if (camp == 4) baseDmg = 1;
@@ -3726,7 +3688,7 @@ void Level::createGasClouds()
     }
 
     void *arr = ::operator new(0xc);
-    ArrayGasCloud_ctor_cgc(arr);
+    arrayCtor(arr);
     *(void **)&this->gasClouds = arr;
 
     bool boss = false;
@@ -3740,7 +3702,7 @@ void Level::createGasClouds()
     // count = base + (prob[1]/denom) * (roll+4); base 3 for the boss fight.
     float countF = (float)(boss ? 3.0f : 0.0f) + ((float)prob[1] / 1.0f) * (float)(roll + 4);
     int count = (countF > 0.0f) ? (int)countF : 0;
-    ArraySetLength_GasCloud_cgc(count, *(void **)&this->gasClouds);
+    arraySetLength((unsigned)(count), *(void **)&this->gasClouds);
 
     void *canvas = *g_cgc_canvas;
     for (unsigned i = 0; i < **(unsigned **)&this->gasClouds; i = i + 1) {
@@ -3901,9 +3863,9 @@ void Level::initParticleSystems()
         // per-asteroid dust systems.
         if (this->field_a4 != 0) {
             void *arr = ::operator new(0xc);
-            Array_int_ctor_ips(arr);
+            arrayCtor(arr);
             *(void **)&this->field_a8 = arr;
-            ArraySetLength_int_ips(**(unsigned **)&this->field_a4, arr);
+            arraySetLength((unsigned)(**(unsigned **)&this->field_a4), arr);
             this->ips_buildAsteroidDust(arr);
         }
 
@@ -4020,9 +3982,9 @@ void Level::createWingmen()
         return;
 
     void *arr = ::operator new(0xc);
-    ArrayKIPlayer_ctor_cwm(arr);
+    arrayCtor(arr);
     unsigned *wm = (unsigned *)Status_getWingmen_cwm();
-    ArraySetLength_KIPlayer_cwm(*wm, arr);
+    arraySetLength((unsigned)(*wm), arr);
 
     unsigned n = *(unsigned *)arr;
     for (unsigned i = 0; i < n; i = i + 1) {
@@ -4054,8 +4016,7 @@ void Level::createWingmen()
         *(void **)&this->enemies = arr;
     } else {
         for (unsigned i = 0; i < n; i = i + 1) {
-            ArrayAdd_KIPlayer_cwm(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4),
-                                  *(void **)&this->enemies);
+            arrayAdd((int)(intptr_t)(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4)), *(void **)&this->enemies);
             n = *(unsigned *)arr;
         }
     }
@@ -4111,7 +4072,7 @@ void Level::createScene()
     if (*(void **)&this->enemies != 0) {
         ArrayReleaseClasses_KIPlayer_csc(*(void **)&this->enemies);
         if (*(void **)&this->enemies != 0)
-            operator_delete_csc(ArrayKIPlayer_dtor_csc(*(void **)&this->enemies));
+            operator_delete_csc(arrayDtor(*(void **)&this->enemies));
     }
     int mode = this->missionPtr;
     this->enemies = 0;
@@ -4126,12 +4087,12 @@ void Level::createScene()
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
+            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
             g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)::operator new(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
+            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
         }
         return;
     }
@@ -4147,15 +4108,15 @@ void Level::createScene()
 
         if (agents == 0) {
             void *arr = ::operator new(0xc);
-            ArrayKIPlayer_ctor_csc(arr);
+            arrayCtor(arr);
             *(void **)&this->enemies = arr;
-            ArraySetLength_KIPlayer_csc(3, arr);
+            arraySetLength((unsigned)(3), arr);
         } else {
             int nAgents = *agents;
             void *arr = ::operator new(0xc);
-            ArrayKIPlayer_ctor_csc(arr);
+            arrayCtor(arr);
             *(void **)&this->enemies = arr;
-            ArraySetLength_KIPlayer_csc(nAgents * 3 + crew, arr);
+            arraySetLength((unsigned)(nAgents * 3 + crew), arr);
             for (int j = 0; j != 7; j = j + 1) taken[j] = 0;
 
             for (int a = 0; a < nAgents; a = a + 1) {
@@ -4215,9 +4176,9 @@ void Level::createScene()
         }
 
         void *arr = ::operator new(0xc);
-        ArrayKIPlayer_ctor_csc(arr);
+        arrayCtor(arr);
         *(void **)&this->enemies = arr;
-        ArraySetLength_KIPlayer_csc(1, arr);
+        arraySetLength((unsigned)(1), arr);
 
         Status_getShip_csc();
         int shipIdx = Ship_getIndex_csc();
@@ -4247,7 +4208,7 @@ void Level::createScene()
                 ((AEGeometry*)g)->addChild(((AEGeometry*)child)->transform);
                 [&]{ AEGeometry *g_=(AEGeometry*)(child); if(g_){ g_->~AEGeometry(); operator_delete_csc(g_);} }();
             }
-            ArrayAdd_KIPlayer_csc((KIPlayer *)p, *(void **)&this->enemies);
+            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
         }
 
         // background traffic fighters.
@@ -4292,7 +4253,7 @@ void Level::createScene()
             (*(Player **)((char *)k + 0x4))->setAlwaysFriend(1);
             KIPlayer_setToSleep_csc(k);
             PlayerFighter_setExhaustVisible_csc((int)(intptr_t)k);
-            ArrayAdd_KIPlayer_csc(k, *(void **)&this->enemies);
+            arrayAdd((int)(intptr_t)(k), *(void **)&this->enemies);
         }
     }
 }
@@ -4590,58 +4551,6 @@ inline void arrayAdd(int item, void *p)
 }
 
 } // namespace
-
-// Array<T>::Array() per element type.
-extern "C" void ArrayKIPlayer_ctor_ca(void *a)   { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_ccm(void *a)  { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_cm(void *a)   { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_csc(void *a)  { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_cso(void *a)  { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_csp(void *a)  { arrayCtor(a); }
-extern "C" void ArrayKIPlayer_ctor_cwm(void *a)  { arrayCtor(a); }
-extern "C" void ArrayPlayer_ctor_cp(void *a)     { arrayCtor(a); }
-extern "C" void ArrayRadio_ctor_crm(void *a)     { arrayCtor(a); }
-extern "C" void ArrayRadio_ctor_crms(void *a)    { arrayCtor(a); }
-extern "C" void ArrayGasCloud_ctor_cgc(void *a)  { arrayCtor(a); }
-extern "C" void ArrayBV_ctor_gbv(void *a)        { arrayCtor(a); }
-extern "C" void Array_int_ctor_ips(void *a)      { arrayCtor(a); }
-extern "C" void ArrayAGun_ctor_cg(void *a)       { arrayCtor(a); }
-extern "C" void ArrayAGun_ctor_ag(void *a)       { arrayCtor(a); }
-
-// Array<T>::~Array() per element type (returns `this`).
-extern "C" void *ArrayKIPlayer_dtor_csc(void *a) { return arrayDtor(a); }
-extern "C" void *ArrayPlayer_dtor_cp(void *a)    { return arrayDtor(a); }
-extern "C" void *ArrayRadio_dtor_crm(void *a)    { return arrayDtor(a); }
-extern "C" void *ArrayInt_dtor_gbv(void *a)      { return arrayDtor(a); }
-extern "C" void *Array_int_dtor_cs(void *a)      { return arrayDtor(a); }
-extern "C" void *Array_int_dtor_cso(void *a)     { return arrayDtor(a); }
-extern "C" void *ArrayAGun_dtor_ag(void *a)      { return arrayDtor(a); }
-
-// Array<T>::setLength(n) per element type.
-extern "C" void ArraySetLength_KIPlayer_ca(int n, void *a)      { arraySetLength((unsigned)n, a); }
-extern "C" void ArraySetLength_KIPlayer_ccm(unsigned n, void *a){ arraySetLength(n, a); }
-extern "C" void ArraySetLength_KIPlayer_cm(unsigned n, void *a) { arraySetLength(n, a); }
-extern "C" void ArraySetLength_KIPlayer_csc(unsigned n, void *a){ arraySetLength(n, a); }
-extern "C" void ArraySetLength_KIPlayer_csp(unsigned n, void *a){ arraySetLength(n, a); }
-extern "C" void ArraySetLength_KIPlayer_cwm(unsigned n, void *a){ arraySetLength(n, a); }
-extern "C" void ArraySetLength_Player_cp(unsigned n, void *a)   { arraySetLength(n, a); }
-extern "C" void ArraySetLength_Radio_crms(unsigned n, void *a)  { arraySetLength(n, a); }
-extern "C" void ArraySetLength_GasCloud_cgc(int n, void *a)     { arraySetLength((unsigned)n, a); }
-extern "C" void ArraySetLength_BV_gbv(unsigned n, void *a)      { arraySetLength(n, a); }
-extern "C" void ArraySetLength_int_ips(unsigned n, void *a)     { arraySetLength(n, a); }
-extern "C" void ArraySetLength_AGun_ag(unsigned n, void *a)     { arraySetLength(n, a); }
-
-// Array<T>::add(item) per element type.
-extern "C" void ArrayAdd_KIPlayer_cft(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
-extern "C" void ArrayAdd_KIPlayer_csc(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
-extern "C" void ArrayAdd_KIPlayer_cso(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
-extern "C" void ArrayAdd_KIPlayer_cwm(KIPlayer *k, void *a) { arrayAdd((int)(intptr_t)k, a); }
-extern "C" void ArrayAdd_Radio_crm(RadioMessage *m, void *a){ arrayAdd((int)(intptr_t)m, a); }
-extern "C" void ArrayAdd_AGun_cg(ObjectGun *o, void *a)     { arrayAdd((int)(intptr_t)o, a); }
-extern "C" void ArrayAdd_AGun_ag(ObjectGun *o, void *a)     { arrayAdd((int)(intptr_t)o, a); }
-
-// Array<int>::release() — clear element values, keep the slots.
-extern "C" void ArrayRelease_int_gbv(void *p) { Level_releaseInt(p); }
 
 // Array<T>::~Array() for the level's owned member arrays (freed in ~Level via the
 // ARR() macro after the matching Level_release* element pass). Same RawArray
