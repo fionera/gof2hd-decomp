@@ -66,7 +66,7 @@ int Achievements::init() {
     this->catches = 0;
     this->pirateKills = 0;
     this->field_0x14 = 0;
-    return (int)(intptr_t)((char *)this + 0x8);
+    return (int)(intptr_t)&this->kills;  // address of member at +0x8 (int cast: pre-existing 64-bit truncation, intentional)
 }
 
 uint8_t Achievements::isEliteMedal(int index) {

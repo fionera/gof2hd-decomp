@@ -19,7 +19,10 @@ void __aeabi_memclr(void *dst, uint32_t n);
 
 class GameRecord {
 public:
-    void* _opaque;  // raw byte-offset access throughout (coverage-mode translation)
+    void* _opaque;          // +0x00 heap buffer / raw byte-offset access throughout (coverage-mode translation)
+    char  _pad_04[0x184];   // +0x04 scalar fields reached via byte-offset casts from `this`
+    String nameString;      // +0x188 embedded AbyssEngine::String
+    String descString;      // +0x194 embedded AbyssEngine::String
     GameRecord();
     ~GameRecord();
 

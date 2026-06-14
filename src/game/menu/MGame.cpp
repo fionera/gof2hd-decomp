@@ -495,7 +495,9 @@ void MGame::freeCamTouchBegin(int x, int y, int id) {
         slot = 0xb0;
         this->field_0x9c = id;
     }
-    *(Vector*)((Vector *)((char *)this + slot)) = *(const Vector*)(buf);
+    // slot is 0xa4 (finger-1 Vector) or 0xb0 (finger-0 Vector); both live in the
+    // free-cam finger-position Vector pair based at &this->field_0xa4 (+0xa4).
+    *(Vector*)((char *)&this->field_0xa4 + (slot - 0xa4)) = *(const Vector*)(buf);
 tail:
     this->field_0x124 = x;
     this->field_0x128 = y;
@@ -1691,7 +1693,10 @@ void MGame::buildMissionFollowup() {
     this->field_0x58->setFreeLookMode(false);
     TFC_enableFirstPersonCam(this->field_0xf4, 0);
     this->field_0x58->hideShipForFirstPersonCameraView(false);
-    *(uint8_t *)((char *)this + 0x239) = 1;   // this[1].field_48+1 (delivery-active flag)
+    // RAWREAD: delivery-active flag at +0x239 (target comment: this[1].field_48+1).
+    // Kept as raw byte access: MGame's field_0xNN layout is documentation-only (no
+    // explicit padding, sparse offsets), so this byte has no faithful named member.
+    *(uint8_t *)((char *)this + 0x239) = 1;
 
     ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setStatusValue(0);
     ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setWon(false);

@@ -147,12 +147,15 @@ public:
     int field_1b8;
     int field_1bc;
     int field_1c0;
-    uint8_t pad_1c4[12];
+    int supernovaFlareTexture; // +0x1c4 (supernova flare mesh texture handle)
+    int field_1c8;           // +0x1c8
+    int supernovaFlareMesh;  // +0x1cc (supernova flare mesh handle)
     uint8_t sub_1d0[0x3c];   // 0x1d0 (constructed sub-object)
     uint8_t sub_20c[0x3c];   // 0x20c (constructed sub-object)
     uint8_t sub_248[0x3c];   // 0x248 (constructed sub-object)
     int field_284;
-    uint16_t field_288;
+    uint8_t field_288;       // +0x288 (boss-present flag)
+    uint8_t supernovaFlareActive; // +0x289 (supernova flare visible flag)
     uint8_t pad_28a[2];
     int miningPlant;
     int numDeliveredOre;

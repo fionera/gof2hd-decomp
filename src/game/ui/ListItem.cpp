@@ -346,7 +346,7 @@ void * ListItem::init() {
     // 16-byte NEON store zeroing agent/bluePrint/ship/item (fields +0x4..+0x10).
     unsigned *p4 = (unsigned *)&this->agent;
     p4[0] = 0; p4[1] = 0; p4[2] = 0; p4[3] = 0;
-    return (char *)this + 4;
+    return (char *)&this->agent;  // address of member at +0x4
 }
 
 // ListItem::ListItem(ListItem* src) — copy constructor. Pointer/value fields are

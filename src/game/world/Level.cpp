@@ -633,28 +633,28 @@ int Level::getNumDeliveredPassengers() {
 // ARM ABI destructors return `this`; model them as functions returning the pointer
 // so the result feeds operator delete without a reload.
 
-#define SIMPLE(off, dtor) \
-    if (*(void **)((char *)this + (off)) != 0) { \
-        operator delete(dtor(*(void **)((char *)this + (off)))); \
+#define SIMPLE(member, dtor) \
+    if ((this->member) != 0) { \
+        operator delete(dtor((void *)(intptr_t)(this->member))); \
     } \
-    *(int *)((char *)this + (off)) = 0;
+    this->member = 0;
 
-#define ARR(off, release, dtor) \
-    if (*(void **)((char *)this + (off)) != 0) { \
-        release(*(void **)((char *)this + (off))); \
-        if (*(void **)((char *)this + (off)) != 0) { \
-            operator delete(dtor(*(void **)((char *)this + (off)))); \
+#define ARR(member, release, dtor) \
+    if ((this->member) != 0) { \
+        release((void *)(intptr_t)(this->member)); \
+        if ((this->member) != 0) { \
+            operator delete(dtor((void *)(intptr_t)(this->member))); \
         } \
     } \
-    *(int *)((char *)this + (off)) = 0;
+    this->member = 0;
 
 Level::~Level() {
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
-    SIMPLE(0x28, dtor_Objective)
-    SIMPLE(0x2c, dtor_Objective)
-    SIMPLE(0xc4, dtor_BoundingVolume)
+    SIMPLE(objectivesA, dtor_Objective)
+    SIMPLE(objectivesB, dtor_Objective)
+    SIMPLE(collisionVolume, dtor_BoundingVolume)
     {
         int *p = (int *)(intptr_t)asteroidWaypoint;
         if (p != 0) {
@@ -662,30 +662,30 @@ Level::~Level() {
         }
     }
     asteroidWaypoint = 0;
-    SIMPLE(0xec, dtor_StarSystem)
-    SIMPLE(0xf0, dtor_PlayerEgo)
-    SIMPLE(0x180, dtor_Route)
-    SIMPLE(0x80, dtor_PSM)
-    SIMPLE(0x88, dtor_PSM)
-    SIMPLE(0x74, dtor_PSM)
-    SIMPLE(0x78, dtor_PSM)
-    SIMPLE(0x7c, dtor_PSM)
-    SIMPLE(0x90, dtor_PSM)
-    SIMPLE(0x84, dtor_PSM)
-    SIMPLE(0x98, dtor_PSM)
-    SIMPLE(0x9c, dtor_PSM)
-    ARR(0xa4, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
-    ARR(0xa8, Level_releaseInt, dtor_ArrayInt)
-    ARR(0xe4, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
-    ARR(0xe8, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
-    ARR(0xf8, Level_releaseKI, dtor_ArrayKI)
-    ARR(0xfc, Level_releaseKI, dtor_ArrayKI)
-    ARR(0xf4, Level_releaseKI, dtor_ArrayKI)
-    ARR(0x100, Level_releaseKI, dtor_ArrayKI)
-    ARR(0x114, Level_releaseRadioMessage, dtor_ArrayRadioMessage)
-    ARR(0x104, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
-    SIMPLE(0x0, dtor_LODManager)
-    SIMPLE(0xa0, dtor_LodMeshMerger)
+    SIMPLE(starSystem, dtor_StarSystem)
+    SIMPLE(player, dtor_PlayerEgo)
+    SIMPLE(field_180, dtor_Route)
+    SIMPLE(field_80, dtor_PSM)
+    SIMPLE(skybox2Mesh, dtor_PSM)
+    SIMPLE(field_74, dtor_PSM)
+    SIMPLE(particleEmitBoolPtr, dtor_PSM)
+    SIMPLE(particleSystemMgr, dtor_PSM)
+    SIMPLE(field_90, dtor_PSM)
+    SIMPLE(particleRenderBoolPtr, dtor_PSM)
+    SIMPLE(field_98, dtor_PSM)
+    SIMPLE(field_9c, dtor_PSM)
+    ARR(field_a4, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
+    ARR(field_a8, Level_releaseInt, dtor_ArrayInt)
+    ARR(playerGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
+    ARR(enemyGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun)
+    ARR(enemies, Level_releaseKI, dtor_ArrayKI)
+    ARR(asteroids, Level_releaseKI, dtor_ArrayKI)
+    ARR(gasClouds, Level_releaseKI, dtor_ArrayKI)
+    ARR(landmarks, Level_releaseKI, dtor_ArrayKI)
+    ARR(messages, Level_releaseRadioMessage, dtor_ArrayRadioMessage)
+    ARR(field_104, Level_releaseAEGeometry, dtor_ArrayAEGeometry)
+    SIMPLE(vtable, dtor_LODManager)
+    SIMPLE(field_a0, dtor_LodMeshMerger)
     if (field_b0 != 0) {
         operator delete(dtor_ArrayKI((void *)(intptr_t)field_b0));
     }
@@ -1021,8 +1021,6 @@ void Level_csp_buildDetail(Level *self);
 // jumpgate/agent props for the current orbit.
 void Level::createSpace()
 {
-    char *self = (char *)this;
-
     // skybox mesh/texture only need (re)building when not yet created (mesh handle at +4 == -1).
     if (*(unsigned *)&this->skyboxMesh == 0xffffffff) {
         Status **status = g_csp_status;
@@ -1325,7 +1323,6 @@ int   KIPlayer_isWingMan_init();
 // then builds space, mission, scene, objects, guns and wires up the players.
 int Level::init() {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     int **statusA = 0;
 
     int stage = this->field_134;
@@ -1333,7 +1330,7 @@ int Level::init() {
         // --- first tick: tear down stale routes/objectives and build particle systems ---
         *(char *)&this->field_68 = 0;
         *(char *)&this->field_1b0 = 0;
-        *(short *)((char *)this + 0x189) = 0;
+        *(short *)((char *)&this->field_188 + 1) = 0;
         if (*(Route **)&this->playerRoute != 0)
             operator_delete_init(Route_dtor_init(*(Route **)&this->playerRoute));
         this->playerRoute = 0;
@@ -1352,7 +1349,7 @@ int Level::init() {
 
         LODManager *lod = (LODManager *)Level_opnew_init(0x14);
         LODManager_ctor_init(lod);
-        *(LODManager **)self = lod;
+        this->vtable = (uint)(intptr_t)lod;
 
         int canvas = **g_init_canvas;
         statusA = g_init_statusA;
@@ -1638,7 +1635,6 @@ void Level_cm_buildMissionScene(Level *self, Mission *mission);
 // freelance mission (and the random alien-orbit ambush layered on top of it).
 void Level::createMission()
 {
-    char *self = (char *)this;
     Mission *mission = (Mission *)Status_getMission_cm();
     if (mission == 0)
         return;
@@ -1667,7 +1663,7 @@ void Level::createMission()
         Globals *globals = *g_cm_globals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = Globals_getRandomEnemyFighter_cm(globals, 9);
-            int ship = (int)(intptr_t)((Level *)self)->createShip_cm(9, 0, fighter, 0, 1, 0);
+            int ship = (int)(intptr_t)this->createShip_cm(9, 0, fighter, 0, 1, 0);
             *(int *)(*(int *)(this->enemies + 4) + i * 4) = ship;
             int *kp = *(int **)(*(int *)(this->enemies + 4) + i * 4);
             float x = (float)(cm_randPos(rng, 0) - 60000);
@@ -1679,7 +1675,7 @@ void Level::createMission()
     }
 
     // everything else (mission-type-specific objects, objectives, escorts) lives in the helper.
-    Level_cm_buildMissionScene((Level *)self, mission);
+    Level_cm_buildMissionScene(this, mission);
 }
 
 struct Station;
@@ -1735,7 +1731,6 @@ void  Level_ca_installLodMeshes(Level *self, AEGeometry *geo, short baseMesh, in
 // from the mission/station context, then reject-samples spawn positions so asteroids do not overlap.
 void Level::createAsteroids()
 {
-    char *self = (char *)this;
 
     int *rng = (int *)*(int **)&g_ca_rngHolder; // RNG object pointer-to-pointer
     int *rngObj = *(int **)g_ca_rngHolder;
@@ -1918,7 +1913,7 @@ void Level::createAsteroids()
         // install LOD meshes + register with the LOD manager (detail-dependent distance table).
         bool near = (int)i < density;
         Level_ca_installLodMeshes(this, geo, (short)mesh, near ? 1 : 0);
-        LODManager_addObject_ca(*(LODManager **)self, geo);
+        LODManager_addObject_ca((LODManager *)(intptr_t)this->vtable, geo);
 
         // per-asteroid random radius and scale.
         int base = (*g_ca_lowDetail && **g_ca_lowDetail != 0) ? 0x46 : (near ? 0x46 : 0x46);
@@ -2295,7 +2290,6 @@ void LODManager_update_up(LODManager *m, unsigned dt);
 // Level::update(long long time, bool param_2) [+ a third stack bool] — engine per-frame tick.
 void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     unsigned dt = dtArg;
 
     // screen-flash fade.
@@ -2399,7 +2393,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     }
 
     if (stackFlag == 0)
-        LODManager_update_up(*(LODManager **)self, dt);
+        LODManager_update_up((LODManager *)(intptr_t)this->vtable, dt);
 }
 
 struct Mission;
@@ -2718,11 +2712,11 @@ int   crms_randDelay(int which);
 struct RMSpec { int id, speaker, kind, delay; };
 
 // Builds an Array<RadioMessage*> at this+0x114 from a static spec table.
-static void buildQueue(char *self, const RMSpec *specs, unsigned n)
+static void buildQueue(Level *self, const RMSpec *specs, unsigned n)
 {
     void *arr = Level_opnew_crms(0xc);
     ArrayRadio_ctor_crms(arr);
-    *(void **)(self + 0x114) = arr;
+    self->messages = (int)(intptr_t)arr;
     ArraySetLength_Radio_crms(n, arr);
     for (unsigned i = 0; i < n; i = i + 1) {
         RadioMessage *m = (RadioMessage *)Level_opnew_crms(0x28);
@@ -2734,8 +2728,6 @@ static void buildQueue(char *self, const RMSpec *specs, unsigned n)
 // Level::createRadioMessages(int set) — populates the level's radio-chatter queue with the fixed
 // dialogue sequence for the requested mission/event set.
 void Level::createRadioMessages(int set) {
-    Level *thisptr = this;
-    char *self = (char *)thisptr;
     this->messages = 0;
 
     switch (set) {
@@ -2747,153 +2739,153 @@ void Level::createRadioMessages(int set) {
             {0x69a,0,0x1b,0xc},{0x69b,0xf,6,0x10},{0x69c,0,6,0x11},{0x69d,0xf,6,0x12},
             {0x69e,0,6,0x13},{0x69f,0,6,0x14},{0x6a0,0xf,6,0x15},
         };
-        buildQueue(self, t, 0x17); break;
+        buildQueue(this, t, 0x17); break;
     }
     case 1: {
         static const RMSpec t[] = {{0x6a1,2,5,10000},{0x6a2,2,6,0},{0x6a3,2,6,1}};
-        buildQueue(self, t, 3); break;
+        buildQueue(this, t, 3); break;
     }
     case 7: {
         static const RMSpec t[] = {{0x6dc,2,0x10,0},{0x6dd,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x10: {
         static const RMSpec t[] = {{0x72e,0x13,5,10000},{0x72f,0,6,0},{0x730,0,9,0},
                                    {0x731,1,6,2},{0x732,0,6,3}};
-        buildQueue(self, t, 5); break;
+        buildQueue(this, t, 5); break;
     }
     case 0x15: {
         static const RMSpec t[] = {{0x759,10,0x10,0},{0x75a,0,6,0},{0x75b,10,0x19,2},
                                    {0x75c,0xe,8,0},{0x75d,0xe,0x15,0}};
-        buildQueue(self, t, 5); break;
+        buildQueue(this, t, 5); break;
     }
     case 0x18: {
         static const RMSpec t[] = {{0x77d,0x13,5,12000},{0x77e,6,6,0},{0x77f,0,6,1},
                                    {0x780,6,0x16,3},{0x781,6,6,3}};
-        buildQueue(self, t, 5); break;
+        buildQueue(this, t, 5); break;
     }
     case 0x19: {
         static const RMSpec t[] = {{0x785,0,5,20000},{0x786,6,6,0},{0x787,0,6,1}};
-        buildQueue(self, t, 3); break;
+        buildQueue(this, t, 3); break;
     }
     case 0x26: {
         static const RMSpec t[] = {{0x7ed,0x15,5,15000}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x28: {
         static const RMSpec t[] = {{0x7fa,0,5,10000},{0x7fb,8,6,0},{0x7fc,0,6,1},{0x7fd,7,5,40000},
                                    {0x7fe,0,6,3},{0x7ff,7,0xc,0},{0x800,0,0x18,0}};
-        buildQueue(self, t, 7); break;
+        buildQueue(this, t, 7); break;
     }
     case 0x29: {
         // two delays come from data slots DAT_000d19e0 / DAT_000d19e4 at runtime.
         RMSpec t[] = {{0x804,0,5,crms_randDelay(0)},{0x805,7,6,0},{0x806,0,6,1},
                       {0x807,7,6,2},{0x808,7,0x1a,crms_randDelay(1)},{0x809,7,6,4},
                       {0x80f,0,1,0},{0x810,0,6,6}};
-        buildQueue(self, t, 8); break;
+        buildQueue(this, t, 8); break;
     }
     case 0x31: {
         static const RMSpec t[] = {{0x848,0,5,8000}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x32: {
         static const RMSpec t[] = {{0x849,0x3f,5,8000},{0x84a,0,6,0},{0x84b,0x3f,6,1},{0x84c,0,6,2}};
-        buildQueue(self, t, 4); break;
+        buildQueue(this, t, 4); break;
     }
     case 0x33: {
         static const RMSpec t[] = {{0x84d,0x3f,5,8000},{0x84e,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x34: {
         static const RMSpec t[] = {{0x84f,0x3f,5,8000},{0x850,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x36: {
         static const RMSpec t[] = {{0x851,0,5,8000}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x37: {
         static const RMSpec t[] = {{0x85a,0,5,8000},{0x85b,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x38: {
         static const RMSpec t[] = {{0x86a,0x1b,5,8000},{0x86b,0,6,0},{0x86c,0x1c,0x10,0},
                                    {0x86d,0,0x14,3},{0x86e,0,6,3},{0x86f,0x1b,0x1c,0}};
-        buildQueue(self, t, 6); break;
+        buildQueue(this, t, 6); break;
     }
     case 0x40: {
         static const RMSpec t[] = {{0x8b4,0,5,8000},{0x8b5,0x14,6,0},{0x8b6,0,6,1},{0x8b7,0x1e,6,2},
                                    {0x8b8,0,6,3},{0x8b9,0x1e,0x14,5},{0x8ba,0,6,5}};
-        buildQueue(self, t, 7); break;
+        buildQueue(this, t, 7); break;
     }
     case 0x41: {
         static const RMSpec t[] = {{0x8cb,0,5,12000},{0x8cc,0x14,6,0},{0x8cd,0,6,1}};
-        buildQueue(self, t, 3); break;
+        buildQueue(this, t, 3); break;
     }
     case 0x43: {
         static const RMSpec t[] = {{0x8ef,0,0x10,0},{0x8f0,0x1f,6,0},{0x8f1,0x1e,6,1},
                                    {0x8f2,0,0x14,2},{0x8f3,0x1f,6,3},{0x8f4,0,6,4},{0x8f5,0,0x14,8},
                                    {0x8f6,0x1f,6,6},{0x8f7,0,6,7},{0x8f8,0x1f,6,8},{0x8f9,0,6,9},
                                    {0x8fa,0x1f,6,10}};
-        buildQueue(self, t, 0xc); break;
+        buildQueue(this, t, 0xc); break;
     }
     case 0x45: {
         static const RMSpec t[] = {{0x90e,0,5,8000},{0x90f,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x46: {
         static const RMSpec t[] = {{0x910,0,5,8000},{0x911,0,6,0},{0x912,0x22,6,1},{0x913,0,6,2}};
-        buildQueue(self, t, 4); break;
+        buildQueue(this, t, 4); break;
     }
     case 0x49: {
         static const RMSpec t[] = {{0x92b,0,5,8000},{0x92c,0,0x10,0},{0x92d,0xb,6,1},{0x92e,0,6,2},
                                    {0x92f,0,0x1b,1},{0x930,0x21,0x1b,2},{0x931,0,0x1b,3},
                                    {0x932,0,6,6}};
-        buildQueue(self, t, 8); break;
+        buildQueue(this, t, 8); break;
     }
     case 0x77: {
         static const RMSpec t[] = {{0xab9,0x11,0x1b,1}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x78: {
         static const RMSpec t[] = {{0xac5,0,5,0x5dc}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x83: {
         static const RMSpec t[] = {{0xb2b,0,0x1b,2}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x85: {
         static const RMSpec t[] = {{0xb33,0x11,0x1b,1}};
-        buildQueue(self, t, 1); break;
+        buildQueue(this, t, 1); break;
     }
     case 0x87: {
         static const RMSpec t[] = {{0xb43,0x31,0x1b,1},{0xb44,0,6,0},{0xb45,0,0x1b,2},
                                    {0xb46,0,0x1b,3}};
-        buildQueue(self, t, 4); break;
+        buildQueue(this, t, 4); break;
     }
     case 0x89: {
         static const RMSpec t[] = {{0xb4f,0x32,5,0x5dc},{0xb50,0,6,0},{0xb51,0x32,6,1},
                                    {0xb52,0,6,2},{0xb53,0x32,6,3}};
-        buildQueue(self, t, 5); break;
+        buildQueue(this, t, 5); break;
     }
     case 0x90: {
         static const RMSpec t[] = {{0xb98,0x27,5,7000},{0xb99,0x27,6,0},{0xb9a,0,6,1},
                                    {0xb9b,0x27,6,2}};
-        buildQueue(self, t, 4); break;
+        buildQueue(this, t, 4); break;
     }
     case 0x91: {
         static const RMSpec t[] = {{0xb9c,0,5,7000},{0xb9d,0x27,6,0},{0xb9e,0x27,0x1b,5}};
-        buildQueue(self, t, 3); break;
+        buildQueue(this, t, 3); break;
     }
     case 0x93: {
         static const RMSpec t[] = {{0xbac,0,5,7000},{0xbad,0,6,0}};
-        buildQueue(self, t, 2); break;
+        buildQueue(this, t, 2); break;
     }
     case 0x50: {
         static const RMSpec t[] = {{0x96e,0,5,8000},{0x96f,6,5,25000},{0x970,0x1a,6,1},
                                    {0x971,0,6,2},{0x972,6,6,3}};
-        buildQueue(self, t, 5); break;
+        buildQueue(this, t, 5); break;
     }
     default:
         break;
@@ -3176,7 +3168,6 @@ int  cso2_rand20000(int rng); // (*pcVar23)(rng, 20000) randomized jitter
 // object at the waypoint (optionally with a small random position offset).
 int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
 
     int x = 0, y = 0, z = 0;
     if (wp != 0) {
@@ -3197,7 +3188,6 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
         type = (r == 0) ? 0x4215 : (r == 1) ? 0x4216 : 0x4217;
     }
 
-    (void)self;
     return thisptr->cso2_construct(type, x, y, z);
 }
 
@@ -3305,7 +3295,6 @@ void operator_delete_cs(void *p);
 // fixed capital ship (class 1) at the waypoint, scaling its stats to the player level/difficulty.
 PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group) {
     Level *thisptr = this;
-    char *self = (char *)thisptr;
     int camp = Status_getCurrentCampaignMission_cs();
 
     int x = 0, y = 0, z = 0;
@@ -3366,7 +3355,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
             if (g == 0) g = *(AEGeometry **)((char *)obj + 0x8);
-            LODManager_addObject_cs(*(LODManager **)self, g);
+            LODManager_addObject_cs((LODManager *)(intptr_t)this->vtable, g);
         }
         if (type == 0x2c || type == 0x31 || type == 0x33) {
             if (type == 0x33) *(unsigned char *)((char *)obj + 0x25) = 0;
@@ -3384,7 +3373,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         PlayerFixedObject_setBV_cs(obj, bv);
         int gg = Globals_getShipGroup_cs(*g_cs_globalsB, type, race, 0);
         (*(void (**)(PlayerFixedObject *, int, int, int))(*(int *)obj + 8))(obj, gg, type, 0);
-        LODManager_addObject_cs(*(LODManager **)self, *(AEGeometry **)((char *)obj + 0x8));
+        LODManager_addObject_cs((LODManager *)(intptr_t)this->vtable, *(AEGeometry **)((char *)obj + 0x8));
         *(unsigned char *)((char *)obj + 0x40) = 1;
     }
 
@@ -3796,7 +3785,7 @@ void Level::updateMissionOrbit(int dt) {
     Level *thisptr = this;
 
     // --- phase A: periodic far wave (only when a "boss present" flag at 0x288 is set) ---
-    if (*(char *)&this->field_288 != 0) {
+    if (this->field_288 != 0) {
         Status_getMission_umo();
         if (Mission_isEmpty_umo() == 0) {
             int t = this->orbitWaveTimer;
@@ -4365,9 +4354,9 @@ void Level_rbg_buildSkyMatrix(char *self, int mode, float spin);
 
 // Level::renderBG(float t) — draws the skybox, nebula, planet rings and supernova glow.
 void Level::renderBG(float t) {
-    Level *thisptr = this;
-    char *self = (char *)thisptr;
     unsigned canvas = *g_rbg_canvas;
+    // matrix dirty/cache flags live inside the sub_1d0 skybox matrix sub-object.
+    char *skyMatrixFlags = (char *)&this->sub_1d0;
 
     ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
     ((PaintCanvas*)(long)(canvas))->BeginBG();
@@ -4376,9 +4365,9 @@ void Level::renderBG(float t) {
 
     Matrix *sky = (Matrix *)((char *)&this->sub_1d0);
     Matrix_getInverse_rbg(sky);
-    *(int *)((char *)this + 0x1ec) = 0;
-    *(int *)((char *)this + 0x1dc) = 0;
-    *(int *)((char *)this + 0x1fc) = 0;
+    *(int *)(skyMatrixFlags + 0x1c) = 0;
+    *(int *)(skyMatrixFlags + 0x0c) = 0;
+    *(int *)(skyMatrixFlags + 0x2c) = 0;
 
     bool alienRing = false;
     if (Status_inAlienOrbit_rbg() == 0) {
@@ -4386,7 +4375,7 @@ void Level::renderBG(float t) {
         if (SolarSystem_getIndex_rbg() == 0x1b)
             alienRing = true;
     }
-    Level_rbg_buildSkyMatrix(self, alienRing ? 1 : 0, t);
+    Level_rbg_buildSkyMatrix((char *)this, alienRing ? 1 : 0, t);
     Matrix_mulEq_rbg(sky, (Matrix *)((char *)&this->sub_20c));
 
     ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
@@ -4405,9 +4394,9 @@ void Level::renderBG(float t) {
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
-        *(int *)((char *)this + 0x1ec) = 0;
-        *(int *)((char *)this + 0x1dc) = 0;
-        *(int *)((char *)this + 0x1fc) = 0;
+        *(int *)(skyMatrixFlags + 0x1c) = 0;
+        *(int *)(skyMatrixFlags + 0x0c) = 0;
+        *(int *)(skyMatrixFlags + 0x2c) = 0;
         Matrix_getInverse_rbg(sky);
         ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1b4), (const float *)0);
     }
@@ -4448,35 +4437,35 @@ void Level::renderBG(float t) {
             AERandom_nextInt_rbg(rng);
             AERandom_nextInt_rbg(rng);
             AERandom_nextInt_rbg(rng);
-            Level_rbg_buildSkyMatrix(self, 2, t);
+            Level_rbg_buildSkyMatrix((char *)this, 2, t);
         }
         Matrix_mulEq_rbg(sky, (Matrix *)((char *)&this->sub_248));
-        *(int *)((char *)this + 0x1dc) = 0;
-        *(int *)((char *)this + 0x1ec) = 0;
-        *(int *)((char *)this + 0x1fc) = 0;
+        *(int *)(skyMatrixFlags + 0x0c) = 0;
+        *(int *)(skyMatrixFlags + 0x1c) = 0;
+        *(int *)(skyMatrixFlags + 0x2c) = 0;
         Matrix_getInverse_rbg(sky);
         ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1bc), (const float *)0);
     }
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
-    if (*(char *)((char *)this + 0x289) != 0 &&
+    if (this->supernovaFlareActive != 0 &&
         1.0f <= *(float *)(*(int *)g_rbg_engine + 0x28)) {
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         Matrix_getInverse_rbg(sky);
         Matrix_assign_rbg(sky, sky);
-        *(int *)((char *)this + 0x1ec) = 0;
-        *(int *)((char *)this + 0x1dc) = 0;
-        *(int *)((char *)this + 0x1fc) = 0;
+        *(int *)(skyMatrixFlags + 0x1c) = 0;
+        *(int *)(skyMatrixFlags + 0x0c) = 0;
+        *(int *)(skyMatrixFlags + 0x2c) = 0;
         ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
         ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
         Engine *eng = *(Engine **)(canvas + 0x34);
         Engine_SetModelMatrix_rbg((Matrix *)eng);
-        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)((char *)this + 0x1c4)), 0);
+        ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(unsigned)this->supernovaFlareTexture, 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         Engine_LightSetLight_rbg(*(Engine **)(canvas + 0x34), 0x4000);
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
-        ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)((char *)this + 0x1cc)));
+        ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(unsigned)this->supernovaFlareMesh);
         Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
         Engine_LightEnable_rbg(*(int *)(canvas + 0x34));
     }
@@ -5011,9 +5000,9 @@ inline void kiSetPosition(int *ki, float x, float y, float z) {
 // The level's player object carries its world position in its geometry at
 // player->geometry(+0x140)->position(+0x10..0x1c). Returns the origin when no
 // player exists yet (early-orbit spawns fall back to {0,0,0}).
-inline Vector levelPlayerPosition(char *self) {
+inline Vector levelPlayerPosition(Level *self) {
     Vector p; p.x = p.y = p.z = 0.0f;
-    int player = *(int *)(self + 0xf0);
+    int player = self->player;
     if (player != 0) {
         int geo = *(int *)(player + 0x140);
         if (geo != 0) {
@@ -5118,9 +5107,8 @@ void Level::ccm_buildCampaignScene(int missionIndex) {
 // --- updateOrbit(): revive an enemy and teleport it to a far random offset from
 // the player. Profile: generic far-field wave.
 void Level::uo_spawnFar(int *kiPlayer) {
-    char *self = (char *)this;
     int rng = *g_uo_rng;
-    Vector p = levelPlayerPosition(self);
+    Vector p = levelPlayerPosition(this);
     float ox = (float)(AERandom_nextInt_uo(rng) % 120000 - 60000);
     float oy = (float)(AERandom_nextInt_uo(rng) %  80000 - 40000);
     float oz = (float)(AERandom_nextInt_uo(rng) % 120000 - 60000);
@@ -5130,9 +5118,8 @@ void Level::uo_spawnFar(int *kiPlayer) {
 // --- updateMissionOrbit(): revive then reposition. profile 0 == far wave,
 // profile 1 == tighter boss-escort spread.
 void Level::umo_spawnAt(int *kiPlayer, int profile) {
-    char *self = (char *)this;
     int rng = *g_umo_rng;
-    Vector p = levelPlayerPosition(self);
+    Vector p = levelPlayerPosition(this);
     int span = profile ? 40000 : 120000;
     float ox = (float)(AERandom_nextInt_umo(rng) % span - span / 2);
     float oy = (float)(AERandom_nextInt_umo(rng) % (span * 2 / 3) - span / 3);
@@ -5143,12 +5130,11 @@ void Level::umo_spawnAt(int *kiPlayer, int profile) {
 // --- updateAlienAttackers(): place a revived alien relative to the player (when
 // alienInOrbit) or the station origin.
 void Level::uaa_placeAlien(int *kiPlayer, int alienInOrbit) {
-    char *self = (char *)this;
     int rng = *g_uaa_rng;
     Vector base;
     base.x = base.y = base.z = 0.0f;
     if (alienInOrbit)
-        base = levelPlayerPosition(self);
+        base = levelPlayerPosition(this);
     float ox = (float)(AERandom_nextInt_uaa(rng) % 100000 - 50000);
     float oy = (float)(AERandom_nextInt_uaa(rng) %  60000 - 30000);
     float oz = (float)(AERandom_nextInt_uaa(rng) % 100000 - 50000);
@@ -5185,8 +5171,7 @@ void *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
 // --- createGasClouds(): pick a far random position for cloud `i`. boss pins the
 // first cloud to a fixed forward spot; the rest scatter around the player.
 void Level::cgc_randomPos(int rng, int boss, unsigned i, Vector *out) {
-    char *self = (char *)this;
-    Vector p = levelPlayerPosition(self);
+    Vector p = levelPlayerPosition(this);
     if (boss && i == 0) {
         out->x = p.x;
         out->y = p.y;
@@ -5224,10 +5209,9 @@ int Level::ips_addPlayerSystem(int kind) {
 // geometry (right/forward offsets) and align its heading. Built inline; this is
 // the recovered split point for that block.
 void Level::cwm_placeWingman(int *kiSlot, unsigned i) {
-    char *self = (char *)this;
     if (kiSlot == 0)
         return;
-    Vector p = levelPlayerPosition(self);
+    Vector p = levelPlayerPosition(this);
     // staggered echelon: alternate sides, step back each pair.
     float side = ((i & 1) ? -1.0f : 1.0f) * (float)(2000 + (int)(i / 2) * 1500);
     float back = (float)(2000 + (int)(i / 2) * 2500);

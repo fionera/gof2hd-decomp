@@ -775,7 +775,11 @@ StatusWindow * StatusWindow::ctor() {
 
     // Zero the inertia/colour state blocks (+0x45..+0x54, +0x38..+0x44).
     for (int o = 0x45; o < 0x55; o++) *((unsigned char *)this + o) = 0;
-    for (int o = 0x38; o < 0x48; o += 4) i32(this, o) = 0;
+    // Zero the scroll-state ints at +0x38..+0x48 (named members below).
+    this->scrollOffset = 0;   // +0x38
+    this->lastTouchY = 0;     // +0x3c
+    this->scrollTarget = 0;   // +0x40
+    this->scrollVelocity = 0; // +0x44
     this->standingBarHeight = img3h;
 
     // Precompute per-tab scroll content heights.

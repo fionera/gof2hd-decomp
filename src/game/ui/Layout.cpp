@@ -1192,6 +1192,9 @@ void Layout::reload() {
     this->headerPatternImage = -1;
     this->headerIconImage = -1;
     this->field_0x3a8 = -1;
+    // bulk zero-init of members [0x334..0x3a4] (footer image-handle block).
+    // Kept as raw (char*)this access: Layout's field_0xNN offsets are documentation-only,
+    // so this byte range cannot be faithfully addressed via a named member.
     __aeabi_memset4((char *)this + 0x334, 0x70, 0xff);
 
     unsigned canvas = *g_rlCanvas;
@@ -1697,6 +1700,9 @@ void Layout::headerAnim(void *btn) {
 // zero-seeds the block so the ctor's explicit writes land on a clean object.
 void Layout::initConstBlock(int hd, int wide, int scale, int res) {
     (void)hd; (void)wide; (void)scale; (void)res;
+    // bulk zero-init of members [0x04..0x2d8] (SIMD-copied header geometry block).
+    // Kept as raw (char*)this access: Layout's field_0xNN offsets are documentation-only,
+    // so this byte range cannot be faithfully addressed via a named member.
     __aeabi_memset4((char *)this + 0x04, 0x2d8 - 0x04, 0);
 }
 
