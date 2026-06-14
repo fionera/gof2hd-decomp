@@ -5,11 +5,16 @@ extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engin
 #include "gof2/externs.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/engine/render/AEGeometry.h"
-// NOTE: gof2/ParticleSystemManager.h and gof2/Status.h are intentionally NOT included.
-// Level reaches those classes only through a handful of accessor methods and opaque
-// pointers, and uses local minimal interface structs (below) whose signatures match the
-// recovered code (e.g. Status::getSystem() -> SolarSystem*, PSM static-style helpers).
-// The full headers model different (32-bit-layout) signatures and would conflict.
+// NOTE: ParticleSystemManager / KIPlayer / RadioMessage are intentionally NOT
+// included from their real headers — their real signatures drift from the
+// recovered call sites (PSM's enable* are non-static (handle,bool) member fns vs
+// the recovered static (mgr,id[,enable]) helpers; KIPlayer::isWingMan() is a
+// receiver-less thiscall here; ...). They keep local minimal interface structs
+// (below) that match the recovered code. The real Status / SolarSystem / Route /
+// Wanted / Objective / Station / LODManager classes ARE adopted (included above);
+// the few accessor return-type drifts (e.g. Status::getSystem() -> int system
+// index reinterpreted as a SolarSystem*) are reconciled with minimal casts at the
+// call sites, preserving the original int-handle behaviour.
 #include "gof2/game/mission/Achievements.h"
 #include "gof2/game/ui/Hud.h"
 #include "gof2/game/ship/Player.h"
@@ -17,38 +22,18 @@ extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engin
 #include "gof2/game/weapons/Gun.h"
 #include "gof2/game/ship/PlayerTurret.h"
 #include "gof2/game/world/Waypoint.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/world/Route.h"
+#include "gof2/game/mission/Objective.h"
+#include "gof2/game/world/Station.h"
+#include "gof2/engine/render/LODManager.h"
+#include "gof2/game/world/Wanted.h"
+#include "gof2/game/mission/Status.h"
 
-// Several related game classes (Status, KIPlayer, ...) are defined in their own
-// headers, but those headers assert the 32-bit ARM struct layout
-// (sizeof(String)==0xc, sizeof(Array)==0xc, etc.) which does not hold on the
-// 64-bit host build, and KIPlayer.h models only data members (no methods).
-// Level only reaches these classes through a handful of accessor methods and
-// opaque pointers, so the minimal interfaces it needs are declared locally here
-// (one definition each, consolidated from the per-method translation units).
-struct SolarSystem;
-struct Station;
-struct Wanted;
-
-struct Status {
-    SolarSystem *getSystem();
-    Station *getStation();
-    int getMission();
-    void addKills(int n);
-    int inBlackMarketSystem();
-    int getShip();
-    int inEmptyOrbit();
-    unsigned int *getWingmen();
-    int isStorylineWanted(int index);
-    int getWanted();
-    void setMission(int m);
-    void setCampaignMission(int m);
-    void incKills();
-};
-
-struct SolarSystem {
-    int getTextureIndex();
-    int getRace();
-};
+// KIPlayer / RadioMessage / ParticleSystemManager are reached only through a few
+// accessor methods and opaque pointers; their real headers drift from the
+// recovered call sites (see note above), so the minimal interfaces Level needs
+// are declared locally here (one definition each).
 
 static unsigned int g_level_texOutScratch;
 
@@ -56,16 +41,6 @@ struct KIPlayer {
     void reset();
     static void setDead(KIPlayer *self);
     static int isWingMan();
-};
-
-struct Route {
-    Route(int *pts, unsigned int n);
-    ~Route();
-    void reset();
-};
-
-struct Wanted {
-    static int getNumWingmen(Wanted *self);
 };
 
 struct RadioMessage {
@@ -149,18 +124,6 @@ struct StarSystemView {
     void render2D();
     void renderSunStreak();
 };
-struct ObjectiveView {
-    unsigned int achieved(int value);
-};
-struct StationView {
-    void setAttackedFriends(bool v);
-};
-struct WantedView {
-    void setActive(bool v);
-};
-struct StatusView {
-    void setWingmen(void *list);
-};
 } // namespace
 
 bool Level::hasMiningPlant() {
@@ -187,7 +150,7 @@ int Level::checkGameOver() {
         return 0;
     }
     // veneer 0x1ac018 -> Objective::achieved
-    return (int)((ObjectiveView *)(intptr_t)objective)->achieved(0);
+    return (int)((Objective *)(intptr_t)objective)->achieved(0);
 }
 
 void Level::updateAsteroidCluster() {
@@ -248,7 +211,7 @@ int Level::checkObjective() {
     int objective = objectivesA;
     if (objective != 0) {
         // veneer 0x1ac018 -> Objective::achieved
-        return (int)((ObjectiveView *)(intptr_t)objective)->achieved(0);
+        return (int)((Objective *)(intptr_t)objective)->achieved(0);
     }
     return 0;
 }
@@ -325,10 +288,10 @@ void Level::switchSkyboxForSupernovaReversal() {
     PaintCanvas **pc = g_paintCanvas_snr;
     Status **st = g_status_snr;
     PaintCanvas *canvas = *pc;
-    int tex = (*st)->getSystem()->getTextureIndex();
+    int tex = ((SolarSystem *)(intptr_t)(*st)->getSystem())->getTextureIndex();
     ((PaintCanvas*)(canvas))->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)&skyboxMesh, false);
     PaintCanvas *canvas2 = *pc;
-    int tex2 = (*st)->getSystem()->getTextureIndex();
+    int tex2 = ((SolarSystem *)(intptr_t)(*st)->getSystem())->getTextureIndex();
     ((PaintCanvas*)(canvas2))->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)&field_198, false);
     skyboxTexture = -1;
 }
@@ -750,9 +713,9 @@ void Level::alarmAllFriends(int race, bool message) {
             type = 0xc;
         }
         createRadioMessage(type, race);
-        if ((*slot)->getSystem()->getRace() == race) {
+        if (((SolarSystem *)(intptr_t)(*slot)->getSystem())->getRace() == race) {
             // veneer 0x1abff8 -> Station::setAttackedFriends(true)
-            ((StationView *)(*slot)->getStation())->setAttackedFriends(true);
+            (*slot)->getStation()->setAttackedFriends(true);
         }
     }
 }
@@ -2168,7 +2131,7 @@ __attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
 
 void Level::createSentryGuns() {
     Status **slot = g_sentryStatus;
-    int ship = (*slot)->getShip();
+    int ship = (int)(intptr_t)(*slot)->getShip();
     if (((Ship *)(ship))->getFirstEquipmentOfSort(0x27) != 0) {
         int guns = (int)(intptr_t)::operator new(0xc);
         ArrayCtor(guns);
@@ -2213,7 +2176,7 @@ void Level::uncoverWanted(int index) {
         createRadioMessage(0x12, index);
         int **g = g_uncoverWanted;
         for (int i = 1;
-             i - 1 < Wanted::getNumWingmen((Wanted *)((int *)(*(int *)(*g) + 4))[index]);
+             i - 1 < ((Wanted *)((int *)(*(int *)(*g) + 4))[index])->getNumWingmen();
              i = i + 1) {
             Level_setAlwaysEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4), 1);
             Level_turnEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4));
@@ -2923,12 +2886,12 @@ __attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 
 void Level::wingmanDied(int name) {
     Status **slot = g_wingmanDied;
-    unsigned int *list = (*slot)->getWingmen();
+    unsigned int *list = (unsigned int *)(intptr_t)(*slot)->getWingmen();
     if (list == 0) {
         return;
     }
     if (__builtin_expect(*list < 2, 0)) {
-        return ((StatusView *)(*slot))->setWingmen((void *)(intptr_t)0);
+        return (*slot)->setWingmen((Array<String *> *)0);
     }
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
@@ -3362,8 +3325,8 @@ void Level::almostKillWanted(int index) {
     new ((void *)(intptr_t)m) Mission(4, 0, (*slot)->getStation()->getIndex());
     ((Mission *)(m))->setCampaign_akw(1);
     ((Mission *)(m))->setWon_akw(1);
-    (*slot)->setMission(m);
-    (*slot)->setCampaignMission(m);
+    (*slot)->setMission((Mission *)(intptr_t)m);
+    (*slot)->setCampaignMission((Mission *)(intptr_t)m);
     if (objectivesA != 0) {
         operator delete(dtor_Objective_akw((void *)(intptr_t)objectivesA));
     }
@@ -3377,8 +3340,8 @@ void Level::almostKillWanted(int index) {
     int e0 = *(int *)(*(int *)(enemies + 4));
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
-    int w = (*slot)->getWanted();
-    return ((WantedView *)(intptr_t)(((int *)(*(int *)(w + 4)))[index]))->setActive(0 != 0);
+    int w = (int)(intptr_t)(*slot)->getWanted();
+    return ((Wanted *)(intptr_t)(((int *)(*(int *)(w + 4)))[index]))->setActive(0 != 0);
 }
 
 struct Wanted;
