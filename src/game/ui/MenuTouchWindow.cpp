@@ -509,6 +509,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[0] = e;
 
             e = ::operator new(0xc);
+            // RAWREAD: GameRecord+0x194/+0x20/+0x11c (preview record held as int32 in Array<GameRecord*>; name/kills/rank members not modeled in GameRecord.h)
             ((String *)e)->ctor_copy((String *)(void *)(*(int *)(i32(this->previewRecords, 4) + i * 4) + 0x194), false);
             rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[1] = e;
 
@@ -632,6 +633,8 @@ void MenuTouchWindow::startValkyrie()
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
+    // RAWREAD: opt+* / optB+* / Status(*statusHolder)+0x84 (untyped char* holders gValOptA/gValOptB/gValStatus;
+    //          option-flag objects and Status pre-set fields not modeled)
     char *opt = (char *)*(void **)gValOptA;
     void *ach = *(void **)gValAch;
     char *optB = (char *)*(void **)gValOptB;
@@ -804,6 +807,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         if (*(char *)*(void **)gBgFlagC != 0 && *(char *)*(void **)gBgFlagD == 0) {
             _mtw_TouchButton_OnTouchBegin(this->cinematicBtnA, y);
             _mtw_TouchButton_OnTouchBegin(this->cinematicBtnB, y);
+            // RAWREAD: gBgObjA+0x54 / gBgObjB+0x58 (untyped char* holders; cinematic hit-zone X anchors, objects not modeled)
             if (touchId != 0 &&
                 (this->cinematicTouchIdA != 0 || y > 0xd1 || this->cinematicTouchIdB == touchId ||
                  x <= *(int *)(*(char **)gBgObjA + 0x54) - 0x14 ||
@@ -938,6 +942,7 @@ int MenuTouchWindow::loadGame(int slot)
     }
 
     void *flags = *(void **)gLoadStatusFlags;
+    // RAWREAD: flags+0x37 / flags+0x35 (untyped void* holder gLoadStatusFlags; Status flag object, byte members not modeled)
     bool versionOk = (u8(rec, 0x117) == 0) || (*(char *)((char *)flags + 0x37) != 0);
     if (versionOk) {
         bool dlcOk = (u8(rec, 0x115) == 0) || (*(char *)((char *)flags + 0x35) != 0);
@@ -1161,6 +1166,7 @@ void MenuTouchWindow::update(int dt)
         }
     }
 
+    // RAWREAD: appData+0x05/0x08/0x0c/0x40/0x41/0x42/0x48 (untyped void* from _mtw_AppMgr_GetApplicationData(); ApplicationData class not modeled)
     void *appData = _mtw_AppMgr_GetApplicationData();
     unsigned char busy = this->dlcMessageShowing;
 
@@ -1173,6 +1179,7 @@ void MenuTouchWindow::update(int dt)
                                 - layout[8]) - layout[9];
             int ih = ((PaintCanvas *)canvas)->GetImage2DHeight(this->scrollbarImageId);
             this->contentHeightCache = ih;
+            // RAWREAD: optObj+0x3b (untyped void* holder gUpOptObj; options/Status flag object, byte member not modeled)
             void *optObj = *(void **)gUpOptObj;
             int rowH = layout[0xb]; // +0x2c
             this->menuState = 0xf;
@@ -1205,6 +1212,7 @@ void MenuTouchWindow::update(int dt)
         void *cw = this->choiceWindow;
         switch (code) {
             case 0: {
+                // RAWREAD: gUpStatusObj+0x35/0x37/0x114, gUpOptObj+0x36/0x38 (untyped void* holders; Status/options flag objects, members not modeled)
                 void *status = *(void **)gUpStatusObj;
                 *(char *)(*(char **)gUpStatusObj + 0x35) = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
@@ -1257,6 +1265,7 @@ void MenuTouchWindow::update(int dt)
     // supernova nag dialog
     if (*(char *)*(void **)gUpStatusGuard != 0) {
         void *flags = *(void **)gUpDlcFlags;
+        // RAWREAD: flags+0x35 (untyped void* holder gUpDlcFlags; DLC/options flag object, byte member not modeled)
         if (this->messageShowing == 0 && *(char *)((char *)flags + 0x35) == 0) {
             void *cw = this->choiceWindow;
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[7]));
@@ -1325,6 +1334,7 @@ void MenuTouchWindow::update(int dt)
         appData = _mtw_AppMgr_GetApplicationData();
         if (*(char *)((char *)appData + 0xc) != 0) {
             void *eng = _mtw_AppMgr_GetEngine();
+            // RAWREAD: eng+0x100 (untyped void* from _mtw_AppMgr_GetEngine(); store-init result field not modeled in Engine.h)
             int r = *(int *)((char *)eng + 0x100);
             if (r == 2 || r == 1) {
                 void *cw = this->choiceWindow;
@@ -1372,6 +1382,7 @@ extern void *const gDlcGameText __attribute__((visibility("hidden")));
 void MenuTouchWindow::callDlcMenu()
 {
     void *holder = gAppHolder;
+    // RAWREAD: ad+0x4c / ad+0x3d (untyped void* from _mtw_GetApplicationData(); ApplicationData class not modeled)
     void *ad = _mtw_GetApplicationData(*(void **)holder);
     u8(ad, 0x4c) = 0;
     ad = _mtw_GetApplicationData(*(void **)holder);
@@ -1815,6 +1826,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 
         int slot = *(int *)(i32(this->previewRecords, 4) + i * 4);
         if (slot != 0) {
+            // RAWREAD: GameRecord(slot)+0x1a0 (slot is an int handle into Array<GameRecord*>; shipId member not modeled in GameRecord.h)
             unsigned int shipId = *(unsigned int *)(slot + 0x1a0);
             if (shipId < 0x40) {
                 _mtw_ImageFactory_drawShip(*(void **)gDlsImgFact, shipId,
@@ -1910,6 +1922,8 @@ void MenuTouchWindow::startSupernova()
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
+    // RAWREAD: opt+* / optB+* / Status(*statusHolder)+0x84 (untyped char* holders gSnOptA/gSnOptB/gSnStatus;
+    //          option-flag objects and Status pre-set fields not modeled)
     char *opt = (char *)*(void **)gSnOptA;
     char *optB = (char *)*(void **)gSnOptB;
     *(int *)(*(char **)statusHolder + 0x84) = 0x1a0a;
@@ -1951,6 +1965,7 @@ void MenuTouchWindow::startGOF2()
     _mtw_Status_resetGame();
     void *snd = *(void **)gGof2Fmod;
     // copy the saved fade value (+0x1a4) into the status object at +0x2c
+    // RAWREAD: Status(gGof2StatusObj)+0x2c (untyped void* holder; fade-value field not modeled)
     *(uint32_t *)((char *)*(void **)gGof2StatusObj + 0x2c) = this->fadeValue;
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);

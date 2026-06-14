@@ -165,6 +165,7 @@ void CutScene::process(int delta)
         if (pt != 0 && enemies != 0 && enemies[0] > 1) {
             char *base = (char *)enemies[1] + enemies[0] * 4;
             void *e0 = *(void **)(base - 8);
+            // RAWREAD: e0+8 (enemy-list entry is an unmodeled struct; +8 holds its AEGeometry*)
             if (e0 != 0 && *(int *)((char *)e0 + 8) != 0) {
                 AEGeometry *g0 = (AEGeometry *)*(void **)((char *)e0 + 8);
                 float f = VectorSignedToFloat(self->frameDelta, 0);
@@ -174,6 +175,7 @@ void CutScene::process(int delta)
                 g0->rotate(f1 * CutScene_proc_rx0, 0.0f, f2 * CutScene_proc_rz0);
             }
             void *e1 = *(void **)(base - 4);
+            // RAWREAD: e1+8 (enemy-list entry is an unmodeled struct; +8 holds its AEGeometry*)
             if (e1 != 0 && *(int *)((char *)e1 + 8) != 0) {
                 AEGeometry *g1 = (AEGeometry *)*(void **)((char *)e1 + 8);
                 float f = VectorSignedToFloat(self->frameDelta, 0);
@@ -219,15 +221,15 @@ void CutScene::process(int delta)
                     if (((AbyssEngine::AERandom *)(rng))->nextInt() < 0x14) {
                         void *t = ((PaintCanvas*)(canvas))->TransformGetTransform(0);
                         if (((AbyssEngine::Transform *)(t))->IsRunning() == 0) {
-                            void *c0 = (void *)(*self->geometries)[i];
+                            AEGeometry *c0 = (*self->geometries)[i];
                             void *tr;
-                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0xc)))->TransformGetTransform(0);
+                            tr = ((PaintCanvas*)(uintptr_t)c0->transform)->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0xc)))->TransformGetTransform(0);
+                            tr = ((PaintCanvas*)(uintptr_t)c0->transform)->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
-                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0x14)))->TransformGetTransform(0);
+                            tr = ((PaintCanvas*)(uintptr_t)c0->childTransform)->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)3, (void *)0);
-                            tr = ((PaintCanvas*)(*(void **)((char *)c0 + 0x14)))->TransformGetTransform(0);
+                            tr = ((PaintCanvas*)(uintptr_t)c0->childTransform)->TransformGetTransform(0);
                             ((AbyssEngine::Transform *)(tr))->SetAnimationState((AbyssEngine::AnimationMode)1, (void *)0);
                         }
                     }
@@ -243,6 +245,8 @@ void CutScene::process(int delta)
         char mtx[0x3c];
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
         void *enemies = (void *)(intptr_t)((Level *)(self->level))->getEnemies();
+        // RAWREAD: enemies+4/+8/+0xc (getEnemies() returns an unmodeled {count, entry**}
+        // list; entries and their embedded AEGeometry handle are untyped here)
         ((PaintCanvas*)(canvas))->TransformSetLocal(0,
             *(const AbyssEngine::AEMath::Matrix*)(*(void **)(*(char **)(*(char **)((char *)enemies + 4) + 8) + 0xc)));
         unsigned int *arr = (unsigned int *)((Level *)(self->level))->getEnemies();
@@ -439,6 +443,8 @@ void CutScene::replacePlayerShip(int a, int b)
         return;
 
     void *enemies = (void *)(intptr_t)((Level *)(self->level))->getEnemies();
+    // RAWREAD: enemies+4/+8 (getEnemies() returns an unmodeled {count, entry**} list;
+    // entry+8 holds the lead ship's AEGeometry*, all untyped here)
     void *lead = *(void **)(*(char **)((char *)enemies + 4) + 8);
     void *oldGeom = lead;
     if (oldGeom != 0) {

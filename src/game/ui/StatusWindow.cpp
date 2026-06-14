@@ -71,7 +71,7 @@ extern "C" void *StatusWindow_dtor(void *p)
 int StatusWindow::OnTouchMove(int param_1, int param_2) {
     void **lh = g_SWm_layout;
     Layout *layout = (Layout *)*lh;
-    if ((i32(layout, 0xc) < param_2 && param_2 < *g_SWm_height - i32(layout, 0x10)) || *g_SWm_force != 0) {
+    if ((layout->field_0xc < param_2 && param_2 < *g_SWm_height - layout->field_0x10) || *g_SWm_force != 0) {
         int d = param_2 - this->lastTouchY;
         this->scrollVelocity = d;
         *(unsigned *)&this->scrollDamping = 0x3f800000u;
@@ -332,10 +332,10 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *(String *)hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            void *base = *(void **)g_swh_status;
-            unsigned int *list = *(unsigned int **)((char *)base + 0x94);
-            for (unsigned int i = 0; i < *list; i++) {
-                if (*(char *)(list[1] + i) == 0) {
+            Status *base = (Status *)*(void **)g_swh_status;
+            Array<bool> *list = base->field_94;
+            for (unsigned int i = 0; i < list->size(); i++) {
+                if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x594 + (int)i);
                     tmpB = tmpA + *(String *)t;
@@ -348,10 +348,10 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *(String *)hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            void *base = *(void **)g_swh_status;
-            unsigned int *list = *(unsigned int **)((char *)base + 0x98);
-            for (unsigned int i = 0; i < *list; i++) {
-                if (*(char *)(list[1] + i) == 0) {
+            Status *base = (Status *)*(void **)g_swh_status;
+            Array<bool> *list = base->field_98;
+            for (unsigned int i = 0; i < list->size(); i++) {
+                if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x59f + (int)i);
                     tmpB = tmpA + *(String *)t;
@@ -364,10 +364,10 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *(String *)hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            void *base = *(void **)g_swh_status;
-            unsigned int *list = *(unsigned int **)((char *)base + 0xac);
-            for (unsigned int i = 0; i < *list; i++) {
-                if (*(char *)(list[1] + i) == 0) {
+            Status *base = (Status *)*(void **)g_swh_status;
+            Array<bool> *list = base->field_ac;
+            for (unsigned int i = 0; i < list->size(); i++) {
+                if ((*list)[i] == 0) {
                     tmpA.ctor_char("\n", false);
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(0x57e + (int)i);
                     tmpB = tmpA + *(String *)t;
@@ -380,10 +380,10 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *(String *)hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            void *root = *(void **)g_swh_status;
+            Status *root = (Status *)*(void **)g_swh_status;
             for (unsigned int i = 0; i < 0xd; i++) {
-                void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
-                if (*(char *)((char *)bp + 8) == 0) {
+                BluePrint *bp = (*root->bluePrints)[i];
+                if (bp->locked == 0) {
                     tmpA.ctor_char("\n", false);
                     int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);
@@ -397,10 +397,10 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *(String *)hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            void *root = *(void **)g_swh_status;
+            Status *root = (Status *)*(void **)g_swh_status;
             for (unsigned int i = 0; i < 0xd; i++) {
-                void *bp = *(void **)(*(int *)(*(int *)((char *)root + 0x18) + 4) + i * 4);
-                if (*(int *)((char *)bp + 0xc) == 0) {
+                BluePrint *bp = (*root->bluePrints)[i];
+                if (bp->productionCount == 0) {
                     tmpA.ctor_char("\n", false);
                     int idx = ((BluePrint *)(bp))->getIndex();
                     void *t = ((GameText *)(*(void **)g_swh_gameText))->getText(idx + 0x4fa);

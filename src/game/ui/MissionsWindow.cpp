@@ -228,7 +228,7 @@ int MissionsWindow::init() {
     int w1 = ((TouchButton *)(b1))->getWidth();
     TouchButton_ctorTab(b1, t1, 3,
                         (((this->m_width + this->m_x) - helpOff2) - w1) +
-                            i32(layout, 0x38), this->m_y, 0x12);
+                            ((Layout *)layout)->field_0x38, this->m_y, 0x12);
     (*tabs)[0] = (TouchButton *)b1;
     (*tabs)[0]->setAlwaysPressed(true);
 
@@ -257,18 +257,19 @@ int MissionsWindow::init() {
     this->m_choiceActive = 0;
 
     // --- left (campaign) scroll window ---
-    int topY = i32(layout, 0xc) + this->m_y + i32(layout, 0x20) +
-               i32(layout, 0x5c) + i32(layout, 0x2c);
-    int reserve = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ? i32(layout, 0x30) : 0;
+    int topY = ((Layout *)layout)->field_0xc + this->m_y + ((Layout *)layout)->field_0x20 +
+               ((Layout *)layout)->field_0x5c + ((Layout *)layout)->field_0x2c;
+    int reserve = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ? ((Layout *)layout)->field_0x30 : 0;
     void *sw0 = ::operator new(0x24);
     ScrollTouchWindow_ctor(sw0,
-        i32(layout, 0x28) + this->m_x, topY,
-        (this->m_width >> 1) - (i32(layout, 0x2c) + i32(layout, 0x28)),
-        (((((this->m_y - topY) + this->m_height) - i32(layout, 0x10)) -
-          i32(layout, 0x24)) - reserve) + i32(layout, 0x2c) * -2, false);
+        ((Layout *)layout)->buttonInsetX + this->m_x, topY,
+        (this->m_width >> 1) - (((Layout *)layout)->field_0x2c + ((Layout *)layout)->buttonInsetX),
+        (((((this->m_y - topY) + this->m_height) - ((Layout *)layout)->field_0x10) -
+          ((Layout *)layout)->field_0x24) - reserve) + ((Layout *)layout)->field_0x2c * -2, false);
     this->m_pCampaignWindow = (ScrollTouchWindow *)sw0;
 
     // --- campaign-mission summary text ---
+    // RAWREAD: g_mwi_campaign+0x37, +0x35 (campaign-state record is an untyped void* global; no modeled class)
     bool campShow = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ||
                     (*(char *)(*(char **)g_mwi_campaign + 0x37) != 0 ||
                      *(char *)(*(char **)g_mwi_campaign + 0x35) != 0);
@@ -320,14 +321,14 @@ int MissionsWindow::init() {
     int fmEmpty = ((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty();
     void *sw1 = ::operator new(0x24);
     int half = this->m_width >> 1;
-    int pad = i32(layout, 0x2c);
+    int pad = ((Layout *)layout)->field_0x2c;
     int rx = this->m_x + half + pad;
     if (fmEmpty == 0) {
-        int ry = i32(layout, 0x2d8) + topY + pad;
-        ScrollTouchWindow_ctor(sw1, rx, ry, (half - pad) - i32(layout, 0x28),
-            (((((this->m_y - ry) + this->m_height) - i32(layout, 0x10)) -
-              i32(layout, 0x24)) - i32(layout, 0x4c)) -
-                i32(layout, 0x30), false);
+        int ry = ((Layout *)layout)->field_0x2d8 + topY + pad;
+        ScrollTouchWindow_ctor(sw1, rx, ry, (half - pad) - ((Layout *)layout)->buttonInsetX,
+            (((((this->m_y - ry) + this->m_height) - ((Layout *)layout)->field_0x10) -
+              ((Layout *)layout)->field_0x24) - ((Layout *)layout)->field_0x4c) -
+                ((Layout *)layout)->field_0x30, false);
         this->m_pFreelanceWindow = (ScrollTouchWindow *)sw1;
 
         char text[0xc], reward[0xc], suffix[0xc], merged[0xc];
@@ -353,9 +354,9 @@ int MissionsWindow::init() {
         this->m_pAgentImageParts = ((ImageFactory *)(*(void **)g_mwi_imageFactory))->loadChar((int *)parts);
         ((String *)(text))->dtor();
     } else {
-        ScrollTouchWindow_ctor(sw1, rx, topY, (half - pad) - i32(layout, 0x28),
+        ScrollTouchWindow_ctor(sw1, rx, topY, (half - pad) - ((Layout *)layout)->buttonInsetX,
             ((this->m_height + (this->m_y - (topY + pad * 2))) -
-             i32(layout, 0x10)) - i32(layout, 0x24), false);
+             ((Layout *)layout)->field_0x10) - ((Layout *)layout)->field_0x24, false);
         this->m_pFreelanceWindow = (ScrollTouchWindow *)sw1;
         char a[0xc], b[0xc];
         ((String *)(a))->ctor_char("", false);
@@ -367,27 +368,27 @@ int MissionsWindow::init() {
 
     // --- action buttons (Accept / Reject / Auto-pilot) ---
     if (((Status *)(*(void **)g_mwi_status))->inAlienOrbit() == 0) {
-        int btnY = ((this->m_width >> 1) >> 1) - i32(layout, 0x28);
+        int btnY = ((this->m_width >> 1) >> 1) - ((Layout *)layout)->buttonInsetX;
         if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
             void *bAccept = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            new ((bAccept)) TouchButton((String *)t, 0, i32(layout, 0x28) + this->m_x, (((this->m_y + this->m_height) - i32(layout, 0x10)) -
-                              i32(layout, 0x24)) - i32(layout, 0x2c), btnY, '!', 4);  // width=btnY recovered via Ghidra
+            new ((bAccept)) TouchButton((String *)t, 0, ((Layout *)layout)->buttonInsetX + this->m_x, (((this->m_y + this->m_height) - ((Layout *)layout)->field_0x10) -
+                              ((Layout *)layout)->field_0x24) - ((Layout *)layout)->field_0x2c, btnY, '!', 4);  // width=btnY recovered via Ghidra
             this->m_pAcceptButton = (TouchButton *)bAccept;
         }
         if (((Mission *)(((Status *)(*(void **)g_mwi_status))->getFreelanceMission()))->isEmpty() == 0) {
             void *bReject = ::operator new(200);
             void *t = ((GameText *)g_mw_gameText)->getText(titleId);
-            new ((bReject)) TouchButton((String *)t, 0, this->m_x + (this->m_width >> 1) + i32(layout, 0x2c), (((this->m_y - i32(layout, 0x2c)) + this->m_height) -
-                              i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
+            new ((bReject)) TouchButton((String *)t, 0, this->m_x + (this->m_width >> 1) + ((Layout *)layout)->field_0x2c, (((this->m_y - ((Layout *)layout)->field_0x2c) + this->m_height) -
+                              ((Layout *)layout)->field_0x10) - ((Layout *)layout)->field_0x24, btnY, '!', 4);  // width=btnY recovered via Ghidra
             this->m_pRejectButton = (TouchButton *)bReject;
 
             if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
                 void *bMap = ::operator new(200);
                 void *t2 = ((GameText *)g_mw_gameText)->getText(titleId);
                 new ((bMap)) TouchButton((String *)t2, 0, this->m_x + btnY + (this->m_width >> 1) +
-                                     i32(layout, 0x2c) * 2, (((this->m_y - i32(layout, 0x2c)) + this->m_height) -
-                                  i32(layout, 0x10)) - i32(layout, 0x24), btnY, '!', 4);  // width=btnY recovered via Ghidra
+                                     ((Layout *)layout)->field_0x2c * 2, (((this->m_y - ((Layout *)layout)->field_0x2c) + this->m_height) -
+                                  ((Layout *)layout)->field_0x10) - ((Layout *)layout)->field_0x24, btnY, '!', 4);  // width=btnY recovered via Ghidra
                 this->m_pMapButton = (TouchButton *)bMap;
                 ((TouchButton *)(bMap))->setTextColor(g_mwi_actionColor);
             }
@@ -464,18 +465,18 @@ void MissionsWindow::draw() {
         char box[0xc];
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
         ((String *)(box))->ctor_copy((String *)(t), false);
-        int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
-        int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        ((Layout *)(layout))->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), i32(layout, 0x5c), box, (unsigned)(uintptr_t)canvas);
+        int c = ((Layout *)layout)->field_0xc, p20 = ((Layout *)layout)->field_0x20;
+        int p28 = ((Layout *)layout)->buttonInsetX, p2c = ((Layout *)layout)->field_0x2c;
+        ((Layout *)(layout))->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), ((Layout *)layout)->field_0x5c, box, (unsigned)(uintptr_t)canvas);
         ((String *)(box))->dtor();
     }
     {
         char box[0xc];
         ((String *)(box))->ctor_char("", false);
-        int c = i32(layout, 0xc), p10 = i32(layout, 0x10);
-        int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
-        int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        int p5c = i32(layout, 0x5c);
+        int c = ((Layout *)layout)->field_0xc, p10 = ((Layout *)layout)->field_0x10;
+        int p20 = ((Layout *)layout)->field_0x20, p24 = ((Layout *)layout)->field_0x24;
+        int p28 = ((Layout *)layout)->buttonInsetX, p2c = ((Layout *)layout)->field_0x2c;
+        int p5c = ((Layout *)layout)->field_0x5c;
         ((Layout *)(layout))->drawBox(5, p28 + ox, oy + c + p20 + p5c + p2c, (ow >> 1) - (p2c + p28), ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, box, (unsigned)(uintptr_t)canvas);
         ((String *)(box))->dtor();
     }
@@ -488,18 +489,18 @@ void MissionsWindow::draw() {
         char box[0xc];
         void *t = ((GameText *)g_mw_gameText)->getText(titleId);
         ((String *)(box))->ctor_copy((String *)(t), false);
-        int c = i32(layout, 0xc), p20 = i32(layout, 0x20);
-        int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        ((Layout *)(layout))->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, i32(layout, 0x5c), box, (unsigned)(uintptr_t)canvas);
+        int c = ((Layout *)layout)->field_0xc, p20 = ((Layout *)layout)->field_0x20;
+        int p28 = ((Layout *)layout)->buttonInsetX, p2c = ((Layout *)layout)->field_0x2c;
+        ((Layout *)(layout))->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, ((Layout *)layout)->field_0x5c, box, (unsigned)(uintptr_t)canvas);
         ((String *)(box))->dtor();
     }
     {
         char box[0xc];
         ((String *)(box))->ctor_char("", false);
-        int c = i32(layout, 0xc), p10 = i32(layout, 0x10);
-        int p20 = i32(layout, 0x20), p24 = i32(layout, 0x24);
-        int p28 = i32(layout, 0x28), p2c = i32(layout, 0x2c);
-        int p5c = i32(layout, 0x5c);
+        int c = ((Layout *)layout)->field_0xc, p10 = ((Layout *)layout)->field_0x10;
+        int p20 = ((Layout *)layout)->field_0x20, p24 = ((Layout *)layout)->field_0x24;
+        int p28 = ((Layout *)layout)->buttonInsetX, p2c = ((Layout *)layout)->field_0x2c;
+        int p5c = ((Layout *)layout)->field_0x5c;
         ((Layout *)(layout))->drawBox(5, ox + (ow >> 1) + p2c, oy + p2c + c + p20 + p5c, ((ow >> 1) - p2c) - p28, ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, (unsigned)(uintptr_t)canvas);
         ((String *)(box))->dtor();
     }
@@ -507,13 +508,13 @@ void MissionsWindow::draw() {
     // Active freelance mission details.
     void *fm = ((Status *)(*(void **)g_mwi_status))->getFreelanceMission();
     if (fm != 0 && ((Mission *)(fm))->isEmpty() == 0 && this->m_pAgentImageParts != 0) {
-        ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar((Array<ImagePart *> *)this->m_pAgentImageParts, ox + (ow >> 1) + i32(layout, 0x2c), i32(layout, 0x2c) + oy + i32(layout, 0xc) +
-                                  i32(layout, 0x20) + i32(layout, 0x5c), false);
+        ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar((Array<ImagePart *> *)this->m_pAgentImageParts, ox + (ow >> 1) + ((Layout *)layout)->field_0x2c, ((Layout *)layout)->field_0x2c + oy + ((Layout *)layout)->field_0xc +
+                                  ((Layout *)layout)->field_0x20 + ((Layout *)layout)->field_0x5c, false);
 
-        int detailX = ox + (ow >> 1) + i32(layout, 0x2d4) +
-                      i32(layout, 0x2c) * 2;
-        int detailY = oy + i32(layout, 0xc) + i32(layout, 0x20) +
-                      i32(layout, 0x2c) + i32(layout, 0x5c);
+        int detailX = ox + (ow >> 1) + ((Layout *)layout)->field_0x2d4 +
+                      ((Layout *)layout)->field_0x2c * 2;
+        int detailY = oy + ((Layout *)layout)->field_0xc + ((Layout *)layout)->field_0x20 +
+                      ((Layout *)layout)->field_0x2c + ((Layout *)layout)->field_0x5c;
 
         char nameStr[0xc];
         ((Agent *)(((Mission *)(fm))->getAgent()))->getName();
@@ -679,14 +680,17 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
             // "Show on map" for the campaign mission.
             void *appMgr = *(void **)g_mwt_appMgr;
             void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
+            // RAWREAD: mod+0x10 (GetApplicationModule returns void*; StarMap-module subtype's cached StarMap* slot is unmodeled)
             void *map = *(void **)((char *)mod + 0x10);
             win->m_pStarMap = (StarMap *)map;
             if (map == 0) {
                 void *m = ::operator new(0x1e8);
                 StarMap_ctor(m, true, (void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(), false, -1);
                 void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
+                // RAWREAD: mod2+0x10 (unmodeled StarMap-module cache slot)
                 *(void **)((char *)mod2 + 0x10) = m;
                 void *mod3 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
+                // RAWREAD: mod3+0x10 (unmodeled StarMap-module cache slot)
                 win->m_pStarMap = (StarMap *)*(void **)((char *)mod3 + 0x10);
             } else {
                 ((StarMap *)(map))->init(true, (Mission *)(void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(), false, -1);
@@ -704,12 +708,14 @@ extern "C" void MissionsWindow_OnTouchEnd(void *self, int y, int z)
                 // "Show on map" for the freelance mission.
                 void *appMgr = *(void **)g_mwt_appMgr;
                 void *mod = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
+                // RAWREAD: mod+0x10 (GetApplicationModule returns void*; StarMap-module subtype's cached StarMap* slot is unmodeled)
                 void *map = *(void **)((char *)mod + 0x10);
                 win->m_pStarMap = (StarMap *)map;
                 if (map == 0) {
                     void *m = ::operator new(0x1e8);
                     StarMap_ctor(m, true, ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
                     void *mod2 = ((ApplicationManager *)(appMgr))->GetApplicationModule(5);
+                    // RAWREAD: mod2+0x10 (unmodeled StarMap-module cache slot)
                     *(void **)((char *)mod2 + 0x10) = m;
                     win->m_pStarMap = (StarMap *)m;
                 } else {
@@ -802,6 +808,7 @@ void MissionsWindow::update(int dt) {
 
     if (relevant) {
         void *camp = *(void **)g_mw_campaign;
+        // RAWREAD: camp+0x37, +0x35 (campaign-state record is an untyped void* global; no modeled class)
         bool show = (((Status *)(*(void **)g_mw_status))->gameWon() == 0) ||
                     (*(char *)((char *)camp + 0x37) != 0 || *(char *)((char *)camp + 0x35) != 0);
         if (show) {

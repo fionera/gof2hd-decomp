@@ -17,6 +17,7 @@ void NFC::iap_buy_dlc_full_package()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -106,6 +107,7 @@ void NFC::iap_buy_credits_300_000()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -162,6 +164,7 @@ void NFC::iap_buy_dlc_vip()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -184,6 +187,7 @@ void NFC::iap_buy_credits_1_000_000()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -206,6 +210,7 @@ void NFC::iap_buy_dlc_supernova()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -228,6 +233,7 @@ void NFC::iap_buy_dlc_kaamo_club()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -250,6 +256,7 @@ void NFC::iap_buy_dlc_valkyrie()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -372,6 +379,7 @@ void NFC::iap_buy_credits_10_000_000()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -394,6 +402,7 @@ void NFC::iap_buy_credits_100_000()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);
@@ -416,6 +425,7 @@ void NFC::iap_buy_credits_3_000_000()
     void **class_slot = nfc_class_slot;
     *flag = 1;
     void *table = *(void **)env;
+    // RAWREAD: table+0x18 (JNIEnv function table, opaque JNI blob -> FindClass slot)
     void *cls = ((NFC_FindClassFn)*(void **)((char *)table + 0x18))(env, *class_slot);
     void *method = nfc_get_static_method(*env_slot, cls, nfc_method_name, nfc_method_sig);
     return NFC_CallStaticVoidMethod(*env_slot, cls, method);

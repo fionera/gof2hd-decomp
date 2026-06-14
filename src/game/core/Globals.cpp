@@ -251,7 +251,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
         String ssub;
         ssub.ctor_copy(&sub, false);
         Globals_getLine(line, font, &ssub, maxWidth, out);
-        int adv = *(int *)((char *)line + 8);
+        int adv = *(int *)((char *)line + 8);   // RAWREAD: line+0x8 (String is std::u16string-backed; getLine packs an advance count here, no modeled member)
         count++;
         consumed += adv;
     }
@@ -855,13 +855,13 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&mainT);
             ((PaintCanvas *)*canvasP)->TransformAddMeshId(mainT, mainMesh);
             ((AEGeometry *)((unsigned)(long)geom))->addChild(mainT);
-            *(unsigned *)((char *)geom + 0x20) = mainMesh;
+            ((AEGeometry *)geom)->meshHandle = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
             ((PaintCanvas *)*canvasP)->MaterialCreate(mat, &matH);
-            ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(*(unsigned *)((char *)geom + 0x1c),
+            ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(((AEGeometry *)geom)->meshId,
                                                    mat);
         }
         short extra = gGSG_extraTable[kind];

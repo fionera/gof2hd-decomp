@@ -1,5 +1,6 @@
 #include <new>
 #include "gof2/game/core/CheatHandler.h"
+#include "gof2/engine/core/KeyCode.h"
 
 namespace AbyssEngine {
 
@@ -65,34 +66,34 @@ void CheatHandler::AddCheatCode(const String &code, int value)
         uint16_t ch = (uint16_t)code.s[i];
         switch (ch) {
         case '0':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x00), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[0].code, *c->keys);
             break;
         case '2':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x20), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[2].code, *c->keys);
             break;
         case '3':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x30), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[3].code, *c->keys);
             break;
         case '4':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x40), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[4].code, *c->keys);
             break;
         case '7':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x70), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[7].code, *c->keys);
             break;
         case '9':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x90), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[9].code, *c->keys);
             break;
         case '1':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x10), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[1].code, *c->keys);
             break;
         case '5':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x50), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[5].code, *c->keys);
             break;
         case '6':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x60), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[6].code, *c->keys);
             break;
         case '8':
-            ArrayAdd<uint16_t>(*(uint16_t *)((char *)keys + 0x80), *c->keys);
+            ArrayAdd<uint16_t>((uint16_t)keys[8].code, *c->keys);
             break;
         default:
             break;

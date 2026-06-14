@@ -119,23 +119,29 @@ bool FileInterfaceAndroid::Read(unsigned int n, void *buf) {
     void *r9 = *gEnvR;
     void *env = *(void **)r9;
     void *table = *(void **)env;
+    // RAWREAD: table+0x2c0 (JNIEnv function table, opaque JNI blob -> NewByteArray slot)
     void *arr = (*(fn_i *)((char *)table + 0x2c0))(env, n);
     unsigned int got = JNI_CallIntMethod(*(void **)r9, this->jniStream, *(void **)gReadMidArg, arr);
 
     bool ok;
     table = *(void **)(*(void **)r9);
+    // RAWREAD: table+0x3c (JNIEnv function table, opaque JNI blob -> ExceptionCheck slot)
     if ((*(fn_check *)((char *)table + 0x3c))(*(void **)r9) == 0 && got == n) {
         env = *(void **)r9;
         table = *(void **)env;
+        // RAWREAD: table+0x320 (JNIEnv function table, opaque JNI blob -> GetByteArrayRegion slot)
         (*(fn_getregion *)((char *)table + 0x320))(env, arr, 0, n, buf);
         ok = true;
     } else {
         table = *(void **)(*(void **)r9);
+        // RAWREAD: table+0x40 (JNIEnv function table, opaque JNI blob -> ExceptionDescribe slot)
         (*(fn_void *)((char *)table + 0x40))(*(void **)r9);
+        // RAWREAD: env-table+0x44 (JNIEnv function table, opaque JNI blob -> ExceptionClear slot)
         (*(fn_void *)((char *)(*(void **)(*(void **)r9)) + 0x44))(*(void **)r9);
         ok = false;
     }
     table = *(void **)(*(void **)r9);
+    // RAWREAD: table+0x5c (JNIEnv function table, opaque JNI blob -> DeleteLocalRef slot)
     (*(fn_del *)((char *)table + 0x5c))(*(void **)r9, arr);
     return ok;
 }
@@ -200,16 +206,21 @@ bool FileInterfaceAndroid::Write(unsigned int n, const void *buf) {
     void *r9 = *gEnvW;
     void *envObj = *(void **)r9;
     void *table = *(void **)envObj;
+    // RAWREAD: table+0x2c0 (JNIEnv function table, opaque JNI blob -> NewByteArray slot)
     void *arr = (*(fn_i *)((char *)table + 0x2c0))(envObj, n);
     envObj = *(void **)r9;
     table = *(void **)envObj;
+    // RAWREAD: table+0x340 (JNIEnv function table, opaque JNI blob -> SetByteArrayRegion slot)
     (*(fn_setregion *)((char *)table + 0x340))(envObj, arr, 0, n, buf);
     JNI_CallVoidMethod(envObj, this->jniStream, *(void **)gWriteMidArg, arr);
     table = *(void **)(*(void **)r9);
+    // RAWREAD: table+0x3c (JNIEnv function table, opaque JNI blob -> ExceptionCheck slot)
     bool ok = (*(fn_check *)((char *)table + 0x3c))(*(void **)r9) == 0;
     if (!ok)
+        // RAWREAD: env-table+0x44 (JNIEnv function table, opaque JNI blob -> ExceptionClear slot)
         (*(fn_void *)((char *)(*(void **)(*(void **)r9)) + 0x44))(*(void **)r9);
     table = *(void **)(*(void **)r9);
+    // RAWREAD: table+0x5c (JNIEnv function table, opaque JNI blob -> DeleteLocalRef slot)
     (*(fn_del *)((char *)table + 0x5c))(*(void **)r9, arr);
     return ok;
 }
@@ -324,19 +335,23 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject *stream, bool reading) {
     this->modeFlag = reading;
     this->field_0x0 = (char *)gFIAVtable_obj + 8;
     *cnt = *cnt + 1;
+    // RAWREAD: env-table+0x7c (JNIEnv function table, opaque JNI blob -> GetObjectClass slot)
     void *cls = (*(jni_getclass *)((char *)*(void **)env + 0x7c))(env);
 
     void **selB;
     if (reading) {
         if (*gMidA_read == 0)
+            // RAWREAD: env-table+0x84 (JNIEnv function table, opaque JNI blob -> GetMethodID slot)
             *gMidA_read = (*(jni_getmethod *)((char *)*(void **)env + 0x84))(env, cls, gNmA_read, gSgA_read);
         selB = gMidB_read;
     } else {
         if (*gMidA_write == 0)
+            // RAWREAD: env-table+0x84 (JNIEnv function table, opaque JNI blob -> GetMethodID slot)
             *gMidA_write = (*(jni_getmethod *)((char *)*(void **)env + 0x84))(env, cls, gNmA_write, gSgA_write);
         selB = gMidB_write;
     }
     if (*selB == 0)
+        // RAWREAD: env-table+0x84 (JNIEnv function table, opaque JNI blob -> GetMethodID slot)
         *selB = (*(jni_getmethod *)((char *)*(void **)env + 0x84))(env, cls, gNmB, gSgB);
 }
 
@@ -376,6 +391,7 @@ FileInterfaceAndroid * FileInterfaceAndroid::OpenRead(String name, int p2, bool 
     wide2.ctor_wchar(body, false);
     b.addAssign_str(&wide2);
 
+    // RAWREAD: gStderrBase+0xa8 (libc FILE table internals, opaque stdio blob -> stderr stream)
     fprintf((FILE *)((char *)*(void **)gStderrBase + 0xa8), gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
 
     zip_file *z1 = zip_fopen(*gZipMainR, a.GetAEChar(), 0);
