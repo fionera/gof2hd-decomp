@@ -31,6 +31,8 @@ struct Arr { uint32_t size; void **data; uint32_t size2; };
 class ImageFactory {
 public:
     void* sprite;                    // +0x0
+    unsigned int itemImage;          // +0x04  item glyph image2d handle (id 0x485)
+    unsigned int shipImage;          // +0x08  foreground glyph image2d handle (id 0x511)
 
     ~ImageFactory();
 

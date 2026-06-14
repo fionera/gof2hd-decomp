@@ -99,8 +99,8 @@ void ImageFactory::reload() {
     int h = ((PaintCanvas*)(long)*holder)->GetImage2DHeight((int)ids[0]);
     Sprite_ctor(spr, ids, 6, w, h);
     this->sprite = spr;
-    ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, (unsigned int *)((char *)this + 4));
-    return ImageFactory::reload_tail(*holder, 0x511, (char *)this + 8);
+    ((PaintCanvas*)(long)*holder)->Image2DCreate(0x485, &this->itemImage);
+    return ImageFactory::reload_tail(*holder, 0x511, &this->shipImage);
 }
 
 // Tail veneer (function-pointer global): draws the foreground glyph layer.
@@ -109,12 +109,12 @@ void ImageFactory::reload() {
 void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, int flag) {
     unsigned *holder = g_drawChar_canvas;
     ((PaintCanvas*)(long)*holder)->SetColor(0xffffffffu);
-    ((PaintCanvas*)(long)*holder)->DrawImage2D(i32(this, 0x4), x, y);
+    ((PaintCanvas*)(long)*holder)->DrawImage2D(this->itemImage, x, y);
     for (unsigned i = 0; i < parts->size(); ++i) {
         ImagePart *part = (*parts)[i];
         if (part != 0) part->draw(x, y, flag);
     }
-    return ImageFactory::drawChar_tail(*holder, i32(this, 0x8), x, y);
+    return ImageFactory::drawChar_tail(*holder, this->shipImage, x, y);
 }
 
 // ImageFactory::drawShip(int shipId, int x, int y) — draws the composite ship sprite (frame 5)

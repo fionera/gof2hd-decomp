@@ -22,12 +22,10 @@ public:
     short f_4; // 0x4  mergeFactor
     unsigned char valid; // 0x6  valid flag
     unsigned char _pad_7;    // 0x7
-    unsigned char _pad_8[4];
-    void* f_c; // 0xc
-    unsigned char _pad_10[4];
+    Array<Mesh*> meshes;     // 0x8  embedded Array<Mesh*> (split header: size@0x8, data@0xc, size2@0x10)
     void* f_14; // 0x14
     int f_18; // 0x18
-    int f_1c; // 0x1c
+    int f_1c; // 0x1c  transformId
 
     // Real C++ constructor (demangles to SimpleMeshMerger::SimpleMeshMerger(...)).
     SimpleMeshMerger(unsigned *meshIds, unsigned *transforms, void *canvas, float factor);

@@ -15,18 +15,20 @@
 //   0x14  uint32_t     field_14 (drawn arg 0)
 //   0x1c  uint32_t     field_1c (drawn arg 1)
 
+// Engine Mesh is opaque/namespaced; a pointer to it is all the embedded Array needs.
+namespace AbyssEngine { class Mesh; }
+
 extern "C" {
-// AbyssEngine::Array<AbyssEngine::Mesh*>::~Array(this) -- 0x0006f760.
-void AMeshMerger_ArrayMesh_dtor(void *self);
 // Engine draw routine reached via the PC-relative global at 0x1abda8 (b.w 0x1abd98).
 void AMeshMerger_drawMeshes(uint32_t a, uint32_t b, uint32_t c);
 }
 
-// Field accessors via byte offset.
-
 class AMeshMerger {
 public:
-    unsigned char _pad_0[20];
+    unsigned char _pad_0[8];
+    // +0x08  embedded Array<Mesh*>; auto-destructs via ~AMeshMerger().
+    Array<AbyssEngine::Mesh*> meshes;
+    unsigned char _pad_10[4];
     uint32_t field_0x14;   // +0x14  (drawMeshes arg 0)
     unsigned char _pad_18[4];
     uint32_t field_0x1c;   // +0x1c  (drawMeshes arg 1)

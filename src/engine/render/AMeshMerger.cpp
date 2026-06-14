@@ -8,8 +8,5 @@ void AMeshMerger::render()
 }
 
 // AMeshMerger::~AMeshMerger()
-//   Array<AbyssEngine::Mesh*>::~Array(this + 0x08);
-AMeshMerger::~AMeshMerger()
-{
-    AMeshMerger_ArrayMesh_dtor((char *)this + 0x08);
-}
+//   The embedded `meshes` Array<Mesh*> at +0x08 destructs automatically.
+AMeshMerger::~AMeshMerger() = default;
