@@ -48,8 +48,6 @@ void CubeMapping::SetInActive()
     glDisableVertexAttribArray(this->aTexCoord);
 }
 
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
 void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->dirty != 0) {

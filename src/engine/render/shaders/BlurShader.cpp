@@ -4,16 +4,10 @@
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
-template <class T> static inline T &ae_field(void *base, unsigned int off) {
-    return *(T *)((char *)base + off);
-}
-
 // BlurShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char BlurShader_vtable;
 
-// Engine entry points reached by opaque pointer (modelled in a later pass).
+// Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
 extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
 extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
@@ -62,12 +56,12 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
 
-    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
-    ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;   // -1.0f
-    ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;   // -1.0f
-    ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;   //  1.0f
-    ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;   //  1.0f
+    engine->projMatrix[0] = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    engine->projMatrix[5] = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    engine->projMatrix[10] = -1.0f;   // -1.0f
+    engine->projMatrix[12] = -1.0f;   // -1.0f
+    engine->projMatrix[13] = 1.0f;   //  1.0f
+    engine->projMatrix[15] = 1.0f;   //  1.0f
     Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
 
     glDisable(0xb71);
@@ -78,7 +72,7 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     fbo->Activate();
 
     if (*target == 0) {
-        glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
+        glBindFramebuffer(0x8d40, engine->field_0x40c);
         int width;
         int height;
         if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
@@ -136,11 +130,11 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     }
     if (position >= 0) {
         glVertexAttribPointer(position, 3, 0x1406, 0, 0,
-                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
+                              *(void **)(engine->field_0x380 + 4));
     }
     if (texCoord >= 0) {
         glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0,
-                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
+                              *(void **)(engine->field_0x380 + 8));
     }
 
     glClear(0x4000);

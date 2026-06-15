@@ -18,8 +18,6 @@ void NoTexShader::SetInActive()
 
 void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-
     glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
         glUniform4fv(this->uColor, 1, engine->glColor);
@@ -30,7 +28,7 @@ void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     int size;
     const void *ptr;
     if (mesh == 0) {
-        ptr = *(void **)(e + 0x348);
+        ptr = *(void **)&engine->field_0x348;
         size = 2;
     } else {
         if (mesh->uploaded == 0) {

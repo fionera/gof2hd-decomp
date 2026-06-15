@@ -4,12 +4,6 @@
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
-template <class T> static inline T &ae_field(void *base, unsigned int off) {
-    return *(T *)((char *)base + off);
-}
-
 // GlowPPShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char GlowPPShader_vtable;
 
@@ -17,7 +11,7 @@ extern "C" char GlowPPShader_vtable;
 extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
 extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
 
-// Engine entry points reached by raw offset / opaque pointer (modelled in a later pass).
+// Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
 extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
 extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
@@ -54,8 +48,8 @@ static inline void draw_fullscreen(Engine *engine, int posLoc, int texLoc, int m
     glEnableVertexAttribArray(posLoc);
     glEnableVertexAttribArray(texLoc);
     glUniformMatrix4fv(matrixLoc, 1, 0, engine->worldViewProjMatrix);
-    glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
-    glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
+    glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
     glClear(0x4000);
     Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(posLoc);
@@ -73,29 +67,29 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         this->backgroundTarget->EndCapture();
     }
 
-    ae_field<uint32_t>(engine, 0x3b4) = 0;
-    ae_field<uint32_t>(engine, 0x3b8) = 0;
-    ae_field<uint32_t>(engine, 0x3bc) = 0;
-    ae_field<uint32_t>(engine, 0x3c0) = 0;
-    ae_field<uint32_t>(engine, 0x3a4) = 0;
-    ae_field<uint32_t>(engine, 0x3a8) = 0;
-    ae_field<uint32_t>(engine, 0x3ac) = 0;
-    ae_field<uint32_t>(engine, 0x3b0) = 0;
-    ae_field<uint32_t>(engine, 0x394) = 0;
-    ae_field<uint32_t>(engine, 0x398) = 0;
-    ae_field<uint32_t>(engine, 0x39c) = 0;
-    ae_field<uint32_t>(engine, 0x3a0) = 0;
-    ae_field<uint32_t>(engine, 0x384) = 0;
-    ae_field<uint32_t>(engine, 0x388) = 0;
-    ae_field<uint32_t>(engine, 0x38c) = 0;
-    ae_field<uint32_t>(engine, 0x390) = 0;
+    engine->projMatrix[12] = 0.0f;
+    engine->projMatrix[13] = 0.0f;
+    engine->projMatrix[14] = 0.0f;
+    engine->projMatrix[15] = 0.0f;
+    engine->projMatrix[8] = 0.0f;
+    engine->projMatrix[9] = 0.0f;
+    engine->projMatrix[10] = 0.0f;
+    engine->projMatrix[11] = 0.0f;
+    engine->projMatrix[4] = 0.0f;
+    engine->projMatrix[5] = 0.0f;
+    engine->projMatrix[6] = 0.0f;
+    engine->projMatrix[7] = 0.0f;
+    engine->projMatrix[0] = 0.0f;
+    engine->projMatrix[1] = 0.0f;
+    engine->projMatrix[2] = 0.0f;
+    engine->projMatrix[3] = 0.0f;
 
-    ae_field<float>(engine, 0x384) = 2.0f / (float)(int32_t)Engine_GetDisplayWidth(engine);
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)(int32_t)Engine_GetDisplayHeight(engine));
-    ae_field<uint32_t>(engine, 0x3ac) = 0xbf800000;
-    ae_field<uint32_t>(engine, 0x3b4) = 0xbf800000;
-    ae_field<uint32_t>(engine, 0x3b8) = 0x3f800000;
-    ae_field<uint32_t>(engine, 0x3c0) = 0x3f800000;
+    engine->projMatrix[0] = 2.0f / (float)(int32_t)Engine_GetDisplayWidth(engine);
+    engine->projMatrix[5] = -(2.0f / (float)(int32_t)Engine_GetDisplayHeight(engine));
+    engine->projMatrix[10] = -1.0f;
+    engine->projMatrix[12] = -1.0f;
+    engine->projMatrix[13] = 1.0f;
+    engine->projMatrix[15] = 1.0f;
 
     float matrix[16];
     matrix[0] = 1.0f;
@@ -133,8 +127,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         glEnableVertexAttribArray(this->blurXAttribPosition);
         glEnableVertexAttribArray(this->blurXAttribTexCoord);
         glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
+        glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
         glUniform1f(this->blurXUniformSampleSize, 1.0f / (float)this->blurXTarget->width);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -148,8 +142,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         glEnableVertexAttribArray(this->blurYAttribPosition);
         glEnableVertexAttribArray(this->blurYAttribTexCoord);
         glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, engine->worldViewProjMatrix);
-        glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
-        glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
+        glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
+        glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
         glUniform1f(this->blurYUniformSampleSize, 1.0f / (float)this->blurYTarget->height);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -173,10 +167,10 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     secondTexture->Activate();
 
     if (*target == 0) {
-        glBindFramebuffer(0x8d40, ae_field<uint32_t>(engine, 0x40c));
+        glBindFramebuffer(0x8d40, engine->field_0x40c);
         uint32_t width;
         uint32_t height;
-        if (*(int32_t *)(ae_field<char *>((void *)engine->field_0x30, 0) + 0x30) == 2) {
+        if (*(int32_t *)(*(char **)engine->field_0x30 + 0x30) == 2) {
             width = Engine_GetDisplayWidth(engine);
             height = Engine_GetDisplayHeight(engine);
         } else {

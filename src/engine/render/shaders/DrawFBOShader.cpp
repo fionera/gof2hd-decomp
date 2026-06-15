@@ -5,16 +5,10 @@
 #include "gof2/platform/gl.h"
 #include <arm_neon.h>
 
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
-template <class T> static inline T &ae_field(void *base, unsigned int off) {
-    return *(T *)((char *)base + off);
-}
-
 // DrawFBOShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char DrawFBOShader_vtable;
 
-// Engine entry points reached by opaque pointer (modelled in a later pass).
+// Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
 extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
 extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
@@ -114,7 +108,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     fbo->Activate();
 
     if (Engine_IsPostEffectActivated(engine) == 0) {
-        glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
+        glBindFramebuffer(0x8d40, engine->field_0x40c);
         unsigned int width;
         unsigned int viewportHeight;
         if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
@@ -133,9 +127,9 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     glEnableVertexAttribArray(this->texCoordLoc);
     glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
-    char *mesh = ae_field<char *>(engine, 0x380);
+    char *mesh = engine->field_0x380;
     glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, *(void **)(mesh + 0x4));
-    mesh = ae_field<char *>(engine, 0x380);
+    mesh = engine->field_0x380;
     glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, *(void **)(mesh + 0x8));
 
     glClear(0x4000);

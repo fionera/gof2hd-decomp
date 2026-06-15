@@ -41,8 +41,7 @@ void VertexColorShader::Init()
 }
 
 // Binds the program's matrices, lighting/material uniforms (when dirty) and the mesh's
-// vertex attribute arrays. Engine/Mesh fields are reached by raw offset (deferred to a
-// later Engine/Mesh-modelling pass).
+// vertex attribute arrays.
 void VertexColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uWorldViewProj >= 0) {

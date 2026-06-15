@@ -4,16 +4,10 @@
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
-template <class T> static inline T &ae_field(void *base, unsigned int off) {
-    return *(T *)((char *)base + off);
-}
-
 // PostBWShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char PostBWShader_vtable;
 
-// Engine entry points reached by opaque pointer (modelled in a later pass).
+// Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine *engine);
 extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine *engine);
 extern "C" void AbyssEngine_Engine_SetWorldViewMatrix(::Engine *engine,
@@ -74,18 +68,18 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 {
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
     u32x4 zero = {0, 0, 0, 0};
-    ae_field<u32x4>(engine, 0x3b4) = zero;
-    ae_field<u32x4>(engine, 0x3a4) = zero;
-    ae_field<u32x4>(engine, 0x394) = zero;
-    ae_field<u32x4>(engine, 0x384) = zero;
-    ae_field<uint32_t>(engine, 0x3e4) = this->program;
+    *(u32x4 *)&engine->projMatrix[12] = zero;
+    *(u32x4 *)&engine->projMatrix[8] = zero;
+    *(u32x4 *)&engine->projMatrix[4] = zero;
+    *(u32x4 *)&engine->projMatrix[0] = zero;
+    engine->field_0x3e4 = this->program;
 
-    ae_field<float>(engine, 0x384) = 2.0f / (float)AbyssEngine_Engine_GetDisplayWidth(engine);
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)AbyssEngine_Engine_GetDisplayHeight(engine));
-    ae_field<uint32_t>(engine, 0x3ac) = 0xbf800000;
-    ae_field<uint32_t>(engine, 0x3b4) = 0xbf800000;
-    ae_field<uint32_t>(engine, 0x3b8) = 0x3f800000;
-    ae_field<uint32_t>(engine, 0x3c0) = 0x3f800000;
+    engine->projMatrix[0] = 2.0f / (float)AbyssEngine_Engine_GetDisplayWidth(engine);
+    engine->projMatrix[5] = -(2.0f / (float)AbyssEngine_Engine_GetDisplayHeight(engine));
+    engine->projMatrix[10] = -1.0f;
+    engine->projMatrix[12] = -1.0f;
+    engine->projMatrix[13] = 1.0f;
+    engine->projMatrix[15] = 1.0f;
 
     float matrix[16] = {};
     matrix[0] = 1.0f;
@@ -99,7 +93,7 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     glUseProgram(this->program);
     glActiveTexture(0x84c0);
     fbo->Activate();
-    glBindFramebuffer(0x8d40, ae_field<uint32_t>(engine, 0x40c));
+    glBindFramebuffer(0x8d40, engine->field_0x40c);
     glClear(0x4100);
 
     int width;
@@ -117,9 +111,9 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     glEnableVertexAttribArray(this->aTexCoord);
     glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0,
-                          *(void **)(ae_field<char *>(engine, 0x380) + 0x4));
+                          *(void **)(engine->field_0x380 + 0x4));
     glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0,
-                          *(void **)(ae_field<char *>(engine, 0x380) + 0x8));
+                          *(void **)(engine->field_0x380 + 0x8));
 
     glClear(0x4000);
     AbyssEngine_Engine_DrawQuad(engine, 0, 0, AbyssEngine_Engine_GetDisplayWidth(engine),
@@ -130,7 +124,7 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-    ae_field<uint32_t>(engine, 0x7c) = 0xffffffff;
+    engine->boundTextures[0] = 0xffffffff;
 }
 
 } // namespace AbyssEngine

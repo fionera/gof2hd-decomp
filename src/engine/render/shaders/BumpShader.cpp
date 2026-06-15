@@ -12,8 +12,7 @@ extern "C" float *const gBumpFloatA;
 extern "C" float *const gBumpFloatB;
 extern "C" uint8_t *const gBumpFlag;
 
-// Reinterprets an AEMath::Vector as its leading float[3]. Modelled in a later pass; here it is
-// the engine helper reached through the ABI.
+// Engine ABI helper: reinterprets an AEMath::Vector as its leading float[3].
 extern "C" float *Vector_cast_to_float(AbyssEngine::AEMath::Vector *self);
 
 namespace AbyssEngine {

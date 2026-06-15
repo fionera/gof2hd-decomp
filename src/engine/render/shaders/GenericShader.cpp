@@ -61,7 +61,6 @@ void GenericShader::SetInActive()
 }
 
 // The Engine/Mesh objects carry the per-frame matrices, light/material data and GL vertex
-// buffers at fixed offsets; those are foreign objects (modelled in a later pass), read here
 // as raw GL data by offset.
 void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
