@@ -14,16 +14,6 @@
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/world/Station.h"
 
-// RadioMessage.h is intentionally NOT included here: it defines stub structs
-// (PlayerEgo, Route, Level, Player, Radar, LevelScript, ...) that collide with the
-// real class headers this TU uses. This TU only needs RadioMessage::trigger/finish,
-// so declare that minimal interface locally instead.
-class RadioMessage {
-public:
-    void finish();
-    void trigger();
-};
-
 // Game singletons / externs (engine-provided, no clean header here).
 extern Status* gStatus;
 extern void*   gProgrammedStation;

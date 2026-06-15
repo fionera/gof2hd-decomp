@@ -5,10 +5,6 @@
 #include "gof2/game/ship/KIPlayer.h"
 #include "gof2/game/ship/Player.h"
 
-// RadioMessage's own header redefines incompatible mini Route/Player/Objective
-// structs, so it cannot be pulled in here; declare just the predicate we call.
-struct RadioMessage { uint8_t isOver(); };
-
 Objective::Objective(int type, int value, Level* level)
 {
     this->type = type;

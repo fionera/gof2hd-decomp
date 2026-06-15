@@ -3,26 +3,21 @@
 #include "StarSystem.h"
 #include "gof2/common.h"
 
-// Forward declarations for related game classes referenced by Level.
-struct Route;
-struct RadioMessage;
-struct KIPlayer;
-struct PlayerEgo;
-struct Ship;
-struct SolarSystem;
-struct Station;
-struct Wanted;
-struct Status;
-struct Player;
-struct ParticleSystemManager;
-struct PaintCanvas;
-struct Mission;
-struct Gun;
-struct Waypoint;
-struct PlayerFixedObject;
-struct BoundingVolume;
-struct AEGeometry;
-struct ObjectGun;
+// Owning headers for the classes Level exposes in its own interface (member pointers,
+// method parameters and returns). Types used only inside Level.cpp are included there.
+#include "gof2/game/world/Route.h"
+#include "gof2/game/world/Waypoint.h"
+#include "gof2/game/core/RadioMessage.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/ship/PlayerFixedObject.h"
+#include "gof2/game/mission/Mission.h"
+#include "gof2/game/mission/Objective.h"
+#include "gof2/game/weapons/Gun.h"
+#include "gof2/game/weapons/ObjectGun.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/math/BoundingVolume.h"
 
 // Galaxy on Fire 2 — Level: the in-flight game world / mission space. It owns the
 // skybox, the actor rosters (player, enemies, asteroids, gas clouds, landmarks),
@@ -39,8 +34,8 @@ public:
     int field_1c;
     int killCountA;                 // friendly-fire kill tally
     int killCountB;                 // player kill tally
-    int objectivesA;
-    int objectivesB;
+    Objective* objectivesA;
+    Objective* objectivesB;
     int field_30;
     int field_34;
     int field_38;
@@ -61,10 +56,10 @@ public:
     int field_6c;
     int field_70;
     int field_74;
-    int particleEmitBoolPtr;
-    int particleSystemMgr;
+    ParticleSystemManager* particleEmitBoolPtr;
+    ParticleSystemManager* particleSystemMgr;
     int field_80;
-    int particleRenderBoolPtr;
+    ParticleSystemManager* particleRenderBoolPtr;
     int skybox2Mesh;                // movingStars target
     int field_8c;
     int field_90;
@@ -85,7 +80,7 @@ public:
     int field_cc;
     int field_d0;
     int field_d4;
-    int asteroidWaypoint;
+    Waypoint* asteroidWaypoint;
     int field_dc;
     int field_e0;
     Array<ObjectGun*>* playerGuns;
@@ -201,7 +196,7 @@ public:
     Array<KIPlayer*>* getEnemies();
     Array<KIPlayer*>* getLandmarks();
     Array<KIPlayer*>* getAsteroids();
-    int getAsteroidWaypoint();
+    Waypoint* getAsteroidWaypoint();
     Route* getPlayerRoute();
     Route* getEnemyRoute();
     Route* getFriendRoute();

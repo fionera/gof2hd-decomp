@@ -15,13 +15,6 @@
 #include "gof2/game/mission/Status.h"
 #include <new>
 
-// PlayerEgo wraps a Player and owns the HUD; its own header is not yet self-sufficient,
-// so the single method this file needs is declared via a minimal local view.
-class PlayerEgo {
-public:
-    int getHUD();
-};
-
 // Free math operators/functions (defined in libgof2hd; not declared in math.h).
 namespace AbyssEngine { namespace AEMath {
     Vector operator-(const Vector&, const Vector&);

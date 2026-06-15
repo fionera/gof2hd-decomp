@@ -309,18 +309,18 @@ void Level::render2D() {
 }
 
 int Level::checkGameOver() {
-    int objective = objectivesB;
-    if (objective == 0) {
+    Objective *objective = objectivesB;
+    if (objective == nullptr) {
         return 0;
     }
     // veneer 0x1ac018 -> Objective::achieved
-    return (int)((Objective *)(intptr_t)objective)->achieved(0);
+    return (int)objective->achieved(0);
 }
 
 void Level::updateAsteroidCluster() {
 }
 
-int Level::getAsteroidWaypoint() {
+Waypoint *Level::getAsteroidWaypoint() {
     return asteroidWaypoint;
 }
 
@@ -363,10 +363,10 @@ void Level::asteroidDied() {
 }
 
 int Level::checkObjective() {
-    int objective = objectivesA;
-    if (objective != 0) {
+    Objective *objective = objectivesA;
+    if (objective != nullptr) {
         // veneer 0x1ac018 -> Objective::achieved
-        return (int)((Objective *)(intptr_t)objective)->achieved(0);
+        return (int)objective->achieved(0);
     }
     return 0;
 }
@@ -386,7 +386,7 @@ void Level::setPlayerRoute(Route *route) {
 
 void Level::enableFog(bool enable) {
     // veneer 0x1ac048 -> ParticleSystemManager::enableSystemRender
-    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemRender(field_284, enable);
+    particleSystemMgr->enableSystemRender(field_284, enable);
 }
 
 void Level::isInAsteroidCenterRange(Vector v) {
@@ -415,8 +415,8 @@ void Level::incNumDeliveredOre(int delta) {
 }
 
 void Level::enableParticleEffects(bool emit, bool render) {
-    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemEmit(field_284, render);  // decompiler dropped the enable arg; Ghidra(0xcd68c) shows it is r2 (=render)
-    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemRender(field_284, render);
+    particleSystemMgr->enableSystemEmit(field_284, render);  // decompiler dropped the enable arg; Ghidra(0xcd68c) shows it is r2 (=render)
+    particleSystemMgr->enableSystemRender(field_284, render);
     *(unsigned char *)particleRenderBoolPtr = render;
     *(unsigned char *)particleEmitBoolPtr = render;
 }
@@ -583,8 +583,8 @@ int Level::getNumDockingTargets() {
 }
 
 void Level::removeObjectives() {
-    objectivesA = 0;
-    objectivesB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
 }
 
 int Level::getDockingTarget(int index) {
@@ -664,17 +664,17 @@ void Level::render(int ctx) {
     if (field_74 != 0) {
         ((ParticleSystemManager *)(field_74))->render3d();
     }
-    if (particleEmitBoolPtr != 0) {
-        ((ParticleSystemManager *)(particleEmitBoolPtr))->render3d();
+    if (particleEmitBoolPtr != nullptr) {
+        particleEmitBoolPtr->render3d();
     }
-    if (particleSystemMgr != 0) {
-        ((ParticleSystemManager *)(particleSystemMgr))->render3d();
+    if (particleSystemMgr != nullptr) {
+        particleSystemMgr->render3d();
     }
     if (skybox2Mesh != 0) {
         ((ParticleSystemManager *)(skybox2Mesh))->render3d();
     }
-    if (particleRenderBoolPtr != 0) {
-        ((ParticleSystemManager *)(particleRenderBoolPtr))->render3d();
+    if (particleRenderBoolPtr != nullptr) {
+        particleRenderBoolPtr->render3d();
     }
     if (field_8c != 0) {
         ((ParticleSystemManager *)(field_8c))->render3d();
@@ -711,11 +711,8 @@ Level::~Level() {
     releaseObject(objectivesA, dtor_Objective);
     releaseObject(objectivesB, dtor_Objective);
     releaseObject(collisionVolume, dtor_BoundingVolume);
-    // asteroidWaypoint is destroyed through its own vtable deleting-dtor (slot +4).
-    if (int *wp = (int *)(intptr_t)asteroidWaypoint) {
-        (*(void (**)(int *))(*wp + 4))(wp);
-    }
-    asteroidWaypoint = 0;
+    delete asteroidWaypoint;   // virtual deleting-dtor (vtable slot +4)
+    asteroidWaypoint = nullptr;
     releaseObject(starSystem, dtor_StarSystem);
     releaseObject(player, dtor_PlayerEgo);
     releaseObject(field_180, dtor_Route);
@@ -1218,12 +1215,12 @@ int Level::init() {
         if (this->friendRoute != nullptr)
             (this->friendRoute->~Route(), ::operator delete(this->friendRoute));
         this->friendRoute = nullptr;
-        if (*(Objective **)&this->objectivesB != 0)
-            ((*(Objective **)&this->objectivesB)->~Objective(), ::operator delete(*(Objective **)&this->objectivesB));
-        this->objectivesB = 0;
-        if (*(Objective **)&this->objectivesA != 0)
-            ((*(Objective **)&this->objectivesA)->~Objective(), ::operator delete(*(Objective **)&this->objectivesA));
-        this->objectivesA = 0;
+        if (this->objectivesB != 0)
+            ((this->objectivesB)->~Objective(), ::operator delete(this->objectivesB));
+        this->objectivesB = nullptr;
+        if (this->objectivesA != 0)
+            ((this->objectivesA)->~Objective(), ::operator delete(this->objectivesA));
+        this->objectivesA = nullptr;
 
         LODManager *lod = (LODManager *)::operator new(0x14);
         new (lod) LODManager();
@@ -1242,10 +1239,10 @@ int Level::init() {
         ParticleSystemManager *psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e85, false, 0xffff, false);
-        *(ParticleSystemManager **)&this->particleEmitBoolPtr = psm;
+        this->particleEmitBoolPtr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6a72, false, 0xffff, false);
-        *(ParticleSystemManager **)&this->particleRenderBoolPtr = psm;
+        this->particleRenderBoolPtr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e83, true, 0xffff, false);
         *(ParticleSystemManager **)&this->field_74 = psm;
@@ -1257,7 +1254,7 @@ int Level::init() {
         *(ParticleSystemManager **)&this->field_98 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, (unsigned short)(dustVariant ? 0x4ea9 : 0x4e7f), true, 0, false);
-        *(ParticleSystemManager **)&this->particleSystemMgr = psm;
+        this->particleSystemMgr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e7c, false, 0x4e7c, false);
         *(ParticleSystemManager **)&this->skybox2Mesh = psm;
@@ -1601,7 +1598,7 @@ void Level::createAsteroids()
 
     Waypoint *wp = (Waypoint *)::operator new(0x138);
     new (wp) Waypoint(oz, oy, ox, 0);
-    *(Waypoint **)&this->asteroidWaypoint = wp;
+    this->asteroidWaypoint = wp;
 
     BoundingSphere *bs = (BoundingSphere *)::operator new(0x48);
     new (bs) BoundingSphere(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -2042,14 +2039,14 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
             ((ParticleSystemManager *)(intptr_t)this->field_80)->update(dt);
         }
         if (this->field_74 != 0) ((ParticleSystemManager *)(intptr_t)this->field_74)->update(dt);
-        if (this->particleEmitBoolPtr != 0) ((ParticleSystemManager *)(intptr_t)this->particleEmitBoolPtr)->update(dt);
+        if (this->particleEmitBoolPtr != nullptr) this->particleEmitBoolPtr->update(dt);
         if (this->skybox2Mesh != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
             this->field_b4 = *(int *)dummy;
             ((ParticleSystemManager *)(intptr_t)this->skybox2Mesh)->update(dt);
         }
-        if (this->particleSystemMgr != 0) ((ParticleSystemManager *)(intptr_t)this->particleSystemMgr)->update(dt);
-        if (this->particleRenderBoolPtr != 0) ((ParticleSystemManager *)(intptr_t)this->particleRenderBoolPtr)->update(dt);
+        if (this->particleSystemMgr != nullptr) this->particleSystemMgr->update(dt);
+        if (this->particleRenderBoolPtr != nullptr) this->particleRenderBoolPtr->update(dt);
         if (this->field_8c != 0) ((ParticleSystemManager *)(intptr_t)this->field_8c)->update(dt);
         if (this->field_98 != 0) ((ParticleSystemManager *)(intptr_t)this->field_98)->update(dt);
         if (this->field_94 != 0) ((ParticleSystemManager *)(intptr_t)this->field_94)->update(dt);
@@ -2599,8 +2596,8 @@ Level::Level(int mission) {
     flashActive = 0;
     // Original zeroes the objective region with two unaligned 4-byte stores at
     // +0x29 and +0x2d; net effect is clearing objectivesA/objectivesB.
-    objectivesA = 0;
-    objectivesB = 0;
+    objectivesA = nullptr;
+    objectivesB = nullptr;
     memset((char *)&this->asteroidWaypoint, 0, 0x65);
     zero16((char *)&this->hostileCount);
     zero16((char *)&this->flashType);
@@ -2899,13 +2896,13 @@ void Level::almostKillWanted(int index) {
     ((Mission *)(m))->setWon(1);
     (*slot)->setMission((Mission *)(intptr_t)m);
     (*slot)->setCampaignMission((Mission *)(intptr_t)m);
-    if (objectivesA != 0) {
-        operator delete(dtor_Objective_akw((void *)(intptr_t)objectivesA));
+    if (objectivesA != nullptr) {
+        operator delete(dtor_Objective_akw((void *)objectivesA));
     }
-    objectivesA = 0;
+    objectivesA = nullptr;
     int o = (int)(intptr_t)::operator new(0x1c);
     Objective_ctor_akw(o, 3, 0, 0, this);
-    objectivesA = o;
+    objectivesA = (Objective *)(intptr_t)o;
     int e = (int)(intptr_t)(*this->enemies)[0];
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
     ((Player *)(int)(intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
@@ -3292,7 +3289,7 @@ void Level::initParticleSystems()
                         AEGeometry *kg = *(AEGeometry **)((char *)k + 8);
                         kg->updateReferenceMatrix();
                         int ref = (int)(intptr_t)&kg->getReferenceMatrix();
-                        ((ParticleSystemManager *)(intptr_t)this->particleSystemMgr)->addSystem((void *)ref, 8, false);
+                        this->particleSystemMgr->addSystem((void *)ref, 8, false);
                         break;
                     }
                 }
@@ -3301,7 +3298,7 @@ void Level::initParticleSystems()
 
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
-        sys = ((ParticleSystemManager *)(intptr_t)this->particleSystemMgr)->addSystem((void *)local, 7, false);
+        sys = this->particleSystemMgr->addSystem((void *)local, 7, false);
         this->field_284 = sys;
 
         this->ips_applyAmbient();
@@ -3313,8 +3310,8 @@ void Level::initParticleSystems()
     // init the always-present managers.
     if (*(ParticleSystemManager **)&this->field_80 != 0)
         (*(ParticleSystemManager **)&this->field_80)->init();
-    if (*(ParticleSystemManager **)&this->particleSystemMgr != 0)
-        (*(ParticleSystemManager **)&this->particleSystemMgr)->init();
+    if (this->particleSystemMgr != nullptr)
+        (this->particleSystemMgr)->init();
     if (*(ParticleSystemManager **)&this->skybox2Mesh != 0)
         (*(ParticleSystemManager **)&this->skybox2Mesh)->init();
     if (*(ParticleSystemManager **)&this->field_8c != 0)
@@ -3344,8 +3341,8 @@ void Level::initParticleSystems()
 
     void (*enableEmit)(int) = g_ips_enableEmit;
     enableEmit(this->field_9c);
-    enableEmit(this->particleEmitBoolPtr);
-    enableEmit(this->particleRenderBoolPtr);
+    enableEmit((int)(intptr_t)this->particleEmitBoolPtr);
+    enableEmit((int)(intptr_t)this->particleRenderBoolPtr);
     if (*(ParticleSystemManager **)&this->field_94 != 0)
         (*(ParticleSystemManager **)&this->field_94)->init();
 }
@@ -3902,11 +3899,11 @@ void Level::ips_applyAmbient() {
 // --- initParticleSystems(): register one player-engine particle system (kind)
 // against a unit reference transform and return its handle.
 int Level::ips_addPlayerSystem(int kind) {
-    int mgr = this->particleSystemMgr;          // particleSystemMgr
-    if (mgr == 0)
+    ParticleSystemManager *mgr = this->particleSystemMgr;          // particleSystemMgr
+    if (mgr == nullptr)
         return -1;
-    int sys = ((ParticleSystemManager *)(intptr_t)mgr)->addSystem(0, kind, true);
-    ((ParticleSystemManager *)(intptr_t)mgr)->enableSystemEmit(sys, true);
+    int sys = mgr->addSystem(0, kind, true);
+    mgr->enableSystemEmit(sys, true);
     return sys;
 }
 
