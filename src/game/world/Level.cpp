@@ -180,7 +180,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
-int  ApplicationManager_GetEngine_csp();
 
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
 int   crms_randDelay(int which);
@@ -901,7 +900,7 @@ void Level::createSpace()
 
             (*g_status)->getSystem();
             if (0xf < ((SolarSystem*)(*g_status)->getSystem())->getTextureIndex()) {
-                Engine *eng = (Engine *)ApplicationManager_GetEngine_csp();
+                Engine *eng = (Engine *)(*g_cp_appMgr)->GetEngine();
                 if (eng->IsPostEffectActivated() != false) {
                     int mp = (int)(long)((PaintCanvas *)(long)canvas)->MeshGetPointer((unsigned int)*(unsigned *)&this->skyboxMesh);
                     *(int *)(mp + 0x1c) = 0;
