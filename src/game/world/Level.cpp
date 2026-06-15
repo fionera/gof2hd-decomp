@@ -31,6 +31,7 @@
 #include "gof2/engine/file/FileRead.h"
 #include "gof2/engine/math/AEMath.h"
 #include "gof2/engine/math/BoundingSphere.h"
+#include "gof2/engine/math/BoundingAAB.h"
 #include "gof2/game/core/Globals.h"
 #include "gof2/game/ship/PlayerAsteroid.h"
 #include "gof2/game/ship/PlayerFighter.h"
@@ -179,7 +180,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
-void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 int  ApplicationManager_GetEngine_csp();
 
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
@@ -3762,12 +3762,21 @@ int Level::cso2_construct(int type, int x, int y, int z) {
 }
 
 // --- getBoundingVolume(): build one BoundingVolume from a raw collision record.
-// shape==0 -> bounding sphere (centre + radius), shape==1 -> axis-aligned box
-// (min/max). Record fields are fixed-point; the engine ctor does the conversion.
+// `rec` points at the record's int fields. shape==1 -> a BoundingAAB (7-int record),
+// shape==0 -> a BoundingSphere (5-int record). The records store signed ints; both
+// volumes are centred at the origin, take their extents from rec[1]/rec[3]/-rec[2],
+// and the box dimensions / sphere radius are scaled copies of rec[4..6].
 BoundingVolume *Level::gbv_makeVolume(int rec, int shape) {
-    BoundingVolume *bv = (BoundingVolume *)::operator new(shape ? 0x40 : 0x20);
-    BoundingVolume_ctor_gbv(bv, rec, shape);
-    return bv;
+    const int *r = (const int *)(intptr_t)rec;
+    if (shape == 1) {
+        return new BoundingAAB(0.0f, 0.0f, 0.0f,
+                               (float)r[1], (float)r[3], -(float)r[2],
+                               2.4f * (float)r[4], 2.4f * (float)r[6], 2.4f * (float)r[5]);
+    }
+    float radius = 0.6f * (float)r[4];
+    if (radius < 0.0f) radius = -radius;
+    return new BoundingSphere(0.0f, 0.0f, 0.0f,
+                              (float)r[1], (float)r[3], -(float)r[2], radius);
 }
 
 // --- createShip(): build the class-appropriate bounding-volume array for a ship
