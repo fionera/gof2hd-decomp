@@ -38,6 +38,17 @@ cmake --build cmake-build-debug --target gof2        # the engine/game library (
 `compile_commands.json` is exported for clangd/CLion code intelligence. Requires a C++14 (gnu++14)
 clang; no external deps yet (SDL2/GLES2 arrive with the platform layer).
 
+### ASM validation (matching build)
+To check whether our code still assembles to the **same instructions** as the original `.so`,
+function by function, build with the matching NDK r18b toolchain (via OrbStack) and diff against the
+binary:
+```
+bash tools/verify/setup.sh                              # one-time OrbStack provisioning
+cmake --preset match
+cmake --build cmake-build-match --target verify         # prints a per-function match-% table
+```
+This is independent of the native build above. See **[docs/VALIDATION.md](docs/VALIDATION.md)**.
+
 ## Roadmap
 - **M1 — compile/link**: every TU in `src/` compiles; resolve undefined symbols into the host. *(in progress: the byte-offset → real-struct cleanup is being applied class by class; most TUs compile.)*
 - **M2 — first frame**: real structs + entry point + window/GL (GLES2→OpenGL or ANGLE) + input.

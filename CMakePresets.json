@@ -18,10 +18,19 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/cmake-build-release",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "match",
+      "displayName": "Match (ARM ASM validation via OrbStack)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/cmake-build-match",
+      "toolchainFile": "${sourceDir}/cmake/orbstack-ndk-arm.toolchain.cmake",
+      "cacheVariables": { "GOF2_MATCH_OPT": "-Oz" }
     }
   ],
   "buildPresets": [
     { "name": "debug", "configurePreset": "debug" },
-    { "name": "release", "configurePreset": "release" }
+    { "name": "release", "configurePreset": "release" },
+    { "name": "verify", "configurePreset": "match", "targets": ["verify"] }
   ]
 }

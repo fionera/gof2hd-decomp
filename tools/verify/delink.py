@@ -84,12 +84,14 @@ def load_thumb(path):
 
 
 def nm_text_symbols(nm_tool, obj):
-    """Mangled names this object *defines* in text (nm type T/t)."""
+    """Mangled names this object *defines* as code. Includes weak/vague-linkage
+    symbols (W/V) — templates and inline functions like ArrayAdd<T> are weak, and
+    skipping them would drop a large fraction of the comparable functions."""
     out = subprocess.check_output([nm_tool, "--defined-only", obj], text=True)
     names = []
     for line in out.splitlines():
         cols = line.split()
-        if len(cols) >= 3 and cols[1] in ("t", "T"):
+        if len(cols) >= 3 and cols[1] in ("t", "T", "W", "V"):
             names.append(cols[2])
     return names
 

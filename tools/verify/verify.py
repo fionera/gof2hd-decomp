@@ -91,28 +91,33 @@ def main():
     ap.add_argument("--only", default=None, help="regex filter on mangled symbol")
     ap.add_argument("--no-build", action="store_true",
                     help="skip the ARM compile step (reuse existing base/ objects)")
-    ap.add_argument("--show", default=None, metavar="SYMBOL",
-                    help="print side-by-side disassembly diff for one symbol")
+    ap.add_argument("--show", nargs="?", const="", default=None, metavar="SYMBOL",
+                    help="print side-by-side disassembly diff for one symbol "
+                         "(falls back to the FN environment variable)")
     ap.add_argument("--report", default=None, help="write JSON report to this path")
     args = ap.parse_args()
 
     if not args.no_build and not args.show:
         run(["bash", os.path.join(HERE, "build_objs.sh"), args.build_dir])
 
-    if args.show:
-        found = find_symbol_objects(args.build_dir, args.show)
+    if args.show is not None:
+        sym = args.show or os.environ.get("FN", "")
+        if not sym:
+            print("set the symbol: --show <mangled> or FN=<mangled>")
+            return 1
+        found = find_symbol_objects(args.build_dir, sym)
         if not found:
-            print(f"symbol not found in any base object: {args.show}")
+            print(f"symbol not found in any base object: {sym}")
             return 1
         unit, base_o, target_o, bf = found
         tf = asmdiff.disassemble(target_o)
-        print(f"# unit {unit}   symbol {args.show}")
+        print(f"# unit {unit}   symbol {sym}")
         r = asmdiff.compare(tf, bf)
-        r = next((x for x in r if x["symbol"] == args.show), None)
+        r = next((x for x in r if x["symbol"] == sym), None)
         if r:
             print(f"# match {r['match']}%   bytes_equal={r['bytes_equal']}   "
                   f"insns target={r['n_target']} base={r['n_base']}\n")
-        print(asmdiff.unified(tf, bf, args.show) or "(identical after normalization)")
+        print(asmdiff.unified(tf, bf, sym) or "(identical after normalization)")
         return 0
 
     rows = collect(args.build_dir, only=args.only)
