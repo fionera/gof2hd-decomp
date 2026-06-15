@@ -193,35 +193,13 @@ int   crms_randDelay(int which);
 int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
 void Player_setHitpoints_cwm(int p);
-void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
-void Level_turnEnemy(int obj);
-int Level_getNumWingmen(int wanted);
 }
 
 static unsigned int g_level_texOutScratch;
 
 extern "C" int Radar_hasScanner_ed();
 
-extern "C" void Level_setAlwaysEnemy(int player, int flag)
-{
-    char *p = (char *)(intptr_t)player;
-    *(unsigned char  *)(p + 0xec) = (unsigned char)flag;  // alwaysEnemy
-    *(unsigned short *)(p + 0x5c) = 1;                     // faction dirty
-    *(unsigned char  *)(p + 0xe0) = 1;                     // hostile
-}
-
-extern "C" void Level_turnEnemy(int player)
-{
-    *(unsigned char *)((char *)(intptr_t)player + 0xe0) = 1; // hostile
-}
-
-extern "C" int Level_getNumWingmen(int wanted)
-{
-    if (wanted == 0)
-        return 0;
-    return *(int *)((char *)(intptr_t)wanted + 0x3c);
-}
 
 extern "C" void Level_ctor(void *self, int mode)
 {
@@ -716,7 +694,7 @@ void Level::alarmAllFriends(int race, bool message) {
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
             int obj = (int)(intptr_t)(*this->enemies)[i];
             if (*(int *)(obj + 0x28) == race) {
-                Level_setAlwaysEnemy(*(int *)(obj + 4), 1);
+                ((Player *)(intptr_t)(*(int *)(obj + 4)))->setAlwaysEnemy(1);
             }
         }
     }
@@ -1886,8 +1864,8 @@ void Level::uncoverWanted(int index) {
         for (int i = 1;
              i - 1 < ((Wanted *)((int *)(*(int *)(*g) + 4))[index])->getNumWingmen();
              i = i + 1) {
-            Level_setAlwaysEnemy(*(int *)((char *)(*enemies)[i] + 4), 1);
-            Level_turnEnemy(*(int *)((char *)(*enemies)[i] + 4));
+            ((Player *)(intptr_t)(*(int *)((char *)(*enemies)[i] + 4)))->setAlwaysEnemy(1);
+            ((Player *)(intptr_t)(*(int *)((char *)(*enemies)[i] + 4)))->turnEnemy();
         }
     }
 }
@@ -2837,7 +2815,7 @@ void Level::almostKillWanted(int index) {
     delete objectivesA; objectivesA = nullptr;
     objectivesA = new Objective(3, 0, 0, this);
     int e = (int)(intptr_t)(*this->enemies)[0];
-    Level_setAlwaysEnemy(*(int *)(e + 4), 0);
+    ((Player *)(intptr_t)(*(int *)(e + 4)))->setAlwaysEnemy(0);
     ((Player *)(int)(intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
     int e0 = (int)(intptr_t)(*this->enemies)[0];
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
@@ -3180,11 +3158,11 @@ void Level::attackWanted(int index) {
         field_29c = 1;
         createRadioMessage(0x10, index);
         int **slot = g_attackWanted;
-        for (int i = 1;
-             i - 1 < Level_getNumWingmen(((int *)(*(int *)((*(int *)*slot) + 4)))[index]);
-             i = i + 1) {
-            Level_setAlwaysEnemy(*(int *)((char *)(*enemies)[i] + 4), 1);
-            Level_turnEnemy(*(int *)((char *)(*enemies)[i] + 4));
+        Wanted *wanted = (Wanted *)(intptr_t)(((int *)(*(int *)((*(int *)*slot) + 4)))[index]);
+        int numWingmen = (wanted != nullptr) ? wanted->getNumWingmen() : 0;
+        for (int i = 1; i - 1 < numWingmen; i = i + 1) {
+            ((Player *)(intptr_t)(*(int *)((char *)(*enemies)[i] + 4)))->setAlwaysEnemy(1);
+            ((Player *)(intptr_t)(*(int *)((char *)(*enemies)[i] + 4)))->turnEnemy();
         }
     }
 }
