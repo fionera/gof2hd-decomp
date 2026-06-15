@@ -101,6 +101,20 @@ uses NEON), `-D__ANDROID_API__=21` (needed for libc++ `<cmath>` to compile),
 Inputs (read-only): `_work/bins/android_2.0.16_libgof2hdaa.so`,
 `_work/symbols/android_2.0.16.symbols.tsv`, `_work/symbols/android_thumb_map.tsv`.
 
+## Known coverage gaps
+
+Auto-discovery matches functions by **exact mangled name**, so anything whose signature mangles
+differently than the original is invisible (not wrong — just not compared):
+
+- **`Array<T>` vs `std::vector`** — `common.h` aliases `Array<T>` to `std::__ndk1::vector<T>`, but the
+  original game ships its own hand-written `Array<T>` class. So `ArrayAdd<X>` and every function
+  taking an `Array<T>`/container parameter mangles differently (`...RNSt6__ndk16vectorI...` vs
+  `...R5ArrayIS2_E`) and won't match by name. Restoring a real `Array` class would unlock a large
+  batch of comparisons. This is why `ArrayAdd` — byte-exact in the old matching era — isn't in the
+  current report.
+- TUs that don't compile under the ARM toolchain yet are skipped (see the build summary); their
+  functions simply aren't compared until they build.
+
 ## Direct CLI (without CMake)
 
 ```bash
