@@ -83,40 +83,31 @@ __attribute__((visibility("hidden"))) extern int **g_cg_snd2b;      // [DAT_000c
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2c;      // [DAT_000ce674]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2d;      // [DAT_000ce678]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2e;      // [DAT_000ce67c]
-__attribute__((visibility("hidden"))) extern int    *g_csp_stack;   // [DAT_000be974]
 __attribute__((visibility("hidden"))) extern Status **g_csp_status;  // [DAT_000be978]
 __attribute__((visibility("hidden"))) extern unsigned *g_csp_canvas;  // [DAT_000be97c]
 __attribute__((visibility("hidden"))) extern int  **g_crm_status;   // [DAT_000d59dc]
-__attribute__((visibility("hidden"))) extern int   *g_crm_rngA;     // [DAT_000d59e0]
-__attribute__((visibility("hidden"))) extern int   *g_crm_rngB;     // [DAT_000d59e8]
-__attribute__((visibility("hidden"))) extern int   *g_crm_rngStorm; // [DAT_000d59e4]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngA;     // [DAT_000d59e0]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngB;     // [DAT_000d59e8]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngStorm; // [DAT_000d59e4]
 __attribute__((visibility("hidden"))) extern int   *g_crm_counts8;  // [DAT_000d59f8] per-stage counts
 __attribute__((visibility("hidden"))) extern int   *g_crm_table8;   // [DAT_000d59fc] {id,arg} table
-__attribute__((visibility("hidden"))) extern int   *g_init_stack;     // [DAT_000be25c]
 __attribute__((visibility("hidden"))) extern int  **g_init_canvas;    // [DAT_000be260]
 __attribute__((visibility("hidden"))) extern int  **g_init_statusA;   // [DAT_000be264]
 __attribute__((visibility("hidden"))) extern char **g_init_flagStack; // [DAT_000be268]
 __attribute__((visibility("hidden"))) extern int  **g_init_missionDef;// [DAT_000be5a4]
 __attribute__((visibility("hidden"))) extern int  **g_init_settings;  // [DAT_000be5ac]
 __attribute__((visibility("hidden"))) extern char **g_init_bmFlag;    // [DAT_000be5b0]
-__attribute__((visibility("hidden"))) extern int *g_cft_stack; // [DAT_000cc3e8]
-__attribute__((visibility("hidden"))) extern int   *g_uaa_stack;     // [DAT_000d5f40]
-__attribute__((visibility("hidden"))) extern int  **g_uaa_rngHolder; // [DAT_000d5f4c]
-__attribute__((visibility("hidden"))) extern int    *g_cm_stack;     // [DAT_000c036c]
-__attribute__((visibility("hidden"))) extern int   **g_cm_rng;       // [DAT_000c0374]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rngHolder; // [DAT_000d5f4c]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cm_rng;       // [DAT_000c0374]
 __attribute__((visibility("hidden"))) extern Globals **g_cm_globals; // [DAT_000c0378]
-__attribute__((visibility("hidden"))) extern int    *g_ca_stack;    // [DAT_000bf97c]
 __attribute__((visibility("hidden"))) extern int   **g_ca_canvas;   // [DAT_000bf984] paint-canvas holder
 __attribute__((visibility("hidden"))) extern int   **g_ca_galaxy;   // galaxy holder
-__attribute__((visibility("hidden"))) extern int    *g_ca_rngHolder;// [DAT_000bf988] RNG object holder
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_ca_rngHolder;// [DAT_000bf988] RNG object holder
 __attribute__((visibility("hidden"))) extern char  **g_ca_lowDetail;// [DAT_000bfd1c] low-detail flag
-__attribute__((visibility("hidden"))) extern int *g_ccm_stack;     // [DAT_000c4e94]
 __attribute__((visibility("hidden"))) extern float g_ccm_pos0;     // DAT_000c5310 (case-0 spawn coord)
-__attribute__((visibility("hidden"))) extern int *g_uo_stack; // [DAT_000d5588]
 __attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
 __attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
 __attribute__((visibility("hidden"))) extern int **g_uncoverWanted;
-__attribute__((visibility("hidden"))) extern int   *g_up_stack;     // [DAT_000d6238] stack-guard cookie addr
 __attribute__((visibility("hidden"))) extern int  **g_up_statusA;   // [DAT_000d624c]
 __attribute__((visibility("hidden"))) extern float  g_up_eqMax;
 __attribute__((visibility("hidden"))) extern float *g_up_clampLo;   // [DAT_000d6244]
@@ -136,20 +127,16 @@ __attribute__((visibility("hidden"))) extern float *g_flashCol_g;
 __attribute__((visibility("hidden"))) extern float *g_flashCol_b;
 __attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 __attribute__((visibility("hidden"))) extern void (**g_levelSubCtor)(void *);
-__attribute__((visibility("hidden"))) extern int  *g_cso_stack;     // [DAT_000cc1e4]
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
 __attribute__((visibility("hidden"))) extern int **g_cso_textB;     // [DAT_000cc1f0] area
 __attribute__((visibility("hidden"))) extern float g_cso_posX;
 __attribute__((visibility("hidden"))) extern float g_cso_posZ;
-__attribute__((visibility("hidden"))) extern int *g_cso2_stack;   // [DAT_000cea34]
-__attribute__((visibility("hidden"))) extern int **g_cso2_rng;    // [DAT_000cea38]
-__attribute__((visibility("hidden"))) extern int *g_gbv_stack; // [DAT_000d405c]
-__attribute__((visibility("hidden"))) extern int    **g_cs_rng;      // [DAT_000d0468]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cso2_rng;    // [DAT_000cea38]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cs_rng;      // [DAT_000d0468]
 __attribute__((visibility("hidden"))) extern int     *g_cs_diffRec;  // [DAT_000d0474]
 __attribute__((visibility("hidden"))) extern Globals **g_cs_globalsA;// [DAT_000d0838]
 __attribute__((visibility("hidden"))) extern Globals **g_cs_globalsB;// [DAT_000d0cdc]
 __attribute__((visibility("hidden"))) extern Status **g_almostKillWanted;
-__attribute__((visibility("hidden"))) extern int    *g_ag_stack;     // [DAT_000cca28]
 __attribute__((visibility("hidden"))) extern Status **g_ag_status;   // [DAT_000cca38]
 __attribute__((visibility("hidden"))) extern int    *g_ag_diffRec;   // [DAT_000cca44] difficulty record
 __attribute__((visibility("hidden"))) extern int   **g_ag_shipTbl;   // [DAT_000cce38]
@@ -161,35 +148,29 @@ __attribute__((visibility("hidden"))) extern int   **g_ag_snd;       // [DAT_000
 __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblB;  // [DAT_000cd1fc]
 __attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000cd200]
 __attribute__((visibility("hidden"))) extern float   g_ag_perLevel;
-__attribute__((visibility("hidden"))) extern int    *g_cgc_stack;   // [DAT_000bffc0]
 __attribute__((visibility("hidden"))) extern Galaxy **g_cgc_galaxy; // [DAT_000bffc4]
-__attribute__((visibility("hidden"))) extern int    *g_cgc_rng;     // [DAT_000bffcc]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cgc_rng;     // [DAT_000bffcc]
 __attribute__((visibility("hidden"))) extern void  **g_cgc_canvas;  // [DAT_000bffd4]
-__attribute__((visibility("hidden"))) extern int *g_umo_stack; // [DAT_000d50dc]
 __attribute__((visibility("hidden"))) extern int **g_attackWanted;
-__attribute__((visibility("hidden"))) extern int   *g_ips_stack;    // [DAT_000cda44]
 __attribute__((visibility("hidden"))) extern unsigned *g_ips_canvas; // [DAT_000cda98]
 __attribute__((visibility("hidden"))) extern int   *g_ips_envA;     // [DAT_000cdaa0] env record
 __attribute__((visibility("hidden"))) extern int   *g_ips_envB;     // [DAT_000cde3c]/[DAT_000cde38]
 __attribute__((visibility("hidden"))) extern int  (*g_ips_addSystem)(int, void *, int, int); // [DAT_000cde40]
 __attribute__((visibility("hidden"))) extern void (*g_ips_enableEmit)(int);  // [DAT_000cde44]
-__attribute__((visibility("hidden"))) extern int     *g_cwm_stack;   // [DAT_000cc670]
 __attribute__((visibility("hidden"))) extern int    **g_cwm_statusB; // [DAT_000cc674]
 __attribute__((visibility("hidden"))) extern int    **g_cwm_seedSrc; // [DAT_000cc678]
 __attribute__((visibility("hidden"))) extern Globals **g_cwm_globals; // [DAT_000cc67c]
-__attribute__((visibility("hidden"))) extern int    *g_csc_stack;    // [DAT_000c46a0]
 __attribute__((visibility("hidden"))) extern int   **g_csc_missionDef;// [DAT_000c46ac]
 __attribute__((visibility("hidden"))) extern void  **g_csc_canvas;   // [DAT_000c46b0] etc.
-__attribute__((visibility("hidden"))) extern int    *g_csc_rng;      // [DAT_000c46bc]/[DAT_000c4ba0]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_csc_rng;      // [DAT_000c46bc]/[DAT_000c4ba0]
 __attribute__((visibility("hidden"))) extern Globals **g_csc_globals;// [DAT_000c46d0]
 __attribute__((visibility("hidden"))) extern int   **g_csc_shipHost; // [DAT_000c46a4]
-__attribute__((visibility("hidden"))) extern int    *g_rbg_stack;    // [DAT_000d46fc]
 __attribute__((visibility("hidden"))) extern unsigned *g_rbg_canvas;  // [DAT_000d4700]
-__attribute__((visibility("hidden"))) extern void   **g_rbg_rng;      // [DAT_000d4b04]
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_rbg_rng;      // [DAT_000d4b04]
 __attribute__((visibility("hidden"))) extern int    **g_rbg_engine;   // [DAT_000d4b0c]
-__attribute__((visibility("hidden"))) extern int *g_uo_rng;
-__attribute__((visibility("hidden"))) extern int *g_umo_rng;
-__attribute__((visibility("hidden"))) extern int *g_uaa_rng;
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uo_rng;
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_umo_rng;
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
@@ -206,7 +187,7 @@ void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player 
 int  ApplicationManager_GetEngine_csp();
 
 int  Item_getAttribute_cg(int item);
-int  cm_randPos(int rng, int slot);
+int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
 void  PlayerAsteroid_ctor_ca(PlayerAsteroid *a, int x_or_id, AEGeometry *geo, int colVariant,
                              int kind, Vector *pos, float scale, int radius);
 void  PlayerAsteroid_setAsteroidCenter_ca(PlayerAsteroid *a, float cx, float cy, float cz);
@@ -215,8 +196,8 @@ int  Item_getAttribute_up(int item);
 void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
 int  GameText_getText_cso(int id);
-int  cso2_rand20000(int rng);
-int  cs_rand40000(int rng);
+int  cso2_rand20000(AbyssEngine::AERandom *rng);
+int  cs_rand40000(AbyssEngine::AERandom *rng);
 int   Item_getAttribute_ag(int item);
 void PlayerGasCloud_ctor_cgc(PlayerGasCloud *c, int kind, ParticleSystemManager *psm,
                              AEGeometry *geo, Vector *pos);
@@ -1136,11 +1117,11 @@ void Level::createRadioMessage(int type, int sub) {
     }
     case 0x13: {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
-        int rng = *g_crm_rngStorm;
-        new (m) RadioMessage(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() + 0xaf4, 0, 5, 0x5dc);
+        AbyssEngine::AERandom *rng = *g_crm_rngStorm;
+        new (m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
         this->messages->push_back(m);
         m = (RadioMessage *)::operator new(0x28);
-        new (m) RadioMessage(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() + 0xafa, 0, 6, 0);
+        new (m) RadioMessage(rng->nextInt() + 0xafa, 0, 6, 0);
         this->messages->push_back(m);
         builtInline = true;
         break;
@@ -1456,12 +1437,12 @@ void Level::createMission()
     // alien-orbit ambush wave: 2..N alien fighters at randomized far positions.
     if ((*g_status)->inAlienOrbit() != 0) {
         int lvl = (*g_status)->getLevel();
-        int rng = *(int *)g_cm_rng;
-        int roll = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+        AbyssEngine::AERandom *rng = *g_cm_rng;
+        int roll = rng->nextInt();
         float base = (float)lvl * 0.5f - 1.0f;
         unsigned count = 2;
         if (2.0f <= base + (float)roll) {
-            int r2 = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+            int r2 = rng->nextInt();
             count = (unsigned)(base + (float)r2);
         }
         int campA = (*g_status)->getCurrentCampaignMission();
@@ -2727,7 +2708,7 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
         z = wp->z;
     }
     if (jitter) {
-        int rng = *(int *)g_cso2_rng;
+        AbyssEngine::AERandom *rng = *g_cso2_rng;
         x = x + cso2_rand20000(rng) - 10000;
         y = y + cso2_rand20000(rng) - 10000;
         z = z + cso2_rand20000(rng) - 10000;
@@ -2802,7 +2783,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         y = wp->y;
         z = wp->z;
     }
-    int rng = *(int *)g_cs_rng;
+    AbyssEngine::AERandom *rng = *g_cs_rng;
     int jx = cs_rand40000(rng);
     int jy = cs_rand40000(rng);
     int jz = cs_rand40000(rng);
@@ -3145,8 +3126,8 @@ void Level::createGasClouds()
         boss = ((Station*)s2)->getIndex() == 0x4f;
     }
 
-    int rng = *g_cgc_rng;
-    int roll = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+    AbyssEngine::AERandom *rng = *g_cgc_rng;
+    int roll = rng->nextInt();
     // count = base + (prob[1]/denom) * (roll+4); base 3 for the boss fight.
     float countF = (float)(boss ? 3.0f : 0.0f) + ((float)prob[1] / 1.0f) * (float)(roll + 4);
     int count = (countF > 0.0f) ? (int)countF : 0;
@@ -3156,7 +3137,7 @@ void Level::createGasClouds()
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
-        this->cgc_randomPos(rng, boss, i, &pos);
+        this->cgc_randomPos((int)(intptr_t)rng, boss, i, &pos);
 
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
@@ -3542,8 +3523,8 @@ void Level::createScene()
         Station *st2 = (Station *)(*g_status)->getStation();
         bool fromStationShips = (((Station*)st2)->getIndex() == 0x6c) &&
                                 (*(int *)(*host + 0x114) == 3);
-        int rng = *g_csc_rng;
-        int spawnCount = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+        AbyssEngine::AERandom *rng = *g_csc_rng;
+        int spawnCount = rng->nextInt();
         if (fromStationShips) {
             unsigned *ships = (unsigned *)((Station*)(*g_status)->getStation())->getShips();
             spawnCount = (ships == 0) ? 0 : (int)*ships;
@@ -3552,16 +3533,16 @@ void Level::createScene()
         for (int j = 0; j < 64; j = j + 1) seats[j] = 0;
 
         for (int s = 0; s < spawnCount; s = s + 1) {
-            int r = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+            int r = rng->nextInt();
             unsigned spawnRace = race;
             if (r < 0x1e) {
-                spawnRace = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
-                if (((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() < 0x1e) spawnRace = 8;
+                spawnRace = rng->nextInt();
+                if (rng->nextInt() < 0x1e) spawnRace = 8;
             }
             int fighter = (int)(*g_csc_globals)->getRandomEnemyFighter(spawnRace);
             Station *st3 = (Station *)(*g_status)->getStation();
             if (((Station*)st3)->getIndex() == 100) {
-                int pick = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+                int pick = rng->nextInt();
                 fighter = (pick == 1) ? 0x26 : (pick == 0) ? 0x25 : 0x28;
             }
             if (fromStationShips) {
@@ -3569,10 +3550,10 @@ void Level::createScene()
                 fighter = ((Ship*)Station_getShips_csc())->getIndex();
             }
             KIPlayer *k = (KIPlayer *)createShip(0, 0, fighter, 0, 0, 0);
-            int seat = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+            int seat = rng->nextInt();
             int guard = -100;
             while (guard != 0 && seats[seat & 0x3f] != 0) {
-                seat = ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+                seat = rng->nextInt();
                 guard = guard + 1;
             }
             seats[seat & 0x3f] = 1;
@@ -3666,10 +3647,10 @@ void Level::renderBG(float t) {
         ((AbyssEngine::Transform *)(intptr_t)xf2)->Update((int64_t)(int)t, true);
         if (*(int *)(xf + 0x110) < before) {
             // re-randomize the ring tilt — corrupted SIMD in the original; rebuild via helper.
-            int rng = *(int *)g_rbg_rng;
-            ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
-            ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
-            ((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt();
+            AbyssEngine::AERandom *rng = *g_rbg_rng;
+            rng->nextInt();
+            rng->nextInt();
+            rng->nextInt();
             this->rbg_buildSkyMatrix(2, t);
         }
         (*sky *= *(Matrix *)((char *)&this->sub_248));
@@ -3809,37 +3790,37 @@ static inline Vector levelPlayerPosition(Level *self) {
 // --- updateOrbit(): revive an enemy and teleport it to a far random offset from
 // the player. Profile: generic far-field wave.
 void Level::uo_spawnFar(int *kiPlayer) {
-    int rng = *g_uo_rng;
+    AbyssEngine::AERandom *rng = *g_uo_rng;
     Vector p = levelPlayerPosition(this);
-    float ox = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % 120000 - 60000);
-    float oy = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() %  80000 - 40000);
-    float oz = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % 120000 - 60000);
+    float ox = (float)(rng->nextInt() % 120000 - 60000);
+    float oy = (float)(rng->nextInt() %  80000 - 40000);
+    float oz = (float)(rng->nextInt() % 120000 - 60000);
     ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
 }
 
 // --- updateMissionOrbit(): revive then reposition. profile 0 == far wave,
 // profile 1 == tighter boss-escort spread.
 void Level::umo_spawnAt(int *kiPlayer, int profile) {
-    int rng = *g_umo_rng;
+    AbyssEngine::AERandom *rng = *g_umo_rng;
     Vector p = levelPlayerPosition(this);
     int span = profile ? 40000 : 120000;
-    float ox = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % span - span / 2);
-    float oy = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % (span * 2 / 3) - span / 3);
-    float oz = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % span - span / 2);
+    float ox = (float)(rng->nextInt() % span - span / 2);
+    float oy = (float)(rng->nextInt() % (span * 2 / 3) - span / 3);
+    float oz = (float)(rng->nextInt() % span - span / 2);
     ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
 }
 
 // --- updateAlienAttackers(): place a revived alien relative to the player (when
 // alienInOrbit) or the station origin.
 void Level::uaa_placeAlien(int *kiPlayer, int alienInOrbit) {
-    int rng = *g_uaa_rng;
+    AbyssEngine::AERandom *rng = *g_uaa_rng;
     Vector base;
     base.x = base.y = base.z = 0.0f;
     if (alienInOrbit)
         base = levelPlayerPosition(this);
-    float ox = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % 100000 - 50000);
-    float oy = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() %  60000 - 30000);
-    float oz = (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % 100000 - 50000);
+    float ox = (float)(rng->nextInt() % 100000 - 50000);
+    float oy = (float)(rng->nextInt() %  60000 - 30000);
+    float oz = (float)(rng->nextInt() % 100000 - 50000);
     ((KIPlayer *)kiPlayer)->setPosition3(base.x + ox, base.y + oy, base.z + oz);
 }
 
