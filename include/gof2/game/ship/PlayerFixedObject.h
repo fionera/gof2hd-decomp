@@ -1,20 +1,21 @@
 #ifndef GOF2_PLAYERFIXEDOBJECT_H
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "gof2/common.h"
+#include "gof2/game/ship/KIPlayer.h"
 
 // Galaxy on Fire 2 - PlayerFixedObject: a stationary/destructible KIPlayer subclass
 // (asteroid-station, container, wreck). Owns its render geometry, an optional wrecked
-// mesh, two bounding-volume arrays and a one-shot Explosion effect.
+// mesh, two bounding-volume arrays and a one-shot Explosion effect. The engine drives it
+// through the shared actor vtable (render/setPosition3/setLevel/...), so it derives from
+// KIPlayer (its ctor constructs a KIPlayer base subobject); player/geometry/level/state
+// are inherited.
 
 class BoundingVolume;
 
 typedef AbyssEngine::AEMath::Vector V3;
-typedef AbyssEngine::AEMath::Vector Vector;
 
-class PlayerFixedObject {
+class PlayerFixedObject : public KIPlayer {
 public:
-    void* player;                             // Player*
-    void* geometry;                           // AEGeometry*
     unsigned char empActive;
     int faction;
     Vector position;                          // current world position
@@ -22,12 +23,10 @@ public:
     uint8_t field_0x41;
     unsigned char hasCargo;
     Array<int>* lootList;                     // loot id/amount pairs
-    void* level;                              // Level*
     float spawnX;
     float spawnY;
     float spawnZ;
     void* secondaryGeometry;                  // AEGeometry*
-    int state;
     uint8_t field_0x8c;
     Vector targetPos;                         // homing-target world position
     int kind;

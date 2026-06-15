@@ -2825,7 +2825,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         new (pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *)pf;
         int gg = (int)(intptr_t)Globals_getShipGroup_cs(*g_cs_globalsA, type, race, group);
-        (*(void (**)(PlayerFixedObject *, int, int, int))(*(int *)obj + 8))(obj, gg, type, hostile);
+        obj->setShipGroup(gg, type, hostile);   // KIPlayer::setShipGroup
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
             if (g == 0) g = *(AEGeometry **)((char *)obj + 0x8);
@@ -2846,13 +2846,14 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume*)bv);
         int gg = (int)(intptr_t)Globals_getShipGroup_cs(*g_cs_globalsB, type, race, 0);
-        (*(void (**)(PlayerFixedObject *, int, int, int))(*(int *)obj + 8))(obj, gg, type, 0);
+        obj->setShipGroup(gg, type, 0);   // KIPlayer::setShipGroup
         ((LODManager *)(intptr_t)this->vtable)->addObject(*(AEGeometry **)((char *)obj + 0x8));
         *(unsigned char *)((char *)obj + 0x40) = 1;
     }
 
     if (obj != 0)
-        (*(void (**)(PlayerFixedObject *, Level *))(*(int *)obj + 0x14))(obj, thisptr);
+        // wire the freshly built ship/object to its level (KIPlayer::setLevel, virtual).
+        obj->setLevel(thisptr);
     return obj;
 }
 
@@ -3138,11 +3139,9 @@ void Level::createGasClouds()
         PlayerGasCloud *cloud = (PlayerGasCloud *)::operator new(0x16c);
         PlayerGasCloud_ctor_cgc(cloud, kind,
                                 *(ParticleSystemManager **)&this->field_94, geo, &pos);
-        (*this->gasClouds)[i] = (KIPlayer *)cloud;
-        char *c = (char *)(*this->gasClouds)[i];
-        // actor-protocol init(level) virtual at original slot +0x14 — raw dispatch pending the
-        // shared actor base (PlayerGasCloud doesn't yet derive from KIPlayer). See createShip's tail.
-        (*(void (**)())(*(int *)c + 0x14))();
+        (*this->gasClouds)[i] = cloud;
+        // wire the freshly built cloud to its level (KIPlayer::setLevel, virtual).
+        (*this->gasClouds)[i]->setLevel(this);
     }
 }
 

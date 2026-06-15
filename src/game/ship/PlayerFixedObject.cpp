@@ -23,11 +23,9 @@
 
 namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
 
-// Engine glue that has no modelled C++ home: bounding-volume math helpers, the wreck
-// collision lookup on the Globals singleton, and the polymorphic vtable symbol.
+// Engine glue: bounding-volume math helpers and the wreck-collision lookup on Globals.
 V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 V3 BV_getProjectionVector(void *bv);
-extern "C" char PlayerFixedObject_vtable;
 void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 
 int PlayerFixedObject::getDockingType() {
@@ -53,16 +51,14 @@ void PlayerFixedObject::setDockingType(int v) {
 typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
 void PlayerFixedObject::setPosition_vec(const Vector &v) {
-    SetPosFn fn = *(SetPosFn *)(*(char **)this + 0x48);
-    return fn(this, v.x, v.y, v.z);
+    this->setPosition3(v.x, v.y, v.z);
 }
 
 void PlayerFixedObject::translate(const Vector &d) {
     float x = (float)this->intPosX;
     float y = (float)this->intPosY;
     float z = (float)this->intPosZ;
-    SetPosFn fn = *(SetPosFn *)(*(char **)this + 0x48);
-    return fn(this, d.x + x, d.y + y, d.z + z);
+    this->setPosition3(d.x + x, d.y + y, d.z + z);
 }
 
 String PlayerFixedObject::getName() {
@@ -98,8 +94,7 @@ void PlayerFixedObject::setTransportID(int v) {
 typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
 
 void PlayerFixedObject::outerCollide_vec(Vector v) {
-    OuterCollideVecFn fn = *(OuterCollideVecFn *)(*(char **)this + 0x3c);
-    return fn(this, v);
+    this->outerCollide(v.x, v.y, v.z);
 }
 
 V3 PlayerFixedObject::getPosition() {
@@ -524,11 +519,9 @@ typedef void (*VecAssignFn)(void *dst, void *src);
 __attribute__((visibility("hidden"))) extern VecAssignFn *g_pfo_vecAssignZero;
 
 void PlayerFixedObject::reset() {
-    ((KIPlayer *)(this))->reset();
+    this->KIPlayer::reset();
 
-    // vtable slot 0x48 -> setPosition(spawnX, spawnY, spawnZ)
-    SetPosFn setPos = *(SetPosFn *)(*(char **)this + 0x48);
-    setPos(this, this->spawnX, this->spawnY, this->spawnZ);
+    this->setPosition3(this->spawnX, this->spawnY, this->spawnZ);
 
     this->targetEnemy = 0;
 
@@ -605,7 +598,6 @@ V3 PlayerFixedObject::getProjectionVector() {
 PlayerFixedObject::~PlayerFixedObject() {
     PlayerFixedObject *self = this;
     void *wreck = self->wreckGeometry;
-    *(void **)self = &PlayerFixedObject_vtable + 8;
     if (wreck != self->geometry) {
         if (wreck != 0) delete (AEGeometry *)wreck;
         self->wreckGeometry = 0;
@@ -634,7 +626,8 @@ PlayerFixedObject::~PlayerFixedObject() {
 // seeds its position, name, faction and loot list.
 PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *geom,
                                      float p5, float p6, float p7,
-                                     float sx, float sy, float sz) {
+                                     float sx, float sy, float sz)
+    : KIPlayer(kind, -1, (Player *)player, (AEGeometry *)geom, p5, p6, p7, false) {
     this->ctor(kind, param2, player, geom, p5, p6, p7, sx, sy, sz);
 }
 
@@ -688,7 +681,6 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     self->field_0x15c = 0;
     self->field_0x160 = 0;
 
-    *(void **)self = &PlayerFixedObject_vtable + 8;
 
     self->name.ctor();
     self->explosion = 0;
@@ -835,7 +827,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     if (geom != 0) delete (AEGeometry *)geom;
     void **holder = g_pfo_canvas3;
     void *newGeom = this->wreckGeometry;
-    this->geometry = newGeom;
+    this->geometry = (AEGeometry *)newGeom;
     void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)newGeom)->transform);
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(((AbyssEngine::Transform *)t)->animationLength, 0);
 }
