@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# ARM `nm` launcher (GNU binutils, in the OrbStack `ubuntu` machine).
+# Used by tools/verify/delink.py to list defined function symbols in our base .o
+# files. Override the machine with GOF2_ORB_MACHINE.
+set -euo pipefail
+MACHINE="${GOF2_ORB_MACHINE:-ubuntu}"
+exec orb -m "$MACHINE" arm-linux-gnueabihf-nm "$@"

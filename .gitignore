@@ -11,3 +11,5 @@ compile_commands.json
 *.out
 __pycache__/
 *.pyc
+.verify-spike/
+cmake-build-match/
