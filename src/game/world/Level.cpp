@@ -194,14 +194,6 @@ int  cs_rand40000(AbyssEngine::AERandom *rng);
 int   Item_getAttribute_ag(int item);
 void Player_setHitpoints_cwm(int p);
 void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
-void *dtor_Objective(void *p);
-void *dtor_BoundingVolume(void *p);
-void *dtor_StarSystem(void *p);
-void *dtor_PlayerEgo(void *p);
-void *dtor_Route(void *p);
-void *dtor_PSM(void *p);
-void *dtor_LODManager(void *p);
-void *dtor_LodMeshMerger(void *p);
 void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
 void *dtor_Objective_akw(void *p);
@@ -211,12 +203,10 @@ int Level_getNumWingmen(int wanted);
 
 static unsigned int g_level_texOutScratch;
 
-template <class Handle>
-static void releaseObject(Handle &member, void *(*objectDtor)(void *)) {
-    if (member != 0) {
-        ::operator delete(objectDtor((void *)(intptr_t)member));
-    }
-    member = 0;
+template <class T>
+static void releaseObject(T *&member) {
+    delete member;
+    member = nullptr;
 }
 
 template <class T> static void deletePolyArray(Array<T*>*& v) {
@@ -309,7 +299,7 @@ void Level::enableMovingStars(bool enable) {
         return;
     }
     // veneer 0x1ac048 -> ParticleSystemManager::enableSystemRender
-    ((ParticleSystemManager *)(intptr_t)skybox2Mesh)->enableSystemRender(index, enable);
+    (skybox2Mesh)->enableSystemRender(index, enable);
 }
 
 void Level::setInitStreamOut() {
@@ -627,10 +617,10 @@ void Level::render(int ctx) {
         }
     }
     if (field_80 != 0) {
-        ((ParticleSystemManager *)(field_80))->render3d();
+        field_80->render3d();
     }
     if (field_74 != 0) {
-        ((ParticleSystemManager *)(field_74))->render3d();
+        field_74->render3d();
     }
     if (particleEmitBoolPtr != nullptr) {
         particleEmitBoolPtr->render3d();
@@ -639,7 +629,7 @@ void Level::render(int ctx) {
         particleSystemMgr->render3d();
     }
     if (skybox2Mesh != 0) {
-        ((ParticleSystemManager *)(skybox2Mesh))->render3d();
+        skybox2Mesh->render3d();
     }
     if (particleRenderBoolPtr != nullptr) {
         particleRenderBoolPtr->render3d();
@@ -648,13 +638,13 @@ void Level::render(int ctx) {
         ((ParticleSystemManager *)(field_8c))->render3d();
     }
     if (field_98 != 0) {
-        ((ParticleSystemManager *)(field_98))->render3d();
+        field_98->render3d();
     }
     if (field_94 != 0) {
         ((ParticleSystemManager *)(field_94))->render3d();
     }
     if (field_9c != 0) {
-        ((ParticleSystemManager *)(field_9c))->render3d();
+        field_9c->render3d();
     }
     if (starSystem != 0)
         starSystem->renderSunStreak();
@@ -676,23 +666,23 @@ Level::~Level() {
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
-    releaseObject(objectivesA, dtor_Objective);
-    releaseObject(objectivesB, dtor_Objective);
-    releaseObject(collisionVolume, dtor_BoundingVolume);
+    releaseObject(objectivesA);
+    releaseObject(objectivesB);
+    releaseObject(collisionVolume);
     delete asteroidWaypoint;   // virtual deleting-dtor (vtable slot +4)
     asteroidWaypoint = nullptr;
-    releaseObject(starSystem, dtor_StarSystem);
-    releaseObject(player, dtor_PlayerEgo);
-    releaseObject(field_180, dtor_Route);
-    releaseObject(field_80, dtor_PSM);
-    releaseObject(skybox2Mesh, dtor_PSM);
-    releaseObject(field_74, dtor_PSM);
-    releaseObject(particleEmitBoolPtr, dtor_PSM);
-    releaseObject(particleSystemMgr, dtor_PSM);
-    releaseObject(field_90, dtor_PSM);
-    releaseObject(particleRenderBoolPtr, dtor_PSM);
-    releaseObject(field_98, dtor_PSM);
-    releaseObject(field_9c, dtor_PSM);
+    releaseObject(starSystem);
+    releaseObject(player);
+    releaseObject(field_180);
+    releaseObject(field_80);
+    releaseObject(skybox2Mesh);
+    releaseObject(field_74);
+    releaseObject(particleEmitBoolPtr);
+    releaseObject(particleSystemMgr);
+    releaseObject(field_90);
+    releaseObject(particleRenderBoolPtr);
+    releaseObject(field_98);
+    releaseObject(field_9c);
     deletePolyArray(field_a4);
     if (field_a8) { delete field_a8; field_a8 = nullptr; }   // Array<int>: no element dtors
     deletePolyArray(playerGuns);
@@ -703,8 +693,8 @@ Level::~Level() {
     deletePolyArray(landmarks);
     deletePolyArray(messages);
     deletePolyArray(field_104);
-    releaseObject(vtable, dtor_LODManager);
-    releaseObject(field_a0, dtor_LodMeshMerger);
+    releaseObject(lodManager);
+    releaseObject(field_a0);
     if (field_b0) { delete field_b0; field_b0 = nullptr; }   // container-only: elements owned by enemies
 }
 
@@ -1192,7 +1182,7 @@ int Level::init() {
 
         LODManager *lod = (LODManager *)::operator new(0x14);
         new (lod) LODManager();
-        this->vtable = (uint)(intptr_t)lod;
+        this->lodManager = lod;
 
         int canvas = **g_init_canvas;
         statusA = g_init_statusA;
@@ -1213,25 +1203,25 @@ int Level::init() {
         this->particleRenderBoolPtr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e83, true, 0xffff, false);
-        *(ParticleSystemManager **)&this->field_74 = psm;
+        this->field_74 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e7a, true, 0x4e7a, true);
-        *(ParticleSystemManager **)&this->field_80 = psm;
+        this->field_80 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x5e20, true, 0x5e20, true);
-        *(ParticleSystemManager **)&this->field_98 = psm;
+        this->field_98 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, (unsigned short)(dustVariant ? 0x4ea9 : 0x4e7f), true, 0, false);
         this->particleSystemMgr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e7c, false, 0x4e7c, false);
-        *(ParticleSystemManager **)&this->skybox2Mesh = psm;
+        this->skybox2Mesh = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6a7c, true, 0x6a7c, true);
         *(ParticleSystemManager **)&this->field_8c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6ab9, true, 0xffff, false);
-        *(ParticleSystemManager **)&this->field_9c = psm;
+        this->field_9c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6aaf, true, 0xffff, false);
         *(ParticleSystemManager **)&this->field_94 = psm;
@@ -1644,7 +1634,7 @@ void Level::createAsteroids()
         // and installs it on the geometry.
         bool near = (int)i < density;
         this->ca_installLodMeshes(geo, (short)mesh, near ? 1 : 0);
-        ((LODManager *)(intptr_t)this->vtable)->addObject(geo);
+        this->lodManager->addObject(geo);
 
         // per-asteroid random radius and scale.
         int base = (*g_ca_lowDetail && **g_ca_lowDetail != 0) ? 0x46 : (near ? 0x46 : 0x46);
@@ -2000,25 +1990,25 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         if (this->field_80 != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
             this->field_b4 = *(int *)dummy;
-            ((ParticleSystemManager *)(intptr_t)this->field_80)->update(dt);
+            (this->field_80)->update(dt);
         }
-        if (this->field_74 != 0) ((ParticleSystemManager *)(intptr_t)this->field_74)->update(dt);
+        if (this->field_74 != 0) (this->field_74)->update(dt);
         if (this->particleEmitBoolPtr != nullptr) this->particleEmitBoolPtr->update(dt);
         if (this->skybox2Mesh != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
             this->field_b4 = *(int *)dummy;
-            ((ParticleSystemManager *)(intptr_t)this->skybox2Mesh)->update(dt);
+            (this->skybox2Mesh)->update(dt);
         }
         if (this->particleSystemMgr != nullptr) this->particleSystemMgr->update(dt);
         if (this->particleRenderBoolPtr != nullptr) this->particleRenderBoolPtr->update(dt);
         if (this->field_8c != 0) ((ParticleSystemManager *)(intptr_t)this->field_8c)->update(dt);
-        if (this->field_98 != 0) ((ParticleSystemManager *)(intptr_t)this->field_98)->update(dt);
+        if (this->field_98 != 0) (this->field_98)->update(dt);
         if (this->field_94 != 0) ((ParticleSystemManager *)(intptr_t)this->field_94)->update(dt);
-        if (this->field_9c != 0) ((ParticleSystemManager *)(intptr_t)this->field_9c)->update(dt);
+        if (this->field_9c != 0) (this->field_9c)->update(dt);
     }
 
     if (stackFlag == 0)
-        ((LODManager *)(intptr_t)this->vtable)->update(dt);
+        this->lodManager->update(dt);
 }
 
 // Level::connectPlayers() — wires up each ship's enemy list from the friend/enemy/neutral arrays,
@@ -2817,7 +2807,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
             if (g == 0) g = *(AEGeometry **)((char *)obj + 0x8);
-            ((LODManager *)(intptr_t)this->vtable)->addObject(g);
+            this->lodManager->addObject(g);
         }
         if (type == 0x2c || type == 0x31 || type == 0x33) {
             if (type == 0x33) *(unsigned char *)((char *)obj + 0x25) = 0;
@@ -2835,7 +2825,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj->setBV((BoundingVolume*)bv);
         int gg = ((Globals *)*g_cs_globalsB)->getShipGroup(type, race, 0);
         obj->setShipGroup(gg, type, 0);   // KIPlayer::setShipGroup
-        ((LODManager *)(intptr_t)this->vtable)->addObject(*(AEGeometry **)((char *)obj + 0x8));
+        this->lodManager->addObject(*(AEGeometry **)((char *)obj + 0x8));
         *(unsigned char *)((char *)obj + 0x40) = 1;
     }
 
@@ -3237,7 +3227,7 @@ void Level::initParticleSystems()
         unsigned canvas = *g_ips_canvas;
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         int local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
-        int sys = ((ParticleSystemManager *)(intptr_t)this->skybox2Mesh)->addSystem((void *)local, 4, false);
+        int sys = (this->skybox2Mesh)->addSystem((void *)local, 4, false);
         this->movingStarsIndex = sys;
 
         // pirate-base smoke plume attached to the pirate flagship.
@@ -3271,16 +3261,16 @@ void Level::initParticleSystems()
     this->ips_applyAmbient();
 
     // init the always-present managers.
-    if (*(ParticleSystemManager **)&this->field_80 != 0)
-        (*(ParticleSystemManager **)&this->field_80)->init();
+    if (this->field_80 != 0)
+        (this->field_80)->init();
     if (this->particleSystemMgr != nullptr)
         (this->particleSystemMgr)->init();
-    if (*(ParticleSystemManager **)&this->skybox2Mesh != 0)
-        (*(ParticleSystemManager **)&this->skybox2Mesh)->init();
+    if (this->skybox2Mesh != 0)
+        (this->skybox2Mesh)->init();
     if (*(ParticleSystemManager **)&this->field_8c != 0)
         (*(ParticleSystemManager **)&this->field_8c)->init();
-    if (*(ParticleSystemManager **)&this->field_98 != 0)
-        (*(ParticleSystemManager **)&this->field_98)->init();
+    if (this->field_98 != 0)
+        (this->field_98)->init();
 
     // the player-engine systems (slots 0x34..0x5c) all use a unit transform.
     this->field_38 = this->ips_addPlayerSystem(10);
@@ -3294,16 +3284,16 @@ void Level::initParticleSystems()
         this->field_5c = this->ips_addPlayerSystem(0x18);
     }
 
-    (*(ParticleSystemManager **)&this->field_74)->init();
-    ((ParticleSystemManager *)(intptr_t)this->field_74)->enableSystemEmit(this->field_50, true);
-    ((ParticleSystemManager *)(intptr_t)this->field_74)->enableSystemEmit(this->field_54, true);
+    (this->field_74)->init();
+    (this->field_74)->enableSystemEmit(this->field_50, true);
+    (this->field_74)->enableSystemEmit(this->field_54, true);
     if ((*g_status)->getCurrentCampaignMission() == 0x50) {
-        ((ParticleSystemManager *)(intptr_t)this->field_74)->enableSystemEmit(this->field_58, true);
-        ((ParticleSystemManager *)(intptr_t)this->field_74)->enableSystemEmit(this->field_5c, true);
+        (this->field_74)->enableSystemEmit(this->field_58, true);
+        (this->field_74)->enableSystemEmit(this->field_5c, true);
     }
 
     void (*enableEmit)(int) = g_ips_enableEmit;
-    enableEmit(this->field_9c);
+    enableEmit((int)(intptr_t)this->field_9c);
     enableEmit((int)(intptr_t)this->particleEmitBoolPtr);
     enableEmit((int)(intptr_t)this->particleRenderBoolPtr);
     if (*(ParticleSystemManager **)&this->field_94 != 0)

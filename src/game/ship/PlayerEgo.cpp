@@ -2487,10 +2487,10 @@ void PlayerEgo::setTurretPosition(float x, float y, float z) {
 __attribute__((visibility("hidden"))) extern void **g_PE_reviveSound;
 
 void PlayerEgo::revive() {
-    int psm = this->level->field_74;
+    ParticleSystemManager *psm = this->level->field_74;
     bool en = ((char&)this->currentSystem) != 0;
-    ((ParticleSystemManager *)(psm))->enableSystemEmit(this->currentSystem, en);
-    ((ParticleSystemManager *)(psm))->enableSystemRender(this->currentSystem, en);
+    psm->enableSystemEmit(this->currentSystem, en);
+    psm->enableSystemRender(this->currentSystem, en);
 
     if (this->explosion != 0)
         ::operator delete(Explosion_dtor(this->explosion));

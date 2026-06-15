@@ -17,6 +17,8 @@
 #include "gof2/game/weapons/ObjectGun.h"
 #include "gof2/engine/render/ParticleSystemManager.h"
 #include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/render/LODManager.h"
+#include "gof2/engine/render/LodMeshMerger.h"
 #include "gof2/engine/math/BoundingVolume.h"
 
 // Galaxy on Fire 2 — Level: the in-flight game world / mission space. It owns the
@@ -24,7 +26,7 @@
 // the weapon objects, the radio-message queue and the per-orbit mission state.
 class Level {
 public:
-    uint vtable;
+    LODManager* lodManager;         // owning LOD manager (offset 0; Level is non-polymorphic)
     int skyboxMesh;
     int field_08;
     int skyboxTexture;
@@ -55,18 +57,18 @@ public:
     uint8_t pad_6a[2];
     int field_6c;
     int field_70;
-    int field_74;
+    ParticleSystemManager* field_74;
     ParticleSystemManager* particleEmitBoolPtr;
     ParticleSystemManager* particleSystemMgr;
-    int field_80;
+    ParticleSystemManager* field_80;
     ParticleSystemManager* particleRenderBoolPtr;
-    int skybox2Mesh;                // movingStars target
+    ParticleSystemManager* skybox2Mesh; // engine-trail PSM (legacy name)
     int field_8c;
-    int field_90;
+    ParticleSystemManager* field_90;
     int field_94;
-    int field_98;
-    int field_9c;
-    int field_a0;
+    ParticleSystemManager* field_98;
+    ParticleSystemManager* field_9c;
+    AbyssEngine::LodMeshMerger* field_a0;
     Array<AEGeometry*>* field_a4;
     Array<int>* field_a8;           // value array; no element dtors
     int miningPlantIndex;
@@ -122,7 +124,7 @@ public:
     int orbitWaveTimer;             // updateOrbit/updateMissionOrbit wave timer
     int field_178;
     int field_17c;
-    int field_180;
+    Route* field_180;
     int field_184;
     uint16_t field_188;             // low byte friendTurnedEnemy flag, high byte alarm flag
     uint8_t field_18a;
