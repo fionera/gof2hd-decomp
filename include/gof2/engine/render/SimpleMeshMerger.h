@@ -1,41 +1,31 @@
 #ifndef GOF2_SIMPLEMESHMERGER_H
 #define GOF2_SIMPLEMESHMERGER_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
-// SimpleMeshMerger — top-level class (only arg types are namespaced: AbyssEngine::Mesh,
-// AEMath::Matrix/Vector, PaintCanvas).
-// Layout recovered from the constructor disassembly:
-//   +0x00  int    (first Array<Matrix> word copied from param)
-//   +0x04  short  mergeFactor (param_5 truncated)
-//   +0x06  uint8_t valid flag (set to 1 at end)
-//   +0x08  Array<Mesh*> header { size@+0x08, data@+0x0c, size2@+0x10 }
-//   +0x14  PaintCanvas* canvas
-//   +0x18  uint   mergedMeshId
-//   +0x1c  uint   transformId
-
-void *operator new(__SIZE_TYPE__ size);
-
-class SimpleMeshMerger {
-public:
-    // @portable-fields
-    int f_0; // 0x0
-    short f_4; // 0x4  mergeFactor
-    unsigned char valid; // 0x6  valid flag
-    unsigned char _pad_7;    // 0x7
-    Array<Mesh*> meshes;     // 0x8  embedded Array<Mesh*> (split header: size@0x8, data@0xc, size2@0x10)
-    void* f_14; // 0x14
-    int f_18; // 0x18
-    int f_1c; // 0x1c  transformId
-
-    // Real C++ constructor (demangles to SimpleMeshMerger::SimpleMeshMerger(...)).
-    SimpleMeshMerger(unsigned *meshIds, unsigned *transforms, void *canvas, float factor);
-};
 
 namespace AbyssEngine {
-namespace AEMath {
 
-}
-}
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
+class Mesh;
+class PaintCanvas;
+
+// SimpleMeshMerger — combines several source meshes (each placed by a per-mesh
+// matrix) into one merged mesh. The merged mesh is created inside `canvas`'s mesh
+// table; a Transform is then built to hold it. Construction does all the work; the
+// resulting object just records the handles produced.
+class SimpleMeshMerger {
+public:
+    int          matrixCount;   // number of per-mesh transform matrices
+    short        mergeFactor;
+    unsigned char valid;        // set once construction completes
+    Array<Mesh*> meshes;        // loaded source meshes
+    PaintCanvas* canvas;
+    unsigned     mergedMeshId;  // handle of the produced merged mesh
+    unsigned     transformId;   // handle of the transform holding the merged mesh
+
+    // meshIds:   { count, u16* ids }       — source mesh ids in `canvas`
+    // transforms:{ count, Matrix* rows }   — per-mesh placement matrices (0x3c-byte rows)
+    SimpleMeshMerger(unsigned* meshIds, unsigned* transforms, PaintCanvas* canvas, float factor);
+};
+
+} // namespace AbyssEngine
+
 #endif

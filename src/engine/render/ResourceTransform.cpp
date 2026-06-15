@@ -1,20 +1,15 @@
 #include "gof2/engine/render/ResourceTransform.h"
 
-// AbyssEngine::ResourceTransform::~ResourceTransform()
-// Releases the two owned heap arrays (at +0x40 and +0x48) and nulls the slots.
-// Returns `this` (the ABI quirk for the base/complete destructor variant).
+namespace AbyssEngine {
 
-void *_ZN11AbyssEngine17ResourceTransformD2Ev(ResourceTransform *self)
+// Releases the two owned heap arrays and nulls the slots.
+ResourceTransform::~ResourceTransform()
 {
-    void *p40 = self->field_0x40;
-    if (p40 != 0)
-        operator delete[](p40);
-    self->field_0x40 = 0;
+    ::operator delete[](dataA);
+    dataA = nullptr;
 
-    void *p48 = self->field_0x48;
-    if (p48 != 0)
-        operator delete[](p48);
-    self->field_0x48 = 0;
-
-    return self;
+    ::operator delete[](dataB);
+    dataB = nullptr;
 }
+
+} // namespace AbyssEngine

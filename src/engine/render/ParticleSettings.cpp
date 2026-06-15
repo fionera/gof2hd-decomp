@@ -1,35 +1,21 @@
 #include "gof2/engine/render/ParticleSettings.h"
-#include "gof2/game/core/String.h"
-#include <arm_neon.h>
+#include "gof2/platform/libc.h"
 
-// AbyssEngine::String::~String
-
-// ParticleSettings::~ParticleSettings(): destruct the embedded String of each
-// ParticleSet entry in reverse (from offset 0x1d60 down to 0, stride 0xa0).
-ParticleSettings::~ParticleSettings() {
-    // Each ParticleSet embeds an AbyssEngine::String; the array members
-    // auto-destruct, so no manual per-entry String teardown is needed.
-}
-
-// AbyssEngine::String::String() -> this
-
-// ParticleSettings::ParticleSettings(): default-construct the embedded String at the
-// head of each of the 48 ParticleSet entries (stride 0xa0, total 0x1e00 bytes).
 ParticleSettings::ParticleSettings() {
     // The 48 embedded ParticleSet::name Strings default-construct automatically.
 }
 
-// ParticleSettings::init() — large data-table initialiser. COVERAGE MODE:
-// faithful transcription of the decompiled control flow + field stores.
-// The opaque .rodata float/int constants (Ghidra DAT_*) are modelled as
-// external named constants; the per-entry default loop, sub-emitter init
-// calls and inter-entry copy-assignments reproduce the original logic.
-// Not byte-exact by design.
+ParticleSettings::~ParticleSettings() {
+    // The 48 embedded ParticleSet::name Strings destruct automatically.
+}
+
+// init() builds the table of built-in emitter presets. The opaque .rodata float/int
+// constants (DAT_*) and the per-entry sub-emitter init / copy helpers are kept as the
+// recovered external entry points.
 
 extern "C" {
 void *ParticleSet_assign(void *dst, const void *src);
 void ParticleSettings_initSub(void *dst, void *parent);
-void __aeabi_memclr4(void *dst, uint32_t n);
 extern const char ParticleSettings_str[];
 extern uint32_t DAT_0019405c;
 extern uint32_t DAT_00194060;
@@ -206,8 +192,14 @@ extern uint32_t DAT_0019546c;
 extern uint32_t DAT_00195470;
 }
 
+// Reinterpret a uint32_t slot as a float lvalue (several ParticleSet fields hold a float
+// bit pattern in a generic 32-bit slot).
+static inline float &asFloat(uint32_t &slot) {
+    return reinterpret_cast<float &>(slot);
+}
+
 int ParticleSettings::init() {
-    String buf;  // local AbyssEngine::String temporary (aSStack_58)
+    String buf;
     uint32_t uVar1 = (uint32_t)DAT_00194078;
     uint64_t uVar19 = (uint64_t)DAT_00194070;
     uint64_t uVar16 = (uint64_t)DAT_00194068;
@@ -225,14 +217,14 @@ int ParticleSettings::init() {
     this->sets[uVar13].field_0x34 = (uint32_t)((uint64_t)(uVar16) >> 32);
     this->sets[uVar13].field_0x38 = (uint32_t)(uVar19);
     this->sets[uVar13].field_0x3c = (uint32_t)((uint64_t)(uVar19) >> 32);
-    this->sets[uVar13].field_0xc = (uint32_t)0x10;
-    this->sets[uVar13].field_0x10 = (uint32_t)1;
+    this->sets[uVar13].flags = (uint32_t)0x10;
+    this->sets[uVar13].count = (uint32_t)1;
     this->sets[uVar13].field_0x14 = (uint32_t)DAT_001940dc;
-    this->sets[uVar13].field_0x28 = (uint32_t)100;
-    this->sets[uVar13].field_0x2c = (uint32_t)DAT_001940e0;
+    this->sets[uVar13].lifetime = (uint32_t)100;
+    this->sets[uVar13].flLifetime = (uint32_t)DAT_001940e0;
     this->sets[uVar13].field_0x40 = (uint32_t)0;
     this->sets[uVar13].field_0x44 = (uint32_t)500;
-    __aeabi_memclr4(&this->sets[uVar13].field_0x48, 0x48);
+    memset(&this->sets[uVar13].field_0x48, 0, 0x48);
     this->sets[uVar13].field_0x90 = (uint32_t)uVar1;
     this->sets[uVar13].field_0x94 = (uint32_t)uVar1;
     this->sets[uVar13].field_0x98 = (uint32_t)0;
@@ -260,12 +252,12 @@ int ParticleSettings::init() {
     this->sets[0].field_0x90 = (uint32_t)(uVar3);
     this->sets[0].field_0x94 = (uint32_t)((uint64_t)(uVar3) >> 32);
     uVar18 = (uint32_t)DAT_00194228;
-    this->sets[0].field_0x28 = (uint32_t)100;
+    this->sets[0].lifetime = (uint32_t)100;
     uVar1 = (uint32_t)DAT_00194230;
     uVar20 = (uint32_t)DAT_0019422c;
-    this->sets[0].field_0x2c = (uint32_t)uVar18;
-    this->sets[0].field_0xc = (uint32_t)0x11;
-    this->sets[0].field_0x10 = (uint32_t)0x14;
+    this->sets[0].flLifetime = (uint32_t)uVar18;
+    this->sets[0].flags = (uint32_t)0x11;
+    this->sets[0].count = (uint32_t)0x14;
     this->sets[0].field_0x14 = (uint32_t)uVar1;
     this->sets[0].field_0x54 = (uint32_t)0;
     this->sets[0].field_0x70 = (uint32_t)uVar20;
@@ -291,11 +283,11 @@ int ParticleSettings::init() {
     uVar20 = (uint32_t)DAT_001942e8;
     uVar17 = (uint32_t)DAT_001942e4;
     uVar15 = (uint32_t)DAT_001942e0;
-    this->sets[4].field_0x2c = (uint32_t)DAT_001942e4;
-    this->sets[4].field_0x28 = (uint32_t)2000;
+    this->sets[4].flLifetime = (uint32_t)DAT_001942e4;
+    this->sets[4].lifetime = (uint32_t)2000;
     this->sets[4].field_0x34 = (uint32_t)0xffffffff;
-    this->sets[4].field_0xc = (uint32_t)0x81;
-    this->sets[4].field_0x10 = (uint32_t)500;
+    this->sets[4].flags = (uint32_t)0x81;
+    this->sets[4].count = (uint32_t)500;
     this->sets[4].field_0x14 = (uint32_t)uVar18;
     this->sets[4].field_0x18 = (uint32_t)0x28;
     uVar18 = (uint32_t)DAT_001942f0;
@@ -330,16 +322,16 @@ int ParticleSettings::init() {
     this->sets[5].field_0x34 = (uint32_t)((uint64_t)(DAT_00194ec8) >> 32);
     this->sets[5].field_0x38 = (uint32_t)(uVar16);
     this->sets[5].field_0x3c = (uint32_t)((uint64_t)(uVar16) >> 32);
-    *(int *)&this->sets[5].field_0xc = (int)(iVar5 + 0x5c000);
-    this->sets[5].field_0x10 = (uint32_t)0x32;
+    this->sets[5].flags = (uint32_t)(iVar5 + 0x5c000);
+    this->sets[5].count = (uint32_t)0x32;
     uVar18 = (uint32_t)DAT_00194394;
     this->sets[5].field_0x14 = (uint32_t)DAT_00194390;
     this->sets[5].field_0x1c = (uint32_t)0;
     this->sets[5].field_0x20 = (uint32_t)uVar18;
     this->sets[5].field_0x24 = (uint32_t)0;
-    this->sets[5].field_0x28 = (uint32_t)2000;
+    this->sets[5].lifetime = (uint32_t)2000;
     uVar18 = (uint32_t)DAT_00194398;
-    this->sets[5].field_0x2c = (uint32_t)uVar17;
+    this->sets[5].flLifetime = (uint32_t)uVar17;
     this->sets[5].field_0x5c = (uint32_t)uVar18;
     this->sets[5].field_0x70 = (uint32_t)0;
     this->sets[5].field_0x44 = (uint32_t)0;
@@ -359,8 +351,8 @@ int ParticleSettings::init() {
     iVar5 = (int32_t)DAT_001943e4;
     uVar15 = (uint32_t)DAT_001943e0;
     this->sets[6].field_0x14 = (uint32_t)DAT_001943e0;
-    this->sets[6].field_0x28 = (uint32_t)500;
-    *(float *)&this->sets[6].field_0x20 = (float)((*(float *)&this->sets[5].field_0x20) * 5.0);
+    this->sets[6].lifetime = (uint32_t)500;
+    asFloat(this->sets[6].field_0x20) = asFloat(this->sets[5].field_0x20) * 5.0f;
     buf.ctor_char(ParticleSettings_str + (int)iVar5, false);
     ParticleSet *this_01 = &this->sets[2];
     uVar1 = (uint32_t)DAT_00194498;
@@ -371,12 +363,12 @@ int ParticleSettings::init() {
     this->sets[2].field_0x48 = (uint32_t)0;
     this->sets[2].field_0x4c = (uint32_t)0;
     this->sets[2].field_0x50 = (uint32_t)0;
-    this->sets[2].field_0xc = (uint32_t)DAT_0019449c;
-    this->sets[2].field_0x10 = (uint32_t)0xb;
+    this->sets[2].flags = (uint32_t)DAT_0019449c;
+    this->sets[2].count = (uint32_t)0xb;
     uint32_t uVar6 = (uint32_t)DAT_001944a0;
     this->sets[2].field_0x14 = (uint32_t)DAT_001944a4;
-    this->sets[2].field_0x28 = (uint32_t)800;
-    this->sets[2].field_0x2c = (uint32_t)uVar20;
+    this->sets[2].lifetime = (uint32_t)800;
+    this->sets[2].flLifetime = (uint32_t)uVar20;
     this->sets[2].field_0x30 = (uint32_t)0;
     this->sets[2].field_0x34 = (uint32_t)uVar18;
     this->sets[2].field_0x38 = (uint32_t)0;
@@ -396,7 +388,7 @@ int ParticleSettings::init() {
     uVar15 = (uint32_t)DAT_001944b0;
     this->sets[3].field_0x14 = (uint32_t)DAT_001944b4;
     uVar17 = (uint32_t)DAT_001944b8;
-    this->sets[3].field_0x28 = (uint32_t)1000;
+    this->sets[3].lifetime = (uint32_t)1000;
     this->sets[3].field_0x78 = (uint32_t)uVar17;
     this->sets[3].field_0x7c = (uint32_t)uVar15;
     buf.ctor_char(ParticleSettings_str, false);
@@ -406,12 +398,12 @@ int ParticleSettings::init() {
     this->sets[13].field_0x34 = (uint32_t)((uint64_t)(DAT_00195330) >> 32);
     this->sets[13].field_0x38 = (uint32_t)(uVar16);
     this->sets[13].field_0x3c = (uint32_t)((uint64_t)(uVar16) >> 32);
-    this->sets[13].field_0xc = (uint32_t)0x11;
-    this->sets[13].field_0x10 = (uint32_t)0x3c;
+    this->sets[13].flags = (uint32_t)0x11;
+    this->sets[13].count = (uint32_t)0x3c;
     uVar15 = (uint32_t)DAT_0019454c;
     this->sets[13].field_0x14 = (uint32_t)DAT_00194548;
-    this->sets[13].field_0x28 = (uint32_t)0x5dc;
-    this->sets[13].field_0x2c = (uint32_t)uVar15;
+    this->sets[13].lifetime = (uint32_t)0x5dc;
+    this->sets[13].flLifetime = (uint32_t)uVar15;
     this->sets[13].field_0x44 = (uint32_t)0;
     this->sets[13].field_0x50 = (uint32_t)0x19;
     uVar15 = (uint32_t)DAT_00194550;
@@ -437,10 +429,10 @@ int ParticleSettings::init() {
     this->sets[8].field_0x8c = (uint32_t)((uint64_t)(uVar16) >> 32);
     this->sets[8].field_0x90 = (uint32_t)(uVar19);
     this->sets[8].field_0x94 = (uint32_t)((uint64_t)(uVar19) >> 32);
-    this->sets[8].field_0xc = (uint32_t)DAT_001945e0;
-    this->sets[8].field_0x10 = (uint32_t)0x1e;
+    this->sets[8].flags = (uint32_t)DAT_001945e0;
+    this->sets[8].count = (uint32_t)0x1e;
     this->sets[8].field_0x14 = (uint32_t)0x47000000;
-    this->sets[8].field_0x28 = (uint32_t)uVar15;
+    this->sets[8].lifetime = (uint32_t)uVar15;
     this->sets[8].field_0x34 = (uint32_t)0xffffffff;
     this->sets[8].field_0x38 = (uint32_t)0xffffffff;
     this->sets[8].field_0x3c = (uint32_t)0;
@@ -461,12 +453,12 @@ int ParticleSettings::init() {
     this->sets[7].field_0x8c = (uint32_t)((uint64_t)(uVar16) >> 32);
     this->sets[7].field_0x90 = (uint32_t)(uVar19);
     this->sets[7].field_0x94 = (uint32_t)((uint64_t)(uVar19) >> 32);
-    this->sets[7].field_0xc = (uint32_t)0x81;
-    this->sets[7].field_0x10 = (uint32_t)0xf;
+    this->sets[7].flags = (uint32_t)0x81;
+    this->sets[7].count = (uint32_t)0xf;
     uVar17 = (uint32_t)DAT_00194670;
     this->sets[7].field_0x14 = (uint32_t)DAT_00194670;
     uVar18 = (uint32_t)DAT_00194674;
-    this->sets[7].field_0x28 = (uint32_t)uVar15;
+    this->sets[7].lifetime = (uint32_t)uVar15;
     this->sets[7].field_0x34 = (uint32_t)0xbbbbbbbb;
     this->sets[7].field_0x38 = (uint32_t)0xbbbbbbbb;
     uVar15 = (uint32_t)DAT_00194678;
@@ -481,12 +473,12 @@ int ParticleSettings::init() {
     uVar19 = (uint64_t)DAT_00195378;
     uVar16 = (uint64_t)DAT_00195370;
     uVar15 = (uint32_t)DAT_0019473c;
-    this->sets[9].field_0x28 = (uint32_t)700;
-    this->sets[9].field_0x2c = (uint32_t)0x41000000;
-    this->sets[9].field_0xc = (uint32_t)uVar15;
+    this->sets[9].lifetime = (uint32_t)700;
+    this->sets[9].flLifetime = (uint32_t)0x41000000;
+    this->sets[9].flags = (uint32_t)uVar15;
     uVar15 = (uint32_t)DAT_00194740;
     ParticleSet *this_03 = &this->sets[16];
-    this->sets[9].field_0x10 = (uint32_t)0x10;
+    this->sets[9].count = (uint32_t)0x10;
     this->sets[9].field_0x14 = (uint32_t)uVar15;
     this->sets[9].field_0x18 = (uint32_t)1000;
     this->sets[9].field_0x34 = (uint32_t)0xffffffff;
@@ -520,9 +512,9 @@ int ParticleSettings::init() {
     this->sets[16].field_0x9c = (uint32_t)0;
     this->sets[16].field_0x38 = (uint32_t)0xff;
     this->sets[16].field_0x3c = (uint32_t)300;
-    this->sets[16].field_0x28 = (uint32_t)300;
-    this->sets[16].field_0x2c = (uint32_t)0x41000000;
-    this->sets[16].field_0x10 = (uint32_t)0xd;
+    this->sets[16].lifetime = (uint32_t)300;
+    this->sets[16].flLifetime = (uint32_t)0x41000000;
+    this->sets[16].count = (uint32_t)0xd;
     this->sets[16].field_0x14 = (uint32_t)DAT_001947d4;
     uVar17 = (uint32_t)DAT_001947dc;
     uVar15 = (uint32_t)DAT_001947d8;
@@ -532,7 +524,7 @@ int ParticleSettings::init() {
     this->sets[16].field_0x90 = (uint32_t)uVar17;
     this->sets[16].field_0x94 = (uint32_t)uVar15;
     ParticleSet_assign(&this->sets[17], (void *)this_03);
-    this->sets[17].field_0x28 = (uint32_t)400;
+    this->sets[17].lifetime = (uint32_t)400;
     buf.ctor_char(ParticleSettings_str, false);
     uVar16 = (uint64_t)DAT_00195398;
     this->sets[17].field_0x88 = (uint32_t)(DAT_00195390);
@@ -540,7 +532,7 @@ int ParticleSettings::init() {
     this->sets[17].field_0x90 = (uint32_t)(uVar16);
     this->sets[17].field_0x94 = (uint32_t)((uint64_t)(uVar16) >> 32);
     ParticleSet_assign(&this->sets[18], (void *)this_03);
-    this->sets[18].field_0x28 = (uint32_t)200;
+    this->sets[18].lifetime = (uint32_t)200;
     buf.ctor_char(ParticleSettings_str, false);
     uVar16 = (uint64_t)DAT_001953a8;
     this->sets[18].field_0x88 = (uint32_t)(DAT_001953a0);
@@ -551,10 +543,10 @@ int ParticleSettings::init() {
     uVar19 = (uint64_t)DAT_001953b8;
     uVar16 = (uint64_t)DAT_001953b0;
     iVar5 = (int32_t)DAT_00194910;
-    this->sets[12].field_0x28 = (uint32_t)0x4e2;
-    this->sets[12].field_0x2c = (uint32_t)DAT_00194914;
-    this->sets[12].field_0xc = (uint32_t)DAT_00194918;
-    this->sets[12].field_0x10 = (uint32_t)0x4c;
+    this->sets[12].lifetime = (uint32_t)0x4e2;
+    this->sets[12].flLifetime = (uint32_t)DAT_00194914;
+    this->sets[12].flags = (uint32_t)DAT_00194918;
+    this->sets[12].count = (uint32_t)0x4c;
     this->sets[12].field_0x14 = (uint32_t)DAT_0019491c;
     this->sets[12].field_0x18 = (uint32_t)0x32;
     this->sets[12].field_0x34 = (uint32_t)0xffffffff;
@@ -581,12 +573,12 @@ int ParticleSettings::init() {
     this->sets[12].field_0x9c = (uint32_t)0x10;
     buf.ctor_char(ParticleSettings_str + (int)iVar5, false);
     iVar5 = (int32_t)DAT_001949e4;
-    this->sets[13].field_0x28 = (uint32_t)1000;
+    this->sets[13].lifetime = (uint32_t)1000;
     iVar14 = (int32_t)DAT_001949e8;
-    this->sets[13].field_0x2c = (uint32_t)DAT_001949ec;
+    this->sets[13].flLifetime = (uint32_t)DAT_001949ec;
     uVar15 = (uint32_t)DAT_001949f0;
-    *(int *)&this->sets[13].field_0xc = (int)(iVar14 + -0x10);
-    this->sets[13].field_0x10 = (uint32_t)0x137;
+    this->sets[13].flags = (uint32_t)(iVar14 + -0x10);
+    this->sets[13].count = (uint32_t)0x137;
     this->sets[13].field_0x14 = (uint32_t)uVar15;
     this->sets[13].field_0x34 = (uint32_t)0xffffffff;
     this->sets[13].field_0x18 = (uint32_t)0;
@@ -620,10 +612,10 @@ int ParticleSettings::init() {
     this->sets[10].field_0x4c = (uint32_t)uVar17;
     this->sets[10].field_0x50 = (uint32_t)uVar18;
     this->sets[10].field_0x54 = (uint32_t)uVar20;
-    this->sets[10].field_0x28 = (uint32_t)0x1c2;
+    this->sets[10].lifetime = (uint32_t)0x1c2;
     iVar14 = (int32_t)DAT_00194a9c + 0xe0;
-    *(int *)&this->sets[10].field_0xc = (int)(iVar14);
-    this->sets[10].field_0x10 = (uint32_t)10;
+    this->sets[10].flags = (uint32_t)(iVar14);
+    this->sets[10].count = (uint32_t)10;
     this->sets[10].field_0x14 = (uint32_t)DAT_00194aa0;
     this->sets[10].field_0x18 = (uint32_t)100;
     this->sets[10].field_0x34 = (uint32_t)0xffffffff;
@@ -646,9 +638,9 @@ int ParticleSettings::init() {
     this->sets[11].field_0x4c = (uint32_t)uVar17;
     this->sets[11].field_0x50 = (uint32_t)uVar18;
     this->sets[11].field_0x54 = (uint32_t)uVar20;
-    this->sets[11].field_0x28 = (uint32_t)0x5dc;
-    *(int *)&this->sets[11].field_0xc = (int)(iVar14);
-    this->sets[11].field_0x10 = (uint32_t)10;
+    this->sets[11].lifetime = (uint32_t)0x5dc;
+    this->sets[11].flags = (uint32_t)(iVar14);
+    this->sets[11].count = (uint32_t)10;
     this->sets[11].field_0x14 = (uint32_t)DAT_00194b34;
     this->sets[11].field_0x18 = (uint32_t)1000;
     this->sets[11].field_0x34 = (uint32_t)0xffffffff;
@@ -668,15 +660,15 @@ int ParticleSettings::init() {
     buf.ctor_char(ParticleSettings_str + (int)iVar5, false);
     ParticleSet *this_00 = &this->sets[15];
     iVar5 = (int32_t)DAT_00194be8;
-    this->sets[15].field_0x28 = (uint32_t)0x5dc;
+    this->sets[15].lifetime = (uint32_t)0x5dc;
     uVar19 = (uint64_t)DAT_001953c8;
     uVar16 = (uint64_t)DAT_001953c0;
     uVar17 = (uint32_t)DAT_00194bf0;
     uVar15 = (uint32_t)DAT_00194bec;
-    this->sets[15].field_0x2c = (uint32_t)DAT_00194bec;
+    this->sets[15].flLifetime = (uint32_t)DAT_00194bec;
     uVar18 = (uint32_t)DAT_00194bf4;
-    this->sets[15].field_0xc = (uint32_t)uVar17;
-    this->sets[15].field_0x10 = (uint32_t)0x1e;
+    this->sets[15].flags = (uint32_t)uVar17;
+    this->sets[15].count = (uint32_t)0x1e;
     this->sets[15].field_0x14 = (uint32_t)uVar18;
     this->sets[15].field_0x18 = (uint32_t)0xde;
     this->sets[15].field_0x34 = (uint32_t)0xffffffff;
@@ -699,10 +691,10 @@ int ParticleSettings::init() {
     this->sets[15].field_0x94 = (uint32_t)((uint64_t)(uVar19) >> 32);
     this->sets[15].field_0x9c = (uint32_t)0x10;
     buf.ctor_char(ParticleSettings_str + (int)iVar5, false);
-    this->sets[42].field_0x28 = (uint32_t)600;
-    this->sets[42].field_0xc = (uint32_t)uVar17;
-    this->sets[42].field_0x2c = (uint32_t)uVar15;
-    this->sets[42].field_0x10 = (uint32_t)0xc;
+    this->sets[42].lifetime = (uint32_t)600;
+    this->sets[42].flags = (uint32_t)uVar17;
+    this->sets[42].flLifetime = (uint32_t)uVar15;
+    this->sets[42].count = (uint32_t)0xc;
     this->sets[42].field_0x14 = (uint32_t)DAT_00194cf4;
     this->sets[42].field_0x18 = (uint32_t)200;
     this->sets[42].field_0x34 = (uint32_t)0xffffffb2;
@@ -730,9 +722,9 @@ int ParticleSettings::init() {
     this->sets[19].field_0x4c = (uint32_t)0;
     this->sets[19].field_0x50 = (uint32_t)0;
     this->sets[19].field_0x54 = (uint32_t)0;
-    this->sets[19].field_0x28 = (uint32_t)0x5dc;
-    *(int *)&this->sets[19].field_0xc = (int)(iVar14);
-    this->sets[19].field_0x10 = (uint32_t)10;
+    this->sets[19].lifetime = (uint32_t)0x5dc;
+    this->sets[19].flags = (uint32_t)(iVar14);
+    this->sets[19].count = (uint32_t)10;
     this->sets[19].field_0x14 = (uint32_t)DAT_00194d88;
     this->sets[19].field_0x18 = (uint32_t)1000;
     this->sets[19].field_0x34 = (uint32_t)0xffffffff;
@@ -757,14 +749,14 @@ int ParticleSettings::init() {
     ParticleSet_assign((void *)p_Var11, &this->sets[11]);
     buf.ctor_char(ParticleSettings_str + (int)DAT_00194e2c, false);
     uVar15 = (uint32_t)DAT_00194e6c;
-    this->sets[20].field_0x28 = (uint32_t)1000;
+    this->sets[20].lifetime = (uint32_t)1000;
     this->sets[20].field_0x14 = (uint32_t)uVar15;
     this->sets[20].field_0x18 = (uint32_t)1000;
     ParticleSet_assign(&this->sets[21], (void *)p_Var11);
     buf.ctor_char(ParticleSettings_str + (int)DAT_00194e70, false);
     uVar15 = (uint32_t)DAT_00194eb0;
     p_Var11 = &this->sets[22];
-    this->sets[21].field_0x28 = (uint32_t)1000;
+    this->sets[21].lifetime = (uint32_t)1000;
     this->sets[21].field_0x14 = (uint32_t)uVar15;
     this->sets[21].field_0x18 = (uint32_t)200;
     ParticleSet_assign((void *)p_Var11, (void *)this_02);
@@ -772,12 +764,12 @@ int ParticleSettings::init() {
     uVar18 = (uint32_t)DAT_001952cc;
     uVar17 = (uint32_t)DAT_001952c8;
     uVar15 = (uint32_t)DAT_001952c4;
-    this->sets[22].field_0x28 = (uint32_t)1000;
-    this->sets[22].field_0x2c = (uint32_t)uVar15;
+    this->sets[22].lifetime = (uint32_t)1000;
+    this->sets[22].flLifetime = (uint32_t)uVar15;
     this->sets[22].field_0x84 = (uint32_t)uVar18;
     this->sets[22].field_0x48 = (uint32_t)3000;
     this->sets[22].field_0x4c = (uint32_t)800;
-    this->sets[22].field_0x10 = (uint32_t)1000;
+    this->sets[22].count = (uint32_t)1000;
     this->sets[22].field_0x14 = (uint32_t)uVar17;
     this->sets[22].field_0x18 = (uint32_t)2000;
     ParticleSet_assign(&this->sets[41], (void *)p_Var11);
@@ -788,8 +780,8 @@ int ParticleSettings::init() {
     ParticleSet_assign(&this->sets[23], (void *)this_02);
     buf.ctor_char(ParticleSettings_str + (int)DAT_00195310, false);
     uVar18 = (uint32_t)DAT_001952cc;
-    this->sets[23].field_0x28 = (uint32_t)1000;
-    this->sets[23].field_0x2c = (uint32_t)uVar15;
+    this->sets[23].lifetime = (uint32_t)1000;
+    this->sets[23].flLifetime = (uint32_t)uVar15;
     this->sets[23].field_0x14 = (uint32_t)uVar17;
     this->sets[23].field_0x18 = (uint32_t)1000;
     this->sets[23].field_0x84 = (uint32_t)uVar18;
@@ -799,8 +791,8 @@ int ParticleSettings::init() {
     buf.ctor_char(ParticleSettings_str + (int)DAT_00195314, false);
     uVar15 = (uint32_t)DAT_00195318;
     ParticleSet *pPVar12 = &this->sets[25];
-    this->sets[24].field_0x28 = (uint32_t)1000;
-    this->sets[24].field_0x2c = (uint32_t)uVar15;
+    this->sets[24].lifetime = (uint32_t)1000;
+    this->sets[24].flLifetime = (uint32_t)uVar15;
     this->sets[24].field_0x14 = (uint32_t)DAT_0019531c;
     this->sets[24].field_0x18 = (uint32_t)5000;
     this->sets[24].field_0x84 = (uint32_t)0;
@@ -816,9 +808,9 @@ int ParticleSettings::init() {
     this->sets[25].field_0x90 = (uint32_t)(uVar2);
     this->sets[25].field_0x94 = (uint32_t)((uint64_t)(uVar2) >> 32);
     uVar15 = (uint32_t)DAT_00195320;
-    this->sets[25].field_0x28 = (uint32_t)1000;
-    this->sets[25].field_0x2c = (uint32_t)uVar15;
-    this->sets[25].field_0x10 = (uint32_t)0x19;
+    this->sets[25].lifetime = (uint32_t)1000;
+    this->sets[25].flLifetime = (uint32_t)uVar15;
+    this->sets[25].count = (uint32_t)0x19;
     this->sets[25].field_0x14 = (uint32_t)uVar15;
     this->sets[25].field_0x34 = (uint32_t)0xffffffff;
     this->sets[25].field_0x38 = (uint32_t)0;
@@ -847,14 +839,14 @@ int ParticleSettings::init() {
     this->sets[28].field_0x94 = (uint32_t)((uint64_t)(uVar2) >> 32);
     ParticleSettings_initSub(&this->sets[39], (void *)(pPVar12));
     pPVar12 = &this->sets[43];
-    *(int *)&this->sets[39].field_0xc = (int)(DAT_00195450 + 0x100000);
+    this->sets[39].flags = (uint32_t)(DAT_00195450 + 0x100000);
     this->sets[39].field_0x14 = (uint32_t)uVar15;
     this->sets[39].field_0x80 = (uint32_t)0;
     this->sets[39].field_0x7c = (uint32_t)0;
     this->sets[39].field_0x78 = (uint32_t)0;
-    this->sets[39].field_0x28 = (uint32_t)3000;
-    this->sets[39].field_0x2c = (uint32_t)DAT_00195454;
-    this->sets[39].field_0x10 = (uint32_t)0x1d;
+    this->sets[39].lifetime = (uint32_t)3000;
+    this->sets[39].flLifetime = (uint32_t)DAT_00195454;
+    this->sets[39].count = (uint32_t)0x1d;
     this->sets[39].field_0x34 = (uint32_t)0xffffffff;
     this->sets[39].field_0x38 = (uint32_t)0;
     this->sets[39].field_0x88 = (uint32_t)DAT_00195464;
@@ -869,12 +861,12 @@ int ParticleSettings::init() {
     this->sets[43].field_0x80 = (uint32_t)0;
     this->sets[43].field_0x7c = (uint32_t)0;
     this->sets[43].field_0x78 = (uint32_t)0;
-    this->sets[43].field_0x2c = (uint32_t)0x3f000000;
-    this->sets[43].field_0x10 = (uint32_t)10;
+    this->sets[43].flLifetime = (uint32_t)0x3f000000;
+    this->sets[43].count = (uint32_t)10;
     this->sets[43].field_0x14 = (uint32_t)DAT_0019545c;
     this->sets[43].field_0x44 = (uint32_t)1000;
     this->sets[43].field_0x18 = (uint32_t)6000;
-    this->sets[43].field_0x28 = (uint32_t)5000;
+    this->sets[43].lifetime = (uint32_t)5000;
     this->sets[43].field_0x48 = (uint32_t)0x5dc;
     this->sets[43].field_0x4c = (uint32_t)0x5dc;
     this->sets[43].field_0x30 = (uint32_t)(uVar2);
@@ -914,73 +906,47 @@ int ParticleSettings::init() {
     return 0;
 }
 
-// Base of the global ParticleSet array, reached through PC-relative pointers. The
-// target loads it twice (one literal for the "flags" view, one for the value view).
-__attribute__((visibility("hidden"))) extern char *g_psm_base;
-__attribute__((visibility("hidden"))) extern char *g_psm_base2;
-
-// ParticleSettings::multiplyAll(float scale): scale lifetimes and colour components of
-// every ParticleSet by `scale` (or its reciprocal, depending on per-set flag bits).
-// NOTE: best-effort. The colour clamps lower to a chain of vcvt.u32.f32 / conditional
-// 0xff saturation whose exact FP register scheduling under -Oz does not reproduce the
-// original byte-for-byte; the arithmetic is faithful to the decompiled form.
-void ParticleSettings_multiplyAll(float scale) {
-    char *flags = g_psm_base;
-    char *vals = g_psm_base2;
+// Scale the lifetime and colour components of every ParticleSet by `scale` (or its
+// reciprocal, depending on per-set flag bits).
+void ParticleSettings::multiplyAll(float scale) {
     float recip = 1.0f / ((scale + 1.0f) * 0.5f);
-    for (int i = 0; i != 0x1e00; i += 0xa0) {
-        char *f = flags + i;
-        unsigned fl = *(unsigned *)(f + 0xc);
+    for (int i = 0; i < 48; ++i) {
+        ParticleSet &p = this->sets[i];
         float lifeScale, lifeBase;
-        if (fl & 0x20) {
-            lifeBase = *(float *)(vals + i + 0x2c);
+        if (p.flags & 0x20) {
+            lifeBase = asFloat(p.flLifetime);
             lifeScale = scale;
-        } else if ((int)(fl << 0x1b) < 0) {
-            lifeBase = *(float *)(vals + i + 0x2c);
+        } else if ((int)(p.flags << 0x1b) < 0) {
+            lifeBase = asFloat(p.flLifetime);
             lifeScale = 1.0f / scale;
         } else {
             continue;
         }
-        char *v = vals + i;
-        unsigned c34 = *(unsigned *)(v + 0x34);
-        unsigned c38 = *(unsigned *)(v + 0x38);
-        float comp10 = (float)*(int *)(v + 0x10);
+        unsigned c34 = p.field_0x34;
+        unsigned c38 = p.field_0x38;
+        float comp10 = (float)p.count;
         float r34 = recip * (float)(int)(c34 & 0xff);
         float r38 = recip * (float)(int)(c38 & 0xff);
-        *(float *)(f + 0x2c) = lifeBase * lifeScale;
+        asFloat(p.flLifetime) = lifeBase * lifeScale;
         unsigned u34 = (0.0f < r34) ? (unsigned)r34 : 0;
         unsigned u38 = (0.0f < r38) ? (unsigned)r38 : 0;
         if (u34 > 0xfe) u34 = 0xff;
         if (u38 > 0xfe) u38 = 0xff;
-        *(unsigned *)(f + 0x34) = u34 | (c34 & 0xffffff00);
-        *(unsigned *)(f + 0x38) = u38 | (c38 & 0xffffff00);
-        *(int *)(f + 0x10) = (int)(comp10 * scale);
+        p.field_0x34 = u34 | (c34 & 0xffffff00);
+        p.field_0x38 = u38 | (c38 & 0xffffff00);
+        p.count = (int)(comp10 * scale);
     }
 }
 
-// Base of the global ParticleSet array, reached through a PC-relative pointer. The
-// target materializes the base twice (separate literals) — once for the two source
-// entries and once for the destination — so we model it as two aliasing globals.
-__attribute__((visibility("hidden"))) extern char *g_ps_base;
-__attribute__((visibility("hidden"))) extern char *g_ps_base_dst;
-
-// ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out):
-// out = b*t + (1-t)*a, field by field. Indices select 0xa0-byte ParticleSet entries.
-// Field +0x28 is stored as an int (count) but blended in float space; +0x14/+0x20/+0x70
-// are plain floats. Operands are written (1-t)*a + b*t so the b*t product seeds the
-// fused multiply-add, matching the target's vmul/vmla pairing.
-void ParticleSettings_Interpolate(int a, int b, float t, int out) {
-    char *base = g_ps_base;
-    char *pb = base + b * 0xa0;
-    char *pa = base + a * 0xa0;
+// out = b*t + (1-t)*a over the lifetime/colour/scale slots. `count` (+0x28) is stored as
+// an int but blended in float space; field_0x14/field_0x20/field_0x70 are plain floats.
+void ParticleSettings::Interpolate(int a, int b, float t, int out) {
+    ParticleSet &pa = this->sets[a];
+    ParticleSet &pb = this->sets[b];
+    ParticleSet &po = this->sets[out];
     float omt = 1.0f - t;
-    float cb = (float)*(int *)(pb + 0x28);
-    float ca = (float)*(int *)(pa + 0x28);
-    char *po = g_ps_base_dst + out * 0xa0;
-    float a14 = *(float *)(pa + 0x14);
-    *(int *)(po + 0x28) = (int)(omt * ca + cb * t);
-    float a20 = *(float *)(pa + 0x20);
-    *(float *)(po + 0x14) = omt * a14 + *(float *)(pb + 0x14) * t;
-    *(float *)(po + 0x20) = omt * a20 + *(float *)(pb + 0x20) * t;
-    *(float *)(po + 0x70) = omt * *(float *)(pa + 0x70) + *(float *)(pb + 0x70) * t;
+    po.count = (int)(omt * (float)pa.count + (float)pb.count * t);
+    asFloat(po.field_0x14) = omt * asFloat(pa.field_0x14) + asFloat(pb.field_0x14) * t;
+    asFloat(po.field_0x20) = omt * asFloat(pa.field_0x20) + asFloat(pb.field_0x20) * t;
+    asFloat(po.field_0x70) = omt * asFloat(pa.field_0x70) + asFloat(pb.field_0x70) * t;
 }

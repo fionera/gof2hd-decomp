@@ -1,44 +1,34 @@
 #include "gof2/engine/render/LensFlare.h"
 
-// LensFlare::~LensFlare()
-//   if (this->images) operator delete(this->images); this->images = 0;
-LensFlare::~LensFlare()
-{
-    void *imgs = this->images;
-    if (imgs != 0) {
-        operator delete(imgs);
-    }
-    this->images = 0;
-}
+using AbyssEngine::PaintCanvas;
 
-// PC-relative pointer-to-pointer global: the engine PaintCanvas singleton used to create
-// the flare's three Image2D sprites (DAT_0012d02c).
-extern void *const gLensFlareCanvas __attribute__((visibility("hidden")));
+// PC-relative pointer-to-pointer global: the engine PaintCanvas singleton used to
+// create the flare's three Image2D sprites, and the same holder reused at draw time.
+extern PaintCanvas *const gLensFlareCanvas __attribute__((visibility("hidden")));
+extern PaintCanvas *const gLF_Canvas2 __attribute__((visibility("hidden")));
 
-LensFlare::LensFlare(PaintCanvas *param_1)
-{
-    uint32_t *images = (uint32_t *)operator new[](0xc);
-    this->images = images;
-    void *canvas = *(void **)gLensFlareCanvas;
-    int off = 0;
-    for (int i = 0; i != 3; i = i + 1) {
-        LensFlare_Image2DCreate(canvas, (short)(i + 0x508),
-                                (uint32_t *)((char *)this->images + off));
-        off = off + 4;
-    }
-    this->width = LensFlare_GetWidth(param_1);
-    this->height = LensFlare_GetHeight(param_1);
-    this->canvas = param_1;
-}
-
-// PC-relative palette tables (R/G/B per flare-color index, DAT_0012d0bc/c0/c4) and the
-// engine PaintCanvas singleton holder (DAT_0012d1c4 etc.).
+// PC-relative palette tables (R/G/B per flare-colour index).
 extern const uint32_t gFlareR[] __attribute__((visibility("hidden")));
 extern const uint32_t gFlareG[] __attribute__((visibility("hidden")));
 extern const uint32_t gFlareB[] __attribute__((visibility("hidden")));
-extern void *const gLF_Canvas2 __attribute__((visibility("hidden")));
 
-// LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
+LensFlare::LensFlare(PaintCanvas *canvas)
+{
+    this->images = new uint32_t[3];
+    PaintCanvas *singleton = *(PaintCanvas **)gLensFlareCanvas;
+    for (int i = 0; i != 3; ++i)
+        LensFlare_Image2DCreate(singleton, (short)(i + 0x508), &this->images[i]);
+    this->width = LensFlare_GetWidth(canvas);
+    this->height = LensFlare_GetHeight(canvas);
+    this->canvas = canvas;
+}
+
+LensFlare::~LensFlare()
+{
+    delete[] this->images;
+    this->images = nullptr;
+}
+
 void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
 {
     // --- tint from palette -------------------------------------------------
@@ -92,8 +82,10 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     float fade = base * (1.0f - dist / halfH);
     this->intensity = fade;
 
-    void *canvas = *(void **)gLF_Canvas2;
-    void **images = (void **)this->images;
+    PaintCanvas *canvas = *(PaintCanvas **)gLF_Canvas2;
+    void *img0 = (void *)(uintptr_t)this->images[0];
+    void *img1 = (void *)(uintptr_t)this->images[1];
+    void *img2 = (void *)(uintptr_t)this->images[2];
 
     // --- sprite 0: the main flare at the source, faded by (1-intensity) -----
     {
@@ -102,24 +94,24 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
         LensFlare_setColor(canvas, color);
         float px = cx + ndx * 0.5f * 0.5f * 17.0f;
         float py = cy + ndy * 0.5f * 0.5f * 17.0f;
-        LensFlare_drawScaled(canvas, images[0], (int)px, (int)py);
+        LensFlare_drawScaled(canvas, img0, (int)px, (int)py);
     }
 
     // --- sprite at image[0] again, scaled by 0.75 around source -------------
     {
-        int iw = LensFlare_imgHandle(images[0]);
+        int iw = LensFlare_imgHandle(img0);
         float s = (float)iw * 0.75f;
-        LensFlare_drawScaled(canvas, images[0], (int)(cx + ndx * s), (int)(cy + ndy * s));
+        LensFlare_drawScaled(canvas, img0, (int)(cx + ndx * s), (int)(cy + ndy * s));
     }
 
     // --- sprite image[1]: two passes at 0.5 and 0.25 offsets ----------------
     {
-        int ih = LensFlare_imgHandle(images[1]);
+        int ih = LensFlare_imgHandle(img1);
         float s = (float)ih * 0.5f;
-        LensFlare_drawScaled(canvas, images[1], (int)(cx + ndx * s * 17.0f),
+        LensFlare_drawScaled(canvas, img1, (int)(cx + ndx * s * 17.0f),
                              (int)(cy + ndy * s * 17.0f));
         float s2 = (float)ih * 0.25f;
-        LensFlare_drawScaled(canvas, images[1], (int)(cx + ndx * s2 * 17.0f),
+        LensFlare_drawScaled(canvas, img1, (int)(cx + ndx * s2 * 17.0f),
                              (int)(cy + ndy * s2 * 17.0f));
     }
 
@@ -130,10 +122,10 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
         LensFlare_setColor(canvas, color);
     }
     if (1.0f - this->intensity < 0.625f) {
-        int iw = LensFlare_imgWidth(canvas, images[0]);
-        int ih = LensFlare_imgWidth(canvas, images[0]);
+        int iw = LensFlare_imgWidth(canvas, img0);
+        int ih = LensFlare_imgWidth(canvas, img0);
         float s = (float)iw * 1.25f;
-        LensFlare_drawScaled(canvas, images[0], (int)(cx + ndx * (float)ih * 0.125f * 17.0f),
+        LensFlare_drawScaled(canvas, img0, (int)(cx + ndx * (float)ih * 0.125f * 17.0f),
                              (int)(cy + ndy * s));
     }
 
@@ -142,16 +134,16 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
         uint32_t a = (uint32_t)(1.0f - this->intensity);
         uint32_t color = (a << 0) | (r << 8) | (g << 16) | (b << 24);
         LensFlare_setColor(canvas, color);
-        int iw0 = LensFlare_imgWidth(canvas, images[2]);
-        int iw1 = LensFlare_imgWidth(canvas, images[2]);
+        int iw0 = LensFlare_imgWidth(canvas, img2);
+        int iw1 = LensFlare_imgWidth(canvas, img2);
         float s = (float)iw0 * 2.0f;
-        LensFlare_drawScaled(canvas, images[2], (int)(cx + ndx * (float)iw1 * 0.5f),
+        LensFlare_drawScaled(canvas, img2, (int)(cx + ndx * (float)iw1 * 0.5f),
                              (int)(cy + ndy * s));
     }
 
     // final blended draw of image[2] if intensity > 0.
     if (this->intensity > 0.0f) {
-        int saved = (int)(unsigned long)this->canvas;
+        int saved = (int)(uintptr_t)this->canvas;
         LensFlare_pushState(this->canvas);
         uint32_t color = (g << 16) | (b << 8) | (r << 24);
         uint32_t shifted = color + (uint32_t)(int)this->intensity;
@@ -161,9 +153,7 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     }
 }
 
-// LensFlare::update()
-//   this->intensity(0x00) = 0;
 void LensFlare::update()
 {
-    this->intensity = 0;
+    this->intensity = 0.0f;
 }

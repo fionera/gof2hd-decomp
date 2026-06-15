@@ -2,30 +2,102 @@
 #include "gof2/engine/render/IParticleSystem.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-extern "C" void _psm_ArrayReleaseSprites(void *arr);
-extern "C" void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
-extern "C" void _psm_renderMeshes(void *self);
-extern "C" void _psm_renderSpritesExt(void *self);
-extern "C" void _psm_construct(void *self);
-extern "C" void _psm_releaseSprites(void *self);
-extern "C" void _psm_releaseMeshArray(void *arr);
-extern "C" void _psm_constructAfterCamera(void *self);
-extern "C" void _ips_emitManual(void *sys, float x, float y, float z);
-extern "C" void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
-extern "C" void _psm_spriteRender2(void *canvas, unsigned a);
-extern "C" void _psm_arraySpriteCtor(void *arr);
-extern "C" void _psm_arrayMeshCtor(void *arr);
-extern "C" void _ips_enableUpdate(void *sys, bool enable);
+// Engine helper forwarders (resolved by a later externs pass).
+extern "C" void  _psm_ArrayReleaseSprites(void *arr);
+extern "C" void  _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
+extern "C" void  _psm_renderMeshes(void *self);
+extern "C" void  _psm_renderSpritesExt(void *self);
+extern "C" void  _psm_releaseSprites(void *self);
+extern "C" void  _psm_releaseMeshArray(void *arr);
+extern "C" void  _psm_constructAfterCamera(void *self);
+extern "C" void  _ips_emitManual(void *sys, float x, float y, float z);
+extern "C" void  _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+extern "C" void  _psm_spriteRender2(void *canvas, unsigned a);
+extern "C" void  _psm_arraySpriteCtor(void *arr);   // Array<ParticleSystemSprite*>::Array()
+extern "C" void  _psm_arrayMeshCtor(void *arr);      // Array<ParticleSystemMesh*>::Array()
+extern "C" void  _ips_enableUpdate(void *sys, bool enable);
 extern "C" short _ips_getParticleCount16(void *sys);
-extern "C" int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
-extern "C" void _psm_initSprites(void *self);
-extern "C" void _psm_initMesh(void *self);
-extern "C" int  _psm_firstUpdate(void *self, int a, int b, int c);
-extern "C" void _ips_reset(void *sys);
-extern "C" void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
-extern "C" void _psm_meshRender2(void *canvas, unsigned a);
+extern "C" int   _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
+extern "C" int   _psm_firstUpdate(void *self, int a, int b, int c);
+extern "C" void  _ips_reset(void *sys);
+extern "C" void  _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+extern "C" void  _psm_meshRender2(void *canvas, unsigned a);
+extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+                              bool b4, bool b5);     // ParticleSystemMesh ctor
+extern "C" void  _psm_arrayMeshAdd(void *sys, void *arr);    // ArrayAdd<ParticleSystemMesh*>
+extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+                           bool b4, bool b5);        // ParticleSystemSprite ctor
+extern "C" void  _psm_arraySpriteAdd(void *sys, void *arr);  // ArrayAdd<ParticleSystemSprite*>
+extern "C" int   _ips_getParticleCount(void *sys);  // IParticleSystem::getParticleCount
 
-// ParticleSystemManager::update(long long)
+// Active particle-set descriptor (the engine resolves it from a global table).
+__attribute__((visibility("hidden"))) extern char *g_activeParticleSet;
+
+// Resolve a system handle to its slot in either the mesh or sprite array. Bit 17 of the shifted
+// handle selects the mesh array; -1 means "no system" and yields a null pointer.
+static IParticleSystem *resolveSystem(ParticleSystemManager *self, int handle)
+{
+    if (handle == -1)
+        return nullptr;
+    IParticleSystem **arr;
+    int idx;
+    if (handle << 0x11 < 0) {
+        arr = (IParticleSystem **)self->meshSystems;
+        idx = handle & 0x3fffffff;
+    } else {
+        arr = (IParticleSystem **)self->spriteSystems;
+        idx = handle;
+    }
+    return arr[idx];
+}
+
+ParticleSystemManager::ParticleSystemManager(
+    void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
+    unsigned short meshTex, bool meshFlag)
+{
+    this->cameraSet = cameraSet;
+    this->canvas = canvas;
+
+    _psm_arraySpriteCtor(&this->spriteSystemCount);
+    this->spriteUvId = 0xffff;
+    this->spriteTextureId = spriteTex;
+    this->spriteBlendMode = 0;
+    this->spriteUsesExtra = spriteFlag ? 1 : 0;
+
+    _psm_arrayMeshCtor(&this->meshSystemCount);
+    this->meshUvId = 0xffff;
+    this->meshTextureId = meshTex;
+    this->meshBlendMode = 0;
+    this->meshUsesExtra = meshFlag ? 1 : 0;
+
+    construct();
+}
+
+// 8-argument overload that also takes explicit blend modes. Same field layout as the 6-arg ctor but
+// the texture slots are forced to 0xffff and the supplied texture goes to the "uv" half, with the
+// blend modes stored explicitly.
+ParticleSystemManager::ParticleSystemManager(
+    void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend, bool spriteFlag,
+    unsigned short meshTex, int meshBlend, bool meshFlag)
+{
+    this->cameraSet = cameraSet;
+    this->canvas = canvas;
+
+    _psm_arraySpriteCtor(&this->spriteSystemCount);
+    this->spriteUvId = spriteTex;
+    this->spriteTextureId = 0xffff;
+    this->spriteBlendMode = (unsigned int)spriteBlend;
+    this->spriteUsesExtra = spriteFlag ? 1 : 0;
+
+    _psm_arrayMeshCtor(&this->meshSystemCount);
+    this->meshUvId = meshTex;
+    this->meshTextureId = 0xffff;
+    this->meshBlendMode = (unsigned int)meshBlend;
+    this->meshUsesExtra = meshFlag ? 1 : 0;
+
+    construct();
+}
+
 void ParticleSystemManager::update(long long dt)
 {
     int d = (int)dt;
@@ -33,58 +105,63 @@ void ParticleSystemManager::update(long long dt)
         return;
     int accum = this->accumulatedDt + d;
     this->accumulatedDt = accum;
+
+    IParticleSystem **sprites = (IParticleSystem **)this->spriteSystems;
     for (unsigned i = 0; i < this->spriteSystemCount; i++) {
-        void *p = ((void **)this->spriteSystems)[i];
-        if (p != 0) {
-            ((IParticleSystem*)(p))->update(d);
-            p = ((void **)this->spriteSystems)[i];
-            if (((IParticleSystem*)p)->canvas == 0) {
-                if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
-                    ((IParticleSystem*)(p))->calcEmitterVelocity(this->accumulatedDt);
-                    p = ((void **)this->spriteSystems)[i];
+        IParticleSystem *p = sprites[i];
+        if (p != nullptr) {
+            p->update(d);
+            p = sprites[i];
+            if (p->canvas == nullptr) {
+                if (accum > 9 || p->emitterVelocityDirty != 0) {
+                    p->calcEmitterVelocity(this->accumulatedDt);
+                    p = sprites[i];
                 }
-                (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
+                p->emit(d);
             } else {
-                ((IParticleSystem*)(p))->resetEmitterVelocity();
+                p->resetEmitterVelocity();
             }
         }
     }
+
+    IParticleSystem **meshes = (IParticleSystem **)this->meshSystems;
     for (unsigned i = 0; i < this->meshSystemCount; i++) {
-        void *p = ((void **)this->meshSystems)[i];
-        if (p != 0) {
-            ((IParticleSystem*)(p))->update(d);
-            p = ((void **)this->meshSystems)[i];
-            if (((IParticleSystem*)p)->canvas == 0) {
-                if (accum > 9 || ((IParticleSystem*)p)->emitterVelocityDirty != 0) {
-                    ((IParticleSystem*)(p))->calcEmitterVelocity(this->accumulatedDt);
-                    p = ((void **)this->meshSystems)[i];
+        IParticleSystem *p = meshes[i];
+        if (p != nullptr) {
+            p->update(d);
+            p = meshes[i];
+            if (p->canvas == nullptr) {
+                if (accum > 9 || p->emitterVelocityDirty != 0) {
+                    p->calcEmitterVelocity(this->accumulatedDt);
+                    p = meshes[i];
                 }
-                (*(void (**)(void *, int))(*(int *)p + 4))(p, d);
+                p->emit(d);
             } else {
-                ((IParticleSystem*)(p))->resetEmitterVelocity();
+                p->resetEmitterVelocity();
             }
         }
     }
+
     if (accum > 9)
         this->accumulatedDt = 0;
 }
 
-// ParticleSystemManager::reset()
 void ParticleSystemManager::reset()
 {
+    IParticleSystem **sprites = (IParticleSystem **)this->spriteSystems;
     for (unsigned i = 0; i < this->spriteSystemCount; i++) {
-        int *p = ((int **)this->spriteSystems)[i];
-        if (p != 0)
-            (*(void (**)(int *))(*p + 8))(p);
+        IParticleSystem *p = sprites[i];
+        if (p != nullptr)
+            _ips_reset(p);
     }
+    IParticleSystem **meshes = (IParticleSystem **)this->meshSystems;
     for (unsigned i = 0; i < this->meshSystemCount; i++) {
-        int *p = ((int **)this->meshSystems)[i];
-        if (p != 0)
-            (*(void (**)(int *))(*p + 8))(p);
+        IParticleSystem *p = meshes[i];
+        if (p != nullptr)
+            _ips_reset(p);
     }
 }
 
-// ParticleSystemManager::releaseSprites()
 void ParticleSystemManager::releaseSprites()
 {
     _psm_ArrayReleaseSprites(&this->spriteSystemCount);
@@ -94,7 +171,7 @@ void ParticleSystemManager::releaseSprites()
     }
 }
 
-// ParticleSystemManager::construct()
+// Reset the runtime state shared by both constructors.
 void ParticleSystemManager::construct()
 {
     this->accumulatedDt = 0;
@@ -108,272 +185,109 @@ void ParticleSystemManager::construct()
     this->flags = 0x101;
 }
 
-// ParticleSystemManager::render3d()
 void ParticleSystemManager::render3d()
 {
     if (this->enabled == 0)
         return;
-    if ((*reinterpret_cast<uint8_t*>(reinterpret_cast<char*>(&this->flags) + 1)) != 0)
+    bool meshActive   = (this->flags & 0xff00) != 0;
+    bool spriteActive = (this->flags & 0x00ff) != 0;
+    if (meshActive)
         _psm_renderMeshes(this);
-    if ((*reinterpret_cast<uint8_t*>(&this->flags)) == 0)
-        return;
-    return _psm_renderSpritesExt(this);
+    if (spriteActive)
+        _psm_renderSpritesExt(this);
 }
-
-// ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
-// Same bit-17 sprite/mesh dispatch as the other per-system setters; forwards the set index to
-// the selected IParticleSystem.
 
 void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem*)(arr[idx]))->setParticleSetIndex(setIndex);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        sys->setParticleSetIndex(setIndex);
 }
-
-// ParticleSystemManager::enableSystemRender(int handle, bool enable)
-// Bad-data ARM veneer that mirrors the other per-system setters' bit-17 sprite/mesh dispatch,
-// forwarding to the IParticleSystem render-enable method.
 
 void ParticleSystemManager::enableSystemRender(int handle, bool enable)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem*)(arr[idx]))->enableRender(enable);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        sys->enableRender(enable);
 }
 
-// ParticleSystemManager::ParticleSystemManager(PaintCanvas*, CameraSet, unsigned short spriteTex,
-//     bool spriteFlag, unsigned short meshTex, bool meshFlag)
-// Stores the canvas and camera set, default-constructs the sprite (+0x18) and mesh (+0x3c)
-// system arrays, seeds their texture/blend slots (the "blend" half left at 0xffff here), records
-// the per-array flags at +0x38 / +0x60, then runs construct() to reset the runtime state.
-
-extern "C" void _psm_arraySpriteCtor(void *arr);  // Array<ParticleSystemSprite*>::Array()
-extern "C" void _psm_arrayMeshCtor(void *arr);     // Array<ParticleSystemMesh*>::Array()
-
-void *ParticleSystemManager_ctor6(
-    void *self, void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
-    unsigned short meshTex, bool meshFlag)
-{
-    ((ParticleSystemManager*)self)->cameraSet = cameraSet;
-    ((ParticleSystemManager*)self)->canvas = canvas;
-
-    _psm_arraySpriteCtor(&((ParticleSystemManager*)self)->spriteSystemCount);
-    ((ParticleSystemManager*)self)->spriteUvId = 0xffff;
-    ((ParticleSystemManager*)self)->spriteTextureId = spriteTex;
-    ((ParticleSystemManager*)self)->spriteBlendMode = 0;
-    ((ParticleSystemManager*)self)->spriteUsesExtra = spriteFlag ? 1 : 0;
-
-    _psm_arrayMeshCtor(&((ParticleSystemManager*)self)->meshSystemCount);
-    ((ParticleSystemManager*)self)->meshUvId = 0xffff;
-    ((ParticleSystemManager*)self)->meshTextureId = meshTex;
-    ((ParticleSystemManager*)self)->meshBlendMode = 0;
-    ((ParticleSystemManager*)self)->meshUsesExtra = meshFlag ? 1 : 0;
-
-    _psm_construct(self);
-    return self;
-}
-
-// Array<ParticleSystemMesh*>::release-ish, via PLT veneer; takes &mesh-array (this+0x3c).
-
-// ParticleSystemManager::release()
 void ParticleSystemManager::release()
 {
     _psm_releaseSprites(this);
-    this->canvas = 0;
-    return _psm_releaseMeshArray(&this->meshSystemCount);
+    this->canvas = nullptr;
+    _psm_releaseMeshArray(&this->meshSystemCount);
 }
 
-// re-init after camera change (PLT veneer); takes this.
-
-// ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet)
 void ParticleSystemManager::cameraToggle(int cam)
 {
     if (this->cameraSet == cam)
         return;
     this->cameraSet = cam;
     _psm_releaseSprites(this);
-    return _psm_constructAfterCamera(this);
+    _psm_constructAfterCamera(this);
 }
 
-// ParticleSystemManager::addMeshSystem(AEMath::Matrix const*, Array<ParticleSet> const&, bool)
-// Allocates a ParticleSystemMesh (0xa0 bytes), constructs it against the manager's canvas
-// (+0x04) and the mesh flag (+0x60), appends it to the mesh array (+0x3c), accumulates its
-// particle count (virtual call, vtable+0x10) into +0x5c, and returns the new system's handle:
-// the mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
-
-extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                              bool b4, bool b5);                    // ParticleSystemMesh ctor
-extern "C" void _psm_arrayMeshAdd(void *sys, void *arr);           // ArrayAdd<ParticleSystemMesh*>
-
+// Allocates a ParticleSystemMesh, constructs it against the manager's canvas and mesh flag, appends
+// it to the mesh array, accumulates its particle count, and returns the new system's handle: the
+// mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
 unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void *sets, bool flag)
 {
-    void *sys = operator new(0xa0);
+    void *sys = ::operator new(0xa0);
     _psmesh_ctor(sys, this->canvas, matrix, sets, flag, this->meshUsesExtra != 0);
     _psm_arrayMeshAdd(sys, &this->meshSystemCount);
 
-    // getParticleCount lives at vtable offset 0x10 for the mesh system.
-    typedef int (*pfn)(void *);
-    int count = ((pfn *)*(void **)sys)[4](sys);
-    this->meshParticleCount = count + this->meshParticleCount;
+    this->meshParticleCount += _ips_getParticleCount(sys);
 
-    return (unsigned int)(this->meshSystemCount - 1) | 0x4000;
+    return (this->meshSystemCount - 1) | 0x4000;
 }
 
-// ParticleSystemManager::emitManual(int handle, Vector const& pos, int ret, float)
 // 4-argument overload: bit-17 sprite/mesh dispatch, emits one burst at `pos`. Returns the
-// pass-through `ret` selector packed into the low word (the high word is -1 on the no-system
-// path, matching the original's CONCAT44).
-
+// pass-through `ret` selector packed into the low word (the high word is -1 on the no-system path).
 unsigned long long ParticleSystemManager::emitManual(int handle, const float *pos, int ret, float p4)
 {
     (void)p4;
-    if (handle == -1)
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys == nullptr)
         return ((unsigned long long)0xffffffffu << 32) | (unsigned int)(unsigned long)this;
 
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    _ips_emitManual(arr[idx], pos[0], pos[1], pos[2]);
+    _ips_emitManual(sys, pos[0], pos[1], pos[2]);
     return (unsigned int)ret;
 }
 
-// 4-arg sprite renderer (DAT_001ac994 veneer): canvas, a, b, c
-// 2-arg sprite renderer (DAT_001ac9a4 veneer): canvas, a
-
-// ParticleSystemManager::renderSprites()
 void ParticleSystemManager::renderSprites()
 {
     if (this->spriteTextureId != -1)
-        return _psm_spriteRender2(this->canvas, this->spriteSystemId);
-    if (this->spriteUvId != -1)
-        return _psm_spriteRender4(this->canvas, this->spriteSystemId, this->spriteMeshId, this->spriteBlendMode);
+        _psm_spriteRender2(this->canvas, this->spriteSystemId);
+    else if (this->spriteUvId != -1)
+        _psm_spriteRender4(this->canvas, this->spriteSystemId, this->spriteMeshId, this->spriteBlendMode);
 }
-
-// ParticleSystemManager::ParticleSystemManager(PaintCanvas*, CameraSet, unsigned short spriteTex,
-//     BlendMode spriteBlend, bool spriteFlag, unsigned short meshTex, BlendMode meshBlend,
-//     bool meshFlag)
-// 8-argument overload that also takes explicit blend modes. Same field layout as the 6-arg ctor
-// but the texture slots (+0x24/+0x48) are forced to 0xffff and the supplied texture goes to the
-// "blend" half (+0x26/+0x4a), with the blend modes stored at +0x28/+0x4c.
-
-void *ParticleSystemManager_ctor8(
-    void *self, void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
-    bool spriteFlag, unsigned short meshTex, int meshBlend, bool meshFlag)
-{
-    ((ParticleSystemManager*)self)->cameraSet = cameraSet;
-    ((ParticleSystemManager*)self)->canvas = canvas;
-
-    _psm_arraySpriteCtor(&((ParticleSystemManager*)self)->spriteSystemCount);
-    ((ParticleSystemManager*)self)->spriteUvId = spriteTex;
-    ((ParticleSystemManager*)self)->spriteTextureId = 0xffff;
-    ((ParticleSystemManager*)self)->spriteBlendMode = (unsigned int)spriteBlend;
-    ((ParticleSystemManager*)self)->spriteUsesExtra = spriteFlag ? 1 : 0;
-
-    _psm_arrayMeshCtor(&((ParticleSystemManager*)self)->meshSystemCount);
-    ((ParticleSystemManager*)self)->meshUvId = meshTex;
-    ((ParticleSystemManager*)self)->meshTextureId = 0xffff;
-    ((ParticleSystemManager*)self)->meshBlendMode = (unsigned int)meshBlend;
-    ((ParticleSystemManager*)self)->meshUsesExtra = meshFlag ? 1 : 0;
-
-    _psm_construct(self);
-    return self;
-}
-
-// ParticleSystemManager::systemSetMatrix(int handle, AEMath::Matrix const* matrix)
-// Bit-17 sprite/mesh dispatch; forwards the world matrix to the selected IParticleSystem.
 
 void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem*)(arr[idx]))->setMatrix((Matrix const*)(matrix));
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        sys->setMatrix((Matrix const *)matrix);
 }
 
-// ParticleSystemManager::setParticleSetBySet(int handle, ParticleSettings::ParticleSet set)
-// Bit-17 sprite/mesh dispatch; forwards a particle-set descriptor (passed by value as a single
-// word in this build) to the selected IParticleSystem.
-
+// Particle-set descriptor passed by value as a single word in this build.
 void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned int set)
 {
-    if (handle == 0xffffffffu)
-        return;
-    void **arr;
-    unsigned int idx;
-    if ((int)(handle << 0x11) < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem*)(arr[idx]))->setParticleSet(set);
+    IParticleSystem *sys = resolveSystem(this, (int)handle);
+    if (sys != nullptr)
+        sys->setParticleSet(set);
 }
-
-// ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
-// Handles pack the array selector in bit 17: when set, the system lives in the mesh array
-// (+0x40) and the low bits index it; otherwise it lives in the sprite array (+0x1c). -1 means
-// "no system". The selected IParticleSystem's update-enable setter is then invoked.
 
 void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    _ips_enableUpdate(arr[idx], enable);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        _ips_enableUpdate(sys, enable);
 }
 
-// ParticleSystemManager::initSprites()
-// When the sprite array (+0x18) is non-empty and a camera set (+0xc) is active, this creates the
-// shared sprite system on the canvas (+0x04) -- either from an existing texture id (+0x24) or by
-// also creating a texture from id (+0x26) -- stores its handle at +0x30, primes the system-wide
-// size/UV from the active particle-set's frame rect, then walks every sub-system, binding it to
-// the sprite-system handle at its running particle offset.
-
-// Active particle-set descriptor (the engine resolves it from a global table).
-__attribute__((visibility("hidden"))) extern char *g_activeParticleSet;
-
+// When the sprite array is non-empty and a camera set is active, create the shared sprite system on
+// the canvas -- either from an existing texture id or by also creating a texture from a uv id --
+// store its handle, prime the system-wide size/UV from the active particle-set's frame rect, then
+// walk every sub-system binding it to the sprite-system handle at its running particle offset.
 void ParticleSystemManager::initSprites()
 {
     if (this->spriteSystemCount == 0)
@@ -383,63 +297,51 @@ void ParticleSystemManager::initSprites()
     if (this->cameraSet == 0)
         return;
 
-    void *canvas = this->canvas;
-    if (this->spriteTextureId == 0xffff) {
-        if ((short)this->spriteUvId != -1) {
-            ((PaintCanvas *)canvas)->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
-                                           (unsigned int *)(&this->spriteSystemId));
-            ((PaintCanvas *)canvas)->TextureCreate((unsigned short)this->spriteUvId,
-                                      (unsigned int *)(&this->spriteSystemId),
-                                      (((char)(unsigned long)this + ',') != 0));
+    PaintCanvas *canvas = (PaintCanvas *)this->canvas;
+    if ((unsigned short)this->spriteTextureId == 0xffff) {
+        if (this->spriteUvId != -1) {
+            canvas->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
+                                       &this->spriteSystemId);
+            canvas->TextureCreate((unsigned short)this->spriteUvId, &this->spriteSystemId,
+                                  (((char)(unsigned long)this + ',') != 0));
         }
     } else {
-        ((PaintCanvas *)canvas)->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
-                                          (unsigned short)this->spriteTextureId,
-                                          (unsigned int *)(&this->spriteSystemId));
+        canvas->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
+                                   (unsigned short)this->spriteTextureId, &this->spriteSystemId);
     }
 
     short offset = 0;
-    ((PaintCanvas *)this->canvas)->SpriteSystemSetAllSize((unsigned int)(short)this->spriteSystemId, 0);
+    canvas->SpriteSystemSetAllSize((unsigned int)(short)this->spriteSystemId, 0);
 
     float u = *(float *)(g_activeParticleSet + 0x90);
     float w = *(float *)(g_activeParticleSet + 0x94);
-    ((PaintCanvas *)this->canvas)->SpriteSystemSetAllUv(this->spriteSystemId, u, 0.0f, w, 0.0f);
+    canvas->SpriteSystemSetAllUv(this->spriteSystemId, u, 0.0f, w, 0.0f);
 
+    IParticleSystem **sprites = (IParticleSystem **)this->spriteSystems;
     for (unsigned i = 0; i < this->spriteSystemCount; ++i) {
-        void *sys = ((void **)this->spriteSystems)[i];
+        void *sys = sprites[i];
         typedef void (*pfn)(void *, unsigned int, short, void *, float, float);
         pfn fn = (pfn)(*(void ***)sys)[0];
         fn(sys, this->spriteSystemId, offset, (void *)fn, u, w);
-        offset = offset + _ips_getParticleCount16(((void **)this->spriteSystems)[i]);
+        offset += _ips_getParticleCount16(sprites[i]);
     }
 }
 
-// ParticleSystemManager::addSpriteSystem(AEMath::Matrix const*, Array<ParticleSet> const&, bool)
-// Allocates a ParticleSystemSprite (0x78 bytes), constructs it against the manager's canvas
-// (+0x04) and the sprite flag (+0x38), appends it to the sprite array (+0x18), accumulates its
-// particle count into +0x34, and returns the new system's sprite-array handle (index, no flag).
-
-extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                           bool b4, bool b5);                       // ParticleSystemSprite ctor
-extern "C" void _psm_arraySpriteAdd(void *sys, void *arr);          // ArrayAdd<ParticleSystemSprite*>
-extern "C" int  _ips_getParticleCount(void *sys);                  // IParticleSystem::getParticleCount
-
+// Allocates a ParticleSystemSprite, constructs it against the manager's canvas and sprite flag,
+// appends it to the sprite array, accumulates its particle count, and returns its sprite-array handle.
 int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets, bool flag)
 {
-    void *sys = operator new(0x78);
+    void *sys = ::operator new(0x78);
     _pss_ctor(sys, this->canvas, matrix, sets, flag, this->spriteUsesExtra != 0);
     _psm_arraySpriteAdd(sys, &this->spriteSystemCount);
-    this->spriteParticleCount = _ips_getParticleCount(sys) + this->spriteParticleCount;
+    this->spriteParticleCount += _ips_getParticleCount(sys);
     return this->spriteSystemCount - 1;
 }
 
-// ParticleSystemManager::initMesh()
-// Mesh analogue of initSprites. When the mesh array (+0x3c) is non-empty it creates the shared
-// particle mesh on the canvas (+0x04) from the packed vertex/index counts in +0x5c (low 14 bits
-// << 2 verts, low 15 bits << 1 indices, format 0x1b), optionally creating its texture (+0x4a),
-// stores the mesh handle at +0x54, builds a transform (+0x58) bound to that mesh, then binds
-// every sub-system at its running vertex offset (4 bytes per particle).
-
+// Mesh analogue of initSprites. When the mesh array is non-empty it creates the shared particle mesh
+// on the canvas from the packed vertex/index counts (format 0x1b), optionally creating its texture,
+// stores the mesh handle, builds a transform bound to that mesh, then binds every sub-system at its
+// running vertex offset (4 bytes per particle).
 void ParticleSystemManager::initMesh()
 {
     if (this->meshSystemCount == 0)
@@ -448,172 +350,90 @@ void ParticleSystemManager::initMesh()
     this->meshId = 0xffffffff;
     this->transformId = 0xffffffff;
 
-    void *canvas = this->canvas;
-    int verts   = ((*reinterpret_cast<uint16_t*>(&this->meshParticleCount)) & 0x3fff) << 2;
-    int indices = ((*reinterpret_cast<uint16_t*>(&this->meshParticleCount)) & 0x7fff) << 1;
+    PaintCanvas *canvas = (PaintCanvas *)this->canvas;
+    int verts   = (int)((this->meshParticleCount & 0x3fff) << 2);
+    int indices = (int)((this->meshParticleCount & 0x7fff) << 1);
 
-    if ((short)this->meshTextureId == -1) {
-        if ((short)this->meshUvId != -1) {
-            ((PaintCanvas *)canvas)->MeshCreate((unsigned short)verts, (unsigned short)indices,
-                                   (signed char)0x1b, (unsigned int *)(&this->meshId));
-            ((PaintCanvas *)canvas)->TextureCreate((unsigned short)this->meshUvId,
-                                      (unsigned int *)(&this->meshId),
-                                      (((char)(unsigned long)this + 'P') != 0));
+    if (this->meshTextureId == -1) {
+        if (this->meshUvId != -1) {
+            canvas->MeshCreate((unsigned short)verts, (unsigned short)indices, (signed char)0x1b,
+                               &this->meshId);
+            canvas->TextureCreate((unsigned short)this->meshUvId, &this->meshId,
+                                  (((char)(unsigned long)this + 'P') != 0));
         }
     } else {
-        ((PaintCanvas *)canvas)->MeshCreate((unsigned short)verts, (unsigned short)indices,
-                                  (signed char)0x1b, (unsigned short)this->meshTextureId,
-                                  (unsigned int *)(&this->meshId));
+        canvas->MeshCreate((unsigned short)verts, (unsigned short)indices, (signed char)0x1b,
+                           (unsigned short)this->meshTextureId, &this->meshId);
     }
 
-    ((PaintCanvas *)this->canvas)->TransformCreate((unsigned int *)(&this->transformId));
-    ((PaintCanvas *)this->canvas)->TransformAddMeshId(this->transformId, this->meshId);
+    canvas->TransformCreate(&this->transformId);
+    canvas->TransformAddMeshId(this->transformId, this->meshId);
 
     short offset = 0;
+    IParticleSystem **meshes = (IParticleSystem **)this->meshSystems;
     for (unsigned i = 0; i < this->meshSystemCount; ++i) {
-        void *sys = ((void **)this->meshSystems)[i];
+        void *sys = meshes[i];
         typedef void (*pfn)(void *, unsigned int, short);
         ((pfn)(*(void ***)sys)[0])(sys, this->meshId, offset);
 
-        void *sys2 = ((void **)this->meshSystems)[i];
-        typedef short (*pfn2)(void *);
-        short count = ((pfn2 *)*(void **)sys2)[4](sys2);   // vtable+0x10
-        offset = offset + (short)(count * 4);
+        short count = _ips_getParticleCount16(meshes[i]);
+        offset += (short)(count * 4);
     }
 }
-
-// ParticleSystemManager::emitManual(int handle, Vector const& pos, int ret, Vector const& vel, float)
-// Bit-17 sprite/mesh dispatch; emits one burst at the given position into the selected system.
-// The decompiled return is the pass-through `ret` selector word when a system was hit, else
-// `this`. Modeled as the dispatch + emit; we return the selector for fidelity.
-//
-// NB: the first explicit param is `this` (in r0); the engine passes the manager pointer there.
-
-void *ParticleSystemManager_emitManual_v(
-    void *self, int handle, const float *pos, void *ret, const float *vel, float p5)
-{
-    (void)vel; (void)p5;
-    void *result = self;
-    if (handle != -1) {
-        void **arr;
-        int idx;
-        if (handle << 0x11 < 0) {
-            arr = (void **)((ParticleSystemManager*)self)->meshSystems;
-            idx = handle & 0x3fffffff;
-        } else {
-            arr = (void **)((ParticleSystemManager*)self)->spriteSystems;
-            idx = handle;
-        }
-        _ips_emitManual(arr[idx], pos[0], pos[1], pos[2]);
-        result = ret;
-    }
-    return result;
-}
-
-// ParticleSystemManager::enableSystemEmit(int handle, bool enable)
-// The target lifts as bad ARM data (a tail-call veneer), but it is the same bit-17 sprite/mesh
-// handle dispatch as the sibling setters, forwarding to the IParticleSystem emit-enable method.
 
 void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem*)(arr[idx]))->enableEmit(enable);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        sys->enableEmit(enable);
 }
 
-// ParticleSystemManager::addSystem(AEMath::Matrix const*, ParticleSettings::ParticleSet, bool)
-// The 16-byte target lifts as bad ARM data (a tail-call veneer). It is a thin forwarder that
-// constructs a particle system for the given set and registers it; we model it as a tail-call to
-// the sprite-system add path (the default add route), returning its handle.
-
+// Thin forwarder that constructs a particle system for the given set and registers it; modelled as a
+// tail-call to the sprite-system add path (the default add route), returning its handle.
 int ParticleSystemManager::addSystem(const void *matrix, unsigned int set, bool flag)
 {
     return _psm_addSpriteSystem(this, matrix, set, flag);
 }
 
-// ParticleSystemManager::init()
-// Builds the sprite and mesh sub-systems, marks the manager active (+0x14), and runs the first
-// update tick (via the virtual update at vtable+? -> here the resolved emitter-update entry).
-
+// Builds the sprite and mesh sub-systems, marks the manager active, and runs the first update tick.
 int ParticleSystemManager::init()
 {
-    _psm_initSprites(this);
-    _psm_initMesh(this);
+    initSprites();
+    initMesh();
     this->enabled = 1;
     return _psm_firstUpdate(this, 0, 0, 0);
 }
 
-// ParticleSystemManager::resetSystem(int handle)
-// Bad-data ARM veneer; same bit-17 sprite/mesh handle dispatch, tail-calling the selected
-// IParticleSystem's reset method.
-
 void ParticleSystemManager::resetSystem(int handle)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    _ips_reset(arr[idx]);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        _ips_reset(sys);
 }
 
-// 4-arg renderer (DAT_001ac974 veneer): canvas, a, b, c
-// 2-arg renderer (DAT_001ac984 veneer): canvas, a
-
-// ParticleSystemManager::renderMeshes()
 void ParticleSystemManager::renderMeshes()
 {
     if (this->meshTextureId != -1)
-        return _psm_meshRender2(this->canvas, this->transformId);
-    if (this->spriteUvId != -1)
-        return _psm_meshRender4(this->canvas, this->transformId, this->meshExtraId, this->meshBlendMode);
+        _psm_meshRender2(this->canvas, this->transformId);
+    else if (this->spriteUvId != -1)
+        _psm_meshRender4(this->canvas, this->transformId, this->meshExtraId, this->meshBlendMode);
 }
 
-// ParticleSystemManager::attachSystem(int handle, bool enable)
-// Binds a previously added sub-system (identified by its handle) into the active set. The handle's
-// top bit (bit 17 of the shifted value) selects the mesh array (+0x40) vs the sprite array (+0x1c);
-// the resolved IParticleSystem is then armed via its emit-enable entry, exactly like the sibling
-// enableSystem* dispatchers.
+// Binds a previously added sub-system (identified by its handle) into the active set via its
+// emit-enable entry, exactly like the sibling enableSystem* dispatchers.
 void ParticleSystemManager::attachSystem(int handle, bool enable)
 {
-    if (handle == -1)
-        return;
-    void **arr;
-    int idx;
-    if (handle << 0x11 < 0) {
-        arr = (void **)this->meshSystems;
-        idx = handle & 0x3fffffff;
-    } else {
-        arr = (void **)this->spriteSystems;
-        idx = handle;
-    }
-    ((IParticleSystem *)(arr[idx]))->enableEmit(enable);
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys != nullptr)
+        sys->enableEmit(enable);
 }
 
-// ParticleSystemManager::enableSystemEmit2(int handle, bool enable)
-// Secondary entry of the emit-enable dispatcher (same bit-17 sprite/mesh handle split as
-// enableSystemEmit), used by the ego-craft thruster bookkeeping.
+// Secondary entry of the emit-enable dispatcher, used by the ego-craft thruster bookkeeping.
 void ParticleSystemManager::enableSystemEmit2(int handle, bool enable)
 {
     enableSystemEmit(handle, enable);
 }
 
-// ParticleSystemManager::enableSystemEmit3(int handle, bool enable)
 // Tertiary entry of the emit-enable dispatcher; identical handle dispatch.
 void ParticleSystemManager::enableSystemEmit3(int handle, bool enable)
 {

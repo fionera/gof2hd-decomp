@@ -1,140 +1,132 @@
 #include "gof2/engine/render/SimpleMeshMerger.h"
+#include "gof2/engine/render/Mesh.h"
 
-extern "C" void SMM_MeshCreate_fromId(void *canvas, unsigned short id, unsigned *out, bool b);
-extern "C" void *SMM_MeshGetPointer(void *canvas, unsigned meshId);
+namespace AbyssEngine {
+
+using AEMath::Matrix;
+using AEMath::Vector;
+
+// Engine helpers backing the merge: source-mesh loading, merged-mesh allocation,
+// per-vertex/-triangle writes, and transform creation. These resolve to PaintCanvas /
+// Mesh / Matrix primitives in libgof2hd; declared here until the engine externs pass
+// gives them their real homes.
+extern "C" void  SMM_MeshCreate_fromId(void* canvas, unsigned short id, unsigned* out, bool b);
+extern "C" void* SMM_MeshGetPointer(void* canvas, unsigned meshId);
 extern "C" unsigned SMM_uidiv(unsigned a, unsigned b);
-extern "C" void SMM_MatrixTransformVector(Matrix *out, const Vector *v);
-extern "C" void SMM_MatrixRotateVector(Matrix *out, const Vector *v);
-extern "C" void SMM_MeshSetNormal(void *canvas, unsigned meshId, unsigned short idx, Vector *n);
-extern "C" void SMM_TransformCreate(void *canvas, unsigned *out);
-extern "C" void SMM_TransformAddMeshId(void *canvas, unsigned transformId, unsigned meshId);
+extern "C" void  SMM_MatrixTransformVector(Matrix* out, const Vector* v);
+extern "C" void  SMM_MatrixRotateVector(Matrix* out, const Vector* v);
+extern "C" void  SMM_MeshSetNormal(void* canvas, unsigned meshId, unsigned short idx, Vector* n);
+extern "C" void  SMM_TransformCreate(void* canvas, unsigned* out);
+extern "C" void  SMM_TransformAddMeshId(void* canvas, unsigned transformId, unsigned meshId);
+extern "C" void  SMM_MeshCreate_empty(void* canvas, unsigned short verts, unsigned short tris,
+                                      int firstFlags, float factor, unsigned* out);
+extern "C" void  SMM_MeshSetPoint(unsigned canvas, unsigned short meshId, unsigned short idx,
+                                  float x, float y, float z);
+extern "C" void  SMM_MeshSetUv(unsigned canvas, unsigned short meshId, unsigned short idx,
+                               float u, float v);
+extern "C" void  SMM_MeshSetColor(void* canvas, unsigned meshId, unsigned short idx,
+                                  float r, float g, float b, float a);
+extern "C" void  SMM_MeshSetTriangle(unsigned canvas, unsigned short meshId, unsigned short tri,
+                                     unsigned short a, unsigned short b, unsigned short c);
 
-// SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
-//                                    Array<Matrix> transforms, PaintCanvas* canvas, ushort factor)
-// Loads each source mesh, allocates one merged mesh sized to the combined vertex/triangle
-// counts, then copies every source vertex (position/normal/uv/color) transformed by its
-// per-mesh matrix and every source triangle (index-rebased) into the merged mesh. Finally
-// builds a transform holding the merged mesh.
-//
-// `transforms` arrives by value; the decompile reads it as `undefined4* param_3` whose [1]
-// member is the matrix data pointer (rows of 0x3c bytes). We model it the same way.
-
-extern "C" void SMM_MeshCreate_empty(void *canvas, unsigned short verts, unsigned short tris,
-                                     int firstFlags, float factor, unsigned *out);
-extern "C" void SMM_MeshSetPoint(unsigned canvas, unsigned short meshId, unsigned short idx,
-                                 float x, float y, float z);
-extern "C" void SMM_MeshSetUv(unsigned canvas, unsigned short meshId, unsigned short idx,
-                              float u, float v);
-extern "C" void SMM_MeshSetColor(void *canvas, unsigned meshId, unsigned short idx,
-                                 float r, float g, float b, float a);
-extern "C" void SMM_MeshSetTriangle(unsigned canvas, unsigned short meshId, unsigned short tri,
-                                    unsigned short a, unsigned short b, unsigned short c);
-
-__attribute__((visibility("hidden"))) extern int **g_SMM_canary;
-
-SimpleMeshMerger::SimpleMeshMerger(unsigned *meshIds, unsigned *transforms, void *canvas, float factor) {
-    int *canary = *g_SMM_canary;
-    int saved = *canary;
-
-    // this->meshes is an embedded Array<Mesh*> auto-constructed with the object.
-    this->f_4 = (short)factor;
-    this->f_14 = canvas;
-    this->f_0 = *(int *)transforms;
+// Builds a single merged mesh from `meshIds`, each instance placed by the matching
+// matrix row in `transforms`. Loads every source mesh, allocates one merged mesh sized
+// to the combined vertex/triangle counts, copies every source vertex (position/normal/
+// uv/color) transformed by its per-mesh matrix and every source triangle (index-rebased),
+// then builds a transform holding the merged mesh.
+SimpleMeshMerger::SimpleMeshMerger(unsigned* meshIds, unsigned* transforms,
+                                   PaintCanvas* canvas, float factor) {
+    void* cv = canvas;
+    this->mergeFactor = (short)factor;
+    this->canvas = canvas;
+    this->matrixCount = (int)transforms[0];
     this->meshes.resize(meshIds[0]);
 
     // pass 1: load source meshes, accumulate vertex + triangle totals
     short vertTotal = 0;
     short triTotal = 0;
-    for (unsigned i = 0; i < meshIds[0]; i = i + 1) {
+    for (unsigned i = 0; i < meshIds[0]; ++i) {
         unsigned newId;
-        SMM_MeshCreate_fromId(canvas, *(unsigned short *)(meshIds[1] + i * 2), &newId, false);
-        void *meshPtr = SMM_MeshGetPointer(canvas, newId);
-        this->meshes[i] = (Mesh *)meshPtr;
-        char *m = (char *)(this->meshes[i]);
-        short vc = *(short *)(m + 2);
-        short tc = (short)SMM_uidiv(*(unsigned short *)(m + 0x28), 3);
-        triTotal = triTotal + vc;       // (matches target's accumulation order)
+        SMM_MeshCreate_fromId(cv, *(unsigned short*)(meshIds[1] + i * 2), &newId, false);
+        this->meshes[i] = (Mesh*)SMM_MeshGetPointer(cv, newId);
+        Mesh* m = this->meshes[i];
+        short vc = (short)m->vertexCount;
+        short tc = (short)SMM_uidiv(m->indexCount, 3);
+        triTotal = triTotal + vc;       // (preserves the original accumulation order)
         vertTotal = vertTotal + tc;
     }
 
-    // allocate the merged mesh
-    char *firstMesh = (char *)(this->meshes[0]);
+    // allocate the merged mesh, seeding its vertex-format flags from the first source mesh
+    Mesh* firstMesh = this->meshes[0];
     unsigned mergedId;
-    SMM_MeshCreate_empty(canvas, (unsigned short)vertTotal, (unsigned short)triTotal,
-                         (int)*(signed char *)firstMesh, factor, &mergedId);
-    this->f_18 = mergedId;
+    SMM_MeshCreate_empty(cv, (unsigned short)vertTotal, (unsigned short)triTotal,
+                         (int)(signed char)firstMesh->vertexFormat, factor, &mergedId);
+    this->mergedMeshId = mergedId;
 
     // pass 2: copy transformed vertices and rebased triangles
     short vBase = 0;
     short tBase = 0;
-    for (unsigned i = 0; i < meshIds[0]; i = i + 1) {
-        char *m = (char *)(this->meshes[i]);
-        int posOff = 0, uvOff = 0, colOff = 0;
-        unsigned v = 0;
+    for (unsigned i = 0; i < meshIds[0]; ++i) {
+        Mesh* m = this->meshes[i];
+        int uvOff = 0, colOff = 0;
         unsigned char flags = 0;
-        for (; v < *(unsigned short *)(m + 2); v = v + 1) {
-            m = (char *)(this->meshes[i]);
-            flags = *(unsigned char *)m;
-            // transformed-vector scratch (matrix-transform writes a Vector into the head)
-            float xform[4];
-            Matrix *matOut = (Matrix *)xform;
-            if (flags & 1) {
-                Vector *src = (Vector *)(transforms[1] + i * 0x3c);
-                SMM_MatrixTransformVector(matOut, src);
-                SMM_MeshSetPoint((unsigned)(unsigned long)canvas,
-                                 (unsigned short)this->f_18,
+        for (unsigned v = 0; v < m->vertexCount; ++v) {
+            flags = m->vertexFormat;
+            if (flags & 1) {   // has positions
+                Vector xform;
+                const Vector* src = (const Vector*)(transforms[1] + i * 0x3c);
+                SMM_MatrixTransformVector((Matrix*)&xform, src);
+                SMM_MeshSetPoint((unsigned)(unsigned long)cv,
+                                 (unsigned short)this->mergedMeshId,
                                  (unsigned short)(vBase + (short)v),
-                                 xform[0], xform[1], xform[2]);
-                m = (char *)(this->meshes[i]);
-                flags = *(unsigned char *)m;
+                                 xform.x, xform.y, xform.z);
+                flags = m->vertexFormat;
             }
-            Matrix mat;
-            if ((unsigned)flags & 4) {   // (flags<<0x1d)<0 -> bit2
-                Vector *src = (Vector *)(transforms[1] + i * 0x3c);
-                SMM_MatrixRotateVector(&mat, src);
-                SMM_MeshSetNormal(canvas, this->f_18,
-                                  (unsigned short)(vBase + (short)v), (Vector *)&mat);
-                m = (char *)(this->meshes[i]);
-                flags = *(unsigned char *)m;
+            if (flags & 4) {   // has normals
+                Matrix rotated;
+                const Vector* src = (const Vector*)(transforms[1] + i * 0x3c);
+                SMM_MatrixRotateVector(&rotated, src);
+                SMM_MeshSetNormal(cv, this->mergedMeshId,
+                                  (unsigned short)(vBase + (short)v), (Vector*)&rotated);
+                flags = m->vertexFormat;
             }
-            if ((unsigned)flags & 2) {   // (flags<<0x1e)<0 -> bit1
-                float *uv = (float *)(*(int *)(m + 8) + uvOff);
-                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)this->f_18,
+            if (flags & 2) {   // has uvs
+                float* uv = (float*)((char*)m->texCoords + uvOff);
+                SMM_MeshSetUv(0 /*canvas-as-uint*/, (unsigned short)this->mergedMeshId,
                               (unsigned short)(vBase + (short)v), uv[1], 0.0f);
-                m = (char *)(this->meshes[i]);
-                flags = *(unsigned char *)m;
+                flags = m->vertexFormat;
             }
-            if ((unsigned)flags & 8) {   // (flags<<0x1c)<0 -> bit3
-                float *col = (float *)(*(int *)(m + 0xc) + colOff);
-                SMM_MeshSetColor(canvas, this->f_18,
+            if (flags & 8) {   // has colors
+                float* col = (float*)((char*)(uintptr_t)m->colors + colOff);
+                SMM_MeshSetColor(cv, this->mergedMeshId,
                                  (unsigned short)(vBase + (short)v),
                                  col[1], col[2], col[3], 0.0f);
             }
-            posOff = posOff + 0xc;
             uvOff = uvOff + 8;
             colOff = colOff + 0x10;
         }
 
-        unsigned triCount = SMM_uidiv(*(unsigned short *)(m + 0x28), 3);
+        unsigned triCount = SMM_uidiv(m->indexCount, 3);
         int triOff = 0;
-        for (unsigned t = 0; t < triCount; t = t + 1) {
-            if ((unsigned)*(unsigned char *)m & 0x10) {   // (flags<<0x1b)<0 -> bit4
-                short *tri = (short *)(*(int *)(m + 0x2c) + triOff);
+        for (unsigned t = 0; t < triCount; ++t) {
+            if (m->vertexFormat & 0x10) {   // has triangles
+                short* tri = (short*)((char*)m->indices + triOff);
                 unsigned short a = (unsigned short)(tri[0] + vBase);
                 unsigned short b = (unsigned short)(tri[1] + vBase);
                 unsigned short c = (unsigned short)(tri[2] + vBase);
-                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)this->f_18,
+                SMM_MeshSetTriangle(0 /*canvas-as-uint*/, (unsigned short)this->mergedMeshId,
                                     (unsigned short)(tBase + (short)t), a, b, c);
-                m = (char *)(this->meshes[i]);
             }
             triOff = triOff + 6;
         }
 
-        tBase = tBase + (short)SMM_uidiv(*(unsigned short *)(m + 0x28), 3);
-        vBase = vBase + *(short *)(m + 2);
+        tBase = tBase + (short)SMM_uidiv(m->indexCount, 3);
+        vBase = vBase + (short)m->vertexCount;
     }
 
-    SMM_TransformCreate(canvas, (unsigned *)&this->f_1c);
-    SMM_TransformAddMeshId(canvas, this->f_1c, this->f_18);
+    SMM_TransformCreate(cv, &this->transformId);
+    SMM_TransformAddMeshId(cv, this->transformId, this->mergedMeshId);
     this->valid = 1;
 }
+
+} // namespace AbyssEngine

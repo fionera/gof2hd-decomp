@@ -1,205 +1,133 @@
-// The PaintCanvas methods now live on the real ::PaintCanvas class (lean header).
-// ParticleSystemSprite.h / IParticleSystem.h forward-declare AbyssEngine::PaintCanvas
-// only as an opaque pointer type (never dereferenced here), which would clash with the
-// lean header's `using ::PaintCanvas`. Rename that opaque forward-decl in those two
-// headers to a private tag so the real ::PaintCanvas class can be used for the calls.
-#define PaintCanvas AE_PaintCanvasOpaque
 #include "gof2/engine/render/ParticleSystemSprite.h"
-#include "gof2/engine/render/IParticleSystem.h"
-#undef PaintCanvas
 #include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/externs.h"
+#include "gof2/platform/libc.h"
 
-extern "C" char ParticleSystemSprite_vtable;
-extern "C" void *ParticleSystemSprite_baseDtor(void *self);
-extern "C" void *memset(void *, int, unsigned long);
-extern "C" char _ZTV20ParticleSystemSprite[];
-extern "C" float VectorSignedToFloat(int v, unsigned char mode);
-extern "C" void ParticleSystem_updateAreaExitParticleImpl(void *self, int param_1, float param_2);
-extern "C" float VectorUnsignedToFloat(unsigned int v, unsigned char mode);
+// ParticleSystemSprite derives (in the shipped binary) from IParticleSystem. In this port the
+// class is kept flat with named members, so the few base-subobject operations are reached through
+// typed helper symbols rather than a base-class cast.
+extern "C" uint32_t g_ParticleSystemSprite_vtable[];
+extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
+                               const void *sets, bool mirror, bool alphaFade);
+extern "C" void _pss_base_dtor(ParticleSystemSprite *self);
+extern "C" void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
+                                      float *green, float *blue);
+extern "C" float *_pss_rotateUVs(ParticleSystemSprite *self, float *src, int index, float *dst);
+extern "C" void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int index, float dt);
 
-// Complete object destructor (D1): set vtable, run release(), tail-call base dtor.
-extern "C" void _ZN20ParticleSystemSprite7releaseEv(void *self); // release()
+// Fixed-point helpers the engine emitted as explicit calls.
+extern "C" float VectorSignedToFloat(int v, uint8_t mode);
+extern "C" float VectorUnsignedToFloat(uint32_t v, uint8_t mode);
 
-void *_ZN20ParticleSystemSpriteD1Ev(void *self)
-{
-    *(void **)self = &ParticleSystemSprite_vtable + 8;
-    _ZN20ParticleSystemSprite7releaseEv(self);
-    return ParticleSystemSprite_baseDtor(self);
-}
+// Base address of the ParticleSet table the per-particle byte index multiplies into (0xA0 stride).
+extern "C" char *g_particleSetBase;
+// Rounding bias the original adds before converting UV offsets to int.
+extern "C" float g_uvRoundBias;
+// Colour normalization scale (1/255).
+extern "C" float g_colorScale;
 
-// ---- ~ParticleSystemSprite (complete-object destructor) ----------------------
-// Re-installs the derived vtable, frees the per-particle sprite scratch arrays via
-// release(), then chains into the IParticleSystem base destructor. Mirrors the
-// recovered D1 body at 0x192c58.
+// Re-installs the derived vtable, frees the per-particle sprite scratch arrays via release(), then
+// chains into the IParticleSystem base destructor to tear down the emitter/particle-set state.
 ParticleSystemSprite::~ParticleSystemSprite()
 {
-    *(void **)this = &ParticleSystemSprite_vtable + 8;
+    this->vtable = g_ParticleSystemSprite_vtable + 2;
     this->release();
-    ParticleSystemSprite_baseDtor(this);
+    _pss_base_dtor(this);
 }
 
-// Base-subobject destructor. ParticleSystemSprite derives from IParticleSystem; after
-// the derived dtor has re-installed the derived vtable and run release(), it chains into
-// the IParticleSystem destructor to tear down the base (emitter/particle-set state).
-// Returns the object pointer for the caller's deleting-dtor convention.
-extern "C" void *ParticleSystemSprite_baseDtor(void *self)
-{
-    ((IParticleSystem *)self)->~IParticleSystem();
-    return self;
-}
-
-void ParticleSystemSprite::reset()
-{
-    for (int i = 0; i < this->particleCount; i++) {
-        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(this->canvasHandle, 
-                                            (unsigned short)(this->idOffset + i),
-                                            4294967296.0f, 4294967296.0f, 4294967296.0f);
-        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetSize(this->canvasHandle, 
-                                        (unsigned short)(this->idOffset + i), 0);
-        this->ages[i] = 0xffffffff;
-    }
-    this->field_0x60 = 0;
-    this->field_0x4 = 1;
-}
-
-int ParticleSystemSprite::init(unsigned int param_1, unsigned short param_2)
-{
-    void **vt = *(void ***)this;
-    this->spriteId = param_1;
-    this->idOffset = param_2;
-    this->field_0x5c = 1;
-    typedef int (*pfn)(void *);
-    return ((pfn)vt[2])(this);
-}
-
-void ParticleSystemSprite::release()
-{
-    if (this->spriteData != 0)
-        ::operator delete[](this->spriteData);
-    this->spriteData = 0;
-    if (this->ages != 0)
-        ::operator delete[](this->ages);
-    this->ages = 0;
-    ::operator delete[](this->setIndices);
-    this->setIndices = 0;
-}
-
-// ParticleSystemSprite::render(PaintCanvas*, unsigned int handle, unsigned int texture, BlendMode)
-// Draws the sprite system with an identity world transform: binds the texture and blend mode,
-// builds an identity 3x4 matrix on the stack, pushes it as the world-view matrix, and issues
-// the sprite-system draw. A handle of -1 means "no system" and is skipped.
-
-// Constant {0,0,1,0} tail used to fill the identity matrix (matches the original literals).
-static const float kIdentTail[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
-
-void ParticleSystemSprite::render(void *canvas, int handle, unsigned int texture, int blend)
-{
-    if (handle == -1)
-        return;
-
-    ((PaintCanvas*)(long)canvas)->SetTexture(texture, 0);
-    ((PaintCanvas*)(long)canvas)->SetBlendMode(blend);
-
-    // Identity affine transform (3x4 rows + trailing vector).
-    float m[16];
-    m[0] = 1.0f;
-    m[1] = 0.0f;
-    m[2] = kIdentTail[1];
-    m[3] = kIdentTail[2];
-    m[4] = kIdentTail[3];
-    m[5] = 1.0f;        // local_44
-    m[6] = 0.0f;
-    m[7] = kIdentTail[1];
-    m[8] = kIdentTail[2];
-    m[9] = kIdentTail[3];
-    m[10] = 0.0f;
-    m[11] = kIdentTail[1];
-    m[12] = kIdentTail[2];
-    m[13] = kIdentTail[3];
-    m[14] = 1.0f;       // local_20
-
-    ((PaintCanvas*)(long)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)m);
-    ((PaintCanvas*)(long)canvas)->DrawSpriteSystem((unsigned int)(unsigned long)canvas);
-}
-
-// ParticleSystemSprite::ParticleSystemSprite(PaintCanvas*, Matrix const*,
-//     Array<ParticleSettings::ParticleSet> const&, bool, bool)
-// Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the per-
-// particle sprite scratch array (count at +0x48, 12 bytes each) at +0x64 and zero-fills it,
-// and caches a precomputed Pow value at +0x70.
-
-extern "C" void _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
-    void *self, void *canvas, const void *matrix, const void *sets, bool b4, bool b5);
-
-void *ParticleSystemSprite_ctor(
-    void *selfv, void *canvas, const void *matrix, const void *sets, bool b4, bool b5)
-{
-    _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
-        selfv, canvas, matrix, sets, b4, b5);
-
-    ParticleSystemSprite *self = (ParticleSystemSprite *)selfv;
-    unsigned int count = self->particleCount;
-
-    // Install the derived vtable (base + 8 -> first virtual slot).
-    *(void **)self = (void *)(_ZTV20ParticleSystemSprite + 8);
-
-    void *arr = operator new[](count * 0xc);
-    if (count != 0)
-        memset(arr, 0, (unsigned long)count * 0xc);
-    self->spriteData = arr;
-
-    self->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
-    return self;
-}
-
-// ParticleSystemSprite::ParticleSystemSprite(PaintCanvas*, Matrix const*,
-//     Array<ParticleSettings::ParticleSet> const&, bool, bool)
 // Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the per-particle
-// sprite scratch array (particleCount * 12 bytes) at +0x64 and zero-fills it, then caches a
-// precomputed Pow value at +0x70.
-ParticleSystemSprite::ParticleSystemSprite(
-    void *canvas, const void *matrix, const void *particleSets, bool b4, bool b5)
+// sprite scratch array (particleCount * 12 bytes) and zero-fills it, then caches a precomputed Pow
+// value.
+ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
+                                           const void *particleSets, bool mirror, bool alphaFade)
 {
-    _ZN15IParticleSystemC2EPN11AbyssEngine10PaintCanvasEPKNS0_6AEMath6MatrixERK5ArrayI14ParticleSettings11ParticleSetEbb(
-        this, canvas, matrix, particleSets, b4, b5);
+    _pss_base_ctor(this, canvas, matrix, particleSets, mirror, alphaFade);
 
-    unsigned int count = this->particleCount;
+    uint32_t count = (uint32_t)this->particleCount;
 
-    // Install the derived vtable (base + 8 -> first virtual slot).
-    *(void **)this = (void *)(_ZTV20ParticleSystemSprite + 8);
+    this->vtable = g_ParticleSystemSprite_vtable + 2;
 
-    void *arr = operator new[](count * 0xc);
+    char *arr = new char[count * 0xc];
     if (count != 0)
-        memset(arr, 0, (unsigned long)count * 0xc);
+        memset(arr, 0, (size_t)count * 0xc);
     this->spriteData = arr;
 
     this->cachedPow = AbyssEngine::AEMath::Pow(0.0f, 0.0f);
 }
 
-// ParticleSystemSprite::updateSingle(int index, float dt)
-// Advances one live particle. Skips the work when the system's active flag (+0x34 bit7) is
-// clear. Otherwise it ages the particle (ages array at +0x68, per-particle set index at +0x6c
-// selecting a 0xA0-byte ParticleSet), kills it once it passes its lifetime, grows its sprite
-// size, interpolates and applies its RGBA, steps the UV flipbook animation when the set has
-// frames, and integrates its velocity into the sprite position.
-
-// Base address of the ParticleSet table the per-particle byte index multiplies into (0xA0 stride).
-__attribute__((visibility("hidden"))) extern char *g_particleSetBase;
-// Rounding bias the original adds before converting UV offsets to int.
-__attribute__((visibility("hidden"))) extern float g_uvRoundBias;
-
-void ParticleSystemSprite::updateSingle(int index, float dt)
+void ParticleSystemSprite::reset()
 {
-    // Active flag: sign bit of (flagByte << 24).
-    if ((int)((unsigned int)this->flags << 0x18) < 0)
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    for (int i = 0; i < this->particleCount; i++) {
+        pc->SpriteSystemSetPosition(this->canvasHandle, (uint16_t)(this->idOffset + i),
+                                    4294967296.0f, 4294967296.0f, 4294967296.0f);
+        pc->SpriteSystemSetSize(this->canvasHandle, (uint16_t)(this->idOffset + i), 0);
+        this->ages[i] = -1;
+    }
+    this->field_0x60 = 0;
+    this->field_0x4 = 1;
+}
+
+int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset)
+{
+    void **vt = (void **)this->vtable;
+    this->spriteId = spriteId;
+    this->idOffset = idOffset;
+    this->field_0x5c = 1;
+    typedef int (*pfn)(ParticleSystemSprite *);
+    return ((pfn)vt[2])(this);
+}
+
+void ParticleSystemSprite::release()
+{
+    delete[] (char *)this->spriteData;
+    this->spriteData = nullptr;
+    delete[] this->ages;
+    this->ages = nullptr;
+    delete[] this->setIndices;
+    this->setIndices = nullptr;
+}
+
+// ParticleSystemSprite::render(PaintCanvas*, handle, texture, BlendMode)
+// Draws the sprite system with an identity world transform: binds the texture and blend mode,
+// builds an identity affine matrix on the stack, pushes it as the world-view matrix, and issues
+// the sprite-system draw. A handle of 0xffffffff means "no system" and is skipped.
+void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t texture, BlendMode blend)
+{
+    if (handle == 0xffffffffu)
         return;
 
-    unsigned int handle = this->canvasHandle;
-    unsigned short id = (unsigned short)this->spriteId;
+    canvas->SetTexture(texture, 0);
+    canvas->SetBlendMode(blend);
 
-    int *ages = (int *)this->ages;
-    char *setIdx = (char *)this->setIndices;
+    // Identity affine transform (3x4 rows + trailing vector).
+    float m[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+    canvas->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)m);
+    canvas->DrawSpriteSystem(handle);
+}
+
+// ParticleSystemSprite::updateSingle(index, dt)
+// Advances one live particle. Skips the work when the system's active flag is clear. Otherwise it
+// ages the particle, kills it once it passes its lifetime, grows its sprite size, interpolates and
+// applies its RGBA, steps the UV flipbook animation when the set has frames, and integrates its
+// velocity into the sprite position.
+void ParticleSystemSprite::updateSingle(int index, float dt)
+{
+    // Active flag: sign bit of (flags << 24).
+    if ((int)((uint32_t)this->flags << 0x18) < 0)
+        return;
+
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    uint32_t handle = this->canvasHandle;
+    uint16_t id = (uint16_t)this->spriteId;
+
+    int *ages = this->ages;
+    int8_t *setIdx = this->setIndices;
     char *set = g_particleSetBase + (int)setIdx[index] * 0xa0;
 
     // Age the particle.
@@ -210,18 +138,18 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
     int lifetime = *(int *)(set + 0x28);
     if ((int)age > lifetime) {
         ages[index] = -1;
-        ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(handle, id, age, 0.0f, 0.0f);
+        pc->SpriteSystemSetPosition(handle, id, age, 0.0f, 0.0f);
         return;
     }
 
     // Grow size.
     VectorSignedToFloat(*(int *)(set + 0x44), 0);
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemAddSize(handle, id, (short)this->idOffset + (short)index);
+    pc->SpriteSystemAddSize(handle, id, (short)this->idOffset + (short)index);
 
-    // Color.
+    // Colour.
     float ca, cr, cg, cb;
-    ((IParticleSystem *)(this))->interpolateColor(index, &ca, &cr, &cg, &cb);
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
+    _pss_interpolateColor(this, index, &ca, &cr, &cg, &cb);
+    pc->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
 
     // UV flipbook animation (when the set has frames at +0x9c).
     int frames = *(int *)(set + 0x9c);
@@ -233,7 +161,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
         int prev = (prevAged * frames) / span;
         if (prev < 0) prev = 0;
 
-        if ((unsigned int)cur != (unsigned int)prev) {
+        if ((uint32_t)cur != (uint32_t)prev) {
             float fcur = VectorSignedToFloat(cur, 0);
             float du = *(float *)(set + 0x90) - *(float *)(set + 0x88);
             float dv = *(float *)(set + 0x94) - *(float *)(set + 0x8c);
@@ -241,90 +169,74 @@ void ParticleSystemSprite::updateSingle(int index, float dt)
             float frac = VectorSignedToFloat((int)(u0 + g_uvRoundBias), 0);
             u0 = u0 - frac;
             float v0 = *(float *)(set + 0x8c) + dv * frac;
-            float uv[4];
-            uv[0] = u0;
-            uv[1] = du + u0;
-            uv[2] = v0;
-            uv[3] = dv + v0;
+            float uv[4] = { u0, du + u0, v0, dv + v0 };
 
             float *out = uv;
             float uvRot[4];
-            // UV rotation flag: sign bit of (flagByte2 << 30).
-            if ((int)((unsigned int)this->flags2 << 0x1e) < 0)
-                out = ((IParticleSystem *)(this))->rotateUVs(uv, index, uvRot);
+            // UV rotation flag: sign bit of (flags2 << 30).
+            if ((int)((uint32_t)this->flags2 << 0x1e) < 0)
+                out = _pss_rotateUVs(this, uv, index, uvRot);
 
-            ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
+            pc->SpriteSystemSetUv(handle, id, out[1], 0.0f, out[2], 0.0f);
         }
     }
 
     // Integrate velocity into position.
     float pos[4] = { 0, 0, 0, 0 };
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
+    pc->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
 }
 
-void ParticleSystemSprite::setAlpha(int param_1, unsigned int param_2, float param_3)
+void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha)
 {
-    float c0 = (float)(param_2 & 0xff);
-    float c1 = (float)((param_2 >> 8) & 0xff);
-    float c2 = (float)((param_2 >> 16) & 0xff);
-    float c3 = (float)(param_2 >> 24);
+    float c0 = (float)(color & 0xff);
+    float c1 = (float)((color >> 8) & 0xff);
+    float c2 = (float)((color >> 16) & 0xff);
+    float c3 = (float)(color >> 24);
 
     c0 = c0 * (1.0f / 255.0f);
     c1 = c1 * (1.0f / 255.0f);
     c2 = c2 * (1.0f / 255.0f);
     c3 = c3 * (1.0f / 255.0f);
 
-    if (this->field_0x45 == 0) {
-        c0 = c0 * param_3;
+    if (this->cAlphaChannelMode == 0) {
+        c0 = c0 * alpha;
     } else {
-        c1 = c1 * param_3;
-        c2 = c2 * param_3;
-        c3 = c3 * param_3;
+        c1 = c1 * alpha;
+        c2 = c2 * alpha;
+        c3 = c3 * alpha;
     }
 
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(this->canvasHandle, 
-                                    (unsigned short)(this->idOffset + param_1),
-                                    c3, c2, c1, c0);
+    ((PaintCanvas *)g_PaintCanvas)->SpriteSystemSetRGBA(this->canvasHandle,
+                                    (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
 }
 
-// ParticleSystemSprite::updateAreaExitParticle(int, float)
-// The target is a 12-byte veneer that the disassembler could not lift cleanly (it decodes as
-// stray conditional ARM ops ending in a conditional branch). Functionally it is a thin
-// forwarder that, under one condition, tail-calls the shared area-exit particle update helper.
-// We model it as that forwarding call so the translation unit is faithful and compiles.
-
-void ParticleSystemSprite::updateAreaExitParticle(int param_1, float param_2)
+// The target is a 12-byte veneer that does not lift cleanly; functionally it is a thin forwarder
+// that tail-calls the shared area-exit particle update helper.
+void ParticleSystemSprite::updateAreaExitParticle(int index, float dt)
 {
-    ParticleSystem_updateAreaExitParticleImpl(this, param_1, param_2);
+    ParticleSystem_updateAreaExitParticleImpl(this, index, dt);
 }
 
-// ParticleSystemSprite::setParticle(Vector const& pos, float, unsigned int color, float, float,
-//     float, float, bool clearColor, float, float, Vector const& uv)
+// ParticleSystemSprite::setParticle(pos, _, color, _, ..., clearColor, _, _, uv)
 // Pushes one particle's state into the PaintCanvas sprite system: position (from `pos`), size
 // (base size + per-system offset), UV rectangle, and RGBA. When `clearColor` is set the packed
-// color's low byte is masked off first. Color components are converted from 0..255 bytes to
-// normalized floats via VectorUnsignedToFloat and scaled by a global constant.
-
-// Global color normalization scale (1/255).
-__attribute__((visibility("hidden"))) extern float g_colorScale;
-
-void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int color,
-                                       float p4, float p5, float p6, float p7, bool clearColor,
-                                       float p9, float p10, const void *uv)
+// colour's low byte is masked off first.
+void ParticleSystemSprite::setParticle(const Vector &pos, float p2, uint32_t color, float p4,
+                                       float p5, float p6, float p7, bool clearColor, float p9,
+                                       float p10, const Vector &uv)
 {
-    (void)p2; (void)p5; (void)p6; (void)p7; (void)p9; (void)p10; (void)pos;
+    (void)p2; (void)p5; (void)p6; (void)p7; (void)p9; (void)p10;
 
-    unsigned int handle = this->canvasHandle;
-    unsigned short id = (unsigned short)this->spriteId;
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    uint32_t handle = this->canvasHandle;
+    uint16_t id = (uint16_t)this->spriteId;
 
-    const float *posv = (const float *)pos;
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetPosition(handle, id, posv[1], p4, posv[2]);
+    pc->SpriteSystemSetPosition(handle, id, pos.y, p4, pos.z);
 
     short size = (short)this->baseSize + (short)this->idOffset;
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetSize(handle, id, size);
+    pc->SpriteSystemSetSize(handle, id, size);
 
-    const float *uvv = (const float *)uv;
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetUv(handle, id, uvv[0], uvv[1], uvv[2], uvv[3]);
+    pc->SpriteSystemSetUv(handle, id, uv.x, uv.y, uv.z, ((const float *)&uv)[3]);
 
     if (clearColor)
         color &= 0xffffff00;
@@ -335,27 +247,23 @@ void ParticleSystemSprite::setParticle(const void *pos, float p2, unsigned int c
     float r = VectorUnsignedToFloat((color & 0xffffff) >> 0x10, 0);
     (void)a; (void)b; (void)g;
 
-    ((PaintCanvas*)g_PaintCanvas)->SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
+    pc->SpriteSystemSetRGBA(handle, id, r * g_colorScale, g, g_colorScale, b);
 }
 
-// ParticleSystemSprite::render(PaintCanvas*, unsigned int handle)
-// Camera-relative draw: snapshots the current camera's local matrix twice (the engine swaps
-// the active camera between the two queries) and forwards both 15-float matrices to the
-// sprite-system draw entry. A handle of 0xffffffff means "no system" and is skipped.
-
-void ParticleSystemSprite::render(void *canvas, unsigned int handle)
+// ParticleSystemSprite::render(PaintCanvas*, handle)
+// Camera-relative draw: snapshots the current camera's local matrix twice (the engine swaps the
+// active camera between the two queries) and forwards both 15-float matrices to the sprite-system
+// draw entry. A handle of 0xffffffff means "no system" and is skipped.
+void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle)
 {
     if (handle == 0xffffffffu)
         return;
 
-    PaintCanvas *pc = (PaintCanvas *)(long)canvas;
+    float *a = (float *)canvas->CameraGetLocal(canvas->CameraGetCurrent());
+    float am[15] = { a[0], a[1], a[2],  a[3],  a[4],  a[5],  a[6], a[7],
+                     a[8], a[9], a[10], a[11], a[12], a[13], a[14] };
 
-    float *a = (float *)pc->CameraGetLocal(pc->CameraGetCurrent());
-    float a0=a[0],a1=a[1],a2=a[2],a3=a[3],a4=a[4],a5=a[5],a6=a[6],a7=a[7];
-    float a8=a[8],a9=a[9],a10=a[10],a11=a[11],a12=a[12],a13=a[13],a14=a[14];
-    float am[15]={a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14};
+    float *b = (float *)canvas->CameraGetLocal(canvas->CameraGetCurrent());
 
-    float *b = (float *)pc->CameraGetLocal(pc->CameraGetCurrent());
-
-    pc->DrawSpriteSystem(handle, am, b);
+    canvas->DrawSpriteSystem(handle, am, b);
 }

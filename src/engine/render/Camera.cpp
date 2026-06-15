@@ -26,10 +26,9 @@ void Camera::SetPerspective(float fov, float aspect, float nearPlane, float farP
 // with the configured shake intensity; here we simply add it to the position.
 void Camera::shake(float dx, float dy, float dz)
 {
-    float *pos = (float *)this->field_0x0;
-    pos[0] += dx;
-    pos[1] += dy;
-    pos[2] += dz;
+    this->position[0] += dx;
+    this->position[1] += dy;
+    this->position[2] += dz;
 }
 
 } // namespace AbyssEngine

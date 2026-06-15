@@ -1,50 +1,46 @@
 #ifndef GOF2_LENSFLARE_H
 #define GOF2_LENSFLARE_H
 #include "gof2/common.h"
-// Galaxy on Fire 2 -- LensFlare class.
-// Top-level class. Uses PaintCanvas for drawing.
-//
-//   0x00  float        intensity (alpha; cleared/updated)
-//   0x04  PaintCanvas* canvas (param to ctor)
-//   0x08  int          width  (PaintCanvas::GetWidth())
-//   0x0c  int          height (PaintCanvas::GetHeight())
-//   0x10  uint*[3]     images (new[](0xc); three Image2D handles)
 
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
+// Galaxy on Fire 2 -- sun/star lens-flare effect.
+// Owns three Image2D sprite handles and renders them along the screen-centre ->
+// source axis, tinted from a small palette and faded by distance. Drawing is done
+// through the engine PaintCanvas.
 
+namespace AbyssEngine { class PaintCanvas; }
+
+// Engine draw/math helpers reached by address in the original binary. They wrap
+// PaintCanvas operations (image creation, colour/blend state, sprite blits) and
+// are resolved by a later externs pass.
 extern "C" {
-// AbyssEngine::PaintCanvas::Image2DCreate(canvas, short id, uint* out) -- 0x00071cf8.
-void LensFlare_Image2DCreate(void *canvas, short id, uint32_t *out);
-// AbyssEngine::PaintCanvas::GetWidth()/GetHeight() -- 0x0006fafc / 0x0006fb08.
-int LensFlare_GetWidth(void *canvas);
-int LensFlare_GetHeight(void *canvas);
+void  LensFlare_Image2DCreate(AbyssEngine::PaintCanvas *canvas, short id, uint32_t *out);
+int   LensFlare_GetWidth(AbyssEngine::PaintCanvas *canvas);
+int   LensFlare_GetHeight(AbyssEngine::PaintCanvas *canvas);
 
-// math + draw helpers used by render2D (resolved from PC-relative blx targets).
 float LensFlare_sqrtf(float v);
-int   LensFlare_imgWidth(void *canvas, void *img);
-int   LensFlare_imgHandle(void *img);           // GetWidth-ish handle accessor (blx r6)
-void  LensFlare_setColor(void *canvas, uint32_t color);
-void  LensFlare_setPos(void *canvas, int x, int y);
-void  LensFlare_drawScaled(void *canvas, void *img, int x, int y);
-void  LensFlare_drawSprite(void *canvas, void *img, int x, int y);   // 0x000709c0-area (blx r5/r6)
-void  LensFlare_pushState(void *canvas);
-void  LensFlare_setBlend(void *canvas, uint32_t mode);
-void  LensFlare_drawFinal(void *canvas, void *img, int a, int b);
-void  LensFlare_restoreState(void *canvas, int saved);           // tail 0x001ac088
+int   LensFlare_imgWidth(AbyssEngine::PaintCanvas *canvas, void *img);
+int   LensFlare_imgHandle(void *img);
+void  LensFlare_setColor(AbyssEngine::PaintCanvas *canvas, uint32_t color);
+void  LensFlare_drawScaled(AbyssEngine::PaintCanvas *canvas, void *img, int x, int y);
+void  LensFlare_pushState(AbyssEngine::PaintCanvas *canvas);
+void  LensFlare_setBlend(AbyssEngine::PaintCanvas *canvas, uint32_t mode);
+void  LensFlare_drawFinal(AbyssEngine::PaintCanvas *canvas, void *img, int a, int b);
+void  LensFlare_restoreState(AbyssEngine::PaintCanvas *canvas, int saved);
 }
 
 class LensFlare {
 public:
-    float intensity;        // +0x0  intensity
-    void* canvas;        // +0x4  PaintCanvas* canvas
-    int width;          // +0x8  width
-    int height;          // +0xc  height
-    void* images;       // +0x10 image handle array (uint[3])
+    float intensity;                 // current flare alpha
+    AbyssEngine::PaintCanvas *canvas;
+    int width;
+    int height;
+    uint32_t *images;                // three Image2D sprite handles
 
-    LensFlare(PaintCanvas *canvas);
+    explicit LensFlare(AbyssEngine::PaintCanvas *canvas);
     ~LensFlare();
+
     void render2D(float srcX, float srcY, float alpha, int colorIndex);
     void update();
 };
+
 #endif

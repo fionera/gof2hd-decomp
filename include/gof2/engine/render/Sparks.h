@@ -2,19 +2,19 @@
 #define GOF2_SPARKS_H
 #include "gof2/common.h"
 #include "gof2/math.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
 
+// Particle burst (rocket impacts / weapon hits) backed by a sprite system.
 class Sparks {
 public:
-    int* lifetimeThresholds;                     // +0x0   per-spark lifetime thresholds
-    uint32_t spriteSystem;                 // +0x4   sprite system handle
-    uint32_t texture;                 // +0x8   texture handle
-    int elapsed;                      // +0xc   elapsed time
-    uint8_t active;                 // +0x10  active flag
-    int kind;                     // +0x14  kind
-    uint32_t count;                // +0x18  spark count
-    int lifetime;                     // +0x1c  lifetime
-    int totalThreshold;                     // +0x20  total threshold
+    int* lifetimeThresholds;    // per-spark lifetime thresholds
+    uint32_t spriteSystem;      // sprite system handle
+    uint32_t texture;           // texture handle
+    int elapsed;                // elapsed time
+    uint8_t active;             // active flag
+    int kind;                   // burst kind (0 = hit, 1 = rocket)
+    uint32_t count;             // spark count
+    int lifetime;               // total lifetime
+    int totalThreshold;         // sum of per-spark thresholds
 
     Sparks(int kind);
     ~Sparks();

@@ -1,184 +1,151 @@
 #include "gof2/engine/render/LodMeshMerger.h"
-#include "gof2/game/core/Vector.h"
+#include "gof2/engine/math/AEMath.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/platform/libc.h"
 
-void LodMeshMerger::setEnabled(int index, bool enabled)
+namespace AbyssEngine {
+
+void LodMeshMerger::setEnabled(int index, bool value)
 {
-    uint8_t *flags = field_0x30;
-    if (flags[index] != enabled) {
-        flags[index] = enabled;
-        if (((int8_t *)field_0x34)[index] == 0) {
-            return;
+    if (enabled[index] != value) {
+        enabled[index] = value;
+        if (visible[index] != 0) {
+            dirty = 1;
         }
-        field_0x3c = 1;
     }
 }
 
 void LodMeshMerger::setLod(int index, signed char lod)
 {
-    int8_t *lods = field_0x2c;
-    if (lods[index] != lod) {
-        lods[index] = lod;
-        if (((int8_t *)field_0x30)[index] == 0) {
-            return;
+    if (lodLevels[index] != lod) {
+        lodLevels[index] = lod;
+        if (enabled[index] != 0) {
+            dirty = 1;
         }
-        field_0x3c = 1;
     }
 }
 
-// setMatrix(index, m): store the source transform into its per-row matrix slot.
-// The merger keeps a packed table of 0x3c-byte matrices (field_0x28).
-void LodMeshMerger::setMatrix(int index, const Matrix &m)
+// Store the source transform into its per-row matrix slot.
+void LodMeshMerger::setMatrix(int index, const Matrix& m)
 {
-    *(Matrix *)((char *)field_0x28 + index * 0x3c) = m;
+    transforms[index] = m;
 }
 
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    field_0x14->MeshCreate(meshId, &id, false);
-    void *ptr = field_0x14->MeshGetPointer(id);
-    AEMesh **meshes = field_0x8.data();
-    meshes[field_0x0 * lod + index] = (AEMesh *)ptr;
+    canvas->MeshCreate(meshId, &id, false);
+    void* ptr = canvas->MeshGetPointer(id);
+    sourceMeshes.data()[rows * lod + index] = (Mesh*)ptr;
 }
-
-extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);  // __aeabi_memcpy4
 
 void LodMeshMerger::update()
 {
-    int rows = field_0x0;
     for (int i = 0; i < rows; i++) {
-        void *sph = field_0x24[i];
-        uint8_t vis = (uint8_t)field_0x14->CameraIsSphereinViewFrustum(
-            (void *)((char *)sph + 0x3c),
-            *(float *)((char *)sph + 0x48));
-        int8_t *visArr = (int8_t *)field_0x34;
-        if (vis != (uint8_t)visArr[i]) {
-            visArr[i] = (int8_t)vis;
-            if (((int8_t *)field_0x30)[i] != 0) {
-                field_0x3c = 1;
+        void* sph = transformedMeshes[i];
+        uint8_t vis = (uint8_t)canvas->CameraIsSphereinViewFrustum(
+            (char*)sph + 0x3c,
+            *(float*)((char*)sph + 0x48));
+        if (vis != visible[i]) {
+            visible[i] = vis;
+            if (enabled[i] != 0) {
+                dirty = 1;
             }
         }
-        rows = field_0x0;
     }
 
-    if (field_0x3c != 0) {
-        int sumIdx = 0;   // r6 (index/triangle accumulator for the budget test)
-        for (int j = 0; j < rows; j++) {
-            if (((int8_t *)field_0x30)[j] != 0 &&
-                ((int8_t *)field_0x34)[j] != 0) {
-                signed char lod = ((int8_t *)field_0x2c)[j];
-                AEMesh *src = (AEMesh *)field_0x24[rows * lod + j];
-                sumIdx += (uint16_t)src->field_0x28;
-            }
-        }
-        for (int j = 0; sumIdx >= 0x10000 && j < rows; j++) {
-            if (((int8_t *)field_0x30)[j] != 0 &&
-                ((int8_t *)field_0x34)[j] != 0) {
-                signed char lod = ((int8_t *)field_0x2c)[j];
-                if (lod < field_0x38 - 1) {
-                    AEMesh *prev = (AEMesh *)field_0x24[rows * lod + j];
-                    setLod(j, (signed char)(lod + 1));
-                    rows = field_0x0;
-                    signed char nlod = ((int8_t *)field_0x2c)[j];
-                    AEMesh *cur = (AEMesh *)field_0x24[rows * nlod + j];
-                    sumIdx = sumIdx - (uint16_t)prev->field_0x28
-                                    + (uint16_t)cur->field_0x28;
-                }
-            }
-        }
-
-        int vtxOff = 0;   // r5 (vertex accumulator)
-        int idxOff = 0;   // r8 (index accumulator)
-        for (int j = 0; j < rows; j++) {
-            if (((int8_t *)field_0x30)[j] != 0 &&
-                ((int8_t *)field_0x34)[j] != 0) {
-                uint8_t *out = (uint8_t *)field_0x20;
-                uint8_t mask = out[0];
-                signed char lod = ((int8_t *)field_0x2c)[j];
-                AEMesh *src = (AEMesh *)field_0x24[rows * lod + j];
-
-                if (mask & 1) {
-                    aeabi_memcpy4(*(char **)(out + 4) + vtxOff * 0xc,
-                                  src->field_0x4,
-                                  (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)field_0x20;
-                    mask = out[0];
-                }
-                if (mask & 4) {
-                    aeabi_memcpy4(*(char **)(out + 0x10) + vtxOff * 0xc,
-                                  src->field_0x10,
-                                  (uint32_t)src->field_0x2 * 0xc);
-                    out = (uint8_t *)field_0x20;
-                    mask = out[0];
-                }
-                if (mask & 8) {
-                    aeabi_memcpy4(*(char **)(out + 0xc) + vtxOff * 0x10,
-                                  (void *)(uintptr_t)src->field_0xc,
-                                  (uint32_t)src->field_0x2 << 4);
-                    out = (uint8_t *)field_0x20;
-                    mask = out[0];
-                }
-                if (mask & 2) {
-                    aeabi_memcpy4(*(char **)(out + 8) + vtxOff * 8,
-                                  src->field_0x8,
-                                  (uint32_t)src->field_0x2 << 3);
-                    out = (uint8_t *)field_0x20;
-                    mask = out[0];
-                }
-                if (mask & 0x10) {
-                    int16_t *si = (int16_t *)src->field_0x2c;
-                    int16_t *di = (int16_t *)(*(char **)(out + 0x2c) + idxOff * 2);
-                    for (int k = -(int)(uint16_t)src->field_0x28; k != 0; k++) {
-                        *di = (int16_t)(*si + (int16_t)vtxOff);
-                        si++;
-                        di++;
-                    }
-                }
-                rows = field_0x0;
-                idxOff += (uint16_t)src->field_0x28;
-                vtxOff += (uint16_t)src->field_0x2;
-            }
-        }
-        uint8_t *out = (uint8_t *)field_0x20;
-        *(int16_t *)(out + 0x28) = (int16_t)idxOff;
-        *(int16_t *)(out + 2) = (int16_t)vtxOff;
-        field_0x3c = 0;
+    if (dirty == 0) {
+        return;
     }
+
+    // Sum the index counts of every active LOD slice.
+    int indexBudget = 0;
+    for (int j = 0; j < rows; j++) {
+        if (enabled[j] != 0 && visible[j] != 0) {
+            signed char lod = lodLevels[j];
+            Mesh* src = (Mesh*)transformedMeshes[rows * lod + j];
+            indexBudget += src->indexCount;
+        }
+    }
+
+    // While over budget, drop to coarser LODs.
+    for (int j = 0; indexBudget >= 0x10000 && j < rows; j++) {
+        if (enabled[j] != 0 && visible[j] != 0) {
+            signed char lod = lodLevels[j];
+            if (lod < cols - 1) {
+                Mesh* prev = (Mesh*)transformedMeshes[rows * lod + j];
+                setLod(j, (signed char)(lod + 1));
+                signed char newLod = lodLevels[j];
+                Mesh* cur = (Mesh*)transformedMeshes[rows * newLod + j];
+                indexBudget += cur->indexCount - prev->indexCount;
+            }
+        }
+    }
+
+    // Copy each active slice into the merged mesh.
+    uint8_t* out = (uint8_t*)mergedMesh;
+    int vtxOffset = 0;
+    int idxOffset = 0;
+    for (int j = 0; j < rows; j++) {
+        if (enabled[j] != 0 && visible[j] != 0) {
+            uint8_t mask = out[0];
+            signed char lod = lodLevels[j];
+            Mesh* src = (Mesh*)transformedMeshes[rows * lod + j];
+
+            if (mask & 1) {
+                memcpy(*(char**)(out + 4) + vtxOffset * 0xc,
+                       src->positions, src->vertexCount * 0xc);
+            }
+            if (mask & 4) {
+                memcpy(*(char**)(out + 0x10) + vtxOffset * 0xc,
+                       src->normals, src->vertexCount * 0xc);
+            }
+            if (mask & 8) {
+                memcpy(*(char**)(out + 0xc) + vtxOffset * 0x10,
+                       (void*)(uintptr_t)src->colors, (uint32_t)src->vertexCount << 4);
+            }
+            if (mask & 2) {
+                memcpy(*(char**)(out + 8) + vtxOffset * 8,
+                       src->texCoords, (uint32_t)src->vertexCount << 3);
+            }
+            if (mask & 0x10) {
+                const int16_t* si = (const int16_t*)src->indices;
+                int16_t* di = (int16_t*)(*(char**)(out + 0x2c) + idxOffset * 2);
+                for (uint16_t k = 0; k < src->indexCount; k++) {
+                    di[k] = (int16_t)(si[k] + (int16_t)vtxOffset);
+                }
+            }
+            idxOffset += src->indexCount;
+            vtxOffset += src->vertexCount;
+        }
+    }
+    *(int16_t*)(out + 0x28) = (int16_t)idxOffset;
+    *(int16_t*)(out + 2) = (int16_t)vtxOffset;
+    dirty = 0;
 }
 
-extern "C" void aeabi_memclr4(void *p, uint32_t n);
-extern "C" void aeabi_memclr(void *p, uint32_t n);
-
-// LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
-LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags)
+LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas* canvas_, uint16_t flags_)
+    : rows(rows_),
+      flags(flags_),
+      initialized(0),
+      canvas(canvas_),
+      mergedMesh(nullptr),
+      transformedMeshes(nullptr),
+      transforms(nullptr),
+      lodLevels(nullptr),
+      cols(cols_),
+      dirty(0)
 {
-    new (&field_0x8) Array<AEMesh*>();
-    field_0x20 = 0;
-    field_0x24 = 0;
-    field_0x28 = 0;
-    field_0x2c = 0;
-    field_0x14 = canvas;
-    field_0x0 = rows;
-    field_0x38 = cols;
-    field_0x8.resize((uint32_t)(cols * rows));
+    sourceMeshes.resize((uint32_t)(cols * rows));
 
-    uint32_t n = (uint32_t)field_0x0;
-    void *slots = ::operator new[](n * cols * 4);
-    field_0x24 = (void **)slots;
-    aeabi_memclr4(slots, n * cols * 4);
+    uint32_t n = (uint32_t)rows;
+    transformedMeshes = new void*[n * cols]();
 
-    void *lods = ::operator new[](n | ((int)n >> 31));
-    field_0x2c = (int8_t *)lods;
-    aeabi_memclr(lods, n);
+    lodLevels = new int8_t[n]();
 
-    char *mats = (char *)::operator new[](n * 0x3c);
-    for (uint32_t off = 0; off != n * 0x3c; off += 0x3c) {
-        new ((Matrix *)(mats + off)) Matrix();
-    }
-    field_0x28 = (Matrix *)mats;
-
-    for (int i = 0; i < (int)field_0x0; i++) {
+    transforms = new Matrix[n];
+    for (uint32_t i = 0; i < n; i++) {
+        // 15-float packed affine identity.
         Matrix tmp;
         tmp.m[0] = 1.0f;
         tmp.m[1] = 0.0f; tmp.m[2] = 0.0f; tmp.m[3] = 0.0f;
@@ -188,43 +155,31 @@ LodMeshMerger::LodMeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t f
         tmp.m[10] = 1.0f;
         tmp.m[11] = 0.0f; tmp.m[12] = 0.0f; tmp.m[13] = 0.0f;
         tmp.m[14] = 1.0f;
-        *(Matrix *)((char *)field_0x28 + i * 0x3c) = tmp;
+        transforms[i] = tmp;
     }
 
-    uint32_t rn = (uint32_t)field_0x0;
-    uint32_t signedN = rn | ((int)rn >> 31);
-    char *enabled = (char *)::operator new[](signedN);
-    field_0x30 = (uint8_t *)enabled;
-    for (int i = 0; i < (int)rn; i++) enabled[i] = 1;
+    enabled = new uint8_t[n];
+    for (uint32_t i = 0; i < n; i++) enabled[i] = 1;
 
-    char *visible = (char *)::operator new[](signedN);
-    field_0x34 = (uint8_t *)visible;
-    for (int i = 0; i < (int)rn; i++) visible[i] = 1;
-
-    field_0x3c = 0;
-    field_0x4 = flags;
-    field_0x6 = 0;
+    visible = new uint8_t[n];
+    for (uint32_t i = 0; i < n; i++) visible[i] = 1;
 }
 
-extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);                            // 0x6ec2c (__aeabi_uidiv)
 int LodMeshMerger::init()
 {
-    if (field_0x6 != 0) {
-        return field_0x6;
+    if (initialized != 0) {
+        return initialized;
     }
 
-    int rows;
-    for (int i = 0; i < (rows = field_0x0); i++) {
-        int8_t *lods = field_0x2c;
-        int lod = lods[i];
-        if (lod >= -1 && field_0x38 <= lod) {
-            lods[i] = 0;
+    for (int i = 0; i < rows; i++) {
+        int lod = lodLevels[i];
+        if (lod >= -1 && cols <= lod) {
+            lodLevels[i] = 0;
         }
-        for (int c = 0; c < field_0x38; c++) {
-            AEMesh *mesh = field_0x8.data()[field_0x0 * c + i];
-            if (mesh != 0) {
-                void *t = this->transformMesh(mesh, *(const Matrix *)((char *)field_0x28 + i * 0x3c));
-                field_0x24[field_0x0 * c + i] = t;
+        for (int c = 0; c < cols; c++) {
+            Mesh* mesh = sourceMeshes.data()[rows * c + i];
+            if (mesh != nullptr) {
+                transformedMeshes[rows * c + i] = transformMesh(mesh, transforms[i]);
             }
         }
     }
@@ -232,131 +187,86 @@ int LodMeshMerger::init()
     uint16_t nv = 0;
     uint16_t ni = 0;
     for (int i = 0; i < rows; i++) {
-        AEMesh *m0 = field_0x8.data()[i];
-        uint16_t v = m0->field_0x2;
-        uint16_t idiv = aeabi_uidiv16(m0->field_0x28, 3);
-        ni = ni + idiv;
-        nv = nv + v;
+        Mesh* m0 = sourceMeshes.data()[i];
+        nv = nv + m0->vertexCount;
+        ni = ni + (uint16_t)(m0->indexCount / 3);
     }
 
-    uint16_t flags = field_0x4;
-    // 5-arg MeshCreate(a, b, c, d, out): a=ni, b=nv, c=(schar)**field_0xc,
-    // d=field_0x4(flags), out=&field_0x18 (recovered from 0x191518 call site).
-    field_0x14->MeshCreate((uint16_t)ni, (uint16_t)nv,
-                           (signed char)field_0x8.data()[0]->field_0x0,
-                           field_0x4, &field_0x18);
-    void *ptr = field_0x14->MeshGetPointer(field_0x18);
-    field_0x20 = ptr;
-    field_0x14->TransformCreate(&field_0x1c);
-    field_0x14->TransformAddMeshId(field_0x1c, field_0x18);
-    field_0x3c = 1;
-    return this->init_tail(0, flags, &field_0x18);
+    canvas->MeshCreate(ni, nv,
+                       (signed char)sourceMeshes.data()[0]->vertexFormat,
+                       flags, &mergedMeshId);
+    mergedMesh = canvas->MeshGetPointer(mergedMeshId);
+    canvas->TransformCreate(&transformId);
+    canvas->TransformAddMeshId(transformId, mergedMeshId);
+    dirty = 1;
+
+    // Flag the merger as built and run the first merge pass (dirty was just set,
+    // so update() copies every enabled LOD slice into the merged mesh).
+    initialized = 1;
+    update();
+    return initialized;
 }
 
-// init() tail: the merged mesh, its pointer and the shared transform have all been
-// created, so finish initialisation by flagging the merger as built and forcing the
-// first merge pass (the dirty flag was just raised, so update() copies every enabled
-// LOD slice into the merged mesh). Returns the now-set init flag, which is what the
-// public init() yields.
-int LodMeshMerger::init_tail(int /*r1*/, uint16_t /*flags*/, uint32_t * /*meshId*/)
+// Builds a fresh Mesh that is `src` with all geometry transformed by `m`: positions
+// are transformed, normals rotated+normalised, and the bounding sphere recomputed.
+void* LodMeshMerger::transformMesh(Mesh* src, const Matrix& m)
 {
-    field_0x6 = 1;
-    this->update();
-    return field_0x6;
-}
+    char* s = (char*)src;
+    char* out = (char*)::operator new(0x88);
 
-// Typed wrappers over the real AbyssEngine::AEMath ops.
-namespace AbyssEngine { namespace AEMath {
-Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
-Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
-Vector VectorNormalize(const Vector &value);
-} }
-static inline void AEMath_MatrixTransformVector(Vector *out, const Matrix &m, const Vector &v) {
-    *out = AbyssEngine::AEMath::MatrixTransformVector(m, v);
-}
-static inline void AEMath_MatrixRotateVector(Vector *out, const Matrix &m, const Vector &v) {
-    *out = AbyssEngine::AEMath::MatrixRotateVector(m, v);
-}
-static inline void AEMath_VectorNormalize(Vector *out, const Vector &v) {
-    *out = AbyssEngine::AEMath::VectorNormalize(v);
-}
-static inline void AEMath_VectorAssign(Vector *dst, const Vector *src) { *dst = *src; }
-
-extern "C" {
-void *operator_new_mesh(uint32_t size);                           // 0x6eb24 (operator new)
-void AEMath_BSphereAssign(void *dst, const void *src);
-}
-
-// LodMeshMerger::transformMesh(AbyssEngine::Mesh* src, AbyssEngine::AEMath::Matrix const& m)
-//   Builds a fresh Mesh that is `src` with all geometry transformed by `m`: positions are
-//   transformed, normals rotated+normalized, and the bounding sphere is recomputed.
-void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
-{
-    char *s = (char *)src;
-    char *out = (char *)operator_new_mesh(0x88);
-
-    // zero-initialise the new mesh (the engine writes a zero vector + identity-ish defaults).
-    for (uint32_t off = 0; off < 0x88; off += 4)
-        *(uint32_t *)(out + off) = 0;
-    *(float *)(out + 0x4c) = 1.0f;   // bsphere radius default = 1.0
+    // zero-initialise the new mesh, then set the default bsphere radius.
+    memset(out, 0, 0x88);
+    *(float*)(out + 0x4c) = 1.0f;
 
     // copy counts/flags from source.
-    uint32_t vcount = *(uint16_t *)(s + 0x2);
-    *(uint16_t *)(out + 0x2) = *(uint16_t *)(s + 0x2);
-    *(uint16_t *)(out + 0x28) = *(uint16_t *)(s + 0x28);
-    uint8_t flags = *(uint8_t *)s;
-    *(uint8_t *)out = flags;
+    uint32_t vcount = *(uint16_t*)(s + 0x2);
+    *(uint16_t*)(out + 0x2) = *(uint16_t*)(s + 0x2);
+    *(uint16_t*)(out + 0x28) = *(uint16_t*)(s + 0x28);
+    uint8_t f = *(uint8_t*)s;
+    *(uint8_t*)out = f;
 
     // conditional pointer copies based on flag bits (texcoords / colours / indices).
-    if (flags & 0x2)
-        *(uint32_t *)(out + 0x8) = *(uint32_t *)(s + 0x8);
-    if (flags & 0x10)   // bit 4 (uVar9 << 0x1c < 0)
-        *(uint32_t *)(out + 0xc) = *(uint32_t *)(s + 0xc);
-    if (flags & 0x20)   // bit 5 (uVar9 << 0x1b < 0)
-        *(uint32_t *)(out + 0x2c) = *(uint32_t *)(s + 0x2c);
+    if (f & 0x2)
+        *(uint32_t*)(out + 0x8) = *(uint32_t*)(s + 0x8);
+    if (f & 0x10)
+        *(uint32_t*)(out + 0xc) = *(uint32_t*)(s + 0xc);
+    if (f & 0x20)
+        *(uint32_t*)(out + 0x2c) = *(uint32_t*)(s + 0x2c);
 
-    // --- transform vertex positions (flag bit 0) ---------------------------
-    if (flags & 0x1) {
-        char *dstV = (char *)::operator new[](vcount * 0xc);
-        *(void **)(out + 0x4) = dstV;
+    // transform vertex positions.
+    if (f & 0x1) {
+        char* dstV = new char[vcount * 0xc];
+        *(void**)(out + 0x4) = dstV;
         int o = 0;
-        for (uint32_t i = 0; i < vcount; i = i + 1) {
-            Vector tmp;
-            AEMath_MatrixTransformVector(&tmp, m, *(Vector *)(*(char **)(s + 0x4) + o));
-            AEMath_VectorAssign((Vector *)(*(char **)(out + 0x4) + o), &tmp);
-            o = o + 0xc;
-            vcount = *(uint16_t *)(s + 0x2);
+        for (uint32_t i = 0; i < vcount; i++) {
+            *(Vector*)(*(char**)(out + 0x4) + o) =
+                AEMath::MatrixTransformVector(m, *(Vector*)(*(char**)(s + 0x4) + o));
+            o += 0xc;
+            vcount = *(uint16_t*)(s + 0x2);
         }
-        flags = *(uint8_t *)s;
+        f = *(uint8_t*)s;
     }
 
-    // --- rotate + normalise normals (flag bit 5 / << 0x1d) -----------------
-    if (flags & 0x4) {
-        char *dstN = (char *)::operator new[](vcount * 0xc);
-        *(void **)(out + 0x10) = dstN;
+    // rotate + normalise normals.
+    if (f & 0x4) {
+        char* dstN = new char[vcount * 0xc];
+        *(void**)(out + 0x10) = dstN;
         int o = 0;
-        for (uint32_t i = 0; i < vcount; i = i + 1) {
-            Vector rot;
-            AEMath_MatrixRotateVector(&rot, m, *(Vector *)(*(char **)(s + 0x10) + o));
-            Vector nrm;
-            AEMath_VectorNormalize(&nrm, rot);
-            AEMath_VectorAssign((Vector *)(*(char **)(out + 0x10) + o), &nrm);
-            o = o + 0xc;
-            vcount = *(uint16_t *)(s + 0x2);
+        for (uint32_t i = 0; i < vcount; i++) {
+            Vector rot = AEMath::MatrixRotateVector(m, *(Vector*)(*(char**)(s + 0x10) + o));
+            *(Vector*)(*(char**)(out + 0x10) + o) = AEMath::VectorNormalize(rot);
+            o += 0xc;
+            vcount = *(uint16_t*)(s + 0x2);
         }
     }
 
-    // --- recompute bounding sphere -----------------------------------------
-    // transform the centre, then derive a conservative radius from the transformed extents.
-    float r = *(float *)(s + 0x48);
+    // recompute bounding sphere: transform the centre, then derive a conservative
+    // radius from the transformed extents.
+    float r = *(float*)(s + 0x48);
     Vector ext = { r, r, r };
-    Vector tExt;
-    AEMath_MatrixTransformVector(&tExt, m, ext);
+    Vector tExt = AEMath::MatrixTransformVector(m, ext);
+    Vector center = AEMath::MatrixTransformVector(m, *(Vector*)(s + 0x3c));
 
-    Vector center;
-    AEMath_MatrixTransformVector(&center, m, *(Vector *)(s + 0x3c));
-
-    // pick the largest |component| of the transformed extent as the new radius.
     float ax = tExt.x < 0.0f ? -tExt.x : tExt.x;
     float ay = tExt.y < 0.0f ? -tExt.y : tExt.y;
     float az = tExt.z < 0.0f ? -tExt.z : tExt.z;
@@ -364,75 +274,55 @@ void *LodMeshMerger::transformMesh(AEMesh *src, const Matrix &m)
     if (ay > rad) rad = ay;
     if (az > rad) rad = az;
 
-    // assemble the BSphere { center.xyz, radius } and store via operator=.
-    struct BSphere { float x, y, z, r; } sph;
-    sph.x = center.x;
-    sph.y = center.y;
-    sph.z = center.z;
-    sph.r = rad;
-    AEMath_BSphereAssign(out + 0x3c, &sph);
+    *(float*)(out + 0x3c) = center.x;
+    *(float*)(out + 0x40) = center.y;
+    *(float*)(out + 0x44) = center.z;
+    *(float*)(out + 0x48) = rad;
 
     return out;
 }
 
-// Per-array-slot release thunk read from a hidden PC-relative global (used to
-// free the lod/enabled/visible byte arrays at 0x2c/0x30/0x34).
-__attribute__((visibility("hidden"))) extern void (*const g_freeFn)(void *);
+// Per-array-slot release thunk read from a hidden PC-relative global (used to free
+// the lod/enabled/visible byte arrays).
+__attribute__((visibility("hidden"))) extern void (*const g_freeFn)(void*);
 
-// Tail-call into the engine base destructor.
 LodMeshMerger::~LodMeshMerger()
 {
-    int i = 0;     // element index (r5)
-    int idx = 0;   // byte offset (r6)
-    void *slots;
-    for (;;) {
-        slots = field_0x24;
-        if (i >= field_0x0 * field_0x38) break;
-
-        void **cell = (void **)((char *)slots + idx);  // slots[idx]
-        void **m4 = (void **)((char *)*cell + 4);
-        if (*m4 != 0) {
-            ::operator delete[](*m4);
-            cell = (void **)((char *)field_0x24 + idx);
-            m4 = (void **)((char *)*cell + 4);
+    // Release every transformed mesh (its position/normal buffers, then the mesh).
+    int count = rows * cols;
+    for (int i = 0; i < count; i++) {
+        char* cell = (char*)transformedMeshes[i];
+        if (cell != nullptr) {
+            void** positions = (void**)(cell + 4);
+            if (*positions != nullptr) {
+                ::operator delete[](*positions);
+                *positions = nullptr;
+            }
+            void** normals = (void**)(cell + 0x10);
+            if (*normals != nullptr) {
+                ::operator delete[](*normals);
+                *normals = nullptr;
+            }
+            ::operator delete(cell);
+            transformedMeshes[i] = nullptr;
         }
-        *m4 = 0;
-        void **m10 = (void **)((char *)*cell + 0x10);
-        if (*m10 != 0) {
-            ::operator delete[](*m10);
-            cell = (void **)((char *)field_0x24 + idx);
-            m10 = (void **)((char *)*cell + 0x10);
-        }
-        *m10 = 0;
-        if (*cell != 0) {
-            ::operator delete(*cell);
-            cell = (void **)((char *)field_0x24 + idx);
-        }
-        *cell = 0;
-
-        idx += 4;
-        i += 1;
     }
-    if (slots != 0) ::operator delete[](slots);
-    field_0x24 = 0;
+    delete[] transformedMeshes;
+    transformedMeshes = nullptr;
 
-    g_freeFn(field_0x2c);
-    field_0x2c = 0;
-    g_freeFn(field_0x30);
-    field_0x30 = 0;
-    g_freeFn(field_0x34);
-    field_0x34 = 0;
+    g_freeFn(lodLevels);
+    lodLevels = nullptr;
+    g_freeFn(enabled);
+    enabled = nullptr;
+    g_freeFn(visible);
+    visible = nullptr;
 
-    if (field_0x28 != 0) ::operator delete[](field_0x28);
-    field_0x28 = 0;
-    this->base_dtor();
+    delete[] transforms;
+    transforms = nullptr;
+
+    // Release the embedded source-mesh array's backing buffer.
+    sourceMeshes.clear();
+    sourceMeshes.shrink_to_fit();
 }
 
-// ~LodMeshMerger() tail: the final owned member is the embedded source-mesh array
-// (field_0x8, an Array<Mesh*> stored in-place, not a pointer). Release its backing
-// buffer to complete teardown of the object's heap allocations.
-void LodMeshMerger::base_dtor()
-{
-    field_0x8.clear();
-    field_0x8.shrink_to_fit();
-}
+} // namespace AbyssEngine

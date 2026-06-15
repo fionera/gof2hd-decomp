@@ -18,6 +18,10 @@ extern "C" void *AERandom_seed_ctor(void *self, long long seed);
 extern "C" void AERandom_dtor(void *self);
 extern "C" void AERandom_ctor(void *self);
 
+// Engine globals (resolved by a later externs pass).
+__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
+__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
+
 void IParticleSystem::setParticleSet(int set)
 {
     if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
@@ -73,8 +77,6 @@ void IParticleSystem::enableRender(bool enabled)
     }
     this->renderEnabled = enabled;
 }
-
-__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
 typedef void (*EmitParticleFn)(IParticleSystem *, void *, float, uint32_t, uint32_t, uint32_t, uint32_t,
                               uint32_t, int, float, float, void *);
@@ -360,8 +362,6 @@ void IParticleSystem::emit(int delta)
     }
 }
 
-__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-
 void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
 {
     int age = ((int *)this->particleAges)[index];
@@ -422,9 +422,6 @@ float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
     return dst;
 }
 
-__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
-__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
                                  bool mirror, bool alphaFade)
 {
@@ -483,8 +480,8 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
     if ((uint32_t)(bytes64 >> 32) != 0) {
         bytes = 0xffffffffu;
     }
-    this->particleAges = ::operator new(bytes);
-    this->particleSetIds = ::operator new(maxParticles | ((int32_t)maxParticles >> 31));
+    this->particleAges = new uint8_t[bytes];
+    this->particleSetIds = new uint8_t[maxParticles | ((int32_t)maxParticles >> 31)];
 
     for (int i = 0; i < (int)maxParticles; ++i) {
         ((uint8_t *)this->particleSetIds)[i] = 200;
@@ -507,8 +504,6 @@ void IParticleSystem::calcEmitterVelocity(int delta)
     this->emitterVelocityDirty = 0;
     this->lastEmitterPosition = *(Vector *)(position);
 }
-
-__attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
 void IParticleSystem::emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime)
 {
@@ -642,8 +637,6 @@ void IParticleSystem::resetEmitterVelocity()
     this->lastEmitterPosition = *(Vector *)(matrixValue);
     this->field_0x4 = 0;
 }
-
-__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
 
 IParticleSystem::~IParticleSystem()
 {

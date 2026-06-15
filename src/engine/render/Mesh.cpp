@@ -1,7 +1,6 @@
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/engine/math/AEMath.h"
 #include "gof2/engine/file/AEFile.h"
-#include <new>
 
 // Minimal view of the (top-level) PaintCanvas, declaring only the three mesh-table
 // primitives the billboard helpers forward to. The full gof2/PaintCanvas.h is not
@@ -82,13 +81,11 @@ Mesh::Mesh(Mesh *src) {
     self->field_0x30 = src->field_0x30;
 
     Transform *srcAnim = src->animation;
-    if (srcAnim == 0) {
-        self->animation = 0;
+    if (srcAnim == nullptr) {
+        self->animation = nullptr;
     } else {
         // Deep-copy the animation track via the Transform copy constructor.
-        Transform *copy = static_cast<Transform *>(operator new(0x180));
-        new (static_cast<void *>(copy)) Transform(srcAnim);
-        self->animation = copy;
+        self->animation = new Transform(srcAnim);
     }
 
     AEMath::Vector &dstVec = *reinterpret_cast<AEMath::Vector *>(&self->field_0x50);
@@ -195,8 +192,7 @@ bool readScalarTrack(unsigned int file, Transform *anim, float *maxSlot,
 
 int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
     Mesh *self = this;
-    Transform *anim = static_cast<Transform *>(operator new(0x180));
-    new (static_cast<void *>(anim)) Transform();
+    Transform *anim = new Transform();
 
     // Bounding sphere: center x/y/z and radius. The y/z pair is swapped and z negated to
     // convert from the file's coordinate convention to the engine's.
@@ -284,8 +280,7 @@ int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
 
     // Attach the track if it gathered any frames, otherwise discard it.
     if (anim->keyFrameCount < 1) {
-        anim->~Transform();
-        operator delete(anim);
+        delete anim;
     } else {
         self->animation = anim;
         float rate = *g_animRate;
@@ -295,8 +290,7 @@ int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
     return 1;
 
 fail:
-    anim->~Transform();
-    operator delete(anim);
+    delete anim;
     return -1;
 }
 

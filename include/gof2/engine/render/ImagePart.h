@@ -1,30 +1,21 @@
 #ifndef GOF2_IMAGEPART_H
 #define GOF2_IMAGEPART_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
-// ImagePart — top-level class (only arg types are namespaced).
-// Layout from ctor/draw decompiles:
-//   +0x00  uint   id            (image2d handle)
-//   +0x04  int    field_04      (flags; draw ORs with 1)
-//   +0x08  int    pos_y
-//   +0x0c  int    scale_x       (image width)
-//   +0x10  int    scale_y       (image height)
 
-void *operator new(__SIZE_TYPE__ size);
-
+// A drawable 2D image region: an image2d handle plus a cached size and a
+// vertical offset, rendered through the global PaintCanvas.
 class ImagePart {
 public:
-    // @portable-fields
-    int id; // 0x0
-    int f_4; // 0x4
-    int pos_y; // 0x8
-    int scale_x; // 0xc
-    int scale_y; // 0x10
+    int id;       // image2d handle
+    int f_4;      // flags (draw ORs with 1)
+    int pos_y;    // vertical offset applied at draw time
+    int scale_x;  // cached image width
+    int scale_y;  // cached image height
 
-    // Real C++ constructor (demangles to ImagePart::ImagePart(unsigned, int, int)).
+    // Demangles to ImagePart::ImagePart(unsigned, int, int); queries the
+    // global PaintCanvas for the image's width/height.
     ImagePart(unsigned id, int field04, int posY);
 
-    // ---- methods (converted from free functions) ----
     void draw(int x, int y, bool b);
 };
 #endif

@@ -1,38 +1,59 @@
 #include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/platform/gl.h"
 
-// FBOContainer only needs the Engine framebuffer-binding field at +0x40c.
-// The full Engine definition is owned by another batch (Engine.h); to keep this
-// translation unit self-contained we model just that field here. The layout offset
-// matches Engine::field_0x40c.
-namespace AbyssEngine {
-struct Engine {
-    char _pad[0x40c];
-    uint32_t field_0x40c;
-};
+// Framebuffer-object GL entry points not yet declared in gof2/platform/gl.h.
+// (Signatures use the same plain-integer style as gl.h; they belong in that
+// header once the platform externs pass reaches the FBO functions.)
+extern "C" {
+void glGenFramebuffers(int n, uint32_t *framebuffers);
+void glDeleteFramebuffers(int n, const uint32_t *framebuffers);
+void glGenTextures(int n, uint32_t *textures);
+void glDeleteTextures(int n, const uint32_t *textures);
+void glPixelStorei(uint32_t pname, int param);
+void glTexParameteri(uint32_t target, uint32_t pname, int param);
+void glTexImage2D(uint32_t target, int level, int internalformat, int width,
+                  int height, int border, uint32_t format, uint32_t type, const void *pixels);
+void glFramebufferTexture2D(uint32_t target, uint32_t attachment, uint32_t textarget,
+                            uint32_t texture, int level);
+void glGenRenderbuffers(int n, uint32_t *renderbuffers);
+void glBindRenderbuffer(uint32_t target, uint32_t renderbuffer);
+void glDeleteRenderbuffers(int n, const uint32_t *renderbuffers);
+void glRenderbufferStorage(uint32_t target, uint32_t internalformat, int width, int height);
+void glFramebufferRenderbuffer(uint32_t target, uint32_t attachment, uint32_t renderbuffertarget,
+                               uint32_t renderbuffer);
+uint32_t glCheckFramebufferStatus(uint32_t target);
 }
 
 namespace AbyssEngine {
 
-void FBOContainer::Activate() {
-    glBindTexture(0xde1, this->field_0x4);
+FBOContainer::FBOContainer(Engine *engine, String name) {
+    this->created = 0;
+    this->field_0x28 = 0;
+    this->framebuffer = 0;
+    this->texture = 0;
+    this->renderbuffer = 0;
+    this->width = 0;
+    this->height = 0;
+    this->name = name;
+    this->engine = engine;
 }
 
-void FBOContainer::BeginCapture() {
-    glBindFramebuffer(0x8d40, this->field_0x0);
-    glViewport(0, 0, this->field_0xc, this->field_0x10);
+FBOContainer::~FBOContainer() {
+    Release();
 }
 
 void FBOContainer::Create(int width, int height, bool a, bool linear) {
-    this->field_0xc = width;
-    this->field_0x10 = height;
-    glGenFramebuffers(1, &this->field_0x0);
-    glBindFramebuffer(0x8d40, this->field_0x0);
-    glGenTextures(1, &this->field_0x4);
-    glBindTexture(0xde1, this->field_0x4);
+    this->width = width;
+    this->height = height;
+    glGenFramebuffers(1, &this->framebuffer);
+    glBindFramebuffer(0x8d40, this->framebuffer);
+    glGenTextures(1, &this->texture);
+    glBindTexture(0xde1, this->texture);
     glPixelStorei(0xcf5, 1);
     glTexParameteri(0xde1, 0x2802, 0x812f);
     glTexParameteri(0xde1, 0x2803, 0x812f);
-    GLint filter;
+    int filter;
     if (linear) {
         glTexParameteri(0xde1, 0x2800, 0x2601);
         filter = 0x2601;
@@ -41,63 +62,45 @@ void FBOContainer::Create(int width, int height, bool a, bool linear) {
         filter = 0x2600;
     }
     glTexParameteri(0xde1, 0x2801, filter);
-    glTexImage2D(0xde1, 0, 0x1908, this->field_0xc,
-                 this->field_0x10, 0, 0x1908, 0x1401, 0);
-    glFramebufferTexture2D(0x8d40, 0x8ce0, 0xde1, this->field_0x4, 0);
-    glGenRenderbuffers(1, &this->field_0x8);
-    glBindRenderbuffer(0x8d41, this->field_0x8);
-    glRenderbufferStorage(0x8d41, 0x81a5, this->field_0xc,
-                          this->field_0x10);
-    glFramebufferRenderbuffer(0x8d40, 0x8d00, 0x8d41, this->field_0x8);
+    glTexImage2D(0xde1, 0, 0x1908, this->width, this->height, 0, 0x1908, 0x1401, 0);
+    glFramebufferTexture2D(0x8d40, 0x8ce0, 0xde1, this->texture, 0);
+    glGenRenderbuffers(1, &this->renderbuffer);
+    glBindRenderbuffer(0x8d41, this->renderbuffer);
+    glRenderbufferStorage(0x8d41, 0x81a5, this->width, this->height);
+    glFramebufferRenderbuffer(0x8d40, 0x8d00, 0x8d41, this->renderbuffer);
     glCheckFramebufferStatus(0x8d40);
-    this->field_0x18 = 1;
-    Engine *engine = this->field_0x14;
-    glBindFramebuffer(0x8d40, engine->field_0x40c);
+    this->created = 1;
+    glBindFramebuffer(0x8d40, this->engine->field_0x40c);
 }
 
 void FBOContainer::Release() {
-    if (this->field_0x18 == 0) {
+    if (this->created == 0) {
         return;
     }
-    glDeleteFramebuffers(1, &this->field_0x0);
-    this->field_0x0 = 0;
-    glDeleteTextures(1, &this->field_0x4);
-    this->field_0x4 = 0;
-    glDeleteRenderbuffers(1, &this->field_0x8);
-    this->field_0x8 = 0;
-    this->field_0x18 = 0;
-    glDeleteRenderbuffers(1, &this->field_0x30);
-    glDeleteRenderbuffers(1, &this->field_0x34);
+    glDeleteFramebuffers(1, &this->framebuffer);
+    this->framebuffer = 0;
+    glDeleteTextures(1, &this->texture);
+    this->texture = 0;
+    glDeleteRenderbuffers(1, &this->renderbuffer);
+    this->renderbuffer = 0;
+    this->created = 0;
+    glDeleteRenderbuffers(1, &this->extraRenderbuffer1);
+    glDeleteRenderbuffers(1, &this->extraRenderbuffer2);
     glBindFramebuffer(0x8d40, 0);
-    glDeleteRenderbuffers(1, &this->field_0x2c);
+    glDeleteRenderbuffers(1, &this->extraRenderbuffer0);
 }
 
-// AbyssEngine::FBOContainer::FBOContainer(AbyssEngine::Engine*, AbyssEngine::String)
-FBOContainer::FBOContainer(Engine *engine, String name)
-{
-    this->field_0x18 = 0;
-    this->field_0x28 = 0;
+void FBOContainer::Activate() {
+    glBindTexture(0xde1, this->texture);
+}
 
-    // Zero framebuffer / texture / renderbuffer / width and clear height.
-    this->field_0x0 = 0;
-    this->field_0x4 = 0;
-    this->field_0x8 = 0;
-    this->field_0xc = 0;
-    this->field_0x10 = 0;
-
-    // Copy the supplied name into the embedded String.
-    this->field_0x1c = name;
-
-    this->field_0x14 = engine;
+void FBOContainer::BeginCapture() {
+    glBindFramebuffer(0x8d40, this->framebuffer);
+    glViewport(0, 0, this->width, this->height);
 }
 
 void FBOContainer::EndCapture() {
-    Engine *engine = this->field_0x14;
-    glBindFramebuffer(0x8d40, engine->field_0x40c);
-}
-
-FBOContainer::~FBOContainer() {
-    Release();
+    glBindFramebuffer(0x8d40, this->engine->field_0x40c);
 }
 
 // ---- Engine-facing render-to-texture entry points ----
@@ -108,20 +111,19 @@ FBOContainer::~FBOContainer() {
 // Bind this framebuffer and set the viewport to its dimensions so that
 // subsequent drawing is captured into the attached color texture.
 void FBOContainer::ActivateRender2Texture() {
-    glBindFramebuffer(0x8d40, this->field_0x0);
-    glViewport(0, 0, this->field_0xc, this->field_0x10);
+    glBindFramebuffer(0x8d40, this->framebuffer);
+    glViewport(0, 0, this->width, this->height);
 }
 
 // Bind this FBO's color texture as the current 2D texture so it can be
 // sampled while drawing the post-processing pass.
 void FBOContainer::ActivateTexture() {
-    glBindTexture(0xde1, this->field_0x4);
+    glBindTexture(0xde1, this->texture);
 }
 
 // Restore the engine's default framebuffer, ending render-to-texture.
 void FBOContainer::DeactivateRender2Texture() {
-    Engine *engine = this->field_0x14;
-    glBindFramebuffer(0x8d40, engine->field_0x40c);
+    glBindFramebuffer(0x8d40, this->engine->field_0x40c);
 }
 
 // The GlowPPShader builds four identically-shaped offscreen targets; the
@@ -129,15 +131,15 @@ void FBOContainer::DeactivateRender2Texture() {
 // They are byte-for-byte the same as the primary constructor / Create, so
 // each variant simply forwards to that shared logic.
 void FBOContainer::initFrom(Engine *engine, String name) {
-    this->field_0x18 = 0;
+    this->created = 0;
     this->field_0x28 = 0;
-    this->field_0x0 = 0;
-    this->field_0x4 = 0;
-    this->field_0x8 = 0;
-    this->field_0xc = 0;
-    this->field_0x10 = 0;
-    this->field_0x1c = name;
-    this->field_0x14 = engine;
+    this->framebuffer = 0;
+    this->texture = 0;
+    this->renderbuffer = 0;
+    this->width = 0;
+    this->height = 0;
+    this->name = name;
+    this->engine = engine;
 }
 
 void FBOContainer::Create0(int width, int height, bool a, bool linear) { Create(width, height, a, linear); }

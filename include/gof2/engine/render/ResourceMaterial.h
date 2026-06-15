@@ -1,32 +1,29 @@
 #ifndef GOF2_RESOURCEMATERIAL_H
 #define GOF2_RESOURCEMATERIAL_H
-#include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
-// Galaxy on Fire 2 -- AbyssEngine::ResourceMaterial (Android libgof2hdaa.so, armv7 Thumb).
-// Two constructor overloads. Fields accessed via byte-offset casts from `this`.
+
+#include <cstdint>
 
 namespace AbyssEngine {
 
-enum BlendMode { BlendMode_dummy };
+enum BlendMode {
+    BlendMode_dummy
+};
 
+// A render material: a set of texture indices plus blend/color state.
 class ResourceMaterial {
 public:
-    // @portable-fields
-    uint16_t f_0; // 0x0
-    uint16_t f_2; // 0x2
-    unsigned char _pad_4[12];
-    int f_10; // 0x10
-    int f_14; // 0x14
-    int f_18; // 0x18
-    int f_1c; // 0x1c
-    int f_20; // 0x20
-    int f_24; // 0x24
+    ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend);
+    ResourceMaterial(uint16_t texId, BlendMode blend);
 
-    ResourceMaterial(unsigned short texId, unsigned short texId2, BlendMode blend);
-    ResourceMaterial(unsigned short texId, BlendMode blend);
+    uint16_t texIndices[8];
+    int      blendMode;
+    int      field_14;
+    int      field_18;
+    int      field_1c;
+    int      field_20;
+    int      field_24;
 };
 
 } // namespace AbyssEngine
 
-// Field accessors via byte offset.
 #endif

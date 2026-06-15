@@ -1,12 +1,14 @@
 #ifndef GOF2_PARTICLESETTINGSREF_H
 #define GOF2_PARTICLESETTINGSREF_H
-#include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// ParticleSettingsRef — top-level class (no namespace per Sig).
-// initialize() is a static-like routine touching globals only; no `this` fields used.
 
-struct ParticleSettingsRef;
-
+// ParticleSettingsRef holds the global setup for the engine's particle system.
+// It carries no per-instance state; initialize() seeds the two referenced
+// ParticleSettings singletons and a shared counter.
 class ParticleSettingsRef {
-public: void* _opaque; };  // no offset accesses observed
+public:
+    // Initialise the two referenced ParticleSettings singletons and seed the
+    // shared particle counter.
+    static void initialize();
+};
+
 #endif

@@ -1,28 +1,13 @@
 #include "gof2/engine/render/LODManager.h"
 #include "gof2/engine/render/AEGeometry.h"
 
+// Engine camera/canvas helpers (resolved against the active PaintCanvas).
 uint32_t CameraGetCurrent(void *canvas);
-Matrix *CameraGetLocal(void *canvas, uint32_t index);
+Matrix  *CameraGetLocal(void *canvas, uint32_t index);
 
-extern "C" int LODManager_hasLod(AEGeometry *g);              // AEGeometry::hasLod()
-
-void LODManager::addObject(AEGeometry *g)
-{
-    if (LODManager_hasLod(g) == 0)
-        return;
-    return this->addObject_tail(g, this->objects);
-}
-
-// ---- addObject_tail ----------------------------------------------------------
-// The decompiler peeled addObject()'s trailing tail-call (a GOT veneer) into its
-// own thunk. It is ArrayAdd<AEGeometry*>(g, objects): append the geometry to the
-// managed object list.
-void LODManager::addObject_tail(AEGeometry *g, Array<AEGeometry*> *objects)
-{
-    ArrayAdd(g, *objects);
-}
-
-// LODManager::LODManager() — real C++ constructor; symbol demangles to contain "LODManager".
+// Engine singletons; a later externs pass will give these their real types.
+extern void **g_LOD_canvas;    // *g_LOD_canvas = PaintCanvas*
+extern void  *g_LOD_settings;  // float at +0x28 = LOD distance factor
 
 LODManager::LODManager()
 {
@@ -33,17 +18,21 @@ LODManager::LODManager()
     this->objects = new Array<AEGeometry*>();
 }
 
-// LODManager::~LODManager() — real C++ destructor so the demangled symbol contains "~LODManager".
-
 LODManager::~LODManager()
 {
-    if (this->objects != 0)
-        delete this->objects;
-    this->objects = 0;
+    delete this->objects;
+    this->objects = nullptr;
 }
 
-// ArrayRemove<AEGeometry*>(g, objects): erase the matching geometry from the
-// managed object list (real std::vector::erase over the typed member).
+// Register a geometry for LOD tracking, but only if it actually has LOD levels.
+void LODManager::addObject(AEGeometry *g)
+{
+    if (!g->hasLod())
+        return;
+    ArrayAdd(g, *this->objects);
+}
+
+// Erase the matching geometry from the managed object list.
 void LODManager::removeObject(AEGeometry *g)
 {
     for (uint32_t i = 0; i < this->objects->size(); i++) {
@@ -53,44 +42,31 @@ void LODManager::removeObject(AEGeometry *g)
     }
 }
 
-// LODManager::forceUpdate(int, bool) — recompute the camera position and update the
-// LOD level of every registered geometry. Uses the engine camera/matrix helpers and
-// a stack-resident Vector (address-taken -> stack canary).
-
-struct PaintCanvas;
-
-__attribute__((visibility("hidden"))) extern void **g_LOD_canvas;   // *holder = PaintCanvas*
-__attribute__((visibility("hidden"))) extern void *g_LOD_settings;  // float at +0x28 = LOD factor
-
-void MatrixGetPosition(void *out, const Matrix *m);     // String
-
+// Recompute the camera position from the active camera transform and refresh the
+// LOD level of every registered geometry.
 void LODManager::forceUpdate(int dt, bool useParent)
 {
-    Vector local;
     void *canvas = *g_LOD_canvas;
     float factor = *(float*)((char*)g_LOD_settings + 0x28);
 
     uint32_t cam = CameraGetCurrent(canvas);
-    Matrix *m = CameraGetLocal(canvas, cam);
-    MatrixGetPosition(&local, m);
-    this->cameraPos = local;
+    Matrix  *m   = CameraGetLocal(canvas, cam);
+    this->cameraPos = AEMath::MatrixGetPosition(*m);
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];
-        if (useParent)
-            ((AEGeometry *)(&local))->getParentPosition();
-        else
-            local = this->cameraPos;
-        ((AEGeometry *)(g))->updateLod(local, factor);
+        Vector ref = useParent ? g->getParentPosition() : this->cameraPos;
+        g->updateLod(ref, factor);
     }
 }
 
+// Drive the periodic LOD refresh: accumulate elapsed time and force an update
+// once roughly a second has passed.
 void LODManager::update(int dt)
 {
-    int sum = this->timer + dt;
-    this->timer = sum;
-    if (sum > 1000) {
+    this->timer += dt;
+    if (this->timer > 1000) {
         this->timer = 0;
-        return forceUpdate(0, false);
+        forceUpdate(0, false);
     }
 }

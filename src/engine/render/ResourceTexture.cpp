@@ -1,31 +1,31 @@
 #include "gof2/engine/render/ResourceTexture.h"
 #include "gof2/game/core/String.h"
+#include "gof2/platform/libc.h"
 
-// AbyssEngine::ResourceTexture::ResourceTexture(char const*, float)
+namespace AbyssEngine {
+
 ResourceTexture::ResourceTexture(const char *name, float value)
 {
     uint32_t len = String_GetStringLength(name);
-    char *buf = (char *)::operator new[](len + 1U);
-    this->name = buf;
-    __aeabi_memcpy(buf, name, len + 1U);
+    this->name = new char[len + 1U];
+    memcpy(this->name, name, len + 1U);
     this->value = value;
 }
 
-// AbyssEngine::ResourceTexture::~ResourceTexture()
-ResourceTexture::~ResourceTexture()
-{
-    ::operator delete[](this->name);
-    this->name = 0;
-}
-
-// AbyssEngine::ResourceTexture::ResourceTexture(AbyssEngine::String const&, float)
 ResourceTexture::ResourceTexture(const String &name, float value)
 {
-    char *utf8 = (char *)((String *)(&name))->GetAEChar();
+    char *utf8 = String_GetAEChar(const_cast<String *>(&name));
     uint32_t len = String_GetStringLength(utf8);
-    char *buf = (char *)::operator new[](len + 1U);
-    this->name = buf;
-    __aeabi_memcpy(buf, utf8, len + 1U);
+    this->name = new char[len + 1U];
+    memcpy(this->name, utf8, len + 1U);
     this->value = value;
-    ::operator delete[](utf8);
+    delete[] utf8;
 }
+
+ResourceTexture::~ResourceTexture()
+{
+    delete[] this->name;
+    this->name = nullptr;
+}
+
+} // namespace AbyssEngine

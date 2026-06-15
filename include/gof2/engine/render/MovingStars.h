@@ -1,37 +1,22 @@
 #ifndef GOF2_MOVINGSTARS_H
 #define GOF2_MOVINGSTARS_H
 #include "gof2/common.h"
-// Galaxy on Fire 2 -- MovingStars (Android libgof2hdaa.so, armv7 Thumb).
-// Qualified target names are top-level: "MovingStars::render()" (no AbyssEngine:: on the class).
-// Vector/Matrix params are AbyssEngine::AEMath::Vector / ::Matrix.
-
-#include <new>
-
-extern "C" void *__aeabi_memcpy(void *dst, const void *src, uint32_t n);
-
-struct MovingStars;
-
-namespace AbyssEngine {
-namespace AEMath {
-
-} // namespace AEMath
-} // namespace AbyssEngine
+#include "gof2/math.h"
 
 // MovingStars — animated starfield rendered through PaintCanvas billboards/transforms.
-// Top-level class (not in AbyssEngine namespace). Four parallel 50-entry (200-byte) arrays
-// hold the per-star billboard ids, transform handles, lifetimes and velocities.
+// Top-level class (not in the AbyssEngine namespace). Four parallel 50-entry arrays hold the
+// per-star billboard ids, transform handles, lifetimes and velocities.
 class MovingStars {
 public:
-    uint32_t *billboardIds;      // +0x0  billboard ids array (50 entries)
-    uint32_t *transformHandles;  // +0x4  transform handles array (50 entries)
-    uint32_t textureHandle;      // +0x8  texture handle
-    int      *lifeArray;         // +0xc  per-star lifetime/timer array (50 entries)
-    int      *velocityArray;     // +0x10 per-star velocity array (50 entries)
-    uint8_t   animResetFlag;     // +0x14 anim flag: low byte of the 0x101 anim word
-    uint8_t   animActiveFlag;    // +0x15 anim flag: high byte of the 0x101 anim word
-    char      field_0x16[2];     // +0x16 padding
-    uint32_t  tickAccumulator;   // +0x18 tick accumulator
-    char      field_0x1c[4];     // +0x1c
+    uint32_t *billboardIds;      // billboard ids array (50 entries)
+    uint32_t *transformHandles;  // transform handles array (50 entries)
+    uint32_t  textureHandle;     // texture handle
+    int      *lifeArray;         // per-star lifetime/timer array (50 entries)
+    int      *velocityArray;     // per-star velocity array (50 entries)
+    uint8_t   animResetFlag;     // anim flag: low byte of the 0x101 anim word
+    uint8_t   animActiveFlag;    // anim flag: high byte of the 0x101 anim word
+    char      pad[2];
+    uint32_t  tickAccumulator;   // tick accumulator
 
     MovingStars();
     ~MovingStars();

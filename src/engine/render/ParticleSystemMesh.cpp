@@ -1,5 +1,8 @@
 #include "gof2/engine/render/ParticleSystemMesh.h"
-#include "gof2/externs.h"
+#include "gof2/platform/libc.h"
+
+// aeabi runtime helper (zero-fill in 4-byte units); supplied by the platform CRT.
+extern "C" void *__aeabi_memclr4(void *dst, size_t n);
 
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
 extern "C" void _psm_emitUsual(ParticleSystemMesh *self, int id);
@@ -53,19 +56,19 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
     return setParticle(pos, scale, color, a, b, c, d, trail, e, f, dir, false);
 }
 
-void _ZN18ParticleSystemMesh4emitEi(ParticleSystemMesh *self, int id)
+void ParticleSystemMesh::emit(int id)
 {
-    if (self->field_0xc == 0 || self->field_0xd == 0) {
-        self->newSectionStarted = 1;
+    if (this->field_0xc == 0 || this->field_0xd == 0) {
+        this->newSectionStarted = 1;
         return;
     }
 
-    uint32_t flags = self->flags;
+    uint32_t flags = this->flags;
     if ((flags & 0x80) != 0)
         return;
     if ((int)(flags << 16) < 0)
-        return _psm_emitTrail(self, id);
-    return _psm_emitUsual(self, id);
+        return _psm_emitTrail(this, id);
+    return _psm_emitUsual(this, id);
 }
 
 void ParticleSystemMesh::finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first, const Vector &second)
@@ -97,7 +100,7 @@ void ParticleSystemMesh::incId()
 void ParticleSystemMesh::reset()
 {
     for (int i = 0; i < (int)this->pointCount; i++) {
-        _psm_meshSetPoint((PaintCanvas *)this->canvas, this->mesh,
+        _psm_meshSetPoint(this->canvas, this->mesh,
                           (uint16_t)(this->firstPoint + i), 0.0f, 0.0f, 0.0f);
     }
 
@@ -111,10 +114,10 @@ void ParticleSystemMesh::reset()
     this->field_0x4 = 1;
 }
 
-void _ZN18ParticleSystemMeshD1Ev(ParticleSystemMesh *self)
+ParticleSystemMesh::~ParticleSystemMesh()
 {
-    self->field_0x0 = g_ParticleSystemMesh_vtable + 2;
-    return _psm_mesh_base_dtor(self);
+    this->vtable = g_ParticleSystemMesh_vtable + 2;
+    _psm_mesh_base_dtor(this);
 }
 
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t texture)
@@ -144,22 +147,22 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     volatile char tmpStorage[sizeof(Vector)];
 
     _psm_vectorMinus(&pos, &edge, &delta);
-    _psm_meshSetPoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)point, pos.x, pos.y, pos.z);
+    _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t)point, pos.x, pos.y, pos.z);
 
     _psm_vectorPlus((void *)tmpStorage, &edge, &delta);
     pos = *(Vector *)(void *)tmpStorage;
 
     uint8_t wide = this->wide;
     int next = point + 1;
-    PaintCanvas *canvas = (PaintCanvas *)this->canvas;
+    PaintCanvas *canvas = this->canvas;
     uint32_t mesh = this->mesh;
     if (wide == 0) {
         _psm_meshSetPoint(canvas, mesh, (uint16_t)next, pos.x, pos.y, pos.z);
     } else {
         void (*setPoint)(PaintCanvas *, uint32_t, uint16_t, float, float, float) = _psm_meshSetPointIndirect;
         setPoint(canvas, mesh, (uint16_t)next, edge.x, edge.y, edge.z);
-        setPoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
-        setPoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
+        setPoint(this->canvas, this->mesh, (uint16_t)(point + 5), edge.x, edge.y, edge.z);
+        setPoint(this->canvas, this->mesh, (uint16_t)(point + 4), pos.x, pos.y, pos.z);
     }
 }
 
@@ -177,7 +180,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     if ((flags & 0x4000) != 0)
         edgeCount++;
 
-    this->field_0x0 = g_ParticleSystemMesh_vtable + 2;
+    this->vtable = g_ParticleSystemMesh_vtable + 2;
 
     uint32_t wide = (flags >> 16) & 1;
     uint32_t stride = edgeCount << wide;
@@ -195,7 +198,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         uint32_t size = (uint32_t)bytes;
         if ((uint32_t)(bytes >> 32) != 0)
             size = 0xffffffff;
-        positions = operator new(size);
+        positions = ::operator new(size);
         clearCount = particleCount;
         clearSize = particleCount * 12u;
     } else {
@@ -213,7 +216,7 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
         uint32_t size = (uint32_t)bytes;
         if ((uint32_t)(bytes >> 32) != 0)
             size = 0xffffffff;
-        positions = operator new(size);
+        positions = ::operator new(size);
         clearCount = vectorCount;
         clearSize = particleCount * edgeCount * 24u;
     }
@@ -242,16 +245,16 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
     Vector tmpA;
     Vector tmpB;
 
-    _psm_matrixGetRight(&right, (const Matrix *)this->matrix);
+    _psm_matrixGetRight(&right, this->matrix);
     _psm_vectorScale(&rightScaled, &right, scale);
     if (this->field_0x4c != 0) {
         _psm_vectorScale(&tmpA, &rightScaled, -1.0f);
         _psm_vectorAssign(&rightScaled, &tmpA);
     }
 
-    _psm_matrixGetUp(&up, (const Matrix *)this->matrix);
+    _psm_matrixGetUp(&up, this->matrix);
     _psm_vectorScale(&upScaled, &up, upScale == 0.0f ? (float)useMaskedColor : upScale);
-    _psm_matrixGetDir(&dir, (const Matrix *)this->matrix);
+    _psm_matrixGetDir(&dir, this->matrix);
     _psm_vectorScale(&dirScaled, &dir, dirScale == 0.0f ? scale : dirScale);
 
     uint32_t flags = this->flags;
@@ -301,14 +304,14 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
     int base = (int)this->firstPoint + (int)this->stride * this->currentId * 4;
     for (int i = 0; i < (int)this->stride; i++) {
-        _psm_meshSetColorWord((PaintCanvas *)this->canvas, this->mesh, (uint16_t)base, backColor);
-        _psm_meshSetColorWord((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 1), backColor);
-        _psm_meshSetColorWord((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 2), frontColor);
-        _psm_meshSetColorWord((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 3), frontColor);
-        _psm_meshSetUV2((PaintCanvas *)this->canvas, this->mesh, (uint16_t)base, u0, v0);
-        _psm_meshSetUV2((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 1), u1, v0);
-        _psm_meshSetUV2((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 2), u0, v1);
-        _psm_meshSetUV2((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(base + 3), u1, v1);
+        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)base, backColor);
+        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 1), backColor);
+        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 2), frontColor);
+        _psm_meshSetColorWord(this->canvas, this->mesh, (uint16_t)(base + 3), frontColor);
+        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)base, u0, v0);
+        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 1), u1, v0);
+        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 2), u0, v1);
+        _psm_meshSetUV2(this->canvas, this->mesh, (uint16_t)(base + 3), u1, v1);
         base += 4;
     }
 }
@@ -322,29 +325,33 @@ int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
     void (*setZero)(PaintCanvas *, uint32_t, uint16_t, uint32_t) = _psm_meshSetZero;
 
     for (int i = 0; i < (int)this->pointCount; i += 4) {
-        setUV((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0.0f, 0.0f);
-        setUV((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 1.0f, 0.0f);
-        setUV((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0.0f, 1.0f);
-        setUV((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 1.0f, 1.0f);
-        setZero((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0);
-        setZero((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 0);
-        setZero((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0);
-        setZero((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 0);
+        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0.0f, 0.0f);
+        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 1.0f, 0.0f);
+        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0.0f, 1.0f);
+        setUV(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 1.0f, 1.0f);
+        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i), 0);
+        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 1), 0);
+        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 2), 0);
+        setZero(this->canvas, this->mesh, (uint16_t)(this->firstPoint + i + 3), 0);
     }
 
     int point = (int)this->firstPoint;
     for (int tri = 0; tri < ((int)this->pointCount >> 1); tri += 2) {
-        _psm_meshSetTriangle((PaintCanvas *)this->canvas, this->mesh,
+        _psm_meshSetTriangle(this->canvas, this->mesh,
                              (uint16_t)(tri + (this->firstPoint >> 1)), (uint16_t)(point + 2),
                              (uint16_t)(point + 1), (uint16_t)point);
-        _psm_meshSetTriangle((PaintCanvas *)this->canvas, this->mesh,
+        _psm_meshSetTriangle(this->canvas, this->mesh,
                              (uint16_t)(tri + (this->firstPoint >> 1) + 1), (uint16_t)(point + 1),
                              (uint16_t)(point + 2), (uint16_t)(point + 3));
         point += 4;
     }
 
     this->field_0x5c = 1;
-    return (*(int (**)(ParticleSystemMesh *))(*(uint32_t *)this + 8))(this);
+
+    // Virtual dispatch through the third vtable slot (the per-system finalize hook).
+    typedef int (*FinalizeFn)(ParticleSystemMesh *);
+    FinalizeFn finalize = *(FinalizeFn *)((char *)this->vtable + 8);
+    return finalize(this);
 }
 
 void ParticleSystemMesh::updateUsualEdges(int id, int delta)
@@ -366,7 +373,7 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta)
 
     int point = (int)this->firstPoint + (int)this->stride * id * 4;
     for (int i = 0; i < (int)this->stride * 4; i++)
-        _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + i), move.x,
+        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + i), move.x,
                                 move.y, move.z);
 }
 
@@ -399,8 +406,8 @@ void ParticleSystemMesh::updateSingleColor(int id)
 
     int point = start + stride * id * 4;
     for (int i = 0; i < (int)this->stride; i++) {
-        _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 2), a, r, g, b);
-        _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 3), a, r, g, b);
+        _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 2), a, r, g, b);
+        _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 3), a, r, g, b);
         point += 4;
     }
 
@@ -410,15 +417,15 @@ void ParticleSystemMesh::updateSingleColor(int id)
             return;
         point = (int)this->firstPoint + (int)this->stride * next * 4;
         for (int i = 0; i < (int)this->stride; i++) {
-            _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)point, a, r, g, b);
-            _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)point, a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
             point += 4;
         }
     } else {
         point = start + stride * id * 4;
         for (int i = 0; i < (int)this->stride; i++) {
-            _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)point, a, r, g, b);
-            _psm_meshSetColor((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)point, a, r, g, b);
+            _psm_meshSetColor(this->canvas, this->mesh, (uint16_t)(point + 1), a, r, g, b);
             point += 4;
         }
     }
@@ -450,9 +457,9 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
             Vector scaledRight;
             Vector up;
             Vector scaledUp;
-            _psm_matrixGetRight(&right, (const Matrix *)this->matrix);
+            _psm_matrixGetRight(&right, this->matrix);
             _psm_vectorScale(&scaledRight, &right, this->field_0x4c == 0 ? 1.0f : -1.0f);
-            _psm_matrixGetUp(&up, (const Matrix *)this->matrix);
+            _psm_matrixGetUp(&up, this->matrix);
             float s = (float)*(int32_t *)(g_ParticleSetData + set * 160 + 0x44);
             _psm_vectorScale(&scaledRight, &scaledRight, s);
             _psm_vectorScale(&scaledUp, &up, s);
@@ -472,7 +479,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
         this->ages[id] = -1;
         int point = (int)this->firstPoint + (int)this->stride * id * 4;
         for (int i = 0; i < (int)this->stride * 4; i++)
-            _psm_meshSetPoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + i), 0.0f, 0.0f,
+            _psm_meshSetPoint(this->canvas, this->mesh, (uint16_t)(point + i), 0.0f, 0.0f,
                               0.0f);
     }
 }
@@ -488,18 +495,18 @@ void ParticleSystemMesh::updateTrailEdges(int id, int delta)
     for (int i = 0; i < edgeCount; i++) {
         Vector move;
         _psm_vectorScale(&move, edge, scale);
-        _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)point, -move.x, move.y,
+        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)point, -move.x, move.y,
                                 -move.z);
         int span = this->wide == 0 ? 1 : 4;
-        _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + span), move.x,
+        _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + span), move.x,
                                 move.y, move.z);
 
         if (this->ages[id] != -2 || (int)(this->field_0x35 << 24) >= 0) {
             Vector move2;
             _psm_vectorScale(&move2, edge + 1, scale);
-            _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + 2),
+            _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + 2),
                                     -move2.x, move2.y, -move2.z);
-            _psm_meshTranslatePoint((PaintCanvas *)this->canvas, this->mesh, (uint16_t)(point + span + 2),
+            _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + span + 2),
                                     move2.x, move2.y, move2.z);
             edge += 2;
             point += this->wide == 0 ? 4 : 8;

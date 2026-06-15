@@ -1,59 +1,65 @@
 #ifndef GOF2_PARTICLESYSTEMMESH_H
 #define GOF2_PARTICLESYSTEMMESH_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-struct ParticleSystemMesh;
-struct PaintCanvas;                 // global engine type (see fwd.h)
 
-enum BlendMode { BlendMode_dummy = 0 };
+// Galaxy on Fire 2 -- ParticleSystemMesh.
+// A mesh-backed particle system: each particle is rendered as one or more quads whose
+// edges are stored in `positions` and animated per frame. The class itself lives in the
+// global namespace; only the cross-class argument types (PaintCanvas, BlendMode) live in
+// AbyssEngine.
 
-// ParticleSettings::ParticleSet — a small enum value used as a per-particle preset index.
+namespace AbyssEngine {
+class PaintCanvas;
+enum BlendMode { BlendMode_dummy };
+}
+using AbyssEngine::PaintCanvas;
+using AbyssEngine::BlendMode;
+
+// ParticleSettings::ParticleSet -- a small index value used as a per-particle preset index.
 struct ParticleSettings {
     enum ParticleSet { ParticleSet_dummy = 0 };
 };
 using ParticleSet = ParticleSettings::ParticleSet;
 
-// Matrix/Vector are the global 3D-math aliases pulled in by common.h.
-
-void *operator new(__SIZE_TYPE__ size);
-
 class ParticleSystemMesh {
 public:
-    void* field_0x0;                    // +0x0  vtable
-    int field_0x4;                      // +0x4
-    void* canvas;                    // +0x8  PaintCanvas*
-    uint8_t field_0xc;                  // +0xc
-    uint8_t field_0xd;                  // +0xd
-    void* matrix;                   // +0x18 Matrix*
-    Vector field_0x1c;                  // +0x1c embedded direction/motion vector (scaled in updateUsualEdges)
-    uint32_t flags;                // +0x34 flags
-    uint8_t field_0x35;                 // +0x35
-    uint8_t field_0x36;                 // +0x36
-    uint8_t colorMask;                 // +0x45
-    uint32_t particleCount;                // +0x48 particle count
-    uint8_t field_0x4c;                 // +0x4c
-    int currentId;                     // +0x50 current id
-    uint32_t mesh;                // +0x54 mesh handle
-    uint32_t firstPoint;                // +0x58 first point
-    uint8_t field_0x5c;                 // +0x5c
-    uint32_t field_0x60;                // +0x60
-    Vector* positions;                 // +0x64 positions/edge-vector buffer (12-byte elements)
-    int* ages;                         // +0x68 per-particle age array
-    int8_t* setIds;                    // +0x6c per-particle set-id array
-    uint32_t pointCount;                // +0x70 point count
-    uint8_t wide;                 // +0x74 wide
-    uint32_t field_0x78;                // +0x78
-    uint32_t field_0x7c;                // +0x7c
-    uint32_t field_0x80;                // +0x80
-    uint32_t field_0x84;                // +0x84
-    uint32_t field_0x88;                // +0x88
-    uint8_t newSectionStarted;                 // +0x90 new-section flag
-    uint32_t field_0x94;                // +0x94
-    uint32_t edgeCount;                // +0x98 edge count
-    uint32_t stride;                // +0x9c stride
+    void* vtable;
+    int field_0x4;
+    PaintCanvas* canvas;
+    uint8_t field_0xc;
+    uint8_t field_0xd;
+    const Matrix* matrix;
+    Vector field_0x1c;                  // embedded direction/motion vector (scaled in updateUsualEdges)
+    uint32_t flags;
+    uint8_t field_0x35;
+    uint8_t field_0x36;
+    uint8_t colorMask;
+    uint32_t particleCount;
+    uint8_t field_0x4c;
+    int currentId;
+    uint32_t mesh;
+    uint32_t firstPoint;
+    uint8_t field_0x5c;
+    uint32_t field_0x60;
+    Vector* positions;                  // positions/edge-vector buffer (12-byte elements)
+    int* ages;                          // per-particle age array
+    int8_t* setIds;                     // per-particle set-id array
+    uint32_t pointCount;
+    uint8_t wide;
+    uint32_t field_0x78;
+    uint32_t field_0x7c;
+    uint32_t field_0x80;
+    uint32_t field_0x84;
+    uint32_t field_0x88;
+    uint8_t newSectionStarted;
+    uint32_t field_0x94;
+    uint32_t edgeCount;
+    uint32_t stride;
 
     ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b);
+    ~ParticleSystemMesh();
 
+    void emit(int id);
     int getPrevId(int id);
     int getQuadCount();
     void incId();

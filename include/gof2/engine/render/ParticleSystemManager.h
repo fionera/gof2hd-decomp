@@ -1,49 +1,49 @@
 #ifndef GOF2_PARTICLESYSTEMMANAGER_H
 #define GOF2_PARTICLESYSTEMMANAGER_H
 #include "gof2/common.h"
-// Galaxy on Fire 2 -- ParticleSystemManager (Android libgof2hdaa.so, armv7 Thumb).
-// Qualified target name is top-level: "ParticleSystemManager::..." (the class is NOT in a
-// namespace; only its argument types like AbyssEngine::AEMath::Matrix are).
-//
-// Layout recovered from the constructor (0x0019357c) and per-method field usage. The sprite and
-// mesh sub-system arrays are inline 3-word arrays (count / data / capacity), default-constructed
-// by Array<ParticleSystemSprite*>::Array() / Array<ParticleSystemMesh*>::Array() against the
-// address of their first word.
 
-void *operator new(__SIZE_TYPE__ size);
+// Galaxy on Fire 2 -- ParticleSystemManager.
+//
+// Owns the per-frame particle sub-systems for a scene. Particles come in two flavours, each kept in
+// its own dynamic array: 2D sprite systems (rendered through the canvas sprite pipeline) and 3D mesh
+// systems (rendered through a particle mesh + transform). A system handle packs the array selector in
+// bit 17: when set the handle indexes the mesh array, otherwise the sprite array; -1 means "no system".
 
 class ParticleSystemManager {
 public:
-    uint16_t flags;                  // +0x0   low byte = sprite-active, high byte = mesh-active
-    uint8_t  pad_0x2[2];             // +0x2
-    void*    canvas;                 // +0x4   PaintCanvas*
-    uint8_t  pad_0x8[4];             // +0x8
-    int32_t  cameraSet;              // +0xc   ParticleSettings::CameraSet
-    int32_t  accumulatedDt;          // +0x10  accumulated update delta
-    uint8_t  enabled;                // +0x14  manager active/enabled flag
-    uint8_t  pad_0x15[3];            // +0x15
-    uint32_t spriteSystemCount;      // +0x18  sprite array: element count
-    void*    spriteSystems;          // +0x1c  sprite array: data pointer (IParticleSystem*[])
-    uint32_t spriteSystemCapacity;   // +0x20  sprite array: capacity
-    int16_t  spriteTextureId;        // +0x24  sprite texture id (0xffff = create from uv id)
-    int16_t  spriteUvId;             // +0x26  sprite uv/texture-source id
-    uint32_t spriteBlendMode;        // +0x28  sprite blend mode
-    uint32_t spriteMeshId;           // +0x2c  sprite render handle (init 0xffffffff)
-    uint32_t spriteSystemId;         // +0x30  created sprite-system handle (init 0xffffffff)
-    uint32_t spriteParticleCount;    // +0x34  accumulated sprite particle count
-    uint8_t  spriteUsesExtra;        // +0x38  sprite extra/mirror flag
-    uint8_t  pad_0x39[3];            // +0x39
-    uint32_t meshSystemCount;        // +0x3c  mesh array: element count
-    void*    meshSystems;            // +0x40  mesh array: data pointer (IParticleSystem*[])
-    uint32_t meshSystemCapacity;     // +0x44  mesh array: capacity
-    int16_t  meshTextureId;          // +0x48  mesh texture id (0xffff = create from uv id)
-    int16_t  meshUvId;               // +0x4a  mesh uv/texture-source id
-    uint32_t meshBlendMode;          // +0x4c  mesh blend mode
-    uint32_t meshExtraId;            // +0x50  mesh render handle
-    uint32_t meshId;                 // +0x54  created particle-mesh handle (init 0xffffffff)
-    uint32_t transformId;            // +0x58  created transform handle (init 0xffffffff)
-    uint32_t meshParticleCount;      // +0x5c  packed mesh vertex/index particle count
-    uint8_t  meshUsesExtra;          // +0x60  mesh extra/mirror flag
+    uint16_t flags;                  // low byte = sprite-active, high byte = mesh-active
+    void*    canvas;                 // PaintCanvas*
+    int32_t  cameraSet;              // ParticleSettings::CameraSet
+    int32_t  accumulatedDt;          // accumulated update delta
+    uint8_t  enabled;                // manager active/enabled flag
+
+    uint32_t spriteSystemCount;      // sprite array: element count
+    void*    spriteSystems;          // sprite array: data pointer (IParticleSystem*[])
+    uint32_t spriteSystemCapacity;   // sprite array: capacity
+    int16_t  spriteTextureId;        // sprite texture id (0xffff = create from uv id)
+    int16_t  spriteUvId;             // sprite uv/texture-source id
+    uint32_t spriteBlendMode;        // sprite blend mode
+    uint32_t spriteMeshId;           // sprite render handle (init 0xffffffff)
+    uint32_t spriteSystemId;         // created sprite-system handle (init 0xffffffff)
+    uint32_t spriteParticleCount;    // accumulated sprite particle count
+    uint8_t  spriteUsesExtra;        // sprite extra/mirror flag
+
+    uint32_t meshSystemCount;        // mesh array: element count
+    void*    meshSystems;            // mesh array: data pointer (IParticleSystem*[])
+    uint32_t meshSystemCapacity;     // mesh array: capacity
+    int16_t  meshTextureId;          // mesh texture id (0xffff = create from uv id)
+    int16_t  meshUvId;               // mesh uv/texture-source id
+    uint32_t meshBlendMode;          // mesh blend mode
+    uint32_t meshExtraId;            // mesh render handle
+    uint32_t meshId;                 // created particle-mesh handle (init 0xffffffff)
+    uint32_t transformId;            // created transform handle (init 0xffffffff)
+    uint32_t meshParticleCount;      // packed mesh vertex/index particle count
+    uint8_t  meshUsesExtra;          // mesh extra/mirror flag
+
+    ParticleSystemManager(void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
+                          unsigned short meshTex, bool meshFlag);
+    ParticleSystemManager(void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
+                          bool spriteFlag, unsigned short meshTex, int meshBlend, bool meshFlag);
 
     void update(long long dt);
     void reset();

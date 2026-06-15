@@ -61,10 +61,8 @@ void Sparks::translate(Vector const &v)
 
 Sparks::~Sparks()
 {
-    void *p = this->lifetimeThresholds;
-    if (p != 0)
-        ::operator delete(p);
-    this->lifetimeThresholds = 0;
+    delete[] this->lifetimeThresholds;
+    this->lifetimeThresholds = nullptr;
 }
 
 void Sparks::explode(Vector const &v)
@@ -167,22 +165,21 @@ void Sparks::render()
         ((PaintCanvas *)*canvas)->SetBlendMode(2);
 
         void *canvasObj = *canvas;
-        uint32_t *m = (uint32_t *)&matrix;
-        m[0] = 0x3f800000;
-        m[1] = 0;
-        m[2] = 0;
-        m[3] = 0;
-        m[4] = 0;
-        m[5] = 0x3f800000;
-        m[6] = 0;
-        m[7] = 0;
-        m[8] = 0;
-        m[9] = 0;
-        m[10] = 0x3f800000;
-        m[11] = 0;
-        m[12] = 0x3f800000;
-        m[13] = 0x3f800000;
-        m[14] = 0x3f800000;
+        matrix.m[0] = 1.0f;
+        matrix.m[1] = 0.0f;
+        matrix.m[2] = 0.0f;
+        matrix.m[3] = 0.0f;
+        matrix.m[4] = 0.0f;
+        matrix.m[5] = 1.0f;
+        matrix.m[6] = 0.0f;
+        matrix.m[7] = 0.0f;
+        matrix.m[8] = 0.0f;
+        matrix.m[9] = 0.0f;
+        matrix.m[10] = 1.0f;
+        matrix.m[11] = 0.0f;
+        matrix.m[12] = 1.0f;
+        matrix.m[13] = 1.0f;
+        matrix.m[14] = 1.0f;
 
         ((PaintCanvas *)canvasObj)->SetWorldViewMatrix(matrix);
         ((PaintCanvas *)*canvas)->DrawSpriteSystem(this->spriteSystem);

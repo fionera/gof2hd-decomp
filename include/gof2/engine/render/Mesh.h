@@ -10,19 +10,13 @@
 // carries both a semantic name (used by the recovered Mesh code) and its original
 // byte-offset alias (field_0xNN, still referenced verbatim by the not-yet-recovered
 // shader / engine translation units) as a same-typed union member, so both spellings
-// name the same storage without disturbing the struct's layout.
-
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
+// name the same storage without disturbing the struct's layout. The 4-byte handle
+// slots stay 32-bit (uint32_t) on purpose: external TUs reinterpret them in place via
+// *(void**)&mesh->field_0xNN, which relies on their fixed 4-byte width.
 
 namespace AbyssEngine {
 
 struct Transform;
-
-namespace AEMath {
-struct BSphere;
-struct Vector;
-}
 
 // AbyssEngine::Mesh — renderable mesh with optional animation track.
 class Mesh {
