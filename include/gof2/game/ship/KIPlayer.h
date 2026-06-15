@@ -123,7 +123,9 @@ public:
     uint8_t isWingMan();
     void jump();
     void outerCollide(const Vector& v);
-    void render();
+    // Polymorphic: PlayerJunk/PlayerAsteroid/PlayerCreature/PlayerTurret override this.
+    // Level::render()/renderPause() dispatch through it for every actor in the rosters.
+    virtual void render();
     void reset();
     void setActive();
     void setDead();

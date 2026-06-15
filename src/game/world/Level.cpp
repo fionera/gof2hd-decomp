@@ -371,8 +371,7 @@ void Level::enableFog(bool enable) {
 }
 
 void Level::isInAsteroidCenterRange(Vector v) {
-    int *vol = (int *)collisionVolume;
-    return (*(void (**)(int *, Vector))(*vol + 8))(vol, v);
+    collisionVolume->collide(v.x, v.y, v.z);
 }
 
 Array<KIPlayer*>* Level::getAsteroids() {
@@ -380,9 +379,8 @@ Array<KIPlayer*>* Level::getAsteroids() {
 }
 
 int Level::collide(Vector v) {
-    int *vol = (int *)collisionVolume;
-    if (vol != 0) {
-        return (*(int (**)(int *, Vector))(*vol + 8))(vol, v);
+    if (collisionVolume != nullptr) {
+        return collisionVolume->collide(v.x, v.y, v.z);
     }
     return 0;
 }
@@ -483,39 +481,34 @@ Array<ObjectGun*>* Level::getPlayerGuns() {
 void Level::renderPause() {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
-            int *o = (int *)(*this->playerGuns)[i];
-            (*(void (**)(int *))(*o + 0x14))(o);
+            (*this->playerGuns)[i]->render();
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            int *o = (int *)(*this->enemyGuns)[i];
-            (*(void (**)(int *))(*o + 0x14))(o);
+            (*this->enemyGuns)[i]->render();
         }
     }
     if (this->enemies != nullptr) {
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            int *o = (int *)(*this->enemies)[i];
-            (*(void (**)(int *))(*o + 0x24))(o);
+            (*this->enemies)[i]->render();
         }
     }
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            int *o = (int *)(*this->asteroids)[i];
-            (*(void (**)(int *))(*o + 0x24))(o);
+            (*this->asteroids)[i]->render();
         }
     }
     if (this->gasClouds != nullptr) {
         for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
-            int *o = (int *)(*this->gasClouds)[i];
-            (*(void (**)(int *))(*o + 0x24))(o);
+            (*this->gasClouds)[i]->render();
         }
     }
     if (this->landmarks != nullptr) {
         for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
-            int *o = (int *)(*this->landmarks)[i];
-            if (o != 0) {
-                (*(void (**)(int *))(*o + 0x24))(o);
+            KIPlayer *o = (*this->landmarks)[i];
+            if (o != nullptr) {
+                o->render();
             }
         }
     }
@@ -592,50 +585,55 @@ Array<KIPlayer*>* Level::getLandmarks() {
     return landmarks;
 }
 
+// The full render pass invokes, per actor, a pre-render virtual at the original vtable
+// slot +0x34 (run only here, never during the frozen renderPause pass) followed by the
+// polymorphic render(). The +0x34 method's name is still unresolved — the actor vtables
+// are reached through a GOT relocation that is not statically resolvable — so it is kept
+// as a documented raw dispatch, matching the +0x1c / setRoute FIXMEs elsewhere in this
+// file. The receiver is a real KIPlayer*; only this one slot remains by-offset.
+static inline void actorPreRender(KIPlayer *o, int ctx) {
+    // FIXME: name the original-slot-+0x34 pre-render virtual and call it directly.
+    (*(void (**)(KIPlayer *, int))(*(char **)o + 0x34))(o, ctx);
+}
+
 void Level::render(int ctx) {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
-            int *o = (int *)(*this->playerGuns)[i];
-            (*(void (**)(int *))(*o + 0x14))(o);
+            (*this->playerGuns)[i]->render();
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            int *o = (int *)(*this->enemyGuns)[i];
-            (*(void (**)(int *))(*o + 0x14))(o);
+            (*this->enemyGuns)[i]->render();
         }
     }
     if (this->enemies != nullptr) {
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            int *o = (int *)(*this->enemies)[i];
-            (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = (int *)(*this->enemies)[i];
-            (*(void (**)(int *))(*o2 + 0x24))(o2);
+            KIPlayer *o = (*this->enemies)[i];
+            actorPreRender(o, ctx);
+            o->render();
         }
     }
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            int *o = (int *)(*this->asteroids)[i];
-            (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = (int *)(*this->asteroids)[i];
-            (*(void (**)(int *))(*o2 + 0x24))(o2);
+            KIPlayer *o = (*this->asteroids)[i];
+            actorPreRender(o, ctx);
+            o->render();
         }
     }
     if (this->gasClouds != nullptr) {
         for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
-            int *o = (int *)(*this->gasClouds)[i];
-            (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = (int *)(*this->gasClouds)[i];
-            (*(void (**)(int *))(*o2 + 0x24))(o2);
+            KIPlayer *o = (*this->gasClouds)[i];
+            actorPreRender(o, ctx);
+            o->render();
         }
     }
     if (this->landmarks != nullptr) {
         for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
-            int *o = (int *)(*this->landmarks)[i];
-            if (o != 0) {
-                (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-                int *o2 = (int *)(*this->landmarks)[i];
-                (*(void (**)(int *))(*o2 + 0x24))(o2);
+            KIPlayer *o = (*this->landmarks)[i];
+            if (o != nullptr) {
+                actorPreRender(o, ctx);
+                o->render();
             }
         }
     }
@@ -1583,7 +1581,7 @@ void Level::createAsteroids()
 
     BoundingSphere *bs = (BoundingSphere *)::operator new(0x48);
     new (bs) BoundingSphere(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    this->collisionVolume = bs;
+    *(BoundingSphere **)&this->collisionVolume = bs;
 
     int density = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt() + 2; // # of "core" (dense) asteroids
     int alien2 = (*g_status)->inAlienOrbit();
@@ -2567,7 +2565,7 @@ Level::Level(int mission) {
     skyboxTexture = -1;
     field_10 = -1;
     missionPtr = mission;
-    collisionVolume = nullptr;
+    collisionVolume = 0;
     field_b0 = nullptr;
     flashColor.x = 0;
     flashColor.y = 0;
