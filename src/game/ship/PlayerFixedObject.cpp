@@ -625,10 +625,9 @@ PlayerFixedObject::~PlayerFixedObject() {
 // Delegates to the recovered initialization body which spawns the fixed object and
 // seeds its position, name, faction and loot list.
 PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *geom,
-                                     float p5, float p6, float p7,
-                                     float sx, float sy, float sz)
-    : KIPlayer(kind, -1, (Player *)player, (AEGeometry *)geom, p5, p6, p7, false) {
-    this->ctor(kind, param2, player, geom, p5, p6, p7, sx, sy, sz);
+                                     float x, float y, float z)
+    : KIPlayer(kind, -1, (Player *)player, (AEGeometry *)geom, x, y, z, false) {
+    this->ctor(kind, param2, player, geom, x, y, z);
 }
 
 // Tail-call thunks selected by object state.
@@ -670,7 +669,7 @@ __attribute__((visibility("hidden"))) extern const int g_pfo_lootParams[8]; // p
 // AERandom singleton holder (pc-rel -> holder; *holder is the AERandom object).
 __attribute__((visibility("hidden"))) extern void **g_pfo_random;
 
-void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz) {
+void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float x, float y, float z) {
     PlayerFixedObject *self = this;
 
     // Zero the contiguous respawnPos/homingTarget/homingDir vector region.
@@ -698,16 +697,16 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     self->field_0x174 = 0;
     self->intPosX = 0; self->intPosY = 0; self->intPosZ = 0;
 
-    Vector p = { sx, sy, sz };
+    Vector p = { x, y, z };
     self->position = p;
 
     self->moving = 0;
     self->wreckType = -1;
     self->wreckMaterial = -1;
     self->dockingType = 0;
-    self->intPosX = (int32_t)sx;
-    self->intPosY = (int32_t)sy;
-    self->intPosZ = (int32_t)sz;
+    self->intPosX = (int32_t)x;
+    self->intPosY = (int32_t)y;
+    self->intPosZ = (int32_t)z;
 
     // Name string from a fixed literal.
     {

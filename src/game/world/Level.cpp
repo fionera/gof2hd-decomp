@@ -181,7 +181,6 @@ extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
 void Globals_addSoundResourceToList_ag(int snd);
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
-void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
 int  ApplicationManager_GetEngine_csp();
 
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
@@ -2778,7 +2777,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         }
     } else if (shipClass == 1) {
         obj = (PlayerFixedObject *)::operator new(0x1bc);
-        PlayerFixedObject_ctor_cs(obj, type, race, pl, 0, fx, fy, fz);
+        new (obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
         int wreck = 0;
         void *bv = Level::cs_buildBV(race, type, &wreck);
         obj->setWreckedMeshId(wreck);

@@ -62,13 +62,14 @@ public:
     String name;                              // display name
     uint8_t shipHidden;
 
+    // The three floats are the spawn position; they seed both the KIPlayer base
+    // position and this object's position (the binary passes them once).
     PlayerFixedObject(int kind, int param2, void *player, void *geom,
-                      float p5, float p6, float p7, float sx, float sy, float sz);
+                      float x, float y, float z);
     ~PlayerFixedObject();
 
     int collide(float x, float y, float z);
-    void ctor(int kind, int param2, void *player, void *geom,
-              float p5, float p6, float p7, float sx, float sy, float sz);
+    void ctor(int kind, int param2, void *player, void *geom, float x, float y, float z);
     int getDockingType();
     String getName();
     V3 getPosition();
