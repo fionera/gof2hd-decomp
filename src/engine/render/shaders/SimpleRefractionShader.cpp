@@ -1,14 +1,78 @@
 #include "gof2/engine/render/shaders/SimpleRefractionShader.h"
+// Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
+class FBOContainer;
+class ShaderBaseStruct;
 #include "gof2/engine/render/Engine.h"
-
-extern "C" void glUniform2f(int location, float x, float y);
+#include "gof2/platform/gl.h"
 
 namespace AbyssEngine {
 
-void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
+// SimpleRefractionShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char SimpleRefractionShader_vtable;
+
+int SimpleRefractionShader::ShaderIndex;
+
+SimpleRefractionShader::SimpleRefractionShader()
+{
+    this->vtable = &SimpleRefractionShader_vtable + 8;
+    SimpleRefractionShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"SimpleRefractionShader";
+}
+
+void SimpleRefractionShader::Init(::Engine *engine)
+{
+    int program = this->ES2LoadProgram(
+        "SimpleRefractionShader.vsh", "SimpleRefractionShader.fsh");
+    this->program = program;
+
+    this->aPositionLoc = glGetAttribLocation(program, "a_position");
+    this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+    this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+    this->aTexCoordLoc = glGetAttribLocation(this->program, "a_texCoord");
+
+    this->uM0Loc = glGetUniformLocation(this->program, "u_m0");
+    this->uM1Loc = glGetUniformLocation(this->program, "u_m1");
+    this->uM2Loc = glGetUniformLocation(this->program, "u_m2");
+    this->uTex0Loc = glGetUniformLocation(this->program, "u_tex0");
+    this->uTex1Loc = glGetUniformLocation(this->program, "u_tex1");
+    this->uM3Loc = glGetUniformLocation(this->program, "u_m3");
+    this->uM4Loc = glGetUniformLocation(this->program, "u_m4");
+    this->uM5Loc = glGetUniformLocation(this->program, "u_m5");
+
+    glActiveTexture(0x84c7);
+    engine->ActivateRefractFBO();
+
+    this->uRefractLoc = glGetUniformLocation(this->program, "u_refract");
+    this->uM6Loc = glGetUniformLocation(this->program, "u_m6");
+
+    glUseProgram(this->program);
+
+    int samplerLocs[2] = { this->uTex0Loc, this->uTex1Loc };
+    for (int i = 0; i != 2; i = i + 1) {
+        if (samplerLocs[i] >= 0)
+            glUniform1i(samplerLocs[i], i);
+    }
+    glUniform1i(this->uM6Loc, 7);
+}
+
+void SimpleRefractionShader::SetInActive()
+{
+    if (this->aPositionLoc >= 0)
+        glDisableVertexAttribArray(this->aPositionLoc);
+    if (this->aNormalLoc >= 0)
+        glDisableVertexAttribArray(this->aNormalLoc);
+    if (this->aTangentLoc >= 0)
+        glDisableVertexAttribArray(this->aTangentLoc);
+    if (this->aTexCoordLoc >= 0)
+        glDisableVertexAttribArray(this->aTexCoordLoc);
+    if (this->uM0Loc >= 0)
+        glDisableVertexAttribArray(this->uM0Loc);
+}
+
+void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
     if (this->uM1Loc >= 0)
-        glUniformMatrix4fv(this->uM1Loc, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(this->uM1Loc, 1, 0, (float *)((char *)engine + 0x104));
 
     if (this->dirty != 0) {
         if (this->uM4Loc >= 0)
@@ -19,11 +83,11 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3f(this->uM2Loc, field_f32(engine, 0x34c), field_f32(engine, 0x350),
                         field_f32(engine, 0x354));
         int loc = this->uM5Loc;
-        float w = (float)((::Engine *)engine)->GetDisplayWidth();
-        float h = (float)((::Engine *)engine)->GetDisplayHeight();
+        float w = (float)engine->GetDisplayWidth();
+        float h = (float)engine->GetDisplayHeight();
         glUniform2f(loc, 1.0f / w, 1.0f / h);
         glActiveTexture(0x84c7);
-        ((::Engine *)engine)->ActivateRefractFBO();
+        engine->ActivateRefractFBO();
         glUniform1f(this->uRefractLoc, field_f32(mesh, 0x20));
         this->dirty = 0;
     }
@@ -65,87 +129,3 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 }
 
 } // namespace AbyssEngine
-
-void _ZN11AbyssEngine22SimpleRefractionShaderD0Ev(
-    AbyssEngine::SimpleRefractionShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
-
-void SimpleRefractionShader::SetInActive()
-{
-    int loc;
-    loc = this->aPositionLoc;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->aNormalLoc;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->aTangentLoc;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->aTexCoordLoc;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->uM0Loc;
-    if (loc < 0)
-        return;
-    return glDisableVertexAttribArray(loc);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void SimpleRefractionShader::Init(Engine *engine)
-{
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram(
-        "SimpleRefractionShader.vsh", "SimpleRefractionShader.fsh");
-    this->field_0x4 = program;
-
-    this->aPositionLoc = glGetAttribLocation(program, "a_position");
-    this->aNormalLoc = glGetAttribLocation(this->field_0x4, "a_normal");
-    this->aTangentLoc = glGetAttribLocation(this->field_0x4, "a_tangent");
-    this->aTexCoordLoc = glGetAttribLocation(this->field_0x4, "a_texCoord");
-
-    this->uM0Loc = glGetUniformLocation(this->field_0x4, "u_m0");
-    this->uM1Loc = glGetUniformLocation(this->field_0x4, "u_m1");
-    this->uM2Loc = glGetUniformLocation(this->field_0x4, "u_m2");
-    this->uTex0Loc = glGetUniformLocation(this->field_0x4, "u_tex0");
-    this->uTex1Loc = glGetUniformLocation(this->field_0x4, "u_tex1");
-    this->uM3Loc = glGetUniformLocation(this->field_0x4, "u_m3");
-    this->uM4Loc = glGetUniformLocation(this->field_0x4, "u_m4");
-    this->uM5Loc = glGetUniformLocation(this->field_0x4, "u_m5");
-
-    glActiveTexture(0x84c7);
-    ((::Engine *)engine)->ActivateRefractFBO();
-
-    this->uRefractLoc = glGetUniformLocation(this->field_0x4, "u_refract");
-    this->uM6Loc = glGetUniformLocation(this->field_0x4, "u_m6");
-
-    glUseProgram(this->field_0x4);
-
-    int samplerLocs[2] = { this->uTex0Loc, this->uTex1Loc };
-    for (int i = 0; i != 2; i = i + 1) {
-        if (samplerLocs[i] >= 0)
-            glUniform1i(samplerLocs[i], i);
-    }
-    return glUniform1i(this->uM6Loc, 7);
-}
-
-} // namespace AbyssEngine
-
-extern "C" AbyssEngine::SimpleRefractionShader *
-_ZN11AbyssEngine22SimpleRefractionShaderC2Ev(AbyssEngine::SimpleRefractionShader *self)
-{
-    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
-    self->field_0x0 = (void *)(_ZTVN11AbyssEngine22SimpleRefractionShaderE + 8);
-    AbyssEngine::SimpleRefractionShader::ShaderIndex =
-        AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
-    self->name = SimpleRefractionShader_name;
-    return self;
-}

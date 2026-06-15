@@ -1,6 +1,41 @@
 #include "gof2/engine/render/shaders/GreenShader.h"
+#include "gof2/platform/gl.h"
+
+// GreenShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char GreenShader_vtable;
 
 namespace AbyssEngine {
+
+GreenShader::GreenShader()
+{
+    this->vtable = &GreenShader_vtable + 8;
+    this->name.s = u"GreenShader";
+}
+
+// Compiles the GLES2 program and caches its attribute (a0..a4) and uniform (u0..u8) locations.
+void GreenShader::Init(Engine *)
+{
+    this->program = this->ES2LoadProgram("GreenShader.vsh", "GreenShader.fsh");
+
+    this->a0Loc = glGetAttribLocation(this->program, "a0");
+    this->a1Loc = glGetAttribLocation(this->program, "a1");
+    this->a2Loc = glGetAttribLocation(this->program, "a2");
+    this->a3Loc = glGetAttribLocation(this->program, "a3");
+    this->a4Loc = glGetAttribLocation(this->program, "a4");
+
+    this->u0Loc = glGetUniformLocation(this->program, "u0");
+    this->u1Loc = glGetUniformLocation(this->program, "u1");
+    this->u2Loc = glGetUniformLocation(this->program, "u2");
+    this->u3Loc = glGetUniformLocation(this->program, "u3");
+    this->u4Loc = glGetUniformLocation(this->program, "u4");
+    this->u5Loc = glGetUniformLocation(this->program, "u5");
+    this->u6Loc = glGetUniformLocation(this->program, "u6");
+    this->u7Loc = glGetUniformLocation(this->program, "u7");
+    this->u8Loc = glGetUniformLocation(this->program, "u8");
+
+    glUseProgram(this->program);
+    glUniform1i(this->u4Loc, 0);
+}
 
 void GreenShader::SetInActive()
 {
@@ -15,46 +50,6 @@ void GreenShader::SetInActive()
     if (this->a4Loc >= 0)
         glDisableVertexAttribArray(this->a4Loc);
 }
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine11GreenShaderD0Ev(AbyssEngine::GreenShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
-
-namespace AbyssEngine {
-
-void GreenShader::Init(Engine *)
-{
-    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("GreenShader.vsh", "GreenShader.fsh");
-    this->field_0x4 = program;
-
-    this->a0Loc = glGetAttribLocation(program, "a0");
-    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
-    this->a2Loc = glGetAttribLocation(this->field_0x4, "a2");
-    this->a3Loc = glGetAttribLocation(this->field_0x4, "a3");
-    this->a4Loc = glGetAttribLocation(this->field_0x4, "a4");
-
-    this->u0Loc = glGetUniformLocation(this->field_0x4, "u0");
-    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
-    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
-    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
-    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
-    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
-    this->u6Loc = glGetUniformLocation(this->field_0x4, "u6");
-    this->u7Loc = glGetUniformLocation(this->field_0x4, "u7");
-    this->u8Loc = glGetUniformLocation(this->field_0x4, "u8");
-
-    glUseProgram(this->field_0x4);
-    return glUniform1i(this->u4Loc, 0);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void GreenShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
@@ -80,17 +75,6 @@ void GreenShader::UpdateMeshData(Mesh *mesh, Engine *engine)
             return;
         glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, (const void *)i32(mesh, 4));
     }
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-GreenShader::GreenShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = (void *)(GreenShader_vtable + 8);
-    this->name = GreenShader_name;
 }
 
 } // namespace AbyssEngine

@@ -1,22 +1,22 @@
 #include "gof2/engine/render/shaders/SandboxShader.h"
 #include "gof2/engine/render/Mesh.h"
+#include "gof2/platform/gl.h"
 
-void _ZN11AbyssEngine13SandboxShaderD0Ev(
-    AbyssEngine::SandboxShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
+// SandboxShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char _ZTVN11AbyssEngine13SandboxShaderE[];
+
+// Registry slot the constructor links itself into (engine-global, resolved at link).
+extern "C" void *SandboxShader_registerSrc;
+extern "C" void **SandboxShader_registerDst;
 
 namespace AbyssEngine {
 
 void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
-    AbyssEngine::Mesh *mesh = (AbyssEngine::Mesh *)meshArg;
+    AbyssEngine::Mesh *mesh = meshArg;
     char *e = (char *)engine;
 
-    glUniformMatrix4fv(this->uniformA, 1, 0, e + 0x104);
+    glUniformMatrix4fv(this->uniformA, 1, 0, (float *)(e + 0x104));
 
     if (this->dirty != 0) {
         glUniform4fv(this->uniformF, 1, (float *)(e + 0xd0));
@@ -54,18 +54,13 @@ void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
     glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void SandboxShader::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("SandboxShader.vsh", "SandboxShader.fsh");
-    this->program = program;
+    this->program = this->ES2LoadProgram("SandboxShader.vsh", "SandboxShader.fsh");
 
-    this->attrPosition = glGetAttribLocation(program, "a_position");
-    this->attrNormal = glGetAttribLocation(this->program, "a_normal");
-    this->attrTangent = glGetAttribLocation(this->program, "a_tangent");
+    this->attrPosition = glGetAttribLocation(this->program, "a_position");
+    this->attrNormal   = glGetAttribLocation(this->program, "a_normal");
+    this->attrTangent  = glGetAttribLocation(this->program, "a_tangent");
     this->attrBinormal = glGetAttribLocation(this->program, "a_binormal");
     this->attrTexCoord = glGetAttribLocation(this->program, "a_texCoord");
 
@@ -82,10 +77,6 @@ void SandboxShader::Init(Engine *)
     glUniform1i(this->uniformE, 1);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void SandboxShader::SetInActive()
 {
     glDisableVertexAttribArray(this->attrPosition);
@@ -95,32 +86,12 @@ void SandboxShader::SetInActive()
     glDisableVertexAttribArray(this->attrTexCoord);
 }
 
-} // namespace AbyssEngine
-
-extern "C" {
-extern void *SandboxShader_registerSrc;
-extern void **SandboxShader_registerDst;
-}
-
-namespace AbyssEngine {
-
-// AbyssEngine::SandboxShader::SandboxShader()
 SandboxShader::SandboxShader()
 {
-    // Base ShaderBaseStruct ctor.
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // Install the SandboxShader vtable (object pointer points 8 bytes into the
-    // vtable, past the RTTI / offset-to-top slots).
-    *(void **)this = (void *)(_ZTVN11AbyssEngine13SandboxShaderE + 8);
-
+    this->vtable = _ZTVN11AbyssEngine13SandboxShaderE + 8;
     // Register this shader into the global registry list.
     *SandboxShader_registerDst = SandboxShader_registerSrc;
-
-    // Initialise the String member at +0xc from a literal.
-    String tmp;
-    tmp.s = u"SandboxShader";
-    this->name = tmp;
+    this->name.s = u"SandboxShader";
 }
 
 } // namespace AbyssEngine

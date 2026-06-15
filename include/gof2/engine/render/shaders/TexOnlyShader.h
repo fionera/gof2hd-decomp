@@ -1,48 +1,27 @@
 #ifndef GOF2_TEXONLYSHADER_H
 #define GOF2_TEXONLYSHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+#include "gof2/engine/render/ShaderBaseStruct.h"
 
-void operator delete(void *ptr) noexcept;
-
-extern "C" uint32_t g_TexOnlyShader_vtable[];
-extern "C" int32_t g_TexOnlyShader_shaderIndex;
-
-extern "C" int glGetAttribLocation(uint32_t program, const char *name);
-extern "C" int glGetUniformLocation(uint32_t program, const char *name);
-extern "C" void glUseProgram(uint32_t program);
-extern "C" void glUniform1i(int location, int value);
-extern "C" void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" void glEnableVertexAttribArray(uint32_t index);
-extern "C" void glDisableVertexAttribArray(uint32_t index);
-extern "C" void glVertexAttribPointer(uint32_t index, int size, uint32_t type, uint8_t normalized, int stride,
-                                      const void *pointer);
-extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
+// Galaxy on Fire 2 - AbyssEngine::TexOnlyShader (minimal GLES2 shader that only samples a texture).
 
 namespace AbyssEngine {
 
-struct Engine;
-struct Mesh;
+class Engine;
+class Mesh;
 
-// AbyssEngine::TexOnlyShader — minimal GLES2 shader that only samples a texture.
-class TexOnlyShader {
+class TexOnlyShader : public ShaderBaseStruct {
 public:
-    void *field_0x0;     // vtable
-    uint32_t program;  // program handle
-    uint8_t field_0x8;
-    uint8_t uniformsDirty;   // dirty flag
-    uint8_t field_0xa;
-    uint8_t field_0xb;
-    String name;    // name
-    int aPosition;      // a_position attrib
-    int aTexCoord;      // a_texCoord attrib
-    int uWorldMatrix;      // u_WorldMatrix uniform
-    int sTexture;      // s_texture uniform
+    int aPosition;      // attribute a_position
+    int aTexCoord;      // attribute a_texCoord
+    int uWorldMatrix;   // uniform u_WorldMatrix
+    int sTexture;       // uniform s_texture
 
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
-    void Init(Engine *engine);
     TexOnlyShader();
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
 };
 
 } // namespace AbyssEngine

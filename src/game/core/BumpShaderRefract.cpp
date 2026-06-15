@@ -1,132 +1,122 @@
 #include "gof2/game/core/BumpShaderRefract.h"
+// Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
+class FBOContainer;
+class ShaderBaseStruct;
 #include "gof2/engine/render/Engine.h"
+#include "gof2/platform/gl.h"
 namespace AbyssEngine {
 
 int BumpShaderRefract::ShaderIndex;
 
-// AbyssEngine::BumpShaderRefract::SetInActive()
 void BumpShaderRefract::SetInActive()
 {
-    if (field_0x20 >= 0)
-        glDisableVertexAttribArray(field_0x20);
-    if (field_0x24 >= 0)
-        glDisableVertexAttribArray(field_0x24);
-    if (field_0x28 >= 0)
-        glDisableVertexAttribArray(field_0x28);
+    if (aPosition >= 0)
+        glDisableVertexAttribArray(aPosition);
+    if (aTexCoord >= 0)
+        glDisableVertexAttribArray(aTexCoord);
+    if (uSampler0 >= 0)
+        glDisableVertexAttribArray(uSampler0);
 }
 
-// AbyssEngine::BumpShaderRefract::BumpShaderRefract()
-__attribute__((minsize)) BumpShaderRefract::BumpShaderRefract()
+BumpShaderRefract::BumpShaderRefract()
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    field_0x0 = (char *)_ZTVN11AbyssEngine17BumpShaderRefractE + 8;
+    this->vtable = (char *)_ZTVN11AbyssEngine17BumpShaderRefractE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    field_0xc.s = u"BumpShaderRefract";
-    
+    this->name.s = u"BumpShaderRefract";
 }
 
-// AbyssEngine::BumpShaderRefract::Init(AbyssEngine::Engine*)
-void BumpShaderRefract::Init(Engine *engine)
+void BumpShaderRefract::Init(::Engine *engine)
 {
-    int program = ES2LoadProgram("BumpShaderRefract.vsh", "BumpShaderRefract.fsh");
-    field_0x4 = program;
+    int program = this->ES2LoadProgram("BumpShaderRefract.vsh", "BumpShaderRefract.fsh");
+    this->program = program;
 
-    field_0x20 = glGetAttribLocation(program, "a0");
-    field_0x24 = glGetAttribLocation(field_0x4, "a1");
+    aPosition = glGetAttribLocation(program, "a0");
+    aTexCoord = glGetAttribLocation(this->program, "a1");
 
-    field_0x28 = glGetUniformLocation(field_0x4, "u0");
-    field_0x2c = glGetUniformLocation(field_0x4, "u1");
-    field_0x30 = glGetUniformLocation(field_0x4, "u2");
-    field_0x34 = glGetUniformLocation(field_0x4, "u3");
-    field_0x38 = glGetUniformLocation(field_0x4, "u4");
-    field_0x40 = glGetUniformLocation(field_0x4, "u5");
-    field_0x44 = glGetUniformLocation(field_0x4, "u6");
-    field_0x48 = glGetUniformLocation(field_0x4, "u7");
+    uSampler0 = glGetUniformLocation(this->program, "u0");
+    uMvpMatrix = glGetUniformLocation(this->program, "u1");
+    uSampler2 = glGetUniformLocation(this->program, "u2");
+    uSampler3 = glGetUniformLocation(this->program, "u3");
+    uPixelSize = glGetUniformLocation(this->program, "u4");
+    uViewMatrix = glGetUniformLocation(this->program, "u5");
+    uColorIndex = glGetUniformLocation(this->program, "u6");
+    uColor = glGetUniformLocation(this->program, "u7");
 
     glActiveTexture(0x84c7);
-    ((::Engine *)engine)->ActivateRefractFBO();
-    field_0x3c = glGetUniformLocation(field_0x4, "u8");
+    engine->ActivateRefractFBO();
+    uRefractSampler = glGetUniformLocation(this->program, "u8");
 
-    glUseProgram(field_0x4);
-    // samplers u2 (+0x30) and u3 (+0x34): consecutive int fields, indexed at runtime.
-    int *samplers = &field_0x30;
+    glUseProgram(this->program);
+    // samplers uSampler2 (+0x30) and uSampler3 (+0x34): consecutive int fields, indexed at runtime.
+    int *samplers = &uSampler2;
     for (int i = 0; i != 2; i++) {
         int loc = samplers[i];
         if (loc >= 0)
             glUniform1i(loc, i);
     }
-    glUniform1i(field_0x3c, 7);
+    glUniform1i(uRefractSampler, 7);
 }
 
-// AbyssEngine::BumpShaderRefract::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
-void BumpShaderRefract::UpdateMeshData(Mesh *mesh, Engine *engine)
+void BumpShaderRefract::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
     char *e = (char *)engine;
     char *m = (char *)mesh;
 
-    if (field_0x2c >= 0)
-        glUniformMatrix4fv(field_0x2c, 1, 0, e + 0x104);
-    if (field_0x40 >= 0)
-        glUniformMatrix4fv(field_0x40, 1, 0, e + 0x1c4);
+    if (uMvpMatrix >= 0)
+        glUniformMatrix4fv(uMvpMatrix, 1, 0, (float *)(e + 0x104));
+    if (uViewMatrix >= 0)
+        glUniformMatrix4fv(uViewMatrix, 1, 0, (float *)(e + 0x1c4));
 
-    if (field_0x9 != 0) {
-        if (field_0x44 >= 0)
-            glUniform1i(field_0x44, *(uint8_t *)(m + 0x85));
-        glUniform4fv(field_0x48, 1, (float *)(e + 0xd0));
-        int loc = field_0x38;
+    if (this->dirty != 0) {
+        if (uColorIndex >= 0)
+            glUniform1i(uColorIndex, *(uint8_t *)(m + 0x85));
+        glUniform4fv(uColor, 1, (float *)(e + 0xd0));
+        int loc = uPixelSize;
         if (loc >= 0) {
-            float w = (float)((::Engine *)engine)->GetDisplayWidth();
-            float h = (float)((::Engine *)engine)->GetDisplayHeight();
+            float w = (float)engine->GetDisplayWidth();
+            float h = (float)engine->GetDisplayHeight();
             glUniform2f(loc, 1.0f / w, 1.0f / h);
         }
         glActiveTexture(0x84c7);
-        ((::Engine *)engine)->ActivateRefractFBO();
-        field_0x9 = 0;
+        engine->ActivateRefractFBO();
+        this->dirty = 0;
     }
 
-    if (field_0x20 >= 0)
-        glEnableVertexAttribArray(field_0x20);
-    if (field_0x24 >= 0)
-        glEnableVertexAttribArray(field_0x24);
-    if (field_0x28 >= 0)
-        glEnableVertexAttribArray(field_0x28);
+    if (aPosition >= 0)
+        glEnableVertexAttribArray(aPosition);
+    if (aTexCoord >= 0)
+        glEnableVertexAttribArray(aTexCoord);
+    if (uSampler0 >= 0)
+        glEnableVertexAttribArray(uSampler0);
 
-    int loc0 = field_0x20;
+    int loc0 = aPosition;
     const void *ptr;
     int last;
     if (*(uint8_t *)(m + 0x5c) == 0) {
         if (loc0 >= 0)
             glVertexAttribPointer(loc0, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
-        if (field_0x24 >= 0)
-            glVertexAttribPointer(field_0x24, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
-        last = field_0x28;
+        if (aTexCoord >= 0)
+            glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+        last = uSampler0;
         if (last < 0)
             return;
         ptr = *(void **)(m + 0xc);
     } else {
         if (loc0 >= 0) {
             glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
-            glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, 0);
         }
-        if (field_0x24 >= 0) {
+        if (aTexCoord >= 0) {
             glBindBuffer(0x8892, *(uint32_t *)(m + 0x68));
-            glVertexAttribPointer(field_0x24, 2, 0x1406, 0, 0, 0);
+            glVertexAttribPointer(aTexCoord, 2, 0x1406, 0, 0, 0);
         }
-        if (field_0x28 < 0)
+        if (uSampler0 < 0)
             return;
         glBindBuffer(0x8892, *(uint32_t *)(m + 0x78));
         ptr = 0;
-        last = field_0x28;
+        last = uSampler0;
     }
     glVertexAttribPointer(last, 4, 0x1406, 0, 0, ptr);
 }
 
 } // namespace AbyssEngine
-
-// AbyssEngine::BumpShaderRefract::~BumpShaderRefract() (deleting dtor)
-void _ZN11AbyssEngine17BumpShaderRefractD0Ev(AbyssEngine::BumpShaderRefract *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}

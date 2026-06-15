@@ -1,77 +1,39 @@
 #ifndef GOF2_VERTEXCOLORALPHATEXTURESHADER_H
 #define GOF2_VERTEXCOLORALPHATEXTURESHADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-#include <new>
+#include "gof2/engine/render/ShaderBaseStruct.h"
 
-void operator delete(void *ptr) noexcept;
-
-extern "C" char _ZTVN11AbyssEngine29VertexColorAlphaTextureShaderE[];
-
-extern "C" void glUseProgram(uint32_t program);
-extern "C" int glGetUniformLocation(uint32_t program, const char *name);
-extern "C" int glGetAttribLocation(uint32_t program, const char *name);
-extern "C" void glUniform1f(int location, float value);
-extern "C" void glUniform1i(int location, int value);
-extern "C" void glUniform3f(int location, float x, float y, float z);
-extern "C" void glUniform3fv(int location, int count, const float *value);
-extern "C" void glUniform4fv(int location, int count, const float *value);
-extern "C" void glUniformMatrix3fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" void glUniformMatrix4fv(int location, int count, uint8_t transpose, const void *value);
-extern "C" void glEnableVertexAttribArray(uint32_t index);
-extern "C" void glDisableVertexAttribArray(uint32_t index);
-extern "C" void glBindBuffer(uint32_t target, uint32_t buffer);
-extern "C" void glVertexAttribPointer(
-    uint32_t index, int size, uint32_t type, uint8_t normalized, int stride, const void *pointer);
-
+// AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
+// alpha (derives from ShaderBaseStruct). The GL program handle lives in the base
+// (ShaderBaseStruct::program); this class caches its six vertex attribute locations
+// and nine uniform locations at its tail.
 namespace AbyssEngine {
 
 struct Engine;
 struct Mesh;
 
-struct ShaderBaseStruct {
-    static int shaderIndexIntern;
-
-    ShaderBaseStruct();
-    ~ShaderBaseStruct();
-
-    int ES2LoadProgram(const char *vertexShader, const char *fragmentShader);
-};
-
-// String_ctor_char / String_assign / String_dtor are declared in gof2/String.h
-
-// AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
-// alpha (derives from ShaderBaseStruct). Holds the program handle, six vertex
-// attribute locations and nine uniform locations.
-class VertexColorAlphaTextureShader {
+class VertexColorAlphaTextureShader : public ShaderBaseStruct {
 public:
-    void *vtable;     // vtable
-    int program;       // program handle
-    uint8_t field_0x8;
-    uint8_t dirty;   // dirty flag
-    uint8_t field_0xa;
-    uint8_t field_0xb;
-    String name;    // name
-    int attrib1;      // attrib a1
-    int attrib2;      // attrib a2
-    int attrib3;      // attrib a3
-    int attrib4;      // attrib a4
-    int attrib5;      // attrib a5
-    int attrib0;      // attrib a0
-    int uniform0;      // uniform u0
-    int uniform1;      // uniform u1
-    int uniform2;      // uniform u2
-    int uniform3;      // uniform u3
-    int uniform4;      // uniform u4
-    int uniform5;      // uniform u5
-    int uniform6;      // uniform u6
-    int uniform7;      // uniform u7
-    int uniform8;      // uniform u8
+    int attrib1;       // a1
+    int attrib2;       // a2
+    int attrib3;       // a3
+    int attrib4;       // a4
+    int attrib5;       // a5
+    int attrib0;       // a0
+    int uniform0;      // u0
+    int uniform1;      // u1
+    int uniform2;      // u2
+    int uniform3;      // u3
+    int uniform4;      // u4
+    int uniform5;      // u5
+    int uniform6;      // u6
+    int uniform7;      // u7
+    int uniform8;      // u8
 
+    VertexColorAlphaTextureShader();
     void Init(Engine *engine);
     void UpdateMeshData(Mesh *mesh, Engine *engine);
     void SetInActive();
-    VertexColorAlphaTextureShader();
 };
 
 } // namespace AbyssEngine

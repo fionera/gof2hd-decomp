@@ -1,19 +1,27 @@
 #include "gof2/engine/render/shaders/SpecCubeAlphaMapping.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/game/core/String.h"
+#include "gof2/platform/gl.h"
+
+// SpecCubeAlphaMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char SpecCubeAlphaMapping_vtable;
 
 namespace AbyssEngine {
 
+SpecCubeAlphaMapping::SpecCubeAlphaMapping()
+{
+    this->vtable = &SpecCubeAlphaMapping_vtable + 8;
+    this->name.s = u"SpecCubeAlphaMapping";
+}
+
+// Compiles the GLES2 program (falling back to the secondary fragment shader when the bound
+// variant is unavailable) and caches its attribute/uniform locations.
 void SpecCubeAlphaMapping::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)(this))->LoadBindShader("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping.fsh");
-    this->program = program;
-    if (program == 0) {
-        program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping2.fsh");
-        this->program = program;
+    this->program = this->LoadBindShader("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping.fsh");
+    if (this->program == 0) {
+        this->program = this->ES2LoadProgram("SpecCubeAlphaMapping.vsh", "SpecCubeAlphaMapping2.fsh");
     }
 
-    this->attrA0 = glGetAttribLocation(program, "a0");
+    this->attrA0 = glGetAttribLocation(this->program, "a0");
     this->attrA1 = glGetAttribLocation(this->program, "a1");
     this->attrA2 = glGetAttribLocation(this->program, "a2");
 
@@ -32,62 +40,25 @@ void SpecCubeAlphaMapping::Init(Engine *)
 
     glUseProgram(this->program);
     glUniform1i(this->uniU4, 0);
-    return glUniform1i(this->uniU5, 1);
+    glUniform1i(this->uniU5, 1);
 }
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine20SpecCubeAlphaMappingD0Ev(AbyssEngine::SpecCubeAlphaMapping *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
-
-// AbyssEngine::SpecCubeAlphaMapping::SpecCubeAlphaMapping()
-// Chains the ShaderBaseStruct ctor, installs the vtable, registers the instance in a global,
-// and stores the shader's resource-name String at +0xc.
-namespace AbyssEngine {
-
-SpecCubeAlphaMapping::SpecCubeAlphaMapping()
-{
-    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // install vtable (target adds +8 to the table base) and register self in the global slot
-    this->field_0x0 = (void *)(SpecCubeAlphaMapping_vtable + 8);
-    *g_SCAM_globalSlotDst = *g_SCAM_globalSlotSrc;
-
-    String name;
-    ((String *)(&name))->ctor_char(g_SCAM_name, false);
-    ((String *)(&this->name))->assign(&name);
-    ((String *)(&name))->dtor();
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void SpecCubeAlphaMapping::SetInActive()
 {
     glDisableVertexAttribArray(this->attrA0);
     glDisableVertexAttribArray(this->attrA1);
-    return glDisableVertexAttribArray(this->attrA2);
+    glDisableVertexAttribArray(this->attrA2);
 }
 
-} // namespace AbyssEngine
-
-// AbyssEngine::SpecCubeAlphaMapping::UpdateMeshData(Mesh*, Engine*)
 // Pushes the per-frame uniforms (env factor, light/material vectors, MVP/normal matrices,
 // fog/spec params) into the bound program, then binds the mesh's vertex/uv/normal streams
 // (VBO path when the mesh has a buffer object, client-array path otherwise).
-namespace AbyssEngine {
-
 void SpecCubeAlphaMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *eng = (char *)engine;
     char *msh = (char *)mesh;
 
-    if (this->uniformsDirty != 0) {
+    if (this->dirty != 0) {
         float envFactor = 1.0f;
         int mat = *(int *)(msh + 0x30);
         if (mat != 0 && *(void **)(mat + 0x24) != 0 && *(int *)(mat + 0x28) == 4) {
@@ -99,7 +70,7 @@ void SpecCubeAlphaMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
         glUniform3fv(this->uniU7, 1, (const float *)(eng + 0x2fc));
         glUniform3fv(this->uniU8, 1, (const float *)(eng + 0x2e4));
         glUniform1f(this->uniU9, *(float *)(eng + 0x2c8));
-        this->uniformsDirty = 0;
+        this->dirty = 0;
     }
 
     glUniformMatrix4fv(this->uniU0, 1, 0, (const float *)(eng + 0x104));

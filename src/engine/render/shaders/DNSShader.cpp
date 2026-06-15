@@ -1,19 +1,48 @@
 #include "gof2/engine/render/shaders/DNSShader.h"
 #include "gof2/game/core/String.h"
+#include "gof2/platform/gl.h"
+
+// DNSShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" void *_ZTVN11AbyssEngine9DNSShaderE[];
 
 // PC-relative globals holding single floats (engine timers) read by UpdateMeshData.
 extern "C" float DNSShader_g0;
 extern "C" float DNSShader_g1;
 
-void _ZN11AbyssEngine9DNSShaderD0Ev(
-    AbyssEngine::DNSShader *self)
+namespace AbyssEngine {
+
+DNSShader::DNSShader()
 {
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
+    this->vtable = (void *)(_ZTVN11AbyssEngine9DNSShaderE + 8);
+    this->name.s = u"DNSShader";
 }
 
-namespace AbyssEngine {
+void DNSShader::Init(Engine *)
+{
+    int program = this->ES2LoadProgram("DNSShader.vsh", "DNSShader.fsh");
+    this->program = program;
+
+    this->aPositionLoc = glGetAttribLocation(program, "a_position");
+    this->aNormalLoc = glGetAttribLocation(this->program, "a_normal");
+    this->aTangentLoc = glGetAttribLocation(this->program, "a_tangent");
+    this->aBinormalLoc = glGetAttribLocation(this->program, "a_binormal");
+
+    this->uM0Loc = glGetUniformLocation(this->program, "u_m0");
+    this->uM1Loc = glGetUniformLocation(this->program, "u_m1");
+    this->uM2Loc = glGetUniformLocation(this->program, "u_m2");
+    this->uM3Loc = glGetUniformLocation(this->program, "u_m3");
+    this->uM4Loc = glGetUniformLocation(this->program, "u_m4");
+    this->uM5Loc = glGetUniformLocation(this->program, "u_m5");
+    this->uM6Loc = glGetUniformLocation(this->program, "u_m6");
+    this->uM7Loc = glGetUniformLocation(this->program, "u_m7");
+    this->uM8Loc = glGetUniformLocation(this->program, "u_m8");
+    this->uM9Loc = glGetUniformLocation(this->program, "u_m9");
+    this->uM10Loc = glGetUniformLocation(this->program, "u_m10");
+    this->uM11Loc = glGetUniformLocation(this->program, "u_m11");
+    this->uM12Loc = glGetUniformLocation(this->program, "u_m12");
+
+    glUseProgram(this->program);
+}
 
 void DNSShader::SetInActive()
 {
@@ -25,23 +54,18 @@ void DNSShader::SetInActive()
         glDisableVertexAttribArray(this->aTangentLoc);
     if (this->aBinormalLoc >= 0)
         glDisableVertexAttribArray(this->aBinormalLoc);
-    if (this->uM0Loc < 0)
-        return;
-    return glDisableVertexAttribArray(this->uM0Loc);
+    if (this->uM0Loc >= 0)
+        glDisableVertexAttribArray(this->uM0Loc);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uM1Loc >= 0)
-        glUniformMatrix4fv(this->uM1Loc, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(this->uM1Loc, 1, 0, (float *)((char *)engine + 0x104));
     if (this->uM2Loc >= 0)
-        glUniformMatrix3fv(this->uM2Loc, 1, 0, (char *)engine + 0x204);
+        glUniformMatrix3fv(this->uM2Loc, 1, 0, (float *)((char *)engine + 0x204));
     if (this->uM3Loc >= 0)
-        glUniformMatrix4fv(this->uM3Loc, 1, 0, (char *)engine + 0x144);
+        glUniformMatrix4fv(this->uM3Loc, 1, 0, (float *)((char *)engine + 0x144));
     if (this->uM11Loc >= 0)
         glUniform1f(this->uM11Loc, DNSShader_g0);
     if (this->uM12Loc >= 0)
@@ -100,48 +124,6 @@ void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
         glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, 0);
     }
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void DNSShader::Init(Engine *)
-{
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("DNSShader.vsh", "DNSShader.fsh");
-    this->field_0x4 = program;
-
-    this->aPositionLoc = glGetAttribLocation(program, "a_position");
-    this->aNormalLoc = glGetAttribLocation(this->field_0x4, "a_normal");
-    this->aTangentLoc = glGetAttribLocation(this->field_0x4, "a_tangent");
-    this->aBinormalLoc = glGetAttribLocation(this->field_0x4, "a_binormal");
-
-    this->uM0Loc = glGetUniformLocation(this->field_0x4, "u_m0");
-    this->uM1Loc = glGetUniformLocation(this->field_0x4, "u_m1");
-    this->uM2Loc = glGetUniformLocation(this->field_0x4, "u_m2");
-    this->uM3Loc = glGetUniformLocation(this->field_0x4, "u_m3");
-    this->uM4Loc = glGetUniformLocation(this->field_0x4, "u_m4");
-    this->uM5Loc = glGetUniformLocation(this->field_0x4, "u_m5");
-    this->uM6Loc = glGetUniformLocation(this->field_0x4, "u_m6");
-    this->uM7Loc = glGetUniformLocation(this->field_0x4, "u_m7");
-    this->uM8Loc = glGetUniformLocation(this->field_0x4, "u_m8");
-    this->uM9Loc = glGetUniformLocation(this->field_0x4, "u_m9");
-    this->uM10Loc = glGetUniformLocation(this->field_0x4, "u_m10");
-    this->uM11Loc = glGetUniformLocation(this->field_0x4, "u_m11");
-    this->uM12Loc = glGetUniformLocation(this->field_0x4, "u_m12");
-
-    return glUseProgram(this->field_0x4);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-DNSShader::DNSShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = (void *)(DNSShader_vtable + 8);
-    this->name = DNSShader_name;
 }
 
 } // namespace AbyssEngine

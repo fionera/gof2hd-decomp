@@ -1,120 +1,96 @@
 #include "gof2/game/core/BumpShaderCloak.h"
-#include "gof2/engine/render/Engine.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glUniform2f(int location, float x, float y);
-extern "C" void glUniformMatrix3fv(int location, int count, uint8_t transpose, const void *value);
-
-void _ZN11AbyssEngine15BumpShaderCloakD0Ev(
-    AbyssEngine::BumpShaderCloak *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
-
-void BumpShaderCloak::Init(Engine *engine)
-{
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpShaderCloak.vsh", "BumpShaderCloak.fsh");
-    this->programId = program;
-
-    this->attrib_a0 = glGetAttribLocation(program, "a0");
-    this->attrib_a1 = glGetAttribLocation(this->programId, "a1");
-    this->attrib_a2 = glGetAttribLocation(this->programId, "a2");
-    this->attrib_a3 = glGetAttribLocation(this->programId, "a3");
-    this->attrib_a4 = glGetAttribLocation(this->programId, "a4");
-
-    this->uniform_u0 = glGetUniformLocation(this->programId, "u0");
-    this->uniform_u1 = glGetUniformLocation(this->programId, "u1");
-    this->uniform_u2 = glGetUniformLocation(this->programId, "u2");
-    this->uniform_u3 = glGetUniformLocation(this->programId, "u3");
-    this->uniform_u4 = glGetUniformLocation(this->programId, "u4");
-    this->uniform_u5 = glGetUniformLocation(this->programId, "u5");
-    this->uniform_u6 = glGetUniformLocation(this->programId, "u6");
-    this->uniform_u7 = glGetUniformLocation(this->programId, "u7");
-    this->uniform_u8 = glGetUniformLocation(this->programId, "u8");
-    this->uniform_u9 = glGetUniformLocation(this->programId, "u9");
-    this->uniform_u10 = glGetUniformLocation(this->programId, "u10");
-    this->uniform_u11 = glGetUniformLocation(this->programId, "u11");
-    this->uniform_u12 = glGetUniformLocation(this->programId, "u12");
-    this->uniform_u13 = glGetUniformLocation(this->programId, "u13");
-    this->uniform_u14 = glGetUniformLocation(this->programId, "u14");
-    this->uniform_u15 = glGetUniformLocation(this->programId, "u15");
-    this->uniform_u16 = glGetUniformLocation(this->programId, "u16");
-    this->uniform_u17 = glGetUniformLocation(this->programId, "u17");
-
-    glActiveTexture(0x84c7);
-    ((::Engine *)engine)->ActivateRefractFBO();
-
-    this->uniform_u18 = glGetUniformLocation(this->programId, "u18");
-    this->uniform_u19 = glGetUniformLocation(this->programId, "u19");
-    this->uniform_u20 = glGetUniformLocation(this->programId, "u20");
-
-    glUseProgram(this->programId);
-    void (*uniform1i)(int, int) = glUniform1i;
-    uniform1i(this->uniform_u5, 0);
-    uniform1i(this->uniform_u6, 1);
-    uniform1i(this->uniform_u7, 6);
-    return uniform1i(this->uniform_u20, 7);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void BumpShaderCloak::SetInActive()
-{
-    int loc;
-    loc = this->attrib_a0;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib_a1;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib_a2;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib_a3;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib_a4;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-}
-
-} // namespace AbyssEngine
+// Engine is the top-level (::Engine) host object; only the few entry points this shader calls
+// are needed here. Its full layout/field reads are reached by raw offset (deferred pass).
+class Engine {
+public:
+    uint32_t GetDisplayWidth();
+    uint32_t GetDisplayHeight();
+    void ActivateRefractFBO();
+};
 
 namespace AbyssEngine {
 
 int BumpShaderCloak::ShaderIndex;
 
 // AbyssEngine::BumpShaderCloak::BumpShaderCloak()
+//   Installs the BumpShaderCloak vtable, publishes its shader index, and stores
+//   the shader resource name.
 BumpShaderCloak::BumpShaderCloak()
 {
-
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    *(void **)this = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
-    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-
-    String tmp("BumpShaderCloak");
-    this->name.assign(&tmp);
+    this->vtable = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
+    BumpShaderCloak::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"BumpShaderCloak";
 }
 
-} // namespace AbyssEngine
+void BumpShaderCloak::Init(Engine *engine)
+{
+    int program = this->ES2LoadProgram("BumpShaderCloak.vsh", "BumpShaderCloak.fsh");
+    this->program = program;
 
-namespace AbyssEngine {
+    this->attrib_a0 = glGetAttribLocation(program, "a0");
+    this->attrib_a1 = glGetAttribLocation(this->program, "a1");
+    this->attrib_a2 = glGetAttribLocation(this->program, "a2");
+    this->attrib_a3 = glGetAttribLocation(this->program, "a3");
+    this->attrib_a4 = glGetAttribLocation(this->program, "a4");
 
-// AbyssEngine::BumpShaderCloak::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
+    this->uniform_u0 = glGetUniformLocation(this->program, "u0");
+    this->uniform_u1 = glGetUniformLocation(this->program, "u1");
+    this->uniform_u2 = glGetUniformLocation(this->program, "u2");
+    this->uniform_u3 = glGetUniformLocation(this->program, "u3");
+    this->uniform_u4 = glGetUniformLocation(this->program, "u4");
+    this->uniform_u5 = glGetUniformLocation(this->program, "u5");
+    this->uniform_u6 = glGetUniformLocation(this->program, "u6");
+    this->uniform_u7 = glGetUniformLocation(this->program, "u7");
+    this->uniform_u8 = glGetUniformLocation(this->program, "u8");
+    this->uniform_u9 = glGetUniformLocation(this->program, "u9");
+    this->uniform_u10 = glGetUniformLocation(this->program, "u10");
+    this->uniform_u11 = glGetUniformLocation(this->program, "u11");
+    this->uniform_u12 = glGetUniformLocation(this->program, "u12");
+    this->uniform_u13 = glGetUniformLocation(this->program, "u13");
+    this->uniform_u14 = glGetUniformLocation(this->program, "u14");
+    this->uniform_u15 = glGetUniformLocation(this->program, "u15");
+    this->uniform_u16 = glGetUniformLocation(this->program, "u16");
+    this->uniform_u17 = glGetUniformLocation(this->program, "u17");
+
+    glActiveTexture(0x84c7);
+    ((::Engine *)engine)->ActivateRefractFBO();
+
+    this->uniform_u18 = glGetUniformLocation(this->program, "u18");
+    this->uniform_u19 = glGetUniformLocation(this->program, "u19");
+    this->uniform_u20 = glGetUniformLocation(this->program, "u20");
+
+    glUseProgram(this->program);
+    glUniform1i(this->uniform_u5, 0);
+    glUniform1i(this->uniform_u6, 1);
+    glUniform1i(this->uniform_u7, 6);
+    glUniform1i(this->uniform_u20, 7);
+}
+
+void BumpShaderCloak::SetInActive()
+{
+    if (this->attrib_a0 >= 0)
+        glDisableVertexAttribArray(this->attrib_a0);
+    if (this->attrib_a1 >= 0)
+        glDisableVertexAttribArray(this->attrib_a1);
+    if (this->attrib_a2 >= 0)
+        glDisableVertexAttribArray(this->attrib_a2);
+    if (this->attrib_a3 >= 0)
+        glDisableVertexAttribArray(this->attrib_a3);
+    if (this->attrib_a4 >= 0)
+        glDisableVertexAttribArray(this->attrib_a4);
+}
+
 void BumpShaderCloak::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *m = (char *)mesh;
     char *e = (char *)engine;
 
     if (this->uniform_u0 >= 0)
-        glUniformMatrix4fv(this->uniform_u0, 1, 0, e + 0x104);
+        glUniformMatrix4fv(this->uniform_u0, 1, 0, (const float *)(e + 0x104));
     if (this->uniform_u1 >= 0)
-        glUniformMatrix3fv(this->uniform_u1, 1, 0, e + 0x204);
+        glUniformMatrix3fv(this->uniform_u1, 1, 0, (const float *)(e + 0x204));
 
     if (this->dirty) {
         glUniform3f(this->uniform_u2, field_f32(e, 0x330), field_f32(e, 0x334), field_f32(e, 0x338));

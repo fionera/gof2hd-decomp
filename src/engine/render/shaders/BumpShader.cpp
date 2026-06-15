@@ -1,18 +1,32 @@
 #include "gof2/engine/render/shaders/BumpShader.h"
-#include "gof2/game/core/String.h"
+#include "gof2/platform/gl.h"
 
-// ---- setSampler ----
+// BumpShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char BumpShader_vtable;
+
+// PC-relative pointer-to-pointer globals holding single floats / a byte (engine timers and
+// a feature flag) read by UpdateMeshData.
+extern "C" float *const gBumpFloatA;
+extern "C" float *const gBumpFloatB;
+extern "C" uint8_t *const gBumpFlag;
+
+// Reinterprets an AEMath::Vector as its leading float[3]. Modelled in a later pass; here it is
+// the engine helper reached through the ABI.
+extern "C" float *Vector_cast_to_float(AbyssEngine::AEMath::Vector *self);
+
 namespace AbyssEngine {
+
+BumpShader::BumpShader()
+{
+    this->vtable = &BumpShader_vtable + 8;
+    this->name.s = u"BumpShader";
+}
 
 // Sets the sampler uniform at `location` to texture unit `unit`.
 void BumpShader::setSampler(int location, int unit)
 {
     glUniform1i(location, unit);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void BumpShader::SetInActive()
 {
@@ -24,86 +38,46 @@ void BumpShader::SetInActive()
         glDisableVertexAttribArray(this->a2Loc);
 }
 
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine10BumpShaderD0Ev(BumpShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
-
-namespace AbyssEngine {
-
-// AbyssEngine::BumpShader::BumpShader()
-BumpShader::BumpShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // install the derived vtable (+8 past the RTTI/offset slots).
-    this->field_0x0 = (void *)(BumpShader_vtable + 8);
-    this->name = BumpShader_name;
-}
-
-} // namespace AbyssEngine
-
-// Final indirect call in Init: an engine glUniform1i-style helper (DAT_001ab778).
-
-namespace AbyssEngine {
-
-// AbyssEngine::BumpShader::Init(AbyssEngine::Engine*)
-//   Loads the program, then resolves every attribute/uniform location into this+0x20..0x80,
-//   activates the program and binds sampler u(0x40)=0, sampler u(0x44)=7.
+// Loads the program, then resolves every attribute/uniform location, activates the program
+// and binds sampler u5=0, sampler u6=7.
 void BumpShader::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("BumpShader.vsh", "BumpShader.fsh");
-    this->field_0x4 = program;
+    this->program = this->ES2LoadProgram("BumpShader.vsh", "BumpShader.fsh");
 
-    this->a0Loc = glGetAttribLocation(program, "a0");
-    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
-    this->a2Loc = glGetAttribLocation(this->field_0x4, "a2");
+    this->a0Loc = glGetAttribLocation(this->program, "a0");
+    this->a1Loc = glGetAttribLocation(this->program, "a1");
+    this->a2Loc = glGetAttribLocation(this->program, "a2");
 
-    this->u0Loc = glGetUniformLocation(this->field_0x4, "u0");
-    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
-    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
-    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
-    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
-    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
-    this->u6Loc = glGetUniformLocation(this->field_0x4, "u6");
-    this->u7Loc = glGetUniformLocation(this->field_0x4, "u7");
-    this->u8Loc = glGetUniformLocation(this->field_0x4, "u8");
-    this->u9Loc = glGetUniformLocation(this->field_0x4, "u9");
-    this->u10Loc = glGetUniformLocation(this->field_0x4, "u10");
-    this->u11Loc = glGetUniformLocation(this->field_0x4, "u11");
-    this->u12Loc = glGetUniformLocation(this->field_0x4, "u12");
-    this->u13Loc = glGetUniformLocation(this->field_0x4, "u13");
-    this->u14Loc = glGetUniformLocation(this->field_0x4, "u14");
-    this->u15Loc = glGetUniformLocation(this->field_0x4, "u15");
-    this->u16Loc = glGetUniformLocation(this->field_0x4, "u16");
-    this->u17Loc = glGetUniformLocation(this->field_0x4, "u17");
-    this->u18Loc = glGetUniformLocation(this->field_0x4, "u18");
-    this->u19Loc = glGetUniformLocation(this->field_0x4, "u19");
-    this->u20Loc = glGetUniformLocation(this->field_0x4, "u20");
-    this->u21Loc = glGetUniformLocation(this->field_0x4, "u21");
+    this->u0Loc = glGetUniformLocation(this->program, "u0");
+    this->u1Loc = glGetUniformLocation(this->program, "u1");
+    this->u2Loc = glGetUniformLocation(this->program, "u2");
+    this->u3Loc = glGetUniformLocation(this->program, "u3");
+    this->u4Loc = glGetUniformLocation(this->program, "u4");
+    this->u5Loc = glGetUniformLocation(this->program, "u5");
+    this->u6Loc = glGetUniformLocation(this->program, "u6");
+    this->u7Loc = glGetUniformLocation(this->program, "u7");
+    this->u8Loc = glGetUniformLocation(this->program, "u8");
+    this->u9Loc = glGetUniformLocation(this->program, "u9");
+    this->u10Loc = glGetUniformLocation(this->program, "u10");
+    this->u11Loc = glGetUniformLocation(this->program, "u11");
+    this->u12Loc = glGetUniformLocation(this->program, "u12");
+    this->u13Loc = glGetUniformLocation(this->program, "u13");
+    this->u14Loc = glGetUniformLocation(this->program, "u14");
+    this->u15Loc = glGetUniformLocation(this->program, "u15");
+    this->u16Loc = glGetUniformLocation(this->program, "u16");
+    this->u17Loc = glGetUniformLocation(this->program, "u17");
+    this->u18Loc = glGetUniformLocation(this->program, "u18");
+    this->u19Loc = glGetUniformLocation(this->program, "u19");
+    this->u20Loc = glGetUniformLocation(this->program, "u20");
+    this->u21Loc = glGetUniformLocation(this->program, "u21");
 
-    glUseProgram(this->field_0x4);
+    glUseProgram(this->program);
     glUniform1i(this->u5Loc, 0);
     BumpShader::setSampler(this->u6Loc, 7);
 }
 
-} // namespace AbyssEngine
-
-// PC-relative pointer-to-pointer globals holding single floats / a byte (engine timers and
-// a feature flag) read by UpdateMeshData.
-extern float *const gBumpFloatA __attribute__((visibility("hidden")));
-extern float *const gBumpFloatB __attribute__((visibility("hidden")));
-extern uint8_t *const gBumpFlag __attribute__((visibility("hidden")));
-
-namespace AbyssEngine {
-
-// AbyssEngine::BumpShader::UpdateMeshData(AbyssEngine::Mesh* mesh, AbyssEngine::Engine* ctx)
-//   Pushes the per-frame matrices/lighting uniforms (only the first time per frame, gated by
-//   this[0x9]) and binds the mesh's vertex attribute streams.
+// Pushes the per-frame matrices/lighting uniforms (only the first time per frame, gated by
+// the dirty byte) and binds the mesh's vertex attribute streams.
 void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx)
 {
     char *e = (char *)ctx;
@@ -137,7 +111,7 @@ void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx)
         if (this->u15Loc >= 0)
             glUniform3fv(this->u15Loc, 1, (const float *)(e + 0x320));
         if (this->u18Loc >= 0) {
-            float *v = Vector_cast_to_float((Vector *)(e + 0x3f0));
+            float *v = Vector_cast_to_float((AEMath::Vector *)(e + 0x3f0));
             glUniform3fv(this->u18Loc, 1, v);
         }
         if (this->u20Loc >= 0)

@@ -1,54 +1,41 @@
 #ifndef GOF2_VERTEXCOLORSHADER_H
 #define GOF2_VERTEXCOLORSHADER_H
 #include "gof2/common.h"
-#include <new>
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+#include "gof2/engine/render/ShaderBaseStruct.h"
+
 namespace AbyssEngine {
 
-struct Engine;
-struct Mesh;
-struct ShaderBaseStruct;
+class Engine;
+class Mesh;
 
-// VertexColorShader: ES2 shader wrapper. Embeds a String name at +0xc; the
-// preceding 0xc bytes are the ShaderBaseStruct base (vtable + program id + flags).
-class VertexColorShader {
+// AbyssEngine::VertexColorShader — GLES2 shader for vertex-coloured, lit geometry.
+// Derives from ShaderBaseStruct (which owns the GL program handle) and caches the
+// program's attribute and uniform locations after Init.
+class VertexColorShader : public ShaderBaseStruct {
 public:
-    byte   _base[0xc];   // +0x00 ShaderBaseStruct base
-    String name;    // +0x0c shader name
-    // remaining shader-location ints (+0x20..+0x58) reached via ae_i32/ae_u32 macros
+    int aPosition;          // attribute "position"
+    int aTexCoord;          // attribute "texcoord"
+    int aNormal;            // attribute "normal"
+    int aTangent;           // attribute "tangent"
+    int aBiNormal;          // attribute "binormal"
+    int aColor;             // attribute "color"
+
+    int uWorldViewProj;     // uniform "worldViewProj"
+    int uNormalMatrix;      // uniform "normalMatrix"
+    int uLightDir;          // uniform "lightDir"
+    int uLightColor;        // uniform "lightColor"
+    int uAmbientColor;      // uniform "ambientColor"
+    int uMaterialDiffuse;   // uniform "materialDiffuse"
+    int uMaterialAmbient;   // uniform "materialAmbient"
+    int uMaterialSpecular;  // uniform "materialSpecular"
+    int uMaterialShininess; // uniform "materialShininess"
+
     VertexColorShader();
-    ~VertexColorShader();
+    void Init();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void SetInActive();
 };
 
 } // namespace AbyssEngine
 
-inline int &ae_i32(void *self, uint32_t offset)
-{
-    return *(int *)((char *)self + offset);
-}
-
-inline uint32_t &ae_u32(void *self, uint32_t offset)
-{
-    return *(uint32_t *)((char *)self + offset);
-}
-
-inline uint8_t &ae_u8(void *self, uint32_t offset)
-{
-    return *(uint8_t *)((char *)self + offset);
-}
-
-inline void *&ae_ptr(void *self, uint32_t offset)
-{
-    return *(void **)((char *)self + offset);
-}
-
-// GLES2 entry-point function-pointer types (the engine dispatches some GL calls through
-// loaded function pointers, e.g. glGetAttribLocation_ptr / glBindBuffer_ptr).
-typedef int  GetShaderLocation(unsigned int program, const char *name);
-typedef void BindBuffer(unsigned int target, unsigned int buffer);
-typedef void VertexAttribPointer(unsigned int index, int size, unsigned int type, bool normalized,
-                                 int stride, const void *pointer);
-
-// String helpers (String_ctor_char / String_assign / String_dtor) are declared
-// canonically in gof2/String.h.
 #endif

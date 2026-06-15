@@ -1,40 +1,31 @@
 #include "gof2/game/core/BumpRimCubeShader_new.h"
-#include "gof2/externs.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glUniform3fv(int location, int count, const float *value);
+extern "C" char _ZTVN11AbyssEngine21BumpRimCubeShader_newE[];
+
+// Global rim-lighting state read by the renderer when streaming per-frame uniforms.
+extern "C" float g_rimnGlobalA;
+extern "C" float g_rimnGlobalB;
+extern "C" float g_rimnGlobalC;
+extern "C" unsigned char g_rimnByteGlobal;
 
 namespace AbyssEngine {
 
-void BumpRimCubeShader_new::SetInActive()
+int BumpRimCubeShader_new::ShaderIndex;
+
+BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
-    int loc;
-    loc = this->attrib0;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib1;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib2;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib3;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->attrib4;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
+    this->vtable = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"BumpRimCubeShader_new";
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void BumpRimCubeShader_new::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)this)->LoadBindShader("BumpRimCubeShader_new.vsh", "BumpRimCubeShader_new.fsh");
+    int program = this->LoadBindShader("BumpRimCubeShader_new.vsh", "BumpRimCubeShader_new.fsh");
     this->program = program;
     if (program == 0) {
-        program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpRimCubeShader_new.vsh", "BumpRimCubeShader_new.fsh");
+        program = this->ES2LoadProgram("BumpRimCubeShader_new.vsh", "BumpRimCubeShader_new.fsh");
         this->program = program;
     }
 
@@ -79,26 +70,14 @@ void BumpRimCubeShader_new::Init(Engine *)
     glUniform1i(this->uniform8, 7);
 }
 
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine21BumpRimCubeShader_newD0Ev(
-    AbyssEngine::BumpRimCubeShader_new *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
-
 void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uniform0 >= 0)
-        glUniformMatrix4fv(this->uniform0, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(this->uniform0, 1, 0, (float *)((char *)engine + 0x104));
     if (this->uniform1 >= 0)
-        glUniformMatrix3fv(this->uniform1, 1, 0, (char *)engine + 0x204);
+        glUniformMatrix3fv(this->uniform1, 1, 0, (float *)((char *)engine + 0x204));
     if (this->uniform2 >= 0)
-        glUniformMatrix4fv(this->uniform2, 1, 0, (char *)engine + 0x144);
+        glUniformMatrix4fv(this->uniform2, 1, 0, (float *)((char *)engine + 0x144));
     if (this->uniform17 >= 0)
         glUniform1f(this->uniform17, g_rimnGlobalA);
     if (this->uniform18 >= 0)
@@ -106,7 +85,7 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->uniform24 >= 0)
         glUniform1f(this->uniform24, g_rimnGlobalC);
 
-    if (this->needsUpdate != 0) {
+    if (this->dirty != 0) {
         glUniform3f(this->uniform3, field_f32(engine, 0x330),
                     field_f32(engine, 0x334), field_f32(engine, 0x338));
         if (this->uniform5 >= 0)
@@ -169,7 +148,7 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3f(this->uniform4, field_f32(engine, 0x33c),
                         field_f32(engine, 0x340), field_f32(engine, 0x344));
         }
-        this->needsUpdate = 0;
+        this->dirty = 0;
     }
 
     if (this->attrib0 >= 0)
@@ -206,23 +185,26 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
         glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, 0);
     }
-    
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-int BumpRimCubeShader_new::ShaderIndex;
-
-__attribute__((minsize)) BumpRimCubeShader_new::BumpRimCubeShader_new()
+void BumpRimCubeShader_new::SetInActive()
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->vtable = _ZTVN11AbyssEngine21BumpRimCubeShader_newE + 8;
-    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-
-    String name("BumpRimCubeShader_new");
-    this->name.assign(&name);
+    int loc;
+    loc = this->attrib0;
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
+    loc = this->attrib1;
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
+    loc = this->attrib2;
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
+    loc = this->attrib3;
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
+    loc = this->attrib4;
+    if (loc >= 0)
+        glDisableVertexAttribArray(loc);
 }
 
 } // namespace AbyssEngine

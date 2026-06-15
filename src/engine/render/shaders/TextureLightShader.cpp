@@ -1,182 +1,130 @@
 #include "gof2/engine/render/shaders/TextureLightShader.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
+#include "gof2/platform/gl.h"
 
-void _ZN11AbyssEngine18TextureLightShaderD0Ev(AbyssEngine::TextureLightShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
+// TextureLightShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char g_TextureLightShader_vtable;
 
 namespace AbyssEngine {
 
+// Reads of the Engine object are deferred to a later Engine-modeling pass; until then its
+// fields are reached by raw byte offset.
+static inline const float *ef(Engine *engine, unsigned off)
+{
+    return (const float *)((char *)engine + off);
+}
+static inline int ei(Engine *engine, unsigned off)
+{
+    return *(int *)((char *)engine + off);
+}
+static inline float eff(Engine *engine, unsigned off)
+{
+    return *(float *)((char *)engine + off);
+}
+
+TextureLightShader::TextureLightShader()
+{
+    this->vtable = (char *)&g_TextureLightShader_vtable + 8;
+    this->name.s = u"TextureLightShader";
+}
+
+// Compiles the lit-texture program and caches its attribute/uniform location handles.
 void TextureLightShader::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("TextureLightShader.vsh", "TextureLightShader.fsh");
-    this->f_4 = program;
+    this->program = this->ES2LoadProgram("TextureLightShader.vsh", "TextureLightShader.fsh");
 
-    int (*uniformFn)(int, const char *) = glGetUniformLocation;
-    this->f_68 = uniformFn(program, "u0");
-    this->f_6c = uniformFn(this->f_4, "u1");
+    this->uModelMatrix = glGetUniformLocation(this->program, "u0");
+    this->uHasScaleAnimation = glGetUniformLocation(this->program, "u1");
 
-    int (*attribFn)(int, const char *) = glGetAttribLocation;
-    this->f_20 = attribFn(this->f_4, "a0");
-    this->f_24 = attribFn(this->f_4, "a1");
+    this->aPosition = glGetAttribLocation(this->program, "a0");
+    this->aTexCoord = glGetAttribLocation(this->program, "a1");
 
-    this->f_28 = uniformFn(this->f_4, "u2");
-    this->f_2c = uniformFn(this->f_4, "u3");
-    this->f_30 = uniformFn(this->f_4, "u4");
-    this->f_34 = uniformFn(this->f_4, "u5");
-    this->f_38 = uniformFn(this->f_4, "u6");
-    this->f_3c = uniformFn(this->f_4, "u7");
-    this->f_64 = uniformFn(this->f_4, "u8");
-    this->f_44 = uniformFn(this->f_4, "u9");
-    this->f_40 = uniformFn(this->f_4, "u10");
-    this->f_48 = uniformFn(this->f_4, "u11");
-    this->f_50 = uniformFn(this->f_4, "u12");
-    this->f_58 = uniformFn(this->f_4, "u13");
-    this->f_60 = uniformFn(this->f_4, "u14");
-    this->f_4c = uniformFn(this->f_4, "u15");
-    this->f_54 = uniformFn(this->f_4, "u16");
-    this->f_5c = uniformFn(this->f_4, "u17");
+    this->aNormal = glGetUniformLocation(this->program, "u2");
+    this->uMvpMatrix = glGetUniformLocation(this->program, "u3");
+    this->uModelViewMatrix = glGetUniformLocation(this->program, "u4");
+    this->uNormalMatrix = glGetUniformLocation(this->program, "u5");
+    this->uColor0 = glGetUniformLocation(this->program, "u6");
+    this->uColor1 = glGetUniformLocation(this->program, "u7");
+    this->uSpecularColor = glGetUniformLocation(this->program, "u8");
+    this->uTexture = glGetUniformLocation(this->program, "u9");
+    this->uAmbientColor = glGetUniformLocation(this->program, "u10");
+    this->uLight0Direction = glGetUniformLocation(this->program, "u11");
+    this->uLight1Direction = glGetUniformLocation(this->program, "u12");
+    this->uLight2Direction = glGetUniformLocation(this->program, "u13");
+    this->uShininess = glGetUniformLocation(this->program, "u14");
+    this->uLight0Color = glGetUniformLocation(this->program, "u15");
+    this->uLight1Color = glGetUniformLocation(this->program, "u16");
+    this->uLight2Color = glGetUniformLocation(this->program, "u17");
 
-    glUseProgram(this->f_4);
-    return glUniform1i(this->f_44, 0);
+    glUseProgram(this->program);
+    glUniform1i(this->uTexture, 0);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-// Helpers to view the Engine/Mesh objects at raw byte offsets.
-static inline const float *ef(Engine *e, unsigned off)
+// Binds the program's matrices, lighting block and the supplied mesh's vertex arrays.
+void TextureLightShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    return (const float *)((char *)e + off);
-}
-static inline int ei(Engine *e, unsigned off)
-{
-    return *(int *)((char *)e + off);
-}
-static inline float eff(Engine *e, unsigned off)
-{
-    return *(float *)((char *)e + off);
-}
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, ef(engine, 0x104));
+    if (this->uModelMatrix >= 0)
+        glUniformMatrix4fv(this->uModelMatrix, 1, 0, ef(engine, 0x1c4));
+    glUniformMatrix3fv(this->uNormalMatrix, 1, 0, ef(engine, 0x204));
+    if (this->uModelViewMatrix >= 0)
+        glUniformMatrix4fv(this->uModelViewMatrix, 1, 0, ef(engine, 0x144));
 
-// TextureLightShader::UpdateMeshData(Mesh*, Engine*)
-void TextureLightShader::UpdateMeshData(Mesh *meshIn, Engine *engine)
-{
-    Mesh *mesh = (Mesh *)meshIn;
-    glUniformMatrix4fv(this->f_2c, 1, 0, ef(engine, 0x104));
-    if (this->f_68 >= 0)
-        glUniformMatrix4fv(this->f_68, 1, 0, ef(engine, 0x1c4));
-    glUniformMatrix3fv(this->f_34, 1, 0, ef(engine, 0x204));
-    if (this->f_30 >= 0)
-        glUniformMatrix4fv(this->f_30, 1, 0, ef(engine, 0x144));
+    if (this->dirty != 0) {
+        if (this->uHasScaleAnimation >= 0)
+            glUniform1i(this->uHasScaleAnimation, mesh->hasAnimation);
+        glUniform4fv(this->uAmbientColor, 1, ef(engine, 0xd0));
 
-    if (this->f_9 != 0) {
-        if (this->f_6c >= 0)
-            glUniform1i(this->f_6c, mesh->field_0x85);
-        glUniform4fv(this->f_40, 1, ef(engine, 0xd0));
+        glUniform3fv(this->uLight0Direction, 1, ef(engine, 0x2cc));
+        glUniform3fv(this->uLight1Direction, 1, ef(engine, 0x2fc));
+        glUniform3fv(this->uLight2Direction, 1, ef(engine, 0x2e4));
 
-        glUniform3fv(this->f_48, 1, ef(engine, 0x2cc));
-        glUniform3fv(this->f_50, 1, ef(engine, 0x2fc));
-        glUniform3fv(this->f_58, 1, ef(engine, 0x2e4));
-
-        glUniform4f(this->f_38, eff(engine, 0x330), eff(engine, 0x334),
+        glUniform4f(this->uColor0, eff(engine, 0x330), eff(engine, 0x334),
                     eff(engine, 0x338), eff(engine, 0x378));
 
         if (ei(engine, 0x32c) < 2) {
-            glUniform3f(this->f_4c, 0, 0, 0);
-            glUniform3f(this->f_54, 0, 0, 0);
-            glUniform3f(this->f_5c, 0, 0, 0);
+            glUniform3f(this->uLight0Color, 0, 0, 0);
+            glUniform3f(this->uLight1Color, 0, 0, 0);
+            glUniform3f(this->uLight2Color, 0, 0, 0);
         } else {
-            glUniform3fv(this->f_4c, 1, ef(engine, 0x2d8));
-            glUniform3fv(this->f_54, 1, ef(engine, 0x308));
-            glUniform3fv(this->f_5c, 1, ef(engine, 0x2f0));
+            glUniform3fv(this->uLight0Color, 1, ef(engine, 0x2d8));
+            glUniform3fv(this->uLight1Color, 1, ef(engine, 0x308));
+            glUniform3fv(this->uLight2Color, 1, ef(engine, 0x2f0));
         }
 
-        glUniform4f(this->f_3c, eff(engine, 0x33c), eff(engine, 0x340),
+        glUniform4f(this->uColor1, eff(engine, 0x33c), eff(engine, 0x340),
                     eff(engine, 0x344), eff(engine, 0x37c));
-        glUniform1f(this->f_60, eff(engine, 0x2c8));
-        if (this->f_64 >= 0)
-            glUniform3f(this->f_64, eff(engine, 0x34c), eff(engine, 0x350),
+        glUniform1f(this->uShininess, eff(engine, 0x2c8));
+        if (this->uSpecularColor >= 0)
+            glUniform3f(this->uSpecularColor, eff(engine, 0x34c), eff(engine, 0x350),
                         eff(engine, 0x354));
-        this->f_9 = 0;
+        this->dirty = 0;
     }
 
-    glEnableVertexAttribArray(this->f_20);
-    glEnableVertexAttribArray(this->f_24);
-    glEnableVertexAttribArray(this->f_28);
+    glEnableVertexAttribArray(this->aPosition);
+    glEnableVertexAttribArray(this->aTexCoord);
+    glEnableVertexAttribArray(this->aNormal);
 
-    if (mesh->field_0x5c != 0) {
-        glBindBuffer(0x8892, mesh->field_0x60);
-        glVertexAttribPointer(this->f_20, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
-        glVertexAttribPointer(this->f_24, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x6c);
-        glVertexAttribPointer(this->f_28, 3, 0x1406, 0, 0, 0);
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+        glBindBuffer(0x8892, mesh->texCoordVBO);
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
+        glBindBuffer(0x8892, mesh->normalVBO);
+        glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
         return;
     }
 
-    glVertexAttribPointer(this->f_20, 3, 0x1406, 0, 0,
-                          mesh->field_0x4);
-    glVertexAttribPointer(this->f_24, 2, 0x1406, 0, 0,
-                          mesh->field_0x8);
-    glVertexAttribPointer(this->f_28, 3, 0x1406, 0, 0,
-                          mesh->field_0x10);
+    glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
+    glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+    glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, mesh->normals);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void TextureLightShader::SetInActive()
 {
-    glDisableVertexAttribArray(this->f_20);
-    glDisableVertexAttribArray(this->f_24);
-    return glDisableVertexAttribArray(this->f_28);
-}
-
-} // namespace AbyssEngine
-
-// Hidden PC-relative globals recovered from the constructor disasm:
-//   g_ctorCounter : *(int**) at 0x9dae8 — read its [0] into local_14 for stack guard.
-//   g_shaderSrc   : *(int**) at 0x9dafa — value copied into *g_shaderDst.
-//   g_shaderDst   : *(int**) at 0x9db02 — destination of the copied source pointer.
-//   g_vtableBase  : *(int*)  at 0x9dafe — vtable address; this->vtable = base + 8.
-//   g_nameLiteral : char* at 0x9db12 — the "TextureLightShader" name string literal.
-__attribute__((visibility("hidden"))) extern int *g_tls_ctorCounter;
-__attribute__((visibility("hidden"))) extern int **g_tls_shaderSrc;
-__attribute__((visibility("hidden"))) extern int **g_tls_shaderDst;
-__attribute__((visibility("hidden"))) extern int g_tls_vtableBase;
-__attribute__((visibility("hidden"))) extern const char g_tls_nameLiteral[];
-
-namespace AbyssEngine {
-
-// TextureLightShader::TextureLightShader()
-TextureLightShader::TextureLightShader()
-{
-    int *counter = g_tls_ctorCounter;
-    int guard = *counter;
-
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // Install vtable (base + 8 to skip RTTI/offset slots).
-    this->f_0 = g_tls_vtableBase + 8;
-
-    // Copy the shader-source pointer into its destination slot.
-    *g_tls_shaderDst = *g_tls_shaderSrc;
-
-    // Initialize the shader-name String member at this+0xc.
-    String tmp;
-    ((String *)(&tmp))->ctor_char(g_tls_nameLiteral, false);
-    String *dst = (String *)((char *)this + 0xc);
-    ((String *)(dst))->assign(&tmp);
-    ((String *)(&tmp))->dtor();
-
-    
+    glDisableVertexAttribArray(this->aPosition);
+    glDisableVertexAttribArray(this->aTexCoord);
+    glDisableVertexAttribArray(this->aNormal);
 }
 
 } // namespace AbyssEngine

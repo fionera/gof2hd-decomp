@@ -1,50 +1,50 @@
 #include "gof2/engine/render/shaders/TextureShader.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/game/core/String.h"
+#include "gof2/platform/gl.h"
 
-// Engine / Mesh are opaque to this translation unit; their fields are accessed
-// by raw offset since their real layouts live in other (non-batch) classes.
-static inline char *bytes(void *self) { return (char *)self; }
+// TextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" void *g_TextureShader_vtable;
+
+// Engine globals: selects the extended program and the per-frame active texture slot.
+extern "C" uint8_t g_TextureShader_hasSecondProgram;
+extern "C" uint8_t g_TextureShader_activeSlot;
+
+// Engine vector accessor reached by opaque pointer (modelled in a later pass).
+namespace AbyssEngine {
+namespace AEMath {
+struct Vector;
+}
+}
+extern "C" float *Vector_to_float(AbyssEngine::AEMath::Vector *self);
 
 namespace AbyssEngine {
 
+TextureShader::TextureShader()
+{
+    this->vtable = (char *)&g_TextureShader_vtable + 8;
+    this->name.s = u"TextureShader";
+}
+
+// Compiles the base and extended GLES2 programs and caches each program's
+// attribute/uniform locations into slot 0 and slot 1 respectively.
 void TextureShader::Init(Engine *)
 {
     const char *vertexShader = "TextureShader.vsh";
-    uint32_t program = ((ShaderBaseStruct *)(this))->ES2LoadProgram(vertexShader, "TextureShader.fsh");
-    this->program = program;
-    ConnectShaderComponents(program, 0);
 
-    program = ((ShaderBaseStruct *)(this))->ES2LoadProgram(vertexShader, "TextureShaderExt.fsh");
-    this->programExt = program;
-    return ConnectShaderComponents(program, 1);
+    this->program = this->ES2LoadProgram(vertexShader, "TextureShader.fsh");
+    ConnectShaderComponents(this->program, 0);
+
+    this->programExt = this->ES2LoadProgram(vertexShader, "TextureShaderExt.fsh");
+    ConnectShaderComponents(this->programExt, 1);
 }
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine13TextureShaderD0Ev(AbyssEngine::TextureShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
 
 void TextureShader::UseShader(bool)
 {
-    if (g_TextureShader_hasSecondProgram != 0) {
-        uint32_t program = this->programExt;
-        if (program != 0) {
-            return glUseProgram(program);
-        }
+    if (g_TextureShader_hasSecondProgram != 0 && this->programExt != 0) {
+        glUseProgram(this->programExt);
+        return;
     }
-    return glUseProgram(this->program);
+    glUseProgram(this->program);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void TextureShader::SetInActive()
 {
@@ -54,44 +54,17 @@ void TextureShader::SetInActive()
     }
 }
 
-} // namespace AbyssEngine
-
-AbyssEngine::TextureShader *TextureShader_TextureShader(AbyssEngine::TextureShader *self)
-{
-    struct Frame {
-        void *nameStorage[3];
-        void *cookie;
-    } frame;
-
-    frame.nameStorage[0] = self;
-
-    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
-
-    void **source = (void **)g_TextureShader_typeInfoSource;
-    void **target = (void **)g_TextureShader_typeInfoTarget;
-    self->vtable = (char *)g_TextureShader_vtable + 8;
-    *target = *source;
-
-    ((String *)((String *)frame.nameStorage))->ctor_char("TextureShader", false);
-    ((String *)(&self->name))->assign((String *)frame.nameStorage);
-    ((String *)((String *)frame.nameStorage))->dtor();
-
-    return self;
-}
-
-namespace AbyssEngine {
-
 void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     int slot = g_TextureShader_activeSlot;
-    char *meshBytes = bytes(mesh);
-    char *engineBytes = bytes(engine);
+    char *meshBytes = (char *)mesh;
+    char *engineBytes = (char *)engine;
 
-    glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, engineBytes + 0x104);
+    glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, (float *)(engineBytes + 0x104));
 
     int location = this->worldViewUniform[slot];
     if (location >= 0) {
-        glUniformMatrix4fv(location, 1, 0, engineBytes + 0x1c4);
+        glUniformMatrix4fv(location, 1, 0, (float *)(engineBytes + 0x1c4));
     }
 
     location = this->alphaUniform[slot];
@@ -152,30 +125,24 @@ void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void TextureShader::ConnectShaderComponents(uint32_t program, int slot)
 {
-    int (*uniformLocation)(uint32_t, const char *) = glGetUniformLocation;
-
-    this->textureUniform[slot] = uniformLocation(program, "texture");
+    this->textureUniform[slot] = glGetUniformLocation(program, "texture");
     this->positionAttrib[slot] = glGetAttribLocation(program, "position");
     this->texcoordAttrib[slot] = glGetAttribLocation(program, "texcoord");
-    this->mvpUniform[slot] = uniformLocation(program, "mvp");
-    this->colorUniform[slot] = uniformLocation(program, "color");
-    this->lightUniform[slot] = uniformLocation(program, "light");
-    this->fogNearUniform[slot] = uniformLocation(program, "fogNear");
-    this->fogFarUniform[slot] = uniformLocation(program, "fogFar");
-    this->activeTextureUniform[slot] = uniformLocation(program, "activeTexture");
-    this->fogColorUniform[slot] = uniformLocation(program, "fogColor");
-    this->alphaUniform[slot] = uniformLocation(program, "alpha");
-    this->textureModeUniform[slot] = uniformLocation(program, "textureMode");
-    this->worldViewUniform[slot] = uniformLocation(program, "worldView");
+    this->mvpUniform[slot] = glGetUniformLocation(program, "mvp");
+    this->colorUniform[slot] = glGetUniformLocation(program, "color");
+    this->lightUniform[slot] = glGetUniformLocation(program, "light");
+    this->fogNearUniform[slot] = glGetUniformLocation(program, "fogNear");
+    this->fogFarUniform[slot] = glGetUniformLocation(program, "fogFar");
+    this->activeTextureUniform[slot] = glGetUniformLocation(program, "activeTexture");
+    this->fogColorUniform[slot] = glGetUniformLocation(program, "fogColor");
+    this->alphaUniform[slot] = glGetUniformLocation(program, "alpha");
+    this->textureModeUniform[slot] = glGetUniformLocation(program, "textureMode");
+    this->worldViewUniform[slot] = glGetUniformLocation(program, "worldView");
 
     glUseProgram(program);
-    return glUniform1i(this->textureUniform[slot], 0);
+    glUniform1i(this->textureUniform[slot], 0);
 }
 
 } // namespace AbyssEngine

@@ -1,58 +1,48 @@
 #include "gof2/engine/render/shaders/SimpleShader.h"
+#include "gof2/platform/gl.h"
+
+// SimpleShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" void *_ZTVN11AbyssEngine12SimpleShaderE[];
 
 namespace AbyssEngine {
 
-// AbyssEngine::SimpleShader::SetInActive()
-void SimpleShader::SetInActive()
+SimpleShader::SimpleShader()
 {
-    return glDisableVertexAttribArray(field_0x20);
+    this->vtable = (char *)_ZTVN11AbyssEngine12SimpleShaderE + 8;
+    this->name.s = u"SimpleShader";
 }
 
-// AbyssEngine::SimpleShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
+void SimpleShader::Init(Engine *)
+{
+    this->program = (int)this->ES2LoadProgram("SimpleShader.vsh", "SimpleShader.fsh");
+    this->aPosition = glGetAttribLocation(this->program, "a_position");
+    this->uWorldMatrix = glGetUniformLocation(this->program, "u_WorldMatrix");
+    this->uColor = glGetUniformLocation(this->program, "u_color");
+    glUseProgram(this->program);
+}
+
+void SimpleShader::SetInActive()
+{
+    glDisableVertexAttribArray(this->aPosition);
+}
+
 void SimpleShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *e = (char *)engine;
     char *m = (char *)mesh;
-    glUniformMatrix4fv(field_0x24, 1, 0, e + 0x104);
-    if (field_0x9 != 0) {
-        glUniform4fv(field_0x28, 1, (const float *)(e + 0xd0));
-        field_0x9 = 0;
+
+    glUniformMatrix4fv(this->uWorldMatrix, 1, 0, (const float *)(e + 0x104));
+    if (this->dirty != 0) {
+        glUniform4fv(this->uColor, 1, (const float *)(e + 0xd0));
+        this->dirty = 0;
     }
-    glEnableVertexAttribArray(field_0x20);
+    glEnableVertexAttribArray(this->aPosition);
     if (*(uint8_t *)(m + 0x5c) != 0) {
         glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
-        return glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+        return;
     }
-    return glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
-}
-
-// AbyssEngine::SimpleShader::Init(AbyssEngine::Engine*)
-void SimpleShader::Init(Engine *)
-{
-    uint32_t program = ((ShaderBaseStruct *)((ShaderBaseStruct *)this))->ES2LoadProgram("SimpleShader.vsh", "SimpleShader.fsh");
-    field_0x4 = (int)program;
-    field_0x20 = glGetAttribLocation(program, "a_position");
-    field_0x24 = glGetUniformLocation(field_0x4, "u_WorldMatrix");
-    field_0x28 = glGetUniformLocation(field_0x4, "u_color");
-    return glUseProgram(field_0x4);
-}
-
-// AbyssEngine::SimpleShader::SimpleShader()
-__attribute__((minsize)) SimpleShader::SimpleShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    field_0xc.s = u"SimpleShader";
-    field_0x0 = (char *)SimpleShader_vtable + 8;
-    SimpleShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    return;
+    glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
 }
 
 } // namespace AbyssEngine
-
-// AbyssEngine::SimpleShader::~SimpleShader() (deleting dtor)
-void _ZN11AbyssEngine12SimpleShaderD0Ev(SimpleShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}

@@ -1,25 +1,30 @@
 #include "gof2/engine/render/shaders/NoTexShader.h"
+#include "gof2/platform/gl.h"
+
+// NoTexShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char NoTexShader_vtable;
+
+// Engine global: this shader's per-shader index, snapshotted at construction.
+extern "C" int NoTexShader_ShaderIndex;
 
 namespace AbyssEngine {
 
-// AbyssEngine::NoTexShader::SetInActive()
 void NoTexShader::SetInActive()
 {
-    return glDisableVertexAttribArray(field_0x20);
+    glDisableVertexAttribArray(this->aPosition);
 }
 
-// AbyssEngine::NoTexShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
 void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *e = (char *)engine;
     char *m = (char *)mesh;
 
-    glUniformMatrix4fv(field_0x24, 1, 0, e + 0x104);
-    if (field_0x9 != 0) {
-        glUniform4fv(field_0x28, 1, (const float *)(e + 0xd0));
-        field_0x9 = 0;
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (const float *)(e + 0x104));
+    if (this->dirty != 0) {
+        glUniform4fv(this->uColor, 1, (const float *)(e + 0xd0));
+        this->dirty = 0;
     }
-    glEnableVertexAttribArray(field_0x20);
+    glEnableVertexAttribArray(this->aPosition);
 
     int size;
     const void *ptr;
@@ -35,36 +40,23 @@ void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         }
         size = 3;
     }
-    return glVertexAttribPointer(field_0x20, size, 0x1406, 0, 0, ptr);
+    glVertexAttribPointer(this->aPosition, size, 0x1406, 0, 0, ptr);
 }
 
-// AbyssEngine::NoTexShader::Init(AbyssEngine::Engine*)
 void NoTexShader::Init(Engine *)
 {
-    uint32_t program = ((ShaderBaseStruct *)((ShaderBaseStruct *)this))->ES2LoadProgram("NoTexShader.vsh", "NoTexShader.fsh");
-    field_0x4 = (int)program;
-    field_0x20 = glGetAttribLocation(program, "a_position");
-    field_0x24 = glGetUniformLocation(field_0x4, "u_mvp");
-    field_0x28 = glGetUniformLocation(field_0x4, "u_color");
-    return glUseProgram(field_0x4);
+    this->program = this->ES2LoadProgram("NoTexShader.vsh", "NoTexShader.fsh");
+    this->aPosition = glGetAttribLocation(this->program, "a_position");
+    this->uMvpMatrix = glGetUniformLocation(this->program, "u_mvp");
+    this->uColor = glGetUniformLocation(this->program, "u_color");
+    glUseProgram(this->program);
 }
 
-// AbyssEngine::NoTexShader::NoTexShader()
 NoTexShader::NoTexShader()
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    field_0x0 = (char *)NoTexShader_vtable + 8;
+    this->vtable = &NoTexShader_vtable + 8;
     NoTexShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    field_0xc.s = u"NoTexShader";
-    return;
+    this->name.s = u"NoTexShader";
 }
 
 } // namespace AbyssEngine
-
-// AbyssEngine::NoTexShader::~NoTexShader() (deleting dtor)
-void _ZN11AbyssEngine11NoTexShaderD0Ev(AbyssEngine::NoTexShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}

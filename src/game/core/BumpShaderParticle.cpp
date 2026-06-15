@@ -1,22 +1,71 @@
 #include "gof2/game/core/BumpShaderParticle.h"
-#include "gof2/externs.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glUniform3fv(int location, int count, const float *value);
+// Per-frame particle lighting globals (renderer module-static state).
+extern float g_particleGlobalA;
+extern float g_particleGlobalB;
+
+// BumpShaderParticle's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char _ZTVN11AbyssEngine18BumpShaderParticleE[];
 
 namespace AbyssEngine {
+
+int BumpShaderParticle::ShaderIndex;
+
+BumpShaderParticle::BumpShaderParticle()
+{
+    this->vtable = _ZTVN11AbyssEngine18BumpShaderParticleE + 8;
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"BumpShaderParticle";
+}
+
+void BumpShaderParticle::Init(Engine *)
+{
+    this->program = this->ES2LoadProgram("BumpShaderParticle.vsh", "BumpShaderParticle.fsh");
+
+    attribA0 = glGetAttribLocation(this->program, "a0");
+    attribA1 = glGetAttribLocation(this->program, "a1");
+    attribA2 = glGetAttribLocation(this->program, "a2");
+    attribA3 = glGetAttribLocation(this->program, "a3");
+    attribA4 = glGetAttribLocation(this->program, "a4");
+
+    uniformU0 = glGetUniformLocation(this->program, "u0");
+    uniformU1 = glGetUniformLocation(this->program, "u1");
+    uniformU2 = glGetUniformLocation(this->program, "u2");
+    uniformU3 = glGetUniformLocation(this->program, "u3");
+    uniformU4 = glGetUniformLocation(this->program, "u4");
+    uniformU5 = glGetUniformLocation(this->program, "u5");
+    uniformU6 = glGetUniformLocation(this->program, "u6");
+    uniformU7 = glGetUniformLocation(this->program, "u7");
+    uniformU8 = glGetUniformLocation(this->program, "u8");
+    uniformU9 = glGetUniformLocation(this->program, "u9");
+    uniformU10 = glGetUniformLocation(this->program, "u10");
+    uniformU11 = glGetUniformLocation(this->program, "u11");
+    uniformU12 = glGetUniformLocation(this->program, "u12");
+    uniformU13 = glGetUniformLocation(this->program, "u13");
+
+    glUseProgram(this->program);
+    // Samplers u5 (+0x48) and u6 (+0x4c) are consecutive int fields, indexed at runtime.
+    int *samplers = &uniformU5;
+    for (int i = 0; i != 2; i++) {
+        int loc = samplers[i];
+        if (loc >= 0)
+            glUniform1i(loc, i);
+    }
+}
 
 void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (uniformU1 >= 0)
-        glUniformMatrix4fv(uniformU1, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(uniformU1, 1, 0, (const float *)((char *)engine + 0x104));
     if (uniformU2 >= 0)
-        glUniformMatrix3fv(uniformU2, 1, 0, (char *)engine + 0x204);
+        glUniformMatrix3fv(uniformU2, 1, 0, (const float *)((char *)engine + 0x204));
     if (uniformU12 >= 0)
         glUniform1f(uniformU12, g_particleGlobalA);
     if (uniformU13 >= 0)
         glUniform1f(uniformU13, g_particleGlobalB);
 
-    if (field_0x9 != 0) {
+    if (this->dirty != 0) {
         glUniform3f(uniformU3, field_f32(engine, 0x330),
                     field_f32(engine, 0x334), field_f32(engine, 0x338));
         if (uniformU4 >= 0)
@@ -32,7 +81,7 @@ void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform3fv(uniformU10, 1, (float *)((char *)engine + 0x2e4));
         if (uniformU11 >= 0)
             glUniform1f(uniformU11, field_f32(engine, 0x2c8));
-        field_0x9 = 0;
+        this->dirty = 0;
     }
 
     if (attribA0 >= 0)
@@ -77,98 +126,20 @@ void BumpShaderParticle::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void BumpShaderParticle::SetInActive()
 {
-    int loc;
-    loc = attribA0;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = attribA1;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = attribA2;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = attribA3;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = attribA4;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = uniformU0;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-}
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine18BumpShaderParticleD0Ev(
-    AbyssEngine::BumpShaderParticle *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
-
-int BumpShaderParticle::ShaderIndex;
-
-__attribute__((minsize)) BumpShaderParticle::BumpShaderParticle()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    *(void **)this = (void *)(_ZTVN11AbyssEngine18BumpShaderParticleE + 8);
-    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    {
-        // name = String("BumpShaderParticle", false);
-        String tmp("BumpShaderParticle");
-        name.assign(&tmp);
-    }
-
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void BumpShaderParticle::Init(Engine *)
-{
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpShaderParticle.vsh", "BumpShaderParticle.fsh");
-    field_0x4 = program;
-
-    attribA0 = glGetAttribLocation(program, "a0");
-    attribA1 = glGetAttribLocation(field_0x4, "a1");
-    attribA2 = glGetAttribLocation(field_0x4, "a2");
-    attribA3 = glGetAttribLocation(field_0x4, "a3");
-    attribA4 = glGetAttribLocation(field_0x4, "a4");
-
-    uniformU0 = glGetUniformLocation(field_0x4, "u0");
-    uniformU1 = glGetUniformLocation(field_0x4, "u1");
-    uniformU2 = glGetUniformLocation(field_0x4, "u2");
-    uniformU3 = glGetUniformLocation(field_0x4, "u3");
-    uniformU4 = glGetUniformLocation(field_0x4, "u4");
-    uniformU5 = glGetUniformLocation(field_0x4, "u5");
-    uniformU6 = glGetUniformLocation(field_0x4, "u6");
-    uniformU7 = glGetUniformLocation(field_0x4, "u7");
-    uniformU8 = glGetUniformLocation(field_0x4, "u8");
-    uniformU9 = glGetUniformLocation(field_0x4, "u9");
-    uniformU10 = glGetUniformLocation(field_0x4, "u10");
-    uniformU11 = glGetUniformLocation(field_0x4, "u11");
-    uniformU12 = glGetUniformLocation(field_0x4, "u12");
-    uniformU13 = glGetUniformLocation(field_0x4, "u13");
-
-    glUseProgram(field_0x4);
-    // samplers u5 (+0x48) and u6 (+0x4c): consecutive int fields, indexed at runtime.
-    int *samplers = &uniformU5;
-    for (int i = 0; i != 2; i++) {
-        int loc = samplers[i];
-        if (loc >= 0)
-            glUniform1i(loc, i);
-    }
+    if (attribA0 >= 0)
+        glDisableVertexAttribArray(attribA0);
+    if (attribA1 >= 0)
+        glDisableVertexAttribArray(attribA1);
+    if (attribA2 >= 0)
+        glDisableVertexAttribArray(attribA2);
+    if (attribA3 >= 0)
+        glDisableVertexAttribArray(attribA3);
+    if (attribA4 >= 0)
+        glDisableVertexAttribArray(attribA4);
+    if (uniformU0 >= 0)
+        glDisableVertexAttribArray(uniformU0);
 }
 
 } // namespace AbyssEngine

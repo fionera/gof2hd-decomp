@@ -1,15 +1,23 @@
 #include "gof2/engine/render/shaders/CubeMapping.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/game/core/String.h"
+#include "gof2/platform/gl.h"
+
+// CubeMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char CubeMapping_vtable;
 
 namespace AbyssEngine {
 
+CubeMapping::CubeMapping()
+{
+    this->vtable = &CubeMapping_vtable + 8;
+    this->name.s = u"CubeMapping";
+}
+
+// Compiles the cube-mapping program and caches its attribute/uniform location handles.
 void CubeMapping::Init(Engine *)
 {
-    int program = ((ShaderBaseStruct *)(this))->ES2LoadProgram("CubeMapping.vsh", "CubeMapping.fsh");
-    this->program = program;
+    this->program = this->ES2LoadProgram("CubeMapping.vsh", "CubeMapping.fsh");
 
-    this->aPosition = glGetAttribLocation(program, "a0");
+    this->aPosition = glGetAttribLocation(this->program, "a0");
     this->aNormal = glGetAttribLocation(this->program, "a1");
     this->aTexCoord = glGetAttribLocation(this->program, "a2");
 
@@ -28,61 +36,30 @@ void CubeMapping::Init(Engine *)
 
     glUseProgram(this->program);
     glUniform1i(this->uniform4, 0);
-    return glUniform1i(this->uniform5, 1);
+    glUniform1i(this->uniform5, 1);
 }
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine11CubeMappingD0Ev(AbyssEngine::CubeMapping *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
-
-namespace AbyssEngine {
-
-CubeMapping::CubeMapping()
-{
-    new ((AbyssEngine::ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // install vtable (target adds +8 to the table base)
-    this->field_0x0 = (void *)(CubeMapping_vtable + 8);
-    CubeMapping_typeInfoDest = CubeMapping_typeInfoSource;
-
-    String name;
-    ((String *)(&name))->ctor_char(CubeMapping_name, false);
-    ((String *)(&this->name))->assign(&name);
-    ((String *)(&name))->dtor();
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void CubeMapping::SetInActive()
 {
     glDisableVertexAttribArray(this->aPosition);
     glDisableVertexAttribArray(this->aNormal);
-    return glDisableVertexAttribArray(this->aTexCoord);
+    glDisableVertexAttribArray(this->aTexCoord);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
 void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *eng = (char *)engine;
     char *msh = (char *)mesh;
 
-    if (this->uniformsDirty != 0) {
+    if (this->dirty != 0) {
         glUniform4fv(this->uniform11, 1, (const float *)(eng + 0xd0));
         glUniform4fv(this->uniform7, 1, (const float *)(eng + 0x2cc));
         glUniform4fv(this->uniform8, 1, (const float *)(eng + 0x2fc));
         glUniform4fv(this->uniform9, 1, (const float *)(eng + 0x2e4));
         glUniform1f(this->uniform10, *(float *)(eng + 0x2c8));
-        this->uniformsDirty = 0;
+        this->dirty = 0;
     }
 
     glUniform1f(this->uniform6, *(float *)(eng + 0xcc));

@@ -1,7 +1,26 @@
 #include "gof2/engine/render/shaders/TextureVtxColorShader.h"
-#include "gof2/engine/render/Mesh.h"
+#include "gof2/platform/gl.h"
+
+// TextureVtxColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char _ZTVN11AbyssEngine21TextureVtxColorShaderE[];
+
+// AbyssEngine::Engine::fogEnabled — global fog toggle. Engine itself is not modeled here, so the
+// static flag is reached through its mangled symbol.
+extern "C" bool _ZN11AbyssEngine6Engine10fogEnabledE;
 
 namespace AbyssEngine {
+
+// Reads the unmodeled AbyssEngine::Engine::fogEnabled static.
+static inline bool EngineFogEnabled() { return _ZN11AbyssEngine6Engine10fogEnabledE; }
+
+int TextureVtxColorShader::ShaderIndex;
+
+TextureVtxColorShader::TextureVtxColorShader()
+{
+    this->vtable = _ZTVN11AbyssEngine21TextureVtxColorShaderE + 8;
+    this->name.s = u"TextureVtxColorShader";
+    TextureVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+}
 
 void TextureVtxColorShader::Init(Engine *)
 {
@@ -14,10 +33,10 @@ void TextureVtxColorShader::Init(Engine *)
         "varying mediump vec2 v_texCoord;\n"
         "varying mediump vec4 v_VertexColor;\n";
 
-    this->program = ((ShaderBaseStruct *)this)->ES2LoadProgram(vertexShader, fragmentShader);
+    this->program = this->ES2LoadProgram(vertexShader, fragmentShader);
     ConnectShaderComponents(this->program, 0);
 
-    this->fogProgram = ((ShaderBaseStruct *)this)->ES2LoadProgram(vertexShader, "\n");
+    this->fogProgram = this->ES2LoadProgram(vertexShader, "\n");
     ConnectShaderComponents(this->fogProgram, 1);
 }
 
@@ -44,7 +63,7 @@ void TextureVtxColorShader::ConnectShaderComponents(uint32_t program, int index)
 
 __attribute__((minsize)) void TextureVtxColorShader::UseShader(bool)
 {
-    if (Engine::fogEnabled && this->fogProgram != 0) {
+    if (EngineFogEnabled() && this->fogProgram != 0) {
         glUseProgram(this->fogProgram);
         return;
     }
@@ -60,98 +79,81 @@ void TextureVtxColorShader::SetInActive()
     }
 }
 
-void TextureVtxColorShader::UpdateMeshData(AbyssEngine::Mesh *mesh, Engine *engine)
+void TextureVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    int index = Engine::fogEnabled ? 1 : 0;
+    int index = EngineFogEnabled() ? 1 : 0;
 
-    glUniformMatrix4fv(loc_u_WorldMatrix[index], 1, 0, engine->worldMatrix);
+    glUniformMatrix4fv(loc_u_WorldMatrix[index], 1, 0, (float *)((char *)engine + 0x104));
 
     int location = loc_u_UvMatrix[index];
     if (location >= 0) {
-        glUniformMatrix4fv(location, 1, 0, engine->uvMatrix);
+        glUniformMatrix4fv(location, 1, 0, (float *)((char *)engine + 0x1c4));
     }
 
     location = loc_u_DarkenValue[index];
     if (location >= 0) {
-        glUniform1f(location, 1.0f - (float)mesh->field_0x1c);
+        glUniform1f(location, 1.0f - (float)*(int *)((char *)mesh + 0x1c));
     }
 
-    if (this->needsUniformUpdate != 0) {
-        glUniform4fv(loc_glColor[index], 1, engine->glColor);
+    if (this->dirty != 0) {
+        glUniform4fv(loc_glColor[index], 1, (float *)((char *)engine + 0xd0));
 
         location = loc_u_UVAnimation[index];
         if (location >= 0) {
-            glUniform1i(location, mesh->field_0x85);
+            glUniform1i(location, *(uint8_t *)((char *)mesh + 0x85));
         }
 
         location = loc_u_fogColor[index];
         if (location >= 0) {
-            glUniform3fv(location, 1, engine->eyePosModel);
+            glUniform3fv(location, 1, (float *)((char *)engine + 0x3f0));
         }
 
         location = loc_u_fogMinDist[index];
         if (location >= 0) {
-            glUniform1f(location, ((float *)engine)[0x3e8 / 4]);
+            glUniform1f(location, *(float *)((char *)engine + 0x3e8));
         }
 
         location = loc_u_fogMaxDist[index];
         if (location >= 0) {
-            glUniform1f(location, ((float *)engine)[0x3ec / 4]);
+            glUniform1f(location, *(float *)((char *)engine + 0x3ec));
         }
 
         location = loc_u_EnableFog[index];
         if (location >= 0) {
-            glUniform1i(location, Engine::fogEnabled ? 1 : 0);
+            glUniform1i(location, EngineFogEnabled() ? 1 : 0);
         }
 
         location = loc_u_eyeposmodel[index];
         if (location >= 0) {
-            glUniform3f(location, engine->eyePosModelX, engine->eyePosModelY, engine->eyePosModelZ);
+            glUniform3f(location,
+                        *(float *)((char *)engine + 0x34c),
+                        *(float *)((char *)engine + 0x350),
+                        *(float *)((char *)engine + 0x354));
         }
 
-        this->needsUniformUpdate = 0;
+        this->dirty = 0;
     }
 
     glEnableVertexAttribArray((uint32_t)loc_a_position[index]);
     glEnableVertexAttribArray((uint32_t)loc_a_texCoord[index]);
     glEnableVertexAttribArray((uint32_t)loc_a_VertexColor[index]);
 
-    if (mesh->field_0x5c != 0) {
-        glBindBuffer(0x8892, mesh->field_0x60);
+    if (*(uint8_t *)((char *)mesh + 0x5c) != 0) {
+        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x60));
         glVertexAttribPointer((uint32_t)loc_a_position[index], 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x68));
         glVertexAttribPointer((uint32_t)loc_a_texCoord[index], 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x78);
+        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x78));
         glVertexAttribPointer((uint32_t)loc_a_VertexColor[index], 4, 0x1406, 0, 0, 0);
         return;
     }
 
-    glVertexAttribPointer((uint32_t)loc_a_position[index], 3, 0x1406, 0, 0, (const void *)mesh->field_0x4);
-    glVertexAttribPointer((uint32_t)loc_a_texCoord[index], 2, 0x1406, 0, 0, (const void *)mesh->field_0x8);
-    glVertexAttribPointer((uint32_t)loc_a_VertexColor[index], 4, 0x1406, 0, 0, (const void *)(__SIZE_TYPE__)mesh->field_0xc);
+    glVertexAttribPointer((uint32_t)loc_a_position[index], 3, 0x1406, 0, 0,
+                          (const void *)*(uintptr_t *)((char *)mesh + 0x4));
+    glVertexAttribPointer((uint32_t)loc_a_texCoord[index], 2, 0x1406, 0, 0,
+                          (const void *)*(uintptr_t *)((char *)mesh + 0x8));
+    glVertexAttribPointer((uint32_t)loc_a_VertexColor[index], 4, 0x1406, 0, 0,
+                          (const void *)(uintptr_t)*(unsigned int *)((char *)mesh + 0xc));
 }
 
 } // namespace AbyssEngine
-
-// ---- TextureVtxColorShader_8bd1c.cpp (constructor) ----
-extern "C" AbyssEngine::TextureVtxColorShader *
-_ZN11AbyssEngine21TextureVtxColorShaderC2Ev(AbyssEngine::TextureVtxColorShader *self)
-{
-    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
-    self->vtable = (void *)(_ZTVN11AbyssEngine21TextureVtxColorShaderE + 8);
-    AbyssEngine::TextureVtxColorShader::ShaderIndex =
-        AbyssEngine::ShaderBaseStruct::shaderIndexIntern;
-
-    AbyssEngine::String name("TextureVtxColorShader");
-    self->shaderName.assign(&name);
-    return self;
-}
-
-// ---- _TextureVtxColorShader_8c10c.cpp (deleting destructor) ----
-void _ZN11AbyssEngine21TextureVtxColorShaderD0Ev(
-    AbyssEngine::TextureVtxColorShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}

@@ -1,137 +1,134 @@
 #include "gof2/engine/render/shaders/PostBWShader.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/platform/gl.h"
+
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
+template <class T> static inline T &ae_field(void *base, unsigned int off) {
+    return *(T *)((char *)base + off);
+}
+
+// PostBWShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char PostBWShader_vtable;
+
+// Engine entry points reached by opaque pointer (modelled in a later pass).
+extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
+extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
+extern "C" void AbyssEngine_Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine,
+                                                      const uint32_t *matrix);
+extern "C" void AbyssEngine_Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width,
+                                            int height);
 
 namespace AbyssEngine {
 
-// AbyssEngine::PostBWShader::SetInActive()
-void PostBWShader::SetInActive()
+PostBWShader::PostBWShader()
 {
-    glDisableVertexAttribArray(field_0x20);
-    return glDisableVertexAttribArray(field_0x28);
+    this->vtable = &PostBWShader_vtable + 8;
+    this->name.s = u"PostBWShader";
 }
 
-// AbyssEngine::PostBWShader::Init(AbyssEngine::Engine*)
+// Compiles and links the grayscale post-process program and binds its attribute/uniform slots.
 void PostBWShader::Init(Engine *)
 {
-    uint32_t program = ES2LoadProgram(
+    this->program = ES2LoadProgram(
         "attribute vec4 a_Position;attribute vec2 a_TexCoord;varying vec2 v_TexCoord;uniform mat4 u_MVPMatrix;void main(){gl_Position=u_MVPMatrix*a_Position;v_TexCoord=a_TexCoord;}",
         "precision mediump float;varying vec2 v_TexCoord;uniform sampler2D s_Texture;void main(){vec4 c=texture2D(s_Texture,v_TexCoord);float g=(c.r+c.g+c.b)/3.0;gl_FragColor=vec4(g,g,g,c.a);}");
-    field_0x4 = (int)program;
-    field_0x20 = glGetAttribLocation(field_0x4, "a_Position");
-    field_0x28 = glGetAttribLocation(field_0x4, "a_TexCoord");
-    field_0x24 = glGetUniformLocation(field_0x4, "u_MVPMatrix");
-    field_0x2c = glGetUniformLocation(field_0x4, "s_Texture");
-    glUseProgram(field_0x4);
-    return glUniform1i(field_0x2c, 0);
+    this->aPosition = glGetAttribLocation(this->program, "a_Position");
+    this->aTexCoord = glGetAttribLocation(this->program, "a_TexCoord");
+    this->uMvpMatrix = glGetUniformLocation(this->program, "u_MVPMatrix");
+    this->sTexture = glGetUniformLocation(this->program, "s_Texture");
+    glUseProgram(this->program);
+    glUniform1i(this->sTexture, 0);
 }
 
-// AbyssEngine::PostBWShader::~PostBWShader()
-PostBWShader::~PostBWShader()
+void PostBWShader::SetInActive()
 {
-    field_0x0 = (char *)PostBWShader_vtable + 8;
+    glDisableVertexAttribArray(this->aPosition);
+    glDisableVertexAttribArray(this->aTexCoord);
 }
 
-// AbyssEngine::PostBWShader::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
+// Binds the world matrix and the mesh's vertex/texcoord arrays (VBO or client-side).
 void PostBWShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-    glUniformMatrix4fv(field_0x24, 1, 0, e + 0x104);
-    if (field_0x9 != 0) {
-        field_0x9 = 0;
-    }
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    this->dirty = 0;
 
-    glEnableVertexAttribArray(field_0x20);
-    glEnableVertexAttribArray(field_0x28);
+    glEnableVertexAttribArray(this->aPosition);
+    glEnableVertexAttribArray(this->aTexCoord);
 
-    if (*(uint8_t *)(m + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
-        glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x68));
-        glVertexAttribPointer(field_0x28, 2, 0x1406, 0, 0, 0);
+    if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
+        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x60));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
+        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x68));
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
     } else {
-        glVertexAttribPointer(field_0x20, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
-        glVertexAttribPointer(field_0x28, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
     }
 }
 
-// AbyssEngine::PostBWShader::RenderEffect(AbyssEngine::FBOContainer*, AbyssEngine::Engine*)
+// Draws the full-screen grayscale pass over the captured scene framebuffer.
 void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 {
-    char *e = (char *)engine;
-    AEMath::Matrix matrix;
-    int width;
-    int height;
+    typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
+    u32x4 zero = {0, 0, 0, 0};
+    ae_field<u32x4>(engine, 0x3b4) = zero;
+    ae_field<u32x4>(engine, 0x3a4) = zero;
+    ae_field<u32x4>(engine, 0x394) = zero;
+    ae_field<u32x4>(engine, 0x384) = zero;
+    ae_field<uint32_t>(engine, 0x3e4) = this->program;
 
-    *(AEMath::Matrix *)(e + 0x3b4) = {};
-    *(AEMath::Matrix *)(e + 0x3a4) = {};
-    *(AEMath::Matrix *)(e + 0x394) = {};
-    *(AEMath::Matrix *)(e + 0x384) = {};
-    *(uint32_t *)(e + 0x3e4) = (uint32_t)field_0x4;
+    ae_field<float>(engine, 0x384) = 2.0f / (float)AbyssEngine_Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)AbyssEngine_Engine_GetDisplayHeight(engine));
+    ae_field<uint32_t>(engine, 0x3ac) = 0xbf800000;
+    ae_field<uint32_t>(engine, 0x3b4) = 0xbf800000;
+    ae_field<uint32_t>(engine, 0x3b8) = 0x3f800000;
+    ae_field<uint32_t>(engine, 0x3c0) = 0x3f800000;
 
-    *(float *)(e + 0x384) = 2.0f / (float)engine->GetDisplayWidth();
-    *(float *)(e + 0x398) = -(2.0f / (float)engine->GetDisplayHeight());
-    *(uint32_t *)(e + 0x3ac) = 0xbf800000;
-    *(uint32_t *)(e + 0x3b4) = 0xbf800000;
-    *(float *)(e + 0x3b8) = 1.0f;
-    *(float *)(e + 0x3c0) = 1.0f;
-
-    matrix = {};
-    matrix.m[0] = 1.0f;
-    matrix.m[5] = 1.0f;
-    matrix.m[14] = 1.0f;
-    engine->SetWorldViewMatrix(matrix);
+    float matrix[16] = {};
+    matrix[0] = 1.0f;
+    matrix[5] = 1.0f;
+    matrix[14] = 1.0f;
+    AbyssEngine_Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
 
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
-    glUseProgram(field_0x4);
+    glUseProgram(this->program);
     glActiveTexture(0x84c0);
     fbo->Activate();
-    glBindFramebuffer(0x8d40, *(uint32_t *)(e + 0x40c));
+    glBindFramebuffer(0x8d40, ae_field<uint32_t>(engine, 0x40c));
     glClear(0x4100);
 
-    if (*(int *)((char *)*(void **)(*(void **)(e + 0x30)) + 0x30) == 2) {
-        width = engine->GetDisplayWidth();
-        height = engine->GetDisplayHeight();
+    int width;
+    int height;
+    if (*(int *)((char *)*(void **)(ae_field<void *>(engine, 0x30)) + 0x30) == 2) {
+        width = AbyssEngine_Engine_GetDisplayWidth(engine);
+        height = AbyssEngine_Engine_GetDisplayHeight(engine);
     } else {
-        width = engine->GetDisplayHeight();
-        height = engine->GetDisplayWidth();
+        width = AbyssEngine_Engine_GetDisplayHeight(engine);
+        height = AbyssEngine_Engine_GetDisplayWidth(engine);
     }
     glViewport(0, 0, width, height);
 
-    glEnableVertexAttribArray(field_0x20);
-    glEnableVertexAttribArray(field_0x28);
-    glUniformMatrix4fv(field_0x24, 1, 0, e + 0x104);
-    glVertexAttribPointer(
-        field_0x20, 3, 0x1406, 0, 0, *(void **)((char *)*(void **)(e + 0x380) + 0x4));
-    glVertexAttribPointer(
-        field_0x28, 2, 0x1406, 0, 0, *(void **)((char *)*(void **)(e + 0x380) + 0x8));
+    glEnableVertexAttribArray(this->aPosition);
+    glEnableVertexAttribArray(this->aTexCoord);
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0,
+                          *(void **)(ae_field<char *>(engine, 0x380) + 0x4));
+    glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0,
+                          *(void **)(ae_field<char *>(engine, 0x380) + 0x8));
 
     glClear(0x4000);
-    width = engine->GetDisplayWidth();
-    height = engine->GetDisplayHeight();
-    engine->DrawQuad(0, 0, width, height);
+    AbyssEngine_Engine_DrawQuad(engine, 0, 0, AbyssEngine_Engine_GetDisplayWidth(engine),
+                                AbyssEngine_Engine_GetDisplayHeight(engine));
 
-    glDisableVertexAttribArray(field_0x20);
-    glDisableVertexAttribArray(field_0x28);
+    glDisableVertexAttribArray(this->aPosition);
+    glDisableVertexAttribArray(this->aTexCoord);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-    *(uint32_t *)(e + 0x7c) = 0xffffffff;
-}
-
-// AbyssEngine::PostBWShader::PostBWShader()
-PostBWShader::PostBWShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    uint32_t copied = PostBWShader_ctor_copy_src;
-    PostBWShader_ctor_copy_dst = copied;
-
-    field_0x0 = (char *)PostBWShader_vtable + 8;
-
-    // field_0xc = String("PostBWShader", false)
-    field_0xc.s = u"PostBWShader";
+    ae_field<uint32_t>(engine, 0x7c) = 0xffffffff;
 }
 
 } // namespace AbyssEngine

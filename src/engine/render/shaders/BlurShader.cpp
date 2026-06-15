@@ -1,96 +1,57 @@
-#include "gof2/engine/render/FBOContainer.h"
 #include "gof2/engine/render/shaders/BlurShader.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/game/core/String.h"
-// gof2/Mesh.h is pulled in by gof2/BlurShader.h. gof2/Engine.h is intentionally NOT included
-// (it does not compile standalone); BlurShader.h provides a minimal Engine view instead.
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glDisableVertexAttribArray(unsigned int index);
-extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
-extern "C" char BlurShader_vtable[];
-extern "C" void *BlurShader_typeinfo_source[];
-extern "C" void *BlurShader_typeinfo_dest[];
-extern "C" int glGetAttribLocation(unsigned int program, const char *name);
-extern "C" int glGetUniformLocation(unsigned int program, const char *name);
-extern "C" void glUseProgram(unsigned int program);
-extern "C" void glUniform1i(int location, int value);
-extern "C" void glDisable(unsigned int cap);
-extern "C" void glEnable(unsigned int cap);
-extern "C" void glDepthMask(unsigned char flag);
-extern "C" void glActiveTexture(unsigned int texture);
-extern "C" void glBindFramebuffer(unsigned int target, unsigned int framebuffer);
-extern "C" void glViewport(int x, int y, int width, int height);
-extern "C" void glEnableVertexAttribArray(unsigned int index);
-extern "C" void glUniform2f(int location, float x, float y);
-extern "C" void glUniform1f(int location, float value);
-extern "C" void glClear(unsigned int mask);
-extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
+template <class T> static inline T &ae_field(void *base, unsigned int off) {
+    return *(T *)((char *)base + off);
+}
+
+// BlurShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char BlurShader_vtable;
+
+// Engine entry points reached by opaque pointer (modelled in a later pass).
+extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
+extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
+
+BlurShader::BlurShader()
+{
+    this->vtable = &BlurShader_vtable + 8;
+    this->name.s = u"BlurShader";
+    this->strength = -4.051786824441422e-28f;   // 0x92006800
+    this->blurScale = 2.0f;
+}
+
+// Compiles the blur GLES2 program and caches its attribute/uniform locations.
+void BlurShader::Init(Engine *)
+{
+    this->program = this->ES2LoadProgram("BlurShader.vsh", "BlurShader.fsh");
+    this->aPosition = glGetAttribLocation(this->program, "a_position");
+    this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
+    this->uMvpMatrix = glGetUniformLocation(this->program, "u_mvpMatrix");
+    this->sTexture = glGetUniformLocation(this->program, "s_texture");
+    this->uTexelSize = glGetUniformLocation(this->program, "u_texelSize");
+    this->uCenter = glGetUniformLocation(this->program, "u_center");
+    this->uBlurAmount = glGetUniformLocation(this->program, "u_blurAmount");
+    this->uStrength = glGetUniformLocation(this->program, "u_strength");
+    glUseProgram(this->program);
+    glUniform1i(this->sTexture, 0);
+}
 
 void BlurShader::SetInActive()
 {
     glDisableVertexAttribArray(this->positionAttrib);
-    return glDisableVertexAttribArray_thunk(this->texCoordAttrib);
+    glDisableVertexAttribArray(this->texCoordAttrib);
 }
 
-} // namespace AbyssEngine
-
-AbyssEngine::BlurShader *BlurShader_BlurShader(AbyssEngine::BlurShader *self)
-{
-    using AbyssEngine::BlurShader;
-    String name;
-    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
-    void **source = BlurShader_typeinfo_source;
-    void **dest = BlurShader_typeinfo_dest;
-    *(void **)self = BlurShader_vtable + 8;
-    *dest = *source;
-    name.ctor_char("BlurShader", false);
-    ((String *)((char *)self + 0xc))->assign(&name);
-    self->strength = 0x92006800;
-    self->blurScale = 0x40000000;
-    return self;
-}
-
-namespace AbyssEngine {
-
-void BlurShader::Init(::Engine *)
-{
-    unsigned int program = ((ShaderBaseStruct *)((::ShaderBaseStruct *)this))->ES2LoadProgram("BlurShader.vsh", "BlurShader.fsh");
-    this->program = program;
-    this->aPosition = glGetAttribLocation(program, "a_position");
-    this->aTexCoord =
-        glGetAttribLocation(this->program, "a_texCoord");
-
-    int (*uniform)(unsigned int, const char *) = glGetUniformLocation;
-    this->uMvpMatrix =
-        uniform(this->program, "u_mvpMatrix");
-    this->sTexture =
-        uniform(this->program, "s_texture");
-    this->uTexelSize =
-        uniform(this->program, "u_texelSize");
-    this->uCenter =
-        uniform(this->program, "u_center");
-    this->uBlurAmount =
-        uniform(this->program, "u_blurAmount");
-    this->uStrength =
-        uniform(this->program, "u_strength");
-    glUseProgram(this->program);
-    return glUniform1i(this->sTexture, 0);
-}
-
-} // namespace AbyssEngine
-
-extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
-                                   const void *value);
-extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
-                                      unsigned char normalized, int stride, const void *pointer);
-
-namespace AbyssEngine {
-
-void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::Engine *engine,
+// Renders the blur pass over a full-screen quad, sampling fbo and writing either to the back
+// buffer (*target == nullptr) or into the capture target FBO.
+void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *engine,
                               float amount, Vector vector)
 {
     float matrix[16] = {};
@@ -99,35 +60,35 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
 
-    engine->projMatrix[0]  = 2.0f / (float)(engine)->GetDisplayWidth();
-    engine->projMatrix[5]  = -(2.0f / (float)(engine)->GetDisplayHeight());
-    engine->projMatrix[10] = -1.0f;   // 0xbf800000
-    engine->projMatrix[12] = -1.0f;   // 0xbf800000
-    engine->projMatrix[13] = 1.0f;    // 0x3f800000
-    engine->projMatrix[15] = 1.0f;    // 0x3f800000
-    (engine)->SetWorldViewMatrix((const uint32_t *)matrix);
+    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
+    ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;   // -1.0f
+    ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;   // -1.0f
+    ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;   //  1.0f
+    ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;   //  1.0f
+    Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
 
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
     glUseProgram(this->program);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(fbo))->Activate();
+    fbo->Activate();
 
     if (*target == 0) {
-        glBindFramebuffer(0x8d40, engine->field_0x40c);
+        glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
         int width;
         int height;
-        if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (engine)->GetDisplayWidth();
-            height = (engine)->GetDisplayHeight();
+        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+            width = Engine_GetDisplayWidth(engine);
+            height = Engine_GetDisplayHeight(engine);
         } else {
-            width = (engine)->GetDisplayHeight();
-            height = (engine)->GetDisplayWidth();
+            width = Engine_GetDisplayHeight(engine);
+            height = Engine_GetDisplayWidth(engine);
         }
         glViewport(0, 0, width, height);
     } else {
-        ((FBOContainer *)(*target))->BeginCapture();
+        (*target)->BeginCapture();
     }
 
     int position = this->aPosition;
@@ -140,26 +101,24 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     }
     int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
-        glUniformMatrix4fv(matrixLocation, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(matrixLocation, 1, 0, &ae_field<float>(engine, 0x104));
     }
     int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         int other;
-        if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)(engine)->GetDisplayWidth();
-            other = (engine)->GetDisplayHeight();
+        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+            width = (float)Engine_GetDisplayWidth(engine);
+            other = Engine_GetDisplayHeight(engine);
         } else {
-            width = (float)(engine)->GetDisplayHeight();
-            other = (engine)->GetDisplayWidth();
+            width = (float)Engine_GetDisplayHeight(engine);
+            other = Engine_GetDisplayWidth(engine);
         }
         glUniform2f(texelLocation, 1.0f / width, 1.0f / (float)other);
     }
     int centerLocation = this->uCenter;
     if (centerLocation >= 0) {
-        float x = vector[0];
-        float y = vector[1];
-        glUniform2f(centerLocation, x, y);
+        glUniform2f(centerLocation, vector[0], vector[1]);
     }
     int strengthLocation = this->uStrength;
     if (strengthLocation >= 0) {
@@ -175,16 +134,15 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
     }
     if (position >= 0) {
         glVertexAttribPointer(position, 3, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 4));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 4));
     }
     if (texCoord >= 0) {
         glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0,
-                              *(void **)(engine->field_0x380 + 8));
+                              *(void **)(ae_field<char *>(engine, 0x380) + 8));
     }
 
     glClear(0x4000);
-    int width = (engine)->GetDisplayWidth();
-    (engine)->DrawQuad(0, 0, width, (engine)->GetDisplayHeight());
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     if (position >= 0) {
         glDisableVertexAttribArray(position);
     }
@@ -192,54 +150,33 @@ void BlurShader::RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::En
         glDisableVertexAttribArray(texCoord);
     }
     if (*target != 0) {
-        ((FBOContainer *)(*target))->EndCapture();
+        (*target)->EndCapture();
     }
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-    return;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-BlurShader::~BlurShader()
-{
-    AbyssEngine::ShaderBaseStruct *base = (ShaderBaseStruct *)this;
-    base->~ShaderBaseStruct();
-    ::operator delete(base);
-}
-
-} // namespace AbyssEngine
-
-extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
-                                   const void *value);
-extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
-                                      unsigned char normalized, int stride, const void *pointer);
-
-namespace AbyssEngine {
-
-void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
+// Binds the blur program's uniforms and the supplied mesh's vertex/texcoord arrays for drawing.
+void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
-        glUniformMatrix4fv(matrixLocation, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(matrixLocation, 1, 0, &ae_field<float>(engine, 0x104));
     }
 
     int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         float height;
-        float one = 1.0f;
-        if (*(int *)(*engine->field_0x30 + 0x30) == 2) {
-            width = (float)(engine)->GetDisplayWidth();
-            height = (float)(engine)->GetDisplayHeight();
+        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+            width = (float)Engine_GetDisplayWidth(engine);
+            height = (float)Engine_GetDisplayHeight(engine);
         } else {
-            width = (float)(engine)->GetDisplayHeight();
-            height = (float)(engine)->GetDisplayWidth();
+            width = (float)Engine_GetDisplayHeight(engine);
+            height = (float)Engine_GetDisplayWidth(engine);
         }
-        glUniform2f(texelLocation, one / width, one / height);
+        glUniform2f(texelLocation, 1.0f / width, 1.0f / height);
     }
 
     int centerLocation = this->uCenter;
@@ -264,20 +201,14 @@ void BlurShader::UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine)
     glEnableVertexAttribArray(this->positionAttrib);
     glEnableVertexAttribArray(this->texCoordAttrib);
 
-    const void *texPtr;
-    if (mesh->field_0x5c == 0) {
-        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0,
-                              mesh->field_0x4);
-        unsigned int texCoord = this->texCoordAttrib;
-        texPtr = mesh->field_0x8;
-        return glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0, texPtr);
+    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
+        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
+        glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
     } else {
-        glBindBuffer(0x8892, mesh->field_0x60);
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
         glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
-        unsigned int texCoord = this->texCoordAttrib;
-        texPtr = 0;
-        return glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0, texPtr);
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, 0);
     }
 }
 

@@ -1,20 +1,41 @@
 #include "gof2/engine/render/shaders/ColorMixAdd.h"
-
-void _ZN11AbyssEngine11ColorMixAddD0Ev(
-    AbyssEngine::ColorMixAdd *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
+#include "gof2/platform/gl.h"
 
 namespace AbyssEngine {
 
+int ColorMixAdd::ShaderIndex;
+
+ColorMixAdd::ColorMixAdd()
+{
+    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
+    this->vtable = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"ColorMixAdd";
+}
+
+void ColorMixAdd::Init(Engine *)
+{
+    int program = this->ES2LoadProgram("ColorMixAdd.vsh", "ColorMixAdd.fsh");
+    this->program = program;
+
+    this->u0Loc = glGetUniformLocation(program, "u0");
+    this->a0Loc = glGetAttribLocation(this->program, "a0");
+    this->a1Loc = glGetAttribLocation(this->program, "a1");
+    this->u1Loc = glGetUniformLocation(this->program, "u1");
+    this->u2Loc = glGetUniformLocation(this->program, "u2");
+    this->u3Loc = glGetUniformLocation(this->program, "u3");
+    this->u4Loc = glGetUniformLocation(this->program, "u4");
+    this->u5Loc = glGetUniformLocation(this->program, "u5");
+
+    glUseProgram(this->program);
+    glUniform1i(this->u0Loc, 0);
+}
+
 void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->u1Loc, 1, 0, (char *)engine + 0x104);
+    glUniformMatrix4fv(this->u1Loc, 1, 0, (float *)((char *)engine + 0x104));
     if (this->u4Loc >= 0)
-        glUniformMatrix4fv(this->u4Loc, 1, 0, (char *)engine + 0x1c4);
+        glUniformMatrix4fv(this->u4Loc, 1, 0, (float *)((char *)engine + 0x1c4));
     if (this->u5Loc >= 0)
         glUniform1i(this->u5Loc, field_u8(mesh, 0x85));
 
@@ -40,54 +61,12 @@ void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void ColorMixAdd::SetInActive()
 {
     for (int i = 2; i != 0; i = i - 1) {
         glDisableVertexAttribArray(this->a0Loc);
         glDisableVertexAttribArray(this->a1Loc);
     }
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-int ColorMixAdd::ShaderIndex;
-
-ColorMixAdd::ColorMixAdd()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
-    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    String tmp;
-    tmp.s = u"ColorMixAdd";
-    this->name = tmp;
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void ColorMixAdd::Init(Engine *)
-{
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("ColorMixAdd.vsh", "ColorMixAdd.fsh");
-    this->field_0x4 = program;
-
-    this->u0Loc = glGetUniformLocation(program, "u0");
-    this->a0Loc = glGetAttribLocation(this->field_0x4, "a0");
-    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
-    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
-    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
-    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
-    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
-    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
-
-    glUseProgram(this->field_0x4);
-    glUniform1i(this->u0Loc, 0);
 }
 
 } // namespace AbyssEngine

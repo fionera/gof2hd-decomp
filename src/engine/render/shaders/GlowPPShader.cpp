@@ -1,50 +1,42 @@
 #include "gof2/engine/render/shaders/GlowPPShader.h"
-#include "gof2/externs.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/game/core/String.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/platform/gl.h"
 
-// cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
 template <class T> static inline T &ae_field(void *base, unsigned int off) {
     return *(T *)((char *)base + off);
 }
 
-extern "C" void *operator_new_0(uint32_t size);
-extern "C" void *operator_new_1(uint32_t size);
-extern "C" void *operator_new_2(uint32_t size);
-extern "C" void *operator_new_3(uint32_t size);
-extern "C" void FBOContainer_ctor_0(FBOContainer *self, Engine *engine, String *name);
-extern "C" void FBOContainer_ctor_1(FBOContainer *self, Engine *engine, String *name);
-extern "C" void FBOContainer_ctor_2(FBOContainer *self, Engine *engine, String *name);
-extern "C" void FBOContainer_ctor_3(FBOContainer *self, Engine *engine, String *name);
-extern "C" void FBOContainer_Create_0(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
-extern "C" void FBOContainer_Create_1(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
-extern "C" void FBOContainer_Create_2(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
-extern "C" void FBOContainer_Create_3(FBOContainer *self, uint32_t width, uint32_t height, bool depth, bool color);
-extern "C" __attribute__((visibility("hidden"))) LoadProgramFn *g_GlowPPShader_LoadProgram;
-extern "C" __attribute__((visibility("hidden"))) LocationFn *g_GlowPPShader_GetAttribLocation;
-extern "C" __attribute__((visibility("hidden"))) LocationFn *g_GlowPPShader_GetUniformLocation;
-extern "C" __attribute__((visibility("hidden"))) UseProgramFn *g_GlowPPShader_UseProgram;
-extern "C" __attribute__((visibility("hidden"))) Uniform1iFn *g_GlowPPShader_Uniform1i;
-extern "C" void *GlowPPShader_vtable;
-extern "C" void *GlowPPShader_typeinfo_source;
-extern "C" void *GlowPPShader_typeinfo_dest;
+// GlowPPShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char GlowPPShader_vtable;
+
+// Engine globals: gate for first-run FBO allocation and the debug visualisation mode.
+extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
+extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
+
+// Engine entry points reached by raw offset / opaque pointer (modelled in a later pass).
+extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
+extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
+
+namespace AbyssEngine {
 
 void GlowPPShader::SetInActive() {
     glDisableVertexAttribArray(this->meshAttribPosition);
-    return glDisableVertexAttribArray(this->meshAttribTexCoord);
+    glDisableVertexAttribArray(this->meshAttribTexCoord);
 }
 
 void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-    glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, (char *)engine + 0x104);
-    if (this->dirty != 0) {
-        this->dirty = 0;
-    }
+    glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+    this->dirty = 0;
 
     glEnableVertexAttribArray(this->meshAttribPosition);
     glEnableVertexAttribArray(this->meshAttribTexCoord);
     if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, (void *)ae_field<uint32_t>(mesh, 4));
-        glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, (void *)ae_field<uint32_t>(mesh, 8));
+        glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 4));
+        glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 8));
     } else {
         glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x60));
         glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, 0);
@@ -53,27 +45,17 @@ void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
     }
 }
 
-void _ZN11AbyssEngine12GlowPPShaderD0Ev(GlowPPShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-static inline void draw_fullscreen(GlowPPShader *self, Engine *engine, int posLoc,
-                                   int texLoc, int matrixLoc)
+// Draws a full-screen quad with the currently bound program, binding the engine's quad mesh to
+// the given position/texcoord attributes and the world-view matrix uniform.
+static inline void draw_fullscreen(Engine *engine, int posLoc, int texLoc, int matrixLoc)
 {
     glEnableVertexAttribArray(posLoc);
     glEnableVertexAttribArray(texLoc);
-    glUniformMatrix4fv(matrixLoc, 1, 0, (char *)engine + 0x104);
-    glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0,
-                          (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 4));
-    glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0,
-                          (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 8));
+    glUniformMatrix4fv(matrixLoc, 1, 0, (const float *)((char *)engine + 0x104));
+    glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
+    glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
-    uint32_t height = ((Engine *)(engine))->GetDisplayHeight();
-    ((Engine *)(engine))->DrawQuad(0, 0, width, height);
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(posLoc);
     glDisableVertexAttribArray(texLoc);
 }
@@ -82,11 +64,11 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
-        ((GlowPPShader *)(this))->InternalInit(engine);
-        ((FBOContainer *)(this->backgroundTarget))->BeginCapture();
+        this->InternalInit(engine);
+        this->backgroundTarget->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(this->backgroundTarget))->EndCapture();
+        this->backgroundTarget->EndCapture();
     }
 
     ae_field<uint32_t>(engine, 0x3b4) = 0;
@@ -106,8 +88,8 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     ae_field<uint32_t>(engine, 0x38c) = 0;
     ae_field<uint32_t>(engine, 0x390) = 0;
 
-    ae_field<float>(engine, 0x384) = 2.0f / (float)(int32_t)((Engine *)(engine))->GetDisplayWidth();
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)(int32_t)((Engine *)(engine))->GetDisplayHeight());
+    ae_field<float>(engine, 0x384) = 2.0f / (float)(int32_t)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)(int32_t)Engine_GetDisplayHeight(engine));
     ae_field<uint32_t>(engine, 0x3ac) = 0xbf800000;
     ae_field<uint32_t>(engine, 0x3b4) = 0xbf800000;
     ae_field<uint32_t>(engine, 0x3b8) = 0x3f800000;
@@ -130,55 +112,45 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     matrix[13] = 0.0f;
     matrix[14] = 0.0f;
     matrix[15] = 1.0f;
-    ((Engine *)(engine))->SetWorldViewMatrix((const uint32_t *)matrix);
+    Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
 
     glUseProgram(this->copyProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(this->copyTarget))->BeginCapture();
-    draw_fullscreen(this, engine, this->copyAttribPosition, this->copyAttribTexCoord, this->copyUniformWorldView);
+    source->Activate();
+    this->copyTarget->BeginCapture();
+    draw_fullscreen(engine, this->copyAttribPosition, this->copyAttribTexCoord, this->copyUniformWorldView);
 
     for (int32_t i = 3; i != 0; --i) {
         glUseProgram(this->blurXProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->copyTarget))->Activate();
-        ((FBOContainer *)(this->blurXTarget))->BeginCapture();
+        this->copyTarget->Activate();
+        this->blurXTarget->BeginCapture();
         glEnableVertexAttribArray(this->blurXAttribPosition);
         glEnableVertexAttribArray(this->blurXAttribTexCoord);
-        glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, (char *)engine + 0x104);
-        glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0,
-                              (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 4));
-        glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0,
-                              (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 8));
-        glUniform1f(this->blurXUniformSampleSize,
-                    1.0f / (float)ae_field<int32_t>((void *)this->blurXTarget, 0x0c));
+        glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+        glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
+        glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
+        glUniform1f(this->blurXUniformSampleSize, 1.0f / (float)this->blurXTarget->field_0xc);
         glClear(0x4000);
-        uint32_t width = ((Engine *)(engine))->GetDisplayWidth();
-        uint32_t height = ((Engine *)(engine))->GetDisplayHeight();
-        ((Engine *)(engine))->DrawQuad(0, 0, width, height);
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurXAttribPosition);
         glDisableVertexAttribArray(this->blurXAttribTexCoord);
 
         glUseProgram(this->blurYProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->blurXTarget))->Activate();
-        ((FBOContainer *)(this->blurYTarget))->BeginCapture();
+        this->blurXTarget->Activate();
+        this->blurYTarget->BeginCapture();
         glEnableVertexAttribArray(this->blurYAttribPosition);
         glEnableVertexAttribArray(this->blurYAttribTexCoord);
-        glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, (char *)engine + 0x104);
-        glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0,
-                              (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 4));
-        glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0,
-                              (void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x380), 8));
-        glUniform1f(this->blurYUniformSampleSize,
-                    1.0f / (float)ae_field<int32_t>((void *)this->blurYTarget, 0x10));
+        glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+        glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
+        glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
+        glUniform1f(this->blurYUniformSampleSize, 1.0f / (float)this->blurYTarget->field_0x10);
         glClear(0x4000);
-        width = ((Engine *)(engine))->GetDisplayWidth();
-        height = ((Engine *)(engine))->GetDisplayHeight();
-        ((Engine *)(engine))->DrawQuad(0, 0, width, height);
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurYAttribPosition);
         glDisableVertexAttribArray(this->blurYAttribTexCoord);
     }
@@ -194,152 +166,105 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
     glUseProgram(this->combineProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(firstTexture))->Activate();
+    firstTexture->Activate();
     glActiveTexture(0x84c1);
-    ((FBOContainer *)(secondTexture))->Activate();
+    secondTexture->Activate();
 
     if (*target == 0) {
         glBindFramebuffer(0x8d40, ae_field<uint32_t>(engine, 0x40c));
         uint32_t width;
         uint32_t height;
-        if (ae_field<int32_t>((void *)ae_field<uint32_t>((void *)ae_field<uint32_t>(engine, 0x30), 0), 0x30) == 2) {
-            width = ((Engine *)(engine))->GetDisplayWidth();
-            height = ((Engine *)(engine))->GetDisplayHeight();
+        if (*(int32_t *)(ae_field<char *>((void *)ae_field<char *>(engine, 0x30), 0) + 0x30) == 2) {
+            width = Engine_GetDisplayWidth(engine);
+            height = Engine_GetDisplayHeight(engine);
         } else {
-            width = ((Engine *)(engine))->GetDisplayHeight();
-            height = ((Engine *)(engine))->GetDisplayWidth();
+            width = Engine_GetDisplayHeight(engine);
+            height = Engine_GetDisplayWidth(engine);
         }
         glViewport(0, 0, width, height);
     } else {
-        ((FBOContainer *)(*target))->BeginCapture();
+        (*target)->BeginCapture();
     }
 
-    draw_fullscreen(this, engine, this->combineAttribPosition, this->combineAttribTexCoord, this->combineUniformWorldView);
+    draw_fullscreen(engine, this->combineAttribPosition, this->combineAttribTexCoord, this->combineUniformWorldView);
     if (*target != 0) {
-        ((FBOContainer *)(*target))->EndCapture();
+        (*target)->EndCapture();
     }
 
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-
-    return;
-}
-
-typedef void RenderEffectFn(GlowPPShader *, FBOContainer *, FBOContainer **, Engine *);
-
-static inline uint32_t stack_guard_diff(uint32_t saved, uint32_t current)
-{
-    return current - saved;
 }
 
 void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
     FBOContainer *target = 0;
-    void **vtable = *(void ***)this;
-    ((RenderEffectFn *)vtable[0x1c / 4])(this, source, &target, engine);
-    return;
+    this->RenderEffect(source, &target, engine);
 }
 
 void GlowPPShader::InternalInit(Engine *engine) {
-    String name0;
-    String name1;
-    String name2;
-    String name3;
+    this->copyTarget = new FBOContainer(engine, String("GlowPPShader0"));
+    this->copyTarget->Create(0x200, 0x200, true, false);
 
-    FBOContainer *fbo = (FBOContainer *)operator_new_0(0x38);
-    name0.ctor_char("GlowPPShader0", false);
-    FBOContainer_ctor_0(fbo, engine, &name0);
-    this->copyTarget = fbo;
-    name0.dtor();
-    FBOContainer_Create_0(this->copyTarget, 0x200, 0x200, true, false);
+    this->blurXTarget = new FBOContainer(engine, String("GlowPPShader1"));
+    this->blurXTarget->Create(0x200, 0x200, true, false);
 
-    fbo = (FBOContainer *)operator_new_1(0x38);
-    name1.ctor_char("GlowPPShader1", false);
-    FBOContainer_ctor_1(fbo, engine, &name1);
-    this->blurXTarget = fbo;
-    name1.dtor();
-    FBOContainer_Create_1(this->blurXTarget, 0x200, 0x200, true, false);
+    this->blurYTarget = new FBOContainer(engine, String("GlowPPShader2"));
+    this->blurYTarget->Create(0x200, 0x200, true, false);
 
-    fbo = (FBOContainer *)operator_new_2(0x38);
-    name2.ctor_char("GlowPPShader2", false);
-    FBOContainer_ctor_2(fbo, engine, &name2);
-    this->blurYTarget = fbo;
-    name2.dtor();
-    FBOContainer_Create_2(this->blurYTarget, 0x200, 0x200, true, false);
-
-    fbo = (FBOContainer *)operator_new_3(0x38);
-    name3.ctor_char("GlowPPShader3", false);
-    FBOContainer_ctor_3(fbo, engine, &name3);
-    this->backgroundTarget = fbo;
-    name3.dtor();
-    FBOContainer_Create_3(this->backgroundTarget, 0x200, 0x200, true, false);
-
-    return;
+    this->backgroundTarget = new FBOContainer(engine, String("GlowPPShader3"));
+    this->backgroundTarget->Create(0x200, 0x200, true, false);
 }
 
 void GlowPPShader::Init() {
     const char *vertex = "GlowPPShader.vert";
-    LoadProgramFn *loadProgram = g_GlowPPShader_LoadProgram;
-    this->copyProgram = loadProgram((AbyssEngine::ShaderBaseStruct *)this, vertex, "GlowPPShader.copy.frag");
-    this->blurXProgram = loadProgram((AbyssEngine::ShaderBaseStruct *)this, vertex, "GlowPPShader.blurX.frag");
-    this->blurYProgram = loadProgram((AbyssEngine::ShaderBaseStruct *)this, vertex, "GlowPPShader.blurY.frag");
-    this->combineProgram = loadProgram((AbyssEngine::ShaderBaseStruct *)this, vertex, "GlowPPShader.combine.frag");
+    this->copyProgram = this->ES2LoadProgram(vertex, "GlowPPShader.copy.frag");
+    this->blurXProgram = this->ES2LoadProgram(vertex, "GlowPPShader.blurX.frag");
+    this->blurYProgram = this->ES2LoadProgram(vertex, "GlowPPShader.blurY.frag");
+    this->combineProgram = this->ES2LoadProgram(vertex, "GlowPPShader.combine.frag");
 
-    LocationFn *getAttribLocation = g_GlowPPShader_GetAttribLocation;
     const char *position = "position";
-    this->copyAttribPosition = getAttribLocation(this->copyProgram, position);
     const char *texcoord = "texcoord";
-    this->copyAttribTexCoord = getAttribLocation(this->copyProgram, texcoord);
-
-    LocationFn *getUniformLocation = g_GlowPPShader_GetUniformLocation;
     const char *worldView = "worldView";
-    this->copyUniformWorldView = getUniformLocation(this->copyProgram, worldView);
     const char *texture = "texture";
-    this->copyUniformTexture = getUniformLocation(this->copyProgram, texture);
-
-    UseProgramFn *useProgram = g_GlowPPShader_UseProgram;
-    useProgram(this->copyProgram);
-    Uniform1iFn *uniform1i = g_GlowPPShader_Uniform1i;
-    uniform1i(this->copyUniformTexture, 0);
-
-    this->blurXAttribPosition = getAttribLocation(this->blurXProgram, position);
-    this->blurXAttribTexCoord = getAttribLocation(this->blurXProgram, texcoord);
-    this->blurXUniformWorldView = getUniformLocation(this->blurXProgram, worldView);
-    this->blurXUniformTexture = getUniformLocation(this->blurXProgram, texture);
     const char *sampleSize = "sampleSize";
-    this->blurXUniformSampleSize = getUniformLocation(this->blurXProgram, sampleSize);
-    useProgram(this->blurXProgram);
-    uniform1i(this->blurXUniformTexture, 0);
-
-    this->blurYAttribPosition = getAttribLocation(this->blurYProgram, position);
-    this->blurYAttribTexCoord = getAttribLocation(this->blurYProgram, texcoord);
-    this->blurYUniformWorldView = getUniformLocation(this->blurYProgram, worldView);
-    this->blurYUniformTexture = getUniformLocation(this->blurYProgram, texture);
-    this->blurYUniformSampleSize = getUniformLocation(this->blurYProgram, sampleSize);
-    useProgram(this->blurYProgram);
-    uniform1i(this->blurYUniformTexture, 0);
-
-    this->combineAttribPosition = getAttribLocation(this->combineProgram, position);
-    this->combineAttribTexCoord = getAttribLocation(this->combineProgram, texcoord);
-    this->combineUniformWorldView = getUniformLocation(this->combineProgram, worldView);
-    this->combineUniformTexture = getUniformLocation(this->combineProgram, texture);
     const char *texture2 = "texture2";
-    this->combineUniformTexture2 = getUniformLocation(this->combineProgram, texture2);
-    useProgram(this->combineProgram);
-    uniform1i(this->combineUniformTexture, 0);
-    return uniform1i(this->combineUniformTexture2, 1);
+
+    this->copyAttribPosition = glGetAttribLocation(this->copyProgram, position);
+    this->copyAttribTexCoord = glGetAttribLocation(this->copyProgram, texcoord);
+    this->copyUniformWorldView = glGetUniformLocation(this->copyProgram, worldView);
+    this->copyUniformTexture = glGetUniformLocation(this->copyProgram, texture);
+    glUseProgram(this->copyProgram);
+    glUniform1i(this->copyUniformTexture, 0);
+
+    this->blurXAttribPosition = glGetAttribLocation(this->blurXProgram, position);
+    this->blurXAttribTexCoord = glGetAttribLocation(this->blurXProgram, texcoord);
+    this->blurXUniformWorldView = glGetUniformLocation(this->blurXProgram, worldView);
+    this->blurXUniformTexture = glGetUniformLocation(this->blurXProgram, texture);
+    this->blurXUniformSampleSize = glGetUniformLocation(this->blurXProgram, sampleSize);
+    glUseProgram(this->blurXProgram);
+    glUniform1i(this->blurXUniformTexture, 0);
+
+    this->blurYAttribPosition = glGetAttribLocation(this->blurYProgram, position);
+    this->blurYAttribTexCoord = glGetAttribLocation(this->blurYProgram, texcoord);
+    this->blurYUniformWorldView = glGetUniformLocation(this->blurYProgram, worldView);
+    this->blurYUniformTexture = glGetUniformLocation(this->blurYProgram, texture);
+    this->blurYUniformSampleSize = glGetUniformLocation(this->blurYProgram, sampleSize);
+    glUseProgram(this->blurYProgram);
+    glUniform1i(this->blurYUniformTexture, 0);
+
+    this->combineAttribPosition = glGetAttribLocation(this->combineProgram, position);
+    this->combineAttribTexCoord = glGetAttribLocation(this->combineProgram, texcoord);
+    this->combineUniformWorldView = glGetUniformLocation(this->combineProgram, worldView);
+    this->combineUniformTexture = glGetUniformLocation(this->combineProgram, texture);
+    this->combineUniformTexture2 = glGetUniformLocation(this->combineProgram, texture2);
+    glUseProgram(this->combineProgram);
+    glUniform1i(this->combineUniformTexture, 0);
+    glUniform1i(this->combineUniformTexture2, 1);
 }
 
-GlowPPShader *_ZN11AbyssEngine12GlowPPShaderC1Ev(GlowPPShader *self)
-{
-    String name;
-    new ((AbyssEngine::ShaderBaseStruct *)self) AbyssEngine::ShaderBaseStruct();
-    void **source = (void **)GlowPPShader_typeinfo_source;
-    void **dest = (void **)GlowPPShader_typeinfo_dest;
-    self->field_0x0 = (char *)GlowPPShader_vtable + 8;
-    *dest = *source;
-    name.ctor_char("GlowPPShader", false);
-    self->name.assign(&name);
-    name.dtor();
-    return self;
+GlowPPShader::GlowPPShader() {
+    this->vtable = &GlowPPShader_vtable + 8;
+    this->name.s = u"GlowPPShader";
 }
+
+} // namespace AbyssEngine

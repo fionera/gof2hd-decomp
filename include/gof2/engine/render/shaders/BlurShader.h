@@ -1,54 +1,41 @@
 #ifndef GOF2_BLURSHADER_H
 #define GOF2_BLURSHADER_H
 #include "gof2/common.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/engine/render/Engine.h"
-#include <new>
-// Galaxy on Fire 2 -- AbyssEngine::BlurShader (Android libgof2hdaa.so, armv7 Thumb).
-// GLES2 radial/box blur post-process shader. Derives from ShaderBaseStruct: program handle at
-// 0x24, attribute/uniform locations at 0x28..0x50, tuning floats at 0x58/0x5c, dirty flag at 0x9.
-//
-// Engine is the real gof2/Engine.h type (it self-compiles now); BlurShader touches a handful of its
-// fields/methods (field_0x30/0x380.., GetDisplayWidth/Height, DrawQuad, SetWorldViewMatrix).
+#include "gof2/engine/render/ShaderBaseStruct.h"
 
-static inline uint32_t stack_guard_delta(uint32_t saved, uint32_t current)
-{
-    return current - saved;
-}
+// AbyssEngine::BlurShader — GLES2 radial/box blur post-process shader. Derives from
+// ShaderBaseStruct (shared shader storage: GL program handle, name, dirty flag) and caches this
+// program's attribute/uniform locations plus its blur tuning floats. RenderEffect draws a
+// full-screen quad through the blur program into either the back buffer or a capture FBO.
 
 namespace AbyssEngine {
 
-// AbyssEngine::BlurShader — derives from ShaderBaseStruct (shared shader storage layout).
-// Engine/Mesh/FBOContainer are the global (gof2/fwd.h + gof2/Mesh.h) types; qualified with :: so
-// name lookup does not resolve them to the AbyssEngine-namespace forward declarations.
-class BlurShader {
-public:
-    void Init(::Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(AbyssEngine::Mesh *mesh, ::Engine *engine);
-    void RenderEffect(::FBOContainer *fbo, ::FBOContainer **target, ::Engine *engine,
-                      float amount, Vector vector);
-    BlurShader();
-    ~BlurShader();
+class Engine;
+class Mesh;
+class FBOContainer;
 
-    char     pad_0x0[0x9];
-    uint8_t  dirty;                 // +0x9  dirty flag
-    char     pad_0xa[0x24 - 0xa];
-    unsigned int program;            // +0x24 program handle
-    int      aPosition;                // +0x28 a_position
-    int      uMvpMatrix;                // +0x2c u_mvpMatrix
-    int      aTexCoord;                // +0x30 a_texCoord
-    int      sTexture;                // +0x34 s_texture
-    int      uTexelSize;                // +0x38 u_texelSize
-    int      uBlurAmount;                // +0x3c u_blurAmount
-    int      uStrength;                // +0x40 u_strength
-    int      uCenter;                // +0x44 u_center
-    unsigned int positionAttrib;            // +0x48 vertex attrib slot
-    char     pad_0x4c[0x50 - 0x4c];
-    unsigned int texCoordAttrib;            // +0x50 texcoord attrib slot
-    char     pad_0x54[0x58 - 0x54];
-    float    strength;                // +0x58 strength
-    float    blurScale;                // +0x5c blur scale
+class BlurShader : public ShaderBaseStruct {
+public:
+    int aPosition;              // a_position
+    int uMvpMatrix;             // u_mvpMatrix
+    int aTexCoord;              // a_texCoord
+    int sTexture;               // s_texture
+    int uTexelSize;             // u_texelSize
+    int uBlurAmount;            // u_blurAmount
+    int uStrength;              // u_strength
+    int uCenter;                // u_center
+    unsigned int positionAttrib;   // vertex attrib slot
+    unsigned int texCoordAttrib;   // texcoord attrib slot
+    float strength;
+    float blurScale;
+
+    BlurShader();
+
+    void Init(Engine *engine);
+    void SetInActive();
+    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *engine,
+                      float amount, Vector vector);
 };
 
 } // namespace AbyssEngine

@@ -1,80 +1,51 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 #include "gof2/game/core/String.h"
+#include "gof2/engine/file/AEFile.h"
+#include "gof2/platform/gl.h"
+#include "gof2/platform/libc.h"
 
 namespace AbyssEngine {
 
 // Engine-wide counter of constructed shaders; each shader snapshots it as its index.
 int ShaderBaseStruct::shaderIndexIntern;
 
-} // namespace AbyssEngine
+ShaderBaseStruct::ShaderBaseStruct()
+{
+    this->vtable = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
+    this->program = -1;
+    this->flags = 0x100;
+    ++shaderIndexIntern;
+    this->vertexPath = 0;
+    this->fragmentPath = 0;
+    this->name = "";
+}
 
-namespace AbyssEngine {
+ShaderBaseStruct::~ShaderBaseStruct()
+{
+    this->vtable = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
+}
 
 String ShaderBaseStruct::GetShaderName()
 {
     String copy;
-    copy.s = shader_name(this)->s;
+    copy.s = this->name.s;
     return copy;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-ShaderBaseStruct::~ShaderBaseStruct()
-{
-    shader_vtable(this) = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
-    shader_name(this)->~String();
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void ShaderBaseStruct::UseShader()
 {
-    glUseProgram(shader_program(this));
+    glUseProgram(this->program);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void ShaderBaseStruct::DeleteShader()
 {
-    glDeleteProgram(shader_program(this));
+    glDeleteProgram(this->program);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void ShaderBaseStruct::Update()
 {
-    shader_dirty(this) = 1;
+    this->dirty = 1;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-ShaderBaseStruct::ShaderBaseStruct()
-{
-    shader_vtable(this) = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
-    new (shader_name(this)) String();
-    program = -1;
-    flags = 0x100;
-    ++shaderIndexIntern;
-    shader_vertex_path(this) = 0;
-    shader_fragment_path(this) = 0;
-
-    // base name initialized to the empty string (concrete shaders overwrite it)
-    name = "";
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *fragmentSource)
 {
@@ -82,7 +53,7 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
 
     uint32_t vertexShader = this->ES2LoadShader(0x8b31, vertexSource);
     if (vertexShader != 0) {
-        uint32_t fragmentShader = ((ShaderBaseStruct *)(vertexShader))->ES2LoadShader(0x8b30, fragmentSource);
+        uint32_t fragmentShader = this->ES2LoadShader(0x8b30, fragmentSource);
         if (fragmentShader == 0) {
             glDeleteShader(vertexShader);
         } else {
@@ -98,7 +69,7 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
                     glDeleteShader(vertexShader);
                     glDeleteShader(fragmentShader);
 
-                    char *name = (char *)((String *)(shader_name(this)))->GetAEChar();
+                    char *name = (char *)this->name.GetAEChar();
                     AELabelObject(0x8b40, program, name);
                     operator delete[](name);
                 } else {
@@ -119,74 +90,51 @@ uint32_t ShaderBaseStruct::ES2LoadProgram(const char *vertexSource, const char *
     return program;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 uint32_t ShaderBaseStruct::ES2LoadShader(uint32_t type, const char *source)
 {
-    const char *localSource;
-    localSource = source;
+    const char *localSource = source;
     uint32_t shader = glCreateShader(type);
-    uint32_t shaderId = shader;
 
-    if (shaderId != 0) {
+    if (shader != 0) {
         int status;
-
-        glShaderSource(shaderId, 1, &localSource, 0);
-        glCompileShader(shaderId);
-        glGetShaderiv(shaderId, 0x8b81, &status);
-        if (status != 0) {
-            goto done;
+        glShaderSource(shader, 1, &localSource, 0);
+        glCompileShader(shader);
+        glGetShaderiv(shader, 0x8b81, &status);
+        if (status == 0) {
+            int logLength = 0;
+            glGetShaderiv(shader, 0x8b84, &logLength);
+            if (logLength >= 2) {
+                void *log = malloc(logLength);
+                glGetShaderInfoLog(shader, logLength, 0, log);
+                free(log);
+            }
+            glDeleteShader(shader);
+            shader = 0;
         }
-
-        int logLength = 0;
-        glGetShaderiv(shaderId, 0x8b84, &logLength);
-        if (logLength >= 2) {
-            void *log = malloc(logLength);
-            glGetShaderInfoLog(shaderId, logLength, 0, log);
-            free(log);
-        }
-        glDeleteShader(shaderId);
-        shader = 0;
     }
 
-done:
     return shader;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 uint32_t ShaderBaseStruct::LoadBindShader(const char *vertexPath, const char *fragmentPath)
 {
-    register const char *fragment = fragmentPath;
     uint32_t result = 0;
 
-    if (vertexPath != 0 && fragment != 0) {
-        shader_vertex_path(this) = vertexPath;
-        shader_fragment_path(this) = fragment;
+    if (vertexPath != 0 && fragmentPath != 0) {
+        this->vertexPath = vertexPath;
+        this->fragmentPath = fragmentPath;
 
         uint32_t handle;
         if (AEFile::OpenRead(vertexPath, &handle) != 0) {
             uint32_t vertexSize = AEFile::GetFileSize(handle);
-            uint32_t allocSize = vertexSize + 1;
-            if ((int)vertexSize < -1) {
-                allocSize = 0xffffffff;
-            }
-            char *vertexSource = (char *)operator new[](allocSize);
+            char *vertexSource = (char *)operator new[](vertexSize + 1);
             AEFile::Read(vertexSize, vertexSource, handle);
             AEFile::Close(handle);
             vertexSource[vertexSize] = 0;
 
-            if (AEFile::OpenRead(fragment, &handle) != 0) {
+            if (AEFile::OpenRead(fragmentPath, &handle) != 0) {
                 uint32_t fragmentSize = AEFile::GetFileSize(handle);
-                allocSize = fragmentSize + 1;
-                if ((int)fragmentSize < -1) {
-                    allocSize = 0xffffffff;
-                }
-                char *fragmentSource = (char *)operator new[](allocSize);
+                char *fragmentSource = (char *)operator new[](fragmentSize + 1);
                 AEFile::Read(fragmentSize, fragmentSource, handle);
                 AEFile::Close(handle);
                 fragmentSource[fragmentSize] = 0;

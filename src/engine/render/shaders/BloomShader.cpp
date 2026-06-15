@@ -1,45 +1,33 @@
 #include "gof2/engine/render/shaders/BloomShader.h"
-#include "gof2/externs.h"
 #include "gof2/engine/render/FBOContainer.h"
-#include "gof2/engine/render/Engine.h"
+#include "gof2/platform/gl.h"
+#include "gof2/platform/libc.h"
 
-// cross-class field accessors (Engine/Mesh/FBOContainer are not in this batch; opaque here)
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
 template <class T> static inline T &ae_field(void *base, unsigned int off) {
     return *(T *)((char *)base + off);
 }
 
-extern "C" int glGetAttribLocation(unsigned int program, const char *name);
-extern "C" int glGetUniformLocation(unsigned int program, const char *name);
-extern "C" void glUseProgram(unsigned int program);
-extern "C" void glUniform1i(int location, int value);
-void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self);
-extern "C" void glEnableVertexAttribArray(unsigned int index);
-extern "C" void glBindBuffer(unsigned int target, unsigned int buffer);
-extern "C" void glDisable(unsigned int cap);
-extern "C" void glEnable(unsigned int cap);
-extern "C" void glDepthMask(unsigned char flag);
-extern "C" void glActiveTexture(unsigned int texture);
-extern "C" void glBindFramebuffer(unsigned int target, unsigned int framebuffer);
-extern "C" void glDisableVertexAttribArray(unsigned int index);
-extern "C" void glUniform1f(int location, float value);
-extern "C" void glClearColor(float red, float green, float blue, float alpha);
-extern "C" void glClear(unsigned int mask);
-extern "C" void glBlendFunc(unsigned int sfactor, unsigned int dfactor);
-extern "C" void glDisableVertexAttribArray_thunk(unsigned int index);
+// BloomShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char BloomShader_vtable;
-extern "C" void *BloomShader_typeinfo_source;
-extern "C" void *BloomShader_typeinfo_dest;
-extern "C" void FBOContainer_ctor(void *self, void *engine, String *name);
+
+// Engine globals: gate for first-run FBO allocation and the debug visualisation mode.
+extern "C" unsigned char g_BloomShader_internalInitNeeded;
+extern "C" unsigned int g_BloomShader_shaderMode;
+
+// Engine entry points reached by raw offset / opaque pointer (modelled in a later pass).
+extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
+extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
 
-void BloomShader::Init(::Engine *)
+// Compiles the five GLES2 programs (luma, downsample, horizontal/vertical blur, final composite)
+// and caches each program's attribute/uniform locations.
+void BloomShader::Init(Engine *)
 {
-    int (*attrib)(unsigned int, const char *) = glGetAttribLocation;
-    int (*uniform)(unsigned int, const char *) = glGetUniformLocation;
-    void (*useProgram)(unsigned int) = glUseProgram;
-    void (*uniform1i)(int, int) = glUniform1i;
-
     const char *vertex = "BloomShader.vsh";
     const char *positionName = "a_position";
     const char *texCoordName = "a_texCoord";
@@ -47,118 +35,108 @@ void BloomShader::Init(::Engine *)
     const char *samplerName = "s_texture";
     const char *texSizeName = "texSize";
 
-    this->field_0x4 =
-        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderLuma.fsh");
-    this->downSampleProgram =
-        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderDownSample.fsh");
-    this->blurHProgram =
-        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurH.fsh");
-    this->blurVProgram =
-        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderBlurV.fsh");
-    this->finalProgram =
-        ((ShaderBaseStruct *)this)->ES2LoadProgram(vertex, "BloomShaderFinal.fsh");
+    this->program = this->ES2LoadProgram(vertex, "BloomShaderLuma.fsh");
+    this->downSampleProgram = this->ES2LoadProgram(vertex, "BloomShaderDownSample.fsh");
+    this->blurHProgram = this->ES2LoadProgram(vertex, "BloomShaderBlurH.fsh");
+    this->blurVProgram = this->ES2LoadProgram(vertex, "BloomShaderBlurV.fsh");
+    this->finalProgram = this->ES2LoadProgram(vertex, "BloomShaderFinal.fsh");
 
-    this->lumaAttribPosition = attrib(this->field_0x4, positionName);
-    this->lumaAttribTexCoord = attrib(this->field_0x4, texCoordName);
-    this->lumaUniformWorldMatrix = uniform(this->field_0x4, matrixName);
-    this->lumaUniformTexture = uniform(this->field_0x4, samplerName);
-    useProgram(this->field_0x4);
-    uniform1i(this->lumaUniformTexture, 0);
+    this->lumaAttribPosition = glGetAttribLocation(this->program, positionName);
+    this->lumaAttribTexCoord = glGetAttribLocation(this->program, texCoordName);
+    this->lumaUniformWorldMatrix = glGetUniformLocation(this->program, matrixName);
+    this->lumaUniformTexture = glGetUniformLocation(this->program, samplerName);
+    glUseProgram(this->program);
+    glUniform1i(this->lumaUniformTexture, 0);
 
-    this->downSampleAttribPosition = attrib(this->downSampleProgram, positionName);
-    this->downSampleAttribTexCoord = attrib(this->downSampleProgram, texCoordName);
-    this->downSampleUniformWorldMatrix = uniform(this->downSampleProgram, matrixName);
-    this->downSampleUniformTexture = uniform(this->downSampleProgram, samplerName);
-    useProgram(this->downSampleProgram);
-    uniform1i(this->downSampleUniformTexture, 0);
+    this->downSampleAttribPosition = glGetAttribLocation(this->downSampleProgram, positionName);
+    this->downSampleAttribTexCoord = glGetAttribLocation(this->downSampleProgram, texCoordName);
+    this->downSampleUniformWorldMatrix = glGetUniformLocation(this->downSampleProgram, matrixName);
+    this->downSampleUniformTexture = glGetUniformLocation(this->downSampleProgram, samplerName);
+    glUseProgram(this->downSampleProgram);
+    glUniform1i(this->downSampleUniformTexture, 0);
 
-    this->blurHAttribPosition = attrib(this->blurHProgram, positionName);
-    this->blurHAttribTexCoord = attrib(this->blurHProgram, texCoordName);
-    this->blurHUniformWorldMatrix = uniform(this->blurHProgram, matrixName);
-    this->blurHUniformTexture = uniform(this->blurHProgram, samplerName);
-    this->blurHUniformTexSize = uniform(this->blurHProgram, texSizeName);
-    useProgram(this->blurHProgram);
-    uniform1i(this->blurHUniformTexture, 0);
+    this->blurHAttribPosition = glGetAttribLocation(this->blurHProgram, positionName);
+    this->blurHAttribTexCoord = glGetAttribLocation(this->blurHProgram, texCoordName);
+    this->blurHUniformWorldMatrix = glGetUniformLocation(this->blurHProgram, matrixName);
+    this->blurHUniformTexture = glGetUniformLocation(this->blurHProgram, samplerName);
+    this->blurHUniformTexSize = glGetUniformLocation(this->blurHProgram, texSizeName);
+    glUseProgram(this->blurHProgram);
+    glUniform1i(this->blurHUniformTexture, 0);
 
-    this->blurVAttribPosition = attrib(this->blurVProgram, positionName);
-    this->blurVAttribTexCoord = attrib(this->blurVProgram, texCoordName);
-    this->blurVUniformWorldMatrix = uniform(this->blurVProgram, matrixName);
-    this->blurVUniformTexture = uniform(this->blurVProgram, samplerName);
-    this->blurVUniformTexSize = uniform(this->blurVProgram, texSizeName);
-    useProgram(this->blurVProgram);
-    uniform1i(this->blurVUniformTexture, 0);
+    this->blurVAttribPosition = glGetAttribLocation(this->blurVProgram, positionName);
+    this->blurVAttribTexCoord = glGetAttribLocation(this->blurVProgram, texCoordName);
+    this->blurVUniformWorldMatrix = glGetUniformLocation(this->blurVProgram, matrixName);
+    this->blurVUniformTexture = glGetUniformLocation(this->blurVProgram, samplerName);
+    this->blurVUniformTexSize = glGetUniformLocation(this->blurVProgram, texSizeName);
+    glUseProgram(this->blurVProgram);
+    glUniform1i(this->blurVUniformTexture, 0);
 
-    this->finalAttribPosition = attrib(this->finalProgram, positionName);
-    this->finalAttribTexCoord = attrib(this->finalProgram, texCoordName);
-    this->finalUniformWorldMatrix = uniform(this->finalProgram, matrixName);
-    this->finalUniformTexture = uniform(this->finalProgram, samplerName);
-    this->finalUniformTextureBloom =
-        uniform(this->finalProgram, "s_texture_bloom");
-    useProgram(this->finalProgram);
-    uniform1i(this->finalUniformTexture, 0);
-    return uniform1i(this->finalUniformTextureBloom, 1);
+    this->finalAttribPosition = glGetAttribLocation(this->finalProgram, positionName);
+    this->finalAttribTexCoord = glGetAttribLocation(this->finalProgram, texCoordName);
+    this->finalUniformWorldMatrix = glGetUniformLocation(this->finalProgram, matrixName);
+    this->finalUniformTexture = glGetUniformLocation(this->finalProgram, samplerName);
+    this->finalUniformTextureBloom = glGetUniformLocation(this->finalProgram, "s_texture_bloom");
+    glUseProgram(this->finalProgram);
+    glUniform1i(this->finalUniformTexture, 0);
+    glUniform1i(this->finalUniformTextureBloom, 1);
 }
 
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine11BloomShaderD0Ev(AbyssEngine::BloomShader *self)
+BloomShader::BloomShader()
 {
-    return ::operator delete(_ZN11AbyssEngine11BloomShaderD1Ev(self));
+    this->vtable = &BloomShader_vtable + 8;
+    this->name.s = u"BloomShader";
 }
 
-extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
-                                   const void *value);
-extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
-                                      unsigned char normalized, int stride, const void *pointer);
-
-namespace AbyssEngine {
-
-void BloomShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
+// Creates the four off-screen render targets (luma, blurH, blurV, black) the first time the
+// effect runs.
+void BloomShader::InternalInit(Engine *engine)
 {
-    glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, (char *)engine + 0x104);
-    if (this->lightingDirty != 0) {
-        this->lightingDirty = 0;
+    this->fboLuma = new FBOContainer(engine, String("BloomShader fboLuma"));
+    this->fboLuma->Create(0x100, 0x100, true, false);
+
+    this->fboBlurH = new FBOContainer(engine, String("BloomShader fboBlurH"));
+    this->fboBlurH->Create(0x100, 0x100, true, false);
+
+    this->fboBlurV = new FBOContainer(engine, String("BloomShader fboBlurV"));
+    this->fboBlurV->Create(0x100, 0x100, true, false);
+
+    this->fboBlack = new FBOContainer(engine, String("BloomShader fboBlack"));
+    this->fboBlack->Create(0x100, 0x100, true, false);
+}
+
+// Binds the luma program's world matrix and vertex/texcoord arrays for the supplied mesh.
+void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine)
+{
+    glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    if (this->dirty != 0) {
+        this->dirty = 0;
     }
 
     glEnableVertexAttribArray(this->lumaAttribPosition);
     glEnableVertexAttribArray(this->lumaAttribTexCoord);
 
-    unsigned int zero = 0;
     if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
         glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
-        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0,
-                              (void *)zero);
+        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
-        return glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0,
-                                     (void *)zero);
+        glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, 0);
     } else {
-        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0,
-                              ae_field<void *>(mesh, 0x4));
-        return glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0,
-                                     ae_field<void *>(mesh, 0x8));
+        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
+        glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
     }
 }
 
-} // namespace AbyssEngine
-
-extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
-                                   const void *value);
-extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
-                                      unsigned char normalized, int stride, const void *pointer);
-
-namespace AbyssEngine {
-
-void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
+void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
 {
-    ae_field<int>(engine, 0x3e4) = this->field_0x4;
+    ae_field<int>(engine, 0x3e4) = this->program;
 
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        ((FBOContainer *)(this->fboBlack))->BeginCapture();
+        this->fboBlack->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(this->fboBlack))->EndCapture();
+        this->fboBlack->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -172,13 +150,13 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    ae_field<float>(engine, 0x384) = 2.0f / (float)((::Engine *)(engine))->GetDisplayWidth();
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)((::Engine *)(engine))->GetDisplayHeight());
+    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
     ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
     ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
-    ((::Engine *)(engine))->SetWorldViewMatrix((const uint32_t *)matrix);
+    Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -186,18 +164,18 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
     glUseProgram(this->downSampleProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(this->fboLuma))->BeginCapture();
+    source->Activate();
+    this->fboLuma->BeginCapture();
     glEnableVertexAttribArray(this->downSampleAttribPosition);
     glEnableVertexAttribArray(this->downSampleAttribTexCoord);
-    const void *mvp = (char *)engine + 0x104;
+    const float *mvp = (float *)((char *)engine + 0x104);
     glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
     glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->downSampleAttribPosition);
     glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
@@ -205,8 +183,8 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     for (int i = 6; i != 0; i -= 1) {
         glUseProgram(this->blurHProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(blurSource))->Activate();
-        ((FBOContainer *)(this->fboBlurH))->BeginCapture();
+        blurSource->Activate();
+        this->fboBlurH->BeginCapture();
         glEnableVertexAttribArray(this->blurHAttribPosition);
         glEnableVertexAttribArray(this->blurHAttribTexCoord);
         glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
@@ -214,17 +192,16 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurHUniformTexSize,
-                    (float)*(int *)((char *)this->fboBlurH + 0xc));
+        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->field_0xc);
         glClear(0x4000);
-        ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurHAttribPosition);
         glDisableVertexAttribArray(this->blurHAttribTexCoord);
 
         glUseProgram(this->blurVProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->fboBlurH))->Activate();
-        ((FBOContainer *)(this->fboBlurV))->BeginCapture();
+        this->fboBlurH->Activate();
+        this->fboBlurV->BeginCapture();
         glEnableVertexAttribArray(this->blurVAttribPosition);
         glEnableVertexAttribArray(this->blurVAttribTexCoord);
         glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
@@ -232,10 +209,9 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurVUniformTexSize,
-                    (float)*(int *)((char *)this->fboBlurV + 0x10));
+        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->field_0x10);
         glClear(0x4000);
-        ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurVAttribPosition);
         glDisableVertexAttribArray(this->blurVAttribTexCoord);
         blurSource = this->fboBlurV;
@@ -261,18 +237,18 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
 
     glUseProgram(this->finalProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(base))->Activate();
+    base->Activate();
     glActiveTexture(0x84c1);
-    ((FBOContainer *)(bloom))->Activate();
+    bloom->Activate();
     glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
     unsigned int width;
     unsigned int height;
     if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
-        width = ((::Engine *)(engine))->GetDisplayWidth();
-        height = ((::Engine *)(engine))->GetDisplayHeight();
+        width = Engine_GetDisplayWidth(engine);
+        height = Engine_GetDisplayHeight(engine);
     } else {
-        width = ((::Engine *)(engine))->GetDisplayHeight();
-        height = ((::Engine *)(engine))->GetDisplayWidth();
+        width = Engine_GetDisplayHeight(engine);
+        height = Engine_GetDisplayWidth(engine);
     }
     glViewport(0, 0, width, height);
 
@@ -284,101 +260,31 @@ void BloomShader::RenderEffect(FBOContainer *source, ::Engine *engine)
     glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->finalAttribPosition);
     glDisableVertexAttribArray(this->finalAttribTexCoord);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-
-    return;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void BloomShader::SetInActive()
 {
     glDisableVertexAttribArray(this->lumaAttribPosition);
     glDisableVertexAttribArray(this->lumaAttribTexCoord);
     glDisableVertexAttribArray(this->downSampleAttribTexCoord);
-    return glDisableVertexAttribArray(this->downSampleAttribPosition);
+    glDisableVertexAttribArray(this->downSampleAttribPosition);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-__attribute__((minsize)) BloomShader::BloomShader()
+void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine)
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = &BloomShader_vtable + 8;
-    *(void **)BloomShader_typeinfo_dest = *(void **)BloomShader_typeinfo_source;
-    this->name.s = u"BloomShader";
-    return;
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void BloomShader::InternalInit(::Engine *engine)
-{
-
-    FBOContainer *fbo = (FBOContainer *)operator new(0x38);
-    String luma; luma.s = u"BloomShader fboLuma";
-    FBOContainer_ctor(fbo, engine, &luma);
-    this->fboLuma = fbo;
-    ((FBOContainer *)(this->fboLuma))->Create(0x100, 0x100, true, false);
-
-    fbo = (FBOContainer *)operator new(0x38);
-    String blurH; blurH.s = u"BloomShader fboBlurH";
-    FBOContainer_ctor(fbo, engine, &blurH);
-    this->fboBlurH = fbo;
-    ((FBOContainer *)(this->fboBlurH))->Create(0x100, 0x100, true, false);
-
-    fbo = (FBOContainer *)operator new(0x38);
-    String blurV; blurV.s = u"BloomShader fboBlurV";
-    FBOContainer_ctor(fbo, engine, &blurV);
-    this->fboBlurV = fbo;
-    ((FBOContainer *)(this->fboBlurV))->Create(0x100, 0x100, true, false);
-
-    fbo = (FBOContainer *)operator new(0x38);
-    String black; black.s = u"BloomShader fboBlack";
-    FBOContainer_ctor(fbo, engine, &black);
-    this->fboBlack = fbo;
-    ((FBOContainer *)(this->fboBlack))->Create(0x100, 0x100, true, false);
-
-    return;
-}
-
-} // namespace AbyssEngine
-
-void *_ZN11AbyssEngine11BloomShaderD1Ev(AbyssEngine::BloomShader *self)
-{
-    *(void **)self = &BloomShader_vtable + 8;
-    ((AbyssEngine::ShaderBaseStruct *)self)->~ShaderBaseStruct();
-    return self;
-}
-
-extern "C" void glUniformMatrix4fv(int location, int count, unsigned char transpose,
-                                   const void *value);
-extern "C" void glVertexAttribPointer(unsigned int index, int size, unsigned int type,
-                                      unsigned char normalized, int stride, const void *pointer);
-
-namespace AbyssEngine {
-
-void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::Engine *engine)
-{
-
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
         InternalInit(engine);
-        ((FBOContainer *)(this->fboBlack))->BeginCapture();
+        this->fboBlack->BeginCapture();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(0x4000);
-        ((FBOContainer *)(this->fboBlack))->EndCapture();
+        this->fboBlack->EndCapture();
     }
 
     typedef unsigned int u32x4 __attribute__((vector_size(16), aligned(4)));
@@ -392,13 +298,13 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     matrix[5] = 1.0f;
     matrix[10] = 1.0f;
     matrix[15] = 1.0f;
-    ae_field<float>(engine, 0x384) = 2.0f / (float)((::Engine *)(engine))->GetDisplayWidth();
-    ae_field<float>(engine, 0x398) = -(2.0f / (float)((::Engine *)(engine))->GetDisplayHeight());
+    ae_field<float>(engine, 0x384) = 2.0f / (float)Engine_GetDisplayWidth(engine);
+    ae_field<float>(engine, 0x398) = -(2.0f / (float)Engine_GetDisplayHeight(engine));
     ae_field<unsigned int>(engine, 0x3ac) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b4) = 0xbf800000;
     ae_field<unsigned int>(engine, 0x3b8) = 0x3f800000;
     ae_field<unsigned int>(engine, 0x3c0) = 0x3f800000;
-    ((::Engine *)(engine))->SetWorldViewMatrix((const uint32_t *)matrix);
+    Engine_SetWorldViewMatrix(engine, (const uint32_t *)matrix);
 
     glDisable(0xb71);
     glDepthMask(0);
@@ -406,18 +312,18 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
 
     glUseProgram(this->downSampleProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(source))->Activate();
-    ((FBOContainer *)(this->fboLuma))->BeginCapture();
+    source->Activate();
+    this->fboLuma->BeginCapture();
     glEnableVertexAttribArray(this->downSampleAttribPosition);
     glEnableVertexAttribArray(this->downSampleAttribTexCoord);
-    const void *mvp = (char *)engine + 0x104;
+    const float *mvp = (float *)((char *)engine + 0x104);
     glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
     glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->downSampleAttribPosition);
     glDisableVertexAttribArray(this->downSampleAttribTexCoord);
 
@@ -425,8 +331,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     for (int i = 6; i != 0; i -= 1) {
         glUseProgram(this->blurHProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(blurSource))->Activate();
-        ((FBOContainer *)(this->fboBlurH))->BeginCapture();
+        blurSource->Activate();
+        this->fboBlurH->BeginCapture();
         glEnableVertexAttribArray(this->blurHAttribPosition);
         glEnableVertexAttribArray(this->blurHAttribTexCoord);
         glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
@@ -434,17 +340,16 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurHUniformTexSize,
-                    (float)*(int *)((char *)this->fboBlurH + 0xc));
+        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->field_0xc);
         glClear(0x4000);
-        ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurHAttribPosition);
         glDisableVertexAttribArray(this->blurHAttribTexCoord);
 
         glUseProgram(this->blurVProgram);
         glActiveTexture(0x84c0);
-        ((FBOContainer *)(this->fboBlurH))->Activate();
-        ((FBOContainer *)(this->fboBlurV))->BeginCapture();
+        this->fboBlurH->Activate();
+        this->fboBlurV->BeginCapture();
         glEnableVertexAttribArray(this->blurVAttribPosition);
         glEnableVertexAttribArray(this->blurVAttribTexCoord);
         glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
@@ -452,10 +357,9 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurVUniformTexSize,
-                    (float)*(int *)((char *)this->fboBlurV + 0x10));
+        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->field_0x10);
         glClear(0x4000);
-        ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+        Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurVAttribPosition);
         glDisableVertexAttribArray(this->blurVAttribTexCoord);
         blurSource = this->fboBlurV;
@@ -481,11 +385,11 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
 
     glUseProgram(this->finalProgram);
     glActiveTexture(0x84c0);
-    ((FBOContainer *)(base))->Activate();
+    base->Activate();
     glActiveTexture(0x84c1);
-    ((FBOContainer *)(bloom))->Activate();
+    bloom->Activate();
     if (*target != 0) {
-        ((FBOContainer *)(*target))->BeginCapture();
+        (*target)->BeginCapture();
     }
 
     glEnableVertexAttribArray(this->finalAttribPosition);
@@ -496,17 +400,15 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, ::En
     glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
-    ((::Engine *)(engine))->DrawQuad(0, 0, ((::Engine *)(engine))->GetDisplayWidth(), ((::Engine *)(engine))->GetDisplayHeight());
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
     glDisableVertexAttribArray(this->finalAttribPosition);
     glDisableVertexAttribArray(this->finalAttribTexCoord);
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
     if (*target != 0) {
-        ((FBOContainer *)(*target))->EndCapture();
+        (*target)->EndCapture();
     }
-
-    return;
 }
 
 } // namespace AbyssEngine

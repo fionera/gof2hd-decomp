@@ -1,26 +1,25 @@
 #include "gof2/engine/render/shaders/EnergyShield.h"
-#include "gof2/engine/render/Engine.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glUniform2f(int location, float x, float y);
-
-void _ZN11AbyssEngine12EnergyShieldD0Ev(
-    AbyssEngine::EnergyShield *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
+// Engine is the top-level (::Engine) host object; only the few entry points this shader calls
+// are needed here. Its full layout/field reads are reached by raw offset (deferred pass).
+class Engine {
+public:
+    uint32_t GetDisplayWidth();
+    uint32_t GetDisplayHeight();
+    void ActivateRefractFBO();
+};
 
 namespace AbyssEngine {
 
 void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uM1 >= 0)
-        glUniformMatrix4fv(this->uM1, 1, 0, (char *)engine + 0x104);
+        glUniformMatrix4fv(this->uM1, 1, 0, (const float *)((char *)engine + 0x104));
     if (this->uM2 >= 0)
-        glUniformMatrix4fv(this->uM2, 1, 0, (char *)engine + 0x184);
+        glUniformMatrix4fv(this->uM2, 1, 0, (const float *)((char *)engine + 0x184));
 
-    if (this->needsUniformUpdate != 0) {
+    if (this->dirty != 0) {
         if (this->uM3 >= 0)
             glUniform3f(this->uM3, field_f32(engine, 0x34c), field_f32(engine, 0x350),
                         field_f32(engine, 0x354));
@@ -38,7 +37,7 @@ void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
         ((::Engine *)engine)->ActivateRefractFBO();
         glUniform1f(this->uM7, field_f32(mesh, 0x24));
         glUniform1f(this->uRefract, field_f32(mesh, 0x24) / 3.0f);
-        this->needsUniformUpdate = 0;
+        this->dirty = 0;
     }
 
     if (this->aPosition >= 0)
@@ -65,75 +64,55 @@ void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void EnergyShield::SetInActive()
 {
-    int loc;
-    loc = this->aPosition;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->aTexCoord;
-    if (loc >= 0)
-        glDisableVertexAttribArray(loc);
-    loc = this->uM0;
-    if (loc < 0)
-        return;
-    return glDisableVertexAttribArray(loc);
+    if (this->aPosition >= 0)
+        glDisableVertexAttribArray(this->aPosition);
+    if (this->aTexCoord >= 0)
+        glDisableVertexAttribArray(this->aTexCoord);
+    if (this->uM0 >= 0)
+        glDisableVertexAttribArray(this->uM0);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void EnergyShield::Init(Engine *engine)
 {
-    int program = ((ShaderBaseStruct *)this)->ES2LoadProgram("EnergyShield.vsh", "EnergyShield.fsh");
-    this->field_0x4 = program;
+    int program = this->ES2LoadProgram("EnergyShield.vsh", "EnergyShield.fsh");
+    this->program = program;
 
     this->aPosition = glGetAttribLocation(program, "a_position");
-    this->aTexCoord = glGetAttribLocation(this->field_0x4, "a_texCoord");
+    this->aTexCoord = glGetAttribLocation(this->program, "a_texCoord");
 
-    this->uM0 = glGetUniformLocation(this->field_0x4, "u_m0");
-    this->uM1 = glGetUniformLocation(this->field_0x4, "u_m1");
-    this->uM2 = glGetUniformLocation(this->field_0x4, "u_m2");
-    this->uM3 = glGetUniformLocation(this->field_0x4, "u_m3");
-    this->uTex0 = glGetUniformLocation(this->field_0x4, "u_tex0");
-    this->uTex1 = glGetUniformLocation(this->field_0x4, "u_tex1");
-    this->uM4 = glGetUniformLocation(this->field_0x4, "u_m4");
-    this->uM5 = glGetUniformLocation(this->field_0x4, "u_m5");
-    this->uM6 = glGetUniformLocation(this->field_0x4, "u_m6");
+    this->uM0 = glGetUniformLocation(this->program, "u_m0");
+    this->uM1 = glGetUniformLocation(this->program, "u_m1");
+    this->uM2 = glGetUniformLocation(this->program, "u_m2");
+    this->uM3 = glGetUniformLocation(this->program, "u_m3");
+    this->uTex0 = glGetUniformLocation(this->program, "u_tex0");
+    this->uTex1 = glGetUniformLocation(this->program, "u_tex1");
+    this->uM4 = glGetUniformLocation(this->program, "u_m4");
+    this->uM5 = glGetUniformLocation(this->program, "u_m5");
+    this->uM6 = glGetUniformLocation(this->program, "u_m6");
 
     glActiveTexture(0x84c7);
     ((::Engine *)engine)->ActivateRefractFBO();
 
-    this->uRefract = glGetUniformLocation(this->field_0x4, "u_refract");
-    this->uM7 = glGetUniformLocation(this->field_0x4, "u_m7");
-    this->uM8 = glGetUniformLocation(this->field_0x4, "u_m8");
+    this->uRefract = glGetUniformLocation(this->program, "u_refract");
+    this->uM7 = glGetUniformLocation(this->program, "u_m7");
+    this->uM8 = glGetUniformLocation(this->program, "u_m8");
 
-    glUseProgram(this->field_0x4);
+    glUseProgram(this->program);
 
     for (int i = 0; i != 2; i = i + 1) {
         if ((&this->uTex0)[i] >= 0)
             glUniform1i((&this->uTex0)[i], i);
     }
-    return glUniform1i(this->uM8, 7);
+    glUniform1i(this->uM8, 7);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 EnergyShield::EnergyShield()
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-
-    // install the derived vtable (+8 past the RTTI/offset slots).
-    this->field_0x0 = (void *)(EnergyShield_vtable + 8);
+    this->vtable = (void *)(EnergyShield_vtable + 8);
     EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name = EnergyShield_name;
+    this->name.s = u"EnergyShield";
 }
 
 } // namespace AbyssEngine

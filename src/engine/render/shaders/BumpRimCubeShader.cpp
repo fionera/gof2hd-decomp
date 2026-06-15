@@ -1,53 +1,115 @@
 #include "gof2/engine/render/shaders/BumpRimCubeShader.h"
-#include "gof2/externs.h"
+#include "gof2/platform/gl.h"
 
-extern "C" void glUniform3fv(int location, int count, const float *value);
+extern "C" char _ZTVN11AbyssEngine17BumpRimCubeShaderE[];
+
+// Global rim-lighting state read by the renderer when streaming per-frame uniforms.
+extern "C" float g_rimGlobalA;
+extern "C" float g_rimGlobalB;
+extern "C" unsigned char g_rimByteGlobal;
 
 namespace AbyssEngine {
 
+int BumpRimCubeShader::ShaderIndex;
+
+BumpRimCubeShader::BumpRimCubeShader()
+{
+    this->vtable = _ZTVN11AbyssEngine17BumpRimCubeShaderE + 8;
+    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+    this->name.s = u"BumpRimCubeShader";
+}
+
+void BumpRimCubeShader::Init(Engine *)
+{
+    int program = this->LoadBindShader("BumpRimCubeShader.vsh", "BumpRimCubeShader.fsh");
+    this->program = program;
+    if (program == 0) {
+        program = this->ES2LoadProgram("BumpRimCubeShader.vsh", "BumpRimCubeShader.fsh");
+        this->program = program;
+    }
+
+    this->aPosition = glGetAttribLocation(program, "a0");
+    this->aTexCoord = glGetAttribLocation(this->program, "a1");
+    this->aNormal = glGetAttribLocation(this->program, "a2");
+    this->aTangent = glGetAttribLocation(this->program, "a3");
+
+    this->aBitangent = glGetUniformLocation(this->program, "u0");
+    this->uModelViewProjectionMatrix = glGetUniformLocation(this->program, "u1");
+    this->uModelMatrix = glGetUniformLocation(this->program, "u2");
+    this->uModelMatrixFull = glGetUniformLocation(this->program, "u3");
+    this->uLightDirModel0 = glGetUniformLocation(this->program, "u4");
+    this->uLightDirModel1 = glGetUniformLocation(this->program, "u5");
+    this->uEyePosModel = glGetUniformLocation(this->program, "u6");
+    this->uTexDiffuse = glGetUniformLocation(this->program, "u7");
+    this->uTexNormal = glGetUniformLocation(this->program, "u8");
+    this->uTexCube = glGetUniformLocation(this->program, "u9");
+    this->uGlColor = glGetUniformLocation(this->program, "u10");
+    this->uAmbientColor0 = glGetUniformLocation(this->program, "u11");
+    this->uDiffuseColor0 = glGetUniformLocation(this->program, "u12");
+    this->uSpecularColor0 = glGetUniformLocation(this->program, "u13");
+    this->uDiffuseColor1 = glGetUniformLocation(this->program, "u14");
+    this->uSpecularColor1 = glGetUniformLocation(this->program, "u15");
+    this->uRimColor = glGetUniformLocation(this->program, "u16");
+    this->uSpecularPower = glGetUniformLocation(this->program, "u17");
+    this->uIsGlowMat = glGetUniformLocation(this->program, "u18");
+    this->uTexBiasDiffuse = glGetUniformLocation(this->program, "u19");
+    this->uTexBiasNormal = glGetUniformLocation(this->program, "u20");
+    this->uFogColor = glGetUniformLocation(this->program, "u21");
+    this->uFogMaxDist = glGetUniformLocation(this->program, "u22");
+    this->uFogMinDist = glGetUniformLocation(this->program, "u23");
+    this->uEnableFog = glGetUniformLocation(this->program, "u24");
+    this->uLodDist = glGetUniformLocation(this->program, "u25");
+
+    glUseProgram(this->program);
+    for (int i = 0; i != 2; i++) {
+        int loc = (&this->uTexDiffuse)[i]; // uTexDiffuse, uTexNormal (adjacent samplers)
+        if (loc >= 0)
+            glUniform1i(loc, i);
+    }
+    glUniform1i(this->uTexCube, 7);
+}
+
 void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    if (this->u1Loc >= 0)
-        glUniformMatrix4fv(this->u1Loc, 1, 0, (char *)engine + 0x104);
-    if (this->u2Loc >= 0)
-        glUniformMatrix3fv(this->u2Loc, 1, 0, (char *)engine + 0x204);
-    if (this->u3Loc >= 0)
-        glUniformMatrix4fv(this->u3Loc, 1, 0, (char *)engine + 0x144);
-    if (this->u19Loc >= 0)
-        glUniform1f(this->u19Loc, g_rimGlobalA);
-    if (this->u20Loc >= 0)
-        glUniform1f(this->u20Loc, g_rimGlobalB);
+    if (this->uModelViewProjectionMatrix >= 0)
+        glUniformMatrix4fv(this->uModelViewProjectionMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    if (this->uModelMatrix >= 0)
+        glUniformMatrix3fv(this->uModelMatrix, 1, 0, (float *)((char *)engine + 0x204));
+    if (this->uModelMatrixFull >= 0)
+        glUniformMatrix4fv(this->uModelMatrixFull, 1, 0, (float *)((char *)engine + 0x144));
+    if (this->uTexBiasDiffuse >= 0)
+        glUniform1f(this->uTexBiasDiffuse, g_rimGlobalA);
+    if (this->uTexBiasNormal >= 0)
+        glUniform1f(this->uTexBiasNormal, g_rimGlobalB);
 
     if (this->dirty != 0) {
-        glUniform3f(this->u4Loc, field_f32(engine, 0x330),
+        glUniform3f(this->uLightDirModel0, field_f32(engine, 0x330),
                     field_f32(engine, 0x334), field_f32(engine, 0x338));
-        if (this->u6Loc >= 0)
-            glUniform3f(this->u6Loc, field_f32(engine, 0x34c),
+        if (this->uEyePosModel >= 0)
+            glUniform3f(this->uEyePosModel, field_f32(engine, 0x34c),
                         field_f32(engine, 0x350), field_f32(engine, 0x354));
-        if (this->u10Loc >= 0)
-            glUniform4fv(this->u10Loc, 1, (float *)((char *)engine + 0xd0));
-        if (this->u11Loc >= 0)
-            glUniform3fv(this->u11Loc, 1, (float *)((char *)engine + 0x2cc));
-        if (this->u12Loc >= 0)
-            glUniform3fv(this->u12Loc, 1, (float *)((char *)engine + 0x2fc));
-        if (this->u13Loc >= 0)
-            glUniform3fv(this->u13Loc, 1, (float *)((char *)engine + 0x2e4));
-        if (this->u17Loc >= 0)
-            glUniform1f(this->u17Loc, field_f32(engine, 0x2c8));
-        if (this->u18Loc >= 0)
-            glUniform3fv(this->u18Loc, 1, (float *)((char *)engine + 800));
-        int loc88 = this->u22Loc;
-        if (loc88 >= 0) {
+        if (this->uGlColor >= 0)
+            glUniform4fv(this->uGlColor, 1, (float *)((char *)engine + 0xd0));
+        if (this->uAmbientColor0 >= 0)
+            glUniform3fv(this->uAmbientColor0, 1, (float *)((char *)engine + 0x2cc));
+        if (this->uDiffuseColor0 >= 0)
+            glUniform3fv(this->uDiffuseColor0, 1, (float *)((char *)engine + 0x2e4));
+        if (this->uSpecularPower >= 0)
+            glUniform1f(this->uSpecularPower, field_f32(engine, 0x2c8));
+        if (this->uIsGlowMat >= 0)
+            glUniform3fv(this->uIsGlowMat, 1, (float *)((char *)engine + 800));
+        int locFogMax = this->uFogMaxDist;
+        if (locFogMax >= 0) {
             float *v = *(AEMath::Vector *)((char *)engine + 0x3f0);
-            glUniform3fv(loc88, 1, v);
+            glUniform3fv(locFogMax, 1, v);
         }
-        if (this->u24Loc >= 0)
-            glUniform1f(this->u24Loc, field_f32(engine, 1000));
-        if (this->u23Loc >= 0)
-            glUniform1f(this->u23Loc, field_f32(engine, 0x3ec));
-        if (this->u25Loc >= 0)
-            glUniform1i(this->u25Loc, g_rimByteGlobal);
-        if (this->u21Loc >= 0) {
+        if (this->uEnableFog >= 0)
+            glUniform1f(this->uEnableFog, field_f32(engine, 1000));
+        if (this->uFogMinDist >= 0)
+            glUniform1f(this->uFogMinDist, field_f32(engine, 0x3ec));
+        if (this->uLodDist >= 0)
+            glUniform1i(this->uLodDist, g_rimByteGlobal);
+        if (this->uFogColor >= 0) {
             float v = 0.0f;
             int *m30 = (int *)field_ptr(mesh, 0x30);
             if (m30 != 0) {
@@ -55,159 +117,78 @@ void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
                 if (m30[9] == 0)
                     v = 0.0f;
             }
-            glUniform1f(this->u21Loc, v);
+            glUniform1f(this->uFogColor, v);
         }
         if (field_i32(engine, 0x32c) >= 2) {
-            glUniform3fv(this->u14Loc, 1, (float *)((char *)engine + 0x2d8));
-            glUniform3fv(this->u15Loc, 1, (float *)((char *)engine + 0x308));
-            glUniform3fv(this->u16Loc, 1, (float *)((char *)engine + 0x2f0));
-            glUniform3f(this->u5Loc, field_f32(engine, 0x33c),
+            glUniform3fv(this->uDiffuseColor1, 1, (float *)((char *)engine + 0x2d8));
+            glUniform3fv(this->uSpecularColor1, 1, (float *)((char *)engine + 0x308));
+            glUniform3fv(this->uRimColor, 1, (float *)((char *)engine + 0x2f0));
+            glUniform3f(this->uLightDirModel1, field_f32(engine, 0x33c),
                         field_f32(engine, 0x340), field_f32(engine, 0x344));
         } else {
-            glUniform3f(this->u14Loc, 0, 0, 0);
-            glUniform3f(this->u15Loc, 0, 0, 0);
-            glUniform3f(this->u16Loc, 0, 0, 0);
-            glUniform3f(this->u5Loc, field_f32(engine, 0x33c),
+            glUniform3f(this->uDiffuseColor1, 0, 0, 0);
+            glUniform3f(this->uSpecularColor1, 0, 0, 0);
+            glUniform3f(this->uRimColor, 0, 0, 0);
+            glUniform3f(this->uLightDirModel1, field_f32(engine, 0x33c),
                         field_f32(engine, 0x340), field_f32(engine, 0x344));
         }
         this->dirty = 0;
     }
 
-    if (this->a0Loc >= 0)
-        glEnableVertexAttribArray(this->a0Loc);
-    if (this->a1Loc >= 0)
-        glEnableVertexAttribArray(this->a1Loc);
-    if (this->a2Loc >= 0)
-        glEnableVertexAttribArray(this->a2Loc);
-    if (this->a3Loc >= 0)
-        glEnableVertexAttribArray(this->a3Loc);
-    if (this->u0Loc >= 0)
-        glEnableVertexAttribArray(this->u0Loc);
+    if (this->aPosition >= 0)
+        glEnableVertexAttribArray(this->aPosition);
+    if (this->aTexCoord >= 0)
+        glEnableVertexAttribArray(this->aTexCoord);
+    if (this->aNormal >= 0)
+        glEnableVertexAttribArray(this->aNormal);
+    if (this->aTangent >= 0)
+        glEnableVertexAttribArray(this->aTangent);
+    if (this->aBitangent >= 0)
+        glEnableVertexAttribArray(this->aBitangent);
 
     if (field_u8(mesh, 0x5c) == 0) {
-        if (this->a0Loc >= 0)
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-        if (this->a1Loc >= 0)
-            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
-        if (this->a2Loc >= 0)
-            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-        if (this->a3Loc >= 0)
-            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-        if (this->u0Loc >= 0)
-            glVertexAttribPointer(this->u0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+        if (this->aPosition >= 0)
+            glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+        if (this->aTexCoord >= 0)
+            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        if (this->aNormal >= 0)
+            glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+        if (this->aTangent >= 0)
+            glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+        if (this->aBitangent >= 0)
+            glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
     } else {
         glBindBuffer(0x8892, field_i32(mesh, 0x60));
-        glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x68));
-        glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x6c));
-        glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x70));
-        glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, 0);
         glBindBuffer(0x8892, field_i32(mesh, 0x74));
-        glVertexAttribPointer(this->u0Loc, 3, 0x1406, 0, 0, 0);
+        glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, 0);
     }
 }
-
-} // namespace AbyssEngine
-
-void _ZN11AbyssEngine17BumpRimCubeShaderD0Ev(
-    AbyssEngine::BumpRimCubeShader *self)
-{
-    AbyssEngine::ShaderBaseStruct *base = (AbyssEngine::ShaderBaseStruct *)self;
-    base->~ShaderBaseStruct();
-    operator delete(base);
-}
-
-namespace AbyssEngine {
 
 void BumpRimCubeShader::SetInActive()
 {
     int loc;
-    loc = this->a0Loc;
+    loc = this->aPosition;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->a1Loc;
+    loc = this->aTexCoord;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->a2Loc;
+    loc = this->aNormal;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->a3Loc;
+    loc = this->aTangent;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-    loc = this->u0Loc;
+    loc = this->aBitangent;
     if (loc >= 0)
         glDisableVertexAttribArray(loc);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-int BumpRimCubeShader::ShaderIndex;
-
-__attribute__((minsize)) BumpRimCubeShader::BumpRimCubeShader()
-{
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->field_0x0 = _ZTVN11AbyssEngine17BumpRimCubeShaderE + 8;
-    ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpRimCubeShader";
-    
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void BumpRimCubeShader::Init(Engine *)
-{
-    int program = ((ShaderBaseStruct *)this)->LoadBindShader("BumpRimCubeShader.vsh", "BumpRimCubeShader.fsh");
-    this->field_0x4 = program;
-    if (program == 0) {
-        program = ((ShaderBaseStruct *)this)->ES2LoadProgram("BumpRimCubeShader.vsh", "BumpRimCubeShader.fsh");
-        this->field_0x4 = program;
-    }
-
-    this->a0Loc = glGetAttribLocation(program, "a0");
-    this->a1Loc = glGetAttribLocation(this->field_0x4, "a1");
-    this->a2Loc = glGetAttribLocation(this->field_0x4, "a2");
-    this->a3Loc = glGetAttribLocation(this->field_0x4, "a3");
-
-    this->u0Loc = glGetUniformLocation(this->field_0x4, "u0");
-    this->u1Loc = glGetUniformLocation(this->field_0x4, "u1");
-    this->u2Loc = glGetUniformLocation(this->field_0x4, "u2");
-    this->u3Loc = glGetUniformLocation(this->field_0x4, "u3");
-    this->u4Loc = glGetUniformLocation(this->field_0x4, "u4");
-    this->u5Loc = glGetUniformLocation(this->field_0x4, "u5");
-    this->u6Loc = glGetUniformLocation(this->field_0x4, "u6");
-    this->u7Loc = glGetUniformLocation(this->field_0x4, "u7");
-    this->u8Loc = glGetUniformLocation(this->field_0x4, "u8");
-    this->u9Loc = glGetUniformLocation(this->field_0x4, "u9");
-    this->u10Loc = glGetUniformLocation(this->field_0x4, "u10");
-    this->u11Loc = glGetUniformLocation(this->field_0x4, "u11");
-    this->u12Loc = glGetUniformLocation(this->field_0x4, "u12");
-    this->u13Loc = glGetUniformLocation(this->field_0x4, "u13");
-    this->u14Loc = glGetUniformLocation(this->field_0x4, "u14");
-    this->u15Loc = glGetUniformLocation(this->field_0x4, "u15");
-    this->u16Loc = glGetUniformLocation(this->field_0x4, "u16");
-    this->u17Loc = glGetUniformLocation(this->field_0x4, "u17");
-    this->u18Loc = glGetUniformLocation(this->field_0x4, "u18");
-    this->u19Loc = glGetUniformLocation(this->field_0x4, "u19");
-    this->u20Loc = glGetUniformLocation(this->field_0x4, "u20");
-    this->u21Loc = glGetUniformLocation(this->field_0x4, "u21");
-    this->u22Loc = glGetUniformLocation(this->field_0x4, "u22");
-    this->u23Loc = glGetUniformLocation(this->field_0x4, "u23");
-    this->u24Loc = glGetUniformLocation(this->field_0x4, "u24");
-    this->u25Loc = glGetUniformLocation(this->field_0x4, "u25");
-
-    glUseProgram(this->field_0x4);
-    for (int i = 0; i != 2; i++) {
-        int loc = (&this->u7Loc)[i];   // u7Loc, u8Loc (adjacent samplers)
-        if (loc >= 0)
-            glUniform1i(loc, i);
-    }
-    glUniform1i(this->u9Loc, 7);
 }
 
 } // namespace AbyssEngine

@@ -1,21 +1,55 @@
 #include "gof2/engine/render/shaders/DrawFBOShader.h"
+#include "gof2/engine/render/FBOContainer.h"
+#include "gof2/platform/gl.h"
 #include <arm_neon.h>
 
+// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
+// then their fields are reached by raw offset.
+template <class T> static inline T &ae_field(void *base, unsigned int off) {
+    return *(T *)((char *)base + off);
+}
+
+// DrawFBOShader's C++ vtable symbol (platform-supplied at the engine ABI level).
+extern "C" char DrawFBOShader_vtable;
+
+// Engine entry points reached by opaque pointer (modelled in a later pass).
+extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
+extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
+extern "C" int Engine_IsPostEffectActivated(AbyssEngine::Engine *engine);
+extern "C" void Engine_ActivateRender2FracFBO(AbyssEngine::Engine *engine);
+extern "C" void Engine_DeactivateRender2FracFBO(AbyssEngine::Engine *engine);
+
 namespace AbyssEngine {
+
+int DrawFBOShader::ShaderIndex;
 
 DrawFBOShader::DrawFBOShader()
 {
+    this->vtable = &DrawFBOShader_vtable + 8;
+    this->name.s = u"DrawFBOShader";
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }
 
-} // namespace AbyssEngine
+// Compiles the full-screen blit program and caches its attribute/uniform locations.
+void DrawFBOShader::Init(Engine *)
+{
+    this->program = this->ES2LoadProgram("DrawFBOShader.vsh", "DrawFBOShader.fsh");
 
-namespace AbyssEngine {
+    this->positionLoc = glGetAttribLocation(this->program, "position");
+    this->texCoordLoc = glGetAttribLocation(this->program, "texCoord");
+    this->worldViewMatrixLoc = glGetUniformLocation(this->program, "worldViewMatrix");
+    this->textureLoc = glGetUniformLocation(this->program, "texture");
 
+    glUseProgram(this->program);
+    glUniform1i(this->textureLoc, 0);
+}
+
+// Binds the world matrix and vertex/texcoord arrays for the supplied mesh.
 void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *meshBytes = (char *)mesh;
-    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (char *)engine + 0x104);
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (float *)((char *)engine + 0x104));
     if (this->dirty != 0) {
         this->dirty = 0;
     }
@@ -23,25 +57,21 @@ void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->positionLoc);
     glEnableVertexAttribArray(this->texCoordLoc);
 
-    if (*(uint8_t *)(meshBytes + 0x5c) == 0) {
-        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0,
-                              *(void **)(meshBytes + 0x4));
-        return glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0,
-                                     *(void **)(meshBytes + 0x8));
+    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
+        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
+        glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
     } else {
-        glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x60));
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
         glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x68));
-        return glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, 0);
+        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, 0);
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 typedef uint64_t unaligned_u64 __attribute__((aligned(1)));
 
+// Blits the source FBO across the full screen (orthographic quad), optionally through the
+// post-effect / fractional render targets.
 void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 {
     char *engineBytes = (char *)engine;
@@ -53,8 +83,8 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     vst1q_u32((uint32_t *)(engineBytes + 0x384), zero);
 
     float two = 2.0f;
-    *(float *)(engineBytes + 0x384) = two / (float)engine->GetDisplayWidth();
-    int32_t height = engine->GetDisplayHeight();
+    *(float *)(engineBytes + 0x384) = two / (float)Engine_GetDisplayWidth(engine);
+    unsigned int height = Engine_GetDisplayHeight(engine);
 
     uint64x2_t tail = {0x000000003f800000ULL, 0x3f8000003f800000ULL};
 
@@ -65,105 +95,69 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
     *(uint32_t *)(engineBytes + 0x3b8) = one;
     *(float *)(engineBytes + 0x398) = -(two / (float)height);
 
-    AEMath::Matrix matrix;
-    vst1q_u32((uint32_t *)((char *)matrix.m + 4), zero);
-    vst1q_u64((unaligned_u64 *)(matrix.m + 6), vreinterpretq_u64_u32(zero));
-    vst1q_u64((unaligned_u64 *)(matrix.m + 10), tail);
-    volatile uint32_t *matrixWords = (volatile uint32_t *)matrix.m;
-    matrixWords[0] = one;
-    matrixWords[5] = one;
-    matrixWords[14] = one;
+    uint32_t matrix[16];
+    vst1q_u32(matrix + 4, zero);
+    vst1q_u64((unaligned_u64 *)(matrix + 6), vreinterpretq_u64_u32(zero));
+    vst1q_u64((unaligned_u64 *)(matrix + 10), tail);
+    matrix[0] = one;
+    matrix[5] = one;
+    matrix[14] = one;
 
-    engine->SetWorldViewMatrix(matrix);
+    Engine_SetWorldViewMatrix(engine, matrix);
     glDisable(0xb71);
     glDepthMask(0);
     glDisable(0xbe2);
-    glUseProgram(this->field_0x4);
+    glUseProgram(this->program);
     glActiveTexture(0x84c0);
     fbo->Activate();
 
-    if (engine->IsPostEffectActivated() == 0) {
-        glBindFramebuffer(0x8d40, *(uint32_t *)(engineBytes + 0x40c));
-        int width;
-        int viewportHeight;
-        if (*(int32_t *)(*(char **)(*(char **)(engineBytes + 0x30)) + 0x30) == 2) {
-            width = engine->GetDisplayWidth();
-            viewportHeight = engine->GetDisplayHeight();
+    if (Engine_IsPostEffectActivated(engine) == 0) {
+        glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
+        unsigned int width;
+        unsigned int viewportHeight;
+        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+            width = Engine_GetDisplayWidth(engine);
+            viewportHeight = Engine_GetDisplayHeight(engine);
         } else {
-            width = engine->GetDisplayHeight();
-            viewportHeight = engine->GetDisplayWidth();
+            width = Engine_GetDisplayHeight(engine);
+            viewportHeight = Engine_GetDisplayWidth(engine);
         }
         glViewport(0, 0, width, viewportHeight);
     } else {
-        engine->ActivateRender2FracFBO();
+        Engine_ActivateRender2FracFBO(engine);
     }
 
     glEnableVertexAttribArray(this->positionLoc);
     glEnableVertexAttribArray(this->texCoordLoc);
-    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engineBytes + 0x104);
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (float *)(engineBytes + 0x104));
 
-    char *mesh = *(char **)(engineBytes + 0x380);
-    glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0,
-                          *(void **)(mesh + 0x4));
-    mesh = *(char **)(engineBytes + 0x380);
-    glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0,
-                          *(void **)(mesh + 0x8));
+    char *mesh = ae_field<char *>(engine, 0x380);
+    glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, *(void **)(mesh + 0x4));
+    mesh = ae_field<char *>(engine, 0x380);
+    glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, *(void **)(mesh + 0x8));
 
-    void (*clear)(uint32_t) = glClear;
-    clear(0x4000);
-    clear(0x100);
+    glClear(0x4000);
+    glClear(0x100);
 
-    int drawWidth = engine->GetDisplayWidth();
-    int drawHeight = engine->GetDisplayHeight();
-    engine->DrawQuad(0, 0, drawWidth, drawHeight);
+    int drawWidth = Engine_GetDisplayWidth(engine);
+    int drawHeight = Engine_GetDisplayHeight(engine);
+    Engine_DrawQuad(engine, 0, 0, drawWidth, drawHeight);
 
     glDisableVertexAttribArray(this->positionLoc);
     glDisableVertexAttribArray(this->texCoordLoc);
     glEnable(0xb71);
-    clear(0x100);
+    glClear(0x100);
 
-    if (engine->IsPostEffectActivated() != 0) {
-        engine->DeactivateRender2FracFBO();
+    if (Engine_IsPostEffectActivated(engine) != 0) {
+        Engine_DeactivateRender2FracFBO(engine);
     }
     glActiveTexture(0x84c0);
-
-    return;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void DrawFBOShader::SetInActive()
 {
     glDisableVertexAttribArray(this->positionLoc);
-    return glDisableVertexAttribArray(this->texCoordLoc);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void DrawFBOShader::Init(Engine *)
-{
-    uint32_t program = ES2LoadProgram("DrawFBOShader.vsh", "DrawFBOShader.fsh");
-    this->field_0x4 = program;
-
-    this->positionLoc = glGetAttribLocation(program, "position");
-    this->texCoordLoc = glGetAttribLocation(this->field_0x4, "texCoord");
-    this->worldViewMatrixLoc = glGetUniformLocation(this->field_0x4, "worldViewMatrix");
-    this->textureLoc = glGetUniformLocation(this->field_0x4, "texture");
-
-    glUseProgram(this->field_0x4);
-    return glUniform1i(this->textureLoc, 0);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-DrawFBOShader::~DrawFBOShader()
-{
+    glDisableVertexAttribArray(this->texCoordLoc);
 }
 
 } // namespace AbyssEngine
