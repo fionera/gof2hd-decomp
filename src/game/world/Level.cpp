@@ -51,7 +51,6 @@
 #include "gof2/game/weapons/SentryGun.h"
 #include "gof2/engine/math/Transform.h"
 
-// Junk-death tally: a singleton holding a counter at +0xb0 (owner class unresolved; not PlayerJunk).
 __attribute__((visibility("hidden"))) extern Status **g_status;  // canonical Status singleton
 __attribute__((visibility("hidden"))) extern int **g_junkDied;
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
@@ -181,11 +180,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_umo_rng;
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 static unsigned int g_level_texOutScratch;
-
-// createGun()/assignGuns() build their Gun arguments as raw 32-bit words; the float p7
-// and the dir/vel Vector components are the bit patterns of the floats they encode.
-static inline float as_float(int bits) { float f; __builtin_memcpy(&f, &bits, sizeof f); return f; }
-
 
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
@@ -714,7 +708,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         int res = ((int *)g_cg_beamTable)[idx];
         if (res < 0) {
             gun = (Gun *)::operator new(0x114);
-            new (gun) Gun(owner, dmg, 1, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
             gun->setPlayerGun(1);
@@ -724,7 +718,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             int barrels = ((unsigned)(idx - 9) < 3 || idx == 0xe4) ? 1 : 0x14;
             gun = (Gun *)::operator new(0x114);
             if (kind == 3) {
-                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_rocketFx)}, Vector{0.0f, 0.0f, 0.0f});
+                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_rocketFx}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
                 gun->weaponType = 3;
                 gun->setPlayerGun(1);
@@ -732,7 +726,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
                 obj = (ObjectGun *)::operator new(0xe8);
                 new (obj) RocketGun(owner, gun, res, 0, 0, 0, 1, this);
             } else {
-                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
                 gun->weaponType = kind;
                 gun->setPlayerGun(1);
@@ -745,7 +739,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 2:
     case 0x19:
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -758,7 +752,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x28: {
         gun = (Gun *)::operator new(0x114);
         int barrels = (kind == 0x28) ? (idx - 0xd3) : 5;
-        new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -772,7 +766,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 7:
     case 0x22: {
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 1, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -789,7 +783,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         int extra = (idx == 0x30 && idx != 0xb5) ? (g_cg_rocketFx - 0xf60000) : 0;
         if (kind == 0x23) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, as_float(color), Vector{as_float(extra), 0.0f, as_float(fx)}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, (float)color, Vector{(float)extra, 0.0f, (float)fx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -826,7 +820,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
     case 0x2a: {
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 1, hp, 1, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 1, hp, 1, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = 0x2a;
         gun->setPlayerGun(1);
@@ -900,9 +894,9 @@ void Level::createSpace()
             (void)status;
             this->csp_buildStarSystemScene();
         } else {
-            this->field_1a4 = 0;
-            this->field_1a8 = 0;
-            this->field_1ac = 0;
+            this->skyRotX = 0.0f;
+            this->skyRotY = 0.0f;
+            this->skyRotZ = 0.0f;
         }
     }
 
@@ -2999,7 +2993,7 @@ void Level::assignGuns()
             Gun *gun = (Gun *)::operator new(0x114);
             int won = (*g_status)->gameWon();
             int rampMis = (won != 0) ? 0x2d : (*g_status)->getCurrentCampaignMission();
-            new (gun) Gun(0, dmg, 4, -1, 3000, rampMis * -2 + 600, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+            new (gun) Gun(0, dmg, 4, -1, 3000, rampMis * -2 + 600, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(1);
             gun->setLevel(this);
             gun->setIndex(0);
@@ -3584,8 +3578,9 @@ void Level::createScene()
     }
 }
 
-// Level::renderBG(float t) — draws the skybox, nebula, planet rings and supernova glow.
-void Level::renderBG(float t) {
+// Level::renderBG(int t) — draws the skybox, nebula, planet rings and supernova glow.
+// t is the elapsed-time/frame word the cutscene passes through verbatim.
+void Level::renderBG(int t) {
     unsigned canvas = *g_rbg_canvas;
     // matrix dirty/cache flags live inside the sub_1d0 skybox matrix sub-object.
     char *skyMatrixFlags = (char *)&this->sub_1d0;
@@ -3601,14 +3596,22 @@ void Level::renderBG(float t) {
     *(int *)(skyMatrixFlags + 0x0c) = 0;
     *(int *)(skyMatrixFlags + 0x2c) = 0;
 
-    bool alienRing = false;
-    if ((*g_status)->inAlienOrbit() == 0) {
-        (*g_status)->getSystem();
-        if (((SolarSystem*)(*g_status)->getSystem())->getIndex() == 0x1b)
-            alienRing = true;
+    // Build the skybox orientation into sub_20c, then compose it onto sub_1d0.
+    Matrix *cloudMtx = (Matrix *)((char *)&this->sub_20c);
+    if ((*g_status)->inAlienOrbit() == 0 &&
+        ((SolarSystem*)(*g_status)->getSystem())->getIndex() == 0x1b) {
+        // Alien-ring system: align the skybox basis to the star's light direction.
+        Vector dir   = AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
+        Vector right = AbyssEngine::AEMath::VectorNormalize(
+            AbyssEngine::AEMath::VectorCross(Vector{1.0f, 0.0f, 0.0f}, dir));
+        Vector up    = AbyssEngine::AEMath::VectorNormalize(
+            AbyssEngine::AEMath::VectorCross(right, dir));
+        AbyssEngine::AEMath::MatrixSetRotation(*cloudMtx, -up, dir, right);
+    } else {
+        // Otherwise rotate by the per-orbit Euler angles stored on the level.
+        AbyssEngine::AEMath::MatrixSetRotation(*cloudMtx, this->skyRotX, this->skyRotY, this->skyRotZ);
     }
-    this->rbg_buildSkyMatrix(alienRing ? 1 : 0, t);
-    (*sky *= *(Matrix *)((char *)&this->sub_20c));
+    *sky *= *cloudMtx;
 
     ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
     ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_19c), 0);
@@ -3664,12 +3667,13 @@ void Level::renderBG(float t) {
         int xf2 = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         ((AbyssEngine::Transform *)(intptr_t)xf2)->Update((int64_t)(int)t, true);
         if (*(int *)(xf + 0x110) < before) {
-            // re-randomize the ring tilt — corrupted SIMD in the original; rebuild via helper.
+            // re-randomize the ring tilt: three Euler angles uniformly in [0, 2*pi).
             AbyssEngine::AERandom *rng = *g_rbg_rng;
-            rng->nextInt();
-            rng->nextInt();
-            rng->nextInt();
-            this->rbg_buildSkyMatrix(2, t);
+            const float toAngle = (1.0f / 65536.0f) * 6.2831855f;
+            float ax = (float)rng->nextInt(0x10000) * toAngle;
+            float ay = (float)rng->nextInt(0x10000) * toAngle;
+            float az = (float)rng->nextInt(0x10000) * toAngle;
+            AbyssEngine::AEMath::MatrixSetRotation(*(Matrix *)((char *)&this->sub_248), ax, ay, az);
         }
         (*sky *= *(Matrix *)((char *)&this->sub_248));
         *(int *)(skyMatrixFlags + 0x0c) = 0;
@@ -3732,9 +3736,9 @@ void Level::csp_buildDetail() {
 // --- createSpace(): seed a per-orbit random skybox spin (light direction) into
 // self+0x1a4..0x1ac, unless the orbit forces an unrotated fog skybox.
 void Level::csp_buildStarSystemScene() {
-    this->field_1a4 = 0;
-    this->field_1a8 = 0;
-    this->field_1ac = 0;
+    this->skyRotX = 0.0f;
+    this->skyRotY = 0.0f;
+    this->skyRotZ = 0.0f;
 }
 
 // --- createSpace(): allocate the home-station + jumpgate roster (4 slots) and
@@ -3932,15 +3936,4 @@ void Level::cwm_placeWingman(int *kiSlot, unsigned i) {
 // inline by createScene(); recovered split point.
 void Level::csc_placeActor(int actor, int idx, int profile) {
     (void)actor; (void)idx; (void)profile;
-}
-
-// --- renderBG(): build the rotated skybox basis from the per-orbit spin angles
-// (self+0x1a4..0x1ac) into the skybox matrix at self+0x1d0. mode==1 selects the
-// alien-orbit variant.
-void Level::rbg_buildSkyMatrix(int mode, float spin) {
-    Matrix *sky = (Matrix *)((char *)&this->sub_1d0);
-    float ax = *(float *)&this->field_1a4;
-    float ay = *(float *)&this->field_1a8 + (mode ? 0.0f : spin);
-    float az = *(float *)&this->field_1ac;
-    AbyssEngine::AEMath::MatrixSetRotation(*sky, ax, ay, az);
 }

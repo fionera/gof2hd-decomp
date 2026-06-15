@@ -697,10 +697,7 @@ void CutScene::render2D_tail(Level *level)
 void CutScene::renderBG_tail(Level *level, uint32_t t)
 {
     if (level != nullptr) {
-        // renderBG() reads the raw 32-bit time word as its float time parameter.
-        float ft;
-        __builtin_memcpy(&ft, &t, sizeof ft);
-        level->renderBG(ft);
+        level->renderBG((int)t);
     }
 }
 

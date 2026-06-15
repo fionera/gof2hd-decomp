@@ -135,9 +135,9 @@ public:
     int field_198;
     int field_19c;
     int field_1a0;
-    int field_1a4;
-    int field_1a8;
-    int field_1ac;
+    float skyRotX;                  // stored skybox Euler angles (built into sub_20c)
+    float skyRotY;
+    float skyRotZ;
     uint8_t field_1b0;
     uint8_t pad_1b1[3];
     int field_1b4;
@@ -219,7 +219,7 @@ public:
     void isInAsteroidCenterRange(Vector v);
     int collideStream(Vector v);
     int collideStation(Vector v);
-    void renderBG(float t);
+    void renderBG(int t);
     void render(int ctx);
     void render2D();
     void renderPause();
@@ -309,8 +309,6 @@ public:
     void cwm_placeWingman(int *kiSlot, unsigned i);
     void csc_placeActor(int actor, int idx, int profile);
 
-    // renderBG(): build the rotated skybox basis into sub_1d0.
-    void rbg_buildSkyMatrix(int mode, float spin);
 };
 
 #endif
