@@ -3,47 +3,49 @@
 #include "gof2/common.h"
 
 class SolarSystem;
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy — top-level class (NO namespace). Byte-exact decomp scaffold.
-// Field offsets taken from the work-items:
-//   +0x00  uint8_t* stations  (heap array of 0x87 visited-flags)
-//   +0x04  AEArray* systems   (Array<SolarSystem*>)
+class Station;
 
-// ---- tiny offset-cast helpers -------------------------------------------------
-#ifndef GOF2_BIP_HELPERS
-#define GOF2_BIP_HELPERS
-static inline char *B(void *p, int off) { return (char *)p + off; }
-static inline int &I(void *p, int off) { return *(int *)((char *)p + off); }
-static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
-#endif
-
-// Galaxy — owns the per-station visited-flag array (at +0x0) and the SolarSystem* Array (+0x4).
-// Field access is via the B/I/U/P offset-cast helpers above; storage covers offsets 0x0..0x8.
+// Galaxy — the star-map model: owns the per-station visited-flag array and the
+// table of SolarSystem objects loaded from the game's binary data files.
 class Galaxy {
 public:
     Galaxy();
     ~Galaxy();
 
-    // Accessors for the two owned members.
-    void *getSystems();   // Array<SolarSystem*>* held at +0x4
-    void *getVisited();   // uint8_t[0x87] visited-flag array held at +0x0
-
+    // Reset every per-station visited flag to "not visited".
     void reset();
+
+    // Percentage-style proximity metric between two map points (planar distance,
+    // scaled to roughly 0..100). invDistancePercent() returns its 100-complement.
     int distancePercent(int x1, int y1, int x2, int y2);
+    int invDistancePercent(int x1, int y1, int x2, int y2);
+
+    // Mark a station/system index as visited.
     void visitStation(int index);
     void setSystemVisited(int systemId);
-    int invDistancePercent(int x1, int y1, int x2, int y2);
+
+    // Bulk-load the visited flags from a bool array, zero-filling the remainder.
     void setVisited(bool *src, int count);
+
+    // The SolarSystem index stored in slot `index` (0 for negative indices).
     int getSystem(int index);
-    void *getPlasmaProbabilities(void *station);
-    void *getAsteroidProbabilities(void *station);
+
+    // Probability tables (plasma / asteroid resource yields) for a given station.
+    void *getPlasmaProbabilities(Station *station);
+    void *getAsteroidProbabilities(Station *station);
+
+    // Resolve a station index; negative resolves to the player's current station.
     int getStation(int index);
 
-    // Euclidean distance between two systems' positions (Z compressed by 1/10),
+    // Euclidean distance between two systems' map positions (Z compressed by 1/10),
     // scaled by the global unit factor. Returns 0 when both refer to the same system.
     float distance(SolarSystem *a, SolarSystem *b);
 
-    uint8_t *visited;   // +0x0  heap array of 0x87 per-station visited flags
-    void *systems;      // +0x4  Array<SolarSystem*>*
+    // Accessors for the two owned members.
+    Array<SolarSystem *> *getSystems();
+    uint8_t *getVisited();
+
+    uint8_t *visited;                 // heap array of 0x87 per-station visited flags
+    Array<SolarSystem *> *systems;    // table of loaded SolarSystem objects
 };
 #endif

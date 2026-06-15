@@ -1,32 +1,38 @@
 #ifndef GOF2_GAMERECORD_H
 #define GOF2_GAMERECORD_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 - GameRecord (top-level class, no AbyssEngine:: namespace).
-// Embeds two AbyssEngine::String members at +0x188 and +0x194, plus a heap buffer
-// at +0x00 and many scalar fields. Fields reached via byte-offset casts from `this`.
 
-// Field accessor via byte offset.
-
-extern "C" {
-void *operator_new__(uint32_t size);
-void operator_delete__(void *ptr);
-void __aeabi_memcpy(void *dst, const void *src, uint32_t n);
-void __aeabi_memclr8(void *dst, uint32_t n);
-void __aeabi_memclr4(void *dst, uint32_t n);
-void __aeabi_memclr(void *dst, uint32_t n);
-}
+// GameRecord — a saved-game snapshot (top-level class, no AbyssEngine namespace).
+//
+// A GameRecord is the in-memory image of a single save slot: it is filled by
+// RecordHandler's deserializer and then applied to the live game singletons by
+// load(). Because it mirrors the on-disk serialization format, the bulk of the
+// record is a flat block of scalar fields and Array<T>* slots addressed by the
+// reader/writer; only the heap data pointer, the two embedded name strings and
+// the player-ship slot are referenced symbolically here. The remaining record
+// payload is kept as a packed storage block so the save layout stays stable.
 
 class GameRecord {
 public:
-    void* _opaque;          // +0x00 heap buffer / raw byte-offset access throughout (coverage-mode translation)
-    char  _pad_04[0x184];   // +0x04 scalar fields reached via byte-offset casts from `this`
-    String nameString;      // +0x188 embedded AbyssEngine::String
-    String descString;      // +0x194 embedded AbyssEngine::String
+    // Heap buffer holding the visited-systems bitmap (0x87 entries) and the
+    // record's variable-length payload.
+    void *data;
+
+    // Packed save-image payload (scalar fields and Array<T>* slots laid out to
+    // match the on-disk record). Spans the record body up to the embedded
+    // strings; reached positionally by the serializer and by load().
+    uint8_t payload[0x184];
+
+    // Display name and description shown in the save-slot preview.
+    String nameString;
+    String descString;
+
     GameRecord();
     ~GameRecord();
 
-    // ---- methods (converted from free functions) ----
+    // Apply this saved snapshot to the live game singletons (Status, Galaxy,
+    // Achievements, the player Ship and the station stack).
     void load();
 };
-#endif
+
+#endif // GOF2_GAMERECORD_H

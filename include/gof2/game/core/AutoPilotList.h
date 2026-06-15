@@ -1,55 +1,33 @@
 #ifndef GOF2_AUTOPILOTLIST_H
 #define GOF2_AUTOPILOTLIST_H
 #include "gof2/common.h"
-// String (12-byte by-value String aggregate) and the SolarSystem class are sourced
+// String (the 12-byte by-value AbyssEngine::String) and the SolarSystem class are sourced
 // from a single header to avoid the duplicate-String ODR clash that arises when
-// SolarSystem.h and Station.h (both define String unconditionally) are pulled into
-// one TU. getTargetString() below returns String by value, so its definition must be
-// in scope here.
+// SolarSystem.h and Station.h are pulled into one TU. getTargetString() returns String by
+// value, so its full definition must be in scope here.
 #include "gof2/game/world/SolarSystem.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 - AutoPilotList class. Android libgof2hdaa.so, armv7 Thumb.
-// Top-level class (no AbyssEngine namespace; only some arg/field types live in
-// AbyssEngine). Field offsets recovered per-method from the target disassembly; we do
-// NOT model a full layout - access fields via byte-offset casts from `this`.
-//
-// Known field offsets:
-//   0x00 int    selected index
-//   0x04 int    x
-//   0x08 int    y
-//   0x0c int    width
-//   0x10 Array<String*>*  entries (owned; released in dtor)
-//   0x14 int    count
 
-struct Level;
+class Level;
 
-// Methods authored as real C++ members demangle to AutoPilotList::name(); the rest are
-// extern "C" wrappers with hand-mangled names.
-
-// AbyssEngine::String - 12-byte object. Heap-allocated, constructed via engine helpers.
-struct EngString {
-    uint32_t a, b, c;
-    EngString(const void *src, bool copy);   // String(String*, bool) / String(char*, bool)
-};
-void *operator new(__SIZE_TYPE__);
-
-// String is provided by gof2/SolarSystem.h (included above).
-
-// Field accessor via byte offset.
-
+// On-screen autopilot destination picker: a small modal list of warp targets (current
+// station, warp gate, mission target, "cancel", route waypoint) the player can step
+// through with up()/down() and confirm via touch().
 class AutoPilotList {
 public:
-    int selected;                      // +0x0  selected index
-    int x;                      // +0x4  x
-    int y;                      // +0x8  y
-    int width;                      // +0xc  width
-    Array<String*>* entries;         // +0x10 owned String* array (released in dtor)
-    int count;                     // +0x14 count
+    int selected;                 // currently highlighted row
+    int x;                        // window left
+    int y;                        // window top
+    int width;                    // window width (widest entry + padding)
+    Array<String*>* entries;      // owned list of destination labels (released in dtor)
+    int count;                    // number of non-empty entries
+
+    AutoPilotList(Level* level);
+    ~AutoPilotList();
 
     void draw();
-
-    // ---- methods (converted from free functions) ----
+    void up();
+    void down();
     String getTargetString();
-    int touch(int p1, int p2);
+    int touch(int px, int py);
 };
 #endif

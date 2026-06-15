@@ -1,298 +1,291 @@
 #include "gof2/game/core/RadioMessage.h"
+#include "gof2/game/core/Radio.h"
+#include "gof2/game/core/Vector.h"
+#include "gof2/game/mission/Objective.h"
+#include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/ship/PlayerEgo.h"
+#include "gof2/game/weapons/Radar.h"
+#include "gof2/game/world/Level.h"
+#include "gof2/game/world/LevelScript.h"
+#include "gof2/game/world/Route.h"
 
-void RadioMessage::finish()
+RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int conditionValue,
+                           int targetCount)
 {
-    field<uint8_t>(this, 0x21) = 1;
-}
+    this->targetIndices = nullptr;
+    this->radio = nullptr;
+    this->objective = nullptr;
+    this->textID = textID;
+    this->imageID = imageID;
+    this->conditionType = conditionType;
+    this->conditionValue = conditionValue;
 
-uint8_t RadioMessage::isOver()
-{
-    return field<uint8_t>(this, 0x21);
-}
-
-void RadioMessage::reset()
-{
-    volatile int *timer = &field<int>(this, 0x24);
-    volatile uint16_t *flags = &field<uint16_t>(this, 0x20);
-    *timer = 0;
-    *flags = 0;
-}
-
-RadioMessage::RadioMessage(int param_1, int param_2, int param_3, int param_4, int param_5)
-{
-    field<int>(this, 0x1c) = 0;
-    field<int>(this, 0x00) = 0;
-    field<int>(this, 0x04) = 0;
-    field<int>(this, 0x08) = param_1;
-    field<int>(this, 0x0c) = param_2;
-    field<int>(this, 0x10) = param_3;
-    field<int>(this, 0x14) = param_4;
-
-    int *values = new int[param_5];
-    field<int *>(this, 0x1c) = values;
-    for (int i = 0; i < param_5; ++i) {
-        values[i] = param_4 + i;
+    int* values = new int[targetCount];
+    this->targetIndices = values;
+    for (int i = 0; i < targetCount; ++i) {
+        values[i] = conditionValue + i;
     }
 
-    volatile int *count = &field<int>(this, 0x18);
-    volatile uint16_t *flags = &field<uint16_t>(this, 0x20);
-    volatile int *timer = &field<int>(this, 0x24);
-    *count = param_5;
-    *flags = 0;
-    *timer = 0;
+    this->targetCount = targetCount;
+    this->triggeredFlag = 0;
+    this->over = 0;
+    this->lastRouteIndex = 0;
 }
 
-void RadioMessage::trigger()
+RadioMessage::RadioMessage(int textID, int imageID, int conditionType, int conditionValue)
 {
-    field<uint8_t>(this, 0x20) = 1;
+    this->targetIndices = nullptr;
+    this->radio = nullptr;
+    this->objective = nullptr;
+    this->textID = textID;
+    this->imageID = imageID;
+    this->conditionType = conditionType;
+    this->conditionValue = conditionValue;
+
+    int* values = new int[1];
+    values[0] = conditionValue;
+    this->targetCount = 1;
+    this->targetIndices = values;
+
+    this->triggeredFlag = 0;
+    this->over = 0;
+    this->lastRouteIndex = 0;
 }
 
-RadioMessage::RadioMessage(int param_1, int param_2, Objective *param_3)
+RadioMessage::RadioMessage(int textID, int imageID, Objective* objective)
 {
-    field<int>(this, 0x1c) = 0;
-    field<int>(this, 0x00) = 0;
-    field<Objective *>(this, 0x04) = param_3;
-    field<int>(this, 0x08) = param_1;
-    field<int>(this, 0x0c) = param_2;
-    field<int>(this, 0x10) = 0xb;
-    field<uint16_t>(this, 0x20) = 0;
-    field<int>(this, 0x24) = 0;
-}
-
-uint8_t RadioMessage::isTriggered()
-{
-    return field<uint8_t>(this, 0x20);
+    this->targetIndices = nullptr;
+    this->radio = nullptr;
+    this->objective = objective;
+    this->textID = textID;
+    this->imageID = imageID;
+    this->conditionType = 0xb;
+    this->triggeredFlag = 0;
+    this->over = 0;
+    this->lastRouteIndex = 0;
 }
 
 RadioMessage::~RadioMessage()
 {
-    void *values = field<void *>(this, 0x1c);
-    if (values != 0) {
-        ::operator delete[](values);
-    }
-    field<void *>(this, 0x1c) = 0;
+    delete[] this->targetIndices;
+    this->targetIndices = nullptr;
 }
 
-#define ALWAYS_INLINE __attribute__((always_inline)) inline
-
-static ALWAYS_INLINE Radio *radio(RadioMessage *self)
+void RadioMessage::finish()
 {
-    return field<Radio *>(self, 0x00);
+    this->over = 1;
 }
 
-static ALWAYS_INLINE Objective *objective(RadioMessage *self)
+uint8_t RadioMessage::isOver()
 {
-    return field<Objective *>(self, 0x04);
+    return this->over;
 }
 
-static ALWAYS_INLINE int type(RadioMessage *self)
+void RadioMessage::reset()
 {
-    return field<int>(self, 0x10);
+    this->lastRouteIndex = 0;
+    this->triggeredFlag = 0;
+    this->over = 0;
 }
 
-static ALWAYS_INLINE int param(RadioMessage *self)
+void RadioMessage::trigger()
 {
-    return field<int>(self, 0x14);
+    this->triggeredFlag = 1;
 }
 
-static ALWAYS_INLINE int count(RadioMessage *self)
+uint8_t RadioMessage::isTriggered()
 {
-    return field<int>(self, 0x18);
+    return this->triggeredFlag;
 }
 
-static ALWAYS_INLINE int *indices(RadioMessage *self)
+namespace {
+
+Array<Player*>* enemyList(PlayerEgo* ego)
 {
-    return field<int *>(self, 0x1c);
+    return static_cast<Player*>(ego->player)->getEnemies();
 }
 
-static ALWAYS_INLINE Array<Player *> *enemies(PlayerEgo *ego)
+// High byte of Player::enemyFlags — the "always friend" half of the flag pair.
+uint8_t enemyFriendFlag(Player* player)
 {
-    return field<Player *>(ego, 0x00)->getEnemies();
+    return static_cast<uint8_t>(player->enemyFlags >> 8);
 }
 
-static ALWAYS_INLINE Player *selected(Array<Player *> *list, RadioMessage *self, int i)
+bool lowHitpoints(Player* player, int divisor, int multiplier)
 {
-    return list->data()[indices(self)[i]];
+    int threshold = (player->getMaxHitpoints() / divisor) * multiplier;
+    return player->getHitpoints() < threshold;
 }
 
-static ALWAYS_INLINE int set_result(RadioMessage *self, int value)
+} // namespace
+
+int RadioMessage::setResult(int value)
 {
-    field<uint8_t>(self, 0x20) = static_cast<uint8_t>(value);
+    this->triggeredFlag = static_cast<uint8_t>(value);
     if (value == 0) {
         return 0;
     }
-    radio(self)->setCurrentMessage(self);
+    this->radio->currentMessage = this;
     return 1;
 }
 
-static ALWAYS_INLINE int clear_result(RadioMessage *self)
+int RadioMessage::triggerResult()
 {
-    field<uint8_t>(self, 0x20) = 0;
-    return 0;
-}
-
-static ALWAYS_INLINE int trigger_result(RadioMessage *self)
-{
-    field<uint8_t>(self, 0x20) = 1;
-    radio(self)->setCurrentMessage(self);
+    this->triggeredFlag = 1;
+    this->radio->currentMessage = this;
     return 1;
 }
 
-static ALWAYS_INLINE int low_hp(Player *player, int divisor, int multiplier)
+Player* RadioMessage::selectTarget(Array<Player*>* list, int i)
 {
-    int max = player->getMaxHitpoints() / divisor;
-    return player->getHitpoints() < max * multiplier;
+    return list->data()[this->targetIndices[i]];
 }
 
-static ALWAYS_INLINE float vector_z(Vector *vector)
+int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
 {
-    return *reinterpret_cast<float *>(reinterpret_cast<char *>(vector) + 8);
-}
-
-int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
-{
-    if (field<uint8_t>(this, 0x20) != 0) {
+    if (this->triggeredFlag != 0) {
         return 0;
     }
 
-    switch (type(this)) {
+    switch (this->conditionType) {
     case 0: {
         if (ego->getRoute() == 0) {
             break;
         }
-        int current = ego->getRoute()->getCurrent();
-        int last = field<int>(this, 0x24);
+        int current = reinterpret_cast<Route*>(static_cast<intptr_t>(ego->getRoute()))->getCurrent();
+        int last = this->lastRouteIndex;
         int value = 0;
         if (current > last) {
-            value = last == param(this);
+            value = (last == this->conditionValue);
         }
-        field<int>(this, 0x24) = ego->getRoute()->getCurrent();
-        field<uint8_t>(this, 0x20) = static_cast<uint8_t>(value);
+        this->lastRouteIndex = current;
+        this->triggeredFlag = static_cast<uint8_t>(value);
         if (value != 0) {
-            radio(this)->setCurrentMessage(this);
+            this->radio->currentMessage = this;
             return 1;
         }
         return 0;
     }
 
     case 1: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            if (selected(list, this, i)->isDead()) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            if (selectTarget(list, i)->isDead()) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 2: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            Player *player = selected(list, this, i);
-            if (field<uint8_t>(player, 0x5d) != 0 && player->isDead()) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            Player* player = selectTarget(list, i);
+            if (enemyFriendFlag(player) != 0 && player->isDead()) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 3:
-        return set_result(this, field<Level *>(ego, 0x0c)->getEnemiesLeft() < 1);
+        return setResult(ego->level->getEnemiesLeft() < 1);
 
     case 4:
-        return set_result(this, field<Level *>(ego, 0x0c)->getFriendsLeft() < 1);
+        return setResult(ego->level->getFriendsLeft() < 1);
 
     case 5:
-        return set_result(this, time >= static_cast<int64_t>(param(this)));
+        return setResult(time >= static_cast<int64_t>(this->conditionValue));
 
     case 6: {
-        RadioMessage *message = radio(this)->getMessage(param(this));
-        return set_result(this, field<uint8_t>(message, 0x20));
+        RadioMessage* message = this->radio->getMessage(this->conditionValue);
+        return setResult(message->triggeredFlag);
     }
 
     case 8: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            Player *player = selected(list, this, i);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            Player* player = selectTarget(list, i);
             if (!player->isAsteroid() && player->isActive()) {
-                return trigger_result(this);
+                return triggerResult();
             }
         }
         break;
     }
 
     case 9: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            if (!selected(list, this, i)->isDead()) {
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            if (!selectTarget(list, i)->isDead()) {
                 break;
             }
-            if (i + 1 >= count(this)) {
-                return trigger_result(this);
+            if (i + 1 >= this->targetCount) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 10: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            Player *player = selected(list, this, i);
-            if (!player->isAsteroid() && field<uint8_t>(player, 0x5d) != 0 && player->isActive()) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            Player* player = selectTarget(list, i);
+            if (!player->isAsteroid() && enemyFriendFlag(player) != 0 && player->isActive()) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x0b:
-        return set_result(this, objective(this)->achieved(static_cast<int>(time)));
+        return setResult(this->objective->achieved(static_cast<int>(time)));
 
     case 0x0c: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            if (low_hp(selected(list, this, i), 2, 1)) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            if (lowHitpoints(selectTarget(list, i), 2, 1)) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x0e: {
-        Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
-        return set_result(this, field<uint8_t>(ki, 0x69));
+        Array<Player*>* list = enemyList(ego);
+        KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
+        return setResult(ki->field_0x69);
     }
 
     case 0x0f: {
-        Array<Player *> *list = enemies(ego);
+        Array<Player*>* list = enemyList(ego);
         for (uint32_t i = 0; i < list->size(); ++i) {
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (!player->isAsteroid() && player->isDead()) {
-                return trigger_result(this);
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x10: {
-        Array<Player *> *list = enemies(ego);
+        Array<Player*>* list = enemyList(ego);
         for (uint32_t i = 0; i < list->size(); ++i) {
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (!player->isAsteroid() && player->isActive() && !player->isAlwaysFriend()) {
-                return trigger_result(this);
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x11: {
-        Array<Player *> *list = enemies(ego);
+        Array<Player*>* list = enemyList(ego);
         for (uint32_t i = 0; i < list->size(); ++i) {
-            if (i == static_cast<uint32_t>(param(this))) {
+            if (i == static_cast<uint32_t>(this->conditionValue)) {
                 continue;
             }
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (player->isAsteroid()) {
                 continue;
             }
@@ -300,64 +293,62 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
                 break;
             }
         }
-        return trigger_result(this);
+        return triggerResult();
     }
 
     case 0x12: {
-        Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
-        if (field<uint8_t>(ki, 0x69) != 0) {
-            return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
+        if (ki->field_0x69 != 0) {
+            return triggerResult();
         }
-        ki = list->data()[param(this)]->getKIPlayer();
-        return set_result(this, field<uint8_t>(ki, 0x6a));
+        ki = list->data()[this->conditionValue]->getKIPlayer();
+        return setResult(ki->field_0x6a);
     }
 
     case 0x13: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            if (low_hp(selected(list, this, i), 4, 1)) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            if (lowHitpoints(selectTarget(list, i), 4, 1)) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x14: {
-        Array<Player *> *list = enemies(ego);
+        Array<Player*>* list = enemyList(ego);
         int dead = 0;
         for (uint32_t i = 0; i < list->size(); ++i) {
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (!player->isAsteroid()) {
                 dead += player->isDead();
             }
-            if (dead >= param(this)) {
-                return trigger_result(this);
+            if (dead >= this->conditionValue) {
+                return triggerResult();
             }
         }
         break;
     }
 
     case 0x15: {
-        Array<Player *> *list = enemies(ego);
-        KIPlayer *ki = list->data()[param(this)]->getKIPlayer();
-        return set_result(this, field<uint8_t>(ki, 0x24));
+        Array<Player*>* list = enemyList(ego);
+        KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
+        return setResult(ki->field_0x24);
     }
 
-    case 0x16: {
-        int value = field<int>(field<Level *>(ego, 0x0c), 0x1c);
-        return set_result(this, value >= param(this));
-    }
+    case 0x16:
+        return setResult(ego->level->field_1c >= this->conditionValue);
 
     case 0x17:
-        return set_result(this, field<Radar *>(ego, 0x14)->stationLocked());
+        return setResult(static_cast<AbyssEngine::Radar*>(ego->field_0x14)->stationLocked());
 
     case 0x18: {
-        Array<Player *> *list = enemies(ego);
-        Player *player = list->data()[param(this)];
+        Array<Player*>* list = enemyList(ego);
+        Player* player = list->data()[this->conditionValue];
         if (!player->isActive()) {
             int value = (!player->isDead()) & (time > 0xea5fLL);
-            return set_result(this, value);
+            return setResult(value);
         }
         break;
     }
@@ -366,93 +357,65 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script)
         if (ego->getRoute() == 0) {
             break;
         }
-        int current = ego->getRoute()->getCurrent();
-        int last = field<int>(this, 0x24);
-        field<int>(this, 0x24) = ego->getRoute()->getCurrent();
-        Array<Player *> *list = enemies(ego);
+        int current = reinterpret_cast<Route*>(static_cast<intptr_t>(ego->getRoute()))->getCurrent();
+        int last = this->lastRouteIndex;
+        this->lastRouteIndex = current;
+        Array<Player*>* list = enemyList(ego);
         int active = 0;
         for (uint32_t i = 0; i < list->size(); ++i) {
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (!player->isAsteroid()) {
                 active += player->isDead() ^ 1;
             }
         }
-        int value = (active >= param(this)) & (current > last) & (last == 0);
-        return set_result(this, value);
+        int value = (active >= this->conditionValue) & (current > last) & (last == 0);
+        return setResult(value);
     }
 
     case 0x1a: {
-        Array<Player *> *list = enemies(ego);
-        Player *player = list->data()[0];
+        Array<Player*>* list = enemyList(ego);
+        Player* player = list->data()[0];
         if (!player->isActive() || player->isDead()) {
             break;
         }
-        Vector first;
-        first = player->getPosition();
-        if (vector_z(&first) - static_cast<float>(param(this)) > 0.0f) {
-            Vector second;
-            second = player->getPosition();
-            return set_result(this, vector_z(&second) - static_cast<float>(param(this)) < 5000.0f);
+        Vector pos;
+        player->getPosition(&pos);
+        float dz = pos.z - static_cast<float>(this->conditionValue);
+        if (dz > 0.0f) {
+            return setResult(dz < 5000.0f);
         }
-        Vector second;
-        second = player->getPosition();
-        return set_result(this, vector_z(&second) - static_cast<float>(param(this)) > -5000.0f);
+        return setResult(dz > -5000.0f);
     }
 
-    case 0x1b: {
-        int delta = script->getEvent() - param(this);
-        return set_result(this, delta == 0);
-    }
+    case 0x1b:
+        return setResult(script->getEvent() - this->conditionValue == 0);
 
     case 0x1c:
-        return set_result(this, field<Player *>(ego, 0x00)->getArmorHP() < 1);
+        return setResult(static_cast<Player*>(ego->player)->getArmorHP() < 1);
 
     case 0x1e: {
-        Array<Player *> *list = enemies(ego);
+        Array<Player*>* list = enemyList(ego);
         int dead = 0;
         for (int i = 2; i != 6; ++i) {
-            Player *player = list->data()[i];
+            Player* player = list->data()[i];
             if (!player->isAsteroid()) {
                 dead += player->isDead();
             }
         }
-        return set_result(this, dead - param(this) == 0);
+        return setResult(dead - this->conditionValue == 0);
     }
 
     case 0x1f: {
-        Array<Player *> *list = enemies(ego);
-        for (int i = 0; i < count(this); ++i) {
-            if (low_hp(selected(list, this, i), 4, 3)) {
-                return trigger_result(this);
+        Array<Player*>* list = enemyList(ego);
+        for (int i = 0; i < this->targetCount; ++i) {
+            if (lowHitpoints(selectTarget(list, i), 4, 3)) {
+                return triggerResult();
             }
         }
         break;
     }
     }
 
-    return clear_result(this);
-}
-
-RadioMessage::RadioMessage(int param_1, int param_2, int param_3, int param_4)
-{
-    field<int>(this, 0x1c) = 0;
-    field<int>(this, 0x00) = 0;
-    field<int>(this, 0x04) = 0;
-    field<int>(this, 0x08) = param_1;
-    field<int>(this, 0x0c) = param_2;
-    field<int>(this, 0x10) = param_3;
-    field<int>(this, 0x14) = param_4;
-
-    int *values = new int[1];
-    *values = param_4;
-    struct CountValues {
-        int count;
-        int *values;
-    };
-    field<CountValues>(this, 0x18) = CountValues{1, values};
-
-    volatile uint16_t *flags = &field<uint16_t>(this, 0x20);
-    volatile int *timer = &field<int>(this, 0x24);
-    *flags = 0;
-    *timer = 0;
+    this->triggeredFlag = 0;
+    return 0;
 }

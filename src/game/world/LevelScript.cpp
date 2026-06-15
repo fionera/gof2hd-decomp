@@ -1,247 +1,185 @@
-// Offset accessors come from a single source each within this TU:
-//   I() from Explosion.h, B() from PlayerEgo.h, P() from LevelScript.h.
-#include "gof2/game/world/LevelScript.h"   // defines P()
-#include "gof2/game/mission/Explosion.h"     // defines I()
+#include "gof2/game/world/LevelScript.h"
+#include "gof2/game/ship/Player.h"
+#include "gof2/game/mission/Explosion.h"
 #include "gof2/game/ship/KIPlayer.h"
 #include "gof2/game/ui/Hud.h"
 #include "gof2/game/world/StarSystem.h"
 #include "gof2/game/ship/TargetFollowCamera.h"
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/game/world/Level.h"
-// RadioMessage.h is intentionally NOT included here: it defines stub structs
-// (PlayerEgo, Route, Level, Player, LevelScript, ...) that collide with the real
-// class headers used by this TU. This TU only needs RadioMessage::trigger/finish,
-// so forward-declare that minimal interface instead.
-class RadioMessage {
-public:
-    void finish();
-    void trigger();
-};
 #include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/ship/PlayerEgo.h"     // defines B()
+#include "gof2/game/ship/PlayerEgo.h"
 #include "gof2/game/ship/PlayerFighter.h"
 #include "gof2/game/world/Route.h"
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/world/Station.h"
 
-// A by-value 3-float vector passed to the camera helpers (a math Vector laid out
-// as 3 contiguous floats). Defined once here so all uses agree.
+// RadioMessage.h is intentionally NOT included here: it defines stub structs
+// (PlayerEgo, Route, Level, Player, Radar, LevelScript, ...) that collide with the
+// real class headers this TU uses. This TU only needs RadioMessage::trigger/finish,
+// so declare that minimal interface locally instead.
+class RadioMessage {
+public:
+    void finish();
+    void trigger();
+};
+
+// Game singletons / externs (engine-provided, no clean header here).
+extern Status* gStatus;
+extern void*   gProgrammedStation;
+extern void    Player_setUnknown(void* player, bool enabled);
+extern void    Player_setAutoPilotTarget(void* player, void* target);
+
+// A by-value 3-float vector passed to the camera helpers (a math Vector laid out as
+// three contiguous floats); the camera helpers take a Vector*.
 struct StackVector {
-    char bytes[12];
+    float v[3];
 
     StackVector() {}
     StackVector(float x, float y, float z)
     {
-        ((float *)bytes)[0] = x;
-        ((float *)bytes)[1] = y;
-        ((float *)bytes)[2] = z;
+        v[0] = x;
+        v[1] = y;
+        v[2] = z;
     }
-    // The camera helpers take a Vector* whose first 3 floats are the offset; the
-    // original ABI passed the address of this stack temporary. Expose that as an
-    // implicit Vector* conversion so the recovered call sites read naturally.
-    operator Vector *() { return (Vector *)bytes; }
+    operator Vector*() { return reinterpret_cast<Vector*>(v); }
 };
 
-extern "C" void *gStatus;
-extern "C" void Player_setUnknown(void *player, bool enabled);
-extern "C" void *gProgrammedStation;
-extern "C" int Station_getIndex(void *station);
-extern "C" void Player_setAutoPilotTarget(void *player, void *target);
-extern "C" void *Explosion_dtor(void *explosion);
+typedef void (*RenderProc)(void*);
+typedef void* (*LevelListProc)(Level*);
+typedef void (*ReadWaypointProc)(StackVector* out, void* waypoint);
+typedef void (*SetVectorProc)(void* self, StackVector* value);
+typedef void (*VirtualCommandProc)(void* self, int a, int b, int c);
 
-typedef void (*RenderProc)(void *);
+static volatile RenderProc    gRenderProc;
+static volatile LevelListProc gLevelListProc;
 
-static volatile RenderProc gRenderProc;
+// First data entry of a flattened engine Array (its `data` pointer sits at +4).
+static inline void* arrayData(void* array)
+{
+    return *reinterpret_cast<void**>(static_cast<char*>(array) + 4);
+}
+
+static inline void* firstListEntry(void* list)
+{
+    return static_cast<void**>(arrayData(list))[0];
+}
 
 void LevelScript::render3D()
 {
-    if (this->m_pGeometry6 != 0) {
-        ((AEGeometry *)(this->m_pGeometry6))->render();
+    if (m_pGeometry6) m_pGeometry6->render();
+    if (m_pGeometry5) m_pGeometry5->render();
+    if (m_pGeometry0) m_pGeometry0->render();
+    if (m_pGeometry1) m_pGeometry1->render();
+    if (m_pGeometry2) m_pGeometry2->render();
+    if (m_pGeometry3) m_pGeometry3->render();
+
+    if (m_pExplosion && m_pExplosion->isPlaying()) {
+        m_pExplosion->render();
     }
-    if (this->m_pGeometry5 != 0) {
-        ((AEGeometry *)(this->m_pGeometry5))->render();
-    }
-    if (this->m_pGeometry0 != 0) {
-        ((AEGeometry *)(this->m_pGeometry0))->render();
-    }
-    if (this->m_pGeometry1 != 0) {
-        ((AEGeometry *)(this->m_pGeometry1))->render();
-    }
-    if (this->m_pGeometry2 != 0) {
-        ((AEGeometry *)(this->m_pGeometry2))->render();
-    }
-    if (this->m_pGeometry3 != 0) {
-        ((AEGeometry *)(this->m_pGeometry3))->render();
-    }
-    if (this->m_pExplosion != 0 && ((Explosion *)(this->m_pExplosion))->isPlaying() != 0) {
-        ((Explosion *)(this->m_pExplosion))->render();
-    }
-    if (this->field_0xa8 != 0 && this->m_pParticleGeom0 != 0) {
+
+    if (field_0xa8 && m_pParticleGeom0) {
         RenderProc render = gRenderProc;
-        render(this->m_pParticleGeom0);
-        render(this->m_pParticleGeom1);
-        return render(this->m_pParticleGeom2);
+        render(m_pParticleGeom0);
+        render(m_pParticleGeom1);
+        render(m_pParticleGeom2);
     }
 }
 
 uint8_t LevelScript::startSequenceOver()
 {
-    return this->m_bStartSequenceOver;
+    return m_bStartSequenceOver;
 }
 
-void LevelScript::resetCamera(Level *level)
+void LevelScript::resetCamera(Level* level)
 {
-    if (((Level *)(level))->getPlayer() != 0) {
-        void *camera = this->m_pCamera;
-        void *player = (void *)((Level *)(level))->getPlayer();
-        ((TargetFollowCamera *)(camera))->setTarget(P(player, 0x8));
-        this->m_pCamera->setTargetOffset(StackVector(0.0f, 600.0f, -650.0f));
-        this->m_pCamera->setCamOffset(StackVector(0.0f, 600.0f, -1338.0f));
+    if (level->getPlayer() != 0) {
+        void* player = (void*)level->getPlayer();
+        m_pCamera->setTarget(*reinterpret_cast<void**>(static_cast<char*>(player) + 0x8));
+        m_pCamera->setTargetOffset(StackVector(0.0f, 600.0f, -650.0f));
+        m_pCamera->setCamOffset(StackVector(0.0f, 600.0f, -1338.0f));
     }
 }
 
 void LevelScript::skipSequence()
 {
-    if (this->field_0x24 > 0 && ((Status *)(gStatus))->getCurrentCampaignMission() > 0) {
-        this->field_0x24 = 0x1b59;
-        void *player = (void *)((Level *)(this->m_pLevel))->getPlayer();
-        return Player_setUnknown(P(player, 0), true);
+    if (field_0x24 > 0 && gStatus->getCurrentCampaignMission() > 0) {
+        field_0x24 = 0x1b59;
+        void* player = (void*)m_pLevel->getPlayer();
+        Player_setUnknown(player, true);
     }
 }
 
 uint8_t LevelScript::startSequence()
 {
-    return (uint8_t)this->m_bStartSequence;
+    return (uint8_t)m_bStartSequence;
 }
 
 void LevelScript::setAutoPilotToProgrammedStation()
 {
-    void **programmedStation = &gProgrammedStation;
-    if (*programmedStation != 0) {
-        void **status = &gStatus;
-        if (((Station *)(((Status *)(*status))->getStation()))->equals((Station *)*programmedStation) != 0) {
-            *programmedStation = 0;
+    if (gProgrammedStation == 0) {
+        return;
+    }
+
+    Station* programmed = static_cast<Station*>(gProgrammedStation);
+    if (gStatus->getStation()->equals(programmed)) {
+        gProgrammedStation = 0;
+        return;
+    }
+
+    SolarSystem* system = (SolarSystem*)gStatus->getSystem();
+    void* player;
+    void* target;
+
+    if (system->stationIsInSystem(programmed)) {
+        player = (void*)m_pLevel->getPlayer();
+        void* targets = ((StarSystem*)m_pLevel->getStarSystem())->getPlanetTargets();
+        int targetIndex = system->getStationEnumIndex(programmed->getIndex());
+        target = static_cast<void**>(arrayData(targets))[targetIndex];
+    } else if (system->currentOrbitHasWarpGate()) {
+        player = (void*)m_pLevel->getPlayer();
+        Array<KIPlayer*>* landmarks = m_pLevel->getLandmarks();
+        target = (void*)(*landmarks)[1];
+    } else {
+        int warpGateIndex = system->getWarpGateEnumIndex();
+        if (warpGateIndex < 0) {
             return;
         }
-
-        void *target;
-        void *player;
-        if (((SolarSystem *)(((Status *)(*status))->getSystem()))->stationIsInSystem((Station *)*programmedStation) != 0) {
-            player = (void *)((Level *)(this->m_pLevel))->getPlayer();
-            void *targets = ((StarSystem *)((void *)((Level *)(this->m_pLevel))->getStarSystem()))->getPlanetTargets();
-            void *system = (void *)((Status *)(*status))->getSystem();
-            int stationIndex = Station_getIndex(*programmedStation);
-            int targetIndex = ((SolarSystem *)(system))->getStationEnumIndex(stationIndex);
-            target = ((void **)P(targets, 4))[targetIndex];
-        } else if (((SolarSystem *)(((Status *)(*status))->getSystem()))->currentOrbitHasWarpGate() != 0) {
-            player = (void *)((Level *)(this->m_pLevel))->getPlayer();
-            void *landmarks = (void *)((Level *)(this->m_pLevel))->getLandmarks();
-            target = ((void **)P(landmarks, 4))[1];
-        } else {
-            int warpGateIndex = ((SolarSystem *)(((Status *)(*status))->getSystem()))->getWarpGateEnumIndex();
-            if (warpGateIndex < 0) {
-                return;
-            }
-            player = (void *)((Level *)(this->m_pLevel))->getPlayer();
-            void *targets = ((StarSystem *)((void *)((Level *)(this->m_pLevel))->getStarSystem()))->getPlanetTargets();
-            target = ((void **)P(targets, 4))[warpGateIndex];
-        }
-        return Player_setAutoPilotTarget(player, target);
+        player = (void*)m_pLevel->getPlayer();
+        void* targets = ((StarSystem*)m_pLevel->getStarSystem())->getPlanetTargets();
+        target = static_cast<void**>(arrayData(targets))[warpGateIndex];
     }
+
+    Player_setAutoPilotTarget(player, target);
 }
 
 LevelScript::~LevelScript()
 {
-    void *geometry = this->m_pGeometry6;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry6 = 0;
-
-    geometry = this->m_pGeometry5;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry5 = 0;
-
-    geometry = this->m_pGeometry0;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry0 = 0;
-
-    geometry = this->m_pGeometry1;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry1 = 0;
-
-    geometry = this->m_pGeometry2;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry2 = 0;
-
-    geometry = this->m_pGeometry3;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry3 = 0;
-
-    geometry = this->m_pParticleGeom0;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pParticleGeom0 = 0;
-
-    geometry = this->m_pParticleGeom1;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pParticleGeom1 = 0;
-
-    geometry = this->m_pParticleGeom2;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pParticleGeom2 = 0;
-
-    void *explosion = this->m_pExplosion;
-    if (explosion != 0) {
-        ::operator delete(Explosion_dtor(explosion));
-    }
-    this->m_pExplosion = 0;
-
-    geometry = this->m_pGeometry4;
-    if (geometry != 0) {
-        ((AEGeometry *)geometry)->~AEGeometry();
-        ::operator delete(geometry);
-    }
-    this->m_pGeometry4 = 0;
+    delete m_pGeometry6;     m_pGeometry6 = 0;
+    delete m_pGeometry5;     m_pGeometry5 = 0;
+    delete m_pGeometry0;     m_pGeometry0 = 0;
+    delete m_pGeometry1;     m_pGeometry1 = 0;
+    delete m_pGeometry2;     m_pGeometry2 = 0;
+    delete m_pGeometry3;     m_pGeometry3 = 0;
+    delete m_pParticleGeom0; m_pParticleGeom0 = 0;
+    delete m_pParticleGeom1; m_pParticleGeom1 = 0;
+    delete m_pParticleGeom2; m_pParticleGeom2 = 0;
+    delete m_pExplosion;     m_pExplosion = 0;
+    delete m_pGeometry4;     m_pGeometry4 = 0;
 }
 
 uint32_t LevelScript::canSkipCutsceneNow()
 {
-    void **status = &gStatus;
-    if (((Status *)(*status))->getCurrentCampaignMission() == 0x9a) {
-        if (!((uint32_t)(this->m_nState - 1) < 9)) {
+    int mission = gStatus->getCurrentCampaignMission();
+    if (mission == 0x9a) {
+        if (!((uint32_t)(m_nState - 1) < 9)) {
             return 0;
         }
-    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9d) {
-        if (!((uint32_t)(this->m_nState - 2) < 3)) {
+    } else if (mission == 0x9d) {
+        if (!((uint32_t)(m_nState - 2) < 3)) {
             return 0;
         }
-    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9e && this->m_nState > 1) {
+    } else if (mission == 0x9e && m_nState > 1) {
         return 0;
     }
     return 1;
@@ -249,188 +187,175 @@ uint32_t LevelScript::canSkipCutsceneNow()
 
 void LevelScript::resetStartSequenceOver()
 {
-    this->field_0x24 = 0;
-    this->m_bStartSequenceOver = 0;
-}
-
-typedef void *(*LevelListProc)(Level *);
-typedef void (*ReadWaypointProc)(StackVector *out, void *waypoint);
-typedef void (*SetVectorProc)(void *self, StackVector *value);
-typedef void (*VirtualCommandProc)(void *self, int a, int b, int c);
-
-static volatile LevelListProc gLevelListProc;
-
-static inline void *firstListEntry(void *list)
-{
-    return ((void **)P(list, 4))[0];
+    field_0x24 = 0;
+    m_bStartSequenceOver = 0;
 }
 
 void LevelScript::skipCutscene()
 {
     StackVector position;
-    void **status = &gStatus;
 
-    int mission = ((Status *)(*status))->getCurrentCampaignMission();
+    int mission = gStatus->getCurrentCampaignMission();
     if (mission == 0x9a) {
-        if ((uint32_t)(this->m_nState - 1) < 9) {
-            this->m_nState = 9;
+        if ((uint32_t)(m_nState - 1) < 9) {
+            m_nState = 9;
             for (int i = 0; i != 8; ++i) {
-                void *messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-                ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
-                messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-                ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
+                Array<void*>* messages = m_pLevel->getMessages();
+                ((RadioMessage*)((*messages)[i]))->trigger();
+                messages = m_pLevel->getMessages();
+                ((RadioMessage*)((*messages)[i]))->finish();
             }
 
-            this->field_0x90 = 0x7d1;
-            this->field_0x94 = 0;
+            field_0x90 = 0x7d1;
+            field_0x94 = 0;
 
             LevelListProc getList = gLevelListProc;
-            void *list = getList(this->m_pLevel);
-            ((PlayerFighter *)(firstListEntry(list)))->setAIDisabled(false);
+            void* list = getList(m_pLevel);
+            ((PlayerFighter*)firstListEntry(list))->setAIDisabled(false);
 
-            list = getList(this->m_pLevel);
-            void *fighter = firstListEntry(list);
+            list = getList(m_pLevel);
+            void* fighter = firstListEntry(list);
 
-            list = getList(this->m_pLevel);
-            void *route = ((KIPlayer *)(firstListEntry(list)))->getRoute();
-            void *waypoint = ((Route *)(route))->getWaypoint();
-            ReadWaypointProc readWaypoint = *(ReadWaypointProc *)((char *)P(waypoint, 0) + 0x28);
+            list = getList(m_pLevel);
+            Route* route = ((KIPlayer*)firstListEntry(list))->getRoute();
+            void* waypoint = route->getWaypoint();
+            ReadWaypointProc readWaypoint =
+                *(ReadWaypointProc*)(*reinterpret_cast<char**>(waypoint) + 0x28);
             readWaypoint(&position, waypoint);
-            SetVectorProc setVector = *(SetVectorProc *)((char *)P(fighter, 0) + 0x44);
+            SetVectorProc setVector =
+                *(SetVectorProc*)(*reinterpret_cast<char**>(fighter) + 0x44);
             setVector(fighter, &position);
         }
-    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9d) {
-        if (this->m_nState <= 4) {
+    } else if (mission == 0x9d) {
+        if (m_nState <= 4) {
             for (int i = 0; i != 4; ++i) {
-                void *messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-                ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
-                messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-                ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
+                Array<void*>* messages = m_pLevel->getMessages();
+                ((RadioMessage*)((*messages)[i]))->trigger();
+                messages = m_pLevel->getMessages();
+                ((RadioMessage*)((*messages)[i]))->finish();
             }
-            this->field_0x90 = 0x4651;
-            this->field_0x94 = 0;
-            this->m_nState = 4;
+            field_0x90 = 0x4651;
+            field_0x94 = 0;
+            m_nState = 4;
         }
-    } else if (((Status *)(*status))->getCurrentCampaignMission() == 0x9e) {
-        this->field_0x98 = 0x2ee1;
-        this->field_0x9c = 0;
+    } else if (mission == 0x9e) {
+        field_0x98 = 0x2ee1;
+        field_0x9c = 0;
         for (int i = 0; i != 3; ++i) {
-            void *messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-            ((RadioMessage *)(((void **)P(messages, 4))[i]))->trigger();
-            messages = (void *)((Level *)(this->m_pLevel))->getMessages();
-            ((RadioMessage *)(((void **)P(messages, 4))[i]))->finish();
+            Array<void*>* messages = m_pLevel->getMessages();
+            ((RadioMessage*)((*messages)[i]))->trigger();
+            messages = m_pLevel->getMessages();
+            ((RadioMessage*)((*messages)[i]))->finish();
         }
 
         LevelListProc getList = gLevelListProc;
-        void *list = getList(this->m_pLevel);
-        void *player = firstListEntry(list);
-        VirtualCommandProc command = *(VirtualCommandProc *)((char *)P(player, 0) + 0x48);
+        void* list = getList(m_pLevel);
+        void* player = firstListEntry(list);
+        VirtualCommandProc command =
+            *(VirtualCommandProc*)(*reinterpret_cast<char**>(player) + 0x48);
         command(player, 0x000ba51e, 0, 0x000ba4b6);
 
-        list = getList(this->m_pLevel);
-        ((KIPlayer *)(firstListEntry(list)))->setVisible(true);
+        list = getList(m_pLevel);
+        ((KIPlayer*)firstListEntry(list))->setVisible(true);
 
-        list = getList(this->m_pLevel);
-        this->m_nState = 2;
+        list = getList(m_pLevel);
+        m_nState = 2;
     }
 }
 
 void LevelScript::process(int delta)
 {
-    Level *level = this->m_pLevel;
-    void *messages = (void *)((Level *)(level))->getMessages();
-    void *player = (void *)((Level *)(level))->getPlayer();
-    void *activeMessages = ((Level *)(level))->getActiveMessages();
-    int mission = ((Status *)(gStatus))->getCurrentCampaignMission();
-
-    (void)messages;
-    (void)player;
-    (void)activeMessages;
+    Level* level = m_pLevel;
+    level->getMessages();
+    level->getPlayer();
+    level->getActiveMessages();
+    int mission = gStatus->getCurrentCampaignMission();
 
     if (mission != 0) {
         float frameDelta = (float)delta * 0.001f;
-        ((TargetFollowCamera *)((TargetFollowCamera *)this->m_pCamera))->update(frameDelta);
+        m_pCamera->update((int)frameDelta);
     }
 }
 
 void LevelScript::lookBehind()
 {
-    ((TargetFollowCamera *)(this->m_pCamera))->setTargetOffset(StackVector(0.0f, 0.0f, -950.0f));
-    ((TargetFollowCamera *)(this->m_pCamera))->setCamOffset(StackVector(0.0f, 600.0f, 2230.0f));
+    m_pCamera->setTargetOffset(StackVector(0.0f, 0.0f, -950.0f));
+    m_pCamera->setCamOffset(StackVector(0.0f, 600.0f, 2230.0f));
 }
 
-LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamera *camera)
+LevelScript::LevelScript(Level* level, Hud* hud, Radar* radar, TargetFollowCamera* camera)
 {
-    this->field_0x48 = 0;
-    this->field_0x38 = 0;
-    this->field_0x3c = 0;
-    this->field_0x40 = 0;
-    this->field_0x44 = 0;
-    this->field_0x28 = 0;
-    this->field_0x2c = 0;
-    this->field_0x30 = 0;
-    this->field_0x34 = 0;
+    field_0x48 = 0;
+    field_0x38 = 0;
+    field_0x3c = 0;
+    field_0x40 = 0;
+    field_0x44 = 0;
+    field_0x28 = 0;
+    field_0x2c = 0;
+    field_0x30 = 0;
+    field_0x34 = 0;
 
-    this->m_matrix.initIdentity();
+    m_matrix.initIdentity();
 
-    this->m_pHud = hud;
-    this->m_pRadar = radar;
-    this->m_pCamera = camera;
-    this->m_pLevel = level;
-    ((Hud *)(hud))->drawTitleImage(false);
+    m_pHud = hud;
+    m_pRadar = radar;
+    m_pCamera = camera;
+    m_pLevel = level;
+    hud->drawTitleImage(false);
 
-    this->m_nState = 0;
-    this->m_bStartSequence = 1;
-    this->m_nFlags = 0x100;
+    m_nState = 0;
+    m_bStartSequence = 1;
+    m_nFlags = 0x100;
 
-    this->field_0x8c = 0;
-    this->field_0x90 = 0;
-    this->field_0x94 = 0;
-    this->field_0x98 = 0;
-    this->m_pParticleGeom0 = 0;
-    this->m_pParticleGeom1 = 0;
-    this->m_pParticleGeom2 = 0;
-    this->m_pGeometry0 = 0;
-    this->m_pGeometry1 = 0;
-    this->m_pGeometry2 = 0;
-    this->m_pGeometry3 = 0;
-    this->m_pExplosion = 0;
-    this->m_pGeometry4 = 0;
-    this->field_0x8 = 0;
-    this->field_0xc = 0;
-    this->m_nTimeLimit = ((Level *)(level))->getTimeLimit();
-    this->field_0x24 = 0;
-    this->m_pGeometry5 = 0;
-    this->m_pGeometry6 = 0;
-    this->field_0x12 = 0;
+    field_0x8c = 0;
+    field_0x90 = 0;
+    field_0x94 = 0;
+    field_0x98 = 0;
+    m_pParticleGeom0 = 0;
+    m_pParticleGeom1 = 0;
+    m_pParticleGeom2 = 0;
+    m_pGeometry0 = 0;
+    m_pGeometry1 = 0;
+    m_pGeometry2 = 0;
+    m_pGeometry3 = 0;
+    m_pExplosion = 0;
+    m_pGeometry4 = 0;
+    field_0x8 = 0;
+    field_0xc = 0;
+    m_nTimeLimit = level->getTimeLimit();
+    field_0x24 = 0;
+    m_pGeometry5 = 0;
+    m_pGeometry6 = 0;
+    field_0x12 = 0;
 
-    ((TargetFollowCamera *)(camera))->setLookAtCam(true);
+    camera->setLookAtCam(true);
 
-    void *player = (void *)((Level *)(level))->getPlayer();
+    void* player = (void*)level->getPlayer();
     if (player == 0) {
-        this->m_bStartSequence = 0;
+        m_bStartSequence = 0;
     } else {
-        ((Player *)(P(player, 0)))->setVulnerable(false);
+        ((Player*)player)->setVulnerable(false);
     }
 
-    player = (void *)((Level *)(level))->getPlayer();
-    ((PlayerEgo *)(player))->setCollide(false);
+    player = (void*)level->getPlayer();
+    ((PlayerEgo*)player)->setCollide(false);
 
-    if (((Status *)(gStatus))->getCurrentCampaignMission() == 0) {
-        this->field_0x90 = 0;
-        this->field_0x94 = 0;
-        this->m_bStartSequenceOver = 1;
-        ((TargetFollowCamera *)(camera))->setLookAtCam(true);
+    if (gStatus->getCurrentCampaignMission() == 0) {
+        field_0x90 = 0;
+        field_0x94 = 0;
+        m_bStartSequenceOver = 1;
+        camera->setLookAtCam(true);
     }
 }
 
-// LevelScript::getEvent() / setEvent() -- accessors for the current scripted-event
-// id (m_nState, +0x1c). The cinematic/start-sequence state machine reads this to
-// decide which step of the level intro is playing.
-int LevelScript::getEvent() {
-    return this->m_nState;
+// Accessors for the current scripted-event id (m_nState). The cinematic /
+// start-sequence state machine reads this to decide which intro step is playing.
+int LevelScript::getEvent()
+{
+    return m_nState;
 }
 
-void LevelScript::setEvent(int event) {
-    this->m_nState = event;
+void LevelScript::setEvent(int event)
+{
+    m_nState = event;
 }

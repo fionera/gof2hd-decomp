@@ -1,78 +1,55 @@
 #include "gof2/game/world/SystemPathFinder.h"
 
-// ---- SystemPathFinder_12b77c / ~SystemPathFinder_12b77e ----
 // Stateless A* helper: the open/closed sets used by search() are created and
 // released within each call, so construction and destruction do nothing.
 SystemPathFinder::SystemPathFinder() {}
 SystemPathFinder::~SystemPathFinder() {}
 
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
-    uint32_t i = 0;
-    do {
-        if (i >= nodes->size()) {
-            return 0;
-        }
-        Node *current = nodes->data()[i];
-        ++i;
-        if (current == node) {
+    for (uint32_t i = 0; i < nodes->size(); ++i) {
+        if (nodes->data()[i] == node) {
             return 1;
         }
-    } while (true);
+    }
+    return 0;
 }
 
 Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     Array<Node *> *closed = new Array<Node *>;
     Array<Node *> *open = new Array<Node *>;
-    ArrayAdd<Node *>(start, *open);
-    start->field_0x4 = 0;
+    open->push_back(start);
+    start->parent = nullptr;
 
-    while (open->size() != 0) {
+    while (!open->empty()) {
         Node *current = open->data()[0];
-        ArrayRemove<Node *>(current, *open);
+        open->erase(open->begin());
         if (current == goal) {
-            return this->constructPath(goal);
+            return constructPath(goal);
         }
 
-        ArrayAdd<Node *>(current, *closed);
-        uint32_t i = 0;
-        while (i < current->field_0x0->size()) {
-            Node *next = current->field_0x0->data()[i];
+        closed->push_back(current);
+        Array<Node *> *neighbours = current->children;
+        for (uint32_t i = 0; i < neighbours->size(); ++i) {
+            Node *next = neighbours->data()[i];
 
-            uint32_t j = 0;
-            while (j < closed->size()) {
-                if (closed->data()[j] == next) {
-                    goto next_node;
-                }
-                ++j;
+            if (contains(closed, next) != 0 || contains(open, next) != 0) {
+                continue;
             }
 
-            j = 0;
-            while (j < open->size()) {
-                if (open->data()[j] == next) {
-                    goto next_node;
-                }
-                ++j;
-            }
-
-            next->field_0x4 = current;
-            ArrayAdd<Node *>(next, *open);
-
-        next_node:
-            ++i;
+            next->parent = current;
+            open->push_back(next);
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
                                       int to) {
     Array<int> *path = getSystemPath(systems, from, to);
-    if (path != 0) {
-        int length = path->size();
-        ArrayRelease<int>(*path);
-        path->~Array<int>();
-        operator delete(path);
+    if (path != nullptr) {
+        int length = (int)path->size();
+        delete path;
         return length - 1;
     }
     return 0;
@@ -80,87 +57,72 @@ int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
 
 Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     Array<Node *> *backwards = new Array<Node *>;
-    for (; node->field_0x4 != 0; node = node->field_0x4) {
-        ArrayAdd<Node *>(node, *backwards);
+    for (; node->parent != nullptr; node = node->parent) {
+        backwards->push_back(node);
     }
 
     Array<Node *> *path = new Array<Node *>;
-    ArraySetLength<Node *>(backwards->size(), *path);
+    path->resize(backwards->size());
 
     // Reverse-copy the back-pointer chain into the forward path.
-    uint32_t i = backwards->size();
-    uint32_t out = 0;
-    while (--i < 0x80000000u) {
-        path->data()[out] = backwards->data()[i];
-        ++out;
+    uint32_t count = (uint32_t)backwards->size();
+    for (uint32_t out = 0; out < count; ++out) {
+        path->data()[out] = backwards->data()[count - 1 - out];
     }
 
-    ArrayRelease<Node *>(*backwards);
+    delete backwards;
     return path;
 }
 
 Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
                                             int from, int to) {
     int start = from;
-    SystemPathFinder *finder = this;
     Array<Node *> *nodes = new Array<Node *>;
-    ArraySetLength<Node *>(systems->size(), *nodes);
+    nodes->resize(systems->size());
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        Node *node = new Node(i);
-        nodes->data()[i] = node;
+        nodes->data()[i] = new Node((int)i);
     }
 
     Status **statusPtr = g_SystemPathFinder_status;
-    from = 0;
-    while ((uint32_t)from < systems->size()) {
-        Array<int> *routes = systems->data()[from]->getRoutes();
-        if (routes != 0) {
-            for (uint32_t j = 0; j < routes->size(); ++j) {
-                Array<uint8_t> *visibilities =
-                    (*statusPtr)->getSystemVisibilities();
-                if (visibilities != 0) {
-                    uint32_t visibilityCount = visibilities->size();
-                    if (visibilityCount >
-                            (uint32_t)systems->data()[routes->data()[j]]
-                                ->getIndex()) {
-                        int visibleIndex =
-                            systems->data()[routes->data()[j]]->getIndex();
-                        uint8_t *visibleData = visibilities->data();
-                        if (visibleData[visibleIndex] != 0) {
-                            ArrayAdd<Node *>(
-                                nodes->data()[routes->data()[j]],
-                                *nodes->data()[from]->field_0x0);
-                        }
-                    }
-                }
+    for (uint32_t s = 0; s < systems->size(); ++s) {
+        Array<int> *routes = (Array<int> *)systems->data()[s]->getRoutes();
+        if (routes == nullptr) {
+            continue;
+        }
+        for (uint32_t j = 0; j < routes->size(); ++j) {
+            Array<uint8_t> *visibilities =
+                (Array<uint8_t> *)(*statusPtr)->getSystemVisibilities();
+            if (visibilities == nullptr) {
+                continue;
+            }
+            int routeIndex = routes->data()[j];
+            int targetIndex = systems->data()[routeIndex]->getIndex();
+            if (visibilities->size() > (uint32_t)targetIndex &&
+                visibilities->data()[targetIndex] != 0) {
+                nodes->data()[s]->children->push_back(
+                    nodes->data()[routeIndex]);
             }
         }
-        ++from;
     }
 
     Array<Node *> *nodePath =
-        finder->search(nodes->data()[start], nodes->data()[to]);
-    Array<int> *path;
-    if (nodePath == 0) {
-        path = 0;
-    } else {
-        if (nodePath->size() == 0) {
-            path = 0;
-        } else {
+        search(nodes->data()[start], nodes->data()[to]);
+    Array<int> *path = nullptr;
+    if (nodePath != nullptr) {
+        if (!nodePath->empty()) {
             path = new Array<int>;
-            ArraySetLength<int>(nodePath->size() + 1, *path);
-            uint32_t i = 0;
+            path->resize(nodePath->size() + 1);
             int *out = path->data();
-            *out++ = start;
-            while (i + 1 < path->size()) {
-                out[i] = nodePath->data()[i]->field_0x8;
-                ++i;
+            out[0] = start;
+            for (uint32_t i = 0; i + 1 < path->size(); ++i) {
+                out[i + 1] = nodePath->data()[i]->value;
             }
         }
-        ArrayReleaseClasses<Node *>(*nodePath);
-        nodePath->~Array<Node *>();
-        operator delete(nodePath);
+        for (uint32_t i = 0; i < nodePath->size(); ++i) {
+            delete nodePath->data()[i];
+        }
+        delete nodePath;
     }
     return path;
 }

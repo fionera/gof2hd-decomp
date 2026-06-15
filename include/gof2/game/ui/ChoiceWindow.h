@@ -1,38 +1,35 @@
 #ifndef GOF2_CHOICEWINDOW_H
 #define GOF2_CHOICEWINDOW_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// ChoiceWindow -- top-level modal choice/medal window (uses TouchButton + ScrollTouchWindow).
-// Layout recovered from Ghidra (ctor @0x1567ec etc.).
 
-struct TouchButton;
-struct ScrollTouchWindow;
+// ChoiceWindow -- top-level modal choice/medal dialog. Hosts a scrollable message
+// (ScrollTouchWindow) plus up to three TouchButtons and an optional medal graphic.
 
-// Byte-offset accessor template, used for reads into objects whose full layout is not
-// modelled in this batch (config blobs, medal image tables, foreign globals).
+class TouchButton;
+class ScrollTouchWindow;
 
 class ChoiceWindow {
 public:
-    int x;                      // +0x0   x
-    int y;                      // +0x4   y
-    int width;                      // +0x8   width
-    int height;                      // +0xc   height
-    void* leftButton;                   // +0x10  TouchButton* (left)
-    void* rightButton;                   // +0x14  TouchButton* (right)
-    void* miscButton;                   // +0x18  TouchButton* (misc)
-    void* scrollWindow;                   // +0x1c  ScrollTouchWindow*
-    String title;                  // +0x20  title String (12 bytes -> 0x2c)
-    int count;                     // +0x2c  count
-    int medal;                     // +0x30  medal
-    int medalImage;                     // +0x34  medal image handle (-1 = none)
-    int medalBgImage;                     // +0x38  medal-bg image handle (-1 = none)
-    String medalText;                  // +0x3c  secondary text String (12 bytes -> 0x48)
-    int padding;                     // +0x48
-    int field_0x4c;                     // +0x4c
-    int field_0x50;                     // +0x50
-    int field_0x54;                     // +0x54
-    uint8_t hasButtons;                 // +0x58  hasButtons flag
-    uint8_t buttonsVisible;                 // +0x59  buttons-visible flag
+    int x;
+    int y;
+    int width;
+    int height;
+    TouchButton* leftButton;
+    TouchButton* rightButton;
+    TouchButton* miscButton;
+    ScrollTouchWindow* scrollWindow;
+    String title;
+    int count;
+    int medal;
+    int medalImage;          // -1 == none
+    int medalBgImage;        // -1 == none
+    String medalText;
+    int padding;
+    int padding2;
+    int padding3;
+    int padding4;
+    uint8_t hasButtons;
+    uint8_t buttonsVisible;
 
     ChoiceWindow();
     ~ChoiceWindow();

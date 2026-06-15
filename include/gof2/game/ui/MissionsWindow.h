@@ -1,21 +1,11 @@
 #ifndef GOF2_MISSIONSWINDOW_H
 #define GOF2_MISSIONSWINDOW_H
 #include "gof2/common.h"
-// Galaxy on Fire 2 -- MissionsWindow (Android libgof2hdaa.so, armv7 Thumb).
-// Top-level class (no AbyssEngine namespace) -- the qualified target name is
-// "MissionsWindow::...". Field offsets recovered per-method from the target
-// disassembly; the layout below is reconstructed in offset order (natural
-// 64-bit alignment) from those byte-offset accesses.
-//
-// MissionsWindow extends ScrollTouchWindow in the engine, but every recovered
-// field access is to MissionsWindow's own layout starting at +0x0 (the two
-// ScrollTouchWindow* members at +0x0/+0x4 are owned sub-windows, not base
-// fields), so no base-region member is referenced here.
 
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
+// MissionsWindow -- the in-station "Missions" screen. Hosts a left (campaign) and a
+// right (freelance) scroll window, a row of tab buttons, the accept/reject/show-on-map
+// buttons, and overlays the star-map and wanted-board sub-windows.
 
-// Forward declarations for the typed sub-object members.
 class ScrollTouchWindow;
 class StarMap;
 class ChoiceWindow;
@@ -25,47 +15,46 @@ class ImagePart;
 
 class MissionsWindow {
 public:
-    ScrollTouchWindow *m_pCampaignWindow;      // +0x00  left (campaign) scroll window
-    ScrollTouchWindow *m_pFreelanceWindow;     // +0x04  right (freelance) scroll window
-    StarMap *m_pStarMap;                       // +0x08  star-map overlay (active when m_starMapActive)
-    ChoiceWindow *m_pChoiceWindow;             // +0x0c  confirm/choice dialog
-    WantedWindow *m_pWantedWindow;             // +0x10  wanted-board window (active when m_mode == 1)
-    Array<TouchButton *> *m_pTabButtons;       // +0x14  tab buttons (campaign / freelance)
-    Array<ImagePart *> *m_pAgentImageParts;    // +0x18  freelance-agent portrait image parts
-    int m_textHalfHeight;                      // +0x1c  cached (font line height / 2 - 1)
-    uint8_t m_choiceActive;                    // +0x20  confirm dialog open flag
-    uint8_t m_field_0x21;                      // +0x21  secondary choice-window draw flag
-    uint8_t m_starMapActive;                   // +0x22  star-map overlay active flag
-    uint8_t m_hangarNeedsUpdate;               // +0x23  hangar-needs-update flag
-    TouchButton *m_pAcceptButton;              // +0x24  accept-mission button
-    TouchButton *m_pRejectButton;              // +0x28  reject-mission button
-    TouchButton *m_pMapButton;                 // +0x2c  show-on-map button
-    int m_x;                                   // +0x30  window x
-    int m_y;                                   // +0x34  window y
-    int m_width;                               // +0x38  window width
-    int m_height;                              // +0x3c  window height
-    int m_mode;                                // +0x40  active mode (1 == wanted board)
+    ScrollTouchWindow*        m_pCampaignWindow;   // left (campaign) scroll window
+    ScrollTouchWindow*        m_pFreelanceWindow;  // right (freelance) scroll window
+    StarMap*                  m_pStarMap;          // star-map overlay (active when m_starMapActive)
+    ChoiceWindow*             m_pChoiceWindow;     // confirm/choice dialog
+    WantedWindow*             m_pWantedWindow;     // wanted-board window (active when m_mode == 1)
+    Array<TouchButton*>*      m_pTabButtons;       // tab buttons (campaign / freelance)
+    Array<ImagePart*>*        m_pAgentImageParts;  // freelance-agent portrait image parts
+    int                       m_textHalfHeight;    // cached (font line height / 2 - 1)
+    uint8_t                   m_choiceActive;      // confirm dialog open flag
+    uint8_t                   m_field_0x21;        // secondary choice-window draw flag
+    uint8_t                   m_starMapActive;     // star-map overlay active flag
+    uint8_t                   m_hangarNeedsUpdate; // hangar-needs-update flag
+    TouchButton*              m_pAcceptButton;     // accept-mission button
+    TouchButton*              m_pRejectButton;     // reject-mission button
+    TouchButton*              m_pMapButton;        // show-on-map button
+    int                       m_x;                 // window x
+    int                       m_y;                 // window y
+    int                       m_width;             // window width
+    int                       m_height;            // window height
+    int                       m_mode;              // active mode (1 == wanted board)
 
     MissionsWindow();
     ~MissionsWindow();
-    int OnTouchMove(int, int);
-    int OnTouchBegin(int, int);
-    void OnTouchEnd(int y, int z);
-    void setHangarUpdate(bool);
+
+    int  OnTouchMove(int x, int y);
+    int  OnTouchBegin(int x, int y);
+    void OnTouchEnd(int x, int y);
+    void setHangarUpdate(bool v);
     uint8_t hangarNeedsUpdate();
     void render3D();
-    int init();
+    int  init();
     void draw();
     void update(int dt);
 
     // Mode-specific sub-window dispatchers, reached from draw()/update() when an
-    // overlay is active. drawWanted/acceptAction drive the wanted-board window
-    // (m_pWantedWindow @ +0x10, active when m_mode @ +0x40 == 1); drawStarMap/
-    // cancelAction drive the star-map overlay (m_pStarMap @ +0x8, active when
-    // m_starMapActive @ +0x22 is set).
-    void drawWanted();      // paint the active wanted-board window
-    void drawStarMap();     // paint the active star-map overlay
-    void acceptAction();    // advance the wanted-board window one frame
-    void cancelAction();    // advance the star-map overlay one frame
+    // overlay is active: the wanted board (m_pWantedWindow, active when m_mode == 1)
+    // or the star-map overlay (m_pStarMap, active when m_starMapActive is set).
+    void drawWanted();   // paint the active wanted-board window
+    void drawStarMap();  // paint the active star-map overlay
+    void acceptAction(); // advance the wanted-board window one frame
+    void cancelAction(); // advance the star-map overlay one frame
 };
 #endif

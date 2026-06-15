@@ -1,64 +1,42 @@
 #ifndef GOF2_ROCKETGUN_H
 #define GOF2_ROCKETGUN_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-struct RocketGun;
-struct Gun;
-struct Level;
-struct Radar;
+#include "gof2/math.h"
+#include "gof2/game/weapons/ObjectGun.h"
 
-namespace AbyssEngine {
-namespace AEMath {
+// Galaxy on Fire 2 -- RocketGun: an ObjectGun that fires homing/cluster rockets.
+// Owns the per-shot rocket-trail effects (transform matrices, particle systems
+// and fade timers) and, for homing weapons, steers active shots toward the
+// current target. Top-level class (no namespace).
 
-}
-}
+class Gun;
+class Level;
+namespace AbyssEngine { class Radar; }
 
-typedef AbyssEngine::AEMath::Vector Vector;
-typedef AbyssEngine::AEMath::Matrix Matrix;
-
-typedef int v4i __attribute__((__vector_size__(16), __aligned__(4)));
-
-// Typed byte-offset accessors retained ONLY for opaque cross-class pointers reached through
-// engine helpers (AEGeometry / ParticleSystemManager / Player internals) whose owning structs
-// are outside this translation unit. Named-field access is used everywhere the type is known.
-
-class RocketGun {
+class RocketGun : public ObjectGun {
 public:
-    void render();
-    // render() tail: RocketGun owns no rocket-specific geometry to draw, so once
-    // dispatched the renderer forwards straight to the ObjectGun base renderer.
-    void render_tail();
-    RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
-              uint32_t param_5, int param_6, bool param_7, Level *param_8);
+    AbyssEngine::Radar* radar;          // owning radar (provides the level/target)
+    int steerX;                         // accumulated steering vector toward target
+    int steerY;
+    int steerZ;
+    uint8_t homing;                     // shots track the locked target
+    int field_0xc4;                     // active homing shot index (-1 == none)
+    uint32_t turnRate;                  // homing turn-rate scalar
+    int particleSystem;                 // single trail/muzzle particle system handle
+    int rocketKind;                     // rocket weapon kind
+    int fadeTimer;                      // trail fade-out countdown (ms)
+    Array<Matrix>* trailMatrices;       // per-shot trail transform matrices
+    Array<int>* trailSystems;           // per-shot particle-system handles
+    Array<int>* trailTimers;            // per-shot trail fade timers
+    int particleManager;                // ParticleSystemManager handle for the trails
+
+    RocketGun(int param_1, Gun* param_2, int param_3, int param_4,
+              uint32_t param_5, int param_6, bool param_7, Level* param_8);
     ~RocketGun();
-    // ~RocketGun() chains here after releasing the rocket-trail arrays: it runs the
-    // ObjectGun base destructor (releasing the muzzle geometry, explosion list and
-    // bullet pool) and returns the object pointer, matching the C1->base dtor chain.
-    void *base_dtor();
-    void setRadar(Radar *radar);
+
+    void render();
+    void setRadar(AbyssEngine::Radar* radar);
     void seekEnemy(int unused, int index);
     void update(int elapsed);
-
-    int field_0x4;                      // +0x4
-    Gun* gun;                     // +0x8  (owning gun)
-    void* level;                    // +0xc  (Level*, used opaquely)
-    uint32_t transformId;                // +0x10
-    void* geometry;                   // +0x18
-    uint8_t field_0x1c;                 // +0x1c
-    uint8_t field_0x1d;                 // +0x1d
-    void* radar;                   // +0xb0
-    int steerX;                     // +0xb4
-    int steerY;                     // +0xb8
-    int steerZ;                     // +0xbc
-    uint8_t homing;                 // +0xc0
-    int field_0xc4;                     // +0xc4
-    uint32_t turnRate;                // +0xc8
-    int particleSystem;                     // +0xcc
-    int rocketKind;                     // +0xd0
-    int fadeTimer;                     // +0xd4
-    Array<Matrix>* trailMatrices;          // +0xd8  (per-shot trail transform matrices)
-    Array<int>* trailSystems;              // +0xdc  (per-shot particle-system handles)
-    Array<int>* trailTimers;               // +0xe0  (per-shot trail fade timers)
-    int particleManager;                     // +0xe4
 };
 #endif

@@ -1,39 +1,38 @@
 #include "gof2/game/weapons/SpriteGun.h"
 #include "gof2/game/weapons/Gun.h"
 
-extern "C" void SpriteGun_Gun_update(void *base);
-extern "C" void SpriteGun_Gun_setEnemies(void *base);
-extern "C" void SpriteGun_Gun_setEnemy(void *base);
+// Per-instance vtable holder resolved by the engine at load time.
+__attribute__((visibility("hidden"))) extern void* SpriteGun_vtable;
 
-// SpriteGun::update(int) — load this->field_8, tail-call Gun::update on the base.
+// update/setEnemies/setEnemy forward through the inherited gun-hierarchy handlers
+// the dynamic linker resolves into engine relocation slots; they have no static
+// body in this image, so they stay as resolved-slot externs.
+__attribute__((visibility("hidden"))) extern void (*SpriteGun_updateHandler_slot)(void*);
+__attribute__((visibility("hidden"))) extern void (*SpriteGun_enemiesHandler_slot)(void*);
+__attribute__((visibility("hidden"))) extern void (*SpriteGun_enemyHandler_slot)(void*);
 
-void SpriteGun::update() {
-    SpriteGun *this_ = this;
-    return SpriteGun_Gun_update(this_->gun);
+SpriteGun::SpriteGun(Gun* gun, int kind)
+{
+    (void)kind;
+    this->vtable = (char*)SpriteGun_vtable + 8;
+    this->field_0x4 = 0;
+    this->gun = gun;
 }
 
-// SpriteGun::setEnemies(Array<Player*>*) — load arg->field_8, tail-call the
-// underlying Gun::setEnemies on the embedded base object.
-
-void SpriteGun::setEnemies() {
-    SpriteGun *this_ = this;
-    return SpriteGun_Gun_setEnemies(this_->gun);
+void SpriteGun::update(int elapsed)
+{
+    (void)elapsed;
+    SpriteGun_updateHandler_slot(this->gun);
 }
 
-// SpriteGun::SpriteGun(Gun*, int) — store (g_SpriteGun + 8) at +0 and 0 at +4.
-// g_SpriteGun is a value-typed global loaded PC-relative (hidden visibility) with a
-// single dereference; the two word stores fuse into a single strd.
-__attribute__((visibility("hidden"))) extern "C" char *const g_SpriteGun;
-
-SpriteGun::SpriteGun(Gun *param_1, int param_2) {
-    SpriteGun *this_ = this;
-    this_->field_0x0 = g_SpriteGun + 8;
-    this_->field_0x4 = 0;
+void SpriteGun::setEnemies(Array<Player*>* enemies)
+{
+    (void)enemies;
+    SpriteGun_enemiesHandler_slot(this->gun);
 }
 
-// SpriteGun::setEnemy(Player*) — load arg->field_8, tail-call Gun::setEnemy on base.
-
-void SpriteGun::setEnemy() {
-    SpriteGun *this_ = this;
-    return SpriteGun_Gun_setEnemy(this_->gun);
+void SpriteGun::setEnemy(Player* enemy)
+{
+    (void)enemy;
+    SpriteGun_enemyHandler_slot(this->gun);
 }

@@ -1,60 +1,36 @@
 #ifndef GOF2_PLAYERWORMHOLE_H
 #define GOF2_PLAYERWORMHOLE_H
-#include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- PlayerWormHole (Android libgof2hdaa.so, armv7 Thumb).
-// Target names are top-level PlayerWormHole::... (no AbyssEngine namespace).
-// Field offsets come from the per-method work-items and are accessed by byte casts.
 
-struct PlayerWormHole;
-struct AEGeometry;
+#include <cstdint>
 
-namespace AbyssEngine {
-struct String;
+#include "gof2/math.h"
+#include "gof2/game/ship/PlayerStaticFar.h"
 
-namespace AEMath {
+class AEGeometry;
 
-}
-}
-
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
-
-// Typed byte-offset accessor for foreign opaque pointers (e.g. the AEGeometry/Transform
-// objects this class holds but whose layout is owned by other classes).
-
-class PlayerWormHole {
+// Galaxy on Fire 2 -- PlayerWormHole: the animated wormhole object the player
+// flies through to jump between systems. It is a far-projected static object
+// (PlayerStaticFar) that grows/shrinks on a timer, relocates itself to a random
+// position when the player passes through, and honours the campaign mission
+// lock that keeps a story wormhole open.
+class PlayerWormHole : public PlayerStaticFar {
 public:
-    char* vtable;                    // +0x0   vtable
-    void* player;                    // +0x4   Player*
-    void* geometry;                    // +0x8   AEGeometry*
-    String name;                     // +0x18  display name (GameText 0x221)
-    void* level;                   // +0x54  Level*
-    float positionX;                   // +0x58  position x
-    float positionY;                   // +0x5c  position y
-    float positionZ;                   // +0x60  position z
-    float directionX;                   // +0x90  direction/target vec x
-    float directionY;                   // +0x94  direction/target vec y
-    float directionZ;                   // +0x98  direction/target vec z
-    uint8_t visible;                 // +0xf5  visible/active flag
-    int intPositionX;                    // +0x124 int position x
-    int intPositionY;                    // +0x128 int position y
-    int intPositionZ;                    // +0x12c int position z
-    float geometryPositionX;             // +0x134 geometry world position x
-    float geometryPositionY;             // +0x138 geometry world position y
-    float geometryPositionZ;             // +0x13c geometry world position z
-    int timer;                    // +0x150 timer
-    int scale;                          // +0x154 scale (12.4 fixed)
-    uint8_t missionLock;                // +0x15c mission-lock flag
+    using Vector = AbyssEngine::AEMath::Vector;
 
-    bool isShrinking();
-    int open(char *__file, int __oflag, ...);
-    Vector getPosition();
-    void freeMissionLock();
-    void render();
-    void reset(bool shrinking);
-    void setPosition(float x, float y, float z);
-    void update(int elapsed);
+    int     timer;          // open/close animation timer (ms; <0 = opening)
+    int     scale;          // current scale (12.4 fixed point, 0x1000 == 1.0)
+    uint8_t missionLock;    // keep this wormhole open for the active mission
+
     PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
+
+    bool   isShrinking();
+    int    open();
+    Vector getPosition();
+    void   freeMissionLock();
+    void   render();
+    void   reset(bool shrinking);
+    void   setPosition(float x, float y, float z);
+    void   update(int elapsed);
 };
+
 #endif

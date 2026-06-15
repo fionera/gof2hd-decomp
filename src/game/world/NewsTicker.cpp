@@ -3,215 +3,62 @@
 #include "gof2/game/world/NewsItem.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/engine/core/GameText.h"
+#include "gof2/engine/core/AERandom.h"
+#include "gof2/engine/file/FileRead.h"
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-// Minimal view of NewsItem fields read here (NewsItem.h is opaque; not in this batch).
-// Layout confirmed from Ghidra NewsTicker::NewsTicker @ 0x16c468.
-namespace AbyssEngine {
-struct NewsItemView {
-    int      field_0x0;   // +0x0   type id
-    uint8_t  field_0x4;   // +0x4   recurring flag
-    uint8_t  pad5[3];
-    int     *field_0x8;   // +0x8   -> faction byte table
-    uint8_t  padc[4];
-    int      field_0x10;  // +0x10  min level
-    int      field_0x14;  // +0x14  max level
-    uint8_t  field_0x18;  // +0x18  used flag
-};
-}
-using AbyssEngine::NewsItemView;
-
-extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn, not methodized)
+// Free-function bridges into engine singletons that have no own header here.
+void DisableClip();          // AbyssEngine::PaintCanvas::DisableClip
 int GameText_getLanguage();
-typedef Array<NewsItem *> NewsItemArray;
-// Minimal view of FileRead so loadTicker() resolves to the real FileRead::loadTicker.
-class FileRead {
-public:
-    Array<NewsItem *> *loadTicker();
-};
-extern "C" void FileRead_ctor(void *self);
-extern "C" void *FileRead_dtor(void *self);
-namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int bound); } }
 
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_canvas;
-__attribute__((visibility("hidden"))) extern int **g_NewsTicker_draw_fontHeight;
-__attribute__((visibility("hidden"))) extern int *g_NewsTicker_draw_screenHeight;
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_draw_font;
-
-void NewsTicker::draw()
-{
-    void **canvasHolder = g_NewsTicker_draw_canvas;
-    ((PaintCanvas *)*canvasHolder)->SetColor(0x6f);
-
-    int *fontHeightTable = *g_NewsTicker_draw_fontHeight;
-    int *screenHeight = g_NewsTicker_draw_screenHeight;
-    {
-        int x0 = this->x;
-        int y0 = this->y;
-        int clipBottom = *screenHeight;
-        int fontHeight = fontHeightTable[4];
-        int fillHeight = (2 - y0) + clipBottom - fontHeight;
-        ((PaintCanvas *)*canvasHolder)->FillRectangle(x0, y0 - 2,
-                                  this->width, fillHeight);
-    }
-
-    ((PaintCanvas *)*canvasHolder)->EnableClip(this->x, this->y,
-                           this->width, *screenHeight);
-    ((PaintCanvas *)*canvasHolder)->SetColor(0x777777ff);
-
-    void **fontHolder = g_NewsTicker_draw_font;
-    String *text = &this->tickerText;
-    float drawX = this->scrollOffset + (float)this->x;
-    ((PaintCanvas *)*canvasHolder)->DrawString((unsigned int)(unsigned long)*fontHolder, (void *)text, (int)drawX,
-                           this->y, false);
-
-    int language = GameText_getLanguage();
-    int textWidth = this->textWidth;
-    float x = this->scrollOffset;
-    if (language == 9) {
-        if (x > (float)textWidth) {
-            x += (float)this->x;
-            int drawY = this->y;
-            void *font = *fontHolder;
-            void *canvas = *canvasHolder;
-            ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)text, (int)x, drawY, false);
-        }
-    } else {
-        if (x < (float)(textWidth - this->width)) {
-            x += (float)this->x;
-            x += (float)textWidth;
-            int drawY = this->y;
-            void *font = *fontHolder;
-            void *canvas = *canvasHolder;
-            ((PaintCanvas *)canvas)->DrawString((unsigned int)(unsigned long)font, (void *)text, (int)x, drawY, false);
-        }
-    }
-
-    return DisableClip();
-}
-
-uint32_t NewsTicker::OnTouchEnd(int, int)
-{
-    if (this->touched == 0) {
-        return 0;
-    }
-    this->touched = 0;
-    return 1;
-}
-
-NewsTicker::~NewsTicker()
-{
-    this->tickerText.~String();
-}
-
-void NewsTicker::update(int dt)
-{
-    if (this->touched != 0) {
-        return;
-    }
-
-    float step = ((float)dt / 1000.0f) * 50.0f;
-    if (GameText_getLanguage() == 9) {
-        float x = this->scrollOffset + step;
-        float width = (float)this->width;
-        this->scrollOffset = x;
-        if (x > width) {
-            this->scrollOffset = (float)-this->textWidth;
-        }
-    } else {
-        float x = this->scrollOffset - step;
-        float minX = (float)-this->textWidth;
-        this->scrollOffset = x;
-        if (x < minX) {
-            this->scrollOffset = 0;
-        }
-    }
-}
-
-__attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchMove_screenWidth;
-
-bool NewsTicker::OnTouchMove(int x, int)
-{
-    uint8_t touched = this->touched;
-    if (touched != 0) {
-        float delta = (float)(this->lastTouchX - x);
-        float current = this->scrollOffset;
-        int *limit = g_NewsTicker_touchMove_screenWidth;
-        float next = current - delta;
-        this->scrollOffset = next;
-        float maxX = (float)*limit;
-        if (maxX < next) {
-            this->scrollOffset = maxX;
-        }
-        this->lastTouchX = x;
-    }
-    return touched != 0;
-}
-
-__attribute__((visibility("hidden"))) extern int **g_NewsTicker_getHeight_font;
-__attribute__((visibility("hidden"))) extern int *g_NewsTicker_getHeight_screen;
-
-int NewsTicker::getHeight()
-{
-    int fontHeight = (*g_NewsTicker_getHeight_font)[4];
-    int top = *g_NewsTicker_getHeight_screen;
-    top += 2;
-    int bottom;
-    __builtin_sub_overflow(top, fontHeight, &bottom);
-    return bottom - this->y;
-}
-
-String NewsTicker::replaceTokens(String text)
-{
-    return text;
-}
-
-#include <new>
-
-__attribute__((visibility("hidden"))) extern int *g_NewsTicker_ctor_canary;
-__attribute__((visibility("hidden"))) extern const char g_NewsTicker_ctor_empty[];
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_random;
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_status;
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_text;
-__attribute__((visibility("hidden"))) extern const char g_NewsTicker_ctor_separator[];
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_font;
-__attribute__((visibility("hidden"))) extern void **g_NewsTicker_ctor_canvas;
+// Engine singletons the ticker reaches through, recovered as typed globals.
+extern void **g_NewsTicker_draw_canvas;
+extern int **g_NewsTicker_draw_fontHeight;
+extern int *g_NewsTicker_draw_screenHeight;
+extern void **g_NewsTicker_draw_font;
+extern int *g_NewsTicker_touchMove_screenWidth;
+extern int **g_NewsTicker_getHeight_font;
+extern int *g_NewsTicker_getHeight_screen;
+extern const char g_NewsTicker_ctor_empty[];
+extern void **g_NewsTicker_ctor_random;
+extern void **g_NewsTicker_ctor_status;
+extern void **g_NewsTicker_ctor_text;
+extern const char g_NewsTicker_ctor_separator[];
+extern void **g_NewsTicker_ctor_font;
+extern void **g_NewsTicker_ctor_canvas;
+extern int **g_NewsTicker_touchBegin_font;
+extern int *g_NewsTicker_touchBegin_screen;
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 {
-    String *tickerText = &this->tickerText;
-    ((String *)(tickerText))->ctor();
+    this->tickerText.ctor();
     this->x = x;
     this->y = y;
     this->width = width;
-
-    String empty;
-    empty.ctor_char(g_NewsTicker_ctor_empty, false);
-    ((String *)(tickerText))->assign(&empty);
+    this->tickerText = String(g_NewsTicker_ctor_empty);
     this->textWidth = 0;
 
-    void *reader = operator new(1);
-    FileRead_ctor(reader);
-    NewsItemArray *allItems = ((FileRead *)reader)->loadTicker();
-    operator delete(FileRead_dtor(reader));
+    FileRead reader;
+    Array<NewsItem *> *allItems = reader.loadTicker();
 
-    NewsItemArray *items = new NewsItemArray();
+    Array<NewsItem *> *items = new Array<NewsItem *>();
 
-    void *random = *g_NewsTicker_ctor_random;
-    int wanted = AbyssEngine::AERandom::nextInt(random, 1) + 2;
+    AbyssEngine::AERandom *random = (AbyssEngine::AERandom *)*g_NewsTicker_ctor_random;
+    int wanted = random->nextInt(1) + 2;
 
+    // Mandatory items: any ticker entry valid for this faction and level range.
     for (uint32_t i = 0; i < allItems->size(); ++i) {
-        NewsItemView *item = (NewsItemView *)(*allItems)[i];
-        int minLevel = item->field_0x10;
-        if (minLevel > 0 && minLevel <= level && level <= item->field_0x14) {
-            int *factions = item->field_0x8;
-            if (((uint8_t *)factions)[faction] != 0) {
-                items->push_back((NewsItem *)((NewsItem *)(item))->clone());
+        NewsItem *item = (*allItems)[i];
+        if (item->field_0x10 > 0 && item->field_0x10 <= level && level <= item->field_0x14) {
+            if (((uint8_t *)item->data)[faction] != 0) {
+                items->push_back((NewsItem *)item->clone());
             }
         }
     }
 
+    // Optional items: randomly fill the rest, honoring recurrence cooldowns.
+    Status *status = (Status *)*g_NewsTicker_ctor_status;
     int added = 0;
     int attempts = 0;
     while (added < wanted && attempts < 100) {
@@ -219,67 +66,58 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         if (allItems->size() == 0) {
             break;
         }
-        NewsItemView *item = (NewsItemView *)(*allItems)[AbyssEngine::AERandom::nextInt(random, allItems->size())];
-        void *system = (void *)((Status *)(*g_NewsTicker_ctor_status))->getSystem();
-        if (((SolarSystem *)(system))->getIndex() > 0x15 && item->field_0x0 == 0x0d) {
+        NewsItem *item = (*allItems)[random->nextInt(allItems->size())];
+        if (status->getSystem() > 0x15 && item->id == 0x0d) {
             continue;
         }
         if (item->field_0x14 < 0xa1 || item->field_0x10 > level) {
             continue;
         }
-        if (AbyssEngine::AERandom::nextInt(random, 100) > 0x31) {
+        if (random->nextInt(100) > 0x31) {
             continue;
         }
-        if (((uint8_t *)item->field_0x8)[faction] == 0 || item->field_0x18 != 0) {
+        if (((uint8_t *)item->data)[faction] == 0 || item->field_0x18 != 0) {
             continue;
         }
-        if (item->field_0x4 != 0) {
-            char *status = (char *)*g_NewsTicker_ctor_status;
-            int64_t now = ((Status *)(*g_NewsTicker_ctor_status))->getPlayingTime();
-            int64_t last = *(int64_t *)(status + 0x160);
-            if ((uint32_t)(now - last) <= 0x493e0) {
+        if (item->flag != 0) {
+            int64_t now = status->getPlayingTime();
+            int64_t *lastShown = (int64_t *)&status->field_160;
+            if ((uint32_t)(now - *lastShown) <= 0x493e0) {
                 continue;
             }
-            *(int64_t *)(status + 0x160) = now;
-            *(int *)(status + 0x174) = item->field_0x0;
+            *lastShown = now;
+            status->field_174 = item->id;
         }
-        items->push_back((NewsItem *)((NewsItem *)(item))->clone());
+        items->push_back((NewsItem *)item->clone());
         item->field_0x18 = 1;
         ++added;
     }
 
-    String separator;
-    separator.ctor_char(g_NewsTicker_ctor_separator, false);
+    // Compose the scrolling line from each item's localized text.
+    String separator(g_NewsTicker_ctor_separator);
+    GameText *gameText = (GameText *)*g_NewsTicker_ctor_text;
     for (uint32_t i = 0; i < items->size(); ++i) {
-        NewsItemView *item = (NewsItemView *)(*items)[i];
-        String line;
-        ((String *)(&line))->ctor_copy((String *)(((GameText *)(*g_NewsTicker_ctor_text))->getText(item->field_0x0 + 0x0cbe)), false);
+        NewsItem *item = (*items)[i];
+        String line(*gameText->getText(item->id + 0x0cbe));
         String replaced = replaceTokens(line);
-        ((String *)(&line))->dtor();
 
-        if (item->field_0x4 != 0) {
-            String *statusText = (String *)((char *)*g_NewsTicker_ctor_status + 0x168);
+        if (item->flag != 0) {
             if (item->field_0x18 == 0) {
-                ((String *)(&replaced))->assign(statusText);
+                replaced = status->string_168;
             } else {
-                ((String *)(statusText))->assign(&replaced);
+                status->string_168 = replaced;
             }
         }
 
-        String combined;
-        combined = replaced + separator;
-        ((String *)(tickerText))->addAssign_str(&combined);
-        ((String *)(&replaced))->dtor();
+        this->tickerText += replaced + separator;
     }
 
-    this->textWidth = ((PaintCanvas *)*g_NewsTicker_ctor_canvas)->GetTextWidth(
-                          (unsigned int)(unsigned long)*g_NewsTicker_ctor_font, (void *)tickerText);
+    PaintCanvas *canvas = (PaintCanvas *)*g_NewsTicker_ctor_canvas;
+    unsigned int font = (unsigned int)(unsigned long)*g_NewsTicker_ctor_font;
+    this->textWidth = canvas->GetTextWidth(font, &this->tickerText);
     if (this->textWidth < width) {
-        String copy;
-        ((String *)(&copy))->ctor_copy((String *)(tickerText), false);
-        ((String *)(tickerText))->addAssign_str(&copy);
-        this->textWidth = ((PaintCanvas *)*g_NewsTicker_ctor_canvas)->GetTextWidth(
-                              (unsigned int)(unsigned long)*g_NewsTicker_ctor_font, (void *)tickerText);
+        this->tickerText += String(this->tickerText);
+        this->textWidth = canvas->GetTextWidth(font, &this->tickerText);
     }
 
     if (GameText_getLanguage() == 9) {
@@ -295,21 +133,80 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     for (NewsItem *e : *allItems) delete e;
     allItems->clear();
     delete allItems;
-    ((String *)(&separator))->dtor();
 }
 
-__attribute__((visibility("hidden"))) extern int **g_NewsTicker_touchBegin_font;
-__attribute__((visibility("hidden"))) extern int *g_NewsTicker_touchBegin_screen;
+NewsTicker::~NewsTicker()
+{
+    this->tickerText.~String();
+}
+
+void NewsTicker::draw()
+{
+    PaintCanvas *canvas = (PaintCanvas *)*g_NewsTicker_draw_canvas;
+    canvas->SetColor(0x6f);
+
+    int *fontMetrics = *g_NewsTicker_draw_fontHeight;
+    int screenHeight = *g_NewsTicker_draw_screenHeight;
+    int fontHeight = fontMetrics[4];
+    int fillHeight = (2 - this->y) + screenHeight - fontHeight;
+    canvas->FillRectangle(this->x, this->y - 2, this->width, fillHeight);
+
+    canvas->EnableClip(this->x, this->y, this->width, screenHeight);
+    canvas->SetColor(0x777777ff);
+
+    unsigned int font = (unsigned int)(unsigned long)*g_NewsTicker_draw_font;
+    canvas->DrawString(font, &this->tickerText,
+                       (int)(this->scrollOffset + (float)this->x), this->y, false);
+
+    float x = this->scrollOffset;
+    if (GameText_getLanguage() == 9) {
+        if (x > (float)this->textWidth) {
+            canvas->DrawString(font, &this->tickerText,
+                               (int)(x + (float)this->x), this->y, false);
+        }
+    } else {
+        if (x < (float)(this->textWidth - this->width)) {
+            canvas->DrawString(font, &this->tickerText,
+                               (int)(x + (float)this->x + (float)this->textWidth),
+                               this->y, false);
+        }
+    }
+
+    DisableClip();
+}
+
+void NewsTicker::update(int dt)
+{
+    if (this->touched != 0) {
+        return;
+    }
+
+    float step = ((float)dt / 1000.0f) * 50.0f;
+    if (GameText_getLanguage() == 9) {
+        this->scrollOffset += step;
+        if (this->scrollOffset > (float)this->width) {
+            this->scrollOffset = (float)-this->textWidth;
+        }
+    } else {
+        this->scrollOffset -= step;
+        if (this->scrollOffset < (float)-this->textWidth) {
+            this->scrollOffset = 0;
+        }
+    }
+}
+
+int NewsTicker::getHeight()
+{
+    int fontHeight = (*g_NewsTicker_getHeight_font)[4];
+    int bottom = (*g_NewsTicker_getHeight_screen + 2) - fontHeight;
+    return bottom - this->y;
+}
 
 uint8_t NewsTicker::OnTouchBegin(int x, int y)
 {
-    if (this->x <= x &&
-        x <= this->x + this->width &&
-        this->y <= y) {
+    if (this->x <= x && x <= this->x + this->width && this->y <= y) {
         int fontHeight = (*g_NewsTicker_touchBegin_font)[4];
-        int bottom = *g_NewsTicker_touchBegin_screen;
-        bottom += 2;
-        __builtin_sub_overflow(bottom, fontHeight, &bottom);
+        int bottom = (*g_NewsTicker_touchBegin_screen + 2) - fontHeight;
         if (y <= bottom) {
             this->lastTouchX = x;
             this->touched = 1;
@@ -318,30 +215,53 @@ uint8_t NewsTicker::OnTouchBegin(int x, int y)
     return this->touched;
 }
 
-// ---- C-ABI dtor wrapper (recovered shim) ----
+bool NewsTicker::OnTouchMove(int x, int)
+{
+    if (this->touched != 0) {
+        float delta = (float)(this->lastTouchX - x);
+        this->scrollOffset -= delta;
+        float maxX = (float)*g_NewsTicker_touchMove_screenWidth;
+        if (maxX < this->scrollOffset) {
+            this->scrollOffset = maxX;
+        }
+        this->lastTouchX = x;
+    }
+    return this->touched != 0;
+}
 
-// NewsTicker_dtor — C-ABI destructor. Runs ~NewsTicker() (which releases the
-// ticker String) and returns the storage for the caller's operator delete.
+uint32_t NewsTicker::OnTouchEnd(int, int)
+{
+    if (this->touched == 0) {
+        return 0;
+    }
+    this->touched = 0;
+    return 1;
+}
+
+String NewsTicker::replaceTokens(String text)
+{
+    return text;
+}
+
+// C-ABI bridges still used by the not-yet-cleaned ModStation, which embeds the
+// ticker and reaches it through these flat entry points (it stores the pointer
+// in an int slot). Once ModStation is converted these can be removed.
+
+// Destructor entry point: runs ~NewsTicker() and hands the storage back for the
+// caller's operator delete.
 extern "C" void *NewsTicker_dtor(void *p)
 {
     if (p) ((NewsTicker *)p)->~NewsTicker();
     return p;
 }
 
-// ---- inlined-station seam wrappers (recovered) ----
-// ModStation's OnUpdate/OnTouchEnd were emitted with the ticker calls inlined;
-// these flat wrappers are the per-frame tick and touch-release entry points that
-// the station reaches the embedded NewsTicker through.
-
-// NewsTicker_update_ou(nt) — per-frame scroll tick. The station drives the ticker
-// once per idle frame; the scroll step is derived inside update().
+// Per-frame scroll tick the station drives once per idle frame.
 void NewsTicker_update_ou(int nt)
 {
     ((NewsTicker *)(intptr_t)nt)->update(0);
 }
 
-// NewsTicker_OnTouchEnd_ote(nt, p1) — touch-release handler; returns non-zero when
-// the ticker consumed the release (it had been grabbed for manual scrolling).
+// Touch-release handler; non-zero when the ticker consumed the release.
 int NewsTicker_OnTouchEnd_ote(int nt, int p1)
 {
     return (int)((NewsTicker *)(intptr_t)nt)->OnTouchEnd(p1, 0);

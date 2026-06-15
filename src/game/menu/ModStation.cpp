@@ -8,6 +8,7 @@
 #include "gof2/game/ui/ChoiceWindow.h"
 #include "gof2/game/core/CutScene.h"
 #include "gof2/engine/math/EaseInOut.h"
+#include "gof2/engine/math/EaseInOutMatrix.h"
 #include "gof2/game/mission/Item.h"
 #include "gof2/game/ui/MissionsWindow.h"
 #include "gof2/game/world/NewsTicker.h"
@@ -20,28 +21,12 @@ struct Radio { unsigned char lastMessageShown(); };
 #include "gof2/game/ui/DialogueWindow.h"
 #include "gof2/engine/render/ImageFactory.h"
 #include "gof2/game/ui/Layout.h"
-#include "gof2/game/mission/RecordHandler.h"   // defines the canonical B/I/P offset helpers (guarded)
-// SpaceLounge.h and TouchButton.h define their own (unguarded) copies of the B/I/P
-// offset helpers. Rename those tokens for the duration of these two includes so the
-// duplicates land on throwaway names instead of colliding; ModStation uses neither from
-// these headers.
-#define B  B_SpaceLounge
-#define I  I_SpaceLounge
-#define P  P_SpaceLounge
+#include "gof2/game/mission/RecordHandler.h"
 #include "gof2/game/menu/SpaceLounge.h"
-#undef B
-#undef I
-#undef P
 #include "gof2/game/world/Station.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/world/SolarSystem.h"
-#define B      B_TouchButton
-#define I      I_TouchButton
-#define P      P_TouchButton
 #include "gof2/game/ui/TouchButton.h"
-#undef B
-#undef I
-#undef P
 #include "gof2/game/ui/MenuTouchWindow.h"
 
 // HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
@@ -58,19 +43,13 @@ struct StatusWindow {
     int OnTouchMove(int param_1, int param_2);
 };
 
-extern "C" void *ModStation_op_new(unsigned int sz);
-extern "C" void ModStation_op_delete(void *p);
 extern "C" void ModStation_autosaveTail();
 extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
-extern "C" void ModStation_dtor_finish(ModStation *self);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
 void Globals_reportLeaderboards(void *obj);
-extern "C" void *cm_op_new(unsigned int sz);
-extern "C" void *cm_op_new_arr(unsigned int sz);
 extern "C" void ModStation_r3d_endTail(void *c);
-extern "C" void *ric_op_new(unsigned int sz);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
 extern "C" int Station_getIndex(Station *st);
@@ -90,7 +69,6 @@ extern "C" void *CutScene_dtor(void *p);
 extern "C" void *Radio_dtor(void *p);
 extern "C" void *Array_RM_dtor(void *p);
 extern "C" void *NewsTicker_dtor(void *p);
-extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void *ScrollTouchBox_dtor(void *p);
 extern "C" void ModStation_or_tail();
 
@@ -104,11 +82,10 @@ void ModStation::autosave() {
     Status *st = *g_ModStation_statusHolder;
     if (((Status *)(st))->getPlayingTime() - 1LL < 0)
         return;
-    void *rh = ModStation_op_new(0x2c);
-    new (rh) RecordHandler();
-    ((RecordHandler *)(rh))->recordStoreWrite(0);
-    ((RecordHandler *)(rh))->recordStoreWritePreview_int(0);
-    do { RecordHandler *_rh = (RecordHandler *)(rh); _rh->~RecordHandler(); ModStation_op_delete(_rh); } while (0);
+    RecordHandler *rh = new RecordHandler();
+    rh->recordStoreWrite(0);
+    rh->recordStoreWritePreview_int(0);
+    delete rh;
     this->field_0xb1 = 1;
     if (*(int*)&this->dlcMenu != 0)
         ModStation_autosaveTail();
@@ -148,7 +125,7 @@ void ModStation_enterStation()
     Item *e9 = ((Ship *)(getShip(holder[0])))->getFirstEquipmentOfSort(9);
     int shipIdx = ((Ship *)(getShip(holder[0])))->getIndex();
     Status *s = holder[0];
-    I(s, 0x150) = shipIdx;
+    *(int *)((char *)s + 0x150) = shipIdx;
 
     int v;
     if (e10 == 0) {
@@ -157,7 +134,7 @@ void ModStation_enterStation()
         v = ((Item *)(e10))->getIndex();
         s = holder[0];
     }
-    I(s, 0x154) = v;
+    *(int *)((char *)s + 0x154) = v;
 
     if (e9 == 0) {
         v = -1;
@@ -165,9 +142,9 @@ void ModStation_enterStation()
         v = ((Item *)(e9))->getIndex();
         s = holder[0];
     }
-    I(s, 0x158) = v;
-    I(s, 0x124) = 0;
-    I(s, 0x11c) = 0;
+    *(int *)((char *)s + 0x158) = v;
+    *(int *)((char *)s + 0x124) = 0;
+    *(int *)((char *)s + 0x11c) = 0;
 }
 
 struct Achievements;
@@ -406,20 +383,8 @@ void ModStation::OnKeyPress(long long key) {
         ModStation_okp_showLocked(this);
 }
 
-// Base destructor (returns `this`), reached through its veneer at 0x74ee4.
-// operator delete veneer tail-called at the end (0x1ab098).
-
-// Deleting destructor at 0xd56f8: runs the base dtor (which returns `this`), then
-// tail-calls the finisher with that pointer.
-void ModStation::dtor() {
-    ModStation_dtor_finish(((ModStation *)(this))->dtor_inner());
-}
-
 struct Station;
 struct SolarSystem;
-struct EaseInOut;
-struct EaseInOutMatrix;
-// Matrix comes from common.h via `using AbyssEngine::AEMath::Matrix;` — do not redeclare.
 
 __attribute__((visibility("hidden"))) extern int  *g_msc_stack;     // [DAT_000e5698]
 __attribute__((visibility("hidden"))) extern int   g_msc_vtable;    // [DAT_000e569c] vtable base
@@ -430,26 +395,23 @@ int   Status_getStation_msc();
 int   Station_getIndex_msc(Station *s);
 int   Status_getSystem_msc();
 int   SolarSystem_getRace_msc();
-void *ModStation_opnew_msc(unsigned size);
-void  EaseInOut_ctor_msc(EaseInOut *e);
 // Builds the two hangar camera key matrices for the given station race (MatrixSetTranslation /
 // MatrixSetRotation cascade the decompiler corrupted) and constructs the 3000ms EaseInOutMatrix
 // camera tween; returns the new EaseInOutMatrix and writes the resting cam coords into self+0x278.
-EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race);
+AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race);
 }
 
 // ModStation::ModStation() — constructor: zero-inits the station-module state, picks the home
 // station's race, and sets up the hangar idle camera tween.
 ModStation::ModStation() {
-    this->vtable = g_msc_vtable + 8;          // vtable
-    this->stationName.ctor();
+    this->vtable = g_msc_vtable + 8;
 
     // zero / default field block.
     this->dt = 0;
-    ((char*)&this->cameraTween)[3] = 0;     // this[1].field_20 + 3
+    ((char*)&this->cameraTween)[3] = 0;
     *(uint16_t*)&this->cameraTween = 0;    // partial of field_20 region — kept as a 16-bit clear
     this->field_0x24 = 0;
-    ((char*)&this->field_0x68)[1] = 0;     // field_68 + 1
+    ((char*)&this->field_0x68)[1] = 0;
     this->state = 100;
     this->field_0x10 = 0;
     *(int*)&this->starMap = 0;
@@ -458,7 +420,7 @@ ModStation::ModStation() {
     *(int*)&this->dlcMenu = 0;
     this->field_0x54 = 0;
     *(int*)&this->radioMessages = 0;
-    ((char*)&this->field_0x6c)[2] = 0;     // field_6C + 2
+    ((char*)&this->field_0x6c)[2] = 0;
     this->field_0x18 = 0;
     *(int*)&this->m_pDialogueWindow = 0;     // m_pDialogueWindow
     *(int*)&this->choiceWindow = 0;
@@ -478,7 +440,7 @@ ModStation::ModStation() {
         }
     }
 
-    EaseInOutMatrix *cam = ModStation_msc_buildCameraTween(this, race);
+    AbyssEngine::EaseInOutMatrix *cam = ModStation_msc_buildCameraTween(this, race);
     this->cameraTween = cam;
 
     unsigned camHandle = **(unsigned **)g_msc_canvas;
@@ -486,25 +448,20 @@ ModStation::ModStation() {
     Matrix *cur = (Matrix *)mscCanvas->CameraGetCurrent();
     mscCanvas->CameraSetLocal(camHandle, *cur);
 
-    // three scalar EaseInOut tweens (fov / fade etc.) stored at this+0x288..0x290.
-    EaseInOut *e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); this->easeCamScalarX = e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); this->easeCamScalarY = e;
-    e = (EaseInOut *)ModStation_opnew_msc(0x10); EaseInOut_ctor_msc(e); this->easeCamScalarZ = e;
+    // three scalar EaseInOut tweens (fov / fade etc.).
+    this->easeCamScalarX = new AbyssEngine::EaseInOut();
+    this->easeCamScalarY = new AbyssEngine::EaseInOut();
+    this->easeCamScalarZ = new AbyssEngine::EaseInOut();
 }
 
-// ModStation::~ModStation() base/inner destructor at 0xd56c0.
-// PIC global: the ModStation vtable base (hidden -> direct pc-relative single deref).
+// The ModStation vtable base.
 __attribute__((visibility("hidden"))) extern void *ModStation_vtable;
 
-// Installs the vtable (+8), runs OnRelease(this), destroys the String member at
-// +0x38, and returns `this` in r0 (consumed by the deleting dtor's tail-call).
-ModStation * ModStation::dtor_inner() {
-    ModStation *self = this;
-    *(void **)self = (char *)ModStation_vtable + 8;
-    ((ModStation *)(self))->OnRelease();
-    self->stationName.dtor();
-    return self;
+// Installs the vtable, runs OnRelease() to free every owned sub-window/resource,
+// then lets the embedded String member destruct.
+ModStation::~ModStation() {
+    this->vtable = (int)(intptr_t)((char *)ModStation_vtable + 8);
+    this->OnRelease();
 }
 
 // ModStation::leaveStation() — a 16-byte veneer the decompiler could only recover as "bad
@@ -572,7 +529,7 @@ void ModStation::checkMedals() {
     this->medalCount = 0;
     for (int i = 0; i != 0x2d; i++) {
         if (medals[i] >= 1) {
-            int *cell = (int *)cm_op_new_arr(8);
+            int *cell = new int[2];
             (*arr)[j] = cell;
             cell[0] = i;
             (*arr)[this->medalCount][1] = medals[i];
@@ -582,11 +539,10 @@ void ModStation::checkMedals() {
     }
     this->medalIndex = 0;
     ((unsigned char*)&this->field_0x68)[2] = 1;
-    void *cw = cm_op_new(0x5c);
-    new (cw) ChoiceWindow();
+    ChoiceWindow *cw = new ChoiceWindow();
     this->medalChoiceWindow = cw;
     int *medal = (*arr)[0];
-    ((ChoiceWindow *)(cw))->setMedal(medal[0], medal[1]);
+    cw->setMedal(medal[0], medal[1]);
     if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
         ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
     int *p = (*arr)[0];
@@ -810,7 +766,7 @@ void ModStation::OnUpdate() {
         Status_incPlayingTime_ou((long long)(unsigned)**(int **)g_ou_status);
 
     // refresh the credits button text.
-    int creditsBtn = this->field_0x54; // this[1].field_4
+    int creditsBtn = this->field_0x54;
     Status_getCredits_ou();
     Layout_formatCredits_ou((char *)this); // formatted into a String temporary
     TouchButton_setText_ou(creditsBtn);
@@ -821,7 +777,7 @@ void ModStation::OnUpdate() {
     if (this->field_0x24 != 0) {
         char *flag = *g_ou_spaceLoungeFlag;
         if (*flag != 0) {
-            ((char*)&this->buttonCredits)[0] = 1;          // this[1].field_48 low byte
+            ((char*)&this->buttonCredits)[0] = 1;
             *flag = 0;
             if (this->spaceLounge == 0) {
                 SpaceLounge *sl = (SpaceLounge *)ModStation_opnew_ou(0x10c);
@@ -833,7 +789,7 @@ void ModStation::OnUpdate() {
             FModSound_setParamValue_ou(*sound, 0, *sound, 0.0f);
             FModSound_stop_ou(*sound);
             FModSound_play_ou(*sound, 0x6c, 0, 0.0f);
-            ((char*)&this->field_0x64)[1] = 1;          // this->field_64+1
+            ((char*)&this->field_0x64)[1] = 1;
             goto epilogue;
         }
     }
@@ -843,7 +799,7 @@ void ModStation::OnUpdate() {
         int appData = ApplicationManager_GetApplicationData_ou();
         if (*(char *)(appData + 0x42) != 0) {
             ChoiceWindow_setNotice_ou(*(int*)&this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
-            ((char*)&this->field_0x6c)[3] = 1;          // m_nStarMapWindowOpen+3
+            ((char*)&this->field_0x6c)[3] = 1;
             *(char *)(appData + 0x42) = 0;
         }
         if (*(char *)(appData + 0x41) != 0 && *(int **)(appData + 0x58) != 0 &&
@@ -884,7 +840,7 @@ void ModStation::OnUpdate() {
 
     if (((char*)&this->m_nStarMapWindowOpen)[0] != 0) {
         // docking cutscene playback + campaign transition at its end.
-        int t = *(int *)&this->spaceLounge; // this[1].field_24
+        int t = *(int *)&this->spaceLounge;
         if (t < 1 + 0 && 0 < this->dt + t) {
             if (this->starMap != 0) {
                 // tear down the old cutscene.
@@ -935,11 +891,11 @@ void ModStation::OnUpdate() {
     // mission completion / failure + campaign dialogue flow (runs once per docked tick).
     if (((char*)&this->field_0x6c)[3] == 0 && ((char*)&this->field_0x68)[1] == 0 &&
         ((char*)&this->field_0x6c)[0] == 0) {
-        if (((char*)&this->buttonCredits)[2] == 0) {              // this[1].field_48+2
+        if (((char*)&this->buttonCredits)[2] == 0) {
             this->checkPendingProducts();
             ((char*)&this->buttonCredits)[2] = 1;
         }
-        if (((char*)&this->buttonCredits)[1] == 0) {              // this[1].field_48+1
+        if (((char*)&this->buttonCredits)[1] == 0) {
             this->checkMedals();
             ((char*)&this->buttonCredits)[1] = 1;
         }
@@ -1071,7 +1027,7 @@ void ModStation::OnUpdate() {
     }
 
     // idle hangar light + ship animation.
-    if (((char*)&this->medalIndex)[0] == 0)            // this[1].field_70 low byte
+    if (((char*)&this->medalIndex)[0] == 0)
         ModStation_ou_updateHangarLight(this, elapsed);
     if (*(int*)&this->starMap != 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0)
         ModStation_ou_animateHangarShip(this);
@@ -1094,27 +1050,18 @@ void ModStation::resetIdleCamForHangar() {
     if (this->starMap != 0)
         ((CutScene *)(this->starMap))->resetCamera();
 
-    if (this->easeCamX != 0) {
+    if (this->easeCamX != 0)
         ((AbyssEngine::EaseInOut *)(this->easeCamX))->SetRange(this->restCamX, this->restCamX);
-    } else {
-        void *p = ric_op_new(0x10);
-        new (p) AbyssEngine::EaseInOut(this->restCamX, this->restCamX);
-        this->easeCamX = p;
-    }
-    if (this->easeCamY != 0) {
+    else
+        this->easeCamX = new AbyssEngine::EaseInOut(this->restCamX, this->restCamX);
+    if (this->easeCamY != 0)
         ((AbyssEngine::EaseInOut *)(this->easeCamY))->SetRange(this->restCamY, this->restCamY);
-    } else {
-        void *p = ric_op_new(0x10);
-        new (p) AbyssEngine::EaseInOut(this->restCamY, this->restCamY);
-        this->easeCamY = p;
-    }
-    if (this->easeCamZ != 0) {
+    else
+        this->easeCamY = new AbyssEngine::EaseInOut(this->restCamY, this->restCamY);
+    if (this->easeCamZ != 0)
         ((AbyssEngine::EaseInOut *)(this->easeCamZ))->SetRange(this->restCamZ, this->restCamZ);
-    } else {
-        void *p = ric_op_new(0x10);
-        new (p) AbyssEngine::EaseInOut(this->restCamZ, this->restCamZ);
-        this->easeCamZ = p;
-    }
+    else
+        this->easeCamZ = new AbyssEngine::EaseInOut(this->restCamZ, this->restCamZ);
 
     void **canvasHolder = g_ModStation_ric_canvas;
     void *canvas = *canvasHolder;
@@ -1325,7 +1272,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     ((TouchButton *)(this->buttonLaunch))->OnTouchMove(x, y);
     ((TouchButton *)(this->buttonCredits))->OnTouchMove(x, y);
     for (int i = 0; i != 5; i++)
-        ((TouchButton *)(*(void **)(I(this->buttonRow, 4) + i * 4)))->OnTouchMove(x, y);
+        ((TouchButton *)(*(void **)(*(int *)((char *)this->buttonRow + 4) + i * 4)))->OnTouchMove(x, y);
     ((Layout *)(layoutObj))->OnTouchMove(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchMove(x, y) != 0)
         return;
@@ -1376,8 +1323,7 @@ void ModStation::OnRelease() {
         ms_op_delete(StarMap_dtor((void*&)this->field_0x10));
     (void*&)this->field_0x10 = 0;
 
-    if (this->spaceLounge != 0)
-        ms_op_delete(((SpaceLounge *)(this->spaceLounge))->dtor());
+    delete (SpaceLounge *)this->spaceLounge;
     this->spaceLounge = 0;
 
     if (this->m_pDialogueWindow != 0)
@@ -1400,8 +1346,7 @@ void ModStation::OnRelease() {
         ms_op_delete(CutScene_dtor(this->starMap));
     this->starMap = 0;
 
-    if (this->dlcMenu != 0)
-        ms_op_delete(((MenuTouchWindow *)(this->dlcMenu))->dtor());
+    delete (MenuTouchWindow *)this->dlcMenu;
     this->dlcMenu = 0;
 
     if (*(void**)&this->field_0x54 != 0)
@@ -1431,20 +1376,16 @@ void ModStation::OnRelease() {
         ((Layout *)(*reloadHolder))->initTip();
     }
 
-    if (this->cameraTween != 0)
-        ms_op_delete(EaseInOutMatrix_dtor(this->cameraTween));
+    delete this->cameraTween;
     this->cameraTween = 0;
 
-    if (this->easeCamX != 0)
-        ms_op_delete(this->easeCamX);
+    delete (AbyssEngine::EaseInOut *)this->easeCamX;
     this->easeCamX = 0;
 
-    if (this->easeCamY != 0)
-        ms_op_delete(this->easeCamY);
+    delete (AbyssEngine::EaseInOut *)this->easeCamY;
     this->easeCamY = 0;
 
-    if (this->easeCamZ != 0)
-        ms_op_delete(this->easeCamZ);
+    delete (AbyssEngine::EaseInOut *)this->easeCamZ;
     this->easeCamZ = 0;
 
     if (*(void**)&this->field_0x54 != 0)
@@ -1656,7 +1597,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
                 DialogueWindow_dtor_ote(dw);
                 ModStation_opdelete_ote(dw);
             }
-            char justEntered = ((char*)&this->choiceWindow)[1];          // this[1].field_70+1
+            char justEntered = ((char*)&this->choiceWindow)[1];
             this->field_0x84 = 0;
             if (justEntered == 0) {
                 Station *st = (Station *)Status_getStation_ote();
@@ -1665,7 +1606,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
                     if (Station_getIndex_ote(st) != 0x58) {
                         Status_getStation_ote();
                         if (Station_stationHasPirateBase_ote() != 0) {
-                            ((char*)&this->field_0x4c)[2] = 0;          // this[1].field_20+2
+                            ((char*)&this->field_0x4c)[2] = 0;
                             Station *home = (Station *)**(int **)g_ote_status;
                             Status_getStation_ote();
                             Status_departStation_ote(home);
@@ -1688,11 +1629,11 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
     if (((char*)&this->field_0x6c)[3] != 0) {
         int r = ChoiceWindow_OnTouchEnd_ote(*(int*)&this->choiceWindow, param_1);
         if (r == 1) {
-            char departed = ((char*)&this->field_0x68)[3];             // this->field_68+3
+            char departed = ((char*)&this->field_0x68)[3];
             ((char*)&this->field_0x4c)[2] = 0;
             if (departed == 0) {
                 ((char*)&this->field_0x6c)[3] = 0;
-                ((char*)&this->scrollBox)[0] = 0;                     // this[1].field_4C
+                ((char*)&this->scrollBox)[0] = 0;
             } else {
                 ((char*)&this->field_0x4c)[2] = 0;
                 Station *home = (Station *)**(int **)g_ote_status;
@@ -1738,7 +1679,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
                         sold += Item_getAmount_ote();
                 }
             }
-            if (*(int *)&this->buttonLaunch < sold)   // this[1].field_40
+            if (*(int *)&this->buttonLaunch < sold)
                 *(int *)(*st + 0xa8) += sold - *(int *)&this->buttonLaunch;
             HangarWindow_setSellMode_ote(*(int*)&this->hangarWindow);
             this->resetIdleCamForHangar();
@@ -1857,10 +1798,10 @@ void handleChoiceDecline(ModStation *self, int param_1, int param_2)
         if (*(int *)&self->buttonCredits <= credits) {  // this[1].field_44 == price
             Status_changeCredits_ote(*status);
             ((char*)&self->field_0x68)[3] = 0;
-            ((char*)&self->buttonCredits)[0] = 1;                          // this[1].field_48
+            ((char*)&self->buttonCredits)[0] = 1;
             Station *st = (Station *)Status_getStation_ote();
             Station_setAttackedFriends_ote(st, 0);
-            ((char*)&self->choiceWindow)[1] = 1;                          // this[1].field_70+1
+            ((char*)&self->choiceWindow)[1] = 1;
             ModStation_enterStation_ote(self);
             self->autosave();
             handleChoiceDeclineTail(self);
@@ -1888,7 +1829,7 @@ void handleChoiceDeclineTail(ModStation *self)
         *(char *)(appData + 0xd) = 1;
         return;
     }
-    if (((char*)&self->field_0x6c)[0] == 0) {                          // this->field_6C
+    if (((char*)&self->field_0x6c)[0] == 0) {
         if (((char*)&self->field_0x6c)[1] != 0) {                      // this->field_6C+1: reward-mission state
             int credits = Status_getCredits_ote();
             if (credits < 25000) {
@@ -2312,7 +2253,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     ((TouchButton *)(this->buttonLaunch))->OnTouchBegin(x, y);
     ((TouchButton *)(this->buttonCredits))->OnTouchBegin(x, y);
     for (int i = 0; i != 5; i++)
-        ((TouchButton *)(*(void **)(I(this->buttonRow, 4) + i * 4)))->OnTouchBegin(x, y);
+        ((TouchButton *)(*(void **)(*(int *)((char *)this->buttonRow + 4) + i * 4)))->OnTouchBegin(x, y);
     ((Layout *)(layoutObj))->OnTouchBegin(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchBegin(x, y) != 0)
         return;
@@ -2417,8 +2358,6 @@ struct Generator;
 struct NewsTicker;
 struct TouchButton;
 struct Agent;
-struct EaseInOut;
-struct EaseInOutMatrix;
 
 __attribute__((visibility("hidden"))) extern int  *g_oi_stack;       // [DAT_000e5a3c]
 __attribute__((visibility("hidden"))) extern int **g_oi_status;      // status holder (multiple DATs alias it)
@@ -3057,7 +2996,7 @@ void ModStation::showDlcMenu() {
         MenuTouchWindow_ctor_dlc(win, 2);
         this->dlcMenu = win;
     }
-    ((char*)&this->field_0x68)[2] = 1; // m_nStarMapWindowOpen + 2
+    ((char*)&this->field_0x68)[2] = 1;
 
     int *bx = g_dlc_btnX;
     int *by = g_dlc_btnY;
@@ -3072,7 +3011,7 @@ void ModStation::showDlcMenu() {
         }
     }
     **g_dlc_btnCount = win->buttons->size();
-    ((char*)&this->field_0x64)[2] = 0; // field_64 + 2
+    ((char*)&this->field_0x64)[2] = 0;
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
 
@@ -3096,8 +3035,8 @@ void ModStation::showCBSMessage() {
     ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
 
     // mark both "CBS message open" flags.
-    this->field_0xc1 = 1;   // this[1].field_4C + 1
-    ((char*)&this->field_0x68)[3] = 1;   // m_nStarMapWindowOpen + 3
+    this->field_0xc1 = 1;
+    ((char*)&this->field_0x68)[3] = 1;
 }
 
 // ===========================================================================
@@ -3115,21 +3054,6 @@ void ModStation::showCBSMessage() {
 // The global leave-station handler (separate TU, reached through a PLT veneer
 // at 0x75244): tears the station module down and transitions back to flight.
 extern "C" void leaveStation();
-
-// operator new / operator delete used by the inline RecordHandler / window
-// allocations the decompiler split out as named helpers.
-extern "C" void *ModStation_op_new(unsigned int sz) {
-    return ::operator new(sz);
-}
-extern "C" void ModStation_op_delete(void *p) {
-    ::operator delete(p);
-}
-
-// Deleting-destructor finisher: the base dtor (dtor_inner) has already run and
-// returned `this`; the terminal tail-branch releases the storage.
-extern "C" void ModStation_dtor_finish(ModStation *self) {
-    ::operator delete(self);
-}
 
 // autosave(): once the slot-0 record + preview have been written, the docked
 // menu reloads its save-slot preview thumbnails so the UI reflects the new
@@ -3207,7 +3131,6 @@ extern "C" void *ModStation_opnew_oi (unsigned size) { return ::operator new(siz
 extern "C" void *ModStation_opnew_ou (unsigned size) { return ::operator new(size); }
 extern "C" void *ModStation_opnew_ote(unsigned size) { return ::operator new(size); }
 extern "C" void *ModStation_opnew_dlc(unsigned size) { return ::operator new(size); }
-extern "C" void *ModStation_opnew_msc(unsigned size) { return ::operator new(size); }
 extern "C" void  ModStation_opdelete_oi (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ou (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ote(void *p) { ::operator delete(p); }
@@ -3307,11 +3230,8 @@ void  ModStation_ch_buildWingmanDialogue(void *dw, int kind);
 void  ModStation_ch_playWingmanVoice();
 }
 extern "C" void ModStation_ch_showWingmanDialogue(ModStation *self, int kind) {
-    if (*(void**)&self->field_0x84 != nullptr) {
-        ((DialogueWindow *)*(void**)&self->field_0x84)->~DialogueWindow();
-        ::operator delete(*(void**)&self->field_0x84);
-        *(void**)&self->field_0x84 = nullptr;
-    }
+    delete (DialogueWindow *)*(void**)&self->field_0x84;
+    *(void**)&self->field_0x84 = nullptr;
     void *dw = ModStation_ch_newDialogue(0x74);
     ModStation_ch_buildWingmanDialogue(dw, kind);
     *(void**)&self->field_0x84 = dw;
@@ -3434,9 +3354,9 @@ extern "C" void ModStation_oi_buildDlcMenu(ModStation *self)                { Mo
 // new tween object. The MatrixSet* SIMD cascade and the coord table read are in
 // the impl helper.
 extern "C" {
-EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race);
+AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race);
 }
-extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race) {
+extern "C" AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, int race) {
     return ModStation_msc_buildCameraTweenImpl(self, race);
 }
 
@@ -3461,10 +3381,6 @@ extern "C" {
 const int  *ModStation_msc_camCoordTable();   // base of the {x,y,z}*race translation table
 const int  *ModStation_msc_camRotTable();      // base of the per-race yaw angle table
 unsigned    ModStation_msc_camHandle();        // active hangar camera index
-// Constructs the 3000ms EaseInOutMatrix tween in already-allocated storage
-// (its full class header conflicts with this TU, so the placement-construct is
-// reached through a thunk, mirroring the file's other engine-construct shims).
-void        ModStation_msc_initTween(void *storage, const Matrix &mn, const Matrix &mx, int ms);
 }
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
@@ -3477,7 +3393,7 @@ using AbyssEngine::AEMath::MatrixSetRotation;
 // eases the hangar camera between them, records the resting camera position at
 // self+0x278.., and returns the new tween. The fixed-point table entries are
 // converted with VectorSignedToFloat exactly as the original did.
-extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race) {
+extern "C" AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race) {
     const int *coord = ModStation_msc_camCoordTable();
     const int *rot   = ModStation_msc_camRotTable();
 
@@ -3503,10 +3419,7 @@ extern "C" EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self
     MatrixSetTranslation(farKey, kx, ky, kz);
     MatrixSetRotation(farKey, 0.0f, yaw, 0.0f);
 
-    EaseInOutMatrix *tween =
-        (EaseInOutMatrix *)ModStation_opnew_msc(0xf4);
-    ModStation_msc_initTween(tween, nearKey, farKey, 3000);
-    return tween;
+    return new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
 }
 
 // ---- OnInitialize content fragments ----------------------------------------

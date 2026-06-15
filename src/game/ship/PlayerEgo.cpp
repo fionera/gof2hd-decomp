@@ -2,8 +2,8 @@
 #include "gof2/engine/render/Camera.h"
 #include "gof2/engine/core/AERandom.h"
 #include "gof2/game/ship/TargetFollowCamera.h"
+#include "gof2/game/core/PaintCanvasClass.h"   // forward-declares Engine for externs.h
 #include "gof2/externs.h"
-#include "gof2/game/core/PaintCanvasClass.h"
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/game/menu/HackingGame.h"
@@ -205,8 +205,8 @@ unsigned char PlayerEgo::isAutoPilot() {
 bool PlayerEgo::goingToWormhole() {
   void* m = this->level;
   void* r4 = ((void*&)this->autoPilotTarget);
-  void* lm = (void *)((Level *)(m))->getLandmarks();
-  return r4 == P(P(lm, 4), 0xc);   // RAWREAD: landmarks container (untyped getLandmarks() result)
+  Array<KIPlayer*>* lm = ((Level *)(m))->getLandmarks();
+  return r4 == (void*)(*lm)[3];   // landmarks[3] (orig byte offset 0xc / 4-byte slots)
 }
 
 int PlayerEgo::getCurrentSecondaryWeaponIndex() {
@@ -372,11 +372,10 @@ void PlayerEgo::setExhaustVisible(bool param) {
   Level* lvl = this->level;
   this->exhaustVisible = param;
   C((void*)(intptr_t)lvl->field_80, 0) = param;
-  unsigned* arr = (unsigned*)(intptr_t)lvl->field_a8;
-  if (arr != 0) {
-    for (unsigned i = 0; i < arr[0]; i++) {
-      int* p = (int*)arr[1];
-      ((ParticleSystemManager *)(this->level->field_80))->enableSystemEmit2(p[i], param);
+  Array<int>* arr = lvl->field_a8;
+  if (arr != nullptr) {
+    for (unsigned i = 0; i < arr->size(); i++) {
+      ((ParticleSystemManager *)(this->level->field_80))->enableSystemEmit2((*arr)[i], param);
     }
   }
 }
@@ -502,8 +501,8 @@ unsigned char PlayerEgo::isDockingToStream() {
 int PlayerEgo::goingToStream() {
   void* m = this->level;
   void* r4 = ((void*&)this->autoPilotTarget);
-  void* lm = (void *)((Level *)(m))->getLandmarks();
-  return r4 == P(P(lm, 4), 4);   // RAWREAD: landmarks container (untyped getLandmarks() result)
+  Array<KIPlayer*>* lm = ((Level *)(m))->getLandmarks();
+  return r4 == (void*)(*lm)[1];   // landmarks[1] (orig byte offset 4 / 4-byte slots)
 }
 
 Vec3 PlayerEgo::GetDirVector() {
@@ -651,11 +650,11 @@ bool PlayerEgo::isDockedToAsteroid() {
 }
 
 int PlayerEgo::goingToStation() {
-  void* lm = (void *)((Level *)(this->level))->getLandmarks();
-  if (P(P(lm, 4), 0) == 0) return false;   // RAWREAD: landmarks container (untyped getLandmarks() result)
+  Array<KIPlayer*>* lm = ((Level *)(this->level))->getLandmarks();
+  if ((*lm)[0] == 0) return false;   // landmarks[0]
   void* r4 = ((void*&)this->autoPilotTarget);
-  lm = (void *)((Level *)(this->level))->getLandmarks();
-  return r4 == P(P(lm, 4), 0);   // RAWREAD: landmarks container (untyped getLandmarks() result)
+  lm = ((Level *)(this->level))->getLandmarks();
+  return r4 == (void*)(*lm)[0];   // landmarks[0]
 }
 
 float PlayerEgo::getCloakingPercentage() {
@@ -1196,7 +1195,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
         void *station = this->dockStation;
         float pos[3];
         ((PlayerEgo *)(this))->getPosition();
-        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint((Vector *)pos, (char *)&this->navPoint);
+        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint((Vector *)pos, (SpacePoint *)&this->navPoint);
         if (nav != 0) {
             if (this->strafeNavPoint != nav) {
                 if (this->strafeNavPoint != 0)
@@ -1655,11 +1654,11 @@ void PlayerEgo::handleAutoTurret(int dt) {
     if (t >= 0xbb9) {                       // 3000ms: rescan for the best target
         this->autoTurretTimer = 0;
         this->autoTurretTarget = 0;
-        unsigned int *enemies = (unsigned int *)((Level *)(this->level))->getEnemies();
-        if (enemies != 0) {
+        Array<KIPlayer*> *enemies = ((Level *)(this->level))->getEnemies();
+        if (enemies != nullptr) {
             int best = 60000;
-            for (unsigned i = 0; i < enemies[0]; i++) {
-                void *e = *(void **)(enemies[1] + i * 4);
+            for (unsigned i = 0; i < enemies->size(); i++) {
+                void *e = (void *)(*enemies)[i];
                 if (((KIPlayer *)(e))->isDead() != 0) continue;
                 if (((KIPlayer *)(e))->isDying() != 0) continue;
                 if (((Player *)(((KIPlayer *)e)->player))->isActive() == 0) continue;
@@ -2177,7 +2176,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
     if (!undock) {
         float pos[3];
         ((PlayerEgo *)(this))->getPosition();
-        void *sp = (void *)(unsigned long)this->spacePoint;
+        SpacePoint *sp = (SpacePoint *)(unsigned long)this->spacePoint;
         void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint((Vector *)pos, sp);
         if (nav == 0) {
             if (C(radar, 0x70) != 0)              // RAWREAD: radar+0x70 (Radar minimal stub, no fields)

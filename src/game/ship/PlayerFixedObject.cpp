@@ -2,8 +2,6 @@
 #include "gof2/engine/core/AERandom.h"
 #include "gof2/game/ship/TargetFollowCamera.h"
 #include "gof2/engine/render/AEGeometry.h"
-
-namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/game/mission/Generator.h"
 #include "gof2/engine/render/LODManager.h"
@@ -18,27 +16,19 @@ namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &valu
 #include "gof2/game/ship/PlayerEgo.h"
 #include "gof2/game/world/Standing.h"
 #include "gof2/game/mission/Status.h"
-#include "gof2/game/core/String.h"
 #include "gof2/engine/math/BoundingVolume.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/game/world/Station.h"
 
-// V3 (3-float by-value vector return type) is provided by gof2/PlayerFixedObject.h
-// as a typedef of AbyssEngine::AEMath::Vector.
+namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
 
-// Byte-offset reader retained for the few foreign-class fields accessed from this
-// translation unit by raw offset (engine singletons / Player internals not modelled
-// in their out-of-batch headers).
-template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
-
-extern "C" V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
-extern "C" void *Explosion_ctor(void *e, int a);
-void *Globals_getWreckCollision(void *globals, int kind, void *geom);
-extern "C" V3 BV_getProjectionVector(void *bv);
+// Engine glue that has no modelled C++ home: bounding-volume math helpers, the wreck
+// collision lookup on the Globals singleton, and the polymorphic vtable symbol.
+V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
+V3 BV_getProjectionVector(void *bv);
 extern "C" char PlayerFixedObject_vtable;
-extern "C" void *Explosion_dtor(void *p);
-extern "C" void Generator_ctor(void *g);
-extern "C" void *Generator_dtor(void *g);
+void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 
 int PlayerFixedObject::getDockingType() {
     return this->dockingType;
@@ -47,7 +37,6 @@ int PlayerFixedObject::getDockingType() {
 void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
     this->boundingVolumes = bv;
 }
-
 
 void PlayerFixedObject::hideShip() {
     this->shipHidden = 1;
@@ -68,10 +57,6 @@ void PlayerFixedObject::setPosition_vec(const Vector &v) {
     return fn(this, v.x, v.y, v.z);
 }
 
-typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
-
-// Reads ship pos (signed ints at +0x178/0x17c/0x180 -> float), adds the delta Vector,
-// then forwards to vtable slot 0x48.
 void PlayerFixedObject::translate(const Vector &d) {
     float x = (float)this->intPosX;
     float y = (float)this->intPosY;
@@ -80,43 +65,24 @@ void PlayerFixedObject::translate(const Vector &d) {
     return fn(this, d.x + x, d.y + y, d.z + z);
 }
 
-// AbyssEngine::String::String(String* out, const String* src, bool) -> void.
-// Returns String by value (sret r0, this r1). Copy-ctor returns void, so the
-// compiler keeps a frame + restores the sret pointer.
-// `struct String` is provided by gof2/Station.h via the class header.
-
 String PlayerFixedObject::getName() {
     return this->name;
 }
 
-// Tail-call into AbyssEngine::String::operator= (or move-assign): dst = this+0x1ac, src = r1 (the String arg).
-
 void * PlayerFixedObject::setName(String *name) {
     return this->name.assign(name);
-}
-
-// Deleting destructor (D0): run the complete dtor (D1), then tail-call operator delete.
-// Mangled names so the demangled symbol contains "~PlayerFixedObject".
-void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self); // complete object dtor
-
-void _ZN17PlayerFixedObjectD0Ev(PlayerFixedObject *self)
-{
-    return ::operator delete(_ZN17PlayerFixedObjectD1Ev(self));
 }
 
 void PlayerFixedObject::setMoving(bool v) {
     this->moving = v;
 }
 
-// Returns a Vector by value (sret r0, this r1, collision vector r2). The callee returns
-// the projected Vector into the same sret, so the compiler keeps a frame + call (not tail).
 V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
-    PlayerFixedObject *self = this;
-    Array<BoundingVolume *> *bv = self->wreckCollision;
-    if (bv != 0 && self->state == 4) {
+    Array<BoundingVolume *> *bv = this->wreckCollision;
+    if (bv != 0 && this->state == 4) {
         return BV_staticProjectCollisionOnSurface(vec, bv);
     }
-    Array<BoundingVolume *> *bv2 = self->boundingVolumes;
+    Array<BoundingVolume *> *bv2 = this->boundingVolumes;
     if (bv2 != 0) {
         return BV_staticProjectCollisionOnSurface(vec, bv2);
     }
@@ -128,8 +94,7 @@ void PlayerFixedObject::setTransportID(int v) {
     this->transportID = v;
 }
 
-// outerCollide(Vector) - Vector passed by value (r1,r2,r3). Pure tail-forward through
-// vtable slot 0x3c: ldr r12,[r0]; ldr r12,[r12,#0x3c]; bx r12.
+// outerCollide(Vector): forward by value through vtable slot 0x3c.
 typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
 
 void PlayerFixedObject::outerCollide_vec(Vector v) {
@@ -137,19 +102,12 @@ void PlayerFixedObject::outerCollide_vec(Vector v) {
     return fn(this, v);
 }
 
-// PlayerFixedObject::getPosition() — integer object position (+0x178/+0x17c/+0x180)
-// promoted to a float Vector. Mirrors the sret free function above.
 V3 PlayerFixedObject::getPosition() {
     V3 pos = { (float)intPosX, (float)intPosY, (float)intPosZ };
     return pos;
 }
 
-// PlayerFixedObject::update(int dt). Large state machine on this->0x88:
-//   normal -> dying(3) -> exploding(4) -> dead(5). Heavily optimized in the target
-//   (the FPSCR shuffles in the Ghidra output are just float comparisons). This is a
-//   faithful structural translation; engine subsystems are reached via extern helpers.
-
-// PC-relative singleton holders.
+// PC-relative singleton holders for the engine subsystems reached during update().
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvasU;   // PaintCanvas for Transform updates
 __attribute__((visibility("hidden"))) extern void **g_pfo_fmod;      // FModSound holder
 __attribute__((visibility("hidden"))) extern void **g_pfo_audioFlag; // *holder+0xf = positional flag
@@ -164,26 +122,26 @@ static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
     return k == 0x37a3 || k == 0xe;
 }
 
+// State machine on this->state: normal -> dying(3) -> exploding(4) -> dead(5).
 void PlayerFixedObject::update(int dt) {
     PlayerFixedObject *self = this;
     self->deltaTime = dt;
-    bool bdt = (bool)(unsigned char)dt;
 
-    // ship's KIPlayer "is active for tutorial" flag derived from 0xf8/0x134
+    // ship's KIPlayer "is active for tutorial" flag derived from field_0xf8/moving
     bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->moving != 0);
     ((Player *)(self->player))->update(dt, kiFlag);
 
-    // Player::enemyFlags (+0x5c): low byte = alwaysEnemy, high byte (+0x5d) = alwaysFriend.
+    // Player::enemyFlags: low byte = alwaysEnemy, high byte = alwaysFriend.
     Player *player = (Player *)self->player;
     unsigned char enemyFlag = 0;
     if ((self->faction & 0xfffffffe) == 8) {
-        F<unsigned char>(player, 0x5c) = 1; // RAWREAD: Player+0x5c (low byte of uint16 enemyFlags)
+        F<unsigned char>(player, 0x5c) = 1;
         enemyFlag = 0;
     } else {
         int st = ((Status *)(*g_pfo_status))->getStanding();
         unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->faction);
         player = (Player *)self->player;
-        F<unsigned char>(player, 0x5c) = e; // RAWREAD: Player+0x5c (low byte of uint16 enemyFlags)
+        F<unsigned char>(player, 0x5c) = e;
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
@@ -192,7 +150,7 @@ void PlayerFixedObject::update(int dt) {
             player = (Player *)self->player;
         }
     }
-    F<unsigned char>(player, 0x5d) = enemyFlag; // RAWREAD: Player+0x5d (high byte of uint16 enemyFlags)
+    F<unsigned char>(player, 0x5d) = enemyFlag;
 
     if (Player_turnedEnemy((Player *)self->player) != 0)
         ((Player *)self->player)->enemyFlags = 1;
@@ -203,7 +161,7 @@ void PlayerFixedObject::update(int dt) {
         float bomb = ((Player *)(self->player))->getBombForce();
         float emp = ((Player *)(self->player))->getEmpForce();
         if (bomb > 0.0f) {
-            float nb = bomb * 0.95f; // DAT decay factor
+            float nb = bomb * 0.95f;
             if (nb < 1.0f) nb = 0.0f;
             ((Player *)(self->player))->setBombForce(nb);
         }
@@ -220,7 +178,7 @@ void PlayerFixedObject::update(int dt) {
         int kind = self->kind;
         bool doMove = (kind != 0x37a3);
         if (doMove) doMove = (self->moving != 0);
-        if (doMove) ((PlayerFixedObject *)(self))->moveForward(dt);
+        if (doMove) self->moveForward(dt);
 
         int cm = ((Status *)(*g_pfo_status))->getCurrentCampaignMission();
         int k2 = self->kind;
@@ -254,7 +212,7 @@ afterMotion:
         int cargo = ((KIPlayer *)(self))->cargoAvailable();
         self->hasCargo = (unsigned char)cargo;
         if (cargo != 0) ((KIPlayer *)(self))->createCrate(0);
-        ((PlayerFixedObject *)(self))->setExhaustVisible(false);
+        self->setExhaustVisible(false);
 
         void *wreck = self->wreckGeometry;
         ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
@@ -276,24 +234,23 @@ afterMotion:
         Level *lod = (Level *)self->level;
         void *mgr = *(void **)&lod->field_74;
         int sysOff = typeIsPirateOrE(self) ? 0x54 : 0x50;
-        int sys = *(int *)((char *)lod + sysOff); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
+        int sys = *(int *)((char *)lod + sysOff);
         void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
         ((ParticleSystemManager *)(mgr))->systemSetMatrix(sys, m);
         int sndHandle = sys;
         Vector *pos = 0;
-        if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0) // RAWREAD: audioFlag+0xf (untyped engine singleton, class unmodeled)
+        if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
             pos = &self->position;
         ((FModSound *)(*g_pfo_fmod))->play(0x14, pos, (Vector *)0, (float)sndHandle);
         lod = (Level *)self->level;
         {
-            int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
+            int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
             ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
         }
 
-        expl = ::operator new(0x68);
-        Explosion_ctor(expl, 0);
-        self->explosion = expl;
-        ((Explosion *)(expl))->addFireStreaks();
+        Explosion *explosion = new Explosion(0);
+        self->explosion = explosion;
+        explosion->addFireStreaks();
         expl = self->explosion;
 
         char posBuf[12];
@@ -301,29 +258,26 @@ afterMotion:
         ((Explosion *)(expl))->start((Vector *)posBuf, (const Vector *)0);
 
         if (self->kind == 0xe) {
-            unsigned int *enemies = (unsigned int *)(intptr_t)((Level *)self->level)->getEnemies();
-            for (unsigned int i = 0; i < enemies[0]; i++) {
-                void *en = (void *)(intptr_t)((Level *)self->level)->getEnemies();
-                void *obj = *(void **)(*(int *)((char *)en + 4) + i * 4); // RAWREAD: enemies Array+4 (untyped engine Array data ptr)
-                if (*(char *)((char *)obj + 0x3e) != 0) { // RAWREAD: obj+0x3e (untyped enemy handle, class unmodeled)
-                    en = (void *)(intptr_t)((Level *)self->level)->getEnemies();
-                    obj = *(void **)(*(int *)((char *)en + 4) + i * 4); // RAWREAD: enemies Array+4 (untyped engine Array data ptr)
-                    ((Player *)(*(void **)((char *)obj + 4)))->damage(g_pfo_dmgVal); // RAWREAD: obj+4 (untyped enemy handle -> Player*)
+            Array<KIPlayer *> *enemies = ((Level *)self->level)->getEnemies();
+            for (unsigned int i = 0; i < enemies->size(); i++) {
+                KIPlayer *obj = (*enemies)[i];
+                if (*(char *)((char *)obj + 0x3e) != 0) {
+                    obj = (*enemies)[i];
+                    ((Player *)(obj->player))->damage(g_pfo_dmgVal);
                 }
-                enemies = (unsigned int *)(intptr_t)((Level *)self->level)->getEnemies();
             }
             if (self->kind == 0xe &&
                 (char)((Player *)self->player)->field_44 == 0) {
                 void *egoObj = *g_pfo_egoA;
                 void *ach = *g_pfo_achievements;
-                *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1; // RAWREAD: egoObj+0x118 (untyped singleton handle; PlayerEgo+0x118 is yawRate, semantic mismatch)
+                *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
                 if (((Achievements *)(ach))->hasMedal(0x27, 1) == 0) {
-                    float cur = (float)*(int *)((char *)egoObj + 0x118); // RAWREAD: egoObj+0x118 (untyped singleton handle)
+                    float cur = (float)*(int *)((char *)egoObj + 0x118);
                     float val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                     if ((int)(cur / val) < 2) {
                         void *ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                         void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                        cur = (float)*(int *)((char *)egoObj + 0x118); // RAWREAD: egoObj+0x118 (untyped singleton handle)
+                        cur = (float)*(int *)((char *)egoObj + 0x118);
                         val = (float)((Achievements *)(ach))->getValue(0x27, 1);
                         ((Hud *)(hud))->hudEventMedal(0x27, (int)((cur / val) * 100.0f));
                     }
@@ -340,16 +294,14 @@ afterMotion:
         if (self->kind != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
-                // AEGeometry::moveForward returns void; the binary forwards the same
-                // distance (dt, held live in r0/s0) to the secondary geometry.
                 ((AEGeometry *)self->wreckGeometry)->moveForward((float)dt);
                 if (self->secondaryGeometry != 0)
                     ((AEGeometry *)self->secondaryGeometry)->moveForward((float)dt);
             }
             Matrix &m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
             *(Matrix *)((Player *)self->player)->transform = m;
-            Vector pos = ((AEGeometry *)(self->wreckGeometry))->getPosition();
-            *&self->position = pos;
+            Vector p = ((AEGeometry *)(self->wreckGeometry))->getPosition();
+            self->position = p;
             Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
@@ -371,7 +323,7 @@ afterMotion:
             Level *lod = (Level *)self->level;
             self->state = 4;
             {
-                int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50)); // RAWREAD: Level+0x50/0x54 (runtime-selected field_50/field_54)
+                int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
                 ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
             }
             ((Explosion *)(self->explosion))->reset();
@@ -410,7 +362,7 @@ afterMotion:
         bool spin = self->hasCargo != 0 && ((Player *)(self->player))->isActive() != 0 &&
                     self->secondaryGeometry != 0;
         if (spin) {
-            float r = (float)(dt >> 1) * 0.001f; // DAT scalings
+            float r = (float)(dt >> 1) * 0.001f;
             r = (float)(int)(r * 1.0f);
             ((AEGeometry *)(self->secondaryGeometry))->rotate(r, r, r);
             if (self->explosionTimer >= 0xea61) {
@@ -428,7 +380,7 @@ afterMotion:
                 (unsigned int)self->wreckMaterial <= 0x7fffffff) {
                 char posBuf[12];
                 ((AEGeometry *)((Vector *)posBuf))->getPosition();
-                *(Vector *)(&self->position) = *(const Vector *)((Vector *)posBuf);
+                self->position = *(const Vector *)((Vector *)posBuf);
                 Array<BoundingVolume *> *bv = self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
                     void *o = (*bv)[i];
@@ -475,10 +427,10 @@ afterMotion:
         }
     } else if (state == 5) {
         // dead-but-selectable: search for a nearby active enemy to re-home on
-        unsigned int *enemies = (unsigned int *)((Player *)(self->player))->getEnemies();
-        if (enemies != 0) {
+        Array<Player *> *enemies = ((Player *)(self->player))->getEnemies();
+        if (enemies != nullptr) {
             self->targetEnemy = 0;
-            for (unsigned int i = 0; i < enemies[0]; i++) {
+            for (unsigned int i = 0; i < enemies->size(); i++) {
                 if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
                     char pb[12];
                     ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
@@ -486,7 +438,7 @@ afterMotion:
                     float dx = self->position.x - self->targetPos.x;
                     float dy = self->position.y - self->targetPos.y;
                     float dz = self->position.z - self->targetPos.z;
-                    const float lo = 0.0f, hi = 50.0f; // DAT thresholds
+                    const float lo = 0.0f, hi = 50.0f;
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
                         ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
@@ -514,16 +466,14 @@ afterMotion:
 
     // mirror the integer position into the Player object
     void *p = self->player;
-    *(int *)((char *)p + 0x48) = self->intPosX; // RAWREAD: Player+0x48 (unmodeled, falls in pad_46 region)
-    *(int *)((char *)p + 0x4c) = self->intPosY; // RAWREAD: Player+0x4c (unmodeled, falls in pad_46 region)
-    *(int *)((char *)p + 0x50) = self->intPosZ; // RAWREAD: Player+0x50 (unmodeled, falls in pad_46 region)
+    *(int *)((char *)p + 0x48) = self->intPosX;
+    *(int *)((char *)p + 0x4c) = self->intPosY;
+    *(int *)((char *)p + 0x50) = self->intPosZ;
 }
 
 // PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
 
-// NEAR: target keeps the frame up-front (no shrink-wrap, bool saved to r4 before the
-// field checks). clang shrink-wraps here (checks before push, bx lr early-exit).
 void PlayerFixedObject::setExhaustVisible(bool v) {
     AEGeometry *geom = (AEGeometry *)this->geometry;
     if (geom != 0 && (int)geom->childTransform != -1) {
@@ -532,10 +482,8 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
     }
 }
 
-// collide(float,float,float): iterate the active bounding-volume array, calling each
-// volume's vtable slot +8 with (bv, x, y, z); return 1 on first hit, else 0.
-// NEAR: clang rotates the first loop as break-test (cbnz) while the target uses
-// continue-test (cmp;beq) there; the two loops differ only in rotation.
+// collide(x,y,z): iterate the active bounding-volume array, calling each volume's
+// vtable slot +8 with (bv, x, y, z); return 1 on first hit, else 0.
 typedef int (*CollideFn)(void *bv, float, float, float);
 
 int PlayerFixedObject::collide(float x, float y, float z) {
@@ -564,18 +512,11 @@ int PlayerFixedObject::collide(float x, float y, float z) {
     return 0;
 }
 
-// Allocate a 12-byte Array<BoundingVolume*>, default-construct, store at +0x128,
-// then forward (param_1, arr) to the bounding-volume registration thunk.
-// NEAR: clang assigns arr->r5, this->r6 (we get them swapped); allocator tie-break, not source-driven.
 void PlayerFixedObject::setBV(BoundingVolume *bv) {
     Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
     this->boundingVolumes = arr;
     return ((BoundingVolume *)(bv))->setArr(arr);
 }
-
-typedef unsigned long long uint64_t;
-
-typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
 
 // PC-relative pointer-to-function-pointer; *holder is a Vector::operator= style routine
 // invoked as fn(Vector*, Vector*).
@@ -585,18 +526,14 @@ __attribute__((visibility("hidden"))) extern VecAssignFn *g_pfo_vecAssignZero;
 void PlayerFixedObject::reset() {
     ((KIPlayer *)(this))->reset();
 
-    // vtable slot 0x48 -> setPosition(this->0x58, 0x5c, 0x60)
+    // vtable slot 0x48 -> setPosition(spawnX, spawnY, spawnZ)
     SetPosFn setPos = *(SetPosFn *)(*(char **)this + 0x48);
     setPos(this, this->spawnX, this->spawnY, this->spawnZ);
 
     this->targetEnemy = 0;
 
-    // Vector copy: spawn (0x58) -> respawnPos (0x138)
-    {
-        Vector spawn = { this->spawnX, this->spawnY, this->spawnZ };
-        this->respawnPos = spawn;
-    }
-    // Vector copy: respawnPos (0x138) -> position (0x2c)
+    Vector spawn = { this->spawnX, this->spawnY, this->spawnZ };
+    this->respawnPos = spawn;
     this->position = this->respawnPos;
 
     this->deltaTime = 0;
@@ -604,18 +541,9 @@ void PlayerFixedObject::reset() {
         this->state = 0;
 
     VecAssignFn fn = *g_pfo_vecAssignZero;
-    char zero[12];
-    *(uint32_t *)(zero + 0) = 0;
-    *(uint32_t *)(zero + 4) = 0;
-    *(uint32_t *)(zero + 8) = 0;
+    char zero[12] = {0};
     fn(&this->targetPos, zero);
-    *(uint32_t *)(zero + 0) = 0;
-    *(uint32_t *)(zero + 4) = 0;
-    *(uint32_t *)(zero + 8) = 0;
     fn(&this->homingTarget, zero);
-    *(uint32_t *)(zero + 0) = 0;
-    *(uint32_t *)(zero + 4) = 0;
-    *(uint32_t *)(zero + 8) = 0;
     fn(&this->homingDir, zero);
 }
 
@@ -626,11 +554,10 @@ __attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t)meshId;
-    void *geom = ::operator new(0xc0);
     void **holder = g_pfo_canvas2;
-    new ((void *)geom) AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
+    AEGeometry *geom = new AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
     this->wreckGeometry = geom;
-    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)geom)->transform);
+    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(geom->transform);
     *(int *)&((AbyssEngine::Transform *)t)->boundingRadius = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
     int kind = this->kind;
@@ -654,10 +581,8 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, this->wreckGeometry);
 }
 
-// Returns a Vector by value (sret r0, this r1). Picks the active bounding-volume array,
-// indexes it by the stored collision index (this+0x16c) and forwards the chosen BV.
-// NEAR: target shares one index+call across both branches (explicit join) and keeps the
-// first bv in a callee reg; clang lays the branches out separately here.
+// Picks the active bounding-volume array, indexes it by the stored collision index,
+// and forwards the chosen volume to the projection helper.
 V3 PlayerFixedObject::getProjectionVector() {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *bv = self->wreckCollision;
@@ -674,49 +599,15 @@ V3 PlayerFixedObject::getProjectionVector() {
     return z;
 }
 
-// Complete object destructor (D1). Returns this. Tears down the wrecked-mesh geometry,
-// the two bounding-volume arrays, the explosion, and the name String, then tail-calls
-// the base destructor.
-
-void *_ZN17PlayerFixedObjectD1Ev(PlayerFixedObject *self)
-{
-    void *wreck = self->wreckGeometry;
-    *(void **)self = &PlayerFixedObject_vtable + 8;
-    if (wreck != self->geometry) {
-        if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
-        self->wreckGeometry = 0;
-    }
-    Array<BoundingVolume *> *bvB = self->boundingVolumes;
-    if (bvB != 0) {
-        for (auto *e : *bvB) delete e;
-        bvB->clear();
-        delete bvB;
-    }
-    self->boundingVolumes = 0;
-    Array<BoundingVolume *> *bvA = self->wreckCollision;
-    if (bvA != 0) {
-        for (auto *e : *bvA) delete e;
-        bvA->clear();
-        delete bvA;
-    }
-    self->wreckCollision = 0;
-    void *expl = self->explosion;
-    if (expl != 0) ::operator delete(Explosion_dtor(expl));
-    self->explosion = 0;
-    self->name.dtor();
-    return ((PlayerFixedObject *)(self))->baseDtor();
-}
-
-// PlayerFixedObject::~PlayerFixedObject() -- real destructor.
-//   Tears down the wrecked-mesh geometry (unless it aliases the main geometry),
-//   the two bounding-volume arrays, the explosion, and the name String, then runs
-//   the base-class teardown.
+// Tears down the wrecked-mesh geometry (unless it aliases the main geometry), the two
+// bounding-volume arrays, the explosion and the name String. The base (KIPlayer/Player)
+// subobject teardown is owned by the parent translation unit.
 PlayerFixedObject::~PlayerFixedObject() {
     PlayerFixedObject *self = this;
     void *wreck = self->wreckGeometry;
     *(void **)self = &PlayerFixedObject_vtable + 8;
     if (wreck != self->geometry) {
-        if (wreck != 0) { ((AEGeometry *)wreck)->~AEGeometry(); ::operator delete(wreck); }
+        if (wreck != 0) delete (AEGeometry *)wreck;
         self->wreckGeometry = 0;
     }
     Array<BoundingVolume *> *bvB = self->boundingVolumes;
@@ -733,25 +624,14 @@ PlayerFixedObject::~PlayerFixedObject() {
         delete bvA;
     }
     self->wreckCollision = 0;
-    void *expl = self->explosion;
-    if (expl != 0) ::operator delete(Explosion_dtor(expl));
+    Explosion *expl = (Explosion *)self->explosion;
+    if (expl != 0) delete expl;
     self->explosion = 0;
     self->name.dtor();
-    ((PlayerFixedObject *)(self))->baseDtor();
 }
 
-// PlayerFixedObject::~PlayerFixedObject() destructor tail.
-//   Reached after every PlayerFixedObject-owned member has been released; it runs the
-//   base (Fighter/Player) subobject teardown and hands `this` back so the deleting
-//   variant can free it. The base teardown is owned by the parent class translation
-//   unit, so here the tail simply yields the object pointer.
-void *PlayerFixedObject::baseDtor() {
-    return this;
-}
-
-// PlayerFixedObject::PlayerFixedObject(...) -- real constructor.
-//   Delegates to the recovered initialization body (ctor) which spawns the fixed
-//   object, seeds its position, name, faction and loot list.
+// Delegates to the recovered initialization body which spawns the fixed object and
+// seeds its position, name, faction and loot list.
 PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *geom,
                                      float p5, float p6, float p7,
                                      float sx, float sy, float sz) {
@@ -759,11 +639,9 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *g
 }
 
 // Tail-call thunks selected by object state.
-extern "C" void render_thunk_state5(void *geom);   // DAT_001abdd4 thunk, arg = this->0x8
-extern "C" void render_thunk_other(void *expl);     // DAT_001ac2b4 thunk, arg = this->0x18c (Explosion*)
+extern "C" void render_thunk_state5(void *geom);   // arg = this->geometry
+extern "C" void render_thunk_other(void *expl);     // arg = this->explosion (Explosion*)
 
-// NEAR: clang reorders the state comparisons (3 before 5) and duplicates the shared
-// state5 block instead of sharing it via the original goto; structure differs.
 void PlayerFixedObject::render() {
     PlayerFixedObject *self = this;
     void *g78 = self->secondaryGeometry;
@@ -792,11 +670,6 @@ LAB_538:
     return render_thunk_other(expl);
 }
 
-typedef unsigned long long uint64_t;
-
-// PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player*, AEGeometry*, float, float, float, ...)
-// (two extra stack floats in_stack_00000004/8/c make up the spawn position passed by value).
-
 // PC-relative literal table holding the station-index match list (4 ints) and the
 // loot-list parameter table (4 x 8-byte pairs).
 __attribute__((visibility("hidden"))) extern const int g_pfo_stationIdx[4];
@@ -807,7 +680,7 @@ __attribute__((visibility("hidden"))) extern void **g_pfo_random;
 void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float p5, float p6, float p7, float sx, float sy, float sz) {
     PlayerFixedObject *self = this;
 
-    // Zero the contiguous respawnPos/homingTarget/homingDir vector region (0x138-0x167).
+    // Zero the contiguous respawnPos/homingTarget/homingDir vector region.
     Vector zeroVec = { 0.0f, 0.0f, 0.0f };
     self->respawnPos = zeroVec;
     self->homingTarget = zeroVec;
@@ -833,11 +706,8 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     self->field_0x174 = 0;
     self->intPosX = 0; self->intPosY = 0; self->intPosZ = 0;
 
-    // Vector::operator=(position, {sx,sy,sz})
-    {
-        Vector p = { sx, sy, sz };
-        self->position = p;
-    }
+    Vector p = { sx, sy, sz };
+    self->position = p;
 
     self->moving = 0;
     self->wreckType = -1;
@@ -871,38 +741,33 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         }
         self->lootList = 0;
     } else {
-        void *gen = ::operator new(1);
-        Generator_ctor(gen);
+        Generator *gen = new Generator();
         if (kind == 0x37a3) {
             self->field_0x41 = 1;
             void *station = ((Status *)(*g_pfo_status))->getStation();
-            int sidx = Station_getIndex((Station *)station);
+            int sidx = ((Station *)station)->getIndex();
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
-                    self->lootList = ((Generator *)(gen))->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
+                    self->lootList = gen->getLootList(g_pfo_lootParams[i * 2 + 1], 0);
                 }
             }
         } else {
-            Array<int> *loot = ((Generator *)(gen))->getLootList(-1, -1);
+            Array<int> *loot = gen->getLootList(-1, -1);
             self->lootList = loot;
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
-                    void *rng = *g_pfo_random;
+                    AbyssEngine::AERandom *rng = (AbyssEngine::AERandom *)*g_pfo_random;
                     for (int idx = 1; (uint32_t)(idx - 1) < self->lootList->size(); idx += 2) {
-                        // NOTE: AERandom::nextInt(self, bound) had its `bound`
-                        // argument dropped by the decompiler; the receiver `rng`
-                        // is preserved. Exact bounds are unrecovered (Ghidra
-                        // unavailable) — using the additive offsets as bounds.
                         if (kind == 0xe) {
-                            int r = ((AbyssEngine::AERandom *)rng)->nextInt();
+                            int r = rng->nextInt();
                             int &cell = (*self->lootList)[idx];
                             cell = cell * (r + 5);
                         } else {
-                            int r = ((AbyssEngine::AERandom *)rng)->nextInt();
+                            int r = rng->nextInt();
                             int &base = (*self->lootList)[idx];
                             base = base * (r + 2);
-                            int r2 = ((AbyssEngine::AERandom *)rng)->nextInt();
+                            int r2 = rng->nextInt();
                             int &cell = (*self->lootList)[idx];
                             if (cell < r2 + 8) cell = r2 + 8;
                         }
@@ -910,10 +775,10 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
                 }
             }
         }
-        ::operator delete(Generator_dtor(gen));
+        delete gen;
     }
 
-    *(uint8_t *)((char *)self->player + 0x45) = 1; // RAWREAD: Player+0x45 (high byte of uint16 field_44)
+    *(uint8_t *)((char *)self->player + 0x45) = 1;
     if (kind != 0x37a3) {
         self->field_0xf8 = 0x2f;
         if (kind == 0xe) {
@@ -925,7 +790,6 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
 typedef void (*BVSetPosFn)(void *bv, float, float, float);
 
-// PlayerFixedObject::setPosition(float, float, float)
 void PlayerFixedObject::setPosition3(float x, float y, float z) {
     this->spawnX = x;
     this->spawnY = y;
@@ -958,9 +822,6 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     }
 }
 
-// NEAR (80.6%): structure matches, but the final Transform::SetAnimationRangeInTime call is
-// emitted as a tail-branch here while the target keeps a frame and passes the 64-bit arg on the
-// stack (push {r2,r3,...}; strd; call; pop). Calling-convention detail not reproducible from src.
 // PaintCanvas singleton holder (pc-rel -> holder; *holder is the canvas).
 __attribute__((visibility("hidden"))) extern void **g_pfo_canvas3;
 
@@ -971,21 +832,16 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((Player *)(this->player))->setVulnerable(false);
     ((LODManager *)(*(void **)this->level))->removeObject((AEGeometry *)this->geometry);
     void *geom = this->geometry;
-    if (geom != 0) { ((AEGeometry *)geom)->~AEGeometry(); ::operator delete(geom); }
+    if (geom != 0) delete (AEGeometry *)geom;
     void **holder = g_pfo_canvas3;
     void *newGeom = this->wreckGeometry;
     this->geometry = newGeom;
     void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)newGeom)->transform);
-    // NOTE: the decompiler emitted a single 64-bit argument; SetAnimationRangeInTime
-    // takes (start, end). Passing the recovered value as start and 0 as end.
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(((AbyssEngine::Transform *)t)->animationLength, 0);
 }
 
-// outerCollide(float,float,float): iterate the active bounding-volume array, calling each
-// volume's vtable slot +0xc with (bv, x, y, z). On the first hit, store the hit index at
-// this+0x16c and return 1; otherwise return 0.
-typedef int (*CollideFn)(void *bv, float, float, float);
-
+// outerCollide(x,y,z): iterate the active bounding-volume array, calling each volume's
+// vtable slot +0xc with (bv, x, y, z). On the first hit, store the index and return 1.
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
@@ -1012,18 +868,13 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-// NEAR (~82%): logic matches but the target carries a stack canary (it was built with the
-// guard for the on-stack Vector). Under the fixed -fstack-protector (basic, not -strong) flag,
-// clang only guards char arrays accessed as bytes; this Vector buffer (read via Vector*) is not
-// protected, so no canary is emitted. Matching it would require -fstack-protector-strong.
-
 typedef void (*BVMoveFn)(void *bv, Vector);
 
 void PlayerFixedObject::moveForward(int amount) {
     float d = (float)amount;
     this->intPosZ = amount + this->intPosZ;
     ((AEGeometry *)(this->geometry))->moveForward(d);
-    void *m = ((AEGeometry *)(this->geometry))->getMatrix();
+    void *m = &((AEGeometry *)(this->geometry))->getMatrix();
     *(Matrix *)((Player *)this->player)->transform = *(const Matrix *)(m);
     char buf[12];
     ((AEGeometry *)((Vector *)buf))->getPosition();

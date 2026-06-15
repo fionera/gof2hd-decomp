@@ -1,64 +1,33 @@
 #ifndef GOF2_OBJECTIVE_H
 #define GOF2_OBJECTIVE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-struct Objective;
-struct Level;
-struct KIPlayer;
-struct Route;
-struct Waypoint;
 
-namespace AbyssEngine {
+class Level;
+class KIPlayer;
 
-}
+namespace AbyssEngine { struct String; }
 
-using String = AbyssEngine::String;
-
-extern "C" void operator_delete(void *ptr);
-
-extern "C" Array<KIPlayer *> *Level_getEnemies(Level *level);
-extern "C" int Level_getEnemiesLeft(Level *level);
-extern "C" Route *Level_getPlayerRoute(Level *level);
-extern "C" Array<void *> *Level_getMessages(Level *level);
-extern "C" int Level_getFriendsLeft(Level *level);
-extern "C" Array<KIPlayer *> *Level_getAsteroids(Level *level);
-extern "C" int Level_getNumDeliveredOre(Level *level);
-extern "C" int Level_getNumDeliveredPassengers(Level *level);
-
-extern "C" int KIPlayer_isDead(KIPlayer *player);
-extern "C" Waypoint *Route_getLastWaypoint(Route *route);
-
-extern "C" unsigned int Objective_tail_enemy(KIPlayer *player);
-extern "C" unsigned int Objective_tail_enemy_payload(void *payload);
-extern "C" unsigned int Objective_tail_level(Level *level);
-extern "C" unsigned int Objective_tail_message(void *message);
-extern "C" unsigned int Objective_tail_enemy_final(KIPlayer *player);
-
+// Galaxy on Fire 2 — Objective: one mission goal evaluated against the in-flight
+// Level. Objectives nest (an objective may own a list of child objectives) and
+// each carries a type discriminator plus up to two integer parameters.
 class Objective {
 public:
-    int type;                           // +0x0 objective type
-    int value;                          // +0x4 value / index parameter
-    int calcValue;                      // +0x8 calc value / end value
-    Level* level;                       // +0xc owning level
-    Array<Objective *>* children;       // +0x10 child objectives
-    String* achievedText;               // +0x14 achieved-text String*
-    int field_0x18;                     // +0x18 stored value when type==0xd
+    int type;                              // objective type discriminator
+    int value;                             // value / index parameter
+    int calcValue;                         // calc value / end-of-range parameter
+    Level* level;                          // owning level
+    Array<Objective*>* children;           // child objectives
+    AbyssEngine::String* achievedText;     // achieved-text message
+    int storedValue;                       // captured value when type == 0xd
 
-    Objective(int type, int value, Level *level);
-    Objective(int type, int value, int calcValue, Level *level);
+    Objective(int type, int value, Level* level);
+    Objective(int type, int value, int calcValue, Level* level);
     ~Objective();
-    Objective *addObjective(Objective *objective);
+
+    Objective* addObjective(Objective* objective);
+    void setAchievedText(AbyssEngine::String* text);
     bool isSurvivalObjective();
     bool getCalcValue();
     unsigned int achieved(int value);
-
-    // Tail-call helpers used by achieved(): each forwards to a single virtual
-    // predicate on the target object (recovered from the indirect tail-calls in
-    // Objective::achieved). Kept as named methods so the switch reads cleanly.
-    unsigned int tailEnemyIsDead(KIPlayer *enemy);       // case 1
-    unsigned int tailEnemyPayloadActive(void *player);   // case 0xf
-    unsigned int tailFriendCargoStolen(Level *level);    // case 0x13
-    unsigned int tailMessageOver(void *message);         // cases 4, 0x16, 22
-    unsigned int tailEnemyIsDying(KIPlayer *enemy);      // case 0x1e
 };
 #endif

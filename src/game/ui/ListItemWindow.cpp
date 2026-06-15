@@ -8,24 +8,24 @@
 #include "gof2/engine/render/ImageFactory.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/ui/ListItem.h"
-#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/game/core/PaintCanvasClass.h"
 
-extern "C" void _liw_stw_OnTouchBegin(void *stw, int x);
-extern "C" void _liw_stw_OnTouchMove(void *stw, int y);
-extern "C" void _liw_stw_OnTouchEnd(void *stw, int y);
-extern "C" void  ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool flag);
-extern "C" void  liw_set_buildShipPreview(void *self, void *item, void *layout);
-extern "C" int   aeabi_idiv_(int a, int b);
-extern "C" void _liw_Matrix_ctor(void *m);
+// Heavy data-driven preview / row-fill regions kept in the engine: the ship
+// preview builder (transform/camera/light setup) and the attribute row filler
+// (the large per-attribute stat switch). They take the window, the item and the
+// already-resolved layout pointer.
+extern "C" void liw_set_buildShipPreview(void *self, void *item, void *layout);
+extern "C" void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);
 
-// Base sub-window at +0x18.
-// PC-relative singleton: a pointer to a pointer to the layout/screen object.
+// Tail of render() (0x1ac428): final canvas cleanup after the preview geometry.
+extern "C" void _liw_render_tail(void *c, int a, int h, void *sp);
+
+// PC-relative game singletons (pointers to the live screen/layout/canvas state).
 __attribute__((visibility("hidden"))) extern int **g_liw_screen;
 
-// ListItemWindow::OnTouchBegin(int, int)
 void ListItemWindow::OnTouchBegin(int x, int y)
 {
-    _liw_stw_OnTouchBegin(this->scrollWindow, x);
+    this->scrollWindow->OnTouchBegin(x, y);
     if (this->shows3DShipFlag &&
         this->x + (this->width >> 1) < x) {
         int *obj = *g_liw_screen;
@@ -38,33 +38,26 @@ void ListItemWindow::OnTouchBegin(int x, int y)
     }
 }
 
-// ListItemWindow::shows3DShip() -- raw uint8 getter at +0x54.
 uint8_t ListItemWindow::shows3DShip()
 {
     return this->shows3DShipFlag;
 }
 
-// Base sub-window at +0x18 (a ScrollTouchWindow*); forward the touch first.
-
-// ListItemWindow::OnTouchMove(int, int)
 void ListItemWindow::OnTouchMove(int x, int y)
 {
-    _liw_stw_OnTouchMove(this->scrollWindow, x);
+    this->scrollWindow->OnTouchMove(x, y);
     if (this->shows3DShipFlag && this->dragging) {
         int d = x - this->dragLastX;
         this->dragDelta = d;
-        this->spinDamping = 1.0f;   // 0x3f800000
+        this->spinDamping = 1.0f;
         this->dragAccum = this->dragAccum + d;
         this->dragLastX = x;
     }
 }
 
-// Base sub-window at +0x18; forward the release first.
-
-// ListItemWindow::OnTouchEnd(int, int)
 void ListItemWindow::OnTouchEnd(int x, int y)
 {
-    _liw_stw_OnTouchEnd(this->scrollWindow, x);
+    this->scrollWindow->OnTouchEnd(x, y);
     if (this->shows3DShipFlag && this->dragging) {
         int dv = this->dragDelta;
         int sum = this->dragAccum + dv;
@@ -80,13 +73,9 @@ void ListItemWindow::OnTouchEnd(int x, int y)
     }
 }
 
-extern "C" void  _liw_Matrix_assign(void *dst, void *src);
-extern "C" void  _liw_render_tail(void *c, int a, int h, void *sp);    // 0x1ac428 tail
-
 __attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;
 __attribute__((visibility("hidden"))) extern void **g_liw_r_obj;
 
-// ListItemWindow::render()
 void ListItemWindow::render()
 {
     if (!this->shows3DShipFlag)
@@ -105,56 +94,35 @@ void ListItemWindow::render()
         h);
     canvas->SetColor((unsigned int)(long)canvas);
     void *m = canvas->CameraGetLocal((unsigned int)(long)canvas);
-    _liw_Matrix_assign(&this->previewTransform, m);
+    this->previewTransform = *(Matrix *)m;
     this->previewGeometry->render();
     canvas->End3d();
     int dummy;
-    return _liw_render_tail((void *)canvas, 0, h, &dummy);
+    _liw_render_tail((void *)canvas, 0, h, &dummy);
 }
 
-// ListItemWindow::set(ListItem*, unsigned, unsigned, unsigned, unsigned, bool)
-//
-//   Re-targets the window onto a new ListItem. The method:
-//     * stores the item pointer and the four mode/colour parameters,
-//     * picks the window width/height from the current language + fullscreen
-//       state and applies them via Layout::setWindowDimensions,
-//     * tears down and rebuilds the two String arrays (labels at +0x0, values
-//       at +0x4) plus, for ships, the int arrays (+0x8 / +0xc),
-//     * for a ship item, builds the rotating 3D preview (transform, mesh,
-//       texture, camera, lighting) -- this block is dense FP/transform setup,
-//       delegated to liw_set_buildShipPreview,
-//     * constructs the inner ScrollTouchWindow,
-//     * fills the label/value rows: ship stats, or the per-attribute item stat
-//       table, or a blueprint/product price block -- delegated to
-//       liw_set_fillRows, which owns the large attribute switch,
-//     * resets the preview spin state.
-//
-// The recoverable scaffolding is authored directly; the two heavy data-driven
-// regions are reached through helpers that take the window, the item and the
-// already-resolved layout pointer.
+// ---- ListItemWindow::set ------------------------------------------------------
+// Re-targets the window onto a new ListItem: stores the item and its four
+// mode/colour parameters, picks the window geometry from the current language /
+// fullscreen state, rebuilds the label/value (and, for ships, stat) arrays,
+// builds the rotating 3D preview for ships, constructs the inner scroll window,
+// fills the rows and resets the preview spin state.
 
-// ---- callees ------------------------------------------------------------------
+// PC-relative game state roots (pointers to live flags / screen dimensions).
+__attribute__((visibility("hidden"))) extern char **g_liw_s_fullscreen;
+__attribute__((visibility("hidden"))) extern char **g_liw_s_modeFlag;
+__attribute__((visibility("hidden"))) extern char **g_liw_s_altFlag;
+__attribute__((visibility("hidden"))) extern int   *g_liw_s_screenW;
+__attribute__((visibility("hidden"))) extern int   *g_liw_s_screenH;
+__attribute__((visibility("hidden"))) extern void **g_liw_s_layoutHolder;
 
-// Heavy data-driven regions (own the corrupted FP / attribute code).
-extern "C" void  liw_set_fillRows(void *self, void *item, void *layout,
-                                  int isShip, bool param6);
-
-// ---- hidden PC-relative roots -------------------------------------------------
-__attribute__((visibility("hidden"))) extern int   *g_liw_s_stackGuard;  // 0x1419b8 stack canary src
-__attribute__((visibility("hidden"))) extern char **g_liw_s_fullscreen;  // 0x1419bc -> bool flag
-__attribute__((visibility("hidden"))) extern char **g_liw_s_modeFlag;    // 0x1419c0 -> bool (HUD layout)
-__attribute__((visibility("hidden"))) extern char **g_liw_s_altFlag;     // 0x1419d4 -> bool
-__attribute__((visibility("hidden"))) extern int   *g_liw_s_screenW;     // 0x1419e0 -> screen width
-__attribute__((visibility("hidden"))) extern int   *g_liw_s_screenH;     // 0x1419e4 -> screen height
-__attribute__((visibility("hidden"))) extern void **g_liw_s_layoutHolder;// 0x1419f8 -> Layout*
-
-// width/height presets (read-only floats/ints in the binary).
-extern const float g_liw_s_wFull;      // fullscreen-off width source
+// Width/height presets (read-only constants in the binary).
+extern const float g_liw_s_wFull;
 extern const float g_liw_s_wAlt;
-extern const float g_liw_s_wMode;      // mode-flag width
-extern const unsigned int g_liw_s_baseAngle;   // 0x1419fc default preview angle
+extern const float g_liw_s_wMode;
+extern const unsigned int g_liw_s_baseAngle;   // default preview angle bits
 
-void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
+void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6)
 {
     this->item = item;
@@ -163,14 +131,14 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     this->param4 = p4;
     this->param5 = p5;
 
-    void *layout = *g_liw_s_layoutHolder;
+    Layout *layout = (Layout *)*g_liw_s_layoutHolder;
 
     int w, h, x, y;
     if (*g_liw_s_fullscreen == 0) {
         // borderless: window spans the whole screen origin.
         this->x = 0;
         this->y = 0;
-        w = *g_liw_s_screenW;   // wired from the two screen-dim globals below
+        w = *g_liw_s_screenW;
         h = *g_liw_s_screenH;
         this->width = w;
         this->height = h;
@@ -195,19 +163,19 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
         this->x = x;
         this->y = y;
     }
-    *(uint32_t *)&this->baseAngle = g_liw_s_baseAngle;   // raw default preview angle bits
-    ((Layout *)(layout))->setWindowDimensions(x, y, h, w);
+    *(uint32_t *)&this->baseAngle = g_liw_s_baseAngle;   // default preview angle bits
+    layout->setWindowDimensions(x, y, h, w);
 
-    // Tear down the label array (+0x0).
+    // Tear down the label array.
     if (this->labels != 0) {
-        for (String *s : *this->labels) delete s;
+        for (String *str : *this->labels) delete str;
         this->labels->clear();
         delete this->labels;
     }
     this->labels = 0;
-    // Tear down the value array (+0x4).
+    // Tear down the value array.
     if (this->values != 0) {
-        for (String *s : *this->values) delete s;
+        for (String *str : *this->values) delete str;
         this->values->clear();
         delete this->values;
     }
@@ -216,7 +184,7 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     this->labels = new Array<String *>();
     this->values = new Array<String *>();
 
-    int isShip = ((ListItem *)(item))->isShip();
+    int isShip = this->item->isShip();
     if (isShip == 0) {
         this->previewHeight = 0;
         this->shows3DShipFlag = 0;
@@ -226,7 +194,7 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
         this->previewHeight =
             ((((this->height - i32(L, 0xc)) - i32(L, 0x10)) - i32(L, 0x20)) - i32(L, 0x24)) / 2
             - i32(L, 0x2c);
-        *(uint32_t *)&this->previewAngle = g_liw_s_baseAngle;   // raw default preview angle bits
+        *(uint32_t *)&this->previewAngle = g_liw_s_baseAngle;   // default preview angle bits
         this->shows3DShipFlag = 1;
         liw_set_buildShipPreview(this, item, layout);
 
@@ -241,15 +209,13 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
         int progH = this->previewHeight;
         int sel = (progH > 0) ? 0x1c : 0x5c;
         int rowH = i32(L, 0x2c);
-        void *stw = operator new(0x24);
         int sx = this->x + rowH + (this->width >> 1);
         int sy = i32(L, 0x20) + this->y + rowH + i32(L, 0xc) + progH + i32(L, sel);
         int sw = (this->width >> 1) - i32(L, 0x28);
         int sh = ((this->height -
                   (i32(L, 0xc) + rowH * 2 + i32(L, 0x20) + progH + i32(L, sel)))
                   - i32(L, 0x10)) - i32(L, 0x24);
-        ScrollTouchWindow_ctor(stw, sx, sy, sw, sh, false);
-        this->scrollWindow = stw;
+        this->scrollWindow = new ScrollTouchWindow(sx, sy, sw, sh, false);
     }
 
     // Populate the rows (ship stats / item attribute table / blueprint price).
@@ -267,19 +233,16 @@ void ListItemWindow::set(void *item, unsigned p2, unsigned p3,
     this->dragStartX     = 0;
 }
 
-extern "C" void *_liw_STW_dtor(void *w);
-
-// ListItemWindow::~ListItemWindow()
 ListItemWindow::~ListItemWindow()
 {
     if (this->labels) {
-        for (String *s : *this->labels) delete s;
+        for (String *str : *this->labels) delete str;
         this->labels->clear();
         delete this->labels;
         this->labels = 0;
     }
     if (this->values) {
-        for (String *s : *this->values) delete s;
+        for (String *str : *this->values) delete str;
         this->values->clear();
         delete this->values;
         this->values = 0;
@@ -294,104 +257,105 @@ ListItemWindow::~ListItemWindow()
         delete this->statsPrev;
         this->statsPrev = 0;
     }
-    if (this->scrollWindow) operator delete(_liw_STW_dtor(this->scrollWindow));
+    delete this->scrollWindow;
     this->scrollWindow = 0;
-    this->str80.dtor();
-    this->str74.dtor();
 }
 
-// Layout / drawing callees (resolved blx targets).
-// 8-arg form
+// ---- ListItemWindow::draw -----------------------------------------------------
+// Renders the list window chrome: background box, header, the ship/item preview
+// (3D ship render or 2D item icon), each visible list row with its value text
+// and up/down trend arrows, and the footer / scrollbar.
 
-// Hidden PC-relative roots.
-__attribute__((visibility("hidden"))) extern char *g_liw_d_maskFlag;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_canvas;      // 0x143140 -> canvas
-__attribute__((visibility("hidden"))) extern void **g_liw_d_layout;      // 0x143162 -> Layout
-__attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;    // 0x1431dc text key
-__attribute__((visibility("hidden"))) extern void **g_liw_d_gameText;    // GameText singleton
-__attribute__((visibility("hidden"))) extern void **g_liw_d_imageFactory;// 0x1437c8 / 0x1432e4
+// PC-relative game state roots.
+__attribute__((visibility("hidden"))) extern char  *g_liw_d_maskFlag;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_canvas;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_layout;
+__attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_gameText;
+__attribute__((visibility("hidden"))) extern void **g_liw_d_imageFactory;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;
 __attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit;
 
-// ListItemWindow::draw()
-//   Renders the list window chrome: background box, header, the ship/item preview
-//   (3D ship render or 2D item icon), each visible list row with its value text
-//   and up/down trend arrows, and the footer / scrollbar.
 void ListItemWindow::draw()
 {
-    void *layout = *g_liw_d_layout;
-    uint32_t canvas = (uint32_t)(unsigned long)*g_liw_d_canvas;
+    Layout *layout = (Layout *)*g_liw_d_layout;
+    uint32_t canvasHandle = (uint32_t)(unsigned long)*g_liw_d_canvas;
+    PaintCanvas *canvas = (PaintCanvas *)(long)canvasHandle;
     bool masked = *g_liw_d_maskFlag != 0;
 
     if (masked)
-        ((Layout *)(layout))->drawMask();
+        layout->drawMask();
 
-    ((PaintCanvas *)(long)canvas)->SetColor(canvas);
-    ((PaintCanvas *)(long)canvas)->FillRectangle((int)canvas, this->x, this->y, this->width);
+    canvas->SetColor(canvasHandle);
+    canvas->FillRectangle((int)canvasHandle, this->x, this->y, this->width);
 
     {
-        String s; s.ctor_char("", false);
-        ((Layout *)(layout))->drawBox(2, this->x, this->y, this->width, this->height, &s, 0);
+        String s("", false);
+        layout->drawBox(2, this->x, this->y, this->width, this->height, &s, 0);
     }
     if (masked) {
-        String s; s.ctor_char("", false);
-        ((Layout *)(layout))->drawBox(7, this->x, this->y, this->width, this->height, &s, 0);
+        String s("", false);
+        layout->drawBox(7, this->x, this->y, this->width, this->height, &s, 0);
     }
 
     {
-        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-        ((Layout *)(layout))->drawHeader1(&s);
+        String s;
+        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        layout->drawHeader1(&s);
     }
 
-    void *li = this->item;
-    int isShip = ((ListItem *)(li))->isShip();
-    ((PaintCanvas *)(long)canvas)->SetColor(canvas);
+    ListItem *li = this->item;
+    int isShip = li->isShip();
+    canvas->SetColor(canvasHandle);
 
-    int isItemish = ((ListItem *)(li))->isItem();
-    if (isItemish == 0 && ((ListItem *)(li))->isBluePrint() == 0 && ((ListItem *)(li))->isPendingProduct() == 0) {
+    int isItemish = li->isItem();
+    if (isItemish == 0 && li->isBluePrint() == 0 && li->isPendingProduct() == 0) {
         if (isShip != 0) {
             char *L = (char *)layout;
-            int x = this->x, y = this->y, w = this->width;
+            int boxX = this->x, boxY = this->y, w = this->width;
             int c0c = i32(L, 0xc), c20 = i32(L, 0x20), c28 = i32(L, 0x28), c2c = i32(L, 0x2c);
             int color = i32(L, 0x5c);
             int textId = *g_liw_d_headerId;
-            ((Ship *)(0))->getIndex();
-            String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(textId), false);
-            ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+            li->ship->getIndex();
+            String s;
+            s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+            layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
 
-            void *fac = *g_liw_d_imageFactory;
-            int shipIdx = ((Ship *)(0))->getIndex();
-            ((ImageFactory *)(fac))->drawShip(shipIdx, this->x + i32(L, 0x28) + i32(L, 0x2c), ((this->y + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2) + i32(L, 0x124));
+            ImageFactory *fac = (ImageFactory *)*g_liw_d_imageFactory;
+            int shipIdx = li->ship->getIndex();
+            fac->drawShip(shipIdx, this->x + i32(L, 0x28) + i32(L, 0x2c),
+                ((this->y + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2) + i32(L, 0x124));
         }
     } else {
         char *L = (char *)layout;
-        int x = this->x, y = this->y, w = this->width;
+        int boxX = this->x, boxY = this->y, w = this->width;
         int c0c = i32(L, 0xc), c20 = i32(L, 0x20), c28 = i32(L, 0x28), c2c = i32(L, 0x2c);
         int color = i32(L, 0x5c);
         int textId = *g_liw_d_headerId;
-        ((ListItem *)(li))->getIndex();
-        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(textId), false);
-        ((Layout *)(layout))->drawBox8(1, c28 + x, y + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+        li->getIndex();
+        String s;
+        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+        layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
 
-        void *itemPtr;
-        if (((ListItem *)(li))->isItem() == 0) {
+        Item *itemPtr;
+        if (li->isItem() == 0) {
             int idx;
             void *db = *g_liw_d_itemDB;
-            if (((ListItem *)(li))->isBluePrint() == 0)
+            if (li->isBluePrint() == 0)
                 idx = i32((void *)(i32(li, 0x18)), 0x14);
             else
-                idx = ((BluePrint *)((void *)i32(li, 0x8)))->getIndex();
-            itemPtr = *(void **)(i32(db, 0x4) + idx * 4);
+                idx = li->bluePrint->getIndex();
+            itemPtr = *(Item **)(i32(db, 0x4) + idx * 4);
         } else {
-            itemPtr = *(void **)((char *)li + 0x10);
+            itemPtr = li->item;
         }
 
-        void *fac = *g_liw_d_imageFactory;
-        int idx = ((Item *)(itemPtr))->getIndex();
-        int type = ((Item *)(itemPtr))->getType();
-        ((ImageFactory *)(fac))->drawItem4(idx, type,
+        ImageFactory *fac = (ImageFactory *)*g_liw_d_imageFactory;
+        int idx = itemPtr->getIndex();
+        int type = itemPtr->getType();
+        fac->drawItem4(idx, type,
             i32(L, 0x28) + this->x + i32(L, 0x2c),
             i32(L, 0x124) + ((this->y + i32(L, 0xc) + i32(L, 0x20) + i32(L, 0x5c) / 2) - i32(L, 0x2c8) / 2));
     }
@@ -407,12 +371,12 @@ void ListItemWindow::draw()
             rowH = 2;
         int ycur = yTop;
         for (uint32_t i = 0; i < n; i++) {
-            ((PaintCanvas *)(long)canvas)->SetColor(canvas);
+            canvas->SetColor(canvasHandle);
             int color = i32(L, 0x1c);
             String s;
             s.ctor_copy((*rows)[i], false);
-            ((Layout *)(layout))->drawBox(6, i32(L, 0x28) + this->x, ycur, (this->width >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
-            ((PaintCanvas *)(long)canvas)->SetColor(canvas);
+            layout->drawBox(6, i32(L, 0x28) + this->x, ycur, (this->width >> 1) - (i32(L, 0x2c) + i32(L, 0x28)), color, &s, 0);
+            canvas->SetColor(canvasHandle);
 
             int textX, textY;
             void *valStr;
@@ -427,13 +391,13 @@ void ListItemWindow::draw()
                         int trendImage = this->arrowEqualImage;        // equal
                         if (a < b) trendImage = this->arrowDownImage;  // down
                         if (b < a) trendImage = this->arrowUpImage;    // up
-                        ((PaintCanvas *)(long)canvas)->DrawImage2D(trendImage,
+                        canvas->DrawImage2D(trendImage,
                             ((this->x + (this->width >> 1)) - i32(L, 0x2c)) - this->arrowSeparator, 0);
                     }
                     int sep = this->arrowSeparator;
                     valStr = (*this->values)[i];
                     void *arrowStr = *g_liw_d_arrowR;
-                    int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
+                    int tw = canvas->GetTextWidth(canvasHandle, arrowStr);
                     centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)this->textHalfHeight);
                     textX = (((this->x + (this->width >> 1) + 10) - i32(L, 0x2c)) - sep) - tw;
                     textY = i32(L, 0x1c);
@@ -443,60 +407,60 @@ void ListItemWindow::draw()
             if (!drewArrow) {
                 valStr = (*this->values)[i];
                 void *arrowStr = *g_liw_d_arrowL;
-                int tw = ((PaintCanvas *)(long)canvas)->GetTextWidth(canvas, arrowStr);
+                int tw = canvas->GetTextWidth(canvasHandle, arrowStr);
                 centered = (char)((char)ycur + (char)(i32(L, 0x1c) / 2) - (char)this->textHalfHeight);
                 textX = (this->x + (this->width >> 1) + i32(L, 0x2c) * -2) - tw;
                 textY = i32(L, 0x1c);
             }
-            ((PaintCanvas *)(long)canvas)->DrawString(canvas, valStr, textX, textY, centered);
+            canvas->DrawString(canvasHandle, valStr, textX, textY, centered);
             ycur = ycur + rowH + i32(L, 0x1c);
         }
     }
 
     // Footer / progress.
     if (this->previewHeight < 1) {
-        String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-        ((Layout *)(layout))->drawBox(1, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
+        String s;
+        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        layout->drawBox(1, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x5c), &s, 0);
     } else {
-        ((PaintCanvas *)(long)canvas)->SetColor(canvas);
+        canvas->SetColor(canvasHandle);
         {
-            String s; s.ctor_char("", false);
-            ((Layout *)(layout))->drawBox(8, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), this->previewHeight, &s, 0);
+            String s("", false);
+            layout->drawBox(8, this->x + (this->width >> 1) + i32(L, 0x2c), this->y + i32(L, 0xc) + i32(L, 0x20), ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), this->previewHeight, &s, 0);
         }
         int prog = this->previewHeight;
         int yBox = this->y + i32(L, 0xc) + i32(L, 0x20);
         if (prog > 0) yBox = yBox + prog + i32(L, 0x2c);
         {
-            String s; s.ctor_copy((String *)((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
-            ((Layout *)(layout))->drawBox(0, this->x + (this->width >> 1) + i32(L, 0x2c), yBox, ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
+            String s;
+            s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+            layout->drawBox(0, this->x + (this->width >> 1) + i32(L, 0x2c), yBox, ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
         }
-        ((PaintCanvas *)(long)canvas)->SetColor(canvas);
-        aeabi_idiv_(this->field_0x30, 3);
-        ((PaintCanvas *)(long)canvas)->DrawImage2D(this->scrollThumbImage, this->field_0x24 - this->field_0x2c, 0);
-        int half = aeabi_idiv_(this->field_0x30, 3);
-        ((PaintCanvas *)(long)canvas)->DrawImage2D(this->scrollThumbImage, this->field_0x24, this->field_0x28 - half, (unsigned char)1);
+        canvas->SetColor(canvasHandle);
+        canvas->DrawImage2D(this->scrollThumbImage, this->field_0x24 - this->field_0x2c, 0);
+        int half = this->field_0x30 / 3;
+        canvas->DrawImage2D(this->scrollThumbImage, this->field_0x24, this->field_0x28 - half, (unsigned char)1);
     }
 
-    ((ScrollTouchWindow *)(this->scrollWindow))->drawTextBG();
-    ((ScrollTouchWindow *)(this->scrollWindow))->draw();
+    this->scrollWindow->drawTextBG();
+    this->scrollWindow->draw();
 }
 
-// Callees (resolved blx targets).
-void  MatrixSetRotation(void *m, float x, float y, float z);
-extern "C" void  MatrixSetScaling(void *m, float x, float y, float z);
-extern "C" int   VectorSignedToFloat_i(int v);                          // s32->f32 helper
+// ---- ListItemWindow::update ---------------------------------------------------
+// Advances the scroll window, applies inertial spin damping to the rotating 3D
+// ship preview, and pushes the resulting rotation onto its geometry.
 
-// Hidden PC-relative roots.
-__attribute__((visibility("hidden"))) extern uint32_t *g_liw_u_tf;     // 0x143904 (preview transform handle)
-__attribute__((visibility("hidden"))) extern const float *g_liw_u_angleTable; // 0x143... per-ship base angle
+// Engine matrix-rotation/scaling helpers and PC-relative preview roots.
+void MatrixSetRotation(void *m, float x, float y, float z);
+extern "C" void MatrixSetScaling(void *m, float x, float y, float z);
+
+__attribute__((visibility("hidden"))) extern uint32_t    *g_liw_u_tf;          // preview transform handle
+__attribute__((visibility("hidden"))) extern const float *g_liw_u_angleTable;  // per-ship base angle
 extern const float g_liw_u_angleScale;
 
-// ListItemWindow::update(int frameTime)
-//   Advances the scroll window, applies inertial spin damping to the rotating
-//   3D ship preview, and pushes the resulting rotation onto its geometry.
 void ListItemWindow::update(int frameTime)
 {
-    ((ScrollTouchWindow *)(this->scrollWindow))->update(frameTime);
+    this->scrollWindow->update(frameTime);
 
     if (this->shows3DShipFlag == 0)
         return;
@@ -511,62 +475,53 @@ void ListItemWindow::update(int frameTime)
         }
     }
 
-    ((Ship *)(this->item ? *(void **)((char *)this->item + 0xc) : 0))->getIndex();
-    int idx = ((Ship *)(*(void **)((char *)this->item + 0xc)))->getIndex();
+    int idx = this->item->ship->getIndex();
 
     float baseAngle = this->baseAngle;
     float angle = (float)this->dragAccum / g_liw_u_angleScale;
     this->previewAngle = angle;
 
     uint32_t tf = *g_liw_u_tf;
-    uint32_t loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
-    MatrixSetRotation((void *)loc, angle, 0.0f, 0.0f);
-    loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
+    PaintCanvas *canvas = (PaintCanvas *)(long)tf;
+    void *loc = canvas->TransformGetLocal(tf);
+    MatrixSetRotation(loc, angle, 0.0f, 0.0f);
+    loc = canvas->TransformGetLocal(tf);
     float tableAngle = g_liw_u_angleTable[idx] + baseAngle;
-    MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
+    MatrixSetScaling(loc, tableAngle, tableAngle, tableAngle);
 
     if (this->previewSentinel != -1) {
-        loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
-        MatrixSetRotation((void *)loc, angle, 0.0f, 0.0f);
-        loc = (uint32_t)(long)((PaintCanvas *)(long)tf)->TransformGetLocal(tf);
-        MatrixSetScaling((void *)loc, tableAngle, tableAngle, tableAngle);
+        loc = canvas->TransformGetLocal(tf);
+        MatrixSetRotation(loc, angle, 0.0f, 0.0f);
+        loc = canvas->TransformGetLocal(tf);
+        MatrixSetScaling(loc, tableAngle, tableAngle, tableAngle);
     }
 
     this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
-// ---- C-ABI fragments ----
-
-// ListItemWindow::dtor(): the C-ABI form of the complete-object destructor. The
-// original deleting-destructor thunk runs ~ListItemWindow and returns the object
-// pointer so the caller can hand it to operator delete.
+// dtor(): C-ABI complete-object destructor. Runs ~ListItemWindow and returns the
+// object pointer so the caller can hand it to operator delete.
 void *ListItemWindow::dtor()
 {
     this->~ListItemWindow();
     return this;
 }
 
-// ListItemWindow::touch_end(int, int): touch-release entry point invoked by the
-// owning screen. Semantically identical to OnTouchEnd (release the drag-scroll
-// of the 3D ship preview); returns a status int the caller discards.
+// touch_end(): touch-release entry point invoked by the owning screen. Releases
+// the drag-scroll of the 3D ship preview; returns a status int the caller drops.
 int ListItemWindow::touch_end(int x, int y)
 {
     this->OnTouchEnd(x, y);
     return 0;
 }
 
-// Two PC-relative singletons (each holds the address of a pointer).
+// PC-relative game singletons consulted by the constructor (the live screen and
+// the global PaintCanvas, each held as a pointer-to-pointer).
 __attribute__((visibility("hidden"))) extern void ***g_liw_a;
 __attribute__((visibility("hidden"))) extern void ***g_liw_b;
 
-// ListItemWindow::ListItemWindow()
 ListItemWindow::ListItemWindow()
 {
-    this->str74.ctor();
-    this->str80.ctor();
-    _liw_Matrix_ctor(&this->previewTransform);
-    _liw_Matrix_ctor(&this->previewTransform2);
-
     void **a = *g_liw_a;
     void **b = *g_liw_b;
     this->labels = 0;
@@ -574,10 +529,10 @@ ListItemWindow::ListItemWindow()
     this->statsCur = 0;
     this->statsPrev = 0;
     void *av = *a;
-    void *canvas = *b;
+    PaintCanvas *canvas = (PaintCanvas *)*b;
     this->scrollWindow = 0;
     (void)av;
-    int h = ((PaintCanvas *)canvas)->GetTextHeight((unsigned int)(long)canvas);
+    int h = canvas->GetTextHeight((unsigned int)(long)canvas);
     this->textHalfHeight = h / 2 - 1;
     this->previewHeight = 0;
 }

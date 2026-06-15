@@ -1,49 +1,53 @@
 #ifndef GOF2_CUTSCENE_H
 #define GOF2_CUTSCENE_H
 #include "gof2/common.h"
-// Galaxy on Fire 2 -- CutScene class (intro / station / docking cinematics).
-// Top-level class. Field names were recovered from the accessor/ctor/dtor bodies
-// and Ghidra; offsets in the trailing comments are the original 32-bit layout.
 
-struct AEGeometry;
+// Galaxy on Fire 2 -- CutScene: intro / station / docking cinematics.
+// Owns a self-contained cinematic Level plus the cameras, transforms and
+// decorative geometry that frame it.
+
+class AEGeometry;            // engine/render/AEGeometry.h; used by pointer only
+class TargetFollowCamera;    // game/ship/TargetFollowCamera.h; used by pointer only
+class PlayerEgo;             // game/ship/PlayerEgo.h; used by pointer only
+
 struct Level;
 
 class CutScene {
 public:
-    Level                  *level;          // +0x00  embedded cinematic level
-    float                   cameraRotX;     // +0x04  camera X-rotation accumulator
-    Vector                  vec8;           // +0x08  zero-initialized vector blob
-    float                   field_0x14;     // +0x14  (4th word of the zero-init block)
-    int                     field_0x18;     // +0x18
-    int                     field_0x1c;     // +0x1c
-    AEGeometry             *rootGeom;       // +0x20  scene root geometry
-    float                   rotationSpeed;  // +0x24  per-frame rotation factor
-    AEGeometry             *geom28;         // +0x28  cinematic geometry
-    AEGeometry             *geom2c;         // +0x2c  cinematic geometry
-    AEGeometry             *geom30;         // +0x30  cinematic geometry
-    AEGeometry             *geom34;         // +0x34  cinematic geometry
-    Array<AEGeometry *>    *geometries;     // +0x38  owned AEGeometry array
-    uint32_t                field_0x40;     // +0x40  current time low word
-    uint32_t                field_0x44;     // +0x44  current time high word
-    uint32_t                prevTimeLo;     // +0x48  previous-frame time low word
-    uint32_t                field_0x4c;     // +0x4c  previous-frame time high word
-    uint32_t                accumLo;        // +0x50  64-bit elapsed accumulator low
-    uint32_t                accumHi;        // +0x54  64-bit elapsed accumulator high
-    uint32_t                frameDelta;     // +0x58  current frame delta (ms)
-    uint8_t                 initialized;    // +0x5c  isInitialized() flag
-    void                   *player;         // +0x60  PlayerEgo* (level player)
-    AEGeometry             *turretGeom;     // +0x64  turret root geometry
-    void                   *followCamera;   // +0x68  TargetFollowCamera*
-    uint32_t                cameraId6c;     // +0x6c  camera handle (mode 4)
-    uint32_t                cameraId70;     // +0x70  camera handle (mode 0x17)
-    uint32_t                cameraId74;     // +0x74  camera handle (mode 2)
-    uint32_t                transformId78;  // +0x78  transform handle (mode 0x17)
-    int                     animTimer7c;    // +0x7c  animation timer
-    int                     animTimer80;    // +0x80  animation timer
-    int                     fogTimer84;     // +0x84  fog/anim timer
-    int                     mode;           // +0x88  cutscene mode (ctor param)
+    Level                  *level;          // self-contained cinematic level
+    float                   cameraRotX;     // camera X-rotation accumulator
+    Vector                  vec8;           // zero-initialized vector blob
+    float                   field_0x14;     // fourth word of the zero-init block
+    int                     field_0x18;
+    int                     field_0x1c;
+    AEGeometry             *rootGeom;       // scene root geometry
+    float                   rotationSpeed;  // per-frame rotation factor
+    AEGeometry             *geom28;         // cinematic geometry
+    AEGeometry             *geom2c;         // cinematic geometry
+    AEGeometry             *geom30;         // cinematic geometry
+    AEGeometry             *geom34;         // cinematic geometry
+    Array<AEGeometry *>    *geometries;     // owned AEGeometry array
+    uint32_t                field_0x40;     // current time low word
+    uint32_t                field_0x44;     // current time high word
+    uint32_t                prevTimeLo;     // previous-frame time low word
+    uint32_t                field_0x4c;     // previous-frame time high word
+    uint32_t                accumLo;        // 64-bit elapsed accumulator low
+    uint32_t                accumHi;        // 64-bit elapsed accumulator high
+    uint32_t                frameDelta;     // current frame delta (ms)
+    uint8_t                 initialized;    // isInitialized() flag
+    PlayerEgo              *player;         // level player
+    AEGeometry             *turretGeom;     // turret root geometry
+    TargetFollowCamera     *followCamera;
+    uint32_t                cameraId6c;     // camera handle (mode 4)
+    uint32_t                cameraId70;     // camera handle (mode 0x17)
+    uint32_t                cameraId74;     // camera handle (mode 2)
+    uint32_t                transformId78;  // transform handle (mode 0x17)
+    int                     animTimer7c;    // animation timer
+    int                     animTimer80;    // animation timer
+    int                     fogTimer84;     // fog/anim timer
+    int                     mode;           // cutscene mode (ctor param)
 
-    CutScene(int param);
+    CutScene(int mode);
     ~CutScene();
 
     uint8_t isInitialized();

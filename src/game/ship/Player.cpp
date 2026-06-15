@@ -1,7 +1,6 @@
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/ship/Ship.h"
 #include "gof2/game/mission/Mission.h"
-#include "gof2/externs.h"
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/game/mission/Item.h"
 #include "gof2/game/world/Level.h"
@@ -9,12 +8,19 @@
 #include "gof2/game/ship/KIPlayer.h"
 #include "gof2/engine/core/GameText.h"
 #include "gof2/game/ui/Hud.h"
-#include "gof2/game/ship/PlayerEgo.h"
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/world/Standing.h"
 #include "gof2/game/core/Globals.h"
 #include "gof2/game/weapons/Gun.h"
 #include "gof2/game/mission/Status.h"
+#include <new>
+
+// PlayerEgo wraps a Player and owns the HUD; its own header is not yet self-sufficient,
+// so the single method this file needs is declared via a minimal local view.
+class PlayerEgo {
+public:
+    int getHUD();
+};
 
 // Free math operators/functions (defined in libgof2hd; not declared in math.h).
 namespace AbyssEngine { namespace AEMath {
@@ -23,9 +29,21 @@ namespace AbyssEngine { namespace AEMath {
     float VectorLength(const Vector&);
 } }
 
-// Status singleton holder (Status** at 0xe4c5c). Dropped-self Status_*() calls in
-// the decompiler are method calls on this global instance.
-__attribute__((visibility("hidden"))) extern Status **gStatus;
+// Engine/game globals (defined elsewhere in the runtime).
+extern Status **gStatus;
+extern int * g_cws_items;
+extern int * g_cws_sound;
+extern int * g_cws_sound2;
+extern int * g_cws_sound3;
+extern void ** g_damageEmp_achievements;
+extern int ** g_damageEmp_progress;
+extern int ** g_damage_globals;
+extern int ** g_damage_text;
+extern unsigned int g_shoot_mask;
+extern int ** g_update_clock;
+extern char ** g_update_flag;
+extern void ** g_update_sound;
+extern float ** g_update_speed;
 
 void MatrixGetPosition(void *out, float *matrix);
 extern "C" int __aeabi_idiv(int a, int b);
@@ -488,7 +506,7 @@ void Player::addEnemies(Array<Player *> *enemies) {
     delete tmp;
 }
 
-Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
+Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
     ((Matrix *)self->transform)->initIdentity();
     self->shieldHP = 0.0f;
@@ -570,8 +588,6 @@ Player * Player::ctor(int radius, int hitpoints, int numPrimary, int numSecondar
     MatrixGetPosition(tmp, self->transform);
     *(Vector *)self->position = *(Vector *)tmp;
     self->field_f4 = (void *)(__INTPTR_TYPE__)-1;
-
-    return self;
 }
 
 void Player::getPosition(Vector *out) {
@@ -896,7 +912,7 @@ void Player::calcWeaponSounds(int count) {
             idx++;
         } while (count != 0);
 
-        operator delete[](order);
+        delete[] order;
         guns = this->guns;
     }
 
@@ -1170,15 +1186,15 @@ LAB_342a:
             if (ki != 0 && ki->shipGroup == 8) {
                 self->turnedEnemy = 1;
                 ((Level *)(ki->level))->alarmAllFriends(8, true);
-                int *enemies = (int *)(__INTPTR_TYPE__)((Level *)(ki->level))->getEnemies();
-                if (enemies != 0) {
-                    int count = enemies[0];
-                    int i = 0;
+                Array<KIPlayer *> *enemies = ((Level *)(ki->level))->getEnemies();
+                if (enemies != nullptr) {
+                    unsigned count = enemies->size();
+                    unsigned i = 0;
                     while (count != i) {
-                        int e = *(int *)(enemies[1] + i * 4);
+                        KIPlayer *e = (*enemies)[i];
                         i++;
-                        if (*(int *)(e + 0x28) == 8) {  // RAWREAD: e+0x28 (enemies[] element is an untyped int handle, not a typed KIPlayer*)
-                            *(char *)(e + 0x25) = 1;     // RAWREAD: e+0x25 (untyped int handle)
+                        if (*(int *)((char *)e + 0x28) == 8) {
+                            *(char *)((char *)e + 0x25) = 1;
                         }
                     }
                 }
@@ -1359,7 +1375,8 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                 } else if (g->itemIndex == gunId &&
                            g->fireDelay < g->timer) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        *(char *)(g->field_0x38 + 0x69) = 1;
+                        // RAWREAD: pointer at Gun+0x38 (not modeled in Gun.h), byte at +0x69
+                        *(char *)(*(intptr_t *)((char *)g + 0x38) + 0x69) = 1;
                     }
                     // Rebuild the by-value firing Matrix the decompiler spilled to a8..a22.
                     Matrix fireMat2;
@@ -1664,7 +1681,7 @@ void Player_setEmpData_cs(Player *p, int a, int b) {
 }
 
 void Player_ctor_cs(Player *p, int hp, int dmg, int a, int b, int c) {
-    p->ctor(hp, dmg, a, b, c);
+    new (p) Player(hp, dmg, a, b, c);
 }
 
 void Player_damageGamma_up(Player *p, float dmg) {

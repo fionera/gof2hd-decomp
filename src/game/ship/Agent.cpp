@@ -1,12 +1,8 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
+#include "gof2/game/mission/Mission.h"
 
 using AbyssEngine::String;
-
-// String (the 12-byte aggregate returned via sret) is declared in Agent.h.
-
-// Minimal view of a virtual object whose deleting-dtor lives at vt[0]+4.
-struct VObj { void (*vt[8])(void *); };
 
 String Agent::getStationName() {
     return this->stationName;
@@ -20,23 +16,19 @@ bool Agent::isStoryAgent() {
     return this->category == 0;
 }
 
-void * Agent::getWingmanNames() {
+Array<AbyssEngine::String*>* Agent::getWingmanNames() {
     return this->wingmanNames;
 }
 
-int * Agent::getImageParts() {
+int* Agent::getImageParts() {
     return this->imageParts;
 }
 
-struct Mission;
-
-Mission * Agent::getMission() {
+Mission* Agent::getMission() {
     return this->mission;
 }
 
-struct Mission;
-
-void Agent::setMission(Mission *mission) {
+void Agent::setMission(Mission* mission) {
     this->mission = mission;
 }
 
@@ -44,12 +36,8 @@ int Agent::getSellModIndex() {
     return this->sellModIndex;
 }
 
-// AbyssEngine::String::operator=(String* dst, String src-by-value)
-
-// Agent::setStationName(String) — this in r0, String by value in r1..r3.
-// Tail-calls operator= on the field at +0x78.
 void Agent::setStationName(String src) {
-    (&this->stationName)->assign((String *)&src);
+    this->stationName = src;
 }
 
 String Agent::getMissionString() {
@@ -60,15 +48,11 @@ uint8_t Agent::isMale() {
     return this->male;
 }
 
-// AbyssEngine::String::String(String* out, const String* src, bool) -> void
-
-// Returns String by value. The copy-ctor returns void, so the compiler cannot
-// assume r0 survives the call and must keep a frame + restore the sret pointer.
 String Agent::getName() {
     return this->name;
 }
 
-// 4-entry price table loaded PC-relative (table contents in local rodata).
+// Per-mod-slot price percentage; slots beyond the table charge the default 40%.
 static const int kModPriceTable[4] = { 0, 0, 0, 0 };
 
 int Agent::getModPricePercentage() {
@@ -122,51 +106,41 @@ void Agent::giveRewardAtNextChat(bool v) {
     this->rewardAtNextChat = v;
 }
 
-// Triple (item/price/percentage) is declared in Agent.h.
-
-// target: adds r0,#0x34; stmia r0!,{r1,r2,r3}; bx lr  (returns this+0x40)
-Triple * Agent::setSellItemData(int a, int b, int c) {
-    this->sellItemIndex = a;
-    this->sellItemQuantity = b;
-    this->sellItemPrice = c;
-    return (Triple *)&this->type;   // original returned this+0x40 (past the triple)
+Triple* Agent::setSellItemData(int index, int quantity, int price) {
+    this->sellItemIndex = index;
+    this->sellItemQuantity = quantity;
+    this->sellItemPrice = price;
+    return reinterpret_cast<Triple*>(&this->sellItemIndex);
 }
 
-// Agent::setWingmanFriendNames(Array<String*>*) — this in r0, param in r1.
-void Agent::setWingmanFriendNames(Array<AbyssEngine::String*> *param) {
-    VObj *f0c = (VObj *)this->wingman1;
-    if (f0c != 0)
-        (*(void (**)(void *))((char *)f0c->vt[0] + 4))(f0c);
-    this->wingman1 = 0;
-    VObj *f10 = (VObj *)this->wingman2;
-    if (f10 != 0)
-        (*(void (**)(void *))((char *)f10->vt[0] + 4))(f10);
-    this->wingman2 = 0;
-    if (this->wingmanNames != 0) {
-        delete this->wingmanNames;
-        this->wingmanNames = 0;
-    }
+// Rebuild the wingman name list from a fresh source array: the player's own name
+// goes first, followed by up to two wingman friend names taken from `param`. Any
+// previously held wingman names and list are released, and `param` is consumed.
+void Agent::setWingmanFriendNames(Array<AbyssEngine::String*>* param) {
+    delete this->wingman1;
+    this->wingman1 = nullptr;
+    delete this->wingman2;
+    this->wingman2 = nullptr;
+    delete this->wingmanNames;
+
     this->wingmanNames = new Array<AbyssEngine::String*>();
-    String *ns = (String *)::operator new(sizeof(String));
-    ns->ctor_copy(&this->name, false);
-    this->wingmanNames->push_back(ns);
+    this->wingmanNames->push_back(new String(this->name));
     this->wingmanCount = 0;
-    if (param == 0)
+    if (param == nullptr)
         return;
-    uint32_t n = param->size();
-    if (n != 0) {
-        String *w0 = (*param)[0];
-        if (w0 != 0) {
+
+    if (param->size() != 0) {
+        String* w0 = (*param)[0];
+        if (w0 != nullptr) {
             this->wingmanCount = 1;
             this->wingman1 = w0;
             this->wingmanNames->push_back(w0);
-            n = param->size();
         }
-        if (n >= 2) {
-            String *w1 = (*param)[1];
-            if (w1 != 0) {
+        if (param->size() >= 2) {
+            String* w1 = (*param)[1];
+            if (w1 != nullptr) {
                 this->wingman2 = w1;
-                this->wingmanCount = this->wingmanCount + 1;
+                this->wingmanCount += 1;
                 this->wingmanNames->push_back(w1);
             }
         }
@@ -174,56 +148,38 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String*> *param) {
     this->finishWingman(param);
 }
 
-// Tail of setWingmanFriendNames (engine 0x18762a -> 0x1ab098): once the source
-// array's String* elements have been moved into wingmanNames, destruct the
-// Array<String*> and release its heap backing (delete = vector dtor + operator
-// delete, the compiler's tail-called teardown of the consumed source array).
-void Agent::finishWingman(Array<AbyssEngine::String*> *consumedArray) {
+// Release the consumed source array once its elements have been moved into
+// wingmanNames.
+void Agent::finishWingman(Array<AbyssEngine::String*>* consumedArray) {
     delete consumedArray;
 }
 
 String Agent::getWingmanName(int idx) {
     if (idx == 1)
-        return *(String *)this->wingman1;
+        return *this->wingman1;
     if (idx == 0)
         return this->name;
-    return *(String *)this->wingman2;
+    return *this->wingman2;
 }
 
 void Agent::setSystemName(String src) {
-    (&this->systemName)->assign((String *)&src);
+    this->systemName = src;
 }
 
-// Agent::~Agent() — real C++ destructor so the demangled symbol contains "~Agent".
-
-__attribute__((minsize)) Agent::~Agent() noexcept(false)
-{
-    if (this->imageParts != 0)
-        ::operator delete[](this->imageParts);
-
-    VObj *o = (VObj *)this->wingman1;        // virtual; deleting-dtor at vt[0]+4
-    this->imageParts = 0;
-    if (o != 0) {
-        (*(void (**)(void *))((char *)o->vt[0] + 4))(o);
-        this->wingman1 = 0;
-    }
+Agent::~Agent() noexcept(false) {
+    delete[] this->imageParts;
+    this->imageParts = nullptr;
+    delete this->wingman1;
+    this->wingman1 = nullptr;
     // name / systemName / missionString / stationName are real String members and
-    // are destroyed automatically when ~Agent() returns.
+    // are destroyed automatically.
 }
 
-// String temp lifecycle helpers (compiler emits the canary via -fstack-protector).
-
-// Agent::setMissionString(String) — this in r0, source String* in r1.
-void Agent::setMissionString(void *src) {
-    String tmp;
-    ((String *)(&tmp))->ctor_copy((String *)(src), false);
-    (&this->missionString)->assign((String *)&tmp);
-    ((String *)(&tmp))->dtor();
+void Agent::setMissionString(const String& src) {
+    this->missionString = src;
 }
 
-// ---- simple field accessors (recovered) ----
-// Single-instruction veneers that load/store a member; offsets confirmed from
-// the constructor's initializer list above.
+// ---- simple field accessors ----
 
 int Agent::getStation() {
     return this->station;
@@ -293,46 +249,44 @@ int Agent::getWingmanFriendsCount() {
     return this->wingmanCount;
 }
 
-// Agent::Agent(int kind, String name, int p4, int p5, int p6, bool p7,
-//              int p8, int p9, int p10, int p11)
-Agent::Agent(unsigned kind, void *name, int p4, int p5, int p6, char p7, int p8, int p9, int p10, int p11) {
-    // name / systemName / missionString / stationName are real String members,
-    // default-constructed before this body runs.
+Agent::Agent(unsigned kind, String* name, int station, int system, int race,
+             char male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
+             int sellItemPrice) {
     this->type = kind;
-    this->name.assign((String *)name);
-    this->station = p4;
-    this->system = p5;
-    this->race = p6;
-    this->male = p7;
+    this->name = *name;
+    this->station = station;
+    this->system = system;
+    this->race = race;
+    this->male = male;
     this->eventCount = 0;
     this->field_0x30 = -1;
     this->offer = -1;
-    this->sellSystemIndex = p8;
-    if (p8 >= 0)
+    this->sellSystemIndex = sellSystemIndex;
+    if (sellSystemIndex >= 0)
         this->offer = 4;
-    this->sellBlueprintIndex = p9;
-    if (p9 >= 0)
+    this->sellBlueprintIndex = sellBlueprintIndex;
+    if (sellBlueprintIndex >= 0)
         this->offer = 3;
     this->offerAccepted = 0;
     this->field_0x24 = 0;
-    this->wingman1 = 0;
-    this->wingman2 = 0;
+    this->wingman1 = nullptr;
+    this->wingman2 = nullptr;
     this->wingmanCount = 0;
     this->sellItemIndex = 0;
     this->sellItemQuantity = 0;
-    this->sellItemPrice = p11;
+    this->sellItemPrice = sellItemPrice;
     this->costs = 0;
-    this->imageParts = 0;
-    this->mission = 0;
-    this->wingmanNames = 0;
+    this->imageParts = nullptr;
+    this->mission = nullptr;
+    this->wingmanNames = nullptr;
     this->field_0x28 = -1;
     this->field_0x2c = -1;
     this->category = kind >> 31;
-    if (p10 >= 0)
+    if (sellModIndex >= 0)
         this->offer = 8;
     if (kind == 0x19)
         this->offer = 9;
     else if (kind == 0x1a)
         this->offer = 10;
-    this->sellModIndex = p10;
+    this->sellModIndex = sellModIndex;
 }

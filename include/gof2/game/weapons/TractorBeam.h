@@ -1,66 +1,39 @@
 #ifndef GOF2_TRACTORBEAM_H
 #define GOF2_TRACTORBEAM_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- TractorBeam (Android libgof2hdaa.so, armv7 Thumb).
-// Top-level class (no AbyssEngine namespace), per each work-item Sig line.
-// Field offsets recovered per-method from the target disassembly; access fields
-// via byte-offset casts from `this`.
-//
-// Object layout (recovered from ctor / update):
-//   +0x00  Vector      working direction/offset vector (3 floats)
-//   +0x0c  KIPlayer*   currently grabbed crate object (0 = none)
-//   +0x10  uint8_t     active flag
-//   +0x11  uint8_t     sound-playing flag
-//   +0x14  AEGeometry* beam mesh geometry
-//   +0x18  int         stored hitpoints snapshot
 
-struct TractorBeam;
-struct AEGeometry;
-struct KIPlayer;
-struct PlayerEgo;
-struct Radar;
-struct Level;
-struct Hud;
-struct PaintCanvas;
+// Galaxy on Fire 2 -- TractorBeam.
+// A ship module that locks onto a nearby cargo crate, draws a visible beam from
+// the player ship toward it, pulls it in, and captures it once close enough.
 
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
+class AEGeometry;
+class KIPlayer;
+class Level;
+class Hud;
 
-namespace AbyssEngine {
-namespace AEMath {
-
-// AEMath free functions (resolved blx targets).
-void VectorNormalize(void *out, const Vector *v);
-float VectorLength(const Vector *v);
-Vector operator-(const Vector &a, const Vector &b);
-
-} // namespace AEMath
-
-} // namespace AbyssEngine
-
-using AbyssEngine::AEMath::Vector;
+namespace AbyssEngine { class Radar; }
 
 class TractorBeam {
 public:
-    float dirX;                    // +0x00  working vector .x
-    float dirY;                    // +0x04  working vector .y
-    float dirZ;                    // +0x08  working vector .z
-    KIPlayer* grabbedCrate;                // +0x0c  grabbed crate (0 = none)
-    uint8_t active;                 // +0x10  active flag
-    uint8_t soundPlaying;                 // +0x11  sound-playing flag
-    uint8_t _pad_0x12[2];               // +0x12  padding
-    AEGeometry* beamGeometry;             // +0x14  beam mesh geometry
-    int storedHitpoints;                     // +0x18  stored hitpoints snapshot
+    float        dirX;            // working direction/offset vector .x
+    float        dirY;            // working direction/offset vector .y
+    float        dirZ;            // working direction/offset vector .z
+    KIPlayer*    grabbedCrate;    // currently grabbed crate (null = none)
+    uint8_t      active;          // beam is active
+    uint8_t      soundPlaying;    // pull sound is currently playing
+    AEGeometry*  beamGeometry;    // beam mesh geometry
+    int          storedHitpoints; // grabbed crate's hitpoints snapshot
 
-    // ---- constructor / destructor (demangle to TractorBeam::TractorBeam / ~TractorBeam) ----
-    TractorBeam(AEGeometry *unused, int kind);
+    // Constructs the beam mesh from base mesh id 0x3798 offset by `kind`.
+    TractorBeam(AEGeometry* unused, int kind);
     ~TractorBeam();
-    void render();
-    void update(int frameTime, Radar *radar, Level *level, Hud *hud);
 
-    // Heap factory: allocate + construct a beam mesh of the given kind. Used by
-    // PlayerEgo when a tractor-beam module is equipped.
-    static TractorBeam *create(AEGeometry *geo, int kind);
+    void render();
+    void update(int frameTime, AbyssEngine::Radar* radar, Level* level, Hud* hud);
+
+    // Allocates and constructs a beam. Used by PlayerEgo when a tractor-beam
+    // module is equipped.
+    static TractorBeam* create(AEGeometry* geo, int kind);
 };
+
 #endif

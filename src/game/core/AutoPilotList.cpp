@@ -1,225 +1,173 @@
-#include "gof2/game/core/AutoPilotList.h"   // also pulls in gof2/SolarSystem.h (String + SolarSystem)
+#include "gof2/game/core/AutoPilotList.h"   // also pulls in SolarSystem.h (String + SolarSystem)
 #include "gof2/engine/core/GameText.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/world/Level.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ship/PlayerEgo.h"
 #include "gof2/game/world/Route.h"
-#include "gof2/game/core/String.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-// Station is declared minimally here rather than via gof2/Station.h: that header
-// defines String unconditionally, which would clash with the identical definition
-// from gof2/SolarSystem.h (already in scope) within this single TU. Only Station's
-// getName() accessor is used, and the decomp accesses Station through byte-offset
-// casts, so a minimal forward declaration is sufficient and ABI-safe.
+// Station is declared minimally here rather than via gof2/Station.h: that header defines
+// String unconditionally, which would clash with the identical definition already in scope
+// from SolarSystem.h within this single TU. Only Station::getName() is used here.
 struct Station {
     String getName();
 };
 
-void _ZN13AutoPilotList4downEv(AutoPilotList *self);   // AutoPilotList::down()
+// GOT-holder game singletons / globals (live object obtained via the double indirection).
+__attribute__((visibility("hidden"))) extern int** g_APL_apFlag;        // status-active flag
+__attribute__((visibility("hidden"))) extern void** g_APL_gametext;     // GameText singleton
+__attribute__((visibility("hidden"))) extern void** g_APL_status;       // Status singleton
+__attribute__((visibility("hidden"))) extern void** g_APL_font;         // measurement font String*
+__attribute__((visibility("hidden"))) extern void** g_APL_canvas;       // PaintCanvas
+__attribute__((visibility("hidden"))) extern int** g_APL_screenW;       // screen width
+__attribute__((visibility("hidden"))) extern int** g_APL_screenH;       // screen height
+__attribute__((visibility("hidden"))) extern void** g_APL_layout_draw;  // Layout (draw())
+__attribute__((visibility("hidden"))) extern void** g_APL_gametext_draw; // GameText (draw())
+__attribute__((visibility("hidden"))) extern void** g_APL_font_draw;    // String* font (draw())
+__attribute__((visibility("hidden"))) extern void** g_APL_canvas_draw;  // PaintCanvas (draw())
 
-// AutoPilotList::touch(int p1, int p2) -> selected index, or -1 if the touch is outside
-// the list window. On a hit, resets the selection to the top then steps down to the row
-// that was touched.
-int AutoPilotList::touch(int p1, int p2) {
+extern const char kEmpty[] __attribute__((visibility("hidden")));
+extern const char kApLit1[] __attribute__((visibility("hidden")));
+extern const char kApLit2[] __attribute__((visibility("hidden")));
+
+// Build the list of autopilot destinations (current station, warp gate, mission target,
+// "cancel", route waypoint), measure the widest entry to size the window, center it on
+// screen, then select the first non-empty row.
+AutoPilotList::AutoPilotList(Level* level) {
+    this->entries = new Array<String*>();
+    this->entries->resize(5);
+    this->count = 0;
+
+    if (**g_APL_apFlag != 0) {
+        String b(kApLit1);
+        String c = *((GameText*)*g_APL_gametext)->getText(0x222) + b;
+        String a = ((Station*)(&a))->getName();
+        (*this->entries)[0] = new String(c + a);
+        this->count++;
+    }
+
+    void* status = *g_APL_status;
+    if (((SolarSystem*)((Status*)status)->getSystem())->currentOrbitHasWarpGate() != 0) {
+        String* s = new String;
+        s->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x223), false);
+        (*this->entries)[1] = s;
+        this->count++;
+    }
+
+    if (((Status*)status)->inEmptyOrbit() == 0) {
+        String c = ((Station*)(&c))->getName();
+        String b(kApLit2);
+        String a = b + c;
+        (*this->entries)[2] = new String(a + *((GameText*)*g_APL_gametext)->getText(0x88));
+        this->count++;
+    }
+
+    String* cancel = new String;
+    cancel->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x225), false);
+    (*this->entries)[3] = cancel;
+    this->count++;
+
+    if (((PlayerEgo*)((Level*)level)->getPlayer())->getRoute() != 0) {
+        Route* route = (Route*)(intptr_t)((PlayerEgo*)((Level*)level)->getPlayer())->getRoute();
+        if (*((uint8_t*)route->getLastWaypoint() + 0x130) == 0) {
+            String* s = new String;
+            s->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x23d), false);
+            (*this->entries)[4] = s;
+            this->count++;
+        }
+    }
+
+    this->width = 0;
+    this->selected = 0;
+    void* font = *g_APL_font;
+    void* canvas = *g_APL_canvas;
+    for (uint32_t i = 0; i < this->entries->size(); i++) {
+        if ((*this->entries)[i] != nullptr) {
+            void* fontStr = *(void**)font;
+            int w = ((PaintCanvas*)*(void**)canvas)->GetTextWidth(
+                        (unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
+            if (this->width < w)
+                this->width = w;
+        }
+    }
+
+    this->x = (**g_APL_screenW - this->width) / 2;
+    this->y = (**g_APL_screenH + this->count * -0xf - 0xc) / 2;
+    while ((*this->entries)[this->selected] == nullptr)
+        this->down();
+}
+
+// Release the owned String* array.
+AutoPilotList::~AutoPilotList() {
+    if (this->entries != nullptr) {
+        for (String* s : *this->entries)
+            delete s;
+        this->entries->clear();
+    }
+    delete this->entries;
+    this->entries = nullptr;
+}
+
+// Advance the selection to the next non-empty entry, wrapping at row 4.
+void AutoPilotList::down() {
+    String** data = this->entries->data();
+    int i = this->selected;
+    do {
+        i = (i < 4) ? i + 1 : 0;
+    } while (data[i] == nullptr);
+    this->selected = i;
+}
+
+// Move the selection to the previous non-empty entry, wrapping at row 0.
+void AutoPilotList::up() {
+    String** data = this->entries->data();
+    int i = this->selected;
+    do {
+        i = (i > 0) ? i - 1 : 4;
+    } while (data[i] == nullptr);
+    this->selected = i;
+}
+
+// Map a touch point to a row: -1 if outside the list window, otherwise reset the selection
+// to the top and step down to the touched row, returning the new selection index.
+int AutoPilotList::touch(int px, int py) {
     int row;
-    if (p1 < this->x ||
-        this->x + this->width <= p1 ||
-        (row = (p2 - this->y - 0xe) / 0xf, p2 - this->y < -0xf) ||
+    if (px < this->x ||
+        this->x + this->width <= px ||
+        (row = (py - this->y - 0xe) / 0xf, py - this->y < -0xf) ||
         (uint32_t)(row + 1) >= this->entries->size()) {
         return -1;
     }
     this->selected = 0;
     for (int i = 0; i <= row; i++)
-        _ZN13AutoPilotList4downEv(this);
+        this->down();
     return this->selected;
 }
 
-// AutoPilotList::~AutoPilotList() - release the owned String* array, free it, null it.
-// Mangled name so the demangled symbol contains "~AutoPilotList".
-AutoPilotList *_ZN13AutoPilotListD1Ev(AutoPilotList *self) {
-    if (self->entries != nullptr) {
-        for (String *s : *self->entries)
-            delete s;
-        self->entries->clear();
-    }
-    delete self->entries;
-    self->entries = nullptr;
-    return self;
-}
-
-// AutoPilotList::down() - advance selection to the next non-empty entry, wrapping at 4.
-void _ZN13AutoPilotList4downEv(AutoPilotList *self) {
-    String **data = self->entries->data();
-    int i = self->selected;
-    int n;
-    do {
-        n = 0;
-        if (i < 4)
-            n = i + 1;
-        i = n;
-    } while (data[i] == 0);
-    self->selected = i;
-}
-
-// AbyssEngine::String::String(out, String* src, bool) -> void   (0x6f028)
-// AbyssEngine::String::String(out, const char* cstr, bool) -> void   (0x6ee18)
-
-// Fallback literal accessed PC-relative.
-extern const char kEmpty[] __attribute__((visibility("hidden")));
-
-// AutoPilotList::getTargetString() -> String by value (sret in r0, this in r1).
-// Returns a copy of the selected entry's String if the index is in range, else the
-// fallback literal.
+// Return a copy of the selected entry's label, or the empty fallback if out of range.
 String AutoPilotList::getTargetString() {
     int idx = this->selected;
-    Array<String *> *entries = this->entries;
-    if (idx >= 0 && (uint32_t)idx < entries->size())
-        return *(*entries)[idx];
+    if (idx >= 0 && (uint32_t)idx < this->entries->size())
+        return *(*this->entries)[idx];
     return String(kEmpty);
 }
 
-// AutoPilotList::up() - move selection to the previous non-empty entry, wrapping at 0.
-void _ZN13AutoPilotList2upEv(AutoPilotList *self) {
-    String **data = self->entries->data();
-    int i = self->selected;
-    int n;
-    do {
-        n = 4;
-        if (0 < i)
-            n = i - 1;
-        i = n;
-    } while (data[i] == 0);
-    self->selected = i;
-}
-
-namespace AbyssEngine { struct String; }
-using AbyssEngine::String;
-
-void _ZN13AutoPilotList4downEv(AutoPilotList *self);          // down()
-
-__attribute__((visibility("hidden"))) extern int **g_APL_apFlag;         // status-active flag
-__attribute__((visibility("hidden"))) extern void **g_APL_gametext;      // GameText singleton
-__attribute__((visibility("hidden"))) extern void **g_APL_status;        // Status singleton
-__attribute__((visibility("hidden"))) extern void **g_APL_font;          // measurement font String*
-__attribute__((visibility("hidden"))) extern void **g_APL_canvas;        // PaintCanvas
-__attribute__((visibility("hidden"))) extern int **g_APL_screenW;        // screen width
-__attribute__((visibility("hidden"))) extern int **g_APL_screenH;        // screen height
-extern const char kApLit1[] __attribute__((visibility("hidden")));
-extern const char kApLit2[] __attribute__((visibility("hidden")));
-
-static inline String **entryData(AutoPilotList *self) {
-    return self->entries->data();
-}
-
-// AutoPilotList::AutoPilotList(Level*) - build the list of autopilot destinations (current
-// station, warp gate, mission target, "cancel", route waypoint), measure the widest entry
-// to size the window, center it, then select the first non-empty row.
-void _ZN13AutoPilotListC1EP5Level(AutoPilotList *self, void *level) {
-    self->entries = new Array<String*>();
-    self->entries->resize(5);
-    self->count = 0;
-
-    if (**g_APL_apFlag != 0) {
-        String *s = (String *)operator new(0xc);
-        String *txt = (String *)((GameText *)(*g_APL_gametext))->getText(0x222);
-        String b(kApLit1);
-        String c = *txt + b;
-        String a = ((Station *)(&a))->getName();
-        *s = c + a;
-        entryData(self)[0] = s;
-        self->count = self->count + 1;
-    }
-
-    void *status = *g_APL_status;
-    if (((SolarSystem *)(((Status *)(status))->getSystem()))->currentOrbitHasWarpGate() != 0) {
-        String *s = (String *)operator new(0xc);
-        ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x223), false);
-        entryData(self)[1] = s;
-        self->count = self->count + 1;
-    }
-
-    if (((Status *)(status))->inEmptyOrbit() == 0) {
-        String *s = (String *)operator new(0xc);
-        String c = ((Station *)(&c))->getName();
-        String b(kApLit2);
-        String a = b + c;
-        *s = a + *(String *)((GameText *)(*g_APL_gametext))->getText(0x88);
-        entryData(self)[2] = s;
-        self->count = self->count + 1;
-    }
-
-    String *cancel = (String *)operator new(0xc);
-    ((String *)(cancel))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x225), false);
-    entryData(self)[3] = cancel;
-    self->count = self->count + 1;
-
-    if (((PlayerEgo *)(((Level *)(level))->getPlayer()))->getRoute() != 0) {
-        void *route = (void *)(intptr_t)((PlayerEgo *)(((Level *)(level))->getPlayer()))->getRoute();
-        if (*((uint8_t *)((Route *)(route))->getLastWaypoint() + 0x130) == 0) {
-            String *s = (String *)operator new(0xc);
-            ((String *)(s))->ctor_copy((String *)((GameText *)(*g_APL_gametext))->getText(0x23d), false);
-            entryData(self)[4] = s;
-            self->count = self->count + 1;
-        }
-    }
-
-    self->width = 0;
-    self->selected = 0;
-    void *font = *g_APL_font;
-    void *canvas = *g_APL_canvas;
-    int width = 0;
-    Array<String *> *entries = self->entries;
-    for (uint32_t i = 0; i < entries->size(); i++) {
-        if ((*entries)[i] != 0) {
-            void *fontStr = (void *)*(void **)font;
-            int w = ((PaintCanvas*)*(void **)canvas)->GetTextWidth((unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
-            width = self->width;
-            if (width < w) {
-                self->width = w;
-                width = w;
-            }
-        }
-        entries = self->entries;
-    }
-
-    int screenH = **g_APL_screenH;
-    self->x = (**g_APL_screenW - width) / 2;
-    self->y = (screenH + self->count * -0xf - 0xc) / 2;
-    while ((*entries)[self->selected] == 0) {
-        _ZN13AutoPilotList4downEv(self);
-        entries = self->entries;
-    }
-}
-
-namespace AbyssEngine { struct String; }
-using AbyssEngine::String;
-
-// PC-relative GOT holders. **holder yields the live object.
-__attribute__((visibility("hidden"))) extern void **g_APL_layout_draw;     // -> Layout
-__attribute__((visibility("hidden"))) extern void **g_APL_gametext_draw;   // -> GameText
-__attribute__((visibility("hidden"))) extern void **g_APL_font_draw;       // -> String* font
-__attribute__((visibility("hidden"))) extern void **g_APL_canvas_draw;     // -> PaintCanvas
-
-// AutoPilotList::draw() - draw the window frame plus one row per non-empty entry.
+// Draw the window frame plus one row per non-empty entry.
 void AutoPilotList::draw() {
-    void *layout = *g_APL_layout_draw;
-    String *title = (String *)((GameText *)(*g_APL_gametext_draw))->getText(0x23c);
-    String tmp;
-    tmp.ctor_copy(title, false);
-    ((Layout *)(layout))->drawWindow(&tmp, this->x, this->y, this->width, this->count * 0xf + 0x16);
+    String title;
+    title.ctor_copy(((GameText*)*g_APL_gametext_draw)->getText(0x23c), false);
+    ((Layout*)*g_APL_layout_draw)->drawWindow(&title, this->x, this->y, this->width,
+                                              this->count * 0xf + 0x16);
 
     int drawn = 0;
-    void **canvasHolder = g_APL_canvas_draw;
-    void **fontHolder = g_APL_font_draw;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
-        String *text = (*this->entries)[i];
-        if (text != 0) {
-            ((PaintCanvas*)*canvasHolder)->DrawString((unsigned int)(uintptr_t)(String *)*fontHolder, text,
-                                   this->x,
-                                   drawn * 0xf + this->y + 0x12, false);
-            drawn = drawn + 1;
+        String* text = (*this->entries)[i];
+        if (text != nullptr) {
+            ((PaintCanvas*)*g_APL_canvas_draw)->DrawString(
+                (unsigned int)(uintptr_t)(String*)*g_APL_font_draw, text,
+                this->x, drawn * 0xf + this->y + 0x12, false);
+            drawn++;
         }
     }
 }

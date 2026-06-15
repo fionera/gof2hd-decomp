@@ -1,30 +1,23 @@
 #ifndef GOF2_NEWSTICKER_H
 #define GOF2_NEWSTICKER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
-struct String;
-}
-typedef AbyssEngine::String String;
 
-namespace AbyssEngine {
-
-String operator+(const String &left, const String &right);
-}
-
+// Galaxy on Fire 2 -- the scrolling station news banner. Builds a single concatenated
+// String of localized ticker lines and animates it horizontally across the HUD.
 class NewsTicker {
 public:
-    float scrollOffset;                    // +0x0   scroll offset
-    int x;                      // +0x4   x
-    int y;                      // +0x8   y
-    int width;                      // +0xc   width
-    int textWidth;                     // +0x10  text width
-    String tickerText;                  // +0x14  ticker text
-    uint8_t touched;                 // +0x28  touched flag
-    int lastTouchX;                     // +0x2c  last touch x
+    float scrollOffset;     // current horizontal scroll position
+    int x;                  // banner origin x
+    int y;                  // banner origin y
+    int width;              // banner width
+    int textWidth;          // rendered width of the full ticker string
+    String tickerText;      // concatenated, localized ticker text
+    uint8_t touched;        // set while the banner is being manually dragged
+    int lastTouchX;         // x of the previous touch sample (for drag delta)
 
     NewsTicker(int x, int y, int width, int faction, int level);
     ~NewsTicker();
+
     void draw();
     void update(int dt);
     int getHeight();

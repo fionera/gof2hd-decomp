@@ -1,173 +1,132 @@
 #include "gof2/game/world/Galaxy.h"
 
-extern "C" void *Galaxy_ctor_op_new_array(unsigned int size);
-extern "C" void *Galaxy_ctor_op_new(unsigned int size);
-extern "C" void Galaxy_ctor_FileRead_ctor(void *self);
-extern "C" void *Galaxy_ctor_FileRead_loadSystemsBinary(void *self);
-extern "C" void *Galaxy_ctor_FileRead_dtor(void *self);
-extern "C" void Galaxy_ctor_op_delete(void *p);
-extern "C" float Galaxy_Globals_sqrt(void *g, float v);
-extern "C" int Galaxy_distancePercent5(int a, int b, int c, int d, int e);
-extern "C" int Galaxy_SS_getIndex(void *ss);
-extern "C" int Galaxy_SS_getX(void *ss);
-extern "C" int Galaxy_SS_getY(void *ss);
-extern "C" int Galaxy_SS_getZ(void *ss);
-extern "C" int Galaxy_idiv(int a, int b);
-extern "C" float Galaxy_dist_sqrt(void *g, float v);
-extern "C" void Galaxy_Vector_subassign(void *dst, const void *src);
-extern "C" int Galaxy_pp_inAlienOrbit(void *status);
-extern "C" void *Galaxy_pp_new(unsigned int size);
-extern "C" void Galaxy_pp_delete(void *p);
-extern "C" int Galaxy_pp_Station_getSystem(void *station);
-extern "C" int Galaxy_pp_SolarSystem_getX(void *sys);
-extern "C" int Galaxy_pp_SolarSystem_getY(void *sys);
-extern "C" int Galaxy_pp_Item_getMinPriceSystem(void *item);
-extern "C" void Galaxy_ArrayReleaseClasses_SolarSystem(void *arr);
-extern "C" void *Galaxy_Array_SolarSystem_dtor(void *arr);
-extern "C" int Galaxy_ap_inAlienOrbit(void *status);
-extern "C" int Galaxy_ap_inSupernovaOrbit(void *status);
-extern "C" int Galaxy_ap_getCurrentCampaignMission(void *status);
-extern "C" void *Galaxy_ap_new(unsigned int size);
-extern "C" void Galaxy_ap_delete(void *p);
-extern "C" int Galaxy_ap_Station_getSystem(void *station);
-extern "C" int Galaxy_ap_SolarSystem_getX(void *sys);
-extern "C" int Galaxy_ap_SolarSystem_getY(void *sys);
-extern "C" int Galaxy_ap_Item_getMinPriceSystem(void *item);
-extern "C" void *Galaxy_gs_op_new(unsigned int size);
-extern "C" void Galaxy_FileRead_ctor(void *self);
-extern "C" int Galaxy_FileRead_loadStation(void *self, int index);
-extern "C" void *Galaxy_FileRead_dtor(void *self);
-extern "C" void Galaxy_gs_op_delete(void *p);
+#include "gof2/engine/file/FileRead.h"
+#include "gof2/game/core/Globals.h"
+#include "gof2/game/mission/Item.h"
+#include "gof2/game/mission/Status.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/world/Station.h"
+
+// Engine singletons (kept as raw globals, like the rest of the port).
+extern Globals *g_globals;            // the Globals instance (random/sqrt/etc.)
+extern Status *g_status;              // the player Status instance
+extern Array<Item *> *g_items;        // the item table
+
+// The map-distance unit factor applied by distance().
+extern float g_galaxyDistanceScale;
+
+static const int kStationCount = 0x87;
 
 Galaxy::Galaxy()
 {
-    uint8_t *stations = (uint8_t *)Galaxy_ctor_op_new_array(0x87);
-    this->visited = stations;
-    for (int i = 0; i != 0x87; i = i + 1) {
-        stations[i] = 0;
-    }
-    void *fr = Galaxy_ctor_op_new(1);
-    Galaxy_ctor_FileRead_ctor(fr);
-    this->systems = Galaxy_ctor_FileRead_loadSystemsBinary(fr);
-    Galaxy_ctor_op_delete(Galaxy_ctor_FileRead_dtor(fr));
+    this->visited = new uint8_t[kStationCount];
+    for (int i = 0; i < kStationCount; ++i)
+        this->visited[i] = 0;
+
+    FileRead loader;
+    this->systems = loader.loadSystemsBinary();
+}
+
+Galaxy::~Galaxy()
+{
+    delete[] this->visited;
+    this->visited = 0;
+    delete this->systems;
+    this->systems = 0;
 }
 
 void Galaxy::reset()
 {
-    uint8_t *stations = this->visited;
-    for (int i = 0; i != 0x87; i = i + 1) {
-        stations[i] = 0;
-    }
+    for (int i = 0; i < kStationCount; ++i)
+        this->visited[i] = 0;
 }
-
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_globals;
 
 int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
 {
     int dx = x2 - x1;
     int dy = y2 - y1;
     float sum = (float)(dy * dy + dx * dx);
-    return (int)Galaxy_Globals_sqrt(*g_Galaxy_globals, sum);
-}
-
-void Galaxy::visitStation(int index)
-{
-    uint8_t *stations = this->visited;
-    stations[index] = 1;
-}
-
-// ---- setSystemVisited (visit-veneer target) ----
-// Tail-call target of Station::visit(): marks the given system index as visited.
-// Identical work to visitStation(int) — writes the per-system visited flag in the
-// stations[] array held at +0x0 (station index == system index on the star map).
-void Galaxy::setSystemVisited(int systemId)
-{
-    uint8_t *stations = this->visited;
-    stations[systemId] = 1;
+    return (int)g_globals->sqrt(sum);
 }
 
 int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2)
 {
-    return 100 - Galaxy_distancePercent5(y2, x1, y1, x2, y2);
+    return 100 - distancePercent(x1, y1, x2, y2);
+}
+
+void Galaxy::visitStation(int index)
+{
+    this->visited[index] = 1;
+}
+
+// Tail-call target of Station::visit(): marks the given system index as visited.
+// Identical work to visitStation(int) — the station index equals the system index
+// on the star map.
+void Galaxy::setSystemVisited(int systemId)
+{
+    this->visited[systemId] = 1;
 }
 
 void Galaxy::setVisited(bool *src, int count)
 {
-    int i;
-    for (i = 0; i < count; i = i + 1) {
-        uint8_t *stations = this->visited;
-        stations[i] = ((uint8_t *)src)[i];
-    }
-    while (true) {
-        if (count >= 0x87)
-            return;
-        uint8_t *stations = this->visited;
-        stations[count] = 0;
-        count = count + 1;
-    }
+    for (int i = 0; i < count; ++i)
+        this->visited[i] = (uint8_t)src[i];
+    for (int i = count; i < kStationCount; ++i)
+        this->visited[i] = 0;
 }
 
 int Galaxy::getSystem(int index)
 {
     if (index < 0)
         return 0;
-    void *systems = this->systems;
-    void *data = P(systems, 0x4);
-    return ((int *)data)[index];
+    return (int)(intptr_t)(*this->systems)[index];
 }
 
-// ---- distance (member) 175f80 ----
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_dist_globals;
-__attribute__((visibility("hidden"))) extern float g_Galaxy_dist_scale;
-
-// Galaxy::distance(SolarSystem* a, SolarSystem* b): Euclidean distance between the two systems'
-// galactic-map positions, with the Z coordinate compressed by 1/10 (the star map is much flatter
-// in depth than in plane), scaled by the global unit factor. Same-system pairs are distance 0.
+// Euclidean distance between the two systems' galactic-map positions, with the Z
+// coordinate compressed by 1/10 (the star map is much flatter in depth than in
+// plane), scaled by the global unit factor. Same-system pairs are distance 0.
 float Galaxy::distance(SolarSystem *a, SolarSystem *b)
 {
-    if (Galaxy_SS_getIndex(a) == Galaxy_SS_getIndex(b))
+    if (a->getIndex() == b->getIndex())
         return 0.0f;
 
-    float pa[3];
-    float pb[3];
-    pa[0] = (float)Galaxy_SS_getX(a);
-    pa[1] = (float)Galaxy_SS_getY(a);
-    pa[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(a), 10);
-    pb[0] = (float)Galaxy_SS_getX(b);
-    pb[1] = (float)Galaxy_SS_getY(b);
-    pb[2] = (float)Galaxy_idiv(Galaxy_SS_getZ(b), 10);
+    Vector pa;
+    Vector pb;
+    pa.x = (float)a->getX();
+    pa.y = (float)a->getY();
+    pa.z = (float)(a->getZ() / 10);
+    pb.x = (float)b->getX();
+    pb.y = (float)b->getY();
+    pb.z = (float)(b->getZ() / 10);
 
-    Galaxy_Vector_subassign(pa, pb);
-    float sq = pa[0] * pa[0] + pa[1] * pa[1] + pa[2] * pa[2];
-    return Galaxy_dist_sqrt(*g_Galaxy_dist_globals, sq) * g_Galaxy_dist_scale;
+    pa -= pb;
+    float sq = pa.x * pa.x + pa.y * pa.y + pa.z * pa.z;
+    return g_globals->sqrt(sq) * g_galaxyDistanceScale;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_pp_status;
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_pp_items;
-
-void *Galaxy::getPlasmaProbabilities(void *station)
+void *Galaxy::getPlasmaProbabilities(Station *station)
 {
-    int alien = Galaxy_pp_inAlienOrbit(*g_Galaxy_pp_status);
-    void *systems = alien == 0 ? this->systems : 0;
-    void *itemTable = *g_Galaxy_pp_items;
+    int alien = g_status->inAlienOrbit() ? 1 : 0;
+    Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
+    Array<Item *> *itemTable = g_items;
 
-    int *probs = (int *)Galaxy_pp_new(0x10);
-    int *ids = (int *)Galaxy_pp_new(0x10);
+    int *probs = new int[4];
+    int *ids = new int[4];
 
     int slot = 0;
-    for (int id = 0xc9; id != 0xcd; id = id + 1) {
+    for (int id = 0xc9; id != 0xcd; ++id) {
         ids[slot] = id;
         int prob;
         int next;
         if (alien == 0) {
-            int sys = Galaxy_pp_Station_getSystem(station);
-            int sysX = Galaxy_pp_SolarSystem_getX(((void **)P(systems, 0x4))[sys]);
-            sys = Galaxy_pp_Station_getSystem(station);
-            int sysY = Galaxy_pp_SolarSystem_getY(((void **)P(systems, 0x4))[sys]);
-            int it = Galaxy_pp_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
-            int itX = Galaxy_pp_SolarSystem_getX(((void **)P(systems, 0x4))[it]);
-            it = Galaxy_pp_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
-            int itY = Galaxy_pp_SolarSystem_getY(((void **)P(systems, 0x4))[it]);
+            int sys = station->getSystem();
+            int sysX = (*systems)[sys]->getX();
+            sys = station->getSystem();
+            int sysY = (*systems)[sys]->getY();
+            int it = (*itemTable)[id]->getMinPriceSystem();
+            int itX = (*systems)[it]->getX();
+            it = (*itemTable)[id]->getMinPriceSystem();
+            int itY = (*systems)[it]->getY();
             prob = invDistancePercent(sysX, sysY, itX, itY);
             next = slot + 1;
             if (prob < 0x32)
@@ -183,7 +142,7 @@ void *Galaxy::getPlasmaProbabilities(void *station)
     bool sorted = true;
     int i = 1;
     do {
-        for (; i != 4; i = i + 1) {
+        for (; i != 4; ++i) {
             int prev = i - 1;
             int a = probs[i];
             int b = probs[prev];
@@ -205,76 +164,48 @@ void *Galaxy::getPlasmaProbabilities(void *station)
     } while (true);
 
     int sub = 0;
-    for (int k = 0; k != 4; k = k + 1) {
+    for (int k = 0; k != 4; ++k) {
         int v = probs[k];
         if (0 < v)
             probs[k] = v + sub;
         sub = sub - 2;
     }
 
-    int *out = (int *)Galaxy_pp_new(0x20);
-    for (unsigned int j = 0; j <= 7; j = j + 2) {
-        out[j] = *(int *)((char *)ids + j * 2);
-        out[j + 1] = *(int *)((char *)probs + j * 2);
+    int *out = new int[8];
+    for (int j = 0; j < 8; j += 2) {
+        out[j] = ids[j / 2];
+        out[j + 1] = probs[j / 2];
     }
 
-    Galaxy_pp_delete(probs);
-    Galaxy_pp_delete(ids);
+    delete[] probs;
+    delete[] ids;
     return out;
 }
 
-// Destructor: free the visited-flag array, release/destroy the SolarSystem* Array.
-Galaxy::~Galaxy()
+void *Galaxy::getAsteroidProbabilities(Station *station)
 {
-    ::operator delete[](this->visited);
-    void *systems = this->systems;
-    this->visited = 0;
-    Galaxy_ArrayReleaseClasses_SolarSystem(systems);
-    if (this->systems != 0) {
-        ::operator delete(Galaxy_Array_SolarSystem_dtor(this->systems));
-    }
-    this->systems = 0;
-}
+    int alien = g_status->inAlienOrbit() ? 1 : 0;
+    int supernova = g_status->inSupernovaOrbit() ? 1 : 0;
+    Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
+    Array<Item *> *itemTable = g_items;
 
-// Returns the owned Array<SolarSystem*> (stored at +0x4).
-void *Galaxy::getSystems()
-{
-    return this->systems;
-}
-
-// Returns the per-station visited-flag array (0x87 bytes, stored at +0x0).
-void *Galaxy::getVisited()
-{
-    return this->visited;
-}
-
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_ap_status;
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_ap_items;
-
-void *Galaxy::getAsteroidProbabilities(void *station)
-{
-    int alien = Galaxy_ap_inAlienOrbit(*g_Galaxy_ap_status);
-    int supernova = Galaxy_ap_inSupernovaOrbit(*g_Galaxy_ap_status);
-    void *systems = alien == 0 ? this->systems : 0;
-    void *itemTable = *g_Galaxy_ap_items;
-
-    int *probs = (int *)Galaxy_ap_new(0x2c);
-    int *ids = (int *)Galaxy_ap_new(0x2c);
+    int *probs = new int[11];
+    int *ids = new int[11];
 
     int slot = 0;
-    for (int id = 0x9a; id != 0xa4; id = id + 1) {
+    for (int id = 0x9a; id != 0xa4; ++id) {
         ids[slot] = id;
         int prob;
         int next;
         if (alien == 0) {
-            int sys = Galaxy_ap_Station_getSystem(station);
-            int sysX = Galaxy_ap_SolarSystem_getX(((void **)P(systems, 0x4))[sys]);
-            sys = Galaxy_ap_Station_getSystem(station);
-            int sysY = Galaxy_ap_SolarSystem_getY(((void **)P(systems, 0x4))[sys]);
-            int it = Galaxy_ap_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
-            int itX = Galaxy_ap_SolarSystem_getX(((void **)P(systems, 0x4))[it]);
-            it = Galaxy_ap_Item_getMinPriceSystem(((void **)P(itemTable, 0x4))[id]);
-            int itY = Galaxy_ap_SolarSystem_getY(((void **)P(systems, 0x4))[it]);
+            int sys = station->getSystem();
+            int sysX = (*systems)[sys]->getX();
+            sys = station->getSystem();
+            int sysY = (*systems)[sys]->getY();
+            int it = (*itemTable)[id]->getMinPriceSystem();
+            int itX = (*systems)[it]->getX();
+            it = (*itemTable)[id]->getMinPriceSystem();
+            int itY = (*systems)[it]->getY();
             prob = invDistancePercent(sysX, sysY, itX, itY);
             next = slot + 1;
             if (prob < 0x32)
@@ -293,7 +224,7 @@ void *Galaxy::getAsteroidProbabilities(void *station)
     bool sorted = true;
     int i = 1;
     do {
-        for (; i != 0xb; i = i + 1) {
+        for (; i != 0xb; ++i) {
             int prev = i - 1;
             int a = probs[i];
             int b = probs[prev];
@@ -315,39 +246,41 @@ void *Galaxy::getAsteroidProbabilities(void *station)
     } while (true);
 
     int sub = 0;
-    for (int k = 0; k != 0xb; k = k + 1) {
+    for (int k = 0; k != 0xb; ++k) {
         int v = probs[k];
         if (0 < v)
             probs[k] = v + sub;
         sub = sub - 2;
     }
 
-    int *out = (int *)Galaxy_ap_new(0x58);
-    for (unsigned int j = 0; j < 0x16; j = j + 2) {
-        out[j] = *(int *)((char *)ids + j * 2);
-        out[j + 1] = *(int *)((char *)probs + j * 2);
-        if (supernova != 0 && Galaxy_ap_getCurrentCampaignMission(*g_Galaxy_ap_status) > 0x59) {
+    int *out = new int[22];
+    for (int j = 0; j < 22; j += 2) {
+        out[j] = ids[j / 2];
+        out[j + 1] = probs[j / 2];
+        if (supernova != 0 && g_status->getCurrentCampaignMission() > 0x59)
             out[j] = 0xd9;
-        }
     }
 
-    Galaxy_ap_delete(probs);
-    Galaxy_ap_delete(ids);
+    delete[] probs;
+    delete[] ids;
     return out;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_Galaxy_gs_globals;
-
 int Galaxy::getStation(int index)
 {
-    int result;
-    if (index < 0) {
-        result = I(*g_Galaxy_gs_globals, 0x78);
-    } else {
-        void *fr = Galaxy_gs_op_new(1);
-        Galaxy_FileRead_ctor(fr);
-        result = Galaxy_FileRead_loadStation(fr, index);
-        Galaxy_gs_op_delete(Galaxy_FileRead_dtor(fr));
-    }
-    return result;
+    if (index < 0)
+        return (int)(intptr_t)g_status->playerStation;
+
+    FileRead loader;
+    return loader.loadStation(index);
+}
+
+Array<SolarSystem *> *Galaxy::getSystems()
+{
+    return this->systems;
+}
+
+uint8_t *Galaxy::getVisited()
+{
+    return this->visited;
 }

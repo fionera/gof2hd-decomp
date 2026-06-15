@@ -330,7 +330,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
 }
 
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
-// scroll windows and two heap buffers, then returns this (base dtor is not chained here).
+// scroll windows and two heap buffers.
 extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);       // Array<TouchButton*> release
 extern "C" void _mtw_ArrayReleaseClasses_TS(void *arr);       // Array<TouchSlider*> release
 extern "C" void _mtw_ArrayReleaseClasses_Str(void *arr);      // Array<String*> release
@@ -350,9 +350,8 @@ static inline void freeObj(void **slot, void *(*dtor)(void *)) {
     *slot = 0;
 }
 
-MenuTouchWindow *MenuTouchWindow::dtor()
+MenuTouchWindow::~MenuTouchWindow()
 {
-
     freeArrayTB((void **)&this->buttons);
     freeArrayTB((void **)&this->optionsButtons);
     freeArrayTB((void **)&this->scrollEntries);
@@ -407,8 +406,6 @@ MenuTouchWindow *MenuTouchWindow::dtor()
     this->heapBufA = 0;
     if (this->heapBufB != 0) ::operator delete[](this->heapBufB);
     this->heapBufB = 0;
-
-    return this;
 }
 
 // MenuTouchWindow::createRecordButtons(bool inSaveMode).
@@ -1674,9 +1671,8 @@ extern "C" void _mtw_buildMenu(void *self, int menuType); // per-type widget ass
 
 extern void *const gCtorLayout __attribute__((visibility("hidden"))); // *holder -> layout, +0x294.. metrics
 
-void MenuTouchWindow::ctor(int menuType)
+MenuTouchWindow::MenuTouchWindow(int menuType)
 {
-
     // copy the 8-word layout metric block (+0x294..+0x2b0 of the layout) into +0x1a8..
     int *layout = (int *)*(void **)gCtorLayout;
     this->buttonWidth = layout[0xa5]; // +0x294

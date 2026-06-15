@@ -1,820 +1,446 @@
 #include "gof2/game/ship/TargetFollowCamera.h"
 #include "gof2/engine/render/AEGeometry.h"
+#include "gof2/engine/render/PaintCanvas.h"
+#include "gof2/platform/libc.h"
 
-namespace AbyssEngine { namespace AEMath { float VectorLength(Vector *v); } }
-extern "C" void TFC_tail_int(TargetFollowCamera *self, int n);
-extern "C" void TFC_setShipHandling2(TargetFollowCamera *self, float v);
-namespace AbyssEngine { namespace AEMath {
-Vector MatrixGetUp(const Matrix &matrix);
-Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
-void MatrixMultiply(Matrix&, const Matrix&);   // lhs *= rhs
-} }
-void TFC_update(TargetFollowCamera *self, int n);
-extern "C" void *TFC_memcpy(void *dst, const void *src, unsigned n);
-extern "C" void TFC_MatrixTransformVector(Vector *out, const Vector *v);
-extern "C" float TFC_VectorLength(const Vector *v);
-extern "C" void *TFC_u_memcpy(void *dst, const void *src, unsigned n);
-extern "C" void TFC_u_MatrixGetUp(Vector *out, const Matrix *m);
-extern "C" void TFC_u_MatrixGetDir(Vector *out, const Matrix *m);
-extern "C" void TFC_u_MatrixGetPosition(Vector *out, const Matrix *m);
-extern "C" void TFC_u_MatrixIdentity(Matrix *out, const Matrix *m);
-extern "C" void TFC_u_MatrixSetRotation3(Matrix *out, float x, float y, float z);
-extern "C" void TFC_u_MatrixTransformVector(Vector *out, const Vector *m);
-extern "C" float TFC_u_VectorLength(const Vector *v);
-extern "C" int TFC_u_rand(void *rng, int bound);
-extern "C" void TFC_u_CameraSetLocal(unsigned camera, const Matrix *m);
+using AbyssEngine::AEMath::Vector;
+using AbyssEngine::AEMath::Matrix;
+using AbyssEngine::AEMath::MatrixGetUp;
+using AbyssEngine::AEMath::MatrixGetDir;
+using AbyssEngine::AEMath::MatrixGetPosition;
+using AbyssEngine::AEMath::MatrixTransformVector;
+using AbyssEngine::AEMath::MatrixSetRotation;
+using AbyssEngine::AEMath::MatrixMultiply;
+using AbyssEngine::AEMath::VectorLength;
 
-// str.w r1,[r0,#0xb0]
-void TFC_zoomTarget(TargetFollowCamera *self, float v) {
-    self->zoom = v;
-}
+// Engine globals / singletons the camera reads while updating (rumble/shake RNG,
+// the active camera index, the damping-curve constant tables). These live in the
+// shipped binary's data segment; declared here so the TU is self-contained.
+namespace AbyssEngine {
+namespace AEMath {
+// Look-at and ordered-rotation matrix builders (no standalone header of their own).
+Matrix MatrixGetLookAt(const Vector &pos, const Vector &at, const Vector &up);
+Matrix MatrixSetRotationOrdered(const Matrix &base, float x, float y, float z, int order);
+} // namespace AEMath
+} // namespace AbyssEngine
 
-// ldrb.w r0,[r0,#0x45]
-uint8_t TFC_isInLookAtMode(TargetFollowCamera *self) {
-    return self->lookAtCam;
-}
+extern PaintCanvas *g_canvas;          // active paint canvas (camera target)
+extern unsigned     g_currentCamera;   // active camera index
+extern void        *g_cameraRng;       // rumble/shake RNG handle
+extern int          AERandom(void *rng, int bound);
 
-// ldrb.w r0,[r0,#0x100]
-uint8_t TFC_hideShipForFirstPersonCam(TargetFollowCamera *self) {
-    return self->hideShip;
-}
+extern const double g_TFC_seedHandlingA;   // initial handlingDampingA seed
+extern const double g_TFC_seedHandlingB;   // initial handlingDampingB seed
+extern const float  g_TFC_shakeMax;        // hide-ship shake threshold (damped follow)
+extern const float  g_TFC_rumbleScale;     // first-person rumble scale
+extern const float  g_TFC_shakeScale;      // first-person shake scale
 
-// strb.w r1,[r0,#0x45]
-void TFC_setLookAtCam(TargetFollowCamera *self, bool v) {
-    self->lookAtCam = v;
-}
-
-// Clamp n to [2,8], store (pct, n) at 0x110/0x114.
-void TFC_setBoostPercentage(TargetFollowCamera *self, float pct, int n) {
-    if (n > 8) n = 8;
-    if (n < 2) n = 2;
-    self->shakeAmount = pct;
-    self->shakeFrequency = n;
-}
-
-// Sets the first-person flag at 0xf0, copies a fixed offset Vector {0,150,-800} into
-// the slot at this+0xf4, and zeros 0x104/0x108. The Vector is staged in an on-stack
-// byte buffer (engine source), so the compiler emits the stack canary automatically.
-
-void TFC_enableFirstPersonCam(TargetFollowCamera *self, bool on) {
-    char buf[12];
-    self->firstPerson = on;
-    *(volatile float *)(buf + 4) = 150.0f;
-    *(volatile float *)(buf + 0) = 0.0f;
-    *(volatile float *)(buf + 8) = -800.0f;
-    *(Vector *)&self->fpOffsetX = *(const Vector *)buf;
-    self->shakeAccum = 0;
-    self->shakeReference = 0;
-}
-
-// adds r0,#0xb4 ; b.w  — tail-call Matrix copy-assign into the first-person matrix
-// slot at this+0xb4 (the source Matrix& stays in r1).
-
-void *TFC_setFirstPersonMatrix(TargetFollowCamera *self, Matrix *m) {
-    return &(self->firstPersonMatrix = *m);
-}
-
-// Vector::operator=(this+0x38, v); this->[0xb0] = VectorLength(v).
-
-void TFC_setCamOffset(TargetFollowCamera *self, Vector *v) {
-    *(Vector *)&self->camOffsetX = *v;
-    self->zoom = AbyssEngine::AEMath::VectorLength(v);
-}
-
-// str.w r1,[r0,#0x130]
-void TFC_setRoll(TargetFollowCamera *self, float v) {
-    self->roll = v;
-}
-
-// Guard on byte at 0x47; if clear, arm a big hit: shake timer 1000, flag set,
-// shake mode 6 at 0x120, clear byte at 0x124.
-void TFC_hit(TargetFollowCamera *self) {
-    if (self->rumbleActive != 0) return;
-    self->rumbleTimer = 1000;
-    self->rumbleActive = 1;
-    self->rumbleStrength = 6;
-    self->field_0x124 = 0;
-}
-
-// this->[0x130] += delta  (float read-modify-write)
-void TFC_roll(TargetFollowCamera *self, float delta) {
-    self->roll = self->roll + delta;
-}
-
-// strb.w r1,[r0,#0x4c]
-void TFC_setRotationAroundTarget(TargetFollowCamera *self, bool v) {
-    self->rotateAroundTarget = v;
-}
-
-// strb.w r1,[r0,#0x138]
-void TFC_setFixed(TargetFollowCamera *self, bool v) {
-    self->fixed = v;
-}
-
-// Adds (dx,dy,dz) to both the position Vector at +0x8 and the target Vector at +0x14.
-void TFC_translateNoUpdate(TargetFollowCamera *self, float dx, float dy, float dz) {
-    self->posX = self->posX + dx;
-    self->posY = self->posY + dy;
-    self->posZ = self->posZ + dz;
-    self->targetX = self->targetX + dx;
-    self->targetY = self->targetY + dy;
-    self->targetZ = self->targetZ + dz;
-}
-
-// strb.w r1,[r0,#0x46]
-void TFC_setActive(TargetFollowCamera *self, bool v) {
-    self->active = v;
-}
-
-// push {r7,lr}; mov r7,sp; add.w r1,r1,#0x13c; movs r2,#0x3c; blx __aeabi_memcpy; pop {r7,pc}
-// getLocal() returns the local matrix (this+0x13c, 0x3c=60 bytes) by value. Returning
-// a 60-byte aggregate uses sret (r0 = hidden dest, r1 = this); clang copies it with
-// __aeabi_memcpy and needs no register saved across the call.
-
-Mat60 TFC_getLocal(TargetFollowCamera *self) {
-    return self->localMatrix;
-}
-
-// strd r1,r2,[r0,#0x110]
-void TFC_setRumblePercentage(TargetFollowCamera *self, float pct, int n) {
-    self->shakeAmount = pct;
-    self->shakeFrequency = n;
-}
-
-// Same as translateNoUpdate, then tail-calls the shake/update helper (this, 1000).
-
-void TFC_translate(TargetFollowCamera *self, float dx, float dy, float dz) {
-    self->posX = self->posX + dx;
-    self->posY = self->posY + dy;
-    self->posZ = self->posZ + dz;
-    self->targetX = self->targetX + dx;
-    self->targetY = self->targetY + dy;
-    self->targetZ = self->targetZ + dz;
-    return TFC_tail_int(self, 1000);
-}
-
-// Toggles fast-forward mode. Only does work when the requested state differs from the
-// current flag at 0x4d: re-derives the ship-handling damping coefficients (setShipHandling
-// + two approximation passes) and records the new flag.
-extern "C" void TFC_aproximate(void *out, float v, double *a, double *b,
-                               double *c, double *d, double *e);
-
-void TFC_setFastForwardMode(TargetFollowCamera *self, bool on) {
-    char *p = (char *)self;
-    uint8_t cur = self->fastForward;
-    if (on) {
-        if (cur) return;
-    } else {
-        if (!cur) return;
-    }
-    TFC_setShipHandling2(self, self->shipHandling);
-    TFC_aproximate(&self->dampCoeffA[4], self->handlingDampingA,
-                   (double *)(&self->dampCoeffA[0]), (double *)(&self->dampCoeffA[1]),
-                   (double *)(&self->dampCoeffA[2]), (double *)(&self->dampCoeffA[3]), (double *)(&self->dampCoeffA[4]));
-    TFC_aproximate(&self->dampCoeffB[4], self->handlingDampingB,
-                   (double *)(&self->dampCoeffB[0]), (double *)(&self->dampCoeffB[1]),
-                   (double *)(&self->dampCoeffB[2]), (double *)(&self->dampCoeffB[3]), (double *)(&self->dampCoeffB[4]));
-    self->fastForward = on;
-}
-
-// Guard on byte at 0x47; if clear, arm a small hit: shake timer 0x32, flag set,
-// shake mode 2 at 0x120, set byte at 0x124.
-void TFC_hitSmall(TargetFollowCamera *self) {
-    if (self->rumbleActive != 0) return;
-    self->rumbleTimer = 0x32;
-    self->rumbleActive = 1;
-    self->rumbleStrength = 2;
-    self->field_0x124 = 1;
-}
-
-// Maps a 0..1 handling value to two damping coefficients (fused multiply-adds),
-// stores the raw value at 0x134, then tail-calls the update helper (this, 1.0f).
-
-void TFC_setShipHandling(TargetFollowCamera *self, float v) {
-    float s = v * 0.01f;
-    self->shipHandling = v;
-    self->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
-    self->handlingDampingB = 0.001f + s * 0.010986f;
-    return TFC_tail_int(self, 0x3f800000);
-}
-
-// ldrb.w r0,[r0,#0x4d]
-uint8_t TFC_isInFastForwardMode(TargetFollowCamera *self) {
-    return self->fastForward;
-}
-
-// strb.w r1,[r0,#0x10c]
-void TFC_useTargetsUpVector(TargetFollowCamera *self, bool v) {
-    self->useTargetsUpVec = v;
-}
-
-// ldrd r2,r3,[r1] ; ldr r1,[r1,#8] ; strd r2,r3,[r0,#8] ; str r1,[r0,#0x10]
-// Copies the source Vector into the position slot at this+0x8.
-void TFC_setPositionV(TargetFollowCamera *self, Vector *src) {
-    float a = src->x, b = src->y, c = src->z;
-    self->posX = a;
-    self->posY = b;
-    self->posZ = c;
-}
-
-// Builds a local Vector {x,y,z} on the stack and copy-assigns it into the rotation
-// slot at this+0x50. The engine's source stages the components in a small on-stack
-// byte buffer, which makes the compiler emit the stack canary automatically (the
-// push {r0-r3} / stm sp prologue + guard check).
-
-void TFC_rotateAroundTarget(TargetFollowCamera *self, float x, float y, float z) {
-    char buf[12];
-    __builtin_memcpy(buf + 0, &x, 4);
-    __builtin_memcpy(buf + 4, &y, 4);
-    __builtin_memcpy(buf + 8, &z, 4);
-    *(Vector *)&self->rotX = *(const Vector *)buf;
-}
-
-// Recomputes the two damping-coefficient sets by scaling the stored handling rates
-// (0x128/0x12c) by `t` and feeding them through the approximation helper.
-extern "C" void TFC_aproximate(void *out, float v, double *a, double *b,
-                               double *c, double *d, double *e);
-
-void TFC_calculateCoefficents(TargetFollowCamera *self, float t) {
-    char *p = (char *)self;
-    TFC_aproximate(&self->dampCoeffA[4], self->handlingDampingA * t,
-                   (double *)(&self->dampCoeffA[0]), (double *)(&self->dampCoeffA[1]),
-                   (double *)(&self->dampCoeffA[2]), (double *)(&self->dampCoeffA[3]), (double *)(&self->dampCoeffA[4]));
-    TFC_aproximate(&self->dampCoeffB[4], self->handlingDampingB * t,
-                   (double *)(&self->dampCoeffB[0]), (double *)(&self->dampCoeffB[1]),
-                   (double *)(&self->dampCoeffB[2]), (double *)(&self->dampCoeffB[3]), (double *)(&self->dampCoeffB[4]));
-}
-
-// Sets the locked flag at 0x44. When locking, snapshots the current ship matrix:
-// copies AEGeometry::getMatrix() into a local, takes its up-vector as the camera up
-// (0x20), transforms the cam offset (0x38) by it for the position (0x8), then updates.
-// The on-stack Matrix/Vector buffers make the compiler emit the canary automatically.
-
-void TFC_setLocked(TargetFollowCamera *self, bool locked) {
-    char *p = (char *)self;
-    char mat[60];    // local matrix copy (char buffer -> stack canary)
-    Vector up;
-    self->locked = locked;
-    if (locked) {
-        __builtin_memcpy(mat, ((AEGeometry *)(self->target))->getMatrix(), 0x3c);
-        up = AbyssEngine::AEMath::MatrixGetUp(*(const AbyssEngine::AEMath::Matrix *)mat);
-        *(Vector *)((char *)&self->upX) = up;
-        up = AbyssEngine::AEMath::MatrixTransformVector(
-            *(const AbyssEngine::AEMath::Matrix *)mat,
-            *(const AbyssEngine::AEMath::Vector *)((char *)&self->camOffsetX));
-        *(Vector *)((char *)&self->posX) = up;
-        TFC_update(self, 0x32);
-    }
-}
-
-// setLocal(Matrix) takes the matrix by value (r0=this, the 16-word matrix in r1-r3 +
-// stack) and copy-assigns it into the local-matrix slot at this+0x13c. The by-value
-// aggregate is staged on the stack, so the compiler emits the canary automatically.
-struct Mat64 { float m[16]; };
-
-void TFC_setLocal(TargetFollowCamera *self, Mat64 m) {
-    *(Matrix *)&self->localMatrix = *(const Matrix *)&m;
-}
-
-// TargetFollowCamera::TargetFollowCamera(uint id, AEGeometry* target, Vector camOffset,
-//                                        Vector targetOffset)
-// Initializes the camera position triplet to the camOffset, snapshots the target matrix to
-// derive the initial position, seeds the local + first-person matrices, the shake/zoom state,
-// and precomputes the damping-function coefficients for both axes.
-//
-// camOffset/targetOffset arrive by value (3 floats each); the decompile reads them off the
-// incoming arg slots. We model them as Vector by value.
-
-void TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
-    TargetFollowCamera *self, float t, double *outB, double *outA, double *outC,
-    double *outD, double *outE, double *outF);
-
-__attribute__((visibility("hidden"))) extern int **g_TFC_ctor_canary;
-__attribute__((visibility("hidden"))) extern double g_TFC_seed0;   // DAT_0016a668 (2 doubles)
-__attribute__((visibility("hidden"))) extern double g_TFC_seed1;
-__attribute__((visibility("hidden"))) extern double g_TFC_dampX;
-__attribute__((visibility("hidden"))) extern double g_TFC_dampY;
-
-TargetFollowCamera *TFC_ctor(TargetFollowCamera *self, unsigned id, void *target,
-                                        Vector camOffset, Vector targetOffset)
-{
-    int *canary = *g_TFC_ctor_canary;
-    int saved = *canary;
-    char *p = (char *)self;
-
-    // position triplet := camOffset, mirror into the three tracked frames
-    self->posX = 0.0f;
-    self->posY = camOffset.y;
-    self->posZ = camOffset.z;
-    self->targetX = (int)camOffset.x;     // field_14..0x24 initialized like the disasm zero-fill
-    self->targetY = 0;
-    self->targetZ = (int)camOffset.y;
-    self->upX = (int)camOffset.z;
-    self->upY = (int)camOffset.x;
-    self->upZ = 0;
-    self->targetOffsetX = (int)camOffset.y;
-    self->targetOffsetY = (int)camOffset.z;
-    self->targetOffsetZ = (int)camOffset.x;
-    self->camOffsetX = (int)camOffset.y;
-    self->camOffsetY = (int)camOffset.z;
-    self->camOffsetZ = (int)camOffset.x;
-    self->rotX = 0;
-    self->rotY = 0;
-    self->rotZ = 0;
-
-    self->firstPersonMatrix.initIdentity();
-    self->fpOffsetX = 0;
-    self->fpOffsetY = 0;
-    self->fpOffsetZ = 0;
-    ((Matrix *)((char *)&self->localMatrix))->initIdentity();
-
-    self->id = id;
-    self->target = target;
-
-    *(Vector *)((char *)&self->targetOffsetX) = camOffset;
-    *(Vector *)((char *)&self->camOffsetX) = targetOffset;
-
-    Vector zero = {0.0f, 0.0f, 0.0f};
-    *(Vector *)((char *)&self->posX) = zero;
-    *(Vector *)((char *)&self->targetX) = zero;
-
-    // initial position from the target's current matrix
-    char mat[0x3c];
-    TFC_memcpy(mat, &((AEGeometry *)target)->getMatrix(), 0x3c);
-    Vector v;
-    TFC_MatrixTransformVector(&v, (const Vector *)mat);
-    *(Vector *)((char *)&self->targetX) = v;
-    TFC_MatrixTransformVector(&v, (const Vector *)mat);
-    *(Vector *)((char *)&self->posX) = v;
-
-    Vector up = {0.0f, 1.0f, 0.0f};
-    *(Vector *)((char *)&self->upX) = up;
-
-    self->locked = 0x10000;
-    self->rumbleTimer = 0;
-    self->rotateAroundTarget = 0;
-    self->firstPerson = 0;
-    self->hideShip = 0;
-    self->useTargetsUpVec = 1;
-    self->shakeAmount = 0.0f;       // shake amount
-    self->shakeFrequency = 5;            // shake frequency
-
-    float zoom = TFC_VectorLength(&targetOffset);
-
-    // seed second-matrix block + damping inputs
-    *(double *)&self->handlingDampingA = g_TFC_seed0;
-    *(double *)&self->roll = g_TFC_seed1;
-    self->zoom = zoom;
-    self->fixed = 0;
-
-    TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
-        (TargetFollowCamera *)(&self->dampCoeffA[4]), zoom, (double *)(&self->dampCoeffA[2]),
-        (double *)(&self->dampCoeffA[0]), (double *)(&self->dampCoeffA[1]), (double *)(&self->dampCoeffA[3]),
-        (double *)(&self->dampCoeffA[0]), &g_TFC_dampX);
-    TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
-        (TargetFollowCamera *)(&self->dampCoeffB[4]), self->handlingDampingB, (double *)(&self->dampCoeffB[2]),
-        (double *)(&self->dampCoeffB[0]), (double *)(&self->dampCoeffB[1]), (double *)(&self->dampCoeffB[3]),
-        (double *)(&self->dampCoeffB[0]), &g_TFC_dampY);
-
-    
-    return self;
-}
-
-// TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
-//     float t, double* outB, double* outA, double* outC, double* outD, double* outE)
-// (+ a 7th hidden double* spilled on the stack)
-// Evaluates five degree-8 polynomials in t (the precomputed damping-curve fit) and stores the
-// coefficients into the five/six output doubles. The constant terms live in the C arrays below;
-// for coverage we model them as extern coefficient tables (9 doubles each, c[0]=x^8 .. c[8]=1).
-
-extern "C" {
+// Damping-curve coefficient tables: each is a degree-8 polynomial fit (c[0]=x^8 .. c[8]=1).
 extern const double g_TFC_dampA[9];
 extern const double g_TFC_dampB[9];
 extern const double g_TFC_dampC[9];
 extern const double g_TFC_dampD[9];
-extern const double g_TFC_dampE[9];   // E has no constant term (c[8] == 0)
+extern const double g_TFC_dampE[9];
+
+static inline float bitsToFloat(uint32_t u) {
+    float f;
+    memcpy(&f, &u, 4);
+    return f;
 }
 
-static inline double poly8(const double *c, double x2, double x3, double x4,
-                           double x5, double x6, double x7, double x8, double x)
-{
+static inline double poly8(const double *c, double x) {
+    double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
+    double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
     return x8 * c[0] + x7 * c[1] + x6 * c[2] + x5 * c[3] + x4 * c[4] +
            x3 * c[5] + x2 * c[6] + x * c[7] + c[8];
 }
 
-void TFC_aproximateCooefficientsForAproximationOfDampingFunktion(
-    TargetFollowCamera *self, float t, double *outB, double *outA, double *outC,
-    double *outD, double *outE, double *outF)
-{
-    (void)self;
+// ---------------------------------------------------------------------------
+// Construction
+// ---------------------------------------------------------------------------
+
+TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
+                                       Vector camOffset, Vector targetOffset) {
+    this->id = id;
+    this->target = target;
+
+    this->firstPersonMatrix.initIdentity();
+    this->fpOffsetX = this->fpOffsetY = this->fpOffsetZ = 0;
+    this->localMatrix.initIdentity();
+
+    *getTargetOffset() = camOffset;
+    *getCamOffset()    = targetOffset;
+
+    Vector zero = {0.0f, 0.0f, 0.0f};
+    *getPosition() = zero;
+    *getTargetPos() = zero;
+
+    // initial position from the target's current matrix
+    Matrix m = target->getMatrix();
+    *getTargetPos() = MatrixGetPosition(m);
+    *getPosition()  = MatrixGetPosition(m);
+
+    Vector up = {0.0f, 1.0f, 0.0f};
+    *getUp() = up;
+
+    this->locked = 0;
+    this->rumbleTimer = 0;
+    this->rotateAroundTarget = 0;
+    this->firstPerson = 0;
+    this->hideShip = 0;
+    this->useTargetsUpVec = 1;
+    this->shakeAmount = 0.0f;
+    this->shakeFrequency = 5;
+
+    float zoom = VectorLength(targetOffset);
+
+    this->handlingDampingA = (float)g_TFC_seedHandlingA;
+    this->handlingDampingB = (float)g_TFC_seedHandlingB;
+    this->zoom = zoom;
+    this->fixed = 0;
+
+    aproximateCoefficients(zoom);
+}
+
+// ---------------------------------------------------------------------------
+// Simple accessors
+// ---------------------------------------------------------------------------
+
+Vector *TargetFollowCamera::getPosition()     { return reinterpret_cast<Vector *>(&this->posX); }
+Vector *TargetFollowCamera::getTargetPos()    { return reinterpret_cast<Vector *>(&this->targetX); }
+Vector *TargetFollowCamera::getUp()           { return reinterpret_cast<Vector *>(&this->upX); }
+Vector *TargetFollowCamera::getTargetOffset() { return reinterpret_cast<Vector *>(&this->targetOffsetX); }
+Vector *TargetFollowCamera::getCamOffset()    { return reinterpret_cast<Vector *>(&this->camOffsetX); }
+Vector *TargetFollowCamera::getRotation()     { return reinterpret_cast<Vector *>(&this->rotX); }
+
+Matrix TargetFollowCamera::getLocal()                { return this->localMatrix; }
+void   TargetFollowCamera::setLocal(Matrix m)        { this->localMatrix = m; }
+void   TargetFollowCamera::setTarget(AEGeometry *t)  { this->target = t; }
+void   TargetFollowCamera::setZoomTarget(float zoom) { this->zoom = zoom; }
+void   TargetFollowCamera::setRoll(float roll)       { this->roll = roll; }
+void   TargetFollowCamera::roll_(float delta)        { this->roll += delta; }
+void   TargetFollowCamera::setLookAtCam(bool e)      { this->lookAtCam = e; }
+void   TargetFollowCamera::setActive(bool e)         { this->active = e; }
+void   TargetFollowCamera::setFixed(bool e)          { this->fixed = e; }
+void   TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTarget = e; }
+void   TargetFollowCamera::useTargetsUpVector(bool e)      { this->useTargetsUpVec = e; }
+
+bool TargetFollowCamera::isInLookAtMode()           { return this->lookAtCam != 0; }
+bool TargetFollowCamera::isInFastForwardMode()      { return this->fastForward != 0; }
+bool TargetFollowCamera::hideShipForFirstPersonCam(){ return this->hideShip != 0; }
+
+void TargetFollowCamera::setFirstPersonMatrix(Matrix *m) { this->firstPersonMatrix = *m; }
+
+void TargetFollowCamera::setCamOffset(Vector *offset) {
+    *getCamOffset() = *offset;
+    this->zoom = VectorLength(*offset);
+}
+
+void TargetFollowCamera::setTargetOffset(Vector *offset) {
+    *getTargetOffset() = *offset;
+}
+
+void TargetFollowCamera::setPosition(Vector *position) {
+    this->posX = position->x;
+    this->posY = position->y;
+    this->posZ = position->z;
+}
+
+void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {
+    this->shakeAmount = pct;
+    this->shakeFrequency = frequency;
+}
+
+void TargetFollowCamera::setBoostPercentage(float pct, int frequency) {
+    if (frequency > 8) frequency = 8;
+    if (frequency < 2) frequency = 2;
+    this->shakeAmount = pct;
+    this->shakeFrequency = frequency;
+}
+
+void TargetFollowCamera::enableFirstPersonCam(bool enabled) {
+    this->firstPerson = enabled;
+    Vector offset = {0.0f, 150.0f, -800.0f};
+    *reinterpret_cast<Vector *>(&this->fpOffsetX) = offset;
+    this->shakeAccum = 0;
+    this->shakeReference = 0;
+}
+
+void TargetFollowCamera::rotateAroundTargetBy(float x, float y, float z) {
+    Vector r = {x, y, z};
+    *getRotation() = r;
+}
+
+void TargetFollowCamera::hit() {
+    if (this->rumbleActive != 0) return;
+    this->rumbleTimer = 1000;
+    this->rumbleActive = 1;
+    this->rumbleStrength = 6;
+    this->smallRumble = 0;
+}
+
+void TargetFollowCamera::hitSmall() {
+    if (this->rumbleActive != 0) return;
+    this->rumbleTimer = 50;
+    this->rumbleActive = 1;
+    this->rumbleStrength = 2;
+    this->smallRumble = 1;
+}
+
+void TargetFollowCamera::setLocked(bool locked) {
+    this->locked = locked;
+    if (!locked) return;
+    Matrix m = this->target->getMatrix();
+    *getUp() = MatrixGetUp(m);
+    *getPosition() = MatrixTransformVector(m, *getCamOffset());
+    update(50);
+}
+
+// ---------------------------------------------------------------------------
+// Translation
+// ---------------------------------------------------------------------------
+
+void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
+    this->posX += dx;  this->posY += dy;  this->posZ += dz;
+    this->targetX += dx;  this->targetY += dy;  this->targetZ += dz;
+}
+
+void TargetFollowCamera::translate(float dx, float dy, float dz) {
+    translateNoUpdate(dx, dy, dz);
+    update(1000);
+}
+
+// ---------------------------------------------------------------------------
+// Ship-handling / damping coefficients
+// ---------------------------------------------------------------------------
+
+void TargetFollowCamera::setShipHandlingNoUpdate(float handling) {
+    float s = handling * 0.01f;
+    this->shipHandling = handling;
+    this->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
+    this->handlingDampingB = 0.001f + s * 0.010986f;
+}
+
+void TargetFollowCamera::setShipHandling(float handling) {
+    setShipHandlingNoUpdate(handling);
+    update(1);
+}
+
+void TargetFollowCamera::resetShipHandling() {
+    this->handlingDampingA = bitsToFloat(0x3ba3d70a);  // ~0.005
+    this->handlingDampingB = bitsToFloat(0x3bc49ba6);  // ~0.006
+    update(1);
+}
+
+void TargetFollowCamera::calculateCoefficients(float t) {
+    aproximateCoefficients(this->handlingDampingA * t,
+                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
+                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
+    aproximateCoefficients(this->handlingDampingB * t,
+                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
+                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
+}
+
+void TargetFollowCamera::setFastForwardMode(bool enabled) {
+    if (enabled == (this->fastForward != 0)) return;
+    setShipHandlingNoUpdate(this->shipHandling);
+    aproximateCoefficients(this->handlingDampingA,
+                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
+                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
+    aproximateCoefficients(this->handlingDampingB,
+                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
+                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
+    this->fastForward = enabled;
+}
+
+// Evaluates the five degree-8 damping-curve polynomials at t and writes the fitted
+// coefficients to the output doubles.
+void TargetFollowCamera::aproximateCoefficients(float t, double *outB, double *outA,
+                                                double *outC, double *outD,
+                                                double *outE, double *outF) {
     double x = (double)t;
-    double x2 = x * x;
-    double x3 = x2 * x;
-    double x4 = x3 * x;
-    double x5 = x4 * x;
-    double x6 = x5 * x;
-    double x7 = x6 * x;
-    double x8 = x7 * x;
+    double a = poly8(g_TFC_dampA, x);
+    double b = poly8(g_TFC_dampB, x);
+    double c = poly8(g_TFC_dampC, x);
+    double d = poly8(g_TFC_dampD, x);
+    double e = poly8(g_TFC_dampE, x);
 
-    double a = poly8(g_TFC_dampA, x2, x3, x4, x5, x6, x7, x8, x);
-    double b = poly8(g_TFC_dampB, x2, x3, x4, x5, x6, x7, x8, x);
-    double c = poly8(g_TFC_dampC, x2, x3, x4, x5, x6, x7, x8, x);
-    double d = poly8(g_TFC_dampD, x2, x3, x4, x5, x6, x7, x8, x);
-    double e = poly8(g_TFC_dampE, x2, x3, x4, x5, x6, x7, x8, x);
-
-    *outB = e;
-    *outA = -a;
-    *outC = c;
-    *outD = d;
-    *outF = -b;
+    if (outB) *outB = e;
+    if (outA) *outA = -a;
+    if (outC) *outC = c;
+    if (outD) *outD = d;
+    if (outF) *outF = -b;
+    (void)outE;
 }
 
-// Restores default ship-handling damping coefficients (0x128/0x12c) then tail-calls
-// the update helper (this, 1.0f).
-
-static inline float bits(uint32_t u) {
-    float f;
-    __builtin_memcpy(&f, &u, 4);
-    return f;
+// Single-argument helper used by the constructor: recompute coefficient set A from
+// the zoom and set B from handlingDampingB.
+void TargetFollowCamera::aproximateCoefficients(float t) {
+    aproximateCoefficients(t,
+                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
+                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
+    aproximateCoefficients(this->handlingDampingB,
+                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
+                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
 }
 
-void TFC_resetShipHandling(TargetFollowCamera *self) {
-    self->handlingDampingA = bits(0x3ba3d70a);  // ~0.005
-    self->handlingDampingB = bits(0x3bc49ba6);  // ~0.006
-    return TFC_tail_int(self, 0x3f800000);
-}
+// ---------------------------------------------------------------------------
+// Per-frame update
+// ---------------------------------------------------------------------------
 
-// adds r0,#0x2c ; b.w  — tail-call Vector copy-assign into the target-offset
-// slot at this+0x2c (source Vector& stays in r1).
-
-void *TFC_setTargetOffset(TargetFollowCamera *self, Vector *v) {
-    return &(*(Vector *)&self->targetOffsetX = *v);
-}
-
-// adds r0,#8 ; stmia r0!,{r1,r2,r3} ; bx lr
-// Writes the position Vector at +0x8 and returns &field_14 (this+0x14): the
-// store base register is post-incremented and reused as the return value.
-float *TFC_setPosition3(float *p, float x, float y, float z) {
-    p += 2;          // &field at +0x8
-    *p++ = x;
-    *p++ = y;
-    *p++ = z;
-    return p;
-}
-
-// TargetFollowCamera::update(int dt)
-// Advances the chase camera one frame. Depending on the camera mode flags it either:
-//   * snaps to a fixed matrix (+0x138 set),
-//   * follows the target with a damped spring (the polynomial coefficients precomputed in the
-//     ctor at +0x60.. and +0x88..),
-//   * runs a first-person matrix, or
-//   * locks/positions directly,
-// then applies rumble (+0x47) and screen-shake (+0x110), builds the look-at matrix, rolls it
-// by +0x130 and pushes it to the active PaintCanvas camera.
-//
-// The decompile's `in_fpscr` bit-mangling is just clang's lowering of float comparisons; we
-// translate those back to ordinary comparisons. `dt` is the int parameter (r1).
-
-extern "C" void TFC_u_MatrixGetLookAt(Matrix *out, const Vector *pos, const Vector *at,
-                                      const Vector *up);
-extern "C" void TFC_u_MatrixSetRotation(Matrix *out, const Matrix *base, float x, float y, float z,
-                                        int order);
-
-__attribute__((visibility("hidden"))) extern int **g_TFC_u_canary;
-__attribute__((visibility("hidden"))) extern void **g_TFC_u_rng;        // rumble/shake rng holder
-__attribute__((visibility("hidden"))) extern unsigned *g_TFC_u_camera;  // active camera holder
-__attribute__((visibility("hidden"))) extern double g_TFC_u_seed0;
-__attribute__((visibility("hidden"))) extern double g_TFC_u_seed1;
-__attribute__((visibility("hidden"))) extern float g_TFC_u_shakeMax;
-__attribute__((visibility("hidden"))) extern float g_TFC_u_rumbleScale;
-__attribute__((visibility("hidden"))) extern float g_TFC_u_shakeScale;
-
-void TFC_update(TargetFollowCamera *self, int dt)
-{
-    int *canary = *g_TFC_u_canary;
-    int saved = *canary;
-    char *p = (char *)self;
-
-    if (self->fixed != 0) {
-        // fixed-matrix path
-        Matrix lm;
-        Vector pos;
-        TFC_u_MatrixGetPosition(&pos, &lm);
-        self->posX = pos.x;
-        self->posY = pos.y;
-        self->posZ = pos.z;
-        *(Vector *)(((char *)&self->posX)) = pos;
-        TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
-        if (self->target != 0) {
-            char mat[0x3c];
-            TFC_u_memcpy(mat, &((AEGeometry *)self->target)->getMatrix(), 0x3c);
-            Vector up, posv;
-            TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-            *(Vector *)(((char *)&self->upX)) = up;
-            TFC_u_MatrixGetPosition(&posv, (const Matrix *)mat);
-            *(Vector *)(((char *)&self->targetX)) = posv;
+void TargetFollowCamera::update(int dt) {
+    if (this->fixed != 0) {
+        // Fixed-matrix path: read the camera position straight from the local matrix.
+        *getPosition() = MatrixGetPosition(this->localMatrix);
+        g_canvas->CameraSetLocal(g_currentCamera, this->localMatrix);
+        if (this->target != 0) {
+            Matrix m = this->target->getMatrix();
+            *getUp() = MatrixGetUp(m);
+            *getTargetPos() = MatrixGetPosition(m);
         }
-        
         return;
     }
 
-    if (dt > 0 && self->active != 0) {
-        char mat[0x3c];
-        TFC_u_memcpy(mat, &((AEGeometry *)self->target)->getMatrix(), 0x3c);
+    if (dt <= 0 || this->active == 0) return;
 
-        if (self->lookAtCam == 0) {           // not look-at cam
-            if (self->locked == 0) {       // not locked
-                if (self->firstPerson == 0) {   // damped follow
-                    Vector savedPos14 = *(Vector *)((char *)&self->targetX);
-                    Vector savedPos08 = *(Vector *)((char *)&self->posX);
+    Matrix m = this->target->getMatrix();
 
-                    Vector up;
-                    TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-                    *(Vector *)(((char *)&self->upX)) = up;
+    if (this->lookAtCam == 0) {
+        if (this->locked == 0) {
+            if (this->firstPerson == 0) {
+                // Damped spring follow.
+                Vector savedTarget = *getTargetPos();
+                Vector savedPos    = *getPosition();
+                *getUp() = MatrixGetUp(m);
 
-                    if (self->rotateAroundTarget != 0) {        // rotate-around-target
-                        Matrix rot;
-                        TFC_u_MatrixSetRotation(&rot, (const Matrix *)mat,
-                                                self->rotX, self->rotY,
-                                                self->rotZ, 2);
-                        AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)(mat), rot);
-                        float curLen = TFC_u_VectorLength((Vector *)((char *)&self->camOffsetX));
-                        if (curLen != self->zoom)
-                            *(Vector *)(((char *)&self->camOffsetX)) *= (self->zoom / curLen);
-                    }
+                if (this->rotateAroundTarget != 0) {
+                    Matrix rot = AbyssEngine::AEMath::MatrixSetRotationOrdered(
+                        m, this->rotX, this->rotY, this->rotZ, 2);
+                    MatrixMultiply(m, rot);
+                    float curLen = VectorLength(*getCamOffset());
+                    if (curLen != this->zoom)
+                        *getCamOffset() *= (this->zoom / curLen);
+                }
+
+                double dd = (double)dt;
+                double d2 = dd * dd, d3 = d2 * dd, d4 = d3 * dd;
+                double inv = 1.0 / (float)dt;
+
+                *getPosition()  = MatrixGetPosition(m);
+                *getTargetPos() = MatrixGetPosition(m);
+
+                Vector diff = *getTargetPos();
+                diff -= *getPosition();
+                float kA = (float)((dampCoeffA[4] + dampCoeffA[1] * d2 + dampCoeffA[0] * dd +
+                                    dampCoeffA[2] * d3 + dampCoeffA[3] * d4) * inv);
+                diff *= kA;
+                diff += savedTarget;
+                *getTargetPos() = diff;
+
+                Vector diff2 = *getTargetPos();
+                diff2 -= *getPosition();
+                float kB = (float)((dampCoeffB[4] + dampCoeffB[1] * d2 + dampCoeffB[0] * dd +
+                                    dampCoeffB[2] * d3 + dampCoeffB[3] * d4) * inv);
+                diff2 *= kB;
+
+                if (this->hideShip != 0) {
+                    float l = VectorLength(diff2) + this->shakeAccum;
+                    this->shakeAccum = l;
+                    this->hideShip = (l < g_TFC_shakeMax) ? 1 : 0;
+                }
+
+                diff2 += savedPos;
+                *getTargetPos() = diff2;
+            } else {
+                // First-person matrix follow.
+                m.initIdentity();
+                Matrix rot;
+                MatrixSetRotation(rot, 0.0f, 0.0f, 0.0f);
+                MatrixMultiply(rot, this->firstPersonMatrix);
+                m = rot;
+
+                Vector cur = *getPosition();
+                *getPosition() = MatrixGetPosition(m);
+
+                if (this->shakeReference == 0.0f ||
+                    this->shakeAccum < this->shakeReference * 1.5f) {
+                    Vector d = *getPosition();
+                    d -= cur;
+                    if (this->shakeReference == 0.0f)
+                        this->shakeReference = VectorLength(d);
 
                     double dd = (double)dt;
-                    double d2 = dd * dd;
-                    double d3 = d2 * dd;
-                    double d4 = d3 * dd;
+                    double d2 = dd * dd, d3 = d2 * dd, d4 = d3 * dd;
                     double inv = 1.0 / (float)dt;
-
-                    Vector dir;
-                    TFC_u_MatrixTransformVector(&dir, (const Vector *)mat);
-                    *(Vector *)(((char *)&self->posX)) = dir;
-                    TFC_u_MatrixTransformVector(&dir, (const Vector *)mat);
-                    *(Vector *)(((char *)&self->targetX)) = dir;
-
-                    Vector diff = *(Vector *)((char *)&self->targetX);
-                    diff -= *(const Vector *)(((char *)&self->posX));
-                    // position-axis spring: const at +0x80, coefficient doubles at +0x60..
-                    double c0 = *(double *)(&self->dampCoeffA[4]);
-                    double *cc = (double *)(&self->dampCoeffA[0]);
-                    float kA = (float)((c0 + cc[1] * d2 + cc[0] * dd + cc[2] * d3 + cc[3] * d4) * inv);
-                    diff *= (kA);
-                    diff += savedPos14;
-                    *(Vector *)(((char *)&self->targetX)) = diff;
-
-                    Vector diff2 = *(Vector *)((char *)&self->targetX);
-                    diff2 -= *(const Vector *)(((char *)&self->posX));
-                    double c0b = *(double *)(&self->dampCoeffB[4]);
-                    double *ccb = (double *)(&self->dampCoeffB[0]);
-                    float kB = (float)((c0b + ccb[1] * d2 + ccb[0] * dd +
-                                        *(double *)(&self->dampCoeffB[2]) * d3 + *(double *)(&self->dampCoeffB[3]) * d4) * inv);
-                    diff2 *= (kB);
-
-                    if (self->hideShip != 0) {
-                        float l = TFC_u_VectorLength(&diff2) + self->shakeAccum;
-                        self->shakeAccum = l;
-                        self->hideShip = (l < g_TFC_u_shakeMax) ? 1 : 0;
-                    }
-
-                    Vector finalPos = diff2;
-                    finalPos += savedPos08;
-                    *(Vector *)(((char *)&self->targetX)) = finalPos;
-                } else {                           // identity-rotation follow
-                    Matrix id;
-                    TFC_u_MatrixIdentity(&id, (const Matrix *)mat);
-                    *(Matrix *)(mat) = id;
-                    Matrix rot;
-                    TFC_u_MatrixSetRotation3(&rot, 0.0f, 0.0f, 0.0f);
-                    AbyssEngine::AEMath::MatrixMultiply(rot, *(const Matrix *)(((char *)&self->firstPersonMatrix)));
-                    *(Matrix *)(mat) = rot;
-
-                    Vector cur = *(Vector *)((char *)&self->posX);
-                    Vector np;
-                    TFC_u_MatrixTransformVector(&np, (const Vector *)mat);
-                    *(Vector *)(((char *)&self->posX)) = np;
-
-                    if (self->shakeReference == 0.0f ||
-                        self->shakeAccum < self->shakeReference * 1.5f) {
-                        Vector d = np;
-                        d -= *(const Vector *)(((char *)&self->posX));
-                        if (self->shakeReference == 0.0f)
-                            self->shakeReference = TFC_u_VectorLength(&d);
-                        double dd = (double)dt;
-                        double d2 = dd * dd;
-                        double d3 = d2 * dd;
-                        double d4 = d3 * dd;
-                        double inv = 1.0 / (float)dt;
-                        double c0 = *(double *)(&self->dampCoeffB[4]);
-                        float k = (float)((c0 + *(double *)(&self->dampCoeffB[1]) * d3 +
-                                           *(double *)(&self->dampCoeffB[0]) * d4 +
-                                           *(double *)(&self->dampCoeffB[2]) * d2 +
-                                           *(double *)(&self->dampCoeffB[3]) * dd) * inv);
-                        d *= (k);
-                        float l = TFC_u_VectorLength(&d) + self->shakeAccum;
-                        float thr = self->shakeReference * 0.75f;
-                        self->shakeAccum = l;
-                        self->hideShip = (l >= thr) ? 1 : 0;
-                        cur += *(const Vector *)(((char *)&self->posX));
-                        *(Vector *)(((char *)&self->posX)) = cur;
-                    }
-
-                    Vector up, dir2;
-                    TFC_u_MatrixGetUp(&up, (const Matrix *)mat);
-                    *(Vector *)(((char *)&self->upX)) = up;
-                    TFC_u_MatrixGetDir(&dir2, (const Matrix *)mat);
-                    Vector tv;
-                    TFC_u_MatrixTransformVector(&tv, (const Vector *)mat);
-                    *(Vector *)(((char *)&self->targetX)) = tv;
+                    float k = (float)((dampCoeffB[4] + dampCoeffB[1] * d3 + dampCoeffB[0] * d4 +
+                                       dampCoeffB[2] * d2 + dampCoeffB[3] * dd) * inv);
+                    d *= k;
+                    float l = VectorLength(d) + this->shakeAccum;
+                    this->shakeAccum = l;
+                    this->hideShip = (l >= this->shakeReference * 0.75f) ? 1 : 0;
+                    cur += *getPosition();
+                    *getPosition() = cur;
                 }
-            } else {                               // locked: snap to position
-                self->hideShip = 0;
-                Vector pos;
-                TFC_u_MatrixGetPosition(&pos, (const Matrix *)mat);
-                *(Vector *)(((char *)&self->targetX)) = pos;
-                self->targetX = self->targetX - self->posX;
-                self->targetY = self->targetY - self->posY;
-                self->targetZ = self->targetZ - self->posZ;
+
+                *getUp() = MatrixGetUp(m);
+                *getTargetPos() = MatrixGetPosition(m);
             }
-        } else {                                   // first-person / look-at cam
-            Matrix fp;
-            if (self->useTargetsUpVec == 0) {
-                TFC_u_MatrixIdentity(&fp, (const Matrix *)mat);
-            } else {
-                TFC_u_memcpy(&fp, mat, 0x3c);
-            }
-            Vector up, pos;
-            TFC_u_MatrixGetUp(&up, &fp);
-            *(Vector *)(((char *)&self->upX)) = up;
-            TFC_u_MatrixGetPosition(&pos, &fp);
-            *(Vector *)(((char *)&self->targetX)) = pos;
-            self->hideShip = 0;
+        } else {
+            // Locked: snap to the target, store the delta toward the camera.
+            this->hideShip = 0;
+            *getTargetPos() = MatrixGetPosition(m);
+            this->targetX -= this->posX;
+            this->targetY -= this->posY;
+            this->targetZ -= this->posZ;
         }
-
-        // first-person matrix sync
-        if (self->firstPerson != 0) {
-            Matrix fpm;
-            Vector v;
-            TFC_u_memcpy(&fpm, &self->firstPersonMatrix, 0x3c);
-            TFC_u_MatrixGetPosition(&v, &fpm);
-            *(Vector *)(((char *)&self->posX)) = v;
-            TFC_u_MatrixGetUp(&v, &fpm);
-            *(Vector *)(((char *)&self->upX)) = v;
-            TFC_u_MatrixGetDir(&v, &fpm);
-            v -= *(const Vector *)(((char *)&self->posX));
-            *(Vector *)(((char *)&self->targetX)) = v;
-        }
-
-        // rumble
-        if (self->rumbleActive != 0) {
-            int t = self->rumbleTimer - dt;
-            self->rumbleTimer = t;
-            if (t < 1)
-                self->rumbleActive = 0;
-            float scale = (self->firstPerson == 0) ? 1.0f : g_TFC_u_rumbleScale;
-            void *rng = *g_TFC_u_rng;
-            int amt = self->rumbleStrength;
-            float r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->posX = self->posX + scale * r;
-            amt = self->rumbleStrength;
-            r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->posY = self->posY + scale * r;
-            amt = self->rumbleStrength;
-            r = (float)(TFC_u_rand(rng, amt << 1) - amt);
-            self->posZ = self->posZ + scale * r;
-        }
-
-        // screen-shake
-        float shake = self->shakeAmount;
-        if (shake > 0.0f) {
-            int freq = self->shakeFrequency;
-            float scale = (self->firstPerson == 0) ? 1.0f : g_TFC_u_shakeScale;
-            void *rng = *g_TFC_u_rng;
-            int b = freq << 1;
-            float r = (float)(TFC_u_rand(rng, b) - freq);
-            self->targetX = self->targetX + scale * shake * r;
-            r = (float)(TFC_u_rand(rng, b) - freq);
-            self->targetY = self->targetY + scale * shake * r;
-            r = (float)(TFC_u_rand(rng, b) - freq);
-            self->targetZ = self->targetZ + scale * shake * r;
-        }
-
-        // build look-at + roll, push to camera, store local matrix
-        Matrix look;
-        TFC_u_MatrixGetLookAt(&look, (const Vector *)((char *)&self->posX), (const Vector *)((char *)&self->targetX),
-                              (const Vector *)((char *)&self->upX));
-        Matrix lm;
-        lm = look;
-        Matrix roll;
-        TFC_u_MatrixSetRotation3(&roll, self->roll, 0.0f, 0.0f);
-        AbyssEngine::AEMath::MatrixMultiply(lm, roll);
-        TFC_u_CameraSetLocal(*g_TFC_u_camera, *(Matrix **)p);
-        *(Matrix *)(((char *)&self->localMatrix)) = lm;
+    } else {
+        // First-person / look-at camera.
+        Matrix fp = m;
+        if (this->useTargetsUpVec == 0)
+            fp.initIdentity();
+        *getUp() = MatrixGetUp(fp);
+        *getTargetPos() = MatrixGetPosition(fp);
+        this->hideShip = 0;
     }
 
-}
+    // First-person matrix sync.
+    if (this->firstPerson != 0) {
+        Matrix fpm = this->firstPersonMatrix;
+        *getPosition() = MatrixGetPosition(fpm);
+        *getUp() = MatrixGetUp(fpm);
+        Vector dir = MatrixGetDir(fpm);
+        dir -= *getPosition();
+        *getTargetPos() = dir;
+    }
 
-// =====================================================================
-// Real member-method wrappers. The recovered semantics live in the TFC_*
-// free functions above (named for the verify harness's substring match);
-// these special members and accessors expose them as the class API.
-// =====================================================================
+    // Rumble.
+    if (this->rumbleActive != 0) {
+        this->rumbleTimer -= dt;
+        if (this->rumbleTimer < 1)
+            this->rumbleActive = 0;
+        float scale = (this->firstPerson == 0) ? 1.0f : g_TFC_rumbleScale;
+        int amt = this->rumbleStrength;
+        this->posX += scale * (float)(AERandom(g_cameraRng, amt << 1) - amt);
+        this->posY += scale * (float)(AERandom(g_cameraRng, amt << 1) - amt);
+        this->posZ += scale * (float)(AERandom(g_cameraRng, amt << 1) - amt);
+    }
 
-// TargetFollowCamera::TargetFollowCamera(uint id, AEGeometry* target,
-//                                        Vector camOffset, Vector targetOffset)
-TargetFollowCamera::TargetFollowCamera(unsigned id, void *target,
-                                       Vector camOffset, Vector targetOffset) {
-    TFC_ctor(this, id, target, camOffset, targetOffset);
-}
+    // Screen-shake.
+    float shake = this->shakeAmount;
+    if (shake > 0.0f) {
+        int freq = this->shakeFrequency;
+        float scale = (this->firstPerson == 0) ? 1.0f : g_TFC_shakeScale;
+        int b = freq << 1;
+        this->targetX += scale * shake * (float)(AERandom(g_cameraRng, b) - freq);
+        this->targetY += scale * shake * (float)(AERandom(g_cameraRng, b) - freq);
+        this->targetZ += scale * shake * (float)(AERandom(g_cameraRng, b) - freq);
+    }
 
-// TargetFollowCamera::~TargetFollowCamera() -- trivial; the object owns no heap state.
-TargetFollowCamera::~TargetFollowCamera() {
-}
-
-// ---- ABI shims --------------------------------------------------------------
-// MGame/CutScene allocate the camera with a raw operator new and then drive the
-// special members through these extern "C" entry points. The constructor takes
-// the camera id, the followed geometry, and two by-value Vectors; under the
-// soft-float ABI those six float components arrive in core registers, so they
-// reach this shim as ints holding the float bit patterns.
-extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
-                                        int cx, int cy, int cz,
-                                        int tx, int ty, int tz)
-{
-    union { int i; float f; } camX{cx}, camY{cy}, camZ{cz},
-                              tgtX{tx}, tgtY{ty}, tgtZ{tz};
-    Vector camOffset    = { camX.f, camY.f, camZ.f };
-    Vector targetOffset = { tgtX.f, tgtY.f, tgtZ.f };
-    new (c) TargetFollowCamera((unsigned)cam, (void *)(intptr_t)target,
-                               camOffset, targetOffset);
-}
-
-// Non-deleting destructor: returns the object so the caller can operator delete it.
-extern "C" void *TargetFollowCamera_dtor(TargetFollowCamera *c)
-{
-    c->~TargetFollowCamera();
-    return c;
-}
-
-// TargetFollowCamera::getPosition() -- returns the live position vector (this+0x8).
-Vector *TargetFollowCamera::getPosition() {
-    return (Vector *)&this->posX;
-}
-
-// TargetFollowCamera::setTarget(AEGeometry*) -- store the followed geometry (this+0x4).
-void TargetFollowCamera::setTarget(void *target) {
-    this->target = target;
-}
-
-// TargetFollowCamera::setCamOffset(Vector) -- copy offset to this+0x38, cache its length as zoom.
-void TargetFollowCamera::setCamOffset(Vector *offset) {
-    TFC_setCamOffset(this, offset);
-}
-
-// TargetFollowCamera::setTargetOffset(Vector) -- copy offset to this+0x2c.
-void TargetFollowCamera::setTargetOffset(Vector *offset) {
-    TFC_setTargetOffset(this, offset);
-}
-
-// TargetFollowCamera::setLookAtCam(bool) -- flag at this+0x45.
-void TargetFollowCamera::setLookAtCam(bool enabled) {
-    this->lookAtCam = enabled;
-}
-
-// TargetFollowCamera::setActive(bool) -- flag at this+0x46.
-void TargetFollowCamera::setActive(bool enabled) {
-    this->active = enabled;
-}
-
-// TargetFollowCamera::useTargetsUpVector(bool) -- flag at this+0x10c.
-void TargetFollowCamera::useTargetsUpVector(bool enabled) {
-    this->useTargetsUpVec = enabled;
-}
-
-// TargetFollowCamera::setRumblePercentage(float, int) -- shake amount/frequency at 0x110/0x114.
-void TargetFollowCamera::setRumblePercentage(float pct, int duration) {
-    this->shakeAmount = pct;
-    this->shakeFrequency = duration;
-}
-
-// TargetFollowCamera::translateNoUpdate(float, float, float) -- shift position + target.
-void TargetFollowCamera::translateNoUpdate(float dx, float dy, float dz) {
-    this->posX = this->posX + dx;
-    this->posY = this->posY + dy;
-    this->posZ = this->posZ + dz;
-    this->targetX = this->targetX + dx;
-    this->targetY = this->targetY + dy;
-    this->targetZ = this->targetZ + dz;
-}
-
-// TargetFollowCamera::resetShipHandling() -- restore default damping then refresh.
-void TargetFollowCamera::resetShipHandling() {
-    TFC_resetShipHandling(this);
-}
-
-// TargetFollowCamera::update(int dt) -- advance the chase camera one frame.
-void TargetFollowCamera::update(int dt) {
-    TFC_update(this, dt);
+    // Build the look-at matrix, roll it, push to the active camera, store local.
+    Matrix look = AbyssEngine::AEMath::MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
+    Matrix roll;
+    MatrixSetRotation(roll, this->roll, 0.0f, 0.0f);
+    MatrixMultiply(look, roll);
+    g_canvas->CameraSetLocal(g_currentCamera, look);
+    this->localMatrix = look;
 }

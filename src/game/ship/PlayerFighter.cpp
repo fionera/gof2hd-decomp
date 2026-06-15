@@ -1,6 +1,5 @@
 #include "gof2/game/ship/PlayerFighter.h"
 #include "gof2/game/mission/Mission.h"
-#include "gof2/externs.h"
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/game/mission/Generator.h"
 #include "gof2/game/world/Level.h"
@@ -12,6 +11,10 @@
 #include "gof2/game/world/Route.h"
 #include "gof2/game/world/Standing.h"
 #include "gof2/engine/math/Transform.h"
+#include "gof2/platform/libc.h"
+
+// ::PaintCanvas global render-target singleton (defined in src/PaintCanvas.cpp).
+extern void *g_PaintCanvas;
 
 // KIPlayer::setShipGroup(AEGeometry*, int, bool) — the real inherited base method
 // (resolved @0x73114). KIPlayer.h currently declares a stale setShipGroup(int,int,int)
@@ -35,27 +38,9 @@ public:
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
 
-// The terminal tail-calls in this TU's methods were long-branch GOT veneers into
-// inherited / engine base implementations. They are resolved to the real targets
-// (verified in android_2.0.16_libgof2hdaa.so, Ghidra image base 0x10000):
-//
-//   PlayerFighter::setShipGroup        -> KIPlayer::setShipGroup(AEGeometry*,int,bool) @0x73114
-//   PlayerFighter::awake               -> AEGeometry::setVisible(bool)                 @0x72d24
-//   PlayerFighter::setExhaustVisible   -> AbyssEngine::Transform::SetVisible(bool)     @0x7249c
-//   PlayerFighter::render              -> AEGeometry::render()                         @0x72238
-//   PlayerFighter::setBV               -> ArrayAdd<BoundingVolume*>(item, Array<>&)    @0x75964
-//   PlayerFighter::setMissionCrate     -> ArrayAdd<int>(item, Array<int>&)             @0x7021c
-//   PlayerFighter::~PlayerFighter      -> KIPlayer::~KIPlayer()                        @0x732b8
-//   PlayerFighter::setCloakingPossible -> PlayerFighter::handleCloaking()              @0x757e4
-//
-// KIPlayer::setShipGroup is declared in KIPlayer.h with a stale (int,int,int)
-// signature; the real symbol is setShipGroup(AEGeometry*,int,bool). We call the
-// real mangled entry directly here (declared below) until KIPlayer.h is corrected.
 extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
 extern "C" void *EaseInOutMatrix_dtor(void *p);
-void *_ZN13PlayerFighterD1Ev(PlayerFighter *self);
-extern "C" void *__aeabi_memcpy(void *dst, const void *src, unsigned n);
 extern "C" void AEMath_Matrix_ctor(void *m);
 // No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and
 // Generator.h declares the (self,bound) overload, so this distinct shim avoids the
@@ -106,11 +91,10 @@ void PlayerFighter::setAIDisabled(bool v) {
     this->aiDisabled = v;
 }
 
-struct AEGeometry;
 
-// PlayerFighter::setShipGroup is a pure thunk that tail-jumps to the inherited
-// KIPlayer::setShipGroup(AEGeometry*, int, bool) (@0x73114). Modeled as a forward
-// to the real base method.
+
+// Forwards to the inherited KIPlayer::setShipGroup(AEGeometry*, int, bool). Bound to the
+// mangled symbol directly because KIPlayer.h still declares a stale (int,int,int) overload.
 void PlayerFighter::setShipGroup(AEGeometry *geom, int group, bool flag)
 {
     _ZN8KIPlayer12setShipGroupEP10AEGeometryib(this, geom, group, flag);
@@ -129,7 +113,6 @@ void PlayerFighter::awake() {
     return ((AEGeometry *)(intptr_t)geom)->setVisible(true);
 }
 
-struct BoundingVolume;
 
 void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
     this->boundingVolumes = v;
@@ -150,7 +133,6 @@ void PlayerFighter::setCloakingPossible(bool v) {
     }
 }
 
-struct Trail;
 
 void PlayerFighter::removeTrail() {
     void *t = this->trail;
@@ -160,57 +142,32 @@ void PlayerFighter::removeTrail() {
     this->trail = 0;
 }
 
-// PlayerFighter complete-object destructor (D1). Returns this. Sets the vtable, destroys the
-// owned members, then tail-calls the base (Fighter/Player) destructor.
-extern "C" char PlayerFighter_vtable;   // vtable symbol base
-
-void *_ZN13PlayerFighterD1Ev(PlayerFighter *self)
-{
-    *(void **)self = &PlayerFighter_vtable + 8;
-
-    void *r = self->route;
-    if (r != 0) do { Route *_rt = (Route *)(r); _rt->~Route(); ::operator delete(_rt); } while (0);
-    self->route = 0;
-
-    if (self->boundingVolumes != 0) {
-        for (auto *e : *self->boundingVolumes) delete e;
-        self->boundingVolumes->clear();
-        delete self->boundingVolumes;
-    }
-    self->boundingVolumes = 0;
-
-    void *t = self->trail;
-    if (t != 0) ::operator delete(Trail_dtor(t));
-    self->trail = 0;
-
-    void *e = self->explosion;
-    if (e != 0) ::operator delete(Explosion_dtor(e));
-    self->explosion = 0;
-
-    void *m = self->easeMatrix;
-    if (m != 0) ::operator delete(EaseInOutMatrix_dtor(m));
-    self->easeMatrix = 0;
-
-    // Chain to the inherited base destructor (KIPlayer::~KIPlayer, @0x732b8), then
-    // return this (the original veneer tail-returned the receiver).
-    ((KIPlayer *)self)->~KIPlayer();
-    return self;
-}
-
-// PlayerFighter deleting destructor (D0): run the complete-object dtor, then tail-call delete.
-
-void _ZN13PlayerFighterD0Ev(PlayerFighter *self)
-{
-    return ::operator delete(_ZN13PlayerFighterD1Ev(self));
-}
-
-// PlayerFighter::~PlayerFighter() — real destructor. Resets the vtable to the
-// PlayerFighter base, releases the owned route, bounding-volume array, trail,
-// explosion and ease-in/out matrix, then chains to the Fighter/Player base
-// destructor.
+// Releases the owned route, bounding-volume array, trail, explosion and ease-in/out
+// matrix. The KIPlayer base destructor is chained automatically.
 PlayerFighter::~PlayerFighter()
 {
-    _ZN13PlayerFighterD1Ev(this);
+    if (this->route != 0) {
+        Route *rt = (Route *)this->route;
+        rt->~Route();
+        ::operator delete(rt);
+    }
+    this->route = 0;
+
+    if (this->boundingVolumes != 0) {
+        for (auto *e : *this->boundingVolumes) delete e;
+        this->boundingVolumes->clear();
+        delete this->boundingVolumes;
+    }
+    this->boundingVolumes = 0;
+
+    if (this->trail != 0) ::operator delete(Trail_dtor(this->trail));
+    this->trail = 0;
+
+    if (this->explosion != 0) ::operator delete(Explosion_dtor(this->explosion));
+    this->explosion = 0;
+
+    if (this->easeMatrix != 0) ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
+    this->easeMatrix = 0;
 }
 
 uint8_t PlayerFighter::hasCrateCaptured() {
@@ -237,7 +194,6 @@ uint8_t PlayerFighter::hasCrateLost() {
     return this->crateLost;
 }
 
-struct Level;
 // Three function pointers fetched once from hidden PC-relative globals (each a ptr-to-fnptr).
 extern void *const gSL_f1 __attribute__((visibility("hidden")));
 extern void *const gSL_f2 __attribute__((visibility("hidden")));
@@ -277,18 +233,17 @@ void PlayerFighter::setLevel(Level *lvl) {
 }
 
 extern void *const gPFC_guard __attribute__((visibility("hidden")));
-extern const int gPFC_vtable __attribute__((visibility("hidden")));      // DAT_000ec6a8 (vptr base)
 extern void *const gPFC_rng __attribute__((visibility("hidden")));
 extern int *const gPFC_sharedRoute __attribute__((visibility("hidden")));
 extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
 
-// PlayerFighter::PlayerFighter(int p1, int wingmanCmd, Player*, AEGeometry*, float, float, float, bool)
-void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float a, float b, float c, int flag) {
+PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *geom,
+                             float x, float y, float z, int flag)
+    : KIPlayer(faction, wingmanCmd, (Player *)player, (AEGeometry *)geom, x, y, z, flag != 0) {
     PlayerFighter *self = this;
     int *guardP = *(int **)gPFC_guard;
     volatile int saved = *guardP;
 
-    *(int *)self = gPFC_vtable + 8;
     self->field_0x200 = 0;
     self->field_0x204 = 0;
     self->field_0x208 = 0;
@@ -350,7 +305,7 @@ void PlayerFighter::ctor(int p1, int wingmanCmd, void *player, void *geom, float
     int *shared = gPFC_sharedRoute;
     if (*shared == 0) {
         int defPts[12];
-        __aeabi_memcpy(defPts, &gPFC_defaultRoute, 0x30);
+        memcpy(defPts, &gPFC_defaultRoute, 0x30);
         void *sr = ::operator new(0x18);
         new (sr) Route(defPts, 0xc);
         *shared = (int)(intptr_t)sr;
@@ -543,7 +498,7 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     ((AEGeometry *)(intptr_t)this->geometry)->setPosition(0.0f, 0.0f, 0.0f);  // forwards x,y,z via regs
     this->workingPosition = *(Vector *)stackVec;
     if (this->trail != 0) {
-        ((Trail *)(this->trail))->reset(this->workingPosition);
+        ((AbyssEngine::Trail *)(this->trail))->reset(this->workingPosition);
     }
     int m = (int)(intptr_t)&((AEGeometry *)(intptr_t)this->geometry)->getMatrix();
     AEMath_MatrixAssign((char *)this->player + 4, (void *)m);
@@ -690,7 +645,6 @@ int PlayerFighter::collide(float x, float y, float z) {
     return 0;
 }
 
-struct BoundingVolume;
 
 void PlayerFighter::setBV_b(BoundingVolume *bv) {
     Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
@@ -699,7 +653,6 @@ void PlayerFighter::setBV_b(BoundingVolume *bv) {
     ArrayAdd<BoundingVolume *>(bv, *a);
 }
 
-struct KIPlayer;
 
 void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
     int saved = this->field_0xe4;
@@ -800,7 +753,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     float dir[3];
     AEMath_VectorSub(dir, pos, pos2);
     float norm[3];
-    AbyssEngine::AEMath::VectorNormalize(norm, (Vector *)dir);
+    AbyssEngine::AEMath::VectorNormalize((Vector *)norm, (Vector *)dir);
     this->pushNormal = *(Vector *)norm;
 
     RngFn rng = (RngFn)gIP_rngFn;
@@ -810,7 +763,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     float rz = VectorSignedToFloat(rng(*rngObj, 200) - 100, 0);
     float rvec[3] = {rx, ry, rz};
     float rnorm[3];
-    AbyssEngine::AEMath::VectorNormalize(rnorm, (Vector *)rvec);
+    AbyssEngine::AEMath::VectorNormalize((Vector *)rnorm, (Vector *)rvec);
     float scaled[3];
     AEMath_VectorScale(scaled, (float)strength, rnorm);
     this->pushImpulse = *(Vector *)scaled;
@@ -876,13 +829,13 @@ void PlayerFighter::render() {
             unsigned char tmp[60];
             unsigned id = *idp;
             void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
-            __aeabi_memcpy(tmp, src, 0x3c);
+            memcpy(tmp, src, 0x3c);
             ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
             ((AEGeometry *)(0))->render();
             ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
         }
         if (this->trail != 0) {
-            ((Trail *)(0))->render();
+            ((AbyssEngine::Trail *)(0))->render();
         }
         goto done;
     }
@@ -890,7 +843,7 @@ void PlayerFighter::render() {
         unsigned char tmp[60];
         unsigned id = *idp;
         void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
-        __aeabi_memcpy(tmp, src, 0x3c);
+        memcpy(tmp, src, 0x3c);
         ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
         ((AEGeometry *)(0))->render();
         ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
@@ -900,7 +853,6 @@ done:
 }
 
 extern "C" void AEMath_MatrixMul(void *out, void *m);          // operator*(out, m)
-extern "C" float l2f(long long v);                              // __aeabi_l2f
 // Vector scale helper used 3x: out = vec * scalar.
 
 extern void *const gPush_guard __attribute__((visibility("hidden")));
@@ -934,7 +886,7 @@ void PlayerFighter::push(int dt) {
             lo = this->deltaTime;
             hi = this->deltaTimeHi;
         }
-        float speed = l2f(((long long)hi << 32) | (unsigned)lo);
+        float speed = __aeabi_l2f(((long long)hi << 32) | (unsigned)lo);
         void *geom = (void *)(intptr_t)this->geometry;
         float ftotal2 = VectorSignedToFloat(this->pushDuration, 0);
 
@@ -1118,15 +1070,10 @@ void PlayerFighter::handleCloaking() {
 // list (cleared for wingman commands 9/10, regenerated otherwise).
 void PlayerFighter::revive()
 {
-
-    int enemy = UC((void *)(intptr_t)(this->player), 0xe0);
+    int enemy = *(uint8_t *)((char *)(intptr_t)this->player + 0xe0);
     ((Player *)(this->player))->reset();
     if (enemy != 0) {
         ((Player *)(this->player))->turnEnemy();
-    }
-    {
-        String s;
-        s.ctor();
     }
     this->field_0x78 = 0;
     this->state = 1;

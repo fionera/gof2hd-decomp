@@ -1,52 +1,28 @@
 #ifndef GOF2_PENDINGPRODUCT_H
 #define GOF2_PENDINGPRODUCT_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- PendingProduct (Android libgof2hdaa.so, armv7 Thumb).
-// Top-level class (not namespaced). It begins with an AbyssEngine::String subobject
-// (the station name) at +0x00, followed by scalar fields:
-//   +0x00  String  stationName
-//   +0x0c  int     stationIndex
-//   +0x10  int     quantity
-//   +0x14  int     blueprintIndex
 
-struct PendingProduct;
-struct BluePrint;
+class BluePrint;
 
-extern "C" {
-
-// BluePrint accessors used by the ctor.
-int BluePrint_getIndex(BluePrint *bp);
-void BluePrint_getStationName(String *out, BluePrint *bp);
-int BluePrint_getStationIndex(BluePrint *bp);
-int BluePrint_getQuantity(BluePrint *bp);
-
-    // ---- methods (converted from free functions) ----
-    PendingProduct * ctor_BluePrint(BluePrint *bp);
-    PendingProduct * ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity);
-    void dtor();
-}
-
+// Galaxy on Fire 2 -- a pending item-production order.
+// Begins with the embedded station-name String, followed by the order's scalar
+// fields. Created either from a BluePrint or directly from saved field values.
 class PendingProduct {
 public:
-    String stationName;                   // +0x0  station name
-    int stationIndex;                      // +0xc  stationIndex
-    int quantity;                     // +0x10 quantity
-    int blueprintIndex;                     // +0x14 blueprintIndex
+    String stationName;     // station the product is being built at
+    int    stationIndex;    // index of that station
+    int    quantity;        // number of units ordered
+    int    blueprintIndex;  // produced item / blueprint index
 
-    // ---- methods (converted from free functions) ----
-    PendingProduct * ctor_BluePrint(BluePrint *bp);
-    PendingProduct * ctor_fields(int blueprintIndex, const String *stationName, int stationIndex, int quantity);
-    void dtor();
+    explicit PendingProduct(BluePrint *bp);
+    PendingProduct(int blueprintIndex, const String *stationName,
+                   int stationIndex, int quantity);
 
-    // Append this pending product to the player's pending-product list. This is the
-    // monomorphised Array<PendingProduct*>::add helper: it grows the backing store by
-    // one and stores this element pointer at the new tail.
+    // Append this pending product to the player's pending-product list.
     void add(Array<PendingProduct*> &list);
 
-    // Heap-allocating factory: operator new(sizeof(PendingProduct)) followed by the
-    // (blueprintIndex, stationName, stationIndex, quantity) field constructor. Used by
-    // the save-game reader when materialising the pending-product list off disk.
+    // Heap-allocating factory used by the save-game reader when materialising the
+    // pending-product list off disk.
     static PendingProduct *make(int blueprintIndex, const String *stationName,
                                 int stationIndex, int quantity);
 };

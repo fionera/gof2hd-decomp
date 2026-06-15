@@ -1,46 +1,23 @@
 #ifndef GOF2_SYSTEMPATHFINDER_H
 #define GOF2_SYSTEMPATHFINDER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-struct SolarSystem;
-struct Status;
-struct SystemPathFinder;
+#include "gof2/engine/core/Node.h"
+#include "gof2/game/world/SolarSystem.h"
+#include "gof2/game/mission/Status.h"
 
-struct Node {
-    Array<Node *> *field_0x0;   // +0x00  children / outgoing edges
-    Node *field_0x4;            // +0x04  parent link (path back-pointer)
-    int field_0x8;              // +0x08  system index value
-    Node(int index);
-};
-
-template <class T> void ArrayAdd(T item, Array<T> &array);
-template <class T> void ArrayRemove(T item, Array<T> &array);
-template <class T> void ArrayRelease(Array<T> &array);
-template <class T> void ArrayReleaseClasses(Array<T> &array);
-template <class T> void ArraySetLength(uint32_t length, Array<T> &array);
-
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-
-struct SolarSystem {
-    int getIndex();
-    Array<int> *getRoutes();
-};
-
-struct Status {
-    Array<uint8_t> *getSystemVisibilities();
-};
-
+// The persistent player/game state used by getSystemPath() to query which
+// systems are currently visible. Resolved through the engine's global Status
+// singleton holder.
 extern "C" __attribute__((visibility("hidden"))) Status **volatile
     g_SystemPathFinder_status;
 
+// Galaxy on Fire 2 -- breadth-first/A* search over the galaxy jump graph.
+//
+// SystemPathFinder is stateless: every search() builds and tears down its
+// open/closed node sets locally, so both the constructor and destructor are
+// trivial.
 class SystemPathFinder {
 public:
-    void *_opaque;  // no offset accesses observed
-
-    // The path finder keeps no persistent state of its own — every search()
-    // builds and tears down its open/closed node sets locally — so both the
-    // constructor and destructor are trivial.
     SystemPathFinder();
     ~SystemPathFinder();
 

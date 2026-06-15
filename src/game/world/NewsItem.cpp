@@ -1,46 +1,31 @@
 #include "gof2/game/world/NewsItem.h"
 
-// NewsItem::clone()
-//   Deep-copies the byte buffer (length = this->length, sign-corrected) and allocates a new
-//   0x1c-byte NewsItem with the copied fields.
-void *NewsItem::clone()
+NewsItem::NewsItem(int id, bool flag, void *data, int length, int field_0x10, int field_0x14)
 {
-    int len = this->length;
-    // operator new[]( len | (len >> 31) ) -- the (n | n>>31) idiom from the target.
-    char *buf = (char *)operator new[]((uint32_t)(len | (len >> 31)));
-    for (int i = 0; i < len; i = i + 1) {
-        buf[i] = ((char *)this->data)[i];
-    }
-    NewsItem *out = (NewsItem *)operator new(0x1c);
-    int f10 = this->field_0x10;
-    int f14 = this->field_0x14;
-    int id = this->id;
-    out->flag = this->flag;
-    out->id = id;
-    out->data = buf;
-    out->length = len;
-    out->field_0x10 = f10;
-    out->field_0x14 = f14;
-    out->field_0x18 = 0;
-    return out;
-}
-
-// NewsItem::NewsItem(int, bool, bool*, int, int, int)
-NewsItem::NewsItem(int p1, bool p2, void *p3, int p4, int p5, int p6)
-{
-    this->flag = (byte)p2;
-    this->id = p1;
-    this->data = p3;
-    this->length = p4;
-    this->field_0x10 = p5;
-    this->field_0x14 = p6;
+    this->flag = (uint8_t)flag;
+    this->id = id;
+    this->data = data;
+    this->length = length;
+    this->field_0x10 = field_0x10;
+    this->field_0x14 = field_0x14;
     this->field_0x18 = 0;
 }
 
-// NewsItem::~NewsItem()
-//   delete[] this->data; this->data = 0;
 NewsItem::~NewsItem()
 {
-    operator delete[](this->data);
-    this->data = 0;
+    delete[] (uint8_t *)this->data;
+    this->data = nullptr;
+}
+
+// Deep-copies the byte buffer and the fields into a freshly allocated NewsItem.
+NewsItem *NewsItem::clone()
+{
+    int len = this->length;
+    uint8_t *buf = new uint8_t[len];
+    for (int i = 0; i < len; i = i + 1) {
+        buf[i] = ((uint8_t *)this->data)[i];
+    }
+    NewsItem *out = new NewsItem(this->id, this->flag != 0, buf, len,
+                                this->field_0x10, this->field_0x14);
+    return out;
 }

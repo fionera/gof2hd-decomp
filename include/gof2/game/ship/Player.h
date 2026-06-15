@@ -1,88 +1,86 @@
 #ifndef GOF2_PLAYER_H
 #define GOF2_PLAYER_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
-// Galaxy on Fire 2 — Player class layout (Android libgof2hdaa.so, armv7 Thumb).
-// Field offsets recovered from the per-method target disassembly.
 
-struct Gun;
-struct KIPlayer;
-// Vector and Matrix are AEMath 3D types brought in via common.h (using AEMath::Vector/Matrix).
-// Do NOT forward-declare them here as plain structs — that conflicts with the using-declarations.
+// Galaxy on Fire 2 -- Player: a controllable/AI ship instance (hull, shields,
+// armor, EMP, guns and the engine-sound state). Top-level, no namespace.
+// Vector/Matrix are the AEMath 3D types brought in via common.h.
+
+class Gun;
+class KIPlayer;
 
 class Player {
 public:
-    Array<Array<Gun *> *> *guns;     // 0x00  gun slots (array of arrays of guns)
-    float transform[15];             // 0x04  AEMath::Matrix (this+4), 0x3c bytes -> ends 0x40
-    int32_t radius;                  // 0x40
-    uint16_t field_44;               // 0x44
-    uint8_t pad_46[0x0e];            // 0x46
-    uint16_t field_54;               // 0x54
-    uint8_t pad_56[2];               // 0x56
-    int32_t field_58;                // 0x58  (init -1)
-    uint16_t enemyFlags;             // 0x5c  alwaysEnemy/alwaysFriend low/high byte pair
-    uint8_t field_5e;                // 0x5e
-    uint8_t pad_5f;                  // 0x5f
-    int32_t field_60;                // 0x60
-    int32_t field_64;                // 0x64  (0x67 byte = gamma-damage flag, set in damageGamma)
-    uint16_t field_68;               // 0x68
-    uint8_t pad_6a[2];               // 0x6a
-    int32_t damageDoneByPlayer;      // 0x6c
-    uint8_t playShootSound;          // 0x70
-    uint8_t pad_71[3];               // 0x71
-    Array<Player *> *enemies;        // 0x74
-    int32_t hitpoints;               // 0x78
-    int32_t empPoints;               // 0x7c
-    int32_t maxEmpPoints;            // 0x80
-    int32_t maxHitpoints;            // 0x84
-    float shieldHP;                  // 0x88
-    int32_t armorHP;                 // 0x8c
-    int32_t maxArmorHP;              // 0x90
-    int32_t maxShieldHP;             // 0x94
-    int32_t damageRate;              // 0x98
-    int32_t numPrimaryGuns;          // 0x9c
-    int32_t numSecondaryGuns;        // 0xa0
-    int32_t numTertiaryGuns;         // 0xa4
-    int32_t shieldDamageRate;        // 0xa8
-    int32_t armorDamageRate;         // 0xac
-    int32_t empDamageRate;           // 0xb0
-    int32_t field_b4;                // 0xb4
-    float gammaHP;                   // 0xb8
-    uint8_t pad_bc[4];               // 0xbc
-    uint8_t active;                  // 0xc0
-    uint8_t damaged;                 // 0xc1
-    uint8_t vulnerable;              // 0xc2
-    uint8_t shootingEnabled;         // 0xc3
-    float hitVector[3];              // 0xc4 .. 0xcc
-    KIPlayer *kiPlayer;              // 0xd0
-    float bombForce;                 // 0xd4
-    float empForce;                  // 0xd8
-    uint8_t field_dc;                // 0xdc
-    uint8_t pad_dd[3];               // 0xdd
-    uint8_t turnedEnemy;             // 0xe0
-    uint8_t pad_e1[3];               // 0xe1
-    int32_t empData;                 // 0xe4
-    uint8_t pad_e8[4];               // 0xe8
-    uint8_t alwaysEnemy;             // 0xec
-    uint8_t alwaysFriend;            // 0xed
-    uint8_t neverAttack;             // 0xee
-    uint8_t pad_ef;                  // 0xef
-    void *engineEvent;               // 0xf0  FMOD event handle
-    void *field_f4;                  // 0xf4  engine-sound position vec (init -1)
-    uint8_t field_f8;                // 0xf8
-    uint8_t pad_f9[3];               // 0xf9
-    float position[3];               // 0xfc .. 0x104
+    Array<Array<Gun *> *> *guns;     // gun slots (array of arrays of guns)
+    float transform[15];             // AEMath::Matrix (3x4 row-major)
+    int32_t radius;
+    uint16_t field_44;
+    uint8_t pad_46[0x0e];
+    uint16_t field_54;
+    uint8_t pad_56[2];
+    int32_t field_58;
+    uint16_t enemyFlags;             // alwaysEnemy/alwaysFriend low/high byte pair
+    uint8_t field_5e;
+    uint8_t pad_5f;
+    int32_t field_60;
+    int32_t field_64;                // top byte = gamma-damage flag
+    uint16_t field_68;
+    uint8_t pad_6a[2];
+    int32_t damageDoneByPlayer;
+    uint8_t playShootSound;
+    uint8_t pad_71[3];
+    Array<Player *> *enemies;
+    int32_t hitpoints;
+    int32_t empPoints;
+    int32_t maxEmpPoints;
+    int32_t maxHitpoints;
+    float shieldHP;
+    int32_t armorHP;
+    int32_t maxArmorHP;
+    int32_t maxShieldHP;
+    int32_t damageRate;
+    int32_t numPrimaryGuns;
+    int32_t numSecondaryGuns;
+    int32_t numTertiaryGuns;
+    int32_t shieldDamageRate;
+    int32_t armorDamageRate;
+    int32_t empDamageRate;
+    int32_t field_b4;
+    float gammaHP;
+    uint8_t pad_bc[4];
+    uint8_t active;
+    uint8_t damaged;
+    uint8_t vulnerable;
+    uint8_t shootingEnabled;
+    float hitVector[3];
+    KIPlayer *kiPlayer;
+    float bombForce;
+    float empForce;
+    uint8_t field_dc;
+    uint8_t pad_dd[3];
+    uint8_t turnedEnemy;
+    uint8_t pad_e1[3];
+    int32_t empData;
+    uint8_t pad_e8[4];
+    uint8_t alwaysEnemy;
+    uint8_t alwaysFriend;
+    uint8_t neverAttack;
+    uint8_t pad_ef;
+    void *engineEvent;               // FMOD event handle
+    void *field_f4;                  // engine-sound position vector
+    uint8_t field_f8;
+    uint8_t pad_f9[3];
+    float position[3];
     uint8_t field_108;
     uint8_t pad_109[3];
     int32_t playShootSoundId;
     int32_t field_110;
 
-    ~Player();                       // defined out-of-line in Player.cpp
+    Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary);
+    ~Player();
 
-    // ---- methods (converted from free functions) ----
     int GetEngineEvent();
     void calcWeaponSounds(int count);
-    Player * ctor(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary);
     void damage(int amount);
     void damageEmp(int amount, bool flag);
     void damageShip(int damage);
@@ -115,18 +113,12 @@ public:
     bool isDead();
     void regenerateArmor();
     void regenerateHull();
-    void regenerateShield();            // a2e1a: per-frame +1.0 regen
-    void regenerateShield(float amount); // a2df0: regen by explicit amount (RepairBeam)
+    void regenerateShield();
+    void regenerateShield(float amount);
     void removeAllGuns();
     void resetDamageDoneByPlayer();
     void setActive(bool value);
-    // awake(active): KIPlayer wakes its underlying ship by (de)activating it. The shim
-    // Player_awake(player, 1) resolves through the PLT straight into Player::setActive,
-    // so awake() simply forwards the activation flag.
     void awake(bool active);
-    // setDead(): the ship has been destroyed — drop it out of the active simulation.
-    // The KIPlayer death path (KIPlayer::setDead -> KIPlayer::setActive(false)) resolves
-    // into Player::setActive(false); setDead() is the Player-side entry point for that.
     void setDead();
     void setArmorHP(int value);
     void setBombForce(float value);
@@ -148,14 +140,9 @@ public:
     void shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14);
     int shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22);
     void turnEnemy();
-    // NOTE: 'turnedEnemy' is a data member (field at 0xe0) AND the original code exposes
-    // an accessor of the same name. C++ forbids a member variable and member function sharing
-    // a name, so the redundant accessor (which merely returns the field) is declared out-of-struct
-    // below as a non-member equivalent. The field is load-bearing and kept intact.
     Vector * update(int dt, int doSound);
     void updateDamageRate();
 
-    // ---- additional recovered methods ----
     void pitchAllPrimaryGuns(float pitch);
     void damageHull(int damage);
     void damageShield(int damage);
@@ -184,23 +171,14 @@ public:
     void stopShooting(int slot);
     void stopShooting(int slot, int channel);
     void stopShootSound(int index, int channel);
-    // NOTE: 'playShootSound' is a data member (flag at 0x70); C++ forbids a member function
-    // sharing its name, so the recovered sound-playback method is exposed out-of-struct below
-    // as Player_playShootSound (same pattern as the turnedEnemy accessor).
     void PlayEngineSound(Vector *vec);
     void PauseEngineSound();
     void ResumeEngineSound(bool force);
     void StopEngineSound();
 };
 
-// Non-member equivalent of the 'turnedEnemy' accessor (see NOTE above): C++ forbids a
-// member function sharing a name with the data member at 0xe0, so the accessor that merely
-// returns that field lives out-of-struct here.
+// The original exposes a 'turnedEnemy' accessor, but C++ forbids a member function
+// sharing the name of the 'turnedEnemy' data member, so it lives here as a free helper.
 inline unsigned char Player_turnedEnemy(Player *self) { return self->turnedEnemy; }
 
-// NOTE: the original byte-matching decomp asserted the 32-bit ARM (ILP32) field offsets here
-// (sizeof(Array<Gun*>)==0xc, radius==0x40, hitpoints==0x78, ...). Those invariants only hold on the
-// 4-byte-pointer target; this is the native 64-bit macOS port (8-byte pointers, 24-byte std::vector),
-// so the absolute offsets necessarily differ. Methods access fields by name, so the exact layout no
-// longer needs to match — the target-only static_asserts are intentionally dropped for the 64-bit port.
 #endif

@@ -1,124 +1,41 @@
 #include "gof2/game/weapons/Radar.h"
+#include "gof2/engine/render/PaintCanvas.h"
+#include "gof2/platform/libc.h"
 
-// Layout and Station are not part of this batch; their fields are read by raw byte offset
-// (including their headers triggers a placement-new redefinition against the STL).
-static inline int layout_i32(void *layout, unsigned off) { return *(int *)((char *)layout + off); }
-static inline uint8_t station_u8(void *station, unsigned off) { return *(uint8_t *)((char *)station + off); }
+namespace AbyssEngine {
 
-extern "C" void Radar_SetColor(void *canvas, int color);
-extern "C" int Radar_GetMissionState(void *mission);
-extern "C" int Radar_GetMissionType(void *mission);
-extern "C" void Radar_StringDefault(void *self);
-extern "C" void Radar_MatrixDefault(void *self);
-extern "C" void Radar_ArrayStringCtor(void *self);
-extern "C" void Radar_ArraySetLengthString(int length, void *self);
-extern "C" void Radar_Image2DCreate(void *canvas, int id, void *out);
-extern "C" int Radar_GetImage2DWidth(void *canvas, int image);
-extern "C" int Radar_GetImage2DHeight(void *canvas, int image);
-extern "C" void Radar_DrawImage2D(void *canvas, int image, int x, int y);
-extern "C" void Radar_StringText(void *self, void const *text, bool copy);
-extern "C" void Radar_StringAssign(void *self, void const *rhs);
-extern "C" void Radar_StringDtor(void *self);
-extern "C" void Radar_StringInt(void *self, int value);
-extern "C" void Radar_StringPlus(void *out, void const *lhs, void const *rhs);
-extern "C" void Radar_StringSubString(void *out, void const *self, int start, int count);
-extern "C" int __aeabi_idivmod(int numerator, int denominator);
-extern "C" unsigned __aeabi_uidiv(unsigned numerator, unsigned denominator);
-extern "C" int Radar_GetScreenPosition(AbyssEngine::PaintCanvas *canvas, void const *value, void *screen);
+// Game singletons (defined in the host engine; referenced by pointer here).
+extern PaintCanvas* gPaintCanvas;
+
+// ---- engine-opaque state read by raw byte offset ---------------------------
+// Layout and Station are modelled elsewhere; their fields are read positionally
+// (pulling in their full headers triggers placement-new redefinitions vs the STL).
+static inline int layout_i32(void* layout, unsigned off) { return *(int*)((char*)layout + off); }
+static inline uint8_t station_u8(void* station, unsigned off) { return *(uint8_t*)((char*)station + off); }
+
+// The radar's lock-target, mission and per-frame canvas state live in engine
+// singletons addressed through these slots in the shipped binary.
+extern void* gRadarCanvasForDraw;
+extern void* gRadarMissionSlot;
+extern void* gRadarCanvasSlot;
+extern void* gRadarLayoutSlot;
+extern uint8_t* gRadarDrawCurrentLockFlag;
+
+extern "C" int Radar_GetMissionState(void* mission);
+extern "C" int Radar_GetMissionType(void* mission);
+
+// Planet-dock station lookup goes through the persistent game Status singleton,
+// whose accessors return id-typed views (kept opaque here to avoid the
+// placement-new clash described above).
+extern void* Radar_GetSystemStations();
 
 int Radar::getTurretScopeWidth()
 {
     return this->turretScopeHalfWidth << 1;
 }
 
-Radar::~Radar()
+Radar::Radar(Level* level)
 {
-    Array<KIPlayer *> *players = this->players;
-    if (players != 0) {
-        players->~Array<KIPlayer *>();
-        operator delete(players);
-    }
-    this->players = 0;
-    this->lockLabel.~String();
-}
-
-uint8_t Radar::hasScanner()
-{
-    return this->scannerAvailable;
-}
-
-uint8_t Radar::isPlasmaInRange()
-{
-    return this->plasmaInRange;
-}
-
-bool Radar::stationLocked()
-{
-    void *station = this->lockedStation;
-    if (station != 0) {
-        return station_u8(station, 0x71) != 0;
-    }
-    return false;
-}
-
-void Radar::update(KIPlayer *player)
-{
-    char position[sizeof(AbyssEngine::AEMath::Vector)];
-    typedef void (*GetPosition)(void *, KIPlayer *);
-    void **vtable = *(void ***)player;
-    ((GetPosition)vtable[0x28 / 4])(position, player);
-    update(*(AbyssEngine::AEMath::Vector *)position);
-}
-
-void Radar::unlockAsteroid()
-{
-    this->lockedAsteroid = 0;
-}
-
-int Radar::getPlanetDockIndex()
-{
-    SolarSystem *system = gStatus->getSystem();
-    Array<Station *> *stations = system->getStations();
-    return (int)(intptr_t)stations->data()[this->planetDockIndex];
-}
-
-extern void *gRadarCanvasForDraw;
-extern void *gRadarMissionSlot;
-
-long long Radar::draw(Player *, Hud *, int mode)
-{
-    char scratch[0x120];
-    (void)scratch;
-
-    if (this->enabled == 0) {
-        return 0;
-    }
-
-    this->drawMode = 0;
-    this->plasmaInRange = 0;
-
-    void *canvas = *(void **)gRadarCanvasForDraw;
-    Radar_SetColor(canvas, -1);
-
-    void *mission = *(void **)gRadarMissionSlot;
-    int missionState = Radar_GetMissionState(mission);
-    if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
-        this->drawMode = (uint8_t)mode;
-    }
-
-    return 0;
-}
-
-extern void *gRadarCanvasSlot;
-extern void *gRadarLayoutSlot;
-
-Radar::Radar(Level *level)
-{
-    char text6c[12];
-    char local60[12];
-    char text54[12];
-    char local48[12];
-
     this->field_0x174 = 0;
     this->field_0x178 = 0;
     this->field_0x17c = 0;
@@ -132,8 +49,7 @@ Radar::Radar(Level *level)
     this->radarPosZ = 0;
     this->field_0x160 = 0;
 
-    Radar_StringDefault(&this->lockLabel);
-    Radar_MatrixDefault(&this->transform);
+    this->transform.initIdentity();
 
     this->field_0x4 = 0;
     this->field_0x8 = 0;
@@ -158,7 +74,7 @@ Radar::Radar(Level *level)
     this->field_0x1a8 = 0;
     this->level = level;
 
-    void *layout = *(void **)gRadarLayoutSlot;
+    void* layout = *(void**)gRadarLayoutSlot;
     if (layout != 0) {
         int width = layout_i32(layout, 0xac);
         int height = layout_i32(layout, 0xa8);
@@ -170,11 +86,12 @@ Radar::Radar(Level *level)
         this->originY = layout_i32(layout, 0xa4);
     }
 
-    void *canvas = *(void **)gRadarCanvasSlot;
-    Radar_Image2DCreate(canvas, 0x4c7, &this->radarImage);
-    int image = this->radarImage;
-    int imageWidth = Radar_GetImage2DWidth(canvas, image);
-    int imageHeight = Radar_GetImage2DHeight(canvas, image);
+    PaintCanvas* canvas = *(PaintCanvas**)gRadarCanvasSlot;
+    unsigned int image = 0;
+    canvas->Image2DCreate(0x4c7, &image);
+    this->radarImage = (int)image;
+    int imageWidth = canvas->GetImage2DWidth(image);
+    int imageHeight = canvas->GetImage2DHeight(image);
     this->imageWidth = imageWidth;
     this->imageHeight = imageHeight;
     this->imageWidthSq = imageWidth * imageWidth;
@@ -182,19 +99,106 @@ Radar::Radar(Level *level)
     this->weightX = 1.0f / (float)(imageWidth * imageWidth);
     this->weightY = 1.0f / (float)(imageHeight * imageHeight);
 
-    void *strings = ::operator new(12);
-    Radar_ArrayStringCtor(strings);
+    Array<String*>* strings = new Array<String*>();
+    ArraySetLength<String*>(4, *strings);
     this->labelStrings = strings;
-    Radar_ArraySetLengthString(4, strings);
-
-    (void)text6c;
-    (void)local60;
-    (void)text54;
-    (void)local48;
 }
 
-AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
-    int y, int x, AbyssEngine::AEMath::Vector value)
+Radar::~Radar()
+{
+    Array<KIPlayer*>* players = this->players;
+    if (players != 0) {
+        delete players;
+    }
+    this->players = 0;
+    this->lockLabel.~String();
+}
+
+uint8_t Radar::hasScanner()
+{
+    return this->scannerAvailable;
+}
+
+uint8_t Radar::isPlasmaInRange()
+{
+    return this->plasmaInRange;
+}
+
+bool Radar::stationLocked()
+{
+    void* station = this->lockedStation;
+    if (station != 0) {
+        return station_u8(station, 0x71) != 0;
+    }
+    return false;
+}
+
+void Radar::unlockAsteroid()
+{
+    this->lockedAsteroid = 0;
+}
+
+int Radar::getPlanetDockIndex()
+{
+    void* stations = Radar_GetSystemStations();
+    return ((int*)stations)[this->planetDockIndex];
+}
+
+void Radar::update(KIPlayer* player)
+{
+    typedef AEMath::Vector (*GetPosition)(KIPlayer*);
+    void** vtable = *(void***)player;
+    AEMath::Vector position = ((GetPosition)vtable[0x28 / 4])(player);
+    update(position);
+}
+
+void Radar::update(AEMath::Vector value)
+{
+    AEMath::Vector transformed = AEMath::MatrixTransformVector(this->transform, value);
+    AEMath::Vector* current = (AEMath::Vector*)&this->radarPosX;
+    *current = transformed;
+
+    this->radarPosY = -this->radarPosY;
+    this->radarPosZ = -this->radarPosZ;
+
+    AEMath::Vector screen = value;
+    int visible = (gPaintCanvas->GetScreenPosition(&value, &screen) != 0);
+    this->onScreen = (uint8_t)visible;
+
+    int screenX = (int)screen.x;
+    this->screenX = screenX;
+    int screenY = (int)screen.y;
+    this->screenY = screenY;
+
+    if (visible == 0) {
+        *current = this->elipsoidIntersect(screenX, screenY, *current);
+        this->screenX = (int)current->x;
+        this->screenY = (int)current->y;
+    }
+}
+
+long long Radar::draw(Player*, Hud*, int mode)
+{
+    if (this->enabled == 0) {
+        return 0;
+    }
+
+    this->drawMode = 0;
+    this->plasmaInRange = 0;
+
+    PaintCanvas* canvas = *(PaintCanvas**)gRadarCanvasForDraw;
+    canvas->SetColor((unsigned int)-1);
+
+    void* mission = *(void**)gRadarMissionSlot;
+    int missionState = Radar_GetMissionState(mission);
+    if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
+        this->drawMode = (uint8_t)mode;
+    }
+
+    return 0;
+}
+
+AEMath::Vector Radar::elipsoidIntersect(int y, int x, AEMath::Vector value)
 {
     int centerY = this->centerY;
     float dy = (float)(centerY - x);
@@ -207,7 +211,7 @@ AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     float distance = weightY * dy2 + weightX * dx2;
 
     if (distance >= 0.0f) {
-        float scale = (distance - gGlobals->sqrt(distance)) / distance;
+        float scale = (distance - std::sqrt(distance)) / distance;
         if (scale >= 0.0f && scale <= 1.0f) {
             value.y = (float)(int)((float)x + scale * dy);
             value.x = (float)(int)((float)y + scale * dx);
@@ -217,27 +221,18 @@ AbyssEngine::AEMath::Vector Radar::elipsoidIntersect(
     return value;
 }
 
-extern uint8_t *gRadarDrawCurrentLockFlag;
-
-void Radar::drawCurrentLock(Hud *)
+void Radar::drawCurrentLock(Hud*)
 {
-    char text34[12];
-    char text40[12];
-    char text4c[12];
-    char text58[12];
-    char text64[12];
-    char text70[12];
-    char text7c[12];
-    char text88[12];
-
     if (this->enabled == 0) {
         return;
     }
 
     *gRadarDrawCurrentLockFlag = 1;
 
+    String label;
+
     if (this->field_0x14 == 0) {
-        void *locked = this->lockedAsteroid;
+        void* locked = this->lockedAsteroid;
         if (locked == 0) {
             locked = this->field_0x38;
             if (locked == 0) {
@@ -251,133 +246,55 @@ void Radar::drawCurrentLock(Hud *)
                 }
             }
         }
-
-        Radar_StringDefault(text40);
-        if (locked == this->lockedStation) {
-            Radar_StringAssign(text40, text34);
-        }
-        Radar_StringDtor(text40);
     } else {
-        Radar_StringText(text34, &this->lockLabel, false);
+        label = this->lockLabel;
     }
-
-    Radar_StringDtor(text34);
-    (void)text4c;
-    (void)text58;
-    (void)text64;
-    (void)text70;
-    (void)text7c;
-    (void)text88;
 }
-
-static const float kDistanceScale = 0.001f;
-static const char kMetersSuffix[] = "";
-static const char kLeadingZero[] = "";
-static const char kKmSuffix[] = "";
-static const char kSpace[] = "";
 
 void Radar::calcDistance(float, float a, float b, float c, float d, float e)
 {
-    char s84[12];
-    char s78[12];
-    char s6c[12];
-    char s60[12];
-    char s54[12];
-    char s48[12];
-
-    float extra = e;
     long long dx = (long long)(a * 0.5f - d * 0.5f);
-    long long dy = (long long)(c * 0.5f - extra * 0.5f);
+    long long dy = (long long)(c * 0.5f - e * 0.5f);
     long long dz = (long long)(b * 0.5f - e * 0.5f);
     long long total = dy * dy + dx * dx + dz * dz;
-    int distance = (int)gGlobals->sqrt((float)total * kDistanceScale);
+    int distance = (int)std::sqrt((float)total * 0.001f);
     int meters = distance << 3;
-    void *out = this;
 
-    Radar_StringInt(s48, meters);
-    Radar_StringText(s54, kMetersSuffix, false);
-    Radar_StringPlus(out, s48, s54);
-    Radar_StringDtor(s54);
-    Radar_StringDtor(s48);
+    String text;
+    text.Set_longlong(meters);
 
     if (distance >= 125) {
         int remainder = meters % 1000;
         if (remainder < 100) {
-            Radar_StringText(s48, kLeadingZero, false);
-            Radar_StringAssign(out, s48);
+            text.Set_char("");
         } else {
-            Radar_StringInt(s48, remainder);
-            Radar_StringAssign(out, s48);
+            text.Set_longlong(remainder);
         }
-        Radar_StringDtor(s48);
 
-        Radar_StringSubString(s48, out, 0, 1);
-        Radar_StringAssign(out, s48);
-        Radar_StringDtor(s48);
+        String head;
+        head.SubString(&text, 0, 1);
+        text = head;
 
-        unsigned kilometers = __aeabi_uidiv((unsigned)distance, 125u);
-        Radar_StringInt(s6c, (int)kilometers);
-        Radar_StringText(s78, kKmSuffix, false);
-        Radar_StringPlus(s60, s6c, s78);
-        Radar_StringPlus(s54, s60, out);
-        Radar_StringText(s84, kSpace, false);
-        Radar_StringPlus(s48, s54, s84);
-        Radar_StringAssign(out, s48);
-
-        Radar_StringDtor(s48);
-        Radar_StringDtor(s84);
-        Radar_StringDtor(s54);
-        Radar_StringDtor(s60);
-        Radar_StringDtor(s78);
-        Radar_StringDtor(s6c);
+        unsigned kilometers = (unsigned)distance / 125u;
+        String km;
+        km.Set_longlong((long long)kilometers);
+        text = km + text;
     }
 }
 
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::Vector;
-
-void Radar::update(Vector value)
-{
-    Vector transformedValue;
-    char positionStorage[12];
-    __builtin_memcpy(positionStorage, &value, 12);
-
-    transformedValue = AEMath::MatrixTransformVector(
-        this->transform, *(const Vector *)positionStorage);
-    Vector *current = (Vector *)&this->radarPosX;
-    *current = transformedValue;
-
-    this->radarPosY = -this->radarPosY;
-    this->radarPosZ = -this->radarPosZ;
-
-    int visible = Radar_GetScreenPosition(gPaintCanvas, positionStorage, positionStorage);
-    this->onScreen = (uint8_t)visible;
-
-    float *position = (float *)positionStorage;
-    int screenX = (int)position[0];
-    this->screenX = screenX;
-    int screenY = (int)position[1];
-    this->screenY = screenY;
-
-    if (visible == 0) {
-        transformedValue = this->elipsoidIntersect(screenX, screenY, *current);
-        *current = transformedValue;
-        this->screenX = (int)current->x;
-        this->screenY = (int)current->y;
-    }
-}
+} // namespace AbyssEngine
 
 // ---- ABI shims -------------------------------------------------------------
 // MGame owns its Radar by raw pointer (allocated with operator new), so it
 // constructs and destroys it through these C entry points that wrap the real
-// special members.  The destructor returns the object pointer so the caller can
+// special members. The destructor returns the object pointer so the caller can
 // hand it straight to operator delete (mirroring the binary's call sequence).
-extern "C" void Radar_ctor(Radar *r, Level *level)
+extern "C" void Radar_ctor(AbyssEngine::Radar* r, Level* level)
 {
-    new (r) Radar(level);
+    new (r) AbyssEngine::Radar(level);
 }
 
-extern "C" void *Radar_dtor(Radar *r)
+extern "C" void* Radar_dtor(AbyssEngine::Radar* r)
 {
     r->~Radar();
     return r;

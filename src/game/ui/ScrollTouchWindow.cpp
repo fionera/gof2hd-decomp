@@ -1,4 +1,3 @@
-#include <new>
 #include "gof2/game/ui/ScrollTouchWindow.h"
 #include "gof2/game/ui/ScrollTouchBox.h"
 #include "gof2/game/ui/Layout.h"
@@ -6,17 +5,11 @@
 #include "gof2/engine/render/PaintCanvas.h"
 
 using AbyssEngine::PaintCanvas;
-
-extern "C" void *ScrollTouchBox_dtor(void *self);
-extern "C" void ScrollTouchBox_ctor(void *self, int x, int y, int w, int h);
-
-// Layout fields (a global UI metrics object) are still accessed by byte offset since the
-// Layout class is not modeled here; helper kept local to this translation unit.
-static inline int   &LayoutI(void *p, int off) { return *(int *)((char *)p + off); }
+using AbyssEngine::String;
 
 void ScrollTouchWindow::OnTouchEnd(int x, int y)
 {
-    ((ScrollTouchBox *)(this->scrollBox))->OnTouchEnd(x, y);
+    this->scrollBox->OnTouchEnd(x, y);
     this->touchActive = 0;
 }
 
@@ -34,47 +27,43 @@ void ScrollTouchWindow::setText4(AbyssEngine::String title, AbyssEngine::String 
 
 void ScrollTouchWindow::OnTouchMove(int x, int y)
 {
-    ((ScrollTouchBox *)(this->scrollBox))->OnTouchMove(x, y);
+    this->scrollBox->OnTouchMove(x, y);
     this->touchActive = 1;
 }
 
 void ScrollTouchWindow::setTextCentered(bool centered)
 {
-    return ((ScrollTouchBox *)(this->scrollBox))->setTextCentered(centered);
+    this->scrollBox->setTextCentered(centered);
 }
 
 void ScrollTouchWindow::setYPosition(int y)
 {
-    return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
+    this->scrollBox->setYPosition(y);
 }
 
 // ---- setPosition (engine-name alias used by ChoiceWindow) ----
 // Window-level reposition: forwards the new top Y to the hosted ScrollTouchBox,
 // which re-lays out its content. Same effect as setYPosition; exposed under the
-// engine's public "setPosition" name (resolved through the GOT at the call site).
+// engine's public "setPosition" name.
 void ScrollTouchWindow::setPosition(int y)
 {
-    return ((ScrollTouchBox *)(this->scrollBox))->setYPosition(y);
+    this->scrollBox->setYPosition(y);
 }
 
 ScrollTouchWindow::~ScrollTouchWindow()
 {
-    void *box = this->scrollBox;
-    if (box != 0) {
-        ::operator delete(ScrollTouchBox_dtor(box));
-    }
-    this->scrollBox = 0;
-    this->title.dtor();
+    delete this->scrollBox;
+    this->scrollBox = nullptr;
 }
 
 void ScrollTouchWindow::update(int dt)
 {
-    return ((ScrollTouchBox *)(this->scrollBox))->update(dt);
+    this->scrollBox->update(dt);
 }
 
 void ScrollTouchWindow::OnTouchBegin(int x, int y)
 {
-    return ((ScrollTouchBox *)(this->scrollBox))->OnTouchBegin(x, y);
+    this->scrollBox->OnTouchBegin(x, y);
 }
 
 // ---- scroll ----
@@ -84,8 +73,8 @@ void ScrollTouchWindow::OnTouchBegin(int x, int y)
 // box-height worth per step) and re-running the box's settle logic.
 void ScrollTouchWindow::scroll(int amount)
 {
-    ScrollTouchBox *box = (ScrollTouchBox *)this->scrollBox;
-    if (box == 0)
+    ScrollTouchBox *box = this->scrollBox;
+    if (box == nullptr)
         return;
 
     int range = box->contentHeight - box->height;
@@ -97,175 +86,132 @@ void ScrollTouchWindow::scroll(int amount)
     box->update(0);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_STW_canvas_draw;
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_plain;
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_window;
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_draw_scrollbar;
+extern Layout **g_STW_canvas_draw;
+extern Layout **g_STW_layout_draw_plain;
+extern Layout **g_STW_layout_draw_window;
+extern Layout **g_STW_layout_draw_scrollbar;
 
 void ScrollTouchWindow::draw()
 {
-    void **canvasHolder = g_STW_canvas_draw;
-    void *canvas = *canvasHolder;
-    int color = ((PaintCanvas*)canvas)->GetColor();
+    PaintCanvas **canvasHolder = reinterpret_cast<PaintCanvas **>(g_STW_canvas_draw);
+    PaintCanvas *canvas = *canvasHolder;
+    int color = canvas->GetColor();
 
     int scrollOffset;
     int contentHeight;
     if (this->hasFrame == 0) {
-        void *layout = *g_STW_layout_draw_plain;
-        contentHeight = this->height - LayoutI(layout, 0x2c) * 2;
+        Layout *layout = *g_STW_layout_draw_plain;
+        contentHeight = this->height - layout->field_0x2c * 2;
         scrollOffset = 0;
     } else {
-        void **layoutHolder = g_STW_layout_draw_window;
-        void *layout = *layoutHolder;
+        Layout *layout = *g_STW_layout_draw_window;
         {
-            String title;
-            title.ctor_copy(&this->title, false);
-            ((Layout *)layout)->drawWindow7(&title, this->x, this->y,
-                              this->width, this->height, 1);
+            String windowTitle(this->title);
+            layout->drawWindow7(&windowTitle, this->x, this->y,
+                                this->width, this->height, 1);
         }
-        layout = *layoutHolder;
-        contentHeight = this->height - LayoutI(layout, 0x2c) * 2;
-        if (this->hasFrame != 0) {
-            scrollOffset = -LayoutI(layout, 8);
-        } else {
-            scrollOffset = 0;
-        }
+        layout = *g_STW_layout_draw_window;
+        contentHeight = this->height - layout->field_0x2c * 2;
+        scrollOffset = -layout->field_0x8;
     }
 
-    ((ScrollTouchBox *)(this->scrollBox))->draw();
+    this->scrollBox->draw();
     int scrollHeight = scrollOffset + contentHeight;
     float scale = (float)scrollHeight;
-    float start = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollStartPos();
-    float height = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollHeight();
+    float start = this->scrollBox->getRelativeScrollStartPos();
+    float height = this->scrollBox->getRelativeScrollHeight();
     int startPx = (int)(start * scale);
     int heightPx = (int)(height * scale);
 
     if (startPx > 0 || heightPx >= 1) {
-        void *layout = *g_STW_layout_draw_scrollbar;
-        int yOffset;
-        if (this->hasFrame == 0) {
-            yOffset = 0;
-        } else {
-            yOffset = LayoutI(layout, 8);
-        }
-        ((Layout *)(layout))->drawScrollBar((this->x + this->width) - LayoutI(layout, 0x48) - LayoutI(layout, 0x2c), this->y + LayoutI(layout, 0x2c) + yOffset, scrollHeight, startPx, heightPx);
+        Layout *layout = *g_STW_layout_draw_scrollbar;
+        int yOffset = (this->hasFrame == 0) ? 0 : layout->field_0x8;
+        layout->drawScrollBar((this->x + this->width) - layout->field_0x48 - layout->field_0x2c,
+                              this->y + layout->field_0x2c + yOffset,
+                              scrollHeight, startPx, heightPx);
     }
 
-    ((PaintCanvas*)*canvasHolder)->SetColor((unsigned int)color);
+    (*canvasHolder)->SetColor((unsigned int)color);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_drawTextBG;
-__attribute__((visibility("hidden"))) extern const char g_STW_empty_drawTextBG[];
+extern Layout **g_STW_layout_drawTextBG;
+extern const char g_STW_empty_drawTextBG[];
 
 void ScrollTouchWindow::drawTextBG()
 {
-    void **layoutHolder = g_STW_layout_drawTextBG;
-    void *layout = *layoutHolder;
+    Layout *layout = *g_STW_layout_drawTextBG;
     int x = this->x;
     int y = this->y;
     int w = this->width;
-    int pad = LayoutI(layout, 0x2c);
-    float relHeight = ((ScrollTouchBox *)(this->scrollBox))->getRelativeScrollHeight();
-    void *layoutNow = *layoutHolder;
+    int pad = layout->field_0x2c;
+    float relHeight = this->scrollBox->getRelativeScrollHeight();
     int widthInset;
     int heightInset;
     if (relHeight > 0.0f) {
-        int p = LayoutI(layoutNow, 0x2c);
-        widthInset = LayoutI(layoutNow, 0x48) + p * 2;
-        heightInset = p * 2;
+        widthInset = layout->field_0x48 + pad * 2;
+        heightInset = pad * 2;
     } else {
-        int p = LayoutI(layoutNow, 0x2c);
-        widthInset = p;
-        heightInset = p * 2;
+        widthInset = pad;
+        heightInset = pad * 2;
     }
     int h = this->height;
     String text(g_STW_empty_drawTextBG);
-    ((Layout *)(layout))->drawBox(5, x, pad + y, w - widthInset, h - heightInset, &text, 0);
+    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, &text, 0);
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text)
 {
-    {
-        void *box = this->scrollBox;
-        String tmp;
-        tmp.ctor_copy(&text, false);
-        ((ScrollTouchBox *)(box))->setText(tmp);
-    }
+    this->scrollBox->setText(text);
     this->title = title;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_174128;
+extern Layout **g_STW_layout_174128;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
 {
-    this->title.ctor();
     this->x = x;
     this->y = y;
     this->width = w;
     this->height = h;
 
-    void *box = ::operator new(0x40);
-    void *layout = *g_STW_layout_174128;
-    int border = LayoutI(layout, 0x4c);
+    Layout *layout = *g_STW_layout_174128;
+    int border = layout->field_0x4c;
     int extra;
     int boxY;
     if (hasFrame) {
-        int top = LayoutI(layout, 8);
+        int top = layout->field_0x8;
         boxY = border + y + top;
         extra = -top;
     } else {
         boxY = border + y;
         extra = 0;
     }
-    ScrollTouchBox_ctor(box, border + x, boxY, w - border * 2,
-                        extra + h - border * 2);
+    this->scrollBox = new ScrollTouchBox(border + x, boxY, w - border * 2,
+                                         extra + h - border * 2);
     this->touchActive = 0;
-    this->scrollBox = box;
     this->hasFrame = hasFrame;
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color)
 {
-    {
-        void *box = this->scrollBox;
-        String tmp;
-        tmp.ctor_copy(&text, false);
-        ((ScrollTouchBox *)(box))->setTextColor(&tmp, color);
-    }
+    this->scrollBox->setTextColor(&text, color);
     this->title = title;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_STW_layout_1741c0;
+extern Layout **g_STW_layout_1741c0;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h)
 {
-    this->title.ctor();
     this->x = x;
     this->y = y;
     this->width = w;
     this->height = h;
 
-    void *box = ::operator new(0x40);
-    void *layout = *g_STW_layout_1741c0;
-    int top = LayoutI(layout, 8);
-    int border = LayoutI(layout, 0x4c);
-    ScrollTouchBox_ctor(box, border + x, top + border + y, w - border * 2,
-                        (h - top) - border * 2);
-    this->scrollBox = box;
-    this->touchActive = 0;     // low byte of the 0x100 short store
-    this->hasFrame = 1;     // high byte of the 0x100 short store
-}
-
-// Free-function ctor/dtor entries used by callers that allocate the window opaquely
-// (placement-construct into `self`, run the in-place destructor and hand back the
-// pointer for the caller to free).
-extern "C" void ScrollTouchWindow_ctor(void *self, int x, int y, int w, int h, bool hasFrame)
-{
-    new (self) ScrollTouchWindow(x, y, w, h, hasFrame);
-}
-
-extern "C" void *ScrollTouchWindow_dtor(void *window)
-{
-    ((ScrollTouchWindow *)window)->~ScrollTouchWindow();
-    return window;
+    Layout *layout = *g_STW_layout_1741c0;
+    int top = layout->field_0x8;
+    int border = layout->field_0x4c;
+    this->scrollBox = new ScrollTouchBox(border + x, top + border + y, w - border * 2,
+                                         (h - top) - border * 2);
+    this->touchActive = 0;
+    this->hasFrame = 1;
 }

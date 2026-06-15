@@ -1,262 +1,132 @@
 #include "gof2/game/ship/PlayerStaticFar.h"
-#include "gof2/game/ship/PlayerStatic.h"
-#include "gof2/engine/render/AEGeometry.h"
+
+#include <vector>
+
+#include "gof2/math.h"
+#include "gof2/engine/math/AEMath.h"
 #include "gof2/engine/math/BoundingVolume.h"
+#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/ship/PlayerStatic.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
-// PlayerStaticFar deleting destructor (D0): PlayerStaticFar has no owned members,
-// so it directly runs the base (PlayerStatic) destructor, then tail-calls
-// operator delete (the b.w 0x1ab098 trampoline).
+using namespace AbyssEngine::AEMath;
 
-void _ZN15PlayerStaticFarD0Ev(PlayerStaticFar *self)
+// Engine-resolved placement parameters for the far-projection: the camera holder,
+// the distance threshold below which the object is drawn at full scale, the sphere
+// radius used to project distant objects, and the scale-down factors.
+static PaintCanvas *g_cameraHolder;
+static int          g_distLimit;
+static float        g_radius;
+static float        g_scaleNum;
+static float        g_scaleFactor;
+
+PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
+    : PlayerStatic(playerId, geometry, x, y, z)
 {
-    return ::operator delete(((PlayerStatic *)self)->base_dtor());
+    this->viewDirection = {0.0f, 0.0f, 0.0f};
+    this->initPosition  = {x, y, z};
+    this->player->setRadius(0x1d4c);
+    this->boundingVolumes = nullptr;
 }
 
-// ---- ~PlayerStaticFar (D2) — non-deleting destructor.
-// PlayerStaticFar owns no members of its own, so the destructor simply chains
-// into the PlayerStatic base destructor.
-void PlayerStaticFar::dtor()
-{
-    ((PlayerStatic *)this)->base_dtor();
-}
+PlayerStaticFar::~PlayerStaticFar() = default;
 
-Vector PlayerStaticFar::getProjectionVector(const Vector &value)
+PlayerStaticFar::Vector PlayerStaticFar::getProjectionVector(const Vector &value)
 {
-    void *volumes = this->boundingVolumes;
-    if (volumes != 0) {
-        void *items = *(void **)((char *)volumes + 0x4);
-        void *volume = *(void **)items;
-        return ((BoundingVolume *)(volume))->getProjectionVector(value);
+    if (this->boundingVolumes != nullptr) {
+        return (*this->boundingVolumes)[0]->getProjectionVector(value);
     }
-
-    Vector r = {0.0f, 0.0f, 0.0f};
-    return r;
+    return {0.0f, 0.0f, 0.0f};
 }
-
-// render(): a single unconditional tail-call thunk (b.w into the PLT-ish
-// trampoline). The body is one branch to the resolved render routine.
 
 void PlayerStaticFar::render()
 {
-    return ((PlayerStaticFar *)(this))->render_tail();
+    this->geometry->render();
 }
 
-// render() chains PlayerStatic::render(), which renders the owned geometry:
-// PlayerStaticFar::render -> PlayerStatic::render -> AEGeometry::render(geometry @ +0x08).
-void PlayerStaticFar::render_tail()
+PlayerStaticFar::Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
 {
-    ((AEGeometry *)this->geometry)->render();
-}
-
-// Static helper returning a Vector via sret. The decompiler dropped the receiver
-// (self) of BoundingVolume::staticProjectCollisionOnSurface and only forwarded the
-// (v, vols) pair; the receiver is unrecoverable in this scope, so model the original
-// sret ABI directly: out = staticProjectCollisionOnSurface(&out, value, volumes).
-
-Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value)
-{
-    void *volumes = this->boundingVolumes;
-    if (volumes != 0) {
+    if (this->boundingVolumes != nullptr) {
         Vector out;
-        ((BoundingVolume *)(&out))->staticProjectCollisionOnSurface(value, (Array<BoundingVolume *> *)volumes);
+        reinterpret_cast<BoundingVolume *>(&out)
+            ->staticProjectCollisionOnSurface(value, this->boundingVolumes);
         return out;
     }
-
-    Vector r = {0.0f, 0.0f, 0.0f};
-    return r;
+    return {0.0f, 0.0f, 0.0f};
 }
-
-// outerCollide(float,float,float): tail-call the virtual slot at vtable+0x38,
-// forwarding the same (this,x,y,z) arguments unchanged.
-typedef bool (*OuterCollideFn)(PlayerStaticFar *self, float x, float y, float z);
 
 bool PlayerStaticFar::outerCollide(float x, float y, float z)
 {
-    OuterCollideFn fn = *(OuterCollideFn *)(*(char **)this + 0x38);
-    return fn(this, x, y, z);
+    return this->collide(x, y, z);
 }
-
-// PlayerStaticFar base-object destructor (D2): no owned members, so the whole
-// body is a single tail-call thunk forwarding to the base PlayerStatic dtor
-// (b.w into the trampoline).
-
-void *_ZN15PlayerStaticFarD2Ev(PlayerStaticFar *self)
-{
-    return ((PlayerStatic *)self)->base_dtor_thunk();
-}
-
-// Returns the init position (fields at +0x58,+0x5c,+0x60) by value: sret in r0,
-// this in r1. ldrd/strd pair the first two floats; the third is a single str.
-Vector PlayerStaticFar::getInitPosition(Vector)
-{
-    Vector r;
-    r.x = this->initPosX;
-    r.y = this->initPosY;
-    r.z = this->initPosZ;
-    return r;
-}
-
-// outerCollide(Vector): the Vector is passed in r0..? In the target this is a
-// 3-instruction thunk: load vtable, fetch slot+0x38, tail-call with args
-// already in place. Model as a tail-call through the virtual slot forwarding
-// the same registers.
-typedef void (*OuterCollideVecFn)(PlayerStaticFar *self, float x, float y, float z);
 
 void PlayerStaticFar::outerCollide(Vector value)
 {
-    OuterCollideVecFn fn = *(OuterCollideVecFn *)(*(char **)this + 0x38);
-    return fn(this, value.x, value.y, value.z);
+    this->collide(value.x, value.y, value.z);
 }
 
-// PlayerStaticFar::update(int):
-// When the object has a geometry (field 0x8), reproject the object's stored integer
-// position relative to the current camera. If the camera-relative distance is below a
-// global limit, hide it (scale 1,1,1 at the integer position); otherwise place it on a
-// sphere of fixed radius along the view direction and scale it down by distance.
-//
-// pcVar3 is AEMath::Vector::operator= (copy 3 floats), resolved at runtime from a global
-// function-pointer slot; modeled here as an extern "C" callee.
-
-struct Vec3 { float x, y, z; };
-
-// Typed wrappers over the real AbyssEngine::AEMath vector/matrix ops.
-namespace AbyssEngine { namespace AEMath {
-Vector MatrixGetPosition(const Matrix &matrix);
-float VectorLength(const Vector &value);
-Vector VectorNormalize(const Vector &value);
-Vector operator-(const Vector &lhs, const Vector &rhs);
-} }
-typedef AbyssEngine::AEMath::Vector AEVec;
-static inline void AbyssEngine_AEMath_MatrixGetPosition(Vec3 *out, void *matrix) {
-    *(AEVec *)out = AbyssEngine::AEMath::MatrixGetPosition(*(const AbyssEngine::AEMath::Matrix *)matrix);
-}
-static inline Vec3 *AEMath_Vector_assign(Vec3 *dst, const Vec3 *src) {
-    *(AEVec *)dst = *(const AEVec *)src; return dst;
-}
-static inline void AbyssEngine_AEMath_operator_sub(Vec3 *out, const Vec3 *a, const Vec3 *b) {
-    *(AEVec *)out = *(const AEVec *)a - *(const AEVec *)b;
-}
-static inline float AbyssEngine_AEMath_VectorLength(const Vec3 *v) {
-    return AbyssEngine::AEMath::VectorLength(*(const AEVec *)v);
-}
-static inline void AbyssEngine_AEMath_VectorNormalize(Vec3 *out, const Vec3 *v) {
-    *(AEVec *)out = AbyssEngine::AEMath::VectorNormalize(*(const AEVec *)v);
-}
-static inline float AEMath_Vector_assign2(Vec3 *dst, const Vec3 *src) {
-    *(AEVec *)dst = *(const AEVec *)src; return 0.0f;
-}
-static inline void AEMath_Vector_mul_eq(Vec3 *v, float s) { *(AEVec *)v *= s; }
-static inline void AEMath_Vector_add_eq(Vec3 *v, const Vec3 *o) { *(AEVec *)v += *(const AEVec *)o; }
-
-extern "C" {
-// AEGeometry placement.
-// Globals (camera object holder, limits/factors materialized as PC-relative loads).
-void *g_PlayerStaticFar_cameraHolder; // **(DAT_0012c458 + 0x12c30a)
-int g_PlayerStaticFar_distLimit;
-float g_PlayerStaticFar_radius;       // DAT_0012c448 (sphere radius numerator)
-float g_PlayerStaticFar_scaleNum;
-float g_PlayerStaticFar_scaleFactor;
+PlayerStaticFar::Vector PlayerStaticFar::getInitPosition()
+{
+    return this->initPosition;
 }
 
+// Reproject the object's stored integer position relative to the current camera.
+// If the camera-relative distance is below g_distLimit it is drawn at full scale at
+// its literal position; otherwise it is placed on a sphere of radius g_radius along
+// the view direction and scaled down by distance.
 void PlayerStaticFar::update(int /*delta*/)
 {
-    if (this->geometry == 0)
+    if (this->geometry == nullptr)
         return;
 
-    void *camera = g_PlayerStaticFar_cameraHolder;
+    PaintCanvas *camera = g_cameraHolder;
+    unsigned int cur    = camera->CameraGetCurrent();
+    Matrix      *matrix = reinterpret_cast<Matrix *>(camera->CameraGetLocal(cur));
 
-    Vec3 local;
-    unsigned int cur = ((PaintCanvas *)camera)->CameraGetCurrent();
-    void *matrix = ((PaintCanvas *)camera)->CameraGetLocal(cur);
-    AbyssEngine_AEMath_MatrixGetPosition(&local, matrix);
+    this->cameraPosition = MatrixGetPosition(*matrix);
+    this->objectPosition = {(float)this->posX, (float)this->posY, (float)this->posZ};
+    this->viewDirection  = this->objectPosition - this->cameraPosition;
 
-    // this+0x90 = camera position.
-    AEMath_Vector_assign((Vec3 *)&this->cameraPosX, &local);
+    float len = VectorLength(this->viewDirection);
 
-    // this+0x9c = object's integer position converted to float.
-    local.x = (float)this->posX;
-    local.y = (float)this->posY;
-    local.z = (float)this->posZ;
-    AEMath_Vector_assign((Vec3 *)&this->objectPosX, &local);
-
-    // local = (this+0x9c) - (this+0x90); store into this+0x134.
-    AbyssEngine_AEMath_operator_sub(&local, (Vec3 *)&this->objectPosX,
-                                    (Vec3 *)&this->cameraPosX);
-    Vec3 *dir = (Vec3 *)&this->viewDirX;
-    AEMath_Vector_assign(dir, &local);
-
-    float len = AbyssEngine_AEMath_VectorLength(dir);
-
-    if ((int)len < g_PlayerStaticFar_distLimit) {
+    if ((int)len < g_distLimit) {
         // Close: full-scale at the literal integer position.
-        ((AEGeometry *)(this->geometry))->setScaling(1.0f);
-        Vec3 pos;
-        pos.x = (float)this->posX;
-        pos.y = (float)this->posY;
-        pos.z = (float)this->posZ;
-        ((AEGeometry *)this->geometry)->setPosition(*(const AbyssEngine::AEMath::Vector *)(&pos));
+        this->geometry->setScaling(1.0f);
+        this->geometry->setPosition(
+            Vector{(float)this->posX, (float)this->posY, (float)this->posZ});
     } else {
         // Far: place on a sphere of radius g_radius along the view direction.
-        Vec3 n;
-        AbyssEngine_AEMath_VectorNormalize(&n, dir);
-        AEMath_Vector_assign2(dir, &n);
-        AEMath_Vector_mul_eq(dir, g_PlayerStaticFar_radius);
-        AEMath_Vector_add_eq(dir, (Vec3 *)&this->cameraPosX);
-        ((AEGeometry *)this->geometry)->setPosition(*(const AbyssEngine::AEMath::Vector *)(dir));
+        this->viewDirection = VectorNormalize(this->viewDirection);
+        this->viewDirection *= g_radius;
+        this->viewDirection += this->cameraPosition;
+        this->geometry->setPosition(this->viewDirection);
 
-        float s = (float)(int)((g_PlayerStaticFar_radius / (float)(int)len) *
-                               g_PlayerStaticFar_scaleNum);
-        s = s * g_PlayerStaticFar_scaleFactor;
-        ((AEGeometry *)(this->geometry))->setScaling(s);
+        float s = (float)(int)((g_radius / (float)(int)len) * g_scaleNum);
+        s = s * g_scaleFactor;
+        this->geometry->setScaling(s);
     }
 }
 
 // collide(x,y,z): true iff (x,y,z) lies strictly inside the +/- bound box centered
-// at the stored integer position (fields 0x124/0x128/0x12c), where bound is the
-// radius integer at *(this+4)+0x40 converted to float.
+// at the stored integer position, where bound is the player's radius in world units.
 bool PlayerStaticFar::collide(float x, float y, float z)
 {
-    float px = (float)this->posX;
-    float dx = x - px;
-    int boundI = *(int *)((char *)this->player + 0x40);
-    float bound = (float)boundI;
-    if (dx < bound) {
-        float negBound = (float)(-boundI);
-        if (dx > negBound) {
-            float py = (float)this->posY;
-            float dy = y - py;
-            if (dy < bound) {
-                if (dy > negBound) {
-                    float pz = (float)this->posZ;
-                    float dz = z - pz;
-                    if (dz < bound && dz > negBound) {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
+    int   boundI   = this->player->radius;
+    float bound    = (float)boundI;
+    float negBound = (float)(-boundI);
 
-// Base PlayerStatic constructor (blx 0x75fdc) and Player::setRadius (blx 0x730d8).
-// Hidden-visibility vtable so the address is materialized via a PC-relative load.
-__attribute__((visibility("hidden"))) extern void *volatile g_PlayerStaticFar_vtable;
+    float dx = x - (float)this->posX;
+    if (dx >= bound || dx <= negBound)
+        return false;
 
-PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z)
-{
-    ((PlayerStatic *)this)->ctor(playerId, geometry, x, y, z);
+    float dy = y - (float)this->posY;
+    if (dy >= bound || dy <= negBound)
+        return false;
 
-    void *vtable = g_PlayerStaticFar_vtable;
-    this->viewDirX = 0;
-    this->viewDirY = 0;
-    this->viewDirZ = 0;
-    this->initPosX = x;
-    this->vtable = (char *)vtable + 8;
-    this->initPosY = y;
-    this->initPosZ = z;
-    ((Player *)(this->player))->setRadius(0x1d4c);
-    this->boundingVolumes = 0;
+    float dz = z - (float)this->posZ;
+    if (dz >= bound || dz <= negBound)
+        return false;
+
+    return true;
 }

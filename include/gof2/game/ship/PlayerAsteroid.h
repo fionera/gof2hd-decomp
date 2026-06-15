@@ -1,83 +1,78 @@
 #ifndef GOF2_PLAYERASTEROID_H
 #define GOF2_PLAYERASTEROID_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
+#include "gof2/math.h"
+class Hud;  // referenced only by pointer in KIPlayer's interface, below
+#include "gof2/game/ship/KIPlayer.h"
 
-namespace AEMath {
+class AEGeometry;
+class Explosion;
 
-} // namespace AEMath
-
-} // namespace AbyssEngine
-
-using String = AbyssEngine::String;
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
-
-struct AEGeometry;
-struct Player;
-struct Explosion;
-struct TargetFollowCamera;
-
-extern "C" void *operator_new(uint32_t size);
-extern "C" void operator_delete(void *ptr);
-
-class PlayerAsteroid {
+// PlayerAsteroid: a minable / destructible asteroid driven by the AI controller.
+// It extends KIPlayer with asteroid-specific state (loot quality, mining flags, a
+// bomb-force push impulse and its own explosion VFX) while reusing the KIPlayer
+// base for the Player wrapper, geometry node and teardown.
+//
+// The bomb-push impulse (timer/duration/direction/spin) and the dropped-loot list
+// live in the KIPlayer base storage block; they are exposed here through the
+// asteroid's own semantic names.
+class PlayerAsteroid : public KIPlayer {
 public:
-    void* vtable;                    // +0x0
-    Player* player;                  // +0x4
-    AEGeometry* geometry;              // +0x8
-    uint8_t field_0x3c;                 // +0x3c
-    uint8_t dropsLoot;                 // +0x4c
-    Array<int>* loot;               // +0x50  dropped-loot {itemId, count} list
-    AEGeometry* secondaryGeometry;             // +0x78
-    int state;                     // +0x88
-    Vector bombHitVector;            // +0x90  scratch vector for the bomb-force push impulse
-    uint8_t visible;                 // +0xf5
-    int pushTimer;                    // +0x104
-    int pushDuration;                    // +0x108
-    Vector pushDirection;            // +0x10c  normalized push movement direction
-    Vector pushSpin;                  // +0x118  per-axis push rotation rate
-    uint8_t field_0x124;                // +0x124
-    int asteroidIndex;                    // +0x128
-    Explosion* explosion;             // +0x12c
-    int lastDelta;                    // +0x134
-    float scaling;                  // +0x138
-    uint8_t minable;                // +0x13c
-    Vector spin;                     // +0x140  per-axis idle rotation rate
-    uint8_t rotationEnabled;                // +0x14c
-    int quality;                    // +0x150
-    int lastHitpoints;                    // +0x158
-    int hitFlashActive;                    // +0x15c
-    float hitFlashTimer;                  // +0x160
-    int field_0x164;                    // +0x164
-    int field_0x168;                    // +0x168
-    int field_0x16c;                    // +0x16c
+    using Vector = AbyssEngine::AEMath::Vector;
+    using Matrix = AbyssEngine::AEMath::Matrix;
 
-    PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType, int asteroidIndex,
-                   const Vector &position, float scaling, int quality);
+    // Asteroid-specific members (beyond the KIPlayer base footprint).
+    uint8_t    asteroidFlag;
+    int        asteroidIndex;
+    Explosion* explosion;
+    int        lastDelta;
+    float      scaling;
+    uint8_t    minable;
+    Vector     spin;            // per-axis idle rotation rate
+    uint8_t    rotationEnabled;
+    int        quality;
+    int        lastHitpoints;
+    int        hitFlashActive;
+    float      hitFlashTimer;
+    int        field_0x164;
+    int        field_0x168;
+    int        field_0x16c;
+
+    PlayerAsteroid(int playerId, AEGeometry* geometry, int explosionType, int asteroidIndex,
+                   const Vector& position, float scaling, int quality);
     ~PlayerAsteroid();
-    void setAsteroidIndex(int asteroidIndex);
-    void translate(const Vector &delta);
-    void render();
-    void setPosition(const Vector &position);
-    void outerCollide(Vector value);
-    void outerCollide(float x, float y, float z);
+
+    void   setAsteroidIndex(int asteroidIndex);
+    void   translate(const Vector& delta);
+    void   render();
+    void   setPosition(const Vector& position);
+    void   outerCollide(Vector value);
+    void   outerCollide(float x, float y, float z);
     Vector getPosition();
-    void setRotationEnabled(bool enabled);
-    int getQualityFrameIndex();
-    int getQuality();
-    float getScaling();
+    void   setRotationEnabled(bool enabled);
+    int    getQualityFrameIndex();
+    int    getQuality();
+    float  getScaling();
     uint8_t isMinable();
     String getQualityString();
-    void update(int delta);
-    Vector getProjectionVector(const Vector &value);
-    void setAsteroidCenter(Vector center);
-    bool collide(float x, float y, float z);
-    void push(int delta);
-    void initPush(const Vector &target, int duration);
-    // Complete-object destructor helper (the D0 deleting destructor's first half):
-    // run ~PlayerAsteroid() and hand back `this` so the caller can free the storage.
-    void *completeDtor();
+    void   update(int delta);
+    Vector getProjectionVector(const Vector& value);
+    void   setAsteroidCenter(Vector center);
+    bool   collide(float x, float y, float z);
+    void   push(int delta);
+    void   initPush(const Vector& target, int duration);
+
+private:
+    // Whether this asteroid should drop loot when destroyed (KIPlayer base slot 0x4c).
+    int&  dropsLoot()        { return this->field_0x4c; }
+    // Dropped-loot {itemId, count} list (reuses the KIPlayer base cargo slot 0x50).
+    Array<int>*& loot()      { return this->cargo; }
+    // Optional secondary mesh (reuses the KIPlayer base crateGeometry slot 0x78).
+    AEGeometry*& secondaryGeometry() { return this->crateGeometry; }
+    // Bomb-push impulse state, overlaid on the KIPlayer base block 0x104..0x120.
+    int&    pushTimer()      { return this->field_0x104; }
+    int&    pushDuration()   { return *reinterpret_cast<int*>(reinterpret_cast<char*>(&this->field_0x104) + 4); }
+    Vector& pushDirection()  { return *reinterpret_cast<Vector*>(&this->field_0x10c); }
+    Vector& pushSpin()       { return *reinterpret_cast<Vector*>(&this->field_0x118); }
 };
 #endif

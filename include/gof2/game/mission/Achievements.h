@@ -1,55 +1,39 @@
 #ifndef GOF2_ACHIEVEMENTS_H
 #define GOF2_ACHIEVEMENTS_H
-#include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 — Achievements class. Top-level, no namespace.
-// Field offsets recovered from per-method target disassembly. We do NOT model a
-// full layout: methods access fields via byte-offset casts from `this`.
-//
-// Known layout (from ctor/init/decompiles):
-//   +0x00  int*  medals      (operator new[](0xb4) -> 45 ints)
-//   +0x04  int*  newMedals   (operator new[](0xb4) -> 45 ints)
-//   +0x08  int   kills
-//   +0x0c  int   catches
-//   +0x10  int   pirateKills
-//   +0x14  int   ?
-//   +0x18  bool  ?
-//   +0x1c  int   credits
-//   +0x20  u16   (gotAllMedals/gotAllGoldMedals bytes 0x20/0x21)
-//   +0x22  bool  gotAllSupernovaMedals
+#include <cstdint>
 
-struct Achievements;
+class PlayerEgo;
 
-// Field accessor via byte offset.
-
+// Galaxy on Fire 2 — Achievements: the player's medal/award tracking state.
+// Holds two parallel 45-int medal arrays (current + freshly earned) plus the
+// running counters and "all medals" summary flags.
 class Achievements {
 public:
-    int* medals;                     // +0x0
-    int* newMedals;                     // +0x4
-    int kills;                      // +0x8
-    int catches;                      // +0xc
-    int pirateKills;                     // +0x10
-    int field_0x14;                     // +0x14 count of type-0 equipment items (semantics unconfirmed)
-    uint8_t hasTurretAndWeapon;                 // +0x18
-    int credits;                     // +0x1c
-    uint8_t gotAllMedals_;              // +0x20 all 36 medals present
-    uint8_t gotAllGoldMedals_;          // +0x21 all 36 gold medals
-    uint8_t gotAllSupernovaMedals_;     // +0x22 all gold + all 9 supernova medals
-    int medalCount;                     // +0x24
+    int* medals;
+    int* newMedals;
+    int kills;
+    int catches;
+    int pirateKills;
+    int weaponCount;
+    uint8_t hasTurretAndWeapon;
+    int credits;
+    uint8_t gotAllMedals_;
+    uint8_t gotAllGoldMedals_;
+    uint8_t gotAllSupernovaMedals_;
+    int medalCount;
 
     Achievements();
     ~Achievements();
 
-    // ---- methods (converted from free functions) ----
     void applyNewMedals();
-    void checkForNewMedal(PlayerEgo *ego);
+    void checkForNewMedal(PlayerEgo* ego);
     void countMedals();
     int getValue(int index, int sub);
     uint8_t gotAllGoldMedals();
     uint8_t gotAllMedals();
     uint8_t gotAllSupernovaMedals();
-    int *getMedals();
-    int *getNewMedals();
+    int* getMedals();
+    int* getNewMedals();
     uint8_t hasMedal(int index, int value);
     void incCatches();
     void incKills();
@@ -60,7 +44,7 @@ public:
     void resetNewMedals();
     void resetPirateKills();
     void setMedal(int index, int value);
-    void setMedals(int *src, int count);
+    void setMedals(int* src, int count);
     void updateCredits(int value);
 };
 #endif

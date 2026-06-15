@@ -1,20 +1,21 @@
 #ifndef GOF2_SCROLLTOUCHWINDOW_H
 #define GOF2_SCROLLTOUCHWINDOW_H
-#include "gof2/common.h"
-// ScrollTouchWindow — a framed/plain window that hosts a ScrollTouchBox and draws a
-// title + scroll bar. Field layout recovered from byte-offset accesses in the merged
-// source (offsets shown in comments). The underlying ScrollTouchBox is held opaque.
+#include "gof2/common.h"   // AbyssEngine::String
 
+class ScrollTouchBox;
+
+// ScrollTouchWindow — a framed or plain window that hosts a ScrollTouchBox and draws a
+// title plus a scroll bar.
 class ScrollTouchWindow {
 public:
-    void*  scrollBox;        // +0x00  ScrollTouchBox* (the scrollable content box)
-    String title;        // +0x04  title text
-    unsigned char touchActive;// +0x10  touch-active flag (set by OnTouchMove/End)
-    unsigned char hasFrame;// +0x11  hasFrame flag
-    int    x;       // +0x14  x
-    int    y;       // +0x18  y
-    int    width;       // +0x1c  width
-    int    height;       // +0x20  height
+    ScrollTouchBox* scrollBox;   // the scrollable content box
+    String          title;       // title text
+    uint8_t         touchActive; // touch-active flag (set by OnTouchMove/End)
+    uint8_t         hasFrame;    // whether the window draws a frame
+    int             x;
+    int             y;
+    int             width;
+    int             height;
 
     ScrollTouchWindow(int x, int y, int w, int h);
     ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame);

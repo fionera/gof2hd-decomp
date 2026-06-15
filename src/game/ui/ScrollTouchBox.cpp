@@ -5,11 +5,13 @@
 int GameText_getLanguage();
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
 
-// font-line-height accessor: the engine's font object stores its line height at +0x4.
-// Modeled as a small opaque struct accessed via a typed helper.
+// Minimal view of the engine font object. It has no standalone header; only the
+// two fields ScrollTouchBox reads are modelled here.
 struct FontMetrics {
     int field_0x0;
-    int field_0x4;   // line height
+    int lineHeight;          // +0x4
+    int field_0x08[16];      // padding up to +0x48
+    int wrapMargin;          // +0x48
 };
 
 void ScrollTouchBox::setTextCentered(bool centered)
@@ -91,7 +93,6 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
     this->dragging = 0;
     this->scrollOffset = 0;
     this->centered = 0;
-    // NEON vector store of zeros across the scroll-state block (0x18..0x24)
     this->contentHeight = 0;
     this->lastDelta = 0;
     this->damping = 0.0f;
@@ -103,9 +104,8 @@ __attribute__((visibility("hidden"))) extern int **g_ScrollTouchBox_defaultWidth
 
 void ScrollTouchBox::setText(AbyssEngine::String text)
 {
-    String tmp;
-    tmp.ctor_copy(&text, false);
-    ((ScrollTouchBox *)(this))->setText2(&tmp, **g_ScrollTouchBox_defaultWidth_13570c);
+    String tmp(text);
+    setText2(&tmp, **g_ScrollTouchBox_defaultWidth_13570c);
 }
 
 void ScrollTouchBox::update(int dt)
@@ -186,7 +186,7 @@ void ScrollTouchBox::draw()
             }
 
             int yBase = this->y;
-            int lineY = (*fontHolder)->field_0x4 * (int)i + yBase + this->scrollOffset;
+            int lineY = (*fontHolder)->lineHeight * (int)i + yBase + this->scrollOffset;
             if (count == 1 ||
                 (yBase <= lineY &&
                  lineY + lastOffset <= (this->height + yBase) - ((PaintCanvas*)canvas)->GetTextHeight((unsigned int)(unsigned long)this->font))) {
@@ -232,7 +232,8 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
         this->lines = 0;
     }
 
-    this->font = (String *)(__SIZE_TYPE__)font;
+    // The font/colour slot id is stored directly in the font pointer field.
+    this->font = (String *)(std::size_t)font;
     Array<String*> *lineArray = new Array<String*>();
 
     void **globals = g_ScrollTouchBox_globals_135600;
@@ -244,10 +245,10 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     int boxHeight = this->height;
     Array<String*> *curLines = this->lines;
     FontMetrics *fontObj = *fontHolder;
-    int contentHeight = fontObj->field_0x4 * (int)curLines->size();
+    int contentHeight = fontObj->lineHeight * (int)curLines->size();
     this->contentHeight = contentHeight;
     if (contentHeight > boxHeight) {
-        this->width = this->textWidth - *(int *)((char *)fontObj + 0x48);
+        this->width = this->textWidth - fontObj->wrapMargin;
         if (curLines != 0) {
             for (String *line : *curLines)
                 delete line;
@@ -262,19 +263,15 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
         this->lines = lineArray;
         Globals_getLineArray(*globals, fontArg, &text, lineWidth, lineArray);
 
-        String *empty = (String *)operator new(sizeof(String));
-        char const *emptyText = g_ScrollTouchBox_empty_135600;
-        bool copy = false;
-        empty->ctor_char(emptyText, copy);
+        String *empty = new String(g_ScrollTouchBox_empty_135600, false);
         this->lines->push_back(empty);
         Array<String*> *finalLines = this->lines;
         FontMetrics *finalFont = *fontHolder;
         int finalCount = (int)finalLines->size();
-        int finalLineHeight = finalFont->field_0x4;
+        int finalLineHeight = finalFont->lineHeight;
         this->contentHeight = finalLineHeight * finalCount;
     }
 
-    // NEON vector store of zeros across the scroll-state block
     this->scrollOffset = 0;
     this->lastDelta = 0;
     this->damping = 0.0f;
@@ -282,8 +279,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     this->touchStartY = 0;
 }
 
-// Lay out 'text' in the given font slot. This is the engine's disambiguated name
-// for the two-argument setText overload (whose body lives at 0x145600).
+// Lay out 'text' in the given font slot; forwards to the two-argument setText.
 void ScrollTouchBox::setText2(AbyssEngine::String *text, int font)
 {
     setText(*text, font);

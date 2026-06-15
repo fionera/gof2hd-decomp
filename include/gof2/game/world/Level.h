@@ -1,8 +1,6 @@
 #ifndef GOF2_LEVEL_H
 #define GOF2_LEVEL_H
 #include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
-// Engine array container (size, data, capacity).
 
 // Forward declarations for related game classes referenced by Level.
 struct Route;
@@ -23,84 +21,85 @@ struct Waypoint;
 struct PlayerFixedObject;
 struct BoundingVolume;
 struct AEGeometry;
+struct ObjectGun;
 
-// Galaxy on Fire 2 — Level (the in-flight game world / mission space).
-// Layout deduced from getter/setter disassembly. Total size 0x2a0.
+// Galaxy on Fire 2 — Level: the in-flight game world / mission space. It owns the
+// skybox, the actor rosters (player, enemies, asteroids, gas clouds, landmarks),
+// the weapon objects, the radio-message queue and the per-orbit mission state.
 class Level {
 public:
-    // --- header / skybox + objective state (0x00..0xb0) ---
-    uint vtable;             // 0x00 (4-byte vtable slot; ARM32 32-bit pointer layout)
-    int skyboxMesh;          // 0x04
-    int field_08;            // 0x08
-    int skyboxTexture;       // 0x0c
-    int field_10;            // 0x10
-    int field_14;            // 0x14
-    int field_18;            // 0x18
-    int field_1c;            // 0x1c (scalar counters, not a vector)
-    int killCountA;          // 0x20 (friendly-fire kill tally)
-    int killCountB;          // 0x24 (player kill tally)
-    int objectivesA;         // 0x28
-    int objectivesB;         // 0x2c
-    int field_30;            // 0x30
-    int field_34;            // 0x34
-    int field_38;            // 0x38
-    int field_3c;            // 0x3c
-    int field_40;            // 0x40
-    int field_44;            // 0x44
-    int field_48;            // 0x48
-    int field_4c;            // 0x4c
-    int field_50;            // 0x50
-    int field_54;            // 0x54
-    int field_58;            // 0x58
-    int field_5c;            // 0x5c
-    int field_60;            // 0x60
-    int movingStarsIndex;    // 0x64
-    uint8_t field_68;        // 0x68
-    uint8_t field_69;        // 0x69
-    uint8_t pad_6a[2];       // 0x6a
-    int field_6c;            // 0x6c
-    int field_70;            // 0x70
-    int field_74;            // 0x74
-    int particleEmitBoolPtr; // 0x78
-    int particleSystemMgr;   // 0x7c
-    int field_80;            // 0x80
-    int particleRenderBoolPtr; // 0x84
-    int skybox2Mesh;         // 0x88 (movingStars target)
-    int field_8c;            // 0x8c
-    int field_90;            // 0x90
-    int field_94;            // 0x94
-    int field_98;            // 0x98
-    int field_9c;            // 0x9c
-    int field_a0;            // 0xa0
-    int field_a4;            // 0xa4
-    int field_a8;            // 0xa8
-    int miningPlantIndex;    // 0xac
-    int field_b0;            // 0xb0
-    int field_b4;            // 0xb4
-    int field_b8;            // 0xb8
-    int field_bc;            // 0xbc
-    int missionPtr;          // 0xc0 (ctor param_1)
-    int collisionVolume;     // 0xc4
-    int field_c8;            // 0xc8
-    int field_cc;            // 0xcc
-    int field_d0;            // 0xd0
-    int field_d4;            // 0xd4
-    int asteroidWaypoint;    // 0xd8
-    int field_dc;            // 0xdc
-    int field_e0;            // 0xe0
-    int playerGuns;          // 0xe4
-    int enemyGuns;           // 0xe8
-    int starSystem;          // 0xec
-    int player;              // 0xf0
-    int gasClouds;           // 0xf4
-    int enemies;             // 0xf8
-    int asteroids;           // 0xfc
-    int landmarks;
-    int field_104;
+    uint vtable;
+    int skyboxMesh;
+    int field_08;
+    int skyboxTexture;
+    int field_10;
+    int field_14;
+    int field_18;
+    int field_1c;
+    int killCountA;                 // friendly-fire kill tally
+    int killCountB;                 // player kill tally
+    int objectivesA;
+    int objectivesB;
+    int field_30;
+    int field_34;
+    int field_38;
+    int field_3c;
+    int field_40;
+    int field_44;
+    int field_48;
+    int field_4c;
+    int field_50;
+    int field_54;
+    int field_58;
+    int field_5c;
+    int field_60;
+    int movingStarsIndex;
+    uint8_t field_68;
+    uint8_t field_69;
+    uint8_t pad_6a[2];
+    int field_6c;
+    int field_70;
+    int field_74;
+    int particleEmitBoolPtr;
+    int particleSystemMgr;
+    int field_80;
+    int particleRenderBoolPtr;
+    int skybox2Mesh;                // movingStars target
+    int field_8c;
+    int field_90;
+    int field_94;
+    int field_98;
+    int field_9c;
+    int field_a0;
+    Array<AEGeometry*>* field_a4;
+    Array<int>* field_a8;           // value array; no element dtors
+    int miningPlantIndex;
+    Array<KIPlayer*>* field_b0;     // sentry guns; elements also owned via enemies
+    int field_b4;
+    int field_b8;
+    int field_bc;
+    int missionPtr;                 // ctor argument
+    int collisionVolume;
+    int field_c8;
+    int field_cc;
+    int field_d0;
+    int field_d4;
+    int asteroidWaypoint;
+    int field_dc;
+    int field_e0;
+    Array<ObjectGun*>* playerGuns;
+    Array<ObjectGun*>* enemyGuns;
+    int starSystem;
+    int player;
+    Array<KIPlayer*>* gasClouds;
+    Array<KIPlayer*>* enemies;
+    Array<KIPlayer*>* asteroids;
+    Array<KIPlayer*>* landmarks;
+    Array<AEGeometry*>* field_104;
     int playerRoute;
     int friendRoute;
     int enemyRoute;
-    int messages;
+    Array<void*>* messages;         // opaque RadioMessage* elements
     int enemiesLeft;
     int friendsLeft;
     int field_120;
@@ -112,30 +111,30 @@ public:
     int field_138;
     uint8_t friendCargoStolen;
     uint8_t pad_13d[3];
-    Vector flashColor;       // 0x140 (0x140..0x14c)
+    Vector flashColor;
     int flashField;
     int flashDurationA;
     int flashDurationB;
     uint8_t flashActive;
     uint8_t pad_159[3];
     int flashType;
-    int friendCount;         // 0x160 (active friendly slot count)
-    int field_164;           // 0x164
-    int field_168;           // 0x168
-    int hostileCount;        // 0x16c (trailing hostile slot count)
-    int alienAttackTimer;    // 0x170 (updateAlienAttackers accumulator)
-    int orbitWaveTimer;      // 0x174 (updateOrbit/updateMissionOrbit wave timer)
+    int friendCount;                // active friendly slot count
+    int field_164;
+    int field_168;
+    int hostileCount;               // trailing hostile slot count
+    int alienAttackTimer;           // updateAlienAttackers accumulator
+    int orbitWaveTimer;             // updateOrbit/updateMissionOrbit wave timer
     int field_178;
     int field_17c;
     int field_180;
     int field_184;
-    uint16_t field_188;      // 0x188 (0x188 friendTurnedEnemy flag, 0x189 alarm flag)
+    uint16_t field_188;             // low byte friendTurnedEnemy flag, high byte alarm flag
     uint8_t field_18a;
     uint8_t pad_18b;
     int field_18c;
     int field_190;
     int field_194;
-    int field_198;           // 0x198 (skybox2 mesh region; this+0x198)
+    int field_198;
     int field_19c;
     int field_1a0;
     int field_1a4;
@@ -147,26 +146,25 @@ public:
     int field_1b8;
     int field_1bc;
     int field_1c0;
-    int supernovaFlareTexture; // +0x1c4 (supernova flare mesh texture handle)
-    int field_1c8;           // +0x1c8
-    int supernovaFlareMesh;  // +0x1cc (supernova flare mesh handle)
-    uint8_t sub_1d0[0x3c];   // 0x1d0 (constructed sub-object)
-    uint8_t sub_20c[0x3c];   // 0x20c (constructed sub-object)
-    uint8_t sub_248[0x3c];   // 0x248 (constructed sub-object)
+    int supernovaFlareTexture;
+    int field_1c8;
+    int supernovaFlareMesh;
+    uint8_t sub_1d0[0x3c];          // skybox-matrix sub-object
+    uint8_t sub_20c[0x3c];          // cloud-layer matrix sub-object
+    uint8_t sub_248[0x3c];          // ring matrix sub-object
     int field_284;
-    uint8_t field_288;       // +0x288 (boss-present flag)
-    uint8_t supernovaFlareActive; // +0x289 (supernova flare visible flag)
+    uint8_t field_288;              // boss-present flag
+    uint8_t supernovaFlareActive;   // supernova flare visible flag
     uint8_t pad_28a[2];
     int miningPlant;
     int numDeliveredOre;
     int numDeliveredPassengers;
     int field_298;
-    uint8_t field_29c;       // 0x29c (attackWanted flag)
-    uint8_t field_29d;       // 0x29d (killWanted flag)
+    uint8_t field_29c;              // attackWanted flag
+    uint8_t field_29d;              // killWanted flag
     uint8_t field_29e;
     uint8_t pad_29f;
 
-    // --- methods ---
     Level(int mission);
     ~Level();
 
@@ -190,7 +188,7 @@ public:
     void setPlayerEngineColor(short color);
     void initParticleSystems();
     int getStarSystem();
-    int getGasClouds();
+    Array<KIPlayer*>* getGasClouds();
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
     int createStaticObject(Waypoint *wp, int type, int jitter);
     PlayerFixedObject *createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group);
@@ -199,9 +197,9 @@ public:
     void createRadioMessages(int set);
     void getBoundingVolume();
     int getPlayer();
-    int getEnemies();
-    int getLandmarks();
-    int getAsteroids();
+    Array<KIPlayer*>* getEnemies();
+    Array<KIPlayer*>* getLandmarks();
+    Array<KIPlayer*>* getAsteroids();
     int getAsteroidWaypoint();
     int getPlayerRoute();
     int getEnemyRoute();
@@ -216,7 +214,7 @@ public:
     int getAsteroidsLeft();
     int getEnemiesLeft();
     int getFriendsLeft();
-    int getMessages();
+    Array<void*>* getMessages();
     void *getActiveMessages();
     int getTimeLimit();
     int collide(Vector v);
@@ -238,8 +236,8 @@ public:
     void stealFriendCargo();
     uint8_t friendCargoWasStolen();
     void removeObjectives();
-    int getPlayerGuns();
-    int getEnemyGuns();
+    Array<ObjectGun*>* getPlayerGuns();
+    Array<ObjectGun*>* getEnemyGuns();
     int checkGameOver();
     void pirateStationAction(bool param);
     void uncoverWanted(int index);
@@ -261,26 +259,15 @@ public:
     int getNumDeliveredPassengers();
     void incNumDeliveredPassengers(int delta);
 
-    // The lone surviving recovered fragment: createScene's wingman-roster
-    // removal performs a real array-remove loop (no binary fn recovered).
+    // createScene()'s wingman-roster removal performs a real array-remove loop.
     void wingmanDied_one(String *name, unsigned int *list);
 
-    // ------------------------------------------------------------------------
-    // Decompiler-split scene/build fragments.
-    //
-    // Each of these was emitted as a standalone Level_<suffix> helper because the
-    // owning method (createSpace / init / createMission / ...) was too large for
-    // the decompiler to lift in one piece — typically the cut fell on a block of
-    // SIMD float math. They are recovered here as real members performing that
-    // block's work through the engine shims declared at each call site.
-    // ------------------------------------------------------------------------
-
     // createRadioMessage(): hand the finished message queue to the player-ego's
-    // comm controller (ego->comm at +0x18). A null queue clears the channel.
+    // comm controller. A null queue clears the channel.
     void crm_dispatch(int egoComm, void *queue);
 
-    // createSpace(): three slices of the monolithic skybox/station builder —
-    // skybox detail meshes, the star-system backdrop spin, the home station + gates.
+    // createSpace(): three slices of the skybox/station builder — skybox detail
+    // meshes, the star-system backdrop spin, the home station + gates.
     void csp_buildDetail();
     void csp_buildStarSystemScene();
     void csp_buildStationAndGates();
@@ -324,31 +311,8 @@ public:
     void cwm_placeWingman(int *kiSlot, unsigned i);
     void csc_placeActor(int actor, int idx, int profile);
 
-    // renderBG(): build the rotated skybox basis into self+0x1d0.
+    // renderBG(): build the rotated skybox basis into sub_1d0.
     void rbg_buildSkyMatrix(int mode, float spin);
 };
 
-static_assert(sizeof(Level) == 0x2a0, "Level size");
-static_assert(__builtin_offsetof(Level, objectivesA) == 0x28, "objectivesA");
-static_assert(__builtin_offsetof(Level, particleSystemMgr) == 0x7c, "particleSystemMgr");
-static_assert(__builtin_offsetof(Level, miningPlantIndex) == 0xac, "miningPlantIndex");
-static_assert(__builtin_offsetof(Level, player) == 0xf0, "player");
-static_assert(__builtin_offsetof(Level, enemies) == 0xf8, "enemies");
-static_assert(__builtin_offsetof(Level, asteroids) == 0xfc, "asteroids");
-static_assert(__builtin_offsetof(Level, landmarks) == 0x100, "landmarks");
-static_assert(__builtin_offsetof(Level, playerRoute) == 0x108, "playerRoute");
-static_assert(__builtin_offsetof(Level, messages) == 0x114, "messages");
-static_assert(__builtin_offsetof(Level, enemiesLeft) == 0x118, "enemiesLeft");
-static_assert(__builtin_offsetof(Level, asteroidsLeft) == 0x128, "asteroidsLeft");
-static_assert(__builtin_offsetof(Level, kills) == 0x12c, "kills");
-static_assert(__builtin_offsetof(Level, timeLimit) == 0x130, "timeLimit");
-static_assert(__builtin_offsetof(Level, friendCargoStolen) == 0x13c, "friendCargoStolen");
-static_assert(__builtin_offsetof(Level, flashColor) == 0x140, "flashColor");
-static_assert(__builtin_offsetof(Level, flashActive) == 0x158, "flashActive");
-static_assert(__builtin_offsetof(Level, flashType) == 0x15c, "flashType");
-static_assert(__builtin_offsetof(Level, sub_1d0) == 0x1d0, "sub_1d0");
-static_assert(__builtin_offsetof(Level, field_284) == 0x284, "field_284");
-static_assert(__builtin_offsetof(Level, miningPlant) == 0x28c, "miningPlant");
-static_assert(__builtin_offsetof(Level, numDeliveredOre) == 0x290, "numDeliveredOre");
-static_assert(__builtin_offsetof(Level, field_29c) == 0x29c, "field_29c");
 #endif

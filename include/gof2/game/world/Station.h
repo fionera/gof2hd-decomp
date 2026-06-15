@@ -1,69 +1,71 @@
 #ifndef GOF2_STATION_H
 #define GOF2_STATION_H
 #include "gof2/common.h"
-#include "gof2/game/ship/Agent.h"   // provides the shared String aggregate
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 — Station class. Top-level, no namespace.
-// Field offsets recovered from per-method target disassembly. Methods access
-// fields via byte-offset casts from `this`.
 
-struct Station;
+class Item;
+class Ship;
+class Agent;
 
-// String (AbyssEngine::String by value: 12-byte trivially-copied aggregate)
-// is provided by gof2/Agent.h (included above) to avoid a duplicate definition.
-
+// Galaxy on Fire 2 - a trading station orbiting a planet within a solar system.
+// Owns its for-sale items, the ships docked for sale, and the agents present.
 class Station {
 public:
-    int index;                      // +0xc
-    int systemIndex;                     // +0x10
-    int textureIndex;                     // +0x18
-    uint8_t visited;                 // +0x1c
-    int techLevel;                     // +0x20
-    uint8_t attackedFriends;                 // +0x24
-    Array<Item*>* items;           // +0x28 Array<Item*>*
-    Array<Ship*>* ships;           // +0x2c Array<Ship*>*
-    Array<Agent*>* agents;         // +0x30 Array<Agent*>*
-    uint8_t field_0x71;                 // +0x71
+    String name;
+    int index;
+    int systemIndex;
+    uint8_t planet;
+    int textureIndex;
+    uint8_t visited;
+    int techLevel;
+    uint8_t attackedFriends;
+    Array<Item*>* items;
+    Array<Ship*>* ships;
+    Array<Agent*>* agents;
 
-    // ---- methods (converted from free functions) ----
-    void addItem(Item *item);
-    void addShip(Ship *ship);
+    Station();
+    Station(const String& name, int index, int systemIndex, int techLevel, int textureIndex);
+    ~Station();
+
+    Station* clone();
+
+    void addItem(Item* item);
+    void addShip(Ship* ship);
+    void removeShip(Ship* ship);
+    void removeShips();
+
+    bool equals(Station* other);
+    uint32_t hasItem(int index);
+    uint32_t hasShip(int index);
+
     int getIndex() const { return index; }
     int getSystem() const { return systemIndex; }
     int getTecLevel() const { return techLevel; }
     int getTextureIndex() const { return textureIndex; }
-    void *getAgents() const { return agents; }
-    void *getItems() const { return items; }   // +0x28 Array<Item*>*
-    void *getShips() const { return ships; }    // +0x2c Array<Ship*>*
-    Station * clone();
-    Station * ctor(void *name, int p3, int p4, int p5, int p6);
-    void ctor_default();
-    void dtor();
-    bool equals(Station *other);
-    uint32_t getHiddenBlueprintIndex();
-    String getName();
-    uint32_t getPirateStationIndex();
+    String getName() { return name; }
+
+    Array<Agent*>* getAgents() const { return agents; }
+    Array<Item*>* getItems() const { return items; }
+    Array<Ship*>* getShips() const { return ships; }
+
+    void setAgents(Array<Agent*>* agents);
+    void setItems(Array<Item*>* items, bool deep);
+    void setShips(Array<Ship*>* ships, bool deep);
+    // Take ownership of a ready-built ship array (no deep clone) - used by save loading.
+    void setShipsArr(Array<Ship*>* ships);
+
+    void setAttackedFriends(bool v);
     uint8_t hasAttackedFriends();
-    uint32_t hasItem(int index);
-    uint32_t hasShip(int index);
+
     bool isAttackedByAliens();
     uint8_t isDiscovered();
-    void removeShip(Ship *ship);
-    void removeShips();
-    void setAgents(void *agents);
-    void setAttackedFriends(bool v);
-    void setItems(uint32_t *items, bool deep);
-    void setShips(uint32_t *ships, bool deep);
-    // Take ownership of a ready-built ship array (no deep clone) — used by save loading.
-    void setShipsArr(void *ships);
-    // ArrayRemove<Ship*>: compact `ships`, dropping every slot equal to `ship`.
-    static void arrayRemoveShip(Ship *ship, void *ships);
-    // Destroy the AbyssEngine::String name base sub-object (last step of ~Station).
-    void baseDtor();
-    // Deleting-destructor tail: release the object's storage after ~Station has run.
-    void dtorFinish();
+    void visit();
+
+    uint32_t getHiddenBlueprintIndex();
+    uint32_t getPirateStationIndex();
     uint32_t stationHasHiddenBlueprint(bool ignoreFound);
     uint32_t stationHasPirateBase();
-    void visit();
+
+    // ArrayRemove<Ship*>: compact `ships`, dropping every slot equal to `ship`.
+    static void arrayRemoveShip(Ship* ship, Array<Ship*>* ships);
 };
 #endif

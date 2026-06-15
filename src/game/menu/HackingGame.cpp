@@ -2,12 +2,8 @@
 #include "gof2/engine/audio/FModSound.h"
 #include "gof2/engine/render/PaintCanvas.h"
 
-extern "C" unsigned __aeabi_uidiv(unsigned value, unsigned divisor);
-extern "C" int __aeabi_idiv(int value, int divisor);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 
-// ---- ~HackingGame ----
-// The game state is a POD block of ints/bytes; nothing to free.
 HackingGame::~HackingGame() {}
 
 int HackingGame::getDockingIndex()
@@ -42,7 +38,7 @@ void HackingGame::rotateLeftCW(int *state)
     state[3] = d;
     state[4] = b;
     this->rotateTimer = 0;
-    *(uint8_t *)&this->f_128 = 1;
+    this->rotatingLeft = true;
 }
 
 int HackingGame::gameWon()
@@ -87,9 +83,7 @@ int HackingGame::gameWon(int *state)
 
 bool HackingGame::isRotating()
 {
-    if ((uint8_t)(this->f_128 & 0xff) != 0)
-        return true;
-    return (uint8_t)(this->f_128 >> 8) != 0;
+    return this->rotatingLeft || this->rotatingRight;
 }
 
 int HackingGame::getRewardItem()
@@ -108,7 +102,7 @@ void HackingGame::rotateRightCW(int *state)
     state[4] = d;
     state[5] = b;
     this->rotateTimer = 0;
-    *((uint8_t *)&this->f_128 + 1) = 1;
+    this->rotatingRight = true;
 }
 
 typedef void (*ImageCreateFn)(void *canvas, uint16_t image, uint32_t *out);
@@ -198,7 +192,7 @@ void HackingGame::render2D()
         delta[i * 2 + 1] = 0;
     }
 
-    if ((uint8_t)(this->f_128 & 0xff) != 0) {
+    if (this->rotatingLeft) {
         float amount = (float)this->rotateTimer / 300.0f;
         if (amount > 1.0f)
             amount = 1.0f;
@@ -206,7 +200,7 @@ void HackingGame::render2D()
         delta[0] = (int)(amount * (float)tileW);
         delta[7] = (int)(-(amount * (float)tileH));
         delta[8] = (int)(-(amount * (float)tileW));
-    } else if ((uint8_t)(this->f_128 >> 8) != 0) {
+    } else if (this->rotatingRight) {
         float amount = (float)this->rotateTimer / 300.0f;
         if (amount > 1.0f)
             amount = 1.0f;
@@ -255,11 +249,11 @@ void HackingGame::render2D()
         float oneAndHalf = (float)tileW * 1.5f;
         for (unsigned i = 0; i != 6; ++i) {
             int stateIndex = this->current[i];
-            bool flashSolved = solved && ((__aeabi_idiv(this->wonTimer, 200) & 1) == 0);
+            bool flashSolved = solved && (((this->wonTimer / 200) & 1) == 0);
             int imageOffset = (flashSolved ? 6 : 0) + typeOffset + stateIndex;
             int image = this->tileImages[imageOffset];
-            unsigned row = __aeabi_uidiv((uint8_t)i, 3);
-            unsigned col = (uint8_t)(i - row * 3);
+            unsigned row = i / 3;
+            unsigned col = i - row * 3;
             int y = (int)(((float)half_i(screenW) - oneAndHalf) + (float)(tileW * col) +
                           (float)delta[i * 2]);
             int imageH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(this->mainImage));
@@ -268,7 +262,7 @@ void HackingGame::render2D()
                                         delta[i * 2 + 1] + layoutOffset(*layout, 0x310));
         }
 
-        int leftArrow = (uint8_t)(this->f_128 & 0xff) != 0 ? this->arrowActive : this->arrowIdle;
+        int leftArrow = this->rotatingLeft ? this->arrowActive : this->arrowIdle;
         int arrowW = ((PaintCanvas*)(*canvasHolder))->GetImage2DWidth((unsigned)(leftArrow));
         int arrowTitleH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(this->mainImage));
         int arrowH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(leftArrow));
@@ -277,7 +271,7 @@ void HackingGame::render2D()
                                 half_i(*g_HackingGame_render_screen_h) - half_i(tileH) -
                                     half_i(arrowTitleH) - half_i(arrowH) + layoutOffset(*layout, 0x310));
 
-        int rightArrow = (uint8_t)(this->f_128 >> 8) != 0 ? this->arrowActive : this->arrowIdle;
+        int rightArrow = this->rotatingRight ? this->arrowActive : this->arrowIdle;
         arrowW = ((PaintCanvas*)(*canvasHolder))->GetImage2DWidth((unsigned)(rightArrow));
         arrowTitleH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(this->mainImage));
         arrowH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(rightArrow));
@@ -288,8 +282,8 @@ void HackingGame::render2D()
 
         if (!solved) {
             for (unsigned i = 0; i != 6; ++i) {
-                unsigned row = __aeabi_uidiv((uint8_t)i, 3);
-                unsigned col = (uint8_t)(i - row * 3);
+                unsigned row = i / 3;
+                unsigned col = i - row * 3;
                 int stateIndex = this->target[i];
                 int image = this->tileImages[typeOffset + stateIndex];
                 int imageH = ((PaintCanvas*)(*canvasHolder))->GetImage2DHeight((unsigned)(this->mainImage));
@@ -385,7 +379,8 @@ void HackingGame::reInit()
     for (int i = 0; i != 6; ++i)
         this->current[i] = this->working[i];
 
-    this->f_128 = 0;
+    this->rotatingLeft = false;
+    this->rotatingRight = false;
 }
 
 int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state)
@@ -427,7 +422,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
                 leftState[3] = d;
                 leftState[4] = b;
                 this->rotateTimer = 0;
-                *(uint8_t *)&this->f_128 = 1;
+                this->rotatingLeft = true;
                 return solvableInNSteps(steps, depth + 1, leftCount + 1, 0, leftState);
             }
 
@@ -442,7 +437,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
                 rightState[4] = d;
                 rightState[5] = b;
                 this->rotateTimer = 0;
-                *((uint8_t *)&this->f_128 + 1) = 1;
+                this->rotatingRight = true;
                 return solvableInNSteps(steps, depth + 1, 0, rightCount + 1, rightState);
             }
         } while (true);
@@ -455,11 +450,12 @@ __attribute__((visibility("hidden"))) extern FModSound **g_HackingGame_update_so
 
 int HackingGame::update(int dt)
 {
-    if ((uint8_t)(this->f_128 & 0xff) != 0 || (uint8_t)(this->f_128 >> 8) != 0) {
+    if (this->rotatingLeft || this->rotatingRight) {
         int timer = this->rotateTimer + dt;
         this->rotateTimer = timer;
         if (timer > 300) {
-            this->f_128 = 0;
+            this->rotatingLeft = false;
+            this->rotatingRight = false;
             this->rotateTimer = 0;
             for (int i = 0; i != 6; ++i)
                 this->current[i] = this->working[i];

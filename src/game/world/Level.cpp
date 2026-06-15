@@ -1,20 +1,9 @@
 #include "gof2/game/world/Level.h"
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/ship/Ship.h"
-extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engine shim (setDirection up-vec unrecoverable)
+#include "gof2/engine/render/AEGeometry.h"
 #include "gof2/externs.h"
 #include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/engine/render/AEGeometry.h"
-// NOTE: ParticleSystemManager / RadioMessage are intentionally NOT included from
-// their real headers — PSM's enable* are non-static (handle,bool) member fns vs
-// the recovered static (mgr,id[,enable]) helpers, and RadioMessage's real header
-// redefines sibling types that clash with this include set. They keep local
-// minimal interface structs (below) that match the recovered code. The real
-// Status / SolarSystem / Route / Wanted / Objective / Station / LODManager /
-// KIPlayer classes ARE adopted (included above); accessor return-type drifts
-// (e.g. Status::getSystem() -> int system index reinterpreted as a SolarSystem*)
-// are reconciled with minimal casts at the call sites, preserving the original
-// int-handle behaviour.
 #include "gof2/game/mission/Achievements.h"
 #include "gof2/game/ui/Hud.h"
 #include "gof2/game/ship/Player.h"
@@ -30,58 +19,34 @@ extern "C" void AEGeometry_setDirection_cso(Vector *geo, Vector *dir);  // engin
 #include "gof2/game/world/Wanted.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ship/KIPlayer.h"
+#include "gof2/game/weapons/ObjectGun.h"
+#include "gof2/game/core/RadioMessage.h"
+#include "gof2/engine/render/ParticleSystemManager.h"
+#include "gof2/game/world/StarSystem.h"
+#include "gof2/engine/core/AbyssEngine.h"
+#include "gof2/platform/libc.h"
 
-// RadioMessage / ParticleSystemManager are reached only through a few accessor
-// methods and opaque pointers; their real headers drift from the recovered call
-// sites (see note above), so the minimal interfaces Level needs are declared
-// locally here (one definition each).
+// Sibling engine/game classes reached only by pointer through the recovered
+// veneer shims below; declared here since each lives in its own header that this
+// translation unit does not otherwise need.
+struct Globals;
+struct Galaxy;
+struct Engine;
+struct ApplicationManager;
+struct FileRead;
+struct BoundingSphere;
+struct PlayerAsteroid;
+struct PlayerFighter;
+struct PlayerStatic;
+struct PlayerGasCloud;
+struct Agent;
+struct RocketGun;
+struct BombGun;
+struct MineGun;
+struct SentryGun;
+struct BeamGun;
 
 static unsigned int g_level_texOutScratch;
-
-struct RadioMessage {
-    void reset();
-};
-
-struct ParticleSystemManager {
-    static void enableSystemEmit(int mgr, int id);
-    static void enableSystemRender(int mgr, int id, bool enable);
-    void render3d();
-};
-
-// Engine Array<T> raw view: the recovered code casts opaque int handles to
-// `Array *` and reads the {size,data,capacity} fields directly. Modelled here
-// as a plain layout-compatible view (size, data pointer, capacity).
-struct RawArray {
-    unsigned int size;
-    void        *data;
-    unsigned int capacity;
-};
-
-// Array<T> container helpers (defined at end of file over the engine's RawArray
-// {size,data,capacity} layout). Each is one Array<T> special member specialised
-// per element type; the trailing context suffix (_ca/_csc/_csp/_cm/...) marks
-// the call site the decompiler inlined it at. Consolidated here as forward
-// declarations so the call sites below resolve.
-struct ObjectGun;
-// Generic Array<T> special members over the engine's RawArray {size,data,capacity}
-// layout (defined in the anonymous namespace near the end of this file). Element
-// size is a 4-byte handle for every instantiation, so one set serves every type;
-// the Level methods below call these directly at each container-op site.
-namespace {
-void  arrayCtor(void *p);
-void *arrayDtor(void *p);
-void  arraySetLength(unsigned n, void *p);
-void  arrayAdd(int item, void *p);
-}
-extern "C" {
-// Array<T>::releaseClasses()
-void  ArrayReleaseClasses_AGun_ag(void *a);
-void  ArrayReleaseClasses_KIPlayer_csc(void *a);
-// generic (untyped, int-handle) Array helpers used by createSentryGuns
-void  ArrayCtor(int arr);
-void  ArraySetLength(int len, int arr);
-void  ArrayAdd(int item, int arr);
-}
 
 extern "C" void *dtor_Objective(void *p);
 extern "C" void *dtor_BoundingVolume(void *p);
@@ -91,18 +56,7 @@ extern "C" void *dtor_Route(void *p);
 extern "C" void *dtor_PSM(void *p);
 extern "C" void *dtor_LODManager(void *p);
 extern "C" void *dtor_LodMeshMerger(void *p);
-extern "C" void *dtor_ArrayKI(void *p);
-extern "C" void Level_releaseAEGeometry(void *p);
-extern "C" void *dtor_ArrayAEGeometry(void *p);
-extern "C" void Level_releaseInt(void *p);
-extern "C" void *dtor_ArrayInt(void *p);
-extern "C" void Level_releaseAbstractGun(void *p);
-extern "C" void *dtor_ArrayAbstractGun(void *p);
-extern "C" void Level_releaseKI(void *p);
-extern "C" void Level_releaseRadioMessage(void *p);
-extern "C" void *dtor_ArrayRadioMessage(void *p);
 extern "C" void Level_setAlwaysEnemy(int obj, int flag);
-extern "C" unsigned int uidiv(unsigned int a, unsigned int b);
 extern "C" void Level_createPlayer_impl(Level *self);
 extern "C" void *dtor_Objective_akw(void *p);
 extern "C" void Objective_ctor_akw(int o, int a, int b, int c, Level *self);
@@ -118,6 +72,7 @@ namespace {
 struct StarSystemView {
     void render2D();
     void renderSunStreak();
+    Vector getLightDirection();
 };
 } // namespace
 
@@ -177,7 +132,7 @@ void Level::enableMovingStars(bool enable) {
         return;
     }
     // veneer 0x1ac048 -> ParticleSystemManager::enableSystemRender
-    ParticleSystemManager::enableSystemRender(skybox2Mesh, index, enable);
+    ((ParticleSystemManager *)(intptr_t)skybox2Mesh)->enableSystemRender(index, enable);
 }
 
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
@@ -191,10 +146,10 @@ int Level::getMiningPlant() {
     if (index < 0) {
         return 0;
     }
-    return ((int *)((RawArray *)(intptr_t)enemies)->data)[index];
+    return (int)(intptr_t)(*this->enemies)[index];
 }
 
-int Level::getGasClouds() {
+Array<KIPlayer*>* Level::getGasClouds() {
     return gasClouds;
 }
 
@@ -226,7 +181,7 @@ void Level::setPlayerRoute(Route *route) {
 
 void Level::enableFog(bool enable) {
     // veneer 0x1ac048 -> ParticleSystemManager::enableSystemRender
-    ParticleSystemManager::enableSystemRender(particleSystemMgr, field_284, enable);
+    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemRender(field_284, enable);
 }
 
 void Level::isInAsteroidCenterRange(Vector v) {
@@ -234,7 +189,7 @@ void Level::isInAsteroidCenterRange(Vector v) {
     return (*(void (**)(int *, Vector))(*vol + 8))(vol, v);
 }
 
-int Level::getAsteroids() {
+Array<KIPlayer*>* Level::getAsteroids() {
     return asteroids;
 }
 
@@ -255,8 +210,8 @@ void Level::incNumDeliveredOre(int delta) {
 }
 
 void Level::enableParticleEffects(bool emit, bool render) {
-    ParticleSystemManager::enableSystemEmit(particleSystemMgr, field_284);
-    ParticleSystemManager::enableSystemRender(particleSystemMgr, field_284, render);
+    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemEmit(field_284, render);  // decompiler dropped the enable arg; Ghidra(0xcd68c) shows it is r2 (=render)
+    ((ParticleSystemManager *)(intptr_t)particleSystemMgr)->enableSystemRender(field_284, render);
     *(unsigned char *)particleRenderBoolPtr = render;
     *(unsigned char *)particleEmitBoolPtr = render;
 }
@@ -267,11 +222,9 @@ void Level::switchSkyboxForIntro() {
     PaintCanvas **pc = g_paintCanvas_intro;
     ((PaintCanvas*)(*pc))->MeshCreate((unsigned short)(0x4591), (unsigned int *)&skyboxMesh, false);
     ((PaintCanvas*)(*pc))->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)&field_198, false);
-    RawArray *list = (RawArray *)(intptr_t)asteroids;
-    if (list != 0) {
-        for (unsigned int i = 0; i < list->size; i = i + 1) {
-            ((KIPlayer **)list->data)[i]->setDead();
-            list = (RawArray *)(intptr_t)asteroids;
+    if (this->asteroids != nullptr) {
+        for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
+            (*this->asteroids)[i]->setDead();
         }
     }
 }
@@ -303,7 +256,7 @@ void Level::killWanted() {
     }
 }
 
-int Level::getEnemyGuns() {
+Array<ObjectGun*>* Level::getEnemyGuns() {
     return enemyGuns;
 }
 
@@ -311,7 +264,7 @@ void Level::stealFriendCargo() {
     friendCargoStolen = 1;
 }
 
-int Level::getEnemies() {
+Array<KIPlayer*>* Level::getEnemies() {
     return enemies;
 }
 
@@ -329,7 +282,7 @@ uint8_t Level::friendCargoWasStolen() {
     return friendCargoStolen;
 }
 
-int Level::getMessages() {
+Array<void*>* Level::getMessages() {
     return messages;
 }
 
@@ -337,66 +290,53 @@ int Level::getMessages() {
 // (the Array<RadioMessage*> that createRadioMessage()/createRadioMessages() build at
 // this+0x114). Returned as an opaque pointer; callers re-cast to the message array.
 void *Level::getActiveMessages() {
-    return (void *)(intptr_t)messages;
+    return (void *)this->messages;
 }
 
 int Level::getEnemyRoute() {
     return enemyRoute;
 }
 
-int Level::getPlayerGuns() {
+Array<ObjectGun*>* Level::getPlayerGuns() {
     return playerGuns;
 }
 
 void Level::renderPause() {
-    unsigned int *a;
-    a = (unsigned int *)(intptr_t)playerGuns;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->playerGuns != nullptr) {
+        for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
+            int *o = (int *)(*this->playerGuns)[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = (unsigned int *)(intptr_t)playerGuns;
         }
     }
-    a = (unsigned int *)(intptr_t)enemyGuns;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->enemyGuns != nullptr) {
+        for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
+            int *o = (int *)(*this->enemyGuns)[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = (unsigned int *)(intptr_t)enemyGuns;
         }
     }
-    a = (unsigned int *)(intptr_t)enemies;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->enemies != nullptr) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            int *o = (int *)(*this->enemies)[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = (unsigned int *)(intptr_t)enemies;
         }
     }
-    a = (unsigned int *)(intptr_t)asteroids;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->asteroids != nullptr) {
+        for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
+            int *o = (int *)(*this->asteroids)[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = (unsigned int *)(intptr_t)asteroids;
         }
     }
-    a = (unsigned int *)(intptr_t)gasClouds;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->gasClouds != nullptr) {
+        for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
+            int *o = (int *)(*this->gasClouds)[i];
             (*(void (**)(int *))(*o + 0x24))(o);
-            a = (unsigned int *)(intptr_t)gasClouds;
         }
     }
-    a = (unsigned int *)(intptr_t)landmarks;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->landmarks != nullptr) {
+        for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
+            int *o = (int *)(*this->landmarks)[i];
             if (o != 0) {
                 (*(void (**)(int *))(*o + 0x24))(o);
-                a = (unsigned int *)(intptr_t)landmarks;
             }
         }
     }
@@ -435,11 +375,11 @@ void Level::pirateStationAction(bool param) {
 }
 
 int Level::getNumDockingTargets() {
-    RawArray *list = (RawArray *)(intptr_t)enemies;
-    if (list != 0) {
+    if (this->enemies != nullptr) {
         int total = 0;
-        for (unsigned int i = 0; list->size != i; i = i + 1) {
-            total = total + *(unsigned char *)(((int *)list->data)[i] + 0x70);
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            KIPlayer *e = (*this->enemies)[i];
+            total = total + *(unsigned char *)((char *)e + 0x70);
         }
         return total;
     }
@@ -452,14 +392,13 @@ void Level::removeObjectives() {
 }
 
 int Level::getDockingTarget(int index) {
-    RawArray *list = (RawArray *)(intptr_t)enemies;
-    if (list != 0) {
+    if (this->enemies != nullptr) {
         int found = 0;
-        for (unsigned int i = 0; i < list->size; i = i + 1) {
-            int obj = ((int *)list->data)[i];
-            if (*(char *)(obj + 0x70) != 0) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            KIPlayer *obj = (*this->enemies)[i];
+            if (*(char *)((char *)obj + 0x70) != 0) {
                 if (found == index) {
-                    return obj;
+                    return (int)(intptr_t)obj;
                 }
                 found = found + 1;
             }
@@ -472,67 +411,54 @@ int Level::getTimeLimit() {
     return timeLimit;
 }
 
-int Level::getLandmarks() {
+Array<KIPlayer*>* Level::getLandmarks() {
     return landmarks;
 }
 
 void Level::render(int ctx) {
-    unsigned int *a;
-    a = (unsigned int *)(intptr_t)playerGuns;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->playerGuns != nullptr) {
+        for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
+            int *o = (int *)(*this->playerGuns)[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = (unsigned int *)(intptr_t)playerGuns;
         }
     }
-    a = (unsigned int *)(intptr_t)enemyGuns;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->enemyGuns != nullptr) {
+        for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
+            int *o = (int *)(*this->enemyGuns)[i];
             (*(void (**)(int *))(*o + 0x14))(o);
-            a = (unsigned int *)(intptr_t)enemyGuns;
         }
     }
-    a = (unsigned int *)(intptr_t)enemies;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->enemies != nullptr) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            int *o = (int *)(*this->enemies)[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(enemies + 4)))[i];
+            int *o2 = (int *)(*this->enemies)[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = (unsigned int *)(intptr_t)enemies;
         }
     }
-    a = (unsigned int *)(intptr_t)asteroids;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->asteroids != nullptr) {
+        for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
+            int *o = (int *)(*this->asteroids)[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(asteroids + 4)))[i];
+            int *o2 = (int *)(*this->asteroids)[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = (unsigned int *)(intptr_t)asteroids;
         }
     }
-    a = (unsigned int *)(intptr_t)gasClouds;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->gasClouds != nullptr) {
+        for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
+            int *o = (int *)(*this->gasClouds)[i];
             (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-            int *o2 = ((int **)(*(int *)(gasClouds + 4)))[i];
+            int *o2 = (int *)(*this->gasClouds)[i];
             (*(void (**)(int *))(*o2 + 0x24))(o2);
-            a = (unsigned int *)(intptr_t)gasClouds;
         }
     }
-    a = (unsigned int *)(intptr_t)landmarks;
-    if (a != 0) {
-        for (unsigned int i = 0; i < *a; i = i + 1) {
-            int *o = ((int **)a[1])[i];
+    if (this->landmarks != nullptr) {
+        for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
+            int *o = (int *)(*this->landmarks)[i];
             if (o != 0) {
                 (*(void (**)(int *, int))(*o + 0x34))(o, ctx);
-                int *o2 = ((int **)(*(int *)(landmarks + 4)))[i];
+                int *o2 = (int *)(*this->landmarks)[i];
                 (*(void (**)(int *))(*o2 + 0x24))(o2);
-                a = (unsigned int *)(intptr_t)landmarks;
             }
         }
     }
@@ -572,7 +498,7 @@ void Level::render(int ctx) {
 }
 
 int Level::collideStream(Vector v) {
-    int *obj = *(int **)(*(int *)(landmarks + 4) + 4);
+    int *obj = (int *)(*this->landmarks)[1];
     if (obj != 0) {
         return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
     }
@@ -594,14 +520,17 @@ static void releaseObject(Handle &member, void *(*objectDtor)(void *)) {
     member = 0;
 }
 
-template <class Handle>
-static void releaseArray(Handle &member, void (*releaseElements)(void *),
-                         void *(*arrayDtor)(void *)) {
-    if (member != 0) {
-        releaseElements((void *)(intptr_t)member);
-        ::operator delete(arrayDtor((void *)(intptr_t)member));
+// Free an Array<T*> whose elements are owned, opaque, forward-declared objects:
+// destroy each element through its vtable deleting-destructor (slot 0), then delete
+// the container. `delete (T*)elem` would be wrong on an incomplete type, so we
+// dispatch through the vtable exactly as the engine's ArrayReleaseClasses<T> did.
+template <class T> static void deletePolyArray(Array<T*>*& v) {
+    if (!v) return;
+    for (unsigned i = 0; i < v->size(); ++i) {
+        void* e = (void*)(*v)[i];
+        if (e) { void* vt = *(void**)e; (*(void(**)(void*))((char*)vt + 0))(e); } // vtable[0] deleting dtor
     }
-    member = 0;
+    delete v; v = nullptr;
 }
 
 Level::~Level() {
@@ -628,19 +557,19 @@ Level::~Level() {
     releaseObject(particleRenderBoolPtr, dtor_PSM);
     releaseObject(field_98, dtor_PSM);
     releaseObject(field_9c, dtor_PSM);
-    releaseArray(field_a4, Level_releaseAEGeometry, dtor_ArrayAEGeometry);
-    releaseArray(field_a8, Level_releaseInt, dtor_ArrayInt);
-    releaseArray(playerGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun);
-    releaseArray(enemyGuns, Level_releaseAbstractGun, dtor_ArrayAbstractGun);
-    releaseArray(enemies, Level_releaseKI, dtor_ArrayKI);
-    releaseArray(asteroids, Level_releaseKI, dtor_ArrayKI);
-    releaseArray(gasClouds, Level_releaseKI, dtor_ArrayKI);
-    releaseArray(landmarks, Level_releaseKI, dtor_ArrayKI);
-    releaseArray(messages, Level_releaseRadioMessage, dtor_ArrayRadioMessage);
-    releaseArray(field_104, Level_releaseAEGeometry, dtor_ArrayAEGeometry);
+    deletePolyArray(field_a4);
+    if (field_a8) { delete field_a8; field_a8 = nullptr; }   // Array<int>: no element dtors
+    deletePolyArray(playerGuns);
+    deletePolyArray(enemyGuns);
+    deletePolyArray(enemies);
+    deletePolyArray(asteroids);
+    deletePolyArray(gasClouds);
+    deletePolyArray(landmarks);
+    deletePolyArray(messages);
+    deletePolyArray(field_104);
     releaseObject(vtable, dtor_LODManager);
     releaseObject(field_a0, dtor_LodMeshMerger);
-    releaseObject(field_b0, dtor_ArrayKI);
+    if (field_b0) { delete field_b0; field_b0 = nullptr; }   // container-only: elements owned by enemies
 }
 
 void Level::incNumDeliveredPassengers(int delta) {
@@ -688,13 +617,11 @@ Route *Level::createRoute(int count) {
 __attribute__((visibility("hidden"))) extern Status **g_alarmAllFriends;
 
 void Level::alarmAllFriends(int race, bool message) {
-    unsigned int *list = (unsigned int *)(intptr_t)enemies;
-    if (list != 0) {
-        for (unsigned int i = 0; i < *list; i = i + 1) {
-            int obj = ((int *)list[1])[i];
+    if (this->enemies != nullptr) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            int obj = (int)(intptr_t)(*this->enemies)[i];
             if (*(int *)(obj + 0x28) == race) {
                 Level_setAlwaysEnemy(*(int *)(obj + 4), 1);
-                list = (unsigned int *)(intptr_t)enemies;
             }
         }
     }
@@ -719,17 +646,16 @@ __attribute__((visibility("hidden"))) extern int *g_engineColorBase;
 
 void Level::setPlayerEngineColor(short color) {
     int c = color;
-    if (player != 0 && field_a4 != 0) {
+    if (player != 0 && field_a4 != nullptr) {
         unsigned int *p = (unsigned int *)((char *)g_engineColorBase + 0x1254);
-        for (int i = *(int *)field_a4; i != 0; i = i - 1) {
+        for (int i = (int)field_a4->size(); i != 0; i = i - 1) {
             *p = c << 0x10 | c << 0x18 | c << 8 | 0xff;
             p = p + 0x28;
         }
     }
 }
 
-struct Gun;
-struct ObjectGun;
+
 
 // Index->resource lookup tables (each DAT_ is a base into a const id array).
 __attribute__((visibility("hidden"))) extern int *g_cg_beamTable;   // [DAT_000ce2b4]
@@ -921,20 +847,17 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
 
     Gun_setLevel_cg(gun, this);
-    void *guns = *(void **)&this->playerGuns;
-    if (guns == 0) {
-        guns = ::operator new(0xc);
-        arrayCtor(guns);
-        *(void **)&this->playerGuns = guns;
+    if (this->playerGuns == nullptr) {
+        this->playerGuns = new Array<ObjectGun*>();
     }
-    arrayAdd((int)(intptr_t)(obj), guns);
+    this->playerGuns->push_back(obj);
     return gun;
 }
 
-struct Station;
-struct StarSystem;
-struct SolarSystem;
-struct Engine;
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int    *g_csp_stack;   // [DAT_000be974]
 __attribute__((visibility("hidden"))) extern Status **g_csp_status;  // [DAT_000be978]
@@ -1020,16 +943,11 @@ void Level::createSpace()
     // build the home station + jumpgates.
     Status **status = g_csp_status;
     (void)status;
-    void *players = ::operator new(0xc);
-    arrayCtor(players);
-    *(void **)&this->landmarks = players;
-    arraySetLength((unsigned)(4), players);
+    this->landmarks = new Array<KIPlayer*>();
+    this->landmarks->resize(4);
 
     this->csp_buildStationAndGates();
 }
-
-struct RadioMessage;
-struct Station;
 
 // PC-relative status/RNG holders + radio-table base pointers (each DAT_ resolves to a global
 // table of {messageId, delay} pairs the original indexes into).
@@ -1064,13 +982,10 @@ void Level::createRadioMessage(int type, int sub) {
         return;
 
     // fresh message queue.
-    if (*(void **)&this->messages != 0) {
-        operator_delete_crm(arrayDtor(*(void **)&this->messages));
-        this->messages = 0;
+    if (this->messages != nullptr) {
+        deletePolyArray(this->messages);
     }
-    void *queue = ::operator new(0xc);
-    arrayCtor(queue);
-    *(void **)&this->messages = queue;
+    this->messages = new Array<void*>();
 
     // resolve the speaker portrait from the sub-parameter.
     int speaker;
@@ -1150,7 +1065,7 @@ void Level::createRadioMessage(int type, int sub) {
             RadioMessage *m = (RadioMessage *)::operator new(0x28);
             int kind = (k == 0) ? 5 : 6;
             RadioMessage_ctor_crm(m, tbl[k * 2 + 1], arg, kind, delay);
-            arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+            this->messages->push_back(m);
         }
         builtInline = true;
         break;
@@ -1159,10 +1074,10 @@ void Level::createRadioMessage(int type, int sub) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         int rng = *g_crm_rngStorm;
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xaf4, 0, 5, 0x5dc);
-        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+        this->messages->push_back(m);
         m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, AERandom_nextInt_crm(rng) + 0xafa, 0, 6, 0);
-        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+        this->messages->push_back(m);
         builtInline = true;
         break;
     }
@@ -1175,10 +1090,10 @@ void Level::createRadioMessage(int type, int sub) {
     case 0x1b: {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc60, 6, 5, 0x5dc);
-        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+        this->messages->push_back(m);
         m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, r2 * 2 + 0xc61, 0, 6, 0);
-        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+        this->messages->push_back(m);
         builtInline = true;
         break;
     }
@@ -1198,10 +1113,9 @@ void Level::createRadioMessage(int type, int sub) {
     }
 
     if (aborted) {
-        if (*(void **)&this->messages != 0)
-            operator_delete_crm(arrayDtor(*(void **)&this->messages));
+        if (this->messages != nullptr)
+            deletePolyArray(this->messages);
         int ego = this->player;
-        this->messages = 0;
         this->crm_dispatch(*(int *)(ego + 0x18), 0);
         return;
     }
@@ -1209,20 +1123,17 @@ void Level::createRadioMessage(int type, int sub) {
     if (!builtInline) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crm(m, id, speaker, 5, extraDelay);
-        arrayAdd((int)(intptr_t)(m), *(void **)&this->messages);
+        this->messages->push_back(m);
     }
 
     int ego = this->player;
-    this->crm_dispatch(*(int *)(ego + 0x18), *(void **)&this->messages);
+    this->crm_dispatch(*(int *)(ego + 0x18), (void *)this->messages);
 }
 
-struct Route;
-struct Objective;
-struct LODManager;
-struct ParticleSystemManager;
-struct Mission;
-struct SolarSystem;
-struct StarSystem;
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int   *g_init_stack;     // [DAT_000be25c]
 __attribute__((visibility("hidden"))) extern int  **g_init_canvas;    // [DAT_000be260]
@@ -1413,29 +1324,26 @@ int Level::init() {
         ((PlayerEgo *)(this->player))->setRoute_init();
 
     // recompute enemiesLeft.
-    unsigned *list = *(unsigned **)&this->enemies;
     int initial = 0;
     int enemies = 0;
-    if (list != 0) {
-        for (unsigned i = 0; i < *list; i = i + 1) {
-            int e = *(int *)(list[1] + i * 4);
+    if (this->enemies != nullptr) {
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+            char *e = (char *)(*this->enemies)[i];
             if (*(char *)(e + 0x41) == 0 && *(char *)(e + 0x71) == 0 && *(char *)(e + 0x3f) == 0) {
                 int wm = KIPlayer_isWingMan_init();
-                list = *(unsigned **)&this->enemies;
                 if (wm == 0) {
-                    e = *(int *)(list[1] + i * 4);
+                    e = (char *)(*this->enemies)[i];
                     if (*(char *)(e + 0x44) == 0 && *(char *)(e + 0x3c) == 0)
                         enemies = enemies + (*(unsigned char *)(e + 0x3d) ^ 1);
                 }
             }
         }
-        if (list != 0)
-            enemies = enemies - this->field_120;
+        enemies = enemies - this->field_120;
     }
     this->asteroidsLeft = 0;
     this->enemiesLeft = enemies;
-    if (*(unsigned **)&this->asteroids != 0)
-        initial = **(unsigned **)&this->asteroids;
+    if (this->asteroids != nullptr)
+        initial = (int)this->asteroids->size();
     this->field_184 = 0;
     *(char *)&this->field_188 = 0;
     this->field_1c = 0;
@@ -1446,9 +1354,9 @@ int Level::init() {
     return 1;
 }
 
-struct KIPlayer;
-struct Player;
-struct PlayerTurret;
+
+
+
 
 __attribute__((visibility("hidden"))) extern int *g_cft_stack; // [DAT_000cc3e8]
 
@@ -1459,12 +1367,11 @@ int  Player_getMaxHitpoints_cft();
 // Level::createFighterTurrets() — attaches a defensive turret to capital-class enemies.
 void Level::createFighterTurrets()
 {
-    unsigned *list = *(unsigned **)&this->enemies;
-    if (list == 0)
+    if (this->enemies == nullptr)
         return;
 
-    for (unsigned i = 0; i < *list; i = i + 1) {
-        char *ki = *(char **)(list[1] + i * 4);
+    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+        char *ki = (char *)(*this->enemies)[i];
         if (ki != 0) {
             int kind = *(int *)(ki + 0x7c);
             if (kind == 0x2d || kind == 0x33) {
@@ -1478,15 +1385,11 @@ void Level::createFighterTurrets()
                 *(PlayerTurret **)(ki + 0x10) = t;
                 t->standing = (kind == 0x2d) ? 8 : 0;
                 t->field_0x74 = 1;
-                arrayAdd((int)(intptr_t)((KIPlayer *)t), *(void **)&this->enemies);
+                this->enemies->push_back((KIPlayer *)t);
             }
         }
-        list = *(unsigned **)&this->enemies;
     }
 }
-
-struct Mission;
-struct Station;
 
 // PC-relative singletons / data slots.
 __attribute__((visibility("hidden"))) extern int   *g_uaa_stack;     // [DAT_000d5f40]
@@ -1524,13 +1427,12 @@ void Level::updateAlienAttackers(int dt) {
     if (elapsed <= period)
         return;
 
-    unsigned *enemies = *(unsigned **)&this->enemies;
     this->alienAttackTimer = 0;
-    if (enemies == 0)
+    if (this->enemies == nullptr)
         return;
 
-    for (unsigned i = 0; i < *enemies; i = i + 1) {
-        int *ki = *(int **)(enemies[1] + i * 4);
+    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+        int *ki = (int *)(*this->enemies)[i];
         // race 9 == alien; only respawn ones that are dead and inactive.
         if (ki[10] == 9 && KIPlayer_isDead_uaa() != 0 && Player_isActive_uaa() == 0) {
             (*(void (**)(int *))(*ki + 0x18))(ki);   // revive
@@ -1542,14 +1444,10 @@ void Level::updateAlienAttackers(int dt) {
             }
             thisptr->uaa_placeAlien(ki, inOrbit);
         }
-        enemies = *(unsigned **)&this->enemies;
     }
 }
 
-struct Mission;
-struct Player;
-struct KIPlayer;
-struct Globals;
+
 
 __attribute__((visibility("hidden"))) extern int    *g_cm_stack;     // [DAT_000c036c]
 __attribute__((visibility("hidden"))) extern int   **g_cm_rng;       // [DAT_000c0374]
@@ -1591,17 +1489,15 @@ void Level::createMission()
         if (campB == 0x21) count = 2;
         if (campA == 0x44) count = 2;
 
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        *(void **)&this->enemies = arr;
-        arraySetLength((unsigned)(count), arr);
+        this->enemies = new Array<KIPlayer*>();
+        this->enemies->resize(count);
 
         Globals *globals = *g_cm_globals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = Globals_getRandomEnemyFighter_cm(globals, 9);
             int ship = (int)(intptr_t)this->createShip(9, 0, fighter, (Waypoint *)(intptr_t)0, 1, 0);
-            *(int *)(*(int *)(this->enemies + 4) + i * 4) = ship;
-            int *kp = *(int **)(*(int *)(this->enemies + 4) + i * 4);
+            (*this->enemies)[i] = (KIPlayer *)(intptr_t)ship;
+            int *kp = (int *)(*this->enemies)[i];
             float x = (float)(cm_randPos(rng, 0) - 60000);
             float y = (float)(cm_randPos(rng, 1) - 40000);
             float z = (float)(cm_randPos(rng, 2) - 60000);
@@ -1614,14 +1510,11 @@ void Level::createMission()
     this->cm_buildMissionScene(mission);
 }
 
-struct Station;
-struct Galaxy;
-struct SolarSystem;
-struct AEGeometry;
-struct PlayerAsteroid;
-struct Waypoint;
-struct BoundingSphere;
-struct LODManager;
+
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int    *g_ca_stack;    // [DAT_000bf97c]
 __attribute__((visibility("hidden"))) extern int   **g_ca_canvas;   // [DAT_000bf984] paint-canvas holder
@@ -1676,9 +1569,7 @@ void Level::createAsteroids()
     }
 
     // asteroid container.
-    void *arr = ::operator new(0xc);
-    arrayCtor(arr);
-    *(void **)&this->asteroids = arr;
+    this->asteroids = new Array<KIPlayer*>();
 
     Galaxy *gal = (Galaxy *)**g_ca_galaxy;
     Station *st = (Station *)Status_getStation_ca();
@@ -1692,7 +1583,7 @@ void Level::createAsteroids()
     AERandom_setSeed_ca((long long)seed);
 
     int countRoll = AERandom_nextIntBound_ca(*rngObj, 0x28);
-    arraySetLength((unsigned)(countRoll + 0x28), *(void **)&this->asteroids);
+    this->asteroids->resize((unsigned)(countRoll + 0x28));
 
     int rx = AERandom_nextIntBound_ca(*rngObj, 0x4e20); // DAT_000bf990 == 0x4e20
     int ry = AERandom_nextIntBound_ca(*rngObj, 0x4e20);
@@ -1780,7 +1671,7 @@ void Level::createAsteroids()
     int kind = 0x9a;
     int probCursor = 0;
 
-    for (unsigned i = 0; i < **(unsigned **)&this->asteroids; i = i + 1) {
+    for (unsigned i = 0; i < this->asteroids->size(); i = i + 1) {
         // choose asteroid kind from the probability table (skip in alien orbit -> fixed 0xa4).
         if (alien2 == 0) {
             bool ok = false;
@@ -1862,23 +1753,20 @@ void Level::createAsteroids()
 
         PlayerAsteroid *a = (PlayerAsteroid *)::operator new(0x170);
         PlayerAsteroid_ctor_ca(a, kind, geo, colVariant, kind, &pos, scale, (int)scale);
-        *(PlayerAsteroid **)(*(int *)(this->asteroids + 4) + i * 4) = a;
+        (*this->asteroids)[i] = (KIPlayer *)a;
 
         // virtual init(level) on the freshly built asteroid (vtable slot +0x14).
-        int *obj = *(int **)(*(int *)(this->asteroids + 4) + i * 4);
+        int *obj = (int *)(*this->asteroids)[i];
         (**(void (***)(int *, Level *))(*obj + 0x14))(obj, this);
 
         PlayerAsteroid_setAsteroidCenter_ca(
-            *(PlayerAsteroid **)(*(int *)(this->asteroids + 4) + i * 4),
+            (PlayerAsteroid *)(*this->asteroids)[i],
             *(float *)&this->field_c8, *(float *)&this->field_cc, *(float *)&this->field_d0);
     }
 
     if (prob != 0)
         operator_deletearr_ca(prob);
 }
-
-struct Player;
-struct KIPlayer;
 
 __attribute__((visibility("hidden"))) extern int *g_ccm_stack;     // [DAT_000c4e94]
 __attribute__((visibility("hidden"))) extern float g_ccm_pos0;     // DAT_000c5310 (case-0 spawn coord)
@@ -1901,27 +1789,24 @@ void Level::createCampaignMission()
 
     if (idx == 0) {
         // mission 0 — the tutorial ambush: three sleeping enemy fighters at a fixed point.
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        *(void **)&this->enemies = arr;
-        arraySetLength((unsigned)(3), arr);
+        this->enemies = new Array<KIPlayer*>();
+        this->enemies->resize(3);
         float c = g_ccm_pos0;
-        for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
+        for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
             int ship = (int)(intptr_t)this->createShip(8, 0, type, (Waypoint*)(intptr_t)0, 1, 0);
-            *(int *)(*(int *)(this->enemies + 4) + i * 4) = ship;
-            KIPlayer_setToSleep_ccm(*(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4));
-            (*(Player **)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 4))->setAlwaysEnemy(true);
-            int *kp = *(int **)(*(int *)(this->enemies + 4) + i * 4);
+            (*this->enemies)[i] = (KIPlayer *)(intptr_t)ship;
+            KIPlayer_setToSleep_ccm((*this->enemies)[i]);
+            (*(Player **)((char *)(*this->enemies)[i] + 4))->setAlwaysEnemy(true);
+            int *kp = (int *)(*this->enemies)[i];
             (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, c, c, c);
-            int base = *(int *)(this->enemies + 4);
-            int e = *(int *)(base + i * 4);
+            int e = (int)(intptr_t)(*this->enemies)[i];
             *(int *)(e + 0x50) = 0;
             *(char *)(e + 0x4c) = 0;
-            Player_setHitpoints_ccm(*(int *)(*(int *)(base + i * 4) + 4));
+            Player_setHitpoints_ccm(*(int *)(e + 4));
             if (i < 3)
                 PlayerFighter_setExhaustVisible_ccm(
-                    *(int *)(this->enemies + 4) + i * 4);
+                    (int)(intptr_t)&(*this->enemies)[i]);
         }
         Player_setHitpoints_ccm(**(int **)&this->player);
         return;
@@ -1930,9 +1815,6 @@ void Level::createCampaignMission()
     // all other campaign missions are scripted by the engine helper.
     this->ccm_buildCampaignScene(idx);
 }
-
-struct SolarSystem;
-struct KIPlayer;
 
 // PC-relative cookie slot.
 __attribute__((visibility("hidden"))) extern int *g_uo_stack; // [DAT_000d5588]
@@ -1971,18 +1853,16 @@ void Level::updateOrbit(int dt) {
 
     // jumper reinforcement every 10s.
     if (10000 < t178) {
-        unsigned *en = *(unsigned **)&this->enemies;
         this->field_178 = 0;
-        if (en != 0) {
-            for (unsigned i = 0; i < *en; i = i + 1) {
-                KIPlayer *ki = *(KIPlayer **)(en[1] + i * 4);
+        if (this->enemies != nullptr) {
+            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                KIPlayer *ki = (*this->enemies)[i];
                 if (KIPlayer_isJumper_uo(ki) != 0 && KIPlayer_isDead_uo() != 0 &&
                     Player_isActive_uo() == 0 && *(unsigned char *)((char *)ki + 0x42) == 0) {
                     (*(void (**)(KIPlayer *))(*(int *)ki + 0x18))(ki);
                     (*(void (**)(KIPlayer *, int, int, int))(*(int *)ki + 0x48))(ki, 0, 0, 0);
                     break;
                 }
-                en = *(unsigned **)&this->enemies;
             }
         }
     }
@@ -1990,23 +1870,21 @@ void Level::updateOrbit(int dt) {
     // major reinforcement sweep every 45s.
     if (45000 < this->orbitWaveTimer) {
         int hostileAlive = 0;
-        unsigned *en = *(unsigned **)&this->enemies;
         this->orbitWaveTimer = 0;
         if (0 < this->hostileCount) {
-            if (en == 0)
+            if (this->enemies == nullptr)
                 return;
-            for (unsigned i = 0; i < *en; i = i + 1) {
-                if ((*en - (unsigned)this->hostileCount) <= i &&
+            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                if ((this->enemies->size() - (unsigned)this->hostileCount) <= i &&
                     KIPlayer_isWingMan_uo() == 0 && KIPlayer_isDead_uo() != 0) {
                     hostileAlive = hostileAlive + (Player_isActive_uo() ^ 1);
                 }
-                en = *(unsigned **)&this->enemies;
             }
         }
-        if (en != 0) {
+        if (this->enemies != nullptr) {
             int spawned = 0;
-            for (unsigned i = 0; i < *en; i = i + 1) {
-                int *ki = *(int **)(en[1] + i * 4);
+            for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                int *ki = (int *)(*this->enemies)[i];
                 // re-activate friendly slots that died.
                 if (0 < this->friendCount && (int)i < this->friendCount &&
                     KIPlayer_isDead_uo() != 0 && Player_isActive_uo() == 0 &&
@@ -2017,7 +1895,7 @@ void Level::updateOrbit(int dt) {
                 // spawn enemy reinforcements subject to security-level caps.
                 if (1 < hostileAlive && this->field_184 < 2 &&
                     0 < this->hostileCount &&
-                    (unsigned)(**(int **)&this->enemies - this->hostileCount) <= i) {
+                    (unsigned)((int)this->enemies->size() - this->hostileCount) <= i) {
                     int race = ki[10];
                     bool secZero = false, secOne = false;
                     if (Status_inAlienOrbit_uo() == 0) {
@@ -2043,7 +1921,6 @@ void Level::updateOrbit(int dt) {
                         }
                     }
                 }
-                en = *(unsigned **)&this->enemies;
             }
             if (spawned & 1)
                 this->field_184 = this->field_184 + 1;
@@ -2068,58 +1945,48 @@ void Level::reset() {
     if (friendRoute != 0) {
         ((Route *)friendRoute)->reset();
     }
-    unsigned int *list = (unsigned int *)(intptr_t)enemies;
-    if (list != 0) {
-        for (unsigned int i = 0; i < *list; i = i + 1) {
-            ((KIPlayer *)((int *)list[1])[i])->reset();
-            list = (unsigned int *)(intptr_t)enemies;
+    if (this->enemies != nullptr) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i]->reset();
         }
     }
     createPlayer();
     assignGuns();
     connectPlayers();
-    list = (unsigned int *)(intptr_t)messages;
-    if (list != 0) {
-        for (unsigned int i = 0; i < *list; i = i + 1) {
-            ((RadioMessage *)((int *)list[1])[i])->reset();
-            list = (unsigned int *)(intptr_t)messages;
+    if (this->messages != nullptr) {
+        for (unsigned int i = 0; i < this->messages->size(); i = i + 1) {
+            ((RadioMessage *)(*this->messages)[i])->reset();
         }
     }
     ((PlayerEgo *)player)->setRoute(playerRoute);
-    list = (unsigned int *)(intptr_t)enemies;
     int count;
-    if (list != 0) {
+    if (this->enemies != nullptr) {
         count = 0;
-        for (unsigned int i = 0; i < *list; i = i + 1) {
-            int e = ((int *)list[1])[i];
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            int e = (int)(intptr_t)(*this->enemies)[i];
             if (*(char *)(e + 0x41) == 0 && *(char *)(e + 0x71) == 0 && *(char *)(e + 0x3f) == 0) {
                 // The original passes the enemy being examined as the receiver; the
                 // decompiler dropped it (ambient-register thiscall). isWingMan reads
                 // wingmanFlag at +0xdc of this enemy KIPlayer.
                 int wm = ((KIPlayer *)(intptr_t)e)->isWingMan();
-                list = (unsigned int *)(intptr_t)enemies;
-                list = (unsigned int *)(intptr_t)enemies;
                 if (wm == 0) {
-                    e = ((int *)list[1])[i];
+                    e = (int)(intptr_t)(*this->enemies)[i];
                     if (*(char *)(e + 0x44) == 0 && *(char *)(e + 0x3c) == 0) {
                         count = count + (*(unsigned char *)(e + 0x3d) ^ 1);
                     }
                 }
             }
         }
-        if (list != 0) {
-            count = count - field_120;
-            goto done;
-        }
+        count = count - field_120;
+    } else {
+        count = 0;
     }
-    count = 0;
-done:
     enemiesLeft = count;
     int ast;
-    if (asteroids == 0) {
+    if (asteroids == nullptr) {
         ast = 0;
     } else {
-        ast = *(int *)asteroids;
+        ast = (int)asteroids->size();
     }
     asteroidsLeft = ast;
     kills = 0;
@@ -2131,25 +1998,21 @@ void Level::createSentryGuns() {
     Status **slot = g_sentryStatus;
     int ship = (int)(intptr_t)(*slot)->getShip();
     if (((Ship *)(ship))->getFirstEquipmentOfSort(0x27) != 0) {
-        int guns = (int)(intptr_t)::operator new(0xc);
-        ArrayCtor(guns);
-        field_b0 = guns;
-        ArraySetLength(9, guns);
-        if (enemies == 0) {
-            int e = (int)(intptr_t)::operator new(0xc);
-            ArrayCtor(e);
-            enemies = e;
+        field_b0 = new Array<KIPlayer*>();
+        field_b0->resize(9);
+        if (enemies == nullptr) {
+            enemies = new Array<KIPlayer*>();
         }
         int color = 0x9923e035;
-        for (unsigned int i = 0; i < *(unsigned int *)field_b0; i = i + 1) {
-            int obj = createStaticObject((Waypoint *)(intptr_t)0, uidiv(i, 3) + 0x49c0, 1);
-            ((int *)(*(int *)(field_b0 + 4)))[i] = obj;
-            int k = ((int *)(*(int *)(field_b0 + 4)))[i];
+        for (unsigned int i = 0; i < field_b0->size(); i = i + 1) {
+            int obj = createStaticObject((Waypoint *)(intptr_t)0, i / 3 + 0x49c0, 1);
+            (*field_b0)[i] = (KIPlayer *)(intptr_t)obj;
+            int k = (int)(intptr_t)(*field_b0)[i];
             ((Player *)(*(int *)(k + 4)))->setRadius(800);
             ((Player *)(*(int *)(k + 4)))->setAlwaysFriend(1);
             ((Player *)(*(int *)(k + 4)))->setMaxHitpoints(100);
             (*(void (**)(int, int, int, int))(*(int *)k + 0x48))(k, color, color, color);
-            ArrayAdd(k, enemies);
+            enemies->push_back((KIPlayer *)(intptr_t)k);
         }
     }
 }
@@ -2157,11 +2020,10 @@ void Level::createSentryGuns() {
 __attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
 
 int Level::collideStation(Vector v) {
-    int lm = landmarks;
-    if (lm != 0 &&
-        *(int *)(*(int *)(lm + 4)) != 0 &&
+    if (this->landmarks != nullptr &&
+        (*this->landmarks)[0] != 0 &&
         (*g_status_collideStation)->inEmptyOrbit() == 0) {
-        int *obj = *(int **)(lm + 4);
+        int *obj = (int *)(*this->landmarks)[0];
         return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
     }
     return 0;
@@ -2176,19 +2038,15 @@ void Level::uncoverWanted(int index) {
         for (int i = 1;
              i - 1 < ((Wanted *)((int *)(*(int *)(*g) + 4))[index])->getNumWingmen();
              i = i + 1) {
-            Level_setAlwaysEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4), 1);
-            Level_turnEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4));
+            Level_setAlwaysEnemy(*(int *)((char *)(*enemies)[i] + 4), 1);
+            Level_turnEnemy(*(int *)((char *)(*enemies)[i] + 4));
         }
     }
 }
 
-struct Station;
-struct Ship;
-struct Item;
-struct Player;
-struct Hud;
-struct LODManager;
-struct ParticleSystemManager;
+
+
+
 
 // PC-relative singleton / data holders.
 __attribute__((visibility("hidden"))) extern int   *g_up_stack;     // [DAT_000d6238] stack-guard cookie addr
@@ -2258,20 +2116,16 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         thisptr->updateAlienAttackers(0);
 
     // tick player guns then enemy guns via their vtable update slot (+0x10).
-    unsigned *guns = *(unsigned **)&this->playerGuns;
-    if (guns != 0) {
-        for (unsigned i = 0; i < *guns; i = i + 1) {
-            int *g = *(int **)(guns[1] + i * 4);
+    if (this->playerGuns != nullptr) {
+        for (unsigned i = 0; i < this->playerGuns->size(); i = i + 1) {
+            int *g = (int *)(*this->playerGuns)[i];
             (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
-            guns = *(unsigned **)&this->playerGuns;
         }
     }
-    guns = *(unsigned **)&this->enemyGuns;
-    if (guns != 0) {
-        for (unsigned i = 0; i < *guns; i = i + 1) {
-            int *g = *(int **)(guns[1] + i * 4);
+    if (this->enemyGuns != nullptr) {
+        for (unsigned i = 0; i < this->enemyGuns->size(); i = i + 1) {
+            int *g = (int *)(*this->enemyGuns)[i];
             (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
-            guns = *(unsigned **)&this->enemyGuns;
         }
     }
 
@@ -2327,10 +2181,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         LODManager_update_up((LODManager *)(intptr_t)this->vtable, dt);
 }
 
-struct Mission;
-struct Station;
-struct Player;
-struct ApplicationManager;
+
 
 __attribute__((visibility("hidden"))) extern ApplicationManager **g_cp_appMgr; // [DAT_000cd530]
 
@@ -2359,47 +2210,35 @@ void Level::connectPlayers()
         return;
 
     // player's enemy list from the enemy array.
-    if (this->enemies != 0 && this->player != 0) {
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        arraySetLength((unsigned)(**(unsigned **)&this->enemies), arr);
-        int n = *(int *)arr;
-        for (int j = 0; j != n; j = j + 1)
-            *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(this->enemies + 4) + j * 4) + 4);
-        ((Player *)**(int **)&this->player)->setEnemies((Array<Player *> *)arr);
-        operator_delete_cp(arrayDtor(arr));
+    if (this->enemies != nullptr && this->player != 0) {
+        Array<Player *> arr;
+        arr.resize(this->enemies->size());
+        for (unsigned j = 0; j < arr.size(); j = j + 1)
+            arr[j] = (Player *)*(int *)((char *)(*this->enemies)[j] + 4);
+        ((Player *)**(int **)&this->player)->setEnemies(&arr);
     }
     // add asteroids/landmarks arrays as additional enemies.
-    if (this->asteroids != 0 && this->player != 0) {
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        arraySetLength((unsigned)(**(unsigned **)&this->asteroids), arr);
-        int n = *(int *)arr;
-        for (int j = 0; j != n; j = j + 1)
-            *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(this->asteroids + 4) + j * 4) + 4);
-        ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(arrayDtor(arr));
+    if (this->asteroids != nullptr && this->player != 0) {
+        Array<Player *> arr;
+        arr.resize(this->asteroids->size());
+        for (unsigned j = 0; j < arr.size(); j = j + 1)
+            arr[j] = (Player *)*(int *)((char *)(*this->asteroids)[j] + 4);
+        ((Player *)**(int **)&this->player)->addEnemies(&arr);
     }
-    if (this->gasClouds != 0 && this->player != 0) {
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        arraySetLength((unsigned)(**(unsigned **)&this->gasClouds), arr);
-        int n = *(int *)arr;
-        for (int j = 0; j != n; j = j + 1)
-            *(int *)(*(int *)((char *)arr + 4) + j * 4) =
-                *(int *)(*(int *)(*(int *)(this->gasClouds + 4) + j * 4) + 4);
-        ((Player *)**(int **)&this->player)->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(arrayDtor(arr));
+    if (this->gasClouds != nullptr && this->player != 0) {
+        Array<Player *> arr;
+        arr.resize(this->gasClouds->size());
+        for (unsigned j = 0; j < arr.size(); j = j + 1)
+            arr[j] = (Player *)*(int *)((char *)(*this->gasClouds)[j] + 4);
+        ((Player *)**(int **)&this->player)->addEnemies(&arr);
     }
 
-    if (this->enemies == 0)
+    if (this->enemies == nullptr)
         return;
 
     int camp = Status_getCurrentCampaignMission_cp();
-    for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
-        int e = *(int *)((*(unsigned **)&this->enemies)[1] + i * 4);
+    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+        int e = (int)(intptr_t)(*this->enemies)[i];
         int eFaction = *(int *)(e + 0x28);
         int wmAll = KIPlayer_isWingMan_cp();
         unsigned count = 0;
@@ -2407,8 +2246,8 @@ void Level::connectPlayers()
         bool notFirst = i != 0;
 
         // first pass: count how many ships become this ship's enemies.
-        for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
-            int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
+        for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
+            int o = (int)(intptr_t)(*this->enemies)[k];
             if (o != e && (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                 bool consider;
                 if (notM24 || notFirst) {
@@ -2436,11 +2275,10 @@ void Level::connectPlayers()
             }
         }
 
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
+        Array<Player *> arr;
         if (this->player != 0)
             count = count + 1;
-        arraySetLength((unsigned)(count), arr);
+        arr.resize(count);
 
         Mission *m = (Mission *)Status_getMission_cp();
         int mtype = Mission_getType_cp();
@@ -2467,15 +2305,14 @@ void Level::connectPlayers()
                 if (m->isCampaignMission() != 0) Status_getCurrentCampaignMission_cp();
                 if (m->isCampaignMission() != 0) Status_getCurrentCampaignMission_cp();
 
-                int *dst = (int *)((char *)arr + 4);
                 int slot = 0;
                 int ego = this->player;
                 if (ego != 0) {
-                    *(int *)(*dst) = *(int *)ego;
+                    arr[0] = (Player *)*(int *)ego;
                     slot = 1;
                 }
-                for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
-                    int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
+                for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
+                    int o = (int)(intptr_t)(*this->enemies)[k];
                     if (o != e && (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                         bool consider;
                         if (notM24 || notFirst) {
@@ -2499,10 +2336,8 @@ void Level::connectPlayers()
                                     skip = true;
                             }
                             if (!skip) {
-                                *(int *)(*dst + slot * 4) =
-                                    *(int *)(*(int *)(this->enemies + 4) + k * 4) + 4
-                                        ? *(int *)(*(int *)(this->enemies + 4) + k * 4) + 4
-                                        : 0;
+                                int ki = (int)(intptr_t)(*this->enemies)[k];
+                                arr[slot] = (Player *)*(int *)(ki + 4);
                                 slot = slot + 1;
                             }
                         }
@@ -2514,8 +2349,8 @@ void Level::connectPlayers()
         if (!branchA || jumpAlwaysFriend) {
             if (Player_isAlwaysFriend_cp() == 0) {
                 int slot = 0;
-                for (unsigned k = 0; k < **(unsigned **)&this->enemies; k = k + 1) {
-                    int o = *(int *)((*(unsigned **)&this->enemies)[1] + k * 4);
+                for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
+                    int o = (int)(intptr_t)(*this->enemies)[k];
                     if (o != e && *(char *)(o + 0x3c) == 0 &&
                         (((~wmAll) & (*(int *)(o + 0x28) == eFaction)) == 0)) {
                         bool add;
@@ -2525,23 +2360,19 @@ void Level::connectPlayers()
                             add = KIPlayer_isWingMan_cp() == 0;
                         }
                         if (add) {
-                            int src = *(int *)(*(int *)(this->enemies + 4) + k * 4);
-                            *(int *)(*(int *)((char *)arr + 4) + slot * 4) = *(int *)(src + 4);
+                            int src = (int)(intptr_t)(*this->enemies)[k];
+                            arr[slot] = (Player *)*(int *)(src + 4);
                             slot = slot + 1;
                         }
                     }
                 }
             } else {
-                operator_delete_cp(arrayDtor(arr));
-                arr = ::operator new(0xc);
-                arrayCtor(arr);
-                arraySetLength((unsigned)(1), arr);
+                arr.resize(1);
             }
-            *(int *)(*(int *)((char *)arr + 4) + *(int *)arr * 4 - 4) = **(int **)&this->player;
+            arr[arr.size() - 1] = (Player *)**(int **)&this->player;
         }
 
-        (*(Player **)(e + 4))->addEnemies((Array<Player *> *)arr);
-        operator_delete_cp(arrayDtor(arr));
+        (*(Player **)(e + 4))->addEnemies(&arr);
 
         Status_getMission_cp();
         if (eFaction == 10 && Mission_isEmpty_cp() != 0)
@@ -2549,9 +2380,11 @@ void Level::connectPlayers()
     }
 }
 
-struct Hud;
-struct Achievements;
-struct Radar { static int hasScanner(); };
+
+// enemyDied() queries the player's radar through a recovered ambient-receiver
+// veneer (the original had the Radar singleton in a register the decompiler
+// dropped); declared as a free entry to avoid clashing with the real Radar type.
+extern "C" int Radar_hasScanner_ed();
 
 // PC-relative singleton holders.
 __attribute__((visibility("hidden"))) extern Status      **g_ed_status; // [DAT_000d441c]
@@ -2584,7 +2417,7 @@ void Level::enemyDied(int r1, bool r2arg) {
     if (this->player == 0)
         return;
 
-    if (Radar::hasScanner() == 0) {
+    if (Radar_hasScanner_ed() == 0) {
         Achievements **achA = g_ed_achA;
         if (((Achievements *)(*achA))->hasMedal(0x28, 1) == 0) {
             int st = *(int *)statusHolder;
@@ -2628,8 +2461,6 @@ void Level::enemyDied(int r1, bool r2arg) {
     }
 }
 
-struct RadioMessage;
-
 extern "C" {
 void  RadioMessage_ctor_crms(RadioMessage *m, int id, int speaker, int kind, int delay);
 // A couple of cases use a randomized delay constant the original loads from a data slot.
@@ -2642,21 +2473,19 @@ struct RMSpec { int id, speaker, kind, delay; };
 // Builds an Array<RadioMessage*> at this+0x114 from a static spec table.
 static void buildQueue(Level *self, const RMSpec *specs, unsigned n)
 {
-    void *arr = ::operator new(0xc);
-    arrayCtor(arr);
-    self->messages = (int)(intptr_t)arr;
-    arraySetLength((unsigned)(n), arr);
+    self->messages = new Array<void*>();
+    self->messages->resize(n);
     for (unsigned i = 0; i < n; i = i + 1) {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
         RadioMessage_ctor_crms(m, specs[i].id, specs[i].speaker, specs[i].kind, specs[i].delay);
-        ((RadioMessage **)(*(int *)((char *)arr + 4)))[i] = m;
+        (*self->messages)[i] = m;
     }
 }
 
 // Level::createRadioMessages(int set) — populates the level's radio-chatter queue with the fixed
 // dialogue sequence for the requested mission/event set.
 void Level::createRadioMessages(int set) {
-    this->messages = 0;
+    this->messages = nullptr;
 
     switch (set) {
     case 0: {
@@ -2932,7 +2761,7 @@ Level::Level(int mission) {
     field_10 = -1;
     missionPtr = mission;
     collisionVolume = 0;
-    field_b0 = 0;
+    field_b0 = nullptr;
     flashColor.x = 0;
     flashColor.y = 0;
     flashColor.z = 0;
@@ -2943,7 +2772,7 @@ Level::Level(int mission) {
     // +0x29 and +0x2d; net effect is clearing objectivesA/objectivesB.
     objectivesA = 0;
     objectivesB = 0;
-    __aeabi_memclr4((char *)&this->asteroidWaypoint, 0x65);
+    memset((char *)&this->asteroidWaypoint, 0, 0x65);
     zero16((char *)&this->hostileCount);
     zero16((char *)&this->flashType);
     field_18a = 0;
@@ -2962,8 +2791,20 @@ Level::Level(int mission) {
     field_6c = 0;
     field_288 = 0;
     field_a0 = 0;
-    field_a4 = 0;
-    field_a8 = 0;
+    field_a4 = nullptr;
+    field_a8 = nullptr;
+    // The container members (offsets 0xe4..0x114) were 32-bit handles cleared by the
+    // original __aeabi_memclr4 over [asteroidWaypoint, +0x65); now that they are real
+    // Array<T>* (8 bytes, shifted offsets), the byte-count memset no longer covers them
+    // correctly, so null them explicitly by name.
+    playerGuns = nullptr;
+    enemyGuns = nullptr;
+    gasClouds = nullptr;
+    enemies = nullptr;
+    asteroids = nullptr;
+    landmarks = nullptr;
+    field_104 = nullptr;
+    messages = nullptr;
     miningPlantIndex = -1;
     miningPlant = 0;
     numDeliveredOre = 0;
@@ -2976,9 +2817,7 @@ Level::Level(int mission) {
     field_1c0 = -1;
 }
 
-struct Station;
-struct PlayerFixedObject;
-struct Player;
+
 
 __attribute__((visibility("hidden"))) extern int  *g_cso_stack;     // [DAT_000cc1e4]
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
@@ -2992,10 +2831,6 @@ int  Status_getStation_cso();
 int  Station_getIndex_cso(Station *s);
 int  Status_getCurrentCampaignMission_cso();
 void PlayerFixedObject_setMoving_cso(PlayerFixedObject *o, int flag);
-void StarSystem_getLightDirection_cso(void *dst);
-// AEGeometry::setDirection takes (dir, up). Ghidra (createStaticObjects @ 0xcbfa4) shows the
-// recovered up-vector is world-up x=0.0f, y=1.0f, z=0.0f (local_40=0, uStack_3c=0x3f800000, local_38=0).
-// The extern shim here only forwards the direction; the up arg is supplied engine-side as world-up.
 int  GameText_getText_cso(int id);
 void PlayerFixedObject_setName_cso(PlayerFixedObject *o, String *n);
 void PlayerFixedObject_setDockingType_cso(PlayerFixedObject *o, int t);
@@ -3024,23 +2859,24 @@ void Level::createStaticObjects()
                 (*(void (**)(char *, float, int, float))(*(int *)o + 0x48))(o, g_cso_posX, 0,
                                                                            g_cso_posZ);
                 PlayerFixedObject_setMoving_cso((PlayerFixedObject *)o, 0);
-                Vector *geo = *(Vector **)(o + 8);
+                AEGeometry *geo = *(AEGeometry **)(o + 8);
                 *(char *)(o + 0x70) = 0;
-                char dir[12];
-                StarSystem_getLightDirection_cso(dir);
-                AEGeometry_setDirection_cso(geo, (Vector *)dir);
+                // Aim the object along the active star system's light direction.
+                // veneer -> StarSystem::getLightDirection on this->starSystem (Level +0xec).
+                Vector dir = ((StarSystemView *)(intptr_t)this->starSystem)->getLightDirection();
+                // AEGeometry::setDirection takes (dir, up). Ghidra (createStaticObjects @ 0xcbfa4)
+                // shows the up arg is world-up (local_40=0, uStack_3c=0x3f800000, local_38=0).
+                Vector up = {0.0f, 1.0f, 0.0f};
+                geo->setDirection(dir, up);
                 String *txt = (String *)GameText_getText_cso(**g_cso_textA);
                 *(String *)(o + 0x18) = *txt;
                 (*(Player **)(o + 4))->setAlwaysFriend(1);
-                void *arr = *(void **)&this->enemies;
-                if (arr == 0) {
-                    arr = ::operator new(0xc);
-                    arrayCtor(arr);
-                    *(void **)&this->enemies = arr;
+                if (this->enemies == nullptr) {
+                    this->enemies = new Array<KIPlayer*>();
                 }
-                arrayAdd((int)(intptr_t)((KIPlayer *)o), arr);
+                this->enemies->push_back((KIPlayer *)o);
                 if (*(void **)(o + 0x50) != 0)
-                    operator_delete_cso(arrayDtor(*(void **)(o + 0x50)));
+                    delete (Array<void*> *)*(void **)(o + 0x50);
                 *(int *)(o + 0x50) = 0;
             }
         }
@@ -3062,24 +2898,16 @@ void Level::createStaticObjects()
             PlayerFixedObject_setName_cso((PlayerFixedObject *)o, &name);
             PlayerFixedObject_setDockingType_cso((PlayerFixedObject *)o, 1);
             if (*(void **)(o + 0x50) != 0)
-                operator_delete_cso(arrayDtor(*(void **)(o + 0x50)));
+                delete (Array<void*> *)*(void **)(o + 0x50);
             *(int *)(o + 0x50) = 0;
             (*(Player **)(o + 4))->setAlwaysFriend(1);
-            void *arr = *(void **)&this->enemies;
-            if (arr == 0) {
-                arr = ::operator new(0xc);
-                arrayCtor(arr);
-                *(void **)&this->enemies = arr;
+            if (this->enemies == nullptr) {
+                this->enemies = new Array<KIPlayer*>();
             }
-            arrayAdd((int)(intptr_t)((KIPlayer *)o), arr);
+            this->enemies->push_back((KIPlayer *)o);
         }
     }
 }
-
-struct Waypoint;
-struct AEGeometry;
-struct Player;
-struct PlayerFixedObject;
 
 __attribute__((visibility("hidden"))) extern int *g_cso2_stack;   // [DAT_000cea34]
 __attribute__((visibility("hidden"))) extern int **g_cso2_rng;    // [DAT_000cea38]
@@ -3119,8 +2947,8 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
     return thisptr->cso2_construct(type, x, y, z);
 }
 
-struct FileRead;
-struct BoundingVolume;
+
+
 
 __attribute__((visibility("hidden"))) extern int *g_gbv_stack; // [DAT_000d405c]
 
@@ -3153,9 +2981,8 @@ void *Level_getBoundingVolume(int idx, int kind)
     void *result = 0;
     if (coll != 0) {
         unsigned n = *(unsigned *)coll[1];   // entry count
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        arraySetLength((unsigned)(n), arr);
+        Array<BoundingVolume*> *arr = new Array<BoundingVolume*>();
+        arr->resize(n);
         result = arr;
 
         int cursor = 1;
@@ -3173,22 +3000,18 @@ void *Level_getBoundingVolume(int idx, int kind)
             } else {
                 cursor = cursor + 1;
             }
-            ((BoundingVolume **)(*(int *)((char *)arr + 4)))[i] = bv;
+            (*arr)[i] = bv;
         }
 
-        Level_releaseInt(coll);
-        operator_delete_gbv(arrayDtor(coll));
+        // `coll` is an external collision-record handle from the FileRead loader
+        // ({?, data, ?}); free its data buffer then the handle itself.
+        operator_delete_gbv((void *)(intptr_t)coll[1]);
+        operator_delete_gbv(coll);
     }
     return result;
 }
 
-struct Waypoint;
-struct Player;
-struct AEGeometry;
-struct PlayerFixedObject;
-struct PlayerFighter;
-struct Globals;
-struct LODManager;
+
 
 __attribute__((visibility("hidden"))) extern int    **g_cs_rng;      // [DAT_000d0468]
 __attribute__((visibility("hidden"))) extern int     *g_cs_diffRec;  // [DAT_000d0474]
@@ -3286,7 +3109,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         if (type == 0x2c || type == 0x31 || type == 0x33) {
             if (type == 0x33) *(unsigned char *)((char *)obj + 0x25) = 0;
             if (type != 0x33 && *(void **)((char *)obj + 0x50) != 0) {
-                operator_delete_cs(arrayDtor(*(void **)((char *)obj + 0x50)));
+                delete (Array<void*> *)*(void **)((char *)obj + 0x50);
                 *(void **)((char *)obj + 0x50) = 0;
             }
         }
@@ -3332,24 +3155,18 @@ void Level::almostKillWanted(int index) {
     int o = (int)(intptr_t)::operator new(0x1c);
     Objective_ctor_akw(o, 3, 0, 0, this);
     objectivesA = o;
-    int e = *(int *)(*(int *)(enemies + 4));
+    int e = (int)(intptr_t)(*this->enemies)[0];
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
-    ((Player *)(*(int *)(*(int *)(enemies + 4) + 4)))->resetDamageDoneByPlayer();
-    int e0 = *(int *)(*(int *)(enemies + 4));
+    ((Player *)(int)(intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
+    int e0 = (int)(intptr_t)(*this->enemies)[0];
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
     int w = (int)(intptr_t)(*slot)->getWanted();
     return ((Wanted *)(intptr_t)(((int *)(*(int *)(w + 4)))[index]))->setActive(0 != 0);
 }
 
-struct Wanted;
-struct Mission;
-struct Gun;
-struct ObjectGun;
-struct RocketGun;
-struct PlayerTurret;
-struct KIPlayer;
-struct Player;
+
+
 
 __attribute__((visibility("hidden"))) extern int    *g_ag_stack;     // [DAT_000cca28]
 __attribute__((visibility("hidden"))) extern Status **g_ag_status;   // [DAT_000cca38]
@@ -3395,14 +3212,11 @@ void  Globals_addSoundResourceToList_ag(int snd);
 void Level::assignGuns()
 {
 
-    if (*(void **)&this->enemyGuns != 0) {
-        ArrayReleaseClasses_AGun_ag(*(void **)&this->enemyGuns);
-        if (*(void **)&this->enemyGuns != 0)
-            operator_delete_ag(arrayDtor(*(void **)&this->enemyGuns));
-        this->enemyGuns = 0;
+    if (this->enemyGuns != nullptr) {
+        deletePolyArray(this->enemyGuns);
     }
     Status **status = g_ag_status;
-    this->enemyGuns = 0;
+    this->enemyGuns = nullptr;
 
     // base weapon "power" from player level (clamped to 20).
     float lvlPower = (float)(Status_getLevel_ag() - 2) * g_ag_perLevel;
@@ -3413,33 +3227,29 @@ void Level::assignGuns()
     int camp = Status_getCurrentCampaignMission_ag();
     int basePower = (int)(lvlPower + lvlPower * (diffScale - 0.5f));
     Wanted *wanted = (Wanted *)Status_getWantedInCurrentOrbit_ag(*status);
-    unsigned *list = *(unsigned **)&this->enemies;
     if (0x15 < basePower) basePower = 0x16;
-    if (list == 0)
+    if (this->enemies == nullptr)
         return;
 
     // count gun slots needed.
     unsigned slots = 0;
-    for (unsigned i = 0; i < *list; i = i + 1) {
-        int e = *(int *)(list[1] + i * 4);
+    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+        int e = (int)(intptr_t)(*this->enemies)[i];
         if (e != 0 && *(char *)(e + 0x25) != 0) {
             int add = (KIPlayer_isWingMan_ag() != 0) ? 2 : 1;
-            list = *(unsigned **)&this->enemies;
             slots = slots + add;
         }
     }
 
-    void *guns = ::operator new(0xc);
-    arrayCtor(guns);
-    *(void **)&this->enemyGuns = guns;
-    arraySetLength((unsigned)(slots), guns);
+    this->enemyGuns = new Array<ObjectGun*>();
+    this->enemyGuns->resize(slots);
 
     int baseDmg = (basePower == 0) ? 3 : (basePower + 2);
     if (camp == 4) baseDmg = 1;
 
     int outIdx = 0;
-    for (unsigned i = 0; i < **(unsigned **)&this->enemies; i = i + 1) {
-        int e = *(int *)((*(unsigned **)&this->enemies)[1] + i * 4);
+    for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+        int e = (int)(intptr_t)(*this->enemies)[i];
         if (e == 0)
             continue;
         if (*(char *)(e + 0x25) == 0)
@@ -3466,8 +3276,8 @@ void Level::assignGuns()
 
             // alien ships ramp the damage harder.
             if (KIPlayer_isWingMan_ag() == 0 && Player_isAlwaysFriend_ag() == 0 &&
-                *(int *)(*(int *)(this->enemies + 4) + i * 4) &&
-                *(int *)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28) == 9) {
+                (*this->enemies)[i] &&
+                *(int *)((char *)(*this->enemies)[i] + 0x28) == 9) {
                 if (camp != 0x10) dmg = (int)((float)dmg * 1.0f);
                 else dmg = dmg + dmg;
             } else {
@@ -3494,8 +3304,8 @@ void Level::assignGuns()
             gun->weaponType = 0;
 
             int res;
-            switch (*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28
-                        ? *(int *)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 0x28)
+            switch ((int)(intptr_t)(*this->enemies)[i] + 0x28
+                        ? *(int *)((char *)(*this->enemies)[i] + 0x28)
                         : 0) {
             case 0:  gun->weaponType = 0; gun->setIndex(0);    res = 0x1a62; break;
             case 1:  gun->setIndex(3);    res = 0x1a68; break;
@@ -3509,13 +3319,13 @@ void Level::assignGuns()
             }
 
             int camp2 = Status_getCurrentCampaignMission_ag();
-            PlayerTurret *turret = *(PlayerTurret **)(*(int *)(this->enemies + 4) + i * 4);
+            PlayerTurret *turret = (PlayerTurret *)(*this->enemies)[i];
             if (turret->field_0x3e != 0) {
                 int host = (int)(intptr_t)turret->getHost();
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
                     gun->weaponType = 2; gun->setIndex(0x16); res = 0x1a8e;
                 } else {
-                    KIPlayer *k = *(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4);
+                    KIPlayer *k = (*this->enemies)[i];
                     if (*(unsigned char *)((char *)k + 0x3f) == 0) {
                         gun->weaponType = 1;
                         if (*(unsigned char *)((char *)k + 0x28) == 1) { gun->setIndex(0xf);  res = 0x1a87; }
@@ -3528,7 +3338,7 @@ void Level::assignGuns()
                         gun->field_0xa8 = 1;
                         // base stats from the ship-stat table (corrupted SIMD in original).
                         if (camp2 == 0x9e && kt == 0x49c2 && Player_isAlwaysEnemy_ag() != 0) {
-                            Player *pp = *(Player **)(*(int *)(*(int *)(this->enemies + 4) + i * 4) + 4);
+                            Player *pp = *(Player **)((char *)(*this->enemies)[i] + 4);
                             int mhp = Player_getMaxHitpoints_ag();
                             pp->setMaxHitpoints((int)((float)mhp * 5.0f));
                         }
@@ -3538,13 +3348,13 @@ void Level::assignGuns()
 
             // wanted/ship special weapon overrides.
             int kt2 = Status_getCurrentCampaignMission_ag();
-            int host2 = *(int *)(*(int *)(this->enemies + 4) + i * 4);
+            int host2 = (int)(intptr_t)(*this->enemies)[i];
             if (Status_getMission_ag() != 0) {
                 Mission *mm = (Mission *)Status_getMission_ag();
                 if (mm->isCampaignMission() != 0) {
                     if (**g_ag_statusB == Status_getCurrentCampaignMission_ag() &&
                         2 < **g_ag_alienCnt &&
-                        KIPlayer_isEnemy_ag(*(KIPlayer **)(*(int *)(this->enemies + 4) + i * 4)) != 0)
+                        KIPlayer_isEnemy_ag((*this->enemies)[i]) != 0)
                         gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
                 }
             }
@@ -3563,7 +3373,7 @@ void Level::assignGuns()
                 RocketGun *r = (RocketGun *)::operator new(0xe8);
                 RocketGun_ctor_ag(r, gun->itemIndex, gun, res, 0, 0, sc,
                                   sc == 5 ? 1 : 0, this);
-                *(RocketGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = r;
+                (*this->enemyGuns)[outIdx] = (ObjectGun *)r;
                 gun->field_0x50 = 0x41000000;
                 gun->initialLifetime = 10000;
                 gun->fireDelay = 3000;
@@ -3571,9 +3381,9 @@ void Level::assignGuns()
             } else {
                 ObjectGun *o = (ObjectGun *)::operator new(0xb0);
                 ObjectGun_ctor_ag(o, 0, gun, res, 0x2711, this);
-                *(ObjectGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = o;
+                (*this->enemyGuns)[outIdx] = o;
             }
-            KIPlayer_addGun_ag(*(Gun **)(*(int *)(this->enemies + 4) + i * 4), (int)(intptr_t)gun);
+            KIPlayer_addGun_ag((Gun *)(*this->enemies)[i], (int)(intptr_t)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd);
             outIdx = outIdx + 1;
             (void)kt2;
@@ -3581,7 +3391,7 @@ void Level::assignGuns()
 
 wingmanExtra:
         if (KIPlayer_isWingMan_ag() != 0 &&
-            *(char *)(*(int *)(this->enemies + 4) + i * 4) + 0x25 != 0) {
+            *(char *)((int)(intptr_t)&(*this->enemies)[i]) + 0x25 != 0) {
             Gun *gun = (Gun *)::operator new(0x114);
             Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
             gun->setFriendGun(1);
@@ -3590,23 +3400,18 @@ wingmanExtra:
             gun->weaponType = 1;
             ObjectGun *o = (ObjectGun *)::operator new(0xb0);
             ObjectGun_ctor_ag(o, 0x12, gun, 0x1a8a, 0x2711, this);
-            *(ObjectGun **)(*(int *)(this->enemyGuns + 4) + outIdx * 4) = o;
+            (*this->enemyGuns)[outIdx] = o;
             gun->setIndex(0x12);
             int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48));
             gun->field_0x64 = attr;
-            KIPlayer_addGun_ag(*(Gun **)(*(int *)(this->enemies + 4) + i * 4), (int)(intptr_t)gun);
+            KIPlayer_addGun_ag((Gun *)(*this->enemies)[i], (int)(intptr_t)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd2);
             outIdx = outIdx + 1;
         }
     }
 }
 
-struct Station;
-struct Galaxy;
-struct SolarSystem;
-struct AEGeometry;
-struct PlayerGasCloud;
-struct ParticleSystemManager;
+
 
 __attribute__((visibility("hidden"))) extern int    *g_cgc_stack;   // [DAT_000bffc0]
 __attribute__((visibility("hidden"))) extern Galaxy **g_cgc_galaxy; // [DAT_000bffc4]
@@ -3648,9 +3453,7 @@ void Level::createGasClouds()
             return;
     }
 
-    void *arr = ::operator new(0xc);
-    arrayCtor(arr);
-    *(void **)&this->gasClouds = arr;
+    this->gasClouds = new Array<KIPlayer*>();
 
     bool boss = false;
     if (Status_getCurrentCampaignMission_cgc() == 0x8e) {
@@ -3663,10 +3466,10 @@ void Level::createGasClouds()
     // count = base + (prob[1]/denom) * (roll+4); base 3 for the boss fight.
     float countF = (float)(boss ? 3.0f : 0.0f) + ((float)prob[1] / 1.0f) * (float)(roll + 4);
     int count = (countF > 0.0f) ? (int)countF : 0;
-    arraySetLength((unsigned)(count), *(void **)&this->gasClouds);
+    this->gasClouds->resize((unsigned)count);
 
     void *canvas = *g_cgc_canvas;
-    for (unsigned i = 0; i < **(unsigned **)&this->gasClouds; i = i + 1) {
+    for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
         this->cgc_randomPos(rng, boss, i, &pos);
@@ -3676,13 +3479,11 @@ void Level::createGasClouds()
         PlayerGasCloud *cloud = (PlayerGasCloud *)::operator new(0x16c);
         PlayerGasCloud_ctor_cgc(cloud, kind,
                                 *(ParticleSystemManager **)&this->field_94, geo, &pos);
-        *(PlayerGasCloud **)(*(int *)(this->gasClouds + 4) + i * 4) = cloud;
-        char *c = *(char **)(*(int *)(this->gasClouds + 4) + i * 4);
+        (*this->gasClouds)[i] = (KIPlayer *)cloud;
+        char *c = (char *)(*this->gasClouds)[i];
         (*(void (**)())(*(int *)c + 0x14))();
     }
 }
-
-struct Mission;
 
 // PC-relative cookie slot.
 __attribute__((visibility("hidden"))) extern int *g_umo_stack; // [DAT_000d50dc]
@@ -3709,10 +3510,9 @@ void Level::updateMissionOrbit(int dt) {
                 int aliveCore = 0;
                 for (int j = 0; j != 4; j = j + 1)
                     aliveCore = aliveCore + (KIPlayer_isDead_umo() ^ 1);
-                if (aliveCore != 0) {
-                    unsigned *en = *(unsigned **)&this->enemies;
-                    for (unsigned i = 4; i < *en; i = i + 1) {
-                        int *ki = *(int **)(en[1] + i * 4);
+                if (aliveCore != 0 && this->enemies != nullptr) {
+                    for (unsigned i = 4; i < this->enemies->size(); i = i + 1) {
+                        int *ki = (int *)(*this->enemies)[i];
                         if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0)
                             this->umo_spawnAt(ki, 0);
                     }
@@ -3729,9 +3529,9 @@ void Level::updateMissionOrbit(int dt) {
             this->orbitWaveTimer = t + dt;
             if (0x1d4c < t + dt) {
                 this->orbitWaveTimer = 0;
-                unsigned *en = *(unsigned **)&this->enemies;
-                for (unsigned i = 0; i < *en; i = i + 1) {
-                    int *ki = *(int **)(en[1] + i * 4);
+                if (this->enemies != nullptr)
+                for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                    int *ki = (int *)(*this->enemies)[i];
                     if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0 &&
                         ki[0x1f] != 0x33) {
                         this->umo_spawnAt(ki, 1);
@@ -3749,10 +3549,9 @@ void Level::updateMissionOrbit(int dt) {
         if (Mission_getType_umo() == 0xf) {
             int t = this->orbitWaveTimer;
             this->orbitWaveTimer = t + dt;
-            if (50000 < t + dt) {
+            if (50000 < t + dt && this->enemies != nullptr) {
                 this->orbitWaveTimer = 0;
-                unsigned *en = *(unsigned **)&this->enemies;
-                unsigned count = *en;
+                unsigned count = this->enemies->size();
                 // require at least one of the non-leader enemies to still be alive.
                 bool anyAlive = false;
                 for (unsigned i = 0; i + 1 < count; i = i + 1) {
@@ -3760,11 +3559,10 @@ void Level::updateMissionOrbit(int dt) {
                 }
                 if (anyAlive) {
                     for (unsigned i = 0; i + 1 < count; i = i + 1) {
-                        int *ki = *(int **)(en[1] + i * 4);
+                        int *ki = (int *)(*this->enemies)[i];
                         if (KIPlayer_isDead_umo() != 0 && Player_isActive_umo() == 0)
                             this->umo_spawnAt(ki, 0);
-                        en = *(unsigned **)&this->enemies;
-                        count = *en;
+                        count = this->enemies->size();
                     }
                 }
             }
@@ -3782,15 +3580,11 @@ void Level::attackWanted(int index) {
         for (int i = 1;
              i - 1 < Level_getNumWingmen(((int *)(*(int *)((*(int *)*slot) + 4)))[index]);
              i = i + 1) {
-            Level_setAlwaysEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4), 1);
-            Level_turnEnemy(*(int *)(((int *)((RawArray *)(intptr_t)enemies)->data)[i] + 4));
+            Level_setAlwaysEnemy(*(int *)((char *)(*enemies)[i] + 4), 1);
+            Level_turnEnemy(*(int *)((char *)(*enemies)[i] + 4));
         }
     }
 }
-
-struct SolarSystem;
-struct KIPlayer;
-struct ParticleSystemManager;
 
 __attribute__((visibility("hidden"))) extern int   *g_ips_stack;    // [DAT_000cda44]
 __attribute__((visibility("hidden"))) extern unsigned *g_ips_canvas; // [DAT_000cda98]
@@ -3822,12 +3616,10 @@ void Level::initParticleSystems()
 
     if (this->player != 0) {
         // per-asteroid dust systems.
-        if (this->field_a4 != 0) {
-            void *arr = ::operator new(0xc);
-            arrayCtor(arr);
-            *(void **)&this->field_a8 = arr;
-            arraySetLength((unsigned)(**(unsigned **)&this->field_a4), arr);
-            this->ips_buildAsteroidDust(arr);
+        if (this->field_a4 != nullptr) {
+            this->field_a8 = new Array<int>();
+            this->field_a8->resize(this->field_a4->size());
+            this->ips_buildAsteroidDust(this->field_a8);
         }
 
         // camera-locked sky particle system.
@@ -3840,10 +3632,9 @@ void Level::initParticleSystems()
         // pirate-base smoke plume attached to the pirate flagship.
         if (Status_getSystem_ips() != 0) {
             SolarSystem *ss = (SolarSystem *)Status_getSystem_ips();
-            unsigned *en = *(unsigned **)&this->enemies;
-            if (SolarSystem_hasPirateBase_ips(ss) != 0 && en != 0) {
-                for (unsigned i = 0; i < *en; i = i + 1) {
-                    KIPlayer *k = *(KIPlayer **)(en[1] + i * 4);
+            if (SolarSystem_hasPirateBase_ips(ss) != 0 && this->enemies != nullptr) {
+                for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
+                    KIPlayer *k = (*this->enemies)[i];
                     if (k != 0 && KIPlayer_getType_ips(k) == 0x37a3) {
                         // The flagship's geometry (KIPlayer::geometry at +0x8) drives the
                         // smoke plume's reference frame.
@@ -3853,7 +3644,6 @@ void Level::initParticleSystems()
                         ParticleSystemManager_addSystem_ips(this->particleSystemMgr, (void *)ref, 8, 0);
                         break;
                     }
-                    en = *(unsigned **)&this->enemies;
                 }
             }
         }
@@ -3909,9 +3699,7 @@ void Level::initParticleSystems()
         ParticleSystemManager_init_ips(*(ParticleSystemManager **)&this->field_94, 0);
 }
 
-struct Mission;
-struct Player;
-struct Globals;
+
 
 __attribute__((visibility("hidden"))) extern int     *g_cwm_stack;   // [DAT_000cc670]
 __attribute__((visibility("hidden"))) extern int    **g_cwm_statusB; // [DAT_000cc674]
@@ -3942,57 +3730,50 @@ void Level::createWingmen()
         this->player == 0)
         return;
 
-    void *arr = ::operator new(0xc);
-    arrayCtor(arr);
+    Array<KIPlayer*> *arr = new Array<KIPlayer*>();
     unsigned *wm = (unsigned *)Status_getWingmen_cwm();
-    arraySetLength((unsigned)(*wm), arr);
+    arr->resize(*wm);
 
-    unsigned n = *(unsigned *)arr;
+    unsigned n = arr->size();
     for (unsigned i = 0; i < n; i = i + 1) {
         int seed = **g_cwm_seedSrc;
         Status_getWingmen_cwm();
         AERandom_setSeed_cwm(seed);
         int fighter = Globals_getRandomEnemyFighter_cwm(*g_cwm_globals, *(int *)(*statusB + 0x2c));
         int ship = (int)(intptr_t)createShip(5, 0, fighter, 0, 1, 0);
-        *(int *)(*(int *)((char *)arr + 4) + i * 4) = ship;
+        (*arr)[i] = (KIPlayer *)(intptr_t)ship;
 
-        int *slot = (int *)(*(int *)((char *)arr + 4) + i * 4);
+        int *slot = (int *)&(*arr)[i];
         this->cwm_placeWingman(slot, i);
 
-        KIPlayer_setWingman_cwm(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4), 1, i);
-        (*(Player **)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4))->setAlwaysFriend(1);
-        Player_setHitpoints_cwm(*(int *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 4));
+        KIPlayer_setWingman_cwm((*arr)[i], 1, i);
+        (*(Player **)((char *)(*arr)[i] + 4))->setAlwaysFriend(1);
+        Player_setHitpoints_cwm(*(int *)((char *)(*arr)[i] + 4));
 
         int wmList = Status_getWingmen_cwm();
-        *(String *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x18) =
+        *(String *)((char *)(*arr)[i] + 0x18) =
             **(String **)(*(int *)(wmList + 4) + i * 4);
-        *(int *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x28) = *(int *)(*statusB + 0x2c);
+        *(int *)((char *)(*arr)[i] + 0x28) = *(int *)(*statusB + 0x2c);
 
         Status_getMission_cwm();
         if (Mission_getType_cwm() == 0xc)
-            *(char *)(*(int *)(*(int *)((char *)arr + 4) + i * 4) + 0x25) = 0;
+            *(char *)((char *)(*arr)[i] + 0x25) = 0;
     }
 
-    if (this->enemies == 0) {
-        *(void **)&this->enemies = arr;
+    if (this->enemies == nullptr) {
+        this->enemies = arr;
     } else {
         for (unsigned i = 0; i < n; i = i + 1) {
-            arrayAdd((int)(intptr_t)(*(KIPlayer **)(*(int *)((char *)arr + 4) + i * 4)), *(void **)&this->enemies);
-            n = *(unsigned *)arr;
+            this->enemies->push_back((*arr)[i]);
+            n = arr->size();
         }
+        delete arr;
     }
     AERandom_reset_cwm();
 }
 
-struct Mission;
-struct Station;
-struct Ship;
-struct Agent;
-struct Player;
-struct KIPlayer;
-struct PlayerStatic;
-struct AEGeometry;
-struct Globals;
+
+
 
 __attribute__((visibility("hidden"))) extern int    *g_csc_stack;    // [DAT_000c46a0]
 __attribute__((visibility("hidden"))) extern int   **g_csc_missionDef;// [DAT_000c46ac]
@@ -4030,13 +3811,11 @@ void  KIPlayer_setToSleep_csc(KIPlayer *k);
 void Level::createScene()
 {
 
-    if (*(void **)&this->enemies != 0) {
-        ArrayReleaseClasses_KIPlayer_csc(*(void **)&this->enemies);
-        if (*(void **)&this->enemies != 0)
-            operator_delete_csc(arrayDtor(*(void **)&this->enemies));
+    if (this->enemies != nullptr) {
+        deletePolyArray(this->enemies);
     }
     int mode = this->missionPtr;
-    this->enemies = 0;
+    this->enemies = nullptr;
 
     if (mode == 2) {
         createPlayer();
@@ -4048,12 +3827,12 @@ void Level::createScene()
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
+            this->enemies->push_back((KIPlayer *)p);
             g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)::operator new(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
+            this->enemies->push_back((KIPlayer *)p);
         }
         return;
     }
@@ -4068,16 +3847,12 @@ void Level::createScene()
         void *canvas = *g_csc_canvas;
 
         if (agents == 0) {
-            void *arr = ::operator new(0xc);
-            arrayCtor(arr);
-            *(void **)&this->enemies = arr;
-            arraySetLength((unsigned)(3), arr);
+            this->enemies = new Array<KIPlayer*>();
+            this->enemies->resize(3);
         } else {
             int nAgents = *agents;
-            void *arr = ::operator new(0xc);
-            arrayCtor(arr);
-            *(void **)&this->enemies = arr;
-            arraySetLength((unsigned)(nAgents * 3 + crew), arr);
+            this->enemies = new Array<KIPlayer*>();
+            this->enemies->resize(nAgents * 3 + crew);
             for (int j = 0; j != 7; j = j + 1) taken[j] = 0;
 
             for (int a = 0; a < nAgents; a = a + 1) {
@@ -4098,20 +3873,20 @@ void Level::createScene()
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas*)canvas, 0);
                 PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(this->enemies + 4) + a * 4) = p;
+                (*this->enemies)[a] = (KIPlayer *)p;
                 this->csc_placeActor((int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(this->enemies + 4) + (nAgents + a) * 4) = p;
+                (*this->enemies)[nAgents + a] = (KIPlayer *)p;
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)0x380c, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
                 PlayerStatic_ctor_csc(p, -1, g);
-                *(PlayerStatic **)(*(int *)(this->enemies + 4) + (nAgents * 2 + a) * 4) = p;
+                (*this->enemies)[nAgents * 2 + a] = (KIPlayer *)p;
             }
         }
         for (unsigned u = 0; u < crew; u = u + 1) {
@@ -4119,8 +3894,7 @@ void Level::createScene()
             new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
             PlayerStatic_ctor_csc(p, -1, g);
-            *(PlayerStatic **)((*(int **)&this->enemies)[1] +
-                               (**(int **)&this->enemies + (u - crew)) * 4) = p;
+            (*this->enemies)[this->enemies->size() + (u - crew)] = (KIPlayer *)p;
         }
         return;
     }
@@ -4136,10 +3910,8 @@ void Level::createScene()
             else { Status_getSystem_csc(); race = SolarSystem_getRace_csc(); }
         }
 
-        void *arr = ::operator new(0xc);
-        arrayCtor(arr);
-        *(void **)&this->enemies = arr;
-        arraySetLength((unsigned)(1), arr);
+        this->enemies = new Array<KIPlayer*>();
+        this->enemies->resize(1);
 
         Status_getShip_csc();
         int shipIdx = Ship_getIndex_csc();
@@ -4147,7 +3919,7 @@ void Level::createScene()
         int shipRace = ship->getRace();
         int actor = (int)(intptr_t)createShip(shipRace, 0, shipIdx, 0,
                                          this->missionPtr != 0x17, 0);
-        **(int **)(this->enemies + 4) = actor;
+        (*this->enemies)[0] = (KIPlayer *)(intptr_t)actor;
         this->csc_placeActor(actor, shipIdx, 1);
         PlayerFighter_removeTrail_csc(actor);
         PlayerFighter_setExhaustVisible_csc(actor);
@@ -4169,7 +3941,7 @@ void Level::createScene()
                 ((AEGeometry*)g)->addChild(((AEGeometry*)child)->transform);
                 [&]{ AEGeometry *g_=(AEGeometry*)(child); if(g_){ g_->~AEGeometry(); operator_delete_csc(g_);} }();
             }
-            arrayAdd((int)(intptr_t)((KIPlayer *)p), *(void **)&this->enemies);
+            this->enemies->push_back((KIPlayer *)p);
         }
 
         // background traffic fighters.
@@ -4214,13 +3986,10 @@ void Level::createScene()
             (*(Player **)((char *)k + 0x4))->setAlwaysFriend(1);
             KIPlayer_setToSleep_csc(k);
             PlayerFighter_setExhaustVisible_csc((int)(intptr_t)k);
-            arrayAdd((int)(intptr_t)(k), *(void **)&this->enemies);
+            this->enemies->push_back(k);
         }
     }
 }
-
-struct StarSystem;
-struct Engine;
 
 // PC-relative cookie + the PaintCanvas singleton + a few float-constant table pointers.
 __attribute__((visibility("hidden"))) extern int    *g_rbg_stack;    // [DAT_000d46fc]
@@ -4377,161 +4146,6 @@ void Level::renderBG(float t) {
 // ============================================================================
 
 #include <new>
-
-// ---- array element release callbacks --------------------------------------
-// Each callback runs over an Array<T>: it destroys every live element
-// (element destructor + operator delete), nulls the slot, then frees the
-// element buffer with operator delete[] and nulls the data pointer. This is
-// exactly the engine `ArrayReleaseClasses<T>` / `ArrayRelease<int>` loop;
-// the callbacks differ only in the element type.
-namespace {
-// Layout-compatible Array<T> view: {size, data, capacity}. The engine stores
-// data at +4 and length at +8 in the raw recovery; RawArray mirrors that.
-template <class T>
-void releaseClassArray(void *p)
-{
-    RawArray *a = (RawArray *)p;
-    T **data = (T **)a->data;
-    for (unsigned i = 0; i < a->capacity; ++i) {  // capacity field == element count
-        if (data[i] != 0) {
-            data[i]->~T();
-            ::operator delete(data[i]);
-        }
-        data[i] = 0;
-    }
-    if (data != 0)
-        ::operator delete[](data);
-    a->data = 0;
-}
-} // namespace
-
-// AbstractGun / KIPlayer / RadioMessage / AEGeometry are opaque here; they are
-// released through their first vtable entry's deleting-destructor, which is the
-// same observable effect as the typed ArrayReleaseClasses<T> loop.
-namespace {
-void releasePolymorphicArray(void *p)
-{
-    RawArray *a = (RawArray *)p;
-    void **data = (void **)a->data;
-    for (unsigned i = 0; i < a->capacity; ++i) {
-        void *e = data[i];
-        if (e != 0) {
-            // virtual deleting destructor lives at vtable slot 0 (offset +0).
-            void *vt = *(void **)e;
-            (*(void (**)(void *))((char *)vt + 0))(e);
-        }
-        data[i] = 0;
-    }
-    if (data != 0)
-        ::operator delete[](data);
-    a->data = 0;
-}
-} // namespace
-
-extern "C" void Level_releaseAEGeometry(void *p)  { releasePolymorphicArray(p); }
-extern "C" void Level_releaseAbstractGun(void *p) { releasePolymorphicArray(p); }
-extern "C" void Level_releaseKI(void *p)          { releasePolymorphicArray(p); }
-extern "C" void Level_releaseRadioMessage(void *p){ releasePolymorphicArray(p); }
-
-// Array<int>: no element destructors — just free the buffer and clear it.
-extern "C" void Level_releaseInt(void *p)
-{
-    RawArray *a = (RawArray *)p;
-    for (unsigned i = 0; i < a->capacity; ++i)
-        ((int *)a->data)[i] = 0;
-    if (a->data != 0)
-        ::operator delete[](a->data);
-    a->data = 0;
-}
-
-// ---- Array<T> container helpers (RawArray {size,data,capacity}) ------------
-// These are the engine's per-element-type Array<T> special members the
-// decompiler emitted as undefined externs (Array_<T>_ctor/_dtor, ArrayXxx_ctor,
-// ArraySetLength_<T>, ArrayAdd_<T>, ArrayRelease(Classes)_<T>). Each is the same
-// Array<T> operation specialised per element type; the `_ca`/`_csc`/`_csp`/...
-// context suffixes are duplicate inlinings of the same instantiation at distinct
-// call sites. They are defined here over the engine's 32-bit RawArray layout
-// (size@+0, data@+4, capacity@+8) — the layout this Level and ~15 peer TUs read
-// directly (KIPlayer/Player/Radio/RepairBeam/CutScene/MGame/...). Element size
-// is 4 bytes (a 32-bit handle/pointer) for every instantiation used here.
-namespace {
-
-// Array<T>::Array() — empty container.
-inline void arrayCtor(void *p)
-{
-    RawArray *a = (RawArray *)p;
-    a->size = 0;
-    a->data = 0;
-    a->capacity = 0;
-}
-
-// Array<T>::~Array() — free the element buffer; returns `this` (ARM ABI) so the
-// caller can hand it straight to operator delete.
-inline void *arrayDtor(void *p)
-{
-    RawArray *a = (RawArray *)p;
-    if (a->data != 0)
-        ::operator delete[](a->data);
-    a->data = 0;
-    a->size = 0;
-    a->capacity = 0;
-    return p;
-}
-
-// Array<T>::setLength(n) — (re)allocate an n-slot, zero-filled element buffer.
-inline void arraySetLength(unsigned n, void *p)
-{
-    RawArray *a = (RawArray *)p;
-    if (a->data != 0)
-        ::operator delete[](a->data);
-    if (n != 0) {
-        a->data = ::operator new[]((size_t)n * 4);
-        for (unsigned i = 0; i < n; ++i)
-            ((int *)a->data)[i] = 0;
-    } else {
-        a->data = 0;
-    }
-    a->size = n;
-    a->capacity = n;
-}
-
-// Array<T>::add(item) — append one 4-byte element, growing the buffer by one.
-inline void arrayAdd(int item, void *p)
-{
-    RawArray *a = (RawArray *)p;
-    unsigned n = a->size;
-    void *grown = ::operator new[]((size_t)(n + 1) * 4);
-    for (unsigned i = 0; i < n; ++i)
-        ((int *)grown)[i] = ((int *)a->data)[i];
-    ((int *)grown)[n] = item;
-    if (a->data != 0)
-        ::operator delete[](a->data);
-    a->data = grown;
-    a->size = n + 1;
-    a->capacity = n + 1;
-}
-
-} // namespace
-
-// Array<T>::~Array() for the level's owned member arrays (freed in ~Level via the
-// ARR() macro after the matching Level_release* element pass). Same RawArray
-// teardown — free the element buffer and return `this` for operator delete.
-extern "C" void *dtor_ArrayAEGeometry(void *a)  { return arrayDtor(a); }
-extern "C" void *dtor_ArrayInt(void *a)         { return arrayDtor(a); }
-extern "C" void *dtor_ArrayAbstractGun(void *a) { return arrayDtor(a); }
-extern "C" void *dtor_ArrayKI(void *a)          { return arrayDtor(a); }
-extern "C" void *dtor_ArrayRadioMessage(void *a){ return arrayDtor(a); }
-
-// Generic (untyped) Array<int-handle> helpers used by createSentryGuns on the
-// level's member arrays (field_b0 / enemies). Same RawArray operations as the
-// per-type variants above, taking the array as an int handle.
-extern "C" void ArrayCtor(int arr)                 { arrayCtor((void *)(intptr_t)arr); }
-extern "C" void ArraySetLength(int len, int arr)   { arraySetLength((unsigned)len, (void *)(intptr_t)arr); }
-extern "C" void ArrayAdd(int item, int arr)        { arrayAdd(item, (void *)(intptr_t)arr); }
-
-// Array<T>::releaseClasses() — destroy + delete every live element, clear slots.
-extern "C" void ArrayReleaseClasses_AGun_ag(void *p)     { releasePolymorphicArray(p); }
-extern "C" void ArrayReleaseClasses_KIPlayer_csc(void *p){ releasePolymorphicArray(p); }
 
 // ---- enemy-flag forwarders ------------------------------------------------
 // Both operate on a Player object (the level passes player = *(obj+4)). These
@@ -4729,11 +4343,9 @@ void Level::cm_buildMissionScene(Mission *mission) {
 // (stored on the PlayerAsteroid at +0x150) and a candidate position, used to
 // reject overlapping spawns.
 float Level::ca_asteroidDistance(unsigned idx, Vector *pos) {
-    int arr = this->asteroids;          // asteroids array
-    if (arr == 0)
+    if (this->asteroids == nullptr)
         return 1.0e30f;
-    int *data = *(int **)(arr + 4);
-    int obj = data[idx];
+    int obj = (int)(intptr_t)(*this->asteroids)[idx];
     Vector c;
     c.x = *(float *)(obj + 0x150);
     c.y = *(float *)(obj + 0x154);

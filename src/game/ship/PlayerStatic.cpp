@@ -1,115 +1,46 @@
 #include "gof2/game/ship/PlayerStatic.h"
-#include "gof2/engine/render/AEGeometry.h"
+#include "gof2/game/ship/KIPlayer.h"
 #include "gof2/game/ship/Player.h"
+#include "gof2/engine/render/AEGeometry.h"
 
-extern "C" void *KIPlayer_dtor(PlayerStatic *self);
-
-void *_ZN12PlayerStaticD1Ev(PlayerStatic *self)
+// PlayerStatic(playerId, geometry, x, y, z): builds the underlying Player ship,
+// constructs the KIPlayer base around it and records the integer fallback
+// position used when no render geometry is attached.
+PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z)
+    : KIPlayer(playerId, -1, new Player(2000, 0, 0, 0, 0), geometry, x, y, z, true)
 {
-    KIPlayer_dtor(self);
-    return ((PlayerStatic *)self)->dtor_tail();
+    positionX = (int)x;
+    positionY = (int)y;
+    positionZ = (int)z;
 }
 
-// ---- ~PlayerStatic (D2 base-object destructor) ----
-// PlayerStatic owns no members beyond the KIPlayer base; the non-deleting
-// destructor simply chains into the KIPlayer base destructor. (The deleting
-// variant _ZN12PlayerStaticD1Ev above additionally tail-calls operator delete.)
+// Convenience overload used when the caller (Level::createStaticActors) builds
+// the actor at the origin and positions it afterwards.
+PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry)
+    : PlayerStatic(playerId, geometry, 0.0f, 0.0f, 0.0f)
+{
+}
+
+// PlayerStatic owns no resources beyond the KIPlayer base; the base destructor
+// (chained implicitly) releases the Player ship and geometry.
 PlayerStatic::~PlayerStatic()
 {
-    KIPlayer_dtor(this);
 }
 
 void PlayerStatic::render()
 {
-    return PlayerStatic::render_geometry(this->geometry);
-}
-
-// ---- render_geometry fragment ----
-// Tail of PlayerStatic::render(): the resolved slot renders the owned geometry
-// (the AEGeometry* passed in is this->geometry at +0x08).
-void PlayerStatic::render_geometry(void *geometry)
-{
-    ((AEGeometry *)geometry)->render();
-}
-
-// ---- dtor_tail fragment ----
-// Tail of the deleting destructor (_ZN12PlayerStaticD1Ev): after the KIPlayer
-// base destructor runs, the deleting variant tail-calls operator delete(this).
-// The fragment forwards the receiver to operator delete.
-void *PlayerStatic::dtor_tail()
-{
-    ::operator delete(this);
-    return this;
-}
-
-// ---- base_dtor / base_dtor_thunk fragments ----
-// PlayerStatic base-object destructor used by the PlayerStaticFar destructor
-// chain. PlayerStatic owns no members beyond the KIPlayer base, so it simply
-// chains into the KIPlayer destructor and returns the receiver.
-void *PlayerStatic::base_dtor()
-{
-    KIPlayer_dtor(this);
-    return this;
-}
-
-// base_dtor_thunk: the b.w veneer that tail-calls the base destructor above.
-void *PlayerStatic::base_dtor_thunk()
-{
-    return this->base_dtor();
-}
-
-// ---- ctor fragment ----
-// PlayerStatic_ctor entry: the in-place construction body shared by the
-// PlayerStaticFar constructor (it calls PlayerStatic_ctor on its own storage).
-// Mirrors the full PlayerStatic(int, AEGeometry*, float, float, float) ctor.
-__attribute__((visibility("hidden"))) extern void *volatile g_PlayerStatic_vtable;
-void PlayerStatic::ctor(int playerId, AEGeometry *geometry, float x, float y, float z)
-{
-    Player *player = (Player *)operator new(0x114);
-    ((Player *)(player))->ctor(2000, 0, 0, 0, 0);
-
-    void *vtable = g_PlayerStatic_vtable;
-    this->vtable = (char *)vtable + 8;
-    this->posX = (int)x;
-    this->posY = (int)y;
-    this->posZ = (int)z;
+    geometry->render();
 }
 
 Vector PlayerStatic::getPosition()
 {
-    AEGeometry *geometry = this->geometry;
-    if (geometry != 0) {
-        return ((AEGeometry *)(geometry))->getPosition();
+    if (geometry != nullptr) {
+        return geometry->getPosition();
     }
 
     Vector result;
-    result.x = (float)this->posX;
-    result.y = (float)this->posY;
-    result.z = (float)this->posZ;
+    result.x = (float)positionX;
+    result.y = (float)positionY;
+    result.z = (float)positionZ;
     return result;
-}
-
-struct Player;
-
-__attribute__((visibility("hidden"))) extern void *volatile g_PlayerStatic_vtable;
-
-PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z)
-{
-    Player *player = (Player *)operator new(0x114);
-    ((Player *)(player))->ctor(2000, 0, 0, 0, 0);
-
-    void *vtable = g_PlayerStatic_vtable;
-    this->vtable = (char *)vtable + 8;
-    this->posX = (int)x;
-    this->posY = (int)y;
-    this->posZ = (int)z;
-}
-
-// ---- PlayerStatic(playerId, geometry) ----
-// Convenience overload used when the caller (Level::createStaticActors) builds
-// the actor at the origin and positions/rotates it afterwards. Delegates to the
-// full constructor with a zero fallback position.
-PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry)
-    : PlayerStatic(playerId, geometry, 0.0f, 0.0f, 0.0f)
-{
 }

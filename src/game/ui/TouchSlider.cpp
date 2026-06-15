@@ -11,9 +11,7 @@ void TouchSlider::setPosition(int param_1, int param_2)
     this->knobX = (int)(fVar2 + this->value * fVar1);
 }
 
-// PaintCanvas singleton holder (pc-rel deref -> holder; object is *holder).
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_canvas;
-// App/engine singleton: pc-rel -> &g; *g -> object pointer; object[0x7c].
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_app;
 
 TouchSlider::TouchSlider(int param_1, int param_2, int param_3, float param_4)
@@ -83,9 +81,6 @@ int TouchSlider::OnTouchEnd(int param_1, int param_2)
     this->isDragging = 0;
     return uVar1;
 }
-
-// PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
-__attribute__((visibility("hidden"))) extern void **g_TouchSlider_canvas;
 
 void TouchSlider::draw()
 {

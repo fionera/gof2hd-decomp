@@ -1,50 +1,53 @@
 #ifndef GOF2_DIALOGUEWINDOW_H
 #define GOF2_DIALOGUEWINDOW_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// String and Vector come from common.h / math.h (do not re-declare here).
-// Mission/Level/Agent are forward-declared in fwd.h (included via common.h).
 
-struct StringSlot {
-    char bytes[12];
-};
+class Mission;
+class Level;
+class Agent;
+class ImagePart;
+class TouchButton;
+class ChoiceWindow;
+class ScrollTouchWindow;
 
+// Modal mission/message dialogue: a framed window showing an agent portrait,
+// title and body text, optional briefing/success paging and a yes/no choice.
 class DialogueWindow {
 public:
-    void* prevButton;                    // +0x0
-    void* nextButton;                    // +0x4
-    void* moreButton;                    // +0x8
-    Array<ImagePart*>* faceParts;        // +0xc  face image-part list (loadChar result)
-    int campaignMission;                     // +0x10
-    int frameX;                     // +0x14
-    int frameY;                     // +0x18
-    int frameWidth;                     // +0x1c
-    int frameHeight;                     // +0x20
-    void* clientImage;                   // +0x24
-    String bodyText;                     // +0x28  dialogue body text
-    String agentName;                    // +0x34  agent / client name (title text)
-    void* scrollWindow;                   // +0x40
-    int kind;                     // +0x44
-    int page;                     // +0x48
-    Mission* mission;                // +0x4c
-    void* choiceWindow;                   // +0x50
-    uint8_t choiceActive;                 // +0x54
-    void* level;                   // +0x58
-    int*  briefingOffsets;                   // +0x5c  campaign briefing offset table
-    int*  successOffsets;                   // +0x60  campaign success offset table
-    int voiceSound;                     // +0x64
-    int autoAdvanceTimer;                     // +0x68
-    int pauseLength;                     // +0x6c
-    uint8_t field_0x70;                 // +0x70
+    TouchButton* prevButton;
+    TouchButton* nextButton;
+    TouchButton* moreButton;
+    Array<ImagePart*>* faceParts;        // face image-part list (loadChar result)
+    int campaignMission;
+    int frameX;
+    int frameY;
+    int frameWidth;
+    int frameHeight;
+    void* clientImage;
+    String bodyText;                     // dialogue body text
+    String agentName;                    // agent / client name (title text)
+    ScrollTouchWindow* scrollWindow;
+    int kind;
+    int page;
+    Mission* mission;
+    ChoiceWindow* choiceWindow;
+    uint8_t choiceActive;
+    Level* level;
+    int* briefingOffsets;                // campaign briefing offset table
+    int* successOffsets;                 // campaign success offset table
+    int voiceSound;
+    int autoAdvanceTimer;
+    int pauseLength;
+    uint8_t mirrorFace;                  // draw the portrait mirrored
 
-    // ---- methods (converted from free functions) ----
+    DialogueWindow();
+    DialogueWindow(Mission* mission, Level* level, int kind);
+    DialogueWindow(String* text, String* agentName, int* parts);
+    ~DialogueWindow();
+
     int OnTouchBegin(int x, int y);
     int OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);
-    ~DialogueWindow();
-    DialogueWindow * ctor_default();
-    DialogueWindow * ctor_mission(Mission *mission, Level *level, int kind);
-    DialogueWindow * ctor_text(String *text, String *agentName, int *parts);
     void draw();
     bool hasLevel();
     int init();
@@ -53,10 +56,10 @@ public:
     int length();
     void loadContent();
     int nextPage();
-    int pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent);
+    int pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent* agent);
     int previousPage();
-    void set(Mission *mission, int kind, int campaign);
-    void setLevel(Level *level);
+    void set(Mission* mission, int kind, int campaign);
+    void setLevel(Level* level);
     void update(int dt);
 
     // Static campaign-dialogue lookups: do the offset tables list a briefing /

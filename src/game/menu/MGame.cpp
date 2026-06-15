@@ -67,6 +67,7 @@
 #include "gof2/game/ship/PlayerEgo.h"
 #undef B
 #include "gof2/game/ship/PlayerFixedObject.h"
+#include "gof2/game/ship/Agent.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
@@ -315,8 +316,8 @@ void MGame::startJumpScene() {
     float camX, camY, camZ;
     if (this->field_0xdd == 0) {
         // Free-space jump: position from a landmark.
-        int lm = ((Level *)(this->field_0x78))->getLandmarks();
-        void *obj = *(void **)((char *)lm + 4);
+        Array<KIPlayer*> *lm = ((Level *)(this->field_0x78))->getLandmarks();
+        void *obj = (void *)(*lm)[0];
         void *vt = *(void **)obj;
         float vtmp[4];
         (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, vtmp);
@@ -784,19 +785,16 @@ void MGame::OnSuspend() {
     if (*g_record != 0) ((RecordHandler *)(*g_record))->saveOptions();
     ((MGame *)(this))->pauseSounds();
     if (this->field_0x5d == 0) {
-        if (this->field_0x88 == 0) {
-            MenuTouchWindow *w = (MenuTouchWindow *)MGame_opnew(0x240);
-            ((MenuTouchWindow *)(w))->ctor(1);
-            this->field_0x88 = w;
-        }
+        if (this->field_0x88 == 0)
+            this->field_0x88 = new MenuTouchWindow(1);
         this->field_0x1a6 = 1;
         this->field_0x5d = 1;
         ((FModSound *)(*g_fmod))->pauseAllPlaying();
         ((PlayerEgo *)(this->field_0x58))->PauseEngineSound();
-        EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-        if (e != 0) {
-            for (uint32_t i = 0; i < e->size; i++)
-                ((KIPlayer *)(e->data[i]))->PauseEngineSound();
+        Array<KIPlayer*> *e = ((Level *)(this->field_0x78))->getEnemies();
+        if (e != nullptr) {
+            for (uint32_t i = 0; i < e->size(); i++)
+                ((KIPlayer *)((*e)[i]))->PauseEngineSound();
         }
         MenuTouchWindow *w = this->field_0x88;
         int mode = 1;
@@ -970,8 +968,8 @@ void MGame::dockEvent() {
 
     if (this->field_0xcc == 0) {
         int tgt = ((PlayerEgo *)(this->field_0x58))->getAutoPilotTarget();
-        int lm = ((Level *)(this->field_0x78))->getLandmarks();
-        if (tgt != *(int *)((char *)lm + 4) ||
+        Array<KIPlayer*> *lm = ((Level *)(this->field_0x78))->getLandmarks();
+        if (tgt != (int)(intptr_t)lm->data() ||
             ((PlayerEgo *)(this->field_0x58))->collidesWithStation() == 0) {
             
             return;
@@ -1318,10 +1316,10 @@ void MGame::setupWeaponsAndAudio() {
         }
     } else {
         self->field_0x58->PlayEngineSound();
-        EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
-        if (enemies != 0)
-            for (unsigned i = 0; i < enemies->size; i++)
-                ((KIPlayer *)(enemies->data[i]))->PlayEngineSound();
+        Array<KIPlayer*> *enemies = ((Level *)(self->field_0x78))->getEnemies();
+        if (enemies != nullptr)
+            for (unsigned i = 0; i < enemies->size(); i++)
+                ((KIPlayer *)((*enemies)[i]))->PlayEngineSound();
     }
 
     self->field_0x50 = 0;
@@ -1365,19 +1363,16 @@ void MGame::setupWeaponsAndAudio() {
 
     // Mission 0x9e: cloak the first enemy fighter.
     if ((*g_status)->getCurrentCampaignMission() == 0x9e) {
-        int enemies = ((Level *)(self->field_0x78))->getEnemies();
-        if (enemies != 0) {
-            int first = *(int *)((char *)(intptr_t)((Level *)(self->field_0x78))->getEnemies() + 4);
+        Array<KIPlayer*> *enemies = ((Level *)(self->field_0x78))->getEnemies();
+        if (enemies != nullptr) {
+            KIPlayer *first = (*enemies)[0];
             ((PlayerFighter *)(first))->cloak(true, false);
         }
     }
 
     // Ensure the pause / cutscene window exists.
-    if (self->field_0x88 == 0) {
-        MenuTouchWindow *w = (MenuTouchWindow *)::operator new(0x240);
-        ((MenuTouchWindow *)(w))->ctor(1);
-        self->field_0x88 = w;
-    }
+    if (self->field_0x88 == 0)
+        self->field_0x88 = new MenuTouchWindow(1);
 
     // Pre-build the wrapped mission-information overlay text.
     self->field_0x1ec = new Array<AbyssEngine::String *>();
@@ -1478,11 +1473,11 @@ void MGame::OnInitialize() {
             int id;
             Level *lvl;
             if (*(uint8_t *)((char *)*status + 0x111) == 0) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
-                if (enemies != 0) {
-                    int n = (int)enemies->size;
+                Array<KIPlayer*> *enemies = ((Level *)(self->field_0x78))->getEnemies();
+                if (enemies != nullptr) {
+                    int n = (int)enemies->size();
                     for (int i = 0; i < n; i++) {
-                        KIPlayer *e = enemies->data[i];
+                        KIPlayer *e = (*enemies)[i];
                         if (e->shipGroup == 8)
                             e->field_0x25 = 0;
                     }
@@ -1495,11 +1490,11 @@ void MGame::OnInitialize() {
             }
             ((Level *)(lvl))->createRadioMessage(id, 0);
         } else {
-            EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(self->field_0x78))->getEnemies();
-            if (enemies != 0) {
-                int n = (int)enemies->size;
+            Array<KIPlayer*> *enemies = ((Level *)(self->field_0x78))->getEnemies();
+            if (enemies != nullptr) {
+                int n = (int)enemies->size();
                 for (int i = 0; i < n; i++) {
-                    KIPlayer *e = enemies->data[i];
+                    KIPlayer *e = (*enemies)[i];
                     if (e->shipGroup == 8)
                         e->field_0x25 = 0;
                 }
@@ -1711,7 +1706,7 @@ void MGame::buildMissionFollowup() {
     Status_replaceHash(&sResult, status, &sTmpl, &sStation, &sHash);
 
     Agent *missionAgent = ((Mission *)(status->getMission()))->getAgent();
-    ((Agent *)(missionAgent))->setMissionString(&sResult);
+    missionAgent->setMissionString(sResult);
 
     status->setMission(((Status *)(status))->getCampaignMissionPtr());
 
@@ -1792,12 +1787,12 @@ void MGame::successCheck() {
 
             int cm = (*g_status)->getCurrentCampaignMission();
             if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x26) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-                unsigned n = enemies->size;
+                Array<KIPlayer*> *enemies = ((Level *)(this->field_0x78))->getEnemies();
+                unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
                     // Enemy entries are polymorphic; this branch touches the
                     // PlayerFixedObject layout (field_0x40 "moving" flag).
-                    PlayerFixedObject *e = (PlayerFixedObject *)enemies->data[i];
+                    PlayerFixedObject *e = (PlayerFixedObject *)(*enemies)[i];
                     if (e->field_0x40 != 0) {
                         ((Player *)(e->player))->setHitpoints((int)(intptr_t)e->player);
                         ((PlayerFixedObject *)(e))->setMoving(1);
@@ -1809,10 +1804,10 @@ void MGame::successCheck() {
                 int pts[3] = {0, 0, 0};
                 Route *route = (Route *)::operator new(0x18);
                 new (route) Route(pts, 3);
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-                unsigned n = enemies->size;
+                Array<KIPlayer*> *enemies = ((Level *)(this->field_0x78))->getEnemies();
+                unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
-                    KIPlayer *k = *(KIPlayer **)(*(int *)((char *)enemies + 4) + i * 4);
+                    KIPlayer *k = (*enemies)[i];
                     if (k->shipGroup == 1) {
                         Route *rc = (Route *)((Route *)(route))->clone();
                         ((KIPlayer *)(k))->setRoute(rc);
@@ -1820,18 +1815,18 @@ void MGame::successCheck() {
                 }
                 do { Route *_rt = (Route *)(route); _rt->~Route(); ::operator delete(_rt); } while (0);
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-                unsigned n = enemies->size;
+                Array<KIPlayer*> *enemies = ((Level *)(this->field_0x78))->getEnemies();
+                unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
-                    KIPlayer *e = enemies->data[i];
+                    KIPlayer *e = (*enemies)[i];
                     if (e->shipGroup == 8)
                         ((Player *)((Player *)e->player))->removeAllGuns();
                 }
             } else if (((Mission *)((*g_status)->getMission()))->isCampaignMission() != 0 && cm == 0x49) {
-                EnemyList *enemies = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-                unsigned n = enemies->size;
+                Array<KIPlayer*> *enemies = ((Level *)(this->field_0x78))->getEnemies();
+                unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
-                    PlayerFixedObject *o = *(PlayerFixedObject **)(*(int *)((char *)enemies + 4) + i * 4);
+                    PlayerFixedObject *o = (PlayerFixedObject *)(*enemies)[i];
                     if (o->field_0x40 != 0) {
                         ((Player *)(o->player))->setHitpoints((int)(intptr_t)o->player);
                         ((PlayerFixedObject *)(o))->setMoving(1);
@@ -1884,10 +1879,10 @@ __attribute__((visibility("hidden"))) extern FModSound **g_fmod;
 void MGame::resumeSounds() {
     ((FModSound *)(*g_fmod))->resumeAll();
     ((PlayerEgo *)(this->field_0x58))->ResumeEngineSound();
-    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-    if (e == 0) return;
-    for (uint32_t i = 0; i < e->size; i++)
-        ((KIPlayer *)(e->data[i]))->ResumeEngineSound();
+    Array<KIPlayer*> *e = ((Level *)(this->field_0x78))->getEnemies();
+    if (e == nullptr) return;
+    for (uint32_t i = 0; i < e->size(); i++)
+        ((KIPlayer *)((*e)[i]))->ResumeEngineSound();
 }
 
 __attribute__((visibility("hidden"))) extern Status **g_status;
@@ -1960,10 +1955,10 @@ void MGame::pauseSounds() {
     this->field_0x1a6 = this->field_0x5d;
     ((FModSound *)(*g_fmod))->pauseAllPlayingSoundFXEvents();
     ((PlayerEgo *)(this->field_0x58))->PauseEngineSound();
-    EnemyList *e = (EnemyList *)(intptr_t)((Level *)(this->field_0x78))->getEnemies();
-    if (e != 0) {
-        for (uint32_t i = 0; i < e->size; i++)
-            ((KIPlayer *)(e->data[i]))->PauseEngineSound();
+    Array<KIPlayer*> *e = ((Level *)(this->field_0x78))->getEnemies();
+    if (e != nullptr) {
+        for (uint32_t i = 0; i < e->size(); i++)
+            ((KIPlayer *)((*e)[i]))->PauseEngineSound();
     }
 }
 
@@ -1998,14 +1993,12 @@ void MGame::reset() {
 
     this->field_0x58 = (PlayerEgo *)(intptr_t)((Level *)(this))->getPlayer();
 
-    Hud *hud = (Hud *)::operator new(0x53c);
-    ((Hud *)(hud))->ctor();
-    this->field_0x74 = hud;
+    this->field_0x74 = new Hud();
 
     Radio *radio = (Radio *)::operator new(0x48);
     Radio_ctor(radio);
     this->field_0x84 = radio;
-    ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)(intptr_t)((Level *)(this->field_0x78))->getMessages());
+    ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)((Level *)(this->field_0x78))->getMessages());
 
     PaintCanvas *pc = *g_resCanvas;
     pc->CameraCreate((unsigned *)&this->field_0xf0);
@@ -2347,10 +2340,10 @@ void MGame::updateJumpScene() {
         int over = (*(unsigned *)((char *)tr + 0x110) > 0x6a4);
         if ((0 - over) - prog < 0) goto camMove;
     } else {
-        int lm = ((Level *)(self->field_0x78))->getLandmarks();
-        if (*(int *)((char *)*(int *)((char *)lm + 4) + 4) != 0) {
+        Array<KIPlayer*> *lm = ((Level *)(self->field_0x78))->getLandmarks();
+        if ((int)(intptr_t)(*lm)[1] != 0) {
             ((Level *)(self->field_0x78))->getLandmarks();
-            int jg = *(int *)((char *)*(int *)((char *)lm + 4) + 4);
+            int jg = (int)(intptr_t)(*lm)[1];
             if (((PlayerJumpgate *)(jg))->timeToJump() == 0) goto camMove;
         }
     }
@@ -2368,8 +2361,8 @@ camMove: {
         if (self->field_0xdd != 0) {
             ((AEGeometry *)(self->field_0x114))->getPosition();
         } else {
-            int lm = ((Level *)(self->field_0x78))->getLandmarks();
-            void *obj = *(void **)((char *)*(int *)((char *)lm + 4) + 4);
+            Array<KIPlayer*> *lm = ((Level *)(self->field_0x78))->getLandmarks();
+            void *obj = (void *)(*lm)[1];
             void *vt = *(void **)obj;
             (*(void (**)(void *, void *))((char *)vt + 0x28))(obj, mtx);
         }
@@ -2387,8 +2380,8 @@ afterCam:
     float threshold = (float)self->field_0xec + *(float *)&g_ujZNear;
     float fVar14 = threshold;
     if (*(float *)((char *)camPos + 8) < threshold && self->field_0xdd == 0) {
-        int lm = ((Level *)(self->field_0x78))->getLandmarks();
-        ((PlayerJumpgate *)(*(int *)((char *)*(int *)((char *)lm + 4) + 4)))->activate();
+        Array<KIPlayer*> *lm = ((Level *)(self->field_0x78))->getLandmarks();
+        ((PlayerJumpgate *)((int)(intptr_t)(*lm)[1]))->activate();
         float p[4];
         ((PlayerEgo *)(p))->getPosition();
         float t2 = (float)self->field_0xec + *(float *)&g_ujZSound;
@@ -2416,8 +2409,8 @@ afterCam:
         int tr = (int)(long)((PaintCanvas*)g_PaintCanvas)->TransformGetTransform(**g_ujCanvasC);
         ended = *(uint8_t *)((char *)tr + 0xed) != 0;
     } else {
-        int lm = ((Level *)(self->field_0x78))->getLandmarks();
-        ended = ((PlayerJumpgate *)(*(int *)((char *)*(int *)((char *)lm + 4) + 4)))->animationEnded() != 0;
+        Array<KIPlayer*> *lm = ((Level *)(self->field_0x78))->getLandmarks();
+        ended = ((PlayerJumpgate *)((int)(intptr_t)(*lm)[1]))->animationEnded() != 0;
     }
     if (!ended) goto done;
 
@@ -2426,11 +2419,11 @@ afterCam:
         if ((*g_status)->getCurrentCampaignMission() == 0x2a && (*g_status)->inAlienOrbit() != 0) {
             ((LevelScript *)(self->field_0x7c))->setEvent(6);
             ((PlayerEgo *)(self->field_0x58))->setSpeed(0.0f);
-            int lm = ((Level *)(self->field_0x78))->getLandmarks();
-            int *node = *(int **)((char *)*(int *)((char *)lm + 4) + 0xc);
+            Array<KIPlayer*> *lm = ((Level *)(self->field_0x78))->getLandmarks();
+            int *node = (int *)(*lm)[3];
             (*(void (**)(int *, int, int, int))((char *)*node + 0x48))(node, g_ujPos0, g_ujPos1, g_ujPos2);
             lm = ((Level *)(self->field_0x78))->getLandmarks();
-            void *node2 = *(void **)((char *)*(int *)((char *)lm + 4) + 0xc);
+            void *node2 = (void *)(*lm)[3];
             float mtx[4];
             (*(void (**)(void *, void *))((char *)*(void **)node2 + 0x28))(node2, mtx);
             *(Vector*)((Vector *)((char *)&self->field_0xe4)) = *(const Vector*)((Vector *)mtx);
@@ -2579,8 +2572,7 @@ void MGame::OnRelease() {
     }
     this->field_0x114 = 0;
 
-    if (this->field_0x74 != 0)
-        ::operator delete(((Hud *)(this->field_0x74))->dtor());
+    delete this->field_0x74;
     this->field_0x74 = 0;
 
     if (this->field_0x7c != 0) {
@@ -2610,8 +2602,7 @@ void MGame::OnRelease() {
     void *m3 = ((ApplicationManager *)(*appMod))->GetApplicationModule(0);
     *(int *)((char *)m3 + 0x10) = 0;
 
-    if (this->field_0x88 != 0)
-        ::operator delete(((MenuTouchWindow *)(this->field_0x88))->dtor());
+    delete this->field_0x88;
     this->field_0x88 = 0;
 
     if (this->field_0x8c != 0)

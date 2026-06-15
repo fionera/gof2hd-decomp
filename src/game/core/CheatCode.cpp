@@ -9,9 +9,11 @@ CheatCode::CheatCode()
     pos = 0;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
+CheatCode::~CheatCode()
+{
+    delete keys;
+    keys = nullptr;
+}
 
 bool CheatCode::Update(uint16_t key)
 {
@@ -23,7 +25,6 @@ bool CheatCode::Update(uint16_t key)
         return false;
     }
     if (d[p] != key) {
-        pos = 0;
         bool first = (d[0] == key);
         uint32_t one = (uint32_t)first;
         pos = (first && n != one);
@@ -36,18 +37,6 @@ bool CheatCode::Update(uint16_t key)
     }
     pos = np;
     return p == n;
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-CheatCode::~CheatCode()
-{
-    if (keys) {
-        delete keys;
-    }
-    keys = 0;
 }
 
 } // namespace AbyssEngine

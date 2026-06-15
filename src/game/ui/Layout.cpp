@@ -8,63 +8,47 @@
 #include "gof2/game/core/String.h"
 #include "gof2/game/ui/TouchButton.h"
 #include "gof2/engine/render/PaintCanvas.h"
+#include "gof2/platform/libc.h"
 
-// The PaintCanvas singleton lives in externs.h as a definition; declare it here
-// for the single-arg SetColor sites that target the global canvas.
+// The PaintCanvas singleton used by the single-argument SetColor sites that
+// target the global canvas.
 extern void *g_PaintCanvas;
 
-extern "C" float __aeabi_l2f(long long);
-extern "C" void *ChoiceWindow_dtor(void *p);
-extern "C" void operator_delete_li(void *p);
-
-// Global GameText singleton holder (ldr [0xe4bbc]); receiver for getText(key).
+// Global GameText singleton holder; receiver for getText(key).
 struct GameTextHolder { GameText *obj; };
 __attribute__((visibility("hidden"))) extern GameTextHolder *gGameText;
 
-// ---- Canonical cross-class engine helpers ---------------------------------
-// The per-method decomp blocks each re-declared these with slightly different
-// (and mutually conflicting) signatures — varying the canvas/color/button
-// parameter between unsigned/int/void*/PaintCanvas* and even the arity.  Under
-// `extern "C"` these cannot overload, so we declare each ONCE here with an
-// unspecified-argument (variadic) signature.  That accepts every call site's
-// argument list and is link-compatible with the real engine entry point.
-struct TouchButton;
+// Cross-class engine helpers whose call sites pass mismatched argument lists;
+// declared once with an unspecified-argument signature so every site type-checks
+// while staying link-compatible with the real engine entry points.
 extern "C" {
 void    TouchButton_footerAnim(...);
 void    TouchButton_getPosition(...);
 void    TouchButton_ctorStr(...);
 void    TouchButton_ctorImg(...);
 void    TouchButton_ctorImg2(...);
-
-void *ChoiceWindow_ctor(...);
-
 unsigned short GameText_getLanguage(...);
-
-void Globals_drawLines(...);
+void    Globals_drawLines(...);
 }
 
-// ldrb.w r0,[r0,#0x400]; bx lr
 uint8_t Layout::isFading() {
     return this->fading;
 }
 
-__attribute__((visibility("hidden"))) extern int **gTouchButtonHolder;  // ldr [0xe4bec]
+__attribute__((visibility("hidden"))) extern int **gTouchButtonHolder;
 
-// Layout::getHelpButtonOffset() -> TouchButton::getWidth(self->f3bc) - (**holder)[0x38/4]
 int Layout::getHelpButtonOffset() {
-    int w = ((TouchButton *)(this->helpButton))->getWidth();
+    int w = this->helpButton->getWidth();
     return w - (*gTouchButtonHolder)[0x38 / 4];
 }
 
-// Layout::update(int dt)
 void Layout::update(int dt) {
-    void *cw = this->choiceWindow;
-    if (cw)
-        ((ChoiceWindow *)(cw))->update(dt);
+    if (this->choiceWindow)
+        this->choiceWindow->update(dt);
     if (this->rewardMessageActive != 0) {
         int t = this->rewardMessageTimer + dt;
         this->rewardMessageTimer = t;
-        if (t >= 6999 + 1)        // 0x1b58 = 7000; cmp r0,#7000; mov.ge
+        if (t >= 7000)
             this->rewardMessageActive = 0;
     }
     if (this->fading != 0) {
@@ -78,10 +62,8 @@ void Layout::update(int dt) {
     }
 }
 
-// PC-relative hidden global: pointer to the PaintCanvas singleton holder.
-__attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder; // ldr [0xe3c38]
+__attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder;
 
-// Layout::getFooterTransitionWidth()
 int Layout::getFooterTransitionWidth() {
     void **holder = gPaintCanvasHolder;
     int w1 = ((PaintCanvas*)(*holder))->GetImage2DWidth(this->footerImageRight);
@@ -89,150 +71,97 @@ int Layout::getFooterTransitionWidth() {
     return w2 + w1;
 }
 
-// tail 0x1ac0c8
-
-// Layout::OnTouchBegin(int x, int y)
 int Layout::OnTouchBegin(int x, int y) {
-    Layout *self = this;
-    if (self->helpButtonEnabled != 0)
-        ((TouchButton *)(self->helpButton))->OnTouchBegin(x, y);
-    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
-        ((ChoiceWindow *)(self->choiceWindow))->OnTouchBegin(x, y);
+    if (this->helpButtonEnabled != 0)
+        this->helpButton->OnTouchBegin(x, y);
+    if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
+        this->choiceWindow->OnTouchBegin(x, y);
         return 0;
     }
-    void *btn;
-    if (((TouchButton *)(self->backButton))->isVisible() == 0)
-        btn = self->secondaryButton;
-    else
-        btn = self->backButton;
+    TouchButton *btn = this->backButton->isVisible() == 0
+                           ? this->secondaryButton
+                           : this->backButton;
     return this->dispatchTouchBegin(btn, x, y);
 }
 
-// Status singleton (PC-rel double-indirect). getPlayingTime returns a 64-bit value
-// (r0/r1), converted to float via __aeabi_l2f, scaled by the arg, fed to Sinf.
-struct Status;
-__attribute__((visibility("hidden"))) extern Status **gStatus;  // ldr [0xe4c5c]
-float Sinf(float);   // AbyssEngine::AEMath::Sinf -> 0x6f1a8
+__attribute__((visibility("hidden"))) extern Status **gStatus;
+float Sinf(float);   // AbyssEngine::AEMath::Sinf
 
-// Layout::getPulseValue(float speed). The holder (gStatus's value) is cached; the
-// actual Status* (*holder) is reloaded for each getPlayingTime call.
+// Pulse value driven by elapsed playing time; sign of the result follows the
+// first sample.
 float Layout::getPulseValue(float speed) {
-    Status **holder = gStatus;
-    float a = Sinf(__aeabi_l2f(((Status *)(*holder))->getPlayingTime()) * speed);
-    float b = Sinf(__aeabi_l2f(((Status *)(*holder))->getPlayingTime()) * speed);
+    Status *status = *gStatus;
+    float a = Sinf((float)status->getPlayingTime() * speed);
+    float b = Sinf((float)status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
 }
 
-// str.w r1,[r0,#0x3b0]; bx lr
 void Layout::setDrawColor(int color) {
     this->drawColor = color;
 }
 
-__attribute__((visibility("hidden"))) extern int *gW;  // ldr [0xe3160]
-__attribute__((visibility("hidden"))) extern int *gH;  // ldr [0xe3164]
-// Layout::drawMask() -> drawMask(*gH, 0, 0, *gW, *gH)
-void Layout_drawMask0() {
-    void *pc = (void *)*gH;
-    int w = *gW;
-    ((Layout *)(pc))->drawMaskImpl(0, 0, w, *gH);
-}
+__attribute__((visibility("hidden"))) extern int *gW;
+__attribute__((visibility("hidden"))) extern int *gH;
 
-__attribute__((visibility("hidden"))) extern int *gA;  // ldr [0xe356c]
-__attribute__((visibility("hidden"))) extern int *gB;  // ldr [0xe3570]
-// Layout::drawBG() -> drawBGPattern(this, this->0x324, 0, 0, *gA, *gB)
+__attribute__((visibility("hidden"))) extern int *gA;
+__attribute__((visibility("hidden"))) extern int *gB;
 void Layout::drawBG() {
     int p4 = *gA;
     int p5 = *gB;
-    ((Layout *)(this))->drawBGPattern(this->bgPatternImage, 0, 0, p4, p5);
+    this->drawBGPattern(this->bgPatternImage, 0, 0, p4, p5);
 }
 
-// strb.w r1,[r0,#0x410]; bx lr
 void Layout::enableFillScreen(bool v) {
     this->fillScreen = v;
 }
 
-// ~TouchButton (0x74d7c) and ~ChoiceWindow (0x74d88) return the object pointer;
-// operator delete (0x6eb48) frees it. Each owned field is deleted then nulled.
-
 Layout::~Layout() {
-    void *p = this->backButton;
-    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
-    this->backButton = 0;
-    p = this->secondaryButton;
-    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
-    this->secondaryButton = 0;
-    p = this->helpButton;
-    if (p) { ((TouchButton *)(p))->~TouchButton(); operator_delete_li(p); }
-    this->helpButton = 0;
-    p = this->choiceWindow;
-    if (p) operator_delete_li(ChoiceWindow_dtor(p));
-    this->choiceWindow = 0;
+    delete this->backButton;
+    this->backButton = nullptr;
+    delete this->secondaryButton;
+    this->secondaryButton = nullptr;
+    delete this->helpButton;
+    this->helpButton = nullptr;
+    delete this->choiceWindow;
+    this->choiceWindow = nullptr;
 }
 
-// ldrb.w r0,[r0,#0x3c0]; bx lr
 uint8_t Layout::helpPressed() {
     return this->helpPressedFlag;
 }
 
-// Layout::drawFooterNoBackButton() -> drawFooter(this, 0, 0)
 void Layout::drawFooterNoBackButton() {
-    return ((Layout *)(this))->drawFooterImpl(0, 0);
+    this->drawFooterImpl(0, 0);
 }
 
-// -> 0x1ac098
-
-// Layout::drawFooter() -> drawFooter(this, 0, 1)
 void Layout::drawFooter() {
-    return ((Layout *)(this))->drawFooterImpl(0, 1);
+    this->drawFooterImpl(0, 1);
 }
 
-// tail 0x1ac0d8
-
-// Layout::OnTouchMove(int x, int y)
 int Layout::OnTouchMove(int x, int y) {
-    Layout *self = this;
-    if (self->helpButtonEnabled != 0)
-        ((TouchButton *)(self->helpButton))->OnTouchMove(x, y);
-    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0) {
-        ((ChoiceWindow *)(self->choiceWindow))->OnTouchMove(x, y);
+    if (this->helpButtonEnabled != 0)
+        this->helpButton->OnTouchMove(x, y);
+    if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0) {
+        this->choiceWindow->OnTouchMove(x, y);
         return 0;
     }
-    void *btn;
-    if (((TouchButton *)(self->backButton))->isVisible() == 0)
-        btn = self->secondaryButton;
-    else
-        btn = self->backButton;
+    TouchButton *btn = this->backButton->isVisible() == 0
+                           ? this->secondaryButton
+                           : this->backButton;
     return this->dispatchTouchMove(btn, x, y);
 }
 
-// 9-arg impl. Forwarded: (p5 as self, p2, p3, p4, p5, p6, instack, 0, 0).
-// Layout::drawBGBorder(uint p1, uint p2, int p3, int p4, int p5, int p6) + stack arg s8.
-// This 7-arg forwarding wrapper (engine 0x74e30) is distinct from the 6-arg
-// Layout::drawBGBorder method (0x74e78) used by drawBox; renamed to avoid the
-// extern "C" name clash.
-void Layout_drawBGBorder7(unsigned p1, unsigned p2, int p3, int p4,
-                                     int p5, int p6, int s8) {
-    ((Layout *)(p5))->drawBGBorderImpl(p2, p3, p4, p5, p6, s8, 0, 0);
-}
-
-// tail 0x1ac0e8
-
-// Layout::OnTouchEnd(int x, int y)
 int Layout::OnTouchEnd(int x, int y) {
-    Layout *self = this;
-    if (self->choiceWindowOpen == 0 && self->helpButtonEnabled != 0)
-        self->helpPressedFlag = ((TouchButton *)(self->helpButton))->OnTouchEnd(x, y);
-    if (self->choiceWindow != 0 && self->choiceWindowOpen != 0)
-        return ((ChoiceWindow *)(self->choiceWindow))->OnTouchEnd(x, y) == 0;
-    void *btn;
-    if (((TouchButton *)(self->backButton))->isVisible() == 0)
-        btn = self->secondaryButton;
-    else
-        btn = self->backButton;
+    if (this->choiceWindowOpen == 0 && this->helpButtonEnabled != 0)
+        this->helpPressedFlag = this->helpButton->OnTouchEnd(x, y);
+    if (this->choiceWindow != nullptr && this->choiceWindowOpen != 0)
+        return this->choiceWindow->OnTouchEnd(x, y) == 0;
+    TouchButton *btn = this->backButton->isVisible() == 0
+                           ? this->secondaryButton
+                           : this->backButton;
     return this->dispatchTouchEnd(btn, x, y);
 }
 
-// Layout::startFade(bool, int, int)
 void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     this->fadeOut = fadeOut;
     this->fading = 1;
@@ -241,97 +170,83 @@ void Layout::startFade(uint8_t fadeOut, int color, int duration) {
     this->fadeDuration = duration;
 }
 
-// Hidden PC-relative globals from initTip disasm:
-//   g_tipColor  : *(uint**) @0xe499c — color value (read [0]).
-//   g_tipTextId : *(int**)  @0xe49a0 — text-table id (read **).
-//   g_tipRandN  : *(int**)  @0xe49a2 — random bound (read **).
-//   g_tipCanvas : *(PaintCanvas***) @0xe49a6 — canvas (read **).
-//   g_tipMetric : *(int**)  @0xe49d4 — object whose [0x78]/[0x4c] give width.
+// Hidden globals from initTip:
+//   g_tipColor  : color value
+//   g_tipTextId : text-table id
+//   g_tipRandN  : random generator
+//   g_tipCanvas : canvas
+//   g_tipMetric : object whose [0x78]/[0x4c] give the wrap width
 __attribute__((visibility("hidden"))) extern unsigned *g_tipColor;
 __attribute__((visibility("hidden"))) extern int **g_tipTextId;
-__attribute__((visibility("hidden"))) extern int **g_tipRandN;
+__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_tipRandN;
 __attribute__((visibility("hidden"))) extern PaintCanvas ***g_tipCanvas;
 __attribute__((visibility("hidden"))) extern int **g_tipMetric;
 
-// Layout::initTip(): rebuild the random "tip" string line array.
+// Rebuild the random "tip" string line array.
 void Layout::initTip() {
-    if (this->tipLines != 0) {
-        for (String *line : *this->tipLines) delete line;   // releaseClasses
+    if (this->tipLines != nullptr) {
+        for (String *line : *this->tipLines) delete line;
         this->tipLines->clear();
         delete this->tipLines;
-        this->tipLines = 0;
+        this->tipLines = nullptr;
     }
     Array<String*> *arr = new Array<String*>();
 
     unsigned color = *g_tipColor;
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
-    ((AbyssEngine::AERandom *)(**g_tipRandN))->nextInt();
-    void *str = gGameText->obj->getText(textId);
+    (*g_tipRandN)->nextInt();
+    String *str = gGameText->obj->getText(textId);
 
     this->tipLines = arr;
     int *m = *g_tipMetric;
     int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    ((PaintCanvas*)(canvas))->GetLineArray(color, str, width, (char *)this->tipLines);
+    canvas->GetLineArray(color, str, width, (char *)this->tipLines);
 }
 
-struct TouchButton;
+// Hidden globals from drawEmptyFooter.
+__attribute__((visibility("hidden"))) extern unsigned *g_efColor;   // [0]=color
+__attribute__((visibility("hidden"))) extern int *g_efScreenH;      // [0]=screen height
+__attribute__((visibility("hidden"))) extern int *g_efScreenW;      // [0]=screen width
+__attribute__((visibility("hidden"))) extern int **g_efMetric;      // [0][0x10]=footer height
 
-// Footer "scroll into place" tail-called helper at 0x1ac0a8.
-
-// Hidden globals from drawEmptyFooter disasm.
-__attribute__((visibility("hidden"))) extern unsigned *g_efColor;   // @0xe3fd2 ([0]=color)
-__attribute__((visibility("hidden"))) extern int *g_efScreenH;      // @0xe3ff8 ([0]=screen height)
-__attribute__((visibility("hidden"))) extern int *g_efScreenW;      // @0xe4016 ([0]=screen width)
-__attribute__((visibility("hidden"))) extern int **g_efMetric;      // @0xe401c ([0][0x10]=footer height)
-
-// Layout::drawEmptyFooter(bool showBack)
 void Layout::drawEmptyFooter(int showBack) {
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
     unsigned color = *g_efColor;
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(color);
-    int w = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(color);
+    pc->SetColor(color);
+    int w = pc->GetImage2DWidth(color);
     int screenH = *g_efScreenH;
-    ((PaintCanvas*)((PaintCanvas *)color))->DrawImage2D(this->footerImageLeft, 0, screenH, (unsigned char)(0x11));
+    pc->DrawImage2D(this->footerImageLeft, 0, screenH, (unsigned char)(0x11));
 
     int screenW = *g_efScreenW;
     int footerH = (*g_efMetric)[0x10 / 4];
-    ((Layout *)(this))->drawBGPattern(this->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
-    ((PaintCanvas*)((PaintCanvas *)color))->DrawImage2D(this->footerImageLeft,
-                            screenW - w, screenH - (*g_efMetric)[0x10 / 4], (unsigned char)(0x01));
+    this->drawBGPattern(this->footerPatternImage, w, screenH - footerH, screenW - w * 2, footerH);
+    pc->DrawImage2D(this->footerImageLeft,
+                    screenW - w, screenH - (*g_efMetric)[0x10 / 4], (unsigned char)(0x01));
     if (showBack == 0) return;
-    ((TouchButton *)(this->backButton))->setVisible(1);
+    this->backButton->setVisible(1);
     unsigned char sp[8] __attribute__((aligned(4)));
     TouchButton_footerAnim(this->backButton, 1, footerH, sp);
 }
 
-// Layout::Layout() — config-driven field initializer (elf 0xd1028, 5478 bytes).
-//
-// The target body is one huge nested-conditional initializer that fills the
-// ~0x414-byte Layout object with layout geometry, switching on a handful of
-// display-config flags read through PC-relative globals:
-//   cfgHd     : "HD / high-detail" master flag (cVar5).  When set, a compact
-//               fixed-constant path is taken for most groups.
-//   cfgTablet : tablet form-factor flag (bVar42 derived from a config byte).
-//   cfgWide   : secondary aspect/scale byte (cVar43).
-//   resByte   : resolution selector byte (uVar61); 0 => half-size variants.
-//
-// The leading ~0x2d8 bytes are populated by NEON block copies of constant
-// vectors (vld1/vst1) that Ghidra renders as deadcode-delayed SIMD garbage;
-// that bulk constant fill is delegated to ((Layout *)(its data lives
-// in the engine .rodata))->initConstBlock().  The readable tail field writes (0x1f0..0x320 and
-// 0x3e0..0x3f8, plus the 0x284..0x290 byte flags) are reproduced faithfully.
+// Config-driven field initialiser. Layout geometry is chosen from a handful of
+// display-config flags read through global bytes:
+//   hd    : high-detail master flag (compact fixed-constant path when set)
+//   wide  : aspect/scale flag
+//   scale : secondary scale flag
+//   res   : resolution selector (0 => half-size variants)
+// The header geometry block (0x04..0x2d8) is bulk-seeded by initConstBlock();
+// the readable scalar tail writes below reproduce the rest.
 
-// Config-flag source globals (each is *(char**) -> byte at [0]).
-__attribute__((visibility("hidden"))) extern char *g_cfgHd;      // @0xe1036
-__attribute__((visibility("hidden"))) extern char *g_cfgWide;    // @0xe1272 / 0xe265a
-__attribute__((visibility("hidden"))) extern char *g_cfgScale;   // @0xe1582 (pcVar46)
-__attribute__((visibility("hidden"))) extern unsigned char *g_resByte; // @0xe187a (uVar61)
-__attribute__((visibility("hidden"))) extern char *g_cfgA;       // @0xe2578
-__attribute__((visibility("hidden"))) extern char *g_cfgB;       // @0xe2692
-__attribute__((visibility("hidden"))) extern char *g_cfgC;       // @0xe2728
-__attribute__((visibility("hidden"))) extern char *g_cfgD;       // @0xe27a8
-
-// Bulk constant-block initializer for the SIMD-copied header region (0x04..0x2d8).
+// Config-flag source globals (each points to a single byte).
+__attribute__((visibility("hidden"))) extern char *g_cfgHd;
+__attribute__((visibility("hidden"))) extern char *g_cfgWide;
+__attribute__((visibility("hidden"))) extern char *g_cfgScale;
+__attribute__((visibility("hidden"))) extern unsigned char *g_resByte;
+__attribute__((visibility("hidden"))) extern char *g_cfgA;
+__attribute__((visibility("hidden"))) extern char *g_cfgB;
+__attribute__((visibility("hidden"))) extern char *g_cfgC;
+__attribute__((visibility("hidden"))) extern char *g_cfgD;
 
 Layout::Layout() {
     int hd    = (*g_cfgHd != 0);
@@ -339,14 +254,10 @@ Layout::Layout() {
     int scale = (*g_cfgScale != 0);
     int res   = *g_resByte;
 
-    // Header / geometry constants (NEON block-copied in the target).
-    ((Layout *)(this))->initConstBlock(hd, wide, scale, res);
+    // Header / geometry constants.
+    this->initConstBlock(hd, wide, scale, res);
 
-    // ---- Readable tail (lines 1480..1740 of the decompile) ----
     if (!hd) {
-        // The non-HD branch fills the 0x204..0x274 doubleword group from
-        // constant vectors and seeds a few scalars; modeled as the engine
-        // const-block plus the explicit scalar writes below.
         this->field_0x238 = 0x46;
         this->field_0x27c = 0x1c;
         this->field_0x280 = 0;
@@ -357,7 +268,7 @@ Layout::Layout() {
         this->rewardBoxY2 = 0x84;
     }
 
-    // 0x3ec / 0x3f0 reward-box dimensions.
+    // Reward-box dimensions.
     if (hd) {
         this->rewardBoxHeight = (res == 0) ? 0xc4 : 0x188;
         this->rewardBoxX = (res == 0) ? 0x32 : 100;
@@ -366,7 +277,7 @@ Layout::Layout() {
         this->rewardBoxX = 0x4b;
     }
 
-    // Footer/back-button geometry group (0x1f0, 0x1f8, 0x200, 0x2bc, 0x3fc, 0x1f4).
+    // Footer/back-button geometry group.
     int v288, v28c, v3fc_, v200, v1f0, v1f4, v1f8, v2bc;
     if (!hd) {
         int wb = (res != 0) ? 4 : 2;
@@ -379,7 +290,6 @@ Layout::Layout() {
         if (!wide) o3fc = 5;
         int o1f8 = (*g_cfgA == 0) ? 2 : 4;
         if (res == 0) o1f8 = 2;
-        // VectorSignedToFloat(x) is an int->float->int identity on these ints.
         v1f4 = (*g_cfgA == 0) ? (res ? 0x20 : 0x10) : wb;
         v2bc = wide ? 2 : 3;
         v200 = below; v1f0 = o1f0; v3fc_ = o3fc; v1f8 = o1f8;
@@ -395,14 +305,14 @@ Layout::Layout() {
     this->field_0x1f0 = v1f0;
     this->field_0x1f4 = v1f4;
     this->field_0x1f8 = v1f8;
-    this->field_0x284 = 1;            // bVar65^1 collapses to a config bit
+    this->field_0x284 = 1;
     this->field_0x285 = 1;
     this->field_0x286 = 1;
     this->field_0x288 = v288;
     this->field_0x28c = v28c;
     this->field_0x290 = wide ? (res == 0 ? 3 : 7) : 4;
 
-    // Choice-window geometry group (0x2f4..0x308).
+    // Choice-window geometry group.
     int cwTitle;
     if (!hd) {
         int cw2f4;
@@ -415,7 +325,7 @@ Layout::Layout() {
             if (res == 0) cw2f4 = 0x1e;
         }
         this->field_0x2f4 = cw2f4;
-        this->field_0x2f8 = 0;    // engine const (DAT)
+        this->field_0x2f8 = 0;
         this->field_0x2fc = (*g_cfgWide != 0) ? 0x48 : 0x24;
         this->field_0x300 = (*g_cfgWide != 0) ? 400 : 200;
         this->field_0x304 = (*g_cfgWide != 0) ? 700 : 0x15e;
@@ -430,7 +340,7 @@ Layout::Layout() {
     }
     this->field_0x308 = cwTitle;
 
-    // Choice-button offsets group (0x30c..0x318).
+    // Choice-button offsets group.
     int b318;
     if (!hd) {
         if (*g_cfgC == 0) {
@@ -458,11 +368,11 @@ Layout::Layout() {
     }
     this->field_0x318 = b318;
 
-    // Help-window position (0x31c / 800).
+    // Help-window position.
     if (!hd) {
         if (wide) {
             this->field_0x31c = (*g_cfgD != 0) ? 0x76 : 0xec;
-            this->field_0x320 = 0;    // engine float const (DAT_000e2bb8..)
+            this->field_0x320 = 0;
         } else {
             this->field_0x31c = 0x1d8;
             this->field_0x320 = 0x120;
@@ -473,53 +383,47 @@ Layout::Layout() {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **gPC;          // ldr [0xe31ac]
-// tail 0x1ac088
+__attribute__((visibility("hidden"))) extern PaintCanvas **gPC;
 
-// Layout::drawMask(int p1, int p2, int p3, int p4) — singleton reloaded each call.
 int Layout::drawMask4(int p1, int p2, int p3, int p4) {
-    int saved = ((PaintCanvas*)(*gPC))->GetColor();
-    ((PaintCanvas*)(*gPC))->SetColor(0x80);
-    ((PaintCanvas*)(*gPC))->FillRectangle(p1, p2, p3, 0);
+    PaintCanvas *pc = *gPC;
+    int saved = pc->GetColor();
+    pc->SetColor(0x80);
+    pc->FillRectangle(p1, p2, p3, 0);
     (void)p4;
-    this->drawMaskTail(*gPC, saved);
+    this->drawMaskTail(pc, saved);
     return 0;
 }
 
-void Layout_formatNumber(void *out, int n);   // 0x74df4 (formatNumber)
+void Layout_formatNumber(String *out, int n);
 
-// Layout::formatCredits(int) -> out = formatNumber(n) + "$"
-void Layout_formatCredits(void *out, int n) {
-    unsigned char num[sizeof(String)] __attribute__((aligned(4)));
-    unsigned char suffix[sizeof(String)] __attribute__((aligned(4)));
-    Layout_formatNumber(num, n);
-    ((String *)suffix)->ctor_char("$", false);
-    *(String *)out = *(String *)num + *(String *)suffix;
-    ((String *)(suffix))->dtor();
-    ((String *)(num))->dtor();
+// Format `n` as a grouped credit amount with a trailing "$".
+void Layout_formatCredits(String *out, int n) {
+    String num;
+    Layout_formatNumber(&num, n);
+    String suffix("$");
+    *out = num + suffix;
 }
 
-extern "C" int __aeabi_idiv(int a, int b);
+// Hidden global from drawBGPattern.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;
 
-// Hidden global from drawBGPattern disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;  // @0xe358a
-
-// Layout::drawBGPattern(uint img, int x, int y, int w, int h): tile `img` to fill the area.
+// Tile `img` across the (x, y, w, h) area.
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     PaintCanvas *pc = *g_bgCanvas;
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
     int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
-    int cols = __aeabi_idiv(w, iw);
+    int cols = w / iw;
     int fullW = cols * iw;
     int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
-    int rows = __aeabi_idiv(h, ih);
+    int rows = h / ih;
     int fullH = rows * ih;
 
     for (int r = 0; r < rows; r++) {
         int py = y + r * ih;
         int px = x;
         for (int c = 0; c < cols; c++) {
-            ((PaintCanvas*)(pc))->DrawImage2D(img, px, py);
+            pc->DrawImage2D(img, px, py);
             px += iw;
         }
     }
@@ -529,134 +433,83 @@ void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     if (remW > 0) {
         int py = y + fullH;
         for (int r = 0; r < rows; r++) {
-            ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, remW, ih, 0, 0, 0, x + fullW, py);
+            pc->DrawRegion2D(img, 0, 0, remW, ih, 0, 0, 0, x + fullW, py);
             py += ih;
         }
     }
     if (remH > 0) {
-        int px = x + fullW;
-        (void)px;
         int px2 = x;
         for (int c = 0; c < cols; c++) {
-            ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, iw, remH, 0, 0, 0, px2, y + fullH);
+            pc->DrawRegion2D(img, 0, 0, iw, remH, 0, 0, 0, px2, y + fullH);
             px2 += iw;
         }
     }
     if (remW > 0 || remH > 0) {
-        ((PaintCanvas*)(pc))->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0,
-                                 x + fullW, y + fullH);
+        pc->DrawRegion2D(img, 0, 0, remW, remH, 0, 0, 0, x + fullW, y + fullH);
     }
 }
 
-// Engine String helpers used by the thousands-separator formatter.
+// Hidden globals from formatNumber.
+__attribute__((visibility("hidden"))) extern const char g_fnEmpty[];
+__attribute__((visibility("hidden"))) extern const char g_fnSepA[];    // langs 0/10/11
+__attribute__((visibility("hidden"))) extern const char g_fnSepB[];    // other langs
+__attribute__((visibility("hidden"))) extern const char g_fnOverflow[];
 
-// Hidden globals from formatNumber disasm.
-__attribute__((visibility("hidden"))) extern int *g_fnGuard;        // @0xe32cc (stack guard [0])
-__attribute__((visibility("hidden"))) extern const char g_fnEmpty[];   // @0xe32e4
-__attribute__((visibility("hidden"))) extern const char g_fnSepA[];    // @0xe3308 (langs 0/10/11)
-__attribute__((visibility("hidden"))) extern const char g_fnSepB[];    // @0xe3316 (other langs)
-__attribute__((visibility("hidden"))) extern const char g_fnOverflow[];// @0xe33f6
-
-// Layout::formatNumber(int): build a grouped decimal string into `out`.
-void Layout_formatNumber(void *out, int value) {
-    int *guard = g_fnGuard;
-    int g0 = *guard;
-
+// Build a grouped (thousands-separated) decimal string into `out`.
+void Layout_formatNumber(String *out, int value) {
     unsigned mag = (value < 0) ? (unsigned)(-value) : (unsigned)value;
 
-    unsigned char digits[sizeof(String)] __attribute__((aligned(4)));  // aSStack_34
-    ((String *)digits)->ctor_int((int)mag);
-    int len = *(int *)((char *)digits + 8);
+    String digits;
+    digits.ctor_int((int)mag);
+    int len = (int)digits.size();
 
-    ((String *)out)->ctor_char(g_fnEmpty, false);
+    *out = String(g_fnEmpty);
 
-    unsigned char sep[sizeof(String)] __attribute__((aligned(4)));      // aSStack_40
+    String sep;
     unsigned short lang = GameText_getLanguage();
     if (lang < 0xc && ((1u << (lang & 0xff)) & 0xc01u) != 0)
-        ((String *)sep)->ctor_char(g_fnSepA, false);
+        sep = String(g_fnSepA);
     else
-        ((String *)sep)->ctor_char(g_fnSepB, false);
+        sep = String(g_fnSepB);
 
     if (len < 4) {
-        ((String *)(out))->assign((String *)digits);
+        out->assign(&digits);
     } else {
         int i = len;
         while (i > 2) {
             i -= 3;
-            unsigned char grp[sizeof(String)] __attribute__((aligned(4)));  // aSStack_64
-            ((String *)grp)->SubString((String *)digits, i, len);
-
-            unsigned char prefix[sizeof(String)] __attribute__((aligned(4))); // aSStack_70
-            if (*(unsigned *)((char *)out + 8) < 2)
-                ((String *)prefix)->ctor();
-            else
-                ((String *)prefix)->ctor_copy((String *)sep, false);
-
-            unsigned char t1[sizeof(String)] __attribute__((aligned(4)));  // aSStack_58
-            *(String *)t1 = *(String *)prefix + *(String *)grp;
-            unsigned char t2[sizeof(String)] __attribute__((aligned(4)));  // aSStack_4c
-            *(String *)t2 = *(String *)t1 + *(String *)out;
-            ((String *)(out))->assign((String *)t2);
-
-            ((String *)(t2))->dtor();
-            ((String *)(t1))->dtor();
-            ((String *)(prefix))->dtor();
-            ((String *)(grp))->dtor();
+            String grp;
+            grp.SubString(&digits, i, len);
+            String prefix = (out->size() < 2) ? String() : sep;
+            *out = prefix + grp + *out;
         }
-        unsigned char head[sizeof(String)] __attribute__((aligned(4)));   // aSStack_4c
-        ((String *)head)->SubString((String *)digits, 0, i);
-        if (*(int *)((char *)head + 8) != 0) {
-            unsigned char j1[sizeof(String)] __attribute__((aligned(4))); // aSStack_64
-            *(String *)j1 = *(String *)head + *(String *)sep;
-            unsigned char j2[sizeof(String)] __attribute__((aligned(4))); // aSStack_58
-            *(String *)j2 = *(String *)j1 + *(String *)out;
-            ((String *)(out))->assign((String *)j2);
-            ((String *)(j2))->dtor();
-            ((String *)(j1))->dtor();
-        }
-        ((String *)(head))->dtor();
+        String head;
+        head.SubString(&digits, 0, i);
+        if (head.size() != 0)
+            *out = head + sep + *out;
     }
 
-    if ((unsigned)value > 0x7fffffff) {
-        unsigned char ov[sizeof(String)] __attribute__((aligned(4)));     // aSStack_58
-        ((String *)ov)->ctor_char(g_fnOverflow, false);
-        unsigned char r[sizeof(String)] __attribute__((aligned(4)));      // aSStack_4c
-        *(String *)r = *(String *)ov + *(String *)out;
-        ((String *)(out))->assign((String *)r);
-        ((String *)(r))->dtor();
-        ((String *)(ov))->dtor();
-    }
-
-    ((String *)(sep))->dtor();
-    ((String *)(digits))->dtor();
-
-    
+    if ((unsigned)value > 0x7fffffff)
+        *out = String(g_fnOverflow) + *out;
 }
 
-__attribute__((visibility("hidden"))) extern int *gW1;  // ldr [0xe3774]
-__attribute__((visibility("hidden"))) extern int *gW2;  // ldr [0xe3778]
-__attribute__((visibility("hidden"))) extern int *gW3;  // ldr [0xe377c]
+__attribute__((visibility("hidden"))) extern int *gW1;
+__attribute__((visibility("hidden"))) extern int *gW2;
+__attribute__((visibility("hidden"))) extern int *gW3;
 
-// Layout::drawWindow(String, bool flag)
-//   -> drawWindow(this, copy, 0, 0, *gW2, *gW3 - (*gW1)[2], flag)
-void Layout::drawWindow2(const void *param, int flag) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)param, false);
+// Centre a window over the full content area and forward to the core renderer.
+void Layout::drawWindow2(const String *param, int flag) {
+    String tmp(*param);
     int p4 = *gW2;
     int p5 = *gW3 - ((int *)gW1)[2];
-    ((Layout *)(this))->drawWindowImpl5(tmp, 0, 0, p4, p5, flag);
-    ((String *)(tmp))->dtor();
+    this->drawWindowImpl5(&tmp, 0, 0, p4, p5, flag);
 }
 
-// Function pointer (TouchButton::setPosition) loaded from a global, called via blx.
+// TouchButton::setPosition resolved through a global function pointer.
 typedef void (*SetPosFn)(void *btn, int x, int y, int mode);
-__attribute__((visibility("hidden"))) extern SetPosFn gSetPos;   // ldr [0xe4d30]
-struct TB; struct TBHolder { TB *o; };
-__attribute__((visibility("hidden"))) extern int **gTB;          // ldr [0xe4d34]
-__attribute__((visibility("hidden"))) extern int *gPosX;         // ldr [0xe4d38]
-__attribute__((visibility("hidden"))) extern int *gPosY;         // ldr [0xe4d3c]
+__attribute__((visibility("hidden"))) extern SetPosFn gSetPos;
+__attribute__((visibility("hidden"))) extern int **gTB;
 
-// Layout::setWindowDimensions(int p1, int p2, int p3, int p4)
 void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
     SetPosFn setPos = gSetPos;
     this->windowX = p1;
@@ -671,40 +524,31 @@ void Layout::setWindowDimensions(int p1, int p2, int p3, int p4) {
            (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 }
 
-__attribute__((visibility("hidden"))) extern int **gFmod;  // ldr [0xe4d70]
-// FModSound::play(int sound, Vector* a, Vector* b, float v) — blx 0x71548.
-struct Vec3 { float x, y, z; };
+__attribute__((visibility("hidden"))) extern FModSound **gFmod;
 
-// Layout::showMissionRewardMessage(int show, bool flag)
 void Layout::showMissionRewardMessage(int show, bool flag) {
     if (show == 0)
         return;
     this->rewardMessageFlag = flag;
     this->rewardMessageActive = 1;
-    int *g = *gFmod;
+    FModSound *sound = *gFmod;
     this->rewardMessageTimer = 0;
     this->rewardCredits = show;
-    ((FModSound *)(*g))->play(0x24, 0, 0, 0.0f);
+    sound->play(0x24, 0, 0, 0.0f);
 }
 
-// Layout::drawWindow(String, int p3, int p4, int p5, int p6)
-//   -> drawWindow(this, copy, p3, p4, p5, p6, 1)
-void Layout::drawWindow5(const void *param, int p3, int p4, int p5, int p6) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)param, false);
-    ((Layout *)(this))->drawWindowImpl5(tmp, p3, p4, p5, p6, 1);
-    ((String *)(tmp))->dtor();
+void Layout::drawWindow5(const String *param, int p3, int p4, int p5, int p6) {
+    String tmp(*param);
+    this->drawWindowImpl5(&tmp, p3, p4, p5, p6, 1);
 }
 
-extern "C" int __aeabi_idiv(int a, int b);
+// Hidden globals from drawBGBorder.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_bbCanvas;
+__attribute__((visibility("hidden"))) extern int g_bbFlipTR;
+__attribute__((visibility("hidden"))) extern int g_bbFlipL;
+__attribute__((visibility("hidden"))) extern int g_bbFlipR;
 
-// Hidden globals from drawBGBorder disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_bbCanvas;  // @0xe3972
-__attribute__((visibility("hidden"))) extern int g_bbFlipTR;            // @0xe3bf4 ([0])
-__attribute__((visibility("hidden"))) extern int g_bbFlipL;             // @0xe3bf8 ([0])
-__attribute__((visibility("hidden"))) extern int g_bbFlipR;             // @0xe3bfc ([0])
-
-// Layout::drawBGBorder(uint corner, uint edge, int x, int y, int w, int h, int inset, int pad)
+// Draw a tiled rounded-rect border (corner images + edge tiling).
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     PaintCanvas *pc = *g_bbCanvas;
     int cw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(corner);
@@ -712,68 +556,67 @@ void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, i
     int ew = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(edge);
     int eh = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(edge);
 
-    // Four corners (top-left at base; others mirrored via the 5-arg variant).
-    ((PaintCanvas*)(pc))->DrawImage2D(corner, inset + x, inset + y);
+    // Four corners (top-left at base; others mirrored).
+    pc->DrawImage2D(corner, inset + x, inset + y);
     int rightX = ((w + x) - cw) - inset;
-    ((PaintCanvas*)(pc))->DrawImage2D(corner, rightX, inset + y, (unsigned char)(1));
+    pc->DrawImage2D(corner, rightX, inset + y, (unsigned char)(1));
     int bottomY = ((y + h) - ch) - inset;
-    ((PaintCanvas*)(pc))->DrawImage2D(corner, inset + x, bottomY, (unsigned char)(2));
-    ((PaintCanvas*)(pc))->DrawImage2D(corner, rightX, bottomY, (unsigned char)(3));
+    pc->DrawImage2D(corner, inset + x, bottomY, (unsigned char)(2));
+    pc->DrawImage2D(corner, rightX, bottomY, (unsigned char)(3));
 
     // Top/bottom edges (horizontal tiling of `edge`).
     int spanW = w + cw * -2 + inset * -2;
-    int colsH = __aeabi_idiv(spanW, ew);
+    int colsH = spanW / ew;
     int baseX = pad + x;
     int tileX = cw + pad + x;
     int topRowY = pad + y;
     int botRowY = (h - inset) + pad + y;
     for (int i = 0; i < colsH; i++) {
-        ((PaintCanvas*)(pc))->DrawImage2D(edge, tileX, topRowY);
-        ((PaintCanvas*)(pc))->DrawImage2D(edge, tileX, botRowY, (unsigned char)(2));
+        pc->DrawImage2D(edge, tileX, topRowY);
+        pc->DrawImage2D(edge, tileX, botRowY, (unsigned char)(2));
         tileX += ew;
     }
     int remW = spanW - colsH * ew;
     if (remW > 0) {
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remW, eh, 0, 0, 0,
-                                 colsH * ew + baseX + cw, topRowY);
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remW, eh, 0, g_bbFlipTR, 0,
-                                 spanW + baseX + cw, botRowY);
+        pc->DrawRegion2D(edge, 0, 0, remW, eh, 0, 0, 0,
+                         colsH * ew + baseX + cw, topRowY);
+        pc->DrawRegion2D(edge, 0, 0, remW, eh, 0, g_bbFlipTR, 0,
+                         spanW + baseX + cw, botRowY);
     }
 
     // Left/right edges (vertical tiling of `edge`).
     int spanH = h + ch * -2 + inset * -2;
-    int rowsV = __aeabi_idiv(spanH, ew);
+    int rowsV = spanH / ew;
     int leftX = pad + x + inset;
     int rightEdgeX = w + x + pad;
     for (int i = 0; i < rowsV; i++) {
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipL, 0, leftX, 0);
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipR, 0, rightEdgeX, 0);
+        pc->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipL, 0, leftX, 0);
+        pc->DrawRegion2D(edge, 0, 0, ew, eh, 0, g_bbFlipR, 0, rightEdgeX, 0);
     }
     int remH = spanH - rowsV * ew;
     if (remH > 0) {
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipL, 0, leftX, 0);
-        ((PaintCanvas*)(pc))->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipR, 0,
-                                 rightEdgeX + inset * -2, 0);
+        pc->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipL, 0, leftX, 0);
+        pc->DrawRegion2D(edge, 0, 0, remH, eh, 0, g_bbFlipR, 0,
+                         rightEdgeX + inset * -2, 0);
     }
 }
 
-// Hidden globals from drawScrollBar disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_sbCanvas;  // @0xe426e
-__attribute__((visibility("hidden"))) extern unsigned g_sbColor0;       // @0xe4370 ([0])
-__attribute__((visibility("hidden"))) extern unsigned g_sbColor1;       // @0xe4374 ([0])
-__attribute__((visibility("hidden"))) extern int **g_sbMetric;          // @0xe42a2 ([0][0x48])
+// Hidden globals from drawScrollBar.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_sbCanvas;
+__attribute__((visibility("hidden"))) extern unsigned g_sbColor0;
+__attribute__((visibility("hidden"))) extern unsigned g_sbColor1;
+__attribute__((visibility("hidden"))) extern int **g_sbMetric;          // [0][0x48]
 
-// Layout::drawScrollBar(int x, int y, int trackH, int pos, int range)
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     PaintCanvas *pc = *g_sbCanvas;
     int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->scrollBarImage);
     int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(this->scrollBarImage);
 
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor0);
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_sbColor1);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(g_sbColor0);
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(g_sbColor1);
 
     int inset = this->scrollBarInset;
-    ((PaintCanvas*)(pc))->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
+    pc->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
 
     int thumb = range - 1;
@@ -786,31 +629,30 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     thumb = thumb + handle * -4;
     off = off + handle * 2;
     if (ih * 2 < thumb) {
-        ((Layout *)(this))->drawBGPattern(this->field_0x378, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
+        this->drawBGPattern(this->field_0x378, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
         handle = this->scrollBarHandle;
     } else {
         int lim = trackH + ih * -2;
         if (lim <= off) off = lim;
     }
 
-    ((PaintCanvas*)(pc))->DrawImage2D(this->scrollBarImage, handle + x + 1, 0);
-    ((PaintCanvas*)(pc))->DrawImage2D(this->scrollBarImage,
-                             this->scrollBarHandle + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
+    pc->DrawImage2D(this->scrollBarImage, handle + x + 1, 0);
+    pc->DrawImage2D(this->scrollBarImage,
+                    this->scrollBarHandle + x + 1, (thumb - ih) + y + off, (unsigned char)(0x02));
 }
 
-// Hidden globals from drawFade disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasA;  // @0xe5052
-__attribute__((visibility("hidden"))) extern int **g_dfDimA;             // @0xe50c8 ([0][0])
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasB;  // @0xe50ee
-__attribute__((visibility("hidden"))) extern int **g_dfDimB;             // @0xe5108 ([0][0])
+// Hidden globals from drawFade.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasA;
+__attribute__((visibility("hidden"))) extern int **g_dfDimA;             // [0][0]
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvasB;
+__attribute__((visibility("hidden"))) extern int **g_dfDimB;             // [0][0]
 
-// Layout::drawFade(): overlay the fade-in/out rectangles, returning the active flag.
+// Overlay the fade-in/out rectangles, returning the active flag.
 uint8_t Layout::drawFade() {
     if (this->fading != 0) {
         PaintCanvas *pc = *g_dfCanvasA;
-        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+        unsigned saved = pc->GetColor();
 
-        // progress = duration / endTime  (fields 0x408 / 0x40c, signed->float)
         float t = (float)this->fadeProgress / (float)this->fadeDuration;
         if (this->fadeOut != 0)
             t = 1.0f - t;
@@ -820,235 +662,221 @@ uint8_t Layout::drawFade() {
         if (t > 0.0f)
             color += (int)(t * 255.0f);
         ((PaintCanvas*)g_PaintCanvas)->SetColor(color);
-        ((PaintCanvas*)(*g_dfCanvasA))->FillRectangle(0, 0, **g_dfDimA, 0);
+        (*g_dfCanvasA)->FillRectangle(0, 0, **g_dfDimA, 0);
         ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
     }
     if (this->fillScreen != 0) {
         PaintCanvas *pc = *g_dfCanvasB;
-        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+        unsigned saved = pc->GetColor();
         ((PaintCanvas*)g_PaintCanvas)->SetColor(0xff);
-        ((PaintCanvas*)(*g_dfCanvasB))->FillRectangle(0, 0, **g_dfDimB, 0);
+        (*g_dfCanvasB)->FillRectangle(0, 0, **g_dfDimB, 0);
         ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
     }
     return this->fading;
 }
 
-// Color-restore tail helper @0x1ac088.
+// Hidden globals from drawBox.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dbCanvas;
+__attribute__((visibility("hidden"))) extern int **g_dbMetric0;         // case0 [0][0x44],[0][0x1c]
+__attribute__((visibility("hidden"))) extern void **g_dbFont0c;
+__attribute__((visibility("hidden"))) extern void **g_dbFont0r;
+__attribute__((visibility("hidden"))) extern void **g_dbFont0;
+__attribute__((visibility("hidden"))) extern int **g_dbMetric1;         // case1 [0][0x44],[0][0x5c]
+__attribute__((visibility("hidden"))) extern void **g_dbFont1c;
+__attribute__((visibility("hidden"))) extern void **g_dbFont1r;
+__attribute__((visibility("hidden"))) extern void **g_dbFont1;
+__attribute__((visibility("hidden"))) extern int **g_dbMetric6;         // case6 [0][0x44]
+__attribute__((visibility("hidden"))) extern void **g_dbFont6c;
+__attribute__((visibility("hidden"))) extern void **g_dbFont6r;
+__attribute__((visibility("hidden"))) extern void **g_dbFont6;
+__attribute__((visibility("hidden"))) extern int **g_dbMetric7;         // case7 [0][8],[0][0x28]
+__attribute__((visibility("hidden"))) extern void **g_dbFont7;
 
-// Hidden globals from drawBox disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dbCanvas;  // @0xe439c
-__attribute__((visibility("hidden"))) extern int **g_dbMetric0;         // @0xe444a (case0 [0][0x44],[0][0x1c])
-__attribute__((visibility("hidden"))) extern void **g_dbFont0c;         // @0xe446a
-__attribute__((visibility("hidden"))) extern void **g_dbFont0r;         // @0xe47f2
-__attribute__((visibility("hidden"))) extern void **g_dbFont0;          // @0xe480c
-__attribute__((visibility("hidden"))) extern int **g_dbMetric1;         // @0xe44f6 (case1 [0][0x44],[0][0x5c])
-__attribute__((visibility("hidden"))) extern void **g_dbFont1c;         // @0xe4516
-__attribute__((visibility("hidden"))) extern void **g_dbFont1r;         // @0xe4830
-__attribute__((visibility("hidden"))) extern void **g_dbFont1;          // @0xe484a
-__attribute__((visibility("hidden"))) extern int **g_dbMetric6;         // @0xe463a (case6 [0][0x44])
-__attribute__((visibility("hidden"))) extern void **g_dbFont6c;         // @0xe4656
-__attribute__((visibility("hidden"))) extern void **g_dbFont6r;         // @0xe4874
-__attribute__((visibility("hidden"))) extern void **g_dbFont6;          // @0xe4894
-__attribute__((visibility("hidden"))) extern int **g_dbMetric7;         // @0xe467c (case7 [0][8],[0][0x28])
-__attribute__((visibility("hidden"))) extern void **g_dbFont7;          // @0xe4708
-
-// Layout::drawBox(int style, int x, int y, int w, int h, String text, uchar flags)
-void Layout::drawBox(int style, int x, int y, int w, int h, void *text, unsigned flags) {
+// Draw one of the styled box backgrounds (0..10) with optional centred label text.
+void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsigned flags) {
     PaintCanvas *pc = *g_dbCanvas;
-    unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+    unsigned saved = pc->GetColor();
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
 
     switch (style) {
     case 0: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x348);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x348, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char)(0x01));
-        if (*(int *)((char *)text + 8) == 0) break;
+        pc->DrawImage2D(this->field_0x348, x, y);
+        this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char)(0x01));
+        if (text->size() == 0) break;
         int *mt = *g_dbMetric0;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
         break;
     }
     case 1: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x350);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x350, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char)(0x01));
-        if (*(int *)((char *)text + 8) == 0) break;
+        pc->DrawImage2D(this->field_0x350, x, y);
+        this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char)(0x01));
+        if (text->size() == 0) break;
         int *mt = *g_dbMetric1;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
         break;
     }
     case 2:
-        ((Layout *)(this))->drawBGPattern(this->bgPatternImage, x, y, w, h);
+        this->drawBGPattern(this->bgPatternImage, x, y, w, h);
         break;
     case 3: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x358);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x358, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x35c, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x358, (w + x) - iw, y, (unsigned char)(0x01));
+        pc->DrawImage2D(this->field_0x358, x, y);
+        this->drawBGPattern(this->field_0x35c, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x358, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 4: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x36c);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x36c, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char)(0x01));
+        pc->DrawImage2D(this->field_0x36c, x, y);
+        this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 5:
-        ((Layout *)(this))->drawBGBorder6(this->field_0x380, this->field_0x384, x, y, w);
+        this->drawBGBorder6(this->field_0x380, this->field_0x384, x, y, w);
         break;
     case 6: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x388);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x388, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char)(0x01));
-        if (*(int *)((char *)text + 8) == 0) break;
+        pc->DrawImage2D(this->field_0x388, x, y);
+        this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char)(0x01));
+        if (text->size() == 0) break;
         int *mt = *g_dbMetric6;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6c), (void *)0);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), (void *)0);
             tx = (w - tx) - tw;
         }
         int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
-        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
         break;
     }
     case 7: {
         int *mt = *g_dbMetric7;
         int hdr = mt[8 / 4];
-        ((Layout *)(this))->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
+        this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
         int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(this->field_0x394);
-        ((Layout *)(this))->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
-        if (*(int *)((char *)text + 8) == 0) break;
+        this->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
+        if (text->size() == 0) break;
         ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->headerIconImage, x, y);
+        pc->DrawImage2D(this->headerIconImage, x, y);
         int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
-        ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
-                               mt[0x28 / 4] + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
+                       mt[0x28 / 4] + x, ty, false);
         break;
     }
     case 8:
-        ((Layout *)(this))->drawBGBorder6(this->field_0x39c, this->field_0x3a0, x, y, w);
+        this->drawBGBorder6(this->field_0x39c, this->field_0x3a0, x, y, w);
         break;
     case 9: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x360);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x360, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x364, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x360, (w + x) - iw, y, (unsigned char)(0x01));
+        pc->DrawImage2D(this->field_0x360, x, y);
+        this->drawBGPattern(this->field_0x364, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x360, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 10: {
         int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x368);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x368, x, y);
-        ((Layout *)(this))->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
-        ((PaintCanvas*)(pc))->DrawImage2D(this->field_0x368, (w + x) - iw, y, (unsigned char)(0x01));
+        pc->DrawImage2D(this->field_0x368, x, y);
+        this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
+        pc->DrawImage2D(this->field_0x368, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     default:
         break;
     }
 
-    ((PaintCanvas*)(*(unsigned *)g_dbCanvas))->SetColor(saved);
+    pc->SetColor(saved);
 }
 
-// Color-restore tail helper @0x1ac088.
+// Hidden globals from drawWindow.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dwCanvas;
+__attribute__((visibility("hidden"))) extern int **g_dwBorderTop;       // [0][8]
+__attribute__((visibility("hidden"))) extern int **g_dwMetric;          // [0][8],[0][0x28]
+__attribute__((visibility("hidden"))) extern const char g_dwCmpLit[];
+__attribute__((visibility("hidden"))) extern void ***g_dwFont;
 
-// Hidden globals from drawWindow disasm.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dwCanvas;  // @0xe3796
-__attribute__((visibility("hidden"))) extern int **g_dwBorderTop;       // @0xe37b0 ([0][8])
-__attribute__((visibility("hidden"))) extern int **g_dwMetric;          // @0xe37d8 ([0][8],[0][0x28])
-__attribute__((visibility("hidden"))) extern const char g_dwCmpLit[];   // @0xe381a
-__attribute__((visibility("hidden"))) extern void ***g_dwFont;          // @0xe382c
-
-// Layout::drawWindow(String, int x, int y, int w, int h, bool drawBG)
-void Layout::drawWindow7(void *title, int x, int y, int w, int h, int drawBG) {
+// Render the window frame (background fill, header bar, optional title text).
+void Layout::drawWindow7(String *title, int x, int y, int w, int h, int drawBG) {
     PaintCanvas *pc = *g_dwCanvas;
-    unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+    unsigned saved = pc->GetColor();
     if (drawBG != 0) {
         int top = (*g_dwBorderTop)[8 / 4];
-        ((Layout *)(this))->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
+        this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
     }
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)g_dwCanvas);  // *puVar3 (the color int slot)
+    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)g_dwCanvas);  // canvas slot doubles as the colour int
     int *m = *g_dwMetric;
     int top = m[8 / 4];
-    ((PaintCanvas*)(*g_dwCanvas))->DrawRectangle(x, top + y, w, h - top);
+    pc->DrawRectangle(x, top + y, w, h - top);
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
-    ((PaintCanvas*)(*g_dwCanvas))->DrawImage2D(this->headerIconImage, x, 0);
-    if (*(int *)((char *)title + 8) != 0 &&
-        ((String *)title)->Compare_char(g_dwCmpLit) == 0) {
+    pc->DrawImage2D(this->headerIconImage, x, 0);
+    if (title->size() != 0 && title->Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
         int half = mm[8 / 4];
         half += half >> 31;
         int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        ((PaintCanvas*)(*g_dwCanvas))->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
     }
-    ((PaintCanvas*)(*g_dwCanvas))->SetColor(saved);
+    pc->SetColor(saved);
 }
 
-// Layout::drawBox(int, int, int, int, int, String) -> drawBox(..., copy, 1)
-void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const void *str) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)str, false);
-    ((Layout *)(this))->drawBoxImpl(p2, p3, p4, p5, p6, tmp, 1);
-    ((String *)(tmp))->dtor();
+void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const String *str) {
+    String tmp(*str);
+    this->drawBoxImpl(p2, p3, p4, p5, p6, &tmp, 1);
 }
 
-// Hidden globals from drawTip disasm.
-__attribute__((visibility("hidden"))) extern int *g_dtGuard;     // @0xe4a26 (stack guard [0])
-__attribute__((visibility("hidden"))) extern unsigned *g_dtColor;// @0xe4a3e ([0]=color)
-__attribute__((visibility("hidden"))) extern int **g_dtMetricA;  // @0xe4a4e ([0][0x78],[0][4])
-__attribute__((visibility("hidden"))) extern int *g_dtDimW;      // @0xe4a52 ([0]=width)
-__attribute__((visibility("hidden"))) extern int *g_dtDimH;      // @0xe4a56 ([0]=height)
-__attribute__((visibility("hidden"))) extern const char g_dtBoxLit[];   // @0xe4a74
-__attribute__((visibility("hidden"))) extern void **g_dtLinesA;  // @0xe4ad0 ([0])
-__attribute__((visibility("hidden"))) extern unsigned *g_dtLinesB;// @0xe4ad2 ([0])
+// Hidden globals from drawTip.
+__attribute__((visibility("hidden"))) extern unsigned *g_dtColor;// [0]=color
+__attribute__((visibility("hidden"))) extern int **g_dtMetricA;  // [0][0x78],[0][4]
+__attribute__((visibility("hidden"))) extern int *g_dtDimW;      // [0]=width
+__attribute__((visibility("hidden"))) extern int *g_dtDimH;      // [0]=height
+__attribute__((visibility("hidden"))) extern const char g_dtBoxLit[];
+__attribute__((visibility("hidden"))) extern void **g_dtLinesA;  // [0]
+__attribute__((visibility("hidden"))) extern unsigned *g_dtLinesB;// [0]
 
-// Layout::drawTip()
 void Layout::drawTip() {
-    int *guard = g_dtGuard;
-    int g0 = *guard;
-    if (this->tipLines != 0) {
+    if (this->tipLines != nullptr) {
         ((PaintCanvas*)g_PaintCanvas)->SetColor(*g_dtColor);
         int *mA = *g_dtMetricA;
         int dimW = *g_dtDimW;
         int dimH = *g_dtDimH;
         int boxW = mA[0x78 / 4];
 
-        unsigned char box[sizeof(String)] __attribute__((aligned(4)));
-        ((String *)box)->ctor_char(g_dtBoxLit, false);
-        ((Layout *)((PaintCanvas *)mA))->drawBoxStr(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box);
-        ((String *)(box))->dtor();
+        String box(g_dtBoxLit);
+        this->drawBoxStr(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, &box);
 
-        ((PaintCanvas*)((PaintCanvas *)*g_dtColor))->DrawImage2D(this->tipBoxImage,
+        ((PaintCanvas*)g_PaintCanvas)->DrawImage2D(this->tipBoxImage,
                                  dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char)(0x11));
 
         int lineCount = (int)this->tipLines->size();
@@ -1056,59 +884,37 @@ void Layout::drawTip() {
         Globals_drawLines(*g_dtLinesB, *(void **)g_dtLinesA, this->tipLines,
                           dimH >> 1, y);
     }
-    
 }
 
-// Layout::drawHeader(String) -> drawHeader(this, copy, 1)
-void Layout::drawHeader1(const void *param) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)param, false);
-    ((Layout *)(this))->drawHeaderImpl(tmp, 1);
-    ((String *)(tmp))->dtor();
+void Layout::drawHeader1(const String *param) {
+    String tmp(*param);
+    this->drawHeaderImpl(&tmp, 1);
 }
 
-// -> 0x1ac0b8
-
-// Layout::drawHelpWindow() -> ext(*(this+0x3c4))
 void Layout::drawHelpWindow() {
-    return ((Layout *)(this->choiceWindow))->drawHelpWindowImpl();
+    this->drawHelpWindowImpl();
 }
 
-extern "C" void *operator_new_li(unsigned sz);
-__attribute__((visibility("hidden"))) extern int *gFmodHelp;        // ldr [0xe4bb8] (distinct global from showMissionRewardMessage's gFmod)
-// gGameText holder declared at top of file.
+__attribute__((visibility("hidden"))) extern FModSound **gFmodHelp;  // distinct global from showMissionRewardMessage's gFmod
 
-// Layout::initHelpWindow(String text)
-void Layout::initHelpWindow(void *text) {
-    if (this->choiceWindow == 0) {
-        void *cw = operator_new_li(0x5c);
-        ChoiceWindow_ctor(cw);
-        this->choiceWindow = cw;
-    }
-    ((FModSound *)(*gFmodHelp))->play(0x7e, 0, 0, 0);
-    void *cw = this->choiceWindow;
-    void *title = ((GameText *)(gGameText->obj))->getText(0x187);
-    ((ChoiceWindow *)(cw))->set(*(String *)title, *(String *)text);
+void Layout::initHelpWindow(String *text) {
+    if (this->choiceWindow == nullptr)
+        this->choiceWindow = new ChoiceWindow();
+    (*gFmodHelp)->play(0x7e, 0, 0, 0);
+    String *title = gGameText->obj->getText(0x187);
+    this->choiceWindow->set(*title, *text);
     this->choiceWindowOpen = 1;
     this->helpPressedFlag = 0;
 }
 
-struct TouchButton;
+// Hidden globals from resetWindowDimensions.
+__attribute__((visibility("hidden"))) extern int **g_rwW;        // ** -> width
+__attribute__((visibility("hidden"))) extern int **g_rwH;        // ** -> height
+__attribute__((visibility("hidden"))) extern int **g_rwMetric;   // [0][0x28] = inset
+__attribute__((visibility("hidden"))) extern int *g_rwOutX;      // button x out
+__attribute__((visibility("hidden"))) extern int *g_rwOutY;      // button y out
 
-// setRect-style helper invoked via fn ptr @0xe306c: (ptr, x, y, anchor).
-
-// Hidden globals from resetWindowDimensions disasm.
-__attribute__((visibility("hidden"))) extern int *g_rwGuard;     // @0xe305e (stack guard source [0])
-__attribute__((visibility("hidden"))) extern int **g_rwW;        // @0xe3060 (** -> width)
-__attribute__((visibility("hidden"))) extern int **g_rwH;        // @0xe3064 (** -> height)
-__attribute__((visibility("hidden"))) extern int **g_rwMetric;   // @0xe3092 ([0][0x28] = inset)
-__attribute__((visibility("hidden"))) extern int *g_rwOutX;      // @0xe30e8 (button x out)
-__attribute__((visibility("hidden"))) extern int *g_rwOutY;      // @0xe3104 (button y out)
-
-// Layout::resetWindowDimensions()
 void Layout::resetWindowDimensions() {
-    int *guard = g_rwGuard;
-    int g0 = *guard;
     int h = **g_rwH;
     int w = **g_rwW;
 
@@ -1124,80 +930,43 @@ void Layout::resetWindowDimensions() {
     this->setBtnRect(this->backButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
     this->setBtnRect(this->secondaryButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 
-    if (this->backButton != 0) {
+    if (this->backButton != nullptr) {
         float pos[2] __attribute__((aligned(4)));
         TouchButton_getPosition((TouchButton *)pos);
         *g_rwOutX = (int)pos[0];
         TouchButton_getPosition((TouchButton *)pos);
         *g_rwOutY = (int)pos[1];
     }
-
-    
 }
 
-// Hidden globals from tagString disasm.
-__attribute__((visibility("hidden"))) extern const void *g_tagBaseString;  // @0xe329c
-__attribute__((visibility("hidden"))) extern const char g_tagLit0[];       // @0xe31d2
-__attribute__((visibility("hidden"))) extern const char g_tagLit1[];       // @0xe31ec
-__attribute__((visibility("hidden"))) extern const char g_tagLit2[];       // @0xe320c (return prefix, ctor'd but unused in concat below)
+// Hidden globals from tagString.
+__attribute__((visibility("hidden"))) extern const String *g_tagBaseString;
+__attribute__((visibility("hidden"))) extern const char g_tagLit0[];
+__attribute__((visibility("hidden"))) extern const char g_tagLit1[];
+__attribute__((visibility("hidden"))) extern const char g_tagLit2[];
 
-// Layout::tagString(String): build "<lit0><base><lit1>" + param into the r0 return slot.
-// out  = param_1 (the String return value, arrives in r0).
-// in   = the incoming String (r2 -> aSStack_28 source).
-void Layout_tagString(void *out, const void *in) {
-    unsigned char s_lit0[sizeof(String)] __attribute__((aligned(4)));   // aSStack_4c
-    unsigned char s_base[sizeof(String)] __attribute__((aligned(4)));   // aSStack_58
-    unsigned char s_ab[sizeof(String)]   __attribute__((aligned(4)));   // aSStack_40
-    unsigned char s_lit1[sizeof(String)] __attribute__((aligned(4)));   // aSStack_64
-    unsigned char s_abc[sizeof(String)]  __attribute__((aligned(4)));   // aSStack_34
-    unsigned char s_full[sizeof(String)] __attribute__((aligned(4)));   // aSStack_28
-    unsigned char s_lit2[sizeof(String)] __attribute__((aligned(4)));   // aSStack_70
-
-    ((String *)s_lit0)->ctor_char(g_tagLit0, false);
-    ((String *)s_base)->ctor_copy((String *)(void *)g_tagBaseString, false);
-    *(String *)s_ab = *(String *)s_lit0 + *(String *)s_base;
-    ((String *)s_lit1)->ctor_char(g_tagLit1, false);
-    *(String *)s_abc = *(String *)s_ab + *(String *)s_lit1;
-    *(String *)s_full = *(String *)s_abc + *(String *)in;
-    ((String *)s_lit2)->ctor_char(g_tagLit2, false);
-    *(String *)out = *(String *)s_full + *(String *)s_lit2;
-
-    ((String *)(s_lit2))->dtor();
-    ((String *)(s_full))->dtor();
-    ((String *)(s_abc))->dtor();
-    ((String *)(s_lit1))->dtor();
-    ((String *)(s_ab))->dtor();
-    ((String *)(s_base))->dtor();
-    ((String *)(s_lit0))->dtor();
+// Build "<lit0><base><lit1>" + in + <lit2> into `out`.
+void Layout_tagString(String *out, const String *in) {
+    *out = String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + *in + String(g_tagLit2);
 }
 
-struct TouchButton;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_rlCanvas;
+__attribute__((visibility("hidden"))) extern char *g_rlHdFlag;  // HD variant
+__attribute__((visibility("hidden"))) extern int *g_rlBackText;
+__attribute__((visibility("hidden"))) extern int *g_rlScreenH;
+__attribute__((visibility("hidden"))) extern int *g_rlMenuY;
 
-extern "C" void __aeabi_memset4(void *dst, int n, int v);
-// Image2DCreate-into-field loader (fn ptr @0xe2c64): (canvas, imgId, &field).
-
-__attribute__((visibility("hidden"))) extern int *g_rlGuard;    // @0xe2c38 (stack guard [0])
-__attribute__((visibility("hidden"))) extern unsigned *g_rlCanvas; // @0xe2c62 (*puVar8)
-__attribute__((visibility("hidden"))) extern char *g_rlHdFlag;  // @0xe2da8 (HD variant)
-__attribute__((visibility("hidden"))) extern int *g_rlBackText; // @0xe2ec0 (*piVar10)
-__attribute__((visibility("hidden"))) extern int *g_rlScreenH;  // @0xe2ed6 (*piVar9)
-__attribute__((visibility("hidden"))) extern int *g_rlMenuY;    // @0xe2f8a
-
-// Layout::reload(): (re)load all layout images/strings and rebuild the buttons.
+// (re)load all layout images/strings and rebuild the buttons.
 void Layout::reload() {
-    int *guard = g_rlGuard;
-    int g0 = *guard;
-
     this->bgPatternImage = -1;
     this->headerPatternImage = -1;
     this->headerIconImage = -1;
     this->field_0x3a8 = -1;
-    // bulk zero-init of members [0x334..0x3a4] (footer image-handle block).
-    // Kept as raw (char*)this access: Layout's field_0xNN offsets are documentation-only,
-    // so this byte range cannot be faithfully addressed via a named member.
-    __aeabi_memset4((char *)this + 0x334, 0x70, 0xff);
+    // Bulk -1 fill of the footer image-handle block (members 0x334..0x3a4);
+    // addressed by byte offset because the run spans documentation-only fields.
+    memset((char *)this + 0x334, 0xff, 0x70);
 
-    unsigned canvas = *g_rlCanvas;
+    PaintCanvas *canvas = *g_rlCanvas;
     this->loadImage(canvas, 0x503, &this->tipBoxImage);
     this->loadImage(canvas, 0x47e, &this->bgPatternImage);
     this->loadImage(canvas, 0x4ff, &this->headerPatternImage);
@@ -1243,20 +1012,21 @@ void Layout::reload() {
     this->loadImage(canvas, 0x50c, &this->field_0x3a0);
     this->loadImage(canvas, 0x50d, &this->field_0x39c);
 
-    // Back button (string-labelled).
-    TouchButton *bBack = (TouchButton *)::operator new(200);
-    void *txt = gGameText->obj->getText(*g_rlBackText);
+    // Back button (string-labelled). Constructed via the engine ctor ABI entry
+    // (its argument list does not map to a single public TouchButton ctor).
+    TouchButton *bBack = (TouchButton *)::operator new(sizeof(TouchButton));
+    String *txt = gGameText->obj->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, this->buttonInsetX, sh - 3, '!');
     this->backButton = bBack;
-    this->backButtonWidth = ((TouchButton *)(bBack))->getWidth();
+    this->backButtonWidth = bBack->getWidth();
 
     // Secondary button (image if available, else string fallback).
     unsigned img535 = 0xffffffff;
-    ((PaintCanvas*)((PaintCanvas *)*g_rlCanvas))->Image2DCreate(0x535, &img535);
-    TouchButton *b2 = (TouchButton *)::operator new(200);
+    (*g_rlCanvas)->Image2DCreate(0x535, &img535);
+    TouchButton *b2 = (TouchButton *)::operator new(sizeof(TouchButton));
     if (img535 == 0xffffffff) {
-        void *t = gGameText->obj->getText(*g_rlBackText);
+        String *t = gGameText->obj->getText(*g_rlBackText);
         TouchButton_ctorStr(b2, t, 2, this->buttonInsetX,
                             *g_rlScreenH - this->footerButtonOffset, '!');
     } else {
@@ -1267,18 +1037,18 @@ void Layout::reload() {
 
     // Help button (image).
     unsigned img471 = 0xffffffff;
-    ((PaintCanvas*)((PaintCanvas *)*g_rlCanvas))->Image2DCreate(0x471, &img471);
-    TouchButton *bHelp = (TouchButton *)::operator new(200);
+    (*g_rlCanvas)->Image2DCreate(0x471, &img471);
+    TouchButton *bHelp = (TouchButton *)::operator new(sizeof(TouchButton));
     TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
 
-    int th = ((PaintCanvas*)(*g_rlCanvas))->GetTextHeight(0);
+    int th = (*g_rlCanvas)->GetTextHeight(0);
     this->choiceWindowOpen = 0;
-    this->choiceWindow = 0;
-    this->tipLines = 0;
+    this->choiceWindow = nullptr;
+    this->tipLines = nullptr;
     this->textBaselineAdjust = th / 2 - 1;
     this->drawColor = -1;
-    ((Layout *)(this))->resetWindowDimensions();
+    this->resetWindowDimensions();
     this->rewardMessageTimer = 0;
     this->helpButtonEnabled = 0;
     this->field_0x3d8 = 0;
@@ -1289,211 +1059,155 @@ void Layout::reload() {
     this->rewardMessageActive = 0;
     this->field_0x40d = 0;
     this->field_0x409 = 0;
-
-    
 }
 
-struct TouchButton;
-struct Status;
-struct Ship;
+void Layout_formatCredits(String *out, int n);
 
-void Layout_formatCredits(void *out, int n);
+// Hidden globals from drawFooter.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvas;
+__attribute__((visibility("hidden"))) extern int **g_dfMetric;     // [0][0x10],[0][0x74]
+__attribute__((visibility("hidden"))) extern int g_dfWarnColor;
+__attribute__((visibility("hidden"))) extern const char g_dfSep[];
+__attribute__((visibility("hidden"))) extern const char g_dfTail[];
+__attribute__((visibility("hidden"))) extern void **g_dfFont;
 
-// Hidden globals from drawFooter disasm.
-__attribute__((visibility("hidden"))) extern int *g_dfGuard;       // @0xe3c54 (stack guard [0])
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvas; // @0xe3c56
-__attribute__((visibility("hidden"))) extern int **g_dfMetric;     // @0xe3cae ([0][0x10],[0][0x74])
-__attribute__((visibility("hidden"))) extern int g_dfWarnColor;    // @0xe3f90 ([0])
-__attribute__((visibility("hidden"))) extern const char g_dfSep[];     // @0xe3dc8
-__attribute__((visibility("hidden"))) extern const char g_dfTail[];    // @0xe3dfa
-__attribute__((visibility("hidden"))) extern void **g_dfFont;      // @0xe3e34
-
-// Layout::drawFooter(bool stationMode, bool showBack) — the 3-arg implementation
-// reached by the forwarding wrappers via Layout_drawFooterImpl.
+// Render the footer bar: end caps, pattern fill, the back/secondary button, the
+// cargo-load text (warning-coloured when over capacity) and the credit total.
 void Layout::drawFooterImpl(int stationMode, int showBack) {
-    int *guard = g_dfGuard;
-    int g0 = *guard;
     PaintCanvas *pc = *g_dfCanvas;
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
     int wRight = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->footerImageRight);
     int wLeft = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->footerImageLeft);
 
-    ((PaintCanvas*)(pc))->DrawImage2D(this->footerImageLeft, this->windowX,
-                             this->windowY + this->windowHeight, (unsigned char)(0x11));
+    pc->DrawImage2D(this->footerImageLeft, this->windowX,
+                    this->windowY + this->windowHeight, (unsigned char)(0x11));
     int *m = *g_dfMetric;
     int footerH = m[0x10 / 4];
-    ((PaintCanvas*)(pc))->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
-                             (this->windowY + this->windowHeight) - footerH);
+    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
+                    (this->windowY + this->windowHeight) - footerH);
     int both = wLeft + wRight;
-    ((Layout *)(this))->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH, this->windowWidth + both * -2, footerH);
-    ((PaintCanvas*)(pc))->DrawImage2D(this->footerImageRight,
-                             (this->windowX - both) + this->windowWidth,
-                             (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
-    ((PaintCanvas*)(pc))->DrawImage2D(this->footerImageLeft,
-                             (this->windowX - wRight) + this->windowWidth,
-                             (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH, this->windowWidth + both * -2, footerH);
+    pc->DrawImage2D(this->footerImageRight,
+                    (this->windowX - both) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+    pc->DrawImage2D(this->footerImageLeft,
+                    (this->windowX - wRight) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
 
     int backVis = (!stationMode) && showBack;
-    ((TouchButton *)(this->backButton))->setVisible(backVis);
-    if (!backVis) {
-        ((TouchButton *)(this->secondaryButton))->draw();
-    } else if (showBack) {
-        ((TouchButton *)(this->backButton))->draw();
-    }
+    this->backButton->setVisible(backVis);
+    if (!backVis)
+        this->secondaryButton->draw();
+    else if (showBack)
+        this->backButton->draw();
 
-    // Cargo load text, in warning color if over capacity.
-    ((Status *)(*gStatus))->getShip();
-    int load = ((Ship *)(((Status *)(*gStatus))->getShip()))->getCurrentLoad();
-    ((Status *)(*gStatus))->getShip();
-    int maxLoad = ((Ship *)(((Status *)(*gStatus))->getShip()))->getMaxLoad();
+    // Cargo load text, in warning colour if over capacity.
+    Status *status = *gStatus;
+    int load = status->getShip()->getCurrentLoad();
+    int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
         ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_dfWarnColor);
 
-    ((Status *)(*gStatus))->getShip();
-    int cur = ((Ship *)(((Status *)(*gStatus))->getShip()))->getCurrentLoad();
-    unsigned char sLoad[sizeof(String)] __attribute__((aligned(4)));   // aSStack_58
-    ((String *)sLoad)->ctor_int((int)cur);
-    unsigned char sSep[sizeof(String)] __attribute__((aligned(4)));    // aSStack_64
-    ((String *)sSep)->ctor_char(g_dfSep, false);
-    unsigned char s1[sizeof(String)] __attribute__((aligned(4)));      // aSStack_4c
-    *(String *)s1 = *(String *)sLoad + *(String *)sSep;
-
-    ((Status *)(*gStatus))->getShip();
-    int mx = ((Ship *)(((Status *)(*gStatus))->getShip()))->getMaxLoad();
-    unsigned char sMax[sizeof(String)] __attribute__((aligned(4)));    // aSStack_70
-    ((String *)sMax)->ctor_int((int)mx);
-    unsigned char s2[sizeof(String)] __attribute__((aligned(4)));      // aSStack_40
-    *(String *)s2 = *(String *)s1 + *(String *)sMax;
-    unsigned char sTail[sizeof(String)] __attribute__((aligned(4)));   // aSStack_7c
-    ((String *)sTail)->ctor_char(g_dfTail, false);
-    unsigned char loadStr[sizeof(String)] __attribute__((aligned(4))); // aSStack_34
-    *(String *)loadStr = *(String *)s2 + *(String *)sTail;
-
-    ((String *)(sTail))->dtor();
-    ((String *)(s2))->dtor();
-    ((String *)(sMax))->dtor();
-    ((String *)(s1))->dtor();
-    ((String *)(sSep))->dtor();
-    ((String *)(sLoad))->dtor();
+    String sLoad;
+    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    String sMax;
+    sMax.ctor_int(status->getShip()->getMaxLoad());
+    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
 
     {
         int x = this->windowX;
         int w = this->windowWidth;
         void *font = *g_dfFont;
-        unsigned cv = *(unsigned *)g_dfCanvas;
-        int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
-                               (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        pc->DrawString((unsigned)(unsigned long)(font), &loadStr, (x + w / 2) - tw / 2,
+                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
     ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
 
-    int credits = ((Status *)(*gStatus))->getCredits();
-    unsigned char credStr[sizeof(String)] __attribute__((aligned(4)));  // aSStack_40
-    Layout_formatCredits(credStr, credits);
+    String credStr;
+    Layout_formatCredits(&credStr, status->getCredits());
 
     {
         int x = this->windowX;
         int w = this->windowWidth;
         void *font = *g_dfFont;
-        unsigned cv = *(unsigned *)g_dfCanvas;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
-            int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-            ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
-                                   (this->windowHeight + this->windowY) - this->footerTextInset, false);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+            pc->DrawString((unsigned)(unsigned long)(font), &credStr, ((w + x) - rightInset) - tw / 2,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
         } else {
-            int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-            ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
-                                   (this->windowHeight + this->windowY) - this->footerTextInset, false);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+            pc->DrawString((unsigned)(unsigned long)(font), &credStr, (w + x - 10) - tw,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
         }
     }
-
-    ((String *)(credStr))->dtor();
-    ((String *)(loadStr))->dtor();
-    
 }
 
-// Layout::drawHeader() -> drawHeader(this, String(""), 0)
 void Layout::drawHeader0() {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_char("", false);
-    ((Layout *)(this))->drawHeaderImpl(tmp, 0);
-    ((String *)(tmp))->dtor();
+    String tmp("");
+    this->drawHeaderImpl(&tmp, 0);
 }
 
-// Layout::drawFooterStation() -> drawFooter(this, 1, 0)  (this passed implicitly in r0)
 void Layout::drawFooterStation() {
-    return ((Layout *)(this))->drawFooterImpl(1, 0);
+    this->drawFooterImpl(1, 0);
 }
 
-// Header transition tail helper @0x1ac0a8.
+// Hidden globals from drawHeader.
+__attribute__((visibility("hidden"))) extern unsigned *g_dhColor;   // [0]=image/color
+__attribute__((visibility("hidden"))) extern int **g_dhMetric;      // [0][0x28],[0][0x44]
+__attribute__((visibility("hidden"))) extern void ***g_dhFont;
 
-// Hidden globals from drawHeader disasm.
-__attribute__((visibility("hidden"))) extern unsigned *g_dhColor;   // @0xe4118 ([0]=image/color)
-__attribute__((visibility("hidden"))) extern int **g_dhMetric;      // @0xe41aa ([0][0x28],[0][0x44])
-__attribute__((visibility("hidden"))) extern void ***g_dhFont;      // @0xe41ac
-
-// Layout::drawHeader(String title, bool transition)
-void Layout::drawHeader7(void *title, int transition) {
-    Layout *self = this;
+// Render the header bar (end caps, pattern fill, title text and help-button
+// slide-in animation).
+void Layout::drawHeader7(String *title, int transition) {
+    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
     unsigned img = *g_dhColor;
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(self->drawColor);
-    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
-    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
-    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerCapImage,
-                             self->windowX, self->windowY);
-    ((Layout *)(self))->drawBGPattern(self->headerPatternImage, self->windowX + iw, self->windowY, self->windowWidth + iw * -2, ih);
-    ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerCapImage,
-                             self->windowWidth + self->windowX,
-                             self->windowY, iw, ih, (unsigned char)(0x11), (unsigned char)(0x12), (unsigned char)(0x01));
-    if (*(int *)((char *)title + 8) != 0) {
-        ((PaintCanvas*)((PaintCanvas *)img))->DrawImage2D(self->headerIconImage,
-                                 self->windowX, self->windowY);
+    pc->SetColor(this->drawColor);
+    int iw = pc->GetImage2DWidth(img);
+    int ih = pc->GetImage2DHeight(img);
+    pc->DrawImage2D(this->headerCapImage, this->windowX, this->windowY);
+    this->drawBGPattern(this->headerPatternImage, this->windowX + iw, this->windowY, this->windowWidth + iw * -2, ih);
+    pc->DrawImage2D(this->headerCapImage,
+                    this->windowWidth + this->windowX,
+                    this->windowY, iw, ih, (unsigned char)(0x11), (unsigned char)(0x12), (unsigned char)(0x01));
+    if (title->size() != 0) {
+        pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
         int *m = *g_dhMetric;
-        ((PaintCanvas*)((PaintCanvas *)img))->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
-                               m[0x28 / 4] + m[0x44 / 4] + self->windowX,
-                               self->headerTitleY + self->windowY, false);
+        pc->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
+                       m[0x28 / 4] + m[0x44 / 4] + this->windowX,
+                       this->headerTitleY + this->windowY, false);
     }
-    self->helpButtonEnabled = (uint8_t)transition;
-    if (transition != 0 && self->choiceWindowOpen == 0) {
-        self->headerAnim(self->helpButton);
-        return;
-    }
+    this->helpButtonEnabled = (uint8_t)transition;
+    if (transition != 0 && this->choiceWindowOpen == 0)
+        this->headerAnim(this->helpButton);
 }
 
-// Layout::drawWindow(String) -> drawWindow(this, copy, 0). The on-stack String
-// temp makes the compiler emit the -fstack-protector canary automatically.
-void Layout::drawWindow1(const void *param) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)param, false);
-    ((Layout *)(this))->drawWindowImpl(tmp, 0);
-    ((String *)(tmp))->dtor();
+void Layout::drawWindow1(const String *param) {
+    String tmp(*param);
+    this->drawWindowImpl(&tmp, 0);
 }
 
-void Layout_formatCredits(void *out, int n);
+void Layout_formatCredits(String *out, int n);
 
-// Hidden globals from drawMissionRewardMessage disasm.
-__attribute__((visibility("hidden"))) extern int *g_mrGuard;       // @0xe4d88 (stack guard [0])
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_mrCanvas; // @0xe4d9e
-__attribute__((visibility("hidden"))) extern int *g_mrDimA;        // @0xe4e2a ([0]=screen W)
-__attribute__((visibility("hidden"))) extern const char g_mrLit0[];    // @0xe4e38
-__attribute__((visibility("hidden"))) extern const char g_mrLit1[];    // @0xe4e6a
-__attribute__((visibility("hidden"))) extern int *g_mrDimB;        // @0xe4e94 ([0]=screen H)
-__attribute__((visibility("hidden"))) extern int *g_mrTextId;      // @0xe4eba ([0]=text id)
-__attribute__((visibility("hidden"))) extern void **g_mrFont;      // @0xe4ede ([0]=font)
-__attribute__((visibility("hidden"))) extern const char g_mrLit2[];    // @0xe4f14
+// Hidden globals from drawMissionRewardMessage.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_mrCanvas;
+__attribute__((visibility("hidden"))) extern int *g_mrDimA;        // [0]=screen W
+__attribute__((visibility("hidden"))) extern const char g_mrLit0[];
+__attribute__((visibility("hidden"))) extern const char g_mrLit1[];
+__attribute__((visibility("hidden"))) extern int *g_mrDimB;        // [0]=screen H
+__attribute__((visibility("hidden"))) extern int *g_mrTextId;      // [0]=text id
+__attribute__((visibility("hidden"))) extern void **g_mrFont;      // [0]=font
+__attribute__((visibility("hidden"))) extern const char g_mrLit2[];
 
-// Layout::drawMissionRewardMessage(bool transition)
 void Layout::drawMissionRewardMessage(int transition) {
-    int *guard = g_mrGuard;
-    int g0 = *guard;
     if (this->rewardMessageActive != 0) {
         PaintCanvas *pc = *g_mrCanvas;
-        unsigned saved = ((PaintCanvas*)(pc))->GetColor();
+        unsigned saved = pc->GetColor();
         unsigned origColor = this->drawColor;
         ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
 
-        // Pulse alpha based on field 0x3d0 (animation timer).
+        // Pulse alpha based on the animation timer.
         int t = this->rewardMessageTimer;
         float a;
         if (t < 2000) {
@@ -1506,7 +1220,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         unsigned col = (unsigned)((int)(a * 256.0f)) - 0x100;
         ((PaintCanvas*)g_PaintCanvas)->SetColor(col);
 
-        unsigned newColor = ((PaintCanvas*)(pc))->GetColor();
+        unsigned newColor = pc->GetColor();
         int boxW = this->rewardBoxWidth;
         int boxH = this->rewardBoxHeight;
         int boxX = this->rewardBoxX;
@@ -1515,105 +1229,79 @@ void Layout::drawMissionRewardMessage(int transition) {
 
         if (transition != 0) {
             int sw = *g_mrDimA;
-            unsigned char s0[sizeof(String)] __attribute__((aligned(4)));
-            ((String *)s0)->ctor_char(g_mrLit0, false);
-            ((Layout *)(pc))->drawBoxStr(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0);
-            ((String *)(s0))->dtor();
+            String s0(g_mrLit0);
+            this->drawBoxStr(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, &s0);
 
             sw = *g_mrDimA;
-            unsigned char s1[sizeof(String)] __attribute__((aligned(4)));
-            ((String *)s1)->ctor_char(g_mrLit1, false);
-            ((Layout *)(pc))->drawBoxStr(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1);
-            ((String *)(s1))->dtor();
+            String s1(g_mrLit1);
+            this->drawBoxStr(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, &s1);
         }
 
         int sh = *g_mrDimB;
-        ((PaintCanvas*)(*g_mrCanvas))->DrawImage2D(this->field_0x3a4, sh >> 1,
-                                 (char)boxX, (unsigned char)(0x11));
+        pc->DrawImage2D(this->field_0x3a4, sh >> 1, (char)boxX, (unsigned char)(0x11));
 
-        void *txt = gGameText->obj->getText(*g_mrTextId);
-        unsigned char line[sizeof(String)] __attribute__((aligned(4)));
-        ((String *)line)->ctor_copy((String *)txt, false);
+        String *txt = gGameText->obj->getText(*g_mrTextId);
+        String line(*txt);
 
         sh = *g_mrDimB;
         void *font = *g_mrFont;
-        unsigned cv = *(unsigned *)g_mrCanvas;
-        int tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        pc->DrawString((unsigned)(unsigned long)(font), &line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
-        unsigned char suffix[sizeof(String)] __attribute__((aligned(4)));
-        ((String *)suffix)->ctor_char(g_mrLit2, false);
-        unsigned char credits[sizeof(String)] __attribute__((aligned(4)));
-        Layout_formatCredits(credits, this->rewardCredits);
-        unsigned char joined[sizeof(String)] __attribute__((aligned(4)));
-        *(String *)joined = *(String *)suffix + *(String *)credits;
-        ((String *)(line))->assign((String *)joined);
-        ((String *)(joined))->dtor();
-        ((String *)(credits))->dtor();
-        ((String *)(suffix))->dtor();
+        String suffix(g_mrLit2);
+        String credits;
+        Layout_formatCredits(&credits, this->rewardCredits);
+        line = suffix + credits;
 
         sh = *g_mrDimB;
-        cv = *(unsigned *)g_mrCanvas;
-        tw = ((PaintCanvas*)(cv))->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        ((PaintCanvas*)(cv))->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1),
-                               this->rewardBoxY2 + boxX, false);
+        tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
+        pc->DrawString((unsigned)(unsigned long)(font), &line, (sh >> 1) - (tw >> 1),
+                       this->rewardBoxY2 + boxX, false);
         ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
         this->drawColor = origColor;
-        ((String *)(line))->dtor();
     }
-
 }
 
-// ===========================================================================
-// Recovered internal helper methods (batch 4)
-//
-// These are the small dispatch/forwarder/init helpers that the public Layout
-// drawing API delegates to.  In the stripped .so they appear only as PLT/GOT
-// veneers (0x74xxx) into the engine bodies (0xe****); each one's semantics are
-// reproduced here as a real Layout:: method so the per-method call sites can be
-// wired to a proper member call by the mechanical pass.
-// ===========================================================================
+// ---- Internal helper methods --------------------------------------------
+// The small dispatch / forwarder / init helpers that the public drawing API
+// delegates to.
 
-// drawWindow(String, bool flag): centre a window using the cached screen
-// metrics, then forward to the full 7-arg renderer.  Equivalent to drawWindow2.
-void Layout::drawWindowImpl(const void *str, int flag) {
+// Centre a window using the cached screen metrics, then forward to the renderer.
+void Layout::drawWindowImpl(const String *str, int flag) {
     this->drawWindow2(str, flag);
 }
 
-// drawWindow(String, x, y, w, h, bool): the 7-arg core renderer (drawWindow7),
-// reached from the 2-arg / 5-arg wrappers.
-void Layout::drawWindowImpl5(void *str, int x, int y, int w, int h, int flag) {
+// The core window renderer reached from the 2-arg / 5-arg wrappers.
+void Layout::drawWindowImpl5(String *str, int x, int y, int w, int h, int flag) {
     this->drawWindow7(str, x, y, w, h, flag);
 }
 
-// drawHeader(String, bool transition): the header-bar renderer core.
-void Layout::drawHeaderImpl(void *title, int transition) {
+// The header-bar renderer core.
+void Layout::drawHeaderImpl(String *title, int transition) {
     this->drawHeader7(title, transition);
 }
 
-// drawBox(style, x, y, w, h, String, flags): owning-String variant of drawBox.
-void Layout::drawBoxImpl(int style, int x, int y, int w, int h, void *text, int flags) {
+// Owning-String variant of drawBox.
+void Layout::drawBoxImpl(int style, int x, int y, int w, int h, String *text, int flags) {
     this->drawBox(style, x, y, w, h, text, (unsigned)flags);
 }
 
-// drawBox over a borrowed String (no copy): the static-style entry the engine
-// uses when the caller already owns the text (flags default to 0).
-void Layout::drawBoxStr(int style, int x, int y, int w, int h, void *text) {
+// drawBox over a borrowed String (no copy); flags default to 0.
+void Layout::drawBoxStr(int style, int x, int y, int w, int h, String *text) {
     this->drawBox(style, x, y, w, h, text, 0u);
 }
 
-// 8-arg drawBox variant used by external callers: (kind, x, y, w, color, text, z).
-// `color` overrides the draw colour for the duration of the box; `z` selects the
-// height metric (passed through as the box height).
-void Layout::drawBox8(int kind, int x, int y, int w, int color, void *text, int z) {
+// 8-arg drawBox variant: `color` overrides the draw colour for the box, `z` is
+// the box height.
+void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, int z) {
     unsigned saved = this->drawColor;
     this->drawColor = (unsigned)color;
     this->drawBox(kind, x, y, w, z, text, 0u);
     this->drawColor = saved;
 }
 
-// drawMask(x, y, w, h): dim the whole screen behind a modal by filling a
-// translucent rectangle with the mask colour, restoring the previous colour.
+// Dim the whole screen behind a modal with a translucent rectangle in the mask
+// colour, restoring the previous colour.
 void Layout::drawMaskImpl(int x, int y, int w, int h) {
     PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
     unsigned saved = pc->GetColor();
@@ -1622,20 +1310,19 @@ void Layout::drawMaskImpl(int x, int y, int w, int h) {
     pc->SetColor(saved);
 }
 
-// Colour-restore tail shared by the mask/footer renderers: restore the canvas
-// colour that was saved before the draw.
-void Layout::drawMaskTail(void *pc, int savedColor) {
-    ((PaintCanvas *)pc)->SetColor((unsigned)savedColor);
+// Restore the canvas colour saved before a draw.
+void Layout::drawMaskTail(PaintCanvas *pc, int savedColor) {
+    pc->SetColor((unsigned)savedColor);
 }
 
-// drawHelpWindow tail: paint the active help/choice window.
+// Paint the active help/choice window.
 void Layout::drawHelpWindowImpl() {
-    if (this->choiceWindow != 0)
-        ((ChoiceWindow *)this->choiceWindow)->draw();
+    if (this->choiceWindow != nullptr)
+        this->choiceWindow->draw();
 }
 
-// drawBGBorder rounded-rect helpers: thin overloads onto the full 8-parameter
-// renderer.  The 6-arg form reuses the corner image's height as inset/pad.
+// drawBGBorder rounded-rect overloads onto the full 8-parameter renderer. The
+// 6-arg form reuses the corner image's height as inset/pad.
 void Layout::drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w) {
     int ch = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight(corner);
     this->drawBGBorder(corner, edge, x, y, w, ch, 0, 0);
@@ -1645,78 +1332,62 @@ void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, 
     this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
 }
 
-// ===========================================================================
-// Canonical-named public draw entries (batch 18)
-//
-// These are the exact-named engine bodies (0xe38d4 / 0xe3140 / 0xe395c) behind
-// the Layout_drawWindow / Layout_drawMask / Layout_drawBGBorderImpl PLT veneers.
-// They reproduce the same work the suffixed variants above do, under the names
-// the external call sites use, so the call sites can be wired to member calls.
-// ===========================================================================
+// ---- Canonical-named public draw entries --------------------------------
 
-// Layout::drawWindow(String, x, y, w, h): take an owning copy of the title and
-// render the full window frame (with background) via the 7-arg core renderer.
-void Layout::drawWindow(void *title, int x, int y, int w, int h) {
-    unsigned char tmp[sizeof(String)] __attribute__((aligned(4)));
-    ((String *)tmp)->ctor_copy((String *)title, false);
-    this->drawWindow7(tmp, x, y, w, h, 1);
-    ((String *)(tmp))->dtor();
+// Take an owning copy of the title and render the full window frame (with
+// background) via the core renderer.
+void Layout::drawWindow(String *title, int x, int y, int w, int h) {
+    String tmp(*title);
+    this->drawWindow7(&tmp, x, y, w, h, 1);
 }
 
-// Layout::drawMask(): dim the entire screen behind a modal using the cached
-// screen-size globals (full-screen translucent fill in the mask colour).
+// Dim the entire screen behind a modal using the cached screen-size globals.
 void Layout::drawMask() {
     int w = *gW;
     int h = *gH;
     this->drawMaskImpl(0, 0, w, h);
 }
 
-// Layout::drawBGBorder (8-arg engine entry 0xe395c) under its impl name: render a
-// tiled rounded-rect border. Forwards to the full 8-parameter renderer.
+// Render a tiled rounded-rect border via the full 8-parameter renderer.
 void Layout::drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
 }
 
 // Position a child TouchButton (back/secondary/help) at (x, y) with an anchor.
-void Layout::setBtnRect(void *btn, int x, int y, int anchor) {
-    ((TouchButton *)btn)->setPosition(x, y, (unsigned char)anchor);
+void Layout::setBtnRect(TouchButton *btn, int x, int y, int anchor) {
+    btn->setPosition(x, y, (unsigned char)anchor);
 }
 
 // Create an Image2D resource into a layout field slot.
-void Layout::loadImage(unsigned canvas, int imageId, void *field) {
-    ((PaintCanvas *)canvas)->Image2DCreate((unsigned short)imageId, (unsigned int *)field);
+void Layout::loadImage(PaintCanvas *canvas, int imageId, void *field) {
+    canvas->Image2DCreate((unsigned short)imageId, (unsigned int *)field);
 }
 
-// Slide the help button into the header when the header animates in.  The engine
-// entry is a PLT veneer into the shared TouchButton "anim" routine; forward to it.
-void Layout::headerAnim(void *btn) {
+// Slide the help button into the header when the header animates in.
+void Layout::headerAnim(TouchButton *btn) {
     unsigned char sp[8] __attribute__((aligned(4)));
     TouchButton_footerAnim(btn, 0, 0, sp);
 }
 
-// Bulk constant-block initialiser for the SIMD-copied header geometry region
-// (0x04..0x2d8).  The constant vectors live in the engine .rodata and are NEON
-// block-copied; the readable scalar tail is handled by the ctor.  This entry just
-// zero-seeds the block so the ctor's explicit writes land on a clean object.
+// Zero-seed the header geometry block (members 0x04..0x2d8) before the ctor's
+// explicit scalar writes; addressed by byte offset because the run spans
+// documentation-only fields.
 void Layout::initConstBlock(int hd, int wide, int scale, int res) {
     (void)hd; (void)wide; (void)scale; (void)res;
-    // bulk zero-init of members [0x04..0x2d8] (SIMD-copied header geometry block).
-    // Kept as raw (char*)this access: Layout's field_0xNN offsets are documentation-only,
-    // so this byte range cannot be faithfully addressed via a named member.
-    __aeabi_memset4((char *)this + 0x04, 0x2d8 - 0x04, 0);
+    memset((char *)this + 0x04, 0, 0x2d8 - 0x04);
 }
 
 // Touch dispatch tails: forward the event to the resolved child TouchButton.
-int Layout::dispatchTouchBegin(void *btn, int x, int y) {
-    return ((TouchButton *)btn)->OnTouchBegin(x, y);
+int Layout::dispatchTouchBegin(TouchButton *btn, int x, int y) {
+    return btn->OnTouchBegin(x, y);
 }
 
-int Layout::dispatchTouchMove(void *btn, int x, int y) {
-    return (int)((TouchButton *)btn)->OnTouchMove(x, y);
+int Layout::dispatchTouchMove(TouchButton *btn, int x, int y) {
+    return (int)btn->OnTouchMove(x, y);
 }
 
-int Layout::dispatchTouchEnd(void *btn, int x, int y) {
-    return (int)((TouchButton *)btn)->OnTouchEnd(x, y);
+int Layout::dispatchTouchEnd(TouchButton *btn, int x, int y) {
+    return (int)btn->OnTouchEnd(x, y);
 }
 
 // Engine-named aliases routed to the canonical handlers.
@@ -1724,6 +1395,6 @@ int Layout::touch_end(int x, int y) {
     return this->OnTouchEnd(x, y);
 }
 
-void Layout::drawHeader_call(void *title) {
+void Layout::drawHeader_call(String *title) {
     this->drawHeader7(title, 0);
 }
