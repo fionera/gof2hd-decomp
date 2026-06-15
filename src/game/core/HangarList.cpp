@@ -188,7 +188,7 @@ void HangarList::fillIngredientsList(BluePrint* blueprint, bool flag) {
     }
 
     (*this->tabs)[4] = list;
-    ListItem* terminator = new ListItem(static_cast<const void*>(nullptr));
+    ListItem* terminator = new ListItem(0);
     terminator->field_0x24 = 0;
     (*this->tabs)[4]->push_back(terminator);
 }
@@ -328,7 +328,7 @@ void HangarList::initShipTab(Ship* ship) {
                 textId = type + 0x109;
             }
             (*items)[out] = new ListItem((*texts)->getText(textId), static_cast<int>(type));
-            Array<Item*>* slotItems = ship->getEquipmentByType(type);
+            Array<Item*>* slotItems = ship->getEquipment(type);
             for (uint32_t j = 0; j < slotItems->size(); ++j) {
                 ++out;
                 Item* item = (*slotItems)[j];

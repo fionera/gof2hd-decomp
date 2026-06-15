@@ -790,7 +790,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun->setPlayerGun(1);
         if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
             gun->field_0xa4 = 1;
-            if (idx == 0xe0) gun->field_0xa5 = 1;
+            if (idx == 0xe0) F<uint8_t>(gun, 0xa5) = 1;
         }
         obj = (ObjectGun *)::operator new(0xb0);
         int *tbl = (kind == 0x23) ? (int *)g_cg_objTable23 : (int *)g_cg_objTable8;
@@ -1383,8 +1383,8 @@ void Level::createFighterTurrets()
                 char offset[12] = {0};
                 t->setHost((KIPlayer *)ki, *(Vector *)offset);
                 *(PlayerTurret **)(ki + 0x10) = t;
-                t->standing = (kind == 0x2d) ? 8 : 0;
-                t->field_0x74 = 1;
+                t->shipGroup = (kind == 0x2d) ? 8 : 0;
+                C(t, 0x74) = 1;   // RAWREAD: KIPlayer t+0x74 (no member at 0x74; mid-field of field_0x73)
                 this->enemies->push_back((KIPlayer *)t);
             }
         }
@@ -3313,7 +3313,7 @@ void Level::assignGuns()
             case 3:  gun->setIndex(0x19); res = 0x1a92; break;
             case 9:  gun->setIndex(5);    res = 0x1a6a; break;
             case 10: gun->setIndex(0xe5); res = 0x4a93;
-                     gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
+                     gun->damage = (int)((float)gun->damage * 1.0f);
                      break;
             default: gun->weaponType = 1; gun->setIndex(0x13); res = 0x1a8b; break;
             }
@@ -3355,7 +3355,7 @@ void Level::assignGuns()
                     if (**g_ag_statusB == Status_getCurrentCampaignMission_ag() &&
                         2 < **g_ag_alienCnt &&
                         KIPlayer_isEnemy_ag((*this->enemies)[i]) != 0)
-                        gun->field_0x60 = (int)((float)gun->field_0x60 * 1.0f);
+                        gun->damage = (int)((float)gun->damage * 1.0f);
                 }
             }
             if (wanted != 0 && *(char *)(host2 + 0x42) != 0) {
@@ -3364,7 +3364,7 @@ void Level::assignGuns()
                 int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4));
                 res = ((int *)g_ag_weaponDmg)[w];
                 gun->weaponType = attr;
-                gun->field_0x60 = gun->field_0x60 << 2;
+                gun->damage = gun->damage << 2;
             }
 
             // wrap the Gun in a Rocket/Object gun and store it.
@@ -3377,7 +3377,7 @@ void Level::assignGuns()
                 gun->field_0x50 = 0x41000000;
                 gun->initialLifetime = 10000;
                 gun->fireDelay = 3000;
-                gun->field_0x60 = gun->field_0x60 << 2;
+                gun->damage = gun->damage << 2;
             } else {
                 ObjectGun *o = (ObjectGun *)::operator new(0xb0);
                 ObjectGun_ctor_ag(o, 0, gun, res, 0x2711, this);
@@ -3403,7 +3403,7 @@ wingmanExtra:
             (*this->enemyGuns)[outIdx] = o;
             gun->setIndex(0x12);
             int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48));
-            gun->field_0x64 = attr;
+            gun->empDamage = attr;
             KIPlayer_addGun_ag((Gun *)(*this->enemies)[i], (int)(intptr_t)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd2);
             outIdx = outIdx + 1;

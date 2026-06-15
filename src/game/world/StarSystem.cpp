@@ -6,7 +6,6 @@
 #include "gof2/game/world/Station.h"
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/engine/file/FileRead.h"
-#include "gof2/engine/render/LensFlare.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/render/Engine.h"
@@ -14,6 +13,27 @@
 #include "gof2/platform/libc.h"
 
 using AbyssEngine::AERandom;
+
+// LensFlare's own header (engine/render/LensFlare.h) forward-declares PaintCanvas
+// as a class *inside* namespace AbyssEngine, which clashes with the canonical
+// `using ::PaintCanvas;` brought in by PaintCanvasClass.h above. Re-declare the
+// LensFlare interface here against the canonical `::PaintCanvas` so the only
+// PlanetSystem use (new LensFlare(canvas)) resolves without pulling in that
+// conflicting forward declaration. Layout/signature are identical to LensFlare.h.
+class LensFlare {
+public:
+    float intensity;                 // current flare alpha
+    PaintCanvas *canvas;
+    int width;
+    int height;
+    uint32_t *images;                // three Image2D sprite handles
+
+    explicit LensFlare(PaintCanvas *canvas);
+    ~LensFlare();
+
+    void render2D(float srcX, float srcY, float alpha, int colorIndex);
+    void update();
+};
 
 // Free AEMath operators used below (defined in AEMath.cpp).
 namespace AbyssEngine { namespace AEMath {
@@ -428,8 +448,7 @@ StarSystem::StarSystem(int mode) {
             }
             usedSlots[sunSlot * 4] = 1;
         } else {
-            PlayerStatic *player = (PlayerStatic *)::operator new(0x130);
-            player->ctor(0, geom, 0.0f, 0.0f, 0.0f);
+            PlayerStatic *player = new PlayerStatic(0, geom, 0.0f, 0.0f, 0.0f);
             targets[i - 1] = player;
             int slot = g_StarSystem_ctor_rng->nextInt(11) + 7;
             usedSlots[slot * 4] = 1;

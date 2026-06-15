@@ -192,7 +192,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->field_0xc);
+        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->width);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurHAttribPosition);
@@ -209,7 +209,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->field_0x10);
+        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->height);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurVAttribPosition);
@@ -340,7 +340,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->field_0xc);
+        glUniform1f(this->blurHUniformTexSize, (float)this->fboBlurH->width);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurHAttribPosition);
@@ -357,7 +357,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
                               *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
                               *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->field_0x10);
+        glUniform1f(this->blurVUniformTexSize, (float)this->fboBlurV->height);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurVAttribPosition);

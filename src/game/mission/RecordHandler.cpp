@@ -973,13 +973,13 @@ void * RecordHandler::readAgent(unsigned int fd) {
     ((Agent *)(agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
 
     if (strE.size() != 0) {
-        void *s = ::operator new(0xc);
-        ((String *)s)->ctor_copy(&strE, false);
+        String *s = (String *)::operator new(0xc);
+        s->ctor_copy(&strE, false);
         agent->wingman1 = s;
     }
     if (strF.size() != 0) {
-        void *s = ::operator new(0xc);
-        ((String *)s)->ctor_copy(&strF, false);
+        String *s = (String *)::operator new(0xc);
+        s->ctor_copy(&strF, false);
         agent->wingman2 = s;
     }
     agent->wingmanCount = wingmen;
@@ -999,7 +999,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
 
     String tmp;
     tmp.ctor_copy(&missionStr, false);
-    ((Agent *)(agent))->setMissionString(&tmp);
+    ((Agent *)(agent))->setMissionString(tmp);
     tmp.ctor_copy(&stationName, false);
     ((Agent *)(agent))->setStationName(tmp);
     tmp.ctor_copy(&systemName, false);

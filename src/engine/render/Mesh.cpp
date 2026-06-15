@@ -1,5 +1,6 @@
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/engine/math/AEMath.h"
+#include "gof2/engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
 #include "gof2/engine/file/AEFile.h"
 
 // Minimal view of the (top-level) PaintCanvas, declaring only the three mesh-table
@@ -15,11 +16,10 @@ public:
                          unsigned short v0, unsigned short v1, unsigned short v2);
 };
 
-// gof2/Transform.h is intentionally NOT included here: it carries its own minimal
-// `AbyssEngine::Mesh` view (for Transform's own needs) that would clash with the full
-// Mesh definition in gof2/Mesh.h. Mesh.cpp only touches a handful of Transform members,
-// which the layout-only AbyssEngine::Transform view in gof2/AEMath.h already exposes, so
-// every `anim->...` below is a genuine call into the engine's real Transform.
+// The real AbyssEngine::Transform (gof2/engine/math/Transform.h) only forward-declares
+// AbyssEngine::Mesh, so it composes cleanly with this TU's full Mesh definition. Every
+// `anim->...` below is a genuine call into the engine's Transform, and AEMath::BSphere
+// (the in-place bounds layout) comes from that same header.
 namespace AbyssEngine {
 
 // AbyssEngine::MeshConvertToVBO(Mesh*) — defined in AbyssEngine.cpp; flushes a mesh's
@@ -56,9 +56,12 @@ Mesh::Mesh(Mesh *src) {
     if (src->vboEligible != 0)
         MeshConvertToVBO(src);
 
-    AEMath::BSphere &dstSphere = *reinterpret_cast<AEMath::BSphere *>(&self->boundsCenterX);
-    const AEMath::BSphere &srcSphere = *reinterpret_cast<const AEMath::BSphere *>(&src->boundsCenterX);
-    dstSphere = srcSphere;
+    // Copy the embedded bounding sphere (center xyz, radius, radius^2).
+    self->boundsCenterX = src->boundsCenterX;
+    self->boundsCenterY = src->boundsCenterY;
+    self->boundsCenterZ = src->boundsCenterZ;
+    self->boundsRadius = src->boundsRadius;
+    self->boundsRadiusSq = src->boundsRadiusSq;
 
     const bool hasTangents = (*g_hasNormalsFlag != 0);
 
@@ -88,9 +91,9 @@ Mesh::Mesh(Mesh *src) {
         self->animation = new Transform(srcAnim);
     }
 
-    AEMath::Vector &dstVec = *reinterpret_cast<AEMath::Vector *>(&self->field_0x50);
-    const AEMath::Vector &srcVec = *reinterpret_cast<const AEMath::Vector *>(&src->field_0x50);
-    dstVec = srcVec;
+    // Copy the embedded Vector (xy used).
+    self->field_0x50 = src->field_0x50;
+    self->field_0x54 = src->field_0x54;
 
     self->shared = 1;
     self->hasAnimation = src->hasAnimation;
@@ -278,8 +281,10 @@ int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
         }
     }
 
-    // Attach the track if it gathered any frames, otherwise discard it.
-    if (anim->keyFrameCount < 1) {
+    // Attach the track if it gathered any frames, otherwise discard it. The recovered
+    // code tested Transform's keyFrameCount slot; in the modernized Transform that count
+    // is the size of the keyFrames Array (which stays null until the first insert).
+    if (anim->keyFrames == nullptr || anim->keyFrames->size() < 1) {
         delete anim;
     } else {
         self->animation = anim;

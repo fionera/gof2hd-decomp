@@ -276,9 +276,8 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
                 }
             }
 
-            SolarSystem *system = new SolarSystem();
-            system->ctor((int32_t)i, name, faction, flag == 1, a, b, c, d, e, f, routes, stations, wrecks,
-                         statics);
+            SolarSystem *system = new SolarSystem((int32_t)i, name, faction, flag == 1, a, b, c, d, e, f,
+                                                  routes, stations, wrecks, statics);
             systems->data()[i] = system;
             delete[] routes;
         }
@@ -419,8 +418,7 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
         AEFile::ReadSwitched(d, handle);
         for (int32_t i = 0; i < count; i++) {
             if (stationId == (uint32_t)ids[i]) {
-                Station *station = new Station();
-                station->ctor(&name, a, b, c, d);
+                Station *station = new Station(name, a, b, c, d);
                 stations->data()[out] = station;
                 out++;
             }
@@ -552,8 +550,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
         AEFile::ReadSwitched(d, handle);
         for (uint32_t i = 0; i < ids->size(); i++) {
             if ((uint32_t)ids->data()[i] == stationId) {
-                Station *station = new Station();
-                station->ctor(&name, a, b, c, d);
+                Station *station = new Station(name, a, b, c, d);
                 stations->data()[out++] = station;
             }
             if (out == ids->size()) {

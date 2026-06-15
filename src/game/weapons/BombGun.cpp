@@ -99,7 +99,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
             AEGeometry *geo = new AEGeometry(geomMesh, canvas, false);
 
             this->geometryTransformId = geo->transform;
-            canvas->TransformAddChild(this->transformId, geo->transform);
+            canvas->TransformAddChild(this->transform, geo->transform);
 
             AbyssEngine::Transform *transform =
                 (AbyssEngine::Transform *)canvas->TransformGetTransform(geo->transform);
@@ -121,8 +121,8 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
 
         AEGeometry *geo = new AEGeometry((uint16_t)0x37d6, canvas, false);
         canvas->TransformAddChild(this->meshTransformId, geo->transform);
-        canvas->TransformRemoveMesh(this->transformId, (void *)(uintptr_t)this->meshTransformId);
-        canvas->TransformAddChild(this->transformId, this->meshTransformId);
+        canvas->TransformRemoveMesh(this->transform, (void *)(uintptr_t)this->meshTransformId);
+        canvas->TransformAddChild(this->transform, this->meshTransformId);
 
         delete geo;
     }
@@ -179,9 +179,9 @@ void BombGun::update(int elapsed)
             if (gun->hitSmall != 0) {
                 gun->hitSmall = 0;
                 AbyssEngine::Transform *transform =
-                    (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transformId);
+                    (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transform);
                 transform->SetAnimationState((AbyssEngine::AnimationMode)3, nullptr);
-                transform = (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transformId);
+                transform = (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transform);
                 transform->SetAnimationState((AbyssEngine::AnimationMode)1, nullptr);
                 // Snapshot the wrapped Player's pose matrix into the PlayerEgo body.
                 // This is a raw cross-object copy the recovery could not bind to a
@@ -191,7 +191,7 @@ void BombGun::update(int elapsed)
             }
 
             AEGeometry *geometry = this->trailGeometry;
-            geometry->setMatrix(*(const Matrix *)canvas->TransformGetLocal(this->transformId));
+            geometry->setMatrix(*(const Matrix *)canvas->TransformGetLocal(this->transform));
             Vector offset = 350.0f * *(const Vector *)gun->velocities;
             geometry->setPosition(*(const Vector *)gun->positions + offset);
             geometry->updateReferenceMatrix();
@@ -206,7 +206,7 @@ void BombGun::update(int elapsed)
 
             if (*(int *)gun->lifetimes < gun->initialLifetime - 500) {
                 AbyssEngine::Transform *transform =
-                    (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transformId);
+                    (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transform);
                 transform->Update((int64_t)elapsed, false);
             }
 
@@ -219,7 +219,7 @@ void BombGun::update(int elapsed)
     if (updateTransforms) {
         PaintCanvas *canvas = activeCanvas();
         AbyssEngine::Transform *transform =
-            (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transformId);
+            (AbyssEngine::Transform *)canvas->TransformGetTransform(this->transform);
         transform->Update((int64_t)elapsed, false);
         if (this->geometryTransformId != 0xffffffff) {
             transform = (AbyssEngine::Transform *)canvas->TransformGetTransform(this->geometryTransformId);

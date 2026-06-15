@@ -133,7 +133,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
         glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurXUniformSampleSize, 1.0f / (float)this->blurXTarget->field_0xc);
+        glUniform1f(this->blurXUniformSampleSize, 1.0f / (float)this->blurXTarget->width);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurXAttribPosition);
@@ -148,7 +148,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
         glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
-        glUniform1f(this->blurYUniformSampleSize, 1.0f / (float)this->blurYTarget->field_0x10);
+        glUniform1f(this->blurYUniformSampleSize, 1.0f / (float)this->blurYTarget->height);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->blurYAttribPosition);

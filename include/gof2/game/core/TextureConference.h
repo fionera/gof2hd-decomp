@@ -3,9 +3,11 @@
 #include "gof2/common.h"
 #include "gof2/engine/render/ShaderBaseStruct.h"
 
+// Engine is a top-level (global-scope) class; the renderer root is not in AbyssEngine.
+class Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 // AbyssEngine::TextureConference — GLES2 scrolling-texture shader program. Derives from
