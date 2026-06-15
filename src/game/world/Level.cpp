@@ -179,15 +179,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uo_rng;
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_umo_rng;
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
-extern "C" {
-// --- residual shims: not class methods, so they stay free functions ---
-// cm_randPos: createMission position RNG — the binary uses a runtime bound (nextInt(*piVar63)),
-//   not a constant, so it is not a plain nextInt(N) inline.
-int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
-// crms_randDelay: createRadioMessages delay sourced from runtime data slots (DAT_000d19e0/e4).
-int   crms_randDelay(int which);
-}
-
 static unsigned int g_level_texOutScratch;
 
 // createGun()/assignGuns() build their Gun arguments as raw 32-bit words; the float p7
@@ -1391,9 +1382,9 @@ void Level::createMission()
             int ship = (int)(intptr_t)this->createShip(9, 0, fighter, (Waypoint *)(intptr_t)0, 1, 0);
             (*this->enemies)[i] = (KIPlayer *)(intptr_t)ship;
             KIPlayer *kp = (*this->enemies)[i];
-            float x = (float)(cm_randPos(rng, 0) - 60000);
-            float y = (float)(cm_randPos(rng, 1) - 40000);
-            float z = (float)(cm_randPos(rng, 2) - 60000);
+            float x = (float)(rng->nextInt(120000) - 60000);
+            float y = (float)(rng->nextInt(80000) - 40000);
+            float z = (float)(rng->nextInt(120000) - 60000);
             kp->setPosition3(x, y, z);
             (*(Player **)((char *)kp + 4))->setAlwaysEnemy(true);
         }
@@ -2282,8 +2273,8 @@ void Level::createRadioMessages(int set) {
     }
     case 0x29: {
         // two delays come from data slots DAT_000d19e0 / DAT_000d19e4 at runtime.
-        RMSpec t[] = {{0x804,0,5,crms_randDelay(0)},{0x805,7,6,0},{0x806,0,6,1},
-                      {0x807,7,6,2},{0x808,7,0x1a,crms_randDelay(1)},{0x809,7,6,4},
+        RMSpec t[] = {{0x804,0,5,80000},{0x805,7,6,0},{0x806,0,6,1},
+                      {0x807,7,6,2},{0x808,7,0x1a,-100000},{0x809,7,6,4},
                       {0x80f,0,1,0},{0x810,0,6,6}};
         buildQueue(this, t, 8); break;
     }
