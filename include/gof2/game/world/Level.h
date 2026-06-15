@@ -1,5 +1,6 @@
 #ifndef GOF2_LEVEL_H
 #define GOF2_LEVEL_H
+#include "StarSystem.h"
 #include "gof2/common.h"
 
 // Forward declarations for related game classes referenced by Level.
@@ -89,7 +90,7 @@ public:
     int field_e0;
     Array<ObjectGun*>* playerGuns;
     Array<ObjectGun*>* enemyGuns;
-    int starSystem;
+    StarSystem* starSystem;
     int player;
     Array<KIPlayer*>* gasClouds;
     Array<KIPlayer*>* enemies;
@@ -187,7 +188,7 @@ public:
     void enableParticleEffects(bool emit, bool render);
     void setPlayerEngineColor(short color);
     void initParticleSystems();
-    int getStarSystem();
+    StarSystem* getStarSystem();
     Array<KIPlayer*>* getGasClouds();
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
     int createStaticObject(Waypoint *wp, int type, int jitter);
