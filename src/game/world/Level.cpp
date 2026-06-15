@@ -179,8 +179,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
-void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
-void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Globals_addSoundResourceToList_ag(int snd);
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
@@ -194,6 +192,10 @@ void Level_createPlayer_impl(Level *self);
 }
 
 static unsigned int g_level_texOutScratch;
+
+// createGun()/assignGuns() build their Gun arguments as raw 32-bit words; the float p7
+// and the dir/vel Vector components are the bit patterns of the floats they encode.
+static inline float as_float(int bits) { float f; __builtin_memcpy(&f, &bits, sizeof f); return f; }
 
 extern "C" int Radar_hasScanner_ed();
 
@@ -736,7 +738,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         int res = ((int *)g_cg_beamTable)[idx];
         if (res < 0) {
             gun = (Gun *)::operator new(0x114);
-            Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
+            new (gun) Gun(owner, dmg, 1, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
             gun->weaponType = kind;
             gun->setPlayerGun(1);
@@ -746,8 +748,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             int barrels = ((unsigned)(idx - 9) < 3 || idx == 0xe4) ? 1 : 0x14;
             gun = (Gun *)::operator new(0x114);
             if (kind == 3) {
-                Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, g_cg_rocketFx,
-                            0, 0, 0);
+                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_rocketFx)}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
                 gun->weaponType = 3;
                 gun->setPlayerGun(1);
@@ -755,7 +756,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
                 obj = (ObjectGun *)::operator new(0xe8);
                 new (obj) RocketGun(owner, gun, res, 0, 0, 0, 1, this);
             } else {
-                Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
+                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
                 gun->weaponType = kind;
                 gun->setPlayerGun(1);
@@ -768,7 +769,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 2:
     case 0x19:
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, dmg, 0x19, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
+        new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -781,7 +782,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 0x28: {
         gun = (Gun *)::operator new(0x114);
         int barrels = (kind == 0x28) ? (idx - 0xd3) : 5;
-        Gun_ctor_cg(gun, owner, dmg, barrels, hp, cool, rate, color, 0, 0, 0, 0, 0, 0);
+        new (gun) Gun(owner, dmg, barrels, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -795,7 +796,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case 7:
     case 0x22: {
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, dmg, 1, hp, cool, rate, color, 0, 0, g_cg_objFx, 0, 0, 0);
+        new (gun) Gun(owner, dmg, 1, hp, cool, rate, as_float(color), Vector{0.0f, 0.0f, as_float(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -812,7 +813,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         int extra = (idx == 0x30 && idx != 0xb5) ? (g_cg_rocketFx - 0xf60000) : 0;
         if (kind == 0x23) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, dmg, 0xf, hp, cool, rate, color, extra, 0, fx, 0, 0, 0);
+        new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, as_float(color), Vector{as_float(extra), 0.0f, as_float(fx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
@@ -827,7 +828,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
     case 0xb: {
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, dmg, 10, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
+        new (gun) Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = 0xb;
         gun->setPlayerGun(1);
@@ -838,7 +839,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
     case 0x27: {
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, 0, 3, hp, cool, rate, 0x40000000, 0, 0, 0, 0, 0, 0);
+        new (gun) Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = 0x27;
         gun->setPlayerGun(1);
@@ -849,7 +850,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
     case 0x2a: {
         gun = (Gun *)::operator new(0x114);
-        Gun_ctor_cg(gun, owner, dmg, 1, hp, 1, rate, color, 0, 0, 0, 0, 0, 0);
+        new (gun) Gun(owner, dmg, 1, hp, 1, rate, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = 0x2a;
         gun->setPlayerGun(1);
@@ -2911,7 +2912,7 @@ void Level::assignGuns()
             Gun *gun = (Gun *)::operator new(0x114);
             int won = (*g_status)->gameWon();
             int rampMis = (won != 0) ? 0x2d : (*g_status)->getCurrentCampaignMission();
-            Gun_ctor_ag(gun, 0, dmg, 4, -1, 3000, rampMis * -2 + 600, color, 0, 0, 0, 0, 0, 0);
+            new (gun) Gun(0, dmg, 4, -1, 3000, rampMis * -2 + 600, as_float(color), Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(1);
             gun->setLevel(this);
             gun->setIndex(0);
@@ -3007,7 +3008,7 @@ wingmanExtra:
         if (((KIPlayer*)e)->isWingMan() != 0 &&
             *(char *)((int)(intptr_t)&(*this->enemies)[i]) + 0x25 != 0) {
             Gun *gun = (Gun *)::operator new(0x114);
-            Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
+            new (gun) Gun(0x12, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(1);
             gun->setLevel(this);
             gun->itemIndex = 0x12;
