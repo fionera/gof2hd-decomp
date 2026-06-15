@@ -9,10 +9,9 @@
 // PaintCanvas.h, so the mangled PaintCanvas:: symbols match the real definitions.
 #include "gof2/common.h"   // Vector, Matrix, Array, String, AEMath
 
-struct Mesh;
 struct Transform;
 struct Engine;
-namespace AbyssEngine { namespace AEMath { struct Matrix; struct Vector; } }
+namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vector; } }
 
 class PaintCanvas {
 public:
@@ -164,7 +163,7 @@ public:
     void DrawMesh(char *param_1, const float *param_2, const float *param_3, unsigned int param_4, const float *param_5);
     void MeshConvertToVBO(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
-    void MeshChangeMaterialIntern(::Mesh *mesh, void *mat);
+    void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, void *mat);
     void MeshChangeMaterialIntern(char *transform, void *material);
     void MeshChangeResourceMaterial(unsigned int meshIndex, unsigned int resId);
     void MeshResourceChangeMaterial(unsigned short matId, unsigned short value);

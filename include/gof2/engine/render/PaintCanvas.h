@@ -1,12 +1,14 @@
 #ifndef GOF2_PAINTCANVAS_H
 #define GOF2_PAINTCANVAS_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-//
-// Self-contained translation unit: the per-class cross-reference headers
-// (Engine.h / Mesh.h / Node.h / String.h) were each generated to be the *only*
-// class included and conflict when co-included, so PaintCanvas pulls the few
-// cross-class shapes it actually needs straight into namespace AbyssEngine here.
+// The real cross-class headers below co-include cleanly, so PaintCanvas uses the real
+// ::Engine, ::Node (both global) and AbyssEngine::Mesh directly instead of self-contained
+// stubs. Transform still keeps a local stub: the real engine/math/Transform.h layout
+// disagrees with Ghidra (it has worldMatrix@0x0 where the binary has meshCount@0x3c /
+// meshes@0x40), so Transform.h must be corrected before it can be the source of truth here.
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/core/Node.h"
 
 // operator new/delete and memcpy/memset/strcmp come from the standard headers
 // pulled in by common.h. The cross-class struct forward-decls live globally in
@@ -58,35 +60,13 @@ float Absf(float value);
 // --- minimal cross-class shapes (fields PaintCanvas reads by offset) ----------
 // Real layouts live in the respective class headers; only the offsets touched
 // from PaintCanvas are modelled here so this TU is self-contained.
-struct Mesh {
-    char pad_0x0[0x1c];
-    float field_0x1c;                   // +0x1c  shader anim value (mode 1)
-    float field_0x20;                   // +0x20  shader anim value (mode 2)
-    float field_0x24;                   // +0x24  shader anim value (mode 4)
-    char pad_0x28[0x30 - 0x28];
-    void* field_0x30;                   // +0x30  material back-reference
-    void* field_0x34;                   // +0x34  resource ptr (passed to shader_anim)
-    char pad_0x38[0x84 - 0x38];
-    unsigned char field_0x84;           // +0x84  vbo flag
-};
-
 struct Transform {
     char pad_0x0[0x3c];
     unsigned int field_0x3c;            // +0x3c  mesh-child count
-    Mesh** field_0x40;                  // +0x40  mesh-child array
+    AbyssEngine::Mesh** field_0x40;     // +0x40  mesh-child array
     char pad_0x44[0x4c - 0x44];
     unsigned int field_0x4c;            // +0x4c  transform-child count
     Transform** field_0x50;             // +0x50  transform-child array
-};
-
-struct Node {
-    char pad_0x0[0x30];
-    unsigned int field_0x30;            // +0x30
-};
-
-struct Engine {
-    char pad_0x0[0xfc];
-    unsigned char field_0xfc;           // +0xfc
 };
 
 class PaintCanvas {
@@ -273,7 +253,7 @@ public:
     void DrawMesh(char *param_1, const float *param_2, const float *param_3, unsigned int param_4, const float *param_5);
     void MeshConvertToVBO(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
-    void MeshChangeMaterialIntern(::Mesh *mesh, void *mat);
+    void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, void *mat);
     void MeshChangeMaterialIntern(char *transform, void *material);
     void MeshChangeResourceMaterial(unsigned int meshIndex, unsigned int resId);
     void MeshResourceChangeMaterial(unsigned short matId, unsigned short value);
@@ -344,12 +324,10 @@ public:
 // (to match fwd.h's global forward declarations); re-export them into the
 // namespace so AbyssEngine::Mesh and bare Mesh are the same type.
 namespace AbyssEngine {
-using ::Mesh;
 using ::Node;
 using ::Engine;
 using ::PaintCanvas;
 using ::Material;
-using ::Transform;
 using ::Camera;
 using ::SpriteSystem;
 using ::ImageFont;

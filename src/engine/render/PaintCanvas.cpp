@@ -1591,7 +1591,7 @@ void PaintCanvas::TransformCreate(unsigned short param_1, unsigned int *param_2)
     }
     char *info = *(char **)(res + 0xc);
     char *tf = (char *)paintcanvas_ext_tfc_new_transform();
-    PCArrayAdd<AbyssEngine::Transform *>((AbyssEngine::Transform *)tf, &this->field_0x158);
+    PCArrayAdd< ::Transform *>((::Transform *)tf, &this->field_0x158);
     unsigned int idx = this->field_0x158 - 1;
     *(unsigned int *)(res + 8) = idx;
     *param_2 = idx;
@@ -2095,10 +2095,10 @@ void PaintCanvas::FontCreate(unsigned short param_1, unsigned int *param_2,
     *(int *)(res + 8) = idx;
     *param_2 = idx;
 
-    char *eng = (char *)this->field_0x34;
-    int cur = *(int *)(eng + 0x78);
+    Engine *eng = (Engine *)this->field_0x34;
+    int cur = eng->field_0x78;
     if (cur == -1) {
-        *(int *)(eng + 0x78) = idx;
+        eng->field_0x78 = idx;
     } else {
         char *curFont = (char *)(this->field_0x144)[cur];
         if (*(unsigned short *)curFont <= *(unsigned short *)font) {
@@ -3016,9 +3016,9 @@ extern "C" int paintcanvas_ext_tc_texfromfileintern(void *eng, char *path, void 
 void PaintCanvas::TextureCreate(unsigned short param_1, void *param_2,
                    void *param_3, unsigned int *param_4, bool param_5)
 {
-    void *eng = this->field_0x34;
-    *(unsigned int *)((char *)eng + 0x7c) = 0xffffffff;
-    *(unsigned int *)((char *)eng + 0x80) = 0xffffffff;
+    Engine *eng = (Engine *)this->field_0x34;
+    eng->boundTextures[0] = -1;
+    eng->boundTextures[1] = -1;
 
     char *res = (char *)paintcanvas_ext_tc_findres(this, param_1);
     if (res != 0) {
@@ -3943,13 +3943,13 @@ void PaintCanvas::FogSetParameter(int param_1, float param_2, float param_3,
         r = r / g_fsp_255d_8d070;
         paintcanvas_ext_fsp_unsignedtofloat(param_5 >> 24, 0);
         double g = (double)paintcanvas_ext_fsp_unsignedtofloat((param_5 >> 8) & 0xff, 0);
-        char *eng = (char *)this->field_0x34;
+        Engine *eng = (Engine *)this->field_0x34;
         g = g / g_fsp_255d_8d070;
-        *(float *)(eng + 1000) = param_2;
-        *(float *)(eng + 0x3ec) = param_3;
+        eng->fogMinDist = param_2;
+        eng->fogMaxDist = param_3;
         col[0] = (float)r;
         col[1] = (float)g;
-        paintcanvas_ext_fsp_vec_assign(eng + 0x3f0, col);
+        paintcanvas_ext_fsp_vec_assign(&eng->fogColor, col);
     }
 }
 
@@ -4162,9 +4162,9 @@ void PaintCanvas::ReleaseAllResources()
             unsigned int id = (unsigned int)*tex;
             paintcanvas_ext_rar_gldeltex(1, &id);
             *g_rar_texcount_87cce = *g_rar_texcount_87cce - 1;
-            char *eng = (char *)this->field_0x34;
+            Engine *eng = (Engine *)this->field_0x34;
             char *texEntry = ((char **)this->field_0x14)[i];
-            *(int *)(eng + 0x70) = *(int *)(eng + 0x70) - *(int *)(texEntry + 0x18);
+            eng->field_0x70 = eng->field_0x70 - *(int *)(texEntry + 0x18);
             tex = ((int **)this->field_0x14)[i];
         }
         if (tex != 0) {
@@ -4595,7 +4595,7 @@ int PaintCanvas::TransformGetTriCount(char *transform)
 // Distinct overload from the single-mesh variant above: recurses over a Transform
 // node's child meshes and child transforms. The first object param is a Transform*,
 // which also disambiguates it from the (PaintCanvas*, Mesh-bytes char*, ...) overload.
-void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Transform *transform, float value, unsigned int mode)
+void PaintCanvas::MeshChangeShaderAnimValue(::Transform *transform, float value, unsigned int mode)
 {
     if (transform) {
         for (unsigned int i = 0; i < transform->field_0x3c; ++i) {
