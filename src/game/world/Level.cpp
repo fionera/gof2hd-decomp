@@ -199,11 +199,8 @@ void Gun_setLevel_cg(Gun *g, Level *self);
 int  Globals_getShipGroup_cs(Globals *g, int type, int race, int flag);
 void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
-void Engine_GlEnable_rbg(unsigned e, int flag);
-void Engine_SetModelMatrix_rbg(Matrix *m);
 int  Station_stationHasHiddenBlueprint_cp(Station *s, int flag);
 int  Station_getShips_csc();
-int  Mission_isCampaignMission_init(Mission *m);
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
 int  ApplicationManager_GetEngine_csp();
@@ -214,7 +211,6 @@ void  PlayerAsteroid_ctor_ca(PlayerAsteroid *a, int x_or_id, AEGeometry *geo, in
                              int kind, Vector *pos, float scale, int radius);
 void  PlayerAsteroid_setAsteroidCenter_ca(PlayerAsteroid *a, float cx, float cy, float cz);
 void  Vector_assign_ca(Vector *dst, Vector *src);
-int  Status_getStation_up();
 int  Item_getAttribute_up(int item);
 void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
@@ -1303,7 +1299,7 @@ int Level::init() {
 
     int mode = this->missionPtr;
     if (mode == 3) {
-        bool campaign = ((Mission*)(*g_status)->getMission())->isEmpty() == 0 && Mission_isCampaignMission_init(m) != 0;
+        bool campaign = ((Mission*)(*g_status)->getMission())->isEmpty() == 0 && m->isCampaignMission() != 0;
         bool madeScene = false;
         if (campaign) {
             if (this->missionPtr != 3) { madeScene = true; }
@@ -1994,7 +1990,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     if (!didMission)
         thisptr->updateOrbit(dt);
 
-    Station *st = (Station *)Status_getStation_up();
+    Station *st = (Station *)(*g_status)->getStation();
     if (((Station*)st)->isAttackedByAliens() != 0 || (*g_status)->inAlienOrbit() != 0)
         thisptr->updateAlienAttackers(0);
 
@@ -2014,7 +2010,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
 
     // gamma-ray damage from supernova / hostile stations.
     int aPtr = *(int *)statusA;
-    Station *st2 = (Station *)Status_getStation_up();
+    Station *st2 = (Station *)(*g_status)->getStation();
     int idx = ((Station*)st2)->getIndex();
     ((Status*)*g_up_statusA)->getCurrentCampaignMission();
     int gammaBits = ((Status*)(intptr_t)aPtr)->getGammaRayDamagePerSecond(aPtr, idx); float gamma = *(float *)&gammaBits;
@@ -2031,7 +2027,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         int hpBefore = ((Player*)this->player)->getGammaHP();
         ((Player*)this->player)->damageGamma(factor);
         if (hpBefore > 0xe && ((Player*)this->player)->getGammaHP() < 0xf) {
-            int hud = ((PlayerEgo *)(this->player))->getHUD_up();
+            int hud = ((PlayerEgo *)(this->player))->getHUD();
             Hud_hudEvent_up(hud, 0x2c, this->player);
         }
         ego = this->player;
@@ -2900,7 +2896,7 @@ void Level::almostKillWanted(int index) {
     int m = (int)(intptr_t)::operator new(0x78);
     new ((void *)(intptr_t)m) Mission(4, 0, (*slot)->getStation()->getIndex());
     ((Mission *)(m))->setCampaign_akw(1);
-    ((Mission *)(m))->setWon_akw(1);
+    ((Mission *)(m))->setWon(1);
     (*slot)->setMission((Mission *)(intptr_t)m);
     (*slot)->setCampaignMission((Mission *)(intptr_t)m);
     if (objectivesA != 0) {
@@ -3700,13 +3696,13 @@ void Level::renderBG(float t) {
         ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
         ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
         Engine *eng = *(Engine **)(canvas + 0x34);
-        Engine_SetModelMatrix_rbg((Matrix *)eng);
+        ((Engine*)*g_rbg_engine)->SetModelMatrix((const uint32_t *)eng);
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(unsigned)this->supernovaFlareTexture, 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         (*(Engine **)(canvas + 0x34))->LightSetLight(0x4000);
-        Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
+        ((Engine*)*g_rbg_engine)->GlEnable(*(unsigned *)(canvas + 0x34), 0);
         ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(unsigned)this->supernovaFlareMesh);
-        Engine_GlEnable_rbg(*(unsigned *)(canvas + 0x34), 0);
+        ((Engine*)*g_rbg_engine)->GlEnable(*(unsigned *)(canvas + 0x34), 0);
         (*(Engine **)(canvas + 0x34))->LightEnable(false);
     }
 
