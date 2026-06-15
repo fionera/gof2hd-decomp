@@ -14,6 +14,7 @@
 #include "gof2/game/world/SolarSystem.h"
 #include "gof2/game/world/Route.h"
 #include "gof2/game/mission/Objective.h"
+#include "gof2/game/mission/Item.h"
 #include "gof2/game/world/Station.h"
 #include "gof2/engine/render/LODManager.h"
 #include "gof2/game/world/Wanted.h"
@@ -176,23 +177,18 @@ extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
 void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
-void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
 int  Station_getShips_csc();
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
 int  ApplicationManager_GetEngine_csp();
 
-int  Item_getAttribute_cg(int item);
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
-int  Item_getAttribute_up(int item);
 void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
 int  GameText_getText_cso(int id);
 int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
-int   Item_getAttribute_ag(int item);
-void Player_setHitpoints_cwm(int p);
 void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
 void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
@@ -653,8 +649,7 @@ Level::~Level() {
     delete objectivesA; objectivesA = nullptr;
     delete objectivesB; objectivesB = nullptr;
     delete collisionVolume; collisionVolume = nullptr;
-    delete asteroidWaypoint;   // virtual deleting-dtor (vtable slot +4)
-    asteroidWaypoint = nullptr;
+    delete asteroidWaypoint; asteroidWaypoint = nullptr;
     delete starSystem; starSystem = nullptr;
     delete player; player = nullptr;
     delete field_180; field_180 = nullptr;
@@ -826,7 +821,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun->setIndex(idx);
         gun->weaponType = kind;
         gun->setPlayerGun(1);
-        int attr = Item_getAttribute_cg(*(int *)(*(int *)(*g_cg_itemTableA + 4) + idx * 4));
+        int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_cg_itemTableA + 4) + idx * 4)))->getAttribute(0xf);
         obj = (ObjectGun *)::operator new(300);
         new (obj) BombGun(gun, ((unsigned *)g_cg_bombTable)[idx], 1, kind, attr == 1 ? 1 : 0,
                         this);
@@ -1670,11 +1665,13 @@ void Level::createCampaignMission()
             int e = (int)(intptr_t)(*this->enemies)[i];
             *(int *)(e + 0x50) = 0;
             *(char *)(e + 0x4c) = 0;
-            Player_setHitpoints_ccm(*(int *)(e + 4));
+            Player *ep = (Player *)(intptr_t)(*(int *)(e + 4));
+            ep->setHitpoints(ep->getMaxHitpoints());   // full-heal the campaign enemy
             if (i < 3)
                 ((PlayerFighter*)(*this->enemies)[i])->setExhaustVisible(false);
         }
-        Player_setHitpoints_ccm(*(int *)this->player);
+        Player *pp = (Player *)(intptr_t)(*(int *)this->player);
+        pp->setHitpoints(pp->getMaxHitpoints());   // full-heal the player
         return;
     }
 
@@ -1955,7 +1952,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         int eq = (int)(intptr_t)((Ship*)(intptr_t)ship)->getFirstEquipmentOfSort(0x26);
         float factor = gamma;
         if (eq != 0) {
-            int attr = Item_getAttribute_up(eq);
+            int attr = ((Item *)(intptr_t)eq)->getAttribute(0x34);
             if (attr > 0)
                 factor = (g_up_eqMax - (float)attr) / g_up_eqMax;
         }
@@ -3000,7 +2997,7 @@ void Level::assignGuns()
             if (wanted != 0 && *(char *)(host2 + 0x42) != 0) {
                 int w = wanted->getWeapon();
                 gun->setIndex(w);
-                int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4));
+                int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4)))->getAttribute(0x2);
                 res = ((int *)g_ag_weaponDmg)[w];
                 gun->weaponType = attr;
                 gun->damage = gun->damage << 2;
@@ -3041,7 +3038,7 @@ wingmanExtra:
             new (o) ObjectGun(0x12, gun, 0x1a8a, 0x2711, this);
             (*this->enemyGuns)[outIdx] = o;
             gun->setIndex(0x12);
-            int attr = Item_getAttribute_ag(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48));
+            int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48)))->getAttribute(0xa);
             gun->empDamage = attr;
             ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
             Globals_addSoundResourceToList_ag(**g_ag_snd2);
@@ -3308,7 +3305,7 @@ void Level::createWingmen()
 
         ((*arr)[i])->setWingman(true, i);
         (*(Player **)((char *)(*arr)[i] + 4))->setAlwaysFriend(1);
-        Player_setHitpoints_cwm(*(int *)((char *)(*arr)[i] + 4));
+        ((Player *)(intptr_t)(*(int *)((char *)(*arr)[i] + 4)))->setHitpoints(0x258);   // 600 hp
 
         int wmList = ((Status*)*g_cwm_statusB)->getWingmen();
         *(String *)((char *)(*arr)[i] + 0x18) =
