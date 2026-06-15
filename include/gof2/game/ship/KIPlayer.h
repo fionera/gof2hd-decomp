@@ -133,7 +133,9 @@ public:
     void setInitActive();
     void setJumpSphere(uint32_t sphere);
     void setJumper(bool b);
-    void setPosition3(float x, float y, float z);
+    // Polymorphic position setter dispatched through the actor vtable from Level's
+    // spawn/respawn paths (createMission/updateOrbit/createSentryGuns).
+    virtual void setPosition3(float x, float y, float z);
     void setPosition_vec(const Vector& v);
     void setRotationSpeed(float speed);
     void setRoute(Route* route);

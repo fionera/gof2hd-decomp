@@ -1456,11 +1456,11 @@ void Level::createMission()
             int fighter = (int)globals->getRandomEnemyFighter(9);
             int ship = (int)(intptr_t)this->createShip(9, 0, fighter, (Waypoint *)(intptr_t)0, 1, 0);
             (*this->enemies)[i] = (KIPlayer *)(intptr_t)ship;
-            int *kp = (int *)(*this->enemies)[i];
+            KIPlayer *kp = (*this->enemies)[i];
             float x = (float)(cm_randPos(rng, 0) - 60000);
             float y = (float)(cm_randPos(rng, 1) - 40000);
             float z = (float)(cm_randPos(rng, 2) - 60000);
-            (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, x, y, z);
+            kp->setPosition3(x, y, z);
             (*(Player **)((char *)kp + 4))->setAlwaysEnemy(true);
         }
     }
@@ -1704,8 +1704,8 @@ void Level::createCampaignMission()
             (*this->enemies)[i] = (KIPlayer *)(intptr_t)ship;
             ((*this->enemies)[i])->setToSleep();
             (*(Player **)((char *)(*this->enemies)[i] + 4))->setAlwaysEnemy(true);
-            int *kp = (int *)(*this->enemies)[i];
-            (*(void (**)(int *, float, float, float))(*kp + 0x48))(kp, c, c, c);
+            KIPlayer *kp = (*this->enemies)[i];
+            kp->setPosition3(c, c, c);
             int e = (int)(intptr_t)(*this->enemies)[i];
             *(int *)(e + 0x50) = 0;
             *(char *)(e + 0x4c) = 0;
@@ -1751,8 +1751,8 @@ void Level::updateOrbit(int dt) {
                 KIPlayer *ki = (*this->enemies)[i];
                 if (ki->isJumper() != 0 && ki->isDead() != 0 &&
                     ki->player->isActive() == 0 && *(unsigned char *)((char *)ki + 0x42) == 0) {
-                    (*(void (**)(KIPlayer *))(*(int *)ki + 0x18))(ki);
-                    (*(void (**)(KIPlayer *, int, int, int))(*(int *)ki + 0x48))(ki, 0, 0, 0);
+                    (*(void (**)(KIPlayer *))(*(int *)ki + 0x18))(ki);   // revive
+                    ki->setPosition3(0, 0, 0);
                     break;
                 }
             }
@@ -1781,8 +1781,8 @@ void Level::updateOrbit(int dt) {
                 if (0 < this->friendCount && (int)i < this->friendCount &&
                     ((KIPlayer*)ki)->isDead() != 0 && ((Player*)ki[1])->isActive() == 0 &&
                     *(unsigned char *)((char *)ki + 0x42) == 0) {
-                    (*(void (**)(int *))(*ki + 0x18))(ki);
-                    (*(void (**)(int *, int, int, int))(*ki + 0x48))(ki, 0, 0, 0);
+                    (*(void (**)(int *))(*ki + 0x18))(ki);   // revive
+                    ((KIPlayer *)ki)->setPosition3(0, 0, 0);
                 }
                 // spawn enemy reinforcements subject to security-level caps.
                 if (1 < hostileAlive && this->field_184 < 2 &&
@@ -1902,7 +1902,7 @@ void Level::createSentryGuns() {
             ((Player *)(*(int *)(k + 4)))->setRadius(800);
             ((Player *)(*(int *)(k + 4)))->setAlwaysFriend(1);
             ((Player *)(*(int *)(k + 4)))->setMaxHitpoints(100);
-            (*(void (**)(int, int, int, int))(*(int *)k + 0x48))(k, color, color, color);
+            ((KIPlayer *)(intptr_t)k)->setPosition3((float)color, (float)color, (float)color);
             enemies->push_back((KIPlayer *)(intptr_t)k);
         }
     }
@@ -1970,17 +1970,15 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     if (((Station*)st)->isAttackedByAliens() != 0 || (*g_status)->inAlienOrbit() != 0)
         thisptr->updateAlienAttackers(0);
 
-    // tick player guns then enemy guns via their vtable update slot (+0x10).
+    // tick player guns then enemy guns.
     if (this->playerGuns != nullptr) {
         for (unsigned i = 0; i < this->playerGuns->size(); i = i + 1) {
-            int *g = (int *)(*this->playerGuns)[i];
-            (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
+            (*this->playerGuns)[i]->update(dt);
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            int *g = (int *)(*this->enemyGuns)[i];
-            (*(void (**)(int *, unsigned))(*g + 0x10))(g, dt);
+            (*this->enemyGuns)[i]->update(dt);
         }
     }
 
@@ -2641,8 +2639,7 @@ void Level::createStaticObjects()
 
             if (type != -1) {
                 char *o = (char *)this->createStaticObject((Waypoint *)(intptr_t)0, type, 0);
-                (*(void (**)(char *, float, int, float))(*(int *)o + 0x48))(o, g_cso_posX, 0,
-                                                                           g_cso_posZ);
+                ((PlayerFixedObject *)o)->setPosition3(g_cso_posX, 0, g_cso_posZ);
                 ((PlayerFixedObject *)o)->setMoving(0);
                 AEGeometry *geo = *(AEGeometry **)(o + 8);
                 *(char *)(o + 0x70) = 0;
@@ -2674,7 +2671,7 @@ void Level::createStaticObjects()
         Station *st = (Station *)(*g_status)->getStation();
         if (((Station*)st)->getIndex() == 0x67) {
             char *o = (char *)this->createStaticObject((Waypoint *)(intptr_t)0, 0x4a88, 0);
-            (*(void (**)(char *, int, int, int))(*(int *)o + 0x48))(o, 0, 0, 0);
+            ((PlayerFixedObject *)o)->setPosition3(0, 0, 0);
             ((PlayerFixedObject *)o)->setMoving(0);
             *(char *)(o + 0x70) = 1;
             String *txt = (String *)GameText_getText_cso(**g_cso_textB);
