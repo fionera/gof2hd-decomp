@@ -37,9 +37,9 @@ void Transform::SetVisible(bool value) {
 
 void Transform::SetVFCFlag(bool value) {
     for (uint i = 0; i < this->meshes->size(); ++i) {
-        char *mesh = (char *)(*this->meshes)[i];
+        Mesh *mesh = (*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
+            Transform *child = mesh->animation;
             if (child != 0) {
                 child->SetVFCFlag(value);
             }
@@ -78,12 +78,12 @@ void Transform::CollectAnimationData() {
     longlong *length = &this->animationLength;
 
     for (uint i = 0; i < this->meshes->size(); ++i) {
-        char *mesh = (char *)(*this->meshes)[i];
+        Mesh *mesh = (*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
+            Transform *child = mesh->animation;
             if (child != 0) {
                 child->CollectAnimationData();
-                child = *(Transform **)((char *)(*this->meshes)[i] + 0x34);  // Mesh+0x34 (child Transform*)
+                child = (*this->meshes)[i]->animation;
                 longlong childLength = child->animationLength;
                 if (*length < childLength) {
                     *length = childLength;
@@ -137,9 +137,9 @@ void Transform::InitAnimationRangeInTime() {
     this->currentTime = start;
 
     for (uint i = 0; i < this->meshes->size(); ++i) {
-        char *mesh = (char *)(*this->meshes)[i];
+        Mesh *mesh = (*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
+            Transform *child = mesh->animation;
             if (child != 0) {
                 child->InitAnimationRangeInTime();
             }
@@ -266,9 +266,9 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     this->currentTime = current;
 
     for (uint i = 0; i < this->meshes->size(); ++i) {
-        char *mesh = (char *)(*this->meshes)[i];
+        Mesh *mesh = (*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
+            Transform *child = mesh->animation;
             if (child != 0) {
                 child->SetAnimationRangeInTime(start, end);
             }
@@ -545,12 +545,12 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
         this->bounds() = sphere;
 
         for (uint i = 0; i < this->meshes->size(); ++i) {
-            char *mesh = (char *)(*this->meshes)[i];
+            Mesh *mesh = (*this->meshes)[i];
             AEMath::BSphere childSphere;
-            if (mesh != 0 && *(Transform **)(mesh + 0x34) != 0) {  // Mesh+0x34 (child Transform*)
-                (*(Transform **)(mesh + 0x34))->InternUpdate(time, updateBounds);  // Mesh+0x34
+            if (mesh != 0 && mesh->animation != 0) {
+                (mesh->animation)->InternUpdate(time, updateBounds);
             }
-            childSphere = *(AEMath::BSphere *)(mesh + 0x3c);  // Mesh+0x3c (BSphere bounds)
+            childSphere = *(AEMath::BSphere *)&mesh->boundsCenterX;
             this->bounds().Merge(childSphere);
         }
 

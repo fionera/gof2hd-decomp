@@ -269,9 +269,9 @@ void ApplicationManager::OnUpdate(long long now) {
         if (module != 0) {
             void (**vtable)(void *) = *(void (***)(void *))module;
             vtable[0x30 / 4](module);
-            void *engine = this->engine;
-            *(uint64_t *)((char *)engine + 0x68) = 0;
-            *(uint64_t *)((char *)engine + 0x58) = 0;
+            Engine *engine = (Engine *)this->engine;
+            engine->field_0x68 = 0;
+            engine->field_0x58 = 0;
             this->paintCanvas->field_0x4 = 0;
             vtable[0x34 / 4](module);
             ResumeCallback_t *resume = (ResumeCallback_t *)this->resumeCallback;
@@ -463,7 +463,7 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
         this->lastTouchX = x;
         this->lastTouchY = y;
 
-        void *engine = this->engine;
+        Engine *engine = (Engine *)this->engine;
         int mode = g_touchMode;
         if (mode <= 3) {
             PaintCanvas *canvas = this->paintCanvas;
@@ -473,12 +473,12 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
                        y > pc_GetHeight(canvas) - 0x32) {
                 g_touchMode = 2;
             } else if (mode == 2 && x <= 0x31 && y > pc_GetHeight(canvas) - 0x32) {
-                uint8_t *flag = (uint8_t *)((char *)engine + 0x74);
+                bool *flag = &engine->field_0x74;
                 *flag = !*flag;
             } else if (mode == 3 && y <= 0x31 && x > pc_GetWidth(canvas) - 0x32) {
                 g_touchMode = 4;
             }
-        } else if (*(uint8_t *)((char *)engine + 0x74)) {
+        } else if (engine->field_0x74) {
             if (y < 100) {
                 g_touchToggle ^= 1;
             } else {

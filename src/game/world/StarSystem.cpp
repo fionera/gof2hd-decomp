@@ -142,7 +142,7 @@ static inline uint32_t rgba_scaled(uint32_t color, float scale) {
 void StarSystem::initLight() {
     ApplicationManager *app = *g_StarSystem_init_app;
     Engine *engine = (Engine *)app->GetEngine();
-    *(int *)((char *)engine + 0x32c) = 2;
+    engine->field_0x32c = 2;
 
     Status *status = *g_StarSystem_init_status;
     uint32_t baseIndex;

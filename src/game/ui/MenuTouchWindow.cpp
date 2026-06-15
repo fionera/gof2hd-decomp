@@ -1,5 +1,6 @@
 #include "gof2/game/ui/MenuTouchWindow.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/engine/render/Engine.h"
 
 extern void *g_PaintCanvas;
 
@@ -1330,9 +1331,8 @@ void MenuTouchWindow::update(int dt)
     if (state == 0xd) {
         appData = _mtw_AppMgr_GetApplicationData();
         if (*(char *)((char *)appData + 0xc) != 0) {
-            void *eng = _mtw_AppMgr_GetEngine();
-            // RAWREAD: eng+0x100 (untyped void* from _mtw_AppMgr_GetEngine(); store-init result field not modeled in Engine.h)
-            int r = *(int *)((char *)eng + 0x100);
+            Engine *eng = (Engine *)_mtw_AppMgr_GetEngine();
+            int r = eng->field_0x100;
             if (r == 2 || r == 1) {
                 void *cw = this->choiceWindow;
                 int id = (r == 2) ? g_mtw_upTextIds[8] : g_mtw_upTextIds[9];

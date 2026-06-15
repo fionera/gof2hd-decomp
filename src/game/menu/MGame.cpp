@@ -2707,7 +2707,7 @@ void MGame::OnRender2D() {
         }
         float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
         Engine *eng = (Engine *)((ApplicationManager *)(self->field_0x8))->GetEngine();
-        *(Vector*)((char *)eng + 0x3cc) = *(const Vector*)(v);
+        *(Vector *)&eng->field_0x3cc = *(const Vector *)(v);
         ((PaintCanvas*)g_PaintCanvas)->End2d();
         
         return;
