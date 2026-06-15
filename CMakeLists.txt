@@ -19,13 +19,12 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # ---- engine + game library --------------------------------------------------------------------
-# WORK IN PROGRESS: the byte-offset -> real-struct cleanup is ongoing, so a subset of TUs still
-# fails to compile. They remain in the target so CLion indexes the whole codebase; `cmake --build`
-# will report the not-yet-clean files. -fpermissive/-w relax the WIP code during cleanup.
+# The whole tree now compiles as proper C++ with NO -fpermissive and NO -w. The only suppressed
+# warnings are the int<->pointer casts inherent to the recovered 32-bit handle fields stored as int.
 file(GLOB_RECURSE GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(gof2 STATIC ${GOF2_SOURCES})
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_compile_options(gof2 PRIVATE -fpermissive -w)
+target_compile_options(gof2 PRIVATE -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast)
 
 # ---- host executable (Milestone 2 entry point; placeholder until the platform layer lands) -----
 add_executable(gof2_host host/main.cpp)
