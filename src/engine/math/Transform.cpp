@@ -14,16 +14,16 @@ void Transform::SetCurrentAnimationTime(longlong value) {
 
 void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
     longlong start;
-    if (first < 0 || (int)this->keyFrames->size() <= first) {
+    if (first < 0 || (int)this->keyFrames.size() <= first) {
         start = 0;
     } else {
-        char *keyFrame = (char *)(*this->keyFrames)[first];
+        char *keyFrame = (char *)this->keyFrames[first];
         start = *(longlong *)(keyFrame + 0x50);
     }
 
     longlong end;
-    if (last >= 0 && last <= (int)this->keyFrames->size()) {
-        char *keyFrame = (char *)(*this->keyFrames)[last];
+    if (last >= 0 && last <= (int)this->keyFrames.size()) {
+        char *keyFrame = (char *)this->keyFrames[last];
         end = *(longlong *)(keyFrame + 0x50);
     } else {
         end = 0;
@@ -36,8 +36,8 @@ void Transform::SetVisible(bool value) {
 }
 
 void Transform::SetVFCFlag(bool value) {
-    for (uint i = 0; i < this->meshes->size(); ++i) {
-        Mesh *mesh = (*this->meshes)[i];
+    for (uint i = 0; i < this->meshes.size(); ++i) {
+        Mesh *mesh = this->meshes[i];
         if (mesh != 0) {
             Transform *child = mesh->animation;
             if (child != 0) {
@@ -45,8 +45,8 @@ void Transform::SetVFCFlag(bool value) {
             }
         }
     }
-    for (uint i = 0; i < this->children->size(); ++i) {
-        Transform *child = (*this->children)[i];
+    for (uint i = 0; i < this->children.size(); ++i) {
+        Transform *child = this->children[i];
         if (child != 0) {
             child->SetVFCFlag(value);
         }
@@ -55,8 +55,8 @@ void Transform::SetVFCFlag(bool value) {
 }
 
 void Transform::PauseAnimationWithKeyFrame(int index) {
-    if (index >= 0 && index < (int)this->keyFrames->size()) {
-        char *keyFrame = (char *)(*this->keyFrames)[index];
+    if (index >= 0 && index < (int)this->keyFrames.size()) {
+        char *keyFrame = (char *)this->keyFrames[index];
         longlong time = *(longlong *)(keyFrame + 0x50);
         this->currentTime = time;
         InternUpdate(time, false);
@@ -77,13 +77,13 @@ void Transform::SetAnimationSpeed(float value) {
 void Transform::CollectAnimationData() {
     longlong *length = &this->animationLength;
 
-    for (uint i = 0; i < this->meshes->size(); ++i) {
-        Mesh *mesh = (*this->meshes)[i];
+    for (uint i = 0; i < this->meshes.size(); ++i) {
+        Mesh *mesh = this->meshes[i];
         if (mesh != 0) {
             Transform *child = mesh->animation;
             if (child != 0) {
                 child->CollectAnimationData();
-                child = (*this->meshes)[i]->animation;
+                child = this->meshes[i]->animation;
                 longlong childLength = child->animationLength;
                 if (*length < childLength) {
                     *length = childLength;
@@ -92,19 +92,19 @@ void Transform::CollectAnimationData() {
         }
     }
 
-    for (uint i = 0; i < this->children->size(); ++i) {
-        Transform *child = (*this->children)[i];
+    for (uint i = 0; i < this->children.size(); ++i) {
+        Transform *child = this->children[i];
         child->CollectAnimationData();
-        child = (*this->children)[i];
+        child = this->children[i];
         longlong childLength = child->animationLength;
         if (*length < childLength) {
             *length = childLength;
         }
     }
 
-    size_t count = this->keyFrames->size();
+    size_t count = this->keyFrames.size();
     if (count != 0) {
-        char *keyFrame = (char *)(*this->keyFrames)[count - 1];
+        char *keyFrame = (char *)this->keyFrames[count - 1];
         longlong keyTime = *(longlong *)(keyFrame + 0x50);
         if (*length < keyTime) {
             *length = keyTime;
@@ -114,15 +114,12 @@ void Transform::CollectAnimationData() {
 
 Transform::~Transform() {
     if (this->keyFramesShared == false) {
-        for (KeyFrame *kf : *this->keyFrames) {
+        for (KeyFrame *kf : this->keyFrames) {
             delete kf;
         }
-        this->keyFrames->clear();
+        this->keyFrames.clear();
     }
     // rotation / localRotation are real members; their dtors run automatically.
-    delete this->keyFrames;
-    delete this->children;
-    delete this->meshes;
 }
 
 void Transform::InitAnimationRangeInTime() {
@@ -136,8 +133,8 @@ void Transform::InitAnimationRangeInTime() {
     this->rangeEnd = length;
     this->currentTime = start;
 
-    for (uint i = 0; i < this->meshes->size(); ++i) {
-        Mesh *mesh = (*this->meshes)[i];
+    for (uint i = 0; i < this->meshes.size(); ++i) {
+        Mesh *mesh = this->meshes[i];
         if (mesh != 0) {
             Transform *child = mesh->animation;
             if (child != 0) {
@@ -145,8 +142,8 @@ void Transform::InitAnimationRangeInTime() {
             }
         }
     }
-    for (uint i = 0; i < this->children->size(); ++i) {
-        (*this->children)[i]->InitAnimationRangeInTime();
+    for (uint i = 0; i < this->children.size(); ++i) {
+        this->children[i]->InitAnimationRangeInTime();
     }
     Update(0, false);
 }
@@ -169,7 +166,7 @@ static float lerp_float(float from, float to, float t) {
 void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
     char *key = (char *)keyFrame;  // KeyFrame fields accessed via key+0xNN
 
-    Array<KeyFrame *> &items = *this->keyFrames;
+    Array<KeyFrame *> &items = this->keyFrames;
     int i = 0;
     while (i + 1 < index) {
         char *next = (char *)items[i + 1];
@@ -207,7 +204,7 @@ void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
         ++i;
     }
 
-    uint count = (uint)this->keyFrames->size();
+    uint count = (uint)this->keyFrames.size();
     while ((uint)++index < count) {
         char *dst = (char *)items[index];
         uint flags0 = *(uint *)(key + 0x58);
@@ -265,8 +262,8 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     }
     this->currentTime = current;
 
-    for (uint i = 0; i < this->meshes->size(); ++i) {
-        Mesh *mesh = (*this->meshes)[i];
+    for (uint i = 0; i < this->meshes.size(); ++i) {
+        Mesh *mesh = this->meshes[i];
         if (mesh != 0) {
             Transform *child = mesh->animation;
             if (child != 0) {
@@ -274,18 +271,18 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
             }
         }
     }
-    for (uint i = 0; i < this->children->size(); ++i) {
-        (*this->children)[i]->SetAnimationRangeInTime(start, end);
+    for (uint i = 0; i < this->children.size(); ++i) {
+        this->children[i]->SetAnimationRangeInTime(start, end);
     }
     Update(0, false);
 }
 
 void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
-    this->keyFrames->push_back((KeyFrame *)0);
-    int count = (int)this->keyFrames->size();
+    this->keyFrames.push_back((KeyFrame *)0);
+    int count = (int)this->keyFrames.size();
     int from = count - 2;
     int to = count - 1;
-    Array<KeyFrame *> &items = *this->keyFrames;
+    Array<KeyFrame *> &items = this->keyFrames;
     while (index < to) {
         items[to] = items[from];
         --from;
@@ -327,14 +324,10 @@ void Transform::setExhaustVisible(bool visible) {
 Transform::Transform(Transform *other) {
     // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
     // real members and are default-constructed automatically.
-    this->meshes = new Array<Mesh *>();
-    this->children = new Array<Transform *>();
 
     this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->boundingRadius = 0.0f;
     this->field_0xe4 = 1.0f;
-
-    this->keyFrames = new Array<KeyFrame *>();
     this->scale.y = 0.0f;
     this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->localScale.y = 0.0f;
@@ -363,14 +356,14 @@ Transform::Transform(Transform *other) {
         this->localMatrix = other->localMatrix;
         this->field_0x58 = other->field_0x58;
 
-        for (uint i = 0; i < other->meshes->size(); ++i) {
-            Mesh *mesh = new Mesh((*other->meshes)[i]);
-            this->meshes->push_back(mesh);
+        for (uint i = 0; i < other->meshes.size(); ++i) {
+            Mesh *mesh = new Mesh(other->meshes[i]);
+            this->meshes.push_back(mesh);
         }
-        *this->keyFrames = *other->keyFrames;
-        for (uint i = 0; i < other->children->size(); ++i) {
-            Transform *child = new Transform((*other->children)[i]);
-            this->children->push_back(child);
+        this->keyFrames = other->keyFrames;
+        for (uint i = 0; i < other->children.size(); ++i) {
+            Transform *child = new Transform(other->children[i]);
+            this->children.push_back(child);
         }
         this->bounds() = other->bounds();
         this->visible = true;
@@ -395,14 +388,10 @@ static void make_identity(AEMath::Matrix &m) {
 Transform::Transform() {
     // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
     // real members and are default-constructed automatically.
-    this->meshes = new Array<Mesh *>();
-    this->children = new Array<Transform *>();
 
     this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->boundingRadius = 0.0f;
     this->field_0xe4 = 1.0f;
-
-    this->keyFrames = new Array<KeyFrame *>();
     this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->scale.x = 0.0f;
     this->scale.y = 0.0f;
@@ -455,11 +444,11 @@ static float clamp_positive_byte(float value) {
 }
 
 void Transform::InternUpdate(longlong time, bool updateBounds) {
-    if (this->keyFrames->size() != 0) {
+    if (this->keyFrames.size() != 0) {
         longlong current = this->rangeStart;
         if (current < time) current = time;
 
-        Array<KeyFrame *> &items = *this->keyFrames;
+        Array<KeyFrame *> &items = this->keyFrames;
         char *last = (char *)items[items.size() - 1];
         if (*(longlong *)(last + 0x50) < current) {  // KeyFrame+0x50 (timestamp)
             current = *(longlong *)(last + 0x50);     // KeyFrame+0x50
@@ -544,8 +533,8 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
         sphere.radius2 = 1.0f;
         this->bounds() = sphere;
 
-        for (uint i = 0; i < this->meshes->size(); ++i) {
-            Mesh *mesh = (*this->meshes)[i];
+        for (uint i = 0; i < this->meshes.size(); ++i) {
+            Mesh *mesh = this->meshes[i];
             AEMath::BSphere childSphere;
             if (mesh != 0 && mesh->animation != 0) {
                 (mesh->animation)->InternUpdate(time, updateBounds);
@@ -554,8 +543,8 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
             this->bounds().Merge(childSphere);
         }
 
-        for (uint i = 0; i < this->children->size(); ++i) {
-            Transform *child = (*this->children)[i];
+        for (uint i = 0; i < this->children.size(); ++i) {
+            Transform *child = this->children[i];
             child->InternUpdate(time, updateBounds);
             AEMath::BSphere childSphere = child->bounds();
             this->bounds().Merge(childSphere);
@@ -576,7 +565,7 @@ void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
     *(AEMath::Vector *)(keyFrame + 0x30) = d;
     longlong timestamp = time;
     *(longlong *)(keyFrame + 0x50) = timestamp;
-    this->keyFrames->push_back((KeyFrame *)keyFrame);
+    this->keyFrames.push_back((KeyFrame *)keyFrame);
     if (this->animationLength < timestamp) {
         this->animationLength = timestamp;
     }
@@ -662,8 +651,8 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
     }
 
     uint index = 0;
-    while (index < this->keyFrames->size()) {
-        char *existing = (char *)(*this->keyFrames)[index];
+    while (index < this->keyFrames.size()) {
+        char *existing = (char *)this->keyFrames[index];
         longlong existingTime = *(longlong *)(existing + 0x50);
         if (existingTime >= timestamp) {
             if (existingTime == timestamp) {
@@ -683,9 +672,9 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
     InsertKeyFrame((KeyFrame *)key, index);
 
     if (index != 0) {
-        Array<KeyFrame *> &items = *this->keyFrames;
+        Array<KeyFrame *> &items = this->keyFrames;
         char *prev = (char *)items[index - 1];
-        if (index < this->keyFrames->size() - 1) {
+        if (index < this->keyFrames.size() - 1) {
             char *next = (char *)items[index + 1];
             float t = (float)(timestamp - *(longlong *)(prev + 0x50)) /
                       (float)(*(longlong *)(next + 0x50) - *(longlong *)(prev + 0x50));
@@ -786,14 +775,14 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
     }
 
     uint index = 0;
-    while (index < this->keyFrames->size() &&
-           *(longlong *)((char *)(*this->keyFrames)[index] + 0x50) < timestamp) {
+    while (index < this->keyFrames.size() &&
+           *(longlong *)((char *)this->keyFrames[index] + 0x50) < timestamp) {
         ++index;
     }
 
     char *key = (char *)new KeyFrame();
     if (index != 0) {
-        char *prev = (char *)(*this->keyFrames)[index - 1];
+        char *prev = (char *)this->keyFrames[index - 1];
         *(AEMath::Vector *)(key + 0x00) = *(AEMath::Vector *)(prev + 0x00);
         *(AEMath::Vector *)(key + 0x0c) = *(AEMath::Vector *)(prev + 0x0c);
         *(AEMath::Vector *)(key + 0x18) = *(AEMath::Vector *)(prev + 0x18);
@@ -806,19 +795,19 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
     *(uint *)(key + 0x5c) |= (uint)((ulonglong)flags >> 32);
     apply_value_old(this, key, values, flags);
 
-    if (this->keyFrames->size() == 0) {
-        this->keyFrames->push_back((KeyFrame *)key);
-    } else if (index == this->keyFrames->size()) {
-        char *last = (char *)(*this->keyFrames)[this->keyFrames->size() - 1];
+    if (this->keyFrames.size() == 0) {
+        this->keyFrames.push_back((KeyFrame *)key);
+    } else if (index == this->keyFrames.size()) {
+        char *last = (char *)this->keyFrames[this->keyFrames.size() - 1];
         uint mask = *(uint *)(key + 0x58);
         for (int off = 0; off <= 0x48; off += 4) {
             if ((mask & (1u << (off / 4))) == 0) {
                 *(int *)(key + off) = *(int *)(last + off);
             }
         }
-        this->keyFrames->push_back((KeyFrame *)key);
+        this->keyFrames.push_back((KeyFrame *)key);
     } else {
-        char *existing = (char *)(*this->keyFrames)[index];
+        char *existing = (char *)this->keyFrames[index];
         if (*(longlong *)(existing + 0x50) == timestamp) {
             *(uint *)(existing + 0x58) |= *(uint *)(key + 0x58);
             *(uint *)(existing + 0x5c) |= *(uint *)(key + 0x5c);
@@ -834,8 +823,8 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
 
 int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
     if (camera == 0 || this->vfcEnabled == false ||
-        (this->meshes->size() == 1 &&
-         *(uint16_t *)((char *)(*this->meshes)[0] + 2) == 0)) {
+        (this->meshes.size() == 1 &&
+         *(uint16_t *)((char *)this->meshes[0] + 2) == 0)) {
         return 1;
     }
 

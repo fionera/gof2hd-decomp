@@ -59,9 +59,15 @@ public:
     longlong rangeEnd;
     longlong currentTime;
     int currentKeyFrameIndex;
-    Array<Mesh*>* meshes;
-    Array<Transform*>* children;
-    Array<KeyFrame*>* keyFrames;
+    // Per the binary (Transform ctor/dtor construct/destruct these in place), the mesh / child /
+    // keyframe lists are EMBEDDED Array<T> objects (count+data+cap inline), not pointers: the ctor
+    // does Array<Mesh*>::Array(&this->meshes) and the dtor ~Array<Mesh*>(&this->meshes). meshes are
+    // at +0x3c, children at +0x4c, keyFrames at +0x11c in the 32-bit layout.
+    Transform* parent;                      // +0x34 scene-graph parent
+    int id;                                 // +0x48
+    Array<Mesh*> meshes;
+    Array<Transform*> children;
+    Array<KeyFrame*> keyFrames;
     Quaternion rotation;                    // current pose rotation
     AEMath::Vector translation;             // current pose translation
     AEMath::Vector scale;                   // current pose scale

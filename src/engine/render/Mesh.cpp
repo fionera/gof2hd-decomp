@@ -283,8 +283,8 @@ int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
 
     // Attach the track if it gathered any frames, otherwise discard it. The recovered
     // code tested Transform's keyFrameCount slot; in the modernized Transform that count
-    // is the size of the keyFrames Array (which stays null until the first insert).
-    if (anim->keyFrames == nullptr || anim->keyFrames->size() < 1) {
+    // is the size of the embedded keyFrames Array.
+    if (anim->keyFrames.size() < 1) {
         delete anim;
     } else {
         self->animation = anim;
