@@ -179,10 +179,14 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_umo_rng;
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
-// --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
-
+// --- residual shims: not class methods, so they stay free functions ---
+// cm_randPos: createMission position RNG — the binary uses a runtime bound (nextInt(*piVar63)),
+//   not a constant, so it is not a plain nextInt(N) inline.
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
+// crms_randDelay: createRadioMessages delay sourced from runtime data slots (DAT_000d19e0/e4).
 int   crms_randDelay(int which);
+// Level_createPlayer_impl: the createPlayer body itself, not yet ported (Level::createPlayer
+//   forwards to it). Becomes a real method once that body is reconstructed.
 void Level_createPlayer_impl(Level *self);
 }
 
