@@ -56,19 +56,20 @@ extern float g_pgcu_fadeDiv;
 extern float g_pgcu_growDiv;
 
 PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager* /*particles*/,
-                               AEGeometry* /*geometry*/, const Vector& position)
+                               AEGeometry* geometry, const Vector& position)
+    : KIPlayer(itemId, -1, new Player(0, 9999999, 0, 0, 0), geometry,
+               position.x, position.y, position.z, false)
 {
-    this->player = new Player(0, 9999999, 0, 0, 0);
+    // player/geometry and setKIPlayer are wired by the KIPlayer base ctor above.
     this->center.x = 0;
     this->center.y = 0;
     this->center.z = 0;
-    this->player->setKIPlayer((KIPlayer*)this);
     this->player->setMaxHitpoints(1);
 
     this->setPosition(position);
 
     this->elapsedSinceExplosion = 0;
-    this->field_0x78 = 0;
+    this->crateGeometry = 0;   // KIPlayer base slot (was field_0x78)
     this->field_0x25 = 0;
 
     int cloudMesh = 0x4a35;
@@ -98,7 +99,7 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager* /*particles*/,
     this->field_0x4c = 1;
     this->field_0x44 = 1;
     this->state = 0;
-    this->active = 1;
+    this->visibleFlag = 1;   // KIPlayer base slot (was active)
     this->settled = 0;
 }
 
@@ -394,14 +395,14 @@ void PlayerGasCloud::update(int dt)
     }
 
     if (this->settled != 0)
-        this->active = 0;
+        this->visibleFlag = 0;
 }
 
 void PlayerGasCloud::render()
 {
     char cameraLocal[60];
 
-    if (this->active == 0)
+    if (this->visibleFlag == 0)
         return;
     int mode = this->state;
     if (mode != 3 && mode != 0)

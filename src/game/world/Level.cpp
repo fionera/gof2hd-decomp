@@ -672,9 +672,9 @@ void Level::render(int ctx) {
 }
 
 int Level::collideStream(Vector v) {
-    int *obj = (int *)(*this->landmarks)[1];
-    if (obj != 0) {
-        return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
+    PlayerFixedObject *obj = (PlayerFixedObject *)(*this->landmarks)[1];
+    if (obj != nullptr) {
+        return obj->collide(v.x, v.y, v.z);
     }
     return 0;
 }
@@ -1412,7 +1412,7 @@ void Level::updateAlienAttackers(int dt) {
         int *ki = (int *)(*this->enemies)[i];
         // race 9 == alien; only respawn ones that are dead and inactive.
         if (ki[10] == 9 && ((KIPlayer*)ki)->isDead() != 0 && ((Player*)ki[1])->isActive() == 0) {
-            (*(void (**)(int *))(*ki + 0x18))(ki);   // revive
+            ((PlayerFighter *)ki)->revive();
             int inOrbit = ((*g_status)->inAlienOrbit() != 0);
             if (!inOrbit) {
                 Station *st = (Station *)(*g_status)->getStation();
@@ -1674,9 +1674,8 @@ void Level::createAsteroids()
         PlayerAsteroid_ctor_ca(a, kind, geo, colVariant, kind, &pos, scale, (int)scale);
         (*this->asteroids)[i] = (KIPlayer *)a;
 
-        // virtual init(level) on the freshly built asteroid (vtable slot +0x14).
-        int *obj = (int *)(*this->asteroids)[i];
-        (**(void (***)(int *, Level *))(*obj + 0x14))(obj, this);
+        // wire the freshly built asteroid to its level (KIPlayer::setLevel, virtual).
+        (*this->asteroids)[i]->setLevel(this);
 
         PlayerAsteroid_setAsteroidCenter_ca(
             (PlayerAsteroid *)(*this->asteroids)[i],
@@ -1751,7 +1750,7 @@ void Level::updateOrbit(int dt) {
                 KIPlayer *ki = (*this->enemies)[i];
                 if (ki->isJumper() != 0 && ki->isDead() != 0 &&
                     ki->player->isActive() == 0 && *(unsigned char *)((char *)ki + 0x42) == 0) {
-                    (*(void (**)(KIPlayer *))(*(int *)ki + 0x18))(ki);   // revive
+                    ((PlayerFighter *)ki)->revive();
                     ki->setPosition3(0, 0, 0);
                     break;
                 }
@@ -1781,7 +1780,7 @@ void Level::updateOrbit(int dt) {
                 if (0 < this->friendCount && (int)i < this->friendCount &&
                     ((KIPlayer*)ki)->isDead() != 0 && ((Player*)ki[1])->isActive() == 0 &&
                     *(unsigned char *)((char *)ki + 0x42) == 0) {
-                    (*(void (**)(int *))(*ki + 0x18))(ki);   // revive
+                    ((PlayerFighter *)ki)->revive();
                     ((KIPlayer *)ki)->setPosition3(0, 0, 0);
                 }
                 // spawn enemy reinforcements subject to security-level caps.
@@ -1912,8 +1911,8 @@ int Level::collideStation(Vector v) {
     if (this->landmarks != nullptr &&
         (*this->landmarks)[0] != 0 &&
         (*g_status_collideStation)->inEmptyOrbit() == 0) {
-        int *obj = (int *)(*this->landmarks)[0];
-        return (*(int (**)(int *, Vector))(*obj + 0x38))(obj, v);
+        PlayerFixedObject *obj = (PlayerFixedObject *)(*this->landmarks)[0];
+        return obj->collide(v.x, v.y, v.z);
     }
     return 0;
 }
@@ -3141,6 +3140,8 @@ void Level::createGasClouds()
                                 *(ParticleSystemManager **)&this->field_94, geo, &pos);
         (*this->gasClouds)[i] = (KIPlayer *)cloud;
         char *c = (char *)(*this->gasClouds)[i];
+        // actor-protocol init(level) virtual at original slot +0x14 — raw dispatch pending the
+        // shared actor base (PlayerGasCloud doesn't yet derive from KIPlayer). See createShip's tail.
         (*(void (**)())(*(int *)c + 0x14))();
     }
 }

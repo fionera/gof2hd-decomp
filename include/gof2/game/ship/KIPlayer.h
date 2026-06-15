@@ -149,7 +149,9 @@ public:
     void translate(const Vector& v);
     Route* getRoute();
     Array<SpacePoint*>* getSpacePoints();
-    void setLevel(Level* lvl);
+    // Polymorphic: PlayerFighter/PlayerEgo override this to also wire up their engine-trail
+    // particle systems. Dispatched through the actor vtable right after construction.
+    virtual void setLevel(Level* lvl);
     // Adds a specific gun to the underlying Player's weapon set (forwarded to Player::addGun).
     void addGun(Gun* gun);
     // Engages / disengages the auto-pilot lock onto the given target (engaged when target != null).
