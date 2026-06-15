@@ -53,7 +53,8 @@ r18b clang 7.0.2** for `armeabi-v7a`. We validate against it like this:
   100.0%   ==  engine/math/AEMath                 _ZN11AbyssEngine6AEMath...mlERKNS0_6VectorES3_
    67.5%       engine/math/AEMath                 _ZN11AbyssEngine6AEMath6MatrixmLERKS1_
 ...
-N functions   avg 67.5%   100%-fuzzy 30   byte-exact 21
+N comparisons   avg 67.5%   100%-fuzzy 30   byte-exact 21
+coverage: compared 2311/4524 original functions   missing 2213 (-> cmake-build-match/verify/missing.txt)
 report -> cmake-build-match/verify/report.json
 ```
 
@@ -64,7 +65,13 @@ report -> cmake-build-match/verify/report.json
   when the original contains a literal pool (clang marks pools as data on our side;
   the delinked original has no such marker so objdump decodes the pool as code) — so
   trust `bytes ==` for "matched", `match` for "getting warmer".
-- `report.json` has the full per-function data for scripting/CI.
+- **`coverage` / `missing`** is the progress metric: how many of the original's
+  `.text` functions we compared at all. *Missing* = original functions with no
+  counterpart in our build — either not decompiled/compiled yet, or whose signature
+  mangles differently (the `Array`-vs-`std::vector` gap accounts for a few hundred).
+  The full list is written to `cmake-build-match/verify/missing.txt`.
+- `report.json` has the full per-function data plus the coverage counts
+  (`count`, `compared_unique`, `original_functions`, `missing`) for scripting/CI.
 
 ## Tuning compiler flags
 

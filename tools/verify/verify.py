@@ -23,7 +23,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-import asmdiff  # noqa: E402
+import asmdiff       # noqa: E402
+import delink as delinker  # noqa: E402  (local delink() below shadows the module name)
 
 DEFAULT_BUILD = os.path.join(REPO, "cmake-build-match", "verify")
 
@@ -71,6 +72,14 @@ def collect(build_dir, only=None):
             rows.append(r)
     rows.sort(key=lambda r: (r["match"], r["unit"], r["symbol"]))
     return rows
+
+
+def original_text_functions():
+    """All function names in the original .so .text — the coverage denominator."""
+    addr2names, _ = delinker.load_symbols(delinker.DEFAULT_SYMS)
+    ta, _, tsz = delinker.find_text_section(delinker.DEFAULT_SO)
+    te = ta + tsz
+    return {n for a, ns in addr2names.items() if ta <= a < te for n in ns}
 
 
 def find_symbol_objects(build_dir, sym):
@@ -135,11 +144,32 @@ def main():
         flag = "==" if r["bytes_equal"] else "  "
         print(f"{r['match']:6.1f}%  {flag:>5}  {r['unit']:<34} {r['symbol'][:60]}")
     print("-" * 100)
-    print(f"{len(rows)} functions   avg {avg:.1f}%   "
-          f"100%-fuzzy {perfect}   byte-exact {bytes_eq}")
 
     report = {"avg_match": round(avg, 2), "count": len(rows),
-              "fuzzy_perfect": perfect, "byte_exact": bytes_eq, "functions": rows}
+              "fuzzy_perfect": perfect, "byte_exact": bytes_eq}
+
+    # Coverage vs the original: functions in the .so .text that we never compared
+    # (not decompiled/compiled yet, or whose signature mangles differently — e.g.
+    # Array<T> vs std::vector). Skipped when --only narrows the set.
+    if not args.only:
+        universe = original_text_functions()
+        compared = {r["symbol"] for r in rows}
+        missing = sorted(universe - compared)
+        report.update({"original_functions": len(universe),
+                       "compared_unique": len(compared), "missing": len(missing)})
+        miss_path = os.path.join(args.build_dir, "missing.txt")
+        os.makedirs(os.path.dirname(miss_path), exist_ok=True)
+        with open(miss_path, "w") as f:
+            f.write("\n".join(missing) + ("\n" if missing else ""))
+
+    print(f"{len(rows)} comparisons   avg {avg:.1f}%   "
+          f"100%-fuzzy {perfect}   byte-exact {bytes_eq}")
+    if not args.only:
+        print(f"coverage: compared {report['compared_unique']}/{report['original_functions']} "
+              f"original functions   missing {report['missing']} "
+              f"(-> {os.path.relpath(miss_path, REPO)})")
+
+    report["functions"] = rows
     out = args.report or os.path.join(args.build_dir, "report.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(report, open(out, "w"), indent=2)
