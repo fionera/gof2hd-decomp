@@ -196,7 +196,6 @@ void Player_setHitpoints_cwm(int p);
 void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
 void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
-void *dtor_Objective_akw(void *p);
 void Level_turnEnemy(int obj);
 int Level_getNumWingmen(int wanted);
 }
@@ -2850,13 +2849,8 @@ void Level::almostKillWanted(int index) {
     ((Mission *)(m))->setWon(1);
     (*slot)->setMission((Mission *)(intptr_t)m);
     (*slot)->setCampaignMission((Mission *)(intptr_t)m);
-    if (objectivesA != nullptr) {
-        operator delete(dtor_Objective_akw((void *)objectivesA));
-    }
-    objectivesA = nullptr;
-    int o = (int)(intptr_t)::operator new(0x1c);
-    new ((void *)(intptr_t)o) Objective(3, 0, 0, this);
-    objectivesA = (Objective *)(intptr_t)o;
+    releaseObject(objectivesA);
+    objectivesA = new Objective(3, 0, 0, this);
     int e = (int)(intptr_t)(*this->enemies)[0];
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
     ((Player *)(int)(intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
