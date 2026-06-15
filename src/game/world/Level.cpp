@@ -118,6 +118,7 @@ __attribute__((visibility("hidden"))) extern float *g_up_clampHi;   // [DAT_000d
 __attribute__((visibility("hidden"))) extern float *g_up_clampZ;    // [DAT_000d623c]
 __attribute__((visibility("hidden"))) extern float *g_up_clampW;    // [DAT_000d6240]
 __attribute__((visibility("hidden"))) extern ApplicationManager **g_cp_appMgr; // [DAT_000cd530]
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_cp_canvas; // [DAT_000bf6f0] engine-trail geometry canvas
 __attribute__((visibility("hidden"))) extern Status      **g_ed_status; // [DAT_000d441c]
 __attribute__((visibility("hidden"))) extern Achievements **g_ed_achA;  // [DAT_000d4420]
 __attribute__((visibility("hidden"))) extern Achievements **g_ed_achB;  // [DAT_000d4424]
@@ -185,9 +186,6 @@ extern "C" {
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
 // crms_randDelay: createRadioMessages delay sourced from runtime data slots (DAT_000d19e0/e4).
 int   crms_randDelay(int which);
-// Level_createPlayer_impl: the createPlayer body itself, not yet ported (Level::createPlayer
-//   forwards to it). Becomes a real method once that body is reconstructed.
-void Level_createPlayer_impl(Level *self);
 }
 
 static unsigned int g_level_texOutScratch;
@@ -2447,7 +2445,117 @@ void Level::flashScreen(int type) {
 // body that is not recoverable from the provided Ghidra output. Left as a stub.
 
 void Level::createPlayer() {
-    return Level_createPlayer_impl(this);
+    Ship *ship = (Ship *)(*g_status)->getShip();
+    Array<Item *> *equip = ship->getEquipment();
+
+    // Used-slot counts per weapon-slot type: primary / secondary / turret.
+    int slots[3];
+    slots[0] = ship->getUsedSlots(0);
+    slots[1] = ship->getUsedSlots(1);
+    slots[2] = ship->getUsedSlots(2);
+
+    // Build the underlying Player from the ship's stats, then wrap it in the PlayerEgo.
+    Player *pl = (Player *)::operator new(0x114);
+    new (pl) Player(0x4b0, ship->getMaxHP(), slots[0], slots[1], slots[2]);
+    pl->setMaxShieldHP(ship->getMaxShieldHP());
+    pl->setMaxArmorHP(ship->getMaxArmorHP());
+    *((uint8_t *)pl + 0x69) = 1;
+
+    PlayerEgo *ego = (PlayerEgo *)::operator new(0x3a0);
+    new (ego) PlayerEgo(pl);
+    this->player = ego;
+    ego->setShip(ship->getIndex(), ship->getRace());
+    ego->setLevel(this);
+
+    // Initial yaw: field_138 is a Q16 turn fraction -> radians.
+    float yaw = (float)this->field_138 * (1.0f / 65536.0f) * 6.2831855f;
+    Vector rot = {0.0f, 0.0f, yaw};
+    this->player->geometry->setRotation(rot);
+
+    // One Gun bucket per weapon-slot type, each sized to its slot count.
+    Array<Array<Gun *> *> *buckets = new Array<Array<Gun *> *>();
+    buckets->resize(3);
+    for (int t = 0; t < 3; t++) {
+        if (slots[t] > 0) {
+            Array<Gun *> *b = new Array<Gun *>();
+            (*buckets)[t] = b;
+            b->resize(slots[t]);
+        }
+    }
+
+    if (equip != nullptr) {
+        FileRead *fr = new FileRead();
+        Array<Array<Vector *> *> *wpos = fr->loadWeaponPositions(ship->getIndex());
+        delete fr;
+
+        // Weapon-position group [3] drives the engine-trail geometries.
+        if ((*wpos)[3] != nullptr) {
+            this->field_a4 = new Array<AEGeometry *>();
+            for (unsigned k = 0; k < (*wpos)[3]->size(); k += 2) {
+                AEGeometry *g = new AEGeometry((PaintCanvas *)*g_cp_canvas);
+                this->field_a4->push_back(g);
+                g->setPosition(*(*(*wpos)[3])[k]);
+                g->setScaling(*(*(*wpos)[3])[k + 1]);
+            }
+        }
+
+        // Build a Gun for each weapon item and slot it (the buckets fill from the end).
+        for (unsigned i = 0; i < equip->size(); i++) {
+            Item *it = (*equip)[i];
+            if (it == nullptr || !it->isWeapon())
+                continue;
+
+            int amount = (it->getType() == 1) ? it->getAmount() : -1;
+            int dmg = it->getAttribute(0x9);
+            int rate = it->getAttribute(0xb);
+
+            // Primary weapons (type 0) get the ship's damage / fire-rate factors applied.
+            if (it->getType() == 0) {
+                float dmgFactor = (float)ship->getDamageFactor();
+                float fireFactor;
+                if (dmg > 9 || dmgFactor >= 0.0f) {
+                    dmg = (int)(dmgFactor * (float)dmg);
+                    fireFactor = (float)ship->getFireRateFactor();
+                } else {
+                    fireFactor = (float)ship->getFireRateFactor() * 0.7f;
+                }
+                rate = (int)(fireFactor * (float)rate);
+            }
+
+            Gun *gun = createGun(it->getIndex(), i, it->getSort(), amount,
+                                 dmg, rate, it->getAttribute(0xc), it->getAttribute(0xd));
+            gun->itemIndex = it->getIndex();
+            gun->weaponType = it->getSort();
+            gun->setMagnitude(it->getAttribute(0xe));
+
+            int type = it->getType();
+            if (type == 2) {
+                // Turret: store from the end of the turret bucket and place its mount.
+                (*(*buckets)[2])[--slots[2]] = gun;
+                Vector *pos = (*(*wpos)[2])[ship->getSlotPos(it)];
+                ego->setTurretPosition(pos->x, pos->y, pos->z);
+            } else if (type == 0 || type == 1) {
+                (*(*buckets)[type])[--slots[type]] = gun;
+                gun->setOffset((*(*wpos)[type])[ship->getSlotPos(it)]);
+            }
+        }
+
+        // Free the loaded weapon-position table.
+        for (unsigned k = 0; k < wpos->size(); k++) {
+            if ((*wpos)[k] != nullptr) {
+                for (Vector *v : *(*wpos)[k])
+                    delete v;
+                delete (*wpos)[k];
+            }
+        }
+        delete wpos;
+    }
+
+    // Hand each populated bucket to the player ego.
+    for (unsigned t = 0; t < buckets->size(); t++) {
+        if ((*buckets)[t] != nullptr)
+            this->player->addGun((*buckets)[t], (int)t);
+    }
 }
 
 
