@@ -58,10 +58,9 @@ public:
     bool field_0x74;
     int field_0x78;
     int boundTextures[20];              // per-slot bound GL texture id (slot 0..19)
-    float field_0xd0;
-    float field_0xd4;
-    float field_0xd8;
-    float field_0xdc;
+    float field_0xcc;                   // scalar bound by the cube shaders (u_*)
+    // +0xd0 current draw color (rgba), set by SetColor; bound to glColor / material diffuse.
+    union { float glColor[4]; struct { float field_0xd0, field_0xd4, field_0xd8, field_0xdc; }; };
     int field_0xe0;
     unsigned char field_0xfc;
     uint16_t field_0xfd;
@@ -70,15 +69,10 @@ public:
     float modelMatrixGL[16];            // GL column-major model matrix
     float worldViewMatrixGL[16];        // GL column-major world-view matrix
     float uvMatrix[16];                 // texture/UV matrix (shader path)
-    uint32_t field_0x204;               // modelMatrix3x4 row0.x
-    uint32_t field_0x208;
-    uint32_t field_0x20c;
-    uint32_t field_0x210;
-    uint32_t field_0x214;
-    uint32_t field_0x218;
-    uint32_t field_0x21c;
-    uint32_t field_0x220;
-    uint32_t field_0x224;
+    // +0x204 normal (rotation 3x3) matrix, rows packed from the model matrix; bound as u_NormalMatrix.
+    union { float normalMatrix[9]; struct { uint32_t field_0x204, field_0x208, field_0x20c,
+                                                     field_0x210, field_0x214, field_0x218,
+                                                     field_0x21c, field_0x220, field_0x224; }; };
     LightColor lightDiffuse;            // per-light diffuse color (rgba, stride 0x10)
     LightColor lightSpecular;           // per-light specular color (rgba, stride 0x10)
     LightColor lightAmbient;            // per-light ambient color (rgba, stride 0x10)
@@ -86,34 +80,27 @@ public:
     float field_0x28c;
     float field_0x290;
     uint32_t field_0x294;
-    float field_0x298;
-    float field_0x29c;
-    float field_0x2a0;
-    uint32_t field_0x2a4;
-    float field_0x2a8;
-    float field_0x2ac;
-    float field_0x2b0;
-    uint32_t field_0x2b4;
-    float field_0x2b8;
-    float field_0x2bc;
-    float field_0x2c0;
-    uint32_t field_0x2c4;
-    float field_0x2c8;
+    // Fixed-function material colors (rgba). Bound by Light*Material* and the lighting shaders.
+    union { float materialDiffuse[4];  struct { float field_0x298, field_0x29c, field_0x2a0; uint32_t field_0x2a4; }; };  // GL_DIFFUSE
+    union { float materialAmbient[4];  struct { float field_0x2a8, field_0x2ac, field_0x2b0; uint32_t field_0x2b4; }; };  // GL_AMBIENT
+    union { float materialSpecular[4]; struct { float field_0x2b8, field_0x2bc, field_0x2c0; uint32_t field_0x2c4; }; };  // GL_SPECULAR
+    union { float materialShininess;   float field_0x2c8; };  // GL_SHININESS
     Vector lightAmbientShaded;          // per-light shaded ambient (rgb, stride 0x0c)
     Vector lightSpecularShaded;         // per-light shaded specular (rgb, stride 0x0c)
     Vector lightDiffuseShaded;          // per-light shaded diffuse (rgb, stride 0x0c)
     Vector particleAmbient;             // particle ambient color (rgb)
-    float field_0x320;
-    float field_0x324;
-    float field_0x328;
+    // Contiguous with the shaded-light block above: Engine indexes (&lightAmbientShaded)[i]
+    // across these, and the lighting shaders bind them by offset.
+    Vector field_0x2fc;
+    Vector field_0x308;
+    Vector field_0x314;
+    union { Vector vec_0x320; struct { float field_0x320, field_0x324, field_0x328; }; };
     int field_0x32c;                    // active light count
-    Vector field_0x330;
+    union { Vector lightDir; Vector field_0x330; };   // scene light direction (rgb-as-xyz)
     Vector field_0x33c;
     uint64_t field_0x340;
     int field_0x348;
-    float field_0x34c;                  // light dir vector x (y@0x350, z@0x354)
-    float field_0x350;
-    float field_0x354;
+    union { Vector lightColor; struct { float field_0x34c, field_0x350, field_0x354; }; };  // scene light color
     void* field_0x358;
     int field_0x35c;
     uint32_t field_0x360;
@@ -130,9 +117,9 @@ public:
     uint32_t field_0x3d4;
     Array<int>* triangleCounts;         // per-shader triangle counters
     int field_0x3e4;
-    uint32_t field_0x3e8;
-    uint32_t field_0x3ec;
-    Vector field_0x3f0;
+    union { float fogMinDist; uint32_t field_0x3e8; };  // u_fogMinDist
+    union { float fogMaxDist; uint32_t field_0x3ec; };  // u_fogMaxDist
+    union { Vector fogColor; Vector field_0x3f0; };     // u_fogColor (rgb)
     Vector eyePosition;                 // eye/camera position (SetEyePosition)
     uint64_t field_0x400;
     uint32_t field_0x40c;

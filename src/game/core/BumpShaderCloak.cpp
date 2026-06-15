@@ -1,14 +1,7 @@
 #include "gof2/game/core/BumpShaderCloak.h"
 #include "gof2/platform/gl.h"
-
-// Engine is the top-level (::Engine) host object; only the few entry points this shader calls
-// are needed here. Its full layout/field reads are reached by raw offset (deferred pass).
-class Engine {
-public:
-    uint32_t GetDisplayWidth();
-    uint32_t GetDisplayHeight();
-    void ActivateRefractFBO();
-};
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 
 namespace AbyssEngine {
 
@@ -84,63 +77,62 @@ void BumpShaderCloak::SetInActive()
 
 void BumpShaderCloak::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *m = (char *)mesh;
-    char *e = (char *)engine;
+    ::Engine *eng = (::Engine *)engine;
 
     if (this->uniform_u0 >= 0)
-        glUniformMatrix4fv(this->uniform_u0, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(this->uniform_u0, 1, 0, eng->worldViewProjMatrix);
     if (this->uniform_u1 >= 0)
-        glUniformMatrix3fv(this->uniform_u1, 1, 0, (const float *)(e + 0x204));
+        glUniformMatrix3fv(this->uniform_u1, 1, 0, eng->normalMatrix);
 
     if (this->dirty) {
-        glUniform3f(this->uniform_u2, field_f32(e, 0x330), field_f32(e, 0x334), field_f32(e, 0x338));
+        glUniform3f(this->uniform_u2, eng->lightDir.x, eng->lightDir.y, eng->lightDir.z);
         if (this->uniform_u4 >= 0)
-            glUniform3f(this->uniform_u4, field_f32(e, 0x34c), field_f32(e, 0x350), field_f32(e, 0x354));
+            glUniform3f(this->uniform_u4, eng->lightColor.x, eng->lightColor.y, eng->lightColor.z);
         if (this->uniform_u8 >= 0)
-            glUniform4fv(this->uniform_u8, 1, (const float *)(e + 0xd0));
+            glUniform4fv(this->uniform_u8, 1, eng->glColor);
         if (this->uniform_u9 >= 0)
-            glUniform3fv(this->uniform_u9, 1, (const float *)(e + 0x2cc));
+            glUniform3fv(this->uniform_u9, 1, (const float *)&eng->lightAmbientShaded);
         if (this->uniform_u10 >= 0)
-            glUniform3fv(this->uniform_u10, 1, (const float *)(e + 0x2fc));
+            glUniform3fv(this->uniform_u10, 1, (const float *)&eng->field_0x2fc);
         if (this->uniform_u11 >= 0)
-            glUniform3fv(this->uniform_u11, 1, (const float *)(e + 0x2e4));
+            glUniform3fv(this->uniform_u11, 1, (const float *)&eng->lightDiffuseShaded);
         if (this->uniform_u15 >= 0)
-            glUniform1f(this->uniform_u15, field_f32(e, 0x2c8));
+            glUniform1f(this->uniform_u15, eng->materialShininess);
         if (this->uniform_u16 >= 0)
-            glUniform3fv(this->uniform_u16, 1, (const float *)(e + 0x320));
+            glUniform3fv(this->uniform_u16, 1, (const float *)&eng->vec_0x320);
 
         int viewportLoc = this->uniform_u17;
         if (viewportLoc >= 0) {
             // The render-target's mode (at [[engine+0x30]+0x30]) picks portrait vs landscape.
             float invW, invH;
-            if (*(int *)(*(char **)(e + 0x30) + 0x30) == 2) {
-                invW = 1.0f / (float)((::Engine *)engine)->GetDisplayWidth();
-                invH = 1.0f / (float)((::Engine *)engine)->GetDisplayHeight();
+            if (*(int *)(eng->field_0x30[0] + 0x30) == 2) {
+                invW = 1.0f / (float)eng->GetDisplayWidth();
+                invH = 1.0f / (float)eng->GetDisplayHeight();
             } else {
-                invW = 1.0f / (float)((::Engine *)engine)->GetDisplayHeight();
-                invH = 1.0f / (float)((::Engine *)engine)->GetDisplayWidth();
+                invW = 1.0f / (float)eng->GetDisplayHeight();
+                invH = 1.0f / (float)eng->GetDisplayWidth();
             }
             glUniform2f(viewportLoc, invW, invH);
         }
 
         glActiveTexture(0x84c7);
-        ((::Engine *)engine)->ActivateRefractFBO();
+        eng->ActivateRefractFBO();
 
         if (this->uniform_u18 >= 0)
-            glUniform1f(this->uniform_u18, field_f32(m, 0x1c));
+            glUniform1f(this->uniform_u18, reinterpret_cast<float &>(mesh->materialId));
         if (this->uniform_u19 >= 0)
-            glUniform1f(this->uniform_u19, field_f32(m, 0x20));
+            glUniform1f(this->uniform_u19, mesh->field_0x20);
 
-        if (field_i32(e, 0x32c) < 2) {
+        if (eng->field_0x32c < 2) {
             glUniform3f(this->uniform_u12, 0.0f, 0.0f, 0.0f);
             glUniform3f(this->uniform_u13, 0.0f, 0.0f, 0.0f);
             glUniform3f(this->uniform_u14, 0.0f, 0.0f, 0.0f);
-            glUniform3f(this->uniform_u3, field_f32(e, 0x33c), field_f32(e, 0x340), field_f32(e, 0x344));
+            glUniform3f(this->uniform_u3, eng->field_0x33c.x, eng->field_0x33c.y, eng->field_0x33c.z);
         } else {
-            glUniform3fv(this->uniform_u12, 1, (const float *)(e + 0x2d8));
-            glUniform3fv(this->uniform_u13, 1, (const float *)(e + 0x308));
-            glUniform3fv(this->uniform_u14, 1, (const float *)(e + 0x2f0));
-            glUniform3f(this->uniform_u3, field_f32(e, 0x33c), field_f32(e, 0x340), field_f32(e, 0x344));
+            glUniform3fv(this->uniform_u12, 1, (const float *)&eng->lightSpecularShaded);
+            glUniform3fv(this->uniform_u13, 1, (const float *)&eng->field_0x308);
+            glUniform3fv(this->uniform_u14, 1, (const float *)&eng->particleAmbient);
+            glUniform3f(this->uniform_u3, eng->field_0x33c.x, eng->field_0x33c.y, eng->field_0x33c.z);
         }
         this->dirty = 0;
     }
@@ -156,27 +148,27 @@ void BumpShaderCloak::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->attrib_a4 >= 0)
         glEnableVertexAttribArray(this->attrib_a4);
 
-    if (field_u8(m, 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->attrib_a0 >= 0)
-            glVertexAttribPointer(this->attrib_a0, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+            glVertexAttribPointer(this->attrib_a0, 3, 0x1406, 0, 0, mesh->positions);
         if (this->attrib_a1 >= 0)
-            glVertexAttribPointer(this->attrib_a1, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+            glVertexAttribPointer(this->attrib_a1, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->attrib_a2 >= 0)
-            glVertexAttribPointer(this->attrib_a2, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+            glVertexAttribPointer(this->attrib_a2, 3, 0x1406, 0, 0, mesh->normals);
         if (this->attrib_a3 >= 0)
-            glVertexAttribPointer(this->attrib_a3, 3, 0x1406, 0, 0, *(void **)(m + 0x14));
+            glVertexAttribPointer(this->attrib_a3, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->attrib_a4 >= 0)
-            glVertexAttribPointer(this->attrib_a4, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
+            glVertexAttribPointer(this->attrib_a4, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attrib_a0, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attrib_a1, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attrib_a2, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->attrib_a3, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->attrib_a4, 3, 0x1406, 0, 0, 0);
     }
 }

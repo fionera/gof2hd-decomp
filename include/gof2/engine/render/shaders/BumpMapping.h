@@ -5,9 +5,11 @@
 
 extern "C" char _ZTVN11AbyssEngine11BumpMappingE[];
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 // AbyssEngine::BumpMapping — GLES2 bump-mapping shader (derives from ShaderBaseStruct).

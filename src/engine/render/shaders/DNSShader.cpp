@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/DNSShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/game/core/String.h"
 #include "gof2/platform/gl.h"
 
@@ -61,32 +63,32 @@ void DNSShader::SetInActive()
 void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uM1Loc >= 0)
-        glUniformMatrix4fv(this->uM1Loc, 1, 0, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->uM1Loc, 1, 0, engine->worldViewProjMatrix);
     if (this->uM2Loc >= 0)
-        glUniformMatrix3fv(this->uM2Loc, 1, 0, (float *)((char *)engine + 0x204));
+        glUniformMatrix3fv(this->uM2Loc, 1, 0, engine->normalMatrix);
     if (this->uM3Loc >= 0)
-        glUniformMatrix4fv(this->uM3Loc, 1, 0, (float *)((char *)engine + 0x144));
+        glUniformMatrix4fv(this->uM3Loc, 1, 0, engine->modelMatrixGL);
     if (this->uM11Loc >= 0)
         glUniform1f(this->uM11Loc, DNSShader_g0);
     if (this->uM12Loc >= 0)
         glUniform1f(this->uM12Loc, DNSShader_g1);
 
     if (this->dirty != 0) {
-        glUniform3f(this->uM4Loc, field_f32(engine, 0x330), field_f32(engine, 0x334),
-                    field_f32(engine, 0x338));
+        glUniform3f(this->uM4Loc, engine->lightDir.x, engine->lightDir.y,
+                    engine->lightDir.z);
         if (this->uM5Loc >= 0)
-            glUniform3f(this->uM5Loc, field_f32(engine, 0x34c), field_f32(engine, 0x350),
-                        field_f32(engine, 0x354));
+            glUniform3f(this->uM5Loc, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         if (this->uM6Loc >= 0)
-            glUniform4fv(this->uM6Loc, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->uM6Loc, 1, engine->glColor);
         if (this->uM7Loc >= 0)
-            glUniform3fv(this->uM7Loc, 1, (float *)((char *)engine + 0x2cc));
+            glUniform3fv(this->uM7Loc, 1, (float *)&engine->lightAmbientShaded);
         if (this->uM8Loc >= 0)
-            glUniform3fv(this->uM8Loc, 1, (float *)((char *)engine + 0x2fc));
+            glUniform3fv(this->uM8Loc, 1, (float *)&engine->field_0x2fc);
         if (this->uM9Loc >= 0)
-            glUniform3fv(this->uM9Loc, 1, (float *)((char *)engine + 0x2e4));
+            glUniform3fv(this->uM9Loc, 1, (float *)&engine->lightDiffuseShaded);
         if (this->uM10Loc >= 0)
-            glUniform1f(this->uM10Loc, field_f32(engine, 0x2c8));
+            glUniform1f(this->uM10Loc, engine->materialShininess);
         this->dirty = 0;
     }
 
@@ -101,27 +103,27 @@ void DNSShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->uM0Loc >= 0)
         glEnableVertexAttribArray(this->uM0Loc);
 
-    if (field_u8(mesh, 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->aPositionLoc >= 0)
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
         if (this->aNormalLoc >= 0)
-            glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+            glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->aTangentLoc >= 0)
-            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->normals);
         if (this->aBinormalLoc >= 0)
-            glVertexAttribPointer(this->aBinormalLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+            glVertexAttribPointer(this->aBinormalLoc, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->uM0Loc >= 0)
-            glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+            glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, field_i32(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->aBinormalLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, 0);
     }
 }

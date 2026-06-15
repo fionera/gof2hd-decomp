@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/NoTexShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // NoTexShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -17,11 +19,10 @@ void NoTexShader::SetInActive()
 void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     char *e = (char *)engine;
-    char *m = (char *)mesh;
 
-    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (const float *)(e + 0x104));
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
-        glUniform4fv(this->uColor, 1, (const float *)(e + 0xd0));
+        glUniform4fv(this->uColor, 1, engine->glColor);
         this->dirty = 0;
     }
     glEnableVertexAttribArray(this->aPosition);
@@ -32,10 +33,10 @@ void NoTexShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         ptr = *(void **)(e + 0x348);
         size = 2;
     } else {
-        if (*(uint8_t *)(m + 0x5c) == 0) {
-            ptr = *(void **)(m + 0x4);
+        if (mesh->uploaded == 0) {
+            ptr = mesh->positions;
         } else {
-            glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
+            glBindBuffer(0x8892, mesh->positionVBO);
             ptr = 0;
         }
         size = 3;

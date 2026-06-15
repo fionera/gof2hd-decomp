@@ -1,6 +1,7 @@
 #include "gof2/engine/render/shaders/PulseShader.h"
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
+#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/platform/gl.h"
 #include "gof2/platform/libc.h"
@@ -64,25 +65,25 @@ void PulseShader::Init(Engine *)
 void PulseShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->u0Loc >= 0)
-        glUniformMatrix4fv(this->u0Loc, 1, 0, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->u0Loc, 1, 0, engine->worldViewProjMatrix);
     if (this->u1Loc >= 0)
-        glUniformMatrix3fv(this->u1Loc, 1, 0, (float *)((char *)engine + 0x204));
+        glUniformMatrix3fv(this->u1Loc, 1, 0, engine->normalMatrix);
 
     if (this->dirty != 0) {
         if (this->u2Loc >= 0)
-            glUniform3f(this->u2Loc, f32(engine, 0x330), f32(engine, 0x334),
-                        f32(engine, 0x338));
+            glUniform3f(this->u2Loc, engine->lightDir.x, engine->lightDir.y,
+                        engine->lightDir.z);
         if (this->u3Loc >= 0)
-            glUniform3f(this->u3Loc, f32(engine, 0x34c), f32(engine, 0x350),
-                        f32(engine, 0x354));
+            glUniform3f(this->u3Loc, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         if (this->u6Loc >= 0)
-            glUniform4fv(this->u6Loc, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->u6Loc, 1, engine->glColor);
         if (this->u7Loc >= 0)
-            glUniform4fv(this->u7Loc, 1, (float *)((char *)engine + 0x2a8));
+            glUniform4fv(this->u7Loc, 1, engine->materialAmbient);
         if (this->u8Loc >= 0)
-            glUniform4fv(this->u8Loc, 1, (float *)((char *)engine + 0x298));
+            glUniform4fv(this->u8Loc, 1, engine->materialDiffuse);
         if (this->u9Loc >= 0)
-            glUniform4fv(this->u9Loc, 1, (float *)((char *)engine + 0x2b8));
+            glUniform4fv(this->u9Loc, 1, engine->materialSpecular);
 
         long long t = g_ApplicationManager->GetCurrentTimeMillis();
         float v = sinf(__aeabi_l2f(t) / PulseShader_timeScale);
@@ -96,27 +97,27 @@ void PulseShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->a3Loc >= 0) glEnableVertexAttribArray(this->a3Loc);
     if (this->a4Loc >= 0) glEnableVertexAttribArray(this->a4Loc);
 
-    if (mesh->field_0x5c == 0) {
+    if (mesh->uploaded == 0) {
         if (this->a0Loc >= 0)
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->field_0x4);
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
         if (this->a1Loc >= 0)
-            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->field_0x8);
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->a2Loc >= 0)
-            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->field_0x10);
+            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->normals);
         if (this->a3Loc >= 0)
-            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x14);
+            glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->a4Loc >= 0)
-            glVertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, (const void *)(uintptr_t)mesh->field_0x18);
+            glVertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, mesh->field_0x60);
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x6c);
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x70);
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x74);
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, 0);
     }
 }

@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/TextureAlphaTestShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // TextureAlphaTestShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -9,16 +11,7 @@ extern "C" char TextureAlphaTestShader_vtable;
 extern "C" unsigned char g_TextureAlphaTestShader_useAlphaProgram;
 extern "C" unsigned char g_TextureAlphaTestShader_programIndex;
 
-// AbyssEngine::Vector reinterpreted as a 3-float array (modelled in a later math pass).
-extern "C" float *Vector_cast_to_float(AbyssEngine::AEMath::Vector *self);
-
 namespace AbyssEngine {
-
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
-template <class T> static inline T &ae_field(void *base, unsigned int off) {
-    return *(T *)((char *)base + off);
-}
 
 int TextureAlphaTestShader::ShaderIndex;
 
@@ -51,27 +44,27 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     uint8_t programIndex = g_TextureAlphaTestShader_programIndex;
 
-    glUniformMatrix4fv(this->uMVPMatrixLoc[programIndex], 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->uMVPMatrixLoc[programIndex], 1, 0, engine->worldViewProjMatrix);
 
     if (this->dirty != 0) {
         int location = this->uColorLoc[programIndex];
         if (location >= 0) {
-            glUniform4fv(location, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(location, 1, engine->glColor);
         }
 
         location = this->uLightPosLoc[programIndex];
         if (location >= 0) {
-            glUniform3fv(location, 1, Vector_cast_to_float((AEMath::Vector *)((char *)engine + 0x3f0)));
+            glUniform3fv(location, 1, (float *)&engine->fogColor);
         }
 
         location = this->uDiffuseLoc[programIndex];
         if (location >= 0) {
-            glUniform1f(location, ae_field<float>(engine, 0x3e8));
+            glUniform1f(location, engine->fogMinDist);
         }
 
         location = this->uAmbientLoc[programIndex];
         if (location >= 0) {
-            glUniform1f(location, ae_field<float>(engine, 0x3ec));
+            glUniform1f(location, engine->fogMaxDist);
         }
 
         location = this->uSamplerLoc[programIndex];
@@ -81,14 +74,14 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
         location = this->uFogColorLoc[programIndex];
         if (location >= 0) {
-            glUniform3f(location, ae_field<float>(engine, 0x34c), ae_field<float>(engine, 0x350),
-                        ae_field<float>(engine, 0x354));
+            glUniform3f(location, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         }
 
         this->dirty = 0;
     }
 
-    if ((((uint32_t)ae_field<uint8_t>(mesh, 0x00)) << 30) < 0x80000000u) {
+    if ((((uint32_t)mesh->vertexFormat) << 30) < 0x80000000u) {
         return;
     }
 
@@ -97,13 +90,13 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(position);
     glEnableVertexAttribArray(texcoord);
 
-    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(position, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
-        glVertexAttribPointer(texcoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(position, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(texcoord, 2, 0x1406, 0, 0, mesh->texCoords);
     } else {
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(position, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(texcoord, 2, 0x1406, 0, 0, 0);
     }
 }

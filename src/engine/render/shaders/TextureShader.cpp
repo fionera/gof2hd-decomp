@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/TextureShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // TextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -7,14 +9,6 @@ extern "C" void *g_TextureShader_vtable;
 // Engine globals: selects the extended program and the per-frame active texture slot.
 extern "C" uint8_t g_TextureShader_hasSecondProgram;
 extern "C" uint8_t g_TextureShader_activeSlot;
-
-// Engine vector accessor reached by opaque pointer (modelled in a later pass).
-namespace AbyssEngine {
-namespace AEMath {
-struct Vector;
-}
-}
-extern "C" float *Vector_to_float(AbyssEngine::AEMath::Vector *self);
 
 namespace AbyssEngine {
 
@@ -57,42 +51,40 @@ void TextureShader::SetInActive()
 void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     int slot = g_TextureShader_activeSlot;
-    char *meshBytes = (char *)mesh;
-    char *engineBytes = (char *)engine;
 
-    glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, (float *)(engineBytes + 0x104));
+    glUniformMatrix4fv(this->mvpUniform[slot], 1, 0, engine->worldViewProjMatrix);
 
     int location = this->worldViewUniform[slot];
     if (location >= 0) {
-        glUniformMatrix4fv(location, 1, 0, (float *)(engineBytes + 0x1c4));
+        glUniformMatrix4fv(location, 1, 0, engine->uvMatrix);
     }
 
     location = this->alphaUniform[slot];
     if (location >= 0) {
-        glUniform1f(location, 1.0f - *(float *)(meshBytes + 0x1c));
+        glUniform1f(location, 1.0f - reinterpret_cast<float &>(mesh->materialId));
     }
 
     if (this->dirty != 0) {
-        glUniform4fv(this->colorUniform[slot], 1, (float *)(engineBytes + 0xd0));
+        glUniform4fv(this->colorUniform[slot], 1, engine->glColor);
 
         location = this->textureModeUniform[slot];
         if (location >= 0) {
-            glUniform1i(location, *(uint8_t *)(meshBytes + 0x85));
+            glUniform1i(location, mesh->hasAnimation);
         }
 
         location = this->lightUniform[slot];
         if (location >= 0) {
-            glUniform3fv(location, 1, Vector_to_float((AEMath::Vector *)(engineBytes + 0x3f0)));
+            glUniform3fv(location, 1, (float *)&engine->fogColor);
         }
 
         location = this->fogFarUniform[slot];
         if (location >= 0) {
-            glUniform1f(location, *(float *)(engineBytes + 0x3e8));
+            glUniform1f(location, engine->fogMinDist);
         }
 
         location = this->fogNearUniform[slot];
         if (location >= 0) {
-            glUniform1f(location, *(float *)(engineBytes + 0x3ec));
+            glUniform1f(location, engine->fogMaxDist);
         }
 
         location = this->activeTextureUniform[slot];
@@ -102,24 +94,23 @@ void TextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
         location = this->fogColorUniform[slot];
         if (location >= 0) {
-            glUniform3f(location, *(float *)(engineBytes + 0x34c), *(float *)(engineBytes + 0x350),
-                        *(float *)(engineBytes + 0x354));
+            glUniform3f(location, engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
         }
 
         this->dirty = 0;
     }
 
-    if ((int)(*(uint8_t *)meshBytes << 30) < 0) {
+    if ((int)(mesh->vertexFormat << 30) < 0) {
         glEnableVertexAttribArray(this->positionAttrib[slot]);
         glEnableVertexAttribArray(this->texcoordAttrib[slot]);
 
-        if (*(uint8_t *)(meshBytes + 0x5c) == 0) {
-            glVertexAttribPointer(this->positionAttrib[slot], 3, 0x1406, 0, 0, *(void **)(meshBytes + 0x04));
-            glVertexAttribPointer(this->texcoordAttrib[slot], 2, 0x1406, 0, 0, *(void **)(meshBytes + 0x08));
+        if (mesh->uploaded == 0) {
+            glVertexAttribPointer(this->positionAttrib[slot], 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->texcoordAttrib[slot], 2, 0x1406, 0, 0, mesh->texCoords);
         } else {
-            glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x60));
+            glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->positionAttrib[slot], 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, *(uint32_t *)(meshBytes + 0x68));
+            glBindBuffer(0x8892, mesh->texCoordVBO);
             glVertexAttribPointer(this->texcoordAttrib[slot], 2, 0x1406, 0, 0, 0);
         }
     }

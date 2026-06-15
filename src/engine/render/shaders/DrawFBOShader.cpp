@@ -1,5 +1,7 @@
 #include "gof2/engine/render/shaders/DrawFBOShader.h"
 #include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 #include <arm_neon.h>
 
@@ -13,13 +15,13 @@ template <class T> static inline T &ae_field(void *base, unsigned int off) {
 extern "C" char DrawFBOShader_vtable;
 
 // Engine entry points reached by opaque pointer (modelled in a later pass).
-extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
-extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
-extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
-extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
-extern "C" int Engine_IsPostEffectActivated(AbyssEngine::Engine *engine);
-extern "C" void Engine_ActivateRender2FracFBO(AbyssEngine::Engine *engine);
-extern "C" void Engine_DeactivateRender2FracFBO(AbyssEngine::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
+extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
+extern "C" int Engine_IsPostEffectActivated(::Engine *engine);
+extern "C" void Engine_ActivateRender2FracFBO(::Engine *engine);
+extern "C" void Engine_DeactivateRender2FracFBO(::Engine *engine);
 
 namespace AbyssEngine {
 
@@ -49,7 +51,7 @@ void DrawFBOShader::Init(Engine *)
 // Binds the world matrix and vertex/texcoord arrays for the supplied mesh.
 void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
         this->dirty = 0;
     }
@@ -57,13 +59,13 @@ void DrawFBOShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->positionLoc);
     glEnableVertexAttribArray(this->texCoordLoc);
 
-    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
-        glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
     } else {
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->texCoordLoc, 2, 0x1406, 0, 0, 0);
     }
 }
@@ -115,7 +117,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
         glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
         unsigned int width;
         unsigned int viewportHeight;
-        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+        if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
             width = Engine_GetDisplayWidth(engine);
             viewportHeight = Engine_GetDisplayHeight(engine);
         } else {
@@ -129,7 +131,7 @@ void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 
     glEnableVertexAttribArray(this->positionLoc);
     glEnableVertexAttribArray(this->texCoordLoc);
-    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, (float *)(engineBytes + 0x104));
+    glUniformMatrix4fv(this->worldViewMatrixLoc, 1, 0, engine->worldViewProjMatrix);
 
     char *mesh = ae_field<char *>(engine, 0x380);
     glVertexAttribPointer(this->positionLoc, 3, 0x1406, 0, 0, *(void **)(mesh + 0x4));

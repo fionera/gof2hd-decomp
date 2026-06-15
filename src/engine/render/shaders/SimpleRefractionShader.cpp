@@ -3,6 +3,7 @@
 class FBOContainer;
 class ShaderBaseStruct;
 #include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 namespace AbyssEngine {
@@ -72,23 +73,23 @@ void SimpleRefractionShader::SetInActive()
 void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
     if (this->uM1Loc >= 0)
-        glUniformMatrix4fv(this->uM1Loc, 1, 0, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->uM1Loc, 1, 0, engine->worldViewProjMatrix);
 
     if (this->dirty != 0) {
         if (this->uM4Loc >= 0)
             glUniform1f(this->uM4Loc, -2.0f);
         if (this->uM3Loc >= 0)
-            glUniform4fv(this->uM3Loc, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->uM3Loc, 1, engine->glColor);
         if (this->uM2Loc >= 0)
-            glUniform3f(this->uM2Loc, field_f32(engine, 0x34c), field_f32(engine, 0x350),
-                        field_f32(engine, 0x354));
+            glUniform3f(this->uM2Loc, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         int loc = this->uM5Loc;
         float w = (float)engine->GetDisplayWidth();
         float h = (float)engine->GetDisplayHeight();
         glUniform2f(loc, 1.0f / w, 1.0f / h);
         glActiveTexture(0x84c7);
         engine->ActivateRefractFBO();
-        glUniform1f(this->uRefractLoc, field_f32(mesh, 0x20));
+        glUniform1f(this->uRefractLoc, mesh->field_0x20);
         this->dirty = 0;
     }
 
@@ -103,27 +104,27 @@ void SimpleRefractionShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
     if (this->uM0Loc >= 0)
         glEnableVertexAttribArray(this->uM0Loc);
 
-    if (field_u8(mesh, 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->aPositionLoc >= 0)
-            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+            glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, mesh->positions);
         if (this->aNormalLoc >= 0)
-            glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+            glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->aTangentLoc >= 0)
-            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+            glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, mesh->normals);
         if (this->aTexCoordLoc >= 0)
-            glVertexAttribPointer(this->aTexCoordLoc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+            glVertexAttribPointer(this->aTexCoordLoc, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->uM0Loc >= 0)
-            glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+            glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, field_i32(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPositionLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aNormalLoc, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->aTangentLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->aTexCoordLoc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->uM0Loc, 3, 0x1406, 0, 0, 0);
     }
 }

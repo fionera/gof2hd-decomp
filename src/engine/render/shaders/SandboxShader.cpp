@@ -1,4 +1,5 @@
 #include "gof2/engine/render/shaders/SandboxShader.h"
+#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
@@ -14,16 +15,15 @@ namespace AbyssEngine {
 void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
     AbyssEngine::Mesh *mesh = meshArg;
-    char *e = (char *)engine;
 
-    glUniformMatrix4fv(this->uniformA, 1, 0, (float *)(e + 0x104));
+    glUniformMatrix4fv(this->uniformA, 1, 0, engine->worldViewProjMatrix);
 
     if (this->dirty != 0) {
-        glUniform4fv(this->uniformF, 1, (float *)(e + 0xd0));
-        glUniform3f(this->uniformB, *(float *)(e + 0x330), *(float *)(e + 0x334),
-                    *(float *)(e + 0x338));
-        glUniform3f(this->uniformC, *(float *)(e + 0x34c), *(float *)(e + 0x350),
-                    *(float *)(e + 0x354));
+        glUniform4fv(this->uniformF, 1, engine->glColor);
+        glUniform3f(this->uniformB, engine->lightDir.x, engine->lightDir.y,
+                    engine->lightDir.z);
+        glUniform3f(this->uniformC, engine->lightColor.x, engine->lightColor.y,
+                    engine->lightColor.z);
         this->dirty = 0;
     }
 
@@ -33,25 +33,25 @@ void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine)
     glEnableVertexAttribArray(this->attrBinormal);
     glEnableVertexAttribArray(this->attrTexCoord);
 
-    if (mesh->field_0x5c != 0) {
-        glBindBuffer(0x8892, mesh->field_0x60);
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attrPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attrNormal, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x6c);
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attrTangent, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x70);
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->attrBinormal, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x74);
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, 0);
         return;
     }
 
-    glVertexAttribPointer(this->attrPosition, 3, 0x1406, 0, 0, mesh->field_0x4);
-    glVertexAttribPointer(this->attrNormal, 2, 0x1406, 0, 0, mesh->field_0x8);
-    glVertexAttribPointer(this->attrTangent, 3, 0x1406, 0, 0, mesh->field_0x10);
-    glVertexAttribPointer(this->attrBinormal, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
-    glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
+    glVertexAttribPointer(this->attrPosition, 3, 0x1406, 0, 0, mesh->positions);
+    glVertexAttribPointer(this->attrNormal, 2, 0x1406, 0, 0, mesh->texCoords);
+    glVertexAttribPointer(this->attrTangent, 3, 0x1406, 0, 0, mesh->normals);
+    glVertexAttribPointer(this->attrBinormal, 3, 0x1406, 0, 0, mesh->tangents);
+    glVertexAttribPointer(this->attrTexCoord, 3, 0x1406, 0, 0, mesh->binormals);
 }
 
 void SandboxShader::Init(Engine *)

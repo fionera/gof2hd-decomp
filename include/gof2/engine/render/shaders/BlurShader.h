@@ -8,9 +8,11 @@
 // program's attribute/uniform locations plus its blur tuning floats. RenderEffect draws a
 // full-screen quad through the blur program into either the back buffer or a capture FBO.
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 class FBOContainer;
 

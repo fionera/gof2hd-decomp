@@ -3,9 +3,11 @@
 #include "gof2/common.h"
 #include "gof2/engine/render/ShaderBaseStruct.h"
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class CubeNormalMapping : public ShaderBaseStruct {

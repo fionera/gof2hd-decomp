@@ -8,9 +8,11 @@
 // FBOContainer render targets plus attribute/uniform locations for four sub-programs
 // (copy / blurX / blurY / combine).
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 class FBOContainer;
 

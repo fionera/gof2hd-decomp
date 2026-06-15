@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/ColorMixAdd.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 namespace AbyssEngine {
@@ -33,29 +35,29 @@ void ColorMixAdd::Init(Engine *)
 
 void ColorMixAdd::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->u1Loc, 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->u1Loc, 1, 0, engine->worldViewProjMatrix);
     if (this->u4Loc >= 0)
-        glUniformMatrix4fv(this->u4Loc, 1, 0, (float *)((char *)engine + 0x1c4));
+        glUniformMatrix4fv(this->u4Loc, 1, 0, engine->uvMatrix);
     if (this->u5Loc >= 0)
-        glUniform1i(this->u5Loc, field_u8(mesh, 0x85));
+        glUniform1i(this->u5Loc, mesh->hasAnimation);
 
     if (this->dirty != 0) {
-        glUniform4fv(this->u2Loc, 1, (float *)((char *)engine + 0xd0));
+        glUniform4fv(this->u2Loc, 1, engine->glColor);
         if (this->u3Loc >= 0)
-            glUniform1f(this->u3Loc, 1.0f - field_f32(mesh, 0x1c));
+            glUniform1f(this->u3Loc, 1.0f - *(float *)&mesh->materialId);
         this->dirty = 0;
     }
 
-    if ((field_u8(mesh, 0x0) & 2) != 0) {
+    if ((mesh->vertexFormat & 2) != 0) {
         glEnableVertexAttribArray(this->a0Loc);
         glEnableVertexAttribArray(this->a1Loc);
-        if (field_u8(mesh, 0x5c) == 0) {
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+        if (mesh->uploaded == 0) {
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->texCoords);
         } else {
-            glBindBuffer(0x8892, field_i32(mesh, 0x60));
+            glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
-            glBindBuffer(0x8892, field_i32(mesh, 0x68));
+            glBindBuffer(0x8892, mesh->texCoordVBO);
             glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
         }
     }

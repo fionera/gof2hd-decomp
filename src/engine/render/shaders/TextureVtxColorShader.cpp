@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/TextureVtxColorShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // TextureVtxColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -83,39 +85,39 @@ void TextureVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     int index = EngineFogEnabled() ? 1 : 0;
 
-    glUniformMatrix4fv(loc_u_WorldMatrix[index], 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(loc_u_WorldMatrix[index], 1, 0, engine->worldViewProjMatrix);
 
     int location = loc_u_UvMatrix[index];
     if (location >= 0) {
-        glUniformMatrix4fv(location, 1, 0, (float *)((char *)engine + 0x1c4));
+        glUniformMatrix4fv(location, 1, 0, engine->uvMatrix);
     }
 
     location = loc_u_DarkenValue[index];
     if (location >= 0) {
-        glUniform1f(location, 1.0f - (float)*(int *)((char *)mesh + 0x1c));
+        glUniform1f(location, 1.0f - (float)mesh->materialId);
     }
 
     if (this->dirty != 0) {
-        glUniform4fv(loc_glColor[index], 1, (float *)((char *)engine + 0xd0));
+        glUniform4fv(loc_glColor[index], 1, engine->glColor);
 
         location = loc_u_UVAnimation[index];
         if (location >= 0) {
-            glUniform1i(location, *(uint8_t *)((char *)mesh + 0x85));
+            glUniform1i(location, mesh->hasAnimation);
         }
 
         location = loc_u_fogColor[index];
         if (location >= 0) {
-            glUniform3fv(location, 1, (float *)((char *)engine + 0x3f0));
+            glUniform3fv(location, 1, (float *)&engine->fogColor);
         }
 
         location = loc_u_fogMinDist[index];
         if (location >= 0) {
-            glUniform1f(location, *(float *)((char *)engine + 0x3e8));
+            glUniform1f(location, engine->fogMinDist);
         }
 
         location = loc_u_fogMaxDist[index];
         if (location >= 0) {
-            glUniform1f(location, *(float *)((char *)engine + 0x3ec));
+            glUniform1f(location, engine->fogMaxDist);
         }
 
         location = loc_u_EnableFog[index];
@@ -126,9 +128,9 @@ void TextureVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         location = loc_u_eyeposmodel[index];
         if (location >= 0) {
             glUniform3f(location,
-                        *(float *)((char *)engine + 0x34c),
-                        *(float *)((char *)engine + 0x350),
-                        *(float *)((char *)engine + 0x354));
+                        engine->lightColor.x,
+                        engine->lightColor.y,
+                        engine->lightColor.z);
         }
 
         this->dirty = 0;
@@ -138,22 +140,22 @@ void TextureVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray((uint32_t)loc_a_texCoord[index]);
     glEnableVertexAttribArray((uint32_t)loc_a_VertexColor[index]);
 
-    if (*(uint8_t *)((char *)mesh + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer((uint32_t)loc_a_position[index], 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer((uint32_t)loc_a_texCoord[index], 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)((char *)mesh + 0x78));
+        glBindBuffer(0x8892, mesh->colorVBO);
         glVertexAttribPointer((uint32_t)loc_a_VertexColor[index], 4, 0x1406, 0, 0, 0);
         return;
     }
 
     glVertexAttribPointer((uint32_t)loc_a_position[index], 3, 0x1406, 0, 0,
-                          (const void *)*(uintptr_t *)((char *)mesh + 0x4));
+                          mesh->positions);
     glVertexAttribPointer((uint32_t)loc_a_texCoord[index], 2, 0x1406, 0, 0,
-                          (const void *)*(uintptr_t *)((char *)mesh + 0x8));
+                          mesh->texCoords);
     glVertexAttribPointer((uint32_t)loc_a_VertexColor[index], 4, 0x1406, 0, 0,
-                          (const void *)(uintptr_t)*(unsigned int *)((char *)mesh + 0xc));
+                          mesh->colors);
 }
 
 } // namespace AbyssEngine

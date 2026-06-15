@@ -1,5 +1,7 @@
 #include "gof2/engine/render/shaders/PostBWShader.h"
 #include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
@@ -12,11 +14,11 @@ template <class T> static inline T &ae_field(void *base, unsigned int off) {
 extern "C" char PostBWShader_vtable;
 
 // Engine entry points reached by opaque pointer (modelled in a later pass).
-extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
-extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
-extern "C" void AbyssEngine_Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine,
+extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine *engine);
+extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine *engine);
+extern "C" void AbyssEngine_Engine_SetWorldViewMatrix(::Engine *engine,
                                                       const uint32_t *matrix);
-extern "C" void AbyssEngine_Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width,
+extern "C" void AbyssEngine_Engine_DrawQuad(::Engine *engine, int x, int y, int width,
                                             int height);
 
 namespace AbyssEngine {
@@ -50,20 +52,20 @@ void PostBWShader::SetInActive()
 // Binds the world matrix and the mesh's vertex/texcoord arrays (VBO or client-side).
 void PostBWShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     this->dirty = 0;
 
     glEnableVertexAttribArray(this->aPosition);
     glEnableVertexAttribArray(this->aTexCoord);
 
-    if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
-        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
     } else {
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
-        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
     }
 }
 
@@ -102,7 +104,7 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 
     int width;
     int height;
-    if (*(int *)((char *)*(void **)(ae_field<void *>(engine, 0x30)) + 0x30) == 2) {
+    if (*(int *)((char *)*(void **)(engine->field_0x30) + 0x30) == 2) {
         width = AbyssEngine_Engine_GetDisplayWidth(engine);
         height = AbyssEngine_Engine_GetDisplayHeight(engine);
     } else {
@@ -113,7 +115,7 @@ void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine)
 
     glEnableVertexAttribArray(this->aPosition);
     glEnableVertexAttribArray(this->aTexCoord);
-    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 0x4));
     glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0,

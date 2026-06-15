@@ -7,9 +7,11 @@
 // ShaderBaseStruct; caches attribute/uniform locations after Init and uploads the
 // per-mesh / per-frame matrices and lighting block in UpdateMeshData.
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-struct Engine;
 struct Mesh;
 
 // Cached attribute/uniform location handles, filled in by Init. The per-material lighting

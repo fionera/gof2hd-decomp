@@ -1,4 +1,5 @@
 #include "gof2/engine/render/shaders/SpecCubeMapping.h"
+#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
@@ -51,48 +52,46 @@ void SpecCubeMapping::Init(Engine *)
 //   both client-array and VBO meshes.
 void SpecCubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *eng = (char *)engine;
-
     if (this->dirty != 0) {
-        glUniform4fv(this->field_0x58, 1, (const float *)(eng + 0xd0));
-        glUniform3fv(this->field_0x48, 1, (const float *)(eng + 0x2cc));
-        glUniform3fv(this->field_0x4c, 1, (const float *)(eng + 0x2fc));
-        glUniform3fv(this->field_0x50, 1, (const float *)(eng + 0x2e4));
-        glUniform1f(this->uShininess, *(float *)(eng + 0x2c8));
+        glUniform4fv(this->field_0x58, 1, engine->glColor);
+        glUniform3fv(this->field_0x48, 1, (const float *)&engine->lightAmbientShaded);
+        glUniform3fv(this->field_0x4c, 1, (const float *)&engine->field_0x2fc);
+        glUniform3fv(this->field_0x50, 1, (const float *)&engine->lightDiffuseShaded);
+        glUniform1f(this->uShininess, engine->materialShininess);
         this->dirty = 0;
     }
 
-    glUniform1f(this->field_0x44, *(float *)(eng + 0xcc));
-    glUniformMatrix4fv(this->mvpMatrixLoc, 1, 0, (const float *)(eng + 0x104));
-    glUniformMatrix3fv(this->normalMatrixLoc, 1, 0, (const float *)(eng + 0x204));
+    glUniform1f(this->field_0x44, engine->field_0xcc);
+    glUniformMatrix4fv(this->mvpMatrixLoc, 1, 0, engine->worldViewProjMatrix);
+    glUniformMatrix3fv(this->normalMatrixLoc, 1, 0, engine->normalMatrix);
     glUniform4f(this->field_0x38,
-                *(float *)(eng + 0x330), *(float *)(eng + 0x334),
-                *(float *)(eng + 0x338), *(float *)(eng + 0x378));
+                engine->lightDir.x, engine->lightDir.y,
+                engine->lightDir.z, engine->lightDirty[0]);
     glUniform3f(this->uCameraPosition,
-                *(float *)(eng + 0x34c), *(float *)(eng + 0x350), *(float *)(eng + 0x354));
+                engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
 
     glEnableVertexAttribArray(this->attribPosition);
     glEnableVertexAttribArray(this->attribTexCoord);
     glEnableVertexAttribArray(this->attribNormal);
 
-    if (mesh->field_0x5c == 0) {
+    if (mesh->uploaded == 0) {
         // Client-side vertex arrays.
-        glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, mesh->field_0x4);
-        uint8_t flags = mesh->field_0x0;
+        glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, mesh->positions);
+        uint8_t flags = mesh->vertexFormat;
         if (flags & 2) {
-            glVertexAttribPointer(this->attribTexCoord, 2, 0x1406, 0, 0, mesh->field_0x8);
-            flags = mesh->field_0x0;
+            glVertexAttribPointer(this->attribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+            flags = mesh->vertexFormat;
         }
         if (((uint32_t)flags << 0x1d) & 0x80000000u) {
-            glVertexAttribPointer(this->attribNormal, 3, 0x1406, 0, 0, mesh->field_0x10);
+            glVertexAttribPointer(this->attribNormal, 3, 0x1406, 0, 0, mesh->normals);
         }
     } else {
         // Buffer-object meshes: bind each VBO before wiring up the attribute.
-        glBindBuffer(0x8892, mesh->field_0x60);
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attribTexCoord, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x6c);
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attribNormal, 3, 0x1406, 0, 0, 0);
     }
 }

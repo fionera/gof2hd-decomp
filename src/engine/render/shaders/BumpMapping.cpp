@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/BumpMapping.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 namespace AbyssEngine {
@@ -36,9 +38,8 @@ void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     this->dirty = 0;
 
-    glUniformMatrix4fv(this->u0Loc, 1, 0, (const float *)((char *)engine + 0x104));
-    glUniform3f(this->u1Loc, field_f32(engine, 0x330), field_f32(engine, 0x334),
-                field_f32(engine, 0x338));
+    glUniformMatrix4fv(this->u0Loc, 1, 0, engine->worldViewProjMatrix);
+    glUniform3f(this->u1Loc, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
 
     glEnableVertexAttribArray(this->a0Loc);
     glEnableVertexAttribArray(this->a1Loc);
@@ -46,14 +47,14 @@ void BumpMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->a3Loc);
     glEnableVertexAttribArray(this->a4Loc);
 
-    glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
-    if ((field_u8(mesh, 0x0) & 2) != 0) {
-        glVertexAttribPointer(this->a4Loc, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+    glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
+    if ((mesh->vertexFormat & 2) != 0) {
+        glVertexAttribPointer(this->a4Loc, 2, 0x1406, 0, 0, mesh->texCoords);
     }
-    if ((field_u8(mesh, 0x0) & 4) != 0) {
-        glVertexAttribPointer(this->a1Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
-        glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
-        glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+    if ((mesh->vertexFormat & 4) != 0) {
+        glVertexAttribPointer(this->a1Loc, 3, 0x1406, 0, 0, mesh->normals);
+        glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->tangents);
+        glVertexAttribPointer(this->a3Loc, 3, 0x1406, 0, 0, mesh->binormals);
     }
 }
 

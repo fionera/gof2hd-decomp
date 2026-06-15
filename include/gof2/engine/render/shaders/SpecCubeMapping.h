@@ -5,9 +5,11 @@
 
 extern "C" char _ZTVN11AbyssEngine15SpecCubeMappingE[];
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class SpecCubeMapping : public ShaderBaseStruct {

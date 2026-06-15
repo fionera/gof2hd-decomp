@@ -7,9 +7,11 @@
 // Owns the cached attribute/uniform location handles for a single program: vertex attributes
 // (position/texcoord/normal), the model/view/projection matrices, and a three-light Phong
 // lighting block (per-light direction + color, shininess, specular, ambient).
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class TextureLightShader : public ShaderBaseStruct {

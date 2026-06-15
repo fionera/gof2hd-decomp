@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/VertexColorAlphaTextureShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // VertexColorAlphaTextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -46,25 +48,25 @@ void VertexColorAlphaTextureShader::Init(Engine *)
 void VertexColorAlphaTextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uniform0 >= 0)
-        glUniformMatrix4fv(this->uniform0, 1, 0, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->uniform0, 1, 0, engine->worldViewProjMatrix);
     if (this->uniform1 >= 0)
-        glUniformMatrix3fv(this->uniform1, 1, 0, (float *)((char *)engine + 0x204));
+        glUniformMatrix3fv(this->uniform1, 1, 0, engine->normalMatrix);
 
     if (this->dirty != 0) {
         if (this->uniform2 >= 0)
-            glUniform3f(this->uniform2, *(float *)((char *)engine + 0x330),
-                        *(float *)((char *)engine + 0x334), *(float *)((char *)engine + 0x338));
+            glUniform3f(this->uniform2, engine->lightDir.x,
+                        engine->lightDir.y, engine->lightDir.z);
         if (this->uniform3 >= 0)
-            glUniform3f(this->uniform3, *(float *)((char *)engine + 0x34c),
-                        *(float *)((char *)engine + 0x350), *(float *)((char *)engine + 0x354));
+            glUniform3f(this->uniform3, engine->lightColor.x,
+                        engine->lightColor.y, engine->lightColor.z);
         if (this->uniform5 >= 0)
-            glUniform4fv(this->uniform5, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->uniform5, 1, engine->glColor);
         if (this->uniform6 >= 0)
-            glUniform4fv(this->uniform6, 1, (float *)((char *)engine + 0x2a8));
+            glUniform4fv(this->uniform6, 1, engine->materialAmbient);
         if (this->uniform7 >= 0)
-            glUniform4fv(this->uniform7, 1, (float *)((char *)engine + 0x298));
+            glUniform4fv(this->uniform7, 1, engine->materialDiffuse);
         if (this->uniform8 >= 0)
-            glUniform4fv(this->uniform8, 1, (float *)((char *)engine + 0x2b8));
+            glUniform4fv(this->uniform8, 1, engine->materialSpecular);
         this->dirty = 0;
     }
 
@@ -81,31 +83,31 @@ void VertexColorAlphaTextureShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->attrib0 >= 0)
         glEnableVertexAttribArray(this->attrib0);
 
-    if (*(uint8_t *)((char *)mesh + 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->attrib1 >= 0)
-            glVertexAttribPointer(this->attrib1, 3, 0x1406, 0, 0, *(void **)((char *)mesh + 0x4));
+            glVertexAttribPointer(this->attrib1, 3, 0x1406, 0, 0, mesh->positions);
         if (this->attrib2 >= 0)
-            glVertexAttribPointer(this->attrib2, 2, 0x1406, 0, 0, *(void **)((char *)mesh + 0x8));
+            glVertexAttribPointer(this->attrib2, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->attrib3 >= 0)
-            glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, *(void **)((char *)mesh + 0x10));
+            glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, mesh->normals);
         if (this->attrib4 >= 0)
-            glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, *(void **)((char *)mesh + 0x14));
+            glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->attrib5 >= 0)
-            glVertexAttribPointer(this->attrib5, 3, 0x1406, 0, 0, *(void **)((char *)mesh + 0x18));
+            glVertexAttribPointer(this->attrib5, 3, 0x1406, 0, 0, mesh->binormals);
         if (this->attrib0 >= 0)
-            glVertexAttribPointer(this->attrib0, 4, 0x1406, 0, 0, *(void **)((char *)mesh + 0xc));
+            glVertexAttribPointer(this->attrib0, 4, 0x1406, 0, 0, mesh->colors);
     } else {
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attrib1, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attrib2, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->attrib5, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)((char *)mesh + 0x78));
+        glBindBuffer(0x8892, mesh->colorVBO);
         glVertexAttribPointer(this->attrib0, 4, 0x1406, 0, 0, 0);
     }
 }

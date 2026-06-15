@@ -7,9 +7,11 @@
 // Derives from ShaderBaseStruct; holds one GL program (the base's ShaderBaseStruct::program)
 // plus its cached attribute/uniform location handles.
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class CubeMapping : public ShaderBaseStruct {

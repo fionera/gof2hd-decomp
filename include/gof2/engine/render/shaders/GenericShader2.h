@@ -4,9 +4,11 @@
 #include "gof2/engine/render/ShaderBaseStruct.h"
 
 // Galaxy on Fire 2 - AbyssEngine::GenericShader2 (GLES2 bump/lit shader).
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class GenericShader2 : public ShaderBaseStruct {

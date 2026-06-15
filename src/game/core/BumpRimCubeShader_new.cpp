@@ -1,5 +1,7 @@
 #include "gof2/game/core/BumpRimCubeShader_new.h"
 #include "gof2/platform/gl.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 
 extern "C" char _ZTVN11AbyssEngine21BumpRimCubeShader_newE[];
 
@@ -72,12 +74,15 @@ void BumpRimCubeShader_new::Init(Engine *)
 
 void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
+    // The shader header forward-declares AbyssEngine::Engine, but the full
+    // renderer layout lives at top-level ::Engine (gof2/engine/render/Engine.h).
+    ::Engine *eng = (::Engine *)engine;
     if (this->uniform0 >= 0)
-        glUniformMatrix4fv(this->uniform0, 1, 0, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->uniform0, 1, 0, eng->worldViewProjMatrix);
     if (this->uniform1 >= 0)
-        glUniformMatrix3fv(this->uniform1, 1, 0, (float *)((char *)engine + 0x204));
+        glUniformMatrix3fv(this->uniform1, 1, 0, eng->normalMatrix);
     if (this->uniform2 >= 0)
-        glUniformMatrix4fv(this->uniform2, 1, 0, (float *)((char *)engine + 0x144));
+        glUniformMatrix4fv(this->uniform2, 1, 0, eng->modelMatrixGL);
     if (this->uniform17 >= 0)
         glUniform1f(this->uniform17, g_rimnGlobalA);
     if (this->uniform18 >= 0)
@@ -86,42 +91,42 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
         glUniform1f(this->uniform24, g_rimnGlobalC);
 
     if (this->dirty != 0) {
-        glUniform3f(this->uniform3, field_f32(engine, 0x330),
-                    field_f32(engine, 0x334), field_f32(engine, 0x338));
+        glUniform3f(this->uniform3, eng->lightDir.x,
+                    eng->lightDir.y, eng->lightDir.z);
         if (this->uniform5 >= 0)
-            glUniform3f(this->uniform5, field_f32(engine, 0x34c),
-                        field_f32(engine, 0x350), field_f32(engine, 0x354));
+            glUniform3f(this->uniform5, eng->lightColor.x,
+                        eng->lightColor.y, eng->lightColor.z);
         if (this->uniform9 >= 0)
-            glUniform4fv(this->uniform9, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->uniform9, 1, eng->glColor);
         float buf[3];
         if (this->uniform10 >= 0) {
-            buf[0] = field_f32(engine, 0x2cc) + field_f32(engine, 0x2d8);
-            buf[1] = field_f32(engine, 0x2d0) + field_f32(engine, 0x2dc);
-            buf[2] = field_f32(engine, 0x2d4) + field_f32(engine, 0x2e0);
+            buf[0] = eng->lightAmbientShaded.x + eng->lightSpecularShaded.x;
+            buf[1] = eng->lightAmbientShaded.y + eng->lightSpecularShaded.y;
+            buf[2] = eng->lightAmbientShaded.z + eng->lightSpecularShaded.z;
             glUniform3fv(this->uniform10, 1, buf);
         }
         if (this->uniform11 >= 0)
-            glUniform3fv(this->uniform11, 1, (float *)((char *)engine + 0x2fc));
+            glUniform3fv(this->uniform11, 1, (float *)&eng->field_0x2fc);
         if (this->uniform13 >= 0)
-            glUniform3fv(this->uniform13, 1, (float *)((char *)engine + 0x2e4));
+            glUniform3fv(this->uniform13, 1, (float *)&eng->lightDiffuseShaded);
         if (this->uniform15 >= 0)
-            glUniform1f(this->uniform15, field_f32(engine, 0x2c8));
+            glUniform1f(this->uniform15, eng->materialShininess);
         if (this->uniform16 >= 0)
-            glUniform3fv(this->uniform16, 1, (float *)((char *)engine + 800));
+            glUniform3fv(this->uniform16, 1, (float *)&eng->vec_0x320);
         int loc84 = this->uniform20;
         if (loc84 >= 0) {
-            float *v = *(AEMath::Vector *)((char *)engine + 0x3f0);
+            float *v = (float *)&eng->fogColor;
             glUniform3fv(loc84, 1, v);
         }
         if (this->uniform22 >= 0)
-            glUniform1f(this->uniform22, field_f32(engine, 1000));
+            glUniform1f(this->uniform22, eng->fogMinDist);
         if (this->uniform21 >= 0)
-            glUniform1f(this->uniform21, field_f32(engine, 0x3ec));
+            glUniform1f(this->uniform21, eng->fogMaxDist);
         if (this->uniform23 >= 0)
             glUniform1i(this->uniform23, g_rimnByteGlobal);
         if (this->uniform19 >= 0) {
             float v = 0.0f;
-            int *m30 = (int *)field_ptr(mesh, 0x30);
+            int *m30 = (int *)mesh->field_0x30;
             if (m30 != 0) {
                 v = 1.0f;
                 if (m30[9] == 0)
@@ -130,23 +135,23 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
             glUniform1f(this->uniform19, v);
         }
         int loc5c = this->uniform10;
-        if (field_i32(engine, 0x32c) >= 2) {
+        if (eng->field_0x32c >= 2) {
             if (loc5c >= 0) {
-                buf[0] = field_f32(engine, 0x2cc) + field_f32(engine, 0x2d8);
-                buf[1] = field_f32(engine, 0x2d0) + field_f32(engine, 0x2dc);
-                buf[2] = field_f32(engine, 0x2d4) + field_f32(engine, 0x2e0);
+                buf[0] = eng->lightAmbientShaded.x + eng->lightSpecularShaded.x;
+                buf[1] = eng->lightAmbientShaded.y + eng->lightSpecularShaded.y;
+                buf[2] = eng->lightAmbientShaded.z + eng->lightSpecularShaded.z;
                 glUniform3fv(loc5c, 1, buf);
             }
-            glUniform3fv(this->uniform12, 1, (float *)((char *)engine + 0x308));
-            glUniform3fv(this->uniform14, 1, (float *)((char *)engine + 0x2f0));
-            glUniform3f(this->uniform4, field_f32(engine, 0x33c),
-                        field_f32(engine, 0x340), field_f32(engine, 0x344));
+            glUniform3fv(this->uniform12, 1, (float *)&eng->field_0x308);
+            glUniform3fv(this->uniform14, 1, (float *)&eng->particleAmbient);
+            glUniform3f(this->uniform4, eng->field_0x33c.x,
+                        eng->field_0x33c.y, eng->field_0x33c.z);
         } else {
             glUniform3f(loc5c, 0, 0, 0);
             glUniform3f(this->uniform12, 0, 0, 0);
             glUniform3f(this->uniform14, 0, 0, 0);
-            glUniform3f(this->uniform4, field_f32(engine, 0x33c),
-                        field_f32(engine, 0x340), field_f32(engine, 0x344));
+            glUniform3f(this->uniform4, eng->field_0x33c.x,
+                        eng->field_0x33c.y, eng->field_0x33c.z);
         }
         this->dirty = 0;
     }
@@ -162,27 +167,27 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->attrib4 >= 0)
         glEnableVertexAttribArray(this->attrib4);
 
-    if (field_u8(mesh, 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->attrib0 >= 0)
-            glVertexAttribPointer(this->attrib0, 3, 0x1406, 0, 0, field_ptr(mesh, 0x4));
+            glVertexAttribPointer(this->attrib0, 3, 0x1406, 0, 0, mesh->positions);
         if (this->attrib1 >= 0)
-            glVertexAttribPointer(this->attrib1, 2, 0x1406, 0, 0, field_ptr(mesh, 0x8));
+            glVertexAttribPointer(this->attrib1, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->attrib2 >= 0)
-            glVertexAttribPointer(this->attrib2, 3, 0x1406, 0, 0, field_ptr(mesh, 0x10));
+            glVertexAttribPointer(this->attrib2, 3, 0x1406, 0, 0, mesh->normals);
         if (this->attrib3 >= 0)
-            glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, field_ptr(mesh, 0x14));
+            glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->attrib4 >= 0)
-            glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, field_ptr(mesh, 0x18));
+            glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, field_i32(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attrib0, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attrib1, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attrib2, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->attrib3, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, field_i32(mesh, 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->attrib4, 3, 0x1406, 0, 0, 0);
     }
 }

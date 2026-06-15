@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/SpecCubeAlphaMapping.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // SpecCubeAlphaMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -55,51 +57,48 @@ void SpecCubeAlphaMapping::SetInActive()
 // (VBO path when the mesh has a buffer object, client-array path otherwise).
 void SpecCubeAlphaMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *eng = (char *)engine;
-    char *msh = (char *)mesh;
-
     if (this->dirty != 0) {
         float envFactor = 1.0f;
-        int mat = *(int *)(msh + 0x30);
+        char *mat = (char *)mesh->field_0x30;
         if (mat != 0 && *(void **)(mat + 0x24) != 0 && *(int *)(mat + 0x28) == 4) {
             envFactor = **(float **)(mat + 0x24);
         }
         glUniform1f(this->uniU11, envFactor);
-        glUniform4fv(this->uniU10, 1, (const float *)(eng + 0xd0));
-        glUniform3fv(this->uniU6, 1, (const float *)(eng + 0x2cc));
-        glUniform3fv(this->uniU7, 1, (const float *)(eng + 0x2fc));
-        glUniform3fv(this->uniU8, 1, (const float *)(eng + 0x2e4));
-        glUniform1f(this->uniU9, *(float *)(eng + 0x2c8));
+        glUniform4fv(this->uniU10, 1, engine->glColor);
+        glUniform3fv(this->uniU6, 1, (const float *)&engine->lightAmbientShaded);
+        glUniform3fv(this->uniU7, 1, (const float *)&engine->field_0x2fc);
+        glUniform3fv(this->uniU8, 1, (const float *)&engine->lightDiffuseShaded);
+        glUniform1f(this->uniU9, engine->materialShininess);
         this->dirty = 0;
     }
 
-    glUniformMatrix4fv(this->uniU0, 1, 0, (const float *)(eng + 0x104));
-    glUniformMatrix3fv(this->uniU1, 1, 0, (const float *)(eng + 0x204));
-    glUniform4f(this->uniU3, *(float *)(eng + 0x330), *(float *)(eng + 0x334),
-                *(float *)(eng + 0x338), *(float *)(eng + 0x378));
-    glUniform3f(this->uniU2, *(float *)(eng + 0x34c), *(float *)(eng + 0x350),
-                *(float *)(eng + 0x354));
+    glUniformMatrix4fv(this->uniU0, 1, 0, engine->worldViewProjMatrix);
+    glUniformMatrix3fv(this->uniU1, 1, 0, engine->normalMatrix);
+    glUniform4f(this->uniU3, engine->lightDir.x, engine->lightDir.y,
+                engine->lightDir.z, engine->lightDirty[0]);
+    glUniform3f(this->uniU2, engine->lightColor.x, engine->lightColor.y,
+                engine->lightColor.z);
 
     glEnableVertexAttribArray(this->attrA0);
     glEnableVertexAttribArray(this->attrA2);
     glEnableVertexAttribArray(this->attrA1);
 
-    if (*(uint8_t *)(msh + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(int *)(msh + 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attrA0, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(msh + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attrA2, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(msh + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attrA1, 3, 0x1406, 0, 0, 0);
     } else {
-        glVertexAttribPointer(this->attrA0, 3, 0x1406, 0, 0, *(void **)(msh + 0x4));
-        uint8_t flags = *(uint8_t *)msh;
+        glVertexAttribPointer(this->attrA0, 3, 0x1406, 0, 0, mesh->positions);
+        uint8_t flags = mesh->vertexFormat;
         if ((flags & 2) != 0) {
-            glVertexAttribPointer(this->attrA2, 2, 0x1406, 0, 0, *(void **)(msh + 0x8));
-            flags = *(uint8_t *)msh;
+            glVertexAttribPointer(this->attrA2, 2, 0x1406, 0, 0, mesh->texCoords);
+            flags = mesh->vertexFormat;
         }
         if (((unsigned)flags << 0x1d) & 0x80000000u) {
-            glVertexAttribPointer(this->attrA1, 3, 0x1406, 0, 0, *(void **)(msh + 0x10));
+            glVertexAttribPointer(this->attrA1, 3, 0x1406, 0, 0, mesh->normals);
         }
     }
 }

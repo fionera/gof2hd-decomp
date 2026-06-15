@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/BumpShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // BumpShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -80,60 +82,55 @@ void BumpShader::Init(Engine *)
 // the dirty byte) and binds the mesh's vertex attribute streams.
 void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx)
 {
-    char *e = (char *)ctx;
-    char *m = (char *)mesh;
-
     if (this->u0Loc >= 0)
-        glUniformMatrix4fv(this->u0Loc, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(this->u0Loc, 1, 0, ctx->worldViewProjMatrix);
     if (this->u1Loc >= 0)
-        glUniformMatrix3fv(this->u1Loc, 1, 0, (const float *)(e + 0x204));
+        glUniformMatrix3fv(this->u1Loc, 1, 0, ctx->normalMatrix);
     if (this->u16Loc >= 0)
         glUniform1f(this->u16Loc, *gBumpFloatA);
     if (this->u17Loc >= 0)
         glUniform1f(this->u17Loc, *gBumpFloatB);
 
     if (this->dirty != 0) {
-        glUniform3f(this->u2Loc, *(float *)(e + 0x330), *(float *)(e + 0x334),
-                    *(float *)(e + 0x338));
+        glUniform3f(this->u2Loc, ctx->lightDir.x, ctx->lightDir.y, ctx->lightDir.z);
         if (this->u4Loc >= 0)
-            glUniform3f(this->u4Loc, *(float *)(e + 0x34c), *(float *)(e + 0x350),
-                        *(float *)(e + 0x354));
+            glUniform3f(this->u4Loc, ctx->lightColor.x, ctx->lightColor.y, ctx->lightColor.z);
         if (this->u7Loc >= 0)
-            glUniform4fv(this->u7Loc, 1, (const float *)(e + 0xd0));
+            glUniform4fv(this->u7Loc, 1, ctx->glColor);
         if (this->u8Loc >= 0)
-            glUniform3fv(this->u8Loc, 1, (const float *)(e + 0x2cc));
+            glUniform3fv(this->u8Loc, 1, (const float *)&ctx->lightAmbientShaded);
         if (this->u9Loc >= 0)
-            glUniform3fv(this->u9Loc, 1, (const float *)(e + 0x2fc));
+            glUniform3fv(this->u9Loc, 1, (const float *)&ctx->field_0x2fc);
         if (this->u10Loc >= 0)
-            glUniform3fv(this->u10Loc, 1, (const float *)(e + 0x2e4));
+            glUniform3fv(this->u10Loc, 1, (const float *)&ctx->lightDiffuseShaded);
         if (this->u14Loc >= 0)
-            glUniform1f(this->u14Loc, *(float *)(e + 0x2c8));
+            glUniform1f(this->u14Loc, ctx->materialShininess);
         if (this->u15Loc >= 0)
-            glUniform3fv(this->u15Loc, 1, (const float *)(e + 0x320));
+            glUniform3fv(this->u15Loc, 1, (const float *)&ctx->vec_0x320);
         if (this->u18Loc >= 0) {
-            float *v = Vector_cast_to_float((AEMath::Vector *)(e + 0x3f0));
+            float *v = Vector_cast_to_float(&ctx->fogColor);
             glUniform3fv(this->u18Loc, 1, v);
         }
         if (this->u20Loc >= 0)
-            glUniform1f(this->u20Loc, *(float *)(e + 0x3e8));
+            glUniform1f(this->u20Loc, ctx->fogMinDist);
         if (this->u19Loc >= 0)
-            glUniform1f(this->u19Loc, *(float *)(e + 0x3ec));
+            glUniform1f(this->u19Loc, ctx->fogMaxDist);
         if (this->u21Loc >= 0)
             glUniform1i(this->u21Loc, *gBumpFlag);
 
-        if (*(int *)(e + 0x32c) < 2) {
+        if (ctx->field_0x32c < 2) {
             // single-light path: zero the matrix uniforms, set the light dir.
             glUniform3f(this->u11Loc, 0, 0, 0);
             glUniform3f(this->u12Loc, 0, 0, 0);
             glUniform3f(this->u13Loc, 0, 0, 0);
-            glUniform3f(this->u3Loc, *(float *)(e + 0x33c), *(float *)(e + 0x340),
-                        *(float *)(e + 0x344));
+            glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
+                        ctx->field_0x33c.z);
         } else {
-            glUniform3fv(this->u11Loc, 1, (const float *)(e + 0x2d8));
-            glUniform3fv(this->u12Loc, 1, (const float *)(e + 0x308));
-            glUniform3fv(this->u13Loc, 1, (const float *)(e + 0x2f0));
-            glUniform3f(this->u3Loc, *(float *)(e + 0x33c), *(float *)(e + 0x340),
-                        *(float *)(e + 0x344));
+            glUniform3fv(this->u11Loc, 1, (const float *)&ctx->lightSpecularShaded);
+            glUniform3fv(this->u12Loc, 1, (const float *)&ctx->field_0x308);
+            glUniform3fv(this->u13Loc, 1, (const float *)&ctx->particleAmbient);
+            glUniform3f(this->u3Loc, ctx->field_0x33c.x, ctx->field_0x33c.y,
+                        ctx->field_0x33c.z);
         }
         this->dirty = 0;
     }
@@ -145,19 +142,19 @@ void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx)
     if (this->a2Loc >= 0)
         glEnableVertexAttribArray(this->a2Loc);
 
-    if (u8(mesh, 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->a0Loc >= 0)
-            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+            glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, mesh->positions);
         if (this->a1Loc >= 0)
-            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+            glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, mesh->texCoords);
         if (this->a2Loc >= 0)
-            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+            glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, mesh->normals);
     } else {
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->a0Loc, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->a1Loc, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(unsigned int *)(m + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
     }
 }

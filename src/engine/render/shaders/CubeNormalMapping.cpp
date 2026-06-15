@@ -1,4 +1,5 @@
 #include "gof2/engine/render/shaders/CubeNormalMapping.h"
+#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
@@ -48,23 +49,22 @@ void CubeNormalMapping::Init(Engine *)
 void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
 {
     Mesh *mesh = meshArg;
-    char *e = (char *)engine;
     if (this->dirty != 0) {
-        glUniform4fv(this->uniformU12, 1, (float *)(e + 0xd0));
-        glUniform4fv(this->uniformU8, 1, (float *)(e + 0x2cc));
-        glUniform4fv(this->uniformU9, 1, (float *)(e + 0x2fc));
-        glUniform4fv(this->uniformU10, 1, (float *)(e + 0x2e4));
-        glUniform1f(this->uniformU11, *(float *)(e + 0x2c8));
+        glUniform4fv(this->uniformU12, 1, engine->glColor);
+        glUniform4fv(this->uniformU8, 1, (float *)&engine->lightAmbientShaded);
+        glUniform4fv(this->uniformU9, 1, (float *)&engine->field_0x2fc);
+        glUniform4fv(this->uniformU10, 1, (float *)&engine->lightDiffuseShaded);
+        glUniform1f(this->uniformU11, engine->materialShininess);
         this->dirty = 0;
     }
 
-    glUniform1f(this->uniformU7, *(float *)(e + 0xcc));
-    glUniformMatrix4fv(this->uniformU0, 1, 0, (float *)(e + 0x104));
-    glUniformMatrix3fv(this->uniformU1, 1, 0, (float *)(e + 0x204));
-    glUniform3f(this->uniformU3, *(float *)(e + 0x330), *(float *)(e + 0x334),
-                *(float *)(e + 0x338));
-    glUniform3f(this->uniformU2, *(float *)(e + 0x34c), *(float *)(e + 0x350),
-                *(float *)(e + 0x354));
+    glUniform1f(this->uniformU7, engine->field_0xcc);
+    glUniformMatrix4fv(this->uniformU0, 1, 0, engine->worldViewProjMatrix);
+    glUniformMatrix3fv(this->uniformU1, 1, 0, engine->normalMatrix);
+    glUniform3f(this->uniformU3, engine->lightDir.x, engine->lightDir.y,
+                engine->lightDir.z);
+    glUniform3f(this->uniformU2, engine->lightColor.x, engine->lightColor.y,
+                engine->lightColor.z);
 
     glEnableVertexAttribArray(this->attribA0);
     glEnableVertexAttribArray(this->attribA2);
@@ -72,26 +72,26 @@ void CubeNormalMapping::UpdateMeshData(Mesh *meshArg, Engine *engine)
     glEnableVertexAttribArray(this->attribA3);
     glEnableVertexAttribArray(this->attribA4);
 
-    if (mesh->field_0x5c == 0) {
-        glVertexAttribPointer(this->attribA0, 3, 0x1406, 0, 0, mesh->field_0x4);
-        if ((mesh->field_0x0 & 2) != 0)
-            glVertexAttribPointer(this->attribA2, 2, 0x1406, 0, 0, mesh->field_0x8);
-        if ((mesh->field_0x0 & 4) != 0)
-            glVertexAttribPointer(this->attribA1, 3, 0x1406, 0, 0, mesh->field_0x10);
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->attribA0, 3, 0x1406, 0, 0, mesh->positions);
+        if ((mesh->vertexFormat & 2) != 0)
+            glVertexAttribPointer(this->attribA2, 2, 0x1406, 0, 0, mesh->texCoords);
+        if ((mesh->vertexFormat & 4) != 0)
+            glVertexAttribPointer(this->attribA1, 3, 0x1406, 0, 0, mesh->normals);
         if (this->attribA3 >= 0)
-            glVertexAttribPointer(this->attribA3, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x14);
+            glVertexAttribPointer(this->attribA3, 3, 0x1406, 0, 0, mesh->tangents);
         if (this->attribA4 >= 0)
-            glVertexAttribPointer(this->attribA4, 3, 0x1406, 0, 0, *(void **)&mesh->field_0x18);
+            glVertexAttribPointer(this->attribA4, 3, 0x1406, 0, 0, mesh->binormals);
     } else {
-        glBindBuffer(0x8892, mesh->field_0x60);
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->attribA0, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x68);
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->attribA2, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x6c);
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->attribA1, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x70);
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->attribA3, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, mesh->field_0x74);
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->attribA4, 3, 0x1406, 0, 0, 0);
     }
 }

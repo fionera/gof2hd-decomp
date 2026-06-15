@@ -29,12 +29,14 @@ public:
     // +0x4 CPU-side per-vertex arrays (freed once uploaded to a VBO).
     union { void *positions;        void *field_0x4; };     // xyz per vertex
     union { void *texCoords;        void *field_0x8; };     // uv per vertex
-    union { uint32_t colors;        uint32_t field_0xc; };  // rgba per vertex
+    union { void *colors;           void *field_0xc; };     // rgba per vertex
     union { void *normals;          void *field_0x10; };    // xyz per vertex
-    union { uint32_t tangents;      uint32_t field_0x14; }; // xyz per vertex
-    union { uint32_t binormals;     uint32_t field_0x18; }; // xyz per vertex
-    union { uint32_t materialId;    uint32_t field_0x1c; };
-    uint32_t field_0x20;
+    union { void *tangents;         void *field_0x14; };    // xyz per vertex
+    union { void *binormals;        void *field_0x18; };    // xyz per vertex
+    union { uint32_t materialId;    uint32_t field_0x1c; };  // shader anim/darken scalar (also read as float)
+    // +0x20/+0x24 shader animation scalars (refraction strength, scale-anim), read as float.
+    float field_0x20;
+    float field_0x24;
     // +0x28 index count, +0x2c index array (u16 triangle-list indices).
     union { uint16_t indexCount;    uint16_t field_0x28; };
     uint16_t field_0x2a;

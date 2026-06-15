@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/GenericShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // GenericShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -63,29 +65,26 @@ void GenericShader::SetInActive()
 // as raw GL data by offset.
 void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
     if (this->uMvpMatrix >= 0)
-        glUniformMatrix4fv(this->uMvpMatrix, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->uNormalMatrix >= 0)
-        glUniformMatrix3fv(this->uNormalMatrix, 1, 0, (const float *)(e + 0x204));
+        glUniformMatrix3fv(this->uNormalMatrix, 1, 0, engine->normalMatrix);
 
     if (this->dirty != 0) {
         if (this->uLightPosition >= 0)
-            glUniform3f(this->uLightPosition, *(float *)(e + 0x330), *(float *)(e + 0x334), *(float *)(e + 0x338));
+            glUniform3f(this->uLightPosition, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
         if (this->uEyePosition >= 0)
-            glUniform3f(this->uEyePosition, *(float *)(e + 0x34c), *(float *)(e + 0x350), *(float *)(e + 0x354));
+            glUniform3f(this->uEyePosition, engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
         if (this->uAmbientColor >= 0)
-            glUniform4fv(this->uAmbientColor, 1, (const float *)(e + 0xd0));
+            glUniform4fv(this->uAmbientColor, 1, engine->glColor);
         if (this->uDiffuseColor >= 0)
-            glUniform3fv(this->uDiffuseColor, 1, (const float *)(e + 0x2cc));
+            glUniform3fv(this->uDiffuseColor, 1, (const float *)&engine->lightAmbientShaded);
         if (this->uSpecularColor >= 0)
-            glUniform3fv(this->uSpecularColor, 1, (const float *)(e + 0x2fc));
+            glUniform3fv(this->uSpecularColor, 1, (const float *)&engine->field_0x2fc);
         if (this->uEmissiveColor >= 0)
-            glUniform3fv(this->uEmissiveColor, 1, (const float *)(e + 0x2e4));
+            glUniform3fv(this->uEmissiveColor, 1, (const float *)&engine->lightDiffuseShaded);
         if (this->uMaterialShininess >= 0)
-            glUniform1f(this->uMaterialShininess, *(float *)(e + 0x2c8));
+            glUniform1f(this->uMaterialShininess, engine->materialShininess);
         this->dirty = 0;
     }
 
@@ -100,30 +99,30 @@ void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     if (this->aBitangent >= 0)
         glEnableVertexAttribArray(this->aBitangent);
 
-    if (*(uint8_t *)(m + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(int *)(m + 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(m + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(m + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(m + 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(m + 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, 0);
         return;
     }
 
     if (this->aPosition >= 0)
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
     if (this->aTexCoord >= 0)
-        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
     if (this->aNormal >= 0)
-        glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+        glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, mesh->normals);
     if (this->aTangent >= 0)
-        glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, *(void **)(m + 0x14));
+        glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, mesh->tangents);
     if (this->aBitangent >= 0)
-        glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
+        glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, mesh->binormals);
 }
 
 GenericShader::GenericShader()

@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/NoTexVtxColorShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // NoTexVtxColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -37,12 +39,9 @@ NoTexVtxColorShader::NoTexVtxColorShader()
 
 void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
-    glUniformMatrix4fv(uMvpMatrix, 1, 0, (const float *)(e + 0x104));
+    glUniformMatrix4fv(uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
-        glUniform4fv(uColor, 1, (const float *)(e + 0xd0));
+        glUniform4fv(uColor, 1, engine->glColor);
         this->dirty = 0;
     }
     glEnableVertexAttribArray(aPosition);
@@ -53,11 +52,11 @@ void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     const void *ptr;
     int stride = 0;
     if (mesh == 0) {
-        ptr = *(void **)(e + 0x348);
+        ptr = *(void **)&engine->field_0x348;
         size = 2;
     } else {
-        glVertexAttribPointer(index, 3, 0x1406, 0, stride, *(void **)(m + 0x4));
-        ptr = *(void **)(m + 0xc);
+        glVertexAttribPointer(index, 3, 0x1406, 0, stride, mesh->positions);
+        ptr = mesh->colors;
         index = aColor;
         size = 4;
     }

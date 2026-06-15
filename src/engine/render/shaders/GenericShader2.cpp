@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/GenericShader2.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // GenericShader2's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -51,27 +53,24 @@ void GenericShader2::Init(Engine *)
 // AbyssEngine::GenericShader2::UpdateMeshData(AbyssEngine::Mesh*, AbyssEngine::Engine*)
 void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
     if (uM0 >= 0)
-        glUniformMatrix4fv(uM0, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(uM0, 1, 0, engine->worldViewProjMatrix);
     if (uM1 >= 0)
-        glUniformMatrix3fv(uM1, 1, 0, (const float *)(e + 0x204));
+        glUniformMatrix3fv(uM1, 1, 0, engine->normalMatrix);
 
     if (this->dirty != 0) {
         if (uM2 >= 0)
-            glUniform3f(uM2, *(float *)(e + 0x330), *(float *)(e + 0x334), *(float *)(e + 0x338));
+            glUniform3f(uM2, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
         if (uM3 >= 0)
-            glUniform3f(uM3, *(float *)(e + 0x34c), *(float *)(e + 0x350), *(float *)(e + 0x354));
+            glUniform3f(uM3, engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
         if (uM5 >= 0)
-            glUniform4fv(uM5, 1, (const float *)(e + 0xd0));
+            glUniform4fv(uM5, 1, engine->glColor);
         if (uM6 >= 0)
-            glUniform4fv(uM6, 1, (const float *)(e + 0x2a8));
+            glUniform4fv(uM6, 1, engine->materialAmbient);
         if (uM7 >= 0)
-            glUniform4fv(uM7, 1, (const float *)(e + 0x298));
+            glUniform4fv(uM7, 1, engine->materialDiffuse);
         if (uM8 >= 0)
-            glUniform4fv(uM8, 1, (const float *)(e + 0x2b8));
+            glUniform4fv(uM8, 1, engine->materialSpecular);
         this->dirty = 0;
     }
 
@@ -87,15 +86,15 @@ void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
         glEnableVertexAttribArray(aTexCoord);
 
     if (aPosition >= 0)
-        glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+        glVertexAttribPointer(aPosition, 3, 0x1406, 0, 0, mesh->positions);
     if (aNormal >= 0)
-        glVertexAttribPointer(aNormal, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+        glVertexAttribPointer(aNormal, 2, 0x1406, 0, 0, mesh->texCoords);
     if (aTangent >= 0)
-        glVertexAttribPointer(aTangent, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+        glVertexAttribPointer(aTangent, 3, 0x1406, 0, 0, mesh->normals);
     if (aBinormal >= 0)
-        glVertexAttribPointer(aBinormal, 3, 0x1406, 0, 0, *(void **)(m + 0x14));
+        glVertexAttribPointer(aBinormal, 3, 0x1406, 0, 0, mesh->tangents);
     if (aTexCoord >= 0)
-        glVertexAttribPointer(aTexCoord, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
+        glVertexAttribPointer(aTexCoord, 3, 0x1406, 0, 0, mesh->binormals);
 }
 
 // AbyssEngine::GenericShader2::GenericShader2()

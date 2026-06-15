@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/GenericShader1.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // GenericShader1's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -41,29 +43,26 @@ void GenericShader1::Init(Engine *)
 // then binds the vertex attribute arrays.
 void GenericShader1::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
     if (this->uM0 >= 0)
-        glUniformMatrix4fv(this->uM0, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(this->uM0, 1, 0, engine->worldViewProjMatrix);
     if (this->uM1 >= 0)
-        glUniformMatrix3fv(this->uM1, 1, 0, (const float *)(e + 0x204));
+        glUniformMatrix3fv(this->uM1, 1, 0, engine->normalMatrix);
 
     if (this->dirty != 0) {
         if (this->uM2 >= 0)
-            glUniform3f(this->uM2, *(float *)(e + 0x330), *(float *)(e + 0x334),
-                        *(float *)(e + 0x338));
+            glUniform3f(this->uM2, engine->lightDir.x, engine->lightDir.y,
+                        engine->lightDir.z);
         if (this->uM3 >= 0)
-            glUniform3f(this->uM3, *(float *)(e + 0x34c), *(float *)(e + 0x350),
-                        *(float *)(e + 0x354));
+            glUniform3f(this->uM3, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         if (this->uM5 >= 0)
-            glUniform4fv(this->uM5, 1, (const float *)(e + 0xd0));
+            glUniform4fv(this->uM5, 1, engine->glColor);
         if (this->uM6 >= 0)
-            glUniform4fv(this->uM6, 1, (const float *)(e + 0x2a8));
+            glUniform4fv(this->uM6, 1, engine->materialAmbient);
         if (this->uM7 >= 0)
-            glUniform4fv(this->uM7, 1, (const float *)(e + 0x298));
+            glUniform4fv(this->uM7, 1, engine->materialDiffuse);
         if (this->uM8 >= 0)
-            glUniform4fv(this->uM8, 1, (const float *)(e + 0x2b8));
+            glUniform4fv(this->uM8, 1, engine->materialSpecular);
         this->dirty = 0;
     }
 
@@ -79,15 +78,15 @@ void GenericShader1::UpdateMeshData(Mesh *mesh, Engine *engine)
         glEnableVertexAttribArray(this->aTexCoord);
 
     if (this->aPosition >= 0)
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
     if (this->aNormal >= 0)
-        glVertexAttribPointer(this->aNormal, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+        glVertexAttribPointer(this->aNormal, 2, 0x1406, 0, 0, mesh->texCoords);
     if (this->aTangent >= 0)
-        glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, *(void **)(m + 0x10));
+        glVertexAttribPointer(this->aTangent, 3, 0x1406, 0, 0, mesh->normals);
     if (this->aBinormal >= 0)
-        glVertexAttribPointer(this->aBinormal, 3, 0x1406, 0, 0, *(void **)(m + 0x14));
+        glVertexAttribPointer(this->aBinormal, 3, 0x1406, 0, 0, mesh->tangents);
     if (this->aTexCoord >= 0)
-        glVertexAttribPointer(this->aTexCoord, 3, 0x1406, 0, 0, *(void **)(m + 0x18));
+        glVertexAttribPointer(this->aTexCoord, 3, 0x1406, 0, 0, mesh->binormals);
 }
 
 // Disables the vertex attribute arrays this shader enabled.

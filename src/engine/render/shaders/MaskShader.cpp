@@ -3,10 +3,8 @@
 class FBOContainer;
 class ShaderBaseStruct;
 #include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
-
-// Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
-// then their fields are reached by raw offset.
 
 namespace AbyssEngine {
 
@@ -55,15 +53,12 @@ void MaskShader::SetInActive()
 
 void MaskShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
     if (this->u_mvpMatrix >= 0)
-        glUniformMatrix4fv(this->u_mvpMatrix, 1, 0, (const float *)(e + 0x104));
+        glUniformMatrix4fv(this->u_mvpMatrix, 1, 0, engine->worldViewProjMatrix);
 
     if (this->dirty != 0) {
         if (this->u_color >= 0)
-            glUniform4fv(this->u_color, 1, (const float *)(e + 0xd0));
+            glUniform4fv(this->u_color, 1, engine->glColor);
         this->dirty = 0;
     }
 
@@ -74,25 +69,25 @@ void MaskShader::UpdateMeshData(Mesh *mesh, ::Engine *engine)
     if (this->a_color >= 0)
         glEnableVertexAttribArray(this->a_color);
 
-    char *texBase = *(char **)(e + 0x30);
+    char *texBase = (char *)engine->field_0x30;
     int *tex = *(int **)(texBase + 0x20);
     if (tex != 0)
         ((::Engine *)engine)->SetTextureSlot(tex[1], 1);
 
-    if (*(uint8_t *)(m + 0x5c) == 0) {
+    if (mesh->uploaded == 0) {
         if (this->a_position >= 0)
-            glVertexAttribPointer(this->a_position, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
+            glVertexAttribPointer(this->a_position, 3, 0x1406, 0, 0, mesh->positions);
         if (this->a_texCoord >= 0)
-            glVertexAttribPointer(this->a_texCoord, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+            glVertexAttribPointer(this->a_texCoord, 2, 0x1406, 0, 0, mesh->texCoords);
         if (tex == 0)
             return;
         if (this->a_color < 0)
             return;
         glVertexAttribPointer(this->a_color, 2, 0x1406, 0, 0, *(void **)(*tex + 8));
     } else {
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->a_position, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->a_texCoord, 2, 0x1406, 0, 0, 0);
         if (tex == 0)
             return;

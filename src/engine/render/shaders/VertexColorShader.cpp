@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/VertexColorShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // VertexColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -44,32 +46,30 @@ void VertexColorShader::Init()
 void VertexColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->uWorldViewProj >= 0) {
-        glUniformMatrix4fv(this->uWorldViewProj, 1, false, (float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->uWorldViewProj, 1, false, engine->worldViewProjMatrix);
     }
     if (this->uNormalMatrix >= 0) {
-        glUniformMatrix3fv(this->uNormalMatrix, 1, false, (float *)((char *)engine + 0x204));
+        glUniformMatrix3fv(this->uNormalMatrix, 1, false, engine->normalMatrix);
     }
 
     if (this->dirty != 0) {
         if (this->uLightDir >= 0) {
-            float *lightDir = (float *)((char *)engine + 0x330);
-            glUniform3f(this->uLightDir, lightDir[0], lightDir[1], lightDir[2]);
+            glUniform3f(this->uLightDir, engine->lightDir.x, engine->lightDir.y, engine->lightDir.z);
         }
         if (this->uLightColor >= 0) {
-            float *lightColor = (float *)((char *)engine + 0x34c);
-            glUniform3f(this->uLightColor, lightColor[0], lightColor[1], lightColor[2]);
+            glUniform3f(this->uLightColor, engine->lightColor.x, engine->lightColor.y, engine->lightColor.z);
         }
         if (this->uMaterialDiffuse >= 0) {
-            glUniform4fv(this->uMaterialDiffuse, 1, (float *)((char *)engine + 0xd0));
+            glUniform4fv(this->uMaterialDiffuse, 1, engine->glColor);
         }
         if (this->uMaterialAmbient >= 0) {
-            glUniform4fv(this->uMaterialAmbient, 1, (float *)((char *)engine + 0x2a8));
+            glUniform4fv(this->uMaterialAmbient, 1, engine->materialAmbient);
         }
         if (this->uMaterialSpecular >= 0) {
-            glUniform4fv(this->uMaterialSpecular, 1, (float *)((char *)engine + 0x298));
+            glUniform4fv(this->uMaterialSpecular, 1, engine->materialDiffuse);
         }
         if (this->uMaterialShininess >= 0) {
-            glUniform4fv(this->uMaterialShininess, 1, (float *)((char *)engine + 0x2b8));
+            glUniform4fv(this->uMaterialShininess, 1, engine->materialSpecular);
         }
         this->dirty = 0;
     }
@@ -93,39 +93,39 @@ void VertexColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         glEnableVertexAttribArray(this->aColor);
     }
 
-    if (*(uint8_t *)((char *)mesh + 0x5c) != 0) {
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, false, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, false, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->aNormal, 3, 0x1406, false, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x70));
+        glBindBuffer(0x8892, mesh->tangentVBO);
         glVertexAttribPointer(this->aTangent, 3, 0x1406, false, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x74));
+        glBindBuffer(0x8892, mesh->binormalVBO);
         glVertexAttribPointer(this->aBiNormal, 3, 0x1406, false, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)((char *)mesh + 0x78));
+        glBindBuffer(0x8892, mesh->colorVBO);
         glVertexAttribPointer(this->aColor, 4, 0x1406, false, 0, 0);
         return;
     }
 
     if (this->aPosition >= 0) {
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, false, 0, *(void **)((char *)mesh + 4));
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, false, 0, mesh->positions);
     }
     if (this->aTexCoord >= 0) {
-        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, false, 0, *(void **)((char *)mesh + 8));
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, false, 0, mesh->texCoords);
     }
     if (this->aNormal >= 0) {
-        glVertexAttribPointer(this->aNormal, 3, 0x1406, false, 0, *(void **)((char *)mesh + 0x10));
+        glVertexAttribPointer(this->aNormal, 3, 0x1406, false, 0, mesh->normals);
     }
     if (this->aTangent >= 0) {
-        glVertexAttribPointer(this->aTangent, 3, 0x1406, false, 0, *(void **)((char *)mesh + 0x14));
+        glVertexAttribPointer(this->aTangent, 3, 0x1406, false, 0, mesh->tangents);
     }
     if (this->aBiNormal >= 0) {
-        glVertexAttribPointer(this->aBiNormal, 3, 0x1406, false, 0, *(void **)((char *)mesh + 0x18));
+        glVertexAttribPointer(this->aBiNormal, 3, 0x1406, false, 0, mesh->binormals);
     }
     if (this->aColor >= 0) {
-        glVertexAttribPointer(this->aColor, 4, 0x1406, false, 0, *(void **)((char *)mesh + 0x0c));
+        glVertexAttribPointer(this->aColor, 4, 0x1406, false, 0, mesh->colors);
     }
 }
 

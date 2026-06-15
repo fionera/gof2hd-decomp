@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/BloomShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/engine/render/FBOContainer.h"
 #include "gof2/platform/gl.h"
 #include "gof2/platform/libc.h"
@@ -17,10 +19,10 @@ extern "C" unsigned char g_BloomShader_internalInitNeeded;
 extern "C" unsigned int g_BloomShader_shaderMode;
 
 // Engine entry points reached by raw offset / opaque pointer (modelled in a later pass).
-extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
-extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
-extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
-extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
+extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
+extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
 
@@ -107,7 +109,7 @@ void BloomShader::InternalInit(Engine *engine)
 // Binds the luma program's world matrix and vertex/texcoord arrays for the supplied mesh.
 void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, (float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->lumaUniformWorldMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
         this->dirty = 0;
     }
@@ -115,14 +117,14 @@ void BloomShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->lumaAttribPosition);
     glEnableVertexAttribArray(this->lumaAttribTexCoord);
 
-    if (ae_field<uint8_t>(mesh, 0x5c) != 0) {
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
+    if (mesh->uploaded != 0) {
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, 0);
     } else {
-        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
-        glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
+        glVertexAttribPointer(this->lumaAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->lumaAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
     }
 }
 
@@ -168,7 +170,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     this->fboLuma->BeginCapture();
     glEnableVertexAttribArray(this->downSampleAttribPosition);
     glEnableVertexAttribArray(this->downSampleAttribTexCoord);
-    const float *mvp = (float *)((char *)engine + 0x104);
+    const float *mvp = engine->worldViewProjMatrix;
     glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
     glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));
@@ -243,7 +245,7 @@ void BloomShader::RenderEffect(FBOContainer *source, Engine *engine)
     glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
     unsigned int width;
     unsigned int height;
-    if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+    if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
         width = Engine_GetDisplayWidth(engine);
         height = Engine_GetDisplayHeight(engine);
     } else {
@@ -316,7 +318,7 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     this->fboLuma->BeginCapture();
     glEnableVertexAttribArray(this->downSampleAttribPosition);
     glEnableVertexAttribArray(this->downSampleAttribTexCoord);
-    const float *mvp = (float *)((char *)engine + 0x104);
+    const float *mvp = engine->worldViewProjMatrix;
     glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
     glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
                           *(void **)(ae_field<char *>(engine, 0x380) + 4));

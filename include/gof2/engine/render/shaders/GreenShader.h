@@ -6,9 +6,11 @@
 // AbyssEngine::GreenShader — GLES2 green shader (derives from ShaderBaseStruct).
 // Caches five vertex-attribute locations (a0..a4) and nine uniform locations (u0..u8)
 // after Init resolves them from the linked program.
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class GreenShader : public ShaderBaseStruct {

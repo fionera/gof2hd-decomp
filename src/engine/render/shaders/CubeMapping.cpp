@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/CubeMapping.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // CubeMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -50,42 +52,39 @@ void CubeMapping::SetInActive()
 // then their fields are reached by raw offset.
 void CubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *eng = (char *)engine;
-    char *msh = (char *)mesh;
-
     if (this->dirty != 0) {
-        glUniform4fv(this->uniform11, 1, (const float *)(eng + 0xd0));
-        glUniform4fv(this->uniform7, 1, (const float *)(eng + 0x2cc));
-        glUniform4fv(this->uniform8, 1, (const float *)(eng + 0x2fc));
-        glUniform4fv(this->uniform9, 1, (const float *)(eng + 0x2e4));
-        glUniform1f(this->uniform10, *(float *)(eng + 0x2c8));
+        glUniform4fv(this->uniform11, 1, engine->glColor);
+        glUniform4fv(this->uniform7, 1, (const float *)&engine->lightAmbientShaded);
+        glUniform4fv(this->uniform8, 1, (const float *)&engine->field_0x2fc);
+        glUniform4fv(this->uniform9, 1, (const float *)&engine->lightDiffuseShaded);
+        glUniform1f(this->uniform10, engine->materialShininess);
         this->dirty = 0;
     }
 
-    glUniform1f(this->uniform6, *(float *)(eng + 0xcc));
-    glUniformMatrix4fv(this->uMvp, 1, 0, (const float *)(eng + 0x104));
-    glUniformMatrix3fv(this->uNormalMatrix, 1, 0, (const float *)(eng + 0x204));
-    glUniform4f(this->uniform3, *(float *)(eng + 0x330), *(float *)(eng + 0x334),
-                *(float *)(eng + 0x338), *(float *)(eng + 0x378));
-    glUniform3f(this->uniform2, *(float *)(eng + 0x34c), *(float *)(eng + 0x350),
-                *(float *)(eng + 0x354));
+    glUniform1f(this->uniform6, engine->field_0xcc);
+    glUniformMatrix4fv(this->uMvp, 1, 0, engine->worldViewProjMatrix);
+    glUniformMatrix3fv(this->uNormalMatrix, 1, 0, engine->normalMatrix);
+    glUniform4f(this->uniform3, engine->lightDir.x, engine->lightDir.y,
+                engine->lightDir.z, engine->lightDirty[0]);
+    glUniform3f(this->uniform2, engine->lightColor.x, engine->lightColor.y,
+                engine->lightColor.z);
 
     glEnableVertexAttribArray(this->aPosition);
     glEnableVertexAttribArray(this->aTexCoord);
     glEnableVertexAttribArray(this->aNormal);
 
-    if (*(uint8_t *)(msh + 0x5c) == 0) {
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(msh + 0x4));
-        if ((*(uint8_t *)msh & 2) != 0)
-            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, *(void **)(msh + 0x8));
-        if ((*(uint8_t *)msh & 4) != 0)
-            glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, *(void **)(msh + 0x10));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
+        if ((mesh->vertexFormat & 2) != 0)
+            glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
+        if ((mesh->vertexFormat & 4) != 0)
+            glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, mesh->normals);
     } else {
-        glBindBuffer(0x8892, *(int *)(msh + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(msh + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(int *)(msh + 0x6c));
+        glBindBuffer(0x8892, mesh->normalVBO);
         glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
     }
 }

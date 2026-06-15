@@ -1,4 +1,5 @@
 #include "gof2/engine/render/shaders/TextureLightShader.h"
+#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
@@ -6,21 +7,6 @@
 extern "C" char g_TextureLightShader_vtable;
 
 namespace AbyssEngine {
-
-// Reads of the Engine object are deferred to a later Engine-modeling pass; until then its
-// fields are reached by raw byte offset.
-static inline const float *ef(Engine *engine, unsigned off)
-{
-    return (const float *)((char *)engine + off);
-}
-static inline int ei(Engine *engine, unsigned off)
-{
-    return *(int *)((char *)engine + off);
-}
-static inline float eff(Engine *engine, unsigned off)
-{
-    return *(float *)((char *)engine + off);
-}
 
 TextureLightShader::TextureLightShader()
 {
@@ -63,41 +49,41 @@ void TextureLightShader::Init(Engine *)
 // Binds the program's matrices, lighting block and the supplied mesh's vertex arrays.
 void TextureLightShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, ef(engine, 0x104));
+    glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->uModelMatrix >= 0)
-        glUniformMatrix4fv(this->uModelMatrix, 1, 0, ef(engine, 0x1c4));
-    glUniformMatrix3fv(this->uNormalMatrix, 1, 0, ef(engine, 0x204));
+        glUniformMatrix4fv(this->uModelMatrix, 1, 0, engine->uvMatrix);
+    glUniformMatrix3fv(this->uNormalMatrix, 1, 0, engine->normalMatrix);
     if (this->uModelViewMatrix >= 0)
-        glUniformMatrix4fv(this->uModelViewMatrix, 1, 0, ef(engine, 0x144));
+        glUniformMatrix4fv(this->uModelViewMatrix, 1, 0, engine->modelMatrixGL);
 
     if (this->dirty != 0) {
         if (this->uHasScaleAnimation >= 0)
             glUniform1i(this->uHasScaleAnimation, mesh->hasAnimation);
-        glUniform4fv(this->uAmbientColor, 1, ef(engine, 0xd0));
+        glUniform4fv(this->uAmbientColor, 1, engine->glColor);
 
-        glUniform3fv(this->uLight0Direction, 1, ef(engine, 0x2cc));
-        glUniform3fv(this->uLight1Direction, 1, ef(engine, 0x2fc));
-        glUniform3fv(this->uLight2Direction, 1, ef(engine, 0x2e4));
+        glUniform3fv(this->uLight0Direction, 1, (float *)&engine->lightAmbientShaded);
+        glUniform3fv(this->uLight1Direction, 1, (float *)&engine->field_0x2fc);
+        glUniform3fv(this->uLight2Direction, 1, (float *)&engine->lightDiffuseShaded);
 
-        glUniform4f(this->uColor0, eff(engine, 0x330), eff(engine, 0x334),
-                    eff(engine, 0x338), eff(engine, 0x378));
+        glUniform4f(this->uColor0, engine->lightDir.x, engine->lightDir.y,
+                    engine->lightDir.z, engine->lightDirty[0]);
 
-        if (ei(engine, 0x32c) < 2) {
+        if (engine->field_0x32c < 2) {
             glUniform3f(this->uLight0Color, 0, 0, 0);
             glUniform3f(this->uLight1Color, 0, 0, 0);
             glUniform3f(this->uLight2Color, 0, 0, 0);
         } else {
-            glUniform3fv(this->uLight0Color, 1, ef(engine, 0x2d8));
-            glUniform3fv(this->uLight1Color, 1, ef(engine, 0x308));
-            glUniform3fv(this->uLight2Color, 1, ef(engine, 0x2f0));
+            glUniform3fv(this->uLight0Color, 1, (float *)&engine->lightSpecularShaded);
+            glUniform3fv(this->uLight1Color, 1, (float *)&engine->field_0x308);
+            glUniform3fv(this->uLight2Color, 1, (float *)&engine->particleAmbient);
         }
 
-        glUniform4f(this->uColor1, eff(engine, 0x33c), eff(engine, 0x340),
-                    eff(engine, 0x344), eff(engine, 0x37c));
-        glUniform1f(this->uShininess, eff(engine, 0x2c8));
+        glUniform4f(this->uColor1, engine->field_0x33c.x, engine->field_0x33c.y,
+                    engine->field_0x33c.z, engine->lightDirty[1]);
+        glUniform1f(this->uShininess, engine->materialShininess);
         if (this->uSpecularColor >= 0)
-            glUniform3f(this->uSpecularColor, eff(engine, 0x34c), eff(engine, 0x350),
-                        eff(engine, 0x354));
+            glUniform3f(this->uSpecularColor, engine->lightColor.x, engine->lightColor.y,
+                        engine->lightColor.z);
         this->dirty = 0;
     }
 

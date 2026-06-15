@@ -1,4 +1,6 @@
 #include "gof2/engine/render/shaders/TexOnlyShader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // TexOnlyShader's C++ vtable symbol (platform-supplied at the engine ABI level).
@@ -31,23 +33,20 @@ void TexOnlyShader::SetInActive()
 
 void TexOnlyShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
-    char *e = (char *)engine;
-    char *m = (char *)mesh;
-
-    glUniformMatrix4fv(this->uWorldMatrix, 1, 0, (const float *)(e + 0x104));
+    glUniformMatrix4fv(this->uWorldMatrix, 1, 0, engine->worldViewProjMatrix);
     if (this->dirty != 0) {
         this->dirty = 0;
     }
     glEnableVertexAttribArray(this->aPosition);
     glEnableVertexAttribArray(this->aTexCoord);
 
-    if (*(uint8_t *)(m + 0x5c) == 0) {
-        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, *(void **)(m + 0x4));
-        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, *(void **)(m + 0x8));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
     } else {
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, *(uint32_t *)(m + 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
     }
 }

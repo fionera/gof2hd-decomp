@@ -7,9 +7,11 @@
 // alpha (derives from ShaderBaseStruct). The GL program handle lives in the base
 // (ShaderBaseStruct::program); this class caches its six vertex attribute locations
 // and nine uniform locations at its tail.
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-struct Engine;
 struct Mesh;
 
 class VertexColorAlphaTextureShader : public ShaderBaseStruct {

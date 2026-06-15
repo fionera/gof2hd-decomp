@@ -7,9 +7,11 @@
 // (ShaderBaseStruct::program) renders opaque meshes; an extended program adds the
 // secondary slot. Per-slot uniform/attribute locations are stored as 2-element
 // arrays indexed by the active slot.
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class TextureShader : public ShaderBaseStruct {

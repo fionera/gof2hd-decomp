@@ -1,5 +1,7 @@
 #include "gof2/engine/render/shaders/BlurShader.h"
 #include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
@@ -12,10 +14,10 @@ template <class T> static inline T &ae_field(void *base, unsigned int off) {
 extern "C" char BlurShader_vtable;
 
 // Engine entry points reached by opaque pointer (modelled in a later pass).
-extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
-extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
-extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
-extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
+extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
+extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
 
@@ -79,7 +81,7 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
         glBindFramebuffer(0x8d40, ae_field<unsigned int>(engine, 0x40c));
         int width;
         int height;
-        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+        if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
             width = Engine_GetDisplayWidth(engine);
             height = Engine_GetDisplayHeight(engine);
         } else {
@@ -101,13 +103,13 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     }
     int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
-        glUniformMatrix4fv(matrixLocation, 1, 0, &ae_field<float>(engine, 0x104));
+        glUniformMatrix4fv(matrixLocation, 1, 0, engine->worldViewProjMatrix);
     }
     int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         int other;
-        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+        if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
             width = (float)Engine_GetDisplayWidth(engine);
             other = Engine_GetDisplayHeight(engine);
         } else {
@@ -162,14 +164,14 @@ void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     int matrixLocation = this->uMvpMatrix;
     if (matrixLocation >= 0) {
-        glUniformMatrix4fv(matrixLocation, 1, 0, &ae_field<float>(engine, 0x104));
+        glUniformMatrix4fv(matrixLocation, 1, 0, engine->worldViewProjMatrix);
     }
 
     int texelLocation = this->uTexelSize;
     if (texelLocation >= 0) {
         float width;
         float height;
-        if (*(int *)(ae_field<char *>(engine, 0x30) + 0x30) == 2) {
+        if (*(int *)((char *)engine->field_0x30 + 0x30) == 2) {
             width = (float)Engine_GetDisplayWidth(engine);
             height = (float)Engine_GetDisplayHeight(engine);
         } else {
@@ -201,13 +203,13 @@ void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     glEnableVertexAttribArray(this->positionAttrib);
     glEnableVertexAttribArray(this->texCoordAttrib);
 
-    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 0x4));
-        glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 0x8));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, mesh->texCoords);
     } else {
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->positionAttrib, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<unsigned int>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, 0);
     }
 }

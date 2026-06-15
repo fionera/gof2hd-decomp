@@ -1,5 +1,7 @@
 #include "gof2/engine/render/shaders/GlowPPShader.h"
 #include "gof2/engine/render/FBOContainer.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/engine/render/Mesh.h"
 #include "gof2/platform/gl.h"
 
 // Cross-object reads of Engine/Mesh are deferred to a later Engine/Mesh-modeling pass; until
@@ -16,10 +18,10 @@ extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
 extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
 
 // Engine entry points reached by raw offset / opaque pointer (modelled in a later pass).
-extern "C" unsigned int Engine_GetDisplayWidth(AbyssEngine::Engine *engine);
-extern "C" unsigned int Engine_GetDisplayHeight(AbyssEngine::Engine *engine);
-extern "C" void Engine_DrawQuad(AbyssEngine::Engine *engine, int x, int y, int width, int height);
-extern "C" void Engine_SetWorldViewMatrix(AbyssEngine::Engine *engine, const uint32_t *matrix);
+extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
+extern "C" unsigned int Engine_GetDisplayHeight(::Engine *engine);
+extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
 
@@ -29,18 +31,18 @@ void GlowPPShader::SetInActive() {
 }
 
 void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
-    glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
     this->dirty = 0;
 
     glEnableVertexAttribArray(this->meshAttribPosition);
     glEnableVertexAttribArray(this->meshAttribTexCoord);
-    if (ae_field<uint8_t>(mesh, 0x5c) == 0) {
-        glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, ae_field<void *>(mesh, 4));
-        glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, ae_field<void *>(mesh, 8));
+    if (mesh->uploaded == 0) {
+        glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, mesh->positions);
+        glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, mesh->texCoords);
     } else {
-        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x60));
+        glBindBuffer(0x8892, mesh->positionVBO);
         glVertexAttribPointer(this->meshAttribPosition, 3, 0x1406, 0, 0, 0);
-        glBindBuffer(0x8892, ae_field<uint32_t>(mesh, 0x68));
+        glBindBuffer(0x8892, mesh->texCoordVBO);
         glVertexAttribPointer(this->meshAttribTexCoord, 2, 0x1406, 0, 0, 0);
     }
 }
@@ -51,7 +53,7 @@ static inline void draw_fullscreen(Engine *engine, int posLoc, int texLoc, int m
 {
     glEnableVertexAttribArray(posLoc);
     glEnableVertexAttribArray(texLoc);
-    glUniformMatrix4fv(matrixLoc, 1, 0, (const float *)((char *)engine + 0x104));
+    glUniformMatrix4fv(matrixLoc, 1, 0, engine->worldViewProjMatrix);
     glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
     glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
     glClear(0x4000);
@@ -130,7 +132,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         this->blurXTarget->BeginCapture();
         glEnableVertexAttribArray(this->blurXAttribPosition);
         glEnableVertexAttribArray(this->blurXAttribTexCoord);
-        glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->blurXUniformWorldView, 1, 0, engine->worldViewProjMatrix);
         glVertexAttribPointer(this->blurXAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurXAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->blurXUniformSampleSize, 1.0f / (float)this->blurXTarget->width);
@@ -145,7 +147,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         this->blurYTarget->BeginCapture();
         glEnableVertexAttribArray(this->blurYAttribPosition);
         glEnableVertexAttribArray(this->blurYAttribTexCoord);
-        glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, (const float *)((char *)engine + 0x104));
+        glUniformMatrix4fv(this->blurYUniformWorldView, 1, 0, engine->worldViewProjMatrix);
         glVertexAttribPointer(this->blurYAttribPosition, 3, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 4));
         glVertexAttribPointer(this->blurYAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(ae_field<char *>(engine, 0x380) + 8));
         glUniform1f(this->blurYUniformSampleSize, 1.0f / (float)this->blurYTarget->height);
@@ -174,7 +176,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         glBindFramebuffer(0x8d40, ae_field<uint32_t>(engine, 0x40c));
         uint32_t width;
         uint32_t height;
-        if (*(int32_t *)(ae_field<char *>((void *)ae_field<char *>(engine, 0x30), 0) + 0x30) == 2) {
+        if (*(int32_t *)(ae_field<char *>((void *)engine->field_0x30, 0) + 0x30) == 2) {
             width = Engine_GetDisplayWidth(engine);
             height = Engine_GetDisplayHeight(engine);
         } else {

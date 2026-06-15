@@ -5,9 +5,11 @@
 // AbyssEngine::SpecCubeAlphaMapping — GLES2 specular-cube + alpha-mapping shader.
 // Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.
 
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-class Engine;
 class Mesh;
 
 class SpecCubeAlphaMapping : public ShaderBaseStruct {

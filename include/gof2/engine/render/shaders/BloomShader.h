@@ -8,9 +8,11 @@
 // downsample, horizontal/vertical blur, final composite) plus four render-target
 // FBOs (luma, blurH, blurV, black). Each program caches its attribute/uniform
 // location handles after Init.
+// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
+struct Engine;
+
 namespace AbyssEngine {
 
-struct Engine;
 struct Mesh;
 class FBOContainer;
 
