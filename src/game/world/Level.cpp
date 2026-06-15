@@ -44,6 +44,7 @@
 #include <new>
 #include "gof2/game/ship/Agent.h"
 #include "gof2/engine/render/Engine.h"
+#include "gof2/game/weapons/Radar.h"
 #include "gof2/game/weapons/BeamGun.h"
 #include "gof2/game/weapons/BombGun.h"
 #include "gof2/game/weapons/MineGun.h"
@@ -185,19 +186,6 @@ static unsigned int g_level_texOutScratch;
 // and the dir/vel Vector components are the bit patterns of the floats they encode.
 static inline float as_float(int bits) { float f; __builtin_memcpy(&f, &bits, sizeof f); return f; }
 
-extern "C" int Radar_hasScanner_ed();
-
-
-extern "C" void Level_ctor(void *self, int mode)
-{
-    new (self) Level(mode);
-}
-
-extern "C" void *Level_dtor(void *level)
-{
-    ((Level *)level)->~Level();
-    return level;
-}
 
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
@@ -2160,7 +2148,8 @@ void Level::enemyDied(int r1, bool r2arg) {
     if (this->player == nullptr)
         return;
 
-    if (Radar_hasScanner_ed() == 0) {
+    // the player ego carries its Radar handle at +0x14; the medal check needs no scanner.
+    if (((AbyssEngine::Radar *)this->player->field_0x14)->hasScanner() == 0) {
         Achievements **achA = g_ed_achA;
         if (((Achievements *)(*achA))->hasMedal(0x28, 1) == 0) {
             int st = *(int *)statusHolder;
