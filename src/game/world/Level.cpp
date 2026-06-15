@@ -184,8 +184,6 @@ int  ApplicationManager_GetEngine_csp();
 
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
 int   crms_randDelay(int which);
-int  cso2_rand20000(AbyssEngine::AERandom *rng);
-int  cs_rand40000(AbyssEngine::AERandom *rng);
 void Level_createPlayer_impl(Level *self);
 }
 
@@ -2639,9 +2637,9 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
     }
     if (jitter) {
         AbyssEngine::AERandom *rng = *g_cso2_rng;
-        x = x + cso2_rand20000(rng) - 10000;
-        y = y + cso2_rand20000(rng) - 10000;
-        z = z + cso2_rand20000(rng) - 10000;
+        x = x + rng->nextInt(20000) - 10000;
+        y = y + rng->nextInt(20000) - 10000;
+        z = z + rng->nextInt(20000) - 10000;
     }
 
     // type 0x4215 picks one of three debris meshes at random; everything else maps 1:1.
@@ -2714,9 +2712,9 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         z = wp->z;
     }
     AbyssEngine::AERandom *rng = *g_cs_rng;
-    int jx = cs_rand40000(rng);
-    int jy = cs_rand40000(rng);
-    int jz = cs_rand40000(rng);
+    int jx = rng->nextInt(40000);
+    int jy = rng->nextInt(40000);
+    int jz = rng->nextInt(40000);
 
     // base hitpoints from player level + campaign ramp.
     int lvl = (*g_status)->getLevel();
