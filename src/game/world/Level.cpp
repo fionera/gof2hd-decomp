@@ -181,9 +181,7 @@ extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
 void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
-void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
-int  Station_getShips_csc();
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
 int  ApplicationManager_GetEngine_csp();
@@ -192,7 +190,6 @@ int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
 int   crms_randDelay(int which);
 int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
-void Player_setHitpoints_cwm(int p);
 void Level_createPlayer_impl(Level *self);
 }
 
@@ -3475,8 +3472,8 @@ void Level::createScene()
                 fighter = (pick == 1) ? 0x26 : (pick == 0) ? 0x25 : 0x28;
             }
             if (fromStationShips) {
-                ((Station*)(*g_status)->getStation())->getShips();
-                fighter = ((Ship*)Station_getShips_csc())->getIndex();
+                Array<Ship*> *ships = ((Station*)(*g_status)->getStation())->getShips();
+                fighter = (*ships)[s]->getIndex();
             }
             KIPlayer *k = (KIPlayer *)createShip(0, 0, fighter, 0, 0, 0);
             int seat = rng->nextInt();
