@@ -1,26 +1,20 @@
 #ifndef GOF2_ABYSSENGINE_H
 #define GOF2_ABYSSENGINE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- AbyssEngine namespace-scope free functions and small math/string
-// helpers (Android libgof2hdaa.so, armv7 Thumb).
-//
-// The work items tagged "class AbyssEngine" are NOT methods of a class named AbyssEngine.
-// They are free functions living in `namespace AbyssEngine`. Ghidra renders struct-return
-// helpers with a leading `AbyssEngine *this` argument -- that is the hidden return-slot
-// pointer (sret), not a real `this`. We model those as ordinary free functions whose return
-// value is the produced struct, so the symbol still demangles to AbyssEngine::name(...).
-//
-// All aggregate fields are reached via byte-offset casts so we never need exact struct
-// layouts; engine/runtime callees are declared extern "C" by their mangled names.
+#include "gof2/math.h"   // AbyssEngine::AEMath::Vector / Matrix, AbyssEngine::Quaternion
 
-typedef unsigned int size_t_;
+// Galaxy on Fire 2 -- the AbyssEngine namespace: a family of namespace-scope free functions and
+// operators that build/draw/release the engine's resource types (Mesh, Image, ImageFont,
+// SpriteSystem, Camera, Curve, ...) and a handful of small math/string helpers. There is no
+// `class AbyssEngine`; these are standalone functions sharing the namespace.
 
-// --- Engine/runtime types declared at GLOBAL scope ------------------------
-// fwd.h already declares Engine/Mesh/Material/Camera/Transform/PaintCanvas globally; the
-// remaining engine types are declared here once at global scope. The AbyssEngine namespace
-// re-exports them via `using` so AbyssEngine::Engine and ::Engine are the same type and the
-// top-level extern "C" engine prototypes match the namespace-scope call sites.
+// --- Engine/runtime types referenced by pointer -----------------------------------------------
+// Declared at global scope (their full definitions live in their own render/file headers) and
+// re-exported into namespace AbyssEngine below, so AbyssEngine::Engine and ::Engine name the same
+// type and the extern engine prototypes match the namespace-scope call sites.
+class Engine;
+class Material;
+class PaintCanvas;
 struct Image;
 struct Image2D;
 struct ImageFont;
@@ -30,28 +24,25 @@ struct AELoadedTexture;
 
 namespace AbyssEngine {
 
-// --- Small value types -----------------------------------------------------
-namespace AEMath {
-
-} // namespace AEMath
-
 using AEMath::Vector;
 using AEMath::Matrix;
-// Quaternion lives directly in namespace AbyssEngine (see gof2/math.h); already visible here.
+// Quaternion already lives directly in namespace AbyssEngine (see gof2/math.h).
 
+// A bare 4x4 float matrix used by esMatrixMultiply (no separate header of its own).
 struct ESMatrix { float m[4][4]; };
 
-// --- Re-export the global engine/runtime types into this namespace --------
-// NOTE: Mesh and Transform are intentionally NOT re-exported here. gof2/Mesh.h declares
-// AbyssEngine::Mesh / AbyssEngine::Transform as namespace-scope forward decls (distinct from
-// the global complete ::Mesh struct), so a `using ::Mesh;` would conflict. Code that needs the
-// complete Mesh layout uses the global ::Mesh explicitly at the access site.
+// Camera is a namespace-scope engine type (AbyssEngine::Camera), forward-declared here and only
+// ever touched by pointer in this TU.
+class Camera;
+
+// Re-export the global engine/runtime types into this namespace. Mesh, Transform and Camera are
+// intentionally NOT re-exported: their namespace-scope forms (gof2/engine/render/Mesh.h,
+// gof2/engine/math/Transform.h) are distinct from any global type, so a `using ::X;` would clash.
 using ::Engine;
 using ::Image;
 using ::Image2D;
 using ::ImageFont;
 using ::Material;
-using ::Camera;
 using ::Curve;
 using ::SpriteSystem;
 using ::PaintCanvas;
@@ -59,9 +50,8 @@ using ::AELoadedTexture;
 
 } // namespace AbyssEngine
 
-// --- Field accessors via byte offset (operate on raw pointers) -------------
+// Byte-offset accessor used by the resource helpers to reach fields of the opaque engine types
+// above (which are touched only by pointer here, without their full layouts).
 static inline int16_t &s16(void *self, uint32_t off) { return *(int16_t *)((char *)self + off); }
-static inline char *bp(void *self, uint32_t off) { return (char *)self + off; }
 
-// NOTE: AbyssEngine is a namespace (declared above), not a class. No struct here.
-#endif
+#endif // GOF2_ABYSSENGINE_H

@@ -2,22 +2,24 @@
 
 namespace AbyssEngine {
 
-// AbyssEngine::KeyFrame::KeyFrame()
-//   Clears the leading 0x48 bytes, seeds the two embedded vectors to (1,1,1),
-//   sets the +0x48 weight to 1.0, and zeroes the four trailing words.
+// Seeds the two transform vectors to (1,1,1), the blend weight to 1.0,
+// and zeroes the trailing words and padding.
 KeyFrame::KeyFrame()
 {
-    this->f_50 = 0;
-    this->f_54 = 0;
-    __aeabi_memclr4(this, 0x48);
+    for (unsigned char& b : _pad_00) b = 0;
+    for (unsigned char& b : _pad_18) b = 0;
+    for (unsigned char& b : _pad_3c) b = 0;
+    for (unsigned char& b : _pad_4c) b = 0;
 
-    AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-    this->scaleA = one;
-    this->scaleB = one;
+    const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
+    scaleA = one;
+    scaleB = one;
+    flWeight = 1.0f;
 
-    this->f_58 = 0;
-    this->f_5c = 0;
-    this->f_48 = 1.0f;
+    field_0x50 = 0;
+    field_0x54 = 0;
+    field_0x58 = 0;
+    field_0x5c = 0;
 }
 
 } // namespace AbyssEngine

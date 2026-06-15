@@ -3,16 +3,25 @@
 #include "gof2/engine/file/AEFile.h"
 #include "gof2/engine/file/FileInterfaceAndroid.h"
 #include "gof2/engine/math/AEMath.h"
+#include "gof2/engine/math/Transform.h"   // also provides AEMath::BSphere (node-local layout)
 #include "gof2/game/core/String.h"
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/engine/render/Engine.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/platform/gl.h"
 #include <cstdlib>   // realloc, for the engine raw-array helpers below
 
+// ARM EABI runtime entry points the recovered code calls directly; not provided by the shared
+// platform header, so declared once here.
+extern "C" {
+void *__aeabi_memcpy(void *dst, const void *src, size_t n);
+int   __aeabi_uidiv(int num, int den);
+}
+
 // AbyssEngine::FBOContainer is defined fully in gof2/FBOContainer.h, but that header
-// forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export
-// pulled in by gof2/AbyssEngine.h. We only build/Create one here via a raw pointer, so
-// declare the minimal class surface locally instead (Engine is the re-exported ::Engine).
+// forward-declares AbyssEngine::Engine which clashes with the `using ::Engine;` re-export pulled
+// in by AbyssEngine.h. Only one is built and Create()d here via a raw pointer, so the minimal
+// surface is declared locally instead.
 namespace AbyssEngine {
 class FBOContainer {
 public:
@@ -203,13 +212,9 @@ void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *
 
 } // namespace AbyssEngine
 
-// AbyssEngine::getAppVersion()
-//
-// NOTE: Ghidra attributes this address to BOTH Engine::InitGL(bool,int,int) and
-// getAppVersion(); the recovered body is the InitGL initialization path operating on the
-// Engine `this` that arrives in r0. To keep the emitted symbol demangling to the work item's
-// name (AbyssEngine::getAppVersion()) while preserving the real logic, we take the engine via
-// a register-style accessor rather than as a named parameter.
+// AbyssEngine::getAppVersion() -- the GL initialization path: sets up the file interface, the
+// default render state, the depth/cull configuration, and (when shaders are enabled) the FBO.
+// The Engine being initialized is supplied by the host runtime rather than as a parameter.
 
 extern "C" {
 void glViewport(int, int, int, int);
@@ -230,13 +235,11 @@ void getAppVersion()
     char *c = (char *)self;
 
     pp(c, 0x418) = 0;
-    // r2/r3 carry the requested resolution; mirror the stores.
     u32(c, 0x368) = u32(c, 0x368);
     u32(c, 0x370) = u32(c, 0x368);
     u32(c, 0x374) = u32(c, 0x36c);
 
-    FileInterfaceAndroid *fileIface = (FileInterfaceAndroid *)operator new(0x38);
-    fileIface->ctor_default();
+    FileInterfaceAndroid *fileIface = new FileInterfaceAndroid();
     pp(c, 0x24) = fileIface;
     AEFile::SetInterface((FileInterface *)fileIface);
 
@@ -247,7 +250,7 @@ void getAppVersion()
     char *shaderFlag = g_Engine_shaderModeFlag;
     u32(c, 0x40c) = 0;
     self->ResetLightParam();
-    glViewport(0, 0, (int)i32(c, 0x374), (int)i32(c, 0x370));
+    glViewport(0, 0, i32(c, 0x374), i32(c, 0x370));
 
     if (*shaderFlag == 0) {
         glEnable(0x803a);
@@ -275,14 +278,9 @@ void getAppVersion()
     glGetIntegerv(0xd33, c + 0xc);
 
     if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
-        void *fbo = operator new(0x38);
-        String name;
-        name.ctor_char("", false);
-        new (fbo) AbyssEngine::FBOContainer((AbyssEngine::Engine *)self, name);
+        FBOContainer *fbo = new FBOContainer(self, String(""));
         pp(c, 0x418) = fbo;
-        ((::String *)&name)->dtor();
-        ((AbyssEngine::FBOContainer *)pp(c, 0x418))->Create(
-            (int)i32(c, 0x368), (int)i32(c, 0x36c), false, true);
+        fbo->Create((int)i32(c, 0x368), (int)i32(c, 0x36c), false, true);
     }
 }
 
@@ -1205,10 +1203,9 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         unsigned short childCount = 0;
         if (AEFile::Read((uint32_t)(2), &childCount, handle) == 0)
             return -1;
-        int xf = *(int *)((char *)*slot + 0x34);
+        Transform *xf = *(Transform **)((char *)*slot + 0x34);
         if (xf != 0)
-            ((AEMath::BSphere *)((char *)*slot + 0x3c))
-                ->Merge(*(const Transform *)(xf + 0xd4));
+            ((AEMath::BSphere *)((char *)*slot + 0x3c))->Merge(xf->bounds());
         for (unsigned int c = 0; c < childCount; ++c) {
             char *child = (char *)::operator new(0x88);
             for (int b = 0; b < 0x88; ++b) child[b] = 0;
@@ -2727,11 +2724,7 @@ void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot)
         }
     }
 
-    Transform *t = m->animation;
-    if (t != 0) {
-        t->~Transform();
-        operator delete(t);
-    }
+    delete m->animation;
     m->animation = 0;
 
     operator delete((void *)m);
@@ -2897,9 +2890,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
             if (MeshReadData(engine, &handle, fmt, out, mat) != -1)
                 ok = true;
         } else {
-            char *xf = (char *)::operator new(0x180);
-            new (xf) Transform();
-            pp((char *)*out + 0x34, 0) = xf;
+            pp((char *)*out + 0x34, 0) = new Transform();
             for (unsigned int s = 0; s < subCount; ++s) {
                 char *child = (char *)::operator new(0x88);
                 initMesh(child);

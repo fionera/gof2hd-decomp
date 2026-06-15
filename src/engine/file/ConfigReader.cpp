@@ -2,28 +2,16 @@
 
 namespace AbyssEngine {
 
-__attribute__((minsize)) ConfigReader::~ConfigReader()
+namespace {
+
+void config_reader_read_file_callback(void *, void *) {}
+void config_reader_keys_for_action_callback(void *, void *) {}
+void config_reader_register_token_callback(void *, void *) {}
+
+} // namespace
+
+ConfigReader::ConfigReader(Engine *engine)
 {
-    for (uint32_t i = 0; i < tokens.size(); i++) {
-        TokenStruct *token = tokens[i];
-        if (token != 0) {
-            delete token;
-        }
-        tokens[i] = 0;
-    }
-}
-
-} // namespace AbyssEngine
-
-static void config_reader_read_file_callback(void *, void *) {}
-static void config_reader_keys_for_action_callback(void *, void *) {}
-static void config_reader_register_token_callback(void *, void *) {}
-
-namespace AbyssEngine {
-
-__attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
-{
-
     this->engine = engine;
 
     RegisterTokenReadFunction(
@@ -35,15 +23,20 @@ __attribute__((minsize)) ConfigReader::ConfigReader(Engine *engine)
     RegisterTokenReadFunction(
         StringFromAscii("ConfigRegisterTokenReadFunction"),
         (ConfigTokenReadFunction)config_reader_register_token_callback, engine);
-
-    
 }
 
-} // namespace AbyssEngine
+ConfigReader::~ConfigReader()
+{
+    for (uint32_t i = 0; i < tokens.size(); i++) {
+        TokenStruct *token = tokens[i];
+        if (token != nullptr) {
+            delete token;
+        }
+        tokens[i] = nullptr;
+    }
+}
 
-namespace AbyssEngine {
-
-__attribute__((minsize)) void ConfigReader::RegisterTokenReadFunction(
+void ConfigReader::RegisterTokenReadFunction(
     String name, ConfigTokenReadFunction read, void *context)
 {
     TokenStruct *token = new TokenStruct();
@@ -53,11 +46,7 @@ __attribute__((minsize)) void ConfigReader::RegisterTokenReadFunction(
     tokens.push_back(token);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-__attribute__((minsize)) String ConfigReader::GetNewLine()
+String ConfigReader::GetNewLine()
 {
     String line;
     char c = 0;
@@ -66,9 +55,8 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
         uint32_t read;
         while (true) {
             read = AEFile::Read(c, this->file_handle);
-            uint32_t newline = __builtin_clz((uint32_t)c - 10) >> 5;
-            uint32_t done = (read ^ 1) | newline;
-            if (done != 0) {
+            bool newline = (c == '\n');
+            if (read == 0 || newline) {
                 break;
             }
             if (c != '\r') {
@@ -77,17 +65,10 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
         }
 
         StringTrim(line);
-        int32_t commentIndex;
-        {
-            String comment = StringFromAscii("//");
-            commentIndex = StringIndexOf(line, comment);
-        }
 
+        int32_t commentIndex = StringIndexOf(line, StringFromAscii("//"));
         if (commentIndex != -1) {
-            {
-                String stripped = StringSubString(line, 0, commentIndex);
-                line = stripped;
-            }
+            line = StringSubString(line, 0, commentIndex);
             StringTrim(line);
         }
 
@@ -95,15 +76,11 @@ __attribute__((minsize)) String ConfigReader::GetNewLine()
             StringSetAscii(line, "EOF");
         }
     }
-    
+
     return line;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-__attribute__((minsize)) void ConfigReader::ParseFile(String name)
+void ConfigReader::ParseFile(String name)
 {
     if (AEFile::OpenRead(name, &this->file_handle) != 0) {
         String line = GetNewLine();
@@ -114,27 +91,18 @@ __attribute__((minsize)) void ConfigReader::ParseFile(String name)
                 if (*last == ']') {
                     for (uint32_t i = 0; i < tokens.size(); i++) {
                         TokenStruct *token = tokens[i];
-                        int32_t cmp;
-                        {
-                            String section =
-                                StringSubString(line, 1, line.size() - 1);
-                            cmp = (token->name.s == section.s) ? 0 : 1;
-                        }
-                        if (cmp == 0) {
+                        String section = StringSubString(line, 1, line.size() - 1);
+                        if (token->name.s == section.s) {
                             token->read(this, token->context);
                             break;
                         }
                     }
                 }
             }
-            {
-                String next = GetNewLine();
-                line = next;
-            }
+            line = GetNewLine();
         }
         AEFile::Close(this->file_handle);
     }
-    
 }
 
 } // namespace AbyssEngine

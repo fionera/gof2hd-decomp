@@ -1,23 +1,22 @@
 #ifndef GOF2_EASEINOUT_H
 #define GOF2_EASEINOUT_H
-#include "gof2/common.h"
-// real struct kept from byte-match recovery (+ supporting decls)
+
 namespace AbyssEngine {
 
 namespace AEMath {
 float Sinf(float value);
 }
 
-// PI as a 32-bit float constant; double-context uses promote it to double,
-// reproducing the target's literal-pool double values (N * (double)PI).
+// PI as a 32-bit float constant. Double-context uses promote it to double,
+// reproducing the engine's literal-pool double values (N * (double)PI).
 static const float PI = 3.1415927f;
 
 class EaseInOut {
 public:
-    float m_min;      // +0x0  base/start output value
-    float m_range;    // +0x4  span (max - min)
-    float m_t;        // +0x8  angle parameter (radians)
-    float m_current;  // +0xc  current output value
+    float m_min;      // base/start output value
+    float m_range;    // span (max - min)
+    float m_t;        // angle parameter (radians)
+    float m_current;  // current output value
 
     EaseInOut();
     EaseInOut(float minValue, float maxValue);
@@ -42,4 +41,5 @@ public:
 };
 
 } // namespace AbyssEngine
+
 #endif

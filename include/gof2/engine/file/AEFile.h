@@ -2,22 +2,14 @@
 #define GOF2_AEFILE_H
 #include "gof2/common.h"
 #include "gof2/game/core/String.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-namespace AbyssEngine {
 
-String operator+(const String &left, const String &right);
-
-} // namespace AbyssEngine
-
-using uint = uint32_t;
-using uchar = uint8_t;
-using ushort = uint16_t;
-using longlong = int64_t;
 using String = AbyssEngine::String;
 
+// A single entry in a registered .pak archive: the CRC32 of its name (the lookup key), the
+// original name, and the location/size of its data within the archive.
 struct AEPakFileEntry {
     uint32_t crc;
-    String name;
+    String   name;
     uint32_t offset;
     uint32_t packedSize;
     uint32_t size;
@@ -25,9 +17,10 @@ struct AEPakFileEntry {
 
 struct AELowLevelFile;
 
+// Dispatch table shared by every low-level file backend (native file / pak entry).
 struct AELowLevelFileVTable {
-    void (*field_00)(AELowLevelFile *);
-    void (*Close)(AELowLevelFile *);
+    void     (*field_00)(AELowLevelFile *);
+    void     (*Close)(AELowLevelFile *);
     uint32_t (*Write)(AELowLevelFile *, uint32_t, const void *);
     uint32_t (*Read)(AELowLevelFile *, uint32_t, void *);
     uint32_t (*Skip)(AELowLevelFile *, uint32_t);
@@ -44,36 +37,37 @@ struct AELowLevelNativeFile : AELowLevelFile {
 };
 
 struct AELowLevelPakFile : AELowLevelFile {
-    void *handle;
-    uint32_t packedSize;
-    uint32_t size;
-    uint32_t position;
+    void     *handle;
+    uint32_t  packedSize;
+    uint32_t  size;
+    uint32_t  position;
 };
 
 struct FileInterface;
 
+// Platform file-system backend dispatch table.
 struct FileInterfaceVTable {
-    void (*field_00)(FileInterface *);
-    void (*field_04)(FileInterface *);
-    void *(*OpenRead)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
-    void *(*OpenWrite)(FileInterface *, const String &, uint32_t, uint32_t);
-    void *(*OpenAppend)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t);
-    void (*field_14)(FileInterface *);
-    void (*field_18)(FileInterface *);
-    void (*field_1c)(FileInterface *);
-    void (*field_20)(FileInterface *);
-    uint32_t (*FileExist)(FileInterface *, const String &);
-    uint32_t (*FileDelete)(FileInterface *, const String &);
-    uint32_t (*GetDeviceFreeSpace)(FileInterface *);
+    void        (*field_00)(FileInterface *);
+    void        (*field_04)(FileInterface *);
+    void       *(*OpenRead)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+    void       *(*OpenWrite)(FileInterface *, const String &, uint32_t, uint32_t);
+    void       *(*OpenAppend)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t);
+    void        (*field_14)(FileInterface *);
+    void        (*field_18)(FileInterface *);
+    void        (*field_1c)(FileInterface *);
+    void        (*field_20)(FileInterface *);
+    uint32_t    (*FileExist)(FileInterface *, const String &);
+    uint32_t    (*FileDelete)(FileInterface *, const String &);
+    uint32_t    (*GetDeviceFreeSpace)(FileInterface *);
     const char *(*GetAppRootDir)(FileInterface *);
-    void (*ResetSaveDirectory)(FileInterface *);
-    void (*field_38)(FileInterface *);
-    uint32_t (*OpenDirectory)(FileInterface *, void *, uint32_t);
-    uint32_t (*ReadDirectory)(FileInterface *, String &);
-    void (*field_44)(FileInterface *);
-    void (*SetAppRootDir)(FileInterface *, const char *);
-    void (*SetZipDirectory)(FileInterface *, const char *);
-    void (*SetSaveDirectory)(FileInterface *, const String &);
+    void        (*ResetSaveDirectory)(FileInterface *);
+    void        (*field_38)(FileInterface *);
+    uint32_t    (*OpenDirectory)(FileInterface *, void *, uint32_t);
+    uint32_t    (*ReadDirectory)(FileInterface *, String &);
+    void        (*field_44)(FileInterface *);
+    void        (*SetAppRootDir)(FileInterface *, const char *);
+    void        (*SetZipDirectory)(FileInterface *, const char *);
+    void        (*SetSaveDirectory)(FileInterface *, const String &);
 };
 
 struct FileInterface {
@@ -81,23 +75,14 @@ struct FileInterface {
     uint8_t enabled;
 };
 
-// NOTE: AEPakFileEntry::name holds the std::u16string-backed String (common.h), so the original
-// 0x1c byte layout no longer holds. The low-level file structs derive from AELowLevelFile (a
-// vtable-pointer base), which is the natural native layout: vtable at 0x0, then members.
-
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete[](void *ptr) noexcept;
-
 enum FileOpenType : uint32_t {
     OPEN_READ   = 0,
     OPEN_WRITE  = 1,
     OPEN_APPEND = 2,
 };
 
-// AEFile is a fully static utility class (a namespace of file I/O routines over the active
-// FileInterface plus the registered .pak archives). No instance state.
+// AEFile is a fully static utility class: a collection of file I/O routines over the active
+// FileInterface plus the registered .pak archives. It has no instance state.
 class AEFile {
 public:
     static void        SetInterface(FileInterface *fileInterface);

@@ -1,40 +1,43 @@
 #ifndef GOF2_AESOUNDRESSOURCE_H
 #define GOF2_AESOUNDRESSOURCE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+
 namespace AbyssEngine {
 
+// One entry of the sound-info table: a sound id, the name of the sample to load,
+// and the playback type/channel the backend should use.
 struct AESoundInfo {
     int id;
-    int field_4;
-    int field_8;
+    const char *name;
+    int type;
 };
+
 // One platform-mixer sound voice. The engine's audio backend provides the concrete
 // implementation (its vtable lives in the runtime); the object itself carries no state
 // beyond its vptr, so AESoundRessource allocates bare instances and drives them through
-// these virtuals. Slot comments are the recovered vtable offsets (4-byte ARM entries).
+// these virtuals.
 class AESoundInterface {
 public:
-    virtual void load(const char *name);      // +0x00  open/prepare the named sample
-    virtual void suspend();                   // +0x04  engine focus-loss hook
-    virtual void play();                      // +0x08  start (music / no explicit volume)
-    virtual void play(float volume);          // +0x0c  start at the given volume
-    virtual void playLooping();               // +0x10  start looping
-    virtual void pause();                     // +0x14
-    virtual void resume();                    // +0x18
-    virtual void stop();                      // +0x1c
-    virtual int  isPlaying();                 // +0x20
-    virtual void setType(int type);           // +0x24  configured from AESoundInfo.field_8 at load
-    virtual void setVolume(int volume);       // +0x28
-    virtual void setSoundVolume(int volume);  // +0x2c  SFX-channel volume
-    virtual void setMusicVolume(int volume);  // +0x30  music-channel volume
-    virtual void release();                   // +0x34  free the backing resource
-    virtual int  isLoaded();                  // +0x38
+    virtual void load(const char *name);      // open/prepare the named sample
+    virtual void suspend();                   // engine focus-loss hook
+    virtual void play();                      // start (music / no explicit volume)
+    virtual void play(float volume);          // start at the given volume
+    virtual void playLooping();               // start looping
+    virtual void pause();
+    virtual void resume();
+    virtual void stop();
+    virtual int  isPlaying();
+    virtual void setType(int type);           // configured from AESoundInfo.type at load
+    virtual void setVolume(int volume);
+    virtual void setSoundVolume(int volume);  // SFX-channel volume
+    virtual void setMusicVolume(int volume);  // music-channel volume
+    virtual void release();                   // free the backing resource
+    virtual int  isLoaded();
 };
 
 class AESoundRessource {
 public:
-    char* soundInfoTable;                    // AESoundInfo table base (byte-addressed, 12-byte entries)
+    AESoundInfo *soundInfoTable;             // sound-info table base
     Array<AESoundInterface*>* sounds;        // loaded-sound slots
     volatile int numSounds;                  // configured sound count
 
@@ -94,9 +97,4 @@ public:
 
 } // namespace AbyssEngine
 
-struct AESoundStackFrame {
-    char info[12];
-    int index;
-    volatile int cookie;
-};
 #endif

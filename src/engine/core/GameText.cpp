@@ -1,87 +1,70 @@
 #include "gof2/engine/core/GameText.h"
 #include "gof2/engine/file/AEFile.h"
+#include "gof2/platform/libc.h"
 
-extern "C" __attribute__((visibility("hidden"))) short *g_GameText_language;
-extern "C" __attribute__((visibility("hidden"))) unsigned short *g_GameText_langReset;
-extern "C" void *memcpy(void *, const void *, unsigned long);
-void  GameText_convertStringFromArabic(void *out, int pad, void *in);
+using String = AbyssEngine::String;
 
-// GameText::release() -- destroys each owned text-table entry via its vtable[1], then nulls it.
+extern short *g_GameText_language;
+extern unsigned short *g_GameText_langReset;
+
+void GameText_convertStringFromArabic(void *out, int pad, void *in);
+
+// Destroys each owned text-table entry, then nulls the slot.
 void GameText::release() {
-    void **data = (void **)this->textTable;
-    if (data == 0) return;
-    int i = 0;
-    for (int byteoff = 0; i < this->textCount; byteoff += 4) {
-        void *obj = *(void **)((char *)this->textTable + byteoff);
-        void **slot;
-        if (obj == 0) {
-            slot = (void **)((char *)this->textTable + i * 4);
-        } else {
-            void (**vt)(void *) = *(void (***)(void *))obj;
-            vt[1](obj);
-            slot = (void **)((char *)this->textTable + byteoff);
-        }
-        *slot = 0;
-        ++i;
+    if (this->textTable == nullptr)
+        return;
+    for (int i = 0; i < this->textCount; ++i) {
+        delete this->textTable[i];
+        this->textTable[i] = nullptr;
     }
 }
 
-// *g_GameText_language -> current language id (signed short).
-
-// GameText::getLanguage() -> (int)current language id.
+// Current active language id (signed short).
 int GameText_getLanguage()
 {
     return *g_GameText_language;
 }
 
 // PC-relative region-code C string.
-extern const char gRegionCodeStr[] __attribute__((visibility("hidden")));
+extern const char gRegionCodeStr[];
 
-// GameText::getRegionCode() -> returns an AbyssEngine::String by value (sret).
+// Returns the region code as an AbyssEngine::String by value.
 String GameText_getRegionCode()
 {
     return String(gRegionCodeStr);
 }
 
-// GameText::setSubstituteArray(int*, unsigned) -- replaces the substitute Array<int> at this+0.
-void GameText::setSubstituteArray(int *param_1, unsigned param_2) {
-    if (param_2 != 0) {
-        if ((param_2 & 1) != 0) return;
+// Replaces the substitute key-remap table with `count` int values (interpreted as from/to pairs).
+void GameText::setSubstituteArray(int* pairs, unsigned count) {
+    if (count != 0) {
+        if ((count & 1) != 0) return;
         this->substitutes.clear();
     }
-    for (; param_2 != 0; --param_2) {
-        int v = *param_1++;
+    for (; count != 0; --count) {
+        int v = *pairs++;
         this->substitutes.push_back(v);
     }
 }
 
-// GameText::setLanguage(short stringCount, int langId)
-// Selects the active UI language. If the language is unchanged it does nothing; otherwise it
-// releases the previous text table, allocates a fresh String*[stringCount] (nulled), resolves
-// the per-language .lang filename via a switch, records the language code (Arabic-shaping
-// languages keep their id, the rest map to 0), falls back to the English file when the chosen
-// one is missing, then opens it and streams the records in through ReadLangFile.
-//
-// Exported as GameText_setLanguage_si to match the forwarder in setLanguage_7f2b8.cpp.
-
 // Active language code slot (compared against the requested id to detect a no-op).
-__attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
+extern unsigned short *g_langCode;
 // Per-language file paths; index 0..15 plus a default and an English fallback.
-__attribute__((visibility("hidden"))) extern const char *gLangPaths[17];
-__attribute__((visibility("hidden"))) extern const char gLangPathDefault[];
-__attribute__((visibility("hidden"))) extern const char gLangPathEnglish[];
+extern const char *gLangPaths[17];
+extern const char gLangPathDefault[];
+extern const char gLangPathEnglish[];
 
+// Selects the active UI language. If the language is unchanged it does nothing; otherwise it
+// releases the previous text table, allocates a fresh String*[stringCount] (nulled), resolves the
+// per-language .lang filename via a switch, records the language code (Arabic-shaping languages
+// keep their id, the rest map to 0), falls back to the English file when the chosen one is missing,
+// then opens it and streams the records in through ReadLangFile.
 void GameText::setLanguage_si(int stringCount, int langId) {
     if ((unsigned int)*g_langCode == ((unsigned int)langId & 0xffff))
         return;
 
-    ((GameText *)(this))->release();
+    this->release();
     this->textCount = stringCount;
-
-    String **table = (String **)operator new[]((uint32_t)((unsigned long long)stringCount * 4));
-    this->textTable = table;
-    for (int i = 0; i < stringCount; ++i)
-        table[i] = 0;
+    this->textTable = new String*[stringCount]();
 
     String path(gLangPathDefault);
 
@@ -118,33 +101,30 @@ void GameText::setLanguage_si(int stringCount, int langId) {
 
     unsigned int file = 0;
     AEFile::OpenRead(path, &file);
-    ((GameText *)(this))->ReadLangFile(0, stringCount);
+    this->ReadLangFile(0, stringCount);
 }
 
-// Tail veneer to the base/Array<int> destructor; takes and returns this.
-
-// GameText::~GameText() -> release() + free the owned text table; the embedded
-// Array<int> substitute table is destroyed by the implicit member teardown.
+// Releases the text table and frees it; the embedded Array<int> and fallback String are destroyed
+// by the implicit member teardown.
 GameText::~GameText()
 {
     this->release();
-    void *p = this->textTable;
-    if (p != 0) ::operator delete[](p);
-    this->textTable = 0;
+    delete[] this->textTable;
+    this->textTable = nullptr;
 }
 
-// Arabic codepoint table: 0x29 rows x 5 u32 columns (PC-relative base address).
-extern unsigned gArabicTable[] __attribute__((visibility("hidden")));
+// Arabic codepoint table: 0x29 rows x 5 u32 columns.
+extern unsigned gArabicTable[];
 
-// GameText::isNonArabicString(unsigned short const*, unsigned) -> 1 if no char is in the table.
-int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
+// Returns 1 if no character of `str` appears in the Arabic codepoint table.
+int GameText_isNonArabicString(const unsigned short *str, unsigned count)
 {
     unsigned short i = 0;
     bool keep;
     do {
-        if (param_2 <= i) return 1;
+        if (count <= i) return 1;
         keep = true;
-        unsigned short ch = param_1[i];
+        unsigned short ch = str[i];
         unsigned *row = gArabicTable;
         for (int r = 0; r != 0x29; row += 5, ++r) {
             for (int c = 0; c != 5; ++c)
@@ -155,42 +135,34 @@ int GameText_isNonArabicString(const unsigned short *param_1, unsigned param_2)
     return 0;
 }
 
-// PC-relative: initial language string; and a short* whose target is reset to 0xffff.
-extern const char gInitLangStr[] __attribute__((visibility("hidden")));
+// PC-relative: initial language string.
+extern const char gInitLangStr[];
 
-// GameText::GameText() -- inits substitute Array<int>, region String, default language string.
+// Initializes the substitute table, fallback String, and default language string.
 GameText::GameText() {
-    GameText *self = this;
-    // `substitutes` (Array<int>) is default-constructed by the C++ member init.
-    ((String *)self->fallbackText)->ctor();
+    this->fallbackText.ctor();
     *g_GameText_langReset = 0xffff;
-    self->textTable = 0;
-    self->textCount = 0;
+    this->textTable = nullptr;
+    this->textCount = 0;
     String tmp(gInitLangStr);
 }
 
-// GameText::convertStringFromArabic(String in) -> String (sret)
-// Reshapes a logical-order Arabic string into the presentation forms the bitmap font expects.
-// Walks the code points from the end toward the start; for each Arabic letter it picks the
-// isolated / initial / medial / final glyph based on the joining behaviour of its neighbours,
-// and collapses the LAM (U+0644) + ALEF family into the appropriate ligature, splicing the
-// string around the merged pair. Substitution data lives in two extern tables:
-//   gArabForms : rows of 5 u32 {base, isolated, final, initial, medial}, terminated implicitly
-//                by the 0x334-byte span (41 rows).
-//   gLamAlef   : rows of 5 u32 {base, ...} for the 10 LAM-ALEF combinations.
-//
-// out is sret; `pad` is the hidden alignment argument from the {String} by-value ABI.
-
-// Substitution tables (see header comment for row layout).
-__attribute__((visibility("hidden"))) extern const unsigned int gArabForms[];  // 41 rows * 5
-__attribute__((visibility("hidden"))) extern const unsigned int gLamAlef[];     // first-letter map (10)
-__attribute__((visibility("hidden"))) extern const unsigned int gLamAlefForms[];// 0x29 rows * 5
+// Substitution tables (see body for row layout).
+extern const unsigned int gArabForms[];      // 41 rows * 5 {base, isolated, final, initial, medial}
+extern const unsigned int gLamAlef[];        // first-letter map (10)
+extern const unsigned int gLamAlefForms[];   // 0x29 rows * 5
 
 // True for code points that participate in Arabic joining as a "letter".
 static inline bool isJoiner(unsigned short c) {
     return c >= 0x600 && c != 0x60c && c != 0x61f;
 }
 
+// Reshapes a logical-order Arabic string into the presentation forms the bitmap font expects.
+// Walks the code points from the end toward the start; for each Arabic letter it picks the
+// isolated / initial / medial / final glyph based on the joining behaviour of its neighbours, and
+// collapses the LAM (U+0644) + ALEF family into the appropriate ligature, splicing the string
+// around the merged pair. `out` is the result (sret); `pad` is the hidden alignment argument from
+// the by-value String ABI.
 void GameText_convertStringFromArabic(void *out, int pad, void *in)
 {
     (void)pad;
@@ -200,8 +172,7 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
     work.ctor_wchar((unsigned short *)((String *)in)->index(0), false);
     unsigned int len = work.size();            // character count
 
-    unsigned int cap = (len + 1) * 2;
-    unsigned short *buf = (unsigned short *)operator new[](cap);
+    unsigned short *buf = new unsigned short[len + 1];
     memcpy(buf, work.index(0), (unsigned long)(len * 2 + 2));
 
     int inLen = (int)((String *)in)->size();
@@ -212,8 +183,7 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
         if (i > 0x7fffffff) {
             // Underflowed past 0: finished. Emit the reshaped buffer.
             ((String *)out)->ctor_wchar(buf, false);
-            if (buf != 0)
-                operator delete[](buf);
+            delete[] buf;
             return;
         }
 
@@ -231,7 +201,7 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
                 }
                 buf[i] = form;
 
-                // Splice: keep [0,i-1) and [i+1,end), join via SubString + operator+=.
+                // Splice: keep [0,i-1) and [i+1,end), join via SubString + addAssign.
                 String merged;
                 merged.ctor_wchar(buf, false);
                 String head, tail;
@@ -239,12 +209,10 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
                 tail.SubString(&merged, i + 1, merged.size());
                 head.addAssign_str(&tail);
 
-                if (buf != 0)
-                    operator delete[](buf);
+                delete[] buf;
 
                 unsigned int mLen = head.size();
-                unsigned int mCap = (mLen + 1) * 2;
-                buf = (unsigned short *)operator new[](mCap);
+                buf = new unsigned short[mLen + 1];
                 memcpy(buf, head.index(0), (unsigned long)(mLen * 2 + 2));
                 --i;
             }
@@ -288,34 +256,25 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
     }
 }
 
-// Tail veneer to GameText::setLanguage(short, int).
-
-// GameText::setLanguage(int) -> forwards to setLanguage(0, param_1).
-void GameText::setLanguage_i(int param_1) {
-    return ((GameText *)(this))->setLanguage_si(0, param_1);
+// Single-argument language switch: forwards to setLanguage_si(0, langId).
+void GameText::setLanguage_i(int langId) {
+    this->setLanguage_si(0, langId);
 }
 
-// GameText::getText(int key)
-// Resolves a text key to a String*. Two reserved keys return guarded function-local statics
-// built from the active language/region code (5000 = language name, 5001 = region name).
-// Any other key is first remapped through the substitute pair-table (+0x04, count at +0x00),
-// then looked up in the text table (ptr at +0x0c, count at +0x1c); a missing entry falls back
-// to the embedded fallback String at +0x10.
-//
-// NB: signature is getText(int) on `this` in r0; we model it as (self, key).
-
 // Active language code (1 => use the primary string, otherwise the fallback variant).
-__attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
 // Reserved-key string literals (primary + fallback) for the two guarded statics.
-__attribute__((visibility("hidden"))) extern const char gLang5000Primary[];
-__attribute__((visibility("hidden"))) extern const char gLang5000Fallback[];
-__attribute__((visibility("hidden"))) extern const char gLang5001Primary[];
-__attribute__((visibility("hidden"))) extern const char gLang5001Fallback[];
+extern const char gLang5000Primary[];
+extern const char gLang5000Fallback[];
+extern const char gLang5001Primary[];
+extern const char gLang5001Fallback[];
 
-void * GameText::getText(int key) {
-    GameText *self = this;
+// Resolves a text key to a String*. Two reserved keys return guarded function-local statics built
+// from the active language/region code (5000 = language name, 5001 = region name). Any other key
+// is first remapped through the substitute pair-table, then looked up in the text table; a missing
+// entry falls back to the embedded fallback String.
+AbyssEngine::String* GameText::getText(int key) {
     if (key == 5000) {
-        static String s5000;   // function-local guarded static
+        static String s5000;
         const char *txt = (*g_langCode != 1) ? gLang5000Fallback : gLang5000Primary;
         s5000.ctor_char(txt, false);
         return &s5000;
@@ -327,9 +286,9 @@ void * GameText::getText(int key) {
         return &s5001;
     }
 
-    // Remap via the substitute pair-table: entries are (from,to) int pairs.
-    uint32_t pairCount = (uint32_t)self->substitutes.size();
-    int *pairs = self->substitutes.data();
+    // Remap via the substitute pair-table: entries are (from, to) int pairs.
+    uint32_t pairCount = (uint32_t)this->substitutes.size();
+    int *pairs = this->substitutes.data();
     for (uint32_t i = 0; i < pairCount; i += 2) {
         if (pairs[i] == key) {
             key = pairs[i + 1];
@@ -337,25 +296,20 @@ void * GameText::getText(int key) {
         }
     }
 
-    if (key >= 0 && key < self->textCount && self->textTable != 0) {
-        String **table = (String **)self->textTable;
-        String *s = table[key];
-        if (s != 0)
+    if (key >= 0 && key < this->textCount && this->textTable != nullptr) {
+        String *s = this->textTable[key];
+        if (s != nullptr)
             return s;
     }
-    return (String *)self->fallbackText;
+    return &this->fallbackText;
 }
 
-// GameText::ReadLangFile(unsigned int file, int count)
-// Reads `count` records from an opened .lang file. Each record is a big-endian u16 byte
-// length followed by that many UTF-8 bytes; the bytes are decoded to wide chars, wrapped in
-// a heap String (run through convertStringFromArabic when the active language is Arabic == 9),
-// and stored into the text table at +0x0c. On a short read the table is released and the file
-// is closed. file == 0 is a no-op early exit.
-
 // Active language code; 9 == Arabic.
-__attribute__((visibility("hidden"))) extern unsigned short *g_langCode;
-
+// Reads `count` records from an opened .lang file. Each record is a big-endian u16 byte length
+// followed by that many UTF-8 bytes; the bytes are decoded to wide chars, wrapped in a heap String
+// (run through convertStringFromArabic when the active language is Arabic == 9), and stored into
+// the text table. On a short read the table is released and the file is closed. file == 0 is a
+// no-op early exit.
 void GameText::ReadLangFile(unsigned int file, int count) {
     if (file == 0)
         return;
@@ -364,48 +318,41 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     for (int i = 0; i < count; ++i) {
         unsigned short len;
         if (AEFile::Read(2, &len, file) == 0) {
-            ((GameText *)(this))->release();
+            this->release();
             break;
         }
         // Length field is stored big-endian; byte-swap to host order.
         unsigned int byteLen = (unsigned int)((len >> 8) | (len << 8)) & 0xffff;
 
-        char *utf8 = (char *)operator new[](byteLen + 1);
+        char *utf8 = new char[byteLen + 1];
         if (AEFile::Read(byteLen, utf8, file) == 0) {
-            operator delete[](utf8);
-            ((GameText *)(this))->release();
+            delete[] utf8;
+            this->release();
             break;
         }
         utf8[byteLen] = '\0';
 
         unsigned short *wide = String::getWCharFromUtf8(utf8, (int)byteLen);
 
-        String *s = (String *)operator new(0xc);
-        String **table = (String **)this->textTable;
+        String *s = new String;
         if (lang == 9) {
             String tmp;
             tmp.ctor_wchar(wide, false);
             GameText_convertStringFromArabic(s, 0, &tmp);
-            table[i] = s;
+            this->textTable[i] = s;
         } else {
             s->ctor_wchar(wide, false);
-            table[i] = s;
+            this->textTable[i] = s;
         }
 
-        if (wide != 0)
-            operator delete[](wide);
-        operator delete[](utf8);
+        delete[] wide;
+        delete[] utf8;
     }
 
     AEFile::Close(file);
 }
 
-// ---- public/C-ABI fragments ----
-
-// GameText::setLanguage(short, int): the two-argument language switch the
-// savegame loader invokes. The string-table count is passed as a short here;
-// the behaviour is otherwise identical to setLanguage_si, so forward to it.
+// The two-argument language switch the savegame loader invokes (string-table count as a short).
 void GameText::setLanguage(short stringCount, int langId) {
     this->setLanguage_si((int)stringCount, langId);
 }
-

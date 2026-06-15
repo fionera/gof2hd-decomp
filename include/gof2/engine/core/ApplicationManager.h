@@ -1,81 +1,79 @@
 #ifndef GOF2_APPLICATIONMANAGER_H
 #define GOF2_APPLICATIONMANAGER_H
-#include "gof2/common.h"
-// Galaxy on Fire 2 - ApplicationManager.
-// Top-level class (matches the global forward decls in fwd.h / Engine.h). Real named
-// struct (field_0xNN member names kept for cross-class refs). The recovered bodies still
-// do some raw byte arithmetic over inline sub-arrays (modules at +0x44, the uint id table
-// at +0x50, the action table at +0x88) and treat offset 0 as the PaintCanvas pointer;
-// those raw accesses compile against char*/void* casts.
-#include <new>   // placement operator new
+#include "gof2/common.h"   // Array, String, fixed-width integer types
+#include <new>             // placement new (key-mapping / config-string construction)
 
-struct ConfigReader;
-struct PaintCanvas;
+// Cross-class types referenced only through pointers.
+class PaintCanvas;   // global-scope render canvas (game/core/PaintCanvasClass.h)
+class Engine;        // global-scope renderer/device root (engine/render/Engine.h)
+namespace AbyssEngine { class ConfigReader; }   // engine/file/ConfigReader.h
+
 using String = AbyssEngine::String;
 
-// Callback function types (used only via pointer below; PaintCanvas fwd-declared above).
-// Signatures recovered from mangled symbols (unified_symbols.tsv) and src/ApplicationManager.cpp:
-//   SetLoadingCallback(void (*)(PaintCanvas*, int, void*), void*)
-//   SetResumeCallback (bool (*)(PaintCanvas*, void*),       void*)
-typedef void LoadingCallback_t(PaintCanvas *, int, void *);
-typedef bool ResumeCallback_t(PaintCanvas *, void *);
+// Application-level callbacks, recovered from the SetLoadingCallback / SetResumeCallback
+// signatures. Invoked through the PaintCanvas the manager owns at offset 0.
+typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data);
+typedef bool ResumeCallback_t(PaintCanvas *canvas, void *data);
 
+// Top-level driver for the running game: owns the PaintCanvas, the active application
+// module, input/key state, the audio resource and the config reader, and steps the
+// per-frame state machine in OnUpdate.
 class ApplicationManager {
 public:
-    void        *paintCanvas;             // +0x0  PaintCanvas* (object starts with the canvas ptr)
-    uint32_t     currentKey;             // +0x8
-    uint32_t     currentKeyHigh;             // +0xc
-    char        *keyMappingTable;            // +0x10 key mapping table
-    bool         orientationTrackingEnabled;            // +0x14 orientation-tracking flag
-    void        *currentModule;            // +0x18 current application module
-    void        *quitCallback;            // +0x1c QuitCallback*
-    void        *loadingCallback;            // +0x20 LoadingCallback*
-    void        *loadingCallbackData;            // +0x24 loading-callback data
-    void        *resumeCallback;            // +0x28 ResumeCallback*
-    void        *resumeCallbackData;            // +0x2c resume-callback data
-    void        *cheatHandler;            // +0x30 CheatHandler*
-    bool         cheatsEnabled;            // +0x34 cheats-enabled flag
-    void        *configReader;            // +0x38 ConfigReader*
-    int          field_0x3c;            // +0x3c state machine state
-    int          savedState;            // +0x40 saved state
-    Array<void*>        *modules;            // +0x44 loaded application modules (IApplicationModule*)
-    Array<unsigned int> *moduleIds;            // +0x50 module-id table (parallel to `modules`)
-    unsigned int currentModuleId;            // +0x5c current module id
-    void        *pendingModule;            // +0x60 pending application module
-    uint64_t     currentTimeMs;            // +0x68 current time (ms)
-    uint64_t     frameTimeMs;            // +0x70 frame time (ms)
-    uint64_t     previousFrameTimeMs;            // +0x78 previous frame time (ms)
-    uint32_t     keyState;            // +0x80 key state (low word)
-    uint32_t     keyStateHigh;            // +0x84 key state (high word)
-    Array<long long>    *actionTable;            // +0x88 action table (pairs of long long: value, key)
-    uint32_t     actionMask;            // +0x98 action mask (low word)
-    uint32_t     actionMaskHigh;            // +0x9c action mask (high word)
-    uint32_t     actionState;            // +0xa0 action state (low word)
-    uint32_t     actionStateHigh;            // +0xa4 action state (high word)
-    void        *engine;            // +0xa8 Engine*
-    void        *soundResource;            // +0xac AESoundRessource*
-    bool         soundFxEnabled;            // +0xb0 sound-fx enabled
-    bool         musicEnabled;            // +0xb1 music enabled
-    bool         vibrateEnabled;            // +0xb2 vibrate enabled
-    int          lastTouchX;            // +0xb4 last touch x
-    int          lastTouchY;            // +0xb8 last touch y
+    PaintCanvas *paintCanvas;             // owned render canvas (object starts here)
+    uint32_t     currentKey;
+    uint32_t     currentKeyHigh;
+    char        *keyMappingTable;         // key-code -> (mask, String) mapping table
+    bool         orientationTrackingEnabled;
+    void        *currentModule;           // active IApplicationModule (polymorphic)
+    void        *quitCallback;            // QuitCallback*
+    void        *loadingCallback;         // LoadingCallback_t*
+    void        *loadingCallbackData;
+    void        *resumeCallback;          // ResumeCallback_t*
+    void        *resumeCallbackData;
+    void        *cheatHandler;            // AbyssEngine::CheatHandler*
+    bool         cheatsEnabled;
+    void        *configReader;            // AbyssEngine::ConfigReader*
+    int          field_0x3c;              // frame state-machine state
+    int          savedState;             // state saved across suspend/resume
+    Array<void*>        *modules;         // loaded application modules (IApplicationModule*)
+    Array<unsigned int> *moduleIds;       // module-id table (parallel to `modules`)
+    unsigned int currentModuleId;
+    void        *pendingModule;           // module to switch to next frame
+    uint64_t     currentTimeMs;
+    uint64_t     frameTimeMs;
+    uint64_t     previousFrameTimeMs;
+    uint32_t     keyState;
+    uint32_t     keyStateHigh;
+    Array<long long>    *actionTable;     // action table: pairs of (action, key) longs
+    uint32_t     actionMask;
+    uint32_t     actionMaskHigh;
+    uint32_t     actionState;
+    uint32_t     actionStateHigh;
+    void        *engine;                  // Engine*
+    void        *soundResource;           // AbyssEngine::AESoundRessource*
+    bool         soundFxEnabled;
+    bool         musicEnabled;
+    bool         vibrateEnabled;
+    int          lastTouchX;
+    int          lastTouchY;
 
+    explicit ApplicationManager(void *engine);
     ~ApplicationManager();
 
-    // ---- methods (converted from free functions) ----
     void CheatAddCode(void *code, int value);
     void CheatEnable(bool enable);
     void CheatSetCallback(void *callback, void *data);
     void CheatUpdate(unsigned short key);
     void CheckForOrientationChange();
-    void * ConfigGetKeysForAction(long long action);
+    void *ConfigGetKeysForAction(long long action);
     void ConfigRegisterAction(long long value, long long key);
     void ConvertTouchCoords(int *x, int *y);
     uint64_t GetActionState();
-    void * GetApplicationModule(unsigned int id);
+    void *GetApplicationModule(unsigned int id);
     uint64_t GetCurrentTimeMillis();
     uint64_t GetElapsedTimeMillis();
-    void * GetEngine();
+    void *GetEngine();
     uint64_t GetKeyState();
     uint64_t GetSystemTimeMillis();
     void KeyCodeSetMapping(void *array);
@@ -118,7 +116,6 @@ public:
     void Vibrate(unsigned short duration);
     void VibrateEnable(bool enable);
     void VibrateSupported();
-    ApplicationManager(void *engine);
 };
 
 #endif

@@ -1,10 +1,11 @@
 #ifndef GOF2_NFC_H
 #define GOF2_NFC_H
-#include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
+
+// JNI function-table slot signatures used to reach the Java side.
 typedef void *(*NFC_FindClassFn)(void *, void *);
 typedef void *(*NFC_GetStaticMethodFn)(void *, void *, const char *, const char *);
 
+// Read a function pointer out of the JNIEnv method table at the given byte offset.
 static inline void *nfc_jni_slot(void *env, unsigned offset)
 {
     return *(void **)((char *)*(void **)env + offset);
@@ -26,13 +27,10 @@ extern "C" int NFC_CallStaticIntMethod(void *env, void *cls, void *method);
 extern "C" void NFC_DeleteLocalRef(void *env);
 
 // NFC — thin JNI bridge to the Java side (in-app purchases, store links, screen
-// metrics). All members are static-style entry points operating on global JNI slots
-// (nfc_env / nfc_class_slot / nfc_method_name / nfc_method_sig); the class itself
-// carries no instance state.
+// metrics). Every entry point operates on global JNI slots (nfc_env / nfc_class_slot /
+// nfc_method_name / nfc_method_sig); the bridge carries no instance state of its own.
 class NFC {
 public:
-    void* _opaque;  // no offset accesses observed
-
     void iap_buy_dlc_full_package();
     void iap_buy_dlc_vip();
     void iap_buy_dlc_supernova();
@@ -60,4 +58,5 @@ public:
     int getWidth();
     int getHeight();
 };
+
 #endif

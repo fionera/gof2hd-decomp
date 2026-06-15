@@ -1,24 +1,18 @@
 #ifndef GOF2_CONFIGREADER_H
 #define GOF2_CONFIGREADER_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-#include <new>
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
+#include "gof2/engine/file/AEFile.h"
+
+// Engine is a global-scope class (the renderer/device root).
+class Engine;
 
 namespace AbyssEngine {
 
-struct Engine;
-struct ConfigReader;
+class ConfigReader;
 
-struct AEFile {
-    static uint32_t OpenRead(String &path, uint32_t *handle);
-    static uint32_t Read(char &value, uint32_t handle);
-    static void Close(uint32_t handle);
-};
-
-// --- thin String helpers (the shared common.h String is minimal; the engine's
-//     game-specific String methods are not modeled in this build) ---
+// --- thin String helpers -------------------------------------------------------------
+// The shared common.h String stores UTF-16 in std::u16string; these small ASCII-oriented
+// helpers are local to the config parser and have no separate home of their own.
 inline String StringFromAscii(const char *cstr) {
     String r;
     for (const char *p = cstr; p && *p; ++p) r.s.push_back((char16_t)(unsigned char)*p);
@@ -46,17 +40,20 @@ inline uint16_t *StringCharAt(String &str, uint32_t idx) { return (uint16_t *)&s
 
 typedef void (*ConfigTokenReadFunction)(ConfigReader *, void *);
 
+// A named config section bound to its handler callback and that handler's context.
 struct TokenStruct {
     String name;
     ConfigTokenReadFunction read;
     void *context;
 };
 
+// Parses simple "[section]"-style config files, dispatching each section to a
+// registered token-read callback.
 class ConfigReader {
 public:
-    Array<TokenStruct *> tokens; // 0x0  { count@0x0, data@0x4, cap@0x8 }
-    Engine *engine;              // 0xc
-    uint32_t file_handle;        // 0x10
+    Array<TokenStruct *> tokens;
+    Engine *engine;
+    uint32_t file_handle;
 
     ConfigReader(Engine *engine);
     ~ConfigReader();

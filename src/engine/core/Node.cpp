@@ -1,19 +1,13 @@
 #include "gof2/engine/core/Node.h"
 
-// Node::Node(int)
-//   field_04 = 0; field_08 = param_1; children = new Array<Node*>();
-Node::Node(int param_1)
+Node::Node(int value)
 {
-    this->field_0x4 = 0;
-    this->value = param_1;
-    void *arr = operator new(0xc);
-    Node_ArrayNode_ctor(arr);
-    this->children = (Array<Node*>*)arr;
+    this->parent = nullptr;
+    this->value = value;
+    this->children = new Array<Node*>();
 }
 
-// Node::~Node()
-//   ArrayRelease<Node*>(this->children);
 Node::~Node()
 {
-    Node_ArrayNode_release(this->children);
+    delete this->children;
 }

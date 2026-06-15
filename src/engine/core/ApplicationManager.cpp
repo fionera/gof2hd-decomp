@@ -1,138 +1,169 @@
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/audio/AESoundRessource.h"
-#include "gof2/externs.h"
 #include "gof2/engine/core/IApplicationModule.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/Engine.h"
 #include "gof2/engine/file/ConfigReader.h"
+#include "gof2/engine/render/Engine.h"
+#include "gof2/game/core/CheatHandler.h"
 #include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "gof2/externs.h"                        // engine g_* globals / host glue
 
 // PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
 // underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight
-// (defined alongside PaintCanvas.cpp). The ctor/dtor remain free functions.
+// (defined alongside PaintCanvas.cpp).
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
 
-extern "C" void ext_001ab578(void *sound, int volume);
-extern "C" void ext_001ab528(void *sound);
-extern "C" int ext_001ab5a8(void *sound);
-extern "C" void ext_001ab4f8(void *sound, int soundId);
-extern "C" void ext_001ab488(void *sound, int soundId, float volume);
-extern "C" void ext_001ab5e8(void *cheats, unsigned short key);
-extern "C" void ext_001ab5d8(void *cheats);
-extern "C" void ext_001ab548(void *sound);
-extern "C" void ext_001ab518(void *sound);
-extern "C" void ext_001ab508(void *sound, int soundId);
-extern "C" void ext_001ab4e8(void *sound, int soundId);
-extern "C" void ext_001ab4d8(void *sound, int soundId);
-extern "C" void ext_001ab598(void *sound);
-extern "C" void ext_001ab558(void *sound, int soundId);
-extern "C" void ext_001ab4c8(void *sound);
-extern "C" void ext_001ab568(void *sound);
-extern "C" void ext_001ab328(void *engine, unsigned short duration);
-extern "C" void ext_001ab588(void *sound);
-extern "C" void ext_001ab5c8(void *cheats);
-extern "C" void ext_001ab538(void *sound);
+// Engine/host glue that is not a statically resolvable typed method (PLT veneers /
+// per-frame engine hook). Kept as documented externs.
 extern "C" void Engine_PreUpdate(void *engine);
-extern "C" void ext_001ab610(void);
-extern "C" void AESoundRessource_ctor(void *sound);
-extern "C" void ConfigReader_ctor(void *reader, void *engine);
-extern "C" void CheatHandler_ctor(void *cheats, void *keys);
-extern "C" void AESoundRessource_SetSound(void *sound, void *info, int count);
-extern "C" void ext_001ab318(void *engine);
-extern "C" void AESoundRessource_dtor(void *sound);
-extern "C" void CheatHandler_dtor(void *cheats);
-extern "C" void ConfigReader_dtor(void *reader);
+extern "C" void Engine_Vibrate(void *engine, unsigned short duration);
+extern "C" void Engine_VibrateSupported(void *engine);
 
-typedef void LoadingCallback_t(PaintCanvas *, int, void *);
+using AbyssEngine::AESoundRessource;
+using AbyssEngine::AESoundInfo;
+using AbyssEngine::CheatHandler;
+using AbyssEngine::ConfigReader;
+using AbyssEngine::ConfigTokenReadFunction;
 
-void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
-    this->loadingCallback = (void *)callback;
-    this->loadingCallbackData = data;
-}
+ApplicationManager::ApplicationManager(void *engine) {
+    this->modules = new Array<void *>();
+    this->moduleIds = new Array<unsigned int>();
+    this->actionTable = new Array<long long>();
 
-void ApplicationManager::SoundSetVolume(int volume) {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab578(sound, volume);
+    this->frameTimeMs = 0;
+    this->previousFrameTimeMs = 0;
+    this->pendingModule = 0;
+    this->currentTimeMs = 0;
+    this->currentKey = 0;
+    this->field_0x3c = 5;
+    this->currentModule = 0;
+    this->keyState = 0;
+    this->engine = engine;
+
+    this->paintCanvas = new PaintCanvas((Engine *)engine);
+
+    this->soundResource = new AESoundRessource();
+    this->cheatsEnabled = false;
+
+    this->configReader = new ConfigReader((Engine *)engine);
+    this->loadingCallback = 0;
+    this->resumeCallback = 0;
+    this->soundFxEnabled = true;
+    this->vibrateEnabled = true;
+    this->orientationTrackingEnabled = false;
+
+    // Key-mapping table: a length-prefixed run of 0x40 fixed (mask, String) entries.
+    // [-8] = entry size (0x10), [-4] = entry count (0x40), then `count` 16-byte slots
+    // each holding a uint32 mask followed by a default-constructed String.
+    char *storage = (char *)::operator new(0x408);
+    *(uint32_t *)storage = 0x10;
+    *(uint32_t *)(storage + 4) = 0x40;
+    char *keys = storage + 8;
+    for (int offset = 0; offset != 0x400; offset += 0x10) {
+        new ((String *)(keys + offset + 4)) String();
+        *(uint32_t *)(keys + offset) = 0;
     }
+    this->keyMappingTable = keys;
+
+    this->cheatHandler = new CheatHandler((AbyssEngine::KeyCode *)keys);
+    this->lastTouchX = -1;
+    this->lastTouchY = -1;
 }
 
-void ApplicationManager::SoundStopSounds() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab528(sound);
+ApplicationManager::~ApplicationManager() {
+    // Shut down the active module (vtable slot +0x0c), then release/clear every loaded
+    // module (slot +0x04). Modules are polymorphic IApplicationModule instances whose
+    // full vtable is not exposed; dispatch stays through the recovered slot offsets.
+    void *module = this->currentModule;
+    if (module != 0) {
+        void (**vtable)(void *) = *(void (***)(void *))module;
+        vtable[0x0c / 4](module);
     }
-}
 
-int ApplicationManager::SoundIsPlaying() {
-    void *sound = this->soundResource;
-    if (sound == 0) {
-        return 0;
+    for (unsigned int i = 0; i < this->modules->size(); ++i) {
+        void *entry = (*this->modules)[i];
+        if (entry != 0) {
+            void (**vtable)(void *) = *(void (***)(void *))entry;
+            vtable[1](entry);
+        }
+        (*this->modules)[i] = 0;
     }
-    return ext_001ab5a8(sound);
-}
+    this->modules->clear();
+    this->moduleIds->clear();
 
-uint64_t ApplicationManager::GetSystemTimeMillis() {
-    return this->currentTimeMs;
-}
+    delete this->paintCanvas;
+    this->paintCanvas = 0;
 
-typedef void LoadingShowCallback(PaintCanvas *, int, void *);
+    delete (AESoundRessource *)this->soundResource;
+    this->soundResource = 0;
 
-void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
-    LoadingShowCallback *callback = (LoadingShowCallback *)this->loadingCallback;
-    if (callback != 0) {
-        callback(*(PaintCanvas **)this, mode, data);
+    delete (CheatHandler *)this->cheatHandler;
+    this->cheatHandler = 0;
+
+    delete (ConfigReader *)this->configReader;
+    this->configReader = 0;
+
+    char *keys = this->keyMappingTable;
+    if (keys != 0) {
+        unsigned int count = *(unsigned int *)(keys - 4);
+        for (unsigned int i = count; i != 0; --i) {
+            ((String *)(keys - 12 + i * 0x10))->~String();
+        }
+        ::operator delete[](keys - 8);
     }
+    this->keyMappingTable = 0;
+
+    delete this->actionTable;
+    delete this->moduleIds;
+    delete this->modules;
 }
 
-void ApplicationManager::SoundPlay(int soundId) {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if (sound != 0 && self->soundFxEnabled) {
-        ext_001ab4f8(sound, soundId);
-    }
+// ---- module registration / lookup ----------------------------------------------------
+
+void ApplicationManager::SetApplicationModule(void *module) {
+    void *current = this->currentModule;
+    this->pendingModule = module;
+    this->field_0x3c = current != 0;
 }
 
-void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
-    void *sound = this->soundResource;
-    if (sound == 0) {
-        return;
+void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
+    // Optional performance-test counter (engine global), kept as recovered.
+    if (g_perfPending != 0) {
+        uint64_t value = g_perfCounter + 1;
+        g_perfCounter = value;
+        if ((long long)(value - g_perfLimit) >= 0) {
+            *(volatile char *)&g_perfExpired = 1;
+            *(volatile char *)&g_perfPending = 0;
+        }
     }
-    if (this->soundFxEnabled == 0) {
-        return;
-    }
-    ext_001ab488(sound, soundId, volume);
-}
 
-void ApplicationManager::CheatUpdate(unsigned short key) {
-    if (this->cheatsEnabled) {
-        void *cheats = this->cheatHandler;
-        if (cheats != 0) {
-            ext_001ab5e8(cheats, key);
+    unsigned int count = this->moduleIds->size();
+    for (unsigned int index = 0; index < count; ++index) {
+        if ((*this->moduleIds)[index] == id) {
+            void *module = (*this->modules)[index];
+            this->field_0x3c = this->currentModule != 0;
+            this->currentModuleId = id;
+            this->pendingModule = module;
+            return;
         }
     }
 }
 
-void ApplicationManager::CheatAddCode(void *code, int value) {
-    void *cheats = this->cheatHandler;
-    if (cheats != 0) {
-        ext_001ab5d8(cheats);
+void *ApplicationManager::GetApplicationModule(unsigned int id) {
+    unsigned int count = this->moduleIds->size();
+    for (unsigned int index = 0; index < count; ++index) {
+        if ((int)(*this->moduleIds)[index] == (int)id) {
+            return (*this->modules)[index];
+        }
     }
+    return 0;
 }
 
-void ApplicationManager::SoundPause() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab548(sound);
-    }
+void *ApplicationManager::GetEngine() {
+    return this->engine;
 }
 
-uint64_t ApplicationManager::GetActionState() {
-    return this->actionState;
-}
-
-typedef void ModuleCallback(void *);
+// ---- frame state machine -------------------------------------------------------------
 
 void ApplicationManager::Resume() {
     if (this->field_0x3c != 3) {
@@ -141,11 +172,10 @@ void ApplicationManager::Resume() {
 
     void *module = this->currentModule;
     if (module != 0) {
-        ModuleCallback **vtable = *(ModuleCallback ***)module;
+        void (**vtable)(void *) = *(void (***)(void *))module;
         vtable[0x40 / 4](module);
-        void *engine = this->engine;
-        if (engine != 0) {
-            ((Engine *)(engine))->Resume();
+        if (this->engine != 0) {
+            ((Engine *)this->engine)->Resume();
         }
         this->actionState = 0;
         this->actionStateHigh = 0;
@@ -155,128 +185,6 @@ void ApplicationManager::Resume() {
     }
 }
 
-void ApplicationManager::SoundStop() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab518(sound);
-    }
-}
-
-void ApplicationManager::SoundPlayLoop(int soundId) {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if (sound != 0 && self->soundFxEnabled) {
-        ext_001ab508(sound, soundId);
-    }
-}
-
-void ApplicationManager::SoundPlayMusicLoop(int soundId) {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if (sound != 0 && self->musicEnabled) {
-        ext_001ab4e8(sound, soundId);
-    }
-}
-
-void ApplicationManager::ResetKeyState() {
-    this->keyState = 0;
-}
-
-uint64_t ApplicationManager::GetElapsedTimeMillis() {
-    return this->frameTimeMs - this->previousFrameTimeMs;
-}
-
-void ApplicationManager::SoundMusicEnable(bool enable) {
-    this->musicEnabled = enable;
-}
-
-void ApplicationManager::CheatEnable(bool enable) {
-    this->cheatsEnabled = enable;
-}
-
-uint64_t ApplicationManager::GetCurrentTimeMillis() {
-    return this->currentTimeMs;
-}
-
-void ApplicationManager::SoundPlayMusic(int soundId) {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if (sound != 0 && self->musicEnabled) {
-        ext_001ab4d8(sound, soundId);
-    }
-}
-
-void ApplicationManager::OnTouchEndSimple() {
-    this->currentKey = 0;
-    this->currentKeyHigh = 0;
-    this->keyState = 0;
-    this->keyStateHigh = 0;
-    // Original wrote a 16-byte vector zero across +0x98..+0xa7 (action mask + action state).
-    this->actionMask = 0;
-    this->actionMaskHigh = 0;
-    this->actionState = 0;
-    this->actionStateHigh = 0;
-}
-
-void ApplicationManager::SoundEnable(bool enable) {
-    this->soundFxEnabled = enable;
-    this->musicEnabled = enable;
-}
-
-void ApplicationManager::SoundSetMusicVolume(int volume) {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab598(sound);
-    }
-}
-
-typedef bool ResumeCallback_t(PaintCanvas *, void *);
-
-void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
-    this->resumeCallback = (void *)callback;
-    this->resumeCallbackData = data;
-}
-
-extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_GetApplicationVersionString(String *out)
-{
-    new (out) String();
-    out->s = u"2.0.16";
-}
-
-void ApplicationManager::VibrateEnable(bool enable) {
-    this->vibrateEnabled = enable;
-}
-
-void ApplicationManager::SoundResume(int soundId) {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if ((sound != 0 && self->soundFxEnabled) || self->musicEnabled) {
-        ext_001ab558(sound, soundId);
-    }
-}
-
-void ApplicationManager::SoundRelease() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab4c8(sound);
-    }
-}
-
-typedef void QuitCallback_t();
-
-void ApplicationManager::Quit() {
-    QuitCallback_t *callback = (QuitCallback_t *)this->quitCallback;
-    if (callback != 0) {
-        callback();
-    }
-}
-
-void * ApplicationManager::GetEngine() {
-    return this->engine;
-}
-
-typedef void ModuleCallback(void *);
-
 void ApplicationManager::Suspend() {
     unsigned int state = this->field_0x3c;
     if (state - 3 < 2) {
@@ -285,11 +193,10 @@ void ApplicationManager::Suspend() {
 
     void *module = this->currentModule;
     if (module != 0) {
-        ModuleCallback **vtable = *(ModuleCallback ***)module;
+        void (**vtable)(void *) = *(void (***)(void *))module;
         vtable[0x3c / 4](module);
-        void *engine = this->engine;
-        if (engine != 0) {
-            ((Engine *)(engine))->Suspend();
+        if (this->engine != 0) {
+            ((Engine *)this->engine)->Suspend();
         }
         int oldState = this->field_0x3c;
         this->field_0x3c = 3;
@@ -297,191 +204,79 @@ void ApplicationManager::Suspend() {
     }
 }
 
-void ApplicationManager::SoundFxEnable(bool enable) {
-    this->soundFxEnabled = enable;
-}
-
-void ApplicationManager::SoundResumeSelf() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab568(sound);
-    }
-}
-
-void ApplicationManager::Vibrate(unsigned short duration) {
-    if (this->vibrateEnabled) {
-        ext_001ab328(this->engine, duration);
-    }
-}
-
-void ApplicationManager::SoundSetFXVolume(int volume) {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab588(sound);
-    }
-}
-
-void ApplicationManager::CheatSetCallback(void *callback, void *data) {
-    void *cheats = this->cheatHandler;
-    if (cheats != 0) {
-        ext_001ab5c8(cheats);
-    }
-}
-
-void ApplicationManager::SoundResumeSounds() {
-    ApplicationManager *self = this;
-    void *sound = self->soundResource;
-    if ((sound != 0 && self->soundFxEnabled) || self->musicEnabled) {
-        ext_001ab568(sound);
-    }
-}
-
-void ApplicationManager::SoundPauseSounds() {
-    void *sound = this->soundResource;
-    if (sound != 0) {
-        ext_001ab538(sound);
-    }
-}
-
-uint64_t ApplicationManager::GetKeyState() {
-    return this->keyState;
-}
-
-void ApplicationManager::SetApplicationModule(void *module) {
-    void *current = this->currentModule;
-    this->pendingModule = module;
-    this->field_0x3c = current != 0;
-}
-
-extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigReadFile(ApplicationManager *self, String *name)
-{
-    unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
-    ConfigReader *reader = (ConfigReader *)self->configReader;
-    if (reader != 0) {
-        String *copy = (String *)storage;
-        new (copy) String(*name);
-        ((::AbyssEngine::ConfigReader *)reader)->ParseFile(*copy);
-        ((String *)storage)->~String();
-    }
-    return;
-}
-
-typedef void TouchEndCallback(void *, int, int, void *);
-typedef void TouchReleaseCallback(void *, int, int);
-
-void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
-    ApplicationManager *self = this;
-    g_touchDown = 0;
-    int x = xArg;
-    int y = yArg;
-
-    void *module = self->currentModule;
-    if (module != 0 && self->field_0x3c == 5) {
-        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->currentModule;
-        void **vtable = *(void ***)module;
-        ((TouchEndCallback *)vtable[0x2c / 4])(module, x, y, touch);
-        module = self->currentModule;
-        vtable = *(void ***)module;
-        ((TouchReleaseCallback *)vtable[0x20 / 4])(module, x, y);
-        self->lastTouchX = x;
-        self->lastTouchY = y;
-    }
-
-    return;
-}
-
-void ApplicationManager_EnablePerformanceTest(int count)
-{
-    g_perfElapsed = 0;
-    g_perfActionCount = (long long)count;
-    g_perfLimitValue = 0;
-    g_perfTotal = 0;
-    g_perfFrame = 0;
-    g_perfEnabled = 1;
-    g_perfPendingFlag = 0;
-}
-
-typedef int ModuleIntCallback(void *);
-typedef void ModuleVoidCallback(void *);
-typedef bool LoadingCallbackU(PaintCanvas *, int, void *);
-typedef bool ResumeCallbackU(PaintCanvas *, void *);
-
 void ApplicationManager::OnUpdate(long long now) {
-    ApplicationManager *self = this;
-    void *engine = self->engine;
-    Engine_PreUpdate(engine);
+    Engine_PreUpdate(this->engine);
 
-    if (self->orientationTrackingEnabled) {
-        ((ApplicationManager *)(self))->CheckForOrientationChange();
+    if (this->orientationTrackingEnabled) {
+        this->CheckForOrientationChange();
     }
-    void *sound = self->soundResource;
-    if (sound != 0 && self->soundFxEnabled) {
-        ((AbyssEngine::AESoundRessource *)(sound))->checkLooping();
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        ((AESoundRessource *)this->soundResource)->checkLooping();
     }
 
-    switch (self->field_0x3c) {
+    switch (this->field_0x3c) {
     case 0: {
-        void *next = self->pendingModule;
-        void *module = next != 0 ? next : self->currentModule;
+        void *next = this->pendingModule;
+        void *module = next != 0 ? next : this->currentModule;
         if (next != 0) {
-            self->pendingModule = 0;
-            self->currentModule = next;
+            this->pendingModule = 0;
+            this->currentModule = next;
         }
         if (module != 0) {
-            void **vtable = *(void ***)module;
-            int loading = ((ModuleIntCallback *)vtable[2])(module);
-            LoadingCallbackU *callback = (LoadingCallbackU *)self->loadingCallback;
+            int (**vtable)(void *) = *(int (***)(void *))module;
+            int loading = vtable[2](module);
+            LoadingCallback_t *callback = (LoadingCallback_t *)this->loadingCallback;
             if (callback != 0) {
-                callback(*(PaintCanvas **)self, loading, self->loadingCallbackData);
+                callback(this->paintCanvas, loading, this->loadingCallbackData);
             }
             if (loading == 0) {
-                self->actionState = 0;
-                self->field_0x3c = 5;
-                self->currentTimeMs = 0;
-                self->frameTimeMs = now;
-                self->previousFrameTimeMs = now - 1;
-                self->keyState = 0;
+                this->actionState = 0;
+                this->field_0x3c = 5;
+                this->currentTimeMs = 0;
+                this->frameTimeMs = now;
+                this->previousFrameTimeMs = now - 1;
+                this->keyState = 0;
             } else {
-                uint64_t previous = self->frameTimeMs;
-                self->currentTimeMs += (uint64_t)now - previous;
-                self->previousFrameTimeMs = previous;
-                self->frameTimeMs = now;
+                uint64_t previous = this->frameTimeMs;
+                this->currentTimeMs += (uint64_t)now - previous;
+                this->previousFrameTimeMs = previous;
+                this->frameTimeMs = now;
             }
         }
         break;
     }
     case 1: {
-        void *module = self->currentModule;
+        void *module = this->currentModule;
         if (module != 0) {
-            void **vtable = *(void ***)module;
-            ((ModuleVoidCallback *)vtable[3])(module);
-            ((Engine *)(engine))->ResetLightParam();
-            self->field_0x3c = 0;
-            self->currentModule = 0;
+            void (**vtable)(void *) = *(void (***)(void *))module;
+            vtable[3](module);
+            ((Engine *)this->engine)->ResetLightParam();
+            this->field_0x3c = 0;
+            this->currentModule = 0;
         }
         break;
     }
     case 4:
-        self->actionState = 0;
-        self->field_0x3c = self->savedState;
-        self->currentTimeMs += 1;
-        self->frameTimeMs = now;
-        self->previousFrameTimeMs = now - 1;
-        self->keyState = 0;
+        this->actionState = 0;
+        this->field_0x3c = this->savedState;
+        this->currentTimeMs += 1;
+        this->frameTimeMs = now;
+        this->previousFrameTimeMs = now - 1;
+        this->keyState = 0;
         break;
     case 5: {
-        void *module = self->currentModule;
+        void *module = this->currentModule;
         if (module != 0) {
-            void **vtable = *(void ***)module;
-            ((ModuleVoidCallback *)vtable[0x30 / 4])(module);
+            void (**vtable)(void *) = *(void (***)(void *))module;
+            vtable[0x30 / 4](module);
+            void *engine = this->engine;
             *(uint64_t *)((char *)engine + 0x68) = 0;
             *(uint64_t *)((char *)engine + 0x58) = 0;
-            *(int *)((char *)*(void **)self + 4) = 0;
-            ((ModuleVoidCallback *)vtable[0x34 / 4])(module);
-            ResumeCallbackU *resume = (ResumeCallbackU *)self->resumeCallback;
-            if (resume == 0 || !resume(*(PaintCanvas **)self, self->resumeCallbackData)) {
-                ((ModuleVoidCallback *)vtable[0x38 / 4])(module);
+            this->paintCanvas->field_0x4 = 0;
+            vtable[0x34 / 4](module);
+            ResumeCallback_t *resume = (ResumeCallback_t *)this->resumeCallback;
+            if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
+                vtable[0x38 / 4](module);
             }
         }
         break;
@@ -489,102 +284,22 @@ void ApplicationManager::OnUpdate(long long now) {
     default:
         break;
     }
-
-    return;
-    ext_001ab610();
 }
 
-ApplicationManager::ApplicationManager(void *engine) {
-    ApplicationManager *self = this;
-
-    self->modules = new Array<void *>();
-    self->moduleIds = new Array<unsigned int>();
-    self->actionTable = new Array<long long>();
-
-    self->frameTimeMs = 0;
-    self->previousFrameTimeMs = 0;
-    self->pendingModule = 0;
-    self->currentTimeMs = 0;
-    self->currentKey = 0;
-    self->field_0x3c = 5;
-    self->currentModule = 0;
-    self->keyState = 0;
-    self->engine = engine;
-
-    void *canvas = ::operator new(0x20c);
-    new ((PaintCanvas *)canvas) PaintCanvas((Engine *)engine);
-    *(void **)self = canvas;
-
-    void *sound = ::operator new(0x14);
-    AESoundRessource_ctor(sound);
-    self->cheatsEnabled = false;
-    self->soundResource = sound;
-
-    void *reader = ::operator new(0x14);
-    ConfigReader_ctor(reader, engine);
-    self->loadingCallback = 0;
-    self->configReader = reader;
-    self->resumeCallback = 0;
-    self->soundFxEnabled = 0x101;
-    self->vibrateEnabled = true;
-    self->orientationTrackingEnabled = false;
-
-    char *storage = (char *)::operator new(0x408);
-    *(uint32_t *)storage = 0x10;
-    *(uint32_t *)(storage + 4) = 0x40;
-    char *keys = storage + 8;
-    for (int offset = 0; offset != 0x400; offset += 0x10) {
-        new ((String *)(keys + offset + 4)) String();
-        *(uint32_t *)(keys + offset) = 0;
-    }
-    self->keyMappingTable = keys;
-
-    void *cheats = ::operator new(0x10);
-    CheatHandler_ctor(cheats, keys);
-    self->cheatHandler = cheats;
-    self->lastTouchX = -1;
-    self->lastTouchY = -1;
-}
-
-typedef void TouchMoveCallback(void *, int, int, void *);
-typedef void TouchDragCallback(void *, int, int);
-
-void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
-    ApplicationManager *self = this;
-    int x = xArg;
-    int y = yArg;
-
-    void *module = self->currentModule;
-    if (module != 0 && self->field_0x3c == 5) {
-        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->currentModule;
-        void **vtable = *(void ***)module;
-        ((TouchMoveCallback *)vtable[0x28 / 4])(module, x, y, touch);
-        module = self->currentModule;
-        vtable = *(void ***)module;
-        ((TouchDragCallback *)vtable[0x1c / 4])(module, x, y);
-        self->lastTouchX = x;
-        self->lastTouchY = y;
-    }
-
-    return;
-}
-
-typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
+// ---- input: keys ---------------------------------------------------------------------
 
 void ApplicationManager::OnKeyPress(int key) {
-    ApplicationManager *self = this;
-    self->actionMask = 0;
-    self->currentKey = key;
-    self->currentKeyHigh = key >> 31;
-    self->actionMaskHigh = 0;
+    this->actionMask = 0;
+    this->currentKey = key;
+    this->currentKeyHigh = key >> 31;
+    this->actionMaskHigh = 0;
 
     unsigned int keyLow = 0;
     unsigned int keyHigh = 0;
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = (int *)self->keyMappingTable;
+    int *mapping = (int *)this->keyMappingTable;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
             int highIndex = (int)keyIndex - 0x20;
@@ -596,20 +311,20 @@ void ApplicationManager::OnKeyPress(int key) {
             if (highIndex >= 0) {
                 keyHigh = 1u << highIndex;
             }
-            self->keyState =
-                self->keyState | (((uint64_t)keyHigh << 32) | keyLow);
+            this->keyState |= keyLow;
+            this->keyStateHigh |= keyHigh;
 
-            char *table = (char *)self->actionTable->data();
+            char *table = (char *)this->actionTable->data();
             unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->actionTable->size(); i += 2) {
+            for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
                 char *entry = table + offset;
                 if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
                     actionLow |= *(uint32_t *)entry;
                     actionHigh |= *(uint32_t *)(entry + 4);
-                    self->actionMask = actionLow;
-                    self->actionMaskHigh = actionHigh;
-                    self->actionState |= actionLow;
-                    self->actionStateHigh |= actionHigh;
+                    this->actionMask = actionLow;
+                    this->actionMaskHigh = actionHigh;
+                    this->actionState |= actionLow;
+                    this->actionStateHigh |= actionHigh;
                 }
                 offset += 0x10;
             }
@@ -619,69 +334,98 @@ void ApplicationManager::OnKeyPress(int key) {
         ++keyIndex;
     }
 
-    void *module = self->currentModule;
-    if (module != 0 && self->field_0x3c == 5) {
-        void **vtable = *(void ***)module;
-        ((KeyCallback *)vtable[0x10 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
+    void *module = this->currentModule;
+    if (module != 0 && this->field_0x3c == 5) {
+        void (**vtable)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int) =
+            *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int))module;
+        vtable[0x10 / 4](module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
 }
 
-__attribute__((minsize)) extern "C" void ApplicationManager_SoundSet(ApplicationManager *self, void *info, int count)
-{
-    if (info != 0) {
-        void *sound = self->soundResource;
-        if (sound != 0) {
-            AESoundRessource_SetSound(sound, info, count);
-            for (int i = 0; i < count; ++i) {
-                ((AbyssEngine::AESoundRessource *)(self->soundResource))->init(i);
+void ApplicationManager::OnKeyRelease(int key) {
+    this->actionMask = 0;
+    this->actionMaskHigh = 0;
+
+    unsigned int keyLow = 0;
+    unsigned int keyHigh = 0;
+    unsigned int actionLow = 0;
+    unsigned int actionHigh = 0;
+    unsigned int keyIndex = 0;
+    int *mapping = (int *)this->keyMappingTable;
+    while (keyIndex <= 0x3f) {
+        if (*mapping == key) {
+            int highIndex = (int)keyIndex - 0x20;
+            keyLow = 1u << keyIndex;
+            if (highIndex >= 0) {
+                keyLow = 0;
             }
+            keyHigh = 1u >> (0x20 - keyIndex);
+            if (highIndex >= 0) {
+                keyHigh = 1u << highIndex;
+            }
+            this->keyState &= ~keyLow;
+            this->keyStateHigh &= ~keyHigh;
+
+            char *table = (char *)this->actionTable->data();
+            unsigned int offset = 0;
+            for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
+                char *entry = table + offset;
+                if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
+                    actionLow |= *(uint32_t *)entry;
+                    actionHigh |= *(uint32_t *)(entry + 4);
+                    this->actionMask = actionLow;
+                    this->actionMaskHigh = actionHigh;
+                    this->actionState &= ~actionLow;
+                    this->actionStateHigh &= ~actionHigh;
+                }
+                offset += 0x10;
+            }
+            break;
+        }
+        mapping += 4;
+        ++keyIndex;
+    }
+
+    void *module = this->currentModule;
+    if (module != 0 && this->field_0x3c == 5) {
+        void (**vtable)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int) =
+            *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int))module;
+        vtable[0x14 / 4](module, module, keyLow, keyHigh, actionLow, actionHigh);
+    }
+}
+
+void ApplicationManager::ResetKeyState() {
+    this->keyState = 0;
+}
+
+uint64_t ApplicationManager::GetKeyState() {
+    return this->keyState;
+}
+
+uint64_t ApplicationManager::GetActionState() {
+    return this->actionState;
+}
+
+void ApplicationManager::KeyCodeSetMapping(void *array) {
+    unsigned int count = *(unsigned int *)array;
+    if (count == 0x40) {
+        int offset = 0;
+        for (unsigned int index = 0; index < count; ++index) {
+            uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
+            char *dst = this->keyMappingTable + offset;
+            *(uint32_t *)dst = *mapping;
+            ((String *)(dst + 4))->assign((String *)(mapping + 1));
+            offset += 0x10;
+            count = *(unsigned int *)array;
         }
     }
 }
 
-__attribute__((minsize)) extern "C" void ApplicationManager_RegisterApplicationModule(ApplicationManager *self, unsigned int id, void *module)
-{
-    if (module != 0) {
-        ((IApplicationModule *)(module))->SetApplicationManager(self);
-        self->modules->push_back(module);
-        self->moduleIds->push_back(id);
-    }
-}
-
-void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
-    char *pending = &g_perfPending;
-    if (*pending != 0) {
-        uint64_t *counter = &g_perfCounter;
-        uint64_t limit = g_perfLimit;
-        uint64_t value = *counter + 1;
-        *counter = value;
-        if ((long long)(value - limit) >= 0) {
-            *(volatile char *)&g_perfExpired = 1;
-            *(volatile char *)pending = 0;
-        }
-    }
-
-    unsigned int count = this->moduleIds->size();
-    unsigned int index = 0;
-    while (index < count) {
-        if ((*this->moduleIds)[index] == id) {
-            void *module = (*this->modules)[index];
-            void *current = this->currentModule;
-            this->field_0x3c = current != 0;
-            this->currentModuleId = id;
-            this->pendingModule = module;
-            return;
-        }
-        ++index;
-    }
-}
+// ---- input: touch --------------------------------------------------------------------
 
 void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
-    ApplicationManager *manager = this;
-    int *xPtr = x;
-    int *yPtr = y;
-    void *canvas = *(void **)manager;
-    int orientation = *(int *)((char *)canvas + 0x30);
+    PaintCanvas *canvas = this->paintCanvas;
+    int orientation = canvas->field_0x30;
     int newY;
 
     if (orientation != 3) {
@@ -689,67 +433,57 @@ void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
             if (orientation != 0) {
                 return;
             }
-            newY = *xPtr;
-            *xPtr = pc_GetWidth((PaintCanvas *)canvas) - *yPtr;
-            goto storeY;
+            newY = *x;
+            *x = pc_GetWidth(canvas) - *y;
+            *y = newY;
+            return;
         }
-        int oldX = *xPtr;
-        *xPtr = *yPtr;
-        *yPtr = pc_GetHeight((PaintCanvas *)canvas) - oldX;
-        canvas = *(void **)manager;
+        int oldX = *x;
+        *x = *y;
+        *y = pc_GetHeight(canvas) - oldX;
+        canvas = this->paintCanvas;
     }
-    *xPtr = pc_GetWidth((PaintCanvas *)canvas) - *xPtr;
-    newY = pc_GetHeight((PaintCanvas *)canvas) - *yPtr;
-
-storeY:
-    *yPtr = newY;
+    *x = pc_GetWidth(canvas) - *x;
+    *y = pc_GetHeight(canvas) - *y;
 }
-
-void ApplicationManager::VibrateSupported() {
-    ext_001ab318(this->engine);
-}
-
-typedef void TouchBeginCallback(void *, int, int, void *);
-typedef void TouchPressCallback(void *, int, int);
 
 void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
-    ApplicationManager *self = this;
     int x = xArg;
     int y = yArg;
 
-    void *module = self->currentModule;
-    if (module != 0 && self->field_0x3c == 5) {
-        ((ApplicationManager *)(self))->ConvertTouchCoords(&x, &y);
-        module = self->currentModule;
-        void **vtable = *(void ***)module;
-        ((TouchBeginCallback *)vtable[0x24 / 4])(module, x, y, touch);
-        module = self->currentModule;
-        vtable = *(void ***)module;
-        ((TouchPressCallback *)vtable[0x18 / 4])(module, x, y);
-        self->lastTouchX = x;
-        self->lastTouchY = y;
+    void *module = this->currentModule;
+    if (module != 0 && this->field_0x3c == 5) {
+        this->ConvertTouchCoords(&x, &y);
+        module = this->currentModule;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        vtable[0x24 / 4](module, x, y, touch);
+        module = this->currentModule;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        vtable2[0x18 / 4](module, x, y);
+        this->lastTouchX = x;
+        this->lastTouchY = y;
 
-        void *engine = self->engine;
+        void *engine = this->engine;
         int mode = g_touchMode;
         if (mode <= 3) {
-            void *canvas = *(void **)self;
+            PaintCanvas *canvas = this->paintCanvas;
             if (mode == 0 && x <= 0x31 && y <= 0x31) {
                 g_touchMode = 1;
-            } else if (mode == 1 && x > pc_GetWidth((PaintCanvas *)canvas) - 0x32 &&
-                       y > pc_GetHeight((PaintCanvas *)canvas) - 0x32) {
+            } else if (mode == 1 && x > pc_GetWidth(canvas) - 0x32 &&
+                       y > pc_GetHeight(canvas) - 0x32) {
                 g_touchMode = 2;
-            } else if (mode == 2 && x <= 0x31 && y > pc_GetHeight((PaintCanvas *)canvas) - 0x32) {
+            } else if (mode == 2 && x <= 0x31 && y > pc_GetHeight(canvas) - 0x32) {
                 uint8_t *flag = (uint8_t *)((char *)engine + 0x74);
                 *flag = !*flag;
-            } else if (mode == 3 && y <= 0x31 && x > pc_GetWidth((PaintCanvas *)canvas) - 0x32) {
+            } else if (mode == 3 && y <= 0x31 && x > pc_GetWidth(canvas) - 0x32) {
                 g_touchMode = 4;
             }
         } else if (*(uint8_t *)((char *)engine + 0x74)) {
             if (y < 100) {
                 g_touchToggle ^= 1;
             } else {
-                int height = pc_GetHeight((PaintCanvas *)*(void **)self);
-                int width = pc_GetWidth((PaintCanvas *)*(void **)self);
+                int height = pc_GetHeight(this->paintCanvas);
+                int width = pc_GetWidth(this->paintCanvas);
                 int half = width / 2;
                 if (height - 100 < y) {
                     g_touchValue = x < half ? 0 : 1;
@@ -759,140 +493,73 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
             }
         }
     }
-
-    return;
 }
 
-void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
-    this->actionTable->push_back(value);
-    this->actionTable->push_back(key);
-}
+void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
+    int x = xArg;
+    int y = yArg;
 
-void * ApplicationManager::GetApplicationModule(unsigned int id) {
-    unsigned int count = this->moduleIds->size();
-    unsigned int index = 0;
-    goto check;
-
-advance:
-    ++index;
-check:
-    if (index >= count) {
-        return 0;
-    }
-    if ((int)(*this->moduleIds)[index] != (int)id) {
-        goto advance;
-    }
-    return (*this->modules)[index];
-}
-
-void * ApplicationManager::ConfigGetKeysForAction(long long action) {
-    int low = (int)action;
-    int high = (int)(action >> 32);
-    unsigned int byteOffset = 0;
-    Array<String *> *result = 0;
-    unsigned int index = 0;
-    goto check;
-
-loop:
-    {
-        char *actions = (char *)this->actionTable->data();
-        int actionLow = *(int *)(actions + byteOffset);
-        int actionHigh = *(int *)(actions + byteOffset + 4);
-        int mismatch = (actionLow ^ low) | (actionHigh ^ high);
-        if (mismatch == 0) {
-            if (result == 0) {
-                result = new Array<String *>();
-            }
-            String *string = (String *)operator new(0xc);
-            actions = (char *)this->actionTable->data();
-            char *keys = this->keyMappingTable;
-            unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
-            new (string) String(*(String *)(keys + keyIndex * 0x10 + 4));
-            result->push_back(string);
-        }
-        byteOffset += 0x10;
-        index += 2;
-    }
-check:
-    if (index < this->actionTable->size()) {
-        goto loop;
-    }
-    return result;
-}
-
-typedef void KeyCallback(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int);
-
-void ApplicationManager::OnKeyRelease(int key) {
-    ApplicationManager *self = this;
-    self->actionMask = 0;
-    self->actionMaskHigh = 0;
-
-    unsigned int keyLow = 0;
-    unsigned int keyHigh = 0;
-    unsigned int actionLow = 0;
-    unsigned int actionHigh = 0;
-    unsigned int keyIndex = 0;
-    int *mapping = (int *)self->keyMappingTable;
-    while (keyIndex <= 0x3f) {
-        if (*mapping == key) {
-            int highIndex = (int)keyIndex - 0x20;
-            keyLow = 1u << keyIndex;
-            if (highIndex >= 0) {
-                keyLow = 0;
-            }
-            keyHigh = 1u >> (0x20 - keyIndex);
-            if (highIndex >= 0) {
-                keyHigh = 1u << highIndex;
-            }
-            self->keyState &= ~keyLow;
-            self->keyStateHigh &= ~keyHigh;
-
-            char *table = (char *)self->actionTable->data();
-            unsigned int offset = 0;
-            for (unsigned int i = 0; i < self->actionTable->size(); i += 2) {
-                char *entry = table + offset;
-                if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
-                    actionLow |= *(uint32_t *)entry;
-                    actionHigh |= *(uint32_t *)(entry + 4);
-                    self->actionMask = actionLow;
-                    self->actionMaskHigh = actionHigh;
-                    self->actionState &= ~actionLow;
-                    self->actionStateHigh &= ~actionHigh;
-                }
-                offset += 0x10;
-            }
-            break;
-        }
-        mapping += 4;
-        ++keyIndex;
-    }
-
-    void *module = self->currentModule;
-    if (module != 0 && self->field_0x3c == 5) {
-        void **vtable = *(void ***)module;
-        ((KeyCallback *)vtable[0x14 / 4])(module, module, keyLow, keyHigh, actionLow, actionHigh);
+    void *module = this->currentModule;
+    if (module != 0 && this->field_0x3c == 5) {
+        this->ConvertTouchCoords(&x, &y);
+        module = this->currentModule;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        vtable[0x28 / 4](module, x, y, touch);
+        module = this->currentModule;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        vtable2[0x1c / 4](module, x, y);
+        this->lastTouchX = x;
+        this->lastTouchY = y;
     }
 }
 
-void ApplicationManager::KeyCodeSetMapping(void *array) {
-    unsigned int count = *(unsigned int *)array;
-    if (count == 0x40) {
-        unsigned int index = 0;
-        int offset = 0;
-        while (index < count) {
-            uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
-            char *dst = this->keyMappingTable + offset;
-            *(uint32_t *)dst = *mapping;
-            ((String *)((String *)(dst + 4)))->assign((String *)(mapping + 1));
-            offset += 0x10;
-            count = *(unsigned int *)array;
-            ++index;
-        }
+void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
+    g_touchDown = 0;
+    int x = xArg;
+    int y = yArg;
+
+    void *module = this->currentModule;
+    if (module != 0 && this->field_0x3c == 5) {
+        this->ConvertTouchCoords(&x, &y);
+        module = this->currentModule;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        vtable[0x2c / 4](module, x, y, touch);
+        module = this->currentModule;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        vtable2[0x20 / 4](module, x, y);
+        this->lastTouchX = x;
+        this->lastTouchY = y;
     }
 }
 
-static bool update_orientation_timer(ApplicationManager *self, int *timer)
-{
+void ApplicationManager::OnTouchEndSimple() {
+    this->currentKey = 0;
+    this->currentKeyHigh = 0;
+    this->keyState = 0;
+    this->keyStateHigh = 0;
+    this->actionMask = 0;
+    this->actionMaskHigh = 0;
+    this->actionState = 0;
+    this->actionStateHigh = 0;
+}
+
+// ---- timing --------------------------------------------------------------------------
+
+uint64_t ApplicationManager::GetSystemTimeMillis() {
+    return this->currentTimeMs;
+}
+
+uint64_t ApplicationManager::GetCurrentTimeMillis() {
+    return this->currentTimeMs;
+}
+
+uint64_t ApplicationManager::GetElapsedTimeMillis() {
+    return this->frameTimeMs - this->previousFrameTimeMs;
+}
+
+// ---- orientation tracking ------------------------------------------------------------
+
+static bool update_orientation_timer(ApplicationManager *self, int *timer) {
     int elapsed = self->frameTimeMs - self->previousFrameTimeMs;
     int value = *timer + elapsed;
     *timer = value;
@@ -900,41 +567,39 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer)
 }
 
 void ApplicationManager::CheckForOrientationChange() {
-    void *engine = this->engine;
-    double tilt = *(double *)((char *)engine + 0x4b0);
-    void *canvas;
-    int orientation;
+    double tilt = *(double *)((char *)this->engine + 0x4b0);
+    PaintCanvas *canvas;
     int *timer;
     int target;
 
     if (tilt < -0.5) {
-        canvas = *(void **)this;
-        orientation = *(int *)((char *)canvas + 0x30);
-        if (orientation == 0) {
+        canvas = this->paintCanvas;
+        if (canvas->field_0x30 == 0) {
             timer = &g_orientationLeft;
             target = 1;
             if (update_orientation_timer(this, timer)) {
-                goto setOrientation;
+                canvas->SetGameOrientation(target);
+                *timer = 0;
             }
             return;
         }
     }
 
     if (tilt > 0.5) {
-        canvas = *(void **)this;
-        orientation = *(int *)((char *)canvas + 0x30);
-        if (orientation == 3) {
+        canvas = this->paintCanvas;
+        if (canvas->field_0x30 == 3) {
             timer = &g_orientationRight;
             target = 2;
             if (update_orientation_timer(this, timer)) {
-                goto setOrientation;
+                canvas->SetGameOrientation(target);
+                *timer = 0;
             }
             return;
         }
-        if (orientation == 1) {
+        if (canvas->field_0x30 == 1) {
             timer = &g_orientationFlat;
             if (update_orientation_timer(this, timer)) {
-                ((PaintCanvas *)canvas)->SetGameOrientation(0);
+                canvas->SetGameOrientation(0);
                 *timer = 0;
             }
             return;
@@ -942,103 +607,290 @@ void ApplicationManager::CheckForOrientationChange() {
     }
 
     if (tilt < -0.5) {
-        canvas = *(void **)this;
-        if (*(int *)((char *)canvas + 0x30) == 2) {
+        canvas = this->paintCanvas;
+        if (canvas->field_0x30 == 2) {
             timer = &g_orientationUpsideDown;
             target = 3;
             if (update_orientation_timer(this, timer)) {
-                goto setOrientation;
+                canvas->SetGameOrientation(target);
+                *timer = 0;
             }
             return;
         }
     }
 
     g_orientationInactive = 0;
-    return;
-
-setOrientation:
-    ((PaintCanvas *)canvas)->SetGameOrientation(target);
-    *timer = 0;
 }
 
-typedef void ModuleCallback(void *);
+// ---- config --------------------------------------------------------------------------
 
-__attribute__((minsize)) ApplicationManager::~ApplicationManager()
-{
-    ApplicationManager *self = this;
-    void *module = self->currentModule;
-    if (module != 0) {
-        ModuleCallback **vtable = *(ModuleCallback ***)module;
-        vtable[0x0c / 4](module);
-    }
-
-    for (unsigned int i = 0; i < self->modules->size(); ++i) {
-        void *entry = (*self->modules)[i];
-        if (entry != 0) {
-            ModuleCallback **vtable = *(ModuleCallback ***)entry;
-            vtable[1](entry);
-        }
-        (*self->modules)[i] = 0;
-    }
-    self->modules->clear();
-    self->moduleIds->clear();
-
-    void *canvas = *(void **)self;
-    if (canvas != 0) {
-        ((AbyssEngine::PaintCanvas *)canvas)->~PaintCanvas();
-        ::operator delete(canvas);
-    }
-    *(void **)self = 0;
-
-    void *sound = self->soundResource;
-    if (sound != 0) {
-        AESoundRessource_dtor(sound);
-        ::operator delete(sound);
-    }
-    self->soundResource = 0;
-
-    void *cheats = self->cheatHandler;
-    if (cheats != 0) {
-        CheatHandler_dtor(cheats);
-        ::operator delete(cheats);
-    }
-    self->cheatHandler = 0;
-
-    void *reader = self->configReader;
-    if (reader != 0) {
-        ConfigReader_dtor(reader);
-        ::operator delete(reader);
-    }
-    self->configReader = 0;
-
-    char *keys = self->keyMappingTable;
-    if (keys != 0) {
-        unsigned int count = *(unsigned int *)(keys - 4);
-        for (unsigned int i = count; i != 0; --i) {
-            ((String *)(keys - 12 + i * 0x10))->~String();
-        }
-        ::operator delete[](keys - 8);
-    }
-    self->keyMappingTable = 0;
-
-    delete self->actionTable;
-    delete self->moduleIds;
-    delete self->modules;
+void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
+    this->actionTable->push_back(value);
+    this->actionTable->push_back(key);
 }
 
-typedef void ConfigTokenReadFunction(ConfigReader *, void *);
+void *ApplicationManager::ConfigGetKeysForAction(long long action) {
+    int low = (int)action;
+    int high = (int)(action >> 32);
+    unsigned int byteOffset = 0;
+    Array<String *> *result = 0;
 
-extern "C" __attribute__((disable_tail_calls)) void ApplicationManager_ConfigRegisterTokenReadFunction(
-    ApplicationManager *self, String *name, ConfigTokenReadFunction *read, void *context)
-{
-    unsigned char storage[sizeof(String)] __attribute__((aligned(4)));
+    for (unsigned int index = 0; index < this->actionTable->size(); index += 2) {
+        char *actions = (char *)this->actionTable->data();
+        int actionLow = *(int *)(actions + byteOffset);
+        int actionHigh = *(int *)(actions + byteOffset + 4);
+        if (((actionLow ^ low) | (actionHigh ^ high)) == 0) {
+            if (result == 0) {
+                result = new Array<String *>();
+            }
+            actions = (char *)this->actionTable->data();
+            char *keys = this->keyMappingTable;
+            unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
+            String *string = new String(*(String *)(keys + keyIndex * 0x10 + 4));
+            result->push_back(string);
+        }
+        byteOffset += 0x10;
+    }
+    return result;
+}
+
+// ---- application callbacks -----------------------------------------------------------
+
+void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
+    this->loadingCallback = (void *)callback;
+    this->loadingCallbackData = data;
+}
+
+void ApplicationManager::SetResumeCallback(ResumeCallback_t *callback, void *data) {
+    this->resumeCallback = (void *)callback;
+    this->resumeCallbackData = data;
+}
+
+void ApplicationManager::LoadingCallbackShow(int mode, void *data) {
+    LoadingCallback_t *callback = (LoadingCallback_t *)this->loadingCallback;
+    if (callback != 0) {
+        callback(this->paintCanvas, mode, data);
+    }
+}
+
+void ApplicationManager::Quit() {
+    typedef void QuitCallback_t();
+    QuitCallback_t *callback = (QuitCallback_t *)this->quitCallback;
+    if (callback != 0) {
+        callback();
+    }
+}
+
+// ---- cheats --------------------------------------------------------------------------
+
+void ApplicationManager::CheatUpdate(unsigned short key) {
+    if (this->cheatsEnabled && this->cheatHandler != 0) {
+        ((CheatHandler *)this->cheatHandler)->Update(key);
+    }
+}
+
+void ApplicationManager::CheatAddCode(void *code, int value) {
+    if (this->cheatHandler != 0) {
+        ((CheatHandler *)this->cheatHandler)->AddCheatCode(*(String *)code, value);
+    }
+}
+
+void ApplicationManager::CheatSetCallback(void *callback, void *data) {
+    if (this->cheatHandler != 0) {
+        ((CheatHandler *)this->cheatHandler)->SetCheatFunc((AbyssEngine::CheatFunc)callback, data);
+    }
+}
+
+void ApplicationManager::CheatEnable(bool enable) {
+    this->cheatsEnabled = enable;
+}
+
+// ---- audio ---------------------------------------------------------------------------
+
+void ApplicationManager::SoundPlay(int soundId) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        ((AESoundRessource *)this->soundResource)->play(soundId, 1.0f);
+    }
+}
+
+void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        ((AESoundRessource *)this->soundResource)->play(soundId, volume);
+    }
+}
+
+void ApplicationManager::SoundPlayLoop(int soundId) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        ((AESoundRessource *)this->soundResource)->playLoop(soundId);
+    }
+}
+
+void ApplicationManager::SoundPlayMusic(int soundId) {
+    if (this->soundResource != 0 && this->musicEnabled) {
+        ((AESoundRessource *)this->soundResource)->playMusic(soundId);
+    }
+}
+
+void ApplicationManager::SoundPlayMusicLoop(int soundId) {
+    if (this->soundResource != 0 && this->musicEnabled) {
+        ((AESoundRessource *)this->soundResource)->playMusicLoop(soundId);
+    }
+}
+
+void ApplicationManager::SoundStop() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->stopAll();
+    }
+}
+
+void ApplicationManager::SoundStopSounds() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->stopAll();
+    }
+}
+
+void ApplicationManager::SoundPause() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->pauseAll();
+    }
+}
+
+void ApplicationManager::SoundPauseSounds() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->pauseAll();
+    }
+}
+
+void ApplicationManager::SoundResume(int soundId) {
+    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
+        ((AESoundRessource *)this->soundResource)->resume(soundId);
+    }
+}
+
+void ApplicationManager::SoundResumeSelf() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->resumeAll();
+    }
+}
+
+void ApplicationManager::SoundResumeSounds() {
+    if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
+        ((AESoundRessource *)this->soundResource)->resumeAll();
+    }
+}
+
+void ApplicationManager::SoundRelease() {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->freeAllRessources();
+    }
+}
+
+int ApplicationManager::SoundIsPlaying() {
+    if (this->soundResource == 0) {
+        return 0;
+    }
+    return ((AESoundRessource *)this->soundResource)->isPlaying(0);
+}
+
+void ApplicationManager::SoundSetVolume(int volume) {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->setVolume(volume);
+    }
+}
+
+void ApplicationManager::SoundSetFXVolume(int volume) {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->setSoundVolume(volume);
+    }
+}
+
+void ApplicationManager::SoundSetMusicVolume(int volume) {
+    if (this->soundResource != 0) {
+        ((AESoundRessource *)this->soundResource)->setMusicVolume(volume);
+    }
+}
+
+void ApplicationManager::SoundEnable(bool enable) {
+    this->soundFxEnabled = enable;
+    this->musicEnabled = enable;
+}
+
+void ApplicationManager::SoundFxEnable(bool enable) {
+    this->soundFxEnabled = enable;
+}
+
+void ApplicationManager::SoundMusicEnable(bool enable) {
+    this->musicEnabled = enable;
+}
+
+// ---- vibration -----------------------------------------------------------------------
+
+void ApplicationManager::Vibrate(unsigned short duration) {
+    if (this->vibrateEnabled) {
+        Engine_Vibrate(this->engine, duration);
+    }
+}
+
+void ApplicationManager::VibrateEnable(bool enable) {
+    this->vibrateEnabled = enable;
+}
+
+void ApplicationManager::VibrateSupported() {
+    Engine_VibrateSupported(this->engine);
+}
+
+// ---- recovered free-function API (operate on the public manager state) ---------------
+
+// Returns the build version string (out is constructed in place by the caller's slot).
+void ApplicationManager_GetApplicationVersionString(String *out) {
+    new (out) String();
+    out->s = u"2.0.16";
+}
+
+// Parse a named config file through the manager's ConfigReader.
+void ApplicationManager_ConfigReadFile(ApplicationManager *self, String *name) {
     ConfigReader *reader = (ConfigReader *)self->configReader;
     if (reader != 0) {
-        String *copy = (String *)storage;
-        new (copy) String(*name);
-        ((::AbyssEngine::ConfigReader *)reader)->RegisterTokenReadFunction(
-            *copy, (::AbyssEngine::ConfigTokenReadFunction)read, context);
-        ((String *)storage)->~String();
+        reader->ParseFile(*name);
     }
-    return;
+}
+
+// Register a section handler with the manager's ConfigReader.
+void ApplicationManager_ConfigRegisterTokenReadFunction(ApplicationManager *self, String *name,
+                                                         ConfigTokenReadFunction read, void *context) {
+    ConfigReader *reader = (ConfigReader *)self->configReader;
+    if (reader != 0) {
+        reader->RegisterTokenReadFunction(*name, read, context);
+    }
+}
+
+// Arm the per-frame performance counter (engine-global bookkeeping).
+void ApplicationManager_EnablePerformanceTest(int count) {
+    g_perfElapsed = 0;
+    g_perfActionCount = (long long)count;
+    g_perfLimitValue = 0;
+    g_perfTotal = 0;
+    g_perfFrame = 0;
+    g_perfEnabled = 1;
+    g_perfPendingFlag = 0;
+}
+
+// Install the sound-info table and initialise each loaded sound slot.
+void ApplicationManager_SoundSet(ApplicationManager *self, AESoundInfo *info, int count) {
+    if (info != 0 && self->soundResource != 0) {
+        AESoundRessource *sound = (AESoundRessource *)self->soundResource;
+        sound->SetSound(info, count);
+        for (int i = 0; i < count; ++i) {
+            sound->init(i);
+        }
+    }
+}
+
+// Register an application module under `id`, binding it back to this manager.
+void ApplicationManager_RegisterApplicationModule(ApplicationManager *self, unsigned int id, void *module) {
+    if (module != 0) {
+        ((IApplicationModule *)module)->SetApplicationManager(self);
+        self->modules->push_back(module);
+        self->moduleIds->push_back(id);
+    }
 }

@@ -1,84 +1,57 @@
 #ifndef GOF2_AEPAKFILE_H
 #define GOF2_AEPAKFILE_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-// Galaxy on Fire 2 -- AEPakFile (Android libgof2hdaa.so, armv7 Thumb).
-// Qualified target names are top-level: "AEPakFile::..." (NOT in a namespace).
-// AEPakFile wraps a FileInterface* (held at +0x4) plus an offset/size window
-// (+0x8 size limit, +0xc base offset, +0x10 current position). Fields are accessed
-// by byte offset taken from each work-item's target disasm.
 
-void *operator new(__SIZE_TYPE__ size);
-void operator delete(void *ptr) noexcept;
-void *operator new[](__SIZE_TYPE__ size);
-void operator delete[](void *ptr) noexcept;
+// Galaxy on Fire 2 -- AEPakFile.
+// A virtual file reader that exposes a windowed view (base offset + size limit) over
+// a held FileInterface. The window tracks the current read position; Read clamps to
+// the remaining bytes and forwards to the underlying interface, Skip drains bytes by
+// reading them into a throwaway buffer.
 
+// The held file interface. It has no dedicated header of its own, so the small vtable
+// it is accessed through is described here. Only the Read/Free/Discard slots are used.
 struct FileInterface;
 
-// ---- held FileInterface object ------------------------------------------------
-struct FI;
-
-struct FIVTable {
-    void (*slot_00)(FI *);                                 // 0x00
-    void (*Free)(FI *);                                    // 0x04
-    void (*slot_08)(FI *);                                 // 0x08
-    void (*slot_0c)(FI *);                                 // 0x0c
-    void (*slot_10)(FI *);                                 // 0x10
-    uint32_t (*Read)(FI *, uint32_t, void *);              // 0x14
-    void (*slot_18)(FI *);                                 // 0x18
-    void (*slot_1c)(FI *);                                 // 0x1c
-    void (*slot_20)(FI *);                                 // 0x20
-    void (*pad_24)(FI *);                                  // 0x24
-    void (*pad_28)(FI *);                                  // 0x28
-    void (*pad_2c)(FI *);                                  // 0x2c
-    void (*pad_30)(FI *);                                  // 0x30
-    void (*pad_34)(FI *);                                  // 0x34
-    void (*pad_38)(FI *);                                  // 0x38
-    void (*pad_3c)(FI *);                                  // 0x3c
-    void (*pad_40)(FI *);                                  // 0x40
-    void (*Discard)(FI *);                                 // 0x44
+struct FileInterfaceVTable {
+    void     (*slot_00)(FileInterface *);
+    void     (*Free)(FileInterface *);
+    void     (*slot_08)(FileInterface *);
+    void     (*slot_0c)(FileInterface *);
+    void     (*slot_10)(FileInterface *);
+    uint32_t (*Read)(FileInterface *, uint32_t, void *);
+    void     (*slot_18)(FileInterface *);
+    void     (*slot_1c)(FileInterface *);
+    void     (*slot_20)(FileInterface *);
+    void     (*pad_24)(FileInterface *);
+    void     (*pad_28)(FileInterface *);
+    void     (*pad_2c)(FileInterface *);
+    void     (*pad_30)(FileInterface *);
+    void     (*pad_34)(FileInterface *);
+    void     (*pad_38)(FileInterface *);
+    void     (*pad_3c)(FileInterface *);
+    void     (*pad_40)(FileInterface *);
+    void     (*Discard)(FileInterface *);
 };
 
-struct FI {
-    FIVTable *vtable;
+struct FileInterface {
+    FileInterfaceVTable *vtable;
 };
-
-// ---- AEPakFile's own vtable (for the self-call in Skip at slot 0xc) -----------
-struct PakVTable {
-    void (*slot_00)(AEPakFile *);                          // 0x00
-    void (*slot_04)(AEPakFile *);                          // 0x04
-    void (*slot_08)(AEPakFile *);                          // 0x08
-    uint32_t (*ReadInto)(AEPakFile *, uint32_t, void *);   // 0x0c
-};
-
-struct PakObj {
-    PakVTable *vtable;
-};
-
-static inline FI *&pak_fi(void *self)      { return *(FI **)((char *)self + 0x4); }
-static inline int &pak_size(void *self)    { return *(int *)((char *)self + 0x8); }
-static inline int &pak_pos(void *self)     { return *(int *)((char *)self + 0x10); }
-
-// ---- tiny offset-cast helpers -------------------------------------------------
-static inline void *&P(void *p, int off) { return *(void **)((char *)p + off); }
-static inline int &I(void *p, int off)   { return *(int *)((char *)p + off); }
-
-// AEPakFile's own vtable, referenced PC-relative (hidden visibility), offset by +8
-// past the RTTI header when installed.
-__attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
 
 class AEPakFile {
 public:
-    void *field_0x0;    // +0x0 vtable
-    FI *fileInterface;      // +0x4 held FileInterface
-    int sizeLimit;      // +0x8 size limit
-    int baseOffset;      // +0xc base offset
-    int position;     // +0x10 current position
+    FileInterface *fileInterface;
+    int            sizeLimit;
+    int            baseOffset;
+    int            position;
 
-    AEPakFile(FileInterface *file, int param_2, int param_3);
-    uint32_t Release();
-    uint32_t Read(uint32_t bytes, void *buffer);
+    AEPakFile(FileInterface *file, int sizeLimit, int baseOffset);
+    virtual ~AEPakFile();
+
+    virtual uint32_t Release();
+    // Read up to `bytes`, clamped to the remaining window, into `buffer`.
+    virtual uint32_t Read(uint32_t bytes, void *buffer);
+    // Drain `bytes` by reading them into a scratch buffer.
     uint32_t Skip(uint32_t bytes);
-    void deleteTail();   // D0 deleting-destructor tail: operator delete(this)
 };
+
 #endif

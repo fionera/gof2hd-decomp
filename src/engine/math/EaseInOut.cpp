@@ -2,35 +2,6 @@
 
 namespace AbyssEngine {
 
-void EaseInOut::UpdateCurrentValue() {
-    if ((double)m_t == 2.5 * PI) {
-        m_current = m_min + m_range;
-    } else {
-        double s = (double)AEMath::Sinf(m_t) * 0.5 + 0.5;
-        m_current = (float)((double)m_min + s * (double)m_range);
-    }
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-float EaseInOut::GetMaxValue() {
-    return m_min + m_range;
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-EaseInOut::EaseInOut(float minValue, float maxValue) {
-    SetRange(minValue, maxValue);
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 EaseInOut::EaseInOut() {
     m_min = 0.0f;
     m_range = 2.0f * PI;
@@ -38,18 +9,9 @@ EaseInOut::EaseInOut() {
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void EaseInOut::SetToMaxValue() {
-    m_t = 2.5f * PI;
-    UpdateCurrentValue();
+EaseInOut::EaseInOut(float minValue, float maxValue) {
+    SetRange(minValue, maxValue);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void EaseInOut::SetRange(float minValue, float maxValue) {
     m_t = 1.5f * PI;
@@ -58,9 +20,35 @@ void EaseInOut::SetRange(float minValue, float maxValue) {
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
+void EaseInOut::SetToMinValue() {
+    m_t = 1.5f * PI;
+    UpdateCurrentValue();
+}
 
-namespace AbyssEngine {
+void EaseInOut::SetToMaxValue() {
+    m_t = 2.5f * PI;
+    UpdateCurrentValue();
+}
+
+float EaseInOut::GetMaxValue() {
+    return m_min + m_range;
+}
+
+void EaseInOut::Increase(float dt) {
+    m_t = (float)((double)m_t + (double)dt * (1.0 / 65536.0) * (2.0 * PI));
+    if ((double)m_t > 2.5 * PI) {
+        m_t = 2.5f * PI;
+    }
+    UpdateCurrentValue();
+}
+
+void EaseInOut::Decrease(float dt) {
+    m_t = (float)((double)m_t + (double)dt * (-1.0 / 65536.0) * (2.0 * PI));
+    if ((double)m_t < 1.5 * PI) {
+        m_t = 1.5f * PI;
+    }
+    UpdateCurrentValue();
+}
 
 void EaseInOut::RunOut(float dt) {
     float target = 2.0f * PI;
@@ -81,46 +69,17 @@ void EaseInOut::RunOut(float dt) {
     UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void EaseInOut::SetToMinValue() {
-    m_t = 1.5f * PI;
-    UpdateCurrentValue();
-}
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void EaseInOut::Decrease(float dt) {
-    m_t = (float)((double)m_t + (double)dt * (-1.0 / 65536.0) * (2.0 * PI));
-    if ((double)m_t < 1.5 * PI) {
-        m_t = 1.5f * PI;
+void EaseInOut::UpdateCurrentValue() {
+    if ((double)m_t == 2.5 * PI) {
+        m_current = m_min + m_range;
+    } else {
+        double s = (double)AEMath::Sinf(m_t) * 0.5 + 0.5;
+        m_current = (float)((double)m_min + s * (double)m_range);
     }
-    UpdateCurrentValue();
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
-void EaseInOut::Increase(float dt) {
-    m_t = (float)((double)m_t + (double)dt * (1.0 / 65536.0) * (2.0 * PI));
-    if ((double)m_t > 2.5 * PI) {
-        m_t = 2.5f * PI;
-    }
-    UpdateCurrentValue();
-}
-
-} // namespace AbyssEngine
-
-// ---- accessors / per-frame Update ----
-namespace AbyssEngine {
-
-// Update(dt): advance the animation parameter forward each frame, clamping at the
-// maximum, then recompute the eased output. Equivalent to Increase().
+// Update(dt): advance the animation parameter forward each frame, clamping at
+// the maximum, then recompute the eased output. Equivalent to Increase().
 void EaseInOut::Update(float dt) {
     Increase(dt);
 }

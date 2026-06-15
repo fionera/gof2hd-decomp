@@ -1,60 +1,66 @@
 #include "gof2/engine/audio/FModSound.h"
+#include "gof2/platform/libc.h"
+#include <cstring>
 
-extern "C" void FMOD_setLanguage(void *system, uint32_t lang);
-extern "C" int FMOD_Event_stop(void *event, int immediate);
-extern "C" int FMOD_Event_setPaused(void *event, int paused);
-extern "C" void FMOD_fade(void *self, int a, int s, float v);
-extern "C" void FMOD_EventSystem_unload(void *system);
-extern "C" void FMOD_EventSystem_release(void *system);
-extern "C" void *AEFile_GetAppRootDir();
-extern "C" FModSound *FMOD_Event_stop_p(void *event, int immediate);
-extern "C" int FMOD_Event_setPitch(void *event, float pitch, int mode);
-extern "C" int FMOD_Event_setVolume(void *event, float vol);
-extern "C" int FMOD_Event_getProperty(void *event, void *prop, void *out, int b = 1);
-extern "C" int FMOD_EventSystem_getNumReverbPresets(void *system, int *out);
-extern "C" int FMOD_EventSystem_getReverbPresetByIndex(void *system, int idx, void *props, char **name);
-extern "C" int FMOD_EventSystem_setReverbProperties(void *system, void *props);
-extern "C" int FMOD_Event_getParameterByIndex(void *event, int idx, FMOD::EventParameter **out);
-extern "C" int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
-extern "C" void *__aeabi_memcpy8(void *dst, const void *src, uint32_t n);
-extern "C" void FMOD_EventSystem_Create(void *out);
-extern "C" int FMOD_EventSystem_init(void *system, int maxch, void *extdriver, int flags);
+// FMOD designer-API shims. The native build links these against the FMOD runtime;
+// they are declared here as the C entry points the engine expects.
+extern "C" {
+void  FMOD_setLanguage(void *system, uint32_t lang);
+int   FMOD_Event_stop(void *event, int immediate);
+int   FMOD_Event_setPaused(void *event, int paused);
+void  FMOD_fade(void *self, int a, int s, float v);
+void  FMOD_EventSystem_unload(void *system);
+void  FMOD_EventSystem_release(void *system);
+void *AEFile_GetAppRootDir();
+FModSound *FMOD_Event_stop_p(void *event, int immediate);
+int   FMOD_Event_setPitch(void *event, float pitch, int mode);
+int   FMOD_Event_setVolume(void *event, float vol);
+int   FMOD_Event_getProperty(void *event, void *prop, void *out, int b = 1);
+int   FMOD_EventSystem_getNumReverbPresets(void *system, int *out);
+int   FMOD_EventSystem_getReverbPresetByIndex(void *system, int idx, void *props, char **name);
+int   FMOD_EventSystem_setReverbProperties(void *system, void *props);
+int   FMOD_Event_getParameterByIndex(void *event, int idx, FMOD::EventParameter **out);
+int   FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
+void  FMOD_EventSystem_Create(void *out);
+int   FMOD_EventSystem_init(void *system, int maxch, void *extdriver, int flags);
+int   FMOD_EventSystem_load(void *system, const char *name, void *proj);
+void  FMOD_EventSystem_getCategory(void *system, void *out);
+void  FMOD_EventSystem_getProjectByIndex(void *system, void *out);
+int   FMOD_Event_getState(void *event, unsigned *out);
+int   FMOD_Event_getParameter(void *event, const char *name, FMOD::EventParameter **out);
+int   FMOD_EventSystem_getProject(void *system, const char *name, FMOD::EventProject **out);
+int   FMOD_Event_getParentGroup(void *event, FMOD::EventGroup **out);
+int   FMOD_Event_getCategory(void *event, FMOD::EventCategory **out = 0);
+void  FMOD_play(void *self, int a, void *b, float v);
+int   FMOD_Event_getInfo(void *event, char **name, void *info);
+int   FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
+int   FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
+int   FMOD_Event_start(void *event);
+int   FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos, void *vel,
+                                               void *forward);
+int   FMOD_EventSystem_update(int system);
+float VectorSignedToFloat(int v, int mode);
+}
+
 int GameText_getLanguage();
-extern "C" void *__aeabi_memclr8(void *d, uint32_t n);
-extern "C" char *strcpy(char *d, const char *s);
-extern "C" __SIZE_TYPE__ strlen(const char *s);
-extern "C" int FMOD_EventSystem_load(void *system, const char *name, void *proj);
-extern "C" void FMOD_EventSystem_getCategory(void *system, void *out);
-extern "C" void FMOD_EventSystem_getProjectByIndex(void *system, void *out);
-extern "C" int FMOD_Event_getState(void *event, unsigned *out);
-extern "C" int FMOD_Event_getParameter(void *event, const char *name, FMOD::EventParameter **out);
-extern "C" int FMOD_EventSystem_getProject(void *system, const char *name, FMOD::EventProject **out);
-extern "C" int FMOD_Event_getParentGroup(void *event, FMOD::EventGroup **out);
-extern "C" int FMOD_Event_getCategory(void *event, FMOD::EventCategory **out = 0);
-extern "C" void FMOD_play(void *self, int a, void *b, float v);
 
-// FModSound::setAudioLanguage(int)
-//   if (system) tail-call ext(system, langTable[p1 == 1])
-__attribute__((visibility("hidden"))) static const uint32_t langTable[2] = {0, 1};
+// Globals the engine publishes for the reverb/property property-name handles.
+extern "C" void **gPauseProp;
+extern void **g_fmodPropName;
+extern "C" float FModSound_defaultPitch;
 
 void FModSound::setAudioLanguage(int p1)
 {
+    static const uint32_t langTable[2] = {0, 1};
     if (!this->system)
         return;
-    return FMOD_setLanguage(this->system, langTable[p1 == 1]);
+    FMOD_setLanguage(this->system, langTable[p1 == 1]);
 }
 
-namespace AbyssEngine { namespace AEMath { struct Vector; } }
-using AbyssEngine::AEMath::Vector;
-
-// FModSound::updateEvent3DAttributes(int, Vector*, Vector*, bool)
-//   events[p1] = updateEvent3DAttributes(events[p1], p1, p2, p3, p4)
 void FModSound::updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c)
 {
     this->events[idx] = updateEvent3DAttributes(this->events[idx], idx, a, b, c);
 }
-
-// FModSound::stopAll() -> for 0x8f5 slots: if (system && events[i]) Event::stop(events[i],1)
 
 void FModSound::stopAll()
 {
@@ -64,8 +70,6 @@ void FModSound::stopAll()
     }
 }
 
-// FModSound::resumeAll() -> for 0x8f5 slots: if (system && events[i]) Event::setPaused(events[i],0)
-
 void FModSound::resumeAll()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
@@ -74,19 +78,15 @@ void FModSound::resumeAll()
     }
 }
 
-// FModSound::promptMusicCue(int)
-//   music = this->0x2400; if (music) tail-call music->vtbl[0x28](music, p1)
 void FModSound::promptMusicCue(int p1)
 {
     if (!this->music)
         return;
     void **vt = *(void ***)this->music;
     typedef void (*Fn)(void *, int);
-    return ((Fn)vt[0x28 / 4])(this->music, p1);
+    ((Fn)vt[0x28 / 4])(this->music, p1);
 }
 
-// FModSound::fadeOutNow()
-//   s = this[0]; if (s==-1 || this[4]==s) return; tail-call ext(this, 0, s, kConst)
 static const float kFade = 0.1f;
 
 void FModSound::fadeOutNow()
@@ -96,10 +96,8 @@ void FModSound::fadeOutNow()
         return;
     if (this->fadeTargetMusicEvent == s)
         return;
-    return FMOD_fade(this, 0, s, kFade);
+    FMOD_fade(this, 0, s, kFade);
 }
-
-// FModSound::release()
 
 void FModSound::release()
 {
@@ -113,8 +111,6 @@ void FModSound::release()
     for (int i = 0; i != 4; i++)
         this->category[i] = 0;
 }
-
-// FModSound::FModSound()
 
 FModSound::FModSound()
 {
@@ -135,9 +131,6 @@ FModSound::FModSound()
     this->listenerUp = 0;
 }
 
-// FModSound::stop(FMOD::Event*) -> if (e) return Event::stop(e, 0); else this
-struct FModSound;
-
 FModSound *FModSound::stop(void *e)
 {
     if (e == 0)
@@ -145,8 +138,6 @@ FModSound *FModSound::stop(void *e)
     return FMOD_Event_stop_p(e, 0);
 }
 
-// FModSound::setVolume(int, float)
-//   if (system && (h=this[p1*4+0x23ec])) tail-call h->vtbl[0x20](h, vol)
 void FModSound::setVolume(int p1, float vol)
 {
     if (this->system == 0)
@@ -156,10 +147,8 @@ void FModSound::setVolume(int p1, float vol)
         return;
     void **vt = *(void ***)h;
     typedef void (*Fn)(void *, float);
-    return ((Fn)vt[0x20 / 4])(h, vol);
+    ((Fn)vt[0x20 / 4])(h, vol);
 }
-
-// FModSound::pauseAll() -> for 0x8f5 slots: if (system && events[i]) Event::setPaused(events[i],1)
 
 void FModSound::pauseAll()
 {
@@ -169,27 +158,21 @@ void FModSound::pauseAll()
     }
 }
 
-// FModSound::~FModSound() -> release(this); (returns this)
 FModSound::~FModSound()
 {
     release();
 }
 
-// FModSound::setDownPitch(bool)
-//   pitch = down ? -1.0 : 0.1 ; this[8]=down ; for i<0x8f5: if(system&&events[i]&&isPlaying(i)) setPitch
-static const float kUp = 0.1f;
-
 void FModSound::setDownPitch(bool down)
 {
+    static const float kUp = 0.1f;
     float pitch = down ? -1.0f : kUp;
-    this->downPitch = (uint8_t)down;
+    this->downPitch = down ? 1 : 0;
     for (unsigned i = 0; i < 0x8f5u; ++i) {
         if (this->system && this->events[i] && isPlaying(i))
             FMOD_Event_setPitch(this->events[i], pitch, 1);
     }
 }
-
-// FModSound::stop(int) -> if (p1>=0 && events[p1]) tail-call Event::stop(h, 0)
 
 void FModSound::stop(int p1)
 {
@@ -201,18 +184,14 @@ void FModSound::stop(int p1)
     FMOD_Event_stop(h, 0);
 }
 
-// FModSound::setMusicParamValue(int, float)
-//   music = this->0x2400; if (music) tail-call music->vtbl[0x34](music, p1, p2)
 void FModSound::setMusicParamValue(int p1, float p2)
 {
     if (!this->music)
         return;
     void **vt = *(void ***)this->music;
     typedef void (*Fn)(void *, int, float);
-    return ((Fn)vt[0x34 / 4])(this->music, p1, p2);
+    ((Fn)vt[0x34 / 4])(this->music, p1, p2);
 }
-
-// FModSound::setSoundVolume(int, float) -> if (system && events[p1]) tail-call setVolume(h, vol)
 
 void FModSound::setSoundVolume(int p1, float vol)
 {
@@ -222,9 +201,6 @@ void FModSound::setSoundVolume(int p1, float vol)
             FMOD_Event_setVolume(h, vol);
     }
 }
-
-// FModSound::pauseAllPlaying()
-//   for i<0x8f5: if (system && events[i] && isPlaying(i)) Event::setPaused(events[i],1)
 
 void FModSound::pauseAllPlaying()
 {
@@ -237,8 +213,6 @@ void FModSound::pauseAllPlaying()
     }
 }
 
-// FModSound::resume(int) -> if (system && events[p1]) tail-call setPaused(h, 0)
-
 void FModSound::resume(int p1)
 {
     if (this->system != 0) {
@@ -247,10 +221,6 @@ void FModSound::resume(int p1)
             FMOD_Event_setPaused(h, 0);
     }
 }
-
-// FModSound::getEventPauseLength(int idx)
-//   if (this[0x2404] && system && enabled[0x11] && events[idx]) getProperty(h, *gProp, &out, 1)
-extern "C" void **gPauseProp;   // pc-relative global: holds &prop
 
 int FModSound::getEventPauseLength(int idx)
 {
@@ -263,12 +233,10 @@ int FModSound::getEventPauseLength(int idx)
     return out;
 }
 
-// FModSound::enableReverb(int)
-//   One stack array holds both the FMOD_REVERB_PROPERTIES (buf[0..0x4f]) and numPresets (buf+0x50),
-//   matching the target's frame: buffer at sp+0, scalar at sp+0x50, canary at sp+0x54.
-
 void FModSound::enableReverb(int p1)
 {
+    // One stack array holds both the FMOD_REVERB_PROPERTIES (buf[0..0x4f]) and the
+    // preset count (buf+0x50).
     if (!this->system)
         return;
     char buf[0x54];
@@ -283,14 +251,8 @@ void FModSound::enableReverb(int p1)
         FMOD_EventSystem_setReverbProperties(this->system, buf);
 }
 
-extern "C" {
-int FMOD_Event_getInfo(void *event, char **name, void *info);
-float VectorSignedToFloat(int v, int mode);
-}
-
-// FModSound::getPlayingProgress(int) -> queries the FMOD event info for a slot
-// and converts two of its fields to float (progress numerator/denominator).
-
+// Queries the FMOD event info for a slot and converts two of its fields to float
+// (progress numerator/denominator).
 float FModSound::getPlayingProgress(int idx)
 {
     if (this->initialized != 0 && this->system != 0 &&
@@ -305,33 +267,13 @@ float FModSound::getPlayingProgress(int idx)
     return 0.0f;
 }
 
-namespace AbyssEngine { namespace AEMath { struct Vector; } }
-using AbyssEngine::AEMath::Vector;
-
-extern "C" {
-int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
-int FMOD_Event_setPitch(void *event, float pitch, int mode);
-int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
-int FMOD_Event_start(void *event);
-}
-
-__attribute__((visibility("hidden"))) extern void **g_fmodPropName; // property-name pointer
-extern "C" extern float FModSound_defaultPitch;
-
+// Copy a Vector (3 floats) into a cached FMOD_VECTOR slot, allocating if needed.
 static void *cacheVec(Vector *&cached, Vector *src)
 {
-    int *slot = (int *)cached;
-    if (slot == 0) {
-        slot = (int *)::operator new(0xc);
-        slot[0] = 0;
-        slot[1] = 0;
-        slot[2] = 0;
-        cached = (Vector *)slot;
-    }
-    slot[0] = *(int *)src;
-    slot[1] = *((int *)src + 1);
-    slot[2] = *((int *)src + 2);
-    return slot;
+    if (cached == 0)
+        cached = new Vector();
+    *cached = *src;
+    return cached;
 }
 
 void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
@@ -368,11 +310,9 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
         if (this->categoryEnabled[idx] == 0)
             return;
 
-        void *posPtr = 0;
-        void *velPtr = 0;
         bool havePos = false, haveVel = false;
-        if (pos != 0) { posPtr = cacheVec(this->eventPos, pos); havePos = true; }
-        if (vel != 0) { velPtr = cacheVec(this->eventVel, vel); haveVel = true; }
+        if (pos != 0) { cacheVec(this->eventPos, pos); havePos = true; }
+        if (vel != 0) { cacheVec(this->eventVel, vel); haveVel = true; }
 
         if (freshLookup) {
             void *dummy = 0;
@@ -413,21 +353,13 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
     }
 }
 
-// FModSound::resume(FMOD::Event*) -> bool: e && system && setPaused(e,0)==0
-
 bool FModSound::resume(void *e)
 {
     bool ok = false;
-    if (e != 0 && this->system != 0) {
-        int r = FMOD_Event_setPaused(e, 0);
-        ok = r == 0;
-    }
+    if (e != 0 && this->system != 0)
+        ok = FMOD_Event_setPaused(e, 0) == 0;
     return ok;
 }
-
-namespace FMOD { struct Event; struct EventParameter; }
-
-// FModSound::setParamValue(FMOD::Event* e, int paramIdx, float val)
 
 void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val)
 {
@@ -438,8 +370,6 @@ void FModSound::setParamValue(FMOD::Event *e, int paramIdx, float val)
     }
 }
 
-// FModSound::stopAllSoundFXEvents()
-//   if (system) iterate category indices (inner skip on ==1, stop at 4): cat[i]->vtbl[0x1c](cat[i])
 void FModSound::stopAllSoundFXEvents()
 {
     if (this->system == 0)
@@ -461,9 +391,6 @@ void FModSound::stopAllSoundFXEvents()
     }
 }
 
-// FModSound::pause(int)
-//   system==0 -> return this ;  h==0 -> return 0 ;  else tail-call setPaused(h,1)
-
 int FModSound::pause(int p1)
 {
     void *self = this;
@@ -475,46 +402,38 @@ int FModSound::pause(int p1)
     return (int)(long)self;
 }
 
-// FModSound::disableReverb()
-//   if (system) { memcpy8(buf, &kRev, 0x50); setReverbProperties(system, buf); }
-//   this->0x2408 = -1;
-
-__attribute__((visibility("hidden"))) static const unsigned char kRev[0x50] = {0};
-
 void FModSound::disableReverb()
 {
+    static const unsigned char kRev[0x50] = {0};
     if (this->system) {
         unsigned char buf[0x50];
-        __aeabi_memcpy8(buf, kRev, 0x50);
+        memcpy(buf, kRev, 0x50);
         FMOD_EventSystem_setReverbProperties(this->system, buf);
     }
     this->reverbPreset = -1;
 }
 
-// FModSound::init()
-
-__attribute__((visibility("hidden"))) static const char kSuffixA[16] = ".fev";
-__attribute__((visibility("hidden"))) static const char kSuffixB[24] = "_low.fev";
-__attribute__((visibility("hidden"))) static void *kCats[4];
-
 int FModSound::init()
 {
+    static const char kSuffixA[16] = ".fev";
+    static const char kSuffixB[24] = "_low.fev";
+    static void *kCats[4];
+
     for (int i = 0; i != 5; i++)
-        this->fxSlots[i] = 0xffffffff;
+        this->fxSlots[i] = -1;
     FMOD_EventSystem_Create(&this->system);
     FMOD_EventSystem_init(this->system, 0x20, (void *)0x82, 0);
     setAudioLanguage(GameText_getLanguage());
 
     char path[0x400];
-    __aeabi_memclr8(path, 0x400);
+    memset(path, 0, 0x400);
     strcpy(path, this->appRootDir);
     uint8_t lowFlag = this->lowMemory;
     char *end = path + strlen(path);
-    if (lowFlag == 0) {
-        __builtin_memcpy(end, kSuffixB, 16);
-    } else {
-        __builtin_memcpy(end, kSuffixA, 14);
-    }
+    if (lowFlag == 0)
+        memcpy(end, kSuffixB, 16);
+    else
+        memcpy(end, kSuffixA, 14);
     FMOD_EventSystem_load(this->system, path, 0);
     for (int i = 0; i != 4; i++) {
         this->category[i] = 0;
@@ -522,16 +441,12 @@ int FModSound::init()
     }
     FMOD_EventSystem_getProjectByIndex(this->system, 0);
     this->propSlot = 0;
-    this->reverbPreset = 0xffffffff;
-    this->currentMusicEvent = 0xffffffff;
-    this->fadeTargetMusicEvent = 0xffffffff;
+    this->reverbPreset = -1;
+    this->currentMusicEvent = -1;
+    this->fadeTargetMusicEvent = -1;
     this->downPitch = 0;
     return 0;
 }
-
-namespace FMOD { struct EventParameter; }
-
-// FModSound::setParamValue(int idx, int paramIdx, float val)
 
 void FModSound::setParamValue(int paramIdx, int idx, float val)
 {
@@ -541,8 +456,6 @@ void FModSound::setParamValue(int paramIdx, int idx, float val)
         FMOD_EventParameter_setValue(p, val);
     }
 }
-
-// FModSound::isChannelActive(int) -> if (system && events[p1]) { getState(h,&s); r=(s>>4)&1; } else 0
 
 unsigned FModSound::isChannelActive(int p1)
 {
@@ -557,9 +470,6 @@ unsigned FModSound::isChannelActive(int p1)
     return 0;
 }
 
-// FModSound::playMusicFadeOutCurrent(int p1)
-//   if (this[0] != p1) { if (this[0]==-1) {this[0]=p1; s=p1;} setParamValue(0,s,0.1f); this[4]=p1; }
-
 void FModSound::playMusicFadeOutCurrent(int p1)
 {
     int s = this->currentMusicEvent;
@@ -573,10 +483,6 @@ void FModSound::playMusicFadeOutCurrent(int p1)
     this->fadeTargetMusicEvent = p1;
 }
 
-namespace FMOD { struct EventParameter; }
-
-// FModSound::getParam(char const*, int) -> if (system && events[idx]) getParameter(h, name, &out)
-
 void FModSound::getParam(const char *name, int idx)
 {
     if (this->system != 0) {
@@ -586,15 +492,6 @@ void FModSound::getParam(const char *name, int idx)
             FMOD_Event_getParameter(h, name, &out);
         }
     }
-}
-
-namespace AbyssEngine { namespace AEMath { struct Vector; } }
-using AbyssEngine::AEMath::Vector;
-
-extern "C" {
-int FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos, void *vel,
-                                             void *forward);
-int FMOD_EventSystem_update(int system);
 }
 
 void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
@@ -612,10 +509,8 @@ void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
 
     bool haveUp = false;
     if (up == 0) {
-        if ((havePos | haveVel | haveFwd) == 1) {
-            // Nothing to set; fall through to the update + reap loop.
+        if ((havePos | haveVel | haveFwd) == 1)
             goto afterListener;
-        }
         haveUp = false;
     } else {
         cacheVec(this->listenerUp, up);
@@ -655,10 +550,6 @@ afterListener:
     }
 }
 
-// FModSound::isPlaying(int) -> if (system && events[p1]) { getState(h,&s); r=(s>>3)&1; } else 0
-// NOTE: target carries a stack canary for the 4-byte state slot (built with stack-protector-strong
-// upstream); basic -fstack-protector here does not, so this is a near-match.
-
 unsigned FModSound::isPlaying(int p1)
 {
     if (this->system != 0) {
@@ -672,13 +563,9 @@ unsigned FModSound::isPlaying(int p1)
     return 0;
 }
 
-namespace FMOD { struct EventProject; struct EventGroup; }
-
-// FModSound::freeAllEvents()
-__attribute__((visibility("hidden"))) static const char kProjName[8] = "GoF2";
-
 void FModSound::freeAllEvents()
 {
+    static const char kProjName[8] = "GoF2";
     if (this->system != 0) {
         FMOD::EventProject *proj = 0;
         FMOD_EventSystem_getProject(this->system, kProjName, &proj);
@@ -702,21 +589,14 @@ void FModSound::freeAllEvents()
             }
         }
     }
-    if (this->listenerPos) operator delete(this->listenerPos);
-    this->listenerPos = 0;
-    if (this->listenerVel) operator delete(this->listenerVel);
-    this->listenerVel = 0;
-    if (this->listenerForward) operator delete(this->listenerForward);
-    this->listenerForward = 0;
-    if (this->listenerUp) operator delete(this->listenerUp);
-    this->listenerUp = 0;
-    if (this->eventPos) operator delete(this->eventPos);
-    this->eventPos = 0;
-    if (this->eventVel) operator delete(this->eventVel);
-    this->eventVel = 0;
+    delete this->listenerPos;     this->listenerPos = 0;
+    delete this->listenerVel;     this->listenerVel = 0;
+    delete this->listenerForward; this->listenerForward = 0;
+    delete this->listenerUp;      this->listenerUp = 0;
+    delete this->eventPos;        this->eventPos = 0;
+    delete this->eventVel;        this->eventVel = 0;
 }
 
-// FModSound::IsCategoryEnabled(int) -> p1<=3 && system && enabled[p1] ? 1 : 0
 uint8_t FModSound::IsCategoryEnabled(int p1)
 {
     uint8_t r = 0;
@@ -724,10 +604,6 @@ uint8_t FModSound::IsCategoryEnabled(int p1)
         r = 1;
     return r;
 }
-
-namespace FMOD { struct EventParameter; }
-
-// FModSound::setParamValue(char const* name, int idx, float val)
 
 void FModSound::setParamValue(const char *name, int idx, float val)
 {
@@ -738,9 +614,6 @@ void FModSound::setParamValue(const char *name, int idx, float val)
     }
 }
 
-// FModSound::pause(FMOD::Event*) -> int
-//   if (e && system) { if (getState(e,&s)==0 && (s<<0x1c)<0) return setPaused(e,1)==0; return 0; }
-
 int FModSound::pause(void *e)
 {
     unsigned r = 0;
@@ -749,25 +622,10 @@ int FModSound::pause(void *e)
         int st = FMOD_Event_getState(e, &s);
         if (st == 0 && (int)(s << 0x1c) < 0)
             r = FMOD_Event_setPaused(e, 1) == 0;
-        else
-            r = 0;
     }
     return r;
 }
 
-namespace AbyssEngine { namespace AEMath { struct Vector; } }
-using AbyssEngine::AEMath::Vector;
-
-extern "C" {
-int FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
-int FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
-int FMOD_Event_start(void *event);
-int FMOD_Event_getState(void *event, unsigned int *state);
-}
-
-// FModSound::updateEvent3DAttributes(Event*, int, Vector*, Vector*, bool)
-
-// Copy a Vector (3 floats) into a cached FMOD_VECTOR slot, allocating if needed.
 void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vector *vel, bool restart)
 {
     if (this->initialized == 0 || this->categoryEnabled[0] == 0)
@@ -840,12 +698,6 @@ void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vect
     return event;
 }
 
-namespace FMOD { struct EventCategory; }
-
-// FModSound::pauseAllPlayingSoundFXEvents()
-//   for i<0x8f5: if (system && events[i] && isPlaying(i)) { getCategory(h,&cat);
-//       cat->vtbl[0](cat,&a,&b); if (a==1) setPaused(h,1); }
-
 void FModSound::pauseAllPlayingSoundFXEvents()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
@@ -865,8 +717,6 @@ void FModSound::pauseAllPlayingSoundFXEvents()
     }
 }
 
-// FModSound::enableCategory(int p1, bool enable)
-
 void FModSound::enableCategory(int p1, bool enable)
 {
     if (p1 > 3)
@@ -877,7 +727,7 @@ void FModSound::enableCategory(int p1, bool enable)
     if (cat == 0)
         return;
 
-    this->categoryEnabled[p1] = (uint8_t)enable;
+    this->categoryEnabled[p1] = enable ? 1 : 0;
     if (!enable) {
         void **vt = *(void ***)cat;
         typedef void (*Fn)(void *);
@@ -889,7 +739,7 @@ void FModSound::enableCategory(int p1, bool enable)
     uint8_t any = 0;
     int i = 1;
     do {
-        if ((unsigned)(i - 0) > 3)
+        if ((unsigned)i > 3)
             break;
         uint8_t v = this->categoryEnabled[i];
         i++;
@@ -898,7 +748,6 @@ void FModSound::enableCategory(int p1, bool enable)
     this->categoryEnabled[0] = any;
 }
 
-// ---- tryToStopMusicForBGMusic_a2da8 ----
 // Stub in the shipped build: it never stops the current track and reports that
 // nothing was stopped, so callers fall back to their own background music.
 int FModSound::tryToStopMusicForBGMusic()
@@ -906,65 +755,66 @@ int FModSound::tryToStopMusicForBGMusic()
     return 0;
 }
 
-// ---- defaultPitch (DAT_000a3518) ----
-// Base pitch applied to freshly started events; the shipped table holds 0.0,
-// meaning "use the event's authored pitch" unless the down-pitch flag overrides it.
+// Base pitch applied to freshly started events; 0.0 means "use the event's
+// authored pitch" unless the down-pitch flag overrides it.
 float FModSound::defaultPitch = 0.0f;
 
 // ---- engine-sound event helpers ----
 // The KIPlayer/AI sound code drives a ship's looping engine sound by handing this
-// manager the owning Player. The live FMOD event lives on the Player at +0xf0
-// (Player::engineEvent); these helpers simply forward the requested transport
+// manager the owning Player. The live FMOD event lives on the Player at the
+// Player::engineEvent slot; these helpers forward the requested transport
 // operation to that handle, guarding against a null/unstarted event.
 
-// FModSound::pauseEvent(Player*) -> pause the player's engine event.
+// Player::engineEvent lives at a fixed offset on the opaque Player object.
+static const unsigned kPlayerEngineEvent = 0xf0;
+
+static void *playerEngineEvent(void *player)
+{
+    return *(void **)((char *)player + kPlayerEngineEvent);
+}
+
 void FModSound::pauseEvent(void *player)
 {
     if (player == 0)
         return;
-    void *event = pp(player, 0xf0);
+    void *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_setPaused(event, 1);
 }
 
-// FModSound::resumeEvent(Player*, int) -> resume the player's engine event.
 // The second argument mirrors the call site (always 0); it selects the FMOD
 // "immediate vs. queued" un-pause behaviour and is passed straight through.
 void FModSound::resumeEvent(void *player, int immediate)
 {
     if (player == 0)
         return;
-    void *event = pp(player, 0xf0);
+    void *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_setPaused(event, immediate);
 }
 
-// FModSound::stopEvent(Player*) -> stop the player's engine event.
 void FModSound::stopEvent(void *player)
 {
     if (player == 0)
         return;
-    void *event = pp(player, 0xf0);
+    void *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_stop(event, 0);
 }
 
-// FModSound::playEvent(Player*, int eventId, int) -> (re)start the player's
-// engine event. The event id is the slot the AI tracked (KIPlayer::engineSoundEvent);
-// the handle to actually start lives on the Player at +0xf0.
 void FModSound::playEvent(void *player, int /*eventId*/, int /*mode*/)
 {
     if (player == 0)
         return;
-    void *event = pp(player, 0xf0);
+    void *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_start(event);
 }
 
-// FModSound::setProp(FModSound*, int) -> configure a property slot on the sound
-// manager for the next event start and report the pitch that should be used for it.
-// The jump-scene code issues several of these to arm the cinematic engine sound,
-// then feeds the final return value into play() as the launch pitch.
+// Configure a property slot on the sound manager for the next event start and
+// report the pitch that should be used for it. The jump-scene code issues several
+// of these to arm the cinematic engine sound, then feeds the final return value
+// into play() as the launch pitch.
 float FModSound::setProp(int snd, int id)
 {
     FModSound *self = (FModSound *)(uintptr_t)snd;
@@ -974,9 +824,8 @@ float FModSound::setProp(int snd, int id)
     return FModSound::defaultPitch;
 }
 
-// FModSound::restoreState() -> un-pause every live event after a scene that had
-// suspended audio (e.g. exiting a cinematic / docking sequence). Resolves the
-// active manager and resumes all of its currently-allocated events.
+// Un-pause every live event after a scene that had suspended audio (e.g. exiting
+// a cinematic / docking sequence).
 void FModSound::restoreState()
 {
     FModSound *self = FModSound::active();
@@ -985,8 +834,8 @@ void FModSound::restoreState()
     self->resumeAll();
 }
 
-// Accessor for the process-wide FModSound instance the legacy code reached through
-// a fixed global slot. The pointer is published by init(); until then it is null.
+// Process-wide FModSound instance the legacy code reached through a fixed global
+// slot. Published by init(); until then it is null.
 FModSound *FModSound::g_instance = 0;
 
 FModSound *FModSound::active()

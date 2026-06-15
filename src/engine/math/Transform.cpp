@@ -1,14 +1,16 @@
 #include "gof2/engine/math/Transform.h"
+#include "gof2/engine/core/KeyFrame.h"
+#include "gof2/engine/render/Mesh.h"
+
+// Engine globals: shared keyframe-insertion counter and the matrix-fixup toggle.
+extern int *g_transform_insert_counter;
+extern bool g_transform_matrix_flag;
 
 namespace AbyssEngine {
 
 void Transform::SetCurrentAnimationTime(longlong value) {
     this->currentTime = value;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
     longlong start;
@@ -29,23 +31,15 @@ void Transform::SetAnimationRangeInKeyFrames(int first, int last) {
     SetAnimationRangeInTime(start, end);
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::SetVisible(bool value) {
     this->visible = value;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::SetVFCFlag(bool value) {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
+            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->SetVFCFlag(value);
             }
@@ -60,10 +54,6 @@ void Transform::SetVFCFlag(bool value) {
     this->vfcEnabled = value;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::PauseAnimationWithKeyFrame(int index) {
     if (index >= 0 && index < (int)this->keyFrames->size()) {
         char *keyFrame = (char *)(*this->keyFrames)[index];
@@ -74,27 +64,15 @@ void Transform::PauseAnimationWithKeyFrame(int index) {
     this->animating = false;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::PauseAnimationWithTimeStamp(longlong time) {
     this->currentTime = time;
     InternUpdate(time, false);
     this->animating = false;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::SetAnimationSpeed(float value) {
     this->animationSpeed = value;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::CollectAnimationData() {
     longlong *length = &this->animationLength;
@@ -102,10 +80,10 @@ void Transform::CollectAnimationData() {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
+            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->CollectAnimationData();
-                child = *(Transform **)((char *)(*this->meshes)[i] + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
+                child = *(Transform **)((char *)(*this->meshes)[i] + 0x34);  // Mesh+0x34 (child Transform*)
                 longlong childLength = child->animationLength;
                 if (*length < childLength) {
                     *length = childLength;
@@ -134,10 +112,6 @@ void Transform::CollectAnimationData() {
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 Transform::~Transform() {
     if (this->keyFramesShared == false) {
         for (KeyFrame *kf : *this->keyFrames) {
@@ -150,10 +124,6 @@ Transform::~Transform() {
     delete this->children;
     delete this->meshes;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::InitAnimationRangeInTime() {
     longlong length = this->animationLength;
@@ -169,7 +139,7 @@ void Transform::InitAnimationRangeInTime() {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
+            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->InitAnimationRangeInTime();
             }
@@ -180,10 +150,6 @@ void Transform::InitAnimationRangeInTime() {
     }
     Update(0, false);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 int Transform::IsRunning() {
     longlong start = this->rangeStart;
@@ -196,16 +162,12 @@ int Transform::IsRunning() {
     return 0;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 static float lerp_float(float from, float to, float t) {
     return from + t * (to - from);
 }
 
 void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-    char *key = (char *)keyFrame; // RAWREAD: KeyFrame fields accessed via key+0xNN
+    char *key = (char *)keyFrame;  // KeyFrame fields accessed via key+0xNN
 
     Array<KeyFrame *> &items = *this->keyFrames;
     int i = 0;
@@ -271,18 +233,10 @@ void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::SetAnimationLength(longlong value) {
     this->rangeEnd = value;
     this->animationLength = value;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     longlong length = this->animationLength;
@@ -314,7 +268,7 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     for (uint i = 0; i < this->meshes->size(); ++i) {
         char *mesh = (char *)(*this->meshes)[i];
         if (mesh != 0) {
-            Transform *child = *(Transform **)(mesh + 0x34); // RAWREAD: Mesh+0x34 (child Transform*)
+            Transform *child = *(Transform **)(mesh + 0x34);  // Mesh+0x34 (child Transform*)
             if (child != 0) {
                 child->SetAnimationRangeInTime(start, end);
             }
@@ -325,10 +279,6 @@ void Transform::SetAnimationRangeInTime(longlong start, longlong end) {
     }
     Update(0, false);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
     this->keyFrames->push_back((KeyFrame *)0);
@@ -343,10 +293,6 @@ void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
     }
     items[index] = keyFrame;
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 void Transform::Update(longlong time, bool updateBounds) {
     InternUpdate(time, updateBounds);
@@ -377,10 +323,6 @@ void Transform::SetInactive() { setExhaustVisible(false); }
 void Transform::setExhaustVisible(bool visible) {
     SetVisible(visible);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 Transform::Transform(Transform *other) {
     // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
@@ -422,14 +364,12 @@ Transform::Transform(Transform *other) {
         this->field_0x58 = other->field_0x58;
 
         for (uint i = 0; i < other->meshes->size(); ++i) {
-            Mesh *mesh = (Mesh *)operator new(0x88);
-            new (mesh) Mesh((*other->meshes)[i]);
+            Mesh *mesh = new Mesh((*other->meshes)[i]);
             this->meshes->push_back(mesh);
         }
         *this->keyFrames = *other->keyFrames;
         for (uint i = 0; i < other->children->size(); ++i) {
-            Transform *child = (Transform *)operator new(0x180);
-            new (child) Transform((*other->children)[i]);
+            Transform *child = new Transform((*other->children)[i]);
             this->children->push_back(child);
         }
         this->bounds() = other->bounds();
@@ -439,16 +379,8 @@ Transform::Transform(Transform *other) {
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::SetAnimationState(AnimationMode, void *) {
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 static void make_identity(AEMath::Matrix &m) {
     for (int i = 0; i < 15; ++i) {
@@ -509,10 +441,6 @@ Transform::Transform() {
     this->animationStart = 0;
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 static void identity_matrix(AEMath::Matrix &m) {
     for (int i = 0; i < 15; ++i) m.m[i] = 0.0f;
     m.m[0] = 1.0f;
@@ -533,12 +461,12 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
 
         Array<KeyFrame *> &items = *this->keyFrames;
         char *last = (char *)items[items.size() - 1];
-        if (*(longlong *)(last + 0x50) < current) { // RAWREAD: KeyFrame+0x50 (timestamp)
-            current = *(longlong *)(last + 0x50);    // RAWREAD: KeyFrame+0x50
+        if (*(longlong *)(last + 0x50) < current) {  // KeyFrame+0x50 (timestamp)
+            current = *(longlong *)(last + 0x50);     // KeyFrame+0x50
         }
 
         int index = 0;
-        while (*(longlong *)((char *)items[index] + 0x50) < current) { // RAWREAD: KeyFrame+0x50
+        while (*(longlong *)((char *)items[index] + 0x50) < current) {  // KeyFrame+0x50
             ++index;
         }
         this->currentKeyFrameIndex = index;
@@ -551,7 +479,7 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
                 this->localMatrix.m[5] = 1.0f;
             }
         } else if (current == 0) {
-            // RAWREAD: KeyFrame fields below (+0x18 rot, +0x00 pos, +0x0c scale, +0x48 alpha, +0x3c/+0x24/+0x30)
+             // KeyFrame fields below (+0x18 rot, +0x00 pos, +0x0c scale, +0x48 alpha, +0x3c/+0x24/+0x30)
             char *key = (char *)items[index];
             this->rotation.Set(*(float *)(key + 0x18), *(float *)(key + 0x1c), *(float *)(key + 0x20));
             this->translation = *(AEMath::Vector *)(key + 0x00);
@@ -561,7 +489,7 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
             this->localTranslation = *(AEMath::Vector *)(key + 0x24);
             this->localScale = *(AEMath::Vector *)(key + 0x30);
         } else {
-            // RAWREAD: KeyFrame fields (prev/next) below
+             // KeyFrame fields (prev/next) below
             char *prev = (char *)items[index - 1];
             char *next = (char *)items[index];
             float t = (float)(current - *(longlong *)(prev + 0x50)) /
@@ -619,10 +547,10 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
         for (uint i = 0; i < this->meshes->size(); ++i) {
             char *mesh = (char *)(*this->meshes)[i];
             AEMath::BSphere childSphere;
-            if (mesh != 0 && *(Transform **)(mesh + 0x34) != 0) { // RAWREAD: Mesh+0x34 (child Transform*)
-                (*(Transform **)(mesh + 0x34))->InternUpdate(time, updateBounds); // RAWREAD: Mesh+0x34
+            if (mesh != 0 && *(Transform **)(mesh + 0x34) != 0) {  // Mesh+0x34 (child Transform*)
+                (*(Transform **)(mesh + 0x34))->InternUpdate(time, updateBounds);  // Mesh+0x34
             }
-            childSphere = *(AEMath::BSphere *)(mesh + 0x3c); // RAWREAD: Mesh+0x3c (BSphere bounds)
+            childSphere = *(AEMath::BSphere *)(mesh + 0x3c);  // Mesh+0x3c (BSphere bounds)
             this->bounds().Merge(childSphere);
         }
 
@@ -635,16 +563,11 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
     }
 }
 
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
-
 void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
                             const AEMath::Vector &c, const AEMath::Vector &d,
                             const AEMath::Vector &e, const AEMath::Vector &f,
                             int time) {
-    char *keyFrame = (char *)operator new(0x60);
-    new (keyFrame) KeyFrame();
+    char *keyFrame = (char *)new KeyFrame();
     *(AEMath::Vector *)(keyFrame + 0x18) = b;
     *(AEMath::Vector *)(keyFrame + 0x00) = c;
     *(AEMath::Vector *)(keyFrame + 0x0c) = a;
@@ -658,10 +581,6 @@ void Transform::AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
         this->animationLength = timestamp;
     }
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 static float kAngleDivisor = 57.295780f;
 
@@ -759,8 +678,7 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
         ++index;
     }
 
-    char *key = (char *)operator new(0x60);
-    new (key) KeyFrame();
+    char *key = (char *)new KeyFrame();
     *(longlong *)(key + 0x50) = timestamp;
     InsertKeyFrame((KeyFrame *)key, index);
 
@@ -797,10 +715,6 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
     apply_value_new(this, key, values, flags);
     UpdateKeyFrames((KeyFrame *)key, index);
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 static float old_angle_divisor = 57.295780f;
 
@@ -877,8 +791,7 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
         ++index;
     }
 
-    char *key = (char *)operator new(0x60);
-    new (key) KeyFrame();
+    char *key = (char *)new KeyFrame();
     if (index != 0) {
         char *prev = (char *)(*this->keyFrames)[index - 1];
         *(AEMath::Vector *)(key + 0x00) = *(AEMath::Vector *)(prev + 0x00);
@@ -911,17 +824,13 @@ void Transform::InsertKeyFrame_old(const float *values, longlong flags, int time
             *(uint *)(existing + 0x5c) |= *(uint *)(key + 0x5c);
             apply_value_old(this, existing, values, flags);
             UpdateKeyFrames((KeyFrame *)existing, index);
-            operator delete(key);
+            delete (KeyFrame *)key;
             return;
         }
         InsertKeyFrame((KeyFrame *)key, index);
         UpdateKeyFrames((KeyFrame *)key, index);
     }
 }
-
-} // namespace AbyssEngine
-
-namespace AbyssEngine {
 
 int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
     if (camera == 0 || this->vfcEnabled == false ||

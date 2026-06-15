@@ -1,12 +1,8 @@
 #ifndef GOF2_FMODSOUND_H
 #define GOF2_FMODSOUND_H
 #include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field naming)
-// Galaxy on Fire 2 -- FModSound (Android libgof2hdaa.so, armv7 Thumb).
-// FMOD wrapper. FMOD_* funcs are modeled as extern "C". Soft-float ABI: float args in core regs.
-#include <new>
 
-// FMOD designer-API handle types (opaque wrappers, manipulated through the FMOD_* shims).
+// FMOD designer-API handle types (opaque wrappers manipulated through the FMOD_* shims).
 namespace FMOD {
 struct Event;
 struct EventParameter;
@@ -21,33 +17,31 @@ using AbyssEngine::AEMath::Vector;
 
 // FModSound -- FMOD designer-API sound manager.
 //
-// The on-disk (32-bit ARM) layout packs three indexed regions as 4-byte-per-slot
-// arrays: the per-category enabled bytes (0x11), the big event-handle array (0x18),
-// and the four EventCategory* slots (0x23ec). They are modelled as fixed C arrays so
-// the original idx-based accesses stay natural while every member is named & typed.
-// Offset comments below are the recovered 32-bit byte offsets.
+// Three indexed regions are modelled as fixed C arrays: the per-category enabled
+// flags, the big event-handle array (one slot per system id), and the four
+// EventCategory* slots.
 class FModSound {
 public:
-    int       currentMusicEvent;      // +0x00 current music event id
-    int       fadeTargetMusicEvent;   // +0x04 music event id being faded to
-    int       downPitch;              // +0x08 down-pitch flag
-    char     *appRootDir;             // +0x0c app root dir / .fev base path
-    uint8_t   lowMemory;              // +0x10 low-memory flag (selects _low.fev)
-    uint8_t   categoryEnabled[4];     // +0x11 [0]=master, [1..3]=per-category enabled
-    void     *events[0x8f5];          // +0x18 event handle array (slot per system id)
-    void     *category[4];            // +0x23ec EventCategory* per category
-    void     *system;                 // +0x23fc FMOD::EventSystem*
-    void     *music;                  // +0x2400 music Event*
-    int       initialized;            // +0x2404 init/ready flag
-    int       reverbPreset;           // +0x2408 current reverb preset index
-    int       propSlot;               // +0x240c armed property slot id
-    int       fxSlots[5];             // +0x2410 active sound-fx slot indices (-1 = free)
-    Vector   *listenerPos;            // +0x2424 cached listener position
-    Vector   *listenerVel;            // +0x2428 cached listener velocity
-    Vector   *listenerForward;        // +0x242c cached listener forward
-    Vector   *listenerUp;             // +0x2430 cached listener up
-    Vector   *eventPos;               // +0x2434 cached event 3D position
-    Vector   *eventVel;               // +0x2438 cached event 3D velocity
+    int      currentMusicEvent;    // current music event id
+    int      fadeTargetMusicEvent; // music event id being faded to
+    int      downPitch;            // down-pitch flag
+    char    *appRootDir;           // app root dir / .fev base path
+    uint8_t  lowMemory;            // low-memory flag (selects _low.fev)
+    uint8_t  categoryEnabled[4];   // [0]=master, [1..3]=per-category enabled
+    void    *events[0x8f5];        // event handle array (slot per system id)
+    void    *category[4];          // EventCategory* per category
+    void    *system;               // FMOD::EventSystem*
+    void    *music;                // music Event*
+    int      initialized;          // init/ready flag
+    int      reverbPreset;         // current reverb preset index
+    int      propSlot;             // armed property slot id
+    int      fxSlots[5];           // active sound-fx slot indices (-1 = free)
+    Vector  *listenerPos;          // cached listener position
+    Vector  *listenerVel;          // cached listener velocity
+    Vector  *listenerForward;      // cached listener forward
+    Vector  *listenerUp;           // cached listener up
+    Vector  *eventPos;             // cached event 3D position
+    Vector  *eventVel;             // cached event 3D velocity
 
     FModSound();
     ~FModSound();
@@ -97,7 +91,7 @@ public:
     int tryToStopMusicForBGMusic();
 
     // Looping engine-sound transport for a ship. The argument is the owning Player;
-    // the live FMOD event handle lives on it at +0xf0 (Player::engineEvent).
+    // the live FMOD event handle lives on it at Player::engineEvent.
     static void pauseEvent(void *player);
     static void resumeEvent(void *player, int immediate);
     static void stopEvent(void *player);

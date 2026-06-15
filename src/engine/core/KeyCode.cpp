@@ -1,8 +1,5 @@
 #include "gof2/engine/core/KeyCode.h"
 
-// AbyssEngine::KeyCode::operator=(KeyCode const&)
-// Copies the scalar key code, then delegates to String::operator= for the embedded name.
-
 namespace AbyssEngine {
 
 KeyCode &KeyCode::operator=(const KeyCode &other)

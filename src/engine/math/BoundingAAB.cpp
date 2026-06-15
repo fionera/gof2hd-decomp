@@ -1,8 +1,7 @@
 #include "gof2/engine/math/BoundingAAB.h"
 #include "gof2/engine/math/BoundingVolume.h"
-
-extern "C" float external_fabsf(float value);
-extern "C" Vector AEMath_operator_sub(const Vector &a, const Vector &b);
+#include "gof2/engine/math/AEMath.h"
+#include <cmath>
 
 int BoundingAAB::outerCollide(float x, float y, float z)
 {
@@ -44,32 +43,29 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     float extentX = this->halfExtentX;
     float highX = centerX + extentX;
     float lowX = centerX - extentX;
-    float pointX = point.x;
-    offsets[0].x = pointX - highX;
-    offsets[1].x = pointX - lowX;
+    offsets[0].x = point.x - highX;
+    offsets[1].x = point.x - lowX;
 
     float centerY = this->centerY + this->extentsY;
     float extentY = this->halfExtentY;
     float highY = centerY + extentY;
     float lowY = centerY - extentY;
-    float pointY = point.y;
-    offsets[2].y = pointY - highY;
-    offsets[3].y = pointY - lowY;
+    offsets[2].y = point.y - highY;
+    offsets[3].y = point.y - lowY;
 
     float centerZ = this->centerZ + this->extentsZ;
     float extentZ = this->halfExtentZ;
     float highZ = centerZ + extentZ;
     float lowZ = centerZ - extentZ;
-    float pointZ = point.z;
-    offsets[4].z = pointZ - highZ;
-    offsets[5].z = pointZ - lowZ;
+    offsets[4].z = point.z - highZ;
+    offsets[5].z = point.z - lowZ;
 
-    distances[0] = external_fabsf(offsets[0].x);
-    distances[1] = external_fabsf(offsets[1].x);
-    distances[2] = external_fabsf(offsets[2].y);
-    distances[3] = external_fabsf(offsets[3].y);
-    distances[4] = external_fabsf(offsets[4].z);
-    distances[5] = external_fabsf(offsets[5].z);
+    distances[0] = std::fabs(offsets[0].x);
+    distances[1] = std::fabs(offsets[1].x);
+    distances[2] = std::fabs(offsets[2].y);
+    distances[3] = std::fabs(offsets[3].y);
+    distances[4] = std::fabs(offsets[4].z);
+    distances[5] = std::fabs(offsets[5].z);
 
     float closest = distances[0];
     int closestIndex = 0;
@@ -80,16 +76,15 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
         }
     }
 
-    return AEMath_operator_sub(point, offsets[closestIndex]);
+    return point - offsets[closestIndex];
 }
 
-__attribute__((visibility("hidden"))) extern void *const g_BoundingAAB_vtbl;
+extern void *const g_BoundingAAB_vtbl;
 
 BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                          float width, float height, float depth)
     : BoundingVolume(x, y, z, ex, ey, ez)
 {
-
     float halfWidth = width * 0.5f;
     float extentX = width * -0.5f;
     if (0.0f < halfWidth) {
@@ -123,18 +118,17 @@ Vector BoundingAAB::getCollisionNormal(const Vector &)
     return out;
 }
 
-typedef int (*CollideFn)(BoundingAAB *self, float x, float y, float z);
-
 int BoundingAAB::collide(float x, float y, float z)
 {
-    CollideFn fn = *(CollideFn *)((char *)*(void **)this + 0xc);
+    typedef int (*CollideFn)(BoundingAAB *self, float x, float y, float z);
+    CollideFn fn = *(CollideFn *)((char *)this->vtable + 0xc);
     if (fn(this, x, y, z) == 0) {
         return 0;
     }
-    return ((BoundingVolume *)(this))->collide(x, y, z);
+    return BoundingVolume::collide(x, y, z);
 }
 
 void BoundingAAB::update(float x, float y, float z)
 {
-    return ((BoundingVolume *)(this))->update(x, y, z);
+    BoundingVolume::update(x, y, z);
 }

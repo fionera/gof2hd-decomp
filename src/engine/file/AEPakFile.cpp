@@ -1,76 +1,51 @@
 #include "gof2/engine/file/AEPakFile.h"
 
-extern "C" uint32_t _ZN9AEPakFile7ReleaseEv(AEPakFile *self);
-AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self);
-
-__attribute__((visibility("hidden"))) extern void *g_AEPakFile_vtable;
-
-AEPakFile *_ZN9AEPakFileD2Ev(AEPakFile *self)
+AEPakFile::AEPakFile(FileInterface *file, int sizeLimit, int baseOffset)
+    : fileInterface(file)
+    , sizeLimit(sizeLimit)
+    , baseOffset(baseOffset)
+    , position(0)
 {
-    P(self, 0) = (char *)g_AEPakFile_vtable + 8;
-    _ZN9AEPakFile7ReleaseEv(self);
-    return self;
 }
 
-// ---- deleteTail (D0 deleting-destructor tail) --------------------------------
-// The deleting destructor ~AEPakFile() runs the D2 body then tail-calls the global
-// operator delete on the object. That tail is what AEPakFile_deleteTail refers to.
-void AEPakFile::deleteTail()
+AEPakFile::~AEPakFile()
 {
-    ::operator delete(this);
+    Release();
 }
 
 uint32_t AEPakFile::Release()
 {
-    FI *h = pak_fi(this);
-    if (h != 0) {
+    FileInterface *h = fileInterface;
+    if (h != nullptr) {
         h->vtable->Discard(h);
-        FI *h2 = pak_fi(this);
-        if (h2 != 0) {
+        FileInterface *h2 = fileInterface;
+        if (h2 != nullptr) {
             h2->vtable->Free(h2);
         }
-        pak_fi(this) = 0;
+        fileInterface = nullptr;
     }
     return 1;
 }
 
-void _ZN9AEPakFileD0Ev(AEPakFile *self)
-{
-    ((AEPakFile *)(_ZN9AEPakFileD2Ev(self)))->deleteTail();
-}
-
 uint32_t AEPakFile::Read(uint32_t bytes, void *buffer)
 {
-    FI *h;
-    if (bytes != 0 && (h = pak_fi(this)) != 0) {
-        int pos = pak_pos(this);
-        int size = pak_size(this);
-        if ((int)(pos + bytes) > size) {
-            bytes = (uint32_t)(size - pos);
+    FileInterface *h;
+    if (bytes != 0 && (h = fileInterface) != nullptr) {
+        if ((int)(position + bytes) > sizeLimit) {
+            bytes = (uint32_t)(sizeLimit - position);
         }
         if (bytes != 0) {
-            pak_pos(this) = pos + bytes;
+            position += bytes;
             return h->vtable->Read(h, bytes, buffer);
         }
     }
     return 0;
 }
 
-AEPakFile::AEPakFile(FileInterface *file, int param_2, int param_3)
-{
-    void *vtable = g_AEPakFile_vtable;
-    P(this, 0x0) = (char *)vtable + 8;
-    P(this, 0x4) = file;
-    I(this, 0x8) = param_2;
-    I(this, 0xc) = param_3;
-    I(this, 0x10) = 0;
-}
-
 uint32_t AEPakFile::Skip(uint32_t bytes)
 {
-    void *buffer = operator new[](bytes);
-    PakObj *self = (PakObj *)this;
-    self->vtable->ReadInto(this, bytes, buffer);
-    operator delete[](buffer);
+    char *buffer = new char[bytes];
+    Read(bytes, buffer);
+    delete[] buffer;
     return 1;
 }

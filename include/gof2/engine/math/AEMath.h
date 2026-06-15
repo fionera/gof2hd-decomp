@@ -1,19 +1,8 @@
 #ifndef GOF2_AEMATH_H
 #define GOF2_AEMATH_H
-#include "gof2/common.h"
-// struct derived from offset-access field map (deterministic field_0xNN naming)
-extern "C" float sqrtf(float);
-extern "C" float sinf(float);
-extern "C" float cosf(float);
-extern "C" float acosf(float);
-extern "C" float atanf(float);
-extern "C" float powf(float, float);
-extern "C" void *memcpy(void *, const void *, unsigned long);
+#include "gof2/math.h"
 
 namespace AbyssEngine {
-
-struct Transform;
-
 namespace AEMath {
 
 enum RotationOrder {
@@ -23,16 +12,6 @@ enum RotationOrder {
     ROTATION_ORDER_YZX = 3,
     ROTATION_ORDER_ZXY = 4,
     ROTATION_ORDER_ZYX = 5,
-};
-
-struct BSphere {
-    Vector center;
-    float radius;
-    float radius2;
-
-    BSphere &operator=(const BSphere &other);
-    void Merge(const ::AbyssEngine::Transform &transform);
-    void Merge(const BSphere &other);
 };
 
 Vector operator+(const Vector &value);
@@ -106,44 +85,12 @@ float VectorUnsignedToFloat(unsigned int value, unsigned char roundingMode);
 
 } // namespace AEMath
 
-struct Transform {
-    AEMath::Matrix matrix;
-    char pad_3c[0x98];
-    AEMath::BSphere bounds;             // +0xd4
-    int  animationStart;               // +0xe8 animation rate (frames)
-    char pad_ec_to_11c[0x11c - 0xe8 - 4];
-    int  keyFrameCount;                // +0x11c keyframe array length
-
-    // Out-of-line definitions live in src/Transform.cpp; declared here so the
-    // mesh-loader call sites in AbyssEngine.cpp / Mesh.cpp can reach them (the full
-    // class with all fields/methods is in gof2/Transform.h, which can't be included
-    // alongside AEMath.h's layout-only view).
-    Transform();
-    Transform(Transform *other);
-    ~Transform();
-    void CollectAnimationData();
-    void InsertKeyFrame(unsigned int channel, float value);
-    void SetAnimationRangeInTime(long long start, long long end);
-};
-
 static_assert(sizeof(AEMath::Vector) == 0x0c, "AEMath::Vector size");
 static_assert(__builtin_offsetof(AEMath::Vector, x) == 0x00, "AEMath::Vector::x offset");
 static_assert(__builtin_offsetof(AEMath::Vector, y) == 0x04, "AEMath::Vector::y offset");
 static_assert(__builtin_offsetof(AEMath::Vector, z) == 0x08, "AEMath::Vector::z offset");
-
-// NOTE: native build uses natural 64-bit AEMath::Matrix (float m[16] == 0x40),
-// not the byte-matched 0x3c. Size/offset asserts that assumed 0x3c are dropped.
 static_assert(__builtin_offsetof(AEMath::Matrix, m) == 0x00, "AEMath::Matrix::m offset");
-
-static_assert(sizeof(AEMath::BSphere) == 0x14, "AEMath::BSphere size");
-static_assert(__builtin_offsetof(AEMath::BSphere, center) == 0x00, "AEMath::BSphere::center offset");
-static_assert(__builtin_offsetof(AEMath::BSphere, radius) == 0x0c, "AEMath::BSphere::radius offset");
-static_assert(__builtin_offsetof(AEMath::BSphere, radius2) == 0x10, "AEMath::BSphere::radius2 offset");
-static_assert(__builtin_offsetof(Transform, matrix) == 0x00, "Transform::matrix offset");
-// Transform::bounds offset depends on natural Matrix size; byte-matched 0xd4 assert dropped.
 
 } // namespace AbyssEngine
 
-// NOTE: 'AEMath' is the namespace AbyssEngine::AEMath above; no separate opaque
-// struct is emitted (it would clash with the namespace name).
-#endif
+#endif // GOF2_AEMATH_H

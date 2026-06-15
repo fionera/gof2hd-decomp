@@ -2,318 +2,264 @@
 #include "gof2/game/core/String.h"
 #include <new>   // placement new used by the in-place String construction below
 
+// Engine file-subsystem state. These globals hold the active platform FileInterface, the table of
+// currently open low-level files (indexed by handle), the registered .pak archive entries, and the
+// shared low-level vtables. They live for the lifetime of the file subsystem.
+extern FileInterface              *g_AEFile_fileInterface;
+extern Array<AELowLevelFile *>    *g_AEFile_openFiles;
+extern Array<AEPakFileEntry *>    *g_AEFile_pakFiles;
+extern uint32_t                    g_AEFile_initialized;
+extern char                        g_AELowLevelNativeFile_vtable[];
+extern char                        g_AELowLevelPakFile_vtable[];
+
 // ---------------------------------------------------------------------------------------------
 // String adapter helpers.
 // The recovered AEFile code used the engine String's member API (ctor(const char*,bool),
 // GetAEChar(), GetAEWChar(), Set(), IndexOf(), operator[]). The canonical String (common.h) is
 // backed by std::u16string and exposes that API as the C entry points declared in String.h.
 // These thin inline helpers bridge the two so the bodies read naturally and route through the
-// real, ABI-stable String implementation in src/String.cpp.
+// real String implementation in src/game/core/String.cpp.
 namespace {
 
 // Construct a String in place from a NUL-terminated 8-bit string.
-inline void AEStr_init(String *self, const char *s)            { ((String *)(self))->ctor_char(s, false); }
+inline void AEStr_init(String *self, const char *s)       { self->ctor_char(s, false); }
 // Construct a String in place from a NUL-terminated UTF-16 buffer.
-inline void AEStr_init(String *self, const uint16_t *s)        { ((String *)(self))->ctor_wchar(s, false); }
+inline void AEStr_init(String *self, const uint16_t *s)   { self->ctor_wchar(s, false); }
 // Construct a String in place as a copy of another String.
-inline void AEStr_init(String *self, const String &other)      { ((String *)(self))->ctor_copy(const_cast<String *>(&other), false); }
+inline void AEStr_init(String *self, const String &other) { self->ctor_copy(const_cast<String *>(&other), false); }
 
 // Reset a String's contents from a NUL-terminated 8-bit / UTF-16 buffer.
-inline void AEStr_set(String &self, const char *s)             { ((String *)(&self))->Set_char(s); }
-inline void AEStr_set(String &self, const uint16_t *s)         { ((String *)(&self))->Set_wchar(s); }
+inline void AEStr_set(String &self, const char *s)        { self.Set_char(s); }
+inline void AEStr_set(String &self, const uint16_t *s)    { self.Set_wchar(s); }
 
 // Raw UTF-16 backing buffer (engine GetAEWChar / implicit uint16_t* conversion).
-inline uint16_t *AEStr_wchar(const String &self)               { return reinterpret_cast<uint16_t *>(const_cast<char16_t *>(self.text())); }
-// Newly allocated 8-bit (low-byte) copy (engine GetAEChar; caller frees with operator delete).
-inline char     *AEStr_char(const String &self)                { return ((String *)(const_cast<String *>(&self)))->GetAEChar(); }
+inline uint16_t *AEStr_wchar(const String &self)          { return reinterpret_cast<uint16_t *>(const_cast<char16_t *>(self.text())); }
+// Newly allocated 8-bit (low-byte) copy (engine GetAEChar; caller frees with ::operator delete).
+inline char     *AEStr_char(const String &self)           { return const_cast<String &>(self).GetAEChar(); }
 // UTF-16 code unit at index i.
-inline uint16_t *AEStr_index(const String &self, int i)        { return ((String *)(const_cast<String *>(&self)))->index(i); }
+inline uint16_t *AEStr_index(const String &self, int i)   { return const_cast<String &>(self).index(i); }
 // First index of needle, or 0xffffffff if absent.
-inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return ((String *)(const_cast<String *>(&self)))->IndexOf(const_cast<String *>(&needle)); }
+inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return const_cast<String &>(self).IndexOf(const_cast<String *>(&needle)); }
 
 } // namespace
+
+void AEFile::SetInterface(FileInterface *fileInterface)
+{
+    if (fileInterface == nullptr || fileInterface->enabled == 0) {
+        return;
+    }
+
+    if (g_AEFile_initialized != 0) {
+        fileInterface->vtable->ResetSaveDirectory(fileInterface);
+    }
+
+    if (g_AEFile_pakFiles == nullptr) {
+        g_AEFile_pakFiles = new Array<AEPakFileEntry *>();
+    }
+    if (g_AEFile_openFiles == nullptr) {
+        g_AEFile_openFiles = new Array<AELowLevelFile *>();
+    }
+    g_AEFile_fileInterface = fileInterface;
+}
+
+void AEFile::Release()
+{
+    if (g_AEFile_openFiles != nullptr) {
+        for (AELowLevelFile *file : *g_AEFile_openFiles) {
+            delete file;
+        }
+        g_AEFile_openFiles->clear();
+        delete g_AEFile_openFiles;
+        g_AEFile_openFiles = nullptr;
+    }
+
+    if (g_AEFile_pakFiles != nullptr) {
+        for (AEPakFileEntry *&entry : *g_AEFile_pakFiles) {
+            if (entry != nullptr) {
+                entry->name.~String();
+                ::operator delete(entry);
+            }
+            entry = nullptr;
+        }
+        delete g_AEFile_pakFiles;
+        g_AEFile_pakFiles = nullptr;
+    }
+}
+
+uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface == nullptr) {
+        return 0;
+    }
+
+    uint16_t *text = AEStr_wchar(path);
+    AELowLevelFile *file = nullptr;
+    void *nativeHandle = nullptr;
+
+    if (openType == OPEN_WRITE) {
+        String localPath; AEStr_init(&localPath, text);
+        nativeHandle = fileInterface->vtable->OpenWrite(fileInterface, localPath, path.size(), 0);
+    } else if (openType == OPEN_APPEND) {
+        String localPath; AEStr_init(&localPath, text);
+        nativeHandle = fileInterface->vtable->OpenAppend(fileInterface, localPath, path.size(), 0, 0);
+    } else if (openType == OPEN_READ) {
+        String localPath; AEStr_init(&localPath, text);
+        nativeHandle = fileInterface->vtable->OpenRead(fileInterface, localPath, path.size(), 0, 0, 0, 0);
+        if (nativeHandle == nullptr) {
+            if (*AEStr_index(path, 0) != '/') {
+                String prefix("/");
+                path = prefix + path;
+            }
+            file = findPakFile(path);
+            if (file == nullptr) {
+                return 0;
+            }
+        }
+    }
+
+    if (file == nullptr) {
+        if (nativeHandle == nullptr) {
+            return 0;
+        }
+        AELowLevelNativeFile *nativeFile = new AELowLevelNativeFile;
+        nativeFile->vtable = reinterpret_cast<AELowLevelFileVTable *>(g_AELowLevelNativeFile_vtable + 8);
+        nativeFile->handle = nativeHandle;
+        file = nativeFile;
+    }
+
+    Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+    uint32_t count = files->size();
+    if (handle == nullptr) {
+        if (count == 0) {
+            ArrayAdd(file, *files);
+        } else {
+            AELowLevelFile *&slot = files->data()[0];
+            if (slot != nullptr) {
+                slot->vtable->Close(slot);
+            }
+            slot = file;
+        }
+    } else {
+        for (uint32_t i = 1; i < count; i++) {
+            if (files->data()[i] == nullptr) {
+                files->data()[i] = file;
+                *handle = i;
+                return 1;
+            }
+        }
+        if (count == 0) {
+            ArrayAdd(static_cast<AELowLevelFile *>(nullptr), *files);
+        }
+        ArrayAdd(file, *files);
+        *handle = files->size() - 1;
+    }
+    return 1;
+}
 
 uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
     return Open(path, OPEN_READ, handle);
 }
 
-uint32_t AEFile::OpenAppend(String &path, uint32_t *handle) {
-    return Open(path, OPEN_APPEND, handle);
-}
-
-extern FileInterface *g_fileInterface;
-extern Array<AELowLevelFile *> *g_openFiles;
-
-__attribute__((minsize)) void AEFile::Close(uint32_t handle) {
-    if (g_fileInterface != 0) {
-        Array<AELowLevelFile *> *files = g_openFiles;
-        if (files->size() <= handle) {
-            goto done;
-        }
-        AELowLevelFile **slot = &files->data()[handle];
-        AELowLevelFile *file = *slot;
-        if (file != 0) {
-            file->vtable->Close(file);
-            slot = &g_openFiles->data()[handle];
-        }
-        *slot = 0;
-    }
-done:
-    return;
-}
-
-uint32_t AEFile::Read(bool &value, uint32_t handle)
+uint32_t AEFile::OpenRead(const char *path, uint32_t *handle)
 {
-    return Read(1, &value, handle);
+    String string;
+    AEStr_init(&string, path);
+    return OpenRead(string, handle);
 }
 
 uint32_t AEFile::OpenWrite(String &path, uint32_t *handle) {
     return Open(path, OPEN_WRITE, handle);
 }
 
-uint32_t AEFile::Read(int64_t &value, uint32_t handle)
+uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle)
 {
-    return AEFile::Read(8, &value, handle);
+    String string;
+    AEStr_init(&string, path);
+    return OpenWrite(string, handle);
 }
 
-void AEFile::RegisterPakFile(String &path)
-{
-    collectFilesInPakFiles(path);
-    return sortPakFileEntryList();
+uint32_t AEFile::OpenAppend(String &path, uint32_t *handle) {
+    return Open(path, OPEN_APPEND, handle);
 }
 
-uint32_t AEFile::Read(float &value, uint32_t handle)
+uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle)
 {
-    return Read(4, &value, handle);
+    String string;
+    AEStr_init(&string, path);
+    return OpenAppend(string, handle);
 }
 
-uint32_t AEFile::Read(int16_t &value, uint32_t handle)
+void AEFile::Close(uint32_t handle)
 {
-    return Read(2, &value, handle);
-}
-
-extern Array<AELowLevelFile *> *g_AEFile_openFiles;
-extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
-
-__attribute__((minsize)) void AEFile::Release()
-{
-    if (g_AEFile_openFiles != 0) {
-        for (AELowLevelFile *file : *g_AEFile_openFiles) {
-            delete file;
-        }
-        g_AEFile_openFiles->clear();
-        if (g_AEFile_openFiles != 0) {
-            delete g_AEFile_openFiles;
-        }
-        g_AEFile_openFiles = 0;
+    if (g_AEFile_fileInterface == nullptr) {
+        return;
     }
-
-    Array<AEPakFileEntry *> *entries = g_AEFile_pakFiles;
-    if (entries != 0) {
-        uint32_t offset = 0;
-        uint32_t index = 0;
-        while (index < entries->size()) {
-            AEPakFileEntry *entry = *(AEPakFileEntry **)((uint8_t *)entries->data() + offset);
-            AEPakFileEntry **slot;
-            if (entry == 0) {
-                slot = &entries->data()[index];
-            } else {
-                entry->name.~String();
-                operator delete(entry);
-                slot = (AEPakFileEntry **)((uint8_t *)g_AEFile_pakFiles->data() + offset);
-            }
-            *slot = 0;
-            index += 1;
-            offset += 4;
-            entries = g_AEFile_pakFiles;
-        }
-        if (entries != 0) {
-            delete entries;
-        }
-        g_AEFile_pakFiles = 0;
+    Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+    if (handle >= files->size()) {
+        return;
     }
-}
-
-__attribute__((minsize)) uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle)
-{
-    uint32_t result;
-    {
-        String string;
-        AEStr_init(&string, path);
-        result = OpenAppend(string, handle);
+    AELowLevelFile *&slot = files->data()[handle];
+    if (slot != nullptr) {
+        slot->vtable->Close(slot);
     }
-
-    return result;
+    slot = nullptr;
 }
-
-__attribute__((minsize)) uint32_t AEFile::ReadSwitched(uint16_t &value, uint32_t handle) {
-    uint32_t result = Read(2, &value, handle);
-    if (result != 0) {
-        uint32_t v = value;
-        value = (uint16_t)((v << 0x18) >> 0x10) | (v >> 8);
-    }
-    return result;
-}
-
-extern FileInterface *g_AEFile_fileInterface;
-extern Array<AELowLevelFile *> *g_AEFile_openFiles;
 
 uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle)
 {
-    if (g_AEFile_fileInterface != 0 && handle < g_AEFile_openFiles->size()) {
+    if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
-        if (file != 0) {
+        if (file != nullptr) {
             return file->vtable->Read(file, bytes, buffer);
         }
     }
     return 0;
 }
 
-namespace {
-__attribute__((used)) void ae_file_70538_trailer() {}
-}
+uint32_t AEFile::Read(bool &value, uint32_t handle)   { return Read(1, &value, handle); }
+uint32_t AEFile::Read(char &value, uint32_t handle)   { return Read(1, &value, handle); }
+uint32_t AEFile::Read(int8_t &value, uint32_t handle) { return Read(1, &value, handle); }
+uint32_t AEFile::Read(uint8_t &value, uint32_t handle){ return Read(1, &value, handle); }
+uint32_t AEFile::Read(int16_t &value, uint32_t handle){ return Read(2, &value, handle); }
+uint32_t AEFile::Read(uint16_t &value, uint32_t handle){ return Read(2, &value, handle); }
+uint32_t AEFile::Read(int32_t &value, uint32_t handle){ return Read(4, &value, handle); }
+uint32_t AEFile::Read(uint32_t &value, uint32_t handle){ return Read(4, &value, handle); }
+uint32_t AEFile::Read(int64_t &value, uint32_t handle){ return Read(8, &value, handle); }
+uint32_t AEFile::Read(float &value, uint32_t handle)  { return Read(4, &value, handle); }
 
-uint32_t AEFile::Read(uint32_t &value, uint32_t handle)
+uint32_t AEFile::Read(String &value, uint32_t handle, bool wide)
 {
-    return Read(4, &value, handle);
-}
-
-__attribute__((minsize)) uint32_t AEFile::Read(String &value, uint32_t handle, bool wide)
-{
-    uint32_t locals[2];
-    uint32_t result = 0;
-
-    result = Read(4, &locals[0], handle);
+    uint32_t length = 0;
+    uint32_t result = Read(4, &length, handle);
+    if (result == 0) {
+        return 0;
+    }
 
     if (wide) {
+        uint16_t *buffer = new uint16_t[length + 1];
+        result = Read(length << 1, buffer, handle);
         if (result != 0) {
-            uint32_t length = locals[0];
-            uint16_t *buffer = new uint16_t[length + 1];
-            result = Read(length << 1, buffer, handle);
-            if (result != 0) {
-                buffer[locals[0]] = 0;
-                AEStr_set(value, buffer);
-                result = 1;
-            }
-            delete[] buffer;
-        } else {
-            result = 0;
+            buffer[length] = 0;
+            AEStr_set(value, buffer);
+            result = 1;
         }
+        delete[] buffer;
     } else {
+        char *buffer = new char[length + 1];
+        result = Read(length, buffer, handle);
         if (result != 0) {
-            uint32_t length = locals[0];
-            char *buffer = new char[length + 1];
-            result = Read(length, buffer, handle);
-            if (result != 0) {
-                buffer[locals[0]] = 0;
-                AEStr_set(value, buffer);
-                result = 1;
-            }
-            delete[] buffer;
-        } else {
-            result = 0;
+            buffer[length] = 0;
+            AEStr_set(value, buffer);
+            result = 1;
         }
+        delete[] buffer;
     }
 
     return result;
 }
 
-extern FileInterface *fileInterface;
-
-__attribute__((minsize))
-uint32_t AEFile::GetDeviceFreeSpace() {
-    FileInterface *interface = fileInterface;
-    if (interface != 0) {
-        return interface->vtable->GetDeviceFreeSpace(interface);
-    }
-    return 0;
-}
-
-uint32_t AEFile::Read(char &value, uint32_t handle) {
-    return Read(1, &value, handle);
-}
-
-extern FileInterface *g_AEFile_fileInterface;
-
-__attribute__((minsize)) void AEFile::SetAppRootDir(const char *path) {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
-    if (fileInterface != 0) {
-        reinterpret_cast<void (*)(FileInterface *, const char *)>(
-            fileInterface->vtable->ResetSaveDirectory)(fileInterface, path);
-    }
-}
-
-__attribute__((minsize)) uint32_t AEFile::OpenRead(const char *path, uint32_t *handle)
-{
-    uint32_t result;
-    {
-        String string;
-        AEStr_init(&string, path);
-        result = OpenRead(string, handle);
-    }
-
-    return result;
-}
-
-uint32_t AEFile::Read(uint16_t &value, uint32_t handle)
-{
-    return Read(2, &value, handle);
-}
-
-uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
-{
-    uint32_t result;
-
-    if (wide) {
-        const uint16_t *text = AEStr_wchar(value);
-        uint32_t size = value.size();
-
-        result = Write(4, &size, handle);
-        if (result != 0) {
-            result = Write(value.size() << 1, text, handle);
-        }
-    } else {
-        char *text = AEStr_char(value);
-        uint32_t size = value.size();
-
-        result = Write(4, &size, handle);
-        if (result != 0) {
-            result = Write(value.size(), text, handle);
-        }
-        operator delete(text);
-    }
-
-    return result;
-}
-
-extern FileInterface *gAEFileInterface;
-
-__attribute__((minsize))
-void AEFile::ResetSaveDirectory()
-{
-    FileInterface *fileInterface = gAEFileInterface;
-    if (fileInterface != 0) {
-        typedef void (*ResetSaveDirectoryFn)(FileInterface *);
-        ResetSaveDirectoryFn resetSaveDirectory =
-            *reinterpret_cast<ResetSaveDirectoryFn *>(
-                reinterpret_cast<uint8_t *>(fileInterface->vtable) + 0x54);
-        resetSaveDirectory(fileInterface);
-    }
-}
-
-__attribute__((minsize)) uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle)
-{
-    uint32_t result;
-    {
-        String string;
-        AEStr_init(&string, path);
-        result = OpenWrite(string, handle);
-    }
-
-    return result;
-}
-
-__attribute__((minsize)) uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t handle)
+uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t handle)
 {
     uint32_t result = Read(2, &value, handle);
     if (result != 0) {
@@ -323,53 +269,96 @@ __attribute__((minsize)) uint32_t AEFile::ReadSwitched(int16_t &value, uint32_t 
     return result;
 }
 
-uint32_t AEFile::Read(int32_t &value, uint32_t handle) {
-    return Read(4, &value, handle);
-}
-
-extern FileInterface *fileInterface;
-
-__attribute__((minsize))
-const char *AEFile::GetAppRootDir()
+uint32_t AEFile::ReadSwitched(uint16_t &value, uint32_t handle)
 {
-    FileInterface *interface = fileInterface;
-    if (interface != 0) {
-        return interface->vtable->GetAppRootDir(interface);
+    uint32_t result = Read(2, &value, handle);
+    if (result != 0) {
+        uint32_t v = value;
+        value = (uint16_t)((v << 0x18) >> 0x10) | (v >> 8);
     }
-    return 0;
+    return result;
 }
 
-uint32_t AEFile::Read(uint8_t &value, uint32_t handle)
+uint32_t AEFile::ReadSwitched(int32_t &value, uint32_t handle)
 {
-    return Read(1, &value, handle);
+    uint32_t result = Read(4, &value, handle);
+    if (result != 0) {
+        value = __builtin_bswap32(value);
+    }
+    return result;
 }
 
-extern FileInterface *g_fileInterface;
-extern Array<AELowLevelFile *> *g_openFiles;
+uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
+{
+    uint16_t length;
+    uint32_t result = 0;
 
-uint32_t AEFile::GetFileSize(uint32_t handle) {
-    if (g_fileInterface != 0) {
-        Array<AELowLevelFile *> *files = g_openFiles;
-        if (handle < files->size()) {
-            AELowLevelFile *file = files->data()[handle];
-            if (file != 0) {
-                return file->vtable->GetFileSize(file);
-            }
+    if (ReadSwitched(length, handle) != 0) {
+        uint32_t bytes = length;
+        char *buffer = static_cast<char *>(::operator new(bytes + 1));
+        if (Read(bytes, buffer, handle) != 0) {
+            buffer[length] = '\0';
+            AEStr_set(value, buffer);
+            result = 1;
+        }
+        ::operator delete(buffer);
+    }
+
+    return result;
+}
+
+uint32_t AEFile::Write(uint32_t bytes, const void *buffer, uint32_t handle)
+{
+    if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
+        AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
+        if (file != nullptr) {
+            return file->vtable->Write(file, bytes, buffer);
         }
     }
     return 0;
 }
 
-extern FileInterface *g_fileInterface;
-extern Array<AELowLevelFile *> *g_openFiles;
+void AEFile::Write(bool value, uint32_t handle)    { Write(1, &value, handle); }
+void AEFile::Write(char value, uint32_t handle)    { Write(1, &value, handle); }
+void AEFile::Write(int8_t value, uint32_t handle)  { Write(1, &value, handle); }
+void AEFile::Write(uint8_t value, uint32_t handle) { Write(1, &value, handle); }
+void AEFile::Write(int16_t value, uint32_t handle) { Write(2, &value, handle); }
+void AEFile::Write(uint16_t value, uint32_t handle){ Write(2, &value, handle); }
+void AEFile::Write(int32_t value, uint32_t handle) { Write(4, &value, handle); }
+void AEFile::Write(uint32_t value, uint32_t handle){ Write(4, &value, handle); }
+void AEFile::Write(int64_t value, uint32_t handle) { Write(8, &value, handle); }
+void AEFile::Write(float value, uint32_t handle)   { Write(4, &value, handle); }
+
+uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
+{
+    uint32_t result;
+    uint32_t size = value.size();
+
+    if (wide) {
+        const uint16_t *text = AEStr_wchar(value);
+        result = Write(4, &size, handle);
+        if (result != 0) {
+            result = Write(size << 1, text, handle);
+        }
+    } else {
+        char *text = AEStr_char(value);
+        result = Write(4, &size, handle);
+        if (result != 0) {
+            result = Write(size, text, handle);
+        }
+        ::operator delete(text);
+    }
+
+    return result;
+}
 
 uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle)
 {
-    if (g_fileInterface != 0) {
-        Array<AELowLevelFile *> *files = g_openFiles;
+    if (g_AEFile_fileInterface != nullptr) {
+        Array<AELowLevelFile *> *files = g_AEFile_openFiles;
         if (handle < files->size()) {
             AELowLevelFile *file = files->data()[handle];
-            if (file != 0) {
+            if (file != nullptr) {
                 return file->vtable->Skip(file, bytes);
             }
         }
@@ -377,188 +366,36 @@ uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle)
     return 0;
 }
 
-extern FileInterface *g_AEFile_fileInterface;
-
-__attribute__((minsize))
-void AEFile::SetZipDirectory(const char *path)
+uint32_t AEFile::GetFileSize(uint32_t handle)
 {
-    FileInterface *fileInterface = g_AEFile_fileInterface;
-    if (fileInterface != 0) {
-        reinterpret_cast<void (*)(FileInterface *, const char *)>(fileInterface->vtable->field_38)(
-            fileInterface, path);
-    }
-}
-
-extern FileInterface *gAEFileInterface;
-extern Array<AELowLevelFile *> *gAEFileOpenFiles;
-
-uint32_t AEFile::Write(uint32_t bytes, const void *buffer, uint32_t handle) {
-    if (gAEFileInterface != 0 && handle < gAEFileOpenFiles->size()) {
-        AELowLevelFile *file = gAEFileOpenFiles->data()[handle];
-        if (file != 0) {
-            return file->vtable->Write(file, bytes, buffer);
+    if (g_AEFile_fileInterface != nullptr) {
+        Array<AELowLevelFile *> *files = g_AEFile_openFiles;
+        if (handle < files->size()) {
+            AELowLevelFile *file = files->data()[handle];
+            if (file != nullptr) {
+                return file->vtable->GetFileSize(file);
+            }
         }
     }
-
     return 0;
 }
 
-uint32_t AEFile::Read(int8_t &value, uint32_t handle)
+void AEFile::RegisterPakFile(String &path)
 {
-    return Read(1, &value, handle);
+    collectFilesInPakFiles(path);
+    sortPakFileEntryList();
 }
 
-__attribute__((minsize)) uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
-{
-    uint16_t length;
-    uint32_t result = 0;
-
-    if (ReadSwitched(length, handle) != 0) {
-        uint32_t bytes = length;
-        char *buffer = static_cast<char *>(operator new(bytes + 1));
-        if (Read(bytes, buffer, handle) != 0) {
-            buffer[length] = '\0';
-            AEStr_set(value, buffer);
-            result = 1;
-        }
-        operator delete(buffer);
-    }
-
-    return result;
-}
-
-uint32_t __attribute__((cold)) AEFile::ReadSwitched(int32_t &value, uint32_t handle)
-{
-    uint32_t result = Read(4, &value, handle);
-    if (__builtin_unpredictable(result != 0)) {
-        value = __builtin_bswap32(value);
-    }
-    return result;
-}
-
-extern FileInterface *g_AEFile_fileInterface;
-extern Array<AELowLevelFile *> *g_AEFile_openFiles;
-extern char g_AELowLevelNativeFile_vtable[];
-
-__attribute__((minsize)) uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
+void AEFile::collectPakFiles(const String &path)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
-    uint32_t result;
-
-    if (fileInterface == 0) {
-        result = 0;
-    } else {
-        uint16_t *text = AEStr_wchar(path);
-        AELowLevelFile *file = 0;
-        void *nativeHandle = 0;
-
-        if (openType == OPEN_WRITE) {
-            String localPath; AEStr_init(&localPath, text);
-            nativeHandle = fileInterface->vtable->OpenWrite(fileInterface, localPath, path.size(), 0);
-        } else if (openType == OPEN_APPEND) {
-            String localPath; AEStr_init(&localPath, text);
-            nativeHandle = fileInterface->vtable->OpenAppend(fileInterface, localPath, path.size(), 0, 0);
-        } else if (openType == OPEN_READ) {
-            String localPath; AEStr_init(&localPath, text);
-            nativeHandle = fileInterface->vtable->OpenRead(fileInterface, localPath, path.size(), 0, 0, 0, 0);
-            if (nativeHandle == 0) {
-                if (*AEStr_index(path, 0) != '/') {
-                    String prefix;  AEStr_init(&prefix, "/");
-                    String oldPath; AEStr_init(&oldPath, path);
-                    String newPath = prefix + oldPath;
-                    path = newPath;
-                }
-                file = findPakFile(path);
-                if (file == 0) {
-                    result = 0;
-                    goto done;
-                }
-            }
-        }
-
-        if (file == 0) {
-            if (nativeHandle == 0) {
-                result = 0;
-                goto done;
-            }
-            AELowLevelNativeFile *nativeFile = new AELowLevelNativeFile;
-            nativeFile->vtable = reinterpret_cast<AELowLevelFileVTable *>(g_AELowLevelNativeFile_vtable + 8);
-            nativeFile->handle = nativeHandle;
-            file = nativeFile;
-        }
-
-        Array<AELowLevelFile *> *files = g_AEFile_openFiles;
-        uint32_t count = files->size();
-        if (handle == 0) {
-            if (count == 0) {
-                ArrayAdd(file, *files);
-            } else {
-                AELowLevelFile **slot = files->data();
-                if (*slot != 0) {
-                    (*slot)->vtable->Close(*slot);
-                    slot = files->data();
-                }
-                *slot = 0;
-                files->data()[0] = file;
-            }
-        } else {
-            for (uint32_t i = 1; i < count; i++) {
-                if (files->data()[i] == 0) {
-                    files->data()[i] = file;
-                    *handle = i;
-                    result = 1;
-                    goto done;
-                }
-            }
-            if (count == 0) {
-                ArrayAdd(static_cast<AELowLevelFile *>(0), *files);
-                files = g_AEFile_openFiles;
-            }
-            ArrayAdd(file, *files);
-            *handle = g_AEFile_openFiles->size() - 1;
-        }
-        result = 1;
-    }
-
-done:
-    return result;
-}
-
-__attribute__((minsize)) void AEFile::Write(uint8_t value, uint32_t handle)
-{
-    uint8_t local = value;
-    Write(1, &local, handle);
-
-    return;
-}
-
-extern FileInterface *gAEFileFileInterface;
-
-__attribute__((minsize)) uint32_t AEFile::FileDelete(const String &path)
-{
-
-    FileInterface *fileInterface = gAEFileFileInterface;
-    uint32_t result = 0;
-    if (fileInterface != 0) {
-        String localPath; AEStr_init(&localPath, path);
-        result = fileInterface->vtable->FileDelete(fileInterface, localPath);
-    }
-
-    return result;
-}
-
-extern FileInterface *g_fileInterface;
-
-__attribute__((minsize)) void AEFile::collectPakFiles(const String &path)
-{
-    FileInterface *fileInterface = g_fileInterface;
-    if (fileInterface == 0 || fileInterface->enabled == 0) {
+    if (fileInterface == nullptr || fileInterface->enabled == 0) {
         return;
     }
 
     char *pathChars = AEStr_char(path);
     if (fileInterface->vtable->OpenDirectory(fileInterface, pathChars, 0) != 0) {
-        String suffix; AEStr_init(&suffix, ".pak");
+        String suffix(".pak");
         String entry;
         while (fileInterface->vtable->ReadDirectory(fileInterface, entry) != 0) {
             String entryCopy; AEStr_init(&entryCopy, entry);
@@ -567,280 +404,214 @@ __attribute__((minsize)) void AEFile::collectPakFiles(const String &path)
             }
         }
     }
-    operator delete(pathChars);
+    ::operator delete(pathChars);
     sortPakFileEntryList();
 }
 
-extern FileInterface *gAEFileFileInterface;
-
-__attribute__((minsize)) uint32_t AEFile::FileExist(const String &path)
+void AEFile::collectFilesInPakFiles(String &path)
 {
-    FileInterface *fileInterface = gAEFileFileInterface;
-    if (fileInterface == 0) {
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface == nullptr || fileInterface->enabled == 0) {
+        return;
+    }
+
+    OpenRead(path, nullptr);
+
+    int8_t nameLength;
+    uint32_t readResult = Read(1, &nameLength, 0);
+    uint32_t offset = 1;
+
+    while ((readResult & 1) != 0) {
+        int32_t length = nameLength;
+        char *name = new char[length + 1];
+        Read(length, name, 0);
+        name[nameLength] = 0;
+
+        uint32_t packedSize;
+        uint32_t size;
+        Read(4, &packedSize, 0);
+        Read(4, &size, 0);
+
+        AEPakFileEntry *entry = new AEPakFileEntry();
+        String nameString; AEStr_init(&nameString, name);
+        entry->crc = crc32_ccitt(nameString);
+
+        entry->name = path;
+        offset = offset + nameLength + 8;
+        entry->offset = offset;
+        entry->packedSize = packedSize;
+        entry->size = size;
+        ArrayAdd(entry, *g_AEFile_pakFiles);
+        delete[] name;
+
+        uint32_t skippedBytes;
+        if (size == 0xffffffff) {
+            Skip(packedSize, 0);
+            skippedBytes = packedSize;
+        } else {
+            Skip(size, 0);
+            skippedBytes = size;
+        }
+
+        readResult = Read(1, &nameLength, 0);
+        offset = offset + skippedBytes + 1;
+    }
+
+    Close(0);
+}
+
+void AEFile::sortPakFileEntryList()
+{
+    Array<AEPakFileEntry *> *entries = g_AEFile_pakFiles;
+    int32_t count = (int32_t)entries->size();
+    if (count == 0) {
+        return;
+    }
+
+    // Bubble sort the entries by CRC ascending, so findPakFile can binary-search them.
+    for (int32_t pass = count - 1; pass > 0; pass--) {
+        for (int32_t index = 0; index < pass; index++) {
+            AEPakFileEntry **data = entries->data();
+            AEPakFileEntry *left = data[index];
+            AEPakFileEntry *right = data[index + 1];
+            if (right->crc < left->crc) {
+                data[index] = right;
+                data[index + 1] = left;
+            }
+        }
+    }
+}
+
+AELowLevelFile *AEFile::findPakFile(const String &path)
+{
+    Array<AEPakFileEntry *> *entries = g_AEFile_pakFiles;
+    if (entries->size() == 0) {
+        return nullptr;
+    }
+
+    uint32_t wantedCrc = crc32_ccitt(path);
+    int32_t low = 0;
+    int32_t high = (int32_t)entries->size();
+
+    while (low < high) {
+        int32_t index = low + ((high - low) >> 1);
+        AEPakFileEntry *entry = entries->data()[index];
+        uint32_t entryCrc = entry->crc;
+
+        if (entryCrc == wantedCrc) {
+            uint16_t *name = AEStr_wchar(entry->name);
+            FileInterface *fileInterface = g_AEFile_fileInterface;
+            String entryName; AEStr_init(&entryName, name);
+            void *handle;
+
+            if (entry->size == 0xffffffff) {
+                handle = fileInterface->vtable->OpenRead(
+                    fileInterface, entryName, entry->name.size(), 0, 0, 0, entry->offset);
+            } else {
+                handle = fileInterface->vtable->OpenRead(
+                    fileInterface, entryName, entry->name.size(), 1,
+                    entry->packedSize, entry->size, entry->offset);
+            }
+
+            AELowLevelPakFile *pakFile = new AELowLevelPakFile;
+            pakFile->vtable = reinterpret_cast<AELowLevelFileVTable *>(g_AELowLevelPakFile_vtable + 8);
+            pakFile->handle = handle;
+            pakFile->packedSize = entry->packedSize;
+            pakFile->size = entry->size;
+            pakFile->position = 0;
+            return pakFile;
+        }
+
+        if (wantedCrc < entryCrc) {
+            high = index;
+        } else {
+            low = index + 1;
+        }
+    }
+
+    return nullptr;
+}
+
+uint32_t AEFile::FileExist(const String &path)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface == nullptr) {
         return 0;
     }
 
     String nativePath; AEStr_init(&nativePath, path);
-    uint32_t result = fileInterface->vtable->FileExist(fileInterface, nativePath);
-    if (result != 0) {
+    if (fileInterface->vtable->FileExist(fileInterface, nativePath) != 0) {
         return 1;
     }
 
     String pakPath; AEStr_init(&pakPath, path);
     if (*AEStr_index(pakPath, 0) != '/') {
-        String prefix;  AEStr_init(&prefix, "/");
-        String pathCopy; AEStr_init(&pathCopy, path);
-        pakPath = prefix + pathCopy;
+        String prefix("/");
+        pakPath = prefix + path;
     }
 
-    AELowLevelFile *pakFile = findPakFile(pakPath);
-    return pakFile != 0;
+    return findPakFile(pakPath) != nullptr;
 }
 
-extern FileInterface *gAEFileInterface;
+uint32_t AEFile::FileDelete(const String &path)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface == nullptr) {
+        return 0;
+    }
+    String localPath; AEStr_init(&localPath, path);
+    return fileInterface->vtable->FileDelete(fileInterface, localPath);
+}
 
-__attribute__((minsize)) void AEFile::SetSaveDirectory(String path) {
+uint32_t AEFile::GetDeviceFreeSpace()
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
+        return fileInterface->vtable->GetDeviceFreeSpace(fileInterface);
+    }
+    return 0;
+}
 
-    FileInterface *fileInterface = gAEFileInterface;
-    if (fileInterface != 0) {
+const char *AEFile::GetAppRootDir()
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
+        return fileInterface->vtable->GetAppRootDir(fileInterface);
+    }
+    return nullptr;
+}
+
+void AEFile::SetAppRootDir(const char *path)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
+        fileInterface->vtable->SetAppRootDir(fileInterface, path);
+    }
+}
+
+void AEFile::SetZipDirectory(const char *path)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
+        fileInterface->vtable->SetZipDirectory(fileInterface, path);
+    }
+}
+
+void AEFile::SetSaveDirectory(String path)
+{
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
         String savePath; AEStr_init(&savePath, path);
         fileInterface->vtable->SetSaveDirectory(fileInterface, savePath);
     }
-
-    return;
 }
 
-extern Array<AEPakFileEntry *> *g_pakFileEntries;
-extern FileInterface *g_fileInterface;
-extern char g_AELowLevelPakFile_vtable[];
-
-__attribute__((stack_protect))
-__attribute__((minsize)) AELowLevelFile *AEFile::findPakFile(const String &path)
+void AEFile::ResetSaveDirectory()
 {
-    AELowLevelFile *result;
-    Array<AEPakFileEntry *> **entriesGlobal = &g_pakFileEntries;
-
-    if ((*entriesGlobal)->size() != 0) {
-        uint32_t wantedCrc = crc32_ccitt(path);
-        Array<AEPakFileEntry *> *entries = *entriesGlobal;
-        int32_t low = 0;
-        int32_t high = entries->size();
-
-search:
-        do {
-            int32_t distance = high - low;
-            int32_t half = distance >> 1;
-            int32_t index = low + half;
-            uint32_t entryCrc;
-
-            if (high <= low) {
-                goto not_found;
-            }
-
-            AEPakFileEntry *entry = entries->data()[index];
-            entryCrc = entry->crc;
-
-            if (entryCrc == wantedCrc) {
-                uint16_t *name = AEStr_wchar(entry->name);
-                AEPakFileEntry *foundEntry = (*entriesGlobal)->data()[index];
-                FileInterface *fileInterface = g_fileInterface;
-                void *handle;
-
-                if (foundEntry->size == 0xffffffff) {
-                    String entryName; AEStr_init(&entryName, name);
-                    AEPakFileEntry *openEntry = (*entriesGlobal)->data()[index];
-                    handle = fileInterface->vtable->OpenRead(fileInterface, entryName, openEntry->name.size(), 0, 0, 0, openEntry->offset);
-                } else {
-                    String entryName; AEStr_init(&entryName, name);
-                    AEPakFileEntry *openEntry = (*entriesGlobal)->data()[index];
-                    handle = fileInterface->vtable->OpenRead(fileInterface, entryName, openEntry->name.size(), 1, openEntry->packedSize, openEntry->size, openEntry->offset);
-                }
-
-                AELowLevelPakFile *pakFile = new AELowLevelPakFile;
-                AEPakFileEntry *newEntry = (*entriesGlobal)->data()[index];
-                pakFile->vtable = (AELowLevelFileVTable *)(g_AELowLevelPakFile_vtable + 8);
-                pakFile->handle = handle;
-                pakFile->packedSize = newEntry->packedSize;
-                pakFile->size = newEntry->size;
-                pakFile->position = 0;
-                result = pakFile;
-                goto done;
-            }
-
-            if (wantedCrc <= entryCrc) {
-                bool done = high == index;
-                high = index;
-                if (done) {
-                    goto done_zero;
-                }
-                goto search;
-            }
-
-            low = index;
-            if (half == 0) {
-                goto not_found;
-            }
-        } while (true);
-    }
-
-not_found:
-    result = 0;
-    return result;
-
-done_zero:
-    result = 0;
-done:
-    return result;
-}
-
-__attribute__((minsize)) void AEFile::Write(int8_t value, uint32_t handle)
-{
-    int8_t local = value;
-    Write(1, &local, handle);
-
-    return;
-}
-
-extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
-
-__attribute__((minsize)) void AEFile::sortPakFileEntryList()
-{
-    Array<AEPakFileEntry *> **slot = &g_AEFile_pakFiles;
-    int32_t count = (int32_t)(*slot)->size();
-    if (count == 0) {
-        return;
-    }
-
-    while (--count, count >= 0) {
-        for (int32_t index = 0; count != index; index++) {
-            AEPakFileEntry **entries = (*slot)->data();
-            AEPakFileEntry *left = entries[index];
-            AEPakFileEntry *right = entries[index + 1];
-            if (right->crc < left->crc) {
-                entries[index] = right;
-                (*slot)->data()[index + 1] = left;
-            }
-        }
-    }
-}
-
-__attribute__((minsize)) void AEFile::Write(char value, uint32_t handle)
-{
-    char local = value;
-    Write(1, &local, handle);
-
-    return;
-}
-
-__attribute__((minsize)) void AEFile::Write(int32_t value, uint32_t handle)
-{
-    int32_t local = value;
-    Write(4, &local, handle);
-
-    return;
-}
-
-extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
-extern Array<AELowLevelFile *> *g_AEFile_openFiles;
-extern FileInterface *g_AEFile_fileInterface;
-extern uint32_t g_AEFile_initialized;
-
-__attribute__((minsize)) void AEFile::SetInterface(FileInterface *fileInterface)
-{
-    if (fileInterface == 0) {
-        return;
-    }
-    if (fileInterface->enabled == 0) {
-        return;
-    }
-
-    if (g_AEFile_initialized != 0) {
+    FileInterface *fileInterface = g_AEFile_fileInterface;
+    if (fileInterface != nullptr) {
         fileInterface->vtable->ResetSaveDirectory(fileInterface);
     }
-
-    if (g_AEFile_pakFiles == 0) {
-        g_AEFile_pakFiles = new Array<AEPakFileEntry *>();
-    }
-    if (g_AEFile_openFiles == 0) {
-        g_AEFile_openFiles = new Array<AELowLevelFile *>();
-    }
-    g_AEFile_fileInterface = fileInterface;
-}
-
-__attribute__((minsize)) void AEFile::Write(int16_t value, uint32_t handle)
-{
-    int16_t local = value;
-    Write(2, &local, handle);
-
-    return;
-}
-
-__attribute__((minsize)) void AEFile::Write(uint16_t value, uint32_t handle)
-{
-    uint16_t local = value;
-    Write(2, &local, handle);
-
-    return;
-}
-
-extern FileInterface *g_fileInterface;
-extern Array<AEPakFileEntry *> *g_pakFileEntries;
-
-__attribute__((minsize)) void AEFile::collectFilesInPakFiles(String &path)
-{
-    FileInterface *fileInterface = g_fileInterface;
-
-    if (fileInterface != 0 && fileInterface->enabled != 0) {
-        AEFile::OpenRead(path, 0);
-
-        int8_t nameLength;
-        uint32_t readResult = AEFile::Read(1, &nameLength, 0);
-        uint32_t (*readFunc)(uint32_t, void *, uint32_t) = AEFile::Read;
-        Array<AEPakFileEntry *> **entriesGlobal = &g_pakFileEntries;
-        uint32_t offset = 1;
-
-        while ((readResult & 1) != 0) {
-            int32_t length = nameLength;
-            char *name = new char[length + 1];
-            readFunc(length, name, 0);
-            name[nameLength] = 0;
-
-            uint32_t packedSize;
-            uint32_t size;
-            readFunc(4, &packedSize, 0);
-            readFunc(4, &size, 0);
-
-            AEPakFileEntry *entry = new AEPakFileEntry();
-            String nameString; AEStr_init(&nameString, name);
-            entry->crc = AEFile::crc32_ccitt(nameString);
-            nameString.~String();
-
-            entry->name = path;
-            offset = offset + nameLength + 8;
-            entry->offset = offset;
-            entry->packedSize = packedSize;
-            entry->size = size;
-            ArrayAdd(entry, **entriesGlobal);
-            delete[] name;
-
-            uint32_t *skipped;
-            if (size == 0xffffffff) {
-                AEFile::Skip(packedSize, 0);
-                skipped = &packedSize;
-            } else {
-                AEFile::Skip(size, 0);
-                skipped = &size;
-            }
-
-            uint32_t skippedBytes = *skipped;
-            readResult = readFunc(1, &nameLength, 0);
-            offset = offset + skippedBytes + 1;
-        }
-
-        AEFile::Close(0);
-    }
-
-    return;
 }
 
 namespace {
@@ -914,46 +685,12 @@ static const uint32_t crc32Table[256] = {
 
 } // namespace
 
-__attribute__((minsize)) uint32_t AEFile::crc32_ccitt(const String &text)
+uint32_t AEFile::crc32_ccitt(const String &text)
 {
-    const String &s = text;
     uint32_t crc = 0;
-    const uint32_t *table = crc32Table;
-    for (int index = 0; index < (int32_t)s.size(); index++) {
-        uint16_t value = *AEStr_index(s, index);
-        crc = table[(value ^ crc) & 0xff] ^ (crc >> 8);
+    for (int index = 0; index < (int32_t)text.size(); index++) {
+        uint16_t value = *AEStr_index(text, index);
+        crc = crc32Table[(value ^ crc) & 0xff] ^ (crc >> 8);
     }
     return crc;
-}
-
-__attribute__((minsize)) void AEFile::Write(int64_t value, uint32_t handle)
-{
-    int64_t local = value;
-    Write(8, &local, handle);
-
-    return;
-}
-
-__attribute__((minsize)) void AEFile::Write(bool value, uint32_t handle)
-{
-    bool local = value;
-    Write(1, &local, handle);
-
-    return;
-}
-
-__attribute__((minsize)) void AEFile::Write(float value, uint32_t handle)
-{
-    float local = value;
-    Write(4, &local, handle);
-
-    return;
-}
-
-__attribute__((minsize)) void AEFile::Write(uint32_t value, uint32_t handle)
-{
-    uint32_t local = value;
-    Write(4, &local, handle);
-
-    return;
 }
