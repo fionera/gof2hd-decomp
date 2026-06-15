@@ -23,6 +23,8 @@ public:
     ~Globals();
 
     unsigned getRandomEnemyFighter(int kind);
+    // Resolve the ship-group id for a given ship type/race (kind==0xf builds capital-ship LOD geometry).
+    int getShipGroup(int type, int race, int flag);
     int init(void* app);
     float sqrt(float x);
 

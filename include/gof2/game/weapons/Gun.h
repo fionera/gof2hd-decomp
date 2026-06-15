@@ -8,6 +8,7 @@
 class Player;
 class Sparks;
 class Item;
+class Level;
 
 class Gun {
 public:
@@ -84,6 +85,7 @@ public:
     void setEnemy(Player* enemy);
     void setErrorMagnitudePercentage(int v);
     void setFriendGun(bool v);
+    void setLevel(Level* lvl);
     void setImpact(Sparks* impact);
     void setIndex(int index);
     void setLevelCollision(bool v);

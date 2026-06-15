@@ -92,6 +92,10 @@ void Gun::setLevelCollision(bool v) {
     this->levelCollision = v;
 }
 
+void Gun::setLevel(Level* lvl) {
+    this->level = (int)(intptr_t)lvl;   // `level` is a 32-bit pointer-as-int field
+}
+
 void Gun::removeAllEnemies() {
     this->enemies = 0;
 }

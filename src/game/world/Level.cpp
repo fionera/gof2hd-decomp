@@ -176,8 +176,6 @@ extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
 void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
-void Gun_setLevel_cg(Gun *g, Level *self);
-int  Globals_getShipGroup_cs(Globals *g, int type, int race, int flag);
 void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
 int  Station_stationHasHiddenBlueprint_cp(Station *s, int flag);
@@ -188,10 +186,7 @@ int  ApplicationManager_GetEngine_csp();
 
 int  Item_getAttribute_cg(int item);
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
-void  PlayerAsteroid_ctor_ca(PlayerAsteroid *a, int x_or_id, AEGeometry *geo, int colVariant,
-                             int kind, Vector *pos, float scale, int radius);
 void  PlayerAsteroid_setAsteroidCenter_ca(PlayerAsteroid *a, float cx, float cy, float cz);
-void  Vector_assign_ca(Vector *dst, Vector *src);
 int  Item_getAttribute_up(int item);
 void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
@@ -199,8 +194,6 @@ int  GameText_getText_cso(int id);
 int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
 int   Item_getAttribute_ag(int item);
-void PlayerGasCloud_ctor_cgc(PlayerGasCloud *c, int kind, ParticleSystemManager *psm,
-                             AEGeometry *geo, Vector *pos);
 void Player_setHitpoints_cwm(int p);
 void  PlayerStatic_ctor_csc(PlayerStatic *p, int a, AEGeometry *geo);
 void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
@@ -938,7 +931,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     default: break;
     }
 
-    Gun_setLevel_cg(gun, this);
+    gun->setLevel(this);
     if (this->playerGuns == nullptr) {
         this->playerGuns = new Array<ObjectGun*>();
     }
@@ -1573,7 +1566,7 @@ void Level::createAsteroids()
     center.x = (float)oy;
     center.y = (float)ox;
     center.z = (float)oz;
-    Vector_assign_ca((Vector *)((char *)&this->field_c8), &center);
+    *(Vector *)((char *)&this->field_c8) = center;
 
     Waypoint *wp = (Waypoint *)::operator new(0x138);
     new (wp) Waypoint(oz, oy, ox, 0);
@@ -1671,8 +1664,8 @@ void Level::createAsteroids()
         }
 
         PlayerAsteroid *a = (PlayerAsteroid *)::operator new(0x170);
-        PlayerAsteroid_ctor_ca(a, kind, geo, colVariant, kind, &pos, scale, (int)scale);
-        (*this->asteroids)[i] = (KIPlayer *)a;
+        new (a) PlayerAsteroid(kind, geo, colVariant, kind, pos, scale, (int)scale);
+        (*this->asteroids)[i] = a;
 
         // wire the freshly built asteroid to its level (KIPlayer::setLevel, virtual).
         (*this->asteroids)[i]->setLevel(this);
@@ -2824,7 +2817,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         PlayerFighter *pf = (PlayerFighter *)::operator new(0x2f0);
         new (pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *)pf;
-        int gg = (int)(intptr_t)Globals_getShipGroup_cs(*g_cs_globalsA, type, race, group);
+        int gg = ((Globals *)*g_cs_globalsA)->getShipGroup(type, race, group);
         obj->setShipGroup(gg, type, hostile);   // KIPlayer::setShipGroup
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
@@ -2845,7 +2838,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         void *bv = Level::cs_buildBV(race, type, &wreck);
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume*)bv);
-        int gg = (int)(intptr_t)Globals_getShipGroup_cs(*g_cs_globalsB, type, race, 0);
+        int gg = ((Globals *)*g_cs_globalsB)->getShipGroup(type, race, 0);
         obj->setShipGroup(gg, type, 0);   // KIPlayer::setShipGroup
         ((LODManager *)(intptr_t)this->vtable)->addObject(*(AEGeometry **)((char *)obj + 0x8));
         *(unsigned char *)((char *)obj + 0x40) = 1;
@@ -2981,7 +2974,7 @@ void Level::assignGuns()
             int rampMis = (won != 0) ? 0x2d : (*g_status)->getCurrentCampaignMission();
             Gun_ctor_ag(gun, 0, dmg, 4, -1, 3000, rampMis * -2 + 600, color, 0, 0, 0, 0, 0, 0);
             gun->setFriendGun(1);
-            Gun_setLevel_cg(gun, this);
+            gun->setLevel(this);
             gun->setIndex(0);
             gun->weaponType = 0;
 
@@ -3077,7 +3070,7 @@ wingmanExtra:
             Gun *gun = (Gun *)::operator new(0x114);
             Gun_ctor_ag(gun, 0x12, 0, 4, -1, 3000, 400, 0x41800000, 0, 0, 0, 0, 0, 0);
             gun->setFriendGun(1);
-            Gun_setLevel_cg(gun, this);
+            gun->setLevel(this);
             gun->itemIndex = 0x12;
             gun->weaponType = 1;
             ObjectGun *o = (ObjectGun *)::operator new(0xb0);
@@ -3137,8 +3130,7 @@ void Level::createGasClouds()
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
         PlayerGasCloud *cloud = (PlayerGasCloud *)::operator new(0x16c);
-        PlayerGasCloud_ctor_cgc(cloud, kind,
-                                *(ParticleSystemManager **)&this->field_94, geo, &pos);
+        new (cloud) PlayerGasCloud(kind, *(ParticleSystemManager **)&this->field_94, geo, pos);
         (*this->gasClouds)[i] = cloud;
         // wire the freshly built cloud to its level (KIPlayer::setLevel, virtual).
         (*this->gasClouds)[i]->setLevel(this);
