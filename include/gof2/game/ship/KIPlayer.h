@@ -98,7 +98,9 @@ public:
 
     KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
              float x, float y, float z, bool active);
-    ~KIPlayer();
+    // Virtual: the actor rosters hold KIPlayer* pointing at the ship subclasses, so
+    // deleting through the base must run the subclass destructor.
+    virtual ~KIPlayer();
 
     void PauseEngineSound();
     void PlayEngineSound();

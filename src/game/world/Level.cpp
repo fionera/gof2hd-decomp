@@ -202,21 +202,6 @@ int Level_getNumWingmen(int wanted);
 
 static unsigned int g_level_texOutScratch;
 
-template <class T>
-static void releaseObject(T *&member) {
-    delete member;
-    member = nullptr;
-}
-
-template <class T> static void deletePolyArray(Array<T*>*& v) {
-    if (!v) return;
-    for (unsigned i = 0; i < v->size(); ++i) {
-        void* e = (void*)(*v)[i];
-        if (e) { void* vt = *(void**)e; (*(void(**)(void*))((char*)vt + 0))(e); } // vtable[0] deleting dtor
-    }
-    delete v; v = nullptr;
-}
-
 extern "C" int Radar_hasScanner_ed();
 
 extern "C" void Level_setAlwaysEnemy(int player, int flag)
@@ -665,35 +650,35 @@ Level::~Level() {
     skyboxMesh = -1;
     field_08 = -1;
     skyboxTexture = -1;
-    releaseObject(objectivesA);
-    releaseObject(objectivesB);
-    releaseObject(collisionVolume);
+    delete objectivesA; objectivesA = nullptr;
+    delete objectivesB; objectivesB = nullptr;
+    delete collisionVolume; collisionVolume = nullptr;
     delete asteroidWaypoint;   // virtual deleting-dtor (vtable slot +4)
     asteroidWaypoint = nullptr;
-    releaseObject(starSystem);
-    releaseObject(player);
-    releaseObject(field_180);
-    releaseObject(field_80);
-    releaseObject(skybox2Mesh);
-    releaseObject(field_74);
-    releaseObject(particleEmitBoolPtr);
-    releaseObject(particleSystemMgr);
-    releaseObject(field_90);
-    releaseObject(particleRenderBoolPtr);
-    releaseObject(field_98);
-    releaseObject(field_9c);
-    deletePolyArray(field_a4);
+    delete starSystem; starSystem = nullptr;
+    delete player; player = nullptr;
+    delete field_180; field_180 = nullptr;
+    delete field_80; field_80 = nullptr;
+    delete skybox2Mesh; skybox2Mesh = nullptr;
+    delete field_74; field_74 = nullptr;
+    delete particleEmitBoolPtr; particleEmitBoolPtr = nullptr;
+    delete particleSystemMgr; particleSystemMgr = nullptr;
+    delete field_90; field_90 = nullptr;
+    delete particleRenderBoolPtr; particleRenderBoolPtr = nullptr;
+    delete field_98; field_98 = nullptr;
+    delete field_9c; field_9c = nullptr;
+    if (field_a4) { for (auto* e : *field_a4) delete e; delete field_a4; field_a4 = nullptr; }
     if (field_a8) { delete field_a8; field_a8 = nullptr; }   // Array<int>: no element dtors
-    deletePolyArray(playerGuns);
-    deletePolyArray(enemyGuns);
-    deletePolyArray(enemies);
-    deletePolyArray(asteroids);
-    deletePolyArray(gasClouds);
-    deletePolyArray(landmarks);
-    deletePolyArray(messages);
-    deletePolyArray(field_104);
-    releaseObject(lodManager);
-    releaseObject(field_a0);
+    if (playerGuns) { for (auto* e : *playerGuns) delete e; delete playerGuns; playerGuns = nullptr; }
+    if (enemyGuns) { for (auto* e : *enemyGuns) delete e; delete enemyGuns; enemyGuns = nullptr; }
+    if (enemies) { for (auto* e : *enemies) delete e; delete enemies; enemies = nullptr; }
+    if (asteroids) { for (auto* e : *asteroids) delete e; delete asteroids; asteroids = nullptr; }
+    if (gasClouds) { for (auto* e : *gasClouds) delete e; delete gasClouds; gasClouds = nullptr; }
+    if (landmarks) { for (auto* e : *landmarks) delete e; delete landmarks; landmarks = nullptr; }
+    if (messages) { for (void* e : *messages) delete (RadioMessage*)e; delete messages; messages = nullptr; }
+    if (field_104) { for (auto* e : *field_104) delete e; delete field_104; field_104 = nullptr; }
+    delete lodManager; lodManager = nullptr;
+    delete field_a0; field_a0 = nullptr;
     if (field_b0) { delete field_b0; field_b0 = nullptr; }   // container-only: elements owned by enemies
 }
 
@@ -1004,7 +989,7 @@ void Level::createRadioMessage(int type, int sub) {
 
     // fresh message queue.
     if (this->messages != nullptr) {
-        deletePolyArray(this->messages);
+        if (this->messages) { for (void* e : *this->messages) delete (RadioMessage*)e; delete this->messages; this->messages = nullptr; }
     }
     this->messages = new Array<void*>();
 
@@ -1135,7 +1120,7 @@ void Level::createRadioMessage(int type, int sub) {
 
     if (aborted) {
         if (this->messages != nullptr)
-            deletePolyArray(this->messages);
+            if (this->messages) { for (void* e : *this->messages) delete (RadioMessage*)e; delete this->messages; this->messages = nullptr; }
         PlayerEgo *ego = this->player;
         this->crm_dispatch(*(int *)((char *)ego + 0x18), 0);
         return;
@@ -2849,7 +2834,7 @@ void Level::almostKillWanted(int index) {
     ((Mission *)(m))->setWon(1);
     (*slot)->setMission((Mission *)(intptr_t)m);
     (*slot)->setCampaignMission((Mission *)(intptr_t)m);
-    releaseObject(objectivesA);
+    delete objectivesA; objectivesA = nullptr;
     objectivesA = new Objective(3, 0, 0, this);
     int e = (int)(intptr_t)(*this->enemies)[0];
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
@@ -2867,7 +2852,7 @@ void Level::assignGuns()
 {
 
     if (this->enemyGuns != nullptr) {
-        deletePolyArray(this->enemyGuns);
+        if (this->enemyGuns) { for (auto* e : *this->enemyGuns) delete e; delete this->enemyGuns; this->enemyGuns = nullptr; }
     }
     Status **status = g_ag_status;
     this->enemyGuns = nullptr;
@@ -3353,7 +3338,7 @@ void Level::createScene()
 {
 
     if (this->enemies != nullptr) {
-        deletePolyArray(this->enemies);
+        if (this->enemies) { for (auto* e : *this->enemies) delete e; delete this->enemies; this->enemies = nullptr; }
     }
     int mode = this->missionPtr;
     this->enemies = nullptr;
