@@ -444,7 +444,7 @@ void Level::switchSkyboxForSupernovaReversal() {
     skyboxTexture = -1;
 }
 
-int Level::getPlayer() {
+PlayerEgo *Level::getPlayer() {
     return player;
 }
 
@@ -802,7 +802,7 @@ void Level::alarmAllFriends(int race, bool message) {
 
 void Level::setPlayerEngineColor(short color) {
     int c = color;
-    if (player != 0 && field_a4 != nullptr) {
+    if (player != nullptr && field_a4 != nullptr) {
         unsigned int *p = (unsigned int *)((char *)g_engineColorBase + 0x1254);
         for (int i = (int)field_a4->size(); i != 0; i = i - 1) {
             *p = c << 0x10 | c << 0x18 | c << 8 | 0xff;
@@ -1040,7 +1040,7 @@ void Level::createSpace()
 void Level::createRadioMessage(int type, int sub) {
     unsigned r2 = (unsigned)sub;
 
-    if (this->player == 0 || *(int *)(this->player + 0x18) == 0)
+    if (this->player == nullptr || *(int *)((char *)this->player + 0x18) == 0)
         return;
 
     int **statusHolder = g_crm_status;
@@ -1182,8 +1182,8 @@ void Level::createRadioMessage(int type, int sub) {
     if (aborted) {
         if (this->messages != nullptr)
             deletePolyArray(this->messages);
-        int ego = this->player;
-        this->crm_dispatch(*(int *)(ego + 0x18), 0);
+        PlayerEgo *ego = this->player;
+        this->crm_dispatch(*(int *)((char *)ego + 0x18), 0);
         return;
     }
 
@@ -1193,8 +1193,8 @@ void Level::createRadioMessage(int type, int sub) {
         this->messages->push_back(m);
     }
 
-    int ego = this->player;
-    this->crm_dispatch(*(int *)(ego + 0x18), (void *)this->messages);
+    PlayerEgo *ego = this->player;
+    this->crm_dispatch(*(int *)((char *)ego + 0x18), (void *)this->messages);
 }
 
 // Level::init() — staged level setup; runs over up to two ticks (the counter at self+0x134),
@@ -1276,7 +1276,7 @@ int Level::init() {
         if (this->missionPtr == 3) {
             thisptr->createPlayer();
             int stk = 0;
-            if (**g_init_flagStack != 0 && *(int *)(this->player + 8) != 0)
+            if (**g_init_flagStack != 0 && *(int *)((char *)this->player + 8) != 0)
                 stk = (int)(intptr_t)((Status*)*g_init_statusA)->getStationStack();
             thisptr->init_placePlayer((int)(intptr_t)*statusA, stk);
         }
@@ -1349,8 +1349,8 @@ int Level::init() {
     if (this->missionPtr != 3)
         this->missionPtr = 3;
     thisptr->connectPlayers();
-    if (*(Route **)&this->player != 0)
-        ((PlayerEgo *)(this->player))->setRoute_init();
+    if (this->player != nullptr)
+        this->player->setRoute_init();
 
     // recompute enemiesLeft.
     int initial = 0;
@@ -1737,7 +1737,7 @@ void Level::createCampaignMission()
             if (i < 3)
                 ((PlayerFighter*)(*this->enemies)[i])->setExhaustVisible(false);
         }
-        Player_setHitpoints_ccm(**(int **)&this->player);
+        Player_setHitpoints_ccm(*(int *)this->player);
         return;
     }
 
@@ -1755,7 +1755,7 @@ void Level::updateOrbit(int dt) {
 
     // delayed "friends turned hostile" alarm.
     if (*(char *)&this->field_18a != 0) {
-        if ((*g_status)->getSystem() != 0 && *(int *)(this->player + 0x18) != 0) {
+        if ((*g_status)->getSystem() != 0 && *(int *)((char *)this->player + 0x18) != 0) {
             (*g_status)->getSystem();
             int race = ((SolarSystem*)(*g_status)->getSystem())->getRace();
             thisptr->alarmAllFriends(race, 0 != 0);
@@ -1875,7 +1875,7 @@ void Level::reset() {
         }
     }
     // FIXME: PlayerEgo::setRoute is mis-typed as int (KIPlayer::setRoute takes Route*); cast at the boundary.
-    ((PlayerEgo *)player)->setRoute((int)(intptr_t)playerRoute);
+    player->setRoute((int)(intptr_t)playerRoute);
     int count;
     if (this->enemies != nullptr) {
         count = 0;
@@ -2014,8 +2014,8 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     int idx = ((Station*)st2)->getIndex();
     ((Status*)*g_up_statusA)->getCurrentCampaignMission();
     int gammaBits = ((Status*)(intptr_t)aPtr)->getGammaRayDamagePerSecond(aPtr, idx); float gamma = *(float *)&gammaBits;
-    int ego = this->player;
-    if (gamma > 0.0f && ego != 0) {
+    PlayerEgo *ego = this->player;
+    if (gamma > 0.0f && ego != nullptr) {
         int ship = (int)(intptr_t)((Status*)*g_up_statusA)->getShip();
         int eq = (int)(intptr_t)((Ship*)(intptr_t)ship)->getFirstEquipmentOfSort(0x26);
         float factor = gamma;
@@ -2024,17 +2024,17 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
             if (attr > 0)
                 factor = (g_up_eqMax - (float)attr) / g_up_eqMax;
         }
-        int hpBefore = ((Player*)this->player)->getGammaHP();
-        ((Player*)this->player)->damageGamma(factor);
-        if (hpBefore > 0xe && ((Player*)this->player)->getGammaHP() < 0xf) {
-            int hud = ((PlayerEgo *)(this->player))->getHUD();
-            Hud_hudEvent_up(hud, 0x2c, this->player);
+        int hpBefore = ((Player *)this->player)->getGammaHP();
+        ((Player *)this->player)->damageGamma(factor);
+        if (hpBefore > 0xe && ((Player *)this->player)->getGammaHP() < 0xf) {
+            int hud = this->player->getHUD();
+            Hud_hudEvent_up(hud, 0x2c, (int)(intptr_t)this->player);
         }
         ego = this->player;
     }
 
     // tick the in-flight particle-system managers (skybox, engine trails, etc).
-    if (ego != 0) {
+    if (ego != nullptr) {
         char dummy[16];
         if (this->field_80 != 0) {
             ((PlayerEgo *)(dummy))->getPosition_up();
@@ -2069,27 +2069,27 @@ void Level::connectPlayers()
         return;
 
     // player's enemy list from the enemy array.
-    if (this->enemies != nullptr && this->player != 0) {
+    if (this->enemies != nullptr && this->player != nullptr) {
         Array<Player *> arr;
         arr.resize(this->enemies->size());
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (Player *)*(int *)((char *)(*this->enemies)[j] + 4);
-        ((Player *)**(int **)&this->player)->setEnemies(&arr);
+        ((Player *)*(int *)this->player)->setEnemies(&arr);
     }
     // add asteroids/landmarks arrays as additional enemies.
-    if (this->asteroids != nullptr && this->player != 0) {
+    if (this->asteroids != nullptr && this->player != nullptr) {
         Array<Player *> arr;
         arr.resize(this->asteroids->size());
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (Player *)*(int *)((char *)(*this->asteroids)[j] + 4);
-        ((Player *)**(int **)&this->player)->addEnemies(&arr);
+        ((Player *)*(int *)this->player)->addEnemies(&arr);
     }
-    if (this->gasClouds != nullptr && this->player != 0) {
+    if (this->gasClouds != nullptr && this->player != nullptr) {
         Array<Player *> arr;
         arr.resize(this->gasClouds->size());
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (Player *)*(int *)((char *)(*this->gasClouds)[j] + 4);
-        ((Player *)**(int **)&this->player)->addEnemies(&arr);
+        ((Player *)*(int *)this->player)->addEnemies(&arr);
     }
 
     if (this->enemies == nullptr)
@@ -2135,7 +2135,7 @@ void Level::connectPlayers()
         }
 
         Array<Player *> arr;
-        if (this->player != 0)
+        if (this->player != nullptr)
             count = count + 1;
         arr.resize(count);
 
@@ -2165,8 +2165,8 @@ void Level::connectPlayers()
                 if (m->isCampaignMission() != 0) (*g_status)->getCurrentCampaignMission();
 
                 int slot = 0;
-                int ego = this->player;
-                if (ego != 0) {
+                PlayerEgo *ego = this->player;
+                if (ego != nullptr) {
                     arr[0] = (Player *)*(int *)ego;
                     slot = 1;
                 }
@@ -2228,14 +2228,14 @@ void Level::connectPlayers()
             } else {
                 arr.resize(1);
             }
-            arr[arr.size() - 1] = (Player *)**(int **)&this->player;
+            arr[arr.size() - 1] = (Player *)*(int *)this->player;
         }
 
         (*(Player **)(e + 4))->addEnemies(&arr);
 
         (*g_status)->getMission();
         if (eFaction == 10 && ((Mission*)(*g_status)->getMission())->isEmpty() != 0)
-            (*(Player **)(e + 4))->setEnemy((Player *)**(int **)&this->player);
+            (*(Player **)(e + 4))->setEnemy((Player *)*(int *)this->player);
     }
 }
 
@@ -2258,7 +2258,7 @@ void Level::enemyDied(int r1, bool r2arg) {
     Status **statusHolder = g_ed_status;
     ((Status *)(*statusHolder))->incKills();
     this->killCountB = this->killCountB + 1;
-    if (this->player == 0)
+    if (this->player == nullptr)
         return;
 
     if (Radar_hasScanner_ed() == 0) {
@@ -2273,7 +2273,7 @@ void Level::enemyDied(int r1, bool r2arg) {
             int goal = ((Achievements *)(*achA))->getValue(0x28, 1);
             int prog = (int)(((float)v / (float)goal) * g_ed_100);
             if ((prog % 10) == 0) {
-                int hud = ((PlayerEgo *)(this->player))->getHUD();
+                int hud = this->player->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x11c);
                 int g2 = ((Achievements *)(*achA))->getValue(0x28, 1);
                 ((Hud *)(hud))->hudEventMedal(0x28, (int)(((float)cur / (float)g2) * g_ed_100));
@@ -2284,8 +2284,8 @@ void Level::enemyDied(int r1, bool r2arg) {
         }
     }
 
-    if (this->player != 0 &&
-        ((PlayerEgo *)(this->player))->emergencySystemActive() != 0) {
+    if (this->player != nullptr &&
+        this->player->emergencySystemActive() != 0) {
         Achievements **achB = g_ed_achB;
         if (((Achievements *)(*achB))->hasMedal(0x2b, 1) == 0) {
             int st = *(int *)statusHolder;
@@ -2293,7 +2293,7 @@ void Level::enemyDied(int r1, bool r2arg) {
             *(int *)(st + 0x13c) = v;
             int goal = ((Achievements *)(*achB))->getValue(0x2b, 1);
             if (0 < (int)((float)v / (float)goal)) {
-                int hud = ((PlayerEgo *)(this->player))->getHUD();
+                int hud = this->player->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x13c);
                 int g2 = ((Achievements *)(*achB))->getValue(0x2b, 1);
                 ((Hud *)(hud))->hudEventMedal(0x2b, (int)(((float)cur / (float)g2) * g_ed_100));
@@ -2522,7 +2522,7 @@ void Level::flashScreen(int type) {
         flashColor.x = 0;
         flashColor.y = 0;
         flashColor.z = 0;
-        ((PlayerEgo *)player)->hitCamera();
+        player->hitCamera();
     } else {
         float k = (type == 1) ? 8.0f : 5.0f;
         flashColor.x = clampChannel(k * *g_flashCol_r);
@@ -3265,7 +3265,7 @@ void Level::attackWanted(int index) {
 void Level::initParticleSystems()
 {
 
-    if (this->player != 0) {
+    if (this->player != nullptr) {
         // per-asteroid dust systems.
         if (this->field_a4 != nullptr) {
             this->field_a8 = new Array<int>();
@@ -3358,7 +3358,7 @@ void Level::createWingmen()
     if ((*g_status)->inSupernovaSystem() != 0 ||
         ((Status*)*g_cwm_statusB)->getCurrentCampaignMission() == 0x9e ||
         ((Status*)*g_cwm_statusB)->getWingmen() == 0 ||
-        this->player == 0)
+        this->player == nullptr)
         return;
 
     Array<KIPlayer*> *arr = new Array<KIPlayer*>();
@@ -3753,11 +3753,11 @@ void Level::csp_buildStationAndGates() {
 // we resolve through the player object's own placement entry.
 void Level::init_placePlayer(int statusA, int stationStack) {
     (void)statusA; (void)stationStack;
-    int player = this->player;
-    if (player == 0)
+    PlayerEgo *player = this->player;
+    if (player == nullptr)
         return;
-    // PlayerEgo exposes its respawn placement through vtable slot +0x1c.
-    int *ego = (int *)(intptr_t)player;
+    // FIXME: PlayerEgo respawn-placement virtual at vtable slot +0x1c — map to the real method.
+    int *ego = (int *)player;
     (*(void (**)(int *, int))(*ego + 0x1c))(ego, stationStack);
 }
 
@@ -3806,7 +3806,7 @@ void Level::ccm_buildCampaignScene(int missionIndex) {
 // The level's player world position (origin when no player exists yet).
 static inline Vector levelPlayerPosition(Level *self) {
     if (self->player == 0) { Vector p; p.x = p.y = p.z = 0.0f; return p; }
-    return ((PlayerEgo *)(intptr_t)self->player)->getPosition();
+    return (self->player)->getPosition();
 }
 
 // --- updateOrbit(): revive an enemy and teleport it to a far random offset from

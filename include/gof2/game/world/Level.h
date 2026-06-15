@@ -91,7 +91,7 @@ public:
     Array<ObjectGun*>* playerGuns;
     Array<ObjectGun*>* enemyGuns;
     StarSystem* starSystem;
-    int player;
+    PlayerEgo* player;
     Array<KIPlayer*>* gasClouds;
     Array<KIPlayer*>* enemies;
     Array<KIPlayer*>* asteroids;
@@ -197,7 +197,7 @@ public:
     void setPlayerRoute(Route *route);
     void createRadioMessages(int set);
     void getBoundingVolume();
-    int getPlayer();
+    PlayerEgo* getPlayer();
     Array<KIPlayer*>* getEnemies();
     Array<KIPlayer*>* getLandmarks();
     Array<KIPlayer*>* getAsteroids();
