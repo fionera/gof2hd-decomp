@@ -178,7 +178,6 @@ void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h
 void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
-int  Station_stationHasHiddenBlueprint_cp(Station *s, int flag);
 int  Station_getShips_csc();
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player *pl, int geom, float x, float y, float z);
@@ -186,7 +185,6 @@ int  ApplicationManager_GetEngine_csp();
 
 int  Item_getAttribute_cg(int item);
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
-void  PlayerAsteroid_setAsteroidCenter_ca(PlayerAsteroid *a, float cx, float cy, float cz);
 int  Item_getAttribute_up(int item);
 void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
@@ -195,7 +193,6 @@ int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
 int   Item_getAttribute_ag(int item);
 void Player_setHitpoints_cwm(int p);
-void  PlayerStatic_ctor_csc(PlayerStatic *p, int a, AEGeometry *geo);
 void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
 void *dtor_Objective(void *p);
 void *dtor_BoundingVolume(void *p);
@@ -208,7 +205,6 @@ void *dtor_LodMeshMerger(void *p);
 void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
 void *dtor_Objective_akw(void *p);
-void Objective_ctor_akw(int o, int a, int b, int c, Level *self);
 void Level_turnEnemy(int obj);
 int Level_getNumWingmen(int wanted);
 }
@@ -1670,9 +1666,8 @@ void Level::createAsteroids()
         // wire the freshly built asteroid to its level (KIPlayer::setLevel, virtual).
         (*this->asteroids)[i]->setLevel(this);
 
-        PlayerAsteroid_setAsteroidCenter_ca(
-            (PlayerAsteroid *)(*this->asteroids)[i],
-            *(float *)&this->field_c8, *(float *)&this->field_cc, *(float *)&this->field_d0);
+        ((PlayerAsteroid *)(*this->asteroids)[i])->setAsteroidCenter(
+            Vector{*(float *)&this->field_c8, *(float *)&this->field_cc, *(float *)&this->field_d0});
     }
 
     if (prob != 0)
@@ -2157,7 +2152,7 @@ void Level::connectPlayers()
                             if (*(char *)(e + 0x40) != 0 &&
                                 ((PlayerFixedObject*)(intptr_t)e)->getDockingType() == 3) {
                                 Station *st = (Station *)(*g_status)->getStation();
-                                if (Station_stationHasHiddenBlueprint_cp(st, 1) != 0)
+                                if (((Station *)st)->stationHasHiddenBlueprint(1) != 0)
                                     skip = true;
                             }
                             if (!skip) {
@@ -2870,7 +2865,7 @@ void Level::almostKillWanted(int index) {
     }
     objectivesA = nullptr;
     int o = (int)(intptr_t)::operator new(0x1c);
-    Objective_ctor_akw(o, 3, 0, 0, this);
+    new ((void *)(intptr_t)o) Objective(3, 0, 0, this);
     objectivesA = (Objective *)(intptr_t)o;
     int e = (int)(intptr_t)(*this->enemies)[0];
     Level_setAlwaysEnemy(*(int *)(e + 4), 0);
@@ -3388,12 +3383,12 @@ void Level::createScene()
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            PlayerStatic_ctor_csc(p, -1, g);
+            new (p) PlayerStatic(-1, g);
             this->enemies->push_back((KIPlayer *)p);
             g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)::operator new(0x130);
-            PlayerStatic_ctor_csc(p, -1, g);
+            new (p) PlayerStatic(-1, g);
             this->enemies->push_back((KIPlayer *)p);
         }
         return;
@@ -3434,20 +3429,20 @@ void Level::createScene()
                 AEGeometry *g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas*)canvas, 0);
                 PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-                PlayerStatic_ctor_csc(p, -1, g);
+                new (p) PlayerStatic(-1, g);
                 (*this->enemies)[a] = (KIPlayer *)p;
                 this->csc_placeActor((int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
-                PlayerStatic_ctor_csc(p, -1, g);
+                new (p) PlayerStatic(-1, g);
                 (*this->enemies)[nAgents + a] = (KIPlayer *)p;
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)0x380c, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
-                PlayerStatic_ctor_csc(p, -1, g);
+                new (p) PlayerStatic(-1, g);
                 (*this->enemies)[nAgents * 2 + a] = (KIPlayer *)p;
             }
         }
@@ -3455,7 +3450,7 @@ void Level::createScene()
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            PlayerStatic_ctor_csc(p, -1, g);
+            new (p) PlayerStatic(-1, g);
             (*this->enemies)[this->enemies->size() + (u - crew)] = (KIPlayer *)p;
         }
         return;
@@ -3496,7 +3491,7 @@ void Level::createScene()
             Vector rot = {0, 0, 0};
             ((AEGeometry*)g)->setRotation(*(const AbyssEngine::AEMath::Vector*)(&rot));
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            PlayerStatic_ctor_csc(p, -1, g);
+            new (p) PlayerStatic(-1, g);
             if ((int)race < 4 && race != 1) {
                 AEGeometry *child = (AEGeometry *)::operator new(0xc0);
                 new ((void*)child) AEGeometry((uint16_t)(unsigned)u, (PaintCanvas*)canvas, 0);
