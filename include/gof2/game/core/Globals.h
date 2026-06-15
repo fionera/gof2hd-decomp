@@ -37,6 +37,8 @@ public:
     static void addSoundResource_tail(int val, Array<int>* list);
     // Add one sound resource to the active list (skipping it if already present).
     void addSoundResource_oi(int val);
+    // Same, addressed by sound id (the assignGuns weapon-sound registration path).
+    void addSoundResourceToList(int snd);
     // Record the drawn system index for the chosen slot.
     static void getRandomSystemForDrinks_tail(int systemSlot, int picked);
     // Set the spacing of the freshly created extra font to 0.

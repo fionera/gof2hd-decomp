@@ -149,9 +149,9 @@ __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblA;  // [DAT_000
 __attribute__((visibility("hidden"))) extern int    *g_ag_weaponDmg; // [DAT_000cd1f4]
 __attribute__((visibility("hidden"))) extern int   **g_ag_statusB;   // [DAT_000cce40]
 __attribute__((visibility("hidden"))) extern int   **g_ag_alienCnt;  // [DAT_000cce44]
-__attribute__((visibility("hidden"))) extern int   **g_ag_snd;       // [DAT_000cd1f8]
+__attribute__((visibility("hidden"))) extern int   **g_ag_snd;       // [DAT_000cd1f8] Globals singleton holder (assignGuns sound reg)
 __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblB;  // [DAT_000cd1fc]
-__attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000cd200]
+__attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000cd200] Globals singleton holder
 __attribute__((visibility("hidden"))) extern float   g_ag_perLevel;
 __attribute__((visibility("hidden"))) extern Galaxy **g_cgc_galaxy; // [DAT_000bffc4]
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cgc_rng;     // [DAT_000bffcc]
@@ -179,7 +179,6 @@ __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
-void Globals_addSoundResourceToList_ag(int snd);
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
 int  ApplicationManager_GetEngine_csp();
 
@@ -2998,7 +2997,10 @@ void Level::assignGuns()
                 (*this->enemyGuns)[outIdx] = o;
             }
             ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
-            Globals_addSoundResourceToList_ag(**g_ag_snd);
+            // **g_ag_snd is the Globals singleton (receiver); the sound id is 0x3e for
+            // alien ships (shipGroup 9), 0x3d otherwise.
+            ((Globals *)(intptr_t)(**g_ag_snd))
+                ->addSoundResourceToList((*this->enemies)[i]->shipGroup == 9 ? 0x3e : 0x3d);
             outIdx = outIdx + 1;
             (void)kt2;
         }
@@ -3019,7 +3021,8 @@ wingmanExtra:
             int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48)))->getAttribute(0xa);
             gun->empDamage = attr;
             ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
-            Globals_addSoundResourceToList_ag(**g_ag_snd2);
+            // **g_ag_snd2 is the Globals singleton (receiver); the EMP-gun sound id is 0x4a.
+            ((Globals *)(intptr_t)(**g_ag_snd2))->addSoundResourceToList(0x4a);
             outIdx = outIdx + 1;
         }
     }
