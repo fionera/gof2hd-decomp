@@ -371,7 +371,7 @@ void Level::enableFog(bool enable) {
 }
 
 void Level::isInAsteroidCenterRange(Vector v) {
-    int *vol = (int *)(intptr_t)collisionVolume;
+    int *vol = (int *)collisionVolume;
     return (*(void (**)(int *, Vector))(*vol + 8))(vol, v);
 }
 
@@ -380,7 +380,7 @@ Array<KIPlayer*>* Level::getAsteroids() {
 }
 
 int Level::collide(Vector v) {
-    int *vol = (int *)(intptr_t)collisionVolume;
+    int *vol = (int *)collisionVolume;
     if (vol != 0) {
         return (*(int (**)(int *, Vector))(*vol + 8))(vol, v);
     }
@@ -1583,7 +1583,7 @@ void Level::createAsteroids()
 
     BoundingSphere *bs = (BoundingSphere *)::operator new(0x48);
     new (bs) BoundingSphere(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    *(BoundingSphere **)&this->collisionVolume = bs;
+    this->collisionVolume = bs;
 
     int density = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt() + 2; // # of "core" (dense) asteroids
     int alien2 = (*g_status)->inAlienOrbit();
@@ -2567,7 +2567,7 @@ Level::Level(int mission) {
     skyboxTexture = -1;
     field_10 = -1;
     missionPtr = mission;
-    collisionVolume = 0;
+    collisionVolume = nullptr;
     field_b0 = nullptr;
     flashColor.x = 0;
     flashColor.y = 0;

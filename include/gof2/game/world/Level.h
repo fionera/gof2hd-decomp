@@ -75,7 +75,7 @@ public:
     int field_b8;
     int field_bc;
     int missionPtr;                 // ctor argument
-    int collisionVolume;
+    BoundingVolume* collisionVolume;
     int field_c8;
     int field_cc;
     int field_d0;
