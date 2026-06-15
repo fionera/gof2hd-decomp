@@ -664,8 +664,8 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
         }
         if (cmd == 2) {
             if (((Level *)(this->level))->getPlayerRoute() != 0) {
-                int r = ((Level *)(this->level))->getPlayerRoute();
-                this->commandRoute = (int32_t)(intptr_t)((Route *)(r))->getExactClone();
+                Route *r = ((Level *)(this->level))->getPlayerRoute();
+                this->commandRoute = (int32_t)(intptr_t)r->getExactClone();
                 this->field_0x1e4 = ((Route *)(this->commandRoute))->getCurrent();
                 goto done;
             }

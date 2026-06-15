@@ -97,9 +97,9 @@ public:
     Array<KIPlayer*>* asteroids;
     Array<KIPlayer*>* landmarks;
     Array<AEGeometry*>* field_104;
-    int playerRoute;
-    int friendRoute;
-    int enemyRoute;
+    Route* playerRoute;
+    Route* friendRoute;
+    Route* enemyRoute;
     Array<void*>* messages;         // opaque RadioMessage* elements
     int enemiesLeft;
     int friendsLeft;
@@ -202,9 +202,9 @@ public:
     Array<KIPlayer*>* getLandmarks();
     Array<KIPlayer*>* getAsteroids();
     int getAsteroidWaypoint();
-    int getPlayerRoute();
-    int getEnemyRoute();
-    int getFriendRoute();
+    Route* getPlayerRoute();
+    Route* getEnemyRoute();
+    Route* getFriendRoute();
     void flashScreen(int type);
     void enemyDied(int r1, bool r2arg);
     void junkDied();

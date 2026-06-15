@@ -531,7 +531,7 @@ bool Level::hasMiningPlant() {
     return miningPlant > 0;
 }
 
-int Level::getFriendRoute() {
+Route *Level::getFriendRoute() {
     return friendRoute;
 }
 
@@ -612,12 +612,12 @@ int Level::getNumDeliveredOre() {
 }
 
 void Level::setPlayerRoute(Route *route) {
-    Route *old = (Route *)playerRoute;
-    if (old != 0) {
+    Route *old = playerRoute;
+    if (old != nullptr) {
         old->~Route();
         operator delete(old);
     }
-    playerRoute = (int)(intptr_t)route;
+    playerRoute = route;
 }
 
 void Level::enableFog(bool enable) {
@@ -727,7 +727,7 @@ void *Level::getActiveMessages() {
     return (void *)this->messages;
 }
 
-int Level::getEnemyRoute() {
+Route *Level::getEnemyRoute() {
     return enemyRoute;
 }
 
@@ -776,7 +776,7 @@ void Level::renderPause() {
     }
 }
 
-int Level::getPlayerRoute() {
+Route *Level::getPlayerRoute() {
     return playerRoute;
 }
 
@@ -1445,15 +1445,15 @@ int Level::init() {
         this->field_68 = 0;
         this->field_1b0 = 0;
         *(short *)((char *)&this->field_188 + 1) = 0;
-        if (*(Route **)&this->playerRoute != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)&this->playerRoute));
-        this->playerRoute = 0;
-        if (*(Route **)&this->enemyRoute != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)&this->enemyRoute));
-        this->enemyRoute = 0;
-        if (*(Route **)&this->friendRoute != 0)
-            operator_delete_init(Route_dtor_init(*(Route **)&this->friendRoute));
-        this->friendRoute = 0;
+        if (this->playerRoute != nullptr)
+            operator_delete_init(Route_dtor_init(this->playerRoute));
+        this->playerRoute = nullptr;
+        if (this->enemyRoute != nullptr)
+            operator_delete_init(Route_dtor_init(this->enemyRoute));
+        this->enemyRoute = nullptr;
+        if (this->friendRoute != nullptr)
+            operator_delete_init(Route_dtor_init(this->friendRoute));
+        this->friendRoute = nullptr;
         if (*(Objective **)&this->objectivesB != 0)
             operator_delete_init(Objective_dtor_init(*(Objective **)&this->objectivesB));
         this->objectivesB = 0;
@@ -2089,14 +2089,14 @@ void Level::friendTurnedEnemy() {
 }
 
 void Level::reset() {
-    if (playerRoute != 0) {
-        ((Route *)playerRoute)->reset();
+    if (playerRoute != nullptr) {
+        playerRoute->reset();
     }
-    if (enemyRoute != 0) {
-        ((Route *)enemyRoute)->reset();
+    if (enemyRoute != nullptr) {
+        enemyRoute->reset();
     }
-    if (friendRoute != 0) {
-        ((Route *)friendRoute)->reset();
+    if (friendRoute != nullptr) {
+        friendRoute->reset();
     }
     if (this->enemies != nullptr) {
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
@@ -2111,7 +2111,8 @@ void Level::reset() {
             ((RadioMessage *)(*this->messages)[i])->reset();
         }
     }
-    ((PlayerEgo *)player)->setRoute(playerRoute);
+    // FIXME: PlayerEgo::setRoute is mis-typed as int (KIPlayer::setRoute takes Route*); cast at the boundary.
+    ((PlayerEgo *)player)->setRoute((int)(intptr_t)playerRoute);
     int count;
     if (this->enemies != nullptr) {
         count = 0;
