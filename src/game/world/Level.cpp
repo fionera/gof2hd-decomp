@@ -15,6 +15,7 @@
 #include "gof2/game/world/Route.h"
 #include "gof2/game/mission/Objective.h"
 #include "gof2/game/mission/Item.h"
+#include "gof2/engine/core/GameText.h"
 #include "gof2/game/world/Station.h"
 #include "gof2/engine/render/LODManager.h"
 #include "gof2/game/world/Wanted.h"
@@ -130,6 +131,9 @@ __attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 __attribute__((visibility("hidden"))) extern void (**g_levelSubCtor)(void *);
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
 __attribute__((visibility("hidden"))) extern int **g_cso_textB;     // [DAT_000cc1f0] area
+// Localized-text singleton holder (same one Layout.cpp uses): gGameText->obj is the GameText.
+struct GameTextHolder { GameText *obj; };
+extern GameTextHolder *gGameText;
 __attribute__((visibility("hidden"))) extern float g_cso_posX;
 __attribute__((visibility("hidden"))) extern float g_cso_posZ;
 __attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cso2_rng;    // [DAT_000cea38]
@@ -177,6 +181,7 @@ extern "C" {
 // --- residual shims (could not be cleanly mapped to a real C++ method; follow-up) ---
 void Gun_ctor_cg(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
 void Gun_ctor_ag(Gun *g, int a, int b, int c, int d, int e, int f, int g7, int h, int i, int j, int k, int l, int m);
+void Player_setHitpoints_ccm(int p);
 void Globals_addSoundResourceToList_ag(int snd);
 int  Station_getShips_csc();
 void BoundingVolume_ctor_gbv(BoundingVolume *bv, int rec, int shape);
@@ -184,12 +189,10 @@ void PlayerFixedObject_ctor_cs(PlayerFixedObject *o, int type, int race, Player 
 int  ApplicationManager_GetEngine_csp();
 
 int  cm_randPos(AbyssEngine::AERandom *rng, int slot);
-void Hud_hudEvent_up(int hud, int code, int ego);
 int   crms_randDelay(int which);
-int  GameText_getText_cso(int id);
 int  cso2_rand20000(AbyssEngine::AERandom *rng);
 int  cs_rand40000(AbyssEngine::AERandom *rng);
-void AEGeometry_setLodMeshes_gap(AEGeometry *geo, unsigned short *meshes, int *dist, int n);
+void Player_setHitpoints_cwm(int p);
 void Level_setAlwaysEnemy(int obj, int flag);
 void Level_createPlayer_impl(Level *self);
 void Level_turnEnemy(int obj);
@@ -1960,7 +1963,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         ((Player *)this->player)->damageGamma(factor);
         if (hpBefore > 0xe && ((Player *)this->player)->getGammaHP() < 0xf) {
             int hud = this->player->getHUD();
-            Hud_hudEvent_up(hud, 0x2c, (int)(intptr_t)this->player);
+            ((Hud *)(intptr_t)hud)->hudEvent(0x2c, (void *)(intptr_t)this->player, 0);
         }
         ego = this->player;
     }
@@ -2608,7 +2611,7 @@ void Level::createStaticObjects()
                 // shows the up arg is world-up (local_40=0, uStack_3c=0x3f800000, local_38=0).
                 Vector up = {0.0f, 1.0f, 0.0f};
                 geo->setDirection(dir, up);
-                String *txt = (String *)GameText_getText_cso(**g_cso_textA);
+                String *txt = gGameText->obj->getText(**g_cso_textA);
                 *(String *)(o + 0x18) = *txt;
                 (*(Player **)(o + 4))->setAlwaysFriend(1);
                 if (this->enemies == nullptr) {
@@ -2632,7 +2635,7 @@ void Level::createStaticObjects()
             ((PlayerFixedObject *)o)->setPosition3(0, 0, 0);
             ((PlayerFixedObject *)o)->setMoving(0);
             *(char *)(o + 0x70) = 1;
-            String *txt = (String *)GameText_getText_cso(**g_cso_textB);
+            String *txt = gGameText->obj->getText(**g_cso_textB);
             String name;
             name.ctor_copy(txt, 0);
             ((PlayerFixedObject *)o)->setName(&name);
@@ -3720,7 +3723,7 @@ void Level::ca_installLodMeshes(AEGeometry *geo, short baseMesh, int near) {
     int dist[3];
     if (near) { dist[0] = 8000;  dist[1] = 20000; dist[2] = 40000; }
     else      { dist[0] = 20000; dist[1] = 40000; dist[2] = 80000; }
-    AEGeometry_setLodMeshes_gap(geo, meshes, dist, 3);
+    geo->setLodMeshes(meshes, dist, 3);
 }
 
 // --- createCampaignMission(): the scripted campaign scene is inlined in
