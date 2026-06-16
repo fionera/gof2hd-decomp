@@ -375,8 +375,6 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     AEFile::Close(fd);
 }
 
-// Status singleton holder-of-holder.
-__attribute__((visibility("hidden"))) extern Status **g_RH_wp_status;
 // Holds the object whose +0x2c float is written near the end of the preview record.
 __attribute__((visibility("hidden"))) extern int *g_RH_wp_float;
 
@@ -393,9 +391,8 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
 
-    Status **sh = g_RH_wp_status;
-    AEFile_Write_i64(((Status *)(*sh))->getPlayingTime(), fd);
-    AEFile_Write_i32(((Status *)(*sh))->getCredits(), fd);
+    AEFile_Write_i64(gStatus->getPlayingTime(), fd);
+    AEFile_Write_i32(gStatus->getCredits(), fd);
 
     num = ((Station *)(&num))->getName();
     AEFile_Write_str(&num, fd, true);
@@ -403,10 +400,10 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     num = ((SolarSystem *)(&num))->getName();
     AEFile_Write_str(&num, fd, true);
 
-    AEFile_Write_i32(((Status *)(*sh))->getCurrentCampaignMission(), fd);
-    AEFile_Write_i32(((Status *)(*sh))->getLevel(), fd);
+    AEFile_Write_i32(gStatus->getCurrentCampaignMission(), fd);
+    AEFile_Write_i32(gStatus->getLevel(), fd);
     AEFile_Write_f32(*(int *)((char *)*(void **)g_RH_wp_float + 0x2c), fd);
-    AEFile_Write_i32(((Ship *)(((Status *)(*sh))->getShip()))->getIndex(), fd);
+    AEFile_Write_i32(((Ship *)(gStatus->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
     return 1;
 }
@@ -1083,9 +1080,6 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
 // A long straight-line writer over the live object graph; delegated to a helper to keep this
 // translation tractable while preserving the open/write-prefix/close/hash control flow.
 
-__attribute__((visibility("hidden"))) extern void **g_RSW_galaxy; // *->Galaxy
-__attribute__((visibility("hidden"))) extern int *g_RSW_status;   // *->Status
-
 // RecordHandler::recordStoreWrite(int slot)
 void RecordHandler::recordStoreWrite(int slot) {
     String num, path;
@@ -1099,31 +1093,29 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile::OpenWrite(path, &fd);
 
     // Visited-systems bitmap (0x87 entries).
-    long visited = (long)((Galaxy *)(*g_RSW_galaxy))->getVisited();
+    long visited = (long)gGalaxy->getVisited();
     AEFile_WriteInt(0x87, fd);
     for (unsigned i = 0; i < 0x87; i++) {
         AEFile_WriteBool(*(bool *)(visited + i), fd);
     }
 
-    int *status = g_RSW_status;
-    Status *st = (Status *)(void *)(long)*status;
-    AEFile_WriteInt(((Status *)(st))->getCredits(), fd);
-    AEFile_WriteInt(((Status *)(st))->getRating(), fd);
-    AEFile_WriteLong(((Status *)(st))->getPlayingTime(), fd);
-    AEFile_WriteInt(((Status *)(st))->getKills(), fd);
-    AEFile_WriteInt(((Status *)(st))->getMissionCount(), fd);
-    AEFile_WriteInt(((Status *)(st))->getLevel(), fd);
-    AEFile_WriteInt(((Status *)(st))->getLastXP(), fd);
-    AEFile_WriteInt(((Status *)(st))->getGoodsProduced(), fd);
-    AEFile_WriteInt(((Status *)(st))->getStationsVisited(), fd);
-    AEFile_WriteInt(((Status *)(st))->getCurrentCampaignMission(), fd);
-    this->writeMission(st->getFreelanceMission(), fd);
-    this->writeMission((void *)(intptr_t)st->getCampaignMission(), fd);
-    AEFile_WriteInt(((Status *)(st))->getJumpgateUsed(), fd);
-    AEFile_WriteInt(((Status *)(st))->getCapturedCrates(), fd);
-    AEFile_WriteInt(((Status *)(st))->getBoughtEquipment(), fd);
-    AEFile_WriteInt(((Status *)(st))->getPirateKills(), fd);
-    AEFile_WriteInt(st->field_80, fd);
+    AEFile_WriteInt(gStatus->getCredits(), fd);
+    AEFile_WriteInt(gStatus->getRating(), fd);
+    AEFile_WriteLong(gStatus->getPlayingTime(), fd);
+    AEFile_WriteInt(gStatus->getKills(), fd);
+    AEFile_WriteInt(gStatus->getMissionCount(), fd);
+    AEFile_WriteInt(gStatus->getLevel(), fd);
+    AEFile_WriteInt(gStatus->getLastXP(), fd);
+    AEFile_WriteInt(gStatus->getGoodsProduced(), fd);
+    AEFile_WriteInt(gStatus->getStationsVisited(), fd);
+    AEFile_WriteInt(gStatus->getCurrentCampaignMission(), fd);
+    this->writeMission(gStatus->getFreelanceMission(), fd);
+    this->writeMission((void *)(intptr_t)gStatus->getCampaignMission(), fd);
+    AEFile_WriteInt(gStatus->getJumpgateUsed(), fd);
+    AEFile_WriteInt(gStatus->getCapturedCrates(), fd);
+    AEFile_WriteInt(gStatus->getBoughtEquipment(), fd);
+    AEFile_WriteInt(gStatus->getPirateKills(), fd);
+    AEFile_WriteInt(gStatus->field_80, fd);
 
     // Remaining object-graph serialization.
     this->recordStoreWrite_body(fd);
@@ -1139,8 +1131,6 @@ void RecordHandler::recordStoreWrite(int slot) {
 // and ship inventories for the player/wingman/stations, standings, blueprints, pending
 // products, wingmen list, agents, option flags, wanteds, bounties and the ship-mod tables)
 // to the already-open file `fd`. The caller handles open/prefix, Close and addHash.
-__attribute__((visibility("hidden"))) extern void **g_RSW_status_p;   // -> Status*
-__attribute__((visibility("hidden"))) extern void **g_RSW_achievements; // -> Achievements*
 __attribute__((visibility("hidden"))) extern void  *g_RSW_optFlags;   // option-flag block base
 __attribute__((visibility("hidden"))) extern void  *g_RSW_uiFlags;    // secondary flag block base
 __attribute__((visibility("hidden"))) extern int    g_RSW_modVersion; // ship-mod table version tag
@@ -1206,7 +1196,7 @@ static void RSW_writeMods(Ship *ship, unsigned int fd) {
 }
 
 void RecordHandler::recordStoreWrite_body(unsigned int fd) {
-    void *status = *g_RSW_status_p;
+    void *status = gStatus;
     char *flags = (char *)g_RSW_optFlags;   // option/progress flag block
     char *ui = (char *)g_RSW_uiFlags;       // secondary flag block
 
@@ -1230,7 +1220,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Achievement medals (0x2d entries).
-    int medals = (int)(intptr_t)((Achievements *)(*g_RSW_achievements))->getMedals();
+    int medals = (int)(intptr_t)gAchievements->getMedals();
     AEFile_WriteInt(0x2d, fd);
     for (unsigned i = 0; i < 0x2d; i++) {
         AEFile_WriteInt(*(int *)(medals + i * 4), fd);
@@ -1492,7 +1482,6 @@ extern "C" void *RH_str_make(void *src);                 // operator new + Strin
 // Item-definition tables and the ship-definition table (PC-relative singletons).
 __attribute__((visibility("hidden"))) extern void **g_RSR_itemDefs;
 __attribute__((visibility("hidden"))) extern void **g_RSR_shipDefs;
-__attribute__((visibility("hidden"))) extern void **g_RSR_status_p;
 __attribute__((visibility("hidden"))) extern int    g_RSR_modVersion;
 
 // Read a saved item (index/amount[/price]/unsaleable) into the table slot, or null when -1.
@@ -1619,9 +1608,8 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     // Blueprints.
     Array<void*> *bpArr = new Array<void*>();   // generic Array<T*> container reuse
     int bpN = 0; AEFile_ReadInt(&bpN, fd); bpArr->resize(bpN);
-    void *statusG = *g_RSR_status_p;
     for (unsigned i = 0; i < bpArr->size(); i++) {
-        unsigned int *liveBps = (unsigned int *)((Status *)statusG)->getBluePrints();
+        unsigned int *liveBps = (unsigned int *)gStatus->getBluePrints();
         int liveIdx = ((BluePrint *)(*(void **)(liveBps[1] + i * 4)))->getIndexOf();
         int *bp = (int *)BluePrint::make(liveIdx);
         (*bpArr)[i] = bp;

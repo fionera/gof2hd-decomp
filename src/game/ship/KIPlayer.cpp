@@ -43,7 +43,6 @@ extern "C" void Player_addGun_b(void* player);
 extern "C" void*  gCanvas;
 extern "C" void** gCanvasPtr;
 extern void* const gAERandom __attribute__((visibility("hidden")));
-extern void* const gStatus   __attribute__((visibility("hidden")));
 extern void* const gItemDb   __attribute__((visibility("hidden")));
 extern "C" unsigned KIPlayer_initA;
 extern "C" unsigned KIPlayer_initB;
@@ -432,7 +431,7 @@ void KIPlayer::captureCrate(Hud* hud) {
         if ((unsigned)(this->state - 3) >= 2)
             amount = ((AbyssEngine::AERandom*)(*(void**)gAERandom))->nextInt();
 
-        Status* status = (Status*)*(void**)gStatus;
+        Status* status = gStatus;
 
         // Clamp to the ship's free space.
         int free1 = status->getShip()->getFreeSpace();
@@ -507,12 +506,12 @@ void KIPlayer::captureCrate(Hud* hud) {
         if (special) {
             this->field_0x69 = 1;
         } else if (this->shipGroup == 9) {
-            Status* st = (Status*)*(void**)gStatus;
+            Status* st = gStatus;
             st->field_cc = item->getAmount() + st->field_cc;
         } else {
             int idx = item->getIndex();
             if (idx >= 0x84 && idx < 0x9a) {
-                Status* st = (Status*)*(void**)gStatus;
+                Status* st = gStatus;
                 (*st->field_ac)[idx - 0x84] = true;
             }
         }

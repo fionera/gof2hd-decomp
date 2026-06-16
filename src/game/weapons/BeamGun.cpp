@@ -56,8 +56,8 @@ BeamGun::BeamGun(int owner, Gun* gun, int meshKind, Level* level)
     AEGeometry* secondary = nullptr;
     int mesh = gun->isPlayerGun();
     if (mesh != 0 && (mesh = BeamGun_secondaryMeshes[gun->itemIndex]) >= 0) {
-        this->hasSecondary = gun->weaponType != 0xb;
-        if (gun->weaponType != 0xb)
+        this->hasSecondary = gun->weaponType != ITEM_SORT_MINE;
+        if (gun->weaponType != ITEM_SORT_MINE)
             secondary = new AEGeometry((uint16_t)mesh, canvas, false);
     } else {
         this->hasSecondary = 0;

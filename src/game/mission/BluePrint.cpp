@@ -7,9 +7,6 @@
 
 using AbyssEngine::String;
 
-// Game singletons reached through the hidden globals the rest of the port uses.
-__attribute__((visibility("hidden"))) extern Status **g_status;
-__attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
 // The item table (database root). Indexed by item id.
 extern Array<Item *> *g_items;
 
@@ -81,7 +78,7 @@ void BluePrint::unlock() {
 // Bump production count, refill the ingredient counters, clear transient state.
 void BluePrint::reset() {
     productionCount += 1;
-    (*g_status)->incGoodsProduced(1);
+    gStatus->incGoodsProduced(1);
     Array<int> *ql = getQuantityList();
     for (uint32_t i = 0; i < ingredientCounters->size(); i++)
         (*ingredientCounters)[i] = (*ql)[i];
@@ -174,11 +171,11 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         spentValue += item->getSinglePrice() * amount;
         if (station >= 0 && stationIndex < 0) {
             stationIndex = station;
-            Station *current = (*g_status)->getStation();
+            Station *current = gStatus->getStation();
             if (current->getIndex() == station) {
                 stationName = current->getName();
             } else {
-                Station *st = (Station *)(intptr_t)(*g_galaxy)->getStation(station);
+                Station *st = (Station *)(intptr_t)gGalaxy->getStation(station);
                 stationName = st->getName();
                 if (st != nullptr)
                     delete st;

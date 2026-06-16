@@ -75,15 +75,12 @@ long Array_dtor(void *self);
 long Station_getIndex(...);
 long Station_getSystem(...);
 extern uint32_t DAT_00165b08;
-extern uint32_t DAT_00165b0c;
-extern uint32_t DAT_00165b10;
 extern uint32_t DAT_0016600c;
 extern uint32_t DAT_00166010;
 extern uint32_t DAT_00166014;
 extern uint32_t DAT_00166018;
 extern uint32_t DAT_0016601c;
 extern uint32_t DAT_00166020;
-extern uint32_t DAT_00166024;
 extern uint32_t DAT_0016646c;
 extern uint32_t DAT_00166474;
 extern uint32_t DAT_00166470;
@@ -109,34 +106,30 @@ void GameRecord::load() {
     int iVar15;
     int *piVar16;
     char *pSVar17;
-    uint32_t *puVar18;
     uint32_t uVar19;
     uint32_t uVar20;
     int *piVar21;
-    int *piVar22;
     uint64_t uVar23;
 
   piVar21 = *(int **)(DAT_00165b08 + 0x165a02);
-  piVar22 = *(int **)(DAT_00165b0c + 0x165a04);
   iVar9 = *piVar21;
-  ((Status *)(*piVar22))->resetGame();
-  piVar16 = *(int **)(DAT_00165b10 + 0x165a22);
-  ((Galaxy *)((char *)*piVar16))->setVisited((bool *)*in_r0, in_r0[1]);
-  ((Status *)((char *)*piVar22))->setLastXP(in_r0[9]);
-  ((Status *)(*piVar22))->setCredits(in_r0[2]);
-  ((Status *)((char *)*piVar22))->setRating(in_r0[3]);
-  ((Status *)(*piVar22))->setPlayingTime(*(int64_t *)(in_r0 + 4));
-  ((Status *)(*piVar22))->setKills(in_r0[6]);
-  ((Status *)((char *)*piVar22))->setMissionCount(in_r0[7]);
-  ((Status *)((char *)*piVar22))->setLevel(in_r0[8]);
-  ((Status *)((char *)*piVar22))->setLastXP(in_r0[9]);
-  ((Status *)((char *)*piVar22))->setGoodsProduced(in_r0[10]);
-  ((Status *)((char *)*piVar22))->setPirateKills(in_r0[0xb]);
-  ((Status *)((char *)*piVar22))->setJumpgateUsed(in_r0[0xc]);
-  ((Status *)((char *)*piVar22))->setCapturedCrates(in_r0[0xd]);
-  ((Status *)((char *)*piVar22))->setBoughtEquipment(in_r0[0xe]);
-  ((Status *)((char *)*piVar22))->setStationsVisited(in_r0[0xf]);
-  iVar2 = *piVar22;
+  gStatus->resetGame();
+  gGalaxy->setVisited((bool *)*in_r0, in_r0[1]);
+  gStatus->setLastXP(in_r0[9]);
+  gStatus->setCredits(in_r0[2]);
+  gStatus->setRating(in_r0[3]);
+  gStatus->setPlayingTime(*(int64_t *)(in_r0 + 4));
+  gStatus->setKills(in_r0[6]);
+  gStatus->setMissionCount(in_r0[7]);
+  gStatus->setLevel(in_r0[8]);
+  gStatus->setLastXP(in_r0[9]);
+  gStatus->setGoodsProduced(in_r0[10]);
+  gStatus->setPirateKills(in_r0[0xb]);
+  gStatus->setJumpgateUsed(in_r0[0xc]);
+  gStatus->setCapturedCrates(in_r0[0xd]);
+  gStatus->setBoughtEquipment(in_r0[0xe]);
+  gStatus->setStationsVisited(in_r0[0xf]);
+  iVar2 = (int)(intptr_t)gStatus;
   *(uint32_t *)(iVar2 + 0x80) = in_r0[0x11];
   *(uint32_t *)(iVar2 + 0x7c) = in_r0[0x12];
   *(uint32_t *)(iVar2 + 0x84) = in_r0[0x13];
@@ -163,66 +156,66 @@ LAB_00165b22:
      (iVar2 = ((Mission *)in_r0[0x16])->isEmpty(), iVar2 != 0)) {
     in_r0[0x10] = 0x2d;
   }
-  ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+  gStatus->setCurrentCampaignMission(in_r0[0x10]);
   *(bool *)((long)in_r0 + 0x102) = 0x2d < (long)in_r0[0x10];
   *(bool *)((long)in_r0 + 0x119) = 0x55 < (long)in_r0[0x10];
-  ((Status *)((char *)*piVar22))->setFreelanceMission((Mission *)in_r0[0x15]);
-  ((Status *)((char *)*piVar22))->setCampaignMission((Mission *)in_r0[0x16]);
-  ((Status *)((char *)*piVar22))->setStationStack((Array<Station *> *)in_r0[0x17]);
+  gStatus->setFreelanceMission((Mission *)in_r0[0x15]);
+  gStatus->setCampaignMission((Mission *)in_r0[0x16]);
+  gStatus->setStationStack((Array<Station *> *)in_r0[0x17]);
   iVar2 = in_r0[0x10];
   if (iVar2 == 0x23) {
     iVar2 = ((Mission *)in_r0[0x16])->getTargetStation();
     if (iVar2 != 0x1d) {
       Mission *m = new Mission(0xb, 0, 0x1d);
-      ((Status *)(*piVar22))->setCampaignMission(m);
+      gStatus->setCampaignMission(m);
     }
     iVar2 = in_r0[0x10];
   }
   if (iVar2 == 0x1d) {
     in_r0[0x11] = 0x5b;
     in_r0[0x12] = 0x12;
-    ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+    gStatus->setCurrentCampaignMission(in_r0[0x10]);
     Mission *m = new Mission(4, 0, 0x5b);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
     iVar2 = in_r0[0x10];
   }
   if (iVar2 == 0x19) {
     in_r0[0x11] = 0x30;
     in_r0[0x12] = 9;
-    ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+    gStatus->setCurrentCampaignMission(in_r0[0x10]);
     Mission *m = new Mission(4, 0, 0x30);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
     iVar2 = in_r0[0x10];
   }
   if (iVar2 == 0x29) {
-    ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+    gStatus->setCurrentCampaignMission(in_r0[0x10]);
     Mission *m = new Mission(0xb, 0, 0x1e);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
      ((in_r0[0x10] == 0x56 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 100)))) {
     *(uint8_t *)(*(int *)(DAT_0016600c + 0x165c98) + 0x31) = 1;
     Mission *m = new Mission(0xb, 0, 100);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
      ((in_r0[0x10] == 0x57 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
     *(uint8_t *)(*(int *)(DAT_00166010 + 0x165ce2) + 0x31) = 1;
     Mission *m = new Mission(4, 0, 10);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
   if ((((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
       (in_r0[0x10] == 0x58)) && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)) {
     *(uint8_t *)(*(int *)(DAT_00166014 + 0x165d2c) + 0x31) = 1;
     Mission *m = new Mission(0xb, 0, 10);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
   if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
      ((in_r0[0x10] == 0x59 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
     *(uint8_t *)(*(int *)(DAT_00166018 + 0x165d72) + 0x31) = 1;
-    ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+    gStatus->setCurrentCampaignMission(in_r0[0x10]);
     Mission *m = new Mission(0xb, 0, 100);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
   if ((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) {
     iVar2 = in_r0[0x10];
@@ -240,19 +233,19 @@ LAB_00165dc2:
     }
     *(uint8_t *)(*(int *)(DAT_0016601c + 0x165dda) + 0x31) = 1;
     in_r0[0x10] = 0x56;
-    ((Status *)(*piVar22))->setCurrentCampaignMission(in_r0[0x10]);
+    gStatus->setCurrentCampaignMission(in_r0[0x10]);
     Mission *m = new Mission(0xb, 0, 100);
-    ((Status *)(*piVar22))->setCampaignMission(m);
+    gStatus->setCampaignMission(m);
   }
 LAB_00165e0c:
-  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setItems((Array<Item *> *)in_r0[0x60], true);
-  ((Station *)(*(char **)(*piVar22 + 0x14c)))->setShips((Array<Ship *> *)in_r0[0x61], SUB41(in_r0[0x61],0));
-  ctx = (char *)*piVar22;
+  ((Station *)(*(char **)((int)(intptr_t)gStatus + 0x14c)))->setItems((Array<Item *> *)in_r0[0x60], true);
+  ((Station *)(*(char **)((int)(intptr_t)gStatus + 0x14c)))->setShips((Array<Ship *> *)in_r0[0x61], SUB41(in_r0[0x61],0));
+  ctx = (char *)gStatus;
   pEVar10 = ctx + 0x94;
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
     ::operator delete(pvVar4);
-    ctx = (char *)*piVar22;
+    ctx = (char *)gStatus;
     pEVar10 = ctx + 0x94;
   }
   *(uint32_t *)pEVar10 = in_r0[0x1a];
@@ -260,7 +253,7 @@ LAB_00165e0c:
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
     ::operator delete(pvVar4);
-    ctx = (char *)*piVar22;
+    ctx = (char *)gStatus;
     pEVar10 = ctx + 0x98;
   }
   *(uint32_t *)pEVar10 = in_r0[0x1b];
@@ -268,7 +261,7 @@ LAB_00165e0c:
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
     ::operator delete(pvVar4);
-    ctx = (char *)*piVar22;
+    ctx = (char *)gStatus;
     pEVar10 = ctx + 0x90;
   }
   iVar2 = DAT_00166020;
@@ -291,7 +284,7 @@ LAB_00165e0c:
   if (*(char **)pEVar10 != (char *)0x0) {
     pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
     ::operator delete(pvVar4);
-    ctx = (char *)*piVar22;
+    ctx = (char *)gStatus;
     pEVar10 = ctx + 0xac;
   }
   *(uint32_t *)pEVar10 = in_r0[0x21];
@@ -303,7 +296,6 @@ LAB_00165e0c:
          *(uint8_t *)(piVar5[1] + iVar14);
   }
   *(uint32_t *)(ctx + 0xb8) = in_r0[0x24];
-  iVar11 = DAT_00166024;
   uVar13 = in_r0[0x27];
   *(uint32_t *)(ctx + 0xc0) = in_r0[0x26];
   *(uint32_t *)(ctx + 0xc4) = uVar13;
@@ -314,28 +306,27 @@ LAB_00165e0c:
   *(uint64_t *)(ctx + 0xd8) = *(uint64_t *)(in_r0 + 0x2c);
   *(uint64_t *)(ctx + 0xe0) = uVar23;
   *(uint32_t *)(ctx + 0xe8) = in_r0[0x30];
-  puVar18 = *(uint32_t **)(iVar11 + 0x165f34);
   *(uint32_t *)(ctx + 0xec) = in_r0[0x31];
-  ((Achievements *)((char *)*puVar18))->init();
+  gAchievements->init();
   if ((int *)in_r0[0x18] != (int *)0x0) {
-    ((Achievements *)((char *)*puVar18))->setMedals((int *)in_r0[0x18], in_r0[0x19]);
+    gAchievements->setMedals((int *)in_r0[0x18], in_r0[0x19]);
   }
-  ((Status *)((char *)*piVar22))->setShip((Ship *)in_r0[0x4c]);
-  iVar11 = ((Status *)(*piVar22))->dlc1Won();
+  gStatus->setShip((Ship *)in_r0[0x4c]);
+  iVar11 = gStatus->dlc1Won();
   if (iVar11 != 0) {
-    iVar11 = (long)((Status *)(*piVar22))->getShip();
+    iVar11 = (long)gStatus->getShip();
     iVar11 = (int)(long)((Ship *)(iVar11))->getFirstEquipmentOfSort(0x12);
     if (iVar11 == 0) {
-      iVar11 = (long)((Status *)(*piVar22))->getShip();
+      iVar11 = (long)gStatus->getShip();
       iVar11 = (int)(long)((Ship *)(iVar11))->getCargo(0x55);
       if (iVar11 == 0) goto LAB_00165faa;
     }
     ((Item *)(SUB41(iVar11,0)))->setUnsaleable(true);
   }
 LAB_00165faa:
-  iVar11 = ((Status *)(*piVar22))->gameWon();
+  iVar11 = gStatus->gameWon();
   if (iVar11 != 0) {
-    Array<Item *> *cargo = ((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
+    Array<Item *> *cargo = ((Ship *)(gStatus->getShip()))->getCargo();
     if (cargo != (Array<Item *> *)0x0) {
       for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
         Item *item = (*cargo)[uVar19];
@@ -346,7 +337,7 @@ LAB_00165faa:
     }
   }
   if (0x79 < (long)in_r0[0x10]) {
-    Array<Item *> *cargo = ((Ship *)(((Status *)(*piVar22))->getShip()))->getCargo();
+    Array<Item *> *cargo = ((Ship *)(gStatus->getShip()))->getCargo();
     if (cargo != (Array<Item *> *)0x0) {
       for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
         Item *item = (*cargo)[uVar19];
@@ -366,17 +357,17 @@ LAB_00165faa:
            iVar11 == 0xd2)) &&
           (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->isEmpty(),
           iVar11 == 0)))) {
-        iVar11 = *piVar16;
+        iVar11 = (int)(intptr_t)gGalaxy;
         pSVar8 = (char *)((Galaxy *)(iVar11))->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
         if (pSVar8 != (char *)0x0) {
           iVar11 = Station_getSystem(pSVar8);
-          SolarSystem *grSys = (SolarSystem *)((Galaxy *)(*piVar16))->getSystem(iVar11);
+          SolarSystem *grSys = (SolarSystem *)gGalaxy->getSystem(iVar11);
           iVar11 = (int)(intptr_t)grSys->getRoutes();
           if (iVar11 == 0) {
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
             ((Station *)(pSVar8))->~Station();
             ::operator delete(pSVar8);
-            pSVar8 = (char *)((Galaxy *)(*piVar16))->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
+            pSVar8 = (char *)gGalaxy->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
             ((Station *)(pSVar8))->getName();
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
@@ -388,21 +379,21 @@ LAB_00166114:
       puVar6 = (uint *)in_r0[0x50];
     }
   }
-  pSVar8 = (char *)*piVar22;
+  pSVar8 = (char *)gStatus;
   *(uint32_t *)(pSVar8 + 0x8c) = in_r0[0x4d];
   ((Status *)(pSVar8))->setStation((Station *)in_r0[0x4e]);
-  ((Status *)((char *)*piVar22))->setMission(*(Mission **)(*(int *)(DAT_00166470 + 0x166138)));
-  *(uint32_t *)(*piVar22 + 0x14) = in_r0[0x4f];
+  gStatus->setMission(*(Mission **)(*(int *)(DAT_00166470 + 0x166138)));
+  *(uint32_t *)((int)(intptr_t)gStatus + 0x14) = in_r0[0x4f];
   for (uVar19 = 0; uVar19 < *(uint *)in_r0[0x50]; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(*piVar22 + 0x18) + 4) + uVar19 * 4) =
+    *(uint32_t *)(*(int *)(*(int *)((int)(intptr_t)gStatus + 0x18) + 4) + uVar19 * 4) =
          *(uint32_t *)(((uint *)in_r0[0x50])[1] + uVar19 * 4);
   }
-  *(uint32_t *)(*piVar22 + 0x1c) = in_r0[0x51];
+  *(uint32_t *)((int)(intptr_t)gStatus + 0x1c) = in_r0[0x51];
   for (uVar19 = 0; uVar19 < *(uint *)in_r0[0x52]; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(*piVar22 + 0x20) + 4) + uVar19 * 4) =
+    *(uint32_t *)(*(int *)(*(int *)((int)(intptr_t)gStatus + 0x20) + 4) + uVar19 * 4) =
          *(uint32_t *)(((uint *)in_r0[0x52])[1] + uVar19 * 4);
   }
-  iVar11 = *piVar22;
+  iVar11 = (int)(intptr_t)gStatus;
   *(uint32_t *)(iVar11 + 0x24) = in_r0[0x53];
   *(uint32_t *)(iVar11 + 0x2c) = in_r0[0x54];
   *(uint32_t *)(iVar11 + 0x30) = in_r0[0x55];
@@ -485,20 +476,20 @@ LAB_00166114:
     puVar6 = (uint *)in_r0[0x6d];
     if ((puVar6 != (uint *)0x0) && (uVar19 = *puVar6, uVar19 != 0)) {
       for (uVar20 = 0; uVar20 < uVar19; uVar20 = uVar20 + 1) {
-        *(uint32_t *)(*(int *)(*(int *)*piVar22 + 4) + uVar20 * 4) =
+        *(uint32_t *)(*(int *)(*(int *)gStatus + 4) + uVar20 * 4) =
              *(uint32_t *)(puVar6[1] + uVar20 * 4);
         puVar6 = (uint *)in_r0[0x6d];
         uVar19 = *puVar6;
       }
     }
-    iVar2 = *piVar22;
+    iVar2 = (int)(intptr_t)gStatus;
     for (iVar11 = 0; iVar11 != 4; iVar11 = iVar11 + 1) {
       *(uint32_t *)(iVar2 + iVar11 * 4 + 4) = in_r0[iVar11 + 0x69];
     }
-    pSVar8 = (char *)((Status *)(*piVar22))->getStation();
+    pSVar8 = (char *)gStatus->getStation();
     iVar2 = Station_getIndex(pSVar8);
     if (iVar2 == 0x6c) {
-      Station *stStation = ((Status *)(*piVar22))->getStation();
+      Station *stStation = gStatus->getStation();
       Array<Ship *> *stationShips = (Array<Ship *> *)stStation->getShips();
       if (stationShips != (Array<Ship *> *)0x0) {
         for (uVar19 = 0; uVar19 < stationShips->size(); uVar19 = uVar19 + 1) {
@@ -512,7 +503,7 @@ LAB_00166114:
         }
       }
     }
-    iVar2 = *piVar22;
+    iVar2 = (int)(intptr_t)gStatus;
     *(uint32_t *)(iVar2 + 0x118) = in_r0[0x38];
     *(uint8_t *)(iVar2 + 0x17c) = *(uint8_t *)(in_r0 + 0x70);
   }

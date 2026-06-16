@@ -51,17 +51,11 @@
 #include "gof2/game/weapons/SentryGun.h"
 #include "gof2/engine/math/Transform.h"
 
-__attribute__((visibility("hidden"))) extern Status **g_status;  // canonical Status singleton
-__attribute__((visibility("hidden"))) extern int **g_junkDied;
+// Canonical render-canvas singleton (binary .bss 0x2281b8). Declared here against the lean
+// PaintCanvasClass.h type in scope; PaintCanvas.h's own copy clashes with this TU's Mesh/Transform.
+extern PaintCanvas* gCanvas;
+
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_intro;
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_paintCanvas_snr;
-__attribute__((visibility("hidden"))) extern Status **g_status_snr;
-__attribute__((visibility("hidden"))) extern Status **g_status_applyKills;
-__attribute__((visibility("hidden"))) extern Status **g_status_pirate;
-__attribute__((visibility("hidden"))) extern int *g_routeRng;
-__attribute__((visibility("hidden"))) extern int (*g_routeRandom)(int rng, int bound);
-__attribute__((visibility("hidden"))) extern Status **g_alarmAllFriends;
 __attribute__((visibility("hidden"))) extern int *g_engineColorBase;
 __attribute__((visibility("hidden"))) extern void Globals_addSoundResourceToList(int snd); // engine sound-list helper (Globals.cpp)
 __attribute__((visibility("hidden"))) extern int *g_cg_beamTable;   // [DAT_000ce2b4]
@@ -71,7 +65,7 @@ __attribute__((visibility("hidden"))) extern int *g_cg_objTable;    // [DAT_000c
 __attribute__((visibility("hidden"))) extern int *g_cg_rocketTable; // [DAT_000ce2c8]
 __attribute__((visibility("hidden"))) extern int **g_cg_rocketSnd;  // [DAT_000ce2cc]
 __attribute__((visibility("hidden"))) extern int **g_cg_itemTableA; // [DAT_000ce2c0]
-__attribute__((visibility("hidden"))) extern int *g_cg_bombTable;   // [DAT_000ce2c4]
+__attribute__((visibility("hidden"))) extern unsigned *g_cg_bombTable;   // [DAT_000ce2c4]
 __attribute__((visibility("hidden"))) extern int *g_cg_bombSnd;     // [DAT_000ce64c]
 __attribute__((visibility("hidden"))) extern int  g_cg_mineFx;
 __attribute__((visibility("hidden"))) extern int *g_cg_objTable8;   // [DAT_000ce648]
@@ -79,105 +73,50 @@ __attribute__((visibility("hidden"))) extern int *g_cg_mineTable;   // [DAT_000c
 __attribute__((visibility("hidden"))) extern int *g_cg_mineSnd;     // [DAT_000ce654]
 __attribute__((visibility("hidden"))) extern int *g_cg_objTable23;  // [DAT_000ce660]
 __attribute__((visibility("hidden"))) extern int *g_cg_sentryTable; // [DAT_000ce65c]
-__attribute__((visibility("hidden"))) extern int *g_cg_bombTable2a; // [DAT_000ce664]
+__attribute__((visibility("hidden"))) extern unsigned *g_cg_bombTable2a; // [DAT_000ce664]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd29;      // [DAT_000ce668]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2a;      // [DAT_000ce66c]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2b;      // [DAT_000ce670]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2c;      // [DAT_000ce674]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2d;      // [DAT_000ce678]
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2e;      // [DAT_000ce67c]
-__attribute__((visibility("hidden"))) extern Status **g_csp_status;  // [DAT_000be978]
-__attribute__((visibility("hidden"))) extern unsigned *g_csp_canvas;  // [DAT_000be97c]
-__attribute__((visibility("hidden"))) extern int  **g_crm_status;   // [DAT_000d59dc]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngA;     // [DAT_000d59e0]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngB;     // [DAT_000d59e8]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_crm_rngStorm; // [DAT_000d59e4]
 __attribute__((visibility("hidden"))) extern int   *g_crm_counts8;  // [DAT_000d59f8] per-stage counts
 __attribute__((visibility("hidden"))) extern int   *g_crm_table8;   // [DAT_000d59fc] {id,arg} table
 __attribute__((visibility("hidden"))) extern int  **g_init_canvas;    // [DAT_000be260]
-__attribute__((visibility("hidden"))) extern int  **g_init_statusA;   // [DAT_000be264]
 __attribute__((visibility("hidden"))) extern char **g_init_flagStack; // [DAT_000be268]
 __attribute__((visibility("hidden"))) extern int  **g_init_missionDef;// [DAT_000be5a4]
 __attribute__((visibility("hidden"))) extern int  **g_init_settings;  // [DAT_000be5ac]
 __attribute__((visibility("hidden"))) extern char **g_init_bmFlag;    // [DAT_000be5b0]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rngHolder; // [DAT_000d5f4c]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cm_rng;       // [DAT_000c0374]
-__attribute__((visibility("hidden"))) extern Globals **g_cm_globals; // [DAT_000c0378]
-__attribute__((visibility("hidden"))) extern int   **g_ca_canvas;   // [DAT_000bf984] paint-canvas holder
-__attribute__((visibility("hidden"))) extern int   **g_ca_galaxy;   // galaxy holder
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_ca_rngHolder;// [DAT_000bf988] RNG object holder
 __attribute__((visibility("hidden"))) extern char  **g_ca_lowDetail;// [DAT_000bfd1c] low-detail flag
 __attribute__((visibility("hidden"))) extern float g_ccm_pos0;     // DAT_000c5310 (case-0 spawn coord)
-__attribute__((visibility("hidden"))) extern Status **g_sentryStatus;
-__attribute__((visibility("hidden"))) extern Status **g_status_collideStation;
-__attribute__((visibility("hidden"))) extern int **g_uncoverWanted;
-__attribute__((visibility("hidden"))) extern int  **g_up_statusA;   // [DAT_000d624c]
 __attribute__((visibility("hidden"))) extern float  g_up_eqMax;
 __attribute__((visibility("hidden"))) extern float *g_up_clampLo;   // [DAT_000d6244]
 __attribute__((visibility("hidden"))) extern float *g_up_clampHi;   // [DAT_000d6248]
 __attribute__((visibility("hidden"))) extern float *g_up_clampZ;    // [DAT_000d623c]
 __attribute__((visibility("hidden"))) extern float *g_up_clampW;    // [DAT_000d6240]
-__attribute__((visibility("hidden"))) extern ApplicationManager **g_cp_appMgr; // [DAT_000cd530]
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_cp_canvas; // [DAT_000bf6f0] engine-trail geometry canvas
-__attribute__((visibility("hidden"))) extern Status      **g_ed_status; // [DAT_000d441c]
-__attribute__((visibility("hidden"))) extern Achievements **g_ed_achA;  // [DAT_000d4420]
-__attribute__((visibility("hidden"))) extern Achievements **g_ed_achB;  // [DAT_000d4424]
-__attribute__((visibility("hidden"))) extern float          g_ed_100;   // DAT_000d4418 == 100.0f
 __attribute__((visibility("hidden"))) extern float *g_flash2_a;
 __attribute__((visibility("hidden"))) extern float *g_flash2_b;
 __attribute__((visibility("hidden"))) extern float *g_flash2_c;
 __attribute__((visibility("hidden"))) extern float *g_flashCol_r;
 __attribute__((visibility("hidden"))) extern float *g_flashCol_g;
 __attribute__((visibility("hidden"))) extern float *g_flashCol_b;
-__attribute__((visibility("hidden"))) extern Status **g_wingmanDied;
 __attribute__((visibility("hidden"))) extern void (**g_levelSubCtor)(void *);
 __attribute__((visibility("hidden"))) extern int **g_cso_textA;     // [DAT_000cc1ec]
 __attribute__((visibility("hidden"))) extern int **g_cso_textB;     // [DAT_000cc1f0] area
-// Localized-text singleton holder (same one Layout.cpp uses): gGameText->obj is the GameText.
-struct GameTextHolder { GameText *obj; };
-extern GameTextHolder *gGameText;
 __attribute__((visibility("hidden"))) extern float g_cso_posX;
 __attribute__((visibility("hidden"))) extern float g_cso_posZ;
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cso2_rng;    // [DAT_000cea38]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cs_rng;      // [DAT_000d0468]
 __attribute__((visibility("hidden"))) extern int     *g_cs_diffRec;  // [DAT_000d0474]
-__attribute__((visibility("hidden"))) extern Globals **g_cs_globalsA;// [DAT_000d0838]
-__attribute__((visibility("hidden"))) extern Globals **g_cs_globalsB;// [DAT_000d0cdc]
-__attribute__((visibility("hidden"))) extern Status **g_almostKillWanted;
-__attribute__((visibility("hidden"))) extern Status **g_ag_status;   // [DAT_000cca38]
 __attribute__((visibility("hidden"))) extern int    *g_ag_diffRec;   // [DAT_000cca44] difficulty record
 __attribute__((visibility("hidden"))) extern int   **g_ag_shipTbl;   // [DAT_000cce38]
 __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblA;  // [DAT_000cd1f0]
 __attribute__((visibility("hidden"))) extern int    *g_ag_weaponDmg; // [DAT_000cd1f4]
 __attribute__((visibility("hidden"))) extern int   **g_ag_statusB;   // [DAT_000cce40]
 __attribute__((visibility("hidden"))) extern int   **g_ag_alienCnt;  // [DAT_000cce44]
-__attribute__((visibility("hidden"))) extern int   **g_ag_snd;       // [DAT_000cd1f8] Globals singleton holder (assignGuns sound reg)
 __attribute__((visibility("hidden"))) extern int   **g_ag_itemTblB;  // [DAT_000cd1fc]
-__attribute__((visibility("hidden"))) extern int   **g_ag_snd2;      // [DAT_000cd200] Globals singleton holder
 __attribute__((visibility("hidden"))) extern float   g_ag_perLevel;
-__attribute__((visibility("hidden"))) extern Galaxy **g_cgc_galaxy; // [DAT_000bffc4]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_cgc_rng;     // [DAT_000bffcc]
-__attribute__((visibility("hidden"))) extern void  **g_cgc_canvas;  // [DAT_000bffd4]
-__attribute__((visibility("hidden"))) extern int **g_attackWanted;
-__attribute__((visibility("hidden"))) extern unsigned *g_ips_canvas; // [DAT_000cda98]
 __attribute__((visibility("hidden"))) extern int   *g_ips_envA;     // [DAT_000cdaa0] env record
 __attribute__((visibility("hidden"))) extern int   *g_ips_envB;     // [DAT_000cde3c]/[DAT_000cde38]
-__attribute__((visibility("hidden"))) extern int  (*g_ips_addSystem)(int, void *, int, int); // [DAT_000cde40]
-__attribute__((visibility("hidden"))) extern void (*g_ips_enableEmit)(int);  // [DAT_000cde44]
-__attribute__((visibility("hidden"))) extern int    **g_cwm_statusB; // [DAT_000cc674]
 __attribute__((visibility("hidden"))) extern int    **g_cwm_seedSrc; // [DAT_000cc678]
-__attribute__((visibility("hidden"))) extern Globals **g_cwm_globals; // [DAT_000cc67c]
-__attribute__((visibility("hidden"))) extern int   **g_csc_missionDef;// [DAT_000c46ac]
-__attribute__((visibility("hidden"))) extern void  **g_csc_canvas;   // [DAT_000c46b0] etc.
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_csc_rng;      // [DAT_000c46bc]/[DAT_000c4ba0]
-__attribute__((visibility("hidden"))) extern Globals **g_csc_globals;// [DAT_000c46d0]
-__attribute__((visibility("hidden"))) extern int   **g_csc_shipHost; // [DAT_000c46a4]
-__attribute__((visibility("hidden"))) extern unsigned *g_rbg_canvas;  // [DAT_000d4700]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_rbg_rng;      // [DAT_000d4b04]
-__attribute__((visibility("hidden"))) extern int    **g_rbg_engine;   // [DAT_000d4b0c]
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uo_rng;
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_umo_rng;
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_uaa_rng;
 
 static unsigned int g_level_texOutScratch;
 
@@ -219,7 +158,7 @@ int Level::getAsteroidsLeft() {
 }
 
 void Level::junkDied() {
-    (*g_junkDied)[0xb0 / 4] += 1;   // +0xb0 junk-death counter on the holder singleton
+    ((int *)gStatus)[0xb0 / 4] += 1;   // +0xb0 junk-death counter on the Status singleton
     enemiesLeft -= 1;
 }
 
@@ -310,9 +249,8 @@ void Level::enableParticleEffects(bool emit, bool render) {
 }
 
 void Level::switchSkyboxForIntro() {
-    PaintCanvas **pc = g_paintCanvas_intro;
-    ((PaintCanvas*)(*pc))->MeshCreate((unsigned short)(0x4591), (unsigned int *)&skyboxMesh, false);
-    ((PaintCanvas*)(*pc))->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)&field_198, false);
+    gCanvas->MeshCreate((unsigned short)(0x4591), (unsigned int *)&skyboxMesh, false);
+    gCanvas->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)&field_198, false);
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
             (*this->asteroids)[i]->setDead();
@@ -321,14 +259,10 @@ void Level::switchSkyboxForIntro() {
 }
 
 void Level::switchSkyboxForSupernovaReversal() {
-    PaintCanvas **pc = g_paintCanvas_snr;
-    Status **st = g_status_snr;
-    PaintCanvas *canvas = *pc;
-    int tex = ((SolarSystem *)(intptr_t)(*st)->getSystem())->getTextureIndex();
-    ((PaintCanvas*)(canvas))->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)&skyboxMesh, false);
-    PaintCanvas *canvas2 = *pc;
-    int tex2 = ((SolarSystem *)(intptr_t)(*st)->getSystem())->getTextureIndex();
-    ((PaintCanvas*)(canvas2))->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)&field_198, false);
+    int tex = ((SolarSystem *)(intptr_t)gStatus->getSystem())->getTextureIndex();
+    gCanvas->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)&skyboxMesh, false);
+    int tex2 = ((SolarSystem *)(intptr_t)gStatus->getSystem())->getTextureIndex();
+    gCanvas->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)&field_198, false);
     skyboxTexture = -1;
 }
 
@@ -357,9 +291,8 @@ Array<KIPlayer*>* Level::getEnemies() {
 }
 
 void Level::applyKills() {
-    Status **slot = g_status_applyKills;
-    if ((*slot)->getMission() != 0) {
-        (*slot)->addKills(kills);
+    if (gStatus->getMission() != 0) {
+        gStatus->addKills(kills);
         kills = 0;
     }
 }
@@ -440,14 +373,13 @@ void Level::pirateStationAction(bool param) {
         if (field_68 != 0) {
             return;
         }
-        Status **slot = g_status_pirate;
-        if ((*slot)->getStation()->getPirateStationIndex() < 0) {
+        if (gStatus->getStation()->getPirateStationIndex() < 0) {
             return;
         }
-        int tbl = *(int *)((char *)*slot + 0x4c);
-        int idx = (*slot)->getStation()->getPirateStationIndex();
+        int tbl = *(int *)((char *)gStatus + 0x4c);
+        int idx = gStatus->getStation()->getPirateStationIndex();
         *(unsigned char *)(*(int *)(tbl + 4) + idx) = 1;
-        *(unsigned char *)((char *)*slot + 0xf9) = 1;
+        *(unsigned char *)((char *)gStatus + 0xf9) = 1;
     }
     // veneer 0x1ac028 -> Level::createRadioMessage(type, sub)
     createRadioMessage(param ? 3 : 4, 8);
@@ -639,17 +571,15 @@ Route *Level::createRoute(int count) {
     unsigned int n = count * 3;
     int *pts = new int[n];
     int *p = pts + 1;
-    int *rng = g_routeRng;
-    int (*rnd)(int, int) = g_routeRandom;
     for (int i = -1; i + 1 < (int)n; i = i + 3) {
-        int sign = (rnd(*rng, 2) == 0) ? 1 : -1;
-        p[-1] = (rnd(*rng, 30000) + 50000) * sign;
-        p[0] = rnd(*rng, 20000) - 10000;
+        int sign = (gRandom->nextInt(2) == 0) ? 1 : -1;
+        p[-1] = (gRandom->nextInt(30000) + 50000) * sign;
+        p[0] = gRandom->nextInt(20000) - 10000;
         if (i == -1) {
-            pts[2] = ((AbyssEngine::AERandom *)(intptr_t)*rng)->nextInt() + 50000;
+            pts[2] = gRandom->nextInt() + 50000;
         } else {
             int prev = p[-2];
-            p[1] = ((AbyssEngine::AERandom *)(intptr_t)*rng)->nextInt() + prev + 50000;
+            p[1] = gRandom->nextInt() + prev + 50000;
         }
         p = p + 3;
     }
@@ -672,14 +602,13 @@ void Level::alarmAllFriends(int race, bool message) {
     if (*alarmFlag == 0 && message) {
         int type = 1;
         *alarmFlag = (unsigned char)type;
-        Status **slot = g_alarmAllFriends;
-        if ((*slot)->inBlackMarketSystem() != 0) {
+        if (gStatus->inBlackMarketSystem() != 0) {
             type = 0xc;
         }
         createRadioMessage(type, race);
-        if (((SolarSystem *)(intptr_t)(*slot)->getSystem())->getRace() == race) {
+        if (((SolarSystem *)(intptr_t)gStatus->getSystem())->getRace() == race) {
             // veneer 0x1abff8 -> Station::setAttackedFriends(true)
-            (*slot)->getStation()->setAttackedFriends(true);
+            gStatus->getStation()->setAttackedFriends(true);
         }
     }
 }
@@ -702,25 +631,25 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     Gun *gun = 0;
 
     switch (kind) {
-    case 0:
-    case 1:
-    case 3: {
-        int res = ((int *)g_cg_beamTable)[idx];
+    case ITEM_SORT_LASER:
+    case ITEM_SORT_BLASTER:
+    case ITEM_SORT_THERMO: {
+        int res = g_cg_beamTable[idx];
         if (res < 0) {
             gun = (Gun *)::operator new(0x114);
             new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setIndex(idx);
-            gun->weaponType = kind;
+            gun->weaponType = static_cast<ItemSort>(kind);
             gun->setPlayerGun(1);
             obj = (ObjectGun *)::operator new(0x24);
             new (obj) BeamGun(owner, gun, idx, this);
         } else {
             int barrels = ((unsigned)(idx - 9) < 3 || idx == 0xe4) ? 1 : 0x14;
             gun = (Gun *)::operator new(0x114);
-            if (kind == 3) {
+            if (kind == ITEM_SORT_THERMO) {
                 new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_rocketFx}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
-                gun->weaponType = 3;
+                gun->weaponType = ITEM_SORT_THERMO;
                 gun->setPlayerGun(1);
                 gun->setErrorMagnitudePercentage(0x14);
                 obj = (ObjectGun *)::operator new(0xe8);
@@ -728,7 +657,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             } else {
                 new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
-                gun->weaponType = kind;
+                gun->weaponType = static_cast<ItemSort>(kind);
                 gun->setPlayerGun(1);
                 obj = (ObjectGun *)::operator new(0xb0);
                 new (obj) ObjectGun(owner, gun, res, 1000, this);
@@ -736,96 +665,96 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         }
         break;
     }
-    case 2:
-    case 0x19:
+    case ITEM_SORT_AUTO_CANNON:
+    case ITEM_SORT_SCATTER_GUN:
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = kind;
+        gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xb0);
-        new (obj) ObjectGun(owner, gun, ((int *)g_cg_objTable)[idx], 1000, this);
+        new (obj) ObjectGun(owner, gun, g_cg_objTable[idx], 1000, this);
         gun->setErrorMagnitudePercentage(2);
         break;
-    case 4:
-    case 5:
-    case 0x28: {
+    case ITEM_SORT_ROCKET:
+    case ITEM_SORT_MISSILE:
+    case ITEM_SORT_CLUSTER_MISSILE: {
         gun = (Gun *)::operator new(0x114);
-        int barrels = (kind == 0x28) ? (idx - 0xd3) : 5;
+        int barrels = (kind == ITEM_SORT_CLUSTER_MISSILE) ? (idx - 0xd3) : 5;
         new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = kind;
+        gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xe8);
-        new (obj) RocketGun(owner, gun, ((int *)g_cg_rocketTable)[idx], 0, 0, kind,
-                          (kind == 0x28 || kind == 5) ? 1 : 0, this);
+        new (obj) RocketGun(owner, gun, g_cg_rocketTable[idx], 0, 0, kind,
+                          (kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE) ? 1 : 0, this);
         Globals_addSoundResourceToList(**g_cg_rocketSnd);
         break;
     }
-    case 6:
-    case 7:
-    case 0x22: {
+    case ITEM_SORT_EMP_BOMB:
+    case ITEM_SORT_NUKE:
+    case ITEM_SORT_IONIZING_MISSILE: {
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = kind;
+        gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
         int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_cg_itemTableA + 4) + idx * 4)))->getAttribute(0xf);
         obj = (ObjectGun *)::operator new(300);
-        new (obj) BombGun(gun, ((unsigned *)g_cg_bombTable)[idx], 1, kind, attr == 1 ? 1 : 0,
+        new (obj) BombGun(gun, g_cg_bombTable[idx], 1, kind, attr == 1 ? 1 : 0,
                         this);
         Globals_addSoundResourceToList(*g_cg_bombSnd);
         break;
     }
-    case 8:
-    case 0x23: {
+    case ITEM_SORT_TURRET:
+    case ITEM_SORT_PLASMA_COLLECTOR: {
         int fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx;
         int extra = (idx == 0x30 && idx != 0xb5) ? (g_cg_rocketFx - 0xf60000) : 0;
-        if (kind == 0x23) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
+        if (kind == ITEM_SORT_PLASMA_COLLECTOR) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, (float)color, Vector{(float)extra, 0.0f, (float)fx}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = kind;
+        gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
         if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
             gun->field_0xa4 = 1;
             if (idx == 0xe0) F<uint8_t>(gun, 0xa5) = 1;
         }
         obj = (ObjectGun *)::operator new(0xb0);
-        int *tbl = (kind == 0x23) ? (int *)g_cg_objTable23 : (int *)g_cg_objTable8;
+        int *tbl = (kind == ITEM_SORT_PLASMA_COLLECTOR) ? g_cg_objTable23 : g_cg_objTable8;
         new (obj) ObjectGun(owner, gun, tbl[idx], 1000, this);
         break;
     }
-    case 0xb: {
+    case ITEM_SORT_MINE: {
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, dmg, 10, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = 0xb;
+        gun->weaponType = ITEM_SORT_MINE;
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xd4);
-        new (obj) MineGun(gun, ((int *)g_cg_mineTable)[idx], 1, 0xb, this);
+        new (obj) MineGun(gun, g_cg_mineTable[idx], 1, ITEM_SORT_MINE, this);
         Globals_addSoundResourceToList(*g_cg_mineSnd);
         break;
     }
-    case 0x27: {
+    case ITEM_SORT_SENTRY_GUN: {
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, 0, 3, hp, cool, rate, 2.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = 0x27;
+        gun->weaponType = ITEM_SORT_SENTRY_GUN;
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xb4);
-        new (obj) SentryGun(gun, ((int *)g_cg_sentryTable)[idx], 1, 0x27, this);
+        new (obj) SentryGun(gun, g_cg_sentryTable[idx], 1, ITEM_SORT_SENTRY_GUN, this);
         Globals_addSoundResourceToList(*g_cg_mineSnd);
         break;
     }
-    case 0x2a: {
+    case ITEM_SORT_SHOCK_BLAST: {
         gun = (Gun *)::operator new(0x114);
         new (gun) Gun(owner, dmg, 1, hp, 1, rate, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
-        gun->weaponType = 0x2a;
+        gun->weaponType = ITEM_SORT_SHOCK_BLAST;
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(300);
-        new (obj) BombGun(gun, ((unsigned *)g_cg_bombTable2a)[idx], 1, 0x2a, 0, this);
+        new (obj) BombGun(gun, g_cg_bombTable2a[idx], 1, ITEM_SORT_SHOCK_BLAST, 0, this);
         Globals_addSoundResourceToList(*g_cg_bombSnd);
         break;
     }
@@ -859,39 +788,36 @@ void Level::createSpace()
 {
     // skybox mesh/texture only need (re)building when not yet created (mesh handle at +4 == -1).
     if (*(unsigned *)&this->skyboxMesh == 0xffffffff) {
-        Status **status = g_csp_status;
-        int alien = (*g_status)->inAlienOrbit();
-        unsigned canvas = *g_csp_canvas;
+        int alien = gStatus->inAlienOrbit();
 
         if (alien == 0) {
-            (*g_status)->getSystem();
-            int sysVariant = (((SolarSystem*)(*g_status)->getSystem())->getIndex() % 3);
-            ((PaintCanvas *)(long)canvas)->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)&this->field_08, false);
-            (*g_status)->getSystem();
-            sysVariant = (((SolarSystem*)(*g_status)->getSystem())->getIndex() % 3);
-            ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), (void *)0, (void *)0, &g_level_texOutScratch, false);
+            gStatus->getSystem();
+            int sysVariant = (((SolarSystem*)gStatus->getSystem())->getIndex() % 3);
+            gCanvas->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)&this->field_08, false);
+            gStatus->getSystem();
+            sysVariant = (((SolarSystem*)gStatus->getSystem())->getIndex() % 3);
+            gCanvas->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), (void *)0, (void *)0, &g_level_texOutScratch, false);
             // the rest (campaign/supernova/storm/ring detail) is built by the helper.
             this->csp_buildDetail();
 
-            (*g_status)->getSystem();
-            if (0xf < ((SolarSystem*)(*g_status)->getSystem())->getTextureIndex()) {
-                Engine *eng = (Engine *)(*g_cp_appMgr)->GetEngine();
+            gStatus->getSystem();
+            if (0xf < ((SolarSystem*)gStatus->getSystem())->getTextureIndex()) {
+                Engine *eng = (Engine *)gAppManager->GetEngine();
                 if (eng->IsPostEffectActivated() != false) {
-                    int mp = (int)(long)((PaintCanvas *)(long)canvas)->MeshGetPointer((unsigned int)*(unsigned *)&this->skyboxMesh);
+                    int mp = (int)(long)gCanvas->MeshGetPointer((unsigned int)*(unsigned *)&this->skyboxMesh);
                     *(int *)(mp + 0x1c) = 0;
                 }
             }
         } else {
-            ((PaintCanvas *)(long)canvas)->MeshCreate((unsigned short)0x45bc, (unsigned int *)&this->field_08, false);
-            ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)0x2768, (void *)0, (void *)0, &g_level_texOutScratch, false);
-            ((PaintCanvas *)(long)canvas)->MeshCreate((unsigned short)0x4592, (unsigned int *)&this->skyboxMesh, false);
-            ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)0x275b, (void *)0, (void *)0, &g_level_texOutScratch, false);
+            gCanvas->MeshCreate((unsigned short)0x45bc, (unsigned int *)&this->field_08, false);
+            gCanvas->TextureCreate((unsigned short)0x2768, (void *)0, (void *)0, &g_level_texOutScratch, false);
+            gCanvas->MeshCreate((unsigned short)0x4592, (unsigned int *)&this->skyboxMesh, false);
+            gCanvas->TextureCreate((unsigned short)0x275b, (void *)0, (void *)0, &g_level_texOutScratch, false);
         }
 
         // randomized skybox spin (light direction), unless in fog orbit.
-        if ((*g_status)->inFogSkyboxOrbit() == 0) {
-            // (*status) used for storm check inside helper; spin written into self+0x1a4..0x1ac.
-            (void)status;
+        if (gStatus->inFogSkyboxOrbit() == 0) {
+            // status used for storm check inside helper; spin written into self+0x1a4..0x1ac.
             this->csp_buildStarSystemScene();
         } else {
             this->skyRotX = 0.0f;
@@ -910,8 +836,6 @@ void Level::createSpace()
     }
 
     // build the home station + jumpgates.
-    Status **status = g_csp_status;
-    (void)status;
     this->landmarks = new Array<KIPlayer*>();
     this->landmarks->resize(4);
 
@@ -926,9 +850,9 @@ void Level::createRadioMessage(int type, int sub) {
     if (this->player == nullptr || *(int *)((char *)this->player + 0x18) == 0)
         return;
 
-    int **statusHolder = g_crm_status;
-    ((Status*)*g_crm_status)->getMission();
-    if (((Mission*)(*g_status)->getMission())->isEmpty() == 0)
+    int **statusHolder = (int **)&gStatus;
+    gStatus->getMission();
+    if (((Mission*)gStatus->getMission())->isEmpty() == 0)
         return;
 
     // fresh message queue.
@@ -958,30 +882,30 @@ void Level::createRadioMessage(int type, int sub) {
         if (stations != 0) {
             for (unsigned k = 0; k < (unsigned)*stations; k = k + 1) {
                 int sidx = *(int *)(((int *)stations[1])[k]);
-                Station *st = (Station *)((Status*)*g_crm_status)->getStation();
+                Station *st = (Station *)gStatus->getStation();
                 if (sidx == ((Station*)st)->getIndex()) { atStation = true; break; }
             }
         }
         if (atStation) { aborted = true; break; }
         int base = (type == 0) ? 0x1aa : 0x1ad;
-        id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngA)->nextInt() + base;
+        id = gRandom->nextInt() + base;
         break;
     }
     case 3:
         *(char *)&this->field_1b0 = 1;
-        id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngStorm)->nextInt() + 0x1b3;
+        id = gRandom->nextInt() + 0x1b3;
         break;
     case 4:
         *(char *)&this->field_68 = 1;
-        id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngStorm)->nextInt() + 0x1b6;
+        id = gRandom->nextInt() + 0x1b6;
         break;
     case 5:  id = 0x1bb; extraDelay = 0; break;
     case 6:  id = 0x1bc; extraDelay = 0; break;
-    case 9:  id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt() + 0x1c1; break;
-    case 10: id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt() + 0x1c3; break;
-    case 0xb: id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt() + 0x1c5; break;
+    case 9:  id = gRandom->nextInt() + 0x1c1; break;
+    case 10: id = gRandom->nextInt() + 0x1c3; break;
+    case 0xb: id = gRandom->nextInt() + 0x1c5; break;
     case 0xc: id = 0x1c5; extraDelay = 0; break;
-    case 0xd: id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt() + 0x1c7; break;
+    case 0xd: id = gRandom->nextInt() + 0x1c7; break;
     case 0xe: {
         int *st = *(int **)(*statusHolder[0] + 0x90);
         id = 0x88f;
@@ -1003,11 +927,11 @@ void Level::createRadioMessage(int type, int sub) {
         break;
     }
     case 8: {
-        int stage = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt();
+        int stage = gRandom->nextInt();
         int off = 0;
         for (int k = 0; k < stage; k = k + 1)
-            off = off + ((int *)g_crm_counts8)[k];
-        int cnt = ((int *)g_crm_counts8)[stage];
+            off = off + g_crm_counts8[k];
+        int cnt = g_crm_counts8[stage];
         int *tbl = (int *)((char *)g_crm_table8 + off * 8);
         for (int k = 0; k < cnt; k = k + 1) {
             int delay = (k == 0) ? 5000 : (k - 1);
@@ -1022,7 +946,7 @@ void Level::createRadioMessage(int type, int sub) {
     }
     case 0x13: {
         RadioMessage *m = (RadioMessage *)::operator new(0x28);
-        AbyssEngine::AERandom *rng = *g_crm_rngStorm;
+        AbyssEngine::AERandom *rng = gRandom;
         new (m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
         this->messages->push_back(m);
         m = (RadioMessage *)::operator new(0x28);
@@ -1057,7 +981,7 @@ void Level::createRadioMessage(int type, int sub) {
         if (type == 7 || type == 0xc || type == 0xe) {
             // fall through to single-message emit below using current id/speaker.
         } else {
-            id = ((AbyssEngine::AERandom*)(intptr_t)*g_crm_rngB)->nextInt() + 0x1bd;
+            id = gRandom->nextInt() + 0x1bd;
         }
         break;
     }
@@ -1084,7 +1008,6 @@ void Level::createRadioMessage(int type, int sub) {
 // then builds space, mission, scene, objects, guns and wires up the players.
 int Level::init() {
     Level *thisptr = this;
-    int **statusA = 0;
 
     int stage = this->field_134;
     if (stage == 0) {
@@ -1113,12 +1036,11 @@ int Level::init() {
         this->lodManager = lod;
 
         int canvas = **g_init_canvas;
-        statusA = g_init_statusA;
 
         bool dustVariant = false;
-        if ((*g_status)->inAlienOrbit() == 0) {
-            ((Status*)*g_init_statusA)->getSystem();
-            dustVariant = ((SolarSystem*)((Status*)*g_init_statusA)->getSystem())->getTextureIndex() == 0xc;
+        if (gStatus->inAlienOrbit() == 0) {
+            gStatus->getSystem();
+            dustVariant = ((SolarSystem*)gStatus->getSystem())->getTextureIndex() == 0xc;
         }
 
         // the engine builds ten particle-system managers (engine trails, explosions, dust...).
@@ -1160,8 +1082,8 @@ int Level::init() {
             thisptr->createPlayer();
             int stk = 0;
             if (**g_init_flagStack != 0 && *(int *)((char *)this->player + 8) != 0)
-                stk = (int)(intptr_t)((Status*)*g_init_statusA)->getStationStack();
-            thisptr->init_placePlayer((int)(intptr_t)*statusA, stk);
+                stk = (int)(intptr_t)gStatus->getStationStack();
+            thisptr->init_placePlayer((int)(intptr_t)gStatus, stk);
         }
         stage = this->field_134;
     }
@@ -1176,31 +1098,31 @@ int Level::init() {
         thisptr->createGasClouds();
     }
 
-    Mission *m = (Mission *)((Status*)*g_init_statusA)->getMission();
+    Mission *m = (Mission *)gStatus->getMission();
     if (m == 0)
-        ((Status*)*g_init_statusA)->setMission((Mission *)**g_init_missionDef);
+        gStatus->setMission((Mission *)**g_init_missionDef);
 
     int mode = this->missionPtr;
     if (mode == 3) {
-        bool campaign = ((Mission*)(*g_status)->getMission())->isEmpty() == 0 && m->isCampaignMission() != 0;
+        bool campaign = ((Mission*)gStatus->getMission())->isEmpty() == 0 && m->isCampaignMission() != 0;
         bool madeScene = false;
         if (campaign) {
             if (this->missionPtr != 3) { madeScene = true; }
             else {
-                int won = (*g_status)->gameWon();
+                int won = gStatus->gameWon();
                 int *settings = *g_init_settings;
                 bool skip = won != 0 && *(char *)(settings + 0x37) == 0 &&
                             *(char *)(settings + 0x35) == 0;
                 if (skip) {
                     thisptr->createMission();
-                    if (**g_init_bmFlag != 0 && (*g_status)->inBlackMarketSystem() != 0)
-                        thisptr->init_placePlayer((int)(intptr_t)*statusA, 0);
+                    if (**g_init_bmFlag != 0 && gStatus->inBlackMarketSystem() != 0)
+                        thisptr->init_placePlayer((int)(intptr_t)gStatus, 0);
                 } else if (this->missionPtr != 3) {
                     madeScene = true;
                 } else {
-                    ((Status*)*g_init_statusA)->getMission();
-                    if (((Mission*)(*g_status)->getMission())->isEmpty() == 0) {
-                        Mission *mm = (Mission *)((Status*)*g_init_statusA)->getMission();
+                    gStatus->getMission();
+                    if (((Mission*)gStatus->getMission())->isEmpty() == 0) {
+                        Mission *mm = (Mission *)gStatus->getMission();
                         if (mm->isCampaignMission() != 0)
                             thisptr->createCampaignMission();
                     }
@@ -1208,8 +1130,8 @@ int Level::init() {
             }
         } else {
             thisptr->createMission();
-            if (**g_init_bmFlag != 0 && (*g_status)->inBlackMarketSystem() != 0)
-                thisptr->init_placePlayer((int)(intptr_t)*statusA, 0);
+            if (**g_init_bmFlag != 0 && gStatus->inBlackMarketSystem() != 0)
+                thisptr->init_placePlayer((int)(intptr_t)gStatus, 0);
         }
         if (madeScene) {
             thisptr->createScene();
@@ -1223,7 +1145,7 @@ int Level::init() {
     thisptr->createStaticObjects();
     mode = this->missionPtr;
     if (mode != 0x17 && mode != 4 &&
-        (mode != 2 || ((Status*)*g_init_statusA)->getCurrentCampaignMission() != 0x2b)) {
+        (mode != 2 || gStatus->getCurrentCampaignMission() != 0x2b)) {
         thisptr->createSentryGuns();
         thisptr->createFighterTurrets();
         thisptr->createWingmen();
@@ -1298,16 +1220,16 @@ void Level::updateAlienAttackers(int dt) {
     Level *thisptr = this;
     this->alienAttackTimer = this->alienAttackTimer + dt;
 
-    Mission *m = (Mission *)(*g_status)->getMission();
+    Mission *m = (Mission *)gStatus->getMission();
     bool blocked = (m != 0) && m->isCampaignMission() != 0 &&
-                   ((*g_status)->getCurrentCampaignMission() == 0x28 ||
-                    (*g_status)->getCurrentCampaignMission() == 0x93 ||
-                    (*g_status)->getCurrentCampaignMission() == 0x9a);
+                   (gStatus->getCurrentCampaignMission() == 0x28 ||
+                    gStatus->getCurrentCampaignMission() == 0x93 ||
+                    gStatus->getCurrentCampaignMission() == 0x9a);
     if (blocked)
         return;
 
     int elapsed = this->alienAttackTimer;
-    int period = ((*g_status)->getCurrentCampaignMission() == 0x29) ? 10000 : 45000;
+    int period = (gStatus->getCurrentCampaignMission() == 0x29) ? 10000 : 45000;
     if (elapsed <= period)
         return;
 
@@ -1320,9 +1242,9 @@ void Level::updateAlienAttackers(int dt) {
         // race 9 == alien; only respawn ones that are dead and inactive.
         if (ki[10] == 9 && ((KIPlayer*)ki)->isDead() != 0 && ((Player*)ki[1])->isActive() == 0) {
             ((PlayerFighter *)ki)->revive();
-            int inOrbit = ((*g_status)->inAlienOrbit() != 0);
+            int inOrbit = (gStatus->inAlienOrbit() != 0);
             if (!inOrbit) {
-                Station *st = (Station *)(*g_status)->getStation();
+                Station *st = (Station *)gStatus->getStation();
                 if (((Station*)st)->isAttackedByAliens() == 0)
                     inOrbit = 1; // fall back to player-relative placement
             }
@@ -1335,14 +1257,14 @@ void Level::updateAlienAttackers(int dt) {
 // freelance mission (and the random alien-orbit ambush layered on top of it).
 void Level::createMission()
 {
-    Mission *mission = (Mission *)(*g_status)->getMission();
+    Mission *mission = (Mission *)gStatus->getMission();
     if (mission == 0)
         return;
 
     // alien-orbit ambush wave: 2..N alien fighters at randomized far positions.
-    if ((*g_status)->inAlienOrbit() != 0) {
-        int lvl = (*g_status)->getLevel();
-        AbyssEngine::AERandom *rng = *g_cm_rng;
+    if (gStatus->inAlienOrbit() != 0) {
+        int lvl = gStatus->getLevel();
+        AbyssEngine::AERandom *rng = gRandom;
         int roll = rng->nextInt();
         float base = (float)lvl * 0.5f - 1.0f;
         unsigned count = 2;
@@ -1350,15 +1272,15 @@ void Level::createMission()
             int r2 = rng->nextInt();
             count = (unsigned)(base + (float)r2);
         }
-        int campA = (*g_status)->getCurrentCampaignMission();
-        int campB = (*g_status)->getCurrentCampaignMission();
+        int campA = gStatus->getCurrentCampaignMission();
+        int campB = gStatus->getCurrentCampaignMission();
         if (campB == 0x21) count = 2;
         if (campA == 0x44) count = 2;
 
         this->enemies = new Array<KIPlayer*>();
         this->enemies->resize(count);
 
-        Globals *globals = *g_cm_globals;
+        Globals *globals = gGlobals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = (int)globals->getRandomEnemyFighter(9);
             int ship = (int)(intptr_t)this->createShip(9, 0, fighter, (Waypoint *)(intptr_t)0, 1, 0);
@@ -1381,15 +1303,13 @@ void Level::createMission()
 void Level::createAsteroids()
 {
 
-    int *rng = (int *)*(int **)&g_ca_rngHolder; // RNG object pointer-to-pointer
-    int *rngObj = *(int **)g_ca_rngHolder;
-    (void)rng;
+    int *rngObj = (int *)&gRandom; // points at the gRandom slot; *rngObj is the AERandom object
 
     // base collision-variant index: 2 in the "ring" system (idx 0x16), else 0; 0 when in alien orbit.
     int colBase;
-    if ((*g_status)->inAlienOrbit() == 0) {
-        (*g_status)->getSystem();
-        colBase = (((SolarSystem*)(*g_status)->getSystem())->getIndex() == 0x16) ? 2 : 0;
+    if (gStatus->inAlienOrbit() == 0) {
+        gStatus->getSystem();
+        colBase = (((SolarSystem*)gStatus->getSystem())->getIndex() == 0x16) ? 2 : 0;
     } else {
         colBase = 0;
     }
@@ -1397,14 +1317,12 @@ void Level::createAsteroids()
     // asteroid container.
     this->asteroids = new Array<KIPlayer*>();
 
-    Galaxy *gal = (Galaxy *)**g_ca_galaxy;
-    Station *st = (Station *)(*g_status)->getStation();
+    Galaxy *gal = gGalaxy;
+    Station *st = (Station *)gStatus->getStation();
     int *prob = (int *)gal->getAsteroidProbabilities(st);
 
-    int *rngHolder = (int *)*(int **)g_ca_rngHolder;
-    (void)rngHolder;
     int seed = *rngObj;
-    Station *st2 = (Station *)(*g_status)->getStation();
+    Station *st2 = (Station *)gStatus->getStation();
     ((Station*)st2)->getIndex();
     ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->setSeed((long long)seed);
 
@@ -1415,8 +1333,8 @@ void Level::createAsteroids()
     int ry = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x4e20);
     int rz = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x4e20);
 
-    int alien = (*g_status)->inAlienOrbit();
-    int camp  = (*g_status)->getCurrentCampaignMission();
+    int alien = gStatus->inAlienOrbit();
+    int camp  = gStatus->getCurrentCampaignMission();
 
     // field-origin coordinates (x=ox, y=oy, z=oz).
     int ox, oy, oz;
@@ -1429,7 +1347,7 @@ void Level::createAsteroids()
     } else {
         bool placed = false;
         if (camp == 0x72) {
-            Station *s = (Station *)(*g_status)->getStation();
+            Station *s = (Station *)gStatus->getStation();
             if (((Station*)s)->getIndex() == 0x53) {
                 oz = 30000;
                 ox = 30000;
@@ -1437,14 +1355,14 @@ void Level::createAsteroids()
                 placed = true; // jumps to LAB_000bf874 (oy = 0)
             }
         }
-        if (!placed && camp == 0x59 && (*g_status)->inSupernovaOrbit() != 0) {
+        if (!placed && camp == 0x59 && gStatus->inSupernovaOrbit() != 0) {
             ox = 0;
             oz = 0;
             oy = 0;
             placed = true;
         }
         if (!placed && camp == 0x5b) {
-            Station *s = (Station *)(*g_status)->getStation();
+            Station *s = (Station *)gStatus->getStation();
             if (((Station*)s)->getIndex() == 0x6e) {
                 oy = 0;
                 oz = 50000;
@@ -1453,7 +1371,7 @@ void Level::createAsteroids()
             }
         }
         if (!placed && camp == 0x91) {
-            Station *s = (Station *)(*g_status)->getStation();
+            Station *s = (Station *)gStatus->getStation();
             if (((Station*)s)->getIndex() == 0x70) {
                 oz = 50000;
                 ox = 50000;
@@ -1465,7 +1383,7 @@ void Level::createAsteroids()
             ox = rx - 50000;
             oz = rz + 20000;
             oy = ry - 50000;
-            if ((*g_status)->getCurrentCampaignMission() == 0 && this->missionPtr == 3) {
+            if (gStatus->getCurrentCampaignMission() == 0 && this->missionPtr == 3) {
                 oz = 0;
                 ox = 0;
                 oy = 0;
@@ -1491,9 +1409,9 @@ void Level::createAsteroids()
     *(BoundingSphere **)&this->collisionVolume = bs;
 
     int density = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt() + 2; // # of "core" (dense) asteroids
-    int alien2 = (*g_status)->inAlienOrbit();
+    int alien2 = gStatus->inAlienOrbit();
 
-    void *canvas = (void *)**g_ca_canvas;
+    void *canvas = (void *)gCanvas;
     int kind = 0x9a;
     int probCursor = 0;
 
@@ -1525,7 +1443,7 @@ void Level::createAsteroids()
 
         // collision variant: 1 in alien orbit, 3 for the special "0xd9" kind, else colBase.
         int colVariant = colBase;
-        if ((*g_status)->inAlienOrbit() != 0)
+        if (gStatus->inAlienOrbit() != 0)
             colVariant = 1;
         if (kind == 0xd9)
             colVariant = 3;
@@ -1596,7 +1514,7 @@ void Level::createAsteroids()
 // current story (campaign) mission.
 void Level::createCampaignMission()
 {
-    int idx = (*g_status)->getCurrentCampaignMission();
+    int idx = gStatus->getCurrentCampaignMission();
 
     if (idx == 0) {
         // mission 0 — the tutorial ambush: three sleeping enemy fighters at a fixed point.
@@ -1638,12 +1556,12 @@ void Level::updateOrbit(int dt) {
 
     // delayed "friends turned hostile" alarm.
     if (*(char *)&this->field_18a != 0) {
-        if ((*g_status)->getSystem() != 0 && *(int *)((char *)this->player + 0x18) != 0) {
-            (*g_status)->getSystem();
-            int race = ((SolarSystem*)(*g_status)->getSystem())->getRace();
+        if (gStatus->getSystem() != 0 && *(int *)((char *)this->player + 0x18) != 0) {
+            gStatus->getSystem();
+            int race = ((SolarSystem*)gStatus->getSystem())->getRace();
             thisptr->alarmAllFriends(race, 0 != 0);
-            (*g_status)->getSystem();
-            ((SolarSystem*)(*g_status)->getSystem())->getRace();
+            gStatus->getSystem();
+            ((SolarSystem*)gStatus->getSystem())->getRace();
             thisptr->createRadioMessage(2, 0);
             *(char *)&this->field_18a = 0;
         }
@@ -1697,12 +1615,12 @@ void Level::updateOrbit(int dt) {
                     (unsigned)((int)this->enemies->size() - this->hostileCount) <= i) {
                     int race = ki[10];
                     bool secZero = false, secOne = false;
-                    if ((*g_status)->inAlienOrbit() == 0) {
-                        SolarSystem *ss = (SolarSystem *)(*g_status)->getSystem();
+                    if (gStatus->inAlienOrbit() == 0) {
+                        SolarSystem *ss = (SolarSystem *)gStatus->getSystem();
                         secZero = ((SolarSystem*)ss)->getSecurityLevel() == 0;
                     }
-                    if ((*g_status)->inAlienOrbit() == 0) {
-                        SolarSystem *ss = (SolarSystem *)(*g_status)->getSystem();
+                    if (gStatus->inAlienOrbit() == 0) {
+                        SolarSystem *ss = (SolarSystem *)gStatus->getSystem();
                         secOne = ((SolarSystem*)ss)->getSecurityLevel() == 1;
                     }
                     if (((KIPlayer*)ki)->isDead() != 0 && ((Player*)ki[1])->isActive() == 0 &&
@@ -1793,8 +1711,7 @@ void Level::reset() {
 }
 
 void Level::createSentryGuns() {
-    Status **slot = g_sentryStatus;
-    int ship = (int)(intptr_t)(*slot)->getShip();
+    int ship = (int)(intptr_t)gStatus->getShip();
     if (((Ship *)(ship))->getFirstEquipmentOfSort(0x27) != 0) {
         field_b0 = new Array<KIPlayer*>();
         field_b0->resize(9);
@@ -1818,7 +1735,7 @@ void Level::createSentryGuns() {
 int Level::collideStation(Vector v) {
     if (this->landmarks != nullptr &&
         (*this->landmarks)[0] != 0 &&
-        (*g_status_collideStation)->inEmptyOrbit() == 0) {
+        gStatus->inEmptyOrbit() == 0) {
         PlayerFixedObject *obj = (PlayerFixedObject *)(*this->landmarks)[0];
         return obj->collide(v.x, v.y, v.z);
     }
@@ -1828,7 +1745,7 @@ int Level::collideStation(Vector v) {
 void Level::uncoverWanted(int index) {
     if (field_29c == 0) {
         createRadioMessage(0x12, index);
-        int **g = g_uncoverWanted;
+        int **g = (int **)&gStatus;
         for (int i = 1;
              i - 1 < ((Wanted *)((int *)(*(int *)(*g) + 4))[index])->getNumWingmen();
              i = i + 1) {
@@ -1859,13 +1776,12 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
             col[k] = bounds[k] > scaled[k] ? bounds[k] : scaled[k];
     }
 
-    int **statusA = g_up_statusA;
 
     // orbit update: mission orbit if an active non-empty mission, else free orbit.
     bool didMission = false;
-    if (((Status*)*g_up_statusA)->getMission() != 0) {
-        ((Status*)*g_up_statusA)->getMission();
-        if (((Mission*)(*g_status)->getMission())->isEmpty() == 0) {
+    if (gStatus->getMission() != 0) {
+        gStatus->getMission();
+        if (((Mission*)gStatus->getMission())->isEmpty() == 0) {
             thisptr->updateMissionOrbit(dt);
             didMission = true;
         }
@@ -1873,8 +1789,8 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     if (!didMission)
         thisptr->updateOrbit(dt);
 
-    Station *st = (Station *)(*g_status)->getStation();
-    if (((Station*)st)->isAttackedByAliens() != 0 || (*g_status)->inAlienOrbit() != 0)
+    Station *st = (Station *)gStatus->getStation();
+    if (((Station*)st)->isAttackedByAliens() != 0 || gStatus->inAlienOrbit() != 0)
         thisptr->updateAlienAttackers(0);
 
     // tick player guns then enemy guns.
@@ -1890,14 +1806,14 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
     }
 
     // gamma-ray damage from supernova / hostile stations.
-    int aPtr = *(int *)statusA;
-    Station *st2 = (Station *)(*g_status)->getStation();
+    int aPtr = (int)(intptr_t)gStatus;
+    Station *st2 = (Station *)gStatus->getStation();
     int idx = ((Station*)st2)->getIndex();
-    ((Status*)*g_up_statusA)->getCurrentCampaignMission();
+    gStatus->getCurrentCampaignMission();
     int gammaBits = ((Status*)(intptr_t)aPtr)->getGammaRayDamagePerSecond(aPtr, idx); float gamma = *(float *)&gammaBits;
     PlayerEgo *ego = this->player;
     if (gamma > 0.0f && ego != nullptr) {
-        int ship = (int)(intptr_t)((Status*)*g_up_statusA)->getShip();
+        int ship = (int)(intptr_t)gStatus->getShip();
         int eq = (int)(intptr_t)((Ship*)(intptr_t)ship)->getFirstEquipmentOfSort(0x26);
         float factor = gamma;
         if (eq != 0) {
@@ -1946,7 +1862,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
 void Level::connectPlayers()
 {
 
-    if ((*g_cp_appMgr)->currentModuleId == 5)
+    if (gAppManager->currentModuleId == 5)
         return;
 
     // player's enemy list from the enemy array.
@@ -1976,7 +1892,7 @@ void Level::connectPlayers()
     if (this->enemies == nullptr)
         return;
 
-    int camp = (*g_status)->getCurrentCampaignMission();
+    int camp = gStatus->getCurrentCampaignMission();
     for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
         int e = (int)(intptr_t)(*this->enemies)[i];
         int eFaction = *(int *)(e + 0x28);
@@ -1993,7 +1909,7 @@ void Level::connectPlayers()
                 if (notM24 || notFirst) {
                     consider = true;
                     if (camp == 0x9a) {
-                        int alien = (*g_status)->inAlienOrbit();
+                        int alien = gStatus->inAlienOrbit();
                         if (k == 8 && alien != 0 && *(int *)(e + 0x28) == 8)
                             consider = false;
                     } else if (camp == 0x40 && !(i != 0 && e != 0 && k != 0)) {
@@ -2005,7 +1921,7 @@ void Level::connectPlayers()
                 if (consider) {
                     bool skip = false;
                     if (*(char *)(e + 0x40) != 0 && ((PlayerFixedObject*)(intptr_t)e)->getDockingType() == 3) {
-                        Station *st = (Station *)(*g_status)->getStation();
+                        Station *st = (Station *)gStatus->getStation();
                         if (((Station*)st)->stationHasHiddenBlueprint(1) != 0)
                             skip = true;
                     }
@@ -2020,30 +1936,30 @@ void Level::connectPlayers()
             count = count + 1;
         arr.resize(count);
 
-        Mission *m = (Mission *)(*g_status)->getMission();
-        int mtype = ((Mission*)(*g_status)->getMission())->getType();
+        Mission *m = (Mission *)gStatus->getMission();
+        int mtype = ((Mission*)gStatus->getMission())->getType();
         bool branchA = !(((i & 1) == 0 && mtype == 0xc)) &&
-                       ((Mission*)(*g_status)->getMission())->getType() != 2 && ((Mission*)(*g_status)->getMission())->getType() != 9;
+                       ((Mission*)gStatus->getMission())->getType() != 2 && ((Mission*)gStatus->getMission())->getType() != 9;
 
         bool jumpAlwaysFriend = false;
         if (branchA) {
             // mission-type-specific carve-outs that fall into the "always friend" path.
             int tmp;
             if (m->isCampaignMission() != 0) {
-                tmp = (*g_status)->getCurrentCampaignMission();
+                tmp = gStatus->getCurrentCampaignMission();
                 if (tmp == 0x10 && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
             if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
-                tmp = (*g_status)->getCurrentCampaignMission();
+                tmp = gStatus->getCurrentCampaignMission();
                 if (tmp == 0x18 && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
             if (!jumpAlwaysFriend && m->isCampaignMission() != 0) {
-                tmp = (*g_status)->getCurrentCampaignMission();
+                tmp = gStatus->getCurrentCampaignMission();
                 if (tmp == 0x1c && *(int *)(e + 0x28) == 9) jumpAlwaysFriend = true;
             }
             if (!jumpAlwaysFriend) {
-                if (m->isCampaignMission() != 0) (*g_status)->getCurrentCampaignMission();
-                if (m->isCampaignMission() != 0) (*g_status)->getCurrentCampaignMission();
+                if (m->isCampaignMission() != 0) gStatus->getCurrentCampaignMission();
+                if (m->isCampaignMission() != 0) gStatus->getCurrentCampaignMission();
 
                 int slot = 0;
                 PlayerEgo *ego = this->player;
@@ -2058,7 +1974,7 @@ void Level::connectPlayers()
                         if (notM24 || notFirst) {
                             consider = true;
                             if (camp == 0x9a) {
-                                int alien = (*g_status)->inAlienOrbit();
+                                int alien = gStatus->inAlienOrbit();
                                 if (k == 8 && alien != 0 && *(int *)(e + 0x28) == 8)
                                     consider = false;
                             } else if (camp == 0x40 && !(i != 0 && e != 0 && k != 0)) {
@@ -2071,7 +1987,7 @@ void Level::connectPlayers()
                             bool skip = false;
                             if (*(char *)(e + 0x40) != 0 &&
                                 ((PlayerFixedObject*)(intptr_t)e)->getDockingType() == 3) {
-                                Station *st = (Station *)(*g_status)->getStation();
+                                Station *st = (Station *)gStatus->getStation();
                                 if (((Station *)st)->stationHasHiddenBlueprint(1) != 0)
                                     skip = true;
                             }
@@ -2114,8 +2030,8 @@ void Level::connectPlayers()
 
         (*(Player **)(e + 4))->addEnemies(&arr);
 
-        (*g_status)->getMission();
-        if (eFaction == 10 && ((Mission*)(*g_status)->getMission())->isEmpty() != 0)
+        gStatus->getMission();
+        if (eFaction == 10 && ((Mission*)gStatus->getMission())->isEmpty() != 0)
             (*(Player **)(e + 4))->setEnemy((Player *)*(int *)this->player);
     }
 }
@@ -2136,15 +2052,15 @@ void Level::enemyDied(int r1, bool r2arg) {
         return;
     }
 
-    Status **statusHolder = g_ed_status;
-    ((Status *)(*statusHolder))->incKills();
+    Status **statusHolder = &gStatus;
+    (*statusHolder)->incKills();
     this->killCountB = this->killCountB + 1;
     if (this->player == nullptr)
         return;
 
     // the player ego carries its Radar handle at +0x14; the medal check needs no scanner.
     if (((AbyssEngine::Radar *)this->player->field_0x14)->hasScanner() == 0) {
-        Achievements **achA = g_ed_achA;
+        Achievements **achA = &gAchievements;
         if (((Achievements *)(*achA))->hasMedal(0x28, 1) == 0) {
             int st = *(int *)statusHolder;
             int v = *(int *)(st + 0x11c);
@@ -2153,12 +2069,12 @@ void Level::enemyDied(int r1, bool r2arg) {
                 *(int *)(st + 0x11c) = v;
             }
             int goal = ((Achievements *)(*achA))->getValue(0x28, 1);
-            int prog = (int)(((float)v / (float)goal) * g_ed_100);
+            int prog = (int)(((float)v / (float)goal) * 100.0f);
             if ((prog % 10) == 0) {
                 int hud = this->player->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x11c);
                 int g2 = ((Achievements *)(*achA))->getValue(0x28, 1);
-                ((Hud *)(hud))->hudEventMedal(0x28, (int)(((float)cur / (float)g2) * g_ed_100));
+                ((Hud *)(hud))->hudEventMedal(0x28, (int)(((float)cur / (float)g2) * 100.0f));
             }
             int cur2 = *(int *)(*(int *)statusHolder + 0x11c);
             if (((Achievements *)(*achA))->getValue(0x28, 1) <= cur2)
@@ -2168,7 +2084,7 @@ void Level::enemyDied(int r1, bool r2arg) {
 
     if (this->player != nullptr &&
         this->player->emergencySystemActive() != 0) {
-        Achievements **achB = g_ed_achB;
+        Achievements **achB = &gAchievements;
         if (((Achievements *)(*achB))->hasMedal(0x2b, 1) == 0) {
             int st = *(int *)statusHolder;
             int v = *(int *)(st + 0x13c) + 1;
@@ -2178,7 +2094,7 @@ void Level::enemyDied(int r1, bool r2arg) {
                 int hud = this->player->getHUD();
                 int cur = *(int *)(*(int *)statusHolder + 0x13c);
                 int g2 = ((Achievements *)(*achB))->getValue(0x2b, 1);
-                ((Hud *)(hud))->hudEventMedal(0x2b, (int)(((float)cur / (float)g2) * g_ed_100));
+                ((Hud *)(hud))->hudEventMedal(0x2b, (int)(((float)cur / (float)g2) * 100.0f));
             }
             int cur2 = *(int *)(*(int *)statusHolder + 0x13c);
             if (((Achievements *)(*achB))->getValue(0x2b, 1) <= cur2)
@@ -2419,7 +2335,7 @@ void Level::flashScreen(int type) {
 // body that is not recoverable from the provided Ghidra output. Left as a stub.
 
 void Level::createPlayer() {
-    Ship *ship = (Ship *)(*g_status)->getShip();
+    Ship *ship = (Ship *)gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment();
 
     // Used-slot counts per weapon-slot type: primary / secondary / turret.
@@ -2466,7 +2382,7 @@ void Level::createPlayer() {
         if ((*wpos)[3] != nullptr) {
             this->field_a4 = new Array<AEGeometry *>();
             for (unsigned k = 0; k < (*wpos)[3]->size(); k += 2) {
-                AEGeometry *g = new AEGeometry((PaintCanvas *)*g_cp_canvas);
+                AEGeometry *g = new AEGeometry(gCanvas);
                 this->field_a4->push_back(g);
                 g->setPosition(*(*(*wpos)[3])[k]);
                 g->setScaling(*(*(*wpos)[3])[k + 1]);
@@ -2499,7 +2415,7 @@ void Level::createPlayer() {
             Gun *gun = createGun(it->getIndex(), i, it->getSort(), amount,
                                  dmg, rate, it->getAttribute(0xc), it->getAttribute(0xd));
             gun->itemIndex = it->getIndex();
-            gun->weaponType = it->getSort();
+            gun->weaponType = static_cast<ItemSort>(it->getSort());
             gun->setMagnitude(it->getAttribute(0xe));
 
             int type = it->getType();
@@ -2534,13 +2450,12 @@ void Level::createPlayer() {
 
 
 void Level::wingmanDied(int name) {
-    Status **slot = g_wingmanDied;
-    unsigned int *list = (unsigned int *)(intptr_t)(*slot)->getWingmen();
+    unsigned int *list = (unsigned int *)(intptr_t)gStatus->getWingmen();
     if (list == 0) {
         return;
     }
     if (__builtin_expect(*list < 2, 0)) {
-        return (*slot)->setWingmen((Array<String *> *)0);
+        return gStatus->setWingmen((Array<String *> *)0);
     }
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
@@ -2643,16 +2558,16 @@ void Level::createStaticObjects()
 {
 
     // --- carrier escort that follows the campaign progression (station 0x70) ---
-    if ((*g_status)->inAlienOrbit() == 0) {
-        Station *st = (Station *)(*g_status)->getStation();
+    if (gStatus->inAlienOrbit() == 0) {
+        Station *st = (Station *)gStatus->getStation();
         if (((Station*)st)->getIndex() == 0x70 &&
-            0x7f < (*g_status)->getCurrentCampaignMission()) {
+            0x7f < gStatus->getCurrentCampaignMission()) {
             int type;
-            if ((*g_status)->getCurrentCampaignMission() < 0x83)      type = 0x493e;
-            else if ((*g_status)->getCurrentCampaignMission() < 0x87) type = 0x4941;
-            else if ((*g_status)->getCurrentCampaignMission() < 0x8a) type = 0x4944;
-            else if ((*g_status)->getCurrentCampaignMission() < 0x8e) type = 0x4947;
-            else if (0x91 < (*g_status)->getCurrentCampaignMission()) type = -1;
+            if (gStatus->getCurrentCampaignMission() < 0x83)      type = 0x493e;
+            else if (gStatus->getCurrentCampaignMission() < 0x87) type = 0x4941;
+            else if (gStatus->getCurrentCampaignMission() < 0x8a) type = 0x4944;
+            else if (gStatus->getCurrentCampaignMission() < 0x8e) type = 0x4947;
+            else if (0x91 < gStatus->getCurrentCampaignMission()) type = -1;
             else                                                    type = 0x494a;
 
             if (type != -1) {
@@ -2668,7 +2583,7 @@ void Level::createStaticObjects()
                 // shows the up arg is world-up (local_40=0, uStack_3c=0x3f800000, local_38=0).
                 Vector up = {0.0f, 1.0f, 0.0f};
                 geo->setDirection(dir, up);
-                String *txt = gGameText->obj->getText(**g_cso_textA);
+                String *txt = gGameText->getText(**g_cso_textA);
                 *(String *)(o + 0x18) = *txt;
                 (*(Player **)(o + 4))->setAlwaysFriend(1);
                 if (this->enemies == nullptr) {
@@ -2683,16 +2598,16 @@ void Level::createStaticObjects()
     }
 
     // --- station 0x67 dockable beacon (mid/late campaign) ---
-    if (0x54 < (*g_status)->getCurrentCampaignMission() &&
-        (*g_status)->getCurrentCampaignMission() != 0x87 &&
-        (*g_status)->inAlienOrbit() == 0) {
-        Station *st = (Station *)(*g_status)->getStation();
+    if (0x54 < gStatus->getCurrentCampaignMission() &&
+        gStatus->getCurrentCampaignMission() != 0x87 &&
+        gStatus->inAlienOrbit() == 0) {
+        Station *st = (Station *)gStatus->getStation();
         if (((Station*)st)->getIndex() == 0x67) {
             char *o = (char *)this->createStaticObject((Waypoint *)(intptr_t)0, 0x4a88, 0);
             ((PlayerFixedObject *)o)->setPosition3(0, 0, 0);
             ((PlayerFixedObject *)o)->setMoving(0);
             *(char *)(o + 0x70) = 1;
-            String *txt = gGameText->obj->getText(**g_cso_textB);
+            String *txt = gGameText->getText(**g_cso_textB);
             String name;
             name.ctor_copy(txt, 0);
             ((PlayerFixedObject *)o)->setName(&name);
@@ -2721,7 +2636,7 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
         z = wp->z;
     }
     if (jitter) {
-        AbyssEngine::AERandom *rng = *g_cso2_rng;
+        AbyssEngine::AERandom *rng = gRandom;
         x = x + rng->nextInt(20000) - 10000;
         y = y + rng->nextInt(20000) - 10000;
         z = z + rng->nextInt(20000) - 10000;
@@ -2729,7 +2644,7 @@ int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
 
     // type 0x4215 picks one of three debris meshes at random; everything else maps 1:1.
     if (type == 0x4215) {
-        int r = ((AbyssEngine::AERandom*)(intptr_t)*(int *)g_cso2_rng)->nextInt();
+        int r = gRandom->nextInt();
         type = (r == 0) ? 0x4215 : (r == 1) ? 0x4216 : 0x4217;
     }
 
@@ -2788,7 +2703,7 @@ void *Level_getBoundingVolume(int idx, int kind)
 // fixed capital ship (class 1) at the waypoint, scaling its stats to the player level/difficulty.
 PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group) {
     Level *thisptr = this;
-    int camp = (*g_status)->getCurrentCampaignMission();
+    int camp = gStatus->getCurrentCampaignMission();
 
     int x = 0, y = 0, z = 0;
     if (wp != 0) {
@@ -2796,15 +2711,15 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         y = wp->y;
         z = wp->z;
     }
-    AbyssEngine::AERandom *rng = *g_cs_rng;
+    AbyssEngine::AERandom *rng = gRandom;
     int jx = rng->nextInt(40000);
     int jy = rng->nextInt(40000);
     int jz = rng->nextInt(40000);
 
     // base hitpoints from player level + campaign ramp.
-    int lvl = (*g_status)->getLevel();
+    int lvl = gStatus->getLevel();
     if (0x15 <= lvl) lvl = 0x14;
-    int ramp = ((*g_status)->gameWon() != 0) ? 0xb4 : (camp << 2);
+    int ramp = (gStatus->gameWon() != 0) ? 0xb4 : (camp << 2);
     int hp = ramp + lvl * 0xe + 0x14;
     if (type == 0x33)      hp = (int)((float)hp * 1.0f);
     else if (type == 0x31) hp = (int)((float)hp * 17.0f);
@@ -2812,7 +2727,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
     if ((unsigned)(camp - 0x31) < 8 && (0x8fU >> ((unsigned)(camp - 0x31) & 0xff) & 1) != 0)
         hp = 0x10e;
 
-    int dmgLvl = (*g_status)->getLevel();
+    int dmgLvl = gStatus->getLevel();
     if (0x15 <= dmgLvl) dmgLvl = 0x14;
     int empA = dmgLvl * 5 + 0x28;
     int empB;
@@ -2824,14 +2739,14 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
     } else {
         empB = 15000;
     }
-    hp = (int)((float)hp + (*(float *)(*(int *)g_cs_diffRec + 0x2c) - 0.5f) * (float)hp);
+    hp = (int)((float)hp + (*(float *)(*g_cs_diffRec + 0x2c) - 0.5f) * (float)hp);
     if (camp == 0x9a) {
-        int alien = (*g_status)->inAlienOrbit();
+        int alien = gStatus->inAlienOrbit();
         hp = hp << (alien & (race == 9));
     }
 
     Player *pl = (Player *)::operator new(0x114);
-    int playerHp = ((*g_status)->hardCoreMode() != 0) ? 0x28a : 1000;
+    int playerHp = (gStatus->hardCoreMode() != 0) ? 0x28a : 1000;
     new (pl) Player(playerHp, hp, 1, 1, 0);
     float fx = (float)(x + jx - 20000);
     float fy = (float)(y + jy - 20000);
@@ -2843,7 +2758,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         PlayerFighter *pf = (PlayerFighter *)::operator new(0x2f0);
         new (pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *)pf;
-        int gg = ((Globals *)*g_cs_globalsA)->getShipGroup(type, race, group);
+        int gg = gGlobals->getShipGroup(type, race, group);
         obj->setShipGroup(gg, type, hostile);   // KIPlayer::setShipGroup
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = *(AEGeometry **)((char *)obj + 0xc);
@@ -2864,7 +2779,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         void *bv = Level::cs_buildBV(race, type, &wreck);
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume*)bv);
-        int gg = ((Globals *)*g_cs_globalsB)->getShipGroup(type, race, 0);
+        int gg = gGlobals->getShipGroup(type, race, 0);
         obj->setShipGroup(gg, type, 0);   // KIPlayer::setShipGroup
         this->lodManager->addObject(*(AEGeometry **)((char *)obj + 0x8));
         *(unsigned char *)((char *)obj + 0x40) = 1;
@@ -2880,17 +2795,16 @@ void Level::almostKillWanted(int index) {
     if (field_29e != 0) {
         return;
     }
-    Status **slot = g_almostKillWanted;
     field_29e = 1;
-    if ((*slot)->isStorylineWanted(index) == 0) {
+    if (gStatus->isStorylineWanted(index) == 0) {
         return;
     }
     int m = (int)(intptr_t)::operator new(0x78);
-    new ((void *)(intptr_t)m) Mission(4, 0, (*slot)->getStation()->getIndex());
+    new ((void *)(intptr_t)m) Mission(4, 0, gStatus->getStation()->getIndex());
     ((Mission *)(m))->setCampaign_akw(1);
     ((Mission *)(m))->setWon(1);
-    (*slot)->setMission((Mission *)(intptr_t)m);
-    (*slot)->setCampaignMission((Mission *)(intptr_t)m);
+    gStatus->setMission((Mission *)(intptr_t)m);
+    gStatus->setCampaignMission((Mission *)(intptr_t)m);
     delete objectivesA; objectivesA = nullptr;
     objectivesA = new Objective(3, 0, 0, this);
     int e = (int)(intptr_t)(*this->enemies)[0];
@@ -2899,7 +2813,7 @@ void Level::almostKillWanted(int index) {
     int e0 = (int)(intptr_t)(*this->enemies)[0];
     *(unsigned char *)(*(int *)(e0 + 4) + 0x5c) = 0;
     *(unsigned char *)(e0 + 0x43) = 1;
-    int w = (int)(intptr_t)(*slot)->getWanted();
+    int w = (int)(intptr_t)gStatus->getWanted();
     return ((Wanted *)(intptr_t)(((int *)(*(int *)(w + 4)))[index]))->setActive(0 != 0);
 }
 
@@ -2911,18 +2825,17 @@ void Level::assignGuns()
     if (this->enemyGuns != nullptr) {
         if (this->enemyGuns) { for (auto* e : *this->enemyGuns) delete e; delete this->enemyGuns; this->enemyGuns = nullptr; }
     }
-    Status **status = g_ag_status;
     this->enemyGuns = nullptr;
 
     // base weapon "power" from player level (clamped to 20).
-    float lvlPower = (float)((*g_status)->getLevel() - 2) * g_ag_perLevel;
+    float lvlPower = (float)(gStatus->getLevel() - 2) * g_ag_perLevel;
     if (lvlPower >= 20.0f) lvlPower = 20.0f;
-    if (lvlPower < 0.0f) lvlPower = (float)((*g_status)->getLevel() - 2) * g_ag_perLevel;
+    if (lvlPower < 0.0f) lvlPower = (float)(gStatus->getLevel() - 2) * g_ag_perLevel;
 
-    float diffScale = *(float *)(*(int *)g_ag_diffRec + 0x2c);
-    int camp = (*g_status)->getCurrentCampaignMission();
+    float diffScale = *(float *)(*g_ag_diffRec + 0x2c);
+    int camp = gStatus->getCurrentCampaignMission();
     int basePower = (int)(lvlPower + lvlPower * (diffScale - 0.5f));
-    Wanted *wanted = (Wanted *)(*g_status)->getWantedInCurrentOrbit();
+    Wanted *wanted = (Wanted *)gStatus->getWantedInCurrentOrbit();
     if (0x15 < basePower) basePower = 0x16;
     if (this->enemies == nullptr)
         return;
@@ -2957,16 +2870,16 @@ void Level::assignGuns()
 
             int color = 0x41800000;
             int dmg;
-            (*g_status)->getMission();
-            if (((Mission*)(*g_status)->getMission())->getType() == 6 && ((Player*)*(int*)(intptr_t)(e + 4))->isAlwaysFriend() == 0) {
+            gStatus->getMission();
+            if (((Mission*)gStatus->getMission())->getType() == 6 && ((Player*)*(int*)(intptr_t)(e + 4))->isAlwaysFriend() == 0) {
                 color = 0x41e00000;
-                dmg = (*g_status)->getLevel() + baseDmg;
+                dmg = gStatus->getLevel() + baseDmg;
             } else {
-                (*g_status)->getMission();
+                gStatus->getMission();
                 dmg = baseDmg;
-                if (((Mission*)(*g_status)->getMission())->getType() == 0xc && ((Player*)*(int*)(intptr_t)(e + 4))->isAlwaysFriend() != 0) {
+                if (((Mission*)gStatus->getMission())->getType() == 0xc && ((Player*)*(int*)(intptr_t)(e + 4))->isAlwaysFriend() != 0) {
                     color = 0x41e00000;
-                    dmg = (*g_status)->getLevel() + baseDmg;
+                    dmg = gStatus->getLevel() + baseDmg;
                 }
             }
 
@@ -2985,52 +2898,52 @@ void Level::assignGuns()
             if (camp == 0x46 && ((KIPlayer*)e)->isWingMan() == 0)
                 dmg = (int)((float)dmg * 2.5f);
 
-            if ((*g_status)->getMission() != 0) {
-                (*g_status)->getMission();
-                if (((Mission*)(*g_status)->getMission())->getType() == 0xb7) dmg = 1;
+            if (gStatus->getMission() != 0) {
+                gStatus->getMission();
+                if (((Mission*)gStatus->getMission())->getType() == 0xb7) dmg = 1;
             }
 
             Gun *gun = (Gun *)::operator new(0x114);
-            int won = (*g_status)->gameWon();
-            int rampMis = (won != 0) ? 0x2d : (*g_status)->getCurrentCampaignMission();
+            int won = gStatus->gameWon();
+            int rampMis = (won != 0) ? 0x2d : gStatus->getCurrentCampaignMission();
             new (gun) Gun(0, dmg, 4, -1, 3000, rampMis * -2 + 600, (float)color, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(1);
             gun->setLevel(this);
             gun->setIndex(0);
-            gun->weaponType = 0;
+            gun->weaponType = ITEM_SORT_LASER;
 
             int res;
             switch ((int)(intptr_t)(*this->enemies)[i] + 0x28
                         ? *(int *)((char *)(*this->enemies)[i] + 0x28)
                         : 0) {
-            case 0:  gun->weaponType = 0; gun->setIndex(0);    res = 0x1a62; break;
+            case 0:  gun->weaponType = ITEM_SORT_LASER; gun->setIndex(0);    res = 0x1a62; break;
             case 1:  gun->setIndex(3);    res = 0x1a68; break;
-            case 2:  gun->weaponType = 0; gun->setIndex(7);    res = 0x1a6c; break;
+            case 2:  gun->weaponType = ITEM_SORT_LASER; gun->setIndex(7);    res = 0x1a6c; break;
             case 3:  gun->setIndex(0x19); res = 0x1a92; break;
             case 9:  gun->setIndex(5);    res = 0x1a6a; break;
             case 10: gun->setIndex(0xe5); res = 0x4a93;
                      gun->damage = (int)((float)gun->damage * 1.0f);
                      break;
-            default: gun->weaponType = 1; gun->setIndex(0x13); res = 0x1a8b; break;
+            default: gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0x13); res = 0x1a8b; break;
             }
 
-            int camp2 = (*g_status)->getCurrentCampaignMission();
+            int camp2 = gStatus->getCurrentCampaignMission();
             PlayerTurret *turret = (PlayerTurret *)(*this->enemies)[i];
             if (turret->field_0x3e != 0) {
                 int host = (int)(intptr_t)turret->getHost();
                 if (host != 0 && (*(int *)(host + 0x7c) == 0x2d || *(int *)(host + 0x7c) == 0x33)) {
-                    gun->weaponType = 2; gun->setIndex(0x16); res = 0x1a8e;
+                    gun->weaponType = ITEM_SORT_AUTO_CANNON; gun->setIndex(0x16); res = 0x1a8e;
                 } else {
                     KIPlayer *k = (*this->enemies)[i];
                     if (*(unsigned char *)((char *)k + 0x3f) == 0) {
-                        gun->weaponType = 1;
+                        gun->weaponType = ITEM_SORT_BLASTER;
                         if (*(unsigned char *)((char *)k + 0x28) == 1) { gun->setIndex(0xf);  res = 0x1a87; }
                         else                                 { gun->setIndex(0x14); res = 0x1a8c; }
                     } else {
                         int kt = k->getType();
-                        if (kt == 0x49c1)      { gun->weaponType = 1; gun->setIndex(0x14); res = 0x1a8d; }
-                        else if (kt == 0x49c0) { gun->weaponType = 0; gun->setIndex(2);    res = 0x1a64; }
-                        else                   { gun->weaponType = 1; gun->setIndex(0xe);  res = 0x1a86; }
+                        if (kt == 0x49c1)      { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0x14); res = 0x1a8d; }
+                        else if (kt == 0x49c0) { gun->weaponType = ITEM_SORT_LASER; gun->setIndex(2);    res = 0x1a64; }
+                        else                   { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0xe);  res = 0x1a86; }
                         gun->field_0xa8 = 1;
                         // base stats from the ship-stat table (corrupted SIMD in original).
                         if (camp2 == 0x9e && kt == 0x49c2 && ((Player*)*(int*)(intptr_t)(e + 4))->isAlwaysEnemy() != 0) {
@@ -3043,12 +2956,12 @@ void Level::assignGuns()
             }
 
             // wanted/ship special weapon overrides.
-            int kt2 = (*g_status)->getCurrentCampaignMission();
+            int kt2 = gStatus->getCurrentCampaignMission();
             int host2 = (int)(intptr_t)(*this->enemies)[i];
-            if ((*g_status)->getMission() != 0) {
-                Mission *mm = (Mission *)(*g_status)->getMission();
+            if (gStatus->getMission() != 0) {
+                Mission *mm = (Mission *)gStatus->getMission();
                 if (mm->isCampaignMission() != 0) {
-                    if (**g_ag_statusB == (*g_status)->getCurrentCampaignMission() &&
+                    if (**g_ag_statusB == gStatus->getCurrentCampaignMission() &&
                         2 < **g_ag_alienCnt &&
                         ((*this->enemies)[i])->isEnemy() != 0)
                         gun->damage = (int)((float)gun->damage * 1.0f);
@@ -3058,17 +2971,17 @@ void Level::assignGuns()
                 int w = wanted->getWeapon();
                 gun->setIndex(w);
                 int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4)))->getAttribute(0x2);
-                res = ((int *)g_ag_weaponDmg)[w];
-                gun->weaponType = attr;
+                res = g_ag_weaponDmg[w];
+                gun->weaponType = static_cast<ItemSort>(attr);
                 gun->damage = gun->damage << 2;
             }
 
             // wrap the Gun in a Rocket/Object gun and store it.
             int sc = gun->weaponType;
-            if (sc == 0x28 || sc == 5) {
+            if (sc == ITEM_SORT_CLUSTER_MISSILE || sc == ITEM_SORT_MISSILE) {
                 RocketGun *r = (RocketGun *)::operator new(0xe8);
                 new (r) RocketGun(gun->itemIndex, gun, res, 0, 0, sc,
-                                  sc == 5 ? 1 : 0, this);
+                                  sc == ITEM_SORT_MISSILE ? 1 : 0, this);
                 (*this->enemyGuns)[outIdx] = (ObjectGun *)r;
                 gun->field_0x50 = 0x41000000;
                 gun->initialLifetime = 10000;
@@ -3080,9 +2993,8 @@ void Level::assignGuns()
                 (*this->enemyGuns)[outIdx] = o;
             }
             ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
-            // **g_ag_snd is the Globals singleton (receiver); the sound id is 0x3e for
-            // alien ships (shipGroup 9), 0x3d otherwise.
-            ((Globals *)(intptr_t)(**g_ag_snd))
+            // sound id is 0x3e for alien ships (shipGroup 9), 0x3d otherwise.
+            gGlobals
                 ->addSoundResourceToList((*this->enemies)[i]->shipGroup == 9 ? 0x3e : 0x3d);
             outIdx = outIdx + 1;
             (void)kt2;
@@ -3096,7 +3008,7 @@ wingmanExtra:
             gun->setFriendGun(1);
             gun->setLevel(this);
             gun->itemIndex = 0x12;
-            gun->weaponType = 1;
+            gun->weaponType = ITEM_SORT_BLASTER;
             ObjectGun *o = (ObjectGun *)::operator new(0xb0);
             new (o) ObjectGun(0x12, gun, 0x1a8a, 0x2711, this);
             (*this->enemyGuns)[outIdx] = o;
@@ -3104,8 +3016,8 @@ wingmanExtra:
             int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48)))->getAttribute(0xa);
             gun->empDamage = attr;
             ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
-            // **g_ag_snd2 is the Globals singleton (receiver); the EMP-gun sound id is 0x4a.
-            ((Globals *)(intptr_t)(**g_ag_snd2))->addSoundResourceToList(0x4a);
+            // EMP-gun sound id is 0x4a.
+            gGlobals->addSoundResourceToList(0x4a);
             outIdx = outIdx + 1;
         }
     }
@@ -3116,37 +3028,37 @@ wingmanExtra:
 void Level::createGasClouds()
 {
 
-    Galaxy *gal = *g_cgc_galaxy;
-    Station *st = (Station *)(*g_status)->getStation();
+    Galaxy *gal = gGalaxy;
+    Station *st = (Station *)gStatus->getStation();
     int *prob = (int *)gal->getPlasmaProbabilities(st);
 
-    int ship = (int)(intptr_t)(*g_status)->getShip();
-    if ((int)(intptr_t)((Ship*)(intptr_t)ship)->getFirstEquipmentOfSort(0x21) == 0 || (*g_status)->inAlienOrbit() != 0)
+    int ship = (int)(intptr_t)gStatus->getShip();
+    if ((int)(intptr_t)((Ship*)(intptr_t)ship)->getFirstEquipmentOfSort(0x21) == 0 || gStatus->inAlienOrbit() != 0)
         return;
 
-    (*g_status)->getSystem();
-    if (((SolarSystem*)(*g_status)->getSystem())->getIndex() != 10 && *prob == 0xcc) {
-        (*g_status)->getSystem();
-        if (((SolarSystem*)(*g_status)->getSystem())->getRoutes() == 0)
+    gStatus->getSystem();
+    if (((SolarSystem*)gStatus->getSystem())->getIndex() != 10 && *prob == 0xcc) {
+        gStatus->getSystem();
+        if (((SolarSystem*)gStatus->getSystem())->getRoutes() == 0)
             return;
     }
 
     this->gasClouds = new Array<KIPlayer*>();
 
     bool boss = false;
-    if ((*g_status)->getCurrentCampaignMission() == 0x8e) {
-        Station *s2 = (Station *)(*g_status)->getStation();
+    if (gStatus->getCurrentCampaignMission() == 0x8e) {
+        Station *s2 = (Station *)gStatus->getStation();
         boss = ((Station*)s2)->getIndex() == 0x4f;
     }
 
-    AbyssEngine::AERandom *rng = *g_cgc_rng;
+    AbyssEngine::AERandom *rng = gRandom;
     int roll = rng->nextInt();
     // count = base + (prob[1]/denom) * (roll+4); base 3 for the boss fight.
     float countF = (float)(boss ? 3.0f : 0.0f) + ((float)prob[1] / 1.0f) * (float)(roll + 4);
     int count = (countF > 0.0f) ? (int)countF : 0;
     this->gasClouds->resize((unsigned)count);
 
-    void *canvas = *g_cgc_canvas;
+    void *canvas = (void *)gCanvas;
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
@@ -3167,8 +3079,8 @@ void Level::updateMissionOrbit(int dt) {
 
     // --- phase A: periodic far wave (only when a "boss present" flag at 0x288 is set) ---
     if (this->field_288 != 0) {
-        (*g_status)->getMission();
-        if (((Mission*)(*g_status)->getMission())->isEmpty() == 0) {
+        gStatus->getMission();
+        if (((Mission*)gStatus->getMission())->isEmpty() == 0) {
             int t = this->orbitWaveTimer;
             this->orbitWaveTimer = t + dt;
             if (0x57e4 < t + dt) {
@@ -3188,9 +3100,9 @@ void Level::updateMissionOrbit(int dt) {
     }
 
     // --- phase B: type-0xb7 boss escort wave ---
-    if ((*g_status)->getMission() != 0) {
-        (*g_status)->getMission();
-        if (((Mission*)(*g_status)->getMission())->getType() == 0xb7) {
+    if (gStatus->getMission() != 0) {
+        gStatus->getMission();
+        if (((Mission*)gStatus->getMission())->getType() == 0xb7) {
             int t = this->orbitWaveTimer;
             this->orbitWaveTimer = t + dt;
             if (0x1d4c < t + dt) {
@@ -3209,10 +3121,10 @@ void Level::updateMissionOrbit(int dt) {
     }
 
     // --- phase C: type-0xf wave (skips the last enemy, the leader) ---
-    (*g_status)->getMission();
-    if (((Mission*)(*g_status)->getMission())->isEmpty() == 0) {
-        (*g_status)->getMission();
-        if (((Mission*)(*g_status)->getMission())->getType() == 0xf) {
+    gStatus->getMission();
+    if (((Mission*)gStatus->getMission())->isEmpty() == 0) {
+        gStatus->getMission();
+        if (((Mission*)gStatus->getMission())->getType() == 0xf) {
             int t = this->orbitWaveTimer;
             this->orbitWaveTimer = t + dt;
             if (50000 < t + dt && this->enemies != nullptr) {
@@ -3240,7 +3152,7 @@ void Level::attackWanted(int index) {
     if (field_29c == 0) {
         field_29c = 1;
         createRadioMessage(0x10, index);
-        int **slot = g_attackWanted;
+        int **slot = (int **)&gStatus;
         Wanted *wanted = (Wanted *)(intptr_t)(((int *)(*(int *)((*(int *)*slot) + 4)))[index]);
         int numWingmen = (wanted != nullptr) ? wanted->getNumWingmen() : 0;
         for (int i = 1; i - 1 < numWingmen; i = i + 1) {
@@ -3264,15 +3176,15 @@ void Level::initParticleSystems()
         }
 
         // camera-locked sky particle system.
-        unsigned canvas = *g_ips_canvas;
-        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
-        int local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
+        PaintCanvas *canvas = gCanvas;
+        canvas->CameraGetCurrent();
+        int local = (int)(long)canvas->CameraGetLocal(canvas->CameraGetCurrent());
         int sys = (this->skybox2Mesh)->addSystem((void *)local, 4, false);
         this->movingStarsIndex = sys;
 
         // pirate-base smoke plume attached to the pirate flagship.
-        if ((*g_status)->getSystem() != 0) {
-            SolarSystem *ss = (SolarSystem *)(*g_status)->getSystem();
+        if (gStatus->getSystem() != 0) {
+            SolarSystem *ss = (SolarSystem *)gStatus->getSystem();
             if (((SolarSystem*)ss)->hasPirateBase() != 0 && this->enemies != nullptr) {
                 for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
                     KIPlayer *k = (*this->enemies)[i];
@@ -3289,8 +3201,8 @@ void Level::initParticleSystems()
             }
         }
 
-        ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
-        local = (int)(long)((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
+        canvas->CameraGetCurrent();
+        local = (int)(long)canvas->CameraGetLocal(canvas->CameraGetCurrent());
         sys = this->particleSystemMgr->addSystem((void *)local, 7, false);
         this->field_284 = sys;
 
@@ -3319,7 +3231,7 @@ void Level::initParticleSystems()
     this->field_34 = this->ips_addPlayerSystem(0x15);
     this->field_50 = this->ips_addPlayerSystem(0x16);
     this->field_54 = this->ips_addPlayerSystem(0x17);
-    if ((*g_status)->getCurrentCampaignMission() == 0x50) {
+    if (gStatus->getCurrentCampaignMission() == 0x50) {
         this->field_58 = this->ips_addPlayerSystem(0x18);
         this->field_5c = this->ips_addPlayerSystem(0x18);
     }
@@ -3327,15 +3239,14 @@ void Level::initParticleSystems()
     (this->field_74)->init();
     (this->field_74)->enableSystemEmit(this->field_50, true);
     (this->field_74)->enableSystemEmit(this->field_54, true);
-    if ((*g_status)->getCurrentCampaignMission() == 0x50) {
+    if (gStatus->getCurrentCampaignMission() == 0x50) {
         (this->field_74)->enableSystemEmit(this->field_58, true);
         (this->field_74)->enableSystemEmit(this->field_5c, true);
     }
 
-    void (*enableEmit)(int) = g_ips_enableEmit;
-    enableEmit((int)(intptr_t)this->field_9c);
-    enableEmit((int)(intptr_t)this->particleEmitBoolPtr);
-    enableEmit((int)(intptr_t)this->particleRenderBoolPtr);
+    this->field_9c->init();
+    this->particleEmitBoolPtr->init();
+    this->particleRenderBoolPtr->init();
     if (*(ParticleSystemManager **)&this->field_94 != 0)
         (*(ParticleSystemManager **)&this->field_94)->init();
 }
@@ -3343,24 +3254,24 @@ void Level::initParticleSystems()
 // Level::createWingmen() — spawns the player's hired escort fighters in formation.
 void Level::createWingmen()
 {
-    int **statusB = g_cwm_statusB;
+    int **statusB = (int **)&gStatus;
 
-    if ((*g_status)->inSupernovaSystem() != 0 ||
-        ((Status*)*g_cwm_statusB)->getCurrentCampaignMission() == 0x9e ||
-        ((Status*)*g_cwm_statusB)->getWingmen() == 0 ||
+    if (gStatus->inSupernovaSystem() != 0 ||
+        gStatus->getCurrentCampaignMission() == 0x9e ||
+        gStatus->getWingmen() == 0 ||
         this->player == nullptr)
         return;
 
     Array<KIPlayer*> *arr = new Array<KIPlayer*>();
-    unsigned *wm = (unsigned *)((Status*)*g_cwm_statusB)->getWingmen();
+    unsigned *wm = (unsigned *)gStatus->getWingmen();
     arr->resize(*wm);
 
     unsigned n = arr->size();
     for (unsigned i = 0; i < n; i = i + 1) {
         int seed = **g_cwm_seedSrc;
-        ((Status*)*g_cwm_statusB)->getWingmen();
+        gStatus->getWingmen();
         ((AbyssEngine::AERandom*)(intptr_t)seed)->setSeed((long long)seed);
-        int fighter = (int)(*g_cwm_globals)->getRandomEnemyFighter(*(int *)(*statusB + 0x2c));
+        int fighter = (int)gGlobals->getRandomEnemyFighter(*(int *)(*statusB + 0x2c));
         int ship = (int)(intptr_t)createShip(5, 0, fighter, 0, 1, 0);
         (*arr)[i] = (KIPlayer *)(intptr_t)ship;
 
@@ -3371,13 +3282,13 @@ void Level::createWingmen()
         (*(Player **)((char *)(*arr)[i] + 4))->setAlwaysFriend(1);
         ((Player *)(intptr_t)(*(int *)((char *)(*arr)[i] + 4)))->setHitpoints(0x258);   // 600 hp
 
-        int wmList = ((Status*)*g_cwm_statusB)->getWingmen();
+        int wmList = gStatus->getWingmen();
         *(String *)((char *)(*arr)[i] + 0x18) =
             **(String **)(*(int *)(wmList + 4) + i * 4);
         *(int *)((char *)(*arr)[i] + 0x28) = *(int *)(*statusB + 0x2c);
 
-        ((Status*)*g_cwm_statusB)->getMission();
-        if (((Mission*)(*g_status)->getMission())->getType() == 0xc)
+        gStatus->getMission();
+        if (((Mission*)gStatus->getMission())->getType() == 0xc)
             *(char *)((char *)(*arr)[i] + 0x25) = 0;
     }
 
@@ -3406,10 +3317,10 @@ void Level::createScene()
 
     if (mode == 2) {
         createPlayer();
-        (*g_status)->setMission((Mission *)**g_csc_missionDef);
+        gStatus->setMission((Mission *)*(int *)gStatus);
         createMission();
-        if ((*g_status)->getCurrentCampaignMission() == 0x2b) {
-            void *canvas = *g_csc_canvas;
+        if (gStatus->getCurrentCampaignMission() == 0x2b) {
+            void *canvas = (void *)gCanvas;
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
@@ -3425,13 +3336,13 @@ void Level::createScene()
     }
 
     if (mode == 4) {
-        (*g_status)->getSystem();
-        int race = ((SolarSystem*)(*g_status)->getSystem())->getRace();
+        gStatus->getSystem();
+        int race = ((SolarSystem*)gStatus->getSystem())->getRace();
         unsigned crew = (race == 1) ? 2 : 3;
-        Station *st = (Station *)(*g_status)->getStation();
+        Station *st = (Station *)gStatus->getStation();
         int *agents = (int *)((Station*)st)->getAgents();
         char taken[7];
-        void *canvas = *g_csc_canvas;
+        void *canvas = (void *)gCanvas;
 
         if (agents == 0) {
             this->enemies = new Array<KIPlayer*>();
@@ -3453,7 +3364,7 @@ void Level::createScene()
                     }
                 }
                 int seat;
-                do { seat = ((AbyssEngine::AERandom*)(intptr_t)*g_csc_rng)->nextInt(); } while (taken[seat] != 0);
+                do { seat = gRandom->nextInt(); } while (taken[seat] != 0);
                 taken[seat] = 1;
 
                 AEGeometry *g = (AEGeometry *)::operator new(0xc0);
@@ -3487,22 +3398,22 @@ void Level::createScene()
     }
 
     if (mode == 0x17) {
-        int *host = *g_csc_shipHost;
-        Station *st = (Station *)(*g_status)->getStation();
+        int *host = (int *)gStatus;
+        Station *st = (Station *)gStatus->getStation();
         unsigned race;
         if (((Station*)st)->getIndex() == 0x65) race = 8;
         else {
-            st = (Station *)(*g_status)->getStation();
+            st = (Station *)gStatus->getStation();
             if (((Station*)st)->getIndex() == 100) race = 7;
-            else { (*g_status)->getSystem(); race = ((SolarSystem*)(*g_status)->getSystem())->getRace(); }
+            else { gStatus->getSystem(); race = ((SolarSystem*)gStatus->getSystem())->getRace(); }
         }
 
         this->enemies = new Array<KIPlayer*>();
         this->enemies->resize(1);
 
-        (int)(intptr_t)(*g_status)->getShip();
-        int shipIdx = ((Ship*)(int)(intptr_t)(*g_status)->getShip())->getIndex();
-        Ship *ship = (Ship *)(int)(intptr_t)(*g_status)->getShip();
+        (int)(intptr_t)gStatus->getShip();
+        int shipIdx = ((Ship*)(int)(intptr_t)gStatus->getShip())->getIndex();
+        Ship *ship = (Ship *)(int)(intptr_t)gStatus->getShip();
         int shipRace = ship->getRace();
         int actor = (int)(intptr_t)createShip(shipRace, 0, shipIdx, 0,
                                          this->missionPtr != 0x17, 0);
@@ -3513,7 +3424,7 @@ void Level::createScene()
         ((KIPlayer*)(intptr_t)actor)->setToSleep();
         (*(Player **)(actor + 4))->setAlwaysFriend(1);
 
-        void *canvas = *g_csc_canvas;
+        void *canvas = (void *)gCanvas;
         for (unsigned u = 0; u < 4; u = u + 1) {
             // decoration meshes around the showroom ship.
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
@@ -3532,13 +3443,13 @@ void Level::createScene()
         }
 
         // background traffic fighters.
-        Station *st2 = (Station *)(*g_status)->getStation();
+        Station *st2 = (Station *)gStatus->getStation();
         bool fromStationShips = (((Station*)st2)->getIndex() == 0x6c) &&
                                 (*(int *)(*host + 0x114) == 3);
-        AbyssEngine::AERandom *rng = *g_csc_rng;
+        AbyssEngine::AERandom *rng = gRandom;
         int spawnCount = rng->nextInt();
         if (fromStationShips) {
-            unsigned *ships = (unsigned *)((Station*)(*g_status)->getStation())->getShips();
+            unsigned *ships = (unsigned *)((Station*)gStatus->getStation())->getShips();
             spawnCount = (ships == 0) ? 0 : (int)*ships;
         }
         char seats[64];
@@ -3551,14 +3462,14 @@ void Level::createScene()
                 spawnRace = rng->nextInt();
                 if (rng->nextInt() < 0x1e) spawnRace = 8;
             }
-            int fighter = (int)(*g_csc_globals)->getRandomEnemyFighter(spawnRace);
-            Station *st3 = (Station *)(*g_status)->getStation();
+            int fighter = (int)gGlobals->getRandomEnemyFighter(spawnRace);
+            Station *st3 = (Station *)gStatus->getStation();
             if (((Station*)st3)->getIndex() == 100) {
                 int pick = rng->nextInt();
                 fighter = (pick == 1) ? 0x26 : (pick == 0) ? 0x25 : 0x28;
             }
             if (fromStationShips) {
-                Array<Ship*> *ships = ((Station*)(*g_status)->getStation())->getShips();
+                Array<Ship*> *ships = ((Station*)gStatus->getStation())->getShips();
                 fighter = (*ships)[s]->getIndex();
             }
             KIPlayer *k = (KIPlayer *)createShip(0, 0, fighter, 0, 0, 0);
@@ -3581,7 +3492,7 @@ void Level::createScene()
 // Level::renderBG(int t) — draws the skybox, nebula, planet rings and supernova glow.
 // t is the elapsed-time/frame word the cutscene passes through verbatim.
 void Level::renderBG(int t) {
-    unsigned canvas = *g_rbg_canvas;
+    uintptr_t canvas = (uintptr_t)gCanvas;
     // matrix dirty/cache flags live inside the sub_1d0 skybox matrix sub-object.
     char *skyMatrixFlags = (char *)&this->sub_1d0;
 
@@ -3598,8 +3509,8 @@ void Level::renderBG(int t) {
 
     // Build the skybox orientation into sub_20c, then compose it onto sub_1d0.
     Matrix *cloudMtx = (Matrix *)((char *)&this->sub_20c);
-    if ((*g_status)->inAlienOrbit() == 0 &&
-        ((SolarSystem*)(*g_status)->getSystem())->getIndex() == 0x1b) {
+    if (gStatus->inAlienOrbit() == 0 &&
+        ((SolarSystem*)gStatus->getSystem())->getIndex() == 0x1b) {
         // Alien-ring system: align the skybox basis to the star's light direction.
         Vector dir   = AbyssEngine::AEMath::VectorNormalize(this->starSystem->getLightDirection());
         Vector right = AbyssEngine::AEMath::VectorNormalize(
@@ -3639,8 +3550,8 @@ void Level::renderBG(int t) {
     (*(StarSystem **)&this->starSystem)->render();
 
     // supernova glow billboards.
-    if ((*g_status)->inSupernovaSystem() != 0 && this->skyboxTexture != -1) {
-        int camp = (*g_status)->getCurrentCampaignMission();
+    if (gStatus->inSupernovaSystem() != 0 && this->skyboxTexture != -1) {
+        int camp = gStatus->getCurrentCampaignMission();
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1a0), 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
         float scale = (0x6a < camp) ? 1.5f : 1.0f;
@@ -3668,7 +3579,7 @@ void Level::renderBG(int t) {
         ((AbyssEngine::Transform *)(intptr_t)xf2)->Update((int64_t)(int)t, true);
         if (*(int *)(xf + 0x110) < before) {
             // re-randomize the ring tilt: three Euler angles uniformly in [0, 2*pi).
-            AbyssEngine::AERandom *rng = *g_rbg_rng;
+            AbyssEngine::AERandom *rng = gRandom;
             const float toAngle = (1.0f / 65536.0f) * 6.2831855f;
             float ax = (float)rng->nextInt(0x10000) * toAngle;
             float ay = (float)rng->nextInt(0x10000) * toAngle;
@@ -3685,7 +3596,7 @@ void Level::renderBG(int t) {
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
     if (this->supernovaFlareActive != 0 &&
-        1.0f <= *(float *)(*(int *)g_rbg_engine + 0x28)) {
+        1.0f <= *(float *)((int)(intptr_t)gEngine + 0x28)) {
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
@@ -3696,13 +3607,13 @@ void Level::renderBG(int t) {
         ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
         ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
         Engine *eng = *(Engine **)(canvas + 0x34);
-        ((Engine*)*g_rbg_engine)->SetModelMatrix((const uint32_t *)eng);
+        gEngine->SetModelMatrix((const uint32_t *)eng);
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(unsigned)this->supernovaFlareTexture, 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         (*(Engine **)(canvas + 0x34))->LightSetLight(0x4000);
-        ((Engine*)*g_rbg_engine)->GlEnable(*(unsigned *)(canvas + 0x34), 0);
+        gEngine->GlEnable(*(unsigned *)(canvas + 0x34), 0);
         ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(unsigned)this->supernovaFlareMesh);
-        ((Engine*)*g_rbg_engine)->GlEnable(*(unsigned *)(canvas + 0x34), 0);
+        gEngine->GlEnable(*(unsigned *)(canvas + 0x34), 0);
         (*(Engine **)(canvas + 0x34))->LightEnable(false);
     }
 
@@ -3812,7 +3723,7 @@ static inline Vector levelPlayerPosition(Level *self) {
 // --- updateOrbit(): revive an enemy and teleport it to a far random offset from
 // the player. Profile: generic far-field wave.
 void Level::uo_spawnFar(int *kiPlayer) {
-    AbyssEngine::AERandom *rng = *g_uo_rng;
+    AbyssEngine::AERandom *rng = gRandom;
     Vector p = levelPlayerPosition(this);
     float ox = (float)(rng->nextInt() % 120000 - 60000);
     float oy = (float)(rng->nextInt() %  80000 - 40000);
@@ -3823,7 +3734,7 @@ void Level::uo_spawnFar(int *kiPlayer) {
 // --- updateMissionOrbit(): revive then reposition. profile 0 == far wave,
 // profile 1 == tighter boss-escort spread.
 void Level::umo_spawnAt(int *kiPlayer, int profile) {
-    AbyssEngine::AERandom *rng = *g_umo_rng;
+    AbyssEngine::AERandom *rng = gRandom;
     Vector p = levelPlayerPosition(this);
     int span = profile ? 40000 : 120000;
     float ox = (float)(rng->nextInt() % span - span / 2);
@@ -3835,7 +3746,7 @@ void Level::umo_spawnAt(int *kiPlayer, int profile) {
 // --- updateAlienAttackers(): place a revived alien relative to the player (when
 // alienInOrbit) or the station origin.
 void Level::uaa_placeAlien(int *kiPlayer, int alienInOrbit) {
-    AbyssEngine::AERandom *rng = *g_uaa_rng;
+    AbyssEngine::AERandom *rng = gRandom;
     Vector base;
     base.x = base.y = base.z = 0.0f;
     if (alienInOrbit)

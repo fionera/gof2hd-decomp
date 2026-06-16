@@ -24,7 +24,6 @@ Matrix MatrixSetRotationOrdered(const Matrix &base, float x, float y, float z, i
 } // namespace AEMath
 } // namespace AbyssEngine
 
-extern PaintCanvas *g_canvas;          // active paint canvas (camera target)
 extern unsigned     g_currentCamera;   // active camera index
 extern void        *g_cameraRng;       // rumble/shake RNG handle
 extern int          AERandom(void *rng, int bound);
@@ -292,7 +291,7 @@ void TargetFollowCamera::update(int dt) {
     if (this->fixed != 0) {
         // Fixed-matrix path: read the camera position straight from the local matrix.
         *getPosition() = MatrixGetPosition(this->localMatrix);
-        g_canvas->CameraSetLocal(g_currentCamera, this->localMatrix);
+        gCanvas->CameraSetLocal(g_currentCamera, this->localMatrix);
         if (this->target != 0) {
             Matrix m = this->target->getMatrix();
             *getUp() = MatrixGetUp(m);
@@ -441,6 +440,6 @@ void TargetFollowCamera::update(int dt) {
     Matrix roll;
     MatrixSetRotation(roll, this->roll, 0.0f, 0.0f);
     MatrixMultiply(look, roll);
-    g_canvas->CameraSetLocal(g_currentCamera, look);
+    gCanvas->CameraSetLocal(g_currentCamera, look);
     this->localMatrix = look;
 }

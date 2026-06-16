@@ -7,8 +7,6 @@
 
 // Engine singletons and the Mission vtable base, accessed via the project's
 // hidden pc-relative globals.
-__attribute__((visibility("hidden"))) extern Galaxy** g_galaxy;
-__attribute__((visibility("hidden"))) extern Status** g_status;
 __attribute__((visibility("hidden"))) extern GameText** g_gameText;
 __attribute__((visibility("hidden"))) extern void* Mission_vtable;
 
@@ -93,7 +91,7 @@ Mission* Mission::clone() {
 // Sets the target station index and caches that station's name.
 void Mission::setTargetStation(int idx) {
     this->targetStation = idx;
-    Station* st = (Station*)(long)(*g_galaxy)->getStation(idx);
+    Station* st = (Station*)(long)gGalaxy->getStation(idx);
     this->targetStationName = st->getName();
 }
 
@@ -107,7 +105,7 @@ Mission::Mission(int id, const String* client, int clientImage, int clientRace,
     this->clientRace = clientRace;
     this->costs = costs;
     this->targetStation = station;
-    Station* st = (Station*)(long)(*g_galaxy)->getStation(station);
+    Station* st = (Station*)(long)gGalaxy->getStation(station);
     this->targetStationName = st->getName();
     this->reward = reward;
     this->targetSystemName = String("");
@@ -143,10 +141,10 @@ Mission::Mission(int id) {
 // Computes the distance (light years) from the player's current system to this
 // mission's target station system.
 void Mission::calcDistance() {
-    Galaxy* g = *g_galaxy;
+    Galaxy* g = gGalaxy;
     Station* st = (Station*)(long)g->getStation(this->targetStation);
     Array<SolarSystem*>* sys = g->getSystems();
-    SolarSystem* a = (*sys)[(*g_status)->getStation()->getSystem()];
+    SolarSystem* a = (*sys)[gStatus->getStation()->getSystem()];
     SolarSystem* b = (*sys)[st->getSystem()];
     this->distance = (int)g->distance(a, b);
     delete st;
@@ -163,7 +161,7 @@ Mission::Mission(int id, int goods, int station) {
     if (station < 0) {
         this->targetStationName = String("");
     } else {
-        Station* st = (Station*)(long)(*g_galaxy)->getStation(station);
+        Station* st = (Station*)(long)gGalaxy->getStation(station);
         this->targetStationName = st->getName();
     }
     this->targetSystemName = String("");

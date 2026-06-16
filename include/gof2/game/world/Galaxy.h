@@ -48,4 +48,6 @@ public:
     uint8_t *visited;                 // heap array of 0x87 per-station visited flags
     Array<SolarSystem *> *systems;    // table of loaded SolarSystem objects
 };
+extern Galaxy* gGalaxy;            // canonical Galaxy singleton (binary .bss 0x2281ac)
+
 #endif

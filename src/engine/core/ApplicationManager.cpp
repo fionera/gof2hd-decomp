@@ -1,4 +1,5 @@
 #include "gof2/engine/core/ApplicationManager.h"
+ApplicationManager* gAppManager = nullptr;  // canonical ApplicationManager singleton
 #include "gof2/engine/audio/AESoundRessource.h"
 #include "gof2/engine/core/IApplicationModule.h"
 #include "gof2/engine/file/ConfigReader.h"
@@ -10,6 +11,7 @@
 // PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
 // underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight
 // (defined alongside PaintCanvas.cpp).
+extern PaintCanvas* gCanvas;   // canonical canvas singleton (defined in PaintCanvas.cpp)
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
 
@@ -41,6 +43,8 @@ ApplicationManager::ApplicationManager(void *engine) {
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas((Engine *)engine);
+    gCanvas = this->paintCanvas;     // publish the global canvas singleton
+    gEngine = (Engine *)engine;      // publish the global engine singleton
 
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;

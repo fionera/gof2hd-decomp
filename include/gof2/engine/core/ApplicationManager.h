@@ -118,4 +118,6 @@ public:
     void VibrateSupported();
 };
 
+extern ApplicationManager* gAppManager;  // canonical ApplicationManager singleton (binary .bss 0x2281d8)
+
 #endif

@@ -1,6 +1,7 @@
 #ifndef GOF2_GUN_H
 #define GOF2_GUN_H
 #include "gof2/common.h"
+#include "gof2/game/ItemSort.h"
 
 // Galaxy on Fire 2 -- Gun (weapon / projectile emitter). Top-level, no namespace.
 // Vector/Matrix are provided at global scope by common.h (math.h).
@@ -32,7 +33,7 @@ public:
     float field_0x50;
     uint8_t field_0x54;
     int itemIndex;
-    int weaponType;
+    ItemSort weaponType;
     int damage;
     int empDamage;
     uint8_t useCustomRadius;

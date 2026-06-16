@@ -9,17 +9,18 @@
 #include "gof2/engine/render/ImagePart.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/engine/render/PaintCanvas.h"
+#include "gof2/engine/core/AERandom.h"
 #include "gof2/game/mission/Mission.h"
 #include "gof2/game/world/Standing.h"
 #include "gof2/game/world/Level.h"
 #include "gof2/game/core/String.h"
+#include "gof2/game/core/Globals.h"
 #include "gof2/game/ui/TouchButton.h"
 #include "gof2/platform/libc.h"
 
 using AbyssEngine::PaintCanvas;
 
 // ---- foreign helpers (defined in the engine; linked elsewhere) -------------
-namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 int GameText_getLanguage(void);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
 
@@ -44,7 +45,6 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
 
 __attribute__((visibility("hidden"))) extern int g_dw_briefingCounts[];
 __attribute__((visibility("hidden"))) extern int g_dw_successCounts[];
-__attribute__((visibility("hidden"))) extern void **g_dw_status;
 
 int DialogueWindow::length() {
     Mission *mission = this->mission;
@@ -61,7 +61,7 @@ int DialogueWindow::length() {
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
         int result = 6;
-        if (F<int>(*g_dw_status, 0x114) == 2) result = 0x12;
+        if (((int *)gStatus)[0x45] == 2) result = 0x12;
         return result;
     }
     return 1;
@@ -153,8 +153,6 @@ bool DialogueWindow::hasSuccessDialogue(int id) {
     return g_dw_successDialogueIds[id] > 0;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_dw_statusForSet;
-
 void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->mission = mission;
     this->kind = kind;
@@ -171,7 +169,7 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
 
     this->page = 0;
     if (campaign == -1) {
-        campaign = ((Status *)*g_dw_statusForSet)->getCurrentCampaignMission();
+        campaign = gStatus->getCurrentCampaignMission();
     }
     this->campaignMission = campaign;
     this->loadContent();
@@ -179,10 +177,7 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
 
 __attribute__((visibility("hidden"))) extern void **g_dw_gameTextLoad;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundLoad;
-__attribute__((visibility("hidden"))) extern void **g_dw_randomLoad;
-__attribute__((visibility("hidden"))) extern void **g_dw_statusLoad;
 __attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryLoad;
-__attribute__((visibility("hidden"))) extern void **g_dw_globalsLoad;
 __attribute__((visibility("hidden"))) extern const char g_dw_emptyLoad[];
 __attribute__((visibility("hidden"))) extern int g_dw_campaignBriefingTextIds[];
 __attribute__((visibility("hidden"))) extern int g_dw_campaignSuccessTextIds[];
@@ -242,7 +237,7 @@ void DialogueWindow::loadContent() {
             if (GameText_getLanguage() == 1 && agent != 0) {
                 textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
-                textId = 0x188 + AbyssEngine::AERandom::nextInt(*g_dw_randomLoad, 5);
+                textId = 0x188 + gRandom->nextInt(5);
             }
         } else {
             textId = 0x20f;
@@ -250,7 +245,7 @@ void DialogueWindow::loadContent() {
         this->bodyText.assign(gameText->getText(textId));
 
         if (kind == 1) {
-            int standing = ((Status *)*g_dw_statusLoad)->getStanding();
+            int standing = gStatus->getStanding();
             ((Standing *)(intptr_t)standing)->applyMissionCompleted(mission->getClientRace());
         }
         if (mission->getTargetStation() == 0x6c && kind == 0) {
@@ -282,7 +277,7 @@ void DialogueWindow::loadContent() {
     }
 
     Agent *agent = mission == 0 ? (Agent *)0 : mission->getAgent();
-    int soundId = Globals_getDialogueSoundId(*g_dw_globalsLoad, textId, agent);
+    int soundId = Globals_getDialogueSoundId(gGlobals, textId, agent);
     this->voiceSound = soundId;
     if (soundId >= 0) {
         sound->play(soundId, 0, 0, 0);
@@ -318,7 +313,6 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_dw_statusTouchEnd;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundChoice;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundVoice;
 __attribute__((visibility("hidden"))) extern void **g_dw_soundPrev;
@@ -334,7 +328,7 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         }
         if (r != 0) return 0;
         this->choiceActive = 0;
-        if (((Status *)*g_dw_statusTouchEnd)->getCurrentCampaignMission() == 0x0f) {
+        if (gStatus->getCurrentCampaignMission() == 0x0f) {
             FModSound *sound = (FModSound *)*g_dw_soundChoice;
             sound->play(0xa2, 0, 0, 0);
             sound->stop(F<int>(sound, 0));
@@ -489,7 +483,6 @@ DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->set(mission, kind, -1);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_dw_random;
 __attribute__((visibility("hidden"))) extern int g_dw_germanBriefingTexts[];
 __attribute__((visibility("hidden"))) extern int g_dw_germanSuccessTexts[];
 __attribute__((visibility("hidden"))) extern int g_dw_germanOtherTexts[];
@@ -516,15 +509,14 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
 
     int index;
     int *texts;
-    void **random = g_dw_random;
     if (kind == 2) {
-        index = AbyssEngine::AERandom::nextInt(*random, 2);
+        index = gRandom->nextInt(2);
         texts = g_dw_germanSuccessTexts;
     } else if (kind != 0) {
-        index = AbyssEngine::AERandom::nextInt(*random, 2);
+        index = gRandom->nextInt(2);
         texts = g_dw_germanOtherTexts;
     } else {
-        index = AbyssEngine::AERandom::nextInt(*random, 2);
+        index = gRandom->nextInt(2);
         texts = g_dw_germanBriefingTexts;
     }
 
@@ -536,7 +528,6 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
 }
 
 __attribute__((visibility("hidden"))) extern int *g_dw_drawGuard;
-__attribute__((visibility("hidden"))) extern void **g_dw_paintCanvas;
 __attribute__((visibility("hidden"))) extern void **g_dw_layoutDraw;
 __attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryDraw;
 __attribute__((visibility("hidden"))) extern int *g_dw_drawPositionsReady;
@@ -547,7 +538,7 @@ __attribute__((visibility("hidden"))) extern int *g_dw_nextButtonY;
 __attribute__((visibility("hidden"))) extern int *g_dw_drawReadyFlag;
 
 void DialogueWindow::draw() {
-    ((PaintCanvas *)*g_dw_paintCanvas)->SetColor((unsigned int)-1);
+    gCanvas->SetColor((unsigned int)-1);
     Layout *layout = (Layout *)*g_dw_layoutDraw;
     layout->drawMask();
     String title;

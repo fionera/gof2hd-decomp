@@ -1,4 +1,5 @@
 #include "gof2/game/mission/Status.h"
+Status* gStatus = nullptr;            // canonical Status singleton
 #include "gof2/game/mission/PendingProduct.h"
 #include "gof2/engine/core/AERandom.h"
 #include "gof2/game/world/Galaxy.h"
@@ -90,14 +91,11 @@ int Status::inSupernovaSystem() {
 }
 
 // Static HUD predicate: the game's only "challenge mode" is the supernova
-// challenge, so this resolves the live status from the global board and reports
-// whether the player is currently stranded in the supernova system.
-extern Status** g_statusBoard;
-
+// challenge, so this resolves the live status from the global singleton and
+// reports whether the player is currently stranded in the supernova system.
 int Status::isChallengeMode() {
-    Status** slot = g_statusBoard;
-    if (slot == 0 || *slot == 0) return 0;
-    return (*slot)->inSupernovaSystem();
+    if (gStatus == 0) return 0;
+    return gStatus->inSupernovaSystem();
 }
 
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
@@ -332,11 +330,9 @@ bool Status::inDeepScienceOrbit() {
     return station->getIndex() == 100;
 }
 
-extern Status** g_statusBoard;
-
 // True if any wanted entry can post on the current system's bounty board right now.
 int Status::wantedBoardAccessible() {
-    Status* st = *g_statusBoard;
+    Status* st = gStatus;
     Array<Wanted*>* w = st->wanted;
     for (unsigned i = 0; i < w->size(); i = i + 1) {
         int race = asSystem(st->system)->getRace();
@@ -535,8 +531,6 @@ int Status::getFreighterMissionStationBit(int station) {
     return 0;
 }
 
-extern Galaxy** g_ccpGalaxy;
-extern AbyssEngine::AERandom** g_ccpRandom;
 extern int** g_ccpPriceMod;
 
 // Status::calcCargoPrices()
@@ -545,9 +539,9 @@ extern int** g_ccpPriceMod;
 //   expensive systems and the current system, clamped to the item's price band
 //   with a small per-system random jitter.
 void Status::calcCargoPrices() {
-    Galaxy* gal = *g_ccpGalaxy;
+    Galaxy* gal = gGalaxy;
     Array<SolarSystem*>* systems = gal->getSystems();
-    AbyssEngine::AERandom* rng = *g_ccpRandom;
+    AbyssEngine::AERandom* rng = gRandom;
     const float kPriceScale = 1.0f;
     const float kJitter = 1.0f;
 
@@ -637,11 +631,7 @@ bool Status::inAlienOrbit() {
 
 // Global slots referenced by resetGame.
 extern int* g_rg_settings;                 // -> settings record
-extern Galaxy** g_rg_galaxy;
 extern Array<Item*>** g_rg_itemTable;
-extern Achievements** g_rg_ach;
-extern Status** g_rg_statusSlotA;
-extern Mission*** g_rg_statusSlotB;        // -> Status holder, missions[0] base value source
 extern int** g_rg_statusSlotC;
 extern int** g_rg_zeroSlotA;
 extern char** g_rg_zeroSlotB;
@@ -743,7 +733,7 @@ void Status::resetGame() {
     }
 
     Globals_resetHints();
-    Galaxy* gal = *g_rg_galaxy;
+    Galaxy* gal = gGalaxy;
     gal->reset();
 
     for (unsigned j = 0; j < this->field_50->size(); j = j + 1)
@@ -779,7 +769,7 @@ void Status::resetGame() {
     this->field_f4 = -1;
     this->field_f8 = 1;
 
-    (*g_rg_ach)->init();
+    gAchievements->init();
 
     // recreate the four int arrays at 0x40/0x3c/0x48/0x44 (length 0xe9).
     Array<int>** off4[4] = {&this->field_0x40, &this->field_0x3c,
@@ -870,9 +860,8 @@ void Status::resetGame() {
 
     setCampaignMission(new Mission(4, 0, 0x4e));
 
-    Status* slotB = (Status*)*g_rg_statusSlotB;
     this->mission = (*this->missions)[0];
-    setShip(slotB->ship->makeShip(-1));
+    setShip(gStatus->ship->makeShip(-1));
     this->ship->priceDecline();
     setStation((Station*)(intptr_t)gal->getStation(0));  // new-game home station (index 0)
     this->ship->setCargo(0);
@@ -888,7 +877,7 @@ void Status::resetGame() {
     addCargo(shipObj, makeItemB(srcShip[0x3b]), 1);
     addCargo(shipObj, makeItemB(srcShip[0x52]), 2);
     addCargo(shipObj, makeItemB(srcShip[0x49]), 3);
-    addCargo((int)(intptr_t)(*g_rg_statusSlotA)->ship,
+    addCargo((int)(intptr_t)gStatus->ship,
              (int)(intptr_t)((Item*)(intptr_t)srcShip[0x24])->makeItem(), 0);
 
     if (*(char*)(srec + 0x35) != 0)
@@ -903,14 +892,12 @@ void Status::resetGame() {
     this->field_158 = -1;
 }
 
-extern Status** g_anwStatus;
 extern int g_anwSysMask;
-extern AbyssEngine::AERandom** g_anwRandom;
 
 // Walks the wanted roster and activates any newly-eligible bounty, routing it
 // onto a random reachable station pair. Returns the number of bounties activated.
 int Status::activateNewWanted() {
-    Status* slot = *g_anwStatus;
+    Status* slot = gStatus;
     Array<Wanted*>* w = slot->wanted;
     if (w == 0) {
         return 0;
@@ -1015,7 +1002,7 @@ int Status::activateNewWanted() {
             }
             path = pf->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned)(*path)[0] < lo || hi < (unsigned)(*path)[0]);
-        AbyssEngine::AERandom* rnd = *g_anwRandom;
+        AbyssEngine::AERandom* rnd = gRandom;
         int pick = (*path)[rnd->nextInt()];
         SolarSystem* dst = (*systems)[pick];
         Array<int>* dstStations = (Array<int>*)dst->getStations_i();
@@ -1299,8 +1286,6 @@ void Status::nextCampaignMission() {
     }
 }
 
-extern Galaxy** g_galaxy;
-
 // Tail dispatch shared by addStationToStack()/visitStation(): commits `s` as the
 // current station by routing through the full setStation() travel logic.
 void Status::setStationTail(Station* s) {
@@ -1314,7 +1299,7 @@ void Status::setStation(Station* s) {
         return;
     }
     station = s;
-    Galaxy* gal = *g_galaxy;
+    Galaxy* gal = gGalaxy;
     system = gal->getSystem(s->getSystem());
     if (system == 0) {
         return;
@@ -1403,10 +1388,7 @@ void Status::changeRating(int delta) {
     }
 }
 
-extern Status** g_dsStatus;
 extern int g_dsTypeMask;
-extern AbyssEngine::AERandom** g_dsRandom;
-extern Galaxy** g_dsGalaxy;
 
 // Status::departStation(Station* dest)
 //   Leaving the current station to travel to `dest`: refreshes inventories, stacks
@@ -1456,7 +1438,7 @@ void Status::departStation(Station* dest) {
     }
 
     // pick the active mission target for the new station.
-    Status* st = *g_dsStatus;
+    Status* st = gStatus;
     this->mission = 0;
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
         Mission* mi = (*missions)[i];
@@ -1503,7 +1485,7 @@ void Status::departStation(Station* dest) {
             if (!same) {
                 if (field_8c + 1 >= 10) {
                     field_8c = 0;
-                    AbyssEngine::AERandom* rng = *g_dsRandom;
+                    AbyssEngine::AERandom* rng = gRandom;
                     int sys;
                     do {
                         do {
@@ -1511,7 +1493,7 @@ void Status::departStation(Station* dest) {
                             field_7c = sys;
                         } while ((*systemVisibilities)[sys] == 0);
                     } while (sys == 10 || sys == 0xf);
-                    SolarSystem* ss = (*g_dsGalaxy)->getSystems()->at(field_7c);
+                    SolarSystem* ss = gGalaxy->getSystems()->at(field_7c);
                     Array<int>* sids = (Array<int>*)ss->getStations_i();
                     int n = rng->nextInt(sids->size());
                     field_80 = (*sids)[n];
@@ -1539,9 +1521,6 @@ void Status::departStation(Station* dest) {
     }
     field_0x108 = 0;
 }
-
-extern Status** g_mcStatusA;
-extern Status** g_mcStatusB;
 
 // Status::missionCompleted(bool atStation, bool docked, long long extra)
 //   Scans the active mission list; for the first unfinished mission whose
@@ -1641,7 +1620,7 @@ Mission* Status::missionCompleted(bool atStation, bool docked, long long extra) 
             break;
         }
         case 0xa8: {
-            Status* s = *g_mcStatusA;
+            Status* s = gStatus;
             if (m->getStatusValue() <= s->field_178) {
                 m->setWon(true);
                 s->field_178 = 0;
@@ -1667,12 +1646,12 @@ Mission* Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 int idx = m->getProductionGoodIndex();
                 int amt = m->getProductionGoodAmount();
                 if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                if (!(*g_mcStatusA)->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
+                if (!gStatus->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
             }
             break;
         case 0xb8:
             if (m->getStatusValue() == 0) {
-                Status* s = *g_mcStatusB;
+                Status* s = gStatus;
                 if (s->currentCampaignMission != 0x5c || s->inAlienOrbit() ||
                     s->station->getIndex() != 0x71) {
                     m->setWon(true);

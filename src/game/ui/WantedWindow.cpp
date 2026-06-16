@@ -184,8 +184,6 @@ extern int *g_WantedWindow_end_screen_w;
 extern int *g_WantedWindow_end_screen_h;
 extern int *g_WantedWindow_end_window_h;
 extern int *g_WantedWindow_end_window_w;
-extern ApplicationManager **g_WantedWindow_end_app;
-extern Galaxy **g_WantedWindow_end_galaxy;
 extern Layout **g_WantedWindow_end_layout_a;
 extern Layout **g_WantedWindow_end_layout_b;
 extern GameText **g_WantedWindow_end_text;
@@ -261,12 +259,12 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     }
 
     if (openMap) {
-        ApplicationManager *app = *g_WantedWindow_end_app;
+        ApplicationManager *app = gAppManager;
         void *module = app->GetApplicationModule(5);
         this->starMap = *(StarMap **)((char *)module + 0x10);
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         int lastSeen = wanted->getLastSeen();
-        int stationIndex = (*g_WantedWindow_end_galaxy)->getStation(lastSeen);
+        int stationIndex = gGalaxy->getStation(lastSeen);
         Station *station = (Station *)(long)stationIndex;
         delete this->mission;
         this->mission = nullptr;
@@ -303,9 +301,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
 }
 
 extern Layout **g_WantedWindow_draw_layout;
-extern PaintCanvas **g_WantedWindow_draw_canvas;
 extern unsigned int *g_WantedWindow_draw_font;
-extern Status **g_WantedWindow_draw_status;
 extern GameText **g_WantedWindow_draw_text;
 extern ImageFactory **g_WantedWindow_draw_factory;
 
@@ -316,7 +312,7 @@ void WantedWindow::draw() {
     }
 
     Layout *layout = *g_WantedWindow_draw_layout;
-    PaintCanvas *canvas = *g_WantedWindow_draw_canvas;
+    PaintCanvas *canvas = gCanvas;
     unsigned int font = *g_WantedWindow_draw_font;
 
     canvas->EnableClip(this->windowX,
@@ -360,9 +356,9 @@ void WantedWindow::draw() {
                                layout->field_0x44,
                            textY, false);
 
-        int campaign = (*g_WantedWindow_draw_status)->getCurrentCampaignMission();
+        int campaign = gStatus->getCurrentCampaignMission();
         if ((i == 0 && campaign == 0x80) ||
-            (i == 1 && (*g_WantedWindow_draw_status)->getCurrentCampaignMission() == 0x82)) {
+            (i == 1 && gStatus->getCurrentCampaignMission() == 0x82)) {
             String marked = wanted->getName();
             marked += String(" *", false);
             int textW = canvas->GetTextWidth(font, (void *)&marked);
@@ -450,7 +446,6 @@ void WantedWindow::draw() {
     layout->drawFooter();
 }
 
-extern Status **g_WantedWindow_init_status;
 extern Layout **g_WantedWindow_init_layout;
 extern uint8_t *g_WantedWindow_init_fullscreen;
 extern uint8_t *g_WantedWindow_init_tablet;
@@ -469,7 +464,7 @@ int WantedWindow::init() {
 
     this->wantedList = new Array<Wanted*>();
 
-    Status *status = *g_WantedWindow_init_status;
+    Status *status = gStatus;
     Array<Wanted*> *allWanted = status->getWanted();
     Layout *layout = *g_WantedWindow_init_layout;
 
@@ -602,14 +597,13 @@ int WantedWindow::init() {
     return 1;
 }
 
-extern PaintCanvas **g_WantedWindow_ctor_canvas;
 extern unsigned int *g_WantedWindow_ctor_font;
 
 WantedWindow::WantedWindow() {
     this->detailButton = nullptr;
     this->starMap = nullptr;
     this->imageParts = nullptr;
-    PaintCanvas *canvas = *g_WantedWindow_ctor_canvas;
+    PaintCanvas *canvas = gCanvas;
     int h = canvas->GetTextHeight(*g_WantedWindow_ctor_font);
     this->wantedList = nullptr;
     this->mission = nullptr;
@@ -669,7 +663,6 @@ float WantedWindow::getRelativeScrollHeight() {
 }
 
 extern ImageFactory **g_WantedWindow_select_factory;
-extern Galaxy **g_WantedWindow_select_galaxy;
 extern GameText **g_WantedWindow_select_text_a;
 extern Layout **g_WantedWindow_select_layout;
 
@@ -686,7 +679,7 @@ void WantedWindow::selectWanted(int idx) {
     this->nameText = wanted->getName();
 
     if (wanted->isActive() != 0) {
-        Galaxy *galaxy = *g_WantedWindow_select_galaxy;
+        Galaxy *galaxy = gGalaxy;
         Station *last = (Station *)(long)galaxy->getStation(wanted->getLastSeen());
         Station *travel = (Station *)(long)galaxy->getStation(wanted->getTravelsTo());
         Station *current = (Station *)(long)galaxy->getStation(wanted->getCurrentLocation());

@@ -101,11 +101,11 @@ void RocketGun::setRadar(AbyssEngine::Radar *radar)
     uint32_t mode = (uint32_t)(gunType - 0x1c);
     if (mode > 2) {
         if (gunType != 0xc1) {
-            if (gun->weaponType != 0x28)
+            if (gun->weaponType != ITEM_SORT_CLUSTER_MISSILE)
                 goto non_special;
         }
     }
-    if (gun->weaponType == 0x28) {
+    if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
         mode = 0;
     } else if (gunType == 0xc1) {
         mode = 3;
@@ -367,7 +367,7 @@ void RocketGun::update(int elapsed)
         }
 
         gun = this->gun;
-        if (gun->weaponType == 0x28 && gun->fireIndex > 0) {
+        if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE && gun->fireIndex > 0) {
             gun->hitSmall = 1;
             gun->fireIndex = gun->fireIndex - 1;
             this->update(elapsed);
@@ -423,7 +423,7 @@ void RocketGun::update(int elapsed)
                     gun = this->gun;
                 }
 
-                if (gun->weaponType == 0x28) {
+                if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
                     uint32_t total = (uint32_t)gun->initialLifetime;
                     uint32_t base = __aeabi_uidiv(total * i, gun->count);
                     float waveIn = (float)base +

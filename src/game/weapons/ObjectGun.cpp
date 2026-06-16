@@ -129,7 +129,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
             this->hasGeometry = 0;
             createGeometry = false;
         } else {
-            this->hasGeometry = (gun->weaponType != 0xb) ? 1 : 0;
+            this->hasGeometry = (gun->weaponType != ITEM_SORT_MINE) ? 1 : 0;
             createGeometry = this->hasGeometry != 0;
         }
     } else {
@@ -253,7 +253,7 @@ void ObjectGun::update(int dt)
         transform = TransformGetTransform(*canvas, this->geometry->transform);
         ((AbyssEngine::Transform *)((uint64_t)transform))->Update((int64_t)dt, 0);
 
-        if (this->gun->weaponType != 8) {
+        if (this->gun->weaponType != ITEM_SORT_TURRET) {
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
             cameraMatrix = *(const Matrix *)CameraGetLocal(paint, camera);
@@ -310,7 +310,7 @@ void ObjectGun::update(int dt)
 after_geometry:
     gun = this->gun;
     this->wasFiring = gun->delayActive;
-    if (gun->weaponType == 0x19) {
+    if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
         int positionOffset = 0;
         for (uint32_t i = 0; i < gun->count; ++i) {
             if (gun->hitFlags[i] != 0) {
@@ -357,7 +357,7 @@ void ObjectGun::render()
     Gun *gun = this->gun;
     gun->render();
 
-    if (gun->weaponType == 0x19) {
+    if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
         for (uint32_t i = 0; i < gun->count; ++i) {
             if (gun->hitFlags[i] != 0) {
                 this->explosions->data()[i]->render();
@@ -368,7 +368,7 @@ void ObjectGun::render()
 
     if (gun->active != 0) {
         identity(&cameraLocal);
-        if (gun->weaponType == 8) {
+        if (gun->weaponType == ITEM_SORT_TURRET) {
             void **canvas = (void **)g_PaintCanvas;
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
@@ -479,7 +479,7 @@ void ObjectGun::render()
                 if (*(uint8_t *)g_ObjectGunRenderScaleFlag != 0)
                     MatrixSetScaling(&local, this->scaleX, this->scaleY, this->scaleZ);
 
-                if (this->gun->weaponType == 0xb) {
+                if (this->gun->weaponType == ITEM_SORT_MINE) {
                     Array<Vector*> *spins = (Array<Vector*> *)this->gun->wobbleOffsets;
                     Vector *spin = spins->data()[i];
                     if (spin != nullptr && this->deltaTime > 0) {

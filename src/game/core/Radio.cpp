@@ -51,7 +51,6 @@ extern "C" __attribute__((visibility("hidden"))) char g_Radio_agentName[];
 extern "C" __attribute__((visibility("hidden"))) Layout** g_Radio_layout;
 extern "C" __attribute__((visibility("hidden"))) int** g_Radio_screenWidth;
 extern "C" __attribute__((visibility("hidden"))) FModSound** g_Radio_drawSound;
-extern "C" __attribute__((visibility("hidden"))) PaintCanvas** g_Radio_drawCanvas;
 extern "C" __attribute__((visibility("hidden"))) Layout** g_Radio_drawLayout;
 extern "C" __attribute__((visibility("hidden"))) Array<Wanted*>** g_Radio_drawWantedRoot;
 extern "C" __attribute__((visibility("hidden"))) GameText** g_Radio_drawGameText;
@@ -251,7 +250,7 @@ void Radio::draw(int64_t time, PlayerEgo* ego, LevelScript* script)
         this->soundPending = 0;
     }
 
-    (*g_Radio_drawCanvas)->SetColor(0xffffffffu);
+    gCanvas->SetColor(0xffffffffu);
     int imageId = this->currentMessage->imageID;
     Layout* layout = *g_Radio_drawLayout;
     layout->setDrawColor(-0xd1);

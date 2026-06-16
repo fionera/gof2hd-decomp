@@ -1,4 +1,5 @@
 #include "gof2/game/world/Galaxy.h"
+Galaxy* gGalaxy = nullptr;            // canonical Galaxy singleton
 
 #include "gof2/engine/file/FileRead.h"
 #include "gof2/game/core/Globals.h"
@@ -8,8 +9,6 @@
 #include "gof2/game/world/Station.h"
 
 // Engine singletons (kept as raw globals, like the rest of the port).
-extern Globals *g_globals;            // the Globals instance (random/sqrt/etc.)
-extern Status *g_status;              // the player Status instance
 extern Array<Item *> *g_items;        // the item table
 
 // The map-distance unit factor applied by distance().
@@ -46,7 +45,7 @@ int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
     int dx = x2 - x1;
     int dy = y2 - y1;
     float sum = (float)(dy * dy + dx * dx);
-    return (int)g_globals->sqrt(sum);
+    return (int)gGlobals->sqrt(sum);
 }
 
 int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2)
@@ -101,12 +100,12 @@ float Galaxy::distance(SolarSystem *a, SolarSystem *b)
 
     pa -= pb;
     float sq = pa.x * pa.x + pa.y * pa.y + pa.z * pa.z;
-    return g_globals->sqrt(sq) * g_galaxyDistanceScale;
+    return gGlobals->sqrt(sq) * g_galaxyDistanceScale;
 }
 
 void *Galaxy::getPlasmaProbabilities(Station *station)
 {
-    int alien = g_status->inAlienOrbit() ? 1 : 0;
+    int alien = gStatus->inAlienOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
     Array<Item *> *itemTable = g_items;
 
@@ -184,8 +183,8 @@ void *Galaxy::getPlasmaProbabilities(Station *station)
 
 void *Galaxy::getAsteroidProbabilities(Station *station)
 {
-    int alien = g_status->inAlienOrbit() ? 1 : 0;
-    int supernova = g_status->inSupernovaOrbit() ? 1 : 0;
+    int alien = gStatus->inAlienOrbit() ? 1 : 0;
+    int supernova = gStatus->inSupernovaOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
     Array<Item *> *itemTable = g_items;
 
@@ -257,7 +256,7 @@ void *Galaxy::getAsteroidProbabilities(Station *station)
     for (int j = 0; j < 22; j += 2) {
         out[j] = ids[j / 2];
         out[j + 1] = probs[j / 2];
-        if (supernova != 0 && g_status->getCurrentCampaignMission() > 0x59)
+        if (supernova != 0 && gStatus->getCurrentCampaignMission() > 0x59)
             out[j] = 0xd9;
     }
 
@@ -269,7 +268,7 @@ void *Galaxy::getAsteroidProbabilities(Station *station)
 int Galaxy::getStation(int index)
 {
     if (index < 0)
-        return (int)(intptr_t)g_status->playerStation;
+        return (int)(intptr_t)gStatus->playerStation;
 
     FileRead loader;
     return loader.loadStation(index);

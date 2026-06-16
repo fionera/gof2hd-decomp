@@ -1,13 +1,21 @@
 #include "gof2/game/core/Globals.h"
+Globals* gGlobals = nullptr;          // canonical Globals singleton
 #include "gof2/engine/render/Mesh.h"
 #include "gof2/game/ship/Ship.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+// gof2/engine/render/PaintCanvas.h defines a second `class PaintCanvas` that clashes with the
+// PaintCanvasClass.h view used in this TU; declare the canonical render-canvas singleton locally
+// (matches `extern PaintCanvas* gCanvas;` in render/PaintCanvas.h, binary .bss 0x2281b8).
+extern PaintCanvas* gCanvas;
 #include "gof2/engine/render/AEGeometry.h"
 #include "gof2/engine/audio/FModSound.h"
 // gof2/FileRead.h intentionally NOT included: its stub `struct Station`/`struct Agent`
 // collide with the canonical Station.h/Agent.h definitions this file relies on. FileRead
 // is only used here as an opaque handle via local extern "C" declarations.
 #include "gof2/game/mission/Status.h"
+#include "gof2/game/world/Galaxy.h"
+#include "gof2/game/mission/Achievements.h"
+#include "gof2/engine/core/AERandom.h"
 #include "gof2/game/ship/Agent.h"          // defines the canonical global `struct String` (12-byte String sret)
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/core/GameText.h"
@@ -67,18 +75,18 @@ void ParticleSettingsRef_initialize();
 extern "C" int Station_getIndex(int station);
 // The dropped-self Status singleton. The original loaded the global Status* implicitly for
 // each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
-// MGame/Mission/PlayerTurret reach). Recover the receiver as (*g_status)->method().
+// MGame/Mission/PlayerTurret reach). Recover the receiver as gStatus->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 int GameText_getLanguage();
 
 struct Status;
-// Two hidden PC-relative globals, each a pointer-to-pointer (deref'd twice).
-extern void *const gLB_status __attribute__((visibility("hidden")));
+// Hidden PC-relative leaderboard destination slot (g_android_leaderboard_scores @ 0x22d2c0;
+// NOT a shared singleton). The kills source resolves to the canonical Status singleton.
 extern void *const gLB_dest __attribute__((visibility("hidden")));
 
 void Globals_reportLeaderboards()
 {
-    int kills = ((Status *)(*(Status **)gLB_status))->getKills();
+    int kills = gStatus->getKills();
     *(int *)gLB_dest = kills;
 }
 
@@ -617,11 +625,11 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
                 int offer = ((Agent *)(agent))->getOffer();
 
                 if (offer == 8) {
-                    int ship = (int)(long)(*g_status)->getShip();
+                    int ship = (int)(long)gStatus->getShip();
                     int price = ((Ship *)(ship))->getPrice();
                     int pct = ((Agent *)(agent))->getModPricePercentage();
                     ((Agent *)(agent))->setSellItemPrice(idiv(price * pct, 100));
-                    ship = (int)(long)(*g_status)->getShip();
+                    ship = (int)(long)gStatus->getShip();
                     int modIdx = ((Agent *)(agent))->getSellModIndex();
                     if (((Ship *)(ship))->hasModInstalled(modIdx) != 0) {
                         void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
@@ -794,7 +802,6 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
 // does; kept as helpers to preserve the recoverable dispatch without inlining ~1.7KB.
 
 extern void *const gGSG_guard __attribute__((visibility("hidden")));
-extern void *const gGSG_canvas __attribute__((visibility("hidden")));    // shared canvas global
 extern const unsigned short gGSG_resTable[] __attribute__((visibility("hidden")));
 extern const unsigned short gGSG_meshTable[] __attribute__((visibility("hidden")));
 extern const short gGSG_extraTable[] __attribute__((visibility("hidden")));
@@ -806,23 +813,23 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
 {
     int *guardP = *(int **)gGSG_guard;
     volatile int saved = *guardP;
-    void **canvasP = *(void ***)gGSG_canvas;
+    PaintCanvas *canvas = gCanvas;        // the shared PaintCanvas singleton
 
     if (kind == 0xf) {
-        ((Globals*)self)->buildShipGroup0f(variant, *canvasP);
+        ((Globals*)self)->buildShipGroup0f(variant, canvas);
         goto done;
     }
     if (kind == 0xe || kind == 0xd) {
         void *geom = ::operator new(0xc0);
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
-        new ((void *)geom) AEGeometry((uint16_t)resId, (PaintCanvas *)*canvasP, false);
+        new ((void *)geom) AEGeometry((uint16_t)resId, canvas, false);
         unsigned t0 = 0xffffffff;
-        ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t0);
-        ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t0, 0, (bool)(1));
+        canvas->TransformCreate((unsigned int *)&t0);
+        canvas->TransformAddMesh((unsigned)t0, 0, (bool)(1));
         ((AEGeometry *)((unsigned)(long)geom))->addChild(t0);
         unsigned t1 = 0xffffffff;
-        ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t1);
-        ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t1, 0, (bool)(1));
+        canvas->TransformCreate((unsigned int *)&t1);
+        canvas->TransformAddMesh((unsigned)t1, 0, (bool)(1));
         ((AEGeometry *)((unsigned)(long)geom))->addChild(t1);
         unsigned short lodMeshes[2] = {0, 0};
         int dist[2];
@@ -840,42 +847,42 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
     // Generic path: per-ship table-driven build indexed by `kind`.
     {
         void *geom = ::operator new(0xc0);
-        new ((void *)geom) AEGeometry((uint16_t)gGSG_resTable[kind], (PaintCanvas *)*canvasP, true);
+        new ((void *)geom) AEGeometry((uint16_t)gGSG_resTable[kind], canvas, true);
         unsigned short mesh = gGSG_meshTable[kind];
         unsigned mainT = 0xffffffff;
         unsigned mainMesh = 0xffffffff;
         if (mesh != 0xffff) {
-            ((PaintCanvas *)*canvasP)->MeshCreate(mesh, &mainMesh, true);
-            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&mainT);
-            ((PaintCanvas *)*canvasP)->TransformAddMeshId(mainT, mainMesh);
+            canvas->MeshCreate(mesh, &mainMesh, true);
+            canvas->TransformCreate((unsigned int *)&mainT);
+            canvas->TransformAddMeshId(mainT, mainMesh);
             ((AEGeometry *)((unsigned)(long)geom))->addChild(mainT);
             ((AEGeometry *)geom)->meshHandle = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
-            ((PaintCanvas *)*canvasP)->MaterialCreate(mat, &matH);
-            ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(((AEGeometry *)geom)->meshId,
+            canvas->MaterialCreate(mat, &matH);
+            canvas->MeshChangeResourceMaterial(((AEGeometry *)geom)->meshId,
                                                    mat);
         }
         short extra = gGSG_extraTable[kind];
         if (extra != -1) {
             unsigned t = 0xffffffff;
-            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
-            ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(unsigned char)(char)extra));
+            canvas->TransformCreate((unsigned int *)&t);
+            canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(unsigned char)(char)extra));
             ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
         if (wireframe) {
             if (kind != 0x27 && kind != 0x29) {
                 unsigned t = 0xffffffff;
-                ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
-                ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(-0x14 + (char)kind)));
+                canvas->TransformCreate((unsigned int *)&t);
+                canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(-0x14 + (char)kind)));
                 ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
-            ((PaintCanvas *)*canvasP)->TransformCreate((unsigned int *)&t);
-            ((PaintCanvas *)*canvasP)->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(0x50 + (char)kind)));
+            canvas->TransformCreate((unsigned int *)&t);
+            canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(0x50 + (char)kind)));
             ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
         }
 
@@ -898,8 +905,8 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 dist[i] = d;
                 meshes[i] = (unsigned short)m;
                 if (!wireframe) {
-                    ((PaintCanvas *)*canvasP)->MeshCreate((unsigned short)m, idp, true);
-                    ((PaintCanvas *)*canvasP)->MeshChangeResourceMaterial(*idp,
+                    canvas->MeshCreate((unsigned short)m, idp, true);
+                    canvas->MeshChangeResourceMaterial(*idp,
                                                            (unsigned short)((short)kind + 0x7dc8));
                 }
                 d += 8000;
@@ -936,7 +943,6 @@ done:
     return;
 }
 
-extern void *const gREF_dlc __attribute__((visibility("hidden")));
 extern void *const gREF_rng1 __attribute__((visibility("hidden")));
 extern void *const gREF_rng2 __attribute__((visibility("hidden")));
 extern const int gREF_table __attribute__((visibility("hidden")));
@@ -952,7 +958,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     }
     unsigned r;
     if (t == 1) {
-        if (((Status *)(*(int *)gREF_dlc))->dlc1Won() == 0) {
+        if (gStatus->dlc1Won() == 0) {
             r = 9;
         } else {
             int n = AERandom_nextIntB(*(int *)gREF_rng1, 0x64);
@@ -1603,13 +1609,13 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
     *o15 = clampU(t15 + VectorUnsignedToFloat(*o7, 0));
 }
 
-// Two hidden PC-relative pointer-to-pointer globals (deref'd twice).
-extern void *const gRR_canvas __attribute__((visibility("hidden")));
+// Hidden PC-relative pointer-to-pointer global (deref'd twice); the canvas it reaches is
+// the shared PaintCanvas singleton (gCanvas).
 extern void *const gRR_arg __attribute__((visibility("hidden")));
 
 void Globals_releaseResources()
 {
-    ((PaintCanvas *)*(void **)gRR_canvas)->ReleaseAllResources();
+    gCanvas->ReleaseAllResources();
     return Globals::releaseResources_tail(*(void **)gRR_arg);
 }
 
@@ -1794,13 +1800,13 @@ int Globals::init(void *app) {
 
     void *galaxy = ::operator new(8);
     Galaxy_ctor(galaxy);
-    **gI_galaxy = galaxy;
+    gGalaxy = (Galaxy *)galaxy;
     void *ach = ::operator new(0x28);
     Achievements_ctor(ach);
-    **gI_achieve = ach;
+    gAchievements = (Achievements *)ach;
     void *status = ::operator new(0x1f0);
     Status_ctor(status);
-    **gI_status = status;
+    gStatus = (Status *)status;
     void *imgFac = ::operator new(0xc);
     new (imgFac) ImageFactory();
     **gI_imgFac = imgFac;
@@ -1815,13 +1821,13 @@ int Globals::init(void *app) {
     if (*engineSlot == 0) {
         *engineSlot = *(int *)app;
     }
-    **gI_appMgr = app;
+    gAppManager = (ApplicationManager *)app;
     ((ApplicationManager *)(app))->VibrateEnable(0);
 
     void *rng = ::operator new(8);
     AERandom_ctor(rng);
     **gI_ctxSlot = this;
-    **gI_random = (void *)rng;
+    gRandom = (AbyssEngine::AERandom *)rng;
 
     void *gen = ::operator new(1);
     Generator_ctor(gen);
@@ -1831,7 +1837,7 @@ int Globals::init(void *app) {
     new (rh) RecordHandler();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
-    ((Status *)(*g_status))->resetGame();
+    gStatus->resetGame();
     ((RecordHandler *)(*rhSlotP))->loadOptions();
 
     void *fmod = ::operator new(0x243c);
@@ -1903,38 +1909,38 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
     }
     if (mode == 1) {
         int *statSnd = *(int **)gPM_sndStatus;
-        if ((*g_status)->inAlienOrbit() != 0) {
+        if (gStatus->inAlienOrbit() != 0) {
             int *sndP = *(int **)gPM_snd1;
             ((FModSound *)(*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
-            int m = (*g_status)->getCurrentCampaignMission();
-            if (m > 0x92 && (*g_status)->getCurrentCampaignMission() < 0x9a) {
+            int m = gStatus->getCurrentCampaignMission();
+            if (m > 0x92 && gStatus->getCurrentCampaignMission() < 0x9a) {
                 track = 0x91;
             }
             ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
             return 0;
         }
-        ((SolarSystem *)(long)(*g_status)->getSystem())->getRace();
+        ((SolarSystem *)(long)gStatus->getSystem())->getRace();
         int *sndP = *(int **)gPM_snd1;
         ((FModSound *)(*sndP))->stop(0);
-        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
+        if (Station_getIndex((int)(long)gStatus->getStation()) == 0x6c) {
             ((FModSound *)(*sndP))->play(0x92, 0, 0, (float)vol);
             return 0;
         }
-        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x65) {
+        if (Station_getIndex((int)(long)gStatus->getStation()) == 0x65) {
             ((FModSound *)(*sndP))->play(0x93, 0, 0, (float)vol);
             return 0;
         }
-        if ((*g_status)->inSupernovaSystem() != 0) {
-            if ((*g_status)->getCurrentCampaignMission() == 0x59) {
+        if (gStatus->inSupernovaSystem() != 0) {
+            if (gStatus->getCurrentCampaignMission() == 0x59) {
                 ((FModSound *)(*sndP))->play(0x8be, 0, 0, (float)vol);
                 return 0;
             }
-            if ((*g_status)->getMission() != 0 && ((Mission *)(long)(*g_status)->getMission())->isEmpty() == 0) {
-                int tgt = ((Mission *)(long)(*g_status)->getMission())->getTargetStation();
-                if (tgt == Station_getIndex((int)(long)(*g_status)->getStation())) {
-                    int cm = (*g_status)->getCurrentCampaignMission();
+            if (gStatus->getMission() != 0 && ((Mission *)(long)gStatus->getMission())->isEmpty() == 0) {
+                int tgt = ((Mission *)(long)gStatus->getMission())->getTargetStation();
+                if (tgt == Station_getIndex((int)(long)gStatus->getStation())) {
+                    int cm = gStatus->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
                     ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
                     return 0;
@@ -1943,18 +1949,18 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
             ((FModSound *)(*sndP))->play(0x94, 0, 0, (float)vol);
             return 0;
         }
-        if ((*g_status)->inDeepScienceOrbit() != 0) {
+        if (gStatus->inDeepScienceOrbit() != 0) {
             ((FModSound *)(*sndP))->play(0x98, 0, 0, (float)vol);
             return 0;
         }
-        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x78 &&
-            ((*g_status)->getCurrentCampaignMission() == 0x7e ||
-             (*g_status)->getCurrentCampaignMission() == 0x85)) {
+        if (Station_getIndex((int)(long)gStatus->getStation()) == 0x78 &&
+            (gStatus->getCurrentCampaignMission() == 0x7e ||
+             gStatus->getCurrentCampaignMission() == 0x85)) {
             ((FModSound *)(*sndP))->play(0x8bf, 0, 0, (float)vol);
             return 0;
         }
         const int *table = &gPM_table1;
-        track = table[((SolarSystem *)(long)(*g_status)->getSystem())->getRace()];
+        track = table[((SolarSystem *)(long)gStatus->getSystem())->getRace()];
         ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
         return 0;
     }
@@ -1962,21 +1968,21 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
         return prev;
     }
 
-    int race = ((SolarSystem *)(long)(*g_status)->getSystem())->getRace();
+    int race = ((SolarSystem *)(long)gStatus->getSystem())->getRace();
     int *sndP = *(int **)gPM_snd0;
     ((FModSound *)(*sndP))->stop(0);
-    if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x6c) {
+    if (Station_getIndex((int)(long)gStatus->getStation()) == 0x6c) {
         ((FModSound *)(*sndP))->play(0x84, 0, 0, (float)vol);
         return 0;
     }
-    if (Station_getIndex((int)(long)(*g_status)->getStation()) == 0x65) {
+    if (Station_getIndex((int)(long)gStatus->getStation()) == 0x65) {
         ((FModSound *)(*sndP))->play(0x83, 0, 0, (float)vol);
         return 0;
     }
-    int idx = Station_getIndex((int)(long)(*g_status)->getStation());
-    if (idx == 10 || Station_getIndex((int)(long)(*g_status)->getStation()) == 100) {
-        if (Station_getIndex((int)(long)(*g_status)->getStation()) == 10 &&
-            (*g_status)->getCurrentCampaignMission() == 0x9f) {
+    int idx = Station_getIndex((int)(long)gStatus->getStation());
+    if (idx == 10 || Station_getIndex((int)(long)gStatus->getStation()) == 100) {
+        if (Station_getIndex((int)(long)gStatus->getStation()) == 10 &&
+            gStatus->getCurrentCampaignMission() == 0x9f) {
             ((FModSound *)(*sndP))->play(0x90, 0, 0, (float)vol);
             return 0;
         }

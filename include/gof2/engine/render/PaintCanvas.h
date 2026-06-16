@@ -337,4 +337,6 @@ using ::Image2D;
 template <class T> using Array = ::Array<T>;
 } // namespace AbyssEngine
 
+extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
+
 #endif

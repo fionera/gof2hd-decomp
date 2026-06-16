@@ -138,13 +138,10 @@ bool Standing::isEnemy(int race) {
     return false;
 }
 
-// Singleton holder: *g_adl_status -> the live Status object.
-extern Status** g_adl_status;
-
 // A committed crime against a race. Severity doubles in hardcore mode; kinds 0/2 are
 // "against the even slot", 1/3 the odd slot, with 0/2 applied as a penalty (negated).
 void Standing::applyDelict(unsigned kind, int severity) {
-    int hc = (*g_adl_status)->hardCoreMode();
+    int hc = gStatus->hardCoreMode();
     int delta = severity << hc;
     switch (kind) {
     case 0:
@@ -164,8 +161,6 @@ void Standing::applyDelict(unsigned kind, int severity) {
     }
 }
 
-// Status singleton holder: *g_apk_status -> Status*.
-extern Status** g_apk_status;
 // "Enemy race" lookup keyed by the current system's race (4 entries).
 extern const int g_apk_raceTable[4];
 
@@ -173,7 +168,7 @@ extern const int g_apk_raceTable[4];
 // mapped to the local system's owning race (once); otherwise it costs 5 standing
 // toward the victim's faction.
 void Standing::applyKill(int kind) {
-    Status* status = *g_apk_status;
+    Status* status = gStatus;
     unsigned sysRace;
     if (status->inAlienOrbit() != 0) {
         sysRace = 9;

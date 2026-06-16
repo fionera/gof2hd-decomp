@@ -24,11 +24,9 @@ using AbyssEngine::String;
 // active-table pointer and the lookup key into a single receiver cast and could not
 // recover a typed owner, so they are referenced here only through these handles.
 extern void *g_mw_gameText;        // active GameText table
-extern void *g_mw_ach;             // Achievements singleton holder
+extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
 
-extern void **g_mw_m_status;       // Status singleton (OnTouchMove)
 extern void **g_mw_m_layout;       // Layout singleton (OnTouchMove)
-extern void **g_mw_b_status;       // Status singleton (OnTouchBegin)
 extern void **g_mw_b_layout;       // Layout singleton (OnTouchBegin)
 
 extern void *g_mwi_layout;         // Layout singleton (init)
@@ -38,21 +36,16 @@ extern char *g_mwi_flagB;          // layout-state flag B
 extern char *g_mwi_flagC;          // layout-state flag C
 extern int  *g_mwi_screenW;        // screen width
 extern int  *g_mwi_screenH;        // screen height
-extern void *g_mwi_status;         // Status singleton (init)
 extern void *g_mwi_campaign;       // campaign-state record (untyped)
 extern void *g_mwi_imageFactory;   // image factory
-extern void *g_mwi_appMgr;         // application manager
 extern int   g_mwi_actionColor;    // action-button text colour
 
-extern void *g_mwd_canvas;         // paint canvas (draw)
 extern void *g_mwd_layout;         // Layout singleton (draw)
 extern int  *g_mwd_textId;         // GameText id base (draw)
 extern void *g_mwd_color;          // box colour
 extern void *g_mwd_imageFactory;   // image factory (draw)
 extern void *g_mwd_font;           // default font
 
-extern void *g_mwt_freelanceSrc;   // freelance mission source (touch)
-extern void *g_mwt_appMgr;         // application manager (touch)
 extern char *g_mwt_flagA;          // layout-state flag A (touch)
 extern char *g_mwt_flagB;          // layout-state flag B (touch)
 extern char *g_mwt_flagC;          // layout-state flag C (touch)
@@ -61,11 +54,9 @@ extern int  *g_mwt_screenH;        // screen height (touch)
 extern void *g_mwt_layout;         // Layout singleton (touch)
 extern void *g_mwt_resetLayout;    // layout for resetWindowDimensions
 
-extern void *g_mw_status;          // Status singleton (update)
 extern void *g_mw_campaign;        // campaign-state record (update)
 extern int  *g_mw_textBase;        // GameText id base (update)
 extern int  *g_mw_titleTable;      // per-mission title id table (update)
-extern void *g_mw_hashSource;      // replaceHash key source (== status)
 
 // Engine String-plumbing helpers the decompiler folded into free calls over raw
 // String storage; they wrap the corresponding Status/Layout/Globals members.
@@ -94,7 +85,7 @@ int MissionsWindow::OnTouchMove(int p1, int p2)
     } else if (this->m_starMapActive) {
         this->m_pStarMap->OnTouchMove(p1, p2);
     } else {
-        if (((Status *)*g_mw_m_status)->wantedBoardAccessible()) {
+        if (gStatus->wantedBoardAccessible()) {
             Array<TouchButton *> *arr = this->m_pTabButtons;
             for (unsigned i = 0; i < arr->size(); i++)
                 (*arr)[i]->OnTouchMove(p1, p2);
@@ -118,7 +109,7 @@ int MissionsWindow::OnTouchBegin(int p1, int p2)
     } else if (this->m_starMapActive) {
         this->m_pStarMap->OnTouchBegin(p1, p2);
     } else {
-        if (((Status *)*g_mw_b_status)->wantedBoardAccessible()) {
+        if (gStatus->wantedBoardAccessible()) {
             Array<TouchButton *> *arr = this->m_pTabButtons;
             for (unsigned i = 0; i < arr->size(); i++)
                 (*arr)[i]->OnTouchBegin(p1, p2);
@@ -145,7 +136,7 @@ uint8_t MissionsWindow::hangarNeedsUpdate()
 
 MissionsWindow::MissionsWindow()
 {
-    void *canvas = *(void **)g_mwd_canvas;
+    PaintCanvas *canvas = gCanvas;
     this->m_pAcceptButton = nullptr;
     this->m_pRejectButton = nullptr;
     this->m_pMapButton = nullptr;
@@ -254,7 +245,7 @@ int MissionsWindow::init()
 
     // --- left (campaign) scroll window ---
     int topY = L->field_0xc + this->m_y + L->field_0x20 + L->field_0x5c + L->field_0x2c;
-    int reserve = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ? L->field_0x30 : 0;
+    int reserve = (gStatus->gameWon() == 0) ? L->field_0x30 : 0;
     this->m_pCampaignWindow = new ScrollTouchWindow(
         L->buttonInsetX + this->m_x, topY,
         (this->m_width >> 1) - (L->field_0x2c + L->buttonInsetX),
@@ -262,17 +253,17 @@ int MissionsWindow::init()
             + L->field_0x2c * -2, false);
 
     // --- campaign-mission summary text ---
-    bool campShow = (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) ||
+    bool campShow = (gStatus->gameWon() == 0) ||
                     (*(char *)(*(char **)g_mwi_campaign + 0x37) != 0 ||
                      *(char *)(*(char **)g_mwi_campaign + 0x35) != 0);
     if (campShow) {
         String text("", false);
-        if (((Status *)(*(void **)g_mwi_status))->getCurrentCampaignMission() < 0xa4) {
+        if (gStatus->getCurrentCampaignMission() < 0xa4) {
             String *t = ((GameText *)g_mw_gameText)->getText(titleId);
             text = *t;
         }
-        void *key = *(void **)g_mwi_status;
-        Mission *cm = (Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mwi_status))->getCampaignMission());
+        void *key = gStatus;
+        Mission *cm = (Mission *)((void *)(intptr_t)gStatus->getCampaignMission());
         int type = cm->getType();
         bool production = (type == 0xa7) || (cm->getType() == 0xae);
         String suffix("", false);
@@ -295,8 +286,8 @@ int MissionsWindow::init()
         String b(text);
         this->m_pCampaignWindow->setText(a, b);
     } else {
-        bool useGold = ((Achievements *)(*(void **)g_mw_ach))->gotAllGoldMedals() != 0 &&
-                       ((Ship *)(((Status *)(*(void **)g_mwi_status))->getShip()))->getIndex() != 8;
+        bool useGold = gAchievements->gotAllGoldMedals() != 0 &&
+                       ((Ship *)(gStatus->getShip()))->getIndex() != 8;
         String a("", false);
         String *t = ((GameText *)g_mw_gameText)->getText(titleId);
         String b(*t);
@@ -305,7 +296,7 @@ int MissionsWindow::init()
     }
 
     // --- right (freelance) scroll window ---
-    int fmEmpty = ((Status *)(*(void **)g_mwi_status))->getFreelanceMission()->isEmpty();
+    int fmEmpty = gStatus->getFreelanceMission()->isEmpty();
     int half = this->m_width >> 1;
     int pad = L->field_0x2c;
     int rx = this->m_x + half + pad;
@@ -316,10 +307,10 @@ int MissionsWindow::init()
             (((((this->m_y - ry) + this->m_height) - L->field_0x10) - L->field_0x24) - L->field_0x4c)
                 - L->field_0x30, false);
 
-        Mission *fm = ((Status *)(*(void **)g_mwi_status))->getFreelanceMission();
+        Mission *fm = gStatus->getFreelanceMission();
         String text;
         Globals_getAgentMissionText(&text, fm->getAgent());
-        void *key = *(void **)g_mwi_status;
+        void *key = gStatus;
         String body(text);
         int rew = fm->getReward();
         int bonus = fm->getBonus();
@@ -347,23 +338,23 @@ int MissionsWindow::init()
     }
 
     // --- action buttons (Accept / Reject / Show-on-map) ---
-    if (((Status *)(*(void **)g_mwi_status))->inAlienOrbit() == 0) {
+    if (gStatus->inAlienOrbit() == 0) {
         int btnY = ((this->m_width >> 1) >> 1) - L->buttonInsetX;
-        if (((Status *)(*(void **)g_mwi_status))->gameWon() == 0) {
+        if (gStatus->gameWon() == 0) {
             String *t = ((GameText *)g_mw_gameText)->getText(titleId);
             this->m_pAcceptButton = new TouchButton(
                 t, 0, L->buttonInsetX + this->m_x,
                 (((this->m_y + this->m_height) - L->field_0x10) - L->field_0x24) - L->field_0x2c,
                 btnY, '!', 4);
         }
-        if (((Status *)(*(void **)g_mwi_status))->getFreelanceMission()->isEmpty() == 0) {
+        if (gStatus->getFreelanceMission()->isEmpty() == 0) {
             String *t = ((GameText *)g_mw_gameText)->getText(titleId);
             this->m_pRejectButton = new TouchButton(
                 t, 0, this->m_x + (this->m_width >> 1) + L->field_0x2c,
                 (((this->m_y - L->field_0x2c) + this->m_height) - L->field_0x10) - L->field_0x24,
                 btnY, '!', 4);
 
-            if (ApplicationManager_GetCurrentApplicationModule(*(void **)g_mwi_appMgr) == 5) {
+            if (ApplicationManager_GetCurrentApplicationModule(gAppManager) == 5) {
                 String *t2 = ((GameText *)g_mw_gameText)->getText(titleId);
                 this->m_pMapButton = new TouchButton(
                     t2, 0, this->m_x + btnY + (this->m_width >> 1) + L->field_0x2c * 2,
@@ -378,7 +369,7 @@ int MissionsWindow::init()
     this->m_mode = 0;
     this->m_hangarNeedsUpdate = 0;
 
-    if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
+    if (gStatus->wantedBoardAccessible() != 0) {
         if (this->m_pWantedWindow == nullptr)
             this->m_pWantedWindow = new WantedWindow();
         else
@@ -393,7 +384,7 @@ void MissionsWindow::draw()
     if (this->m_mode == 1)            { this->drawWanted();  return; }
     if (this->m_starMapActive != 0)   { this->drawStarMap(); return; }
 
-    void *canvas = *(void **)g_mwd_canvas;
+    PaintCanvas *canvas = gCanvas;
     void *layout = *(void **)g_mwd_layout;
     Layout *L = (Layout *)layout;
     void *color = *(void **)g_mwd_color;
@@ -408,7 +399,7 @@ void MissionsWindow::draw()
         Layout_drawHeader(layout, &header);
     }
 
-    if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
+    if (gStatus->wantedBoardAccessible() != 0) {
         Array<TouchButton *> *tabs = this->m_pTabButtons;
         for (unsigned int i = 0; i < tabs->size(); i++)
             (*tabs)[i]->draw();
@@ -457,7 +448,7 @@ void MissionsWindow::draw()
     }
 
     // Active freelance mission details.
-    Mission *fm = ((Status *)(*(void **)g_mwi_status))->getFreelanceMission();
+    Mission *fm = gStatus->getFreelanceMission();
     if (fm != nullptr && fm->isEmpty() == 0 && this->m_pAgentImageParts != nullptr) {
         ((ImageFactory *)(*(void **)g_mwd_imageFactory))->drawChar(
             this->m_pAgentImageParts, ox + (ow >> 1) + L->field_0x2c,
@@ -515,7 +506,7 @@ void MissionsWindow::OnTouchEnd(int y, int z)
         }
         if (r == 0) {
             // Confirmed: clear out the freelance-mission cargo/passengers and re-init.
-            Status *st = (Status *)(*(void **)g_mwt_freelanceSrc);
+            Status *st = gStatus;
             Mission *fm = st->getFreelanceMission();
             int type = fm->getType();
             bool clearCargo = (type == 0) || (fm->getType() == 3) || (fm->getType() == 5);
@@ -550,7 +541,7 @@ void MissionsWindow::OnTouchEnd(int y, int z)
 
     // Normal (no dialog) path, unless the star-map overlay is showing.
     if (this->m_starMapActive == 0) {
-        if (((Status *)(*(void **)g_mwi_status))->wantedBoardAccessible() != 0) {
+        if (gStatus->wantedBoardAccessible() != 0) {
             Array<TouchButton *> *tabs = this->m_pTabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++) {
                 if ((*tabs)[i]->OnTouchEnd(y, z) != 0)
@@ -562,13 +553,13 @@ void MissionsWindow::OnTouchEnd(int y, int z)
 
         if (this->m_pAcceptButton && this->m_pAcceptButton->OnTouchEnd(y, z) != 0) {
             // "Show on map" for the campaign mission.
-            ApplicationManager *appMgr = (ApplicationManager *)(*(void **)g_mwt_appMgr);
+            ApplicationManager *appMgr = gAppManager;
             void *mod = appMgr->GetApplicationModule(5);
             void *map = *(void **)((char *)mod + 0x10);
             this->m_pStarMap = (StarMap *)map;
             if (map == nullptr) {
                 StarMap *m = new StarMap(true,
-                    (Mission *)(void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(),
+                    (Mission *)(void *)(intptr_t)gStatus->getCampaignMission(),
                     false, -1);
                 void *mod2 = appMgr->GetApplicationModule(5);
                 *(void **)((char *)mod2 + 0x10) = m;
@@ -576,7 +567,7 @@ void MissionsWindow::OnTouchEnd(int y, int z)
                 this->m_pStarMap = (StarMap *)*(void **)((char *)mod3 + 0x10);
             } else {
                 this->m_pStarMap->init(true,
-                    (Mission *)(void *)(intptr_t)((Status *)(*(void **)g_mwt_freelanceSrc))->getCampaignMission(),
+                    (Mission *)(void *)(intptr_t)gStatus->getCampaignMission(),
                     false, -1);
             }
             this->m_starMapActive = 1;
@@ -589,19 +580,19 @@ void MissionsWindow::OnTouchEnd(int y, int z)
             }
             if (this->m_pRejectButton && this->m_pRejectButton->OnTouchEnd(y, z) != 0) {
                 // "Show on map" for the freelance mission.
-                ApplicationManager *appMgr = (ApplicationManager *)(*(void **)g_mwt_appMgr);
+                ApplicationManager *appMgr = gAppManager;
                 void *mod = appMgr->GetApplicationModule(5);
                 void *map = *(void **)((char *)mod + 0x10);
                 this->m_pStarMap = (StarMap *)map;
                 if (map == nullptr) {
                     StarMap *m = new StarMap(true,
-                        ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
+                        gStatus->getFreelanceMission(), false, -1);
                     void *mod2 = appMgr->GetApplicationModule(5);
                     *(void **)((char *)mod2 + 0x10) = m;
                     this->m_pStarMap = m;
                 } else {
                     this->m_pStarMap->init(true,
-                        ((Status *)(*(void **)g_mwt_freelanceSrc))->getFreelanceMission(), false, -1);
+                        gStatus->getFreelanceMission(), false, -1);
                 }
                 this->m_starMapActive = 1;
                 ((Layout *)(*(void **)g_mwt_resetLayout))->resetWindowDimensions();
@@ -663,22 +654,22 @@ void MissionsWindow::update(int dt)
     this->m_pCampaignWindow->update(dt);
     this->m_pFreelanceWindow->update(dt);
 
-    Mission *cm = (Mission *)((void *)(intptr_t)((Status *)(*(void **)g_mw_status))->getCampaignMission());
+    Mission *cm = (Mission *)((void *)(intptr_t)gStatus->getCampaignMission());
     int type = cm->getType();
     bool relevant = (type == 0xa7) || (cm->getType() == 0xae);
 
     if (relevant) {
         void *camp = *(void **)g_mw_campaign;
-        bool show = (((Status *)(*(void **)g_mw_status))->gameWon() == 0) ||
+        bool show = (gStatus->gameWon() == 0) ||
                     (*(char *)((char *)camp + 0x37) != 0 || *(char *)((char *)camp + 0x35) != 0);
         if (show) {
             String text("", false);
-            if (((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission() < 0xa4) {
+            if (gStatus->getCurrentCampaignMission() < 0xa4) {
                 String *titleTxt = ((GameText *)g_mw_gameText)->getText(
-                    g_mw_titleTable[((Status *)(*(void **)g_mw_status))->getCurrentCampaignMission()]);
+                    g_mw_titleTable[gStatus->getCurrentCampaignMission()]);
                 text = *titleTxt;
 
-                void *key = *(void **)g_mw_hashSource;
+                void *key = gStatus;
                 String hdr(text);
                 int need = cm->getProductionGoodAmount();
                 int have = cm->getStatusValue();

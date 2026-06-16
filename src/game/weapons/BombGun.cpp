@@ -60,9 +60,9 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
 
     // Pick the Explosion variant from the bomb type / weapon item.
     int explosionType;
-    if (bombType == 6) {
+    if (bombType == ITEM_SORT_EMP_BOMB) {
         explosionType = 7;          // EMP burst
-    } else if (bombType == 0x2a) {
+    } else if (bombType == ITEM_SORT_SHOCK_BLAST) {
         explosionType = 0xb;        // large nuke
     } else if (gun->itemIndex == 0xe8) {
         explosionType = 0xd;        // special weapon
@@ -78,7 +78,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     this->bombType = bombType;
     this->geometryTransformId = 0xffffffff;
 
-    if (bombType == 0x2a) {
+    if (bombType == ITEM_SORT_SHOCK_BLAST) {
         this->explosion->setScaling(50000.0f);
     }
 
@@ -90,7 +90,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
         int item = gun->itemIndex;
         bool customWeapon = item != 0xe8;
         int sel = customWeapon ? gun->weaponType : item;
-        if (customWeapon && sel != 0x22) {
+        if (customWeapon && sel != ITEM_SORT_IONIZING_MISSILE) {
             // Mesh id depends on the projectile model.
             uint16_t geomMesh = 0x395d;
             if (meshId == 0x395a) geomMesh = 0x395b;
@@ -157,7 +157,7 @@ void BombGun::update(int elapsed)
 
     Gun *gun = this->gun;
     if (gun->ignited == 0) {
-        if (this->bombType == 0x2a) {
+        if (this->bombType == ITEM_SORT_SHOCK_BLAST) {
             this->detonationPosition = player->getPosition();
         } else {
             this->detonationPosition = *(const Vector *)gun->positions;
@@ -250,7 +250,7 @@ void BombGun::update(int elapsed)
             force = 1.0f;
         if (force < 0.0f)
             force = 0.0f;
-        if (this->bombType == 0x2a)
+        if (this->bombType == ITEM_SORT_SHOCK_BLAST)
             force *= 0.2f;
         if (gameStatus()->hardCoreMode() != 0) {
             ((Player *)player->player)->damage((int)(force * (float)this->gun->damage));
@@ -263,7 +263,7 @@ void BombGun::update(int elapsed)
             ->setRumblePercentage(this->rumbleStrength, 0x32);
 
         Vector direction =
-            (this->bombType == 0x2a) ? player->GetDirVector() : Vector{0.0f, 0.0f, 0.0f};
+            (this->bombType == ITEM_SORT_SHOCK_BLAST) ? player->GetDirVector() : Vector{0.0f, 0.0f, 0.0f};
         this->explosion->start(&this->detonationPosition, &direction);
         this->detonationPending = 0;
     }

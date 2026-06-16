@@ -255,4 +255,6 @@ public:
     int isFreighterMissionStation(int station);
     int getFreighterMissionStationBit(int station);
 };
+extern Status* gStatus;            // canonical Status singleton (binary .bss 0x2281b0)
+
 #endif

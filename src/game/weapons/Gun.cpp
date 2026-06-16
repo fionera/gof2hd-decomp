@@ -164,8 +164,8 @@ float VectorLength(const Vector *v);
 extern int *const gIG_status __attribute__((visibility("hidden")));   // holder
 
 void Gun::ignite() {
-    if (this->weaponType == 6 || this->weaponType == 7) {
-        if (this->weaponType == 7)
+    if (this->weaponType == ITEM_SORT_EMP_BOMB || this->weaponType == ITEM_SORT_NUKE) {
+        if (this->weaponType == ITEM_SORT_NUKE)
             *(int *)(*gIG_status + 0xc8) += 1;
         *(uint8_t *)(this->level + 0x69) = 0;
     }
@@ -182,7 +182,7 @@ void Gun::ignite() {
     for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
         Player *target = *(Player **)(enemies[1] + ei * 4);
         this->target = target;
-        if (this->weaponType == 6 && target->isAsteroid() != 0)
+        if (this->weaponType == ITEM_SORT_EMP_BOMB && target->isAsteroid() != 0)
             continue;
         if (target->isActive() == 0)
             continue;
@@ -328,7 +328,7 @@ Gun::Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vec
     this->active = 0;
     this->enemies = 0;
     this->itemIndex = -1;
-    this->weaponType = -1;
+    this->weaponType = static_cast<ItemSort>(-1);   // sentinel: no weapon set yet
     this->useCustomRadius = 0;
     this->levelCollision = 1;
     this->errorMagnitudePercentage = 0;
@@ -390,19 +390,20 @@ void Gun::update(int dt) {
         }
     }
 
-    if (this->active != 0 && this->weaponType != 0x27) {
+    if (this->active != 0 && this->weaponType != ITEM_SORT_SENTRY_GUN) {
         this->calcCharacterCollision();
         float fdt = (float)dt;
         int off = 0;
         for (unsigned i = 0; i < this->count; i = i + 1) {
             int amt = ((int *)this->lifetimes)[i];
             int thr = 5;
-            if ((unsigned)(this->weaponType - 4) > 1 && this->weaponType != 0x28)
+            // thr=5 only for ROCKET(4)/MISSILE(5) and CLUSTER_MISSILE; everything else uses 0.
+            if ((unsigned)(this->weaponType - ITEM_SORT_ROCKET) > 1 && this->weaponType != ITEM_SORT_CLUSTER_MISSILE)
                 thr = 0;
             if (thr < amt) {
                 ((int *)this->lifetimes)[i] = amt - dt;
                 Vector scaled;
-                if (this->weaponType == 0xb) {
+                if (this->weaponType == ITEM_SORT_MINE) {
                     Vector tmp;
                     *(long long *)&tmp = (long long)this->velocities;
                     AbyssEngine::AEMath::operator_mul(&tmp, fdt);
@@ -424,11 +425,11 @@ void Gun::update(int dt) {
                     }
                     if (v <= -2000) {
                         int s = this->weaponType;
-                        if ((unsigned)(s - 4) < 2 || s == 0x28)
+                        if ((unsigned)(s - ITEM_SORT_ROCKET) < 2 || s == ITEM_SORT_CLUSTER_MISSILE)
                             *(int *)(*gUP_globals + 0x12c) = 0;
                     }
                 }
-                if (this->weaponType == 0x2a)
+                if (this->weaponType == ITEM_SORT_SHOCK_BLAST)
                     this->ignite();
             } else {
                 int *p = (int *)(this->positions + off);

@@ -14,18 +14,20 @@ struct Station {
     String getName();
 };
 
-// GOT-holder game singletons / globals (live object obtained via the double indirection).
+// Canonical render canvas singleton (binary .bss 0x2281b8). Declared locally rather than
+// via PaintCanvas.h because this TU already defines class PaintCanvas through
+// PaintCanvasClass.h; the declaration matches the canonical definition.
+extern PaintCanvas* gCanvas;
+
+// GOT-holder game globals (live object obtained via the double indirection).
 __attribute__((visibility("hidden"))) extern int** g_APL_apFlag;        // status-active flag
 __attribute__((visibility("hidden"))) extern void** g_APL_gametext;     // GameText singleton
-__attribute__((visibility("hidden"))) extern void** g_APL_status;       // Status singleton
 __attribute__((visibility("hidden"))) extern void** g_APL_font;         // measurement font String*
-__attribute__((visibility("hidden"))) extern void** g_APL_canvas;       // PaintCanvas
 __attribute__((visibility("hidden"))) extern int** g_APL_screenW;       // screen width
 __attribute__((visibility("hidden"))) extern int** g_APL_screenH;       // screen height
 __attribute__((visibility("hidden"))) extern void** g_APL_layout_draw;  // Layout (draw())
 __attribute__((visibility("hidden"))) extern void** g_APL_gametext_draw; // GameText (draw())
 __attribute__((visibility("hidden"))) extern void** g_APL_font_draw;    // String* font (draw())
-__attribute__((visibility("hidden"))) extern void** g_APL_canvas_draw;  // PaintCanvas (draw())
 
 extern const char kEmpty[] __attribute__((visibility("hidden")));
 extern const char kApLit1[] __attribute__((visibility("hidden")));
@@ -47,15 +49,14 @@ AutoPilotList::AutoPilotList(Level* level) {
         this->count++;
     }
 
-    void* status = *g_APL_status;
-    if (((SolarSystem*)((Status*)status)->getSystem())->currentOrbitHasWarpGate() != 0) {
+    if (((SolarSystem*)gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
         String* s = new String;
         s->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x223), false);
         (*this->entries)[1] = s;
         this->count++;
     }
 
-    if (((Status*)status)->inEmptyOrbit() == 0) {
+    if (gStatus->inEmptyOrbit() == 0) {
         String c = ((Station*)(&c))->getName();
         String b(kApLit2);
         String a = b + c;
@@ -81,11 +82,10 @@ AutoPilotList::AutoPilotList(Level* level) {
     this->width = 0;
     this->selected = 0;
     void* font = *g_APL_font;
-    void* canvas = *g_APL_canvas;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
             void* fontStr = *(void**)font;
-            int w = ((PaintCanvas*)*(void**)canvas)->GetTextWidth(
+            int w = gCanvas->GetTextWidth(
                         (unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
             if (this->width < w)
                 this->width = w;
@@ -164,7 +164,7 @@ void AutoPilotList::draw() {
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         String* text = (*this->entries)[i];
         if (text != nullptr) {
-            ((PaintCanvas*)*g_APL_canvas_draw)->DrawString(
+            gCanvas->DrawString(
                 (unsigned int)(uintptr_t)(String*)*g_APL_font_draw, text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;

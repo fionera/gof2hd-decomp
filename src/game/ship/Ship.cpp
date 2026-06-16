@@ -4,13 +4,11 @@
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/world/SolarSystem.h"
 
-// Engine/game singletons reached through the recovered indirection chains.
-extern int *gStatusRoot     __attribute__((visibility("hidden")));
-extern int *gStatusRoot2    __attribute__((visibility("hidden")));
+// Game data tables reached through the recovered indirection chains. These do
+// not resolve to any of the shared singletons and are left as-is.
 extern int **gShipDataRoot  __attribute__((visibility("hidden")));
 extern int *gRaceTable      __attribute__((visibility("hidden")));
 extern int *gDifficultyPtr  __attribute__((visibility("hidden")));
-extern int **gWorldSingleton __attribute__((visibility("hidden")));
 extern int *gShopRoot;
 
 // Releases each owned Item* in `a` then empties the list.
@@ -160,7 +158,7 @@ void Ship::setCargo(Array<Item*> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = *gWorldSingleton;
+    int *world = (int *)gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
@@ -174,7 +172,7 @@ void Ship::replaceCargo(Array<Item*> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = *gWorldSingleton;
+    int *world = (int *)gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
@@ -255,7 +253,7 @@ int Ship::getFreeSpace() {
 void Ship::changeLoad(int delta) {
     this->currentLoad += delta;
     int freeSpace = (this->baseLoad - this->currentLoad) + this->cargoPlus;
-    int *world = *gWorldSingleton;
+    int *world = (int *)gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
@@ -542,7 +540,6 @@ bool Ship::equals(Ship *other) {
 }
 
 void Ship::refreshValue() {
-    int *status = gStatusRoot2;
     this->repairType = -1;
     this->hasJumpDriveFlag = 0;
     this->hasCloakFlag = 0;
@@ -562,8 +559,8 @@ void Ship::refreshValue() {
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
-    if (*status != 0 && ((Status *)(*(void **)status))->getStanding() != 0) {
-        ((Standing *)((void *)(intptr_t)((Status *)(*(void **)status))->getStanding()))->setPlayerSignatureRace(-1);
+    if (gStatus != 0 && gStatus->getStanding() != 0) {
+        ((Standing *)((void *)(intptr_t)gStatus->getStanding()))->setPlayerSignatureRace(-1);
     }
     this->value = this->price;
 
@@ -641,8 +638,8 @@ void Ship::refreshValue() {
             case 0x1d: {
                 int idx = cur->getIndex();
                 this->signatureRace = idx - 0xbd;
-                if (*status != 0 && ((Status *)(*(void **)status))->getStanding() != 0) {
-                    ((Standing *)((void *)(intptr_t)((Status *)(*(void **)status))->getStanding()))->setPlayerSignatureRace(this->signatureRace);
+                if (gStatus != 0 && gStatus->getStanding() != 0) {
+                    ((Standing *)((void *)(intptr_t)gStatus->getStanding()))->setPlayerSignatureRace(this->signatureRace);
                 }
                 break;
             }
@@ -684,13 +681,12 @@ void Ship::refreshValue() {
 }
 
 void Ship::adjustPrice() {
-    int *status = gStatusRoot;
-    if (((Status *)(*(void **)status))->getStation() != 0 && this->price > 0) {
+    if (gStatus->getStation() != 0 && this->price > 0) {
         int *root = (int *)gShipDataRoot;
         int *table = *(int **)(*(int *)root + 4);
         int *entry = *(int **)((char *)table + this->index * 4);
         int cat = *entry;
-        SolarSystem *system = (SolarSystem *)(intptr_t)((Status *)(*(void **)status))->getSystem();
+        SolarSystem *system = (SolarSystem *)(intptr_t)gStatus->getSystem();
         int race = system->getRace();
         int *table2 = *(int **)(*(int *)root + 4);
         int *entry2 = *(int **)((char *)table2 + this->index * 4);

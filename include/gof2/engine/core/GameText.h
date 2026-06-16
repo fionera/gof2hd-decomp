@@ -29,4 +29,6 @@ public:
     // Two-argument language switch the savegame loader invokes (count passed as a short).
     void setLanguage(short stringCount, int langId);
 };
+extern GameText* gGameText;        // canonical localized-text singleton
+
 #endif

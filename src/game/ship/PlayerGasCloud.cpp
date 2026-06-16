@@ -28,7 +28,6 @@ using AbyssEngine::AEMath::MatrixGetDir;
 using AbyssEngine::AEMath::MatrixGetUp;
 
 // Status singleton, reached via the global Status pointer (same pattern as Hud/Player).
-extern Status** gStatus;
 
 // Engine globals reached through the GOT.
 extern void** g_pgc_canvas;        // paint canvas (intact-cloud geometry)
@@ -295,7 +294,7 @@ void PlayerGasCloud::update(int dt)
             if (p2->isInTurretMode() != 0 &&
                 (*this->sparkTimers)[i] >= g_pgcu_minTimer) {
                 (*this->sparkTimers)[i] = g_pgcu_resetTimer;
-                Ship* ship = (*gStatus)->getShip();
+                Ship* ship = gStatus->getShip();
                 int itemId = this->itemId;
                 if (ship->getFreeSpace() < 1) {
                     if (this->level->getPlayer() != 0) {
@@ -315,8 +314,8 @@ void PlayerGasCloud::update(int dt)
 
                         char* camp = (char*)*(void**)g_pgcu_campaign;
                         if (camp[0x2d] == 0 &&
-                            (*gStatus)->getCurrentCampaignMission() > 0x8e) {
-                            Mission* mission = (*gStatus)->getMission();
+                            gStatus->getCurrentCampaignMission() > 0x8e) {
+                            Mission* mission = gStatus->getMission();
                             if (mission->isEmpty() != 0 && this->itemId == 0xcc) {
                                 camp[0x2d] = 1;
                                 this->level->createRadioMessage(0x1a, 0);
@@ -325,7 +324,7 @@ void PlayerGasCloud::update(int dt)
                     }
                     ((FModSound*)g_pgcu_pickupSound)->stop(0x8d0);
                     ((FModSound*)g_pgcu_pickupSound)->play(0x8d0, 0, 0, 0.0f);
-                    Ship* ship2 = (*gStatus)->getShip();
+                    Ship* ship2 = gStatus->getShip();
                     ship2->addCargo(def);
                 }
                 (*this->sparkScale)[i] = 0.0f;
@@ -358,7 +357,7 @@ void PlayerGasCloud::update(int dt)
                       this->elapsedSinceExplosion >= 2000;
         bool steered = false;
         if (homing) {
-            Ship* ship = (*gStatus)->getShip();
+            Ship* ship = gStatus->getShip();
             if (ship->getFirstEquipmentOfSort(0x23) != 0) {
                 // Steer toward the turret.
                 Vector dir = turretPos - shardPos;
@@ -367,7 +366,7 @@ void PlayerGasCloud::update(int dt)
                 *(*this->sparkVelocities)[i] = dn;
                 moveGeom = (*this->sparkGeometries)[i];
 
-                Ship* ship2 = (*gStatus)->getShip();
+                Ship* ship2 = gStatus->getShip();
                 Item* eq = ship2->getFirstEquipmentOfSort(0x23);
                 int attr = eq->getAttribute(0);
                 float step = (float)(attr * dt);

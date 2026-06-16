@@ -13,8 +13,12 @@
 #include "gof2/engine/math/Transform.h"
 #include "gof2/platform/libc.h"
 
-// ::PaintCanvas global render-target singleton (defined in src/PaintCanvas.cpp).
-extern void *g_PaintCanvas;
+// Canonical singletons reachable from this TU. gCanvas/gRandom are declared
+// locally because the full PaintCanvas.h / AERandom.h headers clash with the
+// AbyssEngine stubs already pulled in by Trail.h; these match the canonical
+// definitions (::PaintCanvas* gCanvas, AbyssEngine::AERandom* gRandom).
+namespace AbyssEngine { class AERandom; }
+extern AbyssEngine::AERandom* gRandom;
 
 // KIPlayer::setShipGroup(AEGeometry*, int, bool) — the real inherited base method
 // (resolved @0x73114). KIPlayer.h currently declares a stale setShipGroup(int,int,int)
@@ -37,6 +41,10 @@ public:
     void *MaterialGetMaterial(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
+
+// Canonical render-canvas singleton (binary .bss 0x2281b8), typed against the
+// local ::PaintCanvas view above to avoid the Trail.h type clash.
+extern PaintCanvas* gCanvas;
 
 extern "C" void *Trail_dtor(void *p);
 extern "C" void *Explosion_dtor(void *p);
@@ -68,12 +76,6 @@ static inline float AEMath_VectorLength(void *v) {
 }
 extern "C" int AERandom_nextIntB(int rng, int bound);
 extern "C" void PF_vscale(void *out, void *vec, float scalar);
-
-// Status singleton holder. The original code loads the Status* receiver from a PC-relative
-// global before each of these calls; the decompiler dropped that first (self) arg. We recover
-// it via the same hidden holder used by setMissionCrate (gMissionCrateApp).
-extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
-static inline Status *PF_status() { return *(Status **)gMissionCrateApp; }
 
 uint8_t PlayerFighter::hasMissionCrateLost() {
     return this->missionCrateLost;
@@ -233,7 +235,6 @@ void PlayerFighter::setLevel(Level *lvl) {
 }
 
 extern void *const gPFC_guard __attribute__((visibility("hidden")));
-extern void *const gPFC_rng __attribute__((visibility("hidden")));
 extern int *const gPFC_sharedRoute __attribute__((visibility("hidden")));
 extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
 
@@ -256,7 +257,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     AEMath_Matrix_ctor(&self->easeBaseMatrix);
     AEMath_Matrix_ctor(&self->rollMatrix);
 
-    int rng = *(int *)gPFC_rng;
+    int rng = (int)(intptr_t)gRandom;
     // 9 candidate waypoints (3 floats each) drawn from the RNG.
     float wp[27];
     int r;
@@ -363,7 +364,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     ((Route *)((void *)(long)*shared))->setLoop(0);
     self->routeClone = 0;
 
-    if (PF_status()->getCurrentCampaignMission() != 0x29) {
+    if (gStatus->getCurrentCampaignMission() != 0x29) {
         int cloned;
         if (wingmanCmd == 9) {
             cloned = (int)(intptr_t)((Route *)((void *)(long)*shared))->clone();
@@ -383,7 +384,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
         ::operator delete(Generator_dtor(g));
     }
 
-    self->field_0x128 = (PF_status()->inAlienOrbit() != 0) ? 100000 : 50000;
+    self->field_0x128 = (gStatus->inAlienOrbit() != 0) ? 100000 : 50000;
 
     void *exp = ::operator new(0x68);
     Explosion_ctor(exp, 0);
@@ -398,7 +399,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     self->field_0x1a0 = -1;
 
     int fov;
-    if (PF_status()->getCurrentCampaignMission() == 1) {
+    if (gStatus->getCurrentCampaignMission() == 1) {
         fov = -1;
     } else {
         fov = (self->field_0xdc == 0) ? 0x2e : 0x30;
@@ -476,7 +477,7 @@ void PlayerFighter::update(int dt) {
         } else if (((KIPlayer *)(this))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char)((Standing *)(PF_status()->getStanding()))->isEnemy(this->wingmanCommand);
+            enemy = (unsigned char)((Standing *)(gStatus->getStanding()))->isEnemy(this->wingmanCommand);
         }
         *(unsigned char *)(this->player + 0x5c) = enemy;
     }
@@ -595,28 +596,23 @@ done:
     return;
 }
 
-extern "C" void *gCloakRand;  // hidden PC-relative global (deref'd twice)
-
 void PlayerFighter::cloak(int dur, bool b) {
     unsigned v;
     if (dur > 0) {
         v = (unsigned)dur;
     } else {
-        v = PF_nextInt(**(int **)&gCloakRand) + 5000;
+        v = PF_nextInt((int)(intptr_t)gRandom) + 5000;
     }
     this->cloakActive = 1;
     this->cloakDuration = v + 4000;
     this->field_0x2d9 = b;
 }
 
-// hidden PC-relative global: the App singleton pointer, deref'd twice.
-extern void *const gMissionCrateApp __attribute__((visibility("hidden")));
-
 void PlayerFighter::setMissionCrate(bool on) {
     this->isMissionCrate = on;
     if (on) {
         this->lootList = new Array<int>();
-        int mission = (int)(intptr_t)((Status *)(*(unsigned *)gMissionCrateApp))->getMission();
+        int mission = (int)(intptr_t)gStatus->getMission();
         int type = ((Mission *)(mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         this->lootList->push_back(item);
@@ -723,7 +719,6 @@ static inline void AEMath_VectorScale(void *out, float s, void *v) {  // out = s
 extern void *const gIP_guard __attribute__((visibility("hidden")));
 extern const float gIP_strength __attribute__((visibility("hidden")));
 extern void *const gIP_rngFn __attribute__((visibility("hidden")));     // DAT_000efdc0 (fn ptr)
-extern void *const gIP_rng __attribute__((visibility("hidden")));       // DAT_000efdc4 (rng holder)
 
 typedef void (*GetPosFn)(void *outVec, PlayerFighter *self);
 typedef int (*RngFn)(int rng, int bound);
@@ -757,10 +752,10 @@ void PlayerFighter::initPush(void *target, int radius) {
     this->pushNormal = *(Vector *)norm;
 
     RngFn rng = (RngFn)gIP_rngFn;
-    int *rngObj = *(int **)gIP_rng;
-    float rx = VectorSignedToFloat(rng(*rngObj, 200) - 100, 0);
-    float ry = VectorSignedToFloat(rng(*rngObj, 200) - 100, 0);
-    float rz = VectorSignedToFloat(rng(*rngObj, 200) - 100, 0);
+    int rngObj = (int)(intptr_t)gRandom;
+    float rx = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
+    float ry = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
+    float rz = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
     float rvec[3] = {rx, ry, rz};
     float rnorm[3];
     AbyssEngine::AEMath::VectorNormalize((Vector *)rnorm, (Vector *)rvec);
@@ -780,7 +775,7 @@ void PlayerFighter::setExhaustVisible(bool vis) {
         int sub = this->subGeometry;
         int id = (sub != 0) ? *(int *)(sub + 0x14) : *(int *)(geom + 0x14);
         if (id != -1) {
-            unsigned t = (unsigned)(unsigned long)((PaintCanvas *)g_PaintCanvas)->TransformGetTransform(*(unsigned *)gExhaustCanvas);
+            unsigned t = (unsigned)(unsigned long)gCanvas->TransformGetTransform(*(unsigned *)gExhaustCanvas);
             // setExhaustVisible() tail: toggle the exhaust transform's visibility.
             return ((AbyssEngine::Transform *)(unsigned long)t)->SetVisible(vis);
         }
@@ -828,11 +823,11 @@ void PlayerFighter::render() {
             idp = *(unsigned **)gR_g5;
             unsigned char tmp[60];
             unsigned id = *idp;
-            void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
+            void *src = gCanvas->TransformGetLocal(id);
             memcpy(tmp, src, 0x3c);
-            ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
+            gCanvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
             ((AEGeometry *)(0))->render();
-            ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
+            gCanvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
         }
         if (this->trail != 0) {
             ((AbyssEngine::Trail *)(0))->render();
@@ -842,11 +837,11 @@ void PlayerFighter::render() {
     {
         unsigned char tmp[60];
         unsigned id = *idp;
-        void *src = ((PaintCanvas *)g_PaintCanvas)->TransformGetLocal(id);
+        void *src = gCanvas->TransformGetLocal(id);
         memcpy(tmp, src, 0x3c);
-        ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
+        gCanvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
         ((AEGeometry *)(0))->render();
-        ((PaintCanvas *)g_PaintCanvas)->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
+        gCanvas->TransformSetLocal(*idp, *(const AbyssEngine::AEMath::Matrix *)(*(void **)(this->subGeometry + 0xc)));
     }
 done:
     ;
@@ -962,13 +957,6 @@ extern "C" void PF_cloakStart(PlayerFighter *self);                       // -> 
 extern "C" void PF_cloakStop(PlayerFighter *self, int on);               // -> 0x1ac1f8
 extern "C" void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag); // -> 0x1ac208
 
-extern void *const gHC_rng1 __attribute__((visibility("hidden")));
-extern void *const gHC_canvasClone __attribute__((visibility("hidden")));
-extern void *const gHC_canvasMat __attribute__((visibility("hidden")));
-extern void *const gHC_rng2 __attribute__((visibility("hidden")));
-extern void *const gHC_canvasA __attribute__((visibility("hidden")));
-extern void *const gHC_canvasB __attribute__((visibility("hidden")));
-extern void *const gHC_canvasC __attribute__((visibility("hidden")));
 extern const float gHC_divIn __attribute__((visibility("hidden")));
 extern const float gHC_divOut __attribute__((visibility("hidden")));
 
@@ -986,18 +974,16 @@ void PlayerFighter::handleCloaking() {
             unsigned matId = this->cloakMaterial;
             this->field_0x13c = 1;
             if (matId == 0xffffffff) {
-                void **cv = *(void ***)gHC_canvasClone;
-                ((PaintCanvas *)*cv)->MeshCloneMaterial(*(unsigned *)(this->subGeometry + 0x1c),
+                gCanvas->MeshCloneMaterial(*(unsigned *)(this->subGeometry + 0x1c),
                                               &this->cloakMaterial);
-                int mp = (int)(long)((PaintCanvas *)*cv)->MeshGetPointer(
+                int mp = (int)(long)gCanvas->MeshGetPointer(
                                                     *(unsigned *)(this->subGeometry + 0x1c));
                 matId = this->cloakMaterial;
                 this->field_0x2e0 = *(int *)(*(int *)(mp + 0x30) + 0x20);
             }
-            void **cvm = *(void ***)gHC_canvasMat;
-            int mat = (int)(long)((PaintCanvas *)*cvm)->MaterialGetMaterial(matId);
+            int mat = (int)(long)gCanvas->MaterialGetMaterial(matId);
             *(int *)(mat + 0x20) = 0xe;
-            ((PaintCanvas *)*cvm)->MeshChangeMaterial(*(unsigned *)(this->subGeometry + 0x1c),
+            gCanvas->MeshChangeMaterial(*(unsigned *)(this->subGeometry + 0x1c),
                                            this->cloakMaterial);
             if (this->field_0x2d9 == 0) {
                 delta = this->cloakTimer;
@@ -1017,20 +1003,18 @@ void PlayerFighter::handleCloaking() {
                 ((PlayerFighter *)(this))->setExhaustVisible(false);
                 this->field_0x74 = 1;
             }
-            void *cv = *(void **)gHC_canvasA;
-            cv = *(void **)cv;
-            int mp = (int)(long)((PaintCanvas *)cv)->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
+            void *cv = (void *)gCanvas;
+            int mp = (int)(long)gCanvas->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
             float a = VectorSignedToFloat(this->cloakTimer, 0) / gHC_divIn;
             PF_cloakApply((void *)(long)mp, (int)(long)cv, a, 1);
             return;
         } else {
             if (this->cloakDuration < total) {
                 int restore = this->field_0x2e0;
-                void **cvc = *(void ***)gHC_canvasC;
                 this->cloakTimer = 0;
                 this->cloakActive = 0;
                 this->field_0x13c = 0;
-                int mat = (int)(long)((PaintCanvas *)*cvc)->MaterialGetMaterial(this->cloakMaterial);
+                int mat = (int)(long)gCanvas->MaterialGetMaterial(this->cloakMaterial);
                 *(int *)(mat + 0x20) = restore;
                 PF_cloakStop(this, 1);
                 return;
@@ -1038,10 +1022,9 @@ void PlayerFighter::handleCloaking() {
             if (total <= this->cloakDuration - 2000) {
                 return;
             }
-            void **cvb = *(void ***)gHC_canvasB;
             this->field_0x74 = 0;
-            void *cv = *cvb;
-            int mp = (int)(long)((PaintCanvas *)cv)->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
+            void *cv = (void *)gCanvas;
+            int mp = (int)(long)gCanvas->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
             float a = VectorSignedToFloat(this->cloakTimer, 0);
             float b = VectorSignedToFloat(this->cloakDuration - 2000, 0);
             float alpha = (a - b) / gHC_divOut + 1.0f;
@@ -1050,7 +1033,7 @@ void PlayerFighter::handleCloaking() {
         }
     }
 
-    if (this->field_0x1e0 != 0 && PF_nextInt(**(int **)gHC_rng1) < 0x32) {
+    if (this->field_0x1e0 != 0 && PF_nextInt((int)(intptr_t)gRandom) < 0x32) {
         PF_cloakStart(this);
         return;
     }
@@ -1058,7 +1041,7 @@ void PlayerFighter::handleCloaking() {
     this->cloakCooldown = acc;
     if (8000 < acc) {
         this->cloakCooldown = 0;
-        if (PF_nextInt(**(int **)gHC_rng2) < 0x1e) {
+        if (PF_nextInt((int)(intptr_t)gRandom) < 0x1e) {
             PF_cloakStart(this);
         }
     }

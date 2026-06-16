@@ -233,4 +233,6 @@ public:
     void SwapBuffer();
     void initFileInterface();
 };
+extern Engine* gEngine;            // canonical Engine singleton (binary .bss 0x2281e8)
+
 #endif

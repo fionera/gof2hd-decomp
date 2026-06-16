@@ -18,10 +18,8 @@ extern "C" __attribute__((visibility("hidden"))) void **g_SWm_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_height;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_force;
 extern "C" __attribute__((visibility("hidden"))) unsigned char *g_SWm_btnFlag;
-extern "C" __attribute__((visibility("hidden"))) void **g_SWm_ach;
 extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_layout;
 extern "C" __attribute__((visibility("hidden"))) unsigned char *g_StatusWindow_btnFlag;
-extern "C" __attribute__((visibility("hidden"))) void **g_StatusWindow_ach;
 
 // Tears down the four owned engine Arrays: each owned array first has its element
 // pointers deleted, then the array itself is destroyed.
@@ -80,7 +78,7 @@ int StatusWindow::OnTouchMove(int param_1, int param_2) {
             (*this->tabButtons)[i]->OnTouchMove(param_1, param_2);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = (Achievements *)*g_SWm_ach;
+        Achievements *ach = gAchievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
@@ -103,7 +101,6 @@ void StatusWindow_getMedalHintText(void *out, int medalIndex);
 
 extern void *g_swe_layout;        // Layout singleton
 extern char *g_swe_dialogBlock;   // "is a dialog open" flag
-extern void *g_swe_achievements;  // achievements root
 extern void *g_swe_status;        // status (replaceHash key source)
 extern void *g_swe_gameText;      // GameText id source
 extern void *g_swe_globals;       // globals
@@ -142,7 +139,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (this->activeTab == 1) {
         for (int i = 0; i < this->medalCount; i++) {
             if ((*this->medalButtons)[i]->OnTouchEnd(x, y) != 0) {
-                Achievements *ach = (Achievements *)*(void **)g_swe_achievements;
+                Achievements *ach = gAchievements;
                 int *medals = ach->getMedals();
                 int elite = ach->isEliteMedal(i);
                 if (elite != 0 || medals[i] != 0) {
@@ -210,7 +207,7 @@ int StatusWindow::OnTouchBegin(int param_1, int param_2) {
             (*this->tabButtons)[i]->OnTouchBegin(param_1, param_2);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = (Achievements *)*g_StatusWindow_ach;
+        Achievements *ach = gAchievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
@@ -276,15 +273,13 @@ void StatusWindow::update() {
 }
 
 extern "C" {
-extern void *g_swh_achievements; // achievements root
-extern void *g_swh_status;       // status/campaign singletons share this base
 extern void *g_swh_gameText;     // GameText id source
 }
 
 // Builds the per-medal hint text: medals in progress get a detailed sub-goal checklist.
 void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
 {
-    int *medals = ((Achievements *)*(void **)g_swh_achievements)->getMedals();
+    int *medals = gAchievements->getMedals();
     int state = medals[medalIndex];
 
     ((String *)outStr)->ctor();
@@ -299,7 +294,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            Status *base = (Status *)*(void **)g_swh_status;
+            Status *base = gStatus;
             Array<bool> *list = base->field_94;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -315,7 +310,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            Status *base = (Status *)*(void **)g_swh_status;
+            Status *base = gStatus;
             Array<bool> *list = base->field_98;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -331,7 +326,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            Status *base = (Status *)*(void **)g_swh_status;
+            Status *base = gStatus;
             Array<bool> *list = base->field_ac;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -347,7 +342,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            Status *root = (Status *)*(void **)g_swh_status;
+            Status *root = gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
                 BluePrint *bp = (*root->bluePrints)[i];
                 if (bp->locked == 0) {
@@ -364,7 +359,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpB = tmpA + *hdr;
             ((String *)outStr)->addAssign_str(&tmpB);
 
-            Status *root = (Status *)*(void **)g_swh_status;
+            Status *root = gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
                 BluePrint *bp = (*root->bluePrints)[i];
                 if (bp->productionCount == 0) {
@@ -385,8 +380,6 @@ int Achievements_isUnlocked(void *ach, int index);
 
 extern void *g_sw_imageFactory;   // image factory root
 extern int   g_sw_charDef;        // character definition arg
-extern void *g_sw_achievements;   // achievements accessor base
-extern void *g_sw_canvas;         // paint canvas singleton
 }
 
 // Rebuilds the four medal/rank image tiles from achievement state.
@@ -398,7 +391,7 @@ void StatusWindow::reInit() {
     int a2 = Achievements_isUnlocked(Achievements_get(), 2);
     int a3 = Achievements_isUnlocked(Achievements_get(), 3);
 
-    PaintCanvas *canvas = (PaintCanvas *)*(void **)g_sw_canvas;
+    PaintCanvas *canvas = gCanvas;
 
     int id = 0x493;
     if (a1) id = 0x494;
@@ -433,13 +426,11 @@ void Layout_formatCredits(void *out, int credits);
 void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
 void  Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
 
-extern void *g_swd_canvas;       // paint canvas
 extern int  *g_swd_dimW;         // screen width
 extern int  *g_swd_dimH;         // screen height
 extern void *g_swd_layout;       // Layout singleton
 extern void *g_swd_imageFactory; // image factory
 extern void *g_swd_font;         // default font
-extern void *g_swd_status;       // status singleton
 extern void *g_swd_globals;      // globals
 extern char *g_swd_landscape;    // landscape-layout flag
 extern int  *g_swd_textId;       // rolling GameText id cursor
@@ -448,7 +439,7 @@ extern void *g_swd_gameText;     // GameText singleton (receiver for getText)
 
 // Renders either the player-stats tab or the achievements/medal tab.
 void StatusWindow::draw() {
-    PaintCanvas *canvas = (PaintCanvas *)*(void **)g_swd_canvas;
+    PaintCanvas *canvas = gCanvas;
     Layout *layout = (Layout *)*(void **)g_swd_layout;
     void *font = *(void **)g_swd_font;
     char *land = g_swd_landscape;
@@ -511,7 +502,7 @@ void StatusWindow::draw() {
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
         ((ImageFactory *)*(void **)g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
         String credTmp;
-        Layout_formatCredits(&credTmp, ((Status *)*(void **)g_swd_status)->getCredits());
+        Layout_formatCredits(&credTmp, gStatus->getCredits());
         creditStr.assign(&credTmp);
         int tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
         canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
@@ -521,7 +512,7 @@ void StatusWindow::draw() {
         String *lt = ((GameText *)*(void **)g_swd_gameText)->getText(*g_swd_textId);
         lvlPrefix.ctor_char(" ", false);
         lvlText = *lt;
-        int lvl = ((Status *)*(void **)g_swd_status)->getLevel();
+        int lvl = gStatus->getLevel();
         lvlFull = lvlText;
         lvlFull.addAssign_int(&lvl);
         creditStr.assign(&lvlFull);
@@ -530,23 +521,23 @@ void StatusWindow::draw() {
 
         // Playing-time line.
         String timeStr;
-        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, &timeStr, ((Status *)*(void **)g_swd_status)->getPlayingTime());
+        Globals_longToTimeStringNoSeconds(*(void **)g_swd_globals, &timeStr, gStatus->getPlayingTime());
         tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
         canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Ship picture panel.
         lbl.ctor_char("", false);
         layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
-        ((ImageFactory *)*(void **)g_swd_imageFactory)->drawShip(((Status *)*(void **)g_swd_status)->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
-        String *shipNameTxt = ((GameText *)*(void **)g_swd_gameText)->getText(((Status *)*(void **)g_swd_status)->getShip()->getIndex());
+        ((ImageFactory *)*(void **)g_swd_imageFactory)->drawShip(gStatus->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
+        String *shipNameTxt = ((GameText *)*(void **)g_swd_gameText)->getText(gStatus->getShip()->getIndex());
         canvas->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
                            x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         // Fire-power line.
         String fpStr, fpPre, fpFull;
-        int firePow = ((Status *)*(void **)g_swd_status)->getShip()->getFirePower();
+        int firePow = gStatus->getShip()->getFirePower();
         fpStr.ctor_int((int)((float)firePow * 1.0f));
-        int fp2 = ((Status *)*(void **)g_swd_status)->getShip()->getFirePower();
+        int fp2 = gStatus->getShip()->getFirePower();
         fpPre.ctor_char("%", false);
         fpFull = fpPre;
         fpFull.addAssign_int(&fp2);
@@ -557,12 +548,12 @@ void StatusWindow::draw() {
 
         // Combined-HP line.
         String hpStr;
-        hpStr.ctor_int(((Status *)*(void **)g_swd_status)->getShip()->getCombinedHP());
+        hpStr.ctor_int(gStatus->getShip()->getCombinedHP());
         tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &hpStr);
         canvas->DrawString((unsigned)(uintptr_t)font, &hpStr, ((y + x0) - pad) - tw, y, false);
 
         // Standing emblem panel + bars.
-        Standing *standing = (Standing *)(intptr_t)((Status *)*(void **)g_swd_status)->getStanding();
+        Standing *standing = (Standing *)(intptr_t)gStatus->getStanding();
         float rate = standing->getStandingRate(0);
         canvas->DrawImage2D(this->standingEmblemImage, x0 + (boxW >> 2), y, (unsigned char)'\x11');
         canvas->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
@@ -571,7 +562,7 @@ void StatusWindow::draw() {
         canvas->DrawImage2D(this->standingFrameImage, x0, y, (unsigned char)'\x11');
 
         // Career-stat rows from the Status singleton.
-        Status *st = (Status *)*(void **)g_swd_status;
+        Status *st = gStatus;
         String rowStr;
         int rowX = layout->field_0x4c + x0;
         for (unsigned r = 0; r < 6; r++) {
@@ -703,7 +694,7 @@ StatusWindow::StatusWindow() {
     this->medalCount = 0x2d;
     this->medalButtons->resize(0x2d);
 
-    int *medalIds = ((Achievements *)*(void **)g_sw_achievements)->getMedals();
+    int *medalIds = gAchievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
         TouchButton *btn = (TouchButton *)::operator new(200);
         int medal = medalIds[i];
@@ -714,7 +705,7 @@ StatusWindow::StatusWindow() {
 
     this->reInit();
 
-    PaintCanvas *canvas = (PaintCanvas *)*(void **)g_sw_canvas;
+    PaintCanvas *canvas = gCanvas;
     canvas->Image2DCreate((unsigned short)0x48e, &this->standingEmblemImage);
     canvas->Image2DCreate((unsigned short)0x48f, &this->standingBarImage);
     canvas->Image2DCreate((unsigned short)0x48d, &this->standingFrameImage);

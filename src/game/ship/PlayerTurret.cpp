@@ -15,12 +15,13 @@ using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
 
 // Status singleton. Status isn't otherwise modelled in this TU, so declare the
-// minimal surface: the singleton global plus getStanding().
+// minimal surface needed here: the canonical singleton pointer plus getStanding()
+// (which returns the Standing table id, cast to Standing* at the call site).
 class Status {
 public:
-    Standing* getStanding();
+    int getStanding();
 };
-extern Status* g_status;
+extern Status* gStatus;            // canonical Status singleton (binary .bss 0x2281b0)
 
 namespace AbyssEngine {
 namespace AEMath {
@@ -46,10 +47,12 @@ using AbyssEngine::AEMath::operator+;
 using AbyssEngine::AEMath::operator-;
 using AbyssEngine::AEMath::operator*;
 
-// Engine globals (game singletons): sound bank, RNG, sprite canvas.
+// Engine globals: sound bank and RNG id (file-local, not shared singletons).
 extern FModSound** g_turretSound;
 extern int         g_turretRandom;
-extern PaintCanvas* g_turretCanvas;
+// Canonical render-canvas singleton. PaintCanvas.h clashes with PaintCanvasClass.h
+// in this TU, so declare the canonical pointer locally (matches the real definition).
+extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
 
 void PlayerTurret::setTurretRange(int range)
 {
@@ -221,7 +224,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
     if (ready) {
         this->player->shoot(0, delta, delta >> 31, 0);
         AbyssEngine::Transform* transform =
-            (AbyssEngine::Transform*)g_turretCanvas->TransformGetTransform(turretGeometry->transform);
+            (AbyssEngine::Transform*)gCanvas->TransformGetTransform(turretGeometry->transform);
         transform->Update(delta, delta >> 31);
     }
 }
@@ -305,11 +308,11 @@ void PlayerTurret::update(int delta)
     if ((faction & 0xfffffffeU) == 8) {
         player->enemyFlags = 1;
     } else {
-        Standing* standing = g_status->getStanding();
+        Standing* standing = (Standing*)(intptr_t)gStatus->getStanding();
         bool enemy = standing->isEnemy(faction);
         bool friendly = false;
         if ((faction & 0xfffffffeU) != 8) {
-            friendly = g_status->getStanding()->isFriend(faction);
+            friendly = ((Standing*)(intptr_t)gStatus->getStanding())->isFriend(faction);
         }
         player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }
@@ -414,28 +417,28 @@ PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float
     this->hostOffset = Vector{0.0f, 0.0f, 0.0f};
     this->turretRange = 50000;
 
-    this->baseGeometry = new AEGeometry((uint16_t)mesh, g_turretCanvas, false);
+    this->baseGeometry = new AEGeometry((uint16_t)mesh, gCanvas, false);
 
     if (mesh == 0x381b) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x381c, g_turretCanvas, false);
+        AEGeometry* turret = new AEGeometry((uint16_t)0x381c, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(2);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a76) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x1a77, g_turretCanvas, false);
+        AEGeometry* turret = new AEGeometry((uint16_t)0x1a77, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(2);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a74) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x1a75, g_turretCanvas, false);
+        AEGeometry* turret = new AEGeometry((uint16_t)0x1a75, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(2);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     }
 
-    this->helperGeometry = new AEGeometry(g_turretCanvas);
+    this->helperGeometry = new AEGeometry(gCanvas);
     AbyssEngine::Transform* helperTransform =
-        (AbyssEngine::Transform*)g_turretCanvas->TransformGetTransform(this->helperGeometry->transform);
+        (AbyssEngine::Transform*)gCanvas->TransformGetTransform(this->helperGeometry->transform);
     helperTransform->field_0x58 = 0;
 
     this->setPosition(Vector{x, y, z});
@@ -455,7 +458,7 @@ PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float
         if (mesh == 0x49c0) {
             childMesh = 0x49c6;
         }
-        AEGeometry* child = new AEGeometry(childMesh, g_turretCanvas, false);
+        AEGeometry* child = new AEGeometry(childMesh, gCanvas, false);
         geometry->addChild(child->transform);
         delete child;
         geometry->setScaling(0.5f);

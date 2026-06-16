@@ -25,7 +25,6 @@ struct Player {
 };
 
 // Engine singletons / roots resolved at load time.
-extern Status* gStatus;
 extern AbyssEngine::PaintCanvas* gCanvasRoot;
 extern FModSound* gPullSound;
 extern FModSound* gCaptureSound;

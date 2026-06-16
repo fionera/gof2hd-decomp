@@ -56,10 +56,6 @@ namespace AbyssEngine { namespace AEMath {
 
 extern "C" void *SpaceLounge_layout_move;
 extern "C" void *SpaceLounge_layout_begin;
-// Dropped-self Status singleton accessors: the decompiler emitted these calls
-// with no receiver argument (the Status* singleton is loaded inside the thunk).
-// The singleton is `*g_status`; call the real methods through it.
-extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 void MatrixSetRotation(void *matrix, float x, float y, float z);
 extern "C" void *SpaceLounge_touch_layout_slot;
@@ -406,7 +402,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     switch (this->mode) {
     case 0:
         if (this->introDone == 0) {
-            void *system = (void *)(long)(*g_status)->getSystem();
+            void *system = (void *)(long)gStatus->getSystem();
             int race = ((SolarSystem *)(system))->getRace();
             int *v = &SpaceLounge_touch_race_vectors[race * 3];
             MatrixSetTranslation(matrix, (float)v[2], (float)v[0], (float)v[1]);
@@ -731,7 +727,7 @@ void SpaceLounge::updateScreenPositions() {
 
         ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, &this->silhouettePos);
 
-        if (((SolarSystem *)((void *)(long)(*g_status)->getSystem()))->getRace() == 0) {
+        if (((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
             AbyssEngine::AEMath::MatrixMultiply(*(Matrix*)(camera),*(const Matrix*)(look));
         }
@@ -890,7 +886,7 @@ int SpaceLounge::init() {
     this->touchDown = 0;
     this->initialized = 0;
     this->field_0xbc = 0;
-    this->agents = (Array<Agent *> *)Station_getAgents((*g_status)->getStation());
+    this->agents = (Array<Agent *> *)Station_getAgents(gStatus->getStation());
 
     if (this->choiceWindow != 0) {
         delete this->choiceWindow;
@@ -1027,7 +1023,7 @@ SpaceLounge::SpaceLounge()
         this->cutScene->initialize();
     }
 
-    int race = ((SolarSystem *)((void *)(long)(*g_status)->getSystem()))->getRace();
+    int race = ((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRace();
     MatrixSetTranslation(from, (float)race, 0.0f, 0.0f);
     MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
     MatrixSetTranslation(to, (float)race, 0.0f, 0.0f);

@@ -1,4 +1,5 @@
 #include "gof2/engine/core/GameText.h"
+GameText* gGameText = nullptr;        // canonical localized-text singleton
 #include "gof2/engine/file/AEFile.h"
 #include "gof2/platform/libc.h"
 

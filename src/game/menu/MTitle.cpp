@@ -5,12 +5,15 @@
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/core/PaintCanvasClass.h"
 
+// Canonical render canvas singleton. PaintCanvasClass.h defines its own
+// PaintCanvas (to dodge Mesh/Transform clashes) and does not declare gCanvas,
+// so mirror the canonical extern locally rather than pulling in PaintCanvas.h.
+extern PaintCanvas* gCanvas;
+
 // Engine singletons reached through fixed global slots in the shipped binary.
-extern void *g_PaintCanvas;             // the process-wide render canvas
 extern Layout *g_currentLayout;         // the active full-screen Layout (may be null)
 extern ImageFactory *g_imageFactory;    // the shared UI image factory
 extern void *g_globalFont;              // the global font object Globals::loadFont mutates
-extern ApplicationManager *g_appManager;// the running application manager
 extern FModSound *g_sound;              // the FMOD sound manager
 
 // Localized text helpers (defined in GameText.cpp / Globals.cpp).
@@ -29,7 +32,7 @@ MTitle::~MTitle()
 
 int MTitle::OnInitialize()
 {
-    PaintCanvas *canvas = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *canvas = gCanvas;
     canvas->Image2DCreate(7000, &this->logoImage);
     canvas->Image2DCreate(0x1b59, &this->logoImage2);
 
@@ -43,7 +46,7 @@ int MTitle::OnInitialize()
 
 void MTitle::OnRelease()
 {
-    ((PaintCanvas *)g_PaintCanvas)->ReleaseAllResources();
+    gCanvas->ReleaseAllResources();
 
     Globals_loadFont(g_globalFont, GameText_getLanguage());
 
@@ -55,7 +58,7 @@ void MTitle::OnRelease()
 
 void MTitle::OnRender2D()
 {
-    PaintCanvas *canvas = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *canvas = gCanvas;
     canvas->Begin2d();
     canvas->SetColor((unsigned int)-1);
 
@@ -102,7 +105,7 @@ void MTitle::OnRender2D()
 
 void MTitle::OnRender3D()
 {
-    PaintCanvas *canvas = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *canvas = gCanvas;
     canvas->ClearBuffer(0xff);
     canvas->Begin3d();
 }

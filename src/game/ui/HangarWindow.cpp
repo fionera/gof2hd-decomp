@@ -17,8 +17,11 @@
 #include "gof2/game/ship/Ship.h"
 #include "gof2/engine/core/NFC.h"
 
-// Player Status singleton holder; Status_*() helpers act on *gStatus.
-extern Status **gStatus;
+// Player Status singleton holder; Status_*() helpers act on gStatus.
+
+// This TU uses the lean PaintCanvasClass.h view (the full PaintCanvas.h clashes here),
+// so declare the canonical render-canvas singleton locally to match its definition.
+extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
 
 // The hangar's dialog body text is built and fetched from the GameText catalogue at
 // each ChoiceWindow::set() call site, but the decompiler dropped the resulting String
@@ -78,15 +81,13 @@ bool HangarWindow::listMode() {
     return false;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_status;
-
 bool HangarWindow::readyToClose() {
     HangarWindow *self = this;
     int tab = self->hangarList->getCurrentTab();
     if (tab == 4 && self->buyMode != 0 && self->bluePrintBuyCount > 0 &&
         self->dialogActive == 0 && self->bluePrint->isEmpty() == 0) {
         int si = self->bluePrint->getStationIndex();
-        Station *st = ((Status *)(*g_hw_status))->getStation();
+        Station *st = gStatus->getStation();
         if (si != st->getIndex()) {
             return false;
         }
@@ -154,7 +155,6 @@ void HangarWindow::hideMessage() {
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;        // *piVar37
-__attribute__((visibility("hidden"))) extern void **g_hw_canvas;        // *puVar19
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;     // *piVar21
 __attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;    // *piVar41
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
@@ -173,7 +173,7 @@ extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
 
 void HangarWindow::render() {
     Layout *layout = (Layout *)*g_hw_layout;
-    void *canvas = *g_hw_canvas;
+    PaintCanvas *canvas = gCanvas;
     ((PaintCanvas *)canvas)->SetColor(0u);
 
     void *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
@@ -385,7 +385,7 @@ void HangarWindow::render() {
     (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
         String credits;
-        Layout_formatCredits(&credits, ((Status *)(*gStatus))->getCredits());
+        Layout_formatCredits(&credits, gStatus->getCredits());
         (*btns)[(0x2c) >> 2]->setText(&credits);
     }
     (*btns)[(0x2c) >> 2]->draw();
@@ -623,9 +623,9 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             self->dialogActive = 0;
         } else if (r == 0) {
             int price = self->bluePrint->getAutoCompletionPrice();
-            if (((Status *)(*gStatus))->getCredits() < price) {
+            if (gStatus->getCredits() < price) {
                 String line, priceStr, fmt, msg, suffix, combined;
-                Layout_formatCredits(&priceStr, ((Status *)(*gStatus))->getCredits());
+                Layout_formatCredits(&priceStr, gStatus->getCredits());
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
                 combined = suffix + suffix;
@@ -636,8 +636,8 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->dialogActive = 0;
                 if (self->bluePrint != 0) {
                     if (self->bluePrint->isEmpty() != 0) {
-                        ((BluePrint *)self->bluePrint)->stationIndex = ((Status *)(*gStatus))->getStation()->getIndex();
-                        ((Status *)(*gStatus))->getStation()->getName();
+                        ((BluePrint *)self->bluePrint)->stationIndex = gStatus->getStation()->getIndex();
+                        gStatus->getStation()->getName();
                         // String nameOut; assign into bp+0x14 (skipped: name handled inline)
                     }
                     self->bluePrint->complete();
@@ -738,7 +738,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             int r = self->dialog->OnTouchEnd(touch, coord);
             int cost = ((Item *)((ListItem *)self->bluePrintItem)->item)->getBlueprintAmount() * 200;
             bool revert = true;
-            if (r == 0 && ((Status *)(*gStatus))->getCredits() >= cost && self->localBluePrint == 0) {
+            if (r == 0 && gStatus->getCredits() >= cost && self->localBluePrint == 0) {
                 Status_changeCredits(globals);
                 self->setSellMode();
                 self->selectedItem = 0;
@@ -746,7 +746,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->localBluePrint = 0;
                 self->bluePrintPurchasePending = 0;
                 revert = false;
-            } else if (r == 1 && ((Status *)(*gStatus))->getCredits() >= cost && self->localBluePrint == 0) {
+            } else if (r == 1 && gStatus->getCredits() >= cost && self->localBluePrint == 0) {
                 revert = false;
             }
             if (revert) {
@@ -764,9 +764,9 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->dialogActive = 0;
                 self->bluePrintPurchasePending = 0;
                 self->buyMode = 0;
-                if (((Status *)(*gStatus))->getCredits() < cost && self->localBluePrint == 0) {
+                if (gStatus->getCredits() < cost && self->localBluePrint == 0) {
                     String line, priceStr, fmt, msg;
-                    Layout_formatCredits(&priceStr, ((Status *)(*gStatus))->getCredits());
+                    Layout_formatCredits(&priceStr, gStatus->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     self->dialogActive = 1;
@@ -788,8 +788,8 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->dialogActive = 0;
                 ((ListItem *)(self->selectedItem))->getPrice();
                 Status_changeCredits(globals);
-                ((Status *)(*gStatus))->getStation()->removeShip((Ship *)((Status *)(*gStatus))->getShip());
-                self->hangarList->initShopTab((Array<Item *> *)(self->itemList), ((Status *)(*gStatus))->getStation()->getShips());
+                gStatus->getStation()->removeShip((Ship *)gStatus->getShip());
+                self->hangarList->initShopTab((Array<Item *> *)(self->itemList), gStatus->getStation()->getShips());
                 self->refreshCurrentContentHeight();
             }
             return;
@@ -801,13 +801,13 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         bool special = globals->field_0x114 == 3 && self->upgradeMode == 0;
         if (special && self->field_0x91 != 0 && r == 1) {
             int idx = globals->field_0x14c;
-            ((Status *)(*gStatus))->getShip()->getIndex();
-            if (((Station *)((void *)(uintptr_t)idx))->hasShip(((Status *)(*gStatus))->getShip()->getIndex()) == 0) {
+            gStatus->getShip()->getIndex();
+            if (((Station *)((void *)(uintptr_t)idx))->hasShip(gStatus->getShip()->getIndex()) == 0) {
                 int price = ((ListItem *)self->selectedItem)->ship->getPrice();
-                if (((Status *)(*gStatus))->getCredits() < price) {
+                if (gStatus->getCredits() < price) {
                     String line, priceStr, fmt, msg, suffix, combined;
                     ((ListItem *)self->selectedItem)->ship->getPrice();
-                    Layout_formatCredits(&priceStr, ((Status *)(*gStatus))->getCredits());
+                    Layout_formatCredits(&priceStr, gStatus->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     ((GameText *)(*g_hw_sellShipTextId))->getText();
                     combined = suffix + suffix;
@@ -1067,9 +1067,9 @@ void HangarWindow::demountItem(Item *item, int slot) {
         item->getAmount();
 
     Item *made = item->makeItem();
-    ((Status *)(*gStatus))->getShip()->addCargo(made);
+    gStatus->getShip()->addCargo(made);
 
-    Ship *ship = ((Status *)(*gStatus))->getShip();
+    Ship *ship = gStatus->getShip();
     if (slot < 0)
         ship->freeSlot(item);
     else
@@ -1088,7 +1088,7 @@ void HangarWindow::demountItem(Item *item, int slot) {
     if (!merged)
         this->itemList->push_back(made);
 
-    ((Status *)(*gStatus))->getShip()->setCargo(Item::extractItems(this->itemList, true));
+    gStatus->getShip()->setCargo(Item::extractItems(this->itemList, true));
 
     if (this->itemList != 0) {
         for (Item *it : *this->itemList) delete it;
@@ -1097,11 +1097,11 @@ void HangarWindow::demountItem(Item *item, int slot) {
     }
     this->itemList = 0;
 
-    this->itemList = Item::mixItems(statusShip()->getCargo(), ((Status *)(*gStatus))->getStation()->getItems());
+    this->itemList = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
     this->hangarList->initShipTab(statusShip());
 
-    ItemArray *items = Item::mixItems(statusShip()->getCargo(), ((Status *)(*gStatus))->getStation()->getItems());
-    this->hangarList->initShopTab(items, ((Status *)(*gStatus))->getStation()->getShips());
+    ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
+    this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
     this->hangarList->setCurrentTab(false);
 
     refreshCurrentContentHeight();
@@ -1158,8 +1158,8 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
                 void *ci = self->hangarList->getCurrentItem();
                 if (((ListItem *)(ci))->isShip() != 0 &&
                     self->hangarList->getCurrentTab() == 1) {
-                    ((Status *)(*gStatus))->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-                    ((Status *)(*gStatus))->getStation()->setItems(Item::extractItems(self->itemList, false), false);
+                    gStatus->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
+                    gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
                 }
             }
         }
@@ -1168,7 +1168,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     if (self->hangarList->getCurrentTab() == 4 && self->buyMode != 0 &&
         !(!skip && self->selectedItem == self->bluePrintItem) && self->bluePrintBuyCount > 0 &&
         self->dialogActive == 0 && self->bluePrint->isEmpty() == 0) {
-        if (self->bluePrint->getStationIndex() != ((Status *)(*gStatus))->getStation()->getIndex()) {
+        if (self->bluePrint->getStationIndex() != gStatus->getStation()->getIndex()) {
             Globals *globals = (Globals *)*g_hw_globals;
             int bpIdx = ((Item *)((ListItem *)self->bluePrintItem)->item)->getIndex();
             bool localBp = (bpIdx == 0xd1) ||
@@ -1272,9 +1272,6 @@ int HangarWindow::getCurrentTab() {
     return this->hangarList->getCurrentTab();
 }
 
-// Status singleton holder; *holder is the Status object.
-extern void **g_hw_status2;
-
 // BluePrint::getIngredientList() is private; reached here through its ABI symbol.
 extern "C" Array<int> *BluePrint_getIngredientList(BluePrint *bp);
 
@@ -1288,7 +1285,7 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
         *((uint8_t *)it + 0x45) = 0;
         if (it != nullptr && it->isBluePrint() != 0) {
             BluePrint *bp = it->bluePrint;
-            Array<Item*> *cargo = ((Status *)(*g_hw_status2))->getShip()->getCargo();
+            Array<Item*> *cargo = gStatus->getShip()->getCargo();
             Array<int> *ingr = BluePrint_getIngredientList(bp);
             if (cargo != nullptr) {
                 Array<int> *counters = bp->ingredientCounters;
@@ -1352,12 +1349,12 @@ void HangarWindow::setSellMode() {
             }
             self->savedStationAmount = ((Item *)(item->field_0x10))->getStationAmount();
             self->savedAmount = ((Item *)(item->field_0x10))->getAmount();
-            self->savedCredits = ((Status *)(*gStatus))->getCredits();
+            self->savedCredits = gStatus->getCredits();
             self->savedLoad = self->currentLoad;
         }
 
-        ((Status *)(*gStatus))->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-        ((Status *)(*gStatus))->getStation()->setItems(Item::extractItems(self->itemList, false), false);
+        gStatus->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
+        gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
         if (self->itemList != 0) {
             for (Item *it : *self->itemList) delete it;
             self->itemList->clear();
@@ -1365,10 +1362,10 @@ void HangarWindow::setSellMode() {
         }
         self->itemList = 0;
 
-        ItemArray *mixed = Item::mixItems((ItemArray *)(((Status *)(*gStatus))->getShip()->getCargo()), (ItemArray *)(((Status *)(*gStatus))->getStation()->getItems()));
+        ItemArray *mixed = Item::mixItems((ItemArray *)(gStatus->getShip()->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
         self->itemList = mixed;
-        self->hangarList->initShopTab((Array<Item *> *)(mixed), ((Status *)(*gStatus))->getStation()->getShips());
-        self->hangarList->initShipTab(((Status *)(*gStatus))->getShip());
+        self->hangarList->initShopTab((Array<Item *> *)(mixed), gStatus->getStation()->getShips());
+        self->hangarList->initShipTab(gStatus->getShip());
 
         ListItem *ci = self->hangarList->getCurrentItem();
         self->selectedItem = ci;
@@ -1384,13 +1381,13 @@ void HangarWindow::setSellMode() {
     if (self->buyMode == 0) {
         if (self->bluePrintItem != 0 && self->bluePrint != 0) {
             void *bpItem = ((ListItem *)self->bluePrintItem)->item;
-            self->bluePrint->addItem((Item *)bpItem, ((Item *)(bpItem))->getBlueprintAmount(), ((Status *)(*gStatus))->getStation()->getIndex());
+            self->bluePrint->addItem((Item *)bpItem, ((Item *)(bpItem))->getBlueprintAmount(), gStatus->getStation()->getIndex());
         }
 
         uint8_t completedFlag = 0;
         if (self->bluePrint->isCompleted() != 0) {
             Globals *globals = (Globals *)*g_hw_globals;
-            if (self->bluePrint->getStationIndex() == ((Status *)(*gStatus))->getStation()->getIndex()) {
+            if (self->bluePrint->getStationIndex() == gStatus->getStation()->getIndex()) {
                 String line, copy, name, fmt, result;
                 ((String *)&copy)->ctor_copy(&line, false);
                 Status_replaceHash(&result, globals, &copy, &name, &fmt);
@@ -1400,7 +1397,7 @@ void HangarWindow::setSellMode() {
                 int idx = stations[self->bluePrint->getIndex()];
                 self->bluePrint->getQuantity();
                 void *made = ((Item *)((void *)(uintptr_t)idx))->makeItem();
-                ((Status *)(*gStatus))->getShip()->addCargo((Item *)made);
+                gStatus->getShip()->addCargo((Item *)made);
                 self->itemList->push_back((Item*)made);
                 self->hangarList->setCurrentTab(true);
                 self->refreshCurrentContentHeight();
@@ -1426,10 +1423,10 @@ void HangarWindow::setSellMode() {
         Globals *globals = (Globals *)*g_hw_globals;
         ((Ship *)(this->statusShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
         this->statusShip();
-        ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(((Status *)(*gStatus))->getStation()->getItems()));
-        self->hangarList->initShopTab((Array<Item *> *)(items), ((Status *)(*gStatus))->getStation()->getShips());
+        ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
+        self->hangarList->initShopTab((Array<Item *> *)(items), gStatus->getStation()->getShips());
         self->hangarList->initBlueprintTab((Array<BluePrint *> *)(long)((Status *)(globals))->getBluePrints());
-        ItemArray *mix = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(((Status *)(*gStatus))->getStation()->getItems()));
+        ItemArray *mix = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
         self->itemList = mix;
         self->dialogActive = completedFlag;
 
@@ -1439,7 +1436,7 @@ void HangarWindow::setSellMode() {
                 void *li = items2->data()[i];
                 if (li != 0 && ((ListItem *)(li))->isItem() != 0 &&
                     ((Item *)((ListItem *)li)->item)->getIndex() == self->bluePrint->getIndex()) {
-                    if (((Status *)(*gStatus))->getShip()->hasEquipment(((Item *)((ListItem *)li)->item)->getIndex(), 1) != 0) {
+                    if (gStatus->getShip()->hasEquipment(((Item *)((ListItem *)li)->item)->getIndex(), 1) != 0) {
                         self->autoEquipIndex = i;
                         self->autoEquipPending = 1;
                         self->autoEquipSecondaryWeapons(i);
@@ -1458,7 +1455,7 @@ void HangarWindow::setSellMode() {
         bool flag;
         void *text;
         if (idx == 0xd2 || self->bluePrint->getIndex() == 0xdf) {
-            if (((SolarSystem *)((void *)(long)((Status *)(*gStatus))->getSystem()))->getRoutes() != 0) {
+            if (((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRoutes() != 0) {
                 text = ((GameText *)(*g_hw_sellTextId2))->getText();
                 flag = true;
             } else {
@@ -1476,7 +1473,7 @@ void HangarWindow::setSellMode() {
 
     self->savedBlueprintAmount = ((Item *)(item->field_0x10))->getBlueprintAmount();
     self->savedAmount = ((Item *)(item->field_0x10))->getAmount();
-    self->savedCredits = ((Status *)(*gStatus))->getCredits();
+    self->savedCredits = gStatus->getCredits();
     self->savedLoad = self->currentLoad;
     self->bluePrintItem = self->selectedItem;
 }
@@ -1540,7 +1537,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 }
                 self->savedStationAmount = ((Item *)(li->field_0x10))->getStationAmount();
                 self->savedAmount = ((Item *)(li->field_0x10))->getAmount();
-                self->savedCredits = ((Status *)(*gStatus))->getCredits();
+                self->savedCredits = gStatus->getCredits();
                 self->savedLoad = self->currentLoad;
             } else {
                 if (((ListItem *)(item))->isItem() != 0 && ((Item *)(li->field_0x10))->getType() != 4) {
@@ -1560,8 +1557,8 @@ void HangarWindow::selectItem(ListItem *item) {
                 self->autoEquipPending = 1;
                 self->autoEquipIndex = self->hangarList->getCurrentItemIndex();
 
-                ((Status *)(*gStatus))->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-                ((Status *)(*gStatus))->getStation()->setItems(Item::extractItems(self->itemList, false), false);
+                gStatus->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
+                gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
                 if (self->itemList != 0) {
                     for (Item *it : *self->itemList) delete it;
             self->itemList->clear();
@@ -1569,10 +1566,10 @@ void HangarWindow::selectItem(ListItem *item) {
                 }
                 self->itemList = 0;
 
-                ItemArray *mixed = Item::mixItems((ItemArray *)(((Status *)(*gStatus))->getShip()->getCargo()), (ItemArray *)(((Status *)(*gStatus))->getStation()->getItems()));
+                ItemArray *mixed = Item::mixItems((ItemArray *)(gStatus->getShip()->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
                 self->itemList = mixed;
-                self->hangarList->initShopTab((Array<Item *> *)(mixed), ((Status *)(*gStatus))->getStation()->getShips());
-                self->hangarList->initShipTab(((Status *)(*gStatus))->getShip());
+                self->hangarList->initShopTab((Array<Item *> *)(mixed), gStatus->getStation()->getShips());
+                self->hangarList->initShipTab(gStatus->getShip());
             }
             return;
         }
@@ -1580,12 +1577,12 @@ void HangarWindow::selectItem(ListItem *item) {
         // Buying a ship.
         int price = ((Ship *)(li->ship))->getPrice();
         Globals *globals = (Globals *)*g_hw_globals;
-        int credits = ((Status *)(*gStatus))->getCredits();
-        int oldPrice = ((Status *)(*gStatus))->getShip()->getPrice();
+        int credits = gStatus->getCredits();
+        int oldPrice = gStatus->getShip()->getPrice();
         if (oldPrice + credits < price && self->upgradeMode == 0) {
             String line, priceStr, fmt, msg, suffix, combined;
             Layout_formatCredits(&priceStr,
-                                 ((ListItem *)(item))->getPrice() - ((Status *)(*gStatus))->getCredits() - ((Status *)(*gStatus))->getShip()->getPrice(),
+                                 ((ListItem *)(item))->getPrice() - gStatus->getCredits() - gStatus->getShip()->getPrice(),
                                  0);
             ((String *)&line)->ctor_copy(&priceStr, false);
             Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
@@ -1599,12 +1596,12 @@ void HangarWindow::selectItem(ListItem *item) {
         }
 
         if (globals->field_0x34 < 1) {
-            if (((Status *)(*gStatus))->getCurrentCampaignMission() == 0x4d &&
-                ((Status *)(*gStatus))->getShip()->getIndex() == 0x25) {
+            if (gStatus->getCurrentCampaignMission() == 0x4d &&
+                gStatus->getShip()->getIndex() == 0x25) {
                 showText(self, *g_hw_unsaleableTextId);
                 return;
             }
-            int a = ((Status *)(*gStatus))->getShip()->getIndex();
+            int a = gStatus->getShip()->getIndex();
             int b = ((Ship *)(li->ship))->getIndex();
             if (a != b) {
                 self->shipSwapPending = 1;
@@ -1660,7 +1657,7 @@ void HangarWindow::selectItem(ListItem *item) {
             if (passengerCount >= 1)
                 adj = chosen;
             if (adj >= 0 == (passengerCount >= 1)) {
-                int maxPax = ((Status *)(*gStatus))->getShip()->getMaxPassengers();
+                int maxPax = gStatus->getShip()->getMaxPassengers();
                 int used = ((Item *)(curItem))->getAttribute(0);
                 if (maxPax - used < globals->field_0x34) {
                     showText(self, *g_hw_unsaleableTextId);
@@ -1679,11 +1676,11 @@ void HangarWindow::selectItem(ListItem *item) {
     // Mounting: check for an existing equipment of the same sort.
     Globals *globals = (Globals *)*g_hw_globals;
     int sort = li->field_0x10->getSort();
-    Item *existing = ((Status *)(*gStatus))->getShip()->getFirstEquipmentOfSort(sort);
+    Item *existing = gStatus->getShip()->getFirstEquipmentOfSort(sort);
     bool conflict = false;
     if (((Item *)(li->field_0x10))->getSort() == 0x15) {
-        if (((Status *)(*gStatus))->getShip()->getIndex() != 0x2c &&
-            existing != 0 && ((Status *)(*gStatus))->getShip()->getIndex() != 0x31)
+        if (gStatus->getShip()->getIndex() != 0x2c &&
+            existing != 0 && gStatus->getShip()->getIndex() != 0x31)
             conflict = true;
     } else if (existing != 0) {
         conflict = true;
@@ -1751,7 +1748,7 @@ void HangarWindow::transaction(bool buy) {
 
         if (result >= 0x80000000 && buy) {
             this->currentLoad = this->currentLoad + 1;
-            ((Status *)(*gStatus))->getShip()->changeLoad(1);
+            gStatus->getShip()->changeLoad(1);
             int li = ((ListItem *)(this->selectedItem))->getIndex();
             if (li >= 0x84 && ((ListItem *)(this->selectedItem))->getIndex() < 0x9a) {
                 int base = globals->field_0xac;
@@ -1759,11 +1756,11 @@ void HangarWindow::transaction(bool buy) {
                   ((ListItem *)(this->selectedItem))->getIndex() - 0x84) = 1;
             }
         } else if (result == 0 && buy) {
-            if (((Status *)(*gStatus))->getCredits() < ((Item *)(cur))->getSinglePrice()) {
+            if (gStatus->getCredits() < ((Item *)(cur))->getSinglePrice()) {
                 if (this->upgradeMode != 0)
                     return;
                 String line, priceStr, fmt, msg, suffix, combined;
-                Layout_formatCredits(&priceStr, ((Item *)(cur))->getSinglePrice(), ((Status *)(*gStatus))->getCredits());
+                Layout_formatCredits(&priceStr, ((Item *)(cur))->getSinglePrice(), gStatus->getCredits());
                 ((String *)&line)->ctor_copy(&priceStr, false);
                 Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
@@ -1777,7 +1774,7 @@ void HangarWindow::transaction(bool buy) {
             }
         } else if ((int)result > 0 && !buy) {
             this->currentLoad = this->currentLoad - 1;
-            ((Status *)(*gStatus))->getShip()->changeLoad(-1);
+            gStatus->getShip()->changeLoad(-1);
         }
 
         if (this->upgradeMode == 0)
@@ -1793,11 +1790,11 @@ void HangarWindow::transaction(bool buy) {
                     this->currentLoad = this->currentLoad + 1;
                 } else if (r != 0) {
                     this->bluePrintBuyCount = this->bluePrintBuyCount + 1;
-                    ((Status *)(*gStatus))->getShip()->changeLoad(-1);
+                    gStatus->getShip()->changeLoad(-1);
                 }
             }
         }
-        void *cargo = ((Status *)(*gStatus))->getShip()->getCargo();
+        void *cargo = gStatus->getShip()->getCargo();
         if (cargo != 0) {
             Array<void *> *arr = (Array<void *> *)cargo;
             for (unsigned int i = 0; i < arr->size(); i++) {
@@ -1819,9 +1816,9 @@ void HangarWindow::mountItem(Item *item) {
         amount = item->getAmount();
 
     Item *made = item->makeItem();
-    Ship *ship = ((Status *)(*gStatus))->getShip();
+    Ship *ship = gStatus->getShip();
     ship->addEquipment(made);
-    ((Status *)(*gStatus))->getShip()->removeCargo(made->getIndex(), (type == 1) ? amount : 1);
+    gStatus->getShip()->removeCargo(made->getIndex(), (type == 1) ? amount : 1);
 
     Array<Item*> *cargo = this->itemList;
     if (cargo != nullptr) {
@@ -1850,8 +1847,8 @@ void HangarWindow::mountItem(Item *item) {
     statusShip()->setCargo(Item::extractItems(this->itemList, true));
     this->hangarList->initShipTab(statusShip());
 
-    ItemArray *items = Item::mixItems(statusShip()->getCargo(), ((Status *)(*gStatus))->getStation()->getItems());
-    this->hangarList->initShopTab(items, ((Status *)(*gStatus))->getStation()->getShips());
+    ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
+    this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
     this->hangarList->setCurrentTab(false);
 
     refreshCurrentContentHeight();
@@ -1938,7 +1935,7 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
     if (((Item *)(itm))->getAmount() <= 0)
         return;
 
-    void *ship = ((Status *)(*gStatus))->getShip();
+    void *ship = gStatus->getShip();
     int *equip = (int *)((Ship *)ship)->getEquipment(1);
     if (equip == 0)
         return;
@@ -1980,7 +1977,6 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
 // AbyssEngine::String - 12-byte value type.
 
 __attribute__((visibility("hidden"))) extern int *g_hw_freeCreditsTextId;
-__attribute__((visibility("hidden"))) extern void **g_hw_canvas;
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;
 
 void HangarWindow::showFreeCreditsWindow() {
@@ -2000,7 +1996,7 @@ void HangarWindow::showFreeCreditsWindow() {
     int maxW = 0;
     for (int i = 5; i != 0; i--) {
         ((GameText *)(*g_hw_freeCreditsTextId))->getText();
-        int w = ((PaintCanvas *)*g_hw_canvas)->GetTextWidth(0, (void *)0);
+        int w = gCanvas->GetTextWidth(0, (void *)0);
         if (maxW < w)
             maxW = w;
     }
@@ -2014,8 +2010,7 @@ void HangarWindow::showFreeCreditsWindow() {
     this->notEnoughCredits = 0;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_globals;          // *piVar27 (Status singleton)
-__attribute__((visibility("hidden"))) extern void **g_hw_canvas;           // *puVar30 (PaintCanvas)
+__attribute__((visibility("hidden"))) extern void **g_hw_globals;          // *piVar27 (game-state object at .bss 0x2281d4; NOT a canonical singleton)
 __attribute__((visibility("hidden"))) extern void **g_hw_layout;           // *piVar22 (layout config)
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;        // *piVar11
 __attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;       // *piVar15
@@ -2038,7 +2033,7 @@ void HangarWindow::initialize() {
 
     // Special "shipyard upgrade" mode at station 0x6c with campaign stage 3.
     uint8_t special = 0;
-    if (((Status *)(*gStatus))->getStation()->getIndex() == 0x6c)
+    if (gStatus->getStation()->getIndex() == 0x6c)
         special = (status->field_0x114 == 3);
     self->upgradeMode = special;
     ((Status *)(status))->calcCargoPrices();
@@ -2046,8 +2041,8 @@ void HangarWindow::initialize() {
     // Build the hangar item list.
     HangarList *list = new HangarList();
     self->hangarList = list;
-    self->itemList = Item::mixItems(((Status *)(*gStatus))->getShip()->getCargo(), ((Status *)(*gStatus))->getStation()->getItems());
-    list->init(((Status *)(*gStatus))->getShip(), 0, ((Status *)(*gStatus))->getStation()->getShips(), (Array<BluePrint *> *)(long)((Status *)(*g_hw_globals))->getBluePrints());
+    self->itemList = Item::mixItems(gStatus->getShip()->getCargo(), gStatus->getStation()->getItems());
+    list->init(gStatus->getShip(), 0, gStatus->getStation()->getShips(), (Array<BluePrint *> *)(long)((Status *)(*g_hw_globals))->getBluePrints());
 
     // Tab bar: 3 help/info buttons across the top.
     self->tabButtons = new Array<TouchButton*>();
@@ -2080,7 +2075,7 @@ void HangarWindow::initialize() {
     void *icons = ::operator new[](0x18);
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
-        ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(i + 0x232a), (unsigned int *)((unsigned int *)((char *)icons + i * 4)));
+        gCanvas->Image2DCreate((unsigned short)(i + 0x232a), (unsigned int *)((unsigned int *)((char *)icons + i * 4)));
 
     int *posX = (int *)*g_hw_posXArray;
     int *posY = (int *)*g_hw_posYArray;
@@ -2096,8 +2091,8 @@ void HangarWindow::initialize() {
     }
 
     *(unsigned int *)*g_hw_imageCountSlot = tabArr->size();
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x52e), (unsigned int *)((unsigned int *)((char *)self + 0xe8)));
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x544), (unsigned int *)((unsigned int *)((char *)self + 0xec)));
+    gCanvas->Image2DCreate((unsigned short)(0x52e), (unsigned int *)((unsigned int *)((char *)self + 0xe8)));
+    gCanvas->Image2DCreate((unsigned short)(0x544), (unsigned int *)((unsigned int *)((char *)self + 0xec)));
 
     // Action button bank (24 entries).
     self->buttons = new Array<TouchButton*>();
@@ -2105,13 +2100,13 @@ void HangarWindow::initialize() {
 
     unsigned int img;
     img = 0xffffffff;
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x470), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x470), (unsigned int *)(&img));
     void *e0 = ::operator new(200);
     TouchButton_ctor_img((void *)e0, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x60, 0x11, 4);
     (*self->buttons)[(0) >> 2] = (TouchButton*)(e0);
 
-    if (((Status *)(*gStatus))->getCurrentCampaignMission() == 0x4d)
-        ((Status *)(*gStatus))->getStation()->getIndex();
+    if (gStatus->getCurrentCampaignMission() == 0x4d)
+        gStatus->getStation()->getIndex();
 
     void *e1 = ::operator new(200);
     TouchButton_ctor_text(e1, ((GameText *)(*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
@@ -2121,13 +2116,13 @@ void HangarWindow::initialize() {
     (*self->buttons)[(8) >> 2] = (TouchButton*)(e2);
 
     img = 0xffffffff;
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x533), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x533), (unsigned int *)(&img));
     void *e3 = ::operator new(200);
     TouchButton_ctor_img((void *)e3, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     (*self->buttons)[(0xc) >> 2] = (TouchButton*)(e3);
 
     img = 0xffffffff;
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x532), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x532), (unsigned int *)(&img));
     void *e4 = ::operator new(200);
     TouchButton_ctor_img((void *)e4, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     (*self->buttons)[(0x10) >> 2] = (TouchButton*)(e4);
@@ -2163,7 +2158,7 @@ void HangarWindow::initialize() {
     {
         String credits;
         void *e11 = ::operator new(200);
-        Layout_formatCredits(&credits, ((Status *)(*gStatus))->getCredits());
+        Layout_formatCredits(&credits, gStatus->getCredits());
         TouchButton_ctor_img((void *)e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
                              Layout_getFooterTransitionWidth(), 0x22, 4);
         (*self->buttons)[(0x2c) >> 2] = (TouchButton*)(e11);
@@ -2198,8 +2193,8 @@ void HangarWindow::initialize() {
         (*self->buttons)[(0x44) >> 2]->setVisible(false);
     }
 
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233e), (unsigned int *)((unsigned int *)((char *)self + 0x34)));
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233f), (unsigned int *)((unsigned int *)((char *)self + 0x38)));
+    gCanvas->Image2DCreate((unsigned short)(0x233e), (unsigned int *)((unsigned int *)((char *)self + 0x34)));
+    gCanvas->Image2DCreate((unsigned short)(0x233f), (unsigned int *)((unsigned int *)((char *)self + 0x38)));
     {
         String lbl;
         void *btn = ::operator new(200);
@@ -2212,12 +2207,12 @@ void HangarWindow::initialize() {
     for (int i = 0x12; (unsigned int)(i - 0x12) < 5; i++) {
         imgB = 0xffffffff;
         if (i == 0x12) {
-            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233c), (unsigned int *)(&imgA));
-            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x233d), (unsigned int *)(&imgB));
+            gCanvas->Image2DCreate((unsigned short)(0x233c), (unsigned int *)(&imgA));
+            gCanvas->Image2DCreate((unsigned short)(0x233d), (unsigned int *)(&imgB));
         } else {
             short s = (short)(i - 0x12);
-            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(s * 2 + 0x2330), (unsigned int *)(&imgA));
-            ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(s * 2 + 0x2331), (unsigned int *)(&imgB));
+            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2330), (unsigned int *)(&imgA));
+            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2331), (unsigned int *)(&imgB));
         }
         void *btn = ::operator new(200);
         TouchButton_ctor_img2(btn, (void *)(uintptr_t)imgA, (void *)(uintptr_t)imgB, 0x13, 0, 0, 1);
@@ -2231,16 +2226,16 @@ void HangarWindow::initialize() {
     self->gridSpacingX = (int)((float)(-self->buttonWidth) * g_hw_posScale);
     self->gridSpacingY = (int)((float)(-h) * g_hw_posScale);
 
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x475), (unsigned int *)((unsigned int *)((char *)self + 0x78)));
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x476), (unsigned int *)((unsigned int *)((char *)self + 0x7c)));
-    ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x477), (unsigned int *)((unsigned int *)((char *)self + 0x74)));
-    self->progressBarWidth = ((PaintCanvas *)*g_hw_canvas)->GetImage2DWidth(0);
-    self->progressBarHeight = ((PaintCanvas *)*g_hw_canvas)->GetImage2DHeight(0);
+    gCanvas->Image2DCreate((unsigned short)(0x475), (unsigned int *)((unsigned int *)((char *)self + 0x78)));
+    gCanvas->Image2DCreate((unsigned short)(0x476), (unsigned int *)((unsigned int *)((char *)self + 0x7c)));
+    gCanvas->Image2DCreate((unsigned short)(0x477), (unsigned int *)((unsigned int *)((char *)self + 0x74)));
+    self->progressBarWidth = gCanvas->GetImage2DWidth(0);
+    self->progressBarHeight = gCanvas->GetImage2DHeight(0);
 
     // Recompute best cargo prices from known equipment when not in a black market.
-    if (self->itemList != 0 && ((Status *)(*gStatus))->inBlackMarketSystem() == 0 &&
+    if (self->itemList != 0 && gStatus->inBlackMarketSystem() == 0 &&
         self->upgradeMode == 0) {
-        Array<Item*> *equip = ((Ship*)(((Status *)(*gStatus))->getShip()))->getEquipment();
+        Array<Item*> *equip = ((Ship*)(gStatus->getShip()))->getEquipment();
         Array<Item*> *cargo = self->itemList;
         unsigned int n = cargo->size() + (equip ? equip->size() : 0);
         for (unsigned int i = 0; i < n; i++) {
@@ -2256,20 +2251,20 @@ void HangarWindow::initialize() {
                 int *buyTbl = (int *)(*(int *)((char *)(globals->field_0x40) + (4)));
                 if (buyTbl[idx] < price || buyTbl[idx] == 0) {
                     buyTbl[idx] = price;
-                    int sysIdx = ((SolarSystem *)((void *)(long)((Status *)(*gStatus))->getSystem()))->getIndex();
+                    int sysIdx = ((SolarSystem *)((void *)(long)gStatus->getSystem()))->getIndex();
                     *(int *)((*(int *)((char *)(globals->field_0x48) + (4))) + idx * 4) = sysIdx;
                 }
                 int *sellTbl = (int *)(*(int *)((char *)(globals->field_0x3c) + (4)));
                 if (price < sellTbl[idx] || sellTbl[idx] == 0) {
                     sellTbl[idx] = price;
-                    int sysIdx = ((SolarSystem *)((void *)(long)((Status *)(*gStatus))->getSystem()))->getIndex();
+                    int sysIdx = ((SolarSystem *)((void *)(long)gStatus->getSystem()))->getIndex();
                     *(int *)((*(int *)((char *)((*(void * *)((char *)(*g_hw_globals) + (0x44)))) + (4))) + idx * 4) = sysIdx;
                 }
             }
         }
     }
 
-    ((Ship *)((Ship *)(((Status *)(*gStatus))->getShip())))->adjustPrice();
+    ((Ship *)((Ship *)(gStatus->getShip())))->adjustPrice();
 
     self->listItemWindow = new ListItemWindow();
     self->viewMode = 0;
@@ -2305,14 +2300,14 @@ void HangarWindow::initialize() {
     self->hangarList->setCurrentTab(*g_hw_specialModeFlag != 0);
     self->refreshCurrentContentHeight();
 
-    self->currentLoad = ((Status *)(*gStatus))->getShip()->getCurrentLoad();
+    self->currentLoad = gStatus->getShip()->getCurrentLoad();
     Layout *lay2 = (Layout *)*g_hw_layout;
     self->visibleHeight = ((*g_hw_screenHeight - lay2->field_0x10 - lay2->field_0xc) -
                           lay2->field_0x20) - lay2->field_0x24;
 
     int extra = 0;
     if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-        ((PaintCanvas *)*g_hw_canvas)->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)((unsigned int *)((char *)self + 0xf0)));
+        gCanvas->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)((unsigned int *)((char *)self + 0xf0)));
         extra = (int)((float)(*g_hw_screenWidth) * g_hw_posScale);
     }
     self->selectedItem = 0;
@@ -2338,7 +2333,7 @@ void HangarWindow::initialize() {
     self->scrollDelta = 0;
 
     // First-visit hint at later campaign stages.
-    if (((Status *)(*gStatus))->getCurrentCampaignMission() > 0xd) {
+    if (gStatus->getCurrentCampaignMission() > 0xd) {
         uint8_t *introFlag = g_hw_introHintFlag;
         if (introFlag[0x4e] == 0) {
             ((GameText *)(*g_hw_helpTextId))->getText();
@@ -2384,5 +2379,5 @@ HangarWindow::HangarWindow() {
 
 // The hangar always edits the player's current ship, which the global Status owns.
 Ship *HangarWindow::statusShip() {
-    return ((Status *)(*gStatus))->getShip();
+    return gStatus->getShip();
 }

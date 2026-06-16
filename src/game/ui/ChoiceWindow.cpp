@@ -3,6 +3,7 @@
 #include "gof2/game/ui/ScrollTouchWindow.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/mission/Achievements.h"
+#include "gof2/game/core/Globals.h"
 #include "gof2/engine/core/GameText.h"
 #include "gof2/game/ui/Layout.h"
 #include "gof2/game/ui/TouchButton.h"
@@ -165,9 +166,6 @@ void ChoiceWindow::setHeight(int height)
 }
 
 extern GameText **g_ChoiceWindow_gameText_146e8c;
-extern Status **g_ChoiceWindow_replaceHash_146e8c;
-extern Achievements **g_ChoiceWindow_achievements_146e8c;
-extern PaintCanvas **g_ChoiceWindow_canvas_146e8c;
 extern char g_ChoiceWindow_medalImagesLow_146e8c[];
 extern char g_ChoiceWindow_medalImagesHigh_146e8c[];
 extern char g_ChoiceWindow_medalImages_146e8c[];
@@ -178,7 +176,7 @@ void ChoiceWindow::setMedal(int medal, int count)
     this->medalText = *gameText->getText(medal + 0x5e3);
 
     String pattern = *gameText->getText(medal + 0x610);
-    int value = (*g_ChoiceWindow_achievements_146e8c)->getValue(medal, count);
+    int value = gAchievements->getValue(medal, count);
     String number;
     {
         // Build the decimal text of `value` directly into the String.
@@ -192,12 +190,12 @@ void ChoiceWindow::setMedal(int medal, int count)
         while (n--) number.s.push_back((char16_t)(unsigned char)buf[n]);
     }
 
-    String finalText = (*g_ChoiceWindow_replaceHash_146e8c)->replaceHash(pattern, number);
+    String finalText = gStatus->replaceHash(pattern, number);
 
     set(*gameText->getText(0x161), finalText, false);
     this->scrollWindow->setTextCentered(true);
 
-    PaintCanvas *canvas = *g_ChoiceWindow_canvas_146e8c;
+    PaintCanvas *canvas = gCanvas;
     if (count < 0x24) {
         canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesLow_146e8c, count * 4),
                               (unsigned int *)&this->medalImage);
@@ -243,7 +241,6 @@ extern int *g_ChoiceWindow_screenWidth_1469b0;
 extern FModSound **g_ChoiceWindow_sound_1469b0;
 extern Layout **g_ChoiceWindow_layout_1469b0;
 extern void **g_ChoiceWindow_lineFont_1469b0;
-extern void **g_ChoiceWindow_globals_1469b0;
 extern int *g_ChoiceWindow_screenHeight_1469b0;
 
 void ChoiceWindow::set(String const &title, String const &message, bool hasButtons,
@@ -273,7 +270,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     Array<String *> *lines = new Array<String *>();
 
     Layout *layout = *g_ChoiceWindow_layout_1469b0;
-    Globals_getLineArray(*g_ChoiceWindow_globals_1469b0, *g_ChoiceWindow_lineFont_1469b0, message,
+    Globals_getLineArray(gGlobals, *g_ChoiceWindow_lineFont_1469b0, message,
                          (this->width - layout->field_0x4c * 2) - layout->field_0x48,
                          lines);
 
@@ -373,11 +370,8 @@ void ChoiceWindow::setMiscButton(String const &text)
 }
 
 extern Layout **g_ChoiceWindow_layout_1471bc;
-extern PaintCanvas **g_ChoiceWindow_canvas_1471bc;
 extern char g_ChoiceWindow_medalColorsLow_1471bc[];
 extern char g_ChoiceWindow_medalColorsHigh_1471bc[];
-extern Status **g_ChoiceWindow_status_1471bc;
-extern Achievements **g_ChoiceWindow_achievements_1471bc;
 extern char g_ChoiceWindow_creditValues_1471bc[];
 extern void **g_ChoiceWindow_font_1471bc_a;
 extern void **g_ChoiceWindow_font_1471bc_b;
@@ -396,7 +390,7 @@ void ChoiceWindow::draw()
 
     layout->drawBox6(7, this->x, this->y, this->width, this->height, &this->title);
 
-    PaintCanvas *canvas = *g_ChoiceWindow_canvas_1471bc;
+    PaintCanvas *canvas = gCanvas;
     canvas->SetColor(0xffffffff);
 
     if (this->medalImage != -1) {
@@ -413,8 +407,8 @@ void ChoiceWindow::draw()
                             this->x + (this->width >> 1),
                             this->y + this->padding2, (unsigned char)0x11);
 
-        if ((*g_ChoiceWindow_status_1471bc)->hardCoreMode() == 0 &&
-            (*g_ChoiceWindow_achievements_1471bc)->isEliteMedal(this->medal) == 0) {
+        if (gStatus->hardCoreMode() == 0 &&
+            gAchievements->isEliteMedal(this->medal) == 0) {
             String creditsText;
             Layout_formatCredits(&creditsText, layout,
                                  F<int>(g_ChoiceWindow_creditValues_1471bc, this->count * 4));

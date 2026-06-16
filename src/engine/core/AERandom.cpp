@@ -1,4 +1,5 @@
 #include "gof2/engine/core/AERandom.h"
+AbyssEngine::AERandom* gRandom = nullptr;  // canonical shared RNG singleton
 #include <ctime>
 
 namespace AbyssEngine {

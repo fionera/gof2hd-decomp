@@ -53,7 +53,10 @@ extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
 extern "C" int Station_getIndex(Station *st);
-extern void *g_PaintCanvas;   // PaintCanvas singleton pointer (externs.h)
+// Canonical PaintCanvas singleton. Full PaintCanvas.h is not pulled in here
+// (PaintCanvasClass.h supplies the methods); declare the canonical pointer locally
+// to match its definition (binary .bss 0x2281b8).
+extern PaintCanvas* gCanvas;
 int GameText_getLanguage();
 void Globals_loadFont(int obj, int lang);
 extern "C" void *ms_op_delete(void *p);
@@ -72,15 +75,11 @@ extern "C" void *NewsTicker_dtor(void *p);
 extern "C" void *ScrollTouchBox_dtor(void *p);
 extern "C" void ModStation_or_tail();
 
-struct Status;
-// Status singleton holder-of-holder: g -> P (one load), *P -> Status object.
-__attribute__((visibility("hidden"))) extern Status **g_ModStation_statusHolder;
 // Tail veneer (0x1ac0f8).
 
 // ModStation::autosave()
 void ModStation::autosave() {
-    Status *st = *g_ModStation_statusHolder;
-    if (((Status *)(st))->getPlayingTime() - 1LL < 0)
+    if (gStatus->getPlayingTime() - 1LL < 0)
         return;
     RecordHandler *rh = new RecordHandler();
     rh->recordStoreWrite(0);
@@ -97,59 +96,48 @@ struct Ship;
 struct Item;
 struct Achievements;
 
-// Status singleton holder: g -> P, P[0] -> Status object.
-__attribute__((visibility("hidden"))) extern Status **g_ModStation_es_status;
-// Achievements holder-of-holder.
-__attribute__((visibility("hidden"))) extern Achievements **g_ModStation_es_ach;
 // getShip veneer accessed via a function-pointer global.
 __attribute__((visibility("hidden"))) extern Ship *(*g_ModStation_es_getShip)(Status *);
 
 // ModStation::enterStation()
 void ModStation_enterStation()
 {
-    Status **holder = g_ModStation_es_status;
-    Status *status = holder[0];
     // Status::departStation actually takes the destination Station* (see Status.cpp);
     // gof2/Status.h's no-arg prototype is wrong but not editable here, so dispatch
     // through a correctly-typed pointer-to-member.
     {
         void (Status::*depart)(Station *) =
             reinterpret_cast<void (Status::*)(Station *)>(&Status::departStation);
-        (((Status *)status)->*depart)(((Status *)(status))->getStation());
+        (gStatus->*depart)(gStatus->getStation());
     }
-    ((Station *)(((Status *)(holder[0]))->getStation()))->visit();
-    ((Achievements *)(g_ModStation_es_ach[0]))->applyNewMedals();
+    ((Station *)(gStatus->getStation()))->visit();
+    gAchievements->applyNewMedals();
 
     Ship *(*getShip)(Status *) = g_ModStation_es_getShip;
-    Item *e10 = ((Ship *)(getShip(holder[0])))->getFirstEquipmentOfSort(10);
-    Item *e9 = ((Ship *)(getShip(holder[0])))->getFirstEquipmentOfSort(9);
-    int shipIdx = ((Ship *)(getShip(holder[0])))->getIndex();
-    Status *s = holder[0];
-    *(int *)((char *)s + 0x150) = shipIdx;
+    Item *e10 = ((Ship *)(getShip(gStatus)))->getFirstEquipmentOfSort(10);
+    Item *e9 = ((Ship *)(getShip(gStatus)))->getFirstEquipmentOfSort(9);
+    int shipIdx = ((Ship *)(getShip(gStatus)))->getIndex();
+    *(int *)((char *)gStatus + 0x150) = shipIdx;
 
     int v;
     if (e10 == 0) {
         v = -1;
     } else {
         v = ((Item *)(e10))->getIndex();
-        s = holder[0];
     }
-    *(int *)((char *)s + 0x154) = v;
+    *(int *)((char *)gStatus + 0x154) = v;
 
     if (e9 == 0) {
         v = -1;
     } else {
         v = ((Item *)(e9))->getIndex();
-        s = holder[0];
     }
-    *(int *)((char *)s + 0x158) = v;
-    *(int *)((char *)s + 0x124) = 0;
-    *(int *)((char *)s + 0x11c) = 0;
+    *(int *)((char *)gStatus + 0x158) = v;
+    *(int *)((char *)gStatus + 0x124) = 0;
+    *(int *)((char *)gStatus + 0x11c) = 0;
 }
 
 struct Achievements;
-// Achievements singleton holder-of-holder: g -> P, P[0] -> Achievements object.
-__attribute__((visibility("hidden"))) extern Achievements **g_ModStation_achievements;
 // Three target-struct holders: each g -> P, *P -> the struct (stores at fixed offsets).
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_a;
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_b;
@@ -158,13 +146,12 @@ __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_c;
 
 // ModStation::addAchievement(int, int)
 void ModStation::addAchievement(int param_1, int param_2) {
-    Achievements **holder = g_ModStation_achievements;
-    if (((Achievements *)(holder[0]))->isEliteMedal(param_1) != 0)
+    if (gAchievements->isEliteMedal(param_1) != 0)
         return;
     if ((unsigned)(param_2 - 1) < 2) {
-        if (((Achievements *)(holder[0]))->getValue(param_1, 3) != -1)
+        if (gAchievements->getValue(param_1, 3) != -1)
             *g_ModStation_ach_a = param_1 * 3;
-        if (param_2 == 1 && ((Achievements *)(holder[0]))->getValue(param_1, 2) != -1)
+        if (param_2 == 1 && gAchievements->getValue(param_1, 2) != -1)
             *(int *)((char *)g_ModStation_ach_b + 4) = param_1 * 3 + 1;
     }
     *(int *)((char *)g_ModStation_ach_c + 8) = (param_1 * 3 + 3) - param_2;
@@ -388,7 +375,6 @@ struct SolarSystem;
 
 __attribute__((visibility("hidden"))) extern int  *g_msc_stack;     // [DAT_000e5698]
 __attribute__((visibility("hidden"))) extern int   g_msc_vtable;    // [DAT_000e569c] vtable base
-__attribute__((visibility("hidden"))) extern int **g_msc_canvas;    // [DAT_000e56bc] PaintCanvas holder
 
 extern "C" {
 int   Status_getStation_msc();
@@ -443,10 +429,9 @@ ModStation::ModStation() {
     AbyssEngine::EaseInOutMatrix *cam = ModStation_msc_buildCameraTween(this, race);
     this->cameraTween = cam;
 
-    unsigned camHandle = **(unsigned **)g_msc_canvas;
-    PaintCanvas *mscCanvas = (PaintCanvas *)*g_msc_canvas;
-    Matrix *cur = (Matrix *)mscCanvas->CameraGetCurrent();
-    mscCanvas->CameraSetLocal(camHandle, *cur);
+    unsigned camHandle = *(unsigned *)gCanvas;
+    Matrix *cur = (Matrix *)gCanvas->CameraGetCurrent();
+    gCanvas->CameraSetLocal(camHandle, *cur);
 
     // three scalar EaseInOut tweens (fov / fade etc.).
     this->easeCamScalarX = new AbyssEngine::EaseInOut();
@@ -478,8 +463,6 @@ struct ChoiceWindow;
 __attribute__((visibility("hidden"))) extern int *g_ModStation_cm_credit1;  // *g -> credits delta src
 __attribute__((visibility("hidden"))) extern int *g_ModStation_cm_credit2;  // *g -> credits delta src
 __attribute__((visibility("hidden"))) extern void **g_ModStation_cm_lead;   // **g -> leaderboards obj
-__attribute__((visibility("hidden"))) extern Achievements **g_ModStation_cm_ach; // **g -> Achievements
-__attribute__((visibility("hidden"))) extern void **g_ModStation_cm_status; // *g -> Status obj (campaign mission)
 
 // Tail veneer at 0x1ac158: (ptr, ptr[0], ptr[1]).
 
@@ -499,18 +482,18 @@ void ModStation::checkMedals() {
         int *medal = (*medalArr)[idx];
         ((ChoiceWindow *)(this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
-        if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
-            ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
+        if (gStatus->hardCoreMode() == 0)
+            gStatus->changeCredits(delta);
         int *p = (*medalArr)[this->medalIndex];
         this->addAchievement(p[0], p[1]);
         return;
     }
 
     int delta = *g_ModStation_cm_credit1;
-    if (((Status *)(*g_ModStation_cm_status))->getCurrentCampaignMission() == 1)
+    if (gStatus->getCurrentCampaignMission() == 1)
         ((ModStation *)((ModStation *)1))->addAchievement(0, 1);
     this->medalArray = 0;
-    int *medals = ((Achievements *)(g_ModStation_cm_ach[0]))->getNewMedals();
+    int *medals = gAchievements->getNewMedals();
     int count = 0;
     this->medalCount = 0;
     for (int i = 0; i != 0x2d; i++) {
@@ -543,8 +526,8 @@ void ModStation::checkMedals() {
     this->medalChoiceWindow = cw;
     int *medal = (*arr)[0];
     cw->setMedal(medal[0], medal[1]);
-    if (((Status *)(*g_ModStation_cm_status))->hardCoreMode() == 0)
-        ((Status *)(*g_ModStation_cm_status))->changeCredits(delta);
+    if (gStatus->hardCoreMode() == 0)
+        gStatus->changeCredits(delta);
     int *p = (*arr)[0];
     this->addAchievement(p[0], p[1]);
 }
@@ -554,17 +537,13 @@ struct StarMap;
 struct CutScene;
 struct MissionsWindow;
 
-// PaintCanvas singleton holder: single pc-rel deref -> holder; object is *holder.
-__attribute__((visibility("hidden"))) extern void **g_ModStation_r3d_canvas;
-
 // Tail veneer at 0x1ab918.
 
 // ModStation::OnRender3D()
 void ModStation::OnRender3D() {
     if (this->field_0x24 == 0)
         return;
-    void **holder = g_ModStation_r3d_canvas;
-    ((PaintCanvas *)*holder)->ClearBuffer((unsigned int)(long)*holder);
+    gCanvas->ClearBuffer((unsigned int)(long)gCanvas);
 
     char *p65 = &((char*)&this->field_0x64)[1];
     if (this->starMap == 0 || ((char*)&this->field_0x64)[2] != 0 || ((char*)&this->field_0x64)[0] != 0 ||
@@ -578,7 +557,7 @@ void ModStation::OnRender3D() {
     } else {
         ((CutScene *)(this->starMap))->renderBG();
     }
-    ((PaintCanvas *)*holder)->Begin3d();
+    gCanvas->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *)(this->spaceLounge))->OnRender3D();
     else if (((char*)&this->field_0x64)[3] != 0)
@@ -587,7 +566,7 @@ void ModStation::OnRender3D() {
         ((MissionsWindow *)(this->m_pDialogueWindow))->render3D();
     else if (((char*)&this->field_0x64)[2] == 0 && this->starMap != 0)
         ((CutScene *)(this->starMap))->render3D();
-    ModStation_r3d_endTail(*holder);
+    ModStation_r3d_endTail(gCanvas);
 }
 
 struct Engine;
@@ -1038,8 +1017,6 @@ epilogue:;
 struct Station;
 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_ric_chk;    // *g -> canary src
-__attribute__((visibility("hidden"))) extern void **g_ModStation_ric_canvas; // g -> P, *P -> canvas obj
-__attribute__((visibility("hidden"))) extern void **g_ModStation_ric_status; // *g -> Status obj
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotX;     // table base (pc-rel)
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotY;     // table base (pc-rel)
 
@@ -1063,28 +1040,25 @@ void ModStation::resetIdleCamForHangar() {
     else
         this->easeCamZ = new AbyssEngine::EaseInOut(this->restCamZ, this->restCamZ);
 
-    void **canvasHolder = g_ModStation_ric_canvas;
-    void *canvas = *canvasHolder;
-    ((PaintCanvas *)canvas)->CameraGetCurrent();
-    void *loc = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
+    gCanvas->CameraGetCurrent();
+    void *loc = gCanvas->CameraGetLocal((unsigned int)(long)gCanvas);
     AEMath_MatrixSetTranslation(matrix, this->restCamX, this->restCamY, this->restCamZ);
 
     int race;
-    Station *st = ((Status *)(*g_ModStation_ric_status))->getStation();
+    Station *st = gStatus->getStation();
     if (Station_getIndex(st) == 0x65) {
         race = 8;
     } else {
-        st = ((Status *)(*g_ModStation_ric_status))->getStation();
+        st = gStatus->getStation();
         if (Station_getIndex(st) == 100) {
             race = 7;
         } else {
-            race = ((SolarSystem *)(long)((Status *)(*g_ModStation_ric_status))->getSystem())->getRace();
+            race = ((SolarSystem *)(long)gStatus->getSystem())->getRace();
         }
     }
 
-    canvas = *canvasHolder;
-    ((PaintCanvas *)canvas)->CameraGetCurrent();
-    void *loc2 = ((PaintCanvas *)canvas)->CameraGetLocal((unsigned int)(long)canvas);
+    gCanvas->CameraGetCurrent();
+    void *loc2 = gCanvas->CameraGetLocal((unsigned int)(long)gCanvas);
     AEMath_MatrixSetRotation(matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
     (void)loc;
 }
@@ -1292,7 +1266,6 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
 
 // Two singleton holders (single pc-rel deref each).
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_sound;   // *g -> flag
-__attribute__((visibility("hidden"))) extern void **g_ModStation_or_canvas;  // *g -> canvas
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_lang;    // *g -> obj (font lang)
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_reload;  // *g -> reload flag obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_imgfac;  // *g -> image factory
@@ -1306,7 +1279,7 @@ void ModStation::OnRelease() {
         ((FModSound *)(*soundHolder))->disableReverb();
         ((FModSound *)(*soundHolder))->stopAllSoundFXEvents();
     }
-    ((PaintCanvas *)*g_ModStation_or_canvas)->FogEnable(0, 1);
+    gCanvas->FogEnable(0, 1);
 
     if (this->buttonRow != 0) {
         ArrayReleaseClasses_TouchButton(this->buttonRow);
@@ -1365,7 +1338,7 @@ void ModStation::OnRelease() {
         ms_op_delete(ChoiceWindow_dtor(this->choiceWindow));
     this->choiceWindow = 0;
 
-    ((PaintCanvas *)g_PaintCanvas)->ReleaseAllResources();
+    gCanvas->ReleaseAllResources();
     int langObj = *(int *)*g_ModStation_or_lang;
     Globals_loadFont(langObj, GameText_getLanguage());
 
@@ -2181,8 +2154,6 @@ struct NewsTicker;
 // Globals.
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_layout;  // g -> P, *P -> layout obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_screenH; // **g -> screen height
-__attribute__((visibility("hidden"))) extern void **g_ModStation_tb_campaign;// *g -> obj for nextCampaignMission
-__attribute__((visibility("hidden"))) extern void **g_ModStation_tb_appmod;  // *g -> app module value
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_clear;   // *g -> slot zeroed
 
 // ModStation::OnTouchBegin(int, int, void*)
@@ -2197,11 +2168,11 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     if (flag != 0) {
         if (((Radio *)(*(void**)&this->field_0x54))->lastMessageShown() != 0) {
             (unsigned char&)this->field_0x24 = 0;
-            ((Status *)((char)*(int *)*g_ModStation_tb_campaign))->nextCampaignMission();
-            unsigned int mod = *(unsigned int *)*g_ModStation_tb_appmod;
+            gStatus->nextCampaignMission();
+            unsigned int mod = *(unsigned int *)gAppManager;
             *(int *)*g_ModStation_tb_clear = 0;
             // `mod` is the target module id; dispatch on the ApplicationManager singleton.
-            ((ApplicationManager *)(*g_ModStation_tb_appmod))->SetCurrentApplicationModule(mod);
+            gAppManager->SetCurrentApplicationModule(mod);
             (unsigned char&)this->m_nStarMapWindowOpen = 0;
         }
         return;
@@ -2297,8 +2268,8 @@ void ModStation_r2d_drawStationHud(ModStation *self);
 // ModStation::OnRender2D() — top-level 2D pass; dispatches to whichever station sub-screen is
 // currently open, then overlays the choice/dialogue/help windows.
 void ModStation::OnRender2D() {
-    ((PaintCanvas *)g_PaintCanvas)->Begin2d();
-    ((PaintCanvas *)g_PaintCanvas)->SetColor(this->fadeColor);
+    gCanvas->Begin2d();
+    gCanvas->SetColor(this->fadeColor);
 
     if (this->field_0x24 == 0) {
         // station screen not active yet — nothing to draw this frame.
@@ -2334,7 +2305,7 @@ void ModStation::OnRender2D() {
     if ((*help)->choiceWindowOpen != 0)   // Layout+0x0
         Layout_drawHelpWindow_r2d((Layout *)*help);
 
-    ((PaintCanvas *)g_PaintCanvas)->End2d();
+    gCanvas->End2d();
 
     // 3D hangar/ship pass when no help window is up.
     if ((*help)->choiceWindowOpen == 0) {   // Layout+0x0
@@ -2345,7 +2316,7 @@ void ModStation::OnRender2D() {
             SpaceLounge_draw3DShip_r2d();
     }
 
-    ((PaintCanvas *)g_PaintCanvas)->SwapBuffer();
+    gCanvas->SwapBuffer();
 }
 
 struct Station;

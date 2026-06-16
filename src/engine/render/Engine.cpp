@@ -7,6 +7,7 @@ class Engine;
 #include "gof2/engine/math/AEMath.h"
 #include "gof2/engine/render/FBOContainer.h"
 #include "gof2/engine/render/Engine.h"
+Engine* gEngine = nullptr;            // canonical Engine singleton
 #include "gof2/engine/core/ApplicationManager.h"
 #include "gof2/engine/core/NFC.h"
 #include "gof2/engine/file/AEFile.h"

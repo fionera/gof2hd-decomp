@@ -10,13 +10,7 @@
 #include "gof2/engine/render/PaintCanvas.h"
 #include "gof2/platform/libc.h"
 
-// The PaintCanvas singleton used by the single-argument SetColor sites that
-// target the global canvas.
-extern void *g_PaintCanvas;
-
 // Global GameText singleton holder; receiver for getText(key).
-struct GameTextHolder { GameText *obj; };
-__attribute__((visibility("hidden"))) extern GameTextHolder *gGameText;
 
 // Cross-class engine helpers whose call sites pass mismatched argument lists;
 // declared once with an unspecified-argument signature so every site type-checks
@@ -84,13 +78,12 @@ int Layout::OnTouchBegin(int x, int y) {
     return this->dispatchTouchBegin(btn, x, y);
 }
 
-__attribute__((visibility("hidden"))) extern Status **gStatus;
 float Sinf(float);   // AbyssEngine::AEMath::Sinf
 
 // Pulse value driven by elapsed playing time; sign of the result follows the
 // first sample.
 float Layout::getPulseValue(float speed) {
-    Status *status = *gStatus;
+    Status *status = gStatus;
     float a = Sinf((float)status->getPlayingTime() * speed);
     float b = Sinf((float)status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
@@ -173,12 +166,10 @@ void Layout::startFade(uint8_t fadeOut, int color, int duration) {
 // Hidden globals from initTip:
 //   g_tipColor  : color value
 //   g_tipTextId : text-table id
-//   g_tipRandN  : random generator
 //   g_tipCanvas : canvas
 //   g_tipMetric : object whose [0x78]/[0x4c] give the wrap width
 __attribute__((visibility("hidden"))) extern unsigned *g_tipColor;
 __attribute__((visibility("hidden"))) extern int **g_tipTextId;
-__attribute__((visibility("hidden"))) extern AbyssEngine::AERandom **g_tipRandN;
 __attribute__((visibility("hidden"))) extern PaintCanvas ***g_tipCanvas;
 __attribute__((visibility("hidden"))) extern int **g_tipMetric;
 
@@ -195,8 +186,8 @@ void Layout::initTip() {
     unsigned color = *g_tipColor;
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
-    (*g_tipRandN)->nextInt();
-    String *str = gGameText->obj->getText(textId);
+    gRandom->nextInt();
+    String *str = gGameText->getText(textId);
 
     this->tipLines = arr;
     int *m = *g_tipMetric;
@@ -211,7 +202,7 @@ __attribute__((visibility("hidden"))) extern int *g_efScreenW;      // [0]=scree
 __attribute__((visibility("hidden"))) extern int **g_efMetric;      // [0][0x10]=footer height
 
 void Layout::drawEmptyFooter(int showBack) {
-    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *pc = gCanvas;
     unsigned color = *g_efColor;
     pc->SetColor(color);
     int w = pc->GetImage2DWidth(color);
@@ -411,11 +402,11 @@ __attribute__((visibility("hidden"))) extern PaintCanvas **g_bgCanvas;
 // Tile `img` across the (x, y, w, h) area.
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     PaintCanvas *pc = *g_bgCanvas;
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
-    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(img);
+    gCanvas->SetColor(this->drawColor);
+    int iw = gCanvas->GetImage2DWidth(img);
     int cols = w / iw;
     int fullW = cols * iw;
-    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(img);
+    int ih = gCanvas->GetImage2DHeight(img);
     int rows = h / ih;
     int fullH = rows * ih;
 
@@ -551,10 +542,10 @@ __attribute__((visibility("hidden"))) extern int g_bbFlipR;
 // Draw a tiled rounded-rect border (corner images + edge tiling).
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     PaintCanvas *pc = *g_bbCanvas;
-    int cw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(corner);
-    int ch = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(corner);
-    int ew = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(edge);
-    int eh = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(edge);
+    int cw = gCanvas->GetImage2DWidth(corner);
+    int ch = gCanvas->GetImage2DHeight(corner);
+    int ew = gCanvas->GetImage2DWidth(edge);
+    int eh = gCanvas->GetImage2DHeight(edge);
 
     // Four corners (top-left at base; others mirrored).
     pc->DrawImage2D(corner, inset + x, inset + y);
@@ -609,15 +600,15 @@ __attribute__((visibility("hidden"))) extern int **g_sbMetric;          // [0][0
 
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     PaintCanvas *pc = *g_sbCanvas;
-    int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->scrollBarImage);
-    int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(this->scrollBarImage);
+    int iw = gCanvas->GetImage2DWidth(this->scrollBarImage);
+    int ih = gCanvas->GetImage2DHeight(this->scrollBarImage);
 
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(g_sbColor0);
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(g_sbColor1);
+    gCanvas->SetColor(g_sbColor0);
+    gCanvas->SetColor(g_sbColor1);
 
     int inset = this->scrollBarInset;
     pc->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
+    gCanvas->SetColor(this->drawColor);
 
     int thumb = range - 1;
     if (thumb <= ih * 2) thumb = ih * 2;
@@ -661,16 +652,16 @@ uint8_t Layout::drawFade() {
         unsigned color = this->fadeColor;
         if (t > 0.0f)
             color += (int)(t * 255.0f);
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(color);
+        gCanvas->SetColor(color);
         (*g_dfCanvasA)->FillRectangle(0, 0, **g_dfDimA, 0);
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
+        gCanvas->SetColor(saved);
     }
     if (this->fillScreen != 0) {
         PaintCanvas *pc = *g_dfCanvasB;
         unsigned saved = pc->GetColor();
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xff);
+        gCanvas->SetColor(0xff);
         (*g_dfCanvasB)->FillRectangle(0, 0, **g_dfDimB, 0);
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
+        gCanvas->SetColor(saved);
     }
     return this->fading;
 }
@@ -696,11 +687,11 @@ __attribute__((visibility("hidden"))) extern void **g_dbFont7;
 void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsigned flags) {
     PaintCanvas *pc = *g_dbCanvas;
     unsigned saved = pc->GetColor();
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
+    gCanvas->SetColor(this->drawColor);
 
     switch (style) {
     case 0: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x348);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x348);
         pc->DrawImage2D(this->field_0x348, x, y);
         this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char)(0x01));
@@ -721,7 +712,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         break;
     }
     case 1: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x350);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x350);
         pc->DrawImage2D(this->field_0x350, x, y);
         this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char)(0x01));
@@ -745,14 +736,14 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         this->drawBGPattern(this->bgPatternImage, x, y, w, h);
         break;
     case 3: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x358);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x358);
         pc->DrawImage2D(this->field_0x358, x, y);
         this->drawBGPattern(this->field_0x35c, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x358, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 4: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x36c);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x36c);
         pc->DrawImage2D(this->field_0x36c, x, y);
         this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char)(0x01));
@@ -762,7 +753,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         this->drawBGBorder6(this->field_0x380, this->field_0x384, x, y, w);
         break;
     case 6: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x388);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x388);
         pc->DrawImage2D(this->field_0x388, x, y);
         this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char)(0x01));
@@ -786,10 +777,10 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         int *mt = *g_dbMetric7;
         int hdr = mt[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
-        int ih = ((PaintCanvas*)g_PaintCanvas)->GetImage2DHeight(this->field_0x394);
+        int ih = gCanvas->GetImage2DHeight(this->field_0x394);
         this->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
         if (text->size() == 0) break;
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+        gCanvas->SetColor(0xffffffff);
         pc->DrawImage2D(this->headerIconImage, x, y);
         int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
         pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
@@ -800,14 +791,14 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         this->drawBGBorder6(this->field_0x39c, this->field_0x3a0, x, y, w);
         break;
     case 9: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x360);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x360);
         pc->DrawImage2D(this->field_0x360, x, y);
         this->drawBGPattern(this->field_0x364, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x360, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
     case 10: {
-        int iw = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->field_0x368);
+        int iw = gCanvas->GetImage2DWidth(this->field_0x368);
         pc->DrawImage2D(this->field_0x368, x, y);
         this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x368, (w + x) - iw, y, (unsigned char)(0x01));
@@ -835,11 +826,11 @@ void Layout::drawWindow7(String *title, int x, int y, int w, int h, int drawBG) 
         int top = (*g_dwBorderTop)[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
     }
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)g_dwCanvas);  // canvas slot doubles as the colour int
+    gCanvas->SetColor(*(unsigned *)g_dwCanvas);  // canvas slot doubles as the colour int
     int *m = *g_dwMetric;
     int top = m[8 / 4];
     pc->DrawRectangle(x, top + y, w, h - top);
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
+    gCanvas->SetColor(this->drawColor);
     pc->DrawImage2D(this->headerIconImage, x, 0);
     if (title->size() != 0 && title->Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
@@ -867,7 +858,7 @@ __attribute__((visibility("hidden"))) extern unsigned *g_dtLinesB;// [0]
 
 void Layout::drawTip() {
     if (this->tipLines != nullptr) {
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(*g_dtColor);
+        gCanvas->SetColor(*g_dtColor);
         int *mA = *g_dtMetricA;
         int dimW = *g_dtDimW;
         int dimH = *g_dtDimH;
@@ -876,7 +867,7 @@ void Layout::drawTip() {
         String box(g_dtBoxLit);
         this->drawBoxStr(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, &box);
 
-        ((PaintCanvas*)g_PaintCanvas)->DrawImage2D(this->tipBoxImage,
+        gCanvas->DrawImage2D(this->tipBoxImage,
                                  dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char)(0x11));
 
         int lineCount = (int)this->tipLines->size();
@@ -901,7 +892,7 @@ void Layout::initHelpWindow(String *text) {
     if (this->choiceWindow == nullptr)
         this->choiceWindow = new ChoiceWindow();
     (*gFmodHelp)->play(0x7e, 0, 0, 0);
-    String *title = gGameText->obj->getText(0x187);
+    String *title = gGameText->getText(0x187);
     this->choiceWindow->set(*title, *text);
     this->choiceWindowOpen = 1;
     this->helpPressedFlag = 0;
@@ -1015,7 +1006,7 @@ void Layout::reload() {
     // Back button (string-labelled). Constructed via the engine ctor ABI entry
     // (its argument list does not map to a single public TouchButton ctor).
     TouchButton *bBack = (TouchButton *)::operator new(sizeof(TouchButton));
-    String *txt = gGameText->obj->getText(*g_rlBackText);
+    String *txt = gGameText->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, this->buttonInsetX, sh - 3, '!');
     this->backButton = bBack;
@@ -1026,7 +1017,7 @@ void Layout::reload() {
     (*g_rlCanvas)->Image2DCreate(0x535, &img535);
     TouchButton *b2 = (TouchButton *)::operator new(sizeof(TouchButton));
     if (img535 == 0xffffffff) {
-        String *t = gGameText->obj->getText(*g_rlBackText);
+        String *t = gGameText->getText(*g_rlBackText);
         TouchButton_ctorStr(b2, t, 2, this->buttonInsetX,
                             *g_rlScreenH - this->footerButtonOffset, '!');
     } else {
@@ -1075,9 +1066,9 @@ __attribute__((visibility("hidden"))) extern void **g_dfFont;
 // cargo-load text (warning-coloured when over capacity) and the credit total.
 void Layout::drawFooterImpl(int stationMode, int showBack) {
     PaintCanvas *pc = *g_dfCanvas;
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
-    int wRight = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->footerImageRight);
-    int wLeft = ((PaintCanvas*)g_PaintCanvas)->GetImage2DWidth(this->footerImageLeft);
+    gCanvas->SetColor(this->drawColor);
+    int wRight = gCanvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = gCanvas->GetImage2DWidth(this->footerImageLeft);
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char)(0x11));
@@ -1102,11 +1093,11 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         this->backButton->draw();
 
     // Cargo load text, in warning colour if over capacity.
-    Status *status = *gStatus;
+    Status *status = gStatus;
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(*(unsigned *)&g_dfWarnColor);
+        gCanvas->SetColor(*(unsigned *)&g_dfWarnColor);
 
     String sLoad;
     sLoad.ctor_int(status->getShip()->getCurrentLoad());
@@ -1122,7 +1113,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         pc->DrawString((unsigned)(unsigned long)(font), &loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
-    ((PaintCanvas*)g_PaintCanvas)->SetColor(this->drawColor);
+    gCanvas->SetColor(this->drawColor);
 
     String credStr;
     Layout_formatCredits(&credStr, status->getCredits());
@@ -1161,7 +1152,7 @@ __attribute__((visibility("hidden"))) extern void ***g_dhFont;
 // Render the header bar (end caps, pattern fill, title text and help-button
 // slide-in animation).
 void Layout::drawHeader7(String *title, int transition) {
-    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *pc = gCanvas;
     unsigned img = *g_dhColor;
     pc->SetColor(this->drawColor);
     int iw = pc->GetImage2DWidth(img);
@@ -1205,7 +1196,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         PaintCanvas *pc = *g_mrCanvas;
         unsigned saved = pc->GetColor();
         unsigned origColor = this->drawColor;
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(0xffffffff);
+        gCanvas->SetColor(0xffffffff);
 
         // Pulse alpha based on the animation timer.
         int t = this->rewardMessageTimer;
@@ -1218,7 +1209,7 @@ void Layout::drawMissionRewardMessage(int transition) {
             a = 1.0f;
         }
         unsigned col = (unsigned)((int)(a * 256.0f)) - 0x100;
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(col);
+        gCanvas->SetColor(col);
 
         unsigned newColor = pc->GetColor();
         int boxW = this->rewardBoxWidth;
@@ -1240,7 +1231,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         int sh = *g_mrDimB;
         pc->DrawImage2D(this->field_0x3a4, sh >> 1, (char)boxX, (unsigned char)(0x11));
 
-        String *txt = gGameText->obj->getText(*g_mrTextId);
+        String *txt = gGameText->getText(*g_mrTextId);
         String line(*txt);
 
         sh = *g_mrDimB;
@@ -1257,7 +1248,7 @@ void Layout::drawMissionRewardMessage(int transition) {
         tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
         pc->DrawString((unsigned)(unsigned long)(font), &line, (sh >> 1) - (tw >> 1),
                        this->rewardBoxY2 + boxX, false);
-        ((PaintCanvas*)g_PaintCanvas)->SetColor(saved);
+        gCanvas->SetColor(saved);
         this->drawColor = origColor;
     }
 }
@@ -1303,7 +1294,7 @@ void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, in
 // Dim the whole screen behind a modal with a translucent rectangle in the mask
 // colour, restoring the previous colour.
 void Layout::drawMaskImpl(int x, int y, int w, int h) {
-    PaintCanvas *pc = (PaintCanvas *)g_PaintCanvas;
+    PaintCanvas *pc = gCanvas;
     unsigned saved = pc->GetColor();
     pc->SetColor(this->drawColor);
     pc->FillRectangle(x, y, w, h);
@@ -1324,7 +1315,7 @@ void Layout::drawHelpWindowImpl() {
 // drawBGBorder rounded-rect overloads onto the full 8-parameter renderer. The
 // 6-arg form reuses the corner image's height as inset/pad.
 void Layout::drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w) {
-    int ch = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight(corner);
+    int ch = gCanvas->GetImage2DHeight(corner);
     this->drawBGBorder(corner, edge, x, y, w, ch, 0, 0);
 }
 

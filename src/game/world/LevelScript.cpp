@@ -15,7 +15,6 @@
 #include "gof2/game/world/Station.h"
 
 // Game singletons / externs (engine-provided, no clean header here).
-extern Status* gStatus;
 extern void*   gProgrammedStation;
 extern void    Player_setUnknown(void* player, bool enabled);
 extern void    Player_setAutoPilotTarget(void* player, void* target);

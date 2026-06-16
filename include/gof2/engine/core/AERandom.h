@@ -20,4 +20,6 @@ public:
     int nextInt(int bound);     // [0, bound)
 };
 } // namespace AbyssEngine
+extern AbyssEngine::AERandom* gRandom;  // canonical shared RNG singleton (binary .bss 0x2281cc)
+
 #endif

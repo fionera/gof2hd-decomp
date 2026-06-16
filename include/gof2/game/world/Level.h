@@ -187,6 +187,7 @@ public:
     void initParticleSystems();
     StarSystem* getStarSystem();
     Array<KIPlayer*>* getGasClouds();
+    // `kind` is the item "sort" (ItemSort); kept as int so the mangled symbol matches the original.
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
     int createStaticObject(Waypoint *wp, int type, int jitter);
     PlayerFixedObject *createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group);

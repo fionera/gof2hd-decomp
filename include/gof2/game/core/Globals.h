@@ -53,4 +53,6 @@ public:
     void buildShipGroup0f(int variant, void* canvas);
 };
 
+extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)
+
 #endif // GOF2_GLOBALS_H

@@ -7,18 +7,11 @@
 #include "gof2/game/ship/Agent.h"
 #include "gof2/game/core/String.h"
 
-// Engine game-state singletons (hidden globals shared across the game layer).
-extern "C" __attribute__((visibility("hidden"))) Status **g_status;
-__attribute__((visibility("hidden"))) extern Galaxy **g_galaxy;
-
-// Stations that hide a blueprint / host a pirate base, plus the opaque flag tables
-// that record whether the player has already discovered each. The flag storage is
-// reached through the game's persistent-state singleton.
+// Stations that hide a blueprint / host a pirate base. The discovery flags and the
+// alien-attack target are reached through the game's persistent-state singleton
+// (gStatus); these were previously opaque holders pointing at the same Status object.
 static const int kHiddenBlueprints[5] = { 0, 0, 0, 0, 0 };
 static const int kPirateStations[4] = { 0, 0, 0, 0 };
-__attribute__((visibility("hidden"))) extern char **const g_hiddenBlueprintState;
-__attribute__((visibility("hidden"))) extern char **const g_pirateBaseState;
-__attribute__((visibility("hidden"))) extern int **const g_alienAttackTarget;
 
 Station::Station()
     : name("Station"),
@@ -60,9 +53,8 @@ Station::~Station() {
         items = nullptr;
     }
     if (agents != nullptr) {
-        Status* status = *g_status;
-        Mission* campaign = status->getCampaignMissionPtr();
-        Mission* freelance = status->getFreelanceMission();
+        Mission* campaign = gStatus->getCampaignMissionPtr();
+        Mission* freelance = gStatus->getFreelanceMission();
         Agent* campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
         Agent* freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
         for (Agent* a : *agents) {
@@ -219,19 +211,19 @@ uint8_t Station::hasAttackedFriends() {
 }
 
 bool Station::isAttackedByAliens() {
-    return index == *(int*)((char*)(*g_alienAttackTarget) + 0x80);
+    return index == *(int*)((char*)gStatus + 0x80);
 }
 
 uint8_t Station::isDiscovered() {
-    return (*g_galaxy)->getVisited()[index];
+    return gGalaxy->getVisited()[index];
 }
 
 void Station::visit() {
     if (isDiscovered())
         return;
     visited = 1;
-    (*g_status)->visitStation();
-    (*g_galaxy)->setSystemVisited(index);
+    gStatus->visitStation();
+    gGalaxy->setSystemVisited(index);
 }
 
 uint32_t Station::getHiddenBlueprintIndex() {
@@ -251,7 +243,7 @@ uint32_t Station::getPirateStationIndex() {
 }
 
 uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
-    char* base = *g_hiddenBlueprintState;
+    char* base = (char*)gStatus;
     for (uint32_t i = 0; i < 5; i++) {
         if (kHiddenBlueprints[i] == index) {
             if (ignoreFound)
@@ -265,7 +257,7 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
 }
 
 uint32_t Station::stationHasPirateBase() {
-    char* base = *g_pirateBaseState;
+    char* base = (char*)gStatus;
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
             char* flags = *(char**)(*(char**)(base + 0x4c) + 4);

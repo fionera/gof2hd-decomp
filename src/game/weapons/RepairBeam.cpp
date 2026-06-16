@@ -11,7 +11,6 @@
 using AbyssEngine::AEMath::Vector;
 
 // The active Status singleton (same holder TractorBeam/MGame use).
-extern Status* gStatus;
 
 // AEMath free-functions used by the beam math.
 namespace AbyssEngine {

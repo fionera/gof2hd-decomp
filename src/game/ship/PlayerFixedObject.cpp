@@ -19,6 +19,7 @@
 #include "gof2/engine/math/BoundingVolume.h"
 #include "gof2/game/ship/Player.h"
 #include "gof2/game/core/PaintCanvasClass.h"
+#include "gof2/game/core/Globals.h"
 #include "gof2/game/world/Station.h"
 
 namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &value); } }
@@ -102,15 +103,15 @@ V3 PlayerFixedObject::getPosition() {
     return pos;
 }
 
+// Canonical render canvas singleton (defined in PaintCanvas.h; declared locally here
+// to avoid pulling the full PaintCanvas.h into this TU which uses PaintCanvasClass.h).
+extern PaintCanvas* gCanvas;
+
 // PC-relative singleton holders for the engine subsystems reached during update().
-__attribute__((visibility("hidden"))) extern void **g_pfo_canvasU;   // PaintCanvas for Transform updates
 __attribute__((visibility("hidden"))) extern void **g_pfo_fmod;      // FModSound holder
 __attribute__((visibility("hidden"))) extern void **g_pfo_audioFlag; // *holder+0xf = positional flag
 __attribute__((visibility("hidden"))) extern void **g_pfo_egoA;      // PlayerEgo holder (achievements path)
-__attribute__((visibility("hidden"))) extern void **g_pfo_achievements;
-__attribute__((visibility("hidden"))) extern void **g_pfo_pcMaterial;
 __attribute__((visibility("hidden"))) extern const int g_pfo_dmgVal;
-__attribute__((visibility("hidden"))) extern void **g_pfo_status;     // Status singleton holder
 
 static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
     int k = self->kind;
@@ -133,14 +134,14 @@ void PlayerFixedObject::update(int dt) {
         F<unsigned char>(player, 0x5c) = 1;
         enemyFlag = 0;
     } else {
-        int st = ((Status *)(*g_pfo_status))->getStanding();
+        int st = gStatus->getStanding();
         unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->faction);
         player = (Player *)self->player;
         F<unsigned char>(player, 0x5c) = e;
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
-            void *st2 = (void *)(long)((Status *)(*g_pfo_status))->getStanding();
+            void *st2 = (void *)(long)gStatus->getStanding();
             enemyFlag = ((Standing *)(st2))->isFriend(self->faction);
             player = (Player *)self->player;
         }
@@ -175,16 +176,16 @@ void PlayerFixedObject::update(int dt) {
         if (doMove) doMove = (self->moving != 0);
         if (doMove) self->moveForward(dt);
 
-        int cm = ((Status *)(*g_pfo_status))->getCurrentCampaignMission();
+        int cm = gStatus->getCurrentCampaignMission();
         int k2 = self->kind;
         bool skip = (cm == 0x5b && k2 == 0x494e);
         if (!skip) {
             if (k2 == 0x494a) {
-                if (((Status *)(*g_pfo_status))->getCurrentCampaignMission() == 0x91) goto afterMotion;
+                if (gStatus->getCurrentCampaignMission() == 0x91) goto afterMotion;
                 k2 = self->kind;
             }
             if (k2 != 0x4220) {
-                void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
+                void *t = gCanvas->TransformGetTransform(
                             ((AEGeometry *)self->geometry)->transform);
                 ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
             }
@@ -216,7 +217,7 @@ afterMotion:
         void *expl;
         if (wreck != 0) {
             ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
-            void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
+            void *t = gCanvas->TransformGetTransform(
                         ((AEGeometry *)wreck)->transform);
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
             if (self->faction == 3 && self->moving != 0 &&
@@ -264,16 +265,15 @@ afterMotion:
             if (self->kind == 0xe &&
                 (char)((Player *)self->player)->field_44 == 0) {
                 void *egoObj = *g_pfo_egoA;
-                void *ach = *g_pfo_achievements;
                 *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
-                if (((Achievements *)(ach))->hasMedal(0x27, 1) == 0) {
+                if (gAchievements->hasMedal(0x27, 1) == 0) {
                     float cur = (float)*(int *)((char *)egoObj + 0x118);
-                    float val = (float)((Achievements *)(ach))->getValue(0x27, 1);
+                    float val = (float)gAchievements->getValue(0x27, 1);
                     if ((int)(cur / val) < 2) {
                         void *ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                         void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                         cur = (float)*(int *)((char *)egoObj + 0x118);
-                        val = (float)((Achievements *)(ach))->getValue(0x27, 1);
+                        val = (float)gAchievements->getValue(0x27, 1);
                         ((Hud *)(hud))->hudEventMedal(0x27, (int)((cur / val) * 100.0f));
                     }
                 }
@@ -309,10 +309,10 @@ afterMotion:
             }
         }
         self->finished = 0;
-        void *t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
+        void *t = gCanvas->TransformGetTransform(
                     ((AEGeometry *)self->wreckGeometry)->transform);
         ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
-        t = ((PaintCanvas*)*g_pfo_canvasU)->TransformGetTransform(
+        t = gCanvas->TransformGetTransform(
                     ((AEGeometry *)self->wreckGeometry)->transform);
         if (((AbyssEngine::Transform *)t)->animating == 0) {
             Level *lod = (Level *)self->level;
@@ -392,10 +392,9 @@ afterMotion:
                     default: mat = 0x824d; break;
                 }
                 self->wreckMaterial = mat;
-                void *pc = *g_pfo_pcMaterial;
                 char matOut[4];
-                ((PaintCanvas*)pc)->MaterialCreate(mat, (unsigned int *)matOut);
-                ((PaintCanvas*)pc)->MeshChangeMaterial(
+                gCanvas->MaterialCreate(mat, (unsigned int *)matOut);
+                gCanvas->MeshChangeMaterial(
                     ((AEGeometry *)self->wreckGeometry)->meshId,
                     *(unsigned short *)matOut);
             }
@@ -466,14 +465,10 @@ afterMotion:
     *(int *)((char *)p + 0x50) = self->intPosZ;
 }
 
-// PaintCanvas singleton holder (single pc-rel deref -> holder; object is *holder).
-__attribute__((visibility("hidden"))) extern void **g_pfo_canvas;
-
 void PlayerFixedObject::setExhaustVisible(bool v) {
     AEGeometry *geom = (AEGeometry *)this->geometry;
     if (geom != 0 && (int)geom->childTransform != -1) {
-        void **holder = g_pfo_canvas;
-        return ((AbyssEngine::Transform *)(((PaintCanvas*)*holder)->TransformGetTransform(geom->transform)))->setExhaustVisible(v);
+        return ((AbyssEngine::Transform *)(gCanvas->TransformGetTransform(geom->transform)))->setExhaustVisible(v);
     }
 }
 
@@ -540,17 +535,11 @@ void PlayerFixedObject::reset() {
     fn(&this->homingDir, zero);
 }
 
-// PaintCanvas singleton holder (pc-rel deref -> holder; canvas object is *holder).
-__attribute__((visibility("hidden"))) extern void **g_pfo_canvas2;
-// Globals singleton: pc-rel deref -> holder, **holder is the Globals object.
-__attribute__((visibility("hidden"))) extern void ***g_pfo_globals;
-
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t)meshId;
-    void **holder = g_pfo_canvas2;
-    AEGeometry *geom = new AEGeometry((uint16_t)meshId, (PaintCanvas *)*holder, true);
+    AEGeometry *geom = new AEGeometry((uint16_t)meshId, gCanvas, true);
     this->wreckGeometry = geom;
-    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(geom->transform);
+    void *t = gCanvas->TransformGetTransform(geom->transform);
     *(int *)&((AbyssEngine::Transform *)t)->boundingRadius = 0x48f42400; // 500000.0f far-clip constant (raw bits)
 
     int kind = this->kind;
@@ -567,11 +556,11 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     } else {
         sel = this->wreckType;
         if (sel < 0) return;
-        this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, this->wreckGeometry);
+        this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(gGlobals, sel, this->wreckGeometry);
         return;
     }
     this->wreckType = sel;
-    this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(**g_pfo_globals, sel, this->wreckGeometry);
+    this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(gGlobals, sel, this->wreckGeometry);
 }
 
 // Picks the active bounding-volume array, indexes it by the stored collision index,
@@ -666,8 +655,6 @@ LAB_538:
 // loot-list parameter table (4 x 8-byte pairs).
 __attribute__((visibility("hidden"))) extern const int g_pfo_stationIdx[4];
 __attribute__((visibility("hidden"))) extern const int g_pfo_lootParams[8]; // pairs at +0 used; [idx*2+1]
-// AERandom singleton holder (pc-rel -> holder; *holder is the AERandom object).
-__attribute__((visibility("hidden"))) extern void **g_pfo_random;
 
 void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float x, float y, float z) {
     PlayerFixedObject *self = this;
@@ -714,14 +701,14 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         self->name = tmp;
     }
 
-    void *mission = ((Status *)(*g_pfo_status))->getMission();
+    void *mission = gStatus->getMission();
     int campaign = ((Mission *)(mission))->isCampaignMission();
     bool special = false;
     if (campaign != 0) {
-        int cm = ((Status *)(*g_pfo_status))->getCurrentCampaignMission();
+        int cm = gStatus->getCurrentCampaignMission();
         if (cm == 0x28) special = true;
         else {
-            cm = ((Status *)(*g_pfo_status))->getCurrentCampaignMission();
+            cm = gStatus->getCurrentCampaignMission();
             if (cm == 0x29) special = true;
         }
     }
@@ -735,7 +722,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         Generator *gen = new Generator();
         if (kind == 0x37a3) {
             self->field_0x41 = 1;
-            void *station = ((Status *)(*g_pfo_status))->getStation();
+            void *station = gStatus->getStation();
             int sidx = ((Station *)station)->getIndex();
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {
@@ -748,17 +735,16 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
             if (loot != 0) {
                 int second = (kind != 0x498e) ? 0x4a88 : 0x498e;
                 if (kind != 0x498e && kind != second) {
-                    AbyssEngine::AERandom *rng = (AbyssEngine::AERandom *)*g_pfo_random;
                     for (int idx = 1; (uint32_t)(idx - 1) < self->lootList->size(); idx += 2) {
                         if (kind == 0xe) {
-                            int r = rng->nextInt();
+                            int r = gRandom->nextInt();
                             int &cell = (*self->lootList)[idx];
                             cell = cell * (r + 5);
                         } else {
-                            int r = rng->nextInt();
+                            int r = gRandom->nextInt();
                             int &base = (*self->lootList)[idx];
                             base = base * (r + 2);
-                            int r2 = rng->nextInt();
+                            int r2 = gRandom->nextInt();
                             int &cell = (*self->lootList)[idx];
                             if (cell < r2 + 8) cell = r2 + 8;
                         }
@@ -813,9 +799,6 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     }
 }
 
-// PaintCanvas singleton holder (pc-rel -> holder; *holder is the canvas).
-__attribute__((visibility("hidden"))) extern void **g_pfo_canvas3;
-
 void PlayerFixedObject::setDeadButSelectable() {
     void *player = this->player;
     this->moving = 0;
@@ -824,10 +807,9 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((LODManager *)(*(void **)this->level))->removeObject((AEGeometry *)this->geometry);
     void *geom = this->geometry;
     if (geom != 0) delete (AEGeometry *)geom;
-    void **holder = g_pfo_canvas3;
     void *newGeom = this->wreckGeometry;
     this->geometry = (AEGeometry *)newGeom;
-    void *t = ((PaintCanvas*)*holder)->TransformGetTransform(((AEGeometry *)newGeom)->transform);
+    void *t = gCanvas->TransformGetTransform(((AEGeometry *)newGeom)->transform);
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(((AbyssEngine::Transform *)t)->animationLength, 0);
 }
 

@@ -1,4 +1,5 @@
 #include "gof2/game/mission/Achievements.h"
+Achievements* gAchievements = nullptr;  // canonical Achievements singleton
 #include "gof2/game/mission/Item.h"
 #include "gof2/game/mission/Status.h"
 #include "gof2/game/ship/Ship.h"

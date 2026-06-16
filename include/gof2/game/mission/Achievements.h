@@ -47,4 +47,6 @@ public:
     void setMedals(int* src, int count);
     void updateCredits(int value);
 };
+extern Achievements* gAchievements;  // canonical Achievements singleton (binary .bss 0x2282b4)
+
 #endif

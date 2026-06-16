@@ -1,4 +1,5 @@
 #include "gof2/engine/render/PaintCanvas.h"
+PaintCanvas* gCanvas = nullptr;       // canonical render canvas singleton
 // NOTE: Engine.h / Mesh.h / Node.h / String.h are intentionally NOT included.
 // PaintCanvas.h is a self-contained translation unit that models the few
 // cross-class shapes (Mesh/Transform/Node/Engine/String) it actually touches;

@@ -13,8 +13,7 @@
 #include "gof2/game/core/PaintCanvasClass.h"
 
 // The Status singleton is reached through a global holder slot (set up at boot);
-// `*gStatus` is the live Status pointer.
-__attribute__((visibility("hidden"))) extern Status **gStatus;
+// `gStatus` is the live Status pointer.
 
 // PaintCanvas singleton holder (see externs.h): the live canvas is `*g_PaintCanvas`.
 extern void *g_PaintCanvas;
@@ -130,7 +129,7 @@ void PlayerStation::update(int delta)
         return;
     }
 
-    if ((*gStatus)->inAlienOrbit()) {
+    if (gStatus->inAlienOrbit()) {
         return;
     }
 
@@ -172,7 +171,7 @@ PlayerStation::PlayerStation(Station *station)
     this->stationIndex = stationIndex;
 
     PaintCanvas *canvas = paintCanvas();
-    Status *status = *gStatus;
+    Status *status = gStatus;
 
     Array<int> *collision;
     {
