@@ -165,12 +165,12 @@ uint8_t PlayerFighter::hasCrateCaptured() {
 }
 
 // setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 (= the
-// float setPosition3, Ghidra-confirmed) with the three unpacked components.
-// KEPT as explicit slot dispatch: the actor hierarchy's recovered method
-// signatures are inconsistent (PlayerFighter::setPosition3 is declared int,int,int
-// while the base virtual is float,float,float), so a named `this->setPosition3()`
-// would bind to the int-truncating hider, not slot 0x48. Convert only after a
-// hierarchy-wide signature-unification pass (which must be behaviour-tested).
+// float setPosition3, Ghidra-confirmed; the ABI is uniform across the hierarchy).
+// KEPT as explicit slot dispatch for now only because PlayerFighter::setPosition3's
+// RECOVERED body is buggy: it is declared (int,int,int) and stores into int
+// posX/posY/posZ with a decompiler-zeroed forward. A named this->setPosition3()
+// needs that decl+body+fields corrected to float first — straightforward from the
+// binary, but not runtime-verifiable until the game boots.
 typedef void (*SetPosFn)(PlayerFighter *, float, float, float);
 
 void PlayerFighter::setPosition_ref(const Vector &v) {

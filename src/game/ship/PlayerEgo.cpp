@@ -1836,10 +1836,11 @@ void PlayerEgo::calcCollision(void *candidates) {
         // broad-phase overlap test (virtual +0x40).
         float pos[3];
         ((AEGeometry *)(this->geometry))->getPosition();
-        // Actor virtual dispatch (slot +0x40 outerCollide). KEPT as explicit slot
-        // dispatch: obj is a polymorphic KIPlayer* and the hierarchy's recovered
-        // outerCollide signatures are inconsistent across subclasses (int/bool/void,
-        // Vector/3-float), so named virtual conversion needs signature unification first.
+        // Actor virtual dispatch (slot +0x40 outerCollide(Vector const&), Ghidra-verified;
+        // ABI is uniform across the hierarchy). KEPT as explicit slot dispatch for now:
+        // slot 0x40 tail-calls slot 0x3c outerCollide(f,f,f) and is recovered void-vs-int
+        // ambiguously, so a faithful named conversion needs both slots virtualized with
+        // their true int return — reconstructable from the binary but not runtime-verifiable yet.
         typedef int (*overlap_fn)(void *, void *);
         overlap_fn overlaps = *(overlap_fn *)(*(char **)obj + 0x40);
         if (!overlaps(obj, pos))
