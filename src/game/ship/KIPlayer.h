@@ -117,7 +117,7 @@ public:
     void createCrate(int type);
     SpacePoint* getNearestDockingPoint(Vector* dir);
     SpacePoint* getNearestNavigationPoint(Vector* dir, SpacePoint* target);
-    Vector getPosition();
+    virtual Vector getPosition();   // actor vtable slot +0x28 (Ghidra-verified)
     int  getType();
     bool isDead();
     bool isDocked();

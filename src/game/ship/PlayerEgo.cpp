@@ -2398,14 +2398,10 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
         if (wp == 0 || this->dockedToStream != 0) {
             ((KIPlayer *)(this))->setAutoPilot(0);
         } else {
-            // steer toward the current waypoint.
-            float wpPos[3];
-            // Actor virtual dispatch (slot +0x28 getPosition). KEPT as explicit slot
-            // dispatch: wp is a polymorphic actor and getPosition's recovered return type
-            // varies across subclasses (Vector/void+out/Vec3/V3/Vector*), so a named
-            // virtual call needs a hierarchy-wide signature-unification pass first.
-            typedef void (*getpos_fn)(void *, void *);
-            (*(getpos_fn *)(*(char **)wp + 0x28))(wp, wpPos);
+            // steer toward the current waypoint. wp is a Waypoint (a KIPlayer);
+            // getPosition() is the actor vtable slot +0x28 virtual.
+            AbyssEngine::AEMath::Vector wpVec = ((KIPlayer *)wp)->getPosition();
+            float wpPos[3] = { wpVec.x, wpVec.y, wpVec.z };
             ((int&)this->waypointX) = *(int *)&wpPos[0];
             ((int&)this->waypointY) = *(int *)&wpPos[1];
             ((int&)this->gunBaseGeo) = *(int *)&wpPos[2];
