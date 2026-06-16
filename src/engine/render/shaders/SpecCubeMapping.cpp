@@ -31,15 +31,15 @@ void SpecCubeMapping::Init(Engine *)
     this->mvpMatrixLoc = glGetUniformLocation(this->program, "u0");
     this->normalMatrixLoc = glGetUniformLocation(this->program, "u1");
     this->uCameraPosition = glGetUniformLocation(this->program, "u2");
-    this->field_0x38 = glGetUniformLocation(this->program, "u3");
+    this->uLightDirection = glGetUniformLocation(this->program, "u3");
     this->samplerLoc0 = glGetUniformLocation(this->program, "u4");
     this->samplerLoc1 = glGetUniformLocation(this->program, "u5");
-    this->field_0x44 = glGetUniformLocation(this->program, "u6");
-    this->field_0x48 = glGetUniformLocation(this->program, "u7");
-    this->field_0x4c = glGetUniformLocation(this->program, "u8");
-    this->field_0x50 = glGetUniformLocation(this->program, "u9");
+    this->uParam6 = glGetUniformLocation(this->program, "u6");
+    this->uLightAmbient = glGetUniformLocation(this->program, "u7");
+    this->uParam8 = glGetUniformLocation(this->program, "u8");
+    this->uLightDiffuse = glGetUniformLocation(this->program, "u9");
     this->uShininess = glGetUniformLocation(this->program, "u10");
-    this->field_0x58 = glGetUniformLocation(this->program, "u11");
+    this->uColor = glGetUniformLocation(this->program, "u11");
 
     glUseProgram(this->program);
     glUniform1i(this->samplerLoc0, 0);
@@ -53,18 +53,18 @@ void SpecCubeMapping::Init(Engine *)
 void SpecCubeMapping::UpdateMeshData(Mesh *mesh, Engine *engine)
 {
     if (this->dirty != 0) {
-        glUniform4fv(this->field_0x58, 1, engine->glColor);
-        glUniform3fv(this->field_0x48, 1, (const float *)&engine->lightAmbientShaded);
-        glUniform3fv(this->field_0x4c, 1, (const float *)&engine->field_0x2fc);
-        glUniform3fv(this->field_0x50, 1, (const float *)&engine->lightDiffuseShaded);
+        glUniform4fv(this->uColor, 1, engine->glColor);
+        glUniform3fv(this->uLightAmbient, 1, (const float *)&engine->lightAmbientShaded);
+        glUniform3fv(this->uParam8, 1, (const float *)&engine->field_0x2fc);
+        glUniform3fv(this->uLightDiffuse, 1, (const float *)&engine->lightDiffuseShaded);
         glUniform1f(this->uShininess, engine->materialShininess);
         this->dirty = 0;
     }
 
-    glUniform1f(this->field_0x44, engine->field_0xcc);
+    glUniform1f(this->uParam6, engine->field_0xcc);
     glUniformMatrix4fv(this->mvpMatrixLoc, 1, 0, engine->worldViewProjMatrix);
     glUniformMatrix3fv(this->normalMatrixLoc, 1, 0, engine->normalMatrix);
-    glUniform4f(this->field_0x38,
+    glUniform4f(this->uLightDirection,
                 engine->lightDir.x, engine->lightDir.y,
                 engine->lightDir.z, engine->lightDirty[0]);
     glUniform3f(this->uCameraPosition,
