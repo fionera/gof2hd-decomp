@@ -39,15 +39,15 @@ public:
     char                field_0x42;
     int                 field_0x44;
     int                 field_0x48;
-    int                 field_0x4c;
+    int                 hasCargo;            // +0x4c
     Array<int>*         cargo;
     Level*              level;
     float               posX;
     float               posY;
     float               posZ;
     uint32_t            field_0x64;
-    uint8_t             field_0x68;
-    uint8_t             field_0x69;
+    uint8_t             diedWithMissionCrate; // +0x68
+    uint8_t             lostMissionCrateToEgo; // +0x69
     uint8_t             field_0x6a;
     Route*              route;
     int                 field_0x70;
@@ -77,7 +77,7 @@ public:
     Array<uint32_t>*    spacePointIds;
     int                 field_0xc8;
     Array<SpacePoint*>* spacePoints;
-    int                 field_0xd0;
+    int                 carriesMissionCrate; // +0xd0
     uint32_t            jumpSphere;
     int                 field_0xd8;
     uint8_t             wingmanFlag;

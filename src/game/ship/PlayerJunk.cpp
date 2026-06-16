@@ -55,7 +55,7 @@ void PlayerJunk::update(int elapsed) {
             this->state = 3;
             g_PJ_sound->play(0x16, nullptr, nullptr, 0.0f);
             if (AbyssEngine::AERandom::nextInt(g_PJ_random, 100) < 10) {
-                this->field_0x4c = 1;
+                this->hasCargo = 1;
                 this->cargo = new Array<int>();
                 ArrayAdd(99, *this->cargo);
                 ArrayAdd(AbyssEngine::AERandom::nextInt(g_PJ_random, 10) + 1, *this->cargo);

@@ -95,7 +95,7 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager* /*particles*/,
     this->modelGeometry = new AEGeometry(this->cloudMeshId, (PaintCanvas*)*g_pgc_canvas, false);
     this->modelGeometry->setPosition(position);
 
-    this->field_0x4c = 1;
+    this->hasCargo = 1;   // KIPlayer base slot (was field_0x4c)
     this->field_0x44 = 1;
     this->state = 0;
     this->visibleFlag = 1;   // KIPlayer base slot (was active)

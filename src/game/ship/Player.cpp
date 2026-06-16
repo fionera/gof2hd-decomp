@@ -444,14 +444,14 @@ void Player::regenerateShield() {
 }
 
 void Player::heal(float amount) {
-    float f = this->field_110 + amount;
-    this->field_110 = f;
+    float f = this->healAccumulator + amount;
+    this->healAccumulator = f;
     if (f > 1.0f) {
         int count = (int)f;
         for (int i = 0; i < count; i++) {
             ((Player *)(this))->regenerateHull();
         }
-        this->field_110 = this->field_110 - (float)count;
+        this->healAccumulator = this->healAccumulator - (float)count;
     }
 }
 
@@ -519,7 +519,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->field_5e = 0;
     self->shootingEnabled = 1;
     self->position[0] = 0.0f;
-    self->field_60 = 0;
+    self->flShake = 0.0f;
     self->bombForce = 0.0f;
     self->empForce = 0.0f;
     ((Player *)(self))->updateDamageRate();
@@ -553,29 +553,33 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
     self->playShootSound = 1;
     self->playShootSoundId = 1;
-    self->field_44 = 0;
+    self->destroyed = 0;
     self->active = 1;
-    self->field_b4 = 0;
+    self->damageTimer = 0;
     self->vulnerable = 1;
     self->kiPlayer = 0;
     self->bombForce = 0.0f;
     self->enemyFlags = 0;
     self->turnedEnemy = 0;
-    *(uint16_t *)&self->alwaysEnemy = 0;
+    self->alwaysEnemy = 0;
+    self->alwaysFriend = 0;
     self->enemies = 0;
     self->field_54 = 0;
-    self->field_68 = 0;
+    self->empDisabled = 0;
     self->neverAttack = 0;
-    self->field_110 = 0;
+    self->healAccumulator = 0;
     self->engineEvent = 0;
-    self->field_108 = 0;
-    self->field_f8 = 0;
-    self->field_64 = 0;
+    self->engineSoundPlaying = 0;
+    self->enginePaused = 0;
+    self->shieldHit = 0;
+    self->armorHit = 0;
+    self->hullHit = 0;
+    self->gammaHit = 0;
 
     float tmp[3];
     MatrixGetPosition(tmp, self->transform);
     *(Vector *)self->position = *(Vector *)tmp;
-    self->field_f4 = (void *)(__INTPTR_TYPE__)-1;
+    self->enginePositionVec = (void *)(__INTPTR_TYPE__)-1;
 }
 
 void Player::getPosition(Vector *out) {
@@ -586,7 +590,7 @@ float Player::damageGamma(float amount) {
     if (this->vulnerable) {
         if (this->active) {
             amount = this->gammaHP - amount;
-            ((uint8_t *)&this->field_64)[3] = 1;
+            this->gammaHit = 1;
             this->gammaHP = amount;
             if (!(amount > 0.0f)) {
                 this->gammaHP = 0;
@@ -679,7 +683,7 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_3164;
         }
     lab_30f4:
-        if (self->field_68 != 0) {
+        if (self->empDisabled != 0) {
             goto lab_3164;
         }
         {
@@ -703,7 +707,7 @@ void Player::damageEmp(int amount, bool flag) {
 lab_3164:
     // LAB_000b3164
     float f = (float)self->empData;
-    self->field_68 = 1;
+    self->empDisabled = 1;
     self->empPoints = 0;
     (self->pad_e8[0]) = 0;
     self->empForce = f;
@@ -819,16 +823,19 @@ void Player::reset() {
     self->vulnerable = 1;
     self->active = 1;  // active = 1, damaged = 0
     self->field_54 = 0;
-    ((uint8_t *)&self->field_44)[0] = 0;
+    self->destroyed = 0;
     self->damageDoneByPlayer = 0;
     self->field_5e = 0;
-    self->field_b4 = 0;
-    ((uint8_t *)&self->field_68)[0] = 0;
-    self->field_64 = 0;
+    self->damageTimer = 0;
+    self->empDisabled = 0;
+    self->shieldHit = 0;
+    self->armorHit = 0;
+    self->hullHit = 0;
+    self->gammaHit = 0;
     self->bombForce = 0;
     self->empForce = 0;
     (self->pad_dd[0]) = 0;
-    (((uint8_t*)&self->empForce)[1]) = 0;
+    (((uint8_t*)&self->empForce)[1]) = 0;  // RAWREAD: byte at +0xd9 punned through empForce (no modeled field)
 }
 
 void Player::addGun(Gun *gun, int slot) {
@@ -922,7 +929,7 @@ __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
 {
     void *event = self->engineEvent;
     if (event != 0) {
-        self->field_f8 = ((FModSound *)(gFModSound))->pause(event);
+        self->enginePaused = ((FModSound *)(gFModSound))->pause(event);
     }
 }
 
@@ -930,13 +937,13 @@ struct Mat { float m[12]; };
 
 __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Vector *vec)
 {
-    self->field_f4 = vec;
+    self->enginePositionVec = vec;
     if (*((char *)gAppManager + 0xf) != 0) {
         Mat pos;
         MatrixGetPosition(&pos, self->transform);
-        void *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->field_f4, (Vector *)&pos, false);
+        void *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->enginePositionVec, (Vector *)&pos, false);
         self->engineEvent = ev;
-        self->field_108 = 1;
+        self->engineSoundPlaying = 1;
     }
 }
 
@@ -975,7 +982,7 @@ __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
     void *event = self->engineEvent;
     if (event != 0) {
         ((FModSound *)(gFModSound))->stop(event);
-        self->field_108 = 0;
+        self->engineSoundPlaying = 0;
         self->engineEvent = 0;
     }
 }
@@ -1039,7 +1046,7 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
                     }
                     ((Gun *)(g))->shootAt(fireMat, flag, (Player *)self, false);
                     {
-                        self->field_60 = self->field_60 + k_shootAt_inc;
+                        self->flShake = self->flShake + k_shootAt_inc;
                         Gun *g2 = self->guns->data()[slot]->data()[i];
                         g2->timer = 0;
                         if (self->playShootSound != 0 && g2->field_0x89 != 0) {
@@ -1196,18 +1203,18 @@ LAB_3488:
     {
         int shieldI = (int)self->shieldHP - amount;
         if (shieldI < 0) {
-            *(int *)&self->shieldHP = 0;
+            self->shieldHP = 0.0f;
             shieldI = shieldI + self->armorHP;
             if (shieldI < 0) {
                 self->armorHP = 0;
-                (((uint8_t*)&self->field_64)[2]) = 1;
+                self->hullHit = 1;
                 self->hitpoints = shieldI + self->hitpoints;
             } else {
-                (((uint8_t*)&self->field_64)[1]) = 1;
+                self->armorHit = 1;
                 self->armorHP = shieldI;
             }
         } else {
-            self->field_64 = 1;
+            self->shieldHit = 1;
             self->shieldHP = (float)shieldI;
         }
     }
@@ -1229,7 +1236,7 @@ LAB_3488:
         if (hp < 1) {
             self->hitpoints = 0;
             if (flag != 0) {
-                self->field_44 = 1;
+                self->destroyed = 1;
             } else {
                 KIPlayer *ki2 = self->kiPlayer;
                 if (ki2 != 0 && ki2->stealFlag == 0 && *(char *)((char *)ki2 + 0x3d) == 0 &&  // RAWREAD: ki2+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
@@ -1258,7 +1265,7 @@ LAB_3488:
     }
 
     self->damaged = 1;
-    *(float *)&self->field_60 = *(float *)&self->field_60 + k_damage_regen;
+    self->flShake = self->flShake + k_damage_regen;
     ((Player *)(self))->updateDamageRate();
     if (self->kiPlayer != 0) {
         int slave = self->kiPlayer->field_0x10;
@@ -1297,8 +1304,8 @@ void Player::addEnemy(Player *enemy) {
 __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, bool force)
 {
     void *event = self->engineEvent;
-    if (event != 0 && (self->field_f8 != 0 || force)) {
-        self->field_f8 = ((FModSound *)(gFModSound))->resume(event) ^ 1;
+    if (event != 0 && (self->enginePaused != 0 || force)) {
+        self->enginePaused = ((FModSound *)(gFModSound))->resume(event) ^ 1;
     }
 }
 
@@ -1378,7 +1385,7 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                     }
                     ((Gun *)(g))->shoot(fireMat2, flag, false);
                     {
-                        self->field_60 = self->field_60 + k_shoot_inc;
+                        self->flShake = self->flShake + k_shoot_inc;
                         if (self->playShootSound != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
@@ -1408,16 +1415,16 @@ extern "C" const float k_update_c;
 Vector * Player::update(int dt, int doSound) {
     Player *self = this;
 
-    int b4 = self->field_b4 + dt;
-    self->field_b4 = b4;
+    int b4 = self->damageTimer + dt;
+    self->damageTimer = b4;
     if (b4 > 3000) {
         self->damaged = 0;
-        self->field_b4 = 0;
+        self->damageTimer = 0;
     }
 
     Vector *result = 0;
 
-    if (self->field_68 != 0) {
+    if (self->empDisabled != 0) {
         int e = self->empData + dt;
         float ef = (float)self->empData;
         float ef2 = (float)e;
@@ -1427,7 +1434,7 @@ Vector * Player::update(int dt, int doSound) {
         self->empData = e;
         self->empPoints = (int)v;
         if (maxEmp < (int)v) {
-            self->field_68 = 0;
+            self->empDisabled = 0;
             self->empPoints = maxEmp;
             int *clk = (int *)gStatus;
             *(int *)((char *)clk + 0x134) = *(int *)((char *)clk + 0x134) - 1;
@@ -1437,8 +1444,8 @@ Vector * Player::update(int dt, int doSound) {
     }
 
     char *flagObj = (char *)gEngine;
-    if (*(char *)(flagObj + 0xf) == 0 || doSound == 0 || self->field_f4 == (void *)(__INTPTR_TYPE__)-1) {
-        if (self->field_108 != 0) {
+    if (*(char *)(flagObj + 0xf) == 0 || doSound == 0 || self->enginePositionVec == (void *)(__INTPTR_TYPE__)-1) {
+        if (self->engineSoundPlaying != 0) {
             Player_StopEngineSound(self);
         }
     } else {
@@ -1456,14 +1463,14 @@ Vector * Player::update(int dt, int doSound) {
         fn(tmpB, local, (int)(long)transform);
         void *ev = ((FModSound *)(*g_update_sound))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)tmpB, (Vector *)tmpC, false);
         self->engineEvent = ev;
-        self->field_108 = 1;
+        self->engineSoundPlaying = 1;
         fn(tmpA, local, (int)(long)transform);
         *(Vector *)self->position = *(Vector *)tmpA;
     }
 
     float speed = (float)dt;
-    float nf = *(float *)&self->field_60 + speed * k_update_a * k_update_b;
-    *(float *)&self->field_60 = nf;
+    float nf = self->flShake + speed * k_update_a * k_update_b;
+    self->flShake = nf;
     FloatVectorMax(&result, nf, k_update_c, 2, 0x20);
 
     
@@ -1550,14 +1557,14 @@ Array<Player *> *Player::getEnemies() {
 
 // ---- PlayEngineSound_a4014 ----
 void Player::PlayEngineSound(Vector *vec) {
-    this->field_f4 = vec;
+    this->enginePositionVec = vec;
     if (*((char *)gAppManager + 0xf) != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
         void *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
-            this->engineEvent, 0, (Vector *)this->field_f4, (Vector *)pos, false);
+            this->engineEvent, 0, (Vector *)this->enginePositionVec, (Vector *)pos, false);
         this->engineEvent = ev;
-        this->field_108 = 1;
+        this->engineSoundPlaying = 1;
     }
 }
 
@@ -1565,15 +1572,15 @@ void Player::PlayEngineSound(Vector *vec) {
 void Player::PauseEngineSound() {
     void *event = this->engineEvent;
     if (event != 0) {
-        this->field_f8 = ((FModSound *)gFModSound)->pause(event);
+        this->enginePaused = ((FModSound *)gFModSound)->pause(event);
     }
 }
 
 // ---- ResumeEngineSound_a40ac ----
 void Player::ResumeEngineSound(bool force) {
     void *event = this->engineEvent;
-    if (event != 0 && (this->field_f8 != 0 || force)) {
-        this->field_f8 = ((FModSound *)gFModSound)->resume(event) ^ 1;
+    if (event != 0 && (this->enginePaused != 0 || force)) {
+        this->enginePaused = ((FModSound *)gFModSound)->resume(event) ^ 1;
     }
 }
 
@@ -1582,7 +1589,7 @@ void Player::StopEngineSound() {
     void *event = this->engineEvent;
     if (event != 0) {
         ((FModSound *)gFModSound)->stop(event);
-        this->field_108 = 0;
+        this->engineSoundPlaying = 0;
         this->engineEvent = 0;
     }
 }

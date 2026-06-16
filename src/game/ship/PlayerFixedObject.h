@@ -14,6 +14,8 @@
 // are inherited.
 
 class BoundingVolume;
+class AEGeometry;
+class Explosion;
 
 typedef AbyssEngine::AEMath::Vector V3;
 
@@ -29,14 +31,14 @@ public:
     float spawnX;
     float spawnY;
     float spawnZ;
-    void* secondaryGeometry;                  // AEGeometry*
-    uint8_t field_0x8c;
+    AEGeometry* secondaryGeometry;            // optional cargo/secondary mesh
+    uint8_t collisionEnabled;                 // gate for collide()/outerCollide()
     Vector targetPos;                         // homing-target world position
     int kind;
     int explosionTimer;
-    int32_t field_0xf8;
+    int32_t aiActiveCounter;                  // KIPlayer "active for tutorial" countdown
     unsigned char finished;
-    void* wreckGeometry;                      // AEGeometry*
+    AEGeometry* wreckGeometry;                // wrecked-ship mesh
     Array<BoundingVolume*>* boundingVolumes;  // active bounding volumes
     Array<BoundingVolume*>* wreckCollision;   // wreck collision volumes
     int32_t deltaTime;
@@ -54,7 +56,7 @@ public:
     int32_t intPosY;
     int32_t intPosZ;
     uint16_t wreckMeshId;
-    void* explosion;                          // Explosion*
+    Explosion* explosion;                     // one-shot death explosion effect
     int explosionElapsed;
     int wreckType;
     int rumbleTimer;

@@ -11,6 +11,7 @@
 #include "game/world/Route.h"
 #include "game/world/Standing.h"
 #include "engine/math/Transform.h"
+#include "engine/math/EaseInOutMatrix.h"
 #include "platform/libc.h"
 
 // Canonical singletons reachable from this TU. gCanvas/gRandom are declared
@@ -46,9 +47,6 @@ public:
 // local ::PaintCanvas view above to avoid the Trail.h type clash.
 extern PaintCanvas* gCanvas;
 
-extern "C" void *Trail_dtor(void *p);
-extern "C" void *Explosion_dtor(void *p);
-extern "C" void *EaseInOutMatrix_dtor(void *p);
 extern "C" void AEMath_Matrix_ctor(void *m);
 // No-bound AERandom::nextInt() variant: the decompiler dropped the bound arg and
 // Generator.h declares the (self,bound) overload, so this distinct shim avoids the
@@ -58,9 +56,6 @@ static inline int PF_nextInt(int rng) { return AERandom_nextInt_nobound(rng); }
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" int *RH_op_new_arr(unsigned int n);
 extern "C" void RH_op_delete_arr(void *p);
-extern "C" void Generator_ctor(void *g);
-extern "C" void *Generator_dtor(void *g);
-extern "C" void Explosion_ctor(void *e, int flag);
 extern "C" void PF_update_dead(PlayerFighter *self);
 extern "C" void PF_update_body(PlayerFighter *self, int dt);
 extern "C" void AEMath_MatrixAssign(void *dst, void *src);
@@ -137,10 +132,7 @@ void PlayerFighter::setCloakingPossible(bool v) {
 
 
 void PlayerFighter::removeTrail() {
-    void *t = this->trail;
-    if (t != 0) {
-        ::operator delete(Trail_dtor(t));
-    }
+    delete this->trail;
     this->trail = 0;
 }
 
@@ -148,11 +140,7 @@ void PlayerFighter::removeTrail() {
 // matrix. The KIPlayer base destructor is chained automatically.
 PlayerFighter::~PlayerFighter()
 {
-    if (this->route != 0) {
-        Route *rt = (Route *)this->route;
-        rt->~Route();
-        ::operator delete(rt);
-    }
+    delete this->route;
     this->route = 0;
 
     if (this->boundingVolumes != 0) {
@@ -162,18 +150,18 @@ PlayerFighter::~PlayerFighter()
     }
     this->boundingVolumes = 0;
 
-    if (this->trail != 0) ::operator delete(Trail_dtor(this->trail));
+    delete this->trail;
     this->trail = 0;
 
-    if (this->explosion != 0) ::operator delete(Explosion_dtor(this->explosion));
+    delete this->explosion;
     this->explosion = 0;
 
-    if (this->easeMatrix != 0) ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
+    delete this->easeMatrix;
     this->easeMatrix = 0;
 }
 
 uint8_t PlayerFighter::hasCrateCaptured() {
-    return this->field_0x4c == 0;
+    return this->crateCaptured == 0;
 }
 
 // setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 with the
@@ -214,7 +202,7 @@ void PlayerFighter::setLevel(Level *lvl) {
 
     int v;
     v = f2(*(int *)(base + 0x74), f1(this->geometry), 9, 0);
-    this->field_0x1a0 = v;
+    this->engineTrailSystem = v;
     f3(*(int *)(this->level + 0x74), v, 0);
 
     v = f2(*(int *)(this->level + 0x78), f1(this->geometry), 0xf, 0);
@@ -298,18 +286,14 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
         pts[i + 1] = (int)wp[idx * 3 + 1];
         pts[i + 2] = (int)wp[idx * 3 + 2];
     }
-    void *route = ::operator new(0x18);
-    new (route) Route(pts, (unsigned)count);
-    self->route = route;
+    self->route = new Route(pts, (unsigned)count);
     RH_op_delete_arr(pts);
 
     int *shared = gPFC_sharedRoute;
     if (*shared == 0) {
         int defPts[12];
         memcpy(defPts, &gPFC_defaultRoute, 0x30);
-        void *sr = ::operator new(0x18);
-        new (sr) Route(defPts, 0xc);
-        *shared = (int)(intptr_t)sr;
+        *shared = (int)(intptr_t)(new Route(defPts, 0xc));
     }
 
     self->field_0x130 = -1;
@@ -335,7 +319,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     self->wingmanCommand = wingmanCmd;
 
     // Four 16-byte zero blocks (an int followed by a 3-field vector each).
-    self->field_0x1b8 = 0;
+    self->maneuverTimer = 0;
     self->field_0x1c0 = 0;
     self->field_0x1c4 = 0;
     self->field_0x1c8 = 0;
@@ -357,46 +341,42 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     self->workingPosition.y = 0;
     self->workingPosition.z = 0;
     self->field_0x13d = 1;
-    self->field_0x4c = 1;
+    self->crateCaptured = 1;
     self->currentSpeed = self->speed;
     self->currentRotate = self->rotate;
-    ((Route *)(self->route))->setLoop(0);
+    self->route->setLoop(0);
     ((Route *)((void *)(long)*shared))->setLoop(0);
     self->routeClone = 0;
 
     if (gStatus->getCurrentCampaignMission() != 0x29) {
-        int cloned;
         if (wingmanCmd == 9) {
-            cloned = (int)(intptr_t)((Route *)((void *)(long)*shared))->clone();
+            self->routeClone = ((Route *)((void *)(long)*shared))->clone();
         } else {
-            cloned = (int)(intptr_t)((Route *)(self->route))->clone();
+            self->routeClone = self->route->clone();
         }
-        self->routeClone = cloned;
     }
     self->field_0x12d = 0;
 
     if (wingmanCmd == 9) {
         self->lootList = 0;
     } else {
-        void *g = ::operator new(1);
-        Generator_ctor(g);
-        self->lootList = ((Generator *)(g))->getLootList(-1, -1);
-        ::operator delete(Generator_dtor(g));
+        Generator *g = new Generator();
+        self->lootList = g->getLootList(-1, -1);
+        delete g;
     }
 
     self->field_0x128 = (gStatus->inAlienOrbit() != 0) ? 100000 : 50000;
 
-    void *exp = ::operator new(0x68);
-    Explosion_ctor(exp, 0);
+    Explosion *exp = new Explosion(0);
     self->explosion = exp;
-    ((Explosion *)(exp))->addFireStreaks();
+    exp->addFireStreaks();
     self->field_0x13e = 1;
     self->hitpoints = ((Player *)(self->player))->getHitpoints();
     self->field_0x1dc = 0;
     self->field_0x1e0 = 0;
     self->field_0xe4 = 1;
     self->field_0x25 = 1;
-    self->field_0x1a0 = -1;
+    self->engineTrailSystem = -1;
 
     int fov;
     if (gStatus->getCurrentCampaignMission() == 1) {
@@ -406,23 +386,23 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     }
     self->fov = fov;
 
-    self->field_0x20c = 0;
-    self->field_0x210 = 0;
+    self->targetRoll = 0;
+    self->smoothRoll = 0;
     self->field_0x214 = 0;
     self->field_0x294 = 0;
     self->field_0x298 = 0;
-    self->field_0x29c = 0;
+    self->rollSamples = 0;
     self->field_0x2a0 = 0;
     self->field_0x2a4 = 0;
     self->field_0x2a8 = 0;
     self->field_0x2ac = 0;
-    self->field_0x2b4 = 0;
-    self->field_0x2b0 = 0;
+    self->rollBufferFilled = 0;
+    self->rollSampleIndex = 0;
     self->rollActive = 0;
     self->field_0x254 = 0;
     self->easeMatrix = 0;
     self->field_0x13c = 0;
-    self->field_0x2c4 = 0;
+    self->spacePoint = 0;
     self->cloakTimer = 0;
     self->cloakCooldown = 0;
     self->field_0x2cd = 0;
@@ -430,7 +410,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *ge
     self->cloakingPossible = 1;
     self->cloakMaterial = -1;
     self->aiDisabled = 0;
-    self->field_0x2e8 = 0;
+    self->gunSwitchTimer = 0;
 
     return;
 }
@@ -448,8 +428,8 @@ void PlayerFighter::update(int dt) {
     volatile int saved = *guardP;
 
     // Dead-and-explosion-finished early-out: tear down via the dead veneer.
-    if (this->state == 4 && ((Explosion *)(this->explosion))->isPlaying() == 0 &&
-        (this->field_0x4c == 0 || 60000 < this->deathTimer)) {
+    if (this->state == 4 && this->explosion->isPlaying() == 0 &&
+        (this->crateCaptured == 0 || 60000 < this->deathTimer)) {
         
         PF_update_dead(this);
         return;
@@ -457,7 +437,7 @@ void PlayerFighter::update(int dt) {
 
     // Advance per-frame timers.
     this->field_0x1c0 += dt;
-    this->field_0x1b8 += dt;
+    this->maneuverTimer += dt;
     if (this->wingmanCommand == 1) {
         this->wingmanCommand = 1;
     }
@@ -499,7 +479,7 @@ void PlayerFighter::setPosition3(int x, int y, int z) {
     ((AEGeometry *)(intptr_t)this->geometry)->setPosition(0.0f, 0.0f, 0.0f);  // forwards x,y,z via regs
     this->workingPosition = *(Vector *)stackVec;
     if (this->trail != 0) {
-        ((AbyssEngine::Trail *)(this->trail))->reset(this->workingPosition);
+        this->trail->reset(this->workingPosition);
     }
     int m = (int)(intptr_t)&((AEGeometry *)(intptr_t)this->geometry)->getMatrix();
     AEMath_MatrixAssign((char *)this->player + 4, (void *)m);
@@ -654,15 +634,15 @@ void PlayerFighter::setWingmanCommand(int cmd, KIPlayer *target) {
     int saved = this->field_0xe4;
     ((KIPlayer *)(this))->setWingmanCommand(cmd, target);
     if ((unsigned)(cmd - 2) < 2) {
-        this->field_0x1b8 = 0x1389;
+        this->maneuverTimer = 0x1389;
         if (this->currentSpeed != 5.5f) {
             this->field_0x1c0 = 0x1389;
         }
         if (cmd == 2) {
             if (((Level *)(this->level))->getPlayerRoute() != 0) {
                 Route *r = ((Level *)(this->level))->getPlayerRoute();
-                this->commandRoute = (int32_t)(intptr_t)r->getExactClone();
-                this->field_0x1e4 = ((Route *)(this->commandRoute))->getCurrent();
+                this->commandRoute = r->getExactClone();
+                this->field_0x1e4 = this->commandRoute->getCurrent();
                 goto done;
             }
         } else if (target != 0) {
@@ -787,7 +767,7 @@ extern void *const gR_g4 __attribute__((visibility("hidden")));   // case 4 tran
 extern void *const gR_g5 __attribute__((visibility("hidden")));   // default-case transform-id global
 
 void PlayerFighter::render() {
-    if (this->field_0x78 != 0) {
+    if (this->wreckGeometry != 0) {
         ((AEGeometry *)(0))->render();
     }
     int active = ((Player *)(this->player))->isActive();
@@ -907,7 +887,7 @@ void PlayerFighter::reset()
 {
 
     ((KIPlayer *)(this))->reset();
-    this->field_0x4c = 1;
+    this->crateCaptured = 1;
 
     // Snap the working and render positions back to the spawn point.
     int spawn[3];
@@ -923,7 +903,7 @@ void PlayerFighter::reset()
     this->field_0x12e = 0;
     this->field_0x148 = 0;
     this->field_0x12c = 0;
-    this->field_0x1b8 = 0;
+    this->maneuverTimer = 0;
     this->field_0x1c0 = 0;
     this->field_0x1c4 = 0;
     this->field_0x1c8 = 0;
@@ -940,7 +920,7 @@ void PlayerFighter::reset()
     this->isMissionCrate = 0;
     this->missionCrateLost = 0;
     this->crateLost = 0;
-    this->field_0x4c = 1;
+    this->crateCaptured = 1;
     this->field_0x140 = 0;
     this->field_0x1fc = 0;
     this->field_0x13c = 0;
@@ -979,7 +959,7 @@ void PlayerFighter::handleCloaking() {
                 int mp = (int)(long)gCanvas->MeshGetPointer(
                                                     *(unsigned *)(this->subGeometry + 0x1c));
                 matId = this->cloakMaterial;
-                this->field_0x2e0 = *(int *)(*(int *)(mp + 0x30) + 0x20);
+                this->cloakSavedMode = *(int *)(*(int *)(mp + 0x30) + 0x20);
             }
             int mat = (int)(long)gCanvas->MaterialGetMaterial(matId);
             *(int *)(mat + 0x20) = 0xe;
@@ -1001,7 +981,7 @@ void PlayerFighter::handleCloaking() {
         if (total - this->deltaTime <= 2000) {
             if (1999 < total) {
                 ((PlayerFighter *)(this))->setExhaustVisible(false);
-                this->field_0x74 = 1;
+                this->exhaustHidden = 1;
             }
             void *cv = (void *)gCanvas;
             int mp = (int)(long)gCanvas->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
@@ -1010,7 +990,7 @@ void PlayerFighter::handleCloaking() {
             return;
         } else {
             if (this->cloakDuration < total) {
-                int restore = this->field_0x2e0;
+                int restore = this->cloakSavedMode;
                 this->cloakTimer = 0;
                 this->cloakActive = 0;
                 this->field_0x13c = 0;
@@ -1022,7 +1002,7 @@ void PlayerFighter::handleCloaking() {
             if (total <= this->cloakDuration - 2000) {
                 return;
             }
-            this->field_0x74 = 0;
+            this->exhaustHidden = 0;
             void *cv = (void *)gCanvas;
             int mp = (int)(long)gCanvas->MeshGetPointer(*(unsigned *)(this->subGeometry + 0x1c));
             float a = VectorSignedToFloat(this->cloakTimer, 0);
@@ -1058,18 +1038,18 @@ void PlayerFighter::revive()
     if (enemy != 0) {
         ((Player *)(this->player))->turnEnemy();
     }
-    this->field_0x78 = 0;
+    this->wreckGeometry = 0;
     this->state = 1;
     this->field_0x12e = 0;
     this->field_0x38 = -1;
-    ((Route *)(this->routeClone))->reset();
+    this->routeClone->reset();
     this->hitpoints = ((Player *)(this->player))->getHitpoints();
     this->field_0x1dc = 0;
     this->field_0x1e0 = 0;
     this->deathTimer = 0;
     this->field_0xf0 = 0;
     this->currentSpeed = this->speed;
-    ((Explosion *)(this->explosion))->reset();
+    this->explosion->reset();
     this->pushTimer = 0;
     this->field_0x24 = 0;
     this->setExhaustVisible(true);
@@ -1085,12 +1065,11 @@ void PlayerFighter::revive()
         delete this->lootList;
         this->lootList = 0;
     } else {
-        void *g = ::operator new(1);
-        Generator_ctor(g);
+        Generator *g = new Generator();
         delete this->lootList;
         this->lootList = 0;
-        this->lootList = ((Generator *)(g))->getLootList(-1, -1);
-        ::operator delete(Generator_dtor(g));
+        this->lootList = g->getLootList(-1, -1);
+        delete g;
     }
 }
 

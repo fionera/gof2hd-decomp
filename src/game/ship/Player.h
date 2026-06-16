@@ -14,23 +14,26 @@ class KIPlayer;
 
 class Player {
 public:
-    Array<Array<Gun *> *> *guns;     // gun slots (array of arrays of guns)
-    float transform[15];             // AEMath::Matrix (3x4 row-major)
-    int32_t radius;
-    uint16_t field_44;
+    Array<Array<Gun *> *> *guns;     // +0x00 gun slots (array of arrays of guns)
+    float transform[15];             // +0x04 AEMath::Matrix (3x4 row-major)
+    int32_t radius;                  // +0x40
+    uint16_t destroyed;              // +0x44 killed-by-player flag
     uint8_t pad_46[0x0e];
-    uint16_t field_54;
+    uint16_t field_54;               // +0x54
     uint8_t pad_56[2];
-    int32_t field_58;
-    uint16_t enemyFlags;             // alwaysEnemy/alwaysFriend low/high byte pair
-    uint8_t field_5e;
+    int32_t field_58;                // +0x58
+    uint16_t enemyFlags;             // +0x5c alwaysEnemy/alwaysFriend low/high byte pair
+    uint8_t field_5e;                // +0x5e
     uint8_t pad_5f;
-    int32_t field_60;
-    int32_t field_64;                // top byte = gamma-damage flag
-    uint16_t field_68;
+    float flShake;                   // +0x60 hit/damage shake accumulator
+    uint8_t shieldHit;               // +0x64 shield-hit flag this frame
+    uint8_t armorHit;                // +0x65 armor-hit flag this frame
+    uint8_t hullHit;                 // +0x66 hull-hit flag this frame
+    uint8_t gammaHit;                // +0x67 gamma-hit flag this frame
+    uint16_t empDisabled;            // +0x68 EMP-stun (empPoints recharging) flag
     uint8_t pad_6a[2];
-    int32_t damageDoneByPlayer;
-    uint8_t playShootSound;
+    int32_t damageDoneByPlayer;      // +0x6c
+    uint8_t playShootSound;          // +0x70
     uint8_t pad_71[3];
     Array<Player *> *enemies;
     int32_t hitpoints;
@@ -48,7 +51,7 @@ public:
     int32_t shieldDamageRate;
     int32_t armorDamageRate;
     int32_t empDamageRate;
-    int32_t field_b4;
+    int32_t damageTimer;             // +0xb4 ms since last damage (clears 'damaged')
     float gammaHP;
     uint8_t pad_bc[4];
     uint8_t active;
@@ -69,15 +72,15 @@ public:
     uint8_t alwaysFriend;
     uint8_t neverAttack;
     uint8_t pad_ef;
-    void *engineEvent;               // FMOD event handle
-    void *field_f4;                  // engine-sound position vector
-    uint8_t field_f8;
+    void *engineEvent;               // +0xf0 FMOD event handle
+    void *enginePositionVec;         // +0xf4 engine-sound position vector
+    uint8_t enginePaused;            // +0xf8 engine-sound paused flag
     uint8_t pad_f9[3];
-    float position[3];
-    uint8_t field_108;
+    float position[3];               // +0xfc cached engine-sound emitter position
+    uint8_t engineSoundPlaying;      // +0x108 engine-sound active flag
     uint8_t pad_109[3];
-    int32_t playShootSoundId;
-    int32_t field_110;
+    int32_t playShootSoundId;        // +0x10c
+    float healAccumulator;           // +0x110 fractional hull-regen accumulator
 
     Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary);
     ~Player();

@@ -353,7 +353,7 @@ void PlayerTurret::pickEnemy()
         }
 
         bool accepted = false;
-        if ((enemy->field_68 >> 8) != 0 && (this->player->enemyFlags & 0xff) != 0) {
+        if ((enemy->empDisabled >> 8) != 0 && (this->player->enemyFlags & 0xff) != 0) {
             accepted = true;
         } else if (!this->isSentryGun) {
             if (enemy->getKIPlayer() != nullptr) {

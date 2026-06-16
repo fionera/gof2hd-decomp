@@ -67,7 +67,7 @@ public:
 
 private:
     // Whether this asteroid should drop loot when destroyed (KIPlayer base slot 0x4c).
-    int&  dropsLoot()        { return this->field_0x4c; }
+    int&  dropsLoot()        { return this->hasCargo; }
     // Dropped-loot {itemId, count} list (reuses the KIPlayer base cargo slot 0x50).
     Array<int>*& loot()      { return this->cargo; }
     // Optional secondary mesh (reuses the KIPlayer base crateGeometry slot 0x78).

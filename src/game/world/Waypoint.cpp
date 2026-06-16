@@ -57,5 +57,5 @@ Waypoint::Waypoint(int x, int y, int z, Route* route)
     this->posZ = (float)z;
     this->state = 0;
     this->field_0x72 = 1;
-    this->field_0x4c = 0;
+    this->hasCargo = 0;
 }

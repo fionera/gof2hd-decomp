@@ -17,19 +17,19 @@ class PlayerStation : public PlayerStaticFar {
 public:
     using Vector = AbyssEngine::AEMath::Vector;
 
-    AEGeometry *rootGeometry;       // owned root geometry (mesh tree)
-    uint32_t    meshTransform;      // sub-mesh transform handle (stationIndex 100 anim)
-    int32_t     stationIndex;       // station model index
-    AEGeometry *secondGeometry;     // secondary owned geometry
-    uint32_t    collisionIndex;     // last colliding volume index
-    int32_t     collisionRadius;    // outer collision radius
-    uint32_t    field_0x158;
-    uint32_t    field_0x15c;
-    uint32_t    field_0x160;
-    uint32_t    animTransform0;     // sub-mesh transform handle (stationIndex 0x6c)
-    uint32_t    animTransform1;     // sub-mesh transform handle
-    uint32_t    animTransform2;     // sub-mesh transform handle
-    uint32_t    animTransform3;     // sub-mesh transform handle
+    AEGeometry *rootGeometry;       // +0x140 owned root geometry (mesh tree)
+    uint32_t    meshTransform;      // +0x144 sub-mesh transform handle (stationIndex 100 anim)
+    int32_t     stationIndex;       // +0x148 station model index
+    AEGeometry *secondGeometry;     // +0x14c secondary owned geometry
+    uint32_t    collisionIndex;     // +0x150 last colliding volume index
+    int32_t     collisionRadius;    // +0x154 outer collision radius
+    uint32_t    field_0x158;        // +0x158 zero-initialized, never read in this class (opaque)
+    uint32_t    field_0x15c;        // +0x15c zero-initialized, never read in this class (opaque)
+    uint32_t    field_0x160;        // +0x160 zero-initialized, never read in this class (opaque)
+    uint32_t    animTransform0;     // +0x164 sub-mesh transform handle (stationIndex 0x6c)
+    uint32_t    animTransform1;     // +0x168 sub-mesh transform handle
+    uint32_t    animTransform2;     // +0x16c sub-mesh transform handle
+    uint32_t    animTransform3;     // +0x170 sub-mesh transform handle
 
     explicit PlayerStation(Station *station);
     ~PlayerStation();

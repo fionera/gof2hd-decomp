@@ -254,7 +254,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     case 0x0e: {
         Array<Player*>* list = enemyList(ego);
         KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
-        return setResult(ki->field_0x69);
+        return setResult(ki->lostMissionCrateToEgo);
     }
 
     case 0x0f: {
@@ -299,7 +299,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     case 0x12: {
         Array<Player*>* list = enemyList(ego);
         KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
-        if (ki->field_0x69 != 0) {
+        if (ki->lostMissionCrateToEgo != 0) {
             return triggerResult();
         }
         ki = list->data()[this->conditionValue]->getKIPlayer();

@@ -128,7 +128,7 @@ public:
     int hud;                              // Hud handle
     Vector turretOffsetVec;               // turret-rig offset vector (x/y/z)
     uint8_t collidesWithStationFlag;
-    uint8_t field_0x235;
+    uint8_t hardCoreMode;                 // +0x235 hardcore-mode flag (disables flight assists)
     int hpGaugeImage;                     // HP-gauge image handle
     int dockArrowImage;                   // dock-arrow image handle
     int radarBlipImage1;

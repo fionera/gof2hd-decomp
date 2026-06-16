@@ -123,8 +123,8 @@ void PlayerFixedObject::update(int dt) {
     PlayerFixedObject *self = this;
     self->deltaTime = dt;
 
-    // ship's KIPlayer "is active for tutorial" flag derived from field_0xf8/moving
-    bool kiFlag = (self->field_0xf8 + 1 != 0) && (self->moving != 0);
+    // ship's KIPlayer "is active for tutorial" flag derived from aiActiveCounter/moving
+    bool kiFlag = (self->aiActiveCounter + 1 != 0) && (self->moving != 0);
     ((Player *)(self->player))->update(dt, kiFlag);
 
     // Player::enemyFlags: low byte = alwaysEnemy, high byte = alwaysFriend.
@@ -210,15 +210,14 @@ afterMotion:
         if (cargo != 0) ((KIPlayer *)(self))->createCrate(0);
         self->setExhaustVisible(false);
 
-        void *wreck = self->wreckGeometry;
-        ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
+        AEGeometry *wreck = self->wreckGeometry;
+        wreck->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
         wreck = self->wreckGeometry;
 
         void *expl;
         if (wreck != 0) {
-            ((AEGeometry *)(wreck))->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
-            void *t = gCanvas->TransformGetTransform(
-                        ((AEGeometry *)wreck)->transform);
+            wreck->setMatrix(((AEGeometry *)(self->geometry))->getMatrix());
+            void *t = gCanvas->TransformGetTransform(wreck->transform);
             ((AbyssEngine::Transform *)(t))->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
             if (self->faction == 3 && self->moving != 0 &&
                 (int)((AEGeometry *)self->geometry)->parentTransform != -1) {
@@ -263,7 +262,7 @@ afterMotion:
                 }
             }
             if (self->kind == 0xe &&
-                (char)((Player *)self->player)->field_44 == 0) {
+                (char)F<char>((Player *)self->player, 0x44) == 0) {
                 void *egoObj = *g_pfo_egoA;
                 *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
                 if (gAchievements->hasMedal(0x27, 1) == 0) {
@@ -285,17 +284,17 @@ afterMotion:
     if (state == 3) {
         // dying: run explosion, drift, advance the wreck transform until done
         if (self->explosion != 0)
-            ((Explosion *)(self->explosion))->update(dt, 0);
+            self->explosion->update(dt, 0);
         if (self->kind != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
-                ((AEGeometry *)self->wreckGeometry)->moveForward((float)dt);
+                self->wreckGeometry->moveForward((float)dt);
                 if (self->secondaryGeometry != 0)
-                    ((AEGeometry *)self->secondaryGeometry)->moveForward((float)dt);
+                    self->secondaryGeometry->moveForward((float)dt);
             }
-            Matrix &m = ((AEGeometry *)(self->wreckGeometry))->getMatrix();
+            Matrix &m = self->wreckGeometry->getMatrix();
             *(Matrix *)((Player *)self->player)->transform = m;
-            Vector p = ((AEGeometry *)(self->wreckGeometry))->getPosition();
+            Vector p = self->wreckGeometry->getPosition();
             self->position = p;
             Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
@@ -310,10 +309,10 @@ afterMotion:
         }
         self->finished = 0;
         void *t = gCanvas->TransformGetTransform(
-                    ((AEGeometry *)self->wreckGeometry)->transform);
+                    self->wreckGeometry->transform);
         ((AbyssEngine::Transform *)(t))->Update((long long)dt, true);
         t = gCanvas->TransformGetTransform(
-                    ((AEGeometry *)self->wreckGeometry)->transform);
+                    self->wreckGeometry->transform);
         if (((AbyssEngine::Transform *)t)->animating == 0) {
             Level *lod = (Level *)self->level;
             self->state = 4;
@@ -321,12 +320,12 @@ afterMotion:
                 int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
                 ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
             }
-            ((Explosion *)(self->explosion))->reset();
+            self->explosion->reset();
             float scale = 6.0f;
             if (self->kind == 0x37e7) scale = 8.0f;
             if (self->kind == 0x37a3) scale = 8.0f;
-            ((Explosion *)(self->explosion))->setScaling(scale);
-            ((Explosion *)(self->explosion))->start(&self->position, (const Vector *)0);
+            self->explosion->setScaling(scale);
+            self->explosion->start(&self->position, (const Vector *)0);
             self->rumbleTimer = 1;
             self->explosionElapsed = 0;
             if (((Level *)self->level)->getPlayer() != 0) {
@@ -351,7 +350,7 @@ afterMotion:
         // exploding
         self->explosionElapsed = self->explosionElapsed + dt;
         if (self->explosion != 0)
-            ((Explosion *)(self->explosion))->update(dt, 0);
+            self->explosion->update(dt, 0);
         self->explosionTimer = self->explosionTimer + dt;
 
         bool spin = self->hasCargo != 0 && ((Player *)(self->player))->isActive() != 0 &&
@@ -359,12 +358,12 @@ afterMotion:
         if (spin) {
             float r = (float)(dt >> 1) * 0.001f;
             r = (float)(int)(r * 1.0f);
-            ((AEGeometry *)(self->secondaryGeometry))->rotate(r, r, r);
+            self->secondaryGeometry->rotate(r, r, r);
             if (self->explosionTimer >= 0xea61) {
                 self->finished = 1;
             }
         } else {
-            if (self->explosion != 0 && ((Explosion *)(self->explosion))->isPlaying() == 0) {
+            if (self->explosion != 0 && self->explosion->isPlaying() == 0) {
                 if (self->explosionTimer >= 0xea61)
                 self->finished = 1;
             }
@@ -395,7 +394,7 @@ afterMotion:
                 char matOut[4];
                 gCanvas->MaterialCreate(mat, (unsigned int *)matOut);
                 gCanvas->MeshChangeMaterial(
-                    ((AEGeometry *)self->wreckGeometry)->meshId,
+                    self->wreckGeometry->meshId,
                     *(unsigned short *)matOut);
             }
             // rumble ramp
@@ -410,7 +409,7 @@ afterMotion:
                     cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                     ((TargetFollowCamera *)(cam))->setRumblePercentage(self->rumblePercentage * ((float)v / 50.0f + 1.0f), 0x32);
                     if (self->explosion != 0 &&
-                        ((Explosion *)(self->explosion))->isPlaying() == 0) {
+                        self->explosion->isPlaying() == 0) {
                         ego = (void *)(intptr_t)((Level *)self->level)->getPlayer();
                         cam = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getTargetFollowCamera();
                         ((TargetFollowCamera *)(cam))->setRumblePercentage(0.0f, 0);
@@ -479,7 +478,7 @@ typedef int (*CollideFn)(void *bv, float, float, float);
 int PlayerFixedObject::collide(float x, float y, float z) {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
+    if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 void *bv = (*a)[i];
@@ -586,9 +585,9 @@ V3 PlayerFixedObject::getProjectionVector() {
 // subobject teardown is owned by the parent translation unit.
 PlayerFixedObject::~PlayerFixedObject() {
     PlayerFixedObject *self = this;
-    void *wreck = self->wreckGeometry;
+    AEGeometry *wreck = self->wreckGeometry;
     if (wreck != self->geometry) {
-        if (wreck != 0) delete (AEGeometry *)wreck;
+        if (wreck != 0) delete wreck;
         self->wreckGeometry = 0;
     }
     Array<BoundingVolume *> *bvB = self->boundingVolumes;
@@ -605,7 +604,7 @@ PlayerFixedObject::~PlayerFixedObject() {
         delete bvA;
     }
     self->wreckCollision = 0;
-    Explosion *expl = (Explosion *)self->explosion;
+    Explosion *expl = self->explosion;
     if (expl != 0) delete expl;
     self->explosion = 0;
     self->name.dtor();
@@ -637,7 +636,7 @@ LAB_538:
         return render_thunk_state5(self->geometry);
     }
     if (state == 4) {
-        if (self->shipHidden == 0) ((AEGeometry *)(self->wreckGeometry))->render();
+        if (self->shipHidden == 0) self->wreckGeometry->render();
         expl = self->explosion;
         if (expl == 0) return;
     } else {
@@ -645,7 +644,7 @@ LAB_538:
             if (((Player *)(self->player))->isActive() == 0) return;
             goto LAB_538;
         }
-        if (self->shipHidden == 0) ((AEGeometry *)(self->wreckGeometry))->render();
+        if (self->shipHidden == 0) self->wreckGeometry->render();
         expl = self->explosion;
     }
     return render_thunk_other(expl);
@@ -757,9 +756,9 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
 
     *(uint8_t *)((char *)self->player + 0x45) = 1;
     if (kind != 0x37a3) {
-        self->field_0xf8 = 0x2f;
+        self->aiActiveCounter = 0x2f;
         if (kind == 0xe) {
-            self->field_0xf8 = -1;
+            self->aiActiveCounter = -1;
             self->moving = 0;
         }
     }
@@ -795,7 +794,7 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     }
 
     if (this->wreckGeometry != 0) {
-        ((AEGeometry *)(this->wreckGeometry))->setPosition(posVec);
+        this->wreckGeometry->setPosition(posVec);
     }
 }
 
@@ -807,9 +806,9 @@ void PlayerFixedObject::setDeadButSelectable() {
     ((LODManager *)(*(void **)this->level))->removeObject((AEGeometry *)this->geometry);
     void *geom = this->geometry;
     if (geom != 0) delete (AEGeometry *)geom;
-    void *newGeom = this->wreckGeometry;
-    this->geometry = (AEGeometry *)newGeom;
-    void *t = gCanvas->TransformGetTransform(((AEGeometry *)newGeom)->transform);
+    AEGeometry *newGeom = this->wreckGeometry;
+    this->geometry = newGeom;
+    void *t = gCanvas->TransformGetTransform(newGeom->transform);
     ((AbyssEngine::Transform *)(t))->SetAnimationRangeInTime(((AbyssEngine::Transform *)t)->animationLength, 0);
 }
 
@@ -818,7 +817,7 @@ void PlayerFixedObject::setDeadButSelectable() {
 int PlayerFixedObject::outerCollide(float x, float y, float z) {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
-    if ((a != 0 || self->state != 4) && self->field_0x8c != 0) {
+    if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
                 void *bv = (*a)[i];
@@ -853,7 +852,7 @@ void PlayerFixedObject::moveForward(int amount) {
     ((AEGeometry *)((Vector *)buf))->getPosition();
     this->position = *(const Vector *)((Vector *)buf);
     if (this->wreckGeometry != 0) {
-        ((AEGeometry *)(this->wreckGeometry))->moveForward(d);
+        this->wreckGeometry->moveForward(d);
     }
     Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {

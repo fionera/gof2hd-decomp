@@ -123,23 +123,23 @@ unsigned int Objective::achieved(int value)
     }
         [[fallthrough]];
     case 11:
-        result = (*this->level->getEnemies())[this->value]->field_0x69 != 0;
+        result = (*this->level->getEnemies())[this->value]->lostMissionCrateToEgo != 0;
         break;
     case 12:
-        result = (*this->level->getEnemies())[this->value]->field_0x68 != 0;
+        result = (*this->level->getEnemies())[this->value]->diedWithMissionCrate != 0;
         break;
     case 15:
         return ((Player*)(*this->level->getEnemies())[this->value]->player)->isActive();
     case 16: {
         for (uint32_t i = 0; i < enemies->size(); i++) {
-            if ((*enemies)[i]->field_0x69 == 0)
+            if ((*enemies)[i]->lostMissionCrateToEgo == 0)
                 return 0;
         }
         return 1;
     }
     case 17: {
         for (uint32_t i = 0; i < enemies->size(); i++) {
-            if ((*enemies)[i]->field_0x68 != 0)
+            if ((*enemies)[i]->diedWithMissionCrate != 0)
                 return 1;
         }
         return 0;

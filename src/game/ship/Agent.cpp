@@ -268,7 +268,7 @@ Agent::Agent(unsigned kind, String* name, int station, int system, int race,
     if (sellBlueprintIndex >= 0)
         this->offer = 3;
     this->offerAccepted = 0;
-    this->field_0x24 = 0;
+    this->wasAskedForDifficulty = 0;
     this->wingman1 = nullptr;
     this->wingman2 = nullptr;
     this->wingmanCount = 0;

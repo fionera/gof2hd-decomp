@@ -102,7 +102,6 @@ extern "C" int PlayerEgo_hackingWon_ext(int);
 extern "C" int PlayerEgo_getCurrentMiningAmount_ext(int);
 extern "C" void PlayerEgo_hackingRotateLCW_ext(int, int);
 extern "C" void PlayerEgo_ResumeEngineSound_ext(void*, int);
-extern "C" void Explosion_ctor(void*, int);
 extern "C" void Player_setActive_(int);
 extern "C" void PlayerEgo_explode_ext(PlayerEgo*, int);
 extern "C" int __aeabi_idiv(int, int);
@@ -122,15 +121,11 @@ extern "C" void PlayerEgo_StopEngineSound_ext(void*);
 extern "C" void PlayerEgo_startSmokeEmission_ext(void*, int, int);
 extern "C" int   aeabi_idiv_(int a, int b);
 extern "C" float PE_pitchRampDelta(PlayerEgo *self, float rate, int frameTime);
-extern "C" void *HackingGame_dtor(void *hg);
 extern "C" int   PE_adp_approach(PlayerEgo *self, void *station);
 extern "C" int   PE_adp_glide(PlayerEgo *self);
 extern "C" void  PE_adp_apply(PlayerEgo *self);
 extern "C" void PlayerEgo_setLevel_ext(void*, int, int);
 extern "C" float PE_yawRampDelta(float rate, int frameTime);
-extern "C" void *Player_dtor(void *);
-extern "C" void *MiningGame_dtor(void *);
-extern "C" void *Explosion_dtor(void *);
 extern "C" void *EaseInOutMatrix_dtor(void *);
 extern "C" void PlayerEgo_PlayEngineSound_ext(void*, int, int);
 extern "C" void  Mat_assign(void *dst, const void *src);
@@ -141,7 +136,6 @@ extern "C" int PlayerEgo_getShieldDamageRate_ext(void*);
 extern "C" void  Vec_sub(void *out, const void *a, const void *b);
 extern "C" float Vec_length(const void *v);
 extern "C" int   PE_hat_aimAndFire(PlayerEgo *self, int dt);
-extern "C" void *MiningGame_dtor(void *mg);
 extern "C" float PE_roll_bankFactor(PlayerEgo *self, float rx, float ry, float *outZ);
 extern "C" void PlayerEgo_setTargetFollowCamera_ext(void*, void*);
 extern "C" void  hitCamera_(PlayerEgo *self);
@@ -153,11 +147,9 @@ extern "C" int   Player_shootSecondary(void *player, int kind, int idx, int hi, 
 extern "C" int   Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero);
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self);
 extern "C" void  PlayEngineSound_(PlayerEgo *self);
-extern "C" void *EaseInOutMatrix_dtor(void *m);
 extern "C" void *PE_dtdp_makeEase(const void *fromMatrix, const void *navPoint);
 extern "C" void PE_upd_boost(PlayerEgo *self, int dt);
 extern "C" void PE_upd_docksFinishDelivery(PlayerEgo *self, void *radio);
-extern "C" void *Explosion_dtor(void *exp);
 extern "C" void  PE_um_dodgeStep(PlayerEgo *self);
 extern "C" void  PE_um_strafeTarget(PlayerEgo *self, float *out);
 extern "C" void  PE_um_strafeGlide(PlayerEgo *self);
@@ -474,7 +466,7 @@ void PlayerEgo::ResumeEngineSound() {
 
 void PlayerEgo::addNukeVolatileForce(float v) {
   Player* p = (Player*)this->player;
-  (float&)p->field_60 = (float&)p->field_60 + v * 3.0f;
+  p->flShake = p->flShake + v * 3.0f;
 }
 
 extern void* g_explode_obj;
@@ -483,8 +475,7 @@ void PlayerEgo::explode() {
   ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit3(this->currentSystem, 1);
   if (((int&)this->explosion) != 0) return;
   ((TargetFollowCamera *)(((void*&)this->targetFollowCamera)))->setActive(0);
-  void* e = ::operator new(0x68);
-  Explosion_ctor(e, 0);
+  Explosion* e = new Explosion(0);
   int pl = ((int&)this->player);
   ((int&)this->explosion) = (int)(intptr_t)e;
   Player_setActive_(pl);
@@ -607,7 +598,7 @@ int PlayerEgo::getSpeed() {
     PlayerEgo *self = this; return this->speed; }
 
 float PlayerEgo::getVolatileForce() {
-  float f = (float&)((Player*)this->player)->field_60;
+  float f = ((Player*)this->player)->flShake;
   float r = 0.0f;
   if (!(f < 0.0f)) {
     r = 1.0f;
@@ -806,7 +797,7 @@ extern const float g_PE_strafeDist;   // 0xb1b70 distance scalar
 void PlayerEgo::initManeuver(int type) {
     if ((unsigned)(type - 1) < 2 && this->volatileGoods != 0) {
         Player *player = (Player *)this->player;
-        (float&)player->field_60 = (float&)player->field_60 + g_PE_rollNudge;
+        player->flShake = player->flShake + g_PE_rollNudge;
     }
 
     if (this->maneuverType == 0) {
@@ -902,17 +893,17 @@ void PlayerEgo::checkForTurret() {
     if (muzzle != -1) {
         void *g = (void*)new AEGeometry((uint16_t)(unsigned short)muzzle, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(this->gunBaseGeo))->addChild((uint32_t)(uintptr_t)g);
-        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
+        delete (AEGeometry *)g;
     }
     if (child != -1) {
         void *g = (void*)new AEGeometry((uint16_t)(unsigned short)child, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
-        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
+        delete (AEGeometry *)g;
     }
     if (extra != -1) {
         void *g = (void*)new AEGeometry((uint16_t)(unsigned short)extra, (PaintCanvas*)canvas, false);
         ((AEGeometry *)(this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
-        ((AEGeometry *)g)->~AEGeometry(); ::operator delete(g);
+        delete (AEGeometry *)g;
     }
     if (extra2 != -1) {
         void *g = (void*)new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas*)canvas, false);
@@ -1067,7 +1058,7 @@ float PlayerEgo::down(int frameTime, float delta) {
 
     this->pitchAccumDir = -1;
     float rate;
-    if (this->field_0x235 == 0) {
+    if (this->hardCoreMode == 0) {
         rate = ((float&)this->handling);
     } else {
         float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
@@ -1248,7 +1239,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
                 this->strafeNavPoint = 0;
             }
             if (((void*&)this->hackingGame) != 0) {
-                ::operator delete(HackingGame_dtor(((void*&)this->hackingGame)));
+                delete (HackingGame *)((void*&)this->hackingGame);
                 ((void*&)this->hackingGame) = 0;
                 ((Hud *)(hud))->setHackingGameActive(false);
             }
@@ -1369,7 +1360,7 @@ float PlayerEgo::right(int frameTime, float delta) {
 
     this->yawAccumDir = -1;
     float rate;
-    if (this->field_0x235 == 0) {
+    if (this->hardCoreMode == 0) {
         rate = ((float&)this->handling);
     } else {
         float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
@@ -1439,7 +1430,7 @@ float PlayerEgo::left(int frameTime, float delta) {
 
     this->yawAccumDir = 1;
     float rate;
-    if (this->field_0x235 == 0) {
+    if (this->hardCoreMode == 0) {
         rate = ((float&)this->handling);
     } else {
         float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
@@ -1468,50 +1459,43 @@ float PlayerEgo::left(int frameTime, float delta) {
 
 __attribute__((minsize)) PlayerEgo::~PlayerEgo() noexcept(false)
 {
-    if (this->player)   ::operator delete(Player_dtor(this->player));
+    if (this->player)   delete (Player *)this->player;
     this->player = 0;
-    if (this->field_0x4)   { ((AEGeometry *)this->field_0x4)->~AEGeometry(); ::operator delete(this->field_0x4); }
+    if (this->field_0x4)   delete (AEGeometry *)this->field_0x4;
     this->field_0x4 = 0;
-    if (this->geometry)   { ((AEGeometry *)this->geometry)->~AEGeometry(); ::operator delete(this->geometry); }
+    if (this->geometry)   delete (AEGeometry *)this->geometry;
     this->geometry = 0;
-    if (this->rollGeometry)  { ((AEGeometry *)this->rollGeometry)->~AEGeometry(); ::operator delete(this->rollGeometry); }
+    if (this->rollGeometry)  delete (AEGeometry *)this->rollGeometry;
     this->rollGeometry = 0;
-    if (this->turretGeometry)  { ((AEGeometry *)this->turretGeometry)->~AEGeometry(); ::operator delete(this->turretGeometry); }
+    if (this->turretGeometry)  delete (AEGeometry *)this->turretGeometry;
     this->turretGeometry = 0;
-    if (this->route)  do { Route *_rt = (Route *)(this->route); _rt->~Route(); ::operator delete(_rt); } while (0);
+    if (this->route)  delete (Route *)this->route;
     this->route = 0;
-    if (this->dockCameraNode) { ((AEGeometry *)this->dockCameraNode)->~AEGeometry(); ::operator delete(this->dockCameraNode); }
+    if (this->dockCameraNode) delete (AEGeometry *)this->dockCameraNode;
     this->dockCameraNode = 0;
-    if (this->dockCameraLeaf) { ((AEGeometry *)this->dockCameraLeaf)->~AEGeometry(); ::operator delete(this->dockCameraLeaf); }
+    if (this->dockCameraLeaf) delete (AEGeometry *)this->dockCameraLeaf;
     this->dockCameraLeaf = 0;
-    if (this->field_0x2c)  { ((AEGeometry *)this->field_0x2c)->~AEGeometry(); ::operator delete(this->field_0x2c); }
+    if (this->field_0x2c)  delete (AEGeometry *)this->field_0x2c;
     this->field_0x2c = 0;
-    if (this->field_0x30)  { ((AEGeometry *)this->field_0x30)->~AEGeometry(); ::operator delete(this->field_0x30); }
+    if (this->field_0x30)  delete (AEGeometry *)this->field_0x30;
     this->field_0x30 = 0;
-    if (this->gunYawGeo)  { ((AEGeometry *)this->gunYawGeo)->~AEGeometry(); ::operator delete(this->gunYawGeo); }
+    if (this->gunYawGeo)  delete (AEGeometry *)this->gunYawGeo;
     this->gunYawGeo = 0;
-    if (this->dockCameraMid) { ((AEGeometry *)this->dockCameraMid)->~AEGeometry(); ::operator delete(this->dockCameraMid); }
+    if (this->dockCameraMid) delete (AEGeometry *)this->dockCameraMid;
     this->dockCameraMid = 0;
-    if (this->tractorBeam) {
-        TractorBeam *_tb = (TractorBeam *)(this->tractorBeam);
-        _tb->~TractorBeam();
-        ::operator delete(_tb);
-    }
+    if (this->tractorBeam) delete (TractorBeam *)this->tractorBeam;
     this->tractorBeam = 0;
-    if (this->miningGame) ::operator delete(MiningGame_dtor((void *)(intptr_t)this->miningGame));
+    if (this->miningGame) delete (MiningGame *)(intptr_t)this->miningGame;
     this->miningGame = 0;
-    if (this->explosion)  ::operator delete(Explosion_dtor(this->explosion));
+    if (this->explosion)  delete (Explosion *)(intptr_t)this->explosion;
     this->explosion = 0;
-    if (this->explosion2)  ::operator delete(Explosion_dtor(this->explosion2));
+    if (this->explosion2)  delete (Explosion *)(intptr_t)this->explosion2;
     this->explosion2 = 0;
     if (this->easeMatrix) ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
     this->easeMatrix = 0;
     if (Array<RepairBeam *> *beams = this->repairBeams) {
         for (RepairBeam *beam : *beams)
-            if (beam) {
-                beam->~RepairBeam();
-                ::operator delete(beam);
-            }
+            delete beam;
         delete beams;
     }
     this->repairBeams = 0;
@@ -1712,7 +1696,7 @@ void PlayerEgo::dockToAsteroid(void *radar) {
         ((TargetFollowCamera *)(((void*&)this->targetFollowCamera)))->setActive(true);
         ((Player *)(this->player))->resetGunDelay(0);
         if (((void*&)this->miningGame) != 0)
-            ::operator delete(MiningGame_dtor(((void*&)this->miningGame)));
+            delete (MiningGame *)((void*&)this->miningGame);
         ((void*&)this->miningGame) = 0;
         ((Radar *)(radar))->unlockAsteroid();
         this->dockingPointIndex = 0;
@@ -1951,7 +1935,7 @@ float PlayerEgo::up(int frameTime, float delta) {
 
     this->pitchAccumDir = 1;
     float rate;
-    if (this->field_0x235 == 0) {
+    if (this->hardCoreMode == 0) {
         rate = ((float&)this->handling);
     } else {
         float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
@@ -2112,7 +2096,7 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
         return;
 
     float base;
-    if (this->field_0x235 != 0) {
+    if (this->hardCoreMode != 0) {
         float cur = (float)((Ship *)(PE_status()->getShip()))->getCurrentLoad();
         float max = (float)((Ship *)(PE_status()->getShip()))->getMaxLoad();
         float rate = ((float&)this->handling);
@@ -2213,7 +2197,7 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
     }
 
     if (((void*&)this->hackingGame) != 0) {
-        ::operator delete(HackingGame_dtor(((void*&)this->hackingGame)));
+        delete (HackingGame *)((void*&)this->hackingGame);
         ((void*&)this->hackingGame) = 0;
         ((Hud *)(((void*&)this->hud)))->setHackingGameActive(false);
     }
@@ -2476,7 +2460,7 @@ void PlayerEgo::revive() {
     psm->enableSystemRender(this->currentSystem, en);
 
     if (this->explosion != 0)
-        ::operator delete(Explosion_dtor(this->explosion));
+        delete (Explosion *)(intptr_t)this->explosion;
     this->explosion = 0;
 
     ((TargetFollowCamera *)(((void*&)this->targetFollowCamera)))->setActive(true);
@@ -3260,8 +3244,7 @@ extern "C" void PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self) {
     void *mg = ((void*&)self->miningGame);
     if (mg != 0) {
-        MiningGame_dtor(mg);
-        ::operator delete(mg);
+        delete (MiningGame *)mg;
         ((void*&)self->miningGame) = 0;
     }
 }

@@ -93,9 +93,9 @@ KIPlayer::KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
     this->field_0x48 = -1;
     this->field_0x8c = 1;
     this->stealFlag = 0;
-    this->field_0x4c = 0;
-    this->field_0xd0 = 0;
-    this->field_0x68 = 0;
+    this->hasCargo = 0;
+    this->carriesMissionCrate = 0;
+    this->diedWithMissionCrate = 0;
     this->field_0x6a = 0;
     this->wingmanFlag = 0;
     this->jumperFlag = 0;
@@ -411,7 +411,7 @@ void KIPlayer::reset() {
 // the relevant statistics, and notifies the HUD.
 void KIPlayer::captureCrate(Hud* hud) {
     if ((unsigned)(this->state - 3) < 2) {
-        this->field_0x4c = 0;
+        this->hasCargo = 0;
         if (this->field_0x101 != 0)
             this->setToSleep();
     }
@@ -464,7 +464,7 @@ void KIPlayer::captureCrate(Hud* hud) {
 
         // Determine whether this is a special (illegal) cargo item.
         bool special = false;
-        if (this->field_0xd0 != 0) {
+        if (this->carriesMissionCrate != 0) {
             int idx = item->getIndex();
             special = (idx == 0x74) || (idx == 0x75);
         }
@@ -475,7 +475,7 @@ void KIPlayer::captureCrate(Hud* hud) {
 
         if (avail == 0) {
             if (special)
-                this->field_0x68 = 1;
+                this->diedWithMissionCrate = 1;
             hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 1, 0, 0);
             return;
         }
@@ -504,7 +504,7 @@ void KIPlayer::captureCrate(Hud* hud) {
         this->level->field_1c = item->getAmount() + this->level->field_1c;
 
         if (special) {
-            this->field_0x69 = 1;
+            this->lostMissionCrateToEgo = 1;
         } else if (this->shipGroup == 9) {
             Status* st = gStatus;
             st->field_cc = item->getAmount() + st->field_cc;

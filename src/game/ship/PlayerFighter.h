@@ -13,6 +13,9 @@
 struct BoundingVolume;
 class AEGeometry;
 class Level;
+class Route;
+class Explosion;
+namespace AbyssEngine { class Trail; class EaseInOutMatrix; }
 
 class PlayerFighter : public KIPlayer {
 public:
@@ -28,7 +31,7 @@ public:
     Vector renderPosition;              // world position synced from geometry each frame
     int32_t field_0x38;
     signed char field_0x43;
-    uint8_t field_0x4c;
+    uint8_t crateCaptured;              // +0x4c
     Array<int>* lootList;               // loot item-id list (or mission-crate item)
     int32_t level;
     int32_t posX;
@@ -37,9 +40,9 @@ public:
     uint8_t missionCrateLost;
     uint8_t missionCrateCaptured;
     uint8_t crateLost;
-    int32_t routeClone;
-    signed char field_0x74;
-    int32_t field_0x78;
+    Route* routeClone;
+    uint8_t exhaustHidden;              // +0x74  (Ghidra: exhaustVisible flag)
+    AEGeometry* wreckGeometry;          // +0x78
     int32_t field_0x80;
     int32_t field_0x84;
     int32_t state;
@@ -56,7 +59,7 @@ public:
     int32_t pushDuration;
     Vector pushNormal;                  // unit push direction
     Vector pushImpulse;                 // scaled push offset
-    void* explosion;
+    Explosion* explosion;
     int32_t field_0x128;
     uint8_t field_0x12c;
     short field_0x12d;
@@ -69,21 +72,21 @@ public:
     uint8_t field_0x13d;
     signed char field_0x13e;
     int32_t field_0x140;
-    void* route;
+    Route* route;
     int32_t field_0x148;
-    int32_t commandRoute;
+    Route* commandRoute;
     Array<BoundingVolume*>* boundingVolumes;  // active bounding volumes (owned)
-    void* trail;
+    AbyssEngine::Trail* trail;
     Vector workingPosition;             // current logical position (spawn-relative)
     Vector resetVecB;                   // zeroed on reset() (transient steering vector)
     Vector resetVecC;                   // zeroed on reset() (transient steering vector)
-    int32_t field_0x1a0;
+    int32_t engineTrailSystem;          // +0x1a0
     float rotate;
     float shootError;
     float speed;
     int32_t field_0x1b0;
     int32_t boostProb;
-    int32_t field_0x1b8;
+    int32_t maneuverTimer;              // +0x1b8
     int32_t field_0x1c0;
     int32_t field_0x1c4;
     int32_t field_0x1c8;
@@ -102,8 +105,8 @@ public:
     int32_t field_0x200;
     int32_t field_0x204;
     int32_t field_0x208;
-    int32_t field_0x20c;
-    int32_t field_0x210;
+    int32_t targetRoll;                 // +0x20c
+    int32_t smoothRoll;                 // +0x210
     int32_t field_0x214;
     Matrix easeBaseMatrix;              // matrix constructed in ctor (ease/transform base)
     Matrix rollMatrix;                  // barrel-roll bank matrix (built in roll())
@@ -111,15 +114,15 @@ public:
     signed char field_0x255;
     int32_t field_0x294;
     int32_t field_0x298;
-    int32_t field_0x29c;
+    int32_t rollSamples;                // +0x29c  (ring buffer base)
     int32_t field_0x2a0;
     int32_t field_0x2a4;
     int32_t field_0x2a8;
     int32_t field_0x2ac;
-    int32_t field_0x2b0;
-    signed char field_0x2b4;
-    void* easeMatrix;
-    int32_t field_0x2c4;
+    int32_t rollSampleIndex;            // +0x2b0
+    uint8_t rollBufferFilled;           // +0x2b4
+    AbyssEngine::EaseInOutMatrix* easeMatrix;
+    int32_t spacePoint;                 // +0x2c4
     int32_t cloakTimer;
     int32_t field_0x2c9;
     int32_t cloakDuration;
@@ -129,9 +132,9 @@ public:
     uint8_t cloakingPossible;
     signed char field_0x2d9;
     uint32_t cloakMaterial;
-    int32_t field_0x2e0;
+    int32_t cloakSavedMode;             // +0x2e0  (saved material mode, restored on uncloak)
     uint8_t aiDisabled;
-    int32_t field_0x2e8;
+    int32_t gunSwitchTimer;             // +0x2e8
 
     PlayerFighter(int faction, int wingmanCmd, void *player, void *geom,
                   float x, float y, float z, int active);
