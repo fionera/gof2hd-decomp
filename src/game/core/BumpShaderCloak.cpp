@@ -99,7 +99,7 @@ void BumpShaderCloak::UpdateMeshData(Mesh *mesh, Engine *engine)
         if (this->uniform_u15 >= 0)
             glUniform1f(this->uniform_u15, eng->materialShininess);
         if (this->uniform_u16 >= 0)
-            glUniform3fv(this->uniform_u16, 1, (const float *)&eng->vec_0x320);
+            glUniform3fv(this->uniform_u16, 1, (const float *)&eng->rimColor);
 
         int viewportLoc = this->uniform_u17;
         if (viewportLoc >= 0) {

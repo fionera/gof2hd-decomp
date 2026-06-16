@@ -820,34 +820,32 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         goto done;
     }
     if (kind == 0xe || kind == 0xd) {
-        void *geom = ::operator new(0xc0);
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
-        new ((void *)geom) AEGeometry((uint16_t)resId, canvas, false);
+        AEGeometry *geom = new AEGeometry((uint16_t)resId, canvas, false);
         unsigned t0 = 0xffffffff;
         canvas->TransformCreate((unsigned int *)&t0);
         canvas->TransformAddMesh((unsigned)t0, 0, (bool)(1));
-        ((AEGeometry *)((unsigned)(long)geom))->addChild(t0);
+        geom->addChild(t0);
         unsigned t1 = 0xffffffff;
         canvas->TransformCreate((unsigned int *)&t1);
         canvas->TransformAddMesh((unsigned)t1, 0, (bool)(1));
-        ((AEGeometry *)((unsigned)(long)geom))->addChild(t1);
+        geom->addChild(t1);
         unsigned short lodMeshes[2] = {0, 0};
         int dist[2];
         dist[0] = (kind == 0xe) ? 35000 : 35000;
         dist[1] = (kind == 0xe) ? 60000 : 45000;
-        ((AEGeometry *)(geom))->setLodMeshes(lodMeshes, dist, 2);
+        geom->setLodMeshes(lodMeshes, dist, 2);
         unsigned short childMeshes[1] = {0};
-        ((AEGeometry *)(geom))->setLodChildMeshes(childMeshes);
+        geom->setLodChildMeshes(childMeshes);
         if (kind == 0xe) {
-            ((AEGeometry *)(geom))->setScaling(1.0f);
+            geom->setScaling(1.0f);
         }
         goto done;
     }
 
     // Generic path: per-ship table-driven build indexed by `kind`.
     {
-        void *geom = ::operator new(0xc0);
-        new ((void *)geom) AEGeometry((uint16_t)gGSG_resTable[kind], canvas, true);
+        AEGeometry *geom = new AEGeometry((uint16_t)gGSG_resTable[kind], canvas, true);
         unsigned short mesh = gGSG_meshTable[kind];
         unsigned mainT = 0xffffffff;
         unsigned mainMesh = 0xffffffff;
@@ -855,35 +853,34 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             canvas->MeshCreate(mesh, &mainMesh, true);
             canvas->TransformCreate((unsigned int *)&mainT);
             canvas->TransformAddMeshId(mainT, mainMesh);
-            ((AEGeometry *)((unsigned)(long)geom))->addChild(mainT);
-            ((AEGeometry *)geom)->meshHandle = mainMesh;
+            geom->addChild(mainT);
+            geom->meshHandle = mainMesh;
         }
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
             canvas->MaterialCreate(mat, &matH);
-            canvas->MeshChangeResourceMaterial(((AEGeometry *)geom)->meshId,
-                                                   mat);
+            canvas->MeshChangeResourceMaterial(geom->meshId, mat);
         }
         short extra = gGSG_extraTable[kind];
         if (extra != -1) {
             unsigned t = 0xffffffff;
             canvas->TransformCreate((unsigned int *)&t);
             canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(unsigned char)(char)extra));
-            ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
+            geom->addChild(t);
         }
         if (wireframe) {
             if (kind != 0x27 && kind != 0x29) {
                 unsigned t = 0xffffffff;
                 canvas->TransformCreate((unsigned int *)&t);
                 canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(-0x14 + (char)kind)));
-                ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
+                geom->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
             canvas->TransformCreate((unsigned int *)&t);
             canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(0x50 + (char)kind)));
-            ((AEGeometry *)((unsigned)(long)geom))->addChild(t);
+            geom->addChild(t);
         }
 
         // Count up to 2 LOD meshes for this ship.
@@ -894,9 +891,9 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             if (lod[i] != 0xffff) count++;
         }
         if (count != 0) {
-            unsigned short *meshes = (unsigned short *)::operator new[](count << 1);
-            unsigned *ids = (unsigned *)::operator new[](count * 4);
-            int *dist = (int *)::operator new[](count * 4);
+            unsigned short *meshes = new unsigned short[count];
+            unsigned *ids = new unsigned[count];
+            int *dist = new int[count];
             int d = 5000;
             unsigned *idp = ids;
             const unsigned *src = lod;
@@ -915,9 +912,9 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             }
             lastVisibleDist = (unsigned)d;
             if (wireframe) {
-                ((AEGeometry *)(geom))->setLodMeshes(meshes, dist, count);
+                geom->setLodMeshes(meshes, dist, count);
             } else {
-                ((AEGeometry *)(geom))->setLodMeshesWithMeshIds(meshes, ids, dist, count);
+                geom->setLodMeshesWithMeshIds(meshes, ids, dist, count);
             }
 
             const unsigned *childSrc = &gGSG_childTable[kind * 3];
@@ -926,17 +923,17 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 if (childSrc[i] != 0xffff) childCount++;
             }
             if (childCount != 0) {
-                unsigned short *childMeshes = (unsigned short *)::operator new[](childCount << 1);
+                unsigned short *childMeshes = new unsigned short[childCount];
                 for (int i = 0; i != childCount; i++) {
                     childMeshes[i] = (unsigned short)childSrc[i];
                 }
-                ((AEGeometry *)(geom))->setLodChildMeshes(childMeshes);
-                ::operator delete[](childMeshes);
+                geom->setLodChildMeshes(childMeshes);
+                delete[] childMeshes;
             }
-            ::operator delete[](meshes);
-            ::operator delete[](dist);
+            delete[] meshes;
+            delete[] dist;
         }
-        ((AEGeometry *)(geom))->setLodLastVisibleDistance(lastVisibleDist);
+        geom->setLodLastVisibleDistance(lastVisibleDist);
     }
 
 done:
@@ -1314,9 +1311,7 @@ Globals::~Globals() {
     *statSlot = 0;
     void **gtSlot = gG_gameText;
     if (*gtSlot != 0) {
-        GameText *_gt = (GameText *)(*gtSlot);
-        _gt->~GameText();
-        ::operator delete(_gt);
+        delete (GameText *)(*gtSlot);
     }
     *gtSlot = 0;
     void **rngSlot = gG_random;
@@ -1335,7 +1330,7 @@ Globals::~Globals() {
     }
     *genSlot = 0;
     if (*rhSlot != 0) {
-        do { RecordHandler *_rh = (RecordHandler *)(*rhSlot); _rh->~RecordHandler(); ::operator delete(_rh); } while (0);
+        delete (RecordHandler *)(*rhSlot);
     }
     *rhSlot = 0;
     void **polySlot = gG_polyObj;
@@ -1807,8 +1802,7 @@ int Globals::init(void *app) {
     void *status = ::operator new(0x1f0);
     Status_ctor(status);
     gStatus = (Status *)status;
-    void *imgFac = ::operator new(0xc);
-    new (imgFac) ImageFactory();
+    ImageFactory *imgFac = new ImageFactory();
     **gI_imgFac = imgFac;
 
     void *fr = ::operator new(1);
@@ -1833,8 +1827,7 @@ int Globals::init(void *app) {
     Generator_ctor(gen);
     **gI_generator = gen;
 
-    void *rh = ::operator new(0x2c);
-    new (rh) RecordHandler();
+    RecordHandler *rh = new RecordHandler();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
     gStatus->resetGame();
@@ -1874,10 +1867,9 @@ int Globals::init(void *app) {
     **gI_g3824 = 0;
     **gI_g383a = 0;
 
-    void *layout = ::operator new(0x414);
-    new (layout) Layout();
+    Layout *layout = new Layout();
     **gI_layout = layout;
-    ((Layout *)(layout))->reload();
+    layout->reload();
     ParticleSettingsRef_initialize();
 
     Array<int> *arr = new Array<int>();
@@ -2366,10 +2358,10 @@ int Globals::dialogueDispatch(int category, int code)
 void Globals::buildShipGroup0f(int variant, void *canvasArg)
 {
     PaintCanvas *canvas = (PaintCanvas *)canvasArg;
-    AEGeometry *geom = (AEGeometry *)::operator new(0xc0);
+    AEGeometry *geom;
 
     if (variant == 0) {
-        new ((void *)geom) AEGeometry((uint16_t)0x42a9, canvas, false);
+        geom = new AEGeometry((uint16_t)0x42a9, canvas, false);
 
         unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
         canvas->TransformCreate(&mesh0);
@@ -2388,7 +2380,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         uint16_t lodChild = 0x42ab;
         geom->setLodChildMeshes(&lodChild);
     } else if (variant == 3) {
-        new ((void *)geom) AEGeometry((uint16_t)0x4299, canvas, false);
+        geom = new AEGeometry((uint16_t)0x4299, canvas, false);
 
         unsigned head = 0xffffffff;
         canvas->TransformCreate(&head);
@@ -2427,7 +2419,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         geom->setLodMeshes(lodMeshes, lodDists, 1);
         geom->setLodChildTransform(prevB);
     } else {
-        new ((void *)geom) AEGeometry((uint16_t)0x42a4, canvas, false);
+        geom = new AEGeometry((uint16_t)0x42a4, canvas, false);
 
         unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
         canvas->TransformCreate(&mesh0);

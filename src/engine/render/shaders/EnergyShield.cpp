@@ -20,7 +20,7 @@ void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine)
         if (this->uM4 >= 0)
             glUniform4fv(this->uM4, 1, host->glColor);
         if (this->uM5 >= 0)
-            glUniform3fv(this->uM5, 1, (float *)&host->vec_0x320);
+            glUniform3fv(this->uM5, 1, (float *)&host->rimColor);
         int loc = this->uM6;
         if (loc >= 0) {
             float w = (float)((::Engine *)engine)->GetDisplayWidth();

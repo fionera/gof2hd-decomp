@@ -39,24 +39,24 @@ public:
     String field_0xe8;
     String field_0xf4;
     String field_0x100;
-    int field_0x160;
-    int field_0x164;
-    int field_0x1c4;  // faction-badge image id
+    int eventLineX;          // +0x160 event-line X origin
+    int eventLineY;          // +0x164 event-line Y origin
+    int factionLogoImage;    // +0x1c4 faction-badge image id
     int field_0x1d0;
-    int field_0x1d8;
-    unsigned char field_0x1de;
+    int eventScrollTick;     // +0x1d8 medal/event scroll timer
+    unsigned char eventScrolls;  // +0x1de event line scrolls
     String field_0x1e0;  // current HUD-event line
     unsigned char letterbox;  // cinematic letterbox flag
     String field_0x1f4;  // cargo/event scratch line
     String field_0x200;
-    unsigned char field_0x21e;  // boost-button present
-    unsigned char field_0x21f;  // shield bar present
-    unsigned char field_0x220;  // armor-regen overlay present
-    unsigned char field_0x221;  // autofire UI present
+    unsigned char hasBoostButton;   // +0x21e boost-button present
+    unsigned char hasShieldBar;     // +0x21f shield bar present
+    unsigned char hasArmorRegen;    // +0x220 armor-regen overlay present
+    unsigned char hasAutofireUI;    // +0x221 autofire UI present
     String field_0x228;
     unsigned char cargoFullFlag;
     void *menuLevel;  // active Level* / menu type
-    unsigned char field_0x244;  // shield-hit flash
+    unsigned char shieldHitFlash;   // +0x244 shield-hit flash
     Item *currentSecondaryWeapon;
     Array<Item *> *equipmentArray;  // secondary-weapon equipment
     Array<ListItem *> *eventQueue;  // event-banner queue
@@ -66,51 +66,51 @@ public:
     unsigned char jumpMapSelectedFlag;
     int field_0x278;
     unsigned char field_0x27a;
-    int field_0x27c;
+    int fuelGaugeValue;      // +0x27c gauge numeric value
     unsigned char field_0x280;
     unsigned char field_0x281;
     unsigned char quickMenuOpen;
     unsigned char quickMenuEmpty;
     unsigned int touchFlags;
-    unsigned char field_0x287;
+    unsigned char autoTurretFlags;  // +0x287 auto-turret manual-toggle bits
     int field_0x288;
     Array<int> *keyArray;  // per-touch key ids (0x19)
     int *elementBits;  // per-touch action bits (0x19)
-    int field_0x298;
-    int field_0x29c;
-    int field_0x2a0;
-    int field_0x2a4;
-    int field_0x2a8;
-    int field_0x2ac;
-    int field_0x2b0;
-    int field_0x2b4;
-    int field_0x2b8;
-    int field_0x2bc;
-    int field_0x2c0;
-    int field_0x2c4;
-    int field_0x2d4;
-    int field_0x2f4;
-    int field_0x2f8;
-    int field_0x304;
-    int field_0x308;
-    int field_0x30c;
-    int field_0x310;
-    int field_0x314;
-    int field_0x318;
-    int field_0x31c;
-    int field_0x324;
-    int field_0x354;
-    int field_0x35c;
-    int field_0x370;
-    int field_0x374;
+    int quickMenuTopImage;       // +0x298 radial menu top cap
+    int quickMenuBottomImage;    // +0x29c radial menu bottom cap
+    int quickMenuMiddleImage;    // +0x2a0 radial menu middle slice
+    int shieldFrameImage;        // +0x2a4 shield bar frame
+    int shieldFrameHitImage;     // +0x2a8 shield bar frame (hit)
+    int shieldBarBgImage;        // +0x2ac shield bar background
+    int shieldBarFillImage;      // +0x2b0 shield bar fill
+    int armorFrameImage;         // +0x2b4 armor bar frame
+    int armorFrameLowImage;      // +0x2b8 armor bar frame (low)
+    int armorBarBgImage;         // +0x2bc armor bar background
+    int armorRegenFillImage;     // +0x2c0 armor regen overlay fill
+    int armorBarFillImage;       // +0x2c4 armor bar fill
+    int barDividerImage;         // +0x2d4 status-bar divider
+    int pauseButtonPressedImage; // +0x2f4 pause button (pressed)
+    int pauseButtonImage;        // +0x2f8 pause button (idle)
+    int lockBracketImage;        // +0x304 lock bracket
+    int lockBracketLockedImage;  // +0x308 lock bracket (locked)
+    int orbitMarkerActiveImage;  // +0x30c orbit marker (active)
+    int orbitMarkerIdleImage;    // +0x310 orbit marker (idle)
+    int autoTurretOnImage;       // +0x314 auto-turret icon (on)
+    int autoTurretOffImage;      // +0x318 auto-turret icon (off)
+    int reticleImage;            // +0x31c aiming reticle
+    int missionBannerImage;      // +0x324 mission/cargo banner bg
+    int eventBannerImage;        // +0x354 event-banner bg
+    int quickMenuHeaderImage;    // +0x35c radial menu header glyph
+    int fuelGaugeIconImage;      // +0x370 fuel gauge icon
+    int fuelGaugeBarImage;       // +0x374 fuel gauge bar
     String field_0x3b4;  // secondary-weapon label
-    int field_0x3c0;
+    int secondaryLabelX;     // +0x3c0 secondary-weapon label X (centered)
     int field_0x3c4;
-    int field_0x3c8;
-    int field_0x3cc;
+    int menuOriginY;         // +0x3c8 radial menu Y origin
+    int menuRowHeight;       // +0x3cc radial menu row height
     int field_0x3d0;
     int field_0x3d4;
-    int field_0x3d8;
+    int menuBaseY;           // +0x3d8 radial menu base Y
     int field_0x3dc;
     unsigned short field_0x3e0;
     unsigned short field_0x3e2;
@@ -156,28 +156,28 @@ public:
     unsigned short field_0x45e;
     unsigned short field_0x460;
     int field_0x468;
-    int field_0x46c;
+    int hitFlashTimer;       // +0x46c shield/armor hit flash timer
     int field_0x470;
     unsigned char autofireEnabled;
     unsigned char fireForTutorial;
-    int field_0x4bc;
-    int field_0x4c0;
+    int timeExtenderTimer;   // +0x4bc time-extender countdown
+    int timeExtenderDuration;// +0x4c0 time-extender total duration
     unsigned char messageActive;
-    int field_0x4cc;
-    int field_0x4d0;
-    int field_0x4d8;
-    int field_0x4dc;
-    int field_0x4e0;
-    int field_0x4e8;
-    int field_0x4f0;
-    int field_0x514;
-    int field_0x518;
+    int menuOriginX;         // +0x4cc radial menu X origin
+    int menuOriginYBase;     // +0x4d0 radial menu Y base origin
+    int touchHalfExtent;     // +0x4d8 default touch-rect half extent
+    int touchHalfExtentSmall;// +0x4dc smaller touch-rect half extent
+    int analogStickRadius;   // +0x4e0 analog-stick max radius
+    int eventLineMargin;     // +0x4e8 event-line inner margin
+    int eventLineMarginAlt;  // +0x4f0 event-line letterbox margin
+    int secondaryLabelTimerSeed; // +0x514 secondary-weapon label seed (-1)
+    int secondaryLabelTimer; // +0x518 secondary-weapon label timer
     String field_0x51c;  // full-screen HUD message
     unsigned char hackingGameActive;
-    int field_0x52c;
+    int cargoAggregateCount; // +0x52c aggregated cargo "+N" count
     Array<unsigned int> *uintArray;
     void *digitSprite;  // challenge-mode digit sprite
-    int field_0x538;
+    int multiplierIconImage; // +0x538 challenge-mode multiplier icon
 
     Hud();
     ~Hud();

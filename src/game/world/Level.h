@@ -66,9 +66,9 @@ public:
     ParticleSystemManager* field_80;
     ParticleSystemManager* particleRenderBoolPtr;
     ParticleSystemManager* skybox2Mesh; // engine-trail PSM (legacy name)
-    int field_8c;
+    ParticleSystemManager* field_8c;
     ParticleSystemManager* field_90;
-    int field_94;
+    ParticleSystemManager* field_94;
     ParticleSystemManager* field_98;
     ParticleSystemManager* field_9c;
     AbyssEngine::LodMeshMerger* field_a0;
@@ -81,9 +81,9 @@ public:
     int field_bc;
     int missionPtr;                 // ctor argument
     BoundingVolume* collisionVolume;
-    int field_c8;
-    int field_cc;
-    int field_d0;
+    float field_c8;                 // asteroid-field centre X (built in createAsteroids)
+    float field_cc;                 // asteroid-field centre Y
+    float field_d0;                 // asteroid-field centre Z
     int field_d4;
     Waypoint* asteroidWaypoint;
     int field_dc;

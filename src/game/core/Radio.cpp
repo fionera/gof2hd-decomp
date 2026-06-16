@@ -6,6 +6,7 @@
 #include "engine/render/ImagePart.h"
 #include "engine/audio/FModSound.h"
 #include "game/ui/Layout.h"
+#include "game/ship/Agent.h"
 
 // ---------------------------------------------------------------------------
 // Cross-class engine entry points used through their own (not-yet-self-clean)
@@ -28,12 +29,6 @@ void Globals_drawLines(void* globals, String* font, Array<String*>* lines,
 int Globals_getDialogueSoundId(void* globals, int textId, void* agent);
 
 // Agent is constructed transiently to resolve the speaker's voice sample.
-// Agent.h is not yet self-clean (missing forward decls), so the object is held
-// opaquely and built/destroyed through the engine's real ctor/dtor symbols.
-extern "C" void _ZN5AgentC1EjPN11AbyssEngine6StringEiiibiiii(
-    void* self, unsigned kind, String* name, int p4, int p5, int p6,
-    bool p7, int p8, int p9, int p10, int p11);
-extern "C" void _ZN5AgentD1Ev(void* self);
 
 // ---------------------------------------------------------------------------
 // Engine globals (resolved at link time; left as-is per the port conventions).
@@ -223,14 +218,12 @@ void Radio::update(long time, PlayerEgo* ego, LevelScript* script)
         this->soundPending = 1;
         this->displayDuration = (int)this->textLines->size() * 2000 + 1500;
 
-        void* agent = ::operator new(0x98);
         String agentName = radio_string_from_cstr(g_Radio_agentName);
-        _ZN5AgentC1EjPN11AbyssEngine6StringEiiibiiii(
-            agent, 0, &agentName, 0, 0, agentIndex, generated, 0, 0, 0, 0);
+        Agent* agent = new Agent(0, &agentName, 0, 0, agentIndex, generated,
+                                 0, 0, 0, 0);
         this->soundId = Globals_getDialogueSoundId(*g_Radio_globals,
                                                    message->textID, agent);
-        _ZN5AgentD1Ev(agent);
-        ::operator delete(agent);
+        delete agent;
         break;
     }
 }

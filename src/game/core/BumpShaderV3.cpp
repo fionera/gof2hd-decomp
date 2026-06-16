@@ -106,7 +106,7 @@ void BumpShaderV3::UpdateMeshData(Mesh *mesh, Engine *engine)
         if (this->uSpecularPower >= 0)
             glUniform1f(this->uSpecularPower, engine->materialShininess);
         if (this->uRimColor >= 0)
-            glUniform3fv(this->uRimColor, 1, (float *)&engine->vec_0x320);
+            glUniform3fv(this->uRimColor, 1, (float *)&engine->rimColor);
         if (this->uIsGlowMat >= 0) {
             float w = 0.85f;
             if (*(int *)((char *)mesh->field_0x30 + 0x24) != 0)

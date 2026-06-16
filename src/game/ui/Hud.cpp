@@ -28,14 +28,14 @@ void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
     this->field_0x280 = p3;
     this->field_0x281 = p4;
     if (p2 && p3) {
-        this->field_0x4c0 = 0x7d0;
-        this->field_0x4bc = 0x50;
+        this->timeExtenderDuration = 0x7d0;
+        this->timeExtenderTimer = 0x50;
     }
 }
 
 void Hud::playerHit() {
-    this->field_0x244 = 1;
-    this->field_0x46c = 0;
+    this->shieldHitFlash = 1;
+    this->hitFlashTimer = 0;
 }
 
 void Hud::addToEventQueue(ListItem *item) {
@@ -61,7 +61,7 @@ void Hud::resetAnalogStick() {
 
 float Hud::getAnalogY() {
     float num = (float)((int)this->lockBracketY - (int)this->reticleY);
-    float den = (float)this->field_0x4e0;
+    float den = (float)this->analogStickRadius;
     return num / den;
 }
 
@@ -118,7 +118,7 @@ void Hud::closeHudMenu() {
 
 float Hud::getAnalogX() {
     float num = (float)((int)this->lockBracketX - (int)this->reticleX);
-    float den = (float)this->field_0x4e0;
+    float den = (float)this->analogStickRadius;
     return num / den;
 }
 
@@ -236,7 +236,7 @@ void Hud::drawOrbitInformation() {
     int x = gCanvas->GetImage2DWidth((unsigned)(0)) + layout[0x87];
 
     if (((SolarSystem *)(((void *)(long)gStatus->getSystem())))->hasNoOwner() == 0)
-        gCanvas->DrawImage2D((unsigned)this->field_0x1c4, 3, 0);
+        gCanvas->DrawImage2D((unsigned)this->factionLogoImage, 3, 0);
 
     void *font = *g_Hud_oiFont;
     // station name
@@ -291,7 +291,7 @@ found:
     int dy = (int)(unsigned int)(uintptr_t)b - (int)this->reticleY;
     float f = (float)(dy * dy + dx * dx);
     float r = gGlobals->sqrt(f);
-    int denom = this->field_0x4e0;
+    int denom = this->analogStickRadius;
     int len = (int)r;
     if (denom < len) {
         short s = (short)(denom * dx / len);
@@ -336,14 +336,14 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
         return 0;
     }
 
-    int w = this->field_0x4d8;
-    int w2 = this->field_0x4dc;
+    int w = this->touchHalfExtent;
+    int w2 = this->touchHalfExtentSmall;
 
     bool cinematic = *(char *)*g_Hud_teCinematic != 0;
 
     if (cinematic) {
         if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
-        if (this->field_0x21e != 0 && span(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
+        if (this->hasBoostButton != 0 && span(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
         if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
         if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
         if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
@@ -374,7 +374,7 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     if (y < (unsigned int)(screenH >> 2)) {
         if (span(this->field_0x40a, w, x) && span(this->field_0x40c, w, y)) return 1;
     } else if (x < (unsigned int)(screenW >> 1)) {
-        if (this->field_0x21e != 0 && cspan(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
+        if (this->hasBoostButton != 0 && cspan(this->field_0x410, w, x) && span(this->field_0x412, w, y)) return 2;
         if (span(this->field_0x3f8, w, x) && span(this->field_0x3fa, w, y)) return 0x40;
         if (span(this->field_0x404, w, x) && span(this->field_0x406, w, y)) return 0x100;
         if (cspan(this->reticleX, w, x) && cspan(this->reticleY, w2, y)) return 0x20;
@@ -459,7 +459,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
     // aggregate with previous "+N <unit>" event if allowed
     if (aggregateKey != 0 && this->eventQueueDirty != 0) {
-        char a0[12]; ((String *)(a0))->ctor_int(this->field_0x52c);
+        char a0[12]; ((String *)(a0))->ctor_int(this->cargoAggregateCount);
         char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
         char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
@@ -472,8 +472,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(b8))->dtor();
         if (idx >= 0) {
             this->eventQueueTimer = 2000;
-            int newAmt = this->field_0x52c + (a ? 1 : 0);
-            this->field_0x52c = newAmt;
+            int newAmt = this->cargoAggregateCount + (a ? 1 : 0);
+            this->cargoAggregateCount = newAmt;
             char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
             char nC4[12]; ((String *)(nC4))->ctor_char(g_Hud_ccUnit2, false);
             char nA0[12]; *(String *)nA0 = *(String *)nAc + *(String *)nC4;
@@ -489,8 +489,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     }
 
     // fresh "+N <unit>" event
-    this->field_0x52c = (a ? 1 : 0);
-    char a0[12]; ((String *)(a0))->ctor_int(this->field_0x52c);
+    this->cargoAggregateCount = (a ? 1 : 0);
+    char a0[12]; ((String *)(a0))->ctor_int(this->cargoAggregateCount);
     char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
     char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
     char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
@@ -520,8 +520,8 @@ void Hud::drawEventString(void *text, int rightAlign) {
     void *canvas = *g_Hud_canvas2;
     int x;
     if (this->letterbox == 0) {
-        int base = this->field_0x4e8;
-        int yBase = this->field_0x160;
+        int base = this->eventLineMargin;
+        int yBase = this->eventLineX;
         if (rightAlign == 0) {
             int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), (font));
             x = (base + 3) - w;
@@ -531,15 +531,15 @@ void Hud::drawEventString(void *text, int rightAlign) {
         x = x + yBase;
     } else {
         if (rightAlign == 0) {
-            int margin = this->field_0x4f0;
+            int margin = this->eventLineMarginAlt;
             int screenW = *(int *)*g_Hud_screenW;
             int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), (font));
             x = ((screenW - 1) - margin) - w;
         } else {
-            x = this->field_0x4f0 + 1;
+            x = this->eventLineMarginAlt + 1;
         }
     }
-    char y = (char)(this->field_0x164 - 1);
+    char y = (char)(this->eventLineY - 1);
     gCanvas->DrawString((unsigned)(long)(font), (void *)(text), (x), (y), false);
 }
 
@@ -598,7 +598,7 @@ void Hud::updateSecondaryWeaponString() {
 
     int screenW = *(int *)*g_Hud_swScreenW;
     int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), (*g_Hud_swFont));
-    this->field_0x3c0 = (screenW >> 1) - (w >> 1);
+    this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
 // Hud::drawEventQueue() — draws the sliding event-banner background image and, if the queue
@@ -622,7 +622,7 @@ void Hud::drawEventQueue() {
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int)(mul * dispScale);
 
-    gCanvas->DrawImage2D((unsigned)this->field_0x354, this->field_0x3e0, 0);
+    gCanvas->DrawImage2D((unsigned)this->eventBannerImage, this->field_0x3e0, 0);
 
     ListItem *item = (*this->eventQueue)[1];
     if (item != 0) {
@@ -727,12 +727,12 @@ int Hud::init() {
     // current system faction badge
     if (gStatus->inAlienOrbit() == 0) {
         int race = ((SolarSystem *)(((void *)(long)gStatus->getSystem())))->getRace();
-        Image2DCreate(gCanvas, g_Hud_raceBadge[race], &this->field_0x1c4);
+        Image2DCreate(gCanvas, g_Hud_raceBadge[race], &this->factionLogoImage);
     }
 
     // seed the (empty) HUD message
-    this->field_0x514 = -1;
-    this->field_0x518 = 0;
+    this->secondaryLabelTimerSeed = -1;
+    this->secondaryLabelTimer = 0;
     {
         char tmp[12];
         ((String *)(tmp))->ctor_char(g_Hud_initMsg, false);
@@ -758,7 +758,7 @@ void Hud::drawPauseButton() {
     unsigned char flag = this->touchFlags;
     int y = this->field_0x40c;
     int x = this->field_0x40a;
-    int img = (flag & 1) == 0 ? this->field_0x2f8 : this->field_0x2f4;
+    int img = (flag & 1) == 0 ? this->pauseButtonImage : this->pauseButtonPressedImage;
     return gCanvas->DrawImage2D((unsigned)(img), (x), (y));
 }
 
@@ -804,25 +804,25 @@ void Hud::drawMenu() {
     ((Layout *)(layout))->drawMask();
 
     // top cap
-    gCanvas->DrawImage2D((unsigned)this->field_0x298, this->field_0x3c4 + this->field_0x4cc, 0);
+    gCanvas->DrawImage2D((unsigned)this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
     // header glyph (centered)
-    int hx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
-    char hy = (char)((char)this->field_0x4d0 + (char)this->field_0x3c8 + (char)(this->field_0x3cc / 2)
+    int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
+    char hy = (char)((char)this->menuOriginYBase + (char)this->menuOriginY + (char)(this->menuRowHeight / 2)
                      - (char)layout[0x8b]);
-    gCanvas->DrawImage2D((unsigned)this->field_0x35c, hx, hy, (unsigned char)0x11);
+    gCanvas->DrawImage2D((unsigned)this->quickMenuHeaderImage, hx, hy, (unsigned char)0x11);
 
-    int y = this->field_0x3c8 + this->field_0x4d0 + this->field_0x3cc;
+    int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
     // repeated middle slices (one per button beyond the first)
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int count = (unsigned int)this->menuButtons->size();
         for (unsigned int i = 0; i < count - 1; i++) {
-            gCanvas->DrawImage2D((unsigned)this->field_0x2a0, this->field_0x3c4 + this->field_0x4cc, 0);
+            gCanvas->DrawImage2D((unsigned)this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX, 0);
             y += this->field_0x3d0;
             count = (unsigned int)this->menuButtons->size();
         }
     }
     // bottom cap
-    gCanvas->DrawImage2D((unsigned)this->field_0x29c, this->field_0x3c4 + this->field_0x4cc, 0);
+    gCanvas->DrawImage2D((unsigned)this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
 
     // the actual buttons
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
@@ -840,16 +840,16 @@ void Hud::drawMenu() {
 
     char prefix[12], num[12], label[12];
     ((String *)(prefix))->ctor_char(g_Hud_dmPrefix, false);
-    ((String *)(num))->ctor_int(this->field_0x27c);
+    ((String *)(num))->ctor_int(this->fuelGaugeValue);
     *(String *)label = *(String *)prefix + *(String *)num;
     ((String *)(num))->dtor();
     ((String *)(prefix))->dtor();
 
-    int gx = this->field_0x4cc + this->field_0x3d4 + this->field_0x3dc / 2;
+    int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     unsigned char gy = (unsigned char)((char)y + (char)(layout[0xc] / 2)
                         + (char)layout[0xa2]);
-    gCanvas->DrawImage2D((unsigned)this->field_0x374, gx, gy, (unsigned char)0x11);
-    gCanvas->DrawImage2D((unsigned)this->field_0x370, gx - layout[0x8c], (char)layout[0xc] + (char)gy + (char)layout[0xa3], (unsigned char)0x11);
+    gCanvas->DrawImage2D((unsigned)this->fuelGaugeBarImage, gx, gy, (unsigned char)0x11);
+    gCanvas->DrawImage2D((unsigned)this->fuelGaugeIconImage, gx - layout[0x8c], (char)layout[0xc] + (char)gy + (char)layout[0xa3], (unsigned char)0x11);
 
     int barW = layout[0x8c];
     void *font = *g_Hud_dmFont;
@@ -884,15 +884,15 @@ void Hud::hudEvent(int eventId, void *ego, int arg) {
     case 1:
     case 2:
         // autofire on/off notice — only when the autofire UI is present
-        if (this->field_0x221 == 0) return;
+        if (this->hasAutofireUI == 0) return;
         hudEventBuild(eventId, ego, arg);
         return;
     case 3:
-        if (this->field_0x21e == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
+        if (this->hasBoostButton == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
         hudEventBuild(eventId, ego, arg);
         return;
     case 4:
-        if (this->field_0x21e == 0) return;
+        if (this->hasBoostButton == 0) return;
         hudEventBuild(eventId, ego, arg);
         return;
 
@@ -1008,7 +1008,7 @@ void Hud::drawChallengeModeScore() {
                 ((String *)(bonusStr))->dtor();
             }
         }
-        gCanvas->DrawImage2D((unsigned)this->field_0x538, pad + startX, 0);
+        gCanvas->DrawImage2D((unsigned)this->multiplierIconImage, pad + startX, 0);
 
         char timeStr[12];
         ((String *)(timeStr))->ctor_int(status[0x63]);
@@ -1065,9 +1065,9 @@ void Hud::hudEventMedal(int medalId, int percent) {
 
     int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), (*g_Hud_meFont));
     int screenW = *(int *)*g_Hud_meScreenW;
-    this->field_0x1d8 = 0;
-    this->field_0x1de = 1;
-    this->letterbox = ((screenW / 2 - this->field_0x4e8) + this->field_0x4f0 * -2 < w) ? 1 : 0;
+    this->eventScrollTick = 0;
+    this->eventScrolls = 1;
+    this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
 }
 
 // Hud::initHudMenu(int menuType, Level* lvl) — rebuilds the radial quick-menu. Tears down and
@@ -1103,14 +1103,14 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     this->equipmentArray = gStatus->getShip()->getEquipment(1);
     updateSecondaryWeaponString();
 
-    this->field_0x4cc = 0;
+    this->menuOriginX = 0;
     int *layout = (int *)*g_Hud_imLayout;
     int rowH = *(int *)(layout[0] + 0x1dc); // first row height
     char letterbox = *(char *)*g_Hud_imLetterbox;
 
     int yOrigin;
     if (letterbox == 0) {
-        yOrigin = this->field_0x3d8;
+        yOrigin = this->menuBaseY;
     } else {
         // cargo-bay percentage shifts the menu up in letterboxed mode
         void *cargoA = *g_Hud_imCargoA;
@@ -1135,9 +1135,9 @@ void Hud::initHudMenu(int menuType, void *lvl) {
                 yf = v2 - adj;
             }
         }
-        this->field_0x3c8 = (int)yf;
-        yOrigin = ((this->field_0x3cc + (int)yf) - rowH / 2) + 1;
-        this->field_0x3d8 = yOrigin;
+        this->menuOriginY = (int)yf;
+        yOrigin = ((this->menuRowHeight + (int)yf) - rowH / 2) + 1;
+        this->menuBaseY = yOrigin;
     }
     (void)yOrigin;
 
@@ -1265,10 +1265,10 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     void *font = *g_Hud_font;
     int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), (font));
     int screenW = *(int *)*g_Hud_screenW;
-    this->field_0x1d8 = 0;
-    this->field_0x1de = 1;
+    this->eventScrollTick = 0;
+    this->eventScrolls = 1;
     this->letterbox =
-        (unsigned char)((screenW / 2 - this->field_0x4e8) + this->field_0x4f0 * -2 < w);
+        (unsigned char)((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
 }
 
 // ---- Hud::buildQuickMenu() ----------------------------------------------------
@@ -1300,7 +1300,7 @@ void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
 
     // Reticle image, tinted normally unless an interaction (autopilot/docking/
     // turret) suppresses the highlight; the lock bracket follows at +0x424/+0x41e.
-    canvas->DrawImage2D((unsigned)this->field_0x31c, this->field_0x42c, 0);
+    canvas->DrawImage2D((unsigned)this->reticleImage, this->field_0x42c, 0);
 
     unsigned char flags = this->touchFlags;
     unsigned short bx, by;
@@ -1308,13 +1308,13 @@ void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
     if ((flags & 0x40) != 0) {            // (flags<<0x19)<0  -> locked bracket frozen
         bx = this->reticleX;
         by = this->reticleY;
-        img = this->field_0x308;
+        img = this->lockBracketLockedImage;
         this->lockBracketX = bx;
         this->lockBracketY = by;
     } else {
         bx = this->lockBracketX;
         by = this->lockBracketY;
-        img = this->field_0x304;
+        img = this->lockBracketImage;
     }
     canvas->DrawImage2D((unsigned)img, bx, by, '\x11');
     (void)ego;
@@ -1343,8 +1343,8 @@ void Hud::drawRadar() {
     }
     if (show && st->getCurrentCampaignMission() > 1) {
         int img = ((this->touchFlags & 0x80) != 0)   // (flags<<0x19)<0
-                      ? this->field_0x30c
-                      : this->field_0x310;
+                      ? this->orbitMarkerActiveImage
+                      : this->orbitMarkerIdleImage;
         canvas->DrawImage2D((unsigned)img, this->field_0x3f8, 0);
     }
 }
@@ -1364,15 +1364,15 @@ void Hud::drawBars(void *ego) {
     // -- shield bar (only when the shield element +0x21f is enabled) --
     unsigned short barX = this->field_0x442;
     unsigned short barY = this->field_0x44a;
-    if (this->field_0x21f != 0) {
+    if (this->hasShieldBar != 0) {
         int shp = player->getShieldHP();
-        int frame = (shp < 2 || this->field_0x244 == 0) ? this->field_0x2a4 : this->field_0x2a8;
+        int frame = (shp < 2 || this->shieldHitFlash == 0) ? this->shieldFrameImage : this->shieldFrameHitImage;
         canvas->DrawImage2D((unsigned)frame, this->field_0x43c, this->field_0x442);
-        canvas->DrawImage2D((unsigned)this->field_0x2d4, this->field_0x43e, this->field_0x442);
-        canvas->DrawImage2D((unsigned)this->field_0x2ac, this->field_0x440, this->field_0x44a);
+        canvas->DrawImage2D((unsigned)this->barDividerImage, this->field_0x43e, this->field_0x442);
+        canvas->DrawImage2D((unsigned)this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
         int rate = player->getShieldDamageRate();
         int w = (int)((float)rate * scale);
-        canvas->DrawRegion2D((unsigned)this->field_0x2b0, 0, 0, w, this->field_0x44c,
+        canvas->DrawRegion2D((unsigned)this->shieldBarFillImage, 0, 0, w, this->field_0x44c,
                              (float)w, 0, 0, 0, this->field_0x440);
         barX = this->field_0x444;
         barY = this->field_0x448;
@@ -1380,20 +1380,20 @@ void Hud::drawBars(void *ego) {
 
     // -- hull/armor bar --
     int ahp = player->getArmorHP();
-    int aframe = (ahp < 1) ? this->field_0x2b8 : this->field_0x2b4;
+    int aframe = (ahp < 1) ? this->armorFrameLowImage : this->armorFrameImage;
     canvas->DrawImage2D((unsigned)aframe, this->field_0x43c, barX);
-    canvas->DrawImage2D((unsigned)this->field_0x2d4, this->field_0x43e, barX);
-    canvas->DrawImage2D((unsigned)this->field_0x2bc, this->field_0x440, barY);
+    canvas->DrawImage2D((unsigned)this->barDividerImage, this->field_0x43e, barX);
+    canvas->DrawImage2D((unsigned)this->armorBarBgImage, this->field_0x440, barY);
     int hrate = e->getHullDamageRate();
     int hw = (int)((float)hrate * scale);
-    canvas->DrawRegion2D((unsigned)this->field_0x2c4, 0, 0, hw, this->field_0x44c,
+    canvas->DrawRegion2D((unsigned)this->armorBarFillImage, 0, 0, hw, this->field_0x44c,
                          (float)hw, 0, 0, 0, this->field_0x440);
 
     // -- armor regeneration overlay (element +0x220) --
-    if (this->field_0x220 != 0) {
+    if (this->hasArmorRegen != 0) {
         int arate = player->getArmorDamageRate();
         int aw = (int)((float)arate * scale);
-        canvas->DrawRegion2D((unsigned)this->field_0x2c0, 0, 0, aw, this->field_0x44c,
+        canvas->DrawRegion2D((unsigned)this->armorRegenFillImage, 0, 0, aw, this->field_0x44c,
                              (float)aw, 0, 0, 0, this->field_0x440);
     }
 }
@@ -1408,26 +1408,26 @@ void Hud::drawSecondaryWeaponPanel() {
     PlayerEgo *player = (PlayerEgo *)(lvl ? (void *)(long)lvl->getPlayer() : (void *)0);
 
     if (player != 0 && player->hasAutoTurret() != 0) {
-        bool on = player->autoTurretIsEnabled() != 0 || ((this->field_0x287 & 0x20) != 0);
-        int img = on ? this->field_0x314 : this->field_0x318;
+        bool on = player->autoTurretIsEnabled() != 0 || ((this->autoTurretFlags & 0x20) != 0);
+        int img = on ? this->autoTurretOnImage : this->autoTurretOffImage;
         canvas->DrawImage2D((unsigned)img, this->field_0x3fe, 0);
     } else {
         // no auto-turret: replay the transient "weapon changed" label timer
-        if (this->field_0x518 > 0) {
+        if (this->secondaryLabelTimer > 0) {
             void *font = *g_Hud_font;
             int screenW = *(int *)*g_Hud_screenW;
             unsigned short iconW = this->field_0x3ec;
             canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
-            canvas->DrawImage2D((unsigned)this->field_0x354, this->field_0x3ec, 0);
+            canvas->DrawImage2D((unsigned)this->eventBannerImage, this->field_0x3ec, 0);
             int textW = gCanvas->GetTextWidth(
                 (unsigned)(long)canvas, font);
             int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
             gCanvas->DrawString((unsigned)(long)canvas,
                 (void *)&this->field_0x51c, tx, 0, false);
             canvas->SetColor((unsigned)0xffffffffu);
-            int t = this->field_0x518;
+            int t = this->secondaryLabelTimer;
             if (t > 4000) t = 0;
-            this->field_0x518 = t;
+            this->secondaryLabelTimer = t;
         }
     }
 }
@@ -1444,7 +1444,7 @@ void Hud::drawMissionBanner() {
     canvas->SetColor((unsigned)0xffffffffu);
 
     // banner background frame
-    canvas->DrawImage2D((unsigned)this->field_0x324, this->field_0x438, 0);
+    canvas->DrawImage2D((unsigned)this->missionBannerImage, this->field_0x438, 0);
 }
 
 // ---- Hud::drawMessage() -------------------------------------------------------

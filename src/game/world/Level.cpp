@@ -497,13 +497,13 @@ void Level::render(int ctx) {
         particleRenderBoolPtr->render3d();
     }
     if (field_8c != 0) {
-        ((ParticleSystemManager *)(field_8c))->render3d();
+        field_8c->render3d();
     }
     if (field_98 != 0) {
         field_98->render3d();
     }
     if (field_94 != 0) {
-        ((ParticleSystemManager *)(field_94))->render3d();
+        field_94->render3d();
     }
     if (field_9c != 0) {
         field_9c->render3d();
@@ -1068,13 +1068,13 @@ int Level::init() {
         this->skybox2Mesh = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6a7c, true, 0x6a7c, true);
-        *(ParticleSystemManager **)&this->field_8c = psm;
+        this->field_8c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6ab9, true, 0xffff, false);
         this->field_9c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
         new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6aaf, true, 0xffff, false);
-        *(ParticleSystemManager **)&this->field_94 = psm;
+        this->field_94 = psm;
 
         thisptr->createSpace();
 
@@ -1394,11 +1394,9 @@ void Level::createAsteroids()
     ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->reset();
 
     // field center vector (this+0xc8): note disasm stores (oy, ox, oz) into 0xc8/0xcc/0xd0.
-    Vector center;
-    center.x = (float)oy;
-    center.y = (float)ox;
-    center.z = (float)oz;
-    *(Vector *)((char *)&this->field_c8) = center;
+    this->field_c8 = (float)oy;
+    this->field_cc = (float)ox;
+    this->field_d0 = (float)oz;
 
     Waypoint *wp = (Waypoint *)::operator new(0x138);
     new (wp) Waypoint(oz, oy, ox, 0);
@@ -1455,12 +1453,9 @@ void Level::createAsteroids()
         // reject-sample a position far enough from already-placed asteroids.
         Vector pos;
         for (;;) {
-            float cx = *(float *)&this->field_c8;
-            pos.x = (cx - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
-            float cy = *(float *)&this->field_cc;
-            pos.y = (cy - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
-            float cz = *(float *)&this->field_d0;
-            pos.z = (cz - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
+            pos.x = (this->field_c8 - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
+            pos.y = (this->field_cc - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
+            pos.z = (this->field_d0 - half) + (float)((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(spread);
             if (i == 0 || (int)i >= density)
                 break;
             bool farEnough = false;
@@ -1503,7 +1498,7 @@ void Level::createAsteroids()
         (*this->asteroids)[i]->setLevel(this);
 
         ((PlayerAsteroid *)(*this->asteroids)[i])->setAsteroidCenter(
-            Vector{*(float *)&this->field_c8, *(float *)&this->field_cc, *(float *)&this->field_d0});
+            Vector{this->field_c8, this->field_cc, this->field_d0});
     }
 
     if (prob != 0)
@@ -1847,9 +1842,9 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         }
         if (this->particleSystemMgr != nullptr) this->particleSystemMgr->update(dt);
         if (this->particleRenderBoolPtr != nullptr) this->particleRenderBoolPtr->update(dt);
-        if (this->field_8c != 0) ((ParticleSystemManager *)(intptr_t)this->field_8c)->update(dt);
+        if (this->field_8c != 0) this->field_8c->update(dt);
         if (this->field_98 != 0) (this->field_98)->update(dt);
-        if (this->field_94 != 0) ((ParticleSystemManager *)(intptr_t)this->field_94)->update(dt);
+        if (this->field_94 != 0) this->field_94->update(dt);
         if (this->field_9c != 0) (this->field_9c)->update(dt);
     }
 
@@ -3067,7 +3062,7 @@ void Level::createGasClouds()
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
         PlayerGasCloud *cloud = (PlayerGasCloud *)::operator new(0x16c);
-        new (cloud) PlayerGasCloud(kind, *(ParticleSystemManager **)&this->field_94, geo, pos);
+        new (cloud) PlayerGasCloud(kind, this->field_94, geo, pos);
         (*this->gasClouds)[i] = cloud;
         // wire the freshly built cloud to its level (KIPlayer::setLevel, virtual).
         (*this->gasClouds)[i]->setLevel(this);
@@ -3219,8 +3214,8 @@ void Level::initParticleSystems()
         (this->particleSystemMgr)->init();
     if (this->skybox2Mesh != 0)
         (this->skybox2Mesh)->init();
-    if (*(ParticleSystemManager **)&this->field_8c != 0)
-        (*(ParticleSystemManager **)&this->field_8c)->init();
+    if (this->field_8c != 0)
+        this->field_8c->init();
     if (this->field_98 != 0)
         (this->field_98)->init();
 
@@ -3247,8 +3242,8 @@ void Level::initParticleSystems()
     this->field_9c->init();
     this->particleEmitBoolPtr->init();
     this->particleRenderBoolPtr->init();
-    if (*(ParticleSystemManager **)&this->field_94 != 0)
-        (*(ParticleSystemManager **)&this->field_94)->init();
+    if (this->field_94 != 0)
+        this->field_94->init();
 }
 
 // Level::createWingmen() — spawns the player's hired escort fighters in formation.

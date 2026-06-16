@@ -105,7 +105,7 @@ void BumpShader::UpdateMeshData(Mesh *mesh, Engine *ctx)
         if (this->u14Loc >= 0)
             glUniform1f(this->u14Loc, ctx->materialShininess);
         if (this->u15Loc >= 0)
-            glUniform3fv(this->u15Loc, 1, (const float *)&ctx->vec_0x320);
+            glUniform3fv(this->u15Loc, 1, (const float *)&ctx->rimColor);
         if (this->u18Loc >= 0) {
             float *v = Vector_cast_to_float(&ctx->fogColor);
             glUniform3fv(this->u18Loc, 1, v);

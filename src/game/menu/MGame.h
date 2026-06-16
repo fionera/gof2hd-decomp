@@ -22,6 +22,7 @@ class StarMap;
 class ChoiceWindow;
 class TargetFollowCamera;
 class AEGeometry;
+class ApplicationManager;
 
 // Small opaque singletons referenced only as pointers from MGame.cpp.
 struct Music;
@@ -29,141 +30,141 @@ struct Cfg;
 
 class MGame {
 public:
-    int field_0x0;
-    unsigned field_0x4;
-    int field_0x8;
-    int field_0xc;
-    int field_0x10;
-    int field_0x14;
-    uint8_t field_0x18;
-    int field_0x1c;
-    unsigned field_0x20;
-    unsigned field_0x24;
-    unsigned field_0x28;
-    unsigned field_0x2c;
-    int field_0x30;
-    int field_0x34;
-    int field_0x40;
-    int field_0x44;
-    unsigned field_0x48;
-    int field_0x4c;
-    int field_0x50;
-    uint8_t field_0x54;
-    PlayerEgo* field_0x58;
-    int field_0x5c;
-    uint8_t field_0x5d;
-    uint8_t field_0x5e;
-    uint8_t field_0x5f;
-    uint8_t field_0x60;
-    uint8_t field_0x61;
-    AbyssEngine::String field_0x64;     // game-over message title
-    int field_0x70;
-    Hud* field_0x74;
-    Level* field_0x78;
-    LevelScript* field_0x7c;
-    Radar* field_0x80;
-    Radio* field_0x84;
-    MenuTouchWindow* field_0x88;
-    DialogueWindow* field_0x8c;
-    StarMap* field_0x90;
-    ChoiceWindow* field_0x94;
-    int field_0x98;
-    int field_0x9c;
-    int field_0xa0;
-    int field_0xa4;                     // free-cam finger-1 pos: Vector{0xa4,0xa8,0xac}
-    int field_0xa8;
-    int field_0xac;
-    int field_0xb0;                     // free-cam finger-0 pos: Vector{0xb0,0xb4,0xb8}
-    int field_0xb4;
-    int field_0xb8;
-    float field_0xbc;
-    void* field_0xc0;
-    uint8_t field_0xc1;
-    uint8_t field_0xc2;
-    uint8_t field_0xc3;
-    uint8_t field_0xc4;
-    uint8_t field_0xc5;
-    uint8_t field_0xc6;
-    uint8_t field_0xc7;
-    uint16_t field_0xc8;
-    uint8_t field_0xc9;
-    int field_0xca;
-    uint8_t field_0xcb;
-    uint8_t field_0xcc;
-    uint8_t field_0xcd;
-    uint8_t field_0xce;
-    uint8_t field_0xcf;
-    int field_0xd0;
-    uint8_t field_0xd4;
-    uint8_t field_0xd5;
-    uint8_t field_0xd6;
-    int field_0xd8;
-    uint8_t field_0xdc;
-    uint8_t field_0xdd;
-    uint8_t field_0xe0;
-    int field_0xe4;
-    int field_0xe8;
-    int field_0xec;
-    unsigned field_0xf0;
-    TargetFollowCamera* field_0xf4;
-    int field_0xf8;
-    int field_0x100;
-    int field_0x104;
-    int field_0x108;
-    int field_0x10c;
-    uint8_t field_0x110;
-    uint8_t field_0x111;
-    AEGeometry* field_0x114;
-    float field_0x118;
-    float field_0x11c;
-    int field_0x120;
-    int field_0x124;
-    int field_0x128;
-    int field_0x12c;
-    int field_0x130;
-    int field_0x134;
-    int field_0x138;
-    float field_0x13c;
-    float field_0x140;
-    float field_0x148;
-    float field_0x14c;
-    int field_0x150;
-    int field_0x154;
-    int field_0x158;
-    uint8_t field_0x15c;
-    uint8_t field_0x15d;
-    uint8_t field_0x15e;
-    int field_0x160;
-    uint8_t field_0x164;
-    int field_0x168;
-    int field_0x16c;
-    int field_0x178;
-    uint8_t field_0x17c;
-    int field_0x180;
-    int field_0x184;
-    int field_0x19c;
-    int field_0x1a0;
-    uint8_t field_0x1a6;
-    int field_0x1a8;
-    int field_0x1ac;
-    int field_0x1b0;
-    int field_0x1b4;
-    uint16_t field_0x1b8;
-    uint8_t field_0x1b9;
-    int field_0x1bc;
-    int field_0x1c0;
-    int field_0x1c4;
-    int field_0x1c8;
-    int field_0x1cc;
-    int field_0x1d0;
-    int field_0x1d4;
-    int field_0x1d8;
-    uint8_t field_0x1dd;
-    int field_0x1e0;
-    uint16_t field_0x1e4;
-    uint8_t field_0x1e6;
-    int field_0x1e8;
-    Array<AbyssEngine::String*>* field_0x1ec;  // wrapped mission-info overlay lines
+    int vtable;                         // +0x00
+    unsigned skyboxTexture;             // +0x04  cube-texture handle
+    ApplicationManager* appManager;     // +0x08  owning application module
+    int loadProgress;                   // +0x0c
+    int loadingImage;                   // +0x10  fade/splash image handle
+    int cameraMode;                     // +0x14
+    uint8_t field_0x18;                 // +0x18
+    int field_0x1c;                     // +0x1c
+    unsigned startTime;                 // +0x20
+    unsigned startTimeHigh;             // +0x24
+    unsigned lastTime;                  // +0x28
+    unsigned lastTimeHigh;              // +0x2c
+    int frameTime;                      // +0x30
+    int frameTimeHigh;                  // +0x34
+    int deltaTime;                      // +0x40
+    int field_0x44;                     // +0x44
+    unsigned elapsedTime;               // +0x48
+    int elapsedTimeHigh;                // +0x4c
+    int loadingTime;                    // +0x50
+    uint8_t active;                     // +0x54  session live / drawing enabled
+    PlayerEgo* player;                  // +0x58
+    int field_0x5c;                     // +0x5c
+    uint8_t pauseOpen;                  // +0x5d  in-flight menu/dialogue paused
+    uint8_t cutsceneActive;             // +0x5e  dialogue/cutscene running (0x5e high byte)
+    uint8_t jumpActive;                 // +0x5f  jump cinematic active
+    uint8_t gameOverActive;             // +0x60  game-over splash up
+    uint8_t campaignMission;            // +0x61
+    AbyssEngine::String gameOverTitle;  // +0x64  game-over message title
+    int field_0x70;                     // +0x70
+    Hud* hud;                           // +0x74
+    Level* level;                       // +0x78
+    LevelScript* levelScript;           // +0x7c
+    Radar* radar;                       // +0x80
+    Radio* radio;                       // +0x84
+    MenuTouchWindow* menuWindow;        // +0x88
+    DialogueWindow* dialogueWindow;     // +0x8c
+    StarMap* starMap;                   // +0x90
+    ChoiceWindow* choiceWindow;         // +0x94
+    int touch0Id;                       // +0x98  active free-cam touch id (finger 0)
+    int touch1Id;                       // +0x9c  active free-cam touch id (finger 1)
+    int menuTime;                       // +0xa0
+    int freeCamFinger1X;                // +0xa4  free-cam finger-1 pos: Vector{0xa4,0xa8,0xac}
+    int freeCamFinger1Y;                // +0xa8
+    int freeCamFinger1Z;                // +0xac
+    int freeCamFinger0X;                // +0xb0  free-cam finger-0 pos: Vector{0xb0,0xb4,0xb8}
+    int freeCamFinger0Y;                // +0xb4
+    int freeCamFinger0Z;                // +0xb8
+    float flCameraRoll;                 // +0xbc  free-cam zoom distance
+    void* activeTouchId;                // +0xc0
+    uint8_t field_0xc1;                 // +0xc1
+    uint8_t field_0xc2;                 // +0xc2
+    uint8_t field_0xc3;                 // +0xc3
+    uint8_t dockChoiceOpen;             // +0xc4
+    uint8_t autopilotMenuOpen;          // +0xc5  dock-at-station choice up
+    uint8_t field_0xc6;                 // +0xc6
+    uint8_t starMapOpen;                // +0xc7
+    uint16_t field_0xc8;                // +0xc8
+    uint8_t menuTouchOpen;              // +0xc9  pause/menu-touch window visible
+    int field_0xca;                     // +0xca
+    uint8_t touchesStream;              // +0xcb
+    uint8_t touchesStation;             // +0xcc
+    uint8_t jumpGateSoundStarted;       // +0xcd
+    uint8_t choiceWindowOpen;           // +0xce
+    uint8_t field_0xcf;                 // +0xcf
+    int choiceItemCount;                // +0xd0
+    uint8_t field_0xd4;                 // +0xd4
+    uint8_t turretMode;                 // +0xd5
+    uint8_t hudMenuOpen;                // +0xd6
+    int field_0xd8;                     // +0xd8
+    uint8_t jumpDriveActive;            // +0xdc  hyperspace cinematic in progress
+    uint8_t usingJumpDrive;             // +0xdd  charged (Khador) jump variant
+    uint8_t field_0xe0;                 // +0xe0
+    int egoJumpPosX;                    // +0xe4  jump target position Vector{0xe4,0xe8,0xec}
+    int egoJumpPosY;                    // +0xe8
+    int egoJumpPosZ;                    // +0xec
+    unsigned cameraId;                  // +0xf0  PaintCanvas camera handle
+    TargetFollowCamera* camera;         // +0xf4
+    int hudTouchFlags;                  // +0xf8  last Hud touch-result bitmask
+    int lastTapTime;                    // +0x100
+    int lastTapTimeHigh;                // +0x104
+    int lastAlignTime;                  // +0x108
+    int lastAlignTimeHigh;              // +0x10c
+    uint8_t field_0x110;                // +0x110
+    uint8_t needsRedraw;                // +0x111  redraw / fullscreen-window flag
+    AEGeometry* jumpFlash;              // +0x114  warp-tunnel geometry
+    float flShakeX;                     // +0x118  accumulated free-cam rotation X
+    float flShakeY;                     // +0x11c  accumulated free-cam rotation Y
+    int field_0x120;                    // +0x120
+    int dragLastX;                      // +0x124
+    int dragLastY;                      // +0x128
+    int dragRotIntX;                    // +0x12c
+    int dragRotIntY;                    // +0x130
+    int dragDeltaX;                     // +0x134
+    int dragDeltaY;                     // +0x138
+    float flShakeAmpX;                  // +0x13c
+    float flShakeAmpY;                  // +0x140
+    float flShakePhaseX;                // +0x148
+    float flShakePhaseY;                // +0x14c
+    int field_0x150;                    // +0x150
+    int dragStartX;                     // +0x154
+    int dragStartY;                     // +0x158
+    uint8_t freeCamDragging;            // +0x15c  free-cam pan gesture active
+    uint8_t menuOpen;                   // +0x15d  full-screen menu window open
+    uint8_t freeCamMode;                // +0x15e  cinematic / free-cam mode
+    int cinematicPrevCamMode;           // +0x160  camera mode saved before cinematic
+    uint8_t cinematicPrevLookAt;        // +0x164  look-at flag saved before cinematic
+    int flFastForwardFactor;            // +0x168
+    int timeWarpState;                  // +0x16c
+    int maneuverHoldTime;               // +0x178
+    uint8_t maneuverActive;             // +0x17c
+    int maneuverStartX;                 // +0x180
+    int maneuverStartY;                 // +0x184
+    int field_0x19c;                    // +0x19c
+    int field_0x1a0;                    // +0x1a0
+    uint8_t pauseSnapshot;              // +0x1a6  pause flag saved across suspend
+    float flFastForwardWeight;          // +0x1a8
+    int field_0x1ac;                    // +0x1ac
+    int cloakAttribute;                 // +0x1b0
+    int cloakAttributeMax;              // +0x1b4
+    uint16_t thrustActive;              // +0x1b8  drag-thrust gesture active
+    uint8_t thrustEngaged;              // +0x1b9  thrust threshold crossed
+    int field_0x1bc;                    // +0x1bc
+    int thrustStartY;                   // +0x1c0
+    int field_0x1c4;                    // +0x1c4
+    int thrustResetX;                   // +0x1c8
+    int thrustThreshold;                // +0x1cc
+    int thrustBase;                     // +0x1d0
+    int field_0x1d4;                    // +0x1d4
+    int field_0x1d8;                    // +0x1d8
+    uint8_t field_0x1dd;                // +0x1dd
+    int field_0x1e0;                    // +0x1e0
+    uint16_t field_0x1e4;               // +0x1e4
+    uint8_t field_0x1e6;                // +0x1e6
+    int gameRecord;                     // +0x1e8  saved GameRecord* for replay
+    Array<AbyssEngine::String*>* missionInfoLines;  // +0x1ec  wrapped mission-info overlay lines
 
     MGame();
     ~MGame();

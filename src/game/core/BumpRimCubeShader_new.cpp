@@ -112,7 +112,7 @@ void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine)
         if (this->uniform15 >= 0)
             glUniform1f(this->uniform15, eng->materialShininess);
         if (this->uniform16 >= 0)
-            glUniform3fv(this->uniform16, 1, (float *)&eng->vec_0x320);
+            glUniform3fv(this->uniform16, 1, (float *)&eng->rimColor);
         int loc84 = this->uniform20;
         if (loc84 >= 0) {
             float *v = (float *)&eng->fogColor;

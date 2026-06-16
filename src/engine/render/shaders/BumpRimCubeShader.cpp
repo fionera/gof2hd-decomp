@@ -98,7 +98,7 @@ void BumpRimCubeShader::UpdateMeshData(Mesh *mesh, Engine *engine)
         if (this->uSpecularPower >= 0)
             glUniform1f(this->uSpecularPower, engine->materialShininess);
         if (this->uIsGlowMat >= 0)
-            glUniform3fv(this->uIsGlowMat, 1, (float *)&engine->vec_0x320);
+            glUniform3fv(this->uIsGlowMat, 1, (float *)&engine->rimColor);
         int locFogMax = this->uFogMaxDist;
         if (locFogMax >= 0) {
             glUniform3fv(locFogMax, 1, (float *)&engine->fogColor);
