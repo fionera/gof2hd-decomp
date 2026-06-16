@@ -51,9 +51,3 @@ file(GLOB_RECURSE GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/sr
 add_library(gof2 STATIC ${GOF2_SOURCES})
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(gof2 PRIVATE -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast)
-
-# ---- host executable (Milestone 2 entry point; placeholder until the platform layer lands) -----
-add_executable(gof2_host host/main.cpp)
-target_include_directories(gof2_host PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-# Enable once the library builds cleanly and the SDL2/GLES2 platform layer exists:
-#   target_link_libraries(gof2_host PRIVATE gof2)
