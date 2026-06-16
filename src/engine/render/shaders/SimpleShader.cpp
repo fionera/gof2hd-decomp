@@ -1,7 +1,7 @@
-#include "gof2/engine/render/shaders/SimpleShader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/SimpleShader.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 // SimpleShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" void *_ZTVN11AbyssEngine12SimpleShaderE[];

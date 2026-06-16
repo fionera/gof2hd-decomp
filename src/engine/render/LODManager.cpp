@@ -1,5 +1,5 @@
-#include "gof2/engine/render/LODManager.h"
-#include "gof2/engine/render/AEGeometry.h"
+#include "engine/render/LODManager.h"
+#include "engine/render/AEGeometry.h"
 
 // Engine camera/canvas helpers (resolved against the active PaintCanvas).
 uint32_t CameraGetCurrent(void *canvas);

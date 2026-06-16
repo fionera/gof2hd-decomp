@@ -1,8 +1,8 @@
-#include "gof2/game/mission/Achievements.h"
+#include "game/mission/Achievements.h"
 Achievements* gAchievements = nullptr;  // canonical Achievements singleton
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Ship.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/ship/Ship.h"
 
 uint8_t Achievements::hasMedal(int index, int value) {
     return this->medals[index] == value;

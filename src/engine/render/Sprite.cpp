@@ -1,5 +1,5 @@
-#include "gof2/engine/render/Sprite.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "engine/render/Sprite.h"
+#include "engine/render/PaintCanvas.h"
 
 // Active 2D paint canvas the engine renders sprites into. Resolved by a later
 // externs pass; left as engine globals for now.

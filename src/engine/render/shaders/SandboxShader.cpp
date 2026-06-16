@@ -1,7 +1,7 @@
-#include "gof2/engine/render/shaders/SandboxShader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/SandboxShader.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 // SandboxShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char _ZTVN11AbyssEngine13SandboxShaderE[];

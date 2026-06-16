@@ -1,6 +1,6 @@
-#include "gof2/engine/render/FBOContainer.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/FBOContainer.h"
+#include "engine/render/Engine.h"
+#include "platform/gl.h"
 
 // Framebuffer-object GL entry points not yet declared in gof2/platform/gl.h.
 // (Signatures use the same plain-integer style as gl.h; they belong in that

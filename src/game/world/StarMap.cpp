@@ -1,11 +1,11 @@
-#include "gof2/game/world/StarMap.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/engine/core/AERandom.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/game/ui/ChoiceWindow.h"
-#include "gof2/engine/math/EaseInOut.h"
-#include "gof2/engine/audio/FModSound.h"
+#include "game/world/StarMap.h"
+#include "game/ship/Ship.h"
+#include "engine/core/AERandom.h"
+#include "game/world/Galaxy.h"
+#include "engine/render/AEGeometry.h"
+#include "game/ui/ChoiceWindow.h"
+#include "engine/math/EaseInOut.h"
+#include "engine/audio/FModSound.h"
 // FileRead.h defines stub `struct Item/Station/SolarSystem/Agent/...` that collide with
 // the real class headers pulled in below. StarMap only needs FileRead::loadStationsBinary()
 // (its result is stored into an opaque void* field), so declare a minimal FileRead here
@@ -14,7 +14,7 @@ class FileRead {
 public:
     void *loadStationsBinary();
 };
-#include "gof2/game/mission/Item.h"
+#include "game/mission/Item.h"
 // SystemPathFinder.h declares stub `struct SolarSystem`/`struct Status` that collide with
 // the real class headers. StarMap only needs the SystemPathFinder class itself, so declare a
 // minimal version here (its array params use the real SolarSystem, forward-declared below).
@@ -29,8 +29,8 @@ public:
     int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);
     Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
 };
-#include "gof2/engine/math/Transform.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "engine/math/Transform.h"
+#include "game/core/PaintCanvasClass.h"
 // Achievements.h declares checkForNewMedal(PlayerEgo*), pulling a type that no longer has a
 // forward declaration in this build. StarMap only calls Achievements::resetNewMedals(), so
 // declare a minimal version here instead of including the full header.
@@ -38,21 +38,21 @@ class Achievements {
 public:
     void resetNewMedals();
 };
-#include "gof2/engine/core/ApplicationManager.h"
+#include "engine/core/ApplicationManager.h"
 // Engine.h re-declares __aeabi_memcpy with `unsigned long n`, conflicting with AEGeometry.h's
 // `uint32_t n`. Rename Engine.h's decl during its include so both can coexist in this TU; the
 // real builtin is resolved at link time and StarMap never calls __aeabi_memcpy directly.
 #define __aeabi_memcpy __aeabi_memcpy_engine_unused
-#include "gof2/engine/render/Engine.h"
+#include "engine/render/Engine.h"
 #undef __aeabi_memcpy
-#include "gof2/engine/core/GameText.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical String
-#include "gof2/game/world/Station.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/core/String.h"
-#include "gof2/game/ui/TouchButton.h"
+#include "engine/core/GameText.h"
+#include "game/ui/Layout.h"
+#include "game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical String
+#include "game/world/Station.h"
+#include "game/world/SolarSystem.h"
+#include "game/mission/Status.h"
+#include "game/core/String.h"
+#include "game/ui/TouchButton.h"
 
 extern "C" __attribute__((visibility("hidden"))) void (*g_StarMap_render_geometry)(void *);
 extern "C" __attribute__((visibility("hidden"))) void **g_StarMap_alien_text;

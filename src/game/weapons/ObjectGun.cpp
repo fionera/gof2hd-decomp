@@ -1,18 +1,18 @@
-#include "gof2/game/weapons/ObjectGun.h"
+#include "game/weapons/ObjectGun.h"
 
 // PlayerEgo.h references LevelScript by pointer only; it previously came from the
 // (now-removed) global fwd.h, so forward-declare it here to keep that header usable.
 class LevelScript;
 class KIPlayer;
 
-#include "gof2/game/world/Level.h"
-#include "gof2/engine/math/Transform.h"
-#include "gof2/game/mission/Explosion.h"
-#include "gof2/game/ship/PlayerEgo.h"
-#include "gof2/game/weapons/Gun.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/platform/libc.h"
+#include "game/world/Level.h"
+#include "engine/math/Transform.h"
+#include "game/mission/Explosion.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/weapons/Gun.h"
+#include "game/ship/Player.h"
+#include "engine/render/AEGeometry.h"
+#include "platform/libc.h"
 
 // Byte-offset reader retained ONLY for foreign-class fields that are not modelled
 // by name in their (out-of-batch) headers: a KIPlayer status byte, a PlayerEgo

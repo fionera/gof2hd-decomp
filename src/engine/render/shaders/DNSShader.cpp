@@ -1,8 +1,8 @@
-#include "gof2/engine/render/shaders/DNSShader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/game/core/String.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/DNSShader.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "game/core/String.h"
+#include "platform/gl.h"
 
 // DNSShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" void *_ZTVN11AbyssEngine9DNSShaderE[];

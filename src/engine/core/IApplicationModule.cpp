@@ -1,5 +1,5 @@
-#include "gof2/engine/core/IApplicationModule.h"
-#include "gof2/engine/core/ApplicationManager.h"
+#include "engine/core/IApplicationModule.h"
+#include "engine/core/ApplicationManager.h"
 
 void IApplicationModule::SetApplicationManager(ApplicationManager *manager) {
     this->applicationManager = manager;

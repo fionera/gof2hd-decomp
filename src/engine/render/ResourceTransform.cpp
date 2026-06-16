@@ -1,4 +1,4 @@
-#include "gof2/engine/render/ResourceTransform.h"
+#include "engine/render/ResourceTransform.h"
 
 namespace AbyssEngine {
 

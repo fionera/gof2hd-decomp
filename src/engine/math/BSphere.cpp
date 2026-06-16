@@ -1,5 +1,5 @@
-#include "gof2/engine/math/BSphere.h"
-#include "gof2/math.h"
+#include "engine/math/BSphere.h"
+#include "mathtypes.h"
 #include <cmath>
 
 namespace AbyssEngine {

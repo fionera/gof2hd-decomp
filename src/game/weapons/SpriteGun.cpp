@@ -1,5 +1,5 @@
-#include "gof2/game/weapons/SpriteGun.h"
-#include "gof2/game/weapons/Gun.h"
+#include "game/weapons/SpriteGun.h"
+#include "game/weapons/Gun.h"
 
 // Per-instance vtable holder resolved by the engine at load time.
 __attribute__((visibility("hidden"))) extern void* SpriteGun_vtable;

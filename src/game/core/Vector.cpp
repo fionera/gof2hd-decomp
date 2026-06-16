@@ -1,4 +1,4 @@
-#include "gof2/game/core/Vector.h"
+#include "game/core/Vector.h"
 
 namespace AbyssEngine {
 namespace AEMath {

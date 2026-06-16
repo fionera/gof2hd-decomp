@@ -1,5 +1,5 @@
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/platform/libc.h"
+#include "engine/audio/FModSound.h"
+#include "platform/libc.h"
 #include <cstring>
 
 // FMOD designer-API shims. The native build links these against the FMOD runtime;

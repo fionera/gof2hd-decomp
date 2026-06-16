@@ -1,6 +1,6 @@
-#include "gof2/engine/render/ResourceTexture.h"
-#include "gof2/game/core/String.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ResourceTexture.h"
+#include "game/core/String.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

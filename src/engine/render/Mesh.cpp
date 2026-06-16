@@ -1,7 +1,7 @@
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
-#include "gof2/engine/file/AEFile.h"
+#include "engine/render/Mesh.h"
+#include "engine/math/AEMath.h"
+#include "engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
+#include "engine/file/AEFile.h"
 
 // Minimal view of the (top-level) PaintCanvas, declaring only the three mesh-table
 // primitives the billboard helpers forward to. The full gof2/PaintCanvas.h is not

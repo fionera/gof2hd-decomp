@@ -1,7 +1,7 @@
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/world/Station.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/ship/Ship.h"
+#include "game/world/Station.h"
 
 // Persistent player/game state singleton (owned elsewhere).
 extern Status* status;

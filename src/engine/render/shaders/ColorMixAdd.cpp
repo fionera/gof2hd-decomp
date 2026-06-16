@@ -1,7 +1,7 @@
-#include "gof2/engine/render/shaders/ColorMixAdd.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/ColorMixAdd.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 namespace AbyssEngine {
 

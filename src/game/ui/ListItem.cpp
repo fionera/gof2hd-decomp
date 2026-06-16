@@ -1,11 +1,11 @@
-#include "gof2/game/ui/ListItem.h"
-#include "gof2/game/mission/BluePrint.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Mission.h"
-#include "gof2/game/mission/PendingProduct.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Agent.h"
-#include "gof2/game/ship/Ship.h"
+#include "game/ui/ListItem.h"
+#include "game/mission/BluePrint.h"
+#include "game/mission/Item.h"
+#include "game/mission/Mission.h"
+#include "game/mission/PendingProduct.h"
+#include "game/mission/Status.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
 
 // Shared player/game status singleton.
 extern Status* status;

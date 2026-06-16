@@ -1,6 +1,6 @@
-#include "gof2/game/ui/ScrollTouchBox.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "game/ui/ScrollTouchBox.h"
+#include "game/core/String.h"
+#include "engine/render/PaintCanvas.h"
 
 int GameText_getLanguage();
 void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);

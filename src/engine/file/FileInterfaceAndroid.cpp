@@ -1,6 +1,6 @@
-#include "gof2/engine/file/FileInterfaceAndroid.h"
-#include "gof2/game/core/String.h"
-#include "gof2/platform/libc.h"
+#include "engine/file/FileInterfaceAndroid.h"
+#include "game/core/String.h"
+#include "platform/libc.h"
 #include <cstdio>
 #include <new>
 

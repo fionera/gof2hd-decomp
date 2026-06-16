@@ -1,10 +1,10 @@
-#include "gof2/engine/render/shaders/PulseShader.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/core/ApplicationManager.h"
-#include "gof2/platform/gl.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/shaders/PulseShader.h"
+#include "game/core/String.h"
+#include "engine/render/Mesh.h"
+#include "engine/render/Engine.h"
+#include "engine/core/ApplicationManager.h"
+#include "platform/gl.h"
+#include "platform/libc.h"
 
 // PulseShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" void *_ZTVN11AbyssEngine11PulseShaderE[];

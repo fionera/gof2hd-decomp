@@ -1,9 +1,9 @@
-#include "gof2/game/mission/Objective.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/world/Route.h"
-#include "gof2/game/world/Waypoint.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/game/ship/Player.h"
+#include "game/mission/Objective.h"
+#include "game/world/Level.h"
+#include "game/world/Route.h"
+#include "game/world/Waypoint.h"
+#include "game/ship/KIPlayer.h"
+#include "game/ship/Player.h"
 
 Objective::Objective(int type, int value, Level* level)
 {

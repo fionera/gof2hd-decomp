@@ -1,11 +1,11 @@
-#include "gof2/game/world/Station.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/game/mission/Mission.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/Agent.h"
-#include "gof2/game/core/String.h"
+#include "game/world/Station.h"
+#include "game/ship/Ship.h"
+#include "game/world/Galaxy.h"
+#include "game/mission/Mission.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/ship/Agent.h"
+#include "game/core/String.h"
 
 // Stations that hide a blueprint / host a pirate base. The discovery flags and the
 // alien-attack target are reached through the game's persistent-state singleton

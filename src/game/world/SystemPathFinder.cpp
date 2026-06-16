@@ -1,4 +1,4 @@
-#include "gof2/game/world/SystemPathFinder.h"
+#include "game/world/SystemPathFinder.h"
 
 // Stateless A* helper: the open/closed sets used by search() are created and
 // released within each call, so construction and destruction do nothing.

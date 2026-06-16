@@ -1,8 +1,8 @@
-#include "gof2/game/weapons/SentryGun.h"
-#include "gof2/game/weapons/Gun.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/game/ship/Player.h"
+#include "game/weapons/SentryGun.h"
+#include "game/weapons/Gun.h"
+#include "game/world/Level.h"
+#include "game/ship/KIPlayer.h"
+#include "game/ship/Player.h"
 
 // SentryGun::SentryGun(Gun*, int, int, int, Level*).
 // Runs the ObjectGun base constructor (with reordered arguments) and then seeds the

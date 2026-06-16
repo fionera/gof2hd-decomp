@@ -1,4 +1,4 @@
-#include "gof2/engine/file/ConfigReader.h"
+#include "engine/file/ConfigReader.h"
 
 namespace AbyssEngine {
 

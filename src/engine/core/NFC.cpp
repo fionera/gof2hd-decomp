@@ -1,4 +1,4 @@
-#include "gof2/engine/core/NFC.h"
+#include "engine/core/NFC.h"
 
 // Global JNI slots shared by every bridge entry point.
 extern void **nfc_env __attribute__((visibility("hidden")));

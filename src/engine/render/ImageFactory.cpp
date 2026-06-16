@@ -1,7 +1,7 @@
-#include "gof2/engine/render/ImageFactory.h"
-#include "gof2/engine/render/ImagePart.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/engine/render/Sprite.h"
+#include "engine/render/ImageFactory.h"
+#include "engine/render/ImagePart.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/render/Sprite.h"
 
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 

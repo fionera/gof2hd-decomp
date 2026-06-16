@@ -1,4 +1,4 @@
-#include "gof2/engine/core/KeyFrame.h"
+#include "engine/core/KeyFrame.h"
 
 namespace AbyssEngine {
 

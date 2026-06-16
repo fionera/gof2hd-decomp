@@ -1,6 +1,6 @@
-#include "gof2/game/ship/Agent.h"
-#include "gof2/game/core/String.h"
-#include "gof2/game/mission/Mission.h"
+#include "game/ship/Agent.h"
+#include "game/core/String.h"
+#include "game/mission/Mission.h"
 
 using AbyssEngine::String;
 

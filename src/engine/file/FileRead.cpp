@@ -1,19 +1,19 @@
-#include "gof2/engine/file/FileRead.h"
+#include "engine/file/FileRead.h"
 
 // Agent.h references Mission only through pointers but does not forward-declare it; provide the
 // declaration here so this translation unit stays self-sufficient.
 class Mission;
 
-#include "gof2/engine/core/AERandom.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/ship/Agent.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/world/NewsItem.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/world/SpacePoint.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/world/Wanted.h"
+#include "engine/core/AERandom.h"
+#include "engine/math/AEMath.h"
+#include "game/mission/Item.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
+#include "game/world/NewsItem.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/SpacePoint.h"
+#include "game/world/Station.h"
+#include "game/world/Wanted.h"
 
 #include <cstring>
 

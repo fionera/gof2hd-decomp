@@ -1,5 +1,5 @@
-#include "gof2/engine/render/Sparks.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "engine/render/Sparks.h"
+#include "engine/render/PaintCanvas.h"
 
 namespace AbyssEngine { namespace AERandom { int nextInt(void *rng, int bound); } }
 

@@ -1,7 +1,7 @@
-#include "gof2/game/core/BumpRimCubeShader_new.h"
-#include "gof2/platform/gl.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
+#include "game/core/BumpRimCubeShader_new.h"
+#include "platform/gl.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
 
 extern "C" char _ZTVN11AbyssEngine21BumpRimCubeShader_newE[];
 

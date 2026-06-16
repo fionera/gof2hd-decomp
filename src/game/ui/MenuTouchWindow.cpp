@@ -1,6 +1,6 @@
-#include "gof2/game/ui/MenuTouchWindow.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/engine/render/Engine.h"
+#include "game/ui/MenuTouchWindow.h"
+#include "game/core/PaintCanvasClass.h"
+#include "engine/render/Engine.h"
 
 extern void *g_PaintCanvas;
 

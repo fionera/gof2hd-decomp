@@ -1,11 +1,11 @@
-#include "gof2/game/core/AutoPilotList.h"   // also pulls in SolarSystem.h (String + SolarSystem)
-#include "gof2/engine/core/GameText.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/ship/PlayerEgo.h"
-#include "gof2/game/world/Route.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "game/core/AutoPilotList.h"   // also pulls in SolarSystem.h (String + SolarSystem)
+#include "engine/core/GameText.h"
+#include "game/ui/Layout.h"
+#include "game/world/Level.h"
+#include "game/mission/Status.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/world/Route.h"
+#include "game/core/PaintCanvasClass.h"
 
 // Station is declared minimally here rather than via gof2/Station.h: that header defines
 // String unconditionally, which would clash with the identical definition already in scope

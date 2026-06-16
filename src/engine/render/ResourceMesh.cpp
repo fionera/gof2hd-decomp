@@ -1,6 +1,6 @@
-#include "gof2/engine/render/ResourceMesh.h"
-#include "gof2/game/core/String.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ResourceMesh.h"
+#include "game/core/String.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

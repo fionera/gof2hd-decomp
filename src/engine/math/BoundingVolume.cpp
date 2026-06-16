@@ -1,5 +1,5 @@
-#include "gof2/engine/math/BoundingVolume.h"
-#include "gof2/engine/math/AEMath.h"
+#include "engine/math/BoundingVolume.h"
+#include "engine/math/AEMath.h"
 
 namespace AEMath = AbyssEngine::AEMath;
 

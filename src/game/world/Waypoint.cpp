@@ -1,5 +1,5 @@
-#include "gof2/game/world/Waypoint.h"
-#include "gof2/game/ship/Player.h"
+#include "game/world/Waypoint.h"
+#include "game/ship/Player.h"
 
 void Waypoint::setActive(bool active)
 {

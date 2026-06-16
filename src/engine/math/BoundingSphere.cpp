@@ -1,5 +1,5 @@
-#include "gof2/engine/math/BoundingSphere.h"
-#include "gof2/engine/math/AEMath.h"
+#include "engine/math/BoundingSphere.h"
+#include "engine/math/AEMath.h"
 
 #include <new>
 

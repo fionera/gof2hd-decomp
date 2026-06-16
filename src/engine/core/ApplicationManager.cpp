@@ -1,12 +1,12 @@
-#include "gof2/engine/core/ApplicationManager.h"
+#include "engine/core/ApplicationManager.h"
 ApplicationManager* gAppManager = nullptr;  // canonical ApplicationManager singleton
-#include "gof2/engine/audio/AESoundRessource.h"
-#include "gof2/engine/core/IApplicationModule.h"
-#include "gof2/engine/file/ConfigReader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/game/core/CheatHandler.h"
-#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
-#include "gof2/externs.h"                        // engine g_* globals / host glue
+#include "engine/audio/AESoundRessource.h"
+#include "engine/core/IApplicationModule.h"
+#include "engine/file/ConfigReader.h"
+#include "engine/render/Engine.h"
+#include "game/core/CheatHandler.h"
+#include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "externs.h"                        // engine g_* globals / host glue
 
 // PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
 // underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight

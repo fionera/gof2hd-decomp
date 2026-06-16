@@ -1,12 +1,12 @@
-#include "gof2/game/weapons/RepairBeam.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/platform/libc.h"
+#include "game/weapons/RepairBeam.h"
+#include "engine/render/AEGeometry.h"
+#include "game/core/PaintCanvasClass.h"
+#include "game/ship/Ship.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/world/Level.h"
+#include "game/ship/KIPlayer.h"
+#include "platform/libc.h"
 
 using AbyssEngine::AEMath::Vector;
 

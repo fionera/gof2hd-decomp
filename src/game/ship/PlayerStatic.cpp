@@ -1,7 +1,7 @@
-#include "gof2/game/ship/PlayerStatic.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/engine/render/AEGeometry.h"
+#include "game/ship/PlayerStatic.h"
+#include "game/ship/KIPlayer.h"
+#include "game/ship/Player.h"
+#include "engine/render/AEGeometry.h"
 
 // PlayerStatic(playerId, geometry, x, y, z): builds the underlying Player ship,
 // constructs the KIPlayer base around it and records the integer fallback

@@ -1,6 +1,6 @@
-#include "gof2/game/world/Standing.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/SolarSystem.h"
+#include "game/world/Standing.h"
+#include "game/mission/Status.h"
+#include "game/world/SolarSystem.h"
 
 // Allocate a 2-int standings array {0x1e, 0}; currentRace = -1.
 Standing::Standing() {

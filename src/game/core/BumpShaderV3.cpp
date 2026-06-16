@@ -1,13 +1,13 @@
-#include "gof2/game/core/BumpShaderV3.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "game/core/BumpShaderV3.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 // externs.h references a global `Engine` (formerly supplied by the removed fwd.h); the engine
 // type is AbyssEngine::Engine and externs only takes it by pointer, so an incomplete decl
 // satisfies it here.
 class Engine;
-#include "gof2/externs.h"
+#include "externs.h"
 
 // BumpShaderV3's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char _ZTVN11AbyssEngine12BumpShaderV3E[];

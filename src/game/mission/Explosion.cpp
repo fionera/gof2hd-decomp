@@ -1,11 +1,11 @@
-#include "gof2/game/mission/Explosion.h"
-#include "gof2/game/ship/TargetFollowCamera.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/engine/math/Transform.h"
-#include "gof2/engine/core/AERandom.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/platform/libc.h"
+#include "game/mission/Explosion.h"
+#include "game/ship/TargetFollowCamera.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/audio/FModSound.h"
+#include "engine/math/Transform.h"
+#include "engine/core/AERandom.h"
+#include "game/core/PaintCanvasClass.h"
+#include "platform/libc.h"
 
 // Engine math free-functions (ARM-ABI pointer-output variants used by the recovered code).
 namespace AbyssEngine { namespace AEMath {

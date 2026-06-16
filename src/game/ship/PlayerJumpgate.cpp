@@ -1,11 +1,11 @@
-#include "gof2/game/ship/PlayerJumpgate.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/engine/math/Transform.h"
-#include "gof2/engine/math/BoundingSphere.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "game/ship/PlayerJumpgate.h"
+#include "game/ship/Player.h"
+#include "game/world/SolarSystem.h"
+#include "engine/render/AEGeometry.h"
+#include "game/mission/Status.h"
+#include "engine/math/Transform.h"
+#include "engine/math/BoundingSphere.h"
+#include "game/core/PaintCanvasClass.h"
 
 // Game singletons (raw engine globals, kept as externs).
 extern void* g_PaintCanvas;   // PaintCanvas singleton pointer

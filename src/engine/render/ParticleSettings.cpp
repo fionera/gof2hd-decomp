@@ -1,5 +1,5 @@
-#include "gof2/engine/render/ParticleSettings.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ParticleSettings.h"
+#include "platform/libc.h"
 
 ParticleSettings::ParticleSettings() {
     // The 48 embedded ParticleSet::name Strings default-construct automatically.

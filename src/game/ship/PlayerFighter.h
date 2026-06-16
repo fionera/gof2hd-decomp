@@ -1,0 +1,170 @@
+#ifndef GOF2_PLAYERFIGHTER_H
+#define GOF2_PLAYERFIGHTER_H
+#include "common.h"
+#include "mathtypes.h"
+#include "game/ship/KIPlayer.h"
+
+// A player-controllable / wingman fighter: a KIPlayer with route following, barrel-roll
+// banking, cloaking, push impulses, loot/crate handling and an explosion effect.
+
+struct BoundingVolume;
+class AEGeometry;
+class Level;
+
+class PlayerFighter : public KIPlayer {
+public:
+    using Vector = AbyssEngine::AEMath::Vector;
+    using Matrix = AbyssEngine::AEMath::Matrix;
+
+    int32_t player;
+    int32_t geometry;
+    int32_t subGeometry;
+    uint8_t field_0x24;
+    signed char field_0x25;
+    int32_t wingmanCommand;
+    Vector renderPosition;              // world position synced from geometry each frame
+    int32_t field_0x38;
+    signed char field_0x43;
+    uint8_t field_0x4c;
+    Array<int>* lootList;               // loot item-id list (or mission-crate item)
+    int32_t level;
+    int32_t posX;
+    int32_t posY;
+    int32_t posZ;
+    uint8_t missionCrateLost;
+    uint8_t missionCrateCaptured;
+    uint8_t crateLost;
+    int32_t routeClone;
+    signed char field_0x74;
+    int32_t field_0x78;
+    int32_t field_0x80;
+    int32_t field_0x84;
+    int32_t state;
+    Vector resetVecA;                   // zeroed on reset() (transient steering vector)
+    uint8_t isMissionCrate;
+    int32_t deathTimer;
+    signed char field_0xdc;
+    int32_t field_0xe4;
+    int32_t field_0xf0;
+    uint8_t field_0xf5;
+    int32_t fov;
+    signed char rollActive;
+    int32_t pushTimer;
+    int32_t pushDuration;
+    Vector pushNormal;                  // unit push direction
+    Vector pushImpulse;                 // scaled push offset
+    void* explosion;
+    int32_t field_0x128;
+    uint8_t field_0x12c;
+    short field_0x12d;
+    uint8_t field_0x12e;
+    signed char field_0x12f;
+    int32_t field_0x130;
+    int32_t field_0x134;
+    int32_t field_0x138;
+    signed char field_0x13c;
+    uint8_t field_0x13d;
+    signed char field_0x13e;
+    int32_t field_0x140;
+    void* route;
+    int32_t field_0x148;
+    int32_t commandRoute;
+    Array<BoundingVolume*>* boundingVolumes;  // active bounding volumes (owned)
+    void* trail;
+    Vector workingPosition;             // current logical position (spawn-relative)
+    Vector resetVecB;                   // zeroed on reset() (transient steering vector)
+    Vector resetVecC;                   // zeroed on reset() (transient steering vector)
+    int32_t field_0x1a0;
+    float rotate;
+    float shootError;
+    float speed;
+    int32_t field_0x1b0;
+    int32_t boostProb;
+    int32_t field_0x1b8;
+    int32_t field_0x1c0;
+    int32_t field_0x1c4;
+    int32_t field_0x1c8;
+    int32_t deltaTime;
+    int32_t deltaTimeHi;
+    int32_t hitpoints;
+    int32_t field_0x1dc;
+    signed char field_0x1e0;
+    int32_t field_0x1e4;
+    float currentSpeed;
+    int32_t field_0x1ec;
+    float currentRotate;
+    short field_0x1f4;
+    int32_t field_0x1f8;
+    signed char field_0x1fc;
+    int32_t field_0x200;
+    int32_t field_0x204;
+    int32_t field_0x208;
+    int32_t field_0x20c;
+    int32_t field_0x210;
+    int32_t field_0x214;
+    Matrix easeBaseMatrix;              // matrix constructed in ctor (ease/transform base)
+    Matrix rollMatrix;                  // barrel-roll bank matrix (built in roll())
+    signed char field_0x254;
+    signed char field_0x255;
+    int32_t field_0x294;
+    int32_t field_0x298;
+    int32_t field_0x29c;
+    int32_t field_0x2a0;
+    int32_t field_0x2a4;
+    int32_t field_0x2a8;
+    int32_t field_0x2ac;
+    int32_t field_0x2b0;
+    signed char field_0x2b4;
+    void* easeMatrix;
+    int32_t field_0x2c4;
+    int32_t cloakTimer;
+    int32_t field_0x2c9;
+    int32_t cloakDuration;
+    int32_t field_0x2cd;
+    uint8_t cloakActive;
+    int32_t cloakCooldown;
+    uint8_t cloakingPossible;
+    signed char field_0x2d9;
+    uint32_t cloakMaterial;
+    int32_t field_0x2e0;
+    uint8_t aiDisabled;
+    int32_t field_0x2e8;
+
+    PlayerFighter(int faction, int wingmanCmd, void *player, void *geom,
+                  float x, float y, float z, int active);
+    ~PlayerFighter();
+
+    void awake();
+    void reset();
+    void revive();
+    void cloak(int dur, bool b);
+    int collide(float x, float y, float z);
+    void handleCloaking();
+    uint8_t hasCrateCaptured();
+    uint8_t hasCrateLost();
+    uint8_t hasMissionCrateCaptured();
+    uint8_t hasMissionCrateLost();
+    void initPush(void *target, int radius);
+    int outerCollide(float x, float y, float z);
+    void push(int dt);
+    void removeTrail();
+    void render();
+    void roll(int angle);
+    void setAIDisabled(bool v);
+    void setBV_a(Array<BoundingVolume *> *v);
+    void setBV_b(BoundingVolume *bv);
+    void setBoostProb(int v);
+    void setCloakingPossible(bool v);
+    void setExhaustVisible(bool vis);
+    void setLevel(Level *lvl);
+    void setMissionCrate(bool on);
+    void setPosition3(int x, int y, int z);
+    void setPosition_ref(const Vector &v);
+    void setRotate(int v);
+    void setShootError(int v);
+    void setShipGroup(AEGeometry *geom, int group, bool flag);
+    void setSpeed(float v);
+    void setWingmanCommand(int cmd, KIPlayer *target);
+    void update(int dt);
+};
+#endif

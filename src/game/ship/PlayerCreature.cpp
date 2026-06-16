@@ -1,12 +1,12 @@
-#include "gof2/game/ship/PlayerCreature.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/engine/render/ParticleSystemManager.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/ship/PlayerJunk.h"
-#include "gof2/platform/libc.h"
+#include "game/ship/PlayerCreature.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/audio/FModSound.h"
+#include "game/world/Level.h"
+#include "engine/render/ParticleSystemManager.h"
+#include "game/ship/KIPlayer.h"
+#include "game/ship/Player.h"
+#include "game/ship/PlayerJunk.h"
+#include "platform/libc.h"
 
 // Tuning tables and shared state shipped alongside the creature logic.
 extern int PlayerCreature_weightTable[];

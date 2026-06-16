@@ -1,4 +1,4 @@
-#include "gof2/game/core/CheatCode.h"
+#include "game/core/CheatCode.h"
 
 namespace AbyssEngine {
 

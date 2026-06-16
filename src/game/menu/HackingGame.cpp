@@ -1,7 +1,7 @@
-#include "gof2/game/menu/HackingGame.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/engine/core/AERandom.h"
+#include "game/menu/HackingGame.h"
+#include "engine/audio/FModSound.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/core/AERandom.h"
 
 HackingGame::~HackingGame() {}
 

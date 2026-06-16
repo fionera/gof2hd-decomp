@@ -1,4 +1,4 @@
-#include "gof2/engine/render/Camera.h"
+#include "engine/render/Camera.h"
 
 namespace AbyssEngine {
 

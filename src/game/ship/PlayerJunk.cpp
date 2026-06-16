@@ -1,8 +1,8 @@
-#include "gof2/game/ship/PlayerJunk.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/engine/render/ParticleSystemManager.h"
+#include "game/ship/PlayerJunk.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/audio/FModSound.h"
+#include "game/world/Level.h"
+#include "engine/render/ParticleSystemManager.h"
 
 // Player is dereferenced here only for getHitpoints()/setActive(); we declare a
 // minimal local view of those two methods rather than pull in the full Player.h

@@ -2,19 +2,19 @@
 // visible before that header is parsed.
 class Engine;
 
-#include "gof2/externs.h"
-#include "gof2/platform/gl.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/engine/render/FBOContainer.h"
-#include "gof2/engine/render/Engine.h"
+#include "externs.h"
+#include "platform/gl.h"
+#include "engine/math/AEMath.h"
+#include "engine/render/FBOContainer.h"
+#include "engine/render/Engine.h"
 Engine* gEngine = nullptr;            // canonical Engine singleton
-#include "gof2/engine/core/ApplicationManager.h"
-#include "gof2/engine/core/NFC.h"
-#include "gof2/engine/file/AEFile.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/engine/render/ShaderBaseStruct.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/core/NFC.h"
+#include "engine/file/AEFile.h"
+#include "game/core/String.h"
+#include "engine/render/Mesh.h"
+#include "game/core/PaintCanvasClass.h"
+#include "engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
 
 using AbyssEngine::FBOContainer;

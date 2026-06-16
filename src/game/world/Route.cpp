@@ -1,5 +1,5 @@
-#include "gof2/game/world/Route.h"
-#include "gof2/game/world/Waypoint.h"
+#include "game/world/Route.h"
+#include "game/world/Waypoint.h"
 
 // Route::waypointDefined() -> whether the waypoint array has been allocated.
 bool Route::waypointDefined() {

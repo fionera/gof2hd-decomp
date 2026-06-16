@@ -1,5 +1,5 @@
-#include "gof2/engine/render/SimpleMeshMerger.h"
-#include "gof2/engine/render/Mesh.h"
+#include "engine/render/SimpleMeshMerger.h"
+#include "engine/render/Mesh.h"
 
 namespace AbyssEngine {
 

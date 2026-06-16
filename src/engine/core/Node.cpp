@@ -1,4 +1,4 @@
-#include "gof2/engine/core/Node.h"
+#include "engine/core/Node.h"
 
 Node::Node(int value)
 {

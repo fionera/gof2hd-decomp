@@ -1,10 +1,10 @@
-#include "gof2/game/ship/PlayerAsteroid.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/mission/Explosion.h"
-#include "gof2/game/ship/KIPlayer.h"
-#include "gof2/game/ship/Player.h"
+#include "game/ship/PlayerAsteroid.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/math/AEMath.h"
+#include "game/world/Level.h"
+#include "game/mission/Explosion.h"
+#include "game/ship/KIPlayer.h"
+#include "game/ship/Player.h"
 
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;

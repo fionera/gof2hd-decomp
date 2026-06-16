@@ -1,8 +1,8 @@
-#include "gof2/game/ui/ScrollTouchWindow.h"
-#include "gof2/game/ui/ScrollTouchBox.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "game/ui/ScrollTouchWindow.h"
+#include "game/ui/ScrollTouchBox.h"
+#include "game/ui/Layout.h"
+#include "game/core/String.h"
+#include "engine/render/PaintCanvas.h"
 
 using AbyssEngine::PaintCanvas;
 using AbyssEngine::String;

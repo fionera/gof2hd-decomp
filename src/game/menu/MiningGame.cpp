@@ -1,10 +1,10 @@
-#include "gof2/game/menu/MiningGame.h"
+#include "game/menu/MiningGame.h"
 
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/game/core/String.h"
-#include "gof2/game/ui/Hud.h"
-#include "gof2/engine/render/MarqueeImage.h"
-#include "gof2/engine/render/Sprite.h"
+#include "game/core/PaintCanvasClass.h"
+#include "game/core/String.h"
+#include "game/ui/Hud.h"
+#include "engine/render/MarqueeImage.h"
+#include "engine/render/Sprite.h"
 
 using AbyssEngine::String;
 

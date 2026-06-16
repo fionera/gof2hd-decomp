@@ -1,8 +1,8 @@
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/core/String.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/Galaxy.h"
+#include "game/world/Station.h"
+#include "game/mission/Status.h"
+#include "game/core/String.h"
 
 using AbyssEngine::String;
 

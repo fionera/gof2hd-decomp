@@ -1,9 +1,9 @@
-#include "gof2/game/mission/BluePrint.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/core/String.h"
+#include "game/mission/BluePrint.h"
+#include "game/world/Galaxy.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/world/Station.h"
+#include "game/core/String.h"
 
 using AbyssEngine::String;
 

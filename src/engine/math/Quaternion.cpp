@@ -1,4 +1,4 @@
-#include "gof2/engine/math/Quaternion.h"
+#include "engine/math/Quaternion.h"
 #include <arm_neon.h>
 #include <cmath>
 

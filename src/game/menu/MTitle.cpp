@@ -1,9 +1,9 @@
-#include "gof2/game/menu/MTitle.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/engine/core/ApplicationManager.h"
-#include "gof2/engine/render/ImageFactory.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "game/menu/MTitle.h"
+#include "engine/audio/FModSound.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/render/ImageFactory.h"
+#include "game/ui/Layout.h"
+#include "game/core/PaintCanvasClass.h"
 
 // Canonical render canvas singleton. PaintCanvasClass.h defines its own
 // PaintCanvas (to dodge Mesh/Transform clashes) and does not declare gCanvas,

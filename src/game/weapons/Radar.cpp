@@ -1,6 +1,6 @@
-#include "gof2/game/weapons/Radar.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/platform/libc.h"
+#include "game/weapons/Radar.h"
+#include "engine/render/PaintCanvas.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

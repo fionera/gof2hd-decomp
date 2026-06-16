@@ -1,7 +1,7 @@
-#include "gof2/engine/render/shaders/TextureShader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/TextureShader.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 // TextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" void *g_TextureShader_vtable;

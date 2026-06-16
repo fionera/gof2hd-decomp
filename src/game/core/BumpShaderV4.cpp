@@ -1,7 +1,7 @@
-#include "gof2/game/core/BumpShaderV4.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "game/core/BumpShaderV4.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 namespace AbyssEngine {
 

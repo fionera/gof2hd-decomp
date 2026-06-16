@@ -1,9 +1,9 @@
-#include "gof2/game/mission/Mission.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/engine/core/GameText.h"
-#include "gof2/game/world/Station.h"
+#include "game/mission/Mission.h"
+#include "game/world/Galaxy.h"
+#include "game/world/SolarSystem.h"
+#include "game/mission/Status.h"
+#include "engine/core/GameText.h"
+#include "game/world/Station.h"
 
 // Engine singletons and the Mission vtable base, accessed via the project's
 // hidden pc-relative globals.

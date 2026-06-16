@@ -1,8 +1,8 @@
-#include "gof2/engine/render/ShaderBaseStruct.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/file/AEFile.h"
-#include "gof2/platform/gl.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ShaderBaseStruct.h"
+#include "game/core/String.h"
+#include "engine/file/AEFile.h"
+#include "platform/gl.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

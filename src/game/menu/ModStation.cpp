@@ -1,33 +1,33 @@
-#include "gof2/game/menu/ModStation.h"
-#include "gof2/game/core/Globals.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
-#include "gof2/engine/math/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
+#include "game/menu/ModStation.h"
+#include "game/core/Globals.h"
+#include "game/ship/Ship.h"
+#include "engine/audio/FModSound.h"
+#include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
+#include "engine/math/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
 #include <new>
-#include "gof2/game/ui/ChoiceWindow.h"
-#include "gof2/game/core/CutScene.h"
-#include "gof2/engine/math/EaseInOut.h"
-#include "gof2/engine/math/EaseInOutMatrix.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/ui/MissionsWindow.h"
-#include "gof2/game/world/NewsTicker.h"
+#include "game/ui/ChoiceWindow.h"
+#include "game/core/CutScene.h"
+#include "engine/math/EaseInOut.h"
+#include "engine/math/EaseInOutMatrix.h"
+#include "game/mission/Item.h"
+#include "game/ui/MissionsWindow.h"
+#include "game/world/NewsTicker.h"
 // Radio.h omitted: it embeds conflicting inline defs of Layout/ImageFactory/Agent.
 // ModStation only needs Radio::lastMessageShown(); supply a minimal decl instead.
 struct Radio { unsigned char lastMessageShown(); };
-#include "gof2/game/world/StarMap.h"
-#include "gof2/game/mission/Achievements.h"
-#include "gof2/engine/core/ApplicationManager.h"
-#include "gof2/game/ui/DialogueWindow.h"
-#include "gof2/engine/render/ImageFactory.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/mission/RecordHandler.h"
-#include "gof2/game/menu/SpaceLounge.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/ui/TouchButton.h"
-#include "gof2/game/ui/MenuTouchWindow.h"
+#include "game/world/StarMap.h"
+#include "game/mission/Achievements.h"
+#include "engine/core/ApplicationManager.h"
+#include "game/ui/DialogueWindow.h"
+#include "engine/render/ImageFactory.h"
+#include "game/ui/Layout.h"
+#include "game/mission/RecordHandler.h"
+#include "game/menu/SpaceLounge.h"
+#include "game/world/Station.h"
+#include "game/mission/Status.h"
+#include "game/world/SolarSystem.h"
+#include "game/ui/TouchButton.h"
+#include "game/ui/MenuTouchWindow.h"
 
 // HangarWindow.h and StatusWindow.h are intentionally NOT included: both leak their
 // converted methods into the `AbyssEngine` namespace as free functions (a decompiler

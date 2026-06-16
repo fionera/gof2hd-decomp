@@ -1,11 +1,11 @@
-#include "gof2/game/core/HangarList.h"
-#include "gof2/game/mission/BluePrint.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/engine/core/GameText.h"
-#include "gof2/game/ui/ListItem.h"
-#include "gof2/game/ship/Ship.h"
+#include "game/core/HangarList.h"
+#include "game/mission/BluePrint.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/world/Station.h"
+#include "engine/core/GameText.h"
+#include "game/ui/ListItem.h"
+#include "game/ship/Ship.h"
 
 // BluePrint::getIngredientList() is private; this engine accessor exposes the
 // produced ingredient-index list to the hangar UI (same shim HangarWindow uses).

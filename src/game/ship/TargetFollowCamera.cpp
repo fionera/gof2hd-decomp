@@ -1,7 +1,7 @@
-#include "gof2/game/ship/TargetFollowCamera.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/platform/libc.h"
+#include "game/ship/TargetFollowCamera.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/render/PaintCanvas.h"
+#include "platform/libc.h"
 
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;

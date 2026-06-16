@@ -31,8 +31,8 @@ endif()
 # decompilation of the Android libgof2hdaa.so. This replaces the original byte-matching ARM decomp
 # (which lived under src/recovered, work/, tools/ and was driven by a Makefile + NDK toolchain) —
 # that work is preserved in git history. Layout:
-#   include/gof2/  shared foundation (common.h/math.h/fwd.h) + one real-struct header per class
-#   src/           one .cpp per class (struct cleanup in progress: not every TU compiles yet)
+#   src/           one .cpp + its co-located .h per class; shared foundation (common.h/math.h/
+#                  externs.h, platform/) at the tree root. Include paths are relative to src/.
 #   host/          macOS entry point + platform layer (Milestone 2)
 #   tools/         transformation/build helpers (rewrite_body.py, reconcile.py, build.sh, ...)
 
@@ -49,11 +49,11 @@ endif()
 # warnings are the int<->pointer casts inherent to the recovered 32-bit handle fields stored as int.
 file(GLOB_RECURSE GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(gof2 STATIC ${GOF2_SOURCES})
-target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(gof2 PRIVATE -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast)
 
 # ---- host executable (Milestone 2 entry point; placeholder until the platform layer lands) -----
 add_executable(gof2_host host/main.cpp)
-target_include_directories(gof2_host PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(gof2_host PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 # Enable once the library builds cleanly and the SDL2/GLES2 platform layer exists:
 #   target_link_libraries(gof2_host PRIVATE gof2)

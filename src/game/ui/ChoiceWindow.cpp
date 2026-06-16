@@ -1,13 +1,13 @@
-#include "gof2/game/ui/ChoiceWindow.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/ui/ScrollTouchWindow.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/mission/Achievements.h"
-#include "gof2/game/core/Globals.h"
-#include "gof2/engine/core/GameText.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/ui/TouchButton.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "game/ui/ChoiceWindow.h"
+#include "engine/audio/FModSound.h"
+#include "game/ui/ScrollTouchWindow.h"
+#include "game/mission/Status.h"
+#include "game/mission/Achievements.h"
+#include "game/core/Globals.h"
+#include "engine/core/GameText.h"
+#include "game/ui/Layout.h"
+#include "game/ui/TouchButton.h"
+#include "engine/render/PaintCanvas.h"
 
 // Foreign helpers defined in the engine and linked elsewhere. The line-array builder
 // and the TouchButton position read-back have no modelled member entry points, and the

@@ -1,4 +1,4 @@
-#include "gof2/game/core/Matrix.h"
+#include "game/core/Matrix.h"
 
 // AbyssEngine::AEMath::Matrix::Matrix()
 // Initializes to the identity affine transform. The diagonal entries (0x00, 0x14, 0x38)

@@ -1,4 +1,4 @@
-#include "gof2/engine/render/AMeshMerger.h"
+#include "engine/render/AMeshMerger.h"
 
 // Draw the accumulated meshes onto the canvas using the configured transform.
 void AMeshMerger::render()

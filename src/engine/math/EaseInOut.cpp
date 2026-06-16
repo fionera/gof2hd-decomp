@@ -1,4 +1,4 @@
-#include "gof2/engine/math/EaseInOut.h"
+#include "engine/math/EaseInOut.h"
 
 namespace AbyssEngine {
 

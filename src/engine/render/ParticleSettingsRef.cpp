@@ -1,5 +1,5 @@
-#include "gof2/engine/render/ParticleSettingsRef.h"
-#include "gof2/engine/render/ParticleSettings.h"
+#include "engine/render/ParticleSettingsRef.h"
+#include "engine/render/ParticleSettings.h"
 
 // Global particle setup state. The two ParticleSettings singletons hold the
 // emitter presets; the counter is reset whenever the system is initialised.

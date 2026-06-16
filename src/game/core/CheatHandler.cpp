@@ -1,6 +1,6 @@
 #include <new>
-#include "gof2/game/core/CheatHandler.h"
-#include "gof2/engine/core/KeyCode.h"
+#include "game/core/CheatHandler.h"
+#include "engine/core/KeyCode.h"
 
 namespace AbyssEngine {
 

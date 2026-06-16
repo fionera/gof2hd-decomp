@@ -1,6 +1,6 @@
-#include "gof2/engine/render/MovingStars.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/MovingStars.h"
+#include "engine/render/PaintCanvas.h"
+#include "platform/libc.h"
 
 using AbyssEngine::PaintCanvas;
 using AbyssEngine::AEMath::Vector;

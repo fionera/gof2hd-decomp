@@ -1,10 +1,10 @@
-#include "gof2/engine/render/shaders/SimpleRefractionShader.h"
+#include "engine/render/shaders/SimpleRefractionShader.h"
 // Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
 class FBOContainer;
 class ShaderBaseStruct;
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 namespace AbyssEngine {
 

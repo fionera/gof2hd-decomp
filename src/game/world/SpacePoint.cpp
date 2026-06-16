@@ -1,4 +1,4 @@
-#include "gof2/game/world/SpacePoint.h"
+#include "game/world/SpacePoint.h"
 
 using AbyssEngine::AEMath::Vector;
 

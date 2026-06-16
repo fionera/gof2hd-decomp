@@ -1,4 +1,4 @@
-#include "gof2/engine/render/LensFlare.h"
+#include "engine/render/LensFlare.h"
 
 using AbyssEngine::PaintCanvas;
 

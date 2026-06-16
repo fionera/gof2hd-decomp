@@ -1,5 +1,5 @@
-#include "gof2/engine/render/ParticleSystemMesh.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ParticleSystemMesh.h"
+#include "platform/libc.h"
 
 // aeabi runtime helper (zero-fill in 4-byte units); supplied by the platform CRT.
 extern "C" void *__aeabi_memclr4(void *dst, size_t n);

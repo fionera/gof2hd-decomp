@@ -1,11 +1,11 @@
-#include "gof2/game/core/Radio.h"
-#include "gof2/game/core/RadioMessage.h"
-#include "gof2/game/world/Wanted.h"
-#include "gof2/engine/render/PaintCanvas.h"
-#include "gof2/engine/render/ImageFactory.h"
-#include "gof2/engine/render/ImagePart.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/ui/Layout.h"
+#include "game/core/Radio.h"
+#include "game/core/RadioMessage.h"
+#include "game/world/Wanted.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/render/ImageFactory.h"
+#include "engine/render/ImagePart.h"
+#include "engine/audio/FModSound.h"
+#include "game/ui/Layout.h"
 
 // ---------------------------------------------------------------------------
 // Cross-class engine entry points used through their own (not-yet-self-clean)

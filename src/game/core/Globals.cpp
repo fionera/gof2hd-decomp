@@ -1,34 +1,34 @@
-#include "gof2/game/core/Globals.h"
+#include "game/core/Globals.h"
 Globals* gGlobals = nullptr;          // canonical Globals singleton
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "engine/render/Mesh.h"
+#include "game/ship/Ship.h"
+#include "game/core/PaintCanvasClass.h"
 // gof2/engine/render/PaintCanvas.h defines a second `class PaintCanvas` that clashes with the
 // PaintCanvasClass.h view used in this TU; declare the canonical render-canvas singleton locally
 // (matches `extern PaintCanvas* gCanvas;` in render/PaintCanvas.h, binary .bss 0x2281b8).
 extern PaintCanvas* gCanvas;
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/audio/FModSound.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/audio/FModSound.h"
 // gof2/FileRead.h intentionally NOT included: its stub `struct Station`/`struct Agent`
 // collide with the canonical Station.h/Agent.h definitions this file relies on. FileRead
 // is only used here as an opaque handle via local extern "C" declarations.
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/Galaxy.h"
-#include "gof2/game/mission/Achievements.h"
-#include "gof2/engine/core/AERandom.h"
-#include "gof2/game/ship/Agent.h"          // defines the canonical global `struct String` (12-byte String sret)
-#include "gof2/engine/core/ApplicationManager.h"
-#include "gof2/engine/core/GameText.h"
-#include "gof2/engine/render/ImageFactory.h"
-#include "gof2/game/ui/Layout.h"
+#include "game/mission/Status.h"
+#include "game/world/Galaxy.h"
+#include "game/mission/Achievements.h"
+#include "engine/core/AERandom.h"
+#include "game/ship/Agent.h"          // defines the canonical global `struct String` (12-byte String sret)
+#include "engine/core/ApplicationManager.h"
+#include "engine/core/GameText.h"
+#include "engine/render/ImageFactory.h"
+#include "game/ui/Layout.h"
 // Mission.h transitively pulls Station.h; both reuse the same canonical `String` from
 // common.h, so no aliasing is needed. Station::getName() returns String and is only ever
 // discarded here.
-#include "gof2/game/mission/Mission.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/mission/RecordHandler.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/core/String.h"
+#include "game/mission/Mission.h"
+#include "game/world/Station.h"
+#include "game/mission/RecordHandler.h"
+#include "game/world/SolarSystem.h"
+#include "game/core/String.h"
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
@@ -2174,7 +2174,7 @@ done:
 // These were previously called through extern "C" Globals_* shims with no body.
 // =====================================================================================
 
-#include "gof2/engine/core/AERandom.h"
+#include "engine/core/AERandom.h"
 
 // ---- sqrt_impl ----
 // Globals::sqrt(float) tail-jumps to the runtime sqrtf with the float in r0. The leaf

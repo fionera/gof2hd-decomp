@@ -1,9 +1,9 @@
-#include "gof2/game/core/BumpShaderRefract.h"
+#include "game/core/BumpShaderRefract.h"
 // Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
 class FBOContainer;
 class ShaderBaseStruct;
-#include "gof2/engine/render/Engine.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/Engine.h"
+#include "platform/gl.h"
 namespace AbyssEngine {
 
 int BumpShaderRefract::ShaderIndex;

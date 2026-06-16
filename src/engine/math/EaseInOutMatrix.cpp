@@ -1,4 +1,4 @@
-#include "gof2/engine/math/EaseInOutMatrix.h"
+#include "engine/math/EaseInOutMatrix.h"
 #include <algorithm>
 #include <new>
 

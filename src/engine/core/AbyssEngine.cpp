@@ -1,14 +1,14 @@
-#include "gof2/engine/core/AbyssEngine.h"
-#include "gof2/externs.h"
-#include "gof2/engine/file/AEFile.h"
-#include "gof2/engine/file/FileInterfaceAndroid.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/engine/math/Transform.h"   // also provides AEMath::BSphere (node-local layout)
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/platform/gl.h"
+#include "engine/core/AbyssEngine.h"
+#include "externs.h"
+#include "engine/file/AEFile.h"
+#include "engine/file/FileInterfaceAndroid.h"
+#include "engine/math/AEMath.h"
+#include "engine/math/Transform.h"   // also provides AEMath::BSphere (node-local layout)
+#include "game/core/String.h"
+#include "engine/render/Mesh.h"
+#include "engine/render/Engine.h"
+#include "game/core/PaintCanvasClass.h"
+#include "platform/gl.h"
 #include <cstdlib>   // realloc, for the engine raw-array helpers below
 
 // ARM EABI runtime entry points the recovered code calls directly; not provided by the shared

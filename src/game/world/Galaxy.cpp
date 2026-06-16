@@ -1,12 +1,12 @@
-#include "gof2/game/world/Galaxy.h"
+#include "game/world/Galaxy.h"
 Galaxy* gGalaxy = nullptr;            // canonical Galaxy singleton
 
-#include "gof2/engine/file/FileRead.h"
-#include "gof2/game/core/Globals.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/world/Station.h"
+#include "engine/file/FileRead.h"
+#include "game/core/Globals.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/Station.h"
 
 // Engine singletons (kept as raw globals, like the rest of the port).
 extern Array<Item *> *g_items;        // the item table

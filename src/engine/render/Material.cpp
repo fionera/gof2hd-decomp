@@ -1,4 +1,4 @@
-#include "gof2/engine/render/Material.h"
+#include "engine/render/Material.h"
 
 namespace AbyssEngine {
 

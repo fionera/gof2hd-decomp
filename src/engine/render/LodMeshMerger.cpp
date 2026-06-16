@@ -1,7 +1,7 @@
-#include "gof2/engine/render/LodMeshMerger.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/LodMeshMerger.h"
+#include "engine/math/AEMath.h"
+#include "game/core/PaintCanvasClass.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

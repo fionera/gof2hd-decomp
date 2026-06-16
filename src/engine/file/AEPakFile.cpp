@@ -1,4 +1,4 @@
-#include "gof2/engine/file/AEPakFile.h"
+#include "engine/file/AEPakFile.h"
 
 AEPakFile::AEPakFile(FileInterface *file, int sizeLimit, int baseOffset)
     : fileInterface(file)

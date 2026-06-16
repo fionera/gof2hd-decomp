@@ -1,12 +1,12 @@
-#include "gof2/game/world/NewsTicker.h"
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/game/world/NewsItem.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/engine/core/GameText.h"
-#include "gof2/engine/core/AERandom.h"
-#include "gof2/engine/file/FileRead.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "game/world/NewsTicker.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/NewsItem.h"
+#include "game/mission/Status.h"
+#include "engine/core/GameText.h"
+#include "engine/core/AERandom.h"
+#include "engine/file/FileRead.h"
+#include "game/core/String.h"
+#include "engine/render/PaintCanvas.h"
 
 // Free-function bridges into engine singletons that have no own header here.
 void DisableClip();          // AbyssEngine::PaintCanvas::DisableClip

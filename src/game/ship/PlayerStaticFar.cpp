@@ -1,14 +1,14 @@
-#include "gof2/game/ship/PlayerStaticFar.h"
+#include "game/ship/PlayerStaticFar.h"
 
 #include <vector>
 
-#include "gof2/math.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/engine/math/BoundingVolume.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/game/ship/PlayerStatic.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "mathtypes.h"
+#include "engine/math/AEMath.h"
+#include "engine/math/BoundingVolume.h"
+#include "engine/render/AEGeometry.h"
+#include "game/ship/PlayerStatic.h"
+#include "game/ship/Player.h"
+#include "game/core/PaintCanvasClass.h"
 
 using namespace AbyssEngine::AEMath;
 

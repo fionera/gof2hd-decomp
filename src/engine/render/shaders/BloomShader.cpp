@@ -1,9 +1,9 @@
-#include "gof2/engine/render/shaders/BloomShader.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/engine/render/FBOContainer.h"
-#include "gof2/platform/gl.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/shaders/BloomShader.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "engine/render/FBOContainer.h"
+#include "platform/gl.h"
+#include "platform/libc.h"
 
 // BloomShader's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char BloomShader_vtable;

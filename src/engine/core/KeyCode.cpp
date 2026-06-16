@@ -1,4 +1,4 @@
-#include "gof2/engine/core/KeyCode.h"
+#include "engine/core/KeyCode.h"
 
 namespace AbyssEngine {
 

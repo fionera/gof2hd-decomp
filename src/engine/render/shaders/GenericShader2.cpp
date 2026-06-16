@@ -1,7 +1,7 @@
-#include "gof2/engine/render/shaders/GenericShader2.h"
-#include "gof2/engine/render/Engine.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/platform/gl.h"
+#include "engine/render/shaders/GenericShader2.h"
+#include "engine/render/Engine.h"
+#include "engine/render/Mesh.h"
+#include "platform/gl.h"
 
 // GenericShader2's C++ vtable symbol (platform-supplied at the engine ABI level).
 extern "C" char GenericShader2_vtable;

@@ -1,6 +1,6 @@
-#include "gof2/engine/math/Transform.h"
-#include "gof2/engine/core/KeyFrame.h"
-#include "gof2/engine/render/Mesh.h"
+#include "engine/math/Transform.h"
+#include "engine/core/KeyFrame.h"
+#include "engine/render/Mesh.h"
 
 // Engine globals: shared keyframe-insertion counter and the matrix-fixup toggle.
 extern int *g_transform_insert_counter;

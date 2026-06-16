@@ -1,16 +1,16 @@
-#include "gof2/game/ship/PlayerStation.h"
+#include "game/ship/PlayerStation.h"
 
-#include "gof2/game/world/SolarSystem.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/math/BoundingVolume.h"
-#include "gof2/engine/math/BoundingAAB.h"
-#include "gof2/engine/math/BoundingSphere.h"
-#include "gof2/engine/file/FileRead.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/engine/math/Transform.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/world/Station.h"
-#include "gof2/game/core/PaintCanvasClass.h"
+#include "game/world/SolarSystem.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/math/BoundingVolume.h"
+#include "engine/math/BoundingAAB.h"
+#include "engine/math/BoundingSphere.h"
+#include "engine/file/FileRead.h"
+#include "game/mission/Status.h"
+#include "engine/math/Transform.h"
+#include "game/ship/Player.h"
+#include "game/world/Station.h"
+#include "game/core/PaintCanvasClass.h"
 
 // The Status singleton is reached through a global holder slot (set up at boot);
 // `gStatus` is the live Status pointer.

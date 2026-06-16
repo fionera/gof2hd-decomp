@@ -1,5 +1,5 @@
-#include "gof2/game/mission/PendingProduct.h"
-#include "gof2/game/mission/BluePrint.h"
+#include "game/mission/PendingProduct.h"
+#include "game/mission/BluePrint.h"
 
 PendingProduct::PendingProduct(int blueprintIndex, const String *stationName,
                                int stationIndex, int quantity)

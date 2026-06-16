@@ -1,9 +1,9 @@
-#include "gof2/game/ui/TouchButton.h"
-#include "gof2/engine/audio/FModSound.h"
-#include "gof2/game/mission/Achievements.h"
-#include "gof2/game/ui/Layout.h"
-#include "gof2/game/core/String.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "game/ui/TouchButton.h"
+#include "engine/audio/FModSound.h"
+#include "game/mission/Achievements.h"
+#include "game/ui/Layout.h"
+#include "game/core/String.h"
+#include "engine/render/PaintCanvas.h"
 
 unsigned int GameText_getLanguage();
 

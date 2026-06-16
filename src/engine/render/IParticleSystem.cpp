@@ -1,4 +1,4 @@
-#include "gof2/engine/render/IParticleSystem.h"
+#include "engine/render/IParticleSystem.h"
 
 namespace AbyssEngine { namespace AERandom { int nextInt(void *self, int max); } }
 char *MatrixGetPosition(char *out, Matrix const *matrix);

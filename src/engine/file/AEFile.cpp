@@ -1,5 +1,5 @@
-#include "gof2/engine/file/AEFile.h"
-#include "gof2/game/core/String.h"
+#include "engine/file/AEFile.h"
+#include "game/core/String.h"
 #include <new>   // placement new used by the in-place String construction below
 
 // Engine file-subsystem state. These globals hold the active platform FileInterface, the table of

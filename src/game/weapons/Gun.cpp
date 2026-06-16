@@ -1,9 +1,9 @@
-#include "gof2/game/weapons/Gun.h"
-#include "gof2/game/ship/Player.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/engine/render/Sparks.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/platform/libc.h"
+#include "game/weapons/Gun.h"
+#include "game/ship/Player.h"
+#include "game/mission/Item.h"
+#include "engine/render/Sparks.h"
+#include "engine/render/AEGeometry.h"
+#include "platform/libc.h"
 
 // The four embedded Array<Vector> sub-objects (positions / velocities / up-vectors /
 // hit-positions) and the Array<Vector*> wobble buffer are byte-addressed through the

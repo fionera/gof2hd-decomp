@@ -1,4 +1,4 @@
-#include "gof2/engine/audio/AESoundRessource.h"
+#include "engine/audio/AESoundRessource.h"
 
 static const char defaultSoundName[] = "";
 

@@ -1,7 +1,7 @@
-#include "gof2/engine/render/ParticleSystemSprite.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/externs.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/ParticleSystemSprite.h"
+#include "game/core/PaintCanvasClass.h"
+#include "externs.h"
+#include "platform/libc.h"
 
 // ParticleSystemSprite derives (in the shipped binary) from IParticleSystem. In this port the
 // class is kept flat with named members, so the few base-subobject operations are reached through

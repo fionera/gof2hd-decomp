@@ -1,9 +1,9 @@
-#include "gof2/engine/render/MeshMerger.h"
-#include "gof2/engine/render/Mesh.h"
-#include "gof2/game/core/Vector.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/platform/libc.h"
+#include "engine/render/MeshMerger.h"
+#include "engine/render/Mesh.h"
+#include "game/core/Vector.h"
+#include "engine/math/AEMath.h"
+#include "game/core/PaintCanvasClass.h"
+#include "platform/libc.h"
 
 namespace AbyssEngine {
 

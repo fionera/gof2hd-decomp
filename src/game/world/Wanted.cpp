@@ -1,5 +1,5 @@
-#include "gof2/game/world/Wanted.h"
-#include "gof2/game/core/String.h"
+#include "game/world/Wanted.h"
+#include "game/core/String.h"
 
 int  Wanted::getIndex()            { return index; }
 int  Wanted::getBoard()            { return board; }

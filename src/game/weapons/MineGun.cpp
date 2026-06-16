@@ -1,13 +1,13 @@
-#include "gof2/game/weapons/MineGun.h"
-#include "gof2/game/weapons/ObjectGun.h"
-#include "gof2/game/weapons/Gun.h"
-#include "gof2/game/ship/TargetFollowCamera.h"
-#include "gof2/game/ship/PlayerEgo.h"
-#include "gof2/game/mission/Explosion.h"
-#include "gof2/game/core/PaintCanvasClass.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/engine/math/AEMath.h"
-#include "gof2/engine/math/Transform.h"
+#include "game/weapons/MineGun.h"
+#include "game/weapons/ObjectGun.h"
+#include "game/weapons/Gun.h"
+#include "game/ship/TargetFollowCamera.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/mission/Explosion.h"
+#include "game/core/PaintCanvasClass.h"
+#include "engine/render/AEGeometry.h"
+#include "engine/math/AEMath.h"
+#include "engine/math/Transform.h"
 
 using AbyssEngine::AEMath::Vector;
 

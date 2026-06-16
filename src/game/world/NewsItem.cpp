@@ -1,4 +1,4 @@
-#include "gof2/game/world/NewsItem.h"
+#include "game/world/NewsItem.h"
 
 NewsItem::NewsItem(int id, bool flag, void *data, int length, int field_0x10, int field_0x14)
 {

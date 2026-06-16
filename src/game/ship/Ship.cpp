@@ -1,8 +1,8 @@
-#include "gof2/game/ship/Ship.h"
-#include "gof2/game/world/Standing.h"
-#include "gof2/game/mission/Item.h"
-#include "gof2/game/mission/Status.h"
-#include "gof2/game/world/SolarSystem.h"
+#include "game/ship/Ship.h"
+#include "game/world/Standing.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/world/SolarSystem.h"
 
 // Game data tables reached through the recovered indirection chains. These do
 // not resolve to any of the shared singletons and are left as-is.

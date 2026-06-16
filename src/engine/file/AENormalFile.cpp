@@ -1,4 +1,4 @@
-#include "gof2/engine/file/AENormalFile.h"
+#include "engine/file/AENormalFile.h"
 
 AENormalFile::AENormalFile(FileInterface *file)
     : held(reinterpret_cast<HeldFile *>(file))

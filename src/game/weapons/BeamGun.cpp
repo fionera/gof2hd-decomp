@@ -1,11 +1,11 @@
-#include "gof2/game/weapons/BeamGun.h"
-#include "gof2/game/world/Level.h"
-#include "gof2/game/world/LevelScript.h"
-#include "gof2/engine/math/Transform.h"
-#include "gof2/game/weapons/Gun.h"
-#include "gof2/game/ship/PlayerEgo.h"
-#include "gof2/engine/render/AEGeometry.h"
-#include "gof2/platform/libc.h"
+#include "game/weapons/BeamGun.h"
+#include "game/world/Level.h"
+#include "game/world/LevelScript.h"
+#include "engine/math/Transform.h"
+#include "game/weapons/Gun.h"
+#include "game/ship/PlayerEgo.h"
+#include "engine/render/AEGeometry.h"
+#include "platform/libc.h"
 
 // PaintCanvas is pulled in by pointer only (forward-declared by AEGeometry.h):
 // its full header conflicts with Transform.h during this migration, so reach its

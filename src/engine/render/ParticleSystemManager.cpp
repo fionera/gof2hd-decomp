@@ -1,6 +1,6 @@
-#include "gof2/engine/render/ParticleSystemManager.h"
-#include "gof2/engine/render/IParticleSystem.h"
-#include "gof2/engine/render/PaintCanvas.h"
+#include "engine/render/ParticleSystemManager.h"
+#include "engine/render/IParticleSystem.h"
+#include "engine/render/PaintCanvas.h"
 
 // Engine helper forwarders (resolved by a later externs pass).
 extern "C" void  _psm_ArrayReleaseSprites(void *arr);
