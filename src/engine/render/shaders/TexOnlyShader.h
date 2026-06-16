@@ -1,6 +1,9 @@
 #ifndef GOF2_TEXONLYSHADER_H
 #define GOF2_TEXONLYSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // Galaxy on Fire 2 - AbyssEngine::TexOnlyShader (minimal GLES2 shader that only samples a texture).

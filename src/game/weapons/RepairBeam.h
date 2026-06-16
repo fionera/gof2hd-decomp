@@ -1,6 +1,9 @@
 #ifndef GOF2_REPAIRBEAM_H
 #define GOF2_REPAIRBEAM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 
 class AEGeometry;   // ::AEGeometry, engine/render/AEGeometry.h; pointer only

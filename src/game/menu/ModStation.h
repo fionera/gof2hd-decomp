@@ -1,6 +1,9 @@
 #ifndef GOF2_MODSTATION_H
 #define GOF2_MODSTATION_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 — ModStation: the docked-station module (hangar, shipyard, missions,
 // star map, status and DLC sub-screens reachable from a docked station).

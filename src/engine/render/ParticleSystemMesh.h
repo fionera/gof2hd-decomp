@@ -1,6 +1,9 @@
 #ifndef GOF2_PARTICLESYSTEMMESH_H
 #define GOF2_PARTICLESYSTEMMESH_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- ParticleSystemMesh.
 // A mesh-backed particle system: each particle is rendered as one or more quads whose

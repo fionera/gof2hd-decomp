@@ -1,6 +1,9 @@
 #ifndef GOF2_KIPLAYER_H
 #define GOF2_KIPLAYER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 
 // Galaxy on Fire 2 - KIPlayer: the AI controller that wraps a Player ship and drives

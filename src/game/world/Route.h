@@ -1,6 +1,9 @@
 #ifndef GOF2_ROUTE_H
 #define GOF2_ROUTE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 - Route: an ordered waypoint navigation path with optional
 // docking targets/times, looping support, and an active-waypoint cursor.

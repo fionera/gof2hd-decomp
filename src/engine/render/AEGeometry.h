@@ -1,6 +1,9 @@
 #ifndef GOF2_AEGEOMETRY_H
 #define GOF2_AEGEOMETRY_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 // Galaxy on Fire 2 -- AbyssEngine AEGeometry.
 // A renderable transform node: owns a base transform plus optional LOD levels,

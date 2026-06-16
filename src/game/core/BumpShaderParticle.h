@@ -1,6 +1,9 @@
 #ifndef GOF2_BUMPSHADERPARTICLE_H
 #define GOF2_BUMPSHADERPARTICLE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::BumpShaderParticle — GLES2 bump-mapping shader for particle meshes.

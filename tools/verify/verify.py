@@ -14,6 +14,7 @@ Usage:
   verify.py --show <mangled-symbol>        # side-by-side diff of one function
 """
 import argparse
+import concurrent.futures
 import json
 import os
 import re
@@ -34,9 +35,11 @@ def run(cmd, **kw):
 
 
 def delink(base_o, target_o):
+    # stdout/stderr suppressed so delink diagnostics don't interleave into the report table; a
+    # delink failure surfaces as a concise per-unit skip line after the table.
     run([sys.executable, os.path.join(HERE, "delink.py"),
          "--base", base_o, "--out", target_o],
-        stdout=subprocess.DEVNULL)
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=asmdiff.DISASM_TIMEOUT)
 
 
 def find_base_objects(build_dir):
@@ -50,28 +53,57 @@ def find_base_objects(build_dir):
     return sorted(objs)
 
 
-def collect(build_dir, only=None):
-    """Returns (rows, units_count). Delinks + diffs every base object."""
-    rows = []
-    target_root = os.path.join(build_dir, "target")
-    only_re = re.compile(only) if only else None
-    for unit, base_o in find_base_objects(build_dir):
-        target_o = os.path.join(target_root, unit + ".o")
-        os.makedirs(os.path.dirname(target_o), exist_ok=True)
+def _diff_unit(unit, base_o, target_root, only_re):
+    """Delink + diff one base object. Returns (rows, skip) where skip is None or a short
+    reason string. Per-unit work is independent (each writes only its own target_o), so it
+    is safe to run concurrently. Failures are returned, not printed, so they can be
+    summarised after the table instead of interleaving with it."""
+    target_o = os.path.join(target_root, unit + ".o")
+    os.makedirs(os.path.dirname(target_o), exist_ok=True)
+    # OrbStack calls wedge transiently; a timed-out unit is retried once (the retry almost always
+    # clears) before it is skipped, so a transient wedge doesn't silently drop the unit's functions
+    # from the report and make the totals vary run-to-run.
+    for attempt in (1, 2):
         try:
             delink(base_o, target_o)
             tf = asmdiff.disassemble(target_o)
             bf = asmdiff.disassemble(base_o)
-        except subprocess.CalledProcessError as e:
-            print(f"  ! {unit}: tooling error ({e})", file=sys.stderr)
-            continue
-        for r in asmdiff.compare(tf, bf):
-            if only_re and not only_re.search(r["symbol"]):
+            break
+        except subprocess.CalledProcessError:
+            return [], "no delinkable target"
+        except subprocess.TimeoutExpired:
+            if attempt == 1:
                 continue
-            r["unit"] = unit
-            rows.append(r)
+            return [], "objdump hung twice"
+    out = []
+    for r in asmdiff.compare(tf, bf):
+        if only_re and not only_re.search(r["symbol"]):
+            continue
+        r["unit"] = unit
+        out.append(r)
+    return out, None
+
+
+def collect(build_dir, only=None):
+    """Returns (rows, skips). skips is a list of (unit, reason) for units that couldn't be
+    compared. The per-unit delink+disasm work is all OrbStack subprocesses (GIL released), so
+    we fan it out across a thread pool — same GOF2_VERIFY_JOBS knob build_objs.sh uses."""
+    target_root = os.path.join(build_dir, "target")
+    only_re = re.compile(only) if only else None
+    units = find_base_objects(build_dir)
+    jobs = max(1, int(os.environ.get("GOF2_VERIFY_JOBS", "8")))
+    rows, skips = [], []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
+        futures = {ex.submit(_diff_unit, unit, base_o, target_root, only_re): unit
+                   for unit, base_o in units}
+        for fut, unit in futures.items():
+            unit_rows, skip = fut.result()
+            rows.extend(unit_rows)
+            if skip:
+                skips.append((unit, skip))
     rows.sort(key=lambda r: (r["match"], r["unit"], r["symbol"]))
-    return rows
+    skips.sort()
+    return rows, skips
 
 
 def original_text_functions():
@@ -124,29 +156,38 @@ def main():
         r = asmdiff.compare(tf, bf)
         r = next((x for x in r if x["symbol"] == sym), None)
         if r:
-            print(f"# match {r['match']}%   bytes_equal={r['bytes_equal']}   "
+            print(f"# match {r['match']}%   linked_equal={r['linked_equal']}   "
+                  f"bytes_equal={r['bytes_equal']}   "
                   f"insns target={r['n_target']} base={r['n_base']}\n")
         print(asmdiff.unified(tf, bf, sym) or "(identical after normalization)")
         return 0
 
-    rows = collect(args.build_dir, only=args.only)
+    rows, skips = collect(args.build_dir, only=args.only)
     if not rows:
         print("No comparable functions found. Did the ARM build produce any .o files?")
         return 1
 
     perfect = sum(1 for r in rows if r["match"] >= 100)
     bytes_eq = sum(1 for r in rows if r["bytes_equal"])
+    linked_eq = sum(1 for r in rows if r["linked_equal"])
     avg = sum(r["match"] for r in rows) / len(rows)
 
-    print(f"\n{'match':>7}  {'bytes':>5}  {'unit':<34} symbol")
-    print("-" * 100)
+    # 'L' = byte-identical after linking (matches modulo relocation fields); '==' = raw
+    # bytes identical (the rarer subset with no external refs at all). The unit column is sized to
+    # the widest unit so the symbol column stays aligned, and symbols are printed in full.
+    uw = max(len("unit"), max(len(r["unit"]) for r in rows))
+    header = f"{'match':>7}  {'link':>4}  {'unit':<{uw}}  symbol"
+    print()
+    print(header)
+    print("-" * len(header))
     for r in rows:
-        flag = "==" if r["bytes_equal"] else "  "
-        print(f"{r['match']:6.1f}%  {flag:>5}  {r['unit']:<34} {r['symbol'][:60]}")
-    print("-" * 100)
+        flag = "==" if r["bytes_equal"] else ("L" if r["linked_equal"] else "")
+        print(f"{r['match']:6.1f}%  {flag:>4}  {r['unit']:<{uw}}  {r['symbol']}")
+    print("-" * len(header))
 
     report = {"avg_match": round(avg, 2), "count": len(rows),
-              "fuzzy_perfect": perfect, "byte_exact": bytes_eq}
+              "fuzzy_perfect": perfect, "byte_exact": bytes_eq,
+              "linked_exact": linked_eq, "skipped": len(skips)}
 
     # Coverage vs the original: functions in the .so .text that we never compared
     # (not decompiled/compiled yet, or whose signature mangles differently — e.g.
@@ -163,11 +204,14 @@ def main():
             f.write("\n".join(missing) + ("\n" if missing else ""))
 
     print(f"{len(rows)} comparisons   avg {avg:.1f}%   "
-          f"100%-fuzzy {perfect}   byte-exact {bytes_eq}")
+          f"100%-fuzzy {perfect}   linked-exact {linked_eq}   byte-exact {bytes_eq}")
     if not args.only:
         print(f"coverage: compared {report['compared_unique']}/{report['original_functions']} "
               f"original functions   missing {report['missing']} "
               f"(-> {os.path.relpath(miss_path, REPO)})")
+    if skips:
+        units = ", ".join(u for u, _ in skips)
+        print(f"skipped {len(skips)} units (couldn't delink/diff): {units}")
 
     report["functions"] = rows
     out = args.report or os.path.join(args.build_dir, "report.json")

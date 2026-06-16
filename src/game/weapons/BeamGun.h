@@ -1,7 +1,10 @@
 #ifndef GOF2_BEAMGUN_H
 #define GOF2_BEAMGUN_H
 #include <cstdint>
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- BeamGun: a beam weapon that renders a primary beam
 // geometry plus an optional secondary (muzzle) geometry tracking the gun's

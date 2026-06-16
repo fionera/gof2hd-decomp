@@ -1,6 +1,9 @@
 #ifndef GOF2_TRACTORBEAM_H
 #define GOF2_TRACTORBEAM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- TractorBeam.
 // A ship module that locks onto a nearby cargo crate, draws a visible beam from

@@ -1,6 +1,9 @@
 #ifndef GOF2_LENSFLARE_H
 #define GOF2_LENSFLARE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- sun/star lens-flare effect.
 // Owns three Image2D sprite handles and renders them along the screen-centre ->

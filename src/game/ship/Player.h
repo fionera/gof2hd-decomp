@@ -1,6 +1,9 @@
 #ifndef GOF2_PLAYER_H
 #define GOF2_PLAYER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- Player: a controllable/AI ship instance (hull, shields,
 // armor, EMP, guns and the engine-sound state). Top-level, no namespace.

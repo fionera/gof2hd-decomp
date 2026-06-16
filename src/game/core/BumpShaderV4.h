@@ -1,6 +1,9 @@
 #ifndef GOF2_BUMPSHADERV4_H
 #define GOF2_BUMPSHADERV4_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 extern "C" char _ZTVN11AbyssEngine12BumpShaderV4E[];

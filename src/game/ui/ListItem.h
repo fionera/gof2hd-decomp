@@ -1,6 +1,9 @@
 #ifndef GOF2_LISTITEM_H
 #define GOF2_LISTITEM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // A polymorphic entry in the various menu lists. Exactly one of its payload pointers is set by
 // the matching constructor (text lines, Agent, BluePrint, Ship, Item, Mission or PendingProduct),

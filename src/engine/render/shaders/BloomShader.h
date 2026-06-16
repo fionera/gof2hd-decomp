@@ -1,6 +1,9 @@
 #ifndef GOF2_BLOOMSHADER_H
 #define GOF2_BLOOMSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::BloomShader — GLES2 multi-pass bloom post-process effect.

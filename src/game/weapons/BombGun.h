@@ -1,6 +1,9 @@
 #ifndef GOF2_BOMBGUN_H
 #define GOF2_BOMBGUN_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/weapons/RocketGun.h"
 
 class AEGeometry;

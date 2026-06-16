@@ -1,6 +1,9 @@
 #ifndef GOF2_BLUEPRINT_H
 #define GOF2_BLUEPRINT_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/core/String.h"
 
 // Galaxy on Fire 2 - BluePrint: an item-production blueprint. Tracks the

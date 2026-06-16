@@ -1,6 +1,9 @@
 #ifndef GOF2_STANDING_H
 #define GOF2_STANDING_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Tracks the player's reputation toward each in-game faction. Standings are stored
 // as a small per-race array; a non-negative player signature race switches lookups

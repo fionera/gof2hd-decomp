@@ -1,6 +1,9 @@
 #ifndef GOF2_CUTSCENE_H
 #define GOF2_CUTSCENE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- CutScene: intro / station / docking cinematics.
 // Owns a self-contained cinematic Level plus the cameras, transforms and

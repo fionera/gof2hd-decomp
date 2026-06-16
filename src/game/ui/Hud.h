@@ -1,6 +1,9 @@
 #ifndef GOF2_HUD_H
 #define GOF2_HUD_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // Galaxy on Fire 2 -- Hud: the in-game heads-up display. Owns the radial quick-menu
 // buttons, the event-banner queue, the per-touch key state, and the full set of HUD
 // image atlases and layout coordinates.

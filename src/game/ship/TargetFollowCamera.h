@@ -1,6 +1,9 @@
 #ifndef GOF2_TARGETFOLLOWCAMERA_H
 #define GOF2_TARGETFOLLOWCAMERA_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- TargetFollowCamera.
 // A chase/first-person camera that follows a renderable target (AEGeometry). It

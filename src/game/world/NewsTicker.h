@@ -1,6 +1,9 @@
 #ifndef GOF2_NEWSTICKER_H
 #define GOF2_NEWSTICKER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- the scrolling station news banner. Builds a single concatenated
 // String of localized ticker lines and animates it horizontally across the HUD.

@@ -58,8 +58,14 @@ coverage: compared 2311/4524 original functions   missing 2213 (-> cmake-build-m
 report -> cmake-build-match/verify/report.json
 ```
 
-- **`bytes ==`** is the gold signal: the function's machine code is **byte-identical**
-  to the original. This is the real matching goal.
+- **`L` (linked-exact)** is the real matching signal: the machine code is byte-identical to
+  the original **after linking** — i.e. identical except inside relocation-covered fields (call
+  targets, GOT/literal-pool addresses), which our unlinked `.o` leaves as placeholders while the
+  delinked target carries the linker-resolved value. This is what to chase. (`asmdiff.linked_equal`
+  masks the relocation byte-ranges, read from our object's `-r` table, before comparing.)
+- **`==` (byte-exact)** is the rarer strict subset: raw bytes identical with *no* relocations at
+  all — only leaf functions that never call out or load a global can reach it. A function can be a
+  perfect match (`L`) yet not `==` purely because it makes a call; don't chase `==`, chase `L`.
 - **`match`** is a fuzzy instruction-level score (0–100). Useful for "how close" and
   for comparing flag settings. It can read below 100% even for a byte-exact function
   when the original contains a literal pool (clang marks pools as data on our side;
@@ -89,8 +95,12 @@ cmake --build cmake-build-match --target verify
 (fpu, stack protector, API level, exceptions/rtti) live in `match_flags.sh`; edit
 there and re-run `verify`. Known facts already baked in: `-mfpu=neon` (the original
 uses NEON), `-D__ANDROID_API__=21` (needed for libc++ `<cmath>` to compile),
-`-mthumb`, `-frtti`. `docs/ROADMAP.md` found `-Oz`; the legacy `flags.sh` claimed
-`-O2` — the report settles such disputes empirically.
+`-mthumb`, `-frtti`, **`-DGOF2_MATCH=1`** (selects the real `Array<T>` over the dev-build
+`std::vector` alias, see common.h).
+
+> **`-Oz` vs `-O2` — settled: `-Oz`.** A clean A/B on equal coverage (2326 functions compared in
+> both) gave `-Oz` 468 byte-exact / 66.1% avg vs `-O2` 444 / 54.9%; 24 functions match only at
+> `-Oz` and none only at `-O2`. The original was built `-Oz`. (`match_flags.sh` defaults to it.)
 
 ## Files
 
@@ -113,14 +123,16 @@ Inputs (read-only): `_work/bins/android_2.0.16_libgof2hdaa.so`,
 Auto-discovery matches functions by **exact mangled name**, so anything whose signature mangles
 differently than the original is invisible (not wrong — just not compared):
 
-- **`Array<T>` vs `std::vector`** — `common.h` aliases `Array<T>` to `std::__ndk1::vector<T>`, but the
-  original game ships its own hand-written `Array<T>` class. So `ArrayAdd<X>` and every function
-  taking an `Array<T>`/container parameter mangles differently (`...RNSt6__ndk16vectorI...` vs
-  `...R5ArrayIS2_E`) and won't match by name. Restoring a real `Array` class would unlock a large
-  batch of comparisons. This is why `ArrayAdd` — byte-exact in the old matching era — isn't in the
-  current report.
+- **`Array<T>` vs `std::vector` — RESOLVED.** The match build (`-DGOF2_MATCH`) now uses a faithful
+  hand-written `Array<T>` (global template, layout `{size@0,data@4,capacity@8}`, realloc-based
+  growth — bodies transcribed from the Android binary; see common.h). This mangles as `5ArrayI...`
+  like the original (so the previously-invisible container functions now compare) **and** matches
+  the original's element-access / iteration codegen. Switching from the `std::vector` alias moved
+  the report from ~724 → 910 linked-exact and ~2327 → 2474 compared. The macOS dev build keeps the
+  `std::vector` alias (the `#else` branch in common.h) for natural 64-bit development.
 - TUs that don't compile under the ARM toolchain yet are skipped (see the build summary); their
-  functions simply aren't compared until they build.
+  functions simply aren't compared until they build. (Currently only `MGame.cpp` — a pre-existing
+  `expected statement` parse error, unrelated to containers.)
 
 ## Direct CLI (without CMake)
 
@@ -130,3 +142,8 @@ python3 tools/verify/verify.py --no-build      # reuse existing base objects
 python3 tools/verify/verify.py --only AEMath   # filter by symbol regex
 python3 tools/verify/verify.py --show <mangled-symbol>
 ```
+
+Both the build and the diff fan out across `GOF2_VERIFY_JOBS` workers (default 8). The per-object
+delink/objdump calls have a 90s timeout (`asmdiff.DISASM_TIMEOUT`): if an OrbStack call wedges, that
+one unit is skipped with a warning instead of hanging the whole run. If you kill a run mid-diff,
+check for an orphaned `arm-linux-gnueabihf-objdump` under `orb` and `kill` it.

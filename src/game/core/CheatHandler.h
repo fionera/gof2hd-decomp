@@ -1,14 +1,15 @@
 #ifndef GOF2_CHEATHANDLER_H
 #define GOF2_CHEATHANDLER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 namespace AbyssEngine {
 
-template <class T>
-void ArrayAdd(T item, Array<T> &array);
-
-template <class T>
-void ArrayRemoveAll(Array<T> &array);
+// ArrayAdd / ArrayRemoveAll are the engine's container free-functions, declared once in common.h
+// (global scope). Re-declaring them here in namespace AbyssEngine created a second overload that
+// made every call ambiguous, so we rely on the common.h definitions.
 
 struct CheatCode {
     Array<uint16_t> *keys;

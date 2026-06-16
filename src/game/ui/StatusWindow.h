@@ -1,6 +1,9 @@
 #ifndef GOF2_STATUSWINDOW_H
 #define GOF2_STATUSWINDOW_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class TouchButton;
 class ImagePart;

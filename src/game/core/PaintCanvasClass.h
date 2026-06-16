@@ -7,7 +7,10 @@
 // parameters) instead of redefining them, so it co-includes cleanly. The class
 // body (fields + method declarations) is byte/signature identical to the one in
 // PaintCanvas.h, so the mangled PaintCanvas:: symbols match the real definitions.
-#include "common.h"   // Vector, Matrix, Array, String, AEMath
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 struct Transform;
 struct Engine;

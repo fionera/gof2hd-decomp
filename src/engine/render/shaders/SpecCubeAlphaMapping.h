@@ -1,6 +1,9 @@
 #ifndef GOF2_SPECCUBEALPHAMAPPING_H
 #define GOF2_SPECCUBEALPHAMAPPING_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 // AbyssEngine::SpecCubeAlphaMapping — GLES2 specular-cube + alpha-mapping shader.
 // Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.

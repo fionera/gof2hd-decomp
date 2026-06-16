@@ -1,6 +1,9 @@
 #ifndef GOF2_GAMEDATA_H
 #define GOF2_GAMEDATA_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- GameData (top-level engine class, not namespaced).
 // Owns eight AbyssEngine::String members; construction and destruction of those

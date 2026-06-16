@@ -1,6 +1,9 @@
 #ifndef GOF2_NODE_H
 #define GOF2_NODE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- Node: a scene-graph node holding a list of child nodes,
 // a back-pointer to its parent, and an integer value/identifier.

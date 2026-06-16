@@ -3,9 +3,8 @@
 #include <cstdint>
 #include "mathtypes.h"   // AbyssEngine::AEMath::{Vector,Matrix} (used by value)
 
-// Array<T> container alias (== std::vector<T>).
-#include <vector>
-template <class T> using Array = std::vector<T>;
+// Array<T>: the engine's dynamic-array container (single definition).
+#include "engine/core/Array.h"
 
 namespace AbyssEngine {
 

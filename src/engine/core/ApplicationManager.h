@@ -1,6 +1,9 @@
 #ifndef GOF2_APPLICATIONMANAGER_H
 #define GOF2_APPLICATIONMANAGER_H
-#include "common.h"   // Array, String, fixed-width integer types
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include <new>             // placement new (key-mapping / config-string construction)
 
 // Cross-class types referenced only through pointers.

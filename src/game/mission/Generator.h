@@ -2,7 +2,10 @@
 #define GOF2_GENERATOR_H
 
 #include <cstdint>
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Forward declarations for the cross-class pointer types the Generator works
 // with. The Generator never reaches into their layouts, so a forward decl is

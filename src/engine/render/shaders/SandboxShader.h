@@ -1,6 +1,9 @@
 #ifndef GOF2_SANDBOXSHADER_H
 #define GOF2_SANDBOXSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::SandboxShader — GLES2 bump-mapped mesh program (SandboxShader.vsh/.fsh).

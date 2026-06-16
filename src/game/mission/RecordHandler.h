@@ -1,6 +1,9 @@
 #ifndef GOF2_RECORDHANDLER_H
 #define GOF2_RECORDHANDLER_H
-#include "common.h"   // provides AbyssEngine::String (+ the `using String`) and Array<T>
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Game types referenced by pointer only.
 struct Agent;

@@ -1,6 +1,9 @@
 #ifndef GOF2_PENDINGPRODUCT_H
 #define GOF2_PENDINGPRODUCT_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class BluePrint;
 

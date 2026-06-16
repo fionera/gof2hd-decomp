@@ -1,6 +1,9 @@
 #ifndef GOF2_FILEREAD_H
 #define GOF2_FILEREAD_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/file/AEFile.h"
 
 namespace AbyssEngine {

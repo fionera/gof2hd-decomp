@@ -1,6 +1,9 @@
 #ifndef GOF2_GLOBALS_H
 #define GOF2_GLOBALS_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 - top-level Globals class (no AbyssEngine namespace).
 // Owns the shared game singletons and a handful of stateful helpers; most members

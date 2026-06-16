@@ -1,6 +1,9 @@
 #ifndef GOF2_SHADERBASESTRUCT_H
 #define GOF2_SHADERBASESTRUCT_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/core/String.h"
 
 // AbyssEngine::ShaderBaseStruct — the GLSL shader base that every concrete shader (BloomShader,

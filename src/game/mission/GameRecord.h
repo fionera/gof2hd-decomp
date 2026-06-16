@@ -1,6 +1,9 @@
 #ifndef GOF2_GAMERECORD_H
 #define GOF2_GAMERECORD_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // GameRecord — a saved-game snapshot (top-level class, no AbyssEngine namespace).
 //

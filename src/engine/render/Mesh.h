@@ -1,6 +1,9 @@
 #ifndef GOF2_MESH_H
 #define GOF2_MESH_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // Galaxy on Fire 2 -- AbyssEngine::Mesh (Android libgof2hdaa.so, armv7 Thumb).
 //
 // Renderable mesh: CPU-side vertex/index arrays that get uploaded into GL buffer

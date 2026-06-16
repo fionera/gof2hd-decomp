@@ -1,6 +1,9 @@
 #ifndef GOF2_EASEINOUTMATRIX_H
 #define GOF2_EASEINOUTMATRIX_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 #include "engine/math/AEMath.h"
 // Eased interpolation between two transform matrices. The eased parameter t

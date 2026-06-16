@@ -1,6 +1,9 @@
 #ifndef GOF2_RADIOMESSAGE_H
 #define GOF2_RADIOMESSAGE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Forward declarations for types referenced by pointer only.
 class Radio;

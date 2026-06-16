@@ -2,7 +2,10 @@
 #define GOF2_EXTERNS_H
 #include <cstdint>
 #include <cstddef>
-#include "common.h"        // String, Matrix, Vector, Quaternion (+ fwd.h: Engine, PaintCanvas, ...)
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 namespace AbyssEngine { class Mesh; }   // engine-opaque, namespaced
 class Engine;   // global; defined in engine/render/Engine.h
 // Centralized declarations of GENUINE externals — engine/host symbols defined in libgof2hd,

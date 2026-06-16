@@ -1,6 +1,9 @@
 #ifndef GOF2_MINEGUN_H
 #define GOF2_MINEGUN_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/weapons/ObjectGun.h"
 
 class PlayerEgo;

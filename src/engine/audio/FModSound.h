@@ -1,6 +1,9 @@
 #ifndef GOF2_FMODSOUND_H
 #define GOF2_FMODSOUND_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // FMOD designer-API handle types (opaque wrappers manipulated through the FMOD_* shims).
 namespace FMOD {

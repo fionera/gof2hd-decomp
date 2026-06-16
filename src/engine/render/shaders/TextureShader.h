@@ -1,6 +1,9 @@
 #ifndef GOF2_TEXTURESHADER_H
 #define GOF2_TEXTURESHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::TextureShader — GLES2 textured-mesh shader. The base program

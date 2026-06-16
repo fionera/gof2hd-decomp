@@ -1,6 +1,9 @@
 #ifndef GOF2_GENERICSHADER2_H
 #define GOF2_GENERICSHADER2_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // Galaxy on Fire 2 - AbyssEngine::GenericShader2 (GLES2 bump/lit shader).

@@ -1,6 +1,9 @@
 #ifndef GOF2_CHOICEWINDOW_H
 #define GOF2_CHOICEWINDOW_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // ChoiceWindow -- top-level modal choice/medal dialog. Hosts a scrollable message
 // (ScrollTouchWindow) plus up to three TouchButtons and an optional medal graphic.

@@ -5,7 +5,10 @@
 // (when a bounty mission is started) hosts the embedded star map for plotting the route.
 
 #include <cstdint>
-#include "common.h"   // String, Array<T>
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class StarMap;
 class ScrollTouchWindow;

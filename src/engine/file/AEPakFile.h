@@ -1,6 +1,9 @@
 #ifndef GOF2_AEPAKFILE_H
 #define GOF2_AEPAKFILE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- AEPakFile.
 // A virtual file reader that exposes a windowed view (base offset + size limit) over

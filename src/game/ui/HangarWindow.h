@@ -1,6 +1,9 @@
 #ifndef GOF2_HANGARWINDOW_H
 #define GOF2_HANGARWINDOW_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/ui/ChoiceWindow.h"
 #include "game/ui/ListItemWindow.h"
 

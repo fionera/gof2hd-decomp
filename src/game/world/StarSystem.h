@@ -1,6 +1,9 @@
 #ifndef GOF2_STARSYSTEM_H
 #define GOF2_STARSYSTEM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- the renderable star system shown in the cockpit/intro views.
 // Owns the sun, planet and station billboard geometries, their world positions and

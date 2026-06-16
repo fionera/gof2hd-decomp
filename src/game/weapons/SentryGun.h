@@ -1,6 +1,9 @@
 #ifndef GOF2_SENTRYGUN_H
 #define GOF2_SENTRYGUN_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/weapons/ObjectGun.h"
 
 // Galaxy on Fire 2 -- SentryGun: an ObjectGun that periodically spawns junk objects

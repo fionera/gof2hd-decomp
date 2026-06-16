@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <vector>
 
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 #include "game/ship/PlayerStatic.h"
 
@@ -23,7 +27,7 @@ public:
     Vector  initPosition;                    // original spawn position
     Vector  cameraPosition;                  // camera position captured each update
     Vector  objectPosition;                  // object position (float, from integer pos)
-    std::vector<BoundingVolume*> *boundingVolumes;  // bounding-volume container
+    Array<BoundingVolume*> *boundingVolumes;  // bounding-volume container
     Vector  viewDirection;                   // camera->object direction
 
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);

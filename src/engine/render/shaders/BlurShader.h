@@ -1,6 +1,9 @@
 #ifndef GOF2_BLURSHADER_H
 #define GOF2_BLURSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::BlurShader — GLES2 radial/box blur post-process shader. Derives from

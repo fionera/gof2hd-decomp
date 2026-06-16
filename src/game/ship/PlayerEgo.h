@@ -1,6 +1,9 @@
 #ifndef GOF2_PLAYEREGO_H
 #define GOF2_PLAYEREGO_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Vec3 — the 3-component math vector returned by several PlayerEgo methods.
 // Alias to the foundation Vector type (AbyssEngine::AEMath::Vector via common.h).

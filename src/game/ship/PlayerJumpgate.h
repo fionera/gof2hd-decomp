@@ -1,6 +1,9 @@
 #ifndef GOF2_PLAYERJUMPGATE_H
 #define GOF2_PLAYERJUMPGATE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/ship/PlayerStaticFar.h"
 
 class AEGeometry;

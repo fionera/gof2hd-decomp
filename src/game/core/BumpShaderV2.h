@@ -1,6 +1,9 @@
 #ifndef GOF2_BUMPSHADERV2_H
 #define GOF2_BUMPSHADERV2_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::BumpShaderV2 — GLES2 bump-mapping shader program. Derives from

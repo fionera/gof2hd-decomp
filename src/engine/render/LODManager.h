@@ -1,6 +1,9 @@
 #ifndef GOF2_LODMANAGER_H
 #define GOF2_LODMANAGER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 
 class AEGeometry;   // global engine type, used by pointer only

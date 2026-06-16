@@ -1,6 +1,9 @@
 #ifndef GOF2_ABYSSENGINE_H
 #define GOF2_ABYSSENGINE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"   // AbyssEngine::AEMath::Vector / Matrix, AbyssEngine::Quaternion
 
 // Galaxy on Fire 2 -- the AbyssEngine namespace: a family of namespace-scope free functions and

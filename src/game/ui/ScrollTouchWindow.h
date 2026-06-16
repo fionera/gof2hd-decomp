@@ -1,6 +1,9 @@
 #ifndef GOF2_SCROLLTOUCHWINDOW_H
 #define GOF2_SCROLLTOUCHWINDOW_H
-#include "common.h"   // AbyssEngine::String
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class ScrollTouchBox;
 

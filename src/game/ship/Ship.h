@@ -1,6 +1,9 @@
 #ifndef GOF2_SHIP_H
 #define GOF2_SHIP_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/mission/Item.h"
 
 // A player- or trader-owned spacecraft: its base stats (hull, load, value,

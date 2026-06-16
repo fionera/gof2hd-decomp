@@ -1,6 +1,9 @@
 #ifndef GOF2_CUBEMAPPING_H
 #define GOF2_CUBEMAPPING_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::CubeMapping — GLES2 cube-mapping shader.

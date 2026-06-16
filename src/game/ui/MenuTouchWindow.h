@@ -1,6 +1,9 @@
 #ifndef GOF2_MENUTOUCHWINDOW_H
 #define GOF2_MENUTOUCHWINDOW_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // MenuTouchWindow -- the top-level touch-driven menu window (main menu, options, load/save,
 // missions, store and the in-game cinematic overlay). It owns the per-state widget trees

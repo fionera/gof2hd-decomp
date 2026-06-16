@@ -46,18 +46,18 @@ void BoundingVolume::getCollisionNormal(Vector& out)
 // Copy the source volume's children into a freshly allocated array.
 void BoundingVolume::setVolume(BoundingVolume* src)
 {
-    children = new std::vector<BoundingVolume*>();
+    children = new Array<BoundingVolume*>();
     src->setVolume_tail(children);
 }
 
 // Append this volume to the destination array.
-void BoundingVolume::setVolume_tail(std::vector<BoundingVolume*>* arr)
+void BoundingVolume::setVolume_tail(Array<BoundingVolume*>* arr)
 {
     arr->push_back(this);
 }
 
 // Identical registration used by PlayerFixedObject::setBV.
-void BoundingVolume::setArr(std::vector<BoundingVolume*>* arr)
+void BoundingVolume::setArr(Array<BoundingVolume*>* arr)
 {
     arr->push_back(this);
 }
@@ -81,7 +81,7 @@ typedef void (*ProjFn)(BoundingVolume::Vector* out, void* self, void* bv);
 
 // Seed this->center with v, then run two passes projecting the point onto every
 // colliding volume's surface.
-void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, std::vector<BoundingVolume*>* vols)
+void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols)
 {
     centerX = v.x;
     centerY = v.y;

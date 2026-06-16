@@ -1,6 +1,9 @@
 #ifndef GOF2_PARTICLESYSTEMSPRITE_H
 #define GOF2_PARTICLESYSTEMSPRITE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- ParticleSystemSprite.
 // A sprite-backed particle system: each particle is one entry in a PaintCanvas sprite

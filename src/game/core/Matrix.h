@@ -1,6 +1,9 @@
 #ifndef GOF2_MATRIX_H
 #define GOF2_MATRIX_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // struct derived from offset-access field map (deterministic field_0xNN naming)
 // Galaxy on Fire 2 -- AbyssEngine::AEMath::Matrix (Android libgof2hdaa.so, armv7 Thumb).
 // (Confirmed namespace from the work-item Sig: AbyssEngine::AEMath::Matrix.)

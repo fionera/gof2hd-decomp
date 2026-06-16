@@ -1,6 +1,9 @@
 #ifndef GOF2_GLOWPPSHADER_H
 #define GOF2_GLOWPPSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // Galaxy on Fire 2 -- AbyssEngine::GlowPPShader.

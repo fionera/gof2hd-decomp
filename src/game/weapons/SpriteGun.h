@@ -1,6 +1,9 @@
 #ifndef GOF2_SPRITEGUN_H
 #define GOF2_SPRITEGUN_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- SpriteGun: a lightweight sprite-based weapon wrapper around
 // a Gun. It forwards update and enemy-targeting to the owned gun. Top-level class

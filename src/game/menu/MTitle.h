@@ -1,6 +1,9 @@
 #ifndef GOF2_MTITLE_H
 #define GOF2_MTITLE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/core/IApplicationModule.h"
 
 // MTitle -- the boot/title screen application module. Fades the publisher and

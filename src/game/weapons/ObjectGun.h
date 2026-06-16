@@ -1,6 +1,9 @@
 #ifndef GOF2_OBJECTGUN_H
 #define GOF2_OBJECTGUN_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- ObjectGun: the renderable/animated wrapper around a Gun.
 // It owns the weapon's mesh transform, optional muzzle/effect geometry, and (for

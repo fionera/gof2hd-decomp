@@ -1,6 +1,9 @@
 #ifndef GOF2_POSTBWSHADER_H
 #define GOF2_POSTBWSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::PostBWShader - post-process black & white shader. Renders a grayscale

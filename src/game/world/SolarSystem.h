@@ -1,6 +1,9 @@
 #ifndef GOF2_SOLARSYSTEM_H
 #define GOF2_SOLARSYSTEM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 — a single star system on the galaxy map. Owns its station-id,
 // forbidden-goods and linked-system lists, and an embedded display name.

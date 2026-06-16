@@ -1,6 +1,9 @@
 #ifndef GOF2_TRANSFORM_H
 #define GOF2_TRANSFORM_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/math/AEMath.h"   // AEMath::Matrix / Vector + math free-functions (VectorLerp, MatrixTransformVector, ...)
 
 using uint = uint32_t;

@@ -1,6 +1,9 @@
 #ifndef GOF2_PAINTCANVAS_H
 #define GOF2_PAINTCANVAS_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // The real cross-class headers below co-include cleanly, so PaintCanvas uses the real
 // ::Engine, ::Node (both global) and AbyssEngine::Mesh directly instead of self-contained
 // stubs. Transform still keeps a local stub: the real engine/math/Transform.h layout
@@ -333,7 +336,7 @@ using ::SpriteSystem;
 using ::ImageFont;
 using ::Image2D;
 
-// Array<T> alias inside the namespace (the global one lives in common.h).
+// Array<T> alias inside the namespace (the global one lives in Array.h).
 template <class T> using Array = ::Array<T>;
 } // namespace AbyssEngine
 

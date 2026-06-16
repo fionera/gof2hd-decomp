@@ -1,6 +1,9 @@
 #ifndef GOF2_VERTEXCOLORALPHATEXTURESHADER_H
 #define GOF2_VERTEXCOLORALPHATEXTURESHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +

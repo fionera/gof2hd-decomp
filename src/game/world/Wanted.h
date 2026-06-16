@@ -1,6 +1,9 @@
 #ifndef GOF2_WANTED_H
 #define GOF2_WANTED_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 — a wanted target (bounty) shown on the bounty board.
 

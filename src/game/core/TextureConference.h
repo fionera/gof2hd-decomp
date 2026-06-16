@@ -1,6 +1,9 @@
 #ifndef GOF2_TEXTURECONFERENCE_H
 #define GOF2_TEXTURECONFERENCE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // Engine is a top-level (global-scope) class; the renderer root is not in AbyssEngine.

@@ -1,6 +1,9 @@
 #ifndef GOF2_MODMAINMENU_H
 #define GOF2_MODMAINMENU_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 — ModMainMenu (main-menu / title screen module). Top-level class,
 // NO namespace. The first slot holds the screen's vtable pointer (set to vtable base + 8).

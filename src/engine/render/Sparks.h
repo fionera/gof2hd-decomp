@@ -1,6 +1,9 @@
 #ifndef GOF2_SPARKS_H
 #define GOF2_SPARKS_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 
 // Particle burst (rocket impacts / weapon hits) backed by a sprite system.

@@ -1,6 +1,9 @@
 #ifndef GOF2_STRING_H
 #define GOF2_STRING_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // Galaxy on Fire 2 - AbyssEngine::String.
 // The canonical String type (UTF-16, backed by std::u16string `s`) is defined ONCE in
 // gof2/common.h. This header only declares the recovered free-function API implemented in

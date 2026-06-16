@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <vector>
 
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "mathtypes.h"
 
 // Galaxy on Fire 2 -- BoundingVolume class.
@@ -16,7 +20,7 @@ public:
     using Vector = AbyssEngine::AEMath::Vector;
 
     void* vtable;
-    std::vector<BoundingVolume*>* children;
+    Array<BoundingVolume*>* children;
     float centerX;
     float centerY;
     float centerZ;
@@ -32,9 +36,9 @@ public:
     void setVolume(BoundingVolume* src);
     // Append this volume to the destination array. Both spellings forward to
     // the array's add.
-    void setVolume_tail(std::vector<BoundingVolume*>* arr);
-    void setArr(std::vector<BoundingVolume*>* arr);
-    void staticProjectCollisionOnSurface(const Vector& v, std::vector<BoundingVolume*>* vols);
+    void setVolume_tail(Array<BoundingVolume*>* arr);
+    void setArr(Array<BoundingVolume*>* arr);
+    void staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols);
     void update(float x, float y, float z);
     Vector getProjectionVector(const Vector& v);
 };

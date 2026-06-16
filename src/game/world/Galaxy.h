@@ -1,6 +1,9 @@
 #ifndef GOF2_GALAXY_H
 #define GOF2_GALAXY_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class SolarSystem;
 class Station;

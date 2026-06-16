@@ -1,6 +1,9 @@
 #ifndef GOF2_AMESHMERGER_H
 #define GOF2_AMESHMERGER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 -- AMeshMerger.
 // Owns an embedded Array<Mesh*> of the meshes to be batched and drawn, plus the

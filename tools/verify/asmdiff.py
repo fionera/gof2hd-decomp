@@ -25,6 +25,9 @@ _BRANCH = re.compile(r"^(b|bl|blx|bx|cb|cbz|cbnz|beq|bne|bcs|bhs|bcc|blo|bmi|bpl
 _HEXNUM = re.compile(r"0x[0-9a-fA-F]+")
 _ANGLE = re.compile(r"\s*<[^>]*>")          # objdump symbol annotation
 _PCREL = re.compile(r"\[pc,\s*#-?\d+\]")    # literal-pool load offset
+_REG = re.compile(r"^(r\d+|sp|lr|pc|fp|ip|sl|sb)$", re.I)  # ARM register operand
+_RELOC = re.compile(r"^\s*([0-9a-f]+):\s+R_ARM_\S+")       # objdump -r inline reloc
+_RELOC_WIDTH = 4   # all R_ARM relocs in these objects (THM_CALL/JUMP24/GOT_PREL/REL32) are 4-byte fields
 
 
 def normalize(mnem, ops):
@@ -35,7 +38,16 @@ def normalize(mnem, ops):
     ops = re.sub(r"\s+", " ", ops).strip()
     base = mnem.split(".")[0]
     if _BRANCH.match(mnem) or base in ("b", "bl", "blx", "bx"):
-        return mnem.split(".")[0] + " <t>"             # branch/call target -> placeholder
+        # A direct bl/blx to a *label* is link-time-interchangeable: our unlinked .o
+        # emits `bl`+relocation, the delinked target shows the linker-resolved `blx`
+        # interworking veneer. That is not a codegen difference, so collapse both to a
+        # single `call` token. A register-indirect blx/bx (blx r3, bx lr) IS a real
+        # codegen choice -- keep its register. Other branches: target -> placeholder.
+        if base in ("bl", "blx") and not _REG.match(ops):
+            return "call <t>"
+        if base in ("blx", "bx") and _REG.match(ops):
+            return f"{base} {ops}"
+        return base + " <t>"                           # branch/call target -> placeholder
     # pointer materialization & pool loads carry absolute values post-link
     if base in ("movw", "movt"):
         ops = re.sub(r"#\S+", "#i", ops)
@@ -68,13 +80,26 @@ def _symbol_sizes(lines):
     return sizes
 
 
+DISASM_TIMEOUT = 90   # seconds; objdump normally finishes in <2s — a longer run is a hang
+                      # (a malformed object or a wedged OrbStack call) and must not freeze the run.
+
+
 def disassemble(obj, objdump=DEFAULT_OBJDUMP):
     """{mangled symbol -> {'insns':[normalized...], 'bytes':'hex'}}.
 
     Each function is truncated to its real symbol size so trailing alignment
     padding (attributed by objdump to the preceding symbol) never pollutes the
-    comparison."""
-    out = subprocess.check_output([objdump, "-d", "-t", obj], text=True)
+    comparison.
+
+    'reloc' is the set of function-relative byte offsets covered by a relocation
+    in this (unlinked) object — the fields whose final value the linker fills in.
+    They are wildcarded by linked_equal() so an external call / global load doesn't
+    read as a byte mismatch against the post-link target."""
+    # stderr is captured (not inherited) so a failing object's objdump message ("No such file",
+    # bad format, ...) doesn't interleave into the report table; the failure is reported as a
+    # concise per-unit skip instead.
+    out = subprocess.check_output([objdump, "-d", "-t", "-r", obj], text=True,
+                                  timeout=DISASM_TIMEOUT, stderr=subprocess.DEVNULL)
     lines = out.splitlines()
     sizes = _symbol_sizes(lines)
     funcs, cur, start, limit = {}, None, 0, None
@@ -84,7 +109,7 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
             start = int(m.group(1), 16)
             sz = sizes.get(m.group(2))
             limit = start + sz if sz else None
-            cur = {"insns": [], "bytes": ""}
+            cur = {"insns": [], "bytes": "", "reloc": set()}
             funcs[m.group(2)] = cur
             continue
         if cur is None:
@@ -92,6 +117,12 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
         # "   a:\t68 0a       \tldr\tr2, [r1, #0]"   (objdump -d, raw bytes shown)
         m = re.match(r"^\s*([0-9a-f]+):\t([0-9a-f ]+)\t(\S+)\s*(.*)$", line)
         if not m:
+            # "\t\t\t22: R_ARM_THM_JUMP24\t_ZN..." -> mask this 4-byte field
+            rm = _RELOC.match(line)
+            if rm:
+                off = int(rm.group(1), 16) - start
+                if off >= 0 and (limit is None or start + off < limit):
+                    cur["reloc"].update(range(off, off + _RELOC_WIDTH))
             continue
         addr = int(m.group(1), 16)
         if limit is not None and addr >= limit:
@@ -103,6 +134,22 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
             cur["insns"].append(normalize(mnem, ops))
         cur["bytes"] += raw.replace(" ", "")
     return funcs
+
+
+def linked_equal(t, b):
+    """True if the raw bytes match except inside relocation-covered fields, which
+    legitimately differ: our unlinked .o (b) carries placeholder operands where the
+    delinked, post-link target (t) has the linker-resolved absolute value. Equivalent
+    to byte-identical machine code *after linking* — the real goal — and unlike a raw
+    byte compare it doesn't false-negative on every function that calls out or loads a
+    global. Relocation sites come from the base side (the post-link target has none)."""
+    tb, bb, mask = t["bytes"], b["bytes"], b.get("reloc") or set()
+    if len(tb) != len(bb):
+        return False
+    for i in range(len(bb) // 2):            # byte index; hex chars [2i:2i+2]
+        if i not in mask and tb[2 * i:2 * i + 2] != bb[2 * i:2 * i + 2]:
+            return False
+    return True
 
 
 def compare(target_funcs, base_funcs):
@@ -117,6 +164,7 @@ def compare(target_funcs, base_funcs):
             "symbol": sym,
             "match": round(ratio * 100, 1),
             "bytes_equal": t["bytes"] == b["bytes"],
+            "linked_equal": linked_equal(t, b),
             "n_target": len(t["insns"]),
             "n_base": len(b["insns"]),
         })

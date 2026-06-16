@@ -1,6 +1,9 @@
 #ifndef GOF2_DNSSHADER_H
 #define GOF2_DNSSHADER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.

@@ -1,6 +1,9 @@
 #ifndef GOF2_ENGINE_H
 #define GOF2_ENGINE_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Cross-engine types touched by pointer only. The real definitions live in
 // namespace AbyssEngine (FBOContainer.h / ShaderBaseStruct.h / Mesh.h); a value

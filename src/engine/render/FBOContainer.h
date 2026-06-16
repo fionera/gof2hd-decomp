@@ -1,6 +1,9 @@
 #ifndef GOF2_FBOCONTAINER_H
 #define GOF2_FBOCONTAINER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Engine is referenced by pointer only; its real definition lives in
 // gof2/engine/render/Engine.h. Note: the engine's Engine type is at global scope

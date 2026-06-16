@@ -4,6 +4,7 @@
 #ifndef GOF2_MATH_H
 #define GOF2_MATH_H
 #include <cstdint>
+#include <cmath>     // inline math (sqrtf/sinf/...) and the engine's math users that reached it via common.h
 
 namespace AbyssEngine {
 namespace AEMath {

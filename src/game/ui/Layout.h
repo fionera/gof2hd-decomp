@@ -5,7 +5,10 @@
 // navigation buttons) used by every full-screen game screen.
 
 #include <cstdint>
-#include "common.h"   // String, Array<T>
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 class TouchButton;
 class ChoiceWindow;

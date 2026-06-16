@@ -1,6 +1,9 @@
 #ifndef GOF2_AUTOPILOTLIST_H
 #define GOF2_AUTOPILOTLIST_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 // String (the 12-byte by-value AbyssEngine::String) and the SolarSystem class are sourced
 // from a single header to avoid the duplicate-String ODR clash that arises when
 // SolarSystem.h and Station.h are pulled into one TU. getTargetString() returns String by

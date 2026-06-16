@@ -1,6 +1,9 @@
 #ifndef GOF2_MISSIONSWINDOW_H
 #define GOF2_MISSIONSWINDOW_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // MissionsWindow -- the in-station "Missions" screen. Hosts a left (campaign) and a
 // right (freelance) scroll window, a row of tab buttons, the accept/reject/show-on-map

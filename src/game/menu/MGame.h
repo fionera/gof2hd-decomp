@@ -1,6 +1,9 @@
 #ifndef GOF2_MGAME_H
 #define GOF2_MGAME_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // MGame — the in-flight game module: drives a single flight session (level, player,
 // HUD, cameras, dialogue and the hyperspace-jump cinematic).

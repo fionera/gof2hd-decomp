@@ -82,7 +82,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry* geometry, float x, floa
     this->setVisible(visible);
 
     if (visible) {
-        this->boundingVolumes = new std::vector<BoundingVolume*>();
+        this->boundingVolumes = new Array<BoundingVolume*>();
         this->boundingVolumes->resize(1);
 
         Status* status = (Status*)*(void**)g_Status;

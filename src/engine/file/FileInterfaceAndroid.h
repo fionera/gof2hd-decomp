@@ -1,6 +1,9 @@
 #ifndef GOF2_FILEINTERFACEANDROID_H
 #define GOF2_FILEINTERFACEANDROID_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // File I/O abstraction for the Android build: reads and writes go through a stdio FILE*,
 // a libzip zip_file* (for assets packed in the APK), or a JNI input/output stream.

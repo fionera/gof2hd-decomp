@@ -1,7 +1,10 @@
 #ifndef GOF2_LEVEL_H
 #define GOF2_LEVEL_H
 #include "game/world/StarSystem.h"
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Owning headers for the classes Level exposes in its own interface (member pointers,
 // method parameters and returns). Types used only inside Level.cpp are included there.

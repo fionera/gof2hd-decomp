@@ -1,6 +1,9 @@
 #ifndef GOF2_PARTICLESETTINGS_H
 #define GOF2_PARTICLESETTINGS_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // Galaxy on Fire 2 - particle-emitter settings table.
 // ParticleSettings is an array of 48 ParticleSet parameter blocks (0xa0 bytes each,

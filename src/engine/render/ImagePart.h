@@ -1,6 +1,9 @@
 #ifndef GOF2_IMAGEPART_H
 #define GOF2_IMAGEPART_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 
 // A drawable 2D image region: an image2d handle plus a cached size and a
 // vertical offset, rendered through the global PaintCanvas.

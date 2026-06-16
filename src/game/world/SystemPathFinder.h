@@ -1,6 +1,9 @@
 #ifndef GOF2_SYSTEMPATHFINDER_H
 #define GOF2_SYSTEMPATHFINDER_H
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "engine/core/Node.h"
 #include "game/world/SolarSystem.h"
 #include "game/mission/Status.h"

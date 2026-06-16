@@ -1,7 +1,10 @@
 #ifndef GOF2_PLAYERCREATURE_H
 #define GOF2_PLAYERCREATURE_H
 
-#include "common.h"
+#include "engine/core/Array.h"
+#include "AEString.h"
+#include "fieldaccess.h"
+#include "aetypes.h"
 #include "game/ship/KIPlayer.h"
 
 class Player;
