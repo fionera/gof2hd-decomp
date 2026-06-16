@@ -61,7 +61,7 @@ public:
     Vector getProjectionVector(const Vector& value);
     void   setAsteroidCenter(Vector center);
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
-    void   push(int delta);
+    void   push(int delta) override;
     void   initPush(const Vector& target, int duration);
 
 private:

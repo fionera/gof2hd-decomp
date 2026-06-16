@@ -56,7 +56,7 @@ public:
     void render() override;
     void renderBase();
     void handleTurret(int delta);
-    void revive();
+    void revive() override;
     void setPosition(const Vector& position);
     void reset();
     void setLevel(Level* level);

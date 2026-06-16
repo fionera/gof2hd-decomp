@@ -142,7 +142,7 @@ public:
 
     void awake();
     void reset();
-    void revive();
+    void revive() override;
     void cloak(int dur, bool b);
     int collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void handleCloaking();
@@ -152,7 +152,7 @@ public:
     uint8_t hasMissionCrateLost();
     void initPush(void *target, int radius);
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
-    void push(int dt);
+    void push(int dt) override;
     void removeTrail();
     void render() override;
     void roll(int angle);
@@ -169,8 +169,8 @@ public:
     void setRotate(int v);
     void setShootError(int v);
     void setShipGroup(AEGeometry *geom, int group, bool flag);
-    void setSpeed(float v);
-    void setWingmanCommand(int cmd, KIPlayer *target);
+    void setSpeed(float v) override;
+    void setWingmanCommand(int cmd, KIPlayer *target) override;
     void update(int dt) override;
 };
 #endif

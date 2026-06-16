@@ -155,7 +155,10 @@ public:
     void setToSleep();
     void setVisible(bool visible);
     void setWingman(bool b, int cmd);
-    void setWingmanCommand(int cmd, KIPlayer* target);
+    virtual void setWingmanCommand(int cmd, KIPlayer* target); // actor vtable slot +0x10
+    virtual void setSpeed(float v);                            // actor vtable slot +0x1c
+    virtual void revive();                                     // actor vtable slot +0x18 (base no-op)
+    virtual void push(int dt);                                 // actor vtable slot +0x30 (base no-op)
     void translate(const Vector& v);
     Route* getRoute();
     Array<SpacePoint*>* getSpacePoints();

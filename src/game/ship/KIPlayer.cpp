@@ -329,6 +329,19 @@ int KIPlayer::collide(float, float, float) {
 void KIPlayer::update(int) {
 }
 
+// slot +0x1c: cache the requested speed (binary stores it at +0x64).
+void KIPlayer::setSpeed(float v) {
+    *(float*)&this->field_0x64 = v;
+}
+
+// slot +0x18: base actor has no revive behaviour; subclasses override.
+void KIPlayer::revive() {
+}
+
+// slot +0x30: base actor has no push behaviour; subclasses override.
+void KIPlayer::push(int) {
+}
+
 // slot +0x40: unpack the vector and dispatch to the polymorphic float form (slot +0x3c).
 int KIPlayer::outerCollide(const Vector& v) {
     return this->outerCollide(v.x, v.y, v.z);
