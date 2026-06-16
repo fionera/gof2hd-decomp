@@ -108,7 +108,7 @@ V3 PlayerFixedObject::getPosition() {
 extern PaintCanvas* gCanvas;
 
 // PC-relative singleton holders for the engine subsystems reached during update().
-__attribute__((visibility("hidden"))) extern void **g_pfo_fmod;      // FModSound holder
+__attribute__((visibility("hidden"))) extern FModSound **g_pfo_fmod;  // FModSound holder
 __attribute__((visibility("hidden"))) extern void **g_pfo_audioFlag; // *holder+0xf = positional flag
 __attribute__((visibility("hidden"))) extern void **g_pfo_egoA;      // PlayerEgo holder (achievements path)
 __attribute__((visibility("hidden"))) extern const int g_pfo_dmgVal;
@@ -236,7 +236,7 @@ afterMotion:
         // RAWREAD: *g_pfo_audioFlag is an opaque engine holder (void*), no modeled type
         if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
             pos = &self->position;
-        ((FModSound *)(*g_pfo_fmod))->play(0x14, pos, (Vector *)0, (float)sndHandle);
+        (*g_pfo_fmod)->play(0x14, pos, (Vector *)0, (float)sndHandle);
         lod = (Level *)self->level;
         {
             int emitHandle = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;

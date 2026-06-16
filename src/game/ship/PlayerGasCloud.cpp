@@ -30,14 +30,14 @@ using AbyssEngine::AEMath::MatrixGetUp;
 // Status singleton, reached via the global Status pointer (same pattern as Hud/Player).
 
 // Engine globals reached through the GOT.
-extern void** g_pgc_canvas;        // paint canvas (intact-cloud geometry)
+extern PaintCanvas** g_pgc_canvas;        // paint canvas (intact-cloud geometry)
 extern void*  g_pgc_itemList;      // root item table
-extern void*  g_pgc_canvasRoot;    // paint canvas (spark geometry)
-extern void*  g_pgc_rng;           // random generator
-extern void** g_pgc_canvas2;       // paint canvas (render camera)
-extern void*  g_pgcu_canvasRoot;   // paint canvas (update transforms)
+extern PaintCanvas** g_pgc_canvasRoot;    // paint canvas (spark geometry)
+extern AbyssEngine::AERandom** g_pgc_rng; // random generator
+extern PaintCanvas** g_pgc_canvas2;       // paint canvas (render camera)
+extern PaintCanvas** g_pgcu_canvasRoot;   // paint canvas (update transforms)
 extern void*  g_pgcu_itemDefs;     // item-definition table
-extern void*  g_pgcu_pickupSound;  // pickup FModSound
+extern FModSound* g_pgcu_pickupSound;     // pickup FModSound
 extern void*  g_pgcu_campaign;     // campaign state
 
 // Tuning constants.
@@ -92,7 +92,7 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager* /*particles*/,
 
     this->center = position;
 
-    this->modelGeometry = new AEGeometry(this->cloudMeshId, (PaintCanvas*)*g_pgc_canvas, false);
+    this->modelGeometry = new AEGeometry(this->cloudMeshId, *g_pgc_canvas, false);
     this->modelGeometry->setPosition(position);
 
     this->hasCargo = 1;   // KIPlayer base slot (was field_0x4c)
@@ -210,12 +210,12 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius)
     float spread = t * g_pgc_spread;
     float lifeDiv = g_pgc_lifeDiv;
 
-    AbyssEngine::AERandom* rng = *(AbyssEngine::AERandom**)g_pgc_rng;
+    AbyssEngine::AERandom* rng = *g_pgc_rng;
 
     int count = (int)((countBase / 1.5f + 10.0f) * attrF);
     for (int i = 0; i < count; i++) {
         AEGeometry* shard = new AEGeometry(this->sparkMeshId,
-                                           (PaintCanvas*)*(void**)g_pgc_canvasRoot, false);
+                                           *g_pgc_canvasRoot, false);
         shard->setPosition(this->center);
 
         float jx = (float)rng->next(10000);
@@ -255,7 +255,7 @@ void PlayerGasCloud::update(int dt)
     if (this->exploded == 0 || this->settled != 0 || arr == 0) {
         // Idle / pre-explosion: just advance the bound transform.
         AbyssEngine::Transform* t = (AbyssEngine::Transform*)
-            ((PaintCanvas*)*(void**)g_pgcu_canvasRoot)->TransformGetTransform(
+            (*g_pgcu_canvasRoot)->TransformGetTransform(
                 *(unsigned int*)((char*)this->modelGeometry + 0xc));
         t->Update(1, (bool)dt);
         return;
@@ -298,8 +298,8 @@ void PlayerGasCloud::update(int dt)
                 int itemId = this->itemId;
                 if (ship->getFreeSpace() < 1) {
                     if (this->level->getPlayer() != 0) {
-                        ((FModSound*)g_pgcu_pickupSound)->stop(0x8d0);
-                        ((FModSound*)g_pgcu_pickupSound)->play(0x8d0, 0, 0, 0.0f);
+                        g_pgcu_pickupSound->stop(0x8d0);
+                        g_pgcu_pickupSound->play(0x8d0, 0, 0, 0.0f);
                         PlayerEgo* ego = (PlayerEgo*)(intptr_t)this->level->getPlayer();
                         Hud* hud = (Hud*)(intptr_t)ego->getHUD();
                         hud->catchCargo(this->itemId, false, true, false, true, false, 0, 0);
@@ -322,8 +322,8 @@ void PlayerGasCloud::update(int dt)
                             }
                         }
                     }
-                    ((FModSound*)g_pgcu_pickupSound)->stop(0x8d0);
-                    ((FModSound*)g_pgcu_pickupSound)->play(0x8d0, 0, 0, 0.0f);
+                    g_pgcu_pickupSound->stop(0x8d0);
+                    g_pgcu_pickupSound->play(0x8d0, 0, 0, 0.0f);
                     Ship* ship2 = gStatus->getShip();
                     ship2->addCargo(def);
                 }
@@ -345,7 +345,7 @@ void PlayerGasCloud::update(int dt)
                 *scale = (dist + g_pgcu_fadeAdd) / g_pgcu_fadeDiv;
             }
             AbyssEngine::Transform* t = (AbyssEngine::Transform*)
-                ((PaintCanvas*)*(void**)g_pgcu_canvasRoot)->TransformGetTransform(
+                (*g_pgcu_canvasRoot)->TransformGetTransform(
                     *(unsigned int*)((char*)geom + 0xc));
             t->Update(1, (bool)dt);
         }
@@ -407,7 +407,7 @@ void PlayerGasCloud::render()
     if (mode != 3 && mode != 0)
         return;
 
-    PaintCanvas* cam = (PaintCanvas*)*g_pgc_canvas2;
+    PaintCanvas* cam = *g_pgc_canvas2;
     unsigned int cur = cam->CameraGetCurrent();
     memcpy(cameraLocal, cam->CameraGetLocal(cur), 0x3c);
 

@@ -175,17 +175,17 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-__attribute__((visibility("hidden"))) extern void **g_dw_gameTextLoad;
-__attribute__((visibility("hidden"))) extern void **g_dw_soundLoad;
-__attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryLoad;
+__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextLoad;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundLoad;
+__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryLoad;
 __attribute__((visibility("hidden"))) extern const char g_dw_emptyLoad[];
 __attribute__((visibility("hidden"))) extern int g_dw_campaignBriefingTextIds[];
 __attribute__((visibility("hidden"))) extern int g_dw_campaignSuccessTextIds[];
 __attribute__((visibility("hidden"))) extern void *g_dw_defaultClientImage;
 
 void DialogueWindow::loadContent() {
-    GameText *gameText = (GameText *)*g_dw_gameTextLoad;
-    FModSound *sound = (FModSound *)*g_dw_soundLoad;
+    GameText *gameText = *g_dw_gameTextLoad;
+    FModSound *sound = *g_dw_soundLoad;
 
     this->nextButton->replaceTextKeepSize(gameText->getText(0xb4));
     this->mirrorFace = 0;
@@ -270,7 +270,7 @@ void DialogueWindow::loadContent() {
 
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);
-    this->faceParts = ((ImageFactory *)*g_dw_imageFactoryLoad)->loadChar((int *)this->clientImage);
+    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar((int *)this->clientImage);
 
     if (this->isLastPage() != 0) {
         this->nextButton->replaceTextKeepSize(gameText->getText(0xb5));
@@ -292,7 +292,7 @@ DialogueWindow::DialogueWindow() {
 }
 
 __attribute__((visibility("hidden"))) extern void *g_dw_soundConfig;
-__attribute__((visibility("hidden"))) extern void **g_dw_fmodSound;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_fmodSound;
 
 void DialogueWindow::update(int dt) {
     if (this->scrollWindow != 0) {
@@ -302,7 +302,7 @@ void DialogueWindow::update(int dt) {
         this->choiceWindow->update(dt);
     }
     if (F<uint8_t>(g_dw_soundConfig, 0xe) != 0 && this->voiceSound != -1) {
-        FModSound *sound = (FModSound *)*g_dw_fmodSound;
+        FModSound *sound = *g_dw_fmodSound;
         sound->getPlayingProgress(this->voiceSound);
         if (sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {
             if (this->autoAdvanceTimer >= this->pauseLength) {
@@ -313,11 +313,11 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_dw_soundChoice;
-__attribute__((visibility("hidden"))) extern void **g_dw_soundVoice;
-__attribute__((visibility("hidden"))) extern void **g_dw_soundPrev;
-__attribute__((visibility("hidden"))) extern void **g_dw_soundNext;
-__attribute__((visibility("hidden"))) extern void **g_dw_gameTextTouchEnd;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundChoice;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundVoice;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundPrev;
+__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundNext;
+__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextTouchEnd;
 
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
@@ -329,30 +329,30 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         if (r != 0) return 0;
         this->choiceActive = 0;
         if (gStatus->getCurrentCampaignMission() == 0x0f) {
-            FModSound *sound = (FModSound *)*g_dw_soundChoice;
+            FModSound *sound = *g_dw_soundChoice;
             sound->play(0xa2, 0, 0, 0);
             sound->stop(F<int>(sound, 0));
             sound->play(0x88, 0, 0, 0);
         }
         if (this->voiceSound != -1) {
-            ((FModSound *)*g_dw_soundVoice)->stop(this->voiceSound);
+            (*g_dw_soundVoice)->stop(this->voiceSound);
         }
         return 1;
     }
 
     this->scrollWindow->OnTouchEnd(x, y);
     if (this->prevButton->OnTouchEnd(x, y) != 0) {
-        ((FModSound *)*g_dw_soundPrev)->stop(this->voiceSound);
+        (*g_dw_soundPrev)->stop(this->voiceSound);
         this->previousPage();
     }
     if (this->nextButton->OnTouchEnd(x, y) != 0) {
-        ((FModSound *)*g_dw_soundNext)->stop(this->voiceSound);
+        (*g_dw_soundNext)->stop(this->voiceSound);
         if (this->nextPage() == 0) {
             return 1;
         }
     }
     if (this->moreButton->OnTouchEnd(x, y) != 0) {
-        String *text = ((GameText *)*g_dw_gameTextTouchEnd)->getText(0x18c);
+        String *text = (*g_dw_gameTextTouchEnd)->getText(0x18c);
         this->choiceWindow->set(*text, true);
         this->choiceActive = 1;
     }
@@ -365,7 +365,7 @@ __attribute__((visibility("hidden"))) extern const char g_dw_defaultAgentName[];
 __attribute__((visibility("hidden"))) extern int *g_dw_screenWidth;
 __attribute__((visibility("hidden"))) extern void **g_dw_layoutInit;
 __attribute__((visibility("hidden"))) extern int *g_dw_screenHeight;
-__attribute__((visibility("hidden"))) extern void **g_dw_gameTextInit;
+__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextInit;
 
 static inline int half_round_to_zero(int v) {
     return (v + ((unsigned)v >> 31)) >> 1;
@@ -415,7 +415,7 @@ int DialogueWindow::init() {
 
     this->choiceWindow = new ChoiceWindow();
 
-    GameText *gameText = (GameText *)*g_dw_gameTextInit;
+    GameText *gameText = *g_dw_gameTextInit;
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     this->prevButton = new TouchButton(gameText->getText(0xb3), 5,
@@ -440,8 +440,8 @@ int DialogueWindow::init() {
 }
 
 __attribute__((visibility("hidden"))) extern const char g_dw_emptyString[];
-__attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryCtor;
-__attribute__((visibility("hidden"))) extern void **g_dw_gameTextCtor;
+__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryCtor;
+__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextCtor;
 __attribute__((visibility("hidden"))) extern void **g_dw_layoutCtor;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
@@ -457,11 +457,11 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->moreButton->setVisible(false);
     this->prevButton->setVisible(false);
 
-    this->faceParts = ((ImageFactory *)*g_dw_imageFactoryCtor)->loadChar(parts);
+    this->faceParts = (*g_dw_imageFactoryCtor)->loadChar(parts);
     delete this->nextButton;
     this->nextButton = 0;
 
-    GameText *gameText = (GameText *)*g_dw_gameTextCtor;
+    GameText *gameText = *g_dw_gameTextCtor;
     void *layout = *g_dw_layoutCtor;
     int margin = F<int>(layout, 0x4c);
     int x = this->frameX + this->frameWidth / 2;
@@ -528,8 +528,8 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
 }
 
 __attribute__((visibility("hidden"))) extern int *g_dw_drawGuard;
-__attribute__((visibility("hidden"))) extern void **g_dw_layoutDraw;
-__attribute__((visibility("hidden"))) extern void **g_dw_imageFactoryDraw;
+__attribute__((visibility("hidden"))) extern Layout **g_dw_layoutDraw;
+__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryDraw;
 __attribute__((visibility("hidden"))) extern int *g_dw_drawPositionsReady;
 __attribute__((visibility("hidden"))) extern int *g_dw_moreButtonX;
 __attribute__((visibility("hidden"))) extern int *g_dw_moreButtonY;
@@ -539,7 +539,7 @@ __attribute__((visibility("hidden"))) extern int *g_dw_drawReadyFlag;
 
 void DialogueWindow::draw() {
     gCanvas->SetColor((unsigned int)-1);
-    Layout *layout = (Layout *)*g_dw_layoutDraw;
+    Layout *layout = *g_dw_layoutDraw;
     layout->drawMask();
     String title;
     title.ctor_copy(&this->agentName, false);
@@ -548,9 +548,9 @@ void DialogueWindow::draw() {
 
     this->scrollWindow->draw();
 
-    layout = (Layout *)*g_dw_layoutDraw;
+    layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
-    ((ImageFactory *)*g_dw_imageFactoryDraw)->drawChar(this->faceParts,
+    (*g_dw_imageFactoryDraw)->drawChar(this->faceParts,
         this->frameX + margin, this->frameY + margin + F<int>(layout, 0x8), this->mirrorFace);
 
     this->prevButton->draw();

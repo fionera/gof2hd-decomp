@@ -16,11 +16,11 @@
 // `gStatus` is the live Status pointer.
 
 // PaintCanvas singleton holder (see externs.h): the live canvas is `*g_PaintCanvas`.
-extern void *g_PaintCanvas;
+extern PaintCanvas **g_PaintCanvas;
 
 static inline PaintCanvas *paintCanvas()
 {
-    return *(PaintCanvas **)g_PaintCanvas;
+    return *g_PaintCanvas;
 }
 
 // boundingVolumes is declared as a raw void* on PlayerStaticFar; this view gives

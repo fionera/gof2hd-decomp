@@ -156,12 +156,12 @@ void HangarWindow::hideMessage() {
     this->dialogActive = 0;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;        // *piVar37
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;        // *piVar37
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;     // *piVar21
 __attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;    // *piVar41
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 __attribute__((visibility("hidden"))) extern void **g_hw_font;
-__attribute__((visibility("hidden"))) extern void **g_hw_recordHandler;
+__attribute__((visibility("hidden"))) extern RecordHandler **g_hw_recordHandler;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_optionFlags;
 __attribute__((visibility("hidden"))) extern unsigned int *g_hw_dlcModuleId;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_blackMarketHintFlag;
@@ -174,7 +174,7 @@ extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
     hw_rnd_d[], hw_rnd_e[], hw_rnd_x[];
 
 void HangarWindow::render() {
-    Layout *layout = (Layout *)*g_hw_layout;
+    Layout *layout = *g_hw_layout;
     PaintCanvas *canvas = gCanvas;
     ((PaintCanvas *)canvas)->SetColor(0u);
 
@@ -381,7 +381,7 @@ void HangarWindow::render() {
     }
 
     // --- Footer + credits button (always drawn). ---
-    layout = (Layout *)*g_hw_layout;
+    layout = *g_hw_layout;
     ((Layout *)(layout))->drawFooter();
     Array<TouchButton*> *btns = this->buttons;
     (*btns)[(0x2c) >> 2]->setVisible(true);
@@ -470,8 +470,8 @@ void HangarWindow::render() {
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;
-__attribute__((visibility("hidden"))) extern void **g_hw_recordHandler;
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;
+__attribute__((visibility("hidden"))) extern RecordHandler **g_hw_recordHandler;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_optionFlags;
 __attribute__((visibility("hidden"))) extern unsigned int *g_hw_dlcModuleId;
 __attribute__((visibility("hidden"))) extern unsigned int *g_hw_modStationId;
@@ -497,7 +497,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         if (self->viewMode == 1)
             self->listItemWindow->OnTouchEnd(touch, coord);
 
-        Layout *layout = (Layout *)*g_hw_layout;
+        Layout *layout = *g_hw_layout;
         int handled = ((Layout *)(layout))->OnTouchEnd(touch, coord);
         if (handled == 0) {
             // Inertial scroll bookkeeping.
@@ -583,7 +583,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             // "Buy credits" footer button.
             if ((*self->buttons)[(0x2c) >> 2]->OnTouchEnd(touch) != 0) {
                 g_hw_optionFlags[0x4e] = 1;
-                ((RecordHandler *)(*g_hw_recordHandler))->saveOptions();
+                (*g_hw_recordHandler)->saveOptions();
                 self->showCreditsBuyWindow();
             }
             return;
@@ -679,7 +679,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             self->dialogActive = 0;
         } else if (r == 0) {
             g_hw_optionFlags[0x4e] = 1;
-            ((RecordHandler *)(*g_hw_recordHandler))->saveOptions();
+            (*g_hw_recordHandler)->saveOptions();
             self->showCreditsBuyWindow();
         }
     } else if (self->buyCreditsActive == 0) {
@@ -695,7 +695,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             // RAWREAD: appData is the opaque ApplicationData (void*, no header); +0xNN are its
             // unmodeled per-reward "claimed" flags.
             void *appData = AppManager_GetApplicationData();
-            void *rh = *g_hw_recordHandler;
+            RecordHandler *rh = *g_hw_recordHandler;
             for (unsigned int i = 0; i != 5; i++) {
                 if ((*self->buttons)[(i * 4 + 0x48) >> 2]->OnTouchEnd(touch) != 0) {
                     switch (i) {
@@ -985,11 +985,11 @@ void HangarWindow::update(int delta) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_sound;
+__attribute__((visibility("hidden"))) extern FModSound **g_hw_sound;
 
 int HangarWindow::highlightItem(ListItem *item) {
     if (item != nullptr && item->isSelectable() != 0) {
-        ((FModSound *)(*g_hw_sound))->play(0x7c, nullptr, nullptr, 0);
+        (*g_hw_sound)->play(0x7c, nullptr, nullptr, 0);
         unsigned flag = 0;
         if (this->selectedItem != item) {
             flag = item->isTextButton() ^ 1;
@@ -1065,7 +1065,7 @@ void HangarWindow::buildMissionOffer(int touch, int coord)
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_sound;
+__attribute__((visibility("hidden"))) extern FModSound **g_hw_sound;
 
 void HangarWindow::demountItem(Item *item, int slot) {
     int type = item->getType();
@@ -1112,10 +1112,10 @@ void HangarWindow::demountItem(Item *item, int slot) {
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
-    ((FModSound *)(*g_hw_sound))->play(0x60, nullptr, nullptr, 0.0f);
+    (*g_hw_sound)->play(0x60, nullptr, nullptr, 0.0f);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 __attribute__((visibility("hidden"))) extern int *g_hw_bpTextId;
@@ -1124,7 +1124,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     HangarWindow *self = this;
     self->holdTime = 0;
     self->repeatTimer = 0;
-    unsigned char handled = (unsigned char)((Layout *)(*g_hw_layout))->OnTouchBegin(touch);
+    unsigned char handled = (unsigned char)(*g_hw_layout)->OnTouchBegin(touch);
 
     if (self->dialogActive != 0) {
         if (self->buyCreditsActive != 0) {
@@ -1149,7 +1149,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
         return;
     }
 
-    Layout *layout = (Layout *)*g_hw_layout;
+    Layout *layout = *g_hw_layout;
     unsigned char skip = 1;
     if (layout->field_0xc < coord && coord < *g_hw_screenWidth - layout->field_0x10) {
         int row = IDIV(
@@ -1819,7 +1819,7 @@ void HangarWindow::transaction(bool buy) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_sound;
+__attribute__((visibility("hidden"))) extern FModSound **g_hw_sound;
 
 void HangarWindow::mountItem(Item *item) {
     int type = item->getType();
@@ -1865,14 +1865,14 @@ void HangarWindow::mountItem(Item *item) {
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
-    ((FModSound *)(*g_hw_sound))->play(0x62, nullptr, nullptr, 0.0f);
+    (*g_hw_sound)->play(0x62, nullptr, nullptr, 0.0f);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
-    Layout *layout = (Layout *)*g_hw_layout;
+    Layout *layout = *g_hw_layout;
     ((Layout *)(layout))->OnTouchMove(touch);
 
     if (this->dialogActive != 0) {
@@ -1989,7 +1989,7 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
 // AbyssEngine::String - 12-byte value type.
 
 __attribute__((visibility("hidden"))) extern int *g_hw_freeCreditsTextId;
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;
 
 void HangarWindow::showFreeCreditsWindow() {
     void *appData = ApplicationManager_GetApplicationData();
@@ -2013,7 +2013,7 @@ void HangarWindow::showFreeCreditsWindow() {
             maxW = w;
     }
     int btnW = ((TouchButton *)(0))->getWidth();
-    Layout *layout = (Layout *)*g_hw_layout;
+    Layout *layout = *g_hw_layout;
     this->dialog->setWidth(layout->field_0x2c + btnW + maxW + layout->field_0x28 * 4);
 
     this->freeCreditsActive = 1;
@@ -2023,7 +2023,7 @@ void HangarWindow::showFreeCreditsWindow() {
 }
 
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;          // *piVar27 (game-state object at .bss 0x2281d4; NOT a canonical singleton)
-__attribute__((visibility("hidden"))) extern void **g_hw_layout;           // *piVar22 (layout config)
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;           // *piVar22 (layout config)
 __attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;        // *piVar11
 __attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;       // *piVar15
 __attribute__((visibility("hidden"))) extern int *g_hw_helpTextId;         // *piVar9
@@ -2032,7 +2032,7 @@ __attribute__((visibility("hidden"))) extern void **g_hw_posYArray;        // DA
 __attribute__((visibility("hidden"))) extern void **g_hw_imageCountSlot;   // mirror of tab count
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_specialModeFlag;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_blackMarketHintFlag;
-__attribute__((visibility("hidden"))) extern void **g_hw_recordHandler;
+__attribute__((visibility("hidden"))) extern RecordHandler **g_hw_recordHandler;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_listModeFlag;
 __attribute__((visibility("hidden"))) extern uint8_t *g_hw_introHintFlag;
 __attribute__((visibility("hidden"))) extern float g_hw_posScale;
@@ -2061,7 +2061,7 @@ void HangarWindow::initialize() {
     self->tabButtons->resize(3);
 
     int scrW = *g_hw_screenWidth;
-    Layout *layout = (Layout *)*g_hw_layout;
+    Layout *layout = *g_hw_layout;
 
     void *b0 = ::operator new(200);
     TouchButton_ctor_text(b0, ((GameText *)(*g_hw_helpTextId))->getText(), 3,
@@ -2317,7 +2317,7 @@ void HangarWindow::initialize() {
     self->refreshCurrentContentHeight();
 
     self->currentLoad = gStatus->getShip()->getCurrentLoad();
-    Layout *lay2 = (Layout *)*g_hw_layout;
+    Layout *lay2 = *g_hw_layout;
     self->visibleHeight = ((*g_hw_screenHeight - lay2->field_0x10 - lay2->field_0xc) -
                           lay2->field_0x20) - lay2->field_0x24;
 
@@ -2355,7 +2355,7 @@ void HangarWindow::initialize() {
             ((GameText *)(*g_hw_helpTextId))->getText();
             self->dialog->set(g_HangarWindow_emptyDialogText);
             introFlag[0x4e] = 1;
-            ((RecordHandler *)(*g_hw_recordHandler))->saveOptions();
+            (*g_hw_recordHandler)->saveOptions();
             self->dialogActive = 1;
         }
     }
@@ -2364,7 +2364,7 @@ void HangarWindow::initialize() {
 // A window-open counter (raised to 1) and the layout/config singleton, whose geometry
 // block at +0x238..0x250 seeds this window's grid-spacing fields.
 extern int *g_hw_openCounter;
-extern void **g_hw_layout;
+extern Layout **g_hw_layout;
 
 HangarWindow::HangarWindow() {
     void *lay = *g_hw_layout;

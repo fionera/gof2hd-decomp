@@ -1098,7 +1098,7 @@ float PlayerEgo::down(int frameTime, float delta) {
 // returns the remaining distance; PE_adp_apply writes the final transform.
 
 __attribute__((visibility("hidden"))) extern int  *g_PE_adp_dockRadius; // 0xb00f2 per-ship table
-__attribute__((visibility("hidden"))) extern void **g_PE_adp_fixedObj;  // 0xb00f0 PlayerFixedObject
+__attribute__((visibility("hidden"))) extern PlayerFixedObject **g_PE_adp_fixedObj;  // 0xb00f0 PlayerFixedObject
 
 // clears the 3-float dock-offset vector at 0x1c8.
 static inline void adp_clearDockVector(PlayerEgo *self)
@@ -1113,10 +1113,10 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
 {
     void *mission = PE_status()->getMission();
     void *campaign = (void *)PE_status()->getCampaignMission();
-    void *fixed = *g_PE_adp_fixedObj;
+    PlayerFixedObject *fixed = *g_PE_adp_fixedObj;
 
     if (((Mission *)(mission))->isEmpty() == 0 && ((Mission *)(mission))->getType() == 0xf
-        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
+        && fixed->getDockingType() == 1) {
         if (((Ship *)(PE_status()->getShip()))->hasCargo(((Mission *)(mission))->getProductionGoodIndex(), 1) != 0) {
             int amount = ((Item *)(((Ship *)(PE_status()->getShip()))->getCargo(((Mission *)(mission))->getProductionGoodIndex())))->getAmount();
             ((int&)self->autoTurretEquipped) = amount;
@@ -1131,9 +1131,9 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
 
     if (((Mission *)(mission))->isEmpty() == 0
         && (((Mission *)(mission))->getType() == 0xb8 || ((Mission *)(mission))->getType() == 0xa8)
-        && ((PlayerFixedObject *)(fixed))->getDockingType() == 2) {
+        && fixed->getDockingType() == 2) {
         // passenger drop-off
-        int carried = ((PlayerFixedObject *)fixed)->intPosX;
+        int carried = fixed->intPosX;
         int maxPax = ((Ship *)(PE_status()->getShip()))->getMaxPassengers();
         if (maxPax > 0 && carried < maxPax) {
             int avail = (((Mission *)(mission))->getType() == 0xa8)
@@ -1151,8 +1151,8 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     }
 
     if (((Mission *)(mission))->isEmpty() == 0 && ((Mission *)(mission))->getType() == 0xb8
-        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
-        int n = ((PlayerFixedObject *)fixed)->intPosX;
+        && fixed->getDockingType() == 1) {
+        int n = fixed->intPosX;
         if (n > 0) {
             self->autoTurretTimer = 0;
             ((int&)self->autoTurretEquipped) = n;
@@ -1163,7 +1163,7 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
 
     if (campaign != 0 && ((Mission *)(campaign))->isEmpty() == 0
         && (((Mission *)(campaign))->getType() == 0xa7 || ((Mission *)(campaign))->getType() == 0xae)
-        && ((PlayerFixedObject *)(fixed))->getDockingType() == 1) {
+        && fixed->getDockingType() == 1) {
         if (((Ship *)(PE_status()->getShip()))->hasCargo(((Mission *)(campaign))->getProductionGoodIndex(), 1) != 0) {
             int amount = ((Item *)(((Ship *)(PE_status()->getShip()))->getCargo(((Mission *)(campaign))->getProductionGoodIndex())))->getAmount();
             ((int&)self->autoTurretEquipped) = amount;
@@ -2772,14 +2772,14 @@ void PlayerEgo::approachAsteroid(int hud2, void *radar) {
 // Owns the orientation matrix build + strafe slide; returns nothing, updates
 // the ship transform and the follow camera in place.
 
-__attribute__((visibility("hidden"))) extern void **g_PE_hs_sound;     // 0xabe0c FModSound
+__attribute__((visibility("hidden"))) extern FModSound **g_PE_hs_sound;     // 0xabe0c FModSound
 extern const float g_PE_hs_throttleBias;
 
 void PlayerEgo::handleShip(int dt) {
-    void *snd = *g_PE_hs_sound;
+    FModSound *snd = *g_PE_hs_sound;
     // engine sound: param 0 = RPM (from |yaw|,|pitch| max), param 1 = throttle.
-    ((FModSound *)(snd))->setParamValue((FMOD::Event *)(long)((Player *)(this->player))->GetEngineEvent(), 0, ((float&)this->yawAccumD));
-    ((FModSound *)(snd))->setParamValue((FMOD::Event *)(long)((Player *)(this->player))->GetEngineEvent(), 1, ((float&)this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
+    snd->setParamValue((FMOD::Event *)(long)((Player *)(this->player))->GetEngineEvent(), 0, ((float&)this->yawAccumD));
+    snd->setParamValue((FMOD::Event *)(long)((Player *)(this->player))->GetEngineEvent(), 1, ((float&)this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
 
     unsigned int tf = *(unsigned int *)((char *)gCanvas);   // RAWREAD: gCanvas+0x0 (PaintCanvas has no member at +0; vtable/untracked slot)
 

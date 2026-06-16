@@ -1187,7 +1187,7 @@ struct ChoiceWindow;
 struct DialogueWindow;
 struct NewsTicker;
 
-__attribute__((visibility("hidden"))) extern void **g_ModStation_tm_layout;  // g -> P, *P -> layout obj
+__attribute__((visibility("hidden"))) extern Layout **g_ModStation_tm_layout;  // g -> P, *P -> layout obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tm_screenH; // **g -> screen height
 
 // ModStation::OnTouchMove(int, int, void*)
@@ -1199,10 +1199,10 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     if (((char*)&this->m_nStarMapWindowOpen)[0] != 0)
         return;
 
-    void **layoutHolder = g_ModStation_tm_layout;
-    void *layoutObj = *layoutHolder;
-    if (((Layout *)layoutObj)->choiceWindowOpen != 0) {   // Layout+0x0
-        ((Layout *)(layoutObj))->OnTouchMove(x, y);
+    Layout **layoutHolder = g_ModStation_tm_layout;
+    Layout *layoutObj = *layoutHolder;
+    if (layoutObj->choiceWindowOpen != 0) {   // Layout+0x0
+        layoutObj->OnTouchMove(x, y);
         return;
     }
     if (((char*)&this->modalFlags)[1] != 0) {
@@ -1247,10 +1247,10 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
     ((TouchButton *)(this->buttonCredits))->OnTouchMove(x, y);
     for (int i = 0; i != 5; i++)
         ((TouchButton *)(*(void **)(*(int *)((char *)this->buttonRow + 4) + i * 4)))->OnTouchMove(x, y);
-    ((Layout *)(layoutObj))->OnTouchMove(x, y);
+    layoutObj->OnTouchMove(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchMove(x, y) != 0)
         return;
-    Layout *layout = (Layout *)layoutObj;
+    Layout *layout = layoutObj;
     if (y <= layout->field_0xc)
         return;
     if (*(int *)*g_ModStation_tm_screenH - layout->field_0x10 <= y)
@@ -1265,19 +1265,19 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
 }
 
 // Two singleton holders (single pc-rel deref each).
-__attribute__((visibility("hidden"))) extern void **g_ModStation_or_sound;   // *g -> flag
+__attribute__((visibility("hidden"))) extern FModSound **g_ModStation_or_sound;   // *g -> flag
 __attribute__((visibility("hidden"))) extern void **g_ModStation_or_lang;    // *g -> obj (font lang)
-__attribute__((visibility("hidden"))) extern void **g_ModStation_or_reload;  // *g -> reload flag obj
-__attribute__((visibility("hidden"))) extern void **g_ModStation_or_imgfac;  // *g -> image factory
+__attribute__((visibility("hidden"))) extern Layout **g_ModStation_or_reload;  // *g -> reload flag obj
+__attribute__((visibility("hidden"))) extern ImageFactory **g_ModStation_or_imgfac;  // *g -> image factory
 
 // Tail veneer at 0x1ac168.
 
 // ModStation::OnRelease()
 void ModStation::OnRelease() {
-    void **soundHolder = g_ModStation_or_sound;
+    FModSound **soundHolder = g_ModStation_or_sound;
     if (*soundHolder != 0) {
-        ((FModSound *)(*soundHolder))->disableReverb();
-        ((FModSound *)(*soundHolder))->stopAllSoundFXEvents();
+        (*soundHolder)->disableReverb();
+        (*soundHolder)->stopAllSoundFXEvents();
     }
     gCanvas->FogEnable(0, 1);
 
@@ -1342,11 +1342,11 @@ void ModStation::OnRelease() {
     int langObj = *(int *)*g_ModStation_or_lang;
     Globals_loadFont(langObj, GameText_getLanguage());
 
-    void **reloadHolder = g_ModStation_or_reload;
+    Layout **reloadHolder = g_ModStation_or_reload;
     if (*reloadHolder != 0) {
-        ((Layout *)(*reloadHolder))->reload();
-        ((ImageFactory *)(*g_ModStation_or_imgfac))->reload();
-        ((Layout *)(*reloadHolder))->initTip();
+        (*reloadHolder)->reload();
+        (*g_ModStation_or_imgfac)->reload();
+        (*reloadHolder)->initTip();
     }
 
     delete this->cameraTween;
@@ -2152,7 +2152,7 @@ struct DialogueWindow;
 struct NewsTicker;
 
 // Globals.
-__attribute__((visibility("hidden"))) extern void **g_ModStation_tb_layout;  // g -> P, *P -> layout obj
+__attribute__((visibility("hidden"))) extern Layout **g_ModStation_tb_layout;  // g -> P, *P -> layout obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_screenH; // **g -> screen height
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_clear;   // *g -> slot zeroed
 
@@ -2177,10 +2177,10 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         }
         return;
     }
-    void **layoutHolder = g_ModStation_tb_layout;
-    void *layoutObj = *layoutHolder;
-    if (((Layout *)layoutObj)->choiceWindowOpen != 0) {   // Layout+0x0
-        ((Layout *)(layoutObj))->OnTouchBegin(x, y);
+    Layout **layoutHolder = g_ModStation_tb_layout;
+    Layout *layoutObj = *layoutHolder;
+    if (layoutObj->choiceWindowOpen != 0) {   // Layout+0x0
+        layoutObj->OnTouchBegin(x, y);
         return;
     }
     if (((char*)&this->modalFlags)[1] != 0) {
@@ -2225,10 +2225,10 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     ((TouchButton *)(this->buttonCredits))->OnTouchBegin(x, y);
     for (int i = 0; i != 5; i++)
         ((TouchButton *)(*(void **)(*(int *)((char *)this->buttonRow + 4) + i * 4)))->OnTouchBegin(x, y);
-    ((Layout *)(layoutObj))->OnTouchBegin(x, y);
+    layoutObj->OnTouchBegin(x, y);
     if (((NewsTicker *)(this->newsTicker))->OnTouchBegin(x, y) != 0)
         return;
-    Layout *layout = (Layout *)layoutObj;
+    Layout *layout = layoutObj;
     if (y <= layout->field_0xc)
         return;
     if (*(int *)*g_ModStation_tb_screenH - layout->field_0x10 <= y)
@@ -3063,7 +3063,7 @@ extern "C" void ModStation_r3d_endTail(void *c) {
 // remaining FMOD event handles owned by the sound manager (veneer 0x1ac168 ->
 // FModSound::freeAllEvents; guarded by the live sound singleton).
 extern "C" void ModStation_or_tail() {
-    ((FModSound *)(*g_ModStation_or_sound))->freeAllEvents();
+    (*g_ModStation_or_sound)->freeAllEvents();
 }
 
 // (checkMedals()'s terminal `b.w` into ModStation::addAchievement is now a

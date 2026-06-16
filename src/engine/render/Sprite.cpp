@@ -3,9 +3,9 @@
 
 // Active 2D paint canvas the engine renders sprites into. Resolved by a later
 // externs pass; left as engine globals for now.
-__attribute__((visibility("hidden"))) extern void **g_Sprite_canvas;
-__attribute__((visibility("hidden"))) extern void **g_Sprite_draw_image_canvas;
-__attribute__((visibility("hidden"))) extern void **g_Sprite_draw_region_canvas;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_canvas;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_draw_image_canvas;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_draw_region_canvas;
 
 void Sprite::setPosition(int x, int y)
 {
@@ -44,13 +44,13 @@ void Sprite::draw(float scaleX, float scaleY)
         int refX = this->refPixelX;
         int x = this->posX - refX;
         int y = this->posY - refX;
-        ((PaintCanvas*)*g_Sprite_draw_region_canvas)->DrawRegion2D(
+        (*g_Sprite_draw_region_canvas)->DrawRegion2D(
             this->image, this->frameSrcX, this->frameSrcY,
             this->frameWidth, this->frameHeight, 0.0f, 0, 0, x, y);
         return;
     }
 
-    PaintCanvas *canvas = (PaintCanvas*)*g_Sprite_draw_image_canvas;
+    PaintCanvas *canvas = *g_Sprite_draw_image_canvas;
     uint32_t image = frames[this->currentFrame];
     int refX = this->refPixelX;
     int x = this->posX - refX;
@@ -73,7 +73,7 @@ void Sprite::draw(float scaleX, float scaleY)
 
 Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
 {
-    PaintCanvas *canvas = (PaintCanvas*)*g_Sprite_canvas;
+    PaintCanvas *canvas = *g_Sprite_canvas;
 
     this->frames = nullptr;
     this->image = image;
@@ -101,7 +101,7 @@ void Sprite::prevFrame()
 
 void Sprite::drawRegion(int srcX, int srcY, int w, int h)
 {
-    PaintCanvas *canvas = (PaintCanvas*)*g_Sprite_canvas;
+    PaintCanvas *canvas = *g_Sprite_canvas;
     int refX = this->refPixelX;
     int x = this->posX + srcX - refX;
     int y = this->posY + srcY - refX;
@@ -118,7 +118,7 @@ void Sprite::drawRegion(int srcX, int srcY, int w, int h)
 
 Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight)
 {
-    PaintCanvas *canvas = (PaintCanvas*)*g_Sprite_canvas;
+    PaintCanvas *canvas = *g_Sprite_canvas;
 
     this->frames = frames;
     this->image = (uint32_t)-1;

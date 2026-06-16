@@ -15,9 +15,9 @@ static inline uint8_t station_u8(void* station, unsigned off) { return *(uint8_t
 
 // The radar's lock-target, mission and per-frame canvas state live in engine
 // singletons addressed through these slots in the shipped binary.
-extern void* gRadarCanvasForDraw;
+extern PaintCanvas** gRadarCanvasForDraw;
 extern void* gRadarMissionSlot;
-extern void* gRadarCanvasSlot;
+extern PaintCanvas** gRadarCanvasSlot;
 extern void* gRadarLayoutSlot;
 extern uint8_t* gRadarDrawCurrentLockFlag;
 
@@ -86,7 +86,7 @@ Radar::Radar(Level* level)
         this->originY = layout_i32(layout, 0xa4);
     }
 
-    PaintCanvas* canvas = *(PaintCanvas**)gRadarCanvasSlot;
+    PaintCanvas* canvas = *gRadarCanvasSlot;
     unsigned int image = 0;
     canvas->Image2DCreate(0x4c7, &image);
     this->radarImage = (int)image;
@@ -186,7 +186,7 @@ long long Radar::draw(Player*, Hud*, int mode)
     this->drawMode = 0;
     this->plasmaInRange = 0;
 
-    PaintCanvas* canvas = *(PaintCanvas**)gRadarCanvasForDraw;
+    PaintCanvas* canvas = *gRadarCanvasForDraw;
     canvas->SetColor((unsigned int)-1);
 
     void* mission = *(void**)gRadarMissionSlot;

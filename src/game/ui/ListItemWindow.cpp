@@ -74,7 +74,7 @@ void ListItemWindow::OnTouchEnd(int x, int y)
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_liw_r_canvas;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_liw_r_canvas;
 __attribute__((visibility("hidden"))) extern void **g_liw_r_obj;
 
 void ListItemWindow::render()
@@ -82,7 +82,7 @@ void ListItemWindow::render()
     if (!this->shows3DShipFlag)
         return;
 
-    PaintCanvas *canvas = (PaintCanvas *)*g_liw_r_canvas;
+    PaintCanvas *canvas = *g_liw_r_canvas;
     canvas->Begin3d();
 
     int *obj = (int *)*g_liw_r_obj;  // RAWREAD: opaque layout/screen-state int array, no modeled class
@@ -115,7 +115,7 @@ __attribute__((visibility("hidden"))) extern char **g_liw_s_modeFlag;
 __attribute__((visibility("hidden"))) extern char **g_liw_s_altFlag;
 __attribute__((visibility("hidden"))) extern int   *g_liw_s_screenW;
 __attribute__((visibility("hidden"))) extern int   *g_liw_s_screenH;
-__attribute__((visibility("hidden"))) extern void **g_liw_s_layoutHolder;
+__attribute__((visibility("hidden"))) extern Layout **g_liw_s_layoutHolder;
 
 // Width/height presets (read-only constants in the binary).
 extern const float g_liw_s_wFull;
@@ -132,7 +132,7 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
     this->param4 = p4;
     this->param5 = p5;
 
-    Layout *layout = (Layout *)*g_liw_s_layoutHolder;
+    Layout *layout = *g_liw_s_layoutHolder;
 
     int w, h, x, y;
     if (*g_liw_s_fullscreen == 0) {
@@ -269,10 +269,10 @@ ListItemWindow::~ListItemWindow()
 // PC-relative game state roots.
 __attribute__((visibility("hidden"))) extern char  *g_liw_d_maskFlag;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_canvas;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_layout;
+__attribute__((visibility("hidden"))) extern Layout **g_liw_d_layout;
 __attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_gameText;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_imageFactory;
+__attribute__((visibility("hidden"))) extern GameText **g_liw_d_gameText;
+__attribute__((visibility("hidden"))) extern ImageFactory **g_liw_d_imageFactory;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;
@@ -280,7 +280,7 @@ __attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit;
 
 void ListItemWindow::draw()
 {
-    Layout *layout = (Layout *)*g_liw_d_layout;
+    Layout *layout = *g_liw_d_layout;
     uint32_t canvasHandle = (uint32_t)(unsigned long)*g_liw_d_canvas;
     PaintCanvas *canvas = (PaintCanvas *)(long)canvasHandle;
     bool masked = *g_liw_d_maskFlag != 0;
@@ -302,7 +302,7 @@ void ListItemWindow::draw()
 
     {
         String s;
-        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
         layout->drawHeader1(&s);
     }
 
@@ -319,10 +319,10 @@ void ListItemWindow::draw()
             int textId = *g_liw_d_headerId;
             li->ship->getIndex();
             String s;
-            s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+            s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
             layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
 
-            ImageFactory *fac = (ImageFactory *)*g_liw_d_imageFactory;
+            ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
             char *L = (char *)layout;  // RAWREAD: 0x124/0x2c8 have no named Layout member (sparse layout)
             fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c,
@@ -336,7 +336,7 @@ void ListItemWindow::draw()
         int textId = *g_liw_d_headerId;
         li->getIndex();
         String s;
-        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(textId), false);
+        s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
         layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
 
         Item *itemPtr;
@@ -352,7 +352,7 @@ void ListItemWindow::draw()
             itemPtr = li->item;
         }
 
-        ImageFactory *fac = (ImageFactory *)*g_liw_d_imageFactory;
+        ImageFactory *fac = *g_liw_d_imageFactory;
         int idx = itemPtr->getIndex();
         int type = itemPtr->getType();
         fac->drawItem4(idx, type,
@@ -419,7 +419,7 @@ void ListItemWindow::draw()
     // Footer / progress.
     if (this->previewHeight < 1) {
         String s;
-        s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+        s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
         layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c, this->y + layout->field_0xc + layout->field_0x20, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x5c, &s, 0);
     } else {
         canvas->SetColor(canvasHandle);
@@ -432,7 +432,7 @@ void ListItemWindow::draw()
         if (prog > 0) yBox = yBox + prog + layout->field_0x2c;
         {
             String s;
-            s.ctor_copy(((GameText *)(*g_liw_d_gameText))->getText(*g_liw_d_headerId), false);
+            s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
             layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c, yBox, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x1c, &s, 0);
         }
         canvas->SetColor(canvasHandle);

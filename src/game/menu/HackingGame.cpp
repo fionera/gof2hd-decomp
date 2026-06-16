@@ -10,14 +10,14 @@ int HackingGame::getDockingIndex()
     return this->dockingIndex;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_HackingGame_sound_left;
+__attribute__((visibility("hidden"))) extern FModSound **g_HackingGame_sound_left;
 
 void HackingGame::rotateLeftCW(bool sound)
 {
     if (this->wonTimer != 0)
         return;
     if (sound)
-        ((FModSound *)(*g_HackingGame_sound_left))->play(0x8e2, 0, 0, 0.0f);
+        (*g_HackingGame_sound_left)->play(0x8e2, 0, 0, 0.0f);
     return rotateLeftCW(this->working);
 }
 
@@ -56,14 +56,14 @@ int HackingGame::gameWon()
     } while (true);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_HackingGame_sound_right;
+__attribute__((visibility("hidden"))) extern FModSound **g_HackingGame_sound_right;
 
 void HackingGame::rotateRightCW(bool sound)
 {
     if (this->wonTimer != 0)
         return;
     if (sound)
-        ((FModSound *)(*g_HackingGame_sound_right))->play(0x8e2, 0, 0, 0.0f);
+        (*g_HackingGame_sound_right)->play(0x8e2, 0, 0, 0.0f);
     return rotateRightCW(this->working);
 }
 

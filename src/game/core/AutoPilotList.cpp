@@ -21,13 +21,13 @@ extern PaintCanvas* gCanvas;
 
 // GOT-holder game globals (live object obtained via the double indirection).
 __attribute__((visibility("hidden"))) extern int** g_APL_apFlag;        // status-active flag
-__attribute__((visibility("hidden"))) extern void** g_APL_gametext;     // GameText singleton
+__attribute__((visibility("hidden"))) extern GameText** g_APL_gametext; // GameText singleton
 __attribute__((visibility("hidden"))) extern void** g_APL_font;         // measurement font String*
 __attribute__((visibility("hidden"))) extern int** g_APL_screenW;       // screen width
 __attribute__((visibility("hidden"))) extern int** g_APL_screenH;       // screen height
-__attribute__((visibility("hidden"))) extern void** g_APL_layout_draw;  // Layout (draw())
-__attribute__((visibility("hidden"))) extern void** g_APL_gametext_draw; // GameText (draw())
-__attribute__((visibility("hidden"))) extern void** g_APL_font_draw;    // String* font (draw())
+__attribute__((visibility("hidden"))) extern Layout** g_APL_layout_draw;  // Layout (draw())
+__attribute__((visibility("hidden"))) extern GameText** g_APL_gametext_draw; // GameText (draw())
+__attribute__((visibility("hidden"))) extern AbyssEngine::String** g_APL_font_draw; // String* font (draw())
 
 extern const char kEmpty[] __attribute__((visibility("hidden")));
 extern const char kApLit1[] __attribute__((visibility("hidden")));
@@ -43,7 +43,7 @@ AutoPilotList::AutoPilotList(Level* level) {
 
     if (**g_APL_apFlag != 0) {
         String b(kApLit1);
-        String c = *((GameText*)*g_APL_gametext)->getText(0x222) + b;
+        String c = *(*g_APL_gametext)->getText(0x222) + b;
         String a = ((Station*)(&a))->getName();
         (*this->entries)[0] = new String(c + a);
         this->count++;
@@ -51,7 +51,7 @@ AutoPilotList::AutoPilotList(Level* level) {
 
     if (((SolarSystem*)gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
         String* s = new String;
-        s->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x223), false);
+        s->ctor_copy((*g_APL_gametext)->getText(0x223), false);
         (*this->entries)[1] = s;
         this->count++;
     }
@@ -60,12 +60,12 @@ AutoPilotList::AutoPilotList(Level* level) {
         String c = ((Station*)(&c))->getName();
         String b(kApLit2);
         String a = b + c;
-        (*this->entries)[2] = new String(a + *((GameText*)*g_APL_gametext)->getText(0x88));
+        (*this->entries)[2] = new String(a + *(*g_APL_gametext)->getText(0x88));
         this->count++;
     }
 
     String* cancel = new String;
-    cancel->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x225), false);
+    cancel->ctor_copy((*g_APL_gametext)->getText(0x225), false);
     (*this->entries)[3] = cancel;
     this->count++;
 
@@ -73,7 +73,7 @@ AutoPilotList::AutoPilotList(Level* level) {
         Route* route = (Route*)(intptr_t)((PlayerEgo*)((Level*)level)->getPlayer())->getRoute();
         if (*((uint8_t*)route->getLastWaypoint() + 0x130) == 0) {
             String* s = new String;
-            s->ctor_copy(((GameText*)*g_APL_gametext)->getText(0x23d), false);
+            s->ctor_copy((*g_APL_gametext)->getText(0x23d), false);
             (*this->entries)[4] = s;
             this->count++;
         }
@@ -156,8 +156,8 @@ String AutoPilotList::getTargetString() {
 // Draw the window frame plus one row per non-empty entry.
 void AutoPilotList::draw() {
     String title;
-    title.ctor_copy(((GameText*)*g_APL_gametext_draw)->getText(0x23c), false);
-    ((Layout*)*g_APL_layout_draw)->drawWindow(&title, this->x, this->y, this->width,
+    title.ctor_copy((*g_APL_gametext_draw)->getText(0x23c), false);
+    (*g_APL_layout_draw)->drawWindow(&title, this->x, this->y, this->width,
                                               this->count * 0xf + 0x16);
 
     int drawn = 0;
@@ -165,7 +165,7 @@ void AutoPilotList::draw() {
         String* text = (*this->entries)[i];
         if (text != nullptr) {
             gCanvas->DrawString(
-                (unsigned int)(uintptr_t)(String*)*g_APL_font_draw, text,
+                (unsigned int)(uintptr_t)*g_APL_font_draw, text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;
         }

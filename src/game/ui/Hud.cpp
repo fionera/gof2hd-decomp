@@ -224,7 +224,7 @@ void Hud::updateQueue(int dt) {
 __attribute__((visibility("hidden"))) extern void **g_Hud_oiLayout;  // *holder -> layout (+0x21c..+0x228)
 __attribute__((visibility("hidden"))) extern void **g_Hud_oiStatus;  // *holder -> status (+0x114)
 __attribute__((visibility("hidden"))) extern void **g_Hud_oiFont;    // *holder -> font String
-__attribute__((visibility("hidden"))) extern void **g_Hud_oiGameText;// *holder -> GameText
+__attribute__((visibility("hidden"))) extern GameText **g_Hud_oiGameText;// *holder -> GameText
 extern const char g_Hud_oiSep[]    __attribute__((visibility("hidden")));
 extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden"))); // 4 x 12-byte RGB rows
 
@@ -263,7 +263,7 @@ void Hud::drawOrbitInformation() {
         ((String *)(copy))->ctor_copy((String *)(sysName), false);
         ((String *)(sep))->ctor_char(g_Hud_oiSep, false);
         *(String *)acc = *(String *)copy + *(String *)sep;
-        void *txt = ((GameText *)(*g_Hud_oiGameText))->getText(0); // id resolved by table
+        void *txt = (*g_Hud_oiGameText)->getText(0); // id resolved by table
         *(String *)full = *(String *)acc + *(String *)txt;
         gCanvas->DrawString((unsigned)(long)(font), (void *)(full), (x), (char)layout[0x89], false);
         ((String *)(full))->dtor();
@@ -275,7 +275,7 @@ void Hud::drawOrbitInformation() {
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
     gCanvas->SetColor((unsigned char)(row[0]), (unsigned char)(row[4]), (unsigned char)(row[8]), (unsigned char)(0xff));
-    void *secTxt = ((GameText *)(*g_Hud_oiGameText))->getText(sec);
+    void *secTxt = (*g_Hud_oiGameText)->getText(sec);
     gCanvas->DrawString((unsigned)(long)(font), (void *)(secTxt), (x), (char)layout[0x8a], false);
 }
 
@@ -399,7 +399,7 @@ Hud::Hud() {
 //                 bool p7, int aggregateKey) — builds the cargo / docking / mission HUD event
 // line and pushes it to the queue (aggregating repeated pickups of the same kind).
 
-__attribute__((visibility("hidden"))) extern void **g_Hud_ccGameText;
+__attribute__((visibility("hidden"))) extern GameText **g_Hud_ccGameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_ccTemplate; // *holder -> base format String
 extern const char g_Hud_ccHashX[]  __attribute__((visibility("hidden")));
 extern const char g_Hud_ccHashN[]  __attribute__((visibility("hidden")));
@@ -412,15 +412,15 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
     if (mission) {
         // mission cargo: two replaceHash passes producing the localized line
-        void *gt = *g_Hud_ccGameText;
-        void *base = ((GameText *)(gt))->getText(0x219);
+        GameText *gt = *g_Hud_ccGameText;
+        void *base = gt->getText(0x219);
         void *dst = &this->field_0x1f4;
         ((String *)(dst))->assign((String *)(base));
 
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12]; ((String *)(a40))->ctor_copy((String *)(dst), false);
         gStatus->getMission()->getType();
-        void *typeTxt = ((GameText *)(gt))->getText(0);
+        void *typeTxt = gt->getText(0);
         char a4c[12]; ((String *)(a4c))->ctor_copy((String *)(typeTxt), false);
         char a58[12]; ((String *)(a58))->ctor_char(g_Hud_ccHashX, false);
         char out1[12]; Status_replaceHash(out1, tmpl, a40, a4c, a58);
@@ -444,8 +444,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
     if (docked) {
         // docking confirmation line
-        void *gt = *g_Hud_ccGameText;
-        void *txt = ((GameText *)(gt))->getText(0x18a);
+        GameText *gt = *g_Hud_ccGameText;
+        void *txt = gt->getText(0x18a);
         ((String *)(&this->field_0x1f4))->assign((String *)(txt));
         String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
@@ -455,7 +455,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
     if (!a) return; // amount==0 fast path
 
-    void *gt = *g_Hud_ccGameText;
+    GameText *gt = *g_Hud_ccGameText;
 
     // aggregate with previous "+N <unit>" event if allowed
     if (aggregateKey != 0 && this->eventQueueDirty != 0) {
@@ -463,7 +463,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
         char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
-        void *unit = ((GameText *)(gt))->getText(0);
+        void *unit = gt->getText(0);
         char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
@@ -478,7 +478,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
             char nC4[12]; ((String *)(nC4))->ctor_char(g_Hud_ccUnit2, false);
             char nA0[12]; *(String *)nA0 = *(String *)nAc + *(String *)nC4;
             char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
-            void *u2 = ((GameText *)(gt))->getText(0);
+            void *u2 = gt->getText(0);
             char n88[12]; *(String *)n88 = *(String *)n94 + *(String *)u2;
             ((String *)(*this->eventQueue)[idx]->name)->assign((String *)(n88));
             ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
@@ -494,7 +494,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
     char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
     char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
-    void *unit = ((GameText *)(gt))->getText(0);
+    void *unit = gt->getText(0);
     char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
     ((String *)(&this->field_0x1f4))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
@@ -564,7 +564,7 @@ int Hud::sameHudEventAsBeforeAggregate(String *str) {
 // Hud::updateSecondaryWeaponString() — rebuilds the "<weapon name> xNN" label shown next to
 // the secondary-fire button (field +0x3b4) and recomputes its centered X position (+0x3c0).
 
-__attribute__((visibility("hidden"))) extern void **g_Hud_gameText;
+__attribute__((visibility("hidden"))) extern GameText **g_Hud_gameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_swCanvas;  // font holder
 __attribute__((visibility("hidden"))) extern void **g_Hud_swFont;    // string holder
 __attribute__((visibility("hidden"))) extern void **g_Hud_swScreenW; // [0]=screen width
@@ -575,9 +575,9 @@ void Hud::updateSecondaryWeaponString() {
     void *item = this->currentSecondaryWeapon;
     if (item == 0) return;
 
-    void *gt = *g_Hud_gameText;
+    GameText *gt = *g_Hud_gameText;
     int idx = ((Item *)(item))->getIndex();
-    void *name = ((GameText *)(gt))->getText(idx + 0x4fa);
+    void *name = gt->getText(idx + 0x4fa);
 
     char sep[12], acc1[12], amount[12], acc2[12], end[12], acc3[12];
     ((String *)(sep))->ctor_char(g_Hud_swSep, false);
@@ -1026,7 +1026,7 @@ void Hud::drawChallengeModeScore() {
 // (clamping percent to 100), and if it differs from the last shown event, pushes it onto the
 // event queue and sets up its scroll/centering state.
 
-__attribute__((visibility("hidden"))) extern void **g_Hud_gameText;
+__attribute__((visibility("hidden"))) extern GameText **g_Hud_gameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_meCanvas; // font holder
 __attribute__((visibility("hidden"))) extern void **g_Hud_meFont;   // string holder
 __attribute__((visibility("hidden"))) extern void **g_Hud_meScreenW;// [0]=screen width
@@ -1034,8 +1034,8 @@ extern const char g_Hud_meSep[] __attribute__((visibility("hidden")));
 extern const char g_Hud_meEnd[] __attribute__((visibility("hidden")));
 
 void Hud::hudEventMedal(int medalId, int percent) {
-    void *gt = *g_Hud_gameText;
-    void *name = ((GameText *)(gt))->getText(medalId + 0x5e3);
+    GameText *gt = *g_Hud_gameText;
+    void *name = gt->getText(medalId + 0x5e3);
 
     char sep[12], acc1[12], num[12], acc2[12], end[12], acc3[12];
     ((String *)(sep))->ctor_char(g_Hud_meSep, false);
@@ -1333,7 +1333,7 @@ void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
 // touch flag bit.
 // current Level pointer holder; the renderer reads the active level to count
 // docking targets in the alien-orbit case.
-__attribute__((visibility("hidden"))) extern void **g_Hud_level; // *holder -> Level
+__attribute__((visibility("hidden"))) extern Level **g_Hud_level; // *holder -> Level
 
 void Hud::drawRadar() {
     PaintCanvas *canvas = gCanvas;
@@ -1344,7 +1344,7 @@ void Hud::drawRadar() {
         show = true;
     } else if (st->getCurrentCampaignMission() == 0x9a) {
         // alien-orbit mission 0x9a: only when there are docking targets
-        Level *lvl = (Level *)*g_Hud_level;
+        Level *lvl = *g_Hud_level;
         if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
     }
     if (show && st->getCurrentCampaignMission() > 1) {
@@ -1410,7 +1410,7 @@ void Hud::drawBars(void *ego) {
 // "weapon switched" notice that fades after a few seconds.
 void Hud::drawSecondaryWeaponPanel() {
     PaintCanvas *canvas = gCanvas;
-    Level *lvl = (Level *)*g_Hud_level;
+    Level *lvl = *g_Hud_level;
     PlayerEgo *player = (PlayerEgo *)(lvl ? (void *)(long)lvl->getPlayer() : (void *)0);
 
     if (player != 0 && player->hasAutoTurret() != 0) {

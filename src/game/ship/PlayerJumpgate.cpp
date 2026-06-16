@@ -8,12 +8,12 @@
 #include "game/core/PaintCanvasClass.h"
 
 // Game singletons (raw engine globals, kept as externs).
-extern void* g_PaintCanvas;   // PaintCanvas singleton pointer
-extern void* g_Status;        // Status singleton pointer
+extern PaintCanvas* g_PaintCanvas;   // PaintCanvas singleton pointer
+extern Status** g_Status;            // Status singleton holder
 
 static PaintCanvas* paintCanvas()
 {
-    return (PaintCanvas*)g_PaintCanvas;
+    return g_PaintCanvas;
 }
 
 bool PlayerJumpgate::timeToJump()
@@ -85,7 +85,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry* geometry, float x, floa
         this->boundingVolumes = new Array<BoundingVolume*>();
         this->boundingVolumes->resize(1);
 
-        Status* status = (Status*)*(void**)g_Status;
+        Status* status = *g_Status;
         int radius;
         if (status->inAlienOrbit()) {
             radius = 0x1d4c;

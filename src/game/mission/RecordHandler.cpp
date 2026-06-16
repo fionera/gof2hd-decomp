@@ -805,7 +805,7 @@ void * RecordHandler::readMission(unsigned int fd) {
 }
 
 __attribute__((visibility("hidden"))) extern unsigned char *g_SO_settings; // settings struct
-__attribute__((visibility("hidden"))) extern void **g_SO_playerName; // *->String*
+__attribute__((visibility("hidden"))) extern String **g_SO_playerName; // *->String*
 __attribute__((visibility("hidden"))) extern const char g_SO_defName[];
 __attribute__((visibility("hidden"))) extern int *g_SO_extraInt;     // *->int
 __attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag1; // byte
@@ -834,7 +834,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteInt(*(int *)(s + 0x24), fd);
     AEFile_WriteInt(*(int *)(s + 0x28), fd);
 
-    void *name = *g_SO_playerName;
+    String *name = *g_SO_playerName;
     if (name == 0) {
         String def(g_SO_defName);
         AEFile_WriteString(&def, fd, 0);

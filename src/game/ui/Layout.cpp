@@ -56,12 +56,12 @@ void Layout::update(int dt) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **gPaintCanvasHolder;
+__attribute__((visibility("hidden"))) extern PaintCanvas **gPaintCanvasHolder;
 
 int Layout::getFooterTransitionWidth() {
-    void **holder = gPaintCanvasHolder;
-    int w1 = ((PaintCanvas*)(*holder))->GetImage2DWidth(this->footerImageRight);
-    int w2 = ((PaintCanvas*)(*holder))->GetImage2DWidth(this->footerImageLeft);
+    PaintCanvas **holder = gPaintCanvasHolder;
+    int w1 = (*holder)->GetImage2DWidth(this->footerImageRight);
+    int w2 = (*holder)->GetImage2DWidth(this->footerImageLeft);
     return w2 + w1;
 }
 

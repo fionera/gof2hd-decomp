@@ -11,27 +11,27 @@ void TouchSlider::setPosition(int param_1, int param_2)
     this->knobX = (int)(fVar2 + this->value * fVar1);
 }
 
-__attribute__((visibility("hidden"))) extern void **g_TouchSlider_canvas;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_TouchSlider_canvas;
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_app;
 
 TouchSlider::TouchSlider(int param_1, int param_2, int param_3, float param_4)
 {
     this->type = param_1;
     this->value = param_4;
-    void **holder = g_TouchSlider_canvas;
-    ((PaintCanvas*)*holder)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
+    PaintCanvas **holder = g_TouchSlider_canvas;
+    (*holder)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
 
     unsigned short uVar4 = 0x51b;
     if (param_1 == 1)
         uVar4 = 0x51c;
     if (param_1 == 0)
         uVar4 = 0x519;
-    ((PaintCanvas*)*holder)->Image2DCreate(uVar4, (unsigned int*)&this->trackImage);
+    (*holder)->Image2DCreate(uVar4, (unsigned int*)&this->trackImage);
 
-    this->knobWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->knobImage);
-    this->knobHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->knobImage);
-    this->trackWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->trackImage);
-    this->trackHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->trackImage);
+    this->knobWidth = (*holder)->GetImage2DWidth(this->knobImage);
+    this->knobHeight = (*holder)->GetImage2DHeight(this->knobImage);
+    this->trackWidth = (*holder)->GetImage2DWidth(this->trackImage);
+    this->trackHeight = (*holder)->GetImage2DHeight(this->trackImage);
 
     this->isDragging = 0;
     setPosition(param_2, param_3);
@@ -84,11 +84,11 @@ int TouchSlider::OnTouchEnd(int param_1, int param_2)
 
 void TouchSlider::draw()
 {
-    void **holder = g_TouchSlider_canvas;
+    PaintCanvas **holder = g_TouchSlider_canvas;
     int color = this->isDisabled != 0 ? 0xFFFFFF2F : -1;
-    ((PaintCanvas*)*holder)->SetColor((unsigned int)color);
-    ((PaintCanvas*)*holder)->DrawImage2D(this->trackImage, this->x, this->y);
-    ((PaintCanvas*)*holder)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
+    (*holder)->SetColor((unsigned int)color);
+    (*holder)->DrawImage2D(this->trackImage, this->x, this->y);
+    (*holder)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
 }
 
 bool TouchSlider::OnTouchMove(int param_1, int param_2)

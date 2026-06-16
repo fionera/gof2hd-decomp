@@ -19,23 +19,23 @@ using AbyssEngine::AEMath::operator-;
 using AbyssEngine::AEMath::operator*;
 
 // Engine globals: the active scene canvas and the FMOD / game-state singletons.
-extern "C" void *g_PaintCanvas;
-extern "C" void *g_FMod_singleton;
-extern void *g_mining_status;
+extern "C" PaintCanvas **g_PaintCanvas;
+extern "C" FModSound **g_FMod_singleton;
+extern Status *g_mining_status;
 
 static inline PaintCanvas *activeCanvas()
 {
-    return (PaintCanvas *)*(void **)g_PaintCanvas;
+    return *g_PaintCanvas;
 }
 
 static inline FModSound *sound()
 {
-    return (FModSound *)*(void **)g_FMod_singleton;
+    return *g_FMod_singleton;
 }
 
 static inline Status *gameStatus()
 {
-    return (Status *)g_mining_status;
+    return g_mining_status;
 }
 
 // BombGun's destructor releases its detonation Explosion, then chains into the

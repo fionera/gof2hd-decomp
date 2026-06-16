@@ -2,7 +2,7 @@
 #include "game/core/PaintCanvasClass.h"
 #include "engine/render/Engine.h"
 
-extern void *g_PaintCanvas;
+extern PaintCanvas *g_PaintCanvas;
 
 extern "C" void *_mtw_GameText_getText(void *gt, int id);
 void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
@@ -858,18 +858,18 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
         void *img = *(void **)gBgScrollImg;
         int bound = *(int *)*(void **)gBgScreenW2;
         int b28 = *(int *)(*(char **)gBgLayout + 0x28);
-        int iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
+        int iw = g_PaintCanvas->GetImage2DWidth((unsigned int)(long)img);
         unsigned char hit;
         if ((bound - b28) - iw < y) {
             int lc = *(int *)(*(char **)gBgLayout + 0xc);
             int tp = *(int *)(*(char **)gBgLayout + 0x20);
-            int ih = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight((unsigned int)(long)img);
+            int ih = g_PaintCanvas->GetImage2DHeight((unsigned int)(long)img);
             hit = (x < ih + tp + lc) ? 1 : 0;
         } else hit = 0;
         this->scrollbarHit = hit;
 
         b28 = *(int *)(*(char **)gBgLayout + 0x28);
-        iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
+        iw = g_PaintCanvas->GetImage2DWidth((unsigned int)(long)img);
         if (y < iw + b28) {
             this->dragStartX = x;
             this->dragLastX = x;

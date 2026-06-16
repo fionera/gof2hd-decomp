@@ -11,17 +11,17 @@ void MarqueeImage::setPosition(int x, int y)
 
 MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
 {
-    void **holder = g_MarqueeImage_canvas;
+    PaintCanvas **holder = g_MarqueeImage_canvas;
 
-    ((PaintCanvas*)*holder)->Image2DCreate(image, &this->image);
+    (*holder)->Image2DCreate(image, &this->image);
 
     this->x = x;
     this->y = y;
     this->visibleWidth = width;
     this->speed = speed;
 
-    this->imageWidth = ((PaintCanvas*)*holder)->GetImage2DWidth(this->image);
-    this->imageHeight = ((PaintCanvas*)*holder)->GetImage2DHeight(this->image);
+    this->imageWidth = (*holder)->GetImage2DWidth(this->image);
+    this->imageHeight = (*holder)->GetImage2DHeight(this->image);
     this->scrollPosition = 0;
 }
 
@@ -59,13 +59,13 @@ void MarqueeImage::draw(int x, int y)
             drawWidth = visibleWidth;
         }
 
-        ((PaintCanvas*)*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int)this->scrollPosition,
+        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int)this->scrollPosition,
                                  0, drawWidth, this->imageHeight, 0.0f, 0, 0, x, y);
         offset = this->scrollOffset;
     }
 
     if (offset <= visibleWidth) {
-        ((PaintCanvas*)*g_MarqueeImage_canvas)->DrawRegion2D(this->image, 0, 0,
+        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, 0, 0,
                                  visibleWidth - offset,
                                  this->imageHeight, 0.0f, 0, 0,
                                  offset + x, y);

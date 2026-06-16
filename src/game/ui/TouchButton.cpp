@@ -108,7 +108,7 @@ void TouchButton::resetTouch() {
 }
 
 // FModSound singleton (double-deref).
-extern void **g_TB_sound;
+extern FModSound **g_TB_sound;
 
 bool TouchButton::OnTouchBegin(int px, int py) {
     if (this->visible == 0 || this->halfTransparent != 0)
@@ -117,7 +117,7 @@ bool TouchButton::OnTouchBegin(int px, int py) {
     this->touched = (unsigned char)r;
     if (r == 0)
         return false;
-    ((FModSound *)(*g_TB_sound))->play(0x7c, 0, 0, 0.0f);
+    (*g_TB_sound)->play(0x7c, 0, 0, 0.0f);
     return this->touched != 0;
 }
 
@@ -130,7 +130,7 @@ unsigned int TouchButton::OnTouchEnd(int px, int py) {
         this->touched = 0;
     } else {
         this->touched = 0;
-        ((FModSound *)(*g_TB_sound))->play(0x7b, 0, 0, 0.0f);
+        (*g_TB_sound)->play(0x7b, 0, 0, 0.0f);
         res = 1;
     }
     return res;
@@ -390,11 +390,11 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
 //   spacing, draws the appropriate skin (single icon, 9-patch frame + label, a
 //   progress fill, or a plain image) depending on `kind` and the pressed /
 //   highlight flags, then restores spacing and colour.
-extern void **g_TB_d_layoutA;   // pressed/disabled tint layout
-extern void **g_TB_d_layoutBG;  // background-pattern layout
-extern void **g_TB_d_layoutC;   // progress-fill layout
-extern void **g_TB_d_layoutEnd; // final restore layout
-extern void **g_TB_d_unitStr;   // "%"-style unit String
+extern Layout **g_TB_d_layoutA;   // pressed/disabled tint layout
+extern Layout **g_TB_d_layoutBG;  // background-pattern layout
+extern Layout **g_TB_d_layoutC;   // progress-fill layout
+extern Layout **g_TB_d_layoutEnd; // final restore layout
+extern String **g_TB_d_unitStr;   // "%"-style unit String
 extern unsigned int g_TB_d_frameMask; // kinds that get a frame
 
 void TouchButton::draw() {
@@ -406,7 +406,7 @@ void TouchButton::draw() {
 
     if (this->halfTransparent != 0) {
         gCanvas->SetColor(0xffffff2f);
-        ((Layout *)(*g_TB_d_layoutA))->setDrawColor(-0xd1);
+        (*g_TB_d_layoutA)->setDrawColor(-0xd1);
     } else {
         gCanvas->SetColor(0xffffffff);
     }
@@ -461,12 +461,12 @@ void TouchButton::draw() {
                 frameLeft = (unsigned int)this->imgFrameM;
                 frameMid  = this->imgFrameR;
             }
-            ((Layout *)(*g_TB_d_layoutBG))->drawBGPattern(frameLeft, this->leftWidth + this->x, this->y, this->midStretch, this->height);
+            (*g_TB_d_layoutBG)->drawBGPattern(frameLeft, this->leftWidth + this->x, this->y, this->midStretch, this->height);
             ((PaintCanvas*)(canvas))->DrawImage2D(frameMid, this->x + this->leftWidth + this->midStretch, this->y);
         }
         ((PaintCanvas*)(canvas))->DrawImage2D(base, this->x, this->y);
 
-        Layout *layoutC = (Layout *)(*g_TB_d_layoutC);
+        Layout *layoutC = *g_TB_d_layoutC;
         layoutC->setDrawColor(-1);
 
         // optional progress fill.
@@ -533,7 +533,7 @@ void TouchButton::draw() {
             // shortcut / corner label when its length is set.
             if (this->numberText.size() != 0) {
                 gCanvas->SetColor(0xffffffff);
-                String *u = (String *)(*g_TB_d_unitStr);
+                String *u = *g_TB_d_unitStr;
                 int tw = ((PaintCanvas*)(canvas))->GetTextWidth(this->fontId, u);
                 ((PaintCanvas*)(canvas))->DrawString(this->fontId, &this->numberText, (this->leftWidth + this->x) - tw, this->y + this->textOffsetY, false);
                 gCanvas->SetColor(0xffffffff);
@@ -555,7 +555,7 @@ void TouchButton::draw() {
     if (tailIcon)
         ((PaintCanvas*)(canvas))->DrawImage2D(icon, this->x + this->textOffsetX + 0, iconY);
 
-    ((Layout *)(*g_TB_d_layoutEnd))->setDrawColor(-1);
+    (*g_TB_d_layoutEnd)->setDrawColor(-1);
     ((PaintCanvas*)(canvas))->FontSetSpacing(this->fontId, savedSpacing);
     gCanvas->SetColor(savedColor);
 }

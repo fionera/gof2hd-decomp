@@ -15,7 +15,7 @@
 #include "game/world/Station.h"
 
 // Game singletons / externs (engine-provided, no clean header here).
-extern void*   gProgrammedStation;
+extern Station* gProgrammedStation;
 extern void    Player_setUnknown(void* player, bool enabled);
 extern void    Player_setAutoPilotTarget(void* player, void* target);
 
@@ -110,7 +110,7 @@ void LevelScript::setAutoPilotToProgrammedStation()
         return;
     }
 
-    Station* programmed = static_cast<Station*>(gProgrammedStation);
+    Station* programmed = gProgrammedStation;
     if (gStatus->getStation()->equals(programmed)) {
         gProgrammedStation = 0;
         return;

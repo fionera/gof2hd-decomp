@@ -1,12 +1,13 @@
 #include "engine/render/LODManager.h"
 #include "engine/render/AEGeometry.h"
+#include "game/core/PaintCanvasClass.h"
 
 // Engine camera/canvas helpers (resolved against the active PaintCanvas).
 uint32_t CameraGetCurrent(void *canvas);
 Matrix  *CameraGetLocal(void *canvas, uint32_t index);
 
 // Engine singletons; a later externs pass will give these their real types.
-extern void **g_LOD_canvas;    // *g_LOD_canvas = PaintCanvas*
+extern PaintCanvas **g_LOD_canvas;  // *g_LOD_canvas = PaintCanvas*
 extern void  *g_LOD_settings;  // float at +0x28 = LOD distance factor
 
 LODManager::LODManager()

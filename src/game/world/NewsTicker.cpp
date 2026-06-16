@@ -13,7 +13,7 @@ void DisableClip();          // AbyssEngine::PaintCanvas::DisableClip
 int GameText_getLanguage();
 
 // Engine singletons the ticker reaches through, recovered as typed globals.
-extern void **g_NewsTicker_draw_canvas;
+extern PaintCanvas **g_NewsTicker_draw_canvas;
 extern int **g_NewsTicker_draw_fontHeight;
 extern int *g_NewsTicker_draw_screenHeight;
 extern void **g_NewsTicker_draw_font;
@@ -21,12 +21,12 @@ extern int *g_NewsTicker_touchMove_screenWidth;
 extern int **g_NewsTicker_getHeight_font;
 extern int *g_NewsTicker_getHeight_screen;
 extern const char g_NewsTicker_ctor_empty[];
-extern void **g_NewsTicker_ctor_random;
-extern void **g_NewsTicker_ctor_status;
-extern void **g_NewsTicker_ctor_text;
+extern AbyssEngine::AERandom **g_NewsTicker_ctor_random;
+extern Status **g_NewsTicker_ctor_status;
+extern GameText **g_NewsTicker_ctor_text;
 extern const char g_NewsTicker_ctor_separator[];
 extern void **g_NewsTicker_ctor_font;
-extern void **g_NewsTicker_ctor_canvas;
+extern PaintCanvas **g_NewsTicker_ctor_canvas;
 extern int **g_NewsTicker_touchBegin_font;
 extern int *g_NewsTicker_touchBegin_screen;
 
@@ -44,7 +44,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     Array<NewsItem *> *items = new Array<NewsItem *>();
 
-    AbyssEngine::AERandom *random = (AbyssEngine::AERandom *)*g_NewsTicker_ctor_random;
+    AbyssEngine::AERandom *random = *g_NewsTicker_ctor_random;
     int wanted = random->nextInt(1) + 2;
 
     // Mandatory items: any ticker entry valid for this faction and level range.
@@ -58,7 +58,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
     }
 
     // Optional items: randomly fill the rest, honoring recurrence cooldowns.
-    Status *status = (Status *)*g_NewsTicker_ctor_status;
+    Status *status = *g_NewsTicker_ctor_status;
     int added = 0;
     int attempts = 0;
     while (added < wanted && attempts < 100) {
@@ -95,7 +95,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     // Compose the scrolling line from each item's localized text.
     String separator(g_NewsTicker_ctor_separator);
-    GameText *gameText = (GameText *)*g_NewsTicker_ctor_text;
+    GameText *gameText = *g_NewsTicker_ctor_text;
     for (uint32_t i = 0; i < items->size(); ++i) {
         NewsItem *item = (*items)[i];
         String line(*gameText->getText(item->id + 0x0cbe));
@@ -112,7 +112,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         this->tickerText += replaced + separator;
     }
 
-    PaintCanvas *canvas = (PaintCanvas *)*g_NewsTicker_ctor_canvas;
+    PaintCanvas *canvas = *g_NewsTicker_ctor_canvas;
     unsigned int font = (unsigned int)(unsigned long)*g_NewsTicker_ctor_font;
     this->textWidth = canvas->GetTextWidth(font, &this->tickerText);
     if (this->textWidth < width) {
@@ -142,7 +142,7 @@ NewsTicker::~NewsTicker()
 
 void NewsTicker::draw()
 {
-    PaintCanvas *canvas = (PaintCanvas *)*g_NewsTicker_draw_canvas;
+    PaintCanvas *canvas = *g_NewsTicker_draw_canvas;
     canvas->SetColor(0x6f);
 
     int *fontMetrics = *g_NewsTicker_draw_fontHeight;

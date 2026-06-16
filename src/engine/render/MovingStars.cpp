@@ -229,14 +229,14 @@ void MovingStars::translate(const Vector &v)
     }
 }
 
-__attribute__((visibility("hidden"))) extern void **g_MovingStars_canvas_render;
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_MovingStars_canvas_render;
 
 void MovingStars::render()
 {
-    void **canvas = g_MovingStars_canvas_render;
-    ((PaintCanvas*)*canvas)->SetTexture(this->textureHandle, 0xffffffff);
-    ((PaintCanvas*)*canvas)->SetBlendMode(1);
+    PaintCanvas **canvas = g_MovingStars_canvas_render;
+    (*canvas)->SetTexture(this->textureHandle, 0xffffffff);
+    (*canvas)->SetBlendMode(1);
     for (int i = 0; i != 0x32; i = i + 1) {
-        ((PaintCanvas*)*canvas)->DrawTransform(this->transformHandles[i], (const float*)0);
+        (*canvas)->DrawTransform(this->transformHandles[i], (const float*)0);
     }
 }
