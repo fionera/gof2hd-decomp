@@ -19,9 +19,9 @@ using ::PaintCanvas;
 // update.
 class Trail {
 public:
-    uint32_t field_0x00;     // zeroed in ctor, otherwise unused
-    uint32_t field_0x04;     // zeroed in ctor, otherwise unused
-    uint32_t field_0x08;     // zeroed in ctor, otherwise unused
+    int sourceX;             // +0x00 trail source position x (head anchor)
+    int sourceY;             // +0x04 trail source position y
+    int sourceZ;             // +0x08 trail source position z
     int width;               // half-width of the trail strip
     uint32_t meshId;         // PaintCanvas mesh id
     uint32_t transformId;    // PaintCanvas transform id

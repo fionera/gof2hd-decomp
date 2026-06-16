@@ -26,38 +26,38 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 class ParticleSystemMesh {
 public:
-    void* vtable;
-    int field_0x4;
-    PaintCanvas* canvas;
-    uint8_t field_0xc;
-    uint8_t field_0xd;
-    const Matrix* matrix;
-    Vector field_0x1c;                  // embedded direction/motion vector (scaled in updateUsualEdges)
-    uint32_t flags;
-    uint8_t field_0x35;
-    uint8_t field_0x36;
-    uint8_t colorMask;
-    uint32_t particleCount;
-    uint8_t field_0x4c;
-    int currentId;
-    uint32_t mesh;
-    uint32_t firstPoint;
-    uint8_t field_0x5c;
-    uint32_t field_0x60;
-    Vector* positions;                  // positions/edge-vector buffer (12-byte elements)
-    int* ages;                          // per-particle age array
-    int8_t* setIds;                     // per-particle set-id array
-    uint32_t pointCount;
-    uint8_t wide;
-    uint32_t field_0x78;
-    uint32_t field_0x7c;
-    uint32_t field_0x80;
-    uint32_t field_0x84;
-    uint32_t field_0x88;
-    uint8_t newSectionStarted;
-    uint32_t field_0x94;
-    uint32_t edgeCount;
-    uint32_t stride;
+    void* vtable;                       // +0x0
+    uint8_t dirty;                       // +0x4   reset() marks the system live/dirty
+    PaintCanvas* canvas;                // +0x8
+    uint8_t emitEnabled;                 // +0xc   emit() gate
+    uint8_t visible;                     // +0xd   emit() gate
+    const Matrix* matrix;               // +0x18
+    Vector motion;                       // +0x1c  embedded direction/motion vector (scaled in updateUsualEdges)
+    uint32_t flags;                      // +0x34
+    uint8_t trailFlags;                  // +0x35  bit7 selects trail-mode particles
+    uint8_t edgeFlags;                   // +0x36  bit3 selects the embedded-motion edge source
+    uint8_t colorMask;                   // +0x45
+    uint32_t particleCount;              // +0x48
+    uint8_t flipRight;                   // +0x4c  negate the right basis vector
+    int currentId;                       // +0x50
+    uint32_t mesh;                       // +0x54
+    uint32_t firstPoint;                 // +0x58
+    uint8_t initialized;                 // +0x5c  init() completed
+    uint32_t emitCounter;                // +0x60
+    Vector* positions;                   // +0x64  positions/edge-vector buffer (12-byte elements)
+    int* ages;                           // +0x68  per-particle age array
+    int8_t* setIds;                      // +0x6c  per-particle set-id array
+    uint32_t pointCount;                 // +0x70
+    uint8_t wide;                        // +0x74
+    uint32_t field_0x78;                 // +0x78
+    uint32_t field_0x7c;                 // +0x7c
+    uint32_t field_0x80;                 // +0x80
+    uint32_t field_0x84;                 // +0x84
+    uint32_t field_0x88;                 // +0x88
+    uint8_t newSectionStarted;           // +0x90
+    uint32_t frameCounter;               // +0x94
+    uint32_t edgeCount;                  // +0x98
+    uint32_t stride;                     // +0x9c
 
     ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b);
     ~ParticleSystemMesh();

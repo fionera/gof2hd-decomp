@@ -25,19 +25,19 @@ public:
     ChoiceWindow                *choiceWindow;     // owned yes/no chat dialog
     ListItemWindow              *listWindow;       // owned ship/list sub-window
     int                          mode;             // lounge interaction mode (0..3)
-    int                          field_0x18;
+    int                          field_0x18;        // init/redraw guard, only ever reset to 0
     uint8_t                      chatActive;       // chat session active
-    uint8_t                      field_0x1a;
+    uint8_t                      popupActive;      // +0x1a confirm-popup taking input
     uint8_t                      choiceVisible;    // choice window taking input
     uint8_t                      listVisible;      // list window taking input
     int                          selectedAgent;    // index of selected agent
     Array<Agent *>              *agents;           // Station::agents (cross-object)
     Array<String *>             *agentTexts;       // per-agent text array
-    int                          field_0x2c;
-    int                          field_0x30;
+    int                          chatScroll;        // +0x2c offer-text scroll offset
+    int                          chatAnswer;        // +0x30 selected chat answer
     uint8_t                      mapVisible;        // star-map mode active
     uint8_t                      hangarUpdate;      // hangar needs refresh flag
-    uint8_t                      field_0x36;
+    uint8_t                      singleOffer;       // +0x36 show only the primary offer button
     Array<Array<ImagePart *> *> *silhouetteGrid;    // per-system agent silhouette grid
     Array<ImagePart *>          *agentImageParts;   // selected-agent silhouette parts
     Array<Vector *>             *agentRects;        // per-agent screen hit-rect pairs
@@ -47,8 +47,8 @@ public:
     char                        *agentVisited;      // per-agent visited byte buffer
     Array<TouchButton *>        *buttons;           // owned offer buttons
     ScrollTouchWindow           *scrollWindow;      // owned offer-text scroll window
-    int                          field_0x64;
-    int                          field_0x68;        // button layout count
+    int                          buttonsHeight;     // +0x64 total stacked button height
+    int                          visibleButtonCount; // +0x68 number of offer buttons shown
     int                          panelWidth;        // agent panel width
     int                          panelX;            // agent panel x
     int                          panelY;            // agent panel y
@@ -68,13 +68,13 @@ public:
     uint8_t                      touchDown;         // touch currently down
     int                          touchX;            // last touch x
     int                          touchY;            // last touch y
-    uint8_t                      field_0xbc;
+    uint8_t                      cameraAnimating;   // +0xbc camera ease still running
     uint8_t                      introDone;         // intro/camera intro finished
     AbyssEngine::EaseInOut      *headEase;          // owned head-bob ease
-    uint8_t                      field_0xc4;
+    uint8_t                      headBobReverse;    // +0xc4 head-bob easing toward lower bound
     Matrix                       baseMatrix;        // base camera matrix
-    float                        field_0x104;       // wave-time accumulator
-    int                          field_0x108;       // head-bob rotation step count
+    float                        headBobPhase;      // +0x104 wave-time accumulator
+    int                          headBobSteps;      // +0x108 head-bob rotation step count
 
     SpaceLounge();
     ~SpaceLounge();

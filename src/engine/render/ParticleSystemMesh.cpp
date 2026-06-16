@@ -1,9 +1,6 @@
 #include "engine/render/ParticleSystemMesh.h"
 #include "platform/libc.h"
 
-// aeabi runtime helper (zero-fill in 4-byte units); supplied by the platform CRT.
-extern "C" void *__aeabi_memclr4(void *dst, size_t n);
-
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
 extern "C" void _psm_emitUsual(ParticleSystemMesh *self, int id);
 extern "C" void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
@@ -58,7 +55,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
 void ParticleSystemMesh::emit(int id)
 {
-    if (this->field_0xc == 0 || this->field_0xd == 0) {
+    if (this->emitEnabled == 0 || this->visible == 0) {
         this->newSectionStarted = 1;
         return;
     }
@@ -107,11 +104,11 @@ void ParticleSystemMesh::reset()
     for (int i = 0; i < (int)this->particleCount; i++)
         this->ages[i] = -1;
 
-    this->field_0x94 = 0;
+    this->frameCounter = 0;
     this->currentId = 0;
     this->newSectionStarted = 1;
-    this->field_0x60 = 0;
-    this->field_0x4 = 1;
+    this->emitCounter = 0;
+    this->dirty = 1;
 }
 
 ParticleSystemMesh::~ParticleSystemMesh()
@@ -190,17 +187,9 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     this->stride = stride;
     this->pointCount = quads << 2;
 
-    void *positions;
-    uint32_t clearSize;
-    uint32_t clearCount;
+    uint32_t vectorCount;
     if ((flags & 0x8000) == 0) {
-        uint64_t bytes = (uint64_t)particleCount * 12u;
-        uint32_t size = (uint32_t)bytes;
-        if ((uint32_t)(bytes >> 32) != 0)
-            size = 0xffffffff;
-        positions = ::operator new(size);
-        clearCount = particleCount;
-        clearSize = particleCount * 12u;
+        vectorCount = particleCount;
     } else {
         if (*(uint32_t *)((char *)sets + 0) != 0) {
             int set = *(int *)(*(void **)((char *)sets + 4));
@@ -211,23 +200,10 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
             }
         }
 
-        uint32_t vectorCount = particleCount * edgeCount * 2;
-        uint64_t bytes = (uint64_t)vectorCount * 12u;
-        uint32_t size = (uint32_t)bytes;
-        if ((uint32_t)(bytes >> 32) != 0)
-            size = 0xffffffff;
-        positions = ::operator new(size);
-        clearCount = vectorCount;
-        clearSize = particleCount * edgeCount * 24u;
+        vectorCount = particleCount * edgeCount * 2;
     }
 
-    if (clearCount != 0) {
-        uint32_t n = clearSize - 12u;
-        uint32_t rem = n % 12u;
-        __aeabi_memclr4(positions, (n - rem) + 12u);
-    }
-
-    this->positions = (Vector *)positions;
+    this->positions = new Vector[vectorCount]();
     this->field_0x78 = 0;
     this->field_0x7c = 0;
 }
@@ -247,7 +223,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
 
     _psm_matrixGetRight(&right, this->matrix);
     _psm_vectorScale(&rightScaled, &right, scale);
-    if (this->field_0x4c != 0) {
+    if (this->flipRight != 0) {
         _psm_vectorScale(&tmpA, &rightScaled, -1.0f);
         _psm_vectorAssign(&rightScaled, &tmpA);
     }
@@ -346,7 +322,7 @@ int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
         point += 4;
     }
 
-    this->field_0x5c = 1;
+    this->initialized = 1;
 
     // Virtual dispatch through the third vtable slot (the per-system finalize hook).
     typedef int (*FinalizeFn)(ParticleSystemMesh *);
@@ -360,9 +336,9 @@ void ParticleSystemMesh::updateUsualEdges(int id, int delta)
     Vector tmp;
     float scale = (float)delta * 0.001f;
     const Vector *src;
-    if ((int)(this->field_0x36 << 28) < 0) {
+    if ((int)(this->edgeFlags << 28) < 0) {
         const Vector *trail = this->positions + id;
-        src = &this->field_0x1c;
+        src = &this->motion;
         scale *= trail->y;
     } else {
         src = this->positions + id;
@@ -386,7 +362,7 @@ void ParticleSystemMesh::updateSingleColor(int id)
 
     int start = (int)this->firstPoint;
     int stride = (int)this->stride;
-    if ((int)(this->field_0x35 << 24) < 0) {
+    if ((int)(this->trailFlags << 24) < 0) {
         int prev = id == 0 ? (int)this->particleCount : id;
         if (this->ages[prev - 1] == -1) {
             int set = this->setIds[id];
@@ -411,7 +387,7 @@ void ParticleSystemMesh::updateSingleColor(int id)
         point += 4;
     }
 
-    if ((int)(this->field_0x35 << 24) < 0) {
+    if ((int)(this->trailFlags << 24) < 0) {
         int next = (id == (int)this->particleCount - 1) ? 0 : id + 1;
         if (this->ages[next] == -1)
             return;
@@ -450,7 +426,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
 {
     int intDelta = (int)delta;
     int set = this->setIds[id];
-    if ((int)(this->field_0x35 << 24) < 0) {
+    if ((int)(this->trailFlags << 24) < 0) {
         _psm_updateTrailEdges(this, id, intDelta);
         if (this->ages[id] == -2 && this->newSectionStarted != 0) {
             Vector right;
@@ -458,7 +434,7 @@ void ParticleSystemMesh::updateSingle(int id, float delta)
             Vector up;
             Vector scaledUp;
             _psm_matrixGetRight(&right, this->matrix);
-            _psm_vectorScale(&scaledRight, &right, this->field_0x4c == 0 ? 1.0f : -1.0f);
+            _psm_vectorScale(&scaledRight, &right, this->flipRight == 0 ? 1.0f : -1.0f);
             _psm_matrixGetUp(&up, this->matrix);
             float s = (float)*(int32_t *)(g_ParticleSetData + set * 160 + 0x44);
             _psm_vectorScale(&scaledRight, &scaledRight, s);
@@ -501,7 +477,7 @@ void ParticleSystemMesh::updateTrailEdges(int id, int delta)
         _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + span), move.x,
                                 move.y, move.z);
 
-        if (this->ages[id] != -2 || (int)(this->field_0x35 << 24) >= 0) {
+        if (this->ages[id] != -2 || (int)(this->trailFlags << 24) >= 0) {
             Vector move2;
             _psm_vectorScale(&move2, edge + 1, scale);
             _psm_meshTranslatePoint(this->canvas, this->mesh, (uint16_t)(point + 2),

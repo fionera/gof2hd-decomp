@@ -64,8 +64,8 @@ void ParticleSystemSprite::reset()
         pc->SpriteSystemSetSize(this->canvasHandle, (uint16_t)(this->idOffset + i), 0);
         this->ages[i] = -1;
     }
-    this->field_0x60 = 0;
-    this->field_0x4 = 1;
+    this->liveCount = 0;
+    this->started = 1;
 }
 
 int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset)
@@ -73,7 +73,7 @@ int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset)
     void **vt = (void **)this->vtable;
     this->spriteId = spriteId;
     this->idOffset = idOffset;
-    this->field_0x5c = 1;
+    this->initialized = 1;
     typedef int (*pfn)(ParticleSystemSprite *);
     return ((pfn)vt[2])(this);
 }

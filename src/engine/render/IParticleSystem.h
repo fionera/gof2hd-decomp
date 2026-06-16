@@ -36,9 +36,9 @@ public:
     int32_t field_0x58;
     uint8_t field_0x5c;
     float emitTimer;
-    void* particleVelocities;
-    void* particleAges;
-    void* particleSetIds;
+    Vector* particleVelocities;            // per-particle velocity buffer (one Vector per particle)
+    int* particleAges;                     // per-particle age in ms, -1 == slot free
+    int8_t* particleSetIds;                // per-particle source particle-set index
     Array<int>* particleSets;              // configured particle-set indices
 
     IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,

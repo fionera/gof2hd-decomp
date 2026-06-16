@@ -24,7 +24,9 @@ public:
     int  solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state);
     int  update(int dt);
 
-    int      difficulty;        // puzzle difficulty/type (drives reInit branching)
+    int      difficulty;        // +0x00 puzzle difficulty/type (drives reInit branching)
+    uint32_t reserved_14;       // +0x14 unused slot (Ghidra undefined4, never read)
+    uint32_t reserved_18;       // +0x18 unused slot (Ghidra undefined4, never read)
     int      target[6];         // goal tile arrangement
     int      current[6];        // currently displayed tile arrangement
     int      working[6];        // scratch arrangement used while rotating
@@ -44,6 +46,6 @@ public:
     int      rewardItem;
     int      rewardAmount;
     int      dockingIndex;
-    char     field_storage[0x320 - 0x140]; // trailing state block
+    uint8_t  trailingState[0x320 - 0x140]; // +0x140 opaque trailing state block (never accessed in this TU)
 };
 #endif

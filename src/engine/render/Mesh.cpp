@@ -46,8 +46,8 @@ Mesh::Mesh(Mesh *src) {
     self->boundsCenterZ = 1.0f;
     self->boundsRadius = 0.0f;
     self->boundsRadiusSq = 0.0f;
-    self->field_0x50 = 0.0f;
-    self->field_0x54 = 1.0f;
+    self->pivotX = 0.0f;
+    self->pivotY = 1.0f;
 
     if (src == 0)
         return;
@@ -68,7 +68,7 @@ Mesh::Mesh(Mesh *src) {
     self->vboByteSize = 0;
     self->vertexFormat = src->vertexFormat;
     self->materialId = 0;
-    self->field_0x20 = 0;
+    self->shaderAnimValue0 = 0;
     self->vertexCount = src->vertexCount;
     self->positions = src->positions;
     self->texCoords = src->texCoords;
@@ -81,7 +81,7 @@ Mesh::Mesh(Mesh *src) {
     self->indexCount = src->indexCount;
     self->field_0x2a = src->field_0x2a;
     self->indices = src->indices;
-    self->field_0x30 = src->field_0x30;
+    self->material = src->material;
 
     Transform *srcAnim = src->animation;
     if (srcAnim == nullptr) {
@@ -91,9 +91,9 @@ Mesh::Mesh(Mesh *src) {
         self->animation = new Transform(srcAnim);
     }
 
-    // Copy the embedded Vector (xy used).
-    self->field_0x50 = src->field_0x50;
-    self->field_0x54 = src->field_0x54;
+    // Copy the embedded pivot Vector (xy used).
+    self->pivotX = src->pivotX;
+    self->pivotY = src->pivotY;
 
     self->shared = 1;
     self->hasAnimation = src->hasAnimation;

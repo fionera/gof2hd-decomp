@@ -10,84 +10,85 @@
 
 // Cross types referenced by pointer only.
 class StarMap;
+class CutScene;
 class NewsTicker;
 class DialogueWindow;
 namespace AbyssEngine { class EaseInOutMatrix; }
 
 class ModStation {
 public:
-    int              vtable;            // vtable pointer (set to vtable base + 8)
-    unsigned         fadeColor;         // 2D fade/clear colour
-    int*             field_0x08;
-    int              state;             // screen-state machine value (init 100)
-    int              field_0x10;
-    StarMap*         starMap;           // star-map sub-screen
-    char             field_0x18;        // low-byte flag
-    NewsTicker*      newsTicker;        // station news ticker
-    AbyssEngine::EaseInOutMatrix* cameraTween;  // hangar idle-camera tween
-    char             field_0x24;        // station-active flag
-    int              dt;                // last-frame elapsed time (ms)
-    int              field_0x2c;
-    long long        accumTime;         // accumulated docked time
-    String           stationName;       // current station name
-    int              selectedButton;    // highlighted main-button index
-    int*             buttonState;       // highlighted-button state array
-    int              field_0x4c;
-    void*            dlcMenu;           // DLC MenuTouchWindow
-    int              field_0x54;        // reused: cached Mission* / Radio* / credits-button
-    void*            radioMessages;     // RadioMessage Array
-    int              field_0x5c;
-    int              m_nStarMapWindowOpen; // star-map / cutscene window flags (bytes 0..3)
-    int              field_0x64;        // sub-window open flags (bytes 0..3)
-    int              field_0x68;        // sub-window open flags (bytes 0..3)
-    int*             field_0x6c;        // sub-window open flags (bytes 0..3)
-    void*            choiceWindow;      // station choice/notice window
-    void*            spaceLounge;       // space-lounge sub-screen
-    void*            hangarWindow;      // hangar sub-screen
-    void*            statusWindow;      // status sub-screen
-    DialogueWindow*  m_pDialogueWindow; // mission/dialogue window
-    int              field_0x84;        // DialogueWindow (variant slot)
-    void*            medalChoiceWindow; // medal choice window
-    int*             buttonRow;         // TouchButton array (main button strip)
-    void*            buttonLaunch;      // launch TouchButton
-    void*            buttonCredits;     // credits TouchButton
-    void*            scrollBox;         // radio-cutscene scroll box
-    int              field_0x9c;
-    void*            hangarShipGeom;    // hangar-ship geometry / ticker drag left-bound X
-    char             field_0xb0;        // flags (game-loaded etc.)
-    char             field_0xb1;
-    char             field_0xb3;
-    char             field_0xc1;        // CBS-message flag
-    int*             medalArray;        // Array<int*> of (medalId, value) pairs
-    int              medalIndex;        // current medal being shown
-    int              medalCount;        // number of pending medals
-    char             field_0xd8;        // station "alarm" flag
-    char             field_0xd9;        // mining-plant flag
-    char             field_0xdb;        // wingman-event-consumed flag
-    char             field_0xdc;
-    int              dragOriginX;       // ticker drag origin X
-    int              dragAccumX;        // ticker drag accumulated X
-    int              dragVelX;          // ticker drag velocity X
-    int              dragScaleX;        // ticker drag scale (1.0f)
-    int              dragStartX;        // ticker drag start X
-    char             field_0x100;       // ticker drag-active flag
-    void*            scrollBox2;        // radio-cutscene scroll box (build path)
-    int              scrollOffset;      // radio reveal scroll offset / touch X
-    int              scrollTarget;      // radio reveal scroll target / touch Y
-    char             field_0x118;       // hangar light intensity (low byte also a flag)
-    int              field_0x11c;       // hangar light target
-    void*            capturedTouch;     // active touch pointer
-    char             field_0x12c;
-    int              restCamX;          // idle-camera rest X
-    int              restCamY;          // idle-camera rest Y
-    int              restCamZ;          // idle-camera rest Z
-    void*            easeCamX;          // idle-camera EaseInOut (X)
-    void*            easeCamY;          // idle-camera EaseInOut (Y)
-    void*            easeCamZ;          // idle-camera EaseInOut (Z)
-    char             field_0x148;
-    void*            easeCamScalarX;    // scalar EaseInOut (idle cam X)
-    void*            easeCamScalarY;    // scalar EaseInOut (idle cam Y)
-    void*            easeCamScalarZ;    // scalar EaseInOut (idle cam Z)
+    int              vtable;            // +0x00 vtable pointer (set to vtable base + 8)
+    unsigned         fadeColor;         // +0x04 2D fade/clear colour
+    int*             field_0x08;        // +0x08 (unused in this TU)
+    int              state;             // +0x0c screen-state machine value (init 100)
+    StarMap*         starMap;           // +0x10 star-map sub-screen
+    CutScene*        cutScene;          // +0x14 docking cutscene
+    char             pendingHangarClose;// +0x18 deferred hangar-close flag
+    NewsTicker*      newsTicker;        // +0x1c station news ticker
+    AbyssEngine::EaseInOutMatrix* cameraTween;  // +0x20 hangar idle-camera tween
+    char             stationActive;     // +0x24 station screen active flag
+    int              dt;                // +0x28 last-frame elapsed time (ms)
+    int              loadTick;          // +0x2c per-screen load tick
+    long long        accumTime;         // +0x30 accumulated docked time
+    String           stationName;       // +0x38 current station name
+    int              selectedButton;    // +0x44 highlighted main-button index
+    int*             buttonState;       // +0x48 highlighted-button state array
+    int              departPending;     // +0x4c pending-departure flag (byte 2)
+    void*            dlcMenu;           // +0x50 DLC MenuTouchWindow
+    int              activeMission;     // +0x54 reused: cached Mission* / Radio* / credits-button
+    void*            radioMessages;     // +0x58 RadioMessage Array
+    int              field_0x5c;        // +0x5c (unused in this TU)
+    int              m_nStarMapWindowOpen; // +0x60 star-map / cutscene window flags (bytes 0..3)
+    int              subWindowFlags;    // +0x64 sub-window open flags (bytes 0..3)
+    int              modalFlags;        // +0x68 modal-window open flags (bytes 0..3)
+    int              screenFlags;       // +0x6c screen-state flags (bytes 0..3)
+    void*            choiceWindow;      // +0x70 station choice/notice window
+    void*            spaceLounge;       // +0x74 space-lounge sub-screen
+    void*            hangarWindow;      // +0x78 hangar sub-screen
+    void*            statusWindow;      // +0x7c status sub-screen
+    DialogueWindow*  m_pDialogueWindow; // +0x80 mission/dialogue window
+    DialogueWindow*  dialogueWindow;    // +0x84 mission/event dialogue window (variant slot)
+    void*            medalChoiceWindow; // +0x88 medal choice window
+    int*             buttonRow;         // +0x8c TouchButton array (main button strip)
+    void*            buttonLaunch;      // +0x90 launch TouchButton
+    void*            buttonCredits;     // +0x94 credits TouchButton
+    void*            scrollBox;         // +0x98 radio-cutscene scroll box
+    int              introTimer;        // +0x9c intro timer
+    void*            hangarShipGeom;    // +0xa0 hangar-ship geometry / ticker drag left-bound X
+    char             gameLoaded;        // +0xb0 game-loaded flag
+    char             autoSaved;         // +0xb1 autosaved-this-visit flag
+    char             reloadPending;     // +0xb3 reload-on-leave flag
+    char             cbsMessageOpen;    // +0xc1 CBS-message flag
+    int*             medalArray;        // +0xc4 Array<int*> of (medalId, value) pairs
+    int              medalIndex;        // +0xc8 current medal being shown
+    int              medalCount;        // +0xcc number of pending medals
+    char             alarmActive;       // +0xd8 station "alarm" flag
+    char             miningPlantFlag;   // +0xd9 mining-plant flag
+    char             wingmanEventConsumed; // +0xdb wingman-event-consumed flag
+    char             cbsHintShown;      // +0xdc CBS-hint-shown flag
+    int              dragOriginX;       // +0xe0 ticker drag origin X
+    int              dragAccumX;        // +0xe4 ticker drag accumulated X
+    int              dragVelX;          // +0xe8 ticker drag velocity X
+    int              dragScaleX;        // +0xec ticker drag scale (1.0f)
+    int              dragStartX;        // +0xf0 ticker drag start X
+    char             dragActive;        // +0x100 ticker drag-active flag
+    void*            scrollBox2;        // +0x104 radio-cutscene scroll box (build path)
+    int              scrollOffset;      // +0x110 radio reveal scroll offset / touch X
+    int              scrollTarget;      // +0x114 radio reveal scroll target / touch Y
+    char             hangarLightIntensity; // +0x118 hangar light intensity (low byte also a flag)
+    int              hangarLightTarget; // +0x11c hangar light target
+    void*            capturedTouch;     // +0x128 active touch pointer
+    char             touchPadFlag;      // +0x12c touch-pad flag
+    int              restCamX;          // +0x130 idle-camera rest X
+    int              restCamY;          // +0x134 idle-camera rest Y
+    int              restCamZ;          // +0x138 idle-camera rest Z
+    void*            easeCamX;          // +0x13c idle-camera EaseInOut (X)
+    void*            easeCamY;          // +0x140 idle-camera EaseInOut (Y)
+    void*            easeCamZ;          // +0x144 idle-camera EaseInOut (Z)
+    char             idleCamFlag;       // +0x148 idle-camera flag
+    void*            easeCamScalarX;    // +0x14c scalar EaseInOut (idle cam X)
+    void*            easeCamScalarY;    // +0x150 scalar EaseInOut (idle cam Y)
+    void*            easeCamScalarZ;    // +0x154 scalar EaseInOut (idle cam Z)
 
     ModStation();
     ~ModStation();

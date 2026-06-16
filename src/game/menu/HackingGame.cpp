@@ -114,15 +114,10 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
     int scaledType = type + type * 2;
     int savedRewardItem = rewardItem;
     int savedCanvas = canvas;
-    int i = 0;
-    uint32_t *slot = (uint32_t *)&this->tileImages[scaledType * 4 + 6];
-    while (true) {
-        if (i == 6)
-            break;
-        gCanvas->Image2DCreate((unsigned short)((uint16_t)(i + 0x1f4a)), (unsigned int*)(slot - 6));
-        gCanvas->Image2DCreate((unsigned short)((uint16_t)(i + 0x1f50)), (unsigned int*)(slot));
-        ++slot;
-        ++i;
+    int base = scaledType * 4;
+    for (int i = 0; i != 6; ++i) {
+        gCanvas->Image2DCreate((uint16_t)(i + 0x1f4a), (unsigned int *)&this->tileImages[base + i]);
+        gCanvas->Image2DCreate((uint16_t)(i + 0x1f50), (unsigned int *)&this->tileImages[base + 6 + i]);
     }
 
     ImageCreateFn create = g_HackingGame_ctor_imageCreate;
@@ -162,8 +157,7 @@ static inline int layoutOffset(void *layout, uint32_t off)
 
 void HackingGame::render2D()
 {
-    char deltaBytes[52];
-    int *delta = (int *)deltaBytes;
+    int delta[13];
 
     gCanvas->SetColor((unsigned)(-1));
 
@@ -305,8 +299,7 @@ done:
 
 void HackingGame::reInit()
 {
-    char localBytes[24];
-    int *local = (int *)localBytes;
+    int local[6];
 
     int type = this->difficulty;
     this->rotateTimer = 0;
@@ -370,10 +363,8 @@ void HackingGame::reInit()
 
 int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int rightCount, int *state)
 {
-    char leftBytes[24];
-    char rightBytes[24];
-    int *leftState = (int *)leftBytes;
-    int *rightState = (int *)rightBytes;
+    int leftState[6];
+    int rightState[6];
 
     for (int i = 0; i != 6; ++i) {
         int value = state[i];

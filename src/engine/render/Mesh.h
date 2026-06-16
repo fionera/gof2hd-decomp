@@ -38,13 +38,14 @@ public:
     union { void *binormals;        void *field_0x18; };    // xyz per vertex
     union { uint32_t materialId;    uint32_t field_0x1c; };  // shader anim/darken scalar (also read as float)
     // +0x20/+0x24 shader animation scalars (refraction strength, scale-anim), read as float.
-    float field_0x20;
-    float field_0x24;
+    union { float shaderAnimValue0; float field_0x20; };
+    union { float shaderAnimValue1; float field_0x24; };
     // +0x28 index count, +0x2c index array (u16 triangle-list indices).
     union { uint16_t indexCount;    uint16_t field_0x28; };
     uint16_t field_0x2a;
     union { void *indices;          void *field_0x2c; };
-    void* field_0x30;
+    // +0x30 owning Material (read in place as char*/int* by the shader TUs).
+    union { void *material;          void *field_0x30; };
     union { Transform *animation;   Transform *field_0x34; }; // animation track
     union { uint8_t shared;         uint8_t field_0x38; };    // aliased/shared mesh
     // +0x3c embedded bounding sphere (center xyz, radius, radius^2).
@@ -53,9 +54,9 @@ public:
     union { float boundsCenterZ;    float field_0x44; };
     union { float boundsRadius;     float field_0x48; };
     union { float boundsRadiusSq;   float field_0x4c; };
-    // +0x50 embedded Vector (xy used).
-    float field_0x50;
-    float field_0x54;
+    // +0x50 embedded pivot Vector (xy used).
+    float pivotX;   // +0x50
+    float pivotY;   // +0x54
     // +0x5c set once the CPU arrays have been uploaded into GL buffers.
     union { uint8_t uploaded;       uint8_t field_0x5c; };
     // +0x60..0x78 GL buffer object names (0 when unused).

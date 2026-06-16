@@ -26,22 +26,22 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 class ParticleSystemSprite {
 public:
-    void* vtable;
-    uint8_t field_0x4;
-    uint32_t canvasHandle;
-    uint8_t flags;
-    uint8_t flags2;
-    char cAlphaChannelMode;
-    int particleCount;
-    int baseSize;
-    uint32_t spriteId;
-    uint32_t idOffset;
-    uint8_t field_0x5c;
-    int field_0x60;
-    void* spriteData;                   // per-particle sprite scratch array (12-byte elements)
-    int* ages;                          // per-particle age array
-    int8_t* setIndices;                 // per-particle set-index array
-    float cachedPow;
+    void* vtable;                       // +0x00
+    uint8_t started;                    // +0x04  set by reset() once the system is primed
+    uint32_t canvasHandle;              // +0x08
+    uint8_t flags;                      // +0x34
+    uint8_t flags2;                     // +0x37
+    char cAlphaChannelMode;             // +0x45
+    int particleCount;                  // +0x48
+    int baseSize;                       // +0x50
+    uint32_t spriteId;                  // +0x54
+    uint32_t idOffset;                  // +0x58
+    uint8_t initialized;                // +0x5c  set by init()
+    int liveCount;                      // +0x60  cleared by reset()
+    void* spriteData;                   // +0x64  per-particle sprite scratch array (12-byte elements)
+    int* ages;                          // +0x68  per-particle age array
+    int8_t* setIndices;                 // +0x6c  per-particle set-index array
+    float cachedPow;                    // +0x70
 
     ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix, const void *particleSets,
                          bool mirror, bool alphaFade);

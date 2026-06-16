@@ -383,7 +383,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
                 }
             }
             this->mode = 0;
-            this->field_0x36 = 0;
+            this->singleOffer = 0;
         }
         return;
     }
@@ -415,7 +415,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
                 this->cameraEase->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
             }
             this->introDone = 1;
-            this->field_0x104 = 0;
+            this->headBobPhase = 0;
             return;
         }
         if (this->agents != 0) {
@@ -632,7 +632,7 @@ void SpaceLounge::onKeyPress(int key) {
 
     if (mode == 1 || mode == 3) {
         if (key == 0x10000 || key == 0x20000) {
-            this->field_0x30 = 0;
+            this->chatAnswer = 0;
             void *agent = key_agent(this);
             if (((Agent *)(agent))->getOffer() == 1) {
                 this->mode = 2;
@@ -640,13 +640,13 @@ void SpaceLounge::onKeyPress(int key) {
                 this->mode = mode == 1 ? 2 : 0;
             }
         } else if (key == 0x40000) {
-            if (this->field_0x2c < 3) {
+            if (this->chatScroll < 3) {
                 if (mode == 1) {
-                    this->field_0x2c = 0;
+                    this->chatScroll = 0;
                     this->mode = 0;
                 }
             } else {
-                this->field_0x2c -= 0x28;
+                this->chatScroll -= 0x28;
             }
         }
         return;
@@ -834,19 +834,19 @@ void SpaceLounge::drawLounge() {
     if (this->mode == 2) {
         ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY0);
         ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
-        this->field_0x68 = 0;
+        this->visibleButtonCount = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
-            this->field_0x68 = 3;
+            this->visibleButtonCount = 3;
         } else if (offer == 1) {
-            this->field_0x68 = 1;
+            this->visibleButtonCount = 1;
             ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
         } else {
-            this->field_0x68 = 2;
+            this->visibleButtonCount = 2;
             ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
             ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
         }
     } else {
-        this->field_0x68 = 1;
+        this->visibleButtonCount = 1;
         ((TouchButton *)(button_at(this, 0)))->setTextColor(-1);
         ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
     }
@@ -856,8 +856,8 @@ void SpaceLounge::drawLounge() {
     }
 
     int buttonHeight = layout->field_0x2d8;
-    if (this->field_0x68 > 2) {
-        int needed = layout->field_0x30 * (this->field_0x68 - 1) + layout->field_0x34 * (this->field_0x68 - 2);
+    if (this->visibleButtonCount > 2) {
+        int needed = layout->field_0x30 * (this->visibleButtonCount - 1) + layout->field_0x34 * (this->visibleButtonCount - 2);
         if (needed > buttonHeight) {
             buttonHeight = needed;
         }
@@ -869,7 +869,7 @@ void SpaceLounge::drawLounge() {
     ((ImageFactory *)(factory))->drawChar(this->agentImageParts, layout->field_0x4c + this->panelX, this->buttonPanelY + layout->field_0x4c, true);
 
     ((TouchButton *)(button_at(this, 0)))->setVisible(true);
-    if (!(offer == 1 || this->field_0x36 != 0 || this->mode == 3)) {
+    if (!(offer == 1 || this->singleOffer != 0 || this->mode == 3)) {
         ((TouchButton *)(button_at(this, 1)))->setVisible(true);
         ((TouchButton *)(button_at(this, 0)))->draw();
         ((TouchButton *)(button_at(this, 1)))->draw();
@@ -885,7 +885,7 @@ int SpaceLounge::init() {
 
     this->touchDown = 0;
     this->initialized = 0;
-    this->field_0xbc = 0;
+    this->cameraAnimating = 0;
     this->agents = (Array<Agent *> *)Station_getAgents(gStatus->getStation());
 
     if (this->choiceWindow != 0) {
@@ -900,7 +900,7 @@ int SpaceLounge::init() {
     }
 
     this->field_0x18 = 0;
-    this->agentVisited = (char *)::operator new[](0x15);
+    this->agentVisited = new char[0x15];
     for (int i = 0; i != 0x15; ++i) {
         this->agentVisited[i] = 0;
     }
@@ -918,7 +918,7 @@ int SpaceLounge::init() {
 
     this->mode = 0;
     this->buttonPanelY = this->panelY + layoutMetric(layout, 0x6c) + layout->field_0x2c;
-    this->field_0x64 = (layout->field_0x34 + layout->field_0x30) * 5;
+    this->buttonsHeight = (layout->field_0x34 + layout->field_0x30) * 5;
 
     if (this->buttons != 0) {
         Array<TouchButton *> *oldButtons = this->buttons;
@@ -954,7 +954,7 @@ int SpaceLounge::init() {
         this->cameraEase->SetRange(*(AEMath::Matrix *)matrix, *(AEMath::Matrix *)matrix);
     }
     this->introDone = 1;
-    this->field_0x104 = 0;
+    this->headBobPhase = 0;
     ((SpaceLounge *)(this))->updateScreenPositions();
     return 0;
 }
@@ -980,7 +980,7 @@ SpaceLounge::SpaceLounge()
     this->choiceWindow = 0;
     this->listWindow = 0;
     this->mapVisible = 0;
-    this->field_0x36 = 0;
+    this->singleOffer = 0;
     this->agentVisited = 0;
     this->buttons = 0;
     this->headEase = 0;
@@ -991,7 +991,7 @@ SpaceLounge::SpaceLounge()
     this->selectedAgent = 0;
     this->agents = 0;
     this->agentTexts = 0;
-    this->field_0x2c = 0;
+    this->chatScroll = 0;
     this->silhouetteGrid = 0;
     this->agentImageParts = 0;
     this->agentRects = 0;
@@ -1198,7 +1198,7 @@ void SpaceLounge::draw() {
         ((Layout *)layout)->drawFooter();
     }
 
-    if (this->chatActive != 0 || this->field_0x1a != 0 || this->choiceVisible != 0) {
+    if (this->chatActive != 0 || this->popupActive != 0 || this->choiceVisible != 0) {
         this->choiceWindow->draw();
     }
 }
@@ -1221,7 +1221,7 @@ void SpaceLounge::update(int dt) {
         return this->update_ship_tail(this->listWindow, dt);
     }
 
-    if (this->field_0xbc == 0) {
+    if (this->cameraAnimating == 0) {
         this->cameraEase->Increase((float)dt);
     }
 
@@ -1232,7 +1232,7 @@ void SpaceLounge::update(int dt) {
         ((AbyssEngine::EaseInOutMatrix *)(maxMatrix))->GetMaxValue();
         ((AbyssEngine::EaseInOutMatrix *)(valueMatrix))->GetValue();
         if ((memcmp((maxMatrix),(valueMatrix),sizeof(float)*16)==0) == 0) {
-            this->field_0xbc = 0;
+            this->cameraAnimating = 0;
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_c;
             camera = *(void **)cameraSlot;
             current = (void *)(long)((PaintCanvas *)camera)->CameraGetCurrent();
@@ -1251,24 +1251,24 @@ idle_camera:
             step = 0.0f;
         }
         this->introDone = 1;
-        this->field_0x104 = this->field_0x104 + step;
-        float wave = Sinf(this->field_0x104);
-        float maxRot = (float)this->field_0x108 * 0.5f;
+        this->headBobPhase = this->headBobPhase + step;
+        float wave = Sinf(this->headBobPhase);
+        float maxRot = (float)this->headBobSteps * 0.5f;
 
-        if (this->field_0xbc == 0) {
+        if (this->cameraAnimating == 0) {
             cameraSlot = *(void **)&SpaceLounge_update_camera_slot_a;
             camera = *(void **)cameraSlot;
             current = ((PaintCanvas *)camera)->CameraGetLocal((unsigned int)(long)camera);
             (void)current;
-            this->field_0xbc = 1;
+            this->cameraAnimating = 1;
             int amount = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_update_random_slot, 10);
-            this->field_0xc4 = 0;
+            this->headBobReverse = 0;
             if (this->headEase == 0) {
                 this->headEase = new AbyssEngine::EaseInOut(0.0f, (float)amount);
             } else {
                 this->headEase->SetRange(0.0f, (float)amount);
             }
-            this->field_0x108 = 2;
+            this->headBobSteps = 2;
         } else {
             float value = this->headEase->GetValue();
             float maxValue = this->headEase->GetMaxValue();
@@ -1276,17 +1276,17 @@ idle_camera:
             if (distance < 0.0f) {
                 distance = -distance;
             }
-            int amount = this->field_0x108;
+            int amount = this->headBobSteps;
             if (distance < 0.25f) {
                 void *random = *(void **)&SpaceLounge_update_random_slot;
                 amount = AbyssEngine::AERandom::nextInt(random, 10);
                 float next = (float)(5 - amount);
-                this->field_0xc4 = value > next;
+                this->headBobReverse = value > next;
                 this->headEase->SetRange(value, next);
-                this->field_0x108 = AbyssEngine::AERandom::nextInt(random, 4) + 1;
-                amount = this->field_0x108;
+                this->headBobSteps = AbyssEngine::AERandom::nextInt(random, 4) + 1;
+                amount = this->headBobSteps;
             }
-            if (this->field_0xc4 != 0) {
+            if (this->headBobReverse != 0) {
                 amount = -amount;
             }
             this->headEase->Increase((float)(dt * amount));

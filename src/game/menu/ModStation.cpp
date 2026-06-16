@@ -85,7 +85,7 @@ void ModStation::autosave() {
     rh->recordStoreWrite(0);
     rh->recordStoreWritePreview_int(0);
     delete rh;
-    this->field_0xb1 = 1;
+    this->autoSaved = 1;
     if (*(int*)&this->dlcMenu != 0)
         ModStation_autosaveTail();
 }
@@ -159,14 +159,14 @@ void ModStation::addAchievement(int param_1, int param_2) {
 
 // ModStation::showMapWindow()
 void ModStation::showMapWindow() {
-    ((unsigned char*)&this->field_0x64)[0] = 0;
-    ((unsigned char*)&this->field_0x64)[3] = 1;
+    ((unsigned char*)&this->subWindowFlags)[0] = 0;
+    ((unsigned char*)&this->subWindowFlags)[3] = 1;
 }
 
 // ModStation::setGameLoaded()
 void ModStation::setGameLoaded() {
-    (unsigned char&)this->field_0xb0 = 1;
-    (unsigned char&)this->field_0xb3 = 1;
+    (unsigned char&)this->gameLoaded = 1;
+    (unsigned char&)this->reloadPending = 1;
 }
 
 // Singleton holder: &g taken pc-rel, g is a pointer, *g is the flagged object pointer.
@@ -290,7 +290,7 @@ void ModStation_okp_toggleHelp(ModStation *self);
 
 // ModStation::OnKeyPress(self, key) — drives the station main-menu cursor and screen selection.
 void ModStation::OnKeyPress(long long key) {
-    if (this->field_0x24 == 0)
+    if (this->stationActive == 0)
         return;
 
     Status_checkForLevelUp_okp();
@@ -307,14 +307,14 @@ void ModStation::OnKeyPress(long long key) {
     }
 
     // swallow keys while any modal sub-window owns input.
-    if (((char*)&this->m_nStarMapWindowOpen)[3] != 0 || ((char*)&this->field_0x68)[1] != 0 ||
-        ((char*)&this->field_0x64)[1] != 0 || ((char*)&this->field_0x64)[2] != 0 ||
-        ((char*)&this->field_0x64)[3] != 0 || ((char*)&this->field_0x64)[0] != 0 ||
-        ((char*)&this->field_0x68)[0] != 0)
+    if (((char*)&this->m_nStarMapWindowOpen)[3] != 0 || ((char*)&this->modalFlags)[1] != 0 ||
+        ((char*)&this->subWindowFlags)[1] != 0 || ((char*)&this->subWindowFlags)[2] != 0 ||
+        ((char*)&this->subWindowFlags)[3] != 0 || ((char*)&this->subWindowFlags)[0] != 0 ||
+        ((char*)&this->modalFlags)[0] != 0)
         return;
 
     // DLC menu open: SELECT closes the station.
-    if (((char*)&this->field_0x68)[2] != 0) {
+    if (((char*)&this->modalFlags)[2] != 0) {
         if (key == 0x10000)
             ModStation_leaveStation_okp(this);
         return;
@@ -396,18 +396,18 @@ ModStation::ModStation() {
     this->dt = 0;
     ((char*)&this->cameraTween)[3] = 0;
     *(uint16_t*)&this->cameraTween = 0;    // partial of field_20 region — kept as a 16-bit clear
-    this->field_0x24 = 0;
-    ((char*)&this->field_0x68)[1] = 0;
+    this->stationActive = 0;
+    ((char*)&this->modalFlags)[1] = 0;
     this->state = 100;
-    this->field_0x10 = 0;
-    *(int*)&this->starMap = 0;
+    this->starMap = 0;
+    *(int*)&this->cutScene = 0;
     *(int*)&this->newsTicker = 0;
     *(int*)&this->cameraTween = 0;
     *(int*)&this->dlcMenu = 0;
-    this->field_0x54 = 0;
+    this->activeMission = 0;
     *(int*)&this->radioMessages = 0;
-    ((char*)&this->field_0x6c)[2] = 0;
-    this->field_0x18 = 0;
+    ((char*)&this->screenFlags)[2] = 0;
+    this->pendingHangarClose = 0;
     *(int*)&this->m_pDialogueWindow = 0;     // m_pDialogueWindow
     *(int*)&this->choiceWindow = 0;
 
@@ -470,12 +470,12 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_cm_lead;   // *
 void ModStation::checkMedals() {
     Globals_reportLeaderboards(*g_ModStation_cm_lead);
 
-    if (((char*)&this->field_0x68)[2] != 0 || ((char*)&this->m_nStarMapWindowOpen)[3] != 0) {
+    if (((char*)&this->modalFlags)[2] != 0 || ((char*)&this->m_nStarMapWindowOpen)[3] != 0) {
         // continuation path
         int idx = this->medalIndex + 1;
         this->medalIndex = idx;
         if (idx >= this->medalCount) {
-            ((unsigned char*)&this->field_0x68)[2] = 0;
+            ((unsigned char*)&this->modalFlags)[2] = 0;
             return;
         }
         Array<int *> *medalArr = (Array<int *> *)this->medalArray;
@@ -521,7 +521,7 @@ void ModStation::checkMedals() {
         }
     }
     this->medalIndex = 0;
-    ((unsigned char*)&this->field_0x68)[2] = 1;
+    ((unsigned char*)&this->modalFlags)[2] = 1;
     ChoiceWindow *cw = new ChoiceWindow();
     this->medalChoiceWindow = cw;
     int *medal = (*arr)[0];
@@ -541,31 +541,31 @@ struct MissionsWindow;
 
 // ModStation::OnRender3D()
 void ModStation::OnRender3D() {
-    if (this->field_0x24 == 0)
+    if (this->stationActive == 0)
         return;
     gCanvas->ClearBuffer((unsigned int)(long)gCanvas);
 
-    char *p65 = &((char*)&this->field_0x64)[1];
-    if (this->starMap == 0 || ((char*)&this->field_0x64)[2] != 0 || ((char*)&this->field_0x64)[0] != 0 ||
-        ((char*)&this->field_0x68)[0] != 0 || ((char*)&this->field_0x64)[3] != 0 || *p65 != 0 ||
+    char *p65 = &((char*)&this->subWindowFlags)[1];
+    if (this->cutScene == 0 || ((char*)&this->subWindowFlags)[2] != 0 || ((char*)&this->subWindowFlags)[0] != 0 ||
+        ((char*)&this->modalFlags)[0] != 0 || ((char*)&this->subWindowFlags)[3] != 0 || *p65 != 0 ||
         ((char*)&this->m_nStarMapWindowOpen)[2] != 0) {
-        if (((char*)&this->field_0x64)[3] != 0) {
-            ((StarMap *)((void*&)this->field_0x10))->renderBG();
+        if (((char*)&this->subWindowFlags)[3] != 0) {
+            ((StarMap *)((void*&)this->starMap))->renderBG();
         } else if (*p65 != 0) {
             ((SpaceLounge *)(this->spaceLounge))->OnRenderBG();
         }
     } else {
-        ((CutScene *)(this->starMap))->renderBG();
+        ((CutScene *)(this->cutScene))->renderBG();
     }
     gCanvas->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *)(this->spaceLounge))->OnRender3D();
-    else if (((char*)&this->field_0x64)[3] != 0)
-        ((StarMap *)((void*&)this->field_0x10))->render();
-    else if (((char*)&this->field_0x64)[0] != 0)
+    else if (((char*)&this->subWindowFlags)[3] != 0)
+        ((StarMap *)((void*&)this->starMap))->render();
+    else if (((char*)&this->subWindowFlags)[0] != 0)
         ((MissionsWindow *)(this->m_pDialogueWindow))->render3D();
-    else if (((char*)&this->field_0x64)[2] == 0 && this->starMap != 0)
-        ((CutScene *)(this->starMap))->render3D();
+    else if (((char*)&this->subWindowFlags)[2] == 0 && this->cutScene != 0)
+        ((CutScene *)(this->cutScene))->render3D();
     ModStation_r3d_endTail(gCanvas);
 }
 
@@ -745,7 +745,7 @@ void ModStation::OnUpdate() {
         Status_incPlayingTime_ou((long long)(unsigned)**(int **)g_ou_status);
 
     // refresh the credits button text.
-    int creditsBtn = this->field_0x54;
+    int creditsBtn = this->activeMission;
     Status_getCredits_ou();
     Layout_formatCredits_ou((char *)this); // formatted into a String temporary
     TouchButton_setText_ou(creditsBtn);
@@ -753,7 +753,7 @@ void ModStation::OnUpdate() {
     Achievements_updateCredits_ou((void *)**(int **)g_ou_achievements, Status_getCredits_ou());
 
     // entering the space lounge intro (triggered by the flag at g_ou_spaceLoungeFlag).
-    if (this->field_0x24 != 0) {
+    if (this->stationActive != 0) {
         char *flag = *g_ou_spaceLoungeFlag;
         if (*flag != 0) {
             ((char*)&this->buttonCredits)[0] = 1;
@@ -768,7 +768,7 @@ void ModStation::OnUpdate() {
             FModSound_setParamValue_ou(*sound, 0, *sound, 0.0f);
             FModSound_stop_ou(*sound);
             FModSound_play_ou(*sound, 0x6c, 0, 0.0f);
-            ((char*)&this->field_0x64)[1] = 1;
+            ((char*)&this->subWindowFlags)[1] = 1;
             goto epilogue;
         }
     }
@@ -778,7 +778,7 @@ void ModStation::OnUpdate() {
         int appData = ApplicationManager_GetApplicationData_ou();
         if (*(char *)(appData + 0x42) != 0) {
             ChoiceWindow_setNotice_ou(*(int*)&this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
-            ((char*)&this->field_0x6c)[3] = 1;
+            ((char*)&this->screenFlags)[3] = 1;
             *(char *)(appData + 0x42) = 0;
         }
         if (*(char *)(appData + 0x41) != 0 && *(int **)(appData + 0x58) != 0 &&
@@ -789,7 +789,7 @@ void ModStation::OnUpdate() {
                 Status_changeCredits_ou(*status);
                 this->autosave();
                 ChoiceWindow_setNotice_ou(*(int*)&this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
-                ((char*)&this->field_0x6c)[3] = 1;
+                ((char*)&this->screenFlags)[3] = 1;
                 *(char *)(appData + 0x41) = 0;
                 if (*(int*)&this->hangarWindow != 0)
                     HangarWindow_hideMessage_ou();
@@ -803,13 +803,13 @@ void ModStation::OnUpdate() {
     }
 
     // idle camera + ticker + cutscene while no sub-window is up.
-    if (((char*)&this->field_0x64)[0] == 0 && ((char*)&this->field_0x64)[1] == 0 &&
-        ((char*)&this->field_0x64)[2] == 0 && ((char*)&this->field_0x64)[3] == 0 &&
-        ((char*)&this->field_0x68)[0] == 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0) {
+    if (((char*)&this->subWindowFlags)[0] == 0 && ((char*)&this->subWindowFlags)[1] == 0 &&
+        ((char*)&this->subWindowFlags)[2] == 0 && ((char*)&this->subWindowFlags)[3] == 0 &&
+        ((char*)&this->modalFlags)[0] == 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0) {
         if (*(int*)&this->newsTicker != 0)
             NewsTicker_update_ou(*(int*)&this->newsTicker);
-        if (*(int*)&this->starMap != 0)
-            CutScene_process_ou(*(int*)&this->starMap);
+        if (*(int*)&this->cutScene != 0)
+            CutScene_process_ou(*(int*)&this->cutScene);
         ModStation_ou_updateIdleCamera(this, elapsed);
     }
 
@@ -821,55 +821,55 @@ void ModStation::OnUpdate() {
         // docking cutscene playback + campaign transition at its end.
         int t = *(int *)&this->spaceLounge;
         if (t < 1 + 0 && 0 < this->dt + t) {
-            if (this->starMap != 0) {
+            if (this->cutScene != 0) {
                 // tear down the old cutscene.
-                ModStation_opdelete_ou(this->starMap);
+                ModStation_opdelete_ou(this->cutScene);
             }
-            *(int*)&this->starMap = 0;
+            *(int*)&this->cutScene = 0;
             CutScene *cs = (CutScene *)ModStation_opnew_ou(0xa0);
             CutScene_ctor_ou(cs, 2);
-            this->starMap = (StarMap*)cs;
+            this->cutScene = cs;
             CutScene_initialize_ou(cs);
             cs->rotationSpeed = 0;   // CutScene+0x24
             t = *(int *)&this->spaceLounge;
             ((char*)&this->m_nStarMapWindowOpen)[0] = 1;
         }
         *(int *)&this->spaceLounge = t + this->dt;
-        CutScene_update_ou(*(int*)&this->starMap);
+        CutScene_update_ou(*(int*)&this->cutScene);
 
         if (Radio_lastMessageShown_ou() != 0)
             ModStation_ou_updateRadioReveal(this, elapsed);
 
         if (*(int *)&this->spaceLounge >= 0 /* DAT_000ea664 */ ) {
-            this->field_0x24 = 0;
+            this->stationActive = 0;
             Status_nextCampaignMission_ou(*status);
             int nextModule = **(int **)g_ou_appData;
             ApplicationManager_SetCurrentApplicationModule_ou(nextModule);
             ((char*)&this->m_nStarMapWindowOpen)[0] = 0;
             goto epilogue;
         }
-    } else if (((char*)&this->field_0x68)[0] != 0) {           // DialogueWindow open variant 1
-        DialogueWindow_update_ou(this->field_0x84);
-    } else if (((char*)&this->field_0x68)[1] != 0) {           // StarMap
-        StarMap_update_ou(this->field_0x10, this->dt);
-    } else if (((char*)&this->field_0x64)[3] != 0) {           // HangarWindow
+    } else if (((char*)&this->modalFlags)[0] != 0) {           // DialogueWindow open variant 1
+        DialogueWindow_update_ou((int)(intptr_t)this->dialogueWindow);
+    } else if (((char*)&this->modalFlags)[1] != 0) {           // StarMap
+        StarMap_update_ou((int)(intptr_t)this->starMap, this->dt);
+    } else if (((char*)&this->subWindowFlags)[3] != 0) {           // HangarWindow
         HangarWindow_update_ou(*(int*)&this->hangarWindow);
-    } else if (((char*)&this->field_0x64)[2] != 0) {           // MissionsWindow
+    } else if (((char*)&this->subWindowFlags)[2] != 0) {           // MissionsWindow
         MissionsWindow_update_ou(*(int*)&this->m_pDialogueWindow);
-    } else if (((char*)&this->field_0x64)[0] != 0) {           // SpaceLounge
+    } else if (((char*)&this->subWindowFlags)[0] != 0) {           // SpaceLounge
         SpaceLounge_update_ou(*(int*)&this->spaceLounge);
-    } else if (((char*)&this->field_0x64)[1] != 0) {           // StatusWindow
+    } else if (((char*)&this->subWindowFlags)[1] != 0) {           // StatusWindow
         StatusWindow_update_ou(*(int*)&this->statusWindow);
     }
 
-    if (((char*)&this->field_0x6c)[3] != 0)
+    if (((char*)&this->screenFlags)[3] != 0)
         ChoiceWindow_update_ou(*(int*)&this->choiceWindow);
-    if (((char*)&this->field_0x6c)[2] != 0)
+    if (((char*)&this->screenFlags)[2] != 0)
         MenuTouchWindow_update_ou(this->dlcMenu, this->dt);
 
     // mission completion / failure + campaign dialogue flow (runs once per docked tick).
-    if (((char*)&this->field_0x6c)[3] == 0 && ((char*)&this->field_0x68)[1] == 0 &&
-        ((char*)&this->field_0x6c)[0] == 0) {
+    if (((char*)&this->screenFlags)[3] == 0 && ((char*)&this->modalFlags)[1] == 0 &&
+        ((char*)&this->screenFlags)[0] == 0) {
         if (((char*)&this->buttonCredits)[2] == 0) {
             this->checkPendingProducts();
             ((char*)&this->buttonCredits)[2] = 1;
@@ -879,23 +879,23 @@ void ModStation::OnUpdate() {
             ((char*)&this->buttonCredits)[1] = 1;
         }
         // "remember to save" hint.
-        if (((char*)&this->field_0x68)[2] == 0 && ((char*)&this->field_0x6c)[2] != 0) {
+        if (((char*)&this->modalFlags)[2] == 0 && ((char*)&this->screenFlags)[2] != 0) {
             int rec = *(int *)g_ou_status;
             if (*(char *)(rec + 0x2a) == 0) {
                 ChoiceWindow_setNotice_ou(*(int*)&this->choiceWindow, GameText_getText_ou(**g_ou_textRoot));
-                ((char*)&this->field_0x6c)[3] = 1;
+                ((char*)&this->screenFlags)[3] = 1;
                 *(char *)(rec + 0x2a) = 1;
-                ((char*)&this->field_0x6c)[2] = 0;
+                ((char*)&this->screenFlags)[2] = 0;
             }
         }
 
         bool special = false;
-        int intro = (((char*)&this->field_0x64)[1] != 0) ? SpaceLounge_introFinished_ou() : 0;
+        int intro = (((char*)&this->subWindowFlags)[1] != 0) ? SpaceLounge_introFinished_ou() : 0;
         int completed = Status_missionCompleted_ou(*status, 1, (long long)intro);
         Mission *m = (Mission *)completed;
         int camp = Status_getCurrentCampaignMission_ou();
         if (m == 0 && camp == 0x74) {
-            if (((char*)&this->field_0x64)[1] != 0 && SpaceLounge_introFinished_ou() != 0) {
+            if (((char*)&this->subWindowFlags)[1] != 0 && SpaceLounge_introFinished_ou() != 0) {
                 Status_getSystem_ou();
                 if (SolarSystem_getIndex_ou() == 0x12) {
                     Status_getCampaignMission_ou();
@@ -921,7 +921,7 @@ void ModStation::OnUpdate() {
             Station *st = (Station *)Status_getStation_ou();
             int sidx = Station_getIndex_ou(st);
             int bit = (sidx == 0x42) ? 2 : (sidx == 0x37) ? 1 : (sidx == 9) ? 4 : 0;
-            bool introOk = ((char*)&this->field_0x64)[1] != 0 && SpaceLounge_introFinished_ou() != 0;
+            bool introOk = ((char*)&this->subWindowFlags)[1] != 0 && SpaceLounge_introFinished_ou() != 0;
             if (m == 0) {
                 if (introOk && 0x93 < Status_getCurrentCampaignMission_ou() &&
                     Status_getCurrentCampaignMission_ou() < 0x97 &&
@@ -935,12 +935,12 @@ void ModStation::OnUpdate() {
                         Status_getStation_ou();
                         DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                         DialogueWindow_ctor_ou(dw);
-                        *(void**)&this->field_0x84 = dw;
+                        *(void**)&this->dialogueWindow = dw;
                         Mission *nm = (Mission *)ModStation_opnew_ou(0x78);
                         Mission_ctor_ou(nm, 0xa0, 0, -1);
                         Mission_setCampaignMission_ou(nm);
-                        DialogueWindow_setMission_ou(*(void**)&this->field_0x84, nm, 1);
-                        ((char*)&this->field_0x68)[1] = 1;
+                        DialogueWindow_setMission_ou(*(void**)&this->dialogueWindow, nm, 1);
+                        ((char*)&this->modalFlags)[1] = 1;
                         goto afterDialogue;
                     }
                 }
@@ -950,10 +950,10 @@ void ModStation::OnUpdate() {
                 Status_setCurrentCampaignMission_ou(*status);
                 DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                 DialogueWindow_ctor_ou(dw);
-                *(void**)&this->field_0x54 = m;       // this[1].field_C cached mission
-                *(void**)&this->field_0x84 = dw;
-                DialogueWindow_setMission_ou(*(void**)&this->field_0x84, m, 1);
-                ((char*)&this->field_0x68)[1] = 1;
+                *(void**)&this->activeMission = m;       // this[1].field_C cached mission
+                *(void**)&this->dialogueWindow = dw;
+                DialogueWindow_setMission_ou(*(void**)&this->dialogueWindow, m, 1);
+                ((char*)&this->modalFlags)[1] = 1;
                 goto afterDialogue;
             } else {
                 generic = true;
@@ -972,15 +972,15 @@ void ModStation::OnUpdate() {
                 DialogueWindow_ctor_msg_ou(dw, GameText_getText_ou(**g_ou_textRoot),
                                            GameText_getText_ou(**g_ou_textRoot),
                                            (int *)(long)kind);
-                ((char*)&this->field_0x68)[1] = 1;
-                *(void**)&this->field_0x84 = dw;
+                ((char*)&this->modalFlags)[1] = 1;
+                *(void**)&this->dialogueWindow = dw;
             } else if (m == 0) {
                 Mission *fm = (Mission *)Status_missionFailed_ou(*status, 1, 0);
                 if (fm != 0) {
                     DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                     DialogueWindow_ctor_mission_ou(dw, fm, 0, 2);
-                    ((char*)&this->field_0x68)[1] = 1;
-                    *(void**)&this->field_0x84 = dw;
+                    ((char*)&this->modalFlags)[1] = 1;
+                    *(void**)&this->dialogueWindow = dw;
                     Status_removeMission_ou(*status);
                     if (Mission_getType_ou() == 0xd) {
                         *(short *)(*status + 0xf0) = 0;
@@ -988,11 +988,11 @@ void ModStation::OnUpdate() {
                     }
                 }
             } else {
-                *(void**)&this->field_0x54 = m;
+                *(void**)&this->activeMission = m;
                 DialogueWindow *dw = (DialogueWindow *)ModStation_opnew_ou(0x74);
                 DialogueWindow_ctor_mission_ou(dw, m, 0, 1);
-                ((char*)&this->field_0x68)[1] = 1;
-                *(void**)&this->field_0x84 = dw;
+                ((char*)&this->modalFlags)[1] = 1;
+                *(void**)&this->dialogueWindow = dw;
                 if (Mission_getType_ou() == 0xd) {
                     *(short *)(*status + 0xf0) = 0;
                     this->autosave();
@@ -1008,7 +1008,7 @@ void ModStation::OnUpdate() {
     // idle hangar light + ship animation.
     if (((char*)&this->medalIndex)[0] == 0)
         ModStation_ou_updateHangarLight(this, elapsed);
-    if (*(int*)&this->starMap != 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0)
+    if (*(int*)&this->cutScene != 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0)
         ModStation_ou_animateHangarShip(this);
 
 epilogue:;
@@ -1024,8 +1024,8 @@ __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotY;     // 
 void ModStation::resetIdleCamForHangar() {
     char matrix[60];
 
-    if (this->starMap != 0)
-        ((CutScene *)(this->starMap))->resetCamera();
+    if (this->cutScene != 0)
+        ((CutScene *)(this->cutScene))->resetCamera();
 
     if (this->easeCamX != 0)
         ((AbyssEngine::EaseInOut *)(this->easeCamX))->SetRange(this->restCamX, this->restCamX);
@@ -1100,22 +1100,22 @@ void ModStation::checkHints() {
     int hintRec = *g_ch_hintRec;
 
     // intro CBS hint (after mission 0x12).
-    if (((char*)&this->field_0x68)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
+    if (((char*)&this->modalFlags)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
         *(char *)(hintRec + 0x34) == 0 &&
         0x12 < Status_getCurrentCampaignMission_ch()) {
         ModStation_ch_showWantedHint(this, -1);
         *(char *)(hintRec + 0x34) = 1;
         ((char*)&this->m_nStarMapWindowOpen)[3] = 1;
-        this->field_0xdc = 1;
+        this->cbsHintShown = 1;
     }
 
     int **status = g_ch_status;
     // four "storyline wanted terminated" hints (slots 0x18/0x30/0x48/0x60).
     static const int wantedOff[4] = {0x18, 0x30, 0x48, 0x60};
     static const int wantedFlag[4] = {0x33, 0x34, 0x35, 0x36};
-    if (((char*)&this->field_0x68)[1] == 0) {
+    if (((char*)&this->modalFlags)[1] == 0) {
         for (int k = 0; k < 4; k = k + 1) {
-            if (((char*)&this->field_0x68)[2] != 0) return;
+            if (((char*)&this->modalFlags)[2] != 0) return;
             if (((char*)&this->m_nStarMapWindowOpen)[3] == 0 && *(char *)(hintRec + wantedFlag[k]) == 0) {
                 Wanted *w = *(Wanted **)(*(int *)(*(int *)*status + 4) + wantedOff[k]);
                 if (Wanted_isTerminated_ch(w) != 0) {
@@ -1128,14 +1128,14 @@ void ModStation::checkHints() {
     }
 
     // achievement-completion hints.
-    if (((char*)&this->field_0x68)[2] == 0) {
+    if (((char*)&this->modalFlags)[2] == 0) {
         if (((char*)&this->m_nStarMapWindowOpen)[3] == 0 && *(char *)(hintRec + 0x1a) == 0 &&
             Achievements_gotAllMedals_ch(*g_ch_ach) != 0) {
             ModStation_ch_showTextHint(this, 0x1a);
             *(char *)(hintRec + 0x1a) = 1;
             ((char*)&this->m_nStarMapWindowOpen)[3] = 1;
         }
-        if (((char*)&this->field_0x68)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
+        if (((char*)&this->modalFlags)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
             *(char *)(hintRec + 0x1b) == 0 &&
             Achievements_gotAllGoldMedals_ch() != 0) {
             ModStation_ch_showTextHint(this, 0x1b);
@@ -1143,7 +1143,7 @@ void ModStation::checkHints() {
             ((char*)&this->m_nStarMapWindowOpen)[3] = 1;
         }
         // supernova blueprint unlock.
-        if (((char*)&this->field_0x68)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0) {
+        if (((char*)&this->modalFlags)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0) {
             void *statPtr = (void *)*status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
                 Achievements_gotAllGoldMedals_ch() != 0 &&
@@ -1155,7 +1155,7 @@ void ModStation::checkHints() {
             }
         }
         // hardcore-unlock hint.
-        if (((char*)&this->field_0x68)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
+        if (((char*)&this->modalFlags)[2] == 0 && ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
             *(char *)(hintRec + 0x3a) == 0 &&
             0xa1 < Status_getCurrentCampaignMission_ch()) {
             bool ok = (Achievements_gotAllGoldMedals_ch() != 0 &&
@@ -1172,7 +1172,7 @@ void ModStation::checkHints() {
     }
 
     // wingman recruit / dismissal dialogue.
-    if (((char*)&this->field_0x68)[1] == 0 && ((char*)&this->field_0x68)[2] == 0 &&
+    if (((char*)&this->modalFlags)[1] == 0 && ((char*)&this->modalFlags)[2] == 0 &&
         ((char*)&this->m_nStarMapWindowOpen)[3] == 0)
         ModStation_ch_showWingmanDialogue(this, 0);
 }
@@ -1205,35 +1205,35 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         ((Layout *)(layoutObj))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[1] != 0) {
-        ((DialogueWindow *)(*(void**)&this->field_0x84))->OnTouchMove(x, y);
+    if (((char*)&this->modalFlags)[1] != 0) {
+        ((DialogueWindow *)(*(void**)&this->dialogueWindow))->OnTouchMove(x, y);
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[3] != 0) {
         ((ChoiceWindow *)(this->choiceWindow))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[2] != 0) {
+    if (((char*)&this->modalFlags)[2] != 0) {
         ((ChoiceWindow *)(this->medalChoiceWindow))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[2] != 0) {
+    if (((char*)&this->subWindowFlags)[2] != 0) {
         ((HangarWindow *)(this->hangarWindow))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[3] != 0) {
-        ((StarMap *)((void*&)this->field_0x10))->OnTouchMove(x, y);
+    if (((char*)&this->subWindowFlags)[3] != 0) {
+        ((StarMap *)((void*&)this->starMap))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[1] != 0) {
+    if (((char*)&this->subWindowFlags)[1] != 0) {
         ((SpaceLounge *)(this->spaceLounge))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[0] != 0) {
+    if (((char*)&this->modalFlags)[0] != 0) {
         ((StatusWindow *)(this->statusWindow))->OnTouchMove(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[0] != 0) {
+    if (((char*)&this->subWindowFlags)[0] != 0) {
         ((MissionsWindow *)(this->m_pDialogueWindow))->OnTouchMove(x, y);
         return;
     }
@@ -1292,9 +1292,9 @@ void ModStation::OnRelease() {
         ms_op_delete(HangarWindow_dtor(this->hangarWindow));
     this->hangarWindow = 0;
 
-    if ((void*&)this->field_0x10 != 0)
-        ms_op_delete(StarMap_dtor((void*&)this->field_0x10));
-    (void*&)this->field_0x10 = 0;
+    if ((void*&)this->starMap != 0)
+        ms_op_delete(StarMap_dtor((void*&)this->starMap));
+    (void*&)this->starMap = 0;
 
     delete (SpaceLounge *)this->spaceLounge;
     this->spaceLounge = 0;
@@ -1303,9 +1303,9 @@ void ModStation::OnRelease() {
         ms_op_delete(MissionsWindow_dtor(this->m_pDialogueWindow));
     this->m_pDialogueWindow = 0;
 
-    if (*(void**)&this->field_0x84 != 0)
-        ms_op_delete(DialogueWindow_dtor(*(void**)&this->field_0x84));
-    *(void**)&this->field_0x84 = 0;
+    if (*(void**)&this->dialogueWindow != 0)
+        ms_op_delete(DialogueWindow_dtor(*(void**)&this->dialogueWindow));
+    *(void**)&this->dialogueWindow = 0;
 
     if (this->medalChoiceWindow != 0)
         ms_op_delete(ChoiceWindow_dtor(this->medalChoiceWindow));
@@ -1315,16 +1315,16 @@ void ModStation::OnRelease() {
         ms_op_delete(StatusWindow_dtor(this->statusWindow));
     this->statusWindow = 0;
 
-    if (this->starMap != 0)
-        ms_op_delete(CutScene_dtor(this->starMap));
-    this->starMap = 0;
+    if (this->cutScene != 0)
+        ms_op_delete(CutScene_dtor(this->cutScene));
+    this->cutScene = 0;
 
     delete (MenuTouchWindow *)this->dlcMenu;
     this->dlcMenu = 0;
 
-    if (*(void**)&this->field_0x54 != 0)
-        ms_op_delete(Radio_dtor(*(void**)&this->field_0x54));
-    *(void**)&this->field_0x54 = 0;
+    if (*(void**)&this->activeMission != 0)
+        ms_op_delete(Radio_dtor(*(void**)&this->activeMission));
+    *(void**)&this->activeMission = 0;
 
     if (this->radioMessages != 0)
         ms_op_delete(Array_RM_dtor(this->radioMessages));
@@ -1361,15 +1361,15 @@ void ModStation::OnRelease() {
     delete (AbyssEngine::EaseInOut *)this->easeCamZ;
     this->easeCamZ = 0;
 
-    if (*(void**)&this->field_0x54 != 0)
-        ms_op_delete(Radio_dtor(*(void**)&this->field_0x54));
-    *(void**)&this->field_0x54 = 0;
+    if (*(void**)&this->activeMission != 0)
+        ms_op_delete(Radio_dtor(*(void**)&this->activeMission));
+    *(void**)&this->activeMission = 0;
 
     if (this->scrollBox != 0)
         ms_op_delete(ScrollTouchBox_dtor(this->scrollBox));
     this->scrollBox = 0;
 
-    *(uint16_t*)&this->field_0xb0 = 0;
+    *(uint16_t*)&this->gameLoaded = 0;
     if (*soundHolder != 0)
         ModStation_or_tail();
 }
@@ -1543,7 +1543,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
     if (this->capturedTouch != param_3)
         return;
     int starMapOpen = ((char*)&this->m_nStarMapWindowOpen)[0];
-    this->field_0x118 = 0;
+    this->hangarLightIntensity = 0;
     this->capturedTouch = 0;
     if (starMapOpen != 0)
         return;
@@ -1557,21 +1557,21 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
     }
 
     // ---- dialogue window open ----
-    if (((char*)&this->field_0x68)[1] != 0) {
-        if (DialogueWindow_OnTouchEnd_ote(*(int*)&this->field_0x84, param_1) != 0) {
-            if (this->field_0x54 != 0) {                  // this[1].field_C: an active mission
+    if (((char*)&this->modalFlags)[1] != 0) {
+        if (DialogueWindow_OnTouchEnd_ote(*(int*)&this->dialogueWindow, param_1) != 0) {
+            if (this->activeMission != 0) {                  // this[1].field_C: an active mission
                 handleMissionComplete(this);
                 return;
             }
             // plain dialogue dismissal.
-            DialogueWindow *dw = (DialogueWindow *)*(void**)&this->field_0x84;
-            ((char*)&this->field_0x68)[1] = 0;
+            DialogueWindow *dw = (DialogueWindow *)*(void**)&this->dialogueWindow;
+            ((char*)&this->modalFlags)[1] = 0;
             if (dw != 0) {
                 DialogueWindow_dtor_ote(dw);
                 ModStation_opdelete_ote(dw);
             }
             char justEntered = ((char*)&this->choiceWindow)[1];
-            this->field_0x84 = 0;
+            this->dialogueWindow = 0;
             if (justEntered == 0) {
                 Station *st = (Station *)Status_getStation_ote();
                 if (Station_getIndex_ote(st) != 4) {
@@ -1579,7 +1579,7 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
                     if (Station_getIndex_ote(st) != 0x58) {
                         Status_getStation_ote();
                         if (Station_stationHasPirateBase_ote() != 0) {
-                            ((char*)&this->field_0x4c)[2] = 0;
+                            ((char*)&this->departPending)[2] = 0;
                             Station *home = (Station *)**(int **)g_ote_status;
                             Status_getStation_ote();
                             Status_departStation_ote(home);
@@ -1587,35 +1587,35 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
                             int mod = (Status_getCurrentCampaignMission_ote() == 0x10) ? -1 : 1;
                             **(int **)g_ote_module = mod;
                             ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
-                            this->field_0x24 = 0;
+                            this->stationActive = 0;
                         }
                     }
                 }
             }
             return;
         }
-        if (((char*)&this->field_0x64)[1] != 0)
+        if (((char*)&this->subWindowFlags)[1] != 0)
             return;
     }
 
     // ---- choice window (jump confirm / docking fee / reward) ----
-    if (((char*)&this->field_0x6c)[3] != 0) {
+    if (((char*)&this->screenFlags)[3] != 0) {
         int r = ChoiceWindow_OnTouchEnd_ote(*(int*)&this->choiceWindow, param_1);
         if (r == 1) {
-            char departed = ((char*)&this->field_0x68)[3];
-            ((char*)&this->field_0x4c)[2] = 0;
+            char departed = ((char*)&this->modalFlags)[3];
+            ((char*)&this->departPending)[2] = 0;
             if (departed == 0) {
-                ((char*)&this->field_0x6c)[3] = 0;
+                ((char*)&this->screenFlags)[3] = 0;
                 ((char*)&this->scrollBox)[0] = 0;
             } else {
-                ((char*)&this->field_0x4c)[2] = 0;
+                ((char*)&this->departPending)[2] = 0;
                 Station *home = (Station *)**(int **)g_ote_status;
                 Status_getStation_ote();
                 Status_departStation_ote(home);
                 Achievements_resetNewMedals_ote((void *)**(int **)g_ote_achievements);
                 **(int **)g_ote_module = 1;
                 ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
-                this->field_0x24 = 0;
+                this->stationActive = 0;
             }
         } else if (r == 0) {
             handleChoiceDecline(this, param_1, param_2);
@@ -1624,21 +1624,21 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
     }
 
     // ---- main station screen: dispatch to the open sub-window, else the button strip ----
-    if (((char*)&this->field_0x68)[0] != 0) {                          // StatusWindow
+    if (((char*)&this->modalFlags)[0] != 0) {                          // StatusWindow
         if (StatusWindow_OnTouchEnd_ote(*(int*)&this->statusWindow, param_1, param_2) != 0) {
-            ((char*)&this->field_0x68)[0] = 0;
+            ((char*)&this->modalFlags)[0] = 0;
             ModStation_resetLight_ote(this);
         }
         return;
     }
-    if (((char*)&this->field_0x64)[3] != 0) {                          // StarMap
-        if (StarMap_OnTouchEnd_ote(this->field_0x10, param_1) != 0) {
-            ((char*)&this->field_0x64)[3] = 0;
+    if (((char*)&this->subWindowFlags)[3] != 0) {                          // StarMap
+        if (StarMap_OnTouchEnd_ote((int)(intptr_t)this->starMap, param_1) != 0) {
+            ((char*)&this->subWindowFlags)[3] = 0;
             ModStation_resetLight_ote(this);
         }
         return;
     }
-    if (((char*)&this->field_0x64)[2] != 0) {                          // HangarWindow
+    if (((char*)&this->subWindowFlags)[2] != 0) {                          // HangarWindow
         if (HangarWindow_OnTouchEnd_ote((HangarWindow *)this->hangarWindow, param_1, param_2) != 0) {
             int *st = *(int **)g_ote_status;
             // tally any tradeable cargo sold this visit.
@@ -1657,18 +1657,18 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
             HangarWindow_setSellMode_ote(*(int*)&this->hangarWindow);
             this->resetIdleCamForHangar();
             char *hw = (char*)this->hangarWindow;
-            ((char*)&this->field_0x64)[2] = 0;
+            ((char*)&this->subWindowFlags)[2] = 0;
             if (*hw != 0) {
                 *hw = 0;
-                int cs = *(int*)&this->starMap;
+                int cs = *(int*)&this->cutScene;
                 Status_getShip_ote();
                 int shipIndex = Ship_getIndex_ote();
                 Ship *sh = (Ship *)Status_getShip_ote();
                 Ship_getRace_ote(sh);
                 CutScene_replacePlayerShip_ote(cs, shipIndex);
             }
-            if (*(int*)&this->starMap != 0)
-                CutScene_checkForTurret_ote(*(int*)&this->starMap);
+            if (*(int*)&this->cutScene != 0)
+                CutScene_checkForTurret_ote(*(int*)&this->cutScene);
             int snd = **(int **)g_ote_sound;
             FModSound_stop_ote(snd);
             FModSound_play_ote(snd, 0x7a, 0, 0.0f);
@@ -1677,16 +1677,16 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
         }
         return;
     }
-    if (((char*)&this->field_0x64)[0] != 0) {                          // SpaceLounge
+    if (((char*)&this->subWindowFlags)[0] != 0) {                          // SpaceLounge
         if (SpaceLounge_OnTouchEnd_ote(*(int*)&this->spaceLounge, param_1, param_2) != 0) {
-            ((char*)&this->field_0x64)[1] = 0;
+            ((char*)&this->subWindowFlags)[1] = 0;
             this->resetIdleCamForHangar();
             ModStation_resetLight_ote(this);
             int snd = **(int **)g_ote_sound;
             FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
             FModSound_stop_ote(snd);
             FModSound_play_ote(snd, 0x7a, 0, 0.0f);
-            CutScene_checkForTurret_ote(*(int*)&this->starMap);
+            CutScene_checkForTurret_ote(*(int*)&this->cutScene);
             if (*(int*)&this->spaceLounge != 0 && SpaceLounge_hangarNeedsUpdate_ote() != 0) {
                 if (this->hangarWindow != 0) {
                     HangarWindow_dtor_ote((HangarWindow *)this->hangarWindow);
@@ -1697,23 +1697,23 @@ void ModStation::OnTouchEnd(int param_1, int param_2, void *param_3) {
         }
         return;
     }
-    if (((char*)&this->field_0x64)[1] != 0) {                          // MissionsWindow
+    if (((char*)&this->subWindowFlags)[1] != 0) {                          // MissionsWindow
         if (MissionsWindow_OnTouchEnd_ote(*(int*)&this->m_pDialogueWindow, param_1) != 0) {
-            ((char*)&this->field_0x64)[0] = 0;
+            ((char*)&this->subWindowFlags)[0] = 0;
             int snd = **(int **)g_ote_sound;
             FModSound_setParamValue_ote(snd, 0, snd, 0.0f);
         }
         return;
     }
-    if (((char*)&this->field_0x6c)[2] != 0) {                          // MenuTouchWindow (DLC)
+    if (((char*)&this->screenFlags)[2] != 0) {                          // MenuTouchWindow (DLC)
         if (MenuTouchWindow_OnTouchEnd_ote((MenuTouchWindow *)this->dlcMenu,
                                            param_1, param_2, param_3) != 0) {
-            ((char*)&this->field_0x6c)[2] = 0;
+            ((char*)&this->screenFlags)[2] = 0;
             ModStation_ote_cacheButtonPositions(this);
         }
         return;
     }
-    if (((char*)&this->field_0x6c)[1] != 0) {                          // m_nStarMapWindowOpen+1: button strip active
+    if (((char*)&this->screenFlags)[1] != 0) {                          // m_nStarMapWindowOpen+1: button strip active
         handleMainButtons(this, param_1, param_2);
     }
 }
@@ -1724,8 +1724,8 @@ void handleChoiceDecline(ModStation *self, int param_1, int param_2)
     int *status = *(int **)g_ote_status;
     (void)param_1; (void)param_2;
 
-    if (((char*)&self->field_0x4c)[2] != 0) {                          // a departure was pending
-        ((char*)&self->field_0x4c)[2] = 0;
+    if (((char*)&self->departPending)[2] != 0) {                          // a departure was pending
+        ((char*)&self->departPending)[2] = 0;
         int camp = Status_getCurrentCampaignMission_ote();
         if (camp == 0x18) {
             Station *st = (Station *)Status_getStation_ote();
@@ -1762,15 +1762,15 @@ void handleChoiceDecline(ModStation *self, int param_1, int param_2)
         Achievements_resetNewMedals_ote((void *)**(int **)g_ote_achievements);
         **(int **)g_ote_module = 1;
         ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
-        self->field_0x24 = 0;
+        self->stationActive = 0;
         return;
     }
 
-    if (((char*)&self->field_0x68)[3] != 0) {                          // standing-penalty branch
+    if (((char*)&self->modalFlags)[3] != 0) {                          // standing-penalty branch
         int credits = Status_getCredits_ote();
         if (*(int *)&self->buttonCredits <= credits) {  // this[1].field_44 == price
             Status_changeCredits_ote(*status);
-            ((char*)&self->field_0x68)[3] = 0;
+            ((char*)&self->modalFlags)[3] = 0;
             ((char*)&self->buttonCredits)[0] = 1;
             Station *st = (Station *)Status_getStation_ote();
             Station_setAttackedFriends_ote(st, 0);
@@ -1781,9 +1781,9 @@ void handleChoiceDecline(ModStation *self, int param_1, int param_2)
             return;
         }
         ModStation_ote_showDockingFeeChoice(self, credits);
-        ((char*)&self->field_0x68)[3] = 1;
-        ((char*)&self->field_0x4c)[2] = 1;
-        ((char*)&self->field_0x6c)[3] = 1;
+        ((char*)&self->modalFlags)[3] = 1;
+        ((char*)&self->departPending)[2] = 1;
+        ((char*)&self->screenFlags)[3] = 1;
         return;
     }
 
@@ -1796,34 +1796,34 @@ void handleChoiceDeclineTail(ModStation *self)
     int *status = *(int **)g_ote_status;
 
     if (((char*)&self->scrollBox)[0] != 0) {                          // this[1].field_4C: pending app-data flag
-        ((char*)&self->field_0x6c)[3] = 0;
+        ((char*)&self->screenFlags)[3] = 0;
         ((char*)&self->scrollBox)[0] = 0;
         int appData = ApplicationManager_GetApplicationData_ote();
         *(char *)(appData + 0xd) = 1;
         return;
     }
-    if (((char*)&self->field_0x6c)[0] == 0) {
-        if (((char*)&self->field_0x6c)[1] != 0) {                      // this->field_6C+1: reward-mission state
+    if (((char*)&self->screenFlags)[0] == 0) {
+        if (((char*)&self->screenFlags)[1] != 0) {                      // this->field_6C+1: reward-mission state
             int credits = Status_getCredits_ote();
             if (credits < 25000) {
                 ModStation_ote_showRewardChoice(self, credits);
-                ((char*)&self->field_0x6c)[1] = 0;
+                ((char*)&self->screenFlags)[1] = 0;
                 return;
             }
             Status_changeCredits_ote(*status);
-            ((char*)&self->field_0x6c)[3] = 0;
-            ((char*)&self->field_0x6c)[1] = 0;
+            ((char*)&self->screenFlags)[3] = 0;
+            ((char*)&self->screenFlags)[1] = 0;
             Station *home = (Station *)*status;
             Galaxy_getStation_ote(**(int **)g_ote_galaxy);
             Status_setStation_ote(home);
             **(int **)g_ote_module = 0;
             ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
         }
-        if (self->field_0x18 != 0 && ((char*)&self->field_0x64)[2] != 0) {
-            self->field_0x18 = 0;
-            ((char*)&self->field_0x64)[2] = 0;
+        if (self->pendingHangarClose != 0 && ((char*)&self->subWindowFlags)[2] != 0) {
+            self->pendingHangarClose = 0;
+            ((char*)&self->subWindowFlags)[2] = 0;
         }
-        ((char*)&self->field_0x6c)[3] = 0;
+        ((char*)&self->screenFlags)[3] = 0;
     } else {
         Status_changeCredits_ote(*status);
         Ship_removeCargo_ote(Status_getShip_ote(), 0x6d);
@@ -1833,7 +1833,7 @@ void handleChoiceDeclineTail(ModStation *self)
         Station *st = (Station *)Status_getStation_ote();
         Station_setItems_ote(st, 0, 0);
         Station_setItems_ote(*(Station **)(*status + 0x14c), 0, 0);
-        ((char*)&self->field_0x6c)[0] = 0;
+        ((char*)&self->screenFlags)[0] = 0;
     }
 }
 
@@ -1847,7 +1847,7 @@ void handleMainButtons(ModStation *self, int param_1, int param_2)
         return;
 
     // "buy credits" button -> hangar credits window.
-    if (TouchButton_OnTouchEnd_ote(self->field_0x54, param_1) != 0) {
+    if (TouchButton_OnTouchEnd_ote(self->activeMission, param_1) != 0) {
         RecordHandler *rh = (RecordHandler *)**(int **)g_ote_status;
         *(char *)(*(int *)g_ote_status + 0x4e) = 1;
         RecordHandler_saveOptions_ote(rh);
@@ -1857,8 +1857,8 @@ void handleMainButtons(ModStation *self, int param_1, int param_2)
             self->hangarWindow = hw;
         }
         HangarWindow_initialize_ote();
-        self->field_0x18 = 1;
-        ((char*)&self->field_0x64)[2] = 1;
+        self->pendingHangarClose = 1;
+        ((char*)&self->subWindowFlags)[2] = 1;
         HangarWindow_showCreditsBuyWindow_ote((HangarWindow *)self->hangarWindow);
     }
 
@@ -1881,7 +1881,7 @@ void handleMainButtons(ModStation *self, int param_1, int param_2)
             self->dlcMenu = w;
         }
         Status_checkForLevelUp_ote();
-        ((char*)&self->field_0x6c)[2] = 1;
+        ((char*)&self->screenFlags)[2] = 1;
         ModStation_ote_cacheButtonPositions(self);
         return;
     }
@@ -1898,7 +1898,7 @@ void handleMissionComplete(ModStation *self)
 {
     int *status = *(int **)g_ote_status;
 
-    Mission *mission = (Mission *)self->field_0x54;
+    Mission *mission = (Mission *)self->activeMission;
 
     // mission-type specific cargo cleanup before scoring.
     if (mission != 0) {
@@ -1981,7 +1981,7 @@ void handleMissionComplete(ModStation *self)
         // mining-plant unlock -> supernova radio cutscene.
         Status_removeMission_ote(*status);
         Status_setMission_ote(*status);
-        ((char*)&self->field_0x68)[1] = 0;
+        ((char*)&self->modalFlags)[1] = 0;
         int snd = **(int **)g_ote_sound;
         FModSound_stop_ote(snd);
         FModSound_play_ote(snd, 0x90, 0, 0.0f);
@@ -1997,7 +1997,7 @@ void handleMissionComplete(ModStation *self)
     bool handled = false;
     if (d < 0xf) {
         if ((1 << (d & 0xff) & 0x5830) != 0) {
-            int cs = *(int*)&self->starMap;
+            int cs = *(int*)&self->cutScene;
             Status_getShip_ote();
             int shipIndex = Ship_getIndex_ote();
             Ship *sh = (Ship *)Status_getShip_ote();
@@ -2008,10 +2008,10 @@ void handleMissionComplete(ModStation *self)
         }
         if (d == 1) {
             Status_removeMission_ote(*status);
-            self->field_0x54 = 0;
+            self->activeMission = 0;
             Status_setMission_ote(*status);
             self->selectedButton = 1;
-            ((char*)&self->field_0x68)[1] = 0;
+            ((char*)&self->modalFlags)[1] = 0;
             ModStation_ote_launchModule(self->vtable, 0x10000);
             return;
         }
@@ -2030,9 +2030,9 @@ void handleMissionComplete(ModStation *self)
 
     // missions 0x2c / 9 / 0x4b / 0x4c / 0x53: launch the storyline cutscene module.
     Status_removeMission_ote(*status);
-    self->field_0x54 = 0;
+    self->activeMission = 0;
     Status_setMission_ote(*status);
-    ((char*)&self->field_0x68)[1] = 0;
+    ((char*)&self->modalFlags)[1] = 0;
     *(int *)(*status + 0 /* cutscene slot */) = 0;
     ModStation_ote_launchModule(**(int **)g_ote_module, 5);
 }
@@ -2044,8 +2044,8 @@ void handleCampaignTransition(ModStation *self, int cm)
 
     if (cm == 0x12) {
         Status_removeMission_ote(*status);
-        ((char*)&self->field_0x68)[1] = 0;
-        self->field_0x54 = 0;
+        ((char*)&self->modalFlags)[1] = 0;
+        self->activeMission = 0;
         return;
     }
 
@@ -2070,7 +2070,7 @@ void handleCampaignTransition(ModStation *self, int cm)
         Status_departStation_ote(home);
         **(int **)g_ote_module = 1;
         ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
-        self->field_0x24 = 0;
+        self->stationActive = 0;
         finishMissionReward(self);
         return;
     }
@@ -2099,7 +2099,7 @@ void handleCampaignTransition(ModStation *self, int cm)
         Galaxy_getStation_ote(**(int **)g_ote_galaxy);
         Status_departStation_ote(home);
         ApplicationManager_SetCurrentApplicationModule_ote(**(int **)g_ote_module);
-        self->field_0x24 = 0;
+        self->stationActive = 0;
         return;
     }
     if (cm == 0x68) {
@@ -2107,7 +2107,7 @@ void handleCampaignTransition(ModStation *self, int cm)
             HangarWindow_dtor_ote((HangarWindow *)self->hangarWindow);
             ModStation_opdelete_ote(self->hangarWindow);
         }
-        ((char*)&self->field_0x64)[2] = 0;
+        ((char*)&self->subWindowFlags)[2] = 0;
         self->hangarWindow = 0;
         finishMissionReward(self);
         return;
@@ -2115,7 +2115,7 @@ void handleCampaignTransition(ModStation *self, int cm)
     if (cm == 0x80) {
         Status_activateNewWanted_ote();
         if (*(char *)(*(int *)g_ote_status + 0x2a) == 0)
-            ((char*)&self->field_0x6c)[2] = 1;
+            ((char*)&self->screenFlags)[2] = 1;
         finishMissionReward(self);
         return;
     }
@@ -2134,10 +2134,10 @@ void finishMissionReward(ModStation *self)
         Status_getCurrentCampaignMission_ote();
     Status_changeCredits_ote(*status);
     Status_removeMission_ote(*status);
-    self->field_0x54 = 0;
+    self->activeMission = 0;
     if (*(int*)&self->spaceLounge != 0)
         SpaceLounge_refresh_ote();
-    ((char*)&self->field_0x68)[1] = 0;
+    ((char*)&self->modalFlags)[1] = 0;
     self->checkHints();
 }
 
@@ -2160,14 +2160,14 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_tb_clear;   // 
 void ModStation::OnTouchBegin(int x, int y, void *touch) {
     if (this->capturedTouch != 0)
         return;
-    (unsigned char&)this->field_0x118 = 1;
+    (unsigned char&)this->hangarLightIntensity = 1;
     this->capturedTouch = touch;
     int flag = this->m_nStarMapWindowOpen;
     this->scrollOffset = x;
     this->scrollTarget = y;
     if (flag != 0) {
-        if (((Radio *)(*(void**)&this->field_0x54))->lastMessageShown() != 0) {
-            (unsigned char&)this->field_0x24 = 0;
+        if (((Radio *)(*(void**)&this->activeMission))->lastMessageShown() != 0) {
+            (unsigned char&)this->stationActive = 0;
             gStatus->nextCampaignMission();
             unsigned int mod = *(unsigned int *)gAppManager;
             *(int *)*g_ModStation_tb_clear = 0;
@@ -2183,35 +2183,35 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         ((Layout *)(layoutObj))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[1] != 0) {
-        ((DialogueWindow *)(*(void**)&this->field_0x84))->OnTouchBegin(x, y);
+    if (((char*)&this->modalFlags)[1] != 0) {
+        ((DialogueWindow *)(*(void**)&this->dialogueWindow))->OnTouchBegin(x, y);
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[3] != 0) {
         ((ChoiceWindow *)(this->choiceWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[2] != 0) {
+    if (((char*)&this->modalFlags)[2] != 0) {
         ((ChoiceWindow *)(this->medalChoiceWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[2] != 0) {
+    if (((char*)&this->subWindowFlags)[2] != 0) {
         ((HangarWindow *)(this->hangarWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[1] != 0) {
+    if (((char*)&this->subWindowFlags)[1] != 0) {
         ((SpaceLounge *)(this->spaceLounge))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[3] != 0) {
-        ((StarMap *)((void*&)this->field_0x10))->OnTouchBegin(x, y);
+    if (((char*)&this->subWindowFlags)[3] != 0) {
+        ((StarMap *)((void*&)this->starMap))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x68)[0] != 0) {
+    if (((char*)&this->modalFlags)[0] != 0) {
         ((StatusWindow *)(this->statusWindow))->OnTouchBegin(x, y);
         return;
     }
-    if (((char*)&this->field_0x64)[0] != 0) {
+    if (((char*)&this->subWindowFlags)[0] != 0) {
         ((MissionsWindow *)(this->m_pDialogueWindow))->OnTouchBegin(x, y);
         return;
     }
@@ -2238,7 +2238,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     this->dragStartX = x;
     this->dragAccumX = x;
     this->dragVelX = 0;
-    (unsigned char&)this->field_0x100 = 1;
+    (unsigned char&)this->dragActive = 1;
 }
 
 struct Layout;
@@ -2271,24 +2271,24 @@ void ModStation::OnRender2D() {
     gCanvas->Begin2d();
     gCanvas->SetColor(this->fadeColor);
 
-    if (this->field_0x24 == 0) {
+    if (this->stationActive == 0) {
         // station screen not active yet — nothing to draw this frame.
         return;
     }
 
-    if (((char*)&this->field_0x64)[2] != 0) {            // hangar
+    if (((char*)&this->subWindowFlags)[2] != 0) {            // hangar
         HangarWindow_render_r2d(this);
-    } else if (((char*)&this->field_0x64)[1] != 0) {     // space lounge
+    } else if (((char*)&this->subWindowFlags)[1] != 0) {     // space lounge
         SpaceLounge_draw_r2d(this);
-    } else if (((char*)&this->field_0x64)[0] != 0) {     // missions
+    } else if (((char*)&this->subWindowFlags)[0] != 0) {     // missions
         MissionsWindow_draw_r2d(this->m_pDialogueWindow);
-    } else if (((char*)&this->field_0x64)[3] != 0) {     // star map
+    } else if (((char*)&this->subWindowFlags)[3] != 0) {     // star map
         StarMap_draw_r2d(this);
-    } else if (((char*)&this->field_0x68)[0] != 0) {     // status
+    } else if (((char*)&this->modalFlags)[0] != 0) {     // status
         StatusWindow_draw_r2d(this);
-    } else if (((char*)&this->field_0x68)[2] != 0) {     // DLC menu
+    } else if (((char*)&this->modalFlags)[2] != 0) {     // DLC menu
         MenuTouchWindow_draw_r2d(this);
-    } else if (((char*)&this->field_0x6c)[0] != 0) {     // radio / cutscene overlay
+    } else if (((char*)&this->screenFlags)[0] != 0) {     // radio / cutscene overlay
         Radio_draw_r2d(this);
         CutScene_render2D_r2d();
     } else {
@@ -2296,9 +2296,9 @@ void ModStation::OnRender2D() {
         ModStation_r2d_drawStationHud(this);
     }
 
-    if (((char*)&this->field_0x68)[2] != 0 || ((char*)&this->field_0x68)[3] != 0)
+    if (((char*)&this->modalFlags)[2] != 0 || ((char*)&this->modalFlags)[3] != 0)
         ChoiceWindow_draw_r2d(this);
-    if (((char*)&this->field_0x68)[1] != 0)
+    if (((char*)&this->modalFlags)[1] != 0)
         DialogueWindow_draw_r2d(this);
 
     Layout **help = (Layout **)g_r2d_helpLayout;
@@ -2309,10 +2309,10 @@ void ModStation::OnRender2D() {
 
     // 3D hangar/ship pass when no help window is up.
     if ((*help)->choiceWindowOpen == 0) {   // Layout+0x0
-        if (((char*)&this->field_0x64)[2] != 0) {
+        if (((char*)&this->subWindowFlags)[2] != 0) {
             HangarWindow_render3D_r2d();
         }
-        if ((*help)->choiceWindowOpen == 0 && ((char*)&this->field_0x64)[1] != 0)
+        if ((*help)->choiceWindowOpen == 0 && ((char*)&this->subWindowFlags)[1] != 0)
             SpaceLounge_draw3DShip_r2d();
     }
 
@@ -2461,13 +2461,13 @@ void  ModStation_oi_buildDlcMenu(ModStation *self);
 void ModStation::OnInitialize() {
     int *status = *(int **)g_oi_status;
 
-    this->field_0x9c = 0;
+    this->introTimer = 0;
 
     // lazily build the docking cutscene.
-    if (*(int*)&this->starMap == 0) {
+    if (*(int*)&this->cutScene == 0) {
         CutScene *cs = (CutScene *)ModStation_opnew_oi(0xa0);
         CutScene_ctor_oi(cs, 0x17);
-        this->starMap = (StarMap*)cs;
+        this->cutScene = cs;
         CutScene_initialize_oi(cs);
     }
 
@@ -2476,7 +2476,7 @@ void ModStation::OnInitialize() {
 
     if (state == 0x14) {
         // ---- hangar screen ----
-        if (this->field_0xb1 == 0 && this->field_0xb0 == 0 && ((char*)&this->field_0x100)[1] != 0) {
+        if (this->autoSaved == 0 && this->gameLoaded == 0 && ((char*)&this->dragActive)[1] != 0) {
             bool skip = false;
             if (Status_getCurrentCampaignMission_oi() == 0x4d) {
                 Station *st = (Station *)Status_getStation_oi();
@@ -2500,7 +2500,7 @@ void ModStation::OnInitialize() {
             int eq2 = Item_makeItem_oi();
             Ship_setEquipment_oi((Item *)*shipTbl, eq2);
             Item_setUnsaleable_oi(eq2);
-            CutScene_replacePlayerShip_oi(*(int*)&this->starMap, Ship_getIndex_oi());
+            CutScene_replacePlayerShip_oi(*(int*)&this->cutScene, Ship_getIndex_oi());
         }
 
         // half-transparent docking buttons depending on campaign progress.
@@ -2543,7 +2543,7 @@ void ModStation::OnInitialize() {
         }
         ModStation_oi_setupHangarCamera(this, race);
         ModStation_resetLight_oi(this);
-        if (((char*)&this->field_0x100)[1] != 0)
+        if (((char*)&this->dragActive)[1] != 0)
             ModStation_enterStation_oi(this);
 
         // mission 0x4d: re-price a special ship in the shipyard.
@@ -2562,7 +2562,7 @@ void ModStation::OnInitialize() {
         }
 
         // optional "you have no jump fuel" warning.
-        if (((char*)&this->field_0x68)[1] == 0 && ((char*)&this->field_0x68)[2] == 0 &&
+        if (((char*)&this->modalFlags)[1] == 0 && ((char*)&this->modalFlags)[2] == 0 &&
             ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
             *(char *)(**g_oi_textRoot + 0x2ec) == 0) {
             Station *st2 = (Station *)Status_getStation_oi();
@@ -2575,18 +2575,18 @@ void ModStation::OnInitialize() {
                 if (routes == 0 && hasJump == 0 && hasFuel == 0 &&
                     0x10 < Status_getCurrentCampaignMission_oi()) {
                     ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot), 1);
-                    ((char*)&this->field_0x6c)[1] = 1;
+                    ((char*)&this->screenFlags)[1] = 1;
                     ((char*)&this->m_nStarMapWindowOpen)[3] = 1;
                 }
             }
         }
 
         *(char *)(*(int *)g_oi_status + 0xf8) = 1;
-        this->field_0x118 = 0;
+        this->hangarLightIntensity = 0;
         this->capturedTouch = 0;
-        this->field_0xb3 = 0;
-        this->field_0x2c = 0;
-        this->field_0x148 = 0;
+        this->reloadPending = 0;
+        this->loadTick = 0;
+        this->idleCamFlag = 0;
         next = 1;
     } else if (state == 0x28) {
         // ---- station information screen ----
@@ -2596,30 +2596,30 @@ void ModStation::OnInitialize() {
             if (Station_getIndex_oi(st) == 0x78) {
                 int camp = Status_getCurrentCampaignMission_oi();
                 if (camp == 0x62 || Status_getCurrentCampaignMission_oi() == 100)
-                    this->field_0xd8 = 1;
+                    this->alarmActive = 1;
             }
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *)Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
-                this->field_0xd8 = 1;
+                this->alarmActive = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *)Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
-                this->field_0xd8 = 1;
+                this->alarmActive = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *)Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
-                this->field_0xd8 = 1;
+                this->alarmActive = 1;
         }
         if (Status_inSupernovaSystem_oi() != 0)
-            this->field_0xd8 = 1;
+            this->alarmActive = 1;
         if (**g_oi_demoFlag != 0)
-            *(uint16_t*)&this->field_0xd8 = 0x101;
+            *(uint16_t*)&this->alarmActive = 0x101;
 
-        if (this->field_0xb0 == 0) {
+        if (this->gameLoaded == 0) {
             // decide whether to show the standing / docking-fee choice.
             bool gate = false;
             Station *st = (Station *)Status_getStation_oi();
@@ -2631,7 +2631,7 @@ void ModStation::OnInitialize() {
                     Status_getStation_oi();
                     if (Station_stationHasPirateBase_oi() != 0) {
                         // pirate base -> agent dialogue instead.
-                        if (this->field_0x84 == 0)
+                        if (this->dialogueWindow == 0)
                             ModStation_oi_showPirateDialogue(this);
                         goto afterGate;
                     }
@@ -2646,9 +2646,9 @@ void ModStation::OnInitialize() {
                     Station *s2 = (Station *)Status_getStation_oi();
                     if (Station_getIndex_oi(s2) != 100) {
                         Station *s3 = (Station *)Status_getStation_oi();
-                        if (Station_getIndex_oi(s3) != 0x65 && ((char*)&this->field_0x68)[2] == 0 &&
+                        if (Station_getIndex_oi(s3) != 0x65 && ((char*)&this->modalFlags)[2] == 0 &&
                             ((char*)&this->m_nStarMapWindowOpen)[3] == 0 &&
-                            this->field_0xd8 == 0 && *(char *)(*(int *)g_oi_status + 0x108) == 0) {
+                            this->alarmActive == 0 && *(char *)(*(int *)g_oi_status + 0x108) == 0) {
                             Status_getStation_oi();
                             bool enemy = false;
                             if (Station_hasAttackedFriends_oi() != 0) {
@@ -2697,9 +2697,9 @@ void ModStation::OnInitialize() {
         }
         // mining-plant flag (+0xd9).
         if (Status_getCurrentCampaignMission_oi() == 0x2b) {
-            if (hereIdx == 10) this->field_0xd9 = 1;
+            if (hereIdx == 10) this->miningPlantFlag = 1;
         } else if (hereIdx == 10 && Status_getCurrentCampaignMission_oi() == 0x2c) {
-            this->field_0xd9 = 1;
+            this->miningPlantFlag = 1;
         }
 
         // station-10 endgame goods.
@@ -2791,10 +2791,10 @@ void ModStation::OnInitialize() {
         bool atReward = Station_getIndex_oi(st6c) == 0x6c;
         int rewardState = atReward ? *(int *)(*(int *)g_oi_status + 0x114) : 0;
         if (atReward && rewardState == 1) {
-            if (*(void**)&this->field_0x84 != 0) {
+            if (*(void**)&this->dialogueWindow != 0) {
                 // DialogueWindow dtor delegated via reward helper path.
             }
-            this->field_0x84 = 0;
+            this->dialogueWindow = 0;
             ModStation_oi_showRewardMission(this);
         } else {
             Station *st = (Station *)Status_getStation_oi();
@@ -2804,7 +2804,7 @@ void ModStation::OnInitialize() {
                     ChoiceWindow_setNotice_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot));
                 } else {
                     ChoiceWindow_set_oi(this->choiceWindow, GameText_getText_oi(**g_oi_textRoot), 1);
-                    ((char*)&this->field_0x6c)[0] = 1;
+                    ((char*)&this->screenFlags)[0] = 1;
                 }
                 ((char*)&this->m_nStarMapWindowOpen)[3] = 1;
             }
@@ -2857,7 +2857,7 @@ void ModStation::OnInitialize() {
         next = 0x14;
     } else if (state == 0x3c) {
         // ---- leave-station screen ----
-        this->field_0x100 = 0;
+        this->dragActive = 0;
         this->dragAccumX = 0;
         *(uint32_t*)((char*)&this->dragOriginX - 4) = 0;
         this->dragVelX = 0;
@@ -2867,24 +2867,24 @@ void ModStation::OnInitialize() {
         Status_getSystem_oi();
         int angle = (SolarSystem_getRace_oi() == 2) ? (int)0xffffff38 : 0x10e;
         this->dragOriginX = angle;
-        if (*(int*)&this->starMap != 0)
-            *(float *)(*(int*)&this->starMap + 4) = (float)angle / 65536.0f;
+        if (*(int*)&this->cutScene != 0)
+            *(float *)(*(int*)&this->cutScene + 4) = (float)angle / 65536.0f;
         *(uint32_t*)((char*)&this->dragAccumX + 4) = 0;
-        this->field_0xb0 = this->field_0xb3;
+        this->gameLoaded = this->reloadPending;
         ModStation_oi_buildNewsTicker(this);
         next = 0x28;
     } else if (state == 0x50) {
         // ---- DLC sub-menu screen ----
         *(uint32_t*)((char*)&this->m_nStarMapWindowOpen + 2) = 0;
-        ((char*)&this->field_0x6c)[2] = 0;
-        *(uint16_t*)&this->field_0x6c = 0;
-        this->field_0x68 = 0;
-        *(uint16_t*)((char*)&this->field_0x64 + 2) = 0;
+        ((char*)&this->screenFlags)[2] = 0;
+        *(uint16_t*)&this->screenFlags = 0;
+        this->modalFlags = 0;
+        *(uint16_t*)((char*)&this->subWindowFlags + 2) = 0;
         *(uint16_t*)&this->m_nStarMapWindowOpen = 0x100;
-        this->field_0xdc = 0;
-        *(uint16_t*)((char*)&this->field_0xdc + 2) = 0;
-        this->field_0x12c = 0;
-        this->field_0x18 = 0;
+        this->cbsHintShown = 0;
+        *(uint16_t*)((char*)&this->cbsHintShown + 2) = 0;
+        this->touchPadFlag = 0;
+        this->pendingHangarClose = 0;
         ((char*)&this->m_nStarMapWindowOpen)[3] = 0;
         ModStation_oi_buildDlcMenu(this);
         next = 0x3c;
@@ -2899,7 +2899,7 @@ void ModStation::OnInitialize() {
 
         *(int*)((char*)&this->medalCount + 8) = 0x32;
         int *st = *(int **)g_oi_status;
-        ((char*)&this->field_0x100)[1] = 1;
+        ((char*)&this->dragActive)[1] = 1;
         Status_getStation_oi();
         Station_getName_oi();
         // String assign of station name into this+0x38 (temporary chain).
@@ -2927,7 +2927,7 @@ void ModStation::OnInitialize() {
         if (*music != -1)
             Globals_playMusicAndFadeOutCurrent_oi(**(int **)g_oi_sound);
         *music = -1;
-        this->field_0x24 = 1;
+        this->stationActive = 1;
         this->state = 100;
 
         // snapshot the docking button positions.
@@ -2967,7 +2967,7 @@ void ModStation::showDlcMenu() {
         MenuTouchWindow_ctor_dlc(win, 2);
         this->dlcMenu = win;
     }
-    ((char*)&this->field_0x68)[2] = 1;
+    ((char*)&this->modalFlags)[2] = 1;
 
     int *bx = g_dlc_btnX;
     int *by = g_dlc_btnY;
@@ -2982,7 +2982,7 @@ void ModStation::showDlcMenu() {
         }
     }
     **g_dlc_btnCount = win->buttons->size();
-    ((char*)&this->field_0x64)[2] = 0;
+    ((char*)&this->subWindowFlags)[2] = 0;
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
 
@@ -3006,8 +3006,8 @@ void ModStation::showCBSMessage() {
     ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
 
     // mark both "CBS message open" flags.
-    this->field_0xc1 = 1;
-    ((char*)&this->field_0x68)[3] = 1;
+    this->cbsMessageOpen = 1;
+    ((char*)&this->modalFlags)[3] = 1;
 }
 
 // ===========================================================================
@@ -3201,14 +3201,14 @@ void  ModStation_ch_buildWingmanDialogue(void *dw, int kind);
 void  ModStation_ch_playWingmanVoice();
 }
 extern "C" void ModStation_ch_showWingmanDialogue(ModStation *self, int kind) {
-    delete (DialogueWindow *)*(void**)&self->field_0x84;
-    *(void**)&self->field_0x84 = nullptr;
+    delete (DialogueWindow *)*(void**)&self->dialogueWindow;
+    *(void**)&self->dialogueWindow = nullptr;
     void *dw = ModStation_ch_newDialogue(0x74);
     ModStation_ch_buildWingmanDialogue(dw, kind);
-    *(void**)&self->field_0x84 = dw;
+    *(void**)&self->dialogueWindow = dw;
     ModStation_ch_playWingmanVoice();
-    ((unsigned char*)&self->field_0x68)[1] = 1;   // dialogue window now owns input
-    (unsigned char&)self->field_0xdb = 1;   // wingman event consumed this visit
+    ((unsigned char*)&self->modalFlags)[1] = 1;   // dialogue window now owns input
+    (unsigned char&)self->wingmanEventConsumed = 1;   // wingman event consumed this visit
 }
 
 // ---- checkPendingProducts fragment ----------------------------------------
@@ -3434,7 +3434,7 @@ extern "C" int ModStation_oi_dockingFeeImpl(ModStation *self, int standing, int 
     if (standing >= 0)
         return 0;                          // friendly/allied: docking is free
     ChoiceWindow_setFee_oiImpl(self->choiceWindow, credits, 0);
-    ((unsigned char*)&self->field_0x6c)[1] = 1;                    // choice window now owns input
+    ((unsigned char*)&self->screenFlags)[1] = 1;                    // choice window now owns input
     return 1;
 }
 
@@ -3446,7 +3446,7 @@ extern "C" void ModStation_oi_pirateDialogueImpl(ModStation *self) {
         GameText_getText_oiImpl(0x3e), GameText_getText_oiImpl(0x49),
         GameText_getText_oiImpl(0x7e), GameText_getText_oiImpl(0x7f),
         GameText_getText_oiImpl(0x20c), GameText_getText_oiImpl(0x20d));
-    ((unsigned char*)&self->field_0x6c)[1] = 1;
+    ((unsigned char*)&self->screenFlags)[1] = 1;
 }
 
 // "Wanted level raised" warning shown when `count` new bounties were posted: a
@@ -3454,13 +3454,13 @@ extern "C" void ModStation_oi_pirateDialogueImpl(ModStation *self) {
 extern "C" void ModStation_oi_wantedActivatedImpl(ModStation *self, int count) {
     (void)count;
     ChoiceWindow_set1_oiImpl(self->choiceWindow, GameText_getText_oiImpl(0x2c5));
-    ((unsigned char*)&self->field_0x6c)[1] = 1;
+    ((unsigned char*)&self->screenFlags)[1] = 1;
 }
 
 // Reward-mission offer: localized "a reward mission is available" line on +0x70.
 extern "C" void ModStation_oi_rewardMissionImpl(ModStation *self) {
     ChoiceWindow_set1_oiImpl(self->choiceWindow, GameText_getText_oiImpl(0x6c));
-    ((unsigned char*)&self->field_0x6c)[1] = 1;
+    ((unsigned char*)&self->screenFlags)[1] = 1;
 }
 
 // (Re)builds the scrolling station news ticker owned at +0xa4.
@@ -3529,14 +3529,14 @@ extern "C" {
 void Engine_setHangarLightIntensity_ou(float v);
 }
 extern "C" void ModStation_ou_hangarLightImpl(ModStation *self, int elapsed) {
-    float cur = *(float *)&self->field_0x118;
-    float tgt = *(float *)&self->field_0x11c;
+    float cur = *(float *)&self->hangarLightIntensity;
+    float tgt = *(float *)&self->hangarLightTarget;
     float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
     if (cur < tgt) { cur += step; if (cur > tgt) cur = tgt; }
     else if (cur > tgt) { cur -= step; if (cur < tgt) cur = tgt; }
     if (cur < 0.0f) cur = 0.0f;
     if (cur > 1.0f) cur = 1.0f;
-    *(float *)&self->field_0x118 = cur;
+    *(float *)&self->hangarLightIntensity = cur;
     Engine_setHangarLightIntensity_ou(cur);
 }
 
@@ -3591,7 +3591,7 @@ extern "C" void ModStation_ote_buildRadioCutscene(ModStation *self) {
     Radio_ctor_ote(radio);
     for (int id = 0x817; id <= 0x81a; ++id)
         Radio_addMessage_ote(radio, id);
-    *(void**)&self->field_0x54 = radio;
+    *(void**)&self->activeMission = radio;
 
     void *box = ModStation_ote_newScrollBox(0x80);
     ScrollTouchBox_initRadio_ote(box, radio);

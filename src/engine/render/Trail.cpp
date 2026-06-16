@@ -99,9 +99,9 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
 
 Trail::Trail(int type, int segments)
 {
-    this->field_0x00 = 0;
-    this->field_0x04 = 0;
-    this->field_0x08 = 0;
+    this->sourceX = 0;
+    this->sourceY = 0;
+    this->sourceZ = 0;
     this->segments = segments;
 
     float uvSide = 0.0f;

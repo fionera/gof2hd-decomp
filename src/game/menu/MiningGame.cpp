@@ -300,7 +300,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->oreAmount = 0.0f;
     this->oreRate = 0.0f;
     this->driftTimer = 0;
-    this->field_0x70 = 0x9c4;
+    this->failThreshold = 0x9c4;
     this->layerTimer = 0;
     this->currentLayer = 0;
     this->targetLayer = layer;

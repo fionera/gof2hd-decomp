@@ -23,10 +23,10 @@ public:
     float oreAmount;
     float oreRate;
     float controlDivisor;
-    int field_0x30;
+    int field_0x30;            // +0x30 (unused layout slot)
     int oreImageHeight;
-    int field_0x38;
-    int field_0x3c;
+    int field_0x38;            // +0x38 (unused layout slot)
+    int field_0x3c;            // +0x3c (unused layout slot)
     int oreIconOffsetX;
     int oreIconOffsetY;
     int progressBarWidth;
@@ -39,7 +39,7 @@ public:
     float textAlpha;
     float animAccumulator;     ///< sprite animation accumulator
     int driftTimer;
-    int field_0x70;
+    int failThreshold;         // +0x70 (loss threshold seed = 2500)
     int layerTimer;
     int currentLayer;
     int targetLayer;
