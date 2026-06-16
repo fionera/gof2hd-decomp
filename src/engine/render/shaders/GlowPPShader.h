@@ -60,12 +60,12 @@ public:
     FBOContainer *backgroundTarget; // combine/background render target
 
     GlowPPShader();
-    void Init();
+    void Init(Engine *engine) override;
     void InternalInit(Engine *engine);
-    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);
-    void RenderEffect_simple(FBOContainer *source, Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) override;
+    void RenderEffect(FBOContainer *source, Engine *engine) override;
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

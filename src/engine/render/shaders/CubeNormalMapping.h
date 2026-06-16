@@ -35,9 +35,9 @@ public:
     int uniformU11;
 
     CubeNormalMapping();
-    void Init(Engine *);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
+    void Init(Engine *) override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void SetInActive() override;
 };
 
 } // namespace AbyssEngine

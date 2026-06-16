@@ -285,19 +285,14 @@ void Engine::SwapBuffer() {
     }
 }
 
-typedef void ShaderUnload(ShaderBaseStruct *);
-typedef void ShaderInitReloadFn(ShaderBaseStruct *, Engine *);
-
 void Engine::ReloadShaders() {
     uint32_t index = 0;
     while (index < this->shaders->size()) {
         ShaderBaseStruct *shader = (*this->shaders)[index];
-        void **vtable = *(void ***)shader;
-        ((ShaderUnload *)vtable[0x24 / 4])(shader);
+        shader->DeleteShader();
 
         shader = (*this->shaders)[index];
-        vtable = *(void ***)shader;
-        ((ShaderInitReloadFn *)vtable[0x08 / 4])(shader, this);
+        shader->Init(this);
         index += 1;
     }
 }
@@ -597,8 +592,6 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
     return glColor4f(red, green, blue, alpha);
 }
 
-typedef void FileInterfaceRelease(void *);
-
 Engine::~Engine()
 {
     DestroyCallback *destroy = this->onDestroyCallback;
@@ -609,11 +602,7 @@ Engine::~Engine()
     delete this->appManager;
     this->appManager = nullptr;
 
-    void *fileInterface = this->fileInterface;
-    if (fileInterface != 0) {
-        void **vtable = *(void ***)fileInterface;
-        ((FileInterfaceRelease *)vtable[1])(fileInterface);
-    }
+    delete (FileInterface *)this->fileInterface;
     this->fileInterface = 0;
 
     AEFile::Release();
@@ -655,26 +644,19 @@ void Engine::AfterGLInit() {
     g_Engine_rendererString->assign(&renderer);
 }
 
-typedef void ShaderDrawCloak(ShaderBaseStruct *);
-
 void Engine::DrawCloakFBO(FBOContainer *fbo) {
-    (void)fbo;   // unused in the shader path
     if (g_Engine_useShaders != 0) {
         ShaderBaseStruct *shader = (*this->shaders)[g_Engine_cloakShader];
-        void **vtable = *(void ***)shader;
-        return ((ShaderDrawCloak *)vtable[0x14 / 4])(shader);
+        shader->RenderEffect(fbo, this);
     }
 }
-
-typedef void ShaderInitFn(ShaderBaseStruct *, Engine *);
 
 void Engine::ShaderRegister(ShaderBaseStruct *shader) {
     if (shader != 0) {
         String name = shader->GetShaderName();
         char *text = name.GetAEChar();
 
-        void **vtable = *(void ***)shader;
-        ((ShaderInitFn *)vtable[0x08 / 4])(shader, this);
+        shader->Init(this);
         this->shaders->push_back(shader);
         this->triangleCounts->push_back(0);
         ::operator delete(text);
@@ -757,9 +739,6 @@ void Engine::DrawLine2D(int vertexCount, int count, bool strip) {
     return glDrawArrays(mode, 0, count);
 }
 
-typedef void ShaderEnable(ShaderBaseStruct *, bool);
-typedef void ShaderApply(ShaderBaseStruct *, MeshFull *, Engine *);
-
 void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     while (shaderIndex == -1) {
         shaderIndex = g_Engine_defaultShader;
@@ -775,63 +754,54 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     }
     g_Engine_shaderDirty = 1;
 
-    void **vtable = *(void ***)shader;
-    if (((ShaderBaseStruct *)shader)->program != this->currentProgram) {
-        ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
+    if (shader->program != this->currentProgram) {
+        shader->UseShader(hasExtra);
         shader = (*this->shaders)[shaderIndex];
-        this->currentProgram = ((ShaderBaseStruct *)shader)->program;
+        this->currentProgram = shader->program;
         g_Engine_currentShader = shaderIndex;
-        vtable = *(void ***)shader;
     }
-    ((ShaderEnable *)vtable[0x28 / 4])(shader, hasExtra);
+    shader->UseShader(hasExtra);
     shader = (*this->shaders)[shaderIndex];
-    vtable = *(void ***)shader;
-    ((ShaderApply *)vtable[0x0c / 4])(shader, mesh, this);
+    shader->UpdateMeshData(mesh, this);
     if (mesh != 0) {
         uint32_t triangles = __aeabi_uidiv(mesh->indexCount, 3);
         (*this->triangleCounts)[shaderIndex] += triangles;
     }
 }
 
-typedef void ShaderPostDraw(ShaderBaseStruct *, void *);
-typedef void ShaderPostDrawSwap(ShaderBaseStruct *, void *, void **, Engine *);
-
 void Engine::DoPostEffect() {
     uint32_t flags = this->postEffectFlags;
-    void *current = this->postEffectFBO;
-    void *other = this->refractFBO;
+    FBOContainer *current = this->postEffectFBO;
+    FBOContainer *other = this->refractFBO;
     if (g_Engine_useShaders != 0) {
-        void *slot = other;
+        FBOContainer *slot = other;
         if ((flags & 2) != 0) {
             ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostA];
-            void **vtable = *(void ***)shader;
             if ((flags & ~2u) == 0) {
-                ((ShaderPostDraw *)vtable[0x14 / 4])(shader, current);
+                shader->RenderEffect(current, this);
                 flags = 0;
             } else {
-                ((ShaderPostDrawSwap *)vtable[0x1c / 4])(shader, current, &other, this);
+                shader->RenderEffect(current, &other, this);
                 slot = other;
                 other = current;
             }
         }
         if ((this->postEffectFlags & 1) != 0) {
             ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostB];
-            void **vtable = *(void ***)shader;
             if ((flags & ~1u) == 0) {
-                ((ShaderPostDraw *)vtable[0x14 / 4])(shader, slot);
+                shader->RenderEffect(slot, this);
                 flags = 0;
             } else {
-                ((ShaderPostDrawSwap *)vtable[0x1c / 4])(shader, slot, &other, this);
+                shader->RenderEffect(slot, &other, this);
                 slot = other;
             }
         }
         if ((this->postEffectFlags & 4) != 0) {
             ShaderBaseStruct *shader = (*this->shaders)[g_Engine_shaderPostC];
-            void **vtable = *(void ***)shader;
             if ((flags & ~4u) == 0) {
-                ((ShaderPostDraw *)vtable[0x18 / 4])(shader, slot);
+                shader->RenderEffect(slot, this);
             } else {
-                ((ShaderPostDrawSwap *)vtable[0x20 / 4])(shader, slot, &other, this);
+                shader->RenderEffect(slot, &other, this);
             }
         }
         if (g_Engine_postEffectFlag == 1) {
@@ -1080,12 +1050,9 @@ void Engine::LightSetLightColorAmbient(float red, float green, float blue, unsig
     return ShaderUpdateMaterialColor();
 }
 
-typedef void ShaderInactive(ShaderBaseStruct *);
-
 void Engine::ShaderSetInActive() {
     ShaderBaseStruct *shader = (*this->shaders)[g_Engine_activeShader];
-    void **vtable = *(void ***)shader;
-    return ((ShaderInactive *)vtable[0x10 / 4])(shader);
+    shader->SetInActive();
 }
 
 void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsigned int light) {

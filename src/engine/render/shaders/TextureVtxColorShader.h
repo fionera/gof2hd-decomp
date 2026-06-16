@@ -43,11 +43,11 @@ public:
 
     TextureVtxColorShader();
 
-    void Init(Engine *engine);
-    void SetInActive();
+    void Init(Engine *engine) override;
+    void SetInActive() override;
     void ConnectShaderComponents(uint32_t program, int index);
-    void UseShader(bool);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void UseShader(bool useExtra) override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

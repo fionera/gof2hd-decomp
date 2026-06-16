@@ -30,9 +30,9 @@ public:
 
     TextureConference();
 
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void Init(Engine *engine);
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void Init(Engine *engine) override;
 };
 
 } // namespace AbyssEngine

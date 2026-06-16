@@ -34,9 +34,9 @@ public:
     int uM8;            // u_m8
 
     GenericShader1();
-    void Init(Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(Engine *engine) override;
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

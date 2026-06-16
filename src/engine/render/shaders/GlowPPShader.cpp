@@ -190,7 +190,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     glActiveTexture(0x84c0);
 }
 
-void GlowPPShader::RenderEffect_simple(FBOContainer *source, Engine *engine) {
+void GlowPPShader::RenderEffect(FBOContainer *source, Engine *engine) {
     FBOContainer *target = 0;
     this->RenderEffect(source, &target, engine);
 }
@@ -209,7 +209,7 @@ void GlowPPShader::InternalInit(Engine *engine) {
     this->backgroundTarget->Create(0x200, 0x200, true, false);
 }
 
-void GlowPPShader::Init() {
+void GlowPPShader::Init(Engine *) {
     const char *vertex = "GlowPPShader.vert";
     this->copyProgram = this->ES2LoadProgram(vertex, "GlowPPShader.copy.frag");
     this->blurXProgram = this->ES2LoadProgram(vertex, "GlowPPShader.blurX.frag");

@@ -6,7 +6,6 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-extern "C" char _ZTVN11AbyssEngine11BumpMappingE[];
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
 struct Engine;
@@ -33,9 +32,9 @@ public:
     static int ShaderIndex;
 
     BumpMapping();
-    void Init(Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(Engine *engine) override;
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

@@ -35,10 +35,10 @@ public:
     int alphaUniform[2];           // alpha
 
     TextureShader();
-    void Init(Engine *engine);
-    void UseShader(bool flag);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(Engine *engine) override;
+    void UseShader(bool flag) override;
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     void ConnectShaderComponents(uint32_t program, int slot);
 };
 

@@ -11,7 +11,12 @@
 // drives ES2 shader compile/link plus uniform/attribute location binding.
 
 
+struct Engine;
+
 namespace AbyssEngine {
+
+class Mesh;
+class FBOContainer;
 
 class ShaderBaseStruct {
 public:
@@ -29,9 +34,21 @@ public:
     ShaderBaseStruct();
     virtual ~ShaderBaseStruct();
 
+    // Dispatched shader vtable (uniform across all concrete shaders):
+    //   +0x08 Init   +0x0c UpdateMeshData   +0x10 SetInActive
+    //   +0x14/0x18 RenderEffect(source)         (direct post-process draw)
+    //   +0x1c/0x20 RenderEffect(source,target)  (post-process draw with FBO swap)
+    //   +0x24 DeleteShader   +0x28 UseShader
+    virtual void Init(::Engine *engine) = 0;
+    virtual void UpdateMeshData(Mesh *mesh, ::Engine *engine) = 0;
+    virtual void SetInActive() = 0;
+    // Post-process draw slots; base impls are inert (concrete post-process shaders override them).
+    virtual void RenderEffect(FBOContainer *source, ::Engine *engine);
+    virtual void RenderEffect(FBOContainer *source, FBOContainer **target, ::Engine *engine);
+    virtual void DeleteShader();
+    virtual void UseShader(bool useExtra);
+
     String GetShaderName();
-    void UseShader();
-    void DeleteShader();
     void Update();
     uint32_t ES2LoadProgram(const char *vertexSource, const char *fragmentSource);
     uint32_t ES2LoadShader(uint32_t type, const char *source);

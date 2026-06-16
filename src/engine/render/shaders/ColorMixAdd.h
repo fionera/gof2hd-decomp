@@ -30,13 +30,12 @@ public:
     int u5Loc;              // uniform u5
 
     ColorMixAdd();
-    void Init(Engine *engine);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
+    void Init(Engine *engine) override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void SetInActive() override;
 };
 
 } // namespace AbyssEngine
 
-extern "C" char _ZTVN11AbyssEngine11ColorMixAddE[];
 
 #endif

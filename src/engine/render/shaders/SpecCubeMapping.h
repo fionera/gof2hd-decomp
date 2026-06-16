@@ -6,7 +6,6 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-extern "C" char _ZTVN11AbyssEngine15SpecCubeMappingE[];
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
 struct Engine;
@@ -54,9 +53,9 @@ public:
     };
 
     SpecCubeMapping();
-    void Init(Engine *);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
+    void Init(Engine *) override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void SetInActive() override;
 };
 
 } // namespace AbyssEngine

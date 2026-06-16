@@ -60,12 +60,12 @@ public:
     int lumaUniformTexture;             // +0x98  s_texture
 
     BloomShader();
-    void Init(Engine *engine);
+    void Init(Engine *engine) override;
     void InternalInit(Engine *engine);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
-    void RenderEffect(FBOContainer *source, Engine *engine);
-    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine);
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void SetInActive() override;
+    void RenderEffect(FBOContainer *source, Engine *engine) override;
+    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

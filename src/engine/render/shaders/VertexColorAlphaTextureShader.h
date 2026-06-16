@@ -36,9 +36,9 @@ public:
     int uniform8;      // u8
 
     VertexColorAlphaTextureShader();
-    void Init(Engine *engine);
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
-    void SetInActive();
+    void Init(Engine *engine) override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    void SetInActive() override;
 };
 
 } // namespace AbyssEngine

@@ -30,7 +30,7 @@ String ShaderBaseStruct::GetShaderName()
     return copy;
 }
 
-void ShaderBaseStruct::UseShader()
+void ShaderBaseStruct::UseShader(bool /*useExtra*/)
 {
     glUseProgram(this->program);
 }
@@ -38,6 +38,16 @@ void ShaderBaseStruct::UseShader()
 void ShaderBaseStruct::DeleteShader()
 {
     glDeleteProgram(this->program);
+}
+
+// Base post-process draw slots. Concrete post-process shaders override the slots they implement;
+// the base bodies are inert (slot 0x14 simply returns the source FBO).
+void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, ::Engine * /*engine*/)
+{
+}
+
+void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer ** /*target*/, ::Engine * /*engine*/)
+{
 }
 
 void ShaderBaseStruct::Update()

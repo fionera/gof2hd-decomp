@@ -12,7 +12,7 @@ VertexColorShader::VertexColorShader()
 }
 
 // Compiles the vertex-colour program and caches its attribute/uniform locations.
-void VertexColorShader::Init()
+void VertexColorShader::Init(Engine *)
 {
     this->program = this->ES2LoadProgram("vtx_color_vs", "vtx_color_fs");
 

@@ -9,7 +9,7 @@ int ColorMixAdd::ShaderIndex;
 
 ColorMixAdd::ColorMixAdd()
 {
-    new ((ShaderBaseStruct *)this) ShaderBaseStruct();
+    // ShaderBaseStruct base subobject is default-constructed implicitly.
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"ColorMixAdd";
 }

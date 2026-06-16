@@ -34,9 +34,9 @@ public:
     static int ShaderIndex;
 
     GenericShader2();
-    void Init(Engine *engine);
-    void SetInActive();
-    void UpdateMeshData(Mesh *mesh, Engine *engine);
+    void Init(Engine *engine) override;
+    void SetInActive() override;
+    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
 };
 
 } // namespace AbyssEngine
