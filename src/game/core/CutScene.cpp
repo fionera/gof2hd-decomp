@@ -407,6 +407,9 @@ void CutScene::replacePlayerShip(int /*a*/, int b)
         void *ship = (*en5)[0];
         float bank = VectorSignedToFloat(CutScene_shipBankTable[b], 0);
         void *obj = *(void **)ship;
+        // Actor virtual dispatch (slot +0x48). KEPT as explicit slot dispatch: the
+        // KIPlayer hierarchy's recovered method signatures are inconsistent across
+        // subclasses, so named virtual conversion needs a signature-unification pass first.
         typedef void (*BankFn)(void *, int, float, int);
         BankFn fn = *(BankFn *)(*(char **)obj + 0x48);
         fn(obj, 0, bank, 0);
@@ -468,6 +471,10 @@ void CutScene::initialize()
                 v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
                 v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
                 void *e1 = (*enemies)[n - 1];
+                // Actor virtual dispatch (slot +0x44 setPosition(Vector const&)). KEPT as
+                // explicit slot dispatch: the KIPlayer hierarchy's recovered setPosition
+                // signatures are inconsistent across subclasses, so a named virtual call
+                // needs a hierarchy-wide signature-unification pass first (behaviour-untestable here).
                 typedef void (*SetFn)(void *, void *);
                 SetFn fn = *(SetFn *)(*(char **)e1 + 0x44);
                 fn(e1, v);

@@ -344,6 +344,9 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(slot, &group) == 0) {
                 void **sysObj = (void **)this->system;
+                // External dispatch: sysObj is an FMOD::EventSystem, so slot +8 is a
+                // method in FMOD's own C++ vtable (library type, not ours) — it cannot
+                // become a named call and stays an explicit virtual dispatch.
                 typedef int (*ReleaseFn)(void *, int, int);
                 ReleaseFn fn = *(ReleaseFn *)(*(char **)sysObj + 8);
                 fn(sysObj, (int)(uintptr_t)slot, 0);
@@ -540,6 +543,9 @@ afterListener:
             if (FMOD_Event_getParentGroup(*evp, &group) == 0) {
                 // Release the event back to the system.
                 void **sysObj = (void **)this->system;
+                // External dispatch: sysObj is an FMOD::EventSystem, so slot +8 is a
+                // method in FMOD's own C++ vtable (library type, not ours) — it cannot
+                // become a named call and stays an explicit virtual dispatch.
                 typedef int (*ReleaseFn)(void *, int, int);
                 ReleaseFn fn = *(ReleaseFn *)(*(char **)sysObj + 8);
                 fn(sysObj, (int)(uintptr_t)*evp, 0);

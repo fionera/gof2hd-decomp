@@ -1836,6 +1836,10 @@ void PlayerEgo::calcCollision(void *candidates) {
         // broad-phase overlap test (virtual +0x40).
         float pos[3];
         ((AEGeometry *)(this->geometry))->getPosition();
+        // Actor virtual dispatch (slot +0x40 outerCollide). KEPT as explicit slot
+        // dispatch: obj is a polymorphic KIPlayer* and the hierarchy's recovered
+        // outerCollide signatures are inconsistent across subclasses (int/bool/void,
+        // Vector/3-float), so named virtual conversion needs signature unification first.
         typedef int (*overlap_fn)(void *, void *);
         overlap_fn overlaps = *(overlap_fn *)(*(char **)obj + 0x40);
         if (!overlaps(obj, pos))
@@ -2396,6 +2400,10 @@ void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script
         } else {
             // steer toward the current waypoint.
             float wpPos[3];
+            // Actor virtual dispatch (slot +0x28 getPosition). KEPT as explicit slot
+            // dispatch: wp is a polymorphic actor and getPosition's recovered return type
+            // varies across subclasses (Vector/void+out/Vec3/V3/Vector*), so a named
+            // virtual call needs a hierarchy-wide signature-unification pass first.
             typedef void (*getpos_fn)(void *, void *);
             (*(getpos_fn *)(*(char **)wp + 0x28))(wp, wpPos);
             ((int&)this->waypointX) = *(int *)&wpPos[0];
