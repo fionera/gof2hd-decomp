@@ -9,7 +9,11 @@
 // Cross-class types referenced only through pointers.
 class PaintCanvas;   // global-scope render canvas (game/core/PaintCanvasClass.h)
 class Engine;        // global-scope renderer/device root (engine/render/Engine.h)
-namespace AbyssEngine { class ConfigReader; }   // engine/file/ConfigReader.h
+namespace AbyssEngine {
+    class ConfigReader;       // engine/file/ConfigReader.h
+    class CheatHandler;       // game/core/CheatHandler.h
+    class AESoundRessource;   // engine/audio/AESoundRessource.h
+}
 
 using String = AbyssEngine::String;
 
@@ -17,45 +21,46 @@ using String = AbyssEngine::String;
 // signatures. Invoked through the PaintCanvas the manager owns at offset 0.
 typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data);
 typedef bool ResumeCallback_t(PaintCanvas *canvas, void *data);
+typedef void QuitCallback_t();
 
 // Top-level driver for the running game: owns the PaintCanvas, the active application
 // module, input/key state, the audio resource and the config reader, and steps the
 // per-frame state machine in OnUpdate.
 class ApplicationManager {
 public:
-    PaintCanvas *paintCanvas;             // owned render canvas (object starts here)
-    uint32_t     currentKey;
-    uint32_t     currentKeyHigh;
-    char        *keyMappingTable;         // key-code -> (mask, String) mapping table
-    bool         orientationTrackingEnabled;
-    void        *currentModule;           // active IApplicationModule (polymorphic)
-    void        *quitCallback;            // QuitCallback*
-    void        *loadingCallback;         // LoadingCallback_t*
-    void        *loadingCallbackData;
-    void        *resumeCallback;          // ResumeCallback_t*
-    void        *resumeCallbackData;
-    void        *cheatHandler;            // AbyssEngine::CheatHandler*
-    bool         cheatsEnabled;
-    void        *configReader;            // AbyssEngine::ConfigReader*
-    int          field_0x3c;              // frame state-machine state
-    int          savedState;             // state saved across suspend/resume
-    Array<void*>        *modules;         // loaded application modules (IApplicationModule*)
-    Array<unsigned int> *moduleIds;       // module-id table (parallel to `modules`)
-    unsigned int currentModuleId;
-    void        *pendingModule;           // module to switch to next frame
-    uint64_t     currentTimeMs;
-    uint64_t     frameTimeMs;
-    uint64_t     previousFrameTimeMs;
-    uint32_t     keyState;
-    uint32_t     keyStateHigh;
-    Array<long long>    *actionTable;     // action table: pairs of (action, key) longs
-    uint32_t     actionMask;
-    uint32_t     actionMaskHigh;
-    uint32_t     actionState;
-    uint32_t     actionStateHigh;
-    void        *engine;                  // Engine*
-    void        *soundResource;           // AbyssEngine::AESoundRessource*
-    bool         soundFxEnabled;
+    PaintCanvas *paintCanvas;             // +0x00 owned render canvas (object starts here)
+    uint32_t     currentKey;              // +0x08
+    uint32_t     currentKeyHigh;          // +0x0c
+    char        *keyMappingTable;         // +0x10 key-code -> (mask, String) mapping table
+    bool         orientationTrackingEnabled; // +0x14
+    void        *currentModule;           // +0x18 active IApplicationModule (raw-vtable dispatch)
+    QuitCallback_t    *quitCallback;      // +0x1c
+    LoadingCallback_t *loadingCallback;   // +0x20
+    void        *loadingCallbackData;     // +0x24
+    ResumeCallback_t  *resumeCallback;    // +0x28
+    void        *resumeCallbackData;      // +0x2c
+    AbyssEngine::CheatHandler *cheatHandler;   // +0x30
+    bool         cheatsEnabled;           // +0x34
+    AbyssEngine::ConfigReader *configReader;   // +0x38
+    int          state;                   // +0x3c frame state-machine state
+    int          savedState;              // +0x40 state saved across suspend/resume
+    Array<void*>        *modules;         // +0x48 loaded application modules (IApplicationModule*)
+    Array<unsigned int> *moduleIds;       // +0x50 module-id table (parallel to `modules`)
+    unsigned int currentModuleId;         // +0x5c
+    void        *pendingModule;           // +0x60 module to switch to next frame (raw-vtable dispatch)
+    uint64_t     currentTimeMs;           // +0x68
+    uint64_t     frameTimeMs;             // +0x70
+    uint64_t     previousFrameTimeMs;     // +0x78
+    uint32_t     keyState;                // +0x80
+    uint32_t     keyStateHigh;            // +0x84
+    Array<long long>    *actionTable;     // +0x8c action table: pairs of (action, key) longs
+    uint32_t     actionMask;              // +0x98
+    uint32_t     actionMaskHigh;          // +0x9c
+    uint32_t     actionState;             // +0xa0
+    uint32_t     actionStateHigh;         // +0xa4
+    Engine      *engine;                  // +0xa8
+    AbyssEngine::AESoundRessource *soundResource; // +0xac
+    bool         soundFxEnabled;          // +0xb0
     bool         musicEnabled;
     bool         vibrateEnabled;
     int          lastTouchX;

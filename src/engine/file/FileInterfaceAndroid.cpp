@@ -36,8 +36,8 @@ FileInterfaceAndroid::FileInterfaceAndroid()
     this->alive = 1;
     this->appRootDir = 0;
     this->zipDirectory = 0;
-    this->field_0x24 = 0;
-    this->field_0x28 = 0;
+    this->zipAppend = 0;
+    this->zipReadLen = 0;
     this->vtable = (char *)gFIAVtable + 8;
 }
 
@@ -106,10 +106,10 @@ FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start,
     this->modeFlag = 0;
     this->vtable = (char *)gFIAVtable + 8;
     ++*gFIAInstCount;
-    this->field_0x1c = 0;
-    this->field_0x28 = 0;
+    this->zipReadPos = 0;
+    this->zipReadLen = 0;
     this->Seek(start);
-    this->field_0x24 = append;
+    this->zipAppend = append;
 }
 
 // Re-establishes the vptr, closes any open handle, then either decrements the live-instance

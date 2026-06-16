@@ -327,7 +327,7 @@ Transform::Transform(Transform *other) {
 
     this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->boundingRadius = 0.0f;
-    this->field_0xe4 = 1.0f;
+    this->boundingRadius2 = 1.0f;
     this->scale.y = 0.0f;
     this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->localScale.y = 0.0f;
@@ -354,7 +354,7 @@ Transform::Transform(Transform *other) {
         this->localTranslation = other->localTranslation;
         this->localScale = other->localScale;
         this->localMatrix = other->localMatrix;
-        this->field_0x58 = other->field_0x58;
+        this->renderMode = other->renderMode;
 
         for (uint i = 0; i < other->meshes.size(); ++i) {
             Mesh *mesh = new Mesh(other->meshes[i]);
@@ -391,7 +391,7 @@ Transform::Transform() {
 
     this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->boundingRadius = 0.0f;
-    this->field_0xe4 = 1.0f;
+    this->boundingRadius2 = 1.0f;
     this->translation = AEMath::Vector{0.0f, 0.0f, 0.0f};
     this->scale.x = 0.0f;
     this->scale.y = 0.0f;
@@ -422,7 +422,7 @@ Transform::Transform() {
     this->localMatrix = identity;
     this->rotationMatrix = identity;
 
-    this->field_0x58 = 2;
+    this->renderMode = 2;
     this->localMatrix.m[5] = 1.0f;
     this->vfcEnabled = true;
     this->keyFramesShared = false;
@@ -586,17 +586,17 @@ static void lerp_vec(char *dst, const char *from, const char *to, float t) {
 static void apply_value_new(Transform *owner, char *key, const float *values, longlong flags) {
     if (flags == 0x10) {
         *(float *)(key + 0x10) = values[0];
-        if (owner->field_0xe4 < values[0]) owner->field_0xe4 = values[0];
+        if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
     } else if (flags == 0x20) {
         *(float *)(key + 0x14) = values[0];
-        if (owner->field_0xe4 < values[0]) owner->field_0xe4 = values[0];
+        if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
     } else if (flags == 0x38) {
         *(float *)(key + 0x0c) = values[0];
         *(float *)(key + 0x10) = values[1];
         *(float *)(key + 0x14) = values[2];
         float max = values[1] < values[0] ? values[0] : values[1];
         if (values[2] > max) max = values[2];
-        if (owner->field_0xe4 < max) owner->field_0xe4 = max;
+        if (owner->boundingRadius2 < max) owner->boundingRadius2 = max;
     } else if (flags == 0x40) {
         *(float *)(key + 0x18) = values[0];
     } else if (flags == 0x80) {
@@ -710,17 +710,17 @@ static float old_angle_divisor = 57.295780f;
 static void apply_value_old(Transform *owner, char *key, const float *values, longlong flags) {
     if (flags == 0x10) {
         *(float *)(key + 0x10) = values[0];
-        if (owner->field_0xe4 < values[0]) owner->field_0xe4 = values[0];
+        if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
     } else if (flags == 0x20) {
         *(float *)(key + 0x14) = values[0];
-        if (owner->field_0xe4 < values[0]) owner->field_0xe4 = values[0];
+        if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
     } else if (flags == 0x38) {
         *(float *)(key + 0x0c) = values[0];
         *(float *)(key + 0x10) = values[1];
         *(float *)(key + 0x14) = values[2];
         float max = values[1] < values[0] ? values[0] : values[1];
         if (values[2] > max) max = values[2];
-        if (owner->field_0xe4 < max) owner->field_0xe4 = max;
+        if (owner->boundingRadius2 < max) owner->boundingRadius2 = max;
     } else if (flags == 0x40) {
         *(float *)(key + 0x18) = values[0];
     } else if (flags == 0x80) {
@@ -864,7 +864,7 @@ int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
         x = z;
     }
 
-    return CameraIsSphereinViewFrustum(center, this->field_0xe4 * x, camera);
+    return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, camera);
 }
 
 } // namespace AbyssEngine

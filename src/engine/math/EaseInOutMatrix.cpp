@@ -24,7 +24,7 @@ void EaseInOutMatrix::RunOut(float dt) {
 }
 
 AEMath::Matrix EaseInOutMatrix::GetValue() {
-    return this->field_0x78;
+    return this->m_current;
 }
 
 EaseInOutMatrix::~EaseInOutMatrix() = default;
@@ -34,11 +34,11 @@ void EaseInOutMatrix::SetDuration(int duration) {
 }
 
 AEMath::Matrix EaseInOutMatrix::GetMaxValue() {
-    return this->field_0xb4;
+    return this->m_max;
 }
 
 AEMath::Matrix EaseInOutMatrix::GetMinValue() {
-    return this->field_0x0;
+    return this->m_min;
 }
 
 void EaseInOutMatrix::SetToMaxValue() {
@@ -51,14 +51,14 @@ void EaseInOutMatrix::SetToMaxValue() {
 //   and refreshes the current matrix.
 void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
 {
-    field_0x0 = mn;
-    field_0xb4 = mx;
+    m_min = mn;
+    m_max = mx;
 
     m_q0.Set(mn);
 
     // Min translation.
     AEMath::Vector minPos = AEMath::MatrixGetPosition(mn);
-    this->field_0x4c = minPos;
+    this->m_minPos = minPos;
 
     // Orientation delta q1 = q(max) - q0.
     Quaternion qMax(mx);
@@ -66,7 +66,7 @@ void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
 
     // Translation delta = pos(max) - pos(min).
     AEMath::Vector maxPos = AEMath::MatrixGetPosition(mx);
-    this->field_0x68 = maxPos - minPos;
+    this->m_posDelta = maxPos - minPos;
 
     this->m_t = 0.75f;
     UpdateCurrentValue();
@@ -78,10 +78,10 @@ void EaseInOutMatrix::SetRange(AEMath::Matrix mn, AEMath::Matrix mx)
 //   min translation plus the eased delta.
 void EaseInOutMatrix::UpdateCurrentValue()
 {
-    AEMath::Matrix &current = this->field_0x78;
+    AEMath::Matrix &current = this->m_current;
 
     if (this->m_t == 1.25f) {
-        current = this->field_0xb4;
+        current = this->m_max;
         return;
     }
 
@@ -93,7 +93,7 @@ void EaseInOutMatrix::UpdateCurrentValue()
     blended.Convert(current);
 
     // Translation: min translation plus eased delta.
-    AEMath::Vector t = this->field_0x4c + this->field_0x68 * w;
+    AEMath::Vector t = this->m_minPos + this->m_posDelta * w;
     AEMath::MatrixSetTranslation(current, t);
 }
 
@@ -116,8 +116,8 @@ void EaseInOutMatrix::Decrease(float dt) {
 
 EaseInOutMatrix::EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration)
 {
-    this->field_0x4c = AEMath::Vector{0, 0, 0};
-    this->field_0x68 = AEMath::Vector{0, 0, 0};
+    this->m_minPos = AEMath::Vector{0, 0, 0};
+    this->m_posDelta = AEMath::Vector{0, 0, 0};
 
     SetRange(mn, mx);
     this->m_duration = (float)duration;
@@ -126,8 +126,8 @@ EaseInOutMatrix::EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int durat
 // Default constructor: initialises the range to identity .. identity with a zero duration.
 EaseInOutMatrix::EaseInOutMatrix()
 {
-    this->field_0x4c = AEMath::Vector{0, 0, 0};
-    this->field_0x68 = AEMath::Vector{0, 0, 0};
+    this->m_minPos = AEMath::Vector{0, 0, 0};
+    this->m_posDelta = AEMath::Vector{0, 0, 0};
 
     AEMath::Matrix ident;
     AEMath::MatrixIdentity(ident);

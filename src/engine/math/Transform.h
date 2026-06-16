@@ -47,12 +47,12 @@ public:
     uint32_t field_0x4c;
     uint32_t field_0x50;
     uint32_t field_0x54;
-    int field_0x58;                         // render mode/flag (ctor sets 2)
+    union { int renderMode; int field_0x58; }; // +0x58 render mode/flag (ctor sets 2); PlayerTurret reads field_0x58
     AEMath::Matrix rotationMatrix;          // rotation part (Quaternion::Convert)
     AEMath::Matrix localMatrix;             // composed local transform
     AEMath::Vector boundingCenter;
     float boundingRadius;
-    float field_0xe4;
+    float boundingRadius2;                   // +0xe4 squared radius (BSphere::radius2); also tracks max animated scale
     int animationStart;
     bool visible;
     bool animating;

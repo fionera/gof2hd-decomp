@@ -1,6 +1,6 @@
 #include "engine/file/AEFile.h"
 #include "game/core/String.h"
-#include <new>   // placement new used by the in-place String construction below
+#include <new>
 
 // Engine file-subsystem state. These globals hold the active platform FileInterface, the table of
 // currently open low-level files (indexed by handle), the registered .pak archive entries, and the
@@ -75,10 +75,7 @@ void AEFile::Release()
 
     if (g_AEFile_pakFiles != nullptr) {
         for (AEPakFileEntry *&entry : *g_AEFile_pakFiles) {
-            if (entry != nullptr) {
-                entry->name.~String();
-                ::operator delete(entry);
-            }
+            delete entry;
             entry = nullptr;
         }
         delete g_AEFile_pakFiles;
@@ -295,13 +292,13 @@ uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
 
     if (ReadSwitched(length, handle) != 0) {
         uint32_t bytes = length;
-        char *buffer = static_cast<char *>(::operator new(bytes + 1));
+        char *buffer = new char[bytes + 1];
         if (Read(bytes, buffer, handle) != 0) {
             buffer[length] = '\0';
             AEStr_set(value, buffer);
             result = 1;
         }
-        ::operator delete(buffer);
+        delete[] buffer;
     }
 
     return result;

@@ -14,15 +14,15 @@ namespace AbyssEngine {
 
 class EaseInOutMatrix {
 public:
-    AEMath::Matrix field_0x0;           // start transform (m_min)
-    Quaternion     m_q0;                // start orientation
-    AEMath::Vector field_0x4c;          // start translation (m_minPos)
-    Quaternion     m_q1;                // orientation delta
-    AEMath::Vector field_0x68;          // translation delta
-    float          m_t;                 // eased parameter
-    AEMath::Matrix field_0x78;          // current transform
-    AEMath::Matrix field_0xb4;          // end transform (m_max)
-    float          m_duration;
+    AEMath::Matrix m_min;               // +0x0   start (min) transform
+    Quaternion     m_q0;                // +0x40  start orientation
+    AEMath::Vector m_minPos;            // +0x4c  start (min) translation
+    Quaternion     m_q1;                // +0x5c  orientation delta
+    AEMath::Vector m_posDelta;          // +0x68  translation delta
+    float          m_t;                 // +0x74  eased parameter
+    AEMath::Matrix m_current;           // +0x78  current transform
+    AEMath::Matrix m_max;               // +0xb4  end (max) transform
+    float          m_duration;          // +0xf4
 
     EaseInOutMatrix();
     EaseInOutMatrix(AEMath::Matrix mn, AEMath::Matrix mx, int duration);

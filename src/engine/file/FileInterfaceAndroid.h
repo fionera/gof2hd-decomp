@@ -27,11 +27,11 @@ public:
     void        *jniStream;     // jobject / jmethodID stream handle
     uint8_t      modeFlag;      // append/write-mode flag
     char         pad_15[7];
-    int32_t      field_0x1c;
+    int32_t      zipReadPos;    // +0x1c  zip read position tracker (zeroed on open)
     char         pad_20[4];
-    uint8_t      field_0x24;
+    uint8_t      zipAppend;     // +0x24  append flag for the zip path
     char         pad_25[3];
-    int32_t      field_0x28;
+    int32_t      zipReadLen;    // +0x28  zip read length tracker (zeroed on open)
     char         pad_2c[4];
     const char  *appRootDir;
     void        *zipDirectory;

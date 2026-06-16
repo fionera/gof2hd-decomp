@@ -9,20 +9,22 @@
 
 namespace AbyssEngine {
 
-// A single animation key: two transform vectors plus a blend weight.
+// A single animation key: world and local transform channels plus a blend
+// weight and a timestamp. All channels default to identity-ish values so an
+// unfilled key leaves the transform untouched.
 class KeyFrame {
 public:
-    unsigned char _pad_00[12];   // 0x00..0x0c
-    AEMath::Vector scaleA;       // 0x0c  scale-ish vector A (default 1,1,1)
-    unsigned char _pad_18[24];   // 0x18..0x30
-    AEMath::Vector scaleB;       // 0x30  scale-ish vector B (default 1,1,1)
-    unsigned char _pad_3c[12];   // 0x3c..0x48
-    float flWeight;              // 0x48  blend weight (default 1.0)
-    unsigned char _pad_4c[4];    // 0x4c..0x50
-    uint32_t field_0x50;
-    uint32_t field_0x54;
-    uint32_t field_0x58;
-    uint32_t field_0x5c;
+    AEMath::Vector translation;      // +0x00  world translation
+    AEMath::Vector scale;            // +0x0c  world scale (default 1,1,1)
+    AEMath::Vector rotation;         // +0x18  world rotation (euler, fed to Quaternion)
+    AEMath::Vector localTranslation; // +0x24  local translation
+    AEMath::Vector localScale;       // +0x30  local scale (default 1,1,1)
+    AEMath::Vector localRotation;    // +0x3c  local rotation (euler, fed to Quaternion)
+    float alpha;                     // +0x48  blend weight / alpha (default 1.0)
+    uint32_t _pad_4c;                // +0x4c  padding to 8-byte align timestamp
+    int64_t timestamp;               // +0x50  key time
+    uint32_t field_0x58;             // +0x58
+    uint32_t field_0x5c;             // +0x5c
 
     KeyFrame();
 };

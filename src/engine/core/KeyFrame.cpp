@@ -2,22 +2,23 @@
 
 namespace AbyssEngine {
 
-// Seeds the two transform vectors to (1,1,1), the blend weight to 1.0,
-// and zeroes the trailing words and padding.
+// Seeds both scale channels to (1,1,1) and the blend weight to 1.0, and
+// zeroes the remaining transform channels, timestamp and trailing words.
 KeyFrame::KeyFrame()
 {
-    for (unsigned char& b : _pad_00) b = 0;
-    for (unsigned char& b : _pad_18) b = 0;
-    for (unsigned char& b : _pad_3c) b = 0;
-    for (unsigned char& b : _pad_4c) b = 0;
-
+    const AEMath::Vector zero = {0.0f, 0.0f, 0.0f};
     const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
-    scaleA = one;
-    scaleB = one;
-    flWeight = 1.0f;
 
-    field_0x50 = 0;
-    field_0x54 = 0;
+    translation = zero;
+    scale = one;
+    rotation = zero;
+    localTranslation = zero;
+    localScale = one;
+    localRotation = zero;
+    alpha = 1.0f;
+
+    _pad_4c = 0;
+    timestamp = 0;
     field_0x58 = 0;
     field_0x5c = 0;
 }
