@@ -3,11 +3,8 @@
 
 namespace AEMath = AbyssEngine::AEMath;
 
-__attribute__((visibility("hidden"))) extern void* const g_BoundingVolume_vtbl;
-
 BoundingVolume::~BoundingVolume()
 {
-    vtable = (char*)g_BoundingVolume_vtbl + 8;
     if (children != nullptr) {
         // owning array: delete each child pointee, then free the array itself
         for (BoundingVolume* child : *children) {
@@ -19,21 +16,31 @@ BoundingVolume::~BoundingVolume()
     children = nullptr;
 }
 
-// Each child is polled through its own virtual interface; we read the child's
-// dispatch table directly at the documented slot offset.
-typedef int (*CollideFn)(void* self, float x, float y, float z);
-
+// Composite node: each child is polled through its own virtual collide().
 int BoundingVolume::collide(float, float, float)
 {
     if (children != nullptr) {
         for (BoundingVolume* child : *children) {
-            CollideFn fn = *(CollideFn*)((char*)*(void**)child + 8);
-            if (fn(child, centerX, centerY, centerZ) != 0) {
+            if (child->collide(centerX, centerY, centerZ) != 0) {
                 return 1;
             }
         }
     }
     return 0;
+}
+
+// Base composite outerCollide: a plain volume has no outer surface of its own
+// (binary BoundingVolume::outerCollide returns 0); leaf subclasses override.
+int BoundingVolume::outerCollide(float, float, float)
+{
+    return 0;
+}
+
+// Base projectCollisionOnSurface is only reached on leaf subclasses (they
+// override it); a bare composite node projects the point onto itself (identity).
+BoundingVolume::Vector BoundingVolume::projectCollisionOnSurface(const Vector& point)
+{
+    return point;
 }
 
 void BoundingVolume::getCollisionNormal(Vector& out)
@@ -64,7 +71,6 @@ void BoundingVolume::setArr(Array<BoundingVolume*>* arr)
 
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)
 {
-    vtable = (char*)g_BoundingVolume_vtbl + 8;
     children = nullptr;
     centerX = cx;
     centerY = cy;
@@ -74,13 +80,8 @@ BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey,
     extentsZ = ez;
 }
 
-// Child collision/projection dispatch: slot +0xc tests collision, slot +0x10
-// projects this volume's point onto the colliding surface.
-typedef int (*HitFn)(void* self, float x, float y, float z);
-typedef void (*ProjFn)(BoundingVolume::Vector* out, void* self, void* bv);
-
 // Seed this->center with v, then run two passes projecting the point onto every
-// colliding volume's surface.
+// colliding volume's surface, dispatched through each volume's virtuals.
 void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols)
 {
     centerX = v.x;
@@ -90,11 +91,8 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<Boun
     if (vols != nullptr) {
         for (int pass = 0; pass != 2; pass++) {
             for (BoundingVolume* bv : *vols) {
-                HitFn hit = *(HitFn*)((char*)*(void**)bv + 0xc);
-                if (hit(bv, centerX, centerY, centerZ) != 0) {
-                    ProjFn proj = *(ProjFn*)((char*)*(void**)bv + 0x10);
-                    Vector out;
-                    proj(&out, bv, this);
+                if (bv->outerCollide(centerX, centerY, centerZ) != 0) {
+                    Vector out = bv->projectCollisionOnSurface(Vector{centerX, centerY, centerZ});
                     centerX = out.x;
                     centerY = out.y;
                     centerZ = out.z;
@@ -104,15 +102,11 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<Boun
     }
 }
 
-// Child update dispatch: slot +4 forwards the new position to every child.
-typedef void (*UpdateFn)(void* self, float x, float y, float z);
-
 void BoundingVolume::update(float x, float y, float z)
 {
     if (children != nullptr) {
         for (BoundingVolume* child : *children) {
-            UpdateFn fn = *(UpdateFn*)((char*)*(void**)child + 4);
-            fn(child, x, y, z);
+            child->update(x, y, z);
         }
     }
     centerX = x;

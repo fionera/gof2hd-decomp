@@ -19,7 +19,11 @@ class BoundingVolume {
 public:
     using Vector = AbyssEngine::AEMath::Vector;
 
-    void* vtable;
+    // Real C++ polymorphic base: the dispatch table is the compiler-managed
+    // vptr at offset 0 (it replaces the former hand-installed `void* vtable`
+    // member, same 8-byte slot). Subclasses (BoundingSphere/BoundingAAB)
+    // override the virtual collision interface; callers use named virtual calls
+    // instead of reading the table by byte offset.
     Array<BoundingVolume*>* children;
     float centerX;
     float centerY;
@@ -29,9 +33,18 @@ public:
     float extentsZ;
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
-    ~BoundingVolume();
+    virtual ~BoundingVolume();
 
-    int collide(float x, float y, float z);
+    // Virtual collision interface (binary vtable slots collide@+0x8,
+    // outerCollide@+0xc, update@+0x4, projectCollisionOnSurface@+0x10). The base
+    // is the composite node: it polls its children through the same virtuals.
+    virtual int collide(float x, float y, float z);
+    virtual int outerCollide(float x, float y, float z);
+    virtual void update(float x, float y, float z);
+    virtual Vector projectCollisionOnSurface(const Vector& point);
+
+    // getCollisionNormal is not polymorphically dispatched (subclasses give it a
+    // different signature), so it stays a plain method.
     void getCollisionNormal(Vector& out);
     void setVolume(BoundingVolume* src);
     // Append this volume to the destination array. Both spellings forward to
@@ -39,7 +52,6 @@ public:
     void setVolume_tail(Array<BoundingVolume*>* arr);
     void setArr(Array<BoundingVolume*>* arr);
     void staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols);
-    void update(float x, float y, float z);
     Vector getProjectionVector(const Vector& v);
 };
 

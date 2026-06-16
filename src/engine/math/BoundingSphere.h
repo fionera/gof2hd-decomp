@@ -19,10 +19,10 @@ public:
     BoundingSphere(float cx, float cy, float cz, float radius);
     ~BoundingSphere();
 
-    bool collide(float x, float y, float z);
-    bool outerCollide(float x, float y, float z);
-    void update(float x, float y, float z);
-    Vector projectCollisionOnSurface(const Vector& position);
+    int collide(float x, float y, float z) override;
+    int outerCollide(float x, float y, float z) override;
+    void update(float x, float y, float z) override;
+    Vector projectCollisionOnSurface(const Vector& position) override;
     Vector getCollisionNormal(const Vector& position);
 
 private:

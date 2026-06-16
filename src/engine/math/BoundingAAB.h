@@ -17,10 +17,10 @@ public:
 
     BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                 float width, float height, float depth);
-    int outerCollide(float x, float y, float z);
-    Vector projectCollisionOnSurface(const Vector &point);
+    int outerCollide(float x, float y, float z) override;
+    Vector projectCollisionOnSurface(const Vector &point) override;
     Vector getCollisionNormal(const Vector &point);
-    int collide(float x, float y, float z);
-    void update(float x, float y, float z);
+    int collide(float x, float y, float z) override;
+    void update(float x, float y, float z) override;
 };
 #endif

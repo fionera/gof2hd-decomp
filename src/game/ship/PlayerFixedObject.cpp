@@ -301,10 +301,8 @@ afterMotion:
             Array<BoundingVolume *> *bv = self->boundingVolumes;
             if (bv != 0) {
                 for (unsigned int i = 0; i < bv->size(); i++) {
-                    void *o = (*bv)[i];
-                    typedef void (*BVFn)(void *, float, float, float);
-                    BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->position.x, self->position.y, self->position.z);
+                    BoundingVolume *o = (*bv)[i];
+                    o->update(self->position.x, self->position.y, self->position.z);
                     bv = self->boundingVolumes;
                 }
             }
@@ -379,10 +377,8 @@ afterMotion:
                 self->position = *(const Vector *)((Vector *)posBuf);
                 Array<BoundingVolume *> *bv = self->wreckCollision;
                 for (unsigned int i = 0; i < bv->size(); i++) {
-                    void *o = (*bv)[i];
-                    typedef void (*BVFn)(void *, float, float, float);
-                    BVFn fn = *(BVFn *)(*(char **)o + 0x4);
-                    fn(o, self->position.x, self->position.y, self->position.z);
+                    BoundingVolume *o = (*bv)[i];
+                    o->update(self->position.x, self->position.y, self->position.z);
                 }
                 unsigned short mat;
                 switch ((unsigned int)self->wreckType) {
@@ -484,18 +480,16 @@ int PlayerFixedObject::collide(float x, float y, float z) {
     if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
-                void *bv = (*a)[i];
-                CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
-                if (fn(bv, x, y, z) != 0) return 1;
+                BoundingVolume *bv = (*a)[i];
+                if (bv->collide(x, y, z) != 0) return 1;
                 a = self->wreckCollision;
             }
         } else {
             Array<BoundingVolume *> *b = self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
-                    void *bv = (*b)[i];
-                    CollideFn fn = *(CollideFn *)(*(char **)bv + 0x8);
-                    if (fn(bv, x, y, z) != 0) return 1;
+                    BoundingVolume *bv = (*b)[i];
+                    if (bv->collide(x, y, z) != 0) return 1;
                     b = self->boundingVolumes;
                 }
             }
@@ -790,9 +784,8 @@ void PlayerFixedObject::setPosition3(float x, float y, float z) {
     Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
-            void *o = (*bv)[i];
-            BVSetPosFn fn = *(BVSetPosFn *)(*(char **)o + 0x4);
-            fn(o, this->position.x, this->position.y, this->position.z);
+            BoundingVolume *o = (*bv)[i];
+            o->update(this->position.x, this->position.y, this->position.z);
             bv = this->boundingVolumes;
         }
     }
@@ -824,18 +817,16 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
     if ((a != 0 || self->state != 4) && self->collisionEnabled != 0) {
         if (a != 0 && self->state == 4) {
             for (uint32_t i = 0; i < a->size(); i++) {
-                void *bv = (*a)[i];
-                CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
-                if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
+                BoundingVolume *bv = (*a)[i];
+                if (bv->outerCollide(x, y, z) != 0) { self->collisionIndex = i; return 1; }
                 a = self->wreckCollision;
             }
         } else {
             Array<BoundingVolume *> *b = self->boundingVolumes;
             if (b != 0) {
                 for (uint32_t i = 0; i < b->size(); i++) {
-                    void *bv = (*b)[i];
-                    CollideFn fn = *(CollideFn *)(*(char **)bv + 0xc);
-                    if (fn(bv, x, y, z) != 0) { self->collisionIndex = i; return 1; }
+                    BoundingVolume *bv = (*b)[i];
+                    if (bv->outerCollide(x, y, z) != 0) { self->collisionIndex = i; return 1; }
                     b = self->boundingVolumes;
                 }
             }
@@ -861,10 +852,8 @@ void PlayerFixedObject::moveForward(int amount) {
     Array<BoundingVolume *> *bv = this->boundingVolumes;
     if (bv != 0) {
         for (uint32_t i = 0; i < bv->size(); i++) {
-            void *o = (*bv)[i];
-            BVMoveFn fn = *(BVMoveFn *)(*(char **)o + 0x4);
-            Vector pos = { this->position.x, this->position.y, this->position.z };
-            fn(o, pos);
+            BoundingVolume *o = (*bv)[i];
+            o->update(this->position.x, this->position.y, this->position.z);
             bv = this->boundingVolumes;
         }
     }

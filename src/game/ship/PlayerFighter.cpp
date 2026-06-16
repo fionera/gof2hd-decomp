@@ -601,20 +601,16 @@ void PlayerFighter::setMissionCrate(bool on) {
     }
 }
 
-struct BV;
-typedef int (*CollFn)(BV *, float, float, float);
-
 int PlayerFighter::collide(float x, float y, float z) {
     if ((unsigned)(this->state - 3) > 1) {
-        Array<BV *> *a = (Array<BV *> *)this->boundingVolumes;
+        Array<BoundingVolume *> *a = this->boundingVolumes;
         if (a != 0) {
             for (unsigned i = 0; i < a->size(); i++) {
-                BV *e = a->data()[i];
-                CollFn fn = *(CollFn *)(*(char **)e + 8);
-                if (fn(e, x, y, z) != 0) {
+                BoundingVolume *e = a->data()[i];
+                if (e->collide(x, y, z) != 0) {
                     return 1;
                 }
-                a = (Array<BV *> *)this->boundingVolumes;
+                a = this->boundingVolumes;
             }
         }
     }
@@ -667,20 +663,16 @@ void PlayerFighter::setSpeed(float v) {
     this->currentSpeed = v;
 }
 
-struct BV;
-typedef int (*CollFn)(BV *, float, float, float);
-
 int PlayerFighter::outerCollide(float x, float y, float z) {
     if ((unsigned)(this->state - 3) > 1) {
-        Array<BV *> *a = (Array<BV *> *)this->boundingVolumes;
+        Array<BoundingVolume *> *a = this->boundingVolumes;
         if (a != 0) {
             for (unsigned i = 0; i < a->size(); i++) {
-                BV *e = a->data()[i];
-                CollFn fn = *(CollFn *)(*(char **)e + 0xc);
-                if (fn(e, x, y, z) != 0) {
+                BoundingVolume *e = a->data()[i];
+                if (e->outerCollide(x, y, z) != 0) {
                     return 1;
                 }
-                a = (Array<BV *> *)this->boundingVolumes;
+                a = this->boundingVolumes;
             }
         }
     }

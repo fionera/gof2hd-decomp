@@ -79,8 +79,6 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
     return point - offsets[closestIndex];
 }
 
-extern void *const g_BoundingAAB_vtbl;
-
 BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                          float width, float height, float depth)
     : BoundingVolume(x, y, z, ex, ey, ez)
@@ -103,7 +101,6 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
         extentZ = halfDepth;
     }
 
-    this->vtable = (char *)g_BoundingAAB_vtbl + 8;
     this->halfExtentX = extentX;
     this->halfExtentY = extentY;
     this->halfExtentZ = extentZ;
@@ -120,9 +117,9 @@ Vector BoundingAAB::getCollisionNormal(const Vector &)
 
 int BoundingAAB::collide(float x, float y, float z)
 {
-    typedef int (*CollideFn)(BoundingAAB *self, float x, float y, float z);
-    CollideFn fn = *(CollideFn *)((char *)this->vtable + 0xc);
-    if (fn(this, x, y, z) == 0) {
+    // First test this box's own surface (virtual outerCollide), then the
+    // inherited composite children.
+    if (this->outerCollide(x, y, z) == 0) {
         return 0;
     }
     return BoundingVolume::collide(x, y, z);

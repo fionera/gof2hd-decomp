@@ -3,10 +3,6 @@
 
 #include <new>
 
-// The recovered per-class vtable pointer the constructor installs over the one
-// the BoundingVolume base writes.
-__attribute__((visibility("hidden"))) extern void* const g_BoundingSphere_vtbl;
-
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::VectorDot;
 using AbyssEngine::AEMath::VectorLength;
@@ -20,7 +16,6 @@ BoundingSphere::BoundingSphere(
     : BoundingVolume(x, y, z, ex, ey, ez)
 {
     this->radius = radius;
-    this->vtable = (void*)((char*)g_BoundingSphere_vtbl + 8);
 }
 
 BoundingSphere::BoundingSphere(float cx, float cy, float cz, float radius)
@@ -58,11 +53,11 @@ Vector BoundingSphere::projectCollisionOnSurface(const Vector& position)
     return center - delta * (radius / length);
 }
 
-bool BoundingSphere::outerCollide(float x, float y, float z)
+int BoundingSphere::outerCollide(float x, float y, float z)
 {
     Vector delta = Vector{x, y, z} - worldCenter();
     float distanceSq = VectorDot(delta, delta);
-    return distanceSq < radius * radius;
+    return distanceSq < radius * radius ? 1 : 0;
 }
 
 Vector BoundingSphere::getCollisionNormal(const Vector& position)
@@ -70,12 +65,12 @@ Vector BoundingSphere::getCollisionNormal(const Vector& position)
     return VectorNormalize(worldCenter() - position);
 }
 
-bool BoundingSphere::collide(float x, float y, float z)
+int BoundingSphere::collide(float x, float y, float z)
 {
     if (outerCollide(x, y, z)) {
-        return true;
+        return 1;
     }
-    return BoundingVolume::collide(x, y, z) != 0;
+    return BoundingVolume::collide(x, y, z);
 }
 
 // ---- Flat construction entry points ----
