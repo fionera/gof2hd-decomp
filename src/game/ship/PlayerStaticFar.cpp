@@ -56,14 +56,10 @@ PlayerStaticFar::Vector PlayerStaticFar::projectCollisionOnSurface(const Vector 
     return {0.0f, 0.0f, 0.0f};
 }
 
-bool PlayerStaticFar::outerCollide(float x, float y, float z)
+// slot +0x3c: outer surface test is the bounding collide (slot +0x38).
+int PlayerStaticFar::outerCollide(float x, float y, float z)
 {
     return this->collide(x, y, z);
-}
-
-void PlayerStaticFar::outerCollide(Vector value)
-{
-    this->collide(value.x, value.y, value.z);
 }
 
 PlayerStaticFar::Vector PlayerStaticFar::getInitPosition()

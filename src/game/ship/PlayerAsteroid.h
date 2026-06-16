@@ -49,8 +49,7 @@ public:
     void   translate(const Vector& delta);
     void   render();
     void   setPosition(const Vector& position);
-    void   outerCollide(Vector value);
-    void   outerCollide(float x, float y, float z);
+    int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getPosition();
     void   setRotationEnabled(bool enabled);
     int    getQualityFrameIndex();

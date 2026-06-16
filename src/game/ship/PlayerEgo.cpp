@@ -1833,20 +1833,12 @@ void PlayerEgo::calcCollision(void *candidates) {
                 this->collidesWithStationFlag = 1;
         }
 
-        // broad-phase overlap test (virtual +0x40).
-        float pos[3];
-        ((AEGeometry *)(this->geometry))->getPosition();
-        // Actor virtual dispatch (slot +0x40 outerCollide(Vector const&), Ghidra-verified
-        // uniform ABI). KEPT as explicit slot dispatch — and this is the ONE site that truly
-        // resists conversion: the outerCollide collision BODIES across the hierarchy are
-        // mis-recovered (KIPlayer's forwards to getProjectionVector; PlayerAsteroid's calls
-        // back into the base Vector form — which, once virtualized, infinite-recurses), and
-        // this site's `pos` is itself uninitialized (the getPosition() above is discarded).
-        // Virtualizing safely needs binary-faithful reconstruction of several collision
-        // bodies (slot 0x3c) + runtime testing — deferred until the game boots.
-        typedef int (*overlap_fn)(void *, void *);
-        overlap_fn overlaps = *(overlap_fn *)(*(char **)obj + 0x40);
-        if (!overlaps(obj, pos))
+        // Broad-phase overlap test: does this enemy's outer collision volume contain the
+        // player's current position? Named actor virtual call (outerCollide, slot +0x40 ->
+        // the polymorphic float form). The decompiler had dropped the getPosition() result
+        // here (pos was left uninitialised) — restored.
+        AbyssEngine::AEMath::Vector pos = ((AEGeometry *)(this->geometry))->getPosition();
+        if (((KIPlayer *)obj)->outerCollide(pos) == 0)
             continue;
 
         if (((KIPlayer *)(obj))->getType() == 0x4262 && ((KIPlayer *)(obj))->isVisible() != 0) {

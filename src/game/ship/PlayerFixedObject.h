@@ -82,7 +82,7 @@ public:
     int getTransportID();
     void hideShip();
     void moveForward(int amount);
-    int outerCollide(float x, float y, float z);
+    int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void outerCollide_vec(Vector v);
     V3 projectCollisionOnSurface(void *vec);
     void render();

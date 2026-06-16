@@ -151,7 +151,7 @@ public:
     uint8_t hasMissionCrateCaptured();
     uint8_t hasMissionCrateLost();
     void initPush(void *target, int radius);
-    int outerCollide(float x, float y, float z);
+    int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void push(int dt);
     void removeTrail();
     void render();

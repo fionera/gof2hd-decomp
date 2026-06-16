@@ -61,11 +61,6 @@ void PlayerAsteroid::setPosition(const Vector& position)
     this->geometry->setPosition(position);
 }
 
-void PlayerAsteroid::outerCollide(Vector value)
-{
-    KIPlayer::outerCollide(value);
-}
-
 Vector PlayerAsteroid::getPosition()
 {
     return this->geometry->getPosition();
@@ -81,9 +76,10 @@ int PlayerAsteroid::getQualityFrameIndex()
     return 7 - this->quality;
 }
 
-void PlayerAsteroid::outerCollide(float x, float y, float z)
+// slot +0x3c: the asteroid's outer surface test is its bounding-sphere collide (slot +0x38).
+int PlayerAsteroid::outerCollide(float x, float y, float z)
 {
-    KIPlayer::outerCollide(Vector{x, y, z});
+    return this->collide(x, y, z);
 }
 
 int PlayerAsteroid::getQuality()

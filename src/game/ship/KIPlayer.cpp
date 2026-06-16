@@ -320,8 +320,14 @@ uint8_t KIPlayer::isJumper() {
     return this->jumperFlag;
 }
 
-void KIPlayer::outerCollide(const Vector& v) {
-    this->getProjectionVector(v);
+// slot +0x40: unpack the vector and dispatch to the polymorphic float form (slot +0x3c).
+int KIPlayer::outerCollide(const Vector& v) {
+    return this->outerCollide(v.x, v.y, v.z);
+}
+
+// slot +0x3c: a bare actor has no outer surface of its own; subclasses override.
+int KIPlayer::outerCollide(float, float, float) {
+    return 0;
 }
 
 void KIPlayer::setJumper(bool b) {

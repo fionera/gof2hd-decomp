@@ -40,8 +40,8 @@ public:
     void  *getRoot();
     Vector getProjectionVector(const Vector &position);
     void   render();
-    void   outerCollide(const Vector &position);
-    bool   outerCollide(float x, float y, float z);
+    int    outerCollide(const Vector &position) override;       // slot +0x40
+    int    outerCollide(float x, float y, float z) override;    // slot +0x3c
     Vector getPosition();
     bool   collide(float x, float y, float z);
     void   update(int delta);

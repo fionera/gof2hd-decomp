@@ -49,8 +49,6 @@ void PlayerFixedObject::setDockingType(int v) {
     this->dockingType = v;
 }
 
-typedef void (*SetPosFn)(PlayerFixedObject *, float, float, float);
-
 void PlayerFixedObject::setPosition_vec(const Vector &v) {
     this->setPosition3(v.x, v.y, v.z);
 }
@@ -761,8 +759,6 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         }
     }
 }
-
-typedef void (*BVSetPosFn)(void *bv, float, float, float);
 
 void PlayerFixedObject::setPosition3(float x, float y, float z) {
     this->spawnX = x;

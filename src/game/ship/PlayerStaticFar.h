@@ -36,8 +36,7 @@ public:
     Vector getProjectionVector(const Vector &value);
     void   render();
     Vector projectCollisionOnSurface(const Vector &value);
-    bool   outerCollide(float x, float y, float z);
-    void   outerCollide(Vector value);
+    int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getInitPosition();
     void   update(int delta);
     bool   collide(float x, float y, float z);

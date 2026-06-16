@@ -127,7 +127,8 @@ public:
     uint8_t isVisible();
     uint8_t isWingMan();
     void jump();
-    void outerCollide(const Vector& v);
+    virtual int outerCollide(const Vector& v);           // actor vtable slot +0x40 (unpacks, forwards to float form)
+    virtual int outerCollide(float x, float y, float z);  // actor vtable slot +0x3c (base stub returns 0; subclasses override)
     // Polymorphic: PlayerJunk/PlayerAsteroid/PlayerCreature/PlayerTurret override this.
     // Level::render()/renderPause() dispatch through it for every actor in the rosters.
     virtual void render();

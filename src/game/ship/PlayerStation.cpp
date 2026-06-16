@@ -106,9 +106,9 @@ void PlayerStation::render()
     this->rootGeometry->render();
 }
 
-void PlayerStation::outerCollide(const Vector &position)
+int PlayerStation::outerCollide(const Vector &position)
 {
-    this->outerCollide(position.x, position.y, position.z);
+    return this->outerCollide(position.x, position.y, position.z);
 }
 
 Vector PlayerStation::getPosition()
@@ -383,7 +383,7 @@ PlayerStation::PlayerStation(Station *station)
     this->collisionRadius = (int)(transform->boundingRadius + 10.0f);
 }
 
-bool PlayerStation::outerCollide(float x, float y, float z)
+int PlayerStation::outerCollide(float x, float y, float z)
 {
     float radius = (float)this->collisionRadius;
 
