@@ -9,8 +9,6 @@
 class Engine;
 #include "externs.h"
 
-// BumpShaderV3's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char _ZTVN11AbyssEngine12BumpShaderV3E[];
 
 namespace AbyssEngine {
 
@@ -18,7 +16,6 @@ int BumpShaderV3::ShaderIndex;
 
 BumpShaderV3::BumpShaderV3()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine12BumpShaderV3E + 8);
     ShaderBaseStruct::shaderIndexIntern = ShaderIndex;
     this->name.s = u"BumpShaderV3";
 }

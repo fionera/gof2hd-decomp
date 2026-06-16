@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// TexOnlyShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *_ZTVN11AbyssEngine12TexOnlyShaderE[];
 
 namespace AbyssEngine {
 
 TexOnlyShader::TexOnlyShader()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine12TexOnlyShaderE + 8;
     this->name.s = u"TexOnlyShader";
 }
 

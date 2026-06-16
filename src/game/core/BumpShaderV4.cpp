@@ -9,7 +9,6 @@ int BumpShaderV4::ShaderIndex;
 
 BumpShaderV4::BumpShaderV4()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine12BumpShaderV4E + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpShaderV4";
 }

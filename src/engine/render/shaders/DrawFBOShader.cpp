@@ -5,8 +5,6 @@
 #include "platform/gl.h"
 #include <arm_neon.h>
 
-// DrawFBOShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char DrawFBOShader_vtable;
 
 // Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
@@ -23,7 +21,6 @@ int DrawFBOShader::ShaderIndex;
 
 DrawFBOShader::DrawFBOShader()
 {
-    this->vtable = &DrawFBOShader_vtable + 8;
     this->name.s = u"DrawFBOShader";
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }

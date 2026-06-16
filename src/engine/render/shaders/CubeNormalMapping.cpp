@@ -3,13 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-extern "C" char _ZTVN11AbyssEngine17CubeNormalMappingE[];
 
 namespace AbyssEngine {
 
 CubeNormalMapping::CubeNormalMapping()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine17CubeNormalMappingE + 8);
     String tmp;
     tmp.s = u"CubeNormalMapping";
     this->name = tmp;

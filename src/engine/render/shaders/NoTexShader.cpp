@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// NoTexShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char NoTexShader_vtable;
 
 // Engine global: this shader's per-shader index, snapshotted at construction.
 extern "C" int NoTexShader_ShaderIndex;
@@ -53,7 +51,6 @@ void NoTexShader::Init(Engine *)
 
 NoTexShader::NoTexShader()
 {
-    this->vtable = &NoTexShader_vtable + 8;
     NoTexShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"NoTexShader";
 }

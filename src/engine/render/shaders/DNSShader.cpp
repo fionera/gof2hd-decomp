@@ -4,8 +4,6 @@
 #include "game/core/String.h"
 #include "platform/gl.h"
 
-// DNSShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *_ZTVN11AbyssEngine9DNSShaderE[];
 
 // PC-relative globals holding single floats (engine timers) read by UpdateMeshData.
 extern "C" float DNSShader_g0;
@@ -15,7 +13,6 @@ namespace AbyssEngine {
 
 DNSShader::DNSShader()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine9DNSShaderE + 8);
     this->name.s = u"DNSShader";
 }
 

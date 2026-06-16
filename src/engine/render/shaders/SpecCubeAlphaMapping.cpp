@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// SpecCubeAlphaMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char SpecCubeAlphaMapping_vtable;
 
 namespace AbyssEngine {
 
 SpecCubeAlphaMapping::SpecCubeAlphaMapping()
 {
-    this->vtable = &SpecCubeAlphaMapping_vtable + 8;
     this->name.s = u"SpecCubeAlphaMapping";
 }
 

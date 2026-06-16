@@ -8,14 +8,11 @@ class ShaderBaseStruct;
 
 namespace AbyssEngine {
 
-// MaskShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char MaskShader_vtable;
 
 int MaskShader::ShaderIndex;
 
 MaskShader::MaskShader()
 {
-    this->vtable = &MaskShader_vtable + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"MaskShader";
 }

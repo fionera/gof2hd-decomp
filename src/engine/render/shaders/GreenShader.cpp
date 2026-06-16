@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// GreenShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char GreenShader_vtable;
 
 namespace AbyssEngine {
 
 GreenShader::GreenShader()
 {
-    this->vtable = &GreenShader_vtable + 8;
     this->name.s = u"GreenShader";
 }
 

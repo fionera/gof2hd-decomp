@@ -7,8 +7,6 @@
 extern float g_particleGlobalA;
 extern float g_particleGlobalB;
 
-// BumpShaderParticle's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char _ZTVN11AbyssEngine18BumpShaderParticleE[];
 
 namespace AbyssEngine {
 
@@ -16,7 +14,6 @@ int BumpShaderParticle::ShaderIndex;
 
 BumpShaderParticle::BumpShaderParticle()
 {
-    this->vtable = _ZTVN11AbyssEngine18BumpShaderParticleE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpShaderParticle";
 }

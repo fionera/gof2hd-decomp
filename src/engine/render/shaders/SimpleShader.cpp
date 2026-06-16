@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// SimpleShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *_ZTVN11AbyssEngine12SimpleShaderE[];
 
 namespace AbyssEngine {
 
 SimpleShader::SimpleShader()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine12SimpleShaderE + 8;
     this->name.s = u"SimpleShader";
 }
 

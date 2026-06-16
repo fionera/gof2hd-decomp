@@ -9,7 +9,6 @@ int BumpMapping::ShaderIndex;
 
 BumpMapping::BumpMapping()
 {
-    this->vtable = _ZTVN11AbyssEngine11BumpMappingE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpMapping";
 }

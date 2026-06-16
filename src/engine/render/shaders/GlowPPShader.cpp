@@ -4,8 +4,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// GlowPPShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char GlowPPShader_vtable;
 
 // Engine globals: gate for first-run FBO allocation and the debug visualisation mode.
 extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
@@ -259,7 +257,6 @@ void GlowPPShader::Init() {
 }
 
 GlowPPShader::GlowPPShader() {
-    this->vtable = &GlowPPShader_vtable + 8;
     this->name.s = u"GlowPPShader";
 }
 

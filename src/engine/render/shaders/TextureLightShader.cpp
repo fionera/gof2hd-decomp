@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// TextureLightShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char g_TextureLightShader_vtable;
 
 namespace AbyssEngine {
 
 TextureLightShader::TextureLightShader()
 {
-    this->vtable = (char *)&g_TextureLightShader_vtable + 8;
     this->name.s = u"TextureLightShader";
 }
 

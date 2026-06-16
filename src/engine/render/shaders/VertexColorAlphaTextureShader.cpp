@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// VertexColorAlphaTextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char _ZTVN11AbyssEngine29VertexColorAlphaTextureShaderE[];
 
 namespace AbyssEngine {
 
@@ -14,7 +12,6 @@ __attribute__((visibility("hidden"))) extern int g_shaderIndexDst;
 
 VertexColorAlphaTextureShader::VertexColorAlphaTextureShader()
 {
-    this->vtable = _ZTVN11AbyssEngine29VertexColorAlphaTextureShaderE + 8;
     g_shaderIndexDst = g_shaderIndexSrc;
     this->name.s = u"VCATShader";
 }

@@ -104,7 +104,6 @@ void EnergyShield::Init(Engine *engine)
 
 EnergyShield::EnergyShield()
 {
-    this->vtable = (void *)(EnergyShield_vtable + 8);
     EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"EnergyShield";
 }

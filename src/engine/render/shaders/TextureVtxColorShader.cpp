@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// TextureVtxColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char _ZTVN11AbyssEngine21TextureVtxColorShaderE[];
 
 // AbyssEngine::Engine::fogEnabled — global fog toggle. Engine itself is not modeled here, so the
 // static flag is reached through its mangled symbol.
@@ -19,7 +17,6 @@ int TextureVtxColorShader::ShaderIndex;
 
 TextureVtxColorShader::TextureVtxColorShader()
 {
-    this->vtable = _ZTVN11AbyssEngine21TextureVtxColorShaderE + 8;
     this->name.s = u"TextureVtxColorShader";
     TextureVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }

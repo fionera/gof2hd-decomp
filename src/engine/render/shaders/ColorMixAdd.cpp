@@ -10,7 +10,6 @@ int ColorMixAdd::ShaderIndex;
 ColorMixAdd::ColorMixAdd()
 {
     new ((ShaderBaseStruct *)this) ShaderBaseStruct();
-    this->vtable = (void *)(_ZTVN11AbyssEngine11ColorMixAddE + 8);
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"ColorMixAdd";
 }

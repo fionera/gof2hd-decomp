@@ -3,7 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-extern "C" char _ZTVN11AbyssEngine17BumpRimCubeShaderE[];
 
 // Global rim-lighting state read by the renderer when streaming per-frame uniforms.
 extern "C" float g_rimGlobalA;
@@ -16,7 +15,6 @@ int BumpRimCubeShader::ShaderIndex;
 
 BumpRimCubeShader::BumpRimCubeShader()
 {
-    this->vtable = _ZTVN11AbyssEngine17BumpRimCubeShaderE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpRimCubeShader";
 }

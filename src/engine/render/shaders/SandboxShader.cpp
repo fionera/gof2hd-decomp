@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// SandboxShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char _ZTVN11AbyssEngine13SandboxShaderE[];
 
 // Registry slot the constructor links itself into (engine-global, resolved at link).
 extern "C" void *SandboxShader_registerSrc;
@@ -88,7 +86,6 @@ void SandboxShader::SetInActive()
 
 SandboxShader::SandboxShader()
 {
-    this->vtable = _ZTVN11AbyssEngine13SandboxShaderE + 8;
     // Register this shader into the global registry list.
     *SandboxShader_registerDst = SandboxShader_registerSrc;
     this->name.s = u"SandboxShader";

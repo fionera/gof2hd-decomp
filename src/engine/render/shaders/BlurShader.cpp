@@ -4,8 +4,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// BlurShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char BlurShader_vtable;
 
 // Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine *engine);
@@ -17,7 +15,6 @@ namespace AbyssEngine {
 
 BlurShader::BlurShader()
 {
-    this->vtable = &BlurShader_vtable + 8;
     this->name.s = u"BlurShader";
     this->strength = -4.051786824441422e-28f;   // 0x92006800
     this->blurScale = 2.0f;

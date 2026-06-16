@@ -3,8 +3,6 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-// BumpShaderV2's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char BumpShaderV2_vtable;
 
 // Running global shader index, snapshotted by the base ctor.
 extern "C" int BumpShaderV2_ShaderIndex;
@@ -13,7 +11,6 @@ namespace AbyssEngine {
 
 BumpShaderV2::BumpShaderV2()
 {
-    this->vtable = &BumpShaderV2_vtable + 8;
     BumpShaderV2_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpShaderV2";
 }

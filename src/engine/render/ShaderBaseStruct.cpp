@@ -11,7 +11,6 @@ int ShaderBaseStruct::shaderIndexIntern;
 
 ShaderBaseStruct::ShaderBaseStruct()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
     this->program = -1;
     this->flags = 0x100;
     ++shaderIndexIntern;
@@ -22,7 +21,6 @@ ShaderBaseStruct::ShaderBaseStruct()
 
 ShaderBaseStruct::~ShaderBaseStruct()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine16ShaderBaseStructE + 8;
 }
 
 String ShaderBaseStruct::GetShaderName()

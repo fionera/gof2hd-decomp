@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// NoTexVtxColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char NoTexVtxColorShader_vtable;
 
 // Per-shader index snapshot taken at construction time.
 extern "C" int32_t NoTexVtxColorShader_ShaderIndex;
@@ -32,7 +30,6 @@ void NoTexVtxColorShader::Init(Engine *)
 
 NoTexVtxColorShader::NoTexVtxColorShader()
 {
-    this->vtable = &NoTexVtxColorShader_vtable + 8;
     NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"NoTexVtxColorShader";
 }

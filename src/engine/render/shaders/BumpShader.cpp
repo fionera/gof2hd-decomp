@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// BumpShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char BumpShader_vtable;
 
 // PC-relative pointer-to-pointer globals holding single floats / a byte (engine timers and
 // a feature flag) read by UpdateMeshData.
@@ -19,7 +17,6 @@ namespace AbyssEngine {
 
 BumpShader::BumpShader()
 {
-    this->vtable = &BumpShader_vtable + 8;
     this->name.s = u"BumpShader";
 }
 

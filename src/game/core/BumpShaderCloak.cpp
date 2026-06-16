@@ -12,7 +12,6 @@ int BumpShaderCloak::ShaderIndex;
 //   the shader resource name.
 BumpShaderCloak::BumpShaderCloak()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine15BumpShaderCloakE + 8);
     BumpShaderCloak::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpShaderCloak";
 }

@@ -7,7 +7,6 @@ namespace AbyssEngine {
 
 GlowShader::GlowShader()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine10GlowShaderE + 8);
     GlowShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"GlowShader";
 }

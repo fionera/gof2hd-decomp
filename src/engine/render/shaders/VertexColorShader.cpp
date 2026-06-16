@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// VertexColorShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char VertexColorShader_vtable[];
 
 namespace AbyssEngine {
 
 VertexColorShader::VertexColorShader()
 {
-    this->vtable = VertexColorShader_vtable + 8;
     this->name.s = u"VertexColorShader";
 }
 

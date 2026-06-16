@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// TextureAlphaTestShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char TextureAlphaTestShader_vtable;
 
 // Engine globals: whether the alpha-test variant is active, and which program index (0 = opaque,
 // 1 = alpha) is currently selected.
@@ -17,7 +15,6 @@ int TextureAlphaTestShader::ShaderIndex;
 
 TextureAlphaTestShader::TextureAlphaTestShader()
 {
-    this->vtable = &TextureAlphaTestShader_vtable + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"TextureAlphaTestShader";
 }

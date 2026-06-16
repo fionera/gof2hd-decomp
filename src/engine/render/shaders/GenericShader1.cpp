@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// GenericShader1's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char GenericShader1_vtable;
 
 namespace AbyssEngine {
 
 GenericShader1::GenericShader1()
 {
-    this->vtable = &GenericShader1_vtable + 8;
     this->name.s = u"GenericShader1";
 }
 

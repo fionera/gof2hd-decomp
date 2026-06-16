@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// GenericShader2's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char GenericShader2_vtable;
 
 namespace AbyssEngine {
 
@@ -100,7 +98,6 @@ void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
 // AbyssEngine::GenericShader2::GenericShader2()
 GenericShader2::GenericShader2()
 {
-    this->vtable = &GenericShader2_vtable + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"GenericShader2";
 }

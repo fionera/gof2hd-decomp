@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// TextureShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *g_TextureShader_vtable;
 
 // Engine globals: selects the extended program and the per-frame active texture slot.
 extern "C" uint8_t g_TextureShader_hasSecondProgram;
@@ -14,7 +12,6 @@ namespace AbyssEngine {
 
 TextureShader::TextureShader()
 {
-    this->vtable = (char *)&g_TextureShader_vtable + 8;
     this->name.s = u"TextureShader";
 }
 

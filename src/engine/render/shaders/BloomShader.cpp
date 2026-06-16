@@ -5,8 +5,6 @@
 #include "platform/gl.h"
 #include "platform/libc.h"
 
-// BloomShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char BloomShader_vtable;
 
 // Engine globals: gate for first-run FBO allocation and the debug visualisation mode.
 extern "C" unsigned char g_BloomShader_internalInitNeeded;
@@ -79,7 +77,6 @@ void BloomShader::Init(Engine *)
 
 BloomShader::BloomShader()
 {
-    this->vtable = &BloomShader_vtable + 8;
     this->name.s = u"BloomShader";
 }
 

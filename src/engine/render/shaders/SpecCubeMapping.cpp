@@ -10,7 +10,6 @@ namespace AbyssEngine {
 //   the shader resource name.
 SpecCubeMapping::SpecCubeMapping()
 {
-    this->vtable = (void *)(_ZTVN11AbyssEngine15SpecCubeMappingE + 8);
     SpecCubeMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"SpecCubeMapping";
 }

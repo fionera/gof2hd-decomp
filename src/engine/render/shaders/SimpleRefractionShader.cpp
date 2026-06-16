@@ -8,14 +8,11 @@ class ShaderBaseStruct;
 
 namespace AbyssEngine {
 
-// SimpleRefractionShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char SimpleRefractionShader_vtable;
 
 int SimpleRefractionShader::ShaderIndex;
 
 SimpleRefractionShader::SimpleRefractionShader()
 {
-    this->vtable = &SimpleRefractionShader_vtable + 8;
     SimpleRefractionShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"SimpleRefractionShader";
 }

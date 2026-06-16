@@ -4,8 +4,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// PostBWShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char PostBWShader_vtable;
 
 // Engine glue entry points (platform-supplied at the engine ABI level).
 extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine *engine);
@@ -19,7 +17,6 @@ namespace AbyssEngine {
 
 PostBWShader::PostBWShader()
 {
-    this->vtable = &PostBWShader_vtable + 8;
     this->name.s = u"PostBWShader";
 }
 

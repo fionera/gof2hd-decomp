@@ -3,14 +3,11 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// CubeMapping's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char CubeMapping_vtable;
 
 namespace AbyssEngine {
 
 CubeMapping::CubeMapping()
 {
-    this->vtable = &CubeMapping_vtable + 8;
     this->name.s = u"CubeMapping";
 }
 

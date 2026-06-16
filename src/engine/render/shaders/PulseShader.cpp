@@ -6,8 +6,6 @@
 #include "platform/gl.h"
 #include "platform/libc.h"
 
-// PulseShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *_ZTVN11AbyssEngine11PulseShaderE[];
 
 // The decompiler dropped the receiver from the original
 // ApplicationManager_GetCurrentTimeMillis() call; it reads from the global
@@ -23,7 +21,6 @@ namespace AbyssEngine {
 
 PulseShader::PulseShader()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine11PulseShaderE + 8;
     this->name.s = u"PulseShader";
 }
 

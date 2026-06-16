@@ -3,8 +3,6 @@
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"
 
-// GenericShader's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" char GenericShader_vtable[];
 
 // Registry slot the constructor links itself into (engine-global, resolved at link).
 extern "C" void *GenericShader_registerSrc;
@@ -126,7 +124,6 @@ void GenericShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 
 GenericShader::GenericShader()
 {
-    this->vtable = GenericShader_vtable + 8;
     // Register this shader into the global registry list.
     *GenericShader_registerDst = GenericShader_registerSrc;
     this->name.s = u"GenericShader";

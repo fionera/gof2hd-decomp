@@ -10,14 +10,11 @@
 // BumpShader*, GenericShader*, TextureShader, ...) derives from. It owns the GL program handle and
 // drives ES2 shader compile/link plus uniform/attribute location binding.
 
-// ShaderBaseStruct's C++ vtable symbol (platform-supplied at the engine ABI level).
-extern "C" void *_ZTVN11AbyssEngine16ShaderBaseStructE[];
 
 namespace AbyssEngine {
 
 class ShaderBaseStruct {
 public:
-    void *vtable;
     int program;                // GL program handle (-1 when unset)
     volatile uint16_t flags;
     uint8_t dirty;

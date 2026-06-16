@@ -20,7 +20,6 @@ void BumpShaderRefract::SetInActive()
 
 BumpShaderRefract::BumpShaderRefract()
 {
-    this->vtable = (char *)_ZTVN11AbyssEngine17BumpShaderRefractE + 8;
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
     this->name.s = u"BumpShaderRefract";
 }
