@@ -404,15 +404,13 @@ void CutScene::replacePlayerShip(int /*a*/, int b)
         (*(AEGeometry **)((char *)(*en4)[0] + 8))->setMatrix(*(const Matrix *)matrix);
 
         Array<KIPlayer *> *en5 = this->level->getEnemies();
-        void *ship = (*en5)[0];
+        KIPlayer *ship = (*en5)[0];
         float bank = VectorSignedToFloat(CutScene_shipBankTable[b], 0);
-        void *obj = *(void **)ship;
-        // Actor virtual dispatch (slot +0x48 setPosition(f,f,f), Ghidra-verified uniform ABI).
-        // KEPT for now: `obj = *(void**)ship` is a recovered double-indirection that needs
-        // verifying (obj appears to be the vptr, not the object) before a named call is safe.
-        typedef void (*BankFn)(void *, int, float, int);
-        BankFn fn = *(BankFn *)(*(char **)obj + 0x48);
-        fn(obj, 0, bank, 0);
+        // Position the lead ship along the bank axis via the actor setPosition3 virtual
+        // (slot +0x48, Ghidra-verified). The decompiler recovered this as a vptr
+        // double-indirection (`obj = *(void**)ship`) + raw slot read — a known artifact;
+        // the faithful dispatch is the object's own virtual setPosition3.
+        ship->setPosition3(0.0f, bank, 0.0f);
 
         Array<KIPlayer *> *en6 = this->level->getEnemies();
         ((PlayerFighter *)((*en6)[0]))->setExhaustVisible(false);
@@ -467,17 +465,14 @@ void CutScene::initialize()
                 v[0] = VectorSignedToFloat(rx - 24000, 0);
                 v[1] = 0.0f;
                 v[2] = VectorSignedToFloat(ry + 0x9a4c, 0);
-                (**(void (***)(void *, void *))e0)(e0, v);
+                // e0 and e1 are both positioned via setPosition_vec (slot +0x44), which
+                // unpacks the vector and calls setPosition3 (slot +0x48); call the virtual
+                // setPosition3 directly (Ghidra-verified). e0's site was recovered as a
+                // mangled vtable[0] double-deref — a decompiler artifact for the same dispatch.
+                ((KIPlayer *)e0)->setPosition3(v[0], v[1], v[2]);
                 v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
                 v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
-                void *e1 = (*enemies)[n - 1];
-                // Actor virtual dispatch (slot +0x44 setPosition(Vector const&), Ghidra-verified
-                // uniform ABI). KEPT for now only because the same method is recovered under
-                // different NAMES per subclass (setPosition / setPosition_vec / setPosition_ref);
-                // unifying the name+making it virtual enables a named call (not runtime-verifiable yet).
-                typedef void (*SetFn)(void *, void *);
-                SetFn fn = *(SetFn *)(*(char **)e1 + 0x44);
-                fn(e1, v);
+                ((KIPlayer *)(*enemies)[n - 1])->setPosition3(v[0], v[1], v[2]);
             }
         }
     } else if (this->mode == 0x17) {

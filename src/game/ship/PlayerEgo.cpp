@@ -1836,11 +1836,14 @@ void PlayerEgo::calcCollision(void *candidates) {
         // broad-phase overlap test (virtual +0x40).
         float pos[3];
         ((AEGeometry *)(this->geometry))->getPosition();
-        // Actor virtual dispatch (slot +0x40 outerCollide(Vector const&), Ghidra-verified;
-        // ABI is uniform across the hierarchy). KEPT as explicit slot dispatch for now:
-        // slot 0x40 tail-calls slot 0x3c outerCollide(f,f,f) and is recovered void-vs-int
-        // ambiguously, so a faithful named conversion needs both slots virtualized with
-        // their true int return — reconstructable from the binary but not runtime-verifiable yet.
+        // Actor virtual dispatch (slot +0x40 outerCollide(Vector const&), Ghidra-verified
+        // uniform ABI). KEPT as explicit slot dispatch — and this is the ONE site that truly
+        // resists conversion: the outerCollide collision BODIES across the hierarchy are
+        // mis-recovered (KIPlayer's forwards to getProjectionVector; PlayerAsteroid's calls
+        // back into the base Vector form — which, once virtualized, infinite-recurses), and
+        // this site's `pos` is itself uninitialized (the getPosition() above is discarded).
+        // Virtualizing safely needs binary-faithful reconstruction of several collision
+        // bodies (slot 0x3c) + runtime testing — deferred until the game boots.
         typedef int (*overlap_fn)(void *, void *);
         overlap_fn overlaps = *(overlap_fn *)(*(char **)obj + 0x40);
         if (!overlaps(obj, pos))
