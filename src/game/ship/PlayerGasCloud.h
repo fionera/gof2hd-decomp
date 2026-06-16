@@ -37,7 +37,7 @@ public:
                    const Vector& position);
     ~PlayerGasCloud();
 
-    void translate(const Vector& v);
+    void translate(const Vector& v) override;   // actor vtable slot +0x20
     bool isSparkAlive(int index);
     void setSparkInSight(int index, bool inSight);
     void setPosition(const Vector& position);

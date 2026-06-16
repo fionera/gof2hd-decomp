@@ -11,43 +11,25 @@
 // the remaining bytes and forwards to the underlying interface, Skip drains bytes by
 // reading them into a throwaway buffer.
 
-// The held file interface. It has no dedicated header of its own, so the small vtable
-// it is accessed through is described here. Only the Read/Free/Discard slots are used.
-struct FileInterface;
-
-struct FileInterfaceVTable {
-    void     (*slot_00)(FileInterface *);
-    void     (*Free)(FileInterface *);
-    void     (*slot_08)(FileInterface *);
-    void     (*slot_0c)(FileInterface *);
-    void     (*slot_10)(FileInterface *);
-    uint32_t (*Read)(FileInterface *, uint32_t, void *);
-    void     (*slot_18)(FileInterface *);
-    void     (*slot_1c)(FileInterface *);
-    void     (*slot_20)(FileInterface *);
-    void     (*pad_24)(FileInterface *);
-    void     (*pad_28)(FileInterface *);
-    void     (*pad_2c)(FileInterface *);
-    void     (*pad_30)(FileInterface *);
-    void     (*pad_34)(FileInterface *);
-    void     (*pad_38)(FileInterface *);
-    void     (*pad_3c)(FileInterface *);
-    void     (*pad_40)(FileInterface *);
-    void     (*Discard)(FileInterface *);
-};
-
-struct FileInterface {
-    FileInterfaceVTable *vtable;
+// The held file interface. It has no dedicated header of its own, so the minimal call-through
+// interface it is accessed through is described here. Only the Read/Discard slots and the
+// destructor (the engine's Free slot, +0x04) are used. At runtime the held object is a
+// FileInterfaceAndroid, defined in its own translation unit.
+class PakHeldFile {
+public:
+    virtual ~PakHeldFile() {}                                  // +0x04 Free
+    virtual uint32_t Read(uint32_t bytes, void *buffer)        { return 0; }   // +0x14
+    virtual void     Discard()                                 {}              // +0x44
 };
 
 class AEPakFile {
 public:
-    FileInterface *fileInterface;
+    PakHeldFile   *fileInterface;
     int            sizeLimit;
     int            baseOffset;
     int            position;
 
-    AEPakFile(FileInterface *file, int sizeLimit, int baseOffset);
+    AEPakFile(PakHeldFile *file, int sizeLimit, int baseOffset);
     virtual ~AEPakFile();
 
     virtual uint32_t Release();

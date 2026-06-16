@@ -77,14 +77,14 @@ public:
     void ctor(int kind, int param2, void *player, void *geom, float x, float y, float z);
     int getDockingType();
     String getName();
-    V3 getPosition();
-    V3 getProjectionVector();
+    V3 getPosition() override;   // actor vtable slot +0x28
+    V3 getProjectionVector(const Vector &vec) override;   // actor vtable slot +0x50
     int getTransportID();
     void hideShip();
     void moveForward(int amount);
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void outerCollide_vec(Vector v);
-    V3 projectCollisionOnSurface(void *vec);
+    V3 projectCollisionOnSurface(const Vector &vec) override;   // actor vtable slot +0x58
     void render() override;
     void reset();
     void setBV(BoundingVolume *bv);
@@ -94,11 +94,11 @@ public:
     void setExhaustVisible(bool v);
     void setMoving(bool v);
     void * setName(String *name);
-    void setPosition3(float x, float y, float z);
+    void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
     void setPosition_vec(const Vector &v);
     void setTransportID(int v);
     void setWreckedMeshId(int meshId);
-    void translate(const Vector &d);
+    void translate(const Vector &d) override;   // actor vtable slot +0x20
     void update(int dt) override;
 };
 #endif

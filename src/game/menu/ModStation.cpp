@@ -374,7 +374,6 @@ struct Station;
 struct SolarSystem;
 
 __attribute__((visibility("hidden"))) extern int  *g_msc_stack;     // [DAT_000e5698]
-__attribute__((visibility("hidden"))) extern int   g_msc_vtable;    // [DAT_000e569c] vtable base
 
 extern "C" {
 int   Status_getStation_msc();
@@ -390,7 +389,8 @@ AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, 
 // ModStation::ModStation() — constructor: zero-inits the station-module state, picks the home
 // station's race, and sets up the hangar idle camera tween.
 ModStation::ModStation() {
-    this->vtable = g_msc_vtable + 8;
+    // (the original manually planted the vtable here as `g_msc_vtable + 8`;
+    //  the compiler now installs the real vptr at +0x00 automatically.)
 
     // zero / default field block.
     this->dt = 0;
@@ -439,13 +439,10 @@ ModStation::ModStation() {
     this->easeCamScalarZ = new AbyssEngine::EaseInOut();
 }
 
-// The ModStation vtable base.
-__attribute__((visibility("hidden"))) extern void *ModStation_vtable;
-
-// Installs the vtable, runs OnRelease() to free every owned sub-window/resource,
-// then lets the embedded String member destruct.
+// Runs OnRelease() to free every owned sub-window/resource, then lets the
+// embedded String member destruct. (The original re-planted the vtable pointer
+// at entry; with a real polymorphic type the compiler resets the vptr for us.)
 ModStation::~ModStation() {
-    this->vtable = (int)(intptr_t)((char *)ModStation_vtable + 8);
     this->OnRelease();
 }
 
@@ -1867,8 +1864,8 @@ void handleMainButtons(ModStation *self, int param_1, int param_2)
     for (unsigned i = 0; i < 5; i = i + 1) {
         if (TouchButton_OnTouchEnd_ote(*(int *)((int)(intptr_t)self->buttonRow + i * 4), param_1) != 0) {
             self->selectedButton = (int)i;
-            // dispatches via the main button's vtable thunk in the original.
-            ModStation_ote_launchModule(self->vtable, 0x10000);
+            // virtual dispatch through ModStation's own vtable slot +0x10.
+            self->launchModule(0x10000);
             return;
         }
     }
@@ -2012,7 +2009,8 @@ void handleMissionComplete(ModStation *self)
             Status_setMission_ote(*status);
             self->selectedButton = 1;
             ((char*)&self->modalFlags)[1] = 0;
-            ModStation_ote_launchModule(self->vtable, 0x10000);
+            // virtual dispatch through ModStation's own vtable slot +0x10.
+            self->launchModule(0x10000);
             return;
         }
         if (d != 0)
@@ -3266,12 +3264,22 @@ extern "C" void ModStation_ote_kickIdleCamera(ModStation *self) {
     ModStation_ote_idleCamWobble(self);
 }
 
-// The five DLC / station-menu buttons dispatch through the main button's vtable
-// thunk: `(*this->vtbl[4])(this, arg)`. `module` is the loaded code pointer the
-// original tail-branched to; forward the launch argument through it.
+// Store/module launch tail thunk: `module` is the loaded application-module code
+// pointer the original tail-branched to; forward the launch argument through it.
+// (Still used by the campaign-cutscene path, which launches `**g_ote_module`.)
 extern "C" void ModStation_ote_launchModule(int module, int arg) {
     if (module != 0)
         ((void (*)(int, int))module)(module, arg);
+}
+
+// ModStation::launchModule() — vtable slot at byte-offset 0x10 (index 4).
+// In the binary the DLC/station-menu button path and the mission-0x2d transition
+// resolve this slot off `this`'s own vtable and call it as
+// `(*(this->vptr+0x10))(this, 0x10000, 0)`. It launches the currently loaded
+// station application module with the supplied argument, mirroring the loaded
+// code-pointer tail-branch the engine installs into this slot.
+void ModStation::launchModule(int arg) {
+    ModStation_ote_launchModule(**(int **)g_ote_module, arg);
 }
 
 // ---- OnUpdate camera / animation fragments --------------------------------

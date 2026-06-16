@@ -1,7 +1,7 @@
 #include "engine/file/AENormalFile.h"
 
-AENormalFile::AENormalFile(FileInterface *file)
-    : held(reinterpret_cast<HeldFile *>(file))
+AENormalFile::AENormalFile(HeldFile *file)
+    : held(file)
 {
 }
 
@@ -13,7 +13,7 @@ AENormalFile::~AENormalFile()
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 {
     if (held != nullptr) {
-        return held->vtable->Read(held, bytes, buffer);
+        return held->Read(bytes, buffer);
     }
     return 0;
 }
@@ -21,7 +21,7 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
 {
     if (held != nullptr) {
-        return held->vtable->Write(held, bytes, buffer);
+        return held->Write(bytes, buffer);
     }
     return 0;
 }
@@ -29,7 +29,7 @@ uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
 uint32_t AENormalFile::Skip(uint32_t bytes)
 {
     if (held != nullptr) {
-        return held->vtable->Skip(held, bytes);
+        return held->Skip(bytes);
     }
     return 0;
 }
@@ -37,7 +37,7 @@ uint32_t AENormalFile::Skip(uint32_t bytes)
 uint32_t AENormalFile::GetFileSize()
 {
     if (held != nullptr) {
-        return held->vtable->GetFileSize(held);
+        return held->GetFileSize();
     }
     return 0;
 }
@@ -45,9 +45,9 @@ uint32_t AENormalFile::GetFileSize()
 uint32_t AENormalFile::Release()
 {
     if (held != nullptr) {
-        held->vtable->Discard(held);
+        held->Discard();
         if (held != nullptr) {
-            held->vtable->Free(held);
+            delete held;
         }
     }
     held = nullptr;

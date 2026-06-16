@@ -20,7 +20,17 @@ extern "C" void AERandom_ctor(void *self);
 
 // Engine globals (resolved by a later externs pass).
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
-__attribute__((visibility("hidden"))) extern void *IParticleSystem_vtable;
+
+// Base renderer-hook stubs. The shipped binary leaves these slots __cxa_pure_virtual on
+// IParticleSystem; the class is only ever instantiated as a concrete ParticleSystemMesh /
+// ParticleSystemSprite, both of which override every hook below.
+int  IParticleSystem::init(uint32_t, uint16_t) { return 0; }
+void IParticleSystem::reset() {}
+void IParticleSystem::release() {}
+int  IParticleSystem::getQuadCount() { return 0; }
+void IParticleSystem::updateSingle(int, float) {}
+void IParticleSystem::setParticle(Vector const &, float, uint32_t, float, float, float, float,
+                                  bool, float, float, Vector const &) {}
 
 void IParticleSystem::setParticleSet(int set)
 {
@@ -37,18 +47,13 @@ void IParticleSystem::enableEmit(bool enabled)
     this->emitEnabled = enabled;
 }
 
-typedef void (*UpdateParticleFn)(IParticleSystem *, int, float);
-
 void IParticleSystem::update(int delta)
 {
     if (this->updateEnabled != 0) {
         float fdelta = (float)delta;
         for (int i = 0; i < this->maxParticles; ++i) {
             if (this->particleAges[i] != -1) {
-                void *vtableBase = this->vtable;
-                char *vtbl = (char *)vtableBase;
-                UpdateParticleFn fn = *(UpdateParticleFn *)(vtbl + 0x14);
-                fn(this, i, fdelta);
+                this->updateSingle(i, fdelta);
             }
         }
     }
@@ -65,21 +70,13 @@ void IParticleSystem::setMatrix(Matrix const *matrix)
     this->field_0x4 = 0x100;
 }
 
-typedef void (*RenderOffFn)(IParticleSystem *);
-
 void IParticleSystem::enableRender(bool enabled)
 {
     if (!enabled && this->renderEnabled != 0) {
-        void *vtableBase = this->vtable;
-        char *vtbl = (char *)vtableBase;
-        RenderOffFn fn = *(RenderOffFn *)(vtbl + 8);
-        fn(this);
+        this->reset();
     }
     this->renderEnabled = enabled;
 }
-
-typedef void (*EmitParticleFn)(IParticleSystem *, void *, float, uint32_t, uint32_t, uint32_t, uint32_t,
-                              uint32_t, int, float, float, void *);
 
 static inline int float_bits(float v)
 {
@@ -331,11 +328,10 @@ void IParticleSystem::emit(int delta)
             colorFlag = (*(float *)(def + 0x40) > 0.0f) ? 1 : 0;
         }
 
-        void *vtableBase = this->vtable;
-        char *vtbl = (char *)vtableBase;
-        EmitParticleFn emitFn = *(EmitParticleFn *)(vtbl + 0x18);
-        emitFn(this, particlePos, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
-               colorFlag, size0, size1, emitVelocity);
+        this->setParticle(*(const Vector *)particlePos, life, *(uint32_t *)(def + 0x34),
+                          bits_float(uvp[0]), bits_float(uvp[2]), bits_float(uvp[1]),
+                          bits_float(uvp[3]), colorFlag != 0, size0, size1,
+                          *(const Vector *)emitVelocity);
 
         if (*(float *)(def + 0x64) != 0.0f) {
             *(Vector *)tmp = this->emitterVelocity * *(float *)(def + 0x64);
@@ -347,10 +343,7 @@ void IParticleSystem::emit(int delta)
         if (remaining > fdelta) {
             remaining = fdelta;
         }
-        void *updateVtableBase = this->vtable;
-        char *updateVtbl = (char *)updateVtableBase;
-        UpdateParticleFn updateFn = *(UpdateParticleFn *)(updateVtbl + 0x14);
-        updateFn(this, current, remaining);
+        this->updateSingle(current, remaining);
 
         current = this->currentParticle + 1;
         if (this->maxParticles <= current) {
@@ -424,7 +417,6 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Arra
                                  bool mirror, bool alphaFade)
 {
     this->canvas = canvas;
-    this->vtable = (char *)IParticleSystem_vtable + 8;
     AERandom_ctor(this->random);
 
     this->emitterVelocity.x = 0.0f;
@@ -576,11 +568,11 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * slot;
             }
 
-            void *vtableBase = this->vtable;
-            char *vtbl = (char *)vtableBase;
-            EmitParticleFn fn = *(EmitParticleFn *)(vtbl + 0x18);
-            fn(this, &position, lifetime, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
-               *(int *)(def + 0x3c) > 0, *(float *)(def + 0x1c), *(float *)(def + 0x20), emitVelocity);
+            this->setParticle(position, lifetime, *(uint32_t *)(def + 0x34),
+                              bits_float(uvp[0]), bits_float(uvp[2]), bits_float(uvp[1]),
+                              bits_float(uvp[3]), *(int *)(def + 0x3c) > 0,
+                              *(float *)(def + 0x1c), *(float *)(def + 0x20),
+                              *(const Vector *)emitVelocity);
         } else {
             float life = lifetime + (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
             float size0 = *(float *)(def + 0x1c) + (float)AbyssEngine::AERandom::nextInt(this->random, randomLife);
@@ -594,11 +586,10 @@ void IParticleSystem::emitManual(Vector position, int particleSet, Vector const 
                 *(Vector *)emitVelocity = velocityScale * slot;
             }
 
-            void *vtableBase = this->vtable;
-            char *vtbl = (char *)vtableBase;
-            EmitParticleFn fn = *(EmitParticleFn *)(vtbl + 0x18);
-            fn(this, &position, life, *(uint32_t *)(def + 0x34), uvp[0], uvp[2], uvp[1], uvp[3],
-               *(int *)(def + 0x3c) > 0, size0, size1, emitVelocity);
+            this->setParticle(position, life, *(uint32_t *)(def + 0x34),
+                              bits_float(uvp[0]), bits_float(uvp[2]), bits_float(uvp[1]),
+                              bits_float(uvp[3]), *(int *)(def + 0x3c) > 0,
+                              size0, size1, *(const Vector *)emitVelocity);
         }
 
         float drag = *(float *)(def + 0x64);
@@ -631,7 +622,6 @@ void IParticleSystem::resetEmitterVelocity()
 
 IParticleSystem::~IParticleSystem()
 {
-    *(void * volatile *)&this->vtable = (char *)IParticleSystem_vtable + 8;
     delete this->particleSets;
     AERandom_dtor((void *)this->random);
 }

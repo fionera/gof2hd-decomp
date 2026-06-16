@@ -111,7 +111,8 @@ public:
     void StopEngineSound();
     void addGun_a();
     void addGun_b();
-    void awake();
+    // actor vtable slot +0xc: base flips state and wakes the wrapped Player; subclasses override.
+    virtual void awake();
     void captureCrate(Hud* hud);
     int  cargoAvailable();
     void createCrate(int type);
@@ -149,7 +150,8 @@ public:
     void setPosition_vec(const Vector& v);
     void setRotationSpeed(float speed);
     void setRoute(Route* route);
-    void setShipGroup(int param2, int flag, int cond);
+    // actor vtable slot +0x8: (re)parents the render geometry to the given ship-group node.
+    virtual void setShipGroup(AEGeometry* geom, int group, bool flag);
     void setSpacePoints(Array<SpacePoint*>* pts);
     void setState(int state);
     void setToSleep();
@@ -159,7 +161,10 @@ public:
     virtual void setSpeed(float v);                            // actor vtable slot +0x1c
     virtual void revive();                                     // actor vtable slot +0x18 (base no-op)
     virtual void push(int dt);                                 // actor vtable slot +0x30 (base no-op)
-    void translate(const Vector& v);
+    // actor vtable slot +0x20: shifts the geometry (and route) by a world-space delta.
+    virtual void translate(const Vector& v);
+    // actor vtable slot +0x2c: arm a bomb/explosion push impulse toward the given point.
+    virtual void initPush(const Vector& target, int radius);
     Route* getRoute();
     Array<SpacePoint*>* getSpacePoints();
     // Polymorphic: PlayerFighter/PlayerEgo override this to also wire up their engine-trail
@@ -172,8 +177,9 @@ public:
 
     // Collision-query virtuals inherited from the bounding-volume interface. A KIPlayer
     // does not expose a surface to project onto, so all three return a zeroed vector.
-    Vector getProjectionVector(const Vector& v);
+    // getProjectionVector @ actor vtable slot +0x50; projectCollisionOnSurface @ +0x58.
+    virtual Vector getProjectionVector(const Vector& v);
     Vector getCollisionNormal(const Vector& position);
-    Vector projectCollisionOnSurface(const Vector& position);
+    virtual Vector projectCollisionOnSurface(const Vector& position);
 };
 #endif

@@ -36,9 +36,9 @@ public:
 
     void   setVisible(bool visible);
     void   setPosition(const Vector &position);
-    Vector projectCollisionOnSurface(const Vector &position);
+    Vector projectCollisionOnSurface(const Vector &position) override;  // actor vtable slot +0x58
     void  *getRoot();
-    Vector getProjectionVector(const Vector &position);
+    Vector getProjectionVector(const Vector &position) override;        // actor vtable slot +0x50
     void   render() override;
     int    outerCollide(const Vector &position) override;       // slot +0x40
     int    outerCollide(float x, float y, float z) override;    // slot +0x3c

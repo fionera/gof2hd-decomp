@@ -18,64 +18,91 @@ struct AEPakFileEntry {
     uint32_t size;
 };
 
-struct AELowLevelFile;
-
-// Dispatch table shared by every low-level file backend (native file / pak entry).
-struct AELowLevelFileVTable {
-    void     (*field_00)(AELowLevelFile *);
-    void     (*Close)(AELowLevelFile *);
-    uint32_t (*Write)(AELowLevelFile *, uint32_t, const void *);
-    uint32_t (*Read)(AELowLevelFile *, uint32_t, void *);
-    uint32_t (*Skip)(AELowLevelFile *, uint32_t);
-    uint32_t (*field_14)(AELowLevelFile *);
-    uint32_t (*GetFileSize)(AELowLevelFile *);
+// Low-level file backend: an opened file handle. The base is abstract; concrete backends
+// (native FILE* / windowed pak entry) override the I/O slots. The vtable layout recovered from
+// the binary is: [field_00 = complete dtor][Close = deleting dtor][Write][Read][Skip][Release =
+// field_14][GetFileSize]; the virtual destructor occupies the first two slots, so the engine's
+// "Close" slot is just `delete this` and is expressed at call sites as `delete file`.
+class AELowLevelFile {
+public:
+    virtual ~AELowLevelFile() {}
+    virtual uint32_t Write(uint32_t bytes, const void *buffer) { return 0; }
+    virtual uint32_t Read(uint32_t bytes, void *buffer)        { return 0; }
+    virtual uint32_t Skip(uint32_t bytes)                      { return 0; }
+    virtual uint32_t Release()                                 { return 1; }
+    virtual uint32_t GetFileSize()                             { return 0; }
 };
 
-struct AELowLevelFile {
-    AELowLevelFileVTable *vtable;
+// A minimal held low-level file object, reached only through this fixed set of slots. AEFile's
+// native / pak backends forward their I/O to one of these. (At runtime the held object is a
+// FileInterfaceAndroid, defined in its own translation unit.)
+class AELowLevelHeldFile {
+public:
+    virtual ~AELowLevelHeldFile() {}                                      // +0x04 Free
+    virtual void     *OpenRead(const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)  { return nullptr; }
+    virtual void     *OpenWrite(const String &, uint32_t, uint32_t)       { return nullptr; }
+    virtual void     *OpenAppend(const String &, uint32_t, uint32_t)      { return nullptr; }
+    virtual uint32_t  Read(uint32_t bytes, void *buffer)                  { return 0; }     // +0x14
+    virtual uint32_t  Write(uint32_t bytes, const void *buffer)           { return 0; }     // +0x18
+    virtual uint32_t  Skip(uint32_t bytes)                                { return 0; }     // +0x1c
+    virtual uint32_t  GetFileSize()                                       { return 0; }     // +0x20
 };
 
-struct AELowLevelNativeFile : AELowLevelFile {
-    void *handle;
+// Native file backend: forwards I/O to the held low-level file.
+class AELowLevelNativeFile : public AELowLevelFile {
+public:
+    AELowLevelHeldFile *handle;
+
+    ~AELowLevelNativeFile() override { Release(); }
+    uint32_t Write(uint32_t bytes, const void *buffer) override;
+    uint32_t Read(uint32_t bytes, void *buffer) override;
+    uint32_t Skip(uint32_t bytes) override;
+    uint32_t Release() override;
+    uint32_t GetFileSize() override;
 };
 
-struct AELowLevelPakFile : AELowLevelFile {
-    void     *handle;
-    uint32_t  packedSize;
+// Pak file backend: a windowed view (base offset + size limit) over the held low-level file.
+class AELowLevelPakFile : public AELowLevelFile {
+public:
+    AELowLevelHeldFile *handle;
+    uint32_t  packedSize;   // sizeLimit window
     uint32_t  size;
     uint32_t  position;
+
+    ~AELowLevelPakFile() override { Release(); }
+    uint32_t Write(uint32_t bytes, const void *buffer) override;
+    uint32_t Read(uint32_t bytes, void *buffer) override;
+    uint32_t Skip(uint32_t bytes) override;
+    uint32_t Release() override;
+    uint32_t GetFileSize() override;
 };
 
-struct FileInterface;
-
-// Platform file-system backend dispatch table.
-struct FileInterfaceVTable {
-    void        (*field_00)(FileInterface *);
-    void        (*field_04)(FileInterface *);
-    void       *(*OpenRead)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
-    void       *(*OpenWrite)(FileInterface *, const String &, uint32_t, uint32_t);
-    void       *(*OpenAppend)(FileInterface *, const String &, uint32_t, uint32_t, uint32_t);
-    void        (*field_14)(FileInterface *);
-    void        (*field_18)(FileInterface *);
-    void        (*field_1c)(FileInterface *);
-    void        (*field_20)(FileInterface *);
-    uint32_t    (*FileExist)(FileInterface *, const String &);
-    uint32_t    (*FileDelete)(FileInterface *, const String &);
-    uint32_t    (*GetDeviceFreeSpace)(FileInterface *);
-    const char *(*GetAppRootDir)(FileInterface *);
-    void        (*ResetSaveDirectory)(FileInterface *);
-    void        (*field_38)(FileInterface *);
-    uint32_t    (*OpenDirectory)(FileInterface *, void *, uint32_t);
-    uint32_t    (*ReadDirectory)(FileInterface *, String &);
-    void        (*field_44)(FileInterface *);
-    void        (*SetAppRootDir)(FileInterface *, const char *);
-    void        (*SetZipDirectory)(FileInterface *, const char *);
-    void        (*SetSaveDirectory)(FileInterface *, const String &);
-};
-
-struct FileInterface {
-    FileInterfaceVTable *vtable;
+// Platform file-system backend. Abstract base for the concrete platform implementation
+// (FileInterfaceAndroid). The recovered vtable's first two slots are the virtual destructor
+// (complete + deleting), so OpenRead lands at the planted vptr's +8. `enabled` is the only
+// instance state defined here.
+class FileInterface {
+public:
     uint8_t enabled;
+
+    virtual ~FileInterface() {}
+    virtual void       *OpenRead(const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) { return nullptr; }
+    virtual void       *OpenWrite(const String &, uint32_t, uint32_t)  { return nullptr; }
+    virtual void       *OpenAppend(const String &, uint32_t, uint32_t) { return nullptr; }
+    virtual uint32_t    Read(uint32_t, void *)                         { return 0; }
+    virtual uint32_t    Write(uint32_t, const void *)                  { return 0; }
+    virtual uint32_t    Seek(uint32_t)                                 { return 0; }
+    virtual uint32_t    GetFileSize()                                  { return 0; }
+    virtual uint32_t    FileExist(const String &)                      { return 0; }
+    virtual uint32_t    FileDelete(const String &)                     { return 0; }
+    virtual uint32_t    GetDeviceFreeSpace()                           { return 0; }
+    virtual const char *GetAppRootDir()                                { return nullptr; }
+    virtual void        SetAppRootDir(const char *)                    {}
+    virtual void        SetZipDirectory(const char *)                  {}
+    virtual void        SetSaveDirectory(const String &)               {}
+    virtual void        ResetSaveDirectory()                           {}
+    virtual uint32_t    OpenDirectory(void *, uint32_t)                { return 0; }
+    virtual uint32_t    ReadDirectory(String &)                        { return 0; }
 };
 
 enum FileOpenType : uint32_t {

@@ -3,10 +3,9 @@
 #include "externs.h"
 #include "platform/libc.h"
 
-// ParticleSystemSprite derives (in the shipped binary) from IParticleSystem. In this port the
-// class is kept flat with named members, so the few base-subobject operations are reached through
-// typed helper symbols rather than a base-class cast.
-extern "C" uint32_t g_ParticleSystemSprite_vtable[];
+// ParticleSystemSprite derives from IParticleSystem. The base subobject is still constructed and
+// destroyed by the binary base ctor/dtor helpers; the compiler-managed vptr (at offset 0) replaces
+// the former manual vtable member.
 extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
                                const void *sets, bool mirror, bool alphaFade);
 extern "C" void _pss_base_dtor(ParticleSystemSprite *self);
@@ -26,26 +25,22 @@ extern "C" float g_uvRoundBias;
 // Colour normalization scale (1/255).
 extern "C" float g_colorScale;
 
-// Re-installs the derived vtable, frees the per-particle sprite scratch arrays via release(), then
-// chains into the IParticleSystem base destructor to tear down the emitter/particle-set state.
+// Frees the per-particle sprite scratch arrays via release(), then chains into the IParticleSystem
+// base destructor to tear down the emitter/particle-set state.
 ParticleSystemSprite::~ParticleSystemSprite()
 {
-    this->vtable = g_ParticleSystemSprite_vtable + 2;
     this->release();
     _pss_base_dtor(this);
 }
 
-// Chains to the IParticleSystem base ctor, installs the derived vtable, allocates the per-particle
-// sprite scratch array (particleCount * 12 bytes) and zero-fills it, then caches a precomputed Pow
-// value.
+// Chains to the IParticleSystem base ctor, allocates the per-particle sprite scratch array
+// (particleCount * 12 bytes) and zero-fills it, then caches a precomputed Pow value.
 ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
                                            const void *particleSets, bool mirror, bool alphaFade)
 {
     _pss_base_ctor(this, canvas, matrix, particleSets, mirror, alphaFade);
 
     uint32_t count = (uint32_t)this->particleCount;
-
-    this->vtable = g_ParticleSystemSprite_vtable + 2;
 
     char *arr = new char[count * 0xc];
     if (count != 0)
@@ -70,12 +65,17 @@ void ParticleSystemSprite::reset()
 
 int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset)
 {
-    void **vt = (void **)this->vtable;
     this->spriteId = spriteId;
     this->idOffset = idOffset;
     this->initialized = 1;
-    typedef int (*pfn)(ParticleSystemSprite *);
-    return ((pfn)vt[2])(this);
+    // The original tail-calls the per-system reset hook (vtable slot 2) to prime the system.
+    this->reset();
+    return 0;
+}
+
+int ParticleSystemSprite::getQuadCount()
+{
+    return this->particleCount;
 }
 
 void ParticleSystemSprite::release()

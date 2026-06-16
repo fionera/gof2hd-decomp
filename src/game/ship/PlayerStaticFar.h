@@ -33,9 +33,9 @@ public:
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
     ~PlayerStaticFar();
 
-    Vector getProjectionVector(const Vector &value);
+    Vector getProjectionVector(const Vector &value) override;        // actor vtable slot +0x50
     void   render() override;
-    Vector projectCollisionOnSurface(const Vector &value);
+    Vector projectCollisionOnSurface(const Vector &value) override;  // actor vtable slot +0x58
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getInitPosition();
     void   update(int delta) override;

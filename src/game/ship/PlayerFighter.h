@@ -140,7 +140,7 @@ public:
                   float x, float y, float z, int active);
     ~PlayerFighter();
 
-    void awake();
+    void awake() override;
     void reset();
     void revive() override;
     void cloak(int dur, bool b);
@@ -150,7 +150,7 @@ public:
     uint8_t hasCrateLost();
     uint8_t hasMissionCrateCaptured();
     uint8_t hasMissionCrateLost();
-    void initPush(void *target, int radius);
+    void initPush(const Vector &target, int radius) override;   // actor vtable slot +0x2c
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void push(int dt) override;
     void removeTrail();
@@ -168,7 +168,7 @@ public:
     void setPosition_ref(const Vector &v);
     void setRotate(int v);
     void setShootError(int v);
-    void setShipGroup(AEGeometry *geom, int group, bool flag);
+    void setShipGroup(AEGeometry *geom, int group, bool flag) override;   // actor vtable slot +0x8
     void setSpeed(float v) override;
     void setWingmanCommand(int cmd, KIPlayer *target) override;
     void update(int dt) override;

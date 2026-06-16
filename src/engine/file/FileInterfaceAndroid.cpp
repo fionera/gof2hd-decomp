@@ -19,8 +19,8 @@ static inline const unsigned short *GetAEWChar(const String &s)
     return reinterpret_cast<const unsigned short *>(s.text());
 }
 
-// Vtable group base + instance-count cell, installed/maintained on every constructed instance.
-extern void *gFIAVtable __attribute__((visibility("hidden")));
+// Live-instance count cell, maintained on every constructed instance. (The vptr is now managed
+// by the compiler; the former gFIAVtable plants are gone.)
 extern int *gFIAInstCount __attribute__((visibility("hidden")));
 
 // GetDirPreFix() returns a String built from a fixed directory prefix.
@@ -33,12 +33,11 @@ String FileInterfaceAndroid_GetDirPreFix()
 
 FileInterfaceAndroid::FileInterfaceAndroid()
 {
-    this->alive = 1;
+    this->enabled = 1;
     this->appRootDir = 0;
     this->zipDirectory = 0;
     this->zipAppend = 0;
     this->zipReadLen = 0;
-    this->vtable = (char *)gFIAVtable + 8;
 }
 
 FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append)
@@ -46,7 +45,6 @@ FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append)
     this->file = f;
     this->zipFile = 0;
     this->jniStream = 0;
-    this->vtable = (char *)gFIAVtable + 8;
     this->modeFlag = append;
     ++*gFIAInstCount;
 }
@@ -78,7 +76,6 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject *stream, bool reading)
     this->zipFile = 0;
     this->jniStream = stream;
     this->modeFlag = reading;
-    this->vtable = (char *)gFIAVtable + 8;
     ++*gFIAInstCount;
 
     void *cls = (*(jni_getclass *)((char *)*(void **)env + 0x7c))(env);
@@ -104,7 +101,6 @@ FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start,
     this->zipFile = zf;
     this->jniStream = 0;
     this->modeFlag = 0;
-    this->vtable = (char *)gFIAVtable + 8;
     ++*gFIAInstCount;
     this->zipReadPos = 0;
     this->zipReadLen = 0;
@@ -116,12 +112,11 @@ FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start,
 // count or, when it is already zero, clears the alive flag.
 FileInterfaceAndroid::~FileInterfaceAndroid()
 {
-    this->vtable = (char *)gFIAVtable + 8;
     this->Close();
     if (*gFIAInstCount != 0)
         --*gFIAInstCount;
     else
-        this->alive = 0;
+        this->enabled = 0;
 }
 
 // Close whichever handle is open; for a JNI stream, notify Java of the close.
@@ -148,24 +143,34 @@ void FileInterfaceAndroid::Close()
     }
 }
 
-int FileInterfaceAndroid::GetFileSize()
+uint32_t FileInterfaceAndroid::GetFileSize()
 {
     fseek((FILE *)this->file, 0, SEEK_END);
     int size = ftell((FILE *)this->file);
     fseek((FILE *)this->file, 0, SEEK_SET);
-    return size;
+    return (uint32_t)size;
 }
 
-void FileInterfaceAndroid::SetZipDirectory(void *p)
+const char *FileInterfaceAndroid::GetAppRootDir()
 {
-    if (p != 0)
-        this->zipDirectory = p;
+    return this->appRootDir;
 }
 
-void FileInterfaceAndroid::SetAppRootDir(void *p)
+uint32_t FileInterfaceAndroid::GetDeviceFreeSpace()
+{
+    return 0;
+}
+
+void FileInterfaceAndroid::SetZipDirectory(const char *p)
 {
     if (p != 0)
-        this->appRootDir = (const char *)p;
+        this->zipDirectory = (void *)p;
+}
+
+void FileInterfaceAndroid::SetAppRootDir(const char *p)
+{
+    if (p != 0)
+        this->appRootDir = p;
 }
 
 // JNIEnv function-table slot indices used by the byte-stream Read/Write paths.
@@ -181,7 +186,7 @@ extern void *gReadMidArg __attribute__((visibility("hidden")));
 
 // Reads from the zip handle, the stdio handle, or the JNI input stream (in which case the
 // bytes are copied out of a Java byte[] region).
-bool FileInterfaceAndroid::Read(unsigned int n, void *buf)
+uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf)
 {
     if (this->zipFile != 0)
         return zip_fread(this->zipFile, buf, n) == n;
@@ -216,7 +221,7 @@ bool FileInterfaceAndroid::Read(unsigned int n, void *buf)
 
 // Skip `n` bytes forward. For a zip handle this reads and discards into a scratch buffer;
 // for a stdio handle it is a relative fseek.
-bool FileInterfaceAndroid::Seek(unsigned int n)
+uint32_t FileInterfaceAndroid::Seek(uint32_t n)
 {
     if (n == 0)
         return true;
@@ -242,7 +247,7 @@ extern void **gEnvW __attribute__((visibility("hidden")));
 extern void *gWriteMidArg __attribute__((visibility("hidden")));
 
 // stdio fast path, else JNI byte stream.
-bool FileInterfaceAndroid::Write(unsigned int n, const void *buf)
+uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf)
 {
     if (this->file != 0)
         return fwrite(buf, 1, n, (FILE *)this->file) == n;
@@ -280,12 +285,12 @@ extern const char *gZipPrefixA __attribute__((visibility("hidden")));
 extern const char *gZipPrefixB __attribute__((visibility("hidden")));
 extern const char *gModeRb __attribute__((visibility("hidden")));
 
-bool FileInterfaceAndroid::FileExist(String name)
+uint32_t FileInterfaceAndroid::FileExist(const String &name)
 {
     String a(gZipPrefixA);
-    a.addAssign_str(&name);
+    a.addAssign_str(const_cast<String *>(&name));
     String b(gZipPrefixB);
-    b.addAssign_str(&name);
+    b.addAssign_str(const_cast<String *>(&name));
 
     void *z1 = zip_fopen(*gZipMain, a.GetAEChar(), 0);
     void *z2 = zip_fopen(*gZipPatch, b.GetAEChar(), 0);
@@ -321,10 +326,10 @@ extern const char *gOpenReadFmt __attribute__((visibility("hidden")));
 extern char *gStderrBase __attribute__((visibility("hidden")));
 extern const char *gModeRbR __attribute__((visibility("hidden")));
 
-FileInterfaceAndroid *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6)
+void *FileInterfaceAndroid::OpenRead(const String &name, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6)
 {
     const unsigned short *w = GetAEWChar(name);
-    if (this->alive == 0)
+    if (this->enabled == 0)
         return 0;
 
     const unsigned short *body = (*w == '/') ? w + 1 : w;
@@ -362,7 +367,7 @@ FileInterfaceAndroid *FileInterfaceAndroid::OpenRead(String name, int p2, bool p
 // and on success wraps the FILE* in a freshly-allocated FileInterfaceAndroid.
 extern const char *gModeWb __attribute__((visibility("hidden")));
 
-FileInterfaceAndroid *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int)
+void *FileInterfaceAndroid::OpenWrite(const String &name, uint32_t, uint32_t)
 {
     const unsigned short *w = GetAEWChar(name);
     while (*w)

@@ -72,14 +72,14 @@ void PlayerFixedObject::setMoving(bool v) {
     this->moving = v;
 }
 
-V3 PlayerFixedObject::projectCollisionOnSurface(void *vec) {
+V3 PlayerFixedObject::projectCollisionOnSurface(const Vector &vec) {
     Array<BoundingVolume *> *bv = this->wreckCollision;
     if (bv != 0 && this->state == 4) {
-        return BV_staticProjectCollisionOnSurface(vec, bv);
+        return BV_staticProjectCollisionOnSurface((void *)&vec, bv);
     }
     Array<BoundingVolume *> *bv2 = this->boundingVolumes;
     if (bv2 != 0) {
-        return BV_staticProjectCollisionOnSurface(vec, bv2);
+        return BV_staticProjectCollisionOnSurface((void *)&vec, bv2);
     }
     V3 z = {0.0f, 0.0f, 0.0f};
     return z;
@@ -559,7 +559,8 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
 
 // Picks the active bounding-volume array, indexes it by the stored collision index,
 // and forwards the chosen volume to the projection helper.
-V3 PlayerFixedObject::getProjectionVector() {
+V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {
+    (void)vec;
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *bv = self->wreckCollision;
     if (bv != 0 && self->state == 4) {

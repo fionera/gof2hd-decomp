@@ -17,7 +17,9 @@ namespace AbyssEngine { class EaseInOutMatrix; }
 
 class ModStation {
 public:
-    int              vtable;            // +0x00 vtable pointer (set to vtable base + 8)
+    // +0x00 is the compiler-managed vptr (the original installed it manually as
+    // "vtable base + 8"; ModStation is now a real polymorphic type so the vptr
+    // is synthesised here instead of being a hand-planted member).
     unsigned         fadeColor;         // +0x04 2D fade/clear colour
     int*             field_0x08;        // +0x08 (unused in this TU)
     int              state;             // +0x0c screen-state machine value (init 100)
@@ -91,7 +93,13 @@ public:
     void*            easeCamScalarZ;    // +0x154 scalar EaseInOut (idle cam Z)
 
     ModStation();
-    ~ModStation();
+    virtual ~ModStation();
+
+    // Slot at vtable byte-offset 0x10 (index 4): launches the selected station
+    // sub-module. The five DLC/station-menu buttons and the campaign-mission
+    // transition path dispatch through this virtual slot on `this`
+    // (in the binary: `(*(this->vptr+0x10))(this, 0x10000, 0)`).
+    virtual void launchModule(int arg);
 
     void OnInitialize();
     void OnKeyPress(long long key);

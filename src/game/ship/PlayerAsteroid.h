@@ -46,7 +46,7 @@ public:
     ~PlayerAsteroid();
 
     void   setAsteroidIndex(int asteroidIndex);
-    void   translate(const Vector& delta);
+    void   translate(const Vector& delta) override;   // actor vtable slot +0x20
     void   render() override;
     void   setPosition(const Vector& position);
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
@@ -58,11 +58,11 @@ public:
     uint8_t isMinable();
     String getQualityString();
     void   update(int delta) override;
-    Vector getProjectionVector(const Vector& value);
+    Vector getProjectionVector(const Vector& value) override;   // actor vtable slot +0x50
     void   setAsteroidCenter(Vector center);
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void   push(int delta) override;
-    void   initPush(const Vector& target, int duration);
+    void   initPush(const Vector& target, int duration) override;   // actor vtable slot +0x2c
 
 private:
     // Whether this asteroid should drop loot when destroyed (KIPlayer base slot 0x4c).

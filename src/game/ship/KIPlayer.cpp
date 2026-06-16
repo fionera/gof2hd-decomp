@@ -342,6 +342,10 @@ void KIPlayer::revive() {
 void KIPlayer::push(int) {
 }
 
+// slot +0x2c: a bare actor takes no bomb/explosion impulse; subclasses override.
+void KIPlayer::initPush(const Vector&, int) {
+}
+
 // slot +0x40: unpack the vector and dispatch to the polymorphic float form (slot +0x3c).
 int KIPlayer::outerCollide(const Vector& v) {
     return this->outerCollide(v.x, v.y, v.z);
@@ -591,15 +595,15 @@ void KIPlayer::setEnemies(Array<Player*>* enemies) {
     this->player->setEnemies(enemies);
 }
 
-void KIPlayer::setShipGroup(int param2, int flag, int cond) {
-    this->shipGroupFlag = flag;
-    if (param2 == 0 || cond == 0) {
-        this->geometry = (AEGeometry*)(intptr_t)param2;
+void KIPlayer::setShipGroup(AEGeometry* geom, int group, bool flag) {
+    this->shipGroupFlag = group;
+    if (geom == 0 || !flag) {
+        this->geometry = geom;
         delete this->parentGeometry;
         this->parentGeometry = 0;
     } else {
         AEGeometry* grp = this->geometry;
-        this->parentGeometry = (AEGeometry*)(intptr_t)param2;
+        this->parentGeometry = geom;
         if (grp == 0) {
             grp = new AEGeometry((PaintCanvas*)gCanvas);
             this->geometry = grp;

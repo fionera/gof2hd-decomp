@@ -21,11 +21,6 @@
 namespace AbyssEngine { class AERandom; }
 extern AbyssEngine::AERandom* gRandom;
 
-// KIPlayer::setShipGroup(AEGeometry*, int, bool) — the real inherited base method
-// (resolved @0x73114). KIPlayer.h currently declares a stale setShipGroup(int,int,int)
-// overload, so we bind to the correct mangled symbol directly here.
-extern "C" void _ZN8KIPlayer12setShipGroupEP10AEGeometryib(void *self, AEGeometry *geom, int group, bool flag) asm("_ZN8KIPlayer12setShipGroupEP10AEGeometryib");
-
 // Local minimal view of the real global-scope ::PaintCanvas (the full headers
 // gof2/PaintCanvas.h / PaintCanvasClass.h cannot be included here: Trail.h
 // already declares a distinct AbyssEngine::PaintCanvas stub that conflicts).
@@ -90,11 +85,10 @@ void PlayerFighter::setAIDisabled(bool v) {
 
 
 
-// Forwards to the inherited KIPlayer::setShipGroup(AEGeometry*, int, bool). Bound to the
-// mangled symbol directly because KIPlayer.h still declares a stale (int,int,int) overload.
+// Forwards to the inherited KIPlayer::setShipGroup(AEGeometry*, int, bool).
 void PlayerFighter::setShipGroup(AEGeometry *geom, int group, bool flag)
 {
-    _ZN8KIPlayer12setShipGroupEP10AEGeometryib(this, geom, group, flag);
+    KIPlayer::setShipGroup(geom, group, flag);
 }
 
 void PlayerFighter::awake() {
@@ -691,7 +685,7 @@ extern void *const gIP_rngFn __attribute__((visibility("hidden")));     // DAT_0
 typedef int (*RngFn)(int rng, int bound);
 
 // PlayerFighter::initPush(Vector const& target, int radius) — target in r1, radius in r2.
-void PlayerFighter::initPush(void *target, int radius) {
+void PlayerFighter::initPush(const Vector &target, int radius) {
     int *guardP = *(int **)gIP_guard;
     volatile int saved = *guardP;
 
@@ -701,7 +695,7 @@ void PlayerFighter::initPush(void *target, int radius) {
     float pos[3] = { gp.x, gp.y, gp.z };
 
     float diff[3];
-    AEMath_VectorSub(diff, target, pos);   // diff = pos - target
+    AEMath_VectorSub(diff, (void *)&target, pos);   // diff = pos - target
     float len = AEMath_VectorLength(diff);
     float r = VectorSignedToFloat(radius, 0);
     float t = 1.0f;

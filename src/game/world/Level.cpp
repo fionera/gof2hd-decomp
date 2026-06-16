@@ -2754,7 +2754,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         new (pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *)pf;
         int gg = gGlobals->getShipGroup(type, race, group);
-        obj->setShipGroup(gg, type, hostile);   // KIPlayer::setShipGroup
+        obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, hostile != 0);   // KIPlayer::setShipGroup
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = obj->parentGeometry;
             if (g == 0) g = obj->geometry;
@@ -2775,7 +2775,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume*)bv);
         int gg = gGlobals->getShipGroup(type, race, 0);
-        obj->setShipGroup(gg, type, 0);   // KIPlayer::setShipGroup
+        obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, false);   // KIPlayer::setShipGroup
         this->lodManager->addObject(obj->geometry);
         *(unsigned char *)&obj->field_0x40 = 1;
     }

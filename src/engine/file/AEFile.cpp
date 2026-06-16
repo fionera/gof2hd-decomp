@@ -3,14 +3,101 @@
 #include <new>
 
 // Engine file-subsystem state. These globals hold the active platform FileInterface, the table of
-// currently open low-level files (indexed by handle), the registered .pak archive entries, and the
-// shared low-level vtables. They live for the lifetime of the file subsystem.
+// currently open low-level files (indexed by handle), and the registered .pak archive entries.
+// They live for the lifetime of the file subsystem.
 extern FileInterface              *g_AEFile_fileInterface;
 extern Array<AELowLevelFile *>    *g_AEFile_openFiles;
 extern Array<AEPakFileEntry *>    *g_AEFile_pakFiles;
 extern uint32_t                    g_AEFile_initialized;
-extern char                        g_AELowLevelNativeFile_vtable[];
-extern char                        g_AELowLevelPakFile_vtable[];
+
+// ---------------------------------------------------------------------------------------------
+// Low-level file backends.
+// AELowLevelNativeFile forwards every operation to its held low-level file; AELowLevelPakFile
+// exposes a windowed view (size limit tracked in `packedSize`, current offset in `position`)
+// over the held file. Reconstructed from the binary AENormalFile / AEPakFile vtables.
+
+uint32_t AELowLevelNativeFile::Read(uint32_t bytes, void *buffer)
+{
+    if (handle != nullptr) {
+        return handle->Read(bytes, buffer);
+    }
+    return 0;
+}
+
+uint32_t AELowLevelNativeFile::Write(uint32_t bytes, const void *buffer)
+{
+    if (handle != nullptr) {
+        return handle->Write(bytes, buffer);
+    }
+    return 0;
+}
+
+uint32_t AELowLevelNativeFile::Skip(uint32_t bytes)
+{
+    if (handle != nullptr) {
+        return handle->Skip(bytes);
+    }
+    return 0;
+}
+
+uint32_t AELowLevelNativeFile::GetFileSize()
+{
+    if (handle != nullptr) {
+        return handle->GetFileSize();
+    }
+    return 0;
+}
+
+uint32_t AELowLevelNativeFile::Release()
+{
+    if (handle != nullptr) {
+        delete handle;
+    }
+    handle = nullptr;
+    return 1;
+}
+
+uint32_t AELowLevelPakFile::Read(uint32_t bytes, void *buffer)
+{
+    AELowLevelHeldFile *h;
+    if (bytes != 0 && (h = handle) != nullptr) {
+        if ((int)(position + bytes) > (int)packedSize) {
+            bytes = (uint32_t)((int)packedSize - (int)position);
+        }
+        if (bytes != 0) {
+            position += bytes;
+            return h->Read(bytes, buffer);
+        }
+    }
+    return 0;
+}
+
+uint32_t AELowLevelPakFile::Write(uint32_t, const void *)
+{
+    return 0;
+}
+
+uint32_t AELowLevelPakFile::Skip(uint32_t bytes)
+{
+    char *buffer = new char[bytes];
+    Read(bytes, buffer);
+    delete[] buffer;
+    return 1;
+}
+
+uint32_t AELowLevelPakFile::GetFileSize()
+{
+    return packedSize;
+}
+
+uint32_t AELowLevelPakFile::Release()
+{
+    if (handle != nullptr) {
+        delete handle;
+        handle = nullptr;
+    }
+    return 1;
+}
 
 // ---------------------------------------------------------------------------------------------
 // String adapter helpers.
@@ -50,7 +137,7 @@ void AEFile::SetInterface(FileInterface *fileInterface)
     }
 
     if (g_AEFile_initialized != 0) {
-        fileInterface->vtable->ResetSaveDirectory(fileInterface);
+        fileInterface->ResetSaveDirectory();
     }
 
     if (g_AEFile_pakFiles == nullptr) {
@@ -96,13 +183,13 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
 
     if (openType == OPEN_WRITE) {
         String localPath; AEStr_init(&localPath, text);
-        nativeHandle = fileInterface->vtable->OpenWrite(fileInterface, localPath, path.size(), 0);
+        nativeHandle = fileInterface->OpenWrite(localPath, path.size(), 0);
     } else if (openType == OPEN_APPEND) {
         String localPath; AEStr_init(&localPath, text);
-        nativeHandle = fileInterface->vtable->OpenAppend(fileInterface, localPath, path.size(), 0, 0);
+        nativeHandle = fileInterface->OpenAppend(localPath, path.size(), 0);
     } else if (openType == OPEN_READ) {
         String localPath; AEStr_init(&localPath, text);
-        nativeHandle = fileInterface->vtable->OpenRead(fileInterface, localPath, path.size(), 0, 0, 0, 0);
+        nativeHandle = fileInterface->OpenRead(localPath, path.size(), 0, 0, 0, 0);
         if (nativeHandle == nullptr) {
             if (*AEStr_index(path, 0) != '/') {
                 String prefix("/");
@@ -120,8 +207,7 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
             return 0;
         }
         AELowLevelNativeFile *nativeFile = new AELowLevelNativeFile;
-        nativeFile->vtable = reinterpret_cast<AELowLevelFileVTable *>(g_AELowLevelNativeFile_vtable + 8);
-        nativeFile->handle = nativeHandle;
+        nativeFile->handle = reinterpret_cast<AELowLevelHeldFile *>(nativeHandle);
         file = nativeFile;
     }
 
@@ -133,7 +219,7 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
         } else {
             AELowLevelFile *&slot = files->data()[0];
             if (slot != nullptr) {
-                slot->vtable->Close(slot);
+                delete slot;
             }
             slot = file;
         }
@@ -198,7 +284,7 @@ void AEFile::Close(uint32_t handle)
     }
     AELowLevelFile *&slot = files->data()[handle];
     if (slot != nullptr) {
-        slot->vtable->Close(slot);
+        delete slot;
     }
     slot = nullptr;
 }
@@ -208,7 +294,7 @@ uint32_t AEFile::Read(uint32_t bytes, void *buffer, uint32_t handle)
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
         if (file != nullptr) {
-            return file->vtable->Read(file, bytes, buffer);
+            return file->Read(bytes, buffer);
         }
     }
     return 0;
@@ -309,7 +395,7 @@ uint32_t AEFile::Write(uint32_t bytes, const void *buffer, uint32_t handle)
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
         if (file != nullptr) {
-            return file->vtable->Write(file, bytes, buffer);
+            return file->Write(bytes, buffer);
         }
     }
     return 0;
@@ -356,7 +442,7 @@ uint32_t AEFile::Skip(uint32_t bytes, uint32_t handle)
         if (handle < files->size()) {
             AELowLevelFile *file = files->data()[handle];
             if (file != nullptr) {
-                return file->vtable->Skip(file, bytes);
+                return file->Skip(bytes);
             }
         }
     }
@@ -370,7 +456,7 @@ uint32_t AEFile::GetFileSize(uint32_t handle)
         if (handle < files->size()) {
             AELowLevelFile *file = files->data()[handle];
             if (file != nullptr) {
-                return file->vtable->GetFileSize(file);
+                return file->GetFileSize();
             }
         }
     }
@@ -391,10 +477,10 @@ void AEFile::collectPakFiles(const String &path)
     }
 
     char *pathChars = AEStr_char(path);
-    if (fileInterface->vtable->OpenDirectory(fileInterface, pathChars, 0) != 0) {
+    if (fileInterface->OpenDirectory(pathChars, 0) != 0) {
         String suffix(".pak");
         String entry;
-        while (fileInterface->vtable->ReadDirectory(fileInterface, entry) != 0) {
+        while (fileInterface->ReadDirectory(entry) != 0) {
             String entryCopy; AEStr_init(&entryCopy, entry);
             if (AEStr_indexOf(entry, suffix) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
@@ -502,17 +588,16 @@ AELowLevelFile *AEFile::findPakFile(const String &path)
             void *handle;
 
             if (entry->size == 0xffffffff) {
-                handle = fileInterface->vtable->OpenRead(
-                    fileInterface, entryName, entry->name.size(), 0, 0, 0, entry->offset);
+                handle = fileInterface->OpenRead(
+                    entryName, entry->name.size(), 0, 0, 0, entry->offset);
             } else {
-                handle = fileInterface->vtable->OpenRead(
-                    fileInterface, entryName, entry->name.size(), 1,
+                handle = fileInterface->OpenRead(
+                    entryName, entry->name.size(), 1,
                     entry->packedSize, entry->size, entry->offset);
             }
 
             AELowLevelPakFile *pakFile = new AELowLevelPakFile;
-            pakFile->vtable = reinterpret_cast<AELowLevelFileVTable *>(g_AELowLevelPakFile_vtable + 8);
-            pakFile->handle = handle;
+            pakFile->handle = reinterpret_cast<AELowLevelHeldFile *>(handle);
             pakFile->packedSize = entry->packedSize;
             pakFile->size = entry->size;
             pakFile->position = 0;
@@ -537,7 +622,7 @@ uint32_t AEFile::FileExist(const String &path)
     }
 
     String nativePath; AEStr_init(&nativePath, path);
-    if (fileInterface->vtable->FileExist(fileInterface, nativePath) != 0) {
+    if (fileInterface->FileExist(nativePath) != 0) {
         return 1;
     }
 
@@ -557,14 +642,14 @@ uint32_t AEFile::FileDelete(const String &path)
         return 0;
     }
     String localPath; AEStr_init(&localPath, path);
-    return fileInterface->vtable->FileDelete(fileInterface, localPath);
+    return fileInterface->FileDelete(localPath);
 }
 
 uint32_t AEFile::GetDeviceFreeSpace()
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
-        return fileInterface->vtable->GetDeviceFreeSpace(fileInterface);
+        return fileInterface->GetDeviceFreeSpace();
     }
     return 0;
 }
@@ -573,7 +658,7 @@ const char *AEFile::GetAppRootDir()
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
-        return fileInterface->vtable->GetAppRootDir(fileInterface);
+        return fileInterface->GetAppRootDir();
     }
     return nullptr;
 }
@@ -582,7 +667,7 @@ void AEFile::SetAppRootDir(const char *path)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
-        fileInterface->vtable->SetAppRootDir(fileInterface, path);
+        fileInterface->SetAppRootDir(path);
     }
 }
 
@@ -590,7 +675,7 @@ void AEFile::SetZipDirectory(const char *path)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
-        fileInterface->vtable->SetZipDirectory(fileInterface, path);
+        fileInterface->SetZipDirectory(path);
     }
 }
 
@@ -599,7 +684,7 @@ void AEFile::SetSaveDirectory(String path)
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
         String savePath; AEStr_init(&savePath, path);
-        fileInterface->vtable->SetSaveDirectory(fileInterface, savePath);
+        fileInterface->SetSaveDirectory(savePath);
     }
 }
 
@@ -607,7 +692,7 @@ void AEFile::ResetSaveDirectory()
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
-        fileInterface->vtable->ResetSaveDirectory(fileInterface);
+        fileInterface->ResetSaveDirectory();
     }
 }
 

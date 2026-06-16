@@ -4,18 +4,19 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/render/IParticleSystem.h"
 
 // Galaxy on Fire 2 -- ParticleSystemMesh.
 // A mesh-backed particle system: each particle is rendered as one or more quads whose
-// edges are stored in `positions` and animated per frame. The class itself lives in the
-// global namespace; only the cross-class argument types (PaintCanvas, BlendMode) live in
-// AbyssEngine.
+// edges are stored in `positions` and animated per frame. It is one of the two concrete
+// IParticleSystem renderers; the emit/update/render hooks below are the real C++ overrides
+// of the base virtual slots.
 
+// PaintCanvas is the global ::PaintCanvas (the type IParticleSystem stores as `canvas`).
 namespace AbyssEngine {
-class PaintCanvas;
+using ::PaintCanvas;
 enum BlendMode { BlendMode_dummy };
 }
-using AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 
 // ParticleSettings::ParticleSet -- a small index value used as a per-particle preset index.
@@ -24,62 +25,66 @@ struct ParticleSettings {
 };
 using ParticleSet = ParticleSettings::ParticleSet;
 
-class ParticleSystemMesh {
+// ParticleSystemMesh is a concrete IParticleSystem renderer. The base supplies the vptr and the
+// shared emitter state (canvas, matrix, flags, emitEnabled, particle buffers, ...). The members
+// below are the mesh-specific extension fields; the emit/update/render hooks are real overrides of
+// the IParticleSystem virtual slots.
+class ParticleSystemMesh : public IParticleSystem {
 public:
-    void* vtable;                       // +0x0
-    uint8_t dirty;                       // +0x4   reset() marks the system live/dirty
-    PaintCanvas* canvas;                // +0x8
-    uint8_t emitEnabled;                 // +0xc   emit() gate
-    uint8_t visible;                     // +0xd   emit() gate
-    const Matrix* matrix;               // +0x18
-    Vector motion;                       // +0x1c  embedded direction/motion vector (scaled in updateUsualEdges)
-    uint32_t flags;                      // +0x34
-    uint8_t trailFlags;                  // +0x35  bit7 selects trail-mode particles
-    uint8_t edgeFlags;                   // +0x36  bit3 selects the embedded-motion edge source
-    uint8_t colorMask;                   // +0x45
-    uint32_t particleCount;              // +0x48
-    uint8_t flipRight;                   // +0x4c  negate the right basis vector
-    int currentId;                       // +0x50
-    uint32_t mesh;                       // +0x54
-    uint32_t firstPoint;                 // +0x58
-    uint8_t initialized;                 // +0x5c  init() completed
-    uint32_t emitCounter;                // +0x60
-    Vector* positions;                   // +0x64  positions/edge-vector buffer (12-byte elements)
-    int* ages;                           // +0x68  per-particle age array
-    int8_t* setIds;                      // +0x6c  per-particle set-id array
-    uint32_t pointCount;                 // +0x70
-    uint8_t wide;                        // +0x74
-    uint32_t field_0x78;                 // +0x78
-    uint32_t field_0x7c;                 // +0x7c
-    uint32_t field_0x80;                 // +0x80
-    uint32_t field_0x84;                 // +0x84
-    uint32_t field_0x88;                 // +0x88
-    uint8_t newSectionStarted;           // +0x90
-    uint32_t frameCounter;               // +0x94
-    uint32_t edgeCount;                  // +0x98
-    uint32_t stride;                     // +0x9c
+    uint8_t dirty;                       // reset() marks the system live/dirty
+    uint8_t visible;                     // emit() gate
+    Vector motion;                       // embedded direction/motion vector (scaled in updateUsualEdges)
+    uint8_t trailFlags;                  // bit7 selects trail-mode particles
+    uint8_t edgeFlags;                   // bit3 selects the embedded-motion edge source
+    uint8_t colorMask;
+    uint32_t particleCount;
+    uint8_t flipRight;                   // negate the right basis vector
+    int currentId;
+    uint32_t mesh;
+    uint32_t firstPoint;
+    uint8_t initialized;                 // init() completed
+    uint32_t emitCounter;
+    Vector* positions;                   // positions/edge-vector buffer (12-byte elements)
+    int* ages;                           // per-particle age array
+    int8_t* setIds;                      // per-particle set-id array
+    uint32_t pointCount;
+    uint8_t wide;
+    uint32_t field_0x78;
+    uint32_t field_0x7c;
+    uint32_t field_0x80;
+    uint32_t field_0x84;
+    uint32_t field_0x88;
+    uint8_t newSectionStarted;
+    uint32_t frameCounter;
+    uint32_t edgeCount;
+    uint32_t stride;
 
     ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b);
     ~ParticleSystemMesh();
 
-    void emit(int id);
+    // IParticleSystem virtual overrides (slot order: emit=1, reset=2, getQuadCount=4,
+    // updateSingle=5, setParticle=6, init=0).
+    void emit(int delta) override;
+    int  getQuadCount() override;
+    void reset() override;
+    int  init(uint32_t mesh, uint16_t firstPoint) override;
+    void setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0,
+                     float v1, bool useMaskedColor, float upScale, float dirScale,
+                     const Vector &delta) override;
+    void updateSingle(int id, float delta) override;
+
     int getPrevId(int id);
-    int getQuadCount();
     void incId();
-    void reset();
     void startNewSection();
     uint8_t wasNewSectionStarted();
-    int init(uint32_t mesh, uint32_t firstPoint);
     void setQuadEdge(const Vector &edge, int point, const Vector &delta);
     void finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first, const Vector &second);
-    void setParticle(const Vector &pos, float scale, uint32_t color, float a, float b, float c, float d,
-                     bool trail, float e, float f, const Vector &dir);
+    // Full 12-argument setter; the 11-arg virtual override forwards into this one.
     void setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0, float v1,
                      bool useMaskedColor, float upScale, float dirScale, const Vector &delta, bool finish);
     void updateUsualEdges(int id, int delta);
     void updateTrailEdges(int id, int delta);
     void updateSingleColor(int id);
-    void updateSingle(int id, float delta);
 
     static void render(PaintCanvas *canvas, uint32_t texture);
     static void render(PaintCanvas *canvas, uint32_t mesh, uint32_t texture, BlendMode blend);

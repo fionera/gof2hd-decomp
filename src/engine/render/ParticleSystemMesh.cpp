@@ -5,7 +5,6 @@ extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
 extern "C" void _psm_emitUsual(ParticleSystemMesh *self, int id);
 extern "C" void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
 extern "C" void _psm_mesh_base_dtor(ParticleSystemMesh *self);
-extern "C" uint32_t g_ParticleSystemMesh_vtable[];
 extern "C" void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
 extern "C" void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
 extern "C" void _psm_vectorPlus(void *out, const Vector *a, const Vector *b);
@@ -47,10 +46,11 @@ int ParticleSystemMesh::getPrevId(int id)
     return id - 1;
 }
 
-void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float a, float b, float c,
-                                     float d, bool trail, float e, float f, const Vector &dir)
+void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1,
+                                     float v0, float v1, bool useMaskedColor, float upScale, float dirScale,
+                                     const Vector &delta)
 {
-    return setParticle(pos, scale, color, a, b, c, d, trail, e, f, dir, false);
+    return setParticle(pos, scale, color, u0, u1, v0, v1, useMaskedColor, upScale, dirScale, delta, false);
 }
 
 void ParticleSystemMesh::emit(int id)
@@ -113,7 +113,6 @@ void ParticleSystemMesh::reset()
 
 ParticleSystemMesh::~ParticleSystemMesh()
 {
-    this->vtable = g_ParticleSystemMesh_vtable + 2;
     _psm_mesh_base_dtor(this);
 }
 
@@ -176,8 +175,6 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     uint32_t edgeCount = ((flags >> 13) & 1) + ((flags >> 12) & 1);
     if ((flags & 0x4000) != 0)
         edgeCount++;
-
-    this->vtable = g_ParticleSystemMesh_vtable + 2;
 
     uint32_t wide = (flags >> 16) & 1;
     uint32_t stride = edgeCount << wide;
@@ -292,7 +289,7 @@ void ParticleSystemMesh::setParticle(const Vector &pos, float scale, uint32_t co
     }
 }
 
-int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
+int ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint)
 {
     this->mesh = mesh;
     this->firstPoint = firstPoint;
@@ -324,10 +321,9 @@ int ParticleSystemMesh::init(uint32_t mesh, uint32_t firstPoint)
 
     this->initialized = 1;
 
-    // Virtual dispatch through the third vtable slot (the per-system finalize hook).
-    typedef int (*FinalizeFn)(ParticleSystemMesh *);
-    FinalizeFn finalize = *(FinalizeFn *)((char *)this->vtable + 8);
-    return finalize(this);
+    // The original tail-calls the per-system reset hook (vtable slot 2) to prime the system.
+    this->reset();
+    return 0;
 }
 
 void ParticleSystemMesh::updateUsualEdges(int id, int delta)
