@@ -18,8 +18,8 @@ public:
     PlayerJunk(int type, Player* player, AEGeometry* geometry, float x, float y, float z);
     ~PlayerJunk();
 
-    void update(int elapsed);
+    void update(int elapsed) override;
     void reset();
-    void render();
+    void render() override;
 };
 #endif

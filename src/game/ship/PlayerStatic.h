@@ -24,7 +24,7 @@ public:
     PlayerStatic(int playerId, AEGeometry *geometry);
     ~PlayerStatic();
 
-    void render();
+    void render() override;
     Vector getPosition();
 };
 

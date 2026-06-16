@@ -426,15 +426,10 @@ Array<KIPlayer*>* Level::getLandmarks() {
     return landmarks;
 }
 
-// The full render pass invokes, per actor, a pre-render virtual at the original vtable
-// slot +0x34 (run only here, never during the frozen renderPause pass) followed by the
-// polymorphic render(). The +0x34 method's name is still unresolved — the actor vtables
-// are reached through a GOT relocation that is not statically resolvable — so it is kept
-// as a documented raw dispatch, matching the +0x1c / setRoute FIXMEs elsewhere in this
-// file. The receiver is a real KIPlayer*; only this one slot remains by-offset.
+// The full render pass invokes, per actor, update(int) (actor vtable slot +0x34, run only
+// here, never during the frozen renderPause pass) followed by the polymorphic render().
 static inline void actorPreRender(KIPlayer *o, int ctx) {
-    // FIXME: name the original-slot-+0x34 pre-render virtual and call it directly.
-    (*(void (**)(KIPlayer *, int))(*(char **)o + 0x34))(o, ctx);
+    o->update(ctx);
 }
 
 void Level::render(int ctx) {

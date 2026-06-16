@@ -47,7 +47,7 @@ public:
 
     void   setAsteroidIndex(int asteroidIndex);
     void   translate(const Vector& delta);
-    void   render();
+    void   render() override;
     void   setPosition(const Vector& position);
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getPosition();
@@ -57,7 +57,7 @@ public:
     float  getScaling();
     uint8_t isMinable();
     String getQualityString();
-    void   update(int delta);
+    void   update(int delta) override;
     Vector getProjectionVector(const Vector& value);
     void   setAsteroidCenter(Vector center);
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38

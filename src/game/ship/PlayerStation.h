@@ -39,12 +39,12 @@ public:
     Vector projectCollisionOnSurface(const Vector &position);
     void  *getRoot();
     Vector getProjectionVector(const Vector &position);
-    void   render();
+    void   render() override;
     int    outerCollide(const Vector &position) override;       // slot +0x40
     int    outerCollide(float x, float y, float z) override;    // slot +0x3c
     Vector getPosition();
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
-    void   update(int delta);
+    void   update(int delta) override;
     void   translate(float x, float y, float z);
 };
 

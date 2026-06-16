@@ -325,6 +325,10 @@ int KIPlayer::collide(float, float, float) {
     return 0;
 }
 
+// slot +0x34: a bare actor has no per-tick behaviour; subclasses override.
+void KIPlayer::update(int) {
+}
+
 // slot +0x40: unpack the vector and dispatch to the polymorphic float form (slot +0x3c).
 int KIPlayer::outerCollide(const Vector& v) {
     return this->outerCollide(v.x, v.y, v.z);

@@ -35,7 +35,7 @@ public:
     uint8_t isHooked();
     void    calmDown();
     void    unhook();
-    void    render();
+    void    render() override;
     int     getEndurance();
     int     getWeight();
     uint8_t isCaught();
@@ -44,7 +44,7 @@ public:
     int     getItemIndex();
     void    reset();
     void    hook(int value);
-    void    update(int elapsed);
+    void    update(int elapsed) override;
 };
 
 #endif

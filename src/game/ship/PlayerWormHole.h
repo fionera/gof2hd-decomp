@@ -27,10 +27,10 @@ public:
     int    open();
     Vector getPosition();
     void   freeMissionLock();
-    void   render();
+    void   render() override;
     void   reset(bool shrinking);
     void   setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
-    void   update(int elapsed);
+    void   update(int elapsed) override;
 };
 
 #endif

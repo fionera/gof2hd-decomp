@@ -154,7 +154,7 @@ public:
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void push(int dt);
     void removeTrail();
-    void render();
+    void render() override;
     void roll(int angle);
     void setAIDisabled(bool v);
     void setBV_a(Array<BoundingVolume *> *v);
@@ -171,6 +171,6 @@ public:
     void setShipGroup(AEGeometry *geom, int group, bool flag);
     void setSpeed(float v);
     void setWingmanCommand(int cmd, KIPlayer *target);
-    void update(int dt);
+    void update(int dt) override;
 };
 #endif

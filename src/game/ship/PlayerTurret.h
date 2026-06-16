@@ -53,7 +53,7 @@ public:
     void setTurretRange(int range);
     void handleSentryGun(int delta);
     void setHost(KIPlayer* host, const Vector& offset);
-    void render();
+    void render() override;
     void renderBase();
     void handleTurret(int delta);
     void revive();
@@ -63,7 +63,7 @@ public:
     KIPlayer* getHost();
     void setScaling(float scale);
     void handleRotation(int delta, AEGeometry* mainGeometry, AEGeometry* turretGeometry);
-    void update(int delta);
+    void update(int delta) override;
     void pickEnemy();
 };
 

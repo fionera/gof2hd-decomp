@@ -85,7 +85,7 @@ public:
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void outerCollide_vec(Vector v);
     V3 projectCollisionOnSurface(void *vec);
-    void render();
+    void render() override;
     void reset();
     void setBV(BoundingVolume *bv);
     void setBV_arr(Array<BoundingVolume *> *bv);
@@ -99,6 +99,6 @@ public:
     void setTransportID(int v);
     void setWreckedMeshId(int meshId);
     void translate(const Vector &d);
-    void update(int dt);
+    void update(int dt) override;
 };
 #endif

@@ -133,6 +133,9 @@ public:
     // Polymorphic: PlayerJunk/PlayerAsteroid/PlayerCreature/PlayerTurret override this.
     // Level::render()/renderPause() dispatch through it for every actor in the rosters.
     virtual void render();
+    // actor vtable slot +0x34; Level::update() dispatches it for every actor in the rosters.
+    // Base actor does nothing per tick (binary stub is a pass-through); subclasses override.
+    virtual void update(int dt);
     void reset();
     void setActive();
     void setDead();

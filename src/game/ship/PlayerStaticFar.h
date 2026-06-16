@@ -34,11 +34,11 @@ public:
     ~PlayerStaticFar();
 
     Vector getProjectionVector(const Vector &value);
-    void   render();
+    void   render() override;
     Vector projectCollisionOnSurface(const Vector &value);
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getInitPosition();
-    void   update(int delta);
+    void   update(int delta) override;
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
 };
 

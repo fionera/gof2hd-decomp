@@ -25,7 +25,7 @@ public:
     void activate();
     void addJumpAnimationHandle(uint32_t handle);
     bool animationEnded();
-    void update(int delta);
+    void update(int delta) override;
     void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
 };
 #endif

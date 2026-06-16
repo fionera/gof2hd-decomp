@@ -44,8 +44,8 @@ public:
     void* getSparks();
     Vector getPosition();
     uint8_t hasExploded();
-    void render();
+    void render() override;
     void explode(int itemIndex, Vector src, float radius);
-    void update(int dt);
+    void update(int dt) override;
 };
 #endif
