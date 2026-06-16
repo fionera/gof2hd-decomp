@@ -14,7 +14,6 @@ class Player;
 
 class SpriteGun {
 public:
-    void* vtable;
     int field_0x4;                      // zero-initialised; semantics not recovered
     Gun* gun;                           // owned weapon
 

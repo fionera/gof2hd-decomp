@@ -5,10 +5,8 @@
 #include "engine/core/GameText.h"
 #include "game/world/Station.h"
 
-// Engine singletons and the Mission vtable base, accessed via the project's
 // hidden pc-relative globals.
 __attribute__((visibility("hidden"))) extern GameText** g_gameText;
-__attribute__((visibility("hidden"))) extern void* Mission_vtable;
 
 uint8_t Mission::isInstantActionMission() {
     return this->instantAction;
@@ -98,7 +96,6 @@ void Mission::setTargetStation(int idx) {
 // The freelance-mission constructor.
 Mission::Mission(int id, const String* client, int clientImage, int clientRace,
                  int costs, int station, int reward) {
-    this->vtable = (char*)Mission_vtable + 8;
     this->id = id;
     this->name = *client;
     this->clientImage = clientImage;
@@ -120,7 +117,6 @@ Mission::Mission(int id, const String* client, int clientImage, int clientRace,
 
 // Like the default constructor but stores the given id.
 Mission::Mission(int id) {
-    this->vtable = (char*)Mission_vtable + 8;
     this->name = String("");
     this->campaign = 0;
     this->visible = 0;
@@ -152,7 +148,6 @@ void Mission::calcDistance() {
 
 // The campaign-mission constructor.
 Mission::Mission(int id, int goods, int station) {
-    this->vtable = (char*)Mission_vtable + 8;
     this->costs = goods;
     this->targetStation = station;
     this->clientImage = 0;
@@ -175,14 +170,12 @@ Mission::Mission(int id, int goods, int station) {
 }
 
 Mission::~Mission() {
-    this->vtable = (char*)Mission_vtable + 8;
     // The four String members are destroyed automatically.
 }
 
 // Default constructor: installs the vtable, names the mission from a literal, and
 // zero-inits the rest.
 Mission::Mission() {
-    this->vtable = (char*)Mission_vtable + 8;
     this->name = String("");
     this->campaign = 0;
     this->visible = 0;

@@ -34,7 +34,6 @@ namespace AbyssEngine {
 namespace AEMath { float Sinf(float value); }
 }
 
-extern void *volatile g_ModMainMenu_vtable;
 
 int  *g_ModMainMenu_releaseFontObj;
 void **g_ModMainMenu_releaseReload;
@@ -74,12 +73,10 @@ ModMainMenu::ModMainMenu()
     this->frameTime = 0;
     this->touchWindow = nullptr;
     this->cutScene = nullptr;
-    this->vtable = (char *)g_ModMainMenu_vtable + 8;
 }
 
 ModMainMenu::~ModMainMenu()
 {
-    this->vtable = (char *)g_ModMainMenu_vtable + 8;
     OnRelease();
 }
 

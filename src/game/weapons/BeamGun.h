@@ -17,7 +17,6 @@ class AEGeometry;
 
 class BeamGun {
 public:
-    void* vtable;
     int32_t field_0x4;                  // zero-initialised; semantics not recovered
     Gun* gun;                           // owning gun
     Level* level;

@@ -23,7 +23,6 @@ void MatrixRotateVector(Vector* out, const Matrix* matrix, const Vector* vector)
 void MatrixGetDir(Vector* out, const Matrix* matrix);
 
 // PaintCanvas holder + per-model mesh table resolved by the engine at load time.
-__attribute__((visibility("hidden"))) extern void* BeamGun_vtable;
 __attribute__((visibility("hidden"))) extern void** BeamGun_canvas;
 __attribute__((visibility("hidden"))) extern int32_t BeamGun_secondaryMeshes[];
 
@@ -40,7 +39,6 @@ BeamGun::BeamGun(int owner, Gun* gun, int meshKind, Level* level)
     if (type == 0xe4)
         kind = 2;
 
-    this->vtable = (char*)BeamGun_vtable + 8;
     this->field_0x4 = 0;
     this->gun = gun;
     this->level = level;
@@ -69,7 +67,6 @@ BeamGun::BeamGun(int owner, Gun* gun, int meshKind, Level* level)
 
 BeamGun::~BeamGun()
 {
-    this->vtable = (char*)BeamGun_vtable + 8;
 
     if (this->primaryGeometry != nullptr)
         delete this->primaryGeometry;

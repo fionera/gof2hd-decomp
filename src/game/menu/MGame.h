@@ -30,7 +30,6 @@ struct Cfg;
 
 class MGame {
 public:
-    int vtable;                         // +0x00
     unsigned skyboxTexture;             // +0x04  cube-texture handle
     ApplicationManager* appManager;     // +0x08  owning application module
     int loadProgress;                   // +0x0c

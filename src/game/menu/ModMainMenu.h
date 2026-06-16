@@ -6,14 +6,12 @@
 #include "aetypes.h"
 
 // Galaxy on Fire 2 — ModMainMenu (main-menu / title screen module). Top-level class,
-// NO namespace. The first slot holds the screen's vtable pointer (set to vtable base + 8).
 // Several engine objects are referenced by pointer only and kept opaque.
 struct CutScene;
 struct MenuTouchWindow;
 
 class ModMainMenu {
 public:
-    void*            vtable;        // vtable pointer (set to vtable base + 8)
     int              paintCanvas;  // paint canvas handle
     void*            appManager;    // ApplicationManager*
     int              state;         // state-machine state (100 = idle)

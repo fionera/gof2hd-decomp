@@ -2,7 +2,6 @@
 #include "game/weapons/Gun.h"
 
 // Per-instance vtable holder resolved by the engine at load time.
-__attribute__((visibility("hidden"))) extern void* SpriteGun_vtable;
 
 // update/setEnemies/setEnemy forward through the inherited gun-hierarchy handlers
 // the dynamic linker resolves into engine relocation slots; they have no static
@@ -14,7 +13,6 @@ __attribute__((visibility("hidden"))) extern void (*SpriteGun_enemyHandler_slot)
 SpriteGun::SpriteGun(Gun* gun, int kind)
 {
     (void)kind;
-    this->vtable = (char*)SpriteGun_vtable + 8;
     this->field_0x4 = 0;
     this->gun = gun;
 }

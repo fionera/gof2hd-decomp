@@ -1843,15 +1843,12 @@ done:
     
 }
 
-// PIC globals: the MGame vtable base (hidden -> direct pc-relative single-deref of the
 // value) and the String destructor.
-__attribute__((visibility("hidden"))) extern void *MGame_vtable;
 
 // MGame::~MGame() complete destructor: install the MGame vtable, release game state,
 // destroy the embedded String at 0x64, and return this.
 MGame::~MGame() {
     MGame *self = this;
-    *(void **)self = (char *)MGame_vtable + 8;
     ((MGame *)(self))->OnRelease();
     this->gameOverTitle.dtor();
 }
@@ -2433,12 +2430,10 @@ done:
     
 }
 
-__attribute__((visibility("hidden"))) extern int g_mgameVtable; // @0x187b3c ([0]=vtable base)
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
 // MGame::MGame() — install vtable, default-construct the title String, zero state.
 MGame::MGame() {
-    this->vtable = g_mgameVtable + 8;
     this->gameOverTitle.ctor();
 
     int z = 0;

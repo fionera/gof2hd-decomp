@@ -13,7 +13,6 @@ using AbyssEngine::String;
 // where it takes place, its rewards, and the live won/failed/visible state.
 class Mission {
 public:
-    void* vtable;
     uint8_t failed;
     uint8_t won;
     Agent* agent;
