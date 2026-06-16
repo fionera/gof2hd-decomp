@@ -647,9 +647,6 @@ void StatusWindow::draw() {
 }
 
 extern "C" {
-void TouchButton_ctor_tab(void *self, void *text, int kind, int x, int y, char flags);
-void TouchButton_ctor_medal(void *self, int index, int medal, void *text, int x, int y, char flags);
-
 extern void *g_sw_gameTextDef;   // GameText id source
 extern void *g_sw_layout;        // Layout singleton
 extern void *g_sw_layoutW;       // layout width source
@@ -667,18 +664,16 @@ StatusWindow::StatusWindow() {
     int layoutW = *(int *)*(void **)g_sw_layoutW;
     int textId = *(int *)*(void **)g_sw_gameTextDef;
 
-    TouchButton *b0 = (TouchButton *)::operator new(200);
     String *t0 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
     int helpOff = layout->getHelpButtonOffset();
-    TouchButton_ctor_tab(b0, t0, 3, layoutW - helpOff, 0, 0x12);
+    TouchButton *b0 = new TouchButton(t0, 3, layoutW - helpOff, 0, 0x12);
     (*this->tabButtons)[1] = b0;
 
-    TouchButton *b1 = (TouchButton *)::operator new(200);
     String *t1 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
     int helpOff2 = layout->getHelpButtonOffset();
+    TouchButton *b1 = new TouchButton(t1, 3, 0, 0, 0x12);
     int w1 = b1->getWidth();
-    TouchButton_ctor_tab(b1, t1, 3,
-                         ((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
+    b1->setPosition(((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
     (*this->tabButtons)[0] = b1;
 
     unsigned int defTab = *g_sw_tabIndex;
@@ -696,10 +691,9 @@ StatusWindow::StatusWindow() {
 
     int *medalIds = gAchievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
-        TouchButton *btn = (TouchButton *)::operator new(200);
         int medal = medalIds[i];
         String *txt = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
-        TouchButton_ctor_medal(btn, i, medal, txt, 0, 0, 'D');
+        TouchButton *btn = new TouchButton(i, medal, txt, 0, 0, 'D');
         (*this->medalButtons)[i] = btn;
     }
 

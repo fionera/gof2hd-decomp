@@ -41,7 +41,7 @@ int ListItem::sortCmp(Ship* ship, int sort) {
 ListItem::ListItem(int a, int b) {
     this->init();
     this->slot = b;
-    this->field_0x2c = a;
+    this->itemId = a;
     this->selectable = 1;
 }
 
@@ -258,12 +258,12 @@ void* ListItem::init() {
     this->name2 = 0;
     this->selectable = 0;
     this->slot = -1;
-    this->field_0x2c = -1;
+    this->itemId = -1;
     this->buttonKind = -1;
     this->imageIndex = -1;
     this->textButton = 0;
-    this->field_0x3c = -1;
-    this->field_0x40 = -1;
+    this->inTabIndex = -1;
+    this->subTabIndex = -1;
     this->text = 0;
     return &this->agent;
 }
@@ -281,7 +281,7 @@ ListItem::ListItem(const ListItem& src) {
 
     this->slot = src.slot;
     this->textButton = src.textButton;
-    this->field_0x3c = src.field_0x3c;
-    this->field_0x40 = src.field_0x40;
+    this->inTabIndex = src.inTabIndex;
+    this->subTabIndex = src.subTabIndex;
     this->pendingProduct = src.pendingProduct;
 }

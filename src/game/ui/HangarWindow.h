@@ -116,6 +116,8 @@ public:
     Item* pendingMountItem;
     Item* pendingDemountItem;
     void* tabIcons;
+    unsigned int scrollHintImageA;   // +0x34 (Image2D handle, id 0x233e)
+    unsigned int scrollHintImageB;   // +0x38 (Image2D handle, id 0x233f)
     uint8_t dialogActive;
     int field_0x40;
     int field_0x44;
@@ -127,16 +129,17 @@ public:
     ListItem* selectedItem;
     int holdTime;
     int repeatTimer;
-    int field_0x78;
-    unsigned int field_0x7c;
+    unsigned int progressBarBorderImage; // +0x74 (Image2D handle, id 0x477)
+    int progressBarBgImage;          // +0x78
+    unsigned int progressBarFillImage; // +0x7c
     BluePrint* bluePrint;
     ListItem* bluePrintItem;
     uint8_t buyMode;
     uint8_t specialMode;
     int savedStationAmount;
     uint16_t shipSwapPending;
-    uint8_t field_0x91;
-    uint8_t field_0x92;
+    uint8_t dlcMenuPending;          // +0x92 (Ghidra +0x92)
+    uint8_t swapConfirmFlag;         // +0x93
     uint8_t sellShipPending;
     int bluePrintBuyCount;
     int savedCredits;
@@ -163,13 +166,15 @@ public:
     int field_0xcd;
     uint8_t dragging;
     uint8_t suppressTouchEnd;
-    uint8_t field_0xd2;
+    uint8_t sellConfirmPending;      // +0xd2
     int currentContentHeight;
     int visibleHeight;
     int progressBarWidth;
     int progressBarHeight;
     int savedScrollOffset;
-    int field_0xf0;
+    unsigned int blueprintIconImage; // +0xe8 (Image2D handle, id 0x52e)
+    unsigned int pendingIconImage;   // +0xec (Image2D handle, id 0x544)
+    int hintImage;                   // +0xf0
     int hintOffsetX;
     uint8_t autoEquipPending;
     unsigned int autoEquipIndex;
@@ -186,7 +191,7 @@ public:
     int gridButtonHeight;
     int gridSpacingX;
     int gridSpacingY;
-    uint8_t field_0x130;
+    uint8_t routeWarningPending;     // +0x130
 
     HangarWindow();
     ~HangarWindow();

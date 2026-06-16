@@ -30,13 +30,15 @@ public:
     AbyssEngine::String*         name;       // owned String (title)
     AbyssEngine::String*         name2;      // owned String (subtitle)
     union { uint8_t selectable; uint8_t field_0x24; };
-    union { int slot; int field_0x28; };     // slot index (-1 sentinel)
-    int                          field_0x2c; // -1 sentinel
+    union { int slot; int field_0x28; };     // slot index / medal tier (-1 sentinel)
+    // itemId / inTabIndex are also read by Hud.cpp, HangarWindow.cpp and HangarList.cpp via
+    // their legacy field_0xNN names; anonymous unions keep both spellings available.
+    union { int itemId; int field_0x2c; };   // -1 sentinel
     union { int buttonKind; int field_0x30; }; // 0=sell, 1=move-to-cargo
     int                          imageIndex; // -1 sentinel / image index
     uint8_t                      textButton;
-    int                          field_0x3c; // -1 sentinel
-    int                          field_0x40; // -1 sentinel
+    union { int inTabIndex; int field_0x3c; }; // -1 sentinel / tab index
+    union { int subTabIndex; int field_0x40; }; // -1 sentinel / tab index
     uint8_t                      text;       // text flag
 
     // Exactly one payload pointer is set per overload. The String overloads take the

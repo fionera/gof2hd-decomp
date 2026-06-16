@@ -437,9 +437,9 @@ void ListItemWindow::draw()
             layout->drawBox(0, this->x + (this->width >> 1) + i32(L, 0x2c), yBox, ((this->width >> 1) - i32(L, 0x2c)) - i32(L, 0x28), i32(L, 0x1c), &s, 0);
         }
         canvas->SetColor(canvasHandle);
-        canvas->DrawImage2D(this->scrollThumbImage, this->field_0x24 - this->field_0x2c, 0);
-        int half = this->field_0x30 / 3;
-        canvas->DrawImage2D(this->scrollThumbImage, this->field_0x24, this->field_0x28 - half, (unsigned char)1);
+        canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX - this->scrollBarOffsetX, 0);
+        int half = this->scrollBarTrackLength / 3;
+        canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX, this->scrollBarY - half, (unsigned char)1);
     }
 
     this->scrollWindow->drawTextBG();

@@ -29,10 +29,10 @@ public:
     int textHalfHeight;                     // half the canvas text height (row centring)
     int previewHeight;                      // height of the preview/progress region
 
-    int field_0x24;                         // scrollbar/footer geometry
-    int field_0x28;                         // scrollbar/footer geometry
-    int field_0x2c;                         // scrollbar/footer geometry
-    int field_0x30;                         // scrollbar track length
+    int scrollBarX;                         // +0x24 scrollbar thumb x
+    int scrollBarY;                         // +0x28 scrollbar thumb baseline y
+    int scrollBarOffsetX;                   // +0x2c scrollbar thumb x offset
+    int scrollBarTrackLength;               // +0x30 scrollbar track length
 
     uint32_t param2;                        // mode/colour parameter (from set())
     uint32_t param3;

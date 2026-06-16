@@ -195,7 +195,7 @@ extern void *const gEndPendingFlag __attribute__((visibility("hidden"))); // *ho
 
 int MenuTouchWindow::OnTouchEnd(int y, int x)
 {
-    this->field_0x1 = 0;
+    this->pendingActivate = 0;
     this->dragging = 0;
 
     // Modal Layout (e.g. virtual keyboard) intercepts first.
@@ -223,21 +223,21 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
                 }
                 return 0;
             }
-            if (this->field_0x191 != 0) {
+            if (this->genericConfirmB != 0) {
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r != 1) {
                     if (r != 0) return 0;
                     *(int *)*(void **)gEndPendingFlag = 1;
                 }
                 this->messageShowing = 0;
-                this->field_0x191 = 0;
+                this->genericConfirmB = 0;
                 return 0;
             }
             if (this->quitConfirmShowing != 0) {
                 // return-to-menu confirmation
                 int r = _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 if (r == 1) {
-                    this->quitConfirmShowing = 0; this->messageShowing = 0; this->field_0x174 = 0;
+                    this->quitConfirmShowing = 0; this->messageShowing = 0; this->returnToMenuSubFlag = 0;
                     return 0;
                 }
                 if (r != 0) return 0;
@@ -261,19 +261,19 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
                 this->messageShowing = 0;
                 return 0;
             }
-            if (this->field_0x17d != 0 || this->dlcResultDialogShowing != 0) {
+            if (this->dlcErrorDialogShowing != 0 || this->dlcResultDialogShowing != 0) {
                 _mtw_ChoiceWindow_OnTouchEnd(cw, y);
                 this->messageShowing = 0;
                 return 0;
             }
-            if (this->field_0x17e != 0) {
-                this->field_0x17e = 0;
-            } else if (this->field_0x17f != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                this->messageShowing = 0; this->field_0x17f = 0; return 0;
+            if (this->loadFailedDialogShowing != 0) {
+                this->loadFailedDialogShowing = 0;
+            } else if (this->genericConfirmA != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                this->messageShowing = 0; this->genericConfirmA = 0; return 0;
             } else if (this->supernovaMessageShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
                 this->supernovaMessageShowing = 0;
-            } else if (this->field_0x181 != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
-                this->field_0x181 = 0;
+            } else if (this->supernovaPurchaseDialogShowing != 0 && _mtw_ChoiceWindow_OnTouchEnd(cw, y) == 0) {
+                this->supernovaPurchaseDialogShowing = 0;
             } else {
                 // generic dialog dismissal
                 _mtw_ChoiceWindow_OnTouchEnd(cw, y);
@@ -288,7 +288,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
     switch (state) {
     case 1:
     case 2:
-        if (this->field_0x1db != 0) return 0;
+        if (this->listStateSuppress != 0) return 0;
         _mtw_onTouchEnd_listState(this, y, x, state);
         break;
     case 3:
@@ -814,15 +814,15 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
                     this->cinematicTouchIdB != 0 || y <= *(int *)*(void **)gBgScreenH2 - 0xdc ||
                     x <= *(int *)(*(char **)gBgObjB + 0x58) - 0x14 ||
                     *(int *)(*(char **)gBgObjB + 0x58) + 0xe6 <= x) {
-                    this->field_0x98 = 0;
+                    this->cinematicTouchState = 0;
                 } else {
                     this->cinematicTouchIdB = touchId;
-                    this->field_0x98 = 0x100;
+                    this->cinematicTouchState = 0x100;
                     this->cinematicAnchorB = x;
                 }
             } else {
                 this->cinematicTouchIdA = touchId;
-                this->field_0x98 = 1;
+                this->cinematicTouchState = 1;
                 this->cinematicAnchorA = x;
             }
         }
@@ -869,7 +869,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
             int ih = ((PaintCanvas *)g_PaintCanvas)->GetImage2DHeight((unsigned int)(long)img);
             hit = (x < ih + tp + lc) ? 1 : 0;
         } else hit = 0;
-        this->field_0x1d9 = hit;
+        this->scrollbarHit = hit;
 
         b28 = *(int *)(*(char **)gBgLayout + 0x28);
         iw = ((PaintCanvas *)g_PaintCanvas)->GetImage2DWidth((unsigned int)(long)img);
@@ -911,7 +911,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
 
     int r = _mtw_Layout_OnTouchBegin(*(void **)gBgLayout, y);
     if (r != 0 && this->menuState == 0xd)
-        this->field_0x1 = 1;
+        this->pendingActivate = 1;
     return 0;
 }
 
@@ -933,7 +933,7 @@ int MenuTouchWindow::loadGame(int slot)
         void *cw = this->choiceWindow;
         void *s = _mtw_GameText_getText(*(void **)gLoadGameText, 0x64);
         _mtw_ChoiceWindow_set(cw, s, false);
-        this->field_0x17e = 1;
+        this->loadFailedDialogShowing = 1;
         this->messageShowing = 1;
         ::operator delete(_mtw_RecordHandler_dtor(rh));
         return 0;
@@ -1109,7 +1109,7 @@ void MenuTouchWindow::saveGame(int slot)
     void *cw = this->choiceWindow;
     void *s = _mtw_GameText_getText(*(void **)gSaveGameText, 0x32);
     _mtw_ChoiceWindow_set(cw, s, false);
-    this->field_0x173 = 0;
+    this->saveDialogShowing = 0;
     this->messageShowing = 1;
 }
 
@@ -1168,7 +1168,7 @@ void MenuTouchWindow::update(int dt)
     void *appData = _mtw_AppMgr_GetApplicationData();
     unsigned char busy = this->dlcMessageShowing;
 
-    if (busy != 0 || this->field_0x190 != 0) {
+    if (busy != 0 || this->purchaseRestorePending != 0) {
         // a purchase flow is active: maybe rebuild list geometry
         if (*(char *)((char *)appData + 0x40) != 0) {
             int *layout = (int *)*(void **)gUpLayout;
@@ -1194,11 +1194,11 @@ void MenuTouchWindow::update(int dt)
                 void *cw = this->choiceWindow;
                 void *s = _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[0]);
                 _mtw_ChoiceWindow_set(cw, s);
-                this->field_0x17d = 1;
+                this->dlcErrorDialogShowing = 1;
                 this->messageShowing = 1;
                 this->dlcMessageShowing = 0;
                 *(char *)((char *)appData + 0x42) = 0;
-                this->field_0x190 = 0;
+                this->purchaseRestorePending = 0;
             }
         }
     }
@@ -1245,12 +1245,12 @@ void MenuTouchWindow::update(int dt)
         this->messageShowing = 1;
         *(char *)((char *)appData + 0x41) = 0;
         handled = true;
-    } else if (this->field_0x190 != 0 && *(char *)((char *)appData + 0x41) != 0) {
+    } else if (this->purchaseRestorePending != 0 && *(char *)((char *)appData + 0x41) != 0) {
         _mtw_RecordHandler_saveOptions(*(void **)gUpRecHandler);
-        if (this->field_0x190 != 0) {
+        if (this->purchaseRestorePending != 0) {
             void *cw = this->choiceWindow;
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[6]));
-            this->field_0x190 = 0;
+            this->purchaseRestorePending = 0;
         }
         this->dlcResultDialogShowing = 1;
         this->dlcMessageShowing = 0;
@@ -1267,7 +1267,7 @@ void MenuTouchWindow::update(int dt)
         if (this->messageShowing == 0 && *(char *)((char *)flags + 0x35) == 0) {
             void *cw = this->choiceWindow;
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, g_mtw_upTextIds[7]));
-            this->field_0x181 = 1;
+            this->supernovaPurchaseDialogShowing = 1;
             this->messageShowing = 1;
             *(char *)((char *)flags + 0x35) = 1;
             _mtw_Status_setSystemVisibility(*(void **)gUpStatusObj, 0x19, true);
@@ -1337,7 +1337,7 @@ void MenuTouchWindow::update(int dt)
                 void *cw = this->choiceWindow;
                 int id = (r == 2) ? g_mtw_upTextIds[8] : g_mtw_upTextIds[9];
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **)gUpGameText, id));
-                this->field_0x189 = 0;
+                this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
                 appData = _mtw_AppMgr_GetApplicationData();
                 *(char *)((char *)appData + 0xc) = 0;

@@ -329,7 +329,7 @@ Layout::Layout() {
         this->field_0x304 = 0x1ec;
         cwTitle = 0x15f;
     }
-    this->field_0x308 = cwTitle;
+    this->choiceWindowTitleHeight = cwTitle;
 
     // Choice-button offsets group.
     int b318;
@@ -362,15 +362,15 @@ Layout::Layout() {
     // Help-window position.
     if (!hd) {
         if (wide) {
-            this->field_0x31c = (*g_cfgD != 0) ? 0x76 : 0xec;
-            this->field_0x320 = 0;
+            this->helpWindowX = (*g_cfgD != 0) ? 0x76 : 0xec;
+            this->helpWindowY = 0;
         } else {
-            this->field_0x31c = 0x1d8;
-            this->field_0x320 = 0x120;
+            this->helpWindowX = 0x1d8;
+            this->helpWindowY = 0x120;
         }
     } else {
-        this->field_0x31c = 0x14b;
-        this->field_0x320 = 0xca;
+        this->helpWindowX = 0x14b;
+        this->helpWindowY = 0xca;
     }
 }
 
@@ -620,7 +620,7 @@ void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     thumb = thumb + handle * -4;
     off = off + handle * 2;
     if (ih * 2 < thumb) {
-        this->drawBGPattern(this->field_0x378, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
+        this->drawBGPattern(this->scrollBarFillImage, x + 1 + handle, ih + y + off, iw, thumb + ih * -2);
         handle = this->scrollBarHandle;
     } else {
         int lim = trackH + ih * -2;
@@ -970,7 +970,7 @@ void Layout::reload() {
     this->loadImage(canvas, 0x4fe, &this->footerImageRight);
     this->loadImage(canvas, 0x482, &this->field_0x348);
     this->loadImage(canvas, 0x481, &this->field_0x34c);
-    this->loadImage(canvas, 0x486, &this->field_0x378);
+    this->loadImage(canvas, 0x486, &this->scrollBarFillImage);
     this->loadImage(canvas, 0x487, &this->scrollBarImage);
     this->loadImage(canvas, 0x48b, &this->field_0x37c);
     this->loadImage(canvas, 0x52d, &this->field_0x3a4);

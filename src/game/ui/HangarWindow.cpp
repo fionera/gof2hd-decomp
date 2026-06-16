@@ -215,10 +215,10 @@ void HangarWindow::render() {
                     int rows = IDIV(*g_hw_screenHeight, 1);
                     int y = 0;
                     for (int r = 0; r <= rows; r++) {
-                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0xf0,
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->hintImage,
                             (layout->field_0x28 - iw) + this->hintOffsetX, y, (unsigned char)1);
                         int off = (scrollPx < 1) ? 0 : (layout->field_0x48 + layout->field_0x2c);
-                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0xf0,
+                        ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->hintImage,
                             this->hintOffsetX + layout->field_0x28 + topY + off, y, (unsigned char)0);
                         y += ih;
                     }
@@ -289,10 +289,10 @@ void HangarWindow::render() {
                             ((ListItem *)li)->bluePrint->getIndex();
                             float rate = ((ListItem *)li)->bluePrint->getCompletionRate();
                             if (rate > 0.0f) {
-                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->field_0x78,
+                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->progressBarBgImage,
                                     layout->field_0x28 + contentBase + 2 + this->hintOffsetX, 0, (unsigned char)0);
                                 float dcw = (float)this->progressBarWidth;
-                                ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)this->field_0x7c, 0, 0,
+                                ((PaintCanvas *)canvas)->DrawRegion2D((unsigned)this->progressBarFillImage, 0, 0,
                                     (int)(rate * dcw), this->progressBarHeight, (float)(int)(rate * dcw),
                                     0, 0, 0,
                                     layout->field_0x28 + contentBase + 3 + this->hintOffsetX);
@@ -531,14 +531,14 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 if (row < self->hangarList->getCurrentLength()) {
                     self->hangarList->setCurrentItemIndex(row);
                     if (self->currentItemIsHighlighted() != 0 &&
-                        self->field_0xd2 != 0) {
+                        self->sellConfirmPending != 0) {
                         self->setSellMode();
                         self->setSellMode();
                     }
                 }
             }
-            if (self->field_0xd2 != 0) {
-                self->field_0xd2 = 0;
+            if (self->sellConfirmPending != 0) {
+                self->sellConfirmPending = 0;
                 return;
             }
 
@@ -799,7 +799,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         // is delegated to a helper because its decompile is unrecoverable.
         int r = self->dialog->OnTouchEnd(touch, coord);
         bool special = globals->field_0x114 == 3 && self->upgradeMode == 0;
-        if (special && self->field_0x91 != 0 && r == 1) {
+        if (special && self->dlcMenuPending != 0 && r == 1) {
             int idx = globals->field_0x14c;
             gStatus->getShip()->getIndex();
             if (((Station *)((void *)(uintptr_t)idx))->hasShip(gStatus->getShip()->getIndex()) == 0) {
@@ -875,7 +875,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             self->buyMode = 0;
             self->dialogActive = 0;
         } else if (r2 == 0) {
-            if (self->field_0x130 == 0) {
+            if (self->routeWarningPending == 0) {
                 self->dialogActive = 0;
                 if (self->autoEquipped == 0) {
                     self->buyMode = 1;
@@ -887,7 +887,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 return;
             }
             self->dialogActive = 0;
-            self->field_0x130 = 0;
+            self->routeWarningPending = 0;
             self->buyMode = 0;
         } else {
             return;
@@ -989,7 +989,7 @@ int HangarWindow::highlightItem(ListItem *item) {
             flag = item->isTextButton() ^ 1;
         }
         this->selectedItem = item;
-        this->field_0xd2 = flag;
+        this->sellConfirmPending = flag;
         if (item->isShip() != 0) {
             this->selectedItem->ship->adjustPrice();
         }
@@ -1038,7 +1038,7 @@ void HangarWindow::buildMissionOffer(int touch, int coord)
         } else {
             if (buyResult != 0)
                 return;
-            if (self->field_0x130 == 0) {
+            if (self->routeWarningPending == 0) {
                 self->dialogActive = 0;
                 if (self->autoEquipped == 0) {
                     self->buyMode = 1;
@@ -1051,7 +1051,7 @@ void HangarWindow::buildMissionOffer(int touch, int coord)
                 return;
             }
             self->dialogActive = 0;
-            self->field_0x130 = 0;
+            self->routeWarningPending = 0;
             self->buyMode = 0;
         }
         self->selectedItem = 0;
@@ -1459,7 +1459,7 @@ void HangarWindow::setSellMode() {
                 text = ((GameText *)(*g_hw_sellTextId2))->getText();
                 flag = true;
             } else {
-                self->field_0x130 = 1;
+                self->routeWarningPending = 1;
                 text = ((GameText *)(*g_hw_routesTextId))->getText();
                 flag = false;
             }
@@ -1907,7 +1907,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
             for (unsigned int i = 0; i < buttons->size(); i++)
                 buttons->data()[i]->OnTouchMove(touch);
             this->setSellMode();
-            this->field_0xd2 = 0;
+            this->sellConfirmPending = 0;
             this->selectedItem = 0;
             ((TouchButton *)(btnUp))->resetTouch();
             ((TouchButton *)(btnDown))->resetTouch();
@@ -2091,8 +2091,8 @@ void HangarWindow::initialize() {
     }
 
     *(unsigned int *)*g_hw_imageCountSlot = tabArr->size();
-    gCanvas->Image2DCreate((unsigned short)(0x52e), (unsigned int *)((unsigned int *)((char *)self + 0xe8)));
-    gCanvas->Image2DCreate((unsigned short)(0x544), (unsigned int *)((unsigned int *)((char *)self + 0xec)));
+    gCanvas->Image2DCreate((unsigned short)(0x52e), (unsigned int *)(&self->blueprintIconImage));
+    gCanvas->Image2DCreate((unsigned short)(0x544), (unsigned int *)(&self->pendingIconImage));
 
     // Action button bank (24 entries).
     self->buttons = new Array<TouchButton*>();
@@ -2193,8 +2193,8 @@ void HangarWindow::initialize() {
         (*self->buttons)[(0x44) >> 2]->setVisible(false);
     }
 
-    gCanvas->Image2DCreate((unsigned short)(0x233e), (unsigned int *)((unsigned int *)((char *)self + 0x34)));
-    gCanvas->Image2DCreate((unsigned short)(0x233f), (unsigned int *)((unsigned int *)((char *)self + 0x38)));
+    gCanvas->Image2DCreate((unsigned short)(0x233e), (unsigned int *)(&self->scrollHintImageA));
+    gCanvas->Image2DCreate((unsigned short)(0x233f), (unsigned int *)(&self->scrollHintImageB));
     {
         String lbl;
         void *btn = ::operator new(200);
@@ -2226,9 +2226,9 @@ void HangarWindow::initialize() {
     self->gridSpacingX = (int)((float)(-self->buttonWidth) * g_hw_posScale);
     self->gridSpacingY = (int)((float)(-h) * g_hw_posScale);
 
-    gCanvas->Image2DCreate((unsigned short)(0x475), (unsigned int *)((unsigned int *)((char *)self + 0x78)));
-    gCanvas->Image2DCreate((unsigned short)(0x476), (unsigned int *)((unsigned int *)((char *)self + 0x7c)));
-    gCanvas->Image2DCreate((unsigned short)(0x477), (unsigned int *)((unsigned int *)((char *)self + 0x74)));
+    gCanvas->Image2DCreate((unsigned short)(0x475), (unsigned int *)(&self->progressBarBgImage));
+    gCanvas->Image2DCreate((unsigned short)(0x476), (unsigned int *)(&self->progressBarFillImage));
+    gCanvas->Image2DCreate((unsigned short)(0x477), (unsigned int *)(&self->progressBarBorderImage));
     self->progressBarWidth = gCanvas->GetImage2DWidth(0);
     self->progressBarHeight = gCanvas->GetImage2DHeight(0);
 
@@ -2277,7 +2277,7 @@ void HangarWindow::initialize() {
     self->repeatTimer = 0;
     self->pendingMountItem = 0;
     self->pendingDemountItem = 0;
-    self->field_0x130 = 0;
+    self->routeWarningPending = 0;
     self->suppressTouchEnd = 0;
     self->autoCompletePending = 0;
     self->autoEquipped = 0;
@@ -2307,7 +2307,7 @@ void HangarWindow::initialize() {
 
     int extra = 0;
     if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-        gCanvas->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)((unsigned int *)((char *)self + 0xf0)));
+        gCanvas->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)(&self->hintImage));
         extra = (int)((float)(*g_hw_screenWidth) * g_hw_posScale);
     }
     self->selectedItem = 0;
@@ -2315,7 +2315,7 @@ void HangarWindow::initialize() {
     self->buyMode = 0;
     self->bluePrintPurchasePending = 0;
     self->shipSwapPending = 0;
-    self->field_0x92 = 0;
+    self->swapConfirmFlag = 0;
 
     // Zero the 16-byte block at 0xc1 and the touch-drag block at 0xb4.
     self->field_0xc1 = 0;
@@ -2363,7 +2363,7 @@ HangarWindow::HangarWindow() {
     this->dialog = nullptr;
     this->localBluePrint = 0;
     *g_hw_openCounter = 1;
-    this->field_0x130 = 0;
+    this->routeWarningPending = 0;
     this->dragging = 0;
     this->tabButtons = nullptr;
     this->buttons = nullptr;

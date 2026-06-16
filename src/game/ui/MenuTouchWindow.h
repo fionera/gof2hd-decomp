@@ -12,7 +12,7 @@
 class MenuTouchWindow {
 public:
     uint8_t        cinematicSteerActive;     // steer engaged (set when Layout consumes touch in state 0xd)
-    uint8_t        field_0x1;                // flag cleared at OnTouchEnd start
+    uint8_t        pendingActivate;          // +0x1 set when Layout consumes touch in state 0xd, cleared at OnTouchEnd start
     uint8_t        pad_0x2[2];
     Array<void *> *buttons;                  // Array<TouchButton*>* top-level menu buttons
     int            cinematicTouchIdA;        // cinematic touch id A
@@ -23,7 +23,7 @@ public:
     uint8_t        pad_0x1c[0x74];
     int            cinematicAnchorA;         // cinematic touch x anchor A
     int            cinematicAnchorB;         // cinematic touch x anchor B
-    unsigned short field_0x98;               // cinematic touch state bits
+    unsigned short cinematicTouchState;      // +0x98 cinematic touch state bits
     uint8_t        pad_0x9a[2];
     Array<void *> *previewStrings0;          // Array<String*>* (load/save text rows)
     Array<void *> *previewStrings1;          // Array<String*>*
@@ -67,8 +67,8 @@ public:
     int            menuState;                // current menu state
     uint8_t        messageShowing;           // a ChoiceWindow dialog is up
     uint8_t        pad_0x171[2];
-    uint8_t        field_0x173;              // saved-game dialog flag
-    uint8_t        field_0x174;              // return-to-menu sub-flag
+    uint8_t        saveDialogShowing;        // +0x173 saved-game dialog flag
+    uint8_t        returnToMenuSubFlag;      // +0x174 return-to-menu sub-flag
     uint8_t        pad_0x175[2];
     uint8_t        quitConfirmShowing;       // quit-confirmation dialog
     uint8_t        returnToMenuShowing;      // return-to-menu confirmation
@@ -76,19 +76,19 @@ public:
     uint8_t        dlcMessageShowing;        // DLC/purchase dialog (busy)
     uint8_t        pad_0x17b;
     uint8_t        dlcResultDialogShowing;   // DLC purchase-result dialog
-    uint8_t        field_0x17d;              // DLC error dialog
-    uint8_t        field_0x17e;              // load-failed dialog
-    uint8_t        field_0x17f;              // generic confirm A
+    uint8_t        dlcErrorDialogShowing;    // +0x17d DLC error dialog
+    uint8_t        loadFailedDialogShowing;  // +0x17e load-failed dialog
+    uint8_t        genericConfirmA;          // +0x17f generic confirm A
     uint8_t        supernovaMessageShowing;  // supernova nag dialog
-    uint8_t        field_0x181;              // supernova-purchase dialog
+    uint8_t        supernovaPurchaseDialogShowing; // +0x181 supernova-purchase dialog
     uint8_t        pad_0x182[2];
     int            screenshotState;          // -1 while making screenshot
     uint8_t        pad_0x188;
-    uint8_t        field_0x189;              // store-init dialog flag
+    uint8_t        storeInitDialogShowing;   // +0x189 store-init dialog flag
     uint8_t        pad_0x18a[2];
     int            selectedRow;              // currently selected list row
-    uint8_t        field_0x190;              // purchase-restore pending
-    uint8_t        field_0x191;              // generic confirm B
+    uint8_t        purchaseRestorePending;   // +0x190 purchase-restore pending
+    uint8_t        genericConfirmB;          // +0x191 generic confirm B
     uint8_t        pad_0x192[2];
     int            scrollOffset;             // scroll Y offset (also read as float)
     int            listX;                    // list left coordinate
@@ -104,9 +104,9 @@ public:
     int            metricC;                  // layout metric
     uint8_t        field_0x1c4;              // init-only flag
     uint8_t        pad_0x1c5[0x14];
-    uint8_t        field_0x1d9;              // scrollbar-hit flag (state 0xf)
+    uint8_t        scrollbarHit;             // +0x1d9 scrollbar-hit flag (state 0xf)
     uint8_t        pad_0x1da;
-    uint8_t        field_0x1db;              // list-state suppress flag
+    uint8_t        listStateSuppress;        // +0x1db list-state suppress flag
     uint8_t        pad_0x1dc[4];
     int            field_0x1e0;              // init-only
     int            contentHeightCache;       // image height cache (state 0xf)

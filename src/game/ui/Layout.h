@@ -83,13 +83,13 @@ public:
     int field_0x2fc;
     int field_0x300;
     int field_0x304;
-    int field_0x308;
+    int choiceWindowTitleHeight;        // +0x308  choice-window title-bar height
     int field_0x30c;
     int field_0x310;
     int field_0x314;
     int field_0x318;
-    int field_0x31c;
-    int field_0x320;
+    int helpWindowX;                    // +0x31c  help-window X position
+    int helpWindowY;                    // +0x320  help-window Y position
     unsigned bgPatternImage;
     unsigned headerPatternImage;        // header bar fill pattern
     unsigned headerIconImage;           // header/title icon image
@@ -111,7 +111,7 @@ public:
     unsigned field_0x36c;
     unsigned field_0x370;
     int scrollBarImage;
-    unsigned field_0x378;
+    unsigned scrollBarFillImage;        // +0x378  scrollbar thumb fill pattern
     unsigned field_0x37c;               // image; loaded in reload
     unsigned field_0x380;
     int field_0x384;
