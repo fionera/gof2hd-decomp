@@ -19,21 +19,21 @@ class Mesh;
 
 class CubeMapping : public ShaderBaseStruct {
 public:
-    int aPosition;        // a0 (position)
-    int aNormal;          // a1 (normal)
-    int aTexCoord;        // a2 (texcoord)
-    int uMvp;             // u0 (mvp)
-    int uNormalMatrix;    // u1 (normal matrix)
-    int uniform2;         // u2
-    int uniform3;         // u3
-    int uniform5;         // u5
-    int uniform4;         // u4
-    int uniform6;         // u6
-    int uniform7;         // u7
-    int uniform8;         // u8
-    int uniform9;         // u9
-    int uniform10;        // u10
-    int uniform11;        // u11
+    int aPosition;        // +0x20  a0 (position attribute location)
+    int aNormal;          // +0x24  a1 (normal attribute location)
+    int aTexCoord;        // +0x28  a2 (texcoord attribute location)
+    int uMvp;             // +0x2c  u0 (mvp matrix uniform)
+    int uNormalMatrix;    // +0x30  u1 (normal matrix uniform)
+    int uniform2;         // +0x34  u2
+    int uniform3;         // +0x38  u3
+    int uniform5;         // +0x3c  u5
+    int uniform4;         // +0x40  u4
+    int uniform6;         // +0x44  u6
+    int uniform7;         // +0x48  u7
+    int uniform8;         // +0x4c  u8
+    int uniform9;         // +0x50  u9
+    int uniform10;        // +0x54  u10
+    int uniform11;        // +0x58  u11
 
     CubeMapping();
     void Init(Engine *engine);

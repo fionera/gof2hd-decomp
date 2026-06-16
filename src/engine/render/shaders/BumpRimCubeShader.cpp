@@ -63,11 +63,10 @@ void BumpRimCubeShader::Init(Engine *)
     this->uLodDist = glGetUniformLocation(this->program, "u25");
 
     glUseProgram(this->program);
-    for (int i = 0; i != 2; i++) {
-        int loc = (&this->uTexDiffuse)[i]; // uTexDiffuse, uTexNormal (adjacent samplers)
-        if (loc >= 0)
-            glUniform1i(loc, i);
-    }
+    if (this->uTexDiffuse >= 0)
+        glUniform1i(this->uTexDiffuse, 0);
+    if (this->uTexNormal >= 0)
+        glUniform1i(this->uTexNormal, 1);
     glUniform1i(this->uTexCube, 7);
 }
 
