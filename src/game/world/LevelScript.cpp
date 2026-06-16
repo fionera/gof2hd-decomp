@@ -67,7 +67,7 @@ void LevelScript::render3D()
         m_pExplosion->render();
     }
 
-    if (field_0xa8 && m_pParticleGeom0) {
+    if (m_bRenderParticles && m_pParticleGeom0) {
         RenderProc render = gRenderProc;
         render(m_pParticleGeom0);
         render(m_pParticleGeom1);
@@ -195,8 +195,8 @@ void LevelScript::skipCutscene()
                 ((RadioMessage*)((*messages)[i]))->finish();
             }
 
-            field_0x90 = 0x7d1;
-            field_0x94 = 0;
+            m_nScriptTimerA = 0x7d1;
+            m_nScriptCounterA = 0;
 
             LevelListProc getList = gLevelListProc;
             void* list = getList(m_pLevel);
@@ -223,13 +223,13 @@ void LevelScript::skipCutscene()
                 messages = m_pLevel->getMessages();
                 ((RadioMessage*)((*messages)[i]))->finish();
             }
-            field_0x90 = 0x4651;
-            field_0x94 = 0;
+            m_nScriptTimerA = 0x4651;
+            m_nScriptCounterA = 0;
             m_nState = 4;
         }
     } else if (mission == 0x9e) {
-        field_0x98 = 0x2ee1;
-        field_0x9c = 0;
+        m_nScriptTimerB = 0x2ee1;
+        m_nScriptCounterB = 0;
         for (int i = 0; i != 3; ++i) {
             Array<void*>* messages = m_pLevel->getMessages();
             ((RadioMessage*)((*messages)[i]))->trigger();
@@ -297,9 +297,9 @@ LevelScript::LevelScript(Level* level, Hud* hud, Radar* radar, TargetFollowCamer
     m_nFlags = 0x100;
 
     field_0x8c = 0;
-    field_0x90 = 0;
-    field_0x94 = 0;
-    field_0x98 = 0;
+    m_nScriptTimerA = 0;
+    m_nScriptCounterA = 0;
+    m_nScriptTimerB = 0;
     m_pParticleGeom0 = 0;
     m_pParticleGeom1 = 0;
     m_pParticleGeom2 = 0;
@@ -330,8 +330,8 @@ LevelScript::LevelScript(Level* level, Hud* hud, Radar* radar, TargetFollowCamer
     ((PlayerEgo*)player)->setCollide(false);
 
     if (gStatus->getCurrentCampaignMission() == 0) {
-        field_0x90 = 0;
-        field_0x94 = 0;
+        m_nScriptTimerA = 0;
+        m_nScriptCounterA = 0;
         m_bStartSequenceOver = 1;
         camera->setLookAtCam(true);
     }

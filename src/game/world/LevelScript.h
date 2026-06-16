@@ -39,13 +39,13 @@ public:
     int             field_0x48;
     Matrix          m_matrix;
     int             field_0x8c;
-    int             field_0x90;            // mission script timer
-    int             field_0x94;            // mission script counter
-    int             field_0x98;            // mission script timer
-    int             field_0x9c;
+    int             m_nScriptTimerA;       // +0x90 mission script timer
+    int             m_nScriptCounterA;     // +0x94 mission script counter
+    int             m_nScriptTimerB;       // +0x98 mission script timer
+    int             m_nScriptCounterB;     // +0x9c mission script counter
     int             field_0xa0;
     int             field_0xa4;
-    uint8_t         field_0xa8;            // enables the particle render pass
+    uint8_t         m_bRenderParticles;    // +0xa8 enables the particle render pass
     AEGeometry*     m_pParticleGeom0;
     AEGeometry*     m_pParticleGeom1;
     AEGeometry*     m_pParticleGeom2;

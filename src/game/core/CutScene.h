@@ -20,9 +20,9 @@ public:
     Level                  *level;          // self-contained cinematic level
     float                   cameraRotX;     // camera X-rotation accumulator
     Vector                  vec8;           // zero-initialized vector blob
-    float                   field_0x14;     // fourth word of the zero-init block
-    int                     field_0x18;
-    int                     field_0x1c;
+    float                   vec8w;          // fourth word of the zero-init block
+    int                     shipPosY;       // ship spawn offset (DeepOpen shipPosY)
+    int                     shipPosZ;       // ship spawn offset (DeepOpen shipPosZ)
     AEGeometry             *rootGeom;       // scene root geometry
     float                   rotationSpeed;  // per-frame rotation factor
     AEGeometry             *geom28;         // cinematic geometry
@@ -30,10 +30,10 @@ public:
     AEGeometry             *geom30;         // cinematic geometry
     AEGeometry             *geom34;         // cinematic geometry
     Array<AEGeometry *>    *geometries;     // owned AEGeometry array
-    uint32_t                field_0x40;     // current time low word
-    uint32_t                field_0x44;     // current time high word
-    uint32_t                prevTimeLo;     // previous-frame time low word
-    uint32_t                field_0x4c;     // previous-frame time high word
+    uint32_t                renderAtTimeLo; // current-frame time low word (renderAtTime)
+    uint32_t                renderAtTimeHi; // current-frame time high word
+    uint32_t                prevTimeLo;     // previous-frame time low word (lastRenderAtTime)
+    uint32_t                prevTimeHi;     // previous-frame time high word
     uint32_t                accumLo;        // 64-bit elapsed accumulator low
     uint32_t                accumHi;        // 64-bit elapsed accumulator high
     uint32_t                frameDelta;     // current frame delta (ms)

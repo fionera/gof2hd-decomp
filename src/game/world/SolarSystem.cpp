@@ -10,7 +10,7 @@ using AbyssEngine::String;
 // station-id, linked-system and forbidden-goods lists. The display name is copied.
 SolarSystem::SolarSystem(int unk0, const String& displayName, int security,
                          bool isVisible, int factionId, int x, int y, int z,
-                         int jumpgateId, int texture, int* unkTriple,
+                         int jumpgateId, int texture, int* starRGB,
                          Array<int>* stations, Array<int>* linkedSystems,
                          Array<int>* forbidden)
 {
@@ -24,9 +24,9 @@ SolarSystem::SolarSystem(int unk0, const String& displayName, int security,
     this->mapZ = z;
     this->jumpgateStationId = jumpgateId;
     this->textureIndex = texture;
-    this->field_0x0 = unkTriple[0];
-    this->field_0x4 = unkTriple[1];
-    this->field_0x8 = unkTriple[2];
+    this->starR = starRGB[0];
+    this->starG = starRGB[1];
+    this->starB = starRGB[2];
     this->stationIds = stations;
     this->forbiddenGoods = forbidden;
     this->linkedSystemIds = linkedSystems;

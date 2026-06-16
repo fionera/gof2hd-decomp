@@ -53,8 +53,8 @@ extern "C" void *Globals_getShipGroup(void *globals, int type, int slot, bool fl
 
 CutScene::CutScene(int mode)
 {
-    this->field_0x18 = 0;
-    this->field_0x1c = 0;
+    this->shipPosY = 0;
+    this->shipPosZ = 0;
     this->mode = mode;
     this->level = nullptr;
     this->turretGeom = nullptr;
@@ -64,7 +64,7 @@ CutScene::CutScene(int mode)
     this->initialized = 0;
     this->geometries = nullptr;
     this->vec8 = Vector{0.0f, 0.0f, 0.0f};
-    this->field_0x14 = 0.0f;
+    this->vec8w = 0.0f;
     this->geom28 = nullptr;
     this->geom2c = nullptr;
     this->geom30 = nullptr;
@@ -152,10 +152,10 @@ void CutScene::process(int /*delta*/)
     this->accumLo = lo + dt;
     this->accumHi = this->accumHi + ((int)dt >> 31) + (lo + dt < lo ? 1u : 0u);
     this->frameDelta = dt;
-    this->field_0x40 = now & 0xffff;
-    this->field_0x44 = 0;
+    this->renderAtTimeLo = now & 0xffff;
+    this->renderAtTimeHi = 0;
     this->prevTimeLo = now & 0xffff;
-    this->field_0x4c = 0;
+    this->prevTimeHi = 0;
 
     if (this->followCamera != nullptr)
         this->followCamera->update((int)this->frameDelta);
@@ -529,10 +529,10 @@ void CutScene::initialize()
 
     unsigned int now = (unsigned int)gAppManager->GetCurrentTimeMillis();
     this->initialized = 1;
-    this->field_0x40 = now & 0xffff;
-    this->field_0x44 = 0;
+    this->renderAtTimeLo = now & 0xffff;
+    this->renderAtTimeHi = 0;
     this->prevTimeLo = now & 0xffff;
-    this->field_0x4c = 0;
+    this->prevTimeHi = 0;
 }
 
 void CutScene::resetCamera()

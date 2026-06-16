@@ -1,14 +1,14 @@
 #include "game/world/NewsItem.h"
 
-NewsItem::NewsItem(int id, bool flag, void *data, int length, int field_0x10, int field_0x14)
+NewsItem::NewsItem(int id, bool flag, void *data, int length, int minLevel, int maxLevel)
 {
     this->flag = (uint8_t)flag;
     this->id = id;
     this->data = data;
     this->length = length;
-    this->field_0x10 = field_0x10;
-    this->field_0x14 = field_0x14;
-    this->field_0x18 = 0;
+    this->minLevel = minLevel;
+    this->maxLevel = maxLevel;
+    this->used = 0;
 }
 
 NewsItem::~NewsItem()
@@ -26,6 +26,6 @@ NewsItem *NewsItem::clone()
         buf[i] = ((uint8_t *)this->data)[i];
     }
     NewsItem *out = new NewsItem(this->id, this->flag != 0, buf, len,
-                                this->field_0x10, this->field_0x14);
+                                this->minLevel, this->maxLevel);
     return out;
 }

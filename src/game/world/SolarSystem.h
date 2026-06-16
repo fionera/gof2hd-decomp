@@ -12,9 +12,9 @@ class Station;
 
 class SolarSystem {
 public:
-    int field_0x0;
-    int field_0x4;
-    int field_0x8;
+    int starR;   // +0x0
+    int starG;   // +0x4
+    int starB;   // +0x8
     AbyssEngine::String name;
     int systemId;
     int securityLevel;
@@ -31,7 +31,7 @@ public:
 
     SolarSystem(int unk0, const AbyssEngine::String& displayName, int security,
                 bool isVisible, int factionId, int x, int y, int z,
-                int jumpgateId, int texture, int* unkTriple,
+                int jumpgateId, int texture, int* starRGB,
                 Array<int>* stations, Array<int>* linkedSystems, Array<int>* forbidden);
     ~SolarSystem();
 
