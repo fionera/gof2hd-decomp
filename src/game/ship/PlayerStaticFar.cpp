@@ -106,7 +106,7 @@ void PlayerStaticFar::update(int /*delta*/)
 
 // collide(x,y,z): true iff (x,y,z) lies strictly inside the +/- bound box centered
 // at the stored integer position, where bound is the player's radius in world units.
-bool PlayerStaticFar::collide(float x, float y, float z)
+int PlayerStaticFar::collide(float x, float y, float z)
 {
     int   boundI   = this->player->radius;
     float bound    = (float)boundI;

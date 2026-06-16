@@ -320,6 +320,11 @@ uint8_t KIPlayer::isJumper() {
     return this->jumperFlag;
 }
 
+// slot +0x38: a bare actor has no collision shape of its own; subclasses override.
+int KIPlayer::collide(float, float, float) {
+    return 0;
+}
+
 // slot +0x40: unpack the vector and dispatch to the polymorphic float form (slot +0x3c).
 int KIPlayer::outerCollide(const Vector& v) {
     return this->outerCollide(v.x, v.y, v.z);

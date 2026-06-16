@@ -144,7 +144,7 @@ public:
     void reset();
     void revive();
     void cloak(int dur, bool b);
-    int collide(float x, float y, float z);
+    int collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void handleCloaking();
     uint8_t hasCrateCaptured();
     uint8_t hasCrateLost();

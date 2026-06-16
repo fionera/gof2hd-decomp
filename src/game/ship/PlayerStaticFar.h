@@ -39,7 +39,7 @@ public:
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
     Vector getInitPosition();
     void   update(int delta);
-    bool   collide(float x, float y, float z);
+    int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
 };
 
 #endif

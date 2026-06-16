@@ -43,7 +43,7 @@ public:
     int    outerCollide(const Vector &position) override;       // slot +0x40
     int    outerCollide(float x, float y, float z) override;    // slot +0x3c
     Vector getPosition();
-    bool   collide(float x, float y, float z);
+    int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void   update(int delta);
     void   translate(float x, float y, float z);
 };

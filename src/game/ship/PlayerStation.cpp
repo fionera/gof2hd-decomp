@@ -116,7 +116,7 @@ Vector PlayerStation::getPosition()
     return this->rootGeometry->getPosition();
 }
 
-bool PlayerStation::collide(float x, float y, float z)
+int PlayerStation::collide(float x, float y, float z)
 {
     return this->outerCollide(x, y, z);
 }

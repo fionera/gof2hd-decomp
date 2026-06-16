@@ -60,7 +60,7 @@ public:
     void   update(int delta);
     Vector getProjectionVector(const Vector& value);
     void   setAsteroidCenter(Vector center);
-    bool   collide(float x, float y, float z);
+    int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void   push(int delta);
     void   initPush(const Vector& target, int duration);
 

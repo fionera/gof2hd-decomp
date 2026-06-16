@@ -73,7 +73,7 @@ public:
                       float x, float y, float z);
     ~PlayerFixedObject();
 
-    int collide(float x, float y, float z);
+    int collide(float x, float y, float z) override;   // actor vtable slot +0x38
     void ctor(int kind, int param2, void *player, void *geom, float x, float y, float z);
     int getDockingType();
     String getName();

@@ -227,7 +227,7 @@ void PlayerAsteroid::setAsteroidCenter(Vector center)
     g_playerAsteroidCenterLength = (int)VectorLength(center);
 }
 
-bool PlayerAsteroid::collide(float x, float y, float z)
+int PlayerAsteroid::collide(float x, float y, float z)
 {
     if (this->player->getHitpoints() <= 0)
         return false;
