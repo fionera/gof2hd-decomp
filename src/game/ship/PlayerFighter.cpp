@@ -164,8 +164,13 @@ uint8_t PlayerFighter::hasCrateCaptured() {
     return this->crateCaptured == 0;
 }
 
-// setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 with the
-// three unpacked vector components.
+// setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 (= the
+// float setPosition3, Ghidra-confirmed) with the three unpacked components.
+// KEPT as explicit slot dispatch: the actor hierarchy's recovered method
+// signatures are inconsistent (PlayerFighter::setPosition3 is declared int,int,int
+// while the base virtual is float,float,float), so a named `this->setPosition3()`
+// would bind to the int-truncating hider, not slot 0x48. Convert only after a
+// hierarchy-wide signature-unification pass (which must be behaviour-tested).
 typedef void (*SetPosFn)(PlayerFighter *, float, float, float);
 
 void PlayerFighter::setPosition_ref(const Vector &v) {
@@ -692,7 +697,6 @@ extern void *const gIP_guard __attribute__((visibility("hidden")));
 extern const float gIP_strength __attribute__((visibility("hidden")));
 extern void *const gIP_rngFn __attribute__((visibility("hidden")));     // DAT_000efdc0 (fn ptr)
 
-typedef void (*GetPosFn)(void *outVec, PlayerFighter *self);
 typedef int (*RngFn)(int rng, int bound);
 
 // PlayerFighter::initPush(Vector const& target, int radius) — target in r1, radius in r2.
@@ -700,10 +704,10 @@ void PlayerFighter::initPush(void *target, int radius) {
     int *guardP = *(int **)gIP_guard;
     volatile int saved = *guardP;
 
-    // pos = this->getPosition()  (vtable slot +0x28)
-    GetPosFn getPos = *(GetPosFn *)(*(char **)this + 0x28);
-    float pos[3];
-    getPos(pos, this);
+    // pos = this->getPosition() — PlayerFighter inherits KIPlayer::getPosition
+    // (binary vtable slot +0x28 resolves to KIPlayer::getPosition for a PlayerFighter).
+    AbyssEngine::AEMath::Vector gp = this->getPosition();
+    float pos[3] = { gp.x, gp.y, gp.z };
 
     float diff[3];
     AEMath_VectorSub(diff, target, pos);   // diff = pos - target
@@ -715,8 +719,8 @@ void PlayerFighter::initPush(void *target, int radius) {
     this->pushTimer = strength;
     this->pushDuration = strength;
 
-    float pos2[3];
-    getPos(pos2, this);
+    AbyssEngine::AEMath::Vector gp2 = this->getPosition();
+    float pos2[3] = { gp2.x, gp2.y, gp2.z };
     float dir[3];
     AEMath_VectorSub(dir, pos, pos2);
     float norm[3];
