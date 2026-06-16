@@ -219,7 +219,7 @@ int Mission::getCosts() {
 }
 
 void Mission::setCosts(int costs) {
-    this->field_0x34 = costs;
+    this->costsValue = costs;
 }
 
 int Mission::getBonus() {

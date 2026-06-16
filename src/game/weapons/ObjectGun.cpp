@@ -77,7 +77,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->useEgoOrientation = 0;
     this->explosions = nullptr;
     this->explosionReady = nullptr;
-    this->field_0x4 = -1;
+    this->unusedSlot = -1;
     this->gun = gun;
     this->level = level;
     this->secondaryTransform = -1;

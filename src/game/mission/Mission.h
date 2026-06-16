@@ -23,7 +23,7 @@ public:
     int clientImage;
     int clientRace;
     int costs;                   // reward / costs slot (getReward/getCosts read this)
-    int field_0x34;              // separate costs slot (setCosts writes this)
+    int costsValue;              // +0x34 separate costs slot (setCosts writes this)
     int bonus;
     int targetStation;
     String targetStationName;

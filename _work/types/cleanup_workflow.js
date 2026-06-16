@@ -78,6 +78,9 @@ CROSS-TU SAFETY (critical — other TUs read this class by member name):
     * If an external reader DOES exist: keep the old name working with a union alias so those TUs keep compiling:
           union { Type semanticName; uint32_t field_0xNN; };   // or matching old type/size
     Brand-new members (only ever accessed via a raw cast in the .cpp) never need an alias.
+  - INHERITANCE: if THIS class is a base class, derived classes access your members as 'this->field_0xNN' in THEIR
+    .cpp files. Your external-reader grep above will surface those lines too — treat them as readers (alias, or fix is
+    handled by the derived class's own pass). Never assume a 'this->field_0xNN' hit in another TU is that TU's own field.
   - Do NOT change this class's method signatures, ctor/dtor names, or public method set — that breaks callers.
   - Do NOT rename or retype members of OTHER classes. If you read e.g. engine->field_0x2fc or mesh->field_0xNN
     (a field of a different class), LEAVE it exactly as-is — that owning class gets cleaned separately. List it in

@@ -22,18 +22,16 @@ extern dtor_fn const gGunStringDtor __attribute__((visibility("hidden")));
 
 Gun::~Gun() noexcept(false)
 {
-    if (this->lifetimes != 0)
-        ::operator delete[](this->lifetimes);
+    delete[] this->lifetimes;
     this->lifetimes = 0;
 
-    ::operator delete[](this->hitFlags);
+    delete[] this->hitFlags;
     this->hitFlags = 0;
 
-    if (this->geometries != 0)
-        ::operator delete[](this->geometries);
+    delete[] this->geometries;
     this->geometries = 0;
 
-    ::operator delete[](this->randomFlags);
+    delete[] this->randomFlags;
     this->randomFlags = 0;
 
     VecArray *arr = (VecArray *)this->wobbleOffsets;
@@ -115,24 +113,20 @@ extern int  *const gSI_rng    __attribute__((visibility("hidden")));
 void Gun::setIndex(int index) {
     this->itemIndex = index;
     int *items = gSI_items;
-    this->field_0x108 = (index == 0xe4) || ((unsigned)(index - 9) < 3);
+    this->homing = (index == 0xe4) || ((unsigned)(index - 9) < 3);
     this->empDamage = ((Item *)(*(int *)(*(int *)(*items + 4) + index * 4)))->getAttribute(0xa);
     int g = gSI_table[index];
     if (g >= 0) {
         unsigned count = this->count;
-        unsigned long long bytes = (unsigned long long)count * 4;
-        unsigned alloc = (unsigned)bytes;
-        if ((unsigned)(bytes >> 32) != 0)
-            alloc = 0xffffffff;
-        this->geometries = ::operator new[](alloc);
-        this->randomFlags = ::operator new[](count);
+        this->geometries = new int[count];
+        this->randomFlags = new uint8_t[count];
         unsigned *canvasHolder = gSI_canvas;
         int *rngHolder = gSI_rng;
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = new AEGeometry((uint16_t)g, (PaintCanvas *)*canvasHolder, false);
-            ((int *)this->geometries)[i] = geom->transform;
+            this->geometries[i] = geom->transform;
             int r = AbyssEngine::AERandom::nextInt(*rngHolder);
-            ((uint8_t *)this->randomFlags)[i] = (r == 0);
+            this->randomFlags[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);
             delete geom;
@@ -301,12 +295,8 @@ Gun::Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vec
     this->delayActive = 0;
     this->ammoCount = p4;
     this->field_0x78 = p4 << 1;
-    unsigned long long bytes = (unsigned long long)count * 4;
-    unsigned alloc = (unsigned)bytes;
-    if ((unsigned)(bytes >> 32) != 0)
-        alloc = 0xffffffff;
-    this->lifetimes = ::operator new[](alloc);
-    this->hitFlags = (uint8_t *)::operator new[](count | ((int)count >> 31));
+    this->lifetimes = new int[count];
+    this->hitFlags = new uint8_t[count];
     void *arr = ::operator new(0xc);
     Gun_VecPtrArray_ctor(arr);
     this->wobbleOffsets = (char *)arr;
@@ -319,7 +309,7 @@ Gun::Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vec
     for (int i = 0; i < (int)count; i = i + 1) {
         *(int *)(this->positions + off) = 0;
         off = off + 0xc;
-        ((int *)this->lifetimes)[i] = 0;
+        this->lifetimes[i] = 0;
         this->hitFlags[i] = 0;
         ((int *)*(int *)(this->wobbleOffsets + 4))[i] = 0;
     }
@@ -395,19 +385,19 @@ void Gun::update(int dt) {
         float fdt = (float)dt;
         int off = 0;
         for (unsigned i = 0; i < this->count; i = i + 1) {
-            int amt = ((int *)this->lifetimes)[i];
+            int amt = this->lifetimes[i];
             int thr = 5;
             // thr=5 only for ROCKET(4)/MISSILE(5) and CLUSTER_MISSILE; everything else uses 0.
             if ((unsigned)(this->weaponType - ITEM_SORT_ROCKET) > 1 && this->weaponType != ITEM_SORT_CLUSTER_MISSILE)
                 thr = 0;
             if (thr < amt) {
-                ((int *)this->lifetimes)[i] = amt - dt;
+                this->lifetimes[i] = amt - dt;
                 Vector scaled;
                 if (this->weaponType == ITEM_SORT_MINE) {
                     Vector tmp;
                     *(long long *)&tmp = (long long)this->velocities;
                     AbyssEngine::AEMath::operator_mul(&tmp, fdt);
-                    int rem = this->initialLifetime - ((int *)this->lifetimes)[i];
+                    int rem = this->initialLifetime - this->lifetimes[i];
                     float f = (float)rem / 1.0f + 1.0f;
                     scaled = tmp;
                     AbyssEngine::AEMath::operator_mul(&scaled, f);
@@ -416,12 +406,12 @@ void Gun::update(int dt) {
                     AbyssEngine::AEMath::operator_mul(&scaled, fdt);
                 }
                 *(Vector *)(this->positions + off) += scaled;
-                int v = ((int *)this->lifetimes)[i];
+                int v = this->lifetimes[i];
                 if (v < 1) {
                     unsigned k = this->weaponType - 6;
                     if (k < 0x1d && ((1 << (k & 0xff)) & 0x12345678) != 0) {
                         this->ignite();
-                        v = ((int *)this->lifetimes)[i];
+                        v = this->lifetimes[i];
                     }
                     if (v <= -2000) {
                         int s = this->weaponType;

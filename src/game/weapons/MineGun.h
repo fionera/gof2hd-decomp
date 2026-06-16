@@ -19,11 +19,11 @@ public:
     Array<Explosion*>*   explosions;        // per-mine explosion pool
     uint8_t*             readyFlags;        // per-mine "ready to detonate" flags
     AEGeometry*          geometry;          // mine muzzle geometry
-    int                  field_0xc0;
-    int                  field_0xc4;
-    int                  field_0xc8;
-    int                  rumbleTimer;       // rumble decay timer
-    float                rumblePercentage;  // current rumble intensity
+    int                  field_0xc0;        // +0xc0 (zero-initialized, unused)
+    int                  field_0xc4;        // +0xc4 (zero-initialized, unused)
+    int                  field_0xc8;        // +0xc8 (zero-initialized, unused)
+    int                  rumbleTimer;       // +0xcc rumble decay timer
+    float                rumblePercentage;  // +0xd0 current rumble intensity
 
     MineGun(Gun* gun, int mesh, int param, int unused, Level* level);
     ~MineGun();

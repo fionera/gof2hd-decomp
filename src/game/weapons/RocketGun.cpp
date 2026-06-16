@@ -71,12 +71,12 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
     this->steerY = 0;
     this->steerZ = 0;
     this->homing = param_7;
-    this->field_0xc4 = -1;
+    this->activeShotId = -1;
     this->turnRate = kRocketTurnRate;
     this->particleSystem = -1;
     this->rocketKind = param_6;
     this->particleManager = 0;
-    this->field_0x4 = -1;
+    this->unusedSlot = -1;
 
     int gate = 0x37a9;
     if (param_3 != 0x37a9)
@@ -297,7 +297,7 @@ void RocketGun::update(int elapsed)
     this->wasFiring = gun->delayActive;
 
     if (gun->hitSmall != 0) {
-        this->field_0xc4 = -1;
+        this->activeShotId = -1;
         this->fadeTimer = 0;
         gun->hitSmall = 0;
 

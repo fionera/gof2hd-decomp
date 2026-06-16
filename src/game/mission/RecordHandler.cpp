@@ -1,4 +1,5 @@
 #include "game/mission/RecordHandler.h"
+#include "game/mission/GameRecord.h"
 #include "game/mission/PendingProduct.h"
 #include "game/mission/Achievements.h"
 #include "game/mission/BluePrint.h"
@@ -21,7 +22,6 @@
 extern "C" void SHA256_Init(void *c);
 extern "C" void SHA256_Update(void *c, const void *data, int n);
 extern "C" void SHA256_Final(unsigned char *md, void *c);
-extern "C" void GameRecord_ctor(void *gr);
 extern "C" void AEFile_ReadBool(void *out, unsigned int fd);
 extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
 extern "C" void AEFile_ReadString(void *out, unsigned int fd, int flag);
@@ -95,14 +95,12 @@ void RecordHandler::convertSDVersionSaves() {
     a1->resize(*cnt);
 
     unsigned n = *cnt;
-    unsigned long long bytes = (unsigned long long)n * 4;
-    unsigned int sz = (int)(bytes >> 32) != 0 ? 0xffffffff : (unsigned int)bytes;
-    signed char *sizes0 = (signed char *)::operator new[](sz);
-    signed char *sizes1 = (signed char *)::operator new[](sz);
+    int *sizes0 = new int[n];
+    int *sizes1 = new int[n];
 
     for (int i = 0; i < (int)n; i++) {
-        ((int *)sizes0)[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        ((int *)sizes1)[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
+        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
+        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
 
         String num, path;
         num.ctor_int(i);
@@ -130,29 +128,29 @@ void RecordHandler::convertSDVersionSaves() {
             // process the final slot (index last) then finish
             signed char *lastRec = (*a0)[last];
             if (lastRec != 0) {
-                this->writeByteArrayAsRecord(lastRec, ((int *)sizes0)[last], 0, false);
+                this->writeByteArrayAsRecord(lastRec, sizes0[last], 0, false);
                 this->addHash(0);
                 int idx = (int)(*cnt) - 1;
-                this->writeByteArrayAsRecord((*a1)[idx], ((int *)sizes1)[idx], 0, true);
+                this->writeByteArrayAsRecord((*a1)[idx], sizes1[idx], 0, true);
             }
             break;
         }
         int next = j + 1;
-        this->writeByteArrayAsRecord(rec, ((int *)sizes0)[j], next, false);
+        this->writeByteArrayAsRecord(rec, sizes0[j], next, false);
         this->addHash(next);
-        this->writeByteArrayAsRecord((*a1)[j], ((int *)sizes1)[j], next, true);
+        this->writeByteArrayAsRecord((*a1)[j], sizes1[j], next, true);
         i = next;
         n = *cnt;
     }
 
-    for (signed char *e : *a0) ::operator delete[](e);
+    for (signed char *e : *a0) delete[] e;
     a0->clear();
-    for (signed char *e : *a1) ::operator delete[](e);
+    for (signed char *e : *a1) delete[] e;
     a1->clear();
     delete a0;
     delete a1;
-    ::operator delete[](sizes0);
-    ::operator delete[](sizes1);
+    delete[] sizes0;
+    delete[] sizes1;
 
     return;
 }
@@ -165,15 +163,15 @@ void RecordHandler::addHash(int slot) {
     signed char *data = 0;
     int len = this->readRecordAsByteArray(&data, slot, false);
     if (-1 < len) {
-        unsigned char *md = (unsigned char *)::operator new[](0x20);
-        void *c = ::operator new(0x70);
+        unsigned char *md = new unsigned char[0x20];
+        unsigned char *c = new unsigned char[0x70];
         SHA256_Init(c);
         SHA256_Update(c, data, len);
         SHA256_Update(c, RH_ah_salt, 0x19);
         SHA256_Update(c, *RH_ah_key, 0x10);
         SHA256_Final(md, c);
 
-        signed char *out = (signed char *)::operator new[](len + 0x20);
+        signed char *out = new signed char[len + 0x20];
         memcpy(out, data, len);
         unsigned long long *dst = (unsigned long long *)(out + len);
         unsigned long long *src = (unsigned long long *)md;
@@ -183,10 +181,10 @@ void RecordHandler::addHash(int slot) {
         dst[3] = src[3];
         this->writeByteArrayAsRecord(out, len + 0x20, slot, false);
 
-        ::operator delete[](data);
-        ::operator delete[](out);
-        ::operator delete[](md);
-        ::operator delete(c);
+        delete[] data;
+        delete[] out;
+        delete[] md;
+        delete[] c;
     }
 }
 
@@ -204,7 +202,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     if (AEFile::FileExist(path) != 0) {
         AEFile::OpenRead(path, &fd);
         sz = AEFile::GetFileSize(fd);
-        signed char *b = (signed char *)::operator new[](sz | (sz >> 31));
+        signed char *b = new signed char[sz | (sz >> 31)];
         *out = b;
         AEFile::Read(sz, b, fd);
         AEFile::Close(fd);
@@ -255,7 +253,7 @@ void * RecordHandler::readWanted(unsigned int fd) {
     Wanted *w = new Wanted(idx, name, board, race, male, ship, weapon, hp, loot,
                            lootAmt, reward, reqBounties, reqMission, numWingmen);
 
-    int *parts = (int *)::operator new[](0x14);
+    int *parts = new int[5];
     int *p = parts;
     for (unsigned i = 0; i < 5; i++) {
         AEFile_ReadInt(p, fd);
@@ -285,14 +283,12 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     a1->resize(*cnt);
 
     unsigned int n = *cnt;
-    unsigned long long bytes = (unsigned long long)n * 4;
-    unsigned int sz = (int)(bytes >> 32) != 0 ? 0xffffffff : (unsigned int)bytes;
-    signed char *sizes0 = (signed char *)::operator new[](sz);
-    signed char *sizes1 = (signed char *)::operator new[](sz);
+    int *sizes0 = new int[n];
+    int *sizes1 = new int[n];
 
     for (int i = 0; i < (int)n; i++) {
-        ((int *)sizes0)[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
-        ((int *)sizes1)[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
+        sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
+        sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
         n = *cnt;
     }
 
@@ -303,23 +299,23 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
         if (rec == 0) {
             i++;
         } else {
-            this->writeByteArrayAsRecord(rec, ((int *)sizes0)[i], i, false);
+            this->writeByteArrayAsRecord(rec, sizes0[i], i, false);
             int next = i + 1;
             this->addHash(next);
-            this->writeByteArrayAsRecord((*a1)[i], ((int *)sizes1)[i], i, true);
+            this->writeByteArrayAsRecord((*a1)[i], sizes1[i], i, true);
             n = *cnt;
             i = next;
         }
     }
 
-    for (signed char *e : *a0) ::operator delete[](e);
+    for (signed char *e : *a0) delete[] e;
     a0->clear();
-    for (signed char *e : *a1) ::operator delete[](e);
+    for (signed char *e : *a1) delete[] e;
     a1->clear();
     delete a0;
     delete a1;
-    ::operator delete[](sizes0);
-    ::operator delete[](sizes1);
+    delete[] sizes0;
+    delete[] sizes1;
 }
 
 // RecordHandler::recordStoreReadPreview(int)
@@ -334,8 +330,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
     void *gr = 0;
     if (AEFile::FileExist(path) != 0) {
         AEFile::OpenRead(path, &fd);
-        gr = ::operator new(0x1c8);
-        GameRecord_ctor(gr);
+        gr = new GameRecord();
         AEFile_Read_i64((char *)gr + 0x10, fd);
         AEFile_Read_i32((char *)gr + 0x8, fd);
         AEFile_Read_bool((char *)gr + 0x194, fd, true);
@@ -755,9 +750,7 @@ void * RecordHandler::readMission(unsigned int fd) {
         AEFile_ReadInt(&imgCount, fd);
         int *img = 0;
         if ((int)imgCount >= 1) {
-            unsigned long long bytes = (unsigned long long)imgCount * 4;
-            unsigned sz = (int)(bytes >> 32) != 0 ? 0xffffffff : (unsigned)bytes;
-            img = (int *)::operator new[](sz);
+            img = new int[imgCount];
             int *p = img;
             for (int i = 0; i < (int)imgCount; i++) {
                 AEFile_ReadInt(p, fd);
@@ -784,13 +777,11 @@ void * RecordHandler::readMission(unsigned int fd) {
         void *agent = (hasAgent < 1) ? 0 : this->readAgent(fd);
 
         if (!isEmpty) {
-            mission = ::operator new(0x78);
             String nameCopy;
             nameCopy.ctor_copy(&clientName, false);
-            new (mission) Mission(type, &nameCopy, (int)(intptr_t)img, clientRace, reward, targetStationIdx, difficulty);
+            mission = new Mission(type, &nameCopy, (int)(intptr_t)img, clientRace, reward, targetStationIdx, difficulty);
         } else {
-            mission = ::operator new(0x78);
-            new (mission) Mission(type, reward, targetStationIdx);
+            mission = new Mission(type, reward, targetStationIdx);
         }
         ((Mission *)(mission))->setCosts(costs);
         ((Mission *)(mission))->setBonus(bonus);
@@ -926,9 +917,7 @@ void * RecordHandler::readAgent(unsigned int fd) {
     AEFile_ReadInt(&imgCount, fd);
     int *img = 0;
     if (0 < (int)imgCount) {
-        unsigned long long bytes = (unsigned long long)imgCount * 4;
-        unsigned sz = (int)(bytes >> 32) != 0 ? 0xffffffff : (unsigned)bytes;
-        img = (int *)::operator new[](sz);
+        img = new int[imgCount];
         int *p = img;
         for (int i = 0; i < (int)imgCount; i++) {
             AEFile_ReadInt(p, fd);
@@ -959,10 +948,9 @@ void * RecordHandler::readAgent(unsigned int fd) {
     AEFile_ReadInt(&hasMission, fd);
     void *mission = (hasMission < 1) ? 0 : this->readMission(fd);
 
-    Agent *agent = (Agent *)::operator new(0x98);
     String nameCopy;
     nameCopy.ctor_copy(&name, false);
-    new (agent) Agent(idx, &nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
+    Agent *agent = new Agent(idx, &nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
     ((Agent *)(agent))->setCosts(costs);
     ((Agent *)(agent))->setEvent(event);
@@ -970,12 +958,12 @@ void * RecordHandler::readAgent(unsigned int fd) {
     ((Agent *)(agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
 
     if (strE.size() != 0) {
-        String *s = (String *)::operator new(0xc);
+        String *s = new String();
         s->ctor_copy(&strE, false);
         agent->wingman1 = s;
     }
     if (strF.size() != 0) {
-        String *s = (String *)::operator new(0xc);
+        String *s = new String();
         s->ctor_copy(&strF, false);
         agent->wingman2 = s;
     }
@@ -984,10 +972,10 @@ void * RecordHandler::readAgent(unsigned int fd) {
     Array<String*> *arr = new Array<String*>();
     arr->resize(wingmen);
     for (int i = 0; i < (int)wingmen; i++) {
-        void *s = ::operator new(0xc);
+        String *s = new String();
         String *src = (i == 0) ? &strE : &strF;
-        ((String *)s)->ctor_copy(src, false);
-        (*arr)[i] = (String *)s;
+        s->ctor_copy(src, false);
+        (*arr)[i] = s;
     }
     ((Agent *)(agent))->setWingmanFriendNames(arr);
     ((Agent *)(agent))->giveRewardAtNextChat(hasReward);
@@ -1530,7 +1518,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     // int[] at rec+0x60 (length at rec+100/0x64)
     AEFile_ReadInt(rec + 0x64, fd);
     unsigned len60 = *(unsigned *)(rec + 0x64);
-    int *buf60 = (int *)::operator new[](((unsigned long long)len60 * 4 >> 32) ? 0xffffffff : len60 * 4);
+    int *buf60 = new int[len60];
     *(void **)(rec + 0x60) = buf60;
     for (unsigned i = 0; i < len60; i++) { AEFile_ReadInt(buf60 + i, fd); }
 
@@ -1599,7 +1587,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
 
     // Standings (count then values).
     int sdN = 0; AEFile_ReadInt(&sdN, fd);
-    int *standings = (int *)::operator new[](((unsigned long long)sdN * 4 >> 32) ? 0xffffffff : sdN * 4);
+    int *standings = new int[sdN];
     for (int i = 0; i < sdN; i++) AEFile_ReadInt(standings + i, fd);
     void *standing = Standing_new();
     *(void **)(rec + 0x13c) = standing;
@@ -1653,7 +1641,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
         AEFile_ReadInt(rec + 0x150, fd);
         AEFile_ReadInt(rec + 0x154, fd);
         int cnt = 0; AEFile_ReadInt(&cnt, fd);
-        int *buf158 = (int *)::operator new[](((unsigned long long)cnt * 4 >> 32) ? 0xffffffff : cnt * 4);
+        int *buf158 = new int[cnt];
         *(void **)(rec + 0x158) = buf158;
         for (int i = 0; i < cnt; i++) AEFile_ReadInt(buf158 + i, fd);
     }
@@ -1842,7 +1830,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     if (AEFile::FileExist(tmp) != 0) {
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
-        signed char *buf = (signed char *)::operator new[](sz | (sz >> 31));
+        signed char *buf = new signed char[sz | (sz >> 31)];
         *out = buf;
         AEFile::Read(sz, buf, fd);
         AEFile::Close(fd);
@@ -1871,8 +1859,7 @@ void * RecordHandler::recordStoreRead(int slot) {
         AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(path, &fd);
-            rec = (char *)::operator new(0x1c8);
-            GameRecord_ctor(rec);
+            rec = (char *)new GameRecord();
 
             // Visited-systems bitmap at rec+4 (count then booleans).
             char *visited = rec + 4;
@@ -1941,16 +1928,16 @@ int RecordHandler_checkHash(unsigned int fd)
 
     int sz = AEFile::GetFileSize(fd);
     if (-1 < sz) {
-        unsigned char *buf = (unsigned char *)::operator new[]((unsigned)sz);
+        unsigned char *buf = new unsigned char[(unsigned)sz];
         AEFile::Read((unsigned)sz, (signed char *)buf, fd);
         Array<unsigned char> *arr = new Array<unsigned char>();
         arr->insert(arr->end(), buf, buf + (unsigned)sz);
-        ::operator delete[](buf);
+        delete[] buf;
 
         unsigned len = arr->size();
         if (0x21 < len) {
-            unsigned char *md = (unsigned char *)::operator new[](0x20);
-            void *c = ::operator new(0x70);
+            unsigned char *md = new unsigned char[0x20];
+            unsigned char *c = new unsigned char[0x70];
             SHA256_Init(c);
             unsigned char *data = arr->data();
             SHA256_Update(c, data, (int)len - 0x20);
@@ -1966,8 +1953,8 @@ int RecordHandler_checkHash(unsigned int fd)
                 i++;
             }
             result = (i > 0x1f) ? 1 : 0;
-            ::operator delete[](md);
-            ::operator delete(c);
+            delete[] md;
+            delete[] c;
         }
     }
 
@@ -1985,15 +1972,15 @@ void RecordHandler::addHashToOptions() {
     if (len < 0)
         return;
 
-    unsigned char *md = (unsigned char *)::operator new[](0x20);
-    void *c = ::operator new(0x70);
+    unsigned char *md = new unsigned char[0x20];
+    unsigned char *c = new unsigned char[0x70];
     SHA256_Init(c);
     SHA256_Update(c, data, len);
     SHA256_Update(c, RH_aho_salt, 0x19);
     SHA256_Update(c, *RH_aho_key, 0x10);
     SHA256_Final(md, c);
 
-    signed char *out = (signed char *)::operator new[](len + 0x20);
+    signed char *out = new signed char[len + 0x20];
     memcpy(out, data, len);
     unsigned long long *dst = (unsigned long long *)(out + len);
     unsigned long long *src = (unsigned long long *)md;
@@ -2003,8 +1990,8 @@ void RecordHandler::addHashToOptions() {
     dst[3] = src[3];
     this->writeByteArrayAsOptionsFile(out, len + 0x20);
 
-    ::operator delete[](data);
-    ::operator delete[](out);
-    ::operator delete[](md);
-    ::operator delete(c);
+    delete[] data;
+    delete[] out;
+    delete[] md;
+    delete[] c;
 }

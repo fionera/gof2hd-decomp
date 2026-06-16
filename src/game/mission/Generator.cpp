@@ -498,7 +498,7 @@ Mission *Generator::createMission(Agent *agent,
     rewardInt = ((rewardInt + remainder) % 50 == 0) ? rewardInt + remainder
                                                     : rewardInt - remainder;
 
-    Mission *mission = (Mission *)::operator new(0x78);
+    Mission *mission = new Mission();
     AbyssEngine::String missionName;
     Mission_ctor_full(mission, type, &missionName, agent->getImageParts(), race,
                       rewardInt, targetStation, difficulty);

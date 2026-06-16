@@ -15,16 +15,16 @@ namespace AbyssEngine { namespace AEMath { struct Vector; struct Matrix; } }
 // animations.
 class Explosion {
 public:
-    int                  type;          // explosion type
-    AEGeometry          *primaryMesh;   // primary mesh
-    AEGeometry          *secondaryMesh; // secondary mesh (optional)
-    Array<AEGeometry *> *fireStreaks;   // fire-streak meshes (optional)
-    long long            duration;      // total duration
-    long long            elapsed;       // elapsed time
-    uint8_t              playing;       // playing flag
-    float                scale;         // scale
-    int                  weaponIndex;   // sound id (-1 == none)
-    Matrix               rotation;      // rotation matrix
+    int                  type;          // +0x00 explosion type
+    AEGeometry          *primaryMesh;   // +0x04 primary mesh
+    AEGeometry          *secondaryMesh; // +0x08 secondary mesh (optional)
+    Array<AEGeometry *> *fireStreaks;   // +0x0c fire-streak meshes (optional)
+    long long            duration;      // +0x10 total duration
+    long long            elapsed;       // +0x18 elapsed time
+    uint8_t              playing;       // +0x20 playing flag
+    float                scale;         // +0x24 scale
+    int                  weaponIndex;   // +0x28 sound id (-1 == none)
+    Matrix               rotation;      // +0x2c rotation matrix
 
     explicit Explosion(int type);
     ~Explosion();

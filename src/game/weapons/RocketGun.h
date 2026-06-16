@@ -23,7 +23,7 @@ public:
     int steerY;
     int steerZ;
     uint8_t homing;                     // shots track the locked target
-    int field_0xc4;                     // active homing shot index (-1 == none)
+    int activeShotId;                   // +0xc4 active homing shot index (-1 == none)
     uint32_t turnRate;                  // homing turn-rate scalar
     int particleSystem;                 // single trail/muzzle particle system handle
     int rocketKind;                     // rocket weapon kind

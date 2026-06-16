@@ -497,7 +497,7 @@ Status::Status() {
     system = 0;
     planetNames = 0;
     planetTextures = 0;
-    field_14c = 0;
+    voidStation = nullptr;
     wanted = 0;
     wingmen = 0;
     this->field_0x28 = 0;
@@ -685,12 +685,12 @@ void Status::resetGame() {
     this->field_0x111 = 0;
     this->field_114 = hardcore != 0 ? 3 : 0;
 
-    // recreate the per-game scratch station at field_14c.
-    if (this->field_14c != 0) {
-        delete (Station*)(intptr_t)this->field_14c;
-        this->field_14c = 0;
+    // recreate the per-game scratch "void" station.
+    if (this->voidStation != nullptr) {
+        delete this->voidStation;
+        this->voidStation = nullptr;
     }
-    this->field_14c = (int32_t)(intptr_t)(new Station());
+    this->voidStation = new Station();
 
     if (this->field_0x28 != 0) {
         delete[] (char*)(intptr_t)this->field_0x28;
@@ -1400,7 +1400,7 @@ void Status::departStation(Station* dest) {
     if (!inAlienOrbit()) {
         bool hub = station->getIndex() == 0x6c;
         if (hub && field_114 == 3) {
-            Station* scratch = (Station*)(intptr_t)field_14c;
+            Station* scratch = voidStation;
             scratch->setItems(station->getItems(), true);
             scratch->setShips(station->getShips(), true);
         }

@@ -27,7 +27,7 @@ public:
     int field_0x2c;
     char* hitPositions;                 // impact points (byte-addressed Array<Vector>)
     int level;
-    void* lifetimes;
+    int* lifetimes;                     // projectile time-left buffer (new int[count])
     uint8_t* hitFlags;
     int initialLifetime;
     int fireDelay;
@@ -70,11 +70,12 @@ public:
     int slotIndex;
     uint8_t levelCollision;
     uint8_t friendGun;
-    float errorMagnitudePercentage;
-    int magnitude;
-    uint8_t field_0x108;
-    void* geometries;
-    void* randomFlags;
+    float errorMagnitudePercentage;     // +0xfc
+    int magnitude;                      // +0x100
+    int customRadius;                   // +0x104
+    uint8_t homing;                     // +0x108
+    int* geometries;                    // +0x10c  per-projectile transform handles (new int[count])
+    uint8_t* randomFlags;               // +0x110  per-projectile random flags (new uint8_t[count])
 
     Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
     ~Gun() noexcept(false);

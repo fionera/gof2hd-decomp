@@ -365,14 +365,12 @@ LAB_00165faa:
           iVar11 = (int)(intptr_t)grSys->getRoutes();
           if (iVar11 == 0) {
             *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
-            ((Station *)(pSVar8))->~Station();
-            ::operator delete(pSVar8);
+            delete (Station *)pSVar8;
             pSVar8 = (char *)gGalaxy->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
             ((Station *)(pSVar8))->getName();
             if (pSVar8 == (char *)0x0) goto LAB_00166114;
           }
-          ((Station *)(pSVar8))->~Station();
-          ::operator delete(pSVar8);
+          delete (Station *)pSVar8;
         }
       }
 LAB_00166114:

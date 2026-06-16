@@ -100,7 +100,10 @@ public:
     uint8_t field_140;
     int32_t field_144;
     uint8_t field_148;
-    int32_t field_14c;                        // scratch Station*, stored as int
+    union {                                   // +0x14c: per-game scratch "void" Station
+        Station* voidStation;
+        int32_t field_14c;                    // legacy int view (external readers cast this)
+    };
     int32_t field_150;
     int32_t field_154;
     int32_t field_158;
