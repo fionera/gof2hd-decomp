@@ -17,7 +17,7 @@ class Player;
 
 class ObjectGun {
 public:
-    void* vtable;                       // +0x0
+    // (the +0x0 vptr is the compiler-managed C++ vtable; the class is polymorphic)
     int unusedSlot;                     // +0x4  init -1, never read (unused id/slot)
     Gun* gun;                           // +0x8  owned weapon
     Level* level;                       // +0xc  owning level
@@ -43,7 +43,8 @@ public:
     Matrix orientation;                 // +0x84 world orientation matrix
 
     ObjectGun(int unused, Gun* gun, int mesh, uint32_t param, Level* level);
-    ~ObjectGun();
+    virtual ~ObjectGun();
+    virtual int isRocketGun();          // vtable slot 8 (base: not a rocket gun)
 
     void setScaling(int x, int y);
     void replaceGun(int mesh);

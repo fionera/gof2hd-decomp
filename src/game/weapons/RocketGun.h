@@ -37,6 +37,8 @@ public:
               uint32_t param_5, int param_6, bool param_7, Level* param_8);
     ~RocketGun();
 
+    int isRocketGun() override;         // vtable slot 8: yes
+
     void render();
     void setRadar(AbyssEngine::Radar* radar);
     void seekEnemy(int unused, int index);

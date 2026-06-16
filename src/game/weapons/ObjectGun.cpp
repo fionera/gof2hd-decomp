@@ -53,7 +53,8 @@ void VectorCross(Vector *out, const Vector *a, const Vector *b);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
 
 // Engine globals controlling per-weapon scaling and the geometry/mesh id tables.
-extern "C" void *ObjectGun_vtable;
+// vtable slot 8: the base ObjectGun is not a rocket gun (RocketGun overrides this).
+int ObjectGun::isRocketGun() { return 0; }
 extern "C" void *g_ObjectGunScaleFlag;
 extern "C" void *g_ObjectGunRenderScaleFlag;
 extern "C" MeshId g_ObjectGunGeometryIds[];
@@ -70,7 +71,6 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->up.z = 0.0f;
     this->side.x = 0.0f;
     this->side.z = 0.0f;
-    this->vtable = (char *)ObjectGun_vtable + 8;
     this->orientation.initIdentity();
 
     void **canvas = (void **)g_PaintCanvas;
@@ -149,8 +149,6 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
 // (releasing each element first), and the ready-flag buffer.
 ObjectGun::~ObjectGun()
 {
-    this->vtable = (char *)ObjectGun_vtable + 8;
-
     delete this->geometry;
     this->geometry = nullptr;
 
@@ -456,8 +454,7 @@ void ObjectGun::render()
                         MatrixSetScaling(&local, fscale, fscale, fscale);
                     } else if (gun->hitSmall != 0) {
                         MatrixSetScaling(&local, 1.0f, 1.0f, 1.0f);
-                        typedef int (*DoneFn)(ObjectGun *);
-                        if (((DoneFn *)this->vtable)[8](this) == 0)
+                        if (this->isRocketGun() == 0)
                             gun->hitSmall = 0;
                     }
                 } else {

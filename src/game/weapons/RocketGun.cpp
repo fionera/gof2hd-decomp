@@ -40,6 +40,9 @@ Vector operator*(const Vector &v, float scale);
 }
 }
 
+// vtable slot 8: a RocketGun (and its BombGun subclass) IS a rocket gun.
+int RocketGun::isRocketGun() { return 1; }
+
 void RocketGun::render()
 {
     ObjectGun::render();
