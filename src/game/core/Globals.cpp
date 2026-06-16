@@ -100,7 +100,7 @@ extern void *const gHints __attribute__((visibility("hidden")));
 
 void Globals_resetHints()
 {
-    char *p = (char *)gHints;
+    char *p = (char *)gHints;   // RAWREAD: opaque hint blob via hidden global (no modeled type/members)
     const v4si z = {0, 0, 0, 0};
     ((Q16 *)(p + 0x00))->v = z;
     ((Q16 *)(p + 0x2b))->v = z;
@@ -258,6 +258,7 @@ void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
         ssub.ctor_copy(&sub, false);
         Globals_getLine(line, font, &ssub, maxWidth, out);
         // getLine packs a per-line advance count into the unused tail of the String slot.
+        // RAWREAD: scratch poke into a std::u16string-backed String slot (no byte-faithful member at +8).
         int adv = *(int *)((char *)line + 8);
         count++;
         consumed += adv;
@@ -469,7 +470,7 @@ void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
     if (thresh < fp1) {
         iv = (int)fp1;
         uv = (unsigned short)iv;
-        rdobj(gSCS_objB)[0x54 / 4] = (int)fp1;
+        rdobj(gSCS_objB)[0x54 / 4] = (int)fp1;   // RAWREAD: opaque settings sub-object via hidden global (no header)
         char flag8;
         if (isPhone == 0) {
             flag8 = rdflag(gSCS_flagC);
@@ -495,13 +496,13 @@ void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
         if (isPhone == 0) {
             char flag = rdflag(gSCS_flagD);
             iv = (flag == 0) ? 0x96 : 0x12c;
-            rdobj(gSCS_objC)[0x54 / 4] = iv;
+            rdobj(gSCS_objC)[0x54 / 4] = iv;   // RAWREAD: opaque settings sub-object via hidden global (no header)
             char flag8 = (flag == 0) ? 0 : 1;
             (void)flag8;
             goto label8508;
         }
         uv = 0xd2;
-        rdobj(gSCS_objA)[0x54 / 4] = 0xd2;
+        rdobj(gSCS_objA)[0x54 / 4] = 0xd2;   // RAWREAD: opaque settings sub-object via hidden global (no header)
     }
 
 common: {
@@ -621,6 +622,7 @@ void Globals_getAgentMissionText(void *out, void *unused, void *agent)
             int event = ((Agent *)(agent))->getEvent();
             if (event < 1 && ((Agent *)(agent))->hasAcceptedOffer() == 0) {
                 int *busy = *(int **)gGAMT_busyObj;
+                // RAWREAD: opaque re-entrancy-guard object via hidden global (no header/named member at +0xd0).
                 *(int *)(*busy + 0xd0) += 1;       // mark "assembling text" re-entrancy guard
                 int offer = ((Agent *)(agent))->getOffer();
 
@@ -683,6 +685,7 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
         unsigned i = 0;
         bool keepGoing = true;
         while (i < len && keepGoing) {
+            // RAWREAD: `list` is an opaque engine Array payload (void*); +4 is its data pointer.
             void *entry = *(void **)(*(char **)((char *)list + 4) + i * 4);
             String base, pb, prefix;
             base.ctor_char(gIAP_prefixA, false);
@@ -1002,7 +1005,7 @@ void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
             dx = (int)rightX - w;
         }
         ((PaintCanvas *)(long)*cv)->DrawString(font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *)((char *)*lh + 4);
+        yacc += *(int *)((char *)*lh + 4);   // RAWREAD: opaque line-height object via hidden global (no header)
     }
 }
 
@@ -1213,6 +1216,8 @@ Globals::Globals() {
     *(int *)self = 0;
 
     char *s = (char *)settings;
+    // RAWREAD: `settings` is an opaque state sub-object reached via a hidden global; no modeled
+    // header exists in this TU, so the following field writes stay as raw byte offsets.
     // Vector pairs (DAT_000f33b8 / DAT_000f33c0) at +0x14 .. via vst1; model as zero/identity blocks.
     *(float *)(s + 0x00) = 0.5f;
     *(float *)(s + 0x04) = 0.5f;
@@ -1230,7 +1235,7 @@ Globals::Globals() {
     *(int *)(s + 0x35) = 0;
     *(int *)(s + 0x31) = 0;
     secondary[1] = 0;
-    *(unsigned char *)((char *)secondary + 0x13) = 0;
+    *(unsigned char *)((char *)secondary + 0x13) = 0;   // RAWREAD: opaque secondary sub-object via hidden global (no header)
     *(unsigned char *)(s + 0x3f) = 0;
     *(int *)(s + 0x3b) = 0;
     *(unsigned char *)(s + 0x4e) = 0;
@@ -1408,7 +1413,7 @@ void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
             dx = -(w >> 1);
         }
         ((PaintCanvas *)(long)*cv)->DrawString((unsigned)(uintptr_t)font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *)((char *)*lh + 4);
+        yacc += *(int *)((char *)*lh + 4);   // RAWREAD: opaque line-height object via hidden global (no header)
     }
 }
 
@@ -1520,7 +1525,7 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
         }
         wField = VectorSignedToFloat(rint(gSCF_screenW3) - p2, 0);
         iv = (int)fp1b;
-        robj(gSCF_objC)[0x58 / 4] = (int)fp1b;
+        robj(gSCF_objC)[0x58 / 4] = (int)fp1b;   // RAWREAD: opaque settings sub-object via hidden global (no header)
         adj13 = gSCF_b90;
         if (isPhone == 0) {
             char flag6 = rf(gSCF_flagG);
@@ -1531,12 +1536,12 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
             char flag6 = rf(gSCF_flagD);
             iv = (flag6 == 0) ? 0x96 : 0x12c;
-            robj(gSCF_objB)[0x58 / 4] = iv;
+            robj(gSCF_objB)[0x58 / 4] = iv;   // RAWREAD: opaque settings sub-object via hidden global (no header)
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         } else {
             iv = 0xd2;
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
-            robj(gSCF_objA)[0x58 / 4] = 0xd2;
+            robj(gSCF_objA)[0x58 / 4] = 0xd2;   // RAWREAD: opaque settings sub-object via hidden global (no header)
         }
     }
 
@@ -1723,6 +1728,7 @@ epilogue: {
     int *mainCanvas = *(int **)gLF_canvasMain;
     unsigned *mainFont = *(unsigned **)gLF_fontMain;
     int cv = *mainCanvas;
+    // RAWREAD: `cv` is an opaque int canvas handle (no modeled type in this TU).
     *(unsigned char *)(cv + 0x1c) = isMainFontPersian;
     ((PaintCanvas *)(long)cv)->FontCreate((unsigned short)0x51e, (unsigned int *)mainFont, false);
     ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*mainFont, 0);
@@ -1780,6 +1786,8 @@ int Globals::init(void *app) {
     char *zeroByte = *gI_zeroByte;
 
     char *s = (char *)settings;
+    // RAWREAD: `settings` is an opaque state sub-object reached via a hidden global; no modeled
+    // header exists in this TU, so the following field writes stay as raw byte offsets.
     *(unsigned char *)(s + 0x11) = 1;
     *(unsigned char *)(s + 0x30) = 1;
     *(float *)(s + 0x00) = 0.5f;
@@ -1855,7 +1863,7 @@ int Globals::init(void *app) {
     // Camera/transform-style zeroing of a vector-triple struct (puVar6 second object).
     **gI_g381c = 0;
     **gI_g381a = 1;
-    int *obj = (int *)*gI_g381e;
+    int *obj = (int *)*gI_g381e;   // RAWREAD: opaque vector-triple sub-object via hidden global (no header)
     obj[0] = 0; obj[1] = 0; obj[2] = 0; obj[3] = 0;
     obj[4] = 0; obj[5] = 0; obj[6] = 0; obj[7] = 0;
     obj[8] = 0; obj[9] = 0; obj[10] = 0; obj[11] = 0;

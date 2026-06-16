@@ -58,7 +58,7 @@ void Player::pitchAllPrimaryGuns(float pitch) {
         if (prim != 0) {
             int n = prim->size();
             for (int i = 0; n != i; i++) {
-                *(float *)((char *)prim->data()[i] + 0xb0) = pitch;
+                prim->data()[i]->field_0xb0 = pitch;
             }
         }
     }
@@ -687,18 +687,17 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_3164;
         }
         {
-            int *prog = (int *)gStatus;
-            if (*(unsigned int *)((char *)prog + 0x134) > 0x7fffffff) {
-                *(int *)((char *)prog + 0x134) = 0;
+            if ((unsigned int)gStatus->field_134 > 0x7fffffff) {
+                gStatus->field_134 = 0;
             }
             if (gAchievements->hasMedal(0x2a, 1) == 0) {
-                int cnt = *(int *)((char *)((int *)gStatus) + 0x134) + 1;
-                *(int *)((char *)((int *)gStatus) + 0x134) = cnt;
+                int cnt = gStatus->field_134 + 1;
+                gStatus->field_134 = cnt;
                 if (gAchievements->getValue(0x2a, 1) <= cnt) {
                     void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                     void *hud = (void *)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
                     ((Hud *)(hud))->hudEventMedal(0x2a, 100);
-                    *(char *)((char *)((int *)gStatus) + 0x138) = 1;
+                    gStatus->field_138 = 1;
                 }
             }
         }
@@ -869,6 +868,7 @@ void Player::calcWeaponSounds(int count) {
         int *table = g_cws_items;
         do {
             for (; i < (int)n; i++) {
+                // RAWREAD: g_cws_items is an int* into an opaque engine container; +4 = its data ptr
                 int *dataArr = *(int **)((char *)(*(void **)table) + 4);
                 int a = ((Item *)(*(void **)&dataArr[order[i - 1]]))->getSinglePrice();
                 dataArr = *(int **)((char *)table + 4);
@@ -1189,12 +1189,12 @@ LAB_342a:
                     while (count != i) {
                         KIPlayer *e = (*enemies)[i];
                         i++;
-                        if (*(int *)((char *)e + 0x28) == 8) {
-                            *(char *)((char *)e + 0x25) = 1;
+                        if (e->shipGroup == 8) {
+                            e->field_0x25 = 1;
                         }
                     }
                 }
-                *(uint16_t *)((char *)gStatus + 0x110) = 0x100;
+                gStatus->field_110 = 0x100;
             }
         }
     }
@@ -1371,8 +1371,8 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                 } else if (g->itemIndex == gunId &&
                            g->fireDelay < g->timer) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        // RAWREAD: pointer at Gun+0x38 (not modeled in Gun.h), byte at +0x69
-                        *(char *)(*(intptr_t *)((char *)g + 0x38) + 0x69) = 1;
+                        // RAWREAD: byte at +0x69 of g->lifetimes (an int* projectile buffer, not a modeled class)
+                        *(char *)((intptr_t)g->lifetimes + 0x69) = 1;
                     }
                     // Rebuild the by-value firing Matrix the decompiler spilled to a8..a22.
                     Matrix fireMat2;
@@ -1436,8 +1436,7 @@ Vector * Player::update(int dt, int doSound) {
         if (maxEmp < (int)v) {
             self->empDisabled = 0;
             self->empPoints = maxEmp;
-            int *clk = (int *)gStatus;
-            *(int *)((char *)clk + 0x134) = *(int *)((char *)clk + 0x134) - 1;
+            gStatus->field_134 = gStatus->field_134 - 1;
             self->empData = 0;
         }
         ((Player *)(self))->updateDamageRate();
@@ -1537,7 +1536,7 @@ void Player::resetGunDelay(int slot) {
     if (arr != 0) {
         int n = arr->size();
         for (int i = 0; n != i; i++) {
-            *(int *)((char *)arr->data()[i] + 0x6c) = 0;
+            arr->data()[i]->timer = 0;
         }
     }
 }

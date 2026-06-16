@@ -397,8 +397,8 @@ int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, 
             if (AEFile::Read((uint32_t)(2), r + 0x10, handle) == 0) goto fail;
             if (AEFile::Read((uint32_t)(2), r + 0x12, handle) == 0) goto fail;
 
-            int mesh = *(int *)r;
-            float *pos = *(float **)(mesh + 4);
+            Mesh *mesh = *(Mesh **)r;
+            float *pos = (float *)mesh->positions;
             // Half width/height of the quad in object units (region size).
             float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x10), mode);
             pos[0] = 0; pos[1] = 0; pos[2] = 0;
@@ -413,7 +413,7 @@ int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, 
             float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x0e), mode);
             float offXu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)u16(r, 0x0c), mode);
 
-            float *uv = *(float **)(mesh + 8);
+            float *uv = (float *)mesh->texCoords;
             float u0 = offXu * (float)(1.0 / atlasW);
             float v0 = offYu * (float)(1.0 / atlasH);
             float v1 = (halfH + offYs) * (float)(1.0 / atlasH);
@@ -422,7 +422,7 @@ int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, 
             uv[3] = v0; uv[4] = u1; uv[5] = v1;
             uv[6] = u0; uv[7] = v1;
 
-            unsigned int *draw = *(unsigned int **)(mesh + 0x2c);
+            unsigned int *draw = (unsigned int *)mesh->indices;
             draw[0] = 0x20000;
             draw[1] = 1;
             draw[2] = 0; // DAT default
@@ -471,8 +471,8 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int c
         }
         {
             unsigned int found = (unsigned int)(unsigned short)(idx - 1);
-            void *glyph = *(void **)((char *)pp(font, 0xc) + found * 4);
-            int w = (int)f32(pp(glyph, 0x4), 0xc);
+            Mesh *glyph = *(Mesh **)((char *)pp(font, 0xc) + found * 4);
+            int w = (int)((float *)glyph->positions)[3]; // advance width at positions+0xc
             int adv = (int)s16(font, 0x10) + w;
             int contrib = adv;
             if (w == 0xb)
@@ -733,8 +733,8 @@ int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int s
             continue;
 
         unsigned int gi = (unsigned int)(unsigned short)(idx - 1);
-        void *glyph = *(void **)((char *)pp(font, 0xc) + gi * 4);
-        int w = (int)f32(pp(glyph, 0x4), 0xc);
+        Mesh *glyph = *(Mesh **)((char *)pp(font, 0xc) + gi * 4);
+        int w = (int)((float *)glyph->positions)[3]; // advance width at positions+0xc
         int adv = (int)s16(font, 0x10) + w;
         int contrib = adv;
         if (w == 0xb)
@@ -797,6 +797,10 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
     if (canvas == 0 || mat == 0)
         return;
 
+    // RAWREAD: this recovered MaterialDraw operates on a legacy/non-byte-faithful Material
+    // layout (it reads 0x44 as a submesh count and steps inline per-submesh blocks at
+    // 0x3c/0x48/0x54/0x60+i*0x3c), which does not match the cleaned Material header's
+    // Array<T>* members at those offsets. Left as pointer arithmetic to preserve semantics.
     char *m = (char *)mat;
 
     if (setTextures) {
@@ -920,43 +924,43 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             return -1;
     }
 
-    char *m = (char *)*slot;
+    Mesh *m = *slot;
     // Indexed geometry.
-    if (u8(m, 0x0) & 0x10) { // (byte<<0x1b) negative
-        if (AEFile::Read((uint32_t)(2), m + 0x28, handle) == 0)
+    if (m->vertexFormat & 0x10) { // (byte<<0x1b) negative
+        if (AEFile::Read((uint32_t)(2), &m->indexCount, handle) == 0)
             return -1;
-        void *idx = ::operator new[]((unsigned int)u16(m, 0x28) << 1);
-        pp((char *)*slot, 0x2c) = idx;
-        if (AEFile::Read((uint32_t)((unsigned int)u16((char *)*slot, 0x28) << 1), pp((char *)*slot, 0x2c), handle) == 0)
+        void *idx = ::operator new[]((unsigned int)m->indexCount << 1);
+        (*slot)->indices = idx;
+        if (AEFile::Read((uint32_t)((unsigned int)(*slot)->indexCount << 1), (*slot)->indices, handle) == 0)
             return -1;
-        m = (char *)*slot;
+        m = *slot;
     }
 
     // Vertex count.
-    if (AEFile::Read((uint32_t)(2), m + 0x2, handle) == 0)
+    if (AEFile::Read((uint32_t)(2), &m->vertexCount, handle) == 0)
         return -1;
 
     // Bounding-box accumulators (min/max for x,y,z).
     float minv[3] = {1e30f, 1e30f, 1e30f};
     float maxv[3] = {-1e30f, -1e30f, -1e30f};
     bool compressedPos = (int)(flags << 0x1d) < 0;
-    unsigned int vcount = u16((char *)*slot, 0x2);
+    unsigned int vcount = (*slot)->vertexCount;
 
     if (compressedPos) {
         // 16-bit compressed positions: 3 shorts per vertex.
         void *raw = ::operator new[](vcount * 6);
         if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { ::operator delete[](raw); return -1; }
-        m = (char *)*slot;
+        m = *slot;
         void *pos = ::operator new[](vcount * 0xc);
-        pp(m, 0x4) = pos;
-        m = (char *)*slot;
+        m->positions = pos;
+        m = *slot;
         int dst = 0;
         unsigned int n3 = vcount * 3;
         for (unsigned int i = 0; i < n3; ++i) {
             int axis = (int)__aeabi_uidiv((int)i, 3);
             axis = (int)i - axis * 3;
             float v = AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode);
-            *(float *)(*(int *)(m + 4) + dst) = v;
+            *(float *)((char *)m->positions + dst) = v;
             dst += 4;
             if (v < minv[axis]) minv[axis] = v;
             if (maxv[axis] < v) maxv[axis] = v;
@@ -965,27 +969,27 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     } else if ((flags & 3) == 0) {
         // Raw float positions, read straight in (no per-element bbox here for the enhanced path).
         if ((flags & 0x18) != 0) {
-            m = (char *)*slot;
+            m = *slot;
             void *pos = ::operator new[](vcount * 0xc);
-            pp(m, 0x4) = pos;
-            if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) * 0xc), pp((char *)*slot, 0x4), handle) == 0)
+            m->positions = pos;
+            if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->positions, handle) == 0)
                 return -1;
         }
     } else {
         // Float positions, element-by-element with bbox.
         void *raw = ::operator new[](vcount * 0xc);
         if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) { ::operator delete[](raw); return -1; }
-        m = (char *)*slot;
+        m = *slot;
         void *pos = ::operator new[](vcount * 0xc);
-        pp(m, 0x4) = pos;
-        m = (char *)*slot;
+        m->positions = pos;
+        m = *slot;
         int dst = 0;
         unsigned int n3 = vcount * 3;
         for (unsigned int i = 0; i < n3; ++i) {
             int axis = (int)__aeabi_uidiv((int)i, 3);
             axis = (int)i - axis * 3;
             float v = AbyssEngine::AEMath::VectorSignedToFloat(*(int *)((char *)raw + i * 4), mode);
-            *(float *)(*(int *)(m + 4) + dst) = v;
+            *(float *)((char *)m->positions + dst) = v;
             dst += 4;
             if (v < minv[axis]) minv[axis] = v;
             if (maxv[axis] < v) maxv[axis] = v;
@@ -998,27 +1002,27 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     center[0] = (maxv[0] + minv[0]) * 0.5f;
     center[1] = (maxv[1] + minv[1]) * 0.5f;
     center[2] = (maxv[2] + minv[2]) * 0.5f;
-    *(Vector *)((char *)*slot + 0x3c) = *(const Vector *)center;
+    *(Vector *)&(*slot)->boundsCenterX = *(const Vector *)center;
     float halfDiag[3] = {minv[0], minv[1], minv[2]};
     *(Vector *)center -= *(const Vector *)halfDiag;
-    f32((char *)*slot, 0x48) = AEMath::VectorLength(*(const Vector *)center);
+    (*slot)->boundsRadius = AEMath::VectorLength(*(const Vector *)center);
 
-    m = (char *)*slot;
+    m = *slot;
     // UV coordinates.
-    if (u8(m, 0x0) & 4) { // (byte<<0x1e) negative
+    if (m->vertexFormat & 4) { // (byte<<0x1e) negative
         if (compressedPos) {
             void *raw = ::operator new[](vcount << 2);
             if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
-            m = (char *)*slot;
+            m = *slot;
             void *uv = ::operator new[](vcount << 3);
-            pp(m, 0x8) = uv;
-            m = (char *)*slot;
+            m->texCoords = uv;
+            m = *slot;
             char flip = *g_uvFlipFlag;
             int dst = 0;
             const double scale = 1.0 / 32767.0;
             for (unsigned int i = 0; i < (vcount << 1); i += 2) {
                 double u = (double)AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2), mode) * scale;
-                float *p = (float *)(*(int *)(m + 8) + dst);
+                float *p = (float *)((char *)m->texCoords + dst);
                 dst += 8;
                 p[0] = (float)u;
                 double v = (double)AbyssEngine::AEMath::VectorSignedToFloat((int)*(short *)((char *)raw + i * 2 + 2), mode) * scale;
@@ -1028,14 +1032,14 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
             void *uv = ::operator new[](vcount << 3);
-            pp(m, 0x8) = uv;
-            if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) << 3), pp((char *)*slot, 0x8), handle) == 0)
+            m->texCoords = uv;
+            if (AEFile::Read((uint32_t)((*slot)->vertexCount << 3), (*slot)->texCoords, handle) == 0)
                 return -1;
             if (*g_uvFlipFlag != 0) {
-                m = (char *)*slot;
+                m = *slot;
                 int off = 4;
-                for (unsigned int i = 0; i < (unsigned int)(u16(m, 0x2) << 1); i += 2) {
-                    float *p = (float *)(*(int *)(m + 8) + off);
+                for (unsigned int i = 0; i < (unsigned int)(m->vertexCount << 1); i += 2) {
+                    float *p = (float *)((char *)m->texCoords + off);
                     off += 8;
                     *p = 1.0f - *p;
                 }
@@ -1043,16 +1047,16 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         }
     }
 
-    m = (char *)*slot;
+    m = *slot;
     // Normals (+ tangent/binormal generation).
-    if (u8(m, 0x0) & 8) { // (byte<<0x1d) negative
+    if (m->vertexFormat & 8) { // (byte<<0x1d) negative
         if (compressedPos) {
             void *raw = ::operator new[](vcount * 6);
             if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { ::operator delete[](raw); return -1; }
-            m = (char *)*slot;
+            m = *slot;
             void *nrm = ::operator new[](vcount * 0xc);
-            pp(m, 0x10) = nrm;
-            m = (char *)*slot;
+            m->normals = nrm;
+            m = *slot;
             const double scale = 1.0 / 32767.0;
             short *s = (short *)raw;
             int off = 4;
@@ -1062,7 +1066,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 float nz = (float)((double)AbyssEngine::AEMath::VectorSignedToFloat((int)s[2], mode) * scale);
                 float len2 = nx * nx + ny * ny + nz * nz;
                 float len = sqrtf(len2);
-                int base = *(int *)(m + 0x10);
+                char *base = (char *)m->normals;
                 if (len != 0.0f) {
                     nx /= len; ny /= len; nz /= len;
                     if (nx < -1.0f) nx = -1.0f; if (nx > 1.0f) nx = 1.0f;
@@ -1078,45 +1082,45 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 }
                 s += 3;
                 off += 0xc;
-                m = (char *)*slot;
+                m = *slot;
             }
             ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
             void *nrm = ::operator new[](vcount * 0xc);
-            pp(m, 0x10) = nrm;
-            if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) * 0xc), pp((char *)*slot, 0x10), handle) == 0)
+            m->normals = nrm;
+            if (AEFile::Read((uint32_t)((*slot)->vertexCount * 0xc), (*slot)->normals, handle) == 0)
                 return -1;
         }
 
         // Per-triangle tangent/binormal generation.
         if (*g_tangentEnabled != 0) {
-            m = (char *)*slot;
+            m = *slot;
             void *tan = ::operator new[](vcount * 0xc);
-            pp(m, 0x14) = tan;
-            m = (char *)*slot;
+            m->tangents = tan;
+            m = *slot;
             void *bin = ::operator new[](vcount * 0xc);
-            pp(m, 0x18) = bin;
-            m = (char *)*slot;
+            m->binormals = bin;
+            m = *slot;
 
-            unsigned int triCount = (unsigned int)__aeabi_uidiv((int)(unsigned short)u16(m, 0x28), 3);
+            unsigned int triCount = (unsigned int)__aeabi_uidiv((int)(unsigned short)m->indexCount, 3);
             void *accum = ::operator new[](vcount * 0xc);
             // Zero accumulator.
             for (unsigned int b = 0; b < vcount * 0xc; ++b) ((char *)accum)[b] = 0;
 
             int triOff = 0;
             for (unsigned int t = 0; t < triCount; ++t) {
-                m = (char *)*slot;
-                int posBase = *(int *)(m + 4);
-                int uvBase = *(int *)(m + 8);
-                int idxBase = *(int *)(m + 0x2c) + triOff;
+                m = *slot;
+                char *posBase = (char *)m->positions;
+                char *uvBase = (char *)m->texCoords;
+                char *idxBase = (char *)m->indices + triOff;
                 unsigned int i0 = (unsigned int)*(unsigned short *)(idxBase);
                 unsigned int i2 = (unsigned int)*(unsigned short *)(idxBase + 4);
                 unsigned int i1 = (unsigned int)*(unsigned short *)(idxBase + 2);
 
-                float uv0v = *(float *)((i0 << 3 | 4) + uvBase);
+                float uv0v = *(float *)(uvBase + (i0 << 3 | 4));
                 float uv0u = *(float *)(uvBase + i0 * 8);
-                float dv1 = *(float *)((i2 << 3 | 4) + uvBase) - uv0v;
-                float dv2 = *(float *)((i1 << 3 | 4) + uvBase) - uv0v;
+                float dv1 = *(float *)(uvBase + (i2 << 3 | 4)) - uv0v;
+                float dv2 = *(float *)(uvBase + (i1 << 3 | 4)) - uv0v;
                 float *p0 = (float *)(posBase + i0 * 0xc);
                 float *p2 = (float *)(posBase + i2 * 0xc);
                 float *p1 = (float *)(posBase + i1 * 0xc);
@@ -1139,11 +1143,12 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             // Orthonormalize tangent against the normal, store tangent/binormal.
             int off = 0;
             for (unsigned int v = 0; v < vcount; ++v) {
-                m = (char *)*slot;
+                m = *slot;
+                char *nrmBase = (char *)m->normals;
                 float nrm[3];
-                nrm[0] = *(float *)(*(int *)(m + 0x10) + off);
-                nrm[1] = *(float *)(*(int *)(m + 0x10) + off + 4);
-                nrm[2] = *(float *)(*(int *)(m + 0x10) + off + 8);
+                nrm[0] = *(float *)(nrmBase + off);
+                nrm[1] = *(float *)(nrmBase + off + 4);
+                nrm[2] = *(float *)(nrmBase + off + 8);
                 float tg[3];
                 tg[0] = *(float *)((char *)accum + off);
                 tg[1] = *(float *)((char *)accum + off + 4);
@@ -1154,13 +1159,13 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
                 *(Vector *)tg -= *(const Vector *)scaled;
                 float tanOut[3];
                 *(Vector *)tanOut = AEMath::VectorNormalize(*(const Vector *)tg);
-                int tb = *(int *)((char *)*slot + 0x14) + off;
+                char *tb = (char *)(*slot)->tangents + off;
                 *(float *)(tb) = tanOut[0];
                 *(float *)(tb + 4) = tanOut[1];
                 *(float *)(tb + 8) = tanOut[2];
                 float binOut[3] = {tg[0], tg[1], tg[2]};
                 *(Vector *)binOut = AEMath::VectorCross(*(const Vector *)binOut, *(const Vector *)nrm);
-                int bb = *(int *)((char *)*slot + 0x18) + off;
+                char *bb = (char *)(*slot)->binormals + off;
                 *(float *)(bb) = binOut[0];
                 *(float *)(bb + 4) = binOut[1];
                 *(float *)(bb + 8) = binOut[2];
@@ -1170,28 +1175,28 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         }
     }
 
-    m = (char *)*slot;
+    m = *slot;
     // Vertex colors. (byte<<0x1c) negative -> bit 0x10 set.
-    if (u8(m, 0x0) & 0x10) {
+    if (m->vertexFormat & 0x10) {
         if (compressedPos) {
             void *raw = ::operator new[](vcount << 2);
             if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
-            m = (char *)*slot;
+            m = *slot;
             void *col = ::operator new[](vcount << 4);
-            pp(m, 0xc) = col;
-            m = (char *)*slot;
+            m->colors = col;
+            m = *slot;
             const float inv = 255.0f;
             int dst = 0;
             for (unsigned int i = 0; i < (vcount << 2); ++i) {
                 float c = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int)*((unsigned char *)raw + i), mode);
-                *(float *)(*(int *)(m + 0xc) + dst) = c / inv;
+                *(float *)((char *)m->colors + dst) = c / inv;
                 dst += 4;
             }
             ::operator delete[](raw);
         } else if ((flags & 0x18) != 0) {
             void *col = ::operator new[](vcount << 4);
-            pp(m, 0xc) = col;
-            if (AEFile::Read((uint32_t)(u16((char *)*slot, 0x2) << 4), pp((char *)*slot, 0xc), handle) == 0)
+            m->colors = col;
+            if (AEFile::Read((uint32_t)((*slot)->vertexCount << 4), (*slot)->colors, handle) == 0)
                 return -1;
         }
     }
@@ -1203,21 +1208,21 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
         unsigned short childCount = 0;
         if (AEFile::Read((uint32_t)(2), &childCount, handle) == 0)
             return -1;
-        Transform *xf = *(Transform **)((char *)*slot + 0x34);
+        Transform *xf = (*slot)->animation;
         if (xf != 0)
-            ((AEMath::BSphere *)((char *)*slot + 0x3c))->Merge(xf->bounds());
+            ((AEMath::BSphere *)&(*slot)->boundsCenterX)->Merge(xf->bounds());
         for (unsigned int c = 0; c < childCount; ++c) {
             char *child = (char *)::operator new(0x88);
             for (int b = 0; b < 0x88; ++b) child[b] = 0;
-            u32(child, 0x4c) = 0x3f800000;
-            u8(child, 0x84) = 1;
-            u8(child, 0x0) = u8((char *)*slot, 0x0);
-            pp(child, 0x30) = pp((char *)*slot, 0x30);
             Mesh *childPtr = (Mesh *)child;
+            childPtr->boundsRadiusSq = 1.0f; // +0x4c (IEEE 0x3f800000)
+            childPtr->vboEligible = 1;
+            childPtr->vertexFormat = (*slot)->vertexFormat;
+            childPtr->material = (*slot)->material;
             if (MeshReadData(engine, handlePtr, flags, &childPtr, mat) == -1)
                 return -1;
-            ((AEMath::BSphere *)((char *)*slot + 0x3c))->Merge(*(const AEMath::BSphere *)((char *)childPtr + 0x3c));
-            ArrayAddRaw<Mesh *>(childPtr, (char *)*(int *)((char *)*slot + 0x34) + 0x3c);
+            ((AEMath::BSphere *)&(*slot)->boundsCenterX)->Merge(*(const AEMath::BSphere *)&childPtr->boundsCenterX);
+            ArrayAddRaw<Mesh *>(childPtr, &(*slot)->animation->meshes);
         }
     }
 
@@ -1319,7 +1324,7 @@ int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, Sp
     }
 
     Mesh *mesh = (Mesh *)pp(s, 0x10);
-    int *indexArr = (int *)pp(mesh, 0x2c);
+    int *indexArr = (int *)mesh->indices;
 
     void *posCpu = operator new[](n * 0xc);
     pp(s, 0x4) = posCpu;
@@ -1352,19 +1357,19 @@ int SpriteSystemCreate(Engine *engine, unsigned short count, bool sharedSize, Sp
     }
 
     Mesh *m = (Mesh *)pp(*out, 0x10);
-    unsigned int vcount = (unsigned int)(unsigned short)u16(m, 0x2);
+    unsigned int vcount = (unsigned int)(unsigned short)m->vertexCount;
 
     // Default vertex colors to white (1.0 per channel).
-    float *colors = (float *)pp(m, 0xc);
+    float *colors = (float *)m->colors;
     for (unsigned int i = 0; i <= vcount * 4 && vcount * 4 - i != 0; ++i)
         colors[i] = 1.0f;
 
     // Default normals (and optionally tangents/binormals) to the identity basis.
     char tangent = *g_SpriteSystem_tangentFlag;
     int vo = 0;
-    char *normals = (char *)pp(m, 0x10);
-    char *tangents = (char *)pp(m, 0x14);
-    char *binormals = (char *)pp(m, 0x18);
+    char *normals = (char *)m->normals;
+    char *tangents = (char *)m->tangents;
+    char *binormals = (char *)m->binormals;
     for (unsigned int k = vcount; k != 0; --k) {
         float *nrm = (float *)(normals + vo);
         nrm[0] = 0.0f;
@@ -1585,51 +1590,51 @@ int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short t
     if (vertexCount < 4 || triCount == 0 || (vertexFormat & 1) == 0)
         return -4;
 
-    char *m = (char *)operator new(0x88);
+    Mesh *m = (Mesh *)operator new(0x88);
 
     // Zero the identity/colour/transform region. The decompile splats a 16-byte zero vector
     // across many slots; clearing the whole struct is the faithful net effect, after which we
     // write the few non-zero defaults.
     __aeabi_memclr4(m, 0x88);
-    f32(m, 0x4c) = 1.0f; // default scale = 1.0
+    m->boundsRadiusSq = 1.0f; // +0x4c default scale = 1.0
 
     *out = m;
-    s16(m, 0x2) = (short)vertexCount;
-    u8(m, 0x0) = (char)vertexFormat;
-    s16(m, 0x28) = (short)(triCount + (triCount << 1)); // 3 * triCount (index count)
-    s16(m, 0x2a) = (short)triCount;
+    m->vertexCount = (short)vertexCount;
+    m->vertexFormat = (char)vertexFormat;
+    m->indexCount = (short)(triCount + (triCount << 1)); // 3 * triCount (index count)
+    m->field_0x2a = (short)triCount;
 
     unsigned int posBytes = (unsigned int)vertexCount * 0xc;
     void *p = operator new[](posBytes);
-    pp(m, 0x4) = p;
+    m->positions = p;
     __aeabi_memclr4(p, posBytes);
 
     if (vertexFormat & 0x20) { // (fmt<<0x1b) negative -> index array
         p = operator new[]((unsigned int)triCount * 6);
-        pp(m, 0x2c) = p;
+        m->indices = p;
         __aeabi_memclr(p, (unsigned int)triCount * 6);
     }
     if (vertexFormat & 4) { // (fmt<<0x1e) negative -> uv array
         p = operator new[]((unsigned int)vertexCount << 3);
-        pp(m, 0x8) = p;
+        m->texCoords = p;
         __aeabi_memclr4(p, (unsigned int)vertexCount << 3);
     }
     if (vertexFormat & 8) { // (fmt<<0x1d) negative -> normal array (+ tangents/binormals)
         p = operator new[](posBytes);
-        pp(m, 0x10) = p;
+        m->normals = p;
         __aeabi_memclr4(p, posBytes);
         if (*g_Mesh_tangentEnabledFlag != 0) {
             p = operator new[](posBytes);
-            pp(m, 0x14) = p;
+            m->tangents = p;
             __aeabi_memclr4(p, posBytes);
             p = operator new[](posBytes);
-            pp(m, 0x18) = p;
+            m->binormals = p;
             __aeabi_memclr4(p, posBytes);
         }
     }
     if (vertexFormat & 0x10) { // (fmt<<0x1c) negative -> colour array
         p = operator new[]((unsigned int)vertexCount << 4);
-        pp(m, 0xc) = p;
+        m->colors = p;
         __aeabi_memclr4(p, (unsigned int)vertexCount << 4);
     }
 
@@ -1693,11 +1698,12 @@ namespace AbyssEngine {
 int ImageFontGetHeight(ImageFont *font)
 {
     if (font != 0) {
-        // ((*(*(font+0xc)))[+4])->[0x1c] as float -> int; clamp 0x18 to 0x13.
+        // First glyph mesh's positions[7] (mesh@(*(font+0xc))[0], positions+0x1c) as int;
+        // clamp 0x18 to 0x13.
         void *p = pp(font, 0xc);
-        void *q = pp(p, 0x0);
-        void *r = pp(q, 0x4);
-        int v = (int)f32(r, 0x1c);
+        Mesh *q = (Mesh *)pp(p, 0x0);
+        float *r = (float *)q->positions;
+        int v = (int)r[7];
         if (v == 0x18)
             v = 0x13;
         return v;
@@ -1849,8 +1855,8 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
         }
 
         if (found) {
-            int glyphMesh = *(int *)(*(int *)(f + 0xc) + slot * 4);
-            int advance = (int)*(float *)(*(int *)(glyphMesh + 4) + 0xc);
+            Mesh *glyphMesh = *(Mesh **)(*(int *)(f + 0xc) + slot * 4);
+            int advance = (int)((float *)glyphMesh->positions)[3]; // advance width at positions+0xc
 
             if (x + advance >= 0 && x <= (int)engine->GetDisplayWidth()) {
                 if (!shaderMode) {
@@ -1863,14 +1869,14 @@ int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len,
                     int spr = *(int *)(pc + 8);
                     int n = *(int *)(pc + 0xc);
                     float fx = AbyssEngine::AEMath::VectorSignedToFloat(x, mode);
-                    float *vsrc = *(float **)(glyphMesh + 4);
+                    float *vsrc = (float *)glyphMesh->positions;
                     float *vdst = (float *)(*(int *)(spr + 4) + n * 0x30);
                     vdst[0] = vsrc[0] + fx;     vdst[1] = vsrc[1] + baseY;
                     vdst[3] = vsrc[3] + fx;     vdst[4] = vsrc[4] + baseY;
                     vdst[6] = vsrc[6] + fx;     vdst[7] = vsrc[7] + baseY;
                     vdst[9] = vsrc[9] + fx;     vdst[10] = vsrc[10] + baseY;
 
-                    unsigned int *csrc = *(unsigned int **)(glyphMesh + 8);
+                    unsigned int *csrc = (unsigned int *)glyphMesh->texCoords;
                     unsigned int *cdst = (unsigned int *)(*(int *)(spr + 8) + (n << 5));
                     for (int k = 0; k < 8; ++k) cdst[k] = csrc[k];
 
@@ -1947,11 +1953,11 @@ int  MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCo
 void ImageFontRelease(Engine *engine, ImageFont **slot);
 
 // Build one glyph quad into the mesh at *meshSlot using the four region shorts already read.
-static void buildGlyphQuad(int mesh, unsigned int offX, unsigned int offY, unsigned int sizeX,
+static void buildGlyphQuad(Mesh *mesh, unsigned int offX, unsigned int offY, unsigned int sizeX,
                            unsigned int sizeY, unsigned int atlasW, unsigned int atlasH,
                            unsigned char mode)
 {
-    float *pos = *(float **)(mesh + 4);
+    float *pos = (float *)mesh->positions;
     float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat(sizeX, mode);
     pos[0] = 0; pos[1] = 0; pos[2] = 0;
     pos[4] = 0; pos[5] = 0; pos[3] = halfW; pos[6] = halfW;
@@ -1965,14 +1971,14 @@ static void buildGlyphQuad(int mesh, unsigned int offX, unsigned int offY, unsig
     float u0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aW);
     float v0 = AbyssEngine::AEMath::VectorUnsignedToFloat(offX, mode) * (float)(1.0 / aH);
 
-    float *uv = *(float **)(mesh + 8);
+    float *uv = (float *)mesh->texCoords;
     float v1 = (halfH + offYs) * (float)(1.0 / aH);
     float u1 = (halfW + offXs) * (float)(1.0 / aW);
     uv[0] = u0; uv[1] = v0; uv[2] = u1;
     uv[3] = v0; uv[4] = u1; uv[5] = v1;
     uv[6] = u0; uv[7] = v1;
 
-    unsigned int *draw = *(unsigned int **)(mesh + 0x2c);
+    unsigned int *draw = (unsigned int *)mesh->indices;
     draw[0] = 0x20000;
     draw[1] = 1;
     draw[2] = 0;
@@ -2051,7 +2057,7 @@ int ImageCreateFontFromFile(Engine *engine, char *path, unsigned short index, Im
                 if (AEFile::Read((uint32_t)(2), &sizeX, handle) == 0) goto fail;
                 if (AEFile::Read((uint32_t)(2), &offX, handle) == 0) goto fail;
                 if (AEFile::Read((uint32_t)(2), &offY, handle) == 0) goto fail;
-                int mesh = *(int *)(*(int *)(pp((char *)*out, 0xc)) + gi * 4);
+                Mesh *mesh = *(Mesh **)(*(int *)(pp((char *)*out, 0xc)) + gi * 4);
                 buildGlyphQuad(mesh, offX, offY, sizeX, sizeY, atlasW, atlasH, mode);
             }
         } else {
@@ -2138,7 +2144,7 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         return;
 
     Mesh *mesh = (Mesh *)pp(sys, 0x10);
-    float *vbuf = (float *)pp(mesh, 0x4);
+    float *vbuf = (float *)mesh->positions;
 
     Matrix mv;
     AE_AEMath_matMul(&mv, view);
@@ -2175,10 +2181,10 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         out[9] = left;  out[10] = bottom; out[11] = cz;
     }
 
-    if (i32(mesh, 0x30) == 0) {
+    if (mesh->material == 0) {
         MeshDraw(engine, mesh);
     } else {
-        void *batch = pp(mesh, 0x30);
+        void *batch = mesh->material;
         ArrayAddCachedRaw<Mesh *>(mesh, (char *)batch + 0x44);
 
         // Record the view / unit / world transforms into the deferred batch command buffer.
@@ -2233,9 +2239,9 @@ int MeshConvertToVBOIntern(Mesh *m)
 
     // The colors/tangents/binormals slots hold array pointers (kept as 32-bit-wide fields
     // to preserve the struct layout); read them back as real pointers for the GL calls.
-    void *colArr = pp(m, 0xc);
-    void *tanArr = pp(m, 0x14);
-    void *binArr = pp(m, 0x18);
+    void *colArr = m->colors;
+    void *tanArr = m->tangents;
+    void *binArr = m->binormals;
 
     // Position buffer (always present).
     glGenBuffers(1, &m->positionVBO);
@@ -2289,9 +2295,9 @@ int MeshConvertToVBOIntern(Mesh *m)
             freeArray(m->texCoords);
             freeArray(m->indices);
             freeArray(m->normals);
-            freeArray(pp(m, 0xc));   // colors
-            freeArray(pp(m, 0x14));  // tangents
-            freeArray(pp(m, 0x18));  // binormals
+            freeArray(m->colors);
+            freeArray(m->tangents);
+            freeArray(m->binormals);
         }
         m->uploaded = 1;
         *g_Mesh_vboByteCounter += m->vboByteSize;
@@ -2333,10 +2339,10 @@ int MeshConvertToVBO(Mesh *mesh);
 int TransformConvertToVBO(Transform *t)
 {
     if (t != 0) {
-        for (unsigned int i = 0; i < u32(t, 0x3c); ++i)
-            MeshConvertToVBO(*(Mesh **)((char *)pp(t, 0x40) + i * 4));
-        for (unsigned int i = 0; i < u32(t, 0x4c); ++i)
-            TransformConvertToVBO(*(Transform **)((char *)pp(t, 0x50) + i * 4));
+        for (unsigned int i = 0; i < t->meshes.size_; ++i)
+            MeshConvertToVBO(t->meshes.data_[i]);
+        for (unsigned int i = 0; i < t->children.size_; ++i)
+            TransformConvertToVBO(t->children.data_[i]);
     }
     return 1;
 }
@@ -2715,12 +2721,12 @@ void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot)
         releaseArray(m->indices);
         releaseArray(m->positions);
         releaseArray(m->texCoords);
-        releaseArray(pp(m, 0xc));   // colors
+        releaseArray(m->colors);
         releaseArray(m->normals);
 
         if (*g_Mesh_extraArraysFlag != 0) {
-            releaseArray(pp(m, 0x14));  // tangents
-            releaseArray(pp(m, 0x18));  // binormals
+            releaseArray(m->tangents);
+            releaseArray(m->binormals);
         }
     }
 
@@ -2808,11 +2814,11 @@ int  MeshReadData(Engine *engine, unsigned int *handle, unsigned int flags, Mesh
 void MeshRelease(Engine *engine, Mesh **slot);
 
 // Zero a freshly-allocated Mesh and write its identity defaults.
-static void initMesh(char *m)
+static void initMesh(Mesh *m)
 {
-    for (int i = 0; i < 0x88; ++i) m[i] = 0;
+    for (int i = 0; i < 0x88; ++i) ((char *)m)[i] = 0;
     // Identity-ish: scale field at 0x4c = 1.0; the matrix slots default to 0 here.
-    u32(m, 0x4c) = 0x3f800000;
+    m->boundsRadiusSq = 1.0f; // IEEE 0x3f800000
 }
 
 int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
@@ -2820,13 +2826,13 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     if (engine == 0 || path == 0)
         return -4;
 
-    char *m = (char *)::operator new(0x88);
+    Mesh *m = (Mesh *)::operator new(0x88);
     initMesh(m);
-    *out = (Mesh *)m;
-    pp(m, 0x30) = mat;
+    *out = m;
+    m->material = mat;
 
     unsigned int handle = 0;
-    if (AEFile::OpenRead((const char *)(path), (uint32_t *)((char *)m + 0x60)) == 0) {
+    if (AEFile::OpenRead((const char *)(path), &m->positionVBO) == 0) {
         if (*out != 0)
             ::operator delete((void *)*out);
         *out = 0;
@@ -2869,7 +2875,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
         if (AEFile::Read((uint32_t)(2), &ver, handle) == 0) { MeshRelease(engine, out); AEFile::Close(handle); return -1; }
     }
     // Read the first byte (vertex-format flag) into mesh+0x00.
-    if (AEFile::Read((uint32_t)(1), (char *)*out, handle) == 0 || u8((char *)*out, 0x0) == 0) {
+    if (AEFile::Read((uint32_t)(1), &(*out)->vertexFormat, handle) == 0 || (*out)->vertexFormat == 0) {
         MeshRelease(engine, out);
         AEFile::Close(handle);
         return -1;
@@ -2890,21 +2896,20 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
             if (MeshReadData(engine, &handle, fmt, out, mat) != -1)
                 ok = true;
         } else {
-            pp((char *)*out + 0x34, 0) = new Transform();
+            (*out)->animation = new Transform();
             for (unsigned int s = 0; s < subCount; ++s) {
-                char *child = (char *)::operator new(0x88);
-                initMesh(child);
-                u8(child, 0x84) = 1;
-                u8(child, 0x0) = u8((char *)*out, 0x0);
-                pp(child, 0x30) = mat;
-                Mesh *childPtr = (Mesh *)child;
+                Mesh *childPtr = (Mesh *)::operator new(0x88);
+                initMesh(childPtr);
+                childPtr->vboEligible = 1;
+                childPtr->vertexFormat = (*out)->vertexFormat;
+                childPtr->material = mat;
                 if (MeshReadData(engine, &handle, fmt, &childPtr, mat) == -1) {
                     MeshRelease(engine, out);
                     AEFile::Close(handle);
                     return -1;
                 }
-                ((AEMath::BSphere *)((char *)*out + 0x3c))->Merge(*(const AEMath::BSphere *)((char *)childPtr + 0x3c));
-                ArrayAddRaw<Mesh *>(childPtr, (char *)*(int *)((char *)*out + 0x34) + 0x3c);
+                ((AEMath::BSphere *)&(*out)->boundsCenterX)->Merge(*(const AEMath::BSphere *)&childPtr->boundsCenterX);
+                ArrayAddRaw<Mesh *>(childPtr, &(*out)->animation->meshes);
             }
             ok = true;
         }
@@ -2912,7 +2917,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 
     if (ok) {
         AEFile::Close(handle);
-        Transform *xf = (Transform *)pp((char *)*out + 0x34, 0);
+        Transform *xf = (*out)->animation;
         if (xf != 0) {
             xf->CollectAnimationData();
             long long t = __aeabi_f2lz(0.0f);
@@ -3235,17 +3240,13 @@ void TransformRelease(Engine *engine, Transform **slot)
     if (t == 0)
         return;
 
-    int off = 0;
-    for (unsigned int i = 0; i < u32(t, 0x4c); ++i) {
-        TransformRelease(engine, (Transform **)((char *)pp(t, 0x50) + off));
-        off += 4;
+    for (unsigned int i = 0; i < t->children.size_; ++i) {
+        TransformRelease(engine, &t->children.data_[i]);
         t = (Transform *)*slot;
     }
 
-    off = 0;
-    for (unsigned int i = 0; i < u32(t, 0x3c); ++i) {
-        MeshRelease(engine, (Mesh **)((char *)pp(t, 0x40) + off));
-        off += 4;
+    for (unsigned int i = 0; i < t->meshes.size_; ++i) {
+        MeshRelease(engine, &t->meshes.data_[i]);
         t = (Transform *)*slot;
     }
 }

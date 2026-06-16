@@ -615,6 +615,8 @@ void Hud::drawEventQueue() {
     char cinematicY = (letterbox == 0) ? 0 : (char)this->field_0x3e2;
 
     void *src = *g_Hud_eqSelf;
+    // RAWREAD: src is an opaque "Hud-like" holder (void*) from a void** global; +0x1e0/+0x1e4
+    // are int/float display state there, not Hud members (Hud has a String at +0x1e0).
     int dispBase = F<int>(src, 0x1e4);
     float dispScale = F<float>(src, 0x1e0);
 
@@ -1106,6 +1108,8 @@ void Hud::initHudMenu(int menuType, void *lvl) {
     this->menuOriginX = 0;
     int *layout = (int *)*g_Hud_imLayout;
     int rowH = *(int *)(layout[0] + 0x1dc); // first row height
+    // RAWREAD: layout is an opaque int* holder (from a void** global); layout[0] is an
+    // untyped pointer with no modeled class, so +0x1dc has no named member.
     char letterbox = *(char *)*g_Hud_imLetterbox;
 
     int yOrigin;
@@ -1113,6 +1117,8 @@ void Hud::initHudMenu(int menuType, void *lvl) {
         yOrigin = this->menuBaseY;
     } else {
         // cargo-bay percentage shifts the menu up in letterboxed mode
+        // RAWREAD: cargoA / *g_Hud_imCargoA / *g_Hud_imCargoB are opaque void* holders (from
+        // void** globals); +0x54 (cargo cur) / +0x58 (cargo max) belong to an unmodeled class.
         void *cargoA = *g_Hud_imCargoA;
         float v;
         if ((long)this->menuLevel == 3)

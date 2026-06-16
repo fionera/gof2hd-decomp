@@ -266,7 +266,7 @@ void MGame::startJumpScene() {
     int *guard = g_jsGuard;
     int g0 = *guard;
 
-    ((Player *)(*(void **)((char *)this->player)))->setVulnerable(0);
+    ((Player *)(this->player->player))->setVulnerable(0);
     this->level->enableFog(0);
 
     if (this->player->isDockedToDockingPoint() != 0) {
@@ -320,7 +320,7 @@ void MGame::startJumpScene() {
         this->egoJumpPosZ = (int)nz;
         this->player->setPosition();
         this->player->setComputerControlled(1);
-        ((AEGeometry *)*(void **)((char *)this->player + 8))->setRotation((float)0, (float)0, (float)0);
+        ((AEGeometry *)this->player->geometry)->setRotation((float)0, (float)0, (float)0);
         this->egoJumpPosX = (int)((float)this->egoJumpPosX + *(float *)&g_jsOffsetX);
         this->egoJumpPosY = (int)((float)this->egoJumpPosY + *(float *)&g_jsOffsetY);
         this->egoJumpPosZ = (int)((float)this->egoJumpPosZ + *(float *)&g_jsOffsetZ2);
@@ -353,7 +353,7 @@ void MGame::startJumpScene() {
 
         float off[4]; off[0] = (float)g_jsOffsetX; off[1] = (float)g_jsOffsetY; off[2] = (float)g_jsOffsetX;
         *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
-        *(Vector*)((Vector *)((char *)*(int *)((char *)this->player) + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(off), *(const Vector*)((Vector *)((char *)*(int *)((char *)this->player) + 4)));
+        *(Vector*)((char *)this->player->player + 4) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(off), *(const Vector*)((Vector *)((char *)this->player->player + 4)));
         *(Vector*)((Vector *)off) = *(const Vector*)((Vector *)off);
         *(Vector*)(dst) += *(const Vector*)((Vector *)off);
 
@@ -630,7 +630,7 @@ void MGame::gameOverCheck() {
             if (!done) {
                 int cm = gStatus->getCurrentCampaignMission();
                 if (cm != 0x2a) {
-                    Objective *obj = *(Objective **)((char *)this->level + 0x28);
+                    Objective *obj = this->level->objectivesA;
                     survival = (obj == 0) || (((Objective *)(obj))->isSurvivalObjective() != 0);
                 }
                 if (!survival) {
@@ -1253,6 +1253,7 @@ void MGame::setupWeaponsAndAudio() {
                     ((Station *)(gStatus->getStation()))->getIndex());
                 ((Mission *)(m))->setStatusValue(statusVal | (1 << (bit2 & 0xff)));
                 if (self->player != 0 && self->radio != 0)
+                    // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
                     *(Radio **)((char *)self->player + 0x18) = self->radio;
                 self->level->createRadioMessage(0x13, 0);
             }
@@ -1293,7 +1294,7 @@ void MGame::setupWeaponsAndAudio() {
             Vec3 p = self->player->getPosition();
             (void)p;
             ((FModSound *)(*g_fmod))->play(*g_initEngineSnd,
-                                           (Vector *)((char *)self->player + 0x1c),
+                                           (Vector *)&self->player->field_0x1c,
                                            (Vector *)&p, 0.0f);
         }
     } else {
@@ -1441,6 +1442,7 @@ void MGame::OnInitialize() {
     if (gStatus->dlc1Won() != 0 && gStatus->inAlienOrbit() != 0 &&
         gStatus->getCurrentCampaignMission() < 0x93) {
         if (self->player != 0 && self->radio != 0)
+            // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
             *(Radio **)((char *)self->player + 0x18) = self->radio;
         self->level->createRadioMessage(8, 0);
     }
@@ -1449,6 +1451,7 @@ void MGame::OnInitialize() {
         *(uint16_t *)((char *)*status + 0x110) = 0;
     } else {
         if (self->player != 0 && self->radio != 0)
+            // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
             *(Radio **)((char *)self->player + 0x18) = self->radio;
         if (*(uint8_t *)((char *)*status + 0x110) == 0) {
             int id;
@@ -1593,7 +1596,8 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     int wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
     TFC_setFastForwardMode(this->camera, 0);
-    // (*ppPVar1)[3].field_18 == ego + 0x... resume-flag.
+    // RAWREAD: PlayerEgo +0x150 resume-flag; offset not pinned to a named member
+    // in PlayerEgo.h (no +0x offset comments in that region).
     *(uint8_t *)((char *)this->player + 0x150) = 1;
 
     unsigned hr = 0;
@@ -1893,7 +1897,8 @@ void MGame::startChargingJumpDrive() {
     int *jf = g_jumpFlag;
     if (hc != 0) needed = 2;
     int cost;
-    if (*jf == F<int>((MGame *)gStatus, 0x78)) {
+    // RAWREAD: Status +0x78 (current station ptr) not modeled in gof2/Status.h.
+    if (*jf == *(int *)((char *)gStatus + 0x78)) {
         cost = needed << 1;
     } else {
         cost = **g_alienAmt;
@@ -1917,7 +1922,8 @@ void MGame::startChargingJumpDrive() {
         return;
     }
     this->player->startJumpDrive();
-    if (*jf != F<int>((MGame *)gStatus, 0x78)) {
+    // RAWREAD: Status +0x78 (current station ptr) not modeled in gof2/Status.h.
+    if (*jf != *(int *)((char *)gStatus + 0x78)) {
         if (gStatus->inAlienOrbit() == 0) needed = **g_alienCost;
     }
     this->hud->hudEvent(0x1e, this->player, needed);
@@ -1992,7 +1998,7 @@ void MGame::reset() {
     }
     TargetFollowCamera *tfc = (TargetFollowCamera *)::operator new(0x178);
     TargetFollowCamera_ctor(tfc, this->cameraId,
-                            *(int *)((char *)this->player + 8), 0, 0, 0, 0, 0, 0);
+                            (int)(intptr_t)this->player->geometry, 0, 0, 0, 0, 0, 0);
     this->camera = tfc;
     pc->CameraSetCurrent(this->cameraId);
     this->player->setTargetFollowCamera(this->camera);
@@ -2320,7 +2326,7 @@ void MGame::updateJumpScene() {
 
 camMove: {
         int speed = self->deltaTime;
-        int ego = *(int *)((char *)self->player);
+        void *ego = self->player->player;
         float mtx[4];
         *(Vector*)((Vector *)((char *)ego + 4)) = AbyssEngine::AEMath::MatrixRotateVector(*(const Matrix*)(mtx), *(const Vector*)((Vector *)((char *)ego + 4)));
         *(Vector*)((Vector *)((char *)&self->egoJumpPosX)) = *(const Vector*)((Vector *)mtx);
@@ -2355,7 +2361,7 @@ afterCam:
         float t2 = (float)self->egoJumpPosZ + *(float *)&g_ujZSound;
         if (t2 <= p[2] && self->jumpGateSoundStarted == 0) {
             int *snd = g_ujSound;
-            FModSound_setProp(*snd, *(int *)((char *)self->player + 0x1c));
+            FModSound_setProp(*snd, self->player->field_0x1c);
             FModSound_setProp(*snd, 0x8d5);
             FModSound_setProp(*snd, 0x8d4);
             FModSound_setProp(*snd, 0x23);
@@ -2411,10 +2417,11 @@ afterCam:
                 ((Status *)((Station *)gStatus))->setStation((Station *)*stationPtr /* station: arg lost in decomp */);
             }
             *stationPtr = 0;
-            *(int *)((char *)gStatus + 100) = ((Player *)((Player *)*(int *)((char *)self->player)))->getHitpoints();
-            *(int *)((char *)gStatus + 0x5c) = ((Player *)((Player *)*(int *)((char *)self->player)))->getShieldHP();
-            *(int *)((char *)gStatus + 0x60) = ((Player *)((Player *)*(int *)((char *)self->player)))->getArmorHP();
-            *(int *)((char *)gStatus + 0x68) = ((Player *)((Player *)*(int *)((char *)self->player)))->getGammaHP();
+            // RAWREAD: Status HP fields +0x64/0x5c/0x60/0x68 not modeled in gof2/Status.h.
+            *(int *)((char *)gStatus + 100) = ((Player *)(self->player->player))->getHitpoints();
+            *(int *)((char *)gStatus + 0x5c) = ((Player *)(self->player->player))->getShieldHP();
+            *(int *)((char *)gStatus + 0x60) = ((Player *)(self->player->player))->getArmorHP();
+            *(int *)((char *)gStatus + 0x68) = ((Player *)(self->player->player))->getGammaHP();
             *(int *)((char *)gStatus + 0xf4) = self->player->getCurrentSecondaryWeaponIndex();
             **g_ujFlagC = 1;
             self->active = 0;
@@ -2641,7 +2648,7 @@ void MGame::OnRender2D() {
         // Menu-touch-window / star-system background path.
         bool drawSS = true;
         if (self->freeCamMode != 0 && self->freeCamDragging != 0 &&
-            *(uint8_t *)((char *)self->menuWindow + 1) == 0) {
+            self->menuWindow->pendingActivate == 0) {
             drawSS = true;
         } else {
             self->menuWindow->draw();
@@ -2763,8 +2770,8 @@ void MGame::dialogueEvent() {
     this->player->hideShipForFirstPersonCameraView(0);
     LevelScript *cam = this->levelScript;
     this->needsRedraw = 1;
-    F<int>(cam, 0x8) = 0;
-    F<int>(cam, 0xc) = 0;
+    cam->field_0x8 = 0;
+    cam->field_0xc = 0;
     this->pauseOpen = 1;
     ((MGame *)(this))->pauseSounds();
     this->cutsceneActive = 1;

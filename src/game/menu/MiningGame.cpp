@@ -29,6 +29,10 @@ extern "C" int MiningGame_Status_getCurrentCampaignMission_render(void *status);
 extern "C" String *MiningGame_GameText_getText(void *gameText, int id);
 
 // Generic typed field accessors over engine singletons reached only as void*.
+// RAWREAD: every I()/F()/UC() target here is an opaque engine singleton
+// (layout/status) handed back through a void** global, not a byte-faithful typed
+// object. The Layout/Status headers are sparse (no members at these offsets), so
+// these stay as raw offset reads rather than invented named members.
 static inline int &I(void *p, unsigned off) { return *(int *)((char *)p + off); }
 static inline float &F(void *p, unsigned off) { return *(float *)((char *)p + off); }
 static inline uint8_t &UC(void *p, unsigned off) { return *(uint8_t *)((char *)p + off); }

@@ -331,6 +331,7 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
     if (AEFile::FileExist(path) != 0) {
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
+        // RAWREAD: GameRecord payload is a positional save-image blob (no per-field members in GameRecord.h).
         AEFile_Read_i64((char *)gr + 0x10, fd);
         AEFile_Read_i32((char *)gr + 0x8, fd);
         AEFile_Read_bool((char *)gr + 0x194, fd, true);
@@ -397,7 +398,7 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
 
     AEFile_Write_i32(gStatus->getCurrentCampaignMission(), fd);
     AEFile_Write_i32(gStatus->getLevel(), fd);
-    AEFile_Write_f32(*(int *)((char *)*(void **)g_RH_wp_float + 0x2c), fd);
+    AEFile_Write_f32(*(int *)((char *)*(void **)g_RH_wp_float + 0x2c), fd);   // RAWREAD: opaque global object (g_RH_wp_float), unmodeled +0x2c float
     AEFile_Write_i32(((Ship *)(gStatus->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
     return 1;
@@ -553,7 +554,7 @@ void RecordHandler::loadOptions() {
 
             AEFile_ReadByte(s + 0x10, fd);
             AEFile_ReadByte(s + 0x11, fd);
-            *(unsigned char *)(*(int *)g_LO_statusObj + 0xfa) = s[0x11];
+            *(unsigned char *)(*(int *)g_LO_statusObj + 0xfa) = s[0x11];   // RAWREAD: opaque status handle (g_LO_statusObj), original-layout byte 0xfa
             AEFile_ReadInt(s + 0x14, fd);
             AEFile_ReadInt(s + 0x18, fd);
             AEFile_ReadInt(s + 0x1c, fd);
@@ -1049,6 +1050,7 @@ int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
 
+    // RAWREAD: GameRecord payload is a positional save-image blob (no per-field members in GameRecord.h).
     AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
     AEFile_Write_i32(*(int *)((char *)rec + 0x8), fd);
 
@@ -1126,21 +1128,19 @@ __attribute__((visibility("hidden"))) extern int    g_RSW_modVersion; // ship-mo
 // Item / Achievements / Standing live in out-of-batch headers whose full layout is not
 // pulled in here; their accessors are reached through extern "C" shims (codebase style).
 
-// Helper: write a length-prefixed bool[] backed by an Array<bool> at status+off.
-static void RSW_writeBoolArray(void *status, int off, unsigned int fd) {
-    unsigned int *arr = *(unsigned int **)((char *)status + off);
-    AEFile_WriteInt(*arr, fd);
-    for (unsigned i = 0; i < *arr; i++) {
-        AEFile_WriteBool(*(bool *)(arr[1] + i), fd);
+// Helper: write a length-prefixed bool[] backed by an Array<bool>.
+static void RSW_writeBoolArray(Array<bool> *arr, unsigned int fd) {
+    AEFile_WriteInt(arr->size(), fd);
+    for (unsigned i = 0; i < arr->size(); i++) {
+        AEFile_WriteBool((*arr)[i], fd);
     }
 }
 
-// Helper: write a length-prefixed int[] backed by an Array<int> at status+off.
-static void RSW_writeIntArray(void *status, int off, unsigned int fd) {
-    unsigned int *arr = *(unsigned int **)((char *)status + off);
-    AEFile_WriteInt(*arr, fd);
-    for (unsigned i = 0; i < *arr; i++) {
-        AEFile_WriteInt(*(int *)(arr[1] + i * 4), fd);
+// Helper: write a length-prefixed int[] backed by an Array<int>.
+static void RSW_writeIntArray(Array<int> *arr, unsigned int fd) {
+    AEFile_WriteInt(arr->size(), fd);
+    for (unsigned i = 0; i < arr->size(); i++) {
+        AEFile_WriteInt((*arr)[i], fd);
     }
 }
 
@@ -1184,24 +1184,24 @@ static void RSW_writeMods(Ship *ship, unsigned int fd) {
 }
 
 void RecordHandler::recordStoreWrite_body(unsigned int fd) {
-    void *status = gStatus;
+    Status *status = gStatus;
     char *flags = (char *)g_RSW_optFlags;   // option/progress flag block
     char *ui = (char *)g_RSW_uiFlags;       // secondary flag block
 
     // Standings unlock bitmap and the various progress / discovery bitmaps.
-    AEFile_WriteInt(((Status *)status)->field_7c, fd);
-    AEFile_WriteInt(((Status *)status)->field_84, fd);
+    AEFile_WriteInt(status->field_7c, fd);
+    AEFile_WriteInt(status->field_84, fd);
     AEFile_WriteInt(*(int *)((char *)status + 0x88), fd);   // RAWREAD: Status+0x88 (no named member; gap between field_84 and field_8c)
-    RSW_writeBoolArray(status, 0x94, fd);
-    RSW_writeBoolArray(status, 0x98, fd);
-    AEFile_WriteInt(((Status *)status)->field_9c, fd);
-    AEFile_WriteInt(((Status *)status)->field_a0, fd);
-    AEFile_WriteInt(((Status *)status)->field_a4, fd);
-    AEFile_WriteInt(((Status *)status)->field_a8, fd);
-    RSW_writeBoolArray(status, 0xac, fd);
-    AEFile_WriteInt(((Status *)status)->field_b0, fd);
-    RSW_writeBoolArray(status, 0xb4, fd);
-    AEFile_WriteInt(((Status *)status)->field_b8, fd);
+    RSW_writeBoolArray(status->field_94, fd);
+    RSW_writeBoolArray(status->field_98, fd);
+    AEFile_WriteInt(status->field_9c, fd);
+    AEFile_WriteInt(status->field_a0, fd);
+    AEFile_WriteInt(status->field_a4, fd);
+    AEFile_WriteInt(status->field_a8, fd);
+    RSW_writeBoolArray(status->field_ac, fd);
+    AEFile_WriteInt(status->field_b0, fd);
+    RSW_writeBoolArray(status->field_b4, fd);
+    AEFile_WriteInt(status->field_b8, fd);
     AEFile_WriteLong(*(long long *)((char *)status + 0xc0), fd);   // RAWREAD: Status+0xc0 (i64 spans field_c0/field_c4 int32 members)
     for (int off = 0xc8; off <= 0xec; off += 4) {
         AEFile_WriteInt(*(int *)((char *)status + off), fd);       // RAWREAD: Status+0xc8..0xec (loop over field_c8..field_ec)
@@ -1215,17 +1215,17 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Player ship: index, race, equipment, cargo.
-    Ship *ship = ((Status *)status)->getShip();
+    Ship *ship = status->getShip();
     AEFile_WriteInt(((Ship *)ship)->getIndex(), fd);
     AEFile_WriteInt(((Ship *)ship)->getRace(), fd);
     RSW_writeEquipment(ship, fd);
     RSW_writeCargo(ship, fd);
 
     // Station stack (3 fixed slots + current station): items, ships, agents, hostility flag.
-    Array<Station*> *stack = ((Status *)status)->getStationStack();
+    Array<Station*> *stack = status->getStationStack();
     AEFile_WriteInt(3, fd);
     for (unsigned i = 0; i < stack->size() + 1; i++) {
-        Station *cur = (i == stack->size()) ? (Station *)((Status *)status)->getStation()
+        Station *cur = (i == stack->size()) ? (Station *)status->getStation()
                                      : (*stack)[i];
         if (cur == 0) { AEFile_WriteInt(-1, fd); continue; }
         AEFile_WriteInt(((Station *)cur)->getIndex(), fd);
@@ -1264,14 +1264,14 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Standings (2 races).
-    int standings = (int)(intptr_t)((Standing *)(((Status *)(status))->getStanding()))->getStandings();
+    int standings = (int)(intptr_t)((Standing *)(status->getStanding()))->getStandings();
     AEFile_WriteInt(2, fd);
     for (unsigned i = 0; i < 2; i++) {
         AEFile_WriteInt(*(int *)(standings + i * 4), fd);
     }
 
     // Blueprints: per blueprint the ingredient list, then its scalar fields and name.
-    unsigned int *bps = (unsigned int *)((Status *)status)->getBluePrints();
+    unsigned int *bps = (unsigned int *)status->getBluePrints();
     AEFile_WriteInt(*bps, fd);
     for (unsigned i = 0; i < *bps; i++) {
         int *bp = *(int **)(bps[1] + i * 4);
@@ -1287,7 +1287,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Pending products (only the populated slots are written; -1 when none).
-    unsigned int *pending = (unsigned int *)((Status *)status)->getPendingProducts();
+    unsigned int *pending = (unsigned int *)status->getPendingProducts();
     if (pending == 0) { AEFile_WriteInt(-1, fd); }
     else {
         int count = 0;
@@ -1300,6 +1300,8 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
             for (unsigned i = 0; i < *pending; i++) {
                 int pp = *(int *)(pending[1] + i * 4);
                 if (pp == 0) continue;
+                // RAWREAD: original-layout PendingProduct offsets; the cleaned struct's String pushes
+                // the scalar members to 0x18+, so these +0xc..+0x14 reads don't map to named members.
                 AEFile_WriteInt(*(int *)(pp + 0x14), fd);
                 AEFile_WriteInt(*(int *)(pp + 0x10), fd);
                 AEFile_WriteInt(*(int *)(pp + 0xc), fd);
@@ -1317,23 +1319,23 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
             AEFile_WriteString(*(char **)(wingmen[1] + i * 4), fd, true);
         }
         AEFile_WriteInt(*(int *)((char *)status + 0x2c), fd);     // RAWREAD: Status+0x2c (no named member; between field_0x28 and field_0x30)
-        AEFile_WriteInt(((Status *)status)->field_0x30, fd);
+        AEFile_WriteInt(status->field_0x30, fd);
         AEFile_WriteInt(5, fd);
         for (unsigned i = 0; i < 5; i++) {
             AEFile_WriteInt(*(int *)(*(int *)((char *)status + 0x28) + i * 4), fd);  // RAWREAD: Status+0x28 (field_0x28 int32 reinterpreted as int[] base)
         }
     }
 
-    AEFile_WriteInt(((Status *)status)->passengers, fd);
-    RSW_writeBoolArray(status, 0x38, fd);
-    RSW_writeIntArray(status, 0x40, fd);
-    RSW_writeIntArray(status, 0x3c, fd);
-    RSW_writeIntArray(status, 0x48, fd);
-    RSW_writeIntArray(status, 0x44, fd);
-    RSW_writeBoolArray(status, 0x4c, fd);
+    AEFile_WriteInt(status->passengers, fd);
+    RSW_writeBoolArray(status->systemVisibilities, fd);
+    RSW_writeIntArray(status->field_0x40, fd);
+    RSW_writeIntArray(status->field_0x3c, fd);
+    RSW_writeIntArray(status->field_0x48, fd);
+    RSW_writeIntArray(status->field_0x44, fd);
+    RSW_writeBoolArray(status->field_4c, fd);
 
     // Agents.
-    unsigned int *agents = (unsigned int *)((Status *)status)->getAgents();
+    unsigned int *agents = (unsigned int *)status->getAgents();
     AEFile_WriteInt(*agents, fd);
     for (unsigned i = 0; i < *agents; i++) {
         this->writeAgent(*(void **)(agents[1] + i * 4), fd);
@@ -1364,14 +1366,14 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
         RSW_writeCargo(wingShip, fd);
     }
 
-    RSW_writeIntArray(status, 0x90, fd);
-    AEFile_WriteInt(((Status *)status)->field_10c, fd);
-    AEFile_WriteBool(((Status *)status)->field_110, fd);
-    AEFile_WriteInt(((Status *)status)->field_114, fd);
-    AEFile_WriteBool(((Status *)status)->field_0x111, fd);
+    RSW_writeIntArray(status->field_90, fd);
+    AEFile_WriteInt(status->field_10c, fd);
+    AEFile_WriteBool(status->field_110, fd);
+    AEFile_WriteInt(status->field_114, fd);
+    AEFile_WriteBool(status->field_0x111, fd);
 
     // Current station's items / ships (re-read off the current station).
-    Station *station = (Station *)((Status *)status)->getStation();
+    Station *station = (Station *)status->getStation();
     Array<Item*> *sItems = (Array<Item*> *)((Station *)station)->getItems();
     if (sItems == 0) { AEFile_WriteInt(0, fd); }
     else {
@@ -1398,7 +1400,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     AEFile_WriteBool(*(bool *)(flags + 0x27), fd);
     AEFile_WriteBool(*(bool *)(ui + 0x35), fd);
     AEFile_WriteBool(*(bool *)(ui + 0x36), fd);
-    RSW_writeBoolArray(status, 0x54, fd);
+    RSW_writeBoolArray(status->field_54, fd);
 
     // Ship-mod table version tag + mod lists for player, wingman and every station ship.
     AEFile_WriteInt(g_RSW_modVersion, fd);
@@ -1412,7 +1414,7 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
         }
     }
     for (unsigned i = 0; i < stack->size() + 1; i++) {
-        Station *cur = (i == stack->size()) ? (Station *)((Status *)status)->getStation()
+        Station *cur = (i == stack->size()) ? (Station *)status->getStation()
                                      : (*stack)[i];
         if (cur == 0) continue;
         Array<Ship*> *cShips = (Array<Ship*> *)((Station *)cur)->getShips();
@@ -1424,16 +1426,16 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Wanted board, collected bounties, and the remaining one-shot UI/progress flags.
-    unsigned int *wanted = *(unsigned int **)status;
+    unsigned int *wanted = (unsigned int *)status->wanted;   // engine Array<Wanted*> payload (size at [0], data at [1])
     AEFile_WriteInt(*wanted, fd);
     for (unsigned i = 0; i < *wanted; i++) {
         this->writeWanted(*(void **)(wanted[1] + i * 4), fd);
     }
     for (unsigned i = 0; i < 4; i++) {
-        AEFile_WriteInt(((Status *)status)->getCollectedBounties(i), fd);
+        AEFile_WriteInt(status->getCollectedBounties(i), fd);
     }
     AEFile_WriteBool(*(bool *)(ui + 0x37), fd);
-    AEFile_WriteInt(((Status *)status)->field_178, fd);
+    AEFile_WriteInt(status->field_178, fd);
     AEFile_WriteBool(*(bool *)(flags + 0x28), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x29), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x2c), fd);
@@ -1442,11 +1444,11 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     AEFile_WriteBool(*(bool *)(flags + 0x2e), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x2f), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x30), fd);
-    RSW_writeBoolArray(status, 0x58, fd);
+    RSW_writeBoolArray(status->field_58, fd);
     AEFile_WriteBool(*(bool *)(flags + 0x31), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x2d), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x32), fd);
-    AEFile_WriteInt(((Status *)status)->field_118, fd);
+    AEFile_WriteInt(status->field_118, fd);
     AEFile_WriteBool(*(bool *)(flags + 0x33), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x34), fd);
     AEFile_WriteBool(*(bool *)(flags + 0x35), fd);
@@ -1490,6 +1492,8 @@ static void *RSR_readItem(unsigned int fd, bool withPrice) {
 }
 
 void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
+    // RAWREAD: rec is the GameRecord save-image; its payload is a positional blob with no
+    // per-field members in GameRecord.h, so all `rec + 0xNN` writes target the opaque payload.
     char *rec = (char *)recv;
     void **shipDefs = *(void ***)g_RSR_shipDefs;
 
@@ -1859,6 +1863,8 @@ void * RecordHandler::recordStoreRead(int slot) {
         AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(path, &fd);
+            // RAWREAD: rec is the GameRecord save-image; its payload is a positional blob with no
+            // per-field members in GameRecord.h, so all `rec + 0xNN` accesses target the opaque payload.
             rec = (char *)new GameRecord();
 
             // Visited-systems bitmap at rec+4 (count then booleans).

@@ -29,6 +29,8 @@ extern void *Explosion_random;
 // internal byte layout that is not modelled by AbyssEngine::Transform; a few fields are
 // still poked by offset (an enabled flag, the huge bounding radius that disables view-frustum
 // culling, the animation length, and the current animation time read for the camera rumble).
+// RAWREAD: TransformGetTransform returns an opaque void* runtime handle (not an
+// AbyssEngine::Transform), so every UC()/F<T>() poke below stays raw pointer arithmetic.
 static const int kTransformEnabledFlag   = 0xed;  // uint8
 static const int kTransformBoundingRadius = 0xe0; // float
 static const int kTransformAnimLength    = 0xf8;  // uint64

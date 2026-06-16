@@ -2867,8 +2867,8 @@ void ModStation::OnInitialize() {
         Status_getSystem_oi();
         int angle = (SolarSystem_getRace_oi() == 2) ? (int)0xffffff38 : 0x10e;
         this->dragOriginX = angle;
-        if (*(int*)&this->cutScene != 0)
-            *(float *)(*(int*)&this->cutScene + 4) = (float)angle / 65536.0f;
+        if (this->cutScene != 0)
+            this->cutScene->cameraRotX = (float)angle / 65536.0f;
         *(uint32_t*)((char*)&this->dragAccumX + 4) = 0;
         this->gameLoaded = this->reloadPending;
         ModStation_oi_buildNewsTicker(this);

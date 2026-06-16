@@ -480,37 +480,39 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
 }
 
 void Engine::RenderMesh(MeshFull *mesh) {
-    if (mesh == 0 || mesh->field_0x28 == 0) {
+    if (mesh == 0 || mesh->indexCount == 0) {
         goto done;
     }
 
     if (g_Engine_useShaders == 0) {
-        glVertexPointer(3, 0x1406, 0, mesh->field_0x4);
+        glVertexPointer(3, 0x1406, 0, mesh->positions);
         this->AEClientState(0x8074, true);
-        bool tex = ((uint32_t)*(uint8_t *)mesh << 30) < 0;
-        if (tex && (mesh->field_0x30 == 0 ||
-                    *(int *)((char *)mesh->field_0x30 + 4) == -1)) {
-            glTexCoordPointer(2, 0x1406, 0, mesh->field_0x8);
+        bool tex = ((uint32_t)mesh->vertexFormat << 30) < 0;
+        // RAWREAD: material +4 is an opaque material payload field (void* target).
+        if (tex && (mesh->material == 0 ||
+                    *(int *)((char *)mesh->material + 4) == -1)) {
+            glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
         }
         this->AEClientState(0x8078, tex);
-        bool normals = ((uint32_t)*(uint8_t *)mesh << 29) < 0;
+        bool normals = ((uint32_t)mesh->vertexFormat << 29) < 0;
         if (normals) {
-            glNormalPointer(0x1406, 0, mesh->field_0x10);
+            glNormalPointer(0x1406, 0, mesh->normals);
         }
         this->AEClientState(0x8075, normals);
-        bool colors = ((uint32_t)*(uint8_t *)mesh << 28) < 0;
+        bool colors = ((uint32_t)mesh->vertexFormat << 28) < 0;
         if (colors) {
-            glColorPointer(4, 0x1406, 0, (void *)(uintptr_t)mesh->field_0xc);
+            glColorPointer(4, 0x1406, 0, (void *)(uintptr_t)mesh->colors);
         }
         this->AEClientState(0x8076, colors);
-        if (((uint32_t)*(uint8_t *)mesh << 27) < 0) {
-            glDrawElements(4, mesh->field_0x28, 0x1403,
-                           mesh->field_0x2c);
+        if (((uint32_t)mesh->vertexFormat << 27) < 0) {
+            glDrawElements(4, mesh->indexCount, 0x1403,
+                           mesh->indices);
         } else {
-            glDrawArrays(4, 0, mesh->field_0x2);
+            glDrawArrays(4, 0, mesh->vertexCount);
         }
-        if (tex && mesh->field_0x30 != 0 &&
-            *(int *)((char *)mesh->field_0x30 + 4) != -1) {
+        // RAWREAD: material +4 is an opaque material payload field (void* target).
+        if (tex && mesh->material != 0 &&
+            *(int *)((char *)mesh->material + 4) != -1) {
             this->AEClientState(0x8078, false);
         }
     } else {
@@ -519,18 +521,18 @@ void Engine::RenderMesh(MeshFull *mesh) {
         if (g_Engine_shaderDrew != 0) {
             int oldBuffer = 0;
             glGetIntegerv(0x8ca6, &oldBuffer);
-            if (((uint32_t)*(uint8_t *)mesh << 27) < 0) {
-                if (mesh->field_0x5c == 0) {
-                    glDrawElements(4, mesh->field_0x28, 0x1403,
-                                   mesh->field_0x2c);
+            if (((uint32_t)mesh->vertexFormat << 27) < 0) {
+                if (mesh->uploaded == 0) {
+                    glDrawElements(4, mesh->indexCount, 0x1403,
+                                   mesh->indices);
                 } else {
-                    glBindBuffer(0x8893, mesh->field_0x64);
-                    glDrawElements(4, mesh->field_0x28, 0x1403, 0);
+                    glBindBuffer(0x8893, mesh->indexVBO);
+                    glDrawElements(4, mesh->indexCount, 0x1403, 0);
                     glBindBuffer(0x8892, 0);
                     glBindBuffer(0x8893, 0);
                 }
             } else {
-                glDrawArrays(4, 0, mesh->field_0x2);
+                glDrawArrays(4, 0, mesh->vertexCount);
             }
             this->ShaderSetInActive();
         }
@@ -547,7 +549,7 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
     float bottom = (float)(height + y);
 
     MeshFull *mesh = this->quadMesh;
-    float *positions = (float *)mesh->field_0x4;
+    float *positions = (float *)mesh->positions;
     positions[0] = fx;
     positions[1] = fy;
     positions[3] = right;
@@ -563,14 +565,14 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
         1.0f, 1.0f,
         0.0f, 1.0f,
     };
-    float *uv = (float *)mesh->field_0x8;
+    float *uv = (float *)mesh->texCoords;
     float32x4_t uv0 = vld1q_f32(uvs);
     float32x4_t uv1 = vld1q_f32(uvs + 4);
     vst1q_f32(uv, uv0);
     vst1q_f32(uv + 4, uv1);
 
-    return glDrawElements(4, mesh->field_0x28, 0x1403,
-                          mesh->field_0x2c);
+    return glDrawElements(4, mesh->indexCount, 0x1403,
+                          mesh->indices);
 }
 
 void Engine::SetColor(float red, float green, float blue, float alpha) {
@@ -680,28 +682,30 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 }
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    char *manager = (char *)this->appManager->paintCanvas;   // texture manager lives in the canvas
-    uint32_t count = *(uint32_t *)(manager + 0x10);
+    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
+    uint32_t count = manager->field_0x10;                    // loaded-texture-name list: count
     if (count == 0 || slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *)&this->boundTextures[slot];
-    void *textureEntry = *(void **)(*(char **)(manager + 0x14) + textureIndex * 4);
+    // RAWREAD: field_0x14 entry is an opaque texture-name payload (char**), no struct header.
+    void *textureEntry = *(void **)(manager->field_0x14 + textureIndex);
     uint32_t texture = **(uint32_t **)(&textureEntry);
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = *(float *)((char *)textureEntry + 0x10);
+    float env = *(float *)((char *)textureEntry + 0x10);   // RAWREAD: opaque texture-entry +0x10 texEnv
     if (g_Engine_texEnv != env) {
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = *(void **)(*(char **)(manager + 0x14) + textureIndex * 4);
+            textureEntry = *(void **)(manager->field_0x14 + textureIndex);
         } else if (g_Engine_texEnvDirty != 0) {
             g_Engine_texEnvDirty = 0;
         }
     }
+    // RAWREAD: opaque texture-entry +0x14 cube-map flag
     glBindTexture(*(uint8_t *)((char *)textureEntry + 0x14) == 0 ? 0xde1 : 0x8513, texture);
     *bound = texture;
 }
@@ -759,12 +763,12 @@ typedef void ShaderApply(ShaderBaseStruct *, MeshFull *, Engine *);
 void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     while (shaderIndex == -1) {
         shaderIndex = g_Engine_defaultShader;
-        if ((((uint32_t)*(uint8_t *)mesh) << 30) >= 0) {
+        if ((((uint32_t)mesh->vertexFormat) << 30) >= 0) {
             shaderIndex = g_Engine_altShader;
         }
     }
 
-    bool hasExtra = mesh != 0 && mesh->field_0x85 != 0;
+    bool hasExtra = mesh != 0 && mesh->hasAnimation != 0;
     ShaderBaseStruct *shader = (*this->shaders)[shaderIndex];
     if (shader == 0) {
         return;
@@ -784,7 +788,7 @@ void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     vtable = *(void ***)shader;
     ((ShaderApply *)vtable[0x0c / 4])(shader, mesh, this);
     if (mesh != 0) {
-        uint32_t triangles = __aeabi_uidiv(mesh->field_0x28, 3);
+        uint32_t triangles = __aeabi_uidiv(mesh->indexCount, 3);
         (*this->triangleCounts)[shaderIndex] += triangles;
     }
 }
@@ -1188,8 +1192,8 @@ Engine::Engine() {
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
-    char *manager = (char *)this->appManager->paintCanvas;   // texture manager lives in the canvas
-    uint32_t count = *(uint32_t *)(manager + 0x10);
+    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
+    uint32_t count = manager->field_0x10;                    // loaded-texture-name list: count
     if (count == 0 || first > count - 1) {
         return;
     }
@@ -1205,7 +1209,8 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         }
         return;
     }
-    uint32_t texture = **(uint32_t **)(*(char **)(manager + 0x14) + second * 4);
+    // RAWREAD: field_0x14 entry is an opaque texture-name payload, handle at +0x0
+    uint32_t texture = **(uint32_t **)(manager->field_0x14 + second);
     if (this->boundTextures[1] != texture) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
@@ -1319,8 +1324,8 @@ void Engine::LightSetLight(unsigned int light) {
 }
 
 void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...) {
-    char *manager = (char *)this->appManager->paintCanvas;   // texture manager lives in the canvas
-    if (*(uint32_t *)(manager + 0x10) != 0) {
+    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
+    if (manager->field_0x10 != 0) {                          // loaded-texture-name list: count
         uint32_t values[3] = {first, second, third};
         uint32_t slot = 0;
         uint32_t *p = values;

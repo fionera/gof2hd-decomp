@@ -14,6 +14,7 @@
 #include "game/core/Globals.h"
 #include "game/mission/Status.h"
 #include "game/ui/ListItem.h"
+#include "game/mission/PendingProduct.h"
 #include "game/ship/Ship.h"
 #include "engine/core/NFC.h"
 
@@ -68,6 +69,7 @@ void HangarWindow::refreshCurrentContentHeight() {
     Array<ListItem*> *items = ((HangarList *)this->hangarList)->getCurrentTabItems();
     if (items != 0) {
         int n = (int)items->size();
+        // RAWREAD: *g_hw_globals is an untyped void* here; Globals has no member at +0x70.
         int rowH = (*(int *)((char *)(*g_hw_globals) + (0x70)));
         this->currentContentHeight = this->rowSpacing * (n - 1) + n * rowH;
     }
@@ -177,6 +179,7 @@ void HangarWindow::render() {
     ((PaintCanvas *)canvas)->SetColor(0u);
 
     void *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
+    // RAWREAD: dlc is an opaque IApplicationModule (void*); +0x18 is its "active" flag, unmodeled.
     bool dlcShown = dlc != 0 && (*(uint8_t *)((char *)(dlc) + (0x18))) != 0;
 
     if (dlc == 0 || !dlcShown) {
@@ -304,10 +307,11 @@ void HangarWindow::render() {
                                 ((PaintCanvas *)canvas)->SetColor(0u);
                             }
                             int bpIdx = ((ListItem *)li)->bluePrint->getIndex();
+                            // RAWREAD: indexes the opaque item-pointer table reached via *g_hw_globals(void*)+0x4.
                             int type = ((Item *)((*(void * *)((char *)((*(void * *)((char *)(*g_hw_globals) + (0x4)))) + (bpIdx)))))->getType();
                             ((ImageFactory *)(*g_hw_globals))->drawItem(bpIdx, type, layout->field_0x28 + rowGap + this->hintOffsetX);
                         } else if (((ListItem *)(li))->isPendingProduct() != 0) {
-                            int amt = (*(int *)((char *)(((ListItem *)li)->pendingProduct) + (0x10)));
+                            int amt = ((ListItem *)li)->pendingProduct->quantity;
                             String head;
                             if (amt < 2) {
                             } else {
@@ -316,8 +320,7 @@ void HangarWindow::render() {
                             }
                             String full;
                             full = head + *(String *)((GameText *)(*g_hw_itemNameBase))->getText();
-                            // Product/blueprint index at +0x14 (PendingProduct is opaque in this TU).
-                            int pidx = *(int *)((char *)((ListItem *)li)->pendingProduct + 0x14);
+                            int pidx = ((ListItem *)li)->pendingProduct->blueprintIndex;
                             int type = ((Item *)((*(void * *)((char *)((*(void * *)((char *)(*g_hw_globals) + (0x4)))) + (pidx)))))->getType();
                             ((ImageFactory *)(*g_hw_globals))->drawItem(pidx, type, rowGap + layout->field_0x28 + this->hintOffsetX);
                         } else if (((ListItem *)(li))->isMoveToCargoButton() != 0) {
@@ -451,6 +454,7 @@ void HangarWindow::render() {
                 ((TouchButton *)(b))->replaceTextKeepSize(&label);
                 ((TouchButton *)(b))->setSplitText(&split);
                 ((TouchButton *)(b))->draw();
+                // RAWREAD: tabIcons is an opaque heap array of image handles; indexes element i.
                 ((PaintCanvas *)canvas)->DrawImage2D((unsigned)(*(int *)((char *)(this->tabIcons) + (i * 4))), x,
                                         yy - layout->field_0x2c, (unsigned char)0x11);
             }
@@ -688,6 +692,8 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->freeCreditsActive = 0;
                 self->showCreditsBuyWindow();
             }
+            // RAWREAD: appData is the opaque ApplicationData (void*, no header); +0xNN are its
+            // unmodeled per-reward "claimed" flags.
             void *appData = AppManager_GetApplicationData();
             void *rh = *g_hw_recordHandler;
             for (unsigned int i = 0; i != 5; i++) {
@@ -1329,6 +1335,8 @@ void HangarWindow::setSellMode() {
     if (tab == 1) {
         if (self->buyMode == 0) {
             if (((ListItem *)(item))->isItem() != 0 && ((Item *)(item->field_0x10))->getType() != 4) {
+                // RAWREAD: *g_hw_itemFlags is an opaque hint-flag block (void*); +0x1d/0x1e are
+                // "first-time tip shown" booleans, unmodeled.
                 void *flags = *g_hw_itemFlags;
                 if ((*(uint8_t *)((char *)(flags) + (0x1e))) == 0) {
                     ((GameText *)(*g_hw_sellTextId1))->getText();
@@ -1551,6 +1559,8 @@ void HangarWindow::selectItem(ListItem *item) {
                 }
                 int li = ((ListItem *)(item))->getIndex();
                 if (li > 0x83 && ((ListItem *)(item))->getIndex() < 0x9a) {
+                    // RAWREAD: Globals::field_0xac is an opaque table handle; +0x4 is its byte-array
+                    // payload pointer, indexed by (item index - 0x84). No modeled type.
                     int base = ((Globals *)*g_hw_globals)->field_0xac;
                     *((uint8_t *)(*(int *)((char *)((void *)(uintptr_t)base) + (4))) + ((ListItem *)(item))->getIndex() - 0x84) = 1;
                 }
@@ -1742,6 +1752,8 @@ void HangarWindow::transaction(bool buy) {
         unsigned int result = ((Item *)cur)->transaction(buy, this->currentLoad, this->upgradeMode);
         unsigned int idx = ((Item *)(cur))->getIndex();
         Globals *globals = (Globals *)*g_hw_globals;
+        // RAWREAD: Globals::field_0x54 is an opaque [count, byte-array-addr] descriptor; avail[1]
+        // is the payload address indexed by item index. No modeled type.
         unsigned int *avail = globals->field_0x54;
         if (idx < avail[0])
             *((uint8_t *)avail[1] + ((Item *)(cur))->getIndex()) = 1;
@@ -2075,6 +2087,7 @@ void HangarWindow::initialize() {
     void *icons = ::operator new[](0x18);
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
+        // RAWREAD: icons is a raw image-handle array; this addresses element i (array index, not a field).
         gCanvas->Image2DCreate((unsigned short)(i + 0x232a), (unsigned int *)((unsigned int *)((char *)icons + i * 4)));
 
     int *posX = (int *)*g_hw_posXArray;
@@ -2248,6 +2261,9 @@ void HangarWindow::initialize() {
                 int price = ((Item *)(itemPtr))->getSinglePrice();
                 int idx = ((Item *)(itemPtr))->getIndex();
                 Globals *globals = (Globals *)*g_hw_globals;
+                // RAWREAD: the buy/sell/system price tables (Globals::field_0x3c/0x40/0x48 and the
+                // void* at *g_hw_globals+0x44) are opaque container objects; +0x4 is their int[]
+                // payload pointer, indexed by item id. No modeled element type.
                 int *buyTbl = (int *)(*(int *)((char *)(globals->field_0x40) + (4)));
                 if (buyTbl[idx] < price || buyTbl[idx] == 0) {
                     buyTbl[idx] = price;
@@ -2371,6 +2387,8 @@ HangarWindow::HangarWindow() {
     this->buyCreditsActive = 0;
 
     // Seed the grid-spacing block from the layout config geometry table.
+    // RAWREAD: lay is void*; this copies a raw 16-byte geometry block at +0x238 plus three ints at
+    // +0x248/0x24c/0x250 that Layout does not model as named members.
     this->field_0x100 = *(Blk16 *)((char *)lay + 0x238);
     this->buttonHeight = *(int *)((char *)lay + 0x248);
     this->field_0x114 = *(int *)((char *)lay + 0x24c);

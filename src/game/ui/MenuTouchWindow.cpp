@@ -432,18 +432,15 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
 {
 
     // Tear down any existing 2D row array.
-    void *rows = this->recordRows;
+    Array<void *> *rows = this->recordRows;
     if (rows != 0) {
-        for (uint32_t i = 0; i < *(uint32_t *)rows; i++) {
-            void *row = ((void **)i32(rows, 4))[i];
+        for (uint32_t i = 0; i < rows->size_; i++) {
+            void *row = rows->data_[i];
             if (row != 0) {
                 _mtw_ArrayReleaseClasses_Str(row);
-                int base = i32(this->recordRows, 4);
-                void *r2 = *(void **)(base + i * 4);
-                int *cell;
-                if (r2 == 0) cell = (int *)(base + i * 4);
-                else { ::operator delete(_mtw_Array_Str_dtor(r2)); cell = (int *)(i32(this->recordRows, 4) + i * 4); }
-                *cell = 0;
+                void *r2 = this->recordRows->data_[i];
+                if (r2 != 0) ::operator delete(_mtw_Array_Str_dtor(r2));
+                this->recordRows->data_[i] = 0;
                 rows = this->recordRows;
             }
         }
@@ -464,8 +461,8 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     for (int i = 0; i < rowCount; i++) {
         void *row = ::operator new(0xc);
         _mtw_Array_Str_ctor(row);
-        *(void **)(i32(this->recordRows, 4) + i * 4) = row;
-        _mtw_ArraySetLength_Str(6, *(void **)(i32(this->recordRows, 4) + i * 4));
+        this->recordRows->data_[i] = row;
+        _mtw_ArraySetLength_Str(6, this->recordRows->data_[i]);
 
         String s48; s48.ctor();
         String s54;
@@ -477,25 +474,25 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             s54.ctor();
             _mtw_Globals_longToTimeStringNoSeconds((long long)(int)(long)timeHolder, 0);
             void *e;
-            int *rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4);
+            int *rowData = (int *)i32(this->recordRows->data_[i], 4);
 
             e = ::operator new(0xc); ((String *)e)->ctor_copy(&s54, false); ((void **)rowData)[0] = e;
             e = ::operator new(0xc); ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[1] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else ((String *)e)->ctor_char(gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[2] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[2] = e;
 
             e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[3] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[3] = e;
 
             e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[4] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[4] = e;
 
             e = ::operator new(0xc); ((String *)e)->ctor_char(gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[5] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[5] = e;
         } else {
             s54.ctor();
             int slot = *(int *)(i32(rec, 4) + i * 4);
@@ -504,21 +501,21 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             int *rowData;
 
             e = ::operator new(0xc); ((String *)e)->ctor_copy(&s54, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[0] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[0] = e;
 
             e = ::operator new(0xc);
             // RAWREAD: GameRecord+0x194/+0x20/+0x11c (preview record held as int32 in Array<GameRecord*>; name/kills/rank members not modeled in GameRecord.h)
             ((String *)e)->ctor_copy((String *)(void *)(*(int *)(i32(this->previewRecords, 4) + i * 4) + 0x194), false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[1] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
             else ((String *)e)->ctor_char(gCrbDash, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[2] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[2] = e;
 
             void *credits = ::operator new(0xc);
             _mtw_Layout_formatCredits(credits);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[3] = credits;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[3] = credits;
 
             // build "Kills: " + value string
             void *combined = ::operator new(0xc);
@@ -527,7 +524,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             String s60; _mtw_String_op_plus(&s60, label);
             String s78; s78.ctor_copy((String *)(long)(*(int *)(i32(this->previewRecords, 4) + i * 4) + 0x20), false);
             _mtw_String_op_plus(combined, &s60);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[4] = combined;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[4] = combined;
 
             e = ::operator new(0xc);
             float rank = *(float *)(*(int *)(i32(this->previewRecords, 4) + i * 4) + 0x11c);
@@ -537,7 +534,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             else if (rank <= 1.0f) rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x207);
             else rankTxt = _mtw_GameText_getText(*(void **)gtHolder, 0x19);
             ((String *)e)->ctor_copy((String *)rankTxt, false);
-            rowData = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4); ((void **)rowData)[5] = e;
+            rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[5] = e;
         }
     }
 
@@ -1289,10 +1286,10 @@ void MenuTouchWindow::update(int dt)
                 _mtw_TouchButton_setYPosition(((void **)arr[1])[i],
                     (layout[0xc] + this->buttonRowGap) * i +
                     (screenH / 2 - (int)((unsigned int)(rowGap * (n - 1) + total) >> 1)));
-                void *b = ((void **)i32(this->buttons, 4))[i];
+                void *b = this->buttons->data_[i];
                 if (i32(b, 0) == 0x12 && i32(b, 4) == 0 && _mtw_TouchButton_isVisible(b) != 0 &&
                     this->cutsceneMode != 0) {
-                    b = ((void **)i32(this->buttons, 4))[i];
+                    b = this->buttons->data_[i];
                     char pos[12];
                     _mtw_TouchButton_getPosition(pos, b);
                     _mtw_TouchButton_setYPosition(b, (int)*(float *)(pos + 4));
@@ -1815,7 +1812,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 
         void *font = *(void **)*(void **)gDlsFont;
         int yName = strip58 + rowY;
-        int *cols = (int *)i32(*(void **)(i32(this->recordRows, 4) + i * 4), 4);
+        int *cols = (int *)i32(this->recordRows->data_[i], 4);
 
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, (void *)(long)*(int *)(((void **)cols)[0]),
             layout[0xa] + this->listX + layout[0xb] /*+0x2c*/, (char)yName, false);

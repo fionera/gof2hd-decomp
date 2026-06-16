@@ -131,13 +131,13 @@ void PlayerFixedObject::update(int dt) {
     Player *player = (Player *)self->player;
     unsigned char enemyFlag = 0;
     if ((self->faction & 0xfffffffe) == 8) {
-        F<unsigned char>(player, 0x5c) = 1;
+        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = 1; // low byte: alwaysEnemy
         enemyFlag = 0;
     } else {
         int st = gStatus->getStanding();
         unsigned char e = ((Standing *)((void *)(long)st))->isEnemy(self->faction);
         player = (Player *)self->player;
-        F<unsigned char>(player, 0x5c) = e;
+        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = e; // low byte: alwaysEnemy
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
@@ -146,7 +146,7 @@ void PlayerFixedObject::update(int dt) {
             player = (Player *)self->player;
         }
     }
-    F<unsigned char>(player, 0x5d) = enemyFlag;
+    reinterpret_cast<uint8_t *>(&player->enemyFlags)[1] = enemyFlag; // high byte: alwaysFriend
 
     if (Player_turnedEnemy((Player *)self->player) != 0)
         ((Player *)self->player)->enemyFlags = 1;
@@ -228,18 +228,18 @@ afterMotion:
         // particle + sound for the explosion (shared tail for both branches)
         Level *lod = (Level *)self->level;
         void *mgr = *(void **)&lod->field_74;
-        int sysOff = typeIsPirateOrE(self) ? 0x54 : 0x50;
-        int sys = *(int *)((char *)lod + sysOff);
+        int sys = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;
         void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
         ((ParticleSystemManager *)(mgr))->systemSetMatrix(sys, m);
         int sndHandle = sys;
         Vector *pos = 0;
+        // RAWREAD: *g_pfo_audioFlag is an opaque engine holder (void*), no modeled type
         if (*(char *)((char *)*g_pfo_audioFlag + 0xf) != 0)
             pos = &self->position;
         ((FModSound *)(*g_pfo_fmod))->play(0x14, pos, (Vector *)0, (float)sndHandle);
         lod = (Level *)self->level;
         {
-            int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
+            int emitHandle = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;
             ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
         }
 
@@ -256,14 +256,16 @@ afterMotion:
             Array<KIPlayer *> *enemies = ((Level *)self->level)->getEnemies();
             for (unsigned int i = 0; i < enemies->size(); i++) {
                 KIPlayer *obj = (*enemies)[i];
+                // RAWREAD: KIPlayer has no member at +0x3e (gap before field_0x3f)
                 if (*(char *)((char *)obj + 0x3e) != 0) {
                     obj = (*enemies)[i];
                     ((Player *)(obj->player))->damage(g_pfo_dmgVal);
                 }
             }
             if (self->kind == 0xe &&
-                (char)F<char>((Player *)self->player, 0x44) == 0) {
+                (char)((Player *)self->player)->destroyed == 0) {
                 void *egoObj = *g_pfo_egoA;
+                // RAWREAD: egoObj is an opaque PlayerEgo holder (void*); +0x118 unmodeled
                 *(int *)((char *)egoObj + 0x118) = *(int *)((char *)egoObj + 0x118) + 1;
                 if (gAchievements->hasMedal(0x27, 1) == 0) {
                     float cur = (float)*(int *)((char *)egoObj + 0x118);
@@ -317,7 +319,7 @@ afterMotion:
             Level *lod = (Level *)self->level;
             self->state = 4;
             {
-                int emitHandle = *(int *)((char *)lod + (typeIsPirateOrE(self) ? 0x54 : 0x50));
+                int emitHandle = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;
                 ((ParticleSystemManager *)(*(void **)&lod->field_74))->enableSystemEmit(emitHandle, true);
             }
             self->explosion->reset();
@@ -458,6 +460,7 @@ afterMotion:
     }
 
     // mirror the integer position into the Player object
+    // RAWREAD: Player +0x48/+0x4c/+0x50 fall in the pad_46 region (no named members)
     void *p = self->player;
     *(int *)((char *)p + 0x48) = self->intPosX;
     *(int *)((char *)p + 0x4c) = self->intPosY;
@@ -754,6 +757,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
         delete gen;
     }
 
+    // RAWREAD: Player +0x45 (high byte of 'destroyed' region) is not a distinct named member
     *(uint8_t *)((char *)self->player + 0x45) = 1;
     if (kind != 0x37a3) {
         self->aiActiveCounter = 0x2f;

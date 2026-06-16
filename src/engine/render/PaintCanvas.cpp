@@ -1268,7 +1268,7 @@ void PaintCanvas::CameraSetLocal(unsigned int index, const Matrix &matrix)
 
 void PaintCanvas::SetShaderMode(int mode)
 {
-    *(int *)((char *)this->engine + 0x4a8) = mode;
+    ((Engine *)this->engine)->field_0x4a8 = mode;
 }
 
 void PaintCanvas::MeshConvertToVBO(unsigned int index)
@@ -2040,7 +2040,8 @@ extern char paintcanvas_g_bg_b;
 
 void PaintCanvas::BeginBG()
 {
-    *(unsigned char *)((char *)this->engine + 0xfd) = 0;
+    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
+    *(unsigned char *)&((Engine *)this->engine)->field_0xfd = 0;
     paintcanvas_ext_gl_enable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_enable(0xbe2);
@@ -2106,7 +2107,7 @@ void PaintCanvas::FontCreate(unsigned short param_1, unsigned int *param_2,
             int curH = paintcanvas_ext_fc_fontheight(curFont);
             int newH = paintcanvas_ext_fc_fontheight(font);
             if (newH < curH) {
-                *(int *)((char *)this->engine + 0x78) = *param_2;
+                eng->field_0x78 = *param_2;
             }
         }
     }
@@ -2181,7 +2182,8 @@ extern char paintcanvas_g_use_matgl;
 
 void PaintCanvas::Begin3d()
 {
-    *(unsigned char *)((char *)this->engine + 0xfd) = 0;
+    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
+    *(unsigned char *)&((Engine *)this->engine)->field_0xfd = 0;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(1);
     paintcanvas_ext_gl_enable(0xbe2);
@@ -3588,7 +3590,8 @@ extern char *paintcanvas_g_b2d_flag HIDDEN;
 
 void PaintCanvas::Begin2d()
 {
-    *(unsigned char *)((char *)this->engine + 0xfd) = 1;
+    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
+    *(unsigned char *)&((Engine *)this->engine)->field_0xfd = 1;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
     paintcanvas_ext_gl_enable(0xbe2);
