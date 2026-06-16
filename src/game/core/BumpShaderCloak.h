@@ -6,7 +6,6 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-extern "C" char _ZTVN11AbyssEngine15BumpShaderCloakE[];
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
 struct Engine;

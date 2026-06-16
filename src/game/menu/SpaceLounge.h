@@ -20,7 +20,7 @@ namespace AbyssEngine { class EaseInOutMatrix; class EaseInOut; }
 // the star map or the ship list window.
 class SpaceLounge {
 public:
-    void                        *_vtable;
+    // (+0x0 is the compiler-managed C++ vptr; this screen is polymorphic)
     StarMap                     *starMap;          // active star-map sub-screen
     ChoiceWindow                *choiceWindow;     // owned yes/no chat dialog
     ListItemWindow              *listWindow;       // owned ship/list sub-window
@@ -77,7 +77,7 @@ public:
     int                          headBobSteps;      // +0x108 head-bob rotation step count
 
     SpaceLounge();
-    ~SpaceLounge();
+    virtual ~SpaceLounge();
 
     void OnRender3D();
     void OnRenderBG();

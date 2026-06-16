@@ -38,12 +38,13 @@ void SentryGun::update(int dt)
             (owner->isActive() == 0 || owner->isDead())) {
             level->field_6c += 1;
 
-            void** vtable = *reinterpret_cast<void***>(obj);
-            (reinterpret_cast<void (*)(KIPlayer*)>(vtable[0x18 / 4]))(obj);
+            obj->revive();   // actor vtable slot 0x18
 
             Gun* g = this->gun;
-            int spawnPos = (int)(intptr_t)(g->positions + g->fireIndex * 12);
-            (reinterpret_cast<void (*)(KIPlayer*, int)>(vtable[0x44 / 4]))(obj, spawnPos);
+            AbyssEngine::AEMath::Vector* spawnPos =
+                (AbyssEngine::AEMath::Vector*)(g->positions + g->fireIndex * 12);
+            // slot 0x44 (setPosition(Vector const&)) unpacks to the virtual setPosition3 (0x48).
+            obj->setPosition3(spawnPos->x, spawnPos->y, spawnPos->z);
             return;
         }
         base = this->cooldown;

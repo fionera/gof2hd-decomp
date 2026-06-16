@@ -1,6 +1,7 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
+#include "game/ship/KIPlayer.h"   // for the virtual getPosition() call
 
 namespace AbyssEngine {
 
@@ -146,9 +147,7 @@ int Radar::getPlanetDockIndex()
 
 void Radar::update(KIPlayer* player)
 {
-    typedef AEMath::Vector (*GetPosition)(KIPlayer*);
-    void** vtable = *(void***)player;
-    AEMath::Vector position = ((GetPosition)vtable[0x28 / 4])(player);
+    AEMath::Vector position = player->getPosition();   // actor vtable slot 0x28
     update(position);
 }
 

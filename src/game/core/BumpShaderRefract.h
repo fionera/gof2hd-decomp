@@ -8,7 +8,6 @@
 
 // Galaxy on Fire 2 - AbyssEngine::BumpShaderRefract (GLES2 refraction bump shader).
 
-extern "C" char _ZTVN11AbyssEngine17BumpShaderRefractE[];
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced here by pointer only.
 struct Engine;
