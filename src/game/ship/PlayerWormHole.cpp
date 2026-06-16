@@ -93,7 +93,7 @@ void PlayerWormHole::reset(bool shrinking)
     this->scale = 0x1000;
 }
 
-void PlayerWormHole::setPosition(float x, float y, float z)
+void PlayerWormHole::setPosition3(float x, float y, float z)
 {
     this->posX = x;
     this->posY = y;
@@ -180,7 +180,7 @@ void PlayerWormHole::update(int elapsed)
                 z = (int)(this->cameraPosition.z + (float)z * 1.7f + (float)z);
             }
 
-            this->setPosition((float)x, (float)y, (float)z);
+            this->setPosition3((float)x, (float)y, (float)z);
 
             PlayerEgo *ego = (PlayerEgo *)(intptr_t)this->level->getPlayer();
             if (ego->goingToWormhole()) {

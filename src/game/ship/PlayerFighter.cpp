@@ -164,18 +164,10 @@ uint8_t PlayerFighter::hasCrateCaptured() {
     return this->crateCaptured == 0;
 }
 
-// setPosition(Vector const&) — virtual dispatch through vtable slot 0x48 (= the
-// float setPosition3, Ghidra-confirmed; the ABI is uniform across the hierarchy).
-// KEPT as explicit slot dispatch for now only because PlayerFighter::setPosition3's
-// RECOVERED body is buggy: it is declared (int,int,int) and stores into int
-// posX/posY/posZ with a decompiler-zeroed forward. A named this->setPosition3()
-// needs that decl+body+fields corrected to float first — straightforward from the
-// binary, but not runtime-verifiable until the game boots.
-typedef void (*SetPosFn)(PlayerFighter *, float, float, float);
-
+// setPosition(Vector const&) — slot 0x44 in the binary, which unpacks the vector and
+// calls slot 0x48 (the float setPosition3). Now a named virtual call.
 void PlayerFighter::setPosition_ref(const Vector &v) {
-    SetPosFn fn = *(SetPosFn *)(*(char **)this + 0x48);
-    return fn(this, v.x, v.y, v.z);
+    this->setPosition3(v.x, v.y, v.z);
 }
 
 void PlayerFighter::setRotate(int v) {
@@ -474,15 +466,14 @@ void PlayerFighter::update(int dt) {
 }
 
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
-void PlayerFighter::setPosition3(int x, int y, int z) {
+void PlayerFighter::setPosition3(float x, float y, float z) {
 
     this->posX = x;
     this->posY = y;
     this->posZ = z;
 
-    int stackVec[3];
-    ((AEGeometry *)(intptr_t)this->geometry)->setPosition(0.0f, 0.0f, 0.0f);  // forwards x,y,z via regs
-    this->workingPosition = *(Vector *)stackVec;
+    ((AEGeometry *)(intptr_t)this->geometry)->setPosition(x, y, z);
+    this->workingPosition = Vector{ x, y, z };
     if (this->trail != 0) {
         this->trail->reset(this->workingPosition);
     }
@@ -886,12 +877,9 @@ void PlayerFighter::reset()
     this->crateCaptured = 1;
 
     // Snap the working and render positions back to the spawn point.
-    int spawn[3];
-    spawn[0] = this->posX;
-    spawn[1] = this->posY;
-    spawn[2] = this->posZ;
-    this->workingPosition = *(Vector *)spawn;
-    this->renderPosition  = *(Vector *)spawn;
+    Vector spawn = { this->posX, this->posY, this->posZ };
+    this->workingPosition = spawn;
+    this->renderPosition  = spawn;
 
     this->deltaTime = 0;
     this->deltaTimeHi = 0;

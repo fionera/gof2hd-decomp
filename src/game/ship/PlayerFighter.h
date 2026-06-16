@@ -34,9 +34,9 @@ public:
     uint8_t crateCaptured;              // +0x4c
     Array<int>* lootList;               // loot item-id list (or mission-crate item)
     int32_t level;
-    int32_t posX;
-    int32_t posY;
-    int32_t posZ;
+    float posX;   // cached spawn/target position (decompiled as int32_t holding float bits)
+    float posY;
+    float posZ;
     uint8_t missionCrateLost;
     uint8_t missionCrateCaptured;
     uint8_t crateLost;
@@ -164,7 +164,7 @@ public:
     void setExhaustVisible(bool vis);
     void setLevel(Level *lvl);
     void setMissionCrate(bool on);
-    void setPosition3(int x, int y, int z);
+    void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
     void setPosition_ref(const Vector &v);
     void setRotate(int v);
     void setShootError(int v);
