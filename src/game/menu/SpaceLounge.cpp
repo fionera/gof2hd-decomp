@@ -23,6 +23,7 @@
 // thunks (whose mangled `PaintCanvas::` symbols are defined in PaintCanvas.cpp). We
 // declare just those methods and cast the engine canvas pointer to them; the
 // int-returning width/height impls are exposed as pc_GetWidth/pc_GetHeight.
+namespace AbyssEngine {
 struct PaintCanvas {
     void SetColor(unsigned int color);
     void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
@@ -35,6 +36,8 @@ struct PaintCanvas {
     void CameraSetLocal(unsigned int index, const AbyssEngine::AEMath::Matrix &matrix);
     void *GetScreenPosition(AbyssEngine::AEMath::Vector *a, AbyssEngine::AEMath::Vector *b);
 };
+} // namespace AbyssEngine
+using ::AbyssEngine::PaintCanvas;
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
 

@@ -6,7 +6,8 @@
 #include "aetypes.h"
 #include "mathtypes.h"
 
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 // Base particle-system: owns the per-particle buffers and emits/updates particles
 // for a configured set of particle definitions. Concrete renderers override the

@@ -40,11 +40,7 @@ NAMESPACES = {"AbyssEngine", "AEMath", "FMOD"}  # AERandom is a class, not a nam
 #     void* parameter forces an internal cast. Kept const char* (consistent, cast-free).
 #   - FModSound::updateEvent3DAttributes: void*->FMOD::Event* needs the `void* events[]` member
 #     array retyped, which cascades through void*-returning FMOD shims.
-DEFER_QUALIFIED = {
-    "AEFile::SetAppRootDir", "AEFile::SetZipDirectory",
-    "AbyssEngine::FileInterface::SetAppRootDir", "AbyssEngine::FileInterface::SetZipDirectory",
-    "FModSound::updateEvent3DAttributes",
-}
+DEFER_QUALIFIED = set()  # nothing permanently deferred — the hard cases are being fixed directly
 INT_TYPES = {"int", "unsigned int", "short", "unsigned short", "char", "signed char",
              "unsigned char", "long", "unsigned long", "long long", "unsigned long long",
              "bool", "uint32_t", "int32_t", "uint16_t", "int16_t", "uint8_t", "int8_t",

@@ -3,11 +3,12 @@
 #include "engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
 #include "engine/file/AEFile.h"
 
-// Minimal view of the (top-level) PaintCanvas, declaring only the three mesh-table
+// Minimal view of AbyssEngine::PaintCanvas, declaring only the three mesh-table
 // primitives the billboard helpers forward to. The full gof2/PaintCanvas.h is not
 // pulled in because it redefines a private top-level `struct Mesh` that would clash
 // with this TU's AbyssEngine::Mesh; these three declarations link to the same
 // PaintCanvas methods recovered in PaintCanvas.cpp.
+namespace AbyssEngine {
 class PaintCanvas {
 public:
     float MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
@@ -15,6 +16,8 @@ public:
     void MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
                          unsigned short v0, unsigned short v1, unsigned short v2);
 };
+} // namespace AbyssEngine
+using ::AbyssEngine::PaintCanvas;
 
 // The real AbyssEngine::Transform (gof2/engine/math/Transform.h) only forward-declares
 // AbyssEngine::Mesh, so it composes cleanly with this TU's full Mesh definition. Every

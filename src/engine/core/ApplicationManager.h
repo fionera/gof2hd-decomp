@@ -7,7 +7,8 @@
 #include <new>             // placement new (key-mapping / config-string construction)
 
 // Cross-class types referenced only through pointers.
-class PaintCanvas;   // global-scope render canvas (game/core/PaintCanvasClass.h)
+namespace AbyssEngine { class PaintCanvas; }   // render canvas (game/core/PaintCanvasClass.h)
+using ::AbyssEngine::PaintCanvas;
 namespace AbyssEngine { class Engine; }   // renderer/device root (engine/render/Engine.h)
 using ::AbyssEngine::Engine;
 namespace AbyssEngine {

@@ -13,7 +13,8 @@
 // picking a LOD per row to stay within a triangle budget and re-uploading the
 // merged geometry whenever the selection changes.
 
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 namespace AbyssEngine {
 

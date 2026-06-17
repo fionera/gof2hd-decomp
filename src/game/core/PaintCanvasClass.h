@@ -17,6 +17,11 @@ namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vector; } }
 
+// PaintCanvas's real type lives in namespace AbyssEngine (to match the binary's
+// mangling N11AbyssEngine11PaintCanvasE); the global `using` alias after the
+// namespace close lets bare `PaintCanvas` resolve to AbyssEngine::PaintCanvas.
+namespace AbyssEngine {
+
 class PaintCanvas {
 public:
     // ---- construction / destruction (real definitions live in PaintCanvas.cpp) -
@@ -273,6 +278,11 @@ public:
     void GetScreenPosition(void *matrix, void *worldPos, char *out);
 };
 
-namespace AbyssEngine { using ::PaintCanvas; }
+} // namespace AbyssEngine
+
+// PaintCanvas already lives in this namespace (AbyssEngine::PaintCanvas); the
+// global alias keeps bare `PaintCanvas` resolving to it everywhere this header
+// is included.
+using ::AbyssEngine::PaintCanvas;
 
 #endif

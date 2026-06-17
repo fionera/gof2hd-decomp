@@ -701,3 +701,28 @@ void String::PrintOut() {
     char *bytes = ((String *)(this))->GetAEChar();
     String_printImpl(bytes);
 }
+
+// ---- Real engine constructor / operator+= overloads ----
+// These carry the original binary's mangled symbols and delegate to the recovered member bodies.
+
+// AbyssEngine::String::String(unsigned short const*, bool)
+String::String(const uint16_t *wstr, bool reverse) { ctor_wchar(wstr, reverse); }
+// AbyssEngine::String::String(AbyssEngine::String const&, bool)
+String::String(const String &other, bool reverse) { ctor_copy(const_cast<String *>(&other), reverse); }
+// AbyssEngine::String::String(char)
+String::String(char c) { ctor_charval(c); }
+// AbyssEngine::String::String(int)
+String::String(int v) { ctor_int(v); }
+// AbyssEngine::String::String(float)
+String::String(float v) { ctor_float(v); }
+// AbyssEngine::String::String(long long)
+String::String(long long v) { ctor_longlong(v); }
+
+// AbyssEngine::String::operator+=(char const&)
+String &String::operator+=(const char &c) { addAssign_char(&c); return *this; }
+// AbyssEngine::String::operator+=(int const&)
+String &String::operator+=(const int &v) { addAssign_int(&v); return *this; }
+// AbyssEngine::String::operator+=(float const&)
+String &String::operator+=(const float &v) { addAssign_float(&v); return *this; }
+// AbyssEngine::String::operator+=(long long const&)
+String &String::operator+=(const long long &v) { addAssign_longlong(&v); return *this; }

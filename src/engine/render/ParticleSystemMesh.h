@@ -12,11 +12,12 @@
 // IParticleSystem renderers; the emit/update/render hooks below are the real C++ overrides
 // of the base virtual slots.
 
-// PaintCanvas is the global ::PaintCanvas (the type IParticleSystem stores as `canvas`).
+// PaintCanvas is AbyssEngine::PaintCanvas (the type IParticleSystem stores as `canvas`).
 namespace AbyssEngine {
-using ::PaintCanvas;
+class PaintCanvas;   // real type lives here (engine/render/PaintCanvas.h); pointer-only use
 enum BlendMode { BlendMode_dummy };
 }
+using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 
 // ParticleSettings::ParticleSet -- a small index value used as a per-particle preset index.

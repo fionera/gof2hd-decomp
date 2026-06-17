@@ -5,13 +5,12 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// PaintCanvas is declared at global scope (and re-exported into AbyssEngine) by
-// its own header; forward-declare it the same way for pointer-only use here.
-class PaintCanvas;
+// PaintCanvas's real type lives in namespace AbyssEngine; forward-declare it the
+// same way for pointer-only use here, with a global alias for bare references.
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 namespace AbyssEngine {
-
-using ::PaintCanvas;
 
 // Trail: a flat triangle-strip "ribbon" mesh trailing a moving object (engine
 // trails, exhaust, etc.). It owns a PaintCanvas mesh + transform and a pair of

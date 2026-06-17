@@ -22,7 +22,8 @@ using ::AbyssEngine::Engine;
 // a global `using` alias below lets bare `X` resolve to AbyssEngine::X.
 namespace AbyssEngine { class Material; }
 using ::AbyssEngine::Material;
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 namespace AbyssEngine { struct Image; }
 using ::AbyssEngine::Image;
 namespace AbyssEngine { struct Image2D; }
@@ -52,9 +53,8 @@ class Camera;
 // Re-export the global engine/runtime types into this namespace. Mesh, Transform and Camera are
 // intentionally NOT re-exported: their namespace-scope forms (gof2/engine/render/Mesh.h,
 // gof2/engine/math/Transform.h) are distinct from any global type, so a `using ::X;` would clash.
-// Engine, Image, Image2D, ImageFont, Material, Curve, SpriteSystem and AELoadedTexture already
-// live in this namespace (AbyssEngine::X); no re-export needed.
-using ::PaintCanvas;
+// Engine, Image, Image2D, ImageFont, Material, Curve, SpriteSystem, AELoadedTexture and
+// PaintCanvas already live in this namespace (AbyssEngine::X); no re-export needed.
 
 } // namespace AbyssEngine
 

@@ -6,7 +6,8 @@
 #include "aetypes.h"
 
 class ApplicationManager;
-struct PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 class IApplicationModule {
 public:

@@ -11,6 +11,7 @@
 // through the engine PaintCanvas.
 
 namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 // Engine draw/math helpers reached by address in the original binary. They wrap
 // PaintCanvas operations (image creation, colour/blend state, sprite blits) and

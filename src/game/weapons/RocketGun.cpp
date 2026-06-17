@@ -18,15 +18,18 @@ public:
 };
 
 // Radar.h defines a competing AbyssEngine::PaintCanvas stub, so the real
-// PaintCanvas headers cannot be co-included here. Complete the global
-// ::PaintCanvas (forward-declared by AEGeometry.h) with only the methods this
-// TU calls; signatures match PaintCanvas.h so the mangled symbols resolve.
+// PaintCanvas headers cannot be co-included here. Complete AbyssEngine::PaintCanvas
+// (forward-declared by AEGeometry.h) with only the methods this TU calls;
+// signatures match PaintCanvas.h so the mangled symbols resolve.
+namespace AbyssEngine {
 class PaintCanvas {
 public:
     void TransformAddChild(unsigned int parent, unsigned int child);
     void *TransformGetLocal(unsigned int index);
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
 };
+} // namespace AbyssEngine
+using ::AbyssEngine::PaintCanvas;
 
 // Engine globals: PaintCanvas handle pointer and the vector/matrix helpers used
 // by the homing/trail math. Provided by the engine; declared here by pointer.

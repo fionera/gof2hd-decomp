@@ -8,7 +8,8 @@
 // Forward-declare only: a pointer-to-pointer extern needs no complete type, and
 // including engine/render/PaintCanvas.h here collides with game/core/PaintCanvasClass.h
 // (a second PaintCanvas definition) in TUs that pull in both. The .cpp includes the full type.
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_MarqueeImage_canvas;
 
 class MarqueeImage {

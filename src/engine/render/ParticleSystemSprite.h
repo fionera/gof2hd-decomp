@@ -13,9 +13,10 @@
 // of the base virtual slots.
 
 namespace AbyssEngine {
-using ::PaintCanvas;
+class PaintCanvas;   // real type lives here (engine/render/PaintCanvas.h); pointer-only use
 enum BlendMode { BlendMode_dummy };
 }
+using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 
 // ParticleSettings::ParticleSet -- a small index value used as a per-particle preset index.

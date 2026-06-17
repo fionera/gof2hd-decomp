@@ -10,7 +10,8 @@
 // A renderable transform node: owns a base transform plus optional LOD levels,
 // each with its own transform/mesh handles and a squared-distance threshold.
 
-struct PaintCanvas;          // ::PaintCanvas (defined in game/core/Radio.h); used by pointer only
+namespace AbyssEngine { class PaintCanvas; }   // real type in engine/render/PaintCanvas.h; pointer only
+using ::AbyssEngine::PaintCanvas;
 namespace AbyssEngine { class LodMeshMerger; }  // engine/render/LodMeshMerger.h; pointer only
 
 namespace AbyssEngine {

@@ -98,10 +98,26 @@ void Gun::removeAllEnemies() {
     this->enemies = 0;
 }
 
+// AbyssEngine::PaintCanvas is the engine render canvas (forward-declared as a class
+// by AEGeometry.h, included above). This TU only reaches a handful of its methods,
+// each through a canvas *handle* passed as the first integer argument, so they are
+// completed here as static members: a static `M(unsigned canvas, ...)` mangles to the
+// exact same _ZN11AbyssEngine11PaintCanvas... symbol as the real member, and the
+// `AbyssEngine::PaintCanvas::M(canvas, ...)` call form is identical. Defining the
+// class here (rather than a `namespace PaintCanvas` block) avoids clashing with the
+// class forward-declared by AEGeometry.h.
 namespace AbyssEngine {
 namespace AERandom { int nextInt(int rng); }
-namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); }
 namespace Transform { void SetAnimationState(unsigned tf, int a, int b); }
+class PaintCanvas {
+public:
+    static unsigned TransformGetTransform(unsigned canvas);
+    static unsigned CameraGetCurrent();
+    static unsigned CameraGetLocal(unsigned canvas);
+    static unsigned TransformGetLocal(unsigned canvas);
+    static void     TransformSetLocal(unsigned canvas, AEMath::Matrix *m);
+    static void     DrawTransform(unsigned canvas, AEMath::Matrix *m);
+};
 }
 
 // pc-rel globals (each a holder; *holder used).
@@ -203,13 +219,8 @@ namespace AEMath {
 void MatrixGetPosition(Matrix *out, const Matrix *m);
 void MatrixSetTranslation(Matrix *m, float x, float y, float z);
 }
-namespace PaintCanvas {
-unsigned CameraGetCurrent();
-unsigned CameraGetLocal(unsigned canvas);
-unsigned TransformGetLocal(unsigned canvas);
-void TransformSetLocal(unsigned canvas, AEMath::Matrix *m);
-void DrawTransform(unsigned canvas, AEMath::Matrix *m);
-}
+// PaintCanvas::{CameraGetCurrent,CameraGetLocal,TransformGetLocal,TransformSetLocal,
+// DrawTransform} are declared on the class defined earlier in this TU.
 }
 
 // pc-rel global: holder for the gun-transform canvas pointer (*holder used each iter).
@@ -353,7 +364,7 @@ namespace AbyssEngine {
 namespace AEMath {
 void operator_mul(Vector *out, float s);                 // Vector operator*(scale)
 }
-namespace PaintCanvas { unsigned TransformGetTransform(unsigned canvas); }
+// PaintCanvas::TransformGetTransform is declared on the class defined earlier in this TU.
 namespace Transform { void Update(long long tf, char b); }
 }
 

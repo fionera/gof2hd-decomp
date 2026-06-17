@@ -12,7 +12,8 @@
 
 class TouchButton;
 class ChoiceWindow;
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 class Layout {
 public:

@@ -76,6 +76,11 @@ struct Transform {
     Transform** field_0x50;             // +0x50  transform-child array
 };
 
+// PaintCanvas's real type lives in namespace AbyssEngine (to match the binary's
+// mangling N11AbyssEngine11PaintCanvasE); the global `using` alias after the
+// namespace close lets bare `PaintCanvas` resolve to AbyssEngine::PaintCanvas.
+namespace AbyssEngine {
+
 class PaintCanvas {
 public:
     // NOTE on layout: the byte labels in `field_0xNN` names are the offsets from
@@ -326,6 +331,13 @@ public:
     void GetScreenPosition(void *worldPos, void *unused, char *outVec);
 };
 
+} // namespace AbyssEngine
+
+// PaintCanvas already lives in this namespace (AbyssEngine::PaintCanvas); the
+// global alias below keeps bare `PaintCanvas` resolving to it everywhere this
+// header is included.
+using ::AbyssEngine::PaintCanvas;
+
 // The recovered source refers to these by their fully-qualified AbyssEngine name
 // in some places and unqualified in others. The real types live at global scope
 // (to match fwd.h's global forward declarations); re-export them into the
@@ -333,8 +345,7 @@ public:
 namespace AbyssEngine {
 using ::Node;
 // Engine, Material, SpriteSystem, ImageFont and Image2D already live in this namespace
-// (AbyssEngine::X); no re-export needed.
-using ::PaintCanvas;
+// (AbyssEngine::X); no re-export needed. PaintCanvas already lives here too.
 using ::Camera;
 
 // Array<T> alias inside the namespace (the global one lives in Array.h).

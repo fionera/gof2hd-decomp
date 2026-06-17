@@ -13,9 +13,10 @@
 // matrix and packed into one shared vertex/index buffer, which is re-uploaded
 // whenever the visible/enabled selection changes.
 
-// Engine canvas type; its mangled `PaintCanvas::` symbols are defined globally
+// Engine canvas type; its real type lives in namespace AbyssEngine
 // (see gof2/game/core/PaintCanvasClass.h). Used only through a pointer here.
-class PaintCanvas;
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 namespace AbyssEngine {
 

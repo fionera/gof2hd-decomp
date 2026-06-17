@@ -21,12 +21,13 @@
 namespace AbyssEngine { class AERandom; }
 extern AbyssEngine::AERandom* gRandom;
 
-// Local minimal view of the real global-scope ::PaintCanvas (the full headers
+// Local minimal view of AbyssEngine::PaintCanvas (the full headers
 // gof2/PaintCanvas.h / PaintCanvasClass.h cannot be included here: Trail.h
 // already declares a distinct AbyssEngine::PaintCanvas stub that conflicts).
 // Only the methods called in this TU are declared; signatures/scope match the
-// real ::PaintCanvas definitions in src/PaintCanvas.cpp so the mangled
-// _ZN11PaintCanvas... symbols resolve at link time.
+// real PaintCanvas definitions in src/PaintCanvas.cpp so the mangled
+// _ZN11AbyssEngine11PaintCanvas... symbols resolve at link time.
+namespace AbyssEngine {
 class PaintCanvas {
 public:
     void *TransformGetTransform(unsigned int index);
@@ -37,6 +38,8 @@ public:
     void *MaterialGetMaterial(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
+} // namespace AbyssEngine
+using ::AbyssEngine::PaintCanvas;
 
 // Canonical render-canvas singleton (binary .bss 0x2281b8), typed against the
 // local ::PaintCanvas view above to avoid the Trail.h type clash.

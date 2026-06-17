@@ -19,9 +19,22 @@ struct String {
     // actual work.
     String(const char *cstr, bool reverse = false) { ctor_char(cstr, reverse); }
     String(const String &other) { s = other.s; }
+    // Real engine overloads (recovered from the Android binary): these mangle to the original
+    // String::String(...) / operator+= symbols and delegate to the recovered member bodies.
+    // Defined out-of-line in String.cpp so the original symbols are emitted from that TU.
+    String(const uint16_t *wstr, bool reverse);
+    String(const String &other, bool reverse);
+    explicit String(char c);
+    explicit String(int v);
+    explicit String(float v);
+    explicit String(long long v);
     String &operator=(const String &other) { s = other.s; return *this; }
     String &operator=(const char *cstr) { Set_char(cstr); return *this; }
     String &operator+=(const String &other) { s.append(other.s); return *this; }
+    String &operator+=(const char &c);
+    String &operator+=(const int &v);
+    String &operator+=(const float &v);
+    String &operator+=(const long long &v);
     // copy(src, reverse): copy-assign from another String, optionally reversing (RTL languages).
     void copy(const String *src, bool reverse) { ctor_copy(const_cast<String *>(src), reverse); }
     const char16_t* text() const { return s.c_str(); }
