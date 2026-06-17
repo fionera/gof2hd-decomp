@@ -64,7 +64,7 @@ public:
     void setCoords(int x, int y);
     void setVisible(bool v);
     int stationIsInSystem(Station* station);
-    int stationIsInSystem_int(int idx);
+    int stationIsInSystem(int idx);
     int systemIsInSystemRoutes(int sys);
 };
 #endif

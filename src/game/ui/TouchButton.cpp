@@ -37,8 +37,8 @@ void TouchButton::translate(int dx, int dy) {
     this->y = dy + this->y;
 }
 
-void TouchButton::setNumberText(String *value) {
-    this->numberText.assign(value);
+void TouchButton::setNumberText(String const &value) {
+    this->numberText = value;
 }
 
 TouchButton::~TouchButton() {
@@ -73,17 +73,17 @@ String TouchButton::getText() {
     return this->text;
 }
 
-void TouchButton::replaceTextKeepSize(String *text) {
-    this->text.assign(text);
+void TouchButton::replaceTextKeepSize(String const &text) {
+    this->text = text;
     if (this->kind == 10) {
         int w = this->width;
-        int tw = gCanvas->GetTextWidth(this->fontId, text);
+        int tw = gCanvas->GetTextWidth(this->fontId, &this->text);
         this->textOffsetX = w / 2 - tw / 2;
     }
 }
 
-void TouchButton::setSplitText(String *value) {
-    this->splitText.assign(value);
+void TouchButton::setSplitText(String const &value) {
+    this->splitText = value;
 }
 
 struct Vec3 { float x, y, z; };
@@ -192,12 +192,12 @@ static void tb_basicImageGeometry(TouchButton *self, void *canvas)
     self->textOffsetY = h / 2 - th / 2;
 }
 
-int TouchButton::init(String *text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1) {
+int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1) {
     void *canvas = gCanvas;
 
     this->kind     = (int)kind;
     this->visible  = 1;
-    this->text.assign(text);
+    this->text = text;
     this->subId    = achStage;          // generic "second image / sub-id" slot
     this->textColor = -1;
     this->requestedWidth = width;
@@ -333,7 +333,7 @@ int TouchButton::init(String *text, unsigned int kind, int achId, int achStage, 
                 hh = (*g_TB_langWide2 != 0) ? 0x64 : 0x32;
             this->layoutHeight = hh;
         }
-        setText((String *)&this->fontId);
+        setText(this->text);
         break;
     }
     }
@@ -382,7 +382,7 @@ void TouchButton_168ffc(TouchButton *self, unsigned int kind,
     self->fontSpacing = ((PaintCanvas*)(canvas))->FontGetSpacing(self->fontId);
 
     String tmp(g_TB_emptyStr, false);
-    self->init(&tmp, kind, a, b, c, d, -1, -1, flags0, flags1);
+    self->init(tmp, kind, a, b, c, d, -1, -1, flags0, flags1);
 }
 
 // TouchButton::draw()
@@ -565,15 +565,15 @@ void TouchButton::draw() {
 // then delegates to the shared init().
 extern int **g_TB_c1;   // active-font id holder (double-deref)
 
-TouchButton::TouchButton(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
+TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
     this->fontId = (uint32_t)**g_TB_c1;
     this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
     init(text, (unsigned int)type, x, y, p5, 0, 0, 0, p6, p7);
 }
 
-void TouchButton::setText(String *text) {
-    this->text.assign(text);
-    int w = gCanvas->GetTextWidth(this->fontId, text);
+void TouchButton::setText(String const &text) {
+    this->text = text;
+    int w = gCanvas->GetTextWidth(this->fontId, &this->text);
     if (this->subId != -1)
         w = gCanvas->GetImage2DWidth(0);
     int a94 = this->leftWidth;
@@ -667,11 +667,11 @@ void TouchButton_168d9c(TouchButton *self, unsigned int kind, unsigned int image
     self->fontSpacing = ((PaintCanvas*)(canvas))->FontGetSpacing(self->fontId);
 
     String tmp(g_TB_emptyStr, false);
-    self->init(&tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
+    self->init(tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
 }
 
 // 5-arg label constructor: same setup as the other label ctors, then init().
-TouchButton::TouchButton(String *text, int x, int y, int p4, unsigned char p5) {
+TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
     this->fontId = (uint32_t)**g_TB_c1;
     this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
     init(text, 0xffffffff, 4, x, y, p4, 0, 0, p5, 0x44);
@@ -691,13 +691,13 @@ TouchButton *TouchButton_168f30(TouchButton *self, String *text,
     short prev = ((PaintCanvas*)(canvas))->FontGetSpacing(self->fontId);
     ((PaintCanvas*)(canvas))->FontSetSpacing(spacing, (short)kerning);
 
-    self->init(text, spacing, a, b, c, d, -1, -1, flags0, flags1);
+    self->init(*text, spacing, a, b, c, d, -1, -1, flags0, flags1);
 
     ((PaintCanvas*)(canvas))->FontSetSpacing(spacing, prev);
     return self;
 }
 
-TouchButton::TouchButton(int x, int y, String *text, int p4, int p5, unsigned char p6) {
+TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6) {
     this->fontId = (uint32_t)**g_TB_c1;
     this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
     init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
@@ -713,7 +713,7 @@ void TouchButton_168cb0(TouchButton *self, unsigned int kind,
     self->fontSpacing = ((PaintCanvas*)(canvas))->FontGetSpacing(self->fontId);
 
     String tmp(g_TB_emptyStr, false);
-    self->init(&tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
+    self->init(tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
 }
 
 // ---- TouchButton(String const& text, int type, int x, int y, int width, int icon, int style) ----
@@ -722,7 +722,7 @@ void TouchButton_168cb0(TouchButton *self, unsigned int kind,
 TouchButton::TouchButton(String *text, int type, int x, int y, int width, int icon, int style) {
     this->fontId = (uint32_t)**g_TB_c1;
     this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
-    init(text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
+    init(*text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
 }
 
 // Three-argument placement helper: positions the button using `align` as the

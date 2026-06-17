@@ -79,7 +79,7 @@ void Mission::setVisible(bool v) {
 // Deep-copies this mission into a freshly allocated one via the seven-argument
 // constructor, then carries over the instant-action flag.
 Mission* Mission::clone() {
-    Mission* m = new Mission(this->id, &this->name, this->clientImage,
+    Mission* m = new Mission(this->id, this->name, this->clientImage,
                              this->clientRace, this->costs, this->targetStation,
                              this->reward);
     m->instantAction = this->instantAction;
@@ -94,10 +94,10 @@ void Mission::setTargetStation(int idx) {
 }
 
 // The freelance-mission constructor.
-Mission::Mission(int id, const String* client, int clientImage, int clientRace,
+Mission::Mission(int id, AbyssEngine::String client, int* clientImage, int clientRace,
                  int costs, int station, int reward) {
     this->id = id;
-    this->name = *client;
+    this->name = client;
     this->clientImage = clientImage;
     this->clientRace = clientRace;
     this->costs = costs;
@@ -247,7 +247,7 @@ void Mission::setAgent(Agent* agent) {
     this->agent = agent;
 }
 
-int Mission::getClientImage() {
+int* Mission::getClientImage() {
     return this->clientImage;
 }
 

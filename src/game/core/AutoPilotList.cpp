@@ -157,7 +157,7 @@ String AutoPilotList::getTargetString() {
 void AutoPilotList::draw() {
     String title;
     title.ctor_copy((*g_APL_gametext_draw)->getText(0x23c), false);
-    (*g_APL_layout_draw)->drawWindow(&title, this->x, this->y, this->width,
+    (*g_APL_layout_draw)->drawWindow(title, this->x, this->y, this->width,
                                               this->count * 0xf + 0x16);
 
     int drawn = 0;

@@ -90,7 +90,7 @@ uint8_t SolarSystem::isVisible() {
 }
 
 // Scan the station-index array for `idx`.
-int SolarSystem::stationIsInSystem_int(int idx) {
+int SolarSystem::stationIsInSystem(int idx) {
     Array<int>* arr = this->stationIds;
     uint32_t n = arr->size();
     for (uint32_t i = 0; i < n; i++) {
@@ -143,7 +143,7 @@ extern void* gPirateBaseRoot __attribute__((visibility("hidden")));
 int SolarSystem::hasPirateBase() {
     char* base = *(char**)gPirateBaseRoot;
     for (uint32_t i = 0; i <= 3; i++) {
-        if (stationIsInSystem_int(kPirateBaseStations[i]) != 0) {
+        if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
             char* flags = *(char**)(*(char**)(base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;
@@ -180,7 +180,7 @@ extern void* gBlueprintRoot __attribute__((visibility("hidden")));
 int SolarSystem::hasHiddenBlueprint() {
     char* base = *(char**)gBlueprintRoot;
     for (uint32_t i = 0; i <= 4; i++) {
-        if (stationIsInSystem_int(kBlueprintStations[i]) != 0) {
+        if (stationIsInSystem(kBlueprintStations[i]) != 0) {
             char* flags = *(char**)(*(char**)(base + 0x58) + 4);
             if (flags[i] == 0)
                 return 1;
@@ -222,5 +222,5 @@ int SolarSystem::isFullyDiscovered() {
 int SolarSystem::stationIsInSystem(Station* station) {
     if (station == nullptr)
         return 0;
-    return stationIsInSystem_int(station->getIndex());
+    return stationIsInSystem(station->getIndex());
 }

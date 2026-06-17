@@ -187,7 +187,7 @@ void DialogueWindow::loadContent() {
     GameText *gameText = *g_dw_gameTextLoad;
     FModSound *sound = *g_dw_soundLoad;
 
-    this->nextButton->replaceTextKeepSize(gameText->getText(0xb4));
+    this->nextButton->replaceTextKeepSize(*gameText->getText(0xb4));
     this->mirrorFace = 0;
     this->autoAdvanceTimer = 0;
     this->pauseLength = 0;
@@ -273,7 +273,7 @@ void DialogueWindow::loadContent() {
     this->faceParts = (*g_dw_imageFactoryLoad)->loadChar((int *)this->clientImage);
 
     if (this->isLastPage() != 0) {
-        this->nextButton->replaceTextKeepSize(gameText->getText(0xb5));
+        this->nextButton->replaceTextKeepSize(*gameText->getText(0xb5));
     }
 
     Agent *agent = mission == 0 ? (Agent *)0 : mission->getAgent();
@@ -543,7 +543,7 @@ void DialogueWindow::draw() {
     layout->drawMask();
     String title;
     title.ctor_copy(&this->agentName, false);
-    layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, &title, 1);
+    layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title, 1);
     title.dtor();
 
     this->scrollWindow->draw();

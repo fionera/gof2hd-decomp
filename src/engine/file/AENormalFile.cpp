@@ -1,6 +1,6 @@
 #include "engine/file/AENormalFile.h"
 
-AENormalFile::AENormalFile(HeldFile *file)
+AENormalFile::AENormalFile(FileInterface *file)
     : held(file)
 {
 }
@@ -29,7 +29,10 @@ uint32_t AENormalFile::Write(uint32_t bytes, void *buffer)
 uint32_t AENormalFile::Skip(uint32_t bytes)
 {
     if (held != nullptr) {
-        return held->Skip(bytes);
+        char *buffer = new char[bytes];
+        uint32_t read = held->Read(bytes, buffer);
+        delete[] buffer;
+        return read;
     }
     return 0;
 }
@@ -45,10 +48,7 @@ uint32_t AENormalFile::GetFileSize()
 uint32_t AENormalFile::Release()
 {
     if (held != nullptr) {
-        held->Discard();
-        if (held != nullptr) {
-            delete held;
-        }
+        delete held;
     }
     held = nullptr;
     return 1;

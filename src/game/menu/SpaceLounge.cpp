@@ -394,7 +394,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);
             helpSmall.ctor_copy((String *)text, false);
-            ((Layout *)(layout))->initHelpWindow(&helpSmall);
+            ((Layout *)(layout))->initHelpWindow(helpSmall);
         }
         return;
     }
@@ -459,7 +459,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
         helpBig.ctor_copy((String *)text, false);
-        ((Layout *)(layout))->initHelpWindow(&helpBig);
+        ((Layout *)(layout))->initHelpWindow(helpBig);
     }
 }
 

@@ -53,7 +53,7 @@ public:
     ListItem(Ship* s);
     ListItem(const AbyssEngine::String* src);
     ListItem(const AbyssEngine::String* p1, const AbyssEngine::String* p2);
-    ListItem(AbyssEngine::String* src, bool b);
+    ListItem(AbyssEngine::String* p1, AbyssEngine::String* p2);
     ListItem(AbyssEngine::String* src, bool b, int v);
     ListItem(const AbyssEngine::String* src, int v);
     ListItem(const ListItem& src);

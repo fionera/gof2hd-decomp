@@ -490,9 +490,9 @@ void ChoiceWindow::setText(String const &title, String const &body)
 void ChoiceWindow::setButtonText(String const &left, String const &right)
 {
     if (this->leftButton != nullptr)
-        this->leftButton->setText((String *)&left);
+        this->leftButton->setText(left);
     if (this->rightButton != nullptr)
-        this->rightButton->setText((String *)&right);
+        this->rightButton->setText(right);
 }
 
 int ChoiceWindow::touch_end(int x, int y)

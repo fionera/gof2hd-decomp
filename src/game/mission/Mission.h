@@ -19,7 +19,7 @@ public:
     int id;
     String name;                 // client name
     String targetName;
-    int clientImage;
+    int* clientImage;
     int clientRace;
     int costs;                   // reward / costs slot (getReward/getCosts read this)
     int costsValue;              // +0x34 separate costs slot (setCosts writes this)
@@ -39,7 +39,7 @@ public:
     Mission();
     Mission(int id);
     Mission(int id, int goods, int station);
-    Mission(int id, const String* client, int clientImage, int clientRace,
+    Mission(int id, AbyssEngine::String client, int* clientImage, int clientRace,
             int costs, int station, int reward);
     ~Mission();
 
@@ -78,7 +78,7 @@ public:
     void setStatusValue(int value);
     Agent* getAgent();
     void setAgent(Agent* agent);
-    int getClientImage();
+    int* getClientImage();
     int getClientRace();
     int getProductionGoodIndex();
     int getProductionGoodAmount();

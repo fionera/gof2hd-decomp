@@ -53,7 +53,7 @@ public:
     const char *GetAppRootDir() override;
     uint32_t    GetDeviceFreeSpace() override;
     void        SetAppRootDir(const char *p) override;
-    void        SetZipDirectory(const char *p) override;
+    void        SetZipDirectory(void *p) override;
 
     // Not part of the FileInterface backend dispatch, but invoked directly.
     void Close();

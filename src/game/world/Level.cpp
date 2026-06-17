@@ -2784,9 +2784,9 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj = (PlayerFixedObject *)::operator new(0x1bc);
         new (obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
         int wreck = 0;
-        Array<BoundingVolume *> *bv = Level::cs_buildBV(race, type, &wreck);
+        void *bv = Level::cs_buildBV(race, type, &wreck);
         obj->setWreckedMeshId(wreck);
-        obj->setBV(bv);
+        obj->setBV((BoundingVolume*)bv);
         int gg = gGlobals->getShipGroup(type, race, 0);
         obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, false);   // KIPlayer::setShipGroup
         this->lodManager->addObject(obj->geometry);
@@ -3863,7 +3863,7 @@ BoundingVolume *Level::gbv_makeVolume(int rec, int shape) {
 // --- createShip(): build the class-appropriate bounding-volume array for a ship
 // of (race,type) and report its wreck mesh id. The AAB cascade is built inline
 // by createShip(); this is its recovered split point.
-Array<BoundingVolume *> *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
+void *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
     (void)race; (void)type;
     if (outWreckMesh)
         *outWreckMesh = -1;

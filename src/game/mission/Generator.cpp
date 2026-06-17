@@ -80,7 +80,7 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
 
         uint32_t systemIndex = 0;
         while (systemIndex < systems->size()) {
-            if (systems->data()[systemIndex]->stationIsInSystem_int(selected) != 0) {
+            if (systems->data()[systemIndex]->stationIsInSystem(selected) != 0) {
                 break;
             }
             ++systemIndex;
@@ -387,7 +387,7 @@ Mission *Generator::createMission(Agent *agent,
                     targetStation =
                         generateStationIndex(systems, agent->getStation());
                     for (uint32_t i = 0; i < systems->size(); ++i) {
-                        if (systems->data()[i]->stationIsInSystem_int(targetStation) &&
+                        if (systems->data()[i]->stationIsInSystem(targetStation) &&
                             (uint32_t)systems->data()[i]->getRace() == race) {
                             ok = true;
                             break;
@@ -435,7 +435,7 @@ Mission *Generator::createMission(Agent *agent,
         case 0xf:
             amount = random->nextInt() + 30;
             for (uint32_t i = 0; i < systems->size(); ++i) {
-                if (systems->data()[i]->stationIsInSystem_int(targetStation)) {
+                if (systems->data()[i]->stationIsInSystem(targetStation)) {
                     int *prob =
                         (int *)gGalaxy
                             ->getAsteroidProbabilities(status->getStation());
@@ -521,7 +521,7 @@ Mission *Generator::createMission(Agent *agent,
     mission->setBonus(bonus);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        if (systems->data()[i]->stationIsInSystem_int(targetStation)) {
+        if (systems->data()[i]->stationIsInSystem(targetStation)) {
             AbyssEngine::String systemName = systems->data()[i]->getName();
             mission->setTargetSystemName(systemName);
             break;

@@ -780,7 +780,7 @@ void * RecordHandler::readMission(unsigned int fd) {
         if (!isEmpty) {
             String nameCopy;
             nameCopy.ctor_copy(&clientName, false);
-            mission = new Mission(type, &nameCopy, (int)(intptr_t)img, clientRace, reward, targetStationIdx, difficulty);
+            mission = new Mission(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
         } else {
             mission = new Mission(type, reward, targetStationIdx);
         }

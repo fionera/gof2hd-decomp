@@ -412,7 +412,7 @@ void MissionsWindow::draw()
         String box(*t);
         int c = L->field_0xc, p20 = L->field_0x20;
         int p28 = L->buttonInsetX, p2c = L->field_0x2c;
-        L->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), L->field_0x5c, &box, (unsigned)(uintptr_t)canvas);
+        L->drawBox(1, p28 + ox, oy + c + p20, (ow >> 1) - (p2c + p28), L->field_0x5c, box, (unsigned)(uintptr_t)canvas);
     }
     {
         String box("", false);
@@ -421,7 +421,7 @@ void MissionsWindow::draw()
         int p28 = L->buttonInsetX, p2c = L->field_0x2c;
         int p5c = L->field_0x5c;
         L->drawBox(5, p28 + ox, oy + c + p20 + p5c + p2c, (ow >> 1) - (p2c + p28),
-                   ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, &box, (unsigned)(uintptr_t)canvas);
+                   ((oh - (p20 + c + p5c + p2c * 2)) - p10) - p24, box, (unsigned)(uintptr_t)canvas);
     }
 
     this->m_pCampaignWindow->draw();
@@ -433,7 +433,7 @@ void MissionsWindow::draw()
         String box(*t);
         int c = L->field_0xc, p20 = L->field_0x20;
         int p28 = L->buttonInsetX, p2c = L->field_0x2c;
-        L->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, L->field_0x5c, &box, (unsigned)(uintptr_t)canvas);
+        L->drawBox(1, ox + (ow >> 1) + p2c, oy + c + p20, ((ow >> 1) - p2c) - p28, L->field_0x5c, box, (unsigned)(uintptr_t)canvas);
     }
     {
         String box("", false);
@@ -442,7 +442,7 @@ void MissionsWindow::draw()
         int p28 = L->buttonInsetX, p2c = L->field_0x2c;
         int p5c = L->field_0x5c;
         L->drawBox(5, ox + (ow >> 1) + p2c, oy + p2c + c + p20 + p5c, ((ow >> 1) - p2c) - p28,
-                   ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, &box, (unsigned)(uintptr_t)canvas);
+                   ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, (unsigned)(uintptr_t)canvas);
     }
 
     // Active freelance mission details.
@@ -604,7 +604,7 @@ void MissionsWindow::OnTouchEnd(int y, int z)
             if (layout->helpPressed() != 0) {
                 String *t = g_mw_gameText->getText(0x27b);
                 String title(*t);
-                layout->initHelpWindow(&title);
+                layout->initHelpWindow(title);
             }
         }
     } else {

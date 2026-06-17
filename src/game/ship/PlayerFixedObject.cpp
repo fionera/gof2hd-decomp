@@ -494,8 +494,10 @@ int PlayerFixedObject::collide(float x, float y, float z) {
     return 0;
 }
 
-void PlayerFixedObject::setBV(Array<BoundingVolume *> *bv) {
-    this->boundingVolumes = bv;
+void PlayerFixedObject::setBV(BoundingVolume *bv) {
+    Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
+    this->boundingVolumes = a;
+    ArrayAdd(bv, *a);
 }
 
 // PC-relative pointer-to-function-pointer; *holder is a Vector::operator= style routine

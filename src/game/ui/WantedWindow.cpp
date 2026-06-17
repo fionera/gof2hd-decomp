@@ -295,7 +295,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         } else if (layout->helpPressed() != 0) {
             String help;
             help.copy((*g_WantedWindow_end_text)->getText(0x27b), false);
-            layout->initHelpWindow(&help);
+            layout->initHelpWindow(help);
         }
     }
 }
@@ -345,7 +345,7 @@ void WantedWindow::draw() {
         layout->drawBox(style, layout->buttonInsetX + this->windowX, y,
                         (this->windowWidth >> 1) -
                             (inset + layout->buttonInsetX + layout->field_0x2c),
-                        layout->field_0x70, &boxLabel, 0);
+                        layout->field_0x70, boxLabel, 0);
 
         Wanted *wanted = (*this->wantedList)[i];
         canvas->SetColor(wanted->isActive() ? 0xffffffffu : 0xff808080u);
@@ -386,7 +386,7 @@ void WantedWindow::draw() {
     layout->drawBox(1, layout->buttonInsetX + this->windowX,
                     this->windowY + layout->field_0xc + layout->field_0x20,
                     (this->windowWidth >> 1) - (layout->field_0x2c + layout->buttonInsetX),
-                    layout->field_0x5c, &leftHdr, 0);
+                    layout->field_0x5c, leftHdr, 0);
 
     String leftBody("", false);
     layout->drawBox(5, layout->buttonInsetX + this->windowX,
@@ -398,14 +398,14 @@ void WantedWindow::draw() {
                        layout->field_0x5c + layout->field_0x2c * 2)) -
                      layout->field_0x10) -
                         layout->field_0x24,
-                    &leftBody, 0);
+                    leftBody, 0);
 
     String rightHdr;
     rightHdr.copy((*g_WantedWindow_draw_text)->getText(0xc95), false);
     layout->drawBox(1, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
                     this->windowY + layout->field_0xc + layout->field_0x20,
                     ((this->windowWidth >> 1) - layout->field_0x2c) - layout->buttonInsetX,
-                    layout->field_0x5c, &rightHdr, 0);
+                    layout->field_0x5c, rightHdr, 0);
 
     String rightBody("", false);
     layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
@@ -417,7 +417,7 @@ void WantedWindow::draw() {
                        layout->field_0x20 + layout->field_0x5c)) -
                      layout->field_0x10) -
                         layout->field_0x24,
-                    &rightBody, 0);
+                    rightBody, 0);
 
     if (this->imageParts != nullptr) {
         int charX = this->windowX + (this->windowWidth >> 1) + layout->field_0x2c;
@@ -555,7 +555,7 @@ int WantedWindow::init() {
         String *label = text->getText(0xc93);
         int helpOff = layout->getHelpButtonOffset();
         (*buttons)[1] = new TouchButton(this->windowX + (int)this->windowWidth - helpOff,
-                                        this->windowY, label, 3, 0x12, 0);
+                                        this->windowY, *label, 3, 0x12, 0);
     }
     {
         String *label = text->getText(0x81);
@@ -563,7 +563,7 @@ int WantedWindow::init() {
         int width = (*buttons)[1]->getWidth();
         (*buttons)[0] = new TouchButton(this->windowX + (int)this->windowWidth - helpOff -
                                             width + layout->field_0x38,
-                                        this->windowY, label, 3, 0x12, 0);
+                                        this->windowY, *label, 3, 0x12, 0);
     }
 
     (*buttons)[1]->setAlwaysPressed(true);

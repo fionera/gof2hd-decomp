@@ -161,10 +161,10 @@ uint32_t FileInterfaceAndroid::GetDeviceFreeSpace()
     return 0;
 }
 
-void FileInterfaceAndroid::SetZipDirectory(const char *p)
+void FileInterfaceAndroid::SetZipDirectory(void *p)
 {
     if (p != 0)
-        this->zipDirectory = (void *)p;
+        this->zipDirectory = p;
 }
 
 void FileInterfaceAndroid::SetAppRootDir(const char *p)

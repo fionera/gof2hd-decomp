@@ -164,9 +164,9 @@ public:
     void drawBG();
     void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
     void drawBGPattern(unsigned img, int x, int y, int w, int h);
-    void drawBox(int style, int x, int y, int w, int h, String *text, unsigned flags);
+    void drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags);
     void drawBox6(int p2, int p3, int p4, int p5, int p6, const String *str);
-    void drawEmptyFooter(int showBack);
+    void drawEmptyFooter(bool showBack);
     uint8_t drawFade();
     void drawFooter();
     void drawFooterImpl(int stationMode, int showBack);
@@ -177,7 +177,7 @@ public:
     void drawHeader7(String *title, int transition);
     void drawHelpWindow();
     int drawMask4(int p1, int p2, int p3, int p4);
-    void drawMissionRewardMessage(int transition);
+    void drawMissionRewardMessage(bool transition);
     void drawScrollBar(int x, int y, int trackH, int pos, int range);
     void drawTip();
     void drawWindow1(const String *param);
@@ -189,7 +189,7 @@ public:
     int getHelpButtonOffset();
     float getPulseValue(float speed);
     uint8_t helpPressed();
-    void initHelpWindow(String *text);
+    void initHelpWindow(String text);
     void initTip();
     uint8_t isFading();
     void reload();
@@ -197,7 +197,7 @@ public:
     void setDrawColor(int color);
     void setWindowDimensions(int p1, int p2, int p3, int p4);
     void showMissionRewardMessage(int show, bool flag);
-    void startFade(uint8_t fadeOut, int color, int duration);
+    void startFade(bool fadeOut, int color, int duration);
     void update(int dt);
 
     // ---- internal helpers ----
@@ -223,7 +223,7 @@ public:
     void drawHeader_call(String *title);
 
     // ---- canonical-named public draw entries ----
-    void drawWindow(String *title, int x, int y, int w, int h);
+    void drawWindow(String title, int x, int y, int w, int h);
     void drawMask();
     void drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
 };

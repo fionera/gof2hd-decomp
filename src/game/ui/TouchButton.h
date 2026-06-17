@@ -58,9 +58,9 @@ public:
     int           fontSpacing;        // cached font kerning/spacing
 
     TouchButton(String *text, int type, int x, int y, int width, int icon, int style);
-    TouchButton(String *text, int x, int y, int p4, unsigned char p5);
-    TouchButton(int x, int y, String *text, int p4, int p5, unsigned char p6);
-    TouchButton(String *text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    TouchButton(String const &text, int x, int y, int p4, unsigned char p5);
+    TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6);
+    TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
     ~TouchButton();
 
     bool         OnTouchBegin(int px, int py);
@@ -72,20 +72,20 @@ public:
     int          getHeight();
     String       getText();
     int          getWidth();
-    int          init(String *text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1);
+    int          init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1);
     uint8_t      isTouched();
     uint8_t      isVisible();
-    void         replaceTextKeepSize(String *text);
+    void         replaceTextKeepSize(String const &text);
     void         resetTouch();
     void         setAlwaysPressed(bool value);
     void         setHalfTransparent(bool value);
-    void         setNumberText(String *value);
+    void         setNumberText(String const &value);
     void         setPosition(int x, int y, unsigned char flags);
     void         setPosition2(int x, int y);
     void         setPressProgress(float value);
     void         setPressProgressHighlight(bool value);
-    void         setSplitText(String *value);
-    void         setText(String *text);
+    void         setSplitText(String const &value);
+    void         setText(String const &text);
     void         setTextColor(int color);
     void         setVisible(bool value);
     void         setYPosition(int y);

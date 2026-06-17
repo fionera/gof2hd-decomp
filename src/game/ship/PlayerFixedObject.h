@@ -87,7 +87,7 @@ public:
     V3 projectCollisionOnSurface(const Vector &vec) override;   // actor vtable slot +0x58
     void render() override;
     void reset();
-    void setBV(Array<BoundingVolume *> *bv);
+    void setBV(BoundingVolume *bv);
     void setBV_arr(Array<BoundingVolume *> *bv);
     void setDeadButSelectable();
     void setDockingType(int v);

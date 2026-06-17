@@ -156,7 +156,7 @@ void ScrollTouchWindow::drawTextBG()
     }
     int h = this->height;
     String text(g_STW_empty_drawTextBG);
-    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, &text, 0);
+    layout->drawBox(5, x, pad + y, w - widthInset, h - heightInset, text, 0);
 }
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text)

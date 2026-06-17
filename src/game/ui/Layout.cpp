@@ -155,7 +155,7 @@ int Layout::OnTouchEnd(int x, int y) {
     return this->dispatchTouchEnd(btn, x, y);
 }
 
-void Layout::startFade(uint8_t fadeOut, int color, int duration) {
+void Layout::startFade(bool fadeOut, int color, int duration) {
     this->fadeOut = fadeOut;
     this->fading = 1;
     this->fadeColor = color & 0xffffff00u;
@@ -201,7 +201,7 @@ __attribute__((visibility("hidden"))) extern int *g_efScreenH;      // [0]=scree
 __attribute__((visibility("hidden"))) extern int *g_efScreenW;      // [0]=screen width
 __attribute__((visibility("hidden"))) extern int **g_efMetric;      // [0][0x10]=footer height
 
-void Layout::drawEmptyFooter(int showBack) {
+void Layout::drawEmptyFooter(bool showBack) {
     PaintCanvas *pc = gCanvas;
     unsigned color = *g_efColor;
     pc->SetColor(color);
@@ -684,7 +684,7 @@ __attribute__((visibility("hidden"))) extern int **g_dbMetric7;         // case7
 __attribute__((visibility("hidden"))) extern void **g_dbFont7;
 
 // Draw one of the styled box backgrounds (0..10) with optional centred label text.
-void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsigned flags) {
+void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags) {
     PaintCanvas *pc = *g_dbCanvas;
     unsigned saved = pc->GetColor();
     gCanvas->SetColor(this->drawColor);
@@ -695,7 +695,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         pc->DrawImage2D(this->field_0x348, x, y);
         this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char)(0x01));
-        if (text->size() == 0) break;
+        if (text.size() == 0) break;
         int *mt = *g_dbMetric0;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
@@ -708,7 +708,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont0), &text, tx + x, ty, false);
         break;
     }
     case 1: {
@@ -716,7 +716,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         pc->DrawImage2D(this->field_0x350, x, y);
         this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char)(0x01));
-        if (text->size() == 0) break;
+        if (text.size() == 0) break;
         int *mt = *g_dbMetric1;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
@@ -729,7 +729,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont1), &text, tx + x, ty, false);
         break;
     }
     case 2:
@@ -757,7 +757,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         pc->DrawImage2D(this->field_0x388, x, y);
         this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
         pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char)(0x01));
-        if (text->size() == 0) break;
+        if (text.size() == 0) break;
         int *mt = *g_dbMetric6;
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
@@ -770,7 +770,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
             tx = (w - tx) - tw;
         }
         int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont6), &text, tx + x, ty, false);
         break;
     }
     case 7: {
@@ -779,11 +779,11 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String *text, unsign
         this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
         int ih = gCanvas->GetImage2DHeight(this->field_0x394);
         this->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
-        if (text->size() == 0) break;
+        if (text.size() == 0) break;
         gCanvas->SetColor(0xffffffff);
         pc->DrawImage2D(this->headerIconImage, x, y);
         int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), &text,
                        mt[0x28 / 4] + x, ty, false);
         break;
     }
@@ -888,12 +888,12 @@ void Layout::drawHelpWindow() {
 
 __attribute__((visibility("hidden"))) extern FModSound **gFmodHelp;  // distinct global from showMissionRewardMessage's gFmod
 
-void Layout::initHelpWindow(String *text) {
+void Layout::initHelpWindow(String text) {
     if (this->choiceWindow == nullptr)
         this->choiceWindow = new ChoiceWindow();
     (*gFmodHelp)->play(0x7e, 0, 0, 0);
     String *title = gGameText->getText(0x187);
-    this->choiceWindow->set(*title, *text);
+    this->choiceWindow->set(*title, text);
     this->choiceWindowOpen = 1;
     this->helpPressedFlag = 0;
 }
@@ -1191,7 +1191,7 @@ __attribute__((visibility("hidden"))) extern int *g_mrTextId;      // [0]=text i
 __attribute__((visibility("hidden"))) extern void **g_mrFont;      // [0]=font
 __attribute__((visibility("hidden"))) extern const char g_mrLit2[];
 
-void Layout::drawMissionRewardMessage(int transition) {
+void Layout::drawMissionRewardMessage(bool transition) {
     if (this->rewardMessageActive != 0) {
         PaintCanvas *pc = *g_mrCanvas;
         unsigned saved = pc->GetColor();
@@ -1274,12 +1274,12 @@ void Layout::drawHeaderImpl(String *title, int transition) {
 
 // Owning-String variant of drawBox.
 void Layout::drawBoxImpl(int style, int x, int y, int w, int h, String *text, int flags) {
-    this->drawBox(style, x, y, w, h, text, (unsigned)flags);
+    this->drawBox(style, x, y, w, h, *text, flags);
 }
 
 // drawBox over a borrowed String (no copy); flags default to 0.
 void Layout::drawBoxStr(int style, int x, int y, int w, int h, String *text) {
-    this->drawBox(style, x, y, w, h, text, 0u);
+    this->drawBox(style, x, y, w, h, *text, 0u);
 }
 
 // 8-arg drawBox variant: `color` overrides the draw colour for the box, `z` is
@@ -1287,7 +1287,7 @@ void Layout::drawBoxStr(int style, int x, int y, int w, int h, String *text) {
 void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, int z) {
     unsigned saved = this->drawColor;
     this->drawColor = (unsigned)color;
-    this->drawBox(kind, x, y, w, z, text, 0u);
+    this->drawBox(kind, x, y, w, z, *text, 0u);
     this->drawColor = saved;
 }
 
@@ -1327,8 +1327,8 @@ void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, 
 
 // Take an owning copy of the title and render the full window frame (with
 // background) via the core renderer.
-void Layout::drawWindow(String *title, int x, int y, int w, int h) {
-    String tmp(*title);
+void Layout::drawWindow(String title, int x, int y, int w, int h) {
+    String tmp(title);
     this->drawWindow7(&tmp, x, y, w, h, 1);
 }
 

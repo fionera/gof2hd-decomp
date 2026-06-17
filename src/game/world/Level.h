@@ -299,7 +299,7 @@ public:
     BoundingVolume *gbv_makeVolume(int rec, int shape);
 
     // createShip(): build the class-appropriate bounding-volume array + wreck mesh.
-    Array<BoundingVolume *> *cs_buildBV(int race, int type, int *outWreckMesh);
+    void *cs_buildBV(int race, int type, int *outWreckMesh);
 
     // createGasClouds(): pick a far random spawn position for cloud `i`.
     void cgc_randomPos(int rng, int boss, unsigned i, Vector *out);

@@ -293,11 +293,11 @@ void ListItemWindow::draw()
 
     {
         String s("", false);
-        layout->drawBox(2, this->x, this->y, this->width, this->height, &s, 0);
+        layout->drawBox(2, this->x, this->y, this->width, this->height, s, 0);
     }
     if (masked) {
         String s("", false);
-        layout->drawBox(7, this->x, this->y, this->width, this->height, &s, 0);
+        layout->drawBox(7, this->x, this->y, this->width, this->height, s, 0);
     }
 
     {
@@ -374,7 +374,7 @@ void ListItemWindow::draw()
             int color = layout->field_0x1c;
             String s;
             s.ctor_copy((*rows)[i], false);
-            layout->drawBox(6, layout->buttonInsetX + this->x, ycur, (this->width >> 1) - (layout->field_0x2c + layout->buttonInsetX), color, &s, 0);
+            layout->drawBox(6, layout->buttonInsetX + this->x, ycur, (this->width >> 1) - (layout->field_0x2c + layout->buttonInsetX), color, s, 0);
             canvas->SetColor(canvasHandle);
 
             int textX, textY;
@@ -420,12 +420,12 @@ void ListItemWindow::draw()
     if (this->previewHeight < 1) {
         String s;
         s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
-        layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c, this->y + layout->field_0xc + layout->field_0x20, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x5c, &s, 0);
+        layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c, this->y + layout->field_0xc + layout->field_0x20, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x5c, s, 0);
     } else {
         canvas->SetColor(canvasHandle);
         {
             String s("", false);
-            layout->drawBox(8, this->x + (this->width >> 1) + layout->field_0x2c, this->y + layout->field_0xc + layout->field_0x20, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, this->previewHeight, &s, 0);
+            layout->drawBox(8, this->x + (this->width >> 1) + layout->field_0x2c, this->y + layout->field_0xc + layout->field_0x20, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, this->previewHeight, s, 0);
         }
         int prog = this->previewHeight;
         int yBox = this->y + layout->field_0xc + layout->field_0x20;
@@ -433,7 +433,7 @@ void ListItemWindow::draw()
         {
             String s;
             s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
-            layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c, yBox, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x1c, &s, 0);
+            layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c, yBox, ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x1c, s, 0);
         }
         canvas->SetColor(canvasHandle);
         canvas->DrawImage2D(this->scrollThumbImage, this->scrollBarX - this->scrollBarOffsetX, 0);

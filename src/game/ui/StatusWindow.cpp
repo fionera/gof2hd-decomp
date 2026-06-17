@@ -186,12 +186,12 @@ void StatusWindow::OnTouchEnd(int x, int y) {
             String title;
             String *t = (*g_swe_gameText)->getText(0x287);
             title.ctor_copy(t, false);
-            layout->initHelpWindow(&title);
+            layout->initHelpWindow(title);
         } else if (this->activeTab == 0) {
             String title;
             String *t = (*g_swe_gameText)->getText(0x280);
             title.ctor_copy(t, false);
-            layout->initHelpWindow(&title);
+            layout->initHelpWindow(title);
         }
     }
 }
@@ -494,13 +494,13 @@ void StatusWindow::draw() {
 
         String *t = (*g_swd_gameText)->getText(*g_swd_textId);
         lbl.ctor_copy(t, false);
-        layout->drawBox(0, x0, top, boxW, layout->field_0x1c, &lbl, 0);
+        layout->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl, 0);
 
         int y = layout->field_0x1c + top + pad;
 
         // Credits panel.
         lbl.ctor_char("", false);
-        layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
+        layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
         String credTmp;
         Layout_formatCredits(&credTmp, gStatus->getCredits());
@@ -528,7 +528,7 @@ void StatusWindow::draw() {
 
         // Ship picture panel.
         lbl.ctor_char("", false);
-        layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, &lbl, 0);
+        layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawShip(gStatus->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
         String *shipNameTxt = (*g_swd_gameText)->getText(gStatus->getShip()->getIndex());
         canvas->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
@@ -618,7 +618,7 @@ void StatusWindow::draw() {
             String hdr;
             String *t = (*g_swd_gameText)->getText(*g_swd_textId);
             hdr.ctor_copy(t, false);
-            layout->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, &hdr, 0);
+            layout->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
             gridY0 += layout->field_0x1c + layout->field_0x2c;
         }
 
@@ -639,12 +639,12 @@ void StatusWindow::draw() {
             lbl.ctor_char("", false);
             layout->drawBox(2, layout->buttonInsetX, (((screenH - layout->field_0x10) -
                             layout->field_0x24) - lineH * lines) +
-                              layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
+                              layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, lbl, 0);
 
             lbl.ctor_char("", false);
             layout->drawBox(5, layout->buttonInsetX, (((screenH - layout->field_0x10) -
                             layout->field_0x24) - lineH * lines) +
-                              layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, &lbl, 0);
+                              layout->field_0x4c * -2, this->boxWidth, layout->field_0x4c * 2 + lineH * lines, lbl, 0);
 
             Globals_drawLines(*g_swd_globals, font, this->detailLines,
                               layout->field_0x4c + layout->buttonInsetX,
@@ -684,12 +684,12 @@ StatusWindow::StatusWindow() {
 
     String *t0 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0xa8);
     int helpOff = layout->getHelpButtonOffset();
-    TouchButton *b0 = new TouchButton(t0, 3, layoutW - helpOff, 0, 0x12);
+    TouchButton *b0 = new TouchButton(*t0, 3, layoutW - helpOff, 0, 0x12);
     (*this->tabButtons)[1] = b0;
 
     String *t1 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0x241);
     int helpOff2 = layout->getHelpButtonOffset();
-    TouchButton *b1 = new TouchButton(t1, 3, 0, 0, 0x12);
+    TouchButton *b1 = new TouchButton(*t1, 3, 0, 0, 0x12);
     int w1 = b1->getWidth();
     b1->setPosition(((layoutW - helpOff2) - w1) + layout->field_0x38, 0, 0x12);
     (*this->tabButtons)[0] = b1;
@@ -711,7 +711,7 @@ StatusWindow::StatusWindow() {
     for (int i = 0; i < this->medalCount; i++) {
         int medal = medalIds[i];
         String *txt = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0x5e3 + i);
-        TouchButton *btn = new TouchButton(i, medal, txt, 0, 0, 'D');
+        TouchButton *btn = new TouchButton(i, medal, *txt, 0, 0, 'D');
         (*this->medalButtons)[i] = btn;
     }
 

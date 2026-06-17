@@ -98,7 +98,7 @@ public:
     virtual uint32_t    GetDeviceFreeSpace()                           { return 0; }
     virtual const char *GetAppRootDir()                                { return nullptr; }
     virtual void        SetAppRootDir(const char *)                    {}
-    virtual void        SetZipDirectory(const char *)                  {}
+    virtual void        SetZipDirectory(void *)                        {}
     virtual void        SetSaveDirectory(const String &)               {}
     virtual void        ResetSaveDirectory()                           {}
     virtual uint32_t    OpenDirectory(void *, uint32_t)                { return 0; }
@@ -173,7 +173,7 @@ public:
     static uint32_t    GetDeviceFreeSpace();
     static const char *GetAppRootDir();
     static void        SetAppRootDir(const char *path);
-    static void        SetZipDirectory(const char *path);
+    static void        SetZipDirectory(void *path);
     static void        SetSaveDirectory(String path);
     static void        ResetSaveDirectory();
 };

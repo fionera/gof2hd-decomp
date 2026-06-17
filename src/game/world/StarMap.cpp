@@ -554,7 +554,7 @@ void StarMap::OnTouchEnd_tail()
     String help;
     void *layout = *g_StarMap_end_layout;
     help.copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
-    ((Layout *)(layout))->initHelpWindow(&help);
+    ((Layout *)(layout))->initHelpWindow(help);
 }
 
 // StarMap::touch_end(x, y): touch-release handler used while the star map is embedded inside
@@ -1070,7 +1070,7 @@ void StarMap::drawKey()
 
     String empty;
     int x = screenH - boxW;
-    ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, &empty, 0);
+    ((Layout *)(layout))->drawBox(7, x, ((screenW - rightPad) - boxH) - padY, boxW, padY + boxH, empty, 0);
     int drawX = x + lineH;
     int textX = imageWidth + lineH + drawX;
     int y = ((screenW - lineH) - rightPad) - marginY;
@@ -1435,7 +1435,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     this->jumpMapModeB = 0;
     this->exitRequested = 0;
     String *back = (String *)((GameText *)(*g_StarMap_init_text))->getText(0x190);
-    this->backButton = new TouchButton(back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
+    this->backButton = new TouchButton(*back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c), *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
     this->systemPath = (Array<int> *)0;
     this->choiceWindow = new ChoiceWindow();
     this->pathFinder = (SystemPathFinder *)SystemPathFinder_ctor(operator new(1));

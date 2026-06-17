@@ -671,7 +671,7 @@ void AEFile::SetAppRootDir(const char *path)
     }
 }
 
-void AEFile::SetZipDirectory(const char *path)
+void AEFile::SetZipDirectory(void *path)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
