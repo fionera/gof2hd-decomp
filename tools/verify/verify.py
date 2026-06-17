@@ -54,10 +54,12 @@ def find_base_objects(build_dir):
 
 
 def _diff_unit(unit, base_o, target_root, only_re):
-    """Delink + diff one base object. Returns (rows, skip) where skip is None or a short
-    reason string. Per-unit work is independent (each writes only its own target_o), so it
-    is safe to run concurrently. Failures are returned, not printed, so they can be
-    summarised after the table instead of interleaving with it."""
+    """Delink + diff one base object. Returns (rows, skip, our_syms) where skip is None or a
+    short reason string and our_syms is the set of mangled symbols this object defines (used,
+    independently of whether they matched, to spot originals we implement under a different
+    signature). Per-unit work is independent (each writes only its own target_o), so it is safe
+    to run concurrently. Failures are returned, not printed, so they can be summarised after the
+    table instead of interleaving with it."""
     target_o = os.path.join(target_root, unit + ".o")
     os.makedirs(os.path.dirname(target_o), exist_ok=True)
     # OrbStack calls wedge transiently; a timed-out unit is retried once (the retry almost always
@@ -70,40 +72,43 @@ def _diff_unit(unit, base_o, target_root, only_re):
             bf = asmdiff.disassemble(base_o)
             break
         except subprocess.CalledProcessError:
-            return [], "no delinkable target"
+            return [], "no delinkable target", set()
         except subprocess.TimeoutExpired:
             if attempt == 1:
                 continue
-            return [], "objdump hung twice"
+            return [], "objdump hung twice", set()
+    our_syms = {s for s in bf if s.startswith("_Z")}
     out = []
     for r in asmdiff.compare(tf, bf):
         if only_re and not only_re.search(r["symbol"]):
             continue
         r["unit"] = unit
         out.append(r)
-    return out, None
+    return out, None, our_syms
 
 
 def collect(build_dir, only=None):
-    """Returns (rows, skips). skips is a list of (unit, reason) for units that couldn't be
-    compared. The per-unit delink+disasm work is all OrbStack subprocesses (GIL released), so
-    we fan it out across a thread pool — same GOF2_VERIFY_JOBS knob build_objs.sh uses."""
+    """Returns (rows, skips, our_syms). skips is a list of (unit, reason) for units that
+    couldn't be compared; our_syms is the union of mangled symbols our build defines across all
+    units. The per-unit delink+disasm work is all OrbStack subprocesses (GIL released), so we fan
+    it out across a thread pool — same GOF2_VERIFY_JOBS knob build_objs.sh uses."""
     target_root = os.path.join(build_dir, "target")
     only_re = re.compile(only) if only else None
     units = find_base_objects(build_dir)
     jobs = max(1, int(os.environ.get("GOF2_VERIFY_JOBS", "8")))
-    rows, skips = [], []
+    rows, skips, our_syms = [], [], set()
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
         futures = {ex.submit(_diff_unit, unit, base_o, target_root, only_re): unit
                    for unit, base_o in units}
         for fut, unit in futures.items():
-            unit_rows, skip = fut.result()
+            unit_rows, skip, unit_syms = fut.result()
             rows.extend(unit_rows)
+            our_syms |= unit_syms
             if skip:
                 skips.append((unit, skip))
     rows.sort(key=lambda r: (r["match"], r["unit"], r["symbol"]))
     skips.sort()
-    return rows, skips
+    return rows, skips, our_syms
 
 
 def original_text_functions():
@@ -124,6 +129,75 @@ def find_symbol_objects(build_dir, sym):
             delink(base_o, target_o)
             return unit, base_o, target_o, bf
     return None
+
+
+def demangle_many(names):
+    """{mangled -> demangled} via `c++filt -n` (Apple/LLVM c++filt demangles Itanium names
+    natively, so this needs no OrbStack). Best-effort: returns {} if c++filt is unavailable or
+    the line count doesn't round-trip, in which case the wrong-type analysis is simply skipped."""
+    names = list(names)
+    if not names:
+        return {}
+    try:
+        p = subprocess.run(["c++filt", "-n"], input="\n".join(names),
+                           text=True, capture_output=True, timeout=120)
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return {}
+    out = p.stdout.splitlines()
+    if len(out) != len(names):
+        return {}
+    return dict(zip(names, out))
+
+
+def qualified_name(demangled):
+    """The function's fully-qualified name with the parameter list stripped, e.g.
+    'AbyssEngine::AEMath::Matrix::operator*=(Matrix const&)' -> '...::operator*='. Tracks
+    angle-bracket depth so commas/parens inside template args or function-pointer parameters
+    don't confuse the split, and steps over the parens in an 'operator()' name. Returns None
+    when there is no top-level parameter list (i.e. the symbol isn't a function)."""
+    depth = 0
+    i, n = 0, len(demangled)
+    while i < n:
+        c = demangled[i]
+        if c == "<":
+            depth += 1
+        elif c == ">":
+            depth -= 1
+        elif c == "(" and depth == 0:
+            if demangled[max(0, i - 8):i] == "operator":
+                i += 1  # this '(' is part of the operator() name, not the param list
+                continue
+            return demangled[:i].strip()
+        i += 1
+    return None
+
+
+def analyze_wrong_type(missing, our_syms):
+    """Split the exact-name 'missing' originals into those we genuinely never wrote vs those we
+    implement under a *different signature* (wrong parameter or qualifier types, so the mangled
+    name differs and exact-name matching skips them). Match by demangled qualified name. Returns
+    a list of {symbol, demangled, qualified, ours[]} for the present-but-wrong-type cases."""
+    ours = sorted(s for s in our_syms if s.startswith("_Z"))
+    dm_missing = demangle_many(missing)
+    dm_ours = demangle_many(ours)
+    if not dm_missing or not dm_ours:
+        return []
+    our_by_qual = {}
+    for sym, dem in dm_ours.items():
+        q = qualified_name(dem)
+        if q:
+            our_by_qual.setdefault(q, []).append(dem)
+    hits = []
+    for sym in missing:
+        dem = dm_missing.get(sym)
+        if not dem:
+            continue
+        q = qualified_name(dem)
+        if q and q in our_by_qual:
+            hits.append({"symbol": sym, "demangled": dem, "qualified": q,
+                         "ours": sorted(set(our_by_qual[q]))})
+    hits.sort(key=lambda h: h["qualified"])
+    return hits
 
 
 def main():
@@ -162,7 +236,7 @@ def main():
         print(asmdiff.unified(tf, bf, sym) or "(identical after normalization)")
         return 0
 
-    rows, skips = collect(args.build_dir, only=args.only)
+    rows, skips, our_syms = collect(args.build_dir, only=args.only)
     if not rows:
         print("No comparable functions found. Did the ARM build produce any .o files?")
         return 1
@@ -196,12 +270,33 @@ def main():
         universe = original_text_functions()
         compared = {r["symbol"] for r in rows}
         missing = sorted(universe - compared)
+        # Of the missing originals, which do we actually implement — just under a different
+        # signature (wrong param/qualifier types -> different mangled name -> skipped by the
+        # exact-name match)? These are the high-value fixes: the body exists, only the type is
+        # off. The rest are genuinely not built yet.
+        wrong_type = analyze_wrong_type(missing, our_syms)
+        wrong_type_syms = {h["symbol"] for h in wrong_type}
+        absent = [m for m in missing if m not in wrong_type_syms]
         report.update({"original_functions": len(universe),
-                       "compared_unique": len(compared), "missing": len(missing)})
+                       "compared_unique": len(compared), "missing": len(missing),
+                       "missing_wrong_type": len(wrong_type),
+                       "missing_absent": len(absent),
+                       "wrong_type": wrong_type})
         miss_path = os.path.join(args.build_dir, "missing.txt")
         os.makedirs(os.path.dirname(miss_path), exist_ok=True)
         with open(miss_path, "w") as f:
             f.write("\n".join(missing) + ("\n" if missing else ""))
+        # Present-but-wrong-type, grouped by qualified name with both sides' signatures, so the
+        # fix (retype our params to match the original) is reads straight off the file.
+        wt_path = os.path.join(args.build_dir, "missing_wrong_type.txt")
+        with open(wt_path, "w") as f:
+            for h in wrong_type:
+                f.write(f"{h['qualified']}\n")
+                f.write(f"    original: {h['demangled']}\n")
+                f.write(f"      mangled {h['symbol']}\n")
+                for dem in h["ours"]:
+                    f.write(f"    ours:     {dem}\n")
+                f.write("\n")
 
     print(f"{len(rows)} comparisons   avg {avg:.1f}%   "
           f"100%-fuzzy {perfect}   linked-exact {linked_eq}   byte-exact {bytes_eq}")
@@ -209,6 +304,11 @@ def main():
         print(f"coverage: compared {report['compared_unique']}/{report['original_functions']} "
               f"original functions   missing {report['missing']} "
               f"(-> {os.path.relpath(miss_path, REPO)})")
+        if report["missing_wrong_type"]:
+            print(f"  of which {report['missing_wrong_type']} are implemented under a different "
+                  f"signature (wrong type) "
+                  f"(-> {os.path.relpath(wt_path, REPO)}); "
+                  f"{report['missing_absent']} genuinely absent")
     if skips:
         units = ", ".join(u for u, _ in skips)
         print(f"skipped {len(skips)} units (couldn't delink/diff): {units}")

@@ -76,8 +76,22 @@ report -> cmake-build-match/verify/report.json
   counterpart in our build — either not decompiled/compiled yet, or whose signature
   mangles differently (the `Array`-vs-`std::vector` gap accounts for a few hundred).
   The full list is written to `cmake-build-match/verify/missing.txt`.
+- **`wrong type` (`missing_wrong_type`)** splits that *missing* pile into the two cases that
+  look identical to an exact-name match but need very different fixes. We demangle every missing
+  original and every symbol our build defines, strip the parameter list to a *qualified name*
+  (`AEFile::Open`), and group by it. A missing original whose qualified name we **do** define is
+  reported as *implemented under a different signature* — the body exists, only a parameter or
+  qualifier type is off (`String` by-value vs `String&`, a global enum that should be nested,
+  `void*` vs `char const*`), so the mangled name differs and the exact-name match skipped it.
+  These are the cheap wins: retype our params to match the original and the function starts
+  comparing (and usually matching). The rest are *genuinely absent* (never written). Both sides'
+  full signatures, grouped by name, are written to
+  `cmake-build-match/verify/missing_wrong_type.txt`; `report.json` carries the counts
+  (`missing_wrong_type`, `missing_absent`) and the structured `wrong_type` list. Demangling uses
+  `c++filt -n` (Itanium-aware on macOS — no OrbStack needed for this step).
 - `report.json` has the full per-function data plus the coverage counts
-  (`count`, `compared_unique`, `original_functions`, `missing`) for scripting/CI.
+  (`count`, `compared_unique`, `original_functions`, `missing`, `missing_wrong_type`,
+  `missing_absent`) and the structured `wrong_type` pairings for scripting/CI.
 
 ## Tuning compiler flags
 
