@@ -35,6 +35,10 @@ public:
 
 } // namespace AbyssEngine
 
+// Material's real type lives in namespace AbyssEngine (to match the binary's mangling
+// N11AbyssEngine8MaterialE); a global `using` alias lets bare `Material` resolve to it.
+using ::AbyssEngine::Material;
+
 // Default zero Vector value loaded by the default constructor.
 extern "C" float Material_defaultVectorX;
 #endif

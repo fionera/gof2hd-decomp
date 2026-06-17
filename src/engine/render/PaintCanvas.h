@@ -17,15 +17,19 @@
 // pulled in by common.h. The cross-class struct forward-decls live globally in
 // fwd.h (also via common.h); we model below only the offsets PaintCanvas touches.
 
-struct Material;
+namespace AbyssEngine { struct Material; }
+using ::AbyssEngine::Material;
 struct Resource;
 struct ResourceTexture;
 struct ResourceMesh;
-struct ImageFont;
-struct Image2D;
+namespace AbyssEngine { struct ImageFont; }
+using ::AbyssEngine::ImageFont;
+namespace AbyssEngine { struct Image2D; }
+using ::AbyssEngine::Image2D;
 struct Transform;
 struct Camera;
-struct SpriteSystem;
+namespace AbyssEngine { struct SpriteSystem; }
+using ::AbyssEngine::SpriteSystem;
 
 namespace AbyssEngine {
 
@@ -328,13 +332,10 @@ public:
 // namespace so AbyssEngine::Mesh and bare Mesh are the same type.
 namespace AbyssEngine {
 using ::Node;
-// Engine already lives in this namespace (AbyssEngine::Engine); no re-export needed.
+// Engine, Material, SpriteSystem, ImageFont and Image2D already live in this namespace
+// (AbyssEngine::X); no re-export needed.
 using ::PaintCanvas;
-using ::Material;
 using ::Camera;
-using ::SpriteSystem;
-using ::ImageFont;
-using ::Image2D;
 
 // Array<T> alias inside the namespace (the global one lives in Array.h).
 template <class T> using Array = ::Array<T>;

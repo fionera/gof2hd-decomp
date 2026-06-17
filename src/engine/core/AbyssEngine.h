@@ -18,14 +18,23 @@
 // Engine's real type lives in namespace AbyssEngine; the global alias keeps bare `Engine` working.
 namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
-class Material;
+// These engine types' real types live in namespace AbyssEngine (to match the binary's mangling);
+// a global `using` alias below lets bare `X` resolve to AbyssEngine::X.
+namespace AbyssEngine { class Material; }
+using ::AbyssEngine::Material;
 class PaintCanvas;
-struct Image;
-struct Image2D;
-struct ImageFont;
-struct Curve;
-struct SpriteSystem;
-struct AELoadedTexture;
+namespace AbyssEngine { struct Image; }
+using ::AbyssEngine::Image;
+namespace AbyssEngine { struct Image2D; }
+using ::AbyssEngine::Image2D;
+namespace AbyssEngine { struct ImageFont; }
+using ::AbyssEngine::ImageFont;
+namespace AbyssEngine { struct Curve; }
+using ::AbyssEngine::Curve;
+namespace AbyssEngine { struct SpriteSystem; }
+using ::AbyssEngine::SpriteSystem;
+namespace AbyssEngine { struct AELoadedTexture; }
+using ::AbyssEngine::AELoadedTexture;
 
 namespace AbyssEngine {
 
@@ -43,15 +52,9 @@ class Camera;
 // Re-export the global engine/runtime types into this namespace. Mesh, Transform and Camera are
 // intentionally NOT re-exported: their namespace-scope forms (gof2/engine/render/Mesh.h,
 // gof2/engine/math/Transform.h) are distinct from any global type, so a `using ::X;` would clash.
-// Engine already lives in this namespace (AbyssEngine::Engine); no re-export needed.
-using ::Image;
-using ::Image2D;
-using ::ImageFont;
-using ::Material;
-using ::Curve;
-using ::SpriteSystem;
+// Engine, Image, Image2D, ImageFont, Material, Curve, SpriteSystem and AELoadedTexture already
+// live in this namespace (AbyssEngine::X); no re-export needed.
 using ::PaintCanvas;
-using ::AELoadedTexture;
 
 } // namespace AbyssEngine
 
