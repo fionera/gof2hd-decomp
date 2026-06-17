@@ -32,6 +32,19 @@ SYMS = "/Users/fionera/Downloads/GalaxyOnFire2/_work/symbols/android_2.0.16.symb
 GHIDRA_BASE = 0x10000
 
 NAMESPACES = {"AbyssEngine", "AEMath", "FMOD"}  # AERandom is a class, not a namespace
+
+# Permanently deferred: the binary's signature genuinely can't be matched without a cast or a
+# deep cross-type cascade, so these are routed to FLAG (not re-attempted by fix waves).
+#   - AEFile/FileInterface SetAppRootDir/SetZipDirectory: original takes void*, but the Android
+#     impl stores into a `const char* appRootDir` read back by GetAppRootDir()->const char*, so a
+#     void* parameter forces an internal cast. Kept const char* (consistent, cast-free).
+#   - FModSound::updateEvent3DAttributes: void*->FMOD::Event* needs the `void* events[]` member
+#     array retyped, which cascades through void*-returning FMOD shims.
+DEFER_QUALIFIED = {
+    "AEFile::SetAppRootDir", "AEFile::SetZipDirectory",
+    "AbyssEngine::FileInterface::SetAppRootDir", "AbyssEngine::FileInterface::SetZipDirectory",
+    "FModSound::updateEvent3DAttributes",
+}
 INT_TYPES = {"int", "unsigned int", "short", "unsigned short", "char", "signed char",
              "unsigned char", "long", "unsigned long", "long long", "unsigned long long",
              "bool", "uint32_t", "int32_t", "uint16_t", "int16_t", "uint8_t", "int8_t",
@@ -319,7 +332,9 @@ def build_worklist():
         ctor_dtor = is_ctor_dtor(qualified)
         templ = is_template(e["demangled"], e["ours"])
 
-        if reason != "ok":
+        if qualified in DEFER_QUALIFIED:
+            category, route, flag_reason = "DEFERRED_HARD", "FLAG", "deferred_hard"
+        elif reason != "ok":
             category, route, flag_reason = ("AMBIGUOUS" if reason == "ambiguous"
                                             else "MISSING_OVERLOAD"), "FLAG", reason
         elif norm_ws(e["demangled"]) == norm_ws(chosen):
