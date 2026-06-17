@@ -197,7 +197,7 @@ public:
     bool inPirateLootOrbit();
     bool hardCoreMode();
     Wanted* getWantedInCurrentOrbit();
-    int missionFailed(bool param_1, int64_t time);
+    int missionFailed(bool docked, int64_t time);
     Mission* missionCompleted(bool atStation, bool docked, long long extra);
     void setJumpgateUsed(int value);
     void jumpgateUsed();
@@ -250,7 +250,7 @@ public:
     void loadAgents();
     int getCollectedBounties(int index);
     void incCollectedBounties(int index);
-    int getGammaRayDamagePerSecond(int param_1, int param_2);
+    int getGammaRayDamagePerSecond(int station, int system);
     void loadWanted();
     Array<Wanted*>* getWanted();
     bool isStorylineWanted(int index);

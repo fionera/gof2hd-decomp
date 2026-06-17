@@ -71,7 +71,7 @@ void HangarWindow::refreshCurrentContentHeight() {
         int n = (int)items->size();
         // RAWREAD: *g_hw_globals is an untyped void* here; Globals has no member at +0x70.
         int rowH = (*(int *)((char *)(*g_hw_globals) + (0x70)));
-        this->currentContentHeight = this->rowSpacing * (n - 1) + n * rowH;
+        this->currentContentHeight = this->field_0x100.d * (n - 1) + n * rowH;
     }
 }
 
@@ -146,8 +146,8 @@ HangarWindow::~HangarWindow() {
 float HangarWindow::getRelativeScrollStartPos() {
     int range = this->scrollOffset;
     if (range > 0) {
-        union { unsigned u; float f; } c; c.u = 0x4650a903u;
-        return c.f;
+        // Float pool DAT_0015b6e8 = 0x00000000.
+        return 0.0f;
     }
     return -(float)range / (float)this->currentContentHeight;
 }
@@ -156,9 +156,9 @@ void HangarWindow::hideMessage() {
     this->dialogActive = 0;
 }
 
-__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;        // *piVar37
-__attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;     // *piVar21
-__attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;    // *piVar41
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;       // layout config singleton
+__attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
+__attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;
 __attribute__((visibility("hidden"))) extern void **g_hw_globals;
 __attribute__((visibility("hidden"))) extern void **g_hw_font;
 __attribute__((visibility("hidden"))) extern RecordHandler **g_hw_recordHandler;
@@ -176,7 +176,7 @@ extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
 void HangarWindow::render() {
     Layout *layout = *g_hw_layout;
     PaintCanvas *canvas = gCanvas;
-    ((PaintCanvas *)canvas)->SetColor(0u);
+    ((PaintCanvas *)canvas)->SetColor(0xffffffffu);  // white @0x1590fe
 
     void *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
     // RAWREAD: dlc is an opaque IApplicationModule (void*); +0x18 is its "active" flag, unmodeled.
@@ -242,7 +242,7 @@ void HangarWindow::render() {
                 int boxW = rowGap - 2;
 
                 for (unsigned int i = 0; i < items->size(); i++) {
-                    int y = (layout->field_0x70 + this->rowSpacing) * (int)i +
+                    int y = (layout->field_0x70 + this->field_0x100.d) * (int)i +
                             this->scrollOffset + layout->field_0x20 + layout->field_0xc;
                     if (y < 0 || y > *g_hw_screenHeight)
                         continue;
@@ -267,20 +267,27 @@ void HangarWindow::render() {
                         ((Layout *)(layout))->drawBox(9, this->hintOffsetX + layout->field_0x28, y, topY, layout->field_0x70, &boxText);
                     }
 
-                    ((PaintCanvas *)canvas)->SetColor(0u);
+                    ((PaintCanvas *)canvas)->SetColor(0xffffffffu);  // white @0x159492
                     String label;
 
                     if (((ListItem *)(li))->isItem() == 0) {
                         if (((ListItem *)(li))->isShip() != 0) {
                             // Ship row: name + price + ship icon.
                             ((ListItem *)li)->ship->getIndex();
-                            ((PaintCanvas *)canvas)->SetColor(0u);
+                            // Affordability tint: green when the player can pay, the
+                            // muted price colour otherwise (binary @0x159a16-28).
+                            int shipCredits = gStatus->getCredits();
+                            int shipPrice = ((ListItem *)li)->ship->getPrice();
+                            unsigned int shipPriceColor = (shipCredits > shipPrice)
+                                ? 0xa35b5bffu   // affordable (green)
+                                : 0x7aa35bffu;  // pool @0x159c70
+                            ((PaintCanvas *)canvas)->SetColor(shipPriceColor);
                             String price;
                             Layout_formatCredits(&price, ((ListItem *)li)->ship->getPrice());
                             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&price,
                                 contentBase + layout->field_0x28 + this->hintOffsetX, 0, (bool)1);
                             ((ImageFactory *)(*g_hw_globals))->drawShip(((ListItem *)li)->ship->getIndex(), this->hintOffsetX + layout->field_0x28 + rowGap, this->iconOffsetY + y);
-                            ((PaintCanvas *)canvas)->SetColor(0u);
+                            ((PaintCanvas *)canvas)->SetColor(0xffffffffu);  // white @0x159ace
                         } else if (((ListItem *)(li))->isSlot() != 0) {
                             if (tab == 4 && i == items->size() - 1) {
                                 (*this->buttons)[(0x5c) >> 2]->setPosition(this->hintOffsetX + layout->field_0x28 + topY / 2, layout->field_0x114 + y, 0x14);
@@ -299,17 +306,26 @@ void HangarWindow::render() {
                                     (int)(rate * dcw), this->progressBarHeight, (float)(int)(rate * dcw),
                                     0, 0, 0,
                                     layout->field_0x28 + contentBase + 3 + this->hintOffsetX);
+                                float sliderW = (float)(this->progressBarWidth - 4);
+                                ((PaintCanvas *)canvas)->DrawImage2D((unsigned)this->progressBarBorderImage,
+                                    this->hintOffsetX + layout->field_0x28 + contentBase + 5 + (int)(rate * sliderW),
+                                    (layout->field_0x70 / 2) + 2 + y, (unsigned char)0x11);
+                                ((PaintCanvas *)canvas)->SetColor(0x777777ffu);  // binary literal @0x1599cc, between border image and percent label
                                 String pct, sfx, sum;
+                                pct.ctor_int((int)(rate * 100.0f));
                                 sum = pct + sfx;
                                 ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, (void *)(uintptr_t)(int)(uintptr_t)&sum,
                                     contentBase + 2 + layout->field_0x28 + this->hintOffsetX +
                                         this->progressBarWidth + layout->field_0x2c, 0, (bool)0);
-                                ((PaintCanvas *)canvas)->SetColor(0u);
+                                ((PaintCanvas *)canvas)->SetColor(0xffffffffu);  // white @0x15987e
                             }
                             int bpIdx = ((ListItem *)li)->bluePrint->getIndex();
                             // RAWREAD: indexes the opaque item-pointer table reached via *g_hw_globals(void*)+0x4.
                             int type = ((Item *)((*(void * *)((char *)((*(void * *)((char *)(*g_hw_globals) + (0x4)))) + (bpIdx)))))->getType();
                             ((ImageFactory *)(*g_hw_globals))->drawItem(bpIdx, type, layout->field_0x28 + rowGap + this->hintOffsetX);
+                            // Green tint when the blueprint is craftable (ListItem+0x45) @0x1598e0.
+                            if (((ListItem *)li)->field_0x45 != 0)
+                                ((PaintCanvas *)canvas)->SetColor(0x00ed00ffu);  // green @0x1598f0
                         } else if (((ListItem *)(li))->isPendingProduct() != 0) {
                             int amt = ((ListItem *)li)->pendingProduct->quantity;
                             String head;
@@ -339,7 +355,18 @@ void HangarWindow::render() {
                     } else {
                         // Regular item row: name + amounts + price + icon.
                         ((Item *)((ListItem *)li)->item)->getIndex();
-                        ((PaintCanvas *)canvas)->SetColor(0u);
+                        ((PaintCanvas *)canvas)->SetColor(0xffffffffu);  // white @0x159d3e
+                        // Item-price colour: on the shop tab (tab 1) tint by affordability,
+                        // otherwise use the muted price colour (binary @0x15a114-0x15a14c).
+                        if (tab == 1) {
+                            int itemCredits = gStatus->getCredits();
+                            int itemPrice = ((Item *)((ListItem *)li)->item)->getSinglePrice();
+                            ((PaintCanvas *)canvas)->SetColor((itemCredits > itemPrice)
+                                ? 0xa35b5bffu   // affordable (green)
+                                : 0x7aa35bffu); // pool @0x15a45c
+                        } else {
+                            ((PaintCanvas *)canvas)->SetColor(0x777777ffu);  // pool @0x15a460
+                        }
                         if (this->upgradeMode == 0) {
                             String price;
                             ((Item *)((ListItem *)li)->item)->getSinglePrice();
@@ -529,9 +556,9 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
 
             if (layout->field_0xc < coord) {
                 int row = IDIV(
-                    (((coord - layout->field_0xc) - layout->field_0x20) - self->rowSpacing) -
+                    (((coord - layout->field_0xc) - layout->field_0x20) - self->field_0x100.d) -
                         self->scrollOffset,
-                    layout->field_0x70 + self->rowSpacing);
+                    layout->field_0x70 + self->field_0x100.d);
                 if (row < self->hangarList->getCurrentLength()) {
                     self->hangarList->setCurrentItemIndex(row);
                     if (self->currentItemIsHighlighted() != 0 &&
@@ -1153,9 +1180,9 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     unsigned char skip = 1;
     if (layout->field_0xc < coord && coord < *g_hw_screenWidth - layout->field_0x10) {
         int row = IDIV(
-            ((coord - layout->field_0xc) - layout->field_0x20) - self->rowSpacing -
+            ((coord - layout->field_0xc) - layout->field_0x20) - self->field_0x100.d -
                 self->scrollOffset,
-            layout->field_0x70 + self->rowSpacing);
+            layout->field_0x70 + self->field_0x100.d);
         if (self->hangarList->getCurrentLength() > row) {
             self->hangarList->setCurrentItemIndex(row);
             self->highlightItem(self->hangarList->getCurrentItem());
@@ -1718,8 +1745,8 @@ float HangarWindow::getRelativeScrollHeight() {
     int a = this->currentContentHeight;
     int b = this->visibleHeight;
     if (a < b) {
-        union { unsigned u; float f; } c; c.u = 0x4605e009u;
-        return c.f;
+        // Float pool DAT_0015b73c = 0x00000000.
+        return 0.0f;
     }
     int e = this->scrollOffset;
     int num;
@@ -2022,11 +2049,11 @@ void HangarWindow::showFreeCreditsWindow() {
     this->notEnoughCredits = 0;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_hw_globals;          // *piVar27 (game-state object at .bss 0x2281d4; NOT a canonical singleton)
-__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;           // *piVar22 (layout config)
-__attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;        // *piVar11
-__attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;       // *piVar15
-__attribute__((visibility("hidden"))) extern int *g_hw_helpTextId;         // *piVar9
+__attribute__((visibility("hidden"))) extern void **g_hw_globals;          // game-state object at .bss 0x2281d4 (NOT a canonical singleton)
+__attribute__((visibility("hidden"))) extern Layout **g_hw_layout;           // layout config singleton
+__attribute__((visibility("hidden"))) extern int *g_hw_screenWidth;
+__attribute__((visibility("hidden"))) extern int *g_hw_screenHeight;
+__attribute__((visibility("hidden"))) extern int *g_hw_helpTextId;
 __attribute__((visibility("hidden"))) extern void **g_hw_posXArray;        // DAT for X positions
 __attribute__((visibility("hidden"))) extern void **g_hw_posYArray;        // DAT for Y positions
 __attribute__((visibility("hidden"))) extern void **g_hw_imageCountSlot;   // mirror of tab count
@@ -2384,7 +2411,12 @@ HangarWindow::HangarWindow() {
     this->tabButtons = nullptr;
     this->buttons = nullptr;
     this->shipSwapPending = 0;
+    this->dlcMenuPending = 0;
+    this->sellShipPending = 0;
     this->buyCreditsActive = 0;
+    this->notEnoughCredits = 0;
+    this->freeCreditsActive = 0;
+    this->autoCompletePending = 0;
 
     // Seed the grid-spacing block from the layout config geometry table.
     // RAWREAD: lay is void*; this copies a raw 16-byte geometry block at +0x238 plus three ints at

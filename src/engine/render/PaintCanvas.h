@@ -148,7 +148,7 @@ public:
 
     // ---- methods (recovered from the binary) ----------------------------------
     // Frame / render-state
-    void Initialize(bool param_1);
+    void Initialize(bool landscape);
     void Resume();
     void Suspend();
     void Begin2d();
@@ -161,17 +161,17 @@ public:
     void SetColor(unsigned int color);
     void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
     unsigned int GetColor();
-    void SetBlendMode(int param_2);
+    void SetBlendMode(int mode);
     void SetTexture(unsigned int, unsigned int);
     void SetShaderMode(int mode);
-    void SetGameOrientation(int param_2);
+    void SetGameOrientation(int orientation);
     void SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &);
     void SetProjOrthoMatrix();
-    void SetProjectionMatrix3d(float param_1, float param_2, float param_3);
+    void SetProjectionMatrix3d(float fov, float nearPlane, float farPlane);
     void ResetPersMatrix();
-    void EnableClip(int param_1, int param_2, int param_3, int param_4);
+    void EnableClip(int x, int y, int w, int h);
     void FogEnable(int mode, int enable);
-    void FogSetParameter(int param_1, float param_2, float param_3, float param_4, unsigned int param_5);
+    void FogSetParameter(int mode, float fogStart, float fogEnd, float fogDensity, unsigned int color);
     void ChangeCubeTexture(unsigned int idx);
     void GetWidth();
     void GetHeight();
@@ -186,31 +186,31 @@ public:
 
     // 2D drawing
     void FillRectangle(int x, int y, int w, int h);
-    void DrawRectangle(int param_1, int param_2, int param_3, int param_4);
-    void DrawLine(int param_1, int param_2, int param_3, int param_4);
+    void DrawRectangle(int x, int y, int w, int h);
+    void DrawLine(int x0, int y0, int x1, int y1);
     void DrawImage2D(unsigned int index, int x, int y);
-    void DrawImage2D(unsigned int param_1, int param_2, int param_3, unsigned char param_4);
-    void DrawImage2D(unsigned int param_1, int param_2, int param_3, unsigned char param_4, unsigned char param_5);
-    void DrawImage2D(unsigned int param_1, int param_2, int param_3, int param_4, int param_5, unsigned char param_6, unsigned char param_7, unsigned char param_8);
-    void DrawRegion2D(unsigned int param_1, float param_2, int param_3, int param_4, int param_5, int param_6, float param_7, float param_8);
-    void DrawRegion2D(unsigned int param_1, int param_2, int param_3, int param_4, int param_5, float param_6, int param_7, int param_8, int param_9, int param_10);
-    void Image2DCreate(unsigned short param_1, unsigned int *param_2);
+    void DrawImage2D(unsigned int index, int x, int y, unsigned char flipFlags);
+    void DrawImage2D(unsigned int index, int x, int y, unsigned char regionAlignFlags, unsigned char placeFlags);
+    void DrawImage2D(unsigned int index, int x, int y, int w, int h, unsigned char alignFlags, unsigned char anchorFlags, unsigned char flipFlags);
+    void DrawRegion2D(unsigned int index, float unused, int rotSteps, int pivotX, int pivotY, int transX, float scaleX, float scaleY);
+    void DrawRegion2D(unsigned int index, int srcX, int srcY, int destW, int destH, float unused, int transY, int pivotX, int pivotY, int transX);
+    void Image2DCreate(unsigned short resId, unsigned int *out);
     unsigned short GetImage2DWidth(unsigned int index);
     unsigned short GetImage2DHeight(unsigned int index);
 
     // Text
     void DrawString(unsigned int index, const unsigned short *str, int x, int y, bool b);
     void DrawString(unsigned int index, void *str, int x, int y, bool b);
-    void DrawStringColor(unsigned int param_1, void *param_2, int param_3, int param_4, bool param_5);
+    void DrawStringColor(unsigned int index, void *text, int x, int y, bool b);
     void DrawTextLines(unsigned int font, ::Array<void *> *arr, int x, int y, bool center);
     void DrawTextLines(unsigned int font, ::Array<void *> *arr, int x, int y, unsigned int p5, bool flag);
     int GetTextWidth(unsigned int index, void *str);
     int GetTextWidth(unsigned int index, void *str, unsigned int begin, unsigned int end);
     int GetTextHeight(unsigned int index);
-    void GetLine(unsigned int param_1, void *param_3, int param_4, void *param_5);
-    void GetLineArray(unsigned int param_1, void *param_2, int param_3, char *param_4);
+    void GetLine(unsigned int font, void *str, int maxWidth, void *out);
+    void GetLineArray(unsigned int font, void *str, int width, char *outArray);
     void CheckString(unsigned int index, void *str);
-    void FontCreate(unsigned short param_1, unsigned int *param_2, bool param_3);
+    void FontCreate(unsigned short resId, unsigned int *out, bool unused);
     int FontGetSpacing(unsigned int index);
     void FontSetSpacing(unsigned int index, short spacing);
     int FontGetYOffset(unsigned int index);
@@ -225,12 +225,12 @@ public:
     void CameraSetPerspective(unsigned int index, float a, float b, float c);
     void CameraSetPerspective(unsigned int index, float fov, float aspect);
     float CameraGetCurrentFactor1();
-    int CameraIsSphereinViewFrustum(void *param_1, float param_2);
-    int CameraIsPointinViewFrustum(void *param_1);
+    int CameraIsSphereinViewFrustum(void *point, float radius);
+    int CameraIsPointinViewFrustum(void *point);
 
     // Transforms
     void TransformCreate(unsigned int *out);
-    void TransformCreate(unsigned short param_1, unsigned int *param_2);
+    void TransformCreate(unsigned short resId, unsigned int *out);
     void *TransformGetLocal(unsigned int index);
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
     void TransformSetColor(unsigned int index, unsigned int color);
@@ -240,20 +240,20 @@ public:
     void TransformAddChild(unsigned int parent, unsigned int child);
     void TransformRemoveChild(unsigned int parent, unsigned int child);
     void TransformAddMesh(unsigned int transformIndex, unsigned short meshId, bool b);
-    void TransformAddMeshId(unsigned int param_1, unsigned int param_2);
+    void TransformAddMeshId(unsigned int transformIndex, unsigned int meshIndex);
     void TransformRemoveMesh(unsigned int transformIndex, void *mesh);
     void TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex);
     void DrawTransform(char *tf, void *m2, void *m3);
-    void DrawTransform(unsigned int param_1, const float *param_2);
+    void DrawTransform(unsigned int index, const float *viewMatrix);
 
     // Meshes
-    void MeshCreate(unsigned short param_1, unsigned int *param_2, bool param_3);
+    void MeshCreate(unsigned short resId, unsigned int *out, bool forceClone);
     void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned int *out);
-    void MeshCreate(unsigned short param_1, unsigned short param_2, signed char param_3, unsigned short param_4, unsigned int *param_6);
+    void MeshCreate(unsigned short vertexCount, unsigned short triangleCount, signed char meshType, unsigned short matResId, unsigned int *out);
     void *MeshGetPointer(unsigned int index);
     int MeshGetTriCount(char *mesh);
     void DrawMesh(unsigned int index);
-    void DrawMesh(char *param_1, const float *param_2, const float *param_3, unsigned int param_4, const float *param_5);
+    void DrawMesh(char *mesh, const float *worldMatrix, const float *viewMatrix, unsigned int color, const float *uvMatrix);
     void MeshConvertToVBO(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
     void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, void *mat);
@@ -279,11 +279,11 @@ public:
 
     // Materials / textures / resources
     void MaterialCreate(unsigned int *out, void *p2, void *p3);
-    void MaterialCreate(unsigned short param_1, unsigned int *param_2);
+    void MaterialCreate(unsigned short resId, unsigned int *out);
     void *MaterialGetMaterial(unsigned int index);
     void MaterialChange(unsigned int index, unsigned int param3, unsigned int param4);
     void MaterialResourceChangeTexture(unsigned short resId, void *texture, unsigned int slot);
-    void TextureCreate(unsigned short param_1, void *param_2, void *param_3, unsigned int *param_4, bool param_5);
+    void TextureCreate(unsigned short resId, void *callback, void *userData, unsigned int *out, bool useCallbackLoader);
     void TextureCreate(unsigned short id, unsigned int *out, bool flag);
     void TextureCreateGlobal(::String *name, int unit);
     void AddResource(void *resource);
@@ -296,14 +296,14 @@ public:
     void ReleaseAllResources();
     void ReloadTextures();
     void RemoveAllMatsForGlow();
-    void SetMatForGlow(char *param_1);
+    void SetMatForGlow(char *glowSource);
 
     // Sprite systems
-    void SpriteSystemCreate(unsigned short param_1, bool param_2, unsigned int *param_3);
-    void SpriteSystemCreate(unsigned short param_1, bool param_2, unsigned short param_3, unsigned int *param_4);
-    void DrawSpriteSystem(unsigned int param_1);
-    void DrawSpriteSystem(unsigned int param_1, const float *mat);
-    void DrawSpriteSystem(unsigned int param_1, const float *matA, const float *matB);
+    void SpriteSystemCreate(unsigned short resId, bool flag, unsigned int *out);
+    void SpriteSystemCreate(unsigned short resId, bool flag, unsigned short matResId, unsigned int *out);
+    void DrawSpriteSystem(unsigned int index);
+    void DrawSpriteSystem(unsigned int index, const float *mat);
+    void DrawSpriteSystem(unsigned int index, const float *matA, const float *matB);
     void ReleaseSpriteSystemResource(unsigned int index);
     float SpriteSystemSetPosition(unsigned int index, unsigned short sub, float x, float y, float z);
     void SpriteSystemAddPosition(unsigned int index, unsigned short sub, float x, float y, float z);
@@ -318,8 +318,8 @@ public:
 
     // Screen / misc
     void *GetScreenPosition(Vector *a, Vector *b);
-    void GetScreenPosition(char *param_1, char *param_2);
-    void GetScreenPosition(void *param_1, void *param_2, char *param_3);
+    void GetScreenPosition(char *srcMatrix, char *outVec);
+    void GetScreenPosition(void *worldPos, void *unused, char *outVec);
 };
 
 // The recovered source refers to these by their fully-qualified AbyssEngine name

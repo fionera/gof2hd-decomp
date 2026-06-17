@@ -22,25 +22,43 @@ if [ ! -f "$BUILD/.flags" ] || [ "$(cat "$BUILD/.flags")" != "$GOF2_MATCH_CXXFLA
   echo "$GOF2_MATCH_CXXFLAGS" > "$BUILD/.flags"
 fi
 
-# Recompile a TU only when its object is missing or older than the source or the
-# flag set (so flag tuning forces a rebuild).
+# Is $obj still up to date? It is stale (returns 1) if it is missing, older than its source or the
+# flag set, or — using the compiler-generated .d dependency file — older than ANY header it
+# includes. The .d (from -MMD) is what makes header edits trigger a rebuild; without it a changed
+# header would silently leave a stale object and skew the report. (Paths in this tree contain no
+# spaces, so plain word-splitting of the .d is safe.)
+up_to_date() {
+  local obj="$1" src="$2" dep="$3" prereq
+  [ -f "$obj" ]              || return 1
+  [ "$obj" -nt "$src" ]      || return 1
+  [ "$obj" -nt "$BUILD/.flags" ] || return 1
+  [ -f "$dep" ]              || return 1   # no dependency info yet -> rebuild to generate it
+  for prereq in $(sed -e 's/^[^:]*://' -e 's/\\$//' "$dep"); do
+    [ -e "$prereq" ] && [ "$prereq" -nt "$obj" ] && return 1
+  done
+  return 0
+}
+
+# Recompile a TU when its object is missing or older than the source, the flag set, or any header
+# it includes (tracked via the .d file emitted by -MMD).
 compile_one() {
   local src="$1"
   local rel="${src#src/}"; rel="${rel%.cpp}"
   local obj="$BASE/$rel.o"
+  local dep="$BASE/$rel.d"
   local log="$LOGS/$rel.log"
   mkdir -p "$(dirname "$obj")" "$(dirname "$log")"
-  if [ -f "$obj" ] && [ "$obj" -nt "$src" ] && [ "$obj" -nt "$BUILD/.flags" ]; then
+  if up_to_date "$obj" "$src" "$dep"; then
     return 0
   fi
-  if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS -c "$src" -o "$obj" >"$log" 2>&1; then
+  if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS -MMD -MF "$dep" -c "$src" -o "$obj" >"$log" 2>&1; then
     rm -f "$log"
     return 0
   fi
   rm -f "$obj"
   return 1
 }
-export -f compile_one
+export -f up_to_date compile_one
 export HERE BASE LOGS BUILD GOF2_MATCH_CXXFLAGS
 
 # (portable: macOS ships bash 3.2 which lacks `mapfile`)

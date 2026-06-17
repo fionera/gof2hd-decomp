@@ -178,8 +178,7 @@ public:
     int hintOffsetX;
     uint8_t autoEquipPending;
     unsigned int autoEquipIndex;
-    Blk16 field_0x100;
-    int rowSpacing;
+    Blk16 field_0x100;               // field_0x100.d (+0x10c) = per-row spacing
     int buttonHeight;
     int field_0x114;
     int iconOffsetY;

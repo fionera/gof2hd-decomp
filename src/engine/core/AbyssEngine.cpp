@@ -233,11 +233,14 @@ void getAppVersion()
 {
     Engine *self = AE_getInitGLThis();
     char *c = (char *)self;
+    int width = AE_getInitGLWidth();
+    int height = AE_getInitGLHeight();
 
     pp(c, 0x418) = 0;
-    u32(c, 0x368) = u32(c, 0x368);
-    u32(c, 0x370) = u32(c, 0x368);
-    u32(c, 0x374) = u32(c, 0x36c);
+    u32(c, 0x368) = width;
+    u32(c, 0x36c) = height;
+    u32(c, 0x370) = width;
+    u32(c, 0x374) = height;
 
     FileInterfaceAndroid *fileIface = new FileInterfaceAndroid();
     pp(c, 0x24) = fileIface;
@@ -280,7 +283,7 @@ void getAppVersion()
     if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
         FBOContainer *fbo = new FBOContainer(self, String(""));
         pp(c, 0x418) = fbo;
-        fbo->Create((int)i32(c, 0x368), (int)i32(c, 0x36c), false, true);
+        fbo->Create((int)i32(c, 0x368), (int)i32(c, 0x36c), true, false);
     }
 }
 
@@ -505,8 +508,8 @@ Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
 
     for (;;) {
         if ((unsigned int)mesh->indexCount <= i) {
-            out.u = g_MeshIntersect_missValue;
-            out.v = g_MeshIntersect_missValue;
+            out.u = -1.0f; // miss sentinel: inline 0xbf800000 literal (pool@0x7dab8)
+            out.v = -1.0f;
             return out;
         }
 
@@ -530,7 +533,7 @@ Vec2 MeshIntersect(float qx, float qz, Mesh *mesh)
         if (cx > maxX) maxX = cx;
         if (cx < minX) minX = cx;
 
-        if (maxZ < qz && minX <= qx && maxX < qx && minZ <= qz) {
+        if (maxZ >= qz && minX <= qx && maxX >= qx && minZ <= qz) {
             // Edge tests using outward 2D normals; "inside" means all three <= 0.
             float ex = bx - ax, ez = bz - az;
             float len = sqrtf(ez * ez + ex * ex);
@@ -594,7 +597,7 @@ int MeshDraw(Engine *engine, Mesh *mesh)
         glVertexPointer(3, 0x1406, 0, 0);
         glBindBuffer(0x8893, mesh->indexVBO);
 
-        if (flags & 4) { // has UVs
+        if (flags & 2) { // has UVs
             glBindBuffer(0x8892, mesh->texCoordVBO);
             engine->AEClientState(0x8078, true);
             glTexCoordPointer(2, 0x1406, 0, 0);
@@ -602,7 +605,7 @@ int MeshDraw(Engine *engine, Mesh *mesh)
             engine->AEClientState(0x8078, false);
         }
 
-        if (flags & 8) { // has normals
+        if (flags & 4) { // has normals
             glBindBuffer(0x8892, mesh->normalVBO);
             engine->AEClientState(0x8075, true);
             glNormalPointer(0x1406, 0, 0);
@@ -610,7 +613,7 @@ int MeshDraw(Engine *engine, Mesh *mesh)
             engine->AEClientState(0x8075, false);
         }
 
-        if (flags & 0x10) { // has colors
+        if (flags & 8) { // has colors
             glBindBuffer(0x8892, mesh->colorVBO);
             engine->AEClientState(0x8076, true);
             glColorPointer(4, 0x1406, 0, 0);
@@ -679,17 +682,17 @@ float CameraSetPerspective(float fov, float aspectNum, float aspectDen, float ne
     float ret = fov;
     if (cam != 0) {
         float *f = (float *)cam;
-        f[1] = near;
-        f[2] = fov;
+        f[1] = fov;
+        f[2] = aspectNum;
 
-        float s = AbyssEngine::AEMath::Sinf(fov);
+        float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
         float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         float scale = s / c;
         f[0x12] = scale;
-        f[0x13] = (aspectNum / aspectDen) * scale;
-        f[0x14] = aspectNum / aspectDen;
+        f[0x13] = (aspectDen / near) * scale;
+        f[0x14] = aspectDen / near;
 
-        float at = AbyssEngine::AEMath::ATanf(scale);
+        float at = AbyssEngine::AEMath::ATanf((aspectDen / near) * scale);
         float ca = AbyssEngine::AEMath::Cosf(at);
         ret = 1.0f / ca;
         f[0x15] = ret;
@@ -823,10 +826,11 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
         engine->SetUVMatrix((const uint32_t *)((char *)pp(m, 0x3c) + matOff));
 
         unsigned int packed = *(unsigned int *)((char *)pp(m, 0x54) + i * 4);
+        float ca = (float)((packed >> 24) & 0xff);
         float cr = (float)((packed >> 16) & 0xff);
         float cg = (float)((packed >> 8) & 0xff);
         float cb = (float)(packed & 0xff);
-        engine->SetColor(cb * inv255, cg * inv255, cr * inv255, 0.0f);
+        engine->SetColor(ca * inv255, cr * inv255, cg * inv255, cb * inv255);
 
         MeshDraw(engine, *(Mesh **)((char *)pp(m, 0x48) + i * 4));
         matOff += 0x3c;
@@ -1009,7 +1013,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
 
     m = *slot;
     // UV coordinates.
-    if (m->vertexFormat & 4) { // (byte<<0x1e) negative
+    if (m->vertexFormat & 2) { // (byte<<0x1e) negative
         if (compressedPos) {
             void *raw = ::operator new[](vcount << 2);
             if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
@@ -1049,7 +1053,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
 
     m = *slot;
     // Normals (+ tangent/binormal generation).
-    if (m->vertexFormat & 8) { // (byte<<0x1d) negative
+    if (m->vertexFormat & 4) { // (byte<<0x1d) negative
         if (compressedPos) {
             void *raw = ::operator new[](vcount * 6);
             if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) { ::operator delete[](raw); return -1; }
@@ -1176,8 +1180,8 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
     }
 
     m = *slot;
-    // Vertex colors. (byte<<0x1c) negative -> bit 0x10 set.
-    if (m->vertexFormat & 0x10) {
+    // Vertex colors. (byte<<0x1c) negative -> bit 0x8 set.
+    if (m->vertexFormat & 8) {
         if (compressedPos) {
             void *raw = ::operator new[](vcount << 2);
             if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) { ::operator delete[](raw); return -1; }
@@ -1609,17 +1613,17 @@ int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short t
     m->positions = p;
     __aeabi_memclr4(p, posBytes);
 
-    if (vertexFormat & 0x20) { // (fmt<<0x1b) negative -> index array
+    if (vertexFormat & 0x10) { // (fmt<<0x1b) negative -> index array
         p = operator new[]((unsigned int)triCount * 6);
         m->indices = p;
         __aeabi_memclr(p, (unsigned int)triCount * 6);
     }
-    if (vertexFormat & 4) { // (fmt<<0x1e) negative -> uv array
+    if (vertexFormat & 2) { // (fmt<<0x1e) negative -> uv array
         p = operator new[]((unsigned int)vertexCount << 3);
         m->texCoords = p;
         __aeabi_memclr4(p, (unsigned int)vertexCount << 3);
     }
-    if (vertexFormat & 8) { // (fmt<<0x1d) negative -> normal array (+ tangents/binormals)
+    if (vertexFormat & 4) { // (fmt<<0x1d) negative -> normal array (+ tangents/binormals)
         p = operator new[](posBytes);
         m->normals = p;
         __aeabi_memclr4(p, posBytes);
@@ -1632,7 +1636,7 @@ int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short t
             __aeabi_memclr4(p, posBytes);
         }
     }
-    if (vertexFormat & 0x10) { // (fmt<<0x1c) negative -> colour array
+    if (vertexFormat & 8) { // (fmt<<0x1c) negative -> colour array
         p = operator new[]((unsigned int)vertexCount << 4);
         m->colors = p;
         __aeabi_memclr4(p, (unsigned int)vertexCount << 4);
@@ -1658,11 +1662,11 @@ float CameraSetPerspective(float p1, float aspectNum, float fov, float aspectDen
     float ret = p1;
     if (cam != 0) {
         float *f = (float *)cam;
-        f[0] = fov;
+        f[0] = p1;
         f[1] = aspectNum;
         f[2] = fov;
 
-        float s = AbyssEngine::AEMath::Sinf(fov);
+        float s = AbyssEngine::AEMath::Sinf(f[0] * 0.5f);
         float c = AbyssEngine::AEMath::Cosf(f[0] * 0.5f);
         f[0x12] = s / c;
         f[0x13] = (aspectDen / near) * (s / c);
@@ -2175,10 +2179,10 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         float bottom = cy - half, top = cy + half;
 
         float *out = vbuf + q;
-        out[0] = left;  out[1] = top;    out[2] = cz;
-        out[3] = right; out[4] = top;    out[5] = cz;
-        out[6] = right; out[7] = bottom; out[8] = cz;
-        out[9] = left;  out[10] = bottom; out[11] = cz;
+        out[0] = left;  out[1] = bottom; out[2] = cz;
+        out[3] = right; out[4] = bottom; out[5] = cz;
+        out[6] = right; out[7] = top;    out[8] = cz;
+        out[9] = left;  out[10] = top;   out[11] = cz;
     }
 
     if (mesh->material == 0) {
@@ -2195,7 +2199,8 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         AE_SpriteSystem_pushMatrix(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9],
                                    v[10], v[11], v[12], v[13], v[14], (int)(intptr_t)batch + 0x2c);
         unsigned int one = 0x3f800000;
-        AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, g_SpriteSystem_oneHalf, 0, 0, 0, 0, one, 0,
+        unsigned int negOne = 0xbf800000; // V-flip diagonal: inline -1.0f literal (pool@0x97058)
+        AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
                                    one, one, one, (int)(intptr_t)batch + 0x38);
         const unsigned int *w = (const unsigned int *)world;
         AE_SpriteSystem_pushMatrix(w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9],
@@ -2262,7 +2267,7 @@ int MeshConvertToVBOIntern(Mesh *m)
         flags = m->vertexFormat;
     }
 
-    if (flags & 8) { // has normals (+ optional tangent/binormal pair)
+    if (flags & 4) { // has normals (+ optional tangent/binormal pair)
         glGenBuffers(1, &m->normalVBO);
         glBindBuffer(0x8892, m->normalVBO);
         glBufferData(0x8892, vcount * 0xc, m->normals, 0x88e4);
@@ -2279,7 +2284,7 @@ int MeshConvertToVBOIntern(Mesh *m)
         }
     }
 
-    if (m->vertexFormat & 0x10) { // has colors
+    if (m->vertexFormat & 8) { // has colors
         glGenBuffers(1, &m->colorVBO);
         glBindBuffer(0x8892, m->colorVBO);
         glBufferData(0x8892, vcount << 4, colArr, 0x88e4);
@@ -2313,14 +2318,14 @@ int MeshConvertToVBOIntern(Mesh *m)
             glDeleteBuffers(1, &m->texCoordVBO);
             f = m->vertexFormat;
         }
-        if (f & 8) {
+        if (f & 4) {
             glDeleteBuffers(1, &m->normalVBO);
             if (*g_Mesh_tangentDelFlag != 0) {
                 glDeleteBuffers(1, &m->tangentVBO);
                 glDeleteBuffers(1, &m->binormalVBO);
             }
         }
-        if (m->vertexFormat & 0x10)
+        if (m->vertexFormat & 8)
             glDeleteBuffers(1, &m->colorVBO);
     }
     m->vboByteSize = 0;

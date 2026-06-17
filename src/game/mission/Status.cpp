@@ -379,13 +379,13 @@ int Status::getPassengers() { return passengers; }
 bool Status::isStorylineWanted(int index) { return (unsigned)index < 2; }
 
 // Returns the first failed mission, or a type-0xd mission flagged failable.
-int Status::missionFailed(bool param_1, int64_t time) {
+int Status::missionFailed(bool docked, int64_t time) {
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
         Mission* cur = (*missions)[i];
         if (cur->hasFailed() != 0) {
             return 0;
         }
-        if (cur != 0 && cur->getType() == 0xd && param_1 && this->field_0x111 != 0) {
+        if (cur != 0 && cur->getType() == 0xd && docked && this->field_0x111 != 0) {
             return (int)(intptr_t)cur;
         }
     }
@@ -425,13 +425,15 @@ void Status::changeCredits(int delta) {
 }
 
 // True when `station` hosts a freighter mission (two bit-masks plus the special id 0xf).
-extern int DAT_freighterA;
-extern int DAT_freighterB;
+// The masks pick out the freighter stations relative to the 0x1e / 0x46 bases
+// (the set bits match getFreighterMissionStationBit's station list).
+static const int kFreighterMaskA = 0x40008401;   // stations 0x1e,0x28,0x2d,0x3c
+static const int kFreighterMaskB = 0x02008401;   // stations 0x46,0x50,0x55,0x5f
 
 int Status::isFreighterMissionStation(int station) {
-    if ((unsigned)(station - 0x1e) < 0x1f && ((1 << ((station - 0x1e) & 0xff)) & DAT_freighterA) != 0)
+    if ((unsigned)(station - 0x1e) < 0x1f && ((1 << ((station - 0x1e) & 0xff)) & kFreighterMaskA) != 0)
         return 1;
-    if ((unsigned)(station - 0x46) < 0x1a && ((1 << ((station - 0x46) & 0xff)) & DAT_freighterB) != 0)
+    if ((unsigned)(station - 0x46) < 0x1a && ((1 << ((station - 0x46) & 0xff)) & kFreighterMaskB) != 0)
         return 1;
     if (station == 0xf) return 1;
     return 0;
@@ -542,8 +544,8 @@ void Status::calcCargoPrices() {
     Galaxy* gal = gGalaxy;
     Array<SolarSystem*>* systems = gal->getSystems();
     AbyssEngine::AERandom* rng = gRandom;
-    const float kPriceScale = 1.0f;
-    const float kJitter = 1.0f;
+    const float kPriceScale = 100.0f;  // pool @0x000bccac = 0x42c80000
+    const float kJitter = 0.02f;        // pool @0x000bccb0 = 0x3ca3d70a
 
     for (int src = 0; src != 3; src = src + 1) {
         Array<Item*>* list;
@@ -590,11 +592,12 @@ void Status::calcCargoPrices() {
                     int jitterMax = (int)((float)base * kJitter);
                     if (jitterMax < 2)
                         jitterMax = 1;
-                    price = (base - jitterMax) + rng->nextInt(jitterMax | 1);
+                    price = (base - jitterMax) + rng->nextInt((jitterMax << 1) | 1);
                 }
                 if (*g_ccpPriceMod != 0 && **g_ccpPriceMod != 0) {
                     // apply a global price modifier when present.
-                    price = (int)((float)price + (float)price * (float)(**g_ccpPriceMod));
+                    // price + (price * priceMod) * 0.01f   (pool @0x000bccb4 = 0x3c23d70a)
+                    price = (int)((float)price + (float)price * (float)(**g_ccpPriceMod) * 0.01f);
                 }
                 item->setPrice(price);
             }
@@ -1003,11 +1006,11 @@ int Status::activateNewWanted() {
             path = pf->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned)(*path)[0] < lo || hi < (unsigned)(*path)[0]);
         AbyssEngine::AERandom* rnd = gRandom;
-        int pick = (*path)[rnd->nextInt()];
+        int pick = (*path)[rnd->nextInt(path->size())];
         SolarSystem* dst = (*systems)[pick];
         Array<int>* dstStations = (Array<int>*)dst->getStations_i();
         if (dstStations != 0) {
-            int idx = rnd->nextInt();
+            int idx = rnd->nextInt(dstStations->size());
             int st = (*dstStations)[idx];
             cur->setCurrentLocation(st);
         }
@@ -1099,15 +1102,15 @@ extern const float g_gammaTableB[5];
 static inline int as_int(float f) { union { float f; int i; } u; u.f = f; return u.i; }
 static inline float as_float(unsigned u) { union { unsigned u; float f; } x; x.u = u; return x.f; }
 
-int Status::getGammaRayDamagePerSecond(int a, int b) {
-    unsigned k = a - 0x6d;
-    float result = as_float(0x68409917u);
+int Status::getGammaRayDamagePerSecond(int station, int system) {
+    unsigned k = station - 0x6d;
+    float result = as_float(0x00000000u);
     if (k < 5) {
-        if (b < 0x6a) {
+        if (system < 0x6a) {
             if (k < 5) return as_int(g_gammaTableA[k]);
         } else if (currentCampaignMission < 0x9e) {
             if (k < 5) return as_int(g_gammaTableB[k]);
-        } else if (a == 0x6d) {
+        } else if (station == 0x6d) {
             result = as_float(0x3f800000u);
         }
     }
@@ -1672,6 +1675,18 @@ Mission* Status::missionCompleted(bool atStation, bool docked, long long extra) 
         default:
             // legacy mission ids 8..0xe.
             if (type == 8) {
+                // Campaign pending-product hand-in special case (binary @0x000bc460):
+                // when on the campaign mission 0x8f and not yet docked, look for a
+                // pending product whose word @+0x14 == 0xd2 at the target station.
+                if (m->isCampaignMission() && gStatus->currentCampaignMission == 0x8f && !docked) {
+                    if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
+                        for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
+                            PendingProduct* pp = (*pendingProducts)[j];
+                            if (pp != 0 && i32(pp, 0x14) == 0xd2)
+                                return m;
+                        }
+                    }
+                }
                 if (docked && station->getIndex() == m->getTargetStation()) {
                     int idx = m->getProductionGoodIndex();
                     int amt = m->getProductionGoodAmount();

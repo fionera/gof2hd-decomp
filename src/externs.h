@@ -137,6 +137,10 @@ void AE_SpriteSystem_pushMatrix(
 // Returns the Engine singleton currently being GL-initialized (the InitGL `this`), supplied
 // by the host runtime in a register the decompiler can't model; kept as a documented extern.
 Engine *AE_getInitGLThis();
+// The width/height arguments to InitGL(bool, int width, int height), supplied by the host
+// runtime in registers (r2/r3) the parameterless decompiled model can't see; documented externs.
+int AE_getInitGLWidth();
+int AE_getInitGLHeight();
 void *__aeabi_memclr(void *dst, size_t n);
 void *__aeabi_memclr4(void *dst, size_t n);
 void *__aeabi_memcpy4(void *dst, const void *src, size_t n);

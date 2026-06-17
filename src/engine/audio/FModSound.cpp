@@ -11,6 +11,9 @@ int   FMOD_Event_setPaused(void *event, int paused);
 void  FMOD_fade(void *self, int a, int s, float v);
 void  FMOD_EventSystem_unload(void *system);
 void  FMOD_EventSystem_release(void *system);
+// FMOD::EventSystem::freeEventData(Event*, bool) — the EventSystem vtable slot +8 method;
+// declared as a named extern (like the other FMOD_* glue) instead of a raw vtable dispatch.
+int   FMOD_EventSystem_freeEventData(void *system, void *event, int waitUntilReady);
 void *AEFile_GetAppRootDir();
 FModSound *FMOD_Event_stop_p(void *event, int immediate);
 int   FMOD_Event_setPitch(void *event, float pitch, int mode);
@@ -40,6 +43,13 @@ int   FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos
                                                void *forward);
 int   FMOD_EventSystem_update(int system);
 float VectorSignedToFloat(int v, int mode);
+// MusicSystem / EventCategory vtable slots, named the same way as the rest of the FMOD glue
+// instead of being dispatched through raw vptr arithmetic (slot offsets noted from the binary):
+void  FMOD_MusicSystem_promptCue(void *music, int cueId);                     // MusicSystem slot +0x28
+void  FMOD_MusicSystem_setParameterValue(void *music, int paramId, float v);  // MusicSystem slot +0x34
+void  FMOD_EventCategory_setVolume(void *category, float volume);             // EventCategory slot +0x20
+void  FMOD_EventCategory_stopAllEvents(void *category);                       // EventCategory slot +0x1c
+int   FMOD_EventCategory_getInfo(void *category, int *index, char **name);    // EventCategory slot 0
 }
 
 int GameText_getLanguage();
@@ -82,9 +92,7 @@ void FModSound::promptMusicCue(int p1)
 {
     if (!this->music)
         return;
-    void **vt = *(void ***)this->music;
-    typedef void (*Fn)(void *, int);
-    ((Fn)vt[0x28 / 4])(this->music, p1);
+    FMOD_MusicSystem_promptCue(this->music, p1);
 }
 
 static const float kFade = 0.1f;
@@ -145,9 +153,7 @@ void FModSound::setVolume(int p1, float vol)
     void *h = this->category[p1];
     if (!h)
         return;
-    void **vt = *(void ***)h;
-    typedef void (*Fn)(void *, float);
-    ((Fn)vt[0x20 / 4])(h, vol);
+    FMOD_EventCategory_setVolume(h, vol);
 }
 
 void FModSound::pauseAll()
@@ -188,9 +194,7 @@ void FModSound::setMusicParamValue(int p1, float p2)
 {
     if (!this->music)
         return;
-    void **vt = *(void ***)this->music;
-    typedef void (*Fn)(void *, int, float);
-    ((Fn)vt[0x34 / 4])(this->music, p1, p2);
+    FMOD_MusicSystem_setParameterValue(this->music, p1, p2);
 }
 
 void FModSound::setSoundVolume(int p1, float vol)
@@ -343,13 +347,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
         if (slot != 0) {
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(slot, &group) == 0) {
-                void **sysObj = (void **)this->system;
-                // External dispatch: sysObj is an FMOD::EventSystem, so slot +8 is a
-                // method in FMOD's own C++ vtable (library type, not ours) — it cannot
-                // become a named call and stays an explicit virtual dispatch.
-                typedef int (*ReleaseFn)(void *, int, int);
-                ReleaseFn fn = *(ReleaseFn *)(*(char **)sysObj + 8);
-                fn(sysObj, (int)(uintptr_t)slot, 0);
+                FMOD_EventSystem_freeEventData(this->system, slot, 0);
                 slot = 0;
             }
         }
@@ -388,9 +386,7 @@ void FModSound::stopAllSoundFXEvents()
         if ((j & 0x7fffffff) == 4)
             break;
         void *c = cats[i];
-        void **vt = *(void ***)c;
-        typedef void (*Fn)(void *);
-        ((Fn)vt[0x1c / 4])(c);
+        FMOD_EventCategory_stopAllEvents(c);
     }
 }
 
@@ -542,13 +538,7 @@ afterListener:
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(*evp, &group) == 0) {
                 // Release the event back to the system.
-                void **sysObj = (void **)this->system;
-                // External dispatch: sysObj is an FMOD::EventSystem, so slot +8 is a
-                // method in FMOD's own C++ vtable (library type, not ours) — it cannot
-                // become a named call and stays an explicit virtual dispatch.
-                typedef int (*ReleaseFn)(void *, int, int);
-                ReleaseFn fn = *(ReleaseFn *)(*(char **)sysObj + 8);
-                fn(sysObj, (int)(uintptr_t)*evp, 0);
+                FMOD_EventSystem_freeEventData(this->system, *evp, 0);
                 *evp = 0;
                 this->fxSlots[i] = -1;
             }
@@ -585,9 +575,7 @@ void FModSound::freeAllEvents()
                         FMOD_Event_getState(this->events[i], &st);
                         if ((st & 0x0a) == 0) {
                             void *ee = this->events[i];
-                            void **vt = *(void ***)ee;
-                            typedef void (*Fn)(void *, int);
-                            ((Fn)vt[8 / 4])(ee, 0);
+                            FMOD_Event_stop(ee, 0);   // Event vtable slot +8
                             this->events[i] = 0;
                         }
                     }
@@ -712,11 +700,10 @@ void FModSound::pauseAllPlayingSoundFXEvents()
             if (h && isPlaying(i)) {
                 FMOD::EventCategory *cat;
                 FMOD_Event_getCategory(h, &cat);
-                int a, b;
-                void **vt = *(void ***)cat;
-                typedef void (*Fn)(void *, int *, int *);
-                ((Fn)vt[0])(cat, &a, &b);
-                if (a == 1)
+                int categoryIndex = 0;
+                char *categoryName = 0;
+                FMOD_EventCategory_getInfo(cat, &categoryIndex, &categoryName);
+                if (categoryIndex == 1)
                     FMOD_Event_setPaused(this->events[i], 1);
             }
         }
@@ -735,9 +722,7 @@ void FModSound::enableCategory(int p1, bool enable)
 
     this->categoryEnabled[p1] = enable ? 1 : 0;
     if (!enable) {
-        void **vt = *(void ***)cat;
-        typedef void (*Fn)(void *);
-        ((Fn)vt[0x1c / 4])(cat);
+        FMOD_EventCategory_stopAllEvents(cat);
     } else if (p1 == 1 && this->currentMusicEvent >= 0) {
         FMOD_play(this, this->currentMusicEvent, 0, 0.0f);
     }

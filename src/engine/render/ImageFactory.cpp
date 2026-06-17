@@ -39,12 +39,12 @@ extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableC;
 extern "C" __attribute__((visibility("hidden"))) char *g_IF_flagC;
 extern "C" __attribute__((visibility("hidden"))) int *g_IF_posTableD;
 
-// getItemImageId(int) -> base id (0x898 below 0xb0, else 0xef0) + param.
-int ImageFactory::getItemImageId(int param_1)
+// getItemImageId(itemId) -> base id (0x898 below 0xb0, else 0xef0) + itemId.
+int ImageFactory::getItemImageId(int itemId)
 {
     int base = 0xef0;
-    if (param_1 < 0xb0) base = 0x898;
-    return base + param_1;
+    if (itemId < 0xb0) base = 0x898;
+    return base + itemId;
 }
 
 // Destroys the owned Sprite stored at +0x00 and clears the slot.
@@ -122,13 +122,13 @@ void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, int flag)
 void ImageFactory::drawShip(int shipId, int x, int y)
 {
     PaintCanvas *pc = (PaintCanvas *)(long)*g_IF_drawShip_canvas;
-    unsigned local = 0xffffffffu;
+    unsigned classIcon = 0xffffffffu;
     pc->SetColor(0xffffffffu);
     this->sprite->setFrame(5);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
-    pc->Image2DCreate((unsigned short)(shipId + 0x971), &local);
-    pc->DrawImage2D(local, x, y);
+    pc->Image2DCreate((unsigned short)(shipId + 0x971), &classIcon);
+    pc->DrawImage2D(classIcon, x, y);
 }
 
 // drawItem(itemId, x, y) -- draws just the item icon (no composite sprite) for
@@ -136,12 +136,12 @@ void ImageFactory::drawShip(int shipId, int x, int y)
 void ImageFactory::drawItem(int itemId, int x, int y)
 {
     PaintCanvas *pc = (PaintCanvas *)(long)*g_drawItem_canvas;
-    unsigned local = 0xffffffffu;
+    unsigned icon = 0xffffffffu;
     pc->SetColor(0xffffffffu);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short)(base + itemId), &local);
-    pc->DrawImage2D(local, x, y);
+    pc->Image2DCreate((unsigned short)(base + itemId), &icon);
+    pc->DrawImage2D(icon, x, y);
 }
 
 // loadImage(row, col, frameBase) -- looks up the image id for the [row][col]
@@ -153,9 +153,9 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
     if (id < 0)
         return nullptr;
 
-    unsigned local = 0;
+    unsigned image = 0;
     ((PaintCanvas *)(long)*g_IF_li_canvas)
-        ->Image2DCreate((unsigned short)((short)id + (short)frameBase), &local);
+        ->Image2DCreate((unsigned short)((short)id + (short)frameBase), &image);
 
     int *posBase;
     int rowCol = row * 0x20 + col * 8;
@@ -171,7 +171,7 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
 
     int px = *(int *)((char *)posBase + rowCol);
     int py = *(int *)((char *)posBase + rowCol + 4);
-    return new ImagePart(local, px, py);
+    return new ImagePart(image, px, py);
 }
 
 // drawItem4(itemId, frame, x, y) -- draws the item's composite sprite at the
@@ -180,61 +180,65 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
 void ImageFactory::drawItem4(int itemId, int frame, int x, int y)
 {
     PaintCanvas *pc = (PaintCanvas *)(long)*g_IF_drawItem4_canvas;
-    unsigned local = 0xffffffffu;
+    unsigned icon = 0xffffffffu;
     pc->SetColor(0xffffffffu);
     this->sprite->setFrame(frame);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short)(base + itemId), &local);
-    pc->DrawImage2D(local, x, y);
+    pc->Image2DCreate((unsigned short)(base + itemId), &icon);
+    pc->DrawImage2D(icon, x, y);
 }
 
-// loadChar(int*) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
-Array<ImagePart *> *ImageFactory::loadChar(int *param_1)
+// loadChar(desc) -> Array<ImagePart*>* of 4 entries (with [0]/[2] swapped).
+// `desc` is a char descriptor: desc[0] is the race row, desc[1..4] the part
+// frame bases for the four image cells.
+Array<ImagePart *> *ImageFactory::loadChar(int *desc)
 {
-    if (param_1 == nullptr) return nullptr;
-    Array<ImagePart *> *a = new Array<ImagePart *>();
-    a->resize(4);
-    int first = *param_1++;
-    for (int i = 0; i != 4; ++i) {
-        int raw = param_1[i];
-        (*a)[i] = (ImagePart *)this->loadImage(first, i, raw);
+    if (desc == nullptr) return nullptr;
+    Array<ImagePart *> *parts = new Array<ImagePart *>();
+    parts->resize(4);
+    int race = *desc++;
+    for (int col = 0; col != 4; ++col) {
+        int frameBase = desc[col];
+        if (frameBase != -1) {
+            (*parts)[col] = (ImagePart *)this->loadImage(race, col, frameBase);
+        }
     }
-    ImagePart *tmp = (*a)[0];
-    (*a)[0] = (*a)[2];
-    (*a)[2] = tmp;
-    return a;
+    ImagePart *tmp = (*parts)[0];
+    (*parts)[0] = (*parts)[2];
+    (*parts)[2] = tmp;
+    return parts;
 }
 
-// createChar_i(int) -- randomizes a char then forwards to createChar(bool, int).
-void ImageFactory::createChar_i(int param_1)
+// createChar_i(race) -- picks a random sex (50/50), then builds a random
+// character of that race. The sex roll: nextInt(2) == 0 means male.
+void ImageFactory::createChar_i(int race)
 {
-    int r = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
-    this->createChar((bool)__builtin_clz(r), (r == 0), param_1);
+    int sexRoll = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
+    this->createChar(sexRoll == 0, race);
 }
 
-// createChar(bool, bool, int) -- builds a 5-int char descriptor: a type slot
-// followed by four random part indices. `type` selects a 4-entry row in the
-// part-count table (rows are 16 bytes); type 3 rerolls to 0 or 2; type 0 maps
-// to row 10 unless rand0 forced it; type 5 -> 0.
-int *ImageFactory::createChar(bool clz, bool rand0, int type)
+// createChar(isMale, race) -- builds a 5-int char descriptor: a race-row slot
+// followed by four random part indices. `race` selects a 4-entry row in the
+// part-count table (rows are 16 bytes). Race 3 (Midorian) rerolls to 2 or 0;
+// race 0 (Terran) maps to row 10 (Woman) unless `isMale`; race 5 (Cyborg) -> 0.
+int *ImageFactory::createChar(bool isMale, int race)
 {
-    (void)clz;
-    if (type == 3) {
-        int t = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng1, 4);
-        type = (t != 0) ? 2 : 0;
+    if (race == 3) {
+        int reroll = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng1, 4);
+        race = (reroll != 0) ? 2 : 0;
     }
-    int v = type;
+    int row = race;
     int *table = &gCreateChar2Table;
-    if (type == 0) v = 10;
-    if (rand0) v = type;
-    if (v == 5) v = 0;
-    int *obj = new int[5];
-    obj[0] = v;
-    int *base = (int *)((char *)table + v * 16);
+    if (race == 0) row = 10;
+    if (isMale) row = race;
+    if (row == 5) row = 0;
+    int *desc = new int[5];
+    desc[0] = row;
+    int *partCounts = (int *)((char *)table + row * 16);
     for (int i = 0; i != 4; ++i)
-        obj[i + 1] = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng2, base[i]);
-    return obj;
+        desc[i + 1] = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng2, partCounts[i]);
+    return desc;
 }

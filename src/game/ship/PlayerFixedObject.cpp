@@ -90,8 +90,6 @@ void PlayerFixedObject::setTransportID(int v) {
 }
 
 // outerCollide(Vector): forward by value through vtable slot 0x3c.
-typedef void (*OuterCollideVecFn)(PlayerFixedObject *, Vector);
-
 void PlayerFixedObject::outerCollide_vec(Vector v) {
     this->outerCollide(v.x, v.y, v.z);
 }
@@ -470,8 +468,6 @@ void PlayerFixedObject::setExhaustVisible(bool v) {
 
 // collide(x,y,z): iterate the active bounding-volume array, calling each volume's
 // vtable slot +8 with (bv, x, y, z); return 1 on first hit, else 0.
-typedef int (*CollideFn)(void *bv, float, float, float);
-
 int PlayerFixedObject::collide(float x, float y, float z) {
     PlayerFixedObject *self = this;
     Array<BoundingVolume *> *a = self->wreckCollision;
@@ -831,8 +827,6 @@ int PlayerFixedObject::outerCollide(float x, float y, float z) {
     }
     return 0;
 }
-
-typedef void (*BVMoveFn)(void *bv, Vector);
 
 void PlayerFixedObject::moveForward(int amount) {
     float d = (float)amount;

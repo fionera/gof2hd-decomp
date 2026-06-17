@@ -40,6 +40,7 @@ public:
     union { int inTabIndex; int field_0x3c; }; // -1 sentinel / tab index
     union { int subTabIndex; int field_0x40; }; // -1 sentinel / tab index
     uint8_t                      text;       // text flag
+    union { uint8_t craftable; uint8_t field_0x45; }; // blueprint craftable tint flag (read @HangarWindow render 0x1598e0)
 
     // Exactly one payload pointer is set per overload. The String overloads take the
     // engine String by pointer and deep-copy it into an owned title/subtitle String.

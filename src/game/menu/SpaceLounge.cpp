@@ -696,8 +696,7 @@ void SpaceLounge::updateScreenPositions() {
     unsigned count = (unsigned)this->agents->size();
     for (unsigned i = 0; i < count; ++i) {
         KIPlayer *enemy = (*enemies)[i];
-        void (**vt)(void) = *(void (***)(void))enemy;
-        ((void (*)(void *, void *))vt[0x28 / 4])(enemy, target);
+        *(Vector *)target = enemy->getPosition();   // actor vtable slot 0x28
 
         ((void (*)(void *, void *))project)(screen, target);
         *(Vector*)(pos) = *(const Vector*)(target) - *(const Vector*)(halfRight);
@@ -725,7 +724,8 @@ void SpaceLounge::updateScreenPositions() {
         MatrixGetDir(pos, look);
         this->silhouettePos.z -= (*(float *)(pos + 8)) * 20.0f;
 
-        ((void (*)(void *, void *))(*(void ***)mapped)[0x44 / 4])(mapped, &this->silhouettePos);
+        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition3 (0x48).
+        mapped->setPosition3(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
 
         if (((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
@@ -733,7 +733,8 @@ void SpaceLounge::updateScreenPositions() {
         }
 
         enemy->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
-        ((void (*)(void *, void *))vt[0x44 / 4])(enemy, target);
+        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition3 (0x48).
+        enemy->setPosition3(((Vector *)target)->x, ((Vector *)target)->y, ((Vector *)target)->z);
     }
 }
 

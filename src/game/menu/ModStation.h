@@ -57,40 +57,19 @@ public:
     void*            scrollBox;         // +0x98 radio-cutscene scroll box
     int              introTimer;        // +0x9c intro timer
     void*            hangarShipGeom;    // +0xa0 hangar-ship geometry / ticker drag left-bound X
-    char             gameLoaded;        // +0xb0 game-loaded flag
-    char             autoSaved;         // +0xb1 autosaved-this-visit flag
-    char             reloadPending;     // +0xb3 reload-on-leave flag
-    char             cbsMessageOpen;    // +0xc1 CBS-message flag
-    int*             medalArray;        // +0xc4 Array<int*> of (medalId, value) pairs
-    int              medalIndex;        // +0xc8 current medal being shown
-    int              medalCount;        // +0xcc number of pending medals
-    char             alarmActive;       // +0xd8 station "alarm" flag
-    char             miningPlantFlag;   // +0xd9 mining-plant flag
-    char             wingmanEventConsumed; // +0xdb wingman-event-consumed flag
-    char             cbsHintShown;      // +0xdc CBS-hint-shown flag
-    int              dragOriginX;       // +0xe0 ticker drag origin X
-    int              dragAccumX;        // +0xe4 ticker drag accumulated X
-    int              dragVelX;          // +0xe8 ticker drag velocity X
-    int              dragScaleX;        // +0xec ticker drag scale (1.0f)
-    int              dragStartX;        // +0xf0 ticker drag start X
-    char             dragActive;        // +0x100 ticker drag-active flag
-    void*            scrollBox2;        // +0x104 radio-cutscene scroll box (build path)
-    int              scrollOffset;      // +0x110 radio reveal scroll offset / touch X
-    int              scrollTarget;      // +0x114 radio reveal scroll target / touch Y
-    char             hangarLightIntensity; // +0x118 hangar light intensity (low byte also a flag)
-    int              hangarLightTarget; // +0x11c hangar light target
-    void*            capturedTouch;     // +0x128 active touch pointer
-    char             touchPadFlag;      // +0x12c touch-pad flag
-    int              restCamX;          // +0x130 idle-camera rest X
-    int              restCamY;          // +0x134 idle-camera rest Y
-    int              restCamZ;          // +0x138 idle-camera rest Z
-    void*            easeCamX;          // +0x13c idle-camera EaseInOut (X)
-    void*            easeCamY;          // +0x140 idle-camera EaseInOut (Y)
-    void*            easeCamZ;          // +0x144 idle-camera EaseInOut (Z)
-    char             idleCamFlag;       // +0x148 idle-camera flag
-    void*            easeCamScalarX;    // +0x14c scalar EaseInOut (idle cam X)
-    void*            easeCamScalarY;    // +0x150 scalar EaseInOut (idle cam Y)
-    void*            easeCamScalarZ;    // +0x154 scalar EaseInOut (idle cam Z)
+    // ----------------------------------------------------------------------
+    // Everything at offset >= 0xa4 lives in a SPARSE region that the Ghidra
+    // ModStation struct (which spans only 0x00-0x8f) never modelled; the
+    // decompiler reaches it as this[1].field_NN / this[2].field_NN, i.e.
+    // *(T*)((char*)this + 0xNN). Modelling that region as named members with
+    // guessed String padding kept shifting later fields to the wrong byte
+    // offsets, so those fields are NOT declared here. Each access lives in the
+    // .cpp as a binary-exact positional RAWREAD: *(T*)((char*)this + 0xNN).
+    // (The full object is larger than this declared size; it is only ever
+    //  allocated/owned through ::operator new(sizeof from the binary), and the
+    //  trailing sparse bytes are reached positionally, never via this type's
+    //  size, so leaving them out of the layout is safe for this TU.)
+    // ----------------------------------------------------------------------
 
     ModStation();
     virtual ~ModStation();

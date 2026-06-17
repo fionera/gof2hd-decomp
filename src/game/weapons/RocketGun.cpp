@@ -60,11 +60,11 @@ RocketGun::~RocketGun()
     this->trailTimers = nullptr;
 }
 
-static const uint32_t kRocketTurnRate = 0x3dcccccd;   // 0.1f
+static const float kRocketTurnRate = 0.3f;   // 0x3e99999a
 
-RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
-                     uint32_t param_5, int param_6, bool param_7, Level *param_8)
-    : ObjectGun(param_1, param_2, param_3, param_5, param_8)
+RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
+                     uint32_t flags, int rocketKind, bool homing, Level *level)
+    : ObjectGun(meshVariantId, gun, mesh, flags, level)
 {
     this->fadeTimer = 0;
     this->trailMatrices = nullptr;
@@ -73,22 +73,22 @@ RocketGun::RocketGun(int param_1, Gun *param_2, int param_3, int param_4,
     this->steerX = 0;
     this->steerY = 0;
     this->steerZ = 0;
-    this->homing = param_7;
+    this->homing = homing;
     this->activeShotId = -1;
     this->turnRate = kRocketTurnRate;
     this->particleSystem = -1;
-    this->rocketKind = param_6;
+    this->rocketKind = rocketKind;
     this->particleManager = 0;
     this->unusedSlot = -1;
 
     int gate = 0x37a9;
-    if (param_3 != 0x37a9)
+    if (mesh != 0x37a9)
         gate = 0x37a7;
-    if (param_3 == 0x37a9 || param_3 == gate) {
-        uint16_t mesh = 0x37aa;
-        if (param_1 == 0x37a7)
-            mesh = 0x37a8;
-        AEGeometry geom(mesh, g_paintCanvas, false);
+    if (mesh == 0x37a9 || mesh == gate) {
+        uint16_t meshId = 0x37aa;
+        if (meshVariantId == 0x37a7)
+            meshId = 0x37a8;
+        AEGeometry geom(meshId, g_paintCanvas, false);
         g_paintCanvas->TransformAddChild(this->transform, geom.transform);
     }
 }
@@ -240,7 +240,11 @@ have_enemy:
 
         toTarget = enemyPos - muzzlePositions[index];
         VectorRotateToTarget(rotated, toTarget);
-        Vector steer = rotated;
+
+        // The steering accumulator IS the member at this+0xb4 (steerX/Y/Z); the
+        // engine accumulates in place and stores raw float bits, no truncation.
+        Vector &steer = *(Vector *)&this->steerX;
+        steer = rotated;
 
         VectorRotateToTarget(rotated, muzzleVelocities[index]);
         steer -= rotated;
@@ -249,18 +253,14 @@ have_enemy:
         VectorRotateToTarget(toTarget, rotated);
         muzzleVelocities[index] = toTarget;
         muzzleVelocities[index] *= g->field_0x50;
-
-        this->steerX = (int)steer.x;
-        this->steerY = (int)steer.y;
-        this->steerZ = (int)steer.z;
     }
 }
 
-static const float kMuzzleZAdd = 0.0001f;
-static const float kScaleDiv = 1000.0f;
-static const float kScaleMul = 100.0f;
-static const float kZeroCompare = 0.0f;
-static const float kWave = 0.001f;
+static const float kMuzzleZAdd = -100.0f;     // 0xc2c80000
+static const float kScaleDiv = -200.0f;       // 0xc3480000
+static const float kScaleMul = 255.0f;        // 0x437f0000
+static const float kZeroCompare = 50000.0f;   // 0x47435000
+static const float kWave = 0.003f;            // 0x3b449ba6
 
 void RocketGun::update(int elapsed)
 {

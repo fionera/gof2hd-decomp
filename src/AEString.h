@@ -76,6 +76,8 @@ struct String {
 
 // AbyssEngine::operator+(String const&, String const&) - concatenate (body in AbyssEngine.cpp).
 String operator+(const String &a, const String &b);
+// AbyssEngine::operator+(int const&, String const&) - render the int, then append (AbyssEngine.cpp).
+String operator+(const int &a, const String &b);
 } // namespace AbyssEngine
 
 using AbyssEngine::String;

@@ -120,6 +120,16 @@ __attribute__((visibility("hidden"))) extern int    **g_cwm_seedSrc; // [DAT_000
 
 static unsigned int g_level_texOutScratch;
 
+// The g_cg_*Fx externs hold IEEE-754 float bit patterns stored in int slots
+// (DAT_000ce2b8 = 0x43960000 = 300.0f, DAT_000ce2bc = 0x43c80000 = 400.0f,
+//  DAT_000ce644 = 0xc3960000 = -300.0f). The binary stores those bits RAW into
+// the Vector float slots, so reinterpret the bits instead of int->float converting.
+static inline float bitsToFloat(int bits) {
+    float f;
+    __builtin_memcpy(&f, &bits, sizeof(f));
+    return f;
+}
+
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
 }
@@ -642,7 +652,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
             int barrels = ((unsigned)(idx - 9) < 3 || idx == 0xe4) ? 1 : 0x14;
             gun = (Gun *)::operator new(0x114);
             if (kind == ITEM_SORT_THERMO) {
-                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_rocketFx}, Vector{0.0f, 0.0f, 0.0f});
+                new (gun) Gun(owner, dmg, barrels, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, bitsToFloat(g_cg_rocketFx)}, Vector{0.0f, 0.0f, 0.0f});
                 gun->setIndex(idx);
                 gun->weaponType = ITEM_SORT_THERMO;
                 gun->setPlayerGun(1);
@@ -663,7 +673,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case ITEM_SORT_AUTO_CANNON:
     case ITEM_SORT_SCATTER_GUN:
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 0x19, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, bitsToFloat(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
@@ -690,7 +700,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     case ITEM_SORT_NUKE:
     case ITEM_SORT_IONIZING_MISSILE: {
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, (float)g_cg_objFx}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 1, hp, cool, rate, (float)color, Vector{0.0f, 0.0f, bitsToFloat(g_cg_objFx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
@@ -703,11 +713,13 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
     }
     case ITEM_SORT_TURRET:
     case ITEM_SORT_PLASMA_COLLECTOR: {
-        int fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx;
+        // fx/extra are int slots holding raw float bit patterns (DAT_000ce2b8 = 300.0f,
+        // DAT_000ce644 = -300.0f). extra = 0x43960000 - 0xf60000 = 0x42a00000 = 80.0f bits.
+        int fx = (idx == 0xb5) ? g_cg_mineFx : g_cg_rocketFx;
         int extra = (idx == 0x30 && idx != 0xb5) ? (g_cg_rocketFx - 0xf60000) : 0;
-        if (kind == ITEM_SORT_PLASMA_COLLECTOR) { fx = (idx == 0xb5 || idx != 0x30) ? g_cg_mineFx : g_cg_rocketFx; }
+        if (kind == ITEM_SORT_PLASMA_COLLECTOR) { fx = (idx == 0xb5) ? g_cg_mineFx : g_cg_rocketFx; }
         gun = (Gun *)::operator new(0x114);
-        new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, (float)color, Vector{(float)extra, 0.0f, (float)fx}, Vector{0.0f, 0.0f, 0.0f});
+        new (gun) Gun(owner, dmg, 0xf, hp, cool, rate, (float)color, Vector{bitsToFloat(extra), 0.0f, bitsToFloat(fx)}, Vector{0.0f, 0.0f, 0.0f});
         gun->setIndex(idx);
         gun->weaponType = static_cast<ItemSort>(kind);
         gun->setPlayerGun(1);
@@ -1329,9 +1341,9 @@ void Level::createAsteroids()
     int countRoll = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x28);
     this->asteroids->resize((unsigned)(countRoll + 0x28));
 
-    int rx = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x4e20); // DAT_000bf990 == 0x4e20
-    int ry = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x4e20);
-    int rz = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(0x4e20);
+    int rx = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(100000); // DAT_000bf990 == 0x000186a0
+    int ry = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(100000);
+    int rz = ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->nextInt(100000);
 
     int alien = gStatus->inAlienOrbit();
     int camp  = gStatus->getCurrentCampaignMission();
@@ -1341,7 +1353,7 @@ void Level::createAsteroids()
     if (alien != 0) {
         oy = 0;
         oz = 30000;
-        ox = -50000; // DAT_000bf994 default
+        ox = -30000; // DAT_000bf994 default (0xffff8ad0)
         if (camp == 0x9a)
             ox = -70000;
     } else {
@@ -1349,15 +1361,15 @@ void Level::createAsteroids()
         if (camp == 0x72) {
             Station *s = (Station *)gStatus->getStation();
             if (((Station*)s)->getIndex() == 0x53) {
-                oz = 30000;
+                oz = 80000; // DAT_000bf998 == 0x00013880
                 ox = 30000;
                 oy = 0;
                 placed = true; // jumps to LAB_000bf874 (oy = 0)
             }
         }
         if (!placed && camp == 0x59 && gStatus->inSupernovaOrbit() != 0) {
-            ox = 0;
-            oz = 0;
+            ox = -100000; // DAT_000bf99c == 0xfffe7960
+            oz = -50000;  // DAT_000bf9a0 == 0xffff3cb0
             oy = 0;
             placed = true;
         }
@@ -1373,7 +1385,7 @@ void Level::createAsteroids()
         if (!placed && camp == 0x91) {
             Station *s = (Station *)gStatus->getStation();
             if (((Station*)s)->getIndex() == 0x70) {
-                oz = 50000;
+                oz = 70000; // DAT_000bf9a4 == 0x00011170
                 ox = 50000;
                 oy = 0;
                 placed = true;
@@ -1393,13 +1405,13 @@ void Level::createAsteroids()
 
     ((AbyssEngine::AERandom*)(intptr_t)*rngObj)->reset();
 
-    // field center vector (this+0xc8): note disasm stores (oy, ox, oz) into 0xc8/0xcc/0xd0.
-    this->field_c8 = (float)oy;
-    this->field_cc = (float)ox;
+    // field center vector (this+0xc8): disasm stores (ox, oy, oz) into 0xc8/0xcc/0xd0.
+    this->field_c8 = (float)ox;
+    this->field_cc = (float)oy;
     this->field_d0 = (float)oz;
 
     Waypoint *wp = (Waypoint *)::operator new(0x138);
-    new (wp) Waypoint(oz, oy, ox, 0);
+    new (wp) Waypoint(ox, oy, oz, 0);
     this->asteroidWaypoint = wp;
 
     BoundingSphere *bs = (BoundingSphere *)::operator new(0x48);
@@ -1435,8 +1447,9 @@ void Level::createAsteroids()
             kind = 0xa4;
         }
 
-        // spread radius: tighter (60000) for the dense core, wider otherwise.
-        unsigned spread = (int)i < density ? 60000u : (unsigned)0xea60;
+        // spread radius: tighter (60000) for the dense core, wider (100000) otherwise.
+        // DAT_000bfd10 == 0x000186a0 (default); movw.lt 0xea60 overrides for the core.
+        unsigned spread = (int)i < density ? 60000u : 100000u;
         float half = (float)(spread >> 1);
 
         // collision variant: 1 in alien orbit, 3 for the special "0xd9" kind, else colBase.
@@ -2716,7 +2729,7 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
     if (0x15 <= lvl) lvl = 0x14;
     int ramp = (gStatus->gameWon() != 0) ? 0xb4 : (camp << 2);
     int hp = ramp + lvl * 0xe + 0x14;
-    if (type == 0x33)      hp = (int)((float)hp * 1.0f);
+    if (type == 0x33)      hp = (int)((float)hp * 1.7f);  // DAT_000d0470 = 0x3fd9999a
     else if (type == 0x31) hp = (int)((float)hp * 17.0f);
     else if (type == 0x2c) hp = (int)((float)hp * 2.25f);
     if ((unsigned)(camp - 0x31) < 8 && (0x8fU >> ((unsigned)(camp - 0x31) & 0xff) & 1) != 0)
@@ -2882,13 +2895,16 @@ void Level::assignGuns()
             if (((KIPlayer*)e)->isWingMan() == 0 && ((KIPlayer*)(intptr_t)e)->player->isAlwaysFriend() == 0 &&
                 (*this->enemies)[i] &&
                 (*this->enemies)[i]->shipGroup == 9) {
-                if (camp != 0x10) dmg = (int)((float)dmg * 1.0f);
+                if (camp != 0x10) dmg = (int)((float)dmg * 0.8f);  // DAT_000cca54 = 0x3f4ccccd
                 else dmg = dmg + dmg;
             } else {
                 int hard = ((0x8fU >> ((unsigned)(camp - 0x31) & 0xff) & 1) != 0 &&
                             (unsigned)(camp - 0x31) <= 7) ? 5 : dmg;
                 dmg = hard;
             }
+
+            if (camp == 0x50 && ((PlayerTurret *)(*this->enemies)[i])->field_0x3e != 0)
+                dmg = (int)((float)dmg * 1.7f);  // DAT_000cca48 = 0x3fd9999a
 
             if (camp == 0x46 && ((KIPlayer*)e)->isWingMan() == 0)
                 dmg = (int)((float)dmg * 2.5f);
@@ -2917,7 +2933,7 @@ void Level::assignGuns()
             case 3:  gun->setIndex(0x19); res = 0x1a92; break;
             case 9:  gun->setIndex(5);    res = 0x1a6a; break;
             case 10: gun->setIndex(0xe5); res = 0x4a93;
-                     gun->damage = (int)((float)gun->damage * 1.0f);
+                     gun->damage = (int)((float)gun->damage * 0.7f);  // DAT_000cca4c = 0x3f333333
                      break;
             default: gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0x13); res = 0x1a8b; break;
             }
@@ -2928,6 +2944,7 @@ void Level::assignGuns()
                 int host = (int)(intptr_t)turret->getHost();
                 if (host != 0 && (((KIPlayer*)(intptr_t)host)->shipGroupFlag == 0x2d || ((KIPlayer*)(intptr_t)host)->shipGroupFlag == 0x33)) {
                     gun->weaponType = ITEM_SORT_AUTO_CANNON; gun->setIndex(0x16); res = 0x1a8e;
+                    gun->damage = (int)((double)gun->damage * 0.5);  // d14 = 0x3fe0000000000000
                 } else {
                     KIPlayer *k = (*this->enemies)[i];
                     if ((uint8_t)k->field_0x3f == 0) {
@@ -2936,39 +2953,58 @@ void Level::assignGuns()
                         else                                 { gun->setIndex(0x14); res = 0x1a8c; }
                     } else {
                         int kt = k->getType();
-                        if (kt == 0x49c1)      { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0x14); res = 0x1a8d; }
-                        else if (kt == 0x49c0) { gun->weaponType = ITEM_SORT_LASER; gun->setIndex(2);    res = 0x1a64; }
-                        else                   { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0xe);  res = 0x1a86; }
+                        int statRow;
+                        if (kt == 0x49c1)      { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0x14); gun->offset = Vector{0.0f, 0.0f, 250.0f}; statRow = 0xd4; res = 0x1a8d; }  // DAT_000cce30 = 0x437a0000
+                        else if (kt == 0x49c0) { gun->weaponType = ITEM_SORT_LASER;   gun->setIndex(2);    gun->offset = Vector{0.0f, 0.0f, 250.0f}; statRow = 0xd3; res = 0x1a64; }
+                        else                   { gun->weaponType = ITEM_SORT_BLASTER; gun->setIndex(0xe);  gun->offset = Vector{0.0f, 0.0f, 300.0f}; statRow = 0xd5; res = 0x1a86; }  // DAT_000cce34 = 0x43960000
                         gun->field_0xa8 = 1;
-                        // base stats from the ship-stat table (corrupted SIMD in original).
+                        // base stats harvested from the ship-stat table.
+                        Item *stat = (Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_shipTbl + 4) + statRow * 4));
+                        gun->damage          = stat->getAttribute(0x9);
+                        gun->fireDelay       = stat->getAttribute(0xb);
+                        gun->initialLifetime = stat->getAttribute(0xc);
+                        gun->field_0x50      = (float)stat->getAttribute(0xd);
                         if (camp2 == 0x9e && kt == 0x49c2 && ((KIPlayer*)(intptr_t)e)->player->isAlwaysEnemy() != 0) {
+                            gun->field_0x50 = gun->field_0x50 * 1.2f;       // DAT_000cca50 = 0x3f99999a
+                            gun->damage = (int)((float)gun->damage * 1.5f); // s19 = 0x3fc00000
                             Player *pp = (*this->enemies)[i]->player;
                             int mhp = pp->getMaxHitpoints();
-                            pp->setMaxHitpoints((int)((float)mhp * 5.0f));
+                            pp->setMaxHitpoints((int)((float)mhp * 5.0f));  // s17 = 0x40a00000
                         }
                     }
                 }
             }
 
-            // wanted/ship special weapon overrides.
-            int kt2 = gStatus->getCurrentCampaignMission();
-            int host2 = (int)(intptr_t)(*this->enemies)[i];
-            if (gStatus->getMission() != 0) {
-                Mission *mm = (Mission *)gStatus->getMission();
-                if (mm->isCampaignMission() != 0) {
-                    if (**g_ag_statusB == gStatus->getCurrentCampaignMission() &&
-                        2 < **g_ag_alienCnt &&
-                        ((*this->enemies)[i])->isEnemy() != 0)
-                        gun->damage = (int)((float)gun->damage * 1.0f);
-                }
+            // host-class damage tweaks shared by both turret/non-turret paths.
+            if (camp2 == 7) {
+                if ((*this->enemies)[i]->shipGroup == 8)
+                    gun->damage = (int)((float)gun->damage * 0.5f);  // s24 = 0x3f000000
+            } else if (camp2 == 0x46 && ((KIPlayer*)e)->isWingMan() == 0) {
+                gun->setIndex(0xb7); res = 0x37d9;
             }
-            if (wanted != 0 && ((KIPlayer*)(intptr_t)host2)->field_0x42 != 0) {
-                int w = wanted->getWeapon();
-                gun->setIndex(w);
-                int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4)))->getAttribute(0x2);
-                res = g_ag_weaponDmg[w];
-                gun->weaponType = static_cast<ItemSort>(attr);
-                gun->damage = gun->damage << 2;
+
+            // wanted/ship special weapon overrides.
+            if (gStatus->getMission() != 0 && ((Mission *)gStatus->getMission())->isCampaignMission() != 0) {
+                if (**g_ag_statusB == gStatus->getCurrentCampaignMission() &&
+                    2 < **g_ag_alienCnt &&
+                    ((*this->enemies)[i])->isEnemy() != 0)
+                    gun->damage = (int)((float)gun->damage * 0.7f);  // DAT_000cca4c = 0x3f333333
+            } else {
+                int host7c = ((KIPlayer*)(*this->enemies)[i])->shipGroupFlag;
+                if (camp2 == 0x91 && host7c == 0x31) {
+                    gun->weaponType = ITEM_SORT_CLUSTER_MISSILE; gun->setIndex(0xd6);
+                    gun->damage = gun->damage << 1; res = 0x37a0;
+                } else if ((unsigned)(camp2 - 0x9d) < 2 && host7c == 0x31) {
+                    gun->weaponType = ITEM_SORT_LASER; gun->setIndex(7);
+                    gun->damage = gun->damage * 3; res = 0x1a6c;
+                } else if (wanted != 0 && ((KIPlayer*)(*this->enemies)[i])->field_0x42 != 0) {
+                    int w = wanted->getWeapon();
+                    gun->setIndex(w);
+                    int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblA + 4) + w * 4)))->getAttribute(0x2);
+                    res = g_ag_weaponDmg[w];
+                    gun->weaponType = static_cast<ItemSort>(attr);
+                    gun->damage = gun->damage << 2;
+                }
             }
 
             // wrap the Gun in a Rocket/Object gun and store it.
@@ -2978,7 +3014,7 @@ void Level::assignGuns()
                 new (r) RocketGun(gun->itemIndex, gun, res, 0, 0, sc,
                                   sc == ITEM_SORT_MISSILE ? 1 : 0, this);
                 (*this->enemyGuns)[outIdx] = (ObjectGun *)r;
-                gun->field_0x50 = 0x41000000;
+                gun->field_0x50 = 8.0f;  // 0x41000000
                 gun->initialLifetime = 10000;
                 gun->fireDelay = 3000;
                 gun->damage = gun->damage << 2;
@@ -2991,8 +3027,50 @@ void Level::assignGuns()
             // sound id is 0x3e for alien ships (shipGroup 9), 0x3d otherwise.
             gGlobals
                 ->addSoundResourceToList((*this->enemies)[i]->shipGroup == 9 ? 0x3e : 0x3d);
+
+            // second special weapon emit: wanted bounty hunters carrying a 0x2d..0x30 ship class
+            // get an extra cluster rocket.
+            KIPlayer *shipNow = (*this->enemies)[i];
+            if (wanted != 0 && ((KIPlayer*)(intptr_t)shipNow)->field_0x42 != 0 &&
+                (unsigned)(shipNow->shipGroupFlag - 0x2d) < 4) {
+                Gun *gun2 = (Gun *)::operator new(0x114);
+                new (gun2) Gun(0, dmg << 2, 4, -1, 10000, 3000, (float)color,
+                               Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+                gun2->setFriendGun(1);
+                gun2->setLevel(this);
+                gun2->weaponType = ITEM_SORT_ROCKET;
+                gun2->setIndex(0x1f);
+                RocketGun *r2 = (RocketGun *)::operator new(0xe8);
+                new (r2) RocketGun(gun2->itemIndex, gun2, 0x37a0, 0, 0, gun2->weaponType, false, this);
+                this->enemyGuns->push_back((ObjectGun *)r2);
+                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun2);
+                gGlobals->addSoundResourceToList(0x54);
+            }
+
+            // campaign 0x9d/0x9e bosses on ship-class 0x31 get a second cluster missile.
+            if ((unsigned)(camp2 - 0x9d) < 2 && ((KIPlayer*)(*this->enemies)[i])->shipGroupFlag == 0x31) {
+                Gun *gun3 = (Gun *)::operator new(0x114);
+                int won3 = gStatus->gameWon();
+                int rampMis3 = (won3 != 0) ? 0x2d : gStatus->getCurrentCampaignMission();
+                new (gun3) Gun(0, dmg, 4, -1, 3000, rampMis3 * -2 + 600, (float)color,
+                               Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
+                gun3->setFriendGun(1);
+                gun3->setLevel(this);
+                gun3->weaponType = ITEM_SORT_CLUSTER_MISSILE;
+                gun3->setIndex(0xd6);
+                RocketGun *r3 = (RocketGun *)::operator new(0xe8);
+                new (r3) RocketGun(gun3->itemIndex, gun3, 0x37a0, 0, 0, gun3->weaponType,
+                                   gun3->weaponType == ITEM_SORT_MISSILE, this);
+                this->enemyGuns->push_back((ObjectGun *)r3);
+                gun3->field_0x50 = 8.0f;  // 0x41000000
+                gun3->initialLifetime = 10000;
+                gun3->fireDelay = 3000;
+                gun3->damage = gun3->damage << 2;
+                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun3);
+                gGlobals->addSoundResourceToList(0x54);
+            }
+
             outIdx = outIdx + 1;
-            (void)kt2;
         }
 
 wingmanExtra:

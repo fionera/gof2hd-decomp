@@ -569,7 +569,7 @@ label8556: {
             float base = VectorSignedToFloat(b, 0);
             base = base + scale * fr;
             *o11 = (unsigned short)((0.0f < base) ? (short)(int)base : 0);
-            float fv15 = gSCS_f8720;
+            float fv15 = 4.0f;
             if (rdflag(gSCS_flagG) == 0) fv15 = 2.0f;
             *o12 = (unsigned short)((0.0f < top - fv15) ? (short)(int)(top - fv15) : 0);
         } else {
@@ -800,7 +800,7 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
     return;
 }
 
-// Per-group builders for the special param_1 == 0xf sub-cases that build articulated
+// Per-group builders for the special kind == 0xf sub-cases that build articulated
 // transform chains (capital ships). Each delegates to the engine the same way the target
 // does; kept as helpers to preserve the recoverable dispatch without inlining ~1.7KB.
 
@@ -887,7 +887,8 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         }
 
         // Count up to 2 LOD meshes for this ship.
-        unsigned lastVisibleDist = 5000;   // last accumulated LOD distance (see loop below)
+        // Ghidra (uVar12 init): when count==0 the distance arg is 2, not the accumulated 5000.
+        unsigned lastVisibleDist = 2;   // last accumulated LOD distance (overwritten when count!=0)
         const unsigned *lod = &gGSG_lodTable[kind * 3];
         unsigned count = 0;
         for (int i = 0; i != 2; i++) {
@@ -1018,7 +1019,7 @@ extern void *const gCBB_counter __attribute__((visibility("hidden")));
 extern void *const gCBB_canvas __attribute__((visibility("hidden")));
 
 // Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1, int width)
-// p1 ignored layout-wise; height in r1, width passed on stack(param_7).
+// p1 ignored layout-wise; height in r1, width passed on the stack.
 void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
                                         int width)
 {
@@ -1097,8 +1098,8 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
     if (data != 0) {
         int count = (*data)[0];
 
-        float v[3] = {0, 0, 0};       // local_40..local_38 vector
-        float c[3] = {0, 0, 0};       // local_34/2c/30 scalar parts
+        float v[3] = {0, 0, 0};       // collision-shape extent vector
+        float c[3] = {0, 0, 0};       // collision-shape center/scalar parts
 
         outArr = new Array<void *>();
         outArr->resize((unsigned)count);
@@ -1158,12 +1159,12 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
 
 // Singleton-pointer globals zeroed/initialized by the constructor (PC-relative).
 extern int **const gGC_p_f31f6 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f31fc __attribute__((visibility("hidden")));  // DAT_000f33cc (puVar11)
-extern void **const gGC_p_f3200 __attribute__((visibility("hidden")));  // DAT_000f33d0 (puVar7)
-extern void **const gGC_p_f3204 __attribute__((visibility("hidden")));  // DAT_000f33d4 (puVar12)
-extern void **const gGC_p_f3208 __attribute__((visibility("hidden")));  // DAT_000f33d8 (puVar9)
-extern void **const gGC_p_f320e __attribute__((visibility("hidden")));  // DAT_000f33dc (puVar8 - settings obj)
-extern void **const gGC_p_f3216 __attribute__((visibility("hidden")));  // DAT_000f33e0 (puVar5)
+extern void **const gGC_p_f31fc __attribute__((visibility("hidden")));  // DAT_000f33cc
+extern void **const gGC_p_f3200 __attribute__((visibility("hidden")));  // DAT_000f33d0
+extern void **const gGC_p_f3204 __attribute__((visibility("hidden")));  // DAT_000f33d4
+extern void **const gGC_p_f3208 __attribute__((visibility("hidden")));  // DAT_000f33d8
+extern void **const gGC_p_f320e __attribute__((visibility("hidden")));  // DAT_000f33dc (main settings/state object)
+extern void **const gGC_p_f3216 __attribute__((visibility("hidden")));  // DAT_000f33e0
 extern int **const gGC_p_f322a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3242 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f324a __attribute__((visibility("hidden")));
@@ -1174,25 +1175,25 @@ extern int **const gGC_p_f326a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3272 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f327a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3288 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f32bc __attribute__((visibility("hidden")));  // DAT_000f340c (puVar5 secondary)
+extern void **const gGC_p_f32bc __attribute__((visibility("hidden")));  // DAT_000f340c (secondary object)
 extern char **const gGC_p_f32ec __attribute__((visibility("hidden")));
 extern char **const gGC_p_f32f4 __attribute__((visibility("hidden")));
 extern char **const gGC_p_f3300 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f330c __attribute__((visibility("hidden")));  // DAT_000f341c (puVar7 secondary)
-extern void **const gGC_p_f3316 __attribute__((visibility("hidden")));  // DAT_000f3420 (puVar5)
-extern void **const gGC_p_f3366 __attribute__((visibility("hidden")));  // DAT_000f3424 (puVar11)
+extern void **const gGC_p_f330c __attribute__((visibility("hidden")));  // DAT_000f341c (secondary object)
+extern void **const gGC_p_f3316 __attribute__((visibility("hidden")));  // DAT_000f3420
+extern void **const gGC_p_f3366 __attribute__((visibility("hidden")));  // DAT_000f3424
 extern int **const gGC_p_f3368 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3372 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f337c __attribute__((visibility("hidden")));  // DAT_000f3430 (puVar9)
+extern void **const gGC_p_f337c __attribute__((visibility("hidden")));  // DAT_000f3430
 extern int **const gGC_p_f337e __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3388 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3390 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f339e __attribute__((visibility("hidden")));  // DAT_000f3440 (puVar8 secondary)
+extern void **const gGC_p_f339e __attribute__((visibility("hidden")));  // DAT_000f3440 (secondary object)
 
 // Globals::Globals()
 Globals::Globals() {
     Globals *self = this;
-    void *settings = *gGC_p_f320e;     // puVar8 — the main settings/state sub-object
+    void *settings = *gGC_p_f320e;     // the main settings/state sub-object
     int *secondary = (int *)*gGC_p_f32bc;
     void *p5 = *gGC_p_f3216;
     void *p7 = *gGC_p_f3200;
@@ -1218,12 +1219,18 @@ Globals::Globals() {
     char *s = (char *)settings;
     // RAWREAD: `settings` is an opaque state sub-object reached via a hidden global; no modeled
     // header exists in this TU, so the following field writes stay as raw byte offsets.
-    // Vector pairs (DAT_000f33b8 / DAT_000f33c0) at +0x14 .. via vst1; model as zero/identity blocks.
+    // Vector pairs (DAT_000f33b8 / DAT_000f33c0) written as 8-byte vst1 blocks at +0x14 and +0x1c.
     *(float *)(s + 0x00) = 0.5f;
     *(float *)(s + 0x04) = 0.5f;
     *(float *)(s + 0x08) = 0.5f;
     *(short *)(s + 0x0c) = 0x101;
     *(short *)(s + 0x10) = 0;
+    // *(undefined8*)(puVar8+5)=DAT_000f33b8 (0.5f,0.5f at +0x14/+0x18)
+    *(float *)(s + 0x14) = 0.5f;
+    *(float *)(s + 0x18) = 0.5f;
+    // *(undefined8*)(puVar8+7)=DAT_000f33c0 (0.6f,0.6f at +0x1c/+0x20)
+    *(float *)(s + 0x1c) = 0.6f;
+    *(float *)(s + 0x20) = 0.6f;
     *(float *)(s + 0x24) = 0.5f;
     *(float *)(s + 0x28) = 1.0f;
     *(float *)(s + 0x2c) = 0.5f;
@@ -1299,6 +1306,11 @@ extern void **const gG_imageFactory __attribute__((visibility("hidden")));
 extern int **const gG_tail __attribute__((visibility("hidden")));
 
 // Globals::~Globals()
+// Minimal interface for an engine singleton whose only use here is virtual destruction.
+// Casting to it reads the object's offset-0 vptr and calls slot 1 (the deleting destructor),
+// which is exactly the teardown the shipped binary performs on gG_polyObj.
+struct PolymorphicSingleton { virtual ~PolymorphicSingleton() {} };
+
 Globals::~Globals() {
     void **rhSlot = gG_recordHandler;
     if (*rhSlot != 0) {
@@ -1341,8 +1353,10 @@ Globals::~Globals() {
     void **polySlot = gG_polyObj;
     void *poly = *polySlot;
     if (poly != 0) {
-        void (**vt)(void *) = *(void (***)(void *))poly;
-        vt[1](poly);
+        // gG_polyObj holds a polymorphic engine singleton whose concrete type is not
+        // modelled here; it owns a compiler vptr at offset 0 and is torn down through its
+        // virtual (deleting) destructor — exactly what `delete` through this interface emits.
+        delete static_cast<PolymorphicSingleton *>(poly);
     }
     *polySlot = 0;
     void **fmodSlot = gG_fmod;
@@ -1740,11 +1754,11 @@ epilogue: {
 
 // Hidden PC-relative globals.
 extern int **const gI_mission __attribute__((visibility("hidden")));
-extern void **const gI_settings __attribute__((visibility("hidden")));   // DAT_000f38cc (puVar14)
-extern int **const gI_flagFFFF __attribute__((visibility("hidden")));    // DAT_000f38d0 (puVar6)
-extern int **const gI_uVar7slot __attribute__((visibility("hidden")));   // DAT_000f38d4 (puVar10)
-extern char **const gI_langFlag __attribute__((visibility("hidden")));   // DAT_000f38d8 (pcVar11)
-extern char **const gI_zeroByte __attribute__((visibility("hidden")));   // DAT_000f38dc (puVar12)
+extern void **const gI_settings __attribute__((visibility("hidden")));   // DAT_000f38cc (settings object)
+extern int **const gI_flagFFFF __attribute__((visibility("hidden")));    // DAT_000f38d0
+extern int **const gI_langSettingSlot __attribute__((visibility("hidden")));   // DAT_000f38d4: language-dependent settings int
+extern char **const gI_langFlag __attribute__((visibility("hidden")));   // DAT_000f38d8 (language flag byte)
+extern char **const gI_zeroByte __attribute__((visibility("hidden")));   // DAT_000f38dc
 extern void ***const gI_galaxy __attribute__((visibility("hidden")));
 extern void ***const gI_achieve __attribute__((visibility("hidden")));
 extern void ***const gI_status __attribute__((visibility("hidden")));
@@ -1761,11 +1775,11 @@ extern void ***const gI_fmod __attribute__((visibility("hidden")));
 extern void **const gI_setMusVol __attribute__((visibility("hidden")));  // DAT_000f3914 (fn ptr)
 extern void **const gI_setSfxVol __attribute__((visibility("hidden")));  // DAT_000f3918 (fn ptr)
 extern int ***const gI_g381c __attribute__((visibility("hidden")));
-extern char **const gI_g381a __attribute__((visibility("hidden")));      // DAT_000f3920 (puVar12)
-extern int ***const gI_g381e __attribute__((visibility("hidden")));      // DAT_000f3924 (puVar6 second)
-extern int **const gI_g3822 __attribute__((visibility("hidden")));       // DAT_000f3928 (puVar10)
-extern char ***const gI_g3824 __attribute__((visibility("hidden")));     // DAT_000f392c (puVar17)
-extern char **const gI_g383a __attribute__((visibility("hidden")));      // DAT_000f3930 (puVar16)
+extern char **const gI_g381a __attribute__((visibility("hidden")));      // DAT_000f3920
+extern int ***const gI_g381e __attribute__((visibility("hidden")));      // DAT_000f3924 (vector-triple object)
+extern int **const gI_g3822 __attribute__((visibility("hidden")));       // DAT_000f3928
+extern char ***const gI_g3824 __attribute__((visibility("hidden")));     // DAT_000f392c
+extern char **const gI_g383a __attribute__((visibility("hidden")));      // DAT_000f3930
 extern void ***const gI_layout __attribute__((visibility("hidden")));
 
 typedef void (*VolFn)(void *snd, int channel, int value);
@@ -1781,7 +1795,7 @@ int Globals::init(void *app) {
 
     int *settings = (int *)*gI_settings;
     int *flagFFFF = (int *)*gI_flagFFFF;
-    int *uVar7slot = (int *)*gI_uVar7slot;
+    int *langSettingSlot = (int *)*gI_langSettingSlot;
     char *langFlag = *gI_langFlag;
     char *zeroByte = *gI_zeroByte;
 
@@ -1799,7 +1813,7 @@ int Globals::init(void *app) {
     char lang = *langFlag;
     *(short *)(s + 0x0f) = 0x101;
     *flagFFFF = -1;
-    *uVar7slot = (lang == 0) ? 6 : 0xc;
+    *langSettingSlot = (lang == 0) ? 6 : 0xc;
 
     void *galaxy = ::operator new(8);
     Galaxy_ctor(galaxy);
@@ -1860,7 +1874,7 @@ int Globals::init(void *app) {
         *(unsigned char *)(s + 0xd) = 0;
     }
 
-    // Camera/transform-style zeroing of a vector-triple struct (puVar6 second object).
+    // Camera/transform-style zeroing of a vector-triple struct.
     **gI_g381c = 0;
     **gI_g381a = 1;
     int *obj = (int *)*gI_g381e;   // RAWREAD: opaque vector-triple sub-object via hidden global (no header)
@@ -1998,7 +2012,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
 // Static (dialogueCode, soundId) pair table, 47 entries; linear-searched first.
 extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));  // DAT_000f5a6c base
 // Per-(category) dialogue-code -> sound-id dispatch. category encodes race/gender bucket
-// (the disasm's iVar2 switch value 0..5). Returns -1 when unmapped.
+// (the resolved bucket value 0..5). Returns -1 when unmapped.
 
 // Globals::getDialogueSoundId(int code, Agent* agent)
 int Globals_getDialogueSoundId(void *self, int code, void *agent)
@@ -2007,8 +2021,8 @@ int Globals_getDialogueSoundId(void *self, int code, void *agent)
     // Phase 1: linear search of the static pair table (47 pairs).
     const int *t = gGDS_pairTable;
     for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
-        if (t[i * 2] == code) {
-            return t[i * 2 + 1];
+        if (t[i] == code) {
+            return t[i + 1];
         }
     }
 
@@ -2025,16 +2039,16 @@ int Globals_getDialogueSoundId(void *self, int code, void *agent)
         if (parts != 0) {
             int *p = ((Agent *)(agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
-            // category 0 dispatch differs by gender; fold gender into the bucket id.
-            return ((Globals*)self)->dialogueDispatch(male != 0 ? (category + 10) : category, code);
+            // bucket 0 dispatch differs by gender; dialogueDispatch consults isMale internally.
+            return ((Globals*)self)->dialogueDispatch(category, code, male);
         }
         // No image parts: race-3 fallback uses the "case 2/3" generic dialogue table.
-        return ((Globals*)self)->dialogueDispatch(2, code);
+        return ((Globals*)self)->dialogueDispatch(2, code, male);
     }
 
-    // Non-Klingon races: bucket by race index, gendered.
+    // Non-Klingon races: bucket by race index; only bucket 0/5 is gendered.
     category = race;
-    return ((Globals*)self)->dialogueDispatch(male != 0 ? (category + 10) : category, code);
+    return ((Globals*)self)->dialogueDispatch(category, code, male);
 }
 
 struct FileRead;
@@ -2254,9 +2268,9 @@ void Globals::releaseResources_tail(void *secondaryCanvas)
 
 // ---- dialogueDispatch ----
 // Second stage of getDialogueSoundId(): given a resolved race/gender bucket (`category`) and a
-// dialogue code, return the mapped sound id (or -1). This is the big switch(iVar2) of the
+// dialogue code, return the mapped sound id (or -1). This is the big switch over `category` of the
 // target; the per-code base offsets are the same arithmetic the disassembly performs.
-int Globals::dialogueDispatch(int category, int code)
+int Globals::dialogueDispatch(int category, int code, int isMale)
 {
     // Buckets 2 / 3 (and the race-3 fallback) share the "generic" table.
     auto genericTable = [](int c) -> int {
@@ -2280,7 +2294,18 @@ int Globals::dialogueDispatch(int category, int code)
     switch (category) {
     case 0:
     case 5: {
-        // Female (gender absorbed by the caller's +10 bucketing) vs. male sub-tables.
+        if (isMale == 0) {
+            // Female sub-table (codes 0x172..0x185 only; DAT_000f5d88 indexed at 0x00211a20).
+            if ((unsigned)(code - 0x172) > 0x13) {
+                return -1;
+            }
+            static const int femaleTable[20] = {
+                0x2a7, 0x29b, 0x2a1, 0x2a2, 0x2a3, 0x2a4, 0x2a5, 0x2a6, 0x295, 0x29c,
+                0x29d, 0x29e, 0x29f, 0x2a0, 0x296, 0x297, 0x298, 0x299, 0x29a, 0x294,
+            };
+            return femaleTable[code - 0x172];
+        }
+        // Male sub-table.
         switch (code) {
         case 0x172: return 0x2bb; case 0x173: return 0x2af; case 0x174: return 0x2b5;
         case 0x175: return 0x2b6; case 0x176: return 0x2b7; case 0x177: return 0x2b8;
@@ -2382,10 +2407,10 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         canvas->TransformAddMesh(mesh2, 0x42ad, false);
         geom->addChild(mesh2);
 
-        uint16_t lodMeshes[2] = { 0x42aa, 0x42aa };
+        uint16_t lodMeshes[2] = { 0x42aa, 0x42ab };  // DAT_000f551c + 0x1a001a = 0x42ab42aa
         int       lodDists[2] = { 25000, 45000 };
         geom->setLodMeshes(lodMeshes, lodDists, 2);
-        uint16_t lodChild = 0x42ab;
+        uint16_t lodChild = 0x42ae;                  // DAT_000f5520 = 0x42ae42ae
         geom->setLodChildMeshes(&lodChild);
     } else if (variant == 3) {
         geom = new AEGeometry((uint16_t)0x4299, canvas, false);
@@ -2437,7 +2462,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         canvas->TransformAddMesh(mesh1, 0x42a4, true);
         geom->addChild(mesh1);
 
-        uint16_t lodMeshes[2] = { 0x42a5, 0x42a5 };
+        uint16_t lodMeshes[2] = { 0x42a6, 0x42a7 };  // DAT_000f551c + 0x160016 = 0x42a742a6
         int       lodDists[2] = { 35000, 60000 };
         geom->setLodMeshes(lodMeshes, lodDists, 2);
     }

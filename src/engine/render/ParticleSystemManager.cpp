@@ -319,10 +319,8 @@ void ParticleSystemManager::initSprites()
 
     IParticleSystem **sprites = (IParticleSystem **)this->spriteSystems;
     for (unsigned i = 0; i < this->spriteSystemCount; ++i) {
-        void *sys = sprites[i];
-        typedef void (*pfn)(void *, unsigned int, short, void *, float, float);
-        pfn fn = (pfn)(*(void ***)sys)[0];
-        fn(sys, this->spriteSystemId, offset, (void *)fn, u, w);
+        IParticleSystem *sys = sprites[i];
+        sys->init(this->spriteSystemId, (uint16_t)offset);   // slot 0
         offset += _ips_getParticleCount16(sprites[i]);
     }
 }
@@ -372,9 +370,8 @@ void ParticleSystemManager::initMesh()
     short offset = 0;
     IParticleSystem **meshes = (IParticleSystem **)this->meshSystems;
     for (unsigned i = 0; i < this->meshSystemCount; ++i) {
-        void *sys = meshes[i];
-        typedef void (*pfn)(void *, unsigned int, short);
-        ((pfn)(*(void ***)sys)[0])(sys, this->meshId, offset);
+        IParticleSystem *sys = meshes[i];
+        sys->init(this->meshId, (uint16_t)offset);   // slot 0
 
         short count = _ips_getParticleCount16(meshes[i]);
         offset += (short)(count * 4);

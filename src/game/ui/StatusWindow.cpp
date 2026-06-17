@@ -55,35 +55,35 @@ StatusWindow::~StatusWindow()
     this->detailLines = 0;
 }
 
-int StatusWindow::OnTouchMove(int param_1, int param_2) {
+int StatusWindow::OnTouchMove(int x, int y) {
     Layout *layout = *g_SWm_layout;
-    if ((layout->field_0xc < param_2 && param_2 < *g_SWm_height - layout->field_0x10) || *g_SWm_force != 0) {
-        int d = param_2 - this->lastTouchY;
-        this->scrollVelocity = d;
+    if ((layout->field_0xc < y && y < *g_SWm_height - layout->field_0x10) || *g_SWm_force != 0) {
+        int delta = y - this->lastTouchY;
+        this->scrollVelocity = delta;
         this->scrollDamping = 1.0f;
-        this->scrollOffset += d;
-        this->lastTouchY = param_2;
+        this->scrollOffset += delta;
+        this->lastTouchY = y;
         if (this->selectedMedal >= 0) {
-            int e = this->touchStartY - param_2;
-            if (e < 0) e = -e;
-            if (e > 3) {
+            int dragDist = this->touchStartY - y;
+            if (dragDist < 0) dragDist = -dragDist;
+            if (dragDist > 3) {
                 (*this->medalButtons)[this->selectedMedal]->setAlwaysPressed(0);
                 this->selectedMedal = -1;
                 layout = *g_SWm_layout;
             }
         }
     }
-    layout->OnTouchMove(param_1, param_2);
+    layout->OnTouchMove(x, y);
     if (*g_SWm_btnFlag == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
-            (*this->tabButtons)[i]->OnTouchMove(param_1, param_2);
+            (*this->tabButtons)[i]->OnTouchMove(x, y);
     }
     if (this->activeTab == 1) {
         Achievements *ach = gAchievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
-                (*this->medalButtons)[i]->OnTouchMove(param_1, param_2);
+                (*this->medalButtons)[i]->OnTouchMove(x, y);
         }
     }
     return 0;
@@ -116,7 +116,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     int absvy = vy < 0 ? -vy : vy;
     Layout *layout = *g_swe_layout;
 
-    this->scrollDamping = 1.0f;
+    this->scrollDamping = 0.9f;
     this->isDragging = 0;
     this->scrollOffset = newOff;
     this->scrollTarget = newOff;
@@ -196,23 +196,23 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     }
 }
 
-int StatusWindow::OnTouchBegin(int param_1, int param_2) {
+int StatusWindow::OnTouchBegin(int x, int y) {
     Layout *layout = *g_StatusWindow_layout;
-    this->touchStartY = param_2;
-    this->lastTouchY = param_2;
+    this->touchStartY = y;
+    this->lastTouchY = y;
     this->scrollVelocity = 0;
     this->isDragging = 1;
-    layout->OnTouchBegin(param_1, param_2);
+    layout->OnTouchBegin(x, y);
     if (*g_StatusWindow_btnFlag == 0) {
         for (unsigned i = 0; i < this->tabButtons->size(); ++i)
-            (*this->tabButtons)[i]->OnTouchBegin(param_1, param_2);
+            (*this->tabButtons)[i]->OnTouchBegin(x, y);
     }
     if (this->activeTab == 1) {
         Achievements *ach = gAchievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
-                (*this->medalButtons)[i]->OnTouchBegin(param_1, param_2);
+                (*this->medalButtons)[i]->OnTouchBegin(x, y);
         }
     }
     return 0;
@@ -240,9 +240,9 @@ void StatusWindow::update() {
     if (this->isDragging == 0) {
         float v = this->scrollDamping * this->scrollVelocityF;
         this->scrollVelocityF = v;
-        // If |v| >= 1.0 keep scrolling: advance the integer scroll offset.
+        // If |v| > 1.0 keep scrolling: advance the integer scroll offset.
         float mag = v > 0.0f ? v : -v;
-        if (mag >= 1.0f) {
+        if (mag > 1.0f) {
             this->scrollOffset = (int)(v + (float)this->scrollOffset);
         }
     }
@@ -414,8 +414,8 @@ void StatusWindow::reInit() {
     if (a3) id = 0x49b;
     canvas->Image2DCreate((unsigned short)id, &this->rankImage3);
 
-    this->charImageWidth = canvas->GetImage2DWidth(0);
-    this->charImageHeight = canvas->GetImage2DHeight(0);
+    this->charImageWidth = canvas->GetImage2DWidth(this->rankImage0);
+    this->charImageHeight = canvas->GetImage2DHeight(this->rankImage0);
 }
 
 extern "C" {
@@ -448,9 +448,9 @@ void StatusWindow::draw() {
     int screenH = *g_swd_dimH;
 
     // --- background + scrollbar ---
-    canvas->SetColor(0u);
+    canvas->SetColor(0xffu);
     canvas->FillRectangle(0, 0, screenW, screenH);
-    canvas->SetColor(0u);
+    canvas->SetColor(0xffffffffu);
     layout->drawBG();
 
     float relStart = this->getRelativeScrollStartPos();
@@ -534,16 +534,18 @@ void StatusWindow::draw() {
         canvas->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
                            x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
-        // Fire-power line.
-        String fpStr, fpPre, fpFull;
+        // Fire-power line: "<firePower>%<2-digit fractional part>".
+        // getFirePower() returns float-bits in an int register; the integer part is the
+        // whole percentage and the two-decimal fractional part is appended after the '%'.
+        String frac, fracStr, pct;
         int firePow = gStatus->getShip()->getFirePower();
-        fpStr.ctor_int((int)((float)firePow * 1.0f));
+        float firePowF = *(float *)&firePow;
+        frac.ctor_int((int)((firePowF - (float)(int)firePowF) * 100.0f));
+        fracStr.SubString(&frac, 0, 2);
         int fp2 = gStatus->getShip()->getFirePower();
-        fpPre.ctor_char("%", false);
-        fpFull = fpPre;
-        fpFull.addAssign_int(&fp2);
-        fpStr = fpFull;
-        creditStr.assign(&fpStr);
+        pct.ctor_char("%", false);
+        String fpFull = (fp2 + pct) + fracStr;
+        creditStr.assign(&fpFull);
         tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
         canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, ((y + x0) - pad) - tw, y, false);
 
@@ -554,13 +556,29 @@ void StatusWindow::draw() {
         canvas->DrawString((unsigned)(uintptr_t)font, &hpStr, ((y + x0) - pad) - tw, y, false);
 
         // Standing emblem panel + bars.
+        // First faction standing (rate index 0) at the left-quarter x-position.
+        int standingX0 = x0 + (boxW >> 2);
         Standing *standing = (Standing *)(intptr_t)gStatus->getStanding();
         float rate = standing->getStandingRate(0);
-        canvas->DrawImage2D(this->standingEmblemImage, x0 + (boxW >> 2), y, (unsigned char)'\x11');
+        canvas->DrawImage2D(this->standingEmblemImage, standingX0, y, (unsigned char)'\x11');
         canvas->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
                              (int)-(rate * (float)this->standingBarWidth), this->standingBarHeight,
-                             -(rate * (float)this->standingBarWidth), 0, 0, 0, x0 + (boxW >> 2));
-        canvas->DrawImage2D(this->standingFrameImage, x0, y, (unsigned char)'\x11');
+                             -(rate * (float)this->standingBarWidth), 0, 0, 0, standingX0);
+        canvas->DrawImage2D(this->standingFrameImage,
+                            (int)((float)standingX0 - rate * (float)this->standingBarWidth),
+                            y, (unsigned char)'\x11');
+
+        // Second faction standing (rate index 1) at the recomputed right x-position.
+        int standingX1 = (boxW - ((boxW - pad * 2) >> 2)) + pad * 2;
+        Standing *standing2 = (Standing *)(intptr_t)gStatus->getStanding();
+        float rate2 = standing2->getStandingRate(1);
+        canvas->DrawImage2D(this->standingEmblemImage, standingX1, y, (unsigned char)'\x11');
+        canvas->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
+                             (int)-(rate2 * (float)this->standingBarWidth), this->standingBarHeight,
+                             -(rate2 * (float)this->standingBarWidth), 0, 0, 0, standingX1);
+        canvas->DrawImage2D(this->standingFrameImage,
+                            (int)((float)standingX1 - rate2 * (float)this->standingBarWidth),
+                            y, (unsigned char)'\x11');
 
         // Career-stat rows from the Status singleton.
         Status *st = gStatus;
@@ -614,7 +632,7 @@ void StatusWindow::draw() {
 
         // Selected-medal detail panel.
         if (this->selectedMedal >= 0) {
-            canvas->SetColor(0u);
+            canvas->SetColor(0xffffffffu);
             int lines = (int)this->detailLines->size();
             int lineH = layout->field_0x4;
             String lbl;
@@ -663,14 +681,13 @@ StatusWindow::StatusWindow() {
 
     Layout *layout = *g_sw_layout;
     int layoutW = *(int *)*(void **)g_sw_layoutW;
-    int textId = *(int *)*(void **)g_sw_gameTextDef;
 
-    String *t0 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
+    String *t0 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0xa8);
     int helpOff = layout->getHelpButtonOffset();
     TouchButton *b0 = new TouchButton(t0, 3, layoutW - helpOff, 0, 0x12);
     (*this->tabButtons)[1] = b0;
 
-    String *t1 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
+    String *t1 = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0x241);
     int helpOff2 = layout->getHelpButtonOffset();
     TouchButton *b1 = new TouchButton(t1, 3, 0, 0, 0x12);
     int w1 = b1->getWidth();
@@ -693,7 +710,7 @@ StatusWindow::StatusWindow() {
     int *medalIds = gAchievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
         int medal = medalIds[i];
-        String *txt = ((GameText *)*(void **)g_sw_gameTextDef)->getText(textId);
+        String *txt = ((GameText *)*(void **)g_sw_gameTextDef)->getText(0x5e3 + i);
         TouchButton *btn = new TouchButton(i, medal, txt, 0, 0, 'D');
         (*this->medalButtons)[i] = btn;
     }
@@ -704,8 +721,8 @@ StatusWindow::StatusWindow() {
     canvas->Image2DCreate((unsigned short)0x48e, &this->standingEmblemImage);
     canvas->Image2DCreate((unsigned short)0x48f, &this->standingBarImage);
     canvas->Image2DCreate((unsigned short)0x48d, &this->standingFrameImage);
-    this->standingBarWidth = canvas->GetImage2DWidth(0) / 2;
-    int img3h = canvas->GetImage2DHeight(0);
+    this->standingBarWidth = canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
+    int img3h = canvas->GetImage2DHeight(this->standingEmblemImage);
 
     // Reset the inertia / scroll state.
     this->scrollDamping = 0.0f;

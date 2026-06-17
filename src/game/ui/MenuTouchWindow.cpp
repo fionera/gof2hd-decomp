@@ -1,6 +1,7 @@
 #include "game/ui/MenuTouchWindow.h"
 #include "game/core/PaintCanvasClass.h"
 #include "engine/render/Engine.h"
+#include <math.h>
 
 extern PaintCanvas *g_PaintCanvas;
 
@@ -50,7 +51,7 @@ extern "C" void _mtw_Status_setStation(void *status);
 extern "C" void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis);
 extern "C" void _mtw_Achievements_setMedal(void *ach, int id, int n);
 extern "C" void _mtw_RecordHandler_saveOptions(void *rh);
-extern "C" void _mtw_Status_setKills(void *status);
+extern "C" void _mtw_Status_setKills(void *status, int count);
 extern "C" void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y);
 extern "C" int  _mtw_Layout_OnTouchBegin(void *layout, int y);
 extern "C" void _mtw_TouchButton_OnTouchBegin(void *btn, int y);
@@ -164,16 +165,14 @@ bool MenuTouchWindow::inCinematicMode()
 }
 
 // MenuTouchWindow::getRelativeScrollStartPos()
-//   r = CONST; if (this->0x194 <= 0) r = -(float)(int)this->0x194 / (float)(int)this->0x22c;
+//   When scrolled (offset > 0) the start fraction is 0; otherwise it is the
+//   negative offset relative to the page height. (DAT_00135da0 == 0.0f.)
 float MenuTouchWindow::getRelativeScrollStartPos()
 {
-    int a = this->scrollOffset;
-    if (a > 0) {
-        union { unsigned u; float f; } c;
-        c.u = 0x9a132100u;
-        return c.f;
-    }
-    return -(float)a / (float)this->pageHeight;
+    int offset = this->scrollOffset;
+    if (offset > 0)
+        return 0.0f;
+    return -(float)offset / (float)this->pageHeight;
 }
 
 // MenuTouchWindow::OnTouchEnd(int y, int x). The menu's master action dispatcher: when a
@@ -185,7 +184,7 @@ float MenuTouchWindow::getRelativeScrollStartPos()
 
 // Per-state release handlers (return non-zero when they fully consumed the event).
 
-extern void *const gEndLayoutGuard __attribute__((visibility("hidden"))); // *holder -> layout (*piVar17)
+extern void *const gEndLayoutGuard __attribute__((visibility("hidden"))); // *holder -> modal Layout
 extern void *const gEndStatusObj   __attribute__((visibility("hidden")));
 extern void *const gEndAppHolder   __attribute__((visibility("hidden")));
 extern void *const gEndFmod        __attribute__((visibility("hidden")));
@@ -477,7 +476,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
             int *rowData = (int *)i32(this->recordRows->data_[i], 4);
 
             e = ::operator new(0xc); ((String *)e)->ctor_copy(&s54, false); ((void **)rowData)[0] = e;
-            e = ::operator new(0xc); ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0x1e6), false);
+            e = ::operator new(0xc); ((String *)e)->ctor_copy((String *)_mtw_GameText_getText(*(void **)gtHolder, 0xae), false);
             rowData = (int *)i32(this->recordRows->data_[i], 4); ((void **)rowData)[1] = e;
 
             e = ::operator new(0xc);
@@ -547,7 +546,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
     int screenW = *(int *)*(void **)gCrbScreenW;
     int x = (screenW - this->listX) - layout[0xa]; // -[0x28]
     int y = layout[8] + layout[3] + extra;              // [0x20]+[0xc]
-    void *okLabel = _mtw_GameText_getText(*(void **)gtHolder, backForm ? 0x1fa : 0x1f9);
+    void *okLabel = _mtw_GameText_getText(*(void **)gtHolder, inSaveMode ? 0x1fa : 0x1f9);
     if (backForm)
         _mtw_TouchButton_ctor7(okBtn, okLabel, 7, x, y, 0x12);
     else
@@ -572,9 +571,10 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode)
 // into the game. Walks 0x2d campaign missions forward, builds a ship with fixed loadout,
 // flips a set of option flags, awards medals, then transitions to the game module.
 
-extern "C" void *_mtw_Status_getShip(void *status);       // pcVar13: returns ship from status
-extern "C" void *_mtw_Item_make(int itemDef);             // pcVar12: makeItem(def)
-extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot); // pcVar9
+extern "C" void *_mtw_Status_getShip(void *status);       // returns ship from status
+extern "C" void *_mtw_Item_make(int itemDef);             // makeItem(def)
+extern "C" void *_mtw_Item_makeQty(int itemDef, int qty); // makeItem with count
+extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
 // PC-relative holders.
 extern void *const gValStatus    __attribute__((visibility("hidden"))); // *holder -> Status object
@@ -614,10 +614,10 @@ void MenuTouchWindow::startValkyrie()
     void *it; void *sh;
     it = _mtw_Item_make(*(int *)(row[0] + 8));   sh = _mtw_Status_getShip(*statusHolder); _mtw_Ship_setItem(sh, it, 0);
     it = _mtw_Item_make(*(int *)(row[0] + 0x14));sh = _mtw_Status_getShip(*statusHolder); _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_make(*(int *)(row[0] + 0x90));sh = _mtw_Status_getShip(*statusHolder); _mtw_Ship_setItem(sh, it, 0);
+    it = _mtw_Item_makeQty(*(int *)(row[0] + 0x90), 0xa);sh = _mtw_Status_getShip(*statusHolder); _mtw_Ship_setItem(sh, it, 0);
     it = _mtw_Item_make(*(int *)(row[0] + 0x144));sh = _mtw_Status_getShip(*statusHolder);_mtw_Ship_setItem(sh, it, 0);
     it = _mtw_Item_make(*(int *)(row[0] + 0xcc)); sh = _mtw_Status_getShip(*statusHolder);_mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_make(*(int *)(row[0] + 0x158));sh = _mtw_Status_getShip(*statusHolder);_mtw_Ship_setItem(sh, it, 2);
+    it = _mtw_Item_makeQty(*(int *)(row[0] + 0x158), 0xa);sh = _mtw_Status_getShip(*statusHolder);_mtw_Ship_setItem(sh, it, 2);
     it = _mtw_Item_make(*(int *)(row[0] + 0x154));sh = _mtw_Status_getShip(*statusHolder);_mtw_Ship_setItem(sh, it, 3);
 
     _mtw_Status_setCredits(*statusHolder);
@@ -645,12 +645,12 @@ void MenuTouchWindow::startValkyrie()
     _mtw_Achievements_setMedal(ach, 0x17, 3);
     _mtw_Achievements_setMedal(*(void **)gValAch, 0x1e, 1);
     _mtw_RecordHandler_saveOptions(*(void **)gValOptHolder);
-    _mtw_Status_setKills(*statusHolder);
+    _mtw_Status_setKills(*statusHolder, 0xc5);
     _mtw_FModSound_stop(*(void **)gValFmod);
 
     void **app = (void **)gValTransition;
     *(uint32_t *)(optB + 0x2c) = this->fadeValue;
-    TransitionFn fn = *(TransitionFn *)((char *)app); // DAT_001ab904 thunk
+    TransitionFn fn = *(TransitionFn *)((char *)app); // module-transition thunk
     fn(*app, 5);
 }
 
@@ -658,7 +658,7 @@ void MenuTouchWindow::startValkyrie()
 // sub-widget owns the current menu state (this->0x16c), kicking off scroll drags, slider
 // grabs, list selection and the in-flight 3D steer. r0=this, r1=y, r2=x, r3=touchId. Returns 0.
 
-extern void *const gBgLayout   __attribute__((visibility("hidden"))); // *holder -> layout (=*piVar5)
+extern void *const gBgLayout   __attribute__((visibility("hidden"))); // *holder -> layout
 extern void *const gBgScreenW  __attribute__((visibility("hidden")));
 extern void *const gBgScrollDiv __attribute__((visibility("hidden")));
 extern void *const gBgListPosX __attribute__((visibility("hidden")));
@@ -1137,10 +1137,9 @@ void MenuTouchWindow::update(int dt)
     unsigned int st = this->menuState;
     if (st < 0x10 && ((1u << (st & 0xff)) & 0x8006u) != 0) {
         if (this->dragging == 0) {
-            float v = this->inertiaDecay * this->inertiaVel;
+            float v = *(float*)&this->inertiaDecay * this->inertiaVel; // inertiaDecay holds float bits
             this->inertiaVel = v;
-            if (v < 1.0f) {
-                this->scrollOffset = (float)(v + (float)this->scrollOffset); // accumulate offset
+            if (fabsf(v) > 1.0f) {
                 this->scrollOffset = (int)(v + (float)this->scrollOffset);
             }
         }
@@ -1473,24 +1472,22 @@ void MenuTouchWindow::draw()
 }
 
 // MenuTouchWindow::getRelativeScrollHeight()
-//   Returns the visible fraction of the scrollable list (page / content), clamped by the
-//   current scroll offset at +0x194. Content height at +0x228, page height at +0x22c.
+//   Returns the visible fraction of the scrollable list (numerator / page), clamped by the
+//   current scroll offset. Content height at +0x228, page height at +0x22c.
+//   When the page is shorter than the content, the fraction collapses to 0 (DAT_00135df4 == 0.0f).
 float MenuTouchWindow::getRelativeScrollHeight()
 {
     int content = this->contentHeight;
     int page = this->pageHeight;
-    if (page < content) {
-        union { unsigned u; float f; } c;
-        c.u = 0x3f800000u; // 1.0f (DAT_00135df4)
-        return c.f;
-    }
+    if (page < content)
+        return 0.0f;
     int off = this->scrollOffset;
     int numer;
     if (off >= 1) {
         numer = content - off;
     } else {
         if (content - page <= off) {
-            return (float)page / (float)page;
+            return (float)content / (float)page;
         }
         numer = off + page;
     }
@@ -1498,11 +1495,11 @@ float MenuTouchWindow::getRelativeScrollHeight()
 }
 
 // MenuTouchWindow::OnTouchMove(int y, int x). Dispatches the drag to whatever sub-widget owns
-// the current menu state (this->0x16c). r0=this, r1=y, r2(=param_3)=x. Returns 0.
+// the current menu state (this->menuState). Returns 0.
 
 extern "C" void _mtw_steerFromTouch(void *self, int y, int x); // corrupted case-10 cinematic steer
 
-extern void *const gMvLayout    __attribute__((visibility("hidden"))); // *holder -> layout obj (=*piVar8)
+extern void *const gMvLayout    __attribute__((visibility("hidden"))); // *holder -> layout obj
 extern void *const gMvScreenW   __attribute__((visibility("hidden")));
 extern void *const gMvFlagA     __attribute__((visibility("hidden"))); // *holder -> [0] byte
 extern void *const gMvFlagB     __attribute__((visibility("hidden")));
@@ -1739,7 +1736,6 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible)
 // PC-relative holders.
 extern void *const gDlsLayout   __attribute__((visibility("hidden")));  // *holder -> layout obj
 extern void *const gDlsCanvas   __attribute__((visibility("hidden")));  // *holder -> PaintCanvas
-extern void *const gDlsColor    __attribute__((visibility("hidden")));  // *holder -> [0] = color
 extern void *const gDlsScreenW  __attribute__((visibility("hidden")));  // *holder -> [0] width-ish bound
 extern void *const gDlsScrollOn __attribute__((visibility("hidden")));  // *holder -> [0] byte: show scrollbar
 extern void *const gDlsScrollNo __attribute__((visibility("hidden")));  // *holder -> [0] byte: suppress
@@ -1757,10 +1753,9 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
     (void)param1;
     int *layout = (int *)*(void **)gDlsLayout;
     void *canvas = *(void **)gDlsCanvas;
-    unsigned int color = *(unsigned int *)*(void **)gDlsColor;
 
     int rowBaseY = layout[0x43];        // +0x10c
-    ((PaintCanvas *)canvas)->SetColor(color);
+    ((PaintCanvas *)canvas)->SetColor(0xffffffff);
 
     int scrollOff = this->listX;
     int margin = layout[0xa];            // +0x28
@@ -1804,7 +1799,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
         int rowY = (layout[0x1c] + this->listRowGap) * i + this->scrollOffset + layout[8] + layout[3];
         if (rowY < 0 || rowY > rowMax) continue;
 
-        ((PaintCanvas *)canvas)->SetColor(color);
+        ((PaintCanvas *)canvas)->SetColor(0xffffffff);
         int boxX = layout[0xa] + this->listX;
         String box; box.ctor_char(gDlsBoxStr, false);
         int mode = (i == this->selectedRow) ? 4 : 3;
@@ -1832,7 +1827,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
             layout[0xa] + this->listX + layout[0xb] * 2 + this->metricB + layout[0xb1] /*+0x2c4*/,
             yName, (bool)0);
 
-        ((PaintCanvas *)canvas)->SetColor(color);
+        ((PaintCanvas *)canvas)->SetColor(0x777777ff);
         int rowY2 = rowY + strip5c;
         ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[2],
             layout[0xa] + this->listX + layout[0xb],
@@ -1858,10 +1853,10 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 // MenuTouchWindow::startSupernova() - sets up the "Supernova" pre-made savegame and jumps
 // into the game. Same shape as startValkyrie but advances 0x54 missions and a richer loadout.
 
-extern "C" void *_mtw_Status_getShip(void *status);       // pcVar14
-extern "C" void *_mtw_Item_make(int itemDef);             // pcVar12
-extern "C" void *_mtw_Item_makeQty(int itemDef, int qty); // pcVar13 (makeItem with count)
-extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot); // pcVar11
+extern "C" void *_mtw_Status_getShip(void *status);
+extern "C" void *_mtw_Item_make(int itemDef);
+extern "C" void *_mtw_Item_makeQty(int itemDef, int qty); // makeItem with count
+extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
 // PC-relative holders.
 extern void *const gSnStatus    __attribute__((visibility("hidden")));
@@ -1935,7 +1930,7 @@ void MenuTouchWindow::startSupernova()
 
     _mtw_Achievements_setMedal(ach, 0x17, 3);
     _mtw_Achievements_setMedal(*(void **)gSnAch, 0x1e, 1);
-    _mtw_Status_setKills(*statusHolder);
+    _mtw_Status_setKills(*statusHolder, 0x182);
     _mtw_RecordHandler_saveOptions(*(void **)gSnOptHolder);
     _mtw_FModSound_stop(*(void **)gSnFmod);
 
@@ -1963,6 +1958,6 @@ void MenuTouchWindow::startGOF2()
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);
     void *appHolder = *(void **)gGof2Transition;
-    TransitionFn3 fn = *(TransitionFn3 *)((char *)appHolder); // thunk via DAT_001ab904
+    TransitionFn3 fn = *(TransitionFn3 *)((char *)appHolder); // module-transition thunk
     fn(*(void **)appHolder, 2, 0);
 }

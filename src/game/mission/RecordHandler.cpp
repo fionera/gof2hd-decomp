@@ -567,8 +567,8 @@ void RecordHandler::loadOptions() {
 
             int *nameSlot = g_LO_nameSlot;
             if (*nameSlot != 0) {
-                void (**vt)(void *) = *(void (***)(void *))(*nameSlot);
-                vt[1]((void *)(long)*nameSlot);
+                // Free the previously-stored option name (a heap String*) before reading the new one.
+                delete (String *)(long)*nameSlot;
                 *nameSlot = 0;
             }
 

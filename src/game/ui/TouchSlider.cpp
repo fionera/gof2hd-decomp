@@ -1,144 +1,149 @@
 #include "game/ui/TouchSlider.h"
 #include "engine/render/PaintCanvas.h"
 
-void TouchSlider::setPosition(int param_1, int param_2)
+void TouchSlider::setPosition(int x, int y)
 {
-    float fVar1 = (float)(this->trackWidth - this->knobWidth);
-    float fVar2 = (float)(param_1 + this->knobWidth / 2);
-    this->x = param_1;
-    this->y = param_2;
-    this->knobY = param_2 + this->trackHeight / 2;
-    this->knobX = (int)(fVar2 + this->value * fVar1);
+    float trackRange = (float)(this->trackWidth - this->knobWidth);
+    float knobBase = (float)(x + this->knobWidth / 2);
+    this->x = x;
+    this->y = y;
+    this->knobY = y + this->trackHeight / 2;
+    this->knobX = (int)(knobBase + this->value * trackRange);
 }
 
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_TouchSlider_canvas;
 __attribute__((visibility("hidden"))) extern void **g_TouchSlider_app;
 
-TouchSlider::TouchSlider(int param_1, int param_2, int param_3, float param_4)
+TouchSlider::TouchSlider(int type, int x, int y, float value)
 {
-    this->type = param_1;
-    this->value = param_4;
-    PaintCanvas **holder = g_TouchSlider_canvas;
-    (*holder)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
+    this->type = type;
+    this->value = value;
+    PaintCanvas **canvas = g_TouchSlider_canvas;
+    (*canvas)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
 
-    unsigned short uVar4 = 0x51b;
-    if (param_1 == 1)
-        uVar4 = 0x51c;
-    if (param_1 == 0)
-        uVar4 = 0x519;
-    (*holder)->Image2DCreate(uVar4, (unsigned int*)&this->trackImage);
+    unsigned short trackImageId = 0x51b;
+    if (type == 1)
+        trackImageId = 0x51c;
+    if (type == 0)
+        trackImageId = 0x519;
+    (*canvas)->Image2DCreate(trackImageId, (unsigned int*)&this->trackImage);
 
-    this->knobWidth = (*holder)->GetImage2DWidth(this->knobImage);
-    this->knobHeight = (*holder)->GetImage2DHeight(this->knobImage);
-    this->trackWidth = (*holder)->GetImage2DWidth(this->trackImage);
-    this->trackHeight = (*holder)->GetImage2DHeight(this->trackImage);
+    this->knobWidth = (*canvas)->GetImage2DWidth(this->knobImage);
+    this->knobHeight = (*canvas)->GetImage2DHeight(this->knobImage);
+    this->trackWidth = (*canvas)->GetImage2DWidth(this->trackImage);
+    this->trackHeight = (*canvas)->GetImage2DHeight(this->trackImage);
 
+    // strh r5,[r4,#0x34]: 16-bit zero store clears both adjacent flag bytes
     this->isDragging = 0;
-    setPosition(param_2, param_3);
+    this->isDisabled = 0;
+    setPosition(x, y);
     this->numSteps = 0;
+    // RAWREAD: app object at g_TouchSlider_app is an unmodeled engine type;
+    // field at +0x7c is the global touch-padding/hit-slop value.
     this->touchPadding = *(int *)((char *)*g_TouchSlider_app + 0x7c);
 }
 
-int TouchSlider::OnTouchBegin(int param_1, int param_2)
+int TouchSlider::OnTouchBegin(int x, int y)
 {
     if (this->isDisabled != 0)
         return 0;
-    int r = touchedInside(param_1, param_2);
-    this->isDragging = (uint8_t)r;
-    return r;
+    int inside = touchedInside(x, y);
+    this->isDragging = (uint8_t)inside;
+    return inside;
 }
 
-int TouchSlider::OnTouchEnd(int param_1, int param_2)
+int TouchSlider::OnTouchEnd(int x, int y)
 {
     if (this->isDisabled != 0)
         return 0;
 
-    int uVar1;
+    int result;
     if (this->isDragging == 0) {
-        uVar1 = 0;
+        result = 0;
     } else {
-        int iVar4 = this->numSteps;
-        if (iVar4 > 0) {
-            float fVar6 = (float)(iVar4 + 1);
-            float fVar2 = getValue();
-            float fVar5;
-            float fVar7 = 0.0f;
-            int iVar3 = 0;
+        int steps = this->numSteps;
+        if (steps > 0) {
+            float stepCount = (float)(steps + 1);
+            float currentValue = getValue();
+            float snappedValue;
+            float threshold = 0.0f;
+            int step = 0;
             while (true) {
-                fVar5 = fVar2;
-                if (iVar3 >= iVar4 + 2)
+                snappedValue = currentValue;
+                if (step >= steps + 2)
                     break;
-                fVar5 = fVar7;
-                if (fVar2 <= (1.0f / fVar6) * 0.5f + fVar7)
+                snappedValue = threshold;
+                if (currentValue <= (1.0f / stepCount) * 0.5f + threshold)
                     break;
-                fVar7 = 1.0f / fVar6 + fVar7;
-                iVar3 = iVar3 + 1;
+                threshold = 1.0f / stepCount + threshold;
+                step = step + 1;
             }
-            setValue(fVar5);
+            setValue(snappedValue);
         }
-        uVar1 = 1;
+        result = 1;
     }
     this->isDragging = 0;
-    return uVar1;
+    return result;
 }
 
 void TouchSlider::draw()
 {
-    PaintCanvas **holder = g_TouchSlider_canvas;
+    PaintCanvas **canvas = g_TouchSlider_canvas;
     int color = this->isDisabled != 0 ? 0xFFFFFF2F : -1;
-    (*holder)->SetColor((unsigned int)color);
-    (*holder)->DrawImage2D(this->trackImage, this->x, this->y);
-    (*holder)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
+    (*canvas)->SetColor((unsigned int)color);
+    (*canvas)->DrawImage2D(this->trackImage, this->x, this->y);
+    (*canvas)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
 }
 
-bool TouchSlider::OnTouchMove(int param_1, int param_2)
+bool TouchSlider::OnTouchMove(int x, int y)
 {
     if (this->isDisabled != 0)
         return false;
     if (this->isDragging != 0) {
-        int half = this->knobWidth / 2;
-        int lo = this->x + half;
-        int hi = (this->x + this->trackWidth) - half;
-        if (param_1 < hi)
-            hi = param_1;
-        if (hi <= lo)
-            hi = lo;
-        this->knobX = hi;
+        int halfKnob = this->knobWidth / 2;
+        int minX = this->x + halfKnob;
+        int maxX = (this->x + this->trackWidth) - halfKnob;
+        int clampedX = maxX;
+        if (x < clampedX)
+            clampedX = x;
+        if (clampedX <= minX)
+            clampedX = minX;
+        this->knobX = clampedX;
     }
     return this->isDragging != 0;
 }
 
 float TouchSlider::getValue()
 {
-    float fVar1 = (float)(this->trackWidth - this->knobWidth);
-    float fVar2 = (float)((this->knobX - this->knobWidth / 2) - this->x);
-    return fVar2 / fVar1;
+    float trackRange = (float)(this->trackWidth - this->knobWidth);
+    float knobOffset = (float)((this->knobX - this->knobWidth / 2) - this->x);
+    return knobOffset / trackRange;
 }
 
-void TouchSlider::setHalfTransparent(bool param_1)
+void TouchSlider::setHalfTransparent(bool transparent)
 {
-    this->isDisabled = param_1;
+    this->isDisabled = transparent;
 }
 
-int TouchSlider::touchedInside(int param_1, int param_2)
+int TouchSlider::touchedInside(int x, int y)
 {
-    int half = this->knobWidth >> 1;
-    int cx = this->knobX;
+    int halfKnob = this->knobWidth >> 1;
+    int centerX = this->knobX;
     int pad = this->touchPadding;
-    if (cx - half - pad > param_1)
+    if (centerX - halfKnob - pad > x)
         return 0;
-    if (param_1 >= half + cx + pad)
+    if (x >= halfKnob + centerX + pad)
         return 0;
-    int half2 = this->knobHeight >> 1;
-    int cy = this->knobY;
-    if (cy - pad - half2 > param_2)
+    int halfKnobH = this->knobHeight >> 1;
+    int centerY = this->knobY;
+    if (centerY - pad - halfKnobH > y)
         return 0;
-    return param_2 <= half2 + cy + pad;
+    return y <= halfKnobH + centerY + pad;
 }
 
-void TouchSlider::setValue(float param_1)
+void TouchSlider::setValue(float value)
 {
-    float fVar1 = (float)(this->trackWidth - this->knobWidth);
-    float fVar2 = (float)(this->x + this->knobWidth / 2);
-    this->knobX = (int)(fVar2 + fVar1 * param_1);
+    float trackRange = (float)(this->trackWidth - this->knobWidth);
+    float knobBase = (float)(this->x + this->knobWidth / 2);
+    this->knobX = (int)(knobBase + trackRange * value);
 }

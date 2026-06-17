@@ -20,25 +20,23 @@ public:
     ImageFactory();
     ~ImageFactory();
 
-    /// Randomizes a character then forwards to createChar(bool, int).
-    void createChar_i(int param_1);
+    /// Picks a random sex, then builds a random character of the given race.
+    void createChar_i(int race);
 
-    /// Builds a 5-int char descriptor: a type slot followed by four random
-    /// part indices. `type` selects a 4-entry row in the part-count table;
-    /// type 3 rerolls to 0 or 2; type 0 maps to row 10 unless rand0 forced it.
-    int *createChar(bool clz, bool rand0, int type);
-
-    /// Public 2-argument overload; forwards to the 3-arg builder with rand0=false.
-    int *createChar(bool clz, int type) { return createChar(clz, false, type); }
+    /// Builds a 5-int char descriptor: a race slot followed by four random
+    /// part indices. `race` selects a 4-entry row in the part-count table;
+    /// race 3 (Midorian) rerolls to 0 or 2; race 0 (Terran) maps to row 10
+    /// (Woman) unless `isMale` is set; race 5 (Cyborg) collapses to row 0.
+    int *createChar(bool isMale, int race);
 
     void drawChar(Array<ImagePart *> *parts, int x, int y, int flag);
     void drawItem(int itemId, int x, int y);
     void drawItem4(int itemId, int frame, int x, int y);
     void drawShip(int shipId, int x, int y);
-    Array<ImagePart *> *loadChar(int *param_1);
+    Array<ImagePart *> *loadChar(int *desc);
     void *loadImage(int row, int col, int frameBase);
     void reload();
 
-    int getItemImageId(int param_1);
+    int getItemImageId(int itemId);
 };
 #endif

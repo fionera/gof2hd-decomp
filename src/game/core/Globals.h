@@ -12,15 +12,15 @@
 class Globals {
 public:
     Array<int>* soundResources;         // active sound-resource id list
-    int field_0x34;
-    void* field_0x3c;
-    void* field_0x40;
-    void* field_0x48;
-    unsigned int* field_0x54;
-    int field_0xac;
+    int field_0x34;                     // passenger/cargo count (HangarWindow)
+    void* field_0x3c;                   // sell-price table handle ([count, int-array-addr])
+    void* field_0x40;                   // buy-price table handle ([count, int-array-addr])
+    void* field_0x48;                   // system-price table handle ([count, int-array-addr])
+    unsigned int* field_0x54;           // availability descriptor ([count, byte-array-addr])
+    int field_0xac;                     // item table handle (+0x4 is its int-array base)
     unsigned short field_0x110;
-    int field_0x114;
-    int field_0x14c;
+    int field_0x114;                    // hangar/upgrade mode selector (compared == 3)
+    int field_0x14c;                    // selected slot index (HangarWindow)
 
     Globals();
     ~Globals();
@@ -48,8 +48,9 @@ public:
     static void loadFont_tail(void* canvas, void* font, int spacing);
     // Release the secondary canvas' resources too.
     static void releaseResources_tail(void* secondaryCanvas);
-    // Map a resolved race/gender bucket + dialogue code to a sound id (-1 when unmapped).
-    int dialogueDispatch(int category, int code);
+    // Map a resolved race bucket (0..8) + gender + dialogue code to a sound id (-1 when unmapped).
+    // Only bucket 0/5 consults isMale; all other buckets ignore it.
+    int dialogueDispatch(int category, int code, int isMale);
     // Offer/event briefing-text assembly used by getAgentMissionText().
     static void buildAgentMissionText(String* out, void* agent, int offer);
     // The kind==0xf (capital-ship) branch of getShipGroup(): build the articulated LOD geometry.

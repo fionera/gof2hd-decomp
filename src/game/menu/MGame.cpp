@@ -133,7 +133,7 @@ void MGame::maneuverTouchEnd(int a, void *p) {
         int d = a - self->maneuverStartX;
         if (d < 0) d = -d;
         float f3 = (float)d;
-        if ((f2 / 320.0f) * 0.15f < f3) {
+        if ((f2 / 480.0f) * 70.0f < f3) {
             int dir = 1;
             if (self->maneuverStartX < a) dir = 2;
             self->player->initManeuver(dir);
@@ -168,7 +168,7 @@ void MGame::maneuverTouchMove(int a, int b) {
         float f3 = (float)d;
         // The exact constant values are irrelevant to the byte match (the diff
         // normalizes pc-relative literal loads); only the vldr/vdiv/vmul shape matters.
-        if ((f2 / 320.0f) * 0.15f < f3) {
+        if ((f2 / 320.0f) * 90.0f < f3) {
             this->maneuverActive = 0;
             this->maneuverHoldTime = 0;
         }
@@ -249,8 +249,7 @@ float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
 extern "C" void FModSound_setProp(int snd, int id);  // fn @0x18c30e (pcVar8)
 extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
 
-__attribute__((visibility("hidden"))) extern int *g_jsGuard;     // @0x18c0ea (stack guard / canvas[0])
-__attribute__((visibility("hidden"))) extern int *g_jsSound;     // @0x18c15a (*piVar9)
+__attribute__((visibility("hidden"))) extern int *g_jsSound;     // @0x18c15a (jump-scene FMOD singleton)
 __attribute__((visibility("hidden"))) extern int g_jsHudFlag;    // @0x18c410 (DAT)
 __attribute__((visibility("hidden"))) extern int g_jsFovDefault; // @0x18c414
 __attribute__((visibility("hidden"))) extern int g_jsFovAlienA;  // @0x18c418
@@ -263,9 +262,6 @@ __attribute__((visibility("hidden"))) extern int g_jsOffsetZ2;   // @0x18c438
 
 // MGame::startJumpScene(): set up the hyperspace cinematic (docked or free variant).
 void MGame::startJumpScene() {
-    int *guard = g_jsGuard;
-    int g0 = *guard;
-
     ((Player *)(this->player->player))->setVulnerable(0);
     this->level->enableFog(0);
 
@@ -347,8 +343,8 @@ void MGame::startJumpScene() {
         *(Vector*)(dst) += *(const Vector*)((Vector *)dir);
         this->jumpFlash->setPosition(*dst);
 
-        this->jumpFlash->setScaling(0x40000000);
-        float zero[4]; zero[0] = 0; *(int *)&zero[1] = 0x3f800000; zero[2] = 0;
+        this->jumpFlash->setScaling(2.0f);
+        float zero[4]; zero[0] = 0; zero[1] = 1.0f; zero[2] = 0;
         this->jumpFlash->setDirection(*(Vector *)zero, *(Vector *)zero /* up: arg lost in decomp */);
 
         float off[4]; off[0] = (float)g_jsOffsetX; off[1] = (float)g_jsOffsetY; off[2] = (float)g_jsOffsetX;
@@ -378,10 +374,13 @@ int TFC_hideShipForFirstPersonCam(TargetFollowCamera *c);
 
 // MGame::switchCamera(int id)
 void MGame::switchCamera(int id) {
-    int dockState = 0;
     int turretArg;
+    int savedMode;
 
 restart:
+    // Snapshot the camera mode as it stood on entry to this (re)selection pass;
+    // case 2 below uses it to decide whether to set field_0x18.
+    savedMode = this->cameraMode;
     if (id == 2) id = 3;
     this->cameraMode = id;
     if (id == 1) {
@@ -421,7 +420,22 @@ afterTurret:
     int mode = this->cameraMode;
     switch (mode) {
     case 0:
-        break;
+        // First-person / cockpit: re-aim the camera unless docked. If docked,
+        // restart the whole selection with id=1.
+        if (this->player->isDockedToDockingPoint() != 0) {
+            id = 1;
+            goto restart;
+        }
+        this->levelScript->resetCamera(this->level);
+        TFC_setRotationAroundTarget(this->camera, 0);
+        this->player->setFreeLookMode(0);
+        {
+            Engine *eng = (Engine *)this->appManager->GetEngine();
+            // Engine layout lives in another translation unit (gof2/Engine.h is not
+            // included here); write its +0x360 field via a typed byte offset.
+            F<int>(eng, 0x360) = 0;
+        }
+        goto firstPerson;
     case 1:
     case 3: {
         if (this->player->isDockedToDockingPoint() != 0)
@@ -432,20 +446,12 @@ afterTurret:
         goto firstPerson;
     }
     case 2: {
-        dockState = this->player->isDockedToDockingPoint();
-        if (dockState == 0) {
-            this->levelScript->lookBehind();
-            TFC_setRotationAroundTarget(this->camera, 0);
-            this->player->setFreeLookMode(0);
-            Engine *eng = (Engine *)this->appManager->GetEngine();
-            // Engine layout lives in another translation unit (gof2/Engine.h is not
-            // included here); write its +0x360 field via a typed byte offset.
-            F<int>(eng, 0x360) = 0;
-            goto firstPerson;
-        }
-        // docked: restart the whole selection with id=1.
-        id = 1;
-        goto restart;
+        this->levelScript->resetCamera(this->level);
+        TFC_setRotationAroundTarget(this->camera, 0);
+        this->player->setFreeLookMode(0);
+        if (savedMode == 1)
+            this->field_0x18 = 1;
+        goto firstPerson;
     }
     default:
         goto firstPerson;
@@ -707,7 +713,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             self->dialogueWindow->OnTouchBegin(p1, p2);
             return;
         }
-        if (self->menuOpen != 0) {
+        if (self->menuTouchOpen != 0) {
             int ad = ApplicationManager_GetApplicationData();
             if (*(uint8_t *)((char *)ad + 5) != 0) return;
             if (*(uint8_t *)((char *)ad + 0xc) != 0) return;
@@ -735,13 +741,8 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
 // helper receives the clamped frame-delta and performs all field writes / engine
 // calls on `self`.
 
-__attribute__((visibility("hidden"))) extern int *g_upGuard;   // @0x18c8ee (stack guard [0])
-
 // MGame::OnUpdate(): advance the whole game one frame.
 void MGame::OnUpdate() {
-    int *guard = g_upGuard;
-    int g0 = *guard;
-
     // Clamp this frame's elapsed time to [0, 0x96] ms (cap large hitches).
     int delta;
     int t = this->appManager->GetElapsedTimeMillis();
@@ -799,7 +800,6 @@ void MGame::OnSuspend() {
 extern "C" int Station_getIndex(Station *s);
 // Builds and sets the "dock at <station>?" choice text, then ChoiceWindow::left().
 
-__attribute__((visibility("hidden"))) extern int *g_deGuard;     // @0x18f932 (stack guard [0])
 __attribute__((visibility("hidden"))) extern int *g_deAutoFlag;  // @0x18fa3a
 __attribute__((visibility("hidden"))) extern int g_dePostEffect; // @0x18fe0c
 __attribute__((visibility("hidden"))) extern int g_deTextA;      // @0x18fa82
@@ -846,9 +846,6 @@ void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
 
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
 void MGame::dockEvent() {
-    int *guard = g_deGuard;
-    int g0 = *guard;
-
     float pos[4];
     ((PlayerEgo *)(pos))->getPosition();
     this->touchesStream = this->level->collideStream(*(Vector *)pos);
@@ -1132,8 +1129,6 @@ void MGame::UseKhadorDrive() {
 // HP/shield/armor restore (157..198)
 // weapon + music init (315..end)
 
-__attribute__((visibility("hidden"))) extern int *g_initGuard;   // @0x187c60 (stack guard [0])
-
 // Add a specific resource id to the running sound-resource list (2-arg variant; the
 // 1-arg Globals_addSoundResourceToList above appends the list's "next" default).
 
@@ -1369,9 +1364,6 @@ void MGame::setupWeaponsAndAudio() {
 // MGame::OnInitialize(): bootstrap a flight session (level, player, sounds, state).
 void MGame::OnInitialize() {
     MGame *self = this;
-    int *guard = g_initGuard;
-    int g0 = *guard;
-
     self->missionInfoLines = 0;   // this[2].field_4C low byte
     Level *level = self->level;
     self->loadProgress = 100;
@@ -1495,7 +1487,6 @@ void MGame::OnInitialize() {
 void TFC_zoomTarget(void *cam, float z);
 // Pan-finish tail helper @0x1ac798 (no-op stack-guard-ok path).
 
-__attribute__((visibility("hidden"))) extern int *g_fcGuard;   // @0x188b10 (stack guard [0])
 __attribute__((visibility("hidden"))) extern float g_fcRotScale;  // @0x188d20 (DAT)
 __attribute__((visibility("hidden"))) extern float g_fcZoomMax;   // @0x188d24
 __attribute__((visibility("hidden"))) extern float g_fcZoomMin;   // @0x188d28
@@ -1505,9 +1496,6 @@ __attribute__((visibility("hidden"))) extern float g_fcZoomMin;   // @0x188d28
 // touch coordinate; route it through intptr_t so the host build does not truncate.
 void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     int ty = (int)(intptr_t)touchId;
-    int *guard = g_fcGuard;
-    int g0 = *guard;
-
     if (this->player->isMining() != 0) {
         this->needsRedraw = 1;
         return ((MGame *)(this))->freeCamPanDone(ty);
@@ -1525,8 +1513,8 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
         this->dragLastY = ty;
         this->dragDeltaX = dy;
         this->dragDeltaY = dx;
-        this->flShakeAmpX = 0x3f800000;
-        this->flShakeAmpY = 0x3f800000;
+        this->flShakeAmpX = 1.0f;
+        this->flShakeAmpY = 1.0f;
         this->flShakeX += (float)dy;
         this->flShakeY += (float)dx;
 
@@ -1578,13 +1566,8 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
 // hud-result that the inline body branches on, and performs all field writes and
 // engine calls on `self`.
 
-__attribute__((visibility("hidden"))) extern int *g_teGuard;   // @0x18a15c (stack guard [0])
-
 // MGame::OnTouchEnd(int p1, int p2, void *touchId)
 void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
-    int *guard = g_teGuard;
-    int g0 = *guard;
-
     // Release the tracked touch id if this is the one we were following.
     if (this->activeTouchId == touchId) {
         this->activeTouchId = 0;
@@ -1594,7 +1577,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     }
 
     int wasAutoPilot = this->player->isAutoPilot();
-    this->flFastForwardWeight = 0x3f800000;                 // this[1].field_A0 (fast-forward weight)
+    this->flFastForwardWeight = 1.0f;                 // fast-forward weight
     TFC_setFastForwardMode(this->camera, 0);
     // RAWREAD: PlayerEgo +0x150 resume-flag; offset not pinned to a named member
     // in PlayerEgo.h (no +0x offset comments in that region).
@@ -1620,7 +1603,6 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 // 0x... checkObjective
 // Corrupt follow-up-mission setup block (227..291) kept as one helper.
 
-__attribute__((visibility("hidden"))) extern int *g_scGuard;     // @0x18ff6e (stack guard [0])
 __attribute__((visibility("hidden"))) extern uint8_t **g_scFlag; // @0x1904aa
 
 // Bind a DialogueWindow to the current level (duplicated block at 0x1019020c/0x190020).
@@ -1721,9 +1703,6 @@ void MGame::buildMissionFollowup() {
 
 // MGame::successCheck(): detect mission completion and run its outcome.
 void MGame::successCheck() {
-    int *guard = g_scGuard;
-    int g0 = *guard;
-
     bool timed = !(this->elapsedTimeHigh < (int)(this->elapsedTime < 0x1389));
     if (timed || this->jumpDriveActive != 0) {
         if (((Mission *)((Mission *)gStatus->getCampaignMission()))->getType() != 0xaa) goto done;
@@ -1950,6 +1929,9 @@ extern "C" void Radar_ctor(Radar *r, Level *l);
 __attribute__((visibility("hidden"))) extern int g_resAspectA;    // @0x1886dc (DAT)
 __attribute__((visibility("hidden"))) extern int g_resAspectB;    // @0x1886e0
 __attribute__((visibility("hidden"))) extern int g_resAspectC;    // @0x1886e4
+__attribute__((visibility("hidden"))) extern int g_fovDefault;    // @0x1886e8  (300000.0f)
+__attribute__((visibility("hidden"))) extern int g_fovOrbitHigh;  // @0x1886ec  cm>=0x50 (300000.0f)
+__attribute__((visibility("hidden"))) extern int g_fovOrbitLow;   // @0x1886f0  cm<0x50  (~450000.0f)
 __attribute__((visibility("hidden"))) extern int g_resInitB;      // @0x1886fc
 __attribute__((visibility("hidden"))) extern int **g_resShipTune; // @0x188608 ([0][0x2f4])
 __attribute__((visibility("hidden"))) extern uint8_t **g_resPauseSrc; // @0x188684
@@ -1962,8 +1944,10 @@ void MGame::reset() {
     this->dragStartX = 0; this->dragStartY = 0;
     this->dragDeltaY = 0;
     this->freeCamDragging = 0;
-    this->flShakeX = g_resAspectC;
-    this->flShakeY = g_resAspectA;
+    // Binary stores the raw 32-bit constants with ldr/str (no int->float convert):
+    //   +0x118 <- 0x41c80000 (25.0f), +0x11c <- 0xc2480000 (-50.0f)
+    *(int *)&this->flShakeX = g_resAspectC;
+    *(int *)&this->flShakeY = g_resAspectA;
     this->field_0x120 = g_resAspectB;
     this->dragLastX = 0; this->dragLastY = 0;
     this->dragRotIntX = 0;
@@ -1982,10 +1966,10 @@ void MGame::reset() {
     pc->CameraCreate((unsigned *)&this->cameraId);
     unsigned cam = (unsigned)(uintptr_t)gCanvas;
 
-    float fov = *(float *)&g_resAspectC;  // DAT_001886e8 default
+    float fov = *(float *)&g_fovDefault;  // DAT_001886e8 default
     if (gStatus->inAlienOrbit() != 0) {
         int cm = gStatus->getCurrentCampaignMission();
-        fov = (cm < 0x50) ? *(float *)&g_resInitB : *(float *)&g_resAspectC;
+        fov = (cm < 0x50) ? *(float *)&g_fovOrbitLow : *(float *)&g_fovOrbitHigh;
     }
     pc->CameraSetPerspective(cam, fov, 0, 0);
 
@@ -2028,7 +2012,7 @@ void MGame::reset() {
     this->field_0xe0 = 0;
     this->freeCamMode = 0;
     this->field_0x110 = 0;
-    this->flFastForwardFactor = 0x3f800000;
+    this->flFastForwardFactor = 0x3f800000;  // IEEE 1.0f stored raw (field typed int in header)
     this->cloakAttribute = 0;
     this->cloakAttributeMax = g_resInitB;
     this->lastTapTime = 0;
@@ -2042,7 +2026,9 @@ void MGame::reset() {
     this->maneuverStartX = 0; this->maneuverStartY = 0;
 
     unsigned t = this->appManager->GetCurrentTimeMillis();
-    this->needsRedraw = 0x101;
+    // Binary does a 16-bit store of 0x0101 at +0x111 (strh), setting both
+    // needsRedraw=1 (+0x111) and the padding byte at +0x112.
+    *(uint16_t *)&this->needsRedraw = 0x101;
     this->field_0xcf = 0;
     this->choiceItemCount = 0;
     this->field_0xd4 = 0;
@@ -2285,7 +2271,6 @@ void MGame::setCinematicMode(bool on) {
 
 void TFC_translate(void *cam, int x, int y, int z);
 extern "C" void *TFC_getPosition(void *cam);
-__attribute__((visibility("hidden"))) extern int *g_ujGuard;     // @0x18f598 (stack guard [0])
 __attribute__((visibility("hidden"))) extern int g_ujZNear;      // @0x18f8dc (DAT)
 __attribute__((visibility("hidden"))) extern int g_ujZSound;     // @0x18f8e0
 __attribute__((visibility("hidden"))) extern int g_ujSpeed;      // @0x18f8e4
@@ -2301,8 +2286,6 @@ __attribute__((visibility("hidden"))) extern int **g_ujFlagC;    // @0x18f8b2
 // MGame::updateJumpScene(): advance the hyperspace cinematic each frame.
 void MGame::updateJumpScene() {
     MGame *self = this;
-    int *guard = g_ujGuard;
-    int g0 = *guard;
     bool fadeOut = true;
 
     if (self->usingJumpDrive != 0 && self->jumpFlash != 0) {
@@ -2349,7 +2332,6 @@ afterCam:
 
     void *camPos = TFC_getPosition(self->camera);
     float threshold = (float)self->egoJumpPosZ + *(float *)&g_ujZNear;
-    float fVar14 = threshold;
     if (*(float *)((char *)camPos + 8) < threshold && self->usingJumpDrive == 0) {
         Array<KIPlayer*> *lm = self->level->getLandmarks();
         ((PlayerJumpgate *)((int)(intptr_t)(*lm)[1]))->activate();
@@ -2372,7 +2354,6 @@ afterCam:
         self->player->setVisible(0);
         self->player->setExhaustVisible(0);
     }
-    (void)fVar14;
 
     // Animation-end check.
     bool ended;
@@ -2475,17 +2456,23 @@ MGame::MGame() {
     this->pauseSnapshot = 0;
     this->active = 0;
     this->turretMode = 0;
+    this->hudMenuOpen = 0;          // binary strh.w @0xd5 zeroes 0xd5+0xd6 together
     this->jumpFlash = 0;
     this->camera = 0;
-    this->field_0x1e4 = 0;
+    F<uint8_t>(this, 0x1e4) = 0;    // binary strb.w @0x1e4 (single byte, not strh)
     this->field_0x1d4 = z;
     this->deltaTime = z;
     this->player = 0; this->field_0x5c = z;
     this->gameOverActive = 0;
+    this->campaignMission = 0;      // binary strh.w @0x60 zeroes 0x60+0x61 together
     this->starMap = 0; this->choiceWindow = 0;
-    this->field_0xc8 = 0;
+    F<uint8_t>(this, 0xc8) = 0;     // binary strb.w @0xc8 (single byte, not strh; leaves menuTouchOpen@0xc9)
     this->dockChoiceOpen = z;
+    this->autopilotMenuOpen = 0;    // binary str.w @0xc4 zeroes 0xc4..0xc7 together
+    this->field_0xc6 = 0;
+    this->starMapOpen = 0;
     this->choiceWindowOpen = 0;
+    this->field_0xcf = 0;           // binary strh.w @0xce zeroes 0xce+0xcf together
     this->field_0xca = z;
     this->field_0xd8 = z; this->jumpDriveActive = z;
     this->field_0x1d8 = initVal;
@@ -2621,7 +2608,6 @@ void MGame::OnRelease() {
 // 0x... drawFade
 // splash/fade text helper
 
-__attribute__((visibility("hidden"))) extern int *g_r2dGuard;    // @0x1908d4 (stack guard [0])
 __attribute__((visibility("hidden"))) extern Layout ***g_r2dHelpLayout; // @0x190962
 __attribute__((visibility("hidden"))) extern int **g_r2dPauseFlag; // @0x1909cc
 __attribute__((visibility("hidden"))) extern int **g_r2dRewardLayout; // @0x190d4a
@@ -2630,8 +2616,6 @@ __attribute__((visibility("hidden"))) extern Layout ***g_r2dFadeLayout; // @0x19
 // MGame::OnRender2D(): draw the 2D HUD / menus / overlays for the active state.
 void MGame::OnRender2D() {
     MGame *self = this;
-    int *guard = g_r2dGuard;
-    int g0 = *guard;
     if (self->active == 0) {
         
         return;
@@ -2653,7 +2637,7 @@ void MGame::OnRender2D() {
             self->level->getStarSystem();
             ((StarSystem *)(0))->render2D();
         }
-        float v[4]; *(int *)&v[0] = 0x3f000000; *(int *)&v[1] = 0x3f000000; v[2] = 0;
+        float v[4]; v[0] = 0.5f; v[1] = 0.5f; v[2] = 0;
         Engine *eng = (Engine *)self->appManager->GetEngine();
         *(Vector *)&eng->field_0x3cc = *(const Vector *)(v);
         gCanvas->End2d();
@@ -2661,7 +2645,7 @@ void MGame::OnRender2D() {
         return;
     }
 
-    if (self->pauseOpen == 0 || self->needsRedraw == 0) {
+    if (self->pauseOpen == 0 || self->menuTouchOpen == 0) {
         // World/HUD render path.
         if (self->needsRedraw == 0) {
             // Cinematic-sequence path (field 0x49 etc.).
@@ -2686,11 +2670,12 @@ void MGame::OnRender2D() {
                 ((MGame *)(self))->drawRadio();
                 if (self->cutsceneActive != 0)
                     self->dialogueWindow->draw();
-                self->needsRedraw = 0;
+                self->field_0x110 = 0;   // binary strb [this+0x110] (not needsRedraw +0x111)
                 self->pauseOpen = 0;
-            } else if (self->jumpActive != 0 || self->menuOpen != 0) {
+            } else if (self->jumpActive != 0 || self->jumpDriveActive != 0) {
                 int cm = gStatus->getCurrentCampaignMission();
-                if (cm > 7 && self->radar == 0 && self->menuOpen == 0 &&
+                if (cm > 7 && (uint8_t)self->levelScript->m_nFlags == 0 &&
+                    self->jumpDriveActive == 0 &&
                     self->player->isDockingToPlanet() == 0 &&
                     self->levelScript->getEvent() == 0)
                     self->hud->drawOrbitInformation();
@@ -2699,7 +2684,7 @@ void MGame::OnRender2D() {
                     ((MGame *)(self))->drawRadio();
                 if (self->cutsceneActive != 0)
                     self->dialogueWindow->draw();
-                self->needsRedraw = 0;
+                self->field_0x110 = 0;   // binary strb [this+0x110] (not needsRedraw +0x111)
                 self->pauseOpen = 0;
             } else if (self->gameOverActive == 0) {
                 self->player->draw(1 /* allowHud: arg lost in decomp */);

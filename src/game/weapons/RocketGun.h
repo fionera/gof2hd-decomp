@@ -24,7 +24,7 @@ public:
     int steerZ;
     uint8_t homing;                     // shots track the locked target
     int activeShotId;                   // +0xc4 active homing shot index (-1 == none)
-    uint32_t turnRate;                  // homing turn-rate scalar
+    float turnRate;                     // homing turn-rate scalar (0.3)
     int particleSystem;                 // single trail/muzzle particle system handle
     int rocketKind;                     // rocket weapon kind
     int fadeTimer;                      // trail fade-out countdown (ms)
@@ -33,8 +33,8 @@ public:
     Array<int>* trailTimers;            // per-shot trail fade timers
     int particleManager;                // ParticleSystemManager handle for the trails
 
-    RocketGun(int param_1, Gun* param_2, int param_3, int param_4,
-              uint32_t param_5, int param_6, bool param_7, Level* param_8);
+    RocketGun(int meshVariantId, Gun* gun, int mesh, int unused4,
+              uint32_t flags, int rocketKind, bool homing, Level* level);
     ~RocketGun();
 
     int isRocketGun() override;         // vtable slot 8: yes

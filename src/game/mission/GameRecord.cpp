@@ -68,441 +68,433 @@ GameRecord::GameRecord()
 
 typedef uint32_t uint;
 
-static inline uint8_t SUB41(uint32_t v, int) { return (uint8_t)v; }
-
 extern "C" {
 long Array_dtor(void *self);
 long Station_getIndex(...);
 long Station_getSystem(...);
-extern uint32_t DAT_00165b08;
-extern uint32_t DAT_0016600c;
-extern uint32_t DAT_00166010;
-extern uint32_t DAT_00166014;
-extern uint32_t DAT_00166018;
-extern uint32_t DAT_0016601c;
-extern uint32_t DAT_00166020;
-extern uint32_t DAT_0016646c;
-extern uint32_t DAT_00166474;
-extern uint32_t DAT_00166470;
 }
 
-void GameRecord::load() {
-    uint32_t *in_r0 = (uint32_t *)this;
-    bool bVar1;
-    int iVar2;
-    char *pMVar3;
-    char *pvVar4;
-    int *piVar5;
-    uint32_t *puVar6;
-    char *pThis;
-    char *pSVar8;
-    int iVar9;
-    char *ctx;
-    char *pEVar10;
-    int iVar11;
-    uint32_t *puVar12;
-    uint32_t uVar13;
-    int iVar14;
-    int iVar15;
-    int *piVar16;
-    char *pSVar17;
-    uint32_t uVar19;
-    uint32_t uVar20;
-    int *piVar21;
-    uint64_t uVar23;
+// The mission-system singletons below are reached through global pointer-to-pointer
+// slots in the binary's .bss that this port does not yet model with a typed header.
+// load() reads the live pointer out of each slot and pokes a handful of flag bytes;
+// the slots are addressed by their resolved absolute .bss addresses (the original
+// PC-relative DAT_ loads) and kept as RAWREAD escape-hatches.
+//   0x220290 -> active mission/campaign controller (its +0x31 "force-change" flag,
+//               +0x35/+0x36 hard-core flags)
+//   0x2202bc -> KIPlayer singleton (holds the live Mission pointer)
+static char *const *const kMissionCtrlSlot = (char *const *const)0x220290;
+static char *const *const kKiPlayerSlot    = (char *const *const)0x2202bc;
 
-  piVar21 = *(int **)(DAT_00165b08 + 0x165a02);
-  iVar9 = *piVar21;
+// Save-image format marker stored at record word 0x6f; the extended payload block
+// is only applied when the record carries this tag.
+static const uint32_t kRecordExtendedTag = 0x6e6a78;
+
+void GameRecord::load() {
+    uint32_t *rec = (uint32_t *)this;
+    bool campaignLocked;
+    int campaignStage;
+    void *deadArray;
+    int *srcArray;
+    uint32_t *srcVec;
+    char *blueprint;
+    char *station;
+    char *statusBytes;       // (char*)gStatus, for positional field stores
+    char *statusField;
+    int targetStation;
+    uint32_t *srcVec2;
+    uint32_t scalar;
+    int srcCount;
+    int copyIndex;
+    int *srcArray2;
+    uint32_t i;
+    uint32_t j;
+    uint64_t qword;
+
   gStatus->resetGame();
-  gGalaxy->setVisited((bool *)*in_r0, in_r0[1]);
-  gStatus->setLastXP(in_r0[9]);
-  gStatus->setCredits(in_r0[2]);
-  gStatus->setRating(in_r0[3]);
-  gStatus->setPlayingTime(*(int64_t *)(in_r0 + 4));
-  gStatus->setKills(in_r0[6]);
-  gStatus->setMissionCount(in_r0[7]);
-  gStatus->setLevel(in_r0[8]);
-  gStatus->setLastXP(in_r0[9]);
-  gStatus->setGoodsProduced(in_r0[10]);
-  gStatus->setPirateKills(in_r0[0xb]);
-  gStatus->setJumpgateUsed(in_r0[0xc]);
-  gStatus->setCapturedCrates(in_r0[0xd]);
-  gStatus->setBoughtEquipment(in_r0[0xe]);
-  gStatus->setStationsVisited(in_r0[0xf]);
-  iVar2 = (int)(intptr_t)gStatus;
-  *(uint32_t *)(iVar2 + 0x80) = in_r0[0x11];
-  *(uint32_t *)(iVar2 + 0x7c) = in_r0[0x12];
-  *(uint32_t *)(iVar2 + 0x84) = in_r0[0x13];
-  *(uint32_t *)(iVar2 + 0x88) = in_r0[0x14];
-  if (*(char *)((long)in_r0 + 0x115) == '\0') {
-    if (*(char *)((long)in_r0 + 0x117) == '\0') {
-      if (0x2d < (long)in_r0[0x10]) {
-        in_r0[0x10] = 0x2d;
+  gGalaxy->setVisited((bool *)*rec, rec[1]);
+  gStatus->setLastXP(rec[9]);
+  gStatus->setCredits(rec[2]);
+  gStatus->setRating(rec[3]);
+  gStatus->setPlayingTime(*(int64_t *)(rec + 4));
+  gStatus->setKills(rec[6]);
+  gStatus->setMissionCount(rec[7]);
+  gStatus->setLevel(rec[8]);
+  gStatus->setLastXP(rec[9]);
+  gStatus->setGoodsProduced(rec[10]);
+  gStatus->setPirateKills(rec[0xb]);
+  gStatus->setJumpgateUsed(rec[0xc]);
+  gStatus->setCapturedCrates(rec[0xd]);
+  gStatus->setBoughtEquipment(rec[0xe]);
+  gStatus->setStationsVisited(rec[0xf]);
+  statusBytes = (char *)gStatus;
+  *(uint32_t *)(statusBytes + 0x80) = rec[0x11];
+  *(uint32_t *)(statusBytes + 0x7c) = rec[0x12];
+  *(uint32_t *)(statusBytes + 0x84) = rec[0x13];
+  *(uint32_t *)(statusBytes + 0x88) = rec[0x14];
+  if (*(char *)((long)rec + 0x115) == '\0') {
+    if (*(char *)((long)rec + 0x117) == '\0') {
+      if (0x2d < (long)rec[0x10]) {
+        rec[0x10] = 0x2d;
       }
-      goto LAB_00165b22;
+      goto applyMissionCap;
     }
-LAB_00165b02:
-    bVar1 = true;
+LAB_dlcUnlocked:
+    campaignLocked = true;
   }
   else {
-    if (*(char *)((long)in_r0 + 0x117) != '\0') goto LAB_00165b02;
-LAB_00165b22:
-    if (0x54 < (long)in_r0[0x10]) {
-      in_r0[0x10] = 0x54;
+    if (*(char *)((long)rec + 0x117) != '\0') goto LAB_dlcUnlocked;
+applyMissionCap:
+    if (0x54 < (long)rec[0x10]) {
+      rec[0x10] = 0x54;
     }
-    bVar1 = false;
+    campaignLocked = false;
   }
-  if (((*(char *)((long)in_r0 + 0x115) != '\0' || bVar1) && (in_r0[0x10] == 0x2e)) &&
-     (iVar2 = ((Mission *)in_r0[0x16])->isEmpty(), iVar2 != 0)) {
-    in_r0[0x10] = 0x2d;
+  if (((*(char *)((long)rec + 0x115) != '\0' || campaignLocked) && (rec[0x10] == 0x2e)) &&
+     (campaignStage = ((Mission *)rec[0x16])->isEmpty(), campaignStage != 0)) {
+    rec[0x10] = 0x2d;
   }
-  gStatus->setCurrentCampaignMission(in_r0[0x10]);
-  *(bool *)((long)in_r0 + 0x102) = 0x2d < (long)in_r0[0x10];
-  *(bool *)((long)in_r0 + 0x119) = 0x55 < (long)in_r0[0x10];
-  gStatus->setFreelanceMission((Mission *)in_r0[0x15]);
-  gStatus->setCampaignMission((Mission *)in_r0[0x16]);
-  gStatus->setStationStack((Array<Station *> *)in_r0[0x17]);
-  iVar2 = in_r0[0x10];
-  if (iVar2 == 0x23) {
-    iVar2 = ((Mission *)in_r0[0x16])->getTargetStation();
-    if (iVar2 != 0x1d) {
+  gStatus->setCurrentCampaignMission(rec[0x10]);
+  *(bool *)((long)rec + 0x102) = 0x2d < (long)rec[0x10];
+  *(bool *)((long)rec + 0x119) = 0x55 < (long)rec[0x10];
+  gStatus->setFreelanceMission((Mission *)rec[0x15]);
+  gStatus->setCampaignMission((Mission *)rec[0x16]);
+  gStatus->setStationStack((Array<Station *> *)rec[0x17]);
+  campaignStage = rec[0x10];
+  if (campaignStage == 0x23) {
+    targetStation = ((Mission *)rec[0x16])->getTargetStation();
+    if (targetStation != 0x1d) {
       Mission *m = new Mission(0xb, 0, 0x1d);
       gStatus->setCampaignMission(m);
     }
-    iVar2 = in_r0[0x10];
+    campaignStage = rec[0x10];
   }
-  if (iVar2 == 0x1d) {
-    in_r0[0x11] = 0x5b;
-    in_r0[0x12] = 0x12;
-    gStatus->setCurrentCampaignMission(in_r0[0x10]);
+  if (campaignStage == 0x1d) {
+    rec[0x11] = 0x5b;
+    rec[0x12] = 0x12;
+    gStatus->setCurrentCampaignMission(0x1c);
     Mission *m = new Mission(4, 0, 0x5b);
     gStatus->setCampaignMission(m);
-    iVar2 = in_r0[0x10];
+    campaignStage = rec[0x10];
   }
-  if (iVar2 == 0x19) {
-    in_r0[0x11] = 0x30;
-    in_r0[0x12] = 9;
-    gStatus->setCurrentCampaignMission(in_r0[0x10]);
+  if (campaignStage == 0x19) {
+    rec[0x11] = 0x30;
+    rec[0x12] = 9;
+    gStatus->setCurrentCampaignMission(0x18);
     Mission *m = new Mission(4, 0, 0x30);
     gStatus->setCampaignMission(m);
-    iVar2 = in_r0[0x10];
+    campaignStage = rec[0x10];
   }
-  if (iVar2 == 0x29) {
-    gStatus->setCurrentCampaignMission(in_r0[0x10]);
+  if (campaignStage == 0x29) {
+    gStatus->setCurrentCampaignMission(0x27);
     Mission *m = new Mission(0xb, 0, 0x1e);
     gStatus->setCampaignMission(m);
   }
-  if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x56 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 100)))) {
-    *(uint8_t *)(*(int *)(DAT_0016600c + 0x165c98) + 0x31) = 1;
+  if (((*(char *)((long)rec + 0x117) != '\0') || (*(char *)(rec + 0x46) != '\0')) &&
+     ((rec[0x10] == 0x56 && (targetStation = ((Mission *)rec[0x16])->getTargetStation(), targetStation != 100)))) {
+    (*kMissionCtrlSlot)[0x31] = 1;   // RAWREAD: force mission re-targeting flag
     Mission *m = new Mission(0xb, 0, 100);
     gStatus->setCampaignMission(m);
   }
-  if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x57 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
-    *(uint8_t *)(*(int *)(DAT_00166010 + 0x165ce2) + 0x31) = 1;
+  if (((*(char *)((long)rec + 0x117) != '\0') || (*(char *)(rec + 0x46) != '\0')) &&
+     ((rec[0x10] == 0x57 && (targetStation = ((Mission *)rec[0x16])->getTargetStation(), targetStation != 10)))) {
+    (*kMissionCtrlSlot)[0x31] = 1;   // RAWREAD: force mission re-targeting flag
     Mission *m = new Mission(4, 0, 10);
     gStatus->setCampaignMission(m);
   }
-  if ((((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-      (in_r0[0x10] == 0x58)) && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)) {
-    *(uint8_t *)(*(int *)(DAT_00166014 + 0x165d2c) + 0x31) = 1;
+  if ((((*(char *)((long)rec + 0x117) != '\0') || (*(char *)(rec + 0x46) != '\0')) &&
+      (rec[0x10] == 0x58)) && (targetStation = ((Mission *)rec[0x16])->getTargetStation(), targetStation != 10)) {
+    (*kMissionCtrlSlot)[0x31] = 1;   // RAWREAD: force mission re-targeting flag
     Mission *m = new Mission(0xb, 0, 10);
     gStatus->setCampaignMission(m);
   }
-  if (((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) &&
-     ((in_r0[0x10] == 0x59 && (iVar2 = ((Mission *)in_r0[0x16])->getTargetStation(), iVar2 != 10)))) {
-    *(uint8_t *)(*(int *)(DAT_00166018 + 0x165d72) + 0x31) = 1;
-    gStatus->setCurrentCampaignMission(in_r0[0x10]);
+  if (((*(char *)((long)rec + 0x117) != '\0') || (*(char *)(rec + 0x46) != '\0')) &&
+     ((rec[0x10] == 0x59 && (targetStation = ((Mission *)rec[0x16])->getTargetStation(), targetStation != 10)))) {
+    (*kMissionCtrlSlot)[0x31] = 1;   // RAWREAD: force mission re-targeting flag
+    gStatus->setCurrentCampaignMission(0x56);
     Mission *m = new Mission(0xb, 0, 100);
     gStatus->setCampaignMission(m);
   }
-  if ((*(char *)((long)in_r0 + 0x117) != '\0') || (*(char *)(in_r0 + 0x46) != '\0')) {
-    iVar2 = in_r0[0x10];
-    if (iVar2 == 0x5b) {
-      iVar2 = ((Mission *)in_r0[0x16])->getTargetStation();
-      if (iVar2 == 0x6e) {
-        iVar2 = in_r0[0x10];
-        goto LAB_00165dc2;
+  if ((*(char *)((long)rec + 0x117) != '\0') || (*(char *)(rec + 0x46) != '\0')) {
+    campaignStage = rec[0x10];
+    if (campaignStage == 0x5b) {
+      targetStation = ((Mission *)rec[0x16])->getTargetStation();
+      if (targetStation == 0x6e) {
+        campaignStage = rec[0x10];
+        goto LAB_checkStageRange;
       }
     }
     else {
-LAB_00165dc2:
-      if ((0xc < iVar2 - 0x5bU) || (*(char *)(*(int *)(in_r0[0x58] + 4) + 0x1b) != '\0'))
-      goto LAB_00165e0c;
+LAB_checkStageRange:
+      if ((0xc < campaignStage - 0x5bU) || (*(char *)(*(int *)(rec[0x58] + 4) + 0x1b) != '\0'))
+      goto stationStackLoaded;
     }
-    *(uint8_t *)(*(int *)(DAT_0016601c + 0x165dda) + 0x31) = 1;
-    in_r0[0x10] = 0x56;
-    gStatus->setCurrentCampaignMission(in_r0[0x10]);
+    (*kMissionCtrlSlot)[0x31] = 1;   // RAWREAD: force mission re-targeting flag
+    rec[0x10] = 0x56;
+    gStatus->setCurrentCampaignMission(rec[0x10]);
     Mission *m = new Mission(0xb, 0, 100);
     gStatus->setCampaignMission(m);
   }
-LAB_00165e0c:
-  ((Station *)(*(char **)((int)(intptr_t)gStatus + 0x14c)))->setItems((Array<Item *> *)in_r0[0x60], true);
-  ((Station *)(*(char **)((int)(intptr_t)gStatus + 0x14c)))->setShips((Array<Ship *> *)in_r0[0x61], SUB41(in_r0[0x61],0));
-  ctx = (char *)gStatus;
-  pEVar10 = ctx + 0x94;
-  if (*(char **)pEVar10 != (char *)0x0) {
-    pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    ::operator delete(pvVar4);
-    ctx = (char *)gStatus;
-    pEVar10 = ctx + 0x94;
+stationStackLoaded:
+  ((Station *)(*(char **)((char *)gStatus + 0x14c)))->setItems((Array<Item *> *)rec[0x60], true);
+  ((Station *)(*(char **)((char *)gStatus + 0x14c)))->setShips((Array<Ship *> *)rec[0x61], true);
+  statusBytes = (char *)gStatus;
+  statusField = statusBytes + 0x94;
+  if (*(char **)statusField != (char *)0x0) {
+    deadArray = (void *)Array_dtor(*(char **)statusField);
+    ::operator delete(deadArray);
+    statusBytes = (char *)gStatus;
+    statusField = statusBytes + 0x94;
   }
-  *(uint32_t *)pEVar10 = in_r0[0x1a];
-  pEVar10 = ctx + 0x98;
-  if (*(char **)pEVar10 != (char *)0x0) {
-    pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    ::operator delete(pvVar4);
-    ctx = (char *)gStatus;
-    pEVar10 = ctx + 0x98;
+  *(uint32_t *)statusField = rec[0x1a];
+  statusField = statusBytes + 0x98;
+  if (*(char **)statusField != (char *)0x0) {
+    deadArray = (void *)Array_dtor(*(char **)statusField);
+    ::operator delete(deadArray);
+    statusBytes = (char *)gStatus;
+    statusField = statusBytes + 0x98;
   }
-  *(uint32_t *)pEVar10 = in_r0[0x1b];
-  pEVar10 = ctx + 0x90;
-  if (*(char **)pEVar10 != (char *)0x0) {
-    pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    ::operator delete(pvVar4);
-    ctx = (char *)gStatus;
-    pEVar10 = ctx + 0x90;
+  *(uint32_t *)statusField = rec[0x1b];
+  statusField = statusBytes + 0x90;
+  if (*(char **)statusField != (char *)0x0) {
+    deadArray = (void *)Array_dtor(*(char **)statusField);
+    ::operator delete(deadArray);
+    statusBytes = (char *)gStatus;
+    statusField = statusBytes + 0x90;
   }
-  iVar2 = DAT_00166020;
-  *(uint32_t *)pEVar10 = in_r0[0x1c];
-  *(uint32_t *)(ctx + 0x10c) = in_r0[0x34];
-  iVar2 = *(int *)(iVar2 + 0x165e94);
-  ctx[0x110] = *(char *)(in_r0 + 0x35);
-  ctx[0x111] = *(char *)(in_r0 + 0x37);
-  if (*(char *)(iVar2 + 0x36) == '\0') {
-    uVar13 = in_r0[0x36];
+  *(uint32_t *)statusField = rec[0x1c];
+  *(uint32_t *)(statusBytes + 0x10c) = rec[0x34];
+  // RAWREAD: second mission-system singleton (resolved .bss slot 0x22016c) whose
+  // +0x35/+0x36 bytes are hard-core / valkyrie flags.
+  char *missionFlags = *(char **)0x22016c;
+  statusBytes[0x110] = *(char *)(rec + 0x35);
+  statusBytes[0x111] = *(char *)(rec + 0x37);
+  if (*(char *)(missionFlags + 0x36) == '\0') {
+    scalar = rec[0x36];
   }
   else {
-    uVar13 = 3;
+    scalar = 3;
   }
-  pEVar10 = ctx + 0xac;
-  *(uint32_t *)(ctx + 0x114) = uVar13;
-  uVar23 = *(uint64_t *)(in_r0 + 0x1f);
-  *(uint64_t *)(ctx + 0x9c) = *(uint64_t *)(in_r0 + 0x1d);
-  *(uint64_t *)(ctx + 0xa4) = uVar23;
-  if (*(char **)pEVar10 != (char *)0x0) {
-    pvVar4 = (char *)Array_dtor(*(char **)pEVar10);
-    ::operator delete(pvVar4);
-    ctx = (char *)gStatus;
-    pEVar10 = ctx + 0xac;
+  statusField = statusBytes + 0xac;
+  *(uint32_t *)(statusBytes + 0x114) = scalar;
+  qword = *(uint64_t *)(rec + 0x1f);
+  *(uint64_t *)(statusBytes + 0x9c) = *(uint64_t *)(rec + 0x1d);
+  *(uint64_t *)(statusBytes + 0xa4) = qword;
+  if (*(char **)statusField != (char *)0x0) {
+    deadArray = (void *)Array_dtor(*(char **)statusField);
+    ::operator delete(deadArray);
+    statusBytes = (char *)gStatus;
+    statusField = statusBytes + 0xac;
   }
-  *(uint32_t *)pEVar10 = in_r0[0x21];
-  *(uint32_t *)(ctx + 0xb0) = in_r0[0x22];
-  piVar5 = (int *)in_r0[0x23];
-  iVar11 = *piVar5;
-  for (iVar14 = 0; iVar11 != iVar14; iVar14 = iVar14 + 1) {
-    *(uint8_t *)(*(int *)(*(int *)(ctx + 0xb4) + 4) + iVar14) =
-         *(uint8_t *)(piVar5[1] + iVar14);
+  *(uint32_t *)statusField = rec[0x21];
+  *(uint32_t *)(statusBytes + 0xb0) = rec[0x22];
+  srcArray = (int *)rec[0x23];
+  srcCount = *srcArray;
+  for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {
+    *(uint8_t *)(*(int *)(*(int *)(statusBytes + 0xb4) + 4) + copyIndex) =
+         *(uint8_t *)(srcArray[1] + copyIndex);
   }
-  *(uint32_t *)(ctx + 0xb8) = in_r0[0x24];
-  uVar13 = in_r0[0x27];
-  *(uint32_t *)(ctx + 0xc0) = in_r0[0x26];
-  *(uint32_t *)(ctx + 0xc4) = uVar13;
-  uVar23 = *(uint64_t *)(in_r0 + 0x2a);
-  *(uint64_t *)(ctx + 200) = *(uint64_t *)(in_r0 + 0x28);
-  *(uint64_t *)(ctx + 0xd0) = uVar23;
-  uVar23 = *(uint64_t *)(in_r0 + 0x2e);
-  *(uint64_t *)(ctx + 0xd8) = *(uint64_t *)(in_r0 + 0x2c);
-  *(uint64_t *)(ctx + 0xe0) = uVar23;
-  *(uint32_t *)(ctx + 0xe8) = in_r0[0x30];
-  *(uint32_t *)(ctx + 0xec) = in_r0[0x31];
+  *(uint32_t *)(statusBytes + 0xb8) = rec[0x24];
+  scalar = rec[0x27];
+  *(uint32_t *)(statusBytes + 0xc0) = rec[0x26];
+  *(uint32_t *)(statusBytes + 0xc4) = scalar;
+  qword = *(uint64_t *)(rec + 0x2a);
+  *(uint64_t *)(statusBytes + 200) = *(uint64_t *)(rec + 0x28);
+  *(uint64_t *)(statusBytes + 0xd0) = qword;
+  qword = *(uint64_t *)(rec + 0x2e);
+  *(uint64_t *)(statusBytes + 0xd8) = *(uint64_t *)(rec + 0x2c);
+  *(uint64_t *)(statusBytes + 0xe0) = qword;
+  *(uint32_t *)(statusBytes + 0xe8) = rec[0x30];
+  *(uint32_t *)(statusBytes + 0xec) = rec[0x31];
   gAchievements->init();
-  if ((int *)in_r0[0x18] != (int *)0x0) {
-    gAchievements->setMedals((int *)in_r0[0x18], in_r0[0x19]);
+  if ((int *)rec[0x18] != (int *)0x0) {
+    gAchievements->setMedals((int *)rec[0x18], rec[0x19]);
   }
-  gStatus->setShip((Ship *)in_r0[0x4c]);
-  iVar11 = gStatus->dlc1Won();
-  if (iVar11 != 0) {
-    iVar11 = (long)gStatus->getShip();
-    iVar11 = (int)(long)((Ship *)(iVar11))->getFirstEquipmentOfSort(0x12);
-    if (iVar11 == 0) {
-      iVar11 = (long)gStatus->getShip();
-      iVar11 = (int)(long)((Ship *)(iVar11))->getCargo(0x55);
-      if (iVar11 == 0) goto LAB_00165faa;
+  gStatus->setShip((Ship *)rec[0x4c]);
+  if (gStatus->dlc1Won() != 0) {
+    Item *dlcItem = (Item *)gStatus->getShip()->getFirstEquipmentOfSort(0x12);
+    if (dlcItem == (Item *)0x0) {
+      dlcItem = (Item *)gStatus->getShip()->getCargo(0x55);
+      if (dlcItem == (Item *)0x0) goto afterDlcUnsaleable;
     }
-    ((Item *)(SUB41(iVar11,0)))->setUnsaleable(true);
+    dlcItem->setUnsaleable(false);
   }
-LAB_00165faa:
-  iVar11 = gStatus->gameWon();
-  if (iVar11 != 0) {
+afterDlcUnsaleable:
+  if (gStatus->gameWon() != 0) {
     Array<Item *> *cargo = ((Ship *)(gStatus->getShip()))->getCargo();
     if (cargo != (Array<Item *> *)0x0) {
-      for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
-        Item *item = (*cargo)[uVar19];
-        if ((item != (Item *)0x0) && (iVar11 = item->getIndex(), iVar11 == 0x83)) {
-          item->setUnsaleable(true);
+      for (i = 0; i < cargo->size(); i = i + 1) {
+        Item *item = (*cargo)[i];
+        if ((item != (Item *)0x0) && (item->getIndex() == 0x83)) {
+          item->setUnsaleable(false);
         }
       }
     }
   }
-  if (0x79 < (long)in_r0[0x10]) {
+  if (0x79 < (long)rec[0x10]) {
     Array<Item *> *cargo = ((Ship *)(gStatus->getShip()))->getCargo();
     if (cargo != (Array<Item *> *)0x0) {
-      for (uVar19 = 0; uVar19 < cargo->size(); uVar19 = uVar19 + 1) {
-        Item *item = (*cargo)[uVar19];
-        if ((item != (Item *)0x0) && (iVar11 = item->getIndex(), iVar11 == 0xd1)) {
-          item->setUnsaleable(true);
+      for (i = 0; i < cargo->size(); i = i + 1) {
+        Item *item = (*cargo)[i];
+        if ((item != (Item *)0x0) && (item->getIndex() == 0xd1)) {
+          item->setUnsaleable(false);
         }
       }
     }
   }
-  puVar6 = (uint *)in_r0[0x50];
-  if (puVar6 != (uint *)0x0) {
-    for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-      pThis = *(char **)(puVar6[1] + uVar19 * 4);
-      if ((pThis != (char *)0x0) &&
-         (((iVar11 = ((BluePrint *)(pThis))->getIndex(), iVar11 == 0xdf ||
-           (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getIndex(),
-           iVar11 == 0xd2)) &&
-          (iVar11 = ((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->isEmpty(),
-          iVar11 == 0)))) {
-        iVar11 = (int)(intptr_t)gGalaxy;
-        pSVar8 = (char *)((Galaxy *)(iVar11))->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
-        if (pSVar8 != (char *)0x0) {
-          iVar11 = Station_getSystem(pSVar8);
-          SolarSystem *grSys = (SolarSystem *)gGalaxy->getSystem(iVar11);
-          iVar11 = (int)(intptr_t)grSys->getRoutes();
-          if (iVar11 == 0) {
-            *(uint32_t *)(*(int *)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4) + 0x10) = 10;
-            delete (Station *)pSVar8;
-            pSVar8 = (char *)gGalaxy->getStation((int)((BluePrint *)(*(char **)(*(int *)(in_r0[0x50] + 4) + uVar19 * 4)))->getStationIndex());
-            ((Station *)(pSVar8))->getName();
-            if (pSVar8 == (char *)0x0) goto LAB_00166114;
+  srcVec = (uint *)rec[0x50];
+  if (srcVec != (uint *)0x0) {
+    for (i = 0; i < *srcVec; i = i + 1) {
+      blueprint = *(char **)(srcVec[1] + i * 4);
+      if ((blueprint != (char *)0x0) &&
+         (((((BluePrint *)(blueprint))->getIndex() == 0xdf ||
+           (((BluePrint *)(*(char **)(*(int *)(rec[0x50] + 4) + i * 4)))->getIndex() == 0xd2)) &&
+          (((BluePrint *)(*(char **)(*(int *)(rec[0x50] + 4) + i * 4)))->isEmpty() == 0)))) {
+        station = (char *)gGalaxy->getStation((int)((BluePrint *)(*(char **)(*(int *)(rec[0x50] + 4) + i * 4)))->getStationIndex());
+        if (station != (char *)0x0) {
+          int sysIndex = Station_getSystem(station);
+          SolarSystem *sys = (SolarSystem *)gGalaxy->getSystem(sysIndex);
+          if (sys->getRoutes() == (void *)0x0) {
+            *(uint32_t *)(*(int *)(*(int *)(rec[0x50] + 4) + i * 4) + 0x10) = 10;
+            delete (Station *)station;
+            station = (char *)gGalaxy->getStation((int)((BluePrint *)(*(char **)(*(int *)(rec[0x50] + 4) + i * 4)))->getStationIndex());
+            ((BluePrint *)(*(char **)(*(int *)(rec[0x50] + 4) + i * 4)))->stationName =
+                ((Station *)(station))->getName();
+            if (station == (char *)0x0) goto LAB_blueprintLoopTail;
           }
-          delete (Station *)pSVar8;
+          delete (Station *)station;
         }
       }
-LAB_00166114:
-      puVar6 = (uint *)in_r0[0x50];
+LAB_blueprintLoopTail:
+      srcVec = (uint *)rec[0x50];
     }
   }
-  pSVar8 = (char *)gStatus;
-  *(uint32_t *)(pSVar8 + 0x8c) = in_r0[0x4d];
-  ((Status *)(pSVar8))->setStation((Station *)in_r0[0x4e]);
-  gStatus->setMission(*(Mission **)(*(int *)(DAT_00166470 + 0x166138)));
-  *(uint32_t *)((int)(intptr_t)gStatus + 0x14) = in_r0[0x4f];
-  for (uVar19 = 0; uVar19 < *(uint *)in_r0[0x50]; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)((int)(intptr_t)gStatus + 0x18) + 4) + uVar19 * 4) =
-         *(uint32_t *)(((uint *)in_r0[0x50])[1] + uVar19 * 4);
+  statusBytes = (char *)gStatus;
+  *(uint32_t *)(statusBytes + 0x8c) = rec[0x4d];
+  ((Status *)(statusBytes))->setStation((Station *)rec[0x4e]);
+  gStatus->setMission(*(Mission **)(*kKiPlayerSlot));   // RAWREAD: KIPlayer's live Mission
+  *(uint32_t *)((char *)gStatus + 0x14) = rec[0x4f];
+  for (i = 0; i < *(uint *)rec[0x50]; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)((char *)gStatus + 0x18) + 4) + i * 4) =
+         *(uint32_t *)(((uint *)rec[0x50])[1] + i * 4);
   }
-  *(uint32_t *)((int)(intptr_t)gStatus + 0x1c) = in_r0[0x51];
-  for (uVar19 = 0; uVar19 < *(uint *)in_r0[0x52]; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)((int)(intptr_t)gStatus + 0x20) + 4) + uVar19 * 4) =
-         *(uint32_t *)(((uint *)in_r0[0x52])[1] + uVar19 * 4);
+  *(uint32_t *)((char *)gStatus + 0x1c) = rec[0x51];
+  for (i = 0; i < *(uint *)rec[0x52]; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)((char *)gStatus + 0x20) + 4) + i * 4) =
+         *(uint32_t *)(((uint *)rec[0x52])[1] + i * 4);
   }
-  iVar11 = (int)(intptr_t)gStatus;
-  *(uint32_t *)(iVar11 + 0x24) = in_r0[0x53];
-  *(uint32_t *)(iVar11 + 0x2c) = in_r0[0x54];
-  *(uint32_t *)(iVar11 + 0x30) = in_r0[0x55];
-  *(uint32_t *)(iVar11 + 0x28) = in_r0[0x56];
-  *(uint32_t *)(iVar11 + 0x34) = in_r0[0x57];
-  piVar16 = (int *)in_r0[0x58];
-  iVar14 = *piVar16;
-  for (iVar15 = 0; iVar14 != iVar15; iVar15 = iVar15 + 1) {
-    *(uint8_t *)(*(int *)(*(int *)(iVar11 + 0x38) + 4) + iVar15) =
-         *(uint8_t *)(piVar16[1] + iVar15);
+  statusBytes = (char *)gStatus;
+  *(uint32_t *)(statusBytes + 0x24) = rec[0x53];
+  *(uint32_t *)(statusBytes + 0x2c) = rec[0x54];
+  *(uint32_t *)(statusBytes + 0x30) = rec[0x55];
+  *(uint32_t *)(statusBytes + 0x28) = rec[0x56];
+  *(uint32_t *)(statusBytes + 0x34) = rec[0x57];
+  srcArray2 = (int *)rec[0x58];
+  srcCount = *srcArray2;
+  for (copyIndex = 0; srcCount != copyIndex; copyIndex = copyIndex + 1) {
+    *(uint8_t *)(*(int *)(*(int *)(statusBytes + 0x38) + 4) + copyIndex) =
+         *(uint8_t *)(srcArray2[1] + copyIndex);
   }
-  iVar14 = *(int *)(*(int *)(iVar11 + 0x38) + 4);
-  if (*(char *)(iVar2 + 0x35) != '\0') {
-    *(uint8_t *)(iVar14 + 0x19) = 1;
+  char *visBuf = *(char **)(*(int *)(statusBytes + 0x38) + 4);
+  if (*(char *)(missionFlags + 0x35) != '\0') {
+    *(uint8_t *)(visBuf + 0x19) = 1;
   }
-  *(uint8_t *)(iVar14 + 0x1a) = 1;
-  puVar6 = (uint *)in_r0[0x59];
-  for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(iVar11 + 0x3c) + 4) + uVar19 * 4) =
-         *(uint32_t *)(puVar6[1] + uVar19 * 4);
+  *(uint8_t *)(visBuf + 0x1a) = 1;
+  srcVec = (uint *)rec[0x59];
+  for (i = 0; i < *srcVec; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)(statusBytes + 0x3c) + 4) + i * 4) =
+         *(uint32_t *)(srcVec[1] + i * 4);
   }
-  puVar6 = (uint *)in_r0[0x5a];
-  for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(iVar11 + 0x40) + 4) + uVar19 * 4) =
-         *(uint32_t *)(puVar6[1] + uVar19 * 4);
+  srcVec = (uint *)rec[0x5a];
+  for (i = 0; i < *srcVec; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)(statusBytes + 0x40) + 4) + i * 4) =
+         *(uint32_t *)(srcVec[1] + i * 4);
   }
-  puVar6 = (uint *)in_r0[0x5b];
-  for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(iVar11 + 0x44) + 4) + uVar19 * 4) =
-         *(uint32_t *)(puVar6[1] + uVar19 * 4);
+  srcVec = (uint *)rec[0x5b];
+  for (i = 0; i < *srcVec; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)(statusBytes + 0x44) + 4) + i * 4) =
+         *(uint32_t *)(srcVec[1] + i * 4);
   }
-  puVar6 = (uint *)in_r0[0x5c];
-  for (uVar19 = 0; uVar19 < *puVar6; uVar19 = uVar19 + 1) {
-    *(uint32_t *)(*(int *)(*(int *)(iVar11 + 0x48) + 4) + uVar19 * 4) =
-         *(uint32_t *)(puVar6[1] + uVar19 * 4);
+  srcVec = (uint *)rec[0x5c];
+  for (i = 0; i < *srcVec; i = i + 1) {
+    *(uint32_t *)(*(int *)(*(int *)(statusBytes + 0x48) + 4) + i * 4) =
+         *(uint32_t *)(srcVec[1] + i * 4);
   }
-  puVar6 = *(uint **)(iVar11 + 0x54);
-  *(uint32_t *)(iVar11 + 0x4c) = in_r0[0x5d];
-  puVar12 = (uint *)in_r0[0x5e];
-  uVar19 = *puVar12;
-  if (*puVar6 <= uVar19) {
-    for (uVar20 = 0; uVar19 != uVar20; uVar20 = uVar20 + 1) {
-      *(uint8_t *)(puVar6[1] + uVar20) = *(uint8_t *)(puVar12[1] + uVar20);
+  srcVec = *(uint **)(statusBytes + 0x54);
+  *(uint32_t *)(statusBytes + 0x4c) = rec[0x5d];
+  srcVec2 = (uint *)rec[0x5e];
+  i = *srcVec2;
+  if (*srcVec <= i) {
+    for (j = 0; i != j; j = j + 1) {
+      *(uint8_t *)(srcVec[1] + j) = *(uint8_t *)(srcVec2[1] + j);
     }
   }
-  iVar14 = DAT_0016646c;
-  uVar23 = *(uint64_t *)(in_r0 + 0x3b);
-  iVar15 = *(int *)(DAT_00166474 + 0x16629c);
-  *(uint64_t *)(iVar15 + 8) = *(uint64_t *)(in_r0 + 0x39);
-  *(uint64_t *)(iVar15 + 0x10) = uVar23;
-  *(uint32_t *)(iVar2 + 0x2c) = in_r0[0x47];
-  uVar13 = in_r0[0x33];
-  *(uint32_t *)(iVar11 + 0x100) = in_r0[0x32];
-  *(uint32_t *)(iVar11 + 0x104) = uVar13;
-  uVar23 = *(uint64_t *)(in_r0 + 0x3f);
-  *(uint64_t *)(iVar15 + 0x18) = *(uint64_t *)(in_r0 + 0x3d);
-  *(uint64_t *)(iVar15 + 0x20) = uVar23;
-  if (in_r0[0x6f] == iVar14) {
-    *(uint8_t *)(iVar15 + 0x29) = *(uint8_t *)((long)in_r0 + 0x105);
-    *(uint8_t *)(iVar15 + 0x28) = *(uint8_t *)(in_r0 + 0x41);
-    *(uint8_t *)(iVar15 + 0x2a) = *(uint8_t *)((long)in_r0 + 0x106);
-    *(uint8_t *)(iVar15 + 0x2b) = *(uint8_t *)((long)in_r0 + 0x107);
-    *(uint8_t *)(iVar15 + 0x2c) = *(uint8_t *)(in_r0 + 0x42);
-    *(uint8_t *)(iVar15 + 0x2d) = *(uint8_t *)((long)in_r0 + 0x109);
-    *(uint8_t *)(iVar15 + 0x2e) = *(uint8_t *)((long)in_r0 + 0x10a);
-    *(uint8_t *)(iVar15 + 0x2f) = *(uint8_t *)((long)in_r0 + 0x10b);
-    *(uint8_t *)(iVar15 + 0x30) = *(uint8_t *)(in_r0 + 0x43);
-    *(uint32_t *)(iVar11 + 0x178) = in_r0[0x6e];
-    *(uint8_t *)(iVar15 + 0x31) = *(uint8_t *)((long)in_r0 + 0x119);
-    *(uint8_t *)(iVar15 + 0x32) = *(uint8_t *)((long)in_r0 + 0x11a);
-    *(uint8_t *)(iVar15 + 0x33) = *(uint8_t *)((long)in_r0 + 0x10d);
-    *(uint8_t *)(iVar15 + 0x34) = *(uint8_t *)((long)in_r0 + 0x10e);
-    *(uint8_t *)(iVar15 + 0x35) = *(uint8_t *)((long)in_r0 + 0x10f);
-    *(uint8_t *)(iVar15 + 0x36) = *(uint8_t *)(in_r0 + 0x44);
-    *(uint8_t *)(iVar15 + 0x37) = *(uint8_t *)((long)in_r0 + 0x111);
-    *(uint8_t *)(iVar15 + 0x38) = *(uint8_t *)((long)in_r0 + 0x113);
-    *(uint8_t *)(iVar15 + 0x39) = *(uint8_t *)((long)in_r0 + 0x112);
-    *(uint8_t *)(iVar15 + 0x3a) = *(uint8_t *)(in_r0 + 0x45);
-    *(uint32_t *)(iVar11 + 0x58) = in_r0[0x5f];
-    puVar6 = (uint *)in_r0[0x6d];
-    if ((puVar6 != (uint *)0x0) && (uVar19 = *puVar6, uVar19 != 0)) {
-      for (uVar20 = 0; uVar20 < uVar19; uVar20 = uVar20 + 1) {
-        *(uint32_t *)(*(int *)(*(int *)gStatus + 4) + uVar20 * 4) =
-             *(uint32_t *)(puVar6[1] + uVar20 * 4);
-        puVar6 = (uint *)in_r0[0x6d];
-        uVar19 = *puVar6;
+  // RAWREAD: KIPlayer record fields (resolved .bss slot 0x220290 deref).
+  char *kiPlayer = *(char **)0x220290;
+  qword = *(uint64_t *)(rec + 0x3b);
+  *(uint64_t *)(kiPlayer + 8) = *(uint64_t *)(rec + 0x39);
+  *(uint64_t *)(kiPlayer + 0x10) = qword;
+  // The binary writes rec[0x47] to missionFlags+0x2c (str r2,[r12,#0x2c] where
+  // r12 is the 0x22016c mission-flags singleton), NOT to gStatus+0x2c.
+  *(uint32_t *)(missionFlags + 0x2c) = rec[0x47];
+  scalar = rec[0x33];
+  *(uint32_t *)(statusBytes + 0x100) = rec[0x32];
+  *(uint32_t *)(statusBytes + 0x104) = scalar;
+  qword = *(uint64_t *)(rec + 0x3f);
+  *(uint64_t *)(kiPlayer + 0x18) = *(uint64_t *)(rec + 0x3d);
+  *(uint64_t *)(kiPlayer + 0x20) = qword;
+  if (rec[0x6f] == kRecordExtendedTag) {
+    *(uint8_t *)(kiPlayer + 0x29) = *(uint8_t *)((long)rec + 0x105);
+    *(uint8_t *)(kiPlayer + 0x28) = *(uint8_t *)(rec + 0x41);
+    *(uint8_t *)(kiPlayer + 0x2a) = *(uint8_t *)((long)rec + 0x106);
+    *(uint8_t *)(kiPlayer + 0x2b) = *(uint8_t *)((long)rec + 0x107);
+    *(uint8_t *)(kiPlayer + 0x2c) = *(uint8_t *)(rec + 0x42);
+    *(uint8_t *)(kiPlayer + 0x2d) = *(uint8_t *)((long)rec + 0x109);
+    *(uint8_t *)(kiPlayer + 0x2e) = *(uint8_t *)((long)rec + 0x10a);
+    *(uint8_t *)(kiPlayer + 0x2f) = *(uint8_t *)((long)rec + 0x10b);
+    *(uint8_t *)(kiPlayer + 0x30) = *(uint8_t *)(rec + 0x43);
+    *(uint32_t *)(statusBytes + 0x178) = rec[0x6e];
+    *(uint8_t *)(kiPlayer + 0x31) = *(uint8_t *)((long)rec + 0x119);
+    *(uint8_t *)(kiPlayer + 0x32) = *(uint8_t *)((long)rec + 0x11a);
+    *(uint8_t *)(kiPlayer + 0x33) = *(uint8_t *)((long)rec + 0x10d);
+    *(uint8_t *)(kiPlayer + 0x34) = *(uint8_t *)((long)rec + 0x10e);
+    *(uint8_t *)(kiPlayer + 0x35) = *(uint8_t *)((long)rec + 0x10f);
+    *(uint8_t *)(kiPlayer + 0x36) = *(uint8_t *)(rec + 0x44);
+    *(uint8_t *)(kiPlayer + 0x37) = *(uint8_t *)((long)rec + 0x111);
+    *(uint8_t *)(kiPlayer + 0x38) = *(uint8_t *)((long)rec + 0x113);
+    *(uint8_t *)(kiPlayer + 0x39) = *(uint8_t *)((long)rec + 0x112);
+    *(uint8_t *)(kiPlayer + 0x3a) = *(uint8_t *)(rec + 0x45);
+    *(uint32_t *)(statusBytes + 0x58) = rec[0x5f];
+    srcVec = (uint *)rec[0x6d];
+    if ((srcVec != (uint *)0x0) && (i = *srcVec, i != 0)) {
+      for (j = 0; j < i; j = j + 1) {
+        *(uint32_t *)(*(int *)(*(int *)gStatus + 4) + j * 4) =
+             *(uint32_t *)(srcVec[1] + j * 4);
+        srcVec = (uint *)rec[0x6d];
+        i = *srcVec;
       }
     }
-    iVar2 = (int)(intptr_t)gStatus;
-    for (iVar11 = 0; iVar11 != 4; iVar11 = iVar11 + 1) {
-      *(uint32_t *)(iVar2 + iVar11 * 4 + 4) = in_r0[iVar11 + 0x69];
+    statusBytes = (char *)gStatus;
+    for (int k = 0; k != 4; k = k + 1) {
+      *(uint32_t *)(statusBytes + k * 4 + 4) = rec[k + 0x69];
     }
-    pSVar8 = (char *)gStatus->getStation();
-    iVar2 = Station_getIndex(pSVar8);
-    if (iVar2 == 0x6c) {
+    station = (char *)gStatus->getStation();
+    if (Station_getIndex(station) == 0x6c) {
       Station *stStation = gStatus->getStation();
       Array<Ship *> *stationShips = (Array<Ship *> *)stStation->getShips();
       if (stationShips != (Array<Ship *> *)0x0) {
-        for (uVar19 = 0; uVar19 < stationShips->size(); uVar19 = uVar19 + 1) {
+        for (i = 0; i < stationShips->size(); i = i + 1) {
           Array<int> *mods =
-              ((Ship *)(*(char **)(*(int *)(in_r0[0x61] + 4) + uVar19 * 4)))->getMods();
+              ((Ship *)(*(char **)(*(int *)(rec[0x61] + 4) + i * 4)))->getMods();
           if (mods != (Array<int> *)0x0) {
-            for (uVar20 = 0; uVar20 < mods->size(); uVar20 = uVar20 + 1) {
-              (*stationShips)[uVar19]->addMod((*mods)[uVar20]);
+            for (j = 0; j < mods->size(); j = j + 1) {
+              (*stationShips)[i]->addMod((*mods)[j]);
             }
           }
         }
       }
     }
-    iVar2 = (int)(intptr_t)gStatus;
-    *(uint32_t *)(iVar2 + 0x118) = in_r0[0x38];
-    *(uint8_t *)(iVar2 + 0x17c) = *(uint8_t *)(in_r0 + 0x70);
+    statusBytes = (char *)gStatus;
+    *(uint32_t *)(statusBytes + 0x118) = rec[0x38];
+    *(uint8_t *)(statusBytes + 0x17c) = *(uint8_t *)(rec + 0x70);
   }
 }
