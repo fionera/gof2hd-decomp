@@ -45,7 +45,7 @@ public:
     virtual void SetInActive() = 0;
     // Post-process draw slots; base impls are inert (concrete post-process shaders override them).
     virtual void RenderEffect(FBOContainer *source, ::Engine *engine);
-    virtual void RenderEffect(FBOContainer *source, FBOContainer **target, ::Engine *engine);
+    virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, AbyssEngine::Engine *engine);
     virtual void DeleteShader();
     virtual void UseShader(bool useExtra);
 

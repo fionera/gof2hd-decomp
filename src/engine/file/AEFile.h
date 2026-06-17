@@ -105,16 +105,16 @@ public:
     virtual uint32_t    ReadDirectory(String &)                        { return 0; }
 };
 
-enum FileOpenType : uint32_t {
-    OPEN_READ   = 0,
-    OPEN_WRITE  = 1,
-    OPEN_APPEND = 2,
-};
-
 // AEFile is a fully static utility class: a collection of file I/O routines over the active
 // FileInterface plus the registered .pak archives. It has no instance state.
 class AEFile {
 public:
+    enum FileOpenType : uint32_t {
+        OPEN_READ   = 0,
+        OPEN_WRITE  = 1,
+        OPEN_APPEND = 2,
+    };
+
     static void        SetInterface(FileInterface *fileInterface);
     static void        Release();
 
@@ -145,7 +145,7 @@ public:
     static uint32_t    ReadSwitched(int32_t &value, uint32_t handle);
     static uint32_t    ReadSwitched(String &value, uint32_t handle, bool wide);
 
-    static uint32_t    Write(uint32_t bytes, const void *buffer, uint32_t handle);
+    static uint32_t    Write(uint32_t bytes, void *buffer, uint32_t handle);
     static void        Write(bool value, uint32_t handle);
     static void        Write(char value, uint32_t handle);
     static void        Write(int8_t value, uint32_t handle);
@@ -161,7 +161,7 @@ public:
     static uint32_t    Skip(uint32_t bytes, uint32_t handle);
     static uint32_t    GetFileSize(uint32_t handle);
 
-    static void        RegisterPakFile(String &path);
+    static void        RegisterPakFile(String path);
     static void        collectPakFiles(const String &path);
     static void        collectFilesInPakFiles(String &path);
     static void        sortPakFileEntryList();

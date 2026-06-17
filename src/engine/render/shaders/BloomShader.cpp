@@ -269,7 +269,7 @@ void BloomShader::SetInActive()
     glDisableVertexAttribArray(this->downSampleAttribPosition);
 }
 
-void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine)
+void BloomShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine)
 {
     if (g_BloomShader_internalInitNeeded != 0) {
         g_BloomShader_internalInitNeeded = 0;
@@ -381,8 +381,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     base->Activate();
     glActiveTexture(0x84c1);
     bloom->Activate();
-    if (*target != 0) {
-        (*target)->BeginCapture();
+    if (target != 0) {
+        target->BeginCapture();
     }
 
     glEnableVertexAttribArray(this->finalAttribPosition);
@@ -399,8 +399,8 @@ void BloomShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engi
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
     glActiveTexture(0x84c0);
-    if (*target != 0) {
-        (*target)->EndCapture();
+    if (target != 0) {
+        target->EndCapture();
     }
 }
 

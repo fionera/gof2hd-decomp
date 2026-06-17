@@ -782,7 +782,7 @@ void Engine::DoPostEffect() {
                 shader->RenderEffect(current, this);
                 flags = 0;
             } else {
-                shader->RenderEffect(current, &other, this);
+                shader->RenderEffect(current, other, this);
                 slot = other;
                 other = current;
             }
@@ -793,7 +793,7 @@ void Engine::DoPostEffect() {
                 shader->RenderEffect(slot, this);
                 flags = 0;
             } else {
-                shader->RenderEffect(slot, &other, this);
+                shader->RenderEffect(slot, other, this);
                 slot = other;
             }
         }
@@ -802,7 +802,7 @@ void Engine::DoPostEffect() {
             if ((flags & ~4u) == 0) {
                 shader->RenderEffect(slot, this);
             } else {
-                shader->RenderEffect(slot, &other, this);
+                shader->RenderEffect(slot, other, this);
             }
         }
         if (g_Engine_postEffectFlag == 1) {

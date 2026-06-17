@@ -244,7 +244,7 @@ void Gun::render() {
     }
 }
 
-Gun::Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
+Gun::Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel) {
     // Construct the four embedded Array<Vector> sub-objects (positions / velocities /
     // up-vectors / hit-positions); the helper takes the Array object's base address.
     Gun_VecArray_ctor((char *)&this->count);
@@ -341,7 +341,7 @@ void Gun::setEnemy(Player *enemy) {
 // Float offset applied to z (literal-pool constant in the target).
 static const float kZOffset = 0.1f;
 
-void Gun::setOffset(const Vector *v) {
+void Gun::setOffset(Vector *v) {
     Vector local;
     local.x = v->x;
     local.y = v->y;
@@ -436,10 +436,10 @@ void Gun::update(int dt) {
     }
 }
 
-void Gun::translate(const Vector *v) {
+void Gun::translate(const Vector &v) {
     int off = 0;
     for (unsigned i = 0; i < this->count; i = i + 1) {
-        *(Vector *)(this->positions + off) += *v;
+        *(Vector *)(this->positions + off) += v;
         off = off + 0xc;
     }
 }

@@ -121,7 +121,7 @@ int Status::getMissionCount() { return missionCount; }
 void Status::setCredits(int v) { credits = v; }
 
 bool Status::stringHasToken(String haystack, String needle) {
-    return (int)haystack.IndexOf(&needle) > -1;
+    return (int)haystack.IndexOf(needle) > -1;
 }
 
 int Status::getLastXP() { return lastXP; }
@@ -1354,7 +1354,7 @@ void Status::setStation(Station* s) {
 //   Replaces the first occurrence of `needle` in `haystack` with `replacement`.
 //   If `needle` is absent, returns a copy of `haystack`.
 String Status::replaceHash(String haystack, String needle, String replacement) {
-    int idx = (int)haystack.IndexOf(&needle);
+    int idx = (int)haystack.IndexOf(needle);
     if (idx < 0) {
         return haystack;
     }

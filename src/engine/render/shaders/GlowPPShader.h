@@ -63,7 +63,7 @@ public:
     GlowPPShader();
     void Init(Engine *engine) override;
     void InternalInit(Engine *engine);
-    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) override;
+    void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) override;
     void RenderEffect(FBOContainer *source, Engine *engine) override;
     void SetInActive() override;
     void UpdateMeshData(Mesh *mesh, Engine *engine) override;

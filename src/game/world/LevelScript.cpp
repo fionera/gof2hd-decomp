@@ -85,8 +85,8 @@ void LevelScript::resetCamera(Level* level)
     if (level->getPlayer() != 0) {
         PlayerEgo* player = (PlayerEgo*)level->getPlayer();
         m_pCamera->setTarget(player->geometry);
-        m_pCamera->setTargetOffset(StackVector(0.0f, 600.0f, -650.0f));
-        m_pCamera->setCamOffset(StackVector(0.0f, 600.0f, -1338.0f));
+        m_pCamera->setTargetOffset(Vector{0.0f, 600.0f, -650.0f});
+        m_pCamera->setCamOffset(Vector{0.0f, 600.0f, -1338.0f});
     }
 }
 
@@ -120,7 +120,7 @@ void LevelScript::setAutoPilotToProgrammedStation()
     void* player;
     void* target;
 
-    if (system->stationIsInSystem(programmed->getIndex())) {
+    if (system->stationIsInSystem(programmed)) {
         player = (void*)m_pLevel->getPlayer();
         void* targets = ((StarSystem*)m_pLevel->getStarSystem())->getPlanetTargets();
         int targetIndex = system->getStationEnumIndex(programmed->getIndex());
@@ -268,8 +268,8 @@ void LevelScript::process(int delta)
 
 void LevelScript::lookBehind()
 {
-    m_pCamera->setTargetOffset(StackVector(0.0f, 0.0f, -950.0f));
-    m_pCamera->setCamOffset(StackVector(0.0f, 600.0f, 2230.0f));
+    m_pCamera->setTargetOffset(Vector{0.0f, 0.0f, -950.0f});
+    m_pCamera->setCamOffset(Vector{0.0f, 600.0f, 2230.0f});
 }
 
 LevelScript::LevelScript(Level* level, Hud* hud, Radar* radar, TargetFollowCamera* camera)

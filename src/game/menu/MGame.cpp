@@ -2843,7 +2843,7 @@ void MGame::drawRadar() {
 void MGame::drawHud() {
     long long now = (long long)this->appManager->GetSystemTimeMillis();
     this->hud->draw(now, (long long)this->deltaTime,
-                                      (void *)(this->player),
+                                      this->player,
                                       this->pauseOpen != 0, 0, 0);
 }
 

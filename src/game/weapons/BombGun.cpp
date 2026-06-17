@@ -199,8 +199,8 @@ void BombGun::update(int elapsed)
             TargetFollowCamera *camera =
                 (TargetFollowCamera *)(intptr_t)player->getTargetFollowCamera();
             camera->setTarget(geometry);
-            camera->setCamOffset(&this->cameraOffset);
-            camera->setTargetOffset(&this->cameraTargetOffset);
+            camera->setCamOffset(this->cameraOffset);
+            camera->setTargetOffset(this->cameraTargetOffset);
             camera->useTargetsUpVector(false);
             player->setRocketControl(gun, geometry);
 

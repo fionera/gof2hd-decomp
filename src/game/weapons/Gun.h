@@ -77,7 +77,7 @@ public:
     int* geometries;                    // +0x10c  per-projectile transform handles (new int[count])
     uint8_t* randomFlags;               // +0x110  per-projectile random flags (new uint8_t[count])
 
-    Gun(int kind, int p2, unsigned count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
+    Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
     ~Gun() noexcept(false);
 
     void calcCharacterCollision();
@@ -95,12 +95,12 @@ public:
     void setIndex(int index);
     void setLevelCollision(bool v);
     void setMagnitude(int v);
-    void setOffset(const Vector* v);
+    void setOffset(Vector* v);
     void setOffset_ii(int a, int b);
     void setPlayerGun(bool v);
     void shoot(Matrix m, int n, bool b);
     void shootAt(Matrix m, int n, Player* p, bool b);
-    void translate(const Vector* v);
+    void translate(const Vector& v);
     void update(int dt);
 };
 #endif

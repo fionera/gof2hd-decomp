@@ -12,6 +12,8 @@
 class Item;
 class ListItem;
 class TouchButton;
+class PlayerEgo;
+class Level;
 // String comes from common.h (AbyssEngine::String, aliased into global scope).
 
 class Hud {
@@ -188,10 +190,10 @@ public:
     Hud * checkIfQuickMenuIsEmpty();
     void clearQueue();
     void closeHudMenu();
-    void draw(long long t0, long long t1, void *ego, bool letterbox, unsigned int x, unsigned int y);
+    void draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y);
     void drawChallengeModeScore();
     void drawEventQueue();
-    void drawEventString(void *text, int rightAlign);
+    void drawEventString(String text, bool rightAlign);
     void drawMenu();
     void drawOrbitInformation();
     void drawPauseButton();
@@ -199,17 +201,17 @@ public:
     unsigned int firePressed();
     float getAnalogX();
     float getAnalogY();
-    void hudEvent(int eventId, void *ego, int arg);
+    void hudEvent(int eventId, PlayerEgo *ego, int arg);
     void hudEventMedal(int medalId, int percent);
     int init();
-    void initHudMenu(int menuType, void *lvl);
+    void initHudMenu(int menuType, Level *lvl);
     uint8_t isHackingGameActive();
     uint8_t jumpMapSelected();
     void playerHit();
     void releaseAllKeys();
     void resetAnalogStick();
-    unsigned int sameHudEventAsBefore(String *str);
-    int sameHudEventAsBeforeAggregate(String *str);
+    unsigned int sameHudEventAsBefore(String str);
+    int sameHudEventAsBeforeAggregate(String str);
     void setAutofireEnabled(bool value);
     void setCurrentSecondaryWeapon(Item *item);
     void setHackingGameActive(bool value);

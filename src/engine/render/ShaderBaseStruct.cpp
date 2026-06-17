@@ -46,7 +46,7 @@ void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, ::Engine * /*engi
 {
 }
 
-void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer ** /*target*/, ::Engine * /*engine*/)
+void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer *& /*target*/, AbyssEngine::Engine * /*engine*/)
 {
 }
 

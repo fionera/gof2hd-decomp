@@ -38,7 +38,7 @@ struct Player {
 };
 
 // Engine singletons / roots resolved at load time.
-extern AbyssEngine::PaintCanvas* gCanvasRoot;
+extern PaintCanvas* gCanvasRoot;
 extern FModSound* gPullSound;
 extern FModSound* gCaptureSound;
 extern const float gCaptureDistance;
@@ -93,7 +93,7 @@ void TractorBeam::update(int frameTime, Radar* radar, Level* level, Hud* hud) {
     }
 
     // Advance the canvas transform for this frame.
-    AbyssEngine::PaintCanvas* canvas = gCanvasRoot;
+    PaintCanvas* canvas = gCanvasRoot;
     AbyssEngine::Transform* tf = (AbyssEngine::Transform*)canvas->TransformGetTransform(0);
     tf->Update(frameTime, false);
 

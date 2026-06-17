@@ -20,7 +20,7 @@ void  String_assign_op(String *self, String *src);
 }
 
 // AbyssEngine::String::GetAEChar() const - allocate an 8-bit (low-byte) copy of the wide buffer.
-char * String::GetAEChar() {
+char * String::GetAEChar() const {
     unsigned int len = this->s.size();
     unsigned int n = len + 1;
     char *out = new char[n];
@@ -31,17 +31,17 @@ char * String::GetAEChar() {
 }
 
 // AbyssEngine::String::ReplaceString(find, repl) - replace each occurrence of `find` with `repl`.
-void String::ReplaceString(String *find, String *repl) {
-    if (this->s.empty() || find->s.empty())
+void String::ReplaceString(String find, String repl) {
+    if (this->s.empty() || find.s.empty())
         return;
 
     std::u16string acc;
     unsigned int pos = 0;
     int idx;
-    while ((idx = (int)((String *)(this))->IndexOf_from(pos, find)) != -1) {
+    while ((idx = (int)((String *)(this))->IndexOf_from(pos, &find)) != -1) {
         acc.append(this->s, pos, (unsigned int)idx - pos);
-        acc.append(repl->s);
-        pos = (unsigned int)find->s.size() + idx;
+        acc.append(repl.s);
+        pos = (unsigned int)find.s.size() + idx;
     }
 
     if (pos != 0 && pos < this->s.size())
@@ -129,19 +129,19 @@ int String::ValueOf() {
 }
 
 // AbyssEngine::String::Split(sep) -> Array<String*>* (null if no splits).
-void * String::Split(String *sep) {
-    if (!this->s.empty() && !sep->s.empty()) {
+void * String::Split(String sep) {
+    if (!this->s.empty() && !sep.s.empty()) {
         Array<String *> *arr = new Array<String *>();
 
         unsigned int pos = 0;
         unsigned int idx;
-        while ((idx = ((String *)(this))->IndexOf_from(pos, sep)) != 0xffffffff) {
+        while ((idx = ((String *)(this))->IndexOf_from(pos, &sep)) != 0xffffffff) {
             if (pos < idx) {
                 String *piece = new String();
                 piece->SubString(this, pos, idx);
                 arr->push_back(piece);
             }
-            pos = (unsigned int)sep->s.size() + idx;
+            pos = (unsigned int)sep.s.size() + idx;
         }
         if (pos != 0 && pos < this->s.size()) {
             String *piece = new String();
@@ -410,7 +410,7 @@ void String::Set_wchar(const uint16_t *s) {
 
 // AbyssEngine::String::IndexOf(unsigned int start, AbyssEngine::String const&)
 // Return the first index >= start where needle occurs, or 0xffffffff if not found.
-unsigned int String::IndexOf_from(unsigned int start, String *needle) {
+unsigned int String::IndexOf_from(unsigned int start, const String *needle) {
     String *self = this;
     unsigned int slen = (unsigned int)self->s.size();
     unsigned int nlen = (unsigned int)needle->s.size();
@@ -461,17 +461,17 @@ static const char kSlash[] = "</";
 
 // AbyssEngine::String::SplitTags(AbyssEngine::String tag)
 // Wrap `tag` as "<tag>", split this string on it, ending each run at the matching "</".
-void String::SplitTags(String *tag) {
-    if (this->s.empty() || tag->s.empty())
+void String::SplitTags(String tag) {
+    if (this->s.empty() || tag.s.empty())
         return;
 
     // tag := "<" + tag + ">"
     {
         std::u16string wrapped;
         wrapped.push_back(u'<');
-        wrapped.append(tag->s);
+        wrapped.append(tag.s);
         wrapped.push_back(u'>');
-        tag->s = wrapped;
+        tag.s = wrapped;
     }
 
     Array<String *> *arr = new Array<String *>();
@@ -479,13 +479,13 @@ void String::SplitTags(String *tag) {
     int endPos = 0;
     unsigned int pos = 0;
     unsigned int idx;
-    while ((idx = ((String *)(this))->IndexOf_from(pos, tag)) != 0xffffffff) {
+    while ((idx = ((String *)(this))->IndexOf_from(pos, &tag)) != 0xffffffff) {
         if (pos <= idx) {
             String *piece = new String();
             piece->SubString(this, pos, idx);
             arr->push_back(piece);
 
-            unsigned int afterTag = (unsigned int)tag->s.size() + idx;
+            unsigned int afterTag = (unsigned int)tag.s.size() + idx;
             String closer;
             ((String *)(&closer))->ctor_char(kSlash, false);
             endPos = (int)((String *)(this))->IndexOf_from(afterTag, &closer);
@@ -677,8 +677,8 @@ uint16_t *String::getWCharFromUtf8(char *s, int len)
 }
 
 // AbyssEngine::String::IndexOf(AbyssEngine::String const&) - search from offset 0.
-unsigned int String::IndexOf(String *needle) {
-    return ((String *)(this))->IndexOf_from(0, needle);
+unsigned int String::IndexOf(const String &needle) {
+    return ((String *)(this))->IndexOf_from(0, &needle);
 }
 
 // AbyssEngine::String::String(long long) - decimal string of a 64-bit value.

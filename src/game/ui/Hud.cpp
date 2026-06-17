@@ -152,7 +152,7 @@ uint8_t Hud::jumpMapSelected() {
 // state gating, delegating each panel to its renderer.
 // x/y arrive on the stack.
 
-void Hud::draw(long long t0, long long t1, void *ego, bool letterbox, unsigned int x, unsigned int y) {
+void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y) {
     (void)t0; (void)t1;
 
     // background/letterbox state recorded for the panel renderers
@@ -435,7 +435,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(dst))->assign((String *)(out2));
         ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
 
-        String *str = new String(*(String *)dst);
+        const String *str = new String(*(String *)dst);
         ListItem *item = new ListItem(str, 0);
         item->field_0x2c = cargoVal;
         addToEventQueue(item);
@@ -447,7 +447,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         GameText *gt = *g_Hud_ccGameText;
         void *txt = gt->getText(0x18a);
         ((String *)(&this->field_0x1f4))->assign((String *)(txt));
-        String *str = new String(this->field_0x1f4);
+        const String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
         catchCargoFinish(item);
         return;
@@ -468,7 +468,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
         char b8[12]; ((String *)(b8))->ctor_copy((String *)(k34), false);
-        int idx = sameHudEventAsBeforeAggregate((String *)b8);
+        int idx = sameHudEventAsBeforeAggregate(*(String *)b8);
         ((String *)(b8))->dtor();
         if (idx >= 0) {
             this->eventQueueTimer = 2000;
@@ -499,7 +499,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     ((String *)(&this->field_0x1f4))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
-    String *str = new String(this->field_0x1f4);
+    const String *str = new String(this->field_0x1f4);
     ListItem *item = new ListItem(str, 0);
     item->field_0x2c = cargoVal;
     if (!p7 || p6) item->field_0x30 = 2;
@@ -515,7 +515,7 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_font;   // *holder -> 
 __attribute__((visibility("hidden"))) extern void **g_Hud_canvas2;// *holder -> PaintCanvas
 __attribute__((visibility("hidden"))) extern void **g_Hud_screenW;// *holder -> [0] = screen width
 
-void Hud::drawEventString(void *text, int rightAlign) {
+void Hud::drawEventString(String text, bool rightAlign) {
     void *font = *g_Hud_font;
     void *canvas = *g_Hud_canvas2;
     int x;
@@ -540,7 +540,7 @@ void Hud::drawEventString(void *text, int rightAlign) {
         }
     }
     char y = (char)(this->eventLineY - 1);
-    gCanvas->DrawString((unsigned)(long)(font), (void *)(text), (x), (y), false);
+    gCanvas->DrawString((unsigned)(long)(font), &text, (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
@@ -548,7 +548,7 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
     return secondaryWeaponChanged();
 }
 
-int Hud::sameHudEventAsBeforeAggregate(String *str) {
+int Hud::sameHudEventAsBeforeAggregate(String str) {
     Array<ListItem *> *q = this->eventQueue;
     int i = (int)q->size();
     ListItem *e;
@@ -557,7 +557,7 @@ int Hud::sameHudEventAsBeforeAggregate(String *str) {
         if (i < 1)
             return -1;
         e = (*q)[i];
-    } while (e == 0 || ((String *)e->name)->Compare_str(str) != 0);
+    } while (e == 0 || ((String *)e->name)->Compare_str(&str) != 0);
     return i;
 }
 
@@ -683,12 +683,12 @@ done:
     return this->touchFlags;
 }
 
-unsigned int Hud::sameHudEventAsBefore(String *str) {
+unsigned int Hud::sameHudEventAsBefore(String str) {
     Array<ListItem *> *q = this->eventQueue;
     int i = (int)q->size();
     while (--i >= 1) {
         ListItem *e = (*q)[i];
-        if (e != 0 && ((String *)e->name)->Compare_str(str) == 0)
+        if (e != 0 && ((String *)e->name)->Compare_str(&str) == 0)
             return 1;
     }
     return 0;
@@ -881,7 +881,7 @@ void Hud::clearQueue() {
 // Several events are gated on HUD-enable flags (+0x221 autofire, +0x21e boost) before building.
 // builds + queues
 
-void Hud::hudEvent(int eventId, void *ego, int arg) {
+void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     switch (eventId) {
     case 1:
     case 2:
@@ -1057,11 +1057,11 @@ void Hud::hudEventMedal(int medalId, int percent) {
 
     char probe[12];
     ((String *)(probe))->ctor_copy((String *)(dst), false);
-    int same = sameHudEventAsBefore((String *)probe);
+    int same = sameHudEventAsBefore(*(String *)probe);
     ((String *)(probe))->dtor();
     if (same != 0) return;
 
-    String *str = new String(*(String *)dst);
+    const String *str = new String(*(String *)dst);
     ListItem *item = new ListItem(str, 3);
     addToEventQueue(item);
 
@@ -1088,7 +1088,7 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_imCargoB;     // *hold
 __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagA;      // *holder -> [0] byte
 __attribute__((visibility("hidden"))) extern void **g_Hud_imFlagB;      // *holder -> [0] byte
 
-void Hud::initHudMenu(int menuType, void *lvl) {
+void Hud::initHudMenu(int menuType, Level *lvl) {
     // tear down old menu buttons
     if (this->menuButtons != 0) {
         for (TouchButton *b : *this->menuButtons) delete b;
@@ -1253,12 +1253,12 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     String *line = (String *)&this->field_0x1e0;
     char probe[12];
     ((String *)(probe))->ctor_copy(line, false);
-    unsigned int dup = sameHudEventAsBefore((String *)probe);
+    unsigned int dup = sameHudEventAsBefore(*(String *)probe);
     ((String *)(probe))->dtor();
     if (dup != 0)
         return;
 
-    String *str = new String(*line);
+    const String *str = new String(*line);
     // "important" ids get the alternate ListItem ctor that marks them priority.
     unsigned int idBit = (unsigned int)(eventId - 1);
     ListItem *item;

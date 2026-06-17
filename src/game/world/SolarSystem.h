@@ -63,7 +63,7 @@ public:
     uint8_t isVisible();
     void setCoords(int x, int y);
     void setVisible(bool v);
-    int stationIsInSystem(int idx);
+    int stationIsInSystem(Station* station);
     int stationIsInSystem_int(int idx);
     int systemIsInSystemRoutes(int sys);
 };

@@ -54,7 +54,7 @@ static inline void draw_fullscreen(Engine *engine, int posLoc, int texLoc, int m
     glDisableVertexAttribArray(texLoc);
 }
 
-void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) {
+void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
         *g_GlowPPShader_internalInitNeededPtr = 0;
@@ -164,7 +164,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
     glActiveTexture(0x84c1);
     secondTexture->Activate();
 
-    if (*target == 0) {
+    if (target == 0) {
         glBindFramebuffer(0x8d40, engine->field_0x40c);
         uint32_t width;
         uint32_t height;
@@ -177,12 +177,12 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
         }
         glViewport(0, 0, width, height);
     } else {
-        (*target)->BeginCapture();
+        target->BeginCapture();
     }
 
     draw_fullscreen(engine, this->combineAttribPosition, this->combineAttribTexCoord, this->combineUniformWorldView);
-    if (*target != 0) {
-        (*target)->EndCapture();
+    if (target != 0) {
+        target->EndCapture();
     }
 
     glEnable(0xbe2);
@@ -192,7 +192,7 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer **target, Eng
 
 void GlowPPShader::RenderEffect(FBOContainer *source, Engine *engine) {
     FBOContainer *target = 0;
-    this->RenderEffect(source, &target, engine);
+    this->RenderEffect(source, target, engine);
 }
 
 void GlowPPShader::InternalInit(Engine *engine) {

@@ -126,7 +126,7 @@ inline char     *AEStr_char(const String &self)           { return const_cast<St
 // UTF-16 code unit at index i.
 inline uint16_t *AEStr_index(const String &self, int i)   { return const_cast<String &>(self).index(i); }
 // First index of needle, or 0xffffffff if absent.
-inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return const_cast<String &>(self).IndexOf(const_cast<String *>(&needle)); }
+inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { return const_cast<String &>(self).IndexOf(needle); }
 
 } // namespace
 
@@ -390,7 +390,7 @@ uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
     return result;
 }
 
-uint32_t AEFile::Write(uint32_t bytes, const void *buffer, uint32_t handle)
+uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle)
 {
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {
         AELowLevelFile *file = g_AEFile_openFiles->data()[handle];
@@ -418,7 +418,7 @@ uint32_t AEFile::Write(const String &value, uint32_t handle, bool wide)
     uint32_t size = value.size();
 
     if (wide) {
-        const uint16_t *text = AEStr_wchar(value);
+        uint16_t *text = AEStr_wchar(value);
         result = Write(4, &size, handle);
         if (result != 0) {
             result = Write(size << 1, text, handle);
@@ -463,7 +463,7 @@ uint32_t AEFile::GetFileSize(uint32_t handle)
     return 0;
 }
 
-void AEFile::RegisterPakFile(String &path)
+void AEFile::RegisterPakFile(String path)
 {
     collectFilesInPakFiles(path);
     sortPakFileEntryList();

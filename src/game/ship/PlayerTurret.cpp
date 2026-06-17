@@ -266,7 +266,7 @@ void PlayerTurret::update(int delta)
         (*g_turretSound)->play(0x16, nullptr, nullptr, 0.0f);
         Vector zero = {0.0f, 0.0f, 0.0f};
         ParticleSystemManager* manager = (ParticleSystemManager*)this->level->field_74;
-        manager->emitManual(this->level->field_3c, (const float*)&this->cachedPosition, 0, 0.0f);
+        manager->emitManual(this->level->field_3c, this->cachedPosition, 0, 0.0f);
         manager->enableSystemEmit(this->particleSystemId, true);
         this->explosion->start(this->cachedPosition, zero);
 

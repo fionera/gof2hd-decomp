@@ -40,7 +40,7 @@ public:
     void Init(Engine *engine) override;
     void SetInActive() override;
     void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *engine,
+    void RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
                       float amount, Vector vector);
 };
 

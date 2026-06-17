@@ -15,6 +15,13 @@ class Player;
 class Level;
 class LevelScript;
 class RepairBeam;
+class Gun;
+class KIPlayer;
+class Route;
+class TargetFollowCamera;
+class Hud;
+class Radar;
+class Radio;
 
 // PlayerEgo — the player's own ship.
 class PlayerEgo {
@@ -202,16 +209,16 @@ public:
     void ResumeEngineSound();
     void StopEngineSound();
     unsigned char aboutToReachAutoTarget();
-    void addGun(void* gun, int x);
-    void addGun2(void* arr, int x);
+    void addGun(Gun* gun, int x);
+    void addGun(Array<Gun*>* arr, int x);
     void addNukeVolatileForce(float v);
     void alignToHorizon();
     void approachAsteroid(int hud2, void *radar);
-    int approachDockingPoint(void *hud, int /*hud2*/, void *radar);
+    int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
     unsigned char autoTurretIsEnabled();
     void boost();
     unsigned char boosting();
-    void calcCollision(void *candidates);
+    void calcCollision(Array<KIPlayer*> *candidates);
     void changeThrust(float v);
     void checkForTurret();
     unsigned char collidesWithStation();
@@ -221,7 +228,7 @@ public:
     void dockToPlanet();
     void dockToStream(bool param);
     float down(int frameTime, float delta);
-    void draw(int allowHud);
+    void draw(bool allowHud);
     void drawThrottle();
     bool driveReady();
     bool emergencySystemActive();
@@ -306,7 +313,7 @@ public:
     bool readyToBoost();
     void refillGunDelay();
     void removeRoute();
-    void render(int allowHud);
+    void render(bool allowHud);
     void resetChargingDrive();
     void resetGunDelay();
     void resetLastHP();
@@ -316,7 +323,7 @@ public:
     void roll(int amount);
     void rotate(float rx, float ry, float rz);
     void setActive(bool);
-    void setAutoPilot(void* kip);
+    void setAutoPilot(KIPlayer* kip);
     void setAutoTurret(bool on);
     void setCollide(bool v);
     void setComputerControlled(bool v);
@@ -326,17 +333,17 @@ public:
     void setExhaustVisible(bool param);
     void setFreeLookMode(bool v);
     void setFreeze(bool v);
-    void setLevel(void* level);
+    void setLevel(Level* level);
     void setPosition();
     void setPosition3(float x, float y, float z);
-    void setRocketControl(void* gun, void* geo);
+    void setRocketControl(Gun* gun, AEGeometry* geo);
     void setRotation(float rx, float ry, float rz);
-    void setRoute(int v);
+    void setRoute(Route* v);
     void setShip(int race, int group);
     void setSpeed(float v);
-    void setTargetFollowCamera(void* cam);
+    void setTargetFollowCamera(TargetFollowCamera* cam);
     void setThrust(float v);
-    void setTurretMode(int enable);
+    void setTurretMode(bool enable);
     void setTurretPosition(float x, float y, float z);
     void setVisible(bool v);
     void shake(int amount);
@@ -356,7 +363,7 @@ public:
     void turnHorizontal(int a, float v);
     void turnVertical(int a, float v);
     float up(int frameTime, float delta);
-    void update(int dt, void *radar, void *hud, void *radio, void *script, int arg5, bool arg6, int arg7);
+    void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
     int updateManeuver();
 
     // ---- veneer / fragment entry points (forward to the canonical methods) ----

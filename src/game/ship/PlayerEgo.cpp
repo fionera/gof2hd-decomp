@@ -35,6 +35,10 @@ public:
     void setHackingGameActive(bool value);
 };
 #include "game/ship/KIPlayer.h"
+// Radio.h is intentionally NOT included here (its full definition is not needed and
+// pulling it in clashes with other minimal stubs in this TU). update() only needs
+// the type name to form a Radio* parameter that is forwarded to void*-taking helpers.
+class Radio;
 #include "game/mission/Mission.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerFixedObject.h"
@@ -331,7 +335,7 @@ bool PlayerEgo::isInWormhole() {
   return false;
 }
 
-void PlayerEgo::setRocketControl(void* gun, void* geo) {
+void PlayerEgo::setRocketControl(Gun* gun, AEGeometry* geo) {
   Level* lvl = this->level;
   this->rocketControlGun = (int)(intptr_t)gun;
   int psm_arg = lvl->movingStarsIndex;
@@ -341,7 +345,7 @@ void PlayerEgo::setRocketControl(void* gun, void* geo) {
     this->rocketBanking = 0;
     return;
   }
-  void* m = (void*)&((AEGeometry *)geo)->getReferenceMatrix();
+  Matrix* m = &geo->getReferenceMatrix();
   ((ParticleSystemManager *)(psm))->systemSetMatrix(psm_arg, m);
   return PlayerEgo_setRocketControl_ext(this, 0);
 }
@@ -636,8 +640,8 @@ void PlayerEgo::removeRoute() {
   ((void*&)this->route) = 0;
 }
 
-void PlayerEgo::setRoute(int v) {
-    PlayerEgo *self = this; this->route = v; }
+void PlayerEgo::setRoute(Route* v) {
+    PlayerEgo *self = this; this->route = (int)(intptr_t)v; }
 
 unsigned char PlayerEgo::boosting() {
     PlayerEgo *self = this; return ((uint8_t&)this->boostingFlag); }
@@ -678,8 +682,8 @@ float PlayerEgo::getCloakingPercentage() {
 int PlayerEgo::getBoostSpeed() {
     PlayerEgo *self = this; return this->boostSpeed; }
 
-void PlayerEgo::addGun(void* gun, int x) {
-  ((Player *)(this->player))->addGun((Gun *)gun, x);
+void PlayerEgo::addGun(Gun* gun, int x) {
+  ((Player *)(this->player))->addGun(gun, x);
   return PlayerEgo_addGun_ext(this);
 }
 
@@ -1176,7 +1180,7 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station)
     return 0;
 }
 
-int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
+int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
     if (((KIPlayer *)(this))->isDying() != 0)
         return 0;
 
@@ -1213,7 +1217,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
         if (dist < radius) {
             int ev = adp_arrivalEvent(this, this->dockStation);
             if (ev != 0)
-                ((Hud *)(hud))->hudEvent(ev, this, 0);
+                hud->hudEvent(ev, this, 0);
             ((int&)this->emergencyVec.x) = 1;        // hand back to manual control
         }
         PE_adp_apply(this);
@@ -1241,7 +1245,7 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
             if (((void*&)this->hackingGame) != 0) {
                 delete (HackingGame *)((void*&)this->hackingGame);
                 ((void*&)this->hackingGame) = 0;
-                ((Hud *)(hud))->setHackingGameActive(false);
+                hud->setHackingGameActive(false);
             }
             return 1;        // docking complete
         }
@@ -1250,21 +1254,21 @@ int PlayerEgo::approachDockingPoint(void *hud, int /*hud2*/, void *radar) {
     return 0;
 }
 
-void PlayerEgo::setLevel(void* level) {
+void PlayerEgo::setLevel(Level* level) {
   ((int&)this->level) = (int)(intptr_t)level;
-  void* src = (void*)(intptr_t)((Level*)level)->field_74;
-  void* gm = (void*)&((AEGeometry *)this->geometry)->getMatrix();
+  void* src = (void*)(intptr_t)level->field_74;
+  Matrix* gm = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, 9, 0);
   this->currentSystem = (int)(intptr_t)sys;
   ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit3((int)(intptr_t)sys, 0);
   if (gStatus->getCurrentCampaignMission() > 1) return;
   void* src2 = (void*)(intptr_t)this->level->particleEmitBoolPtr;
-  void* gm2 = (void*)&((AEGeometry *)this->geometry)->getMatrix();
+  Matrix* gm2 = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, 0xf, 0);
   this->smokeSystem = (int)(intptr_t)sys2;
   ((ParticleSystemManager *)(this->level->particleEmitBoolPtr))->enableSystemEmit3((int)(intptr_t)sys2, 0);
   void* src3 = (void*)(intptr_t)this->level->particleRenderBoolPtr;
-  void* gm3 = (void*)&((AEGeometry *)this->geometry)->getMatrix();
+  Matrix* gm3 = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, 0x2a, 0);
   this->explosionSmoke = (int)(intptr_t)sys3;
   return PlayerEgo_setLevel_ext((void*)(intptr_t)this->level->particleRenderBoolPtr, (int)(intptr_t)sys3, 0);
@@ -1792,7 +1796,7 @@ void PlayerEgo::roll(int amount) {
     Mat_assign((char *)&this->rollMatrix, rollMat);
 }
 
-void PlayerEgo::setTargetFollowCamera(void* cam) {
+void PlayerEgo::setTargetFollowCamera(TargetFollowCamera* cam) {
   void* m = ((void*&)this->handling);
   ((void*&)this->targetFollowCamera) = cam;
   return PlayerEgo_setTargetFollowCamera_ext(cam, m);
@@ -1815,15 +1819,14 @@ void PlayerEgo::setTargetFollowCamera(void* cam) {
 
 extern const float g_PE_cc_alarmDist;
 
-void PlayerEgo::calcCollision(void *candidates) {
+void PlayerEgo::calcCollision(Array<KIPlayer*> *candidates) {
     if (candidates == 0)
         return;
     if (this->dockedFlag != 0 && (unsigned)(this->dockingPointIndex - 1) < 3)
         return;   // in final docking approach: no collisions
 
-    unsigned int *arr = (unsigned int *)candidates;
-    for (unsigned i = 0; i < arr[0]; i++) {
-        void *obj = *(void **)(arr[1] + i * 4);
+    for (unsigned i = 0; i < candidates->size(); i++) {
+        void *obj = (*candidates)[i];
         if (obj == 0)
             continue;
 
@@ -2009,7 +2012,7 @@ __attribute__((visibility("hidden"))) extern int  *g_PE_tm_hum;
 extern const float g_PE_tm_fovNormal;
 extern const float g_PE_tm_fovAlien;
 
-void PlayerEgo::setTurretMode(int enable) {
+void PlayerEgo::setTurretMode(bool enable) {
     if (this->turretMode == 0 || ((void*&)this->miningGame) != 0 || this->autoTurretEquipped != 0) {
         // turret view unavailable -> restore default camera if a maneuver runs.
         if (((void*&)this->rocketControlGun) != 0) {
@@ -2223,7 +2226,7 @@ __attribute__((visibility("hidden"))) extern float *g_PE_dr_posNoLock;
 __attribute__((visibility("hidden"))) extern float *g_PE_dr_posBlink;
 __attribute__((visibility("hidden"))) extern float *g_PE_dr_posNormal;
 
-void PlayerEgo::draw(int allowHud) {
+void PlayerEgo::draw(bool allowHud) {
     if (((void*&)this->rocketControlGun) != 0)               // mid scripted maneuver: nothing to draw
         return;
 
@@ -2326,7 +2329,7 @@ extern "C" void PE_upd_post(PlayerEgo *self, int dt, void *radar, void *hud,
 
 extern const float g_PE_upd_handlingBias;
 
-void PlayerEgo::update(int dt, void *radar, void *hud, void *radio, void *script, int arg5, bool arg6, int arg7) {
+void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7) {
     (void)arg6; (void)arg7; (void)script;
 
     if (((void*&)this->hud) == 0)
@@ -2538,7 +2541,7 @@ void PlayerEgo::drawThrottle() {
     ((String *)(pct))->dtor();
 }
 
-void PlayerEgo::setAutoPilot(void* kip) {
+void PlayerEgo::setAutoPilot(KIPlayer* kip) {
   this->goingToWaypointFlag = 0;
   int v = (int)(intptr_t)kip;
   this->autoPilotTarget = v;
@@ -2552,7 +2555,7 @@ void PlayerEgo::setAutoPilot(void* kip) {
     }
     return;
   }
-  if (((KIPlayer *)kip)->field_0x72 != 0) this->goingToWaypointFlag = 1;
+  if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
   void* eng = gAppManager->GetEngine();
   I(eng, 0x360) = 0;   // RAWREAD: eng+0x360 (untyped GetEngine() result, no modeled class)
   ((int&)this->thrust) = 0x3f800000;
@@ -2893,7 +2896,7 @@ void PlayerEgo::setShip(int race, int group) {
                                (char *)&this->cloakMaterial1, nullptr);
 }
 
-void PlayerEgo::addGun2(void* arr, int x) {
+void PlayerEgo::addGun(Array<Gun*>* arr, int x) {
   Player_addGun2(this->player, arr, x);
   return PlayerEgo_addGun2_ext(this);
 }
@@ -2909,7 +2912,7 @@ void PlayerEgo::addGun2(void* arr, int x) {
 // _ZN5Level17enableMovingStarsEb @ 0xd6528) toggles the level's moving-stars
 // particle backdrop after the ship and its effects have been drawn.
 
-void PlayerEgo::render(int allowHud) {
+void PlayerEgo::render(bool allowHud) {
     Level *level = this->level;
 
     if (((PlayerEgo *)(this))->isDead() == 0) {
@@ -3165,7 +3168,7 @@ extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
 }
 // endExplosion() forwards to the explosion's final update so it can release.
 extern "C" void PlayerEgo_endExplosion_ext(int exp) {
-    ((Explosion *)exp)->update_camera(0, (TargetFollowCamera *)0);
+    ((Explosion *)exp)->update(0, (TargetFollowCamera *)0);
 }
 
 // ---- camera veneers ----
@@ -3320,7 +3323,7 @@ Vec3 PlayerEgo::getPosition_up() {
 // setRoute_init (0xab150 thunk) -- re-applies the currently assigned route on the
 // Level init path (Level::connectPlayers): the route slot at 0xfc is re-stored.
 void PlayerEgo::setRoute_init() {
-    setRoute(getRoute());
+    setRoute(((Route*&)this->route));
 }
 
 // rollLeft / rollRight (0x1abb74 / 0x1abb84 veneers) -- accelerometer banking

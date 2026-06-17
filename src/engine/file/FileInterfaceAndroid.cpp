@@ -285,12 +285,12 @@ extern const char *gZipPrefixA __attribute__((visibility("hidden")));
 extern const char *gZipPrefixB __attribute__((visibility("hidden")));
 extern const char *gModeRb __attribute__((visibility("hidden")));
 
-uint32_t FileInterfaceAndroid::FileExist(const String &name)
+uint32_t FileInterfaceAndroid::FileExist(String name)
 {
     String a(gZipPrefixA);
-    a.addAssign_str(const_cast<String *>(&name));
+    a.addAssign_str(&name);
     String b(gZipPrefixB);
-    b.addAssign_str(const_cast<String *>(&name));
+    b.addAssign_str(&name);
 
     void *z1 = zip_fopen(*gZipMain, a.GetAEChar(), 0);
     void *z2 = zip_fopen(*gZipPatch, b.GetAEChar(), 0);
@@ -326,7 +326,7 @@ extern const char *gOpenReadFmt __attribute__((visibility("hidden")));
 extern char *gStderrBase __attribute__((visibility("hidden")));
 extern const char *gModeRbR __attribute__((visibility("hidden")));
 
-void *FileInterfaceAndroid::OpenRead(const String &name, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6)
+void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6)
 {
     const unsigned short *w = GetAEWChar(name);
     if (this->enabled == 0)

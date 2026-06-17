@@ -8,6 +8,8 @@
 // Game types referenced by pointer only.
 struct Agent;
 struct Mission;
+struct Wanted;
+struct GameRecord;
 
 // RecordHandler — save/record serialization for the persistent game state.
 // The two leading pointers track the mission/agent currently being (de)serialized so the
@@ -41,13 +43,13 @@ public:
     void   recordStoreWrite_body(unsigned int fd);
     void  *recordStoreReadPreview(int slot);
     void   recordStoreWrite(int slot);
-    int    recordStoreWritePreview(void *rec, int slot);
+    int    recordStoreWritePreview(GameRecord *rec, int slot);
     int    recordStoreWritePreview_int(int slot);
     void   saveOptions();
-    void   writeAgent(void *agentPtr, unsigned int fd);
+    void   writeAgent(Agent *agentPtr, unsigned int fd);
     void   writeByteArrayAsOptionsFile(signed char *buf, int n);
     int    writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
-    void   writeMission(void *m, unsigned int fd);
-    void   writeWanted(void *w, unsigned int fd);
+    void   writeMission(Mission *m, unsigned int fd);
+    void   writeWanted(Wanted *w, unsigned int fd);
 };
 #endif

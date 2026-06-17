@@ -79,10 +79,10 @@ public:
     Matrix  getLocal();
     void    setLocal(Matrix m);
     void    setTarget(AEGeometry *target);
-    void    setCamOffset(Vector *offset);
-    void    setTargetOffset(Vector *offset);
-    void    setPosition(Vector *position);
-    void    setFirstPersonMatrix(Matrix *m);
+    void    setCamOffset(const Vector &offset);
+    void    setTargetOffset(const Vector &offset);
+    void    setPosition(const Vector &position);
+    void    setFirstPersonMatrix(Matrix &m);
     void    setZoomTarget(float zoom);
     void    setRoll(float roll);
     void    roll_(float delta);

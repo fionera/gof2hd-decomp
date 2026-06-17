@@ -43,13 +43,13 @@ public:
     ~FileInterfaceAndroid() override;
 
     // FileInterface backend slots.
-    void       *OpenRead(const String &name, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6) override;
+    void       *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6);
     void       *OpenWrite(const String &name, uint32_t p2, uint32_t p3) override;
     uint32_t    Read(uint32_t n, void *buf) override;
     uint32_t    Write(uint32_t n, const void *buf) override;
     uint32_t    Seek(uint32_t n) override;
     uint32_t    GetFileSize() override;
-    uint32_t    FileExist(const String &name) override;
+    uint32_t    FileExist(String name);
     const char *GetAppRootDir() override;
     uint32_t    GetDeviceFreeSpace() override;
     void        SetAppRootDir(const char *p) override;

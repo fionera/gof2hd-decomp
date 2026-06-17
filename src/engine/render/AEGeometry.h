@@ -123,6 +123,6 @@ public:
     void    setLodChildTransform(uint32_t param);
     void    setLodLastVisibleDistance(uint64_t d);
     void    updateLod(const Vector &camPos, float screenScale);
-    void    DEBUG_setMeshMergerIndex(int a, void *b);
+    void    DEBUG_setMeshMergerIndex(int a, AbyssEngine::LodMeshMerger *b);
 };
 #endif

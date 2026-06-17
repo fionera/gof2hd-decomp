@@ -408,9 +408,9 @@ __attribute__((visibility("hidden"))) extern const char g_WA_empty1[];
 __attribute__((visibility("hidden"))) extern const char g_WA_empty2[];
 
 // RecordHandler::writeAgent(Agent*, unsigned int fd)
-void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
+void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
     RecordHandler *self = this;
-    Agent *agent = (Agent *)agentPtr;
+    Agent *agent = agentPtr;
     AEFile_WriteInt(((Agent *)(agent))->getCosts(), fd);
     AEFile_WriteInt(((Agent *)(agent))->getSellSystemIndex(), fd);
     AEFile_WriteInt(((Agent *)(agent))->getSellBlueprintIndex(), fd);
@@ -469,7 +469,7 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
     }
 
     self->currentAgent = agent;
-    void *mission = ((Agent *)(agent))->getMission();
+    Mission *mission = agent->getMission();
     if (mission == 0 || self->currentMission == mission) {
         AEFile_WriteInt(-1, fd);
     } else {
@@ -482,43 +482,43 @@ void RecordHandler::writeAgent(void *agentPtr, unsigned int fd) {
 
 
 // RecordHandler::writeMission(Mission*, unsigned int fd)
-void RecordHandler::writeMission(void *m, unsigned int fd) {
+void RecordHandler::writeMission(Mission *m, unsigned int fd) {
     RecordHandler *self = this;
-    AEFile_WriteInt(((Mission *)(m))->getType(), fd);
-    if (((Mission *)(m))->isEmpty() == 0) {
+    AEFile_WriteInt(m->getType(), fd);
+    if (m->isEmpty() == 0) {
         String s;
-        s = ((Mission *)m)->getClientName();
+        s = m->getClientName();
         AEFile_WriteString(&s, fd, 1);
-        s = ((Mission *)m)->getTargetName();
+        s = m->getTargetName();
         AEFile_WriteString(&s, fd, 1);
-        s = ((Mission *)m)->getTargetStationName();
+        s = m->getTargetStationName();
         AEFile_WriteString(&s, fd, 1);
-        s = ((Mission *)m)->getTargetSystemName();
+        s = m->getTargetSystemName();
         AEFile_WriteString(&s, fd, 1);
 
-        AEFile_WriteBool(((Mission *)(m))->isCampaignMission(), fd);
-        if (((Mission *)(m))->getClientImage() == 0) {
+        AEFile_WriteBool(m->isCampaignMission(), fd);
+        if (m->getClientImage() == 0) {
             AEFile_WriteInt(-1, fd);
         } else {
             AEFile_WriteInt(5, fd);
             for (int i = 0; i != 5; i++) {
-                int *img = (int *)(long)((Mission *)(m))->getClientImage();
+                int *img = (int *)(long)m->getClientImage();
                 AEFile_WriteInt(img[i], fd);
             }
         }
-        AEFile_WriteInt(((Mission *)(m))->getClientRace(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getCosts(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getBonus(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getReward(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getTargetStation(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getDifficulty(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getProductionGoodIndex(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getProductionGoodAmount(), fd);
-        AEFile_WriteInt(((Mission *)(m))->getStatusValue(), fd);
-        AEFile_WriteBool(((Mission *)(m))->isVisible(), fd);
+        AEFile_WriteInt(m->getClientRace(), fd);
+        AEFile_WriteInt(m->getCosts(), fd);
+        AEFile_WriteInt(m->getBonus(), fd);
+        AEFile_WriteInt(m->getReward(), fd);
+        AEFile_WriteInt(m->getTargetStation(), fd);
+        AEFile_WriteInt(m->getDifficulty(), fd);
+        AEFile_WriteInt(m->getProductionGoodIndex(), fd);
+        AEFile_WriteInt(m->getProductionGoodAmount(), fd);
+        AEFile_WriteInt(m->getStatusValue(), fd);
+        AEFile_WriteBool(m->isVisible(), fd);
 
-        self->currentMission = (Mission *)m;
-        void *agent = ((Mission *)(m))->getAgent();
+        self->currentMission = m;
+        Agent *agent = m->getAgent();
         if (agent == 0 || self->currentAgent == agent) {
             AEFile_WriteInt(-1, fd);
         } else {
@@ -1000,34 +1000,34 @@ void * RecordHandler::readAgent(unsigned int fd) {
 
 
 // RecordHandler::writeWanted(Wanted*, unsigned int fd)
-void RecordHandler::writeWanted(void *w, unsigned int fd) {
+void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
     (void)this;
-    AEFile_WriteBool(((Wanted *)(w))->isActive(), fd);
-    AEFile_WriteBool(((Wanted *)(w))->isTerminated(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getCurrentLocation(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getTravelsTo(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getLastSeen(), fd);
+    AEFile_WriteBool(w->isActive(), fd);
+    AEFile_WriteBool(w->isTerminated(), fd);
+    AEFile_WriteInt(w->getCurrentLocation(), fd);
+    AEFile_WriteInt(w->getTravelsTo(), fd);
+    AEFile_WriteInt(w->getLastSeen(), fd);
 
     String name;
-    name = ((Wanted *)w)->getName();
+    name = w->getName();
     AEFile_WriteString(&name, fd, 1);
 
-    AEFile_WriteInt(((Wanted *)(w))->getIndex(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getBoard(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getRace(), fd);
-    AEFile_WriteBool(((Wanted *)(w))->isMale(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getShip(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getWeapon(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getHitpoints(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getLoot(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getLootAmount(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getReward(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getRequiredBounties(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getRequiredMission(), fd);
-    AEFile_WriteInt(((Wanted *)(w))->getNumWingmen(), fd);
+    AEFile_WriteInt(w->getIndex(), fd);
+    AEFile_WriteInt(w->getBoard(), fd);
+    AEFile_WriteInt(w->getRace(), fd);
+    AEFile_WriteBool(w->isMale(), fd);
+    AEFile_WriteInt(w->getShip(), fd);
+    AEFile_WriteInt(w->getWeapon(), fd);
+    AEFile_WriteInt(w->getHitpoints(), fd);
+    AEFile_WriteInt(w->getLoot(), fd);
+    AEFile_WriteInt(w->getLootAmount(), fd);
+    AEFile_WriteInt(w->getReward(), fd);
+    AEFile_WriteInt(w->getRequiredBounties(), fd);
+    AEFile_WriteInt(w->getRequiredMission(), fd);
+    AEFile_WriteInt(w->getNumWingmen(), fd);
 
     for (int i = 0; i != 5; i++) {
-        int *parts = ((Wanted *)(w))->getImageParts();
+        int *parts = w->getImageParts();
         AEFile_WriteInt(parts[i], fd);
     }
 
@@ -1035,7 +1035,7 @@ void RecordHandler::writeWanted(void *w, unsigned int fd) {
 }
 
 // RecordHandler::recordStoreWritePreview(GameRecord*, int)
-int RecordHandler::recordStoreWritePreview(void *rec, int slot) {
+int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     if (rec == 0)
         return 0;
 
@@ -1100,7 +1100,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(gStatus->getStationsVisited(), fd);
     AEFile_WriteInt(gStatus->getCurrentCampaignMission(), fd);
     this->writeMission(gStatus->getFreelanceMission(), fd);
-    this->writeMission((void *)(intptr_t)gStatus->getCampaignMission(), fd);
+    this->writeMission(gStatus->getCampaignMissionPtr(), fd);
     AEFile_WriteInt(gStatus->getJumpgateUsed(), fd);
     AEFile_WriteInt(gStatus->getCapturedCrates(), fd);
     AEFile_WriteInt(gStatus->getBoughtEquipment(), fd);
@@ -1335,10 +1335,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     RSW_writeBoolArray(status->field_4c, fd);
 
     // Agents.
-    unsigned int *agents = (unsigned int *)status->getAgents();
-    AEFile_WriteInt(*agents, fd);
-    for (unsigned i = 0; i < *agents; i++) {
-        this->writeAgent(*(void **)(agents[1] + i * 4), fd);
+    Array<Agent*> *agents = status->agents;
+    AEFile_WriteInt(agents->size(), fd);
+    for (unsigned i = 0; i < agents->size(); i++) {
+        this->writeAgent((*agents)[i], fd);
     }
 
     // Tutorial / one-shot progress flags (option block +0x8 .. +0x24).
@@ -1426,10 +1426,10 @@ void RecordHandler::recordStoreWrite_body(unsigned int fd) {
     }
 
     // Wanted board, collected bounties, and the remaining one-shot UI/progress flags.
-    unsigned int *wanted = (unsigned int *)status->wanted;   // engine Array<Wanted*> payload (size at [0], data at [1])
-    AEFile_WriteInt(*wanted, fd);
-    for (unsigned i = 0; i < *wanted; i++) {
-        this->writeWanted(*(void **)(wanted[1] + i * 4), fd);
+    Array<Wanted*> *wanted = status->wanted;   // engine Array<Wanted*> payload
+    AEFile_WriteInt(wanted->size(), fd);
+    for (unsigned i = 0; i < wanted->size(); i++) {
+        this->writeWanted((*wanted)[i], fd);
     }
     for (unsigned i = 0; i < 4; i++) {
         AEFile_WriteInt(status->getCollectedBounties(i), fd);

@@ -228,7 +228,7 @@ void Explosion::start(const Vector &position, const Vector &direction) {
     this->playSound(&soundPosition);
 }
 
-void Explosion::update_camera(int dt, TargetFollowCamera *camera) {
+void Explosion::update(int dt, TargetFollowCamera *camera) {
     if (this->playing == 0) {
         return;
     }

@@ -128,21 +128,21 @@ bool TargetFollowCamera::isInLookAtMode()           { return this->lookAtCam != 
 bool TargetFollowCamera::isInFastForwardMode()      { return this->fastForward != 0; }
 bool TargetFollowCamera::hideShipForFirstPersonCam(){ return this->hideShip != 0; }
 
-void TargetFollowCamera::setFirstPersonMatrix(Matrix *m) { this->firstPersonMatrix = *m; }
+void TargetFollowCamera::setFirstPersonMatrix(Matrix &m) { this->firstPersonMatrix = m; }
 
-void TargetFollowCamera::setCamOffset(Vector *offset) {
-    *getCamOffset() = *offset;
-    this->zoom = VectorLength(*offset);
+void TargetFollowCamera::setCamOffset(const Vector &offset) {
+    *getCamOffset() = offset;
+    this->zoom = VectorLength(offset);
 }
 
-void TargetFollowCamera::setTargetOffset(Vector *offset) {
-    *getTargetOffset() = *offset;
+void TargetFollowCamera::setTargetOffset(const Vector &offset) {
+    *getTargetOffset() = offset;
 }
 
-void TargetFollowCamera::setPosition(Vector *position) {
-    this->posX = position->x;
-    this->posY = position->y;
-    this->posZ = position->z;
+void TargetFollowCamera::setPosition(const Vector &position) {
+    this->posX = position.x;
+    this->posY = position.y;
+    this->posZ = position.z;
 }
 
 void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {

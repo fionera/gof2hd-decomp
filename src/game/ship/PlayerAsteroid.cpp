@@ -5,6 +5,7 @@
 #include "game/mission/Explosion.h"
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
+#include "engine/math/Transform.h"
 
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
@@ -13,14 +14,10 @@ using AbyssEngine::AEMath::VectorLength;
 using AbyssEngine::AEMath::MatrixSetRotation;
 
 // The PaintCanvas transform node carries the model-space bounding radius at +0xe0.
-// PaintCanvas.h models a differently-shaped Transform, so a minimal local view is
-// used here to read just that one field.
-struct PlayerAsteroidTransformBounds { char _pad[0xe0]; float boundingRadius; };
-
+// This veneer maps the canvas' TransformGetTransform helper to the engine's
+// Transform node so its boundingRadius can be read directly.
 namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
-namespace AbyssEngine { namespace PaintCanvas {
-PlayerAsteroidTransformBounds* TransformGetTransform(void* canvas, uint32_t handle);
-} }
+AbyssEngine::Transform* PlayerAsteroidTransformGetTransform(void* canvas, uint32_t handle);
 
 // Game-state singletons owned elsewhere in the level/world layer.
 extern void*  g_playerAsteroidCanvas;
@@ -319,8 +316,8 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry* geometry, int explosion
     this->field_0x168 = 0;
     this->field_0x16c = 0;
 
-    PlayerAsteroidTransformBounds* transform =
-        AbyssEngine::PaintCanvas::TransformGetTransform(g_playerAsteroidCanvas, geometry->transform);
+    AbyssEngine::Transform* transform =
+        PlayerAsteroidTransformGetTransform(g_playerAsteroidCanvas, geometry->transform);
     this->player->setRadius((int)(transform->boundingRadius * scaling * 0.5f));
     this->player->setMaxHitpoints((int)(scaling * 100.0f + 30.0f));
     this->minable = quality > 3;

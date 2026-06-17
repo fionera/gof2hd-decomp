@@ -4,32 +4,23 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/file/AEFile.h"
 
 // Galaxy on Fire 2 -- AEPakFile.
 // A virtual file reader that exposes a windowed view (base offset + size limit) over
 // a held FileInterface. The window tracks the current read position; Read clamps to
 // the remaining bytes and forwards to the underlying interface, Skip drains bytes by
-// reading them into a throwaway buffer.
-
-// The held file interface. It has no dedicated header of its own, so the minimal call-through
-// interface it is accessed through is described here. Only the Read/Discard slots and the
-// destructor (the engine's Free slot, +0x04) are used. At runtime the held object is a
+// reading them into a throwaway buffer. At runtime the held FileInterface is a
 // FileInterfaceAndroid, defined in its own translation unit.
-class PakHeldFile {
-public:
-    virtual ~PakHeldFile() {}                                  // +0x04 Free
-    virtual uint32_t Read(uint32_t bytes, void *buffer)        { return 0; }   // +0x14
-    virtual void     Discard()                                 {}              // +0x44
-};
 
 class AEPakFile {
 public:
-    PakHeldFile   *fileInterface;
+    FileInterface *fileInterface;
     int            sizeLimit;
     int            baseOffset;
     int            position;
 
-    AEPakFile(PakHeldFile *file, int sizeLimit, int baseOffset);
+    AEPakFile(FileInterface *file, int sizeLimit, int baseOffset);
     virtual ~AEPakFile();
 
     virtual uint32_t Release();

@@ -69,7 +69,7 @@ public:
 
     // The three floats are the spawn position; they seed both the KIPlayer base
     // position and this object's position (the binary passes them once).
-    PlayerFixedObject(int kind, int param2, void *player, void *geom,
+    PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
                       float x, float y, float z);
     ~PlayerFixedObject();
 
@@ -87,13 +87,13 @@ public:
     V3 projectCollisionOnSurface(const Vector &vec) override;   // actor vtable slot +0x58
     void render() override;
     void reset();
-    void setBV(BoundingVolume *bv);
+    void setBV(Array<BoundingVolume *> *bv);
     void setBV_arr(Array<BoundingVolume *> *bv);
     void setDeadButSelectable();
     void setDockingType(int v);
     void setExhaustVisible(bool v);
     void setMoving(bool v);
-    void * setName(String *name);
+    void * setName(String name);
     void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
     void setPosition_vec(const Vector &v);
     void setTransportID(int v);

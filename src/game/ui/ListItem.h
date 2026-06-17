@@ -53,13 +53,13 @@ public:
     ListItem(Ship* s);
     ListItem(const AbyssEngine::String* src);
     ListItem(const AbyssEngine::String* p1, const AbyssEngine::String* p2);
-    ListItem(const AbyssEngine::String* src, bool b);
-    ListItem(const AbyssEngine::String* src, bool b, int v);
+    ListItem(AbyssEngine::String* src, bool b);
+    ListItem(AbyssEngine::String* src, bool b, int v);
     ListItem(const AbyssEngine::String* src, int v);
     ListItem(const ListItem& src);
     ListItem(int v);                                 // also the "slot" entry
     ListItem(int a, int b);
-    ListItem(int a, int b, const AbyssEngine::String* src);
+    ListItem(int a, int b, AbyssEngine::String* src);
 
     ~ListItem();
 

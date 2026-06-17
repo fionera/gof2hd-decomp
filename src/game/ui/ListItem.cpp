@@ -112,7 +112,7 @@ bool ListItem::isImage() {
     return this->imageIndex >= 0;
 }
 
-ListItem::ListItem(int a, int b, const AbyssEngine::String* src) {
+ListItem::ListItem(int a, int b, AbyssEngine::String* src) {
     this->init();
     this->imageIndex = a;
     this->name = new AbyssEngine::String(*src);
@@ -172,7 +172,7 @@ bool ListItem::checkCredits() {
     return price <= status->getCredits();
 }
 
-ListItem::ListItem(const AbyssEngine::String* src, bool b) {
+ListItem::ListItem(AbyssEngine::String* src, bool b) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->text = b;
@@ -236,7 +236,7 @@ ListItem::ListItem(Agent* a) {
     this->agent = a;
 }
 
-ListItem::ListItem(const AbyssEngine::String* src, bool b, int v) {
+ListItem::ListItem(AbyssEngine::String* src, bool b, int v) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->textButton = 1;

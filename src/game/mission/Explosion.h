@@ -42,7 +42,7 @@ public:
     void    start_matrix(const Matrix *matrix);
     void    translate(const Vector &v);
     void    update(int dt, const Vector &position);
-    void    update_camera(int dt, TargetFollowCamera *camera);
+    void    update(int dt, TargetFollowCamera *camera);
     void    update_vector(int dt, const Vector *position);
 
     // Tail helpers extracted from translate()/update_vector(): translating the

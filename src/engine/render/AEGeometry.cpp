@@ -62,10 +62,10 @@ void AEGeometry::setVisible(bool v)
     this->visibility = v ? 0x0101 : 0;
 }
 
-void AEGeometry::DEBUG_setMeshMergerIndex(int a, void *b)
+void AEGeometry::DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b)
 {
     this->mergerIndex = (uint32_t)a;
-    this->merger = (LodMeshMerger *)b;
+    this->merger = b;
 }
 
 void AEGeometry::addChild(uint32_t child)

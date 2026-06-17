@@ -356,7 +356,7 @@ float Player::getEmpForce() {
 // Accessor lives as the non-member inline Player_turnedEnemy() in Player.h, because a
 // member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
 
-bool Player::gunAvailable(unsigned int slot) {
+bool Player::gunAvailable(int slot) {
     if (slot < 4) {
         Array<Gun *> *slotArray = this->guns->data()[slot];
         if (slotArray != 0 && slotArray->size() != 0) {
@@ -1136,8 +1136,8 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                         ((Standing *)(standing))->setPlayerSignatureRace(-1);
                         void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                         int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                        int p = (int)(long)((Level *)(self->kiPlayer->level))->getPlayer();
-                        ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
+                        PlayerEgo *p = ((Level *)(self->kiPlayer->level))->getPlayer();
+                        ((Hud *)(hud))->hudEvent(0x1f, p, 0);
                     }
                 }
             }
@@ -1157,8 +1157,8 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                     ((Standing *)(standing))->setPlayerSignatureRace(-1);
                     void *ego = (void *)(__INTPTR_TYPE__)((Level *)(self->kiPlayer->level))->getPlayer();
                     int hud = (int)(__INTPTR_TYPE__)((PlayerEgo *)(ego))->getHUD();
-                    int p = (int)(long)((Level *)(self->kiPlayer->level))->getPlayer();
-                    ((Hud *)(hud))->hudEvent(0x1f, (void *)(__INTPTR_TYPE__)p, 0);
+                    PlayerEgo *p = ((Level *)(self->kiPlayer->level))->getPlayer();
+                    ((Hud *)(hud))->hudEvent(0x1f, p, 0);
                 }
                 self->turnedEnemy = 1;
             }
@@ -1412,7 +1412,7 @@ extern "C" const float k_update_a;
 extern "C" const float k_update_b;
 extern "C" const float k_update_c;
 
-Vector * Player::update(int dt, int doSound) {
+Vector * Player::update(int dt, bool doSound) {
     Player *self = this;
 
     int b4 = self->damageTimer + dt;

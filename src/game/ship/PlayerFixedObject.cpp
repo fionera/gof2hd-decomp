@@ -64,8 +64,8 @@ String PlayerFixedObject::getName() {
     return this->name;
 }
 
-void * PlayerFixedObject::setName(String *name) {
-    return this->name.assign(name);
+void * PlayerFixedObject::setName(String name) {
+    return this->name.assign(&name);
 }
 
 void PlayerFixedObject::setMoving(bool v) {
@@ -225,7 +225,7 @@ afterMotion:
         Level *lod = (Level *)self->level;
         void *mgr = *(void **)&lod->field_74;
         int sys = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;
-        void *m = (void *)&((AEGeometry *)(self->geometry))->getMatrix();
+        const AbyssEngine::AEMath::Matrix *m = &((AEGeometry *)(self->geometry))->getMatrix();
         ((ParticleSystemManager *)(mgr))->systemSetMatrix(sys, m);
         int sndHandle = sys;
         Vector *pos = 0;
@@ -494,10 +494,8 @@ int PlayerFixedObject::collide(float x, float y, float z) {
     return 0;
 }
 
-void PlayerFixedObject::setBV(BoundingVolume *bv) {
-    Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
-    this->boundingVolumes = arr;
-    return ((BoundingVolume *)(bv))->setArr(arr);
+void PlayerFixedObject::setBV(Array<BoundingVolume *> *bv) {
+    this->boundingVolumes = bv;
 }
 
 // PC-relative pointer-to-function-pointer; *holder is a Vector::operator= style routine
@@ -606,9 +604,9 @@ PlayerFixedObject::~PlayerFixedObject() {
 
 // Delegates to the recovered initialization body which spawns the fixed object and
 // seeds its position, name, faction and loot list.
-PlayerFixedObject::PlayerFixedObject(int kind, int param2, void *player, void *geom,
+PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
                                      float x, float y, float z)
-    : KIPlayer(kind, -1, (Player *)player, (AEGeometry *)geom, x, y, z, false) {
+    : KIPlayer(kind, -1, player, geom, x, y, z, false) {
     this->ctor(kind, param2, player, geom, x, y, z);
 }
 

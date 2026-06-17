@@ -1682,8 +1682,7 @@ void Level::reset() {
             ((RadioMessage *)(*this->messages)[i])->reset();
         }
     }
-    // FIXME: PlayerEgo::setRoute is mis-typed as int (KIPlayer::setRoute takes Route*); cast at the boundary.
-    player->setRoute((int)(intptr_t)playerRoute);
+    player->setRoute(playerRoute);
     int count;
     if (this->enemies != nullptr) {
         count = 0;
@@ -1834,7 +1833,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         ((Player *)this->player)->damageGamma(factor);
         if (hpBefore > 0xe && ((Player *)this->player)->getGammaHP() < 0xf) {
             int hud = this->player->getHUD();
-            ((Hud *)(intptr_t)hud)->hudEvent(0x2c, (void *)(intptr_t)this->player, 0);
+            ((Hud *)(intptr_t)hud)->hudEvent(0x2c, this->player, 0);
         }
         ego = this->player;
     }
@@ -2619,7 +2618,7 @@ void Level::createStaticObjects()
             String *txt = gGameText->getText(**g_cso_textB);
             String name;
             name.ctor_copy(txt, 0);
-            ((PlayerFixedObject *)o)->setName(&name);
+            ((PlayerFixedObject *)o)->setName(name);
             ((PlayerFixedObject *)o)->setDockingType(1);
             if (o->cargo != 0)
                 delete (Array<void*> *)o->cargo;
@@ -2785,9 +2784,9 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         obj = (PlayerFixedObject *)::operator new(0x1bc);
         new (obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
         int wreck = 0;
-        void *bv = Level::cs_buildBV(race, type, &wreck);
+        Array<BoundingVolume *> *bv = Level::cs_buildBV(race, type, &wreck);
         obj->setWreckedMeshId(wreck);
-        obj->setBV((BoundingVolume*)bv);
+        obj->setBV(bv);
         int gg = gGlobals->getShipGroup(type, race, 0);
         obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, false);   // KIPlayer::setShipGroup
         this->lodManager->addObject(obj->geometry);
@@ -3864,11 +3863,11 @@ BoundingVolume *Level::gbv_makeVolume(int rec, int shape) {
 // --- createShip(): build the class-appropriate bounding-volume array for a ship
 // of (race,type) and report its wreck mesh id. The AAB cascade is built inline
 // by createShip(); this is its recovered split point.
-void *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
+Array<BoundingVolume *> *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
     (void)race; (void)type;
     if (outWreckMesh)
         *outWreckMesh = -1;
-    return 0;
+    return nullptr;
 }
 
 // --- createGasClouds(): pick a far random position for cloud `i`. boss pins the

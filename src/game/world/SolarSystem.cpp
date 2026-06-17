@@ -218,7 +218,9 @@ int SolarSystem::isFullyDiscovered() {
     }
 }
 
-// Scan the station-index array for `idx`.
-int SolarSystem::stationIsInSystem(int idx) {
-    return stationIsInSystem_int(idx);
+// Resolve the station's index and scan the station-index array for it.
+int SolarSystem::stationIsInSystem(Station* station) {
+    if (station == nullptr)
+        return 0;
+    return stationIsInSystem_int(station->getIndex());
 }

@@ -28,7 +28,7 @@ __attribute__((visibility("hidden"))) extern void                         **g_pl
 // veneers that could not be tied back to a named method, so they remain as
 // typed indirect calls.
 typedef int   (*RandomNextIntFn)(void *random, int limit);
-typedef void *(*GetPlayerFn)(Level *level);
+typedef PlayerEgo *(*GetPlayerFn)(Level *level);
 
 __attribute__((visibility("hidden"))) extern RandomNextIntFn g_playerWormHole_update_randomAlien;
 __attribute__((visibility("hidden"))) extern RandomNextIntFn g_playerWormHole_update_randomNormal;
@@ -184,12 +184,12 @@ void PlayerWormHole::update(int elapsed)
 
             PlayerEgo *ego = (PlayerEgo *)(intptr_t)this->level->getPlayer();
             if (ego->goingToWormhole()) {
-                void *target = g_playerWormHole_update_getPlayer(this->level);
-                Hud *hud = (Hud *)(intptr_t)((PlayerEgo *)target)->getHUD();
+                PlayerEgo *target = g_playerWormHole_update_getPlayer(this->level);
+                Hud *hud = (Hud *)(intptr_t)target->getHUD();
                 target = g_playerWormHole_update_getPlayer(this->level);
                 hud->hudEvent(6, target, 0);
                 target = g_playerWormHole_update_getPlayer(this->level);
-                ((PlayerEgo *)target)->setAutoPilot(nullptr);
+                target->setAutoPilot(nullptr);
             }
         }
     }

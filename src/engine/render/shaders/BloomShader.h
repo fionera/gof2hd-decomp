@@ -66,7 +66,7 @@ public:
     void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     void SetInActive() override;
     void RenderEffect(FBOContainer *source, Engine *engine) override;
-    void RenderEffect(FBOContainer *source, FBOContainer **target, Engine *engine) override;
+    void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) override;
 };
 
 } // namespace AbyssEngine

@@ -44,7 +44,7 @@ void BlurShader::SetInActive()
 
 // Renders the blur pass over a full-screen quad, sampling fbo and writing either to the back
 // buffer (*target == nullptr) or into the capture target FBO.
-void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *engine,
+void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *engine,
                               float amount, Vector vector)
 {
     float matrix[16] = {};
@@ -68,7 +68,7 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     glActiveTexture(0x84c0);
     fbo->Activate();
 
-    if (*target == 0) {
+    if (target == 0) {
         glBindFramebuffer(0x8d40, engine->field_0x40c);
         int width;
         int height;
@@ -81,7 +81,7 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
         }
         glViewport(0, 0, width, height);
     } else {
-        (*target)->BeginCapture();
+        target->BeginCapture();
     }
 
     int position = this->aPosition;
@@ -142,8 +142,8 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer **target, Engine *
     if (texCoord >= 0) {
         glDisableVertexAttribArray(texCoord);
     }
-    if (*target != 0) {
-        (*target)->EndCapture();
+    if (target != 0) {
+        target->EndCapture();
     }
     glEnable(0xbe2);
     glBlendFunc(0x302, 0x303);
