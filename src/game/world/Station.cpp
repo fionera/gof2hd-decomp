@@ -26,7 +26,7 @@ Station::Station()
       ships(nullptr),
       agents(nullptr) {}
 
-Station::Station(const String& name, int index, int systemIndex, int techLevel, int textureIndex)
+Station::Station(String name, int index, int systemIndex, int techLevel, int textureIndex)
     : name(name),
       index(index),
       systemIndex(systemIndex),

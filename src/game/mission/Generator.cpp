@@ -210,7 +210,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
             AbyssEngine::String name;
             Globals_getRandomName(&name, **(int **)(&g_Generator_storyNames), 0,
                                   1);
-            Agent *agent = new Agent(-1, &name, station->getIndex(),
+            Agent *agent = new Agent(-1, name, station->getIndex(),
                                      status->getSystem(), 0, 1, -1, -1, -1, -1);
             agent->setOffer(2);
             agent->setSellItemData(0x44, 1, 0);
@@ -245,7 +245,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                             AbyssEngine::String name;
                             Globals_getRandomName(&name, *g_Generator_enemyNames,
                                                   race, 1);
-                            agent = new Agent(-1, &name, station->getIndex(),
+                            agent = new Agent(-1, name, station->getIndex(),
                                               status->getSystem(), race, 1, -1,
                                               -1, -1, -1);
                             result->data()[i] = agent;
@@ -580,7 +580,7 @@ Agent *Generator::createAgent(Station *station) {
     int *names = g_Generator_nameSource;
     AbyssEngine::String name;
     Globals_getRandomName(&name, *names, race, male);
-    Agent *agent = new Agent(-1, &name, station->getIndex(), status->getSystem(),
+    Agent *agent = new Agent(-1, name, station->getIndex(), status->getSystem(),
                              race, male, -1, -1, -1, -1);
     agent->setOffer(offer);
     agent->setImageParts((*g_Generator_imageFactory)->createChar(male, race));

@@ -59,7 +59,7 @@ public:
     uint8_t isVisible();
     void setInstantActionMission(bool v);
     void setProductionGoods(int a, int b);
-    void* setTargetName(const String& rhs);
+    void* setTargetName(String rhs);
     void setTargetStation(int idx);
     void* setTargetSystemName(const String& rhs);
     void setVisible(bool v);

@@ -38,10 +38,10 @@ public:
     void    setMatrix(const Matrix *matrix);
     void    setScaling(float scale);
     void    setWeaponIndex(int index);
-    void    start(const Vector *position, const Vector *direction);
+    void    start(const Vector &position, const Vector &direction);
     void    start_matrix(const Matrix *matrix);
-    void    translate(const Vector *v);
-    void    update(int dt, TargetFollowCamera *camera);
+    void    translate(const Vector &v);
+    void    update(int dt, const Vector &position);
     void    update_camera(int dt, TargetFollowCamera *camera);
     void    update_vector(int dt, const Vector *position);
 

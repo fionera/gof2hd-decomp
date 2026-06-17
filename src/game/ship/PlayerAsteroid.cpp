@@ -171,7 +171,7 @@ void PlayerAsteroid::update(int delta)
     }
 
     if (this->state == 3) {
-        this->explosion->update(delta, nullptr);
+        this->explosion->update_vector(delta, nullptr);
         if (this->explosion->isPlaying() == 0) {
             this->state = 4;
             player->setBombForce(0.0f);
@@ -204,7 +204,7 @@ void PlayerAsteroid::update(int delta)
         float force = (float)(int)(bombForce * 0.1f * (clamped / 2.0f + 1.0f));
         hit = hit * force;
         KIPlayer::translate(hit);
-        this->explosion->translate(&hit);
+        this->explosion->translate(hit);
         if (this->secondaryGeometry() != nullptr)
             this->secondaryGeometry()->translate(hit);
         float nextForce = bombForce * 0.75f;

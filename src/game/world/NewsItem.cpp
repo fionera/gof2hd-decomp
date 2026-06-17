@@ -1,6 +1,6 @@
 #include "game/world/NewsItem.h"
 
-NewsItem::NewsItem(int id, bool flag, void *data, int length, int minLevel, int maxLevel)
+NewsItem::NewsItem(int id, bool flag, bool *data, int length, int minLevel, int maxLevel)
 {
     this->flag = (uint8_t)flag;
     this->id = id;
@@ -21,7 +21,7 @@ NewsItem::~NewsItem()
 NewsItem *NewsItem::clone()
 {
     int len = this->length;
-    uint8_t *buf = new uint8_t[len];
+    bool *buf = new bool[len];
     for (int i = 0; i < len; i = i + 1) {
         buf[i] = ((uint8_t *)this->data)[i];
     }

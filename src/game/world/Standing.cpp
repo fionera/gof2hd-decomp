@@ -60,8 +60,8 @@ bool Standing::isEnemyWithAnyone() {
 extern const uint32_t Standing_enemyRaceTable[4];
 
 // idx<4 ? table[idx] : 8.
-uint32_t Standing::getEnemyRace(unsigned idx) {
-    if (idx < 4)
+uint32_t Standing::getEnemyRace(int idx) {
+    if ((unsigned)idx < 4)
         return Standing_enemyRaceTable[idx];
     return 8;
 }
@@ -140,7 +140,7 @@ bool Standing::isEnemy(int race) {
 
 // A committed crime against a race. Severity doubles in hardcore mode; kinds 0/2 are
 // "against the even slot", 1/3 the odd slot, with 0/2 applied as a penalty (negated).
-void Standing::applyDelict(unsigned kind, int severity) {
+void Standing::applyDelict(int kind, int severity) {
     int hc = gStatus->hardCoreMode();
     int delta = severity << hc;
     switch (kind) {
@@ -218,7 +218,7 @@ bool Standing::isFriend(int race) {
 
 // Standing toward the faction, normalized to [0, 1] (negative standings clamp to 0).
 // Out-of-range race returns 0.
-float Standing::getMissionBonus(unsigned race) {
+float Standing::getMissionBonus(int race) {
     float s0;
     switch (race) {
     case 0:

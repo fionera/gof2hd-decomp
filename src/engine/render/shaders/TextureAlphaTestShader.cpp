@@ -98,7 +98,7 @@ void TextureAlphaTestShader::UpdateMeshData(Mesh *mesh, Engine *engine)
     }
 }
 
-void TextureAlphaTestShader::ConnectShaderComponents(int program, int index)
+void TextureAlphaTestShader::ConnectShaderComponents(unsigned int program, int index)
 {
     this->uTextureLoc[index] = glGetUniformLocation(program, "u_Texture");
     this->aPositionLoc[index] = glGetAttribLocation(program, "a_Position");

@@ -219,7 +219,7 @@ void Radio::update(long time, PlayerEgo* ego, LevelScript* script)
         this->displayDuration = (int)this->textLines->size() * 2000 + 1500;
 
         String agentName = radio_string_from_cstr(g_Radio_agentName);
-        Agent* agent = new Agent(0, &agentName, 0, 0, agentIndex, generated,
+        Agent* agent = new Agent(0, agentName, 0, 0, agentIndex, generated,
                                  0, 0, 0, 0);
         this->soundId = Globals_getDialogueSoundId(*g_Radio_globals,
                                                    message->textID, agent);

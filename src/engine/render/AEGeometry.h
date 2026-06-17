@@ -5,6 +5,7 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "mathtypes.h"
+#include "engine/math/AEMath.h"
 // Galaxy on Fire 2 -- AbyssEngine AEGeometry.
 // A renderable transform node: owns a base transform plus optional LOD levels,
 // each with its own transform/mesh handles and a squared-distance threshold.
@@ -85,7 +86,7 @@ public:
     Matrix &getMatrix();
     Matrix &getReferenceMatrix();
     void    setMatrix(const Matrix &m);
-    void    setRotationOrder(int order);
+    void    setRotationOrder(AbyssEngine::AEMath::RotationOrder order);
 
     bool    hasLod();
     uint8_t isVisible();

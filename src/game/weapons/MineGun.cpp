@@ -108,12 +108,12 @@ void MineGun::update(int delta)
             camera->setRumblePercentage(this->rumblePercentage, 0x32);
 
             Vector direction = {0.0f, 0.0f, 0.0f};
-            (*this->explosions)[i]->start(minePosition, &direction);
+            (*this->explosions)[i]->start(*minePosition, direction);
             this->readyFlags[i] = 0;
         }
 
         Explosion *explosion = (*this->explosions)[i];
-        explosion->update(delta, nullptr);
+        explosion->update_vector(delta, nullptr);
 
         int timer = this->rumbleTimer + delta;
         if (timer > 1999) {

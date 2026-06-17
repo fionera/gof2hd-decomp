@@ -217,9 +217,9 @@ extern void *const gPFC_guard __attribute__((visibility("hidden")));
 extern int *const gPFC_sharedRoute __attribute__((visibility("hidden")));
 extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
 
-PlayerFighter::PlayerFighter(int faction, int wingmanCmd, void *player, void *geom,
-                             float x, float y, float z, int flag)
-    : KIPlayer(faction, wingmanCmd, (Player *)player, (AEGeometry *)geom, x, y, z, flag != 0) {
+PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
+                             float x, float y, float z, bool flag)
+    : KIPlayer(faction, wingmanCmd, player, geom, x, y, z, flag) {
     PlayerFighter *self = this;
     int *guardP = *(int **)gPFC_guard;
     volatile int saved = *guardP;

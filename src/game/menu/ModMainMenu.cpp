@@ -160,7 +160,7 @@ void ModMainMenu::OnTouchBegin(int x, int y, void *touch)
 {
     if (this->logoActive != 0)
         return;
-    this->touchWindow->OnTouchBegin(x, y, (int)(intptr_t)touch);
+    this->touchWindow->OnTouchBegin(x, y, touch);
 }
 
 void ModMainMenu::OnRender2D()

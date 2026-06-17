@@ -11,6 +11,9 @@ class Item;
 // Item lists are vectors of Item*; data() is reinterpreted as int* for the
 // packed attribute/quantity blobs loaded from the .bin tables.
 typedef Array<Item*> ItemArray;
+// The ingredient/quantity/attribute tables are flat int arrays loaded from the
+// .bin tables (the original constructor takes Array<int>* for all three).
+typedef Array<int> IntArray;
 
 class Item {
 public:
@@ -24,16 +27,16 @@ public:
     int occurence;
     int minPrice;
     int maxPrice;
-    ItemArray* ingredients;
-    ItemArray* quantities;
-    ItemArray* attributes;
+    IntArray* ingredients;
+    IntArray* quantities;
+    IntArray* attributes;
     int amount;
     int stationAmount;
     int blueprintAmount;
     int missingIngredients;
     bool unsaleable;
 
-    Item(ItemArray* ingredients, ItemArray* quantities, ItemArray* attributes);
+    Item(IntArray* ingredients, IntArray* quantities, IntArray* attributes);
     ~Item();
 
     void init();
@@ -66,9 +69,9 @@ public:
     void setBlueprintAmount(int value);
     int getBlueprintAmount();
     void changeBlueprintAmount(int delta);
-    ItemArray* getIngredients();
-    ItemArray* getQuantities();
-    ItemArray* getAttributes();
+    IntArray* getIngredients();
+    IntArray* getQuantities();
+    IntArray* getAttributes();
     int getAttribute(int attribute);
     int transaction(bool buy, int priceAdjustment, bool useCredits);
     int transactionBlueprint(bool fabricate);

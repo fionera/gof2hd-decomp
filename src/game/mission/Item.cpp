@@ -8,7 +8,7 @@ extern Status* status;
 
 int Item::getAttribute(int attribute)
 {
-    int* data = reinterpret_cast<int*>(attributes->data());
+    int* data = attributes->data();
     uint32_t size = attributes->size();
     for (uint32_t index = 0; index < size; index += 2) {
         if (data[index] == attribute) {
@@ -18,7 +18,7 @@ int Item::getAttribute(int attribute)
     return static_cast<int>(0xc5997825);
 }
 
-ItemArray* Item::getQuantities() {
+IntArray* Item::getQuantities() {
     return quantities;
 }
 
@@ -113,7 +113,7 @@ void Item::setStationAmount(int value) {
     stationAmount = value;
 }
 
-ItemArray* Item::getIngredients() {
+IntArray* Item::getIngredients() {
     return ingredients;
 }
 
@@ -263,7 +263,7 @@ Item* Item::clone()
     return copy;
 }
 
-ItemArray* Item::getAttributes() {
+IntArray* Item::getAttributes() {
     return attributes;
 }
 
@@ -277,7 +277,7 @@ void Item::init()
         return;
     }
 
-    int* data = reinterpret_cast<int*>(attributes->data());
+    int* data = attributes->data();
 
     index = data[1];
     type = data[3];
@@ -301,7 +301,7 @@ bool Item::isUnsaleable()
     return unsaleable;
 }
 
-Item::Item(ItemArray* ingredients_, ItemArray* quantities_, ItemArray* attributes_)
+Item::Item(IntArray* ingredients_, IntArray* quantities_, IntArray* attributes_)
     : ingredients(ingredients_), quantities(quantities_), attributes(attributes_)
 {
     init();
@@ -391,8 +391,8 @@ ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
 
 void Item::fabricate(Item* item, ItemArray* items, int amount)
 {
-    int* ingredientIds = reinterpret_cast<int*>(item->ingredients->data());
-    int* ingredientQuantities = reinterpret_cast<int*>(item->quantities->data());
+    int* ingredientIds = item->ingredients->data();
+    int* ingredientQuantities = item->quantities->data();
     uint32_t ingredientCount = ingredientIds[0];
 
     for (uint32_t i = 0; i < ingredientCount; i++) {

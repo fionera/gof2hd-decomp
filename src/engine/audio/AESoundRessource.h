@@ -40,7 +40,7 @@ public:
 
 class AESoundRessource {
 public:
-    AESoundInfo *soundInfoTable;             // sound-info table base
+    const AESoundInfo *soundInfoTable;       // sound-info table base
     Array<AESoundInterface*>* sounds;        // loaded-sound slots
     volatile int numSounds;                  // configured sound count
 
@@ -50,9 +50,9 @@ public:
     // Release every loaded AESoundInterface and clear its slot.
     void freeAllRessources();
     // Install the sound-info table (`info`, `count` entries) and size the sound array.
-    void SetSound(AESoundInfo *info, int count);
+    void SetSound(const AESoundInfo *info, int count);
     // Look up the entry whose id == `id`; copies it to `info` and reports the slot in `index`.
-    void getSoundInfo(int id, AESoundInfo *info, int *index);
+    void getSoundInfo(int id, AESoundInfo &info, int &index);
     // Lazily create + load the AESoundInterface for sound `id`.
     void init(int id);
     // Play sound `id` at the given volume.

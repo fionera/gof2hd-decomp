@@ -521,7 +521,7 @@ void CutScene::initialize()
     }
 
     this->rootGeom = new AEGeometry(canvas);
-    this->rootGeom->setRotationOrder(2);
+    this->rootGeom->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
 
     this->accumLo = 0;
     this->accumHi = 0;
@@ -624,7 +624,7 @@ void CutScene::checkForTurret()
 
     AEGeometry *geom0 = new AEGeometry(id0, canvas, false);
     AEGeometry *geom1 = new AEGeometry(id1, canvas, false);
-    geom1->setRotationOrder(2);
+    geom1->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
 
     if (child0 != -1) {
         AEGeometry *c = new AEGeometry((uint16_t)(unsigned short)child0, canvas, false);

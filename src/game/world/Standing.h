@@ -21,14 +21,14 @@ public:
     int* getStandings();                // raw per-race standings array
     void setStandings(int* arr);        // replace the standings array pointer
 
-    void applyDelict(unsigned kind, int severity);
+    void applyDelict(int kind, int severity);
     void applyDisable(int race);
     void applyKill(int kind);
     void applyMissionCompleted(int race);
     void applyPoints(int race, int delta);
     void applyStealCargo(int race);
-    uint32_t getEnemyRace(unsigned idx);
-    float getMissionBonus(unsigned race);
+    uint32_t getEnemyRace(int idx);
+    float getMissionBonus(int race);
     int getStanding(int race);
     float getStandingRate(int race);
     bool isEnemy(int race);

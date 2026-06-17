@@ -42,7 +42,7 @@ void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsB = b;
 }
 
-void* Mission::setTargetName(const String& rhs) {
+void* Mission::setTargetName(String rhs) {
     this->targetName = rhs;
     return &this->targetName;
 }

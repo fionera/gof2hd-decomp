@@ -33,7 +33,6 @@ public:
 extern PaintCanvas *g_paintCanvas;
 void MatrixRotateVector(Vector &out, const Matrix &matrix, const Vector &vec);
 void MatrixGetDir(Vector &out, const Matrix &matrix);
-void MatrixSetTranslation(Matrix &matrix, float x, float y, float z);
 void VectorCross(Vector &out, const Vector &a, const Vector &b);
 void VectorNormalize(Vector &out, const Vector &in);
 void VectorRotateToTarget(Vector &out, const Vector &in);

@@ -41,7 +41,7 @@ public:
     void Init(Engine *engine) override;
     void SetInActive() override;
     void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void ConnectShaderComponents(int program, int index);
+    void ConnectShaderComponents(unsigned int program, int index);
     void UseShader(bool useExtra) override;
 };
 

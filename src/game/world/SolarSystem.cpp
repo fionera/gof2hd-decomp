@@ -8,7 +8,7 @@ using AbyssEngine::String;
 
 // SolarSystem(...) — initialise the system's metadata and take ownership of its
 // station-id, linked-system and forbidden-goods lists. The display name is copied.
-SolarSystem::SolarSystem(int unk0, const String& displayName, int security,
+SolarSystem::SolarSystem(int unk0, String displayName, int security,
                          bool isVisible, int factionId, int x, int y, int z,
                          int jumpgateId, int texture, int* starRGB,
                          Array<int>* stations, Array<int>* linkedSystems,
@@ -218,9 +218,7 @@ int SolarSystem::isFullyDiscovered() {
     }
 }
 
-// Null -> not present; otherwise dispatch on the station's index.
-int SolarSystem::stationIsInSystem(Station* st) {
-    if (st != nullptr)
-        return stationIsInSystem_int(st->getIndex());
-    return 0;
+// Scan the station-index array for `idx`.
+int SolarSystem::stationIsInSystem(int idx) {
+    return stationIsInSystem_int(idx);
 }

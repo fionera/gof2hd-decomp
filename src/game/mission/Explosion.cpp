@@ -120,15 +120,15 @@ void Explosion::setMatrix(const Matrix *matrix) {
     this->start_matrix(matrix);
 }
 
-void Explosion::update(int dt, TargetFollowCamera *camera) {
-    this->update_camera(dt, camera);
+void Explosion::update(int dt, const Vector &position) {
+    this->update_vector(dt, &position);
 }
 
-void Explosion::translate(const Vector *v) {
-    this->primaryMesh->translate(*v);
+void Explosion::translate(const Vector &v) {
+    this->primaryMesh->translate(v);
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
-        return this->tail_translate(secondary, v);
+        return this->tail_translate(secondary, &v);
     }
 }
 
@@ -177,8 +177,8 @@ bool Explosion::peakReached() {
     return this->elapsed > 0x8fcLL;
 }
 
-void Explosion::start(const Vector *position, const Vector *direction) {
-    this->primaryMesh->setPosition(*position);
+void Explosion::start(const Vector &position, const Vector &direction) {
+    this->primaryMesh->setPosition(position);
 
     PaintCanvas *canvas = explosionCanvas();
     UC(canvas->TransformGetTransform(this->primaryMesh->transform), kTransformEnabledFlag) = 1;
@@ -190,7 +190,7 @@ void Explosion::start(const Vector *position, const Vector *direction) {
 
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
-        secondary->setPosition(*position);
+        secondary->setPosition(position);
         UC(canvas->TransformGetTransform(this->secondaryMesh->transform), kTransformEnabledFlag) = 1;
     }
 
@@ -207,24 +207,24 @@ void Explosion::start(const Vector *position, const Vector *direction) {
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->primaryMesh->setDirection(*direction, up);
+        this->primaryMesh->setDirection(direction, up);
         up.x = 0.0f;
         up.y = 1.0f;
         up.z = 0.0f;
-        this->secondaryMesh->setDirection(*direction, up);
+        this->secondaryMesh->setDirection(direction, up);
     }
 
     Array<AEGeometry *> *streaks = this->fireStreaks;
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            geometry->setPosition(*position);
+            geometry->setPosition(position);
             UC(canvas->TransformGetTransform(geometry->transform), kTransformEnabledFlag) = 1;
         }
     }
 
     this->playing = 1;
-    Vector soundPosition = *position;
+    Vector soundPosition = position;
     this->playSound(&soundPosition);
 }
 

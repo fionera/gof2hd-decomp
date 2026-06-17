@@ -161,7 +161,7 @@ void AEGeometry::setMatrix(const Matrix &m)
     AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, (Matrix *)&m);
 }
 
-void AEGeometry::setRotationOrder(int order)
+void AEGeometry::setRotationOrder(AbyssEngine::AEMath::RotationOrder order)
 {
     this->rotationOrder = order;
 }

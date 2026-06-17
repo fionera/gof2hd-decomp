@@ -52,8 +52,8 @@ public:
     Array<AbyssEngine::String*>* wingmanNames;
     int sellModIndex;
 
-    Agent(unsigned kind, AbyssEngine::String* name, int station, int system, int race,
-          char male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
+    Agent(int kind, AbyssEngine::String name, int station, int system, int race,
+          bool male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
           int sellItemPrice);
     ~Agent() noexcept(false);
 
@@ -78,7 +78,7 @@ public:
     void nextEvent();
     void setImageParts(int* parts);
     void setMission(Mission* mission);
-    void setMissionString(const AbyssEngine::String& src);
+    void setMissionString(AbyssEngine::String src);
     void setOfferAccepted(bool v);
     Triple* setSellItemData(int index, int quantity, int price);
     void setStationName(AbyssEngine::String src);

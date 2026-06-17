@@ -2457,7 +2457,7 @@ void Level::createPlayer() {
 }
 
 
-void Level::wingmanDied(int name) {
+void Level::wingmanDied(AbyssEngine::String const& name) {
     unsigned int *list = (unsigned int *)(intptr_t)gStatus->getWingmen();
     if (list == 0) {
         return;
@@ -2465,9 +2465,10 @@ void Level::wingmanDied(int name) {
     if (__builtin_expect(*list < 2, 0)) {
         return gStatus->setWingmen((Array<String *> *)0);
     }
+    String key = name;
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
-        if (w->Compare_str((String *)name) == 0) {
+        if (w->Compare_str(&key) == 0) {
             return this->wingmanDied_one(((String **)list[1])[i], list);
         }
     }
@@ -2634,7 +2635,7 @@ void Level::createStaticObjects()
 
 // Level::createStaticObject(Waypoint* wp, int type, bool jitter) — spawns one scenery / structure
 // object at the waypoint (optionally with a small random position offset).
-int Level::createStaticObject(Waypoint *wp, int type, int jitter) {
+int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
     Level *thisptr = this;
 
     int x = 0, y = 0, z = 0;
@@ -2709,7 +2710,7 @@ void *Level_getBoundingVolume(int idx, int kind)
 
 // Level::createShip(race, shipClass, type, wp, hostile, group) — spawns a fighter (class 0) or a
 // fixed capital ship (class 1) at the waypoint, scaling its stats to the player level/difficulty.
-PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoint *wp, int hostile, int group) {
+PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoint *wp, bool hostile, bool group) {
     Level *thisptr = this;
     int camp = gStatus->getCurrentCampaignMission();
 

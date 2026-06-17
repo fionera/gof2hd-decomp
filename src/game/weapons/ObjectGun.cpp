@@ -317,10 +317,10 @@ after_geometry:
             if (gun->hitFlags[i] != 0) {
                 Explosion *explosion = this->explosions->data()[i];
                 if (this->explosionReady[i] != 0) {
-                    explosion->start((Vector *)((char *)gun->hitPositions + positionOffset), &zero);
+                    explosion->start(*(Vector *)((char *)gun->hitPositions + positionOffset), zero);
                     this->explosionReady[i] = 0;
                 }
-                explosion->update(dt, nullptr);
+                explosion->update_vector(dt, nullptr);
                 if (explosion->isPlaying() == 0) {
                     gun = this->gun;
                     gun->hitFlags[i] = 0;

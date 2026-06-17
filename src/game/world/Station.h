@@ -26,7 +26,7 @@ public:
     Array<Agent*>* agents;
 
     Station();
-    Station(const String& name, int index, int systemIndex, int techLevel, int textureIndex);
+    Station(String name, int index, int systemIndex, int techLevel, int textureIndex);
     ~Station();
 
     Station* clone();

@@ -175,7 +175,7 @@ Agent::~Agent() noexcept(false) {
     // are destroyed automatically.
 }
 
-void Agent::setMissionString(const String& src) {
+void Agent::setMissionString(String src) {
     this->missionString = src;
 }
 
@@ -249,11 +249,11 @@ int Agent::getWingmanFriendsCount() {
     return this->wingmanCount;
 }
 
-Agent::Agent(unsigned kind, String* name, int station, int system, int race,
-             char male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
+Agent::Agent(int kind, String name, int station, int system, int race,
+             bool male, int sellSystemIndex, int sellBlueprintIndex, int sellModIndex,
              int sellItemPrice) {
     this->type = kind;
-    this->name = *name;
+    this->name = name;
     this->station = station;
     this->system = system;
     this->race = race;
@@ -281,7 +281,7 @@ Agent::Agent(unsigned kind, String* name, int station, int system, int race,
     this->wingmanNames = nullptr;
     this->field_0x28 = -1;
     this->field_0x2c = -1;
-    this->category = kind >> 31;
+    this->category = (unsigned)kind >> 31;
     if (sellModIndex >= 0)
         this->offer = 8;
     if (kind == 0x19)

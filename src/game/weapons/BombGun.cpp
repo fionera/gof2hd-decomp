@@ -264,11 +264,11 @@ void BombGun::update(int elapsed)
 
         Vector direction =
             (this->bombType == ITEM_SORT_SHOCK_BLAST) ? player->GetDirVector() : Vector{0.0f, 0.0f, 0.0f};
-        this->explosion->start(&this->detonationPosition, &direction);
+        this->explosion->start(this->detonationPosition, direction);
         this->detonationPending = 0;
     }
 
-    this->explosion->update(elapsed, nullptr);
+    this->explosion->update_vector(elapsed, nullptr);
     int timer = this->rumbleTimer + elapsed;
     if (timer > 2000)
         timer = 2000;

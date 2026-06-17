@@ -33,7 +33,7 @@ String Wanted::getName() {
     return name;
 }
 
-Wanted::Wanted(int index, const String &name, int board, int race, bool male,
+Wanted::Wanted(int index, String name, int board, int race, bool male,
                int shipId, int weapon, int hitpoints, int lootItemId, int lootAmount,
                int reward, int requiredBounties, int requiredMission, int numWingmen) {
     this->index = index;

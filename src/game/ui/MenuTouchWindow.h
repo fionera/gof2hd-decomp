@@ -2,6 +2,7 @@
 #define GOF2_MENUTOUCHWINDOW_H
 #include "engine/core/Array.h"
 #include "AEString.h"
+#include "game/ui/TouchButton.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
 
@@ -15,8 +16,8 @@ public:
     uint8_t        pendingActivate;          // +0x1 set when Layout consumes touch in state 0xd, cleared at OnTouchEnd start
     uint8_t        pad_0x2[2];
     Array<void *> *buttons;                  // Array<TouchButton*>* top-level menu buttons
-    int            cinematicTouchIdA;        // cinematic touch id A
-    int            cinematicTouchIdB;        // cinematic touch id B
+    void          *cinematicTouchIdA;        // cinematic touch id A (r3 handle)
+    void          *cinematicTouchIdB;        // cinematic touch id B (r3 handle)
     uint8_t        pad_0x10[4];
     void          *cinematicBtnA;            // TouchButton* (cinematic A)
     void          *cinematicBtnB;            // TouchButton* (cinematic B)
@@ -139,9 +140,9 @@ public:
     int OnTouchEnd(int y, int x);
     void createRecordButtons(bool inSaveMode);
     void startValkyrie();
-    int OnTouchBegin(int y, int x, int touchId);
+    int OnTouchBegin(int y, int x, void *touchId);
     int loadGame(int slot);
-    void addButton(int id, void *label, int row, void *arr, int yOff);
+    void addButton(int id, AbyssEngine::String label, int row, Array<TouchButton*> *arr, int yOff);
     void setCutsceneMode(bool mode);
     void loadPreviewRecords();
     void saveGame(int slot);

@@ -120,7 +120,7 @@ void LevelScript::setAutoPilotToProgrammedStation()
     void* player;
     void* target;
 
-    if (system->stationIsInSystem(programmed)) {
+    if (system->stationIsInSystem(programmed->getIndex())) {
         player = (void*)m_pLevel->getPlayer();
         void* targets = ((StarSystem*)m_pLevel->getStarSystem())->getPlanetTargets();
         int targetIndex = system->getStationEnumIndex(programmed->getIndex());

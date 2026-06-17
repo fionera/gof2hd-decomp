@@ -136,8 +136,8 @@ public:
     uint8_t aiDisabled;
     int32_t gunSwitchTimer;             // +0x2e8
 
-    PlayerFighter(int faction, int wingmanCmd, void *player, void *geom,
-                  float x, float y, float z, int active);
+    PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
+                  float x, float y, float z, bool active);
     ~PlayerFighter();
 
     void awake() override;

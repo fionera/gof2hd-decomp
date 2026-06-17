@@ -886,7 +886,7 @@ void PlayerEgo::checkForTurret() {
     this->gunBaseGeo = baseGeo;
     void *yawGeo = (void*)new AEGeometry((uint16_t)barrel, (PaintCanvas*)canvas, false);
     this->gunYawGeo = yawGeo;
-    ((AEGeometry *)yawGeo)->setRotationOrder(2);
+    ((AEGeometry *)yawGeo)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
     void *muzzleRoot = (void*)new AEGeometry((PaintCanvas*)canvas);
     this->gunMuzzleRoot = muzzleRoot;
 
@@ -1292,7 +1292,7 @@ void PlayerEgo::setDockingCamera() {
 
         void *node = (void*)new AEGeometry(gCanvas);
         this->dockCameraNode = node;
-        ((AEGeometry *)node)->setRotationOrder(2);
+        ((AEGeometry *)node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
 
         // seed the default rig offset (0x224..0x22c) only when fully zero.
         if (this->turretOffsetVec.x == 0.0f && this->turretOffsetVec.y == 0.0f && this->turretOffsetVec.z == 0.0f) {
@@ -2035,7 +2035,7 @@ void PlayerEgo::setTurretMode(int enable) {
 
             void *node = (void*)new AEGeometry(gCanvas);
             this->dockCameraNode = node;
-            ((AEGeometry *)node)->setRotationOrder(2);
+            ((AEGeometry *)node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
             ((AEGeometry *)(node))->translate(this->turretOffsetVec);
 
             void *mid = (void*)new AEGeometry(gCanvas);
@@ -3165,7 +3165,7 @@ extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
 }
 // endExplosion() forwards to the explosion's final update so it can release.
 extern "C" void PlayerEgo_endExplosion_ext(int exp) {
-    ((Explosion *)exp)->update(0, (TargetFollowCamera *)0);
+    ((Explosion *)exp)->update_camera(0, (TargetFollowCamera *)0);
 }
 
 // ---- camera veneers ----

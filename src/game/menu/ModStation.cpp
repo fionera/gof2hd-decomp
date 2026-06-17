@@ -2221,7 +2221,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[2] != 0) {
-        ((MenuTouchWindow *)(this->dlcMenu))->OnTouchBegin(x, y, (int)(intptr_t)touch);
+        ((MenuTouchWindow *)(this->dlcMenu))->OnTouchBegin(x, y, touch);
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[1] == 0)

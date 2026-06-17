@@ -673,7 +673,7 @@ extern void *const gBgScreenH2 __attribute__((visibility("hidden")));
 extern void *const gBgScrollImg __attribute__((visibility("hidden")));
 extern void *const gBgScreenW2 __attribute__((visibility("hidden")));
 
-int MenuTouchWindow::OnTouchBegin(int y, int x, int touchId)
+int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId)
 {
     if (this->messageShowing != 0) { _mtw_ChoiceWindow_OnTouchBegin(this->choiceWindow, y); return 0; }
 
@@ -986,7 +986,7 @@ extern void *const gAddBtnPosY    __attribute__((visibility("hidden")));  // y c
 extern void *const gAddBtnCount   __attribute__((visibility("hidden")));  // *holder -> count cell
 
 // MenuTouchWindow::addButton(int id, String label, int row, Array<TouchButton*>* arr, int yOff)
-void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOff)
+void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton*> *arr, int yOff)
 {
     void *btn = ::operator new(0xc8);
 
@@ -998,25 +998,25 @@ void MenuTouchWindow::addButton(int id, void *label, int row, void *arr, int yOf
     int x = screenW / 2 - btnW / 2;
     int y = (rowH + this->buttonRowGap) * row + (yOff - this->buttonYBias) + screenH / 2;
 
-    _mtw_TouchButton_ctor(btn, label, 0, x, y, btnW, 0x11, 0x04);
+    _mtw_TouchButton_ctor(btn, &label, 0, x, y, btnW, 0x11, 0x04);
     i32(btn, 0) = id;
     i32(btn, 4) = id >> 31;
     _mtw_ArrayAdd_TouchButton(btn, arr);
 
     int *posX = (int *)*(void **)gAddBtnPosX;
     int *posY = (int *)*(void **)gAddBtnPosY;
-    for (uint32_t i = 0; i < *(uint32_t *)arr; i++) {
+    for (uint32_t i = 0; i < arr->size_; i++) {
         if (i < 10) {
             char buf[12];
-            void *b = ((void **)i32(arr, 4))[i];
+            TouchButton *b = arr->data_[i];
             _mtw_TouchButton_getPosition(buf, b);
             posX[i] = (int)*(float *)(buf + 0);
-            b = ((void **)i32(arr, 4))[i];
+            b = arr->data_[i];
             _mtw_TouchButton_getPosition(buf, b);
             posY[i] = (int)*(float *)(buf + 4);
         }
     }
-    *(uint32_t *)*(void **)gAddBtnCount = *(uint32_t *)arr;
+    *(uint32_t *)*(void **)gAddBtnCount = arr->size_;
 }
 
 // MenuTouchWindow::setCutsceneMode(bool). Ghidra mislabels: r0=this, r1=mode.

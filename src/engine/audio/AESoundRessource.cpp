@@ -35,7 +35,7 @@ void AESoundRessource::freeAllRessources()
     }
 }
 
-void AESoundRessource::SetSound(AESoundInfo *info, int count)
+void AESoundRessource::SetSound(const AESoundInfo *info, int count)
 {
     this->numSounds = count;
     this->soundInfoTable = info;
@@ -45,15 +45,15 @@ void AESoundRessource::SetSound(AESoundInfo *info, int count)
     }
 }
 
-void AESoundRessource::getSoundInfo(int id, AESoundInfo *info, int *index)
+void AESoundRessource::getSoundInfo(int id, AESoundInfo &info, int &index)
 {
-    *index = -1;
+    index = -1;
     uint32_t count = this->sounds->size();
     for (uint32_t i = 0; i < count; ++i) {
-        AESoundInfo *entry = &this->soundInfoTable[i];
+        const AESoundInfo *entry = &this->soundInfoTable[i];
         if (entry->id == id) {
-            *index = i;
-            *info = *entry;
+            index = i;
+            info = *entry;
             return;
         }
     }
@@ -64,7 +64,7 @@ void AESoundRessource::init(int id)
     AESoundInfo info;
     info.name = defaultSoundName;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound == nullptr) {
@@ -92,7 +92,7 @@ void AESoundRessource::initWithoutLoading(int id)
     AESoundInfo info;
     info.name = defaultSoundName;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         if ((*this->sounds)[index] == nullptr) {
             (*this->sounds)[index] = new AESoundInterface();
@@ -104,7 +104,7 @@ void AESoundRessource::play(int id, float volume)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound->isLoaded() == 0) {
@@ -121,7 +121,7 @@ void AESoundRessource::playLoop(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr && sound->isPlaying() == 0) {
@@ -134,7 +134,7 @@ void AESoundRessource::playMusic(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr && sound->isPlaying() == 0) {
@@ -147,7 +147,7 @@ void AESoundRessource::playMusicLoop(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr && sound->isPlaying() == 0) {
@@ -161,7 +161,7 @@ void AESoundRessource::stop(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr) {
@@ -184,7 +184,7 @@ void AESoundRessource::pause(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr) {
@@ -208,7 +208,7 @@ void AESoundRessource::resume(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr) {
@@ -241,7 +241,7 @@ void AESoundRessource::release(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         sound->release();
@@ -252,7 +252,7 @@ bool AESoundRessource::isPlaying(int id)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     int result;
     if (index == -1) {
         result = 0;
@@ -268,7 +268,7 @@ void AESoundRessource::setVolume(int id, int volume)
 {
     AESoundInfo info;
     int index;
-    this->getSoundInfo(id, &info, &index);
+    this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
         if (sound != nullptr) {

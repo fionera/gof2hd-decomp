@@ -29,7 +29,7 @@ public:
     Array<int>* linkedSystemIds;
     uint8_t visible;
 
-    SolarSystem(int unk0, const AbyssEngine::String& displayName, int security,
+    SolarSystem(int unk0, AbyssEngine::String displayName, int security,
                 bool isVisible, int factionId, int x, int y, int z,
                 int jumpgateId, int texture, int* starRGB,
                 Array<int>* stations, Array<int>* linkedSystems, Array<int>* forbidden);
@@ -63,7 +63,7 @@ public:
     uint8_t isVisible();
     void setCoords(int x, int y);
     void setVisible(bool v);
-    int stationIsInSystem(Station* st);
+    int stationIsInSystem(int idx);
     int stationIsInSystem_int(int idx);
     int systemIsInSystemRoutes(int sys);
 };

@@ -13,7 +13,7 @@ public:
     union { int maxLevel; int field_0x14; };           // +0x14 highest player level this item shows at
     union { uint8_t used; uint8_t field_0x18; };       // +0x18 already-displayed flag
 
-    NewsItem(int id, bool flag, void *data, int length, int field_0x10, int field_0x14);
+    NewsItem(int id, bool flag, bool *data, int length, int field_0x10, int field_0x14);
     ~NewsItem();
 
     NewsItem *clone();

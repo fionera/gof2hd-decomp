@@ -18,7 +18,7 @@ public:
     int    blueprintIndex;  // produced item / blueprint index
 
     explicit PendingProduct(BluePrint *bp);
-    PendingProduct(int blueprintIndex, const String *stationName,
+    PendingProduct(int blueprintIndex, String stationName,
                    int stationIndex, int quantity);
 
     // Append this pending product to the player's pending-product list.

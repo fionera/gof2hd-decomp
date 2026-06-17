@@ -717,7 +717,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             int ad = ApplicationManager_GetApplicationData();
             if (*(uint8_t *)((char *)ad + 5) != 0) return;
             if (*(uint8_t *)((char *)ad + 0xc) != 0) return;
-            self->menuWindow->OnTouchBegin(p1, p2, (int)(intptr_t)touchId);
+            self->menuWindow->OnTouchBegin(p1, p2, touchId);
             if (self->freeCamMode == 0) return;
             if (self->menuWindow->isShowingMessage() != 0) return;
             if (self->menuWindow->isMakingScreenshot() != 0) return;

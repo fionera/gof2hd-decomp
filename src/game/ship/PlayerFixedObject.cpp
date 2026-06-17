@@ -246,7 +246,8 @@ afterMotion:
 
         char posBuf[12];
         ((AEGeometry *)((Vector *)posBuf))->getPosition();
-        ((Explosion *)(expl))->start((Vector *)posBuf, (const Vector *)0);
+        Vector zeroDir = {0.0f, 0.0f, 0.0f};
+        ((Explosion *)(expl))->start(*(Vector *)posBuf, zeroDir);
 
         if (self->kind == 0xe) {
             Array<KIPlayer *> *enemies = ((Level *)self->level)->getEnemies();
@@ -282,7 +283,7 @@ afterMotion:
     if (state == 3) {
         // dying: run explosion, drift, advance the wreck transform until done
         if (self->explosion != 0)
-            self->explosion->update(dt, 0);
+            self->explosion->update(dt, self->position);
         if (self->kind != 0x37a3) {
             if (self->moving != 0) {
                 self->intPosZ = self->intPosZ + dt;
@@ -321,7 +322,8 @@ afterMotion:
             if (self->kind == 0x37e7) scale = 8.0f;
             if (self->kind == 0x37a3) scale = 8.0f;
             self->explosion->setScaling(scale);
-            self->explosion->start(&self->position, (const Vector *)0);
+            Vector zeroDir = {0.0f, 0.0f, 0.0f};
+            self->explosion->start(self->position, zeroDir);
             self->rumbleTimer = 1;
             self->explosionElapsed = 0;
             if (((Level *)self->level)->getPlayer() != 0) {
@@ -346,7 +348,7 @@ afterMotion:
         // exploding
         self->explosionElapsed = self->explosionElapsed + dt;
         if (self->explosion != 0)
-            self->explosion->update(dt, 0);
+            self->explosion->update(dt, self->position);
         self->explosionTimer = self->explosionTimer + dt;
 
         bool spin = self->hasCargo != 0 && ((Player *)(self->player))->isActive() != 0 &&

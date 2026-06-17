@@ -268,7 +268,7 @@ void PlayerTurret::update(int delta)
         ParticleSystemManager* manager = (ParticleSystemManager*)this->level->field_74;
         manager->emitManual(this->level->field_3c, (const float*)&this->cachedPosition, 0, 0.0f);
         manager->enableSystemEmit(this->particleSystemId, true);
-        this->explosion->start(&this->cachedPosition, &zero);
+        this->explosion->start(this->cachedPosition, zero);
 
         int random = AbyssEngine::AERandom::nextInt(g_turretRandom, 100);
         if (random < 0) {
@@ -291,7 +291,7 @@ void PlayerTurret::update(int delta)
     }
     if (state == 3) {
         this->explosionTimer += delta;
-        this->explosion->update(delta, nullptr);
+        this->explosion->update_vector(delta, nullptr);
         if (this->explosionTimer > 4500) {
             ((ParticleSystemManager*)this->level->field_74)->enableSystemEmit(this->particleSystemId, false);
             this->explosionTimer = 0;
@@ -422,17 +422,17 @@ PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float
     if (mesh == 0x381b) {
         AEGeometry* turret = new AEGeometry((uint16_t)0x381c, gCanvas, false);
         this->turretGeometry = turret;
-        turret->setRotationOrder(2);
+        turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a76) {
         AEGeometry* turret = new AEGeometry((uint16_t)0x1a77, gCanvas, false);
         this->turretGeometry = turret;
-        turret->setRotationOrder(2);
+        turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a74) {
         AEGeometry* turret = new AEGeometry((uint16_t)0x1a75, gCanvas, false);
         this->turretGeometry = turret;
-        turret->setRotationOrder(2);
+        turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     }
 

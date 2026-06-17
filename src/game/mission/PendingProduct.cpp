@@ -1,9 +1,9 @@
 #include "game/mission/PendingProduct.h"
 #include "game/mission/BluePrint.h"
 
-PendingProduct::PendingProduct(int blueprintIndex, const String *stationName,
+PendingProduct::PendingProduct(int blueprintIndex, String stationName,
                                int stationIndex, int quantity)
-    : stationName(*stationName),
+    : stationName(stationName),
       stationIndex(stationIndex),
       quantity(quantity),
       blueprintIndex(blueprintIndex) {
@@ -25,5 +25,5 @@ void PendingProduct::add(Array<PendingProduct*> &list) {
 // list from a save file.
 PendingProduct *PendingProduct::make(int blueprintIndex, const String *stationName,
                                      int stationIndex, int quantity) {
-    return new PendingProduct(blueprintIndex, stationName, stationIndex, quantity);
+    return new PendingProduct(blueprintIndex, *stationName, stationIndex, quantity);
 }

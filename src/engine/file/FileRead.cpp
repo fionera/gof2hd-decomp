@@ -601,7 +601,7 @@ Array<Agent *> *FileRead::loadAgents()
             AEFile::ReadSwitched(f, handle);
             AEFile::ReadSwitched(g, handle);
 
-            Agent *agent = new Agent((unsigned)id, &name, a, b, c, (char)(flag == 1), d, e, f, g);
+            Agent *agent = new Agent(id, name, a, b, c, flag == 1, d, e, f, g);
             agents->data()[index] = agent;
 
             AEFile::ReadSwitched(imageCount, handle);
@@ -799,18 +799,18 @@ Array<Item *> *FileRead::loadItemsBinary()
             uint32_t count0 = 0;
             uint32_t count1 = 0;
             uint32_t count2 = 0;
-            ItemArray *a0;
-            ItemArray *a1;
-            ItemArray *a2;
+            IntArray *a0;
+            IntArray *a1;
+            IntArray *a2;
 
             AEFile::ReadSwitched((int32_t &)count0, handle);
             if ((int32_t)count0 < 1) {
                 a0 = 0;
             } else {
-                a0 = new ItemArray();
-                ArraySetLength<Item *>(count0, *a0);
+                a0 = new IntArray();
+                ArraySetLength<int32_t>(count0, *a0);
                 for (int32_t j = 0; j < (int32_t)count0; j++) {
-                    AEFile::ReadSwitched(*(int32_t *)&a0->data()[j], handle);
+                    AEFile::ReadSwitched(a0->data()[j], handle);
                 }
             }
 
@@ -818,10 +818,10 @@ Array<Item *> *FileRead::loadItemsBinary()
             if ((int32_t)count1 < 1) {
                 a1 = 0;
             } else {
-                a1 = new ItemArray();
-                ArraySetLength<Item *>(count1, *a1);
+                a1 = new IntArray();
+                ArraySetLength<int32_t>(count1, *a1);
                 for (int32_t j = 0; j < (int32_t)count1; j++) {
-                    AEFile::ReadSwitched(*(int32_t *)&a1->data()[j], handle);
+                    AEFile::ReadSwitched(a1->data()[j], handle);
                 }
             }
 
@@ -829,10 +829,10 @@ Array<Item *> *FileRead::loadItemsBinary()
             if ((int32_t)count2 < 1) {
                 a2 = 0;
             } else {
-                a2 = new ItemArray();
-                ArraySetLength<Item *>(count2, *a2);
+                a2 = new IntArray();
+                ArraySetLength<int32_t>(count2, *a2);
                 for (int32_t j = 0; j < (int32_t)count2; j++) {
-                    AEFile::ReadSwitched(*(int32_t *)&a2->data()[j], handle);
+                    AEFile::ReadSwitched(a2->data()[j], handle);
                 }
             }
 
