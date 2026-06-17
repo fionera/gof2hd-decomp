@@ -13,8 +13,7 @@ class AEGeometry;
 class KIPlayer;
 class Level;
 class Hud;
-
-namespace AbyssEngine { class Radar; }
+class Radar;
 
 class TractorBeam {
 public:
@@ -32,7 +31,7 @@ public:
     ~TractorBeam();
 
     void render();
-    void update(int frameTime, AbyssEngine::Radar* radar, Level* level, Hud* hud);
+    void update(int frameTime, Radar* radar, Level* level, Hud* hud);
 
     // Allocates and constructs a beam. Used by PlayerEgo when a tractor-beam
     // module is equipped.

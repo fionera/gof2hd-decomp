@@ -34,7 +34,7 @@ public:
     virtual ~AENormalFile();
 
     virtual uint32_t Read(uint32_t bytes, void *buffer);
-    virtual uint32_t Write(uint32_t bytes, const void *buffer);
+    virtual uint32_t Write(uint32_t bytes, void *buffer);
     virtual uint32_t Skip(uint32_t bytes);
     virtual uint32_t GetFileSize();
     virtual uint32_t Release();

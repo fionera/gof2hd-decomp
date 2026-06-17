@@ -14,11 +14,11 @@
 
 class Gun;
 class Level;
-namespace AbyssEngine { class Radar; }
+class Radar;
 
 class RocketGun : public ObjectGun {
 public:
-    AbyssEngine::Radar* radar;          // owning radar (provides the level/target)
+    Radar* radar;                       // owning radar (provides the level/target)
     int steerX;                         // accumulated steering vector toward target
     int steerY;
     int steerZ;
@@ -40,7 +40,7 @@ public:
     int isRocketGun() override;         // vtable slot 8: yes
 
     void render();
-    void setRadar(AbyssEngine::Radar* radar);
+    void setRadar(Radar* radar);
     void seekEnemy(int unused, int index);
     void update(int elapsed);
 };

@@ -105,7 +105,7 @@ void ImageFactory::reload()
 
 // drawChar(Array<ImagePart*>*, int, int, bool) -- draws the item glyph, each
 // supplied part, then the foreground (ship) glyph layer.
-void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, int flag)
+void ImageFactory::drawChar(Array<ImagePart *> *parts, int x, int y, bool flag)
 {
     PaintCanvas *pc = (PaintCanvas *)(long)*g_drawChar_canvas;
     pc->SetColor(0xffffffffu);

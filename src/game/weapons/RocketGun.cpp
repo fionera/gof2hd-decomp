@@ -5,8 +5,17 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Gun.h"
 #include "game/ship/Player.h"
-#include "game/weapons/Radar.h"
 #include "platform/libc.h"
+
+// The owning radar is referenced here only by pointer; in the original binary it is
+// the global-scope Radar class. Radar.h declares it inside namespace AbyssEngine,
+// which would mangle setRadar's parameter wrong, so provide a minimal global Radar
+// with just the two fields this TU reads (level at +0x00, the lock contact at +0x04).
+class Radar {
+public:
+    void *level;        // +0x00
+    void *field_0x4;    // +0x04
+};
 
 // Radar.h defines a competing AbyssEngine::PaintCanvas stub, so the real
 // PaintCanvas headers cannot be co-included here. Complete the global
@@ -93,7 +102,7 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
     }
 }
 
-void RocketGun::setRadar(AbyssEngine::Radar *radar)
+void RocketGun::setRadar(Radar *radar)
 {
     this->radar = radar;
     Level *radarLevel = (Level *)radar->level;

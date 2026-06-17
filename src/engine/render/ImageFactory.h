@@ -29,7 +29,7 @@ public:
     /// (Woman) unless `isMale` is set; race 5 (Cyborg) collapses to row 0.
     int *createChar(bool isMale, int race);
 
-    void drawChar(Array<ImagePart *> *parts, int x, int y, int flag);
+    void drawChar(Array<ImagePart *> *parts, int x, int y, bool flag);
     void drawItem(int itemId, int x, int y);
     void drawItem4(int itemId, int frame, int x, int y);
     void drawShip(int shipId, int x, int y);

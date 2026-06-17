@@ -8,12 +8,25 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/mission/Status.h"
 #include "game/core/PaintCanvasClass.h"
-#include "game/weapons/Radar.h"
 
 using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::VectorLength;
 using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::Radar;
+
+// The original binary mangles the radar parameter as a global ::Radar (P5Radar),
+// not AbyssEngine::Radar. Radar.h (which defines AbyssEngine::Radar) is therefore
+// not included; only the two lock-slot fields this function touches are modeled
+// here, mirroring the real layout (field_0x8 at +0x08, field_0x1c at +0x1c).
+struct Radar {
+    void* level;          // +0x00
+    void* field_0x4;      // +0x04
+    void* field_0x8;      // +0x08
+    void* lockedAsteroid; // +0x0c
+    int   field_0x10;     // +0x10
+    int   field_0x14;     // +0x14
+    int   field_0x18;     // +0x18
+    void* field_0x1c;     // +0x1c
+};
 
 // The grabbed crate's hitpoints/active state live on its owning Player object,
 // reached through the crate's player slot. Player both declares a 'turnedEnemy'

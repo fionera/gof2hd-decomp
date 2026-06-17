@@ -18,7 +18,7 @@ uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
     return 0;
 }
 
-uint32_t AENormalFile::Write(uint32_t bytes, const void *buffer)
+uint32_t AENormalFile::Write(uint32_t bytes, void *buffer)
 {
     if (held != nullptr) {
         return held->Write(bytes, buffer);
