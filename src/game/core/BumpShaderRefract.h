@@ -10,7 +10,8 @@
 
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced here by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

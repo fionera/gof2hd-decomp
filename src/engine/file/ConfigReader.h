@@ -6,8 +6,9 @@
 #include "aetypes.h"
 #include "engine/file/AEFile.h"
 
-// Engine is a global-scope class (the renderer/device root).
-class Engine;
+// Engine is the renderer/device root; its real type lives in namespace AbyssEngine.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

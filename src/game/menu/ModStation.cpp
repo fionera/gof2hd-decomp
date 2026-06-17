@@ -566,7 +566,8 @@ void ModStation::OnRender3D() {
     ModStation_r3d_endTail(gCanvas);
 }
 
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 struct SolarSystem;
 
 __attribute__((visibility("hidden"))) extern int **g_rl_engineHolder; // [DAT_000e71f4]

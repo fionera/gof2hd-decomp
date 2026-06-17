@@ -328,7 +328,7 @@ public:
 // namespace so AbyssEngine::Mesh and bare Mesh are the same type.
 namespace AbyssEngine {
 using ::Node;
-using ::Engine;
+// Engine already lives in this namespace (AbyssEngine::Engine); no re-export needed.
 using ::PaintCanvas;
 using ::Material;
 using ::Camera;

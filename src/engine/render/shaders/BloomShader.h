@@ -12,7 +12,8 @@
 // FBOs (luma, blurH, blurV, black). Each program caches its attribute/uniform
 // location handles after Init.
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

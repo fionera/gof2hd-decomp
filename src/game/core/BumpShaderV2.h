@@ -11,7 +11,8 @@
 // per-mesh / per-frame matrices and lighting block in UpdateMeshData.
 
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

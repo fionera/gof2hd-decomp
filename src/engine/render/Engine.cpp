@@ -1,6 +1,7 @@
-// Engine is referenced at global scope by the engine glue (externs.h), so it must be
-// visible before that header is parsed.
-class Engine;
+// Engine is referenced by the engine glue (externs.h), so it must be visible before that
+// header is parsed. Its real type lives in namespace AbyssEngine; the alias keeps bare `Engine`.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 #include "externs.h"
 #include "platform/gl.h"

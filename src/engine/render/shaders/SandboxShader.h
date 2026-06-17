@@ -11,7 +11,8 @@
 // attribute/uniform location handles queried at Init and feeds per-frame matrix, light and
 // material data plus the mesh vertex arrays into the program.
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

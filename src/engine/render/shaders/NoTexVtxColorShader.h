@@ -8,7 +8,8 @@
 
 // Galaxy on Fire 2 - AbyssEngine::NoTexVtxColorShader (GLES2 untextured, per-vertex-color shader).
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

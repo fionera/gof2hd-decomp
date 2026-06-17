@@ -6,8 +6,9 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Engine is a top-level (global-scope) class; the renderer root is not in AbyssEngine.
-class Engine;
+// Engine's real type lives in namespace AbyssEngine; the global alias keeps bare `Engine` working.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

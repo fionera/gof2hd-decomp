@@ -8,7 +8,8 @@
 
 // Galaxy on Fire 2 - AbyssEngine::MaskShader (GLES2 masked/textured shader).
 
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

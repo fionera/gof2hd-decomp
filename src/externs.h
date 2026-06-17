@@ -7,7 +7,8 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 namespace AbyssEngine { class Mesh; }   // engine-opaque, namespaced
-class Engine;   // global; defined in engine/render/Engine.h
+namespace AbyssEngine { class Engine; }   // real definition in engine/render/Engine.h
+using ::AbyssEngine::Engine;
 // Centralized declarations of GENUINE externals — engine/host symbols defined in libgof2hd,
 // not in this source tree. First section: engine data globals (basic-typed flags/sentinels).
 

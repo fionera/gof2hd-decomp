@@ -8,7 +8,8 @@
 
 // Cross-class types referenced only through pointers.
 class PaintCanvas;   // global-scope render canvas (game/core/PaintCanvasClass.h)
-class Engine;        // global-scope renderer/device root (engine/render/Engine.h)
+namespace AbyssEngine { class Engine; }   // renderer/device root (engine/render/Engine.h)
+using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class ConfigReader;       // engine/file/ConfigReader.h
     class CheatHandler;       // game/core/CheatHandler.h

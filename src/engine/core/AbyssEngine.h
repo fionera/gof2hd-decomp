@@ -15,7 +15,9 @@
 // Declared at global scope (their full definitions live in their own render/file headers) and
 // re-exported into namespace AbyssEngine below, so AbyssEngine::Engine and ::Engine name the same
 // type and the extern engine prototypes match the namespace-scope call sites.
-class Engine;
+// Engine's real type lives in namespace AbyssEngine; the global alias keeps bare `Engine` working.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 class Material;
 class PaintCanvas;
 struct Image;
@@ -41,7 +43,7 @@ class Camera;
 // Re-export the global engine/runtime types into this namespace. Mesh, Transform and Camera are
 // intentionally NOT re-exported: their namespace-scope forms (gof2/engine/render/Mesh.h,
 // gof2/engine/math/Transform.h) are distinct from any global type, so a `using ::X;` would clash.
-using ::Engine;
+// Engine already lives in this namespace (AbyssEngine::Engine); no re-export needed.
 using ::Image;
 using ::Image2D;
 using ::ImageFont;

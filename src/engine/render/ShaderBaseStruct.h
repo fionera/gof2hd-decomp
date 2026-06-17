@@ -11,7 +11,8 @@
 // drives ES2 shader compile/link plus uniform/attribute location binding.
 
 
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 
@@ -39,8 +40,8 @@ public:
     //   +0x14/0x18 RenderEffect(source)         (direct post-process draw)
     //   +0x1c/0x20 RenderEffect(source,target)  (post-process draw with FBO swap)
     //   +0x24 DeleteShader   +0x28 UseShader
-    virtual void Init(::Engine *engine) = 0;
-    virtual void UpdateMeshData(Mesh *mesh, ::Engine *engine) = 0;
+    virtual void Init(Engine *engine) = 0;
+    virtual void UpdateMeshData(Mesh *mesh, Engine *engine) = 0;
     virtual void SetInActive() = 0;
     // Post-process draw slots; base impls are inert (concrete post-process shaders override them).
     virtual void RenderEffect(FBOContainer *source, ::Engine *engine);

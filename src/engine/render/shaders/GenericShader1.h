@@ -10,7 +10,8 @@
 // Binds five vertex attributes (position/normal/tangent/binormal/texCoord) and the
 // u_m0..u_m8 uniform block, and pushes per-mesh material/transform data each frame.
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

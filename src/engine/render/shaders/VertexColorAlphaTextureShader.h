@@ -11,7 +11,8 @@
 // (ShaderBaseStruct::program); this class caches its six vertex attribute locations
 // and nine uniform locations at its tail.
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

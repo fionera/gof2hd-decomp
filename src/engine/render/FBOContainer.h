@@ -6,9 +6,10 @@
 #include "aetypes.h"
 
 // Engine is referenced by pointer only; its real definition lives in
-// gof2/engine/render/Engine.h. Note: the engine's Engine type is at global scope
-// (matches the original ::Engine), not inside AbyssEngine.
-class Engine;
+// gof2/engine/render/Engine.h, inside namespace AbyssEngine (matching the binary's
+// N11AbyssEngine6EngineE mangling). The global alias keeps bare `Engine` working.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 

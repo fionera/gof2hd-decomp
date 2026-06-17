@@ -13,7 +13,8 @@
 #include "aetypes.h"
 
 struct Transform;
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vector; } }
 
 class PaintCanvas {

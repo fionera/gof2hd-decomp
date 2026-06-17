@@ -17,9 +17,11 @@ class Mesh;
 // Game-side singletons referenced by pointer.
 class ApplicationManager;
 
-// Engine is the renderer/device root; it is referenced at global scope by the
-// engine glue (externs.h) and by FBOContainer, so it stays a top-level class.
-class Engine;
+// Engine is the renderer/device root. The real definition lives in
+// namespace AbyssEngine (to match the binary's mangling N11AbyssEngine6EngineE);
+// a global `using` alias below lets bare `Engine` resolve to AbyssEngine::Engine.
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 // MeshFull is the complete in-engine mesh type used by the render entry points.
 typedef AbyssEngine::Mesh MeshFull;
@@ -36,6 +38,8 @@ struct LightColor {
     float b;
     float a;
 };
+
+namespace AbyssEngine {
 
 class Engine {
 public:
@@ -233,6 +237,11 @@ public:
     void SwapBuffer();
     void initFileInterface();
 };
+
+} // namespace AbyssEngine
+
+using ::AbyssEngine::Engine;
+
 extern Engine* gEngine;            // canonical Engine singleton (binary .bss 0x2281e8)
 
 #endif

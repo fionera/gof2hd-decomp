@@ -9,7 +9,8 @@
 // AbyssEngine::PostBWShader - post-process black & white shader. Renders a grayscale
 // full-screen pass over the scene framebuffer. Derives from ShaderBaseStruct.
 // Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-struct Engine;
+namespace AbyssEngine { class Engine; }
+using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
 
