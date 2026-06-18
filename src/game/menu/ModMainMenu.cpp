@@ -80,6 +80,25 @@ ModMainMenu::~ModMainMenu()
     OnRelease();
 }
 
+// Default application-module input stubs: key handlers pass the key code
+// straight through, and the loading-screen hook always reports ready.
+long long ModMainMenu::OnKeyPress(long long key, long long mod)
+{
+    (void)mod;
+    return key;
+}
+
+long long ModMainMenu::OnKeyRelease(long long key, long long mod)
+{
+    (void)mod;
+    return key;
+}
+
+int ModMainMenu::ShowLoadingScreen()
+{
+    return 1;
+}
+
 void ModMainMenu::OnRelease()
 {
     if (this->cutScene != nullptr)
