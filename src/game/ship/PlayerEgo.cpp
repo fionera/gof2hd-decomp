@@ -341,7 +341,7 @@ void PlayerEgo::setRocketControl(Gun* gun, AEGeometry* geo) {
   int psm_arg = lvl->movingStarsIndex;
   void* psm = (void*)(intptr_t)lvl->skybox2Mesh;
   if (gun == 0) {
-    ((ParticleSystemManager *)(psm))->systemSetMatrix(psm_arg, ((Player *)this->player)->transform);
+    ((ParticleSystemManager *)(psm))->systemSetMatrix(psm_arg, &F<Matrix>(this->player, 4));
     this->rocketBanking = 0;
     return;
   }
@@ -1265,18 +1265,18 @@ void PlayerEgo::setLevel(Level* level) {
   ((int&)this->level) = (int)(intptr_t)level;
   void* src = (void*)(intptr_t)level->field_74;
   Matrix* gm = &((AEGeometry *)this->geometry)->getMatrix();
-  void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, 9, 0);
+  void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, ParticleSettings::ParticleSet_9, 0);
   this->currentSystem = (int)(intptr_t)sys;
   ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit3((int)(intptr_t)sys, 0);
   if (gStatus->getCurrentCampaignMission() > 1) return;
   void* src2 = (void*)(intptr_t)this->level->particleEmitBoolPtr;
   Matrix* gm2 = &((AEGeometry *)this->geometry)->getMatrix();
-  void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, 0xf, 0);
+  void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, ParticleSettings::ParticleSet_0xf, 0);
   this->smokeSystem = (int)(intptr_t)sys2;
   ((ParticleSystemManager *)(this->level->particleEmitBoolPtr))->enableSystemEmit3((int)(intptr_t)sys2, 0);
   void* src3 = (void*)(intptr_t)this->level->particleRenderBoolPtr;
   Matrix* gm3 = &((AEGeometry *)this->geometry)->getMatrix();
-  void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, 0x2a, 0);
+  void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, ParticleSettings::ParticleSet_0x2a, 0);
   this->explosionSmoke = (int)(intptr_t)sys3;
   return PlayerEgo_setLevel_ext((void*)(intptr_t)this->level->particleRenderBoolPtr, (int)(intptr_t)sys3, 0);
 }

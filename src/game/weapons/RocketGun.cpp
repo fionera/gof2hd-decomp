@@ -25,7 +25,7 @@ namespace AbyssEngine {
 class PaintCanvas {
 public:
     void TransformAddChild(unsigned int parent, unsigned int child);
-    void *TransformGetLocal(unsigned int index);
+    Matrix *TransformGetLocal(unsigned int index);
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
 };
 } // namespace AbyssEngine
@@ -135,9 +135,9 @@ void RocketGun::setRadar(Radar *radar)
         this->trailSystems->resize(count);
         this->trailTimers->resize(count);
 
-        int defaultType = 0x1c;
+        ParticleSettings::ParticleSet defaultType = ParticleSettings::ParticleSet_0x1c;
         if (mode == 2)
-            defaultType = 0x1b;
+            defaultType = ParticleSettings::ParticleSet_0x1b;
         for (uint32_t i = 0; i < this->gun->count; i++) {
             ParticleSystemManager *manager;
             if (this->gun->itemIndex == 0xc1) {
@@ -147,13 +147,13 @@ void RocketGun::setRadar(Radar *radar)
                 manager = (ParticleSystemManager *)this->particleManager;
             }
 
-            int effect;
+            ParticleSettings::ParticleSet effect;
             if (mode == 0) {
-                effect = 0x19;
+                effect = ParticleSettings::ParticleSet_0x19;
             } else {
                 effect = defaultType;
                 if (mode == 1)
-                    effect = 0x1a;
+                    effect = ParticleSettings::ParticleSet_0x1a;
             }
 
             int system = manager->addSystem(&(*this->trailMatrices)[i], effect, false);
@@ -177,7 +177,7 @@ non_special:
 
         for (uint32_t i = 0; i < this->gun->count; i++) {
             ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x80);
-            int system = manager->addSystem(&(*this->trailMatrices)[i], 0x27, false);
+            int system = manager->addSystem(&(*this->trailMatrices)[i], ParticleSettings::ParticleSet_0x27, false);
             (*this->trailSystems)[i] = system;
             manager->enableSystemEmit(system, false);
             (*this->trailTimers)[i] = 0;
@@ -187,14 +187,14 @@ non_special:
 
     if (gunType == 0xe8) {
         ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x9c);
-        void *local = g_paintCanvas->TransformGetLocal(this->transform);
-        int system = manager->addSystem(local, 0x2f, false);
+        Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
+        int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
         this->particleSystem = system;
         manager->attachSystem(system, 0);
     } else {
         ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x84);
-        void *local = g_paintCanvas->TransformGetLocal(this->transform);
-        int system = manager->addSystem(local, 0xc, false);
+        Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
+        int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
         this->particleSystem = system;
         manager->attachSystem(system, 0);
     }

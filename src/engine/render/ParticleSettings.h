@@ -27,14 +27,22 @@ public:
     // ParticleSystemManager::addSystem(..., ParticleSettings::ParticleSet, ...) all pass it as a
     // small integer index into the SetDefinition table below). Enumerators are not individually
     // named in the binary (it is used purely as an index), so a placeholder is declared.
-    enum ParticleSet { ParticleSet_dummy = 0 };
+    enum ParticleSet {
+        ParticleSet_dummy = 0,
+        ParticleSet_4 = 4, ParticleSet_7 = 7, ParticleSet_8 = 8, ParticleSet_9 = 9,
+        ParticleSet_0xa = 0xa, ParticleSet_0xb = 0xb, ParticleSet_0xc = 0xc, ParticleSet_0xf = 0xf,
+        ParticleSet_0x14 = 0x14, ParticleSet_0x15 = 0x15, ParticleSet_0x16 = 0x16,
+        ParticleSet_0x17 = 0x17, ParticleSet_0x18 = 0x18, ParticleSet_0x19 = 0x19,
+        ParticleSet_0x1a = 0x1a, ParticleSet_0x1b = 0x1b, ParticleSet_0x1c = 0x1c,
+        ParticleSet_0x27 = 0x27, ParticleSet_0x2a = 0x2a, ParticleSet_0x2f = 0x2f
+    };
 
     // ParticleSettings::CameraSet -- the camera-set selector passed to the ParticleSystemManager
     // ctor and ParticleSettings::cameraToggle(ParticleSettings::CameraSet). The binary stores it in
     // the manager's `cameraSet` int field and only ever compares it for equality, so it is a small
     // enum; its enumerators are not individually recoverable from the binary (used purely as an
     // opaque selector), so a placeholder is declared.
-    enum CameraSet { CameraSet_dummy = 0 };
+    enum CameraSet { CameraSet_dummy = 0, CameraSet_1 = 1 };
 
     // One particle-emitter parameter block (0xa0 bytes). This is the element type of the `sets`
     // table -- NOT the same as the nested `ParticleSet` index enum above. Most slots hold either an

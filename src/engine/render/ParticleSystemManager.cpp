@@ -52,8 +52,8 @@ static IParticleSystem *resolveSystem(ParticleSystemManager *self, int handle)
 }
 
 ParticleSystemManager::ParticleSystemManager(
-    void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
-    unsigned short meshTex, bool meshFlag)
+    PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
+    bool spriteFlag, unsigned short meshTex, bool meshFlag)
 {
     this->cameraSet = cameraSet;
     this->canvas = canvas;
@@ -77,8 +77,9 @@ ParticleSystemManager::ParticleSystemManager(
 // the texture slots are forced to 0xffff and the supplied texture goes to the "uv" half, with the
 // blend modes stored explicitly.
 ParticleSystemManager::ParticleSystemManager(
-    void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend, bool spriteFlag,
-    unsigned short meshTex, int meshBlend, bool meshFlag)
+    PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet, unsigned short spriteTex,
+    AbyssEngine::BlendMode spriteBlend, bool spriteFlag,
+    unsigned short meshTex, AbyssEngine::BlendMode meshBlend, bool meshFlag)
 {
     this->cameraSet = cameraSet;
     this->canvas = canvas;
@@ -86,13 +87,13 @@ ParticleSystemManager::ParticleSystemManager(
     _psm_arraySpriteCtor(&this->spriteSystemCount);
     this->spriteUvId = spriteTex;
     this->spriteTextureId = 0xffff;
-    this->spriteBlendMode = (unsigned int)spriteBlend;
+    this->spriteBlendMode = spriteBlend;
     this->spriteUsesExtra = spriteFlag ? 1 : 0;
 
     _psm_arrayMeshCtor(&this->meshSystemCount);
     this->meshUvId = meshTex;
     this->meshTextureId = 0xffff;
-    this->meshBlendMode = (unsigned int)meshBlend;
+    this->meshBlendMode = meshBlend;
     this->meshUsesExtra = meshFlag ? 1 : 0;
 
     construct();
@@ -218,7 +219,7 @@ void ParticleSystemManager::release()
     _psm_releaseMeshArray(&this->meshSystemCount);
 }
 
-void ParticleSystemManager::cameraToggle(int cam)
+void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam)
 {
     if (this->cameraSet == cam)
         return;
@@ -230,10 +231,12 @@ void ParticleSystemManager::cameraToggle(int cam)
 // Allocates a ParticleSystemMesh, constructs it against the manager's canvas and mesh flag, appends
 // it to the mesh array, accumulates its particle count, and returns the new system's handle: the
 // mesh-array index with bit 0x4000 set to mark it as a mesh-array handle.
-unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void *sets, bool flag)
+unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix const *matrix,
+                                                  Array<ParticleSettings::ParticleSet> const &sets,
+                                                  bool flag)
 {
     void *sys = ::operator new(0xa0);
-    _psmesh_ctor(sys, this->canvas, matrix, sets, flag, this->meshUsesExtra != 0);
+    _psmesh_ctor(sys, this->canvas, matrix, &sets, flag, this->meshUsesExtra != 0);
     _psm_arrayMeshAdd(sys, &this->meshSystemCount);
 
     this->meshParticleCount += _ips_getParticleCount(sys);
@@ -241,16 +244,31 @@ unsigned int ParticleSystemManager::addMeshSystem(const void *matrix, const void
     return (this->meshSystemCount - 1) | 0x4000;
 }
 
-// 4-argument overload: bit-17 sprite/mesh dispatch, emits one burst at `pos`. Returns the
-// pass-through `ret` selector packed into the low word (the high word is -1 on the no-system path).
-unsigned long long ParticleSystemManager::emitManual(int handle, const float *pos, int ret, float p4)
+// 4-argument overload: bit-17 sprite/mesh dispatch, emits one burst at `pos` with no explicit
+// velocity. Returns the pass-through `ret` selector packed into the low word (the high word is -1
+// on the no-system path).
+unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AEMath::Vector const &pos,
+                                                     int ret, float p4)
 {
-    (void)p4;
     IParticleSystem *sys = resolveSystem(this, handle);
     if (sys == nullptr)
         return ((unsigned long long)0xffffffffu << 32) | (unsigned int)(unsigned long)this;
 
-    _ips_emitManual(sys, pos[0], pos[1], pos[2]);
+    sys->emitManual(pos, ret, nullptr, p4);
+    return (unsigned int)ret;
+}
+
+// 5-argument overload: as the 4-arg form but threads an explicit emitter velocity through to the
+// per-system emit path.
+unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AEMath::Vector const &pos,
+                                                     int ret, AbyssEngine::AEMath::Vector const &velocity,
+                                                     float p5)
+{
+    IParticleSystem *sys = resolveSystem(this, handle);
+    if (sys == nullptr)
+        return ((unsigned long long)0xffffffffu << 32) | (unsigned int)(unsigned long)this;
+
+    sys->emitManual(pos, ret, &velocity, p5);
     return (unsigned int)ret;
 }
 
@@ -262,17 +280,17 @@ void ParticleSystemManager::renderSprites()
         _psm_spriteRender4(this->canvas, this->spriteSystemId, this->spriteMeshId, this->spriteBlendMode);
 }
 
-void ParticleSystemManager::systemSetMatrix(int handle, const void *matrix)
+void ParticleSystemManager::systemSetMatrix(int handle, AbyssEngine::AEMath::Matrix const *matrix)
 {
     IParticleSystem *sys = resolveSystem(this, handle);
     if (sys != nullptr)
-        sys->setMatrix((Matrix const *)matrix);
+        sys->setMatrix(matrix);
 }
 
 // Particle-set descriptor passed by value as a single word in this build.
-void ParticleSystemManager::setParticleSetBySet(unsigned int handle, unsigned int set)
+void ParticleSystemManager::setParticleSetBySet(int handle, ParticleSettings::ParticleSet set)
 {
-    IParticleSystem *sys = resolveSystem(this, (int)handle);
+    IParticleSystem *sys = resolveSystem(this, handle);
     if (sys != nullptr)
         sys->setParticleSet(set);
 }
@@ -327,10 +345,11 @@ void ParticleSystemManager::initSprites()
 
 // Allocates a ParticleSystemSprite, constructs it against the manager's canvas and sprite flag,
 // appends it to the sprite array, accumulates its particle count, and returns its sprite-array handle.
-int ParticleSystemManager::addSpriteSystem(const void *matrix, const void *sets, bool flag)
+int ParticleSystemManager::addSpriteSystem(AbyssEngine::AEMath::Matrix const *matrix,
+                                           Array<ParticleSettings::ParticleSet> const &sets, bool flag)
 {
     void *sys = ::operator new(0x78);
-    _pss_ctor(sys, this->canvas, matrix, sets, flag, this->spriteUsesExtra != 0);
+    _pss_ctor(sys, this->canvas, matrix, &sets, flag, this->spriteUsesExtra != 0);
     _psm_arraySpriteAdd(sys, &this->spriteSystemCount);
     this->spriteParticleCount += _ips_getParticleCount(sys);
     return this->spriteSystemCount - 1;
@@ -387,7 +406,8 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 
 // Thin forwarder that constructs a particle system for the given set and registers it; modelled as a
 // tail-call to the sprite-system add path (the default add route), returning its handle.
-int ParticleSystemManager::addSystem(const void *matrix, unsigned int set, bool flag)
+int ParticleSystemManager::addSystem(AbyssEngine::AEMath::Matrix const *matrix,
+                                     ParticleSettings::ParticleSet set, bool flag)
 {
     return _psm_addSpriteSystem(this, matrix, set, flag);
 }

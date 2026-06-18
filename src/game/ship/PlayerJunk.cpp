@@ -85,7 +85,7 @@ void PlayerJunk::update(int elapsed) {
             int psManager = *(int*)((char*)level + 0x74);
             Vector* emitter = *(Vector**)((char*)level + 0x34);
             ((ParticleSystemManager*)psManager)->emitManual(
-                (int)(intptr_t)emitter, position, 0, (float)(intptr_t)&zero);
+                (int)(intptr_t)emitter, position, 0, zero, 0.0f);
         }
     }
 

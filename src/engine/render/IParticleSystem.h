@@ -5,6 +5,7 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "mathtypes.h"
+#include "engine/render/ParticleSettings.h"
 
 namespace AbyssEngine { class PaintCanvas; }
 using ::AbyssEngine::PaintCanvas;
@@ -40,9 +41,10 @@ public:
     Vector* particleVelocities;            // per-particle velocity buffer (one Vector per particle)
     int* particleAges;                     // per-particle age in ms, -1 == slot free
     int8_t* particleSetIds;                // per-particle source particle-set index
-    Array<int>* particleSets;              // configured particle-set indices
+    Array<ParticleSettings::ParticleSet>* particleSets;   // configured particle-set indices
 
-    IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
+    IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
+                    Array<ParticleSettings::ParticleSet> const &sets,
                     bool mirror, bool alphaFade);
     // Trivial base ctor for the concrete renderers, whose construction is driven by the binary
     // base-ctor helper (_psm_base_ctor / _pss_base_ctor) rather than this C++ ctor.
@@ -63,14 +65,14 @@ public:
                              float u0, float u1, float v0, float v1, bool maskedColor,
                              float size0, float size1, Vector const &velocity);  // slot 6
 
-    void setParticleSet(int set);
+    void setParticleSet(ParticleSettings::ParticleSet set);
     void setParticleSetIndex(uint8_t index);
     void setMatrix(Matrix const *matrix);
     void enableEmit(bool enabled);
     void enableRender(bool enabled);
     void update(int delta);
     void emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime);
-    void interpolateColor(int index, float *alpha, float *red, float *green, float *blue);
+    void interpolateColor(int index, float &alpha, float &red, float &green, float &blue);
     float *rotateUVs(float *src, int seed, float *dst);
     void calcEmitterVelocity(int delta);
     void resetEmitterVelocity();

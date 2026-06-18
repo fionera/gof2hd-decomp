@@ -55,6 +55,11 @@
 // PaintCanvasClass.h type in scope; PaintCanvas.h's own copy clashes with this TU's Mesh/Transform.
 extern PaintCanvas* gCanvas;
 
+// Typed camera-local-matrix accessor (the engine free-function form, same symbol LODManager uses);
+// returns the active camera's local transform as a Matrix* so it can feed the particle systems
+// without a void*-to-Matrix* cast.
+Matrix *CameraGetLocal(void *canvas, uint32_t index);
+
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
 __attribute__((visibility("hidden"))) extern int *g_engineColorBase;
 __attribute__((visibility("hidden"))) extern void Globals_addSoundResourceToList(int snd); // engine sound-list helper (Globals.cpp)
@@ -82,7 +87,7 @@ __attribute__((visibility("hidden"))) extern int **g_cg_snd2d;      // [DAT_000c
 __attribute__((visibility("hidden"))) extern int **g_cg_snd2e;      // [DAT_000ce67c]
 __attribute__((visibility("hidden"))) extern int   *g_crm_counts8;  // [DAT_000d59f8] per-stage counts
 __attribute__((visibility("hidden"))) extern int   *g_crm_table8;   // [DAT_000d59fc] {id,arg} table
-__attribute__((visibility("hidden"))) extern int  **g_init_canvas;    // [DAT_000be260]
+__attribute__((visibility("hidden"))) extern PaintCanvas ***g_init_canvas;    // [DAT_000be260]
 __attribute__((visibility("hidden"))) extern char **g_init_flagStack; // [DAT_000be268]
 __attribute__((visibility("hidden"))) extern int  **g_init_missionDef;// [DAT_000be5a4]
 __attribute__((visibility("hidden"))) extern int  **g_init_settings;  // [DAT_000be5ac]
@@ -1128,7 +1133,7 @@ int Level::init() {
         new (lod) LODManager();
         this->lodManager = lod;
 
-        int canvas = **g_init_canvas;
+        PaintCanvas *canvas = **g_init_canvas;
 
         bool dustVariant = false;
         if (gStatus->inAlienOrbit() == 0) {
@@ -1139,34 +1144,34 @@ int Level::init() {
         // the engine builds ten particle-system managers (engine trails, explosions, dust...).
         ParticleSystemManager *psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e85, false, 0xffff, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e85, false, 0xffff, false);
         this->particleEmitBoolPtr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6a72, false, 0xffff, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6a72, false, 0xffff, false);
         this->particleRenderBoolPtr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e83, true, 0xffff, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e83, true, 0xffff, false);
         this->field_74 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e7a, true, 0x4e7a, true);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e7a, true, 0x4e7a, true);
         this->field_80 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x5e20, true, 0x5e20, true);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x5e20, true, 0x5e20, true);
         this->field_98 = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, (unsigned short)(dustVariant ? 0x4ea9 : 0x4e7f), true, 0, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, (unsigned short)(dustVariant ? 0x4ea9 : 0x4e7f), true, 0, false);
         this->particleSystemMgr = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x4e7c, false, 0x4e7c, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x4e7c, false, 0x4e7c, false);
         this->skybox2Mesh = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6a7c, true, 0x6a7c, true);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6a7c, true, 0x6a7c, true);
         this->field_8c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6ab9, true, 0xffff, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6ab9, true, 0xffff, false);
         this->field_9c = psm;
         psm = (ParticleSystemManager *)::operator new(100);
-        new (psm) ParticleSystemManager((void *)(intptr_t)canvas, 1, 0x6aaf, true, 0xffff, false);
+        new (psm) ParticleSystemManager(canvas, ParticleSettings::CameraSet_1, 0x6aaf, true, 0xffff, false);
         this->field_94 = psm;
 
         thisptr->createSpace();
@@ -3350,8 +3355,8 @@ void Level::initParticleSystems()
         // camera-locked sky particle system.
         PaintCanvas *canvas = gCanvas;
         canvas->CameraGetCurrent();
-        int local = (int)(long)canvas->CameraGetLocal(canvas->CameraGetCurrent());
-        int sys = (this->skybox2Mesh)->addSystem((void *)local, 4, false);
+        Matrix *local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
         this->movingStarsIndex = sys;
 
         // pirate-base smoke plume attached to the pirate flagship.
@@ -3365,8 +3370,8 @@ void Level::initParticleSystems()
                         // smoke plume's reference frame.
                         AEGeometry *kg = k->geometry;
                         kg->updateReferenceMatrix();
-                        int ref = (int)(intptr_t)&kg->getReferenceMatrix();
-                        this->particleSystemMgr->addSystem((void *)ref, 8, false);
+                        Matrix const *ref = &kg->getReferenceMatrix();
+                        this->particleSystemMgr->addSystem(ref, ParticleSettings::ParticleSet_8, false);
                         break;
                     }
                 }
@@ -3374,8 +3379,8 @@ void Level::initParticleSystems()
         }
 
         canvas->CameraGetCurrent();
-        local = (int)(long)canvas->CameraGetLocal(canvas->CameraGetCurrent());
-        sys = this->particleSystemMgr->addSystem((void *)local, 7, false);
+        local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
+        sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
         this->field_284 = sys;
 
         this->ips_applyAmbient();
@@ -3397,15 +3402,15 @@ void Level::initParticleSystems()
         (this->field_98)->init();
 
     // the player-engine systems (slots 0x34..0x5c) all use a unit transform.
-    this->field_38 = this->ips_addPlayerSystem(10);
-    this->field_3c = this->ips_addPlayerSystem(0xb);
-    this->field_48 = this->ips_addPlayerSystem(0x14);
-    this->field_34 = this->ips_addPlayerSystem(0x15);
-    this->field_50 = this->ips_addPlayerSystem(0x16);
-    this->field_54 = this->ips_addPlayerSystem(0x17);
+    this->field_38 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0xa);
+    this->field_3c = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0xb);
+    this->field_48 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x14);
+    this->field_34 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x15);
+    this->field_50 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x16);
+    this->field_54 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x17);
     if (gStatus->getCurrentCampaignMission() == 0x50) {
-        this->field_58 = this->ips_addPlayerSystem(0x18);
-        this->field_5c = this->ips_addPlayerSystem(0x18);
+        this->field_58 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x18);
+        this->field_5c = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x18);
     }
 
     (this->field_74)->init();
@@ -3996,7 +4001,7 @@ void Level::ips_applyAmbient() {
 
 // --- initParticleSystems(): register one player-engine particle system (kind)
 // against a unit reference transform and return its handle.
-int Level::ips_addPlayerSystem(int kind) {
+int Level::ips_addPlayerSystem(ParticleSettings::ParticleSet kind) {
     ParticleSystemManager *mgr = this->particleSystemMgr;          // particleSystemMgr
     if (mgr == nullptr)
         return -1;

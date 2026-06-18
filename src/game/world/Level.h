@@ -314,7 +314,7 @@ public:
     // initParticleSystems(): per-asteroid dust, ambient tint, engine-trail systems.
     void ips_buildAsteroidDust(void *arr);
     void ips_applyAmbient();
-    int  ips_addPlayerSystem(int kind);
+    int  ips_addPlayerSystem(ParticleSettings::ParticleSet kind);
 
     // createWingmen()/createScene(): position a wingman / static actor.
     void cwm_placeWingman(int *kiSlot, unsigned i);

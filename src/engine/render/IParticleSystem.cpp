@@ -32,7 +32,7 @@ void IParticleSystem::updateSingle(int, float) {}
 void IParticleSystem::setParticle(Vector const &, float, uint32_t, float, float, float, float,
                                   bool, float, float, Vector const &) {}
 
-void IParticleSystem::setParticleSet(int set)
+void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set)
 {
     if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
         this->particleSetIndex = 0;
@@ -353,7 +353,7 @@ void IParticleSystem::emit(int delta)
     }
 }
 
-void IParticleSystem::interpolateColor(int index, float *alpha, float *red, float *green, float *blue)
+void IParticleSystem::interpolateColor(int index, float &alpha, float &red, float &green, float &blue)
 {
     int age = this->particleAges[index];
     int setIndex = this->particleSetIds[index];
@@ -377,20 +377,20 @@ void IParticleSystem::interpolateColor(int index, float *alpha, float *red, floa
     float b1 = (float)(c1 & 0xff);
 
     const float scale = 0.003921568859368563f;
-    *alpha = (inv * a0 + t * a1) * scale;
-    *red = (inv * r0 + t * r1) * scale;
-    *green = (inv * g0 + t * g1) * scale;
-    *blue = (inv * b0 + t * b1) * scale;
+    alpha = (inv * a0 + t * a1) * scale;
+    red = (inv * r0 + t * r1) * scale;
+    green = (inv * g0 + t * g1) * scale;
+    blue = (inv * b0 + t * b1) * scale;
 
     int fadeFrames = *(int *)(def + 0x3c);
     if (age < fadeFrames) {
         float fade = (float)age / (float)fadeFrames;
         if (this->alphaFade != 0) {
-            *alpha *= fade;
-            *red *= fade;
-            *green *= fade;
+            alpha *= fade;
+            red *= fade;
+            green *= fade;
         } else {
-            *blue *= fade;
+            blue *= fade;
         }
     }
 }
@@ -414,7 +414,7 @@ float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
 }
 
 IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
-                                 Array<int> const &sets,
+                                 Array<ParticleSettings::ParticleSet> const &sets,
                                  bool mirror, bool alphaFade)
 {
     this->canvas = canvas;
@@ -428,7 +428,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     this->field_0x2c = 0;
     this->field_0x30 = 0;
 
-    this->particleSets = new Array<int>();
+    this->particleSets = new Array<ParticleSettings::ParticleSet>();
     this->mirror = mirror;
     this->alphaFade = alphaFade;
     *this->particleSets = sets;
@@ -443,7 +443,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     this->flags = 0;
 
     int count = sets.size();
-    const int *src = sets.data();
+    const ParticleSettings::ParticleSet *src = sets.data();
     int firstFlags = 0;
     uint32_t maxParticles = 0;
     while (count != 0) {

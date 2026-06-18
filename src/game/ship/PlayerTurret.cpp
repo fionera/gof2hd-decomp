@@ -143,7 +143,7 @@ void PlayerTurret::setLevel(Level* level)
 {
     this->KIPlayer::setLevel(level);
     ParticleSystemManager* manager = (ParticleSystemManager*)this->level->field_74;
-    int system = manager->addSystem(&this->geometry->getReferenceMatrix(), 9, false);
+    int system = manager->addSystem(&this->geometry->getReferenceMatrix(), ParticleSettings::ParticleSet_9, false);
     this->particleSystemId = system;
     manager->enableSystemEmit(system, false);
 }

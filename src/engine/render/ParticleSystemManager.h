@@ -4,6 +4,22 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/render/ParticleSettings.h"
+
+// AbyssEngine::BlendMode -- defined with the SAME canonical guarded form the rest of the
+// engine uses (PaintCanvas.h / ResourceMaterial.h). Guarded so a TU that already pulls one
+// of those definers does not get a redefinition.
+namespace AbyssEngine {
+#ifndef GOF2_ENUM_BlendMode
+#define GOF2_ENUM_BlendMode
+enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
+#endif
+}
+
+// PaintCanvas is used only by pointer here, so forward-declare it (do NOT include the full
+// PaintCanvas.h, whose stub-redefining co-includes would break this header).
+namespace AbyssEngine { class PaintCanvas; }
+using ::AbyssEngine::PaintCanvas;
 
 // Galaxy on Fire 2 -- ParticleSystemManager.
 //
@@ -43,10 +59,13 @@ public:
     uint32_t meshParticleCount;      // packed mesh vertex/index particle count
     uint8_t  meshUsesExtra;          // mesh extra/mirror flag
 
-    ParticleSystemManager(void *canvas, int cameraSet, unsigned short spriteTex, bool spriteFlag,
+    ParticleSystemManager(PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet,
+                          unsigned short spriteTex, bool spriteFlag,
                           unsigned short meshTex, bool meshFlag);
-    ParticleSystemManager(void *canvas, int cameraSet, unsigned short spriteTex, int spriteBlend,
-                          bool spriteFlag, unsigned short meshTex, int meshBlend, bool meshFlag);
+    ParticleSystemManager(PaintCanvas *canvas, ParticleSettings::CameraSet cameraSet,
+                          unsigned short spriteTex, AbyssEngine::BlendMode spriteBlend,
+                          bool spriteFlag, unsigned short meshTex,
+                          AbyssEngine::BlendMode meshBlend, bool meshFlag);
 
     void update(long long dt);
     void reset();
@@ -56,21 +75,25 @@ public:
     void setParticleSetByIndex(int handle, unsigned char setIndex);
     void enableSystemRender(int handle, bool enable);
     void release();
-    void cameraToggle(int cam);
-    unsigned int addMeshSystem(const void *matrix, const void *sets, bool flag);
-    unsigned long long emitManual(int handle, const float *pos, int ret, float p4);
+    void cameraToggle(ParticleSettings::CameraSet cam);
+    unsigned int addMeshSystem(AbyssEngine::AEMath::Matrix const *matrix,
+                               Array<ParticleSettings::ParticleSet> const &sets, bool flag);
+    unsigned long long emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret, float p4);
+    unsigned long long emitManual(int handle, AbyssEngine::AEMath::Vector const &pos, int ret,
+                                  AbyssEngine::AEMath::Vector const &velocity, float p5);
     void renderSprites();
-    void systemSetMatrix(int handle, const void *matrix);
-    void setParticleSetBySet(unsigned int handle, unsigned int set);
+    void systemSetMatrix(int handle, AbyssEngine::AEMath::Matrix const *matrix);
+    void setParticleSetBySet(int handle, ParticleSettings::ParticleSet set);
     void enableSystemUpdate(int handle, bool enable);
     void initSprites();
-    int  addSpriteSystem(const void *matrix, const void *sets, bool flag);
+    int  addSpriteSystem(AbyssEngine::AEMath::Matrix const *matrix,
+                         Array<ParticleSettings::ParticleSet> const &sets, bool flag);
     void initMesh();
     void enableSystemEmit(int handle, bool enable);
     void enableSystemEmit2(int handle, bool enable);
     void enableSystemEmit3(int handle, bool enable);
     void attachSystem(int handle, bool enable);
-    int  addSystem(const void *matrix, unsigned int set, bool flag);
+    int  addSystem(AbyssEngine::AEMath::Matrix const *matrix, ParticleSettings::ParticleSet set, bool flag);
     int  init();
     void resetSystem(int handle);
     void renderMeshes();
