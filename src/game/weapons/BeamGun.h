@@ -28,11 +28,12 @@ public:
     uint8_t secondaryVisible;           // secondary visible (tracks gun delay)
 
     BeamGun(int owner, Gun* gun, int meshKind, Level* level);
-    ~BeamGun();
+    virtual ~BeamGun();
 
-    void render();
-    void update(int elapsed);
-    void setEnemies(Array<Player*>* enemies);
-    void setEnemy(Player* enemy);
+    // Virtual methods in vtable order: setEnemies, setEnemy, update, render.
+    virtual void setEnemies(Array<Player*>* enemies);
+    virtual void setEnemy(Player* enemy);
+    virtual void update(int elapsed);
+    virtual void render();
 };
 #endif
