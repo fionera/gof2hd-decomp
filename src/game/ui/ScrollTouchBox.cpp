@@ -199,18 +199,18 @@ void ScrollTouchBox::draw()
                     int left = this->x;
                     int width = this->width;
                     if (this->centered == 0) {
-                        x = (left + width) - ((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line);
+                        x = (left + width) - ((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line);
                     } else {
-                        x = (left + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line) >> 1);
+                        x = (left + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line) >> 1);
                     }
                 } else {
                     x = this->x;
                     if (this->centered != 0) {
                         int width = this->width;
-                        x = (x + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, line) >> 1);
+                        x = (x + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line) >> 1);
                     }
                 }
-                ((PaintCanvas*)canvas)->DrawString((unsigned int)(unsigned long)font, line, x, lineY, false);
+                ((PaintCanvas*)canvas)->DrawString((unsigned int)(unsigned long)font, *line, x, lineY, false);
             }
         }
     }

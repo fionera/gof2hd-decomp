@@ -162,9 +162,9 @@ void ParticleSystemMesh::setQuadEdge(const Vector &edge, int point, const Vector
     }
 }
 
-ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b)
+ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const Array<ParticleSet> &sets, bool a, bool b)
 {
-    _psm_base_ctor(this, canvas, matrix, sets, a, b);
+    _psm_base_ctor(this, canvas, matrix, &sets, a, b);
 
     uint32_t flags = this->flags;
     uint32_t particleCount = this->particleCount;
@@ -188,8 +188,8 @@ ParticleSystemMesh::ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix
     if ((flags & 0x8000) == 0) {
         vectorCount = particleCount;
     } else {
-        if (*(uint32_t *)((char *)sets + 0) != 0) {
-            int set = *(int *)(*(void **)((char *)sets + 4));
+        if (sets.size() != 0) {
+            int set = (int)sets.data()[0];
             if (set != -1) {
                 char *data = g_ParticleSetData + (set * 160);
                 if (*(float *)(data + 0x40) > 0.0f)

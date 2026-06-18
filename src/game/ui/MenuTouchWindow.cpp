@@ -1515,6 +1515,8 @@ float MenuTouchWindow::getRelativeScrollHeight()
 // the current menu state (this->menuState). Returns 0.
 
 extern "C" void _mtw_steerFromTouch(void *self, int y, int x); // corrupted case-10 cinematic steer
+extern "C" void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // touch-id-aware cinematic steer/fire (case-10)
+extern "C" void _mtw_Layout_OnTouchMove(void *layout, int y); // Layout::OnTouchMove forwarding
 
 extern void *const gMvLayout    __attribute__((visibility("hidden"))); // *holder -> layout obj
 extern void *const gMvScreenW   __attribute__((visibility("hidden")));
@@ -1529,6 +1531,42 @@ static void doSliders(void *self, int y) {
         _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **)sl)[1]));
     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **)sl)[2]));
     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **)sl)[3]));
+}
+
+extern void *const gMvScrollBound __attribute__((visibility("hidden"))); // *holder -> [0] right edge bound (scroll state)
+
+// Shared scroll-state move tail (states 0xf/0x10): the scroll window, the scrollbar slot
+// entries, the scroll list slots, then the horizontal scroll-drag with its hit-test against
+// the layout edges and the scrollbar strip image.
+static void scrollStateMove(MenuTouchWindow *self, int y, int x)
+{
+    char *layout = (char *)*(void **)gMvLayout;
+
+    _mtw_ScrollTouchWindow_OnTouchMove(self->scrollWindowB, y);
+
+    void **arr = (void **)self->scrollEntries;
+    for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
+        unsigned int *e = (unsigned int *)((void **)arr[1])[i];
+        if ((e[0] | 8) == 0x3c && e[1] == 0)
+            _mtw_TouchButton_OnTouchMove(e, y);
+    }
+
+    void **slots = (void **)self->scrollSlots;
+    for (unsigned int i = 0; i < *(unsigned int *)slots; i++)
+        _mtw_TouchButton_OnTouchMove(((void **)slots[1])[i], y);
+
+    if (*(int *)(layout + 0xc) < x &&
+        x < *(int *)*(void **)gMvScrollBound - *(int *)(layout + 0x10)) {
+        int b28 = *(int *)(layout + 0x28);
+        int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *)self->heapBufA);
+        if (y < iw + b28) {
+            int dx = x - self->dragLastX;
+            self->dragLastX = x;
+            self->dragVelocity = dx;
+            self->inertiaDecay = 0x3f800000;
+            self->scrollOffset = self->scrollOffset + dx;
+        }
+    }
 }
 
 int MenuTouchWindow::OnTouchMove(int y, int x)
@@ -1668,6 +1706,180 @@ int MenuTouchWindow::OnTouchMove(int y, int x)
             _mtw_steerFromTouch(this, y, x);
     } break;
     }
+    return 0;
+}
+
+// MenuTouchWindow::OnTouchMove(int y, int x, void *touchId). The touch-id-aware drag dispatcher.
+// Same per-state widget routing as the two-argument form, but the in-game cinematic/cutscene
+// overlay (state 0xb) uses the originating touch id to drive the virtual steer / fire controls
+// (Globals::setCoordsSteer / setCoordsFire). After the state body runs, the drag is forwarded to
+// the modal Layout. r0=this, r1=y, r2=x, r3=touchId. Returns 0.
+int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId)
+{
+    if (this->messageShowing != 0) {
+        _mtw_ChoiceWindow_OnTouchMove(this->choiceWindow, y);
+        return 0;
+    }
+    char *layout = (char *)*(void **)gMvLayout;
+    if (*layout != 0) {
+        _mtw_Layout_OnTouchMove(layout, y);
+        return 0;
+    }
+
+    int state = this->menuState;
+    switch (state - 1) {
+    case 0: // state 1
+    case 1: // state 2 list-drag (scroll)
+        if (*(int *)(layout + 0xc) < x &&
+            x < *(int *)*(void **)gMvScreenW - *(int *)(layout + 0x10)) {
+            int dx = x - this->dragLastX;
+            this->dragLastX = x;
+            this->dragVelocity = dx;
+            this->inertiaDecay = 0x3f800000;
+            this->scrollOffset = this->scrollOffset + dx;
+        }
+        _mtw_TouchButton_OnTouchMove(this->okButton, y);
+        break;
+    case 2: { // state 3
+        if (*(char *)*(void **)gMvFlagA == 0) {
+            void **arr = (void **)this->optionsButtons;
+            for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
+                _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
+        } else {
+            _mtw_TouchButton_OnTouchMove(this->okButton, y);
+            this->upButtonPressed = 0;
+            int base = *(int *)(layout + 0x28);
+            int top = base + this->listTopY;
+            int bottom = this->listEntryHeight + top;
+            if (top < y && y < bottom &&
+                *(int *)(layout + 0xc) + base < x &&
+                x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + this->listEntryWidth)
+                this->upButtonPressed = 1;
+            if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
+                base + *(int *)(layout + 0xc) < x &&
+                x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + this->listEntryWidth)
+                this->downButtonPressed = 1;
+            _mtw_TouchButton_OnTouchMoveXY(this->optBtnCC, y, x);
+            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD0, y, x);
+            _mtw_TouchSlider_OnTouchMove(*(void **)i32(this->sliders, 4), y);
+            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
+            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
+            _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
+            doSliders(this, y);
+            void **arr = (void **)this->sliders;
+            for (unsigned int i = 1; i < *(unsigned int *)arr; i++)
+                _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
+            if (*(char *)*(void **)gMvFlagB != 0 && this->okButton != 0)
+                _mtw_TouchButton_OnTouchMove(this->okButton, y);
+        }
+    } break;
+    case 3: { // state 4
+        _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowA, y);
+        void **arr = (void **)this->scrollEntries;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
+            unsigned int *e = (unsigned int *)((void **)arr[1])[i];
+            unsigned int t = e[0];
+            if (((unsigned int)(t - 0x6a) < 5 && ((1u << ((t - 0x6a) & 0xff)) & 0x19u) != 0)
+                || (e[1] == 0 && t == 0x16))
+                _mtw_TouchButton_OnTouchMove(e, y);
+        }
+    } break;
+    case 5:   // state 6
+    case 0xc: // state 0xd
+        break;
+    case 6: // state 7 -> volume sliders (d4/d8/dc + slider array, slot 5 gated)
+        _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
+        _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
+        _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
+        doSliders(this, y);
+        {
+            void **arr = (void **)this->sliders;
+            for (unsigned int i = 1; i < *(unsigned int *)arr; i++) {
+                if (i == 5 && (unsigned char)*(char *)(*(char **)gMvLayout + 0x284) == 0) continue;
+                _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
+            }
+        }
+        break;
+    case 7: { // state 8 -> options up/down hit-test + cc/d0 + first slider
+        this->upButtonPressed = 0;
+        int base = *(int *)(layout + 0x28);
+        int top = base + this->listTopY;
+        int bottom = this->listEntryHeight + top;
+        if (top < y && y < bottom &&
+            *(int *)(layout + 0xc) + base < x &&
+            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + this->listEntryWidth)
+            this->upButtonPressed = 1;
+        if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
+            base + *(int *)(layout + 0xc) < x &&
+            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + this->listEntryWidth)
+            this->downButtonPressed = 1;
+        _mtw_TouchButton_OnTouchMove(this->optBtnCC, y);
+        _mtw_TouchButton_OnTouchMove(this->optBtnD0, y);
+        _mtw_TouchSlider_OnTouchMove(*(void **)i32(this->sliders, 4), y);
+    } break;
+    case 8: // state 9
+        _mtw_MissionsWindow_OnTouchMove(this->missionsWindow, y);
+        break;
+    case 0xa: // state 0xb -> cinematic steer / fire (touch-id-aware)
+        _mtw_steerFromTouchId(this, y, x, touchId);
+        break;
+    case 0xb: { // state 0xc -> buttonsB4 (0xb4) loop
+        void **arr = (void **)this->buttonsB4;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
+            _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
+    } break;
+    case 0xd: { // state 0xe -> buttonsB0 (0xb0) loop
+        void **arr = (void **)this->buttonsB0;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
+            _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
+    } break;
+    case 0xe: // state 0xf -> common scroll-state tail (no entry pre-pass)
+        scrollStateMove(this, y, x);
+        break;
+    case 0xf: { // state 0x10 -> entry pre-pass then common scroll-state tail
+        void **arr = (void **)this->scrollEntries;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
+            unsigned int *e = (unsigned int *)((void **)arr[1])[i];
+            if ((unsigned int)(e[0] - 0x65) < 5)
+                _mtw_TouchButton_OnTouchMove(e, y);
+        }
+        scrollStateMove(this, y, x);
+    } break;
+    case 0x10: { // state 0x11 -> buttonsB8 (0xb8) loop
+        void **arr = (void **)this->buttonsB8;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
+            _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
+    } break;
+    default: { // top-level buttons + scrollEntries array
+        void **arr = (void **)this->buttons;
+        for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
+            _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
+        void **arr2 = (void **)this->scrollEntries;
+        unsigned int n = *(unsigned int *)arr2;
+        for (unsigned int i = 0; i < n; i++) {
+            int *e = (int *)((void **)arr2[1])[i];
+            if ((unsigned int)(e[0] - 0x17) < 2)
+                _mtw_TouchButton_OnTouchBegin(e, y);
+        }
+        for (unsigned int i = 0; i < n; i++) {
+            unsigned int *e = (unsigned int *)((void **)arr2[1])[i];
+            unsigned int t = e[0], id = e[1];
+            bool hit;
+            if (t == 5 && id == 0) hit = true;
+            else {
+                unsigned int x2 = (t != 0x11 || id != 0) ? (t ^ 100) : 0;
+                hit = (id == 0 && (t == 0x11 || x2 == 0)) || (id == 0 && t == 0x35);
+            }
+            if (hit) {
+                _mtw_TouchButton_OnTouchMove(e, y);
+                arr2 = (void **)this->scrollEntries;
+                n = *(unsigned int *)arr2;
+            }
+        }
+    } break;
+    }
+
+    _mtw_Layout_OnTouchMove((void *)*(void **)gMvLayout, y);
     return 0;
 }
 
@@ -1824,9 +2036,9 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
 
         void *font = *(void **)*(void **)gDlsFont;
         int yName = strip58 + rowY;
-        int *cols = (int *)i32(this->recordRows->data_[i], 4);
+        String **cols = (String **)(long)i32(this->recordRows->data_[i], 4);
 
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, (void *)(long)*(int *)(((void **)cols)[0]),
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[0],
             layout[0xa] + this->listX + layout[0xb] /*+0x2c*/, (char)yName, false);
 
         int slot = *(int *)(i32(this->previewRecords, 4) + i * 4);
@@ -1840,25 +2052,25 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1)
             }
         }
 
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[1],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[1],
             layout[0xa] + this->listX + layout[0xb] * 2 + this->metricB + layout[0xb1] /*+0x2c4*/,
             yName, (bool)0);
 
         ((PaintCanvas *)canvas)->SetColor(0x777777ff);
         int rowY2 = rowY + strip5c;
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[2],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[2],
             layout[0xa] + this->listX + layout[0xb],
             rowY2 + layout[0x1c] / 2, (bool)0);
 
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[3],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[3],
             layout[0xa] + this->listX + layout[0xb] * 2 + this->metricB + layout[0xb1],
             rowY2 + layout[0x1c] / 2, (bool)0);
 
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[4],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[4],
             layout[0xa] + this->listX + layout[0xb1] + (layout[0xb] + this->metricA) * 2,
             yName, (bool)0);
 
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, ((void **)cols)[5],
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(long)font, *cols[5],
             layout[0xa] + this->listX + layout[0xb1] + (layout[0xb] + this->metricA) * 2,
             rowY2 + layout[0x1c] / 2, (bool)0);
 

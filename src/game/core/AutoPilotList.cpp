@@ -84,9 +84,8 @@ AutoPilotList::AutoPilotList(Level* level) {
     void* font = *g_APL_font;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
-            void* fontStr = *(void**)font;
             int w = gCanvas->GetTextWidth(
-                        (unsigned int)(uintptr_t)fontStr, fontStr) + 0x13;
+                        (unsigned int)(uintptr_t)font, *(*this->entries)[i]) + 0x13;
             if (this->width < w)
                 this->width = w;
         }
@@ -165,7 +164,7 @@ void AutoPilotList::draw() {
         String* text = (*this->entries)[i];
         if (text != nullptr) {
             gCanvas->DrawString(
-                (unsigned int)(uintptr_t)*g_APL_font_draw, text,
+                (unsigned int)(uintptr_t)*g_APL_font_draw, *text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;
         }

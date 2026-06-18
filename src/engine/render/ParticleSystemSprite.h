@@ -46,7 +46,8 @@ public:
     int8_t* setIndices;                 // per-particle set-index array
     float cachedPow;
 
-    ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix, const void *particleSets,
+    ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
+                         const Array<ParticleSettings::ParticleSet> &particleSets,
                          bool mirror, bool alphaFade);
     ~ParticleSystemSprite();
 

@@ -25,12 +25,15 @@ public:
     void ReadLangFile(unsigned int file, int count);
     AbyssEngine::String* getText(int key);
     void release();
-    void setLanguage_i(int langId);
+    void setLanguage(int langId);
     void setLanguage_si(int stringCount, int langId);
     void setSubstituteArray(int* pairs, unsigned count);
 
     // Two-argument language switch the savegame loader invokes (count passed as a short).
     void setLanguage(short stringCount, int langId);
+
+    // Legacy alias retained for callers that used the disambiguated name.
+    inline void setLanguage_i(int langId) { setLanguage(langId); }
 };
 extern GameText* gGameText;        // canonical localized-text singleton
 

@@ -88,7 +88,7 @@ int ListItem::checkSlot() {
     return r;
 }
 
-ListItem::ListItem(const AbyssEngine::String* src, int v) {
+ListItem::ListItem(AbyssEngine::String* src, int v) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->buttonKind = v;
@@ -101,7 +101,7 @@ ListItem::ListItem(int v) {
     this->slot = v;
 }
 
-ListItem::ListItem(const AbyssEngine::String* p1, const AbyssEngine::String* p2) {
+ListItem::ListItem(AbyssEngine::String* p1, AbyssEngine::String* p2) {
     this->init();
     this->name = new AbyssEngine::String(*p1);
     this->name2 = new AbyssEngine::String(*p2);
@@ -218,7 +218,7 @@ bool ListItem::isSellButton() {
     return this->buttonKind == 0;
 }
 
-ListItem::ListItem(const AbyssEngine::String* src) {
+ListItem::ListItem(AbyssEngine::String* src) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->selectable = 0;
@@ -266,6 +266,30 @@ void* ListItem::init() {
     this->subTabIndex = -1;
     this->text = 0;
     return &this->agent;
+}
+
+// Pointer copy constructor: payload/value fields are copied verbatim; the two owned
+// title/subtitle Strings are deep-cloned when present.
+ListItem::ListItem(ListItem* src) {
+    this->init();
+    this->agent = src->agent;
+    this->bluePrint = src->bluePrint;
+    this->ship = src->ship;
+    this->item = src->item;
+    this->mission = src->mission;
+    this->selectable = src->selectable;
+
+    this->name  = src->name  ? new AbyssEngine::String(*src->name)  : 0;
+    this->name2 = src->name2 ? new AbyssEngine::String(*src->name2) : 0;
+
+    this->slot = src->slot;
+    this->itemId = src->itemId;
+    this->buttonKind = src->buttonKind;
+    this->imageIndex = src->imageIndex;
+    this->textButton = src->textButton;
+    this->inTabIndex = src->inTabIndex;
+    this->subTabIndex = src->subTabIndex;
+    this->pendingProduct = src->pendingProduct;
 }
 
 // Copy constructor: payload/value fields are copied verbatim; the two owned title/

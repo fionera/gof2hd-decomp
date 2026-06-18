@@ -506,12 +506,12 @@ void MiningGame::render2D()
     }
 
     String *font = (String *)*g_MiningGame_fontString;
-    int textWidth = canvas->GetTextWidth((unsigned int)(long)font, oreText);
+    int textWidth = canvas->GetTextWidth((unsigned int)(long)font, *oreText);
     int textX = (int)(((this->posX + (float)this->oreIconOffsetX + (float)this->oreIconOffsetY) -
                        (float)I(layout, 0xfc)) -
                       (float)(textWidth / 2));
     int textY = (int)(this->posY + (float)I(layout, 0x104));
-    canvas->DrawString((unsigned int)(long)font, (void *)oreText, textX, textY, false);
+    canvas->DrawString((unsigned int)(long)font, *oreText, textX, textY, false);
     canvas->SetColor((unsigned int)-1);
 
     if (MiningGame_Status_getCurrentCampaignMission_render(*g_MiningGame_statusRender) < 5) {
@@ -522,8 +522,8 @@ void MiningGame::render2D()
         canvas->SetColor((unsigned char)0xff, (unsigned char)0xff, (unsigned char)0xff, (unsigned char)(uint8_t)promptAlpha);
         String *prompt = MiningGame_GameText_getText(*g_MiningGame_gameText, 0x268);
         amountText->ctor_copy(prompt, false);
-        int promptWidth = canvas->GetTextWidth((unsigned int)(long)font, amountText);
-        canvas->DrawString((unsigned int)(long)font, (void *)amountText,
+        int promptWidth = canvas->GetTextWidth((unsigned int)(long)font, *amountText);
+        canvas->DrawString((unsigned int)(long)font, *amountText,
                            *g_MiningGame_screenWRender / 2 - promptWidth / 2,
                            I(layout, 0x70) + this->progressBarY, false);
         canvas->SetColor((unsigned int)-1);

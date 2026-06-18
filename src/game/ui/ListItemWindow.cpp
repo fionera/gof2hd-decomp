@@ -274,8 +274,8 @@ __attribute__((visibility("hidden"))) extern int   *g_liw_d_headerId;
 __attribute__((visibility("hidden"))) extern GameText **g_liw_d_gameText;
 __attribute__((visibility("hidden"))) extern ImageFactory **g_liw_d_imageFactory;
 __attribute__((visibility("hidden"))) extern void **g_liw_d_itemDB;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowL;
-__attribute__((visibility("hidden"))) extern void **g_liw_d_arrowR;
+__attribute__((visibility("hidden"))) extern String **g_liw_d_arrowL;
+__attribute__((visibility("hidden"))) extern String **g_liw_d_arrowR;
 __attribute__((visibility("hidden"))) extern int   *g_liw_d_scrollLimit;
 
 void ListItemWindow::draw()
@@ -378,7 +378,7 @@ void ListItemWindow::draw()
             canvas->SetColor(canvasHandle);
 
             int textX, textY;
-            void *valStr;
+            String *valStr;
             bool centered;
             bool drewArrow = false;
             if (isShip != 0) {
@@ -395,8 +395,8 @@ void ListItemWindow::draw()
                     }
                     int sep = this->arrowSeparator;
                     valStr = (*this->values)[i];
-                    void *arrowStr = *g_liw_d_arrowR;
-                    int tw = canvas->GetTextWidth(canvasHandle, arrowStr);
+                    String *arrowStr = *g_liw_d_arrowR;
+                    int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
                     centered = (char)((char)ycur + (char)(layout->field_0x1c / 2) - (char)this->textHalfHeight);
                     textX = (((this->x + (this->width >> 1) + 10) - layout->field_0x2c) - sep) - tw;
                     textY = layout->field_0x1c;
@@ -405,13 +405,13 @@ void ListItemWindow::draw()
             }
             if (!drewArrow) {
                 valStr = (*this->values)[i];
-                void *arrowStr = *g_liw_d_arrowL;
-                int tw = canvas->GetTextWidth(canvasHandle, arrowStr);
+                String *arrowStr = *g_liw_d_arrowL;
+                int tw = canvas->GetTextWidth(canvasHandle, *arrowStr);
                 centered = (char)((char)ycur + (char)(layout->field_0x1c / 2) - (char)this->textHalfHeight);
                 textX = (this->x + (this->width >> 1) + layout->field_0x2c * -2) - tw;
                 textY = layout->field_0x1c;
             }
-            canvas->DrawString(canvasHandle, valStr, textX, textY, centered);
+            canvas->DrawString(canvasHandle, *valStr, textX, textY, centered);
             ycur = ycur + rowH + layout->field_0x1c;
         }
     }

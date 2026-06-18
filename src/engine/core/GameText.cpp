@@ -258,7 +258,7 @@ void GameText_convertStringFromArabic(void *out, int pad, void *in)
 }
 
 // Single-argument language switch: forwards to setLanguage_si(0, langId).
-void GameText::setLanguage_i(int langId) {
+void GameText::setLanguage(int langId) {
     this->setLanguage_si(0, langId);
 }
 

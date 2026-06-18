@@ -121,7 +121,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
 
         AEGeometry *geo = new AEGeometry((uint16_t)0x37d6, canvas, false);
         canvas->TransformAddChild(this->meshTransformId, geo->transform);
-        canvas->TransformRemoveMesh(this->transform, (void *)(uintptr_t)this->meshTransformId);
+        canvas->TransformRemoveMesh(this->transform, this->meshTransformId);
         canvas->TransformAddChild(this->transform, this->meshTransformId);
 
         delete geo;

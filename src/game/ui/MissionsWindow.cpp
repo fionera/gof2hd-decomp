@@ -456,14 +456,14 @@ void MissionsWindow::draw()
         int detailY = oy + L->field_0xc + L->field_0x20 + L->field_0x2c + L->field_0x5c;
 
         String name = ((Agent *)(fm->getAgent()))->getName();
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, (void *)&name, detailX, detailY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, name, detailX, detailY, false);
 
         String station = ((Agent *)(fm->getAgent()))->getStationName();
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, (void *)&station, detailX, detailY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, station, detailX, detailY, false);
 
         String *typeTxt = g_mw_gameText->getText(
             ((Agent *)(fm->getAgent()))->getMission()->getType() + 0x162);
-        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, (void *)typeTxt, detailX, detailY, false);
+        ((PaintCanvas *)canvas)->DrawString((unsigned int)(uintptr_t)font, *typeTxt, detailX, detailY, false);
     }
 
     this->m_pFreelanceWindow->draw();

@@ -114,10 +114,10 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
 
     PaintCanvas *canvas = *g_NewsTicker_ctor_canvas;
     unsigned int font = (unsigned int)(unsigned long)*g_NewsTicker_ctor_font;
-    this->textWidth = canvas->GetTextWidth(font, &this->tickerText);
+    this->textWidth = canvas->GetTextWidth(font, this->tickerText);
     if (this->textWidth < width) {
         this->tickerText += String(this->tickerText);
-        this->textWidth = canvas->GetTextWidth(font, &this->tickerText);
+        this->textWidth = canvas->GetTextWidth(font, this->tickerText);
     }
 
     if (GameText_getLanguage() == 9) {
@@ -155,18 +155,18 @@ void NewsTicker::draw()
     canvas->SetColor(0x777777ff);
 
     unsigned int font = (unsigned int)(unsigned long)*g_NewsTicker_draw_font;
-    canvas->DrawString(font, &this->tickerText,
+    canvas->DrawString(font, this->tickerText,
                        (int)(this->scrollOffset + (float)this->x), this->y, false);
 
     float x = this->scrollOffset;
     if (GameText_getLanguage() == 9) {
         if (x > (float)this->textWidth) {
-            canvas->DrawString(font, &this->tickerText,
+            canvas->DrawString(font, this->tickerText,
                                (int)(x + (float)this->x), this->y, false);
         }
     } else {
         if (x < (float)(this->textWidth - this->width)) {
-            canvas->DrawString(font, &this->tickerText,
+            canvas->DrawString(font, this->tickerText,
                                (int)(x + (float)this->x + (float)this->textWidth),
                                this->y, false);
         }

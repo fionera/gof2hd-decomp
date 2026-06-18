@@ -217,10 +217,10 @@ int Globals_getRandomStation()
 // 4-arg Globals::drawLines(uint, Array<String*>*, int, int) forwards to the 6-value
 // drawLines variant with the first arg forced to 0, the incoming 5th stack value as the
 // "startY", and a trailing 0.
-void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines5(unsigned p1, void *font, Array<String *> *lines, int baseX,
                                    int startY, int centered);
 
-void Globals_drawLines4(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines4(unsigned p1, void *font, Array<String *> *lines, int baseX,
                                    int startY)
 {
     (void)p1;
@@ -388,9 +388,9 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
 
     ((String *)retSlot)->ctor_copy((String *)text, false);
 
-    void **strPtr = *(void ***)gGBS_strPtr;
+    String **strPtr = *(String ***)gGBS_strPtr;
     int **canvas = *(int ***)gGBS_canvas;
-    int w = ((PaintCanvas *)(long)**canvas)->GetTextWidth(0, *strPtr);
+    int w = ((PaintCanvas *)(long)**canvas)->GetTextWidth(0, **strPtr);
     if (width < w) {
         String *line = (String *)::operator new(0xc);
         line->ctor();
@@ -993,7 +993,7 @@ extern void *const gDL2_lineHeight __attribute__((visibility("hidden")));
 
 // Globals::drawLines(uint, Array<String*>*, int, int, uint, bool) — 7-decl form.
 // When NOT centered: dx = rightX - GetTextWidth(); when centered: dx stays 0.
-void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
+void Globals_drawLines7(unsigned font, Array<String *> *lines, int baseX, int startY,
                                    unsigned rightX, int centered)
 {
     int *cv = (int *)gDL2_canvas;          // global value (pointer); deref'd each iteration
@@ -1002,10 +1002,10 @@ void Globals_drawLines7(unsigned font, Array<int> *lines, int baseX, int startY,
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
         if (centered == 0) {
-            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth(font, (void *)(uintptr_t)(*lines)[i]);
+            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth(font, *(*lines)[i]);
             dx = (int)rightX - w;
         }
-        ((PaintCanvas *)(long)*cv)->DrawString(font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
+        ((PaintCanvas *)(long)*cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
         yacc += *(int *)((char *)*lh + 4);   // RAWREAD: opaque line-height object via hidden global (no header)
     }
 }
@@ -1413,7 +1413,7 @@ extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
 // Globals::drawLines(uint, Array<String*>*, int, int, bool) — 5-decl form; the body
 // consumes 6 incoming values: p1(unused), font(r1), lines(r2), baseX(r3), startY(stack0),
 // centered(stack1).
-void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
+void Globals_drawLines5(unsigned p1, void *font, Array<String *> *lines, int baseX,
                                    int startY, int centered)
 {
     (void)p1;
@@ -1423,10 +1423,10 @@ void Globals_drawLines5(unsigned p1, void *font, Array<int> *lines, int baseX,
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
         if (centered != 0) {
-            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth((unsigned)(uintptr_t)font, (void *)(uintptr_t)(*lines)[i]);
+            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth((unsigned)(uintptr_t)font, *(*lines)[i]);
             dx = -(w >> 1);
         }
-        ((PaintCanvas *)(long)*cv)->DrawString((unsigned)(uintptr_t)font, (void *)(uintptr_t)(*lines)[i], dx + baseX, yacc, false);
+        ((PaintCanvas *)(long)*cv)->DrawString((unsigned)(uintptr_t)font, *(*lines)[i], dx + baseX, yacc, false);
         yacc += *(int *)((char *)*lh + 4);   // RAWREAD: opaque line-height object via hidden global (no header)
     }
 }

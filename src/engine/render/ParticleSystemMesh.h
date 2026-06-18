@@ -59,7 +59,7 @@ public:
     uint32_t edgeCount;
     uint32_t stride;
 
-    ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const void *sets, bool a, bool b);
+    ParticleSystemMesh(PaintCanvas *canvas, const Matrix *matrix, const Array<ParticleSet> &sets, bool a, bool b);
     ~ParticleSystemMesh();
 
     // IParticleSystem virtual overrides (slot order: emit=1, reset=2, getQuadCount=4,

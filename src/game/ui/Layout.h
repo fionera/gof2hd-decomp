@@ -225,7 +225,14 @@ public:
 
     // ---- canonical-named public draw entries ----
     void drawWindow(String title, int x, int y, int w, int h);
+    void drawWindow(String title);
+    void drawWindow(String title, bool drawBG);
+    void drawWindow(String title, int x, int y, int w, int h, bool drawBG);
     void drawMask();
+    void drawMask(int x, int y, int w, int h);
+    void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h);
+    void drawBox(int style, int x, int y, int w, int h, String text);
+    void drawFooter(bool stationMode, bool showBack);
     void drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
 };
 #endif

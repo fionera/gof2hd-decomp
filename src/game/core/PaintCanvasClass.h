@@ -12,7 +12,8 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-struct Transform;
+namespace AbyssEngine { struct Transform; }
+using ::AbyssEngine::Transform;
 namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vector; } }
@@ -183,16 +184,17 @@ public:
 
     // Text
     void DrawString(unsigned int index, const unsigned short *str, int x, int y, bool b);
-    void DrawString(unsigned int index, void *str, int x, int y, bool b);
+    void DrawString(unsigned int index, const AbyssEngine::String &str, int x, int y, bool b);
     void DrawStringColor(unsigned int index, const AbyssEngine::String &str, int x, int y, bool b);
+    void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y);
     void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y, bool center);
     void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y, unsigned int p5, bool flag);
-    int GetTextWidth(unsigned int index, void *str);
+    int GetTextWidth(unsigned int index, const AbyssEngine::String &str);
     int GetTextWidth(unsigned int index, const AbyssEngine::String &str, unsigned int begin, unsigned int end);
     int GetTextHeight(unsigned int index);
-    void GetLine(unsigned int font, void *str, int maxWidth, void *out);
-    void GetLineArray(unsigned int font, void *str, int maxWidth, char *out);
-    void CheckString(unsigned int index, void *str);
+    void GetLine(unsigned int font, AbyssEngine::String str, int maxWidth, AbyssEngine::String *out);
+    void GetLineArray(unsigned int font, const AbyssEngine::String &str, int maxWidth, ::Array<AbyssEngine::String *> *out);
+    void CheckString(unsigned int index, const AbyssEngine::String &str);
     void FontCreate(unsigned short id, unsigned int &out, bool flag);
     int FontGetSpacing(unsigned int index);
     void FontSetSpacing(unsigned int index, short spacing);
@@ -219,33 +221,33 @@ public:
     void TransformSetColor(unsigned int index, unsigned int color);
     void *TransformGetTransform(unsigned int index);
     int TransformGetTriCount(unsigned int index);
-    int TransformGetTriCount(char *transform);
+    int TransformGetTriCount(::Transform *transform);
     void TransformAddChild(unsigned int parent, unsigned int child);
     void TransformRemoveChild(unsigned int parent, unsigned int child);
     void TransformAddMesh(unsigned int transformIndex, unsigned short meshId, bool b);
     void TransformAddMeshId(unsigned int transformIndex, unsigned int meshIndex);
-    void TransformRemoveMesh(unsigned int transformIndex, void *mesh);
+    void TransformRemoveMesh(unsigned int transformIndex, unsigned short meshResId);
     void TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex);
-    void DrawTransform(char *tf, void *m2, void *m3);
+    void DrawTransform(::Transform *tf, const AbyssEngine::AEMath::Matrix &m2, AbyssEngine::AEMath::Matrix &m3);
     void DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *matrix);
 
     // Meshes
     void MeshCreate(unsigned short id, unsigned int &out, bool flag);
     void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned int &out);
     void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned short d, unsigned int &out);
-    void *MeshGetPointer(unsigned int index);
+    AbyssEngine::Mesh *MeshGetPointer(unsigned int index);
     int MeshGetTriCount(AbyssEngine::Mesh *mesh);
     void DrawMesh(unsigned int index);
-    void DrawMesh(char *mesh, const float *worldMatrix, const float *projMatrix, unsigned int color, const float *uvMatrix);
+    void DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix &worldMatrix, AbyssEngine::AEMath::Matrix &viewMatrix, unsigned int color, AbyssEngine::AEMath::Matrix &uvMatrix);
     void MeshConvertToVBO(unsigned int index);
     void MeshChangeMaterial(unsigned int meshIndex, unsigned short matIndex);
     void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, AbyssEngine::Material *mat);
-    void MeshChangeMaterialIntern(char *transform, void *material);
+    void MeshChangeMaterialIntern(::Transform *transform, AbyssEngine::Material *material);
     void MeshChangeResourceMaterial(unsigned int meshIndex, unsigned short resId);
     void MeshResourceChangeMaterial(unsigned short matId, unsigned short value);
     void MeshResourceChangeAllMaterial(unsigned short matId, unsigned short value);
     void MeshCloneMaterial(unsigned int index, unsigned int &out);
-    void MeshChangeShaderAnimValue(char *mesh, float value, unsigned int mode);
+    void MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value, unsigned int mode);
     void MeshChangeShaderAnimValue(::Transform *transform, float value, unsigned int mode);
     float MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
     void MeshSetUv(unsigned int index, unsigned short sub, float u, float v);
@@ -258,14 +260,16 @@ public:
     void MeshSetTriangleCount(unsigned int index, unsigned short count);
     void MeshTranslatePoint(unsigned int index, unsigned short sub, float x, float y, float z);
     void MeshSet2DMask(unsigned int index, int);
+    void MeshSet2DMask(unsigned int index, int, int);
     void MeshClear2DMask();
 
     // Materials / textures / resources
     void MaterialCreate(unsigned int *out, void *p2, void *p3);
+    void MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode, unsigned int textures, unsigned short p4);
     void MaterialCreate(unsigned short id, unsigned int &out);
     void *MaterialGetMaterial(unsigned int index);
     void MaterialChange(unsigned int index, AbyssEngine::BlendMode param3, unsigned int param4);
-    void MaterialResourceChangeTexture(unsigned short resId, void *texture, unsigned int slot);
+    void MaterialResourceChangeTexture(unsigned int resId, unsigned int texture, int slot);
     void TextureCreate(unsigned short id, void (*loadCallback)(AbyssEngine::Image *, void *), void *userData, unsigned int &out, bool flag);
     void TextureCreate(unsigned short id, unsigned int &out, bool flag);
     void TextureCreateGlobal(AbyssEngine::String name, unsigned int unit);
@@ -285,8 +289,8 @@ public:
     void SpriteSystemCreate(unsigned short id, bool flag, unsigned int &out);
     void SpriteSystemCreate(unsigned short id, bool flag, unsigned short matId, unsigned int &out);
     void DrawSpriteSystem(unsigned int index);
-    void DrawSpriteSystem(unsigned int index, const float *mat);
-    void DrawSpriteSystem(unsigned int index, const float *matA, const float *matB);
+    void DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matrix mat);
+    void DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matrix matA, AbyssEngine::AEMath::Matrix matB);
     void ReleaseSpriteSystemResource(unsigned int index);
     float SpriteSystemSetPosition(unsigned int index, unsigned short sub, float x, float y, float z);
     void SpriteSystemAddPosition(unsigned int index, unsigned short sub, float x, float y, float z);
@@ -300,9 +304,9 @@ public:
     void SpriteSystemSetRGBA(unsigned int index, unsigned short sub, float a, float b, float c, float d);
 
     // Screen / misc
-    void *GetScreenPosition(Vector *a, Vector *b);
-    void GetScreenPosition(char *worldPos, char *out);
-    void GetScreenPosition(void *matrix, void *worldPos, char *out);
+    int GetScreenPosition(const AbyssEngine::AEMath::Vector &a, AbyssEngine::AEMath::Vector &b);
+    void GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix, AbyssEngine::AEMath::Vector &outVec);
+    void GetScreenPosition(AbyssEngine::AEMath::Matrix &m, const AbyssEngine::AEMath::Vector &worldPos, AbyssEngine::AEMath::Vector &outVec);
 };
 
 } // namespace AbyssEngine

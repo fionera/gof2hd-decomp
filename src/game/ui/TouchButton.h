@@ -61,6 +61,10 @@ public:
     TouchButton(String const &text, int x, int y, int p4, unsigned char p5);
     TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6);
     TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);
+    TouchButton(String const &text, int a, int b, int c, int d, unsigned char flags0, unsigned char flags1, unsigned int font, int kerning);
+    TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag);
+    TouchButton(unsigned int kind, int a, int b, int c, int d, unsigned char flags0, unsigned char flags1);
+    TouchButton(unsigned int kind, unsigned int image, int a, int b, int c, unsigned char flag);
     ~TouchButton();
 
     bool         OnTouchBegin(int px, int py);
@@ -81,6 +85,7 @@ public:
     void         setHalfTransparent(bool value);
     void         setNumberText(String const &value);
     void         setPosition(int x, int y, unsigned char flags);
+    void         setPosition(int x, int y);
     void         setPosition2(int x, int y);
     void         setPressProgress(float value);
     void         setPressProgressHighlight(bool value);

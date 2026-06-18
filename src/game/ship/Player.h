@@ -88,6 +88,7 @@ public:
     int GetEngineEvent();
     void calcWeaponSounds(int count);
     void damage(int amount);
+    void damage(int amount, bool flag, int missionId);
     void damageEmp(int amount, bool flag);
     void damageShip(int damage);
     unsigned char doesNeverAttack();
@@ -102,6 +103,7 @@ public:
     Player * getEnemy(int index);
     int getGammaHP();
     int getGunRegenRate();
+    int getGunRegenRate(int slot);
     int getGunSlots();
     int getHitpoints();
     KIPlayer * getKIPlayer();
@@ -143,6 +145,9 @@ public:
     void setShootingEnabled(bool value);
     void setVulnerable(bool value);
     void shoot(int a, int b, long long pos, bool flag);
+    void shoot(int a, int b, long long pos, bool flag, Matrix mat);
+    void shoot(int a, long long pos, bool flag);
+    void shoot(int a, long long pos, bool flag, Matrix mat);
     void shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14);
     int shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22);
     void turnEnemy();
@@ -155,7 +160,9 @@ public:
     float damageGamma(float amount);
     Array<Player *> *getEnemies();
     void getPosition(Vector *out);
+    Vector getPosition();
     void getHitVector(Vector *out);
+    Vector getHitVector();
     int replaceGuns(int a, int b, int c, int d, int e, bool f);
     bool isAsteroid();
     bool isGasCloud();
@@ -178,6 +185,7 @@ public:
     void stopShooting(int slot, int channel);
     void stopShootSound(int index, int channel);
     void PlayEngineSound(Vector *vec);
+    void PlayEngineSound(int unused, Vector *vec);
     void PauseEngineSound();
     void ResumeEngineSound(bool force);
     void StopEngineSound();

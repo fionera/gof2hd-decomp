@@ -192,7 +192,7 @@ void Layout::initTip() {
     this->tipLines = arr;
     int *m = *g_tipMetric;
     int width = m[0x78 / 4] + m[0x4c / 4] * -2;
-    canvas->GetLineArray(color, str, width, (char *)this->tipLines);
+    canvas->GetLineArray(color, *str, width, this->tipLines);
 }
 
 // Hidden globals from drawEmptyFooter.
@@ -700,15 +700,15 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0c), text);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont0r), text);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x1c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont0), &text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont0), text, tx + x, ty, false);
         break;
     }
     case 1: {
@@ -721,15 +721,15 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1c), text);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont1r), text);
             tx = (w - tx) - tw;
         }
         int ty = (y + (mt[0x5c / 4] >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont1), &text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont1), text, tx + x, ty, false);
         break;
     }
     case 2:
@@ -762,15 +762,15 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         int tx = mt[0x44 / 4];
         if ((flags & 2) == 0) {
             if ((int)(flags << 0x1d) < 0) {
-                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6c), (void *)0);
+                int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6c), text);
                 tx = w / 2 - tw / 2;
             }
         } else {
-            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), (void *)0);
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(*g_dbFont6r), text);
             tx = (w - tx) - tw;
         }
         int ty = (y + (h >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont6), &text, tx + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont6), text, tx + x, ty, false);
         break;
     }
     case 7: {
@@ -783,7 +783,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         gCanvas->SetColor(0xffffffff);
         pc->DrawImage2D(this->headerIconImage, x, y);
         int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), &text,
+        pc->DrawString((unsigned)(unsigned long)(*g_dbFont7), text,
                        mt[0x28 / 4] + x, ty, false);
         break;
     }
@@ -837,7 +837,7 @@ void Layout::drawWindow7(String *title, int x, int y, int w, int h, int drawBG) 
         int half = mm[8 / 4];
         half += half >> 31;
         int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(**g_dwFont), *title, mm[0x28 / 4] + x, ty, false);
     }
     pc->SetColor(saved);
 }
@@ -1109,8 +1109,8 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         int x = this->windowX;
         int w = this->windowWidth;
         void *font = *g_dfFont;
-        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        pc->DrawString((unsigned)(unsigned long)(font), &loadStr, (x + w / 2) - tw / 2,
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), loadStr);
+        pc->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
     gCanvas->SetColor(this->drawColor);
@@ -1124,12 +1124,12 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
         void *font = *g_dfFont;
         if (stationMode) {
             int rightInset = m[0x74 / 4];
-            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-            pc->DrawString((unsigned)(unsigned long)(font), &credStr, ((w + x) - rightInset) - tw / 2,
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
                            (this->windowHeight + this->windowY) - this->footerTextInset, false);
         } else {
-            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-            pc->DrawString((unsigned)(unsigned long)(font), &credStr, (w + x - 10) - tw,
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
                            (this->windowHeight + this->windowY) - this->footerTextInset, false);
         }
     }
@@ -1165,7 +1165,7 @@ void Layout::drawHeader7(String *title, int transition) {
     if (title->size() != 0) {
         pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
         int *m = *g_dhMetric;
-        pc->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
+        pc->DrawString((unsigned)(unsigned long)(**g_dhFont), *title,
                        m[0x28 / 4] + m[0x44 / 4] + this->windowX,
                        this->headerTitleY + this->windowY, false);
     }
@@ -1236,8 +1236,8 @@ void Layout::drawMissionRewardMessage(bool transition) {
 
         sh = *g_mrDimB;
         void *font = *g_mrFont;
-        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        pc->DrawString((unsigned)(unsigned long)(font), &line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), line);
+        pc->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
         String suffix(g_mrLit2);
         String credits;
@@ -1245,8 +1245,8 @@ void Layout::drawMissionRewardMessage(bool transition) {
         line = suffix + credits;
 
         sh = *g_mrDimB;
-        tw = pc->GetTextWidth((unsigned)(unsigned long)(font), (void *)0);
-        pc->DrawString((unsigned)(unsigned long)(font), &line, (sh >> 1) - (tw >> 1),
+        tw = pc->GetTextWidth((unsigned)(unsigned long)(font), line);
+        pc->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1),
                        this->rewardBoxY2 + boxX, false);
         gCanvas->SetColor(saved);
         this->drawColor = origColor;
@@ -1342,6 +1342,48 @@ void Layout::drawMask() {
 // Render a tiled rounded-rect border via the full 8-parameter renderer.
 void Layout::drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
+}
+
+// 6-arg border: forward to the full 8-parameter renderer with zero inset/pad.
+void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
+    this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
+}
+
+// 6-arg box: take an owning copy of the label and forward with flags = 0.
+void Layout::drawBox(int style, int x, int y, int w, int h, String text) {
+    String tmp(text);
+    this->drawBox(style, x, y, w, h, tmp, 0u);
+}
+
+// Render the footer bar (station mode / back-button flags).
+void Layout::drawFooter(bool stationMode, bool showBack) {
+    this->drawFooterImpl(stationMode, showBack);
+}
+
+// Dim a rectangle in the mask colour, restoring the previous canvas colour.
+void Layout::drawMask(int x, int y, int w, int h) {
+    this->drawMaskImpl(x, y, w, h);
+}
+
+// Take an owning copy of the title and render the full window frame (with
+// background) at the default content area.
+void Layout::drawWindow(String title) {
+    String tmp(title);
+    this->drawWindow(tmp, true);
+}
+
+// Centre a window over the full content area and forward to the core renderer.
+void Layout::drawWindow(String title, bool drawBG) {
+    String tmp(title);
+    int p4 = *gW2;
+    int p5 = *gW3 - ((int *)gW1)[2];
+    this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
+}
+
+// Render the window frame (background fill, header bar, optional title text).
+void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
+    String tmp(title);
+    this->drawWindow7(&tmp, x, y, w, h, drawBG);
 }
 
 // Position a child TouchButton (back/secondary/help) at (x, y) with an anchor.

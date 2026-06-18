@@ -243,7 +243,7 @@ void Hud::drawOrbitInformation() {
     {
         char name[12];
         ((Station *)(name))->getName();
-        gCanvas->DrawString((unsigned)(long)(font), (void *)(name), (x), (char)layout[0x88], false);
+        gCanvas->DrawString((unsigned)(long)(font), *(String *)(name), (x), (char)layout[0x88], false);
         ((String *)(name))->dtor();
     }
     gCanvas->SetColor((unsigned)(-1));
@@ -265,7 +265,7 @@ void Hud::drawOrbitInformation() {
         *(String *)acc = *(String *)copy + *(String *)sep;
         void *txt = (*g_Hud_oiGameText)->getText(0); // id resolved by table
         *(String *)full = *(String *)acc + *(String *)txt;
-        gCanvas->DrawString((unsigned)(long)(font), (void *)(full), (x), (char)layout[0x89], false);
+        gCanvas->DrawString((unsigned)(long)(font), *(String *)(full), (x), (char)layout[0x89], false);
         ((String *)(full))->dtor();
         ((String *)(acc))->dtor();
         ((String *)(sep))->dtor();
@@ -276,7 +276,7 @@ void Hud::drawOrbitInformation() {
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
     gCanvas->SetColor((unsigned char)(row[0]), (unsigned char)(row[4]), (unsigned char)(row[8]), (unsigned char)(0xff));
     void *secTxt = (*g_Hud_oiGameText)->getText(sec);
-    gCanvas->DrawString((unsigned)(long)(font), (void *)(secTxt), (x), (char)layout[0x8a], false);
+    gCanvas->DrawString((unsigned)(long)(font), *(String *)(secTxt), (x), (char)layout[0x8a], false);
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
@@ -441,7 +441,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(dst))->assign((String *)(out2));
         ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
 
-        const String *str = new String(*(String *)dst);
+        String *str = new String(*(String *)dst);
         ListItem *item = new ListItem(str, 0);
         item->field_0x2c = cargoVal;
         addToEventQueue(item);
@@ -453,7 +453,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         GameText *gt = *g_Hud_ccGameText;
         void *txt = gt->getText(0x18a);
         ((String *)(&this->field_0x1f4))->assign((String *)(txt));
-        const String *str = new String(this->field_0x1f4);
+        String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
         catchCargoFinish(item);
         return;
@@ -505,7 +505,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     ((String *)(&this->field_0x1f4))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
-    const String *str = new String(this->field_0x1f4);
+    String *str = new String(this->field_0x1f4);
     ListItem *item = new ListItem(str, 0);
     item->field_0x2c = cargoVal;
     if (!p7 || p6) item->field_0x30 = 2;
@@ -529,7 +529,7 @@ void Hud::drawEventString(String text, bool rightAlign) {
         int base = this->eventLineMargin;
         int yBase = this->eventLineX;
         if (rightAlign == 0) {
-            int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), (font));
+            int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), *(String *)(font));
             x = (base + 3) - w;
         } else {
             x = -3 - base;
@@ -539,14 +539,14 @@ void Hud::drawEventString(String text, bool rightAlign) {
         if (rightAlign == 0) {
             int margin = this->eventLineMarginAlt;
             int screenW = *(int *)*g_Hud_screenW;
-            int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), (font));
+            int w = gCanvas->GetTextWidth((unsigned)(long)(canvas), *(String *)(font));
             x = ((screenW - 1) - margin) - w;
         } else {
             x = this->eventLineMarginAlt + 1;
         }
     }
     char y = (char)(this->eventLineY - 1);
-    gCanvas->DrawString((unsigned)(long)(font), &text, (x), (y), false);
+    gCanvas->DrawString((unsigned)(long)(font), text, (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
@@ -603,7 +603,7 @@ void Hud::updateSecondaryWeaponString() {
     ((String *)(sep))->dtor();
 
     int screenW = *(int *)*g_Hud_swScreenW;
-    int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), (*g_Hud_swFont));
+    int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), *(String *)(*g_Hud_swFont));
     this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
@@ -645,9 +645,9 @@ void Hud::drawEventQueue() {
         String *label = (String *)item->name;
         void *font = *g_Hud_eqFont;
         int screenW = *(int *)*g_Hud_eqScreenW;
-        int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), (font));
+        int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), *(String *)(font));
         char y = (char)((char)yOff + (char)dispBase + cinematicY);
-        gCanvas->DrawString((unsigned)(long)(font), (void *)label, ((screenW >> 1) - w / 2), (y), false);
+        gCanvas->DrawString((unsigned)(long)(font), *label, ((screenW >> 1) - w / 2), (y), false);
     }
     this->eventQueueFinish(gCanvas, 0xffffffff);
 }
@@ -870,7 +870,7 @@ void Hud::drawMenu() {
     int ih = gCanvas->GetImage2DHeight((unsigned)(0));
     int th = gCanvas->GetTextHeight(0);
     char ty = (char)(((gy + (char)(ih / 2)) - (char)(th / 2)) + (char)layout[0x8d]);
-    gCanvas->DrawString((unsigned)(long)(font), (void *)(label), (barW + gx), (ty), false);
+    gCanvas->DrawString((unsigned)(long)(font), *(String *)(label), (barW + gx), (ty), false);
     ((String *)(label))->dtor();
 }
 
@@ -1079,11 +1079,11 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ((String *)(probe))->dtor();
     if (same != 0) return;
 
-    const String *str = new String(*(String *)dst);
+    String *str = new String(*(String *)dst);
     ListItem *item = new ListItem(str, 3);
     addToEventQueue(item);
 
-    int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), (*g_Hud_meFont));
+    int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_meCanvas), *(String *)(*g_Hud_meFont));
     int screenW = *(int *)*g_Hud_meScreenW;
     this->eventScrollTick = 0;
     this->eventScrolls = 1;
@@ -1276,7 +1276,7 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     if (dup != 0)
         return;
 
-    const String *str = new String(*line);
+    String *str = new String(*line);
     // "important" ids get the alternate ListItem ctor that marks them priority.
     unsigned int idBit = (unsigned int)(eventId - 1);
     ListItem *item;
@@ -1287,7 +1287,7 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
     addToEventQueue(item);
 
     void *font = *g_Hud_font;
-    int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), (font));
+    int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), *(String *)(font));
     int screenW = *(int *)*g_Hud_screenW;
     this->eventScrollTick = 0;
     this->eventScrolls = 1;
@@ -1444,10 +1444,10 @@ void Hud::drawSecondaryWeaponPanel() {
             canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
             canvas->DrawImage2D((unsigned)this->eventBannerImage, this->field_0x3ec, 0);
             int textW = gCanvas->GetTextWidth(
-                (unsigned)(long)canvas, font);
+                (unsigned)(long)canvas, *(String *)(font));
             int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
             gCanvas->DrawString((unsigned)(long)canvas,
-                (void *)&this->field_0x51c, tx, 0, false);
+                this->field_0x51c, tx, 0, false);
             canvas->SetColor((unsigned)0xffffffffu);
             int t = this->secondaryLabelTimer;
             if (t > 4000) t = 0;
@@ -1481,9 +1481,9 @@ void Hud::drawMessage() {
     canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
     void *font = *g_Hud_font;
     int screenW = *(int *)*g_Hud_screenW;
-    int w = gCanvas->GetTextWidth((unsigned)(long)canvas, font);
+    int w = gCanvas->GetTextWidth((unsigned)(long)canvas, *(String *)(font));
     gCanvas->DrawString((unsigned)(long)canvas,
-        (void *)&this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
+        this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
     canvas->SetColor((unsigned)0xffffffffu);
 }
 

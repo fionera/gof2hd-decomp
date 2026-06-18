@@ -146,7 +146,7 @@ void TractorBeam::update(int frameTime, Radar* radar, Level* level, Hud* hud) {
         radar->field_0x8 = nullptr;
         radar->field_0x1c = nullptr;
         this->soundPlaying = 0;
-        gCaptureSound->stop((void*)nullptr);
+        gCaptureSound->stop(nullptr);
         gCaptureSound->play(4, nullptr, nullptr, 0.0f);
     }
 }

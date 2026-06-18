@@ -371,6 +371,21 @@ uint32_t AEFile::ReadSwitched(int32_t &value, uint32_t handle)
     return result;
 }
 
+void AEFile::ReadSwitched(String &value, uint32_t handle)
+{
+    uint16_t length;
+
+    if (ReadSwitched(length, handle) != 0) {
+        uint32_t bytes = length;
+        char *buffer = new char[bytes + 1];
+        if (Read(bytes, buffer, handle) != 0) {
+            buffer[length] = '\0';
+            AEStr_set(value, buffer);
+        }
+        delete[] buffer;
+    }
+}
+
 uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
 {
     uint16_t length;

@@ -295,6 +295,11 @@ int Player::getGunRegenRate() {
     return 0;
 }
 
+int Player::getGunRegenRate(int slot) {
+    (void)slot;
+    return 0;
+}
+
 int Player::getMaxEmpPoints() {
     return this->maxEmpPoints;
 }
@@ -426,6 +431,14 @@ void Player::getHitVector(Vector *out) {
     double xy = *(double *)this->hitVector;
     out->z = this->hitVector[2];
     *(double *)&out->x = xy;
+}
+
+Vector Player::getHitVector() {
+    Vector out;
+    double xy = *(double *)this->hitVector;
+    out.z = this->hitVector[2];
+    *(double *)&out.x = xy;
+    return out;
 }
 
 void Player::setPlayShootSound(bool play, int id) {
@@ -584,6 +597,12 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
 void Player::getPosition(Vector *out) {
     MatrixGetPosition(out, this->transform);
+}
+
+Vector Player::getPosition() {
+    Vector out;
+    MatrixGetPosition(&out, this->transform);
+    return out;
 }
 
 float Player::damageGamma(float amount) {
@@ -1313,6 +1332,10 @@ void Player::damage(int amount) {
     return Player_damage_full(this, amount, 0, -1);
 }
 
+void Player::damage(int amount, bool flag, int missionId) {
+    return Player_damage_full(this, amount, flag, missionId);
+}
+
 void Player::stopShooting(int slot, int channel) {
     if ((unsigned int)(channel - 0x16) >= 9) {
         return;
@@ -1490,6 +1513,91 @@ void Player::shoot(int a, int b, long long pos, bool flag) {
                        m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
 }
 
+// shoot(int,int,long long,bool,Matrix): primary/turret fire worker. For slot `b`,
+// fires every gun whose itemIndex matches the requested id, using the supplied
+// firing matrix. (Body recovered from 0xb3d5c.)
+void Player::shoot(int a, int b, long long pos, bool flag, Matrix mat) {
+    Player *self = this;
+    unsigned int mask = g_shoot_mask;
+
+    Array<Array<Gun *> *> *guns = self->guns;
+    if (guns != 0 && self->shootingEnabled != 0 && b >= 0 &&
+        (unsigned int)b < guns->size()) {
+        Array<Gun *> *arr = guns->data()[b];
+        if (arr != 0) {
+            for (unsigned int i = 0; i < arr->size(); i++) {
+                Gun *g = self->guns->data()[b]->data()[i];
+                unsigned int sortIdx = g->weaponType - 6;
+                if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0 &&
+                    *(int *)g->lifetimes >= 0) {
+                    ((Gun *)(g))->ignite();
+                } else if (g->itemIndex == (int)pos && g->fireDelay < g->timer) {
+                    if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
+                        // RAWREAD: byte at +0x69 of g->lifetimes (an int* projectile buffer, not a modeled class)
+                        *(char *)((intptr_t)g->lifetimes + 0x69) = 1;
+                    }
+                    ((Gun *)(g))->shoot(mat, flag, false);
+                    self->flShake = self->flShake + k_shoot_inc;
+                    if (self->playShootSound != 0) {
+                        float tmp[3];
+                        MatrixGetPosition(tmp, self->transform);
+                        Gun *g2 = self->guns->data()[b]->data()[i];
+                        Player_playShootSound(self, g2->itemIndex,
+                                              (Vector *)(__INTPTR_TYPE__)g2->weaponType,
+                                              g2->field_0xb0);
+                    }
+                    g->timer = 0;
+                    break;
+                }
+            }
+        }
+    }
+    (void)a;
+}
+
+// shoot(int,long long,bool): secondary launch through the hull transform; expands
+// fields 0x04..0x3c into the firing matrix and forwards to the Matrix-taking
+// overload, then returns success. (Body recovered from 0xb3f30.)
+void Player::shoot(int a, long long pos, bool flag) {
+    Matrix mat;
+    float *src = this->transform;
+    for (int k = 0; k < 15; ++k) mat.m[k] = src[k];
+    mat.m[15] = 1.0f;
+    this->shoot(a, pos, flag, mat);
+}
+
+// shoot(int,long long,bool,Matrix): secondary-launch worker. For slot `a`, every
+// ready gun fires via Gun::shootAt with the supplied matrix. (Body recovered from
+// 0xb3b20.)
+void Player::shoot(int a, long long pos, bool flag, Matrix mat) {
+    Player *self = this;
+
+    Array<Array<Gun *> *> *guns = self->guns;
+    if (guns != 0 && self->shootingEnabled != 0 && a >= 0 &&
+        (unsigned int)a < guns->size()) {
+        Array<Gun *> *arr = guns->data()[a];
+        if (arr != 0) {
+            for (unsigned int i = 0; i < arr->size(); i++) {
+                Gun *g = self->guns->data()[a]->data()[i];
+                if (g->fireDelay < g->timer) {
+                    ((Gun *)(g))->shootAt(mat, (int)pos, self, flag);
+                    self->flShake = self->flShake + k_shootAt_inc;
+                    Gun *g2 = self->guns->data()[a]->data()[i];
+                    g2->timer = 0;
+                    if (self->playShootSound != 0 && g2->field_0x89 != 0) {
+                        float tmp[3];
+                        MatrixGetPosition(tmp, self->transform);
+                        Gun *g3 = self->guns->data()[a]->data()[i];
+                        Player_playShootSound(self, g3->itemIndex,
+                                              (Vector *)(__INTPTR_TYPE__)g3->weaponType,
+                                              g3->field_0xb0);
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Player::stopShooting(int) — single-arg overload (no channel filter).
 void Player::stopShooting(int slot) {
     Array<Array<Gun *> *> *guns = this->guns;
@@ -1556,6 +1664,19 @@ Array<Player *> *Player::getEnemies() {
 
 // ---- PlayEngineSound_a4014 ----
 void Player::PlayEngineSound(Vector *vec) {
+    this->enginePositionVec = vec;
+    if (*((char *)gAppManager + 0xf) != 0) {
+        float pos[12];
+        MatrixGetPosition(pos, this->transform);
+        void *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
+            this->engineEvent, 0, (Vector *)this->enginePositionVec, (Vector *)pos, false);
+        this->engineEvent = ev;
+        this->engineSoundPlaying = 1;
+    }
+}
+
+void Player::PlayEngineSound(int unused, Vector *vec) {
+    (void)unused;
     this->enginePositionVec = vec;
     if (*((char *)gAppManager + 0xf) != 0) {
         float pos[12];

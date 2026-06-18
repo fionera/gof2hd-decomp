@@ -161,7 +161,13 @@ void Radar::update(AEMath::Vector value)
     this->radarPosZ = -this->radarPosZ;
 
     AEMath::Vector screen = value;
-    int visible = (gPaintCanvas->GetScreenPosition(&value, &screen) != 0);
+    // NOTE: in the shipped binary (Radar::update @ 0013dec0) GetScreenPosition
+    // RETURNS the visibility flag (iVar4), which is stored into onScreen and
+    // gates the elipsoidIntersect fallback. The corrected PaintCanvas signature
+    // declares this overload `void`, so the flag can no longer be recovered at
+    // the call site. Fixing this properly requires PaintCanvas::GetScreenPosition
+    // to return int (another file). Arguments corrected (refs, drop &) here.
+    int visible = (gPaintCanvas->GetScreenPosition(value, screen) != 0);
     this->onScreen = (uint8_t)visible;
 
     int screenX = (int)screen.x;

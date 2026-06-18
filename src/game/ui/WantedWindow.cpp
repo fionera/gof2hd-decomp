@@ -351,7 +351,7 @@ void WantedWindow::draw() {
         canvas->SetColor(wanted->isActive() ? 0xffffffffu : 0xff808080u);
         String name = wanted->getName();
         int textY = y + layout->field_0x70 / 2 - canvas->GetTextHeight(font) / 2;
-        canvas->DrawString(font, (void *)&name,
+        canvas->DrawString(font, name,
                            this->windowX + layout->buttonInsetX +
                                layout->field_0x44,
                            textY, false);
@@ -361,7 +361,7 @@ void WantedWindow::draw() {
             (i == 1 && gStatus->getCurrentCampaignMission() == 0x82)) {
             String marked = wanted->getName();
             marked += String(" *", false);
-            int textW = canvas->GetTextWidth(font, (void *)&marked);
+            int textW = canvas->GetTextWidth(font, marked);
             canvas->DrawImage2D(this->bgImage,
                                 this->windowX + layout->buttonInsetX +
                                     layout->field_0x44 + textW,
@@ -425,15 +425,15 @@ void WantedWindow::draw() {
                     layout->field_0xc + layout->field_0x20;
         (*g_WantedWindow_draw_factory)->drawChar(this->imageParts, charX, charY, false);
         int textX = layout->field_0x2d4 + charX + layout->field_0x2c;
-        canvas->DrawString(font, (void *)&this->nameText, textX, charY, false);
+        canvas->DrawString(font, this->nameText, textX, charY, false);
 
         String fromLine = String("from: ", false) +
                           *(*g_WantedWindow_draw_text)->getText(0xc93) + this->fromText;
-        canvas->DrawString(font, (void *)&fromLine, textX, charY + layout->field_0x4 * 2, false);
+        canvas->DrawString(font, fromLine, textX, charY + layout->field_0x4 * 2, false);
 
         String toLine = String("to: ", false) +
                         *(*g_WantedWindow_draw_text)->getText(0xc93) + this->toText;
-        canvas->DrawString(font, (void *)&toLine, textX, charY + layout->field_0x4 * 3, false);
+        canvas->DrawString(font, toLine, textX, charY + layout->field_0x4 * 3, false);
 
         this->scrollWindow->draw();
     }

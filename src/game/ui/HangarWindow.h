@@ -96,9 +96,10 @@ struct TouchButton {
 };
 
 // Opaque text catalogue. The decompiler dropped the string-key argument at every
-// call site in this translation unit, so getText() is declared nullary here.
+// call site in this translation unit, so getText() is declared nullary here. It
+// returns the resolved AbyssEngine::String entry.
 struct GameText {
-    void *getText();
+    AbyssEngine::String *getText();
 };
 
 class HangarWindow {
@@ -217,6 +218,7 @@ public:
     void render3D();
     void selectItem(ListItem *item);
     void setSellMode();
+    void setSellMode(bool buy);
     void showCreditsBuyWindow();
     void showFreeCreditsWindow();
     void transaction(bool buy);

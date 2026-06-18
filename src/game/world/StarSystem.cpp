@@ -280,9 +280,8 @@ void StarSystem::render2D() {
     pos.y = *(float *)(local + 0x1c) + this->lightDirection.y * 65536.0f;
     pos.z = *(float *)(local + 0x2c) + this->lightDirection.z * 65536.0f;
     this->lensFlare->update();
-    if (gCanvas->GetScreenPosition(&pos, &pos) != nullptr) {
-        this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
-    }
+    gCanvas->GetScreenPosition(pos, pos);
+    this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
 }
 
 __attribute__((visibility("hidden"))) extern uint16_t g_StarSystem_ctor_planetTextures[];

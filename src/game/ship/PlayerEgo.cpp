@@ -1731,6 +1731,15 @@ void PlayerEgo::dockToAsteroid(void *radar) {
     }
 }
 
+// PlayerEgo::dockToAsteroid(KIPlayer*, Radar*)
+//   Typed form of the asteroid mining-dock toggle. In the binary the receiver is
+//   the KIPlayer-shaped first argument and the Radar argument carries the
+//   asteroid being latched/unlocked. Forwards to the packed form, which treats
+//   its single argument as that asteroid/radar object.
+void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
+    dockToAsteroid(radar);
+}
+
 void PlayerEgo::killLiberator() {
   char sv[12];
   // RAWREAD: arr/e below are untyped Array internals (the guns array and its
@@ -2525,7 +2534,7 @@ void PlayerEgo::revive() {
 // String::String(int)
 
 __attribute__((visibility("hidden"))) extern float *g_PE_t_anchor;     // {x,y} gauge anchor
-__attribute__((visibility("hidden"))) extern void **g_PE_t_pctStr;     // "%" String
+__attribute__((visibility("hidden"))) extern String **g_PE_t_pctStr;     // "%" String
 extern const float g_PE_t_timerDiv;    // 0xb1f30 timer normaliser
 extern const float g_PE_t_pctScale;    // 0xb20dc thrust->percent
 extern const float g_PE_t_textDiv;     // 0xb20e0 text vertical divisor
@@ -2559,9 +2568,9 @@ void PlayerEgo::drawThrottle() {
     ((String *)(pct))->ctor_int((int)(thrust * g_PE_t_pctScale));
 
     int th = ((PaintCanvas*)(long)(canvas))->GetImage2DHeight((unsigned int)(img));
-    void *pctStr = *g_PE_t_pctStr;
-    int tw = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(canvas), (void *)(pctStr));
-    ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(canvas), (void *)(pctStr), (int)(long)(pct), (int)((anchor[0] - (float)(tw / 2)) - 1.0f), (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
+    String *pctStr = *g_PE_t_pctStr;
+    int tw = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(canvas), *pctStr);
+    ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(canvas), *pctStr, (int)(long)(pct), (int)((anchor[0] - (float)(tw / 2)) - 1.0f), (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
     gCanvas->SetColor((unsigned int)(0xffffffff));
 
     ((String *)(pct))->dtor();
@@ -2759,7 +2768,7 @@ void PlayerEgo::approachAsteroid(int hud2, void *radar) {
             I((void *)(this->asteroidTarget + 4), 0x40) = 0;   // RAWREAD: (asteroidTarget+4)+0x40 (nested handle deref, no modeled member)
             int snd = *g_PE_aa_mineSound;
             ((FModSound *)(snd))->play(1, (Vector *)0, (Vector *)0, 0);
-            ((FModSound *)((void *)(unsigned long)snd))->pause((void *)0);
+            ((FModSound *)((void *)(unsigned long)snd))->pause(0);
             return;
         }
 
@@ -3053,8 +3062,8 @@ void PlayerEgo::toggleCloaking() {
     ((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial1));     // returned ptr +0x20 = 0xe below
     I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial1)), 0x20) = 0xe;   // RAWREAD: material+0x20 (untyped MaterialGetMaterial() result, no modeled class)
     ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(this->field_0x4->meshId), (unsigned int)(this->cloakMaterial1));
-    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(this->field_0x4->meshId))), 0.0f, (unsigned int)(0));
-    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(this->field_0x4->meshId))), 0.0f, (unsigned int)(0));
+    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(this->field_0x4->meshId)), 0.0f, (unsigned int)(0));
+    ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(this->field_0x4->meshId)), 0.0f, (unsigned int)(0));
 
     if (this->turretMode != 0) {
         I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial2)), 0x20) = 0xe;   // RAWREAD: material+0x20 (untyped MaterialGetMaterial() result)
@@ -3062,15 +3071,15 @@ void PlayerEgo::toggleCloaking() {
         ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(((AEGeometry *)this->rollGeometry)->meshId), (unsigned int)(this->cloakMaterial2));
         ((PaintCanvas*)(long)(canvas))->MeshChangeMaterial((unsigned int)(((AEGeometry *)this->turretGeometry)->meshId), (unsigned int)(this->cloakMaterial3));
 
-        void *m;
+        AbyssEngine::Mesh *m;
         m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(((AEGeometry *)this->rollGeometry)->meshId));
-        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(1));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int)(1));
         m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(((AEGeometry *)this->rollGeometry)->meshId));
-        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(2));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int)(2));
         m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(((AEGeometry *)this->turretGeometry)->meshId));
-        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(1));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int)(1));
         m = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(((AEGeometry *)this->turretGeometry)->meshId));
-        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue((char *)(m), 0.0f, (unsigned int)(2));
+        ((PaintCanvas*)(long)(canvas))->MeshChangeShaderAnimValue(m, 0.0f, (unsigned int)(2));
 
         if (this->turretMode != 0) {
             unsigned short mat = 0x4e8e;

@@ -47,7 +47,7 @@ int  *g_ModMainMenu_suspendObj;
 
 int  *g_ModMainMenu_touchEndFlag;
 
-void **g_ModMainMenu_r2d_string;
+AbyssEngine::String **g_ModMainMenu_r2d_string;
 int  *g_ModMainMenu_r2d_textId;
 int  *g_ModMainMenu_r2d_screenW;
 int  *g_ModMainMenu_r2d_screenH;
@@ -208,18 +208,18 @@ void ModMainMenu::OnRender2D()
             (void)alpha;
             gCanvas->SetColor((unsigned char)canvas, 0xff, 0xff, 0xff);
 
-            void **stringHolder = g_ModMainMenu_r2d_string;
+            AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
             int *textIdHolder = g_ModMainMenu_r2d_textId;
             int drawCanvas = (int)(intptr_t)gCanvas;
-            void *drawStr = *stringHolder;
+            AbyssEngine::String *drawStr = *stringHolder;
             int text = (int)(long)((GameText *)(*textIdHolder))->getText(0xc7);
 
             int screenW = *g_ModMainMenu_r2d_screenW;
-            int textWidth = gCanvas->GetTextWidth((unsigned int)drawCanvas, drawStr);
+            int textWidth = gCanvas->GetTextWidth((unsigned int)drawCanvas, *drawStr);
 
             int screenH = *g_ModMainMenu_r2d_screenH;
             int imageHeight = gCanvas->GetImage2DHeight((unsigned int)(intptr_t)gCanvas);
-            gCanvas->DrawString((unsigned int)drawCanvas, drawStr, text,
+            gCanvas->DrawString((unsigned int)drawCanvas, *drawStr, text,
                                    (screenW >> 1) - (textWidth >> 1),
                                    (bool)((char)(screenH >> 1) + (char)(imageHeight >> 1) + '\n'));
         }

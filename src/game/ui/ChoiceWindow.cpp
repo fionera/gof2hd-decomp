@@ -418,8 +418,8 @@ void ChoiceWindow::draw()
                                  F<int>(g_ChoiceWindow_creditValues_1471bc, this->count * 4));
 
             void *font = *g_ChoiceWindow_font_1471bc_a;
-            int textWidth = canvas->GetTextWidth((unsigned int)(unsigned long)font, (void *)&creditsText);
-            canvas->DrawString((unsigned int)(unsigned long)font, (void *)&creditsText,
+            int textWidth = canvas->GetTextWidth((unsigned int)(unsigned long)font, creditsText);
+            canvas->DrawString((unsigned int)(unsigned long)font, creditsText,
                                this->x + (this->width >> 1) - textWidth / 2,
                                this->y + this->height - this->padding3,
                                false);
@@ -427,8 +427,8 @@ void ChoiceWindow::draw()
 
         canvas->SetColor(0xffffffff);
         void *font = *g_ChoiceWindow_font_1471bc_b;
-        int textWidth = canvas->GetTextWidth((unsigned int)(unsigned long)font, (void *)&this->medalText);
-        canvas->DrawString((unsigned int)(unsigned long)font, (void *)&this->medalText,
+        int textWidth = canvas->GetTextWidth((unsigned int)(unsigned long)font, this->medalText);
+        canvas->DrawString((unsigned int)(unsigned long)font, this->medalText,
                            this->x + (this->width >> 1) - textWidth / 2,
                            this->y + this->padding4, false);
     }

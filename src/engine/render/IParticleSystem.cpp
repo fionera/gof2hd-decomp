@@ -413,7 +413,8 @@ float *IParticleSystem::rotateUVs(float *src, int seed, float *dst)
     return dst;
 }
 
-IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix, Array<int> const &sets,
+IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
+                                 Array<int> const &sets,
                                  bool mirror, bool alphaFade)
 {
     this->canvas = canvas;

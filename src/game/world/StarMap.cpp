@@ -295,7 +295,7 @@ void StarMap::draw()
             gCanvas->DrawImage2D((unsigned int)(this->systemNameImage), field<int32_t>(*g_StarMap_draw_layout, 0x2c), field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                         field<int32_t>(*g_StarMap_draw_layout, 0x2c), (unsigned char)(0));
             ((SolarSystem *)(&tmp))->getName();
-            gCanvas->DrawString((unsigned int)(long)(*g_StarMap_draw_font), (void *)(&tmp), gCanvas->GetImage2DWidth((unsigned int)(this->systemNameImage)) +
+            gCanvas->DrawString((unsigned int)(long)(*g_StarMap_draw_font), tmp, gCanvas->GetImage2DWidth((unsigned int)(this->systemNameImage)) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) * 2, field<int32_t>(*g_StarMap_draw_layout, 0xc) +
                                        field<int32_t>(*g_StarMap_draw_layout, 0x2c) + 2, false);
         }
@@ -594,7 +594,7 @@ void StarMap::update(int dt)
         Array<Vector *> *positions = this->systemPositions;
         for (uint32_t i = 0; i < positions->size(); i++) {
             ((AEGeometry *)(&tmp))->getPosition();
-            int visible = (int)(long)gCanvas->GetScreenPosition((AbyssEngine::AEMath::Vector *)(&tmp), (AbyssEngine::AEMath::Vector *)(positions->data()[i]));
+            int visible = gCanvas->GetScreenPosition(tmp, *positions->data()[i]);
             positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
         }
     }
@@ -603,7 +603,7 @@ void StarMap::update(int dt)
         if (positions != 0) {
             for (uint32_t i = 0; i < positions->size(); i++) {
                 ((AEGeometry *)(&tmp))->getPosition();
-                int visible = (int)(long)gCanvas->GetScreenPosition((AbyssEngine::AEMath::Vector *)(&tmp), (AbyssEngine::AEMath::Vector *)(positions->data()[i]));
+                int visible = gCanvas->GetScreenPosition(tmp, *positions->data()[i]);
                 positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
             }
         }
@@ -1240,24 +1240,24 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             icons[3] = this->keyImageCurrent;
         }
         ((Station *)(&name))->getName();
-        int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), (void *)&name);
+        int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), name);
         int drawX = (int)(x - (float)(textW / 2));
         int drawY = (int)(y + (float)(this->iconWidth >> 1) - 3.0f);
         if (this->selectedStation == index) {
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0x80), (unsigned char)(0), (unsigned char)(this->alpha));
-            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
+            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), name, drawX, drawY, false);
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
             if (Station_getTecLevel(station) > 0) {
                 line.copy((String *)((GameText *)(*g_StarMap_info_text))->getText(0x200), false);
                 value.ctor_int(Station_getTecLevel(station));
                 name = line + value;
-                ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
+                ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), name, drawX, drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
             }
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->selectIcon), (int)x, (int)y, (unsigned char)(0x11));
         } else {
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
             ((PaintCanvas*)(long)(canvas))->DrawImage2D((unsigned int)(this->cursorIcon), (int)x, (int)y, (unsigned char)(0x11));
-            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
+            ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), name, drawX, drawY, false);
         }
     } else {
         SolarSystem *system = this->systems->data()[index];
@@ -1283,7 +1283,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
             }
         }
         ((SolarSystem *)(&name))->getName();
-        int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), (void *)&name);
+        int textW = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_info_font), name);
         int drawX = (int)(x - (float)(textW / 2));
         int drawY = (int)(y + (float)(this->iconWidth >> 1) - 3.0f);
         int currentSystem = gStatus->getSystem();
@@ -1297,7 +1297,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode)
         } else if (this->selectedSystem >= 0) {
             ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
         }
-        ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), (void *)(&name), drawX, drawY, false);
+        ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(*g_StarMap_info_font), name, drawX, drawY, false);
         ((PaintCanvas*)(long)(canvas))->SetColor((unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(0xff), (unsigned char)(this->alpha));
         if (system->hasNoOwner() == 0) {
             uint32_t image = this->raceImageDefault;
@@ -1463,7 +1463,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 
     this->keyBoxWidth = 0;
     for (int i = 0; i < 6; i++) {
-        int width = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_init_font), (void *)((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
+        int width = ((PaintCanvas*)(long)(canvas))->GetTextWidth((unsigned int)(long)(*g_StarMap_init_font), *((GameText *)(*g_StarMap_init_text))->getText(0x112 + i));
         if (this->keyBoxWidth < width) {
             this->keyBoxWidth = width;
         }

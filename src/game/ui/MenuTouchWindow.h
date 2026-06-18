@@ -153,6 +153,7 @@ public:
     void draw();
     float getRelativeScrollHeight();
     int OnTouchMove(int y, int x);
+    int OnTouchMove(int y, int x, void *touchId);
     void setSkipButtonVisible(bool visible);
     void drawLoadSaveMenu(bool param1);
     void startSupernova();

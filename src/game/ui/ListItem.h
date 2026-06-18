@@ -51,11 +51,12 @@ public:
     ListItem(Mission* m);
     ListItem(PendingProduct* pp);
     ListItem(Ship* s);
-    ListItem(const AbyssEngine::String* src);
-    ListItem(const AbyssEngine::String* p1, const AbyssEngine::String* p2);
+    ListItem(AbyssEngine::String* src);
+    ListItem(AbyssEngine::String* p1, AbyssEngine::String* p2);
     ListItem(AbyssEngine::String* p1, bool b);
     ListItem(AbyssEngine::String* src, bool b, int v);
-    ListItem(const AbyssEngine::String* src, int v);
+    ListItem(AbyssEngine::String* src, int v);
+    ListItem(ListItem* src);
     ListItem(const ListItem& src);
     ListItem(int v);                                 // also the "slot" entry
     ListItem(int a, int b);

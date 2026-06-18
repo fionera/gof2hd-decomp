@@ -69,7 +69,7 @@ extern const char *gNmB __attribute__((visibility("hidden")));
 extern const char *gSgB __attribute__((visibility("hidden")));
 
 // Wraps a JNI stream; lazily resolves and caches the JNI method IDs it will use.
-FileInterfaceAndroid::FileInterfaceAndroid(jobject *stream, bool reading)
+FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading)
 {
     void *env = *gJniEnvObj;
     this->file = 0;

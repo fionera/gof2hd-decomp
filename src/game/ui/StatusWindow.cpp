@@ -513,8 +513,8 @@ void StatusWindow::draw() {
         String credTmp;
         Layout_formatCredits(&credTmp, gStatus->getCredits());
         creditStr.assign(&credTmp);
-        int tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
-        canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        int tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        canvas->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Level line.
         String lvlPrefix, lvlText, lvlFull;
@@ -525,21 +525,21 @@ void StatusWindow::draw() {
         lvlFull = lvlText;
         lvlFull.addAssign_int(&lvl);
         creditStr.assign(&lvlFull);
-        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
-        canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        canvas->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Playing-time line.
         String timeStr;
         Globals_longToTimeStringNoSeconds(*g_swd_globals, &timeStr, gStatus->getPlayingTime());
-        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
-        canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
+        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        canvas->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         // Ship picture panel.
         lbl.ctor_char("", false);
         layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawShip(gStatus->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
         String *shipNameTxt = (*g_swd_gameText)->getText(gStatus->getShip()->getIndex());
-        canvas->DrawString((unsigned)(uintptr_t)font, shipNameTxt,
+        canvas->DrawString((unsigned)(uintptr_t)font, *shipNameTxt,
                            x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         // Fire-power line: "<firePower>%<2-digit fractional part>".
@@ -554,14 +554,14 @@ void StatusWindow::draw() {
         pct.ctor_char("%", false);
         String fpFull = (fp2 + pct) + fracStr;
         creditStr.assign(&fpFull);
-        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &creditStr);
-        canvas->DrawString((unsigned)(uintptr_t)font, &creditStr, ((y + x0) - pad) - tw, y, false);
+        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
+        canvas->DrawString((unsigned)(uintptr_t)font, creditStr, ((y + x0) - pad) - tw, y, false);
 
         // Combined-HP line.
         String hpStr;
         hpStr.ctor_int(gStatus->getShip()->getCombinedHP());
-        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &hpStr);
-        canvas->DrawString((unsigned)(uintptr_t)font, &hpStr, ((y + x0) - pad) - tw, y, false);
+        tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, hpStr);
+        canvas->DrawString((unsigned)(uintptr_t)font, hpStr, ((y + x0) - pad) - tw, y, false);
 
         // Standing emblem panel + bars.
         // First faction standing (rate index 0) at the left-quarter x-position.
@@ -603,10 +603,10 @@ void StatusWindow::draw() {
                 default: rowVal = st->getGoodsProduced();   break;
             }
             String *labelTxt = (*g_swd_gameText)->getText(*g_swd_textId);
-            canvas->DrawString((unsigned)(uintptr_t)font, labelTxt, rowX, y, false);
+            canvas->DrawString((unsigned)(uintptr_t)font, *labelTxt, rowX, y, false);
             rowStr.ctor_int(rowVal);
-            tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, &rowStr);
-            canvas->DrawString((unsigned)(uintptr_t)font, &rowStr, ((y + x0) - pad) - tw, y, false);
+            tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, rowStr);
+            canvas->DrawString((unsigned)(uintptr_t)font, rowStr, ((y + x0) - pad) - tw, y, false);
         }
 
         drewStats = *land;

@@ -11,7 +11,7 @@
 // destroyed by the binary base ctor/dtor helpers; the compiler-managed vptr (at offset 0) replaces
 // the former manual vtable member.
 extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
-                               const void *sets, bool mirror, bool alphaFade);
+                               const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
 extern "C" void _pss_base_dtor(ParticleSystemSprite *self);
 extern "C" void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
                                       float *green, float *blue);
@@ -40,7 +40,8 @@ ParticleSystemSprite::~ParticleSystemSprite()
 // Chains to the IParticleSystem base ctor, allocates the per-particle sprite scratch array
 // (particleCount * 12 bytes) and zero-fills it, then caches a precomputed Pow value.
 ParticleSystemSprite::ParticleSystemSprite(PaintCanvas *canvas, const Matrix *matrix,
-                                           const void *particleSets, bool mirror, bool alphaFade)
+                                           const Array<ParticleSettings::ParticleSet> &particleSets,
+                                           bool mirror, bool alphaFade)
 {
     _pss_base_ctor(this, canvas, matrix, particleSets, mirror, alphaFade);
 
@@ -264,10 +265,14 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle)
         return;
 
     float *a = (float *)canvas->CameraGetLocal(canvas->CameraGetCurrent());
-    float am[15] = { a[0], a[1], a[2],  a[3],  a[4],  a[5],  a[6], a[7],
-                     a[8], a[9], a[10], a[11], a[12], a[13], a[14] };
+    Matrix am;
+    for (int i = 0; i < 15; ++i)
+        am.m[i] = a[i];
 
     float *b = (float *)canvas->CameraGetLocal(canvas->CameraGetCurrent());
+    Matrix bm;
+    for (int i = 0; i < 15; ++i)
+        bm.m[i] = b[i];
 
-    canvas->DrawSpriteSystem(handle, am, b);
+    canvas->DrawSpriteSystem(handle, am, bm);
 }
