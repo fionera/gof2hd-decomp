@@ -18,7 +18,7 @@ using AbyssEngine::AEMath::Matrix;
 // Engine math free-functions (defined in libgof2hd).
 namespace AbyssEngine { namespace AEMath {
 void   MatrixGetPosition(Vector* out, const float* matrix);
-void   MatrixMultiply(Matrix& lhs, const Matrix& rhs);
+void   MatrixMultiply(const Matrix& lhs, const Matrix& rhs);
 Vector MatrixRotateVector(const Matrix& matrix, const Vector& vector);
 float  VectorLength(const Vector& value);
 Vector operator+(const Vector& lhs, const Vector& rhs);
@@ -379,7 +379,7 @@ void KIPlayer::setDead() {
 
 // Returns the nearest space point of type 2 (docking) to the supplied direction vector,
 // measured from the player's transformed position.
-SpacePoint* KIPlayer::getNearestDockingPoint(Vector* dir) {
+SpacePoint* KIPlayer::getNearestDockingPoint(const Vector& dir) {
     Array<SpacePoint*>* arr = this->spacePoints;
     if (arr == 0)
         return 0;
@@ -397,7 +397,7 @@ SpacePoint* KIPlayer::getNearestDockingPoint(Vector* dir) {
         Vector rotated = MatrixRotateVector(this->geometry->getMatrix(),
                                             *(const Vector*)(*arr)[i]);
         Vector world = selfPos + rotated;
-        Vector delta = world - *dir;
+        Vector delta = world - dir;
         float len = VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {
@@ -555,7 +555,7 @@ void KIPlayer::captureCrate(Hud* hud) {
 
 // Among the player's space points of type 1 (navigation), returns the nearest free one
 // (or the explicitly requested `target`) measured against the player's transformed position.
-SpacePoint* KIPlayer::getNearestNavigationPoint(Vector* dir, SpacePoint* target) {
+SpacePoint* KIPlayer::getNearestNavigationPoint(const Vector& dir, SpacePoint* target) {
     Array<SpacePoint*>* arr = this->spacePoints;
     if (arr == 0)
         return 0;
@@ -573,7 +573,7 @@ SpacePoint* KIPlayer::getNearestNavigationPoint(Vector* dir, SpacePoint* target)
         Vector rotated = MatrixRotateVector(this->geometry->getMatrix(),
                                             *(const Vector*)(*arr)[i]);
         Vector world = selfPos + rotated;
-        Vector delta = world - *dir;
+        Vector delta = world - dir;
         float len = VectorLength(delta);
         float alen = len < 0.0f ? -len : len;
         if (alen < bestLen) {

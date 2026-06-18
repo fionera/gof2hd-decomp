@@ -116,8 +116,8 @@ public:
     void captureCrate(Hud* hud);
     int  cargoAvailable();
     void createCrate(int type);
-    SpacePoint* getNearestDockingPoint(Vector* dir);
-    SpacePoint* getNearestNavigationPoint(Vector* dir, SpacePoint* target);
+    SpacePoint* getNearestDockingPoint(const Vector& dir);
+    SpacePoint* getNearestNavigationPoint(const Vector& dir, SpacePoint* target);
     virtual Vector getPosition();   // actor vtable slot +0x28 (Ghidra-verified)
     int  getType();
     bool isDead();

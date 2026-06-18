@@ -76,7 +76,7 @@ public:
     unsigned int touchFlags;
     unsigned char autoTurretFlags;  // +0x287 auto-turret manual-toggle bits
     int field_0x288;
-    Array<int> *keyArray;  // per-touch key ids (0x19)
+    Array<void *> *keyArray;  // per-touch key ids (0x19) — touch ids are opaque void* handles
     int *elementBits;  // per-touch action bits (0x19)
     int quickMenuTopImage;       // +0x298 radial menu top cap
     int quickMenuBottomImage;    // +0x29c radial menu bottom cap
@@ -217,9 +217,9 @@ public:
     void setHackingGameActive(bool value);
     void setJumpMapSelected(bool value);
     void setTimeExtender(bool p1, bool p2, bool p3, bool p4);
-    unsigned int touchBegin(unsigned int a, void *b, int key);
-    unsigned int touchEnd(unsigned int a, void *b, int key);
-    unsigned int touchMove(unsigned int a, void *b, int key);
+    unsigned int touchBegin(unsigned int a, unsigned int b, void *key);
+    unsigned int touchEnd(unsigned int a, unsigned int b, void *key);
+    unsigned int touchMove(unsigned int a, unsigned int b, void *key);
     unsigned int touchedElement(unsigned int x, unsigned int y);
     void updateQueue(int dt);
     void updateSecondaryWeaponString();

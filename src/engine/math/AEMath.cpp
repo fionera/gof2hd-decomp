@@ -337,9 +337,9 @@ Matrix &Matrix::operator*=(const Matrix &other)
 
 // ---- Matrix free functions --------------------------------------------------------------------
 
-void MatrixMultiply(Matrix &lhs, const Matrix &rhs)
+void MatrixMultiply(const Matrix &lhs, const Matrix &rhs)
 {
-    lhs = lhs * rhs;
+    lhs * rhs;
 }
 
 Matrix MatrixIdentity(Matrix &matrix)

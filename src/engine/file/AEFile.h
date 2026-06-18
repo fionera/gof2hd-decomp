@@ -97,7 +97,7 @@ public:
     virtual uint32_t    FileDelete(const String &)                     { return 0; }
     virtual uint32_t    GetDeviceFreeSpace()                           { return 0; }
     virtual const char *GetAppRootDir()                                { return nullptr; }
-    virtual void        SetAppRootDir(const char *)                    {}
+    virtual void        SetAppRootDir(void *)                          {}
     virtual void        SetZipDirectory(void *)                        {}
     virtual void        SetSaveDirectory(const String &)               {}
     virtual void        ResetSaveDirectory()                           {}
@@ -172,7 +172,7 @@ public:
     static uint32_t    FileDelete(const String &path);
     static uint32_t    GetDeviceFreeSpace();
     static const char *GetAppRootDir();
-    static void        SetAppRootDir(const char *path);
+    static void        SetAppRootDir(void *path);
     static void        SetZipDirectory(void *path);
     static void        SetSaveDirectory(String path);
     static void        ResetSaveDirectory();

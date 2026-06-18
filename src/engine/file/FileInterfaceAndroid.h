@@ -33,7 +33,7 @@ public:
     char         pad_25[3];
     int32_t      zipReadLen;    // +0x28  zip read length tracker (zeroed on open)
     char         pad_2c[4];
-    const char  *appRootDir;    // +0x30
+    void        *appRootDir;    // +0x30 (holds the void* from SetAppRootDir; GetAppRootDir casts back to const char*)
     void        *zipDirectory;  // +0x34
 
     FileInterfaceAndroid();
@@ -52,7 +52,7 @@ public:
     uint32_t    FileExist(String name);
     const char *GetAppRootDir() override;
     uint32_t    GetDeviceFreeSpace() override;
-    void        SetAppRootDir(const char *p) override;
+    void        SetAppRootDir(void *p) override;
     void        SetZipDirectory(void *p) override;
 
     // Not part of the FileInterface backend dispatch, but invoked directly.

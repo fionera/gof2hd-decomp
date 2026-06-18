@@ -33,7 +33,7 @@ int PlayerFixedObject::getDockingType() {
     return this->dockingType;
 }
 
-void PlayerFixedObject::setBV_arr(Array<BoundingVolume *> *bv) {
+void PlayerFixedObject::setBV(Array<BoundingVolume *> *bv) {
     this->boundingVolumes = bv;
 }
 

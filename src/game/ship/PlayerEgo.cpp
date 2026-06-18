@@ -1188,9 +1188,8 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
 
     if (state == 0) {
         void *station = this->dockStation;
-        float pos[3];
-        ((PlayerEgo *)(this))->getPosition();
-        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint((Vector *)pos, (SpacePoint *)&this->navPoint);
+        Vector pos = ((PlayerEgo *)(this))->getPosition();
+        void *nav = ((KIPlayer *)(station))->getNearestNavigationPoint(pos, (SpacePoint *)&this->navPoint);
         if (nav != 0) {
             if (this->strafeNavPoint != nav) {
                 if (this->strafeNavPoint != 0)
@@ -2146,10 +2145,9 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
 
     bool undock = (radar == 0);
     if (!undock) {
-        float pos[3];
-        ((PlayerEgo *)(this))->getPosition();
+        Vector pos = ((PlayerEgo *)(this))->getPosition();
         SpacePoint *sp = (SpacePoint *)(unsigned long)this->spacePoint;
-        void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint((Vector *)pos, sp);
+        void *nav = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
         if (nav == 0) {
             if (C(radar, 0x70) != 0)              // RAWREAD: radar+0x70 (Radar minimal stub, no fields)
                 C(radar, 0x8c) = 1;               // RAWREAD: radar+0x8c (Radar minimal stub, no fields)
@@ -2171,8 +2169,8 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
                 ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
             this->easeMatrix = 0;
 
-            ((PlayerEgo *)(this))->getPosition();
-            void *nav2 = ((KIPlayer *)(radar))->getNearestNavigationPoint((Vector *)pos, sp);
+            pos = ((PlayerEgo *)(this))->getPosition();
+            void *nav2 = ((KIPlayer *)(radar))->getNearestNavigationPoint(pos, sp);
             void *from = ((AEGeometry *)(this->geometry))->getMatrix();
             this->easeMatrix = PE_dtdp_makeEase(from, nav2);
             ((PlayerEgo *)(this))->setExhaustVisible(true);

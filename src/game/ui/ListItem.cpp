@@ -172,10 +172,10 @@ bool ListItem::checkCredits() {
     return price <= status->getCredits();
 }
 
-ListItem::ListItem(AbyssEngine::String* p1, AbyssEngine::String* p2) {
+ListItem::ListItem(AbyssEngine::String* p1, bool b) {
     this->init();
     this->name = new AbyssEngine::String(*p1);
-    this->name2 = new AbyssEngine::String(*p2);
+    this->text = b;
     this->selectable = 0;
 }
 

@@ -43,7 +43,7 @@ Vector operator*(const Matrix &matrix, const Vector &vector);
 bool operator==(const Matrix &lhs, const Matrix &rhs);
 bool operator!=(const Matrix &lhs, const Matrix &rhs);
 
-void MatrixMultiply(Matrix &lhs, const Matrix &rhs);
+void MatrixMultiply(const Matrix &lhs, const Matrix &rhs);
 Matrix MatrixIdentity(Matrix &matrix);
 bool MatrixIsEqual(const Matrix &lhs, const Matrix &rhs);
 Vector MatrixGetRight(const Matrix &matrix);

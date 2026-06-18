@@ -156,7 +156,7 @@ int ParticleSettings::init() {
 
     // --- sets[2]: muzzle flash, sets[3] copies it -----------------------------------
     buf.ctor_char(ParticleSettings_str + 400742, false);  // DAT_001943e4
-    ParticleSet *muzzleFlash = &this->sets[2];
+    SetDefinition *muzzleFlash = &this->sets[2];
     this->sets[2].posBase = 0;
     this->sets[2].posSpread = 0;
     this->sets[2].ySpread = 0;
@@ -257,11 +257,11 @@ int ParticleSettings::init() {
 
     // --- sets[9]: spark burst, copied into sets[16] ---------------------------------
     buf.ctor_char(ParticleSettings_str + 400195, false);  // DAT_0019466c
-    ParticleSet *spark = &this->sets[9];
+    SetDefinition *spark = &this->sets[9];
     this->sets[9].lifetime = 700;
     this->sets[9].flLifetime = 0x41000000;     // 8.0f
     this->sets[9].flags = 0x02000021;          // DAT_0019473c
-    ParticleSet *dustCloud = &this->sets[16];
+    SetDefinition *dustCloud = &this->sets[16];
     this->sets[9].count = 0x10;
     asFloat(this->sets[9].lifeBase) = 100.0f;            // DAT_00194740
     this->sets[9].lifeRandom = 1000;
@@ -437,7 +437,7 @@ int ParticleSettings::init() {
 
     // --- sets[15]: ember / debris, copied into sets[19], sets[14], sets[40] ----------
     buf.ctor_char(ParticleSettings_str + 399109, false);  // DAT_00194b30
-    ParticleSet *ember = &this->sets[15];
+    SetDefinition *ember = &this->sets[15];
     this->sets[15].lifetime = 0x5dc;
     asFloat(this->sets[15].flLifetime) = 20.0f;          // DAT_00194bec
     this->sets[15].flags = 0x02000021;         // DAT_00194bf0
@@ -521,7 +521,7 @@ int ParticleSettings::init() {
     ParticleSet_assign(&this->sets[40], (void *)ember);
     buf.ctor_char(ParticleSettings_str + 398438, false);  // DAT_00194dc8
     this->sets[40].field_0x54 = 5000;
-    ParticleSet *streak2 = &this->sets[20];
+    SetDefinition *streak2 = &this->sets[20];
     asFloat(this->sets[40].posDir) = 500.0f;             // DAT_00194e24
     asFloat(this->sets[40].lifeBase) = 1800.0f;          // DAT_00194e28
     this->sets[40].lifeRandom = 300;
@@ -536,7 +536,7 @@ int ParticleSettings::init() {
     // --- sets[21]: streak copy ------------------------------------------------------
     ParticleSet_assign(&this->sets[21], (void *)streak2);
     buf.ctor_char(ParticleSettings_str + 398324, false);  // DAT_00194e70
-    ParticleSet *jet = &this->sets[22];
+    SetDefinition *jet = &this->sets[22];
     this->sets[21].lifetime = 1000;
     asFloat(this->sets[21].lifeBase) = 1600.0f;          // DAT_00194eb0
     this->sets[21].lifeRandom = 200;
@@ -574,7 +574,7 @@ int ParticleSettings::init() {
     // --- sets[24]: jet copy ---------------------------------------------------------
     ParticleSet_assign(&this->sets[24], (void *)spark);
     buf.ctor_char(ParticleSettings_str + 398045, false);  // DAT_00195314
-    ParticleSet *ringEmitter = &this->sets[25];
+    SetDefinition *ringEmitter = &this->sets[25];
     this->sets[24].lifetime = 1000;
     asFloat(this->sets[24].flLifetime) = 5.0f;           // DAT_00195318
     asFloat(this->sets[24].lifeBase) = 2000.0f;          // DAT_0019531c
@@ -626,7 +626,7 @@ int ParticleSettings::init() {
 
     // --- sets[39]: ring sub (special flags) -----------------------------------------
     ParticleSettings_initSub(&this->sets[39], (void *)ringEmitter);
-    ParticleSet *plume = &this->sets[43];
+    SetDefinition *plume = &this->sets[43];
     this->sets[39].flags = (uint32_t)(176146 + 0x100000);  // DAT_00195450 = 0x0002b012
     asFloat(this->sets[39].lifeBase) = 100.0f;           // DAT_00195324 = 0x42c80000 (carried in uVar15)
     this->sets[39].posDir = 0;
@@ -701,7 +701,7 @@ int ParticleSettings::init() {
 void ParticleSettings::multiplyAll(float scale) {
     float recip = 1.0f / ((scale + 1.0f) * 0.5f);
     for (int i = 0; i < 48; ++i) {
-        ParticleSet &p = this->sets[i];
+        SetDefinition &p = this->sets[i];
         float lifeScale, lifeBase;
         if (p.flags & 0x20) {
             lifeBase = asFloat(p.flLifetime);
@@ -731,9 +731,9 @@ void ParticleSettings::multiplyAll(float scale) {
 // out = b*t + (1-t)*a over the lifetime/colour/scale slots. `count` (+0x28) is stored as
 // an int but blended in float space; lifeBase/endSize/velDir are plain floats.
 void ParticleSettings::Interpolate(int a, int b, float t, int out) {
-    ParticleSet &pa = this->sets[a];
-    ParticleSet &pb = this->sets[b];
-    ParticleSet &po = this->sets[out];
+    SetDefinition &pa = this->sets[a];
+    SetDefinition &pb = this->sets[b];
+    SetDefinition &po = this->sets[out];
     float omt = 1.0f - t;
     po.count = (int)(omt * (float)pa.count + (float)pb.count * t);
     asFloat(po.lifeBase) = omt * asFloat(pa.lifeBase) + asFloat(pb.lifeBase) * t;

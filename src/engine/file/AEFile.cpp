@@ -663,7 +663,7 @@ const char *AEFile::GetAppRootDir()
     return nullptr;
 }
 
-void AEFile::SetAppRootDir(const char *path)
+void AEFile::SetAppRootDir(void *path)
 {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {

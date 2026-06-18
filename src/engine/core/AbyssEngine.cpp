@@ -103,7 +103,7 @@ void ImageFontSetYOffset(ImageFont *font, short yOffset)
 // +0x48 horizontal slope, +0x50 vertical slope.
 namespace AbyssEngine {
 
-int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
+int CameraIsPointinViewFrustum(const Vector &point, Matrix *extra, Camera *cam)
 {
     if (*g_Camera_frustumEnabledFlag == 0)
         return 1;
@@ -129,7 +129,7 @@ int CameraIsPointinViewFrustum(Vector *point, Matrix *extra, Camera *cam)
     camPoint = *(Vector *)dstMatrix;
 
     pos = AEMath::MatrixGetPosition(*dstMatrix);
-    pos -= *point;
+    pos -= point;
     dir = AEMath::MatrixGetDir(*dstMatrix);
     axis -= dir;
     Vector normAxis = AEMath::VectorNormalize(axis);
@@ -361,14 +361,14 @@ int  MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCo
                 unsigned int vertexFormat, void **out);
 void MeshRelease(Engine *engine, Mesh **slot);
 
-int ImageCreateRegionFromFile(Engine *engine, char *path, unsigned short index, Image2D *region)
+int ImageCreateRegionFromFile(Engine *engine, const char *path, unsigned short index, Image2D *region)
 {
     if (engine == 0 || path == 0)
         return -4;
 
     char *r = (char *)region;
     unsigned int handle = 0;
-    if (AEFile::OpenRead((const char *)(path), (uint32_t *)(&handle)) == 0)
+    if (AEFile::OpenRead(path, (uint32_t *)(&handle)) == 0)
         return -1;
 
     char magic[8];
@@ -822,8 +822,8 @@ void MaterialDraw(PaintCanvas *canvas, Engine *engine, Material *mat, bool setTe
         Matrix world;
         AE_AEMath_matMul(&world, (const Matrix *)((char *)pp(m, 0x60) + matOff));
         ((PaintCanvas *)canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)canvas);
-        engine->SetModelMatrix((const uint32_t *)&world);
-        engine->SetUVMatrix((const uint32_t *)((char *)pp(m, 0x3c) + matOff));
+        engine->SetModelMatrix(world);
+        engine->SetUVMatrix(F<Matrix>(m, 0x3c + matOff));
 
         unsigned int packed = *(unsigned int *)((char *)pp(m, 0x54) + i * 4);
         float ca = (float)((packed >> 24) & 0xff);
@@ -912,13 +912,13 @@ char *g_uvFlipFlag;        // **(DAT + 0x7c904) / 0x7c9d2
 char *g_tangentEnabled;    // **(DAT + 0x7cc36)
 }
 
-int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Mesh **slot,
+int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                  Material *mat);
 
-int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Mesh **slot,
+int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                  Material *mat)
 {
-    unsigned int handle = *handlePtr;
+    unsigned int handle = handleRef;
     unsigned int subBit = flags & 0x1a;
     unsigned char mode = 0;
 
@@ -1223,7 +1223,7 @@ int MeshReadData(Engine *engine, unsigned int *handlePtr, unsigned int flags, Me
             childPtr->vboEligible = 1;
             childPtr->vertexFormat = (*slot)->vertexFormat;
             childPtr->material = (*slot)->material;
-            if (MeshReadData(engine, handlePtr, flags, &childPtr, mat) == -1)
+            if (MeshReadData(engine, handleRef, flags, &childPtr, mat) == -1)
                 return -1;
             ((AEMath::BSphere *)&(*slot)->boundsCenterX)->Merge(*(const AEMath::BSphere *)&childPtr->boundsCenterX);
             ArrayAddRaw<Mesh *>(childPtr, &(*slot)->animation->meshes);
@@ -1409,7 +1409,7 @@ namespace AbyssEngine {
 
 void ImageRelease(Image **slot);
 
-int ImageCreateFromFile(Engine *engine, char *path, Image **out)
+int ImageCreateFromFile(Engine *engine, const char *path, Image **out)
 {
     if (engine == 0 || path == 0)
         return -4;
@@ -1422,7 +1422,7 @@ int ImageCreateFromFile(Engine *engine, char *path, Image **out)
     *out = (Image *)img;
 
     unsigned int handle = 0;
-    if (AEFile::OpenRead((const char *)(path), (uint32_t *)(&handle)) == 0) {
+    if (AEFile::OpenRead(path, (uint32_t *)(&handle)) == 0) {
         if (*out != 0)
             ::operator delete((void *)*out);
         *out = 0;
@@ -1589,7 +1589,7 @@ void Image2DRelease(Engine *engine, Image2D **slot)
 namespace AbyssEngine {
 
 int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
-               unsigned int vertexFormat, void **out)
+               signed char vertexFormat, Mesh **out)
 {
     if (vertexCount < 4 || triCount == 0 || (vertexFormat & 1) == 0)
         return -4;
@@ -1604,7 +1604,7 @@ int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short t
 
     *out = m;
     m->vertexCount = (short)vertexCount;
-    m->vertexFormat = (char)vertexFormat;
+    m->vertexFormat = vertexFormat;
     m->indexCount = (short)(triCount + (triCount << 1)); // 3 * triCount (index count)
     m->field_0x2a = (short)triCount;
 
@@ -1760,8 +1760,8 @@ String operator+(const String &a)
 // renderer.
 namespace AbyssEngine {
 
-void ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x,
-                         int y, PaintCanvas *canvas, Engine *engine, bool flag);
+int ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x,
+                        int y, PaintCanvas *canvas, Engine *engine, bool flag);
 
 void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int y,
                          PaintCanvas *canvas, Engine *engine, bool flag)
@@ -1790,11 +1790,11 @@ void ImageFontDrawString(ImageFont *font, const unsigned short *str, int x, int 
 // each glyph mesh. RTL ordering (or the canvas batch flag) reverses the scan direction.
 namespace AbyssEngine {
 
-int  ImageFontGetWidth(ImageFont *font, unsigned short *text, unsigned int len);
+int  ImageFontGetWidth(ImageFont *font, const unsigned short *text, unsigned int len);
 int  ImageFontGetHeight(ImageFont *font);
 int  MeshDraw(Engine *engine, Mesh *mesh);
 
-int ImageFontDrawString(ImageFont *font, unsigned short *text, unsigned int len, int x, int y,
+int ImageFontDrawString(ImageFont *font, const unsigned short *text, unsigned int len, int x, int y,
                         PaintCanvas *canvas, Engine *engine, bool rtl)
 {
     if (text == 0 || font == 0)
@@ -1988,13 +1988,13 @@ static void buildGlyphQuad(Mesh *mesh, unsigned int offX, unsigned int offY, uns
     draw[2] = 0;
 }
 
-int ImageCreateFontFromFile(Engine *engine, char *path, unsigned short index, ImageFont **out)
+int ImageCreateFontFromFile(Engine *engine, const char *path, unsigned short index, ImageFont **out)
 {
     if (engine == 0 || path == 0)
         return -4;
 
     unsigned int handle = 0;
-    if (AEFile::OpenRead((const char *)(path), (uint32_t *)(&handle)) == 0)
+    if (AEFile::OpenRead(path, (uint32_t *)(&handle)) == 0)
         return -1;
 
     char magic[8];
@@ -2140,9 +2140,13 @@ namespace AbyssEngine {
 
 int MeshDraw(Engine *engine, Mesh *mesh);
 
+// Reinterpret a float's storage bits as the 32-bit word the binary passes to the batch helper
+// (the matrix words travel as raw IEEE-754 bit patterns, not numeric conversions).
+static inline unsigned int f2u(float f) { union { float f; unsigned int u; } c; c.f = f; return c.u; }
+
 // Array<T>::AddCached helpers (templated in the binary).
 
-void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem *sys)
+void SpriteSystemDraw(Engine *engine, const Matrix &view, const Matrix &world, SpriteSystem *sys)
 {
     if (sys == 0)
         return;
@@ -2151,13 +2155,13 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
     float *vbuf = (float *)mesh->positions;
 
     Matrix mv;
-    AE_AEMath_matMul(&mv, view);
+    AE_AEMath_matMul(&mv, &view);
 
     unsigned short count = u16(sys, 0x0);
     unsigned char sharedSize = u8(sys, 0xc);
     float *posCpu = (float *)pp(sys, 0x4);
     short *sizeCpu = (short *)pp(sys, 0x8);
-    const float *W = (const float *)world;
+    const float *W = world;
 
     unsigned short sizeIdx = 0;
     unsigned short posIdx = 0;
@@ -2195,16 +2199,18 @@ void SpriteSystemDraw(Engine *engine, Matrix *view, Matrix *world, SpriteSystem 
         // AE_SpriteSystem_pushMatrix copies a 4x4 matrix (15 explicit words; m33 implicit) into
         // the destination slot. It is a runtime-resolved (GOT) indirect helper with no statically
         // visible body, so it stays a documented extern (see externs.h).
-        const unsigned int *v = (const unsigned int *)view;
-        AE_SpriteSystem_pushMatrix(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9],
-                                   v[10], v[11], v[12], v[13], v[14], (int)(intptr_t)batch + 0x2c);
+        const float *v = view;
+        AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
+                                   f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
+                                   f2u(v[12]), f2u(v[13]), f2u(v[14]), (int)(intptr_t)batch + 0x2c);
         unsigned int one = 0x3f800000;
         unsigned int negOne = 0xbf800000; // V-flip diagonal: inline -1.0f literal (pool@0x97058)
         AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
                                    one, one, one, (int)(intptr_t)batch + 0x38);
-        const unsigned int *w = (const unsigned int *)world;
-        AE_SpriteSystem_pushMatrix(w[0], w[1], w[2], w[3], w[4], w[5], w[6], w[7], w[8], w[9],
-                                   w[10], w[11], w[12], w[13], w[14], (int)(intptr_t)batch + 0x5c);
+        const float *w = world;
+        AE_SpriteSystem_pushMatrix(f2u(w[0]), f2u(w[1]), f2u(w[2]), f2u(w[3]), f2u(w[4]), f2u(w[5]),
+                                   f2u(w[6]), f2u(w[7]), f2u(w[8]), f2u(w[9]), f2u(w[10]), f2u(w[11]),
+                                   f2u(w[12]), f2u(w[13]), f2u(w[14]), (int)(intptr_t)batch + 0x5c);
         ArrayAddCachedRaw<unsigned int>(0xffffffff, (char *)batch + 0x50);
     }
 }
@@ -2422,7 +2428,7 @@ float *g_anisoMaxPtr;           // **(DAT + 0x7fa00)
 char *g_labelObjectsFlag;       // **(DAT + 0x7c9d2) (reused)
 }
 
-int  ImageCreateFromFile(Engine *engine, char *path, Image **out);
+int  ImageCreateFromFile(Engine *engine, const char *path, Image **out);
 void ImageRelease(Image **slot);
 
 // Helper to upload one compressed mip chain for the simple formats.
@@ -2447,7 +2453,7 @@ static void uploadCompressedChain(char *img, unsigned int glFmt, int divShift, i
     }
 }
 
-int TextureCreateFromFileIntern(Engine *engine, char *path, void (*cb)(Image *, void *),
+int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *),
                                 void *user, unsigned int *outIds, float aniso,
                                 AELoadedTexture *outTex, bool /*flag*/)
 {
@@ -2814,7 +2820,7 @@ void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b)
 // loading, animation data is collected. Returns 1 on success, -1 on error, -4 on bad args.
 namespace AbyssEngine {
 
-int  MeshReadData(Engine *engine, unsigned int *handle, unsigned int flags, Mesh **slot,
+int  MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
                   Material *mat);
 void MeshRelease(Engine *engine, Mesh **slot);
 
@@ -2826,7 +2832,7 @@ static void initMesh(Mesh *m)
     m->boundsRadiusSq = 1.0f; // IEEE 0x3f800000
 }
 
-int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
+int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat)
 {
     if (engine == 0 || path == 0)
         return -4;
@@ -2837,7 +2843,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
     m->material = mat;
 
     unsigned int handle = 0;
-    if (AEFile::OpenRead((const char *)(path), &m->positionVBO) == 0) {
+    if (AEFile::OpenRead(path, &m->positionVBO) == 0) {
         if (*out != 0)
             ::operator delete((void *)*out);
         *out = 0;
@@ -2888,7 +2894,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 
     bool ok = false;
     if ((fmt & 0x1a) == 0) {
-        if (MeshReadData(engine, &handle, fmt, out, mat) != -1)
+        if (MeshReadData(engine, handle, fmt, out, mat) != -1)
             ok = true;
     } else {
         unsigned short subCount = 0;
@@ -2898,7 +2904,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
             return -1;
         }
         if (subCount < 2) {
-            if (MeshReadData(engine, &handle, fmt, out, mat) != -1)
+            if (MeshReadData(engine, handle, fmt, out, mat) != -1)
                 ok = true;
         } else {
             (*out)->animation = new Transform();
@@ -2908,7 +2914,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
                 childPtr->vboEligible = 1;
                 childPtr->vertexFormat = (*out)->vertexFormat;
                 childPtr->material = mat;
-                if (MeshReadData(engine, &handle, fmt, &childPtr, mat) == -1) {
+                if (MeshReadData(engine, handle, fmt, &childPtr, mat) == -1) {
                     MeshRelease(engine, out);
                     AEFile::Close(handle);
                     return -1;
@@ -2948,7 +2954,7 @@ int MeshCreateFromFile(Engine *engine, char *path, Mesh **out, Material *mat)
 // +0x48 fwd-h slope, +0x50 fwd-v slope, +0x54 right radius scale, +0x58 up radius scale.
 namespace AbyssEngine {
 
-int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Camera *cam)
+int CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam)
 {
     // Ghidra aliases the camera-data pointer through r3; cam is the frustum data here.
     char *c = (char *)cam;
@@ -2976,7 +2982,7 @@ int CameraIsSphereinViewFrustum(Vector *center, float radius, Matrix *extra, Cam
     camPoint = *(Vector *)dstMatrix;
 
     pos = AEMath::MatrixGetPosition(*dstMatrix);
-    pos -= *center;
+    pos -= center;
     dir = AEMath::MatrixGetDir(*dstMatrix);
     axis -= dir;
     Vector normAxis = AEMath::VectorNormalize(axis);

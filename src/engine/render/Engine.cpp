@@ -146,44 +146,45 @@ bool Engine::IsPostEffectActivated() {
     return this->postEffectFlags != 0;
 }
 
-void Engine::SetUVMatrix(const uint32_t *matrix) {
+void Engine::SetUVMatrix(const Matrix &matrix) {
     if (g_Engine_useShaders == 0) {
         glMatrixMode(0x1702);
-        MatrixGetGL(*(const Matrix *)matrix, this->uvMatrixGL);
+        MatrixGetGL(matrix, this->uvMatrixGL);
         glLoadMatrixf(this->uvMatrixGL);
         return glMatrixMode(0x1700);
     }
 
-    uint32_t m0 = matrix[0];
-    uint32_t m1 = matrix[1];
-    uint32_t m2 = matrix[2];
-    uint32_t m3 = matrix[3];
-    uint32_t m4 = matrix[4];
-    uint32_t m5 = matrix[5];
-    uint32_t m6 = matrix[6];
-    uint32_t m7 = matrix[7];
-    uint32_t m8 = matrix[8];
-    uint32_t m9 = matrix[9];
-    uint32_t m10 = matrix[10];
-    uint32_t m11 = matrix[11];
+    const float *m = matrix;
+    float m0 = m[0];
+    float m1 = m[1];
+    float m2 = m[2];
+    float m3 = m[3];
+    float m4 = m[4];
+    float m5 = m[5];
+    float m6 = m[6];
+    float m7 = m[7];
+    float m8 = m[8];
+    float m9 = m[9];
+    float m10 = m[10];
+    float m11 = m[11];
 
-    uint32_t *uv = (uint32_t *)this->uvMatrix;
+    float *uv = this->uvMatrix;
     uv[0] = m0;
     uv[1] = m4;
     uv[2] = m8;
-    uv[3] = 0;
+    uv[3] = 0.0f;
     uv[4] = m1;
     uv[5] = m5;
     uv[6] = m9;
-    uv[7] = 0;
+    uv[7] = 0.0f;
     uv[8] = m2;
     uv[9] = m6;
     uv[10] = m10;
-    uv[11] = 0;
+    uv[11] = 0.0f;
     uv[12] = m3;
     uv[13] = m7;
     uv[14] = m11;
-    uv[15] = 0x3f800000;
+    uv[15] = 1.0f;
 }
 
 void Engine::ActivateRender2TextureFBO() {
@@ -426,11 +427,11 @@ void Engine::DeactivateRender2FracFBO() {
     }
 }
 
-void Engine::SetPerspMatrix(const uint32_t *matrix) {
+void Engine::SetPerspMatrix(float *matrix) {
     if (g_Engine_useShaders == 0) {
         return;
     }
-    uint32_t *proj = (uint32_t *)this->projMatrix;
+    float *proj = this->projMatrix;
     for (int i = 0; i < 16; i += 1) {
         proj[i] = matrix[i];
     }
@@ -719,7 +720,7 @@ void Engine::AEClientState(unsigned int state, bool enable) {
     this->clientStateFlagsAE = bits;
 }
 
-void Engine::GlowBeginGlow(unsigned int depthFunc) {
+void Engine::GlowBeginGlow(int depthFunc) {
     if (this->glowActive != 0) {
         return;
     }
@@ -733,8 +734,8 @@ void Engine::GlowBeginGlow(unsigned int depthFunc) {
     }
 }
 
-void Engine::DrawLine2D(int vertexCount, int count, bool strip) {
-    this->lineVertexBase = vertexCount;
+void Engine::DrawLine2D(float *verts, int count, bool strip) {
+    this->lineVertexBase = count;
     this->ShaderSetActive(g_Engine_lineShader, 0);
     unsigned int mode = strip != 0 ? 2 : 1;
     return glDrawArrays(mode, 0, count);
@@ -922,14 +923,14 @@ void Engine::initFileInterface() {
     return AEFile::SetInterface((FileInterface *)fileInterface);
 }
 
-void Engine::SetOrthoMatrix(const uint32_t *projection, const uint32_t *view, bool multiply) {
+void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
     if (g_Engine_useShaders != 0) {
-        uint32_t *proj = (uint32_t *)this->projMatrix;
+        float *proj = this->projMatrix;
         for (int i = 0; i < 16; i += 1) {
             proj[i] = projection[i];
         }
         if (multiply) {
-            uint32_t local[16];
+            float local[16];
             __aeabi_memcpy(local, view, 0x40);
             esMatrixMultiply(this->projMatrix, local, this->projMatrix);
         }
@@ -1210,38 +1211,40 @@ uint32_t Engine::ShaderInit() {
     return 1;
 }
 
-uint64_t Engine::SetEyePosition(uint32_t x, uint32_t y, uint32_t z) {
-    uint32_t buf[3];
-    buf[0] = x;
-    buf[1] = y;
-    buf[2] = z;
-    this->eyePosition = *(const Vector *)buf;
-    return (uint64_t)buf[0] | ((uint64_t)buf[1] << 32);
+uint64_t Engine::SetEyePosition(float x, float y, float z) {
+    this->eyePosition.x = x;
+    this->eyePosition.y = y;
+    this->eyePosition.z = z;
+    union { float f; uint32_t u; } cx, cy;
+    cx.f = x;
+    cy.f = y;
+    return (uint64_t)cx.u | ((uint64_t)cy.u << 32);
 }
 
-void Engine::SetModelMatrix(const uint32_t *matrix) {
+void Engine::SetModelMatrix(const Matrix &matrix) {
     Engine *self = this;
+    const float *m = matrix;
     if (g_Engine_useShaders != 0) {
-        self->normalMatrix[0] = matrix[0];
-        self->normalMatrix[1] = matrix[4];
-        self->normalMatrix[2] = matrix[8];
-        self->normalMatrix[3] = matrix[1];
-        self->normalMatrix[4] = matrix[5];
-        self->normalMatrix[5] = matrix[9];
-        self->normalMatrix[6] = matrix[2];
-        self->normalMatrix[7] = matrix[6];
-        self->normalMatrix[8] = matrix[10];
-        uint32_t gl[16] = {
-            matrix[0], matrix[4], matrix[8], 0,
-            matrix[1], matrix[5], matrix[9], 0,
-            matrix[2], matrix[6], matrix[10], 0,
-            matrix[3], matrix[7], matrix[11], 0x3f800000,
+        self->normalMatrix[0] = m[0];
+        self->normalMatrix[1] = m[4];
+        self->normalMatrix[2] = m[8];
+        self->normalMatrix[3] = m[1];
+        self->normalMatrix[4] = m[5];
+        self->normalMatrix[5] = m[9];
+        self->normalMatrix[6] = m[2];
+        self->normalMatrix[7] = m[6];
+        self->normalMatrix[8] = m[10];
+        float gl[16] = {
+            m[0], m[4], m[8], 0.0f,
+            m[1], m[5], m[9], 0.0f,
+            m[2], m[6], m[10], 0.0f,
+            m[3], m[7], m[11], 1.0f,
         };
         __aeabi_memcpy(self->modelMatrixGL, gl, 0x40);
         Vector tmp;
         if (self->lightDirty[0] == 0.0f) {
             tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                *(const Matrix *)matrix, self->field_0x468);
+                matrix, self->field_0x468);
             tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
             self->lightDir = tmp;
         } else {
@@ -1250,7 +1253,7 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         if (self->lightCount > 1) {
             if (self->lightDirty[1] == 0.0f) {
                 tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
-                    *(const Matrix *)matrix, self->field_0x474);
+                    matrix, self->field_0x474);
                 tmp = AbyssEngine::AEMath::VectorNormalize(tmp);
                 self->field_0x33c = tmp;
             } else {
@@ -1259,11 +1262,11 @@ void Engine::SetModelMatrix(const uint32_t *matrix) {
         }
         self->ShaderUpdate();
         tmp = AbyssEngine::AEMath::MatrixInverseTransformVector(
-            *(const Matrix *)matrix, self->eyePosition);
+            matrix, self->eyePosition);
         self->lightColor = tmp;
-        self->lightColor.x /= *(float *)(matrix + 12);
-        self->lightColor.y /= *(float *)(matrix + 13);
-        self->lightColor.z /= *(float *)(matrix + 14);
+        self->lightColor.x /= m[12];
+        self->lightColor.y /= m[13];
+        self->lightColor.z /= m[14];
     }
     return;
 }
@@ -1310,18 +1313,19 @@ void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...
     return;
 }
 
-void Engine::SetWorldViewMatrix(const uint32_t *matrix) {
+void Engine::SetWorldViewMatrix(const Matrix &matrix) {
+    const float *m = matrix;
     if (g_Engine_useShaders != 0) {
-        uint32_t gl[16] = {
-            matrix[0], matrix[4], matrix[8], 0,
-            matrix[1], matrix[5], matrix[9], 0,
-            matrix[2], matrix[6], matrix[10], 0,
-            matrix[3], matrix[7], matrix[11], 0x3f800000,
+        float gl[16] = {
+            m[0], m[4], m[8], 0.0f,
+            m[1], m[5], m[9], 0.0f,
+            m[2], m[6], m[10], 0.0f,
+            m[3], m[7], m[11], 1.0f,
         };
         __aeabi_memcpy(this->worldViewMatrixGL, gl, 0x40);
         esMatrixMultiply(this->worldViewProjMatrix, gl, this->projMatrix);
     } else {
-        MatrixGetGL(*(const Matrix *)matrix, this->uvMatrixGL);
+        MatrixGetGL(matrix, this->uvMatrixGL);
         return glLoadMatrixf(this->uvMatrixGL);
     }
     return;

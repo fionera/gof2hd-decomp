@@ -727,7 +727,7 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
     }
 
     // World HUD touch: dispatch on the hud's touch result bitmask.
-    unsigned hr = self->hud->touchBegin(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
+    unsigned hr = self->hud->touchBegin(p1, p2, touchId);
     self->hudTouchFlags = hr;
     ((MGame *)(self))->handleHudTouchAction(p1, p2, touchId, hr);
 }
@@ -1585,7 +1585,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 
     unsigned hr = 0;
     if (this->pauseOpen == 0) {
-        hr = this->hud->touchEnd(p1, (void *)(intptr_t)p2, (int)(intptr_t)touchId);
+        hr = this->hud->touchEnd(p1, p2, touchId);
         this->hudTouchFlags = hr;
         if (hr != 0) {
             this->touch0Id = 0;
@@ -2175,7 +2175,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
 
     if (!handledFree) {
         if (self->pauseOpen == 0) {
-            int hh = self->hud->touchMove(p1, (void *)(intptr_t)y, (int)(intptr_t)touch);
+            int hh = self->hud->touchMove(p1, y, touch);
             self->hudTouchFlags = hh;
             unsigned mode = (unsigned)self->cameraMode;
             if (mode <= 1) {

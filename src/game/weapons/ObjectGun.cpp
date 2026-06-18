@@ -27,7 +27,7 @@ struct MeshId {
 };
 
 namespace AbyssEngine { namespace AEMath {
-void MatrixMultiply(Matrix &, const Matrix &);
+void MatrixMultiply(const Matrix &, const Matrix &);
 } }
 
 // PaintCanvas transform/mesh helpers and the active canvas handle (engine globals).

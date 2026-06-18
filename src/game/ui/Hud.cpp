@@ -69,7 +69,7 @@ uint8_t Hud::cargoFull() {
     return this->cargoFullFlag;
 }
 
-unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
+unsigned int Hud::touchEnd(unsigned int a, unsigned int b, void *key) {
     int i = 0;
     unsigned int ret = 0;
     for (; i != 0x19; i = i + 1) {
@@ -84,7 +84,7 @@ unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
         Array<TouchButton *> *btns = this->menuButtons;
         if (btns != 0) {
             for (unsigned int j = 0; j < btns->size(); j = j + 1) {
-                (*btns)[j]->OnTouchEnd((int)a, (int)(long)b);
+                (*btns)[j]->OnTouchEnd((int)a, (int)b);
                 btns = this->menuButtons;
             }
         }
@@ -95,7 +95,7 @@ unsigned int Hud::touchEnd(unsigned int a, void *b, int key) {
 void Hud::releaseAllKeys() {
     this->touchFlags = 0;
     for (int i = 0; i != 0x19; i++) {
-        Array<int> *p = this->keyArray;
+        Array<void *> *p = this->keyArray;
         if (p != 0) {
             if ((*p)[i] != 0)
                 (*p)[i] = 0;
@@ -279,16 +279,16 @@ void Hud::drawOrbitInformation() {
     gCanvas->DrawString((unsigned)(long)(font), (void *)(secTxt), (x), (char)layout[0x8a], false);
 }
 
-unsigned int Hud::touchMove(unsigned int a, void *b, int key) {
+unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
     unsigned int i = 0;
     for (; i <= 0x18; i = i + 1) {
         if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
             goto found;
     }
-    return touchMoveFallback(a, b);
+    return touchMoveFallback(a, key);
 found:
     int dx = (int)a - (int)this->reticleX;
-    int dy = (int)(unsigned int)(uintptr_t)b - (int)this->reticleY;
+    int dy = (int)b - (int)this->reticleY;
     float f = (float)(dy * dy + dx * dx);
     float r = gGlobals->sqrt(f);
     int denom = this->analogStickRadius;
@@ -301,7 +301,7 @@ found:
         this->lockBracketY = s + base;
     } else {
         this->lockBracketX = (short)a;
-        this->lockBracketY = (short)(unsigned int)(uintptr_t)b;
+        this->lockBracketY = (short)b;
     }
     return 0x20;
 }
@@ -646,8 +646,8 @@ void Hud::drawEventQueue() {
     this->eventQueueFinish(gCanvas, 0xffffffff);
 }
 
-unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
-    unsigned int e = touchedElement(a, (unsigned int)(uintptr_t)b);
+unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) {
+    unsigned int e = touchedElement(a, b);
     if (e == 0) {
         for (int i = 0; i != 0x19; i = i + 1) {
             if ((*this->keyArray)[i] == key) {
@@ -659,7 +659,7 @@ unsigned int Hud::touchBegin(unsigned int a, void *b, int key) {
     } else {
         unsigned int j;
         for (j = 0; j < 0x19; j = j + 1) {
-            if ((*this->keyArray)[j] == (int)key) {
+            if ((*this->keyArray)[j] == key) {
                 unsigned int v = (unsigned int)this->elementBits[j];
                 if (e == v)
                     v = this->touchFlags;
@@ -717,7 +717,7 @@ int Hud::init() {
     this->hackingGameActive = 0;
 
     // key-state arrays: 0x19 slots each
-    this->keyArray = new Array<int>();
+    this->keyArray = new Array<void *>();
     this->keyArray->resize(0x19);
     this->elementBits = new int[0x19];
     for (int i = 0; i != 0x19; i++) {
@@ -1228,7 +1228,7 @@ void Hud::secondaryWeaponChanged() {
 // registers. (touchMove's main path handled the analog stick; everything else is
 // treated as a fresh begin.)
 unsigned int Hud::touchMoveFallback(unsigned int a, void *b) {
-    return touchBegin(a, b, -1);
+    return touchBegin(a, -1, b);
 }
 
 // ---- Hud::loadImages() --------------------------------------------------------

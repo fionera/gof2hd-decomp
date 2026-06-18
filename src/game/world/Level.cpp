@@ -3682,8 +3682,9 @@ void Level::renderBG(int t) {
         *(int *)(skyMatrixFlags + 0x2c) = 0;
         ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
         ((PaintCanvas*)(long)(canvas))->SetColor(0xffffffffu);
-        Engine *eng = (Engine *)gCanvas->field_0x34;
-        gEngine->SetModelMatrix((const uint32_t *)eng);
+        const AbyssEngine::AEMath::Matrix *eng =
+            (const AbyssEngine::AEMath::Matrix *)gCanvas->field_0x34;
+        gEngine->SetModelMatrix(*eng);
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(unsigned)this->supernovaFlareTexture, 0);
         ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
         ((Engine *)gCanvas->field_0x34)->LightSetLight(0x4000);

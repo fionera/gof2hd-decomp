@@ -153,7 +153,9 @@ uint32_t FileInterfaceAndroid::GetFileSize()
 
 const char *FileInterfaceAndroid::GetAppRootDir()
 {
-    return this->appRootDir;
+    // appRootDir now holds a void* (set by SetAppRootDir(void*)); GetAppRootDir must hand back
+    // a const char*. This single internal cast mirrors the binary's own behavior.
+    return (const char *)this->appRootDir;
 }
 
 uint32_t FileInterfaceAndroid::GetDeviceFreeSpace()
@@ -167,7 +169,7 @@ void FileInterfaceAndroid::SetZipDirectory(void *p)
         this->zipDirectory = p;
 }
 
-void FileInterfaceAndroid::SetAppRootDir(const char *p)
+void FileInterfaceAndroid::SetAppRootDir(void *p)
 {
     if (p != 0)
         this->appRootDir = p;
@@ -303,7 +305,7 @@ uint32_t FileInterfaceAndroid::FileExist(String name)
         zip_fclose(z2);
         exists = true;
     } else {
-        String dir(this->appRootDir);
+        String dir((const char *)this->appRootDir);
         String full = dir + name;
         FILE *f = fopen(full.GetAEChar(), gModeRb);
         if (f != 0) {
@@ -354,7 +356,7 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     } else if (z2 != 0) {
         result = new FileInterfaceAndroid(z2, (bool)p4, p2, p5, p4);
     } else if (this->appRootDir != 0) {
-        String dir(this->appRootDir);
+        String dir((const char *)this->appRootDir);
         String full = dir + a;
         FILE *f = fopen(full.GetAEChar(), gModeRbR);
         if (f != 0)
@@ -373,7 +375,7 @@ void *FileInterfaceAndroid::OpenWrite(const String &name, uint32_t, uint32_t)
     while (*w)
         ++w;
 
-    String dir(this->appRootDir);
+    String dir((const char *)this->appRootDir);
     String wide;
     wide.ctor_wchar(GetAEWChar(name), false);
     String full = dir + wide;

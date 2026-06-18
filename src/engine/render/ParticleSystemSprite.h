@@ -5,6 +5,7 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "engine/render/IParticleSystem.h"
+#include "engine/render/ParticleSettings.h"   // canonical ParticleSettings::ParticleSet nested type
 
 // Galaxy on Fire 2 -- ParticleSystemSprite.
 // A sprite-backed particle system: each particle is one entry in a PaintCanvas sprite
@@ -20,9 +21,7 @@ using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 
 // ParticleSettings::ParticleSet -- a small index value used as a per-particle preset index.
-struct ParticleSettings {
-    enum ParticleSet { ParticleSet_dummy = 0 };
-};
+// The canonical definition lives in engine/render/ParticleSettings.h (included above).
 using ParticleSet = ParticleSettings::ParticleSet;
 
 // ParticleSystemSprite is a concrete IParticleSystem renderer. The base supplies the vptr and the

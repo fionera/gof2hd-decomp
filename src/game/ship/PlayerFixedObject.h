@@ -88,7 +88,7 @@ public:
     void render() override;
     void reset();
     void setBV(BoundingVolume *bv);
-    void setBV_arr(Array<BoundingVolume *> *bv);
+    void setBV(Array<BoundingVolume *> *bv);
     void setDeadButSelectable();
     void setDockingType(int v);
     void setExhaustVisible(bool v);
