@@ -103,6 +103,7 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
     lines = out.splitlines()
     sizes = _symbol_sizes(lines)
     funcs, cur, start, limit = {}, None, 0, None
+    addr2label = {}   # text address -> the one name objdump put on the `<name>:` header
     for line in lines:
         m = re.match(r"^([0-9a-f]+) <(.+)>:$", line)
         if m:
@@ -111,6 +112,7 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
             limit = start + sz if sz else None
             cur = {"insns": [], "bytes": "", "reloc": set()}
             funcs[m.group(2)] = cur
+            addr2label[start] = m.group(2)
             continue
         if cur is None:
             continue
@@ -133,6 +135,21 @@ def disassemble(obj, objdump=DEFAULT_OBJDUMP):
         else:
             cur["insns"].append(normalize(mnem, ops))
         cur["bytes"] += raw.replace(" ", "")
+
+    # Credit aliased function symbols. objdump's `<name>:` disassembly header carries only ONE name
+    # per address, but the compiler aliases C1/C2 (complete/base ctor) and D1/D2 (complete/base dtor)
+    # — and, with -Oz, sometimes emits only one of a pair — so a sibling that shares the address is
+    # byte-identical but invisible. Parse the `-t` symbol table (in the same objdump output) for all
+    # function names at each text address and point every sibling at the labelled entry, so a match
+    # under one variant name credits all of them.
+    for line in lines:
+        m = re.match(r"^([0-9a-f]+)\s.{6,}\bF\s+\.text\s+[0-9a-f]+\s+(\S+)\s*$", line)
+        if not m:
+            continue
+        addr, name = int(m.group(1), 16), m.group(2)
+        label = addr2label.get(addr)
+        if label and name not in funcs and label in funcs:
+            funcs[name] = funcs[label]
     return funcs
 
 
