@@ -138,6 +138,7 @@ public:
     bool inCinematicMode();
     float getRelativeScrollStartPos();
     int OnTouchEnd(int y, int x);
+    void OnTouchEnd(int y, int x, void *touchId);
     void createRecordButtons(bool inSaveMode);
     void startValkyrie();
     int OnTouchBegin(int y, int x, void *touchId);

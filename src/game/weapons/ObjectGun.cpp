@@ -170,12 +170,27 @@ void ObjectGun::setScaling(int x, int y)
     this->scaleY = (float)y;
 }
 
+// Three-argument scaling variant: stores x/y into scaleX/scaleY; the trailing z
+// component is accepted but unused by this build (scaleZ is left untouched).
+void ObjectGun::setScaling(int x, int y, int /*z*/)
+{
+    this->scaleX = (float)x;
+    this->scaleY = (float)y;
+}
+
 void ObjectGun::replaceGun(int mesh)
 {
     void **canvas = (void **)g_PaintCanvas;
     TransformRemoveMesh(*canvas, this->transform, this->meshId);
     this->meshId = mesh;
     TransformAddMesh(*canvas, this->transform, (uint16_t)mesh, 0);
+}
+
+// Unsigned-mesh replaceGun variant: same as replaceGun(int) but takes the mesh as
+// an unsigned id plus a trailing flag/argument that this build ignores.
+void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/)
+{
+    this->replaceGun((int)mesh);
 }
 
 void ObjectGun::setEnemies(Array<Player*> *enemies)

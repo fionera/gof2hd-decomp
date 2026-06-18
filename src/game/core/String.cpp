@@ -602,6 +602,14 @@ void String::SubString(String *self, unsigned int start, unsigned int end) {
     }
 }
 
+// AbyssEngine::String::SubString(unsigned int start, unsigned int end)
+// Return self[start..end) as a new String; empty when end <= start.
+String String::SubString(unsigned int start, unsigned int end) {
+    String out;
+    out.SubString(this, start, end);
+    return out;
+}
+
 // AbyssEngine::String::getWCharFromUtf8(char* utf8, int len)
 // Decode `len` UTF-8 bytes into a wide buffer, transliterating Cyrillic to Latin.
 uint16_t *String::getWCharFromUtf8(char *s, int len)
@@ -679,6 +687,12 @@ uint16_t *String::getWCharFromUtf8(char *s, int len)
 // AbyssEngine::String::IndexOf(AbyssEngine::String const&) - search from offset 0.
 unsigned int String::IndexOf(const String &needle) {
     return ((String *)(this))->IndexOf_from(0, &needle);
+}
+
+// AbyssEngine::String::IndexOf(unsigned int start, AbyssEngine::String const&)
+// Return the first index >= start where needle occurs, or 0xffffffff if not found.
+unsigned int String::IndexOf(unsigned int start, const String &needle) {
+    return this->IndexOf_from(start, &needle);
 }
 
 // AbyssEngine::String::String(long long) - decimal string of a 64-bit value.

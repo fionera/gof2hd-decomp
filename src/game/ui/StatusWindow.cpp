@@ -273,6 +273,14 @@ void StatusWindow::update() {
     }
 }
 
+// Arity variant: the binary carries a second update overload whose int parameter
+// is never read — the body is the same scroll-inertia / tab-highlight pass as the
+// no-arg form, so forward to it.
+void StatusWindow::update(int unused) {
+    (void)unused;
+    this->update();
+}
+
 extern "C" {
 extern GameText **g_swh_gameText;   // GameText id source
 }

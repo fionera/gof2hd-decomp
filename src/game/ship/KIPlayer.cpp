@@ -280,6 +280,10 @@ void KIPlayer::setActive() {
     this->player->setActive(1);
 }
 
+void KIPlayer::setActive(bool active) {
+    this->player->setActive(active);
+}
+
 void KIPlayer::PlayEngineSound() {
     if (this->player != 0 && this->engineSoundEvent != -1)
         FModSound_playEvent(this->player, this->engineSoundEvent, 0);
@@ -303,6 +307,11 @@ void KIPlayer::awake() {
 }
 
 void KIPlayer::setInitActive() {
+    this->initActiveFlag = 0;
+}
+
+void KIPlayer::setInitActive(bool active) {
+    this->setActive(active);
     this->initActiveFlag = 0;
 }
 
@@ -702,6 +711,16 @@ Vector KIPlayer::projectCollisionOnSurface(const Vector& position) {
 void KIPlayer::addGun(Gun* gun) {
     (void)gun;
     Player_addGun_a(this->player);
+}
+
+// Forward a single gun into the given weapon slot of the wrapped Player.
+void KIPlayer::addGun(Gun* gun, int slot) {
+    this->player->addGun(gun, slot);
+}
+
+// Forward a whole gun list into the given weapon slot of the wrapped Player.
+void KIPlayer::addGun(Array<Gun*>* guns, int slot) {
+    this->player->addGun(guns, slot);
 }
 
 // Engage/disengage the auto-pilot lock. This override lives on the PlayerEgo subclass,

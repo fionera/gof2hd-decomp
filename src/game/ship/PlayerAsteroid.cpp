@@ -79,6 +79,12 @@ int PlayerAsteroid::outerCollide(float x, float y, float z)
     return this->collide(x, y, z);
 }
 
+// Vector-form outer surface test: unpack into the bounding-sphere collide (slot +0x38).
+int PlayerAsteroid::outerCollide(Vector point)
+{
+    return this->collide(point.x, point.y, point.z);
+}
+
 int PlayerAsteroid::getQuality()
 {
     return this->quality;

@@ -320,6 +320,14 @@ void RepairBeam::update(int dt, void* level, void* hud) {
     }
 }
 
+// Canonical per-frame entry (same signature the other beam weapons expose). The
+// radar handle is unused here; the work is driven entirely off the frame time,
+// the active level and the hud, so forward to the core update.
+void RepairBeam::update(int frameTime, Radar* radar, Level* level, Hud* hud) {
+    (void)radar;
+    this->update(frameTime, level, hud);
+}
+
 // Allocate then construct. PlayerEgo equips this when a repair-beam module is present.
 RepairBeam* RepairBeam::create(int shipIndex, int sort) {
     return new RepairBeam(shipIndex, sort);

@@ -115,6 +115,13 @@ void CutScene::update()
     this->update_tail();
 }
 
+// Long-branch veneer in the binary: tail-calls the nullary update(); the int
+// argument is passed through but the target ignores it.
+void CutScene::update(int /*delta*/)
+{
+    this->update();
+}
+
 void CutScene::render3D()
 {
     if (this->level != nullptr) {

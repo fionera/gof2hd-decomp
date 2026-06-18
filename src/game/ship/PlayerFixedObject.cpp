@@ -90,6 +90,11 @@ void PlayerFixedObject::setTransportID(int v) {
 }
 
 // outerCollide(Vector): forward by value through vtable slot 0x3c.
+void PlayerFixedObject::outerCollide(Vector v) {
+    this->outerCollide(v.x, v.y, v.z);
+}
+
+// outerCollide(Vector): forward by value through vtable slot 0x3c.
 void PlayerFixedObject::outerCollide_vec(Vector v) {
     this->outerCollide(v.x, v.y, v.z);
 }

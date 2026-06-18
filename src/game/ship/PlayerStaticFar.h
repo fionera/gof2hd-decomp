@@ -37,7 +37,9 @@ public:
     void   render() override;
     Vector projectCollisionOnSurface(const Vector &value) override;  // actor vtable slot +0x58
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
+    int    outerCollide(Vector value);                         // Vector overload -> this->collide
     Vector getInitPosition();
+    Vector getInitPosition(Vector value);                      // Vector overload -> initPosition
     void   update(int delta) override;
     int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
 };

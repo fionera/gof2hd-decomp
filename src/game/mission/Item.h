@@ -75,6 +75,7 @@ public:
     int getAttribute(int attribute);
     int transaction(bool buy, int priceAdjustment, bool useCredits);
     int transactionBlueprint(bool fabricate);
+    int transactionBlueprint(bool fabricate, int mode);
     bool equals(Item* other);
     bool isWeapon();
     Item* makeItem();

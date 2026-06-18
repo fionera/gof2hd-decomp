@@ -402,6 +402,14 @@ bool PlayerEgo::isHacking() {
 void PlayerEgo::setPosition() {
     PlayerEgo *self = this; return PlayerEgo_setPosition_v(self); }
 
+void PlayerEgo::setPosition(float x, float y, float z) {
+  this->geometry->setPosition(x, y, z);
+}
+
+void PlayerEgo::setPosition(Vector v) {
+  this->geometry->setPosition(v);
+}
+
 void PlayerEgo::resetChargingDrive() {
     PlayerEgo *self = this; ((uint8_t&)this->chargingDrive) = 0; }
 
@@ -1610,6 +1618,13 @@ void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float sp
     ((AEGeometry *)(this->geometry))->getPosition();
 }
 
+// PlayerEgo::moveToPosition(Vector target, bool steer, float speed)
+//   Vector-packed form of moveToPosition: unpacks the target vector into its
+//   components and forwards to the (float,float,float,int,float) flight helper.
+void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
+    moveToPosition(target.x, target.y, target.z, steer ? 1 : 0, speed);
+}
+
 void PlayerEgo::resetGunDelay() {
     PlayerEgo *self = this; return PlayerEgo_resetGunDelay_ext(self->player, 0); }
 
@@ -2204,6 +2219,15 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
     }
 }
 
+// PlayerEgo::dockToDockingPoint(KIPlayer*, Radar*)
+//   Typed form of the station-docking toggle. In the binary the nav/landmark
+//   object (first argument) drives the whole routine; the Radar argument is
+//   vestigial. Forwards to the packed form, which treats its single argument as
+//   that nav object.
+void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
+    dockToDockingPoint(kip);
+}
+
 // PlayerEgo::draw(bool allowHud)
 //   Draws the 2D overlay layer for the player ship (targeting reticle / lock
 //   marker plus the boost throttle). A cascade of guard conditions short-circuits
@@ -2444,6 +2468,10 @@ void PlayerEgo::setTurretPosition(float x, float y, float z) {
   *(float*)(v + 4) = y;
   *(float*)(v + 8) = z;
   this->turretOffsetVec = *(const Vector *)(v);
+}
+
+void PlayerEgo::setTurretPosition(Vector v) {
+  this->turretOffsetVec = v;
 }
 
 // PlayerEgo::revive()
@@ -2758,6 +2786,15 @@ void PlayerEgo::approachAsteroid(int hud2, void *radar) {
         // approach phase: steer/align toward the asteroid.
         this->dockingPointIndex = PE_aa_approachStep(this, hud2, radar);
     }
+}
+
+// PlayerEgo::approachAsteroid(Hud*, int hud2, Radar*)
+//   Typed form of the mining controller. In the binary the int parameter is
+//   vestigial; the Hud and the Radar drive the work. Forwards to the packed
+//   (Hud-handle, radar) form, which threads the Hud through the HUD events and
+//   mining-game creation exactly as the binary does.
+void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
+    approachAsteroid((int)(intptr_t)hud, radar);
 }
 
 // PlayerEgo::handleShip(int dt)

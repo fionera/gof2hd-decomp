@@ -27,6 +27,13 @@ void HangarList::setCurrentTab(bool blueprintIngredients) {
     this->currentTab = blueprintIngredients ? 1u : 0u;
 }
 
+// Two-argument variant: the int selector is unused by the original; the boolean
+// is stored directly into currentTab as the active tab index.
+void HangarList::setCurrentTab(int tab, bool blueprintIngredients) {
+    (void)tab;
+    this->currentTab = blueprintIngredients;
+}
+
 // currentItem doubles as the currently selected row index within the active tab;
 // getCurrentItem() resolves it to a ListItem* via getCurrentItemAt().
 void HangarList::setCurrentItemIndex(int index) {

@@ -9,6 +9,9 @@
 // Owns the shared game singletons and a handful of stateful helpers; most members
 // are static-style helper routines driven by the global game state.
 
+// Touched by pointer only in the two-argument init() entry point.
+namespace AbyssEngine { class ApplicationManager; class Engine; }
+
 class Globals {
 public:
     Array<int>* soundResources;         // active sound-resource id list
@@ -29,6 +32,9 @@ public:
     // Resolve the ship-group id for a given ship type/race (kind==0xf builds capital-ship LOD geometry).
     int getShipGroup(int type, int race, int flag);
     int init(void* app);
+    // Engine bring-up entry point; the renderer root is supplied for completeness but the
+    // body only needs the application manager (forwarded to init(void*)).
+    int init(AbyssEngine::ApplicationManager* app, AbyssEngine::Engine* engine);
     float sqrt(float x);
 
     // Plain runtime sqrtf wrapper (the instance is unused).

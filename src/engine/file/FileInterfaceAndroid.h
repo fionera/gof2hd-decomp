@@ -45,6 +45,7 @@ public:
     // FileInterface backend slots.
     void       *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6);
     void       *OpenWrite(const String &name, uint32_t p2, uint32_t p3) override;
+    void       *OpenWrite(String name, int p2, bool p3, unsigned int p4);
     uint32_t    Read(uint32_t n, void *buf) override;
     uint32_t    Write(uint32_t n, const void *buf) override;
     uint32_t    Seek(uint32_t n) override;

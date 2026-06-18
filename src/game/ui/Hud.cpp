@@ -406,6 +406,12 @@ extern const char g_Hud_ccHashN[]  __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit[]   __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit2[]  __attribute__((visibility("hidden")));
 
+// Seven-arg form: the aggregate key is omitted (no aggregation), so forward to the
+// full implementation with a zero key.
+void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7) {
+    catchCargo(amount, cargoVal, a, docked, mission, p6, p7, 0);
+}
+
 void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey) {
     this->field_0x1d0 = 0;
     this->cargoFullFlag = (unsigned char)docked;
@@ -801,6 +807,12 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_dmLayout; // *holder -
 __attribute__((visibility("hidden"))) extern void **g_Hud_dmFont;   // *holder -> font String
 extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
+// Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
+void Hud::drawMenu(int unused) {
+    (void)unused;
+    drawMenu();
+}
+
 void Hud::drawMenu() {
     int *layout = (int *)*g_Hud_dmLayout;
     ((Layout *)(layout))->drawMask();
@@ -957,6 +969,12 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
         ((Sprite *)(sprite))->draw(1.0f, 1.0f);
         x += dw;
     }
+}
+
+// Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
+void Hud::drawChallengeModeScore(int unused) {
+    (void)unused;
+    drawChallengeModeScore();
 }
 
 void Hud::drawChallengeModeScore() {

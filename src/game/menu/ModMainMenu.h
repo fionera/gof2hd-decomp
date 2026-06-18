@@ -35,7 +35,10 @@ public:
     void OnRender2D();
     void OnRender3D();
     void OnTouchBegin(int x, int y, void* touch);
+    void OnTouchBegin(int x, int y);
     void OnTouchMove(int x, int y, void* touch);
+    void OnTouchMove(int x, int y);
     void OnTouchEnd(int x, int y, void* touch);
+    void OnTouchEnd(int x, int y);
 };
 #endif

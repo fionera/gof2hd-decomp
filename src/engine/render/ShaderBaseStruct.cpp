@@ -50,6 +50,16 @@ void ShaderBaseStruct::RenderEffect(FBOContainer * /*source*/, FBOContainer *& /
 {
 }
 
+FBOContainer *ShaderBaseStruct::RenderEffect(FBOContainer *source, Engine * /*engine*/, float /*strength*/, AEMath::Vector /*tint*/)
+{
+    return source;
+}
+
+FBOContainer *ShaderBaseStruct::RenderEffect(FBOContainer *source, FBOContainer *& /*target*/, Engine * /*engine*/, float /*strength*/, AEMath::Vector /*tint*/)
+{
+    return source;
+}
+
 void ShaderBaseStruct::Update()
 {
     this->dirty = 1;

@@ -1289,6 +1289,15 @@ void Status::nextCampaignMission() {
     }
 }
 
+// Same campaign-advance body, but takes (and ignores) a bool flag. The shipped
+// binary loads this argument register but immediately overwrites it with the
+// current campaign step before the dispatch switch, so the flag has no effect on
+// the work performed; it simply forwards to the parameterless form.
+void Status::nextCampaignMission(bool advance) {
+    (void)advance;
+    nextCampaignMission();
+}
+
 // Tail dispatch shared by addStationToStack()/visitStation(): commits `s` as the
 // current station by routing through the full setStation() travel logic.
 void Status::setStationTail(Station* s) {
@@ -1714,6 +1723,11 @@ Mission* Status::missionCompleted(bool atStation, bool docked, long long extra) 
 void Status::loadAgents() {
     FileRead fr;
     agents = fr.loadAgents();
+}
+
+// Identity passthrough variant: hands back the agent list it was given unchanged.
+Array<int>* Status::loadAgents(Array<int>* agents) {
+    return agents;
 }
 
 extern int g_levelXPTable[];

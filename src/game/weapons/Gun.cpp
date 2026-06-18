@@ -167,6 +167,18 @@ void Gun::setOffset_ii(int a, int b) {
     this->offset = local;
 }
 
+void Gun::setOffset(int a, int b) {
+    short *row = (short *)((char *)gSO_table + b * 0x3c + a * 6);
+    Vector local;
+    local.x = (float)(int)row[0];
+    local.y = (float)(int)row[1];
+    local.z = (float)(int)row[2];
+    local.x = this->offset.x + local.x;
+    local.y = this->offset.y + local.y;
+    local.z = this->offset.z + local.z;
+    this->offset = local;
+}
+
 namespace AbyssEngine { namespace AEMath {
 float VectorLength(const Vector *v);
 } }

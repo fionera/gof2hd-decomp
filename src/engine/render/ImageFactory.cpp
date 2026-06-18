@@ -174,6 +174,23 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
     return new ImagePart(image, px, py);
 }
 
+// drawItem(itemId, frame, x, y) -- draws the item's composite sprite at the
+// given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
+// otherwise 0xef0, plus itemId). Same body as drawItem4.
+void ImageFactory::drawItem(int itemId, int frame, int x, int y)
+{
+    PaintCanvas *pc = (PaintCanvas *)(long)*g_IF_drawItem4_canvas;
+    unsigned icon = 0xffffffffu;
+    pc->SetColor(0xffffffffu);
+    this->sprite->setFrame(frame);
+    this->sprite->setPosition(x, y);
+    this->sprite->draw(1.0f, 1.0f);
+    int base = 0xef0;
+    if (itemId < 0xb0) base = 0x898;
+    pc->Image2DCreate((unsigned short)(base + itemId), icon);
+    pc->DrawImage2D(icon, x, y);
+}
+
 // drawItem4(itemId, frame, x, y) -- draws the item's composite sprite at the
 // given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
 // otherwise 0xef0, plus itemId).
@@ -215,6 +232,14 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc)
 // createChar_i(race) -- picks a random sex (50/50), then builds a random
 // character of that race. The sex roll: nextInt(2) == 0 means male.
 void ImageFactory::createChar_i(int race)
+{
+    int sexRoll = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
+    this->createChar(sexRoll == 0, race);
+}
+
+// createChar(race) -- picks a random sex (50/50), then builds a random
+// character of that race. Same logic as createChar_i: nextInt(2)==0 means male.
+void ImageFactory::createChar(int race)
 {
     int sexRoll = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
     this->createChar(sexRoll == 0, race);

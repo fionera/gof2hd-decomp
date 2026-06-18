@@ -386,6 +386,26 @@ void *FileInterfaceAndroid::OpenWrite(const String &name, uint32_t, uint32_t)
     return new FileInterfaceAndroid(f, true);
 }
 
+// Arity variant of OpenWrite taking the name by value (plus mode/flag args that do not affect
+// the resolved path): builds "<dir><name>" from AppRootDir, fopen("..","wb"), and on success
+// wraps the FILE* in a freshly-allocated FileInterfaceAndroid.
+void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int)
+{
+    const unsigned short *w = GetAEWChar(name);
+    while (*w)
+        ++w;
+
+    String dir((const char *)this->appRootDir);
+    String wide;
+    wide.ctor_wchar(GetAEWChar(name), false);
+    String full = dir + wide;
+
+    FILE *f = fopen(full.GetAEChar(), gModeWb);
+    if (f == 0)
+        return 0;
+    return new FileInterfaceAndroid(f, true);
+}
+
 // C-ABI default constructor (C1): construct in place.
 extern "C" void FileInterfaceAndroid_ctor(void *self)
 {

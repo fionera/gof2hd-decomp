@@ -82,6 +82,9 @@ public:
 
     void OnInitialize();
     void OnKeyPress(long long key);
+    // Two-arg engine-dispatch variant: the first argument is ignored and the
+    // second carries the key code, so it forwards to the real handler above.
+    void OnKeyPress(long long unused, long long key);
     void OnRelease();
     void OnRender2D();
     void OnRender3D();
@@ -89,6 +92,11 @@ public:
     void OnTouchBegin(int x, int y, void *touch);
     void OnTouchEnd(int x, int y, void *touch);
     void OnTouchMove(int x, int y, void *touch);
+    // Two-arg engine-dispatch stubs (the base touch interface invokes these
+    // without a touch handle); they are no-ops in the original binary.
+    int OnTouchBegin(int x, int y);
+    int OnTouchEnd(int x, int y);
+    int OnTouchMove(int x, int y);
     void OnUpdate();
     void addAchievement(int medalId, int kind);
     void autosave();

@@ -46,6 +46,10 @@ public:
     // Post-process draw slots; base impls are inert (concrete post-process shaders override them).
     virtual void RenderEffect(FBOContainer *source, ::Engine *engine);
     virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, AbyssEngine::Engine *engine);
+    // Parameterized post-process draw slots (strength + tint Vector). Base impls are inert and
+    // simply hand the source FBO back.
+    FBOContainer *RenderEffect(FBOContainer *source, Engine *engine, float strength, AEMath::Vector tint);
+    FBOContainer *RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine, float strength, AEMath::Vector tint);
     virtual void DeleteShader();
     virtual void UseShader(bool useExtra);
 

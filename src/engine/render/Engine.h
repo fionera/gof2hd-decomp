@@ -225,6 +225,7 @@ public:
     void SetPostEffect(uint32_t effect, bool enable);
     void SetTextureSlot(uint32_t textureIndex, uint32_t slot);
     void SetTextures(uint32_t first, uint32_t second);
+    void SetTexturesExt(uint32_t first, ...);
     void SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...);
     void SetUVMatrix(const AbyssEngine::AEMath::Matrix &matrix);
     void SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &matrix);

@@ -43,6 +43,29 @@ KIPlayer *Route::getDockingTarget() {
     return nullptr;
 }
 
+// Route::getDockingTarget(int) -> docking target at the given index, or null.
+KIPlayer *Route::getDockingTarget(int index) {
+    Array<KIPlayer *> *targets = this->dockingTargets;
+    if (targets != nullptr && index < (int)targets->size())
+        return (*targets)[index];
+    return nullptr;
+}
+
+// Route::getDockingTime(int) -> docking time at the given index, or 0.
+int Route::getDockingTime(int index) {
+    if (this->dockingTargets != nullptr) {
+        Array<int> *times = this->dockingTimes;
+        if (index < (int)times->size())
+            return (*times)[index];
+    }
+    return 0;
+}
+
+// Route::getWaypoint(int) -> snap the waypoint's stored coords to its docking target's position.
+Waypoint *Route::getWaypoint(int index) {
+    return getWaypointAt(index);
+}
+
 // Route::getDockingTimeAt(int) -> docking time at the given index, or 0.
 int Route::getDockingTimeAt(int index) {
     if (this->dockingTargets != nullptr) {
@@ -61,6 +84,11 @@ void Route::setNewCoords(float x, float y, float z) {
     wp->z = (int)z;
 }
 
+// Route::setNewCoords(Vector) -> overwrite the first waypoint's target coordinates.
+void Route::setNewCoords(Vector v) {
+    setNewCoords(v.x, v.y, v.z);
+}
+
 // Route::getDockingTarget_i(int) -> docking target at the given index, or null.
 KIPlayer *Route::getDockingTarget_i(int index) {
     Array<KIPlayer *> *targets = this->dockingTargets;
@@ -72,6 +100,11 @@ KIPlayer *Route::getDockingTarget_i(int index) {
 // Route::update(Vector const&) -> forward to update_xyz(v.x, v.y, v.z).
 void Route::update(const Vector &v) {
     update_xyz(v.x, v.y, v.z);
+}
+
+// Route::update(x, y, z) -> if close enough to the active waypoint, advance to the next.
+float Route::update(float x, float y, float z) {
+    return update_xyz(x, y, z);
 }
 
 // Route::getLastWaypoint() -> last waypoint in the path.

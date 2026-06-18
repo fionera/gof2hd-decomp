@@ -730,7 +730,7 @@ void ParticleSettings::multiplyAll(float scale) {
 
 // out = b*t + (1-t)*a over the lifetime/colour/scale slots. `count` (+0x28) is stored as
 // an int but blended in float space; lifeBase/endSize/velDir are plain floats.
-void ParticleSettings::Interpolate(int a, int b, float t, int out) {
+void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out) {
     SetDefinition &pa = this->sets[a];
     SetDefinition &pb = this->sets[b];
     SetDefinition &po = this->sets[out];

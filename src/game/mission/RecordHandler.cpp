@@ -404,6 +404,13 @@ int RecordHandler::recordStoreWritePreview_int(int slot) {
     return 1;
 }
 
+// RecordHandler::recordStoreWritePreview(int) — the single-arg preview writer pulls the
+// preview fields from the live Status/Station/SolarSystem/Ship state; the body matches
+// recordStoreWritePreview_int(int).
+void RecordHandler::recordStoreWritePreview(int slot) {
+    this->recordStoreWritePreview_int(slot);
+}
+
 __attribute__((visibility("hidden"))) extern const char g_WA_empty1[];
 __attribute__((visibility("hidden"))) extern const char g_WA_empty2[];
 
@@ -706,6 +713,14 @@ void RecordHandler::loadResolutionValue() {
     }
 
     return;
+}
+
+// RecordHandler::loadResolutionValue(float) — the overload taking a resolution argument
+// reads the same options-file settings block as the no-arg form; the argument is not used
+// by the read path, so it shares the sibling's body.
+void RecordHandler::loadResolutionValue(float resolution) {
+    (void)resolution;
+    this->loadResolutionValue();
 }
 
 // RecordHandler::writeByteArrayAsRecord(signed char*, int, int, bool)

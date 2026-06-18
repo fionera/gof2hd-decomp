@@ -43,11 +43,14 @@ BoundingVolume::Vector BoundingVolume::projectCollisionOnSurface(const Vector& p
     return point;
 }
 
-void BoundingVolume::getCollisionNormal(Vector& out)
+BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position)
 {
+    (void)position;
+    Vector out;
     out.x = 0.0f;
     out.y = 0.0f;
     out.z = 0.0f;
+    return out;
 }
 
 // Copy the source volume's children into a freshly allocated array.

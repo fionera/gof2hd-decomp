@@ -67,6 +67,18 @@ PlayerStaticFar::Vector PlayerStaticFar::getInitPosition()
     return this->initPosition;
 }
 
+// Vector overload: ignores its argument and returns the stored spawn position.
+PlayerStaticFar::Vector PlayerStaticFar::getInitPosition(Vector /*value*/)
+{
+    return this->initPosition;
+}
+
+// Vector overload: forwards the components to the bounding collide (slot +0x38).
+int PlayerStaticFar::outerCollide(Vector value)
+{
+    return this->collide(value.x, value.y, value.z);
+}
+
 // Reproject the object's stored integer position relative to the current camera.
 // If the camera-relative distance is below g_distLimit it is drawn at full scale at
 // its literal position; otherwise it is placed on a sphere of radius g_radius along

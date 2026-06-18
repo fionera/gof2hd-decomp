@@ -45,6 +45,7 @@ public:
 
     void render2D(float srcX, float srcY, float alpha, int colorIndex);
     void update();
+    void update(int);
 };
 
 #endif

@@ -174,6 +174,7 @@ public:
     void incMissionCount();
     void setCurrentCampaignMission(int value);
     void nextCampaignMission();
+    void nextCampaignMission(bool advance);
     void changeCredits(int delta);
     void setShip(Ship* ship);
     void setStationsVisited(int value);
@@ -248,6 +249,7 @@ public:
     String replaceHash(String haystack, String needle, String replacement);
     void calcCargoPrices();
     void loadAgents();
+    Array<int>* loadAgents(Array<int>* agents);
     int getCollectedBounties(int index);
     void incCollectedBounties(int index);
     int getGammaRayDamagePerSecond(int station, int system);

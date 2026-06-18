@@ -203,6 +203,14 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
     }
 }
 
+// MovingStars::update(int, Matrix, bool, float) — the by-value Matrix arity. The leading int
+// is consumed by the signature only; the body is identical to the const-ref form, so forward.
+void MovingStars::update(int param1, Matrix m, bool flag, float param19)
+{
+    (void)param1;
+    this->update(m, flag, param19);
+}
+
 // MovingStars::translate(Vector const&)
 //   for each of 50 transforms: pos = MatrixGetPosition(local); pos += v;
 //   MatrixSetTranslation(out, local, pos.x, pos.y, pos.z)

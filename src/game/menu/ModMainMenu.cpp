@@ -135,6 +135,12 @@ void ModMainMenu::OnTouchMove(int x, int y, void *touch)
     this->touchWindow->OnTouchMove(x, y);
 }
 
+void ModMainMenu::OnTouchMove(int x, int y)
+{
+    (void)x;
+    (void)y;
+}
+
 void ModMainMenu::OnSuspend()
 {
     int obj = *g_ModMainMenu_suspendObj;
@@ -156,11 +162,23 @@ void ModMainMenu::OnTouchEnd(int x, int y, void *touch)
     *g_ModMainMenu_touchEndFlag = 0;
 }
 
+void ModMainMenu::OnTouchEnd(int x, int y)
+{
+    (void)x;
+    (void)y;
+}
+
 void ModMainMenu::OnTouchBegin(int x, int y, void *touch)
 {
     if (this->logoActive != 0)
         return;
     this->touchWindow->OnTouchBegin(x, y, touch);
+}
+
+void ModMainMenu::OnTouchBegin(int x, int y)
+{
+    (void)x;
+    (void)y;
 }
 
 void ModMainMenu::OnRender2D()

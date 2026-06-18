@@ -214,6 +214,7 @@ public:
     void addNukeVolatileForce(float v);
     void alignToHorizon();
     void approachAsteroid(int hud2, void *radar);
+    void approachAsteroid(Hud *hud, int hud2, Radar *radar);
     int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
     unsigned char autoTurretIsEnabled();
     void boost();
@@ -224,7 +225,9 @@ public:
     unsigned char collidesWithStation();
     void deleteHackingGame();
     void dockToAsteroid(void *radar);
+    void dockToAsteroid(KIPlayer *kip, Radar *radar);
     void dockToDockingPoint(void *radar);
+    void dockToDockingPoint(KIPlayer *kip, Radar *radar);
     void dockToPlanet();
     void dockToStream(bool param);
     float down(int frameTime, float delta);
@@ -308,6 +311,7 @@ public:
     float left(int frameTime, float delta);
     unsigned char lostMiningGame();
     void moveToPosition(float tx, float ty, float tz, int steer, float speed);
+    void moveToPosition(Vector target, bool steer, float speed);
     void pitchAllPrimaryGuns(float);
     bool readyForCloak();
     bool readyToBoost();
@@ -335,6 +339,8 @@ public:
     void setFreeze(bool v);
     void setLevel(Level* level);
     void setPosition();
+    void setPosition(float x, float y, float z);
+    void setPosition(Vector v);
     void setPosition3(float x, float y, float z);
     void setRocketControl(Gun* gun, AEGeometry* geo);
     void setRotation(float rx, float ry, float rz);
@@ -345,6 +351,7 @@ public:
     void setThrust(float v);
     void setTurretMode(bool enable);
     void setTurretPosition(float x, float y, float z);
+    void setTurretPosition(Vector v);
     void setVisible(bool v);
     void shake(int amount);
     void shoot(int weapon, int type);

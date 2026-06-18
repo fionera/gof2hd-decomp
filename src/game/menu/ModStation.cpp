@@ -370,6 +370,13 @@ void ModStation::OnKeyPress(long long key) {
         ModStation_okp_showLocked(this);
 }
 
+// Two-arg engine-dispatch variant: the first argument is the (ignored) dispatch
+// slot and the second is the actual key code, so it forwards to the single-arg
+// handler above.
+void ModStation::OnKeyPress(long long, long long key) {
+    OnKeyPress(key);
+}
+
 struct Station;
 struct SolarSystem;
 
@@ -2245,6 +2252,13 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     *(int *)((char *)this + 0xf0) = 0;   // RAWREAD: dragVelX (+0xf0)
     *(unsigned char *)((char *)this + 0x100) = 1;   // RAWREAD: dragActive byte (+0x100)
 }
+
+// Two-arg engine-dispatch touch stubs: the base touch interface invokes these
+// handle-less variants, which the original binary implements as no-ops that
+// simply return their first coordinate.
+int ModStation::OnTouchBegin(int x, int y) { return x; }
+int ModStation::OnTouchEnd(int x, int y) { return x; }
+int ModStation::OnTouchMove(int x, int y) { return x; }
 
 struct Layout;
 

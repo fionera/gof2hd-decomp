@@ -186,15 +186,18 @@ public:
 
     void addToEventQueue(ListItem *item);
     uint8_t cargoFull();
+    void catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7);
     void catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey);
     Hud * checkIfQuickMenuIsEmpty();
     void clearQueue();
     void closeHudMenu();
     void draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y);
     void drawChallengeModeScore();
+    void drawChallengeModeScore(int unused);
     void drawEventQueue();
     void drawEventString(String text, bool rightAlign);
     void drawMenu();
+    void drawMenu(int unused);
     void drawOrbitInformation();
     void drawPauseButton();
     void enableFireForTutorial(bool value);

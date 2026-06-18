@@ -473,6 +473,13 @@ void Explosion::playSound(Vector *pos) {
     ((FModSound *)(intptr_t)sound)->play(cue, soundPos, 0, 0);
 }
 
+// Matrix-based public entry: positions the explosion meshes from a full
+// transform matrix. The by-reference sibling of start(Vector, Vector); mirrors
+// setMatrix() by forwarding to the matrix placement logic.
+void Explosion::start(const Matrix &matrix) {
+    this->start_matrix(&matrix);
+}
+
 void Explosion::start_matrix(const Matrix *matrix) {
     Vector position;
 

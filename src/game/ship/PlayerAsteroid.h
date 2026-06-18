@@ -50,6 +50,7 @@ public:
     void   render() override;
     void   setPosition(const Vector& position);
     int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
+    int    outerCollide(Vector point);
     Vector getPosition();
     void   setRotationEnabled(bool enabled);
     int    getQualityFrameIndex();

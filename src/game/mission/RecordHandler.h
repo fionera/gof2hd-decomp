@@ -31,6 +31,7 @@ public:
     void   convertSDVersionSaves();
     void   loadOptions();
     void   loadResolutionValue();
+    void   loadResolutionValue(float resolution);
     void  *readAgent(unsigned int fd);
     void  *readAllPreviewRecords();
     void  *readAllRecords();
@@ -44,6 +45,7 @@ public:
     void  *recordStoreReadPreview(int slot);
     void   recordStoreWrite(int slot);
     int    recordStoreWritePreview(GameRecord *rec, int slot);
+    void   recordStoreWritePreview(int slot);
     int    recordStoreWritePreview_int(int slot);
     void   saveOptions();
     void   writeAgent(Agent *agentPtr, unsigned int fd);

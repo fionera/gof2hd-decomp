@@ -44,8 +44,9 @@ public:
     virtual Vector projectCollisionOnSurface(const Vector& point);
 
     // getCollisionNormal is not polymorphically dispatched (subclasses give it a
-    // different signature), so it stays a plain method.
-    void getCollisionNormal(Vector& out);
+    // different signature), so it stays a plain method. The base composite has no
+    // surface of its own, so it returns a zero normal (BoundingAAB matches).
+    Vector getCollisionNormal(const Vector& position);
     void setVolume(BoundingVolume* src);
     // Append this volume to the destination array. Both spellings forward to
     // the array's add.

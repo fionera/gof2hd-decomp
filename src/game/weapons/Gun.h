@@ -96,6 +96,7 @@ public:
     void setLevelCollision(bool v);
     void setMagnitude(int v);
     void setOffset(Vector* v);
+    void setOffset(int a, int b);
     void setOffset_ii(int a, int b);
     void setPlayerGun(bool v);
     void shoot(Matrix m, int n, bool b);

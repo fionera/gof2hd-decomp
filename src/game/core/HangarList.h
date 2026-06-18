@@ -32,6 +32,7 @@ public:
 
     void release();
     void setCurrentTab(bool blueprintIngredients);
+    void setCurrentTab(int tab, bool blueprintIngredients);
     void setCurrentItemIndex(int index);
     uint32_t getCurrentItemIndex();
     uint32_t getCurrentTab();

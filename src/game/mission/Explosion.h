@@ -39,6 +39,7 @@ public:
     void    setScaling(float scale);
     void    setWeaponIndex(int index);
     void    start(const Vector &position, const Vector &direction);
+    void    start(const Matrix &matrix);
     void    start_matrix(const Matrix *matrix);
     void    translate(const Vector &v);
     void    update(int dt, const Vector &position);

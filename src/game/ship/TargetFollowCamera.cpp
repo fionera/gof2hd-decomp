@@ -145,6 +145,12 @@ void TargetFollowCamera::setPosition(const Vector &position) {
     this->posZ = position.z;
 }
 
+void TargetFollowCamera::setPosition(float x, float y, float z) {
+    this->posX = x;
+    this->posY = y;
+    this->posZ = z;
+}
+
 void TargetFollowCamera::setRumblePercentage(float pct, int frequency) {
     this->shakeAmount = pct;
     this->shakeFrequency = frequency;

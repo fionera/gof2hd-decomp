@@ -55,6 +55,7 @@ public:
 
     uint8_t isInitialized();
     void update();
+    void update(int delta);
     void update_tail();
     void render3D();
     void render2D();

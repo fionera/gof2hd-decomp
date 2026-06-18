@@ -193,6 +193,22 @@ int Item::transactionBlueprint(bool fabricate)
     return 0;
 }
 
+int Item::transactionBlueprint(bool fabricate, int mode)
+{
+    if (mode == 0) {
+        if (amount > 0) {
+            amount -= 1;
+            blueprintAmount += 1;
+            return price;
+        }
+    } else if (blueprintAmount > 0) {
+        blueprintAmount -= 1;
+        amount += 1;
+        return -price;
+    }
+    return 0;
+}
+
 void Item::setPrice(int value) {
     price = value;
 }

@@ -64,6 +64,8 @@ public:
     void initWithoutLoading(int id);
     // Play sound `id` (one-shot) at the given floating-point volume.
     void play(int id, float volume);
+    // Play sound `id` (one-shot) at zero volume.
+    void play(int id);
     // Start sound `id` looping.
     void playLoop(int id);
     // Start music track `id` (one-shot).
@@ -73,13 +75,19 @@ public:
     // Stop sound `id`.
     void stop(int id);
     // Stop every loaded sound.
+    void stop();
+    // Stop every loaded sound.
     void stopAll();
     // Pause sound `id`.
     void pause(int id);
     // Pause every loaded sound; returns the number of slots iterated.
+    int pause();
+    // Pause every loaded sound; returns the number of slots iterated.
     int pauseAll();
     // Resume sound `id`.
     void resume(int id);
+    // Resume every loaded sound.
+    void resume();
     // Resume every loaded sound.
     void resumeAll();
     // Suspend every loaded sound (engine focus-loss hook).

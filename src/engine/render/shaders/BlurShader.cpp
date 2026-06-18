@@ -150,6 +150,13 @@ void BlurShader::RenderEffect(FBOContainer *fbo, FBOContainer *&target, Engine *
     glActiveTexture(0x84c0);
 }
 
+// Convenience overload: blurs fbo straight into the back buffer (no capture target).
+void BlurShader::RenderEffect(FBOContainer *fbo, Engine *engine, float amount, Vector vector)
+{
+    FBOContainer *target = nullptr;
+    this->RenderEffect(fbo, target, engine, amount, vector);
+}
+
 // Binds the blur program's uniforms and the supplied mesh's vertex/texcoord arrays for drawing.
 void BlurShader::UpdateMeshData(Mesh *mesh, Engine *engine)
 {

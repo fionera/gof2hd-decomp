@@ -82,6 +82,7 @@ public:
     void    setCamOffset(const Vector &offset);
     void    setTargetOffset(const Vector &offset);
     void    setPosition(const Vector &position);
+    void    setPosition(float x, float y, float z);
     void    setFirstPersonMatrix(Matrix &m);
     void    setZoomTarget(float zoom);
     void    setRoll(float roll);

@@ -329,6 +329,23 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
     return 0;
 }
 
+// MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId). The touch-id-aware variant used by
+// the in-game cinematic/cutscene overlay (state 0xb): a release carrying the originating touch
+// id frees whichever virtual-control slot (steer / fire) that id was driving before the normal
+// release dispatch runs. In every other state the id is irrelevant, so the body is identical to
+// the two-argument dispatcher and we forward to it.
+void MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId)
+{
+    if (this->menuState == 0xb && touchId != 0) {
+        if (this->cinematicTouchIdA == touchId)
+            this->cinematicTouchIdA = 0;
+        if (this->cinematicTouchIdB == touchId)
+            this->cinematicTouchIdB = 0;
+        this->cinematicTouchState = 0;
+    }
+    OnTouchEnd(y, x);
+}
+
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
 // scroll windows and two heap buffers.
 extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);       // Array<TouchButton*> release

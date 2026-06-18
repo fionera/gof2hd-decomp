@@ -7,6 +7,9 @@
 #include "mathtypes.h"
 
 class AEGeometry;   // ::AEGeometry, engine/render/AEGeometry.h; pointer only
+class Radar;        // ::Radar, game/weapons/Radar.h; pointer only
+class Level;        // ::Level, game/world/Level.h; pointer only
+class Hud;          // ::Hud, game/ui/Hud.h; pointer only
 
 // Repair / heal / shield beam emitter. Maintains a fixed pool of beam geometries
 // (sized to the equipped module's target-count attribute) and, on each update,
@@ -27,6 +30,7 @@ public:
 
     void render();
     void update(int dt, void* level, void* hud);
+    void update(int frameTime, Radar* radar, Level* level, Hud* hud);
 
     // Allocate and construct a RepairBeam for the given ship index and equipment
     // sort (0x25 heal / 0x29 shield). Used by PlayerEgo when a repair-beam module

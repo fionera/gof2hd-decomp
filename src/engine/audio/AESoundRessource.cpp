@@ -117,6 +117,11 @@ void AESoundRessource::play(int id, float volume)
     }
 }
 
+void AESoundRessource::play(int id)
+{
+    play(id, 0.0f);
+}
+
 void AESoundRessource::playLoop(int id)
 {
     AESoundInfo info;
@@ -170,6 +175,16 @@ void AESoundRessource::stop(int id)
     }
 }
 
+void AESoundRessource::stop()
+{
+    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->stop();
+        }
+    }
+}
+
 void AESoundRessource::stopAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
@@ -193,6 +208,17 @@ void AESoundRessource::pause(int id)
     }
 }
 
+int AESoundRessource::pause()
+{
+    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
+        AESoundInterface *sound = (*this->sounds)[i];
+        if (sound != nullptr) {
+            sound->pause();
+        }
+    }
+    return this->sounds->size();
+}
+
 int AESoundRessource::pauseAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
@@ -211,6 +237,16 @@ void AESoundRessource::resume(int id)
     this->getSoundInfo(id, info, index);
     if (index != -1) {
         AESoundInterface *sound = (*this->sounds)[index];
+        if (sound != nullptr) {
+            sound->resume();
+        }
+    }
+}
+
+void AESoundRessource::resume()
+{
+    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
+        AESoundInterface *sound = (*this->sounds)[i];
         if (sound != nullptr) {
             sound->resume();
         }

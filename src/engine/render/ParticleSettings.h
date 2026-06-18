@@ -97,6 +97,6 @@ public:
     void multiplyAll(float scale);
 
     // out = b*t + (1-t)*a, field by field, over the lifetime/colour/scale slots.
-    void Interpolate(int a, int b, float t, int out);
+    void Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out);
 };
 #endif

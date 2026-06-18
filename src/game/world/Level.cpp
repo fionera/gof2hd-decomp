@@ -156,6 +156,15 @@ int Level::checkGameOver() {
     return (int)objective->achieved(0);
 }
 
+int Level::checkGameOver(int param) {
+    Objective *objective = objectivesB;
+    if (objective == nullptr) {
+        return 0;
+    }
+    // veneer 0x1ac018 -> Objective::achieved
+    return (int)objective->achieved(param);
+}
+
 void Level::updateAsteroidCluster() {
 }
 
@@ -210,6 +219,15 @@ int Level::checkObjective() {
     return 0;
 }
 
+int Level::checkObjective(int param) {
+    Objective *objective = objectivesA;
+    if (objective != nullptr) {
+        // veneer 0x1ac018 -> Objective::achieved
+        return (int)objective->achieved(param);
+    }
+    return 0;
+}
+
 int Level::getNumDeliveredOre() {
     return numDeliveredOre;
 }
@@ -237,6 +255,13 @@ Array<KIPlayer*>* Level::getAsteroids() {
 }
 
 int Level::collide(Vector v) {
+    if (collisionVolume != nullptr) {
+        return collisionVolume->collide(v.x, v.y, v.z);
+    }
+    return 0;
+}
+
+int Level::collide(Vector v, bool /*param*/) {
     if (collisionVolume != nullptr) {
         return collisionVolume->collide(v.x, v.y, v.z);
     }
@@ -296,6 +321,14 @@ void Level::killWanted() {
     }
 }
 
+void Level::killWanted(int /*param*/) {
+    if (field_29d == 0) {
+        field_29d = 1;
+        // veneer 0x1ac028 -> Level::createRadioMessage(type, sub)
+        createRadioMessage(0x11, 0);
+    }
+}
+
 Array<ObjectGun*>* Level::getEnemyGuns() {
     return enemyGuns;
 }
@@ -339,6 +372,42 @@ Array<ObjectGun*>* Level::getPlayerGuns() {
 }
 
 void Level::renderPause() {
+    if (this->playerGuns != nullptr) {
+        for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
+            (*this->playerGuns)[i]->render();
+        }
+    }
+    if (this->enemyGuns != nullptr) {
+        for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
+            (*this->enemyGuns)[i]->render();
+        }
+    }
+    if (this->enemies != nullptr) {
+        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
+            (*this->enemies)[i]->render();
+        }
+    }
+    if (this->asteroids != nullptr) {
+        for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
+            (*this->asteroids)[i]->render();
+        }
+    }
+    if (this->gasClouds != nullptr) {
+        for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
+            (*this->gasClouds)[i]->render();
+        }
+    }
+    if (this->landmarks != nullptr) {
+        for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
+            KIPlayer *o = (*this->landmarks)[i];
+            if (o != nullptr) {
+                o->render();
+            }
+        }
+    }
+}
+
+void Level::renderPause(long long /*ctx*/) {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
             (*this->playerGuns)[i]->render();
@@ -1673,6 +1742,13 @@ void Level::friendTurnedEnemy() {
     }
 }
 
+void Level::friendTurnedEnemy(int /*param*/) {
+    if ((unsigned char)field_188 == 0) {
+        *(unsigned char *)&field_188 = 1;
+        return createRadioMessage(0, 0);
+    }
+}
+
 void Level::reset() {
     if (playerRoute != nullptr) {
         playerRoute->reset();
@@ -1877,6 +1953,13 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
 
     if (stackFlag == 0)
         this->lodManager->update(dt);
+}
+
+// Level::update(long long time, bool param_2) — the engine's 2-arg per-frame tick entry;
+// the delta-time is carried in param_2 and the LOD-update path is taken by default. Forwards
+// to the full update implementation.
+void Level::update(long long time, bool param) {
+    update(time, (unsigned)param, 0);
 }
 
 // Level::connectPlayers() — wires up each ship's enemy list from the friend/enemy/neutral arrays,

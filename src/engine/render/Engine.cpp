@@ -17,6 +17,7 @@ Engine* gEngine = nullptr;            // canonical Engine singleton
 #include "game/core/PaintCanvasClass.h"
 #include "engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
+#include <cstdarg>
 
 using AbyssEngine::FBOContainer;
 using AbyssEngine::ShaderBaseStruct;
@@ -1290,6 +1291,27 @@ void Engine::LightSetLight(unsigned int light) {
         if (g_Engine_useShaders == 0) {
             glLightfv(light, 0x1203, values);
         }
+    }
+    return;
+}
+
+void Engine::SetTexturesExt(uint32_t first, ...) {
+    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
+    if (manager->field_0x10 != 0) {                          // loaded-texture-name list: count
+        va_list args;
+        va_start(args, first);
+        uint32_t slot = 0;
+        uint32_t textureIndex = first;
+        while (textureIndex != 0xffffffff) {
+            this->SetTextureSlot(textureIndex, slot);
+            slot += 1;
+            textureIndex = va_arg(args, uint32_t);
+        }
+        va_end(args);
+        for (uint32_t i = slot; i < 0x14; i += 1) {
+            this->boundTextures[i] = -1;
+        }
+        glActiveTexture(0x84c0);
     }
     return;
 }

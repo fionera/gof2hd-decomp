@@ -13,7 +13,9 @@
 namespace AbyssEngine {
 struct String {
     std::u16string s;
-    String() {}
+    // Default constructor (recovered): empty string. Delegates to the recovered ctor() body,
+    // matching the original String::String() which zero-initializes the contents.
+    String() { ctor(); }
     // Convenience C++ constructors/operators layered on the recovered engine methods, so call
     // sites read like ordinary string code. The recovered ctor_*/assign/addAssign_* bodies do the
     // actual work.
@@ -46,6 +48,7 @@ struct String {
     void ConvertFromUTF8();
     char * GetAEChar() const;
     unsigned int IndexOf(const String &needle);
+    unsigned int IndexOf(unsigned int start, const String &needle);
     unsigned int IndexOf_from(unsigned int start, const String *needle);
     void PrintOut();
     void ReplaceChar(char from, char to);
@@ -60,6 +63,7 @@ struct String {
     int StrLen_char(const char *s);
     int StrLen_wchar(const uint16_t *s);
     void SubString(String *self, unsigned int start, unsigned int end);
+    String SubString(unsigned int start, unsigned int end);
     void ToLowerCase();
     void ToUpperCase();
     void Trim();

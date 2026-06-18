@@ -57,5 +57,6 @@ public:
     float getRelativeScrollStartPos();
     void reInit();
     void update();
+    void update(int unused);
 };
 #endif

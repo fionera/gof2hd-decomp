@@ -1899,6 +1899,15 @@ int Globals::init(void *app) {
     return (int)(long)arr;
 }
 
+// Globals::init(ApplicationManager*, Engine*): typed bring-up wrapper. The engine root is
+// passed by the caller for completeness; the construction work only needs the application
+// manager, so forward to the void* form.
+int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+    (void)engine;
+    void *appPtr = app;
+    return init(appPtr);
+}
+
 extern void *const gPM_snd0 __attribute__((visibility("hidden")));
 extern void *const gPM_snd1 __attribute__((visibility("hidden")));   // DAT_000f5808 / 0x580c
 extern void *const gPM_snd2 __attribute__((visibility("hidden")));
