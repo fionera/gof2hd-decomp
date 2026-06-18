@@ -259,8 +259,12 @@ void Level::enableParticleEffects(bool emit, bool render) {
 }
 
 void Level::switchSkyboxForIntro() {
-    gCanvas->MeshCreate((unsigned short)(0x4591), (unsigned int *)&skyboxMesh, false);
-    gCanvas->TextureCreate((unsigned short)(0x275a), (void *)0, (void *)0, (unsigned int *)&field_198, false);
+    unsigned int skyboxMeshHandle;
+    gCanvas->MeshCreate((unsigned short)(0x4591), skyboxMeshHandle, false);
+    skyboxMesh = skyboxMeshHandle;
+    unsigned int skyboxTexHandle;
+    gCanvas->TextureCreate((unsigned short)(0x275a), nullptr, nullptr, skyboxTexHandle, false);
+    field_198 = skyboxTexHandle;
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
             (*this->asteroids)[i]->setDead();
@@ -270,9 +274,13 @@ void Level::switchSkyboxForIntro() {
 
 void Level::switchSkyboxForSupernovaReversal() {
     int tex = ((SolarSystem *)(intptr_t)gStatus->getSystem())->getTextureIndex();
-    gCanvas->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), (unsigned int *)&skyboxMesh, false);
+    unsigned int skyboxMeshHandle;
+    gCanvas->MeshCreate((unsigned short)((unsigned short)(tex + 0x4588)), skyboxMeshHandle, false);
+    skyboxMesh = skyboxMeshHandle;
     int tex2 = ((SolarSystem *)(intptr_t)gStatus->getSystem())->getTextureIndex();
-    gCanvas->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), (void *)0, (void *)0, (unsigned int *)&field_198, false);
+    unsigned int skyboxTexHandle;
+    gCanvas->TextureCreate((unsigned short)((unsigned short)(tex2 + 0x2751)), nullptr, nullptr, skyboxTexHandle, false);
+    field_198 = skyboxTexHandle;
     skyboxTexture = -1;
 }
 
@@ -800,10 +808,12 @@ void Level::createSpace()
         if (alien == 0) {
             gStatus->getSystem();
             int sysVariant = (((SolarSystem*)gStatus->getSystem())->getIndex() % 3);
-            gCanvas->MeshCreate((unsigned short)(sysVariant + 0x45ba), (unsigned int *)&this->field_08, false);
+            unsigned int field08Handle;
+            gCanvas->MeshCreate((unsigned short)(sysVariant + 0x45ba), field08Handle, false);
+            this->field_08 = field08Handle;
             gStatus->getSystem();
             sysVariant = (((SolarSystem*)gStatus->getSystem())->getIndex() % 3);
-            gCanvas->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), (void *)0, (void *)0, &g_level_texOutScratch, false);
+            gCanvas->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), nullptr, nullptr, g_level_texOutScratch, false);
             // the rest (campaign/supernova/storm/ring detail) is built by the helper.
             this->csp_buildDetail();
 
@@ -816,10 +826,14 @@ void Level::createSpace()
                 }
             }
         } else {
-            gCanvas->MeshCreate((unsigned short)0x45bc, (unsigned int *)&this->field_08, false);
-            gCanvas->TextureCreate((unsigned short)0x2768, (void *)0, (void *)0, &g_level_texOutScratch, false);
-            gCanvas->MeshCreate((unsigned short)0x4592, (unsigned int *)&this->skyboxMesh, false);
-            gCanvas->TextureCreate((unsigned short)0x275b, (void *)0, (void *)0, &g_level_texOutScratch, false);
+            unsigned int field08Handle;
+            gCanvas->MeshCreate((unsigned short)0x45bc, field08Handle, false);
+            this->field_08 = field08Handle;
+            gCanvas->TextureCreate((unsigned short)0x2768, nullptr, nullptr, g_level_texOutScratch, false);
+            unsigned int skyboxMeshHandle;
+            gCanvas->MeshCreate((unsigned short)0x4592, skyboxMeshHandle, false);
+            this->skyboxMesh = skyboxMeshHandle;
+            gCanvas->TextureCreate((unsigned short)0x275b, nullptr, nullptr, g_level_texOutScratch, false);
         }
 
         // randomized skybox spin (light direction), unless in fog orbit.
@@ -3602,16 +3616,16 @@ void Level::renderBG(int t) {
 
     ((PaintCanvas*)(long)(canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *)&this->sub_1d0);
     ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_19c), 0);
-    ((PaintCanvas*)(long)(canvas))->SetBlendMode(0);
+    ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_dummy);
     ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)&this->field_08));
     ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_198), 0);
-    ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
+    ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
     ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(*(unsigned *)&this->skyboxMesh));
 
     // optional far cloud layer.
     if (this->field_1b4 != -1) {
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1b8), 0);
-        ((PaintCanvas*)(long)(canvas))->SetBlendMode(1);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_1);
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
@@ -3620,7 +3634,7 @@ void Level::renderBG(int t) {
         *(int *)(skyMatrixFlags + 0x0c) = 0;
         *(int *)(skyMatrixFlags + 0x2c) = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1b4), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1b4), nullptr);
     }
 
     (*(StarSystem **)&this->starSystem)->render();
@@ -3629,22 +3643,22 @@ void Level::renderBG(int t) {
     if (gStatus->inSupernovaSystem() != 0 && this->skyboxTexture != -1) {
         int camp = gStatus->getCurrentCampaignMission();
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1a0), 0);
-        ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
         float scale = (0x6a < camp) ? 1.5f : 1.0f;
         int flag = (int)(scale * t);
         int xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         ((AbyssEngine::Transform *)(intptr_t)xf)->Update((int64_t)flag, true);
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_10), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_10), nullptr);
         xf = (int)(long)((PaintCanvas*)(long)(canvas))->TransformGetTransform(0);
         ((AbyssEngine::Transform *)(intptr_t)xf)->Update((int64_t)flag, true);
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_18), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_18), nullptr);
     }
 
     // rotating planet ring.
     if (this->field_1bc != -1) {
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(*(unsigned *)&this->field_1c0), 0);
-        ((PaintCanvas*)(long)(canvas))->SetBlendMode(2);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_2);
         ((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
         ((PaintCanvas*)(long)(canvas))->CameraGetLocal(((PaintCanvas*)(long)(canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
@@ -3667,7 +3681,7 @@ void Level::renderBG(int t) {
         *(int *)(skyMatrixFlags + 0x1c) = 0;
         *(int *)(skyMatrixFlags + 0x2c) = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1bc), (const float *)0);
+        ((PaintCanvas*)(long)(canvas))->DrawTransform((unsigned int)(long)(*(Matrix **)&this->field_1bc), nullptr);
     }
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
@@ -3686,7 +3700,7 @@ void Level::renderBG(int t) {
             (const AbyssEngine::AEMath::Matrix *)gCanvas->field_0x34;
         gEngine->SetModelMatrix(*eng);
         ((PaintCanvas*)(long)(canvas))->SetTexture((unsigned int)(unsigned)this->supernovaFlareTexture, 0);
-        ((PaintCanvas*)(long)(canvas))->SetBlendMode(8);
+        ((PaintCanvas*)(long)(canvas))->SetBlendMode(AbyssEngine::BlendMode_8);
         ((Engine *)gCanvas->field_0x34)->LightSetLight(0x4000);
         gEngine->GlEnable((unsigned)(uintptr_t)gCanvas->field_0x34, 0);
         ((PaintCanvas*)(long)(canvas))->DrawMesh((unsigned int)(unsigned)this->supernovaFlareMesh);

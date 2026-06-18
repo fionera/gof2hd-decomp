@@ -387,11 +387,11 @@ afterMotion:
                     default: mat = 0x824d; break;
                 }
                 self->wreckMaterial = mat;
-                char matOut[4];
-                gCanvas->MaterialCreate(mat, (unsigned int *)matOut);
+                unsigned int matOut;
+                gCanvas->MaterialCreate(mat, matOut);
                 gCanvas->MeshChangeMaterial(
                     self->wreckGeometry->meshId,
-                    *(unsigned short *)matOut);
+                    matOut);
             }
             // rumble ramp
             if (((Level *)self->level)->getPlayer() != 0) {

@@ -228,7 +228,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         void *ach = gAchievements;
         int elite = (((Achievements *)(ach))->isEliteMedal(achId) != 0) ? 1 : 0;
         this->iconTexId = TB_iconTexId(elite, achStage);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_iconImgId(elite, achStage), &this->iconImage);
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_iconImgId(elite, achStage), this->iconImage);
         this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
         int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
         this->layoutHeight = this->height;
@@ -239,14 +239,22 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         this->iconOverlay = -1;
         this->textOffsetX = w / 2 - tw / 2;
         this->iconSmall = -1;
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_medalSmallId(achId), (unsigned int*)&this->iconSmall);
-        if (achStage != 0 || ((Achievements *)(ach))->isEliteMedal(achId) != 0)
-            ((PaintCanvas*)(canvas))->Image2DCreate(0x96c, (unsigned int*)&this->iconOverlay);
+        unsigned int iconSmallH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_medalSmallId(achId), iconSmallH);
+        this->iconSmall = iconSmallH;
+        if (achStage != 0 || ((Achievements *)(ach))->isEliteMedal(achId) != 0) {
+            unsigned int iconOverlayH;
+            ((PaintCanvas*)(canvas))->Image2DCreate(0x96c, iconOverlayH);
+            this->iconOverlay = iconOverlayH;
+        }
         break;
     }
     case 10: {  // toggle-style button with a 0x2329 background
-        ((PaintCanvas*)(canvas))->Image2DCreate(9000, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x2329, (unsigned int*)&this->imgFrameTL);
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(9000, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x2329, frameH);
+        this->imgFrameTL = frameH;
         this->imgFrameBL = this->imgFrameTL;
         this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
         int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
@@ -259,42 +267,73 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         this->touchMargin = *(int *)((char *)*g_TB_layoutMetrics + 0x80);
         break;
     }
-    case 0xc:   // simple two-image button (0x472 / 0x473)
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x472, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x473, (unsigned int*)&this->imgFrameTL);
+    case 0xc: {  // simple two-image button (0x472 / 0x473)
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x472, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x473, frameH);
+        this->imgFrameTL = frameH;
         tb_basicImageGeometry(this, canvas);
         break;
-    case 0xd:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x517, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x518, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0xd: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x517, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x518, frameH);
+        this->imgFrameTL = frameH;
         this->imgFrameBL = this->imgFrameTL;
         tb_basicImageGeometry(this, canvas);
         break;
-    case 0xe:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x53c, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x53b, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0xe: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x53c, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x53b, frameH);
+        this->imgFrameTL = frameH;
         goto wide_text_layout;
-    case 0xf:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x53e, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x53d, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0xf: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x53e, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x53d, frameH);
+        this->imgFrameTL = frameH;
         goto wide_text_layout;
-    case 0x10:  // background supplied by caller
+    }
+    case 0x10: {  // background supplied by caller
+        unsigned int frameH;
         this->imgFrameL = achStage;
-        ((PaintCanvas*)(canvas))->Image2DCreate(0xbb9, (unsigned int*)&this->imgFrameTL);
+        ((PaintCanvas*)(canvas))->Image2DCreate(0xbb9, frameH);
+        this->imgFrameTL = frameH;
         tb_basicImageGeometry(this, canvas);
         break;
-    case 0x11:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc0, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc1, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0x11: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc0, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc1, frameH);
+        this->imgFrameTL = frameH;
         goto wide_text_layout;
-    case 0x12:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc0, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc1, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0x12: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc0, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0xbc1, frameH);
+        this->imgFrameTL = frameH;
         goto wide_text_layout;
-    case 0x14:
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x1f6e, (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(0x1f6f, (unsigned int*)&this->imgFrameTL);
+    }
+    case 0x14: {
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x1f6e, frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(0x1f6f, frameH);
+        this->imgFrameTL = frameH;
         goto wide_text_layout;
+    }
     case 0x13:  // pre-supplied images (caller + ctor variant)
         this->imgFrameL = achStage;
         this->imgFrameTL = (int)this->image;
@@ -302,15 +341,25 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         break;
     default: {  // generic menu button: 9-patch frame from the skin table
         int alt = (*g_TB_useAltSkin != 0) ? 1 : 0;
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 0), (unsigned int*)&this->imgFrameL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 1), (unsigned int*)&this->imgFrameM);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 2), (unsigned int*)&this->imgFrameR);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 3), (unsigned int*)&this->imgFrameTL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 4), (unsigned int*)&this->imgFrameT);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 5), (unsigned int*)&this->imgFrameTR);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 6), (unsigned int*)&this->imgFrameBL);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 7), (unsigned int*)&this->imgFrameB);
-        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 8), (unsigned int*)&this->imgFrameBR);
+        unsigned int frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 0), frameH);
+        this->imgFrameL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 1), frameH);
+        this->imgFrameM = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 2), frameH);
+        this->imgFrameR = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 3), frameH);
+        this->imgFrameTL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 4), frameH);
+        this->imgFrameT = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 5), frameH);
+        this->imgFrameTR = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 6), frameH);
+        this->imgFrameBL = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 7), frameH);
+        this->imgFrameB = frameH;
+        ((PaintCanvas*)(canvas))->Image2DCreate(TB_frameId(alt, kind, 8), frameH);
+        this->imgFrameBR = frameH;
 
         this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
         this->leftWidth = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);   // left frame width

@@ -99,8 +99,8 @@ void ImageFactory::reload()
     int h = pc->GetImage2DHeight(ids[0]);
     this->sprite = new Sprite(ids, 6, w, h);
 
-    pc->Image2DCreate(0x485, &this->itemImage);
-    pc->Image2DCreate(0x511, &this->shipImage);
+    pc->Image2DCreate(0x485, this->itemImage);
+    pc->Image2DCreate(0x511, this->shipImage);
 }
 
 // drawChar(Array<ImagePart*>*, int, int, bool) -- draws the item glyph, each
@@ -127,7 +127,7 @@ void ImageFactory::drawShip(int shipId, int x, int y)
     this->sprite->setFrame(5);
     this->sprite->setPosition(x, y);
     this->sprite->draw(1.0f, 1.0f);
-    pc->Image2DCreate((unsigned short)(shipId + 0x971), &classIcon);
+    pc->Image2DCreate((unsigned short)(shipId + 0x971), classIcon);
     pc->DrawImage2D(classIcon, x, y);
 }
 
@@ -140,7 +140,7 @@ void ImageFactory::drawItem(int itemId, int x, int y)
     pc->SetColor(0xffffffffu);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short)(base + itemId), &icon);
+    pc->Image2DCreate((unsigned short)(base + itemId), icon);
     pc->DrawImage2D(icon, x, y);
 }
 
@@ -155,7 +155,7 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
 
     unsigned image = 0;
     ((PaintCanvas *)(long)*g_IF_li_canvas)
-        ->Image2DCreate((unsigned short)((short)id + (short)frameBase), &image);
+        ->Image2DCreate((unsigned short)((short)id + (short)frameBase), image);
 
     int *posBase;
     int rowCol = row * 0x20 + col * 8;
@@ -187,7 +187,7 @@ void ImageFactory::drawItem4(int itemId, int frame, int x, int y)
     this->sprite->draw(1.0f, 1.0f);
     int base = 0xef0;
     if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short)(base + itemId), &icon);
+    pc->Image2DCreate((unsigned short)(base + itemId), icon);
     pc->DrawImage2D(icon, x, y);
 }
 

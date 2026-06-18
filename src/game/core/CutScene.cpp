@@ -85,7 +85,7 @@ CutScene::~CutScene()
     delete this->level;
     this->level = nullptr;
 
-    gCanvas->FogEnable(0, 1);
+    gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
 
     delete this->geom28;
     this->geom28 = nullptr;
@@ -210,7 +210,7 @@ void CutScene::process(int /*delta*/)
         }
         this->fogTimer84 = this->frameDelta + this->fogTimer84;
         if (((SolarSystem *)(long)gStatus->getSystem())->getRace() == 1) {
-            canvas->FogSetParameter(0x2601, 0, CutScene_fogColorMode17, 1.0f, CutScene_fogDensityMode17);
+            canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode17, 1.0f, CutScene_fogDensityMode17);
         } else if (kind == 2 && this->geometries != nullptr) {
             unsigned int n = this->geometries->size();
             for (unsigned int i = 0; i < n; i++) {
@@ -277,8 +277,8 @@ void CutScene::process(int /*delta*/)
         } else {
             int race1 = ((SolarSystem *)(long)gStatus->getSystem())->getRace();
             if (race1 == 1) {
-                canvas->FogSetParameter(0x2601, 0, CutScene_fogColorMode4, 1.0f, CutScene_fogDensityMode4);
-                canvas->FogEnable(1, 1);
+                canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode4, 1.0f, CutScene_fogDensityMode4);
+                canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
                 this->level->getEnemies();
                 this->level->getEnemies();
                 AbyssEngine::Transform *t = (AbyssEngine::Transform *)canvas->TransformGetTransform(0);
@@ -439,7 +439,7 @@ void CutScene::initialize()
     PaintCanvas *canvas = gCanvas;
 
     if (this->mode == 2) {
-        canvas->CameraCreate(&this->cameraId74);
+        canvas->CameraCreate(this->cameraId74);
         canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
         canvas->CameraSetCurrent(this->cameraId74);
         char tmp[0x3c];
@@ -477,7 +477,7 @@ void CutScene::initialize()
         }
     } else if (this->mode == 0x17) {
         this->turretGeom = nullptr;
-        canvas->CameraCreate(&this->cameraId70);
+        canvas->CameraCreate(this->cameraId70);
         canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
         canvas->CameraSetCurrent(this->cameraId70);
         char tmp[0x3c];
@@ -485,7 +485,7 @@ void CutScene::initialize()
         MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
         MatrixSetTranslation(localMatrix, 0.0f, 0.0f, 0.0f);
         canvas->CameraSetLocal(0, *(const Matrix *)(uintptr_t)this->cameraId70);
-        canvas->TransformCreate(&this->transformId78);
+        canvas->TransformCreate(this->transformId78);
         this->level->getEnemies();
         ((AEGeometry *)nullptr)->getPosition();
         canvas->TransformGetLocal(0);
@@ -494,7 +494,7 @@ void CutScene::initialize()
         this->resetCamera();
         this->checkForTurret();
     } else if (this->mode == 4) {
-        canvas->CameraCreate(&this->cameraId6c);
+        canvas->CameraCreate(this->cameraId6c);
         canvas->CameraSetPerspective(0, CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar);
         if (this->followCamera != nullptr) {
             delete this->followCamera;
@@ -543,8 +543,8 @@ void CutScene::resetCamera()
 
     if (this->mode == 0x17) {
         if (((SolarSystem *)(long)gStatus->getSystem())->getRace() == 1) {
-            canvas->FogSetParameter(0x2601, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode17);
-            canvas->FogEnable(1, 1);
+            canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode17);
+            canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
         }
         canvas->CameraSetCurrent(this->cameraId70);
         canvas->CameraSetPerspective(0, CutScene_persp_fov_mode17, CutScene_persp_znear, CutScene_persp_zfar);
@@ -559,8 +559,8 @@ void CutScene::resetCamera()
         return;
 
     if (((SolarSystem *)(long)gStatus->getSystem())->getRace() == 1) {
-        canvas->FogSetParameter(0x2601, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode4);
-        canvas->FogEnable(1, 1);
+        canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode4);
+        canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
     }
     canvas->CameraSetCurrent(this->cameraId6c);
     canvas->CameraSetPerspective(0, CutScene_persp_fov_mode4, CutScene_persp_znear, CutScene_persp_zfar);

@@ -118,7 +118,7 @@ Trail::Trail(int type, int segments)
                        (uint16_t)(segments * 2),
                        0x13,
                        0x4e77,
-                       &this->meshId);
+                       this->meshId);
 
     for (int i = 2; i - 2 < segments * 2 - 2; i += 2) {
         uint16_t tri = (uint16_t)(i - 2);
@@ -143,7 +143,7 @@ Trail::Trail(int type, int segments)
 
     this->points = new int[count];
     this->relativePoints = new int[count];
-    canvas->TransformCreate(&this->transformId);
+    canvas->TransformCreate(this->transformId);
     canvas->TransformAddMeshId(this->transformId, this->meshId);
     changeType(type);
 }

@@ -145,7 +145,7 @@ void StarMap::render()
     gCanvas->Begin3d();
     if (this->starSystemRoot != 0) {
         gCanvas->SetTexture((unsigned int)(this->planetTexture), (unsigned int)(0xffffffffu));
-        gCanvas->SetBlendMode(2);
+        gCanvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
         this->planetGeom->render();
         this->starSystemRoot->render();
     }
@@ -1173,7 +1173,7 @@ void StarMap::initStarSystem()
     this->yaw = 4096.0f;
     this->pitch = 0.0f;
     this->selectedStation = -1;
-    gCanvas->Image2DCreate((unsigned short)((uint16_t)(0x4500 + system->getRace())), &this->systemNameImage);
+    gCanvas->Image2DCreate((unsigned short)((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
 
     if (this->stationPositions != 0) {
         for (Vector *v : *this->stationPositions) delete v;
@@ -1198,7 +1198,7 @@ void StarMap::initStarSystem()
     if (this->selectedSystem == 0x1b) {
         texture = 0x2734;
     }
-    gCanvas->TextureCreate((unsigned short)(texture), (void *)0, (void *)0, &this->planetTexture, false);
+    gCanvas->TextureCreate((unsigned short)(texture), nullptr, nullptr, this->planetTexture, false);
     AEGeometry *planet = new AEGeometry((uint16_t)0x1a70, gCanvas, false);
     this->planetGeom = planet;
     planet->setPosition(selected);
@@ -1335,7 +1335,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     Vector pos;
 
     uint32_t canvas = (uint32_t)(uintptr_t)gCanvas;
-    gCanvas->FogEnable(0, (int)(true));
+    gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
     this->autoMode = (uint8_t)param3;
     this->pad_0xa8_a = (uint8_t)jumpMapMode;
     this->pulseSystem = param4;
@@ -1384,7 +1384,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     this->easeZ = new AbyssEngine::EaseInOut();
     this->dragScale = field<int32_t>(*g_StarMap_init_layout, 0x90);
     this->prevCamera = (uint32_t)((PaintCanvas*)(long)(canvas))->CameraGetCurrent();
-    ((PaintCanvas*)(long)(canvas))->CameraCreate(&this->camera);
+    ((PaintCanvas*)(long)(canvas))->CameraCreate(this->camera);
     ((PaintCanvas*)(long)(canvas))->CameraSetPerspective(this->camera, 60.0f, 1.0f, 10000.0f);
     MatrixSetTranslation(&matrix, 0.0f, 0.0f, 0.0f);
     MatrixSetRotation(&matrix, 0.0f, 0.0f, 0.0f, 0.0f);

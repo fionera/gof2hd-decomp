@@ -826,11 +826,11 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
         AEGeometry *geom = new AEGeometry((uint16_t)resId, canvas, false);
         unsigned t0 = 0xffffffff;
-        canvas->TransformCreate((unsigned int *)&t0);
+        canvas->TransformCreate(t0);
         canvas->TransformAddMesh((unsigned)t0, 0, (bool)(1));
         geom->addChild(t0);
         unsigned t1 = 0xffffffff;
-        canvas->TransformCreate((unsigned int *)&t1);
+        canvas->TransformCreate(t1);
         canvas->TransformAddMesh((unsigned)t1, 0, (bool)(1));
         geom->addChild(t1);
         unsigned short lodMeshes[2] = {0, 0};
@@ -853,8 +853,8 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         unsigned mainT = 0xffffffff;
         unsigned mainMesh = 0xffffffff;
         if (mesh != 0xffff) {
-            canvas->MeshCreate(mesh, &mainMesh, true);
-            canvas->TransformCreate((unsigned int *)&mainT);
+            canvas->MeshCreate(mesh, mainMesh, true);
+            canvas->TransformCreate(mainT);
             canvas->TransformAddMeshId(mainT, mainMesh);
             geom->addChild(mainT);
             geom->meshHandle = mainMesh;
@@ -862,26 +862,26 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         if (!wireframe) {
             unsigned short mat = (unsigned short)((short)kind + 0x7dc8);
             unsigned matH = 0xffffffff;
-            canvas->MaterialCreate(mat, &matH);
+            canvas->MaterialCreate(mat, matH);
             canvas->MeshChangeResourceMaterial(geom->meshId, mat);
         }
         short extra = gGSG_extraTable[kind];
         if (extra != -1) {
             unsigned t = 0xffffffff;
-            canvas->TransformCreate((unsigned int *)&t);
+            canvas->TransformCreate(t);
             canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(unsigned char)(char)extra));
             geom->addChild(t);
         }
         if (wireframe) {
             if (kind != 0x27 && kind != 0x29) {
                 unsigned t = 0xffffffff;
-                canvas->TransformCreate((unsigned int *)&t);
+                canvas->TransformCreate(t);
                 canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(-0x14 + (char)kind)));
                 geom->addChild(t);
             }
         } else {
             unsigned t = 0xffffffff;
-            canvas->TransformCreate((unsigned int *)&t);
+            canvas->TransformCreate(t);
             canvas->TransformAddMesh((unsigned)t, 0, (bool)((int)(char)(0x50 + (char)kind)));
             geom->addChild(t);
         }
@@ -906,7 +906,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
                 dist[i] = d;
                 meshes[i] = (unsigned short)m;
                 if (!wireframe) {
-                    canvas->MeshCreate((unsigned short)m, idp, true);
+                    canvas->MeshCreate((unsigned short)m, *idp, true);
                     canvas->MeshChangeResourceMaterial(*idp,
                                                            (unsigned short)((short)kind + 0x7dc8));
                 }
@@ -1028,9 +1028,9 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     int *canvasP = *(int **)gCBB_canvas;
     int snapshot = *counter;
 
-    long long mesh64 = 0;
-    ((PaintCanvas *)(long)*canvasP)->MeshCreate((unsigned short)0xc, (unsigned short)6, (signed char)0x13, (unsigned short)0, (unsigned int *)&mesh64);
-    int mesh = (int)mesh64;
+    unsigned int meshOut = 0;
+    ((PaintCanvas *)(long)*canvasP)->MeshCreate((unsigned short)0xc, (unsigned short)6, (signed char)0x13, (unsigned short)0, meshOut);
+    int mesh = (int)meshOut;
     int cv = *canvasP;
 
     AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 0, 0, 1, 2);
@@ -1665,7 +1665,7 @@ void Globals_loadFont(void *self, int kind)
 {
     (void)self;
     void **canvasP;
-    void **fontP;
+    unsigned int **fontP;
     unsigned glyph;
     short spacing;
     unsigned char isMainFontPersian = 1;
@@ -1673,8 +1673,8 @@ void Globals_loadFont(void *self, int kind)
     switch (kind) {
     case 9: {
         canvasP = *(void ***)gLF_canvas9;
-        fontP = *(void ***)gLF_font9;
-        ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d74, (unsigned int *)(long)*fontP, false);
+        fontP = *(unsigned int ***)gLF_font9;
+        ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d74, **fontP, false);
         if (flag(gLF_flagA) != 0) {
             spacing = -6;
         } else {
@@ -1686,32 +1686,32 @@ void Globals_loadFont(void *self, int kind)
     }
     case 10:
         canvasP = *(void ***)gLF_canvas10;
-        fontP = *(void ***)gLF_font10;
+        fontP = *(unsigned int ***)gLF_font10;
         glyph = 0x2d78;
         break;
     case 0xb:
         canvasP = *(void ***)gLF_canvas11;
-        fontP = *(void ***)gLF_font11;
+        fontP = *(unsigned int ***)gLF_font11;
         glyph = 0x2d76;
         break;
     case 0xe:
         canvasP = *(void ***)gLF_canvas14;
-        fontP = *(void ***)gLF_font14;
+        fontP = *(unsigned int ***)gLF_font14;
         glyph = 0x2d7c;
         break;
     default: {
         canvasP = *(void ***)gLF_canvasD;
         if (kind == 0xf) {
-            fontP = *(void ***)gLF_font15;
-            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d7e, (unsigned int *)(long)*fontP, false);
+            fontP = *(unsigned int ***)gLF_font15;
+            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x2d7e, **fontP, false);
             if (flag(gLF_flagC) != 0) {
                 spacing = -7;
             } else {
                 spacing = flag(gLF_flagD) != 0 ? -10 : -5;
             }
         } else {
-            fontP = *(void ***)gLF_fontDef;
-            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x457, (unsigned int *)(long)*fontP, false);
+            fontP = *(unsigned int ***)gLF_fontDef;
+            ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)0x457, **fontP, false);
             if (flag(gLF_flagE) != 0) {
                 spacing = -5;
             } else if (flag(gLF_flagF) != 0) {
@@ -1728,7 +1728,7 @@ void Globals_loadFont(void *self, int kind)
     }
 
     // cases 10/11/14: common creation tail
-    ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)glyph, (unsigned int *)(long)*fontP, false);
+    ((PaintCanvas *)*canvasP)->FontCreate((unsigned short)glyph, **fontP, false);
     if (flag(gLF_flagA) != 0) {
         spacing = -6;
     } else {
@@ -1744,10 +1744,10 @@ epilogue: {
     int cv = *mainCanvas;
     // RAWREAD: `cv` is an opaque int canvas handle (no modeled type in this TU).
     *(unsigned char *)(cv + 0x1c) = isMainFontPersian;
-    ((PaintCanvas *)(long)cv)->FontCreate((unsigned short)0x51e, (unsigned int *)mainFont, false);
+    ((PaintCanvas *)(long)cv)->FontCreate((unsigned short)0x51e, *mainFont, false);
     ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*mainFont, 0);
     unsigned *extra = *(unsigned **)gLF_fontExtra;
-    ((PaintCanvas *)(long)*mainCanvas)->FontCreate((unsigned short)0x2d7a, (unsigned int *)extra, false);
+    ((PaintCanvas *)(long)*mainCanvas)->FontCreate((unsigned short)0x2d7a, *extra, false);
     Globals::loadFont_tail((void *)(long)*mainCanvas, (void *)(long)(int)*extra, 0);
 }
 }
@@ -2152,7 +2152,7 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
 
     while (i < len) {
         short ch = *((String *)text)->index(i);
-        width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, text, i, i + 1);
+        width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, *(String *)text, i, i + 1);
         if (ch == 0x20) {
             lastSpace = i;
         }
@@ -2397,13 +2397,13 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         geom = new AEGeometry((uint16_t)0x42a9, canvas, false);
 
         unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
-        canvas->TransformCreate(&mesh0);
+        canvas->TransformCreate(mesh0);
         canvas->TransformAddMesh(mesh0, 0x42ae, false);
         geom->addChild(mesh0);
-        canvas->TransformCreate(&mesh1);
+        canvas->TransformCreate(mesh1);
         canvas->TransformAddMesh(mesh1, 0x42b2, false);
         geom->addChild(mesh1);
-        canvas->TransformCreate(&mesh2);
+        canvas->TransformCreate(mesh2);
         canvas->TransformAddMesh(mesh2, 0x42ad, false);
         geom->addChild(mesh2);
 
@@ -2416,7 +2416,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         geom = new AEGeometry((uint16_t)0x4299, canvas, false);
 
         unsigned head = 0xffffffff;
-        canvas->TransformCreate(&head);
+        canvas->TransformCreate(head);
         canvas->TransformAddMesh(head, 0x4299, true);
         geom->addChild(head);
 
@@ -2424,8 +2424,8 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         unsigned prevA = 0xffffffff, prevB = 0xffffffff;
         for (int i = 0; i < segments; i++) {
             unsigned a = 0xffffffff, b = 0xffffffff;
-            canvas->TransformCreate(&a);
-            canvas->TransformCreate(&b);
+            canvas->TransformCreate(a);
+            canvas->TransformCreate(b);
             canvas->TransformAddMesh(a, 0x429a, true);
             canvas->TransformAddMesh(b, 0x429a, true);
             unsigned keepA = a, keepB = b;
@@ -2443,7 +2443,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         }
 
         unsigned tail = 0xffffffff;
-        canvas->TransformCreate(&tail);
+        canvas->TransformCreate(tail);
         canvas->TransformAddMesh(tail, 0x429a, true);
         geom->addChild(tail);
 
@@ -2455,10 +2455,10 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         geom = new AEGeometry((uint16_t)0x42a4, canvas, false);
 
         unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
-        canvas->TransformCreate(&mesh0);
+        canvas->TransformCreate(mesh0);
         canvas->TransformAddMesh(mesh0, 0x42a4, true);
         geom->addChild(mesh0);
-        canvas->TransformCreate(&mesh1);
+        canvas->TransformCreate(mesh1);
         canvas->TransformAddMesh(mesh1, 0x42a4, true);
         geom->addChild(mesh1);
 

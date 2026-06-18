@@ -574,13 +574,13 @@ void ApplicationManager::CheckForOrientationChange() {
     double tilt = *(double *)((char *)this->engine + 0x4b0);
     PaintCanvas *canvas;
     int *timer;
-    int target;
+    AbyssEngine::LandscapeMode target;
 
     if (tilt < -0.5) {
         canvas = this->paintCanvas;
         if (canvas->field_0x30 == 0) {
             timer = &g_orientationLeft;
-            target = 1;
+            target = AbyssEngine::LandscapeMode_1;
             if (update_orientation_timer(this, timer)) {
                 canvas->SetGameOrientation(target);
                 *timer = 0;
@@ -593,7 +593,7 @@ void ApplicationManager::CheckForOrientationChange() {
         canvas = this->paintCanvas;
         if (canvas->field_0x30 == 3) {
             timer = &g_orientationRight;
-            target = 2;
+            target = AbyssEngine::LandscapeMode_2;
             if (update_orientation_timer(this, timer)) {
                 canvas->SetGameOrientation(target);
                 *timer = 0;
@@ -603,7 +603,7 @@ void ApplicationManager::CheckForOrientationChange() {
         if (canvas->field_0x30 == 1) {
             timer = &g_orientationFlat;
             if (update_orientation_timer(this, timer)) {
-                canvas->SetGameOrientation(0);
+                canvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
                 *timer = 0;
             }
             return;
@@ -614,7 +614,7 @@ void ApplicationManager::CheckForOrientationChange() {
         canvas = this->paintCanvas;
         if (canvas->field_0x30 == 2) {
             timer = &g_orientationUpsideDown;
-            target = 3;
+            target = AbyssEngine::LandscapeMode_3;
             if (update_orientation_timer(this, timer)) {
                 canvas->SetGameOrientation(target);
                 *timer = 0;

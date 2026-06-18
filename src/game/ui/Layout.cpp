@@ -1014,7 +1014,7 @@ void Layout::reload() {
 
     // Secondary button (image if available, else string fallback).
     unsigned img535 = 0xffffffff;
-    (*g_rlCanvas)->Image2DCreate(0x535, &img535);
+    (*g_rlCanvas)->Image2DCreate(0x535, img535);
     TouchButton *b2 = (TouchButton *)::operator new(sizeof(TouchButton));
     if (img535 == 0xffffffff) {
         String *t = gGameText->getText(*g_rlBackText);
@@ -1028,7 +1028,7 @@ void Layout::reload() {
 
     // Help button (image).
     unsigned img471 = 0xffffffff;
-    (*g_rlCanvas)->Image2DCreate(0x471, &img471);
+    (*g_rlCanvas)->Image2DCreate(0x471, img471);
     TouchButton *bHelp = (TouchButton *)::operator new(sizeof(TouchButton));
     TouchButton_ctorImg2(bHelp, img471, 1, *g_rlMenuY, 0, this->field_0x3c, 0x12, 0x04);
     this->helpButton = bHelp;
@@ -1351,7 +1351,7 @@ void Layout::setBtnRect(TouchButton *btn, int x, int y, int anchor) {
 
 // Create an Image2D resource into a layout field slot.
 void Layout::loadImage(PaintCanvas *canvas, int imageId, void *field) {
-    canvas->Image2DCreate((unsigned short)imageId, (unsigned int *)field);
+    canvas->Image2DCreate((unsigned short)imageId, *(unsigned int *)field);
 }
 
 // Slide the help button into the header when the header animates in.

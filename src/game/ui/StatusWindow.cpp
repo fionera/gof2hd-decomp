@@ -397,22 +397,22 @@ void StatusWindow::reInit() {
     int id = 0x493;
     if (a1) id = 0x494;
     if (a0) id = 0x495;
-    canvas->Image2DCreate((unsigned short)id, &this->rankImage0);
+    canvas->Image2DCreate((unsigned short)id, this->rankImage0);
 
     id = 0x492;
     if (a0) id = 0x496;
     if (a1) id = 0x497;
-    canvas->Image2DCreate((unsigned short)id, &this->rankImage1);
+    canvas->Image2DCreate((unsigned short)id, this->rankImage1);
 
     id = 0x490;
     if (a3) id = 0x498;
     if (a2) id = 0x499;
-    canvas->Image2DCreate((unsigned short)id, &this->rankImage2);
+    canvas->Image2DCreate((unsigned short)id, this->rankImage2);
 
     id = 0x491;
     if (a2) id = 0x49a;
     if (a3) id = 0x49b;
-    canvas->Image2DCreate((unsigned short)id, &this->rankImage3);
+    canvas->Image2DCreate((unsigned short)id, this->rankImage3);
 
     this->charImageWidth = canvas->GetImage2DWidth(this->rankImage0);
     this->charImageHeight = canvas->GetImage2DHeight(this->rankImage0);
@@ -718,9 +718,9 @@ StatusWindow::StatusWindow() {
     this->reInit();
 
     PaintCanvas *canvas = gCanvas;
-    canvas->Image2DCreate((unsigned short)0x48e, &this->standingEmblemImage);
-    canvas->Image2DCreate((unsigned short)0x48f, &this->standingBarImage);
-    canvas->Image2DCreate((unsigned short)0x48d, &this->standingFrameImage);
+    canvas->Image2DCreate((unsigned short)0x48e, this->standingEmblemImage);
+    canvas->Image2DCreate((unsigned short)0x48f, this->standingBarImage);
+    canvas->Image2DCreate((unsigned short)0x48d, this->standingFrameImage);
     this->standingBarWidth = canvas->GetImage2DWidth(this->standingEmblemImage) / 2;
     int img3h = canvas->GetImage2DHeight(this->standingEmblemImage);
 

@@ -242,7 +242,7 @@ void ModMainMenu::OnInitialize()
                       0xffff;
         }
         unsigned int texSlot = 0xffffffff;
-        ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)texture, &texSlot, true);
+        ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)texture, texSlot, true);
         ((PaintCanvas *)(long)this->paintCanvas)->ChangeCubeTexture((unsigned int)this->paintCanvas);
         return;
     }
@@ -300,8 +300,9 @@ music:
     return;
 
 state80:
-    gCanvas->Image2DCreate(0x1b5a,
-                              (unsigned int *)&this->logoImage);
+    unsigned int logoImageHandle;
+    gCanvas->Image2DCreate(0x1b5a, logoImageHandle);
+    this->logoImage = logoImageHandle;
     this->logoActive = 1;
     this->fadeTimer = 0;
     *g_ModMainMenu_initTouchFlag = 1;

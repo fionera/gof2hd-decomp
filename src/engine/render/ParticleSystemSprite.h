@@ -15,7 +15,7 @@
 
 namespace AbyssEngine {
 class PaintCanvas;   // real type lives here (engine/render/PaintCanvas.h); pointer-only use
-enum BlendMode { BlendMode_dummy };
+enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
 }
 using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;

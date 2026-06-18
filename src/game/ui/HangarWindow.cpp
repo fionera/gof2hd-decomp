@@ -2115,7 +2115,7 @@ void HangarWindow::initialize() {
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
         // RAWREAD: icons is a raw image-handle array; this addresses element i (array index, not a field).
-        gCanvas->Image2DCreate((unsigned short)(i + 0x232a), (unsigned int *)((unsigned int *)((char *)icons + i * 4)));
+        gCanvas->Image2DCreate((unsigned short)(i + 0x232a), *(unsigned int *)((char *)icons + i * 4));
 
     int *posX = (int *)*g_hw_posXArray;
     int *posY = (int *)*g_hw_posYArray;
@@ -2131,8 +2131,8 @@ void HangarWindow::initialize() {
     }
 
     *(unsigned int *)*g_hw_imageCountSlot = tabArr->size();
-    gCanvas->Image2DCreate((unsigned short)(0x52e), (unsigned int *)(&self->blueprintIconImage));
-    gCanvas->Image2DCreate((unsigned short)(0x544), (unsigned int *)(&self->pendingIconImage));
+    gCanvas->Image2DCreate((unsigned short)(0x52e), self->blueprintIconImage);
+    gCanvas->Image2DCreate((unsigned short)(0x544), self->pendingIconImage);
 
     // Action button bank (24 entries).
     self->buttons = new Array<TouchButton*>();
@@ -2140,7 +2140,7 @@ void HangarWindow::initialize() {
 
     unsigned int img;
     img = 0xffffffff;
-    gCanvas->Image2DCreate((unsigned short)(0x470), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x470), img);
     void *e0 = ::operator new(200);
     TouchButton_ctor_img((void *)e0, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x60, 0x11, 4);
     (*self->buttons)[(0) >> 2] = (TouchButton*)(e0);
@@ -2156,13 +2156,13 @@ void HangarWindow::initialize() {
     (*self->buttons)[(8) >> 2] = (TouchButton*)(e2);
 
     img = 0xffffffff;
-    gCanvas->Image2DCreate((unsigned short)(0x533), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x533), img);
     void *e3 = ::operator new(200);
     TouchButton_ctor_img((void *)e3, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     (*self->buttons)[(0xc) >> 2] = (TouchButton*)(e3);
 
     img = 0xffffffff;
-    gCanvas->Image2DCreate((unsigned short)(0x532), (unsigned int *)(&img));
+    gCanvas->Image2DCreate((unsigned short)(0x532), img);
     void *e4 = ::operator new(200);
     TouchButton_ctor_img((void *)e4, (void *)(uintptr_t)img, 7, 0, 0, layout->field_0x64, 0x11, 4);
     (*self->buttons)[(0x10) >> 2] = (TouchButton*)(e4);
@@ -2233,8 +2233,8 @@ void HangarWindow::initialize() {
         (*self->buttons)[(0x44) >> 2]->setVisible(false);
     }
 
-    gCanvas->Image2DCreate((unsigned short)(0x233e), (unsigned int *)(&self->scrollHintImageA));
-    gCanvas->Image2DCreate((unsigned short)(0x233f), (unsigned int *)(&self->scrollHintImageB));
+    gCanvas->Image2DCreate((unsigned short)(0x233e), self->scrollHintImageA);
+    gCanvas->Image2DCreate((unsigned short)(0x233f), self->scrollHintImageB);
     {
         String lbl;
         void *btn = ::operator new(200);
@@ -2247,12 +2247,12 @@ void HangarWindow::initialize() {
     for (int i = 0x12; (unsigned int)(i - 0x12) < 5; i++) {
         imgB = 0xffffffff;
         if (i == 0x12) {
-            gCanvas->Image2DCreate((unsigned short)(0x233c), (unsigned int *)(&imgA));
-            gCanvas->Image2DCreate((unsigned short)(0x233d), (unsigned int *)(&imgB));
+            gCanvas->Image2DCreate((unsigned short)(0x233c), imgA);
+            gCanvas->Image2DCreate((unsigned short)(0x233d), imgB);
         } else {
             short s = (short)(i - 0x12);
-            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2330), (unsigned int *)(&imgA));
-            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2331), (unsigned int *)(&imgB));
+            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2330), imgA);
+            gCanvas->Image2DCreate((unsigned short)(s * 2 + 0x2331), imgB);
         }
         void *btn = ::operator new(200);
         TouchButton_ctor_img2(btn, (void *)(uintptr_t)imgA, (void *)(uintptr_t)imgB, 0x13, 0, 0, 1);
@@ -2266,9 +2266,11 @@ void HangarWindow::initialize() {
     self->gridSpacingX = (int)((float)(-self->buttonWidth) * g_hw_posScale);
     self->gridSpacingY = (int)((float)(-h) * g_hw_posScale);
 
-    gCanvas->Image2DCreate((unsigned short)(0x475), (unsigned int *)(&self->progressBarBgImage));
-    gCanvas->Image2DCreate((unsigned short)(0x476), (unsigned int *)(&self->progressBarFillImage));
-    gCanvas->Image2DCreate((unsigned short)(0x477), (unsigned int *)(&self->progressBarBorderImage));
+    unsigned int progressBarBgImageHandle;
+    gCanvas->Image2DCreate((unsigned short)(0x475), progressBarBgImageHandle);
+    self->progressBarBgImage = progressBarBgImageHandle;
+    gCanvas->Image2DCreate((unsigned short)(0x476), self->progressBarFillImage);
+    gCanvas->Image2DCreate((unsigned short)(0x477), self->progressBarBorderImage);
     self->progressBarWidth = gCanvas->GetImage2DWidth(0);
     self->progressBarHeight = gCanvas->GetImage2DHeight(0);
 
@@ -2350,7 +2352,9 @@ void HangarWindow::initialize() {
 
     int extra = 0;
     if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
-        gCanvas->Image2DCreate((unsigned short)(0x6a4), (unsigned int *)(&self->hintImage));
+        unsigned int hintImageHandle;
+        gCanvas->Image2DCreate((unsigned short)(0x6a4), hintImageHandle);
+        self->hintImage = hintImageHandle;
         extra = (int)((float)(*g_hw_screenWidth) * g_hw_posScale);
     }
     self->selectedItem = 0;

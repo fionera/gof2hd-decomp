@@ -116,8 +116,11 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
     int savedCanvas = canvas;
     int base = scaledType * 4;
     for (int i = 0; i != 6; ++i) {
-        gCanvas->Image2DCreate((uint16_t)(i + 0x1f4a), (unsigned int *)&this->tileImages[base + i]);
-        gCanvas->Image2DCreate((uint16_t)(i + 0x1f50), (unsigned int *)&this->tileImages[base + 6 + i]);
+        unsigned int handle;
+        gCanvas->Image2DCreate((uint16_t)(i + 0x1f4a), handle);
+        this->tileImages[base + i] = handle;
+        gCanvas->Image2DCreate((uint16_t)(i + 0x1f50), handle);
+        this->tileImages[base + 6 + i] = handle;
     }
 
     ImageCreateFn create = g_HackingGame_ctor_imageCreate;

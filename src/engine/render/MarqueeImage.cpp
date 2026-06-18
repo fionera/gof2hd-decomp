@@ -13,7 +13,7 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
 {
     PaintCanvas **holder = g_MarqueeImage_canvas;
 
-    (*holder)->Image2DCreate(image, &this->image);
+    (*holder)->Image2DCreate(image, this->image);
 
     this->x = x;
     this->y = y;

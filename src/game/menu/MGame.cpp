@@ -1378,7 +1378,7 @@ void MGame::OnInitialize() {
         } else {
             texSel = 0x2f08;
         }
-        gCanvas->TextureCreate((unsigned short)self->skyboxTexture, &texSel, (void *)0, &texSel, false);
+        gCanvas->TextureCreate((unsigned short)self->skyboxTexture, 0, (void *)0, texSel, false);
         gCanvas->ChangeCubeTexture((unsigned)self->skyboxTexture);
 
         // Build the per-session sound-resource list (long sequential block).
@@ -1963,7 +1963,7 @@ void MGame::reset() {
     ((Radio *)(radio))->setMessages((Array<RadioMessage *> *)this->level->getMessages());
 
     PaintCanvas *pc = gCanvas;
-    pc->CameraCreate((unsigned *)&this->cameraId);
+    pc->CameraCreate(this->cameraId);
     unsigned cam = (unsigned)(uintptr_t)gCanvas;
 
     float fov = *(float *)&g_fovDefault;  // DAT_001886e8 default

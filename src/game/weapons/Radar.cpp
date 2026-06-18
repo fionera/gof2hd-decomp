@@ -89,7 +89,7 @@ Radar::Radar(Level* level)
 
     PaintCanvas* canvas = *gRadarCanvasSlot;
     unsigned int image = 0;
-    canvas->Image2DCreate(0x4c7, &image);
+    canvas->Image2DCreate(0x4c7, image);
     this->radarImage = (int)image;
     int imageWidth = canvas->GetImage2DWidth(image);
     int imageHeight = canvas->GetImage2DHeight(image);

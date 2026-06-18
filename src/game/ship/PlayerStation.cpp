@@ -193,11 +193,11 @@ PlayerStation::PlayerStation(Station *station)
         } else if (status->dlc1Won()) {
             this->rootGeometry = new AEGeometry((uint16_t)0x4220, canvas, false);
             uint32_t t0, t1;
-            canvas->TransformCreate(&t0);
+            canvas->TransformCreate(t0);
             canvas->TransformAddMesh(t0, 0x4221, true);
             this->rootGeometry->addChild(t0);
             t1 = 0xffffffff;
-            canvas->TransformCreate(&t1);
+            canvas->TransformCreate(t1);
             canvas->TransformAddMesh(t1, 0x4222, true);
             this->rootGeometry->addChild(t1);
             FileRead reader;
@@ -238,25 +238,25 @@ PlayerStation::PlayerStation(Station *station)
         if (stationIndex == 0x65) {
             this->rootGeometry = new AEGeometry((uint16_t)0x4220, canvas, false);
             uint32_t t0, t1;
-            canvas->TransformCreate(&t0);
+            canvas->TransformCreate(t0);
             canvas->TransformAddMesh(t0, 0x4221, true);
             this->rootGeometry->addChild(t0);
             t1 = 0xffffffff;
-            canvas->TransformCreate(&t1);
+            canvas->TransformCreate(t1);
             canvas->TransformAddMesh(t1, 0x4222, true);
             this->rootGeometry->addChild(t1);
             if (status->getCurrentCampaignMission() == 0x9d &&
                 status->getStation()->getIndex() == 0x70) {
                 uint32_t m0 = 0xffffffff, m1, m2;
-                canvas->TransformCreate(&m0);
+                canvas->TransformCreate(m0);
                 canvas->TransformAddMesh(m0, 0x4950, true);
                 this->rootGeometry->addChild(m0);
                 m1 = 0xffffffff;
-                canvas->TransformCreate(&m1);
+                canvas->TransformCreate(m1);
                 canvas->TransformAddMesh(m1, 0x4952, true);
                 this->rootGeometry->addChild(m1);
                 m2 = 0xffffffff;
-                canvas->TransformCreate(&m2);
+                canvas->TransformCreate(m2);
                 canvas->TransformAddMesh(m2, 0x4951, true);
                 this->rootGeometry->addChild(m2);
             }
@@ -286,16 +286,16 @@ PlayerStation::PlayerStation(Station *station)
             uint16_t mesh3 = mission == 0x50 ? 0x3821 : (dlcWon ? 0x3825 : 0x4225);
             this->rootGeometry = new AEGeometry(rootMesh, canvas, false);
             uint32_t t0, t1, t2;
-            canvas->TransformCreate(&t0);
+            canvas->TransformCreate(t0);
             canvas->TransformAddMesh(t0, mesh1, false);
             this->rootGeometry->addChild(t0);
             this->meshTransform = t0;
             t1 = 0xffffffff;
-            canvas->TransformCreate(&t1);
+            canvas->TransformCreate(t1);
             canvas->TransformAddMesh(t1, mesh2, false);
             this->rootGeometry->addChild(t1);
             t2 = 0xffffffff;
-            canvas->TransformCreate(&t2);
+            canvas->TransformCreate(t2);
             canvas->TransformAddMesh(t2, mesh3, false);
             this->rootGeometry->addChild(t2);
             if (mission == 0x50 || dlcWon) {

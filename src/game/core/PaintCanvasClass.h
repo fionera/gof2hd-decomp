@@ -16,6 +16,33 @@ struct Transform;
 namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vector; } }
+namespace AbyssEngine { struct Material; }
+namespace AbyssEngine { struct Resource; }
+namespace AbyssEngine { struct Image; }
+// Engine-side enums recovered from the binary's mangled method signatures (see
+// the matching block in src/engine/render/PaintCanvas.h). Only the namespace-
+// qualified type names matter for the ABI; the constants are conventional. Each
+// uses the SAME canonical nonfixed form the engine already uses elsewhere
+// (e.g. `enum BlendMode { BlendMode_dummy };` in ResourceMaterial.h /
+// ParticleSystem*.h), guarded so this header never re-defines its own enum.
+namespace AbyssEngine {
+#ifndef GOF2_ENUM_FogMode
+#define GOF2_ENUM_FogMode
+enum FogMode { FogMode_dummy = 0, FogMode_1 = 1, FogMode_linear = 0x2601 };
+#endif
+#ifndef GOF2_ENUM_BlendMode
+#define GOF2_ENUM_BlendMode
+enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
+#endif
+#ifndef GOF2_ENUM_ResourceType
+#define GOF2_ENUM_ResourceType
+enum ResourceType { ResourceType_dummy };
+#endif
+#ifndef GOF2_ENUM_LandscapeMode
+#define GOF2_ENUM_LandscapeMode
+enum LandscapeMode { LandscapeMode_dummy = 0, LandscapeMode_1 = 1, LandscapeMode_2 = 2, LandscapeMode_3 = 3 };
+#endif
+}
 
 // PaintCanvas's real type lives in namespace AbyssEngine (to match the binary's
 // mangling N11AbyssEngine11PaintCanvasE); the global `using` alias after the
@@ -117,17 +144,17 @@ public:
     void SetColor(unsigned int color);
     void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
     unsigned int GetColor();
-    void SetBlendMode(int mode);
+    void SetBlendMode(AbyssEngine::BlendMode mode);
     void SetTexture(unsigned int, unsigned int);
     void SetShaderMode(int mode);
-    void SetGameOrientation(int orientation);
+    void SetGameOrientation(AbyssEngine::LandscapeMode orientation);
     void SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &);
     void SetProjOrthoMatrix();
     void SetProjectionMatrix3d(float fov, float zNear, float zFar);
     void ResetPersMatrix();
     void EnableClip(int x, int y, int w, int h);
-    void FogEnable(int mode, int enable);
-    void FogSetParameter(int mode, float start, float end, float density, unsigned int color);
+    void FogEnable(bool mode, AbyssEngine::FogMode enable);
+    void FogSetParameter(AbyssEngine::FogMode mode, float start, float end, float density, unsigned int color);
     void ChangeCubeTexture(unsigned int idx);
     void GetWidth();
     void GetHeight();
@@ -150,30 +177,30 @@ public:
     void DrawImage2D(unsigned int index, int x, int y, int w, int h, unsigned char anchor, unsigned char align, unsigned char flipFlags);
     void DrawRegion2D(unsigned int index, float angle, int x, int y, int w, int h, float scaleX, float scaleY);
     void DrawRegion2D(unsigned int index, int srcX, int srcY, int srcW, int srcH, float angle, int dstX, int dstY, int dstW, int dstH);
-    void Image2DCreate(unsigned short id, unsigned int *out);
+    void Image2DCreate(unsigned short id, unsigned int &out);
     unsigned short GetImage2DWidth(unsigned int index);
     unsigned short GetImage2DHeight(unsigned int index);
 
     // Text
     void DrawString(unsigned int index, const unsigned short *str, int x, int y, bool b);
     void DrawString(unsigned int index, void *str, int x, int y, bool b);
-    void DrawStringColor(unsigned int index, void *str, int x, int y, bool b);
-    void DrawTextLines(unsigned int font, ::Array<void *> *arr, int x, int y, bool center);
-    void DrawTextLines(unsigned int font, ::Array<void *> *arr, int x, int y, unsigned int p5, bool flag);
+    void DrawStringColor(unsigned int index, const AbyssEngine::String &str, int x, int y, bool b);
+    void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y, bool center);
+    void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y, unsigned int p5, bool flag);
     int GetTextWidth(unsigned int index, void *str);
-    int GetTextWidth(unsigned int index, void *str, unsigned int begin, unsigned int end);
+    int GetTextWidth(unsigned int index, const AbyssEngine::String &str, unsigned int begin, unsigned int end);
     int GetTextHeight(unsigned int index);
     void GetLine(unsigned int font, void *str, int maxWidth, void *out);
     void GetLineArray(unsigned int font, void *str, int maxWidth, char *out);
     void CheckString(unsigned int index, void *str);
-    void FontCreate(unsigned short id, unsigned int *out, bool flag);
+    void FontCreate(unsigned short id, unsigned int &out, bool flag);
     int FontGetSpacing(unsigned int index);
     void FontSetSpacing(unsigned int index, short spacing);
     int FontGetYOffset(unsigned int index);
     void FontSetYOffset(unsigned int index, short yoff);
 
     // Cameras
-    void CameraCreate(unsigned int *out);
+    void CameraCreate(unsigned int &out);
     unsigned int CameraGetCurrent();
     void CameraSetCurrent(unsigned int index);
     void *CameraGetLocal(unsigned int index);
@@ -181,12 +208,12 @@ public:
     void CameraSetPerspective(unsigned int index, float a, float b, float c);
     void CameraSetPerspective(unsigned int index, float fov, float aspect);
     float CameraGetCurrentFactor1();
-    int CameraIsSphereinViewFrustum(void *center, float radius);
-    int CameraIsPointinViewFrustum(void *point);
+    int CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &center, float radius);
+    int CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &point);
 
     // Transforms
-    void TransformCreate(unsigned int *out);
-    void TransformCreate(unsigned short id, unsigned int *out);
+    void TransformCreate(unsigned int &out);
+    void TransformCreate(unsigned short id, unsigned int &out);
     void *TransformGetLocal(unsigned int index);
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
     void TransformSetColor(unsigned int index, unsigned int color);
@@ -200,24 +227,24 @@ public:
     void TransformRemoveMesh(unsigned int transformIndex, void *mesh);
     void TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex);
     void DrawTransform(char *tf, void *m2, void *m3);
-    void DrawTransform(unsigned int index, const float *matrix);
+    void DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *matrix);
 
     // Meshes
-    void MeshCreate(unsigned short id, unsigned int *out, bool flag);
-    void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned int *out);
-    void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned short d, unsigned int *out);
+    void MeshCreate(unsigned short id, unsigned int &out, bool flag);
+    void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned int &out);
+    void MeshCreate(unsigned short a, unsigned short b, signed char c, unsigned short d, unsigned int &out);
     void *MeshGetPointer(unsigned int index);
-    int MeshGetTriCount(char *mesh);
+    int MeshGetTriCount(AbyssEngine::Mesh *mesh);
     void DrawMesh(unsigned int index);
     void DrawMesh(char *mesh, const float *worldMatrix, const float *projMatrix, unsigned int color, const float *uvMatrix);
     void MeshConvertToVBO(unsigned int index);
-    void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
-    void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, void *mat);
+    void MeshChangeMaterial(unsigned int meshIndex, unsigned short matIndex);
+    void MeshChangeMaterialIntern(AbyssEngine::Mesh *mesh, AbyssEngine::Material *mat);
     void MeshChangeMaterialIntern(char *transform, void *material);
-    void MeshChangeResourceMaterial(unsigned int meshIndex, unsigned int resId);
+    void MeshChangeResourceMaterial(unsigned int meshIndex, unsigned short resId);
     void MeshResourceChangeMaterial(unsigned short matId, unsigned short value);
     void MeshResourceChangeAllMaterial(unsigned short matId, unsigned short value);
-    void MeshCloneMaterial(unsigned int index, unsigned int *out);
+    void MeshCloneMaterial(unsigned int index, unsigned int &out);
     void MeshChangeShaderAnimValue(char *mesh, float value, unsigned int mode);
     void MeshChangeShaderAnimValue(::Transform *transform, float value, unsigned int mode);
     float MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
@@ -235,28 +262,28 @@ public:
 
     // Materials / textures / resources
     void MaterialCreate(unsigned int *out, void *p2, void *p3);
-    void MaterialCreate(unsigned short id, unsigned int *out);
+    void MaterialCreate(unsigned short id, unsigned int &out);
     void *MaterialGetMaterial(unsigned int index);
-    void MaterialChange(unsigned int index, unsigned int param3, unsigned int param4);
+    void MaterialChange(unsigned int index, AbyssEngine::BlendMode param3, unsigned int param4);
     void MaterialResourceChangeTexture(unsigned short resId, void *texture, unsigned int slot);
-    void TextureCreate(unsigned short id, void *loadCallback, void *userData, unsigned int *out, bool flag);
-    void TextureCreate(unsigned short id, unsigned int *out, bool flag);
-    void TextureCreateGlobal(::String *name, int unit);
-    void AddResource(void *resource);
-    void SetResourceList(void **list, unsigned int count);
+    void TextureCreate(unsigned short id, void (*loadCallback)(AbyssEngine::Image *, void *), void *userData, unsigned int &out, bool flag);
+    void TextureCreate(unsigned short id, unsigned int &out, bool flag);
+    void TextureCreateGlobal(AbyssEngine::String name, unsigned int unit);
+    void AddResource(AbyssEngine::Resource *resource);
+    void SetResourceList(AbyssEngine::Resource *const *list, unsigned int count);
     void *FindResource(unsigned short id);
-    int ResourceLoaded(unsigned int index, unsigned int type);
-    unsigned int GetMeshResourceId(void *name);
-    unsigned int GetMeshResourceId(void *name, unsigned short p2);
-    unsigned int GetTextureResourceId(void *name);
+    int ResourceLoaded(unsigned int index, AbyssEngine::ResourceType type);
+    unsigned int GetMeshResourceId(AbyssEngine::String &name);
+    unsigned int GetMeshResourceId(AbyssEngine::String &name, unsigned short p2);
+    unsigned int GetTextureResourceId(AbyssEngine::String &name);
     void ReleaseAllResources();
     void ReloadTextures();
     void RemoveAllMatsForGlow();
     void SetMatForGlow(char *material);
 
     // Sprite systems
-    void SpriteSystemCreate(unsigned short id, bool flag, unsigned int *out);
-    void SpriteSystemCreate(unsigned short id, bool flag, unsigned short matId, unsigned int *out);
+    void SpriteSystemCreate(unsigned short id, bool flag, unsigned int &out);
+    void SpriteSystemCreate(unsigned short id, bool flag, unsigned short matId, unsigned int &out);
     void DrawSpriteSystem(unsigned int index);
     void DrawSpriteSystem(unsigned int index, const float *mat);
     void DrawSpriteSystem(unsigned int index, const float *matA, const float *matB);
@@ -265,9 +292,9 @@ public:
     void SpriteSystemAddPosition(unsigned int index, unsigned short sub, float x, float y, float z);
     void SpriteSystemGetPosition(unsigned int index, unsigned short sub, Vector &out);
     void SpriteSystemGetPosition(unsigned int index, unsigned short sub, const Matrix &m, Vector &out);
-    void SpriteSystemSetSize(unsigned int index, unsigned int sub, unsigned short value);
+    void SpriteSystemSetSize(unsigned int index, unsigned short sub, short value);
     void SpriteSystemAddSize(unsigned int index, unsigned short sub, short delta);
-    void SpriteSystemSetAllSize(unsigned int index, unsigned int size);
+    void SpriteSystemSetAllSize(unsigned int index, short size);
     void SpriteSystemSetUv(unsigned int index, unsigned short sub, float a, float b, float c, float d);
     void SpriteSystemSetAllUv(unsigned int index, float a, float b, float c, float d);
     void SpriteSystemSetRGBA(unsigned int index, unsigned short sub, float a, float b, float c, float d);

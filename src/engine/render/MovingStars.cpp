@@ -235,8 +235,8 @@ void MovingStars::render()
 {
     PaintCanvas **canvas = g_MovingStars_canvas_render;
     (*canvas)->SetTexture(this->textureHandle, 0xffffffff);
-    (*canvas)->SetBlendMode(1);
+    (*canvas)->SetBlendMode(AbyssEngine::BlendMode_1);
     for (int i = 0; i != 0x32; i = i + 1) {
-        (*canvas)->DrawTransform(this->transformHandles[i], (const float*)0);
+        (*canvas)->DrawTransform(this->transformHandles[i], nullptr);
     }
 }

@@ -53,7 +53,7 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     int16_t totalI = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t localId;
-        canvas->MeshCreate(meshIds.data()[i], &localId, false);
+        canvas->MeshCreate(meshIds.data()[i], localId, false);
         table[i] = (Mesh *)canvas->MeshGetPointer(localId);
         Mesh *m = table[i];
         totalV = (int16_t)(totalV + m->vertexCount);
@@ -63,7 +63,7 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     // Create the combined target mesh.
     Mesh *m0 = table[0];
     canvas->MeshCreate((uint16_t)totalV, (uint16_t)totalI, (signed char)m0->vertexFormat,
-                       flags, &this->mergedMeshId);
+                       flags, this->mergedMeshId);
 
     int16_t triBase = 0;
     int16_t vtxBase = 0;
@@ -117,7 +117,7 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         vtxBase = (int16_t)(vtxBase + m->vertexCount);
     }
 
-    canvas->TransformCreate(&this->transformId);
+    canvas->TransformCreate(this->transformId);
     canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->transformedMeshes = nullptr;
     this->initialized = 1;
@@ -235,7 +235,7 @@ void MeshMerger::setLod(int index, signed char lod)
 void MeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    this->canvas->MeshCreate(meshId, &id, false);
+    this->canvas->MeshCreate(meshId, id, false);
     void *ptr = this->canvas->MeshGetPointer(id);
     ((void **)this->sourceMeshes)[this->rows * lod + index] = ptr;
 }
@@ -262,8 +262,9 @@ void MeshMerger::update()
     int rows = this->rows;
     for (int i = 0; i < rows; i++) {
         Mesh *sph = ((Mesh **)this->transformedMeshes)[i];
+        Vector boundsCenter = { sph->boundsCenterX, sph->boundsCenterY, sph->boundsCenterZ };
         uint8_t vis = (uint8_t)this->canvas->CameraIsSphereinViewFrustum(
-            &sph->boundsCenterX, sph->boundsRadius);
+            boundsCenter, sph->boundsRadius);
         int8_t *visArr = (int8_t *)this->visibleFlags;
         if (vis != (uint8_t)visArr[i]) {
             visArr[i] = (int8_t)vis;
@@ -354,9 +355,9 @@ int MeshMerger::init()
     }
 
     Mesh *first = ((Mesh **)this->sourceMeshes)[0];
-    this->canvas->MeshCreate(nv, ni, (signed char)first->vertexFormat, &this->mergedMeshId);
+    this->canvas->MeshCreate(nv, ni, (signed char)first->vertexFormat, this->mergedMeshId);
     this->mergedMesh = this->canvas->MeshGetPointer(this->mergedMeshId);
-    this->canvas->TransformCreate(&this->transformId);
+    this->canvas->TransformCreate(this->transformId);
     this->canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->dirty = 1;
 

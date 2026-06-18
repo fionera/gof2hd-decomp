@@ -301,13 +301,13 @@ void ParticleSystemManager::initSprites()
     if ((unsigned short)this->spriteTextureId == 0xffff) {
         if (this->spriteUvId != -1) {
             canvas->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
-                                       &this->spriteSystemId);
-            canvas->TextureCreate((unsigned short)this->spriteUvId, &this->spriteSystemId,
+                                       this->spriteSystemId);
+            canvas->TextureCreate((unsigned short)this->spriteUvId, this->spriteSystemId,
                                   (((char)(unsigned long)this + ',') != 0));
         }
     } else {
         canvas->SpriteSystemCreate((unsigned short)this->spriteParticleCount, false,
-                                   (unsigned short)this->spriteTextureId, &this->spriteSystemId);
+                                   (unsigned short)this->spriteTextureId, this->spriteSystemId);
     }
 
     short offset = 0;
@@ -355,16 +355,16 @@ void ParticleSystemManager::initMesh()
     if (this->meshTextureId == -1) {
         if (this->meshUvId != -1) {
             canvas->MeshCreate((unsigned short)verts, (unsigned short)indices, (signed char)0x1b,
-                               &this->meshId);
-            canvas->TextureCreate((unsigned short)this->meshUvId, &this->meshId,
+                               this->meshId);
+            canvas->TextureCreate((unsigned short)this->meshUvId, this->meshId,
                                   (((char)(unsigned long)this + 'P') != 0));
         }
     } else {
         canvas->MeshCreate((unsigned short)verts, (unsigned short)indices, (signed char)0x1b,
-                           (unsigned short)this->meshTextureId, &this->meshId);
+                           (unsigned short)this->meshTextureId, this->meshId);
     }
 
-    canvas->TransformCreate(&this->transformId);
+    canvas->TransformCreate(this->transformId);
     canvas->TransformAddMeshId(this->transformId, this->meshId);
 
     short offset = 0;

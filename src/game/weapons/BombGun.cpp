@@ -112,7 +112,7 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     } else {
         // Simple-mesh path: build a transform tree from the bomb's own mesh plus a
         // trail geometry, then re-parent it under the rocket transform.
-        canvas->TransformCreate(&this->meshTransformId);
+        canvas->TransformCreate(this->meshTransformId);
         canvas->TransformAddMesh(this->meshTransformId, this->meshId, false);
 
         AbyssEngine::Transform *transform =

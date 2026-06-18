@@ -610,7 +610,9 @@ WantedWindow::WantedWindow() {
     this->scrollWindow = nullptr;
     this->buttons = nullptr;
     this->halfTextHeight = h / 2 - 1;
-    canvas->Image2DCreate(0x454, (unsigned int *)&this->bgImage);
+    unsigned int bgImageHandle;
+    canvas->Image2DCreate(0x454, bgImageHandle);
+    this->bgImage = bgImageHandle;
     this->init();
 }
 

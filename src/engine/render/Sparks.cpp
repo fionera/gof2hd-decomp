@@ -11,7 +11,6 @@ Sparks::Sparks(int kind)
     uint32_t count = 5;
     if (kind == 0)
         count = 1;
-    uint32_t *outSprite = &this->spriteSystem;
     void **canvas = g_Sparks_canvas_ctor;
     uint32_t lifetime = 0x514;
     if (kind == 0)
@@ -21,7 +20,7 @@ Sparks::Sparks(int kind)
     this->count = count;
     this->lifetime = lifetime;
 
-    ((PaintCanvas *)*canvas)->SpriteSystemCreate((uint16_t)count, false, outSprite);
+    ((PaintCanvas *)*canvas)->SpriteSystemCreate((uint16_t)count, false, this->spriteSystem);
     ((PaintCanvas *)*canvas)->SpriteSystemSetAllUv(this->spriteSystem, 0.626953125f,
                                      0.001953125f, 0.748046875f, 0.123046875f);
 
@@ -162,7 +161,7 @@ void Sparks::render()
     if (this->active != 0) {
         void **canvas = g_Sparks_canvas_render;
         ((PaintCanvas *)*canvas)->SetTexture(this->texture, 0xffffffff);
-        ((PaintCanvas *)*canvas)->SetBlendMode(2);
+        ((PaintCanvas *)*canvas)->SetBlendMode(AbyssEngine::BlendMode_2);
 
         void *canvasObj = *canvas;
         matrix.m[0] = 1.0f;

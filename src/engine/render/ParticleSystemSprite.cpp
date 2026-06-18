@@ -1,4 +1,8 @@
 #include "engine/render/ParticleSystemSprite.h"
+// ParticleSystemSprite.h already defines AbyssEngine::BlendMode (identically, but
+// without setting the shared guard macro), so claim the guard before pulling in
+// PaintCanvasClass.h to avoid a redefinition of the same enum.
+#define GOF2_ENUM_BlendMode
 #include "game/core/PaintCanvasClass.h"
 #include "externs.h"
 #include "platform/libc.h"

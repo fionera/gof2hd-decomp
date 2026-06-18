@@ -196,15 +196,19 @@ void ChoiceWindow::setMedal(int medal, int count)
     this->scrollWindow->setTextCentered(true);
 
     PaintCanvas *canvas = gCanvas;
+    unsigned int medalImageHandle;
     if (count < 0x24) {
         canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesLow_146e8c, count * 4),
-                              (unsigned int *)&this->medalImage);
+                              medalImageHandle);
     } else {
         canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesHigh_146e8c, count * 4),
-                              (unsigned int *)&this->medalImage);
+                              medalImageHandle);
     }
+    this->medalImage = medalImageHandle;
+    unsigned int medalBgImageHandle;
     canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImages_146e8c, medal * 4),
-                          (unsigned int *)&this->medalBgImage);
+                          medalBgImageHandle);
+    this->medalBgImage = medalBgImageHandle;
 
     this->count = count;
     this->medal = medal;

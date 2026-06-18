@@ -34,7 +34,7 @@ void LodMeshMerger::setMatrix(int index, const Matrix& m)
 void LodMeshMerger::setMesh(int index, signed char lod, uint16_t meshId)
 {
     uint32_t id;
-    canvas->MeshCreate(meshId, &id, false);
+    canvas->MeshCreate(meshId, id, false);
     void* ptr = canvas->MeshGetPointer(id);
     sourceMeshes.data()[rows * lod + index] = (Mesh*)ptr;
 }
@@ -43,8 +43,9 @@ void LodMeshMerger::update()
 {
     for (int i = 0; i < rows; i++) {
         Mesh* sph = (Mesh*)transformedMeshes[i];
+        Vector sphCenter = { sph->boundsCenterX, sph->boundsCenterY, sph->boundsCenterZ };
         uint8_t vis = (uint8_t)canvas->CameraIsSphereinViewFrustum(
-            &sph->boundsCenterX, sph->boundsRadius);
+            sphCenter, sph->boundsRadius);
         if (vis != visible[i]) {
             visible[i] = vis;
             if (enabled[i] != 0) {
@@ -193,9 +194,9 @@ int LodMeshMerger::init()
 
     canvas->MeshCreate(ni, nv,
                        (signed char)sourceMeshes.data()[0]->vertexFormat,
-                       flags, &mergedMeshId);
+                       flags, mergedMeshId);
     mergedMesh = canvas->MeshGetPointer(mergedMeshId);
-    canvas->TransformCreate(&transformId);
+    canvas->TransformCreate(transformId);
     canvas->TransformAddMeshId(transformId, mergedMeshId);
     dirty = 1;
 

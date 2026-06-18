@@ -1283,7 +1283,7 @@ void ModStation::OnRelease() {
         (*soundHolder)->disableReverb();
         (*soundHolder)->stopAllSoundFXEvents();
     }
-    gCanvas->FogEnable(0, 1);
+    gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
 
     if (this->buttonRow != 0) {
         ArrayReleaseClasses_TouchButton(this->buttonRow);

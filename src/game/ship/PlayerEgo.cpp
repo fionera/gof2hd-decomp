@@ -931,7 +931,7 @@ void PlayerEgo::checkForTurret() {
     ((AEGeometry *)(this->gunMuzzleRoot))->addChild((uint32_t)(uintptr_t)this->gunYawGeo);
 
     if (this->field_0x2c0 != 0 && this->turretMode != 0) {
-        ((PaintCanvas*)(long)(canvas))->MeshCloneMaterial((unsigned int)(((AEGeometry *)this->gunBaseGeo)->meshId), (unsigned int *)(&((uint32_t&)this->cloakMaterial1)));
+        ((PaintCanvas*)(long)(canvas))->MeshCloneMaterial((unsigned int)(((AEGeometry *)this->gunBaseGeo)->meshId), (uint32_t&)this->cloakMaterial1);
         PE_cft_finishMaterials(canvas, ((AEGeometry *)this->gunYawGeo)->meshId, (char *)&this->cloakMaterial2);
     }
 }
@@ -1287,7 +1287,7 @@ extern const unsigned int g_PE_dc_defY; // 0xaab7c default offset hi
 
 void PlayerEgo::setDockingCamera() {
     if (this->dockCameraNode == 0) {
-        gCanvas->CameraCreate((unsigned int *)(&this->turretCamera));
+        gCanvas->CameraCreate(this->turretCamera);
         unsigned int cam = (unsigned int)(unsigned long)gCanvas;
 
         float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_dc_fovAlien : g_PE_dc_fovNormal;
@@ -2030,7 +2030,7 @@ void PlayerEgo::setTurretMode(bool enable) {
         if (((void*&)this->rocketControlGun) != 0)
             return;
         if (this->dockCameraNode == 0) {
-            gCanvas->CameraCreate((unsigned int *)(&this->turretCamera));
+            gCanvas->CameraCreate(this->turretCamera);
             unsigned int cam = (unsigned int)(unsigned long)gCanvas;
             float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_tm_fovAlien : g_PE_tm_fovNormal;
             gCanvas->CameraSetPerspective((unsigned int)(cam), fov, 0.0f, g_PE_tm_fovAlien);
@@ -3048,7 +3048,7 @@ void PlayerEgo::toggleCloaking() {
                 if (idx == 0xc6) mat = 0x7161;
             }
             unsigned int out;
-            ((PaintCanvas*)(long)(canvas))->MaterialCreate((unsigned short)(mat), (unsigned int *)(&out));
+            ((PaintCanvas*)(long)(canvas))->MaterialCreate((unsigned short)(mat), out);
             ((PaintCanvas*)(long)(canvas))->MeshChangeResourceMaterial((unsigned int)(((AEGeometry *)this->rollGeometry)->meshId), (unsigned int)(mat));
             ((PaintCanvas*)(long)(canvas))->MeshChangeResourceMaterial((unsigned int)(((AEGeometry *)this->turretGeometry)->meshId), (unsigned int)(mat));
         }

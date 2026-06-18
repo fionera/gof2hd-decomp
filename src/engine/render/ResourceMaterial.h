@@ -5,9 +5,7 @@
 
 namespace AbyssEngine {
 
-enum BlendMode {
-    BlendMode_dummy
-};
+enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
 
 // A render material: a set of texture indices plus blend/color state.
 class ResourceMaterial {

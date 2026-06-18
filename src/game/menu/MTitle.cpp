@@ -33,8 +33,8 @@ MTitle::~MTitle()
 int MTitle::OnInitialize()
 {
     PaintCanvas *canvas = gCanvas;
-    canvas->Image2DCreate(7000, &this->logoImage);
-    canvas->Image2DCreate(0x1b59, &this->logoImage2);
+    canvas->Image2DCreate(7000, this->logoImage);
+    canvas->Image2DCreate(0x1b59, this->logoImage2);
 
     g_sound->play(0x91, (Vector *)0, (Vector *)0, 0.0f);
 

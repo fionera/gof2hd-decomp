@@ -19,14 +19,18 @@ TouchSlider::TouchSlider(int type, int x, int y, float value)
     this->type = type;
     this->value = value;
     PaintCanvas **canvas = g_TouchSlider_canvas;
-    (*canvas)->Image2DCreate(0x51a, (unsigned int*)&this->knobImage);
+    unsigned int knobImageOut;
+    (*canvas)->Image2DCreate(0x51a, knobImageOut);
+    this->knobImage = knobImageOut;
 
     unsigned short trackImageId = 0x51b;
     if (type == 1)
         trackImageId = 0x51c;
     if (type == 0)
         trackImageId = 0x519;
-    (*canvas)->Image2DCreate(trackImageId, (unsigned int*)&this->trackImage);
+    unsigned int trackImageOut;
+    (*canvas)->Image2DCreate(trackImageId, trackImageOut);
+    this->trackImage = trackImageOut;
 
     this->knobWidth = (*canvas)->GetImage2DWidth(this->knobImage);
     this->knobHeight = (*canvas)->GetImage2DHeight(this->knobImage);
