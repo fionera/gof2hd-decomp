@@ -1,4 +1,5 @@
 #include "engine/render/PaintCanvas.h"
+#include "engine/render/Material.h"
 PaintCanvas* gCanvas = nullptr;       // canonical render canvas singleton
 // NOTE: Engine.h / Mesh.h / Node.h / String.h are intentionally NOT included.
 // PaintCanvas.h is a self-contained translation unit that models the few
@@ -3712,25 +3713,21 @@ namespace AbyssEngine {
 
 // Adds a matrix (15 floats) plus the target Array pointer onto a glow-matrix list.
 
-void PaintCanvas::SetMatForGlow(char *glowSource)
+void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource)
 {
-    int off = 0x38;
-    for (unsigned int i = 0; i < *(unsigned int *)(glowSource + 0x44); i++) {
-        // meshes array at 0x48 -> list at this+0x18c
-        PCArrayAdd<AbyssEngine::Mesh *>((*(AbyssEngine::Mesh ***)(glowSource + 0x48))[i], &this->glowMeshes_count);
+    // Mirror each entry of the material's per-mesh glow state onto this canvas'
+    // glow lists: the mesh handles (meshes @0x44/0x48), the three parallel matrix
+    // lists (arr_2c @0x30, arr_38 @0x3c, arr_5c @0x60) and the uint list
+    // (arr_50 @0x54). The matrices convert to const float* via Matrix::operator.
+    for (unsigned int i = 0; i < glowSource->meshes->size_; i++) {
+        PCArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes->data_[i], &this->glowMeshes_count);
 
-        const float *m1 = (const float *)(*(char **)(glowSource + 0x30) + off - 0x38);
-        paintcanvas_ext_smfg_pushmat(m1, &this->glowMatA_count);
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_2c->data_[i], &this->glowMatA_count);
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_38->data_[i], &this->glowMatB_count);
 
-        const float *m2 = (const float *)(*(char **)(glowSource + 0x3c) + off - 0x38);
-        paintcanvas_ext_smfg_pushmat(m2, &this->glowMatB_count);
+        PCArrayAdd<unsigned int>(glowSource->arr_50->data_[i], &this->glowUints_count);
 
-        PCArrayAdd<unsigned int>((*(unsigned int **)(glowSource + 0x54))[i], &this->glowUints_count);
-
-        const float *m3 = (const float *)(*(char **)(glowSource + 0x60) + off - 0x38);
-        paintcanvas_ext_smfg_pushmat(m3, &this->glowMatC_count);
-
-        off += 0x3c;
+        paintcanvas_ext_smfg_pushmat(glowSource->arr_5c->data_[i], &this->glowMatC_count);
     }
 }
 

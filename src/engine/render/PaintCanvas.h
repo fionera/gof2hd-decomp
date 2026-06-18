@@ -347,7 +347,7 @@ public:
     void ReleaseAllResources();
     void ReloadTextures();
     void RemoveAllMatsForGlow();
-    void SetMatForGlow(char *glowSource);
+    void SetMatForGlow(AbyssEngine::Material *glowSource);
 
     // Sprite systems
     void SpriteSystemCreate(unsigned short resId, bool flag, unsigned int &out);
