@@ -6,39 +6,39 @@
 // they are declared here as the C entry points the engine expects.
 extern "C" {
 void  FMOD_setLanguage(void *system, uint32_t lang);
-int   FMOD_Event_stop(void *event, int immediate);
-int   FMOD_Event_setPaused(void *event, int paused);
+int   FMOD_Event_stop(FMOD::Event *event, int immediate);
+int   FMOD_Event_setPaused(FMOD::Event *event, int paused);
 void  FMOD_fade(void *self, int a, int s, float v);
 void  FMOD_EventSystem_unload(void *system);
 void  FMOD_EventSystem_release(void *system);
 // FMOD::EventSystem::freeEventData(Event*, bool) — the EventSystem vtable slot +8 method;
 // declared as a named extern (like the other FMOD_* glue) instead of a raw vtable dispatch.
-int   FMOD_EventSystem_freeEventData(void *system, void *event, int waitUntilReady);
+int   FMOD_EventSystem_freeEventData(void *system, FMOD::Event *event, int waitUntilReady);
 void *AEFile_GetAppRootDir();
-FModSound *FMOD_Event_stop_p(void *event, int immediate);
-int   FMOD_Event_setPitch(void *event, float pitch, int mode);
-int   FMOD_Event_setVolume(void *event, float vol);
-int   FMOD_Event_getProperty(void *event, void *prop, void *out, int b = 1);
+FModSound *FMOD_Event_stop_p(FMOD::Event *event, int immediate);
+int   FMOD_Event_setPitch(FMOD::Event *event, float pitch, int mode);
+int   FMOD_Event_setVolume(FMOD::Event *event, float vol);
+int   FMOD_Event_getProperty(FMOD::Event *event, void *prop, void *out, int b = 1);
 int   FMOD_EventSystem_getNumReverbPresets(void *system, int *out);
 int   FMOD_EventSystem_getReverbPresetByIndex(void *system, int idx, void *props, char **name);
 int   FMOD_EventSystem_setReverbProperties(void *system, void *props);
-int   FMOD_Event_getParameterByIndex(void *event, int idx, FMOD::EventParameter **out);
+int   FMOD_Event_getParameterByIndex(FMOD::Event *event, int idx, FMOD::EventParameter **out);
 int   FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
 void  FMOD_EventSystem_Create(void *out);
 int   FMOD_EventSystem_init(void *system, int maxch, void *extdriver, int flags);
 int   FMOD_EventSystem_load(void *system, const char *name, void *proj);
 void  FMOD_EventSystem_getCategory(void *system, void *out);
 void  FMOD_EventSystem_getProjectByIndex(void *system, void *out);
-int   FMOD_Event_getState(void *event, unsigned *out);
-int   FMOD_Event_getParameter(void *event, const char *name, FMOD::EventParameter **out);
+int   FMOD_Event_getState(FMOD::Event *event, unsigned *out);
+int   FMOD_Event_getParameter(FMOD::Event *event, const char *name, FMOD::EventParameter **out);
 int   FMOD_EventSystem_getProject(void *system, const char *name, FMOD::EventProject **out);
-int   FMOD_Event_getParentGroup(void *event, FMOD::EventGroup **out);
-int   FMOD_Event_getCategory(void *event, FMOD::EventCategory **out = 0);
+int   FMOD_Event_getParentGroup(FMOD::Event *event, FMOD::EventGroup **out);
+int   FMOD_Event_getCategory(FMOD::Event *event, FMOD::EventCategory **out = 0);
 void  FMOD_play(void *self, int a, void *b, float v);
-int   FMOD_Event_getInfo(void *event, char **name, void *info);
-int   FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, void **out);
-int   FMOD_Event_set3DAttributes(void *event, void *pos, void *vel);
-int   FMOD_Event_start(void *event);
+int   FMOD_Event_getInfo(FMOD::Event *event, char **name, void *info);
+int   FMOD_EventSystem_getEventBySystemID(unsigned int system, int id, FMOD::Event **out);
+int   FMOD_Event_set3DAttributes(FMOD::Event *event, void *pos, void *vel);
+int   FMOD_Event_start(FMOD::Event *event);
 int   FMOD_EventSystem_set3DListenerAttributes(int system, void *zero, void *pos, void *vel,
                                                void *forward);
 int   FMOD_EventSystem_update(int system);
@@ -139,7 +139,7 @@ FModSound::FModSound()
     this->listenerUp = 0;
 }
 
-FModSound *FModSound::stop(void *e)
+FModSound *FModSound::stop(FMOD::Event *e)
 {
     if (e == 0)
         return this;
@@ -184,7 +184,7 @@ void FModSound::stop(int p1)
 {
     if (p1 < 0)
         return;
-    void *h = this->events[p1];
+    FMOD::Event *h = this->events[p1];
     if (!h)
         return;
     FMOD_Event_stop(h, 0);
@@ -200,7 +200,7 @@ void FModSound::setMusicParamValue(int p1, float p2)
 void FModSound::setSoundVolume(int p1, float vol)
 {
     if (this->system != 0) {
-        void *h = this->events[p1];
+        FMOD::Event *h = this->events[p1];
         if (h)
             FMOD_Event_setVolume(h, vol);
     }
@@ -210,7 +210,7 @@ void FModSound::pauseAllPlaying()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
         if (this->system) {
-            void *slot = this->events[i];
+            FMOD::Event *slot = this->events[i];
             if (slot && isPlaying(i))
                 FMOD_Event_setPaused(slot, 1);
         }
@@ -220,7 +220,7 @@ void FModSound::pauseAllPlaying()
 void FModSound::resume(int p1)
 {
     if (this->system != 0) {
-        void *h = this->events[p1];
+        FMOD::Event *h = this->events[p1];
         if (h)
             FMOD_Event_setPaused(h, 0);
     }
@@ -230,7 +230,7 @@ int FModSound::getEventPauseLength(int idx)
 {
     int out = 0;
     if (this->initialized != 0 && this->system != 0 && this->categoryEnabled[0] != 0) {
-        void *h = this->events[idx];
+        FMOD::Event *h = this->events[idx];
         if (h != 0)
             FMOD_Event_getProperty(h, *gPauseProp, &out, 1);
     }
@@ -285,12 +285,12 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
     if (this->initialized == 0 || (unsigned int)idx >= 0x8f5 || this->system == 0)
         return;
 
-    void *&slot = this->events[idx];
-    void *event = slot;
+    FMOD::Event *&slot = this->events[idx];
+    FMOD::Event *event = slot;
     bool freshLookup = (event == 0);
 
     if (freshLookup) {
-        void *ev = 0;
+        FMOD::Event *ev = 0;
         FMOD_EventSystem_getEventBySystemID((unsigned int)(uintptr_t)this->system, idx, &ev);
         event = ev;
     }
@@ -319,7 +319,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
         if (vel != 0) { cacheVec(this->eventVel, vel); haveVel = true; }
 
         if (freshLookup) {
-            void *dummy = 0;
+            FMOD::Event *dummy = 0;
             if (FMOD_EventSystem_getEventBySystemID(
                     (unsigned int)(uintptr_t)this->system, idx, &dummy) != 0)
                 return;
@@ -354,7 +354,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
     }
 }
 
-bool FModSound::resume(void *e)
+bool FModSound::resume(FMOD::Event *e)
 {
     bool ok = false;
     if (e != 0 && this->system != 0)
@@ -394,9 +394,10 @@ int FModSound::pause(int p1)
 {
     void *self = this;
     if (this->system) {
-        self = this->events[p1];
-        if (self)
-            return FMOD_Event_setPaused(self, 1);
+        FMOD::Event *ev = this->events[p1];
+        self = ev;
+        if (ev)
+            return FMOD_Event_setPaused(ev, 1);
     }
     return (int)(long)self;
 }
@@ -459,7 +460,7 @@ void FModSound::setParamValue(int paramIdx, int idx, float val)
 unsigned FModSound::isChannelActive(int p1)
 {
     if (this->system != 0) {
-        void *h = this->events[p1];
+        FMOD::Event *h = this->events[p1];
         if (h != 0) {
             unsigned s;
             FMOD_Event_getState(h, &s);
@@ -485,7 +486,7 @@ void FModSound::playMusicFadeOutCurrent(int p1)
 void FModSound::getParam(const char *name, int idx)
 {
     if (this->system != 0) {
-        void *h = this->events[idx];
+        FMOD::Event *h = this->events[idx];
         if (h != 0) {
             FMOD::EventParameter *out;
             FMOD_Event_getParameter(h, name, &out);
@@ -528,8 +529,8 @@ afterListener:
 
     for (int i = 0; i != 5; i++) {
         int slotIdx = this->fxSlots[i];
-        void **evp = 0;
-        void *ev = 0;
+        FMOD::Event **evp = 0;
+        FMOD::Event *ev = 0;
         if (slotIdx != -1) {
             evp = &this->events[slotIdx];
             ev = *evp;
@@ -549,7 +550,7 @@ afterListener:
 unsigned FModSound::isPlaying(int p1)
 {
     if (this->system != 0) {
-        void *h = this->events[p1];
+        FMOD::Event *h = this->events[p1];
         if (h != 0) {
             unsigned s;
             FMOD_Event_getState(h, &s);
@@ -567,14 +568,14 @@ void FModSound::freeAllEvents()
         FMOD_EventSystem_getProject(this->system, kProjName, &proj);
         if (proj != 0) {
             for (unsigned i = 0; i < 0x8f5u; ++i) {
-                void *e = this->events[i];
+                FMOD::Event *e = this->events[i];
                 if (e) {
                     FMOD::EventGroup *grp;
                     if (FMOD_Event_getParentGroup(e, &grp) == 0) {
                         unsigned st;
                         FMOD_Event_getState(this->events[i], &st);
                         if ((st & 0x0a) == 0) {
-                            void *ee = this->events[i];
+                            FMOD::Event *ee = this->events[i];
                             FMOD_Event_stop(ee, 0);   // Event vtable slot +8
                             this->events[i] = 0;
                         }
@@ -608,7 +609,7 @@ void FModSound::setParamValue(const char *name, int idx, float val)
     }
 }
 
-int FModSound::pause(void *e)
+int FModSound::pause(FMOD::Event *e)
 {
     unsigned r = 0;
     if (e != 0 && this->system != 0) {
@@ -620,7 +621,7 @@ int FModSound::pause(void *e)
     return r;
 }
 
-void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vector *vel, bool restart)
+FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vector *pos, Vector *vel, bool restart)
 {
     if (this->initialized == 0 || this->categoryEnabled[0] == 0)
         return event;
@@ -628,7 +629,7 @@ void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vect
     int category = (event == 0) ? 0x24 : FMOD_Event_getCategory(event);
 
     if (event == 0 || category == 0x24) {
-        void *ev = 0;
+        FMOD::Event *ev = 0;
         if (FMOD_EventSystem_getEventBySystemID((unsigned int)(uintptr_t)this->system,
                                                 idx, &ev) != 0)
             return event;
@@ -654,7 +655,7 @@ void *FModSound::updateEvent3DAttributes(void *event, int idx, Vector *pos, Vect
         }
 
         if (FMOD_Event_set3DAttributes(ev, posPtr, velPtr) == 0) {
-            void *dummy = 0;
+            FMOD::Event *dummy = 0;
             if (FMOD_EventSystem_getEventBySystemID(
                     (unsigned int)(uintptr_t)this->system, idx, &dummy) == 0)
                 FMOD_Event_start(ev);
@@ -696,7 +697,7 @@ void FModSound::pauseAllPlayingSoundFXEvents()
 {
     for (unsigned i = 0; i < 0x8f5u; ++i) {
         if (this->system) {
-            void *h = this->events[i];
+            FMOD::Event *h = this->events[i];
             if (h && isPlaying(i)) {
                 FMOD::EventCategory *cat;
                 FMOD_Event_getCategory(h, &cat);
@@ -759,16 +760,16 @@ float FModSound::defaultPitch = 0.0f;
 // Player::engineEvent lives at a fixed offset on the opaque Player object.
 static const unsigned kPlayerEngineEvent = 0xf0;
 
-static void *playerEngineEvent(void *player)
+static FMOD::Event *playerEngineEvent(void *player)
 {
-    return *(void **)((char *)player + kPlayerEngineEvent);
+    return *(FMOD::Event **)((char *)player + kPlayerEngineEvent);
 }
 
 void FModSound::pauseEvent(void *player)
 {
     if (player == 0)
         return;
-    void *event = playerEngineEvent(player);
+    FMOD::Event *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_setPaused(event, 1);
 }
@@ -779,7 +780,7 @@ void FModSound::resumeEvent(void *player, int immediate)
 {
     if (player == 0)
         return;
-    void *event = playerEngineEvent(player);
+    FMOD::Event *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_setPaused(event, immediate);
 }
@@ -788,7 +789,7 @@ void FModSound::stopEvent(void *player)
 {
     if (player == 0)
         return;
-    void *event = playerEngineEvent(player);
+    FMOD::Event *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_stop(event, 0);
 }
@@ -797,7 +798,7 @@ void FModSound::playEvent(void *player, int /*eventId*/, int /*mode*/)
 {
     if (player == 0)
         return;
-    void *event = playerEngineEvent(player);
+    FMOD::Event *event = playerEngineEvent(player);
     if (event != 0)
         FMOD_Event_start(event);
 }

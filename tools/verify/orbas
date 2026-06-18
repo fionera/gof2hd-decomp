@@ -4,4 +4,7 @@
 # into relocatable ARM ELF .o files. Override the machine with GOF2_ORB_MACHINE.
 set -euo pipefail
 MACHINE="${GOF2_ORB_MACHINE:-ubuntu}"
-exec orb -m "$MACHINE" arm-linux-gnueabihf-as "$@"
+# stdin from /dev/null: delink.py always passes an input .s file (never assembles from stdin),
+# and it stops `orb` from flipping the shared controlling TTY to raw mode (the parallel delink
+# jobs race to restore it and leave the terminal raw, which staircases the report output).
+exec orb -m "$MACHINE" arm-linux-gnueabihf-as "$@" </dev/null

@@ -4,4 +4,7 @@
 # files. Override the machine with GOF2_ORB_MACHINE.
 set -euo pipefail
 MACHINE="${GOF2_ORB_MACHINE:-ubuntu}"
-exec orb -m "$MACHINE" arm-linux-gnueabihf-nm "$@"
+# stdin from /dev/null: nm reads none, and it stops `orb` from flipping the shared controlling
+# TTY to raw mode (the parallel delink jobs race to restore it and leave the terminal raw,
+# which staircases the report output).
+exec orb -m "$MACHINE" arm-linux-gnueabihf-nm "$@" </dev/null

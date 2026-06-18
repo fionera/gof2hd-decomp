@@ -31,7 +31,7 @@ public:
     char    *appRootDir;           // app root dir / .fev base path
     uint8_t  lowMemory;            // low-memory flag (selects _low.fev)
     uint8_t  categoryEnabled[4];   // [0]=master, [1..3]=per-category enabled
-    void    *events[0x8f5];        // event handle array (slot per system id)
+    FMOD::Event *events[0x8f5];    // event handle array (slot per system id)
     void    *category[4];          // EventCategory* per category
     void    *system;               // FMOD::EventSystem*
     void    *music;                // music Event*
@@ -51,13 +51,13 @@ public:
 
     void setAudioLanguage(int p1);
     void updateEvent3DAttributes(int idx, Vector *a, Vector *b, bool c);
-    void *updateEvent3DAttributes(void *event, int idx, Vector *pos, Vector *vel, bool restart);
+    FMOD::Event *updateEvent3DAttributes(FMOD::Event *event, int idx, Vector *pos, Vector *vel, bool restart);
     void stopAll();
     void resumeAll();
     void promptMusicCue(int p1);
     void fadeOutNow();
     void release();
-    FModSound *stop(void *e);
+    FModSound *stop(FMOD::Event *e);
     void stop(int p1);
     void setVolume(int p1, float vol);
     void pauseAll();
@@ -66,7 +66,7 @@ public:
     void setSoundVolume(int p1, float vol);
     void pauseAllPlaying();
     void resume(int p1);
-    bool resume(void *e);
+    bool resume(FMOD::Event *e);
     int getEventPauseLength(int idx);
     void enableReverb(int p1);
     float getPlayingProgress(int idx);
@@ -76,7 +76,7 @@ public:
     void setParamValue(const char *name, int idx, float val);
     void stopAllSoundFXEvents();
     int pause(int p1);
-    int pause(void *e);
+    int pause(FMOD::Event *e);
     void disableReverb();
     int init();
     unsigned isChannelActive(int p1);

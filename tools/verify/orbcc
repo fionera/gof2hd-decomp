@@ -9,4 +9,7 @@ set -euo pipefail
 MACHINE="${GOF2_ORB_MACHINE:-ubuntu}"
 NDK="${NDK:-/opt/android-ndk-r18b}"
 CLANGXX="$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
-exec orb -m "$MACHINE" "$CLANGXX" "$@"
+# stdin from /dev/null: clang reads none, and it stops `orb` from treating the shared
+# controlling TTY as interactive (it flips it to raw mode and races to restore it across the
+# parallel build jobs, which leaves the terminal raw and staircases the report output).
+exec orb -m "$MACHINE" "$CLANGXX" "$@" </dev/null

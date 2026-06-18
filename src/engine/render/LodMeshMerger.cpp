@@ -3,8 +3,6 @@
 #include "game/core/PaintCanvasClass.h"
 #include "platform/libc.h"
 
-namespace AbyssEngine {
-
 void LodMeshMerger::setEnabled(int index, bool value)
 {
     if (enabled[index] != value) {
@@ -319,5 +317,3 @@ LodMeshMerger::~LodMeshMerger()
     sourceMeshes.clear();
     sourceMeshes.shrink_to_fit();
 }
-
-} // namespace AbyssEngine

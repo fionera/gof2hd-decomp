@@ -15,8 +15,7 @@
 
 namespace AbyssEngine { class PaintCanvas; }
 using ::AbyssEngine::PaintCanvas;
-
-namespace AbyssEngine {
+using ::AbyssEngine::Mesh;
 
 // Combines per-row source meshes (each available at several LOD levels) into one
 // merged mesh. Geometry is transformed per row and the active LOD is chosen so the
@@ -53,7 +52,5 @@ public:
     int   init();
     void* transformMesh(Mesh* src, const Matrix& m);
 };
-
-} // namespace AbyssEngine
 
 #endif

@@ -11,6 +11,7 @@
 
 class Gun;
 class KIPlayer;
+namespace FMOD { struct Event; }
 
 class Player {
 public:
@@ -72,7 +73,7 @@ public:
     uint8_t alwaysFriend;
     uint8_t neverAttack;
     uint8_t pad_ef;
-    void *engineEvent;               // +0xf0 FMOD event handle
+    FMOD::Event *engineEvent;        // +0xf0 FMOD event handle
     void *enginePositionVec;         // +0xf4 engine-sound position vector
     uint8_t enginePaused;            // +0xf8 engine-sound paused flag
     uint8_t pad_f9[3];

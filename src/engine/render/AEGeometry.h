@@ -12,7 +12,7 @@
 
 namespace AbyssEngine { class PaintCanvas; }   // real type in engine/render/PaintCanvas.h; pointer only
 using ::AbyssEngine::PaintCanvas;
-namespace AbyssEngine { class LodMeshMerger; }  // engine/render/LodMeshMerger.h; pointer only
+class LodMeshMerger;  // engine/render/LodMeshMerger.h; pointer only (global scope)
 
 namespace AbyssEngine {
 
@@ -38,7 +38,7 @@ struct AEGeomCanvas {
 class AEGeometry {
 public:
     uint32_t                 mergerIndex;
-    AbyssEngine::LodMeshMerger *merger;
+    LodMeshMerger           *merger;
     uint16_t                 mesh;
     uint32_t                 transform;
     uint32_t                 parentTransform;
@@ -124,6 +124,6 @@ public:
     void    setLodChildTransform(uint32_t param);
     void    setLodLastVisibleDistance(uint64_t d);
     void    updateLod(const Vector &camPos, float screenScale);
-    void    DEBUG_setMeshMergerIndex(int a, AbyssEngine::LodMeshMerger *b);
+    void    DEBUG_setMeshMergerIndex(int a, LodMeshMerger *b);
 };
 #endif

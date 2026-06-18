@@ -1,7 +1,6 @@
 #include "engine/render/AEGeometry.h"
 #include "engine/render/LodMeshMerger.h"
 #include "platform/libc.h"
-using AbyssEngine::LodMeshMerger;
 // NOTE: gof2/Transform.h is intentionally NOT included here. It declares an
 // AbyssEngine::Mesh that conflicts with the complete AbyssEngine::Mesh from
 // gof2/Mesh.h (pulled in via gof2/LodMeshMerger.h). The only Transform method

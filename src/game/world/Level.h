@@ -71,7 +71,7 @@ public:
     ParticleSystemManager* field_94;
     ParticleSystemManager* field_98;
     ParticleSystemManager* field_9c;
-    AbyssEngine::LodMeshMerger* field_a0;
+    LodMeshMerger* field_a0;
     Array<AEGeometry*>* field_a4;
     Array<int>* field_a8;           // value array; no element dtors
     int miningPlantIndex;

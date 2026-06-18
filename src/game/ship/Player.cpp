@@ -946,7 +946,7 @@ void Player::calcWeaponSounds(int count) {
 
 __attribute__((minsize)) extern "C" void Player_PauseEngineSound(Player *self)
 {
-    void *event = self->engineEvent;
+    FMOD::Event *event = self->engineEvent;
     if (event != 0) {
         self->enginePaused = ((FModSound *)(gFModSound))->pause(event);
     }
@@ -960,7 +960,7 @@ __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Ve
     if (*((char *)gAppManager + 0xf) != 0) {
         Mat pos;
         MatrixGetPosition(&pos, self->transform);
-        void *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->enginePositionVec, (Vector *)&pos, false);
+        FMOD::Event *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->enginePositionVec, (Vector *)&pos, false);
         self->engineEvent = ev;
         self->engineSoundPlaying = 1;
     }
@@ -998,7 +998,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
 
 __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
 {
-    void *event = self->engineEvent;
+    FMOD::Event *event = self->engineEvent;
     if (event != 0) {
         ((FModSound *)(gFModSound))->stop(event);
         self->engineSoundPlaying = 0;
@@ -1322,7 +1322,7 @@ void Player::addEnemy(Player *enemy) {
 
 __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, bool force)
 {
-    void *event = self->engineEvent;
+    FMOD::Event *event = self->engineEvent;
     if (event != 0 && (self->enginePaused != 0 || force)) {
         self->enginePaused = ((FModSound *)(gFModSound))->resume(event) ^ 1;
     }
@@ -1483,7 +1483,7 @@ Vector * Player::update(int dt, bool doSound) {
         *(Vector *)tmpC = *(const Vector *)tmpB; *(Vector *)tmpC /= (float)dt;
         (void)spd;
         fn(tmpB, local, (int)(long)transform);
-        void *ev = ((FModSound *)(*g_update_sound))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)tmpB, (Vector *)tmpC, false);
+        FMOD::Event *ev = ((FModSound *)(*g_update_sound))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)tmpB, (Vector *)tmpC, false);
         self->engineEvent = ev;
         self->engineSoundPlaying = 1;
         fn(tmpA, local, (int)(long)transform);
@@ -1668,7 +1668,7 @@ void Player::PlayEngineSound(Vector *vec) {
     if (*((char *)gAppManager + 0xf) != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
-        void *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
+        FMOD::Event *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
             this->engineEvent, 0, (Vector *)this->enginePositionVec, (Vector *)pos, false);
         this->engineEvent = ev;
         this->engineSoundPlaying = 1;
@@ -1681,7 +1681,7 @@ void Player::PlayEngineSound(int unused, Vector *vec) {
     if (*((char *)gAppManager + 0xf) != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
-        void *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
+        FMOD::Event *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
             this->engineEvent, 0, (Vector *)this->enginePositionVec, (Vector *)pos, false);
         this->engineEvent = ev;
         this->engineSoundPlaying = 1;
@@ -1690,7 +1690,7 @@ void Player::PlayEngineSound(int unused, Vector *vec) {
 
 // ---- PauseEngineSound_a4088 ----
 void Player::PauseEngineSound() {
-    void *event = this->engineEvent;
+    FMOD::Event *event = this->engineEvent;
     if (event != 0) {
         this->enginePaused = ((FModSound *)gFModSound)->pause(event);
     }
@@ -1698,7 +1698,7 @@ void Player::PauseEngineSound() {
 
 // ---- ResumeEngineSound_a40ac ----
 void Player::ResumeEngineSound(bool force) {
-    void *event = this->engineEvent;
+    FMOD::Event *event = this->engineEvent;
     if (event != 0 && (this->enginePaused != 0 || force)) {
         this->enginePaused = ((FModSound *)gFModSound)->resume(event) ^ 1;
     }
@@ -1706,7 +1706,7 @@ void Player::ResumeEngineSound(bool force) {
 
 // ---- StopEngineSound_a40e0 ----
 void Player::StopEngineSound() {
-    void *event = this->engineEvent;
+    FMOD::Event *event = this->engineEvent;
     if (event != 0) {
         ((FModSound *)gFModSound)->stop(event);
         this->engineSoundPlaying = 0;
