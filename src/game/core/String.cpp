@@ -454,6 +454,18 @@ void String::dtor_del() {
     delete this;
 }
 
+// Emit the deleting destructor under its original mangled name. clang -Oz inlines every
+// `delete (String*)` at the call site and never outlines D0 for a non-virtual type, so the
+// binary's standalone String::D0 — taken by address from the engine's object-destruction
+// tables — has no counterpart in our build unless emitted explicitly (same asm-label idiom
+// as Radio.cpp's GameText::getText). Body matches the original: run the complete destructor,
+// then free the object. [[gnu::used]] keeps it despite having no in-tree caller.
+void String_deleting_dtor(String *self) asm("_ZN11AbyssEngine6StringD0Ev");
+[[gnu::used]] void String_deleting_dtor(String *self) {
+    self->~String();
+    ::operator delete(self);
+}
+
 // Tag delimiter fragments.
 static const char kOpen[]  = "<";
 static const char kClose[] = ">";
