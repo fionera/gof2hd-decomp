@@ -269,7 +269,18 @@ def main():
     if not args.only:
         universe = original_text_functions()
         compared = {r["symbol"] for r in rows}
-        missing = sorted(universe - compared)
+        # Collapse aliased symbols before computing coverage. Many functions share ONE address in
+        # the binary — most commonly the C1/C2 (complete/base) constructor pair and the D0/D1/D2
+        # destructor variants, which the compiler emits as aliases when they'd be identical. objdump
+        # and nm attribute only ONE name per address, so the aliased sibling looks "missing" even
+        # though the function IS compared (and often byte-matches) under the other name. Treat a
+        # binary symbol as compared if ANY symbol at its address is compared, so these aliases don't
+        # masquerade as wrong-type/absent.
+        addr2names, _ = delinker.load_symbols(delinker.DEFAULT_SYMS)
+        name2addr = {n: a for a, ns in addr2names.items() for n in ns}
+        compared_addrs = {name2addr[s] for s in compared if s in name2addr}
+        missing = sorted(s for s in universe
+                         if s not in compared and name2addr.get(s) not in compared_addrs)
         # Of the missing originals, which do we actually implement — just under a different
         # signature (wrong param/qualifier types -> different mangled name -> skipped by the
         # exact-name match)? These are the high-value fixes: the body exists, only the type is
