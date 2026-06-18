@@ -41,7 +41,9 @@ public:
     Mission(int id, int goods, int station);
     Mission(int id, AbyssEngine::String client, int* clientImage, int clientRace,
             int costs, int station, int reward);
-    ~Mission();
+    // Polymorphic only via its virtual destructor (vtable = [D1, D0]); no other
+    // virtual methods. The virtual dtor plants the vptr at offset 0.
+    virtual ~Mission();
 
     void calcDistance();
     Mission* clone();
