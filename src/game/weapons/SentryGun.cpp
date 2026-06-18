@@ -15,6 +15,13 @@ SentryGun::SentryGun(Gun* gun, int mesh, int unused, int p4, Level* level)
     this->cooldown = gun->itemIndex * 3 - 0x279;
 }
 
+// SentryGun::~SentryGun() — out-of-line so all destructor variants (D0/D1/D2) emit
+// in this TU, matching the original binary. Body is the implicit base/member cleanup,
+// which the compiler regenerates identically.
+SentryGun::~SentryGun()
+{
+}
+
 // SentryGun::update(int) — virtual override of ObjectGun::update.
 // Advances the owned gun, and on a fire pulse re-activates an idle junk object from
 // the level's sentry pool, positions it at the current muzzle slot, and spawns it.

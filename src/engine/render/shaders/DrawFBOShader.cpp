@@ -25,6 +25,10 @@ DrawFBOShader::DrawFBOShader()
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }
 
+DrawFBOShader::~DrawFBOShader()
+{
+}
+
 // Compiles the full-screen blit program and caches its attribute/uniform locations.
 void DrawFBOShader::Init(Engine *)
 {

@@ -31,6 +31,7 @@ public:
 
     PlayerCreature(int kind, int itemIndex, Player* player, AEGeometry* geometry,
                    float x, float y, float z);
+    ~PlayerCreature();
 
     uint8_t isHooked();
     void    calmDown();

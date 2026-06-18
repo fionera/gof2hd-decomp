@@ -22,6 +22,7 @@ public:
     uint8_t missionLock;    // keep this wormhole open for the active mission
 
     PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
+    ~PlayerWormHole();
 
     bool   isShrinking();
     int    open();

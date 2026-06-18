@@ -57,6 +57,10 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
     this->scale = 0x1000;
 }
 
+PlayerWormHole::~PlayerWormHole()
+{
+}
+
 bool PlayerWormHole::isShrinking()
 {
     return this->timer > 60000;

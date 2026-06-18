@@ -80,6 +80,10 @@ BloomShader::BloomShader()
     this->name.s = u"BloomShader";
 }
 
+BloomShader::~BloomShader()
+{
+}
+
 // Creates the four off-screen render targets (luma, blurH, blurV, black) the first time the
 // effect runs.
 void BloomShader::InternalInit(Engine *engine)

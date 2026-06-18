@@ -17,6 +17,7 @@ public:
     int cooldown;   // spawn index/cooldown, seeded from the gun's item index
 
     SentryGun(Gun* gun, int mesh, int unused, int p4, Level* level);
+    ~SentryGun();
 
     void update(int dt);
 };

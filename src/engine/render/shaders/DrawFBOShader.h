@@ -26,6 +26,7 @@ public:
     int textureLoc;             // uniform "texture"
 
     DrawFBOShader();
+    ~DrawFBOShader();
 
     void Init(Engine *engine) override;
     void SetInActive() override;

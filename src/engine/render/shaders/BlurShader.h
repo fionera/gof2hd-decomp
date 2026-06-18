@@ -36,6 +36,7 @@ public:
     float blurScale;
 
     BlurShader();
+    ~BlurShader() override;
 
     void Init(Engine *engine) override;
     void SetInActive() override;

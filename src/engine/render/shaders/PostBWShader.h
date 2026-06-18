@@ -25,6 +25,7 @@ public:
     int sTexture;       // uniform s_Texture
 
     PostBWShader();
+    ~PostBWShader();
 
     void Init(Engine *engine) override;
     void SetInActive() override;

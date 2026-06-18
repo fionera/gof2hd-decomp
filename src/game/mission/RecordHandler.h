@@ -24,6 +24,7 @@ public:
     String   backupDir;        // backup save-record directory prefix
 
     RecordHandler();
+    ~RecordHandler();
 
     void   addHash(int slot);
     void   addHashToOptions();

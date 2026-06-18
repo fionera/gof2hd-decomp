@@ -260,4 +260,6 @@ GlowPPShader::GlowPPShader() {
     this->name.s = u"GlowPPShader";
 }
 
+GlowPPShader::~GlowPPShader() {}
+
 } // namespace AbyssEngine

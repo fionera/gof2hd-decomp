@@ -59,3 +59,7 @@ Waypoint::Waypoint(int x, int y, int z, Route* route)
     this->field_0x72 = 1;
     this->hasCargo = 0;
 }
+
+Waypoint::~Waypoint()
+{
+}

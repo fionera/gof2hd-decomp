@@ -103,3 +103,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry* geometry, float x, floa
     this->activated = 0;
     this->geometry->setRotation(0.0f, 3.1415927f, 0.0f);
 }
+
+PlayerJumpgate::~PlayerJumpgate()
+{
+}

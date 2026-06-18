@@ -20,6 +20,10 @@ PostBWShader::PostBWShader()
     this->name.s = u"PostBWShader";
 }
 
+PostBWShader::~PostBWShader()
+{
+}
+
 // Compiles and links the grayscale post-process program and binds its attribute/uniform slots.
 void PostBWShader::Init(Engine *)
 {

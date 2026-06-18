@@ -106,6 +106,10 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
     this->halfExtentZ = extentZ;
 }
 
+BoundingAAB::~BoundingAAB()
+{
+}
+
 Vector BoundingAAB::getCollisionNormal(const Vector &)
 {
     Vector out;

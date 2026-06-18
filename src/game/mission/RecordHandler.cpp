@@ -358,6 +358,9 @@ RecordHandler::RecordHandler()
       backupDir(RH_lit2) {
 }
 
+RecordHandler::~RecordHandler() {
+}
+
 // RecordHandler::writeByteArrayAsOptionsFile(signed char*, int)
 void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     String tmp;

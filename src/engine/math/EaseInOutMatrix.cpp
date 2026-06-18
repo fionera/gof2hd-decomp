@@ -27,7 +27,7 @@ AEMath::Matrix EaseInOutMatrix::GetValue() {
     return this->m_current;
 }
 
-EaseInOutMatrix::~EaseInOutMatrix() = default;
+EaseInOutMatrix::~EaseInOutMatrix() {}
 
 void EaseInOutMatrix::SetDuration(int duration) {
     m_duration = (float)duration;

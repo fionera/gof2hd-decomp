@@ -61,6 +61,7 @@ public:
     int lumaUniformTexture;             // +0x98  s_texture
 
     BloomShader();
+    ~BloomShader();
     void Init(Engine *engine) override;
     void InternalInit(Engine *engine);
     void UpdateMeshData(Mesh *mesh, Engine *engine) override;

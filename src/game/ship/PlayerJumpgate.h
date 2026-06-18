@@ -20,6 +20,7 @@ public:
     uint32_t transformHandle;
 
     PlayerJumpgate(int playerId, AEGeometry* geometry, float x, float y, float z, bool visible);
+    ~PlayerJumpgate();
 
     bool timeToJump();
     void activate();

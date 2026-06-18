@@ -114,6 +114,10 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player* player, AEGeomet
     reset();
 }
 
+PlayerCreature::~PlayerCreature()
+{
+}
+
 void PlayerCreature::hook(int value)
 {
     this->hooked = 1;

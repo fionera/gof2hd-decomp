@@ -61,6 +61,7 @@ public:
     FBOContainer *backgroundTarget; // combine/background render target
 
     GlowPPShader();
+    ~GlowPPShader();
     void Init(Engine *engine) override;
     void InternalInit(Engine *engine);
     void RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) override;

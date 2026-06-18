@@ -20,6 +20,10 @@ BlurShader::BlurShader()
     this->blurScale = 2.0f;
 }
 
+BlurShader::~BlurShader()
+{
+}
+
 // Compiles the blur GLES2 program and caches its attribute/uniform locations.
 void BlurShader::Init(Engine *)
 {
