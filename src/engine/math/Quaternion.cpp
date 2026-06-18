@@ -4,6 +4,11 @@
 
 namespace AbyssEngine {
 
+// Default ctor leaves the fields uninitialized (the original just returns `this`).
+Quaternion::Quaternion() {}
+
+Quaternion::Quaternion(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+
 Quaternion::Quaternion(Quaternion *other) {
     (void)other;
 }

@@ -47,8 +47,8 @@ float Pow(float, float);
 
 struct Quaternion {
     float x, y, z, w;
-    Quaternion() {}
-    Quaternion(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+    Quaternion();                                        // out-of-line so the binary's C1/C2 symbols emit
+    Quaternion(float x_, float y_, float z_, float w_);  // out-of-line (matches the original)
     Quaternion(AEMath::Vector angles);
     Quaternion(Quaternion* other);
     Quaternion(const AEMath::Matrix& matrix);
