@@ -1620,8 +1620,8 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
     int bpN = 0; AEFile_ReadInt(&bpN, fd); bpArr->resize(bpN);
     for (unsigned i = 0; i < bpArr->size(); i++) {
         unsigned int *liveBps = (unsigned int *)gStatus->getBluePrints();
-        int liveIdx = ((BluePrint *)(*(void **)(liveBps[1] + i * 4)))->getIndexOf();
-        int *bp = (int *)BluePrint::make(liveIdx);
+        int liveIdx = ((BluePrint *)(*(void **)(liveBps[1] + i * 4)))->getIndex();
+        int *bp = (int *)(new BluePrint(liveIdx));
         (*bpArr)[i] = bp;
         unsigned int *ingredients = (unsigned int *)bp[0];
         int byteoff = 0;

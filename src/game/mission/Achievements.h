@@ -28,6 +28,9 @@ public:
     void applyNewMedals();
     void checkForNewMedal(PlayerEgo* ego);
     void countMedals();
+    int getCatches();
+    int getKills();
+    int getPirateKills();
     int getValue(int index, int sub);
     uint8_t gotAllGoldMedals();
     uint8_t gotAllMedals();

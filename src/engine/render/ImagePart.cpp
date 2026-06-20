@@ -18,6 +18,9 @@ ImagePart::ImagePart(unsigned id, int field04, int posY) {
     this->scale_y = ((PaintCanvas*)*holder)->GetImage2DHeight(id);
 }
 
+// ImagePart::~ImagePart() — trivial; the binary emits a standalone empty dtor.
+ImagePart::~ImagePart() {}
+
 // ImagePart::draw(int x, int y, bool b) — draws the stored image2d at (x, pos_y+y)
 // with size (scale_x, scale_y), mode 0x11, flags = field_04|1, last = b.
 void ImagePart::draw(int x, int y, bool b) {

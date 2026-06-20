@@ -3,6 +3,15 @@
 
 using AbyssEngine::PaintCanvas;
 
+MarqueeImage::~MarqueeImage()
+{
+}
+
+void MarqueeImage::setSpeed(float speed)
+{
+    this->speed = speed;
+}
+
 void MarqueeImage::setPosition(int x, int y)
 {
     this->x = x;

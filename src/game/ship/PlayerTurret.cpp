@@ -87,16 +87,23 @@ void PlayerTurret::render()
         this->explosion->render();
         state = this->state;
     }
+    // Draw the inherited KIPlayer representation (the turret geometry) whenever the
+    // turret is not in the mid-explosion states (state in {3,4}).
     if ((uint32_t)(state - 3) >= 2) {
-        this->renderBase();
+        this->KIPlayer::render();
     }
 }
 
-// render() tail: draw the inherited KIPlayer representation (the turret geometry)
-// whenever the turret is not in the mid-explosion states (state in {3,4}).
-void PlayerTurret::renderBase()
+// Turrets are never queried for hull/proximity collisions; both vtable slots are
+// inert stubs that report "no collision".
+int PlayerTurret::collide(float x, float y, float z)
 {
-    this->KIPlayer::render();
+    return 0;
+}
+
+int PlayerTurret::outerCollide(float x, float y, float z)
+{
+    return 0;
 }
 
 void PlayerTurret::handleTurret(int delta)

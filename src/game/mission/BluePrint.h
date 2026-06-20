@@ -33,13 +33,13 @@ public:
     float getCompletionRate();
     int getCurrentAmount(int item);
     int getIndex();
-    // Index accessor used when a BluePrint is reached through a ListItem/record
-    // wrapper; same semantics as getIndex() (returns the produced item index).
-    int getIndexOf();
     int getStationIndex();
-    // Heap factory: operator new + BluePrint(index).
-    static BluePrint *make(int index);
     int getQuantity();
+    // Base (unscaled) batch quantity for one production cycle.
+    int getBaseQuantity();
+    // Accumulated spend on this blueprint.
+    int getMoneySpent();
+    void setMoneySpent(int value);
     bool isUnlocked();
     int getIngredientsValue();
     int getRemainingAmount(int item);

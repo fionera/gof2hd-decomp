@@ -47,6 +47,20 @@ TouchSlider::TouchSlider(int type, int x, int y, float value)
     this->touchPadding = *(int *)((char *)*g_TouchSlider_app + 0x7c);
 }
 
+TouchSlider::~TouchSlider()
+{
+}
+
+int TouchSlider::getWidth()
+{
+    return this->trackWidth;
+}
+
+void TouchSlider::setFixedScale(int numSteps)
+{
+    this->numSteps = numSteps;
+}
+
 int TouchSlider::OnTouchBegin(int x, int y)
 {
     if (this->isDisabled != 0)

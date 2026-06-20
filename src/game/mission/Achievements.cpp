@@ -80,6 +80,18 @@ void Achievements::resetNewMedals() {
     this->weaponCount = 0;
 }
 
+int Achievements::getKills() {
+    return this->kills;
+}
+
+int Achievements::getCatches() {
+    return this->catches;
+}
+
+int Achievements::getPirateKills() {
+    return this->pirateKills;
+}
+
 void Achievements::incCatches() {
     this->catches += 1;
 }

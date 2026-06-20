@@ -145,14 +145,11 @@ BluePrint::BluePrint(int item) {
     remainingBatch = batchMultiplier;
 }
 
-// Index accessor reached via the ListItem/record-handler wrapper path; returns
-// the produced item's database index, same as getIndex().
-int BluePrint::getIndexOf() { return itemIndex; }
-
-// Heap factory: operator new + BluePrint(index).
-BluePrint *BluePrint::make(int index) {
-    return new BluePrint(index);
-}
+// Base (unscaled) batch quantity for one production cycle.
+int BluePrint::getBaseQuantity() { return batchMultiplier; }
+// Accumulated spend on this blueprint.
+int BluePrint::getMoneySpent() { return spentValue; }
+void BluePrint::setMoneySpent(int value) { spentValue = value; }
 
 // addItem(item, amount, station): apply an ingredient delivery to the blueprint,
 // decrementing the matching ingredient counter, accumulating spend and recording

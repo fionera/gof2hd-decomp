@@ -42,12 +42,14 @@ public:
     // LevelScript.cpp dereferences it directly; getPlanets() returns the typed array.
     void *getPlanetTargets();
     void *getPlanets();
+    Array<int> *getStationIndices();
+    float getPlanetScaleFactor();
     Vector getLightDirection();
     void initLight();
+    void rotate(int x, int y, int z);
     void render();
     void render2D();
     void renderSunStreak();
-    void renderSunStreak_tail(AEGeometry *geom);
     void scaleSunDuringSupernovaIntro(int amount);
     void switchPlanetForIntro();
     void switchSunForSupernovaExpansion();

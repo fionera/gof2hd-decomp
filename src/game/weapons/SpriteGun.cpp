@@ -1,36 +1,38 @@
 #include "game/weapons/SpriteGun.h"
 #include "game/weapons/Gun.h"
 
-// Per-instance vtable holder resolved by the engine at load time.
-
-// update/setEnemies/setEnemy forward through the inherited gun-hierarchy handlers
-// the dynamic linker resolves into engine relocation slots; they have no static
-// body in this image, so they stay as resolved-slot externs.
-__attribute__((visibility("hidden"))) extern void (*SpriteGun_updateHandler_slot)(void*);
+// setEnemies/setEnemy/update forward the relevant pointer through the inherited
+// gun-hierarchy handlers the dynamic linker resolves into engine relocation
+// slots; they have no static body in this image, so they stay as resolved-slot
+// externs.
 __attribute__((visibility("hidden"))) extern void (*SpriteGun_enemiesHandler_slot)(void*);
 __attribute__((visibility("hidden"))) extern void (*SpriteGun_enemyHandler_slot)(void*);
+__attribute__((visibility("hidden"))) extern void (*SpriteGun_updateHandler_slot)(void*);
 
-SpriteGun::SpriteGun(Gun* gun, int kind)
+SpriteGun::SpriteGun(Gun* /*gun*/, int /*kind*/)
 {
-    (void)kind;
     this->field_0x4 = 0;
-    this->gun = gun;
 }
 
-void SpriteGun::update(int elapsed)
+SpriteGun::~SpriteGun()
 {
-    (void)elapsed;
-    SpriteGun_updateHandler_slot(this->gun);
 }
 
 void SpriteGun::setEnemies(Array<Player*>* enemies)
 {
-    (void)enemies;
-    SpriteGun_enemiesHandler_slot(this->gun);
+    SpriteGun_enemiesHandler_slot(enemies->data());
 }
 
 void SpriteGun::setEnemy(Player* enemy)
 {
-    (void)enemy;
-    SpriteGun_enemyHandler_slot(this->gun);
+    SpriteGun_enemyHandler_slot(reinterpret_cast<void**>(enemy)[2]);
+}
+
+void SpriteGun::update(int elapsed)
+{
+    SpriteGun_updateHandler_slot(reinterpret_cast<void**>(elapsed)[2]);
+}
+
+void SpriteGun::render()
+{
 }

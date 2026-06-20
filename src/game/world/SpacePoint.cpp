@@ -12,3 +12,13 @@ void SpacePoint::giveFree() {
 void SpacePoint::take() {
     this->free = 0;
 }
+
+SpacePoint::~SpacePoint() {}
+
+uint8_t SpacePoint::isFree() {
+    return this->free;
+}
+
+int SpacePoint::getIndex() {
+    return this->param;
+}

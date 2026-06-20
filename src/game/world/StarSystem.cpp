@@ -81,13 +81,7 @@ void StarSystem::renderSunStreak() {
                                                      : (*this->texturesArray)[0];
     gCanvas->SetTexture(texture, (unsigned)-1);
     gCanvas->SetBlendMode(AbyssEngine::BlendMode_2);
-    renderSunStreak_tail(this->sunStreak);
-}
-
-// Draws the sun-streak billboard geometry held in sunStreak.
-void StarSystem::renderSunStreak_tail(AEGeometry *geom) {
-    if (geom != nullptr)
-        geom->render();
+    this->sunStreak->render();
 }
 
 void *StarSystem::getPlanetTargets() {
@@ -96,6 +90,18 @@ void *StarSystem::getPlanetTargets() {
 
 void *StarSystem::getPlanets() {
     return this->planetsArray;
+}
+
+Array<int> *StarSystem::getStationIndices() {
+    return this->stationIdxArray;
+}
+
+float StarSystem::getPlanetScaleFactor() {
+    return this->planetRingScaleOffset;
+}
+
+// Empty in the shipped binary -- the rotation hook is a no-op stub.
+void StarSystem::rotate(int x, int y, int z) {
 }
 
 Vector StarSystem::getLightDirection() {

@@ -54,7 +54,8 @@ public:
     void handleSentryGun(int delta);
     void setHost(KIPlayer* host, const Vector& offset);
     void render() override;
-    void renderBase();
+    int collide(float x, float y, float z) override;
+    int outerCollide(float x, float y, float z) override;
     void handleTurret(int delta);
     void revive() override;
     void setPosition(const Vector& position);

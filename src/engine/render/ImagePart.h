@@ -18,6 +18,7 @@ public:
     // Demangles to ImagePart::ImagePart(unsigned, int, int); queries the
     // global PaintCanvas for the image's width/height.
     ImagePart(unsigned id, int field04, int posY);
+    ~ImagePart();
 
     void draw(int x, int y, bool b);
 };

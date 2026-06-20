@@ -16,9 +16,12 @@ public:
 
     SpacePoint(int type, const AbyssEngine::AEMath::Vector& position,
                const AbyssEngine::AEMath::Vector& direction, int param);
+    ~SpacePoint();
 
     void giveFree();
     void take();
+    uint8_t isFree();
+    int getIndex();
 };
 
 #endif

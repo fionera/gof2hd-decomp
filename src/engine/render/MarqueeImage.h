@@ -25,6 +25,8 @@ public:
     int32_t  scrollOffset;
 
     MarqueeImage(uint16_t image, int width, int x, int y, float speed);
+    ~MarqueeImage();
+    void setSpeed(float speed);
     void setPosition(int x, int y);
     void update(int dt);
     void draw();
