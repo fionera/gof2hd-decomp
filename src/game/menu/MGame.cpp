@@ -1819,7 +1819,7 @@ deliverFollowup:
     ((MGame *)(this))->buildMissionFollowup();
 
 done:
-    
+    ;
 }
 
 // value) and the String destructor.
@@ -2408,7 +2408,7 @@ afterCam:
     }
 
 done:
-    
+    ;
 }
 
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
