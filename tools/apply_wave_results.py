@@ -21,9 +21,31 @@ REPO = os.path.dirname(HERE)
 DEFERRED = os.path.join(REPO, "docs", "DEFERRED.md")
 
 
+# Independent parallel agents must NEVER apply cross-hierarchy edits piecemeal — a base-virtual
+# rename or a dtor-virtuality flip applied in isolation breaks every derived TU (the setPosition3
+# cascade that cost a whole wave). So only auto-apply LOCAL call-site edits in .cpp files; anything
+# that edits a header or touches the type system (virtual/override/class/struct/base decls) is
+# REFUSED and deferred for a dedicated coordinated change.
+RISKY = ("virtual", "override", "class ", "struct ", " : public", " : private", " : protected")
+
+
+def _risky(r):
+    if not r["file"].endswith(".cpp"):
+        return f"edits a header ({r['file']}) — needs coordinated change"
+    blob = (r.get("find", "") + "\n" + (r.get("replace") or ""))
+    for kw in RISKY:
+        if kw in blob:
+            return f"touches the type system ('{kw.strip()}') — needs coordinated change"
+    return None
+
+
 def apply_caller_rewrites(rewrites):
-    applied, skipped = 0, []
+    applied, skipped, refused = 0, [], []
     for r in rewrites:
+        why = _risky(r)
+        if why:
+            refused.append(f"{r['file']}: REFUSED — {why}")
+            continue
         path = os.path.join(REPO, r["file"])
         if not os.path.exists(path):
             skipped.append(f"{r['file']}: no such file")
@@ -37,7 +59,7 @@ def apply_caller_rewrites(rewrites):
             continue
         open(path, "w").write(txt.replace(r["find"], r["replace"]))
         applied += 1
-    return applied, skipped
+    return applied, skipped + refused, refused
 
 
 def route_missing(missing):
@@ -69,12 +91,13 @@ def main():
     deferred = data.get("deferred", [])
     fixed = data.get("fixed", [])
 
-    applied, skipped = apply_caller_rewrites(rewrites)
+    applied, skipped, refused = apply_caller_rewrites(rewrites)
     reconciled, other_missing = route_missing(missing)
-    append_deferred(deferred, other_missing)
+    # refused cross-hierarchy rewrites are real work that needs a coordinated pass -> ledger.
+    append_deferred(deferred, other_missing + [f"REFUSED caller_rewrite: {r}" for r in refused])
 
     print(f"fixed reported: {len(fixed)}")
-    print(f"caller_rewrites: applied {applied}, skipped {len(skipped)}")
+    print(f"caller_rewrites: applied {applied}, skipped/refused {len(skipped)}")
     for s in skipped:
         print(f"    - {s}")
     if reconciled:
