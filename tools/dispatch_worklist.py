@@ -158,6 +158,29 @@ def main():
     # call sites); letting those union would chain every unrelated class into one mega-group. Broad
     # and zero-file entries are instead bucketed by their owning class/scope so related work still
     # lands on one agent without the pathological bridges.
+    # nearest-.text-neighbor home: a free function with no syntactic owner belongs in the source
+    # unit of the COMPARED original physically adjacent to it (same original .cpp -> contiguous
+    # addresses). Build a sorted (ghidra_addr -> unit) table from the report's compared functions.
+    import bisect
+    sym2unit = {f["symbol"]: f["unit"] for f in report.get("functions", []) if "unit" in f}
+    au = sorted((sym_addr[s] + GHIDRA_BASE, u) for s, u in sym2unit.items() if s in sym_addr)
+    au_addrs = [a for a, _ in au]
+    HOME_DIST = 0x400  # only adopt a neighbor's unit when within 1KB (very-high-confidence same TU)
+
+    def home_files(ghidra_addr_hex):
+        if not ghidra_addr_hex or not au:
+            return []
+        a = int(ghidra_addr_hex, 16)
+        i = bisect.bisect_left(au_addrs, a)
+        best, bd = None, 1 << 60
+        for j in (i - 1, i):
+            if 0 <= j < len(au) and abs(au_addrs[j] - a) < bd:
+                bd, best = abs(au_addrs[j] - a), au[j][1]
+        if best is None or bd >= HOME_DIST:
+            return []
+        cpp, h = f"src/{best}.cpp", f"src/{best}.h"
+        return [p for p in (h, cpp) if os.path.exists(os.path.join(REPO, p))]
+
     MAX_TRUST = 4
     for e in entries:
         leaf_name = re.sub(r"<.*>", "", e["qualified"]).rsplit("::", 1)[-1]
@@ -168,6 +191,9 @@ def main():
         headers, cpps = wt.resolve_files(e["qualified"])
         e["headers"], e["cpps"] = headers, cpps
         e["files"] = sorted(set(headers) | set(cpps))
+        # free function nobody declares yet -> adopt its nearest-neighbor unit's file as home.
+        if not e["files"] and "::" not in e["qualified"]:
+            e["files"] = home_files(e.get("ghidra_addr"))
         e["trusted"] = 1 <= len(e["files"]) <= MAX_TRUST
 
     # --- union-find: shared file (trusted only) OR an absent<->extra pair -> same group ------
@@ -199,14 +225,34 @@ def main():
             if ck:
                 keyroot.setdefault(ck, uf.find(("E", idx)))
 
-    # Orphan/untrusted entries that will all write ONE shared target file must share a component
-    # (else "disjoint" singletons would clobber it in parallel): every template instantiation lands
-    # in Array.h/Array.cpp; every JNI/ndk bridge entry lands in the platform bridge TU.
-    def orphan_root(e):
+    # No-file GLOBAL FREE functions (no `::`) have no owning file and no caller hint, but functions
+    # from the same original .cpp are contiguous in .text — so cluster them by address RUN (a gap
+    # > RUN_GAP starts a new TU). One agent then reconstructs one original source file, instead of
+    # N agents each independently inventing a home for related globals and clobbering it.
+    RUN_GAP = 0x1000
+    free_orphans = sorted(
+        (idx for idx, e in enumerate(entries)
+         if not e["trusted"] and "::" not in e["qualified"] and e.get("ghidra_addr")
+         and e["kind"] not in ("template",)
+         and not e["symbol"].startswith(("Java_", "JNI_", "ndk23_", "ndk_"))),
+        key=lambda i: int(entries[i]["ghidra_addr"], 16))
+    run_of = {}
+    run_id, prev = -1, None
+    for idx in free_orphans:
+        a = int(entries[idx]["ghidra_addr"], 16)
+        if prev is None or a - prev > RUN_GAP:
+            run_id += 1
+        run_of[idx] = run_id
+        prev = a
+
+    def orphan_root(idx):
+        e = entries[idx]
         if e["kind"] == "template":
             return ("BUCKET", "__templates__")
         if e["symbol"].startswith(("Java_", "JNI_", "ndk23_", "ndk_")):
             return ("BUCKET", "__jni_bridge__")
+        if idx in run_of:
+            return ("FREE_RUN", run_of[idx])
         ck = class_key(e)
         if ck:
             return keyroot.get(ck) or ("BUCKET", ck)
@@ -214,7 +260,7 @@ def main():
 
     groups = defaultdict(list)
     for idx, e in enumerate(entries):
-        root = uf.find(("E", idx)) if e["trusted"] else orphan_root(entries[idx])
+        root = uf.find(("E", idx)) if e["trusted"] else orphan_root(idx)
         groups[root].append(idx)
 
     # A COMPONENT is one file-disjoint island (its files are touched by no other component). A wave
@@ -230,16 +276,34 @@ def main():
             return ck
         return e["qualified"].rsplit("::", 1)[0] if "::" in e["qualified"] else "(free)"
 
+    # Synthetic no-file components write a single, deterministic target file. Templates land in the
+    # Array header; the JNI/ndk bridge in one platform TU; an address-run reconstructs one original
+    # .cpp under a stable address-derived name (so its sequential subbatches all append to the SAME
+    # file across waves instead of each inventing a new one). FREE_RUNs are NOT split — one agent
+    # owns the whole reconstructed TU, so the filename is decided once.
+    def target_and_split(root, idxs):
+        if root == ("BUCKET", "__templates__"):
+            return "src/engine/core/Array.h", True
+        if root == ("BUCKET", "__jni_bridge__"):
+            return "src/platform/jni_bridge.cpp", True
+        if isinstance(root, tuple) and root[0] == "FREE_RUN":
+            lo = min(int(entries[i]["ghidra_addr"], 16) for i in idxs)
+            return f"src/platform/recovered_{lo:x}.cpp", False  # no split
+        return None, True
+
     components = []
-    for _, idxs in groups.items():
-        # split by scope, then chunk each scope to <= SUBBATCH
+    for root, idxs in groups.items():
+        target_file, do_split = target_and_split(root, idxs)
+        # split by scope, then chunk each scope to <= SUBBATCH (synthetic single-file runs are kept
+        # whole so one agent decides the new file's name and contents).
         by_scope = defaultdict(list)
         for i in idxs:
             by_scope[scope_of(entries[i])].append(i)
         subbatches = []
         for scope, sidx in sorted(by_scope.items(), key=lambda kv: (-len(kv[1]), kv[0])):
-            for k in range(0, len(sidx), SUBBATCH):
-                subbatches.append(sidx[k:k + SUBBATCH])
+            step = SUBBATCH if do_split else len(sidx) or 1
+            for k in range(0, len(sidx), step):
+                subbatches.append(sidx[k:k + step])
         gfiles = sorted({f for i in idxs for f in entries[i]["files"]})
         kinds = [entries[i]["kind"] for i in idxs]
         kc = {k: kinds.count(k) for k in set(kinds)}
@@ -247,7 +311,7 @@ def main():
                                                     "extra", "absent"].index(k)))
         components.append({"dominant_kind": dominant, "kinds": kc, "n_entries": len(idxs),
                            "n_subbatches": len(subbatches), "files": gfiles,
-                           "subbatches": subbatches})
+                           "target_file": target_file, "subbatches": subbatches})
     # smallest-first so quick wins (singletons / new-file orphans) clear early
     components.sort(key=lambda c: (c["n_subbatches"], c["n_entries"]))
 

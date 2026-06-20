@@ -68,10 +68,15 @@ function promptFor(job) {
     if (e.paired_absent) s += `\n     paired absent (the original this shim should become): ${e.paired_absent}`
     return s
   }).join('\n')
+  const where = job.files && job.files.length
+    ? `Component files you may edit (and ONLY these): ${job.files.join(', ')}`
+    : (job.target_file
+        ? `These have no existing home. Put ALL of them in this exact file (create it if missing, APPEND if it exists): ${job.target_file}  — plus its header if you add a class. Do NOT invent a different filename.`
+        : `These have no existing home — create one well-named .cpp (+ .h) under src/ and put them together.`)
   return `Fix these ${job.entries.length} function(s) in the Galaxy on Fire 2 decompilation so each recompiles to the ORIGINAL Android binary under its EXACT original mangled symbol.
 
 Repo: ${REPO}
-Component files you may edit (and ONLY these): ${job.files.join(', ') || '(none yet — create the owning file(s) under src/)'}
+${where}
 
 ENTRIES:
 ${lines}
