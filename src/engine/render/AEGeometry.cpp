@@ -53,6 +53,8 @@ AEGeometry::~AEGeometry()
 
 bool AEGeometry::hasLod() { return this->lodTransforms != nullptr; }
 
+uint16_t AEGeometry::getID() { return this->mesh; }
+
 uint8_t AEGeometry::isVisible() { return (uint8_t)this->visibility; }
 
 void AEGeometry::setVisible(bool v)
@@ -493,23 +495,4 @@ void AEGeometry::setLodChildTransform(uint32_t param)
             count = this->lodCount;
         }
     }
-}
-
-// Single-argument convenience overload: orient the forward axis along 'dir'
-// while keeping the geometry's current up axis as the reference up vector.
-// (The two-vector form does the actual basis re-orthonormalisation.)
-void AEGeometry::setDirection(const Vector &dir)
-{
-    Vector up = this->getUpVector();
-    setDirection(dir, up);
-}
-
-// Re-commit the geometry's current world position. The owning object (e.g. a
-// PlayerWormHole) updates its own position fields and then notifies the
-// geometry so its transform stays in sync; we read the position back out of the
-// local transform and re-apply it through the normal setPosition path.
-void AEGeometry::positionChanged()
-{
-    Vector pos = this->getPosition();
-    setPosition(pos.x, pos.y, pos.z);
 }

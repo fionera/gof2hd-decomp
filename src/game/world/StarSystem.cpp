@@ -285,7 +285,7 @@ void StarSystem::render2D() {
     pos.x = *(float *)(local + 0x0c) + this->lightDirection.x * 65536.0f;
     pos.y = *(float *)(local + 0x1c) + this->lightDirection.y * 65536.0f;
     pos.z = *(float *)(local + 0x2c) + this->lightDirection.z * 65536.0f;
-    this->lensFlare->update();
+    this->lensFlare->update(0);
     gCanvas->GetScreenPosition(pos, pos);
     this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
 }

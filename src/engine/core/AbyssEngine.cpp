@@ -42,7 +42,7 @@ struct EngineArrayHeader { uint32_t count; void *data; uint32_t capacity; };
 
 // ArrayAdd<T>: grow the backing store by exactly one element, then append.
 template <class T>
-inline void ArrayAddRaw(T item, void *arrayHeader) {
+__attribute__((always_inline)) inline void ArrayAddRaw(T item, void *arrayHeader) {
     EngineArrayHeader *a = (EngineArrayHeader *)arrayHeader;
     a->capacity = a->count + 1;
     a->data = realloc(a->data, (a->count + 1) * sizeof(T));

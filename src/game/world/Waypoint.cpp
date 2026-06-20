@@ -11,22 +11,6 @@ void Waypoint::reached()
     this->state = 0x101;
 }
 
-// Tail-call target of Route::reachWaypoint: once the route has stepped past this
-// waypoint it is flagged as reached.
-void Waypoint::activate()
-{
-    this->reached();
-}
-
-// Tail-call target of Route::update: when the ship gets close enough the route makes
-// the next waypoint active. The float return is the unused passthrough Route::update
-// hands back as its result.
-float Waypoint::advance(bool active)
-{
-    this->setActive(active);
-    return 0.0f;
-}
-
 Vector Waypoint::getPosition()
 {
     Vector result;

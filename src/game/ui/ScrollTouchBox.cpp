@@ -105,7 +105,7 @@ __attribute__((visibility("hidden"))) extern int **g_ScrollTouchBox_defaultWidth
 void ScrollTouchBox::setText(AbyssEngine::String text)
 {
     String tmp(text);
-    setText2(&tmp, **g_ScrollTouchBox_defaultWidth_13570c);
+    setText(tmp, **g_ScrollTouchBox_defaultWidth_13570c);
 }
 
 void ScrollTouchBox::update(int dt)
@@ -277,20 +277,6 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     this->damping = 0.0f;
     this->velocity = 0.0f;
     this->touchStartY = 0;
-}
-
-// Lay out 'text' in the given font slot; forwards to the two-argument setText.
-void ScrollTouchBox::setText2(AbyssEngine::String *text, int font)
-{
-    setText(*text, font);
-}
-
-// Lay out 'text' using the supplied colour/font slot. ScrollTouchWindow::setText
-// routes its coloured-text request through here; it resolves to the same
-// two-argument setText layout path (the colour rides in the font/style slot).
-void ScrollTouchBox::setTextColor(AbyssEngine::String *text, int color)
-{
-    setText(*text, color);
 }
 
 float ScrollTouchBox::getRelativeScrollHeight()

@@ -109,11 +109,11 @@ uint32_t AELowLevelPakFile::Release()
 namespace {
 
 // Construct a String in place from a NUL-terminated 8-bit string.
-inline void AEStr_init(String *self, const char *s)       { self->ctor_char(s, false); }
+__attribute__((always_inline)) inline void AEStr_init(String *self, const char *s)       { self->ctor_char(s, false); }
 // Construct a String in place from a NUL-terminated UTF-16 buffer.
-inline void AEStr_init(String *self, const uint16_t *s)   { self->ctor_wchar(s, false); }
+__attribute__((always_inline)) inline void AEStr_init(String *self, const uint16_t *s)   { self->ctor_wchar(s, false); }
 // Construct a String in place as a copy of another String.
-inline void AEStr_init(String *self, const String &other) { self->ctor_copy(const_cast<String *>(&other), false); }
+__attribute__((always_inline)) inline void AEStr_init(String *self, const String &other) { self->ctor_copy(const_cast<String *>(&other), false); }
 
 // Reset a String's contents from a NUL-terminated 8-bit / UTF-16 buffer.
 inline void AEStr_set(String &self, const char *s)        { self.Set_char(s); }

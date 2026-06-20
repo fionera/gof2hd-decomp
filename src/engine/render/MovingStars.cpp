@@ -102,8 +102,11 @@ extern float MovingStars_kA, MovingStars_kB, MovingStars_kC, MovingStars_kD;
 extern float MovingStars_kSpeed, MovingStars_kVel, MovingStars_kZSpawn;
 }
 
-void MovingStars::update(const Matrix &m, bool flag, float param19)
+// MovingStars::update(int, Matrix, bool, float) — the by-value Matrix arity. The leading int
+// is consumed by the signature only (it is not used by the body).
+void MovingStars::update(int param1, Matrix m, bool flag, float param19)
 {
+    (void)param1;
     int delta = (int)m.m[0];
 
     this->tickAccumulator += delta;
@@ -201,14 +204,6 @@ void MovingStars::update(const Matrix &m, bool flag, float param19)
             this->lifeArray[i] = newTimer;
         }
     }
-}
-
-// MovingStars::update(int, Matrix, bool, float) — the by-value Matrix arity. The leading int
-// is consumed by the signature only; the body is identical to the const-ref form, so forward.
-void MovingStars::update(int param1, Matrix m, bool flag, float param19)
-{
-    (void)param1;
-    this->update(m, flag, param19);
 }
 
 // MovingStars::translate(Vector const&)

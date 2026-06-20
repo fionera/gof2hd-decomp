@@ -2,25 +2,21 @@
 
 namespace AbyssEngine {
 
-// Seeds both scale channels to (1,1,1) and the blend weight to 1.0, and
-// zeroes the remaining transform channels, timestamp and trailing words.
+// Clears the whole transform block (translation..localRotation) in one shot,
+// then seeds both scale channels to (1,1,1) and the blend weight to 1.0. The
+// timestamp words and the two trailing words are zeroed; +0x4c is left alone.
 KeyFrame::KeyFrame()
 {
-    const AEMath::Vector zero = {0.0f, 0.0f, 0.0f};
     const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
 
-    translation = zero;
+    timestampLo = 0;
+    timestampHi = 0;
+    __builtin_memset(this, 0, 0x48);
     scale = one;
-    rotation = zero;
-    localTranslation = zero;
     localScale = one;
-    localRotation = zero;
-    alpha = 1.0f;
-
-    _pad_4c = 0;
-    timestamp = 0;
     field_0x58 = 0;
     field_0x5c = 0;
+    alpha = 1.0f;
 }
 
 } // namespace AbyssEngine

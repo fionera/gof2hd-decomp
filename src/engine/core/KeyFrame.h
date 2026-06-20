@@ -21,8 +21,9 @@ public:
     AEMath::Vector localScale;       // +0x30  local scale (default 1,1,1)
     AEMath::Vector localRotation;    // +0x3c  local rotation (euler, fed to Quaternion)
     float alpha;                     // +0x48  blend weight / alpha (default 1.0)
-    uint32_t _pad_4c;                // +0x4c  padding to 8-byte align timestamp
-    int64_t timestamp;               // +0x50  key time
+    uint32_t field_0x4c;             // +0x4c  left uninitialized by the ctor
+    uint32_t timestampLo;            // +0x50  key time (low word)
+    uint32_t timestampHi;            // +0x54  key time (high word)
     uint32_t field_0x58;             // +0x58
     uint32_t field_0x5c;             // +0x5c
 

@@ -17,11 +17,6 @@ Standing::~Standing() {
     this->standings = nullptr;
 }
 
-// Heap factory used by RecordHandler when reconstructing a Standing from a save slot.
-Standing* Standing::create() {
-    return new Standing();
-}
-
 int* Standing::getStandings() {
     return this->standings;
 }

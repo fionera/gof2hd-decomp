@@ -39,21 +39,6 @@ void GlowPPShader::UpdateMeshData(Mesh *mesh, Engine *engine) {
     }
 }
 
-// Draws a full-screen quad with the currently bound program, binding the engine's quad mesh to
-// the given position/texcoord attributes and the world-view matrix uniform.
-static inline void draw_fullscreen(Engine *engine, int posLoc, int texLoc, int matrixLoc)
-{
-    glEnableVertexAttribArray(posLoc);
-    glEnableVertexAttribArray(texLoc);
-    glUniformMatrix4fv(matrixLoc, 1, 0, engine->worldViewProjMatrix);
-    glVertexAttribPointer(posLoc, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
-    glVertexAttribPointer(texLoc, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
-    glClear(0x4000);
-    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
-    glDisableVertexAttribArray(posLoc);
-    glDisableVertexAttribArray(texLoc);
-}
-
 void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Engine *engine) {
 
     if (*g_GlowPPShader_internalInitNeededPtr != 0) {
@@ -115,7 +100,15 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Eng
     glActiveTexture(0x84c0);
     source->Activate();
     this->copyTarget->BeginCapture();
-    draw_fullscreen(engine, this->copyAttribPosition, this->copyAttribTexCoord, this->copyUniformWorldView);
+    glEnableVertexAttribArray(this->copyAttribPosition);
+    glEnableVertexAttribArray(this->copyAttribTexCoord);
+    glUniformMatrix4fv(this->copyUniformWorldView, 1, 0, engine->worldViewProjMatrix);
+    glVertexAttribPointer(this->copyAttribPosition, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->copyAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
+    glClear(0x4000);
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    glDisableVertexAttribArray(this->copyAttribPosition);
+    glDisableVertexAttribArray(this->copyAttribTexCoord);
 
     for (int32_t i = 3; i != 0; --i) {
         glUseProgram(this->blurXProgram);
@@ -180,7 +173,15 @@ void GlowPPShader::RenderEffect(FBOContainer *source, FBOContainer *&target, Eng
         target->BeginCapture();
     }
 
-    draw_fullscreen(engine, this->combineAttribPosition, this->combineAttribTexCoord, this->combineUniformWorldView);
+    glEnableVertexAttribArray(this->combineAttribPosition);
+    glEnableVertexAttribArray(this->combineAttribTexCoord);
+    glUniformMatrix4fv(this->combineUniformWorldView, 1, 0, engine->worldViewProjMatrix);
+    glVertexAttribPointer(this->combineAttribPosition, 3, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 4));
+    glVertexAttribPointer(this->combineAttribTexCoord, 2, 0x1406, 0, 0, *(void **)(engine->field_0x380 + 8));
+    glClear(0x4000);
+    Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
+    glDisableVertexAttribArray(this->combineAttribPosition);
+    glDisableVertexAttribArray(this->combineAttribTexCoord);
     if (target != 0) {
         target->EndCapture();
     }

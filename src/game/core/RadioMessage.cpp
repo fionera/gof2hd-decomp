@@ -101,21 +101,10 @@ uint8_t RadioMessage::isTriggered()
 
 namespace {
 
-Array<Player*>* enemyList(PlayerEgo* ego)
-{
-    return static_cast<Player*>(ego->player)->getEnemies();
-}
-
 // High byte of Player::enemyFlags — the "always friend" half of the flag pair.
 uint8_t enemyFriendFlag(Player* player)
 {
     return static_cast<uint8_t>(player->enemyFlags >> 8);
-}
-
-bool lowHitpoints(Player* player, int divisor, int multiplier)
-{
-    int threshold = (player->getMaxHitpoints() / divisor) * multiplier;
-    return player->getHitpoints() < threshold;
 }
 
 } // namespace
@@ -169,7 +158,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 1: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
             if (selectTarget(list, i)->isDead()) {
                 return triggerResult();
@@ -179,7 +168,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 2: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
             Player* player = selectTarget(list, i);
             if (enemyFriendFlag(player) != 0 && player->isDead()) {
@@ -204,7 +193,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 8: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
             Player* player = selectTarget(list, i);
             if (!player->isAsteroid() && player->isActive()) {
@@ -215,7 +204,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 9: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
             if (!selectTarget(list, i)->isDead()) {
                 break;
@@ -228,7 +217,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 10: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
             Player* player = selectTarget(list, i);
             if (!player->isAsteroid() && enemyFriendFlag(player) != 0 && player->isActive()) {
@@ -242,9 +231,10 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         return setResult(this->objective->achieved(static_cast<int>(time)));
 
     case 0x0c: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
-            if (lowHitpoints(selectTarget(list, i), 2, 1)) {
+            Player* target = selectTarget(list, i);
+            if (target->getHitpoints() < target->getMaxHitpoints() / 2) {
                 return triggerResult();
             }
         }
@@ -252,13 +242,13 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x0e: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
         return setResult(ki->lostMissionCrateToEgo);
     }
 
     case 0x0f: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (uint32_t i = 0; i < list->size(); ++i) {
             Player* player = list->data()[i];
             if (!player->isAsteroid() && player->isDead()) {
@@ -269,7 +259,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x10: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (uint32_t i = 0; i < list->size(); ++i) {
             Player* player = list->data()[i];
             if (!player->isAsteroid() && player->isActive() && !player->isAlwaysFriend()) {
@@ -280,7 +270,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x11: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (uint32_t i = 0; i < list->size(); ++i) {
             if (i == static_cast<uint32_t>(this->conditionValue)) {
                 continue;
@@ -297,7 +287,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x12: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
         if (ki->lostMissionCrateToEgo != 0) {
             return triggerResult();
@@ -307,9 +297,10 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x13: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
-            if (lowHitpoints(selectTarget(list, i), 4, 1)) {
+            Player* target = selectTarget(list, i);
+            if (target->getHitpoints() < target->getMaxHitpoints() / 4) {
                 return triggerResult();
             }
         }
@@ -317,7 +308,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x14: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         int dead = 0;
         for (uint32_t i = 0; i < list->size(); ++i) {
             Player* player = list->data()[i];
@@ -332,7 +323,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x15: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         KIPlayer* ki = list->data()[this->conditionValue]->getKIPlayer();
         return setResult(ki->field_0x24);
     }
@@ -344,7 +335,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         return setResult(static_cast<AbyssEngine::Radar*>(ego->field_0x14)->stationLocked());
 
     case 0x18: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         Player* player = list->data()[this->conditionValue];
         if (!player->isActive()) {
             int value = (!player->isDead()) & (time > 0xea5fLL);
@@ -360,7 +351,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         int current = reinterpret_cast<Route*>(static_cast<intptr_t>(ego->getRoute()))->getCurrent();
         int last = this->lastRouteIndex;
         this->lastRouteIndex = current;
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         int active = 0;
         for (uint32_t i = 0; i < list->size(); ++i) {
             Player* player = list->data()[i];
@@ -373,7 +364,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x1a: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         Player* player = list->data()[0];
         if (!player->isActive() || player->isDead()) {
             break;
@@ -394,7 +385,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         return setResult(static_cast<Player*>(ego->player)->getArmorHP() < 1);
 
     case 0x1e: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         int dead = 0;
         for (int i = 2; i != 6; ++i) {
             Player* player = list->data()[i];
@@ -406,9 +397,10 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
     }
 
     case 0x1f: {
-        Array<Player*>* list = enemyList(ego);
+        Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();
         for (int i = 0; i < this->targetCount; ++i) {
-            if (lowHitpoints(selectTarget(list, i), 4, 3)) {
+            Player* target = selectTarget(list, i);
+            if (target->getHitpoints() < target->getMaxHitpoints() / 4 * 3) {
                 return triggerResult();
             }
         }

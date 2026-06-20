@@ -153,11 +153,6 @@ void LensFlare::render2D(float srcX, float srcY, float alpha, int colorIndex)
     }
 }
 
-void LensFlare::update()
-{
-    this->intensity = 0.0f;
-}
-
 void LensFlare::update(int)
 {
     this->intensity = 0.0f;

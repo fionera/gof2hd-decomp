@@ -31,11 +31,8 @@ public:
     void RunOut(float dt);
     void UpdateCurrentValue();
 
-    // Per-frame stepper: advance the ease toward its maximum and recompute output.
-    void Update(float dt);
     // Current animated output value.
     float GetValue();
-    float GetCurrentValue();
     // Base (start) output value.
     float GetMinValue();
 };

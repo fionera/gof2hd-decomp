@@ -62,15 +62,16 @@ int PlayerStaticFar::outerCollide(float x, float y, float z)
     return this->collide(x, y, z);
 }
 
-PlayerStaticFar::Vector PlayerStaticFar::getInitPosition()
-{
-    return this->initPosition;
-}
-
 // Vector overload: ignores its argument and returns the stored spawn position.
 PlayerStaticFar::Vector PlayerStaticFar::getInitPosition(Vector /*value*/)
 {
     return this->initPosition;
+}
+
+// A far-projected static object has no orientation of its own, so the rotation
+// setter is an explicit no-op.
+void PlayerStaticFar::setYRotation(int /*yRotation*/)
+{
 }
 
 // Vector overload: forwards the components to the bounding collide (slot +0x38).

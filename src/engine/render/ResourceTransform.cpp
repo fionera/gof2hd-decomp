@@ -5,10 +5,14 @@ namespace AbyssEngine {
 // Releases the two owned heap arrays and nulls the slots.
 ResourceTransform::~ResourceTransform()
 {
-    ::operator delete[](dataA);
+    if (dataA != nullptr) {
+        ::operator delete[](dataA);
+    }
     dataA = nullptr;
 
-    ::operator delete[](dataB);
+    if (dataB != nullptr) {
+        ::operator delete[](dataB);
+    }
     dataB = nullptr;
 }
 

@@ -1,5 +1,6 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Material.h"
+#include "engine/core/Array.h"
 PaintCanvas* gCanvas = nullptr;       // canonical render canvas singleton
 // NOTE: Engine.h / Mesh.h / Node.h / String.h are intentionally NOT included.
 // PaintCanvas.h is a self-contained translation unit that models the few
@@ -30,7 +31,8 @@ inline void PCArrayCtor(void *arrayHeader) {
 }
 
 // Array_<T>_dtor: free the backing store (elements are released separately, like ~vector).
-inline void PCArrayDtor(void *arrayHeader) {
+// always_inline: the original fully inlined this at every call site (no standalone symbol).
+__attribute__((always_inline)) inline void PCArrayDtor(void *arrayHeader) {
     PCArrayHeader *a = (PCArrayHeader *)arrayHeader;
     ::operator delete(a->data);
     a->data = nullptr;
@@ -62,7 +64,8 @@ inline void PCArrayRemoveAll(void *arrayHeader) {
 }
 
 // ArrayReleaseClasses_<T>: delete every owned pointee, then clear.
-inline void PCArrayReleaseClasses(void *arrayHeader) {
+// always_inline: the original fully inlined this at every call site (no standalone symbol).
+__attribute__((always_inline)) inline void PCArrayReleaseClasses(void *arrayHeader) {
     PCArrayHeader *a = (PCArrayHeader *)arrayHeader;
     for (uint32_t i = 0; i < a->count; ++i) {
         void *e = ((void **)a->data)[i];
@@ -2153,7 +2156,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child)
         char **arr = this->transforms;
         char *p = arr[parent];
         char *c = arr[child];
-        PCArrayAdd<void *>(c, p + 0x4c);
+        PCArrayAdd< ::Transform *>((::Transform *)c, p + 0x4c);
         char **arr2 = this->transforms;
         char *p2 = arr2[parent];
         char *c2 = arr2[child];
@@ -2287,8 +2290,10 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
         if (ss == 0) {
             return;
         }
-        PCArrayAdd<AbyssEngine::SpriteSystem *>((AbyssEngine::SpriteSystem *)ss,
-                                          &this->spriteSystemCount);
+        ArrayAdd<AbyssEngine::SpriteSystem *>(
+            static_cast<AbyssEngine::SpriteSystem *>(ss),
+            *reinterpret_cast<Array<AbyssEngine::SpriteSystem *> *>(
+                &this->spriteSystemCount));
         result = this->spriteSystemCount - 1;
     } else {
         result = 0xffffffff;
@@ -2377,8 +2382,10 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId,
         if (ss == 0) {
             return;
         }
-        PCArrayAdd<AbyssEngine::SpriteSystem *>((AbyssEngine::SpriteSystem *)ss,
-                                          &this->spriteSystemCount);
+        ArrayAdd<AbyssEngine::SpriteSystem *>(
+            static_cast<AbyssEngine::SpriteSystem *>(ss),
+            *reinterpret_cast<Array<AbyssEngine::SpriteSystem *> *>(
+                &this->spriteSystemCount));
         result = this->spriteSystemCount - 1;
     } else {
         result = 0xffffffff;
@@ -2495,7 +2502,8 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
     }
     char *tf = (this->transforms)[transformIndex];
     char *mesh = (this->meshes)[meshIndex];
-    PCArrayAdd<AbyssEngine::Mesh *>(*(AbyssEngine::Mesh **)(mesh), tf + 0x3c);
+    ArrayAdd<AbyssEngine::Mesh *>(*(AbyssEngine::Mesh **)(mesh),
+                                  *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(tf + 0x3c));
     paintcanvas_ext_tami_bsphere_merge(tf + 0xd4, mesh + 0x3c);
 
     void *res = *(void **)(mesh + 0x34);
@@ -3473,7 +3481,8 @@ void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangle
                 ((AbyssEngine::Mesh *)mesh)->field_0x30 = m;
             }
         }
-        PCArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)mesh, &this->meshCount);
+        ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)mesh,
+                                      *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->meshCount));
         result = this->meshCount - 1;
     }
     out = (unsigned int)result;
@@ -3720,7 +3729,8 @@ void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource)
     // lists (arr_2c @0x30, arr_38 @0x3c, arr_5c @0x60) and the uint list
     // (arr_50 @0x54). The matrices convert to const float* via Matrix::operator.
     for (unsigned int i = 0; i < glowSource->meshes->size_; i++) {
-        PCArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes->data_[i], &this->glowMeshes_count);
+        ArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes->data_[i],
+                                      *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->glowMeshes_count));
 
         paintcanvas_ext_smfg_pushmat(glowSource->arr_2c->data_[i], &this->glowMatA_count);
         paintcanvas_ext_smfg_pushmat(glowSource->arr_38->data_[i], &this->glowMatB_count);
@@ -3860,7 +3870,8 @@ void PaintCanvas::MeshCreate(unsigned short a, unsigned short b,
     *(void **)mesh = 0;
     int result = paintcanvas_ext_meshcreate(this->engine, mesh);
     if (result == 1) {
-        PCArrayAdd<void *>(*(void **)mesh, &this->meshCount);
+        ArrayAdd<AbyssEngine::Mesh *>(*(AbyssEngine::Mesh **)mesh,
+                                      *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->meshCount));
         result = (int)this->meshCount - 1;
     } else {
         result = -1;
@@ -3922,7 +3933,8 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
             }
             paintcanvas_ext_mc2_converttovbo(mesh);
         }
-        PCArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)mesh, &this->meshCount);
+        ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)mesh,
+                                      *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->meshCount));
         idx = this->meshCount - 1;
         *(unsigned int *)(res + 8) = idx;
     } else {
@@ -3931,7 +3943,8 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
         if (*(int *)(existing + 0x34) != 0 || forceClone) {
             void *clone = paintcanvas_ext_mc2_new_mesh_copy(
                 ((void **)meshes)[*(unsigned int *)(res + 8)]);
-            PCArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)clone, &this->meshCount);
+            ArrayAdd<AbyssEngine::Mesh *>((AbyssEngine::Mesh *)clone,
+                                          *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->meshCount));
             idx = this->meshCount - 1;
         }
     }

@@ -20,12 +20,6 @@ BumpShader::BumpShader()
     this->name.s = u"BumpShader";
 }
 
-// Sets the sampler uniform at `location` to texture unit `unit`.
-void BumpShader::setSampler(int location, int unit)
-{
-    glUniform1i(location, unit);
-}
-
 void BumpShader::SetInActive()
 {
     if (this->a0Loc >= 0)
@@ -71,7 +65,7 @@ void BumpShader::Init(Engine *)
 
     glUseProgram(this->program);
     glUniform1i(this->u5Loc, 0);
-    BumpShader::setSampler(this->u6Loc, 7);
+    glUniform1i(this->u6Loc, 7);
 }
 
 // Pushes the per-frame matrices/lighting uniforms (only the first time per frame, gated by

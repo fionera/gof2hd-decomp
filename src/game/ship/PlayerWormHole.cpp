@@ -105,7 +105,8 @@ void PlayerWormHole::setPosition3(float x, float y, float z)
     this->positionX = (int)x;
     this->positionY = (int)y;
     this->positionZ = (int)z;
-    this->geometry->positionChanged();
+    Vector pos = this->geometry->getPosition();
+    this->geometry->setPosition(pos.x, pos.y, pos.z);
 }
 
 void PlayerWormHole::update(int elapsed)

@@ -24,8 +24,6 @@ public:
 
     void setActive(bool active);
     void reached();
-    void activate();
-    float advance(bool active);
     Vector getPosition();
     void reset();
 };

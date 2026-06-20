@@ -139,7 +139,7 @@ void Route::reachWaypoint(int index) {
         (*this->waypoints)[0]->setActive(true);
     }
     (*this->waypoints)[index]->setActive(false);
-    (*this->waypoints)[index]->activate();
+    (*this->waypoints)[index]->reached();
 }
 
 // Route::clone() -> deep copy of the path; preserves docking targets/times when any are set.
@@ -244,8 +244,10 @@ float Route::update_xyz(float x, float y, float z) {
         }
         next = this->currentIndex;
     }
-    if (next < (int)len)
-        return (*w)[next]->advance(true);
+    if (next < (int)len) {
+        (*w)[next]->setActive(true);
+        return 0.0f;
+    }
     return x;
 }
 

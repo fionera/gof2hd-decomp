@@ -392,7 +392,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 
     if (this->listVisible != 0) {
-        this->listWindow->touch_end(x, y);
+        this->listWindow->OnTouchEnd(x, y);
         if (((Layout *)(layout))->helpPressed() != 0) {
             void *texts = *(void **)&SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *)(*(void **)texts))->getText(0x283);

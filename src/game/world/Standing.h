@@ -16,8 +16,6 @@ public:
     Standing();
     ~Standing();
 
-    static Standing* create();          // heap factory: new Standing
-
     int* getStandings();                // raw per-race standings array
     void setStandings(int* arr);        // replace the standings array pointer
 

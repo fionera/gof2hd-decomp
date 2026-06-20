@@ -194,7 +194,7 @@ ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame)
 
 void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String text, int color)
 {
-    this->scrollBox->setTextColor(&text, color);
+    this->scrollBox->setText(text, color);
     this->title = title;
 }
 

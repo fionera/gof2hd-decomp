@@ -46,16 +46,11 @@ public:
     int getZ();
     int getWarpGateIndex();
     uint32_t* getStations();
-    // Array<int>*-typed view of the station-id list (same member as getStations());
-    // callers read the embedded data pointer.
-    uint32_t* getStations_i();
+    void* getForbiddenGoods();
     uint32_t* getRoutes();
     AbyssEngine::String getName();
     uint32_t getStationEnumIndex(int idx);
     int getWarpGateEnumIndex();
-    // Resolve the warp-gate's enum index — the same table lookup as an ordinary
-    // station, so it forwards to getStationEnumIndex().
-    int warpGateLookup(int idx);
     int hasHiddenBlueprint();
     uint32_t hasNoOwner();
     int hasPirateBase();

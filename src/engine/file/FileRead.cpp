@@ -26,7 +26,7 @@ namespace {
 
 // AEFile only exposes ReadSwitched() for the integer/string widths. Floats in the .bin tables are
 // stored big-endian too, so read the raw 32 bits switched and reinterpret them as a float.
-inline float ReadSwitchedFloat(uint32_t handle)
+float ReadSwitchedFloat(uint32_t handle)
 {
     int32_t bits = 0;
     AEFile::ReadSwitched(bits, handle);

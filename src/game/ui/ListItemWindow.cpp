@@ -498,22 +498,6 @@ void ListItemWindow::update(int frameTime)
     this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
-// dtor(): C-ABI complete-object destructor. Runs ~ListItemWindow and returns the
-// object pointer so the caller can hand it to operator delete.
-void *ListItemWindow::dtor()
-{
-    this->~ListItemWindow();
-    return this;
-}
-
-// touch_end(): touch-release entry point invoked by the owning screen. Releases
-// the drag-scroll of the 3D ship preview; returns a status int the caller drops.
-int ListItemWindow::touch_end(int x, int y)
-{
-    this->OnTouchEnd(x, y);
-    return 0;
-}
-
 // PC-relative game singletons consulted by the constructor (the live screen and
 // the global PaintCanvas, each held as a pointer-to-pointer).
 __attribute__((visibility("hidden"))) extern void ***g_liw_a;

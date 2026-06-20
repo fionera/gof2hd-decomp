@@ -23,7 +23,6 @@ public:
 
     MovingStars();
     ~MovingStars();
-    void update(const AbyssEngine::AEMath::Matrix &m, bool flag, float param19);
     void update(int param1, AbyssEngine::AEMath::Matrix m, bool flag, float param19);
     void translate(const AbyssEngine::AEMath::Vector &v);
     void render();

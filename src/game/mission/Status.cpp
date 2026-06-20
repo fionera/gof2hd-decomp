@@ -1008,7 +1008,7 @@ int Status::activateNewWanted() {
         AbyssEngine::AERandom* rnd = gRandom;
         int pick = (*path)[rnd->nextInt(path->size())];
         SolarSystem* dst = (*systems)[pick];
-        Array<int>* dstStations = (Array<int>*)dst->getStations_i();
+        Array<int>* dstStations = (Array<int>*)dst->getStations();
         if (dstStations != 0) {
             int idx = rnd->nextInt(dstStations->size());
             int st = (*dstStations)[idx];
@@ -1506,7 +1506,7 @@ void Status::departStation(Station* dest) {
                         } while ((*systemVisibilities)[sys] == 0);
                     } while (sys == 10 || sys == 0xf);
                     SolarSystem* ss = gGalaxy->getSystems()->at(field_7c);
-                    Array<int>* sids = (Array<int>*)ss->getStations_i();
+                    Array<int>* sids = (Array<int>*)ss->getStations();
                     int n = rng->nextInt(sids->size());
                     field_80 = (*sids)[n];
                 } else {

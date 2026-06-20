@@ -171,9 +171,3 @@ TractorBeam::~TractorBeam() {
     delete this->beamGeometry;
     this->beamGeometry = nullptr;
 }
-
-// Allocates and constructs a beam. PlayerEgo::equip reaches the beam through
-// this factory when a tractor-beam module is equipped.
-TractorBeam* TractorBeam::create(AEGeometry* geo, int kind) {
-    return new TractorBeam(geo, kind);
-}

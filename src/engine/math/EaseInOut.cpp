@@ -78,17 +78,7 @@ void EaseInOut::UpdateCurrentValue() {
     }
 }
 
-// Update(dt): advance the animation parameter forward each frame, clamping at
-// the maximum, then recompute the eased output. Equivalent to Increase().
-void EaseInOut::Update(float dt) {
-    Increase(dt);
-}
-
 float EaseInOut::GetValue() {
-    return m_current;
-}
-
-float EaseInOut::GetCurrentValue() {
     return m_current;
 }
 

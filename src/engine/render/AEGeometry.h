@@ -90,6 +90,7 @@ public:
     void    setRotationOrder(AbyssEngine::AEMath::RotationOrder order);
 
     bool    hasLod();
+    uint16_t getID();
     uint8_t isVisible();
     void    setVisible(bool v);
     void    render();
@@ -111,12 +112,6 @@ public:
     void    rotate(const Vector &v);
     void    moveForward(float dist);
     void    setDirection(const Vector &dir, const Vector &up);
-    // Aim the geometry's forward axis along 'dir', deriving the up vector from
-    // the geometry's current local up (single-argument convenience overload).
-    void    setDirection(const Vector &dir);
-    // Re-commit the geometry's current transform position (called after the
-    // owning object mutates its position fields, to keep the transform in sync).
-    void    positionChanged();
 
     void    setLodMeshes(uint16_t *meshes, int *dists, int count);
     void    setLodMeshesWithMeshIds(uint16_t *meshes, uint32_t *meshIds, int *dists, int count);

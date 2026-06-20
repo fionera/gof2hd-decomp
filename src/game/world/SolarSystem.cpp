@@ -70,20 +70,9 @@ int SolarSystem::getX()              { return mapX; }
 int SolarSystem::getY()              { return mapY; }
 int SolarSystem::getZ()              { return mapZ; }
 int SolarSystem::getWarpGateIndex()  { return jumpgateStationId; }
-uint32_t* SolarSystem::getStations() { return (uint32_t*)stationIds; }
-uint32_t* SolarSystem::getRoutes()   { return (uint32_t*)linkedSystemIds; }
-
-// Array<int>*-typed view of the station-id list — the very same member that
-// getStations() returns. Status::activateNewWanted() uses it to pick a random
-// station in a destination system.
-uint32_t* SolarSystem::getStations_i() { return (uint32_t*)stationIds; }
-
-// getWarpGateEnumIndex() forwards here with the orbit's jump-gate station id.
-// Resolving the warp-gate enum index is the same array lookup used for ordinary
-// stations, so reuse getStationEnumIndex().
-int SolarSystem::warpGateLookup(int idx) {
-    return (int)getStationEnumIndex(idx);
-}
+uint32_t* SolarSystem::getStations()      { return (uint32_t*)stationIds; }
+uint32_t* SolarSystem::getRoutes()        { return (uint32_t*)linkedSystemIds; }
+void*     SolarSystem::getForbiddenGoods() { return forbiddenGoods; }
 
 uint8_t SolarSystem::isVisible() {
     return this->visible;
@@ -194,8 +183,10 @@ void SolarSystem::setCoords(int x, int y) {
     this->mapY = y;
 }
 
+// Resolving the warp-gate's enum index is the same array lookup used for
+// ordinary stations, so it forwards straight to getStationEnumIndex().
 int SolarSystem::getWarpGateEnumIndex() {
-    return warpGateLookup(this->jumpgateStationId);
+    return (int)getStationEnumIndex(this->jumpgateStationId);
 }
 
 // Galaxy singleton: tracks which stations the player has visited.

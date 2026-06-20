@@ -32,10 +32,6 @@ public:
 
     void render();
     void update(int frameTime, Radar* radar, Level* level, Hud* hud);
-
-    // Allocates and constructs a beam. Used by PlayerEgo when a tractor-beam
-    // module is equipped.
-    static TractorBeam* create(AEGeometry* geo, int kind);
 };
 
 #endif
