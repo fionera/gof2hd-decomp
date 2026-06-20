@@ -210,6 +210,9 @@ def main():
                     help="print side-by-side disassembly diff for one symbol "
                          "(falls back to the FN environment variable)")
     ap.add_argument("--report", default=None, help="write JSON report to this path")
+    ap.add_argument("--fail-on-wrong-type", action="store_true",
+                    help="exit non-zero if any function is implemented under a different "
+                         "(wrong) signature than the original binary (missing_wrong_type > 0)")
     args = ap.parse_args()
 
     if not args.no_build and not args.show:
@@ -329,6 +332,17 @@ def main():
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(report, open(out, "w"), indent=2)
     print(f"report -> {os.path.relpath(out, REPO)}")
+
+    # Regression gate: every function we implement must mangle to the original's signature.
+    # missing_wrong_type is only populated on a full run (no --only), so this is inert for
+    # narrowed/--show invocations. Runs last so the table, missing_wrong_type.txt and
+    # report.json are all still written even when we fail the build.
+    if args.fail_on_wrong_type and report.get("missing_wrong_type", 0) > 0:
+        print(f"\nERROR: {report['missing_wrong_type']} function(s) are implemented under a "
+              f"different (wrong) signature than the original binary "
+              f"(-> {os.path.relpath(wt_path, REPO)}). "
+              f"Fix the signature(s) so the count returns to 0.", file=sys.stderr)
+        return 1
     return 0
 
 

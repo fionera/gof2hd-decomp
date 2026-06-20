@@ -11,9 +11,12 @@ project(GalaxyOnFire2 LANGUAGES CXX)
 if(GOF2_MATCH)
     set(_verify_py "${CMAKE_SOURCE_DIR}/tools/verify/verify.py")
     set(_verify_dir "${CMAKE_BINARY_DIR}/verify")
+    # --fail-on-wrong-type makes the target fail the build if any function is implemented under a
+    # different (wrong) signature than the original .so (report.json missing_wrong_type > 0); the
+    # full diff table still prints first. Keeps the 0-wrong-signature invariant from regressing.
     add_custom_target(verify
         COMMAND ${CMAKE_COMMAND} -E env "GOF2_MATCH_OPT=${GOF2_MATCH_OPT}"
-                python3 ${_verify_py} --build-dir ${_verify_dir}
+                python3 ${_verify_py} --build-dir ${_verify_dir} --fail-on-wrong-type
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
         COMMENT "Validating ARM build vs original .so (opt=${GOF2_MATCH_OPT})")
     # Single-function side-by-side diff:  FN=<mangled> cmake --build ... --target verify-fn
