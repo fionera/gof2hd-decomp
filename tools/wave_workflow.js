@@ -33,7 +33,7 @@ const RESULT_SCHEMA = {
 }
 
 const RULES = `
-GROUND TRUTH is the original binary in Ghidra (program "android_2.0.16_libgof2hdaa.so", image base 0x10000; the ghidra_addr given for each entry is already V+0x10000). For every entry: decompile it (mcp__ghidra__decompile_function) AND read its disassembly (mcp__ghidra__disassemble_function). The MANGLED symbol is authoritative for the signature — your C++ MUST mangle to exactly that symbol (verify with orbnm, below).
+GROUND TRUTH is the original binary. The exact original disassembly is provided inline per entry (orig_asm) — it is AUTHORITATIVE; your compiled output must reproduce it (verify with orbobjdump, below). For richer context (types, field names, decompiled control flow) ALSO use Ghidra MCP when available: program "android_2.0.16_libgof2hdaa.so", image base 0x10000, the ghidra_addr is already V+0x10000 — mcp__ghidra__decompile_function / mcp__ghidra__disassemble_function. If Ghidra MCP is unavailable, work from the provided orig_asm + the mangled signature + DeepOpen + our existing headers; if a function is too complex to recover confidently from asm alone, DEFER it. The MANGLED symbol is authoritative for the signature — your C++ MUST mangle to exactly that symbol (verify with orbnm, below).
 
 NAMING ORACLE (inspiration only, NOT authoritative): ${DEEPOPEN} (Java decompile of an older version). grep it for the class/method to recover intent, method names and field names. The Android binary always wins on signatures/layout/names when they disagree.
 
@@ -67,6 +67,7 @@ function promptFor(job) {
     if (e.ours && e.ours.length) s += `\n     our current overload(s): ${e.ours.join(' | ')}`
     if (e.paired_extra) s += `\n     paired extra (same fn, our shim name): ${e.paired_extra}`
     if (e.paired_absent) s += `\n     paired absent (the original this shim should become): ${e.paired_absent}`
+    if (e.orig_asm) s += `\n     original disassembly (authoritative):\n${e.orig_asm.split('\n').map((l) => '       ' + l).join('\n')}`
     return s
   }).join('\n')
   const where = job.files && job.files.length

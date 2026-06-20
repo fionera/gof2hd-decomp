@@ -17,6 +17,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+import dump_asm  # noqa: E402  — bake original .so disassembly into jobs (Ghidra-free ground truth)
 VDIR = os.path.join(REPO, "cmake-build-match", "verify")
 
 KEEP = ("symbol", "demangled", "ghidra_addr", "kind", "files", "ours",
@@ -53,7 +55,13 @@ def main():
         sub = c["subbatches"][0]
         if args.max_entries and len(sub) > args.max_entries:
             continue
-        je = [{k: entries[i].get(k) for k in KEEP if entries[i].get(k) is not None} for i in sub]
+        je = []
+        for i in sub:
+            d = {k: entries[i].get(k) for k in KEEP if entries[i].get(k) is not None}
+            asm = dump_asm.get_asm(entries[i].get("ghidra_addr"))
+            if asm:
+                d["orig_asm"] = asm
+            je.append(d)
         # a short, file-derived label
         base = (c["files"][0].split("/")[-1].rsplit(".", 1)[0]
                 if c["files"] else (c.get("target_file") or dk).split("/")[-1].rsplit(".", 1)[0])
