@@ -35,5 +35,10 @@ public:
     virtual void setEnemy(Player* enemy);
     virtual void update(int elapsed);
     virtual void render();
+
+    // No-op weapon hooks: the beam mesh follows the gun every frame, so swapping
+    // the underlying mesh and applying a camera-relative translate do nothing here.
+    void replaceGun(unsigned int mesh, int unused);
+    void translate(const Vector& v);
 };
 #endif

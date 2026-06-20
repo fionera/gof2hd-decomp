@@ -45,3 +45,13 @@ uint32_t AEPakFile::Skip(uint32_t bytes)
     delete[] buffer;
     return 1;
 }
+
+uint32_t AEPakFile::GetFileSize()
+{
+    return sizeLimit;
+}
+
+uint32_t AEPakFile::Write(uint32_t bytes, void *buffer)
+{
+    return 0;
+}

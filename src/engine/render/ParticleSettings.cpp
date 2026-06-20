@@ -13,8 +13,10 @@ ParticleSettings::~ParticleSettings() {
 // shared ParticleSettings_str blob indexed by a byte offset; the per-entry sub-emitter
 // init / copy helpers are the recovered external entry points.
 
+// Per-set copy is done with the anonymous SetDefinition's compiler-generated copy-assignment
+// operator (`dst = src`), which mangles to ParticleSettings::{unnamed type#1}::operator=
+// (_ZN16ParticleSettingsUt_aSERKS0_) -- the original's per-entry copy helper.
 extern "C" {
-void *ParticleSet_assign(void *dst, const void *src);
 void ParticleSettings_initSub(void *dst, void *parent);
 extern const char ParticleSettings_str[];
 }
@@ -180,7 +182,7 @@ int ParticleSettings::init() {
     this->sets[2].uvU1 = 0x3b000000;
     asFloat(this->sets[2].uvV1) = 0.998046875f;          // DAT_001944a0 (carried in uVar6)
     this->sets[2].speedThreshold = 1;
-    ParticleSet_assign(&this->sets[3], (void *)muzzleFlash);
+    this->sets[3] = *muzzleFlash;
     asFloat(this->sets[3].lifeBase) = 100.0f;            // DAT_001944b4 = 0x42c80000
     this->sets[3].lifetime = 1000;
     asFloat(this->sets[3].posRight) = 160.0f;            // DAT_001944b8
@@ -285,7 +287,7 @@ int ParticleSettings::init() {
     this->sets[9].oneShot = 1;
     this->sets[9].uvV1 = 0x3e800000;           // 0.25f
     this->sets[9].frames = 0x10;
-    ParticleSet_assign((void *)dustCloud, (void *)spark);
+    *dustCloud = *spark;
 
     // --- sets[16]: dust cloud (variant of sets[9]) ----------------------------------
     buf.ctor_char(ParticleSettings_str + 399927, false);  // DAT_00194748
@@ -305,7 +307,7 @@ int ParticleSettings::init() {
     this->sets[16].ySpread = 300;
     asFloat(this->sets[16].uvU1) = 0.9970703125f;        // DAT_001947dc
     asFloat(this->sets[16].uvV1) = 0.2470703125f;        // DAT_001947d8
-    ParticleSet_assign(&this->sets[17], (void *)dustCloud);
+    this->sets[17] = *dustCloud;
     this->sets[17].lifetime = 400;
 
     // --- sets[17]: dust cloud variant -----------------------------------------------
@@ -314,7 +316,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[17].uvV0) = 0.251953125f;         // DAT_00195390 high = 0x3e810000
     asFloat(this->sets[17].uvU1) = 0.9970703125f;        // DAT_00195398 low  = 0x3f7f4000
     asFloat(this->sets[17].uvV1) = 0.4970703125f;        // DAT_00195398 high = 0x3efe8000
-    ParticleSet_assign(&this->sets[18], (void *)dustCloud);
+    this->sets[18] = *dustCloud;
     this->sets[18].lifetime = 200;
 
     // --- sets[18]: dust cloud variant -----------------------------------------------
@@ -491,7 +493,7 @@ int ParticleSettings::init() {
     asFloat(this->sets[42].uvV1) = 0.25f;                // DAT_001953c8 high = 0x3e800000
 
     // --- sets[19]: ember copy -------------------------------------------------------
-    ParticleSet_assign(&this->sets[19], (void *)ember);
+    this->sets[19] = *ember;
     buf.ctor_char(ParticleSettings_str + 398596, false);  // DAT_00194d00
     this->sets[19].posSpread = 0;
     this->sets[19].ySpread = 0;
@@ -513,12 +515,12 @@ int ParticleSettings::init() {
     this->sets[19].drag = 0;
 
     // --- sets[14]: ember copy -------------------------------------------------------
-    ParticleSet_assign(&this->sets[14], (void *)ember);
+    this->sets[14] = *ember;
     buf.ctor_char(ParticleSettings_str + 398477, false);  // DAT_00194d8c
     asFloat(this->sets[14].posDir) = 100.0f;             // DAT_00194dc4
 
     // --- sets[40]: ember copy -------------------------------------------------------
-    ParticleSet_assign(&this->sets[40], (void *)ember);
+    this->sets[40] = *ember;
     buf.ctor_char(ParticleSettings_str + 398438, false);  // DAT_00194dc8
     this->sets[40].field_0x54 = 5000;
     SetDefinition *streak2 = &this->sets[20];
@@ -527,14 +529,14 @@ int ParticleSettings::init() {
     this->sets[40].lifeRandom = 300;
 
     // --- sets[20]: streak copy (from sets[11]) --------------------------------------
-    ParticleSet_assign((void *)streak2, &this->sets[11]);
+    *streak2 = this->sets[11];
     buf.ctor_char(ParticleSettings_str + 398366, false);  // DAT_00194e2c
     this->sets[20].lifetime = 1000;
     asFloat(this->sets[20].lifeBase) = 10000.0f;         // DAT_00194e6c
     this->sets[20].lifeRandom = 1000;
 
     // --- sets[21]: streak copy ------------------------------------------------------
-    ParticleSet_assign(&this->sets[21], (void *)streak2);
+    this->sets[21] = *streak2;
     buf.ctor_char(ParticleSettings_str + 398324, false);  // DAT_00194e70
     SetDefinition *jet = &this->sets[22];
     this->sets[21].lifetime = 1000;
@@ -542,7 +544,7 @@ int ParticleSettings::init() {
     this->sets[21].lifeRandom = 200;
 
     // --- sets[22]: jet stream (copy of sets[9]) -------------------------------------
-    ParticleSet_assign((void *)jet, (void *)spark);
+    *jet = *spark;
     buf.ctor_char(ParticleSettings_str + 398286, false);  // DAT_00194eb4
     this->sets[22].lifetime = 1000;
     asFloat(this->sets[22].flLifetime) = 9.0f;           // DAT_001952c4
@@ -554,14 +556,14 @@ int ParticleSettings::init() {
     this->sets[22].lifeRandom = 2000;
 
     // --- sets[41]: jet copy ---------------------------------------------------------
-    ParticleSet_assign(&this->sets[41], (void *)jet);
+    this->sets[41] = *jet;
     buf.ctor_char(ParticleSettings_str + 398148, false);  // DAT_001952d0
     asFloat(this->sets[41].posDir) = -4000.0f;           // DAT_001952d4
     this->sets[41].posSpread = 1000;
     asFloat(this->sets[41].posDirRandom) = 8000.0f;      // DAT_0019530c
 
     // --- sets[23]: jet copy ---------------------------------------------------------
-    ParticleSet_assign(&this->sets[23], (void *)spark);
+    this->sets[23] = *spark;
     buf.ctor_char(ParticleSettings_str + 398106, false);  // DAT_00195310
     this->sets[23].lifetime = 1000;
     asFloat(this->sets[23].flLifetime) = 9.0f;           // DAT_001952c4 (carried in uVar15)
@@ -572,7 +574,7 @@ int ParticleSettings::init() {
     this->sets[23].ySpread = 0x5dc;
 
     // --- sets[24]: jet copy ---------------------------------------------------------
-    ParticleSet_assign(&this->sets[24], (void *)spark);
+    this->sets[24] = *spark;
     buf.ctor_char(ParticleSettings_str + 398045, false);  // DAT_00195314
     SetDefinition *ringEmitter = &this->sets[25];
     this->sets[24].lifetime = 1000;

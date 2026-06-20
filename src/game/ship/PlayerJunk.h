@@ -21,5 +21,9 @@ public:
     void update(int elapsed) override;
     void reset();
     void render() override;
+
+    // Junk has no collidable surface: both collision queries return 0 like the base.
+    int collide(float x, float y, float z) override;
+    int outerCollide(float x, float y, float z) override;
 };
 #endif

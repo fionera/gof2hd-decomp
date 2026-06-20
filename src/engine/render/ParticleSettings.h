@@ -4,6 +4,7 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include <type_traits>
 
 // Galaxy on Fire 2 - particle-emitter settings table.
 // ParticleSettings is an array of 48 ParticleSet parameter blocks (0xa0 bytes each,
@@ -51,7 +52,13 @@ public:
     // Field roles recovered from how IParticleSystem / ParticleSystemSprite / ParticleSystemMesh
     // read this block (they index it by raw `def + 0xNN` pointer arithmetic, so the member NAMES
     // below are private to this TU and safe to rename).
-    struct SetDefinition {
+    //
+    // This element type is intentionally an *unnamed* (anonymous) struct: in the original binary it
+    // has no name for linkage, so its compiler-generated copy-assignment operator is mangled as
+    // ParticleSettings::{unnamed type#1}::operator= (_ZN16ParticleSettingsUt_aSERKS0_). That implicit
+    // operator= assigns the embedded `name` String then bulk-copies the remaining 0x94 bytes -- which
+    // is exactly what the binary does -- so the `sets[d] = sets[s]` copies below emit that symbol.
+    struct {
         String   name;              // +0x00 emitter/texture name
         uint32_t flags;             // +0x0c
         int32_t  count;             // +0x10 particles emitted
@@ -90,9 +97,11 @@ public:
         uint32_t uvV1;              // +0x94 texture-rect v1 (float bits)
         int32_t  speedThreshold;    // +0x98 minimum emitter speed^2 to emit
         int32_t  frames;            // +0x9c animation frame count
-    };
+    } sets[48];
 
-    SetDefinition sets[48];
+    // Spelling for the anonymous element type above, so this TU can name `SetDefinition *` locals
+    // without giving the type a linkage name (which would change the operator= mangling).
+    using SetDefinition = std::remove_reference<decltype(sets[0])>::type;
 
     ParticleSettings();
     ~ParticleSettings();

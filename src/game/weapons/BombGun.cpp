@@ -46,6 +46,12 @@ BombGun::~BombGun()
     this->explosion = nullptr;
 }
 
+// Run-time type query: a BombGun always reports itself as a bomb gun.
+int BombGun::isBombGun()
+{
+    return 1;
+}
+
 // A guided "bomb" projectile (nuke / EMP / mine). It chains to the RocketGun base,
 // spawns the matching Explosion effect, then builds its scene geometry: either a
 // pre-authored AEGeometry attached to the rocket transform (normal launch), or a

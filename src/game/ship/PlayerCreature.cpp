@@ -212,6 +212,16 @@ void PlayerCreature::update(int elapsed)
     memcpy(this->player->transform, &current, sizeof(this->player->transform));
 }
 
+int PlayerCreature::collide(float /*x*/, float /*y*/, float /*z*/)
+{
+    return 0;
+}
+
+int PlayerCreature::outerCollide(float /*x*/, float /*y*/, float /*z*/)
+{
+    return 0;
+}
+
 void PlayerCreature::reset()
 {
     KIPlayer::reset();

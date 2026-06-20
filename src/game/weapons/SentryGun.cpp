@@ -57,3 +57,10 @@ void SentryGun::update(int dt)
         base = this->cooldown;
     }
 }
+
+// SentryGun::render() — overrides ObjectGun::render to draw nothing. The sentry's
+// spawned junk objects render themselves through the level, so the gun wrapper has
+// no geometry of its own to draw. Empty body, matching the original (a bare return).
+void SentryGun::render()
+{
+}

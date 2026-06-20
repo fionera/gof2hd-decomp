@@ -59,6 +59,11 @@ void RocketGun::render()
     ObjectGun::render();
 }
 
+// Rockets are placed in world space directly, so a camera-relative translate is a no-op.
+void RocketGun::translate(const Vector & /*v*/)
+{
+}
+
 RocketGun::~RocketGun()
 {
     delete this->trailMatrices;

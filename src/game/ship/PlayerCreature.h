@@ -46,6 +46,9 @@ public:
     void    reset();
     void    hook(int value);
     void    update(int elapsed) override;
+    // The creature exposes no collidable surface, so both query forms report no hit.
+    int     collide(float x, float y, float z) override;      // actor vtable slot +0x38
+    int     outerCollide(float x, float y, float z) override; // actor vtable slot +0x3c
 };
 
 #endif

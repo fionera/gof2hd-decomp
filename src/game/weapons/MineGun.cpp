@@ -59,6 +59,11 @@ MineGun::~MineGun()
     this->geometry = nullptr;
 }
 
+int MineGun::isMineGun()
+{
+    return 1;
+}
+
 void MineGun::render()
 {
     ObjectGun::render();

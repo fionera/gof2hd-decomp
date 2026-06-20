@@ -36,6 +36,15 @@ void PlayerJunk::reset() {
     this->setVisible(true);
 }
 
+// collide / outerCollide: junk exposes no collidable surface, so both report a miss.
+int PlayerJunk::collide(float x, float y, float z) {
+    return 0;
+}
+
+int PlayerJunk::outerCollide(float x, float y, float z) {
+    return 0;
+}
+
 // render(): draw the crate geometry if present, then (unless dying) render the base.
 void PlayerJunk::render() {
     if (this->crateGeometry != nullptr)

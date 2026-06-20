@@ -20,5 +20,6 @@ public:
     ~SentryGun();
 
     void update(int dt);
+    void render();
 };
 #endif

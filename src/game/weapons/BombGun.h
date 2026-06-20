@@ -39,6 +39,8 @@ public:
     BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh, Level *level);
     ~BombGun();
 
+    virtual int isBombGun();            // vtable slot 9: yes (new BombGun slot)
+
     void setPlayer(PlayerEgo *player);
     void render();
     void update(int elapsed);

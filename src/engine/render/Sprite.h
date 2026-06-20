@@ -37,5 +37,7 @@ public:
     void drawRegion(int srcX, int srcY, int w, int h);
     int getFrameWidth();
     int getFrameHeight();
+    int getFrame();
+    int getRawFrameCount();
 };
 #endif

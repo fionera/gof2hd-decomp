@@ -24,6 +24,7 @@ public:
     unsigned char _pad_18[4];
     uint32_t transformId;
 
+    ~AMeshMerger();
     void render();
 };
 #endif

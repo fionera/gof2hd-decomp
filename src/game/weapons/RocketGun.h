@@ -40,6 +40,7 @@ public:
     int isRocketGun() override;         // vtable slot 8: yes
 
     void render();
+    void translate(const Vector& v);    // no-op override (rockets ignore camera translation)
     void setRadar(Radar* radar);
     void seekEnemy(int unused, int index);
     void update(int elapsed);

@@ -149,6 +149,16 @@ int Sprite::getFrameHeight()
     return this->frameHeight;
 }
 
+int Sprite::getFrame()
+{
+    return this->currentFrame;
+}
+
+int Sprite::getRawFrameCount()
+{
+    return this->frameCount;
+}
+
 void Sprite::setFrame(int frame)
 {
     if (frame < 0) {

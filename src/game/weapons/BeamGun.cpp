@@ -191,6 +191,18 @@ void BeamGun::update(int elapsed)
     this->secondaryVisible = this->gun->delayActive;
 }
 
+// Swapping the beam mesh is a no-op: the beam geometry is rebuilt each frame in
+// update(), so there is no standing mesh to replace.
+void BeamGun::replaceGun(unsigned int /*mesh*/, int /*unused*/)
+{
+}
+
+// The beam is positioned directly from the gun/player state every frame, so a
+// camera-relative translate has nothing to apply.
+void BeamGun::translate(const Vector& /*v*/)
+{
+}
+
 // setEnemies/setEnemy forward the enemy data through the inherited gun-hierarchy
 // handler the dynamic linker resolves into the engine relocation slot.
 void BeamGun::setEnemies(Array<Player*>* enemies)

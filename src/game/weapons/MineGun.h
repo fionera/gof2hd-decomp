@@ -28,6 +28,11 @@ public:
     MineGun(Gun* gun, int mesh, int param, int unused, Level* level);
     ~MineGun();
 
+    // In the original, ObjectGun's polymorphic base declares the isRocketGun/
+    // isBombGun/isMineGun predicate trio as virtuals (default 0); MineGun is the
+    // one that answers yes. Only isRocketGun is modeled on the base today, so we
+    // declare isMineGun virtual here to keep it in the vtable.
+    virtual int isMineGun();            // vtable predicate slot: yes
     void render();
     void setPlayer(PlayerEgo* player);
     void update(int delta);

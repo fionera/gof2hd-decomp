@@ -28,6 +28,10 @@ public:
     virtual uint32_t Read(uint32_t bytes, void *buffer);
     // Drain `bytes` by reading them into a scratch buffer.
     uint32_t Skip(uint32_t bytes);
+    // Total size of the windowed view.
+    uint32_t GetFileSize();
+    // Read-only view: writing is unsupported and always reports 0 bytes written.
+    uint32_t Write(uint32_t bytes, void *buffer);
 };
 
 #endif
