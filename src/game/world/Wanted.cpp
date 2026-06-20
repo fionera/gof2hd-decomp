@@ -20,6 +20,7 @@ int  Wanted::getLastSeen()         { return lastSeen; }
 int *Wanted::getImageParts()       { return imageParts; }
 
 void Wanted::setImageParts(int *parts)   { imageParts = parts; }
+void Wanted::setRequiredMission(int v)   { requiredMission = v; }
 void Wanted::setCurrentLocation(int v)   { currentLocation = v; }
 void Wanted::setTravelsTo(int v)         { travelsTo = v; }
 void Wanted::setLastSeen(int v)          { lastSeen = v; }

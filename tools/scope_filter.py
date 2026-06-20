@@ -1,0 +1,146 @@
+#!/usr/bin/env python3
+"""scope_filter.py — partition the verify gaps into in-scope (GOF2 / Abyss engine / platform-bridge)
+vs library-glue (statically-linked third-party we do NOT decompile), and emit the in-scope gap lists
++ the machine-checkable goal counts.
+
+Reads cmake-build-match/verify/{missing.txt,report.json}; writes, in the same dir:
+  in_scope_missing.txt        absent originals we still owe (in-scope only)
+  in_scope_wrong_type.txt     originals implemented under the wrong signature (in-scope only)
+  in_scope_extra.txt          symbols we define that the original lacks (in-scope only)
+  glue_excluded.txt           every symbol classified as library glue (audit trail)
+  scope_unclassified.txt      unmangled symbols matching no rule (defaulted in-scope, surfaced)
+  scope_counts.json           {"absent":N,"wrong_type":N,"extra":N}  <-- DONE when all three are 0
+
+"Done" for the campaign == scope_counts.json all zero.  Read-only except its own outputs.
+
+Scope decisions (see plan):
+  * EXCLUDE: OpenSSL/crypto, zlib, libzip, libc++abi / C++ runtime, libc++ std::, GLES imports, CRT.
+  * IN SCOPE: every other mangled C++ symbol (global ns + AbyssEngine), the JNI bridge
+    (Java_*, JNI_OnLoad) and its C side (ndk23_*, ndk_*, loadAPK*, and the named util shims below).
+"""
+import json
+import os
+import re
+import subprocess
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+VDIR = os.path.join(REPO, "cmake-build-match", "verify")
+
+# --- glue: unmangled C symbols from statically-linked libraries / the runtime / GL imports ---------
+# Each entry is a regex anchored at the start of the (unmangled) symbol name.
+GLUE_UNMANGLED = [
+    # OpenSSL / crypto
+    r"SHA\d", r"SHA1", r"MD5", r"OPENSSL_", r"CRYPTO_", r"Blowfish_", r"InitializeBlowfish$",
+    r"AES_", r"RSA_", r"BN_", r"bn_", r"EVP_", r"RC4", r"RIPEMD", r"ECDSA", r"EC_", r"ec_",
+    r"GCM_", r"gcm_", r"ChaCha", r"[Pp]oly1305", r"sha\d+_block", r"_armv7_", r"_armv8_",
+    r"OPENSSL$",
+    # zlib
+    r"deflate", r"inflate", r"adler32", r"crc32", r"get_crc_table$", r"compress", r"uncompress$",
+    r"_tr_", r"zError$", r"zcalloc$", r"zcfree$", r"zlibVersion$", r"zlibCompileFlags$",
+    r"gzip", r"gz",
+    # libzip
+    r"_zip_", r"zip_",
+    # libc++abi / C++ runtime / unwinder
+    r"__cxa_", r"__cxxabi", r"_Unwind_", r"__gnu_", r"__gxx_personality", r"__dynamic_cast$",
+    # GLES (imported from libGLESv1_CM / libGLESv2 — external, not our code)
+    r"gl[A-Z]",
+    # CRT / toolchain artifacts
+    r"ExitFunction$",
+]
+GLUE_UN_RE = re.compile("|".join(f"(?:{p})" for p in GLUE_UNMANGLED))
+
+# in-scope C bridge: the Android native layer + JNI helpers are game-authored platform glue.
+INSCOPE_UN_PREFIX = ("Java_", "ndk23_", "ndk_")
+INSCOPE_UN_EXACT = {
+    "JNI_OnLoad", "loadAPK", "loadAPKAndZip", "opensubkeyfile", "decrypt", "setBaughtCredits",
+    "checkFirstCreditPackBoughtWriteAction", "getStringUTFChars", "releaseStringUTFChars",
+    "pConstToNonConst",
+}
+
+
+def _demangle_many(names):
+    names = list(names)
+    if not names:
+        return {}
+    p = subprocess.run(["c++filt", "-n"], input="\n".join(names), text=True, capture_output=True)
+    out = p.stdout.splitlines()
+    return dict(zip(names, out)) if len(out) == len(names) else {n: n for n in names}
+
+
+def classify(sym, demangled):
+    """Return 'glue' | 'in_scope' | 'review'. `demangled` may equal `sym` for C names."""
+    if sym.startswith("_Z"):
+        # mangled C++: glue iff it lives in std / __gnu_cxx / __cxxabiv1 (covers funcs, vtables,
+        # typeinfo — 'vtable for std::...', 'typeinfo for std::...').
+        if re.search(r"(?:^|[ :])(std::|__gnu_cxx::|__cxxabiv1::)", demangled):
+            return "glue"
+        return "in_scope"
+    # unmangled C symbol
+    if sym in INSCOPE_UN_EXACT or sym.startswith(INSCOPE_UN_PREFIX):
+        return "in_scope"
+    if GLUE_UN_RE.match(sym):
+        return "glue"
+    return "review"  # unknown unmangled (e.g. 'F') — surfaced, counted in-scope so it can't hide
+
+
+def main():
+    missing = [l.strip() for l in open(os.path.join(VDIR, "missing.txt")) if l.strip()]
+    report = json.load(open(os.path.join(VDIR, "report.json")))
+    wrong = report.get("wrong_type", [])
+    extra = report.get("extra", [])
+    wrong_syms = [w["symbol"] for w in wrong]
+    wrong_set = set(wrong_syms)
+    absent = [m for m in missing if m not in wrong_set]  # missing.txt = absent ∪ wrong_type
+
+    dm = _demangle_many(set(missing) | set(extra) | set(wrong_syms))
+
+    def split(names):
+        ins, glue, rev = [], [], []
+        for s in names:
+            c = classify(s, dm.get(s, s))
+            (ins if c == "in_scope" else rev if c == "review" else glue).append(s)
+        return ins, glue, rev
+
+    abs_in, abs_glue, abs_rev = split(absent)
+    wt_in, wt_glue, wt_rev = split(wrong_syms)
+    ex_in, ex_glue, ex_rev = split(extra)
+
+    def write(name, lines):
+        with open(os.path.join(VDIR, name), "w") as f:
+            f.write("\n".join(lines) + ("\n" if lines else ""))
+
+    write("in_scope_missing.txt", sorted(abs_in + abs_rev))
+    write("in_scope_extra.txt", [f"{s}\t{dm.get(s, s)}" for s in sorted(ex_in + ex_rev)])
+    # wrong_type carries both sides; keep the rich grouping from report.json for in-scope entries.
+    wt_keep = [w for w in wrong if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"]
+    with open(os.path.join(VDIR, "in_scope_wrong_type.txt"), "w") as f:
+        for w in sorted(wt_keep, key=lambda w: w["qualified"]):
+            f.write(f"{w['qualified']}\n    original: {w['demangled']}\n"
+                    f"      mangled {w['symbol']}\n")
+            for o in w["ours"]:
+                f.write(f"    ours:     {o}\n")
+            f.write("\n")
+    write("glue_excluded.txt", sorted(abs_glue + wt_glue + ex_glue))
+    unclassified = sorted(set(abs_rev + wt_rev + ex_rev))
+    write("scope_unclassified.txt", unclassified)
+
+    counts = {"absent": len(abs_in) + len(abs_rev),
+              "wrong_type": len(wt_keep),
+              "extra": len(ex_in) + len(ex_rev)}
+    json.dump(counts, open(os.path.join(VDIR, "scope_counts.json"), "w"), indent=1)
+
+    print(f"in-scope    absent {counts['absent']}   wrong_type {counts['wrong_type']}   "
+          f"extra {counts['extra']}")
+    print(f"glue excluded: {len(abs_glue + wt_glue + ex_glue)}   "
+          f"unclassified (surfaced, counted in-scope): {len(unclassified)}")
+    if unclassified:
+        print("  unclassified:", ", ".join(unclassified[:20]))
+    done = all(v == 0 for v in counts.values())
+    print("STATUS:", "DONE — all in-scope gaps closed" if done else "in progress")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

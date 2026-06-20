@@ -144,6 +144,11 @@ int AutoPilotList::touch(int px, int py) {
     return this->selected;
 }
 
+// Return the highlighted row index (which destination the player confirmed).
+int AutoPilotList::fire() {
+    return this->selected;
+}
+
 // Return a copy of the selected entry's label, or the empty fallback if out of range.
 String AutoPilotList::getTargetString() {
     int idx = this->selected;

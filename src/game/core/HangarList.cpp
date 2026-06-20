@@ -22,13 +22,9 @@ HangarList::~HangarList() {
 }
 
 // Selects which tab is active. The hangar/shop UI flips between the normal item
-// list (tab 0/2) and the blueprint-ingredients sub-list using this boolean.
-void HangarList::setCurrentTab(bool blueprintIngredients) {
-    this->currentTab = blueprintIngredients ? 1u : 0u;
-}
-
-// Two-argument variant: the int selector is unused by the original; the boolean
-// is stored directly into currentTab as the active tab index.
+// list and the blueprint-ingredients sub-list using the boolean; the int tab
+// selector is accepted (to match the original signature) but unused — the
+// boolean is stored directly into currentTab as the active tab index.
 void HangarList::setCurrentTab(int tab, bool blueprintIngredients) {
     (void)tab;
     this->currentTab = blueprintIngredients;

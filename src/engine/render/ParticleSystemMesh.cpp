@@ -116,6 +116,10 @@ ParticleSystemMesh::~ParticleSystemMesh()
     _psm_mesh_base_dtor(this);
 }
 
+void ParticleSystemMesh::release()
+{
+}
+
 void ParticleSystemMesh::render(PaintCanvas *canvas, uint32_t texture)
 {
     if (texture != 0xffffffff)

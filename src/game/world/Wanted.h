@@ -59,6 +59,7 @@ public:
     int  getLastSeen();
     int *getImageParts();
     void setImageParts(int *parts);
+    void setRequiredMission(int v);
     void setCurrentLocation(int v);
     void setTravelsTo(int v);
     void setLastSeen(int v);

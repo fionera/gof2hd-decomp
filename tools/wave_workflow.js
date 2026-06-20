@@ -1,0 +1,96 @@
+export const meta = {
+  name: 'gof2-fix-wave',
+  description: 'One race-free wave: fix in-scope verify gaps (absent/shim/template/extra/wrong_type) — one agent per file-disjoint component, each Ghidra-verified and build-gated',
+  phases: [{ title: 'fix', detail: 'one agent per component subbatch, all file-disjoint' }],
+}
+
+// args = { jobs: [ { label, kind, files:[...], entries:[ {symbol,demangled,ghidra_addr,kind,
+//          files,ours?,paired_extra?,paired_absent?} ] } ] }
+const REPO = '/Users/fionera/Downloads/GalaxyOnFire2/gof2-decomp'
+const DEEPOPEN = '/Users/fionera/Downloads/GalaxyOnFire2/DeepOpen'
+
+const RESULT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    fixed: { type: 'array', items: { type: 'string' },
+             description: 'mangled symbols now implemented/corrected under the exact original name' },
+    deferred: { type: 'array', items: {
+        type: 'object', additionalProperties: false,
+        properties: { symbol: { type: 'string' }, reason: { type: 'string' } },
+        required: ['symbol', 'reason'] } },
+    caller_rewrites: { type: 'array', items: {
+        type: 'object', additionalProperties: false,
+        properties: { file: { type: 'string' }, find: { type: 'string' }, replace: { type: 'string' },
+                      why: { type: 'string' } },
+        required: ['file', 'find', 'replace'] },
+        description: 'edits needed in files OUTSIDE this component (callers); master applies serially' },
+    missing: { type: 'array', items: { type: 'string' },
+        description: 'MISSING FIELD/DECL lines for classes whose header is not in this component' },
+    notes: { type: 'string' },
+  },
+  required: ['fixed', 'deferred', 'caller_rewrites', 'missing', 'notes'],
+}
+
+const RULES = `
+GROUND TRUTH is the original binary in Ghidra (program "android_2.0.16_libgof2hdaa.so", image base 0x10000; the ghidra_addr given for each entry is already V+0x10000). For every entry: decompile it (mcp__ghidra__decompile_function) AND read its disassembly (mcp__ghidra__disassemble_function). The MANGLED symbol is authoritative for the signature — your C++ MUST mangle to exactly that symbol (verify with orbnm, below).
+
+NAMING ORACLE (inspiration only, NOT authoritative): ${DEEPOPEN} (Java decompile of an older version). grep it for the class/method to recover intent, method names and field names. The Android binary always wins on signatures/layout/names when they disagree.
+
+READABILITY / CORRECTNESS RULES (a violation is a SHORTCUT — do not commit shortcuts):
+- Real C++ classes. Model polymorphism as REAL inheritance: if the original has a vtable, the base declares virtual methods and the derived uses 'override'; emit virtual dtors (D0/D1/D2) as the binary does. Never fake a virtual as a nullary static.
+- Use REAL types and REAL #includes of the owning header — never void* or a forward-decl where the concrete type is known and available.
+- If Ghidra shows a member call with NO receiver, read the asm to recover the real 'this' (often a member var) — never invent a nullary static to paper over it.
+- C++14. NO C-style casts (use static_cast/reinterpret_cast). No 'Enum{int}'. Semantic field/param names (consult fieldmap/rename via DeepOpen + existing headers), never field_0xNN if a name is known.
+- Match the surrounding file's style, comment density and idiom.
+
+KIND-SPECIFIC:
+- absent: implement the function (declare in header, define in cpp) from the decompiled body.
+- shim: a free-function emulation shim (e.g. Globals_getLine / Player_ctor_cs) that should be the original's real method/namespaced function. Convert it so it mangles to the original (methodize onto the class, or move into the original namespace). Update call sites that are IN YOUR component's files; call sites in OTHER files -> report as caller_rewrites. If a paired_absent/paired_extra is given, they are the same function — fix once under the correct name.
+- template: an Array<T>/ArrayAdd|Remove|Release|SetLength<T> instantiation the original has and we don't (or vice-versa). Make our instantiation set match: ensure the template is defined/used with the original's exact T. Explicit instantiations go in the shared Array TU.
+- extra: our build defines this but the original has NO such symbol. Decompile to determine which holds, then fix: (a) MISNAMED -> rename ours to the original's exact name (update callers; out-of-component callers -> caller_rewrites); (b) WRONG SIGNATURE -> retype; (c) INLINED-ONLY (original inlined it everywhere, no standalone symbol) -> inline our body into its callers and delete the standalone (out-of-component callers -> caller_rewrites). Never delete a called function without inlining.
+- wrong_type: we implement it under a different signature. Retype our params/qualifiers (and, for C1/C2/D0/D1/D2 'same demangled, different mangled' cases, recover the polymorphic vtable / emit the missing ctor/dtor variant) so it mangles to the original.
+
+BUILD-GATE (MANDATORY) — compile EVERY .cpp you edited, in BASH (the login shell is zsh which will NOT word-split the flags; you MUST use 'bash -c'. Write the .o UNDER THE REPO, never /tmp — /tmp is inside the OrbStack VM):
+  cd ${REPO} && bash -c '. tools/verify/match_flags.sh; tools/verify/orbcc $GOF2_MATCH_CXXFLAGS -c src/<file>.cpp -o ./_chk_<n>.o; echo EXIT $?'
+Every compile MUST print EXIT 0. Then confirm each symbol: tools/verify/orbnm ./_chk_<n>.o | grep <mangled-or-substring>. Remove the _chk_*.o when done. You may compare asm with tools/verify/orbobjdump -d.
+
+FILE DISCIPLINE: edit ONLY the files listed for your component. Anything needed in another component's file -> caller_rewrites (callers) or missing (fields/decls). Do NOT touch other files directly.
+
+If you genuinely cannot finish an entry this pass WITHOUT a shortcut, leave it unimplemented and put it in 'deferred' with a precise reason. Never fake it.`
+
+function promptFor(job) {
+  const lines = job.entries.map((e, i) => {
+    let s = `  ${i + 1}. ${e.kind}  symbol=${e.symbol}\n     demangled: ${e.demangled}`
+    if (e.ghidra_addr) s += `\n     ghidra_addr: ${e.ghidra_addr}`
+    if (e.ours && e.ours.length) s += `\n     our current overload(s): ${e.ours.join(' | ')}`
+    if (e.paired_extra) s += `\n     paired extra (same fn, our shim name): ${e.paired_extra}`
+    if (e.paired_absent) s += `\n     paired absent (the original this shim should become): ${e.paired_absent}`
+    return s
+  }).join('\n')
+  return `Fix these ${job.entries.length} function(s) in the Galaxy on Fire 2 decompilation so each recompiles to the ORIGINAL Android binary under its EXACT original mangled symbol.
+
+Repo: ${REPO}
+Component files you may edit (and ONLY these): ${job.files.join(', ') || '(none yet — create the owning file(s) under src/)'}
+
+ENTRIES:
+${lines}
+${RULES}
+
+Return the structured result (fixed / deferred / caller_rewrites / missing / notes).`
+}
+
+phase('fix')
+const jobs = (args && args.jobs) || []
+log(`wave: ${jobs.length} file-disjoint components`)
+const results = await parallel(jobs.map((job) => () =>
+  agent(promptFor(job), { schema: RESULT_SCHEMA, label: job.label, phase: 'fix' })
+    .then((r) => ({ label: job.label, kind: job.kind, ...r }))
+))
+const ok = results.filter(Boolean)
+const fixed = ok.flatMap((r) => r.fixed || [])
+const deferred = ok.flatMap((r) => (r.deferred || []).map((d) => ({ ...d, label: r.label })))
+const callers = ok.flatMap((r) => (r.caller_rewrites || []).map((c) => ({ ...c, label: r.label })))
+const missing = ok.flatMap((r) => r.missing || [])
+log(`wave done: fixed ${fixed.length}, deferred ${deferred.length}, caller_rewrites ${callers.length}, missing ${missing.length}`)
+return { fixed, deferred, caller_rewrites: callers, missing, per_component: ok }

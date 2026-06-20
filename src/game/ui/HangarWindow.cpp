@@ -544,7 +544,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     self->setSellMode();
                     self->setSellMode();
                     self->selectedItem = 0;
-                    self->hangarList->setCurrentTab(i != 0);
+                    self->hangarList->setCurrentTab(0, i != 0);
                     if (i == 2)
                         self->refreshCargoAvailabilityForBlueprints();
                     self->refreshCurrentContentHeight();
@@ -626,7 +626,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         if (tab == 4) {
             self->setSellMode();
             self->selectedItem = 0;
-            self->hangarList->setCurrentTab(true);
+            self->hangarList->setCurrentTab(0, true);
             self->refreshCargoAvailabilityForBlueprints();
             self->refreshCurrentContentHeight();
             self->scrollOffset = 0;
@@ -635,7 +635,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             return;
         }
         if (self->hangarList->getCurrentTab() == 3) {
-            self->hangarList->setCurrentTab(false);
+            self->hangarList->setCurrentTab(0, false);
             self->refreshCargoAvailabilityForBlueprints();
             self->refreshCurrentContentHeight();
         } else if (self->readyToClose() != 0) {
@@ -1135,7 +1135,7 @@ void HangarWindow::demountItem(Item *item, int slot) {
 
     ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
     this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
-    this->hangarList->setCurrentTab(false);
+    this->hangarList->setCurrentTab(0, false);
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
@@ -1434,7 +1434,7 @@ void HangarWindow::setSellMode() {
                 void *made = ((Item *)((void *)(uintptr_t)idx))->makeItem();
                 gStatus->getShip()->addCargo((Item *)made);
                 self->itemList->push_back((Item*)made);
-                self->hangarList->setCurrentTab(true);
+                self->hangarList->setCurrentTab(0, true);
                 self->refreshCurrentContentHeight();
             } else {
                 String line, copy, name, fmt, result, line2, sname, fmt2;
@@ -1448,7 +1448,7 @@ void HangarWindow::setSellMode() {
 
                 self->dialog->set(g_HangarWindow_emptyDialogText);
                 ((Status *)(globals))->addPendingProduct((BluePrint *)self->bluePrint);
-                self->hangarList->setCurrentTab(true);
+                self->hangarList->setCurrentTab(0, true);
                 self->refreshCargoAvailabilityForBlueprints();
             }
             self->bluePrint->reset();
@@ -1603,7 +1603,7 @@ void HangarWindow::setSellMode(bool buy) {
                 void *made = ((Item *)((void *)(uintptr_t)idx))->makeItem();
                 gStatus->getShip()->addCargo((Item *)made);
                 self->itemList->push_back((Item*)made);
-                self->hangarList->setCurrentTab(true);
+                self->hangarList->setCurrentTab(0, true);
                 self->refreshCurrentContentHeight();
             } else {
                 String line, copy, name, fmt, result, line2, sname, fmt2;
@@ -1617,7 +1617,7 @@ void HangarWindow::setSellMode(bool buy) {
 
                 self->dialog->set(g_HangarWindow_emptyDialogText);
                 ((Status *)(globals))->addPendingProduct((BluePrint *)self->bluePrint);
-                self->hangarList->setCurrentTab(true);
+                self->hangarList->setCurrentTab(0, true);
                 self->refreshCargoAvailabilityForBlueprints();
             }
             self->bluePrint->reset();
@@ -1713,7 +1713,7 @@ void HangarWindow::selectItem(ListItem *item) {
             BluePrint *bp = li->bluePrint;
             self->bluePrint = bp;
             self->hangarList->fillIngredientsList(bp, bp != nullptr);
-            self->hangarList->setCurrentTab(true);
+            self->hangarList->setCurrentTab(0, true);
             self->refreshCurrentContentHeight();
             if (self->specialMode != 0)
                 self->specialMode = 0;
@@ -2057,7 +2057,7 @@ void HangarWindow::mountItem(Item *item) {
 
     ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
     this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
-    this->hangarList->setCurrentTab(false);
+    this->hangarList->setCurrentTab(0, false);
 
     refreshCurrentContentHeight();
     this->scrollOffset = this->savedScrollOffset;
@@ -2511,7 +2511,7 @@ void HangarWindow::initialize() {
     cols[1] = third;
     cols[2] = (*g_hw_screenWidth - 0xe) + third * -2;
 
-    self->hangarList->setCurrentTab(*g_hw_specialModeFlag != 0);
+    self->hangarList->setCurrentTab(0, *g_hw_specialModeFlag != 0);
     self->refreshCurrentContentHeight();
 
     self->currentLoad = gStatus->getShip()->getCurrentLoad();

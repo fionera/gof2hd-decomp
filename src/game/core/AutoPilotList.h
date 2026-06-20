@@ -32,5 +32,6 @@ public:
     void down();
     String getTargetString();
     int touch(int px, int py);
+    int fire();                   // returns the highlighted row index (DeepOpen: getSelection())
 };
 #endif
