@@ -38,7 +38,7 @@ public:
     ~LensFlare();
 
     void render2D(float srcX, float srcY, float alpha, int colorIndex);
-    void update();
+    void update(int);   // mirrors engine/render/LensFlare.h (kept in sync)
 };
 
 // Free AEMath operators used below (defined in AEMath.cpp).
