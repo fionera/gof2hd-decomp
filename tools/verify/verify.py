@@ -291,11 +291,20 @@ def main():
         wrong_type = analyze_wrong_type(missing, our_syms)
         wrong_type_syms = {h["symbol"] for h in wrong_type}
         absent = [m for m in missing if m not in wrong_type_syms]
+        # The inverse of coverage: function symbols our build defines that the original binary has
+        # nowhere (compared by name against the FULL binary symbol table — any address/section — so
+        # ctor/dtor aliases and non-.text symbols aren't falsely flagged). Mostly intentional
+        # re-expression scaffolding (helper/shim free functions, renamed emulation methods like
+        # String::ctor/dtor and the *_ext_* shims), surfaced so a genuinely accidental extra — a
+        # stray or wrongly-named function — is easy to spot. Informational, not gated.
+        binary_names = {n for ns in addr2names.values() for n in ns}
+        extra = sorted(s for s in our_syms if s not in binary_names)
         report.update({"original_functions": len(universe),
                        "compared_unique": len(compared), "missing": len(missing),
                        "missing_wrong_type": len(wrong_type),
                        "missing_absent": len(absent),
-                       "wrong_type": wrong_type})
+                       "wrong_type": wrong_type,
+                       "extra_symbols": len(extra), "extra": extra})
         miss_path = os.path.join(args.build_dir, "missing.txt")
         os.makedirs(os.path.dirname(miss_path), exist_ok=True)
         with open(miss_path, "w") as f:
@@ -311,6 +320,13 @@ def main():
                 for dem in h["ours"]:
                     f.write(f"    ours:     {dem}\n")
                 f.write("\n")
+        # Symbols we emit that the original binary doesn't define (mangled + demangled, one per
+        # line) — the inverse of missing.txt, for auditing our build's surface vs the original.
+        extra_path = os.path.join(args.build_dir, "extra.txt")
+        dm_extra = demangle_many(extra)
+        with open(extra_path, "w") as f:
+            for s in extra:
+                f.write(f"{s}    {dm_extra.get(s, s)}\n")
 
     print(f"{len(rows)} comparisons   avg {avg:.1f}%   "
           f"100%-fuzzy {perfect}   linked-exact {linked_eq}   byte-exact {bytes_eq}")
@@ -323,6 +339,8 @@ def main():
                   f"signature (wrong type) "
                   f"(-> {os.path.relpath(wt_path, REPO)}); "
                   f"{report['missing_absent']} genuinely absent")
+        print(f"extra: {report['extra_symbols']} symbols our build defines that the original "
+              f"doesn't (-> {os.path.relpath(extra_path, REPO)})")
     if skips:
         units = ", ".join(u for u, _ in skips)
         print(f"skipped {len(skips)} units (couldn't delink/diff): {units}")
