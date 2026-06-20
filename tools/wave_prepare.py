@@ -31,6 +31,9 @@ def main():
     ap.add_argument("--max-entries", type=int, default=None,
                     help="skip components whose first subbatch exceeds this size")
     ap.add_argument("--out", default=os.path.join(VDIR, "wave.json"))
+    ap.add_argument("--script-out", default=os.path.join(VDIR, "wave_wf.js"),
+                    help="write a self-contained Workflow script with the jobs baked in "
+                         "(Workflow `args` stringification is unreliable, so we embed)")
     args = ap.parse_args()
 
     wl = json.load(open(os.path.join(VDIR, "worklist.json")))
@@ -60,10 +63,24 @@ def main():
             break
 
     json.dump({"jobs": jobs}, open(args.out, "w"), indent=1)
+
+    # bake a self-contained Workflow script (jobs as a JSON literal) — invoke with
+    # Workflow({scriptPath: <script-out>}) and NO args.
+    template = open(os.path.join(HERE, "wave_workflow.js")).read()
+    literal = "const EMBEDDED_JOBS = " + json.dumps(jobs, separators=(",", ":"))
+    marker = "const EMBEDDED_JOBS = null // __WAVE_JOBS__ (wave_prepare.py replaces this whole line)"
+    if marker not in template:
+        print("ERROR: marker line not found in tools/wave_workflow.js", file=sys.stderr)
+        return 1
+    open(args.script_out, "w").write(template.replace(marker, literal))
+
     n_entries = sum(len(j["entries"]) for j in jobs)
     from collections import Counter
     bk = Counter(j["kind"] for j in jobs)
-    print(f"wave: {len(jobs)} components, {n_entries} entries  ({dict(bk)})  -> {os.path.relpath(args.out, REPO)}")
+    print(f"wave: {len(jobs)} components, {n_entries} entries  ({dict(bk)})")
+    print(f"  jobs   -> {os.path.relpath(args.out, REPO)}")
+    print(f"  script -> {os.path.relpath(args.script_out, REPO)}  "
+          f"(invoke: Workflow scriptPath={os.path.relpath(args.script_out, REPO)}, no args)")
     return 0
 
 

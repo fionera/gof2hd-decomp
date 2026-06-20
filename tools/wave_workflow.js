@@ -85,8 +85,10 @@ ${RULES}
 Return the structured result (fixed / deferred / caller_rewrites / missing / notes).`
 }
 
+const EMBEDDED_JOBS = null // __WAVE_JOBS__ (wave_prepare.py replaces this whole line)
+
 phase('fix')
-const jobs = (args && args.jobs) || []
+const jobs = EMBEDDED_JOBS || (typeof args !== 'undefined' && args && args.jobs) || []
 log(`wave: ${jobs.length} file-disjoint components`)
 const results = await parallel(jobs.map((job) => () =>
   agent(promptFor(job), { schema: RESULT_SCHEMA, label: job.label, phase: 'fix' })
