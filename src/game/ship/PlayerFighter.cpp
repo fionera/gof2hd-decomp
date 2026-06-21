@@ -672,10 +672,6 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-static inline void AEMath_VectorSub(void *out, void *a, void *b) {  // out = a - b
-    *(AbyssEngine::AEMath::Vector *)out =
-        *(const AbyssEngine::AEMath::Vector *)a - *(const AbyssEngine::AEMath::Vector *)b;
-}
 static inline void AEMath_VectorScale(void *out, float s, void *v) {  // out = s * v
     *(AbyssEngine::AEMath::Vector *)out =
         s * *(const AbyssEngine::AEMath::Vector *)v;
@@ -698,7 +694,7 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     float pos[3] = { gp.x, gp.y, gp.z };
 
     float diff[3];
-    AEMath_VectorSub(diff, (void *)&target, pos);   // diff = pos - target
+    *reinterpret_cast<Vector *>(diff) = target - *reinterpret_cast<const Vector *>(pos);
     float len = AEMath_VectorLength(diff);
     float r = VectorSignedToFloat(radius, 0);
     float t = 1.0f;
@@ -710,7 +706,8 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     AbyssEngine::AEMath::Vector gp2 = this->getPosition();
     float pos2[3] = { gp2.x, gp2.y, gp2.z };
     float dir[3];
-    AEMath_VectorSub(dir, pos, pos2);
+    *reinterpret_cast<Vector *>(dir) =
+        *reinterpret_cast<const Vector *>(pos) - *reinterpret_cast<const Vector *>(pos2);
     float norm[3];
     AbyssEngine::AEMath::VectorNormalize((Vector *)norm, (Vector *)dir);
     this->pushNormal = *(Vector *)norm;

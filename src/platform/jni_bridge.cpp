@@ -89,12 +89,6 @@ void AppMgr_OnUpdate(ApplicationManager *self, long long now)
 char *AppMgr_GetApplicationData(ApplicationManager *self)
     asm("_ZN11AbyssEngine18ApplicationManager18GetApplicationDataEv");
 
-// Engine accelerometer/gravity sinks.
-void Engine_SetAccelValue(AbyssEngine::Engine *self, double x, double y, double z)
-    asm("_ZN11AbyssEngine6Engine13SetAccelValueEddd");
-void Engine_SetGravValue(AbyssEngine::Engine *self, double x, double y, double z)
-    asm("_ZN11AbyssEngine6Engine12SetGravValueEddd");
-
 // Free helpers (touch queue + key dispatch + per-frame offerwall poll).
 int gof2_GetTouchCount() asm("_Z13GetTouchCountv");
 void gof2_GetTouch(int touch) asm("_Z8GetTouchi");
@@ -126,7 +120,7 @@ extern "C" void ndk23_resetScreenshotFlag();
 extern "C" void ndk23_sendingPauseSignal();
 extern "C" void ndk23_sendingResumeSignal();
 extern "C" void ndk23_setCountryCode(unsigned int code);
-// Accelerometer sink (deferred: implemented elsewhere in the NDK layer).
+// Accelerometer sink (defined below).
 extern "C" void ndk23_handleAcceleration(float x, float y, float z);
 
 // ---------------------------------------------------------------------------
@@ -261,6 +255,55 @@ extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
     engine->Initialize(&OnCreateApplication);
     engine->SetOnDestroyApp(&OnDestroyApplication);
     engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+}
+
+// ---------------------------------------------------------------------------
+// Accelerometer sink. The Java layer hands us a portrait-relative (x, y, z)
+// gravity vector; we remap it onto the engine's landscape axes, low-pass filter
+// it into a smoothed gravity estimate (gAccelFilterState[0..2]) and push both the
+// raw acceleration and the smoothed gravity into the engine.
+// ---------------------------------------------------------------------------
+
+// When set, the analog tilt uses the landscape mapping (-x, y); otherwise the
+// device is held in the portrait orientation and the axes are swapped (y, x)
+// (binary .bss 0x227b28).
+static int rotateAccelValues;
+
+extern "C" void ndk23_handleAcceleration(float x, float y, float z)
+{
+    double tiltA, tiltB;
+    if (rotateAccelValues != 0) {
+        tiltA = -x;
+        tiltB = y;
+    } else {
+        tiltA = y;
+        tiltB = x;
+    }
+
+    AbyssEngine::Engine *engine = *g_pEngine;
+    if (engine == nullptr)
+        return;
+
+    double *gravity = gAccelFilterState;
+    double gz;
+    if (engine->appManager->paintCanvas->initialized) {
+        // Running low-pass: blend the new sample into the smoothed gravity.
+        gravity[0] = gravity[0] * 0.95 + tiltB * 0.05;
+        gravity[1] = gravity[1] * 0.95 + tiltA * 0.05;
+        gz         = gravity[2] * 0.95 + z * 0.05;
+    } else {
+        // Rotation disabled: seed the estimate straight from the X tilt.
+        gravity[0] = tiltB * 0.95;
+        gravity[1] = tiltB * 0.95;
+        gz         = tiltB * 0.95;
+    }
+    gravity[2] = gz;
+    gravity[3] = -gravity[0];
+    gravity[4] = -gravity[1];
+    gravity[5] = -gz;
+
+    engine->SetAccelValue(-tiltB, -tiltA, -z);
+    engine->SetGravValue(gravity[3], gravity[4], gravity[5]);
 }
 
 // ---------------------------------------------------------------------------
