@@ -1011,43 +1011,44 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     int mesh = (int)meshOut;
     int cv = *canvasP;
 
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 0, 0, 1, 2);
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 1, 2, 1, 3);
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 2, 4, 5, 6);
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 3, 6, 5, 7);
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 4, 8, 9, 10);
-    AbyssEngine::Mesh::setFace((void *)(long)cv, mesh, 5, 10, 9, 0xb);
+    PaintCanvas *meshCanvas = (PaintCanvas *)(long)cv;
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 0, 0, 1, 2);
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 1, 2, 1, 3);
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 2, 4, 5, 6);
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 3, 6, 5, 7);
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 4, 8, 9, 10);
+    meshCanvas->MeshSetTriangle((unsigned int)mesh, 5, 10, 9, 0xb);
 
     // UV coords: pairs (u0,v0) and (u0,v1) drive the texture mapping of each face.
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 0, u0, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 1, u1, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 2, v1, u0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 3, v1, v0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 4, u0, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 5, u1, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 6, v1, u0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 7, v1, v0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 8, u0, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 9, u1, 0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 10, v1, u0);
-    AbyssEngine::Mesh::setUV((void *)(long)cv, mesh, 0xb, v1, v0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 0, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 1, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 2, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 3, v1, v0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 4, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 5, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 6, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 7, v1, v0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 8, u0, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 9, u1, 0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 10, v1, u0);
+    meshCanvas->MeshSetUv((unsigned int)mesh, 0xb, v1, v0);
 
     float pw = VectorSignedToFloat(width, 0);
     float nh = VectorSignedToFloat(-height, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 0, nh, 0, pw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 0, nh, 0, pw);
     float nw = VectorSignedToFloat(-width, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 1, nh, 0, nw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 1, nh, 0, nw);
     float ph = VectorSignedToFloat(height, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 2, ph, 0, pw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 3, ph, 0, nw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 4, 0, nh, pw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 5, 0, nh, nw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 6, 0, ph, pw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 7, 0, ph, nw);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 8, nh, ph, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 9, nh, nh, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 10, ph, ph, 0);
-    AbyssEngine::Mesh::setVertex((void *)(long)cv, mesh, 0xb, ph, nh, 0);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 2, ph, 0, pw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 3, ph, 0, nw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 4, 0, nh, pw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 5, 0, nh, nw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 6, 0, ph, pw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 7, 0, ph, nw);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 8, nh, ph, 0);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 9, nh, nh, 0);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 10, ph, ph, 0);
+    meshCanvas->MeshSetPoint((unsigned int)mesh, 0xb, ph, nh, 0);
 
     return;
 }

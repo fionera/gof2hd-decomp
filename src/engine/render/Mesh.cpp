@@ -3,22 +3,6 @@
 #include "engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
 #include "engine/file/AEFile.h"
 
-// Minimal view of AbyssEngine::PaintCanvas, declaring only the three mesh-table
-// primitives the billboard helpers forward to. The full gof2/PaintCanvas.h is not
-// pulled in because it redefines a private top-level `struct Mesh` that would clash
-// with this TU's AbyssEngine::Mesh; these three declarations link to the same
-// PaintCanvas methods recovered in PaintCanvas.cpp.
-namespace AbyssEngine {
-class PaintCanvas {
-public:
-    float MeshSetPoint(unsigned int index, unsigned short vtx, float x, float y, float z);
-    void MeshSetUv(unsigned int index, unsigned short sub, float u, float v);
-    void MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
-                         unsigned short v0, unsigned short v1, unsigned short v2);
-};
-} // namespace AbyssEngine
-using ::AbyssEngine::PaintCanvas;
-
 // The real AbyssEngine::Transform (gof2/engine/math/Transform.h) only forward-declares
 // AbyssEngine::Mesh, so it composes cleanly with this TU's full Mesh definition. Every
 // `anim->...` below is a genuine call into the engine's Transform, and AEMath::BSphere
@@ -300,27 +284,6 @@ int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
 fail:
     delete anim;
     return -1;
-}
-
-// --- per-mesh edit helpers (Globals_createBillBoard) ---------------------------
-// These operate on a mesh that lives inside a PaintCanvas's mesh table, so they take
-// the owning canvas plus the mesh's table index and forward to the matching
-// PaintCanvas primitive: triangle indices, UV coords and vertex positions.
-
-void Mesh::setFace(void *canvas, int mesh, int face, int i0, int i1, int i2) {
-    static_cast<PaintCanvas *>(canvas)->MeshSetTriangle(
-        (unsigned int)mesh, (unsigned short)face,
-        (unsigned short)i0, (unsigned short)i1, (unsigned short)i2);
-}
-
-void Mesh::setUV(void *canvas, int mesh, int vert, float u, float v) {
-    static_cast<PaintCanvas *>(canvas)->MeshSetUv(
-        (unsigned int)mesh, (unsigned short)vert, u, v);
-}
-
-void Mesh::setVertex(void *canvas, int mesh, int vert, float x, float y, float z) {
-    static_cast<PaintCanvas *>(canvas)->MeshSetPoint(
-        (unsigned int)mesh, (unsigned short)vert, x, y, z);
 }
 
 } // namespace AbyssEngine

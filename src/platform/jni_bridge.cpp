@@ -17,6 +17,12 @@
 #include <cstring>
 
 #include "engine/render/Engine.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/core/GameData.h"
+#include "engine/file/AEFile.h"
+#include "platform/gl.h"
+#include "game/mission/Status.h"
 
 // ---------------------------------------------------------------------------
 // Global state shared with the Java side and the rest of the NDK layer.
@@ -122,6 +128,140 @@ extern "C" void ndk23_sendingResumeSignal();
 extern "C" void ndk23_setCountryCode(unsigned int code);
 // Accelerometer sink (deferred: implemented elsewhere in the NDK layer).
 extern "C" void ndk23_handleAcceleration(float x, float y, float z);
+
+// ---------------------------------------------------------------------------
+// Loader-owned global state read/written by the bring-up and host hooks.
+// ---------------------------------------------------------------------------
+
+// Device framebuffer size cached by InitWithZip and consumed by the render path
+// (binary .bss 0x227b38 / 0x227b3c).
+static int gRealWidth;
+static int gRealHeight;
+// Asset root / zip directory copies owned by the NDK setters (binary .bss
+// 0x227b40 / 0x227b44); each is a freshly malloc'd, mutable C string.
+static char *rootDirectory;
+static char *ZIPDirectory;
+// Host-requested exit latch read back through getExitFlag (binary .bss 0x227b48).
+static int forceExit;
+// Locale code clamped to the 0..15 table range (binary .bss 0x2250e0).
+static unsigned int countryCode;
+// Pending offerwall credit reward, granted once the player has banked any play
+// time and then cleared (binary .bss 0x227b54).
+static int gb_android_offerwallCreditAmount;
+
+// The NDK loader publishes the singleton Engine through this slot (binary .bss
+// 0x227b24); the render hooks double-deref it.
+extern "C" AbyssEngine::Engine **g_pEngine;
+AbyssEngine::Engine **g_pEngine;
+
+// Globals::status is the canonical Status singleton (binary .bss 0x2281b0) under
+// its real mangled name; it is not exposed by Globals.h, so reach it here through
+// its exact mangled symbol (mirrors the rest of the NDK layer).
+extern Status *Globals_status asm("_ZN7Globals6statusE");
+
+// Asset unpack + the engine's app-create/app-destroy callbacks. loadAPKAndZip is
+// a plain C-linkage loader helper; OnCreateApplication is the global
+// InitializeCallback the binary registers (no header declares it).
+extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath);
+void OnCreateApplication(AbyssEngine::Engine *engine);
+
+// Persists the game after the offerwall reward is granted.
+extern "C" void ndk_autosave();
+
+// ---------------------------------------------------------------------------
+// Asset / locale setters. Each copies the incoming string into a fresh malloc'd
+// buffer (the loader keeps an owned, mutable copy), or clamps the locale code.
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk23_setRootDirectory(const char *path)
+{
+    rootDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
+    std::strcpy(rootDirectory, path);
+}
+
+extern "C" void ndk23_setZipDirectory(const char *path)
+{
+    ZIPDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
+    std::strcpy(ZIPDirectory, path);
+}
+
+extern "C" void ndk23_setCountryCode(unsigned int code)
+{
+    // The locale table only has sixteen entries; anything past it falls back to 0.
+    countryCode = (code > 15) ? 0u : code;
+}
+
+// ---------------------------------------------------------------------------
+// Host status hooks. The screenshot path is a no-op stub in this build.
+// ---------------------------------------------------------------------------
+
+extern "C" int ndk23_getExitFlag()
+{
+    return forceExit;
+}
+
+extern "C" int ndk23_getScreenshotFlag()
+{
+    return 0;
+}
+
+extern "C" void ndk23_resetScreenshotFlag()
+{
+}
+
+// ---------------------------------------------------------------------------
+// Per-frame offerwall reward: once the player has banked any play time and an
+// offerwall credit amount is pending, award it, persist the game and clear it.
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits()
+{
+    if (Globals_status->getPlayingTime() >= 1) {
+        int amount = gb_android_offerwallCreditAmount;
+        if (amount > 0) {
+            Globals_status->changeCredits(amount);
+            ndk_autosave();
+            gb_android_offerwallCreditAmount = 0;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Asset bring-up: sets the GL viewport, clears the accelerometer filter state,
+// caches the framebuffer size, unpacks the APK + zip, builds the Engine, stamps
+// its version string, installs the asset root and the app-create/app-destroy
+// callbacks, then forces the canvas into landscape.
+// ---------------------------------------------------------------------------
+
+// Low-pass gravity filter state shared with the accelerometer sink (binary .bss
+// 0x227b60..0x227b78, six doubles); InitWithZip resets it before the engine
+// starts.
+double gAccelFilterState[6];
+
+extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+                                  int width, int height)
+{
+    glViewport(0, 0, width, height);
+
+    for (int i = 0; i < 6; ++i)
+        gAccelFilterState[i] = 0.0;
+
+    gRealWidth = width;
+    gRealHeight = height;
+
+    loadAPKAndZip(apkPath, zipPath);
+
+    AbyssEngine::Engine *engine = new AbyssEngine::Engine();
+    *g_pEngine = engine;
+    engine->str_0x3c = String("2.0.16", false);
+
+    if (rootDirectory != nullptr)
+        AEFile::SetAppRootDir(rootDirectory);
+
+    engine->Initialize(&OnCreateApplication);
+    engine->SetOnDestroyApp(&OnDestroyApplication);
+    engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+}
 
 // ---------------------------------------------------------------------------
 // JNI bridge.
