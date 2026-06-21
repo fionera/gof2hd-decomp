@@ -40,14 +40,11 @@ public:
     // Build the LOD geometry for the given ship type/variant (kind==0xf builds the
     // articulated capital-ship geometry). `wireframe` skips material creation.
     AEGeometry* getShipGroup(int type, int variant, bool wireframe);
-    int init(void* app);
-    // Engine bring-up entry point; the renderer root is supplied for completeness but the
-    // body only needs the application manager (forwarded to init(void*)).
+    // Engine bring-up entry point; constructs the shared game singletons. The renderer root is
+    // supplied for completeness but the construction work only needs the application manager.
     int init(AbyssEngine::ApplicationManager* app, AbyssEngine::Engine* engine);
     float sqrt(float x);
 
-    // Plain runtime sqrtf wrapper (the instance is unused).
-    static float sqrt_impl(float x);
     // Discard the active sound-resource list and start a fresh one seeded with the two
     // always-present menu sound ids.
     void startNewSoundResourceList();

@@ -154,7 +154,7 @@ String Globals::getKeyActionName(int action)
 
 float Globals::sqrt(float x) {
     (void)this;
-    return Globals::sqrt_impl(x);
+    return __builtin_sqrtf(x);
 }
 
 extern void *const gDrinks_a __attribute__((visibility("hidden")));
@@ -1825,8 +1825,11 @@ extern void ***const gI_layout __attribute__((visibility("hidden")));
 
 typedef void (*VolFn)(void *snd, int channel, int value);
 
-// Globals::init(ApplicationManager* app): construct the shared game singletons.
-int Globals::init(void *app) {
+// Globals::init(ApplicationManager*, Engine*): construct the shared game singletons. The engine
+// root is passed by the caller for completeness; the construction work only needs the application
+// manager.
+int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
+    (void)engine;
     int *missionSlot = *gI_mission;
     if (*missionSlot == 0) {
         void *m = ::operator new(0x78);
@@ -1876,10 +1879,10 @@ int Globals::init(void *app) {
 
     int *engineSlot = *gI_engineSlot;
     if (*engineSlot == 0) {
-        *engineSlot = *(int *)app;
+        *engineSlot = *reinterpret_cast<int *>(app);
     }
-    gAppManager = (ApplicationManager *)app;
-    ((ApplicationManager *)(app))->VibrateEnable(0);
+    gAppManager = app;
+    app->VibrateEnable(0);
 
     void *rng = ::operator new(8);
     AERandom_ctor(rng);
@@ -1938,15 +1941,6 @@ int Globals::init(void *app) {
     Array<int> *arr = new Array<int>();
     this->soundResources = arr;
     return (int)(long)arr;
-}
-
-// Globals::init(ApplicationManager*, Engine*): typed bring-up wrapper. The engine root is
-// passed by the caller for completeness; the construction work only needs the application
-// manager, so forward to the void* form.
-int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *engine) {
-    (void)engine;
-    void *appPtr = app;
-    return init(appPtr);
 }
 
 extern void *const gPM_snd0 __attribute__((visibility("hidden")));
@@ -2233,14 +2227,6 @@ void Globals::getLine(unsigned font, String text, int maxWidth, String *out)
 // =====================================================================================
 
 #include "engine/core/AERandom.h"
-
-// ---- sqrt_impl ----
-// Globals::sqrt(float) tail-jumps to the runtime sqrtf with the float in r0. The leaf
-// fragment is just that call.
-float Globals::sqrt_impl(float x)
-{
-    return __builtin_sqrtf(x);
-}
 
 // ---- dialogueDispatch ----
 // Second stage of getDialogueSoundId(): given a resolved race/gender bucket (`category`) and a

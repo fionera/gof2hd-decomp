@@ -415,20 +415,20 @@ int DialogueWindow::init() {
     GameText *gameText = *g_dw_gameTextInit;
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    this->prevButton = new TouchButton(gameText->getText(0xb3), 5,
+    this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
         this->frameX + margin, this->frameY - margin + this->frameHeight,
         F<int>(layout, 0x50), 0x21, 4);
 
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    this->nextButton = new TouchButton(gameText->getText(0xb4), 6,
+    this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
         this->frameX + this->frameWidth - margin,
         this->frameY - margin + this->frameHeight,
         F<int>(layout, 0x50), 0x22, 4);
 
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
-    this->moreButton = new TouchButton(gameText->getText(0x18b), 0,
+    this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
         this->frameX + half_round_to_zero(this->frameWidth),
         this->frameY + this->frameHeight - margin,
         this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
@@ -464,7 +464,7 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     int x = this->frameX + this->frameWidth / 2;
     int y = this->frameY + this->frameHeight - margin;
     int width = this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2;
-    this->nextButton = new TouchButton(gameText->getText(0x20c), 0, x, y, width, 0x24, 4);
+    this->nextButton = new TouchButton(*gameText->getText(0x20c), 0, x, y, width, 0x24, 4);
 
     this->agentName.assign(agentName);
     this->voiceSound = -1;

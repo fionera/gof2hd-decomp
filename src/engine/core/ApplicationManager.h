@@ -151,4 +151,8 @@ using ::AbyssEngine::ApplicationManager;
 
 extern ApplicationManager* gAppManager;  // canonical ApplicationManager singleton (binary .bss 0x2281d8)
 
+// Global Engine accessor (double-derefs the NDK Engine** root): returns the live
+// engine, null until the engine has been brought up.
+AbyssEngine::Engine *GetEngine();
+
 #endif

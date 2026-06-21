@@ -215,6 +215,13 @@ void ParticleSystemSprite::setAlpha(int index, uint32_t color, float alpha)
                                     (uint16_t)(this->idOffset + index), c3, c2, c1, c0);
 }
 
+// Toggle hook for the sprite particle system. The original compiles to an empty body (a bare
+// return), so the active/visible state is driven entirely through the per-particle flags elsewhere.
+void ParticleSystemSprite::enable(bool enabled)
+{
+    (void)enabled;
+}
+
 // The target is a 12-byte veneer that does not lift cleanly; functionally it is a thin forwarder
 // that tail-calls the shared area-exit particle update helper.
 void ParticleSystemSprite::updateAreaExitParticle(int index, float dt)

@@ -63,6 +63,7 @@ public:
 
     void setAlpha(int index, uint32_t color, float alpha);
     void updateAreaExitParticle(int index, float dt);
+    void enable(bool enabled);
 
     static void render(PaintCanvas *canvas, uint32_t handle, uint32_t texture, BlendMode blend);
     static void render(PaintCanvas *canvas, uint32_t handle);

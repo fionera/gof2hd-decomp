@@ -58,7 +58,6 @@ public:
     int           touchMargin;        // hit-test margin (from layout metrics)
     int           fontSpacing;        // cached font kerning/spacing
 
-    TouchButton(String *text, int type, int x, int y, int width, int icon, int style);
     TouchButton(String const &text, int x, int y, int p4, unsigned char p5);
     TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6);
     TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7);

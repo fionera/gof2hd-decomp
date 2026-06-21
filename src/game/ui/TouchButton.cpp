@@ -793,11 +793,3 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char f
     this->init(tmp, kind, a, b, c, 0x44, -1, -1, flag, 0);
 }
 
-// ---- TouchButton(String const& text, int type, int x, int y, int width, int icon, int style) ----
-// `icon` is the optional sub-image id (init's achStage slot); `style` becomes flags0.
-// flags1 defaults to 0x44 like the other label ctors.
-TouchButton::TouchButton(String *text, int type, int x, int y, int width, int icon, int style) {
-    this->fontId = (uint32_t)**g_TB_c1;
-    this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
-    init(*text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
-}

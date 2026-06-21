@@ -921,3 +921,13 @@ void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplication
         this->moduleIds->push_back(id);
     }
 }
+
+// The Engine root the NDK layer publishes (binary .bss 0x227b24); defined in the
+// JNI bridge. The free GetEngine() below double-dereferences this slot.
+extern "C" Engine **g_pEngine;
+
+// Global Engine accessor used throughout the NDK render/input layer: returns the
+// live engine (null until the engine has been brought up).
+Engine *GetEngine() {
+    return *g_pEngine;
+}

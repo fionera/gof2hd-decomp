@@ -20,6 +20,10 @@ extern "C" unsigned int F(unsigned int value);
 // "Accelerate" / "Decelerate"); a plain global free function in the binary.
 int GetKeyState(char *name);
 
+// Reports the pressed/held state of the virtual key at table index `index`
+// (out-of-range indices read as released).
+int GetKeyState(int index);
+
 // Software-pointer relative move: accumulates a delta into the emulated cursor.
 // While the first virtual key is "captured" the x delta is written absolutely,
 // otherwise both axes are integrated; the whole move is ignored unless pointer

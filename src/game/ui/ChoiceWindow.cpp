@@ -305,17 +305,17 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
         if (defaultButtons) scaled = (float)baseWidth;
         int buttonWidth = (int)scaled;
 
-        this->leftButton = new TouchButton((String *)&left, 0,
+        this->leftButton = new TouchButton(left, 0,
                                            this->x + this->width / 2 - layout->field_0x4c / 2,
                                            this->y + this->height - this->padding,
                                            buttonWidth, 0x22, 4);
 
-        this->rightButton = new TouchButton((String *)&right, 0,
+        this->rightButton = new TouchButton(right, 0,
                                             this->x + this->width / 2 + layout->field_0x4c / 2,
                                             this->y + this->height - this->padding,
                                             buttonWidth, 0x21, 4);
     } else {
-        this->rightButton = new TouchButton((String *)&single, 0,
+        this->rightButton = new TouchButton(single, 0,
                                             this->x + this->width / 2,
                                             this->y + this->height - this->padding,
                                             layout->field_0x40, 0x24, 4);
@@ -345,7 +345,7 @@ void ChoiceWindow::setMiscButton(String const &text)
         buttonWidth = leftWidth + rightWidth + padding;
     }
 
-    this->miscButton = new TouchButton((String *)&text, 0,
+    this->miscButton = new TouchButton(text, 0,
                                        this->x + this->width / 2 - layout->field_0x4c / 2,
                                        this->y + this->height - padding, buttonWidth, 0x22, 4);
 

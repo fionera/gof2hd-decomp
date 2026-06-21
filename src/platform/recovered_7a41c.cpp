@@ -565,6 +565,25 @@ matched:
 // ---------------------------------------------------------------------------
 // Keyboard / mouse state queries.
 // ---------------------------------------------------------------------------
+// Pressed/held state of the virtual key at table index `index`.
+int GetKeyState(int index)
+{
+    if (static_cast<unsigned int>(index) > kVirtualKeyCount - 1)
+        return 0;
+    return g_virtualKeys[index].pressed;
+}
+
+// Pressed/held state of the first virtual key whose label matches `name`.
+int GetKeyState(char *name)
+{
+    for (int i = 0; i < kVirtualKeyCount; ++i) {
+        if (std::strcmp(g_virtualKeys[i].name, name) == 0 &&
+            g_virtualKeys[i].pressed != 0)
+            return 1;
+    }
+    return 0;
+}
+
 bool ArrowKeyPressed()
 {
     return g_arrowKeys[0].pressed != 0 || g_arrowKeys[1].pressed != 0 ||
