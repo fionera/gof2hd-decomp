@@ -60,6 +60,38 @@ INSCOPE_UN_EXACT = {
 }
 
 
+SYMS_TSV = "/Users/fionera/Downloads/GalaxyOnFire2/_work/symbols/android_2.0.16.symbols.tsv"
+_CTORDTOR = re.compile(r"^(_ZN.*?)([CD][0-3])(E.*)$")
+
+
+def _binary_names():
+    """All symbol names the original .so exports (any section), for alias-collapse."""
+    names = set()
+    try:
+        for line in open(SYMS_TSV):
+            p = line.rstrip("\n").split("\t")
+            if len(p) >= 2:
+                names.add(p[1])
+    except OSError:
+        pass
+    return names
+
+
+def is_benign_alias(sym, binary_names):
+    """True if `sym` is a ctor/dtor variant (C0-3/D0-2) whose function the original DOES have under
+    a SIBLING variant name at the same class+params — i.e. a compiler/linker alias the original just
+    didn't keep a separate name for (e.g. we emit C1 where the binary kept only C2, or D0/D1 where
+    it kept D2). Such 'extra' symbols are not real defects and cannot be removed from idiomatic C++
+    without a forbidden asm/alias hack, so they are excluded from the gated extra count."""
+    m = _CTORDTOR.match(sym)
+    if not m:
+        return False
+    prefix, variant, suffix = m.group(1), m.group(2), m.group(3)
+    fam = "C" if variant[0] == "C" else "D"
+    sibs = (["C1", "C2", "C3"] if fam == "C" else ["D0", "D1", "D2"])
+    return any(f"{prefix}{v}{suffix}" in binary_names for v in sibs if v != variant)
+
+
 def _demangle_many(names):
     names = list(names)
     if not names:
@@ -106,6 +138,13 @@ def main():
     abs_in, abs_glue, abs_rev = split(absent)
     wt_in, wt_glue, wt_rev = split(wrong_syms)
     ex_in, ex_glue, ex_rev = split(extra)
+    # Split benign ctor/dtor alias variants out of the gated extra set (real C++ emits C1/C2/D0/D1/D2
+    # aliases; the original kept only some names — not a defect, not removable without a hack).
+    binary_names = _binary_names()
+    ex_alias = [s for s in (ex_in + ex_rev) if is_benign_alias(s, binary_names)]
+    alias_set = set(ex_alias)
+    ex_in = [s for s in ex_in if s not in alias_set]
+    ex_rev = [s for s in ex_rev if s not in alias_set]
 
     def write(name, lines):
         with open(os.path.join(VDIR, name), "w") as f:
@@ -123,6 +162,7 @@ def main():
                 f.write(f"    ours:     {o}\n")
             f.write("\n")
     write("glue_excluded.txt", sorted(abs_glue + wt_glue + ex_glue))
+    write("extra_benign_alias.txt", [f"{s}\t{dm.get(s, s)}" for s in sorted(ex_alias)])
     unclassified = sorted(set(abs_rev + wt_rev + ex_rev))
     write("scope_unclassified.txt", unclassified)
 
@@ -134,6 +174,7 @@ def main():
     print(f"in-scope    absent {counts['absent']}   wrong_type {counts['wrong_type']}   "
           f"extra {counts['extra']}")
     print(f"glue excluded: {len(abs_glue + wt_glue + ex_glue)}   "
+          f"benign ctor/dtor aliases excluded from extra: {len(ex_alias)}   "
           f"unclassified (surfaced, counted in-scope): {len(unclassified)}")
     if unclassified:
         print("  unclassified:", ", ".join(unclassified[:20]))

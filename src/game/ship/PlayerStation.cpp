@@ -73,12 +73,14 @@ void PlayerStation::setPosition(const Vector &position)
 
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position)
 {
-    // Seed a scratch volume with `position`, project it onto every colliding
-    // volume in the list, and return the projected center.
-    BoundingVolume scratch(0, 0, 0, 0, 0, 0);
-    scratch.staticProjectCollisionOnSurface(position,
-                                            (BoundingVolumeList *)this->boundingVolumes);
-    return *(Vector *)&scratch.centerX;
+    // The helper writes the projected center into the first three floats of its
+    // `this` storage (centerX/Y/Z at offset 0), so alias the return Vector as the
+    // scratch volume and project directly into it (BoundingVolume is abstract and
+    // never instantiated; this mirrors the original).
+    Vector result;
+    reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(
+        position, (BoundingVolumeList *)this->boundingVolumes);
+    return result;
 }
 
 void *PlayerStation::getRoot()
