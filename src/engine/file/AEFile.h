@@ -76,11 +76,7 @@ public:
     uint32_t       baseOffset;
     uint32_t       position;
 
-    AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
-        : fileInterface(fileInterface),
-          sizeLimit(static_cast<uint32_t>(sizeLimit)),
-          baseOffset(static_cast<uint32_t>(baseOffset)),
-          position(0) {}
+    AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset);
     ~AEPakFile() override { Release(); }
     uint32_t Write(uint32_t bytes, void *buffer) override;
     uint32_t Read(uint32_t bytes, void *buffer) override;

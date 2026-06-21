@@ -324,6 +324,14 @@ bool IsInGameSubMenuNotActive(int)
     return false;
 }
 
+// True while an in-game sub-menu has focus: the top menu has descended into a
+// sub-page (subMenuIndex != -1). The inverse of the subMenuIndex test in
+// IsInGameSubMenuNotActive.
+bool IsInGameSubMenuActive(int)
+{
+    return subMenuIndex != -1;
+}
+
 // True while the player sits on a primary (top-level) menu page: the menu
 // overlay is up, nothing deeper has focus (no sub-page, no touch window, no
 // dialogue/choice box) and the star-map overlay is closed.

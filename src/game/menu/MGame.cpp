@@ -2261,7 +2261,7 @@ void MGame::setCinematicMode(bool on) {
         self->cinematicPrevLookAt = TFC_isInLookAtMode(self->camera);
         TFC_setLookAtCam(self->camera, 0);
         ((MGame *)(self))->switchCamera(3);
-        return ((Hud *)(*(void **)self->level))->enterCinematic(self->deltaTime, 1);
+        return self->level->lodManager->forceUpdate(self->deltaTime, true);
     }
 }
 

@@ -73,6 +73,7 @@ bool IsDialogNotVisible(int);
 bool IsDialogNotVisible2(int);
 bool IsStarMapNotVisible(int);
 bool IsInGameSubMenuNotActive(int);
+bool IsInGameSubMenuActive(int);
 bool IsInPrimaryMenu(int);
 
 // Android hardware back-button handler: raises the pending-back flag the main

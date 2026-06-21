@@ -62,6 +62,14 @@ uint32_t AENormalFile::Release()
     return 1;
 }
 
+AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
+    : fileInterface(fileInterface),
+      sizeLimit(static_cast<uint32_t>(sizeLimit)),
+      baseOffset(static_cast<uint32_t>(baseOffset)),
+      position(0)
+{
+}
+
 uint32_t AEPakFile::Read(uint32_t bytes, void *buffer)
 {
     FileInterface *file;
