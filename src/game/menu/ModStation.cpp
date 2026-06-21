@@ -2440,7 +2440,6 @@ void  CutScene_replacePlayerShip_oi(int cs, int shipIndex);
 
 void  TouchButton_setHalfTransparent_oi(int flag);
 
-void  static_cast<Globals *>(*sound)->startNewSoundResourceList();
 void  Globals_playMusicAndFadeOutCurrent_oi(int id);
 
 void  FModSound_play_oi(int sound, int id, void *pos, float vol);
@@ -2915,7 +2914,7 @@ void ModStation::OnInitialize() {
     } else if (state == 100) {
         // ---- enter-station screen ----
         int *sound = *(int **)g_oi_sound;
-        static_cast<Globals *>(*sound)->startNewSoundResourceList();
+        reinterpret_cast<Globals *>(*sound)->startNewSoundResourceList();
         static const int snd[] = {0x5f, 0x7a, 0x6c, 0x60, 0x61, 0x62, 99, 0x65, 100,
                                   0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e};
         for (unsigned i = 0; i < sizeof(snd) / sizeof(snd[0]); i = i + 1)

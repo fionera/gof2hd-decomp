@@ -4,6 +4,7 @@
 #include "game/ui/ChoiceWindow.h"
 #include "engine/audio/FModSound.h"
 #include "game/mission/Status.h"
+#include "game/core/Globals.h"
 #include "engine/core/GameText.h"
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
@@ -988,7 +989,7 @@ void Layout::drawTip() {
 
         int lineCount = (int)this->tipLines->size();
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        static_cast<Globals *>(*g_dtLinesB)->drawLines(reinterpret_cast<unsigned>(*(void **)g_dtLinesA), this->tipLines,
+        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines(reinterpret_cast<unsigned>(*(void **)g_dtLinesA), this->tipLines,
                           dimH >> 1, y);
     }
 }
