@@ -281,29 +281,35 @@ def main():
     # .cpp under a stable address-derived name (so its sequential subbatches all append to the SAME
     # file across waves instead of each inventing a new one). FREE_RUNs are NOT split — one agent
     # owns the whole reconstructed TU, so the filename is decided once.
+    # returns (target_file, mode, size): mode 'scope' splits by class scope then chunks at `size`;
+    # 'flat' ignores scope and chunks all entries at `size` (synthetic one-file buckets); 'whole'
+    # keeps everything in one subbatch.
     def target_and_split(root, idxs):
         if root == ("BUCKET", "__templates__"):
-            return "src/engine/core/Array.h", True
+            return "src/engine/core/Array.h", "flat", 45   # trivial one-line instantiations
         if root == ("BUCKET", "__jni_bridge__"):
-            return "src/platform/jni_bridge.cpp", True
+            return "src/platform/jni_bridge.cpp", "flat", 18
         if isinstance(root, tuple) and root[0] == "FREE_RUN":
             lo = min(int(entries[i]["ghidra_addr"], 16) for i in idxs)
-            return f"src/platform/recovered_{lo:x}.cpp", False  # no split
-        return None, True
+            return f"src/platform/recovered_{lo:x}.cpp", "whole", 0  # one agent owns the new TU
+        return None, "scope", SUBBATCH
 
     components = []
     for root, idxs in groups.items():
-        target_file, do_split = target_and_split(root, idxs)
-        # split by scope, then chunk each scope to <= SUBBATCH (synthetic single-file runs are kept
-        # whole so one agent decides the new file's name and contents).
-        by_scope = defaultdict(list)
-        for i in idxs:
-            by_scope[scope_of(entries[i])].append(i)
+        target_file, mode, size = target_and_split(root, idxs)
         subbatches = []
-        for scope, sidx in sorted(by_scope.items(), key=lambda kv: (-len(kv[1]), kv[0])):
-            step = SUBBATCH if do_split else len(sidx) or 1
-            for k in range(0, len(sidx), step):
-                subbatches.append(sidx[k:k + step])
+        if mode == "whole":
+            subbatches = [idxs]
+        elif mode == "flat":
+            for k in range(0, len(idxs), size):
+                subbatches.append(idxs[k:k + size])
+        else:  # scope: keep each class's work together, chunk to <= size
+            by_scope = defaultdict(list)
+            for i in idxs:
+                by_scope[scope_of(entries[i])].append(i)
+            for scope, sidx in sorted(by_scope.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+                for k in range(0, len(sidx), size):
+                    subbatches.append(sidx[k:k + size])
         gfiles = sorted({f for i in idxs for f in entries[i]["files"]})
         kinds = [entries[i]["kind"] for i in idxs]
         kc = {k: kinds.count(k) for k in set(kinds)}
