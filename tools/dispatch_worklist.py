@@ -116,11 +116,15 @@ def main():
                         "ours": w["ours"], "ghidra_addr": addr_of(w["symbol"]),
                         "leaf": leaf_key(w["demangled"])})
     for sym in absent:
+        if sf._CONTAINER_MEMBER.match(sym):
+            continue  # generic Array<T> member — provided by the template, not hand-instantiated
         d = dm_all.get(sym, sym)
         entries.append({"symbol": sym, "demangled": d, "qualified": qualified_name(d),
                         "kind": base_kind(sym, d, is_extra=False), "side": "absent",
                         "ghidra_addr": addr_of(sym), "leaf": leaf_key(d)})
     for sym in extra:
+        if sf._CONTAINER_MEMBER.match(sym):
+            continue
         d = dm_all.get(sym, sym)
         entries.append({"symbol": sym, "demangled": d, "qualified": qualified_name(d),
                         "kind": base_kind(sym, d, is_extra=True), "side": "extra",

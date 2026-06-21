@@ -62,6 +62,11 @@ INSCOPE_UN_EXACT = {
 
 SYMS_TSV = "/Users/fionera/Downloads/GalaxyOnFire2/_work/symbols/android_2.0.16.symbols.tsv"
 _CTORDTOR = re.compile(r"^(_ZN.*?)([CD][0-3])(E.*)$")
+# Member functions of the generic Array<T> container (Array<T>::resize/clear/push_back/ctor/dtor/...).
+# These are defined inline in Array.h and emitted by the compiler wherever a type is used — they must
+# NOT be hand-instantiated per type (byte-match clutter). Excluded from the gated counts: the generic
+# template provides the functionality; we don't chase the standalone per-type symbols.
+_CONTAINER_MEMBER = re.compile(r"^_ZNK?5ArrayI")
 
 
 def _binary_names():
@@ -138,6 +143,15 @@ def main():
     abs_in, abs_glue, abs_rev = split(absent)
     wt_in, wt_glue, wt_rev = split(wrong_syms)
     ex_in, ex_glue, ex_rev = split(extra)
+    # Exclude generic Array<T> container member instantiations from absent/extra (the template
+    # provides them; not hand-instantiated per type).
+    cont_abs = [s for s in (abs_in + abs_rev) if _CONTAINER_MEMBER.match(s)]
+    cont_ex = [s for s in (ex_in + ex_rev) if _CONTAINER_MEMBER.match(s)]
+    container = set(cont_abs) | set(cont_ex)
+    abs_in = [s for s in abs_in if s not in container]
+    abs_rev = [s for s in abs_rev if s not in container]
+    ex_in = [s for s in ex_in if s not in container]
+    ex_rev = [s for s in ex_rev if s not in container]
     # Split benign ctor/dtor alias variants out of the gated extra set (real C++ emits C1/C2/D0/D1/D2
     # aliases; the original kept only some names — not a defect, not removable without a hack).
     binary_names = _binary_names()
@@ -161,7 +175,8 @@ def main():
         return bool(_CTORDTOR.match(w["symbol"])) and w["demangled"] in w["ours"]
     wt_keep = [w for w in wrong
                if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"
-               and not benign_variant(w)]
+               and not benign_variant(w)
+               and not _CONTAINER_MEMBER.match(w["symbol"])]
     wt_alias = [w["symbol"] for w in wrong
                 if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"
                 and benign_variant(w)]
@@ -174,6 +189,7 @@ def main():
             f.write("\n")
     write("glue_excluded.txt", sorted(abs_glue + wt_glue + ex_glue))
     write("extra_benign_alias.txt", [f"{s}\t{dm.get(s, s)}" for s in sorted(ex_alias)])
+    write("container_excluded.txt", [f"{s}\t{dm.get(s, s)}" for s in sorted(set(cont_abs + cont_ex))])
     unclassified = sorted(set(abs_rev + wt_rev + ex_rev))
     write("scope_unclassified.txt", unclassified)
 
@@ -185,8 +201,9 @@ def main():
     print(f"in-scope    absent {counts['absent']}   wrong_type {counts['wrong_type']}   "
           f"extra {counts['extra']}")
     print(f"glue excluded: {len(abs_glue + wt_glue + ex_glue)}   "
-          f"benign ctor/dtor aliases excluded (extra {len(ex_alias)}, wrong_type {len(wt_alias)})   "
-          f"unclassified (surfaced, counted in-scope): {len(unclassified)}")
+          f"aliases excluded (extra {len(ex_alias)}, wt {len(wt_alias)})   "
+          f"Array<T> container members excluded (absent {len(cont_abs)}, extra {len(cont_ex)})   "
+          f"unclassified: {len(unclassified)}")
     if unclassified:
         print("  unclassified:", ", ".join(unclassified[:20]))
     done = all(v == 0 for v in counts.values())

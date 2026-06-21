@@ -147,93 +147,10 @@ template void ArraySet<ae::KeyFrame*>(ae::KeyFrame* const*, unsigned int, Array<
 template void ArraySet<ae::KeyFrame*>(const Array<ae::KeyFrame*>&, Array<ae::KeyFrame*>&);
 
 // --- Array<T>::Array() / ~Array() (ctor & dtor) ---------------------------
-template Array<GameRecord*>::Array();
-template Array<GameRecord*>::~Array();
-template Array<AbstractGun*>::Array();
-template Array<AbstractGun*>::~Array();
-template Array<TouchSlider*>::Array();
-template Array<TouchSlider*>::~Array();
-template Array<RadioMessage*>::~Array();
-template Array<ae::SpriteSystem*>::Array();
-template Array<ae::SpriteSystem*>::~Array();
-template Array<ae::AELoadedTexture*>::Array();
-template Array<ae::AELoadedTexture*>::~Array();
-template Array<ae::IApplicationModule*>::Array();
-template Array<ae::IApplicationModule*>::~Array();
-template Array<ae::Camera*>::Array();
-template Array<ae::Camera*>::~Array();
-template Array<ae::Image2D*>::Array();
-template Array<ae::Image2D*>::~Array();
-template Array<ae::KeyCode*>::Array();
-template Array<ae::KeyCode*>::~Array();
-template Array<ae::Material*>::Array();
-template Array<ae::Material*>::~Array();
-template Array<ae::Resource*>::Array();
-template Array<ae::Resource*>::~Array();
-template Array<ae::ImageFont*>::Array();
-template Array<ae::ImageFont*>::~Array();
-template Array<Array<ImagePart*>*>::Array();
-template Array<Array<ae::String*>*>::Array();
-template Array<Array<ae::String*>*>::~Array();
 
 // --- ArrayAdd<T> (single-item) for ImageFont ------------------------------
 template void ArrayAdd<ae::ImageFont*>(ae::ImageFont*, Array<ae::ImageFont*>&);
 
 // --- Array<T> member methods ----------------------------------------------
-template void Array<ae::AEMath::Matrix>::clear();
-template void Array<ae::AEMath::Matrix>::resize(unsigned int);
-template void Array<ae::AEMath::Vector>::resize(unsigned int);
-template Array<ParticleSettings::ParticleSet>& Array<ParticleSettings::ParticleSet>::operator=(const Array<ParticleSettings::ParticleSet>&);
-template void Array<AEGeometry*>::clear();
-template void Array<AEGeometry*>::resize(unsigned int);
-template void Array<AEGeometry*>::push_back(AEGeometry*);
-template void Array<RepairBeam*>::push_back(RepairBeam*);
-template void Array<SpacePoint*>::clear();
-template void Array<SolarSystem*>::resize(unsigned int);
 
 // Game-object pointer containers.
-template void Array<TouchButton*>::clear();
-template void Array<TouchButton*>::resize(unsigned int);
-template void Array<RadioMessage*>::push_back(RadioMessage*);
-template void Array<AELowLevelFile*>::clear();
-template void Array<BoundingVolume*>::clear();
-template void Array<BoundingVolume*>::resize(unsigned int);
-template void Array<BoundingVolume*>::push_back(BoundingVolume*);
-template void Array<PendingProduct*>::resize(unsigned int);
-template void Array<PendingProduct*>::push_back(PendingProduct*);
-template void Array<Gun*>::clear();
-template void Array<Gun*>::resize(unsigned int);
-template void Array<Gun*>::push_back(Gun*);
-template void Array<Item*>::clear();
-template void Array<Item*>::erase(Item**);
-template void Array<Item*>::resize(unsigned int);
-template void Array<Item*>::push_back(Item*);
-template void Array<Node*>::erase(Node**);
-template void Array<Node*>::resize(unsigned int);
-template void Array<Node*>::push_back(Node*);
-template void Array<Ship*>::clear();
-template void Array<Ship*>::resize(unsigned int);
-template void Array<Ship*>::push_back(Ship*);
-template void Array<Agent*>::clear();
-template void Array<Agent*>::resize(unsigned int);
-template void Array<Player*>::resize(unsigned int);
-template void Array<Player*>::push_back(Player*);
-template void Array<Wanted*>::resize(unsigned int);
-template void Array<Wanted*>::push_back(Wanted*);
-template void Array<Mission*>::resize(unsigned int);
-template void Array<Station*>::clear();
-template void Array<Station*>::resize(unsigned int);
-template void Array<KIPlayer*>::resize(unsigned int);
-template void Array<KIPlayer*>::push_back(KIPlayer*);
-template void Array<ListItem*>::clear();
-template void Array<ListItem*>::resize(unsigned int);
-template void Array<ListItem*>::push_back(ListItem*);
-template void Array<NewsItem*>::clear();
-template void Array<NewsItem*>::resize(unsigned int);
-template void Array<NewsItem*>::push_back(NewsItem*);
-template void Array<Waypoint*>::clear();
-template void Array<Waypoint*>::push_back(Waypoint*);
-template void Array<BluePrint*>::resize(unsigned int);
-template void Array<Explosion*>::clear();
-template void Array<Explosion*>::resize(unsigned int);
-template void Array<ImagePart*>::clear();
