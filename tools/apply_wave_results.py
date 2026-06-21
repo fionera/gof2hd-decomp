@@ -33,6 +33,11 @@ def _risky(r):
     if not r["file"].endswith(".cpp"):
         return f"edits a header ({r['file']}) — needs coordinated change"
     blob = (r.get("find", "") + "\n" + (r.get("replace") or ""))
+    repl = r.get("replace") or ""
+    # reinterpret_cast<T*>(nullptr) is ill-formed C++ — agents sometimes emit it to fill a new
+    # ref/pointer param; refuse so the owning TU handles the new arg correctly (use static_cast).
+    if "reinterpret_cast" in repl and "nullptr" in repl:
+        return "ill-formed reinterpret_cast<...>(nullptr) — owning TU must pass the real arg"
     for kw in RISKY:
         if kw in blob:
             return f"touches the type system ('{kw.strip()}') — needs coordinated change"
