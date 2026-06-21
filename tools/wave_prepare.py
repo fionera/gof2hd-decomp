@@ -58,9 +58,17 @@ def main():
         je = []
         for i in sub:
             d = {k: entries[i].get(k) for k in KEEP if entries[i].get(k) is not None}
-            asm = dump_asm.get_asm(entries[i].get("ghidra_addr"))
-            if asm:
-                d["orig_asm"] = asm
+            # template instantiations are mechanical (no body to recover) — skip the asm to keep the
+            # baked script small; everything else gets its authoritative disassembly.
+            if entries[i].get("kind") != "template":
+                asm = dump_asm.get_asm(entries[i].get("ghidra_addr"))
+                if asm:
+                    # cap very long bodies — ~50 lines is plenty to understand behavior, and keeps
+                    # the baked Workflow script under the 512KB limit on wide waves.
+                    lines = asm.split("\n")
+                    if len(lines) > 50:
+                        asm = "\n".join(lines[:50]) + "\n       ... (truncated; decompile via Ghidra for the full body)"
+                    d["orig_asm"] = asm
             je.append(d)
         # a short, file-derived label
         base = (c["files"][0].split("/")[-1].rsplit(".", 1)[0]
@@ -87,7 +95,9 @@ def main():
     bk = Counter(j["kind"] for j in jobs)
     print(f"wave: {len(jobs)} components, {n_entries} entries  ({dict(bk)})")
     print(f"  jobs   -> {os.path.relpath(args.out, REPO)}")
-    print(f"  script -> {os.path.relpath(args.script_out, REPO)}  "
+    sz = os.path.getsize(args.script_out)
+    warn = "  !! exceeds 512KB Workflow limit — lower --limit/--max-entries" if sz > 520000 else ""
+    print(f"  script -> {os.path.relpath(args.script_out, REPO)}  ({sz} bytes){warn}  "
           f"(invoke: Workflow scriptPath={os.path.relpath(args.script_out, REPO)}, no args)")
     return 0
 
