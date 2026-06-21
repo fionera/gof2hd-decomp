@@ -96,7 +96,7 @@ public:
     void OnKeyRelease(int key);
     void OnTouchBegin(int xArg, int yArg, void *touch);
     void OnTouchEnd(int xArg, int yArg, void *touch);
-    void OnTouchEndSimple();
+    void OnTouchEnd();   // no-arg finalizer: clears key/action input state
     void OnTouchMove(int xArg, int yArg, void *touch);
     void OnUpdate(long long now);
     void Quit();
@@ -112,6 +112,7 @@ public:
     void SoundMusicEnable(bool enable);
     void SoundPause(int soundId);
     void SoundPauseSounds();
+    void SoundPlay(int soundId);
     void SoundPlay(int soundId, float volume);
     void SoundPlayLoop(int soundId);
     void SoundPlayMusic(int soundId);
@@ -119,6 +120,7 @@ public:
     void SoundPlay_vol(int soundId, float volume);
     void SoundRelease(int soundId);
     void SoundResume();
+    void SoundResume(int soundId);
     void SoundResumeSelf();
     void SoundResumeSounds();
     void SoundSetFXVolume(int volume);

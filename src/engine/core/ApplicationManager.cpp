@@ -537,7 +537,7 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     }
 }
 
-void ApplicationManager::OnTouchEndSimple() {
+void ApplicationManager::OnTouchEnd() {
     this->currentKey = 0;
     this->currentKeyHigh = 0;
     this->keyState = 0;
@@ -711,6 +711,12 @@ void ApplicationManager::CheatEnable(bool enable) {
 
 // ---- audio ---------------------------------------------------------------------------
 
+void ApplicationManager::SoundPlay(int soundId) {
+    if (this->soundResource != 0 && this->soundFxEnabled) {
+        this->soundResource->play(soundId);
+    }
+}
+
 void ApplicationManager::SoundPlay(int soundId, float volume) {
     if (this->soundResource != 0 && this->soundFxEnabled) {
         this->soundResource->play(soundId, volume);
@@ -768,6 +774,12 @@ void ApplicationManager::SoundPauseSounds() {
 void ApplicationManager::SoundResume() {
     if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
         this->soundResource->resume();
+    }
+}
+
+void ApplicationManager::SoundResume(int soundId) {
+    if (this->soundResource != 0 && (this->soundFxEnabled || this->musicEnabled)) {
+        this->soundResource->resume(soundId);
     }
 }
 

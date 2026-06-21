@@ -399,7 +399,7 @@ void keyReleased(AbyssEngine::Engine *engine, int key)
 
         engine->appManager->OnTouchEnd(vk.baseX + vk.offsetX, vk.baseY + vk.offsetY,
                                        vk.touch);
-        engine->appManager->OnTouchEndSimple();
+        engine->appManager->OnTouchEnd();
         engine->DrawQuad(vk.offsetX, vk.offsetY, 10, 10);
         if (vk.action != 0)
             g_followUpAction = vk.action;
