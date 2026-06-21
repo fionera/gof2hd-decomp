@@ -183,10 +183,10 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
 
     if (openType == OPEN_WRITE) {
         String localPath; AEStr_init(&localPath, text);
-        nativeHandle = fileInterface->OpenWrite(localPath, path.size(), 0);
+        nativeHandle = fileInterface->OpenWrite(localPath, path.size(), false, 0);
     } else if (openType == OPEN_APPEND) {
         String localPath; AEStr_init(&localPath, text);
-        nativeHandle = fileInterface->OpenAppend(localPath, path.size(), 0);
+        nativeHandle = fileInterface->OpenAppend(localPath, path.size(), false, 0);
     } else if (openType == OPEN_READ) {
         String localPath; AEStr_init(&localPath, text);
         nativeHandle = fileInterface->OpenRead(localPath, path.size(), 0, 0, 0, 0);
@@ -490,11 +490,11 @@ void AEFile::collectPakFiles(const String &path)
     }
 
     char *pathChars = AEStr_char(path);
-    if (fileInterface->OpenDirectory(pathChars, 0) != 0) {
-        String suffix(".pak");
+    if (fileInterface->FileEnumInit(pathChars, false) != 0) {
         String entry;
-        while (fileInterface->ReadDirectory(entry) != 0) {
+        while (fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy; AEStr_init(&entryCopy, entry);
+            String suffix(".pak");
             if (AEStr_indexOf(entry, suffix) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
             }

@@ -18,6 +18,11 @@ struct EventSystem;
 // 3D math vector used for event positions/velocities.
 using AbyssEngine::AEMath::Vector;
 
+// FMOD result/error code returned by every FMOD_* runtime call.
+enum FMOD_RESULT {
+    FMOD_OK = 0
+};
+
 // FModSound -- FMOD designer-API sound manager.
 //
 // Three indexed regions are modelled as fixed C arrays: the per-category enabled
@@ -93,25 +98,12 @@ public:
     // shipped build is a no-op that always reports "nothing stopped".
     int tryToStopMusicForBGMusic();
 
-    // Looping engine-sound transport for a ship. The argument is the owning Player;
-    // the live FMOD event handle lives on it at Player::engineEvent.
-    static void pauseEvent(void *player);
-    static void resumeEvent(void *player, int immediate);
-    static void stopEvent(void *player);
-    static void playEvent(void *player, int eventId, int mode);
+    // Reports whether wired headphones are connected. The shipped build has no
+    // headset-detection backend, so it always reports "not plugged in".
+    bool isHeadsetPluggedIn();
 
-    // Arm a property slot for the next event start (cinematic launch sound) and
-    // return the pitch to start it with.
-    static float setProp(int snd, int id);
-
-    // Resume every live event after a scene that had suspended audio.
-    static void restoreState();
-
-    // Process-wide instance the legacy code reached through a fixed global slot.
-    static FModSound *g_instance;
-    static FModSound *active();
-
-    // Base pitch applied to freshly started events (0.0 = use authored pitch).
-    static float defaultPitch;
+    // Central error handler for FMOD return codes. The shipped build swallows the
+    // result and does nothing (release builds drop the diagnostic logging).
+    void ERRCHECK(FMOD_RESULT result);
 };
 #endif

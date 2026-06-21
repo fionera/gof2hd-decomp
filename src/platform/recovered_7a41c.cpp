@@ -8,7 +8,10 @@
 // global symbols).
 #include "platform/recovered_7a41c.h"
 
+#include "engine/core/ApplicationManager.h"   // gAppManager, current module id
+
 #include <cstring>
+#include <initializer_list>
 
 namespace {
 
@@ -70,6 +73,17 @@ int g_wheelAccumA;
 int g_wheelAccumB;
 int g_wheelAccumC;
 
+// In-game zoom request driven by large wheel notches: +1 on a strong scroll
+// down, -1 on a strong scroll up, consumed by the game module on the next frame.
+int g_zoomRequest;
+
+// True while the running module is the in-game flight module (module id 2). The
+// software wheel only drives zoom while the player is actually flying.
+inline bool inFlightModule()
+{
+    return gAppManager->currentModuleId == 2;
+}
+
 // Software pointer. The binary reaches each axis through its own indirection,
 // so they are kept as separate ints behind module-private pointers; modelled
 // here as plain ints (their addresses are what the rest of the input layer
@@ -82,20 +96,6 @@ int g_pointerX;
 int g_pointerY;
 int g_pointerBaseY;
 int g_pointerCaptureX;
-
-// Decays one accumulator toward zero by kWheelDecay, mirroring the binary's
-// branchless "clamp to the same sign" rounding.
-inline void decayWheel(int &accum)
-{
-    if (accum > 0) {
-        int scaled = static_cast<int>(static_cast<double>(accum) * kWheelDecay);
-        accum = scaled & ~(scaled >> 31);   // clamp negatives to 0
-    } else if (accum < 0) {
-        int scaled = static_cast<int>(static_cast<double>(accum) * kWheelDecay);
-        accum = scaled & (scaled >> 31);    // clamp positives to 0
-    }
-    // accum == 0 stays 0
-}
 
 // ---------------------------------------------------------------------------
 // 32-bit hash finaliser table.
@@ -145,11 +145,37 @@ void MouseInput(int dx, int dy)
 // ---------------------------------------------------------------------------
 // Per-frame wheel decay.
 // ---------------------------------------------------------------------------
+// Each accumulator decays toward zero by kWheelDecay, with the scaled value
+// clamped so it never crosses zero (matches the binary's same-sign rounding).
 void LowerMouseWheel()
 {
-    decayWheel(g_wheelAccumA);
-    decayWheel(g_wheelAccumB);
-    decayWheel(g_wheelAccumC);
+    for (int *accum : {&g_wheelAccumA, &g_wheelAccumB, &g_wheelAccumC}) {
+        if (*accum > 0) {
+            int scaled = static_cast<int>(static_cast<double>(*accum) * kWheelDecay);
+            *accum = scaled < 0 ? 0 : scaled;   // clamp negatives to 0
+        } else if (*accum < 0) {
+            int scaled = static_cast<int>(static_cast<double>(*accum) * kWheelDecay);
+            *accum = scaled > 0 ? 0 : scaled;   // clamp positives to 0
+        }
+        // *accum == 0 stays 0
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Mouse-wheel notch.
+// ---------------------------------------------------------------------------
+// A strong notch (|delta| > 4) while flying posts a one-shot zoom request, and
+// the whole notch (`delta` + the fractional `residual`) is folded into the wheel
+// accumulator that the rest of the input layer reads.
+void MouseWheel(float delta, float residual)
+{
+    if (delta < -4.0f && inFlightModule())
+        g_zoomRequest = 1;
+
+    if (delta > 4.0f && inFlightModule())
+        g_zoomRequest = -1;
+
+    g_wheelAccumA = static_cast<int>(static_cast<float>(g_wheelAccumA) + delta + residual);
 }
 
 // ---------------------------------------------------------------------------
@@ -175,6 +201,15 @@ void keyEventReleased(AbyssEngine::Engine *engine, char *name)
         VirtualKey &key = g_virtualKeys[i];
         if (std::strcmp(key.name, name) == 0)
             keyReleased(engine, key.keyCode);
+    }
+}
+
+void keyEventPressed(AbyssEngine::Engine *engine, char *name)
+{
+    for (int i = 0; i < kVirtualKeyCount; ++i) {
+        VirtualKey &key = g_virtualKeys[i];
+        if (std::strcmp(key.name, name) == 0)
+            keyPressed(engine, key.keyCode);
     }
 }
 

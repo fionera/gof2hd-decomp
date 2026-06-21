@@ -2211,30 +2211,21 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
     }
 }
 
-// AbyssEngine::PaintCanvas::GetReverseString(String out, _, String in, bool reverse)
-// When reverse is false, returns a copy of `in`; otherwise concatenates `in`'s characters in
-// reverse order (one SubString per char) into a fresh String.
+// AbyssEngine::PaintCanvas::GetReverseString(String in, bool reverse)
+// When `reverse` is false, returns a plain copy of `in`; otherwise returns `in` with its
+// characters in reverse order (built one SubString per character).
 using AbyssEngine::String;
 
-__attribute__((visibility("hidden"))) extern const char g_grs_empty[];
-
-// Inlined in the original binary (no standalone symbol); file-local helper here.
-static void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine::String *in,
-                      int reverse)
+AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in, bool reverse)
 {
-    if (reverse == 0) {
-        ((String *)out)->ctor_copy((String *)in, false);
-    } else {
-        ((String *)out)->ctor_char(g_grs_empty, false);
-        int i = (int)in->size();
-        while (--i >= 0) {
-            String piece;
-            ((String *)&piece)->SubString((String *)in, (unsigned)i, (unsigned)(i + 1));
-            ((String *)out)->addAssign_str((String *)&piece);
-        }
+    if (!reverse) {
+        return in;
     }
-
-    
+    String out("");
+    for (int i = (int)in.size() - 1; i >= 0; --i) {
+        out += in.SubString((unsigned)i, (unsigned)(i + 1));
+    }
+    return out;
 }
 
 namespace AbyssEngine {
@@ -2368,16 +2359,6 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId,
         result = 0xffffffff;
     }
     out = result;
-}
-
-void PaintCanvas::MaterialCreate(unsigned int *out, void *p2, void *p3)
-{
-    char *obj = (char *)paintcanvas_ext_alloc(0x74);
-    paintcanvas_ext_material_ctor(obj);
-    *(void **)(obj + 0x0) = p3;
-    *(void **)(obj + 0x20) = p2;
-    paintcanvas_ext_material_add(obj, &this->materialCount);
-    *out = this->materialCount - 1;
 }
 
 void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
@@ -2999,6 +2980,24 @@ void PaintCanvas::ClearBuffer(unsigned int mask)
     paintcanvas_ext_enable(0xb71);
     paintcanvas_ext_depthmask(1);
     return paintcanvas_ext_clear2(this->engine, mask);
+}
+
+// Clear only the depth buffer (GL_DEPTH_BUFFER_BIT == 0x100).
+void PaintCanvas::ClearDepth()
+{
+    ClearBuffer(0x100);
+}
+
+// Renders the captured frame-buffer texture as a fullscreen blit. The Android
+// build ships an empty stub for this entry point (no observable side effects).
+void PaintCanvas::DrawFrameBufferTexture(int, int, int, int, int, int)
+{
+}
+
+// Pre-warm the texture cache. Always reports success on this platform.
+bool PaintCanvas::WarmUpTexture()
+{
+    return true;
 }
 
 void PaintCanvas::TransformRemoveChild(unsigned int parent, unsigned int child)
@@ -4060,10 +4059,11 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
     paintcanvas_ext_dr3_glenable(0xb44);
 }
 
-// Re-seed an image's 2D quad vertex/UV buffers from its source rect. Inlined at every
-// use in the original binary; kept here as a file-local helper to avoid duplicating the body.
-static void RestoreImage2D(char *img)
+// Re-seed an Image2D's 2D quad vertex/UV buffers from its source rect, resetting the
+// sprite to draw its full source region.
+void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image)
 {
+    char *img = reinterpret_cast<char *>(image);
     char *m = *(char **)img;
     *(unsigned char *)(img + 0x14) = 0;
     char *s = *(char **)(m + 0x4);
@@ -4137,21 +4137,6 @@ void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub
     }
 }
 
-void PaintCanvas::MeshSet2DMask(unsigned int index, int)
-{
-    unsigned int i = index;
-    if (this->imageCount <= index) {
-        return;
-    }
-    char **arr = this->images;
-    char *img = arr[i];
-    if (*(unsigned char *)(img + 0x14) != 0) {
-        RestoreImage2D(img);
-        arr = this->images;
-    }
-    this->mask2dImage = arr[i];
-}
-
 void PaintCanvas::MeshSet2DMask(unsigned int index, int, int)
 {
     unsigned int i = index;
@@ -4161,7 +4146,7 @@ void PaintCanvas::MeshSet2DMask(unsigned int index, int, int)
     char **arr = this->images;
     char *img = arr[i];
     if (*(unsigned char *)(img + 0x14) != 0) {
-        RestoreImage2D(img);
+        RestoreImage2D(reinterpret_cast<AbyssEngine::Image2D *>(img));
         arr = this->images;
     }
     this->mask2dImage = arr[i];

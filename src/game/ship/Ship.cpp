@@ -916,7 +916,3 @@ unsigned int Ship::hasJumpDriveIntegrated() {
     }
     return 0;
 }
-
-// Out-of-line instantiation for the int mods array (Ship::mods is Array<int>*).
-template void ArrayRemoveAll<int>(Array<int> &);
-

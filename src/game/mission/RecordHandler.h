@@ -10,6 +10,14 @@ struct Agent;
 struct Mission;
 struct Wanted;
 struct GameRecord;
+namespace AbyssEngine { class PaintCanvas; }
+
+// Full-screen "loading / saving" splash: clears the frame, draws the window chrome
+// (background, header, empty footer), the centered status caption and the spinner image,
+// and finally a horizontal progress bar filled to `progress` percent. `resourceHolder`
+// points at the resource id of the font/spinner to use (and is refreshed if the font for
+// the current language is not loaded yet); a null holder draws an empty frame.
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder);
 
 // RecordHandler — save/record serialization for the persistent game state.
 // The two leading pointers track the mission/agent currently being (de)serialized so the

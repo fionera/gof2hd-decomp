@@ -89,32 +89,40 @@ public:
     uint32_t GetFileSize() override;
 };
 
-// Platform file-system backend. Abstract base for the concrete platform implementation
-// (FileInterfaceAndroid). The recovered vtable's first two slots are the virtual destructor
-// (complete + deleting), so OpenRead lands at the planted vptr's +8. `enabled` is the only
-// instance state defined here.
+// Platform file-system backend. Pure-abstract base for the concrete platform implementation
+// (FileInterfaceAndroid), which overrides every slot. The base declares only the interface, so
+// the original emits typeinfo for it but no vtable and no out-of-line method bodies; the virtual
+// destructor occupies the first two vtable slots, then the I/O slots follow in the order below
+// (recovered from the FileInterfaceAndroid vtable). `enabled` is the only instance state.
+//
+// The slot signatures match the derived overrides exactly: the file name is passed by value as an
+// AbyssEngine::String, and the open calls carry the extra mode/window parameters the platform
+// backend needs.
 class FileInterface {
 public:
     uint8_t enabled;
 
     virtual ~FileInterface() {}
-    virtual void       *OpenRead(const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) { return nullptr; }
-    virtual void       *OpenWrite(const String &, uint32_t, uint32_t)  { return nullptr; }
-    virtual void       *OpenAppend(const String &, uint32_t, uint32_t) { return nullptr; }
-    virtual uint32_t    Read(uint32_t, void *)                         { return 0; }
-    virtual uint32_t    Write(uint32_t, const void *)                  { return 0; }
-    virtual uint32_t    Seek(uint32_t)                                 { return 0; }
-    virtual uint32_t    GetFileSize()                                  { return 0; }
-    virtual uint32_t    FileExist(const String &)                      { return 0; }
-    virtual uint32_t    FileDelete(const String &)                     { return 0; }
-    virtual uint32_t    GetDeviceFreeSpace()                           { return 0; }
-    virtual const char *GetAppRootDir()                                { return nullptr; }
-    virtual void        SetAppRootDir(void *)                          {}
-    virtual void        SetZipDirectory(void *)                        {}
-    virtual void        SetSaveDirectory(const String &)               {}
-    virtual void        ResetSaveDirectory()                           {}
-    virtual uint32_t    OpenDirectory(void *, uint32_t)                { return 0; }
-    virtual uint32_t    ReadDirectory(String &)                        { return 0; }
+    virtual void       *OpenRead(String name, int size, bool windowed, int packedSize, int rawSize, unsigned int offset) = 0;
+    virtual void       *OpenWrite(String name, int size, bool append, unsigned int mode) = 0;
+    virtual void       *OpenAppend(String name, int size, bool append, unsigned int mode) = 0;
+    virtual uint32_t    Read(uint32_t bytes, void *buffer)            = 0;
+    virtual uint32_t    Write(uint32_t bytes, const void *buffer)     = 0;
+    virtual uint32_t    Seek(uint32_t bytes)                          = 0;
+    virtual uint32_t    GetFileSize()                                 = 0;
+    virtual uint32_t    FileExist(String name)                        = 0;
+    virtual uint32_t    FileDelete(String name)                       = 0;
+    virtual uint32_t    GetDeviceFreeSpace()                          = 0;
+    virtual const char *GetAppRootDir()                               = 0;
+    virtual void        SetAppRootDir(void *path)                     = 0;
+    virtual void        SetZipDirectory(void *path)                   = 0;
+    virtual uint32_t    FileEnumInit(char *pattern, bool recurse)     = 0;
+    virtual uint32_t    FileGetNextEnum(String &out)                  = 0;
+    virtual void        Close()                                       = 0;
+    virtual String      GetDirPreFix()                                = 0;
+    virtual char       *Output(char *line)                            = 0;
+    virtual void        SetSaveDirectory(String dir)                  = 0;
+    virtual void        ResetSaveDirectory()                          = 0;
 };
 
 // AEFile is a fully static utility class: a collection of file I/O routines over the active

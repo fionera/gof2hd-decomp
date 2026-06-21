@@ -3,6 +3,7 @@
 #include "game/ship/KIPlayer.h"
 #include "game/core/RadioMessage.h"
 #include "game/weapons/AbstractGun.h"
+#include "engine/core/Array.h"
 
 // KIPlayer's vtable slot writes its current position (3 floats) to *out. KIPlayer is
 // only ever held by pointer here, so its position is read through the vtable rather
@@ -280,13 +281,3 @@ int Route::getCurrent() {
 void Route::setLoop(bool loop) {
     this->loop = loop;
 }
-
-// Out-of-line instantiations for the container helpers the route's arrays use:
-// the waypoint path (Array<Waypoint*>), the docking targets (Array<KIPlayer*>),
-// and the class-owning release helpers for the related game types.
-template void ArrayAdd<Waypoint *>(Waypoint *, Array<Waypoint *> &);
-template void ArraySetLength<KIPlayer *>(unsigned int, Array<KIPlayer *> &);
-template void ArrayReleaseClasses<Waypoint *>(Array<Waypoint *> &);
-template void ArrayReleaseClasses<KIPlayer *>(Array<KIPlayer *> &);
-template void ArrayReleaseClasses<RadioMessage *>(Array<RadioMessage *> &);
-template void ArrayReleaseClasses<AbstractGun *>(Array<AbstractGun *> &);

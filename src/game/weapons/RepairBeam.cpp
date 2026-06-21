@@ -323,8 +323,4 @@ void RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud) {
     }
 }
 
-// Out-of-line emission of the ArraySetLength<T> helpers used by the constructor
-// to size the per-target geometry and charge pools.
-template void ArraySetLength<AEGeometry*>(unsigned int, Array<AEGeometry*>&);
-template void ArraySetLength<float>(unsigned int, Array<float>&);
 

@@ -190,8 +190,7 @@ public:
 
     void addToEventQueue(ListItem *item);
     uint8_t cargoFull();
-    void catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7);
-    void catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey);
+    void catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender, bool slotMode, bool aggregate);
     Hud * checkIfQuickMenuIsEmpty();
     void clearQueue();
     void closeHudMenu();
@@ -201,7 +200,6 @@ public:
     void drawBigNumber(int x, int y, int value, bool flag);
     void drawEventQueue();
     void drawEventString(String text, bool rightAlign);
-    void drawMenu();
     void drawMenu(int unused);
     void drawOrbitInformation();
     void drawPauseButton();
@@ -233,11 +231,6 @@ public:
     unsigned int touchedElement(unsigned int x, unsigned int y);
     void updateQueue(int dt);
     void updateSecondaryWeaponString();
-
-    // Per-panel renderers driven by the methods above.
-    void drawRadar();
-    void drawBars(void *ego);
-    void drawSecondaryWeaponPanel();
 
     bool drawTitleImage(bool visible);
     // Toggle the HUD's cinematic overlay.

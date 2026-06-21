@@ -111,7 +111,8 @@ uint8_t CutScene::isInitialized()
 
 void CutScene::update()
 {
-    this->update_tail();
+    if (this->level != nullptr)
+        this->level->update((long long)(int)this->frameDelta, 0u, 0);
 }
 
 // Long-branch veneer in the binary: tail-calls the nullary update(); the int
@@ -142,7 +143,8 @@ void CutScene::render3D()
 
 void CutScene::render2D()
 {
-    this->render2D_tail(this->level);
+    if (this->level != nullptr)
+        this->level->render2D();
 }
 
 void CutScene::process(int /*delta*/)
@@ -315,12 +317,12 @@ void CutScene::process(int /*delta*/)
                             AbyssEngine::Transform *a = (AbyssEngine::Transform *)canvas->TransformGetTransform(0);
                             a->SetAnimationState((AnimationMode)3, nullptr);
                             canvas->TransformGetTransform(0);
-                            this->processAux();
+                            if (this->level != nullptr) this->level->getEnemies();
                             return;
                         }
                     }
                 }
-                this->processAux();
+                if (this->level != nullptr) this->level->getEnemies();
                 return;
             }
             int race3 = ((SolarSystem *)(long)gStatus->getSystem())->getRace();
@@ -355,21 +357,21 @@ void CutScene::process(int /*delta*/)
                         AbyssEngine::Transform *a = (AbyssEngine::Transform *)canvas->TransformGetTransform(0);
                         a->SetAnimationState((AnimationMode)3, nullptr);
                         canvas->TransformGetTransform(0);
-                        this->processAux();
+                        if (this->level != nullptr) this->level->getEnemies();
                         return;
                     }
                 }
-                this->processAux();
+                if (this->level != nullptr) this->level->getEnemies();
                 return;
             }
             if (((SolarSystem *)(long)gStatus->getSystem())->getRace() != 2)
                 return;
-            this->processAux();
-            this->processAux();
+            if (this->level != nullptr) this->level->getEnemies();
+            if (this->level != nullptr) this->level->getEnemies();
             AbyssEngine::Transform *t = (AbyssEngine::Transform *)canvas->TransformGetTransform(0);
             t->Update((long long)(unsigned)this->frameDelta, (bool)(unsigned char)this->frameDelta);
-            this->processAux();
-            this->processAux();
+            if (this->level != nullptr) this->level->getEnemies();
+            if (this->level != nullptr) this->level->getEnemies();
             AbyssEngine::Transform *t2 = (AbyssEngine::Transform *)canvas->TransformGetTransform(0);
             t2->Update((long long)(unsigned)this->frameDelta, (bool)(unsigned char)this->frameDelta);
         }
@@ -378,7 +380,8 @@ void CutScene::process(int /*delta*/)
 
 void CutScene::renderBG()
 {
-    this->renderBG_tail(this->level, this->frameDelta);
+    if (this->level != nullptr)
+        this->level->renderBG((int)this->frameDelta);
 }
 
 void CutScene::replacePlayerShip(int /*a*/, int b)
@@ -685,34 +688,4 @@ void CutScene::checkForTurret()
         }
     }
     delete positions;
-}
-
-void CutScene::update_tail()
-{
-    if (this->level == nullptr)
-        return;
-    this->level->update((long long)(int)this->frameDelta, 0u, 0);
-}
-
-void CutScene::render2D_tail(Level *level)
-{
-    if (level != nullptr)
-        level->render2D();
-}
-
-void CutScene::renderBG_tail(Level *level, uint32_t t)
-{
-    if (level != nullptr) {
-        level->renderBG((int)t);
-    }
-}
-
-void CutScene::processAux()
-{
-    if (this->level != nullptr)
-        this->level->getEnemies();
-}
-
-void CutScene::turretFinalize(void * /*positions*/)
-{
 }

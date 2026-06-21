@@ -117,6 +117,9 @@ public:
     SpacePoint* getNearestDockingPoint(const Vector& dir);
     SpacePoint* getNearestNavigationPoint(const Vector& dir, SpacePoint* target);
     virtual Vector getPosition();   // actor vtable slot +0x28 (Ghidra-verified)
+    // A bare actor has no propulsion of its own, so it reports zero speed.
+    // Ship subclasses (PlayerEgo, ...) report their real velocity.
+    int  getSpeed();
     int  getType();
     bool isDead();
     bool isDocked();
@@ -145,7 +148,10 @@ public:
     // Polymorphic position setter dispatched through the actor vtable from Level's
     // spawn/respawn paths (createMission/updateOrbit/createSentryGuns).
     virtual void setPosition3(float x, float y, float z);
-    void setPosition_vec(const Vector& v);
+    // Vector-form position setter: stores the world position into the render
+    // geometry, then mirrors the resulting transform onto the wrapped Player
+    // (composing with the parent ship-group transform when present).
+    void setPosition(const Vector& v);
     void setRotationSpeed(float speed);
     void setRoute(Route* route);
     // actor vtable slot +0x8: (re)parents the render geometry to the given ship-group node.
@@ -179,8 +185,6 @@ public:
     void enableExplosion();
     // Records the spawn orientation. The base actor keeps no rotation state.
     void setInitialRotation(Vector rotation);
-    // Engages / disengages the auto-pilot lock onto the given target (engaged when target != null).
-    void setAutoPilot(KIPlayer* target);
 
     // Collision-query virtuals inherited from the bounding-volume interface. A KIPlayer
     // does not expose a surface to project onto, so all three return a zeroed vector.

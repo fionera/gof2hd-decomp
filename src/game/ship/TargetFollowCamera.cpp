@@ -47,13 +47,6 @@ static inline float bitsToFloat(uint32_t u) {
     return f;
 }
 
-static inline double poly8(const double *c, double x) {
-    double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
-    double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
-    return x8 * c[0] + x7 * c[1] + x6 * c[2] + x5 * c[3] + x4 * c[4] +
-           x3 * c[5] + x2 * c[6] + x * c[7] + c[8];
-}
-
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -267,18 +260,21 @@ void TargetFollowCamera::setFastForwardMode(bool enabled) {
 // coefficients to the output doubles.
 void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
         float t, double &outB, double &outA, double &outC, double &outD, double &outE) {
-    double x = (double)t;
-    double a = poly8(g_TFC_dampA, x);
-    double b = poly8(g_TFC_dampB, x);
-    double c = poly8(g_TFC_dampC, x);
-    double d = poly8(g_TFC_dampD, x);
-    double e = poly8(g_TFC_dampE, x);
+    double x  = (double)t;
+    double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
+    double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
 
-    outB = e;
-    outA = -a;
-    outC = c;
-    outD = d;
-    outE = -b;
+    // Evaluate each degree-8 damping-curve polynomial (c[0]=x^8 .. c[8]=1) at x.
+    auto poly8 = [&](const double *c) {
+        return x8 * c[0] + x7 * c[1] + x6 * c[2] + x5 * c[3] + x4 * c[4] +
+               x3 * c[5] + x2 * c[6] + x * c[7] + c[8];
+    };
+
+    outB =  poly8(g_TFC_dampE);
+    outA = -poly8(g_TFC_dampA);
+    outC =  poly8(g_TFC_dampC);
+    outD =  poly8(g_TFC_dampD);
+    outE = -poly8(g_TFC_dampB);
 }
 
 // ---------------------------------------------------------------------------

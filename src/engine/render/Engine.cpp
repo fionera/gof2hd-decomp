@@ -75,6 +75,11 @@ void MeshRelease(Engine *self, void *meshSlot);
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
 void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 
+// Poll-and-clear the GLES error flag (debug helper, result discarded).
+void glError() {
+    glGetError();
+}
+
 double * Engine::GetAccelValue() {
     double x = this->accelRaw[0];
     double y;

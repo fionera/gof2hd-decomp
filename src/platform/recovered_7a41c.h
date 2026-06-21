@@ -37,6 +37,15 @@ bool keyIsPressed();
 // clamping toward zero.
 void LowerMouseWheel();
 
+// Presses the virtual key `key`: maps it to a game key code, drives the matching
+// on-screen button (starting a synthetic touch via OnTouchBegin) and applies the
+// key's side effects to the global game state.
+void keyPressed(AbyssEngine::Engine *engine, int key);
+
+// Presses every virtual key whose name matches `name` (the press counterpart of
+// keyEventReleased).
+void keyEventPressed(AbyssEngine::Engine *engine, char *name);
+
 // Releases the virtual key `key` (clears its pressed flag, ends the touch it was
 // driving and runs its follow-up action).
 void keyReleased(AbyssEngine::Engine *engine, int key);

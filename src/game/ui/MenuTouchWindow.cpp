@@ -2050,7 +2050,4 @@ void MenuTouchWindow::startGOF2()
     fn(*(void **)appHolder, 2, 0);
 }
 
-// Explicit instantiation: the original emits ArrayAdd<TouchSlider*> out-of-line for the
-// options sliders array (member +0xec). Defined inline in Array.h.
-template void ArrayAdd<TouchSlider *>(TouchSlider *, Array<TouchSlider *> &);
 

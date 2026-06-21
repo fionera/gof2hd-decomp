@@ -67,9 +67,10 @@ extern "C" char *g_Portraits_ipadFlagC;
 // Registers a single portrait texture on the canvas: builds the asset name
 // "<base><suffix>.aei" and wraps the ResourceTexture in an id-tagged Resource
 // (kind 2 = texture). Inlined at every call site by loadPortraits below.
-static void addPortrait(AbyssEngine::PaintCanvas *canvas,
-                        const AbyssEngine::String &suffix,
-                        unsigned short id, const char *base)
+__attribute__((always_inline)) static inline void
+addPortrait(AbyssEngine::PaintCanvas *canvas,
+            const AbyssEngine::String &suffix,
+            unsigned short id, const char *base)
 {
     AbyssEngine::String fullName = AbyssEngine::String(base, false) + suffix +
                                    AbyssEngine::String(".aei", false);

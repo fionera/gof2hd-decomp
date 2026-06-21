@@ -219,9 +219,7 @@ public:
     int getEnemiesLeft();
     int getFriendsLeft();
     Array<void*>* getMessages();
-    void *getActiveMessages();
     int getTimeLimit();
-    int collide(Vector v);
     int collide(Vector v, bool param);
     void isInAsteroidCenterRange(Vector v);
     int collideStream(Vector v);
@@ -236,7 +234,6 @@ public:
     void createRadioMessage(int type, int param);
     void updateAlienAttackers(int dt);
     void updateAsteroidCluster();
-    void update(long long time, unsigned dtArg, int stackFlag);
     void update(long long time, bool param);
     int checkObjective(int param);
     void stealFriendCargo();
@@ -250,7 +247,6 @@ public:
     void attackWanted(int index);
     void almostKillWanted(int index);
     void killWanted(int param);
-    void friendTurnedEnemy();
     void friendTurnedEnemy(int param);
     void enableFog(bool enable);
     void enableMovingStars(bool enable);
@@ -269,25 +265,6 @@ public:
     // createRadioMessage(): hand the finished message queue to the player-ego's
     // comm controller. A null queue clears the channel.
     void crm_dispatch(int egoComm, void *queue);
-
-    // createSpace(): two slices of the skybox/station builder — the star-system
-    // backdrop spin, the home station + gates.
-    void csp_buildStarSystemScene();
-    void csp_buildStationAndGates();
-
-    // createMission(): build the per-mission-type actors/objectives.
-    void cm_buildMissionScene(Mission *mission);
-
-    // createAsteroids(): reject-sampling distance test + lod-mesh table install.
-    float ca_asteroidDistance(unsigned idx, Vector *pos);
-    void  ca_installLodMeshes(AEGeometry *geo, short baseMesh, int near);
-
-    // createCampaignMission(): build the scripted campaign scene.
-    void ccm_buildCampaignScene(int missionIndex);
-
-    // initParticleSystems(): per-asteroid dust + engine-trail systems.
-    void ips_buildAsteroidDust(void *arr);
-    int  ips_addPlayerSystem(ParticleSettings::ParticleSet kind);
 
 };
 

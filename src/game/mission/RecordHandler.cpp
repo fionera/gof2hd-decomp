@@ -4,6 +4,8 @@
 #include "game/mission/Achievements.h"
 #include "game/mission/BluePrint.h"
 #include "engine/core/GameText.h"
+#include "engine/render/PaintCanvas.h"
+#include "game/ui/Layout.h"
 #include "game/core/Globals.h"
 #include "game/mission/Item.h"
 #include "game/world/Standing.h"
@@ -66,6 +68,107 @@ extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
 extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
+
+// ---- loadingScreen(PaintCanvas*, int, void*) ----
+// Shared UI singletons the splash pulls from. These mirror the Globals static handles the
+// original reads (the secondary draw canvas, the Globals/Layout objects and the cached
+// screen width/height, the localized-text object and the "saving vs loading" flag); they are
+// reached through the file's typed-handle idiom because Globals.h does not model them.
+__attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas *g_LS_canvas; // Globals::Canvas (spinner/bar canvas)
+__attribute__((visibility("hidden"))) extern unsigned char *g_LS_globals;            // Globals::globals (layout-metrics object)
+__attribute__((visibility("hidden"))) extern Layout *g_LS_layout;                    // Globals::layout
+__attribute__((visibility("hidden"))) extern int g_LS_screenW;                       // Globals::w
+__attribute__((visibility("hidden"))) extern int g_LS_screenH;                       // Globals::h
+__attribute__((visibility("hidden"))) extern GameText *g_LS_gameText;                // Globals::gameText
+__attribute__((visibility("hidden"))) extern bool g_LS_gameSaving;                   // Globals::gameSaving
+
+void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder) {
+    canvas->ClearBuffer(0xff);
+    canvas->Begin2d();
+    canvas->SetColor(0xffffffffu);
+
+    if (resourceHolder == nullptr) {
+        canvas->End2d();
+        canvas->SwapBuffer();
+        return;
+    }
+
+    // The holder carries the resource id of the font/spinner to draw with; (re)load the font
+    // for the current language if Arabic (id 9) or if that resource isn't resident yet.
+    unsigned int resId = *static_cast<unsigned int *>(resourceHolder);
+    if (GameText::getLanguage() == 9 ||
+        !canvas->ResourceLoaded(resId, static_cast<AbyssEngine::ResourceType>(1))) {
+        gGlobals->loadFont(GameText::getLanguage());
+        *static_cast<unsigned int *>(resourceHolder) = resId;
+    }
+
+    // Create the two splash images (spinner = 0x504, progress-bar fill = 0x505).
+    unsigned int spinner = 0xffffffffu;
+    unsigned int barFill = 0xffffffffu;
+    g_LS_canvas->Image2DCreate(0x504, spinner);
+    g_LS_canvas->Image2DCreate(0x505, barFill);
+
+    int barFillW  = g_LS_canvas->GetImage2DWidth(barFill);
+    int spinnerW  = g_LS_canvas->GetImage2DWidth(spinner);
+    int barFillH  = g_LS_canvas->GetImage2DHeight(barFill);
+
+    // Window chrome. The top margin used to centre the caption/spinner is read from the
+    // layout-metrics object (Globals::globals +0x27c); the bar baseline from +0x290.
+    int topMargin = *reinterpret_cast<int *>(g_LS_globals + 0x27c);   // RAWREAD: Globals::globals +0x27c (unnamed top margin)
+    g_LS_layout->drawBG();
+    g_LS_layout->drawHeader();
+    g_LS_layout->drawEmptyFooter(false);
+
+    // Caption: "Saving..." while saving, otherwise "Loading..." (text ids 0x18a / 0x189).
+    int captionId = g_LS_gameSaving ? 0x18a : 0x189;
+    String caption(*g_LS_gameText->getText(captionId), false);
+
+    // Progress percent clamped to [0,100]; `barShortfall` is the unfilled remainder.
+    if (progress < 0) progress = 100;
+    int barShortfall = 100;
+    if (progress > 0) barShortfall = 100 - progress;
+
+    // Layout metrics live as raw fields on the Globals::globals object.
+    int *layoutFields  = reinterpret_cast<int *>(*reinterpret_cast<void **>(g_LS_layout));  // RAWREAD: Layout body fields
+    int globalsCenterX = *reinterpret_cast<int *>(g_LS_globals);                            // RAWREAD: Globals::globals +0x00 (content width)
+    int barBaseline    = *reinterpret_cast<int *>(g_LS_globals + 0x290);                    // RAWREAD: Globals::globals +0x290 (bar baseline)
+
+    // Centred caption.
+    int captionW = canvas->GetTextWidth(resId, caption);
+    int captionX = (g_LS_screenW / 2) - (captionW / 2);
+    int captionY = (g_LS_screenH / 2) - topMargin - layoutFields[1] - layoutFields[0x280 / 4];
+    canvas->DrawString(resId, caption, captionX, captionY, false);
+
+    // Centred spinner image.
+    int spinnerX = (globalsCenterX / 2) - (spinnerW / 2);
+    int spinnerY = (g_LS_screenH / 2) - topMargin;
+    canvas->DrawImage2D(spinner, spinnerX, spinnerY);
+
+    // Progress bar: draw the filled portion of the 0x505 image. Arabic (language 9) fills
+    // right-to-left, every other language fills left-to-right.
+    float fillW = static_cast<float>(barShortfall < 0 ? 0 : barShortfall) * 0.01f *
+                  static_cast<float>(barFillW);
+    int barTransY = barBaseline + ((g_LS_screenH / 2) - topMargin);
+    int barCenterX = globalsCenterX / 2;
+
+    if (GameText::getLanguage() == 9) {
+        float pivot = static_cast<float>(barCenterX + (barFillW / 2)) - fillW;
+        g_LS_canvas->DrawRegion2D(barFill,
+                                  static_cast<int>(static_cast<float>(barFillW) - fillW), 0,
+                                  static_cast<int>(fillW), barFillH,
+                                  0.0f, 0, 0,
+                                  static_cast<int>(pivot), barTransY);
+    } else {
+        g_LS_canvas->DrawRegion2D(barFill,
+                                  0, 0,
+                                  static_cast<int>(fillW), barFillH,
+                                  0.0f, 0, 0,
+                                  barCenterX - (barFillW / 2), barTransY);
+    }
+
+    canvas->End2d();
+    canvas->SwapBuffer();
+}
 
 // Global holder: g -> P, *P -> the record count.
 __attribute__((visibility("hidden"))) extern int *g_RH_recordCount;

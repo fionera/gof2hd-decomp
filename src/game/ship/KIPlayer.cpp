@@ -43,9 +43,6 @@ extern void* const gItemDb   __attribute__((visibility("hidden")));
 extern "C" unsigned KIPlayer_initA;
 extern "C" unsigned KIPlayer_initB;
 
-// AbyssEngine::ApplicationManager::GetEngine() — singleton engine accessor.
-extern "C" void* AppManager_GetEngine();
-
 KIPlayer::KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
                    float x, float y, float z, bool active) {
     this->name.ctor();
@@ -180,6 +177,11 @@ KIPlayer::~KIPlayer() {
     }
 
     this->name.dtor();
+}
+
+// A bare actor has no propulsion of its own; subclasses report their real speed.
+int KIPlayer::getSpeed() {
+    return 0;
 }
 
 int KIPlayer::getType() {
@@ -412,7 +414,7 @@ void KIPlayer::setPosition3(float x, float y, float z) {
     v.x = x;
     v.y = y;
     v.z = z;
-    this->setPosition_vec(v);
+    this->setPosition(v);
 }
 
 void KIPlayer::reset() {
@@ -611,7 +613,7 @@ void KIPlayer::setShipGroup(AEGeometry* geom, int group, bool flag) {
                                             this->parentGeometry->getMatrix());
 }
 
-void KIPlayer::setPosition_vec(const Vector& v) {
+void KIPlayer::setPosition(const Vector& v) {
     if (this->geometry != 0) {
         this->geometry->setPosition(v);
         *(Matrix*)this->player->transform = this->geometry->getMatrix();
@@ -712,39 +714,4 @@ void KIPlayer::enableExplosion() {
 // Base actor keeps no spawn-orientation state; subclasses that need it override.
 void KIPlayer::setInitialRotation(Vector rotation) {
     (void)rotation;
-}
-
-// Engage/disengage the auto-pilot lock. This override lives on the PlayerEgo subclass,
-// so the touched fields sit past the KIPlayer base layout and are addressed by byte
-// offset on the player-ego tail:
-//   +0x158 autoPilotActive flag   +0x15c autoPilotTarget   +0x160 followingHostile
-//   +0x14  controller (its +0x2c slot is the steering command)
-//   +0x2a4/+0x2a8 lock-on highlight pair   +0xbc thrust scale (1.0 when engaged)
-void KIPlayer::setAutoPilot(KIPlayer* target) {
-    char* ego = reinterpret_cast<char*>(this);
-
-    *(uint8_t*)(ego + 0x160) = 0;
-    *(KIPlayer**)(ego + 0x15c) = target;
-
-    bool wasActive = *(uint8_t*)(ego + 0x158) != 0;
-    *(uint8_t*)(ego + 0x158) = (target != 0);
-
-    if (target == 0) {
-        // Disengage: clear the steering command and the lock-on highlight.
-        *(void**)(*(char**)(ego + 0x14) + 0x2c) = 0;
-        if (wasActive) {
-            *(uint8_t*)(ego + 0x2a8) = 0;
-            *(void**)(ego + 0x2a4) = 0;
-        }
-        return;
-    }
-
-    // Engage: mark "following hostile" when the target itself is hostile (+0x72),
-    // reset the engine's frame accumulator and apply full forward thrust.
-    if (target->field_0x72 != 0)
-        *(uint8_t*)(ego + 0x160) = 1;
-    void* engine = AppManager_GetEngine();
-    // RAWREAD: engine+0x360 (AppManager_GetEngine() returns untyped void*; engine class not modeled)
-    *(uint32_t*)((char*)engine + 0x360) = 0;
-    *(uint32_t*)(ego + 0xbc) = 0x3f800000;   // 1.0f
 }

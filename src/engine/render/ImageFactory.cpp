@@ -243,6 +243,3 @@ int *ImageFactory::createChar(bool isMale, int race)
     return desc;
 }
 
-// Out-of-line emission of the ArraySetLength<ImagePart*> helper used by loadChar().
-template void ArraySetLength<ImagePart *>(unsigned int, Array<ImagePart *> &);
-

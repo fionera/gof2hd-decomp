@@ -30,6 +30,11 @@ typedef AbyssEngine::Mesh MeshFull;
 typedef void DestroyCallback(Engine *);
 typedef void InitializeCallback(Engine *);
 
+// Poll-and-clear the GLES error flag. A thin debug helper used after a batch of
+// GL calls; the result is discarded here (callers that need the code query
+// glGetError directly).
+void glError();
+
 // Per-light fixed-function color slot (GL light color: rgba). The engine keeps up
 // to 8 of these contiguously (one per GL light) and indexes them by (light - GL_LIGHT0).
 struct LightColor {

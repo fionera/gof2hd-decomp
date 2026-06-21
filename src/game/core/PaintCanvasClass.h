@@ -20,6 +20,7 @@ namespace AbyssEngine { class Mesh; namespace AEMath { struct Matrix; struct Vec
 namespace AbyssEngine { struct Material; }
 namespace AbyssEngine { struct Resource; }
 namespace AbyssEngine { struct Image; }
+namespace AbyssEngine { struct Image2D; }
 // Engine-side enums recovered from the binary's mangled method signatures (see
 // the matching block in src/engine/render/PaintCanvas.h). Only the namespace-
 // qualified type names matter for the ABI; the constants are conventional. Each
@@ -168,6 +169,9 @@ public:
     void StartDraw2FBO();
     void StopDraw2FBO();
     void CheckNUseRefractFBO(bool);
+    void ClearDepth();
+    void DrawFrameBufferTexture(int, int, int, int, int, int);
+    bool WarmUpTexture();
 
     // 2D drawing
     void FillRectangle(int x, int y, int w, int h);
@@ -182,6 +186,7 @@ public:
     void Image2DCreate(unsigned short id, unsigned int &out);
     unsigned short GetImage2DWidth(unsigned int index);
     unsigned short GetImage2DHeight(unsigned int index);
+    void RestoreImage2D(AbyssEngine::Image2D *image);
 
     // Text
     void DrawString(unsigned int index, const unsigned short *str, int x, int y, bool b);
@@ -192,6 +197,8 @@ public:
     void DrawTextLines(unsigned int font, ::Array<AbyssEngine::String *> *arr, int x, int y, unsigned int p5, bool flag);
     int GetTextWidth(unsigned int index, const AbyssEngine::String &str);
     int GetTextWidth(unsigned int index, const AbyssEngine::String &str, unsigned int begin, unsigned int end);
+    AbyssEngine::String GetReverseString(AbyssEngine::String in);
+    AbyssEngine::String GetReverseString(AbyssEngine::String in, bool reverse);
     int GetTextHeight(unsigned int index);
     void GetLine(unsigned int font, AbyssEngine::String str, int maxWidth, AbyssEngine::String *out);
     void GetLineArray(unsigned int font, const AbyssEngine::String &str, int maxWidth, ::Array<AbyssEngine::String *> *out);
@@ -214,6 +221,13 @@ public:
     int CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &center, float radius);
     int CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &point);
 
+    // Result of a 2D pick test: the (u,v) texture coordinate hit by the pick ray,
+    // or {-1.0f, -1.0f} when nothing was hit.
+    struct PickedTextureRegion {
+        float u;
+        float v;
+    };
+
     // Transforms
     void TransformCreate(unsigned int &out);
     void TransformCreate(unsigned short id, unsigned int &out);
@@ -231,6 +245,8 @@ public:
     void TransformRemoveMeshId(unsigned int transformIndex, unsigned int meshIndex);
     void DrawTransform(::Transform *tf, const AbyssEngine::AEMath::Matrix &m2, AbyssEngine::AEMath::Matrix &m3);
     void DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *matrix);
+    PickedTextureRegion TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z, int shift);
+    PickedTextureRegion TransformGet2DPickedTextureRegion(::Transform *transform, int x, int y, int z, int shift);
 
     // Meshes
     void MeshCreate(unsigned short id, unsigned int &out, bool flag);
@@ -260,12 +276,10 @@ public:
     void MeshSetTriangle(unsigned int meshIndex, unsigned short tri, unsigned short v0, unsigned short v1, unsigned short v2);
     void MeshSetTriangleCount(unsigned int index, unsigned short count);
     void MeshTranslatePoint(unsigned int index, unsigned short sub, float x, float y, float z);
-    void MeshSet2DMask(unsigned int index, int);
     void MeshSet2DMask(unsigned int index, int, int);
     void MeshClear2DMask();
 
     // Materials / textures / resources
-    void MaterialCreate(unsigned int *out, void *p2, void *p3);
     void MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode, unsigned int textures, unsigned short p4);
     void MaterialCreate(unsigned short id, unsigned int &out);
     void *MaterialGetMaterial(unsigned int index);

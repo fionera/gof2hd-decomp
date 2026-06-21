@@ -1,13 +1,5 @@
 #include "game/world/SystemPathFinder.h"
-#include "engine/render/LODManager.h" // ArrayRemove<T>
-
-// The galaxy jump graph is built and searched over Array<Node*>, so the engine's
-// container free-functions are emitted out-of-line here for that element type.
-// (Bodies live in Array.h; these are just the per-type instantiations.)
-template void ArrayAdd<Node *>(Node *, Array<Node *> &);
-template void ArrayRemove<Node *>(Node *, Array<Node *> &);
-template void ArrayReleaseClasses<Node *>(Array<Node *> &);
-template void ArraySetLength<Node *>(unsigned int, Array<Node *> &);
+#include "engine/render/LODManager.h"
 
 // Deletes every owned pointee in the array (nulling each slot as it goes), then
 // frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;

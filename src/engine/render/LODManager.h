@@ -6,12 +6,6 @@
 #include "aetypes.h"
 #include "mathtypes.h"
 
-class AEGeometry;   // global engine type, used by pointer only
-
-// Erase every element equal to `item` from `a` (in-place compaction), then shrink the
-// backing store to the new count (min one slot). The engine's out-of-line container
-// helper: _Z11ArrayRemoveI...EvT_R5ArrayIS2_E in the binary, paired with ArrayAdd<T>.
-
 // A single live touch point, as tracked by the Android input bridge: screen x/y plus
 // the pointer id and action code. GetTouch() returns one of these by value.
 struct Touch {

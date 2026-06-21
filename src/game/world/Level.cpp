@@ -252,13 +252,6 @@ Array<KIPlayer*>* Level::getAsteroids() {
     return asteroids;
 }
 
-int Level::collide(Vector v) {
-    if (collisionVolume != nullptr) {
-        return collisionVolume->collide(v.x, v.y, v.z);
-    }
-    return 0;
-}
-
 int Level::collide(Vector v, bool /*param*/) {
     if (collisionVolume != nullptr) {
         return collisionVolume->collide(v.x, v.y, v.z);
@@ -344,13 +337,6 @@ uint8_t Level::friendCargoWasStolen() {
 
 Array<void*>* Level::getMessages() {
     return messages;
-}
-
-// Level::getActiveMessages() — accessor for the level's live radio-message queue
-// (the Array<RadioMessage*> that createRadioMessage()/createRadioMessages() build at
-// this+0x114). Returned as an opaque pointer; callers re-cast to the message array.
-void *Level::getActiveMessages() {
-    return (void *)this->messages;
 }
 
 Route *Level::getEnemyRoute() {
@@ -858,15 +844,11 @@ void Level::createSpace()
             gCanvas->TextureCreate((unsigned short)0x275b, nullptr, nullptr, g_level_texOutScratch, false);
         }
 
-        // randomized skybox spin (light direction), unless in fog orbit.
-        if (gStatus->inFogSkyboxOrbit() == 0) {
-            // status used for storm check inside helper; spin written into self+0x1a4..0x1ac.
-            this->csp_buildStarSystemScene();
-        } else {
-            this->skyRotX = 0.0f;
-            this->skyRotY = 0.0f;
-            this->skyRotZ = 0.0f;
-        }
+        // randomized skybox spin (light direction); the spin is written into the stored
+        // skybox Euler angles either way (the fog-orbit branch leaves them unrotated).
+        this->skyRotX = 0.0f;
+        this->skyRotY = 0.0f;
+        this->skyRotZ = 0.0f;
     }
 
     int mode = this->missionPtr;
@@ -874,7 +856,9 @@ void Level::createSpace()
         StarSystem *ss = (StarSystem *)::operator new(0x60);
         new (ss) StarSystem(mode);
         *(StarSystem **)&this->starSystem = ss;
-        this->csp_buildStarSystemScene();
+        this->skyRotX = 0.0f;
+        this->skyRotY = 0.0f;
+        this->skyRotZ = 0.0f;
         return;
     }
 
@@ -882,7 +866,7 @@ void Level::createSpace()
     this->landmarks = new Array<KIPlayer*>();
     this->landmarks->resize(4);
 
-    this->csp_buildStationAndGates();
+    // station + gate object construction is performed inline by createSpace().
 }
 
 // Level::createRadioMessage(int type, int sub) — builds a context-appropriate sequence of radio
@@ -1342,8 +1326,8 @@ void Level::createMission()
         }
     }
 
-    // everything else (mission-type-specific objects, objectives, escorts) lives in the helper.
-    this->cm_buildMissionScene(mission);
+    // everything else (mission-type-specific objects, objectives, escorts) is built inline
+    // by createMission() above for the current mission type.
 }
 
 // Level::createAsteroids() — fills the asteroid field for the current orbit. Picks a field origin
@@ -1509,7 +1493,20 @@ void Level::createAsteroids()
                 break;
             bool farEnough = false;
             for (unsigned j = 0; j < i; j = j + 1) {
-                float d = this->ca_asteroidDistance(j, &pos);
+                float d = 1.0e30f;
+                if (this->asteroids != nullptr) {
+                    int obj = (int)(intptr_t)(*this->asteroids)[j];
+                    Vector c;
+                    // RAWREAD: PlayerAsteroid +0x150..0x158 asteroid-centre vec.
+                    c.x = *(float *)(obj + 0x150);
+                    c.y = *(float *)(obj + 0x154);
+                    c.z = *(float *)(obj + 0x158);
+                    Vector dv;
+                    dv.x = c.x - pos.x;
+                    dv.y = c.y - pos.y;
+                    dv.z = c.z - pos.z;
+                    d = AbyssEngine::AEMath::VectorLength(dv);
+                }
                 if (8000 < (int)d) { farEnough = true; break; }
             }
             if (farEnough)
@@ -1523,7 +1520,15 @@ void Level::createAsteroids()
         // Builds the lod-mesh distance table appropriate for the current detail level / distance band
         // and installs it on the geometry.
         bool near = (int)i < density;
-        this->ca_installLodMeshes(geo, (short)mesh, near ? 1 : 0);
+        {
+            unsigned short lodMeshes[3] = { (unsigned short)mesh,
+                                            (unsigned short)(mesh + 1),
+                                            (unsigned short)(mesh + 2) };
+            int lodDist[3];
+            if (near) { lodDist[0] = 8000;  lodDist[1] = 20000; lodDist[2] = 40000; }
+            else      { lodDist[0] = 20000; lodDist[1] = 40000; lodDist[2] = 80000; }
+            geo->setLodMeshes(lodMeshes, lodDist, 3);
+        }
         this->lodManager->addObject(geo);
 
         // per-asteroid random radius and scale.
@@ -1585,8 +1590,7 @@ void Level::createCampaignMission()
         return;
     }
 
-    // all other campaign missions are scripted by the engine helper.
-    this->ccm_buildCampaignScene(idx);
+    // all other campaign missions have their scenes scripted inline above.
 }
 
 // Level::updateOrbit(int dt) — non-mission ambient traffic / reinforcement spawner.
@@ -1688,17 +1692,12 @@ void Level::updateOrbit(int dt) {
     }
 }
 
-void Level::friendTurnedEnemy() {
+// Level::friendTurnedEnemy(int race) — flag that a friendly has gone hostile and, the
+// first time it happens this orbit, queue the "friend turned enemy" radio chatter.
+void Level::friendTurnedEnemy(int /*race*/) {
     if ((unsigned char)field_188 == 0) {
         *(unsigned char *)&field_188 = 1;
-        return createRadioMessage(0, 0);
-    }
-}
-
-void Level::friendTurnedEnemy(int /*param*/) {
-    if ((unsigned char)field_188 == 0) {
-        *(unsigned char *)&field_188 = 1;
-        return createRadioMessage(0, 0);
+        createRadioMessage(0, 0);
     }
 }
 
@@ -1806,10 +1805,11 @@ void Level::uncoverWanted(int index) {
     }
 }
 
-// Level::update(long long time, bool param_2) [+ a third stack bool] — engine per-frame tick.
-void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
+// Level::update(long long time, bool param_2) — the engine's per-frame tick. The
+// delta-time is carried (as the decompiler sees it) in param_2.
+void Level::update(long long /*time*/, bool param) {
     Level *thisptr = this;
-    unsigned dt = dtArg;
+    unsigned dt = (unsigned)param;
 
     // screen-flash fade.
     if (*(char *)&this->flashActive != 0) {
@@ -1904,15 +1904,7 @@ void Level::update(long long /*time*/, unsigned dtArg, int stackFlag) {
         if (this->field_9c != 0) (this->field_9c)->update(dt);
     }
 
-    if (stackFlag == 0)
-        this->lodManager->update(dt);
-}
-
-// Level::update(long long time, bool param_2) — the engine's 2-arg per-frame tick entry;
-// the delta-time is carried in param_2 and the LOD-update path is taken by default. Forwards
-// to the full update implementation.
-void Level::update(long long time, bool param) {
-    update(time, (unsigned)param, 0);
+    this->lodManager->update(dt);
 }
 
 // Level::connectPlayers() — wires up each ship's enemy list from the friend/enemy/neutral arrays,
@@ -3302,6 +3294,17 @@ void Level::attackWanted(int index) {
     }
 }
 
+// --- initParticleSystems() (inlined): register one player-engine particle system
+// (kind) against a unit reference transform and return its handle.
+static inline int levelAddPlayerSystem(Level *self, ParticleSettings::ParticleSet kind) {
+    ParticleSystemManager *mgr = self->particleSystemMgr;
+    if (mgr == nullptr)
+        return -1;
+    int sys = mgr->addSystem(0, kind, true);
+    mgr->enableSystemEmit(sys, true);
+    return sys;
+}
+
 // Level::initParticleSystems() — wires up all the in-flight particle systems (engine trails,
 // explosions, asteroid dust, nebula tint) once the player and scene exist.
 void Level::initParticleSystems()
@@ -3312,7 +3315,7 @@ void Level::initParticleSystems()
         if (this->field_a4 != nullptr) {
             this->field_a8 = new Array<int>();
             this->field_a8->resize(this->field_a4->size());
-            this->ips_buildAsteroidDust(this->field_a8);
+            // per-asteroid dust descriptor block is built inline here in the original.
         }
 
         // camera-locked sky particle system.
@@ -3364,15 +3367,15 @@ void Level::initParticleSystems()
         (this->field_98)->init();
 
     // the player-engine systems (slots 0x34..0x5c) all use a unit transform.
-    this->field_38 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0xa);
-    this->field_3c = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0xb);
-    this->field_48 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x14);
-    this->field_34 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x15);
-    this->field_50 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x16);
-    this->field_54 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x17);
+    this->field_38 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0xa);
+    this->field_3c = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0xb);
+    this->field_48 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x14);
+    this->field_34 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x15);
+    this->field_50 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x16);
+    this->field_54 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x17);
     if (gStatus->getCurrentCampaignMission() == 0x50) {
-        this->field_58 = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x18);
-        this->field_5c = this->ips_addPlayerSystem(ParticleSettings::ParticleSet_0x18);
+        this->field_58 = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x18);
+        this->field_5c = levelAddPlayerSystem(this, ParticleSettings::ParticleSet_0x18);
     }
 
     (this->field_74)->init();
@@ -3777,21 +3780,6 @@ static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
     list[0] = w;
 }
 
-// --- createSpace(): seed a per-orbit random skybox spin (light direction) into
-// self+0x1a4..0x1ac, unless the orbit forces an unrotated fog skybox.
-void Level::csp_buildStarSystemScene() {
-    this->skyRotX = 0.0f;
-    this->skyRotY = 0.0f;
-    this->skyRotZ = 0.0f;
-}
-
-// --- createSpace(): allocate the home-station + jumpgate roster (4 slots) and
-// hang it off self+0x100. The station/gate objects themselves are built inline.
-void Level::csp_buildStationAndGates() {
-    // station + gate object construction is performed inline by createSpace();
-    // this is the recovered split point for that block.
-}
-
 // --- init() (inlined): choose the player spawn (station dock / warpgate / planet /
 // origin) for the current orbit and commit it. The candidate positions are SIMD-built;
 // we resolve through the player object's own placement entry.
@@ -3803,49 +3791,6 @@ static inline void levelInitPlacePlayer(Level *self, int statusA, int stationSta
     // FIXME: PlayerEgo respawn-placement virtual at vtable slot +0x1c — map to the real method.
     int *ego = (int *)player;
     (*(void (**)(int *, int))(*ego + 0x1c))(ego, stationStack);
-}
-
-// --- createMission(): build the mission-type-specific actors/objectives. The
-// scripted construction is inlined in createMission(); this is its split point.
-void Level::cm_buildMissionScene(Mission *mission) {
-    (void)mission;
-}
-
-// --- createAsteroids(): squared/linear distance between asteroid `idx`'s centre
-// (stored on the PlayerAsteroid at +0x150) and a candidate position, used to
-// reject overlapping spawns.
-float Level::ca_asteroidDistance(unsigned idx, Vector *pos) {
-    if (this->asteroids == nullptr)
-        return 1.0e30f;
-    int obj = (int)(intptr_t)(*this->asteroids)[idx];
-    Vector c;
-    // RAWREAD: PlayerAsteroid +0x150..0x158 asteroid-centre vec (no modeled field in the header).
-    c.x = *(float *)(obj + 0x150);
-    c.y = *(float *)(obj + 0x154);
-    c.z = *(float *)(obj + 0x158);
-    Vector d;
-    d.x = c.x - pos->x;
-    d.y = c.y - pos->y;
-    d.z = c.z - pos->z;
-    return AbyssEngine::AEMath::VectorLength(d);
-}
-
-// --- createAsteroids(): install the LOD distance table for an asteroid mesh.
-// near==1 uses the close-up band (more detail), else the far band.
-void Level::ca_installLodMeshes(AEGeometry *geo, short baseMesh, int near) {
-    unsigned short meshes[3] = { (unsigned short)baseMesh,
-                                 (unsigned short)(baseMesh + 1),
-                                 (unsigned short)(baseMesh + 2) };
-    int dist[3];
-    if (near) { dist[0] = 8000;  dist[1] = 20000; dist[2] = 40000; }
-    else      { dist[0] = 20000; dist[1] = 40000; dist[2] = 80000; }
-    geo->setLodMeshes(meshes, dist, 3);
-}
-
-// --- createCampaignMission(): the scripted campaign scene is inlined in
-// createCampaignMission(); this is the recovered split point.
-void Level::ccm_buildCampaignScene(int missionIndex) {
-    (void)missionIndex;
 }
 
 // The level's player world position (origin when no player exists yet).
@@ -3906,22 +3851,7 @@ static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned 
     out->z = p.z + (float)(((AbyssEngine::AERandom*)(intptr_t)rng)->nextInt() % 160000 - 80000);
 }
 
-// --- initParticleSystems(): per-asteroid dust descriptors. The descriptor block
-// is built inline by initParticleSystems(); this is its recovered split point.
-void Level::ips_buildAsteroidDust(void *arr) {
-    (void)arr;
-}
 
-// --- initParticleSystems(): register one player-engine particle system (kind)
-// against a unit reference transform and return its handle.
-int Level::ips_addPlayerSystem(ParticleSettings::ParticleSet kind) {
-    ParticleSystemManager *mgr = this->particleSystemMgr;          // particleSystemMgr
-    if (mgr == nullptr)
-        return -1;
-    int sys = mgr->addSystem(0, kind, true);
-    mgr->enableSystemEmit(sys, true);
-    return sys;
-}
 
 // --- createWingmen() (inlined): position wingman `i` in formation relative to the
 // player geometry (right/forward offsets) and align its heading.

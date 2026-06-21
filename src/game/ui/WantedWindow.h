@@ -57,6 +57,8 @@ public:
     WantedWindow();
     ~WantedWindow();
 
+    void setHangarUpdate(bool needsUpdate);
+    bool hangarNeedsUpdate();
     int OnTouchBegin(int x, int y);
     void OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);

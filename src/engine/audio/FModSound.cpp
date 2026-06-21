@@ -778,90 +778,15 @@ int FModSound::tryToStopMusicForBGMusic()
     return 0;
 }
 
-// Base pitch applied to freshly started events; 0.0 means "use the event's
-// authored pitch" unless the down-pitch flag overrides it.
-float FModSound::defaultPitch = 0.0f;
-
-// ---- engine-sound event helpers ----
-// The KIPlayer/AI sound code drives a ship's looping engine sound by handing this
-// manager the owning Player. The live FMOD event lives on the Player at the
-// Player::engineEvent slot; these helpers forward the requested transport
-// operation to that handle, guarding against a null/unstarted event.
-
-// Player::engineEvent lives at a fixed offset on the opaque Player object.
-static const unsigned kPlayerEngineEvent = 0xf0;
-
-static FMOD::Event *playerEngineEvent(void *player)
+// Wired-headset detection. The shipped Android build has no backend wired up for
+// this, so it unconditionally reports that no headset is connected.
+bool FModSound::isHeadsetPluggedIn()
 {
-    return *(FMOD::Event **)((char *)player + kPlayerEngineEvent);
+    return false;
 }
 
-void FModSound::pauseEvent(void *player)
+// Central handler for FMOD return codes. In the release build the diagnostic
+// logging is compiled out, leaving the result code simply swallowed.
+void FModSound::ERRCHECK(FMOD_RESULT /*result*/)
 {
-    if (player == 0)
-        return;
-    FMOD::Event *event = playerEngineEvent(player);
-    if (event != 0)
-        FMOD_Event_setPaused(event, 1);
-}
-
-// The second argument mirrors the call site (always 0); it selects the FMOD
-// "immediate vs. queued" un-pause behaviour and is passed straight through.
-void FModSound::resumeEvent(void *player, int immediate)
-{
-    if (player == 0)
-        return;
-    FMOD::Event *event = playerEngineEvent(player);
-    if (event != 0)
-        FMOD_Event_setPaused(event, immediate);
-}
-
-void FModSound::stopEvent(void *player)
-{
-    if (player == 0)
-        return;
-    FMOD::Event *event = playerEngineEvent(player);
-    if (event != 0)
-        FMOD_Event_stop(event, 0);
-}
-
-void FModSound::playEvent(void *player, int /*eventId*/, int /*mode*/)
-{
-    if (player == 0)
-        return;
-    FMOD::Event *event = playerEngineEvent(player);
-    if (event != 0)
-        FMOD_Event_start(event);
-}
-
-// Configure a property slot on the sound manager for the next event start and
-// report the pitch that should be used for it. The jump-scene code issues several
-// of these to arm the cinematic engine sound, then feeds the final return value
-// into play() as the launch pitch.
-float FModSound::setProp(int snd, int id)
-{
-    FModSound *self = (FModSound *)(uintptr_t)snd;
-    if (self == 0 || self->initialized == 0)
-        return FModSound::defaultPitch;
-    self->propSlot = id;
-    return FModSound::defaultPitch;
-}
-
-// Un-pause every live event after a scene that had suspended audio (e.g. exiting
-// a cinematic / docking sequence).
-void FModSound::restoreState()
-{
-    FModSound *self = FModSound::active();
-    if (self == 0)
-        return;
-    self->resumeAll();
-}
-
-// Process-wide FModSound instance the legacy code reached through a fixed global
-// slot. Published by init(); until then it is null.
-FModSound *FModSound::g_instance = 0;
-
-FModSound *FModSound::active()
-{
-    return FModSound::g_instance;
 }

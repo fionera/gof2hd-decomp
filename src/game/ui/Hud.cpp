@@ -31,6 +31,9 @@ static void refreshQuickMenu(Hud *self);
 static void hudEventBuild(Hud *self, int eventId, void *ego, int arg);
 static void buildQuickMenu(Hud *self, int menuType);
 static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
+static void drawRadar(Hud *self);
+static void drawBars(Hud *self, void *ego);
+static void drawSecondaryWeaponPanel(Hud *self);
 static void drawMissionBanner(Hud *self);
 static void drawMessage(Hud *self);
 static void drawChallengeModeScoreImpl(Hud *self);
@@ -195,11 +198,11 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     // world-space HUD elements (reticle, target brackets, radar)
     drawReticleAndBrackets(this, ego, x, y);
-    drawRadar();
+    drawRadar(this);
 
     // player status (shield / armor / energy bars + secondary weapon)
-    drawBars(ego);
-    drawSecondaryWeaponPanel();
+    drawBars(this, ego);
+    drawSecondaryWeaponPanel(this);
 
     // contextual banners
     drawOrbitInformation();
@@ -210,7 +213,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     // the radial quick-menu, when open
     if (this->quickMenuOpen != 0)
-        drawMenu();
+        drawMenu(0);
 
     // challenge-mode score/time readout
     if (Status::isChallengeMode() != 0)
@@ -432,9 +435,10 @@ Hud::Hud() {
     init();
 }
 
-// Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6,
-//                 bool p7, int aggregateKey) — builds the cargo / docking / mission HUD event
-// line and pushes it to the queue (aggregating repeated pickups of the same kind).
+// Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender,
+//                 bool slotMode, bool aggregate) — builds the cargo / "cargo full" / mission HUD
+// event line and pushes it to the queue (aggregating repeated pickups of the same item).
+// itemId selects the localized unit name (GameText id itemId+0x4fa); count is the running tally.
 
 __attribute__((visibility("hidden"))) extern GameText **g_Hud_ccGameText;
 __attribute__((visibility("hidden"))) extern void **g_Hud_ccTemplate; // *holder -> base format String
@@ -443,18 +447,14 @@ extern const char g_Hud_ccHashN[]  __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit[]   __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit2[]  __attribute__((visibility("hidden")));
 
-// Seven-arg form: the aggregate key is omitted (no aggregation), so forward to the
-// full implementation with a zero key.
-void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7) {
-    catchCargo(amount, cargoVal, a, docked, mission, p6, p7, 0);
-}
-
-void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission, bool p6, bool p7, int aggregateKey) {
+void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender,
+                     bool slotMode, bool aggregate) {
     this->field_0x1d0 = 0;
-    this->cargoFullFlag = (unsigned char)docked;
+    this->cargoFullFlag = single ? 1 : 0;
 
-    if (mission) {
-        // mission cargo: two replaceHash passes producing the localized line
+    if (missionDelivery) {
+        // mission-delivery line: GameText(0x219) run through two replaceHash passes that
+        // substitute the mission-type word and the count into the localized template.
         GameText *gt = *g_Hud_ccGameText;
         void *base = gt->getText(0x219);
         void *dst = &this->field_0x1f4;
@@ -462,8 +462,8 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
 
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12]; ((String *)(a40))->ctor_copy((String *)(dst), false);
-        gStatus->getMission()->getType();
-        void *typeTxt = gt->getText(0);
+        int type = gStatus->getMission()->getType();
+        void *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
         char a4c[12]; ((String *)(a4c))->ctor_copy((String *)(typeTxt), false);
         char a58[12]; ((String *)(a58))->ctor_char(g_Hud_ccHashX, false);
         char out1[12]; Status_replaceHash(out1, tmpl, a40, a4c, a58);
@@ -479,16 +479,16 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
 
         String *str = new String(*(String *)dst);
-        ListItem *item = new ListItem(str, 0);
-        item->field_0x2c = cargoVal;
+        ListItem *item = new ListItem(str);
+        item->field_0x2c = itemId;
         addToEventQueue(item);
         return;
     }
 
-    if (docked) {
-        // docking confirmation line
+    if (single) {
+        // "cargo full" notice: GameText(0x142) pushed as its own event line
         GameText *gt = *g_Hud_ccGameText;
-        void *txt = gt->getText(0x18a);
+        void *txt = gt->getText(0x142);
         ((String *)(&this->field_0x1f4))->assign((String *)(txt));
         String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
@@ -496,17 +496,17 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         return;
     }
 
-    if (!a) return; // amount==0 fast path
+    if (count < 1) return; // nothing to add to the running "+N" tally
 
     GameText *gt = *g_Hud_ccGameText;
 
-    // aggregate with previous "+N <unit>" event if allowed
-    if (aggregateKey != 0 && this->eventQueueDirty != 0) {
+    // aggregate into the previous "+N <unit>" event when one is still showing
+    if (aggregate && this->eventQueueDirty != 0) {
         char a0[12]; ((String *)(a0))->ctor_int(this->cargoAggregateCount);
         char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
         char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
-        void *unit = gt->getText(0);
+        void *unit = gt->getText(itemId + 0x4fa);
         char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
         ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
@@ -515,15 +515,14 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(b8))->dtor();
         if (idx >= 0) {
             this->eventQueueTimer = 2000;
-            int newAmt = this->cargoAggregateCount + (a ? 1 : 0);
-            this->cargoAggregateCount = newAmt;
-            char nAc[12]; ((String *)(nAc))->ctor_int(newAmt);
+            this->cargoAggregateCount += count;
+            char nAc[12]; ((String *)(nAc))->ctor_int(this->cargoAggregateCount);
             char nC4[12]; ((String *)(nC4))->ctor_char(g_Hud_ccUnit2, false);
             char nA0[12]; *(String *)nA0 = *(String *)nAc + *(String *)nC4;
             char n94[12]; ((String *)(n94))->ctor_copy((String *)(nA0), false);
-            void *u2 = gt->getText(0);
+            void *u2 = gt->getText(itemId + 0x4fa);
             char n88[12]; *(String *)n88 = *(String *)n94 + *(String *)u2;
-            ((String *)(*this->eventQueue)[idx]->name)->assign((String *)(n88));
+            ((String *)((*this->eventQueue)[idx]->name))->assign((String *)(n88));
             ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
             ((String *)(k34))->dtor();
             return;
@@ -532,21 +531,21 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
     }
 
     // fresh "+N <unit>" event
-    this->cargoAggregateCount = (a ? 1 : 0);
+    this->cargoAggregateCount = count;
     char a0[12]; ((String *)(a0))->ctor_int(this->cargoAggregateCount);
     char ac[12]; ((String *)(ac))->ctor_char(g_Hud_ccUnit, false);
     char a94[12]; *(String *)a94 = *(String *)a0 + *(String *)ac;
     char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
-    void *unit = gt->getText(0);
+    void *unit = gt->getText(itemId + 0x4fa);
     char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
     ((String *)(&this->field_0x1f4))->assign((String *)(k34));
     ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
 
     String *str = new String(this->field_0x1f4);
-    ListItem *item = new ListItem(str, 0);
-    item->field_0x2c = cargoVal;
-    if (!p7 || p6) item->field_0x30 = 2;
-    if (p7) item->field_0x24 = 1;
+    ListItem *item = new ListItem(str);
+    item->field_0x2c = itemId;
+    if (!slotMode || extender) item->field_0x30 = 2;
+    if (slotMode) item->field_0x24 = 1;
     addToEventQueue(item);
 }
 
@@ -846,13 +845,8 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_dmLayout; // *holder -
 __attribute__((visibility("hidden"))) extern void **g_Hud_dmFont;   // *holder -> font String
 extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
-// Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
 void Hud::drawMenu(int unused) {
     (void)unused;
-    drawMenu();
-}
-
-void Hud::drawMenu() {
     int *layout = (int *)*g_Hud_dmLayout;
     ((Layout *)(layout))->drawMask();
 
@@ -1354,7 +1348,7 @@ static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigne
 // docking targets in the alien-orbit case.
 __attribute__((visibility("hidden"))) extern Level **g_Hud_level; // *holder -> Level
 
-void Hud::drawRadar() {
+static void drawRadar(Hud *self) {
     PaintCanvas *canvas = gCanvas;
     Status *st = gStatus;
 
@@ -1367,10 +1361,10 @@ void Hud::drawRadar() {
         if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
     }
     if (show && st->getCurrentCampaignMission() > 1) {
-        int img = ((this->touchFlags & 0x80) != 0)   // (flags<<0x19)<0
-                      ? this->orbitMarkerActiveImage
-                      : this->orbitMarkerIdleImage;
-        canvas->DrawImage2D((unsigned)img, this->field_0x3f8, 0);
+        int img = ((self->touchFlags & 0x80) != 0)   // (flags<<0x19)<0
+                      ? self->orbitMarkerActiveImage
+                      : self->orbitMarkerIdleImage;
+        canvas->DrawImage2D((unsigned)img, self->field_0x3f8, 0);
     }
 }
 
@@ -1379,47 +1373,47 @@ void Hud::drawRadar() {
 // background frame is positioned at the bar's anchor and a clipped fill region is
 // drawn whose width tracks the corresponding damage/charge rate. ego supplies the
 // per-frame damage rates.
-void Hud::drawBars(void *ego) {
+static void drawBars(Hud *self, void *ego) {
     PaintCanvas *canvas = gCanvas;
     PlayerEgo *e = (PlayerEgo *)ego;
     Player *player = *(Player **)ego;            // the ego embeds a Player* at +0
-    float scale = (float)this->field_0x446;
+    float scale = (float)self->field_0x446;
     canvas->SetColor((unsigned)0xffffffffu);
 
     // -- shield bar (only when the shield element +0x21f is enabled) --
-    unsigned short barX = this->field_0x442;
-    unsigned short barY = this->field_0x44a;
-    if (this->hasShieldBar != 0) {
+    unsigned short barX = self->field_0x442;
+    unsigned short barY = self->field_0x44a;
+    if (self->hasShieldBar != 0) {
         int shp = player->getShieldHP();
-        int frame = (shp < 2 || this->shieldHitFlash == 0) ? this->shieldFrameImage : this->shieldFrameHitImage;
-        canvas->DrawImage2D((unsigned)frame, this->field_0x43c, this->field_0x442);
-        canvas->DrawImage2D((unsigned)this->barDividerImage, this->field_0x43e, this->field_0x442);
-        canvas->DrawImage2D((unsigned)this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
+        int frame = (shp < 2 || self->shieldHitFlash == 0) ? self->shieldFrameImage : self->shieldFrameHitImage;
+        canvas->DrawImage2D((unsigned)frame, self->field_0x43c, self->field_0x442);
+        canvas->DrawImage2D((unsigned)self->barDividerImage, self->field_0x43e, self->field_0x442);
+        canvas->DrawImage2D((unsigned)self->shieldBarBgImage, self->field_0x440, self->field_0x44a);
         int rate = player->getShieldDamageRate();
         int w = (int)((float)rate * scale);
-        canvas->DrawRegion2D((unsigned)this->shieldBarFillImage, 0, 0, w, this->field_0x44c,
-                             (float)w, 0, 0, 0, this->field_0x440);
-        barX = this->field_0x444;
-        barY = this->field_0x448;
+        canvas->DrawRegion2D((unsigned)self->shieldBarFillImage, 0, 0, w, self->field_0x44c,
+                             (float)w, 0, 0, 0, self->field_0x440);
+        barX = self->field_0x444;
+        barY = self->field_0x448;
     }
 
     // -- hull/armor bar --
     int ahp = player->getArmorHP();
-    int aframe = (ahp < 1) ? this->armorFrameLowImage : this->armorFrameImage;
-    canvas->DrawImage2D((unsigned)aframe, this->field_0x43c, barX);
-    canvas->DrawImage2D((unsigned)this->barDividerImage, this->field_0x43e, barX);
-    canvas->DrawImage2D((unsigned)this->armorBarBgImage, this->field_0x440, barY);
+    int aframe = (ahp < 1) ? self->armorFrameLowImage : self->armorFrameImage;
+    canvas->DrawImage2D((unsigned)aframe, self->field_0x43c, barX);
+    canvas->DrawImage2D((unsigned)self->barDividerImage, self->field_0x43e, barX);
+    canvas->DrawImage2D((unsigned)self->armorBarBgImage, self->field_0x440, barY);
     int hrate = e->getHullDamageRate();
     int hw = (int)((float)hrate * scale);
-    canvas->DrawRegion2D((unsigned)this->armorBarFillImage, 0, 0, hw, this->field_0x44c,
-                         (float)hw, 0, 0, 0, this->field_0x440);
+    canvas->DrawRegion2D((unsigned)self->armorBarFillImage, 0, 0, hw, self->field_0x44c,
+                         (float)hw, 0, 0, 0, self->field_0x440);
 
     // -- armor regeneration overlay (element +0x220) --
-    if (this->hasArmorRegen != 0) {
+    if (self->hasArmorRegen != 0) {
         int arate = player->getArmorDamageRate();
         int aw = (int)((float)arate * scale);
-        canvas->DrawRegion2D((unsigned)this->armorRegenFillImage, 0, 0, aw, this->field_0x44c,
-                             (float)aw, 0, 0, 0, this->field_0x440);
+        canvas->DrawRegion2D((unsigned)self->armorRegenFillImage, 0, 0, aw, self->field_0x44c,
+                             (float)aw, 0, 0, 0, self->field_0x440);
     }
 }
 
@@ -1427,32 +1421,32 @@ void Hud::drawBars(void *ego) {
 // Draws the secondary-weapon / auto-turret indicator near the reticle: either the
 // auto-turret state icon (when the ship has an auto-turret) or the animated
 // "weapon switched" notice that fades after a few seconds.
-void Hud::drawSecondaryWeaponPanel() {
+static void drawSecondaryWeaponPanel(Hud *self) {
     PaintCanvas *canvas = gCanvas;
     Level *lvl = *g_Hud_level;
     PlayerEgo *player = (PlayerEgo *)(lvl ? (void *)(long)lvl->getPlayer() : (void *)0);
 
     if (player != 0 && player->hasAutoTurret() != 0) {
-        bool on = player->autoTurretIsEnabled() != 0 || ((this->autoTurretFlags & 0x20) != 0);
-        int img = on ? this->autoTurretOnImage : this->autoTurretOffImage;
-        canvas->DrawImage2D((unsigned)img, this->field_0x3fe, 0);
+        bool on = player->autoTurretIsEnabled() != 0 || ((self->autoTurretFlags & 0x20) != 0);
+        int img = on ? self->autoTurretOnImage : self->autoTurretOffImage;
+        canvas->DrawImage2D((unsigned)img, self->field_0x3fe, 0);
     } else {
         // no auto-turret: replay the transient "weapon changed" label timer
-        if (this->secondaryLabelTimer > 0) {
+        if (self->secondaryLabelTimer > 0) {
             void *font = *g_Hud_font;
             int screenW = *(int *)*g_Hud_screenW;
-            unsigned short iconW = this->field_0x3ec;
+            unsigned short iconW = self->field_0x3ec;
             canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
-            canvas->DrawImage2D((unsigned)this->eventBannerImage, this->field_0x3ec, 0);
+            canvas->DrawImage2D((unsigned)self->eventBannerImage, self->field_0x3ec, 0);
             int textW = gCanvas->GetTextWidth(
                 (unsigned)(long)canvas, *(String *)(font));
-            int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
+            int tx = self->field_0x3ec + ((screenW - iconW) - textW) / 2;
             gCanvas->DrawString((unsigned)(long)canvas,
-                this->field_0x51c, tx, 0, false);
+                self->field_0x51c, tx, 0, false);
             canvas->SetColor((unsigned)0xffffffffu);
-            int t = this->secondaryLabelTimer;
+            int t = self->secondaryLabelTimer;
             if (t > 4000) t = 0;
-            this->secondaryLabelTimer = t;
+            self->secondaryLabelTimer = t;
         }
     }
 }

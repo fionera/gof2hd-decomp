@@ -431,11 +431,4 @@ void PlayerGasCloud::render()
     }
 }
 
-// Out-of-line container helpers the original emits for the spark arrays (Array<bool>
-// sparkInSight, Array<float> sparkLife/Scale) and the mission/station tables reached
-// through this translation unit.
-template void ArrayAdd<bool>(bool, Array<bool>&);
-template void ArrayAdd<float>(float, Array<float>&);
-template void ArraySetLength<Mission*>(unsigned int, Array<Mission*>&);
-template void ArraySetLength<Station*>(unsigned int, Array<Station*>&);
 
