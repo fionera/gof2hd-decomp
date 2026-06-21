@@ -1,5 +1,7 @@
 #include "engine/render/Camera.h"
 
+#include <new>
+
 namespace AbyssEngine {
 
 // Engine free function that actually programs the projection matrix (recovered in AbyssEngine.cpp).
@@ -7,11 +9,10 @@ namespace AbyssEngine {
 float CameraSetPerspective(float fov, float aspect, float nearPlane, float farPlane, float param5,
                            Camera *cam);
 
-// AbyssEngine::Camera::Camera(float, float, float, float, float)
-// Default-constructs the projection Matrix at +0x0c, then sets up the perspective
-// via the engine free function (there is no Camera::SetPerspective method).
+// Default-construct the projection matrix, then install the perspective projection.
 Camera::Camera(float fov, float aspect, float nearPlane, float farPlane, float param5)
 {
+    new (&this->projection) AEMath::Matrix();
     CameraSetPerspective(fov, aspect, nearPlane, farPlane, param5, this);
 }
 
