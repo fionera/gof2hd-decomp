@@ -26,9 +26,4 @@ public:
     ~Node();
 };
 
-// ArrayRelease<T>: free an Array's backing store and null it out, without
-// deleting the pointees. The original emits this out-of-line for Array<Node*>.
-template<class T>
-void ArrayRelease(Array<T> &a);
-
 #endif

@@ -34,6 +34,9 @@ Galaxy::~Galaxy()
 {
     delete[] this->visited;
     this->visited = 0;
+    // Free the loaded SolarSystem objects (full capacity, nulling each slot)
+    // before releasing the table itself.
+    ArrayReleaseClasses<SolarSystem *>(*this->systems);
     delete this->systems;
     this->systems = 0;
 }

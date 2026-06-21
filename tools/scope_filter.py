@@ -62,11 +62,13 @@ INSCOPE_UN_EXACT = {
 
 SYMS_TSV = "/Users/fionera/Downloads/GalaxyOnFire2/_work/symbols/android_2.0.16.symbols.tsv"
 _CTORDTOR = re.compile(r"^(_ZN.*?)([CD][0-3])(E.*)$")
-# Member functions of the generic Array<T> container (Array<T>::resize/clear/push_back/ctor/dtor/...).
-# These are defined inline in Array.h and emitted by the compiler wherever a type is used — they must
-# NOT be hand-instantiated per type (byte-match clutter). Excluded from the gated counts: the generic
-# template provides the functionality; we don't chase the standalone per-type symbols.
-_CONTAINER_MEMBER = re.compile(r"^_ZNK?5ArrayI")
+# The generic Array<T> container: BOTH its member functions (Array<T>::resize/clear/push_back/...,
+# mangled _ZN5ArrayI...) AND the free helper templates (ArrayAdd/Remove/Release/ReleaseClasses/
+# SetLength/RemoveAll/Set/AddCached<T>, mangled _Z<len>Array...I...) are defined in Array.h and
+# always-visible. The compiler instantiates them wherever a type is used (or inlines them at -Oz).
+# They must NOT be hand-instantiated per type (byte-match clutter) and are excluded from the gated
+# counts — the generic template provides the functionality; we don't chase the standalone symbols.
+_CONTAINER_MEMBER = re.compile(r"^(_ZNK?5ArrayI|_Z\d+Array[A-Za-z]+I)")
 
 
 def _binary_names():

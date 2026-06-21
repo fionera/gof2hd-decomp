@@ -2,7 +2,6 @@
 // out-of-line container-helper template definitions (kept behind this guard in Array.h). Define the
 // guard before the first include of Array.h so the helpers are visible here; using ArrayAdd<T> /
 // ArrayReleaseClasses<T> below then implicitly instantiates them.
-#define GOF2_ARRAY_INSTANTIATIONS
 #include "engine/core/Array.h"
 
 // The full ParticleSystemMesh type is needed for ArrayReleaseClasses<ParticleSystemMesh*> (which

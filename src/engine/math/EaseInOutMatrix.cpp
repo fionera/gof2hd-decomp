@@ -163,3 +163,7 @@ extern "C" void *EaseInOutMatrix_dtor(void *p)
     return p;
 }
 
+// The repair-beam list teardown helper is emitted out-of-line for this element
+// type; RepairBeam.h is included above so the destructor is visible here.
+template void ArrayReleaseClasses<RepairBeam *>(Array<RepairBeam *> &);
+

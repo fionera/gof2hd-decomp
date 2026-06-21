@@ -653,3 +653,9 @@ void StarSystem::render() {
         }
     }
 }
+
+// The KIPlayer* target array collapses to a 4-byte {size,data,capacity}
+// container, so the original emits the length helper on the unsigned-int
+// element type (see the loadStations() call above). Force the out-of-line
+// instantiation the binary keeps.
+template void ArraySetLength<unsigned int>(unsigned int, Array<unsigned int> &);

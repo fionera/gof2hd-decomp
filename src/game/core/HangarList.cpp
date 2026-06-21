@@ -456,3 +456,9 @@ int HangarList::init(Ship* ship, Array<Item*>* items, Array<Ship*>* ships,
     return 0;
 }
 
+// Out-of-line container helpers the original emits for the hangar list's element
+// types: the per-tab Array<ListItem*> and the outer Array of those tabs.
+template void ArraySetLength<Array<ListItem*>*>(unsigned int, Array<Array<ListItem*>*>&);
+template void ArraySetLength<ListItem*>(unsigned int, Array<ListItem*>&);
+template void ArrayAdd<ListItem*>(ListItem*, Array<ListItem*>&);
+

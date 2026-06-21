@@ -930,3 +930,9 @@ Array<Ship *> *FileRead::loadShipsBinary()
     }
     return ships;
 }
+
+// Out-of-line emission of the ArraySetLength<> helpers the original keeps as standalone symbols.
+// loadSystemsBinary() drives the SolarSystem* table; the signed-char form backs the raw byte-array
+// loads that share this file's record-reading machinery.
+template void ArraySetLength<SolarSystem *>(unsigned int, Array<SolarSystem *> &);
+template void ArraySetLength<signed char>(unsigned int, Array<signed char> &);

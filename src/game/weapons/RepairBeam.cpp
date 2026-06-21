@@ -88,7 +88,7 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
 
     // geometry pool
     this->geometries = new Array<AEGeometry*>();
-    this->geometries->resize(count);
+    ArraySetLength<AEGeometry*>(count, *this->geometries);
 
     uint16_t geoId = (sort == 0x25) ? 0x4a94 : 0x4a95;
     PaintCanvas* canvas = *g_RepairBeam_canvas;
@@ -104,7 +104,7 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
 
     // charge accumulator pool
     this->charges = new Array<float>();
-    this->charges->resize(count);
+    ArraySetLength<float>(count, *this->charges);
     for (unsigned j = 0; j < this->charges->size(); ++j)
         (*this->charges)[j] = 0.0f;
 }
@@ -322,4 +322,9 @@ void RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud) {
         }
     }
 }
+
+// Out-of-line emission of the ArraySetLength<T> helpers used by the constructor
+// to size the per-target geometry and charge pools.
+template void ArraySetLength<AEGeometry*>(unsigned int, Array<AEGeometry*>&);
+template void ArraySetLength<float>(unsigned int, Array<float>&);
 
