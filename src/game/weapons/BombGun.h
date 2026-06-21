@@ -39,7 +39,7 @@ public:
     BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool simpleMesh, Level *level);
     ~BombGun();
 
-    virtual int isBombGun();            // vtable slot 9: yes (new BombGun slot)
+    int isBombGun() override;           // overrides AbstractGun::isBombGun (answers yes)
 
     void setPlayer(PlayerEgo *player);
     void render();
