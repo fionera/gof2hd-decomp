@@ -13,6 +13,7 @@ Writes the wave JSON to --out (default cmake-build-match/verify/wave.json) and p
 import argparse
 import json
 import os
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -95,6 +96,12 @@ def main():
     bk = Counter(j["kind"] for j in jobs)
     print(f"wave: {len(jobs)} components, {n_entries} entries  ({dict(bk)})")
     print(f"  jobs   -> {os.path.relpath(args.out, REPO)}")
+    # fail loud if the generated script doesn't parse (e.g. a stray backtick in the prompt) — a
+    # broken script silently runs 0 agents otherwise.
+    chk = subprocess.run(["node", "--check", args.script_out], capture_output=True, text=True)
+    if chk.returncode != 0:
+        print("ERROR: generated wave script does not parse:\n" + chk.stderr.strip(), file=sys.stderr)
+        return 1
     sz = os.path.getsize(args.script_out)
     warn = "  !! exceeds 512KB Workflow limit — lower --limit/--max-entries" if sz > 520000 else ""
     print(f"  script -> {os.path.relpath(args.script_out, REPO)}  ({sz} bytes){warn}  "
