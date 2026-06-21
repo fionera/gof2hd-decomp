@@ -409,7 +409,7 @@ SpacePoint* KIPlayer::getNearestDockingPoint(const Vector& dir) {
 }
 
 // Packs the three floats into a Vector and forwards to setPosition(Vector const&).
-void KIPlayer::setPosition3(float x, float y, float z) {
+void KIPlayer::setPosition(float x, float y, float z) {
     Vector v;
     v.x = x;
     v.y = y;

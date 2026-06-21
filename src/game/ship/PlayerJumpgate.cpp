@@ -66,7 +66,7 @@ void PlayerJumpgate::update(int delta)
     transform->Update((longlong)delta, true);
 }
 
-void PlayerJumpgate::setPosition3(float x, float y, float z)
+void PlayerJumpgate::setPosition(float x, float y, float z)
 {
     this->positionX = (int)x;
     this->positionY = (int)y;

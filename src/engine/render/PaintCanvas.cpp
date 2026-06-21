@@ -2484,23 +2484,11 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
 }
 
 // AbyssEngine::PaintCanvas::GetReverseString(String in) — convenience overload that forwards to
-// the (String,bool) overload, choosing the reverse flag from a runtime layout-direction byte at
-// param2+0x1c (RTL when zero).
-using AbyssEngine::String;
-
-// Inlined in the original binary (no standalone symbol); file-local helper here.
-// Reverses `in` when the layout-direction byte at param2+0x1c is zero (RTL).
-static void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String *in)
+// the (String,bool) overload, choosing the reverse flag from the canvas's layout-direction byte at
+// +0x1c (reverse when that byte is zero, i.e. right-to-left).
+AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in)
 {
-    bool reverse = *(char *)((char *)(unsigned long)param2 + 0x1c) == 0;
-    if (!reverse) {
-        out->ctor_copy(in, false);
-        return;
-    }
-    String rev("");
-    for (int i = (int)in->size() - 1; i >= 0; --i)
-        rev += in->SubString((unsigned)i, (unsigned)(i + 1));
-    out->ctor_copy(&rev, false);
+    return this->GetReverseString(in, this->field_0x1c == 0);
 }
 
 void PaintCanvas::GetAccelValue()
@@ -4264,30 +4252,37 @@ void PaintCanvas::ReleaseAllResources()
 
 __attribute__((visibility("hidden"))) extern const unsigned int g_tg2d_defval_7b590;
 
-void TransformGet2DPickedTextureRegion(void *outResult, char *canvas, int transformIndex,
-                                       int x, int y, int z)
+// Picks a transform (by index) from the canvas's transform list, projects the screen-space pick
+// coordinate (x,y,z) into the transform's local space and forwards to the Transform* overload to
+// resolve the (u,v) texture region under the ray. Returns {-1,-1} when the index is out of range.
+PaintCanvas::PickedTextureRegion
+PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,
+                                               int w)
 {
+    PickedTextureRegion result;
     char matbuf[60];
     char vecbuf[64];
 
-    if ((unsigned int)transformIndex < *(unsigned int *)(canvas + 0x158)) {
-        char *tf = (*(char ***)(canvas + 0x15c))[transformIndex];
+    if (transformIndex < this->transformCount) {
+        char *tf = ((char **)this->transforms)[transformIndex];
         paintcanvas_ext_tg2d_memcpy(vecbuf, tf, 0x3c);
         float fy = paintcanvas_ext_tg2d_signedtofloat(y, 0);
         float fz = paintcanvas_ext_tg2d_signedtofloat(z, 0);
-        float fx = paintcanvas_ext_tg2d_signedtofloat(x, 0);
+        float fx = paintcanvas_ext_tg2d_signedtofloat(w, 0);
         float vin[3];
         vin[0] = fy;
         vin[1] = fz;
         vin[2] = fx;
         paintcanvas_ext_tg2d_invtransformvec(matbuf, vecbuf);
         paintcanvas_ext_tg2d_vec_assign(vin, matbuf);
-        paintcanvas_ext_tg2d_inner(outResult, canvas, tf, (int)vin[0], (int)vin[1]);
+        result = this->TransformGet2DPickedTextureRegion(
+            reinterpret_cast<::Transform *>(tf), x, (int)vin[0], (int)vin[1], 0);
     } else {
-        *(unsigned int *)outResult = g_tg2d_defval_7b590;
-        *(unsigned int *)((char *)outResult + 4) = g_tg2d_defval_7b590;
-        paintcanvas_ext_tg2d_errmsg(outResult);
+        result.u = *(const float *)&g_tg2d_defval_7b590;
+        result.v = *(const float *)&g_tg2d_defval_7b590;
+        paintcanvas_ext_tg2d_errmsg(&result);
     }
+    return result;
 }
 
 void PaintCanvas::CheckString(unsigned int index, const AbyssEngine::String &str)
@@ -4362,35 +4357,38 @@ void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out)
 
 __attribute__((visibility("hidden"))) extern const unsigned int g_tg2di_neg1_8b588;
 
-void TransformGet2DPickedTextureRegion(void *outResult, void *canvas, char *transform, int x,
-                                       int y, int /*unused*/, unsigned int shiftAmount)
+// Resolves the (u,v) texture region under a pick ray for a single Transform node. First intersects
+// the node's own meshes (count @0x3c, array @0x40); if none is hit, projects the ray into each
+// child transform's (count @0x4c, array @0x50) local space and recurses. Returns {-1,-1} on a miss.
+PaintCanvas::PickedTextureRegion
+PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, int y, int z, int w)
 {
-    // transform = root Mesh container; x/y = pick coords; shiftAmount = bit shift applied twice
-    char *tf = transform;
-    int shift = (int)shiftAmount;
+    PickedTextureRegion result;
+    char *tf = reinterpret_cast<char *>(transform);
+    int shift = w;
     float vy = paintcanvas_ext_tg2di_signedtofloat((y >> shift) >> shift, 0);
-    float vx = paintcanvas_ext_tg2di_signedtofloat((x >> shift) >> shift, 0);
+    float vx = paintcanvas_ext_tg2di_signedtofloat((z >> shift) >> shift, 0);
 
-    // First: test meshes (offset 0x3c count, 0x40 array)
+    // First: test the node's own meshes (offset 0x3c count, 0x40 array)
     unsigned int i = 0;
     bool found = false;
     while (i < *(unsigned int *)(tf + 0x3c)) {
         void *mesh = (*(void ***)(tf + 0x40))[i];
-        paintcanvas_ext_tg2di_meshintersect(outResult, vx, vy, mesh);
+        paintcanvas_ext_tg2di_meshintersect(&result, vx, vy, mesh);
         i++;
-        if (*(float *)outResult != -1.0f && *(float *)((char *)outResult + 4) != -1.0f) {
+        if (result.u != -1.0f && result.v != -1.0f) {
             found = true;
             break;
         }
     }
     if (found) {
-        return;
+        return result;
     }
 
     // Then: recurse over child transforms (0x4c count, 0x50 array)
-    float fy = paintcanvas_ext_tg2di_signedtofloat(y, 0);
-    float fx = paintcanvas_ext_tg2di_signedtofloat(x, 0);
-    float fz = paintcanvas_ext_tg2di_signedtofloat((int)shiftAmount, 0);
+    float fy = paintcanvas_ext_tg2di_signedtofloat(z, 0);
+    float fx = paintcanvas_ext_tg2di_signedtofloat(y, 0);
+    float fz = paintcanvas_ext_tg2di_signedtofloat(w, 0);
 
     i = 0;
     while (i < *(unsigned int *)(tf + 0x4c)) {
@@ -4404,15 +4402,16 @@ void TransformGet2DPickedTextureRegion(void *outResult, void *canvas, char *tran
         vin[2] = fz;
         paintcanvas_ext_tg2di_invtransformvec(matbuf, vecbuf);
         paintcanvas_ext_tg2di_vec_assign(vin, matbuf);
-        paintcanvas_ext_tg2di_inner(outResult, canvas, (*(void ***)(tf + 0x50))[i],
-                                    (int)vin[0], (int)vin[1]);
+        result = this->TransformGet2DPickedTextureRegion(
+            reinterpret_cast<::Transform *>(child), x, (int)vin[0], (int)vin[1], 0);
         i++;
-        if (*(float *)outResult != -1.0f && *(float *)((char *)outResult + 4) != -1.0f) {
-            return;
+        if (result.u != -1.0f && result.v != -1.0f) {
+            return result;
         }
     }
-    *(unsigned int *)outResult = g_tg2di_neg1_8b588;
-    *(unsigned int *)((char *)outResult + 4) = g_tg2di_neg1_8b588;
+    result.u = *(const float *)&g_tg2di_neg1_8b588;
+    result.v = *(const float *)&g_tg2di_neg1_8b588;
+    return result;
 }
 
 __attribute__((visibility("hidden"))) extern const double g_dt_gravscale_898d8;

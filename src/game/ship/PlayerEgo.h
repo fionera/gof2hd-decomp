@@ -339,9 +339,8 @@ public:
     void setFreeze(bool v);
     void setLevel(Level* level);
     void setPosition();
-    void setPosition(float x, float y, float z);
     void setPosition(Vector v);
-    void setPosition3(float x, float y, float z);
+    void setPosition(float x, float y, float z);   // was setPosition3 (PlayerEgo is not KIPlayer-derived)
     void setRocketControl(Gun* gun, AEGeometry* geo);
     void setRotation(float rx, float ry, float rz);
     void setRoute(Route* v);

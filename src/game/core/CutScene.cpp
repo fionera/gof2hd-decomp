@@ -415,11 +415,11 @@ void CutScene::replacePlayerShip(int /*a*/, int b)
         Array<KIPlayer *> *en5 = this->level->getEnemies();
         KIPlayer *ship = (*en5)[0];
         float bank = VectorSignedToFloat(CutScene_shipBankTable[b], 0);
-        // Position the lead ship along the bank axis via the actor setPosition3 virtual
+        // Position the lead ship along the bank axis via the actor setPosition virtual
         // (slot +0x48, Ghidra-verified). The decompiler recovered this as a vptr
         // double-indirection (`obj = *(void**)ship`) + raw slot read — a known artifact;
-        // the faithful dispatch is the object's own virtual setPosition3.
-        ship->setPosition3(0.0f, bank, 0.0f);
+        // the faithful dispatch is the object's own virtual setPosition.
+        ship->setPosition(0.0f, bank, 0.0f);
 
         Array<KIPlayer *> *en6 = this->level->getEnemies();
         ((PlayerFighter *)((*en6)[0]))->setExhaustVisible(false);
@@ -475,13 +475,13 @@ void CutScene::initialize()
                 v[1] = 0.0f;
                 v[2] = VectorSignedToFloat(ry + 0x9a4c, 0);
                 // e0 and e1 are both positioned via setPosition_vec (slot +0x44), which
-                // unpacks the vector and calls setPosition3 (slot +0x48); call the virtual
-                // setPosition3 directly (Ghidra-verified). e0's site was recovered as a
+                // unpacks the vector and calls setPosition (slot +0x48); call the virtual
+                // setPosition directly (Ghidra-verified). e0's site was recovered as a
                 // mangled vtable[0] double-deref — a decompiler artifact for the same dispatch.
-                ((KIPlayer *)e0)->setPosition3(v[0], v[1], v[2]);
+                ((KIPlayer *)e0)->setPosition(v[0], v[1], v[2]);
                 v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
                 v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
-                ((KIPlayer *)(*enemies)[n - 1])->setPosition3(v[0], v[1], v[2]);
+                ((KIPlayer *)(*enemies)[n - 1])->setPosition(v[0], v[1], v[2]);
             }
         }
     } else if (this->mode == 0x17) {

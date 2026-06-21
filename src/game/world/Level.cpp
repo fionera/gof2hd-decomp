@@ -1321,7 +1321,7 @@ void Level::createMission()
             float x = (float)(rng->nextInt(120000) - 60000);
             float y = (float)(rng->nextInt(80000) - 40000);
             float z = (float)(rng->nextInt(120000) - 60000);
-            kp->setPosition3(x, y, z);
+            kp->setPosition(x, y, z);
             kp->player->setAlwaysEnemy(true);
         }
     }
@@ -1577,7 +1577,7 @@ void Level::createCampaignMission()
             ((*this->enemies)[i])->setToSleep();
             (*this->enemies)[i]->player->setAlwaysEnemy(true);
             KIPlayer *kp = (*this->enemies)[i];
-            kp->setPosition3(c, c, c);
+            kp->setPosition(c, c, c);
             kp->cargo = nullptr;
             kp->hasCargo = 0;
             Player *ep = kp->player;
@@ -1624,7 +1624,7 @@ void Level::updateOrbit(int dt) {
                 if (ki->isJumper() != 0 && ki->isDead() != 0 &&
                     ki->player->isActive() == 0 && (uint8_t)ki->field_0x42 == 0) {
                     ((PlayerFighter *)ki)->revive();
-                    ki->setPosition3(0, 0, 0);
+                    ki->setPosition(0, 0, 0);
                     break;
                 }
             }
@@ -1654,7 +1654,7 @@ void Level::updateOrbit(int dt) {
                     ((KIPlayer*)ki)->isDead() != 0 && ((KIPlayer*)ki)->player->isActive() == 0 &&
                     (uint8_t)((KIPlayer*)ki)->field_0x42 == 0) {
                     ((PlayerFighter *)ki)->revive();
-                    ((KIPlayer *)ki)->setPosition3(0, 0, 0);
+                    ((KIPlayer *)ki)->setPosition(0, 0, 0);
                 }
                 // spawn enemy reinforcements subject to security-level caps.
                 if (1 < hostileAlive && this->field_184 < 2 &&
@@ -1775,7 +1775,7 @@ void Level::createSentryGuns() {
             k->player->setRadius(800);
             k->player->setAlwaysFriend(1);
             k->player->setMaxHitpoints(100);
-            k->setPosition3((float)color, (float)color, (float)color);
+            k->setPosition((float)color, (float)color, (float)color);
             enemies->push_back(k);
         }
     }
@@ -2623,7 +2623,7 @@ void Level::createStaticObjects()
 
             if (type != -1) {
                 KIPlayer *o = (KIPlayer *)this->createStaticObject((Waypoint *)(intptr_t)0, type, 0);
-                ((PlayerFixedObject *)o)->setPosition3(g_cso_posX, 0, g_cso_posZ);
+                ((PlayerFixedObject *)o)->setPosition(g_cso_posX, 0, g_cso_posZ);
                 ((PlayerFixedObject *)o)->setMoving(0);
                 AEGeometry *geo = o->geometry;
                 *(char *)&o->field_0x70 = 0;
@@ -2655,7 +2655,7 @@ void Level::createStaticObjects()
         Station *st = (Station *)gStatus->getStation();
         if (((Station*)st)->getIndex() == 0x67) {
             KIPlayer *o = (KIPlayer *)this->createStaticObject((Waypoint *)(intptr_t)0, 0x4a88, 0);
-            ((PlayerFixedObject *)o)->setPosition3(0, 0, 0);
+            ((PlayerFixedObject *)o)->setPosition(0, 0, 0);
             ((PlayerFixedObject *)o)->setMoving(0);
             *(char *)&o->field_0x70 = 1;
             String *txt = gGameText->getText(**g_cso_textB);
@@ -3807,7 +3807,7 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
     float ox = (float)(rng->nextInt() % 120000 - 60000);
     float oy = (float)(rng->nextInt() %  80000 - 40000);
     float oz = (float)(rng->nextInt() % 120000 - 60000);
-    ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
+    ((KIPlayer *)kiPlayer)->setPosition(p.x + ox, p.y + oy, p.z + oz);
 }
 
 // --- updateMissionOrbit() (inlined): revive then reposition. profile 0 == far wave,
@@ -3819,7 +3819,7 @@ static inline __attribute__((always_inline)) void levelSpawnAt(Level *self, int 
     float ox = (float)(rng->nextInt() % span - span / 2);
     float oy = (float)(rng->nextInt() % (span * 2 / 3) - span / 3);
     float oz = (float)(rng->nextInt() % span - span / 2);
-    ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
+    ((KIPlayer *)kiPlayer)->setPosition(p.x + ox, p.y + oy, p.z + oz);
 }
 
 // --- updateAlienAttackers() (inlined): place a revived alien relative to the player
@@ -3833,7 +3833,7 @@ static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit)
     float ox = (float)(rng->nextInt() % 100000 - 50000);
     float oy = (float)(rng->nextInt() %  60000 - 30000);
     float oz = (float)(rng->nextInt() % 100000 - 50000);
-    ((KIPlayer *)kiPlayer)->setPosition3(base.x + ox, base.y + oy, base.z + oz);
+    ((KIPlayer *)kiPlayer)->setPosition(base.x + ox, base.y + oy, base.z + oz);
 }
 
 // --- createGasClouds() (inlined): pick a far random position for cloud `i`. boss
@@ -3862,5 +3862,5 @@ static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
     // staggered echelon: alternate sides, step back each pair.
     float side = ((i & 1) ? -1.0f : 1.0f) * (float)(2000 + (int)(i / 2) * 1500);
     float back = (float)(2000 + (int)(i / 2) * 2500);
-    ((KIPlayer *)kiSlot)->setPosition3(p.x + side, p.y, p.z - back);
+    ((KIPlayer *)kiSlot)->setPosition(p.x + side, p.y, p.z - back);
 }

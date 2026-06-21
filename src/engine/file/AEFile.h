@@ -57,7 +57,7 @@ class AENormalFile : public AELowLevelFile {
 public:
     FileInterface *file;
 
-    AENormalFile(FileInterface *file) : file(file) {}
+    AENormalFile(FileInterface *file);
     ~AENormalFile() override { Release(); }
     uint32_t Write(uint32_t bytes, void *buffer) override;
     uint32_t Read(uint32_t bytes, void *buffer) override;

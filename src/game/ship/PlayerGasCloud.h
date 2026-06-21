@@ -9,7 +9,7 @@
 // Galaxy on Fire 2 -- PlayerGasCloud: a destructible gas/cargo cloud. When hit it
 // "explodes" into a swarm of spark shards (each a small AEGeometry) that drift, fade
 // and can be collected by the player's turret. A KIPlayer subclass (the engine drives
-// it through the shared actor vtable: render/setPosition3/setLevel/...); the math
+// it through the shared actor vtable: render/setPosition/setLevel/...); the math
 // argument types (Vector) live in AbyssEngine::AEMath.
 
 class AEGeometry;

@@ -9,7 +9,7 @@
 // Galaxy on Fire 2 - PlayerFixedObject: a stationary/destructible KIPlayer subclass
 // (asteroid-station, container, wreck). Owns its render geometry, an optional wrecked
 // mesh, two bounding-volume arrays and a one-shot Explosion effect. The engine drives it
-// through the shared actor vtable (render/setPosition3/setLevel/...), so it derives from
+// through the shared actor vtable (render/setPosition/setLevel/...), so it derives from
 // KIPlayer (its ctor constructs a KIPlayer base subobject); player/geometry/level/state
 // are inherited.
 
@@ -95,8 +95,8 @@ public:
     void setExhaustVisible(bool v);
     void setMoving(bool v);
     void * setName(String name);
-    void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
-    void setPosition_vec(const Vector &v);
+    void setPosition(float x, float y, float z) override;   // actor vtable slot +0x48
+    void setPosition(const Vector &v);
     void setTransportID(int v);
     void setWreckedMeshId(int meshId);
     void translate(const Vector &d) override;   // actor vtable slot +0x20

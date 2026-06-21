@@ -30,7 +30,7 @@ public:
     void   freeMissionLock();
     void   render() override;
     void   reset(bool shrinking);
-    void   setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
+    void   setPosition(float x, float y, float z) override;   // actor vtable slot +0x48
     void   update(int elapsed) override;
 };
 

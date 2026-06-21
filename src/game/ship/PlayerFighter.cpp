@@ -161,10 +161,10 @@ uint8_t PlayerFighter::hasCrateCaptured() {
     return this->crateCaptured == 0;
 }
 
-// setPosition(Vector const&) — unpacks the vector and dispatches the float setPosition3
+// setPosition(Vector const&) — unpacks the vector and dispatches the float setPosition
 // override through the actor vtable (slot 0x48).
 void PlayerFighter::setPosition(const Vector &v) {
-    this->setPosition3(v.x, v.y, v.z);
+    this->setPosition(v.x, v.y, v.z);
 }
 
 void PlayerFighter::setRotate(int v) {
@@ -463,7 +463,7 @@ void PlayerFighter::update(int dt) {
 }
 
 // PlayerFighter::setPosition(float, float, float). r0=self, r1..r3 = x,y,z (raw bits).
-void PlayerFighter::setPosition3(float x, float y, float z) {
+void PlayerFighter::setPosition(float x, float y, float z) {
 
     this->posX = x;
     this->posY = y;

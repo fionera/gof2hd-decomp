@@ -16,6 +16,11 @@ extern uint32_t                    g_AEFile_initialized;
 // view (size limit tracked in `sizeLimit`, current offset in `position`) over the held file.
 // Reconstructed from the binary AENormalFile / AEPakFile vtables.
 
+AENormalFile::AENormalFile(FileInterface *file)
+    : file(file)
+{
+}
+
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 {
     if (file != nullptr) {

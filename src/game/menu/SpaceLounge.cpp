@@ -738,8 +738,8 @@ void SpaceLounge::updateScreenPositions() {
         MatrixGetDir(pos, look);
         this->silhouettePos.z -= (*(float *)(pos + 8)) * 20.0f;
 
-        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition3 (0x48).
-        mapped->setPosition3(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
+        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition (0x48).
+        mapped->setPosition(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
 
         if (((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
@@ -747,8 +747,8 @@ void SpaceLounge::updateScreenPositions() {
         }
 
         enemy->parentGeometry->setMatrix(*(const AbyssEngine::AEMath::Matrix *)(camera));
-        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition3 (0x48).
-        enemy->setPosition3(((Vector *)target)->x, ((Vector *)target)->y, ((Vector *)target)->z);
+        // slot 0x44 (setPosition(Vector const&)) trampolines to the virtual setPosition (0x48).
+        enemy->setPosition(((Vector *)target)->x, ((Vector *)target)->y, ((Vector *)target)->z);
     }
 }
 
@@ -848,7 +848,7 @@ void SpaceLounge::drawLounge() {
     int offer = ((Agent *)((*this->agents)[this->selectedAgent]))->getOffer();
     if (this->mode == 2) {
         ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY0);
-        ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
+        ((TouchButton *)(button_at(this, 1)))->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
         this->visibleButtonCount = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
             this->visibleButtonCount = 3;
@@ -858,7 +858,7 @@ void SpaceLounge::drawLounge() {
         } else {
             this->visibleButtonCount = 2;
             ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
-            ((TouchButton *)(button_at(this, 1)))->setPosition3(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
+            ((TouchButton *)(button_at(this, 1)))->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
         }
     } else {
         this->visibleButtonCount = 1;

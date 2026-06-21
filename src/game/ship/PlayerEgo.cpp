@@ -296,7 +296,7 @@ int PlayerEgo::getHackingGameDockIndex() {
   return PlayerEgo_getHackingGameDockIndex_ext(v);
 }
 
-void PlayerEgo::setPosition3(float x, float y, float z) {
+void PlayerEgo::setPosition(float x, float y, float z) {
   void* g = this->geometry;
   char v[12];
   *(float*)(v + 0) = x;
@@ -308,7 +308,7 @@ void PlayerEgo::setPosition3(float x, float y, float z) {
 void PlayerEgo::dockToStream(bool param) {
   if (param) { *(short*)(char *)&this->docked = 0x100; return; }
   this->speed = 0x40000000;
-  ((PlayerEgo *)(this))->setPosition3(this->rotX, this->rotY, this->rotZ);
+  ((PlayerEgo *)(this))->setPosition(this->rotX, this->rotY, this->rotZ);
   this->freeze = 0;
   this->field_0x145 = 0;
   *(short*)(char *)&this->docked = 0;
@@ -405,10 +405,6 @@ bool PlayerEgo::isHacking() {
 
 void PlayerEgo::setPosition() {
     PlayerEgo *self = this; return PlayerEgo_setPosition_v(self); }
-
-void PlayerEgo::setPosition(float x, float y, float z) {
-  this->geometry->setPosition(x, y, z);
-}
 
 void PlayerEgo::setPosition(Vector v) {
   this->geometry->setPosition(v);

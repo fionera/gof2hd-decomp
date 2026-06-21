@@ -147,7 +147,7 @@ public:
     void setJumper(bool b);
     // Polymorphic position setter dispatched through the actor vtable from Level's
     // spawn/respawn paths (createMission/updateOrbit/createSentryGuns).
-    virtual void setPosition3(float x, float y, float z);
+    virtual void setPosition(float x, float y, float z);
     // Vector-form position setter: stores the world position into the render
     // geometry, then mirrors the resulting transform onto the wrapped Player
     // (composing with the parent ship-group transform when present).

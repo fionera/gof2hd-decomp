@@ -354,7 +354,7 @@ Transform::Transform(Transform *other) {
 void Transform::SetAnimationState(AnimationMode, void *) {
 }
 
-static void make_identity(AEMath::Matrix &m) {
+static inline __attribute__((always_inline)) void make_identity(AEMath::Matrix &m) {
     for (int i = 0; i < 15; ++i) {
         m.m[i] = 0.0f;
     }
@@ -409,14 +409,6 @@ Transform::Transform() {
     this->animationStart = 0;
 }
 
-static void identity_matrix(AEMath::Matrix &m) {
-    for (int i = 0; i < 15; ++i) m.m[i] = 0.0f;
-    m.m[0] = 1.0f;
-    m.m[5] = 1.0f;
-    m.m[10] = 1.0f;
-    m.m[14] = 1.0f;
-}
-
 static float clamp_positive_byte(float value) {
     int v = (int)(value * 255.0f);
     return (float)(v < 0 ? 0 : v);
@@ -441,7 +433,7 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
 
         if (index == 0) {
             AEMath::Matrix identity;
-            identity_matrix(identity);
+            make_identity(identity);
             this->localMatrix = identity;
             if (!g_transform_matrix_flag) {
                 this->localMatrix.m[5] = 1.0f;
@@ -488,7 +480,7 @@ void Transform::InternUpdate(longlong time, bool updateBounds) {
         this->color = (int)(a | (a << 8) | (a << 16) | (a << 24));
 
         AEMath::Matrix rotationMat;
-        identity_matrix(rotationMat);
+        make_identity(rotationMat);
         this->rotation.Convert(rotationMat);
         this->rotationMatrix = rotationMat;
 
@@ -556,13 +548,13 @@ static void copy_vec(char *dst, const char *src) {
     *(AEMath::Vector *)dst = *(const AEMath::Vector *)src;
 }
 
-static void lerp_vec(char *dst, const char *from, const char *to, float t) {
+static inline __attribute__((always_inline)) void lerp_vec(char *dst, const char *from, const char *to, float t) {
     AEMath::Vector value = AEMath::VectorLerp(*(const AEMath::Vector *)from,
                                               *(const AEMath::Vector *)to, t);
     *(AEMath::Vector *)dst = value;
 }
 
-static void apply_value_new(Transform *owner, char *key, const float *values, longlong flags) {
+static inline __attribute__((always_inline)) void apply_value_new(Transform *owner, char *key, const float *values, longlong flags) {
     if (flags == 0x10) {
         *(float *)(key + 0x10) = values[0];
         if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
@@ -686,7 +678,7 @@ void Transform::InsertKeyFrame(const float *values, longlong flags, int time) {
 
 static float old_angle_divisor = 57.295780f;
 
-static void apply_value_old(Transform *owner, char *key, const float *values, longlong flags) {
+static inline __attribute__((always_inline)) void apply_value_old(Transform *owner, char *key, const float *values, longlong flags) {
     if (flags == 0x10) {
         *(float *)(key + 0x10) = values[0];
         if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];

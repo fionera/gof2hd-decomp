@@ -165,7 +165,7 @@ public:
     void setExhaustVisible(bool vis);
     void setLevel(Level *lvl);
     void setMissionCrate(bool on);
-    void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
+    void setPosition(float x, float y, float z) override;   // actor vtable slot +0x48
     void setPosition(const Vector &v);                       // unpacks and dispatches slot +0x48
     void setRotate(int v);
     void setShootError(int v);

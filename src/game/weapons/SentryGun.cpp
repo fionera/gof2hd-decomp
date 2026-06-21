@@ -50,8 +50,8 @@ void SentryGun::update(int dt)
             Gun* g = this->gun;
             AbyssEngine::AEMath::Vector* spawnPos =
                 (AbyssEngine::AEMath::Vector*)(g->positions + g->fireIndex * 12);
-            // slot 0x44 (setPosition(Vector const&)) unpacks to the virtual setPosition3 (0x48).
-            obj->setPosition3(spawnPos->x, spawnPos->y, spawnPos->z);
+            // slot 0x44 (setPosition(Vector const&)) unpacks to the virtual setPosition (0x48).
+            obj->setPosition(spawnPos->x, spawnPos->y, spawnPos->z);
             return;
         }
         base = this->cooldown;

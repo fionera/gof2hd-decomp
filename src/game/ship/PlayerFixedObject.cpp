@@ -49,15 +49,15 @@ void PlayerFixedObject::setDockingType(int v) {
     this->dockingType = v;
 }
 
-void PlayerFixedObject::setPosition_vec(const Vector &v) {
-    this->setPosition3(v.x, v.y, v.z);
+void PlayerFixedObject::setPosition(const Vector &v) {
+    this->setPosition(v.x, v.y, v.z);
 }
 
 void PlayerFixedObject::translate(const Vector &d) {
     float x = (float)this->intPosX;
     float y = (float)this->intPosY;
     float z = (float)this->intPosZ;
-    this->setPosition3(d.x + x, d.y + y, d.z + z);
+    this->setPosition(d.x + x, d.y + y, d.z + z);
 }
 
 String PlayerFixedObject::getName() {
@@ -513,7 +513,7 @@ __attribute__((visibility("hidden"))) extern VecAssignFn *g_pfo_vecAssignZero;
 void PlayerFixedObject::reset() {
     this->KIPlayer::reset();
 
-    this->setPosition3(this->spawnX, this->spawnY, this->spawnZ);
+    this->setPosition(this->spawnX, this->spawnY, this->spawnZ);
 
     this->targetEnemy = 0;
 
@@ -764,7 +764,7 @@ void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, flo
     }
 }
 
-void PlayerFixedObject::setPosition3(float x, float y, float z) {
+void PlayerFixedObject::setPosition(float x, float y, float z) {
     this->spawnX = x;
     this->spawnY = y;
     this->spawnZ = z;
