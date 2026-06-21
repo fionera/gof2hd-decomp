@@ -4,6 +4,9 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/render/Engine.h"            // Engine (ctor receiver)
+#include "engine/core/IApplicationModule.h"  // IApplicationModule (SetApplicationModule)
+#include "engine/core/KeyCode.h"             // KeyCode (KeyCodeSetMapping)
 #include <new>             // placement new (key-mapping / config-string construction)
 
 // Cross-class types referenced only through pointers.
@@ -69,17 +72,17 @@ public:
     int          lastTouchX;
     int          lastTouchY;
 
-    explicit ApplicationManager(void *engine);
+    explicit ApplicationManager(AbyssEngine::Engine *engine);
     ~ApplicationManager();
 
-    void CheatAddCode(void *code, int value);
+    void CheatAddCode(const AbyssEngine::String &code, int value);
     void CheatEnable(bool enable);
-    void CheatSetCallback(void *callback, void *data);
+    void CheatSetCallback(void (*callback)(int, void *), void *data);
     void CheatUpdate(unsigned short key);
     void CheckForOrientationChange();
     void *ConfigGetKeysForAction(long long action);
     void ConfigRegisterAction(long long value, long long key);
-    void ConvertTouchCoords(int *x, int *y);
+    void ConvertTouchCoords(int &x, int &y);
     uint64_t GetActionState();
     void *GetApplicationModule(unsigned int id);
     uint64_t GetCurrentTimeMillis();
@@ -87,7 +90,7 @@ public:
     void *GetEngine();
     uint64_t GetKeyState();
     uint64_t GetSystemTimeMillis();
-    void KeyCodeSetMapping(void *array);
+    void KeyCodeSetMapping(Array<AbyssEngine::KeyCode*> *array);
     void LoadingCallbackShow(int mode, void *data);
     void OnKeyPress(int key);
     void OnKeyRelease(int key);
@@ -98,30 +101,30 @@ public:
     void OnUpdate(long long now);
     void Quit();
     void ResetKeyState();
-    void Resume();
-    void SetApplicationModule(void *module);
+    void Resume(bool arg);
+    void SetApplicationModule(AbyssEngine::IApplicationModule *module);
     void SetCurrentApplicationModule(unsigned int id);
     void SetLoadingCallback(LoadingCallback_t *callback, void *data);
     void SetResumeCallback(ResumeCallback_t *callback, void *data);
     void SoundEnable(bool enable);
     void SoundFxEnable(bool enable);
-    int SoundIsPlaying();
+    int SoundIsPlaying(int soundId);
     void SoundMusicEnable(bool enable);
-    void SoundPause();
+    void SoundPause(int soundId);
     void SoundPauseSounds();
-    void SoundPlay(int soundId);
+    void SoundPlay(int soundId, float volume);
     void SoundPlayLoop(int soundId);
     void SoundPlayMusic(int soundId);
     void SoundPlayMusicLoop(int soundId);
     void SoundPlay_vol(int soundId, float volume);
-    void SoundRelease();
-    void SoundResume(int soundId);
+    void SoundRelease(int soundId);
+    void SoundResume();
     void SoundResumeSelf();
     void SoundResumeSounds();
     void SoundSetFXVolume(int volume);
     void SoundSetMusicVolume(int volume);
-    void SoundSetVolume(int volume);
-    void SoundStop();
+    void SoundSetVolume(int soundId, int volume);
+    void SoundStop(int soundId);
     void SoundStopSounds();
     void Suspend();
     void Vibrate(unsigned short duration);

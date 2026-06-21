@@ -27,7 +27,7 @@ using AbyssEngine::CheatHandler;
 using AbyssEngine::ConfigReader;
 using AbyssEngine::ConfigTokenReadFunction;
 
-ApplicationManager::ApplicationManager(void *engine) {
+ApplicationManager::ApplicationManager(Engine *engine) {
     this->modules = new Array<void *>();
     this->moduleIds = new Array<unsigned int>();
     this->actionTable = new Array<long long>();
@@ -40,16 +40,16 @@ ApplicationManager::ApplicationManager(void *engine) {
     this->state = 5;
     this->currentModule = 0;
     this->keyState = 0;
-    this->engine = (Engine *)engine;
+    this->engine = engine;
 
-    this->paintCanvas = new PaintCanvas((Engine *)engine);
+    this->paintCanvas = new PaintCanvas(engine);
     gCanvas = this->paintCanvas;     // publish the global canvas singleton
-    gEngine = (Engine *)engine;      // publish the global engine singleton
+    gEngine = engine;                // publish the global engine singleton
 
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;
 
-    this->configReader = new ConfigReader((Engine *)engine);
+    this->configReader = new ConfigReader(engine);
     this->loadingCallback = 0;
     this->resumeCallback = 0;
     this->soundFxEnabled = true;
@@ -124,7 +124,7 @@ ApplicationManager::~ApplicationManager() {
 
 // ---- module registration / lookup ----------------------------------------------------
 
-void ApplicationManager::SetApplicationModule(void *module) {
+void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
     void *current = this->currentModule;
     this->pendingModule = module;
     this->state = current != 0;
@@ -169,7 +169,8 @@ void *ApplicationManager::GetEngine() {
 
 // ---- frame state machine -------------------------------------------------------------
 
-void ApplicationManager::Resume() {
+void ApplicationManager::Resume(bool arg) {
+    (void)arg;
     if (this->state != 3) {
         return;
     }
@@ -410,24 +411,24 @@ uint64_t ApplicationManager::GetActionState() {
     return this->actionState;
 }
 
-void ApplicationManager::KeyCodeSetMapping(void *array) {
-    unsigned int count = *(unsigned int *)array;
+void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode*> *array) {
+    unsigned int count = array->size();
     if (count == 0x40) {
         int offset = 0;
         for (unsigned int index = 0; index < count; ++index) {
-            uint32_t *mapping = *(uint32_t **)(*(char **)((char *)array + 4) + index * 4);
+            AbyssEngine::KeyCode *mapping = (*array)[index];
             char *dst = this->keyMappingTable + offset;
-            *(uint32_t *)dst = *mapping;
-            ((String *)(dst + 4))->assign((String *)(mapping + 1));
+            *(uint32_t *)dst = (uint32_t)mapping->code;
+            ((String *)(dst + 4))->assign(&mapping->name);
             offset += 0x10;
-            count = *(unsigned int *)array;
+            count = array->size();
         }
     }
 }
 
 // ---- input: touch --------------------------------------------------------------------
 
-void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
+void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     PaintCanvas *canvas = this->paintCanvas;
     int orientation = canvas->field_0x30;
     int newY;
@@ -437,18 +438,18 @@ void ApplicationManager::ConvertTouchCoords(int *x, int *y) {
             if (orientation != 0) {
                 return;
             }
-            newY = *x;
-            *x = pc_GetWidth(canvas) - *y;
-            *y = newY;
+            newY = x;
+            x = pc_GetWidth(canvas) - y;
+            y = newY;
             return;
         }
-        int oldX = *x;
-        *x = *y;
-        *y = pc_GetHeight(canvas) - oldX;
+        int oldX = x;
+        x = y;
+        y = pc_GetHeight(canvas) - oldX;
         canvas = this->paintCanvas;
     }
-    *x = pc_GetWidth(canvas) - *x;
-    *y = pc_GetHeight(canvas) - *y;
+    x = pc_GetWidth(canvas) - x;
+    y = pc_GetHeight(canvas) - y;
 }
 
 void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
@@ -457,7 +458,7 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
 
     void *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        this->ConvertTouchCoords(&x, &y);
+        this->ConvertTouchCoords(x, y);
         module = this->currentModule;
         void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
         vtable[0x24 / 4](module, x, y, touch);
@@ -505,7 +506,7 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
 
     void *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        this->ConvertTouchCoords(&x, &y);
+        this->ConvertTouchCoords(x, y);
         module = this->currentModule;
         void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
         vtable[0x28 / 4](module, x, y, touch);
@@ -524,7 +525,7 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
 
     void *module = this->currentModule;
     if (module != 0 && this->state == 5) {
-        this->ConvertTouchCoords(&x, &y);
+        this->ConvertTouchCoords(x, y);
         module = this->currentModule;
         void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
         vtable[0x2c / 4](module, x, y, touch);
@@ -692,15 +693,15 @@ void ApplicationManager::CheatUpdate(unsigned short key) {
     }
 }
 
-void ApplicationManager::CheatAddCode(void *code, int value) {
+void ApplicationManager::CheatAddCode(const String &code, int value) {
     if (this->cheatHandler != 0) {
-        this->cheatHandler->AddCheatCode(*(String *)code, value);
+        this->cheatHandler->AddCheatCode(code, value);
     }
 }
 
-void ApplicationManager::CheatSetCallback(void *callback, void *data) {
+void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *data) {
     if (this->cheatHandler != 0) {
-        this->cheatHandler->SetCheatFunc((AbyssEngine::CheatFunc)callback, data);
+        this->cheatHandler->SetCheatFunc(callback, data);
     }
 }
 
@@ -710,9 +711,9 @@ void ApplicationManager::CheatEnable(bool enable) {
 
 // ---- audio ---------------------------------------------------------------------------
 
-void ApplicationManager::SoundPlay(int soundId) {
+void ApplicationManager::SoundPlay(int soundId, float volume) {
     if (this->soundResource != 0 && this->soundFxEnabled) {
-        this->soundResource->play(soundId, 1.0f);
+        this->soundResource->play(soundId, volume);
     }
 }
 
@@ -740,9 +741,9 @@ void ApplicationManager::SoundPlayMusicLoop(int soundId) {
     }
 }
 
-void ApplicationManager::SoundStop() {
+void ApplicationManager::SoundStop(int soundId) {
     if (this->soundResource != 0) {
-        this->soundResource->stop();
+        this->soundResource->stop(soundId);
     }
 }
 
@@ -752,9 +753,9 @@ void ApplicationManager::SoundStopSounds() {
     }
 }
 
-void ApplicationManager::SoundPause() {
+void ApplicationManager::SoundPause(int soundId) {
     if (this->soundResource != 0) {
-        this->soundResource->pause();
+        this->soundResource->pause(soundId);
     }
 }
 
@@ -764,9 +765,9 @@ void ApplicationManager::SoundPauseSounds() {
     }
 }
 
-void ApplicationManager::SoundResume(int soundId) {
+void ApplicationManager::SoundResume() {
     if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
-        this->soundResource->resume(soundId);
+        this->soundResource->resume();
     }
 }
 
@@ -782,22 +783,22 @@ void ApplicationManager::SoundResumeSounds() {
     }
 }
 
-void ApplicationManager::SoundRelease() {
+void ApplicationManager::SoundRelease(int soundId) {
     if (this->soundResource != 0) {
-        this->soundResource->freeAllRessources();
+        this->soundResource->release(soundId);
     }
 }
 
-int ApplicationManager::SoundIsPlaying() {
+int ApplicationManager::SoundIsPlaying(int soundId) {
     if (this->soundResource == 0) {
         return 0;
     }
-    return this->soundResource->isPlaying(0);
+    return this->soundResource->isPlaying(soundId);
 }
 
-void ApplicationManager::SoundSetVolume(int volume) {
+void ApplicationManager::SoundSetVolume(int soundId, int volume) {
     if (this->soundResource != 0) {
-        this->soundResource->setVolume(volume);
+        this->soundResource->setVolume(soundId, volume);
     }
 }
 
