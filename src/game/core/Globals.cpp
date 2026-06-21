@@ -1,5 +1,17 @@
 #include "game/core/Globals.h"
 Globals* gGlobals = nullptr;          // canonical Globals singleton
+
+// Recovered global UI / input-state flags (fixed .bss/.data addresses). Plain
+// globals in the original, modelled as Globals static members; see Globals.h.
+int           Globals::is_dialogue_window_visible = 0;   // 0x227cc8
+int           Globals::is_choice_window_visible   = 0;   // 0x227ccc
+int           Globals::is_menu_visible            = 0;   // 0x227cd0
+int           Globals::is_hacking_visible         = 0;   // 0x227cd4
+unsigned char Globals::isStarMapVisible           = 0;   // 0x227ce8
+unsigned char Globals::isCinematicModeActive      = 0;   // 0x228300
+int           Globals::mouseCursorActivated       = 0;   // 0x228304
+unsigned char Globals::showMouseDuringGameOver    = 0;   // 0x2281a4
+unsigned char Globals::keyBindings[8]             = {};  // 0x2281a8
 #include "engine/render/Mesh.h"
 #include "game/ship/Ship.h"
 #include "game/core/PaintCanvasClass.h"

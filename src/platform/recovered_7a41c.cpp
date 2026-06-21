@@ -9,8 +9,11 @@
 #include "platform/recovered_7a41c.h"
 
 #include "engine/core/ApplicationManager.h"   // gAppManager, current module id
+#include "engine/core/NFC.h"                   // IsInGameSubMenuNotActive
 #include "engine/render/Engine.h"             // Engine (appManager, DrawQuad, field_0x360)
+#include "game/core/Globals.h"                // Globals UI-state flags / mouse toggles
 
+#include <cstdint>
 #include <cstring>
 #include <initializer_list>
 
@@ -197,6 +200,15 @@ ModuleInputState *const *g_moduleInputState;
 // completes; consumed by the flight module next frame.
 char *g_accelHeld;
 char *g_decelHeld;
+
+// ---------------------------------------------------------------------------
+// Emulated-pointer visibility latch.
+// ---------------------------------------------------------------------------
+// Tri-state latch driving ActualizeMouseVisibilty: -1 while a sub-menu owns the
+// pointer, 0 idle, 1 while the pointer is being shown/driven. Seeded to 1 so the
+// first activation pass treats the pointer as freshly shown. (binary .data
+// 0x225090.)
+int g_mousePointerLatch = 1;
 
 } // namespace
 
@@ -596,6 +608,118 @@ bool keyIsPressed()
 }
 
 // ---------------------------------------------------------------------------
+// Emulated-pointer visibility.
+// ---------------------------------------------------------------------------
+namespace {
+
+// True while the flight module (id 2) is the running application module.
+inline bool currentModuleIs(int id)
+{
+    return reinterpret_cast<std::intptr_t>(
+               gAppManager->GetCurrentApplicationModule()) == id;
+}
+
+// True while no blocking dialogue / choice / hacking overlay is up.
+inline bool noBlockingOverlay()
+{
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+            Globals::is_hacking_visible) == 0;
+}
+
+} // namespace
+
+// Reconciles the emulated-pointer state for the current frame. `force`
+// suppresses the pointer (e.g. while a real touch drag is in progress). The
+// return value is a per-frame change code, not the live visibility: 1 when the
+// pointer was hidden this frame, -1 when it was (re)shown this frame, and 0 when
+// nothing changed (pointer left as-is, whether shown or hidden).
+int ActualizeMouseVisibilty(int force)
+{
+    const bool arrowPressed = ArrowKeyPressed();
+
+    // Hide the pointer, rewind the steering latch and report the change.
+    // `rewindLatch` is false on the force-hide path, which skips the hacking /
+    // latch-armed recompute but still clears the latch on arrow / game-over.
+    auto hideAndReportChange = [&](bool rewindLatch) {
+        Globals::mouseCursorActivated = 0;
+        if (rewindLatch) {
+            const bool latchArmed = (g_mousePointerLatch + 1 != 0);
+            g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
+        }
+        if (arrowPressed || Globals::showMouseDuringGameOver != 0)
+            g_mousePointerLatch = 0;
+        return 1;
+    };
+
+    // Pointer left unchanged. Clear the latch once the store module's (id 5)
+    // key-binding window has been dismissed.
+    auto reportNoChange = [&]() {
+        if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
+            g_mousePointerLatch = 0;
+        return 0;
+    };
+
+    if (Globals::mouseCursorActivated != 0) {
+        // -- Pointer currently shown: decide whether it stays up. ------------
+        // The whole gate is bypassed (-> hide) once the latch has wound past -1
+        // and cinematic mode is off.
+        if ((g_mousePointerLatch + 1 != 0 || Globals::isCinematicModeActive != 0) &&
+            currentModuleIs(2)) {
+            bool keep = false;
+            bool steerActive = false;   // r0 entering the convergence test (0x93e)
+            if (IsInGameSubMenuNotActive(2)) {
+                if (noBlockingOverlay()) {
+                    keep = true;
+                    steerActive = Globals::isCinematicModeActive != 0;
+                }
+            } else if (noBlockingOverlay()) {
+                keep = true;
+                steerActive = true;
+            }
+
+            if (keep) {
+                const bool menuHidden = Globals::is_menu_visible == 0;
+                if ((static_cast<int>(steerActive) | static_cast<int>(menuHidden)) == 1 &&
+                    Globals::isStarMapVisible == 0 && force == 0 &&
+                    Globals::showMouseDuringGameOver == 0) {
+                    // Gates passed: the pointer stays shown. It is only released
+                    // here if an arrow is held while flying; otherwise nothing
+                    // changes this frame.
+                    if (arrowPressed && currentModuleIs(2))
+                        return hideAndReportChange(true);
+                    return reportNoChange();
+                }
+            }
+        }
+
+        // -- Gate failed: hide the pointer this frame. -----------------------
+        return hideAndReportChange(force == 0);
+    }
+
+    // -- Pointer currently hidden: decide whether to (re)show it. ------------
+    bool reshow = false;
+    if (g_mousePointerLatch == 1 || Globals::isCinematicModeActive != 0) {
+        if (Globals::isCinematicModeActive != 0) {
+            reshow = true;
+        } else if (currentModuleIs(2) && IsInGameSubMenuNotActive(2) &&
+                   (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+                    Globals::is_menu_visible) == 0 &&
+                   Globals::is_hacking_visible == 0 && Globals::isStarMapVisible == 0) {
+            reshow = true;
+        }
+    }
+
+    if (reshow) {
+        g_mousePointerLatch = -static_cast<int>(
+            (g_mousePointerLatch - 1 != 0) && Globals::isCinematicModeActive != 0);
+        Globals::mouseCursorActivated = 1;
+        return -1;
+    }
+
+    return reportNoChange();
+}
+
+// ---------------------------------------------------------------------------
 // No-op input-table hooks (the Android build has a fixed on-screen layout and
 // no keyboard animation, so the originals are empty bodies).
 // ---------------------------------------------------------------------------
@@ -606,3 +730,16 @@ void KeyboardAnimationTimer(AbyssEngine::Engine * /*engine*/)
 void actualizeButtonPositions(AbyssEngine::Engine * /*engine*/)
 {
 }
+
+// simulateTouch(AbyssEngine::Engine*) is intentionally left unimplemented (still
+// absent). Its body folds the software touch-stick into synthetic OnTouchBegin/
+// Move/End events via a small .data float block at 0x2250a0 whose fields the
+// binary reaches through several overlapping base+offset views, and the eased
+// X/Y dataflow is carried in NEON registers across FPSCR-conditioned branches.
+// The struct field aliasing (which slot feeds each ease input vs. receives the
+// output across the idle / sign-latch / copy-through branches) could not be
+// resolved unambiguously from static analysis, and a wrong transcription would
+// silently corrupt named game-state globals (rotateShipInStation,
+// translateStarMapInX/Y, the stick struct). Per the "do not guess" rule it is
+// reported blocked rather than implemented speculatively. All of its globals are
+// already resolved (see the task report) for a future runtime-verified pass.

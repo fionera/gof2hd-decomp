@@ -117,6 +117,21 @@ public:
     void drawLines(unsigned int font, Array<String*>* lines, int baseX, int startY, bool centered);
     void drawLines(unsigned int font, Array<String*>* lines, int baseX, int startY,
                    unsigned int rightX, bool centered);
+
+    // --- Recovered global UI / input state (fixed .bss/.data addresses) -------
+    // These are module-wide game-state flags the original keeps as plain globals
+    // under the Globals namespace; modelled here as static members so they mangle
+    // to the same Globals::<name> symbols. Touched by the desktop-style input
+    // glue (ActualizeMouseVisibilty / simulateTouch) and the windowing layer.
+    static int is_dialogue_window_visible;   // 0x227cc8
+    static int is_choice_window_visible;     // 0x227ccc
+    static int is_menu_visible;              // 0x227cd0
+    static int is_hacking_visible;           // 0x227cd4
+    static unsigned char isStarMapVisible;   // 0x227ce8
+    static unsigned char isCinematicModeActive;   // 0x228300
+    static int mouseCursorActivated;         // 0x228304
+    static unsigned char showMouseDuringGameOver; // 0x2281a4
+    static unsigned char keyBindings[8];     // 0x2281a8 (only [4] read here)
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)
