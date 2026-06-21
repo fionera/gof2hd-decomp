@@ -2127,11 +2127,11 @@ afterYaw: {
     if (roll <= 1.0f) {
         rollMag = -1.0f;
         if (roll < -1.0f) {
-            return this->player->rollRight(F<int>(this, shipOff), rollMag * rollMag);
+            return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
         }
         rollMag = roll;
         if (roll < 0.0f) {
-            return this->player->rollRight(F<int>(this, shipOff), rollMag * rollMag);
+            return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
         }
         if (roll == 0.0f) return;
     }
