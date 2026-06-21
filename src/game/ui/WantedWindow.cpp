@@ -585,7 +585,7 @@ int WantedWindow::init() {
     {
         String *label = text->getText(0x1a8);
         this->detailButton = new TouchButton(
-            label, 0,
+            *label, 0,
             this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
             (((this->windowY - layout->field_0x2c) + this->windowHeight) -
              layout->field_0x10) - layout->field_0x24,

@@ -339,14 +339,14 @@ int MissionsWindow::init()
         if (gStatus->gameWon() == 0) {
             String *t = g_mw_gameText->getText(titleId);
             this->m_pAcceptButton = new TouchButton(
-                t, 0, L->buttonInsetX + this->m_x,
+                *t, 0, L->buttonInsetX + this->m_x,
                 (((this->m_y + this->m_height) - L->field_0x10) - L->field_0x24) - L->field_0x2c,
                 btnY, '!', 4);
         }
         if (gStatus->getFreelanceMission()->isEmpty() == 0) {
             String *t = g_mw_gameText->getText(titleId);
             this->m_pRejectButton = new TouchButton(
-                t, 0, this->m_x + (this->m_width >> 1) + L->field_0x2c,
+                *t, 0, this->m_x + (this->m_width >> 1) + L->field_0x2c,
                 (((this->m_y - L->field_0x2c) + this->m_height) - L->field_0x10) - L->field_0x24,
                 btnY, '!', 4);
 
