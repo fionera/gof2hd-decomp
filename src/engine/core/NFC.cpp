@@ -8,6 +8,11 @@ extern char nfc_class_name[] __attribute__((visibility("hidden")));
 extern const char nfc_method_name[] __attribute__((visibility("hidden")));
 extern const char nfc_method_sig[] __attribute__((visibility("hidden")));
 
+// The bridge holds no instance state of its own; construction is a no-op.
+NFC::NFC()
+{
+}
+
 // ---- in-app purchases -----------------------------------------------------------------------
 // Each purchase sets nfc_purchase_flag before dispatching to the Java side.
 

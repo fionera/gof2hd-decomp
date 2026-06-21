@@ -31,6 +31,8 @@ extern "C" void NFC_DeleteLocalRef(void *env);
 // nfc_method_name / nfc_method_sig); the bridge carries no instance state of its own.
 class NFC {
 public:
+    NFC();
+
     void iap_buy_dlc_full_package();
     void iap_buy_dlc_vip();
     void iap_buy_dlc_supernova();
