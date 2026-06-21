@@ -9,6 +9,15 @@ using ::AbyssEngine::Engine;
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 Engine* gEngine = nullptr;            // canonical Engine singleton
+
+// Device render-capability globals (AbyssEngine::Engine static members; seeded by
+// OnCreateApplication). Defaults match the binary's .bss/.data init.
+bool         AbyssEngine::Engine::vboSupported  = false;
+bool         AbyssEngine::Engine::clampTextures = false;
+bool         AbyssEngine::Engine::vfc           = false;
+float        AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
+float        AbyssEngine::Engine::lodBiasNormal  = 0.0f;
+unsigned int AbyssEngine::Engine::countryCode    = 0;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
@@ -312,10 +321,12 @@ void Engine::DeactivateRender2TextureFBO() {
     }
 }
 
-void Engine::GetDeviceInfo() {
-    this->isPad = NFC().isPad();
-    this->deviceWidth = NFC().getWidth();
-    this->deviceHeight = NFC().getHeight();
+DeviceInfo Engine::GetDeviceInfo() {
+    DeviceInfo info;
+    info.isPad = NFC().isPad();
+    info.width = NFC().getWidth();
+    info.height = NFC().getHeight();
+    return info;
 }
 
 void Engine::CopyFBO() {

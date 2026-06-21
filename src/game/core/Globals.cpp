@@ -12,6 +12,24 @@ unsigned char Globals::isCinematicModeActive      = 0;   // 0x228300
 int           Globals::mouseCursorActivated       = 0;   // 0x228304
 unsigned char Globals::showMouseDuringGameOver    = 0;   // 0x2281a4
 unsigned char Globals::keyBindings[8]             = {};  // 0x2281a8
+
+// Device screen-class / asset-selection flags (seeded by OnCreateApplication).
+unsigned char Globals::iPad                   = 0;   // 0x2282c0
+unsigned char Globals::iPadHD                 = 0;   // 0x2282d5
+unsigned char Globals::retinaDisplay          = 0;   // 0x2282d6
+unsigned char Globals::n9                     = 0;   // 0x2282d7
+unsigned char Globals::iPadLarge              = 0;   // 0x2282dc
+unsigned char Globals::iPadLargePossible      = 0;   // 0x228310
+unsigned char Globals::iPadAssetsWithLowerRes = 0;   // 0x228311
+unsigned char Globals::enterSpaceLounge       = 0;   // 0x22837c
+int           Globals::switch_to_target_setting = 0; // 0x228378
+
+// Game-wide singletons / cached values seeded by OnCreateApplication.
+Layout*  gLayout      = nullptr;   // 0x2281d4
+void*    gFont        = nullptr;   // 0x2281c0
+int      gScreenWidth  = 0;        // 0x2282e0
+int      gScreenHeight = 0;        // 0x2282d8
+AbyssEngine::ApplicationManager* gAppManager = nullptr; // 0x2281d8
 #include "engine/render/Mesh.h"
 #include "game/ship/Ship.h"
 #include "game/core/PaintCanvasClass.h"

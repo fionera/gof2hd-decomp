@@ -10,7 +10,11 @@ struct Agent;
 struct Mission;
 struct Wanted;
 struct GameRecord;
-namespace AbyssEngine { class PaintCanvas; }
+namespace AbyssEngine { class PaintCanvas; class Engine; }
+
+// Builds the application's startup resource list (textures/sounds/fonts the active
+// device profile needs). Called from OnCreateApplication; the body lives in its own TU.
+void BuildResourceList(AbyssEngine::Engine *engine);
 
 // Full-screen "loading / saving" splash: clears the frame, draws the window chrome
 // (background, header, empty footer), the centered status caption and the spinner image,

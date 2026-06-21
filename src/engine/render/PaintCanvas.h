@@ -222,8 +222,8 @@ public:
     void FogEnable(bool mode, AbyssEngine::FogMode enable);
     void FogSetParameter(AbyssEngine::FogMode mode, float fogStart, float fogEnd, float fogDensity, unsigned int color);
     void ChangeCubeTexture(unsigned int idx);
-    void GetWidth();
-    void GetHeight();
+    int GetWidth();
+    int GetHeight();
     void HasVibration();
     void Vibrate(unsigned short);
     void GetAccelValue();

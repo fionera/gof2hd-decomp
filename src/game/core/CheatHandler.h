@@ -43,4 +43,10 @@ public:
 };
 
 } // namespace AbyssEngine
+
+// Cheat-code activation callback registered with the ApplicationManager by
+// OnCreateApplication (CheatFunc: code = the matched cheat's value, data = context).
+// Applies the unlocked effect for the entered code; its body lives in its own TU.
+void OnCheatActivated(int code, void *data);
+
 #endif

@@ -14,6 +14,7 @@
 #include "game/weapons/Gun.h"
 #include "game/mission/Status.h"
 #include "engine/render/Engine.h"
+#include "engine/core/ApplicationManager.h"
 #include <new>
 
 // Free math operators/functions (defined in libgof2hd; not declared in math.h).
@@ -38,7 +39,6 @@ extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
 extern "C" void *gFModSoundAlt;
-extern "C" void *gAppManager;
 extern "C" void **gFModSoundPtr;
 extern "C" void Gun_setEnemies(void *gun);
 extern "C" int gShootSoundsByType[];
@@ -927,7 +927,7 @@ struct Mat { float m[12]; };
 __attribute__((minsize)) extern "C" void Player_PlayEngineSound(Player *self, Vector *vec)
 {
     self->enginePositionVec = vec;
-    if (*((char *)gAppManager + 0xf) != 0) {
+    if (reinterpret_cast<char *>(gAppManager)[0xf] != 0) {
         Mat pos;
         MatrixGetPosition(&pos, self->transform);
         FMOD::Event *ev = ((FModSound *)(gFModSoundPtr[0]))->updateEvent3DAttributes(self->engineEvent, 0, (Vector *)self->enginePositionVec, (Vector *)&pos, false);
@@ -1530,7 +1530,7 @@ Array<Player *> *Player::getEnemies() {
 void Player::PlayEngineSound(int unused, Vector *vec) {
     (void)unused;
     this->enginePositionVec = vec;
-    if (*((char *)gAppManager + 0xf) != 0) {
+    if (reinterpret_cast<char *>(gAppManager)[0xf] != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
         FMOD::Event *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(

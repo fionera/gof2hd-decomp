@@ -36,6 +36,15 @@ typedef void InitializeCallback(Engine *);
 // glGetError directly).
 void glError();
 
+// Device geometry/capability snapshot returned by Engine::GetDeviceInfo(). The original
+// returns it by value (sret); width/height/isPad map onto the engine's own +0x0/+0x4/+0x8
+// fields, which is why the engine keeps the same first-three-field layout.
+struct DeviceInfo {
+    uint32_t width;     // +0x0 NFC::getWidth()
+    uint32_t height;    // +0x4 NFC::getHeight()
+    uint8_t  isPad;     // +0x8 NFC::isPad()
+};
+
 // Per-light fixed-function color slot (GL light color: rgba). The engine keeps up
 // to 8 of these contiguously (one per GL light) and indexes them by (light - GL_LIGHT0).
 struct LightColor {
@@ -192,7 +201,10 @@ public:
     void DrawLine2D(float *verts, int count, bool strip);
     void DrawQuad(int x, int y, int width, int height);
     double * GetAccelValue();
-    void GetDeviceInfo();
+    // Returns the live device geometry/capabilities (NFC width/height/isPad). The
+    // original returns the struct by value (sret); callers branch on it to derive the
+    // iPad / retina / large-screen capability flags.
+    DeviceInfo GetDeviceInfo();
     uint32_t GetDisplayHeight();
     uint32_t GetDisplayWidth();
     double * GetGravValue();
@@ -260,6 +272,17 @@ public:
     uint32_t Suspend();
     void SwapBuffer();
     void initFileInterface();
+
+    // ---- device render-capability globals (recovered .bss/.data) ------------
+    // Plain globals in the original under the AbyssEngine::Engine scope; modelled as
+    // static members so they mangle to the same AbyssEngine::Engine::<name> symbols.
+    // OnCreateApplication seeds these from the device-info probe / fixed defaults.
+    static bool  vboSupported;      // 0x227ab8 vertex-buffer-objects available
+    static bool  clampTextures;     // 0x227ab9 clamp texture wrap mode (low-mem path)
+    static bool  vfc;               // 0x227aba view-frustum culling enabled
+    static float lodBiasDiffuse;    // 0x2250c8 diffuse-map LOD bias (-1.3)
+    static float lodBiasNormal;     // 0x227ab4 normal-map LOD bias (-0.5)
+    static unsigned int countryCode; // 0x2250e0 device locale / language code
 };
 
 } // namespace AbyssEngine

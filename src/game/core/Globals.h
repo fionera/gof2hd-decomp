@@ -132,8 +132,33 @@ public:
     static int mouseCursorActivated;         // 0x228304
     static unsigned char showMouseDuringGameOver; // 0x2281a4
     static unsigned char keyBindings[8];     // 0x2281a8 (only [4] read here)
+
+    // --- Device screen-class / asset-selection flags (fixed .bss) ------------
+    // Derived once at bring-up (OnCreateApplication) from the device-info probe
+    // (NFC width/height/isPad). Kept as plain Globals-scoped globals in the
+    // original; modelled as static members so they mangle to Globals::<name>.
+    static unsigned char iPad;                  // 0x2282c0 running on an iPad-class device
+    static unsigned char iPadHD;                // 0x2282d5 iPad high-density assets
+    static unsigned char retinaDisplay;         // 0x2282d6 retina / high-DPI display
+    static unsigned char n9;                    // 0x2282d7 Nokia N9 form factor
+    static unsigned char iPadLarge;             // 0x2282dc large iPad screen
+    static unsigned char iPadLargePossible;     // 0x228310 large iPad layout permitted
+    static unsigned char iPadAssetsWithLowerRes;// 0x228311 iPad layout, lower-res assets
+    static unsigned char enterSpaceLounge;      // 0x22837c space-lounge entry latch
+    static int           switch_to_target_setting; // 0x228378 target-setting selector (-1 = unset)
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)
+
+// Game-wide singletons / cached values seeded by OnCreateApplication. The original keeps
+// these as plain Globals-scoped globals; here they are file-scope externs (the canonical
+// Status / Canvas / GameText / RNG singletons already live under their own g* names).
+namespace AbyssEngine { class ApplicationManager; }
+class Layout;
+extern Layout*  gLayout;            // canonical Layout singleton (binary .bss 0x2281d4)
+extern void*    gFont;              // active font handle (binary .bss 0x2281c0)
+extern int      gScreenWidth;       // canvas width  (Globals::w, binary .bss 0x2282e0)
+extern int      gScreenHeight;      // canvas height (Globals::h, binary .bss 0x2282d8)
+extern AbyssEngine::ApplicationManager* gAppManager; // active manager (binary .bss 0x2281d8)
 
 #endif // GOF2_GLOBALS_H

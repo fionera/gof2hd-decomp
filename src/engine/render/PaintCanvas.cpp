@@ -160,7 +160,7 @@ extern "C" unsigned short *paintcanvas_ext_gla_str_index(const void *s, int i);
 extern "C" void paintcanvas_ext_gla_str_assign(void *dst, void *src);
 extern "C" void paintcanvas_ext_add_resource(void *, void *);
 extern "C" void paintcanvas_ext_remove_meshid(void *, void *);
-extern "C" void paintcanvas_ext_get_height(void *);
+extern "C" int paintcanvas_ext_get_height(void *);
 extern "C" void paintcanvas_ext_gl_a(unsigned int);
 extern "C" void paintcanvas_ext_gl_bind(unsigned int, unsigned int);
 extern "C" void paintcanvas_ext_gl_c(unsigned int);
@@ -461,7 +461,7 @@ extern "C" void paintcanvas_ext_dt2_mtx_getinv(void *out, void *m);
 extern "C" void paintcanvas_ext_dt2_seteye(void *eng, float a, float b, float c);
 extern "C" void paintcanvas_ext_dt2_drawrec(void *self, void *tf, void *m, void *m2);
 extern "C" void paintcanvas_ext_font_set_spacing(void *, int);
-extern "C" void paintcanvas_ext_get_width(void *);
+extern "C" int paintcanvas_ext_get_width(void *);
 extern "C" int pc_GetWidth(AbyssEngine::PaintCanvas *self);
 extern "C" int pc_GetHeight(AbyssEngine::PaintCanvas *self);
 extern "C" void pc_Camera_ctor(void *cam, float h, float w);
@@ -1560,7 +1560,7 @@ void PaintCanvas::TransformRemoveMeshId(unsigned int transformIndex, unsigned in
     }
 }
 
-void PaintCanvas::GetHeight()
+int PaintCanvas::GetHeight()
 {
     return paintcanvas_ext_get_height(this->engine);
 }
@@ -4500,7 +4500,7 @@ void PaintCanvas::FontSetSpacing(unsigned int index, short spacing)
     }
 }
 
-void PaintCanvas::GetWidth()
+int PaintCanvas::GetWidth()
 {
     return paintcanvas_ext_get_width(this->engine);
 }

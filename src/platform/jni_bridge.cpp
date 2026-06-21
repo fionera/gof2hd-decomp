@@ -20,9 +20,19 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/GameData.h"
+#include "engine/core/GameText.h"
+#include "engine/core/AERandom.h"
 #include "engine/file/AEFile.h"
 #include "platform/gl.h"
 #include "game/mission/Status.h"
+#include "game/mission/RecordHandler.h"      // BuildResourceList, loadingScreen
+#include "game/core/Globals.h"               // Globals + device flags, gLayout/gFont/...
+#include "game/core/CheatHandler.h"          // OnCheatActivated
+#include "game/ui/Layout.h"                  // Layout::initTip
+#include "game/menu/MGame.h"
+#include "game/menu/ModMainMenu.h"
+#include "game/menu/ModStation.h"
+#include "game/menu/MTitle.h"
 #include "platform/recovered_a462c.h"
 #include "platform/recovered_7a41c.h"
 
@@ -167,6 +177,147 @@ void OnCreateApplication(AbyssEngine::Engine *engine);
 
 // Persists the game after the offerwall reward is granted.
 extern "C" void ndk_autosave();
+
+// ---------------------------------------------------------------------------
+// Application bootstrap. Registered as the engine's InitializeCallback; the engine
+// invokes it once the GL context and ApplicationManager exist. It allocates the
+// game-wide GameData, derives the device screen-class / asset-selection flags from
+// the device-info probe, wires up the localized text, fonts and RNG, registers the
+// four top-level application modules, installs the cheat codes and shows the title.
+// ---------------------------------------------------------------------------
+
+void OnCreateApplication(AbyssEngine::Engine *engine)
+{
+    using AbyssEngine::Engine;
+
+    // --- Allocate and zero-seed the game-wide application data. --------------
+    GameData *data = new GameData();
+    data->field_0x04 = 0;
+    data->field_0x0c = 0;
+    data->field_0x0e = 0;
+    data->field_0x14 = 0;
+    data->field_0x10 = -1;
+    data->field_0x44 = 0;
+    data->field_0x3c = 0;
+    data->field_0x40 = 0;
+    data->field_0x48 = -1;
+    data->field_0x4c = 1;
+    data->field_0x08 = 0;
+    data->field_0x77 = 0;
+    data->field_0x75 = 0;
+    data->field_0x71 = 0;
+    data->field_0x6d = 0;
+    data->field_0x50 = 0;
+    data->field_0x54 = 0;
+    data->field_0x58 = 0;
+    data->field_0x5c = 0;
+    data->field_0x60 = 0;
+    data->field_0x64 = 0;
+    data->field_0x68 = 0;
+    data->field_0x6c = 0;
+
+    // The game-wide Globals singleton is owned by the GameData (offset 0).
+    data->globals = new Globals();
+
+    // --- Device screen-class probe. ------------------------------------------
+    // GetDeviceInfo() reports the live NFC width/height and the iPad flag; the
+    // capability flags below are derived from those thresholds.
+    DeviceInfo dev = engine->GetDeviceInfo();
+
+    // A tall (>=640px) non-pad screen is treated as a retina display; otherwise a
+    // pad with a >800px screen is the retina/high-DPI case.
+    if (dev.height < 640 || dev.isPad != 0) {
+        DeviceInfo padDev = engine->GetDeviceInfo();
+        Globals::retinaDisplay = (padDev.isPad != 0) && (static_cast<int>(dev.height) > 800);
+    } else {
+        Globals::retinaDisplay = true;
+    }
+
+    // --- Cached asset / DLC path strings (empty at bring-up). ----------------
+    data->field_0xa8 = AbyssEngine::String("", false);
+    data->field_0xa5 = 0;
+    data->field_0xb8 = AbyssEngine::String("", false);
+    data->field_0xc4 = 0;
+    data->field_0xb4 = 0;
+    data->field_0x78 = 0;
+    data->field_0x7a = 0;
+    data->field_0x7c = AbyssEngine::String("", false);
+    data->field_0x88 = AbyssEngine::String("", false);
+    data->field_0x94 = AbyssEngine::String("", false);
+    data->field_0xa4 = 0;
+    data->field_0xa0 = 0;
+
+    // An exactly 480x864 portrait screen identifies the iPad reference layout.
+    Globals::iPad = (dev.height == 480) && (dev.width == 864);
+
+    // --- Second device probe: derive the remaining iPad / large-screen flags. -
+    // (The original re-probes here; the capability flags below use the first probe.)
+    engine->GetDeviceInfo();
+    Globals::iPadHD = 0;
+    Globals::iPad = dev.isPad;
+    Globals::iPadLargePossible = 0;
+    Globals::iPadLarge = (dev.isPad != 0) ? Globals::retinaDisplay : 0;
+    if (dev.isPad != 0) {
+        Globals::iPadAssetsWithLowerRes =
+            (static_cast<int>(dev.height) < 768) && (static_cast<int>(dev.width) < 1024);
+    } else {
+        Globals::iPadAssetsWithLowerRes = 0;
+    }
+    Globals::switch_to_target_setting = -1;
+    Globals::enterSpaceLounge = 0;
+
+    // --- Resource list + canvas geometry. ------------------------------------
+    BuildResourceList(engine);
+
+    gAppManager = engine->appManager;
+    gCanvas = engine->appManager->paintCanvas;
+    gScreenWidth = gCanvas->GetWidth();
+    gScreenHeight = gCanvas->GetHeight();
+
+    // --- Localized text, fonts and RNG. --------------------------------------
+    GameText *text = new GameText();
+    gGameText = text;
+    text->setLanguage(static_cast<short>(Engine::countryCode), 3401);
+    data->globals->loadFont(GameText::getLanguage());
+    data->globals->init(engine->appManager, engine);
+
+    engine->appManager->SetApplicationData(data);
+    engine->appManager->SetLoadingCallback(&loadingScreen, gFont);
+
+    // --- Register the top-level application modules. -------------------------
+    engine->appManager->RegisterApplicationModule(
+        2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
+    engine->appManager->RegisterApplicationModule(
+        1, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModMainMenu()));
+    engine->appManager->RegisterApplicationModule(
+        5, reinterpret_cast<AbyssEngine::IApplicationModule *>(new ModStation()));
+    engine->appManager->RegisterApplicationModule(
+        0, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MTitle()));
+
+    // --- Cheat handler + codes. ----------------------------------------------
+    engine->appManager->CheatSetCallback(&OnCheatActivated, nullptr);
+    engine->appManager->CheatAddCode(AbyssEngine::String("754753835", false), 0);
+    engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
+    engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
+
+    // --- Title bring-up. -----------------------------------------------------
+    gLayout->initTip();
+    gStatus->resetGame();
+    AbyssEngine::Engine::vfc = true;
+    gRandom->reset();
+    engine->appManager->SetCurrentApplicationModule(0);
+    AbyssEngine::Engine::clampTextures = false;
+
+    // Pre-create the global power-up flash texture in unit 2.
+    engine->appManager->paintCanvas->TextureCreateGlobal(
+        AbyssEngine::String("data/textures/pow_texture.aei", false), 2);
+
+    AbyssEngine::Engine::vboSupported = true;
+    AbyssEngine::Engine::clampTextures = false;
+    engine->field_0x74 = false;
+    AbyssEngine::Engine::lodBiasNormal = -0.5f;
+    AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
+}
 
 // ---------------------------------------------------------------------------
 // Asset / locale setters. Each copies the incoming string into a fresh malloc'd

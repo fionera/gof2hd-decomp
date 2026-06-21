@@ -26,12 +26,11 @@ void OnDestroyApplication(AbyssEngine::Engine* engine) {
 
     GameData* data = static_cast<GameData*>(app->GetApplicationData());
 
-    // GameData stores the game-wide Globals singleton at offset 0.
-    Globals*& globals = *reinterpret_cast<Globals**>(data);
-    if (globals != nullptr) {
-        delete globals;
+    // GameData owns the game-wide Globals singleton (member `globals`, offset 0).
+    if (data->globals != nullptr) {
+        delete data->globals;
     }
-    globals = nullptr;
+    data->globals = nullptr;
 
     if (data != nullptr) {
         delete data;
