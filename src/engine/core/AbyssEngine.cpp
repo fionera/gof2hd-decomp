@@ -78,10 +78,6 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 
 // __aeabi_memcpy is declared by gof2/Engine.h
 
-// GameText engine entry points (defined in src/GameText.cpp; GameText is a top-level class,
-// so its no-receiver accessors are rendered as free functions, matching the rest of the tree).
-int GameText_isNonArabicString(const unsigned short *text, unsigned int len);
-
 // AbyssEngine::ImageFontSetYOffset(AbyssEngine::ImageFont*, short)
 namespace AbyssEngine {
 
@@ -1837,7 +1833,7 @@ int ImageFontDrawString(ImageFont *font, const unsigned short *text, unsigned in
     if (shaderMode) {
         // Arabic special-case: force forward scan.
         if (*g_GameText_arabicEnabledFlag != 0 && GameText::getLanguage() == 9 &&
-            GameText_isNonArabicString(text, len) != 0) {
+            GameText::isNonArabicString(text, len) != 0) {
             idx = 0;
             step = 1;
         }

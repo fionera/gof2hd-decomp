@@ -723,12 +723,6 @@ void ApplicationManager::SoundPlay(int soundId, float volume) {
     }
 }
 
-void ApplicationManager::SoundPlay_vol(int soundId, float volume) {
-    if (this->soundResource != 0 && this->soundFxEnabled) {
-        this->soundResource->play(soundId, volume);
-    }
-}
-
 void ApplicationManager::SoundPlayLoop(int soundId) {
     if (this->soundResource != 0 && this->soundFxEnabled) {
         this->soundResource->playLoop(soundId);
@@ -780,12 +774,6 @@ void ApplicationManager::SoundResume() {
 void ApplicationManager::SoundResume(int soundId) {
     if (this->soundResource != 0 && (this->soundFxEnabled || this->musicEnabled)) {
         this->soundResource->resume(soundId);
-    }
-}
-
-void ApplicationManager::SoundResumeSelf() {
-    if (this->soundResource != 0) {
-        this->soundResource->resume();
     }
 }
 
@@ -855,33 +843,56 @@ void ApplicationManager::VibrateSupported() {
     Engine_VibrateSupported(this->engine);
 }
 
-// ---- recovered free-function API (operate on the public manager state) ---------------
+// ---- application data / lifecycle ----------------------------------------------------
 
-// Returns the build version string (out is constructed in place by the caller's slot).
-void ApplicationManager_GetApplicationVersionString(String *out) {
-    new (out) String();
-    out->s = u"2.0.16";
+// Anti-piracy hook: the shipped binary performs no check and always reports "not cracked".
+bool ApplicationManager::CheckCrack(const char *path) {
+    (void)path;
+    return false;
 }
 
+void *ApplicationManager::GetApplicationData() {
+    return this->applicationData;
+}
+
+void ApplicationManager::SetApplicationData(void *data) {
+    this->applicationData = data;
+}
+
+void ApplicationManager::SetExitCallback(QuitCallback_t *callback) {
+    this->quitCallback = callback;
+}
+
+void *ApplicationManager::GetCurrentApplicationModule() const {
+    return reinterpret_cast<void *>(this->currentModuleId);
+}
+
+// Returns the build version string.
+String ApplicationManager::GetApplicationVersionString() {
+    return String("2.0.16");
+}
+
+// ---- config / modules / sound (operate on the public manager state) ------------------
+
 // Parse a named config file through the manager's ConfigReader.
-void ApplicationManager_ConfigReadFile(ApplicationManager *self, String *name) {
-    ConfigReader *reader = self->configReader;
+void ApplicationManager::ConfigReadFile(String name) {
+    ConfigReader *reader = this->configReader;
     if (reader != 0) {
-        reader->ParseFile(*name);
+        reader->ParseFile(name);
     }
 }
 
 // Register a section handler with the manager's ConfigReader.
-void ApplicationManager_ConfigRegisterTokenReadFunction(ApplicationManager *self, String *name,
-                                                         ConfigTokenReadFunction read, void *context) {
-    ConfigReader *reader = self->configReader;
+void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
+                                                         void *context) {
+    ConfigReader *reader = this->configReader;
     if (reader != 0) {
-        reader->RegisterTokenReadFunction(*name, read, context);
+        reader->RegisterTokenReadFunction(name, read, context);
     }
 }
 
 // Arm the per-frame performance counter (engine-global bookkeeping).
-void ApplicationManager_EnablePerformanceTest(int count) {
+void ApplicationManager::EnablePerformanceTest(int count) {
     g_perfElapsed = 0;
     g_perfActionCount = (long long)count;
     g_perfLimitValue = 0;
@@ -892,9 +903,9 @@ void ApplicationManager_EnablePerformanceTest(int count) {
 }
 
 // Install the sound-info table and initialise each loaded sound slot.
-void ApplicationManager_SoundSet(ApplicationManager *self, AESoundInfo *info, int count) {
-    if (info != 0 && self->soundResource != 0) {
-        AESoundRessource *sound = self->soundResource;
+void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
+    if (info != 0 && this->soundResource != 0) {
+        AESoundRessource *sound = this->soundResource;
         sound->SetSound(info, count);
         for (int i = 0; i < count; ++i) {
             sound->init(i);
@@ -903,10 +914,10 @@ void ApplicationManager_SoundSet(ApplicationManager *self, AESoundInfo *info, in
 }
 
 // Register an application module under `id`, binding it back to this manager.
-void ApplicationManager_RegisterApplicationModule(ApplicationManager *self, unsigned int id, void *module) {
+void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
     if (module != 0) {
-        ((IApplicationModule *)module)->SetApplicationManager(self);
-        self->modules->push_back(module);
-        self->moduleIds->push_back(id);
+        module->SetApplicationManager(this);
+        this->modules->push_back(module);
+        this->moduleIds->push_back(id);
     }
 }

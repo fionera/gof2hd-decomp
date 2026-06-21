@@ -1499,14 +1499,6 @@ __attribute__((visibility("hidden"))) extern int *g_hw_notEnoughTextId;
 __attribute__((visibility("hidden"))) extern int *g_hw_sellMsgTextId1;
 __attribute__((visibility("hidden"))) extern int *g_hw_sellMsgTextId2;
 
-// Show a simple text-only choice window with the given game-text id, then flag dirty.
-static void showText(HangarWindow *self, int textId)
-{
-    ((GameText *)(textId))->getText();
-    self->dialog->set(g_HangarWindow_emptyDialogText);
-    self->dialogActive = 1;
-}
-
 void HangarWindow::selectItem(ListItem *item) {
     HangarWindow *self = this;
     ListItem *li = item;
@@ -1611,7 +1603,9 @@ void HangarWindow::selectItem(ListItem *item) {
         if (globals->field_0x34 < 1) {
             if (gStatus->getCurrentCampaignMission() == 0x4d &&
                 gStatus->getShip()->getIndex() == 0x25) {
-                showText(self, *g_hw_unsaleableTextId);
+                ((GameText *)(*g_hw_unsaleableTextId))->getText();
+                self->dialog->set(g_HangarWindow_emptyDialogText);
+                self->dialogActive = 1;
                 return;
             }
             int a = gStatus->getShip()->getIndex();
@@ -1623,9 +1617,13 @@ void HangarWindow::selectItem(ListItem *item) {
                 self->dialogActive = 1;
                 return;
             }
-            showText(self, *g_hw_buyBaseTextId);
+            ((GameText *)(*g_hw_buyBaseTextId))->getText();
+            self->dialog->set(g_HangarWindow_emptyDialogText);
+            self->dialogActive = 1;
         } else {
-            showText(self, *g_hw_buyBaseTextId);
+            ((GameText *)(*g_hw_buyBaseTextId))->getText();
+            self->dialog->set(g_HangarWindow_emptyDialogText);
+            self->dialogActive = 1;
         }
         return;
     }
@@ -1657,7 +1655,9 @@ void HangarWindow::selectItem(ListItem *item) {
     Item *curItem = cur->item;
     if (curItem != nullptr) {
         if (curItem->isUnsaleable() != 0) {
-            showText(self, *g_hw_unsaleableTextId);
+            ((GameText *)(*g_hw_unsaleableTextId))->getText();
+            self->dialog->set(g_HangarWindow_emptyDialogText);
+            self->dialogActive = 1;
             return;
         }
         if (((Item *)(curItem))->getSort() == 0x14) {
@@ -1673,7 +1673,9 @@ void HangarWindow::selectItem(ListItem *item) {
                 int maxPax = gStatus->getShip()->getMaxPassengers();
                 int used = ((Item *)(curItem))->getAttribute(0);
                 if (maxPax - used < globals->field_0x34) {
-                    showText(self, *g_hw_unsaleableTextId);
+                    ((GameText *)(*g_hw_unsaleableTextId))->getText();
+                    self->dialog->set(g_HangarWindow_emptyDialogText);
+                    self->dialogActive = 1;
                     return;
                 }
             }

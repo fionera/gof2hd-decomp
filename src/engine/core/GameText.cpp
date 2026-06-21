@@ -8,8 +8,6 @@ using String = AbyssEngine::String;
 extern short *g_GameText_language;
 extern unsigned short *g_GameText_langReset;
 
-void GameText_convertStringFromArabic(void *out, int pad, void *in);
-
 // Destroys each owned text-table entry, then nulls the slot.
 void GameText::release() {
     if (this->textTable == nullptr)
@@ -30,7 +28,7 @@ int GameText::getLanguage()
 extern const char gRegionCodeStr[];
 
 // Returns the region code as an AbyssEngine::String by value.
-String GameText_getRegionCode()
+String GameText::getRegionCode()
 {
     return String(gRegionCodeStr);
 }
@@ -118,7 +116,7 @@ GameText::~GameText()
 extern unsigned gArabicTable[];
 
 // Returns 1 if no character of `str` appears in the Arabic codepoint table.
-int GameText_isNonArabicString(const unsigned short *str, unsigned count)
+int GameText::isNonArabicString(const unsigned short *str, unsigned int count)
 {
     unsigned short i = 0;
     bool keep;
@@ -162,35 +160,33 @@ static inline bool isJoiner(unsigned short c) {
 // Walks the code points from the end toward the start; for each Arabic letter it picks the
 // isolated / initial / medial / final glyph based on the joining behaviour of its neighbours, and
 // collapses the LAM (U+0644) + ALEF family into the appropriate ligature, splicing the string
-// around the merged pair. `out` is the result (sret); `pad` is the hidden alignment argument from
-// the by-value String ABI.
-void GameText_convertStringFromArabic(void *out, int pad, void *in)
+// around the merged pair. The input string is taken by value and the reshaped result is returned.
+String GameText::convertStringFromArabic(String in)
 {
-    (void)pad;
-
     // Working copy of the wide buffer (length + NUL).
     String work;
-    work.ctor_wchar((unsigned short *)((String *)in)->index(0), false);
+    work.ctor_wchar(in.index(0), false);
     unsigned int len = work.size();            // character count
 
     unsigned short *buf = new unsigned short[len + 1];
     memcpy(buf, work.index(0), (unsigned long)(len * 2 + 2));
 
-    int inLen = (int)((String *)in)->size();
+    int inLen = (int)in.size();
     unsigned int hi = (unsigned int)(inLen - 1);
     unsigned int i = hi;
 
     while (true) {
         if (i > 0x7fffffff) {
             // Underflowed past 0: finished. Emit the reshaped buffer.
-            ((String *)out)->ctor_wchar(buf, false);
+            String result;
+            result.ctor_wchar(buf, false);
             delete[] buf;
-            return;
+            return result;
         }
 
         if (i != 0) {
-            unsigned short prev = *((String *)in)->index(i - 1);
-            unsigned short cur  = *((String *)in)->index(i);
+            unsigned short prev = *in.index(i - 1);
+            unsigned short cur  = *in.index(i);
             if (prev == 0x644) {
                 // LAM + ALEF-family ligature.
                 unsigned short form = 2;
@@ -339,7 +335,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         if (lang == 9) {
             String tmp;
             tmp.ctor_wchar(wide, false);
-            GameText_convertStringFromArabic(s, 0, &tmp);
+            *s = this->convertStringFromArabic(tmp);
             this->textTable[i] = s;
         } else {
             s->ctor_wchar(wide, false);

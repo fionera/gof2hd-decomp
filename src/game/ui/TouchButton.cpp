@@ -179,22 +179,6 @@ extern char  *g_TB_langWide2;      // bool: second toggle
 extern void **g_TB_layoutMetrics;  // Layout providing the touch-margin / default-height metrics
 extern const char g_TB_emptyStr[];
 
-// Helper: GetImage2DWidth/Height of the just-created image, then derive the
-// centred label X offset. Used by several of the simple image-only kinds.
-static void tb_basicImageGeometry(TouchButton *self, void *canvas)
-{
-    self->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
-    int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
-    self->layoutHeight = self->height;
-    self->width = w;
-    self->leftWidth = w;
-    int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
-    int h = self->height;
-    self->textOffsetX = w / 2 - tw / 2;
-    int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
-    self->textOffsetY = h / 2 - th / 2;
-}
-
 int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1) {
     void *canvas = gCanvas;
 
@@ -276,7 +260,18 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         this->imgFrameL = frameH;
         ((PaintCanvas*)(canvas))->Image2DCreate(0x473, frameH);
         this->imgFrameTL = frameH;
-        tb_basicImageGeometry(this, canvas);
+        {   // centred label geometry from the just-created image
+            this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            this->layoutHeight = this->height;
+            this->width = w;
+            this->leftWidth = w;
+            int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            int h = this->height;
+            this->textOffsetX = w / 2 - tw / 2;
+            int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            this->textOffsetY = h / 2 - th / 2;
+        }
         break;
     }
     case 0xd: {
@@ -286,7 +281,18 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         ((PaintCanvas*)(canvas))->Image2DCreate(0x518, frameH);
         this->imgFrameTL = frameH;
         this->imgFrameBL = this->imgFrameTL;
-        tb_basicImageGeometry(this, canvas);
+        {   // centred label geometry from the just-created image
+            this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            this->layoutHeight = this->height;
+            this->width = w;
+            this->leftWidth = w;
+            int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            int h = this->height;
+            this->textOffsetX = w / 2 - tw / 2;
+            int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            this->textOffsetY = h / 2 - th / 2;
+        }
         break;
     }
     case 0xe: {
@@ -310,7 +316,18 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
         this->imgFrameL = achStage;
         ((PaintCanvas*)(canvas))->Image2DCreate(0xbb9, frameH);
         this->imgFrameTL = frameH;
-        tb_basicImageGeometry(this, canvas);
+        {   // centred label geometry from the just-created image
+            this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            this->layoutHeight = this->height;
+            this->width = w;
+            this->leftWidth = w;
+            int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            int h = this->height;
+            this->textOffsetX = w / 2 - tw / 2;
+            int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            this->textOffsetY = h / 2 - th / 2;
+        }
         break;
     }
     case 0x11: {
@@ -340,7 +357,18 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
     case 0x13:  // pre-supplied images (caller + ctor variant)
         this->imgFrameL = achStage;
         this->imgFrameTL = (int)this->image;
-        tb_basicImageGeometry(this, canvas);
+        {   // centred label geometry from the just-created image
+            this->height = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            int w = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            this->layoutHeight = this->height;
+            this->width = w;
+            this->leftWidth = w;
+            int tw = ((PaintCanvas*)(canvas))->GetImage2DWidth(0);
+            int h = this->height;
+            this->textOffsetX = w / 2 - tw / 2;
+            int th = ((PaintCanvas*)(canvas))->GetImage2DHeight(0);
+            this->textOffsetY = h / 2 - th / 2;
+        }
         break;
     default: {  // generic menu button: 9-patch frame from the skin table
         int alt = (*g_TB_useAltSkin != 0) ? 1 : 0;

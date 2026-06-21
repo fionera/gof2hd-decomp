@@ -7,6 +7,7 @@
 #include "engine/render/Engine.h"            // Engine (ctor receiver)
 #include "engine/core/IApplicationModule.h"  // IApplicationModule (SetApplicationModule)
 #include "engine/core/KeyCode.h"             // KeyCode (KeyCodeSetMapping)
+#include "engine/file/ConfigReader.h"        // ConfigReader, ConfigTokenReadFunction
 #include <new>             // placement new (key-mapping / config-string construction)
 
 // Cross-class types referenced only through pointers.
@@ -18,6 +19,7 @@ namespace AbyssEngine {
     class ConfigReader;       // engine/file/ConfigReader.h
     class CheatHandler;       // game/core/CheatHandler.h
     class AESoundRessource;   // engine/audio/AESoundRessource.h
+    struct AESoundInfo;       // engine/audio/AESoundRessource.h
 }
 
 using String = AbyssEngine::String;
@@ -52,8 +54,9 @@ public:
     int          savedState;              // +0x40 state saved across suspend/resume
     Array<void*>        *modules;         // +0x48 loaded application modules (IApplicationModule*)
     Array<unsigned int> *moduleIds;       // +0x50 module-id table (parallel to `modules`)
-    unsigned int currentModuleId;         // +0x5c
+    unsigned int currentModuleId;         // +0x5c active module (raw-vtable dispatch handle)
     void        *pendingModule;           // +0x60 module to switch to next frame (raw-vtable dispatch)
+    void        *applicationData;         // +0x64 opaque host application-data pointer
     uint64_t     currentTimeMs;           // +0x68
     uint64_t     frameTimeMs;             // +0x70
     uint64_t     previousFrameTimeMs;     // +0x78
@@ -75,16 +78,24 @@ public:
     explicit ApplicationManager(AbyssEngine::Engine *engine);
     ~ApplicationManager();
 
+    bool CheckCrack(const char *path);
     void CheatAddCode(const AbyssEngine::String &code, int value);
     void CheatEnable(bool enable);
     void CheatSetCallback(void (*callback)(int, void *), void *data);
     void CheatUpdate(unsigned short key);
     void CheckForOrientationChange();
     void *ConfigGetKeysForAction(long long action);
+    void ConfigReadFile(AbyssEngine::String name);
     void ConfigRegisterAction(long long value, long long key);
+    void ConfigRegisterTokenReadFunction(AbyssEngine::String name,
+                                         AbyssEngine::ConfigTokenReadFunction read, void *context);
     void ConvertTouchCoords(int &x, int &y);
+    void EnablePerformanceTest(int count);
     uint64_t GetActionState();
+    void *GetApplicationData();
     void *GetApplicationModule(unsigned int id);
+    AbyssEngine::String GetApplicationVersionString();
+    void *GetCurrentApplicationModule() const;
     uint64_t GetCurrentTimeMillis();
     uint64_t GetElapsedTimeMillis();
     void *GetEngine();
@@ -100,10 +111,13 @@ public:
     void OnTouchMove(int xArg, int yArg, void *touch);
     void OnUpdate(long long now);
     void Quit();
+    void RegisterApplicationModule(unsigned int id, AbyssEngine::IApplicationModule *module);
     void ResetKeyState();
     void Resume(bool arg);
+    void SetApplicationData(void *data);
     void SetApplicationModule(AbyssEngine::IApplicationModule *module);
     void SetCurrentApplicationModule(unsigned int id);
+    void SetExitCallback(QuitCallback_t *callback);
     void SetLoadingCallback(LoadingCallback_t *callback, void *data);
     void SetResumeCallback(ResumeCallback_t *callback, void *data);
     void SoundEnable(bool enable);
@@ -117,12 +131,11 @@ public:
     void SoundPlayLoop(int soundId);
     void SoundPlayMusic(int soundId);
     void SoundPlayMusicLoop(int soundId);
-    void SoundPlay_vol(int soundId, float volume);
     void SoundRelease(int soundId);
     void SoundResume();
     void SoundResume(int soundId);
-    void SoundResumeSelf();
     void SoundResumeSounds();
+    void SoundSet(const AbyssEngine::AESoundInfo *info, int count);
     void SoundSetFXVolume(int volume);
     void SoundSetMusicVolume(int volume);
     void SoundSetVolume(int soundId, int volume);

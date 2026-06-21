@@ -669,23 +669,9 @@ void MatrixDebugOut(const Matrix &matrix)
     (void)matrix;
 }
 
-// ---- vertex dequantizers ----------------------------------------------------------------------
-// The mesh loader reads quantized vertex components (signed/unsigned 8- and 16-bit fixed point)
-// and widens them to float. In the shipped binary these are a single NEON vcvt.f32.s32 /
-// vcvt.f32.u32 instruction; the rounding-mode argument is the FPSCR control the instruction
-// observes. For the integral inputs used here every mode produces the same value, so the
-// conversion is the plain integer-to-float widening.
-float VectorSignedToFloat(int value, unsigned char roundingMode)
-{
-    (void)roundingMode;
-    return (float)value;
-}
-
-float VectorUnsignedToFloat(unsigned int value, unsigned char roundingMode)
-{
-    (void)roundingMode;
-    return (float)value;
-}
+// The vertex dequantizers VectorSignedToFloat / VectorUnsignedToFloat are tiny int->float
+// widenings (a single NEON vcvt in the binary) that the original always inlined; they live as
+// inline functions in AEMath.h and emit no standalone symbol here.
 
 } // namespace AEMath
 } // namespace AbyssEngine

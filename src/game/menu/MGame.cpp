@@ -576,20 +576,6 @@ __attribute__((visibility("hidden"))) extern int **g_goRecId;      // @0x19077a
 __attribute__((visibility("hidden"))) extern int **g_goSnd;        // @0x190746
 
 // Helper to (re)bind a DialogueWindow to the current level (the duplicated block).
-static void bindDialogueLevel(MGame *self) {
-    if (self->dialogueWindow == 0) {
-        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
-        DialogueWindow_ctor(w);
-        Level *lvl = self->level;
-        self->dialogueWindow = w;
-        if (lvl != 0) ((DialogueWindow *)(w))->setLevel(lvl);
-    } else if (self->dialogueWindow->hasLevel() == 0) {
-        Level *lvl = self->level;
-        if (lvl != 0) self->dialogueWindow->setLevel(lvl);
-    }
-    self->dialogueWindow->set(gStatus->getMission(), 2, -1);
-}
-
 // MGame::gameOverCheck(): handle player death/explosion and end-of-level dialogue.
 void MGame::gameOverCheck() {
     if (this->player->getHitpoints() <= 0) {
@@ -636,7 +622,19 @@ void MGame::gameOverCheck() {
     }
 
     if (this->level->checkGameOver(0) != 0) {
-        bindDialogueLevel(this);
+        // Bind (creating if needed) the dialogue window to the current level and
+        // raise the end-of-level mission dialogue.
+        if (this->dialogueWindow == 0) {
+            DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
+            DialogueWindow_ctor(w);
+            Level *lvl = this->level;
+            this->dialogueWindow = w;
+            if (lvl != 0) w->setLevel(lvl);
+        } else if (this->dialogueWindow->hasLevel() == 0) {
+            Level *lvl = this->level;
+            if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+        }
+        this->dialogueWindow->set(gStatus->getMission(), 2, -1);
         this->cutsceneActive = 1;
         ((MGame *)(this))->pauseSounds();
         this->pauseOpen = 1;
@@ -661,7 +659,19 @@ void MGame::gameOverCheck() {
                     survival = (obj == 0) || (((Objective *)(obj))->isSurvivalObjective() != 0);
                 }
                 if (!survival) {
-                    bindDialogueLevel(this);
+                    // Bind the dialogue window to the level and raise the
+                    // end-of-level mission dialogue.
+                    if (this->dialogueWindow == 0) {
+                        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
+                        DialogueWindow_ctor(w);
+                        Level *lvl = this->level;
+                        this->dialogueWindow = w;
+                        if (lvl != 0) w->setLevel(lvl);
+                    } else if (this->dialogueWindow->hasLevel() == 0) {
+                        Level *lvl = this->level;
+                        if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+                    }
+                    this->dialogueWindow->set(gStatus->getMission(), 2, -1);
                     this->pauseOpen = 0x101;
                     ((MGame *)(this))->pauseSounds();
                 }
@@ -840,17 +850,6 @@ __attribute__((visibility("hidden"))) extern int g_deLitB0;      // @0x18fc8c
 __attribute__((visibility("hidden"))) extern int g_deLitB1;      // @0x18fcb2
 __attribute__((visibility("hidden"))) extern int **g_deAlienFlag;// @0x18fb9c
 
-static void savePlayerStats(MGame *self, Status *status) {
-    PlayerEgo *ego = self->player;
-    Player *pl = (Player *)ego->player;
-    // Status fields at +0x5c/0x60/0x64/0x68 are not modeled in gof2/Status.h
-    // (owned by another batch); write them via typed byte offsets.
-    F<int>(status, 0x64) = ((Player *)(pl))->getHitpoints();
-    F<int>(status, 0x5c) = ((Player *)(pl))->getShieldHP();
-    F<int>(status, 0x60) = ((Player *)(pl))->getArmorHP();
-    F<int>(status, 0x68) = ((Player *)(pl))->getGammaHP();
-}
-
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
 void MGame::dockEvent(int p1, int p2) {
     (void)p1;
@@ -894,7 +893,16 @@ void MGame::dockEvent(int p1, int p2) {
             return;
         }
         if (this->touchesStream != 0) {
-            savePlayerStats(this, status);
+            // Snapshot the player's combat stats into the Status object.  Fields at
+            // +0x5c/0x60/0x64/0x68 are not modeled in gof2/Status.h (owned by another
+            // batch); write them via typed byte offsets.
+            {
+                Player *pl = (Player *)this->player->player;
+                F<int>(status, 0x64) = pl->getHitpoints();
+                F<int>(status, 0x5c) = pl->getShieldHP();
+                F<int>(status, 0x60) = pl->getArmorHP();
+                F<int>(status, 0x68) = pl->getGammaHP();
+            }
             // Status +0xf4 is not modeled in gof2/Status.h (owned by another batch).
             F<int>(status, 0xf4) = this->player->getCurrentSecondaryWeaponIndex();
             int autop = this->player->isAutoPilot();
@@ -1011,7 +1019,14 @@ void MGame::dockEvent(int p1, int p2) {
         ((Status *)(*(Station **)status))->inEmptyOrbit() == 0) {
         gAchievements->checkForNewMedal(this->player);
         **g_deAlienFlag = 0;
-        savePlayerStats(this, status);
+        // Snapshot the player's combat stats into the Status object (see dockEvent).
+        {
+            Player *pl = (Player *)this->player->player;
+            F<int>(status, 0x64) = pl->getHitpoints();
+            F<int>(status, 0x5c) = pl->getShieldHP();
+            F<int>(status, 0x60) = pl->getArmorHP();
+            F<int>(status, 0x68) = pl->getGammaHP();
+        }
         this->appManager->SetCurrentApplicationModule(5);
         this->active = 0;
     }
@@ -1630,19 +1645,6 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 __attribute__((visibility("hidden"))) extern uint8_t **g_scFlag; // @0x1904aa
 
 // Bind a DialogueWindow to the current level (duplicated block at 0x1019020c/0x190020).
-static void bindDlg(MGame *self) {
-    if (self->dialogueWindow == 0) {
-        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
-        DialogueWindow_ctor(w);
-        Level *lvl = self->level;
-        self->dialogueWindow = w;
-        if (lvl != 0) ((DialogueWindow *)(w))->setLevel(lvl);
-    } else if (self->dialogueWindow->hasLevel() == 0) {
-        Level *lvl = self->level;
-        if (lvl != 0) self->dialogueWindow->setLevel(lvl);
-    }
-}
-
 // Follow-up-mission setup helpers: getCampaignMission() yields the active campaign Mission*
 // (header types it as int); Mission::setType is not declared in the shared header.
 // Status::getCampaignMission
@@ -1697,7 +1699,17 @@ void MGame::successCheck() {
                 goto done;
             }
             // fallthrough: has success dialogue -> show it.
-            bindDlg(this);
+            // Bind (creating if needed) the dialogue window to the current level.
+            if (this->dialogueWindow == 0) {
+                DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
+                DialogueWindow_ctor(w);
+                Level *lvl = this->level;
+                this->dialogueWindow = w;
+                if (lvl != 0) w->setLevel(lvl);
+            } else if (this->dialogueWindow->hasLevel() == 0) {
+                Level *lvl = this->level;
+                if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+            }
             this->dialogueWindow->set(gStatus->getMission(), 1, -1);
             this->pauseOpen = 0x101;
             ((MGame *)(this))->pauseSounds();
@@ -1756,7 +1768,17 @@ void MGame::successCheck() {
             goto done;
         }
         // Non-campaign success-dialogue path.
-        bindDlg(this);
+        // Bind (creating if needed) the dialogue window to the current level.
+        if (this->dialogueWindow == 0) {
+            DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
+            DialogueWindow_ctor(w);
+            Level *lvl = this->level;
+            this->dialogueWindow = w;
+            if (lvl != 0) w->setLevel(lvl);
+        } else if (this->dialogueWindow->hasLevel() == 0) {
+            Level *lvl = this->level;
+            if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+        }
         // Slot holds either a Mission* (non-campaign) or a campaign mission id;
         // use a pointer-width carrier so neither is truncated on a 64-bit host.
         intptr_t m = gStatus->getCurrentCampaignMission() == 0
@@ -1769,7 +1791,17 @@ void MGame::successCheck() {
     }
 
 deliverFollowup:
-    bindDlg(this);
+    // Bind (creating if needed) the dialogue window to the current level.
+    if (this->dialogueWindow == 0) {
+        DialogueWindow *w = (DialogueWindow *)::operator new(0x74);
+        DialogueWindow_ctor(w);
+        Level *lvl = this->level;
+        this->dialogueWindow = w;
+        if (lvl != 0) w->setLevel(lvl);
+    } else if (this->dialogueWindow->hasLevel() == 0) {
+        Level *lvl = this->level;
+        if (lvl != 0) this->dialogueWindow->setLevel(lvl);
+    }
     {
         // Turn the just-completed mission into its follow-up "deliver to <station>" mission.
         // Retarget the campaign mission at the originating agent's station, raise its briefing,

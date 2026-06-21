@@ -80,8 +80,19 @@ float InvSqrt(float value);
 // Vertex dequantizers: convert a fixed-point/integer vertex component to float. In the binary
 // these are the NEON vcvt.f32.s32 / vcvt.f32.u32 conversions; `roundingMode` carries the two
 // FPSCR rounding-control bits the instruction observes (0 == round-to-nearest, the default).
-float VectorSignedToFloat(int value, unsigned char roundingMode);
-float VectorUnsignedToFloat(unsigned int value, unsigned char roundingMode);
+// They are tiny enough that the original always inlined them at every use site (there is no
+// standalone symbol in the shipped library), so they live inline in the header here too.
+inline float VectorSignedToFloat(int value, unsigned char roundingMode)
+{
+    (void)roundingMode;
+    return static_cast<float>(value);
+}
+
+inline float VectorUnsignedToFloat(unsigned int value, unsigned char roundingMode)
+{
+    (void)roundingMode;
+    return static_cast<float>(value);
+}
 
 } // namespace AEMath
 

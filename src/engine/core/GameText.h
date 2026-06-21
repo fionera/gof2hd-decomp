@@ -24,6 +24,13 @@ public:
 
     static int getLanguage();
 
+    // Region code returned as an AbyssEngine::String by value.
+    static AbyssEngine::String getRegionCode();
+    // Returns 1 if no character of `str` appears in the Arabic codepoint table.
+    static int isNonArabicString(const unsigned short* str, unsigned int count);
+    // Reshapes a logical-order Arabic string into the presentation glyph forms the font expects.
+    AbyssEngine::String convertStringFromArabic(AbyssEngine::String in);
+
     void ReadLangFile(unsigned int file, int count);
     AbyssEngine::String* getText(int key);
     void release();
