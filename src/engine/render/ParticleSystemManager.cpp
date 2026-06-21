@@ -28,9 +28,7 @@ extern "C" void  _ips_emitManual(void *sys, float x, float y, float z);
 extern "C" void  _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
 extern "C" void  _psm_spriteRender2(void *canvas, unsigned a);
 extern "C" void  _psm_arraySpriteCtor(void *arr);   // Array<ParticleSystemSprite*>::Array()
-extern "C" void  _psm_arrayMeshCtor(void *arr);      // Array<ParticleSystemMesh*>::Array()
 extern "C" void  _psm_arraySpriteDtor(void *arr);    // Array<ParticleSystemSprite*>::~Array()
-extern "C" void  _psm_arrayMeshDtor(void *arr);      // Array<ParticleSystemMesh*>::~Array()
 extern "C" void  _ips_enableUpdate(void *sys, bool enable);
 extern "C" short _ips_getParticleCount16(void *sys);
 extern "C" int   _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
@@ -79,7 +77,7 @@ ParticleSystemManager::ParticleSystemManager(
     this->spriteBlendMode = 0;
     this->spriteUsesExtra = spriteFlag ? 1 : 0;
 
-    _psm_arrayMeshCtor(&this->meshSystemCount);
+    new (&meshArray()) Array<ParticleSystemMesh *>();
     this->meshUvId = 0xffff;
     this->meshTextureId = meshTex;
     this->meshBlendMode = 0;
@@ -105,7 +103,7 @@ ParticleSystemManager::ParticleSystemManager(
     this->spriteBlendMode = spriteBlend;
     this->spriteUsesExtra = spriteFlag ? 1 : 0;
 
-    _psm_arrayMeshCtor(&this->meshSystemCount);
+    new (&meshArray()) Array<ParticleSystemMesh *>();
     this->meshUvId = meshTex;
     this->meshTextureId = 0xffff;
     this->meshBlendMode = meshBlend;
@@ -465,6 +463,6 @@ void ParticleSystemManager::renderPost3d()
 ParticleSystemManager::~ParticleSystemManager()
 {
     release();
-    _psm_arrayMeshDtor(&this->meshSystemCount);
+    meshArray().~Array();
     _psm_arraySpriteDtor(&this->spriteSystemCount);
 }
