@@ -15,7 +15,8 @@ class AEGeometry;
 class Level;
 class Route;
 class Explosion;
-namespace AbyssEngine { class Trail; class EaseInOutMatrix; }
+class Trail;   // global ::Trail (engine/render/Trail.h)
+namespace AbyssEngine { class EaseInOutMatrix; }
 
 class PlayerFighter : public KIPlayer {
 public:
@@ -76,7 +77,7 @@ public:
     int32_t field_0x148;
     Route* commandRoute;
     Array<BoundingVolume*>* boundingVolumes;  // active bounding volumes (owned)
-    AbyssEngine::Trail* trail;
+    Trail* trail;
     Vector workingPosition;             // current logical position (spawn-relative)
     Vector resetVecB;                   // zeroed on reset() (transient steering vector)
     Vector resetVecC;                   // zeroed on reset() (transient steering vector)
