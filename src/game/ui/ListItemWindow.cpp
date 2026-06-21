@@ -320,7 +320,12 @@ void ListItemWindow::draw()
             li->ship->getIndex();
             String s;
             s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
-            layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+            {
+                unsigned savedColor = layout->drawColor;
+                layout->drawColor = static_cast<unsigned>(color);
+                layout->drawBox(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), 2, s, 0u);
+                layout->drawColor = savedColor;
+            }
 
             ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
@@ -337,7 +342,12 @@ void ListItemWindow::draw()
         li->getIndex();
         String s;
         s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
-        layout->drawBox8(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), color, &s, 2);
+        {
+            unsigned savedColor = layout->drawColor;
+            layout->drawColor = static_cast<unsigned>(color);
+            layout->drawBox(1, c28 + boxX, boxY + c0c + c20, (w >> 1) - (c2c + c28), 2, s, 0u);
+            layout->drawColor = savedColor;
+        }
 
         Item *itemPtr;
         if (li->isItem() == 0) {

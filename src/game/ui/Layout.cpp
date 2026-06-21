@@ -1351,19 +1351,6 @@ void Layout::drawMissionRewardMessage(bool transition) {
     }
 }
 
-// ---- Internal helper methods --------------------------------------------
-// The small dispatch / forwarder / init helpers that the public drawing API
-// delegates to.
-
-// 8-arg drawBox variant: `color` overrides the draw colour for the box, `z` is
-// the box height.
-void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, int z) {
-    unsigned saved = this->drawColor;
-    this->drawColor = (unsigned)color;
-    this->drawBox(kind, x, y, w, z, *text, 0u);
-    this->drawColor = saved;
-}
-
 // ---- Canonical-named public draw entries --------------------------------
 
 // Take an owning copy of the title and render the full window frame (with

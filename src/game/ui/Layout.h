@@ -197,9 +197,6 @@ public:
     void startFade(bool fadeOut, int color, int duration);
     void update(int dt);
 
-    // ---- internal helpers ----
-    void drawBox8(int kind, int x, int y, int w, int color, String *text, int z);
-
     // ---- canonical-named public draw entries ----
     void drawWindow(String title, int x, int y, int w, int h);
     void drawWindow(String title);

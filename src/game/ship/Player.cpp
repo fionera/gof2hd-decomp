@@ -46,7 +46,6 @@ extern "C" int gShootSoundsByIndex[];
 extern "C" void *gAppManagerA;
 extern "C" void *gAppManagerB;
 extern "C" void *gAppManagerC;
-void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
 
@@ -1093,9 +1092,10 @@ extern "C" const float k_damage_full2;
 extern "C" const float k_damage_hc2;
 extern "C" const float k_damage_regen;
 
-// Full damage implementation. Player::damage(int) below forwards here with flag=0,
-// missionId=-1. Matches the Player_damage_full(self, amount, a, b) prototype at top.
-void Player_damage_full(Player *self, int amount, int flag, int missionId) {
+// Full damage implementation. Player::damage(int) forwards here with flag=false,
+// missionId=-1.
+void Player::damage(int amount, bool flag, int missionId) {
+    Player *self = this;
     if (self->vulnerable == 0) return;
     if (self->active == 0) return;
     if (self->hitpoints < 1) return;
@@ -1331,11 +1331,7 @@ __attribute__((minsize)) extern "C" void Player_ResumeEngineSound(Player *self, 
 }
 
 void Player::damage(int amount) {
-    return Player_damage_full(this, amount, 0, -1);
-}
-
-void Player::damage(int amount, bool flag, int missionId) {
-    return Player_damage_full(this, amount, flag, missionId);
+    this->damage(amount, false, -1);
 }
 
 void Player::stopShooting(int slot, int channel) {
@@ -1730,79 +1726,6 @@ void Player::StopEngineSound() {
 //   - playShootSound tail                            -> FModSound::play(int,Vector*,Vector*,float)  (0x71548)
 //   - addEnemies/addEnemy empty-list short-circuit   -> this->setEnemies()/setEnemy()  (0x72eb0 / 0x72ebc)
 // =====================================================================
-
-// =====================================================================
-// Cross-class forwarders.
-//
-// Level / KIPlayer call a handful of Player methods through thin
-// `Player_<method>_<caller>` shims (the suffix names the spawning call
-// site, e.g. _cp = createPlayer, _cs = createStation, _cm/_ccm = campaign
-// mission, _cwm = create-wingman, _csc/_cso = create-static/object,
-// _ag = addGroup, _cft = create-fighter). Each shim is a plain forward to
-// the corresponding real Player member. They are recovered here with their
-// existing C++-linkage signatures so the references resolve; the wiring pass
-// rewrites the call sites to direct member calls.
-// =====================================================================
-
-void Player_setEnemies_cp(Player *p, void *arr) {
-    p->setEnemies(static_cast<Array<Player *> *>(arr));
-}
-
-void Player_addEnemies_cp(Player *p, void *arr) {
-    p->addEnemies(static_cast<Array<Player *> *>(arr));
-}
-
-void Player_setEnemy_cp(Player *p, Player *e) {
-    p->setEnemy(e);
-}
-
-void Player_setMaxHitpoints_ag(Player *p, int hp) {
-    p->setMaxHitpoints(hp);
-}
-
-void Player_setMaxHitpoints_cft(Player *p, int hp) {
-    p->setMaxHitpoints(hp);
-}
-
-void Player_setAlwaysEnemy_ccm(Player *p) {
-    p->setAlwaysEnemy(true);
-}
-
-void Player_setAlwaysEnemy_cm(Player *p) {
-    p->setAlwaysEnemy(true);
-}
-
-void Player_setAlwaysFriend_csc(Player *p, int flag) {
-    p->setAlwaysFriend(flag != 0);
-}
-
-void Player_setAlwaysFriend_cso(Player *p, int flag) {
-    p->setAlwaysFriend(flag != 0);
-}
-
-void Player_setAlwaysFriend_cwm(Player *p, int flag) {
-    p->setAlwaysFriend(flag != 0);
-}
-
-void Player_setVulnerable_cft(Player *player, int flag) {
-    player->setVulnerable(flag != 0);
-}
-
-void Player_setPlayShootSound_ag(Player *p, int flag, int v) {
-    p->setPlayShootSound(flag != 0, v);
-}
-
-void Player_setEmpData_cs(Player *p, int a, int b) {
-    p->setEmpData(a, b);
-}
-
-void Player_ctor_cs(Player *p, int hp, int dmg, int a, int b, int c) {
-    new (p) Player(hp, dmg, a, b, c);
-}
-
-void Player_damageGamma_up(Player *p, float dmg) {
-    p->damageGamma(dmg);
-}
 
 // Player_dtor: the demangled destructor body reused as an `operator delete`
 // helper — run ~Player() on the object and hand the storage back to the caller,
