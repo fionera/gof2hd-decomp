@@ -198,8 +198,15 @@ def main():
         headers, cpps = wt.resolve_files(e["qualified"])
         e["headers"], e["cpps"] = headers, cpps
         e["files"] = sorted(set(headers) | set(cpps))
+        # platform/NDK free functions belong in the platform TU — do NOT nearest-neighbor them into an
+        # unrelated component (agents correctly refuse to put loadAPK in FModSound). Leave them
+        # file-less so orphan_root routes them to the platform/JNI bucket.
+        is_platform = e["symbol"].startswith(("Java_", "JNI_", "ndk23_", "ndk_")) or e["symbol"] in {
+            "loadAPK", "loadAPKAndZip", "opensubkeyfile", "decrypt", "setBaughtCredits",
+            "checkFirstCreditPackBoughtWriteAction", "getStringUTFChars", "releaseStringUTFChars",
+            "pConstToNonConst"}
         # free function nobody declares yet -> adopt its nearest-neighbor unit's file as home.
-        if not e["files"] and "::" not in e["qualified"]:
+        if not e["files"] and "::" not in e["qualified"] and not is_platform:
             e["files"] = home_files(e.get("ghidra_addr"))
         e["trusted"] = 1 <= len(e["files"]) <= MAX_TRUST
 
