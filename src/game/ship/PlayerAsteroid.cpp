@@ -174,7 +174,7 @@ void PlayerAsteroid::update(int delta)
     }
 
     if (this->state == 3) {
-        this->explosion->update(delta, *reinterpret_cast<const Vector *>(nullptr));
+        this->explosion->update(delta, *static_cast<const Vector *>(nullptr));
         if (this->explosion->isPlaying() == 0) {
             this->state = 4;
             player->setBombForce(0.0f);

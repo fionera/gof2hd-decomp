@@ -298,7 +298,7 @@ void PlayerTurret::update(int delta)
     }
     if (state == 3) {
         this->explosionTimer += delta;
-        this->explosion->update(delta, *reinterpret_cast<const Vector *>(nullptr));
+        this->explosion->update(delta, *static_cast<const Vector *>(nullptr));
         if (this->explosionTimer > 4500) {
             ((ParticleSystemManager*)this->level->field_74)->enableSystemEmit(this->particleSystemId, false);
             this->explosionTimer = 0;

@@ -1036,8 +1036,8 @@ extern const float g_PE_d_rateK;
 float PlayerEgo::down(int frameTime, float delta) {
     if (((void*&)this->miningGame) != 0) {
         if (C(*g_PE_d_miningGate, 0x10) == 0)   // RAWREAD: opaque flags struct via global holder (no modeled class)
-            return ((MiningGame *)(((void*&)this->miningGame)))->steerYAlt(delta);
-        return ((MiningGame *)(((void*&)this->miningGame)))->steerY(-delta);
+            return ((MiningGame *)(((void*&)this->miningGame)))->down(delta);
+        return ((MiningGame *)(((void*&)this->miningGame)))->up(-delta);
     }
 
     if (this->turretActive != 0) {
@@ -1927,8 +1927,8 @@ extern const float g_PE_u_rateK;
 float PlayerEgo::up(int frameTime, float delta) {
     if (((void*&)this->miningGame) != 0) {
         if (C(*g_PE_u_miningGate, 0x10) == 0)   // RAWREAD: opaque flags struct via global holder (no modeled class)
-            return ((MiningGame *)(((void*&)this->miningGame)))->steerY(-delta);
-        return ((MiningGame *)(((void*&)this->miningGame)))->steerYAlt(delta);
+            return ((MiningGame *)(((void*&)this->miningGame)))->up(-delta);
+        return ((MiningGame *)(((void*&)this->miningGame)))->down(delta);
     }
 
     if (this->turretActive != 0) {

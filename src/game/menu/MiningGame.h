@@ -72,10 +72,10 @@ public:
     MiningGame(int layer, int station, Hud* hud);
     ~MiningGame();
 
-    void up(float amount);
-    void down(float amount);
-    void left(float amount);
-    void right(float amount);
+    float up(float amount);
+    float down(float amount);
+    float left(float amount);
+    float right(float amount);
 
     int getOreAmount();
     int getAsteroidType();

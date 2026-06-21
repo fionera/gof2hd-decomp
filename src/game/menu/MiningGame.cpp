@@ -67,9 +67,9 @@ bool MiningGame::isInCurrentLayer()
     return distance < scale * (float)(size / 2);
 }
 
-void MiningGame::up(float amount)
+float MiningGame::up(float amount)
 {
-    this->inputY = amount * 3.0f;
+    return this->inputY = amount * 3.0f;
 }
 
 uint8_t MiningGame::gameWon()
@@ -77,9 +77,9 @@ uint8_t MiningGame::gameWon()
     return this->gameWonFlag;
 }
 
-void MiningGame::down(float amount)
+float MiningGame::down(float amount)
 {
-    this->inputY = amount * 3.0f;
+    return this->inputY = amount * 3.0f;
 }
 
 uint8_t MiningGame::gotCore()
@@ -87,9 +87,9 @@ uint8_t MiningGame::gotCore()
     return this->gotCoreFlag;
 }
 
-void MiningGame::left(float amount)
+float MiningGame::left(float amount)
 {
-    this->inputX = amount * 3.0f;
+    return this->inputX = amount * 3.0f;
 }
 
 uint8_t MiningGame::gameLost()
@@ -97,9 +97,9 @@ uint8_t MiningGame::gameLost()
     return this->gameLostFlag;
 }
 
-void MiningGame::right(float amount)
+float MiningGame::right(float amount)
 {
-    this->inputX = amount * 3.0f;
+    return this->inputX = amount * 3.0f;
 }
 
 MiningGame::~MiningGame()
