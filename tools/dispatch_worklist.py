@@ -96,8 +96,11 @@ def main():
              for l in open(os.path.join(VDIR, "in_scope_extra.txt")) if l.strip()]
     report = json.load(open(os.path.join(VDIR, "report.json")))
     dm_all = sf._demangle_many(set(report.get("wrong_type", []) and []) | set(absent) | set(extra))
+    # drop glue + benign ctor/dtor VARIANT mismatches (C1-vs-C2 etc. with identical demangled) — same
+    # alias artifacts scope_filter excludes; agents shouldn't be assigned no-op work on them.
     wrong = [w for w in report.get("wrong_type", [])
-             if sf.classify(w["symbol"], w["demangled"]) != "glue"]
+             if sf.classify(w["symbol"], w["demangled"]) != "glue"
+             and not (sf._CTORDTOR.match(w["symbol"]) and w["demangled"] in w["ours"])]
     sym_addr = wt.load_sym_addrs()
 
     def addr_of(sym):
