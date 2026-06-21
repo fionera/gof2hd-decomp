@@ -6,6 +6,10 @@
 #include "aetypes.h"
 #include "engine/render/ParticleSettings.h"
 
+class IParticleSystem;
+class ParticleSystemMesh;
+class ParticleSystemSprite;
+
 // AbyssEngine::BlendMode -- defined with the SAME canonical guarded form the rest of the
 // engine uses (PaintCanvas.h / ResourceMaterial.h). Guarded so a TU that already pulls one
 // of those definers does not get a redefinition.
@@ -96,5 +100,19 @@ public:
     int  init();
     void resetSystem(int handle);
     void renderMeshes();
+
+private:
+    // The (count, data, capacity) field triples overlay the engine's Array<T> container, so a
+    // reinterpret view lets the real ArrayAdd<T> / ArrayReleaseClasses<T> helpers operate on them.
+    Array<ParticleSystemSprite *> &spriteArray() {
+        return *reinterpret_cast<Array<ParticleSystemSprite *> *>(&spriteSystemCount);
+    }
+    Array<ParticleSystemMesh *> &meshArray() {
+        return *reinterpret_cast<Array<ParticleSystemMesh *> *>(&meshSystemCount);
+    }
+
+    // Resolve a packed system handle to its IParticleSystem* (mesh vs sprite array by bit 17);
+    // inlined at every call site, so the original emits no standalone symbol for it.
+    IParticleSystem *resolveSystem(int handle);
 };
 #endif

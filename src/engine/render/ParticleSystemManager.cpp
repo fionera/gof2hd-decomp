@@ -1,14 +1,28 @@
+// ArrayReleaseClasses<T> deletes its pointees, so it needs both the pointee's full type and the
+// out-of-line container-helper template definitions (kept behind this guard in Array.h). Define the
+// guard before the first include of Array.h so the helpers are visible here; using ArrayAdd<T> /
+// ArrayReleaseClasses<T> below then implicitly instantiates them.
+#define GOF2_ARRAY_INSTANTIATIONS
+#include "engine/core/Array.h"
+
+// The full ParticleSystemMesh type is needed for ArrayReleaseClasses<ParticleSystemMesh*> (which
+// destroys its pointees). Its header defines AbyssEngine::BlendMode, so pre-set the manager header's
+// enum guard afterwards to avoid a redefinition of the same enum. (ParticleSystemSprite.h is NOT
+// co-includable here -- it redefines the same unguarded enum -- so the sprite array helpers stay as
+// forwarders; see releaseSprites/addSpriteSystem.)
+#include "engine/render/ParticleSystemMesh.h"
+#define GOF2_ENUM_BlendMode
+
 #include "engine/render/ParticleSystemManager.h"
 #include "engine/render/IParticleSystem.h"
 #include "engine/render/PaintCanvas.h"
 
 // Engine helper forwarders (resolved by a later externs pass).
-extern "C" void  _psm_ArrayReleaseSprites(void *arr);
+extern "C" void  _psm_ArrayReleaseSprites(void *arr);  // ArrayReleaseClasses<ParticleSystemSprite*>
 extern "C" void  _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
 extern "C" void  _psm_renderMeshes(void *self);
 extern "C" void  _psm_renderSpritesExt(void *self);
 extern "C" void  _psm_releaseSprites(void *self);
-extern "C" void  _psm_releaseMeshArray(void *arr);
 extern "C" void  _psm_constructAfterCamera(void *self);
 extern "C" void  _ips_emitManual(void *sys, float x, float y, float z);
 extern "C" void  _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
@@ -26,28 +40,27 @@ extern "C" void  _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned
 extern "C" void  _psm_meshRender2(void *canvas, unsigned a);
 extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                               bool b4, bool b5);     // ParticleSystemMesh ctor
-extern "C" void  _psm_arrayMeshAdd(void *sys, void *arr);    // ArrayAdd<ParticleSystemMesh*>
 extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
                            bool b4, bool b5);        // ParticleSystemSprite ctor
-extern "C" void  _psm_arraySpriteAdd(void *sys, void *arr);  // ArrayAdd<ParticleSystemSprite*>
 extern "C" int   _ips_getParticleCount(void *sys);  // IParticleSystem::getParticleCount
 
 // Active particle-set descriptor (the engine resolves it from a global table).
 __attribute__((visibility("hidden"))) extern char *g_activeParticleSet;
 
 // Resolve a system handle to its slot in either the mesh or sprite array. Bit 17 of the shifted
-// handle selects the mesh array; -1 means "no system" and yields a null pointer.
-static IParticleSystem *resolveSystem(ParticleSystemManager *self, int handle)
+// handle selects the mesh array; -1 means "no system" and yields a null pointer. The original
+// build inlines this at every call site, so it is force-inlined and emits no standalone symbol.
+__attribute__((always_inline)) inline IParticleSystem *ParticleSystemManager::resolveSystem(int handle)
 {
     if (handle == -1)
         return nullptr;
     IParticleSystem **arr;
     int idx;
     if (handle << 0x11 < 0) {
-        arr = (IParticleSystem **)self->meshSystems;
+        arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
         idx = handle & 0x3fffffff;
     } else {
-        arr = (IParticleSystem **)self->spriteSystems;
+        arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
         idx = handle;
     }
     return arr[idx];
@@ -167,6 +180,9 @@ void ParticleSystemManager::reset()
 
 void ParticleSystemManager::releaseSprites()
 {
+    // ArrayReleaseClasses<ParticleSystemSprite*> -- forwarded: the full ParticleSystemSprite type
+    // (required to destroy the pointees) cannot be included in this TU alongside ParticleSystemMesh.h
+    // because both headers define the same unguarded AbyssEngine::BlendMode enum.
     _psm_ArrayReleaseSprites(&this->spriteSystemCount);
     if (this->spriteSystemId != 0xffffffff) {
         _psm_ReleaseSpriteSystemResource(this->canvas, this->spriteSystemId);
@@ -202,14 +218,14 @@ void ParticleSystemManager::render3d()
 
 void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setIndex)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         sys->setParticleSetIndex(setIndex);
 }
 
 void ParticleSystemManager::enableSystemRender(int handle, bool enable)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         sys->enableRender(enable);
 }
@@ -218,7 +234,7 @@ void ParticleSystemManager::release()
 {
     _psm_releaseSprites(this);
     this->canvas = nullptr;
-    _psm_releaseMeshArray(&this->meshSystemCount);
+    ArrayReleaseClasses<ParticleSystemMesh *>(meshArray());
 }
 
 void ParticleSystemManager::cameraToggle(ParticleSettings::CameraSet cam)
@@ -239,7 +255,7 @@ unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix co
 {
     void *sys = ::operator new(0xa0);
     _psmesh_ctor(sys, this->canvas, matrix, &sets, flag, this->meshUsesExtra != 0);
-    _psm_arrayMeshAdd(sys, &this->meshSystemCount);
+    ArrayAdd<ParticleSystemMesh *>(static_cast<ParticleSystemMesh *>(sys), meshArray());
 
     this->meshParticleCount += _ips_getParticleCount(sys);
 
@@ -252,7 +268,7 @@ unsigned int ParticleSystemManager::addMeshSystem(AbyssEngine::AEMath::Matrix co
 unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AEMath::Vector const &pos,
                                                      int ret, float p4)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys == nullptr)
         return ((unsigned long long)0xffffffffu << 32) | (unsigned int)(unsigned long)this;
 
@@ -266,7 +282,7 @@ unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AE
                                                      int ret, AbyssEngine::AEMath::Vector const &velocity,
                                                      float p5)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys == nullptr)
         return ((unsigned long long)0xffffffffu << 32) | (unsigned int)(unsigned long)this;
 
@@ -284,7 +300,7 @@ void ParticleSystemManager::renderSprites()
 
 void ParticleSystemManager::systemSetMatrix(int handle, AbyssEngine::AEMath::Matrix const *matrix)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         sys->setMatrix(matrix);
 }
@@ -292,14 +308,14 @@ void ParticleSystemManager::systemSetMatrix(int handle, AbyssEngine::AEMath::Mat
 // Particle-set descriptor passed by value as a single word in this build.
 void ParticleSystemManager::setParticleSetBySet(int handle, ParticleSettings::ParticleSet set)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         sys->setParticleSet(set);
 }
 
 void ParticleSystemManager::enableSystemUpdate(int handle, bool enable)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         _ips_enableUpdate(sys, enable);
 }
@@ -352,7 +368,7 @@ int ParticleSystemManager::addSpriteSystem(AbyssEngine::AEMath::Matrix const *ma
 {
     void *sys = ::operator new(0x78);
     _pss_ctor(sys, this->canvas, matrix, &sets, flag, this->spriteUsesExtra != 0);
-    _psm_arraySpriteAdd(sys, &this->spriteSystemCount);
+    ArrayAdd<ParticleSystemSprite *>(static_cast<ParticleSystemSprite *>(sys), spriteArray());
     this->spriteParticleCount += _ips_getParticleCount(sys);
     return this->spriteSystemCount - 1;
 }
@@ -401,7 +417,7 @@ void ParticleSystemManager::initMesh()
 
 void ParticleSystemManager::enableSystemEmit(int handle, bool enable)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         sys->enableEmit(enable);
 }
@@ -425,7 +441,7 @@ int ParticleSystemManager::init()
 
 void ParticleSystemManager::resetSystem(int handle)
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
+    IParticleSystem *sys = resolveSystem(handle);
     if (sys != nullptr)
         _ips_reset(sys);
 }

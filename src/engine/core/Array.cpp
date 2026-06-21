@@ -36,7 +36,19 @@ class CheatCode;
 class ImageFont;
 class TokenStruct;
 class AELoadedTexture;
+class Resource;
 } // namespace AbyssEngine
+
+// Global (non-namespaced) pointer-only element types.
+class GameRecord;
+class AbstractGun;
+class TouchSlider;
+class RadioMessage;
+class AEGeometry;
+class RepairBeam;
+class SpacePoint;
+class SolarSystem;
+class ImagePart;
 
 namespace ae = AbyssEngine;
 
@@ -46,12 +58,14 @@ template void ArrayRemove<ae::String*>(ae::String*, Array<ae::String*>&);
 template void ArrayRemove<ae::Transform*>(ae::Transform*, Array<ae::Transform*>&);
 
 // --- ArrayRelease<T> ------------------------------------------------------
+template void ArrayRelease<unsigned int>(Array<unsigned int>&);
 template void ArrayRelease<ae::AEMath::Matrix>(Array<ae::AEMath::Matrix>&);
 template void ArrayRelease<ae::AEMath::Vector>(Array<ae::AEMath::Vector>&);
 template void ArrayRelease<ae::IApplicationModule*>(Array<ae::IApplicationModule*>&);
 template void ArrayRelease<ae::Mesh*>(Array<ae::Mesh*>&);
 
 // --- ArrayAddCached<T> ----------------------------------------------------
+template void ArrayAddCached<unsigned int>(unsigned int, Array<unsigned int>&);
 template void ArrayAddCached<ae::AEMath::Matrix>(ae::AEMath::Matrix, Array<ae::AEMath::Matrix>&);
 template void ArrayAddCached<ae::Mesh*>(ae::Mesh*, Array<ae::Mesh*>&);
 
@@ -79,6 +93,7 @@ template void ArraySetLength<ae::Mesh*>(unsigned int, Array<ae::Mesh*>&);
 template void ArraySetLength<ae::String*>(unsigned int, Array<ae::String*>&);
 
 // --- ArrayReleaseClasses<T> -----------------------------------------------
+template void ArrayReleaseClasses<ae::AEMath::Vector*>(Array<ae::AEMath::Vector*>&);
 template void ArrayReleaseClasses<Array<ae::AEMath::Vector*>*>(Array<Array<ae::AEMath::Vector*>*>&);
 template void ArrayReleaseClasses<Array<ae::String*>*>(Array<Array<ae::String*>*>&);
 template void ArrayReleaseClasses<ae::ShaderBaseStruct*>(Array<ae::ShaderBaseStruct*>&);
@@ -86,6 +101,7 @@ template void ArrayReleaseClasses<ae::String*>(Array<ae::String*>&);
 template void ArrayReleaseClasses<ae::KeyFrame*>(Array<ae::KeyFrame*>&);
 
 // --- ArrayAdd<T> ----------------------------------------------------------
+template void ArrayAdd<long long>(long long, Array<long long>&);
 template void ArrayAdd<ae::AEMath::Matrix>(ae::AEMath::Matrix, Array<ae::AEMath::Matrix>&);
 template void ArrayAdd<ParticleSettings::ParticleSet>(ParticleSettings::ParticleSet, Array<ParticleSettings::ParticleSet>&);
 template void ArrayAdd<ae::TokenStruct*>(ae::TokenStruct*, Array<ae::TokenStruct*>&);
@@ -98,3 +114,60 @@ template void ArrayAdd<ae::Image2D*>(ae::Image2D*, Array<ae::Image2D*>&);
 template void ArrayAdd<ae::KeyCode*>(ae::KeyCode*, Array<ae::KeyCode*>&);
 template void ArrayAdd<ae::KeyFrame*>(ae::KeyFrame*, Array<ae::KeyFrame*>&);
 template void ArrayAdd<ae::Material*>(ae::Material*, Array<ae::Material*>&);
+
+template void ArrayAdd<ae::Resource*>(ae::Resource*, Array<ae::Resource*>&);
+
+// --- ArrayAdd<T>(const T*, count, Array<T>&) ------------------------------
+// Bulk-append (block copy) overload.
+template void ArrayAdd<ae::Resource*>(ae::Resource* const*, unsigned int, Array<ae::Resource*>&);
+
+// --- ArraySet<T> ----------------------------------------------------------
+template void ArraySet<ParticleSettings::ParticleSet>(const ParticleSettings::ParticleSet*, unsigned int, Array<ParticleSettings::ParticleSet>&);
+template void ArraySet<ParticleSettings::ParticleSet>(const Array<ParticleSettings::ParticleSet>&, Array<ParticleSettings::ParticleSet>&);
+template void ArraySet<ae::KeyFrame*>(ae::KeyFrame* const*, unsigned int, Array<ae::KeyFrame*>&);
+template void ArraySet<ae::KeyFrame*>(const Array<ae::KeyFrame*>&, Array<ae::KeyFrame*>&);
+
+// --- Array<T>::Array() / ~Array() (ctor & dtor) ---------------------------
+template Array<GameRecord*>::Array();
+template Array<GameRecord*>::~Array();
+template Array<AbstractGun*>::Array();
+template Array<AbstractGun*>::~Array();
+template Array<TouchSlider*>::Array();
+template Array<TouchSlider*>::~Array();
+template Array<RadioMessage*>::~Array();
+template Array<ae::SpriteSystem*>::Array();
+template Array<ae::SpriteSystem*>::~Array();
+template Array<ae::AELoadedTexture*>::Array();
+template Array<ae::AELoadedTexture*>::~Array();
+template Array<ae::IApplicationModule*>::Array();
+template Array<ae::IApplicationModule*>::~Array();
+template Array<ae::Camera*>::Array();
+template Array<ae::Camera*>::~Array();
+template Array<ae::Image2D*>::Array();
+template Array<ae::Image2D*>::~Array();
+template Array<ae::KeyCode*>::Array();
+template Array<ae::KeyCode*>::~Array();
+template Array<ae::Material*>::Array();
+template Array<ae::Material*>::~Array();
+template Array<ae::Resource*>::Array();
+template Array<ae::Resource*>::~Array();
+template Array<ae::ImageFont*>::Array();
+template Array<ae::ImageFont*>::~Array();
+template Array<Array<ImagePart*>*>::Array();
+template Array<Array<ae::String*>*>::Array();
+template Array<Array<ae::String*>*>::~Array();
+
+// --- ArrayAdd<T> (single-item) for ImageFont ------------------------------
+template void ArrayAdd<ae::ImageFont*>(ae::ImageFont*, Array<ae::ImageFont*>&);
+
+// --- Array<T> member methods ----------------------------------------------
+template void Array<ae::AEMath::Matrix>::clear();
+template void Array<ae::AEMath::Matrix>::resize(unsigned int);
+template void Array<ae::AEMath::Vector>::resize(unsigned int);
+template Array<ParticleSettings::ParticleSet>& Array<ParticleSettings::ParticleSet>::operator=(const Array<ParticleSettings::ParticleSet>&);
+template void Array<AEGeometry*>::clear();
+template void Array<AEGeometry*>::resize(unsigned int);
+template void Array<AEGeometry*>::push_back(AEGeometry*);
+template void Array<RepairBeam*>::push_back(RepairBeam*);
+template void Array<SpacePoint*>::clear();
+template void Array<SolarSystem*>::resize(unsigned int);

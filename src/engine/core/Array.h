@@ -129,6 +129,38 @@ void ArrayAdd(T item, Array<T> &a) {
     a.size_ = a.capacity_;
 }
 
+// Bulk append: grow by exactly `count` (exact-fit realloc), then block-copy the
+// incoming run onto the end. Overload of the single-item ArrayAdd above.
+template<class T>
+void ArrayAdd(const T *src, unsigned int count, Array<T> &a) {
+    a.capacity_ = a.size_ + count;
+    a.data_ = static_cast<T *>(realloc(a.data_, a.capacity_ * sizeof(T)));
+    memcpy(a.data_ + a.size_, src, count * sizeof(T));
+    a.size_ = a.capacity_;
+}
+
+// Replace the array's contents with `count` elements copied from `src`. Only
+// reallocates when the cached capacity differs; the new size is exactly `count`.
+template<class T>
+void ArraySet(const T *src, unsigned int count, Array<T> &a) {
+    T *p;
+    if (a.capacity_ == count) {
+        p = a.data_;
+    } else {
+        a.capacity_ = count ? count : 1;
+        p = static_cast<T *>(realloc(a.data_, a.capacity_ * sizeof(T)));
+        a.data_ = p;
+    }
+    memcpy(p, src, count * sizeof(T));
+    a.size_ = count;
+}
+
+// Replace the array's contents with a copy of `src`'s elements.
+template<class T>
+void ArraySet(const Array<T> &src, Array<T> &a) {
+    ArraySet(src.data_, src.size_, a);
+}
+
 template<class T>
 void ArraySetLength(unsigned int n, Array<T> &a) { a.resize(n); }
 
