@@ -633,31 +633,35 @@ inline bool noBlockingOverlay()
 // return value is a per-frame change code, not the live visibility: 1 when the
 // pointer was hidden this frame, -1 when it was (re)shown this frame, and 0 when
 // nothing changed (pointer left as-is, whether shown or hidden).
+// Hide the pointer, rewind the steering latch and report the change.
+// `rewindLatch` is false on the force-hide path, which skips the hacking /
+// latch-armed recompute but still clears the latch on arrow / game-over.
+static inline __attribute__((always_inline))
+int amvHideAndReportChange(bool rewindLatch, bool arrowPressed)
+{
+    Globals::mouseCursorActivated = 0;
+    if (rewindLatch) {
+        const bool latchArmed = (g_mousePointerLatch + 1 != 0);
+        g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
+    }
+    if (arrowPressed || Globals::showMouseDuringGameOver != 0)
+        g_mousePointerLatch = 0;
+    return 1;
+}
+
+// Pointer left unchanged. Clear the latch once the store module's (id 5)
+// key-binding window has been dismissed.
+static inline __attribute__((always_inline))
+int amvReportNoChange()
+{
+    if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
+        g_mousePointerLatch = 0;
+    return 0;
+}
+
 int ActualizeMouseVisibilty(int force)
 {
     const bool arrowPressed = ArrowKeyPressed();
-
-    // Hide the pointer, rewind the steering latch and report the change.
-    // `rewindLatch` is false on the force-hide path, which skips the hacking /
-    // latch-armed recompute but still clears the latch on arrow / game-over.
-    auto hideAndReportChange = [&](bool rewindLatch) {
-        Globals::mouseCursorActivated = 0;
-        if (rewindLatch) {
-            const bool latchArmed = (g_mousePointerLatch + 1 != 0);
-            g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
-        }
-        if (arrowPressed || Globals::showMouseDuringGameOver != 0)
-            g_mousePointerLatch = 0;
-        return 1;
-    };
-
-    // Pointer left unchanged. Clear the latch once the store module's (id 5)
-    // key-binding window has been dismissed.
-    auto reportNoChange = [&]() {
-        if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
-            g_mousePointerLatch = 0;
-        return 0;
-    };
 
     if (Globals::mouseCursorActivated != 0) {
         // -- Pointer currently shown: decide whether it stays up. ------------
@@ -686,14 +690,14 @@ int ActualizeMouseVisibilty(int force)
                     // here if an arrow is held while flying; otherwise nothing
                     // changes this frame.
                     if (arrowPressed && currentModuleIs(2))
-                        return hideAndReportChange(true);
-                    return reportNoChange();
+                        return amvHideAndReportChange(true, arrowPressed);
+                    return amvReportNoChange();
                 }
             }
         }
 
         // -- Gate failed: hide the pointer this frame. -----------------------
-        return hideAndReportChange(force == 0);
+        return amvHideAndReportChange(force == 0, arrowPressed);
     }
 
     // -- Pointer currently hidden: decide whether to (re)show it. ------------
@@ -716,7 +720,7 @@ int ActualizeMouseVisibilty(int force)
         return -1;
     }
 
-    return reportNoChange();
+    return amvReportNoChange();
 }
 
 // ---------------------------------------------------------------------------
