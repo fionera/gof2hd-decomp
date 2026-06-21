@@ -76,6 +76,7 @@ extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary 
 class Globals {
 public:
     void addSoundResourceToList(int snd);
+    AEGeometry* getShipGroup(int type, int variant, bool wireframe);
 };
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)
 
@@ -174,7 +175,6 @@ extern "C" int   PE_aa_approachStep(PlayerEgo *self, int hud2, void *radar);
 extern "C" void  Mat_mul(void *out, const void *a, const void *b);
 extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHandle);
 extern "C" void (*g_stopBoost_fn)(void*, int);
-void *Globals_getShipGroup(void *g, int race, int group, bool b);
 extern "C" void *TractorBeam_new(void *geo, int kind);
 
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
@@ -2880,8 +2880,8 @@ extern const float g_PE_ss_emDiv;
 extern const float g_PE_ss_emBias;
 
 void PlayerEgo::setShip(int race, int group) {
-    void *grp = Globals_getShipGroup(gGlobals, race, group, true);
-    this->field_0x4 = (AEGeometry *)grp;
+    AEGeometry *grp = gGlobals->getShipGroup(race, group, true);
+    this->field_0x4 = grp;
 
     void *canvas = (void*)gCanvas;
     void *mesh = ((PaintCanvas*)(long)(canvas))->MeshGetPointer((unsigned int)(((AEGeometry *)grp)->meshId));

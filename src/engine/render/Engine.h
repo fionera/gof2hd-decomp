@@ -41,6 +41,13 @@ struct LightColor {
 
 namespace AbyssEngine {
 
+// Screen/game orientation, shared with PaintCanvas. Guarded so a TU that already
+// pulls a definer (PaintCanvas.h / PaintCanvasClass.h) does not get a redefinition.
+#ifndef GOF2_ENUM_LandscapeMode
+#define GOF2_ENUM_LandscapeMode
+enum LandscapeMode { LandscapeMode_dummy = 0, LandscapeMode_1 = 1, LandscapeMode_2 = 2, LandscapeMode_3 = 3 };
+#endif
+
 class Engine {
 public:
     uint32_t deviceWidth;               // +0x0 device width (NFC::getWidth())
@@ -226,7 +233,17 @@ public:
     void SetTextureSlot(uint32_t textureIndex, uint32_t slot);
     void SetTextures(uint32_t first, uint32_t second);
     void SetTexturesExt(uint32_t first, ...);
-    void SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...);
+    // ---- platform / screenshot / device stubs (no-ops on the Android port) ----
+    void PreUpdate();
+    void Release();
+    void ActivateFrameBuffer(int slot);
+    void SetFrameBufferScaleFactor(float factor, int slot);
+    void GrabFrameBuffer();
+    void* GetJPEGImageData(float quality);
+    void SaveImageToPhotosAlbum();
+    void SetScreenOrientation(AbyssEngine::LandscapeMode orientation);
+    bool IsRefractActivated();
+    void Vibrate(unsigned short duration);
     void SetUVMatrix(const AbyssEngine::AEMath::Matrix &matrix);
     void SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &matrix);
     uint32_t ShaderInit();

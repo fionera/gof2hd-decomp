@@ -197,7 +197,9 @@ public:
     Route *createRoute(int count);
     void setPlayerRoute(Route *route);
     void createRadioMessages(int set);
-    void getBoundingVolume();
+    // Build the Array<BoundingVolume*> for a station/static-object collision mesh.
+    // `param` is unused; `kind` (as an int) selects station (<2000) vs static collision.
+    void *getBoundingVolume(int param, AEGeometry *kind);
     PlayerEgo* getPlayer();
     Array<KIPlayer*>* getEnemies();
     Array<KIPlayer*>* getLandmarks();
@@ -227,7 +229,6 @@ public:
     void renderBG(int t);
     void render(int ctx);
     void render2D();
-    void renderPause();
     void renderPause(long long ctx);
     void updateMissionOrbit(int dt);
     void updateOrbit(int dt);
@@ -237,20 +238,17 @@ public:
     void updateAsteroidCluster();
     void update(long long time, unsigned dtArg, int stackFlag);
     void update(long long time, bool param);
-    int checkObjective();
     int checkObjective(int param);
     void stealFriendCargo();
     uint8_t friendCargoWasStolen();
     void removeObjectives();
     Array<ObjectGun*>* getPlayerGuns();
     Array<ObjectGun*>* getEnemyGuns();
-    int checkGameOver();
     int checkGameOver(int param);
     void pirateStationAction(bool param);
     void uncoverWanted(int index);
     void attackWanted(int index);
     void almostKillWanted(int index);
-    void killWanted();
     void killWanted(int param);
     void friendTurnedEnemy();
     void friendTurnedEnemy(int param);
@@ -268,21 +266,14 @@ public:
     int getNumDeliveredPassengers();
     void incNumDeliveredPassengers(int delta);
 
-    // createScene()'s wingman-roster removal performs a real array-remove loop.
-    void wingmanDied_one(String *name, unsigned int *list);
-
     // createRadioMessage(): hand the finished message queue to the player-ego's
     // comm controller. A null queue clears the channel.
     void crm_dispatch(int egoComm, void *queue);
 
-    // createSpace(): three slices of the skybox/station builder — skybox detail
-    // meshes, the star-system backdrop spin, the home station + gates.
-    void csp_buildDetail();
+    // createSpace(): two slices of the skybox/station builder — the star-system
+    // backdrop spin, the home station + gates.
     void csp_buildStarSystemScene();
     void csp_buildStationAndGates();
-
-    // init(): place the player at the spawn appropriate for the orbit context.
-    void init_placePlayer(int statusA, int stationStack);
 
     // createMission(): build the per-mission-type actors/objectives.
     void cm_buildMissionScene(Mission *mission);
@@ -294,31 +285,9 @@ public:
     // createCampaignMission(): build the scripted campaign scene.
     void ccm_buildCampaignScene(int missionIndex);
 
-    // updateOrbit()/updateMissionOrbit()/updateAlienAttackers(): revive + reposition.
-    void uo_spawnFar(int *kiPlayer);
-    void umo_spawnAt(int *kiPlayer, int profile);
-    void uaa_placeAlien(int *kiPlayer, int alienInOrbit);
-
-    // createStaticObject(): construct the requested static-object type, positioned.
-    int cso2_construct(int type, int x, int y, int z);
-
-    // getBoundingVolume(): build one BoundingVolume from a raw collision record.
-    BoundingVolume *gbv_makeVolume(int rec, int shape);
-
-    // createShip(): build the class-appropriate bounding-volume array + wreck mesh.
-    void *cs_buildBV(int race, int type, int *outWreckMesh);
-
-    // createGasClouds(): pick a far random spawn position for cloud `i`.
-    void cgc_randomPos(int rng, int boss, unsigned i, Vector *out);
-
-    // initParticleSystems(): per-asteroid dust, ambient tint, engine-trail systems.
+    // initParticleSystems(): per-asteroid dust + engine-trail systems.
     void ips_buildAsteroidDust(void *arr);
-    void ips_applyAmbient();
     int  ips_addPlayerSystem(ParticleSettings::ParticleSet kind);
-
-    // createWingmen()/createScene(): position a wingman / static actor.
-    void cwm_placeWingman(int *kiSlot, unsigned i);
-    void csc_placeActor(int actor, int idx, int profile);
 
 };
 

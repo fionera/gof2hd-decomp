@@ -1316,23 +1316,38 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
     return;
 }
 
-void Engine::SetTexturesExt(uint32_t first, uint32_t second, uint32_t third, ...) {
-    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
-    if (manager->field_0x10 != 0) {                          // loaded-texture-name list: count
-        uint32_t values[3] = {first, second, third};
-        uint32_t slot = 0;
-        uint32_t *p = values;
-        while (*p != 0xffffffff) {
-            this->SetTextureSlot(*p, slot);
-            slot += 1;
-            p += 1;
-        }
-        for (uint32_t i = slot; i < 0x14; i += 1) {
-            this->boundTextures[i] = -1;
-        }
-        glActiveTexture(0x84c0);
-    }
-    return;
+// Screenshot, framebuffer-scaling and device hooks below are iOS-only entry points.
+// On the Android port they have no platform implementation and stay as no-ops.
+void Engine::PreUpdate() {
+}
+
+void Engine::Release() {
+}
+
+void Engine::ActivateFrameBuffer(int slot) {
+}
+
+void Engine::SetFrameBufferScaleFactor(float factor, int slot) {
+}
+
+void Engine::GrabFrameBuffer() {
+}
+
+void* Engine::GetJPEGImageData(float quality) {
+    return nullptr;
+}
+
+void Engine::SaveImageToPhotosAlbum() {
+}
+
+void Engine::SetScreenOrientation(AbyssEngine::LandscapeMode orientation) {
+}
+
+bool Engine::IsRefractActivated() {
+    return true;
+}
+
+void Engine::Vibrate(unsigned short duration) {
 }
 
 void Engine::SetWorldViewMatrix(const Matrix &matrix) {

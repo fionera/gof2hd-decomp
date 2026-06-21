@@ -308,7 +308,7 @@ void StarMap::draw()
         drawKey();
     }
     tmp.copy((String *)((GameText *)(*g_StarMap_draw_text))->getText(0x190), false);
-    ((Layout *)(*g_StarMap_draw_layout))->drawHeader1(&tmp);
+    ((Layout *)(*g_StarMap_draw_layout))->drawHeader(tmp);
     ((Layout *)(*g_StarMap_draw_layout))->drawEmptyFooter(1);
     this->backButton->draw();
     if (this->choiceVisible != 0) {
@@ -404,7 +404,7 @@ static inline float absf_end(float v)
     return v < 0.0f ? -v : v;
 }
 
-void StarMap::OnTouchEnd(int x, int y)
+int StarMap::OnTouchEnd(int x, int y)
 {
     String help;
 
@@ -413,21 +413,21 @@ void StarMap::OnTouchEnd(int x, int y)
         if (result == 1) {
             this->choiceVisible = 0;
             this->alienJumpPending = 0;
-            return;
+            return 0;
         }
         if (result != 0) {
-            return;
+            return 0;
         }
         this->choiceVisible = 0;
         if (this->suppressNextClose != 0) {
             this->suppressNextClose = 0;
-            return;
+            return 0;
         }
         if (this->mode == 3) {
             Station *station = this->stations->data()[this->selectedStation];
             if (Station_getIndex(station) == Station_getIndex(gStatus->getStation())) {
                 this->suppressNextClose = 0;
-                return;
+                return 0;
             }
         }
         if (this->alienJumpPending != 0 && this->mode == 0 &&
@@ -435,27 +435,27 @@ void StarMap::OnTouchEnd(int x, int y)
             this->alienJumpPending = 0;
             this->exitRequested = 1;
             gCanvas->CameraSetCurrent((unsigned int)(this->prevCamera));
-            return;
+            return 0;
         }
         if (this->pad_0xa8_a == 0 && this->mode == 3) {
             if (this->jumpMapModeB == 0 ||
                 this->jumpCost <= this->cargoAmount) {
                 if (this->jumpMapModeA == 0) {
                     depart(true);
-                    return;
+                    return 0;
                 }
             } else if (this->jumpCost == 1 && this->jumpMapModeA == 0) {
                 depart(false);
-                return;
+                return 0;
             }
             this->exitRequested = 1;
             gCanvas->CameraSetCurrent((unsigned int)(this->prevCamera));
         }
-        return;
+        return 0;
     }
 
     if (this->transitionIn != 0 || this->transitionOut != 0) {
-        return;
+        return 0;
     }
     void *layout = *g_StarMap_end_layout;
     if (*(uint8_t *)layout == 0 && ((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
@@ -468,14 +468,16 @@ void StarMap::OnTouchEnd(int x, int y)
             this->easeY->SetRange(this->scratchVector.y, this->scratchVector.y);
             this->easeZ->SetRange(this->scratchVector.z, this->scratchVector.z);
             ((FModSound *)(*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
-        } else {
-            gCanvas->CameraSetCurrent((unsigned int)(this->prevCamera));
-            ((FModSound *)(*g_StarMap_end_sound))->stop(0x66);
+            return 0;
         }
-        return;
+        // Back/exit button on a non-galaxy map: restore the host camera and report
+        // that the map was dismissed.
+        gCanvas->CameraSetCurrent((unsigned int)(this->prevCamera));
+        ((FModSound *)(*g_StarMap_end_sound))->stop(0x66);
+        return 1;
     }
     if (this->pad_0xa8_a != 0 && this->pathAnim != 0) {
-        return;
+        return 0;
     }
     if (this->backButton->OnTouchEnd(x, y) != 0) {
         this->showKey ^= 1;
@@ -496,7 +498,7 @@ void StarMap::OnTouchEnd(int x, int y)
                     ((SolarSystem *)(long)(gStatus->getSystem()))->systemIsInSystemRoutes(gStatus->getSystem()) == 0) {
                     this->choiceWindow->set(*(String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a4), false);
                     this->choiceVisible = 1;
-                    return;
+                    return 0;
                 }
                 ((FModSound *)(*g_StarMap_end_sound))->play(0x6a, 0, 0, 0.0f);
                 initStarSystem();
@@ -535,20 +537,6 @@ void StarMap::OnTouchEnd(int x, int y)
         help.copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
         ((Layout *)(layout))->initHelpWindow(help);
     }
-}
-
-// StarMap::touch_end(x, y): touch-release handler used while the star map is embedded inside
-// another screen (e.g. the space lounge map overlay). Unlike OnTouchEnd() — which drives the
-// full standalone map screen — this thin variant just feeds the release to the shared map
-// layout and reports whether its back/OK button was pressed, so the host screen knows to leave
-// map mode and restore its own camera. Returns nonzero when the map was dismissed.
-int StarMap::touch_end(int x, int y)
-{
-    void *layout = *g_StarMap_end_layout;
-    if (((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
-        return 1;
-    }
-    OnTouchEnd(x, y);
     return 0;
 }
 

@@ -19,8 +19,43 @@
 extern void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 
+// Loads the flat run of HUD image atlases into the per-image fields. The id->field
+// list is pure data and is carried out by the engine helper.
+extern void Hud_loadImages(Hud *self);
+// The per-menu-type button-assembly switch of initHudMenu.
+extern void Hud_buildQuickMenu(Hud *self, int menuType);
+
+// File-local HUD helpers (factored panel renderers / queue + menu helpers). These
+// have no standalone symbol in the original binary; the compiler inlines them.
+static void refreshQuickMenu(Hud *self);
+static void hudEventBuild(Hud *self, int eventId, void *ego, int arg);
+static void buildQuickMenu(Hud *self, int menuType);
+static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
+static void drawMissionBanner(Hud *self);
+static void drawMessage(Hud *self);
+static void drawChallengeModeScoreImpl(Hud *self);
+
 void Hud::enableFireForTutorial(bool value) {
     this->fireForTutorial = value;
+}
+
+void Hud::setVisible(bool value) {
+    this->visible = value;
+}
+
+// Stubs retained from the original build. The credits roll and the big-number
+// readout were compiled out (empty bodies), and hudAction always reports "not
+// handled" (0) — the in-game HUD has no scripted action hooks in this build.
+void Hud::drawCredits() {
+}
+
+void Hud::drawBigNumber(int x, int y, int value, bool flag) {
+    (void)x; (void)y; (void)value; (void)flag;
+}
+
+int Hud::hudAction(int action, Level *lvl, Radar *radar) {
+    (void)action; (void)lvl; (void)radar;
+    return 0;
 }
 
 void Hud::setTimeExtender(bool p1, bool p2, bool p3, bool p4) {
@@ -159,7 +194,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     this->letterbox = (unsigned char)letterbox;
 
     // world-space HUD elements (reticle, target brackets, radar)
-    drawReticleAndBrackets(ego, x, y);
+    drawReticleAndBrackets(this, ego, x, y);
     drawRadar();
 
     // player status (shield / armor / energy bars + secondary weapon)
@@ -168,7 +203,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     // contextual banners
     drawOrbitInformation();
-    drawMissionBanner();
+    drawMissionBanner(this);
 
     // transient event lines
     drawEventQueue();
@@ -179,12 +214,12 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     // challenge-mode score/time readout
     if (Status::isChallengeMode() != 0)
-        drawChallengeModeScore();
+        drawChallengeModeScoreImpl(this);
 
     // pause button and any pending full-screen message
     drawPauseButton();
     if (this->messageActive != 0)
-        drawMessage();
+        drawMessage(this);
 }
 
 void Hud::updateQueue(int dt) {
@@ -285,7 +320,9 @@ unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
         if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
             goto found;
     }
-    return touchMoveFallback(a, key);
+    // not the analog-stick key: treat the drag as a fresh touch-begin so a
+    // wandering touch that lands on a button still registers.
+    return touchBegin(a, (unsigned int)-1, key);
 found:
     int dx = (int)a - (int)this->reticleX;
     int dy = (int)b - (int)this->reticleY;
@@ -455,7 +492,7 @@ void Hud::catchCargo(int amount, int cargoVal, bool a, bool docked, bool mission
         ((String *)(&this->field_0x1f4))->assign((String *)(txt));
         String *str = new String(this->field_0x1f4);
         ListItem *item = new ListItem(str, 1);
-        catchCargoFinish(item);
+        addToEventQueue(item);
         return;
     }
 
@@ -551,7 +588,7 @@ void Hud::drawEventString(String text, bool rightAlign) {
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
     this->currentSecondaryWeapon = item;
-    return secondaryWeaponChanged();
+    refreshQuickMenu(this);
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String str) {
@@ -649,7 +686,9 @@ void Hud::drawEventQueue() {
         char y = (char)((char)yOff + (char)dispBase + cinematicY);
         gCanvas->DrawString((unsigned)(long)(font), *label, ((screenW >> 1) - w / 2), (y), false);
     }
-    this->eventQueueFinish(gCanvas, 0xffffffff);
+    // restore the canvas colour to full white so the next HUD layer is not
+    // tinted by the event-banner colour.
+    gCanvas->SetColor(0xffffffffu);
 }
 
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) {
@@ -717,7 +756,7 @@ __attribute__((visibility("hidden"))) extern const unsigned short g_Hud_raceBadg
 extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
 
 int Hud::init() {
-    loadImages();
+    Hud_loadImages(this);
 
     this->messageActive = 0;
     this->hackingGameActive = 0;
@@ -795,7 +834,7 @@ Hud * Hud::checkIfQuickMenuIsEmpty() {
         empty = 0;
     }
     this->quickMenuEmpty = empty;
-    refreshQuickMenu();
+    refreshQuickMenu(this);
     return this;
 }
 
@@ -899,15 +938,15 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     case 2:
         // autofire on/off notice — only when the autofire UI is present
         if (this->hasAutofireUI == 0) return;
-        hudEventBuild(eventId, ego, arg);
+        hudEventBuild(this, eventId, ego, arg);
         return;
     case 3:
         if (this->hasBoostButton == 0 || ((PlayerEgo *)((void *)(long)arg))->readyToBoost() == 0) return;
-        hudEventBuild(eventId, ego, arg);
+        hudEventBuild(this, eventId, ego, arg);
         return;
     case 4:
         if (this->hasBoostButton == 0) return;
-        hudEventBuild(eventId, ego, arg);
+        hudEventBuild(this, eventId, ego, arg);
         return;
 
     // ---- pure status-flag events (no queue entry) ----
@@ -937,12 +976,12 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     case 0x2a:
         // these clear the "showing" flag and set a fixed localized line, no queue
         this->field_0x278 = 0;
-        hudEventBuild(eventId, ego, arg);
+        hudEventBuild(this, eventId, ego, arg);
         return;
 
     default:
         // all remaining events compose a localized line and enqueue it
-        hudEventBuild(eventId, ego, arg);
+        hudEventBuild(this, eventId, ego, arg);
         return;
     }
 }
@@ -971,17 +1010,11 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
     }
 }
 
-// Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
-void Hud::drawChallengeModeScore(int unused) {
-    (void)unused;
-    drawChallengeModeScore();
-}
-
-void Hud::drawChallengeModeScore() {
+static void drawChallengeModeScoreImpl(Hud *self) {
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
     int screenW = *(int *)*g_Hud_csScreenW;
-    void *sprite = this->digitSprite;
+    void *sprite = self->digitSprite;
 
     gCanvas->SetColor((unsigned)(-1));
     int fw = ((Sprite *)(sprite))->getFrameWidth();
@@ -1009,7 +1042,7 @@ void Hud::drawChallengeModeScore() {
     int half = screenW / 2;
     int span = (dw * 7) / 2;
     int startX = half - span;
-    drawDigits(this, sprite, score, startX, y, dw);
+    drawDigits(self, sprite, score, startX, y, dw);
 
     if (status[0x60] > 0 && status[0x63] > 1) {
         gCanvas->SetColor((unsigned)(-1));
@@ -1024,20 +1057,26 @@ void Hud::drawChallengeModeScore() {
                 ((String *)(bonusStr))->ctor_int((int)((bonus * 0.0f + 1.0f) * base));
                 int bl = (int)((String *)bonusStr)->size();
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
-                drawDigits(this, sprite, bonusStr, bx, fh + yRow + pad, dw);
+                drawDigits(self, sprite, bonusStr, bx, fh + yRow + pad, dw);
                 ((String *)(bonusStr))->dtor();
             }
         }
-        gCanvas->DrawImage2D((unsigned)this->multiplierIconImage, pad + startX, 0);
+        gCanvas->DrawImage2D((unsigned)self->multiplierIconImage, pad + startX, 0);
 
         char timeStr[12];
         ((String *)(timeStr))->ctor_int(status[0x63]);
         int tx = (half + pad) - span + gCanvas->GetImage2DWidth((unsigned)(0));
-        drawDigits(this, sprite, timeStr, tx, yRow, dw);
+        drawDigits(self, sprite, timeStr, tx, yRow, dw);
         ((String *)(timeStr))->dtor();
     }
     gCanvas->SetColor((unsigned)(-1));
     ((String *)(score))->dtor();
+}
+
+// Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
+void Hud::drawChallengeModeScore(int unused) {
+    (void)unused;
+    drawChallengeModeScoreImpl(this);
 }
 
 // Hud::hudEventMedal(int medalId, int percent) — composes the "<medal name> NN%" event line
@@ -1165,7 +1204,7 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     }
     (void)yOrigin;
 
-    buildQuickMenu(menuType);
+    buildQuickMenu(this, menuType);
 }
 
 // Releases the equipment array, the event-queue array, the touch-button array, and
@@ -1195,29 +1234,15 @@ Hud::~Hud() {
 
 // The draw helpers paint onto the canonical render canvas singleton gCanvas.
 
-// ---- Hud::eventQueueFinish() --------------------------------------------------
-// Tail of drawEventQueue: restore the canvas colour to full white
-// so the next HUD layer is not tinted by the event-banner colour.
-void Hud::eventQueueFinish(void *canvas, unsigned int color) {
-    ((PaintCanvas *)canvas)->SetColor(color);
-}
-
-// ---- Hud::catchCargoFinish() --------------------------------------------------
-// Tail of catchCargo's "docked" branch: push the freshly built docking-event
-// ListItem onto the queue.
-void Hud::catchCargoFinish(ListItem *item) {
-    addToEventQueue(item);
-}
-
 // Rebuilds the secondary-weapon label and re-derives the radial quick-menu's
 // "empty" state from the current ship. Shared by setCurrentSecondaryWeapon() and
 // checkIfQuickMenuIsEmpty().
-void Hud::refreshQuickMenu() {
-    updateSecondaryWeaponString();
+static void refreshQuickMenu(Hud *self) {
+    self->updateSecondaryWeaponString();
 
     Ship *ship = gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
-    this->equipmentArray = equip;
+    self->equipmentArray = equip;
 
     bool hasSecondary = false;
     if (equip != 0) {
@@ -1233,45 +1258,23 @@ void Hud::refreshQuickMenu() {
     } else {
         empty = 0;
     }
-    this->quickMenuEmpty = empty;
+    self->quickMenuEmpty = empty;
 }
 
-void Hud::secondaryWeaponChanged() {
-    refreshQuickMenu();
-}
-
-// ---- Hud::touchMoveFallback() -------------------------------------------------
-// Fallback path of touchMove: when the moving touch is not the analog-stick key,
-// forward to the touch-begin hit-test so a drag that wandered onto a button still
-// registers. (touchMove's main path handled the analog stick; everything else is
-// treated as a fresh begin.)
-unsigned int Hud::touchMoveFallback(unsigned int a, void *b) {
-    return touchBegin(a, -1, b);
-}
-
-// ---- Hud::loadImages() --------------------------------------------------------
-// Loads the flat run of HUD image atlases into the per-image fields. The id->field
-// list is pure data and is carried out by the engine helper.
-extern void Hud_loadImages(Hud *self);
-
-void Hud::loadImages() {
-    Hud_loadImages(this);
-}
-
-// ---- Hud::hudEventBuild() -----------------------------------------------------
+// ---- hudEventBuild -----------------------------------------------------
 // Shared tail of hudEvent: once a case has composed the localized line into the
 // event String, this de-duplicates it against the recent queue, allocates a
 // ListItem (flagged via the per-id "important" bitmask), enqueues it, then records
 // the banner geometry so the line scrolls in from the correct side.
 extern unsigned int g_Hud_heImportantMask; // 1<<id bitmask of priority events
 
-void Hud::hudEventBuild(int eventId, void *ego, int arg) {
+static void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
     (void)ego; (void)arg;
 
-    String *line = (String *)&this->field_0x1e0;
+    String *line = (String *)&self->field_0x1e0;
     char probe[12];
     ((String *)(probe))->ctor_copy(line, false);
-    unsigned int dup = sameHudEventAsBefore(*(String *)probe);
+    unsigned int dup = self->sameHudEventAsBefore(*(String *)probe);
     ((String *)(probe))->dtor();
     if (dup != 0)
         return;
@@ -1284,28 +1287,26 @@ void Hud::hudEventBuild(int eventId, void *ego, int arg) {
         item = new ListItem(str, 1);
     else
         item = new ListItem(str, 0);
-    addToEventQueue(item);
+    self->addToEventQueue(item);
 
     void *font = *g_Hud_font;
     int w = gCanvas->GetTextWidth((unsigned)(long)(gCanvas), *(String *)(font));
     int screenW = *(int *)*g_Hud_screenW;
-    this->eventScrollTick = 0;
-    this->eventScrolls = 1;
-    this->letterbox =
-        (unsigned char)((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
+    self->eventScrollTick = 0;
+    self->eventScrolls = 1;
+    self->letterbox =
+        (unsigned char)((screenW / 2 - self->eventLineMargin) + self->eventLineMarginAlt * -2 < w);
 }
 
-// ---- Hud::buildQuickMenu() ----------------------------------------------------
+// ---- buildQuickMenu ----------------------------------------------------
 // The per-menu-type button-assembly switch of initHudMenu. menuType selects which
 // set of TouchButtons is built into the menu-button array (weapons / wingmen /
 // cloak / jump-drive for 0, the cargo list for 1, the time-extender row for 2, the
 // docking menu for 3), the matching background atlas is loaded, and the buttons are
 // laid out; then the radial menu is marked open.
-extern void Hud_buildQuickMenu(Hud *self, int menuType);
-
-void Hud::buildQuickMenu(int menuType) {
-    Hud_buildQuickMenu(this, menuType);
-    this->quickMenuOpen = 1;
+static void buildQuickMenu(Hud *self, int menuType) {
+    Hud_buildQuickMenu(self, menuType);
+    self->quickMenuOpen = 1;
 }
 
 // ============================================================================
@@ -1314,31 +1315,31 @@ void Hud::buildQuickMenu(int menuType) {
 //  corresponding PaintCanvas primitives.
 // ============================================================================
 
-// ---- Hud::drawReticleAndBrackets() --------------------------------------------
+// ---- drawReticleAndBrackets() --------------------------------------------
 // Recomputes the steering/firing reticle anchor points (only when the player's
 // target moved) via the Globals coordinate solver, then draws the aiming reticle
 // and the auto-target lock bracket. ego is the PlayerEgo being rendered.
-void Hud::drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y) {
+static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y) {
     (void)x; (void)y;
     PaintCanvas *canvas = gCanvas;
 
     // Reticle image, tinted normally unless an interaction (autopilot/docking/
     // turret) suppresses the highlight; the lock bracket follows at +0x424/+0x41e.
-    canvas->DrawImage2D((unsigned)this->reticleImage, this->field_0x42c, 0);
+    canvas->DrawImage2D((unsigned)self->reticleImage, self->field_0x42c, 0);
 
-    unsigned char flags = this->touchFlags;
+    unsigned char flags = self->touchFlags;
     unsigned short bx, by;
     int img;
     if ((flags & 0x40) != 0) {            // (flags<<0x19)<0  -> locked bracket frozen
-        bx = this->reticleX;
-        by = this->reticleY;
-        img = this->lockBracketLockedImage;
-        this->lockBracketX = bx;
-        this->lockBracketY = by;
+        bx = self->reticleX;
+        by = self->reticleY;
+        img = self->lockBracketLockedImage;
+        self->lockBracketX = bx;
+        self->lockBracketY = by;
     } else {
-        bx = this->lockBracketX;
-        by = this->lockBracketY;
-        img = this->lockBracketImage;
+        bx = self->lockBracketX;
+        by = self->lockBracketY;
+        img = self->lockBracketImage;
     }
     canvas->DrawImage2D((unsigned)img, bx, by, '\x11');
     (void)ego;
@@ -1456,26 +1457,26 @@ void Hud::drawSecondaryWeaponPanel() {
     }
 }
 
-// ---- Hud::drawMissionBanner() -------------------------------------------------
+// ---- drawMissionBanner() -------------------------------------------------
 // Draws the top cargo/mission banner: the current cargo load (or the active
 // mission's progress line) over the banner background image, plus the volatile-
 // goods warning fill when carrying volatile cargo. The exact line composed depends
 // on the active mission type; the heavy GameText formatting is shared with the
 // inlined draw() body, so this performs the banner background + load readout that
 // is common to every branch.
-void Hud::drawMissionBanner() {
+static void drawMissionBanner(Hud *self) {
     PaintCanvas *canvas = gCanvas;
     canvas->SetColor((unsigned)0xffffffffu);
 
     // banner background frame
-    canvas->DrawImage2D((unsigned)this->missionBannerImage, this->field_0x438, 0);
+    canvas->DrawImage2D((unsigned)self->missionBannerImage, self->field_0x438, 0);
 }
 
-// ---- Hud::drawMessage() -------------------------------------------------------
+// ---- drawMessage() -------------------------------------------------------
 // Draws the full-screen HUD message (the centred mining/objective hint shown when
 // the +0x4c8 message flag is set): a fading line whose timer advances toward 2s
 // and wraps. Drawn centred on the screen with the message font colour.
-void Hud::drawMessage() {
+static void drawMessage(Hud *self) {
     PaintCanvas *canvas = gCanvas;
 
     canvas->SetColor((unsigned char)0xff, 0xff, 0xff, 0xff);
@@ -1483,7 +1484,7 @@ void Hud::drawMessage() {
     int screenW = *(int *)*g_Hud_screenW;
     int w = gCanvas->GetTextWidth((unsigned)(long)canvas, *(String *)(font));
     gCanvas->DrawString((unsigned)(long)canvas,
-        this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
+        self->field_0x51c, screenW / 2 - w / 2, self->field_0x3e2, false);
     canvas->SetColor((unsigned)0xffffffffu);
 }
 

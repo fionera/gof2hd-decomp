@@ -303,7 +303,7 @@ void ListItemWindow::draw()
     {
         String s;
         s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
-        layout->drawHeader1(&s);
+        layout->drawHeader(s);
     }
 
     ListItem *li = this->item;

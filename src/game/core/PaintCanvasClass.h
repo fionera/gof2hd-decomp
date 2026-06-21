@@ -154,6 +154,7 @@ public:
     void SetProjectionMatrix3d(float fov, float zNear, float zFar);
     void ResetPersMatrix();
     void EnableClip(int x, int y, int w, int h);
+    void DisableClip();
     void FogEnable(bool mode, AbyssEngine::FogMode enable);
     void FogSetParameter(AbyssEngine::FogMode mode, float start, float end, float density, unsigned int color);
     void ChangeCubeTexture(unsigned int idx);

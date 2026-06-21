@@ -380,16 +380,13 @@ int Layout::drawMask4(int p1, int p2, int p3, int p4) {
     pc->SetColor(0x80);
     pc->FillRectangle(p1, p2, p3, 0);
     (void)p4;
-    this->drawMaskTail(pc, saved);
+    pc->SetColor((unsigned)saved);
     return 0;
 }
 
-void Layout_formatNumber(String *out, int n);
-
 // Format `n` as a grouped credit amount with a trailing "$".
 String Layout::formatCredits(int n) {
-    String num;
-    Layout_formatNumber(&num, n);
+    String num = Layout::formatNumber(n);
     String suffix("$");
     return num + suffix;
 }
@@ -444,15 +441,15 @@ __attribute__((visibility("hidden"))) extern const char g_fnSepA[];    // langs 
 __attribute__((visibility("hidden"))) extern const char g_fnSepB[];    // other langs
 __attribute__((visibility("hidden"))) extern const char g_fnOverflow[];
 
-// Build a grouped (thousands-separated) decimal string into `out`.
-void Layout_formatNumber(String *out, int value) {
+// Build a grouped (thousands-separated) decimal string.
+String Layout::formatNumber(int value) {
     unsigned mag = (value < 0) ? (unsigned)(-value) : (unsigned)value;
 
     String digits;
     digits.ctor_int((int)mag);
     int len = (int)digits.size();
 
-    *out = String(g_fnEmpty);
+    String out(g_fnEmpty);
 
     String sep;
     unsigned short lang = GameText::getLanguage();
@@ -462,37 +459,31 @@ void Layout_formatNumber(String *out, int value) {
         sep = String(g_fnSepB);
 
     if (len < 4) {
-        out->assign(&digits);
+        out.assign(&digits);
     } else {
         int i = len;
         while (i > 2) {
             i -= 3;
             String grp;
             grp.SubString(&digits, i, len);
-            String prefix = (out->size() < 2) ? String() : sep;
-            *out = prefix + grp + *out;
+            String prefix = (out.size() < 2) ? String() : sep;
+            out = prefix + grp + out;
         }
         String head;
         head.SubString(&digits, 0, i);
         if (head.size() != 0)
-            *out = head + sep + *out;
+            out = head + sep + out;
     }
 
     if ((unsigned)value > 0x7fffffff)
-        *out = String(g_fnOverflow) + *out;
+        out = String(g_fnOverflow) + out;
+
+    return out;
 }
 
 __attribute__((visibility("hidden"))) extern int *gW1;
 __attribute__((visibility("hidden"))) extern int *gW2;
 __attribute__((visibility("hidden"))) extern int *gW3;
-
-// Centre a window over the full content area and forward to the core renderer.
-void Layout::drawWindow2(const String *param, int flag) {
-    String tmp(*param);
-    int p4 = *gW2;
-    int p5 = *gW3 - ((int *)gW1)[2];
-    this->drawWindowImpl5(&tmp, 0, 0, p4, p5, flag);
-}
 
 // TouchButton::setPosition resolved through a global function pointer.
 typedef void (*SetPosFn)(void *btn, int x, int y, int mode);
@@ -524,11 +515,6 @@ void Layout::showMissionRewardMessage(int show, bool flag) {
     this->rewardMessageTimer = 0;
     this->rewardCredits = show;
     sound->play(0x24, 0, 0, 0.0f);
-}
-
-void Layout::drawWindow5(const String *param, int p3, int p4, int p5, int p6) {
-    String tmp(*param);
-    this->drawWindowImpl5(&tmp, p3, p4, p5, p6, 1);
 }
 
 // Hidden globals from drawBGBorder.
@@ -817,10 +803,10 @@ __attribute__((visibility("hidden"))) extern const char g_dwCmpLit[];
 __attribute__((visibility("hidden"))) extern void ***g_dwFont;
 
 // Render the window frame (background fill, header bar, optional title text).
-void Layout::drawWindow7(String *title, int x, int y, int w, int h, int drawBG) {
+void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     PaintCanvas *pc = *g_dwCanvas;
     unsigned saved = pc->GetColor();
-    if (drawBG != 0) {
+    if (drawBG) {
         int top = (*g_dwBorderTop)[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
     }
@@ -830,19 +816,19 @@ void Layout::drawWindow7(String *title, int x, int y, int w, int h, int drawBG) 
     pc->DrawRectangle(x, top + y, w, h - top);
     gCanvas->SetColor(this->drawColor);
     pc->DrawImage2D(this->headerIconImage, x, 0);
-    if (title->size() != 0 && title->Compare_char(g_dwCmpLit) == 0) {
+    if (title.size() != 0 && title.Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
         int half = mm[8 / 4];
         half += half >> 31;
         int ty = (y + (half >> 1) + 1) - this->textBaselineAdjust;
-        pc->DrawString((unsigned)(unsigned long)(**g_dwFont), *title, mm[0x28 / 4] + x, ty, false);
+        pc->DrawString((unsigned)(unsigned long)(**g_dwFont), title, mm[0x28 / 4] + x, ty, false);
     }
     pc->SetColor(saved);
 }
 
 void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const String *str) {
     String tmp(*str);
-    this->drawBoxImpl(p2, p3, p4, p5, p6, &tmp, 1);
+    this->drawBox(p2, p3, p4, p5, p6, tmp, 1u);
 }
 
 // Hidden globals from drawTip.
@@ -863,7 +849,7 @@ void Layout::drawTip() {
         int boxW = mA[0x78 / 4];
 
         String box(g_dtBoxLit);
-        this->drawBoxStr(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, &box);
+        this->drawBox(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box, 0u);
 
         gCanvas->DrawImage2D(this->tipBoxImage,
                                  dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char)(0x11));
@@ -875,9 +861,8 @@ void Layout::drawTip() {
     }
 }
 
-void Layout::drawHeader1(const String *param) {
-    String tmp(*param);
-    this->drawHeaderImpl(&tmp, 1);
+void Layout::drawHeader(String title) {
+    this->drawHeader(title, true);
 }
 
 void Layout::drawHelpWindow() {
@@ -912,12 +897,13 @@ void Layout::resetWindowDimensions() {
     this->windowWidth = w;
     this->windowHeight = h;
 
-    this->setBtnRect(this->helpButton, w, 0, 0x12);
+    this->helpButton->setPosition(w, 0, (unsigned char)0x12);
 
     int *m = *g_rwMetric;
     int inset = m[0x28 / 4];
-    this->setBtnRect(this->backButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
-    this->setBtnRect(this->secondaryButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
+    int btnY = (this->windowY + this->windowHeight) - this->footerButtonOffset;
+    this->backButton->setPosition(inset + this->windowX, btnY, (unsigned char)0x21);
+    this->secondaryButton->setPosition(inset + this->windowX, btnY, (unsigned char)0x21);
 
     if (this->backButton != nullptr) {
         Vector pos = this->backButton->getPosition();
@@ -933,9 +919,9 @@ __attribute__((visibility("hidden"))) extern const char g_tagLit0[];
 __attribute__((visibility("hidden"))) extern const char g_tagLit1[];
 __attribute__((visibility("hidden"))) extern const char g_tagLit2[];
 
-// Build "<lit0><base><lit1>" + in + <lit2> into `out`.
-void Layout_tagString(String *out, const String *in) {
-    *out = String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + *in + String(g_tagLit2);
+// Build "<lit0><base><lit1>" + in + <lit2>.
+String Layout::tagString(String in) {
+    return String(g_tagLit0) + *g_tagBaseString + String(g_tagLit1) + in + String(g_tagLit2);
 }
 
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_rlCanvas;
@@ -1129,9 +1115,8 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     }
 }
 
-void Layout::drawHeader0() {
-    String tmp("");
-    this->drawHeaderImpl(&tmp, 0);
+void Layout::drawHeader() {
+    this->drawHeader(String(""), false);
 }
 
 void Layout::drawFooterStation() {
@@ -1145,7 +1130,7 @@ __attribute__((visibility("hidden"))) extern void ***g_dhFont;
 
 // Render the header bar (end caps, pattern fill, title text and help-button
 // slide-in animation).
-void Layout::drawHeader7(String *title, int transition) {
+void Layout::drawHeader(String title, bool transition) {
     PaintCanvas *pc = gCanvas;
     unsigned img = *g_dhColor;
     pc->SetColor(this->drawColor);
@@ -1156,21 +1141,19 @@ void Layout::drawHeader7(String *title, int transition) {
     pc->DrawImage2D(this->headerCapImage,
                     this->windowWidth + this->windowX,
                     this->windowY, iw, ih, (unsigned char)(0x11), (unsigned char)(0x12), (unsigned char)(0x01));
-    if (title->size() != 0) {
+    if (title.size() != 0) {
         pc->DrawImage2D(this->headerIconImage, this->windowX, this->windowY);
         int *m = *g_dhMetric;
-        pc->DrawString((unsigned)(unsigned long)(**g_dhFont), *title,
+        pc->DrawString((unsigned)(unsigned long)(**g_dhFont), title,
                        m[0x28 / 4] + m[0x44 / 4] + this->windowX,
                        this->headerTitleY + this->windowY, false);
     }
-    this->helpButtonEnabled = (uint8_t)transition;
-    if (transition != 0 && this->choiceWindowOpen == 0)
-        this->headerAnim(this->helpButton);
-}
-
-void Layout::drawWindow1(const String *param) {
-    String tmp(*param);
-    this->drawWindowImpl(&tmp, 0);
+    this->helpButtonEnabled = transition;
+    if (transition && this->choiceWindowOpen == 0) {
+        // Slide the help button into the header.
+        unsigned char sp[8] __attribute__((aligned(4)));
+        TouchButton_footerAnim(this->helpButton, 0, 0, sp);
+    }
 }
 
 // Hidden globals from drawMissionRewardMessage.
@@ -1213,11 +1196,11 @@ void Layout::drawMissionRewardMessage(bool transition) {
         if (transition != 0) {
             int sw = *g_mrDimA;
             String s0(g_mrLit0);
-            this->drawBoxStr(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, &s0);
+            this->drawBox(2, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s0, 0u);
 
             sw = *g_mrDimA;
             String s1(g_mrLit1);
-            this->drawBoxStr(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, &s1);
+            this->drawBox(8, (sw >> 1) - (boxH >> 1), boxX, boxH, boxW, s1, 0u);
         }
 
         int sh = *g_mrDimB;
@@ -1250,27 +1233,19 @@ void Layout::drawMissionRewardMessage(bool transition) {
 
 // Centre a window using the cached screen metrics, then forward to the renderer.
 void Layout::drawWindowImpl(const String *str, int flag) {
-    this->drawWindow2(str, flag);
+    int p4 = *gW2;
+    int p5 = *gW3 - ((int *)gW1)[2];
+    this->drawWindow(*str, 0, 0, p4, p5, flag != 0);
 }
 
 // The core window renderer reached from the 2-arg / 5-arg wrappers.
 void Layout::drawWindowImpl5(String *str, int x, int y, int w, int h, int flag) {
-    this->drawWindow7(str, x, y, w, h, flag);
+    this->drawWindow(*str, x, y, w, h, flag != 0);
 }
 
 // The header-bar renderer core.
 void Layout::drawHeaderImpl(String *title, int transition) {
-    this->drawHeader7(title, transition);
-}
-
-// Owning-String variant of drawBox.
-void Layout::drawBoxImpl(int style, int x, int y, int w, int h, String *text, int flags) {
-    this->drawBox(style, x, y, w, h, *text, flags);
-}
-
-// drawBox over a borrowed String (no copy); flags default to 0.
-void Layout::drawBoxStr(int style, int x, int y, int w, int h, String *text) {
-    this->drawBox(style, x, y, w, h, *text, 0u);
+    this->drawHeader(*title, transition != 0);
 }
 
 // 8-arg drawBox variant: `color` overrides the draw colour for the box, `z` is
@@ -1280,21 +1255,6 @@ void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, in
     this->drawColor = (unsigned)color;
     this->drawBox(kind, x, y, w, z, *text, 0u);
     this->drawColor = saved;
-}
-
-// Dim the whole screen behind a modal with a translucent rectangle in the mask
-// colour, restoring the previous colour.
-void Layout::drawMaskImpl(int x, int y, int w, int h) {
-    PaintCanvas *pc = gCanvas;
-    unsigned saved = pc->GetColor();
-    pc->SetColor(this->drawColor);
-    pc->FillRectangle(x, y, w, h);
-    pc->SetColor(saved);
-}
-
-// Restore the canvas colour saved before a draw.
-void Layout::drawMaskTail(PaintCanvas *pc, int savedColor) {
-    pc->SetColor((unsigned)savedColor);
 }
 
 // Paint the active help/choice window.
@@ -1319,15 +1279,14 @@ void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, 
 // Take an owning copy of the title and render the full window frame (with
 // background) via the core renderer.
 void Layout::drawWindow(String title, int x, int y, int w, int h) {
-    String tmp(title);
-    this->drawWindow7(&tmp, x, y, w, h, 1);
+    this->drawWindow(title, x, y, w, h, true);
 }
 
 // Dim the entire screen behind a modal using the cached screen-size globals.
 void Layout::drawMask() {
     int w = *gW;
     int h = *gH;
-    this->drawMaskImpl(0, 0, w, h);
+    this->drawMask(0, 0, w, h);
 }
 
 // Render a tiled rounded-rect border via the full 8-parameter renderer.
@@ -1353,7 +1312,11 @@ void Layout::drawFooter(bool stationMode, bool showBack) {
 
 // Dim a rectangle in the mask colour, restoring the previous canvas colour.
 void Layout::drawMask(int x, int y, int w, int h) {
-    this->drawMaskImpl(x, y, w, h);
+    PaintCanvas *pc = gCanvas;
+    unsigned saved = pc->GetColor();
+    pc->SetColor(this->drawColor);
+    pc->FillRectangle(x, y, w, h);
+    pc->SetColor(saved);
 }
 
 // Take an owning copy of the title and render the full window frame (with
@@ -1371,26 +1334,9 @@ void Layout::drawWindow(String title, bool drawBG) {
     this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
 }
 
-// Render the window frame (background fill, header bar, optional title text).
-void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
-    String tmp(title);
-    this->drawWindow7(&tmp, x, y, w, h, drawBG);
-}
-
-// Position a child TouchButton (back/secondary/help) at (x, y) with an anchor.
-void Layout::setBtnRect(TouchButton *btn, int x, int y, int anchor) {
-    btn->setPosition(x, y, (unsigned char)anchor);
-}
-
 // Create an Image2D resource into a layout field slot.
 void Layout::loadImage(PaintCanvas *canvas, int imageId, void *field) {
     canvas->Image2DCreate((unsigned short)imageId, *(unsigned int *)field);
-}
-
-// Slide the help button into the header when the header animates in.
-void Layout::headerAnim(TouchButton *btn) {
-    unsigned char sp[8] __attribute__((aligned(4)));
-    TouchButton_footerAnim(btn, 0, 0, sp);
 }
 
 // Zero-seed the header geometry block (members 0x04..0x2d8) before the ctor's
@@ -1420,5 +1366,5 @@ int Layout::touch_end(int x, int y) {
 }
 
 void Layout::drawHeader_call(String *title) {
-    this->drawHeader7(title, 0);
+    this->drawHeader(*title, false);
 }

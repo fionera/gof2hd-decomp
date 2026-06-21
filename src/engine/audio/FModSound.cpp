@@ -271,15 +271,6 @@ float FModSound::getPlayingProgress(int idx)
     return 0.0f;
 }
 
-// Copy a Vector (3 floats) into a cached FMOD_VECTOR slot, allocating if needed.
-static void *cacheVec(Vector *&cached, Vector *src)
-{
-    if (cached == 0)
-        cached = new Vector();
-    *cached = *src;
-    return cached;
-}
-
 void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
 {
     if (this->initialized == 0 || (unsigned int)idx >= 0x8f5 || this->system == 0)
@@ -315,8 +306,19 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch)
             return;
 
         bool havePos = false, haveVel = false;
-        if (pos != 0) { cacheVec(this->eventPos, pos); havePos = true; }
-        if (vel != 0) { cacheVec(this->eventVel, vel); haveVel = true; }
+        if (pos != 0) {
+            // Cache the 3D position into our reusable Vector slot, allocating once.
+            if (this->eventPos == 0)
+                this->eventPos = new Vector();
+            *this->eventPos = *pos;
+            havePos = true;
+        }
+        if (vel != 0) {
+            if (this->eventVel == 0)
+                this->eventVel = new Vector();
+            *this->eventVel = *vel;
+            haveVel = true;
+        }
 
         if (freshLookup) {
             FMOD::Event *dummy = 0;
@@ -501,11 +503,26 @@ void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
         return;
 
     unsigned int havePos = 0;
-    if (pos != 0) { cacheVec(this->listenerPos, pos); havePos = 1; }
+    if (pos != 0) {
+        if (this->listenerPos == 0)
+            this->listenerPos = new Vector();
+        *this->listenerPos = *pos;
+        havePos = 1;
+    }
     unsigned int haveVel = 0;
-    if (vel != 0) { cacheVec(this->listenerVel, vel); haveVel = 1; }
+    if (vel != 0) {
+        if (this->listenerVel == 0)
+            this->listenerVel = new Vector();
+        *this->listenerVel = *vel;
+        haveVel = 1;
+    }
     unsigned int haveFwd = 0;
-    if (forward != 0) { cacheVec(this->listenerForward, forward); haveFwd = 1; }
+    if (forward != 0) {
+        if (this->listenerForward == 0)
+            this->listenerForward = new Vector();
+        *this->listenerForward = *forward;
+        haveFwd = 1;
+    }
 
     bool haveUp = false;
     if (up == 0) {
@@ -513,7 +530,9 @@ void FModSound::updateAll(Vector *pos, Vector *vel, Vector *forward, Vector *up)
             goto afterListener;
         haveUp = false;
     } else {
-        cacheVec(this->listenerUp, up);
+        if (this->listenerUp == 0)
+            this->listenerUp = new Vector();
+        *this->listenerUp = *up;
         haveUp = true;
     }
 
@@ -642,11 +661,17 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
         void *velPtr = 0;
         bool havePos = false;
         if (pos != 0) {
-            posPtr = cacheVec(this->eventPos, pos);
+            if (this->eventPos == 0)
+                this->eventPos = new Vector();
+            *this->eventPos = *pos;
+            posPtr = this->eventPos;
             havePos = true;
         }
         if (vel != 0) {
-            velPtr = cacheVec(this->eventVel, vel);
+            if (this->eventVel == 0)
+                this->eventVel = new Vector();
+            *this->eventVel = *vel;
+            velPtr = this->eventVel;
             posPtr = havePos ? (void *)this->eventPos : 0;
         } else if (!havePos) {
             return event;
@@ -671,11 +696,17 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
     void *velPtr = 0;
     bool havePos = false;
     if (pos != 0) {
-        posPtr = cacheVec(this->eventPos, pos);
+        if (this->eventPos == 0)
+            this->eventPos = new Vector();
+        *this->eventPos = *pos;
+        posPtr = this->eventPos;
         havePos = true;
     }
     if (vel != 0) {
-        velPtr = cacheVec(this->eventVel, vel);
+        if (this->eventVel == 0)
+            this->eventVel = new Vector();
+        *this->eventVel = *vel;
+        velPtr = this->eventVel;
         posPtr = havePos ? (void *)this->eventPos : 0;
     } else if (!havePos) {
         return event;

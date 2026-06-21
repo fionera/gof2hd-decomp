@@ -12,9 +12,9 @@ extern uint32_t                    g_AEFile_initialized;
 
 // ---------------------------------------------------------------------------------------------
 // Low-level file backends.
-// AELowLevelNativeFile forwards every operation to its held low-level file; AELowLevelPakFile
-// exposes a windowed view (size limit tracked in `packedSize`, current offset in `position`)
-// over the held file. Reconstructed from the binary AENormalFile / AEPakFile vtables.
+// AENormalFile forwards every operation to its held platform file; AEPakFile exposes a windowed
+// view (size limit tracked in `sizeLimit`, current offset in `position`) over the held file.
+// Reconstructed from the binary AENormalFile / AEPakFile vtables.
 
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 {
@@ -57,27 +57,27 @@ uint32_t AENormalFile::Release()
     return 1;
 }
 
-uint32_t AELowLevelPakFile::Read(uint32_t bytes, void *buffer)
+uint32_t AEPakFile::Read(uint32_t bytes, void *buffer)
 {
-    AELowLevelHeldFile *h;
-    if (bytes != 0 && (h = handle) != nullptr) {
-        if ((int)(position + bytes) > (int)packedSize) {
-            bytes = (uint32_t)((int)packedSize - (int)position);
+    FileInterface *file;
+    if (bytes != 0 && (file = fileInterface) != nullptr) {
+        if (static_cast<int>(position + bytes) > static_cast<int>(sizeLimit)) {
+            bytes = static_cast<uint32_t>(static_cast<int>(sizeLimit) - static_cast<int>(position));
         }
         if (bytes != 0) {
             position += bytes;
-            return h->Read(bytes, buffer);
+            return file->Read(bytes, buffer);
         }
     }
     return 0;
 }
 
-uint32_t AELowLevelPakFile::Write(uint32_t, void *)
+uint32_t AEPakFile::Write(uint32_t, void *)
 {
     return 0;
 }
 
-uint32_t AELowLevelPakFile::Skip(uint32_t bytes)
+uint32_t AEPakFile::Skip(uint32_t bytes)
 {
     char *buffer = new char[bytes];
     Read(bytes, buffer);
@@ -85,16 +85,16 @@ uint32_t AELowLevelPakFile::Skip(uint32_t bytes)
     return 1;
 }
 
-uint32_t AELowLevelPakFile::GetFileSize()
+uint32_t AEPakFile::GetFileSize()
 {
-    return packedSize;
+    return sizeLimit;
 }
 
-uint32_t AELowLevelPakFile::Release()
+uint32_t AEPakFile::Release()
 {
-    if (handle != nullptr) {
-        delete handle;
-        handle = nullptr;
+    if (fileInterface != nullptr) {
+        delete fileInterface;
+        fileInterface = nullptr;
     }
     return 1;
 }
@@ -609,12 +609,9 @@ AELowLevelFile *AEFile::findPakFile(const String &path)
                     entry->packedSize, entry->size, entry->offset);
             }
 
-            AELowLevelPakFile *pakFile = new AELowLevelPakFile;
-            pakFile->handle = reinterpret_cast<AELowLevelHeldFile *>(handle);
-            pakFile->packedSize = entry->packedSize;
-            pakFile->size = entry->size;
-            pakFile->position = 0;
-            return pakFile;
+            return new AEPakFile(reinterpret_cast<FileInterface *>(handle),
+                                 static_cast<int>(entry->packedSize),
+                                 static_cast<int>(entry->offset));
         }
 
         if (wantedCrc < entryCrc) {

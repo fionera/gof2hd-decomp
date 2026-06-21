@@ -16,7 +16,6 @@
 #include "game/world/Wanted.h"
 #include "game/core/String.h"
 
-extern void DisableClip();  // AbyssEngine::PaintCanvas::DisableClip (free fn)
 
 // Engine globals: live UI/screen state and the shared singletons the bounty board reads.
 extern Layout **g_WantedWindow_move_layout;
@@ -371,11 +370,11 @@ void WantedWindow::draw() {
         y += layout->field_0x34 + layout->field_0x70;
     }
 
-    DisableClip();
+    canvas->DisableClip();
     canvas->SetColor(0xffffffffu);
     String header;
     header.copy((*g_WantedWindow_draw_text)->getText(0xc93), false);
-    layout->drawHeader1(&header);
+    layout->drawHeader(header);
 
     for (uint32_t i = 0; i < this->buttons->size(); ++i) {
         (*this->buttons)[i]->draw();

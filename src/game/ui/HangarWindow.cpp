@@ -41,7 +41,6 @@ static inline unsigned int UDIV(unsigned int a, unsigned int b) { return a / b; 
 // Engine/game helpers reached as ABI symbols (no clean class entry point for these
 // call shapes in this translation unit).
 extern "C" {
-void Layout_drawHeader(void *layout, String *text);
 void *AppManager_GetApplicationData();
 void *AppManager_GetApplicationModule(unsigned int id);
 void *ApplicationManager_GetApplicationData();
@@ -388,7 +387,7 @@ void HangarWindow::render() {
             }
 
             String header;
-            Layout_drawHeader(layout, &header);
+            ((Layout *)(layout))->drawHeader(header);
 
             Array<TouchButton*> *tabs = this->tabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++)

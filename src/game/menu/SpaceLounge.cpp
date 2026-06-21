@@ -366,7 +366,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 
     if (this->mapVisible != 0) {
-        if (this->starMap->touch_end(x, y) != 0) {
+        if (this->starMap->OnTouchEnd(x, y) != 0) {
             this->cutScene->resetCamera();
             this->mapVisible = 0;
         }

@@ -10,12 +10,15 @@
 namespace AbyssEngine { class PaintCanvas; }
 using ::AbyssEngine::PaintCanvas;
 
-namespace AbyssEngine {
-
 // Trail: a flat triangle-strip "ribbon" mesh trailing a moving object (engine
 // trails, exhaust, etc.). It owns a PaintCanvas mesh + transform and a pair of
 // vertex buffers (absolute and head-relative) that are shifted forward each
 // update.
+//
+// Trail lives in the global namespace in the shipped binary (mangled
+// _ZN5Trail...), even though its vector/matrix parameters belong to
+// AbyssEngine::AEMath. A `using ::Trail;` alias below lets the rest of the
+// engine keep referring to it as AbyssEngine::Trail.
 class Trail {
 public:
     int sourceX;             // +0x00 trail source position x (head anchor)
@@ -44,7 +47,9 @@ public:
     void reset(AbyssEngine::AEMath::Vector value);
 };
 
-} // namespace AbyssEngine
+// Allow existing call sites that spell the type AbyssEngine::Trail to keep
+// resolving to the same global ::Trail class.
+namespace AbyssEngine { using ::Trail; }
 
 // The trail render / colour calls dispatch through engine function-pointer
 // globals in the shipped binary; modelled here as external entry points.

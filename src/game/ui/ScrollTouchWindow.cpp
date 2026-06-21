@@ -66,8 +66,8 @@ void ScrollTouchWindow::draw()
         Layout *layout = *g_STW_layout_draw_window;
         {
             String windowTitle(this->title);
-            layout->drawWindow7(&windowTitle, this->x, this->y,
-                                this->width, this->height, 1);
+            layout->drawWindow(windowTitle, this->x, this->y,
+                               this->width, this->height, true);
         }
         layout = *g_STW_layout_draw_window;
         contentHeight = this->height - layout->field_0x2c * 2;

@@ -88,6 +88,7 @@ public:
     void OnRelease();
     void OnRender2D();
     void OnRender3D();
+    void OnResume();
     void OnSuspend();
     void OnTouchBegin(int x, int y, void *touch);
     void OnTouchEnd(int x, int y, void *touch);

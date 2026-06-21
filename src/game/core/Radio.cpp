@@ -260,10 +260,10 @@ void Radio::draw(int64_t time, PlayerEgo* ego, LevelScript* script)
     if (imageId >= 10000) {
         Wanted* wanted = (**g_Radio_drawWantedRoot)[imageId - 10000];
         String title = wanted->getName();
-        layout->drawBoxStr(7, x, y, width, boxHeight, &title);
+        layout->drawBox(7, x, y, width, boxHeight, title, 0u);
     } else {
         String title = *_ZN8GameText7getTextEi(*g_Radio_drawGameText, imageId + 0x63d);
-        layout->drawBoxStr(7, x, y, width, boxHeight, &title);
+        layout->drawBox(7, x, y, width, boxHeight, title, 0u);
     }
 
     layout->setDrawColor(-1);

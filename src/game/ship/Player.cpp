@@ -1276,7 +1276,7 @@ LAB_3488:
                             ((Mission *)(intptr_t)mission)->getStatusValue() + 1);
                     }
                     if (self->kiPlayer->field_0x42 != 0) {
-                        ((Level *)(self->kiPlayer->level))->killWanted();
+                        ((Level *)(self->kiPlayer->level))->killWanted(0);
                     }
                 }
             }

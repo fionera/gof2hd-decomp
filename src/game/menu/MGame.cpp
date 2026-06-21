@@ -146,7 +146,7 @@ __attribute__((visibility("hidden"))) extern Music **g_music;
 __attribute__((visibility("hidden"))) extern Cfg **g_cfg;
 
 // MGame::OnResume(): resume background music unless it was deliberately stopped.
-void MGame_OnResume() {
+void MGame::OnResume() {
     Music **mp = g_music;
     if (*mp == 0) return;
     if (FModSound_tryToStopMusicForBGMusic() != 0) return;
@@ -613,7 +613,7 @@ void MGame::gameOverCheck() {
         }
     }
 
-    if (this->level->checkGameOver() != 0) {
+    if (this->level->checkGameOver(0) != 0) {
         bindDialogueLevel(this);
         this->cutsceneActive = 1;
         ((MGame *)(this))->pauseSounds();
@@ -1707,7 +1707,7 @@ void MGame::successCheck() {
     {
         int *status = ((int *)&gStatus);
         Mission *mc = ((Status *)(*status))->missionCompleted(0, 0, 0);
-        int obj = this->level->checkObjective();
+        int obj = this->level->checkObjective(0);
         if (mc == 0 && obj == 0) goto done;
     }
 

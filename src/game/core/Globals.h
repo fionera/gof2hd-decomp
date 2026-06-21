@@ -11,6 +11,7 @@
 
 // Touched by pointer only in the two-argument init() entry point.
 namespace AbyssEngine { class ApplicationManager; class Engine; }
+class AEGeometry;
 
 class Globals {
 public:
@@ -29,8 +30,13 @@ public:
     ~Globals();
 
     unsigned getRandomEnemyFighter(int kind);
-    // Resolve the ship-group id for a given ship type/race (kind==0xf builds capital-ship LOD geometry).
-    int getShipGroup(int type, int race, int flag);
+    // Zero the opaque per-station hint-state blob (clears all hint flags).
+    void resetHints();
+    // Look up a localized item name by item index.
+    String getItemName(int item);
+    // Build the LOD geometry for the given ship type/variant (kind==0xf builds the
+    // articulated capital-ship geometry). `wireframe` skips material creation.
+    AEGeometry* getShipGroup(int type, int variant, bool wireframe);
     int init(void* app);
     // Engine bring-up entry point; the renderer root is supplied for completeness but the
     // body only needs the application manager (forwarded to init(void*)).
@@ -61,11 +67,13 @@ public:
     int dialogueDispatch(int category, int code, int isMale);
     // Offer/event briefing-text assembly used by getAgentMissionText().
     static void buildAgentMissionText(String* out, void* agent, int offer);
-    // The kind==0xf (capital-ship) branch of getShipGroup(): build the articulated LOD geometry.
-    void buildShipGroup0f(int variant, void* canvas);
+    // The kind==0xf (capital-ship) branch of getShipGroup(): build and return the articulated LOD geometry.
+    AEGeometry* buildShipGroup0f(int variant, void* canvas);
     // Word-wrap `text` to `maxWidth` (in the given font), producing one trimmed String per line
     // into `out` (which is resized to the line count and filled with freshly allocated Strings).
     void getLineArray(unsigned int font, const String& text, int maxWidth, Array<String*>* out);
+    // Extract the next wrapped line of `text` that fits `maxWidth` in `font`, written into `*out`.
+    void getLine(unsigned int font, String text, int maxWidth, String* out);
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)

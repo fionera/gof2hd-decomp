@@ -81,7 +81,7 @@ void MTitle::OnRender2D()
     canvas->SetColor((unsigned int)-1);
 
     g_currentLayout->drawBG();
-    g_currentLayout->drawHeader0();
+    g_currentLayout->drawHeader();
     g_currentLayout->drawEmptyFooter(0);
 
     // Advance the step timer, clamping the per-frame delta to 50ms.

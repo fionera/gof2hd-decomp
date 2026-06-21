@@ -29,7 +29,9 @@ public:
     void   addHash(int slot);
     void   addHashToOptions();
     void   changeSaveDirectoryToBackupDirectory();
+    bool   checkHash(unsigned int fd);
     void   convertSDVersionSaves();
+    bool   notEnoughMemory();
     void   loadOptions();
     void   loadResolutionValue();
     void   loadResolutionValue(float resolution);

@@ -173,6 +173,7 @@ public:
     void OnRelease();
     void OnRender2D();
     void OnRender3D();
+    void OnResume();
     void OnSuspend();
     void OnTouchBegin(int p1, int p2, void* touchId);
     void OnTouchEnd(int p1, int p2, void* touchId);

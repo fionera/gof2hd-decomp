@@ -18,6 +18,27 @@
 #include "game/world/Wanted.h"
 #include "game/ship/Agent.h"
 #include "platform/libc.h"
+#include <jni.h>
+
+// JNI-supplied UTF-8 string naming the "Origami Super Club" promo bundle. The setter native
+// stashes the JVM-owned pointer here; the release native hands it back to the JVM.
+extern "C" const char *g_android_origami_super_club;
+const char *g_android_origami_super_club = nullptr;
+
+// net.fishlabs.gof2hdallandroid2012.GOF2HD2012.SetOrigamiSuperClub(String) native.
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub(
+    JNIEnv *env, jobject /*thiz*/, jstring value)
+{
+    jboolean isCopy;
+    g_android_origami_super_club = env->GetStringUTFChars(value, &isCopy);
+}
+
+// net.fishlabs.gof2hdallandroid2012.GOF2HD2012.ReleaseOrigamiSuperClub(String) native.
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigamiSuperClub(
+    JNIEnv *env, jobject /*thiz*/, jstring value)
+{
+    env->ReleaseStringUTFChars(value, g_android_origami_super_club);
+}
 
 // SHA-256 hashing used to sign records (digest appended on write, verified on read).
 extern "C" void SHA256_Init(void *c);
@@ -40,7 +61,6 @@ extern "C" void AEFile_WriteString(void *s, unsigned int fd, int flag);
 extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
-int RecordHandler_checkHash(unsigned int fd);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
@@ -78,7 +98,7 @@ void * RecordHandler::readAllPreviewRecords() {
 }
 
 // RecordHandler::notEnoughMemory() -> bool: free space < 900.
-uint8_t RecordHandler_notEnoughMemory()
+bool RecordHandler::notEnoughMemory()
 {
     return AEFile::GetDeviceFreeSpace() < 900;
 }
@@ -555,7 +575,7 @@ void RecordHandler::loadOptions() {
     if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
         AEFile::OpenRead(path, &fd);
-        int valid = RecordHandler_checkHash(fd);
+        int valid = this->checkHash(fd);
         AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(path, &fd);
@@ -1876,7 +1896,7 @@ void * RecordHandler::recordStoreRead(int slot) {
     if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
         AEFile::OpenRead(path, &fd);
-        int valid = RecordHandler_checkHash(fd);
+        int valid = this->checkHash(fd);
         AEFile::Close(fd);
         if (valid != 0) {
             AEFile::OpenRead(path, &fd);
@@ -1945,7 +1965,7 @@ __attribute__((visibility("hidden"))) extern const unsigned char RH_ch_salt[]; /
 __attribute__((visibility("hidden"))) extern unsigned char **RH_ch_key;        // (16-byte key)
 
 // RecordHandler::checkHash(unsigned int fd) -> bool (1=valid, 0=invalid).
-int RecordHandler_checkHash(unsigned int fd)
+bool RecordHandler::checkHash(unsigned int fd)
 {
     int result = 0;
 

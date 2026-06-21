@@ -109,8 +109,6 @@ public:
     void PlayEngineSound();
     void ResumeEngineSound();
     void StopEngineSound();
-    void addGun_a();
-    void addGun_b();
     // actor vtable slot +0xc: base flips state and wakes the wrapped Player; subclasses override.
     virtual void awake();
     void captureCrate(Hud* hud);
@@ -138,11 +136,9 @@ public:
     // Base actor does nothing per tick (binary stub is a pass-through); subclasses override.
     virtual void update(int dt);
     void reset();
-    void setActive();
     void setActive(bool active);
     void setDead();
     void setEnemies(Array<Player*>* enemies);
-    void setInitActive();
     void setInitActive(bool active);
     void setJumpSphere(uint32_t sphere);
     void setJumper(bool b);
@@ -172,11 +168,17 @@ public:
     // Polymorphic: PlayerFighter/PlayerEgo override this to also wire up their engine-trail
     // particle systems. Dispatched through the actor vtable right after construction.
     virtual void setLevel(Level* lvl);
-    // Adds a specific gun to the underlying Player's weapon set (forwarded to Player::addGun).
-    void addGun(Gun* gun);
     // Installs a gun (or a whole gun list) into the given weapon slot of the wrapped Player.
     void addGun(Gun* gun, int slot);
     void addGun(Array<Gun*>* guns, int slot);
+
+    // Bounding-volume collision query against the level geometry. A bare KIPlayer has no
+    // collision surface, so it reports no hit.
+    int  levelCollision(Vector* out, long long flags);
+    // Arms the death explosion. The base actor has no explosion model; subclasses override.
+    void enableExplosion();
+    // Records the spawn orientation. The base actor keeps no rotation state.
+    void setInitialRotation(Vector rotation);
     // Engages / disengages the auto-pilot lock onto the given target (engaged when target != null).
     void setAutoPilot(KIPlayer* target);
 

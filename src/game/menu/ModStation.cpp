@@ -187,7 +187,7 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_resumeArg;
 // Tail veneer (0x1ac178): (obj, 1, arg)
 
 // ModStation::OnResume()
-void ModStation_OnResume()
+void ModStation::OnResume()
 {
     void **holder = g_ModStation_resumeObj;
     void *obj = *holder;
@@ -680,7 +680,6 @@ void  ChoiceWindow_setNotice_ou(int cw, int text);
 void  ChoiceWindow_update_ou(int cw);
 int   GameText_getText_ou(int id);
 
-void  NewsTicker_update_ou(int nt);
 void  CutScene_process_ou(int cs);
 void  CutScene_update_ou(int cs);
 void  CutScene_ctor_ou(CutScene *cs, int kind);
@@ -810,8 +809,8 @@ void ModStation::OnUpdate() {
     if (((char*)&this->subWindowFlags)[0] == 0 && ((char*)&this->subWindowFlags)[1] == 0 &&
         ((char*)&this->subWindowFlags)[2] == 0 && ((char*)&this->subWindowFlags)[3] == 0 &&
         ((char*)&this->modalFlags)[0] == 0 && ((char*)&this->m_nStarMapWindowOpen)[0] == 0) {
-        if (*(int*)&this->newsTicker != 0)
-            NewsTicker_update_ou(*(int*)&this->newsTicker);
+        if (this->newsTicker != nullptr)
+            this->newsTicker->update(0);
         if (*(int*)&this->cutScene != 0)
             CutScene_process_ou(*(int*)&this->cutScene);
         ModStation_ou_updateIdleCamera(this, elapsed);

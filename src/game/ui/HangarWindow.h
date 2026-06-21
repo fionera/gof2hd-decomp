@@ -62,6 +62,7 @@ struct Layout {
 
     void drawBG();
     void drawBox(int style, int x, int y, int h, int w, void *text);
+    void drawHeader(String title);     // mirrors Layout::drawHeader(String)
     void drawFooter();
     void drawScrollBar(int x, int y, int trackH, int pos, int range);
     int OnTouchBegin(int coord);

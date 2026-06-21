@@ -15,17 +15,16 @@
 
 // Engine canvas type; its real type lives in namespace AbyssEngine
 // (see gof2/game/core/PaintCanvasClass.h). Used only through a pointer here.
-namespace AbyssEngine { class PaintCanvas; }
+// Engine types live in namespace AbyssEngine; MeshMerger itself is a global
+// (its mangled symbol is _ZN10MeshMerger..., no AbyssEngine prefix).
+namespace AbyssEngine { class PaintCanvas; class Mesh; }
 using ::AbyssEngine::PaintCanvas;
-
-namespace AbyssEngine {
-
-class Mesh;
 
 class MeshMerger {
 public:
-    using Matrix = AEMath::Matrix;
-    using Vector = AEMath::Vector;
+    using Mesh   = AbyssEngine::Mesh;
+    using Matrix = AbyssEngine::AEMath::Matrix;
+    using Vector = AbyssEngine::AEMath::Vector;
 
     int          rows;               // source-mesh rows (mesh count)
     uint16_t     flags;              // merged-mesh creation flags
@@ -57,7 +56,5 @@ public:
     int   init();
     void* transformMesh(Mesh* mesh, const Matrix& m);
 };
-
-} // namespace AbyssEngine
 
 #endif

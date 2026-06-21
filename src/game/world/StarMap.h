@@ -149,8 +149,9 @@ public:
 
     uint32_t OnTouchBegin(int x, int y);
     void OnTouchMove(int x, int y);
-    void OnTouchEnd(int x, int y);
-    int  touch_end(int x, int y);    // embedded (lounge) touch-release; nonzero => map dismissed
+    // Touch-release handler. Returns nonzero when the map was dismissed (the host
+    // screen should then restore its own camera), zero while the map stays open.
+    int  OnTouchEnd(int x, int y);
 
     void depart(bool jump);
     void setStart(int start, int target);

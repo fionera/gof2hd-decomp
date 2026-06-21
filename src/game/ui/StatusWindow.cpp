@@ -428,7 +428,7 @@ void StatusWindow::reInit() {
 
 extern "C" {
 
-void Layout_drawHeader(void *layout, void *title);
+
 
 void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
 void  Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
@@ -661,7 +661,7 @@ void StatusWindow::draw() {
     String header;
     String *ht = (*g_swd_gameText)->getText(*g_swd_textId);
     header.ctor_copy(ht, false);
-    Layout_drawHeader(layout, &header);
+    layout->drawHeader(header);
     layout->drawFooter();
 
     if (*land == 0) {

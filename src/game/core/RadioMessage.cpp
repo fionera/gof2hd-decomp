@@ -350,7 +350,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         return setResult(ego->level->field_1c >= this->conditionValue);
 
     case 0x17:
-        return setResult(static_cast<AbyssEngine::Radar*>(ego->field_0x14)->stationLocked());
+        return setResult(static_cast<Radar*>(ego->field_0x14)->stationLocked());
 
     case 0x18: {
         Array<Player*>* list = static_cast<Player*>(ego->player)->getEnemies();

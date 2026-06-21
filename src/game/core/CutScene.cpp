@@ -49,7 +49,6 @@ extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" void MatrixSetRotation(void *m, float x, float y, float z);
 extern "C" void MatrixSetTranslation(void *m, float x, float y, float z);
 extern "C" int Station_getIndex(void *station);
-extern "C" void *Globals_getShipGroup(void *globals, int type, int slot, bool flag);
 
 CutScene::CutScene(int mode)
 {
@@ -401,10 +400,10 @@ void CutScene::replacePlayerShip(int /*a*/, int b)
         char matrix[0x3c];
         memcpy(matrix, &oldGeom->getMatrix(), 0x3c);
 
-        void *grp = Globals_getShipGroup(gGlobals, b, 0, false);
+        AEGeometry *grp = gGlobals->getShipGroup(b, 0, false);
 
         Array<KIPlayer *> *en3 = this->level->getEnemies();
-        *(void **)((char *)(*en3)[0] + 8) = grp;
+        *(AEGeometry **)((char *)(*en3)[0] + 8) = grp;
 
         Array<KIPlayer *> *en4 = this->level->getEnemies();
         // The matrix is the old ship's local transform saved into `matrix` above.

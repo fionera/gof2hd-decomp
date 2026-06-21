@@ -84,7 +84,7 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
 
     this->locked = 0;
     this->rumbleTimer = 0;
-    this->rotateAroundTarget = 0;
+    this->rotateAroundTargetEnabled = 0;
     this->firstPerson = 0;
     this->hideShip = 0;
     this->useTargetsUpVec = 1;
@@ -98,30 +98,35 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     this->zoom = zoom;
     this->fixed = 0;
 
-    aproximateCoefficients(zoom);
+    // Seed both damping-curve coefficient sets: set A from the initial zoom, set B
+    // from the initial handling-damping seed.
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        zoom, dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingB,
+        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
 }
 
 // ---------------------------------------------------------------------------
 // Simple accessors
 // ---------------------------------------------------------------------------
 
+AEGeometry *TargetFollowCamera::getTarget()   { return this->target; }
 Vector *TargetFollowCamera::getPosition()     { return reinterpret_cast<Vector *>(&this->posX); }
-Vector *TargetFollowCamera::getTargetPos()    { return reinterpret_cast<Vector *>(&this->targetX); }
-Vector *TargetFollowCamera::getUp()           { return reinterpret_cast<Vector *>(&this->upX); }
 Vector *TargetFollowCamera::getTargetOffset() { return reinterpret_cast<Vector *>(&this->targetOffsetX); }
 Vector *TargetFollowCamera::getCamOffset()    { return reinterpret_cast<Vector *>(&this->camOffsetX); }
-Vector *TargetFollowCamera::getRotation()     { return reinterpret_cast<Vector *>(&this->rotX); }
 
 Matrix TargetFollowCamera::getLocal()                { return this->localMatrix; }
 void   TargetFollowCamera::setLocal(Matrix m)        { this->localMatrix = m; }
 void   TargetFollowCamera::setTarget(AEGeometry *t)  { this->target = t; }
-void   TargetFollowCamera::setZoomTarget(float zoom) { this->zoom = zoom; }
-void   TargetFollowCamera::setRoll(float roll)       { this->roll = roll; }
-void   TargetFollowCamera::roll_(float delta)        { this->roll += delta; }
+void   TargetFollowCamera::zoomTarget(float zoom)    { this->zoom = zoom; }
+void   TargetFollowCamera::setRoll(float roll)       { this->rollAngle = roll; }
+void   TargetFollowCamera::roll(float delta)         { this->rollAngle += delta; }
+TargetFollowCamera::~TargetFollowCamera() {}
 void   TargetFollowCamera::setLookAtCam(bool e)      { this->lookAtCam = e; }
 void   TargetFollowCamera::setActive(bool e)         { this->active = e; }
 void   TargetFollowCamera::setFixed(bool e)          { this->fixed = e; }
-void   TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTarget = e; }
+void   TargetFollowCamera::setRotationAroundTarget(bool e) { this->rotateAroundTargetEnabled = e; }
 void   TargetFollowCamera::useTargetsUpVector(bool e)      { this->useTargetsUpVec = e; }
 
 bool TargetFollowCamera::isInLookAtMode()           { return this->lookAtCam != 0; }
@@ -171,7 +176,7 @@ void TargetFollowCamera::enableFirstPersonCam(bool enabled) {
     this->shakeReference = 0;
 }
 
-void TargetFollowCamera::rotateAroundTargetBy(float x, float y, float z) {
+void TargetFollowCamera::rotateAroundTarget(float x, float y, float z) {
     Vector r = {x, y, z};
     *getRotation() = r;
 }
@@ -219,15 +224,11 @@ void TargetFollowCamera::translate(float dx, float dy, float dz) {
 // Ship-handling / damping coefficients
 // ---------------------------------------------------------------------------
 
-void TargetFollowCamera::setShipHandlingNoUpdate(float handling) {
+void TargetFollowCamera::setShipHandling(float handling) {
     float s = handling * 0.01f;
     this->shipHandling = handling;
     this->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
     this->handlingDampingB = 0.001f + s * 0.010986f;
-}
-
-void TargetFollowCamera::setShipHandling(float handling) {
-    setShipHandlingNoUpdate(handling);
     update(1);
 }
 
@@ -237,32 +238,35 @@ void TargetFollowCamera::resetShipHandling() {
     update(1);
 }
 
-void TargetFollowCamera::calculateCoefficients(float t) {
-    aproximateCoefficients(this->handlingDampingA * t,
-                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
-                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
-    aproximateCoefficients(this->handlingDampingB * t,
-                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
-                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
+void TargetFollowCamera::calculateCoefficents(float t) {
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingA * t,
+        dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingB * t,
+        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
 }
 
 void TargetFollowCamera::setFastForwardMode(bool enabled) {
     if (enabled == (this->fastForward != 0)) return;
-    setShipHandlingNoUpdate(this->shipHandling);
-    aproximateCoefficients(this->handlingDampingA,
-                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
-                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
-    aproximateCoefficients(this->handlingDampingB,
-                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
-                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
+    {
+        float s = this->shipHandling * 0.01f;
+        this->handlingDampingA = 0.003f + (1.0f - s) * 0.015f;
+        this->handlingDampingB = 0.001f + s * 0.010986f;
+    }
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingA,
+        dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
+    aproximateCooefficientsForAproximationOfDampingFunktion(
+        this->handlingDampingB,
+        dampCoeffB[0], dampCoeffB[1], dampCoeffB[2], dampCoeffB[3], dampCoeffB[4]);
     this->fastForward = enabled;
 }
 
 // Evaluates the five degree-8 damping-curve polynomials at t and writes the fitted
 // coefficients to the output doubles.
-void TargetFollowCamera::aproximateCoefficients(float t, double *outB, double *outA,
-                                                double *outC, double *outD,
-                                                double *outE, double *outF) {
+void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
+        float t, double &outB, double &outA, double &outC, double &outD, double &outE) {
     double x = (double)t;
     double a = poly8(g_TFC_dampA, x);
     double b = poly8(g_TFC_dampB, x);
@@ -270,23 +274,11 @@ void TargetFollowCamera::aproximateCoefficients(float t, double *outB, double *o
     double d = poly8(g_TFC_dampD, x);
     double e = poly8(g_TFC_dampE, x);
 
-    if (outB) *outB = e;
-    if (outA) *outA = -a;
-    if (outC) *outC = c;
-    if (outD) *outD = d;
-    if (outF) *outF = -b;
-    (void)outE;
-}
-
-// Single-argument helper used by the constructor: recompute coefficient set A from
-// the zoom and set B from handlingDampingB.
-void TargetFollowCamera::aproximateCoefficients(float t) {
-    aproximateCoefficients(t,
-                           &dampCoeffA[0], &dampCoeffA[1], &dampCoeffA[2],
-                           &dampCoeffA[3], &dampCoeffA[4], &dampCoeffA[4]);
-    aproximateCoefficients(this->handlingDampingB,
-                           &dampCoeffB[0], &dampCoeffB[1], &dampCoeffB[2],
-                           &dampCoeffB[3], &dampCoeffB[4], &dampCoeffB[4]);
+    outB = e;
+    outA = -a;
+    outC = c;
+    outD = d;
+    outE = -b;
 }
 
 // ---------------------------------------------------------------------------
@@ -318,7 +310,7 @@ void TargetFollowCamera::update(int dt) {
                 Vector savedPos    = *getPosition();
                 *getUp() = MatrixGetUp(m);
 
-                if (this->rotateAroundTarget != 0) {
+                if (this->rotateAroundTargetEnabled != 0) {
                     Matrix rot = AbyssEngine::AEMath::MatrixSetRotationOrdered(
                         m, this->rotX, this->rotY, this->rotZ, 2);
                     MatrixMultiply(m, rot);
@@ -443,9 +435,9 @@ void TargetFollowCamera::update(int dt) {
 
     // Build the look-at matrix, roll it, push to the active camera, store local.
     Matrix look = AbyssEngine::AEMath::MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
-    Matrix roll;
-    MatrixSetRotation(roll, this->roll, 0.0f, 0.0f);
-    MatrixMultiply(look, roll);
+    Matrix rollMat;
+    MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);
+    MatrixMultiply(look, rollMat);
     gCanvas->CameraSetLocal(g_currentCamera, look);
     this->localMatrix = look;
 }

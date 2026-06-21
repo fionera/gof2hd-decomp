@@ -6,8 +6,6 @@ using AbyssEngine::AEMath::Vector;
 using AbyssEngine::AEMath::Matrix;
 namespace AEMath = AbyssEngine::AEMath;
 
-namespace AbyssEngine {
-
 void Trail::update(const Vector &a, const Vector &b)
 {
     update(a.x, a.y, a.z, b.x, b.y, b.z);
@@ -93,7 +91,7 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz)
         canvas->MeshSetPoint(this->meshId, (uint16_t)vertex, x, y, z);
     }
 
-    Matrix *local = (Matrix *)canvas->TransformGetLocal(this->transformId);
+    Matrix *local = static_cast<Matrix *>(canvas->TransformGetLocal(this->transformId));
     AEMath::MatrixSetTranslation(*local, ax, ay, az);
 }
 
@@ -213,5 +211,3 @@ void Trail::reset(Vector value)
 
     update(value, value);
 }
-
-} // namespace AbyssEngine

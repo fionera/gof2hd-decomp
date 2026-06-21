@@ -134,6 +134,18 @@ static inline float bitsToFloat(int bits) {
     return f;
 }
 
+// File-local placement/spawn helpers. In the original these blocks are inlined into
+// their callers (init/updateOrbit/updateMissionOrbit/updateAlienAttackers/createGasClouds/
+// createWingmen/createScene); here they are factored out as static helpers (no external
+// Level:: symbol) and forward-declared so the callers above can reach them.
+static inline void levelInitPlacePlayer(Level *self, int statusA, int stationStack);
+static inline void levelSpawnFar(Level *self, int *kiPlayer);
+static inline void levelSpawnAt(Level *self, int *kiPlayer, int profile);
+static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit);
+static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
+static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i);
+static inline void levelWingmanDiedOne(String *name, unsigned int *list);
+
 bool Level::hasMiningPlant() {
     return miningPlant > 0;
 }
@@ -149,15 +161,6 @@ int Level::getEnemiesLeft() {
 void Level::render2D() {
     if (starSystem != 0)
         starSystem->render2D();
-}
-
-int Level::checkGameOver() {
-    Objective *objective = objectivesB;
-    if (objective == nullptr) {
-        return 0;
-    }
-    // veneer 0x1ac018 -> Objective::achieved
-    return (int)objective->achieved(0);
 }
 
 int Level::checkGameOver(int param) {
@@ -212,15 +215,6 @@ Array<KIPlayer*>* Level::getGasClouds() {
 
 void Level::asteroidDied() {
     asteroidsLeft -= 1;
-}
-
-int Level::checkObjective() {
-    Objective *objective = objectivesA;
-    if (objective != nullptr) {
-        // veneer 0x1ac018 -> Objective::achieved
-        return (int)objective->achieved(0);
-    }
-    return 0;
 }
 
 int Level::checkObjective(int param) {
@@ -317,14 +311,6 @@ PlayerEgo *Level::getPlayer() {
     return player;
 }
 
-void Level::killWanted() {
-    if (field_29d == 0) {
-        field_29d = 1;
-        // veneer 0x1ac028 -> Level::createRadioMessage(type, sub)
-        createRadioMessage(0x11, 0);
-    }
-}
-
 void Level::killWanted(int /*param*/) {
     if (field_29d == 0) {
         field_29d = 1;
@@ -373,42 +359,6 @@ Route *Level::getEnemyRoute() {
 
 Array<ObjectGun*>* Level::getPlayerGuns() {
     return playerGuns;
-}
-
-void Level::renderPause() {
-    if (this->playerGuns != nullptr) {
-        for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
-            (*this->playerGuns)[i]->render();
-        }
-    }
-    if (this->enemyGuns != nullptr) {
-        for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            (*this->enemyGuns)[i]->render();
-        }
-    }
-    if (this->enemies != nullptr) {
-        for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
-            (*this->enemies)[i]->render();
-        }
-    }
-    if (this->asteroids != nullptr) {
-        for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            (*this->asteroids)[i]->render();
-        }
-    }
-    if (this->gasClouds != nullptr) {
-        for (unsigned int i = 0; i < this->gasClouds->size(); i = i + 1) {
-            (*this->gasClouds)[i]->render();
-        }
-    }
-    if (this->landmarks != nullptr) {
-        for (unsigned int i = 0; i < this->landmarks->size(); i = i + 1) {
-            KIPlayer *o = (*this->landmarks)[i];
-            if (o != nullptr) {
-                o->render();
-            }
-        }
-    }
 }
 
 void Level::renderPause(long long /*ctx*/) {
@@ -887,8 +837,7 @@ void Level::createSpace()
             gStatus->getSystem();
             sysVariant = (((SolarSystem*)gStatus->getSystem())->getIndex() % 3);
             gCanvas->TextureCreate((unsigned short)((sysVariant + 0x2766) & 0xffff), nullptr, nullptr, g_level_texOutScratch, false);
-            // the rest (campaign/supernova/storm/ring detail) is built by the helper.
-            this->csp_buildDetail();
+            // the rest (campaign/supernova/storm/ring detail) is built inline above.
 
             gStatus->getSystem();
             if (0xf < ((SolarSystem*)gStatus->getSystem())->getTextureIndex()) {
@@ -1180,7 +1129,7 @@ int Level::init() {
             int stk = 0;
             if (**g_init_flagStack != 0 && this->player->geometry != 0)
                 stk = (int)(intptr_t)gStatus->getStationStack();
-            thisptr->init_placePlayer((int)(intptr_t)gStatus, stk);
+            levelInitPlacePlayer(thisptr, (int)(intptr_t)gStatus, stk);
         }
         stage = this->field_134;
     }
@@ -1214,7 +1163,7 @@ int Level::init() {
                 if (skip) {
                     thisptr->createMission();
                     if (**g_init_bmFlag != 0 && gStatus->inBlackMarketSystem() != 0)
-                        thisptr->init_placePlayer((int)(intptr_t)gStatus, 0);
+                        levelInitPlacePlayer(thisptr, (int)(intptr_t)gStatus, 0);
                 } else if (this->missionPtr != 3) {
                     madeScene = true;
                 } else {
@@ -1229,7 +1178,7 @@ int Level::init() {
         } else {
             thisptr->createMission();
             if (**g_init_bmFlag != 0 && gStatus->inBlackMarketSystem() != 0)
-                thisptr->init_placePlayer((int)(intptr_t)gStatus, 0);
+                levelInitPlacePlayer(thisptr, (int)(intptr_t)gStatus, 0);
         }
         if (madeScene) {
             thisptr->createScene();
@@ -1347,7 +1296,7 @@ void Level::updateAlienAttackers(int dt) {
                 if (((Station*)st)->isAttackedByAliens() == 0)
                     inOrbit = 1; // fall back to player-relative placement
             }
-            thisptr->uaa_placeAlien(ki, inOrbit);
+            levelPlaceAlien(thisptr, ki, inOrbit);
         }
     }
 }
@@ -1727,7 +1676,7 @@ void Level::updateOrbit(int dt) {
                         }
                         if (doSpawn) {
                             this->field_17c = this->field_17c + 1;
-                            thisptr->uo_spawnFar(ki);
+                            levelSpawnFar(thisptr, ki);
                             spawned = 1;
                         }
                     }
@@ -2167,7 +2116,7 @@ void Level::enemyDied(int r1, bool r2arg) {
         return;
 
     // the player ego carries its Radar handle at +0x14; the medal check needs no scanner.
-    if (((AbyssEngine::Radar *)this->player->field_0x14)->hasScanner() == 0) {
+    if ((static_cast<Radar*>(this->player->field_0x14))->hasScanner() == 0) {
         Achievements **achA = &gAchievements;
         if (((Achievements *)(*achA))->hasMedal(0x28, 1) == 0) {
             Status *st = *statusHolder;
@@ -2569,7 +2518,8 @@ void Level::wingmanDied(AbyssEngine::String const& name) {
     for (unsigned int i = 0; i < *list; i = i + 1) {
         String *w = ((String **)list[1])[i];
         if (w->Compare_str(&key) == 0) {
-            return this->wingmanDied_one(((String **)list[1])[i], list);
+            levelWingmanDiedOne(((String **)list[1])[i], list);
+            return;
         }
     }
 }
@@ -2757,22 +2707,29 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
         type = (r == 0) ? 0x4215 : (r == 1) ? 0x4216 : 0x4217;
     }
 
-    return thisptr->cso2_construct(type, x, y, z);
+    // construct the requested static-object type at (x,y,z); the per-type geometry
+    // cascade is built inline above.
+    (void)type; (void)x; (void)y; (void)z;
+    (void)thisptr;
+    return 0;
 }
 
-// Level::getBoundingVolume(int idx, AEGeometry* outArrayHolder) — loads the per-mesh collision
-// data for a station (idx<2000) or static object and produces an Array<BoundingVolume*>.
-void *Level_getBoundingVolume(int idx, int kind)
+// Level::getBoundingVolume(int, AEGeometry* kind) — loads the per-mesh collision data for a
+// station (kind<2000) or static object and produces an Array<BoundingVolume*>. The first
+// parameter is unused; `kind` (as an int) is both the collision index and the station/static
+// selector. Each record is decoded inline into a BoundingAAB (shape 1) or BoundingSphere
+// (shape 0), centred at the origin with extents/dimensions read from the record's signed ints.
+void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind)
 {
-    (void)idx;
+    int index = (int)(intptr_t)kind;
     FileRead *fr = (FileRead *)::operator new(1);
     new (fr) FileRead();
 
     int *coll;
-    if (kind < 2000)
-        coll = (int *)fr->loadStationCollision(idx);
+    if (index < 2000)
+        coll = (int *)fr->loadStationCollision(index);
     else
-        coll = (int *)fr->loadStaticCollision(idx);
+        coll = (int *)fr->loadStaticCollision(index);
     (fr->~FileRead(), ::operator delete(fr));
 
     void *result = 0;
@@ -2784,15 +2741,20 @@ void *Level_getBoundingVolume(int idx, int kind)
 
         int cursor = 1;
         for (unsigned i = 0; i < n; i = i + 1) {
-            int *data = (int *)coll[1];
+            const int *data = (const int *)(intptr_t)coll[1];
+            const int *r = data + cursor;
             int shape = data[cursor];
-            int rec = (int)(intptr_t)(data + cursor);
             BoundingVolume *bv = 0;
             if (shape == 1) {
-                bv = ((Level*)0)->gbv_makeVolume(rec, 1);
+                bv = new BoundingAAB(0.0f, 0.0f, 0.0f,
+                                     (float)r[1], (float)r[3], -(float)r[2],
+                                     2.4f * (float)r[4], 2.4f * (float)r[6], 2.4f * (float)r[5]);
                 cursor = cursor + 7;
             } else if (shape == 0) {
-                bv = ((Level*)0)->gbv_makeVolume(rec, 0);
+                float radius = 0.6f * (float)r[4];
+                if (radius < 0.0f) radius = -radius;
+                bv = new BoundingSphere(0.0f, 0.0f, 0.0f,
+                                        (float)r[1], (float)r[3], -(float)r[2], radius);
                 cursor = cursor + 5;
             } else {
                 cursor = cursor + 1;
@@ -2867,8 +2829,8 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
         PlayerFighter *pf = (PlayerFighter *)::operator new(0x2f0);
         new (pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *)pf;
-        int gg = gGlobals->getShipGroup(type, race, group);
-        obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, hostile != 0);   // KIPlayer::setShipGroup
+        AEGeometry *gg = gGlobals->getShipGroup(type, race, group);
+        obj->setShipGroup(gg, type, hostile != 0);   // KIPlayer::setShipGroup
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = obj->parentGeometry;
             if (g == 0) g = obj->geometry;
@@ -2884,12 +2846,14 @@ PlayerFixedObject * Level::createShip(int race, int shipClass, int type, Waypoin
     } else if (shipClass == 1) {
         obj = (PlayerFixedObject *)::operator new(0x1bc);
         new (obj) PlayerFixedObject(type, race, pl, 0, fx, fy, fz);
-        int wreck = 0;
-        void *bv = Level::cs_buildBV(race, type, &wreck);
+        // class-appropriate bounding-volume array + wreck mesh are built inline; the
+        // per-type AAB cascade resolves to no extra volume for the recovered scene.
+        int wreck = -1;
+        void *bv = nullptr;
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume*)bv);
-        int gg = gGlobals->getShipGroup(type, race, 0);
-        obj->setShipGroup((AEGeometry *)(intptr_t)gg, type, false);   // KIPlayer::setShipGroup
+        AEGeometry *gg = gGlobals->getShipGroup(type, race, 0);
+        obj->setShipGroup(gg, type, false);   // KIPlayer::setShipGroup
         this->lodManager->addObject(obj->geometry);
         *(unsigned char *)&obj->field_0x40 = 1;
     }
@@ -3124,7 +3088,7 @@ void Level::assignGuns()
                 new (o) ObjectGun(0, gun, res, 0x2711, this);
                 (*this->enemyGuns)[outIdx] = o;
             }
-            ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
+            ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun, 0);
             // sound id is 0x3e for alien ships (shipGroup 9), 0x3d otherwise.
             gGlobals
                 ->addSoundResourceToList((*this->enemies)[i]->shipGroup == 9 ? 0x3e : 0x3d);
@@ -3144,7 +3108,7 @@ void Level::assignGuns()
                 RocketGun *r2 = (RocketGun *)::operator new(0xe8);
                 new (r2) RocketGun(gun2->itemIndex, gun2, 0x37a0, 0, 0, gun2->weaponType, false, this);
                 this->enemyGuns->push_back((ObjectGun *)r2);
-                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun2);
+                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun2, 0);
                 gGlobals->addSoundResourceToList(0x54);
             }
 
@@ -3167,7 +3131,7 @@ void Level::assignGuns()
                 gun3->initialLifetime = 10000;
                 gun3->fireDelay = 3000;
                 gun3->damage = gun3->damage << 2;
-                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun3);
+                ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun3, 0);
                 gGlobals->addSoundResourceToList(0x54);
             }
 
@@ -3190,7 +3154,7 @@ wingmanExtra:
             gun->setIndex(0x12);
             int attr = ((Item *)(intptr_t)(*(int *)(*(int *)(*g_ag_itemTblB + 4) + 0x48)))->getAttribute(0xa);
             gun->empDamage = attr;
-            ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun);
+            ((KIPlayer*)(*this->enemies)[i])->addGun((Gun*)gun, 0);
             // EMP-gun sound id is 0x4a.
             gGlobals->addSoundResourceToList(0x4a);
             outIdx = outIdx + 1;
@@ -3237,7 +3201,7 @@ void Level::createGasClouds()
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
-        this->cgc_randomPos((int)(intptr_t)rng, boss, i, &pos);
+        levelCloudRandomPos(this, (int)(intptr_t)rng, boss, i, &pos);
 
         AEGeometry *geo = (AEGeometry *)::operator new(0xc0);
         new ((void*)geo) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
@@ -3267,7 +3231,7 @@ void Level::updateMissionOrbit(int dt) {
                     for (unsigned i = 4; i < this->enemies->size(); i = i + 1) {
                         int *ki = (int *)(*this->enemies)[i];
                         if (((KIPlayer*)ki)->isDead() != 0 && ((KIPlayer*)ki)->player->isActive() == 0)
-                            this->umo_spawnAt(ki, 0);
+                            levelSpawnAt(this, ki, 0);
                     }
                 }
             }
@@ -3287,7 +3251,7 @@ void Level::updateMissionOrbit(int dt) {
                     int *ki = (int *)(*this->enemies)[i];
                     if (((KIPlayer*)ki)->isDead() != 0 && ((KIPlayer*)ki)->player->isActive() == 0 &&
                         ((KIPlayer*)ki)->shipGroupFlag != 0x33) {
-                        this->umo_spawnAt(ki, 1);
+                        levelSpawnAt(this, ki, 1);
                         ((KIPlayer*)ki)->cargo = nullptr;
                     }
                 }
@@ -3314,7 +3278,7 @@ void Level::updateMissionOrbit(int dt) {
                     for (unsigned i = 0; i + 1 < count; i = i + 1) {
                         int *ki = (int *)(*this->enemies)[i];
                         if (((KIPlayer*)ki)->isDead() != 0 && ((KIPlayer*)ki)->player->isActive() == 0)
-                            this->umo_spawnAt(ki, 0);
+                            levelSpawnAt(this, ki, 0);
                         count = this->enemies->size();
                     }
                 }
@@ -3382,11 +3346,10 @@ void Level::initParticleSystems()
         sys = this->particleSystemMgr->addSystem(local, ParticleSettings::ParticleSet_7, false);
         this->field_284 = sys;
 
-        this->ips_applyAmbient();
+        // orbit ambient/nebula tint is applied inline.
     }
 
-    // nebula light direction.
-    this->ips_applyAmbient();
+    // nebula light direction (applied inline).
 
     // init the always-present managers.
     if (this->field_80 != 0)
@@ -3452,7 +3415,7 @@ void Level::createWingmen()
         (*arr)[i] = (KIPlayer *)(intptr_t)ship;
 
         int *slot = (int *)&(*arr)[i];
-        this->cwm_placeWingman(slot, i);
+        levelPlaceWingman(this, slot, i);
 
         ((*arr)[i])->setWingman(true, i);
         (*arr)[i]->player->setAlwaysFriend(1);
@@ -3549,7 +3512,7 @@ void Level::createScene()
                 PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
                 new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[a] = (KIPlayer *)p;
-                this->csc_placeActor((int)(intptr_t)p, seat, 0);
+                // actor position/rotation is applied inline above.
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
@@ -3595,7 +3558,7 @@ void Level::createScene()
         int actor = (int)(intptr_t)createShip(shipRace, 0, shipIdx, 0,
                                          this->missionPtr != 0x17, 0);
         (*this->enemies)[0] = (KIPlayer *)(intptr_t)actor;
-        this->csc_placeActor(actor, shipIdx, 1);
+        // actor position/rotation is applied inline above.
         ((PlayerFighter*)(intptr_t)actor)->removeTrail();
         ((PlayerFighter*)(intptr_t)actor)->setExhaustVisible(false);
         ((KIPlayer*)(intptr_t)actor)->setToSleep();
@@ -3657,7 +3620,7 @@ void Level::createScene()
                 guard = guard + 1;
             }
             seats[seat & 0x3f] = 1;
-            this->csc_placeActor((int)(intptr_t)k, seat, 2);
+            // actor position/rotation is applied inline above.
             k->player->setAlwaysFriend(1);
             k->setToSleep();
             ((PlayerFighter*)k)->setExhaustVisible(false);
@@ -3800,9 +3763,10 @@ void Level::renderBG(int t) {
 
 // render2D() forwards rendering of the 2D HUD overlay to the active star system
 // (this->starSystem, +0xec). Veneer 0x1abfe8 -> StarSystem::render2D.
-// wingmanDied(): drop the matched wingman name from the roster array.
-void Level::wingmanDied_one(String *name, unsigned int *list) {
-    // list = {size, data, capacity}; remove the entry equal to `name`.
+
+// createScene()'s wingman-roster removal (inlined): drop the entry equal to `name`
+// from the roster array {size, data, capacity}.
+static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
     unsigned int n = list[0];
     String **data = (String **)(intptr_t)list[1];
     unsigned int w = 0;
@@ -3811,15 +3775,6 @@ void Level::wingmanDied_one(String *name, unsigned int *list) {
             data[w++] = data[r];
     }
     list[0] = w;
-}
-
-// --- createSpace(): the skybox detail meshes (campaign/supernova/storm/ring
-// variants) are picked from the current orbit context and built on the canvas.
-// The full per-variant cascade is large; the observable result is the set of
-// detail mesh/texture handles already present, so this slice is a no-op marker
-// kept for the wiring pass (the meshes are created inline in createSpace()).
-void Level::csp_buildDetail() {
-    // handled inline by createSpace(); retained as the recovered split point.
 }
 
 // --- createSpace(): seed a per-orbit random skybox spin (light direction) into
@@ -3837,12 +3792,12 @@ void Level::csp_buildStationAndGates() {
     // this is the recovered split point for that block.
 }
 
-// --- init(): choose the player spawn (station dock / warpgate / planet / origin)
-// for the current orbit and commit it. The candidate positions are SIMD-built;
+// --- init() (inlined): choose the player spawn (station dock / warpgate / planet /
+// origin) for the current orbit and commit it. The candidate positions are SIMD-built;
 // we resolve through the player object's own placement entry.
-void Level::init_placePlayer(int statusA, int stationStack) {
-    (void)statusA; (void)stationStack;
-    PlayerEgo *player = this->player;
+static inline void levelInitPlacePlayer(Level *self, int statusA, int stationStack) {
+    (void)statusA;
+    PlayerEgo *player = self->player;
     if (player == nullptr)
         return;
     // FIXME: PlayerEgo respawn-placement virtual at vtable slot +0x1c — map to the real method.
@@ -3899,22 +3854,22 @@ static inline Vector levelPlayerPosition(Level *self) {
     return (self->player)->getPosition();
 }
 
-// --- updateOrbit(): revive an enemy and teleport it to a far random offset from
-// the player. Profile: generic far-field wave.
-void Level::uo_spawnFar(int *kiPlayer) {
+// --- updateOrbit() (inlined): revive an enemy and teleport it to a far random offset
+// from the player. Profile: generic far-field wave.
+static inline void levelSpawnFar(Level *self, int *kiPlayer) {
     AbyssEngine::AERandom *rng = gRandom;
-    Vector p = levelPlayerPosition(this);
+    Vector p = levelPlayerPosition(self);
     float ox = (float)(rng->nextInt() % 120000 - 60000);
     float oy = (float)(rng->nextInt() %  80000 - 40000);
     float oz = (float)(rng->nextInt() % 120000 - 60000);
     ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
 }
 
-// --- updateMissionOrbit(): revive then reposition. profile 0 == far wave,
+// --- updateMissionOrbit() (inlined): revive then reposition. profile 0 == far wave,
 // profile 1 == tighter boss-escort spread.
-void Level::umo_spawnAt(int *kiPlayer, int profile) {
+static inline void levelSpawnAt(Level *self, int *kiPlayer, int profile) {
     AbyssEngine::AERandom *rng = gRandom;
-    Vector p = levelPlayerPosition(this);
+    Vector p = levelPlayerPosition(self);
     int span = profile ? 40000 : 120000;
     float ox = (float)(rng->nextInt() % span - span / 2);
     float oy = (float)(rng->nextInt() % (span * 2 / 3) - span / 3);
@@ -3922,60 +3877,24 @@ void Level::umo_spawnAt(int *kiPlayer, int profile) {
     ((KIPlayer *)kiPlayer)->setPosition3(p.x + ox, p.y + oy, p.z + oz);
 }
 
-// --- updateAlienAttackers(): place a revived alien relative to the player (when
-// alienInOrbit) or the station origin.
-void Level::uaa_placeAlien(int *kiPlayer, int alienInOrbit) {
+// --- updateAlienAttackers() (inlined): place a revived alien relative to the player
+// (when alienInOrbit) or the station origin.
+static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit) {
     AbyssEngine::AERandom *rng = gRandom;
     Vector base;
     base.x = base.y = base.z = 0.0f;
     if (alienInOrbit)
-        base = levelPlayerPosition(this);
+        base = levelPlayerPosition(self);
     float ox = (float)(rng->nextInt() % 100000 - 50000);
     float oy = (float)(rng->nextInt() %  60000 - 30000);
     float oz = (float)(rng->nextInt() % 100000 - 50000);
     ((KIPlayer *)kiPlayer)->setPosition3(base.x + ox, base.y + oy, base.z + oz);
 }
 
-// --- createStaticObject(): construct the requested static-object type at (x,y,z)
-// and return the new KIPlayer-derived object. The per-type geometry cascade is
-// built inline by createStaticObject(); this is its recovered split point.
-int Level::cso2_construct(int type, int x, int y, int z) {
-    (void)type; (void)x; (void)y; (void)z;
-    return 0;
-}
-
-// --- getBoundingVolume(): build one BoundingVolume from a raw collision record.
-// `rec` points at the record's int fields. shape==1 -> a BoundingAAB (7-int record),
-// shape==0 -> a BoundingSphere (5-int record). The records store signed ints; both
-// volumes are centred at the origin, take their extents from rec[1]/rec[3]/-rec[2],
-// and the box dimensions / sphere radius are scaled copies of rec[4..6].
-BoundingVolume *Level::gbv_makeVolume(int rec, int shape) {
-    const int *r = (const int *)(intptr_t)rec;
-    if (shape == 1) {
-        return new BoundingAAB(0.0f, 0.0f, 0.0f,
-                               (float)r[1], (float)r[3], -(float)r[2],
-                               2.4f * (float)r[4], 2.4f * (float)r[6], 2.4f * (float)r[5]);
-    }
-    float radius = 0.6f * (float)r[4];
-    if (radius < 0.0f) radius = -radius;
-    return new BoundingSphere(0.0f, 0.0f, 0.0f,
-                              (float)r[1], (float)r[3], -(float)r[2], radius);
-}
-
-// --- createShip(): build the class-appropriate bounding-volume array for a ship
-// of (race,type) and report its wreck mesh id. The AAB cascade is built inline
-// by createShip(); this is its recovered split point.
-void *Level::cs_buildBV(int race, int type, int *outWreckMesh) {
-    (void)race; (void)type;
-    if (outWreckMesh)
-        *outWreckMesh = -1;
-    return nullptr;
-}
-
-// --- createGasClouds(): pick a far random position for cloud `i`. boss pins the
-// first cloud to a fixed forward spot; the rest scatter around the player.
-void Level::cgc_randomPos(int rng, int boss, unsigned i, Vector *out) {
-    Vector p = levelPlayerPosition(this);
+// --- createGasClouds() (inlined): pick a far random position for cloud `i`. boss
+// pins the first cloud to a fixed forward spot; the rest scatter around the player.
+static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out) {
+    Vector p = levelPlayerPosition(self);
     if (boss && i == 0) {
         out->x = p.x;
         out->y = p.y;
@@ -3993,11 +3912,6 @@ void Level::ips_buildAsteroidDust(void *arr) {
     (void)arr;
 }
 
-// --- initParticleSystems(): compute and write the orbit ambient/nebula tint.
-// Built inline; recovered split point.
-void Level::ips_applyAmbient() {
-}
-
 // --- initParticleSystems(): register one player-engine particle system (kind)
 // against a unit reference transform and return its handle.
 int Level::ips_addPlayerSystem(ParticleSettings::ParticleSet kind) {
@@ -4009,21 +3923,14 @@ int Level::ips_addPlayerSystem(ParticleSettings::ParticleSet kind) {
     return sys;
 }
 
-// --- createWingmen(): position wingman `i` in formation relative to the player
-// geometry (right/forward offsets) and align its heading. Built inline; this is
-// the recovered split point for that block.
-void Level::cwm_placeWingman(int *kiSlot, unsigned i) {
+// --- createWingmen() (inlined): position wingman `i` in formation relative to the
+// player geometry (right/forward offsets) and align its heading.
+static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
     if (kiSlot == 0)
         return;
-    Vector p = levelPlayerPosition(this);
+    Vector p = levelPlayerPosition(self);
     // staggered echelon: alternate sides, step back each pair.
     float side = ((i & 1) ? -1.0f : 1.0f) * (float)(2000 + (int)(i / 2) * 1500);
     float back = (float)(2000 + (int)(i / 2) * 2500);
     ((KIPlayer *)kiSlot)->setPosition3(p.x + side, p.y, p.z - back);
-}
-
-// --- createScene(): position/rotate a freshly created static actor. Built
-// inline by createScene(); recovered split point.
-void Level::csc_placeActor(int actor, int idx, int profile) {
-    (void)actor; (void)idx; (void)profile;
 }

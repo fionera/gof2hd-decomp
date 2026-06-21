@@ -30,7 +30,9 @@ struct String {
     explicit String(int v);
     explicit String(float v);
     explicit String(long long v);
-    String &operator=(const String &other) { s = other.s; return *this; }
+    // operator=(String const&): recovered engine assignment (re-Sets from the other's wide buffer).
+    // Defined out-of-line in String.cpp so the original mangled symbol is emitted from that TU.
+    String &operator=(const String &other);
     String &operator=(const char *cstr) { Set_char(cstr); return *this; }
     String &operator+=(const String &other) { s.append(other.s); return *this; }
     String &operator+=(const char &c);
@@ -41,6 +43,27 @@ struct String {
     void copy(const String *src, bool reverse) { ctor_copy(const_cast<String *>(src), reverse); }
     const char16_t* text() const { return s.c_str(); }
     uint32_t        size() const { return (uint32_t)s.size(); }
+
+    // ---- recovered engine methods (mangle to the original AbyssEngine::String symbols) ----
+    // Replace this string's contents from various sources.
+    void Set(const char *s);
+    void Set(const unsigned short *s);
+    void Set(float v);
+    void Set(long long v);
+    // Length helpers (static): byte length of a char string / code-unit length of a wide string.
+    static int StrLen(const char *s);
+    static int StrLen(const unsigned short *s);
+    static int GetStringLength(const char *s);
+    // Compare against another String / an 8-bit string. 0 == equal.
+    int Compare(const String &other) const;
+    unsigned int Compare(const char *s);
+    // Raw access to the wide backing buffer.
+    const unsigned short *GetAEWChar() const;
+    operator unsigned short *();
+    operator const unsigned short *() const;
+    // Bounded element access: pointer to the index-th code unit, or &NUL on out-of-range.
+    unsigned short *operator[](int i);
+    const unsigned short *operator[](int i) const;
 
     // ---- methods (converted from String_*/free functions) ----
     unsigned int Compare_char(const char *s);

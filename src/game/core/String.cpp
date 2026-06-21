@@ -163,12 +163,13 @@ void * String::Split(String sep) {
 static char16_t g_String_nullChar = 0;
 
 // AbyssEngine::String::operator[](int) - pointer to the index-th code unit, or &NUL on OOB.
-uint16_t * String::index(int i) {
-    String *self = this;
-    if (i < 0 || (unsigned int)i >= self->s.size())
-        return (uint16_t *)&g_String_nullChar;
-    return (uint16_t *)&self->s[i];
+unsigned short *String::operator[](int i) {
+    if (i < 0 || (unsigned int)i >= this->s.size())
+        return reinterpret_cast<unsigned short *>(&g_String_nullChar);
+    return reinterpret_cast<unsigned short *>(&this->s[i]);
 }
+
+uint16_t * String::index(int i) { return (uint16_t *)(*this)[i]; }
 
 // AbyssEngine::String::String(char const*, bool reverse)
 String * String::ctor_char(const char *s, bool reverse) {
@@ -179,12 +180,14 @@ String * String::ctor_char(const char *s, bool reverse) {
     return this;
 }
 
+void String::Set_longlong(long long v) { Set(v); }
+
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
-void String::Set_longlong(long long v) {
+void String::Set(long long v) {
     this->s.clear();
 
     if (v == 0) {
-        ((String *)(this))->Set_char("");
+        this->Set("");
         return;
     }
 
@@ -219,12 +222,13 @@ String * String::ctor_copy(String *other, bool reverse) {
 }
 
 // AbyssEngine::String::StrLen(char const*) - byte length of a NUL-terminated char string.
-int String::StrLen_char(const char *s) {
-    int n = 0;
-    while (s[n] != '\0')
-        n++;
-    return n;
+int String::StrLen(const char *s) {
+    const char *p = s;
+    while (*p != '\0')
+        p++;
+    return (int)(p - s);
 }
+int String::StrLen_char(const char *s) { return StrLen(s); }
 
 // AbyssEngine::String::operator+=(int const&) - sign-extend to 64-bit and append.
 String * String::addAssign_int(const int *v) {
@@ -239,8 +243,10 @@ String * String::ctor_float(float v) {
     return this;
 }
 
+unsigned int String::Compare_char(const char *s) { return Compare(s); }
+
 // AbyssEngine::String::Compare(char const*) - compare against an 8-bit string.
-unsigned int String::Compare_char(const char *s) {
+unsigned int String::Compare(const char *s) {
     if (this->s.empty())
         return 1;
 
@@ -268,17 +274,21 @@ done:
 }
 
 // AbyssEngine::String::Set(char const*) - replace contents from an 8-bit string (widened to 16-bit).
-void String::Set_char(const char *s) {
+void String::Set(const char *s) {
     this->s.clear();
     if (s == 0)
         return;
     for (const unsigned char *p = (const unsigned char *)s; *p != 0; p++)
         this->s.push_back((char16_t)*p);
 }
+void String::Set_char(const char *s) { Set(s); }
+
+int String::Compare_str(String *other) { return Compare(*other); }
 
 // AbyssEngine::String::Compare(AbyssEngine::String const&)
 // Returns 0 when equal; a small signed value otherwise (0xff sentinel for length mismatch).
-int String::Compare_str(String *other) {
+int String::Compare(const String &otherRef) const {
+    const String *other = &otherRef;
     short result;
     if (other->s.size() == this->s.size()) {
         size_t i = 0;
@@ -346,12 +356,18 @@ void String::Trim() {
 }
 
 // AbyssEngine::String::GetStringLength(char const*) - byte length of a NUL-terminated char string.
+int String::GetStringLength(const char *s)
+{
+    const char *p = s;
+    while (*p != '\0')
+        p++;
+    return (int)(p - s);
+}
+
+// ABI-stable free entry point kept for existing call sites; forwards to the real static method.
 int String_GetStringLength(const char *s)
 {
-    int n = 0;
-    while (s[n] != '\0')
-        n++;
-    return n;
+    return String::GetStringLength(s);
 }
 
 // AbyssEngine::String::ToLowerCase() - lowercase ASCII plus a CP-1252 accented range.
@@ -389,8 +405,15 @@ void String::ToLowerCase() {
 }
 
 // AbyssEngine::String::operator=(AbyssEngine::String const&)
+// Re-Set from the other's wide buffer; an empty source leaves this string untouched.
+String &String::operator=(const String &other) {
+    if (!other.s.empty())
+        this->Set((const unsigned short *)other.s.c_str());
+    return *this;
+}
+
 String * String::assign(String *other) {
-    this->s = other->s;
+    *this = *other;
     return this;
 }
 
@@ -400,13 +423,14 @@ void String::ctor() {
 }
 
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
-void String::Set_wchar(const uint16_t *s) {
+void String::Set(const unsigned short *s) {
     this->s.clear();
     if (s == 0)
         return;
-    for (const uint16_t *p = s; *p != 0; p++)
+    for (const unsigned short *p = s; *p != 0; p++)
         this->s.push_back((char16_t)*p);
 }
+void String::Set_wchar(const uint16_t *s) { Set((const unsigned short *)s); }
 
 // AbyssEngine::String::IndexOf(unsigned int start, AbyssEngine::String const&)
 // Return the first index >= start where needle occurs, or 0xffffffff if not found.
@@ -528,8 +552,10 @@ static const char kZero[]    = "0";
 static const char kDot[]     = ".";
 static const char kExp[]     = "E";
 
+void String::Set_float(float v) { Set(v); }
+
 // AbyssEngine::String::Set(float) - format a float into this string.
-void String::Set_float(float v) {
+void String::Set(float v) {
     int exp = 0;
     int neg = 0;
     uint16_t *digitsW = String_computeFloatString(v, 10, &exp, &neg);
@@ -568,14 +594,15 @@ void String::Set_float(float v) {
 }
 
 // AbyssEngine::String::StrLen(unsigned short const*) - length of a NUL-terminated wide string.
-int String::StrLen_wchar(const uint16_t *s) {
+int String::StrLen(const unsigned short *s) {
     if (s == 0)
         return 0;
-    int n = 0;
-    while (s[n] != 0)
-        n++;
-    return n;
+    const unsigned short *p = s;
+    while (*p != 0)
+        p++;
+    return (int)(p - s);
 }
+int String::StrLen_wchar(const uint16_t *s) { return StrLen((const unsigned short *)s); }
 
 // AbyssEngine::String::String(unsigned short const*, bool reverse)
 String * String::ctor_wchar(const uint16_t *s, bool reverse) {
@@ -704,11 +731,27 @@ String * String::ctor_longlong(long long v) {
 }
 
 // AbyssEngine::String::operator[](int) const - pointer to the index-th code unit, or &NUL on OOB.
-uint16_t * String::index_const(int i) {
-    String *self = this;
-    if (i < 0 || (unsigned int)i >= self->s.size())
-        return (uint16_t *)&g_String_nullChar;
-    return (uint16_t *)&self->s[i];
+const unsigned short *String::operator[](int i) const {
+    if (i < 0 || (unsigned int)i >= this->s.size())
+        return reinterpret_cast<const unsigned short *>(&g_String_nullChar);
+    return reinterpret_cast<const unsigned short *>(&this->s[i]);
+}
+
+uint16_t * String::index_const(int i) { return (uint16_t *)(*this)[i]; }
+
+// AbyssEngine::String::GetAEWChar() const - the wide backing buffer.
+const unsigned short *String::GetAEWChar() const {
+    return reinterpret_cast<const unsigned short *>(this->s.c_str());
+}
+
+// AbyssEngine::String::operator unsigned short*() - implicit access to the wide backing buffer.
+String::operator unsigned short *() {
+    return reinterpret_cast<unsigned short *>(&this->s[0]);
+}
+
+// AbyssEngine::String::operator unsigned short const*() const - implicit wide-buffer access.
+String::operator const unsigned short *() const {
+    return reinterpret_cast<const unsigned short *>(this->s.c_str());
 }
 
 // AbyssEngine::String::PrintOut() - print the string via the platform helper.

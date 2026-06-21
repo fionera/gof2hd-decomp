@@ -9,7 +9,6 @@
 #include "engine/render/PaintCanvas.h"
 
 // Free-function bridges into engine singletons that have no own header here.
-void DisableClip();          // AbyssEngine::PaintCanvas::DisableClip
 
 // Engine singletons the ticker reaches through, recovered as typed globals.
 extern PaintCanvas **g_NewsTicker_draw_canvas;
@@ -171,7 +170,7 @@ void NewsTicker::draw()
         }
     }
 
-    DisableClip();
+    canvas->DisableClip();
 }
 
 void NewsTicker::update(int dt)
@@ -252,12 +251,6 @@ extern "C" void *NewsTicker_dtor(void *p)
 {
     if (p) ((NewsTicker *)p)->~NewsTicker();
     return p;
-}
-
-// Per-frame scroll tick the station drives once per idle frame.
-void NewsTicker_update_ou(int nt)
-{
-    ((NewsTicker *)(intptr_t)nt)->update(0);
 }
 
 // Touch-release handler; non-zero when the ticker consumed the release.

@@ -642,7 +642,7 @@ extern int** g_rg_zeroSlotC;
 extern int (*g_rg_makeItemB)(int);
 extern void (*g_rg_addCargo)(int, int, int);
 
-extern void Globals_resetHints();
+#include "game/core/Globals.h"
 
 // Status::resetGame()
 //   Wipes the persistent player state back to a fresh new-game baseline: zeroes
@@ -735,7 +735,7 @@ void Status::resetGame() {
         }
     }
 
-    Globals_resetHints();
+    gGlobals->resetHints();
     Galaxy* gal = gGalaxy;
     gal->reset();
 

@@ -35,10 +35,6 @@ extern "C" void FModSound_pauseEvent(void* player);
 extern "C" void FModSound_stopEvent(void* player);
 extern "C" void FModSound_playEvent(void* player, int event, int flags);
 
-// Player weapon-attach PLT shims (resolve into Player::addGun in the shipped binary).
-extern "C" void Player_addGun_a(void* player);
-extern "C" void Player_addGun_b(void* player);
-
 // Game singletons and engine constants captured from PC-relative slots.
 extern "C" void*  gCanvas;
 extern "C" void** gCanvasPtr;
@@ -276,10 +272,6 @@ void KIPlayer::jump() {
     this->jumperFlag = 1;
 }
 
-void KIPlayer::setActive() {
-    this->player->setActive(1);
-}
-
 void KIPlayer::setActive(bool active) {
     this->player->setActive(active);
 }
@@ -304,10 +296,6 @@ uint8_t KIPlayer::isVisible() {
 void KIPlayer::awake() {
     this->state = 1;
     this->player->awake(1);
-}
-
-void KIPlayer::setInitActive() {
-    this->initActiveFlag = 0;
 }
 
 void KIPlayer::setInitActive(bool active) {
@@ -425,10 +413,6 @@ void KIPlayer::setPosition3(float x, float y, float z) {
     v.y = y;
     v.z = z;
     this->setPosition_vec(v);
-}
-
-void KIPlayer::addGun_b() {
-    Player_addGun_b(this->player);
 }
 
 void KIPlayer::reset() {
@@ -637,10 +621,6 @@ void KIPlayer::setPosition_vec(const Vector& v) {
     }
 }
 
-void KIPlayer::addGun_a() {
-    Player_addGun_a(this->player);
-}
-
 void KIPlayer::createCrate(int type) {
     unsigned short id;
     if (type == 1) {
@@ -707,12 +687,6 @@ Vector KIPlayer::projectCollisionOnSurface(const Vector& position) {
     return out;
 }
 
-// Delegate the new weapon to the wrapped Player object.
-void KIPlayer::addGun(Gun* gun) {
-    (void)gun;
-    Player_addGun_a(this->player);
-}
-
 // Forward a single gun into the given weapon slot of the wrapped Player.
 void KIPlayer::addGun(Gun* gun, int slot) {
     this->player->addGun(gun, slot);
@@ -721,6 +695,23 @@ void KIPlayer::addGun(Gun* gun, int slot) {
 // Forward a whole gun list into the given weapon slot of the wrapped Player.
 void KIPlayer::addGun(Array<Gun*>* guns, int slot) {
     this->player->addGun(guns, slot);
+}
+
+// A bare actor has no collision surface to test against the level, so the query
+// never produces a hit.
+int KIPlayer::levelCollision(Vector* out, long long flags) {
+    (void)out;
+    (void)flags;
+    return 0;
+}
+
+// Base actor has no explosion model; subclasses arm their own.
+void KIPlayer::enableExplosion() {
+}
+
+// Base actor keeps no spawn-orientation state; subclasses that need it override.
+void KIPlayer::setInitialRotation(Vector rotation) {
+    (void)rotation;
 }
 
 // Engage/disengage the auto-pilot lock. This override lives on the PlayerEgo subclass,

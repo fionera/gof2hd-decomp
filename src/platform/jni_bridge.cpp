@@ -11,6 +11,7 @@
 // cross-TU references here are declared with explicit asm() labels so they bind
 // to the exact mangled symbols the original calls.
 #include <jni.h>
+#include <android/log.h>
 
 #include <cstdlib>
 #include <cstring>
@@ -46,6 +47,17 @@ extern "C" AbyssEngine::Engine **g_pEngine;
 // Back-button latch raised by the Android key handler (binary .bss 0x22d2fc);
 // newrender drains it into a synthetic key press/release each frame.
 extern "C" int g_android_back_button_pressed;
+
+// Slow-motion / speed-up latch bytes read back by the Java side through the
+// SlowMotion()/SpeedUp() accessors (binary .bss).
+static bool g_slowMotion;
+static bool g_speedUp;
+
+// Analog gamepad axes pushed in from the Java input layer by
+// setValuesForGamepad() (binary .data gamepad record; the two analog values sit
+// at offsets +0x14 / +0x18 of that record).
+static float g_gamepadAxisX;
+static float g_gamepadAxisY;
 
 // ---------------------------------------------------------------------------
 // Cross-namespace references bound to their exact original mangled symbols.
@@ -87,6 +99,29 @@ void gof2_keyReleased(AbyssEngine::Engine *engine, int key)
     asm("_Z11keyReleasedPN11AbyssEngine6EngineEi");
 
 extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits();
+
+// ---------------------------------------------------------------------------
+// Engine entry points the JNI natives forward into. These live in the wider NDK
+// layer (or, for the touch/render hooks, just below); they are plain unmangled
+// C-linkage symbols, so they are declared extern "C".
+// ---------------------------------------------------------------------------
+
+// Asset bring-up: unpacks the APK + zip, builds the Engine and shows the canvas.
+extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+                                  int width, int height);
+// Copies the asset root / zip directory strings into the loader's own buffers.
+extern "C" void ndk23_setRootDirectory(const char *path);
+extern "C" void ndk23_setZipDirectory(const char *path);
+// One-shot per-frame tick and host-driven lifecycle / status hooks.
+extern "C" void ndk23_renderstep(int width, int height);
+extern "C" int ndk23_getExitFlag();
+extern "C" int ndk23_getScreenshotFlag();
+extern "C" void ndk23_resetScreenshotFlag();
+extern "C" void ndk23_sendingPauseSignal();
+extern "C" void ndk23_sendingResumeSignal();
+extern "C" void ndk23_setCountryCode(unsigned int code);
+// Accelerometer sink (deferred: implemented elsewhere in the NDK layer).
+extern "C" void ndk23_handleAcceleration(float x, float y, float z);
 
 // ---------------------------------------------------------------------------
 // JNI bridge.
@@ -133,6 +168,105 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setZIPPath(
         std::strcpy(g_zipPath, utf);
         env->ReleaseStringUTFChars(path, utf);
     }
+}
+
+// Root-asset / zip directory copies owned by SetDirectories (binary .bss
+// 0x2279ac / 0x2279b0); each is a freshly malloc'd, mutable C string.
+static char *g_rootDir;
+static char *g_zipDir;
+
+// Hands the engine its asset root and zip directories. Each incoming Java string
+// is copied into a malloc'd buffer, published into the matching loader global and
+// forwarded to the NDK, then (when the JNI returned a private copy) released and
+// logged.
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories(
+    JNIEnv *env, jclass /*clazz*/, jstring rootDir, jstring zipDir)
+{
+    jboolean isCopy;
+    const char *utf = env->GetStringUTFChars(rootDir, &isCopy);
+    g_rootDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    g_zipDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    if (isCopy) {
+        std::strcpy(g_rootDir, utf);
+        std::strcpy(g_zipDir, utf);
+        ndk23_setRootDirectory(g_rootDir);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "rootDir: %s", g_rootDir);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", g_zipDir);
+        env->ReleaseStringUTFChars(rootDir, utf);
+    }
+
+    utf = env->GetStringUTFChars(zipDir, &isCopy);
+    g_zipDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    if (isCopy) {
+        std::strcpy(g_zipDir, utf);
+        ndk23_setZipDirectory(g_zipDir);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", g_zipDir);
+        env->ReleaseStringUTFChars(zipDir, utf);
+    }
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    // Reserved Java entry point: the native side has nothing to do at startup.
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_initialize(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height)
+{
+    ndk23_InitWithZip(g_apkPath, g_zipPath, width, height);
+    ndk23_renderstep(width, height);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_renderstep(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height)
+{
+    ndk23_renderstep(width, height);
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getExitFlag(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk23_getExitFlag() != 0;
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getScreenshotFlag(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk23_getScreenshotFlag() != 0;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resetScreenshotFlag(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk23_resetScreenshotFlag();
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_sendPauseSignalToGame(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk23_sendingPauseSignal();
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_sendResumeSignalToGame(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk23_sendingResumeSignal();
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setCountryCodeOfDevice(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint code)
+{
+    ndk23_setCountryCode(static_cast<unsigned int>(code));
+}
+
+// The Java layer reports portrait-relative acceleration; the engine wants the
+// landscape x axis flipped, so the x component is sign-bit-toggled before it is
+// handed to the accelerometer sink.
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer(
+    JNIEnv * /*env*/, jclass /*clazz*/, jfloat x, jfloat y, jfloat z)
+{
+    ndk23_handleAcceleration(-x, y, z);
 }
 
 // ---------------------------------------------------------------------------
@@ -198,4 +332,67 @@ extern "C" void ndk23_newrender(long long now)
     }
 
     ndk_checkPlaytimeAndSpendOfferwallCredits();
+}
+
+// ---------------------------------------------------------------------------
+// Direct touch injection (used by the touch-pad / touch-screen host paths, which
+// bypass the queued newrender path and dispatch straight into the manager). The
+// x/y come in as floats and are truncated to integer pixels.
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
+                                          float x, float y)
+{
+    ApplicationManager *manager = (*g_pEngine)->appManager;
+    int px = static_cast<int>(x);
+    int py = static_cast<int>(y);
+    if (phase == 2) {
+        AppMgr_OnTouchMove(manager, px, py, touch);
+    } else if (phase == 1) {
+        AppMgr_OnTouchEnd(manager, px, py, touch);
+        AppMgr_OnTouchEnd(manager);
+    } else if (phase == 0) {
+        AppMgr_OnTouchBegin(manager, px, py, touch);
+    }
+}
+
+extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase,
+                                             float x, float y)
+{
+    ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
+}
+
+// ---------------------------------------------------------------------------
+// Engine teardown: releases and destroys the singleton Engine, clearing the slot.
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk23_ndkDone()
+{
+    AbyssEngine::Engine *engine = *g_pEngine;
+    if (engine != nullptr) {
+        engine->Release();
+        delete engine;
+        *g_pEngine = nullptr;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Host-side input accessors. SlowMotion()/SpeedUp() report the matching latch
+// bytes; setValuesForGamepad() stores the latest analog stick values.
+// ---------------------------------------------------------------------------
+
+bool SlowMotion()
+{
+    return g_slowMotion;
+}
+
+bool SpeedUp()
+{
+    return g_speedUp;
+}
+
+void setValuesForGamepad(float x, float y)
+{
+    g_gamepadAxisX = x;
+    g_gamepadAxisY = y;
 }

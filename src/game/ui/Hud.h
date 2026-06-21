@@ -14,11 +14,15 @@ class ListItem;
 class TouchButton;
 class PlayerEgo;
 class Level;
+class Radar;
 // String comes from common.h (AbyssEngine::String, aliased into global scope).
 
 class Hud {
 public:
     unsigned char field_0x0;
+    unsigned char visible;  // +0x1 HUD visibility flag
+    unsigned char field_0x2;
+    unsigned char field_0x3;
     Array<TouchButton *> *menuButtons;  // radial quick-menu buttons
     // Scratch block of message/label String members.
     String field_0x1c;
@@ -192,8 +196,9 @@ public:
     void clearQueue();
     void closeHudMenu();
     void draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y);
-    void drawChallengeModeScore();
     void drawChallengeModeScore(int unused);
+    void drawCredits();
+    void drawBigNumber(int x, int y, int value, bool flag);
     void drawEventQueue();
     void drawEventString(String text, bool rightAlign);
     void drawMenu();
@@ -206,6 +211,7 @@ public:
     float getAnalogY();
     void hudEvent(int eventId, PlayerEgo *ego, int arg);
     void hudEventMedal(int medalId, int percent);
+    int hudAction(int action, Level *lvl, Radar *radar);
     int init();
     void initHudMenu(int menuType, Level *lvl);
     uint8_t isHackingGameActive();
@@ -220,6 +226,7 @@ public:
     void setHackingGameActive(bool value);
     void setJumpMapSelected(bool value);
     void setTimeExtender(bool p1, bool p2, bool p3, bool p4);
+    void setVisible(bool value);
     unsigned int touchBegin(unsigned int a, unsigned int b, void *key);
     unsigned int touchEnd(unsigned int a, unsigned int b, void *key);
     unsigned int touchMove(unsigned int a, unsigned int b, void *key);
@@ -227,21 +234,10 @@ public:
     void updateQueue(int dt);
     void updateSecondaryWeaponString();
 
-    // Per-panel renderers and helpers driven by the methods above.
-    void drawReticleAndBrackets(void *ego, unsigned int x, unsigned int y);
+    // Per-panel renderers driven by the methods above.
     void drawRadar();
     void drawBars(void *ego);
     void drawSecondaryWeaponPanel();
-    void drawMissionBanner();
-    void drawMessage();
-    unsigned int touchMoveFallback(unsigned int a, void *b);
-    void secondaryWeaponChanged();
-    void refreshQuickMenu();
-    void catchCargoFinish(ListItem *item);
-    void eventQueueFinish(void *canvas, unsigned int color);
-    void loadImages();
-    void hudEventBuild(int eventId, void *ego, int arg);
-    void buildQuickMenu(int menuType);
 
     bool drawTitleImage(bool visible);
     // Toggle the HUD's cinematic overlay.

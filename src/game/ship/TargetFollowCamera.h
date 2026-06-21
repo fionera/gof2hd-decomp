@@ -39,7 +39,7 @@ public:
     uint8_t            active;
     uint8_t            rumbleActive;
     int                rumbleTimer;
-    uint8_t            rotateAroundTarget;
+    uint8_t            rotateAroundTargetEnabled;
     uint8_t            fastForward;
     float              rotX;
     float              rotY;
@@ -62,20 +62,22 @@ public:
     uint8_t            smallRumble;
     float              handlingDampingA;
     float              handlingDampingB;
-    float              roll;
+    float              rollAngle;
     float              shipHandling;
     uint8_t            fixed;
     Matrix             localMatrix;
 
     TargetFollowCamera(unsigned id, AEGeometry *target,
                        Vector camOffset, Vector targetOffset);
+    ~TargetFollowCamera();
 
+    AEGeometry *getTarget();
     Vector *getPosition();
-    Vector *getTargetPos();
-    Vector *getUp();
+    Vector *getTargetPos() { return reinterpret_cast<Vector *>(&this->targetX); }
+    Vector *getUp()        { return reinterpret_cast<Vector *>(&this->upX); }
     Vector *getTargetOffset();
     Vector *getCamOffset();
-    Vector *getRotation();
+    Vector *getRotation()  { return reinterpret_cast<Vector *>(&this->rotX); }
     Matrix  getLocal();
     void    setLocal(Matrix m);
     void    setTarget(AEGeometry *target);
@@ -84,15 +86,15 @@ public:
     void    setPosition(const Vector &position);
     void    setPosition(float x, float y, float z);
     void    setFirstPersonMatrix(Matrix &m);
-    void    setZoomTarget(float zoom);
+    void    zoomTarget(float zoom);
     void    setRoll(float roll);
-    void    roll_(float delta);
+    void    roll(float delta);
     void    setLookAtCam(bool enabled);
     void    setActive(bool enabled);
     void    setLocked(bool locked);
     void    setFixed(bool enabled);
     void    setRotationAroundTarget(bool enabled);
-    void    rotateAroundTargetBy(float x, float y, float z);
+    void    rotateAroundTarget(float x, float y, float z);
     void    enableFirstPersonCam(bool enabled);
     void    setFastForwardMode(bool enabled);
     void    useTargetsUpVector(bool enabled);
@@ -100,11 +102,10 @@ public:
     void    setBoostPercentage(float pct, int frequency);
     void    setShipHandling(float handling);
     void    resetShipHandling();
-    void    setShipHandlingNoUpdate(float handling);
-    void    calculateCoefficients(float t);
-    void    aproximateCoefficients(float t);
-    void    aproximateCoefficients(float t, double *outB, double *outA, double *outC,
-                                   double *outD, double *outE = nullptr, double *outF = nullptr);
+    void    calculateCoefficents(float t);
+    void    aproximateCooefficientsForAproximationOfDampingFunktion(
+                float t, double &outB, double &outA, double &outC,
+                double &outD, double &outE);
     void    hit();
     void    hitSmall();
     void    translate(float dx, float dy, float dz);

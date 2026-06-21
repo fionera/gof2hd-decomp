@@ -62,7 +62,7 @@ extern int  *g_mw_titleTable;      // per-mission title id table (update)
 // String storage; they wrap the corresponding Status/Layout/Globals members.
 extern "C" void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 extern "C" void Globals_getAgentMissionText(void *out, void *agent);
-extern "C" void Layout_drawHeader(void *layout, void *title);
+
 extern "C" int  ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 extern "C" int  _mw_GetTextHeight(void *canvas);
 
@@ -392,7 +392,7 @@ void MissionsWindow::draw()
     {
         String *ht = g_mw_gameText->getText(titleId);
         String header(*ht);
-        Layout_drawHeader(L, &header);
+        L->drawHeader(header);
     }
 
     if (gStatus->wantedBoardAccessible() != 0) {

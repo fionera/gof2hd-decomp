@@ -34,7 +34,6 @@ extern PaintCanvas* gCanvas;
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
 struct Status;
 
-void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth, void *lineArr);
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 // AERandom::nextInt — the real defs are free functions in AERandom.cpp:
@@ -97,7 +96,7 @@ struct __attribute__((packed)) Q16 { v4si v; };
 
 extern void *const gHints __attribute__((visibility("hidden")));
 
-void Globals_resetHints()
+void Globals::resetHints()
 {
     char *p = (char *)gHints;   // RAWREAD: opaque hint blob via hidden global (no modeled type/members)
     const v4si z = {0, 0, 0, 0};
@@ -125,9 +124,8 @@ extern void *const gItemNameGameText __attribute__((visibility("hidden")));
 
 // String (12-byte String sret aggregate) is provided by gof2/Agent.h above.
 
-String Globals_getItemName(void *unused, int item)
+String Globals::getItemName(int item)
 {
-    (void)unused;
     String *src = (String *)((GameText *)(*(void **)gItemNameGameText))->getText(item + 0x4fa);
     return *(String *)src;
 }
@@ -248,7 +246,7 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     for (int consumed = 0; consumed < total;) {
         String rest;
         rest.SubString(&work, consumed, total);
-        Globals_getLine(line, font, &rest, maxWidth, line);
+        getLine(font, rest, maxWidth, line);
         consumed += static_cast<int>(line->size());
         count++;
     }
@@ -269,7 +267,7 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
         String *slot = (*out)[i];
         String rest;
         rest.SubString(&work, consumed, total);
-        Globals_getLine(slot, font, &rest, maxWidth, slot);
+        getLine(font, rest, maxWidth, slot);
         consumed += static_cast<int>(slot->size());
 
         // Trim leading and trailing spaces, in place.
@@ -384,7 +382,7 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
         int font = (int)(long)*strPtr;
         String tmpText;
         tmpText.ctor_copy((String *)text, false);
-        Globals_getLine(font ? (void *)(long)font : line, font, &tmpText, width - 3, line);
+        gGlobals->getLine((unsigned)font, tmpText, width - 3, line);
 
         String prefix;
         prefix.ctor_char(gGBS_prefix, false);
@@ -790,23 +788,19 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
 // transform chains (capital ships). Each delegates to the engine the same way the target
 // does; kept as helpers to preserve the recoverable dispatch without inlining ~1.7KB.
 
-extern void *const gGSG_guard __attribute__((visibility("hidden")));
 extern const unsigned short gGSG_resTable[] __attribute__((visibility("hidden")));
 extern const unsigned short gGSG_meshTable[] __attribute__((visibility("hidden")));
 extern const short gGSG_extraTable[] __attribute__((visibility("hidden")));
 extern const unsigned gGSG_lodTable[] __attribute__((visibility("hidden")));         // DAT_000f5548 (3/group)
 extern const unsigned gGSG_childTable[] __attribute__((visibility("hidden")));       // DAT_000f5550 (3/group)
 
-// Globals::getShipGroup(int kind, int variant, bool wireframe) -> AEGeometry*.
-void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
+// Build the LOD geometry for ship `kind`/`variant`. `wireframe` skips material creation.
+AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe)
 {
-    int *guardP = *(int **)gGSG_guard;
-    volatile int saved = *guardP;
     PaintCanvas *canvas = gCanvas;        // the shared PaintCanvas singleton
 
     if (kind == 0xf) {
-        ((Globals*)self)->buildShipGroup0f(variant, canvas);
-        goto done;
+        return buildShipGroup0f(variant, canvas);
     }
     if (kind == 0xe || kind == 0xd) {
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
@@ -829,7 +823,7 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
         if (kind == 0xe) {
             geom->setScaling(1.0f);
         }
-        goto done;
+        return geom;
     }
 
     // Generic path: per-ship table-driven build indexed by `kind`.
@@ -924,10 +918,8 @@ void Globals_getShipGroup(void *self, int kind, int variant, int wireframe)
             delete[] dist;
         }
         geom->setLodLastVisibleDistance(lastVisibleDist);
+        return geom;
     }
-
-done:
-    return;
 }
 
 extern void *const gREF_rng1 __attribute__((visibility("hidden")));
@@ -2122,18 +2114,14 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     return;
 }
 
-extern void *const gGL_guardHolder __attribute__((visibility("hidden")));
 extern void *const gGL_canvas __attribute__((visibility("hidden")));
 extern const char gGL_empty[] __attribute__((visibility("hidden")));
 
 // Globals::getLine(uint font, AbyssEngine::String text, int maxWidth, AbyssEngine::String* out)
-void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
-                                void *out)
+// Extracts the longest leading run of `text` (in the given `font`) that fits `maxWidth`, breaking
+// at the last space when possible and on an explicit newline, writing the result into `*out`.
+void Globals::getLine(unsigned font, String text, int maxWidth, String *out)
 {
-    (void)retSlot;
-    int *guardP = *(int **)gGL_guardHolder;
-    volatile int saved = *guardP;
-
     int lang = GameText::getLanguage();
     int width = 5;
     if (((unsigned)(lang | 1)) == 0xb) width = 0xf;
@@ -2141,41 +2129,36 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
 
     int *canvas = *(int **)gGL_canvas;
     unsigned lastSpace = 0;
-    unsigned i = 0;
-    String tmp;
-    unsigned len = ((String *)text)->size();
+    unsigned len = text.size();
 
-    while (i < len) {
-        short ch = *((String *)text)->index(i);
-        width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, *(String *)text, i, i + 1);
+    String tmp;
+    for (unsigned i = 0; i < len; ) {
+        short ch = *text.index(i);
+        width += ((PaintCanvas *)(long)*canvas)->GetTextWidth(font, text, i, i + 1);
         if (ch == 0x20) {
             lastSpace = i;
         }
         if (maxWidth <= width) {
-            short c0 = *((String *)text)->index(i);
-            short c1 = *((String *)text)->index(i);
-            unsigned end = i + 1;
-            if (c0 == 0x0a || c1 == 0x0d) {
-                tmp.SubString((String *)text, 0, end);
+            if (ch == 0x0a || ch == 0x0d) {
+                tmp.SubString(&text, 0, i + 1);
             } else if ((int)lastSpace < 1) {
-                tmp.SubString((String *)text, 0, end);
+                tmp.SubString(&text, 0, i + 1);
             } else {
-                tmp.SubString((String *)text, 0, lastSpace + 1);
+                tmp.SubString(&text, 0, lastSpace + 1);
             }
-            goto done;
+            *out = tmp;
+            return;
         }
         i++;
-        len = ((String *)text)->size();
+        len = text.size();
     }
 
     if ((int)len < 2) {
         tmp.ctor_char(gGL_empty, false);
     } else {
-        tmp.SubString((String *)text, 0, len);
+        tmp.SubString(&text, 0, len);
     }
-
-done:
-    return;
+    *out = tmp;
 }
 
 // =====================================================================================
@@ -2383,7 +2366,7 @@ int Globals::dialogueDispatch(int category, int code, int isMale)
 // ---- buildShipGroup0f ----
 // The kind==0xf (capital-ship) branch of getShipGroup(). Three variants, each assembling an
 // AEGeometry with LOD meshes/children. Variant 3 stitches a random-length transform chain.
-void Globals::buildShipGroup0f(int variant, void *canvasArg)
+AEGeometry *Globals::buildShipGroup0f(int variant, void *canvasArg)
 {
     PaintCanvas *canvas = (PaintCanvas *)canvasArg;
     AEGeometry *geom;
@@ -2462,8 +2445,7 @@ void Globals::buildShipGroup0f(int variant, void *canvasArg)
         geom->setLodMeshes(lodMeshes, lodDists, 2);
     }
 
-    // sret: the assembled geometry is returned to the caller in `this` (the getShipGroup sret).
-    *(AEGeometry **)this = geom;
+    return geom;
 }
 
 // ---- buildAgentMissionText ----

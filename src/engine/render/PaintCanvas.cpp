@@ -257,7 +257,6 @@ extern "C" void paintcanvas_ext_tami_bsphere_merge(void *dst, void *src);
 extern "C" void paintcanvas_ext_tami_setanimlen(void *tf, int hi, int lo);
 extern "C" void paintcanvas_ext_tami_setanimstate(void *tf, int a, int b);
 extern "C" void paintcanvas_ext_tami_finalize(void *tf);
-extern "C" void grs2_GetReverseString_impl(String *out, unsigned r1, String *tmp, int reverse);
 extern "C" void paintcanvas_ext_get_accel(void *);
 extern "C" int paintcanvas_ext_rpm_dispwidth(void *eng);
 extern "C" int paintcanvas_ext_rpm_dispheight(void *eng);
@@ -423,7 +422,6 @@ extern "C" void paintcanvas_ext_dr3_setwvm(void *self, void *m);
 extern "C" void paintcanvas_ext_dr3_gldisable(unsigned int cap);
 extern "C" void paintcanvas_ext_dr3_meshdraw(void *eng, void *mesh);
 extern "C" void paintcanvas_ext_dr3_glenable(unsigned int cap);
-void RestoreImage2D(void *, void *);
 extern "C" void paintcanvas_ext_rar_gldeltex(int n, void *ids);
 extern "C" void paintcanvas_ext_rar_str_dtor(void *s);
 extern "C" void paintcanvas_ext_rar_op_delete(void *p);
@@ -908,11 +906,6 @@ void PaintCanvas::TransformSetLocal(unsigned int index, const Matrix &matrix)
     }
 }
 
-void DrawTextLines(void *self, unsigned int p1, void *p2, int p3, int p4)
-{
-    return paintcanvas_ext_drawtextlines6(self, p1, p2, p3, p4, false);
-}
-
 unsigned int PaintCanvas::GetMeshResourceId(AbyssEngine::String &name, unsigned short p2)
 {
     for (unsigned int i = 0; i < this->resourceCount; ++i) {
@@ -980,11 +973,6 @@ float PaintCanvas::CameraGetCurrentFactor1()
     }
     char *cam = (char *)(this->cameras)[cur];
     return *(float *)(cam + 0x48);
-}
-
-void ClearDepth()
-{
-    return paintcanvas_ext_clear(0x100);
 }
 
 void PaintCanvas::SpriteSystemAddPosition(unsigned int index, unsigned short sub,
@@ -1169,9 +1157,9 @@ void PaintCanvas::MeshSetTriangleCount(unsigned int index, unsigned short count)
     }
 }
 
-void DisableClip()
+void PaintCanvas::DisableClip()
 {
-    return paintcanvas_ext_disable(0xc11);
+    paintcanvas_ext_disable(0xc11);
 }
 
 void PaintCanvas::TransformSetColor(unsigned int index, unsigned int color)
@@ -1644,14 +1632,6 @@ void PaintCanvas::End2d()
         paintcanvas_ext_set_wvm2(this, buf);
         paintcanvas_ext_meshdraw(this->engine, this->quad2dMesh);
     }
-}
-
-extern "C" void paintcanvas_ext_texcreate6(unsigned short, unsigned int &, void *, void *,
-                                           unsigned int &, bool);
-
-void TextureCreate(unsigned short w, unsigned int &ref, bool b)
-{
-    return paintcanvas_ext_texcreate6(w, ref, 0, 0, *(unsigned int *)&b, b);
 }
 
 void PaintCanvas::MeshChangeMaterialIntern(::Transform *transform, AbyssEngine::Material *material)
@@ -2236,15 +2216,12 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
 // reverse order (one SubString per char) into a fresh String.
 using AbyssEngine::String;
 
-__attribute__((visibility("hidden"))) extern int **g_grs_canary;
 __attribute__((visibility("hidden"))) extern const char g_grs_empty[];
 
-void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine::String *in,
+// Inlined in the original binary (no standalone symbol); file-local helper here.
+static void GetReverseString(AbyssEngine::String *out, unsigned int /*r1*/, AbyssEngine::String *in,
                       int reverse)
 {
-    int *canary = *g_grs_canary;
-    int saved = *canary;
-
     if (reverse == 0) {
         ((String *)out)->ctor_copy((String *)in, false);
     } else {
@@ -2530,19 +2507,14 @@ void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int m
 // param2+0x1c (RTL when zero).
 using AbyssEngine::String;
 
-__attribute__((visibility("hidden"))) extern int **g_grs2_canary;
-
-void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String *in)
+// Inlined in the original binary (no standalone symbol); file-local helper here.
+// Reverses `in` when the layout-direction byte at param2+0x1c is zero (RTL).
+static void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String *in)
 {
-    int *canary = *g_grs2_canary;
-    int saved = *canary;
-
     String tmp;
     ((String *)&tmp)->ctor_copy((String *)in, false);
-    grs2_GetReverseString_impl(out, 0, &tmp, *(char *)((char *)(unsigned long)param2 + 0x1c) == 0);
+    GetReverseString(out, 0, &tmp, *(char *)((char *)(unsigned long)param2 + 0x1c) == 0);
     ((String *)&tmp)->dtor();
-
-    
 }
 
 void PaintCanvas::GetAccelValue()
@@ -4088,7 +4060,9 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
     paintcanvas_ext_dr3_glenable(0xb44);
 }
 
-void RestoreImage2D(AbyssEngine::PaintCanvas *, char *img)
+// Re-seed an image's 2D quad vertex/UV buffers from its source rect. Inlined at every
+// use in the original binary; kept here as a file-local helper to avoid duplicating the body.
+static void RestoreImage2D(char *img)
 {
     char *m = *(char **)img;
     *(unsigned char *)(img + 0x14) = 0;
@@ -4172,7 +4146,7 @@ void PaintCanvas::MeshSet2DMask(unsigned int index, int)
     char **arr = this->images;
     char *img = arr[i];
     if (*(unsigned char *)(img + 0x14) != 0) {
-        RestoreImage2D(arr, img);
+        RestoreImage2D(img);
         arr = this->images;
     }
     this->mask2dImage = arr[i];
@@ -4187,7 +4161,7 @@ void PaintCanvas::MeshSet2DMask(unsigned int index, int, int)
     char **arr = this->images;
     char *img = arr[i];
     if (*(unsigned char *)(img + 0x14) != 0) {
-        RestoreImage2D(arr, img);
+        RestoreImage2D(img);
         arr = this->images;
     }
     this->mask2dImage = arr[i];

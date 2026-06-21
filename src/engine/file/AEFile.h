@@ -66,15 +66,22 @@ public:
     uint32_t GetFileSize() override;
 };
 
-// Pak file backend: a windowed view (base offset + size limit) over the held low-level file.
-class AELowLevelPakFile : public AELowLevelFile {
+// Pak file backend: a windowed view (base offset + size limit) over the held platform file.
+// It forwards reads to the held FileInterface while clamping them to the [baseOffset, sizeLimit)
+// window carved out for this archived entry.
+class AEPakFile : public AELowLevelFile {
 public:
-    AELowLevelHeldFile *handle;
-    uint32_t  packedSize;   // sizeLimit window
-    uint32_t  size;
-    uint32_t  position;
+    FileInterface *fileInterface;
+    uint32_t       sizeLimit;
+    uint32_t       baseOffset;
+    uint32_t       position;
 
-    ~AELowLevelPakFile() override { Release(); }
+    AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset)
+        : fileInterface(fileInterface),
+          sizeLimit(static_cast<uint32_t>(sizeLimit)),
+          baseOffset(static_cast<uint32_t>(baseOffset)),
+          position(0) {}
+    ~AEPakFile() override { Release(); }
     uint32_t Write(uint32_t bytes, void *buffer) override;
     uint32_t Read(uint32_t bytes, void *buffer) override;
     uint32_t Skip(uint32_t bytes) override;

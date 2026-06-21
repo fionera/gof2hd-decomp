@@ -5,10 +5,10 @@
 #include "game/core/PaintCanvasClass.h"
 #include "platform/libc.h"
 
-namespace AbyssEngine {
-
-using AEMath::Vector;
-using AEMath::Matrix;
+using AbyssEngine::Mesh;
+using AbyssEngine::PaintCanvas;
+using AbyssEngine::AEMath::Vector;
+using AbyssEngine::AEMath::Matrix;
 
 // ARM EABI runtime helpers the engine relies on (16-bit divide, 4-byte aligned
 // copy/clear). Declared locally; they are not part of the shared platform header.
@@ -423,5 +423,3 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m)
     AEMath_BSphere_assign(&out->boundsCenterX, bs);
     return out;
 }
-
-} // namespace AbyssEngine
