@@ -715,7 +715,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     switch (i) {
                     case 0:
                         ((RecordHandler *)(rh))->recordStoreWrite(0);
-                        ((RecordHandler *)(rh))->recordStoreWritePreview_int(0);
+                        ((RecordHandler *)(rh))->recordStoreWritePreview(0);
                         break;
                     case 1:
                         (*(uint8_t *)((char *)(appData) + (0xa0))) = 1;

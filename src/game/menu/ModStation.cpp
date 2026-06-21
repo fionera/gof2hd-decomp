@@ -81,7 +81,7 @@ void ModStation::autosave() {
         return;
     RecordHandler *rh = new RecordHandler();
     rh->recordStoreWrite(0);
-    rh->recordStoreWritePreview_int(0);
+    rh->recordStoreWritePreview(0);
     delete rh;
     *(unsigned char *)((char *)this + 0xb1) = 1;   // RAWREAD: autoSaved (+0xb1)
     if (*(int*)&this->dlcMenu != 0)
