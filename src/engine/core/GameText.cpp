@@ -52,12 +52,13 @@ extern const char *gLangPaths[17];
 extern const char gLangPathDefault[];
 extern const char gLangPathEnglish[];
 
-// Selects the active UI language. If the language is unchanged it does nothing; otherwise it
-// releases the previous text table, allocates a fresh String*[stringCount] (nulled), resolves the
+// Selects the active UI language (the two-argument overload the savegame loader invokes; the
+// string-table count is passed as a short). If the language is unchanged it does nothing; otherwise
+// it releases the previous text table, allocates a fresh String*[stringCount] (nulled), resolves the
 // per-language .lang filename via a switch, records the language code (Arabic-shaping languages
 // keep their id, the rest map to 0), falls back to the English file when the chosen one is missing,
 // then opens it and streams the records in through ReadLangFile.
-void GameText::setLanguage_si(int stringCount, int langId) {
+void GameText::setLanguage(short stringCount, int langId) {
     if ((unsigned int)*g_langCode == ((unsigned int)langId & 0xffff))
         return;
 
@@ -253,9 +254,9 @@ String GameText::convertStringFromArabic(String in)
     }
 }
 
-// Single-argument language switch: forwards to setLanguage_si(0, langId).
+// Single-argument language switch: forwards to the two-argument overload with a zero count.
 void GameText::setLanguage(int langId) {
-    this->setLanguage_si(0, langId);
+    this->setLanguage(static_cast<short>(0), langId);
 }
 
 // Active language code (1 => use the primary string, otherwise the fallback variant).
@@ -347,9 +348,4 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     }
 
     AEFile::Close(file);
-}
-
-// The two-argument language switch the savegame loader invokes (string-table count as a short).
-void GameText::setLanguage(short stringCount, int langId) {
-    this->setLanguage_si((int)stringCount, langId);
 }

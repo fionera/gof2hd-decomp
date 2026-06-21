@@ -35,7 +35,6 @@ public:
     AbyssEngine::String* getText(int key);
     void release();
     void setLanguage(int langId);
-    void setLanguage_si(int stringCount, int langId);
     void setSubstituteArray(int* pairs, unsigned count);
 
     // Two-argument language switch the savegame loader invokes (count passed as a short).

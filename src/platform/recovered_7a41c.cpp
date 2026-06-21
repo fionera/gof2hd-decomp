@@ -9,7 +9,9 @@
 #include "platform/recovered_7a41c.h"
 
 #include "engine/core/ApplicationManager.h"   // gAppManager, current module id
+#include "engine/core/NFC.h"                   // IsInGameSubMenuNotActive
 #include "engine/render/Engine.h"             // Engine (appManager, DrawQuad, field_0x360)
+#include "game/core/Globals.h"                // Globals UI-state flags / mouse toggles
 
 #include <cstring>
 #include <initializer_list>
@@ -593,6 +595,112 @@ bool ArrowKeyPressed()
 bool keyIsPressed()
 {
     return ArrowKeyPressed() || g_actionKeyState != 0;
+}
+
+// ---------------------------------------------------------------------------
+// Emulated-pointer visibility.
+// ---------------------------------------------------------------------------
+namespace {
+
+// Tri-state latch for the in-flight steering overlay: -1 while a sub-menu owns
+// the touch, 0 when idle, >0 while the pointer is being driven. Seeded to 1 so
+// the first activation pass treats the pointer as freshly shown. (binary .data
+// 0x215090.)
+int g_subMenuPointerLatch = 1;
+
+// True while module `id` is the in-flight game module (id 2).
+inline bool inFlightGameModule()
+{
+    return gAppManager->currentModuleId == 2;
+}
+
+// True while no blocking dialogue / choice / hacking overlay is up.
+inline bool noBlockingOverlay()
+{
+    return (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+            Globals::is_hacking_visible) == 0;
+}
+
+} // namespace
+
+// Shows or hides the emulated mouse pointer for the current frame. `force`
+// suppresses the pointer (e.g. while a touch drag is in progress). Returns 1
+// while the pointer stays visible, -1 on the frame it is (re)shown and 0 while
+// it is hidden.
+int ActualizeMouseVisibilty(int force)
+{
+    const bool arrowPressed = ArrowKeyPressed();
+
+    if (Globals::mouseCursorActivated != 0) {
+        // Pointer is currently shown: decide whether to keep it up. It stays up
+        // only inside the flight module, with no blocking overlay/menu, no
+        // star-map, no forced hide and not during the game-over screen.
+        bool keep = false;
+        bool steerActive = false;   // r0 at the convergence point
+
+        if ((g_subMenuPointerLatch != -1 || Globals::isCinematicModeActive) &&
+            inFlightGameModule()) {
+            if (IsInGameSubMenuNotActive(0)) {
+                keep = noBlockingOverlay();
+                steerActive = keep && Globals::isCinematicModeActive;
+            } else if (Globals::isCinematicModeActive && noBlockingOverlay()) {
+                steerActive = true;
+                keep = true;
+            }
+
+            // Converge: visible unless both "steering active" and "menu hidden"
+            // are false.
+            if (keep) {
+                const bool menuHidden = Globals::is_menu_visible == 0;
+                keep = steerActive || menuHidden;
+            }
+        }
+
+        if (keep && Globals::is_menu_visible == 0 && !Globals::isStarMapVisible &&
+            force == 0 && Globals::showMouseDuringGameOver == 0 &&
+            !(arrowPressed && inFlightGameModule())) {
+            return 1;
+        }
+
+        // Hide and recentre the steering latch.
+        Globals::mouseCursorActivated = 0;
+        if (force == 0) {
+            g_subMenuPointerLatch = (Globals::rotateShipInStation != 0)
+                ? 0
+                : ((g_subMenuPointerLatch + 1 != 0) ? 1 : 0);
+        }
+        if (arrowPressed || Globals::translateStarMapInYDirection != 0)
+            g_subMenuPointerLatch = 0;
+        return 1;
+    }
+
+    // Pointer currently hidden: decide whether to (re)show it.
+    if (g_subMenuPointerLatch == 1 || Globals::isCinematicModeActive) {
+        bool show = Globals::isCinematicModeActive;
+        if (!show) {
+            // Not in cinematic mode: only the flight module with everything
+            // dismissed brings the pointer back.
+            show = inFlightGameModule() && IsInGameSubMenuNotActive(0) &&
+                   (Globals::is_dialogue_window_visible | Globals::is_choice_window_visible |
+                    Globals::is_menu_visible) == 0 &&
+                   Globals::is_hacking_visible == 0 &&
+                   ((Globals::isStarMapVisible ? 1 : 0) | (force & 0xff)) == 0;
+        }
+        if (show) {
+            g_subMenuPointerLatch = -static_cast<int>(
+                (g_subMenuPointerLatch - 1 != 0) && Globals::isCinematicModeActive);
+            Globals::mouseCursorActivated = 1;
+            return -1;
+        }
+    }
+
+    // Stays hidden. Clear the latch once the store module's key-binding window
+    // has been dismissed.
+    if (g_subMenuPointerLatch != 0 && gAppManager->currentModuleId == 5 &&
+        Globals::keyBindings[4] != 0) {
+        g_subMenuPointerLatch = 0;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
