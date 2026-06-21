@@ -233,5 +233,7 @@ public:
     void updateSecondaryWeaponString();
 
     bool drawTitleImage(bool visible);
+    // Toggle the HUD's cinematic overlay.
+    void enterCinematic(int arg, int flag);
 };
 #endif

@@ -1500,3 +1500,12 @@ bool Hud::drawTitleImage(bool visible) {
     return visible;
 }
 
+// ---- Hud::enterCinematic(int, int) --------------------------------------------
+// Toggle the HUD's cinematic overlay. In the binary this is reached through a
+// GOT/veneer slot into the engine Hud entry point; we forward through the same
+// hidden function-pointer slot the dispatch uses.
+__attribute__((visibility("hidden"))) extern void (**g_Hud_enterCinematicFn)(Hud *, int, int);
+
+void Hud::enterCinematic(int arg, int flag) {
+    (*g_Hud_enterCinematicFn)(this, arg, flag);
+}
