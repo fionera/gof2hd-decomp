@@ -22,7 +22,8 @@ class StarMap;
 class ChoiceWindow;
 class TargetFollowCamera;
 class AEGeometry;
-class ApplicationManager;
+namespace AbyssEngine { class ApplicationManager; }
+using ::AbyssEngine::ApplicationManager;
 
 // Small opaque singletons referenced only as pointers from MGame.cpp.
 struct Music;

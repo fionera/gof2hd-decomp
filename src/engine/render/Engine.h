@@ -15,7 +15,8 @@ class Mesh;
 } // namespace AbyssEngine
 
 // Game-side singletons referenced by pointer.
-class ApplicationManager;
+namespace AbyssEngine { class ApplicationManager; }
+using ::AbyssEngine::ApplicationManager;
 
 // Engine is the renderer/device root. The real definition lives in
 // namespace AbyssEngine (to match the binary's mangling N11AbyssEngine6EngineE);

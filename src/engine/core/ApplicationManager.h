@@ -28,6 +28,7 @@ typedef void QuitCallback_t();
 // Top-level driver for the running game: owns the PaintCanvas, the active application
 // module, input/key state, the audio resource and the config reader, and steps the
 // per-frame state machine in OnUpdate.
+namespace AbyssEngine {
 class ApplicationManager {
 public:
     PaintCanvas *paintCanvas;             // +0x00 owned render canvas (object starts here)
@@ -127,6 +128,8 @@ public:
     void VibrateEnable(bool enable);
     void VibrateSupported();
 };
+}  // namespace AbyssEngine
+using ::AbyssEngine::ApplicationManager;
 
 extern ApplicationManager* gAppManager;  // canonical ApplicationManager singleton (binary .bss 0x2281d8)
 

@@ -5,7 +5,8 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-class ApplicationManager;
+namespace AbyssEngine { class ApplicationManager; }
+using ::AbyssEngine::ApplicationManager;
 namespace AbyssEngine { class PaintCanvas; }
 using ::AbyssEngine::PaintCanvas;
 
