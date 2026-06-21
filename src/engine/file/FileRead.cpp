@@ -44,7 +44,7 @@ int32_t FileRead::loadStationsBinary()
         int32_t offset = 0;
         String name;
         for (uint32_t i = 0; i < 0x87; i++) {
-            AEFile::ReadSwitched(name, handle, false);
+            AEFile::ReadSwitched(name, handle);
             AEFile::ReadSwitched(offset, handle);
             AEFile::ReadSwitched(color0, handle);
             AEFile::ReadSwitched(color1, handle);
@@ -216,7 +216,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
             int32_t f;
             uint32_t count;
 
-            AEFile::ReadSwitched(name, handle, false);
+            AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
             AEFile::ReadSwitched(faction, handle);
             AEFile::ReadSwitched(flag, handle);
@@ -309,7 +309,7 @@ Array<Wanted *> *FileRead::loadWanted()
             int32_t l;
             int32_t imageCount;
 
-            AEFile::ReadSwitched(name, handle, false);
+            AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
             AEFile::ReadSwitched(id, handle);
             AEFile::ReadSwitched(a, handle);
@@ -403,7 +403,7 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
         int32_t b;
         int32_t c;
         int32_t d;
-        AEFile::ReadSwitched(name, handle, false);
+        AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
         AEFile::ReadSwitched(b, handle);
@@ -504,7 +504,7 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
 
         String tmp;
         for (int32_t i = 0; i < (int32_t)count; i++) {
-            AEFile::ReadSwitched(tmp, handle, false);
+            AEFile::ReadSwitched(tmp, handle);
             names->data()[i] = new String(tmp);
         }
         AEFile::Close(handle);
@@ -535,7 +535,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
         int32_t b;
         int32_t c;
         int32_t d;
-        AEFile::ReadSwitched(name, handle, false);
+        AEFile::ReadSwitched(name, handle);
         name.ConvertFromUTF8();
         AEFile::ReadSwitched(a, handle);
         AEFile::ReadSwitched(b, handle);
@@ -582,7 +582,7 @@ Array<Agent *> *FileRead::loadAgents()
             int32_t g;
             int32_t imageCount;
 
-            AEFile::ReadSwitched(name, handle, false);
+            AEFile::ReadSwitched(name, handle);
             name.ConvertFromUTF8();
             AEFile::ReadSwitched(id, handle);
             AEFile::ReadSwitched(a, handle);

@@ -404,25 +404,6 @@ void AEFile::ReadSwitched(String &value, uint32_t handle)
     }
 }
 
-uint32_t AEFile::ReadSwitched(String &value, uint32_t handle, bool)
-{
-    uint16_t length;
-    uint32_t result = 0;
-
-    if (ReadSwitched(length, handle) != 0) {
-        uint32_t bytes = length;
-        char *buffer = new char[bytes + 1];
-        if (Read(bytes, buffer, handle) != 0) {
-            buffer[length] = '\0';
-            AEStr_set(value, buffer);
-            result = 1;
-        }
-        delete[] buffer;
-    }
-
-    return result;
-}
-
 uint32_t AEFile::Write(uint32_t bytes, void *buffer, uint32_t handle)
 {
     if (g_AEFile_fileInterface != nullptr && handle < g_AEFile_openFiles->size()) {

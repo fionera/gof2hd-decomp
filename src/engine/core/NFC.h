@@ -76,6 +76,30 @@ bool IsInGameSubMenuNotActive(int);
 bool IsInGameSubMenuActive(int);
 bool IsInPrimaryMenu(int);
 
+// ---------------------------------------------------------------------------
+// Desktop-style pointer / joystick input toggles.
+//
+// The Android port emulates a mouse pointer and an optional on-screen joystick
+// on top of the touch screen. These plain global setters/getters flip the small
+// module-level flags the input layer polls each frame; they carry no instance
+// state and live outside any class, matching their global C++ symbols.
+
+// Returns the current mouse-hidden flag.
+int HideMouse();
+
+// Captures the emulated mouse (locks the pointer for relative motion).
+void CaptureMouse(int capture);
+
+// Switches the touch controls to the alternate mouse configuration. Always
+// returns 0.
+int SwitchToOtherMouseConifguration(int config);
+
+// Enables/disables on-screen joystick input.
+void UseJoystick(int use);
+
+// Returns whether on-screen joystick input is enabled.
+int GetUseJoystick();
+
 // Android hardware back-button handler: raises the pending-back flag the main
 // loop polls each frame. Exported under its JNI name so the Java activity can
 // invoke it directly.

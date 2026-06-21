@@ -166,7 +166,6 @@ public:
     static uint32_t    ReadSwitched(uint16_t &value, uint32_t handle);
     static uint32_t    ReadSwitched(int32_t &value, uint32_t handle);
     static void        ReadSwitched(String &value, uint32_t handle);
-    static uint32_t    ReadSwitched(String &value, uint32_t handle, bool wide);
 
     static uint32_t    Write(uint32_t bytes, void *buffer, uint32_t handle);
     static void        Write(bool value, uint32_t handle);

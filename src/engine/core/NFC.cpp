@@ -345,6 +345,41 @@ bool IsInPrimaryMenu(int)
     return !isStarMapVisible;
 }
 
+// ---- desktop-style pointer / joystick toggles -----------------------------------------------
+//
+// Module-level input flags shared with the rest of the input layer. The setters
+// here are the only writers; the per-frame input/touch code reads them.
+static int g_mouseHidden;       // 1 while the emulated pointer is hidden
+static int g_mouseCaptured;     // 1 while the pointer is captured for relative motion
+static int g_mouseConfig;       // selected touch-control configuration
+static int g_useJoystick;       // 1 while on-screen joystick input is enabled
+
+int HideMouse()
+{
+    return g_mouseHidden;
+}
+
+void CaptureMouse(int capture)
+{
+    g_mouseCaptured = capture;
+}
+
+int SwitchToOtherMouseConifguration(int config)
+{
+    g_mouseConfig = config;
+    return 0;
+}
+
+void UseJoystick(int use)
+{
+    g_useJoystick = use;
+}
+
+int GetUseJoystick()
+{
+    return g_useJoystick;
+}
+
 // ---- Android hardware back button -----------------------------------------------------------
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed()
