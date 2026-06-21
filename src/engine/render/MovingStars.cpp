@@ -1,5 +1,6 @@
 #include "engine/render/MovingStars.h"
 #include "engine/render/PaintCanvas.h"
+#include "game/core/Globals.h"
 #include "platform/libc.h"
 
 using AbyssEngine::PaintCanvas;
@@ -23,8 +24,6 @@ MovingStars::~MovingStars()
 typedef void *(*AllocFn)(int);
 
 extern "C" int MovingStars_nextIntBounded(uint32_t rng, int bound);        // AERandom::nextInt(seed,bound)
-extern "C" uint32_t MovingStars_createBillBoard(int globals, int p2, float a, float b,
-                                                float c, float d, int p7);
 extern "C" void MovingStars_TransformCreate(void *canvas, uint32_t *out);
 extern "C" void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh);
 extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);
@@ -65,7 +64,8 @@ MovingStars::MovingStars()
 
     for (int j = 0; j != 50; j = j + 1) {
         MovingStars_nextIntBounded(*rng, 4);
-        uint32_t bb = MovingStars_createBillBoard(*globals, 0x46, kBB0, kBB1, kBB2, kBB3, 500);
+        uint32_t bb = reinterpret_cast<Globals *>(*globals)
+                          ->createBillBoard(0, 0x46, kBB0, kBB1, kBB2, kBB3, 500);
         this->billboardIds[j] = bb;
         MovingStars_TransformCreate(*canvas, &this->transformHandles[j]);
         MovingStars_TransformAddMeshId(*canvas, this->transformHandles[j],

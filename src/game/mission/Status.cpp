@@ -22,8 +22,6 @@ extern void* g_incPirateKillsHook;
 extern void incKills_notify(void* arg);
 extern void incPirateKills_notify(void* arg);
 
-extern Station* Globals_getRandomStation();
-
 // FileRead — the binary save/data loader. It lives in its own translation unit;
 // here we only need the few entry points used to materialise the wanted/agent/
 // system/station tables. It is genuinely headerless from Status's point of view
@@ -958,7 +956,7 @@ int Status::activateNewWanted() {
         Array<int>* path;
         int fromSys, toSys;
         do {
-            Station* a = Globals_getRandomStation();
+            Station* a = gGlobals->getRandomStation();
             unsigned asys = a->getSystem();
             Array<bool>* vis = slot->systemVisibilities;
             while (true) {
@@ -973,10 +971,10 @@ int Status::activateNewWanted() {
                 if (a != 0) {
                     delete a;
                 }
-                a = Globals_getRandomStation();
+                a = gGlobals->getRandomStation();
                 asys = a->getSystem();
             }
-            Station* b = Globals_getRandomStation();
+            Station* b = gGlobals->getRandomStation();
             unsigned bsys = b->getSystem();
             while (true) {
                 bool ok2 = false;
@@ -990,7 +988,7 @@ int Status::activateNewWanted() {
                 if (b != 0) {
                     delete b;
                 }
-                b = Globals_getRandomStation();
+                b = gGlobals->getRandomStation();
                 bsys = b->getSystem();
             }
             cur->setLastSeen(a->getIndex());
@@ -1780,9 +1778,9 @@ void Status::moveWanted() {
         }
 
         // resolve the from/to stations.
-        Station* fromSt = Globals_getRandomStation();
+        Station* fromSt = gGlobals->getRandomStation();
         int fromSys = fromSt->getSystem();
-        Station* toSt = Globals_getRandomStation();
+        Station* toSt = gGlobals->getRandomStation();
         int toSys = toSt->getSystem();
 
         Array<int>* path = 0;
@@ -1793,7 +1791,7 @@ void Status::moveWanted() {
             else { int r = (i - 1) % 6; lo = r / 3 + 2; hi = r / 2 + 4; }
             w->setLastSeen(w->getCurrentLocation());
             if (toSt != 0) delete toSt;
-            toSt = Globals_getRandomStation();
+            toSt = gGlobals->getRandomStation();
             toSys = toSt->getSystem();
             for (;;) {
                 path = pf->getSystemPath(systemsTable, fromSys, toSys);
@@ -1809,7 +1807,7 @@ void Status::moveWanted() {
                     break;
                 }
                 if (toSt != 0) delete toSt;
-                toSt = Globals_getRandomStation();
+                toSt = gGlobals->getRandomStation();
                 toSys = toSt->getSystem();
             }
         } else if (fromSys == toSys) {

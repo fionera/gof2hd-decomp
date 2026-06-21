@@ -11,6 +11,7 @@
 #include "game/mission/Mission.h"
 #include "game/mission/Status.h"
 #include "game/mission/Achievements.h"
+#include "game/core/Globals.h"
 #include "game/world/StarMap.h"
 #include "game/core/String.h"
 #include "engine/core/ApplicationManager.h"
@@ -61,7 +62,6 @@ extern int  *g_mw_titleTable;      // per-mission title id table (update)
 // Engine String-plumbing helpers the decompiler folded into free calls over raw
 // String storage; they wrap the corresponding Status/Layout/Globals members.
 extern "C" void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
-extern "C" void Globals_getAgentMissionText(void *out, void *agent);
 
 extern "C" int  ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 extern "C" int  _mw_GetTextHeight(void *canvas);
@@ -306,8 +306,7 @@ int MissionsWindow::init()
                 - L->field_0x30, false);
 
         Mission *fm = gStatus->getFreelanceMission();
-        String text;
-        Globals_getAgentMissionText(&text, fm->getAgent());
+        String text = gGlobals->getAgentMissionText(fm->getAgent());
         void *key = gStatus;
         String body(text);
         int rew = fm->getReward();

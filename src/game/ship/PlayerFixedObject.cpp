@@ -27,7 +27,6 @@ namespace AbyssEngine { namespace AEMath { float VectorLength(const Vector &valu
 // Engine glue: bounding-volume math helpers and the wreck-collision lookup on Globals.
 V3 BV_staticProjectCollisionOnSurface(void *vec, void *bvArray);
 V3 BV_getProjectionVector(void *bv);
-void *Globals_getWreckCollision(void *globals, int kind, void *geom);
 
 int PlayerFixedObject::getDockingType() {
     return this->dockingType;
@@ -553,11 +552,11 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     } else {
         sel = this->wreckType;
         if (sel < 0) return;
-        this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(gGlobals, sel, this->wreckGeometry);
+        this->wreckCollision = gGlobals->getWreckCollision(sel, this->wreckGeometry);
         return;
     }
     this->wreckType = sel;
-    this->wreckCollision = (Array<BoundingVolume *> *)Globals_getWreckCollision(gGlobals, sel, this->wreckGeometry);
+    this->wreckCollision = gGlobals->getWreckCollision(sel, this->wreckGeometry);
 }
 
 // Picks the active bounding-volume array, indexes it by the stored collision index,

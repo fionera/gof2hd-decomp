@@ -1587,9 +1587,9 @@ extern const float g_PE_mtp_strafeEps;
 extern const float g_PE_mtp_strafeReset;
 extern const float g_PE_mtp_strafeK;
 
-void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float speed) {
-    float target[3] = { tx, ty, tz };
-    PE_mtp_steer(this, target, steer, speed);
+void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
+    float t[3] = { target.x, target.y, target.z };
+    PE_mtp_steer(this, t, steer ? 1 : 0, speed);
 
     // apply the resolved heading (stored at 0x164) as the new facing.
     float up[3] = {0.0f, 1.0f, 0.0f};
@@ -1616,13 +1616,6 @@ void PlayerEgo::moveToPosition(float tx, float ty, float tz, int steer, float sp
 
     Mat_assign(((Player *)this->player)->transform, ((AEGeometry *)(this->geometry))->getMatrix());
     ((AEGeometry *)(this->geometry))->getPosition();
-}
-
-// PlayerEgo::moveToPosition(Vector target, bool steer, float speed)
-//   Vector-packed form of moveToPosition: unpacks the target vector into its
-//   components and forwards to the (float,float,float,int,float) flight helper.
-void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
-    moveToPosition(target.x, target.y, target.z, steer ? 1 : 0, speed);
 }
 
 void PlayerEgo::resetGunDelay() {
@@ -1700,7 +1693,8 @@ extern "C" void  Vec_assign(void *dst, const void *src);                 // Vect
 
 extern const float g_PE_astApproach;    // 0xaf568 scaling -> approach distance
 
-void PlayerEgo::dockToAsteroid(void *radar) {
+void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
+    (void)kip;
     if (((char&)this->dockingState) != 0) {
         // Already docked -> undock.
         ((PlayerAsteroid *)(((void*&)this->asteroidTarget)))->setRotationEnabled(true);
@@ -1731,13 +1725,13 @@ void PlayerEgo::dockToAsteroid(void *radar) {
     }
 }
 
-// PlayerEgo::dockToAsteroid(KIPlayer*, Radar*)
-//   Typed form of the asteroid mining-dock toggle. In the binary the receiver is
-//   the KIPlayer-shaped first argument and the Radar argument carries the
-//   asteroid being latched/unlocked. Forwards to the packed form, which treats
-//   its single argument as that asteroid/radar object.
-void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
-    dockToAsteroid(radar);
+// PlayerEgo::levelCollision()
+//   The player ship never reports a level-geometry collision (unlike the AI
+//   ships, whose KIPlayer::levelCollision drives the autopilot avoidance). The
+//   override exists so callers can query any actor uniformly; it always answers
+//   "no collision".
+int PlayerEgo::levelCollision() {
+    return 0;
 }
 
 void PlayerEgo::killLiberator() {
@@ -2151,7 +2145,8 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
 
 // Wraps operator new + EaseInOutMatrix(from-matrix, to-translation, 3000ms).
 
-void PlayerEgo::dockToDockingPoint(void *radar) {
+void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
+    (void)kip;
     if (((PlayerEgo *)(this))->isDead() != 0)
         return;
 
@@ -2226,15 +2221,6 @@ void PlayerEgo::dockToDockingPoint(void *radar) {
         ((void*&)this->hackingGame) = 0;
         ((Hud *)(((void*&)this->hud)))->setHackingGameActive(false);
     }
-}
-
-// PlayerEgo::dockToDockingPoint(KIPlayer*, Radar*)
-//   Typed form of the station-docking toggle. In the binary the nav/landmark
-//   object (first argument) drives the whole routine; the Radar argument is
-//   vestigial. Forwards to the packed form, which treats its single argument as
-//   that nav object.
-void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
-    dockToDockingPoint(kip);
 }
 
 // PlayerEgo::draw(bool allowHud)
@@ -2384,18 +2370,18 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     if (((char&)this->dockingState) != 0) {
         this->field_0x145 = 1;
         if (((void*&)this->asteroidTarget) == 0 || ((PlayerEgo *)(this))->isDead() != 0) {
-            ((PlayerEgo *)(this))->dockToAsteroid(0);
+            ((PlayerEgo *)(this))->dockToAsteroid(nullptr, nullptr);
             PE_upd_post(this, dt, radar, hud, radio, arg5);
             return;
         }
-        ((PlayerEgo *)(this))->approachAsteroid(0 /*hud2*/, radar);
+        ((PlayerEgo *)(this))->approachAsteroid(hud, (int)(intptr_t)hud, radar);
     }
 
     // ---- station docking ---------------------------------------------------
     if (this->dockedFlag != 0 && ((Player *)(this->player))->getHitpoints() > 0) {
         this->field_0x145 = 1;
         if (((void*&)this->asteroidTarget) == 0 || ((PlayerEgo *)(this))->isDead() != 0) {
-            ((PlayerEgo *)(this))->dockToDockingPoint(0);
+            ((PlayerEgo *)(this))->dockToDockingPoint(nullptr, nullptr);
             PE_upd_post(this, dt, radar, hud, radio, arg5);
             return;
         }
@@ -2446,7 +2432,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             float h = ((Ship *)(PE_status()->getShip()))->getHandling();
             if (h + g_PE_upd_handlingBias < 4.0f)
                 speed = ((Ship *)(PE_status()->getShip()))->getHandling() + g_PE_upd_handlingBias;
-            ((PlayerEgo *)(this))->moveToPosition(this->waypointX, this->waypointY, ((float&)this->gunBaseGeo), 1, speed);
+            ((PlayerEgo *)(this))->moveToPosition(Vector{this->waypointX, this->waypointY, ((float&)this->gunBaseGeo)}, true, speed);
             if (this->turretActive != 0)
                 ((PlayerEgo *)(this))->handleTurretView(dt);
         }
@@ -2469,14 +2455,6 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
 
     // collision + camera + explosion post-processing.
     PE_upd_post(this, dt, radar, hud, radio, arg5);
-}
-
-void PlayerEgo::setTurretPosition(float x, float y, float z) {
-  char v[12];
-  *(float*)(v + 0) = x;
-  *(float*)(v + 4) = y;
-  *(float*)(v + 8) = z;
-  this->turretOffsetVec = *(const Vector *)(v);
 }
 
 void PlayerEgo::setTurretPosition(Vector v) {
@@ -2642,7 +2620,7 @@ int PlayerEgo::updateManeuver() {
         target[1] = this->strafeTargetVec.y;
         target[2] = this->strafeTargetVec.z;
     }
-    ((PlayerEgo *)(this))->moveToPosition(target[0], target[1], target[2], 1, 0.0f);
+    ((PlayerEgo *)(this))->moveToPosition(Vector{target[0], target[1], target[2]}, true, 0.0f);
 
     PE_um_strafeGlide(this);
     ((TargetFollowCamera *)(((void*&)this->targetFollowCamera)))->setLookAtCam(false);
@@ -2746,7 +2724,8 @@ __attribute__((visibility("hidden"))) extern void **g_PE_aa_winHolder1;
 __attribute__((visibility("hidden"))) extern void **g_PE_aa_winHolder2;
 extern const float g_PE_aa_settleEps;
 
-void PlayerEgo::approachAsteroid(int hud2, void *radar) {
+void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
+    (void)hud;
     if (((KIPlayer *)(this))->isDying() != 0)
         return;
 
@@ -2795,15 +2774,6 @@ void PlayerEgo::approachAsteroid(int hud2, void *radar) {
         // approach phase: steer/align toward the asteroid.
         this->dockingPointIndex = PE_aa_approachStep(this, hud2, radar);
     }
-}
-
-// PlayerEgo::approachAsteroid(Hud*, int hud2, Radar*)
-//   Typed form of the mining controller. In the binary the int parameter is
-//   vestigial; the Hud and the Radar drive the work. Forwards to the packed
-//   (Hud-handle, radar) form, which threads the Hud through the HUD events and
-//   mining-game creation exactly as the binary does.
-void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
-    approachAsteroid((int)(intptr_t)hud, radar);
 }
 
 // PlayerEgo::handleShip(int dt)
@@ -3348,41 +3318,3 @@ extern "C" void PlayerEgo_initFields(void *selfp, Player *player) {
     self->dockCameraNode = stars;
 }
 
-// ---- veneer / fragment entry points -----------------------------------------
-// The following are the secondary symbols the disassembly split out of the
-// matching full methods. Each is a real thunk in the binary that simply forwards
-// into the canonical method, so they get faithful forwarding definitions here.
-
-// getHUD_up (0xb21e0 thunk) -- the HUD getter, called from Level::update.
-int PlayerEgo::getHUD_up() {
-    return getHUD();
-}
-
-// getPosition_up (0xab7e8 thunk) -- the world-position getter, called from
-// Level::update when feeding the in-flight particle-system managers.
-Vec3 PlayerEgo::getPosition_up() {
-    return getPosition();
-}
-
-// setRoute_init (0xab150 thunk) -- re-applies the currently assigned route on the
-// Level init path (Level::connectPlayers): the route slot at 0xfc is re-stored.
-void PlayerEgo::setRoute_init() {
-    setRoute(((Route*&)this->route));
-}
-
-// rollLeft / rollRight (0x1abb74 / 0x1abb84 veneers) -- accelerometer banking
-// input. Both veneers forward to PlayerEgo::turnHorizontal(shipField, amount),
-// whose sign branch (amount < 0 vs > 0) selects the turn direction.
-void PlayerEgo::rollLeft(int shipField, float amt) {
-    turnHorizontal(shipField, amt);
-}
-
-void PlayerEgo::rollRight(int shipField, float amt) {
-    turnHorizontal(shipField, amt);
-}
-
-// syncFirstPerson (0x1ac874 veneer) -- camera-mode sync from MGame::switchCamera;
-// forwards to hideShipForFirstPersonCameraView(hide).
-void PlayerEgo::syncFirstPerson(int v) {
-    hideShipForFirstPersonCameraView(v != 0);
-}

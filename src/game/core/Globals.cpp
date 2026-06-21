@@ -82,10 +82,16 @@ struct Status;
 // NOT a shared singleton). The kills source resolves to the canonical Status singleton.
 extern void *const gLB_dest __attribute__((visibility("hidden")));
 
-void Globals_reportLeaderboards()
+void Globals::reportLeaderboards()
 {
     int kills = gStatus->getKills();
     *(int *)gLB_dest = kills;
+}
+
+// Trivial accessor for the active sound-resource id list.
+Array<int> *Globals::getSoundResourceList()
+{
+    return soundResources;
 }
 
 // Globals::resetHints() zeroes four 16-byte blocks of the hint struct (at offsets 0, 0x2b,
@@ -134,11 +140,10 @@ String Globals::getItemName(int item)
 // so the compiler keeps a frame and restores the sret pointer (no tail call). The int arg
 // is unused.
 
-String Globals_getKeyActionName(int action)
+String Globals::getKeyActionName(int action)
 {
     (void)action;
     String r;
-    r.ctor();
     return r;
 }
 
@@ -153,7 +158,7 @@ float Globals::sqrt(float x) {
 extern void *const gDrinks_a __attribute__((visibility("hidden")));
 extern void *const gDrinks_rng __attribute__((visibility("hidden")));
 
-void Globals_getRandomSystemForDrinks()
+void Globals::getRandomSystemForDrinks()
 {
     int a = *(int *)gDrinks_a;
     int r = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gDrinks_rng, 0x16);
@@ -179,17 +184,16 @@ void Globals::addSoundResourceToList(int snd)
 // Body copy-constructs the return slot from the source string (in r2), flag=false.
 // The copy-ctor returns void -> frame kept, sret pointer restored (no tail call).
 
-String Globals_replaceKeyBindingTokens(void *unused, void *src)
+String Globals::replaceKeyBindingTokens(const String& src)
 {
-    (void)unused;
-    return *(String *)src;
+    return src;
 }
 
 // Local minimal FileRead view (gof2/FileRead.h conflicts with Station.h/Agent.h here,
 // see top of file). Declaring the instance methods we call lets us link straight to the
 // real FileRead:: symbols without the opaque extern "C" thunks.
 struct FileRead {
-    int32_t loadStation(int32_t id);
+    Station *loadStation(int32_t id);
     Array<int32_t> *loadWreckCollision(int32_t id);
     Array<Item *> *loadItemsBinary();
     Array<Ship *> *loadShipsBinary();
@@ -197,12 +201,12 @@ struct FileRead {
 };
 extern void *const gStationRng __attribute__((visibility("hidden")));
 
-int Globals_getRandomStation()
+Station *Globals::getRandomStation()
 {
     FileRead *f = (FileRead *)::operator new(1);
     FileRead_ctor(f);
     int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gStationRng, 0x87);
-    int r = (int)(long)f->loadStation(which);
+    Station *r = f->loadStation(which);
     ::operator delete(FileRead_dtor(f));
     return r;
 }
@@ -299,13 +303,10 @@ extern const char gLTS2_sep1[] __attribute__((visibility("hidden")));
 extern const char gLTS2_sep2[] __attribute__((visibility("hidden")));
 
 // Globals::longToTimeString(long long ms, AbyssEngine::String& out)
-void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
+void Globals::longToTimeString(long long ms, String& out)
 {
-    (void)unused;
-    (void)retSlot;
     int *guardP = *(int **)gLTS2_guardHolder;
     volatile int saved = *guardP;
-    void *out = retSlot;
 
     int rem = 0;
     long long secQ = Globals::lts_divmod(ms, 1000, &rem);
@@ -331,10 +332,10 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
     minStr = minPart + minNum;
 
     if (hours == 0) {
-        String prefix, left, full;
+        String prefix, left;
         prefix.ctor_char(gLTS2_zeroPrefix, false);
         left = prefix + minStr;
-        full = left + secStr;
+        out = left + secStr;
     } else {
         int rem4 = 0;
         long long h = Globals::lts_divmod(ms, 0xea60, &rem4);
@@ -345,13 +346,13 @@ void Globals_longToTimeString(void *retSlot, void *unused, long long ms)
         hrNum.ctor_int(hv);
         hrStr = hrPart + hrNum;
 
-        String s1, a, b, s2, c, full;
+        String s1, a, b, s2, c;
         s1.ctor_char(gLTS2_sep1, false);
         a = s1 + hrStr;
         b = a + minStr;
         s2.ctor_char(gLTS2_sep2, false);
         c = b + s2;
-        full = c + secStr;
+        out = c + secStr;
     }
 
     return;
@@ -364,13 +365,13 @@ extern void *const gGBS_canvas __attribute__((visibility("hidden")));
 extern const char gGBS_prefix[] __attribute__((visibility("hidden")));
 
 // Globals::getBoundedString(AbyssEngine::String const&, int) — String returned by value.
-void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width)
+String Globals::getBoundedString(const String& text, int width)
 {
-    (void)unused;
     int *guardP = *(int **)gGBS_guardHolder;
     volatile int saved = *guardP;
 
-    ((String *)retSlot)->ctor_copy((String *)text, false);
+    String result;
+    result.ctor_copy(const_cast<String *>(&text), false);
 
     String **strPtr = *(String ***)gGBS_strPtr;
     int **canvas = *(int ***)gGBS_canvas;
@@ -381,18 +382,17 @@ void Globals_getBoundedString(void *retSlot, void *unused, void *text, int width
 
         int font = (int)(long)*strPtr;
         String tmpText;
-        tmpText.ctor_copy((String *)text, false);
+        tmpText.ctor_copy(const_cast<String *>(&text), false);
         gGlobals->getLine((unsigned)font, tmpText, width - 3, line);
 
         String prefix;
         prefix.ctor_char(gGBS_prefix, false);
-        String concat;
-        concat = prefix + *line;
+        result = prefix + *line;
 
         line->dtor();
     }
 
-    return;
+    return result;
 }
 
 // Hidden float constants and locale/flag globals (PC-relative).
@@ -429,13 +429,12 @@ static inline char rdflag(void *const g) { return **(char **)&g; }
 static inline int *rdobj(void *const g) { return *(int **)&g; }
 
 // Globals::setCoordsSteer(int p1, int p2, int p3, int p4, ushort& a..ushort& j)
-void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
-                                       unsigned short *o5, unsigned short *o6, unsigned short *o7,
-                                       unsigned short *o8, unsigned short *o9, unsigned short *o10,
-                                       unsigned short *o11, unsigned short *o12, unsigned short *o13,
-                                       unsigned short *o14)
+void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
+                                       unsigned short &o5, unsigned short &o6, unsigned short &o7,
+                                       unsigned short &o8, unsigned short &o9, unsigned short &o10,
+                                       unsigned short &o11, unsigned short &o12, unsigned short &o13,
+                                       unsigned short &o14)
 {
-    (void)self;
     int screenH = **(int **)gSCS_screenH;
     char isPhone = rdflag(gSCS_isPhone);
     int bottom = ((-0x19 - p2) - p3) + screenH;
@@ -463,16 +462,16 @@ void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
         goto common;
     label8508:
         uv = (flag8 == 0) ? 0x14 : 0x28;
-        *o5 = uv;
-        *o6 = (unsigned short)iv;
-        *o13 = uv;
+        o5 = uv;
+        o6 = (unsigned short)iv;
+        o13 = uv;
         {
             float sub = (flag8 == 0) ? gSCS_f8710 : gSCS_f870c;
             float add14 = (flag8 == 0) ? gSCS_f8718 : gSCS_f8714;
-            float val = VectorUnsignedToFloat(*o6, 0);
+            float val = VectorUnsignedToFloat(o6, 0);
             float r = val - sub;
-            *o14 = (unsigned short)((0.0f < r) ? (short)(int)r : 0);
-            *o7 = 0x14;
+            o14 = (unsigned short)((0.0f < r) ? (short)(int)r : 0);
+            o7 = 0x14;
             (void)add14;
             goto label8556;
         }
@@ -491,26 +490,26 @@ void Globals_setCoordsSteer(void *self, int p1, int p2, int p3, int p4,
 
 common: {
     float fv = gSCS_f8708;
-    *o5 = 0x1c;
-    *o6 = uv;
-    *o13 = 0x1c;
-    float val = VectorUnsignedToFloat(*o6, 0);
+    o5 = 0x1c;
+    o6 = uv;
+    o13 = 0x1c;
+    float val = VectorUnsignedToFloat(o6, 0);
     float r = val + gSCS_f8704;
-    *o14 = (unsigned short)((0.0f < r) ? (short)(int)r : 0);
-    *o7 = 0x14;
+    o14 = (unsigned short)((0.0f < r) ? (short)(int)r : 0);
+    o7 = 0x14;
     (void)fv;
 }
 
 label8556: {
     unsigned absp2 = (unsigned)(p2 - (p2 >> 31));
     float fv = gSCS_f8708;
-    float val6 = VectorUnsignedToFloat(*o6, 0);
+    float val6 = VectorUnsignedToFloat(o6, 0);
     float r8 = fv + val6;
-    *o8 = (unsigned short)((0.0f < r8) ? (short)(int)r8 : 0);
-    *o9 = (unsigned short)(*o7 + (short)(absp2 >> 1));
-    *o10 = (unsigned short)(*o8 + (short)(absp2 >> 1));
+    o8 = (unsigned short)((0.0f < r8) ? (short)(int)r8 : 0);
+    o9 = (unsigned short)(o7 + (short)(absp2 >> 1));
+    o10 = (unsigned short)(o8 + (short)(absp2 >> 1));
 
-    float val6b = VectorUnsignedToFloat(*o6, 0);
+    float val6b = VectorUnsignedToFloat(o6, 0);
     float fv2;
     float acc;
     if (isPhone == 0) {
@@ -522,7 +521,7 @@ label8556: {
         fv2 = gSCS_f8720;
     }
     int i12 = (0.0f < acc) ? (int)acc : 0;
-    *o12 = (unsigned short)i12;
+    o12 = (unsigned short)i12;
 
     float top = VectorSignedToFloat(screenH - p4, 0);
     float f12 = VectorUnsignedToFloat((unsigned)i12, 0);
@@ -533,7 +532,7 @@ label8556: {
         } else {
             u11 = 0x1c;
         }
-        *o11 = u11;
+        o11 = u11;
     } else {
         int a, b;
         if (isPhone == 0) {
@@ -544,7 +543,7 @@ label8556: {
             b = 0x10a;
             float d = f12 - (top - fv14);
             int i16 = (0.0f < d) ? (int)d : 0;
-            *o12 = (unsigned short)i16;
+            o12 = (unsigned short)i16;
             if (flag8 == 0) { a = 0xad; b = 0x85; }
             float fd = VectorUnsignedToFloat((unsigned)i16, 0);
             float fr = VectorSignedToFloat(a - b, 0);
@@ -552,23 +551,23 @@ label8556: {
             if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
             float base = VectorSignedToFloat(b, 0);
             base = base + scale * fr;
-            *o11 = (unsigned short)((0.0f < base) ? (short)(int)base : 0);
+            o11 = (unsigned short)((0.0f < base) ? (short)(int)base : 0);
             float fv15 = 4.0f;
             if (rdflag(gSCS_flagG) == 0) fv15 = 2.0f;
-            *o12 = (unsigned short)((0.0f < top - fv15) ? (short)(int)(top - fv15) : 0);
+            o12 = (unsigned short)((0.0f < top - fv15) ? (short)(int)(top - fv15) : 0);
         } else {
             a = 0xf3; b = 0xbb;
             float d = f12 - (top + gSCS_f872c);
             int i16 = (0.0f < d) ? (int)d : 0;
-            *o12 = (unsigned short)i16;
+            o12 = (unsigned short)i16;
             float fd = VectorUnsignedToFloat((unsigned)i16, 0);
             float fr = VectorSignedToFloat(a - b, 0);
             float scale = 1.0f;
             if (fd / gSCS_f8730 < 1.0f) scale = fd / gSCS_f8730;
             float base = VectorSignedToFloat(b, 0);
             base = base + scale * fr;
-            *o11 = (unsigned short)((0.0f < base) ? (short)(int)base : 0);
-            *o12 = (unsigned short)((0.0f < top - gSCS_f8720) ? (short)(int)(top - gSCS_f8720) : 0);
+            o11 = (unsigned short)((0.0f < base) ? (short)(int)base : 0);
+            o12 = (unsigned short)((0.0f < top - gSCS_f8720) ? (short)(int)(top - gSCS_f8720) : 0);
         }
     }
 }
@@ -584,62 +583,56 @@ extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));  // DAT_
 extern void *const gGAMT_modText __attribute__((visibility("hidden")));
 
 // Globals::getAgentMissionText(Agent*) -> String by value.
-void Globals_getAgentMissionText(void *out, void *unused, void *agent)
+String Globals::getAgentMissionText(Agent *agent)
 {
-    (void)unused;
     int *guardP = *(int **)gGAMT_guard;
     volatile int saved = *guardP;
 
-    if (agent == 0) {
-        ((String *)out)->ctor_char(gGAMT_noAgent, false);
-        goto epilogue;
+    String result;
+
+    if (agent == nullptr) {
+        result.ctor_char(gGAMT_noAgent, false);
+        return result;
     }
 
-    {
-        String acc;
-        acc.ctor();
+    String acc;
 
-        if (((Agent *)(agent))->isGenericAgent() == 0) {
-            String scratch;
-            scratch.ctor();
+    if (agent->isGenericAgent() == 0) {
+        int event = agent->getEvent();
+        if (event < 1 && agent->hasAcceptedOffer() == 0) {
+            int *busy = *(int **)gGAMT_busyObj;
+            // RAWREAD: opaque re-entrancy-guard object via hidden global (no header/named member at +0xd0).
+            *(int *)(*busy + 0xd0) += 1;       // mark "assembling text" re-entrancy guard
+            int offer = agent->getOffer();
 
-            int event = ((Agent *)(agent))->getEvent();
-            if (event < 1 && ((Agent *)(agent))->hasAcceptedOffer() == 0) {
-                int *busy = *(int **)gGAMT_busyObj;
-                // RAWREAD: opaque re-entrancy-guard object via hidden global (no header/named member at +0xd0).
-                *(int *)(*busy + 0xd0) += 1;       // mark "assembling text" re-entrancy guard
-                int offer = ((Agent *)(agent))->getOffer();
-
-                if (offer == 8) {
-                    int ship = (int)(long)gStatus->getShip();
-                    int price = ((Ship *)(ship))->getPrice();
-                    int pct = ((Agent *)(agent))->getModPricePercentage();
-                    ((Agent *)(agent))->setSellItemPrice(idiv(price * pct, 100));
-                    ship = (int)(long)gStatus->getShip();
-                    int modIdx = ((Agent *)(agent))->getSellModIndex();
-                    if (((Ship *)(ship))->hasModInstalled(modIdx) != 0) {
-                        void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
-                        *(int *)(*busy + 0xd0) -= 1;
-                        ((String *)out)->ctor_copy(&acc, false);
-                        goto epilogue;
-                    }
+            if (offer == 8) {
+                int ship = (int)(long)gStatus->getShip();
+                int price = ((Ship *)(ship))->getPrice();
+                int pct = agent->getModPricePercentage();
+                agent->setSellItemPrice(idiv(price * pct, 100));
+                ship = (int)(long)gStatus->getShip();
+                int modIdx = agent->getSellModIndex();
+                if (((Ship *)(ship))->hasModInstalled(modIdx) != 0) {
+                    void *t = ((GameText *)((void *)(long)**(int **)gGAMT_modText))->getText(modIdx);
+                    (void)t;
+                    *(int *)(*busy + 0xd0) -= 1;
+                    result.ctor_copy(&acc, false);
+                    return result;
                 }
-
-                // General offer/event briefing text: data-driven assembly into `acc`.
-                Globals::buildAgentMissionText(&acc, agent, offer);
-                *(int *)(*busy + 0xd0) -= 1;
-            } else {
-                Globals::buildAgentMissionText(&acc, agent, -1);
             }
+
+            // General offer/event briefing text: data-driven assembly into `acc`.
+            Globals::buildAgentMissionText(&acc, agent, offer);
+            *(int *)(*busy + 0xd0) -= 1;
         } else {
             Globals::buildAgentMissionText(&acc, agent, -1);
         }
-
-        ((String *)out)->ctor_copy(&acc, false);
+    } else {
+        Globals::buildAgentMissionText(&acc, agent, -1);
     }
 
-epilogue:
-    return;
+    result.ctor_copy(&acc, false);
+    return result;
 }
 
 extern void *const gIAP_guardHolder __attribute__((visibility("hidden")));
@@ -746,9 +739,8 @@ extern const char gLTS_hrEmpty[] __attribute__((visibility("hidden")));     // D
 extern const char gLTS_sep[] __attribute__((visibility("hidden")));         // DAT_000f3e00 ":"
 
 // Globals::longToTimeStringNoSeconds(long long ms, AbyssEngine::String& out)
-void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms)
+void Globals::longToTimeStringNoSeconds(long long ms, String& out)
 {
-    (void)unused;
     int *guardP = *(int **)gLTS_guardHolder;
     volatile int saved = *guardP;
 
@@ -776,10 +768,10 @@ void Globals_longToTimeStringNoSeconds(void *retSlot, void *unused, long long ms
     hNum.ctor_int(hv);
     hrStr = hPart + hNum;
 
-    String sep, left, full;
+    String sep, left;
     sep.ctor_char(gLTS_sep, false);
     left = sep + hrStr;
-    full = left + minStr;
+    out = left + minStr;
 
     return;
 }
@@ -997,8 +989,8 @@ extern void *const gCBB_counter __attribute__((visibility("hidden")));
 extern void *const gCBB_canvas __attribute__((visibility("hidden")));
 
 // Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1, int width)
-// p1 ignored layout-wise; height in r1, width passed on the stack.
-void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
+// p1 ignored layout-wise; height in r1, width passed on the stack. Returns the created mesh id.
+unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
                                         int width)
 {
     (void)p1;
@@ -1050,7 +1042,7 @@ void Globals_createBillBoard(int p1, int height, float u0, float v0, float u1, f
     meshCanvas->MeshSetPoint((unsigned int)mesh, 10, ph, ph, 0);
     meshCanvas->MeshSetPoint((unsigned int)mesh, 0xb, ph, nh, 0);
 
-    return;
+    return meshOut;
 }
 
 // Vector scale: in-place multiply of a Vector by a scalar, returns resulting magnitude/component.
@@ -1062,9 +1054,8 @@ extern "C" void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float
 extern void *const gGWC_guardHolder __attribute__((visibility("hidden")));
 
 // Globals::getWreckCollision(int kind, AEGeometry* geom).
-void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
+Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom)
 {
-    (void)retSlot;
     int *guardP = *(int **)gGWC_guardHolder;
     volatile int saved = *guardP;
 
@@ -1073,14 +1064,14 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
     Array<int> *data = ((FileRead *)fr)->loadWreckCollision(kind);
     ::operator delete(FileRead_dtor(fr));
 
-    Array<void *> *outArr = 0;
+    Array<BoundingVolume *> *outArr = nullptr;
     if (data != 0) {
         int count = (*data)[0];
 
         float v[3] = {0, 0, 0};       // collision-shape extent vector
         float c[3] = {0, 0, 0};       // collision-shape center/scalar parts
 
-        outArr = new Array<void *>();
+        outArr = new Array<BoundingVolume *>();
         outArr->resize((unsigned)count);
 
         int pos = 1;
@@ -1126,14 +1117,14 @@ void Globals_getWreckCollision(void *retSlot, int kind, void *geom)
                 pos += 1;
                 continue;
             }
-            (*outArr)[i] = bound;
+            (*outArr)[i] = reinterpret_cast<BoundingVolume *>(bound);
         }
 
         data->clear();
         delete data;
     }
 
-    return;
+    return outArr;
 }
 
 // Singleton-pointer globals zeroed/initialized by the constructor (PC-relative).
@@ -1471,14 +1462,13 @@ static inline unsigned short clampU(float v)
 }
 
 // Globals::setCoordsFire(int p1, int p2, uint p3, uint p4, uint& o5, ushort& o6..ushort& o17)
-void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
-                                      unsigned *o5, unsigned short *o6, unsigned short *o7,
-                                      unsigned short *o8, unsigned short *o9, unsigned short *o10,
-                                      unsigned short *o11, unsigned short *o12, unsigned short *o13,
-                                      unsigned short *o14, unsigned short *o15, unsigned short *o16,
-                                      unsigned short *o17)
+void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
+                                      unsigned &o5, unsigned short &o6, unsigned short &o7,
+                                      unsigned short &o8, unsigned short &o9, unsigned short &o10,
+                                      unsigned short &o11, unsigned short &o12, unsigned short &o13,
+                                      unsigned short &o14, unsigned short &o15, unsigned short &o16,
+                                      unsigned short &o17)
 {
-    (void)self;
     char isPhone = rf(gSCF_isPhone);
     float fbase = gSCF_b14;
     float fwid = gSCF_b10;
@@ -1538,43 +1528,43 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
         }
     }
 
-    *o6 = clampU(wField + adj13);
-    *o7 = (unsigned short)iv;
-    *o8 = (unsigned short)(*o6 + (short)(p2 >> 1));
-    *o9 = (unsigned short)(*o7 + (short)(p2 >> 1));
+    o6 = clampU(wField + adj13);
+    o7 = (unsigned short)iv;
+    o8 = (unsigned short)(o6 + (short)(p2 >> 1));
+    o9 = (unsigned short)(o7 + (short)(p2 >> 1));
 
     float tail;
     unsigned short u16;
     if (isPhone == 0) {
         char flag6 = rf(gSCF_flagH);
         float a10 = (flag6 == 0) ? gSCF_bb8 : gSCF_bb4;
-        *o10 = clampU(a10 + VectorUnsignedToFloat(*o6, 0));
+        o10 = clampU(a10 + VectorUnsignedToFloat(o6, 0));
         float a11 = (flag6 == 0) ? 4.0f : 8.0f;
-        *o11 = clampU(a11 + VectorUnsignedToFloat(*o7, 0));
+        o11 = clampU(a11 + VectorUnsignedToFloat(o7, 0));
         float a12 = (flag6 == 0) ? 15.0f : 28.0f;
-        *o12 = clampU(a12 + VectorUnsignedToFloat(*o6, 0));
+        o12 = clampU(a12 + VectorUnsignedToFloat(o6, 0));
         float a13 = (flag6 == 0) ? 13.0f : 27.0f;
-        *o13 = clampU(a13 + VectorUnsignedToFloat(*o7, 0));
+        o13 = clampU(a13 + VectorUnsignedToFloat(o7, 0));
         float a16 = (flag6 == 0) ? gSCF_bc0 : gSCF_bbc;
-        u16 = clampU(a16 + VectorUnsignedToFloat(*o6, 0));
+        u16 = clampU(a16 + VectorUnsignedToFloat(o6, 0));
         tail = (flag6 == 0) ? gSCF_bc8 : gSCF_bc4;
     } else {
-        *o10 = clampU(VectorUnsignedToFloat(*o6, 0) + gSCF_b9c);
-        *o11 = clampU(VectorUnsignedToFloat(*o7, 0) + gSCF_ba0);
-        *o12 = clampU(VectorUnsignedToFloat(*o6, 0) + gSCF_ba4);
-        *o13 = clampU(VectorUnsignedToFloat(*o7, 0) + gSCF_ba8);
-        u16 = clampU(VectorUnsignedToFloat(*o6, 0) + gSCF_bac);
+        o10 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_b9c);
+        o11 = clampU(VectorUnsignedToFloat(o7, 0) + gSCF_ba0);
+        o12 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_ba4);
+        o13 = clampU(VectorUnsignedToFloat(o7, 0) + gSCF_ba8);
+        u16 = clampU(VectorUnsignedToFloat(o6, 0) + gSCF_bac);
         tail = gSCF_bb0;
     }
 
-    *o16 = u16;
-    *o17 = clampU(VectorUnsignedToFloat(*o7, 0) - tail);
+    o16 = u16;
+    o17 = clampU(VectorUnsignedToFloat(o7, 0) - tail);
 
     unsigned short u14;
     float t15;
     if (colDelta < iv) {
-        *o5 = p3;
-        float w = VectorUnsignedToFloat(*o6, 0);
+        o5 = p3;
+        float w = VectorUnsignedToFloat(o6, 0);
         if (isPhone != 0) {
             u14 = clampU(w + -2.0f);
             t15 = gSCF_be4;
@@ -1585,8 +1575,8 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
             t15 = (flag == 0) ? gSCF_bf0 : gSCF_bec;
         }
     } else {
-        *o5 = p4;
-        float w = VectorUnsignedToFloat(*o6, 0);
+        o5 = p4;
+        float w = VectorUnsignedToFloat(o6, 0);
         if (isPhone != 0) {
             u14 = clampU(w + gSCF_bcc);
             t15 = gSCF_bd0;
@@ -1598,15 +1588,15 @@ void Globals_setCoordsFire(void *self, int p1, int p2, unsigned p3, unsigned p4,
         }
     }
 
-    *o14 = u14;
-    *o15 = clampU(t15 + VectorUnsignedToFloat(*o7, 0));
+    o14 = u14;
+    o15 = clampU(t15 + VectorUnsignedToFloat(o7, 0));
 }
 
 // Hidden PC-relative pointer-to-pointer global (deref'd twice); the canvas it reaches is
 // the shared PaintCanvas singleton (gCanvas).
 extern void *const gRR_arg __attribute__((visibility("hidden")));
 
-void Globals_releaseResources()
+void Globals::releaseResources()
 {
     gCanvas->ReleaseAllResources();
     return Globals::releaseResources_tail(*(void **)gRR_arg);
@@ -2003,9 +1993,8 @@ extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));  // DAT
 // (the resolved bucket value 0..5). Returns -1 when unmapped.
 
 // Globals::getDialogueSoundId(int code, Agent* agent)
-int Globals_getDialogueSoundId(void *self, int code, void *agent)
+int Globals::getDialogueSoundId(int code, Agent *agent)
 {
-    (void)self;
     // Phase 1: linear search of the static pair table (47 pairs).
     const int *t = gGDS_pairTable;
     for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
@@ -2028,32 +2017,32 @@ int Globals_getDialogueSoundId(void *self, int code, void *agent)
             int *p = ((Agent *)(agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
             // bucket 0 dispatch differs by gender; dialogueDispatch consults isMale internally.
-            return ((Globals*)self)->dialogueDispatch(category, code, male);
+            return dialogueDispatch(category, code, male);
         }
         // No image parts: race-3 fallback uses the "case 2/3" generic dialogue table.
-        return ((Globals*)self)->dialogueDispatch(2, code, male);
+        return dialogueDispatch(2, code, male);
     }
 
     // Non-Klingon races: bucket by race index; only bucket 0/5 is gendered.
     category = race;
-    return ((Globals*)self)->dialogueDispatch(category, code, male);
+    return dialogueDispatch(category, code, male);
 }
 
 struct FileRead;
 struct Station;
 extern void *const gPlanetRng __attribute__((visibility("hidden")));
 
-// Returns a planet name in `ret` (also the return value).
-String *Globals_getRandomPlanetName(String *ret)
+// Returns a random planet (station) name.
+String Globals::getRandomPlanetName()
 {
     FileRead *f = (FileRead *)::operator new(1);
     FileRead_ctor(f);
     int which = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gPlanetRng, 0x64);
-    Station *st = (Station *)(long)f->loadStation(which);
-    ((Station *)(ret))->getName();
+    Station *st = f->loadStation(which);
+    String name = st->getName();
     delete st;
     ::operator delete(FileRead_dtor(f));
-    return ret;
+    return name;
 }
 
 
@@ -2065,9 +2054,8 @@ extern void *const gGRN_rng2 __attribute__((visibility("hidden")));
 extern const char gGRN_space[] __attribute__((visibility("hidden")));       // DAT_000f422c (" ")
 
 // Globals::getRandomName(int kind, bool both) -> String by value.
-void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
+String Globals::getRandomName(int kind, bool both)
 {
-    (void)unused;
     int *guardP = *(int **)gGRN_guardHolder;
     volatile int saved = *guardP;
 
@@ -2103,16 +2091,17 @@ void Globals_getRandomName(void *retSlot, void *unused, int kind, int both)
     ::operator delete(FileRead_dtor(fr));
 
     // When the first name is empty, just copy firstStr; otherwise join "first last".
+    String result;
     if (firstStr.size() == 0) {
-        ((String *)retSlot)->ctor_copy(&firstStr, false);
+        result.ctor_copy(&firstStr, false);
     } else {
         String space, mid;
         space.ctor_char(gGRN_space, false);
         mid = firstStr + space;
-        *(String *)retSlot = mid + lastStr;
+        result = mid + lastStr;
     }
 
-    return;
+    return result;
 }
 
 extern void *const gGL_canvas __attribute__((visibility("hidden")));

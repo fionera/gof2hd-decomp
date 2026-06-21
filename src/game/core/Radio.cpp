@@ -25,7 +25,6 @@ extern "C" String* _ZN8GameText7getTextEi(GameText* self, int key)
 // the engine exposes them as free functions (see src/game/core/Globals.cpp).
 void Globals_drawLines(void* globals, String* font, Array<String*>* lines,
                        int x, int y);
-int Globals_getDialogueSoundId(void* globals, int textId, void* agent);
 
 // Agent is constructed transiently to resolve the speaker's voice sample.
 
@@ -221,8 +220,8 @@ void Radio::update(long time, PlayerEgo* ego, LevelScript* script)
         String agentName = radio_string_from_cstr(g_Radio_agentName);
         Agent* agent = new Agent(0, agentName, 0, 0, agentIndex, generated,
                                  0, 0, 0, 0);
-        this->soundId = Globals_getDialogueSoundId(*g_Radio_globals,
-                                                   message->textID, agent);
+        this->soundId = static_cast<Globals*>(*g_Radio_globals)
+                            ->getDialogueSoundId(message->textID, agent);
         delete agent;
         break;
     }

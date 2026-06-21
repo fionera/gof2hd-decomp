@@ -23,6 +23,7 @@
 #include "engine/file/AEFile.h"
 #include "platform/gl.h"
 #include "game/mission/Status.h"
+#include "platform/recovered_a462c.h"
 
 // ---------------------------------------------------------------------------
 // Global state shared with the Java side and the rest of the NDK layer.
@@ -578,4 +579,138 @@ void setValuesForGamepad(float x, float y)
 {
     g_gamepadAxisX = x;
     g_gamepadAxisY = y;
+}
+
+// ---------------------------------------------------------------------------
+// DLC purchase bridge. The Java store UI reads each pack's "already bought"
+// flag through ToJNI_getDLCnBOUGHT (a thin forward to the matching ndk_getDLC_n_
+// BOUGHT accessor) and, when restoring purchases, marks a pack as owned through
+// ToJNI_correctBoughtDLCn (a forward to ndk_iapBoughtPremium(pack, /*bought=*/1)
+// with the zero-based pack index).
+// ---------------------------------------------------------------------------
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC1BOUGHT(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getDLC_1_BOUGHT();
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC2BOUGHT(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getDLC_2_BOUGHT();
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC1(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtPremium(0, 1);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC2(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtPremium(1, 1);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC3(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtPremium(2, 1);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC4(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtPremium(3, 1);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC5(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtPremium(4, 1);
+}
+
+// ---------------------------------------------------------------------------
+// Google Play achievement / leaderboard / link bridge. The Java side keeps the
+// pending achievement-id and leaderboard-score arrays plus the GP-link state
+// behind these pointers (allocated and published from the Java layer); the
+// native code only reads back the queued values and clears them once consumed.
+// ---------------------------------------------------------------------------
+
+// Queued achievement ids (the engine pushes up to three at a time) and per-rank
+// leaderboard scores; the GP-link flag, and the two "show overlay" request flags
+// the host polls each frame.
+static jint *g_achievementIds;
+static jint *g_leaderboardScores;
+static jint *g_linkGameGP;
+static jint *g_showAchievements;
+static jint *g_showLeaderboards;
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint index)
+{
+    return g_achievementIds[index];
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint index)
+{
+    return g_leaderboardScores[index];
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLeaderboardScore(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint index)
+{
+    g_leaderboardScores[index] = 0;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetAchievements(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    g_achievementIds[0] = 0;
+    g_achievementIds[1] = 0;
+    g_achievementIds[2] = 0;
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowAchievements(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return *g_showAchievements;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowAchievements(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    *g_showAchievements = 0;
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLinkGameGP(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return *g_linkGameGP;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLinkGameGP(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    *g_linkGameGP = 0;
+}
+
+extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowLeaderboards(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return *g_showLeaderboards;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowLeaderboards(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    *g_showLeaderboards = 0;
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint linked)
+{
+    *g_linkGameGP = linked;
 }

@@ -49,7 +49,6 @@ extern "C" void ModStation_suspendTail(void *obj, void **holder);
 extern "C" int FModSound_tryToStopMusicForBGMusic();
 extern "C" void ModStation_resumeTail(void *obj, int one, int arg);
 extern "C" void ModStation_leaveStation_impl(ModStation *self);
-void Globals_reportLeaderboards(void *obj);
 extern "C" void ModStation_r3d_endTail(void *c);
 extern "C" void AEMath_MatrixSetTranslation(void *m, int x, int y, int z);
 extern "C" void AEMath_MatrixSetRotation(void *m, void *loc, int rx, int ry, int a4, int a5);
@@ -471,7 +470,7 @@ __attribute__((visibility("hidden"))) extern void **g_ModStation_cm_lead;   // *
 
 // ModStation::checkMedals()
 void ModStation::checkMedals() {
-    Globals_reportLeaderboards(*g_ModStation_cm_lead);
+    gGlobals->reportLeaderboards();
 
     if (((char*)&this->modalFlags)[2] != 0 || ((char*)&this->m_nStarMapWindowOpen)[3] != 0) {
         // continuation path

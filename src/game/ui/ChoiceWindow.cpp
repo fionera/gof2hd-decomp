@@ -383,7 +383,7 @@ void ChoiceWindow::draw()
     Layout *layout = *g_ChoiceWindow_layout_1471bc;
     layout->drawMask();
 
-    layout->drawBox6(7, this->x, this->y, this->width, this->height, &this->title);
+    layout->drawBox(7, this->x, this->y, this->width, this->height, this->title, 1u);
 
     PaintCanvas *canvas = gCanvas;
     canvas->SetColor(0xffffffff);

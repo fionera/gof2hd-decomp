@@ -20,9 +20,6 @@
 
 using AbyssEngine::PaintCanvas;
 
-// ---- foreign helpers (defined in the engine; linked elsewhere) -------------
-int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
-
 // Byte-offset accessor for EXTERNAL opaque objects (the engine sound-config
 // record) whose layout is not modelled here.
 template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
@@ -273,7 +270,7 @@ void DialogueWindow::loadContent() {
     }
 
     Agent *agent = mission == 0 ? (Agent *)0 : mission->getAgent();
-    int soundId = Globals_getDialogueSoundId(gGlobals, textId, agent);
+    int soundId = gGlobals->getDialogueSoundId(textId, agent);
     this->voiceSound = soundId;
     if (soundId >= 0) {
         sound->play(soundId, 0, 0, 0);

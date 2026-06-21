@@ -73,7 +73,7 @@ int Layout::OnTouchBegin(int x, int y) {
     TouchButton *btn = this->backButton->isVisible() == 0
                            ? this->secondaryButton
                            : this->backButton;
-    return this->dispatchTouchBegin(btn, x, y);
+    return btn->OnTouchBegin(x, y);
 }
 
 float Sinf(float);   // AbyssEngine::AEMath::Sinf
@@ -121,12 +121,156 @@ uint8_t Layout::helpPressed() {
     return this->helpPressedFlag;
 }
 
+// Hidden globals from drawFooter.
+__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvas;
+__attribute__((visibility("hidden"))) extern int **g_dfMetric;     // [0][0x10],[0][0x74]
+__attribute__((visibility("hidden"))) extern int g_dfWarnColor;
+__attribute__((visibility("hidden"))) extern const char g_dfSep[];
+__attribute__((visibility("hidden"))) extern const char g_dfTail[];
+__attribute__((visibility("hidden"))) extern void **g_dfFont;
+
 void Layout::drawFooterNoBackButton() {
-    this->drawFooterImpl(0, 0);
+    int stationMode = 0;
+    int showBack = 0;
+    PaintCanvas *pc = *g_dfCanvas;
+    gCanvas->SetColor(this->drawColor);
+    int wRight = gCanvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = gCanvas->GetImage2DWidth(this->footerImageLeft);
+
+    pc->DrawImage2D(this->footerImageLeft, this->windowX,
+                    this->windowY + this->windowHeight, (unsigned char)(0x11));
+    int *m = *g_dfMetric;
+    int footerH = m[0x10 / 4];
+    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
+                    (this->windowY + this->windowHeight) - footerH);
+    int both = wLeft + wRight;
+    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH, this->windowWidth + both * -2, footerH);
+    pc->DrawImage2D(this->footerImageRight,
+                    (this->windowX - both) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+    pc->DrawImage2D(this->footerImageLeft,
+                    (this->windowX - wRight) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+
+    int backVis = (!stationMode) && showBack;
+    this->backButton->setVisible(backVis);
+    if (!backVis)
+        this->secondaryButton->draw();
+    else if (showBack)
+        this->backButton->draw();
+
+    // Cargo load text, in warning colour if over capacity.
+    Status *status = gStatus;
+    int load = status->getShip()->getCurrentLoad();
+    int maxLoad = status->getShip()->getMaxLoad();
+    if (maxLoad < load)
+        gCanvas->SetColor(*(unsigned *)&g_dfWarnColor);
+
+    String sLoad;
+    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    String sMax;
+    sMax.ctor_int(status->getShip()->getMaxLoad());
+    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), loadStr);
+        pc->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
+                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
+    }
+    gCanvas->SetColor(this->drawColor);
+
+    String credStr = Layout::formatCredits(status->getCredits());
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        if (stationMode) {
+            int rightInset = m[0x74 / 4];
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        } else {
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        }
+    }
 }
 
 void Layout::drawFooter() {
-    this->drawFooterImpl(0, 1);
+    int stationMode = 0;
+    int showBack = 1;
+    PaintCanvas *pc = *g_dfCanvas;
+    gCanvas->SetColor(this->drawColor);
+    int wRight = gCanvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = gCanvas->GetImage2DWidth(this->footerImageLeft);
+
+    pc->DrawImage2D(this->footerImageLeft, this->windowX,
+                    this->windowY + this->windowHeight, (unsigned char)(0x11));
+    int *m = *g_dfMetric;
+    int footerH = m[0x10 / 4];
+    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
+                    (this->windowY + this->windowHeight) - footerH);
+    int both = wLeft + wRight;
+    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH, this->windowWidth + both * -2, footerH);
+    pc->DrawImage2D(this->footerImageRight,
+                    (this->windowX - both) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+    pc->DrawImage2D(this->footerImageLeft,
+                    (this->windowX - wRight) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+
+    int backVis = (!stationMode) && showBack;
+    this->backButton->setVisible(backVis);
+    if (!backVis)
+        this->secondaryButton->draw();
+    else if (showBack)
+        this->backButton->draw();
+
+    // Cargo load text, in warning colour if over capacity.
+    Status *status = gStatus;
+    int load = status->getShip()->getCurrentLoad();
+    int maxLoad = status->getShip()->getMaxLoad();
+    if (maxLoad < load)
+        gCanvas->SetColor(*(unsigned *)&g_dfWarnColor);
+
+    String sLoad;
+    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    String sMax;
+    sMax.ctor_int(status->getShip()->getMaxLoad());
+    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), loadStr);
+        pc->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
+                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
+    }
+    gCanvas->SetColor(this->drawColor);
+
+    String credStr = Layout::formatCredits(status->getCredits());
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        if (stationMode) {
+            int rightInset = m[0x74 / 4];
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        } else {
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        }
+    }
 }
 
 int Layout::OnTouchMove(int x, int y) {
@@ -139,7 +283,7 @@ int Layout::OnTouchMove(int x, int y) {
     TouchButton *btn = this->backButton->isVisible() == 0
                            ? this->secondaryButton
                            : this->backButton;
-    return this->dispatchTouchMove(btn, x, y);
+    return static_cast<int>(btn->OnTouchMove(x, y));
 }
 
 int Layout::OnTouchEnd(int x, int y) {
@@ -150,7 +294,7 @@ int Layout::OnTouchEnd(int x, int y) {
     TouchButton *btn = this->backButton->isVisible() == 0
                            ? this->secondaryButton
                            : this->backButton;
-    return this->dispatchTouchEnd(btn, x, y);
+    return static_cast<int>(btn->OnTouchEnd(x, y));
 }
 
 void Layout::startFade(bool fadeOut, int color, int duration) {
@@ -224,7 +368,7 @@ void Layout::drawEmptyFooter(bool showBack) {
 //   wide  : aspect/scale flag
 //   scale : secondary scale flag
 //   res   : resolution selector (0 => half-size variants)
-// The header geometry block (0x04..0x2d8) is bulk-seeded by initConstBlock();
+// The header geometry block (0x04..0x2d8) is bulk-seeded with zero;
 // the readable scalar tail writes below reproduce the rest.
 
 // Config-flag source globals (each points to a single byte).
@@ -243,8 +387,9 @@ Layout::Layout() {
     int scale = (*g_cfgScale != 0);
     int res   = *g_resByte;
 
-    // Header / geometry constants.
-    this->initConstBlock(hd, wide, scale, res);
+    // Header / geometry constants: zero-seed the geometry block
+    // (members 0x04..0x2d8) before the explicit scalar writes below.
+    memset((char *)this + 0x04, 0, 0x2d8 - 0x04);
 
     if (!hd) {
         this->field_0x238 = 0x46;
@@ -370,18 +515,6 @@ Layout::Layout() {
         this->helpWindowX = 0x14b;
         this->helpWindowY = 0xca;
     }
-}
-
-__attribute__((visibility("hidden"))) extern PaintCanvas **gPC;
-
-int Layout::drawMask4(int p1, int p2, int p3, int p4) {
-    PaintCanvas *pc = *gPC;
-    int saved = pc->GetColor();
-    pc->SetColor(0x80);
-    pc->FillRectangle(p1, p2, p3, 0);
-    (void)p4;
-    pc->SetColor((unsigned)saved);
-    return 0;
 }
 
 // Format `n` as a grouped credit amount with a trailing "$".
@@ -733,9 +866,11 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         pc->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char)(0x01));
         break;
     }
-    case 5:
-        this->drawBGBorder6(this->field_0x380, this->field_0x384, x, y, w);
+    case 5: {
+        int ch = gCanvas->GetImage2DHeight(this->field_0x380);
+        this->drawBGBorder(this->field_0x380, this->field_0x384, x, y, w, ch, 0, 0);
         break;
+    }
     case 6: {
         int iw = gCanvas->GetImage2DWidth(this->field_0x388);
         pc->DrawImage2D(this->field_0x388, x, y);
@@ -762,7 +897,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
         int hdr = mt[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
         int ih = gCanvas->GetImage2DHeight(this->field_0x394);
-        this->drawBGBorder8(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
+        this->drawBGBorder(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
         if (text.size() == 0) break;
         gCanvas->SetColor(0xffffffff);
         pc->DrawImage2D(this->headerIconImage, x, y);
@@ -771,9 +906,11 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
                        mt[0x28 / 4] + x, ty, false);
         break;
     }
-    case 8:
-        this->drawBGBorder6(this->field_0x39c, this->field_0x3a0, x, y, w);
+    case 8: {
+        int ch = gCanvas->GetImage2DHeight(this->field_0x39c);
+        this->drawBGBorder(this->field_0x39c, this->field_0x3a0, x, y, w, ch, 0, 0);
         break;
+    }
     case 9: {
         int iw = gCanvas->GetImage2DWidth(this->field_0x360);
         pc->DrawImage2D(this->field_0x360, x, y);
@@ -826,11 +963,6 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
     pc->SetColor(saved);
 }
 
-void Layout::drawBox6(int p2, int p3, int p4, int p5, int p6, const String *str) {
-    String tmp(*str);
-    this->drawBox(p2, p3, p4, p5, p6, tmp, 1u);
-}
-
 // Hidden globals from drawTip.
 __attribute__((visibility("hidden"))) extern unsigned *g_dtColor;// [0]=color
 __attribute__((visibility("hidden"))) extern int **g_dtMetricA;  // [0][0x78],[0][4]
@@ -866,7 +998,8 @@ void Layout::drawHeader(String title) {
 }
 
 void Layout::drawHelpWindow() {
-    this->drawHelpWindowImpl();
+    if (this->choiceWindow != nullptr)
+        this->choiceWindow->draw();
 }
 
 __attribute__((visibility("hidden"))) extern FModSound **gFmodHelp;  // distinct global from showMissionRewardMessage's gFmod
@@ -941,50 +1074,50 @@ void Layout::reload() {
     memset((char *)this + 0x334, 0xff, 0x70);
 
     PaintCanvas *canvas = *g_rlCanvas;
-    this->loadImage(canvas, 0x503, &this->tipBoxImage);
-    this->loadImage(canvas, 0x47e, &this->bgPatternImage);
-    this->loadImage(canvas, 0x4ff, &this->headerPatternImage);
-    this->loadImage(canvas, 0x500, &this->headerCapImage);
-    this->loadImage(canvas, 0x474, &this->headerIconImage);
-    this->loadImage(canvas, 0x502, &this->footerImageLeft);
-    this->loadImage(canvas, 0x506, &this->field_0x340);
-    this->loadImage(canvas, 0x501, &this->field_0x338);
-    this->loadImage(canvas, 0x507, &this->footerPatternImage);
-    this->loadImage(canvas, 0x4fe, &this->footerImageRight);
-    this->loadImage(canvas, 0x482, &this->field_0x348);
-    this->loadImage(canvas, 0x481, &this->field_0x34c);
-    this->loadImage(canvas, 0x486, &this->scrollBarFillImage);
-    this->loadImage(canvas, 0x487, &this->scrollBarImage);
-    this->loadImage(canvas, 0x48b, &this->field_0x37c);
-    this->loadImage(canvas, 0x52d, &this->field_0x3a4);
+    canvas->Image2DCreate(static_cast<unsigned short>(0x503), reinterpret_cast<unsigned int &>(this->tipBoxImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x47e), reinterpret_cast<unsigned int &>(this->bgPatternImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x4ff), reinterpret_cast<unsigned int &>(this->headerPatternImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x500), reinterpret_cast<unsigned int &>(this->headerCapImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x474), reinterpret_cast<unsigned int &>(this->headerIconImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x502), reinterpret_cast<unsigned int &>(this->footerImageLeft));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x506), reinterpret_cast<unsigned int &>(this->field_0x340));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x501), reinterpret_cast<unsigned int &>(this->field_0x338));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x507), reinterpret_cast<unsigned int &>(this->footerPatternImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x4fe), reinterpret_cast<unsigned int &>(this->footerImageRight));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x482), reinterpret_cast<unsigned int &>(this->field_0x348));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x481), reinterpret_cast<unsigned int &>(this->field_0x34c));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x486), reinterpret_cast<unsigned int &>(this->scrollBarFillImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x487), reinterpret_cast<unsigned int &>(this->scrollBarImage));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x48b), reinterpret_cast<unsigned int &>(this->field_0x37c));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x52d), reinterpret_cast<unsigned int &>(this->field_0x3a4));
 
     if (*g_rlHdFlag == 0) {
-        this->loadImage(canvas, 0x480, &this->field_0x350);
-        this->loadImage(canvas, 0x47f, &this->field_0x354);
-        this->loadImage(canvas, 0x479, &this->field_0x358);
-        this->loadImage(canvas, 0x478, &this->field_0x35c);
-        this->loadImage(canvas, 0x489, &this->field_0x36c);
-        this->loadImage(*g_rlCanvas, 0x488, &this->field_0x370);
+        canvas->Image2DCreate(static_cast<unsigned short>(0x480), reinterpret_cast<unsigned int &>(this->field_0x350));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x47f), reinterpret_cast<unsigned int &>(this->field_0x354));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x479), reinterpret_cast<unsigned int &>(this->field_0x358));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x478), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x489), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        (*g_rlCanvas)->Image2DCreate(static_cast<unsigned short>(0x488), reinterpret_cast<unsigned int &>(this->field_0x370));
     } else {
-        this->loadImage(canvas, 0x6bb, &this->field_0x350);
-        this->loadImage(canvas, 0x6ba, &this->field_0x354);
-        this->loadImage(canvas, 0x6b9, &this->field_0x358);
-        this->loadImage(canvas, 0x6b8, &this->field_0x35c);
-        this->loadImage(canvas, 0x6b7, &this->field_0x36c);
-        this->loadImage(*g_rlCanvas, 0x6bc, &this->field_0x370);
+        canvas->Image2DCreate(static_cast<unsigned short>(0x6bb), reinterpret_cast<unsigned int &>(this->field_0x350));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x6ba), reinterpret_cast<unsigned int &>(this->field_0x354));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x6b9), reinterpret_cast<unsigned int &>(this->field_0x358));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x6b8), reinterpret_cast<unsigned int &>(this->field_0x35c));
+        canvas->Image2DCreate(static_cast<unsigned short>(0x6b7), reinterpret_cast<unsigned int &>(this->field_0x36c));
+        (*g_rlCanvas)->Image2DCreate(static_cast<unsigned short>(0x6bc), reinterpret_cast<unsigned int &>(this->field_0x370));
     }
 
-    this->loadImage(canvas, 0x530, &this->field_0x360);
-    this->loadImage(canvas, 0x531, &this->field_0x364);
-    this->loadImage(canvas, 0x52f, &this->field_0x368);
-    this->loadImage(canvas, 0x47c, &this->field_0x384);
-    this->loadImage(canvas, 0x47d, &this->field_0x380);
-    this->loadImage(canvas, 0x47b, &this->field_0x388);
-    this->loadImage(canvas, 0x47a, &this->field_0x38c);
-    this->loadImage(canvas, 0x484, &this->field_0x390);
-    this->loadImage(canvas, 0x483, &this->field_0x394);
-    this->loadImage(canvas, 0x50c, &this->field_0x3a0);
-    this->loadImage(canvas, 0x50d, &this->field_0x39c);
+    canvas->Image2DCreate(static_cast<unsigned short>(0x530), reinterpret_cast<unsigned int &>(this->field_0x360));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x531), reinterpret_cast<unsigned int &>(this->field_0x364));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x52f), reinterpret_cast<unsigned int &>(this->field_0x368));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x47c), reinterpret_cast<unsigned int &>(this->field_0x384));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x47d), reinterpret_cast<unsigned int &>(this->field_0x380));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x47b), reinterpret_cast<unsigned int &>(this->field_0x388));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x47a), reinterpret_cast<unsigned int &>(this->field_0x38c));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x484), reinterpret_cast<unsigned int &>(this->field_0x390));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x483), reinterpret_cast<unsigned int &>(this->field_0x394));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x50c), reinterpret_cast<unsigned int &>(this->field_0x3a0));
+    canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
 
     // Back button (string-labelled). Constructed via the engine ctor ABI entry
     // (its argument list does not map to a single public TouchButton ctor).
@@ -1035,17 +1168,15 @@ void Layout::reload() {
     this->field_0x409 = 0;
 }
 
-// Hidden globals from drawFooter.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvas;
-__attribute__((visibility("hidden"))) extern int **g_dfMetric;     // [0][0x10],[0][0x74]
-__attribute__((visibility("hidden"))) extern int g_dfWarnColor;
-__attribute__((visibility("hidden"))) extern const char g_dfSep[];
-__attribute__((visibility("hidden"))) extern const char g_dfTail[];
-__attribute__((visibility("hidden"))) extern void **g_dfFont;
 
-// Render the footer bar: end caps, pattern fill, the back/secondary button, the
-// cargo-load text (warning-coloured when over capacity) and the credit total.
-void Layout::drawFooterImpl(int stationMode, int showBack) {
+
+void Layout::drawHeader() {
+    this->drawHeader(String(""), false);
+}
+
+void Layout::drawFooterStation() {
+    int stationMode = 1;
+    int showBack = 0;
     PaintCanvas *pc = *g_dfCanvas;
     gCanvas->SetColor(this->drawColor);
     int wRight = gCanvas->GetImage2DWidth(this->footerImageRight);
@@ -1113,14 +1244,6 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
                            (this->windowHeight + this->windowY) - this->footerTextInset, false);
         }
     }
-}
-
-void Layout::drawHeader() {
-    this->drawHeader(String(""), false);
-}
-
-void Layout::drawFooterStation() {
-    this->drawFooterImpl(1, 0);
 }
 
 // Hidden globals from drawHeader.
@@ -1231,23 +1354,6 @@ void Layout::drawMissionRewardMessage(bool transition) {
 // The small dispatch / forwarder / init helpers that the public drawing API
 // delegates to.
 
-// Centre a window using the cached screen metrics, then forward to the renderer.
-void Layout::drawWindowImpl(const String *str, int flag) {
-    int p4 = *gW2;
-    int p5 = *gW3 - ((int *)gW1)[2];
-    this->drawWindow(*str, 0, 0, p4, p5, flag != 0);
-}
-
-// The core window renderer reached from the 2-arg / 5-arg wrappers.
-void Layout::drawWindowImpl5(String *str, int x, int y, int w, int h, int flag) {
-    this->drawWindow(*str, x, y, w, h, flag != 0);
-}
-
-// The header-bar renderer core.
-void Layout::drawHeaderImpl(String *title, int transition) {
-    this->drawHeader(*title, transition != 0);
-}
-
 // 8-arg drawBox variant: `color` overrides the draw colour for the box, `z` is
 // the box height.
 void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, int z) {
@@ -1255,23 +1361,6 @@ void Layout::drawBox8(int kind, int x, int y, int w, int color, String *text, in
     this->drawColor = (unsigned)color;
     this->drawBox(kind, x, y, w, z, *text, 0u);
     this->drawColor = saved;
-}
-
-// Paint the active help/choice window.
-void Layout::drawHelpWindowImpl() {
-    if (this->choiceWindow != nullptr)
-        this->choiceWindow->draw();
-}
-
-// drawBGBorder rounded-rect overloads onto the full 8-parameter renderer. The
-// 6-arg form reuses the corner image's height as inset/pad.
-void Layout::drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w) {
-    int ch = gCanvas->GetImage2DHeight(corner);
-    this->drawBGBorder(corner, edge, x, y, w, ch, 0, 0);
-}
-
-void Layout::drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
-    this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
 }
 
 // ---- Canonical-named public draw entries --------------------------------
@@ -1289,11 +1378,6 @@ void Layout::drawMask() {
     this->drawMask(0, 0, w, h);
 }
 
-// Render a tiled rounded-rect border via the full 8-parameter renderer.
-void Layout::drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
-    this->drawBGBorder(corner, edge, x, y, w, h, inset, pad);
-}
-
 // 6-arg border: forward to the full 8-parameter renderer with zero inset/pad.
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h) {
     this->drawBGBorder(corner, edge, x, y, w, h, 0, 0);
@@ -1306,8 +1390,76 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text) {
 }
 
 // Render the footer bar (station mode / back-button flags).
-void Layout::drawFooter(bool stationMode, bool showBack) {
-    this->drawFooterImpl(stationMode, showBack);
+void Layout::drawFooter(bool stationMode_, bool showBack_) {
+    int stationMode = stationMode_;
+    int showBack = showBack_;
+    PaintCanvas *pc = *g_dfCanvas;
+    gCanvas->SetColor(this->drawColor);
+    int wRight = gCanvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = gCanvas->GetImage2DWidth(this->footerImageLeft);
+
+    pc->DrawImage2D(this->footerImageLeft, this->windowX,
+                    this->windowY + this->windowHeight, (unsigned char)(0x11));
+    int *m = *g_dfMetric;
+    int footerH = m[0x10 / 4];
+    pc->DrawImage2D(this->footerImageRight, this->windowX + wLeft,
+                    (this->windowY + this->windowHeight) - footerH);
+    int both = wLeft + wRight;
+    this->drawBGPattern(this->field_0x338, both + this->windowX, (this->windowY + this->windowHeight) - footerH, this->windowWidth + both * -2, footerH);
+    pc->DrawImage2D(this->footerImageRight,
+                    (this->windowX - both) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+    pc->DrawImage2D(this->footerImageLeft,
+                    (this->windowX - wRight) + this->windowWidth,
+                    (this->windowHeight + this->windowY) - footerH, (unsigned char)(0x01));
+
+    int backVis = (!stationMode) && showBack;
+    this->backButton->setVisible(backVis);
+    if (!backVis)
+        this->secondaryButton->draw();
+    else if (showBack)
+        this->backButton->draw();
+
+    // Cargo load text, in warning colour if over capacity.
+    Status *status = gStatus;
+    int load = status->getShip()->getCurrentLoad();
+    int maxLoad = status->getShip()->getMaxLoad();
+    if (maxLoad < load)
+        gCanvas->SetColor(*(unsigned *)&g_dfWarnColor);
+
+    String sLoad;
+    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    String sMax;
+    sMax.ctor_int(status->getShip()->getMaxLoad());
+    String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), loadStr);
+        pc->DrawString((unsigned)(unsigned long)(font), loadStr, (x + w / 2) - tw / 2,
+                       (this->windowHeight + this->windowY) - this->footerTextInset, false);
+    }
+    gCanvas->SetColor(this->drawColor);
+
+    String credStr = Layout::formatCredits(status->getCredits());
+
+    {
+        int x = this->windowX;
+        int w = this->windowWidth;
+        void *font = *g_dfFont;
+        if (stationMode) {
+            int rightInset = m[0x74 / 4];
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, ((w + x) - rightInset) - tw / 2,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        } else {
+            int tw = pc->GetTextWidth((unsigned)(unsigned long)(font), credStr);
+            pc->DrawString((unsigned)(unsigned long)(font), credStr, (w + x - 10) - tw,
+                           (this->windowHeight + this->windowY) - this->footerTextInset, false);
+        }
+    }
 }
 
 // Dim a rectangle in the mask colour, restoring the previous canvas colour.
@@ -1334,37 +1486,3 @@ void Layout::drawWindow(String title, bool drawBG) {
     this->drawWindow(tmp, 0, 0, p4, p5, drawBG);
 }
 
-// Create an Image2D resource into a layout field slot.
-void Layout::loadImage(PaintCanvas *canvas, int imageId, void *field) {
-    canvas->Image2DCreate((unsigned short)imageId, *(unsigned int *)field);
-}
-
-// Zero-seed the header geometry block (members 0x04..0x2d8) before the ctor's
-// explicit scalar writes; addressed by byte offset because the run spans
-// documentation-only fields.
-void Layout::initConstBlock(int hd, int wide, int scale, int res) {
-    (void)hd; (void)wide; (void)scale; (void)res;
-    memset((char *)this + 0x04, 0, 0x2d8 - 0x04);
-}
-
-// Touch dispatch tails: forward the event to the resolved child TouchButton.
-int Layout::dispatchTouchBegin(TouchButton *btn, int x, int y) {
-    return btn->OnTouchBegin(x, y);
-}
-
-int Layout::dispatchTouchMove(TouchButton *btn, int x, int y) {
-    return (int)btn->OnTouchMove(x, y);
-}
-
-int Layout::dispatchTouchEnd(TouchButton *btn, int x, int y) {
-    return (int)btn->OnTouchEnd(x, y);
-}
-
-// Engine-named aliases routed to the canonical handlers.
-int Layout::touch_end(int x, int y) {
-    return this->OnTouchEnd(x, y);
-}
-
-void Layout::drawHeader_call(String *title) {
-    this->drawHeader(*title, false);
-}

@@ -166,18 +166,15 @@ public:
     void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
     void drawBGPattern(unsigned img, int x, int y, int w, int h);
     void drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags);
-    void drawBox6(int p2, int p3, int p4, int p5, int p6, const String *str);
     void drawEmptyFooter(bool showBack);
     uint8_t drawFade();
     void drawFooter();
-    void drawFooterImpl(int stationMode, int showBack);
     void drawFooterNoBackButton();
     void drawFooterStation();
     void drawHeader();
     void drawHeader(String title);
     void drawHeader(String title, bool transition);
     void drawHelpWindow();
-    int drawMask4(int p1, int p2, int p3, int p4);
     void drawMissionRewardMessage(bool transition);
     void drawScrollBar(int x, int y, int trackH, int pos, int range);
     void drawTip();
@@ -201,20 +198,7 @@ public:
     void update(int dt);
 
     // ---- internal helpers ----
-    void drawWindowImpl(const String *str, int flag);
-    void drawWindowImpl5(String *str, int x, int y, int w, int h, int flag);
-    void drawHeaderImpl(String *title, int transition);
     void drawBox8(int kind, int x, int y, int w, int color, String *text, int z);
-    void drawHelpWindowImpl();
-    void drawBGBorder6(unsigned corner, unsigned edge, int x, int y, int w);
-    void drawBGBorder8(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
-    void loadImage(PaintCanvas *canvas, int imageId, void *field);
-    void initConstBlock(int hd, int wide, int scale, int res);
-    int  dispatchTouchBegin(TouchButton *btn, int x, int y);
-    int  dispatchTouchMove(TouchButton *btn, int x, int y);
-    int  dispatchTouchEnd(TouchButton *btn, int x, int y);
-    int  touch_end(int x, int y);
-    void drawHeader_call(String *title);
 
     // ---- canonical-named public draw entries ----
     void drawWindow(String title, int x, int y, int w, int h);
@@ -226,6 +210,5 @@ public:
     void drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h);
     void drawBox(int style, int x, int y, int w, int h, String text);
     void drawFooter(bool stationMode, bool showBack);
-    void drawBGBorderImpl(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad);
 };
 #endif

@@ -265,7 +265,7 @@ void MGame::startJumpScene() {
     this->level->enableFog(0);
 
     if (this->player->isDockedToDockingPoint() != 0) {
-        this->player->dockToDockingPoint(0);
+        this->player->dockToDockingPoint(nullptr, nullptr);
         TFC_setActive(this->camera, 1);
         TFC_setLookAtCam(this->camera, 0);
         float sp = TFC_useTargetsUpVector(this->camera, 0);
@@ -464,7 +464,7 @@ firstPerson: {
             v = TFC_hideShipForFirstPersonCam(this->camera);
         else
             v = 1;
-        ((PlayerEgo *)(ego))->syncFirstPerson(v);
+        ((PlayerEgo *)(ego))->hideShipForFirstPersonCameraView(v != 0);
     }
 }
 
@@ -2135,7 +2135,7 @@ afterYaw: {
         }
         if (roll == 0.0f) return;
     }
-    return this->player->rollLeft(F<int>(this, shipOff), rollMag * rollMag);
+    return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
 }
 }
 

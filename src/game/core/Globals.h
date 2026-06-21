@@ -12,6 +12,9 @@
 // Touched by pointer only in the two-argument init() entry point.
 namespace AbyssEngine { class ApplicationManager; class Engine; }
 class AEGeometry;
+class Agent;
+class Station;
+class BoundingVolume;
 
 class Globals {
 public:
@@ -74,6 +77,52 @@ public:
     void getLineArray(unsigned int font, const String& text, int maxWidth, Array<String*>* out);
     // Extract the next wrapped line of `text` that fits `maxWidth` in `font`, written into `*out`.
     void getLine(unsigned int font, String text, int maxWidth, String* out);
+
+    // Release all canvas/render resources (both primary and secondary canvas).
+    void releaseResources();
+    // Report the current kill count into the platform leaderboard slot.
+    void reportLeaderboards();
+    // Localized key-action label (currently returns an empty String).
+    String getKeyActionName(int action);
+    // Pick a random system index suitable for the bar-drink minigame.
+    void getRandomSystemForDrinks();
+    // Substitute the configured key-binding tokens inside `src`, returning the result.
+    String replaceKeyBindingTokens(const String& src);
+    // Load and return a randomly chosen station.
+    Station* getRandomStation();
+    // Format `ms` (milliseconds) as "h:mm:ss" into `out`.
+    void longToTimeString(long long ms, String& out);
+    // Format `ms` (milliseconds) as "h:mm" (no seconds) into `out`.
+    void longToTimeStringNoSeconds(long long ms, String& out);
+    // Truncate `text` to fit `width` (in pixels), appending an ellipsis when clipped.
+    String getBoundedString(const String& text, int width);
+    // Assemble the briefing/offer text shown for `agent`.
+    String getAgentMissionText(Agent* agent);
+    // Build the screen-space coordinates of the steering HUD overlay.
+    void setCoordsSteer(int p1, int p2, int p3, int p4,
+                        unsigned short& o5, unsigned short& o6, unsigned short& o7,
+                        unsigned short& o8, unsigned short& o9, unsigned short& o10,
+                        unsigned short& o11, unsigned short& o12, unsigned short& o13,
+                        unsigned short& o14);
+    // Build the screen-space coordinates of the weapon-fire HUD overlay.
+    void setCoordsFire(int p1, int p2, unsigned int p3, unsigned int p4,
+                       unsigned int& o5, unsigned short& o6, unsigned short& o7,
+                       unsigned short& o8, unsigned short& o9, unsigned short& o10,
+                       unsigned short& o11, unsigned short& o12, unsigned short& o13,
+                       unsigned short& o14, unsigned short& o15, unsigned short& o16,
+                       unsigned short& o17);
+    // Build a textured billboard quad mesh in the shared canvas; returns the new mesh id.
+    unsigned int createBillBoard(int p1, int height, float u0, float v0, float u1, float v1, int width);
+    // Build the wreck collision volumes for ship `kind` (optionally fitted to `geom`).
+    Array<BoundingVolume*>* getWreckCollision(int kind, AEGeometry* geom);
+    // Map a dialogue text id (and optionally `agent`'s race/gender) to a voice-over sound id.
+    int getDialogueSoundId(int code, Agent* agent);
+    // Load and return a random planet name.
+    String getRandomPlanetName();
+    // Compose a random "first last" agent name for race `kind` (`both` selects the secondary table).
+    String getRandomName(int kind, bool both);
+    // The active sound-resource id list.
+    Array<int>* getSoundResourceList();
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)

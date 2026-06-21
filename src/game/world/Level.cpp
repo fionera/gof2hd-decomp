@@ -1186,7 +1186,7 @@ int Level::init() {
         this->missionPtr = 3;
     thisptr->connectPlayers();
     if (this->player != nullptr)
-        this->player->setRoute_init();
+        this->player->setRoute(this->playerRoute);
 
     // recompute enemiesLeft.
     int initial = 0;
@@ -1885,14 +1885,14 @@ void Level::update(long long /*time*/, bool param) {
     if (ego != nullptr) {
         char dummy[16];
         if (this->field_80 != 0) {
-            ((PlayerEgo *)(dummy))->getPosition_up();
+            *(Vec3 *)dummy = ego->getPosition();
             this->field_b4 = *(int *)dummy;
             (this->field_80)->update(dt);
         }
         if (this->field_74 != 0) (this->field_74)->update(dt);
         if (this->particleEmitBoolPtr != nullptr) this->particleEmitBoolPtr->update(dt);
         if (this->skybox2Mesh != 0) {
-            ((PlayerEgo *)(dummy))->getPosition_up();
+            *(Vec3 *)dummy = ego->getPosition();
             this->field_b4 = *(int *)dummy;
             (this->skybox2Mesh)->update(dt);
         }
@@ -2472,7 +2472,7 @@ void Level::createPlayer() {
                 // Turret: store from the end of the turret bucket and place its mount.
                 (*(*buckets)[2])[--slots[2]] = gun;
                 Vector *pos = (*(*wpos)[2])[ship->getSlotPos(it)];
-                ego->setTurretPosition(pos->x, pos->y, pos->z);
+                ego->setTurretPosition(*pos);
             } else if (type == 0 || type == 1) {
                 (*(*buckets)[type])[--slots[type]] = gun;
                 gun->setOffset((*(*wpos)[type])[ship->getSlotPos(it)]);

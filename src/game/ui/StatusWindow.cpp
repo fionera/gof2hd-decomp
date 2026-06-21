@@ -430,7 +430,6 @@ extern "C" {
 
 
 
-void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
 void  Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
 
 extern int  *g_swd_dimW;         // screen width
@@ -527,7 +526,7 @@ void StatusWindow::draw() {
 
         // Playing-time line.
         String timeStr;
-        Globals_longToTimeStringNoSeconds(*g_swd_globals, &timeStr, gStatus->getPlayingTime());
+        (*g_swd_globals)->longToTimeStringNoSeconds(gStatus->getPlayingTime(), timeStr);
         tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
         canvas->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 

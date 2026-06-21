@@ -12,6 +12,11 @@ using ::AbyssEngine::PaintCanvas;
 // Polymorphic application-module base. Its vtable plants a vptr at offset 0,
 // followed by the two engine-owned members. The virtual interface order below
 // matches the shipped vtable exactly (the dtor occupies the first two slots).
+//
+// The real type lives in namespace AbyssEngine (to match the binary's mangled
+// names); a global `using` alias keeps the unqualified spelling working for the
+// concrete modules that derive from it.
+namespace AbyssEngine {
 class IApplicationModule {
 public:
     PaintCanvas        *paintCanvas;
@@ -40,4 +45,6 @@ public:
 
     void SetApplicationManager(ApplicationManager *manager);
 };
+}  // namespace AbyssEngine
+using ::AbyssEngine::IApplicationModule;
 #endif

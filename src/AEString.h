@@ -10,6 +10,11 @@
 #include <cstdint>
 #include <string>
 
+// The thin Compare/StrLen/index/ctor_*/addAssign_* adapters below are inlined into their call
+// sites in the original binary (no standalone symbol exists). always_inline guarantees the same
+// here so they never emit a (weak) out-of-line definition.
+#define AESTRING_SHIM inline __attribute__((always_inline))
+
 namespace AbyssEngine {
 struct String {
     std::u16string s;
@@ -55,7 +60,7 @@ struct String {
     static int StrLen(const unsigned short *s);
     static int GetStringLength(const char *s);
     // Compare against another String / an 8-bit string. 0 == equal.
-    int Compare(const String &other) const;
+    int Compare(const String &other);
     unsigned int Compare(const char *s);
     // Raw access to the wide backing buffer.
     const unsigned short *GetAEWChar() const;
@@ -66,49 +71,116 @@ struct String {
     const unsigned short *operator[](int i) const;
 
     // ---- methods (converted from String_*/free functions) ----
-    unsigned int Compare_char(const char *s);
-    int Compare_str(String *other);
+    // Thin wide-vs-narrow / String-ptr Compare adapters used at various call sites; both forward
+    // to the real Compare overloads. Inline so they emit no standalone symbol (the original inlined
+    // them at the call site).
+    AESTRING_SHIM unsigned int Compare_char(const char *s) { return Compare(s); }
+    AESTRING_SHIM int Compare_str(String *other) { return Compare(*other); }
     void ConvertFromUTF8();
     char * GetAEChar() const;
     unsigned int IndexOf(const String &needle);
     unsigned int IndexOf(unsigned int start, const String &needle);
-    unsigned int IndexOf_from(unsigned int start, const String *needle);
+    // First index >= start where needle occurs, or 0xffffffff if not found. Inline (the original
+    // inlined this worker into IndexOf / Split / ReplaceString rather than emitting a symbol).
+    AESTRING_SHIM unsigned int IndexOf_from(unsigned int start, const String *needle) {
+        unsigned int slen = (unsigned int)this->s.size();
+        unsigned int nlen = (unsigned int)needle->s.size();
+        while (start < slen && nlen <= slen - start) {
+            if (needle->s[0] == this->s[start]) {
+                unsigned int k = 0;
+                while (start + k < slen && this->s[start + k] == needle->s[k]) {
+                    if (nlen <= k + 1)
+                        return start;
+                    k++;
+                }
+                start += k;
+            } else {
+                start++;
+            }
+        }
+        return 0xffffffff;
+    }
     void PrintOut();
     void ReplaceChar(char from, char to);
     void ReplaceString(String find, String repl);
     void Reverse();
     void Set_char(const char *s);
     void Set_float(float v);
-    void Set_longlong(long long v);
+    // Forwarder to Set(long long); inline so no standalone symbol is emitted.
+    AESTRING_SHIM void Set_longlong(long long v) { Set((long long)v); }
     void Set_wchar(const uint16_t *s);
     void * Split(String sep);
     void SplitTags(String tag);
-    int StrLen_char(const char *s);
-    int StrLen_wchar(const uint16_t *s);
+    // Length adapters forwarding to the static StrLen overloads; inline (no standalone symbol).
+    AESTRING_SHIM int StrLen_char(const char *s) { return StrLen(s); }
+    AESTRING_SHIM int StrLen_wchar(const uint16_t *s) { return StrLen((const unsigned short *)s); }
     void SubString(String *self, unsigned int start, unsigned int end);
     String SubString(unsigned int start, unsigned int end);
     void ToLowerCase();
     void ToUpperCase();
     void Trim();
     int ValueOf();
-    String * addAssign_char(const char *c);
-    String * addAssign_float(const float *v);
-    String * addAssign_int(const int *v);
-    String * addAssign_longlong(const long long *v);
-    String * addAssign_str(String *other);
+    // operator+= helpers (one per value type). Each appends the formatted value to this string.
+    // Inline: the original inlined these into the operator+= bodies rather than emitting symbols.
+    AESTRING_SHIM String * addAssign_char(const char *c) {
+        this->s.push_back((char16_t)*(const unsigned char *)c);
+        return this;
+    }
+    AESTRING_SHIM String * addAssign_float(const float *v) {
+        String tmp; tmp.ctor_float(*v);
+        this->s.append(tmp.s);
+        return this;
+    }
+    AESTRING_SHIM String * addAssign_int(const int *v) {
+        long long ext = (long long)*v;
+        return addAssign_longlong(&ext);
+    }
+    AESTRING_SHIM String * addAssign_longlong(const long long *v) {
+        String tmp; tmp.ctor_longlong(*v);
+        this->s.append(tmp.s);
+        return this;
+    }
+    AESTRING_SHIM String * addAssign_str(String *other) {
+        this->s.append(other->s);
+        return this;
+    }
     String * assign(String *other);
-    void ctor();
+    // ctor helpers (one per value type). Each resets this string and fills it from the argument.
+    // Inline: the original inlined these into the matching String(...) constructor bodies.
+    AESTRING_SHIM void ctor() { this->s.clear(); }
     String * ctor_char(const char *s, bool reverse);
-    String * ctor_charval(char c);
+    AESTRING_SHIM String * ctor_charval(char c) {
+        this->s.clear();
+        Set_longlong((long long)c);
+        return this;
+    }
     String * ctor_copy(String *other, bool reverse);
-    String * ctor_float(float v);
+    AESTRING_SHIM String * ctor_float(float v) {
+        this->s.clear();
+        Set_float(v);
+        return this;
+    }
     String * ctor_int(int v);
-    String * ctor_longlong(long long v);
-    String * ctor_wchar(const uint16_t *s, bool reverse);
+    AESTRING_SHIM String * ctor_longlong(long long v) {
+        this->s.clear();
+        Set_longlong(v);
+        return this;
+    }
+    AESTRING_SHIM String * ctor_wchar(const uint16_t *s, bool reverse) {
+        this->s.clear();
+        Set_wchar(s);
+        if (reverse)
+            Reverse();
+        return this;
+    }
     String * dtor();
     void dtor_del();
     uint16_t * index(int i);
-    uint16_t * index_const(int i);
+    // const-overload element adapter; inline so no standalone symbol is emitted.
+    AESTRING_SHIM uint16_t * index_const(int i) {
+        return const_cast<uint16_t *>(reinterpret_cast<const uint16_t *>(
+            (*const_cast<const String *>(this))[i]));
+    }
     // Decode `len` UTF-8 bytes into a freshly allocated NUL-terminated wide buffer (caller frees
     // with operator delete[]); transliterates Cyrillic to Latin approximations.
     static uint16_t * getWCharFromUtf8(char *utf8, int len);

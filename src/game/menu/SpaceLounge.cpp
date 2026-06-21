@@ -13,6 +13,7 @@
 #include "game/ui/ScrollTouchBox.h"
 #include "game/world/StarMap.h"
 #include "game/ship/Agent.h"
+#include "game/core/Globals.h"
 #include "engine/core/GameText.h"
 #include "engine/render/ImageFactory.h"
 #include "game/ui/Layout.h"
@@ -67,7 +68,6 @@ extern "C" void *SpaceLounge_touch_help_text_slot;
 extern "C" void *SpaceLounge_touch_list_help_text_slot;
 extern "C" void *SpaceLounge_touch_camera_slot;
 extern "C" int SpaceLounge_touch_race_vectors[];
-void Globals_getAgentMissionText(void *out, int textId, void *agent);
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
 int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
 extern "C" int *SpaceLounge_getSoundId_missionText;
@@ -375,7 +375,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
 
     void *layoutSlot = *(void **)&SpaceLounge_touch_layout_slot;
     void *layout = *(void **)layoutSlot;
-    if (((Layout *)(layout))->touch_end(x, y) != 0) {
+    if (((Layout *)(layout))->OnTouchEnd(x, y) != 0) {
         if (this->listVisible != 0) {
             ((Layout *)(layout))->resetWindowDimensions();
             this->listVisible = 0;
@@ -493,7 +493,7 @@ int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
         }
     }
 
-    Globals_getAgentMissionText(&missionText, *SpaceLounge_getSoundId_missionText, agent);
+    missionText = gGlobals->getAgentMissionText(static_cast<Agent *>(agent));
 
     bool checkSpecialText = true;
     int soundId;
@@ -816,7 +816,7 @@ void SpaceLounge::drawLounge() {
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
             s2 = "";
-            layout->drawBox6(2, boxX, boxY, width, layout->field_0x30, &s2);
+            layout->drawBox(2, boxX, boxY, width, layout->field_0x30, s2, 1u);
             ((PaintCanvas *)canvas)->DrawRectangle(boxX, boxY, width, layout->field_0x30);
 
             s3 = ((Agent *)(agent))->isKnown() == 0 ? "?" : "";
@@ -835,7 +835,7 @@ void SpaceLounge::drawLounge() {
 
     ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
     s0 = "";
-    layout->drawBox6(2, this->panelX, this->panelY, layoutMetric(layout, 0x68), layoutMetric(layout, 0x6c), &s0);
+    layout->drawBox(2, this->panelX, this->panelY, layoutMetric(layout, 0x68), layoutMetric(layout, 0x6c), s0, 1u);
     ((PaintCanvas *)canvas)->DrawRectangle(this->panelX, this->panelY, layoutMetric(layout, 0x68), layoutMetric(layout, 0x6c));
     ((ImageFactory *)(factory))->drawChar((*this->silhouetteGrid)[this->selectedAgent], layout->field_0x4c + this->panelX, layout->field_0x4c + this->panelY, false);
     this->scrollWindow->draw();
@@ -879,7 +879,7 @@ void SpaceLounge::drawLounge() {
     }
     int panelHeight = layout->field_0x4c * 2 + buttonHeight;
     s0 = "";
-    layout->drawBox6(2, this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight, &s0);
+    layout->drawBox(2, this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight, s0, 1u);
     ((PaintCanvas *)canvas)->DrawRectangle(this->panelX, this->buttonPanelY, layoutMetric(layout, 0x68), panelHeight);
     ((ImageFactory *)(factory))->drawChar(this->agentImageParts, layout->field_0x4c + this->panelX, this->buttonPanelY + layout->field_0x4c, true);
 
@@ -1206,7 +1206,7 @@ void SpaceLounge::draw() {
     void *textsSlot = *(void **)&SpaceLounge_draw_text_slot;
     void *text = ((GameText *)(*(void **)textsSlot))->getText(0x18e);
     title.ctor_copy((String *)text, false);
-    ((Layout *)(layout))->drawHeader_call(&title);
+    ((Layout *)(layout))->drawHeader(title, false);
 
     ((SpaceLounge *)(this))->drawLounge();
 

@@ -20,8 +20,6 @@ class Status;
 
 // Genuine free helpers used by the generator that have no class home of their
 // own (declared here so this header stays self-sufficient).
-void Globals_getRandomName(AbyssEngine::String *out, int names, int race,
-                           int male);
 Mission *Mission_ctor_full(Mission *self, int type, AbyssEngine::String *name,
                            int *imageParts, int race, int reward,
                            int targetStation, int difficulty);

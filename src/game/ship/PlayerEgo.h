@@ -213,7 +213,6 @@ public:
     void addGun(Array<Gun*>* arr, int x);
     void addNukeVolatileForce(float v);
     void alignToHorizon();
-    void approachAsteroid(int hud2, void *radar);
     void approachAsteroid(Hud *hud, int hud2, Radar *radar);
     int approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar);
     unsigned char autoTurretIsEnabled();
@@ -224,9 +223,7 @@ public:
     void checkForTurret();
     unsigned char collidesWithStation();
     void deleteHackingGame();
-    void dockToAsteroid(void *radar);
     void dockToAsteroid(KIPlayer *kip, Radar *radar);
-    void dockToDockingPoint(void *radar);
     void dockToDockingPoint(KIPlayer *kip, Radar *radar);
     void dockToPlanet();
     void dockToStream(bool param);
@@ -308,9 +305,9 @@ public:
     bool isMining();
     bool isRechargingCloak();
     void killLiberator();
+    int levelCollision();
     float left(int frameTime, float delta);
     unsigned char lostMiningGame();
-    void moveToPosition(float tx, float ty, float tz, int steer, float speed);
     void moveToPosition(Vector target, bool steer, float speed);
     void pitchAllPrimaryGuns(float);
     bool readyForCloak();
@@ -349,7 +346,6 @@ public:
     void setTargetFollowCamera(TargetFollowCamera* cam);
     void setThrust(float v);
     void setTurretMode(bool enable);
-    void setTurretPosition(float x, float y, float z);
     void setTurretPosition(Vector v);
     void setVisible(bool v);
     void shake(int amount);
@@ -371,13 +367,5 @@ public:
     float up(int frameTime, float delta);
     void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
     int updateManeuver();
-
-    // ---- veneer / fragment entry points (forward to the canonical methods) ----
-    int getHUD_up();                        // alias of getHUD()
-    Vec3 getPosition_up();                  // alias of getPosition()
-    void setRoute_init();                   // re-apply the current route (Level init path)
-    void rollLeft(int shipField, float amt);   // bank input -> turnHorizontal()
-    void rollRight(int shipField, float amt);  // bank input -> turnHorizontal()
-    void syncFirstPerson(int v);            // -> hideShipForFirstPersonCameraView()
 };
 #endif

@@ -58,21 +58,6 @@ void String::ReplaceChar(char from, char to) {
             this->s[i] = (char16_t)(short)to;
 }
 
-// AbyssEngine::String::String(char) - build a string from a single character's numeric value.
-String * String::ctor_charval(char c) {
-    this->s.clear();
-    ((String *)(this))->Set_longlong((long long)c);
-    return this;
-}
-
-// AbyssEngine::String::operator+=(float const&) - append the formatted form of a float.
-String * String::addAssign_float(const float *v) {
-    String tmp;
-    ((String *)(&tmp))->ctor_float(*v);
-    this->s.append(tmp.s);
-    return this;
-}
-
 // AbyssEngine::String::Reverse() - reverse the code units (only for language id 9 / RTL).
 void String::Reverse() {
     if (!this->s.empty() && GameText::getLanguage() == 9) {
@@ -180,8 +165,6 @@ String * String::ctor_char(const char *s, bool reverse) {
     return this;
 }
 
-void String::Set_longlong(long long v) { Set(v); }
-
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
 void String::Set(long long v) {
     this->s.clear();
@@ -228,22 +211,6 @@ int String::StrLen(const char *s) {
         p++;
     return (int)(p - s);
 }
-int String::StrLen_char(const char *s) { return StrLen(s); }
-
-// AbyssEngine::String::operator+=(int const&) - sign-extend to 64-bit and append.
-String * String::addAssign_int(const int *v) {
-    long long ext = (long long)*v;
-    return ((String *)(this))->addAssign_longlong(&ext);
-}
-
-// AbyssEngine::String::String(float) - formatted string of a float.
-String * String::ctor_float(float v) {
-    this->s.clear();
-    ((String *)(this))->Set_float(v);
-    return this;
-}
-
-unsigned int String::Compare_char(const char *s) { return Compare(s); }
 
 // AbyssEngine::String::Compare(char const*) - compare against an 8-bit string.
 unsigned int String::Compare(const char *s) {
@@ -283,11 +250,9 @@ void String::Set(const char *s) {
 }
 void String::Set_char(const char *s) { Set(s); }
 
-int String::Compare_str(String *other) { return Compare(*other); }
-
 // AbyssEngine::String::Compare(AbyssEngine::String const&)
 // Returns 0 when equal; a small signed value otherwise (0xff sentinel for length mismatch).
-int String::Compare(const String &otherRef) const {
+int String::Compare(const String &otherRef) {
     const String *other = &otherRef;
     short result;
     if (other->s.size() == this->s.size()) {
@@ -417,11 +382,6 @@ String * String::assign(String *other) {
     return this;
 }
 
-// AbyssEngine::String::String() - default constructor: empty string.
-void String::ctor() {
-    this->s.clear();
-}
-
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
 void String::Set(const unsigned short *s) {
     this->s.clear();
@@ -431,34 +391,6 @@ void String::Set(const unsigned short *s) {
         this->s.push_back((char16_t)*p);
 }
 void String::Set_wchar(const uint16_t *s) { Set((const unsigned short *)s); }
-
-// AbyssEngine::String::IndexOf(unsigned int start, AbyssEngine::String const&)
-// Return the first index >= start where needle occurs, or 0xffffffff if not found.
-unsigned int String::IndexOf_from(unsigned int start, const String *needle) {
-    String *self = this;
-    unsigned int slen = (unsigned int)self->s.size();
-    unsigned int nlen = (unsigned int)needle->s.size();
-    while (start < slen && nlen <= slen - start) {
-        if (needle->s[0] == self->s[start]) {
-            unsigned int k = 0;
-            while (start + k < slen && self->s[start + k] == needle->s[k]) {
-                if (nlen <= k + 1)
-                    return start;
-                k++;
-            }
-            start += k;
-        } else {
-            start++;
-        }
-    }
-    return 0xffffffff;
-}
-
-// AbyssEngine::String::operator+=(AbyssEngine::String const&)
-String * String::addAssign_str(String *other) {
-    this->s.append(other->s);
-    return this;
-}
 
 // AbyssEngine::String::ConvertFromUTF8() - reinterpret the stored bytes as UTF-8 and re-store.
 void String::ConvertFromUTF8() {
@@ -538,14 +470,6 @@ done:
     ;
 }
 
-// AbyssEngine::String::operator+=(long long const&) - append the decimal form of a 64-bit value.
-String * String::addAssign_longlong(const long long *v) {
-    String tmp;
-    ((String *)(&tmp))->ctor_longlong(*v);
-    this->s.append(tmp.s);
-    return this;
-}
-
 // Static format fragments.
 static const char kZeroDot[] = "0.";
 static const char kZero[]    = "0";
@@ -601,22 +525,6 @@ int String::StrLen(const unsigned short *s) {
     while (*p != 0)
         p++;
     return (int)(p - s);
-}
-int String::StrLen_wchar(const uint16_t *s) { return StrLen((const unsigned short *)s); }
-
-// AbyssEngine::String::String(unsigned short const*, bool reverse)
-String * String::ctor_wchar(const uint16_t *s, bool reverse) {
-    this->s.clear();
-    ((String *)(this))->Set_wchar(s);
-    if (reverse)
-        ((String *)(this))->Reverse();
-    return this;
-}
-
-// AbyssEngine::String::operator+=(char const&) - append a single character.
-String * String::addAssign_char(const char *c) {
-    this->s.push_back((char16_t)*(const unsigned char *)c);
-    return this;
 }
 
 // AbyssEngine::String::SubString(unsigned int start, unsigned int end)
@@ -723,21 +631,12 @@ unsigned int String::IndexOf(unsigned int start, const String &needle) {
     return this->IndexOf_from(start, &needle);
 }
 
-// AbyssEngine::String::String(long long) - decimal string of a 64-bit value.
-String * String::ctor_longlong(long long v) {
-    this->s.clear();
-    ((String *)(this))->Set_longlong(v);
-    return this;
-}
-
 // AbyssEngine::String::operator[](int) const - pointer to the index-th code unit, or &NUL on OOB.
 const unsigned short *String::operator[](int i) const {
     if (i < 0 || (unsigned int)i >= this->s.size())
         return reinterpret_cast<const unsigned short *>(&g_String_nullChar);
     return reinterpret_cast<const unsigned short *>(&this->s[i]);
 }
-
-uint16_t * String::index_const(int i) { return (uint16_t *)(*this)[i]; }
 
 // AbyssEngine::String::GetAEWChar() const - the wide backing buffer.
 const unsigned short *String::GetAEWChar() const {
