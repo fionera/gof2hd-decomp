@@ -2231,7 +2231,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
     if (self->menuTouchOpen != 0) {
         int ad = **g_tmAppData;
         if (*(uint8_t *)((char *)ad + 5) == 0 && *(uint8_t *)((char *)ad + 0xc) == 0)
-            self->menuWindow->OnTouchMove(p1, y);
+            self->menuWindow->OnTouchMove(p1, y, touch);
     }
 }
 

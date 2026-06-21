@@ -508,7 +508,8 @@ void Player::addEnemies(Array<Player *> *enemies) {
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
-    *static_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
+    // transform[] is the raw storage of the 3x4 matrix at +0x04; default-init it in place.
+    *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
     self->shieldHP = 0.0f;
     self->armorHP = 0;
     self->maxArmorHP = 0;

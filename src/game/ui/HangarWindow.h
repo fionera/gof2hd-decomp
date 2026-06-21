@@ -68,6 +68,7 @@ struct Layout {
     int OnTouchEnd(int touch, int coord);
     int OnTouchMove(int coord);
     unsigned char helpPressed();
+    static String formatCredits(int n);   // mirrors game/ui/Layout.h
     void initHelpWindow(void *text);
     void resetWindowDimensions();
 };
