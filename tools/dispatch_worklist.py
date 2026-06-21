@@ -198,6 +198,15 @@ def main():
         headers, cpps = wt.resolve_files(e["qualified"])
         e["headers"], e["cpps"] = headers, cpps
         e["files"] = sorted(set(headers) | set(cpps))
+        # a free function DECLARED in a header but not yet defined (cpps empty) -> include the
+        # header's sibling .cpp, which is where its definition must go (the agent can't add a body to
+        # a header-only component). Fixes the recovered_*.cpp input-function case.
+        if "::" not in e["qualified"] and e["headers"] and not e["cpps"]:
+            sibs = [h[:-2] + ".cpp" for h in e["headers"]
+                    if os.path.exists(os.path.join(REPO, h[:-2] + ".cpp"))]
+            if sibs:
+                e["cpps"] = sibs
+                e["files"] = sorted(set(e["files"]) | set(sibs))
         # platform/NDK free functions belong in the platform TU — do NOT nearest-neighbor them into an
         # unrelated component (agents correctly refuse to put loadAPK in FModSound). Leave them
         # file-less so orphan_root routes them to the platform/JNI bucket.
