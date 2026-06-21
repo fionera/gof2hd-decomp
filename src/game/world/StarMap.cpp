@@ -1492,15 +1492,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
 // original binary. The StarMap screen owns a few Array<T> helpers that no other TU pulls
 // out-of-line, so they are defined and instantiated here.
 
-// ArrayAdd<T>(buffer, count, array): bulk-append `count` elements from a raw buffer
-// (exact-fit realloc, then memcpy). The byte-flag variant loads the per-station flag table.
-template<class T>
-void ArrayAdd(const T *items, unsigned int count, Array<T> &a) {
-    a.capacity_ = a.size_ + count;
-    a.data_ = static_cast<T *>(realloc(a.data_, a.capacity_ * sizeof(T)));
-    memcpy(a.data_ + a.size_, items, count * sizeof(T));
-    a.size_ = a.capacity_;
-}
+// ArrayAdd<T>(buffer, count, array) is defined canonically in engine/core/Array.h.
 
 // ArrayRelease<T>: free the backing store and null it out, without touching the elements.
 template<class T>

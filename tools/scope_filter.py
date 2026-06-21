@@ -153,7 +153,18 @@ def main():
     write("in_scope_missing.txt", sorted(abs_in + abs_rev))
     write("in_scope_extra.txt", [f"{s}\t{dm.get(s, s)}" for s in sorted(ex_in + ex_rev)])
     # wrong_type carries both sides; keep the rich grouping from report.json for in-scope entries.
-    wt_keep = [w for w in wrong if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"]
+    # Exclude benign ctor/dtor VARIANT mismatches: when the original symbol is a ctor/dtor
+    # (C0-3/D0-2) and we already emit the IDENTICAL demangled signature (just a different variant
+    # name, e.g. original C1 vs our C2), that is not a wrong signature — it's the same alias artifact
+    # excluded from extra. Real signature errors (our demangled != original) are kept.
+    def benign_variant(w):
+        return bool(_CTORDTOR.match(w["symbol"])) and w["demangled"] in w["ours"]
+    wt_keep = [w for w in wrong
+               if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"
+               and not benign_variant(w)]
+    wt_alias = [w["symbol"] for w in wrong
+                if classify(w["symbol"], dm.get(w["symbol"], w["symbol"])) != "glue"
+                and benign_variant(w)]
     with open(os.path.join(VDIR, "in_scope_wrong_type.txt"), "w") as f:
         for w in sorted(wt_keep, key=lambda w: w["qualified"]):
             f.write(f"{w['qualified']}\n    original: {w['demangled']}\n"
@@ -174,7 +185,7 @@ def main():
     print(f"in-scope    absent {counts['absent']}   wrong_type {counts['wrong_type']}   "
           f"extra {counts['extra']}")
     print(f"glue excluded: {len(abs_glue + wt_glue + ex_glue)}   "
-          f"benign ctor/dtor aliases excluded from extra: {len(ex_alias)}   "
+          f"benign ctor/dtor aliases excluded (extra {len(ex_alias)}, wrong_type {len(wt_alias)})   "
           f"unclassified (surfaced, counted in-scope): {len(unclassified)}")
     if unclassified:
         print("  unclassified:", ", ".join(unclassified[:20]))
