@@ -61,12 +61,13 @@ public:
     int OnTouchMove(int x, int y);
     int OnTouchEnd(int x, int y);
 
-    // Engine-name convenience setters/forwarders (delegate to the set() overloads
-    // and the underlying TouchButton labels).
-    void setMsg(String const &text, bool hasButtons);
-    void setText(String const &title, String const &body);
+    // Fire callback for the left choice button; the shipped build records the
+    // press through hasChoice()/the button state, so this does no work itself.
+    int fire();
+
+    // Retitles the two choice buttons in place. The shipped code combines this
+    // with the set() overloads when it opens an agent-chat dialog; it is kept as
+    // a standalone helper because it touches the private TouchButton labels.
     void setButtonText(String const &left, String const &right);
-    // Touch-release handler exposed under the engine's "touch_end" name; forwards to OnTouchEnd.
-    int touch_end(int x, int y);
 };
 #endif

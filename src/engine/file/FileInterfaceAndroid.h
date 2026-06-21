@@ -55,9 +55,21 @@ public:
     uint32_t    GetDeviceFreeSpace() override;
     void        SetAppRootDir(void *p) override;
     void        SetZipDirectory(void *p) override;
+    void        ResetSaveDirectory() override;
 
     // Not part of the FileInterface backend dispatch, but invoked directly.
     void Close();
+
+    // Backend slots the platform layer never wired up on Android: emitted as standalone symbols
+    // by the original (mostly no-op stubs returning a constant). They are static because their
+    // bodies ignore the instance.
+    static void        *OpenAppend(String name, int p2, bool p3, unsigned int p4);
+    static char        *Output(char *line);
+    static void         FileDelete(String name);
+    static uint32_t     FileEnumInit(char *pattern, bool recurse);
+    static uint32_t     FileGetNextEnum(String &out);
+    static void         SetSaveDirectory(String dir);
+    static String       GetDirPreFix();
 };
 
 #endif

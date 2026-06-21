@@ -579,7 +579,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 String line, priceStr, fmt, msg;
                 Layout_formatCredits(&priceStr, 0);
                 Status_replaceHash(&msg, globals, &line, &priceStr);
-                self->dialog->setMsg(*(String *)&msg, true);
+                self->dialog->set(*(String *)&msg, true);
                 self->autoCompletePending = 1;
                 self->dialogActive = 1;
             }
@@ -661,7 +661,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
                 combined = suffix + suffix;
                 ((String *)&msg)->addAssign_str(&combined);
-                self->dialog->setMsg(*(String *)&msg, true);
+                self->dialog->set(*(String *)&msg, true);
                 self->notEnoughCredits = 1;
             } else {
                 self->dialogActive = 0;
@@ -845,7 +845,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     ((GameText *)(*g_hw_sellShipTextId))->getText();
                     combined = suffix + suffix;
                     ((String *)&msg)->addAssign_str(&combined);
-                    self->dialog->setMsg(*(String *)&msg, true);
+                    self->dialog->set(*(String *)&msg, true);
                     self->dialogActive = 1;
                     self->notEnoughCredits = 1;
                     self->shipSwapPending = 0;
@@ -1225,7 +1225,7 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
                 Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
             }
             bool flag = (self->localBluePrint == 0);
-            self->dialog->setMsg(*(String *)&msg, flag);
+            self->dialog->set(*(String *)&msg, flag);
             self->dialogActive = 1;
             self->bluePrintPurchasePending = 1;
             self->suppressTouchEnd = 1;
@@ -1502,7 +1502,7 @@ void HangarWindow::setSellMode() {
             text = ((GameText *)(*g_hw_sellTextId2))->getText();
             flag = true;
         }
-        self->dialog->setMsg(*(String *)text, flag);
+        self->dialog->set(*(String *)text, flag);
         self->dialogActive = 1;
     }
 
@@ -1671,7 +1671,7 @@ void HangarWindow::setSellMode(bool buy) {
             text = ((GameText *)(*g_hw_sellTextId2))->getText();
             flag = true;
         }
-        self->dialog->setMsg(*(String *)text, flag);
+        self->dialog->set(*(String *)text, flag);
         self->dialogActive = 1;
     }
 
@@ -1795,7 +1795,7 @@ void HangarWindow::selectItem(ListItem *item) {
             ((GameText *)(*g_hw_notEnoughTextId))->getText();
             combined = suffix + suffix;
             ((String *)&msg)->addAssign_str(&combined);
-            self->dialog->setMsg(*(String *)&msg, true);
+            self->dialog->set(*(String *)&msg, true);
             self->dialogActive = 1;
             self->notEnoughCredits = 1;
             return;
@@ -1812,7 +1812,7 @@ void HangarWindow::selectItem(ListItem *item) {
             if (a != b) {
                 self->shipSwapPending = 1;
                 ((GameText *)(*g_hw_sellMsgTextId2))->getText();
-                self->dialog->setMsg(*(String *)((GameText *)(*g_hw_sellMsgTextId2))->getText(), true);
+                self->dialog->set(*(String *)((GameText *)(*g_hw_sellMsgTextId2))->getText(), true);
                 self->dialogActive = 1;
                 return;
             }
@@ -1899,7 +1899,7 @@ void HangarWindow::selectItem(ListItem *item) {
         Status_replaceHash(&result, globals, &copy, &etext, &fmt);
         ((Item *)(li->field_0x10))->getIndex();
         Status_replaceHash(&result2, globals, &result, &etext2, &fmt2);
-        self->dialog->setMsg(*(String *)&name, true);
+        self->dialog->set(*(String *)&name, true);
         self->replaceEquipPending = 1;
         self->dialogActive = 1;
         self->pendingMountItem = li->field_0x10;
@@ -1974,7 +1974,7 @@ void HangarWindow::transaction(bool buy) {
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
                 combined = suffix + suffix;
                 ((String *)&msg)->addAssign_str(&combined);
-                this->dialog->setMsg(*(String *)&msg, true);
+                this->dialog->set(*(String *)&msg, true);
                 this->dialogActive = 1;
                 this->notEnoughCredits = 1;
                 (*this->buttons)[(0x20) >> 2]->resetTouch();
@@ -1993,7 +1993,7 @@ void HangarWindow::transaction(bool buy) {
             void *bp = this->bluePrint;
             int remaining = ((BluePrint *)(bp))->getRemainingAmount(((Item *)(cur))->getIndex());
             if (bpAmt < remaining) {
-                int r = ((Item *)(cur))->transactionBlueprint(0);
+                int r = ((Item *)(cur))->transactionBlueprint(false, 0);
                 if (r < 0) {
                     this->currentLoad = this->currentLoad + 1;
                 } else if (r != 0) {

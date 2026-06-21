@@ -76,11 +76,6 @@ void AESoundRessource::init(int id)
     }
 }
 
-void AESoundRessource::play_impl(int id, int volume)
-{
-    play(id, (float)volume);
-}
-
 // Empty in this build (the looping bookkeeping was compiled out).
 void AESoundRessource::checkLooping()
 {
@@ -185,16 +180,6 @@ void AESoundRessource::stop()
     }
 }
 
-void AESoundRessource::stopAll()
-{
-    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        AESoundInterface *sound = (*this->sounds)[i];
-        if (sound != nullptr) {
-            sound->stop();
-        }
-    }
-}
-
 void AESoundRessource::pause(int id)
 {
     AESoundInfo info;
@@ -209,17 +194,6 @@ void AESoundRessource::pause(int id)
 }
 
 int AESoundRessource::pause()
-{
-    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        AESoundInterface *sound = (*this->sounds)[i];
-        if (sound != nullptr) {
-            sound->pause();
-        }
-    }
-    return this->sounds->size();
-}
-
-int AESoundRessource::pauseAll()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
         AESoundInterface *sound = (*this->sounds)[i];
@@ -253,17 +227,7 @@ void AESoundRessource::resume()
     }
 }
 
-void AESoundRessource::resumeAll()
-{
-    for (uint32_t i = 0; i < this->sounds->size(); ++i) {
-        AESoundInterface *sound = (*this->sounds)[i];
-        if (sound != nullptr) {
-            sound->resume();
-        }
-    }
-}
-
-void AESoundRessource::suspendAll()
+void AESoundRessource::supend()
 {
     for (uint32_t i = 0; i < this->sounds->size(); ++i) {
         AESoundInterface *sound = (*this->sounds)[i];

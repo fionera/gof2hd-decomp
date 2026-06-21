@@ -1042,7 +1042,7 @@ void Status::addPendingProduct(BluePrint* bp) {
         }
     }
     PendingProduct* pp = new PendingProduct(bp);
-    pp->add(*pendingProducts);
+    pendingProducts->push_back(pp);
 }
 
 extern int g_emptyOrbitMask;

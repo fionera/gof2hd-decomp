@@ -99,6 +99,26 @@ uint8_t RadioMessage::isTriggered()
     return this->triggeredFlag;
 }
 
+void RadioMessage::setRadio(Radio* radio)
+{
+    this->radio = radio;
+}
+
+int RadioMessage::getTextID()
+{
+    return this->textID;
+}
+
+int RadioMessage::getImageID()
+{
+    return this->imageID;
+}
+
+int RadioMessage::getSoundID()
+{
+    return 0;
+}
+
 namespace {
 
 // High byte of Player::enemyFlags — the "always friend" half of the flag pair.
@@ -109,33 +129,31 @@ uint8_t enemyFriendFlag(Player* player)
 
 } // namespace
 
-int RadioMessage::setResult(int value)
-{
-    this->triggeredFlag = static_cast<uint8_t>(value);
-    if (value == 0) {
-        return 0;
-    }
-    this->radio->currentMessage = this;
-    return 1;
-}
-
-int RadioMessage::triggerResult()
-{
-    this->triggeredFlag = 1;
-    this->radio->currentMessage = this;
-    return 1;
-}
-
-Player* RadioMessage::selectTarget(Array<Player*>* list, int i)
-{
-    return list->data()[this->targetIndices[i]];
-}
-
 int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
 {
     if (this->triggeredFlag != 0) {
         return 0;
     }
+
+    // Mark the message (and, when satisfied, promote it to the radio's current
+    // message); return whether the condition fired.
+    auto setResult = [this](int value) -> int {
+        this->triggeredFlag = static_cast<uint8_t>(value);
+        if (value == 0) {
+            return 0;
+        }
+        this->radio->currentMessage = this;
+        return 1;
+    };
+    auto triggerResult = [this]() -> int {
+        this->triggeredFlag = 1;
+        this->radio->currentMessage = this;
+        return 1;
+    };
+    // Resolve the i-th watched enemy from the ego's enemy list.
+    auto selectTarget = [this](Array<Player*>* list, int i) -> Player* {
+        return list->data()[this->targetIndices[i]];
+    };
 
     switch (this->conditionType) {
     case 0: {

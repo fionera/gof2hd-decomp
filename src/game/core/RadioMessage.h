@@ -34,19 +34,16 @@ public:
     RadioMessage(int textID, int imageID, Objective* objective);
     ~RadioMessage();
 
+    void setRadio(Radio* radio);
+    int getTextID();
+    int getImageID();
+    int getSoundID();
+
     void finish();
     uint8_t isOver();
     void reset();
     void trigger();
     uint8_t isTriggered();
     int triggered(int64_t time, PlayerEgo* ego, LevelScript* script);
-
-private:
-    // Mark the message (and, when satisfied, promote it to the radio's current
-    // message); return whether the condition fired.
-    int setResult(int value);
-    int triggerResult();
-    // Resolve the i-th watched enemy from the ego's enemy list.
-    Player* selectTarget(Array<Player*>* list, int i);
 };
 #endif

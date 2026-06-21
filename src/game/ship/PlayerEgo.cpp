@@ -981,7 +981,7 @@ void PlayerEgo::shake(int amount) {
     float dx = (float)(gRandom->next(span) - range);
     float dy = (float)(gRandom->next(span) - range);
     float dz = (float)(gRandom->next(span) - range);
-    ((AbyssEngine::Camera *)(cam))->shake(dx, dy, dz);
+    ((AEGeometry *)(cam))->translate(dx, dy, dz);
 }
 
 void PlayerEgo::setRotation(float rx, float ry, float rz) {
@@ -1345,7 +1345,7 @@ extern const float g_PE_r_manK2;
 
 float PlayerEgo::right(int frameTime, float delta) {
     if (((void*&)this->miningGame) != 0)
-        return ((MiningGame *)(((void*&)this->miningGame)))->steerXR(delta);
+        return (((MiningGame *)(((void*&)this->miningGame)))->right(delta), ((MiningGame *)(((void*&)this->miningGame)))->inputX);
 
     if (this->turretActive != 0) {
         float pitch = (float)this->turretPitch;
@@ -1414,7 +1414,7 @@ extern const float g_PE_l_manK2;
 
 float PlayerEgo::left(int frameTime, float delta) {
     if (((void*&)this->miningGame) != 0)
-        return ((MiningGame *)(((void*&)this->miningGame)))->steerX(-delta);
+        return (((MiningGame *)(((void*&)this->miningGame)))->left(-delta), ((MiningGame *)(((void*&)this->miningGame)))->inputX);
 
     if (this->turretActive != 0) {
         // turret yaw: scale by inverse turret-pitch and apply to 3 nodes.
@@ -3207,7 +3207,7 @@ extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
     Explosion *e = (Explosion *)self->explosion;
     if (e != 0) {
         Vector pos = ((PlayerEgo *)self)->getPosition();
-        e->update_vector(0, &pos);
+        e->update(0, pos);
     }
 }
 // endExplosion() forwards to the explosion's final update so it can release.

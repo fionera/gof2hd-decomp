@@ -369,7 +369,7 @@ void ChoiceWindow::setMiscButton(String const &text)
     if (this->leftButton != nullptr) this->leftButton->translate(0, delta);
     if (this->rightButton != nullptr) this->rightButton->translate(0, delta);
 
-    this->scrollWindow->setPosition(
+    this->scrollWindow->setYPosition(
         *g_ChoiceWindow_screenHeight_147068 / 2 - this->height / 2 + layout->field_0x8);
 }
 
@@ -476,30 +476,21 @@ void ChoiceWindow::left() {
 void ChoiceWindow::right() {
 }
 
-// ---- engine-name convenience setters / forwarders -----------------------------------
-// These mirror the way the shipped code drives a ChoiceWindow from the hangar / lounge
-// screens: each delegates to one of the recovered set() overloads (or, for the button
-// labels, retitles the existing TouchButtons) so the window keeps a single layout path.
-
-void ChoiceWindow::setMsg(String const &text, bool hasButtons)
+// Fire callback for the left choice button: an intentional no-op in the shipped
+// build (returns 0). The caller reads the decision back via hasChoice() / the
+// recorded button state.
+int ChoiceWindow::fire()
 {
-    set(text, hasButtons);
+    return 0;
 }
 
-void ChoiceWindow::setText(String const &title, String const &body)
-{
-    set(title, body, true);
-}
-
+// Retitles the two existing choice buttons. The hangar / lounge screens call this
+// alongside a set() overload when (re)opening an agent-chat dialog; it stays a
+// member because it touches the private TouchButton labels.
 void ChoiceWindow::setButtonText(String const &left, String const &right)
 {
     if (this->leftButton != nullptr)
         this->leftButton->setText(left);
     if (this->rightButton != nullptr)
         this->rightButton->setText(right);
-}
-
-int ChoiceWindow::touch_end(int x, int y)
-{
-    return this->OnTouchEnd(x, y);
 }

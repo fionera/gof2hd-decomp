@@ -355,7 +355,7 @@ void ListItemWindow::draw()
         ImageFactory *fac = *g_liw_d_imageFactory;
         int idx = itemPtr->getIndex();
         int type = itemPtr->getType();
-        fac->drawItem4(idx, type,
+        fac->drawItem(idx, type,
             layout->buttonInsetX + this->x + layout->field_0x2c,
             i32(L, 0x124) + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - i32(L, 0x2c8) / 2));
     }

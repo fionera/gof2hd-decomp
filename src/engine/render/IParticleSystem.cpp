@@ -21,16 +21,15 @@ extern "C" void AERandom_ctor(void *self);
 // Engine globals (resolved by a later externs pass).
 __attribute__((visibility("hidden"))) extern char *ParticleSet_definitions;
 
-// Base renderer-hook stubs. The shipped binary leaves these slots __cxa_pure_virtual on
-// IParticleSystem; the class is only ever instantiated as a concrete ParticleSystemMesh /
-// ParticleSystemSprite, both of which override every hook below.
-int  IParticleSystem::init(uint32_t, uint16_t) { return 0; }
-void IParticleSystem::reset() {}
-void IParticleSystem::release() {}
-int  IParticleSystem::getQuadCount() { return 0; }
-void IParticleSystem::updateSingle(int, float) {}
-void IParticleSystem::setParticle(Vector const &, float, uint32_t, float, float, float, float,
-                                  bool, float, float, Vector const &) {}
+// The renderer-hook slots (init/reset/release/getQuadCount/updateSingle/setParticle) are
+// __cxa_pure_virtual on IParticleSystem in the shipped binary: the class is abstract and only
+// ever instantiated as a concrete ParticleSystemMesh / ParticleSystemSprite, both of which
+// override every one of those hooks. They therefore have no out-of-line base definition here.
+
+void IParticleSystem::enableUpdate(bool enabled)
+{
+    this->updateEnabled = enabled;
+}
 
 void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set)
 {
@@ -619,10 +618,4 @@ void IParticleSystem::resetEmitterVelocity()
     MatrixGetPosition(matrixValue, this->matrix);
     this->lastEmitterPosition = *(Vector *)(matrixValue);
     this->field_0x4 = 0;
-}
-
-IParticleSystem::~IParticleSystem()
-{
-    delete this->particleSets;
-    AERandom_dtor((void *)this->random);
 }

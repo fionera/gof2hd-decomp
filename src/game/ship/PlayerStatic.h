@@ -21,11 +21,18 @@ public:
     int32_t positionZ;   // integer fallback z position
 
     PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z);
-    PlayerStatic(int playerId, AEGeometry *geometry);
     ~PlayerStatic();
 
     void render() override;
     Vector getPosition();
+
+    // A static actor never moves, ticks or takes part in collision: every
+    // motion/collision virtual is overridden to do nothing (the binary emits a
+    // bare stub for each one).
+    void update(int dt) override;
+    void translate(const Vector& v) override;
+    int collide(float x, float y, float z) override;
+    int outerCollide(float x, float y, float z) override;
 };
 
 #endif

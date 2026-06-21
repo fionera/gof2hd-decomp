@@ -164,38 +164,37 @@ ObjectGun::~ObjectGun()
     this->explosionReady = nullptr;
 }
 
-void ObjectGun::setScaling(int x, int y)
-{
-    this->scaleX = (float)x;
-    this->scaleY = (float)y;
-}
-
-// Three-argument scaling variant: stores x/y into scaleX/scaleY; the trailing z
-// component is accepted but unused by this build (scaleZ is left untouched).
+// Stores x/y into scaleX/scaleY; the trailing z component is accepted but unused
+// by this build (scaleZ is left untouched).
 void ObjectGun::setScaling(int x, int y, int /*z*/)
 {
     this->scaleX = (float)x;
     this->scaleY = (float)y;
 }
 
-void ObjectGun::replaceGun(int mesh)
+// Swaps the mesh shown by the primary transform: removes the old mesh, records the
+// new one, and re-adds it. The trailing argument is accepted but ignored.
+void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/)
 {
     void **canvas = (void **)g_PaintCanvas;
     TransformRemoveMesh(*canvas, this->transform, this->meshId);
-    this->meshId = mesh;
+    this->meshId = (int)mesh;
     TransformAddMesh(*canvas, this->transform, (uint16_t)mesh, 0);
-}
-
-// Unsigned-mesh replaceGun variant: same as replaceGun(int) but takes the mesh as
-// an unsigned id plus a trailing flag/argument that this build ignores.
-void ObjectGun::replaceGun(unsigned int mesh, int /*unused*/)
-{
-    this->replaceGun((int)mesh);
 }
 
 void ObjectGun::setEnemies(Array<Player*> *enemies)
 {
     ObjectGun_setEnemies_impl((void *)enemies->data());
+}
+
+// Targeting hooks overridden by the KI-driven guns; the base ObjectGun keeps no
+// enemy state and applies no camera translation, so both are no-ops here.
+void ObjectGun::setEnemy(Player * /*enemy*/)
+{
+}
+
+void ObjectGun::translate(const Vector & /*v*/)
+{
 }
 
 void ObjectGun::update(int dt)
@@ -335,7 +334,7 @@ after_geometry:
                     explosion->start(*(Vector *)((char *)gun->hitPositions + positionOffset), zero);
                     this->explosionReady[i] = 0;
                 }
-                explosion->update_vector(dt, nullptr);
+                explosion->update(dt, static_cast<TargetFollowCamera *>(nullptr));
                 if (explosion->isPlaying() == 0) {
                     gun = this->gun;
                     gun->hitFlags[i] = 0;

@@ -22,4 +22,11 @@ public:
     GameData();
     ~GameData();
 };
+
+namespace AbyssEngine { class Engine; }
+
+// Application teardown hook (registered with the engine). Destroys the Globals
+// singleton held at GameData offset 0, then the GameData itself.
+void OnDestroyApplication(AbyssEngine::Engine* engine);
+
 #endif

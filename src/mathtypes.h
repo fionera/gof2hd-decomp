@@ -52,7 +52,7 @@ struct Quaternion {
     Quaternion(AEMath::Vector angles);
     Quaternion(Quaternion* other);
     Quaternion(const AEMath::Matrix& matrix);
-    ~Quaternion() {}
+    ~Quaternion();                                       // out-of-line (the binary emits D1/D2)
     void Set(AEMath::Vector angles);
     void Set(const AEMath::Matrix& matrix);
     void Set(float xa, float ya, float za);
@@ -63,10 +63,10 @@ struct Quaternion {
     Quaternion Normalized();
     float Length() const;
     void Convert(AEMath::Matrix& matrix);
-    operator float*()             { return &x; }
-    operator const float*() const { return &x; }
-    float&       operator[](int i)       { return (&x)[i]; }
-    float        operator[](int i) const { return (&x)[i]; }
+    operator float*();                   // out-of-line (the binary emits these accessors)
+    operator const float*() const;
+    float&       operator[](int i);
+    float        operator[](int i) const;
 };
 
 } // namespace AbyssEngine

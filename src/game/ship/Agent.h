@@ -72,7 +72,6 @@ public:
     uint8_t hasReward();
     bool isGenericAgent();
     bool isKnown();
-    void setKnown(bool known);
     uint8_t isMale();
     bool isStoryAgent();
     void nextEvent();
@@ -89,6 +88,7 @@ public:
     int getStation();
     int getSystem();
     int getRace();
+    int getType();
     int getIndex();
     int getCosts();
     void setCosts(int costs);
@@ -103,8 +103,5 @@ public:
     int getSellSystemIndex();
     int getSellBlueprintIndex();
     int getWingmanFriendsCount();
-
-    // Tail of setWingmanFriendNames: free the consumed source array's backing.
-    void finishWingman(Array<AbyssEngine::String*> *consumedArray);
 };
 #endif

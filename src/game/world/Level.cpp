@@ -2911,7 +2911,7 @@ void Level::almostKillWanted(int index) {
     }
     int m = (int)(intptr_t)::operator new(0x78);
     new ((void *)(intptr_t)m) Mission(4, 0, gStatus->getStation()->getIndex());
-    ((Mission *)(m))->setCampaign_akw(1);
+    ((Mission *)(m))->setCampaignMission(true);
     ((Mission *)(m))->setWon(1);
     gStatus->setMission((Mission *)(intptr_t)m);
     gStatus->setCampaignMission((Mission *)(intptr_t)m);
@@ -3502,12 +3502,12 @@ void Level::createScene()
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d0, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            new (p) PlayerStatic(-1, g);
+            new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             this->enemies->push_back((KIPlayer *)p);
             g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)0x37d1, (PaintCanvas*)canvas, 0);
             p = (PlayerStatic *)::operator new(0x130);
-            new (p) PlayerStatic(-1, g);
+            new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             this->enemies->push_back((KIPlayer *)p);
         }
         return;
@@ -3548,20 +3548,20 @@ void Level::createScene()
                 AEGeometry *g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)part, (PaintCanvas*)canvas, 0);
                 PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-                new (p) PlayerStatic(-1, g);
+                new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[a] = (KIPlayer *)p;
                 this->csc_placeActor((int)(intptr_t)p, seat, 0);
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
-                new (p) PlayerStatic(-1, g);
+                new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[nAgents + a] = (KIPlayer *)p;
 
                 g = (AEGeometry *)::operator new(0xc0);
                 new ((void*)g) AEGeometry((uint16_t)0x380c, (PaintCanvas*)canvas, 0);
                 p = (PlayerStatic *)::operator new(0x130);
-                new (p) PlayerStatic(-1, g);
+                new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
                 (*this->enemies)[nAgents * 2 + a] = (KIPlayer *)p;
             }
         }
@@ -3569,7 +3569,7 @@ void Level::createScene()
             AEGeometry *g = (AEGeometry *)::operator new(0xc0);
             new ((void*)g) AEGeometry((uint16_t)(unsigned)mode, (PaintCanvas*)canvas, 0);
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            new (p) PlayerStatic(-1, g);
+            new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             (*this->enemies)[this->enemies->size() + (u - crew)] = (KIPlayer *)p;
         }
         return;
@@ -3610,7 +3610,7 @@ void Level::createScene()
             Vector rot = {0, 0, 0};
             ((AEGeometry*)g)->setRotation(*(const AbyssEngine::AEMath::Vector*)(&rot));
             PlayerStatic *p = (PlayerStatic *)::operator new(0x130);
-            new (p) PlayerStatic(-1, g);
+            new (p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
             if ((int)race < 4 && race != 1) {
                 AEGeometry *child = (AEGeometry *)::operator new(0xc0);
                 new ((void*)child) AEGeometry((uint16_t)(unsigned)u, (PaintCanvas*)canvas, 0);

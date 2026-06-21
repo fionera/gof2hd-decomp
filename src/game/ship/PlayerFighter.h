@@ -157,8 +157,8 @@ public:
     void render() override;
     void roll(int angle);
     void setAIDisabled(bool v);
-    void setBV_a(Array<BoundingVolume *> *v);
-    void setBV_b(BoundingVolume *bv);
+    void setBV(Array<BoundingVolume *> *v);
+    void setBV(BoundingVolume *bv);
     void setBoostProb(int v);
     void setCloakingPossible(bool v);
     void setExhaustVisible(bool vis);

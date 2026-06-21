@@ -29,12 +29,6 @@ int ListItem::checkSort() {
         return 0;
     Ship* ship = status->getShip();
     int sort = this->item->getSort();
-    return ListItem::sortCmp(ship, sort);
-}
-
-// Tail-called helper of checkSort(): asks the ship whether a slot matching this
-// item's sort is free.
-int ListItem::sortCmp(Ship* ship, int sort) {
     return ship->slotAvailable(sort);
 }
 
@@ -290,22 +284,4 @@ ListItem::ListItem(ListItem* src) {
     this->inTabIndex = src->inTabIndex;
     this->subTabIndex = src->subTabIndex;
     this->pendingProduct = src->pendingProduct;
-}
-
-// Copy constructor: payload/value fields are copied verbatim; the two owned title/
-// subtitle Strings are deep-cloned when present.
-ListItem::ListItem(const ListItem& src) {
-    this->init();
-    this->agent = src.agent;
-    this->mission = src.mission;
-    this->selectable = src.selectable;
-
-    this->name  = src.name  ? new AbyssEngine::String(*src.name)  : 0;
-    this->name2 = src.name2 ? new AbyssEngine::String(*src.name2) : 0;
-
-    this->slot = src.slot;
-    this->textButton = src.textButton;
-    this->inTabIndex = src.inTabIndex;
-    this->subTabIndex = src.subTabIndex;
-    this->pendingProduct = src.pendingProduct;
 }

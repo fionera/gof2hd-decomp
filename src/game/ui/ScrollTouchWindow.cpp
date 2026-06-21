@@ -13,18 +13,6 @@ void ScrollTouchWindow::OnTouchEnd(int x, int y)
     this->touchActive = 0;
 }
 
-// ---- touch_end (engine-name forwarder for OnTouchEnd) ----
-void ScrollTouchWindow::touch_end(int x, int y)
-{
-    this->OnTouchEnd(x, y);
-}
-
-// ---- setText4 (engine-name forwarder for the coloured setText) ----
-void ScrollTouchWindow::setText4(AbyssEngine::String title, AbyssEngine::String text, int color)
-{
-    this->setText(title, text, color);
-}
-
 void ScrollTouchWindow::OnTouchMove(int x, int y)
 {
     this->scrollBox->OnTouchMove(x, y);
@@ -37,15 +25,6 @@ void ScrollTouchWindow::setTextCentered(bool centered)
 }
 
 void ScrollTouchWindow::setYPosition(int y)
-{
-    this->scrollBox->setYPosition(y);
-}
-
-// ---- setPosition (engine-name alias used by ChoiceWindow) ----
-// Window-level reposition: forwards the new top Y to the hosted ScrollTouchBox,
-// which re-lays out its content. Same effect as setYPosition; exposed under the
-// engine's public "setPosition" name.
-void ScrollTouchWindow::setPosition(int y)
 {
     this->scrollBox->setYPosition(y);
 }

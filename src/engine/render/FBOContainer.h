@@ -38,18 +38,6 @@ public:
     void Activate();
     void BeginCapture();
     void EndCapture();
-
-    // Engine-facing render-to-texture entry points (see .cpp).
-    void ActivateRender2Texture();
-    void ActivateTexture();
-    void DeactivateRender2Texture();
-
-    // Per-target construct/Create variants used by GlowPPShader's four FBOs.
-    void initFrom(Engine *engine, String name);
-    void Create0(int width, int height, bool a, bool linear);
-    void Create1(int width, int height, bool a, bool linear);
-    void Create2(int width, int height, bool a, bool linear);
-    void Create3(int width, int height, bool a, bool linear);
 };
 
 } // namespace AbyssEngine

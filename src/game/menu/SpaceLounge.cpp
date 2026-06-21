@@ -355,7 +355,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     this->touchDown = 0;
 
     if (this->choiceVisible != 0 || this->chatActive != 0) {
-        int result = this->choiceWindow->touch_end(x, y);
+        int result = this->choiceWindow->OnTouchEnd(x, y);
         if (result == 1) {
             this->chatActive = 0;
         } else if (result == 0) {
@@ -457,7 +457,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
 
-    this->scrollWindow->touch_end(x, y);
+    this->scrollWindow->OnTouchEnd(x, y);
     if (((Layout *)(layout))->helpPressed() != 0) {
         void *texts = *(void **)&SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *)(*(void **)texts))->getText(0x273);
@@ -1075,11 +1075,12 @@ void SpaceLounge::startChat() {
     left.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x10), false);
     right.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
-    this->choiceWindow->setText(title, body);
+    this->choiceWindow->set(title, body, true);
     this->choiceWindow->setButtonText(left, right);
 
     if (((Agent *)(agent))->isKnown() == 0 && ((Agent *)(agent))->isStoryAgent() == 0) {
-        ((Agent *)(agent))->setKnown(true);
+        if (((Agent *)(agent))->eventCount <= 0)
+            ((Agent *)(agent))->eventCount = 1;
     }
     SpaceLounge_getSoundId(this, agent);
 

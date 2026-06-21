@@ -244,7 +244,7 @@ void HangarList::fillBuyList(ListItem* item) {
 
     GameText** texts = g_HangarList_gameText;
     (*list)[0] = new ListItem((*texts)->getText(0x115));
-    (*list)[1] = new ListItem(*item);
+    (*list)[1] = new ListItem(item);
 
     uint32_t out;
     if (special == 0) {

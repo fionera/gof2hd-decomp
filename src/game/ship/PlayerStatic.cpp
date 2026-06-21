@@ -14,13 +14,6 @@ PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry, float x, float y,
     positionZ = (int)z;
 }
 
-// Convenience overload used when the caller (Level::createStaticActors) builds
-// the actor at the origin and positions it afterwards.
-PlayerStatic::PlayerStatic(int playerId, AEGeometry *geometry)
-    : PlayerStatic(playerId, geometry, 0.0f, 0.0f, 0.0f)
-{
-}
-
 // PlayerStatic owns no resources beyond the KIPlayer base; the base destructor
 // (chained implicitly) releases the Player ship and geometry.
 PlayerStatic::~PlayerStatic()
@@ -43,4 +36,25 @@ Vector PlayerStatic::getPosition()
     result.y = (float)positionY;
     result.z = (float)positionZ;
     return result;
+}
+
+// A static actor never advances per tick.
+void PlayerStatic::update(int dt)
+{
+}
+
+// A static actor is anchored: a world-space shift is a no-op.
+void PlayerStatic::translate(const Vector& v)
+{
+}
+
+// A static actor is not a collidable hull; collision queries report no hit.
+int PlayerStatic::collide(float x, float y, float z)
+{
+    return 0;
+}
+
+int PlayerStatic::outerCollide(float x, float y, float z)
+{
+    return 0;
 }

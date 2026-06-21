@@ -20,9 +20,6 @@ public:
     ImageFactory();
     ~ImageFactory();
 
-    /// Picks a random sex, then builds a random character of the given race.
-    void createChar_i(int race);
-
     /// Picks a random sex (50/50), then builds a random character of `race`.
     void createChar(int race);
 
@@ -35,7 +32,6 @@ public:
     void drawChar(Array<ImagePart *> *parts, int x, int y, bool flag);
     void drawItem(int itemId, int x, int y);
     void drawItem(int itemId, int frame, int x, int y);
-    void drawItem4(int itemId, int frame, int x, int y);
     void drawShip(int shipId, int x, int y);
     Array<ImagePart *> *loadChar(int *desc);
     void *loadImage(int row, int col, int frameBase);

@@ -15,27 +15,10 @@ class Mission;
 #include "game/world/Station.h"
 #include "game/world/Wanted.h"
 
-#include <cstring>
-
 using AbyssEngine::AEMath::MatrixGetDir;
 using AbyssEngine::AEMath::MatrixIdentity;
 using AbyssEngine::AEMath::MatrixSetRotation;
 using AbyssEngine::AEMath::ROTATION_ORDER_XZY;
-
-namespace {
-
-// AEFile only exposes ReadSwitched() for the integer/string widths. Floats in the .bin tables are
-// stored big-endian too, so read the raw 32 bits switched and reinterpret them as a float.
-float ReadSwitchedFloat(uint32_t handle)
-{
-    int32_t bits = 0;
-    AEFile::ReadSwitched(bits, handle);
-    float value;
-    std::memcpy(&value, &bits, sizeof(value));
-    return value;
-}
-
-} // namespace
 
 // FileRead carries no state of its own (every loadXxx() opens, reads and closes its file locally),
 // so both the constructor and destructor have empty bodies.
@@ -105,13 +88,15 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
                 AEFile::ReadSwitched(x, handle);
                 AEFile::ReadSwitched(y, handle);
                 AEFile::ReadSwitched(z, handle);
+                // Floats in the .bin tables are stored big-endian, so read the raw 32 bits switched
+                // and reinterpret them as a float.
                 float extraX = 0.0f;
                 float extraY = 0.0f;
                 float extraZ = 0.0f;
                 if (type == 3) {
-                    extraX = ReadSwitchedFloat(handle);
-                    extraY = ReadSwitchedFloat(handle);
-                    extraZ = ReadSwitchedFloat(handle);
+                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraX), handle);
+                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraY), handle);
+                    AEFile::ReadSwitched(reinterpret_cast<int32_t &>(extraZ), handle);
                 }
                 if (ship == id) {
                     if (positions->data()[type] == 0) {
@@ -164,15 +149,26 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
         for (uint32_t i = 0; i < count; i++) {
             uint16_t type;
             AEFile::Read(type, handle);
-            float a = ReadSwitchedFloat(handle);
-            float b = ReadSwitchedFloat(handle);
-            float c = ReadSwitchedFloat(handle);
-            float rx = ReadSwitchedFloat(handle);
-            float ry = ReadSwitchedFloat(handle);
-            float rz = ReadSwitchedFloat(handle);
-            ReadSwitchedFloat(handle);
-            ReadSwitchedFloat(handle);
-            ReadSwitchedFloat(handle);
+            // Floats in the .bin tables are stored big-endian, so read the raw 32 bits switched and
+            // reinterpret them as a float.
+            float a;
+            float b;
+            float c;
+            float rx;
+            float ry;
+            float rz;
+            float ignored0;
+            float ignored1;
+            float ignored2;
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(a), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(b), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(c), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rx), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ry), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(rz), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored0), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored1), handle);
+            AEFile::ReadSwitched(reinterpret_cast<int32_t &>(ignored2), handle);
 
             Vector position;
             position.x = a;

@@ -35,21 +35,13 @@ public:
     void    playSound(Vector *pos);
     void    render();
     void    reset();
-    void    setMatrix(const Matrix *matrix);
     void    setScaling(float scale);
     void    setWeaponIndex(int index);
     void    start(const Vector &position, const Vector &direction);
     void    start(const Matrix &matrix);
-    void    start_matrix(const Matrix *matrix);
     void    translate(const Vector &v);
     void    update(int dt, const Vector &position);
     void    update(int dt, TargetFollowCamera *camera);
-    void    update_vector(int dt, const Vector *position);
-
-    // Tail helpers extracted from translate()/update_vector(): translating the
-    // optional secondary mesh, and the terminal reset once the animation finishes.
-    void    tail_translate(AEGeometry *geometry, const Vector *v);
-    void    reset_tail();
 };
 
 #endif

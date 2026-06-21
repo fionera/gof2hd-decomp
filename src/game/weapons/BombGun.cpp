@@ -274,7 +274,7 @@ void BombGun::update(int elapsed)
         this->detonationPending = 0;
     }
 
-    this->explosion->update_vector(elapsed, nullptr);
+    this->explosion->update(elapsed, *reinterpret_cast<const Vector *>(nullptr));
     int timer = this->rumbleTimer + elapsed;
     if (timer > 2000)
         timer = 2000;

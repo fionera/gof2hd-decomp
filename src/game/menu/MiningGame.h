@@ -72,24 +72,13 @@ public:
     MiningGame(int layer, int station, Hud* hud);
     ~MiningGame();
 
-    /// Heap factory used by PlayerEgo::approachAsteroid; allocates the instance
-    /// and runs the constructor with the asteroid quality/seed.
-    static MiningGame* create(int quality, int seed, Hud* hud);
-
     void up(float amount);
     void down(float amount);
     void left(float amount);
     void right(float amount);
 
-    /// Steering veneers exported to PlayerEgo's input dispatch. Each is a thin
-    /// forwarder that hands the steering delta to the matching axis handler:
-    ///   steerXR -> right, steerX -> left, steerY -> down, steerYAlt -> up.
-    float steerXR(float delta);
-    float steerX(float delta);
-    float steerY(float delta);
-    float steerYAlt(float delta);
-
     int getOreAmount();
+    int getAsteroidType();
     uint8_t gameWon();
     uint8_t gameLost();
     uint8_t gotCore();

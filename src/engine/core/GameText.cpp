@@ -39,7 +39,7 @@ String GameText_getRegionCode()
 void GameText::setSubstituteArray(int* pairs, unsigned count) {
     if (count != 0) {
         if ((count & 1) != 0) return;
-        this->substitutes.clear();
+        ArrayRemoveAll<int>(this->substitutes);
     }
     for (; count != 0; --count) {
         int v = *pairs++;

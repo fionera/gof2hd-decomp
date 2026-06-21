@@ -297,12 +297,7 @@ void Mission::setType(int type) {
     this->id = type;
 }
 
-// Campaign-flag setter spelling used by Level::almostKillWanted.
-void Mission::setCampaign_akw(int flag) {
-    this->setCampaignMission(flag != 0);
-}
-
-// Won-flag setter spelling used by Level::almostKillWanted.
-void Mission::setWon_akw(int flag) {
-    this->setWon(flag != 0);
+// The difficulty is stored in the same slot as the reward.
+void Mission::setDifficulty(int difficulty) {
+    this->reward = difficulty;
 }

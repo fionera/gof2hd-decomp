@@ -1,7 +1,25 @@
 #include "game/ui/MenuTouchWindow.h"
+#include "game/ui/TouchSlider.h"
 #include "game/core/PaintCanvasClass.h"
 #include "engine/render/Engine.h"
 #include <math.h>
+
+// Deletes every owned pointee in the array (nulling each slot as it goes), then frees the
+// backing store. Out-of-line in the original as ArrayReleaseClasses<T>; the loop walks the
+// full capacity, not just size.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
+        if (a.data_[i] != 0) {
+            delete a.data_[i];
+        }
+        a.data_[i] = 0;
+    }
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = 0;
+}
 
 extern PaintCanvas *g_PaintCanvas;
 
@@ -70,7 +88,6 @@ extern "C" void _mtw_GameRecord_load(void *gr);
 void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
 extern "C" void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
 extern "C" void _mtw_ModStation_setGameLoaded(void *ms);
-extern "C" void _mtw_ArrayAdd_TouchButton(void *btn, void *arr);
 extern "C" void _mtw_TouchButton_getPosition(void *out, void *btn);
 extern "C" void _mtw_TouchButton_setVisible(void *btn, bool v);
 extern "C" void *_mtw_Array_GameRecord_dtor(void *p);
@@ -349,10 +366,9 @@ void MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId)
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
 // scroll windows and two heap buffers.
 extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);       // Array<TouchButton*> release
-extern "C" void _mtw_ArrayReleaseClasses_TS(void *arr);       // Array<TouchSlider*> release
 extern "C" void _mtw_ArrayReleaseClasses_Str(void *arr);      // Array<String*> release
 
-static inline void freeArrayTB(void **slot) {
+static inline __attribute__((always_inline)) void freeArrayTB(void **slot) {
     void *a = *slot;
     if (a != 0) {
         _mtw_ArrayReleaseClasses_TB(a);
@@ -378,9 +394,9 @@ MenuTouchWindow::~MenuTouchWindow()
 
     // Array<TouchSlider*> at 0xec
     {
-        void *a = this->sliders;
+        Array<TouchSlider*> *a = (Array<TouchSlider*> *)this->sliders;
         if (a != 0) {
-            _mtw_ArrayReleaseClasses_TS(a);
+            ArrayReleaseClasses<TouchSlider*>(*a);
             void *b = this->sliders;
             if (b != 0) ::operator delete(_mtw_Array_TS_dtor(b));
         }
@@ -1018,7 +1034,7 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
     _mtw_TouchButton_ctor(btn, &label, 0, x, y, btnW, 0x11, 0x04);
     i32(btn, 0) = id;
     i32(btn, 4) = id >> 31;
-    _mtw_ArrayAdd_TouchButton(btn, arr);
+    ArrayAdd<TouchButton*>((TouchButton *)btn, *arr);
 
     int *posX = (int *)*(void **)gAddBtnPosX;
     int *posY = (int *)*(void **)gAddBtnPosY;
@@ -1524,7 +1540,7 @@ extern void *const gMvFlagA     __attribute__((visibility("hidden"))); // *holde
 extern void *const gMvFlagB     __attribute__((visibility("hidden")));
 extern void *const gMvFmod      __attribute__((visibility("hidden")));
 
-static void doSliders(void *self, int y) {
+static inline __attribute__((always_inline)) void doSliders(void *self, int y) {
     void *fmod = *(void **)gMvFmod;
     int *sl = (int *)i32(((MenuTouchWindow*)self)->sliders, 4);
     if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
@@ -1538,7 +1554,7 @@ extern void *const gMvScrollBound __attribute__((visibility("hidden"))); // *hol
 // Shared scroll-state move tail (states 0xf/0x10): the scroll window, the scrollbar slot
 // entries, the scroll list slots, then the horizontal scroll-drag with its hit-test against
 // the layout edges and the scrollbar strip image.
-static void scrollStateMove(MenuTouchWindow *self, int y, int x)
+static inline __attribute__((always_inline)) void scrollStateMove(MenuTouchWindow *self, int y, int x)
 {
     char *layout = (char *)*(void **)gMvLayout;
 
@@ -2190,3 +2206,6 @@ void MenuTouchWindow::startGOF2()
     TransitionFn3 fn = *(TransitionFn3 *)((char *)appHolder); // module-transition thunk
     fn(*(void **)appHolder, 2, 0);
 }
+
+// Out-of-line container template instantiations emitted by this TU in the original binary.
+template void ArrayAdd<TouchSlider*>(TouchSlider *, Array<TouchSlider*> &);

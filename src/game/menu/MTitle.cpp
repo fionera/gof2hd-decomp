@@ -56,6 +56,26 @@ void MTitle::OnRelease()
     }
 }
 
+long long MTitle::OnKeyPress(long long key, long long mod)
+{
+}
+
+long long MTitle::OnKeyRelease(long long key, long long mod)
+{
+}
+
+int MTitle::OnTouchBegin(int x, int y)
+{
+}
+
+int MTitle::OnTouchMove(int x, int y)
+{
+}
+
+void MTitle::OnUpdate()
+{
+}
+
 void MTitle::OnRender2D()
 {
     PaintCanvas *canvas = gCanvas;
@@ -114,4 +134,9 @@ void MTitle::OnTouchEnd(int x, int y)
 {
     // Tapping the title skips straight to the end of the logo sequence.
     this->timer = 5000;
+}
+
+int MTitle::ShowLoadingScreen()
+{
+    return 0;
 }

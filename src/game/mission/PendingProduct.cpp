@@ -16,14 +16,7 @@ PendingProduct::PendingProduct(BluePrint *bp)
       blueprintIndex(bp->getIndex()) {
 }
 
-// Append this pending product to the player's pending-product list.
-void PendingProduct::add(Array<PendingProduct*> &list) {
-    list.push_back(this);
-}
-
-// Allocating factory used by RecordHandler when reconstructing the pending-product
-// list from a save file.
-PendingProduct *PendingProduct::make(int blueprintIndex, const String *stationName,
-                                     int stationIndex, int quantity) {
-    return new PendingProduct(blueprintIndex, *stationName, stationIndex, quantity);
+// Destroys the embedded stationName String (the only non-trivial member); compiles to
+// a thunk into String::~String() exactly as the original.
+PendingProduct::~PendingProduct() {
 }

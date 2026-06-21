@@ -48,10 +48,8 @@ public:
     // surface of its own, so it returns a zero normal (BoundingAAB matches).
     Vector getCollisionNormal(const Vector& position);
     void setVolume(BoundingVolume* src);
-    // Append this volume to the destination array. Both spellings forward to
-    // the array's add.
-    void setVolume_tail(Array<BoundingVolume*>* arr);
-    void setArr(Array<BoundingVolume*>* arr);
+    // Store the child-volume array directly (str r1,[r0,#4] -> children).
+    void setVolumes(Array<BoundingVolume*>* arr);
     void staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols);
     Vector getProjectionVector(const Vector& v);
 };

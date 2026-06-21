@@ -1610,7 +1610,7 @@ void PaintCanvas::TransformCreate(unsigned short resId, unsigned int &out)
     }
     char *info = *(char **)(res + 0xc);
     char *tf = (char *)paintcanvas_ext_tfc_new_transform();
-    PCArrayAdd< ::Transform *>((::Transform *)tf, &this->transformCount);
+    ArrayAdd< ::Transform *>((::Transform *)tf, *reinterpret_cast<Array< ::Transform *> *>(&this->transformCount));
     unsigned int idx = this->transformCount - 1;
     *(unsigned int *)(res + 8) = idx;
     out = idx;
@@ -2156,7 +2156,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child)
         char **arr = this->transforms;
         char *p = arr[parent];
         char *c = arr[child];
-        PCArrayAdd< ::Transform *>((::Transform *)c, p + 0x4c);
+        ArrayAdd< ::Transform *>((::Transform *)c, *reinterpret_cast<Array< ::Transform *> *>(p + 0x4c));
         char **arr2 = this->transforms;
         char *p2 = arr2[parent];
         char *c2 = arr2[child];

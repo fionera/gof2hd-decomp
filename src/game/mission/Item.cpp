@@ -161,11 +161,6 @@ void Item::changeAmount(int delta)
     amount += delta;
 }
 
-void Item::addAmount(int delta)
-{
-    amount += delta;
-}
-
 Item* Item::makeItem(int amount, int price)
 {
     Item* item = clone();
@@ -175,23 +170,6 @@ Item* Item::makeItem(int amount, int price)
 }
 
 Item::~Item() {}
-
-int Item::transactionBlueprint(bool fabricate)
-{
-    if (fabricate) {
-        if (blueprintAmount > 0) {
-            int currentPrice = price;
-            blueprintAmount -= 1;
-            amount += 1;
-            return -currentPrice;
-        }
-    } else if (amount > 0) {
-        amount -= 1;
-        blueprintAmount += 1;
-        return price;
-    }
-    return 0;
-}
 
 int Item::transactionBlueprint(bool fabricate, int mode)
 {

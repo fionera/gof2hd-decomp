@@ -42,6 +42,11 @@ int MiningGame::getOreAmount()
     return (int)this->oreAmount;
 }
 
+int MiningGame::getAsteroidType()
+{
+    return this->station;
+}
+
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_sqrt;
 __attribute__((visibility("hidden"))) extern void **g_MiningGame_layout;
 __attribute__((visibility("hidden"))) extern int *g_MiningGame_layerSizes;
@@ -95,33 +100,6 @@ uint8_t MiningGame::gameLost()
 void MiningGame::right(float amount)
 {
     this->inputX = amount * 3.0f;
-}
-
-// PlayerEgo's pitch/yaw input handlers reach the mining game through these
-// veneers. Each forwards the steering delta to the corresponding axis handler
-// and reports the resulting axis input back to the caller.
-float MiningGame::steerXR(float delta)
-{
-    right(delta);
-    return this->inputX;
-}
-
-float MiningGame::steerX(float delta)
-{
-    left(delta);
-    return this->inputX;
-}
-
-float MiningGame::steerY(float delta)
-{
-    down(delta);
-    return this->inputY;
-}
-
-float MiningGame::steerYAlt(float delta)
-{
-    up(delta);
-    return this->inputY;
 }
 
 MiningGame::~MiningGame()
@@ -533,17 +511,11 @@ void MiningGame::render2D()
     oreText->dtor();
 }
 
-// Heap factory. PlayerEgo::approachAsteroid constructs the instance with the
-// asteroid quality/seed.
-MiningGame *MiningGame::create(int quality, int seed, Hud *hud)
-{
-    return new MiningGame(quality, seed, hud);
-}
-
-// C-ABI factory used at the asteroid-docking call site.
+// C-ABI factory used at the asteroid-docking call site. PlayerEgo::approachAsteroid
+// allocates the instance and runs the constructor with the asteroid quality/seed.
 extern "C" void *MiningGame_new(int quality, int seed, void *hud)
 {
-    return MiningGame::create(quality, seed, (Hud *)hud);
+    return new MiningGame(quality, seed, (Hud *)hud);
 }
 
 // C-ABI destructor: runs ~MiningGame() and returns the storage so the caller can

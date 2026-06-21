@@ -60,7 +60,6 @@ public:
     int getOccurence();
     int getAmount();
     void changeAmount(int delta);
-    void addAmount(int delta);
     int getMissingIngredients();
     void setMissingIngredients(int value);
     void setStationAmount(int value);
@@ -74,7 +73,6 @@ public:
     IntArray* getAttributes();
     int getAttribute(int attribute);
     int transaction(bool buy, int priceAdjustment, bool useCredits);
-    int transactionBlueprint(bool fabricate);
     int transactionBlueprint(bool fabricate, int mode);
     bool equals(Item* other);
     bool isWeapon();

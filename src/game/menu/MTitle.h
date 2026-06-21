@@ -19,10 +19,16 @@ public:
     MTitle();
     ~MTitle();
 
-    int  OnInitialize();
-    void OnRelease();
-    void OnRender2D();
-    void OnRender3D();
-    void OnTouchEnd(int x, int y);
+    int       OnInitialize();
+    void      OnRelease();
+    long long OnKeyPress(long long key, long long mod);
+    long long OnKeyRelease(long long key, long long mod);
+    int       OnTouchBegin(int x, int y);
+    int       OnTouchMove(int x, int y);
+    void      OnUpdate();
+    void      OnRender2D();
+    void      OnRender3D();
+    void      OnTouchEnd(int x, int y);
+    int       ShowLoadingScreen();
 };
 #endif

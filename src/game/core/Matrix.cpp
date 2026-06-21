@@ -100,3 +100,20 @@ Matrix &Matrix::operator=(const Matrix &other)
 
 } // namespace AEMath
 } // namespace AbyssEngine
+
+// ---------------------------------------------------------------------------
+// AbyssEngine::Quaternion value-type accessors (out-of-line so the binary's
+// standalone symbols emit). The dtor is trivial; the conversion operators and
+// subscript operators expose the {x,y,z,w} float storage as a 4-float array.
+// ---------------------------------------------------------------------------
+
+namespace AbyssEngine {
+
+Quaternion::~Quaternion() {}
+
+Quaternion::operator float*()             { return &x; }
+Quaternion::operator const float*() const { return &x; }
+float& Quaternion::operator[](int i)       { return (&x)[i]; }
+float  Quaternion::operator[](int i) const { return (&x)[i]; }
+
+} // namespace AbyssEngine

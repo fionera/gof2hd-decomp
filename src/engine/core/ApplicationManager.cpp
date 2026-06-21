@@ -742,25 +742,25 @@ void ApplicationManager::SoundPlayMusicLoop(int soundId) {
 
 void ApplicationManager::SoundStop() {
     if (this->soundResource != 0) {
-        this->soundResource->stopAll();
+        this->soundResource->stop();
     }
 }
 
 void ApplicationManager::SoundStopSounds() {
     if (this->soundResource != 0) {
-        this->soundResource->stopAll();
+        this->soundResource->stop();
     }
 }
 
 void ApplicationManager::SoundPause() {
     if (this->soundResource != 0) {
-        this->soundResource->pauseAll();
+        this->soundResource->pause();
     }
 }
 
 void ApplicationManager::SoundPauseSounds() {
     if (this->soundResource != 0) {
-        this->soundResource->pauseAll();
+        this->soundResource->pause();
     }
 }
 
@@ -772,13 +772,13 @@ void ApplicationManager::SoundResume(int soundId) {
 
 void ApplicationManager::SoundResumeSelf() {
     if (this->soundResource != 0) {
-        this->soundResource->resumeAll();
+        this->soundResource->resume();
     }
 }
 
 void ApplicationManager::SoundResumeSounds() {
     if ((this->soundResource != 0 && this->soundFxEnabled) || this->musicEnabled) {
-        this->soundResource->resumeAll();
+        this->soundResource->resume();
     }
 }
 

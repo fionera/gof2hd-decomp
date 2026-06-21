@@ -46,11 +46,11 @@ public:
     virtual ~ObjectGun();
     virtual int isRocketGun();          // vtable slot 8 (base: not a rocket gun)
 
-    void setScaling(int x, int y);
     void setScaling(int x, int y, int z);
-    void replaceGun(int mesh);
     void replaceGun(unsigned int mesh, int unused);
     void setEnemies(Array<Player*>* enemies);
+    void setEnemy(Player* enemy);
+    void translate(const Vector& v);
     void update(int dt);
     void render();
 };

@@ -266,7 +266,7 @@ void DialogueWindow::loadContent() {
     String style(g_dw_emptyLoad, false);
     String body;
     body.ctor_copy(&this->bodyText, false);
-    this->scrollWindow->setText4(style, body, 0);
+    this->scrollWindow->setText(style, body, 0);
 
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);

@@ -47,8 +47,6 @@ public:
 
     void calcDistance();
     Mission* clone();
-    void setCampaign_akw(int flag);
-    void setWon_akw(int flag);
     String getClientName();
     String getDescription();
     String getName();
@@ -75,6 +73,7 @@ public:
     int getBonus();
     void setBonus(int bonus);
     int getDifficulty();
+    void setDifficulty(int difficulty);
     int getDistance();
     int getStatusValue();
     void setStatusValue(int value);

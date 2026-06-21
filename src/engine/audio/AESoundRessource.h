@@ -55,8 +55,6 @@ public:
     void getSoundInfo(int id, AESoundInfo &info, int &index);
     // Lazily create + load the AESoundInterface for sound `id`.
     void init(int id);
-    // Play sound `id` at the given volume.
-    void play_impl(int id, int volume);
     // No-op in this build (kept for the loop-mode bookkeeping hook).
     void checkLooping();
 
@@ -76,22 +74,16 @@ public:
     void stop(int id);
     // Stop every loaded sound.
     void stop();
-    // Stop every loaded sound.
-    void stopAll();
     // Pause sound `id`.
     void pause(int id);
     // Pause every loaded sound; returns the number of slots iterated.
     int pause();
-    // Pause every loaded sound; returns the number of slots iterated.
-    int pauseAll();
     // Resume sound `id`.
     void resume(int id);
     // Resume every loaded sound.
     void resume();
-    // Resume every loaded sound.
-    void resumeAll();
-    // Suspend every loaded sound (engine focus-loss hook).
-    void suspendAll();
+    // Suspend every loaded sound (engine focus-loss hook). [sic: original misspells "suspend"]
+    void supend();
     // Release the backing resource for sound `id`.
     void release(int id);
     // True if sound `id` is currently playing.

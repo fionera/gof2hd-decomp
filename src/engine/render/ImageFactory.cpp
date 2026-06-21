@@ -22,7 +22,7 @@ extern int g_ctor_src[] __attribute__((visibility("hidden")));
 
 // gCreateChar2Rng1 -> rng (type-3 reroll); gCreateChar2Table -> int[] table base
 // (PC-relative address, not dereferenced); gCreateChar2Rng2 -> rng for the per-part loop;
-// gCreateCharRng -> rng for createChar_i.
+// gCreateCharRng -> rng for createChar(int).
 extern void *const gCreateChar2Rng1 __attribute__((visibility("hidden")));
 extern int gCreateChar2Table __attribute__((visibility("hidden")));
 extern void *const gCreateChar2Rng2 __attribute__((visibility("hidden")));
@@ -176,25 +176,8 @@ void *ImageFactory::loadImage(int row, int col, int frameBase)
 
 // drawItem(itemId, frame, x, y) -- draws the item's composite sprite at the
 // given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
-// otherwise 0xef0, plus itemId). Same body as drawItem4.
-void ImageFactory::drawItem(int itemId, int frame, int x, int y)
-{
-    PaintCanvas *pc = (PaintCanvas *)(long)*g_IF_drawItem4_canvas;
-    unsigned icon = 0xffffffffu;
-    pc->SetColor(0xffffffffu);
-    this->sprite->setFrame(frame);
-    this->sprite->setPosition(x, y);
-    this->sprite->draw(1.0f, 1.0f);
-    int base = 0xef0;
-    if (itemId < 0xb0) base = 0x898;
-    pc->Image2DCreate((unsigned short)(base + itemId), icon);
-    pc->DrawImage2D(icon, x, y);
-}
-
-// drawItem4(itemId, frame, x, y) -- draws the item's composite sprite at the
-// given frame/position, then overlays the item icon (0x898 for ids < 0xb0,
 // otherwise 0xef0, plus itemId).
-void ImageFactory::drawItem4(int itemId, int frame, int x, int y)
+void ImageFactory::drawItem(int itemId, int frame, int x, int y)
 {
     PaintCanvas *pc = (PaintCanvas *)(long)*g_IF_drawItem4_canvas;
     unsigned icon = 0xffffffffu;
@@ -229,16 +212,8 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc)
     return parts;
 }
 
-// createChar_i(race) -- picks a random sex (50/50), then builds a random
-// character of that race. The sex roll: nextInt(2) == 0 means male.
-void ImageFactory::createChar_i(int race)
-{
-    int sexRoll = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);
-    this->createChar(sexRoll == 0, race);
-}
-
 // createChar(race) -- picks a random sex (50/50), then builds a random
-// character of that race. Same logic as createChar_i: nextInt(2)==0 means male.
+// character of that race: nextInt(2)==0 means male.
 void ImageFactory::createChar(int race)
 {
     int sexRoll = AbyssEngine::AERandom::nextInt(*(void **)gCreateCharRng, 2);

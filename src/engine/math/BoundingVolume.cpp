@@ -53,23 +53,17 @@ BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position
     return out;
 }
 
-// Copy the source volume's children into a freshly allocated array.
+// Allocate a fresh child-volume array and register the source volume into it.
 void BoundingVolume::setVolume(BoundingVolume* src)
 {
     children = new Array<BoundingVolume*>();
-    src->setVolume_tail(children);
+    children->push_back(src);
 }
 
-// Append this volume to the destination array.
-void BoundingVolume::setVolume_tail(Array<BoundingVolume*>* arr)
+// Store the child-volume array directly (the binary is a single str at +4).
+void BoundingVolume::setVolumes(Array<BoundingVolume*>* arr)
 {
-    arr->push_back(this);
-}
-
-// Identical registration used by PlayerFixedObject::setBV.
-void BoundingVolume::setArr(Array<BoundingVolume*>* arr)
-{
-    arr->push_back(this);
+    children = arr;
 }
 
 BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)

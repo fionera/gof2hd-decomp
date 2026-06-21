@@ -70,18 +70,6 @@ void Agent::nextEvent() {
     this->eventCount = this->eventCount + 1;
 }
 
-// Agent::setKnown(bool) — an agent counts as "known" once its dialogue/event
-// counter is non-zero (see isKnown()). The space-lounge marks a freshly-met,
-// non-story agent as known by advancing it onto its first event.
-void Agent::setKnown(bool known) {
-    if (known) {
-        if (this->eventCount <= 0)
-            this->eventCount = 1;
-    } else {
-        this->eventCount = 0;
-    }
-}
-
 uint8_t Agent::hasReward() {
     return this->rewardAtNextChat;
 }
@@ -96,6 +84,10 @@ bool Agent::isKnown() {
 
 bool Agent::isGenericAgent() {
     return this->category == 1;
+}
+
+int Agent::getType() {
+    return this->category;
 }
 
 String Agent::getSystemName() {
@@ -145,13 +137,9 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String*>* param) {
             }
         }
     }
-    this->finishWingman(param);
-}
-
-// Release the consumed source array once its elements have been moved into
-// wingmanNames.
-void Agent::finishWingman(Array<AbyssEngine::String*>* consumedArray) {
-    delete consumedArray;
+    // Release the consumed source array once its elements have been moved into
+    // wingmanNames.
+    delete param;
 }
 
 String Agent::getWingmanName(int idx) {

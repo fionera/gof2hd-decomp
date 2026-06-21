@@ -169,12 +169,12 @@ void PlayerAsteroid::update(int delta)
         }
 
         Matrix geometryMatrix = this->geometry->getMatrix();
-        this->explosion->setMatrix(&geometryMatrix);
+        this->explosion->start(geometryMatrix);
         return;
     }
 
     if (this->state == 3) {
-        this->explosion->update_vector(delta, nullptr);
+        this->explosion->update(delta, *reinterpret_cast<const Vector *>(nullptr));
         if (this->explosion->isPlaying() == 0) {
             this->state = 4;
             player->setBombForce(0.0f);

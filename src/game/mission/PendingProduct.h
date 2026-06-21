@@ -21,12 +21,8 @@ public:
     PendingProduct(int blueprintIndex, String stationName,
                    int stationIndex, int quantity);
 
-    // Append this pending product to the player's pending-product list.
-    void add(Array<PendingProduct*> &list);
-
-    // Heap-allocating factory used by the save-game reader when materialising the
-    // pending-product list off disk.
-    static PendingProduct *make(int blueprintIndex, const String *stationName,
-                                int stationIndex, int quantity);
+    // Destroys the embedded stationName String. Non-virtual: PendingProduct has no
+    // vtable, so the original is just a thunk to String::~String() on the first member.
+    ~PendingProduct();
 };
 #endif

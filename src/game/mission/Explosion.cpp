@@ -115,20 +115,11 @@ void Explosion::setWeaponIndex(int index) {
     this->weaponIndex = index;
 }
 
-// Places the explosion meshes from a full transform matrix.
-void Explosion::setMatrix(const Matrix *matrix) {
-    this->start_matrix(matrix);
-}
-
-void Explosion::update(int dt, const Vector &position) {
-    this->update_vector(dt, &position);
-}
-
 void Explosion::translate(const Vector &v) {
     this->primaryMesh->translate(v);
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
-        return this->tail_translate(secondary, &v);
+        return secondary->translate(v);
     }
 }
 
@@ -474,26 +465,21 @@ void Explosion::playSound(Vector *pos) {
 }
 
 // Matrix-based public entry: positions the explosion meshes from a full
-// transform matrix. The by-reference sibling of start(Vector, Vector); mirrors
-// setMatrix() by forwarding to the matrix placement logic.
+// transform matrix. The by-reference sibling of start(Vector, Vector).
 void Explosion::start(const Matrix &matrix) {
-    this->start_matrix(&matrix);
-}
-
-void Explosion::start_matrix(const Matrix *matrix) {
     Vector position;
 
     int type = this->type;
     if (type == 6 || type == 0) {
-        MatrixGetPosition(&position, matrix);
+        MatrixGetPosition(&position, &matrix);
         this->primaryMesh->setPosition(position);
-        MatrixGetPosition(&position, matrix);
+        MatrixGetPosition(&position, &matrix);
         this->secondaryMesh->setPosition(position);
     } else {
-        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrix);
+        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&matrix);
         AEGeometry *secondary = this->secondaryMesh;
         if (secondary != 0) {
-            secondary->setMatrix(*(const AbyssEngine::AEMath::Matrix *)matrix);
+            secondary->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&matrix);
         }
     }
 
@@ -502,7 +488,7 @@ void Explosion::start_matrix(const Matrix *matrix) {
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            MatrixGetPosition(&position, matrix);
+            MatrixGetPosition(&position, &matrix);
             geometry->setPosition(position);
             UC(canvas->TransformGetTransform(geometry->transform), kTransformEnabledFlag) = 1;
         }
@@ -519,7 +505,7 @@ void Explosion::start_matrix(const Matrix *matrix) {
     }
 
     this->playing = 1;
-    MatrixGetPosition(&position, matrix);
+    MatrixGetPosition(&position, &matrix);
     this->playSound(&position);
 }
 
@@ -579,7 +565,10 @@ void Explosion::render() {
     }
 }
 
-void Explosion::update_vector(int dt, const Vector *position) {
+// Advances the explosion animation by dt; positions the optional fire-streak
+// meshes at `position`. Most callers carry no streaks and bind a null reference
+// here, so `position` is only ever read when fireStreaks is populated.
+void Explosion::update(int dt, const Vector &position) {
     if (this->playing == 0) {
         return;
     }
@@ -602,7 +591,7 @@ void Explosion::update_vector(int dt, const Vector *position) {
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            geometry->setPosition(*position);
+            geometry->setPosition(position);
             meshTransform(canvas, geometry->transform)->Update(delta, 0);
         }
     }
@@ -610,7 +599,7 @@ void Explosion::update_vector(int dt, const Vector *position) {
     long long elapsed = this->elapsed + delta;
     this->elapsed = elapsed;
     if (this->duration < elapsed) {
-        return this->reset_tail();
+        return this->reset();
     }
 }
 
@@ -644,18 +633,6 @@ void Explosion::addFireStreaks() {
         float scale = (float)scaleInt / 100.0f;
         geometry->setScaling(scale, scale, scale);
     }
-}
-
-// tail_translate: translate the optional secondary mesh; the tail of translate() that
-// runs when an explosion type carries a second AEGeometry.
-void Explosion::tail_translate(AEGeometry *geometry, const Vector *v) {
-    geometry->translate(*v);
-}
-
-// reset_tail: the terminal branch of update_vector() once elapsed exceeds the total
-// duration -- rewinds and stops every mesh animation. Identical to reset().
-void Explosion::reset_tail() {
-    this->reset();
 }
 
 // Explosions are pooled by raw pointer (operator new) in BombGun / ObjectGun / the various

@@ -118,7 +118,7 @@ void MineGun::update(int delta)
         }
 
         Explosion *explosion = (*this->explosions)[i];
-        explosion->update_vector(delta, nullptr);
+        explosion->update(delta, *reinterpret_cast<const Vector *>(nullptr));
 
         int timer = this->rumbleTimer + delta;
         if (timer > 1999) {

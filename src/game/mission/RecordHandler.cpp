@@ -1644,7 +1644,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
             int a = 0, c = 0, d = 0; AEFile_ReadInt(&a, fd); AEFile_ReadInt(&c, fd); AEFile_ReadInt(&d, fd);
             String nm; nm.ctor(); AEFile_ReadString(&nm, fd, 1);
             void *nameCopy = RH_str_make(&nm);
-            void *pp = PendingProduct::make(a, (const String *)nameCopy, d, c);
+            void *pp = new PendingProduct(a, *(const String *)nameCopy, d, c);
             (*ppArr)[i] = (PendingProduct *)pp;
         }
         *(void **)(rec + 0x144) = ppArr;

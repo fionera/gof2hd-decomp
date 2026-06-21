@@ -57,7 +57,6 @@ public:
     ListItem(AbyssEngine::String* src, bool b, int v);
     ListItem(AbyssEngine::String* src, int v);
     ListItem(ListItem* src);
-    ListItem(const ListItem& src);
     ListItem(int v);                                 // also the "slot" entry
     ListItem(int a, int b);
     ListItem(int a, int b, AbyssEngine::String* src);
@@ -67,9 +66,6 @@ public:
     bool    checkCredits();
     int     checkSlot();
     int     checkSort();
-    // Tail helper of checkSort(): forwards the requested item sort to the player ship,
-    // which answers whether a matching equipment slot is available.
-    static int sortCmp(Ship* ship, int sort);
     int     getIndex();
     int     getNumLines();
     int     getPrice();

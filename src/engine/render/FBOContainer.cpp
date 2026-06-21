@@ -103,48 +103,4 @@ void FBOContainer::EndCapture() {
     glBindFramebuffer(0x8d40, this->engine->field_0x40c);
 }
 
-// ---- Engine-facing render-to-texture entry points ----
-// These are the FBOContainer-side operations the Engine's FBO helpers
-// (ActivateRender2FracFBO / ActivateTextureFBO / DeactivateRender2FracFBO)
-// tail-call into once they have fetched the active FBOContainer.
-
-// Bind this framebuffer and set the viewport to its dimensions so that
-// subsequent drawing is captured into the attached color texture.
-void FBOContainer::ActivateRender2Texture() {
-    glBindFramebuffer(0x8d40, this->framebuffer);
-    glViewport(0, 0, this->width, this->height);
-}
-
-// Bind this FBO's color texture as the current 2D texture so it can be
-// sampled while drawing the post-processing pass.
-void FBOContainer::ActivateTexture() {
-    glBindTexture(0xde1, this->texture);
-}
-
-// Restore the engine's default framebuffer, ending render-to-texture.
-void FBOContainer::DeactivateRender2Texture() {
-    glBindFramebuffer(0x8d40, this->engine->field_0x40c);
-}
-
-// The GlowPPShader builds four identically-shaped offscreen targets; the
-// decompiler emitted a distinct construct/Create fragment per call site.
-// They are byte-for-byte the same as the primary constructor / Create, so
-// each variant simply forwards to that shared logic.
-void FBOContainer::initFrom(Engine *engine, String name) {
-    this->created = 0;
-    this->field_0x28 = 0;
-    this->framebuffer = 0;
-    this->texture = 0;
-    this->renderbuffer = 0;
-    this->width = 0;
-    this->height = 0;
-    this->name = name;
-    this->engine = engine;
-}
-
-void FBOContainer::Create0(int width, int height, bool a, bool linear) { Create(width, height, a, linear); }
-void FBOContainer::Create1(int width, int height, bool a, bool linear) { Create(width, height, a, linear); }
-void FBOContainer::Create2(int width, int height, bool a, bool linear) { Create(width, height, a, linear); }
-void FBOContainer::Create3(int width, int height, bool a, bool linear) { Create(width, height, a, linear); }
-
 } // namespace AbyssEngine

@@ -11,14 +11,21 @@ extern int *gRaceTable      __attribute__((visibility("hidden")));
 extern int *gDifficultyPtr  __attribute__((visibility("hidden")));
 extern int *gShopRoot;
 
-// Releases each owned Item* in `a` then empties the list.
-static void releaseItems(Array<Item*> *a) {
-    for (Item *it : *a) {
-        if (it != 0) {
-            delete it;
+// Deletes every owned pointee in the array (nulling each slot as it goes),
+// then frees the backing store. Out-of-line in the original as
+// ArrayReleaseClasses<T>; the loop walks the full capacity, not just size.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
+        if (a.data_[i] != 0) {
+            delete a.data_[i];
         }
+        a.data_[i] = 0;
     }
-    a->clear();
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = 0;
 }
 
 // ===========================================================================
@@ -61,7 +68,7 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
 Ship::~Ship() {
     if (this->equipment != 0) {
         if (this->equipment->size() != 0) {
-            releaseItems(this->equipment);
+            ArrayReleaseClasses<Item*>(*this->equipment);
         }
         delete this->equipment;
     }
@@ -69,7 +76,7 @@ Ship::~Ship() {
 
     if (this->cargo != 0) {
         if (this->cargo->size() != 0) {
-            releaseItems(this->cargo);
+            ArrayReleaseClasses<Item*>(*this->cargo);
         }
         delete this->cargo;
     }

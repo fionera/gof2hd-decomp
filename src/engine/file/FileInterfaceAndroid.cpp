@@ -26,7 +26,7 @@ extern int *gFIAInstCount __attribute__((visibility("hidden")));
 // GetDirPreFix() returns a String built from a fixed directory prefix.
 extern const char kDirPreFix[] __attribute__((visibility("hidden")));
 
-String FileInterfaceAndroid_GetDirPreFix()
+String FileInterfaceAndroid::GetDirPreFix()
 {
     return String(kDirPreFix);
 }
@@ -273,11 +273,43 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf)
     return ok;
 }
 
-// Deletes a copy of a String by value (homed to the stack on entry).
-void FileInterfaceAndroid_FileDelete(String s)
+// The Android backend never implemented these slots; the original emitted them as standalone
+// stubs that return a constant (and otherwise ignore their arguments).
+void *FileInterfaceAndroid::OpenAppend(String, int, bool, unsigned int)
 {
-    String tmp;
-    tmp.ctor_copy(&s, false);
+    return 0;
+}
+
+char *FileInterfaceAndroid::Output(char *line)
+{
+    return line;
+}
+
+// Copy-constructs a throwaway String from the by-value argument's second backing word
+// reinterpreted as a String pointer (the original's degenerate FileDelete body); the copy is
+// discarded immediately.
+void FileInterfaceAndroid::FileDelete(String name)
+{
+    String *src = *reinterpret_cast<String **>(reinterpret_cast<char *>(&name) + 4);
+    String discard(*src, false);
+}
+
+uint32_t FileInterfaceAndroid::FileEnumInit(char *, bool)
+{
+    return 0;
+}
+
+uint32_t FileInterfaceAndroid::FileGetNextEnum(String &)
+{
+    return 0;
+}
+
+void FileInterfaceAndroid::SetSaveDirectory(String)
+{
+}
+
+void FileInterfaceAndroid::ResetSaveDirectory()
+{
 }
 
 // Probes both zip directories and, failing that, the filesystem (fopen) under AppRootDir.

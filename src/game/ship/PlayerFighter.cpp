@@ -108,7 +108,7 @@ void PlayerFighter::awake() {
 }
 
 
-void PlayerFighter::setBV_a(Array<BoundingVolume *> *v) {
+void PlayerFighter::setBV(Array<BoundingVolume *> *v) {
     this->boundingVolumes = v;
 }
 
@@ -611,7 +611,7 @@ int PlayerFighter::collide(float x, float y, float z) {
 }
 
 
-void PlayerFighter::setBV_b(BoundingVolume *bv) {
+void PlayerFighter::setBV(BoundingVolume *bv) {
     Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
     this->boundingVolumes = a;
     // setBV() tail: append the bounding volume to the newly created array.

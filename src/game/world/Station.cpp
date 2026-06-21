@@ -76,7 +76,7 @@ void Station::addItem(Item* item) {
     } else {
         for (uint32_t i = 0; i < items->size(); i++) {
             if ((*items)[i]->equals(item)) {
-                (*items)[i]->addAmount(item->getAmount());
+                (*items)[i]->changeAmount(item->getAmount());
                 return;
             }
         }
