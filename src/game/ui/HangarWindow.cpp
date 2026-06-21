@@ -428,7 +428,7 @@ void HangarWindow::render() {
                 else
                     vis = (i != 4 || g_hw_optionFlags[0x4c] == 0);
                 ((TouchButton *)(b))->setVisible(vis);
-                ((TouchButton *)(b))->setPosition2(layout->field_0x28 + ((ChoiceWindow *)this->dialog)->x, layout->field_0x8);
+                ((TouchButton *)(b))->setPosition(layout->field_0x28 + ((ChoiceWindow *)this->dialog)->x, layout->field_0x8);
                 ((TouchButton *)(b))->draw();
             }
         }

@@ -447,7 +447,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         Array<TouchButton *> *buttons = this->buttons;
         for (unsigned i = 0; i < buttons->size(); ++i) {
             TouchButton *button = (*buttons)[i];
-            if (button->touch_end(x, y) != 0) {
+            if (button->OnTouchEnd(x, y) != 0) {
                 void *agent = selected_agent(this);
                 if (i >= 5 && ((Agent *)(agent))->isGenericAgent() != 0) {
                     ((Agent *)(agent))->setEvent(1);
@@ -457,7 +457,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         break;
     }
     case 3:
-        if ((*this->buttons)[0]->touch_end(x, y) != 0) {
+        if ((*this->buttons)[0]->OnTouchEnd(x, y) != 0) {
             ((SpaceLounge *)(this))->onKeyPress(0x10000);
         }
         break;
@@ -847,23 +847,23 @@ void SpaceLounge::drawLounge() {
     ((TouchButton *)(button_at(this, 0)))->setTextColor(-1);
     int offer = ((Agent *)((*this->agents)[this->selectedAgent]))->getOffer();
     if (this->mode == 2) {
-        ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY0);
+        ((TouchButton *)(button_at(this, 0)))->setPosition(this->buttonX, this->buttonY0);
         ((TouchButton *)(button_at(this, 1)))->setPosition(this->panelWidth + this->buttonX, this->buttonY0, 0x12);
         this->visibleButtonCount = 0;
         if (offer < 11 && ((1 << (offer & 0xff)) & 0x60c) != 0) {
             this->visibleButtonCount = 3;
         } else if (offer == 1) {
             this->visibleButtonCount = 1;
-            ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
+            ((TouchButton *)(button_at(this, 0)))->setPosition(this->buttonX, this->buttonY1);
         } else {
             this->visibleButtonCount = 2;
-            ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
+            ((TouchButton *)(button_at(this, 0)))->setPosition(this->buttonX, this->buttonY1);
             ((TouchButton *)(button_at(this, 1)))->setPosition(this->panelWidth + this->buttonX, this->buttonY1, 0x12);
         }
     } else {
         this->visibleButtonCount = 1;
         ((TouchButton *)(button_at(this, 0)))->setTextColor(-1);
-        ((TouchButton *)(button_at(this, 0)))->setPosition2(this->buttonX, this->buttonY1);
+        ((TouchButton *)(button_at(this, 0)))->setPosition(this->buttonX, this->buttonY1);
     }
 
     for (unsigned i = 0; i < this->buttons->size(); ++i) {

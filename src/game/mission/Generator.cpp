@@ -634,7 +634,8 @@ extern "C" __attribute__((visibility("hidden"))) uint8_t *volatile
 extern "C" __attribute__((visibility("hidden"))) void **volatile
     g_Generator_wantedList;
 
-static void addShip(Array<Ship *> *list, Ship *base, int race) {
+static inline __attribute__((always_inline)) void
+addShip(Array<Ship *> *list, Ship *base, int race) {
     Ship *ship = base->makeShip(-1);
     list->push_back(ship);
     Ship *added = list->data()[list->size() - 1];

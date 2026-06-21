@@ -213,24 +213,5 @@ public:
     void switchCamera(int id);
     void updateJumpScene();
     void useCloak();
-
-    // Per-frame / dispatch bodies called by the thin entry points above.
-    void tick(int frameDeltaMs);
-    void dispatchTouchEndAction(int p1, int p2, void* touchId, unsigned hudResult,
-                                int wasAutoPilot);
-    void handleHudTouchAction(int p1, int p2, void* touchId, unsigned hudResult);
-
-    // 2D overlay sub-draws (inlined in OnRender2D).
-    void drawRadio();
-    void drawRadar();
-    void drawHud();
-    void drawFadeMessage(int canvas);
-
-    // Factored helpers used by OnInitialize / dockEvent / successCheck.
-    void loadSoundResources();
-    void restorePlayerStats();
-    void setupWeaponsAndAudio();
-    void buildDockChoice(int textId, int prefixLit, int suffixLit);
-    void buildMissionFollowup();
 };
 #endif

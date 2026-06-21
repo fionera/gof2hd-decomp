@@ -142,8 +142,9 @@ void TouchButton::setPosition(int x, int y) {
     setPosition(x, y, this->flags0);
 }
 
-void TouchButton::setPosition2(int x, int y) {
-    setPosition(x, y, this->flags0);
+// Swap the small corner adornment for a gamepad-button glyph image.
+void TouchButton::setGamePadButtonImage(unsigned int image) {
+    this->adornImage = static_cast<int>(image);
 }
 
 void TouchButton::setHalfTransparent(bool value) {
@@ -771,16 +772,4 @@ TouchButton::TouchButton(String *text, int type, int x, int y, int width, int ic
     this->fontId = (uint32_t)**g_TB_c1;
     this->fontSpacing = gCanvas->FontGetSpacing(this->fontId);
     init(*text, (unsigned int)type, 0, icon, width, 0, x, y, (unsigned char)style, 0x44);
-}
-
-// Three-argument placement helper: positions the button using `align` as the
-// anchor-flags byte (the same flags consumed by setPosition()).
-void TouchButton::setPosition3(int x, int y, int align) {
-    setPosition(x, y, (unsigned char)align);
-}
-
-// Touch-release handler entry point: forwards to OnTouchEnd, which clears the
-// pressed flag and reports whether the release counts as a click.
-unsigned int TouchButton::touch_end(int x, int y) {
-    return OnTouchEnd(x, y);
 }

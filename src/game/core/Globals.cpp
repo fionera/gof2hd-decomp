@@ -577,8 +577,8 @@ extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));  // DAT_
 extern void *const gGAMT_modText __attribute__((visibility("hidden")));
 
 // Offer/event briefing-text assembly (the shipped binary inlines this into getAgentMissionText;
-// kept as a file-local helper, defined below).
-static void buildAgentMissionText(String *out, void *agent, int offer);
+// kept as a file-local helper, defined below). always_inline so no standalone symbol is emitted.
+static inline __attribute__((always_inline)) void buildAgentMissionText(String *out, void *agent, int offer);
 
 // Globals::getAgentMissionText(Agent*) -> String by value.
 String Globals::getAgentMissionText(Agent *agent)
@@ -2065,8 +2065,8 @@ extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));  // DAT
 // (the resolved bucket value 0..5). Returns -1 when unmapped.
 
 // File-local dialogue-code -> sound-id table (the shipped binary inlines this into
-// getDialogueSoundId; defined below).
-static int dialogueDispatch(int category, int code, int isMale);
+// getDialogueSoundId; defined below). always_inline so no standalone symbol is emitted.
+static inline __attribute__((always_inline)) int dialogueDispatch(int category, int code, int isMale);
 
 // Globals::getDialogueSoundId(int code, Agent* agent)
 int Globals::getDialogueSoundId(int code, Agent *agent)
@@ -2247,7 +2247,7 @@ float Globals::sqrt_impl(float x)
 // dialogue code, return the mapped sound id (or -1). The shipped binary inlines this entirely into
 // getDialogueSoundId(); it is kept here as a file-local helper (no standalone Globals:: symbol) to
 // avoid duplicating the ~100-line table three times.
-static int dialogueDispatch(int category, int code, int isMale)
+static inline __attribute__((always_inline)) int dialogueDispatch(int category, int code, int isMale)
 {
     // Buckets 2 / 3 (and the race-3 fallback) share the "generic" table.
     auto genericTable = [](int c) -> int {
@@ -2367,7 +2367,7 @@ static int dialogueDispatch(int category, int code, int isMale)
 // briefing into `out` by selecting a base GameText line per offer and substituting hash tokens
 // (#name#, #amount#, #reward#, ...) via Status::replaceHash. The per-offer base text indices and
 // token substitutions are reproduced from the disassembly's GameText::getText(...) keys.
-static void buildAgentMissionText(String *out, void *agentArg, int offer)
+static inline __attribute__((always_inline)) void buildAgentMissionText(String *out, void *agentArg, int offer)
 {
     Agent *agent = (Agent *)agentArg;
 

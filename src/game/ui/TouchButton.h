@@ -71,8 +71,6 @@ public:
     bool         OnTouchBegin(int px, int py);
     unsigned int OnTouchEnd(int px, int py);
     unsigned int OnTouchMove(int px, int py);
-    void         setPosition3(int x, int y, int align);
-    unsigned int touch_end(int x, int y);
     void         draw();
     int          getHeight();
     Vector       getPosition();
@@ -86,9 +84,9 @@ public:
     void         setAlwaysPressed(bool value);
     void         setHalfTransparent(bool value);
     void         setNumberText(String const &value);
+    void         setGamePadButtonImage(unsigned int image);
     void         setPosition(int x, int y, unsigned char flags);
     void         setPosition(int x, int y);
-    void         setPosition2(int x, int y);
     void         setPressProgress(float value);
     void         setPressProgressHighlight(bool value);
     void         setSplitText(String const &value);

@@ -3277,3 +3277,15 @@ void TransformRelease(Engine *engine, Transform **slot)
 }
 
 } // namespace AbyssEngine
+
+// GetStringLength(AbyssEngine::String) - number of UTF-16 code units before the terminating NUL in
+// the string's wide backing buffer. A standalone free helper in the GLOBAL namespace; walks
+// GetAEWChar() to the NUL and returns the code-unit count. Declared in AEString.h; defined here
+// (out-of-line, not inline) because the original emits a standalone symbol for it.
+int GetStringLength(AbyssEngine::String str)
+{
+    const unsigned short *p = str.GetAEWChar();
+    while (*p)
+        ++p;
+    return static_cast<int>(p - str.GetAEWChar());
+}

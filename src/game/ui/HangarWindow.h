@@ -91,7 +91,7 @@ struct TouchButton {
     void resetTouch();
     void setAlwaysPressed(bool value);
     void setPosition(int x, int y, int flags);
-    void setPosition2(int x, int y);
+    void setPosition(int x, int y);
     void setSplitText(void *value);
     void setText(void *text);
     void setVisible(bool value);

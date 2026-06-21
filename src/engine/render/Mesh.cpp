@@ -129,7 +129,10 @@ inline void bumpMax(float *slot, float v) {
 }
 
 // Reads one "type 1" vector track: u16 count, then per entry a float key followed by a
-// 12-byte vector payload, inserting a keyframe under `channel`.
+// 12-byte vector payload, inserting a keyframe under `channel`. The original always
+// expanded these track readers at their single call site, so they carry no standalone
+// symbol; keep them force-inlined to preserve that.
+__attribute__((always_inline)) inline
 bool readVectorTrack(unsigned int file, Transform *anim, float *maxSlot, unsigned int channel) {
     unsigned short count;
     if (AEFile::Read(2, &count, file) == 0)
@@ -150,6 +153,7 @@ bool readVectorTrack(unsigned int file, Transform *anim, float *maxSlot, unsigne
 // Reads one "type 0" scalar-triplet track: three axes, each a u16 count then per sample a
 // value float and a key float. `ch0/ch1/ch2` are the per-axis channel masks; when
 // `negateMiddle` is set the middle axis' value is negated before insert.
+__attribute__((always_inline)) inline
 bool readScalarTrack(unsigned int file, Transform *anim, float *maxSlot,
                      unsigned int ch0, unsigned int ch1, unsigned int ch2,
                      bool negateMiddle) {
