@@ -40,21 +40,20 @@ public:
     uint32_t hasItem(int index);
     uint32_t hasShip(int index);
 
-    int getIndex() const { return index; }
-    int getSystem() const { return systemIndex; }
-    int getTecLevel() const { return techLevel; }
-    int getTextureIndex() const { return textureIndex; }
-    String getName() { return name; }
+    int getIndex();
+    int getSystem();
+    int getTecLevel();
+    int getTextureIndex();
+    bool isPlanet();
+    String getName();
 
-    Array<Agent*>* getAgents() const { return agents; }
-    Array<Item*>* getItems() const { return items; }
-    Array<Ship*>* getShips() const { return ships; }
+    Array<Agent*>* getAgents();
+    Array<Item*>* getItems();
+    Array<Ship*>* getShips();
 
     void setAgents(Array<Agent*>* agents);
     void setItems(Array<Item*>* items, bool deep);
     void setShips(Array<Ship*>* ships, bool deep);
-    // Take ownership of a ready-built ship array (no deep clone) - used by save loading.
-    void setShipsArr(Array<Ship*>* ships);
 
     void setAttackedFriends(bool v);
     uint8_t hasAttackedFriends();
@@ -67,8 +66,5 @@ public:
     uint32_t getPirateStationIndex();
     uint32_t stationHasHiddenBlueprint(bool ignoreFound);
     uint32_t stationHasPirateBase();
-
-    // ArrayRemove<Ship*>: compact `ships`, dropping every slot equal to `ship`.
-    static void arrayRemoveShip(Ship* ship, Array<Ship*>* ships);
 };
 #endif

@@ -169,6 +169,35 @@ int g_followUpAction;
 // 6 and 7).
 int *g_aimAssist;
 
+// ---------------------------------------------------------------------------
+// Press-time action sinks (written by keyPressed's action dispatch).
+// ---------------------------------------------------------------------------
+// keyPressed mirrors keyReleased's steering recentre: a pressed directional key
+// drives its axis fully toward that direction (+/-0.1 around the 0.5 midpoint),
+// and the boost/brake/fire keys post one-shot wheel/zoom/fire requests. These
+// two extra module-private sinks complete the set keyReleased already clears
+// (g_pendingZoom/WheelA/WheelB/Fire and g_aimAssist).
+int *g_pressWheelRequest;   // boost/brake nudge target (+/-1, then +/-0.01)
+int *g_pressFireFlag;       // single-shot fire flag raised on a press
+
+// The cheat/combo progress tracker. The active application module keeps a small
+// state block; its +0x8 word counts how far a recognised key sequence has
+// advanced (0 = idle, 9 = complete) and +0xc carries the touch handle the
+// matched key must belong to. keyPressed reads the live module through the same
+// indirection keyReleased uses.
+struct ModuleInputState {
+    int field_0x00;
+    int field_0x04;
+    int comboProgress;      // +0x08 recognised-sequence progress (0..9)
+    int requiredTouch;      // +0x0c touch handle a matched key must report
+};
+ModuleInputState *const *g_moduleInputState;
+
+// "Accelerate"/"Decelerate" held flags, raised when the thrust combo (action 9)
+// completes; consumed by the flight module next frame.
+char *g_accelHeld;
+char *g_decelHeld;
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -398,6 +427,138 @@ void keyReleased(AbyssEngine::Engine *engine, int key)
         break;
     default:
         break;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Virtual-key press.
+// ---------------------------------------------------------------------------
+// Pressing a virtual key drives a three-stage pipeline:
+//
+//   1. Advance the active module's recognised key sequence: pressing the
+//      "start" key (14) resets it to 1, and pressing the expected follow-up key
+//      while the previous step is current advances it one notch (up to 9). This
+//      is the cheat / multi-key combo tracker the module reads at +0x8.
+//   2. Scan the virtual-key table in three priority passes (key field +0x50 ==
+//      pass, high to low). The first matching, currently-released key whose
+//      required module and touch handle line up is marked pressed and, if it
+//      drives a synthetic touch, OnTouchBegin is started for it. The matched
+//      key's table index (capped at 0xb, or 0x13 for the dedicated fire slot)
+//      selects the steering/throttle side-effect applied in step 3.
+//   3. When the sequence has fully advanced (progress == 9) latch the
+//      forward/reverse thrust flags from the live "Accelerate"/"Decelerate"
+//      action state, then apply the matched key's side-effect: steer one axis,
+//      post a wheel/boost request, drive the throttle (engine +0x360) or raise
+//      the fire flag.
+void keyPressed(AbyssEngine::Engine *engine, int key)
+{
+    if (engine == nullptr)
+        return;
+
+    ModuleInputState *module = *g_moduleInputState;
+
+    // --- Step 1: advance the recognised key sequence. -----------------------
+    // Each transition fires only when the expected key follows the current
+    // progress value; key 14 (re)starts the sequence, and a completed sequence
+    // (progress 9) is left untouched.
+    int progress = module->comboProgress;
+    if (key == 14) {
+        switch (progress) {
+        case 4:  progress = 5; break;
+        case 6:  progress = 7; break;
+        case 9:  break;                 // already complete: leave as-is
+        default: progress = 1; break;
+        }
+    } else if (key == 0x40000000 && progress == 1) {
+        progress = 2;
+    } else if (key == 1 && progress == 2) {
+        progress = 3;
+    } else if (key == 0x11 && progress == 3) {
+        progress = 4;
+    } else if (key == 0xf && progress == 5) {
+        progress = 6;
+    } else if (key == 5 && progress == 7) {
+        progress = 8;
+    } else if (key == 5 && progress == 8) {
+        progress = 9;
+    } else if (progress != 9) {
+        progress = 0;
+    }
+    if (progress != 9 || module->comboProgress != 9)
+        module->comboProgress = progress;
+
+    // --- Step 2: drive the matching on-screen key. --------------------------
+    const int currentModule = static_cast<int>(gAppManager->currentModuleId);
+    int matchedIndex = -1;
+
+    for (int pass = 2; pass >= 0; --pass) {
+        for (int i = 0; i < kVirtualKeyCount; ++i) {
+            VirtualKey &vk = g_virtualKeys[i];
+            if (vk.field_0x50 != pass)
+                continue;
+            if (vk.keyCode != key && vk.altCode1 != key && vk.altCode2 != key &&
+                vk.altCode3 != key)
+                continue;
+            if (vk.pressed != 0)
+                continue;
+            // The key only fires inside its bound module (-1 == any module).
+            if (vk.field_0x44 != currentModule && vk.field_0x44 + 1 != 0)
+                continue;
+            // ...and, if it carries a required touch handle, only while that
+            // handle is the module's active one.
+            if (vk.field_0x48 != 0 && module->requiredTouch != vk.field_0x48)
+                continue;
+            // Optional per-key predicate gate.
+            if (vk.action != 0) {
+                auto predicate = reinterpret_cast<int (*)(int)>(vk.action);
+                if (predicate(i) == 0)
+                    continue;
+            }
+
+            vk.pressed = 1;
+            if (matchedIndex < 0xb)
+                matchedIndex = i;
+            if (i == 19)                // the dedicated fire slot
+                matchedIndex = 0x13;
+
+            if (vk.hasTouch != 0) {
+                engine->appManager->OnTouchBegin(vk.baseX + vk.offsetX,
+                                                 vk.baseY + vk.offsetY, vk.touch);
+                vk.offsetX = vk.baseX;
+                vk.offsetY = vk.baseY;
+            }
+            goto matched;
+        }
+    }
+
+matched:
+    // --- Step 3: latch thrust + apply the matched key's side-effect. --------
+    if (module->comboProgress == 9) {
+        if (GetKeyState(const_cast<char *>("Accelerate")) != 0) {
+            *g_decelHeld = 0;
+            *g_accelHeld = 1;
+        } else if (GetKeyState(const_cast<char *>("Decelerate")) != 0) {
+            *g_accelHeld = 0;
+            *g_decelHeld = 1;
+        } else if (gAppManager->engine == nullptr) {
+            *g_accelHeld = 0;
+            *g_decelHeld = 0;
+        }
+    }
+
+    switch (matchedIndex) {
+    case 0:  g_steeringX.axis1 = -kAxisStep; break;   // left
+    case 1:  g_steeringX.axis1 =  kAxisStep; break;   // right
+    case 2:  g_steeringY.axis2 =  kAxisStep; break;   // up
+    case 3:  g_steeringY.axis2 = -kAxisStep; break;   // down
+    case 4:  *g_pressWheelRequest = -1; break;
+    case 5:  *g_pressWheelRequest =  1; break;
+    case 6:  *reinterpret_cast<float *>(g_aimAssist) = -0.01f; break;
+    case 7:  *reinterpret_cast<float *>(g_aimAssist) =  0.01f; break;
+    case 8:  engine->field_0x360 = 0x3f800000; break;   // throttle  1.0f
+    case 9:  engine->field_0x360 = 0xbf800000; break;   // throttle -1.0f
+    case 0x13: *g_pressFireFlag = 1; break;
+    default: break;
     }
 }
 

@@ -98,7 +98,7 @@ struct Achievements;
 __attribute__((visibility("hidden"))) extern Ship *(*g_ModStation_es_getShip)(Status *);
 
 // ModStation::enterStation()
-void ModStation_enterStation()
+void ModStation::enterStation()
 {
     // Status::departStation actually takes the destination Station* (see Status.cpp);
     // gof2/Status.h's no-arg prototype is wrong but not editable here, so dispatch
@@ -286,8 +286,10 @@ void ModStation_leaveStation_okp(ModStation *self);
 void ModStation_okp_toggleHelp(ModStation *self);
 }
 
-// ModStation::OnKeyPress(self, key) — drives the station main-menu cursor and screen selection.
-void ModStation::OnKeyPress(long long key) {
+// ModStation::OnKeyPress(unused, key) — drives the station main-menu cursor and screen
+// selection. The engine dispatches through this two-arg slot; the first argument is the
+// ignored dispatch slot and the second carries the actual key code.
+void ModStation::OnKeyPress(long long, long long key) {
     if (this->stationActive == 0)
         return;
 
@@ -368,11 +370,14 @@ void ModStation::OnKeyPress(long long key) {
         ModStation_okp_showLocked(this);
 }
 
-// Two-arg engine-dispatch variant: the first argument is the (ignored) dispatch
-// slot and the second is the actual key code, so it forwards to the single-arg
-// handler above.
-void ModStation::OnKeyPress(long long, long long key) {
-    OnKeyPress(key);
+// The station screen ignores key-release events entirely, and always reports its
+// loading screen as already shown (both are no-ops in the original binary).
+long long ModStation::OnKeyRelease(long long, long long key) {
+    return key;
+}
+
+int ModStation::ShowLoadingScreen() {
+    return 1;
 }
 
 struct Station;
@@ -590,7 +595,7 @@ void Engine_LightEnable_rl(int engine, int flag);
 }
 
 // ModStation::resetLight() — restores the hangar's lighting rig to the home-system's race profile.
-void ModStation_resetLight()
+void ModStation::resetLight()
 {
     int holder = *(int *)g_rl_engineHolder;
     rl_engineFromHolder(holder); // material ambient
@@ -1873,8 +1878,8 @@ void handleMainButtons(ModStation *self, int x, int y)
     for (unsigned i = 0; i < 5; i = i + 1) {
         if (TouchButton_OnTouchEnd_ote(*(int *)((int)(intptr_t)self->buttonRow + i * 4), x) != 0) {
             self->selectedButton = (int)i;
-            // virtual dispatch through ModStation's own vtable slot +0x10.
-            self->launchModule(0x10000);
+            // launch the currently loaded station application module.
+            ModStation_ote_launchModule(**(int **)g_ote_module, 0x10000);
             return;
         }
     }
@@ -2018,8 +2023,8 @@ void handleMissionComplete(ModStation *self)
             Status_setMission_ote(*status);
             self->selectedButton = 1;
             ((char*)&self->modalFlags)[1] = 0;
-            // virtual dispatch through ModStation's own vtable slot +0x10.
-            self->launchModule(0x10000);
+            // launch the currently loaded station application module.
+            ModStation_ote_launchModule(**(int **)g_ote_module, 0x10000);
             return;
         }
         if (d != 0)
@@ -2175,7 +2180,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     if (flag != 0) {
         if (((Radio *)(*(void**)&this->activeMission))->lastMessageShown() != 0) {
             (unsigned char&)this->stationActive = 0;
-            gStatus->nextCampaignMission();
+            gStatus->nextCampaignMission(true);
             unsigned int mod = *(unsigned int *)gAppManager;
             *(int *)*g_ModStation_tb_clear = 0;
             // `mod` is the target module id; dispatch on the ApplicationManager singleton.
@@ -3126,18 +3131,14 @@ extern "C" void  ModStation_opdelete_oi (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ou (void *p) { ::operator delete(p); }
 extern "C" void  ModStation_opdelete_ote(void *p) { ::operator delete(p); }
 
-// ---- free-function forwarders ---------------------------------------------
-// enterStation()/resetLight() are file-local free functions (they operate on
-// station/engine globals, not on `this`); these split-outs just re-enter them.
-// (The ModStation member split-outs — autosave/checkHints/checkMedals/
-// checkPendingProducts/resetIdleCamForHangar — were removed: their call sites
-// now invoke the real member directly on `this`.)
-void ModStation_enterStation();   // free function (uses station globals)
-void ModStation_resetLight();     // free function (uses engine globals)
-extern "C" void ModStation_enterStation_oi (ModStation * /*self*/) { ModStation_enterStation(); }
-extern "C" void ModStation_enterStation_ote(ModStation * /*self*/) { ModStation_enterStation(); }
-extern "C" void ModStation_resetLight_oi (ModStation * /*self*/) { ModStation_resetLight(); }
-extern "C" void ModStation_resetLight_ote(ModStation * /*self*/) { ModStation_resetLight(); }
+// ---- member forwarders -----------------------------------------------------
+// enterStation()/resetLight() are real ModStation members; these split-outs
+// (the per-parent block lift-outs OnInitialize/OnTouchEnd performed) just
+// re-enter the member on `self`.
+extern "C" void ModStation_enterStation_oi (ModStation *self) { self->enterStation(); }
+extern "C" void ModStation_enterStation_ote(ModStation *self) { self->enterStation(); }
+extern "C" void ModStation_resetLight_oi (ModStation *self) { self->resetLight(); }
+extern "C" void ModStation_resetLight_ote(ModStation *self) { self->resetLight(); }
 
 // leaveStation reached from the SELECT key path: same 16-byte veneer that
 // tail-calls the global leave-station handler (see ModStation_leaveStation_impl).
@@ -3292,16 +3293,6 @@ extern "C" void ModStation_ote_kickIdleCamera(ModStation *self) {
 extern "C" void ModStation_ote_launchModule(int module, int arg) {
     if (module != 0)
         ((void (*)(int, int))module)(module, arg);
-}
-
-// ModStation::launchModule() — vtable slot at byte-offset 0x10 (index 4).
-// In the binary the DLC/station-menu button path and the mission-0x2d transition
-// resolve this slot off `this`'s own vtable and call it as
-// `(*(this->vptr+0x10))(this, 0x10000, 0)`. It launches the currently loaded
-// station application module with the supplied argument, mirroring the loaded
-// code-pointer tail-branch the engine installs into this slot.
-void ModStation::launchModule(int arg) {
-    ModStation_ote_launchModule(**(int **)g_ote_module, arg);
 }
 
 // ---- OnUpdate camera / animation fragments --------------------------------

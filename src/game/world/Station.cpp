@@ -53,7 +53,7 @@ Station::~Station() {
         items = nullptr;
     }
     if (agents != nullptr) {
-        Mission* campaign = gStatus->getCampaignMissionPtr();
+        Mission* campaign = reinterpret_cast<Mission*>(gStatus->getCampaignMission());
         Mission* freelance = gStatus->getFreelanceMission();
         Agent* campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
         Agent* freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
@@ -69,6 +69,17 @@ Station::~Station() {
 Station* Station::clone() {
     return new Station(name, index, systemIndex, techLevel, textureIndex);
 }
+
+int Station::getIndex() { return index; }
+int Station::getSystem() { return systemIndex; }
+int Station::getTecLevel() { return techLevel; }
+int Station::getTextureIndex() { return textureIndex; }
+bool Station::isPlanet() { return planet; }
+String Station::getName() { return name; }
+
+Array<Agent*>* Station::getAgents() { return agents; }
+Array<Item*>* Station::getItems() { return items; }
+Array<Ship*>* Station::getShips() { return ships; }
 
 void Station::addItem(Item* item) {
     if (items == nullptr) {
@@ -96,20 +107,10 @@ void Station::addShip(Ship* ship) {
     ships->push_back(ship);
 }
 
-void Station::arrayRemoveShip(Ship* ship, Array<Ship*>* ships) {
-    uint32_t kept = 0;
-    for (uint32_t i = 0; i < ships->size(); i++) {
-        Ship* cur = (*ships)[i];
-        if (cur != ship)
-            (*ships)[kept++] = cur;
-    }
-    ships->resize(kept);
-}
-
 void Station::removeShip(Ship* ship) {
     if (ships == nullptr)
         return;
-    arrayRemoveShip(ship, ships);
+    ArrayRemove(ship, *ships);
 }
 
 void Station::removeShips() {
@@ -178,17 +179,6 @@ void Station::setShips(Array<Ship*>* ships, bool deep) {
         for (uint32_t i = 0; i < ships->size(); i++)
             (*copy)[i] = (*ships)[i]->clone();
     }
-}
-
-void Station::setShipsArr(Array<Ship*>* ships) {
-    if (this->ships == ships)
-        return;
-    if (this->ships != nullptr) {
-        for (Ship* s : *this->ships) delete s;
-        this->ships->clear();
-        delete this->ships;
-    }
-    this->ships = ships;
 }
 
 void Station::setAgents(Array<Agent*>* agents) {

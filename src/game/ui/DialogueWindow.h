@@ -52,6 +52,7 @@ public:
     int OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);
     void draw();
+    int getMode();
     bool hasLevel();
     int init();
     bool isFirstPage();

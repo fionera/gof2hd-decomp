@@ -97,7 +97,6 @@ float StatusWindow::getRelativeScrollStartPos() {
 
 extern "C" {
 void Status_replaceHash(void *out, void *key, void *a, void *b);
-void StatusWindow_getMedalHintText(void *out, int medalIndex);
 
 extern Layout **g_swe_layout;       // Layout singleton
 extern char *g_swe_dialogBlock;   // "is a dialog open" flag
@@ -158,7 +157,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 
                     int count = (elite == 0) ? medals[this->selectedMedal] : 1;
 
-                    String hdr, valStr, valTmp, full, hint;
+                    String hdr, valStr, valTmp, full;
                     void *key = *(void **)g_swe_status;
                     String *t = (*g_swe_gameText)->getText(this->selectedMedal + 0x610);
                     hdr.ctor_copy(t, false);
@@ -167,7 +166,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     valTmp.ctor_copy(&valStr, false);
                     Status_replaceHash(&full, key, &hdr, &valTmp);
 
-                    StatusWindow_getMedalHintText(&hint, this->selectedMedal);
+                    String hint = this->getMedalHintText(this->selectedMedal);
                     full.addAssign_str(&hint);
 
                     (*g_swe_globals)->getLineArray(
@@ -234,8 +233,11 @@ float StatusWindow::getRelativeScrollHeight() {
     return (float)num / (float)a;
 }
 
-// Scroll inertia + selected-tab button highlight.
-void StatusWindow::update() {
+// Scroll inertia + selected-tab button highlight. The frameTime argument is
+// carried by the call interface but the inertia model is frame-rate independent
+// here, so it is unused.
+void StatusWindow::update(int frameTime) {
+    (void)frameTime;
     // Velocity integration while not being dragged.
     if (this->isDragging == 0) {
         float v = this->scrollDamping * this->scrollVelocityF;
@@ -273,25 +275,18 @@ void StatusWindow::update() {
     }
 }
 
-// Arity variant: the binary carries a second update overload whose int parameter
-// is never read — the body is the same scroll-inertia / tab-highlight pass as the
-// no-arg form, so forward to it.
-void StatusWindow::update(int unused) {
-    (void)unused;
-    this->update();
-}
-
 extern "C" {
 extern GameText **g_swh_gameText;   // GameText id source
 }
 
 // Builds the per-medal hint text: medals in progress get a detailed sub-goal checklist.
-void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
+String StatusWindow::getMedalHintText(int medalIndex)
 {
     int *medals = gAchievements->getMedals();
     int state = medals[medalIndex];
 
-    ((String *)outStr)->ctor();
+    String out;
+    out.ctor();
 
     if (state != 0) {
         String tmpA;  // intro/prefix line
@@ -301,7 +296,7 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            ((String *)outStr)->addAssign_str(&tmpB);
+            out.addAssign_str(&tmpB);
 
             Status *base = gStatus;
             Array<bool> *list = base->field_94;
@@ -310,14 +305,14 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x594 + (int)i);
                     tmpB = tmpA + *t;
-                    ((String *)outStr)->addAssign_str(&tmpB);
+                    out.addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 3 && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            ((String *)outStr)->addAssign_str(&tmpB);
+            out.addAssign_str(&tmpB);
 
             Status *base = gStatus;
             Array<bool> *list = base->field_98;
@@ -326,14 +321,14 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x59f + (int)i);
                     tmpB = tmpA + *t;
-                    ((String *)outStr)->addAssign_str(&tmpB);
+                    out.addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 9 && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            ((String *)outStr)->addAssign_str(&tmpB);
+            out.addAssign_str(&tmpB);
 
             Status *base = gStatus;
             Array<bool> *list = base->field_ac;
@@ -342,14 +337,14 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x57e + (int)i);
                     tmpB = tmpA + *t;
-                    ((String *)outStr)->addAssign_str(&tmpB);
+                    out.addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 0xd && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            ((String *)outStr)->addAssign_str(&tmpB);
+            out.addAssign_str(&tmpB);
 
             Status *root = gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
@@ -359,14 +354,14 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                     int idx = bp->getIndex();
                     String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
-                    ((String *)outStr)->addAssign_str(&tmpB);
+                    out.addAssign_str(&tmpB);
                 }
             }
         } else if (medalIndex == 0xe && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            ((String *)outStr)->addAssign_str(&tmpB);
+            out.addAssign_str(&tmpB);
 
             Status *root = gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
@@ -376,11 +371,13 @@ void StatusWindow_getMedalHintText(void *outStr, int medalIndex)
                     int idx = bp->getIndex();
                     String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
-                    ((String *)outStr)->addAssign_str(&tmpB);
+                    out.addAssign_str(&tmpB);
                 }
             }
         }
     }
+
+    return out;
 }
 
 extern "C" {

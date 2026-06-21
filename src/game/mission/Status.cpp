@@ -88,14 +88,6 @@ int Status::inSupernovaSystem() {
     return result;
 }
 
-// Static HUD predicate: the game's only "challenge mode" is the supernova
-// challenge, so this resolves the live status from the global singleton and
-// reports whether the player is currently stranded in the supernova system.
-int Status::isChallengeMode() {
-    if (gStatus == 0) return 0;
-    return gStatus->inSupernovaSystem();
-}
-
 void Status::visitStation() { stationsVisited = stationsVisited + 1; }
 
 int Status::getMaxMissions() { return 2; }
@@ -278,12 +270,6 @@ int Status::getStationsVisited() { return stationsVisited; }
 
 int Status::getCampaignMission() {
     return (int)(intptr_t)(*missions)[0];
-}
-
-// Mission*-typed view of the same slot getCampaignMission() returns: the first
-// entry of the missions array is the active campaign mission.
-Mission* Status::getCampaignMissionPtr() {
-    return (*missions)[0];
 }
 
 void Status::setJumpgateUsed(int v) { jumpgatesUsed = v; }
@@ -621,13 +607,10 @@ bool Status::isOnStack(Station* s) {
     return (*stationStack)[i] != 0;
 }
 
-// True iff the orbited station differs from the player's home station.
-bool Status::inAlienOrbit_impl(Station* station, Station* playerStation) {
-    return station != playerStation;
-}
-
+// You are in an "alien" (foreign) orbit whenever the station you are currently
+// orbiting is not your own player/home station.
 bool Status::inAlienOrbit() {
-    return Status::inAlienOrbit_impl(station, playerStation);
+    return station != playerStation;
 }
 
 // Global slots referenced by resetGame.
@@ -1119,7 +1102,7 @@ int Status::getGammaRayDamagePerSecond(int station, int system) {
 // it is already present. Returns 1 if the stack was modified, 0 otherwise.
 int Status::addStationToStack(Station* s) {
     if (isOnStack(s)) {
-        setStationTail(s);
+        setStation(s);
         return 0;
     }
     Station** base = stationStack->data();
@@ -1144,7 +1127,7 @@ int Status::addStationToStack(Station* s) {
         }
         base[0] = s;
     }
-    setStationTail(s);
+    setStation(s);
     return 1;
 }
 
@@ -1219,12 +1202,17 @@ static const Step kSteps[] = {
     /*0x58*/ {0x4, 0, 0x6d, 0},
 };
 
-// Status::nextCampaignMission()
+// Status::nextCampaignMission(bool advance)
 //   Advances the campaign by one step: bumps the campaign-mission counter,
 //   snapshots the playing-time, runs the achievement check, then spawns and
 //   registers the next scripted Mission for that step (with a few steps
 //   performing extra cargo/equipment bookkeeping).
-void Status::nextCampaignMission() {
+//
+//   The `advance` argument is loaded but immediately overwritten with the current
+//   campaign step before the dispatch switch, so it has no effect on the work
+//   performed; it is accepted only to preserve the engine's call signature.
+void Status::nextCampaignMission(bool advance) {
+    (void)advance;
     int prevTimeLo = (int)this->playingTime;
     int prevTimeHi = (int)(this->playingTime >> 32);
 
@@ -1285,21 +1273,6 @@ void Status::nextCampaignMission() {
         // beyond the scripted range: default freelance hop.
         Status_addMissionTail(this, new Mission(0xb, 0, 100));
     }
-}
-
-// Same campaign-advance body, but takes (and ignores) a bool flag. The shipped
-// binary loads this argument register but immediately overwrites it with the
-// current campaign step before the dispatch switch, so the flag has no effect on
-// the work performed; it simply forwards to the parameterless form.
-void Status::nextCampaignMission(bool advance) {
-    (void)advance;
-    nextCampaignMission();
-}
-
-// Tail dispatch shared by addStationToStack()/visitStation(): commits `s` as the
-// current station by routing through the full setStation() travel logic.
-void Status::setStationTail(Station* s) {
-    setStation(s);
 }
 
 // Travels to `s`: marks its system visible, then rebuilds the planet name and

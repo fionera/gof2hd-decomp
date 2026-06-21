@@ -93,11 +93,6 @@ void PlayerFixedObject::outerCollide(Vector v) {
     this->outerCollide(v.x, v.y, v.z);
 }
 
-// outerCollide(Vector): forward by value through vtable slot 0x3c.
-void PlayerFixedObject::outerCollide_vec(Vector v) {
-    this->outerCollide(v.x, v.y, v.z);
-}
-
 V3 PlayerFixedObject::getPosition() {
     V3 pos = { (float)intPosX, (float)intPosY, (float)intPosZ };
     return pos;
@@ -608,14 +603,6 @@ PlayerFixedObject::~PlayerFixedObject() {
     self->name.dtor();
 }
 
-// Delegates to the recovered initialization body which spawns the fixed object and
-// seeds its position, name, faction and loot list.
-PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
-                                     float x, float y, float z)
-    : KIPlayer(kind, -1, player, geom, x, y, z, false) {
-    this->ctor(kind, param2, player, geom, x, y, z);
-}
-
 // Tail-call thunks selected by object state.
 extern "C" void render_thunk_state5(void *geom);   // arg = this->geometry
 extern "C" void render_thunk_other(void *expl);     // arg = this->explosion (Explosion*)
@@ -653,7 +640,10 @@ LAB_538:
 __attribute__((visibility("hidden"))) extern const int g_pfo_stationIdx[4];
 __attribute__((visibility("hidden"))) extern const int g_pfo_lootParams[8]; // pairs at +0 used; [idx*2+1]
 
-void PlayerFixedObject::ctor(int kind, int param2, void *player, void *geom, float x, float y, float z) {
+// Spawns the fixed object and seeds its position, name, faction and loot list.
+PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
+                                     float x, float y, float z)
+    : KIPlayer(kind, -1, player, geom, x, y, z, false) {
     PlayerFixedObject *self = this;
 
     // Zero the contiguous respawnPos/homingTarget/homingDir vector region.

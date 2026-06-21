@@ -16,6 +16,10 @@ namespace AbyssEngine { class Engine; }
 // asset checksum). C linkage in the original, hence the bare `F` symbol.
 extern "C" unsigned int F(unsigned int value);
 
+// Reports the current pressed/held state of the named logical action (e.g.
+// "Accelerate" / "Decelerate"); a plain global free function in the binary.
+int GetKeyState(char *name);
+
 // Software-pointer relative move: accumulates a delta into the emulated cursor.
 // While the first virtual key is "captured" the x delta is written absolutely,
 // otherwise both axes are integrated; the whole move is ignored unless pointer

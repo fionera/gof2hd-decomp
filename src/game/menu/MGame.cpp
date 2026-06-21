@@ -124,8 +124,9 @@ __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 
 // MGame::maneuverTouchEnd(): if a maneuver gesture was active, recent, and the finger
 // moved far enough, trigger a left/right maneuver on the player; always clear the flag.
-void MGame::maneuverTouchEnd(int a, void *p) {
+void MGame::maneuverTouchEnd(int a, int b, void *p) {
     MGame *self = this;
+    (void)b;
     (void)p;
     if (self->maneuverActive != 0 && self->maneuverHoldTime <= 0x258) {
         float f2 = (float)(*g_maneuverScale);
@@ -158,8 +159,9 @@ __attribute__((visibility("hidden"))) extern int *g_maneuverScale;
 
 // MGame::maneuverTouchMove(): if a maneuver gesture is active, cancel it once the
 // finger has moved far enough sideways relative to a screen-scaled threshold.
-void MGame::maneuverTouchMove(int a, int b) {
+void MGame::maneuverTouchMove(int a, int b, void *p) {
     (void)a;
+    (void)p;
     if (this->maneuverActive != 0) {
         float f2 = (float)(*g_maneuverScale);
         int d = b - this->maneuverStartY;
@@ -175,12 +177,30 @@ void MGame::maneuverTouchMove(int a, int b) {
 }
 
 // Begins a maneuver gesture: mark active, record start position, reset timer.
-void MGame::maneuverTouchBegin(int x, int y) {
+void MGame::maneuverTouchBegin(int x, int y, void *p) {
+    (void)p;
     this->maneuverActive = 1;
     this->maneuverStartX = x;
     this->maneuverStartY = y;
     this->maneuverHoldTime = 0;
 }
+
+// Two-argument touch/key/lifecycle overrides. MGame routes all real input through the
+// void*-carrying touch overloads and the application manager, so the plain two-argument
+// vtable slots are empty no-ops in this module (matching the shipped stubs).
+void MGame::OnTouchBegin(int /*p1*/, int /*p2*/) {}
+void MGame::OnTouchEnd(int /*p1*/, int /*p2*/) {}
+void MGame::OnTouchMove(int /*p1*/, int /*p2*/) {}
+
+long long MGame::OnKeyPress(long long key, long long /*mod*/) { return key; }
+long long MGame::OnKeyRelease(long long key, long long /*mod*/) { return key; }
+
+void MGame::showLiteScreen() {}
+
+// The game module always reports that it owns its loading screen.
+int MGame::ShowLoadingScreen() { return 1; }
+
+void MGame::pause() {}
 
 // PaintCanvas End3d tail helper @0x1ab918.
 
@@ -472,7 +492,8 @@ __attribute__((visibility("hidden"))) extern int *g_fcb_guard; // DAT_188af4 (ca
 
 // MGame::freeCamTouchBegin(int, int, void*): start a free-camera drag. Records the start
 // touch and seeds the camera-offset Vector (built on the stack -> compiler canary).
-void MGame::freeCamTouchBegin(int x, int y, int id) {
+void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
+    int id = (int)(intptr_t)idPtr;
     char buf[12];
     float fy = (float)y;
     float fx = (float)x;
@@ -678,13 +699,13 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             int cm = gStatus->getCurrentCampaignMission();
             if (cm == 0x9e) {
                 self->active = 0;
-                return ((MGame *)(self->appManager))->endRunModule(2);
+                return self->appManager->SetCurrentApplicationModule(2);
             }
             if (self->gameRecord != 0) {
                 ((GameRecord *)(self->gameRecord))->load();
                 Globals_playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
-                return ((MGame *)(self->appManager))->endRunModule(5);
+                return self->appManager->SetCurrentApplicationModule(5);
             }
             Globals_playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->active = 0;
@@ -844,7 +865,9 @@ void MGame::buildDockChoice(int textId, int prefixLit, int suffixLit) {
 }
 
 // MGame::dockEvent(): handle proximity to a jumpgate/station while flying.
-void MGame::dockEvent() {
+void MGame::dockEvent(int p1, int p2) {
+    (void)p1;
+    (void)p2;
     float pos[4];
     ((PlayerEgo *)(pos))->getPosition();
     this->touchesStream = this->level->collideStream(*(Vector *)pos);
@@ -984,7 +1007,8 @@ void MGame::dockEvent() {
 // matching active-touch slot, then commits the accumulated rotation deltas (only the
 // axes that moved more than 3px) and converts them to integer angles, flagging the
 // camera dirty.
-void MGame::freeCamTouchEnd(int p1, int p2, int id) {
+void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
+    int id = (int)(intptr_t)idPtr;
     (void)p1;
     (void)p2;
     if (this->touch0Id == id) {
@@ -1076,7 +1100,7 @@ void MGame::UseKhadorDrive() {
         ((MGame *)(this))->resumeSounds();
         this->hudMenuOpen = 0;
         this->hud->closeHudMenu();
-        return ((MGame *)(status))->jumpFinish();
+        return gStatus->nextCampaignMission(true);
     }
 
     if (gStatus->inAlienOrbit() == 0) {
@@ -1107,7 +1131,7 @@ void MGame::UseKhadorDrive() {
         this->starMapOpen = 1;
         ((MGame *)(this))->pauseSounds();
         this->hudMenuOpen = 0;
-        return ((MGame *)(this->hud))->starMapShown();
+        return this->hud->closeHudMenu();
     }
 
     // In alien orbit.
@@ -1120,7 +1144,7 @@ void MGame::UseKhadorDrive() {
     this->pauseOpen = 0;
     ((MGame *)(this))->resumeSounds();
     this->hudMenuOpen = 0;
-    return ((MGame *)(this->hud))->starMapShown();
+    return this->hud->closeHudMenu();
 }
 
 // Heavily-corrupt sub-blocks are delegated to documented helpers:
@@ -1493,8 +1517,8 @@ __attribute__((visibility("hidden"))) extern float g_fcZoomMin;   // @0x188d28
 void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     int ty = (int)(intptr_t)touchId;
     if (this->player->isMining() != 0) {
+        // Free-cam pan/zoom while mining: nothing more to do (clean exit).
         this->needsRedraw = 1;
-        return ((MGame *)(this))->freeCamPanDone(ty);
         return;
     }
     this->needsRedraw = 0;
@@ -1636,13 +1660,13 @@ void MGame::buildMissionFollowup() {
     Status *status = gStatus;
 
     // Point the campaign mission at the agent's home station.
-    Mission *cm = ((Status *)(status))->getCampaignMissionPtr();
-    Agent *agent = ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->getAgent();
+    Mission *cm = (Mission *)(intptr_t)status->getCampaignMission();
+    Agent *agent = ((Mission *)((Mission *)(intptr_t)status->getCampaignMission()))->getAgent();
     ((Mission *)(cm))->setTargetStation(((Agent *)(agent))->getStation());
 
     // Raise the briefing for the (now retargeted) mission and convert it to a delivery type.
-    this->dialogueWindow->set(((Status *)(status))->getCampaignMissionPtr(), 1, -1);
-    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setType(0xb);
+    this->dialogueWindow->set((Mission *)(intptr_t)status->getCampaignMission(), 1, -1);
+    ((Mission *)((Mission *)(intptr_t)status->getCampaignMission()))->setType(0xb);
 
     // Leave turret / first-person and reset the flight camera.
     this->player->setTurretMode(0);
@@ -1655,8 +1679,8 @@ void MGame::buildMissionFollowup() {
     // explicit padding, sparse offsets), so this byte has no faithful named member.
     *(uint8_t *)((char *)this + 0x239) = 1;
 
-    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setStatusValue(0);
-    ((Mission *)(((Status *)(status))->getCampaignMissionPtr()))->setWon(false);
+    ((Mission *)((Mission *)(intptr_t)status->getCampaignMission()))->setStatusValue(0);
+    ((Mission *)((Mission *)(intptr_t)status->getCampaignMission()))->setWon(false);
 
     // Rebuild the agent's mission text: take the template and substitute the target station.
     void *tmpl = ((GameText *)(*g_gameText))->getText(g_scFollowTextKey);
@@ -1670,7 +1694,7 @@ void MGame::buildMissionFollowup() {
     Agent *missionAgent = ((Mission *)(status->getMission()))->getAgent();
     missionAgent->setMissionString(sResult);
 
-    status->setMission(((Status *)(status))->getCampaignMissionPtr());
+    status->setMission((Mission *)(intptr_t)status->getCampaignMission());
 
     // Hand the route back to the player and clear it / its waypoint autopilot.
     this->player->setRoute(0);
@@ -1731,7 +1755,7 @@ void MGame::successCheck() {
                 if (cm > 0x2d && ((Mission *)(gStatus->getMission()))->isCampaignMission() != 0) {
                     int cm2 = gStatus->getCurrentCampaignMission();
                     if (DialogueWindow::hasSuccessDialogue(cm2) == 0) {
-                        ((Status *)(*status))->nextCampaignMission();
+                        ((Status *)(*status))->nextCampaignMission(true);
                         this->level->removeObjectives();
                         ((Status *)(status))->setMission((Mission *)gStatus->getCampaignMission() /* mission: arg lost in decomp */);
                     }
@@ -2175,7 +2199,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
             self->hudTouchFlags = hh;
             unsigned mode = (unsigned)self->cameraMode;
             if (mode <= 1) {
-                ((MGame *)(self))->maneuverTouchMove(mode, y);
+                ((MGame *)(self))->maneuverTouchMove(mode, y, touch);
                 if (self->thrustActive != 0 && self->jumpActive == 0) {
                     int f8 = self->hudTouchFlags;
                     int ok = (f8 == 0) ||
@@ -2787,32 +2811,6 @@ int MGame::nextCamId(int cur) {
 //                                                            (veneer 0x1ab8f8 -> 0x71d64)
 //   freeCamPanDone-> clean stack-guard-OK return (no-op)     (tail at 0x188b1e)
 // ===========================================================================
-
-// MGame::jumpFinish(): a direct hyperspace jump has been committed; advance the
-// campaign to the next mission. (UseKhadorDrive tail-call: status,1.)
-void MGame::jumpFinish() {
-    gStatus->nextCampaignMission();
-}
-
-// MGame::starMapShown(): the jump star map / direct-jump UI just came up, so the
-// open in-flight HUD menu is dismissed. (UseKhadorDrive tail-call on the Hud.)
-void MGame::starMapShown() {
-    this->hud->closeHudMenu();
-}
-
-// MGame::endRunModule(int): tear down the running game module and switch the
-// application back to module `code`. (OnTouchBegin game-over splash tap.)
-void MGame::endRunModule(int code) {
-    this->appManager->SetCurrentApplicationModule((unsigned)code);
-}
-
-// MGame::freeCamPanDone(int): the free-cam pan/zoom gesture finished while the
-// player is mining. The original simply takes the clean function-exit path here
-// (field_0x111 has already been raised by the caller), so there is nothing more
-// to do.
-void MGame::freeCamPanDone(int /*touchY*/) {
-    // no-op: stack-guard-OK return path.
-}
 
 // MGame::drawRadio(): paint the in-flight radio overlay. Receiver is the Radio at
 // +0x84; the original threads the current system time plus the player ego and the

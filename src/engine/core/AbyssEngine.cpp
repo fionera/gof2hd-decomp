@@ -2232,7 +2232,7 @@ unsigned int glGetError();
 // back down. Returns 1 / -1 / -4.
 namespace AbyssEngine {
 
-static inline void freeArray(void *&arr)
+__attribute__((always_inline)) static inline void freeArray(void *&arr)
 {
     if (arr != 0)
         operator delete[](arr);
@@ -2431,8 +2431,22 @@ char *g_labelObjectsFlag;       // **(DAT + 0x7c9d2) (reused)
 int  ImageCreateFromFile(Engine *engine, const char *path, Image **out);
 void ImageRelease(Image **slot);
 
+// Set the blend mode used by full-screen effect (FX) draws. On this GLES build the engine
+// resolves blending elsewhere, so the hook is a no-op; the entry point is kept so callers can
+// stay platform-agnostic.
+void SetFXMaterial(BlendMode /*mode*/)
+{
+}
+
+// Build a compressed-texture variant from a source image. The GLES backend has no runtime
+// compressor, so it always reports success without touching the image.
+int GenerateCompressedTexture(Image * /*image*/)
+{
+    return 1;
+}
+
 // Helper to upload one compressed mip chain for the simple formats.
-static void uploadCompressedChain(char *img, unsigned int glFmt, int divShift, int minBlock)
+__attribute__((always_inline)) static inline void uploadCompressedChain(char *img, unsigned int glFmt, int divShift, int minBlock)
 {
     unsigned int w = (unsigned int)u16(img, 0x0);
     unsigned int h = (unsigned int)u16(img, 0x2);
@@ -2695,7 +2709,7 @@ bool operator==(const String &a, const String &b)
 // the mesh. Skips GL/array teardown entirely when it is a shared/aliased mesh (byte@0x38).
 namespace AbyssEngine {
 
-static inline void releaseArray(void *&arr)
+__attribute__((always_inline)) static inline void releaseArray(void *&arr)
 {
     if (arr != 0)
         operator delete[](arr);

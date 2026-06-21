@@ -39,6 +39,10 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
 __attribute__((visibility("hidden"))) extern int g_dw_briefingCounts[];
 __attribute__((visibility("hidden"))) extern int g_dw_successCounts[];
 
+int DialogueWindow::getMode() {
+    return this->kind;
+}
+
 int DialogueWindow::length() {
     Mission *mission = this->mission;
     if (mission != 0 && mission->isCampaignMission() != 0) {

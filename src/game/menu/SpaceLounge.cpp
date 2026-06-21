@@ -69,7 +69,6 @@ extern "C" void *SpaceLounge_touch_list_help_text_slot;
 extern "C" void *SpaceLounge_touch_camera_slot;
 extern "C" int SpaceLounge_touch_race_vectors[];
 namespace AbyssEngine { namespace AERandom { int nextInt(void *random, int limit); } }
-int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate);
 extern "C" int *SpaceLounge_getSoundId_missionText;
 extern "C" void *SpaceLounge_getSoundId_offerText;
 extern "C" void *SpaceLounge_getSoundId_offer2358910;
@@ -103,7 +102,6 @@ extern "C" void *SpaceLounge_init_text_slot;
 extern "C" void *SpaceLounge_init_camera_slot;
 extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
 extern "C" void *SpaceLounge_ctor_camera_slot;
-int SpaceLounge_getSoundId(SpaceLounge *self, void *agent);
 extern "C" void *SpaceLounge_start_text_slot;
 extern "C" void *SpaceLounge_draw_layout_slot;
 extern "C" void *SpaceLounge_draw_canvas_slot;
@@ -172,10 +170,11 @@ int SpaceLounge::OnTouchMove(int x, int y) {
 
 void SpaceLounge::OnRender3D() {
     if (this->mapVisible != 0) {
-        return this->OnRender3D_map_tail(this->starMap);
+        this->starMap->render();
+        return;
     }
 
-    void *cutscene = this->cutScene;
+    CutScene *cutscene = this->cutScene;
     if (cutscene == 0) {
         return;
     }
@@ -187,12 +186,12 @@ void SpaceLounge::OnRender3D() {
         cutscene = this->cutScene;
     }
 
-    return this->OnRender3D_cutscene_tail(cutscene);
+    cutscene->render3D();
 }
 
 void SpaceLounge::OnRenderBG() {
     if (this->cutScene != 0) {
-        return this->OnRenderBG_tail(this->cutScene);
+        this->cutScene->renderBG();
     }
 }
 
@@ -212,9 +211,15 @@ unsigned char SpaceLounge::hangarNeedsUpdate() {
     return this->hangarUpdate;
 }
 
+// The lounge never participates in the station's location-selection mode, so this
+// query is a constant 'false' in this build.
+bool SpaceLounge::checkLocationMode() {
+    return false;
+}
+
 void SpaceLounge::draw3DShip() {
     if (this->listVisible != 0) {
-        return this->draw3DShip_tail(this->listWindow);
+        this->listWindow->render();
     }
 }
 
@@ -281,7 +286,7 @@ int SpaceLounge::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-int SpaceLounge_getSpecificSoundForRace(int, unsigned soundId, int race, bool alternate)
+int SpaceLounge::getSpecificSoundForRace(int soundId, int race, bool alternate)
 {
     unsigned delta;
 
@@ -472,7 +477,7 @@ static inline int random_from(void *slot, int limit)
     return AbyssEngine::AERandom::nextInt(*(void **)slot, limit);
 }
 
-int SpaceLounge_getSoundId(SpaceLounge *, void *agent)
+int SpaceLounge::getSoundId(Agent *agent)
 {
     String missionText;
 
@@ -590,7 +595,7 @@ special_done:
         }
     }
 
-    int result = SpaceLounge_getSpecificSoundForRace(dummy, soundId, race, male);
+    int result = this->getSpecificSoundForRace(soundId, race, male);
     return result;
 }
 
@@ -1096,7 +1101,7 @@ void SpaceLounge::startChat() {
         if (((Agent *)(agent))->eventCount <= 0)
             ((Agent *)(agent))->eventCount = 1;
     }
-    SpaceLounge_getSoundId(this, agent);
+    this->getSoundId(static_cast<Agent *>(agent));
 
     this->choiceVisible = 1;
     this->chatActive = 1;
@@ -1194,11 +1199,14 @@ void SpaceLounge::draw() {
             ((PaintCanvas *)canvas)->SetColor((unsigned int)(long)canvas);
         }
         this->listWindow->draw();
-        return this->draw_cutscene_tail();
+        void *layout = *(void **)(*(void **)&SpaceLounge_draw_layout_slot);
+        ((Layout *)layout)->drawFooter();
+        return;
     }
 
     if (this->mapVisible != 0) {
-        return this->draw_map_tail(this->starMap);
+        this->starMap->draw();
+        return;
     }
 
     void *layoutSlot = *(void **)&SpaceLounge_draw_layout_slot;
@@ -1234,10 +1242,12 @@ void SpaceLounge::update(int dt) {
     }
 
     if (this->mapVisible != 0) {
-        return this->update_map_tail(this->starMap, dt);
+        this->starMap->update(dt);
+        return;
     }
     if (this->listVisible != 0) {
-        return this->update_ship_tail(this->listWindow, dt);
+        this->listWindow->update(dt);
+        return;
     }
 
     if (this->cameraAnimating == 0) {
@@ -1360,61 +1370,6 @@ idle_camera:
             }
         }
     }
-}
-
-// Mode-dependent tail handlers: each forwards rendering/updating to whichever
-// sub-screen (StarMap / CutScene / ListItemWindow / Layout) is live for the current
-// mode. The receiver is supplied by the caller, except draw_cutscene_tail which reads
-// the active draw-layout from its global slot.
-
-void SpaceLounge::OnRender3D_map_tail(void *map)
-{
-    ((StarMap *)map)->render();
-}
-
-void SpaceLounge::OnRender3D_cutscene_tail(void *cutscene)
-{
-    ((CutScene *)cutscene)->render3D();
-}
-
-void SpaceLounge::OnRenderBG_tail(void *cutscene)
-{
-    // When a cutscene is active the lounge draws the cutscene's background layer.
-    ((CutScene *)cutscene)->renderBG();
-}
-
-void SpaceLounge::draw3DShip_tail(void *ship)
-{
-    ((ListItemWindow *)ship)->render();
-}
-
-void SpaceLounge::draw_map_tail(void *map)
-{
-    ((StarMap *)map)->draw();
-}
-
-void SpaceLounge::draw_cutscene_tail()
-{
-    // Tail of draw() in 3D-ship mode: after the ListItemWindow has been drawn,
-    // render the footer of the currently active draw layout.
-    void *layout = *(void **)(*(void **)&SpaceLounge_draw_layout_slot);
-    ((Layout *)layout)->drawFooter();
-}
-
-void SpaceLounge::update_map_tail(void *map, int dt)
-{
-    ((StarMap *)map)->update(dt);
-}
-
-void SpaceLounge::update_ship_tail(void *list, int dt)
-{
-    ((ListItemWindow *)list)->update(dt);
-}
-
-void *SpaceLounge::dtor()
-{
-    this->~SpaceLounge();
-    return this;
 }
 
 // SpaceLounge::refresh -- called from ModStation after a mission reward is credited

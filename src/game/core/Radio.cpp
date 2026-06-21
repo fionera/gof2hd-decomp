@@ -122,16 +122,9 @@ void Radio::setMessages(Array<RadioMessage*>* messages)
     }
 }
 
-void Radio::addMessage(int textId)
+void Radio::setCurrentMessage(RadioMessage* message)
 {
-    // Lazily create the backing message list on first use, append a fresh
-    // RadioMessage built from the story text id and link it back to this radio.
-    if (this->messages == 0)
-        this->messages = new Array<RadioMessage*>();
-
-    RadioMessage* message = new RadioMessage(textId, 1, 5, 0);
-    this->messages->push_back(message);
-    message->radio = this;
+    this->currentMessage = message;
 }
 
 void Radio::update(long time, PlayerEgo* ego, LevelScript* script)

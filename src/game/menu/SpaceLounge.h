@@ -84,9 +84,12 @@ public:
     int OnTouchBegin(int x, int y);
     void OnTouchEnd(int x, int y);
     int OnTouchMove(int x, int y);
+    bool checkLocationMode();
     void draw();
     void draw3DShip();
     void drawLounge();
+    int getSoundId(Agent *agent);
+    int getSpecificSoundForRace(int soundId, int race, bool alternate);
     unsigned char hangarNeedsUpdate();
     int init();
     unsigned char introFinished();
@@ -98,20 +101,5 @@ public:
     void startChat();
     void update(int dt);
     void updateScreenPositions();
-
-    // Mode-dependent tail handlers: forward rendering/updating to whichever sub-screen
-    // (StarMap / CutScene / ListItemWindow / Layout) is live for the current mode.
-    void OnRender3D_map_tail(void *map);
-    void OnRender3D_cutscene_tail(void *cutscene);
-    void OnRenderBG_tail(void *cutscene);
-    void draw3DShip_tail(void *ship);
-    void draw_map_tail(void *map);
-    void draw_cutscene_tail();
-    void update_map_tail(void *map, int dt);
-    void update_ship_tail(void *list, int dt);
-
-    // Deleting destructor body reached through the deleting-dtor thunk: runs the
-    // destructor and returns the storage so the caller can free it.
-    void *dtor();
 };
 #endif

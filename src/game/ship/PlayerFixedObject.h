@@ -74,7 +74,6 @@ public:
     ~PlayerFixedObject();
 
     int collide(float x, float y, float z) override;   // actor vtable slot +0x38
-    void ctor(int kind, int param2, void *player, void *geom, float x, float y, float z);
     int getDockingType();
     String getName();
     V3 getPosition() override;   // actor vtable slot +0x28
@@ -84,7 +83,6 @@ public:
     void moveForward(int amount);
     int outerCollide(float x, float y, float z) override;   // actor vtable slot +0x3c
     void outerCollide(Vector v);
-    void outerCollide_vec(Vector v);
     V3 projectCollisionOnSurface(const Vector &vec) override;   // actor vtable slot +0x58
     void render() override;
     void reset();

@@ -51,13 +51,5 @@ public:
     int  init();
     void draw();
     void update(int dt);
-
-    // Mode-specific sub-window dispatchers, reached from draw()/update() when an
-    // overlay is active: the wanted board (m_pWantedWindow, active when m_mode == 1)
-    // or the star-map overlay (m_pStarMap, active when m_starMapActive is set).
-    void drawWanted();   // paint the active wanted-board window
-    void drawStarMap();  // paint the active star-map overlay
-    void acceptAction(); // advance the wanted-board window one frame
-    void cancelAction(); // advance the star-map overlay one frame
 };
 #endif

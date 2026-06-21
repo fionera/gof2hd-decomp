@@ -66,13 +66,6 @@ void String::Reverse() {
     }
 }
 
-// AbyssEngine::String::String(int) - decimal string of an int.
-String * String::ctor_int(int v) {
-    this->s.clear();
-    ((String *)(this))->Set_longlong((long long)v);
-    return this;
-}
-
 // AbyssEngine::String::ToUpperCase() - uppercase ASCII plus a CP-1252 accented range.
 void String::ToUpperCase() {
     for (size_t i = 0; i < this->s.size(); i++) {
@@ -154,17 +147,6 @@ unsigned short *String::operator[](int i) {
     return reinterpret_cast<unsigned short *>(&this->s[i]);
 }
 
-uint16_t * String::index(int i) { return (uint16_t *)(*this)[i]; }
-
-// AbyssEngine::String::String(char const*, bool reverse)
-String * String::ctor_char(const char *s, bool reverse) {
-    this->s.clear();
-    ((String *)(this))->Set_char(s);
-    if (reverse)
-        ((String *)(this))->Reverse();
-    return this;
-}
-
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
 void String::Set(long long v) {
     this->s.clear();
@@ -194,14 +176,6 @@ void String::Set(long long v) {
     for (int i = n - 1; i >= 0; i--)
         out.push_back(tmp[i]);
     this->s = out;
-}
-
-// AbyssEngine::String::String(AbyssEngine::String const&, bool reverse) - copy ctor.
-String * String::ctor_copy(String *other, bool reverse) {
-    this->s = other->s;
-    if (reverse)
-        ((String *)(this))->Reverse();
-    return this;
 }
 
 // AbyssEngine::String::StrLen(char const*) - byte length of a NUL-terminated char string.
@@ -248,7 +222,6 @@ void String::Set(const char *s) {
     for (const unsigned char *p = (const unsigned char *)s; *p != 0; p++)
         this->s.push_back((char16_t)*p);
 }
-void String::Set_char(const char *s) { Set(s); }
 
 // AbyssEngine::String::Compare(AbyssEngine::String const&)
 // Returns 0 when equal; a small signed value otherwise (0xff sentinel for length mismatch).
@@ -286,12 +259,6 @@ int String::Compare(const String &otherRef) {
         result = 0xff;
     }
     return (int)(char)result;
-}
-
-// AbyssEngine::String::~String() - clear contents.
-String * String::dtor() {
-    this->s.clear();
-    return this;
 }
 
 // AbyssEngine::String::Trim() - strip leading/trailing spaces and tabs.
@@ -377,11 +344,6 @@ String &String::operator=(const String &other) {
     return *this;
 }
 
-String * String::assign(String *other) {
-    *this = *other;
-    return this;
-}
-
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
 void String::Set(const unsigned short *s) {
     this->s.clear();
@@ -390,7 +352,6 @@ void String::Set(const unsigned short *s) {
     for (const unsigned short *p = s; *p != 0; p++)
         this->s.push_back((char16_t)*p);
 }
-void String::Set_wchar(const uint16_t *s) { Set((const unsigned short *)s); }
 
 // AbyssEngine::String::ConvertFromUTF8() - reinterpret the stored bytes as UTF-8 and re-store.
 void String::ConvertFromUTF8() {
@@ -403,13 +364,6 @@ void String::ConvertFromUTF8() {
     delete[] bytes;
     delete[] wide;
 }
-
-// AbyssEngine::String::~String() - deleting destructor: destroy then free the object.
-void String::dtor_del() {
-    ((String *)(this))->dtor();
-    delete this;
-}
-
 
 // Tag delimiter fragments.
 static const char kOpen[]  = "<";
@@ -476,8 +430,6 @@ static const char kZero[]    = "0";
 static const char kDot[]     = ".";
 static const char kExp[]     = "E";
 
-void String::Set_float(float v) { Set(v); }
-
 // AbyssEngine::String::Set(float) - format a float into this string.
 void String::Set(float v) {
     int exp = 0;
@@ -525,17 +477,6 @@ int String::StrLen(const unsigned short *s) {
     while (*p != 0)
         p++;
     return (int)(p - s);
-}
-
-// AbyssEngine::String::SubString(unsigned int start, unsigned int end)
-// out = self[start..end); empty string when end <= start.
-void String::SubString(String *self, unsigned int start, unsigned int end) {
-    String *out = this;
-    out->s.clear();
-    if (start < end && start < self->s.size()) {
-        unsigned int hi = end > self->s.size() ? (unsigned int)self->s.size() : end;
-        out->s = self->s.substr(start, hi - start);
-    }
 }
 
 // AbyssEngine::String::SubString(unsigned int start, unsigned int end)

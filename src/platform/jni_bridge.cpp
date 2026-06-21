@@ -25,6 +25,10 @@
 #include "game/mission/Status.h"
 #include "platform/recovered_a462c.h"
 
+// Clears the cached native store item list (defined in LODManager.cpp); a plain
+// C-linkage loader hook, declared here to avoid pulling in the LOD render header.
+extern "C" void ndk_resetNativeItemInformationList();
+
 // ---------------------------------------------------------------------------
 // Global state shared with the Java side and the rest of the NDK layer.
 // ---------------------------------------------------------------------------
@@ -713,4 +717,207 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(
     JNIEnv * /*env*/, jclass /*clazz*/, jint linked)
 {
     *g_linkGameGP = linked;
+}
+
+// ---------------------------------------------------------------------------
+// Remaining DLC "already bought" accessors (packs 3..5). Each is the same thin
+// forward to its ndk_getDLC_n_BOUGHT accessor as packs 1..2 above.
+// ---------------------------------------------------------------------------
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getDLC_3_BOUGHT();
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC4BOUGHT(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getDLC_4_BOUGHT();
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC5BOUGHT(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getDLC_5_BOUGHT();
+}
+
+// ---------------------------------------------------------------------------
+// Title / boot state queries. The host polls these to decide when the splash
+// has cleared and whether the player is sitting in the main menu.
+// ---------------------------------------------------------------------------
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getLogoShown(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getLogoShown() != 0;
+}
+
+extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_isInMainMenu(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_isInMainMenu() != 0;
+}
+
+// ---------------------------------------------------------------------------
+// Window resize / direct touch host hooks. resize re-runs a render step at the
+// new framebuffer size; handleTouchEvent injects a single screen touch (touch
+// id, phase, x, y) straight into the active application module.
+// ---------------------------------------------------------------------------
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_resize(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height)
+{
+    ndk23_renderstep(width, height);
+}
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleTouchEvent(
+    JNIEnv * /*env*/, jclass clazz, jint touch, jint phase, jfloat x, jfloat y)
+{
+    ndk23_handleTouchScreenEvent(clazz, reinterpret_cast<void *>(touch), phase, x, y);
+}
+
+// ---------------------------------------------------------------------------
+// In-app-purchase debug / completion bridge.
+//   testPurchase            grants the first consumable credit pack (index 0)
+//                           as a developer test purchase.
+//   iapBoughtConsumable     awards the credit pack the host just resolved.
+//   iapBoughtPremium        records the bought/refunded state of a DLC pack.
+//   iapSet/ResetNativeItemInformationList  load / clear the cached store list.
+// ---------------------------------------------------------------------------
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_testPurchase(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_iapBoughtConsumable(0);
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtConsumable(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint consumable)
+{
+    ndk_iapBoughtConsumable(static_cast<unsigned int>(consumable));
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapBoughtPremium(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint pack, jint bought)
+{
+    ndk_iapBoughtPremium(static_cast<unsigned int>(pack),
+                         static_cast<unsigned int>(bought));
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapSetNativeItemInformationList(
+    JNIEnv *env, jclass clazz, jobjectArray ids, jobjectArray names,
+    jobjectArray descriptions, jobjectArray currencies, jobjectArray prices)
+{
+    ndk_setNativeItemInformationList(env, clazz, ids, names, descriptions,
+                                     currencies, prices);
+}
+
+extern "C" void Java_net_fishlabs_googleplay_ToJNI_iapResetNativeItemInformationList(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    ndk_resetNativeItemInformationList();
+}
+
+// ---------------------------------------------------------------------------
+// Google Play store SKU lookup. The billing layer asks the native side for the
+// product id of each of the five consumable / premium products by index; an
+// out-of-range index yields a null string.
+// ---------------------------------------------------------------------------
+
+// Consumable credit-pack product ids, smallest pack first.
+static const char *const kConsumableSKU[5] = {
+    "net.fishlabs.gof2hd2012.creditpack1",
+    "net.fishlabs.gof2hd2012.creditpack2",
+    "net.fishlabs.gof2hd2012.creditpack3",
+    "net.fishlabs.gof2hd2012.creditpack4",
+    "net.fishlabs.gof2hd2012.creditpack5",
+};
+
+// Premium DLC product ids.
+static const char *const kPremiumSKU[5] = {
+    "net.fishlabs.gof2hd2012.dlc1",
+    "net.fishlabs.gof2hd2012.dlc2",
+    "net.fishlabs.gof2hd2012.dlc3",
+    "net.fishlabs.gof2hd2012.dlc4",
+    "net.fishlabs.gof2hd2012.dlc5",
+};
+
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getConsumableSKU(
+    JNIEnv *env, jclass /*clazz*/, jint index)
+{
+    if (index < 0 || index > 4)
+        return nullptr;
+    return env->NewStringUTF(kConsumableSKU[index]);
+}
+
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012getPremiumSKU(
+    JNIEnv *env, jclass /*clazz*/, jint index)
+{
+    if (index < 0 || index > 4)
+        return nullptr;
+    return env->NewStringUTF(kPremiumSKU[index]);
+}
+
+// The licensing handshake hands the Java side the expected APK package back as a
+// freshly built Java string.
+extern "C" jstring Java_net_fishlabs_googleplay_ToJNI_gof2hd2012apk(
+    JNIEnv *env, jclass /*clazz*/)
+{
+    return env->NewStringUTF("net.fishlabs.gof2hdallandroid2012");
+}
+
+// ---------------------------------------------------------------------------
+// Module / offerwall host hooks.
+//   getCurrentApplicationModule  index of the active application module (-1 down).
+//   spentAmountOfCredits         the Tapjoy offerwall reward to bank next frame.
+// ---------------------------------------------------------------------------
+
+extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule(
+    JNIEnv * /*env*/, jclass /*clazz*/)
+{
+    return ndk_getCurrentApplicationModule();
+}
+
+extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits(
+    JNIEnv * /*env*/, jclass /*clazz*/, jint amount)
+{
+    // Queue the offerwall reward; ndk_checkPlaytimeAndSpendOfferwallCredits
+    // banks it on the next frame once the player has logged any play time.
+    gb_android_offerwallCreditAmount = amount;
+    ndk_checkPlaytimeAndSpendOfferwallCredits();
+}
+
+// ---------------------------------------------------------------------------
+// Asset bring-up without a separate patch zip: the no-zip sibling of
+// InitWithZip. Sets the GL viewport, clears the accelerometer filter state,
+// caches the framebuffer size, opens just the APK archive, builds the Engine,
+// stamps its version, installs the asset root and app-create/-destroy callbacks
+// and forces the canvas into landscape.
+// ---------------------------------------------------------------------------
+
+extern "C" int loadAPK(const char *path);
+
+extern "C" void ndk23_Init(const char *apkPath, int width, int height)
+{
+    glViewport(0, 0, width, height);
+
+    for (int i = 0; i < 6; ++i)
+        gAccelFilterState[i] = 0.0;
+
+    gRealWidth = width;
+    gRealHeight = height;
+
+    loadAPK(apkPath);
+
+    AbyssEngine::Engine *engine = new AbyssEngine::Engine();
+    *g_pEngine = engine;
+    engine->str_0x3c = String("2.0.16", false);
+
+    if (rootDirectory != nullptr)
+        AEFile::SetAppRootDir(rootDirectory);
+
+    engine->Initialize(&OnCreateApplication);
+    engine->SetOnDestroyApp(&OnDestroyApplication);
+    engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }

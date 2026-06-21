@@ -227,7 +227,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         drawMenu(0);
 
     // challenge-mode score/time readout
-    if (Status::isChallengeMode() != 0)
+    if (gStatus != nullptr && gStatus->inSupernovaSystem() != 0)
         drawChallengeModeScoreImpl(this);
 
     // pause button and any pending full-screen message

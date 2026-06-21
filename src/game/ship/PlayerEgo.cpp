@@ -2983,14 +2983,6 @@ void PlayerEgo::render(bool allowHud) {
     }
 }
 
-void PlayerEgo_getTurretPosition(void* out, void* src) {
-  char local[60];
-  void* m1 = ((AEGeometry *)(((PlayerEgo *)src)->geometry))->getMatrix();
-  void* m2 = ((AEGeometry *)(((PlayerEgo *)src)->turretGeometry))->getMatrix();
-  *(Matrix *)(local) = *(const Matrix *)(m1) * *(const Matrix *)(m2);
-  MatrixGetPosition(out, local);
-}
-
 // PlayerEgo::toggleCloaking()
 //   Engages or disengages the cloaking device. When uncloaked and chargeable
 //   (and carrying enough plasma, item 0x7a), it consumes the plasma, sets the
@@ -3213,22 +3205,19 @@ extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo *self) {
 }
 
 // ---- visibility / docking / rocket-control shared continuation -----
-// setVisible / dockToStream / setRocketControl / explode all tail-call the same
-// "sync visual state" continuation. Pushing the visibility flags down to the
-// ship and exhaust geometry is the observable effect.
-static void PE_syncVisualState(PlayerEgo *self) {
-    void *geo = self->geometry;
-    if (geo != 0)
-        ((AEGeometry *)geo)->setVisible(self->field_0x309 != 0);
-}
+// setVisible / dockToStream / setRocketControl / explode all push the ship's
+// visibility flag down to the hull geometry. The original inlined this short
+// "sync visual state" sequence at each site, so it appears here at each caller.
 extern "C" void PlayerEgo_setVisible_ext() {
     // receiver passed in r0 by the caller; nothing further is observable here.
 }
 extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo *self, int /*zero*/) {
-    PE_syncVisualState(self);
+    if (self->geometry != 0)
+        ((AEGeometry *)self->geometry)->setVisible(self->field_0x309 != 0);
 }
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo *self, int /*zero*/) {
-    PE_syncVisualState(self);
+    if (self->geometry != 0)
+        ((AEGeometry *)self->geometry)->setVisible(self->field_0x309 != 0);
 }
 
 // ---- setPosition continuation: push the ship matrix position to the geometry ----

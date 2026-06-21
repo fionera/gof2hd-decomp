@@ -178,19 +178,29 @@ public:
     void OnTouchBegin(int p1, int p2, void* touchId);
     void OnTouchEnd(int p1, int p2, void* touchId);
     void OnTouchMove(int p1, int y, void* touch);
+    // Two-argument touch/key overrides: empty no-op stubs in this module (the real
+    // dispatch lives in the void*-carrying overloads above).
+    void OnTouchBegin(int p1, int p2);
+    void OnTouchEnd(int p1, int p2);
+    void OnTouchMove(int p1, int p2);
+    long long OnKeyPress(long long key, long long mod);
+    long long OnKeyRelease(long long key, long long mod);
+    void showLiteScreen();
+    int ShowLoadingScreen();
+    void pause();
     void OnUpdate();
 
     void UseKhadorDrive();
     void dialogueEvent();
-    void dockEvent();
-    void freeCamTouchBegin(int x, int y, int id);
-    void freeCamTouchEnd(int p1, int p2, int id);
+    void dockEvent(int p1, int p2);
+    void freeCamTouchBegin(int x, int y, void* id);
+    void freeCamTouchEnd(int p1, int p2, void* id);
     void freeCamTouchMove(int x, int y, void* touchId);
     void gameOverCheck();
     void handleAccelerometer();
-    void maneuverTouchBegin(int x, int y);
-    void maneuverTouchEnd(int a, void* p);
-    void maneuverTouchMove(int a, int b);
+    void maneuverTouchBegin(int x, int y, void* p);
+    void maneuverTouchEnd(int a, int b, void* p);
+    void maneuverTouchMove(int a, int b, void* p);
     int nextCamId(int cur);
     void pauseSounds();
     void reset();
@@ -208,14 +218,6 @@ public:
     void dispatchTouchEndAction(int p1, int p2, void* touchId, unsigned hudResult,
                                 int wasAutoPilot);
     void handleHudTouchAction(int p1, int p2, void* touchId, unsigned hudResult);
-    // Finish a hyperspace jump: advance to the next campaign mission.
-    void jumpFinish();
-    // The jump star map became visible: close the open HUD menu.
-    void starMapShown();
-    // Pan/zoom gesture finished while mining: clean no-op exit path.
-    void freeCamPanDone(int touchY);
-    // End the running game module and hand control back to application module `code`.
-    void endRunModule(int code);
 
     // 2D overlay sub-draws (inlined in OnRender2D).
     void drawRadio();

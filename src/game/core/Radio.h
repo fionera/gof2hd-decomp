@@ -36,7 +36,7 @@ public:
     bool isShowingMessage();
     uint8_t lastMessageShown();
     RadioMessage* getMessage(int index);
-    void addMessage(int textId);
+    void setCurrentMessage(RadioMessage* message);
     void setMessages(Array<RadioMessage*>* messages);
     void update(long time, PlayerEgo* ego, LevelScript* script);
     void draw(int64_t time, PlayerEgo* ego, LevelScript* script);

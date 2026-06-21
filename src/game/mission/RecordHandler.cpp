@@ -1240,7 +1240,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(gStatus->getStationsVisited(), fd);
     AEFile_WriteInt(gStatus->getCurrentCampaignMission(), fd);
     this->writeMission(gStatus->getFreelanceMission(), fd);
-    this->writeMission(gStatus->getCampaignMissionPtr(), fd);
+    this->writeMission(reinterpret_cast<Mission*>(gStatus->getCampaignMission()), fd);
     AEFile_WriteInt(gStatus->getJumpgateUsed(), fd);
     AEFile_WriteInt(gStatus->getCapturedCrates(), fd);
     AEFile_WriteInt(gStatus->getBoughtEquipment(), fd);
@@ -1712,7 +1712,7 @@ void RecordHandler::recordStoreRead_body(void *recv, unsigned int fd) {
                     (*ships)[i] = (Ship *)sh;
                     int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(sh))->setRace(r);
                 }
-                ((Station *)(st))->setShipsArr(ships);
+                ((Station *)(st))->setShips(ships, false);
             }
             int agN = 0; AEFile_ReadInt(&agN, fd);
             if (agN > 0) {

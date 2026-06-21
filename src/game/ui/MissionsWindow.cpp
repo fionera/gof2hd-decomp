@@ -377,8 +377,8 @@ int MissionsWindow::init()
 
 void MissionsWindow::draw()
 {
-    if (this->m_mode == 1)            { this->drawWanted();  return; }
-    if (this->m_starMapActive != 0)   { this->drawStarMap(); return; }
+    if (this->m_mode == 1)            { this->m_pWantedWindow->draw(); return; }
+    if (this->m_starMapActive != 0)   { this->m_pStarMap->draw();     return; }
 
     PaintCanvas *canvas = gCanvas;
     Layout *L = *g_mwd_layout;
@@ -637,12 +637,12 @@ void MissionsWindow::update(int dt)
 {
     // Mode 1: advance the wanted board and bail out.
     if (this->m_mode == 1) {
-        this->acceptAction();
+        this->m_pWantedWindow->update(0);
         return;
     }
     // Star-map overlay active: advance it and bail out.
     if (this->m_starMapActive != 0) {
-        this->cancelAction();
+        this->m_pStarMap->update(0);
         return;
     }
 
@@ -685,27 +685,4 @@ void MissionsWindow::update(int dt)
     Array<TouchButton *> *tabs = this->m_pTabButtons;
     for (unsigned int i = 0; i < tabs->size(); i++)
         (*tabs)[i]->setAlwaysPressed((int)i == this->m_mode);
-}
-
-// ---- mode-specific sub-window dispatchers ----
-// draw()/update() short-circuit into one of these whenever an overlay is active.
-
-void MissionsWindow::drawWanted()
-{
-    this->m_pWantedWindow->draw();
-}
-
-void MissionsWindow::drawStarMap()
-{
-    this->m_pStarMap->draw();
-}
-
-void MissionsWindow::acceptAction()
-{
-    this->m_pWantedWindow->update(0);
-}
-
-void MissionsWindow::cancelAction()
-{
-    this->m_pStarMap->update(0);
 }

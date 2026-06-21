@@ -25,7 +25,9 @@ struct String {
     // sites read like ordinary string code. The recovered ctor_*/assign/addAssign_* bodies do the
     // actual work.
     String(const char *cstr, bool reverse = false) { ctor_char(cstr, reverse); }
-    String(const String &other) { s = other.s; }
+    // Copy constructor: the original inlined it at every call site (no standalone symbol exists),
+    // so force-inline here to suppress the out-of-line (weak) variant other TUs would emit.
+    AESTRING_SHIM String(const String &other) { s = other.s; }
     // Real engine overloads (recovered from the Android binary): these mangle to the original
     // String::String(...) / operator+= symbols and delegate to the recovered member bodies.
     // Defined out-of-line in String.cpp so the original symbols are emitted from that TU.
@@ -104,17 +106,27 @@ struct String {
     void ReplaceChar(char from, char to);
     void ReplaceString(String find, String repl);
     void Reverse();
-    void Set_char(const char *s);
-    void Set_float(float v);
+    // Set_* forwarders to the matching Set(...) overload; inline so no standalone symbol is
+    // emitted (the original inlined these into their call sites).
+    AESTRING_SHIM void Set_char(const char *s)  { Set(s); }
+    AESTRING_SHIM void Set_float(float v)        { Set(v); }
     // Forwarder to Set(long long); inline so no standalone symbol is emitted.
     AESTRING_SHIM void Set_longlong(long long v) { Set((long long)v); }
-    void Set_wchar(const uint16_t *s);
+    AESTRING_SHIM void Set_wchar(const uint16_t *s) { Set((const unsigned short *)s); }
     void * Split(String sep);
     void SplitTags(String tag);
     // Length adapters forwarding to the static StrLen overloads; inline (no standalone symbol).
     AESTRING_SHIM int StrLen_char(const char *s) { return StrLen(s); }
     AESTRING_SHIM int StrLen_wchar(const uint16_t *s) { return StrLen((const unsigned short *)s); }
-    void SubString(String *self, unsigned int start, unsigned int end);
+    // out = self[start..end); empty when end <= start. Inline (the original inlined this worker
+    // into Split / SplitTags / the public SubString rather than emitting a standalone symbol).
+    AESTRING_SHIM void SubString(String *self, unsigned int start, unsigned int end) {
+        this->s.clear();
+        if (start < end && start < self->s.size()) {
+            unsigned int hi = end > self->s.size() ? (unsigned int)self->s.size() : end;
+            this->s = self->s.substr(start, hi - start);
+        }
+    }
     String SubString(unsigned int start, unsigned int end);
     void ToLowerCase();
     void ToUpperCase();
@@ -144,23 +156,40 @@ struct String {
         this->s.append(other->s);
         return this;
     }
-    String * assign(String *other);
+    // Assign from another String, returning this; inline (the original inlined this into its
+    // call sites rather than emitting a standalone symbol).
+    AESTRING_SHIM String * assign(String *other) { *this = *other; return this; }
     // ctor helpers (one per value type). Each resets this string and fills it from the argument.
     // Inline: the original inlined these into the matching String(...) constructor bodies.
     AESTRING_SHIM void ctor() { this->s.clear(); }
-    String * ctor_char(const char *s, bool reverse);
+    AESTRING_SHIM String * ctor_char(const char *s, bool reverse) {
+        this->s.clear();
+        Set_char(s);
+        if (reverse)
+            Reverse();
+        return this;
+    }
     AESTRING_SHIM String * ctor_charval(char c) {
         this->s.clear();
         Set_longlong((long long)c);
         return this;
     }
-    String * ctor_copy(String *other, bool reverse);
+    AESTRING_SHIM String * ctor_copy(String *other, bool reverse) {
+        this->s = other->s;
+        if (reverse)
+            Reverse();
+        return this;
+    }
     AESTRING_SHIM String * ctor_float(float v) {
         this->s.clear();
         Set_float(v);
         return this;
     }
-    String * ctor_int(int v);
+    AESTRING_SHIM String * ctor_int(int v) {
+        this->s.clear();
+        Set_longlong((long long)v);
+        return this;
+    }
     AESTRING_SHIM String * ctor_longlong(long long v) {
         this->s.clear();
         Set_longlong(v);
@@ -173,9 +202,14 @@ struct String {
             Reverse();
         return this;
     }
-    String * dtor();
-    void dtor_del();
-    uint16_t * index(int i);
+    // Destructor body / deleting-destructor; inline (the original inlined these into the real
+    // ~String() and the delete expression rather than emitting standalone symbols).
+    AESTRING_SHIM String * dtor() { this->s.clear(); return this; }
+    AESTRING_SHIM void dtor_del() { dtor(); delete this; }
+    // Bounded element access; inline (no standalone symbol in the original).
+    AESTRING_SHIM uint16_t * index(int i) {
+        return reinterpret_cast<uint16_t *>((*this)[i]);
+    }
     // const-overload element adapter; inline so no standalone symbol is emitted.
     AESTRING_SHIM uint16_t * index_const(int i) {
         return const_cast<uint16_t *>(reinterpret_cast<const uint16_t *>(

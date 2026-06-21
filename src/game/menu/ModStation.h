@@ -74,17 +74,16 @@ public:
     ModStation();
     virtual ~ModStation();
 
-    // Slot at vtable byte-offset 0x10 (index 4): launches the selected station
-    // sub-module. The five DLC/station-menu buttons and the campaign-mission
-    // transition path dispatch through this virtual slot on `this`
-    // (in the binary: `(*(this->vptr+0x10))(this, 0x10000, 0)`).
-    virtual void launchModule(int arg);
-
     void OnInitialize();
-    void OnKeyPress(long long key);
-    // Two-arg engine-dispatch variant: the first argument is ignored and the
-    // second carries the key code, so it forwards to the real handler above.
+    // Drives the station main-menu cursor and screen selection. The engine
+    // dispatches key events through the two-arg variant (the first argument is
+    // the ignored dispatch slot, the second the key code); the single-arg form
+    // is inlined into it.
     void OnKeyPress(long long unused, long long key);
+    // The station screen ignores key-release and reports the loading screen as
+    // already shown (no-op handlers in the original).
+    long long OnKeyRelease(long long unused, long long key);
+    int ShowLoadingScreen();
     void OnRelease();
     void OnRender2D();
     void OnRender3D();
@@ -104,7 +103,13 @@ public:
     void checkHints();
     void checkMedals();
     void checkPendingProducts();
+    // Re-enters the docked station: hands the current station back to Status,
+    // marks it visited, applies any earned medals, and caches the player's ship
+    // / weapon / shield indices into the save record.
+    void enterStation();
     void leaveStation();
+    // Restores the hangar's lighting rig to the home-system's race profile.
+    void resetLight();
     void resetIdleCamForHangar();
     void setGameLoaded();
     void showCBSMessage();

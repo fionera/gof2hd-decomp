@@ -148,7 +148,6 @@ public:
     int addStationToStack(Station* station);
     bool isOnStack(Station* station);
     void setStation(Station* station);
-    void setStationTail(Station* station);
     void departStation(Station* dest);
     bool inAlienOrbit();
     Station* getStation();
@@ -158,9 +157,6 @@ public:
     bool gameWon();
     int getCurrentCampaignMission();
     int getCampaignMission();
-    // Same slot as getCampaignMission() (missions[0]), but typed as the Mission*
-    // it really is. MGame uses it to fetch the active campaign mission object.
-    Mission* getCampaignMissionPtr();
     Mission* getMission();
     void moveWanted();
     int getPassengers();
@@ -173,7 +169,6 @@ public:
     int getMaxMissions();
     void incMissionCount();
     void setCurrentCampaignMission(int value);
-    void nextCampaignMission();
     void nextCampaignMission(bool advance);
     void changeCredits(int delta);
     void setShip(Ship* ship);
@@ -185,11 +180,6 @@ public:
     uint32_t orbitHasPlanetRing(int index);
     bool inStormOrbit();
     int inSupernovaSystem();
-    static int isChallengeMode();
-    // Alien-orbit predicate used by inAlienOrbit(): you are in an "alien" (foreign)
-    // orbit whenever the station you are currently orbiting is not your own
-    // player/home station.
-    static bool inAlienOrbit_impl(Station* station, Station* playerStation);
     int getSystem();
     bool inFogSkyboxOrbit();
     bool inSupernovaOrbit();

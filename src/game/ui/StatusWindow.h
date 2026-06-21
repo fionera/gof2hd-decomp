@@ -55,8 +55,8 @@ public:
     void draw();
     float getRelativeScrollHeight();
     float getRelativeScrollStartPos();
+    String getMedalHintText(int medalIndex);
     void reInit();
-    void update();
-    void update(int unused);
+    void update(int frameTime);
 };
 #endif

@@ -22,26 +22,30 @@ public:
     PaintCanvas        *paintCanvas;
     ApplicationManager *applicationManager;
 
-    IApplicationModule();
-    virtual ~IApplicationModule();
+    IApplicationModule() {}
+    virtual ~IApplicationModule() {}
 
-    // Virtual interface, in vtable order.
-    virtual int       OnInitialize();
-    virtual void      OnRelease();
-    virtual long long OnKeyPress(long long key, long long mod);
-    virtual long long OnKeyRelease(long long key, long long mod);
-    virtual int       OnTouchBegin(int x, int y);
-    virtual int       OnTouchMove(int x, int y);
-    virtual void      OnTouchEnd(int x, int y);
-    virtual int       OnTouchBegin(int x, int y, void *touch);
-    virtual int       OnTouchMove(int x, int y, void *touch);
-    virtual int       OnTouchEnd(int x, int y, void *touch);
-    virtual void      OnUpdate();
-    virtual void      OnRender3D();
-    virtual void      OnRender2D();
-    virtual void      OnSuspend();
-    virtual void      OnResume();
-    virtual int       ShowLoadingScreen();
+    // Default no-op virtual interface, in vtable order. Concrete modules
+    // (MTitle, ...) override the handlers they care about; the rest fall through
+    // to these inline passthrough stubs. The bodies are inline-in-class so the
+    // base only contributes them to its vtable -- exactly as the shipped binary,
+    // which emits no standalone out-of-line symbol for any of them.
+    virtual int       OnInitialize()                            { return 0; }
+    virtual void      OnRelease()                               {}
+    virtual long long OnKeyPress(long long key, long long)      { return key; }
+    virtual long long OnKeyRelease(long long key, long long)    { return key; }
+    virtual int       OnTouchBegin(int x, int)                  { return x; }
+    virtual int       OnTouchMove(int x, int)                   { return x; }
+    virtual void      OnTouchEnd(int, int)                      {}
+    virtual int       OnTouchBegin(int x, int, void *)          { return x; }
+    virtual int       OnTouchMove(int x, int, void *)           { return x; }
+    virtual int       OnTouchEnd(int x, int, void *)            { return x; }
+    virtual void      OnUpdate()                                {}
+    virtual void      OnRender3D()                              {}
+    virtual void      OnRender2D()                              {}
+    virtual void      OnSuspend()                               {}
+    virtual void      OnResume()                                {}
+    virtual int       ShowLoadingScreen()                       { return 0; }
 
     void SetApplicationManager(ApplicationManager *manager);
 };
