@@ -133,6 +133,23 @@ public:
     static unsigned char showMouseDuringGameOver; // 0x2281a4
     static unsigned char keyBindings[8];     // 0x2281a8 (only [4] read here)
 
+    // --- Synthetic-touch / on-screen-stick steering state (simulateTouch) ------
+    // The desktop-style input layer maps a software joystick onto synthetic
+    // touches. simulateTouch seeds the four screen edges once, integrates the
+    // steering axes and feeds the eased stick position back out through these
+    // plain Globals-scoped ints (so they mangle to Globals::<name>).
+    static int left_edge;                    // 0x227cac  10
+    static int right_edge;                   // 0x227cb0  displayWidth-10
+    static int top_edge;                     // 0x227cb4  10
+    static int bottom_edge;                  // 0x227cb8  displayHeight-10
+    static int resetKeyboard;                // 0x227ce4  cleared when no key drives the stick
+    static int rotateShipInStation;          // 0x227cec  integrated yaw/roll steering value
+    static int translateStarMapInXDirection; // 0x227cf0  star-map pan-X request
+    static int translateStarMapInYDirection; // 0x227cf4  star-map pan-Y request
+    static int smallButton_dim;              // 0x227ca8  stick travel radius (px)
+    static int touch_stick_x;                // 0x227c90  stick centre X (px)
+    static int touch_stick_y;                // 0x227c94  stick centre Y (px)
+
     // --- Device screen-class / asset-selection flags (fixed .bss) ------------
     // Derived once at bring-up (OnCreateApplication) from the device-info probe
     // (NFC width/height/isPad). Kept as plain Globals-scoped globals in the

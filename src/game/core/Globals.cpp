@@ -13,6 +13,19 @@ int           Globals::mouseCursorActivated       = 0;   // 0x228304
 unsigned char Globals::showMouseDuringGameOver    = 0;   // 0x2281a4
 unsigned char Globals::keyBindings[8]             = {};  // 0x2281a8
 
+// Synthetic-touch / on-screen-stick steering state (simulateTouch).
+int Globals::left_edge                    = 0;   // 0x227cac
+int Globals::right_edge                   = 0;   // 0x227cb0
+int Globals::top_edge                     = 0;   // 0x227cb4
+int Globals::bottom_edge                  = 0;   // 0x227cb8
+int Globals::resetKeyboard                = 0;   // 0x227ce4
+int Globals::rotateShipInStation          = 0;   // 0x227cec
+int Globals::translateStarMapInXDirection = 0;   // 0x227cf0
+int Globals::translateStarMapInYDirection = 0;   // 0x227cf4
+int Globals::smallButton_dim              = 0;   // 0x227ca8
+int Globals::touch_stick_x                = 0;   // 0x227c90
+int Globals::touch_stick_y                = 0;   // 0x227c94
+
 // Device screen-class / asset-selection flags (seeded by OnCreateApplication).
 unsigned char Globals::iPad                   = 0;   // 0x2282c0
 unsigned char Globals::iPadHD                 = 0;   // 0x2282d5

@@ -18,6 +18,7 @@ bool         AbyssEngine::Engine::vfc           = false;
 float        AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float        AbyssEngine::Engine::lodBiasNormal  = 0.0f;
 unsigned int AbyssEngine::Engine::countryCode    = 0;
+bool         AbyssEngine::Engine::EnablePostEffect = false;  // 0x2250d8
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"

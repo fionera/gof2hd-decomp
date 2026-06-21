@@ -283,6 +283,10 @@ public:
     static float lodBiasDiffuse;    // 0x2250c8 diffuse-map LOD bias (-1.3)
     static float lodBiasNormal;     // 0x227ab4 normal-map LOD bias (-0.5)
     static unsigned int countryCode; // 0x2250e0 device locale / language code
+
+    // Post-processing toggle flipped by the synthetic-touch glue (simulateTouch)
+    // while the loading screen / GL post pass is active.
+    static bool EnablePostEffect;    // 0x2250d8
 };
 
 } // namespace AbyssEngine

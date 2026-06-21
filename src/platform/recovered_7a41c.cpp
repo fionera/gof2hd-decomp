@@ -9,10 +9,13 @@
 #include "platform/recovered_7a41c.h"
 
 #include "engine/core/ApplicationManager.h"   // gAppManager, current module id
+#include "engine/math/AEMath.h"                // VectorSignedToFloat (vertex dequantizer)
 #include "engine/core/NFC.h"                   // IsInGameSubMenuNotActive
 #include "engine/render/Engine.h"             // Engine (appManager, DrawQuad, field_0x360)
 #include "game/core/Globals.h"                // Globals UI-state flags / mouse toggles
 
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <initializer_list>
@@ -209,6 +212,36 @@ char *g_decelHeld;
 // first activation pass treats the pointer as freshly shown. (binary .data
 // 0x225090.)
 int g_mousePointerLatch = 1;
+
+// ---------------------------------------------------------------------------
+// Software on-screen-stick state (driven by simulateTouch).
+// ---------------------------------------------------------------------------
+// The eased stick lives in a small .data float block (binary 0x2250a4..0x2250b8)
+// whose word 0 (0x2250a0) is the shared pointer-captured flag (g_pointerCaptured
+// above). The remaining six floats are the per-axis stick state: the raw
+// input centres, the eased [0,1] outputs fed to the synthetic touch, and the
+// saved outputs restored while the joystick latch is engaged.
+struct SoftwareStick {
+    float inputX;    // 0x2250a4 raw centre X (0.5 = neutral)
+    float inputY;    // 0x2250a8 raw centre Y (0.5 = neutral)
+    float easedX;    // 0x2250ac eased output X in [0,1]
+    float easedY;    // 0x2250b0 eased output Y in [0,1]
+    float savedX;    // 0x2250b4 saved output X (joystick hold)
+    float savedY;    // 0x2250b8 saved output Y (joystick hold)
+};
+SoftwareStick g_stick = { 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
+
+// "Use raw joystick" sub-mode (binary 0x227998): when set, the eased outputs are
+// replaced by the saved hold values instead of being recomputed each frame.
+int g_useJoystick;
+
+// One-shot edge seed: false until simulateTouch has stored the four screen edges.
+// (binary 0x22798c)
+int g_simEdgesInit;
+
+// Latch tracking whether a synthetic touch is currently in flight, so begin /
+// move / end events are posted in order. (binary 0x227990)
+unsigned char g_simTouchActive;
 
 } // namespace
 
@@ -735,15 +768,252 @@ void actualizeButtonPositions(AbyssEngine::Engine * /*engine*/)
 {
 }
 
-// simulateTouch(AbyssEngine::Engine*) is intentionally left unimplemented (still
-// absent). Its body folds the software touch-stick into synthetic OnTouchBegin/
-// Move/End events via a small .data float block at 0x2250a0 whose fields the
-// binary reaches through several overlapping base+offset views, and the eased
-// X/Y dataflow is carried in NEON registers across FPSCR-conditioned branches.
-// The struct field aliasing (which slot feeds each ease input vs. receives the
-// output across the idle / sign-latch / copy-through branches) could not be
-// resolved unambiguously from static analysis, and a wrong transcription would
-// silently corrupt named game-state globals (rotateShipInStation,
-// translateStarMapInX/Y, the stick struct). Per the "do not guess" rule it is
-// reported blocked rather than implemented speculatively. All of its globals are
-// already resolved (see the task report) for a future runtime-verified pass.
+// ---------------------------------------------------------------------------
+// Software joystick -> synthetic touch.
+// ---------------------------------------------------------------------------
+namespace {
+
+using AbyssEngine::AEMath::VectorSignedToFloat;
+
+// Several "int" Globals here (rotateShipInStation, translateStarMapInX/Y) carry
+// a float steering value in their bit pattern, exactly as the binary stores the
+// vstr.32 result into the integer slot and reads it back with vldr.32. These
+// thin bit-cast helpers express that without aliasing UB.
+inline float bitsToFloat(int v) { float f; std::memcpy(&f, &v, sizeof f); return f; }
+inline int floatToBits(float f) { int v; std::memcpy(&v, &f, sizeof v); return v; }
+
+// The steering / star-map keys live in the virtual-key table; the body reaches
+// them by table index (entry n -> table[n].pressed at struct +0x14, i.e. the
+// 0x2d4.. offsets the binary indexes off the table base).
+inline bool keyHeld(int index) { return g_virtualKeys[index].pressed != 0; }
+
+// Per-axis ease curve: maps a signed delta into [0,1] via an ease-in/ease-out
+// quadratic biased by +0.5 (the binary's vmls / vneg / +0.5 sequence at 0x7b002).
+inline float easeAxis(float t)
+{
+    float eased;
+    if (t <= 0.0f)
+        eased = -(1.0f - (t + 1.0f) * (t + 1.0f));
+    else
+        eased = 1.0f - (t - 1.0f) * (t - 1.0f);
+    return eased + 0.5f;
+}
+
+} // namespace
+
+void simulateTouch(AbyssEngine::Engine *engine)
+{
+    // -- Post-effect toggle while the loading/post pass owns the screen. -------
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(gAppManager) + 0xbc) != 0)
+        AbyssEngine::Engine::EnablePostEffect = !AbyssEngine::Engine::EnablePostEffect;
+
+    // -- One-shot: seed the four screen edges from the GL display extents. -----
+    if (g_simEdgesInit == 0) {
+        Globals::resetKeyboard = 10;
+        Globals::right_edge = static_cast<int>(engine->GetDisplayWidth()) - 10;
+        Globals::left_edge = 10;
+        Globals::bottom_edge = static_cast<int>(engine->GetDisplayHeight()) - 10;
+        g_simEdgesInit = 1;
+    }
+
+    // -- While the pointer is captured, reset the eased stick to neutral. ------
+    if (g_pointerCaptured != 0) {
+        g_stick.easedX = 0.5f;
+        g_stick.easedY = 0.5f;
+        g_pointerEmulationEnabled = 0;
+        g_pointerCaptured = 0;
+        g_zoomRequest = 0;
+    }
+
+    // -- Roll output from the two fire keys (engine->field_0x360, a float). -----
+    if (keyHeld(8))
+        engine->field_0x360 = static_cast<uint32_t>(floatToBits(-1.0f));
+    if (keyHeld(9))
+        engine->field_0x360 = static_cast<uint32_t>(floatToBits(1.0f));
+
+    // -- Steering value (rotateShipInStation) set from the turn keys. ----------
+    // key11 left / key12 right / key13 up / key14 down. A held key drives the
+    // axis to +/-20, escalated to +/-40 when the opposite key is also held.
+    if (keyHeld(11)) {
+        Globals::rotateShipInStation = floatToBits(keyHeld(14) ? -40.0f : -20.0f);
+    } else if (keyHeld(12)) {
+        Globals::rotateShipInStation = floatToBits(keyHeld(13) ? 40.0f : 20.0f);
+    } else if (keyHeld(13)) {
+        Globals::rotateShipInStation = floatToBits(20.0f);
+    } else if (keyHeld(14)) {
+        Globals::rotateShipInStation = floatToBits(-20.0f);
+    }
+
+    // -- Integrate the mouse-wheel accumulator into the steering value. --------
+    // Blocked while a menu / dialogue / choice overlay is up (then both are
+    // zeroed); otherwise the wheel folds into the steering value, the wheel
+    // decays by 0.9, and the steering value is clamped to [-40, 40].
+    if ((Globals::is_choice_window_visible | Globals::is_menu_visible |
+         Globals::is_dialogue_window_visible) == 0) {
+        float steer = bitsToFloat(Globals::rotateShipInStation) +
+                      VectorSignedToFloat(g_wheelAccumA, 0);
+        g_wheelAccumA = static_cast<int>(VectorSignedToFloat(g_wheelAccumA, 0) * 0.9f);
+        if (steer > 40.0f)
+            steer = 40.0f;
+        else if (steer < -40.0f)
+            steer = -40.0f;
+        Globals::rotateShipInStation = floatToBits(steer);
+    } else {
+        g_wheelAccumA = 0;
+        Globals::rotateShipInStation = floatToBits(0.0f);
+    }
+
+    // -- Star-map pan X (translateStarMapInXDirection), a float bit pattern. ----
+    // +10 while a "left"/zoom-out key (11 or 15) is held, -10 while only a
+    // "right"/zoom-in key (12 or 16) is held, 0 otherwise.
+    if (keyHeld(11) || keyHeld(15))
+        Globals::translateStarMapInXDirection = floatToBits(10.0f);
+    else if (keyHeld(12) || keyHeld(16))
+        Globals::translateStarMapInXDirection = floatToBits(-10.0f);
+    else
+        Globals::translateStarMapInXDirection = floatToBits(0.0f);
+
+    // -- Star-map pan Y (translateStarMapInYDirection). ------------------------
+    if (keyHeld(13) || keyHeld(17))
+        Globals::translateStarMapInYDirection = floatToBits(-10.0f);
+    else if (keyHeld(14) || keyHeld(18))
+        Globals::translateStarMapInYDirection = floatToBits(10.0f);
+    else
+        Globals::translateStarMapInYDirection = floatToBits(0.0f);
+
+    // -- Pointer-driven step into the eased stick outputs. ---------------------
+    // Only runs while pointer emulation is active; each pointer accumulator
+    // contributes a unit step toward 0/1 and is then decayed by that step
+    // (same-sign saturate). With emulation off the eased outputs are left as-is.
+    if (g_pointerEmulationEnabled != 0) {
+        int px = g_pointerX;
+        int stepX = 0;
+        if (px < 0)       { g_stick.easedX = 0.0f; }
+        else if (px != 0) { stepX = 1; g_stick.easedX = 1.0f; }
+
+        int py = g_pointerY;
+        int stepY = 0;
+        if (py < 0)       { g_stick.easedY = 0.0f; }
+        else if (py != 0) { stepY = 1; g_stick.easedY = 1.0f; }
+
+        // The binary stores the decayed accumulator only when a step was taken
+        // or the subtraction went negative (i.e. not the "idle and stayed
+        // non-negative" case): store when stepX != 0 || (px - stepX) < 0.
+        if (stepX != 0 || (px - stepX) < 0) {
+            int dx = px - stepX;
+            g_pointerX = dx - (dx >> 31);
+        }
+        if (stepY != 0 || (py - stepY) < 0) {
+            int dy = py - stepY;
+            g_pointerY = dy - (dy >> 31);
+        }
+
+        if (g_stick.easedX > 1.0f)      g_stick.easedX = 1.0f;
+        else if (g_stick.easedX < 0.0f) g_stick.easedX = 0.0f;
+        if (g_stick.easedY > 1.0f)      g_stick.easedY = 1.0f;
+        else if (g_stick.easedY < 0.0f) g_stick.easedY = 0.0f;
+    }
+
+    // -- Ease stick X toward its rest (0.5). -----------------------------------
+    if (g_stick.inputX == 0.5f) {
+        // At rest: drift easedX by +/-0.05 toward 0.5, then snap inside (0.4,0.6).
+        if (g_stick.easedX != 0.5f)
+            g_stick.easedX = static_cast<float>(static_cast<double>(g_stick.easedX) +
+                                                (g_stick.easedX < 0.5f ? 0.05 : -0.05));
+        if (static_cast<double>(g_stick.easedX) > 0.4 &&
+            static_cast<double>(g_stick.easedX) < 0.6)
+            g_stick.easedX = 0.5f;
+    } else {
+        // Driven: integrate the input, clamped to [0,1].
+        float v = std::min(g_stick.inputX + g_stick.easedX, 1.0f);
+        g_stick.easedX = v;
+        if (v < 0.0f) g_stick.easedX = 0.0f;
+    }
+
+    // -- Ease stick Y toward its rest (0.5). -----------------------------------
+    if (g_stick.inputY == 0.5f) {
+        if (g_stick.easedY != 0.5f)
+            g_stick.easedY = static_cast<float>(static_cast<double>(g_stick.easedY) +
+                                                (g_stick.easedY < 0.5f ? 0.05 : -0.05));
+        if (static_cast<double>(g_stick.easedY) > 0.4 &&
+            static_cast<double>(g_stick.easedY) < 0.6)
+            g_stick.easedY = 0.5f;
+    } else {
+        float v = std::min(g_stick.inputY + g_stick.easedY, 1.0f);
+        g_stick.easedY = v;
+        if (v < 0.0f) g_stick.easedY = 0.0f;
+    }
+
+    // -- Magnitude shaping while pointer emulation is active. ------------------
+    // The larger absolute axis (X capped at 500) sets a common magnitude; the
+    // pointer accumulators are normalised by it (Y by half), clamped to [-1,1],
+    // run through the ease curve and clamped to [0,1].
+    if (g_pointerEmulationEnabled != 0) {
+        float magX = std::min(std::fabs(g_stick.easedX), 500.0f);
+        float mag  = std::max(std::fabs(g_stick.easedY), magX);
+
+        float nx = std::max(std::min(VectorSignedToFloat(g_pointerX, 0) / mag, 1.0f), -1.0f);
+        float ny = std::max(std::min(VectorSignedToFloat(g_pointerY, 0) / (mag * 0.5f), 1.0f), -1.0f);
+
+        float ex = easeAxis(nx);
+        float ey = easeAxis(ny);
+        g_stick.easedX = ex;
+        g_stick.easedY = ey;
+        if (ex < 0.0f) { g_stick.easedX = 0.0f; }
+        if (ey < 0.0f) { g_stick.easedY = 0.0f; }
+        if (ex > 1.0f) g_stick.easedX = 1.0f;
+        if (ey > 1.0f) g_stick.easedY = 1.0f;
+    }
+
+    // -- "Use raw joystick" hold: restore the saved eased outputs. -------------
+    if (g_useJoystick != 0) {
+        g_stick.easedX = g_stick.savedX;
+        g_stick.easedY = g_stick.savedY;
+    }
+
+    // -- Map the eased stick to a screen point and post the synthetic touch. ---
+    // Only fires inside the flight module (module id 2).
+    if (reinterpret_cast<std::intptr_t>(gAppManager->GetCurrentApplicationModule()) == 2) {
+        const float dim = VectorSignedToFloat(Globals::smallButton_dim, 0);
+        const float cy  = VectorSignedToFloat(Globals::touch_stick_y, 0);
+        const float cx  = VectorSignedToFloat(Globals::touch_stick_x, 0);
+        const float ex  = g_stick.easedX;
+        const float ey  = g_stick.easedY;
+
+        const int down = keyIsPressed();
+        unsigned char active = g_simTouchActive;
+        const bool inactive = (active ^ 1) != 0;
+
+        // Skip entirely when neither pressed nor already driving a touch.
+        if (down != 0 || !inactive) {
+            const int touchX = static_cast<int>((cx - dim) + (dim + dim) * ex);
+            const int touchY = static_cast<int>((cy - dim) + (dim + dim) * ey);
+            AbyssEngine::ApplicationManager *mgr = engine->appManager;
+
+            if (down == 0 && !inactive) {
+                // Released while a touch is in flight: end it once the stick has
+                // recentred, otherwise keep dragging.
+                if (ex == 0.5f && ey == 0.5f) {
+                    mgr->OnTouchEnd(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                    g_simTouchActive = 0;
+                } else {
+                    mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                }
+            } else if (down == 1 && !inactive) {
+                // Held with a touch already active: drag.
+                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+            } else if (active == 0 && down == 1) {
+                // First press of a frame: begin then immediately move.
+                mgr->OnTouchBegin(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                mgr->OnTouchMove(touchX, touchY, reinterpret_cast<void *>(0xe8b));
+                g_simTouchActive = 1;
+            }
+        }
+    }
+
+    // -- Decay the pointer accumulators by 0.96 each frame while uncaptured. ----
+    if (g_pointerCaptured == 0) {
+        g_pointerX = static_cast<int>(VectorSignedToFloat(g_pointerX, 0) * 0.96f);
+        g_pointerY = static_cast<int>(VectorSignedToFloat(g_pointerY, 0) * 0.96f);
+    }
+}
