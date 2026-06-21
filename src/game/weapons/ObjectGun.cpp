@@ -250,7 +250,7 @@ void ObjectGun::update(int dt)
         if (gun->isPlayerGun() != 0) {
             position = ((PlayerEgo *)player)->getPosition();
         } else {
-            gun->owner->getPosition(&position);
+            position = gun->owner->getPosition();
         }
 
         gun = this->gun;

@@ -387,8 +387,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo* ego, LevelScript* script)
         if (!player->isActive() || player->isDead()) {
             break;
         }
-        Vector pos;
-        player->getPosition(&pos);
+        Vector pos = player->getPosition();
         float dz = pos.z - static_cast<float>(this->conditionValue);
         if (dz > 0.0f) {
             return setResult(dz < 5000.0f);

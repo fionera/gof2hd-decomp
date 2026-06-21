@@ -234,22 +234,6 @@ void Player::setActive(bool value) {
     this->active = value;
 }
 
-// ---- awake_725xx ----
-// KIPlayer::awake() flips its own state and then calls ((Player *)(player))->awake(1); that shim
-// is a PLT interworking stub that branches directly into Player::setActive, so awakening
-// the ship is exactly "make it active again".
-void Player::awake(bool active) {
-    setActive(active);
-}
-
-// ---- setDead ----
-// The death path KIPlayer::setDead() -> KIPlayer::setActive(false) -> Player::setActive(false)
-// pulls the destroyed ship out of the active simulation. setDead() is the Player-side hook the
-// KIPlayer/PlayerEgo teardown calls reach.
-void Player::setDead() {
-    setActive(false);
-}
-
 bool Player::isAsteroid() {
     KIPlayer *ki = this->kiPlayer;
     bool result = false;
@@ -288,10 +272,6 @@ void Player::setMaxHitpoints(int value) {
     this->updateDamageRate();
 }
 
-int Player::getGunRegenRate() {
-    return 0;
-}
-
 int Player::getGunRegenRate(int slot) {
     (void)slot;
     return 0;
@@ -327,9 +307,9 @@ unsigned char Player::isActive() {
     return this->active;
 }
 
-// Duplicate of Player::shoot(int,int,long long,bool); the canonical definition (using
-// Player_shoot_full2 and the 'b' argument) lives further below. Removed to avoid a
-// redefinition; the leftover here also dropped 'b' and wrongly returned a value.
+// Duplicate of Player::shoot(int,int,long long,bool); the canonical definition lives
+// further below. Removed to avoid a redefinition; the leftover here also dropped 'b'
+// and wrongly returned a value.
 
 int Player::getEmpPoints() {
     return this->empPoints;
@@ -425,12 +405,6 @@ struct HitVec3 {
     double xy;
     float z;
 };
-
-void Player::getHitVector(Vector *out) {
-    double xy = *(double *)this->hitVector;
-    out->z = this->hitVector[2];
-    *(double *)&out->x = xy;
-}
 
 Vector Player::getHitVector() {
     Vector out;
@@ -593,10 +567,6 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     MatrixGetPosition(tmp, self->transform);
     *(Vector *)self->position = *(Vector *)tmp;
     self->enginePositionVec = (void *)(__INTPTR_TYPE__)-1;
-}
-
-void Player::getPosition(Vector *out) {
-    MatrixGetPosition(out, this->transform);
 }
 
 Vector Player::getPosition() {
@@ -1042,50 +1012,6 @@ void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
 
 extern "C" const float k_shootAt_inc;
 
-void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
-    Player *self = this;
-    (void)idLo; (void)idHi;
-
-    Array<Array<Gun *> *> *guns = self->guns;
-    if (guns != 0 && self->shootingEnabled != 0 && (int)slot >= 0 &&
-        slot < guns->size()) {
-        Array<Gun *> *arr = guns->data()[slot];
-        if (arr != 0) {
-            for (unsigned int i = 0; i < arr->size(); i++) {
-                Gun *g = self->guns->data()[slot]->data()[i];
-                if (g->fireDelay < g->timer) {
-                    // Rebuild the firing transform from the flattened matrix args (m0..m14)
-                    // that the decompiler spilled out of the by-value Matrix parameter.
-                    Matrix fireMat;
-                    {
-                        int mi[15] = { m0, m1, m2, m3, m4, m5, m6, m7,
-                                       m8, m9, m10, m11, m12, m13, m14 };
-                        for (int k = 0; k < 15; ++k)
-                            fireMat.m[k] = *(float *)&mi[k];
-                        fireMat.m[15] = 1.0f;
-                    }
-                    ((Gun *)(g))->shootAt(fireMat, flag, (Player *)self, false);
-                    {
-                        self->flShake = self->flShake + k_shootAt_inc;
-                        Gun *g2 = self->guns->data()[slot]->data()[i];
-                        g2->timer = 0;
-                        if (self->playShootSoundFlag != 0 && g2->field_0x89 != 0) {
-                            float tmp[3];
-                            MatrixGetPosition(tmp, self->transform);
-                            Gun *g3 = self->guns->data()[slot]->data()[i];
-                            self->playShootSound(g3->itemIndex, g3->weaponType,
-                                                 reinterpret_cast<Vector *>(tmp),
-                                                 g3->field_0xb0);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-}
-
 extern "C" const float k_damage_full;
 extern "C" const float k_damage_hc;
 extern "C" const float k_damage_full2;
@@ -1373,61 +1299,6 @@ void Player::setMaxArmorHP(int value) {
 
 extern "C" const float k_shoot_inc;
 
-int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22) {
-    Player *self = this;
-    unsigned int mask = g_shoot_mask;
-    int retval = 1;
-
-    Array<Array<Gun *> *> *guns = self->guns;
-    if (guns != 0 && self->shootingEnabled != 0 && (int)slot >= 0 &&
-        slot < guns->size()) {
-        Array<Gun *> *arr = guns->data()[slot];
-        if (arr != 0) {
-            for (unsigned int i = 0; i < arr->size(); i++) {
-                Gun *g = self->guns->data()[slot]->data()[i];
-                unsigned int sortIdx = g->weaponType - 6;
-                if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0 &&
-                    *(int *)g->lifetimes >= 0) {
-                    ((Gun *)(g))->ignite();
-                } else if (g->itemIndex == gunId &&
-                           g->fireDelay < g->timer) {
-                    if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        // RAWREAD: byte at +0x69 of g->lifetimes (an int* projectile buffer, not a modeled class)
-                        *(char *)((intptr_t)g->lifetimes + 0x69) = 1;
-                    }
-                    // Rebuild the by-value firing Matrix the decompiler spilled to a8..a22.
-                    Matrix fireMat2;
-                    {
-                        int mi[15] = { a8, a9, a10, a11, a12, a13, a14, a15,
-                                       a16, a17, a18, a19, a20, a21, a22 };
-                        for (int k = 0; k < 15; ++k)
-                            fireMat2.m[k] = *(float *)&mi[k];
-                        fireMat2.m[15] = 1.0f;
-                    }
-                    ((Gun *)(g))->shoot(fireMat2, flag, false);
-                    {
-                        self->flShake = self->flShake + k_shoot_inc;
-                        if (self->playShootSoundFlag != 0) {
-                            float tmp[3];
-                            MatrixGetPosition(tmp, self->transform);
-                            Gun *g2 = self->guns->data()[slot]->data()[i];
-                            self->playShootSound(g2->itemIndex, g2->weaponType,
-                                                 reinterpret_cast<Vector *>(tmp),
-                                                 g2->field_0xb0);
-                        }
-                        g->timer = 0;
-                        retval = 1;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    
-    return retval;
-}
-
 extern "C" void (**g_update_transform)(void *, void *, int);  // DAT_b41e2 fn ptr table
 extern "C" const float k_update_a;
 extern "C" const float k_update_b;
@@ -1497,18 +1368,15 @@ Vector * Player::update(int dt, bool doSound) {
     return result;
 }
 
-// Forwards to the full Player::shoot overload, expanding the transform matrix
-// (fields 0x04..0x3c) into the trailing arguments.
-extern "C" void Player_shoot_full2(
-    Player *self, int a, int b, int loC, int hiC,
-    int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
-    int m8, int m9, int m10, int m11, int m12, int m13, int m14);
-
+// shoot(int,int,long long,bool): primary/turret fire through the hull transform.
+// Expands fields 0x04..0x3c into the firing matrix and forwards to the
+// Matrix-taking overload.
 void Player::shoot(int a, int b, long long pos, bool flag) {
-    int *m = (int *)this->transform;
-    Player_shoot_full2(this, a, b, (int)pos, (int)((unsigned long long)pos >> 32),
-                       m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
-                       m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
+    Matrix mat;
+    float *src = this->transform;
+    for (int k = 0; k < 15; ++k) mat.m[k] = src[k];
+    mat.m[15] = 1.0f;
+    this->shoot(a, b, pos, flag, mat);
 }
 
 // shoot(int,int,long long,bool,Matrix): primary/turret fire worker. For slot `b`,
@@ -1659,18 +1527,6 @@ Array<Player *> *Player::getEnemies() {
 
 
 // ---- PlayEngineSound_a4014 ----
-void Player::PlayEngineSound(Vector *vec) {
-    this->enginePositionVec = vec;
-    if (*((char *)gAppManager + 0xf) != 0) {
-        float pos[12];
-        MatrixGetPosition(pos, this->transform);
-        FMOD::Event *ev = ((FModSound *)gFModSoundPtr[0])->updateEvent3DAttributes(
-            this->engineEvent, 0, (Vector *)this->enginePositionVec, (Vector *)pos, false);
-        this->engineEvent = ev;
-        this->engineSoundPlaying = 1;
-    }
-}
-
 void Player::PlayEngineSound(int unused, Vector *vec) {
     (void)unused;
     this->enginePositionVec = vec;
@@ -1819,26 +1675,14 @@ extern "C" int Player_shootTurret(void *player, int kind, int weapon, int hi,
                                   int flag, const void *matrix) {
     (void)flag;
     // Turret fire aims through an externally-combined geometry matrix rather than
-    // the hull transform, so it routes through the matrix-expanding shoot1 overload.
-    const int *m = static_cast<const int *>(matrix);
-    static_cast<Player *>(player)->shoot1((unsigned)kind, weapon, hi,
-                                          hi < 0,
-                                          m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7],
-                                          m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
+    // the hull transform, so it routes through the matrix-taking secondary-launch
+    // overload Player::shoot(int, long long, bool, Matrix).
+    const float *m = static_cast<const float *>(matrix);
+    Matrix mat;
+    for (int k = 0; k < 15; ++k) mat.m[k] = m[k];
+    mat.m[15] = 1.0f;
+    long long pos = ((long long)hi << 32) | (unsigned int)weapon;
+    static_cast<Player *>(player)->shoot(kind, pos, hi < 0, mat);
     return 1;
-}
-
-// shoot_full2: the canonical Player::shoot(int,int,long long,bool) expands the
-// hull transform (fields 0x04..0x3c) into the trailing matrix arguments and tail-
-// calls the matrix-taking shoot1 overload (veneer -> Player::shoot1 at 0xb3b20).
-extern "C" void Player_shoot_full2(
-    Player *self, int a, int b, int loC, int hiC,
-    int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7,
-    int m8, int m9, int m10, int m11, int m12, int m13, int m14) {
-    long long pos = ((long long)hiC << 32) | (unsigned int)loC;
-    (void)pos;
-    self->shoot1((unsigned)a, b, hiC, loC,
-                 m0, m1, m2, m3, m4, m5, m6, m7,
-                 m8, m9, m10, m11, m12, m13, m14);
 }
 

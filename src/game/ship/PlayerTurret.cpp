@@ -169,8 +169,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
 {
     Matrix matrix;
     matrix = *(const Matrix*)this->currentEnemy->transform;
-    Vector enemyPos;
-    this->currentEnemy->getPosition(&enemyPos);
+    Vector enemyPos = this->currentEnemy->getPosition();
 
     Vector dir = MatrixGetDir(matrix);
     Vector normal = VectorNormalize(dir);
@@ -374,8 +373,7 @@ void PlayerTurret::pickEnemy()
             continue;
         }
 
-        Vector enemyPos;
-        enemy->getPosition(&enemyPos);
+        Vector enemyPos = enemy->getPosition();
         Vector diff = position - enemyPos;
         int distance = (int)VectorLength(diff);
         if (distance < bestRange) {

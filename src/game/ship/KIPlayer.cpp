@@ -297,7 +297,7 @@ uint8_t KIPlayer::isVisible() {
 
 void KIPlayer::awake() {
     this->state = 1;
-    this->player->awake(1);
+    this->player->setActive(true);
 }
 
 void KIPlayer::setInitActive(bool active) {
@@ -373,7 +373,7 @@ int KIPlayer::cargoAvailable() {
 
 void KIPlayer::setDead() {
     this->state = 4;
-    this->player->setDead();
+    this->player->setActive(false);
 }
 
 // Returns the nearest space point of type 2 (docking) to the supplied direction vector,

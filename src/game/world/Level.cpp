@@ -283,7 +283,7 @@ void Level::switchSkyboxForIntro() {
     field_198 = skyboxTexHandle;
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
-            (*this->asteroids)[i]->setDead();
+            (*this->asteroids)[i]->setActive(false);
         }
     }
 }

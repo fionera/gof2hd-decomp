@@ -250,7 +250,7 @@ fallback:
 have_enemy:
     if (enemy != nullptr) {
         Gun *g = this->gun;
-        enemy->getPosition(&enemyPos);
+        enemyPos = enemy->getPosition();
         Vector *muzzlePositions = (Vector *)g->positions;
         Vector *muzzleVelocities = (Vector *)g->velocities;
 

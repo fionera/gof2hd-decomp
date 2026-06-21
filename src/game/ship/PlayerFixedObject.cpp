@@ -420,17 +420,14 @@ afterMotion:
             self->targetEnemy = 0;
             for (unsigned int i = 0; i < enemies->size(); i++) {
                 if (((Player *)(((Player *)(self->player))->getEnemy(i)))->isActive() != 0) {
-                    char pb[12];
-                    ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
-                    self->targetPos = *(const Vector *)((Vector *)pb);
+                    self->targetPos = ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition();
                     float dx = self->position.x - self->targetPos.x;
                     float dy = self->position.y - self->targetPos.y;
                     float dz = self->position.z - self->targetPos.z;
                     const float lo = 0.0f, hi = 50.0f;
                     if (dx < hi && dx > lo && dy < hi && dy > lo && dz < hi && dz > lo) {
                         self->targetEnemy = (int32_t)(__INTPTR_TYPE__)((Player *)(self->player))->getEnemy(i);
-                        ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition((Vector *)pb);
-                        self->targetPos = *(const Vector *)((Vector *)pb);
+                        self->targetPos = ((Player *)(((Player *)(self->player))->getEnemy(i)))->getPosition();
                         self->homingTarget.x = self->targetPos.x;
                         self->homingTarget.y = self->targetPos.y;
                         self->homingTarget.z = self->targetPos.z;

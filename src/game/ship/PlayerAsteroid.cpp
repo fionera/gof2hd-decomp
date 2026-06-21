@@ -196,8 +196,7 @@ void PlayerAsteroid::update(int delta)
 
     float bombForce = player->getBombForce();
     if (bombForce > 0.0f && this->state == 3) {
-        Vector hit;
-        player->getHitVector(&hit);
+        Vector hit = player->getHitVector();
         float scaling = this->scaling;
         float clamped = scaling;
         if (clamped > 1.0f)

@@ -3086,7 +3086,7 @@ extern "C" void PlayerEgo_StopEngineSound_ext(void *player) {
 extern "C" void PlayerEgo_PlayEngineSound_ext(void *player, int /*posHandle*/, int /*zero*/) {
     // Player::PlayEngineSound takes the 3D source position; the engine reads it
     // from the player's own cached sound-position vector (Player::field_f4).
-    ((Player *)player)->PlayEngineSound((Vector *)0);
+    ((Player *)player)->PlayEngineSound(0, (Vector *)0);
 }
 
 // ---- Player scalar getters (self->player receiver) ----
