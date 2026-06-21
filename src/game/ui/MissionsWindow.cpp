@@ -353,7 +353,7 @@ int MissionsWindow::init()
             if (ApplicationManager_GetCurrentApplicationModule(gAppManager) == 5) {
                 String *t2 = g_mw_gameText->getText(titleId);
                 this->m_pMapButton = new TouchButton(
-                    t2, 0, this->m_x + btnY + (this->m_width >> 1) + L->field_0x2c * 2,
+                    *t2, 0, this->m_x + btnY + (this->m_width >> 1) + L->field_0x2c * 2,
                     (((this->m_y - L->field_0x2c) + this->m_height) - L->field_0x10) - L->field_0x24,
                     btnY, '!', 4);
                 this->m_pMapButton->setTextColor(g_mwi_actionColor);
