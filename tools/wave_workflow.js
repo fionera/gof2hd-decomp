@@ -33,8 +33,12 @@ const RESULT_SCHEMA = {
 }
 
 const RULES = `
-GOAL: clean, idiomatic, human-looking C++ that correctly implements each function. We do NOT care
-about byte-for-byte matching or exact symbol/alias matching. NEVER write a byte-match hack.
+GOAL: clean, idiomatic, human-looking C++. The work is EXACTLY three operations: (1) ADD an absent
+function (implement the missing original as a real method/free-function/ctor/dtor on the right
+class); (2) REMOVE an extra (rename a misnamed function to the original, retype a wrong overload, or
+— if the original inlined it — inline its body into the callers and delete it; never delete a called
+function); (3) CORRECT a wrong_type (retype params so the signature matches the original). We do NOT
+care about byte-for-byte matching or exact symbol/alias matching. NEVER write a byte-match hack.
 
 ABSOLUTELY FORBIDDEN (these are the mistakes to undo, never introduce):
 - asm link-name overrides: NO  asm("_ZN...")  labels on a function/variable to force a mangled name.
@@ -44,8 +48,16 @@ ABSOLUTELY FORBIDDEN (these are the mistakes to undo, never introduce):
   correctly. It is FINE that a real ctor/dtor also emits the C1/D1 alias variants; do not try to
   suppress them.
 - __attribute__((alias(...))), [[gnu::used]] added only to keep a hack alive, .set/.global asm.
-- referencing another class's member/global by a hand-written mangled \`asm("_ZN...")\` extern —
-  include the owning header and use the real \`Class::member\` / \`obj->method()\` instead.
+- *** FORWARD-DECLARATIONS and LOCAL STUB CLASSES to dodge a header — THE #1 DEFECT. *** To use a
+  type, \`#include\` its OWNING HEADER and reference the real \`Class\` / \`Class::member\`. NEVER write
+  \`class X;\` / \`namespace AbyssEngine { class Trail; }\`, NEVER a local \`struct Layout {...}\` /
+  \`class LensFlare {...}\` mirror, NEVER an \`extern T x asm("_ZN...")\`. A stub/forward-decl gives the
+  type the WRONG identity (your \`AbyssEngine::Trail\` is NOT the real global \`::Trail\`), and breaks
+  other TUs with incomplete-type / redefinition / using-conflict errors. If the owning header
+  genuinely conflicts with another you need (duplicate-String / two-PaintCanvas / unguarded
+  BlendMode), FIX the conflict (add the header guard / relocate the namespace) so the real header is
+  includable; if that fix is outside your component's files, DEFER with the precise reason. Stubbing
+  is NEVER acceptable.
 
 GROUND TRUTH is the original binary, for UNDERSTANDING BEHAVIOR ONLY. Use Ghidra MCP when available
 (program "android_2.0.16_libgof2hdaa.so", image base 0x10000; ghidra_addr is already V+0x10000 —

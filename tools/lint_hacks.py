@@ -24,13 +24,38 @@ REPO = os.path.dirname(HERE)
 SRC = os.path.join(REPO, "src")
 
 
-def rg(pattern):
+def rg(pattern, glob=None):
+    cmd = ["rg", "-n", "--no-heading"]
+    if glob:
+        cmd += ["-g", glob]
+    cmd += [pattern, SRC]
     try:
-        out = subprocess.run(["rg", "-n", "--no-heading", pattern, SRC],
-                             capture_output=True, text=True, timeout=30).stdout
+        out = subprocess.run(cmd, capture_output=True, text=True, timeout=30).stdout
     except (OSError, subprocess.SubprocessError):
         return []
     return [l for l in out.splitlines() if l.strip()]
+
+
+def stub_mirrors():
+    """Local `class/struct <Name> {...}` DEFINITIONS in a .cpp/.h that shadow an existing owning
+    header src/**/<Name>.h — the forbidden 'stub mirror' anti-pattern (e.g. StarSystem's local
+    LensFlare, HangarWindow's local Layout). The fix is to #include the real header. Returns hit
+    lines (file:line: decl). Excludes the owning header itself."""
+    headers = {}
+    for dirpath, _, files in os.walk(SRC):
+        for f in files:
+            if f.endswith(".h"):
+                headers[f[:-2]] = os.path.relpath(os.path.join(dirpath, f), REPO)
+    hits = []
+    for line in rg(r'^\s*(class|struct)\s+[A-Z]\w*\s*[:{]'):
+        m = re.match(r'^(.*?):(\d+):\s*(class|struct)\s+([A-Z]\w*)', line)
+        if not m:
+            continue
+        path, name = m.group(1), m.group(4)
+        owner = headers.get(name)
+        if owner and os.path.relpath(path, REPO) != owner:
+            hits.append((os.path.relpath(path, REPO), name, owner))
+    return hits
 
 
 def main():
@@ -59,10 +84,19 @@ def main():
         if len(ref_asm) > 8:
             print(f"  ... +{len(ref_asm) - 8} more")
 
-    fail = bool(gated) or (strict and bool(ref_asm))
+    stubs = stub_mirrors()
+    if stubs:
+        print(f"\nstub-mirror anti-pattern (info, {len(stubs)}): local class/struct shadowing an "
+              f"owning header — should #include it instead:")
+        for path, name, owner in stubs[:12]:
+            print(f"  {path}: local '{name}' shadows {owner}")
+        if len(stubs) > 12:
+            print(f"  ... +{len(stubs) - 12} more")
+
+    fail = bool(gated) or (strict and (bool(ref_asm) or bool(stubs)))
     if not fail:
-        print("OK: no byte-match definition hacks." + ("" if not ref_asm else
-              f" ({len(ref_asm)} reference-workarounds remain — not gated)"))
+        print("OK: no byte-match definition hacks." + ("" if not (ref_asm or stubs) else
+              f" ({len(ref_asm)} extern-asm refs, {len(stubs)} stub-mirrors remain — not gated)"))
     return 1 if fail else 0
 
 
