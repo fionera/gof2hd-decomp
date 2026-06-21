@@ -33,7 +33,28 @@ const RESULT_SCHEMA = {
 }
 
 const RULES = `
-GROUND TRUTH is the original binary. The exact original disassembly is provided inline per entry (orig_asm) — it is AUTHORITATIVE; your compiled output must reproduce it (verify with orbobjdump, below). For richer context (types, field names, decompiled control flow) ALSO use Ghidra MCP when available: program "android_2.0.16_libgof2hdaa.so", image base 0x10000, the ghidra_addr is already V+0x10000 — mcp__ghidra__decompile_function / mcp__ghidra__disassemble_function. If Ghidra MCP is unavailable, work from the provided orig_asm + the mangled signature + DeepOpen + our existing headers; if a function is too complex to recover confidently from asm alone, DEFER it. The MANGLED symbol is authoritative for the signature — your C++ MUST mangle to exactly that symbol (verify with orbnm, below).
+GOAL: clean, idiomatic, human-looking C++ that correctly implements each function. We do NOT care
+about byte-for-byte matching or exact symbol/alias matching. NEVER write a byte-match hack.
+
+ABSOLUTELY FORBIDDEN (these are the mistakes to undo, never introduce):
+- asm link-name overrides: NO  asm("_ZN...")  labels on a function/variable to force a mangled name.
+- ctor/dtor written as a free function taking an explicit \`self\`/\`this\` pointer (e.g.
+  \`void Foo_base_ctor(Foo* self, ...) asm("..C2..")\`, \`Foo_ctor\`, \`Foo_dtor\`). Write a REAL C++
+  constructor \`Foo::Foo(args){...}\` / destructor \`Foo::~Foo(){...}\` instead — it naturally mangles
+  correctly. It is FINE that a real ctor/dtor also emits the C1/D1 alias variants; do not try to
+  suppress them.
+- __attribute__((alias(...))), [[gnu::used]] added only to keep a hack alive, .set/.global asm.
+- referencing another class's member/global by a hand-written mangled \`asm("_ZN...")\` extern —
+  include the owning header and use the real \`Class::member\` / \`obj->method()\` instead.
+
+GROUND TRUTH is the original binary, for UNDERSTANDING BEHAVIOR ONLY. Use Ghidra MCP when available
+(program "android_2.0.16_libgof2hdaa.so", image base 0x10000; ghidra_addr is already V+0x10000 —
+mcp__ghidra__decompile_function / mcp__ghidra__disassemble_function) plus the provided orig_asm to
+work out what the function DOES (its logic, params, return, field accesses), then express that as
+clean C++. Do NOT reverse-engineer instruction sequences to reproduce them. The mangled symbol tells
+you the correct SIGNATURE — write a normal C++ declaration with that signature (real constructor,
+real method on the class, real overload); confirm it mangles right with orbnm, but never force it
+with asm. If a function is too complex to recover confidently, DEFER it.
 
 NAMING ORACLE (inspiration only, NOT authoritative): ${DEEPOPEN} (Java decompile of an older version). grep it for the class/method to recover intent, method names and field names. The Android binary always wins on signatures/layout/names when they disagree.
 
@@ -54,7 +75,10 @@ KIND-SPECIFIC:
 
 BUILD-GATE (MANDATORY) — compile EVERY .cpp you edited, in BASH (the login shell is zsh which will NOT word-split the flags; you MUST use 'bash -c'. Write the .o UNDER THE REPO, never /tmp — /tmp is inside the OrbStack VM):
   cd ${REPO} && bash -c '. tools/verify/match_flags.sh; tools/verify/orbcc $GOF2_MATCH_CXXFLAGS -c src/<file>.cpp -o ./_chk_<n>.o; echo EXIT $?'
-Every compile MUST print EXIT 0. Then confirm each symbol: tools/verify/orbnm ./_chk_<n>.o | grep <mangled-or-substring>. Remove the _chk_*.o when done. You may compare asm with tools/verify/orbobjdump -d.
+Every compile MUST print EXIT 0. Then confirm each symbol exists under its correct mangled name from
+NORMAL C++ (not an asm override): tools/verify/orbnm ./_chk_<n>.o | grep <mangled-or-substring>.
+Remove the _chk_*.o when done. (Do NOT chase asm/byte equality — compiling cleanly + the right
+symbol from idiomatic C++ is the bar.)
 
 FILE DISCIPLINE: edit ONLY the files listed for your component. Anything needed in another component's file -> caller_rewrites (callers) or missing (fields/decls). Do NOT touch other files directly.
 
@@ -67,7 +91,7 @@ function promptFor(job) {
     if (e.ours && e.ours.length) s += `\n     our current overload(s): ${e.ours.join(' | ')}`
     if (e.paired_extra) s += `\n     paired extra (same fn, our shim name): ${e.paired_extra}`
     if (e.paired_absent) s += `\n     paired absent (the original this shim should become): ${e.paired_absent}`
-    if (e.orig_asm) s += `\n     original disassembly (authoritative):\n${e.orig_asm.split('\n').map((l) => '       ' + l).join('\n')}`
+    if (e.orig_asm) s += `\n     original disassembly (for understanding behavior ONLY — do not reproduce instruction-by-instruction):\n${e.orig_asm.split('\n').map((l) => '       ' + l).join('\n')}`
     return s
   }).join('\n')
   const where = job.files && job.files.length

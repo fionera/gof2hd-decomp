@@ -63,3 +63,15 @@ CutScene/SpaceLounge/Level/SentryGun/TouchButton), build-gating every affected T
 - [ ] MISSING DECL: AbyssEngine::ApplicationManager::GetApplicationData() -> void* (mangled _ZN11AbyssEngine18ApplicationManager18GetApplicationDataEv); ApplicationManager is currently declared at GLOBAL scope in src/engine/core/ApplicationManager.h, so this namespaced method has no real declaration. GameData.cpp declares a local namespaced stub class to obtain the exact mangling for OnDestroyApplication; the canonical declaration belongs on the real (namespaced) ApplicationManager class.
 - [ ] REFUSED caller_rewrite: src/game/ship/PlayerEgo.cpp: REFUSED — touches the type system ('struct') — needs coordinated change
 - [ ] REFUSED caller_rewrite: src/game/ship/PlayerEgo.cpp: REFUSED — touches the type system ('struct') — needs coordinated change
+
+## Clean-C++ cleanup backlog (NOT byte-match hacks, but non-idiomatic — convert opportunistically)
+- ~42 reference-workarounds: `extern T x asm("_ZN...")` declarations that reach another class's
+  member/method/global by hand-mangled name to avoid including a header that ODR-conflicts (the
+  duplicate-`String` / two-PaintCanvas problem). Files: src/platform/jni_bridge.cpp,
+  src/engine/render/LODManager.cpp (Globals::cItemListID_NN), src/game/core/Radio.cpp
+  (GameText::getText), src/platform/recovered_a462c.cpp (Globals::status/options). Fix by resolving
+  the header conflicts so the owning header can be included and `Class::member` used directly.
+- `_ctor(self)` / `_base_ctor` emulation shims (ParticleSystemMesh/Sprite, FileRead, AERandom,
+  BoundingSphere, Explosion, etc.) — pre-existing decompile shims pending methodize into real
+  ctors/methods (the dispatcher tags these 'shim'; the corrected wave prompt converts them cleanly).
+tools/lint_hacks.py gates against the egregious ctor/dtor asm-override hack recurring.

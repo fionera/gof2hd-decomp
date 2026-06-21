@@ -74,6 +74,7 @@ public:
                              float u0, float u1, float v0, float v1, bool maskedColor,
                              float size0, float size1, Vector const &velocity) = 0;  // slot 6
 
+    int getParticleCount();
     void setParticleSet(ParticleSettings::ParticleSet set);
     void setParticleSetIndex(uint8_t index);
     void setMatrix(Matrix const *matrix);

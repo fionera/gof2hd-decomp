@@ -48,6 +48,9 @@ fi
 FAIL_TUS=$(find "$V/logs" -name '*.log' | wc -l | tr -d ' ')
 [ "$FAIL_TUS" -gt 0 ] && echo "   failing-compile TUs: $FAIL_TUS (-> $V/logs)"
 
+echo "== 3b. hack lint (no byte-match ctor/dtor asm overrides) =="
+python3 tools/lint_hacks.py | sed 's/^/   /' || echo "   !!! a wave introduced a byte-match hack — rewrite it as clean C++ before continuing"
+
 echo "== 4. scope_filter =="
 python3 tools/scope_filter.py
 

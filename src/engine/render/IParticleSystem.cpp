@@ -31,6 +31,11 @@ void IParticleSystem::enableUpdate(bool enabled)
     this->updateEnabled = enabled;
 }
 
+int IParticleSystem::getParticleCount()
+{
+    return this->maxParticles;
+}
+
 void IParticleSystem::setParticleSet(ParticleSettings::ParticleSet set)
 {
     if (!this->particleSets->empty() && (*this->particleSets)[0] == set) {
