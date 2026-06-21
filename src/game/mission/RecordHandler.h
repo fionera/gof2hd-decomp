@@ -48,7 +48,9 @@ public:
     void  *readAllRecords();
     void  *readMission(unsigned int fd);
     int    readOptionsFileAsByteArray(signed char **out);
+    void  *readRecord(int slot);
     int    readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
+    void   recoverSDVersionSaves();
     void  *readWanted(unsigned int fd);
     void  *recordStoreRead(int slot);
     void   recordStoreRead_body(void *rec, unsigned int fd);

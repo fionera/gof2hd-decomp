@@ -34,7 +34,7 @@ public:
     uint16_t empDisabled;            // +0x68 EMP-stun (empPoints recharging) flag
     uint8_t pad_6a[2];
     int32_t damageDoneByPlayer;      // +0x6c
-    uint8_t playShootSound;          // +0x70
+    uint8_t playShootSoundFlag;      // +0x70
     uint8_t pad_71[3];
     Array<Player *> *enemies;
     int32_t hitpoints;
@@ -65,7 +65,7 @@ public:
     float empForce;
     uint8_t field_dc;
     uint8_t pad_dd[3];
-    uint8_t turnedEnemy;
+    uint8_t turnedEnemyFlag;
     uint8_t pad_e1[3];
     int32_t empData;
     uint8_t pad_e8[4];
@@ -141,6 +141,7 @@ public:
     void setMaxHitpoints(int value);
     void setMaxShieldHP(int value);
     void setNeverAttack(bool value);
+    void playShootSound(int type, int channel, Vector *pos, float volume);
     void setPlayShootSound(bool play, int id);
     void setRadius(int value);
     void setShootingEnabled(bool value);
@@ -152,6 +153,7 @@ public:
     void shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int m1, int m2, int m3, int m4, int m5, int m6, int m7, int m8, int m9, int m10, int m11, int m12, int m13, int m14);
     int shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, int a7, int a8, int a9, int a10, int a11, int a12, int a13, int a14, int a15, int a16, int a17, int a18, int a19, int a20, int a21, int a22);
     void turnEnemy();
+    unsigned char turnedEnemy();
     Vector * update(int dt, bool doSound);
     void updateDamageRate();
 
@@ -191,9 +193,5 @@ public:
     void ResumeEngineSound(bool force);
     void StopEngineSound();
 };
-
-// The original exposes a 'turnedEnemy' accessor, but C++ forbids a member function
-// sharing the name of the 'turnedEnemy' data member, so it lives here as a free helper.
-inline unsigned char Player_turnedEnemy(Player *self) { return self->turnedEnemy; }
 
 #endif

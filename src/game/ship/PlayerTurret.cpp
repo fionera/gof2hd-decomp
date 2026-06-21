@@ -323,7 +323,7 @@ void PlayerTurret::update(int delta)
         }
         player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }
-    if (Player_turnedEnemy(player) != 0) {
+    if (player->turnedEnemy() != 0) {
         player->enemyFlags = 1;
     }
     if (player->isAlwaysFriend() != 0) {

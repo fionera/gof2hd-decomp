@@ -334,6 +334,17 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     return sz;
 }
 
+// RecordHandler::readRecord(int slot) — thin forwarder to the record-store reader
+// (the original tail-calls recordStoreRead with the slot unchanged).
+void * RecordHandler::readRecord(int slot) {
+    return this->recordStoreRead(slot);
+}
+
+// RecordHandler::recoverSDVersionSaves() — no-op in this build (the SD-version save
+// recovery path was compiled out; the original body is a bare return).
+void RecordHandler::recoverSDVersionSaves() {
+}
+
 
 // RecordHandler::readWanted(unsigned int fd) -> Wanted* (in r0 on return).
 void * RecordHandler::readWanted(unsigned int fd) {

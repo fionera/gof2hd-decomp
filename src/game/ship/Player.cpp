@@ -46,7 +46,6 @@ extern "C" int gShootSoundsByIndex[];
 extern "C" void *gAppManagerA;
 extern "C" void *gAppManagerB;
 extern "C" void *gAppManagerC;
-extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume);
 void Player_damage_full(Player *self, int amount, int a, int b);
 extern "C" void Player_StopEngineSound(Player *self);
 extern "C" void FloatVectorMax(void *out, float a, float b, int c, int d);
@@ -130,7 +129,7 @@ void Player::setRadius(int value) {
 void Player::resetDamageDoneByPlayer() {
     this->field_dc = 0;
     this->damageDoneByPlayer = 0;
-    this->turnedEnemy = 0;
+    this->turnedEnemyFlag = 0;
 }
 
 KIPlayer * Player::getKIPlayer() {
@@ -216,7 +215,7 @@ Player * Player::getEnemy(int index) {
 }
 
 void Player::turnEnemy() {
-    this->turnedEnemy = 1;
+    this->turnedEnemyFlag = 1;
 }
 
 void Player::setEmpData(int points, int data) {
@@ -357,8 +356,10 @@ float Player::getEmpForce() {
     return this->empForce;
 }
 
-// Accessor lives as the non-member inline Player_turnedEnemy() in Player.h, because a
-// member of this name would collide with the 'turnedEnemy' data member (field 0xe0).
+// Accessor for the "turned hostile this encounter" flag (field 0xe0).
+unsigned char Player::turnedEnemy() {
+    return this->turnedEnemyFlag;
+}
 
 bool Player::gunAvailable(int slot) {
     if (slot < 4) {
@@ -441,7 +442,7 @@ Vector Player::getHitVector() {
 }
 
 void Player::setPlayShootSound(bool play, int id) {
-    this->playShootSound = play;
+    this->playShootSoundFlag = play;
     this->playShootSoundId = id;
 }
 
@@ -564,7 +565,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
         self->guns->data()[2]->resize(numTertiary);
     }
 
-    self->playShootSound = 1;
+    self->playShootSoundFlag = 1;
     self->playShootSoundId = 1;
     self->destroyed = 0;
     self->active = 1;
@@ -573,7 +574,7 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
     self->kiPlayer = 0;
     self->bombForce = 0.0f;
     self->enemyFlags = 0;
-    self->turnedEnemy = 0;
+    self->turnedEnemyFlag = 0;
     self->alwaysEnemy = 0;
     self->alwaysFriend = 0;
     self->enemies = 0;
@@ -657,7 +658,7 @@ void Player::damageEmp(int amount, bool flag) {
                 int prev = self->field_dc;
                 self->field_dc = prev + amount;
                 if (__aeabi_idiv(self->maxEmpPoints, 3) < prev + amount) {
-                    self->turnedEnemy = 1;
+                    self->turnedEnemyFlag = 1;
                     ((Level *)(self->kiPlayer->level))->friendTurnedEnemy(0);
                 }
             }
@@ -742,7 +743,7 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
                 this->guns->data()[slot]->push_back(gunsIn->data()[i]);
             }
         }
-        if (this->playShootSound) {
+        if (this->playShootSoundFlag) {
             this->calcWeaponSounds(this->playShootSoundId);
             return;
         }
@@ -752,7 +753,7 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
 void Player::setAlwaysEnemy(bool value) {
     this->alwaysEnemy = value;
     this->enemyFlags = 1;
-    this->turnedEnemy = 1;
+    this->turnedEnemyFlag = 1;
 }
 
 void Player::regenerateHull() {
@@ -863,7 +864,7 @@ void Player::addGun(Gun *gun, int slot) {
             this->guns->data()[slot] = arr;
             this->guns->data()[slot]->push_back(gun);
         }
-        if (this->playShootSound) {
+        if (this->playShootSoundFlag) {
             this->calcWeaponSounds(this->playShootSoundId);
             return;
         }
@@ -1006,37 +1007,38 @@ __attribute__((minsize)) extern "C" void Player_StopEngineSound(Player *self)
     }
 }
 
-__attribute__((minsize)) extern "C" void Player_playShootSound(Player *self, int type, Vector *channel, float volume)
-{
+// Player::playShootSound(int type, int channel, Vector *pos, float volume) — fire a
+// weapon-shot sound. Picks the sound id from the per-shipgroup table when this ship is
+// AI-controlled, otherwise from the per-weapon table. On a "looping" channel (one of the
+// bits in 0x10c) an already-playing sound is just re-positioned instead of restarted.
+void Player::playShootSound(int type, int channel, Vector *pos, float volume) {
     int soundId;
-    if (self->kiPlayer == 0) {
+    if (this->kiPlayer == 0) {
         soundId = gShootSoundsByIndex[type];
     } else {
-        unsigned int kind = (unsigned int)self->kiPlayer->shipGroup;
+        unsigned int kind = static_cast<unsigned int>(this->kiPlayer->shipGroup);
         if (kind < 0xb) {
             soundId = gShootSoundsByType[kind];
         } else {
             soundId = 0x3d;
         }
     }
-    void **fmodPtr = gFModSoundPtr;
-    void *sound = fmodPtr[0];
-    Vector *pos = channel;
-    if ((unsigned int)(__UINTPTR_TYPE__)channel < 9 && ((1 << ((unsigned int)(__UINTPTR_TYPE__)channel & 0xff)) & 0x10c) != 0) {
-        if (((FModSound *)(sound))->isPlaying(soundId) != 0) {
-            if (*((char *)gAppManagerA + 0xf) != 0) {
-                ((FModSound *)(fmodPtr[0]))->updateEvent3DAttributes(soundId, pos, 0, false);
+
+    FModSound *sound = reinterpret_cast<FModSound *>(gFModSoundPtr[0]);
+    if (static_cast<unsigned int>(channel) < 9 && ((1 << (channel & 0xff)) & 0x10c) != 0) {
+        if (sound->isPlaying(soundId) != 0) {
+            if (reinterpret_cast<char *>(gAppManagerA)[0xf] != 0) {
+                sound->updateEvent3DAttributes(soundId, pos, 0, false);
             }
             return;
         }
-        if (*((char *)gAppManagerB + 0xf) == 0) {
+        if (reinterpret_cast<char *>(gAppManagerB)[0xf] == 0) {
             pos = 0;
         }
-        sound = fmodPtr[0];
-    } else if (*((char *)gAppManagerC + 0xf) == 0) {
+    } else if (reinterpret_cast<char *>(gAppManagerC)[0xf] == 0) {
         pos = 0;
     }
-    ((FModSound *)sound)->play(soundId, pos, 0, volume);
+    sound->play(soundId, pos, 0, volume);
 }
 
 extern "C" const float k_shootAt_inc;
@@ -1068,13 +1070,13 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
                         self->flShake = self->flShake + k_shootAt_inc;
                         Gun *g2 = self->guns->data()[slot]->data()[i];
                         g2->timer = 0;
-                        if (self->playShootSound != 0 && g2->field_0x89 != 0) {
+                        if (self->playShootSoundFlag != 0 && g2->field_0x89 != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g3 = self->guns->data()[slot]->data()[i];
-                            Player_playShootSound(self, g3->itemIndex,
-                                                  (Vector *)(__INTPTR_TYPE__)g3->weaponType,
-                                                  g3->field_0xb0);
+                            self->playShootSound(g3->itemIndex, g3->weaponType,
+                                                 reinterpret_cast<Vector *>(tmp),
+                                                 g3->field_0xb0);
                         }
                     }
                 }
@@ -1082,7 +1084,7 @@ void Player::shoot1(unsigned int slot, int idLo, int idHi, int flag, int m0, int
         }
     }
 
-    
+
 }
 
 extern "C" const float k_damage_full;
@@ -1103,7 +1105,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
         if (self->alwaysEnemy == 0 &&
             (unsigned int)(ki->shipGroup - 9) > 1 &&
             gStatus->getSystem() != 0 &&
-            ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
+            ((self->enemyFlags == 0) || (self->turnedEnemyFlag != 0))) {
             ki = self->kiPlayer;
             if (ki->field_0x42 != 0) {
                 if (amount > 0) {
@@ -1119,7 +1121,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
         if (ki != 0 && self->alwaysEnemy == 0 &&
             (unsigned int)(ki->shipGroup - 9) > 1 &&
             self->kiPlayer->isWingMan() == 0 && gStatus->getSystem() != 0 &&
-            ((self->enemyFlags == 0) || (self->turnedEnemy != 0))) {
+            ((self->enemyFlags == 0) || (self->turnedEnemyFlag != 0))) {
             int race = self->kiPlayer->shipGroup;
             gStatus->getSystem();
             bool sameRace = (race == ((SolarSystem *)(intptr_t)gStatus->getSystem())->getRace());
@@ -1179,7 +1181,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
                     PlayerEgo *p = ((Level *)(self->kiPlayer->level))->getPlayer();
                     ((Hud *)(hud))->hudEvent(0x1f, p, 0);
                 }
-                self->turnedEnemy = 1;
+                self->turnedEnemyFlag = 1;
             }
 
             float f4a = (float)self->maxHitpoints;
@@ -1199,7 +1201,7 @@ LAB_342a:
         if (gStatus->inBlackMarketSystem() != 0) {
             KIPlayer *ki = self->kiPlayer;
             if (ki != 0 && ki->shipGroup == 8) {
-                self->turnedEnemy = 1;
+                self->turnedEnemyFlag = 1;
                 ((Level *)(ki->level))->alarmAllFriends(8, true);
                 Array<KIPlayer *> *enemies = ((Level *)(ki->level))->getEnemies();
                 if (enemies != nullptr) {
@@ -1364,7 +1366,7 @@ void Player::stopShooting(int slot, int channel) {
 void Player::setAlwaysFriend(bool value) {
     this->alwaysFriend = value;
     this->enemyFlags = 0x100;
-    this->turnedEnemy = 0;
+    this->turnedEnemyFlag = 0;
 }
 
 void Player::setMaxArmorHP(int value) {
@@ -1409,13 +1411,13 @@ int Player::shoot2(unsigned int slot, int gunId, int a4_00, int flag, int a6, in
                     ((Gun *)(g))->shoot(fireMat2, flag, false);
                     {
                         self->flShake = self->flShake + k_shoot_inc;
-                        if (self->playShootSound != 0) {
+                        if (self->playShootSoundFlag != 0) {
                             float tmp[3];
                             MatrixGetPosition(tmp, self->transform);
                             Gun *g2 = self->guns->data()[slot]->data()[i];
-                            Player_playShootSound(self, g2->itemIndex,
-                                                  (Vector *)(__INTPTR_TYPE__)g2->weaponType,
-                                                  g2->field_0xb0);
+                            self->playShootSound(g2->itemIndex, g2->weaponType,
+                                                 reinterpret_cast<Vector *>(tmp),
+                                                 g2->field_0xb0);
                         }
                         g->timer = 0;
                         retval = 1;
@@ -1538,13 +1540,13 @@ void Player::shoot(int a, int b, long long pos, bool flag, Matrix mat) {
                     }
                     ((Gun *)(g))->shoot(mat, flag, false);
                     self->flShake = self->flShake + k_shoot_inc;
-                    if (self->playShootSound != 0) {
+                    if (self->playShootSoundFlag != 0) {
                         float tmp[3];
                         MatrixGetPosition(tmp, self->transform);
                         Gun *g2 = self->guns->data()[b]->data()[i];
-                        Player_playShootSound(self, g2->itemIndex,
-                                              (Vector *)(__INTPTR_TYPE__)g2->weaponType,
-                                              g2->field_0xb0);
+                        self->playShootSound(g2->itemIndex, g2->weaponType,
+                                             reinterpret_cast<Vector *>(tmp),
+                                             g2->field_0xb0);
                     }
                     g->timer = 0;
                     break;
@@ -1584,13 +1586,13 @@ void Player::shoot(int a, long long pos, bool flag, Matrix mat) {
                     self->flShake = self->flShake + k_shootAt_inc;
                     Gun *g2 = self->guns->data()[a]->data()[i];
                     g2->timer = 0;
-                    if (self->playShootSound != 0 && g2->field_0x89 != 0) {
+                    if (self->playShootSoundFlag != 0 && g2->field_0x89 != 0) {
                         float tmp[3];
                         MatrixGetPosition(tmp, self->transform);
                         Gun *g3 = self->guns->data()[a]->data()[i];
-                        Player_playShootSound(self, g3->itemIndex,
-                                              (Vector *)(__INTPTR_TYPE__)g3->weaponType,
-                                              g3->field_0xb0);
+                        self->playShootSound(g3->itemIndex, g3->weaponType,
+                                             reinterpret_cast<Vector *>(tmp),
+                                             g3->field_0xb0);
                     }
                 }
             }
@@ -1659,8 +1661,6 @@ Array<Player *> *Player::getEnemies() {
     return this->enemies;
 }
 
-// NOTE: playShootSound is intentionally NOT added as a Player:: member — it collides with the
-// data-member flag at 0x70. The recovered body lives as the extern "C" Player_playShootSound above.
 
 // ---- PlayEngineSound_a4014 ----
 void Player::PlayEngineSound(Vector *vec) {

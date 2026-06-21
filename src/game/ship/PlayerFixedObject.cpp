@@ -143,7 +143,7 @@ void PlayerFixedObject::update(int dt) {
     }
     reinterpret_cast<uint8_t *>(&player->enemyFlags)[1] = enemyFlag; // high byte: alwaysFriend
 
-    if (Player_turnedEnemy((Player *)self->player) != 0)
+    if (reinterpret_cast<Player *>(self->player)->turnedEnemy() != 0)
         ((Player *)self->player)->enemyFlags = 1;
     if (((Player *)(self->player))->isAlwaysFriend() != 0)
         ((Player *)self->player)->enemyFlags = 0x100;
