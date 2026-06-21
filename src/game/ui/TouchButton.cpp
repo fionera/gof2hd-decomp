@@ -4,8 +4,7 @@
 #include "game/ui/Layout.h"
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
-
-unsigned int GameText_getLanguage();
+#include "engine/core/GameText.h"
 
 void TouchButton::setVisible(bool value) {
     this->visible = value;
@@ -86,13 +85,12 @@ void TouchButton::setSplitText(String const &value) {
     this->splitText = value;
 }
 
-struct Vec3 { float x, y, z; };
-
-void TouchButton_getPosition(Vec3 *out, TouchButton *self)
-{
-    out->z = 0;
-    out->y = (float)self->y;
-    out->x = (float)self->x;
+Vector TouchButton::getPosition() {
+    Vector pos;
+    pos.x = static_cast<float>(this->x);
+    pos.y = static_cast<float>(this->y);
+    pos.z = 0.0f;
+    return pos;
 }
 
 void TouchButton::setTextColor(int color) {
@@ -396,7 +394,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
 wide_text_layout: {
         // Shared epilogue for the 'arrow' style kinds (0xe/0xf/0x11/0x12/0x14):
         // a language-dependent vertical text factor is applied.
-        unsigned int lang = GameText_getLanguage();
+        unsigned int lang = GameText::getLanguage();
         float factor;
         if ((lang & 0xffff) < 0x10 && ((1 << (lang & 0xff)) & 0x8c00) != 0)
             factor = 1.0f;

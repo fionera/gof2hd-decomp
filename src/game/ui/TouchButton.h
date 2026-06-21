@@ -1,6 +1,7 @@
 #ifndef GOF2_TOUCHBUTTON_H
 #define GOF2_TOUCHBUTTON_H
 #include "game/core/String.h"
+#include "mathtypes.h"
 
 // TouchButton — top-level on-screen button (global namespace).
 // A label string plus a skin built from 2D images (normal / pressed / disabled,
@@ -74,6 +75,7 @@ public:
     unsigned int touch_end(int x, int y);
     void         draw();
     int          getHeight();
+    Vector       getPosition();
     String       getText();
     int          getWidth();
     int          init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x, int y, unsigned char flags0, unsigned char flags1);

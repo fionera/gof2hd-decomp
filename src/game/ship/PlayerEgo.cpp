@@ -70,7 +70,13 @@ Matrix operator*(const Matrix &lhs, const Matrix &rhs);
 // this TU), so the two canonical pointers are declared locally to match their
 // canonical definitions.
 extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
-class Globals;
+// Minimal local view of Globals (the full Globals.h clashes with PaintCanvasClass.h /
+// externs.h in this TU). Declaring the one instance method we call lets us link straight
+// to the real Globals:: symbol instead of going through an extern "C" thunk.
+class Globals {
+public:
+    void addSoundResourceToList(int snd);
+};
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)
 
 // Status singleton accessor. Several Status:: instance methods (getShip, inAlienOrbit,
@@ -170,7 +176,6 @@ extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHa
 extern "C" void (*g_stopBoost_fn)(void*, int);
 void *Globals_getShipGroup(void *g, int race, int group, bool b);
 extern "C" void *TractorBeam_new(void *geo, int kind);
-void  Globals_addSoundResourceToList(int snd);
 extern "C" void *RepairBeam_new(int idx, int sort);
 
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
@@ -1547,8 +1552,8 @@ extern "C" void PlayerEgo_initFields(void *self, Player *player); // field init 
 PlayerEgo::PlayerEgo(Player *player)
 {
     // embedded orientation matrices.
-    (&this->rollMatrix)->initIdentity();     // roll matrix
-    (&this->turretHudMatrix)->initIdentity();     // turret/HUD matrix
+    this->rollMatrix = AbyssEngine::AEMath::Matrix();     // roll matrix
+    this->turretHudMatrix = AbyssEngine::AEMath::Matrix();     // turret/HUD matrix
 
     // record the wrapped player (offset 0).
     this->player = (void *)player;
@@ -2894,8 +2899,8 @@ void PlayerEgo::setShip(int race, int group) {
         int kind = (idx < 0x48) ? idx - 0x44 : 3;
         void *tb = TractorBeam_new(this->geometry, kind);
         this->tractorBeam = tb;
-        Globals_addSoundResourceToList(*(int *)(void*)gGlobals);
-        Globals_addSoundResourceToList(*(int *)(void*)gGlobals);
+        gGlobals->addSoundResourceToList(0x0);
+        gGlobals->addSoundResourceToList(0x4);
     }
 
     // repair beams (sorts 0x25 and 0x29)
@@ -2908,9 +2913,9 @@ void PlayerEgo::setShip(int race, int group) {
             RepairBeam *rb = (RepairBeam *)RepairBeam_new(((Item *)(it))->getIndex(), ((Item *)(it))->getSort());
             int idx = ((Item *)(it))->getIndex();
             if (idx == 0xde)
-                Globals_addSoundResourceToList(*(int *)(void*)gGlobals);
+                gGlobals->addSoundResourceToList(0x8db);
             else if (((Item *)(it))->getIndex() == 0xdf)
-                Globals_addSoundResourceToList(*(int *)(void*)gGlobals);
+                gGlobals->addSoundResourceToList(0x8dc);
             this->repairBeams->push_back(rb);
         }
     }

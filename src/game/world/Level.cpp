@@ -62,7 +62,6 @@ Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
 __attribute__((visibility("hidden"))) extern unsigned char *g_initStreamOut;
 __attribute__((visibility("hidden"))) extern int *g_engineColorBase;
-__attribute__((visibility("hidden"))) extern void Globals_addSoundResourceToList(int snd); // engine sound-list helper (Globals.cpp)
 __attribute__((visibility("hidden"))) extern int *g_cg_beamTable;   // [DAT_000ce2b4]
 __attribute__((visibility("hidden"))) extern int  g_cg_rocketFx;
 __attribute__((visibility("hidden"))) extern int  g_cg_objFx;
@@ -775,7 +774,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         obj = (ObjectGun *)::operator new(0xe8);
         new (obj) RocketGun(owner, gun, g_cg_rocketTable[idx], 0, 0, kind,
                           (kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE) ? 1 : 0, this);
-        Globals_addSoundResourceToList(**g_cg_rocketSnd);
+        gGlobals->addSoundResourceToList(**g_cg_rocketSnd);
         break;
     }
     case ITEM_SORT_EMP_BOMB:
@@ -790,7 +789,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         obj = (ObjectGun *)::operator new(300);
         new (obj) BombGun(gun, g_cg_bombTable[idx], 1, kind, attr == 1 ? 1 : 0,
                         this);
-        Globals_addSoundResourceToList(*g_cg_bombSnd);
+        gGlobals->addSoundResourceToList(*g_cg_bombSnd);
         break;
     }
     case ITEM_SORT_TURRET:
@@ -822,7 +821,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xd4);
         new (obj) MineGun(gun, g_cg_mineTable[idx], 1, ITEM_SORT_MINE, this);
-        Globals_addSoundResourceToList(*g_cg_mineSnd);
+        gGlobals->addSoundResourceToList(*g_cg_mineSnd);
         break;
     }
     case ITEM_SORT_SENTRY_GUN: {
@@ -833,7 +832,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(0xb4);
         new (obj) SentryGun(gun, g_cg_sentryTable[idx], 1, ITEM_SORT_SENTRY_GUN, this);
-        Globals_addSoundResourceToList(*g_cg_mineSnd);
+        gGlobals->addSoundResourceToList(*g_cg_mineSnd);
         break;
     }
     case ITEM_SORT_SHOCK_BLAST: {
@@ -844,7 +843,7 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
         gun->setPlayerGun(1);
         obj = (ObjectGun *)::operator new(300);
         new (obj) BombGun(gun, g_cg_bombTable2a[idx], 1, ITEM_SORT_SHOCK_BLAST, 0, this);
-        Globals_addSoundResourceToList(*g_cg_bombSnd);
+        gGlobals->addSoundResourceToList(*g_cg_bombSnd);
         break;
     }
     default:
@@ -854,12 +853,12 @@ Gun * Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, 
 
     // index-keyed extra sound resources (fallthrough chain in the original).
     switch (idx) {
-    case 0x29: Globals_addSoundResourceToList(**g_cg_snd29);
-    case 0x2a: Globals_addSoundResourceToList(**g_cg_snd2a);
-    case 0x2b: Globals_addSoundResourceToList(**g_cg_snd2b);
-    case 0x2c: Globals_addSoundResourceToList(**g_cg_snd2c);
-    case 0x2d: Globals_addSoundResourceToList(**g_cg_snd2d);
-    case 0x2e: Globals_addSoundResourceToList(**g_cg_snd2e);
+    case 0x29: gGlobals->addSoundResourceToList(**g_cg_snd29);
+    case 0x2a: gGlobals->addSoundResourceToList(**g_cg_snd2a);
+    case 0x2b: gGlobals->addSoundResourceToList(**g_cg_snd2b);
+    case 0x2c: gGlobals->addSoundResourceToList(**g_cg_snd2c);
+    case 0x2d: gGlobals->addSoundResourceToList(**g_cg_snd2d);
+    case 0x2e: gGlobals->addSoundResourceToList(**g_cg_snd2e);
     default: break;
     }
 

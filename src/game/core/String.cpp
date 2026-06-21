@@ -1,4 +1,5 @@
 #include "game/core/String.h"
+#include "engine/core/GameText.h"
 
 // AbyssEngine::String, native re-expression.
 // The canonical type is common.h's `AbyssEngine::String { std::u16string s; }`. Every method
@@ -8,7 +9,6 @@
 
 extern "C" {
 // External (non-String) helpers kept as opaque imports.
-int   GameText_getLanguage();
 int   atoi(const char *s);                                 // libc
 void  String_printImpl(const char *s);                     // 0x1ab108 platform print
 uint16_t *String_computeFloatString(float v, int base, int *outExp, int *outNeg);
@@ -75,7 +75,7 @@ String * String::addAssign_float(const float *v) {
 
 // AbyssEngine::String::Reverse() - reverse the code units (only for language id 9 / RTL).
 void String::Reverse() {
-    if (!this->s.empty() && GameText_getLanguage() == 9) {
+    if (!this->s.empty() && GameText::getLanguage() == 9) {
         std::u16string r(this->s.rbegin(), this->s.rend());
         this->s = r;
     }

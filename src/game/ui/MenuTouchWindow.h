@@ -137,8 +137,7 @@ public:
     void render3D();
     bool inCinematicMode();
     float getRelativeScrollStartPos();
-    int OnTouchEnd(int y, int x);
-    void OnTouchEnd(int y, int x, void *touchId);
+    int OnTouchEnd(int y, int x, void *touchId);
     void createRecordButtons(bool inSaveMode);
     void startValkyrie();
     int OnTouchBegin(int y, int x, void *touchId);
@@ -152,7 +151,6 @@ public:
     void callDlcMenu();
     void draw();
     float getRelativeScrollHeight();
-    int OnTouchMove(int y, int x);
     int OnTouchMove(int y, int x, void *touchId);
     void setSkipButtonVisible(bool visible);
     void drawLoadSaveMenu(bool param1);

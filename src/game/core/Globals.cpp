@@ -77,7 +77,6 @@ extern "C" int Station_getIndex(int station);
 // each of these 0-arg calls; the singleton lives at the hidden global g_status (same one
 // MGame/Mission/PlayerTurret reach). Recover the receiver as gStatus->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
-int GameText_getLanguage();
 
 struct Status;
 // Hidden PC-relative leaderboard destination slot (g_android_leaderboard_scores @ 0x22d2c0;
@@ -163,23 +162,19 @@ void Globals_getRandomSystemForDrinks()
     return Globals::getRandomSystemForDrinks_tail(a, r);
 }
 
-// Linear search; on no-match append `val` to the active sound-resource list.
-void Globals_addSoundResourceToList(void *self, int val)
+// Linear search; on no-match append `snd` to the active sound-resource list.
+void Globals::addSoundResourceToList(int snd)
 {
-    Array<int> *a = ((Globals*)self)->soundResources;
-    if (a != 0) {
-        unsigned i = 0;
-        for (;;) {
-            if (i >= a->size()) {
-                return ((Globals*)self)->addSoundResource_tail(val, a);
-            }
-            int e = (*a)[i];
-            i = i + 1;
-            if (e == val) {
-                break;
-            }
+    Array<int> *a = this->soundResources;
+    if (a == nullptr) {
+        return;
+    }
+    for (unsigned i = 0; i < a->size(); ++i) {
+        if ((*a)[i] == snd) {
+            return; // already present
         }
     }
+    addSoundResource_tail(snd, a);
 }
 
 // Globals::replaceKeyBindingTokens(String const&) returns a String by value (sret in r0).
@@ -227,80 +222,71 @@ void Globals_drawLines4(unsigned p1, void *font, Array<String *> *lines, int bas
     Globals_drawLines5(0, font, lines, baseX, startY, 0);
 }
 
-extern void *const gGLA_guardHolder __attribute__((visibility("hidden")));
 extern const char gGLA_newline[] __attribute__((visibility("hidden")));
 
-// Globals::getLineArray(uint font, AbyssEngine::String const& text, int maxWidth,
-//                        Array<String*>* out)
-void Globals_getLineArray(unsigned font, void *text, int maxWidth, void *arg3,
-                                     Array<void *> *out)
+// Word-wrap `text` into one String per line (each fitting `maxWidth` in the given font), stored
+// into `out`. A trailing newline is appended to a working copy so the final fragment is emitted as
+// its own line. The line count is determined in a first pass, `out` is sized and populated with
+// fresh empty Strings, then a second pass fills each slot with the trimmed line text.
+void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
+                           Array<String *> *out)
 {
-    (void)arg3;
-    int *guardP = *(int **)gGLA_guardHolder;
-    volatile int saved = *guardP;
-
-    String *line = (String *)::operator new(0xc);
+    // Reusable scratch slot getLine writes the next line into; its length is the chars consumed.
+    String *line = static_cast<String *>(::operator new(sizeof(String)));
     line->ctor();
 
     String work;
-    work.ctor_copy((String *)text, false);   // work = copy of text
+    work.ctor_copy(const_cast<String *>(&text), false);   // work = copy of text + '\n'
     String nl;
     nl.ctor_char(gGLA_newline, false);
     work.addAssign_str(&nl);
 
+    const int total = static_cast<int>(work.size());
+
+    // First pass: count the lines.
     unsigned count = 0;
-    int consumed = 0;
-    int total = (int)work.size();
-    while (consumed < total) {
-        String sub;
-        sub.SubString(&work, consumed, total);
-        String ssub;
-        ssub.ctor_copy(&sub, false);
-        Globals_getLine(line, font, &ssub, maxWidth, out);
-        // getLine packs a per-line advance count into the unused tail of the String slot.
-        // RAWREAD: scratch poke into a std::u16string-backed String slot (no byte-faithful member at +8).
-        int adv = *(int *)((char *)line + 8);
+    for (int consumed = 0; consumed < total;) {
+        String rest;
+        rest.SubString(&work, consumed, total);
+        Globals_getLine(line, font, &rest, maxWidth, line);
+        consumed += static_cast<int>(line->size());
         count++;
-        consumed += adv;
     }
     line->dtor();
+    ::operator delete(line);
 
+    // Allocate one fresh String per line.
     out->resize(count);
     for (unsigned i = 0; i < count; i++) {
-        String *s = (String *)::operator new(0xc);
+        String *s = static_cast<String *>(::operator new(sizeof(String)));
         s->ctor();
         (*out)[i] = s;
     }
 
+    // Second pass: fill each slot with the trimmed line text.
+    int consumed = 0;
     for (unsigned i = 0; i < count; i++) {
-        String sub;
-        sub.SubString(&work, consumed, total);
-        String ssub;
-        ssub.ctor_copy(&sub, false);
-        void *slot = (*out)[i];
-        Globals_getLine(slot, font, &ssub, maxWidth, slot);
+        String *slot = (*out)[i];
+        String rest;
+        rest.SubString(&work, consumed, total);
+        Globals_getLine(slot, font, &rest, maxWidth, slot);
+        consumed += static_cast<int>(slot->size());
 
-        int li = 0;
-        String *s = (String *)(*out)[i];
-        int hi = (int)s->size();
-        while (*s->index(li) == 0x20) {
-            li++;
-            s = (String *)(*out)[i];
+        // Trim leading and trailing spaces, in place.
+        int lo = 0;
+        int hi = static_cast<int>(slot->size());
+        while (*slot->index(lo) == 0x20) {
+            lo++;
         }
         hi++;
         do {
-            String *cur = (String *)(*out)[i];
-            short ch = *cur->index(hi - 2);
             hi--;
-            if (ch != 0x20) break;
-        } while (true);
+        } while (*slot->index(hi - 2) == 0x20);
 
         String trimmed;
-        String *cur = (String *)(*out)[i];
-        trimmed.SubString(cur, li, hi);
+        trimmed.SubString(slot, lo, hi);
+        slot->assign(&trimmed);
     }
-
-    return;
 }
 
 extern void *const gLTS2_guardHolder __attribute__((visibility("hidden")));
@@ -1660,10 +1646,10 @@ extern void *const gLF_flagG __attribute__((visibility("hidden")));
 
 static inline char flag(void *const g) { return **(char **)&g; }
 
-// Globals::loadFont(int kind).
-void Globals_loadFont(void *self, int kind)
+// (Re)create the bitmap fonts for the given language/script kind and apply spacing.
+// `this` is unused: every font/canvas handle comes from the PC-relative globals below.
+void Globals::loadFont(int kind)
 {
-    (void)self;
     void **canvasP;
     unsigned int **fontP;
     unsigned glyph;
@@ -2148,7 +2134,7 @@ void Globals_getLine(void *retSlot, unsigned font, void *text, int maxWidth,
     int *guardP = *(int **)gGL_guardHolder;
     volatile int saved = *guardP;
 
-    int lang = GameText_getLanguage();
+    int lang = GameText::getLanguage();
     int width = 5;
     if (((unsigned)(lang | 1)) == 0xb) width = 0xf;
     if ((unsigned)lang == 0xf) width = 0xf;

@@ -111,7 +111,6 @@ extern "C" void *MGame_opnew(unsigned sz);
 void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" void MGame_opdelete(void *p);
 void Globals_startNewSoundResourceList();
-void Globals_addSoundResourceToList(int list);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 extern "C" void applyThrust(MGame *self, int y);
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
@@ -1129,55 +1128,55 @@ void MGame::UseKhadorDrive() {
 // HP/shield/armor restore (157..198)
 // weapon + music init (315..end)
 
-// Add a specific resource id to the running sound-resource list (2-arg variant; the
-// 1-arg Globals_addSoundResourceToList above appends the list's "next" default).
 
 // MGame::loadSoundResources(): build the per-session FMOD resource list. Always loads the
 // common cockpit/weapon/explosion set, then appends wingman, early-mission, warp-gate and
 // per-campaign-mission specific clips.
 void MGame::loadSoundResources() {
-    int list = *((int *)&gGlobals);
-
     Globals_startNewSoundResourceList();
     static const int kCommon[] = {
         0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
         0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
     };
     for (int id : kCommon)
-        ((Globals *)(list))->addSoundResource_oi(id);
+        gGlobals->addSoundResource_oi(id);
 
     if (gStatus->getWingmen() != 0)
-        Globals_addSoundResourceToList(list);
+        gGlobals->addSoundResourceToList(0x30);
 
-    ((Globals *)(list))->addSoundResource_oi(0x3e);
-    ((Globals *)(list))->addSoundResource_oi(0x3d);
-    ((Globals *)(list))->addSoundResource_oi(0x24);
+    gGlobals->addSoundResource_oi(0x3e);
+    gGlobals->addSoundResource_oi(0x3d);
+    gGlobals->addSoundResource_oi(0x24);
 
     if (gStatus->getCurrentCampaignMission() < 2) {
-        Globals_addSoundResourceToList(list);
-        Globals_addSoundResourceToList(list);
+        gGlobals->addSoundResourceToList(0x9c);
+        gGlobals->addSoundResourceToList(0x9d);
     }
 
     if (gStatus->inAlienOrbit() == 0) {
         gStatus->getSystem();
         if (((SolarSystem *)(0))->currentOrbitHasWarpGate())
-            Globals_addSoundResourceToList(list);
+            gGlobals->addSoundResourceToList(0x1f);
     }
 
     int cm = gStatus->getCurrentCampaignMission();
     if (cm == 0) {
-        ((Globals *)(list))->addSoundResource_oi(0x8f);
-        ((Globals *)(list))->addSoundResource_oi(0x9d);
-        ((Globals *)(list))->addSoundResource_oi(0x9e);
-        ((Globals *)(list))->addSoundResource_oi(0xa1);
-        ((Globals *)(list))->addSoundResource_oi(0xa0);
-        ((Globals *)(list))->addSoundResource_oi(0x9f);
-    } else if (cm == 0xe || cm == 0x18 || cm == 0x1d) {
-        Globals_addSoundResourceToList(list);
+        gGlobals->addSoundResource_oi(0x8f);
+        gGlobals->addSoundResource_oi(0x9d);
+        gGlobals->addSoundResource_oi(0x9e);
+        gGlobals->addSoundResource_oi(0xa1);
+        gGlobals->addSoundResource_oi(0xa0);
+        gGlobals->addSoundResource_oi(0x9f);
+    } else if (cm == 0xe) {
+        gGlobals->addSoundResourceToList(0xf);
+    } else if (cm == 0x18) {
+        gGlobals->addSoundResourceToList(0x22);
+    } else if (cm == 0x1d) {
+        gGlobals->addSoundResourceToList(0xe);
     } else if (cm == 0x29) {
-        ((Globals *)(list))->addSoundResource_oi(0x9b);
-        ((Globals *)(list))->addSoundResource_oi(0x99);
-        ((Globals *)(list))->addSoundResource_oi(0x9a);
+        gGlobals->addSoundResource_oi(0x9b);
+        gGlobals->addSoundResource_oi(0x99);
+        gGlobals->addSoundResource_oi(0x9a);
     }
 }
 
@@ -1224,9 +1223,6 @@ __attribute__((visibility("hidden"))) extern int   *g_initInfoWidth;    // @0x18
 
 // 0x... PlayerFighter::cloak
 // Level::getPlayer (int handle)
-extern "C" void  Globals_getLineArray(int font, String *text, int key,
-                                       Array<AbyssEngine::String *> *out); // Globals::getLineArray
-
 // MGame::setupWeaponsAndAudio(): choose the active secondary weapon, kick off engine sounds,
 // particle effects, music and the post-process effect, ensure the pause window and the
 // mission-information overlay text exist. Runs as the tail of OnInitialize.
@@ -1356,8 +1352,8 @@ void MGame::setupWeaponsAndAudio() {
     self->missionInfoLines = new Array<AbyssEngine::String *>();
     String *font = *g_initInfoFont;
     String *text = (String *)((GameText *)(*g_gameText))->getText(g_initInfoTextKey);
-    Globals_getLineArray((int)(intptr_t)font, text, *g_initInfoWidth,
-                         self->missionInfoLines);
+    gGlobals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
+                           *text, *g_initInfoWidth, self->missionInfoLines);
     self->active = 1;
 }
 
@@ -2482,13 +2478,10 @@ MGame::MGame() {
 extern "C" void *Radar_dtor(void *r);
 extern "C" void *Radio_dtor(...);
 extern "C" void *DialogueWindow_dtor(...);
-unsigned short GameText_getLanguage();
-void Globals_loadFont(int font, int lang);
 // Tail helper @0x1ac168 (re-enables low-pass / restores FMOD state).
 
 __attribute__((visibility("hidden"))) extern int g_relPostEffect;   // @0x18c8b8 (DAT)
 __attribute__((visibility("hidden"))) extern int *g_relSoundFlag;   // @0x18c6da (*piVar4)
-__attribute__((visibility("hidden"))) extern int *g_relFont;        // @0x18c856 (**)
 __attribute__((visibility("hidden"))) extern int *g_relLayout;      // @0x18c86a (**)
 __attribute__((visibility("hidden"))) extern int **g_relImgFactory; // @0x18c878
 
@@ -2578,9 +2571,8 @@ void MGame::OnRelease() {
     }
     gCanvas->ReleaseAllResources();
 
-    int font = **(int **)&g_relFont;
-    int lang = GameText_getLanguage();
-    Globals_loadFont(font, lang);
+    int lang = GameText::getLanguage();
+    gGlobals->loadFont(lang);
 
     int *layout = g_relLayout;
     if (*layout != 0) {

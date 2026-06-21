@@ -1,5 +1,6 @@
 #include "game/menu/ModStation.h"
 #include "game/core/Globals.h"
+#include "engine/core/GameText.h"
 #include "game/ship/Ship.h"
 #include "engine/audio/FModSound.h"
 #include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
@@ -57,8 +58,6 @@ extern "C" int Station_getIndex(Station *st);
 // (PaintCanvasClass.h supplies the methods); declare the canonical pointer locally
 // to match its definition (binary .bss 0x2281b8).
 extern PaintCanvas* gCanvas;
-int GameText_getLanguage();
-void Globals_loadFont(int obj, int lang);
 extern "C" void *ms_op_delete(void *p);
 extern "C" void *ArrayReleaseClasses_TouchButton(void *a);
 extern "C" void *Array_TB_dtor(void *p);
@@ -1249,7 +1248,7 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[2] != 0) {
-        ((MenuTouchWindow *)(this->dlcMenu))->OnTouchMove(x, y);
+        ((MenuTouchWindow *)(this->dlcMenu))->OnTouchMove(x, y, nullptr);
         return;
     }
     if (((char*)&this->m_nStarMapWindowOpen)[1] == 0)
@@ -1277,7 +1276,6 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
 
 // Two singleton holders (single pc-rel deref each).
 __attribute__((visibility("hidden"))) extern FModSound **g_ModStation_or_sound;   // *g -> flag
-__attribute__((visibility("hidden"))) extern void **g_ModStation_or_lang;    // *g -> obj (font lang)
 __attribute__((visibility("hidden"))) extern Layout **g_ModStation_or_reload;  // *g -> reload flag obj
 __attribute__((visibility("hidden"))) extern ImageFactory **g_ModStation_or_imgfac;  // *g -> image factory
 
@@ -1350,8 +1348,7 @@ void ModStation::OnRelease() {
     this->choiceWindow = 0;
 
     gCanvas->ReleaseAllResources();
-    int langObj = *(int *)*g_ModStation_or_lang;
-    Globals_loadFont(langObj, GameText_getLanguage());
+    gGlobals->loadFont(GameText::getLanguage());
 
     Layout **reloadHolder = g_ModStation_or_reload;
     if (*reloadHolder != 0) {

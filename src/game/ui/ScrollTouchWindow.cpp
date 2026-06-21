@@ -45,26 +45,6 @@ void ScrollTouchWindow::OnTouchBegin(int x, int y)
     this->scrollBox->OnTouchBegin(x, y);
 }
 
-// ---- scroll ----
-// Keyboard / D-pad driven scroll. The pointer-drag path feeds the box a velocity
-// that update() integrates into scrollOffset and clamps to the content extent; a
-// discrete key-press scroll does the same by stepping scrollOffset directly (one
-// box-height worth per step) and re-running the box's settle logic.
-void ScrollTouchWindow::scroll(int amount)
-{
-    ScrollTouchBox *box = this->scrollBox;
-    if (box == nullptr)
-        return;
-
-    int range = box->contentHeight - box->height;
-    if (range <= 0)
-        return;
-
-    // Step by one visible page per key press, then let update() clamp / settle.
-    box->scrollOffset -= amount * box->height;
-    box->update(0);
-}
-
 extern Layout **g_STW_canvas_draw;
 extern Layout **g_STW_layout_draw_plain;
 extern Layout **g_STW_layout_draw_window;

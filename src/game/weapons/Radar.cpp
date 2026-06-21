@@ -50,7 +50,7 @@ Radar::Radar(Level* level)
     this->radarPosZ = 0;
     this->field_0x160 = 0;
 
-    this->transform.initIdentity();
+    this->transform = AbyssEngine::AEMath::Matrix();
 
     this->field_0x4 = 0;
     this->field_0x8 = 0;

@@ -63,9 +63,9 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     this->id = id;
     this->target = target;
 
-    this->firstPersonMatrix.initIdentity();
+    this->firstPersonMatrix = AbyssEngine::AEMath::Matrix();
     this->fpOffsetX = this->fpOffsetY = this->fpOffsetZ = 0;
-    this->localMatrix.initIdentity();
+    this->localMatrix = AbyssEngine::AEMath::Matrix();
 
     *getTargetOffset() = camOffset;
     *getCamOffset()    = targetOffset;
@@ -358,7 +358,7 @@ void TargetFollowCamera::update(int dt) {
                 *getTargetPos() = diff2;
             } else {
                 // First-person matrix follow.
-                m.initIdentity();
+                m = AbyssEngine::AEMath::Matrix();
                 Matrix rot;
                 MatrixSetRotation(rot, 0.0f, 0.0f, 0.0f);
                 MatrixMultiply(rot, this->firstPersonMatrix);
@@ -402,7 +402,7 @@ void TargetFollowCamera::update(int dt) {
         // First-person / look-at camera.
         Matrix fp = m;
         if (this->useTargetsUpVec == 0)
-            fp.initIdentity();
+            fp = AbyssEngine::AEMath::Matrix();
         *getUp() = MatrixGetUp(fp);
         *getTargetPos() = MatrixGetPosition(fp);
         this->hideShip = 0;

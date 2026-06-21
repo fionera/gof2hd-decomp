@@ -1,6 +1,7 @@
 #include "engine/core/AbyssEngine.h"
 #include "externs.h"
 #include "engine/file/AEFile.h"
+#include "engine/core/GameText.h"
 #include "engine/file/FileInterfaceAndroid.h"
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"   // also provides AEMath::BSphere (node-local layout)
@@ -79,7 +80,6 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 
 // GameText engine entry points (defined in src/GameText.cpp; GameText is a top-level class,
 // so its no-receiver accessors are rendered as free functions, matching the rest of the tree).
-int GameText_getLanguage();
 int GameText_isNonArabicString(const unsigned short *text, unsigned int len);
 
 // AbyssEngine::ImageFontSetYOffset(AbyssEngine::ImageFont*, short)
@@ -1836,7 +1836,7 @@ int ImageFontDrawString(ImageFont *font, const unsigned short *text, unsigned in
     bool shaderMode = (u8(en, 0xfc) != 0);
     if (shaderMode) {
         // Arabic special-case: force forward scan.
-        if (*g_GameText_arabicEnabledFlag != 0 && GameText_getLanguage() == 9 &&
+        if (*g_GameText_arabicEnabledFlag != 0 && GameText::getLanguage() == 9 &&
             GameText_isNonArabicString(text, len) != 0) {
             idx = 0;
             step = 1;

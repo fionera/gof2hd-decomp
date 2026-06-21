@@ -21,7 +21,7 @@ void GameText::release() {
 }
 
 // Current active language id (signed short).
-int GameText_getLanguage()
+int GameText::getLanguage()
 {
     return *g_GameText_language;
 }

@@ -26,16 +26,13 @@ struct Vector {
 
 struct Matrix {
     float m[16];
-    Matrix() {}
-    operator float*()             { return m; }
-    operator const float*() const { return m; }
+    Matrix();                            // out-of-line: initializes to the identity transform
+    operator float*();                   // out-of-line (the binary emits these accessors)
+    operator const float*() const;
     float&       operator[](int i)       { return m[i]; }
     float        operator[](int i) const { return m[i]; }
     Matrix& operator=(const Matrix& o);
     Matrix& operator*=(const Matrix& o);
-
-    // ---- methods (converted from String_*/free functions) ----
-    void initIdentity();
 };
 
 // Engine math free-functions (defined in libgof2hd; calls re-mangle to AbyssEngine::AEMath::*)

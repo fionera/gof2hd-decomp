@@ -4,6 +4,7 @@
 #include "game/mission/Achievements.h"
 #include "game/mission/BluePrint.h"
 #include "engine/core/GameText.h"
+#include "game/core/Globals.h"
 #include "game/mission/Item.h"
 #include "game/world/Standing.h"
 #include "game/ship/Ship.h"
@@ -40,11 +41,9 @@ extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
 int RecordHandler_checkHash(unsigned int fd);
-void Globals_loadFont(int kind);
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
-int GameText_getLanguage();
 extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 
@@ -631,7 +630,7 @@ void RecordHandler::loadOptions() {
             if (-1 < langVal) {
                 if (langVal == 9) langVal = 0;
                 ((GameText *)((short)**(int **)g_LO_textObj))->setLanguage_i(langVal);
-                Globals_loadFont(**(int **)g_LO_fontKind);
+                gGlobals->loadFont(**(int **)g_LO_fontKind);
             }
 
             int *fmodSlot = g_LO_fmodSlot;
@@ -871,7 +870,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteByte(s[0x34], fd);
     AEFile_WriteInt(*(int *)(s + 0x20), fd);
 
-    AEFile_WriteShort(GameText_getLanguage(), fd);
+    AEFile_WriteShort(GameText::getLanguage(), fd);
     AEFile_WriteByte(*g_SO_flag2, fd);
     AEFile_WriteByte(s[0x35], fd);
     AEFile_WriteByte(s[0x36], fd);

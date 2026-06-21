@@ -98,7 +98,7 @@ PlayerCreature::PlayerCreature(int kind, int itemIndex, Player* player, AEGeomet
                                float x, float y, float z)
     : KIPlayer(0, 0, player, geometry, x, y, z, true)
 {
-    this->rageMatrix.initIdentity();
+    this->rageMatrix = AbyssEngine::AEMath::Matrix();
 
     this->caught = 0;
     this->itemIndex = itemIndex;
@@ -228,5 +228,5 @@ void PlayerCreature::reset()
     this->state = 0;
     this->endurance = this->maxEndurance;
     this->lastHitpoints = this->player->getHitpoints();
-    this->rageMatrix.initIdentity();
+    this->rageMatrix = AbyssEngine::AEMath::Matrix();
 }

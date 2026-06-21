@@ -33,7 +33,6 @@ static const String g_HangarWindow_emptyDialogText;
 // Status::replaceHash() is reached here with differing argument counts/types across the
 // merged fragments; declared variadic so each call site matches the single symbol.
 extern "C" void Status_replaceHash(...);
-void Layout_formatCredits(...);
 
 // Truncating integer division (the ARM build reached these via the aeabi runtime).
 static inline int IDIV(int a, int b) { return a / b; }
@@ -282,8 +281,7 @@ void HangarWindow::render() {
                                 ? 0xa35b5bffu   // affordable (green)
                                 : 0x7aa35bffu;  // pool @0x159c70
                             ((PaintCanvas *)canvas)->SetColor(shipPriceColor);
-                            String price;
-                            Layout_formatCredits(&price, ((ListItem *)li)->ship->getPrice());
+                            String price = Layout::formatCredits(((ListItem *)li)->ship->getPrice());
                             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, price,
                                 contentBase + layout->field_0x28 + this->hintOffsetX, 0, (bool)1);
                             ((ImageFactory *)(*g_hw_globals))->drawShip(((ListItem *)li)->ship->getIndex(), this->hintOffsetX + layout->field_0x28 + rowGap, this->iconOffsetY + y);
@@ -368,9 +366,7 @@ void HangarWindow::render() {
                             ((PaintCanvas *)canvas)->SetColor(0x777777ffu);  // pool @0x15a460
                         }
                         if (this->upgradeMode == 0) {
-                            String price;
-                            ((Item *)((ListItem *)li)->item)->getSinglePrice();
-                            Layout_formatCredits(&price, ((Item *)((ListItem *)li)->item)->getSinglePrice());
+                            String price = Layout::formatCredits(((Item *)((ListItem *)li)->item)->getSinglePrice());
                             ((PaintCanvas *)canvas)->DrawString((unsigned)(uintptr_t)*g_hw_font, price,
                                 contentBase + layout->field_0x28 + this->hintOffsetX, 0, (bool)1);
                         }
@@ -414,8 +410,7 @@ void HangarWindow::render() {
     (*btns)[(0x2c) >> 2]->setVisible(true);
     (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
-        String credits;
-        Layout_formatCredits(&credits, gStatus->getCredits());
+        String credits = Layout::formatCredits(gStatus->getCredits());
         (*btns)[(0x2c) >> 2]->setText(&credits);
     }
     (*btns)[(0x2c) >> 2]->draw();
@@ -577,7 +572,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch) != 0) {
                 self->bluePrint->getAutoCompletionPrice();
                 String line, priceStr, fmt, msg;
-                Layout_formatCredits(&priceStr, 0);
+                priceStr = Layout::formatCredits(0);
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 self->dialog->set(*(String *)&msg, true);
                 self->autoCompletePending = 1;
@@ -656,7 +651,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             int price = self->bluePrint->getAutoCompletionPrice();
             if (gStatus->getCredits() < price) {
                 String line, priceStr, fmt, msg, suffix, combined;
-                Layout_formatCredits(&priceStr, gStatus->getCredits());
+                priceStr = Layout::formatCredits(gStatus->getCredits());
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
                 combined = suffix + suffix;
@@ -799,7 +794,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->buyMode = 0;
                 if (gStatus->getCredits() < cost && self->localBluePrint == 0) {
                     String line, priceStr, fmt, msg;
-                    Layout_formatCredits(&priceStr, gStatus->getCredits());
+                    priceStr = Layout::formatCredits(gStatus->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     self->dialogActive = 1;
@@ -840,7 +835,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 if (gStatus->getCredits() < price) {
                     String line, priceStr, fmt, msg, suffix, combined;
                     ((ListItem *)self->selectedItem)->ship->getPrice();
-                    Layout_formatCredits(&priceStr, gStatus->getCredits());
+                    priceStr = Layout::formatCredits(gStatus->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     ((GameText *)(*g_hw_sellShipTextId))->getText();
                     combined = suffix + suffix;
@@ -1220,8 +1215,8 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
 
                 String copy2, priceStr, fmt2, result2;
                 ((String *)&copy2)->ctor_copy(&msg, false);
-                Layout_formatCredits(&priceStr,
-                                     ((Item *)((ListItem *)self->bluePrintItem)->item)->getBlueprintAmount());
+                priceStr = Layout::formatCredits(
+                    ((Item *)((ListItem *)self->bluePrintItem)->item)->getBlueprintAmount());
                 Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
             }
             bool flag = (self->localBluePrint == 0);
@@ -1787,9 +1782,8 @@ void HangarWindow::selectItem(ListItem *item) {
         int oldPrice = gStatus->getShip()->getPrice();
         if (oldPrice + credits < price && self->upgradeMode == 0) {
             String line, priceStr, fmt, msg, suffix, combined;
-            Layout_formatCredits(&priceStr,
-                                 ((ListItem *)(item))->getPrice() - gStatus->getCredits() - gStatus->getShip()->getPrice(),
-                                 0);
+            priceStr = Layout::formatCredits(
+                ((ListItem *)(item))->getPrice() - gStatus->getCredits() - gStatus->getShip()->getPrice());
             ((String *)&line)->ctor_copy(&priceStr, false);
             Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
             ((GameText *)(*g_hw_notEnoughTextId))->getText();
@@ -1968,7 +1962,7 @@ void HangarWindow::transaction(bool buy) {
                 if (this->upgradeMode != 0)
                     return;
                 String line, priceStr, fmt, msg, suffix, combined;
-                Layout_formatCredits(&priceStr, ((Item *)(cur))->getSinglePrice(), gStatus->getCredits());
+                priceStr = Layout::formatCredits(((Item *)(cur))->getSinglePrice());
                 ((String *)&line)->ctor_copy(&priceStr, false);
                 Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
                 ((GameText *)(*g_hw_notEnoughTextId))->getText();
@@ -2367,7 +2361,7 @@ void HangarWindow::initialize() {
     {
         String credits;
         void *e11 = ::operator new(200);
-        Layout_formatCredits(&credits, gStatus->getCredits());
+        credits = Layout::formatCredits(gStatus->getCredits());
         TouchButton_ctor_img((void *)e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
                              Layout_getFooterTransitionWidth(), 0x22, 4);
         (*self->buttons)[(0x2c) >> 2] = (TouchButton*)(e11);

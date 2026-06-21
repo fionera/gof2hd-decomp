@@ -1,40 +1,24 @@
 #include "game/core/Matrix.h"
 
 // AbyssEngine::AEMath::Matrix::Matrix()
-// Initializes to the identity affine transform. The diagonal entries (0x00, 0x14, 0x38)
-// are 1.0; the remaining rotation/translation entries are zeroed, and the trailing
-// pair (0x28..0x34) is loaded from a constant {0,0,1,0} table.
+// Default-constructs the identity transform. The original lays the matrix out so that the
+// set entries are m[0], m[5], m[12] and m[14] (the latter from the {0,0,1,0} tail loaded at
+// offset 0x28); every other entry is zeroed.
 
 namespace AbyssEngine {
 namespace AEMath {
 
-// Constant {0,0,1,0} pair the original loads via PC-relative literals.
-static const float kIdentTail[4] = { 0.0f, 0.0f, 1.0f, 0.0f };
-
-// NOTE: Matrix's default constructor is declared inline (= {}) in gof2/math.h, which we
-// must not edit. To avoid an ODR redefinition we expose the identity-init logic as a
-// helper instead of redefining Matrix::Matrix(); callers that need identity init use this.
-void Matrix::initIdentity() {
-    float *m = this->m;
-    m[0] = 1.0f;   // 0x00
-    m[5] = 1.0f;   // 0x14
-    m[14] = 1.0f;  // 0x38
-
-    m[1] = 0.0f;   // 0x04
-    m[2] = kIdentTail[1];   // 0x08
-    m[3] = kIdentTail[2];   // 0x0c
-    m[4] = kIdentTail[3];   // 0x10
-
-    m[6] = 0.0f;   // 0x18
-    m[7] = kIdentTail[1];   // 0x1c
-    m[8] = kIdentTail[2];   // 0x20
-    m[9] = kIdentTail[3];   // 0x24
-
-    m[10] = kIdentTail[0];  // 0x28
-    m[11] = kIdentTail[1];  // 0x2c
-    m[12] = kIdentTail[2];  // 0x30
-    m[13] = kIdentTail[3];  // 0x34
+Matrix::Matrix()
+{
+    m[0]  = 1.0f; m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = 0.0f;
+    m[4]  = 0.0f; m[5]  = 1.0f; m[6]  = 0.0f; m[7]  = 0.0f;
+    m[8]  = 0.0f; m[9]  = 0.0f; m[10] = 0.0f; m[11] = 0.0f;
+    m[12] = 1.0f; m[13] = 0.0f; m[14] = 1.0f;
 }
+
+// Conversion operators: expose the 16-float storage as a raw float array.
+Matrix::operator float*()             { return m; }
+Matrix::operator const float*() const { return m; }
 
 } // namespace AEMath
 } // namespace AbyssEngine

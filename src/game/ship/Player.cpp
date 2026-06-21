@@ -38,7 +38,6 @@ extern "C" int __aeabi_idiv(int a, int b);
 extern "C" int gStopSoundIds[];
 extern "C" void *gFModSound;
 extern "C" void *gFModSoundAlt;
-void Globals_addSoundResourceToList(int id);
 extern "C" void *gAppManager;
 extern "C" void **gFModSoundPtr;
 extern "C" void Gun_setEnemies(void *gun);
@@ -509,7 +508,7 @@ void Player::addEnemies(Array<Player *> *enemies) {
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player *self = this;
-    ((Matrix *)self->transform)->initIdentity();
+    *static_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
     self->shieldHP = 0.0f;
     self->armorHP = 0;
     self->maxArmorHP = 0;
@@ -919,7 +918,7 @@ void Player::calcWeaponSounds(int count) {
             if ((int)n <= idx) break;
             if (order[idx] >= 0) {
                 this->guns->data()[0]->data()[idx]->field_0x89 = 1;
-                Globals_addSoundResourceToList(*sound);
+                gGlobals->addSoundResourceToList(*sound);
                 count--;
             }
             idx++;
@@ -937,7 +936,7 @@ void Player::calcWeaponSounds(int count) {
                 int sid = g_cws_sound3[g->itemIndex];
                 g->field_0x89 = 1;
                 (void)sid;
-                Globals_addSoundResourceToList(*g_cws_sound2);
+                gGlobals->addSoundResourceToList(*g_cws_sound2);
                 return;
             }
         }

@@ -5,6 +5,7 @@
 #include "game/world/StarSystem.h"
 #include "game/core/CutScene.h"
 #include "game/core/PaintCanvasClass.h"
+#include "game/core/Globals.h"
 #include "engine/audio/FModSound.h"
 #include "game/ui/MenuTouchWindow.h"
 #include "game/ui/Layout.h"
@@ -24,8 +25,6 @@ extern PaintCanvas* gCanvas;
 // ---- engine glue ---------------------------------------------------------------
 // These resolve to other game singletons/helpers in the full link; they are kept as
 // externs because the menu does not own the objects they refer to.
-int  GameText_getLanguage();
-void Globals_loadFont(int obj, int language);
 void Globals_startNewSoundResourceList(void *soundRes);
 void Globals_playMusicAndFadeOutCurrent(int music);
 int  FModSound_tryToStopMusicForBGMusic();
@@ -35,7 +34,6 @@ namespace AEMath { float Sinf(float value); }
 }
 
 
-int  *g_ModMainMenu_releaseFontObj;
 void **g_ModMainMenu_releaseReload;
 void **g_ModMainMenu_releaseImageFactory;
 void **g_ModMainMenu_releaseSound;
@@ -111,8 +109,7 @@ void ModMainMenu::OnRelease()
 
     gCanvas->ReleaseAllResources();
 
-    int fontObj = *g_ModMainMenu_releaseFontObj;
-    Globals_loadFont(fontObj, GameText_getLanguage());
+    gGlobals->loadFont(GameText::getLanguage());
 
     void **reload = g_ModMainMenu_releaseReload;
     if (*reload != nullptr) {
@@ -151,7 +148,7 @@ void ModMainMenu::OnTouchMove(int x, int y, void *touch)
     (void)touch;
     if (this->logoActive != 0)
         return;
-    this->touchWindow->OnTouchMove(x, y);
+    this->touchWindow->OnTouchMove(x, y, nullptr);
 }
 
 void ModMainMenu::OnTouchMove(int x, int y)
@@ -171,7 +168,7 @@ void ModMainMenu::OnTouchEnd(int x, int y, void *touch)
 {
     (void)touch;
     if (this->logoActive == 0) {
-        this->touchWindow->OnTouchEnd(x, y);
+        this->touchWindow->OnTouchEnd(x, y, nullptr);
         Level *level = *(Level **)this->cutScene;
         ((StarSystem *)(intptr_t)level->getStarSystem())->initLight();
         return;

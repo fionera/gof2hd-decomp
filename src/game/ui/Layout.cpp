@@ -17,11 +17,9 @@
 // while staying link-compatible with the real engine entry points.
 extern "C" {
 void    TouchButton_footerAnim(...);
-void    TouchButton_getPosition(...);
 void    TouchButton_ctorStr(...);
 void    TouchButton_ctorImg(...);
 void    TouchButton_ctorImg2(...);
-unsigned short GameText_getLanguage(...);
 void    Globals_drawLines(...);
 }
 
@@ -389,11 +387,11 @@ int Layout::drawMask4(int p1, int p2, int p3, int p4) {
 void Layout_formatNumber(String *out, int n);
 
 // Format `n` as a grouped credit amount with a trailing "$".
-void Layout_formatCredits(String *out, int n) {
+String Layout::formatCredits(int n) {
     String num;
     Layout_formatNumber(&num, n);
     String suffix("$");
-    *out = num + suffix;
+    return num + suffix;
 }
 
 // Hidden global from drawBGPattern.
@@ -457,7 +455,7 @@ void Layout_formatNumber(String *out, int value) {
     *out = String(g_fnEmpty);
 
     String sep;
-    unsigned short lang = GameText_getLanguage();
+    unsigned short lang = GameText::getLanguage();
     if (lang < 0xc && ((1u << (lang & 0xff)) & 0xc01u) != 0)
         sep = String(g_fnSepA);
     else
@@ -922,10 +920,9 @@ void Layout::resetWindowDimensions() {
     this->setBtnRect(this->secondaryButton, inset + this->windowX, (this->windowY + this->windowHeight) - this->footerButtonOffset, 0x21);
 
     if (this->backButton != nullptr) {
-        float pos[2] __attribute__((aligned(4)));
-        TouchButton_getPosition((TouchButton *)pos);
+        Vector pos = this->backButton->getPosition();
         *g_rwOutX = (int)pos[0];
-        TouchButton_getPosition((TouchButton *)pos);
+        pos = this->backButton->getPosition();
         *g_rwOutY = (int)pos[1];
     }
 }
@@ -1052,8 +1049,6 @@ void Layout::reload() {
     this->field_0x409 = 0;
 }
 
-void Layout_formatCredits(String *out, int n);
-
 // Hidden globals from drawFooter.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_dfCanvas;
 __attribute__((visibility("hidden"))) extern int **g_dfMetric;     // [0][0x10],[0][0x74]
@@ -1115,8 +1110,7 @@ void Layout::drawFooterImpl(int stationMode, int showBack) {
     }
     gCanvas->SetColor(this->drawColor);
 
-    String credStr;
-    Layout_formatCredits(&credStr, status->getCredits());
+    String credStr = Layout::formatCredits(status->getCredits());
 
     {
         int x = this->windowX;
@@ -1179,8 +1173,6 @@ void Layout::drawWindow1(const String *param) {
     this->drawWindowImpl(&tmp, 0);
 }
 
-void Layout_formatCredits(String *out, int n);
-
 // Hidden globals from drawMissionRewardMessage.
 __attribute__((visibility("hidden"))) extern PaintCanvas **g_mrCanvas;
 __attribute__((visibility("hidden"))) extern int *g_mrDimA;        // [0]=screen W
@@ -1240,8 +1232,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         pc->DrawString((unsigned)(unsigned long)(font), line, (sh >> 1) - (tw >> 1), boxX + boxY, false);
 
         String suffix(g_mrLit2);
-        String credits;
-        Layout_formatCredits(&credits, this->rewardCredits);
+        String credits = Layout::formatCredits(this->rewardCredits);
         line = suffix + credits;
 
         sh = *g_mrDimB;

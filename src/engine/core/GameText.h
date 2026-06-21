@@ -22,6 +22,8 @@ public:
     GameText();
     ~GameText();
 
+    static int getLanguage();
+
     void ReadLangFile(unsigned int file, int count);
     AbyssEngine::String* getText(int key);
     void release();

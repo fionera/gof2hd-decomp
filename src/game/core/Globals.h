@@ -50,6 +50,8 @@ public:
     void addSoundResourceToList(int snd);
     // Record the drawn system index for the chosen slot.
     static void getRandomSystemForDrinks_tail(int systemSlot, int picked);
+    // (Re)create the bitmap fonts for the given language/script kind and apply per-kind glyph spacing.
+    void loadFont(int kind);
     // Set the spacing of the freshly created extra font to 0.
     static void loadFont_tail(void* canvas, void* font, int spacing);
     // Release the secondary canvas' resources too.
@@ -61,6 +63,9 @@ public:
     static void buildAgentMissionText(String* out, void* agent, int offer);
     // The kind==0xf (capital-ship) branch of getShipGroup(): build the articulated LOD geometry.
     void buildShipGroup0f(int variant, void* canvas);
+    // Word-wrap `text` to `maxWidth` (in the given font), producing one trimmed String per line
+    // into `out` (which is resized to the line count and filled with freshly allocated Strings).
+    void getLineArray(unsigned int font, const String& text, int maxWidth, Array<String*>* out);
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)

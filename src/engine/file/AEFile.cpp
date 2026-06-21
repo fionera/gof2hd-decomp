@@ -16,44 +16,44 @@ extern uint32_t                    g_AEFile_initialized;
 // exposes a windowed view (size limit tracked in `packedSize`, current offset in `position`)
 // over the held file. Reconstructed from the binary AENormalFile / AEPakFile vtables.
 
-uint32_t AELowLevelNativeFile::Read(uint32_t bytes, void *buffer)
+uint32_t AENormalFile::Read(uint32_t bytes, void *buffer)
 {
-    if (handle != nullptr) {
-        return handle->Read(bytes, buffer);
+    if (file != nullptr) {
+        return file->Read(bytes, buffer);
     }
     return 0;
 }
 
-uint32_t AELowLevelNativeFile::Write(uint32_t bytes, const void *buffer)
+uint32_t AENormalFile::Write(uint32_t bytes, void *buffer)
 {
-    if (handle != nullptr) {
-        return handle->Write(bytes, buffer);
+    if (file != nullptr) {
+        return file->Write(bytes, buffer);
     }
     return 0;
 }
 
-uint32_t AELowLevelNativeFile::Skip(uint32_t bytes)
+uint32_t AENormalFile::Skip(uint32_t bytes)
 {
-    if (handle != nullptr) {
-        return handle->Skip(bytes);
+    if (file != nullptr) {
+        return file->Seek(bytes);
     }
     return 0;
 }
 
-uint32_t AELowLevelNativeFile::GetFileSize()
+uint32_t AENormalFile::GetFileSize()
 {
-    if (handle != nullptr) {
-        return handle->GetFileSize();
+    if (file != nullptr) {
+        return file->GetFileSize();
     }
     return 0;
 }
 
-uint32_t AELowLevelNativeFile::Release()
+uint32_t AENormalFile::Release()
 {
-    if (handle != nullptr) {
-        delete handle;
+    if (file != nullptr) {
+        delete file;
     }
-    handle = nullptr;
+    file = nullptr;
     return 1;
 }
 
@@ -72,7 +72,7 @@ uint32_t AELowLevelPakFile::Read(uint32_t bytes, void *buffer)
     return 0;
 }
 
-uint32_t AELowLevelPakFile::Write(uint32_t, const void *)
+uint32_t AELowLevelPakFile::Write(uint32_t, void *)
 {
     return 0;
 }
@@ -206,9 +206,7 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle)
         if (nativeHandle == nullptr) {
             return 0;
         }
-        AELowLevelNativeFile *nativeFile = new AELowLevelNativeFile;
-        nativeFile->handle = reinterpret_cast<AELowLevelHeldFile *>(nativeHandle);
-        file = nativeFile;
+        file = new AENormalFile(reinterpret_cast<FileInterface *>(nativeHandle));
     }
 
     Array<AELowLevelFile *> *files = g_AEFile_openFiles;

@@ -26,7 +26,7 @@ struct AEPakFileEntry {
 class AELowLevelFile {
 public:
     virtual ~AELowLevelFile() {}
-    virtual uint32_t Write(uint32_t bytes, const void *buffer) { return 0; }
+    virtual uint32_t Write(uint32_t bytes, void *buffer)       { return 0; }
     virtual uint32_t Read(uint32_t bytes, void *buffer)        { return 0; }
     virtual uint32_t Skip(uint32_t bytes)                      { return 0; }
     virtual uint32_t Release()                                 { return 1; }
@@ -48,13 +48,18 @@ public:
     virtual uint32_t  GetFileSize()                                       { return 0; }     // +0x20
 };
 
-// Native file backend: forwards I/O to the held low-level file.
-class AELowLevelNativeFile : public AELowLevelFile {
-public:
-    AELowLevelHeldFile *handle;
+// Forward declaration: the held file handle returned by FileInterface::OpenRead/OpenWrite is itself
+// a FileInterface (the platform FileInterfaceAndroid). The concrete class is defined below.
+class FileInterface;
 
-    ~AELowLevelNativeFile() override { Release(); }
-    uint32_t Write(uint32_t bytes, const void *buffer) override;
+// Native file backend: forwards every operation to the platform file handle it holds.
+class AENormalFile : public AELowLevelFile {
+public:
+    FileInterface *file;
+
+    AENormalFile(FileInterface *file) : file(file) {}
+    ~AENormalFile() override { Release(); }
+    uint32_t Write(uint32_t bytes, void *buffer) override;
     uint32_t Read(uint32_t bytes, void *buffer) override;
     uint32_t Skip(uint32_t bytes) override;
     uint32_t Release() override;
@@ -70,7 +75,7 @@ public:
     uint32_t  position;
 
     ~AELowLevelPakFile() override { Release(); }
-    uint32_t Write(uint32_t bytes, const void *buffer) override;
+    uint32_t Write(uint32_t bytes, void *buffer) override;
     uint32_t Read(uint32_t bytes, void *buffer) override;
     uint32_t Skip(uint32_t bytes) override;
     uint32_t Release() override;

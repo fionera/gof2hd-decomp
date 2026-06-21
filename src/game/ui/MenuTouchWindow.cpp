@@ -192,12 +192,14 @@ float MenuTouchWindow::getRelativeScrollStartPos()
     return -(float)offset / (float)this->pageHeight;
 }
 
-// MenuTouchWindow::OnTouchEnd(int y, int x). The menu's master action dispatcher: when a
-// ChoiceWindow dialog is open it routes the release to the right confirm/cancel handler
+// MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId). The menu's master action dispatcher.
+// In the in-game cinematic/cutscene overlay (state 0xb) a release carrying the originating touch
+// id first frees whichever virtual-control slot (steer / fire) that id was driving. After that,
+// when a ChoiceWindow dialog is open it routes the release to the right confirm/cancel handler
 // (case 0 below); otherwise it forwards to whichever widget set owns the current state
-// (this->0x16c) and runs that state's button actions. The per-state action bodies are large
+// (this->menuState) and runs that state's button actions. The per-state action bodies are large
 // and share a lot of structure, so each is delegated to an extern handler that performs the
-// genuine work for that state. r0=this, r1=y, r2=x. Returns 0.
+// genuine work for that state. r0=this, r1=y, r2=x, r3=touchId. Returns 0.
 
 // Per-state release handlers (return non-zero when they fully consumed the event).
 
@@ -209,8 +211,16 @@ extern void *const gEndQuitApp     __attribute__((visibility("hidden")));
 extern void *const gEndModuleId    __attribute__((visibility("hidden"))); // *holder -> module id
 extern void *const gEndPendingFlag __attribute__((visibility("hidden"))); // *holder -> int set on confirm
 
-int MenuTouchWindow::OnTouchEnd(int y, int x)
+int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId)
 {
+    if (this->menuState == 0xb && touchId != 0) {
+        if (this->cinematicTouchIdA == touchId)
+            this->cinematicTouchIdA = 0;
+        if (this->cinematicTouchIdB == touchId)
+            this->cinematicTouchIdB = 0;
+        this->cinematicTouchState = 0;
+    }
+
     this->pendingActivate = 0;
     this->dragging = 0;
 
@@ -344,23 +354,6 @@ int MenuTouchWindow::OnTouchEnd(int y, int x)
         break;
     }
     return 0;
-}
-
-// MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId). The touch-id-aware variant used by
-// the in-game cinematic/cutscene overlay (state 0xb): a release carrying the originating touch
-// id frees whichever virtual-control slot (steer / fire) that id was driving before the normal
-// release dispatch runs. In every other state the id is irrelevant, so the body is identical to
-// the two-argument dispatcher and we forward to it.
-void MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId)
-{
-    if (this->menuState == 0xb && touchId != 0) {
-        if (this->cinematicTouchIdA == touchId)
-            this->cinematicTouchIdA = 0;
-        if (this->cinematicTouchIdB == touchId)
-            this->cinematicTouchIdB = 0;
-        this->cinematicTouchState = 0;
-    }
-    OnTouchEnd(y, x);
 }
 
 // MenuTouchWindow::~MenuTouchWindow(). Tears down all owned arrays, buttons, choice window,
@@ -1527,10 +1520,9 @@ float MenuTouchWindow::getRelativeScrollHeight()
     return (float)numer / (float)page;
 }
 
-// MenuTouchWindow::OnTouchMove(int y, int x). Dispatches the drag to whatever sub-widget owns
-// the current menu state (this->menuState). Returns 0.
+// MenuTouchWindow::OnTouchMove(int y, int x, void *touchId). Dispatches the drag to whatever
+// sub-widget owns the current menu state (this->menuState). Returns 0.
 
-extern "C" void _mtw_steerFromTouch(void *self, int y, int x); // corrupted case-10 cinematic steer
 extern "C" void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId); // touch-id-aware cinematic steer/fire (case-10)
 extern "C" void _mtw_Layout_OnTouchMove(void *layout, int y); // Layout::OnTouchMove forwarding
 
@@ -1585,145 +1577,9 @@ static inline __attribute__((always_inline)) void scrollStateMove(MenuTouchWindo
     }
 }
 
-int MenuTouchWindow::OnTouchMove(int y, int x)
-{
-    if (this->messageShowing != 0) {
-        _mtw_ChoiceWindow_OnTouchMove(this->choiceWindow, y);
-        return 0;
-    }
-    char *layout = (char *)*(void **)gMvLayout;
-    if (*layout != 0) {
-        // corrupted-state guard path -> in-flight 3D steer
-        _mtw_steerFromTouch(this, y, x);
-        return 0;
-    }
-
-    int state = this->menuState;
-    switch (state - 1) {
-    case 0: // state 1
-    case 1: // state 2 list-drag (scroll)
-        if (*(int *)(layout + 0xc) < x &&
-            x < *(int *)*(void **)gMvScreenW - *(int *)(layout + 0x10)) {
-            int dy = x - this->dragLastX;
-            this->dragLastX = x;
-            this->dragVelocity = dy;
-            this->inertiaDecay = 0x3f800000;
-            this->scrollOffset = this->scrollOffset + dy;
-        }
-        _mtw_TouchButton_OnTouchMove(this->okButton, y);
-        break;
-    case 2: { // state 3
-        if (*(char *)*(void **)gMvFlagA == 0) {
-            void **arr = (void **)this->optionsButtons;
-            for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
-                _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
-        } else {
-            _mtw_TouchButton_OnTouchMove(this->scrollUpButton, y);
-            this->upButtonPressed = 0;
-            int base = *(int *)(layout + 0x28);
-            int top = base + this->listTopY;
-            int bottom = this->listEntryHeight + top;
-            if (top < y && y < bottom &&
-                *(int *)(layout + 0xc) + base < x &&
-                x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + this->listEntryWidth)
-                this->upButtonPressed = 1;
-            if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
-                base + *(int *)(layout + 0xc) < x &&
-                x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + this->listEntryWidth)
-                this->downButtonPressed = 1;
-            _mtw_TouchButton_OnTouchMoveXY(this->optBtnCC, y, x);
-            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD0, y, x);
-            _mtw_TouchSlider_OnTouchMove(*(void **)i32(this->sliders, 4), y);
-            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
-            _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
-            _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
-            doSliders(this, y);
-            void **arr = (void **)this->sliders;
-            for (unsigned int i = 1; i < *(unsigned int *)arr; i++)
-                _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
-            if (*(char *)*(void **)gMvFlagB != 0 && this->scrollExtraButton != 0)
-                _mtw_TouchButton_OnTouchMove(this->okButton, y);
-        }
-    } break;
-    case 3: { // state 4
-        _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowA, y);
-        void **arr = (void **)this->scrollEntries;
-        for (unsigned int i = 0; i < *(unsigned int *)arr; i++) {
-            unsigned int *e = (unsigned int *)((void **)arr[1])[i];
-            unsigned int t = e[0];
-            if (((unsigned int)(t - 0x6a) < 5 && ((1u << ((t - 0x6a) & 0xff)) & 0x19u) != 0)
-                || (e[1] == 0 && t == 0x16))
-                _mtw_TouchButton_OnTouchMove(e, y);
-        }
-    } break;
-    case 5: // state 6
-        _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
-        _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
-        _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
-        doSliders(this, y);
-        {
-            void **arr = (void **)this->sliders;
-            for (unsigned int i = 1; i < *(unsigned int *)arr; i++) {
-                if (i == 5 && (unsigned char)*(char *)(*(char **)gMvLayout + 0x284) == 0) continue;
-                _mtw_TouchSlider_OnTouchMove(((void **)arr[1])[i], y);
-            }
-        }
-        break;
-    case 6: { // state 7
-        this->upButtonPressed = 0;
-        int base = *(int *)(layout + 0x28);
-        int top = base + this->listTopY;
-        int bottom = this->listEntryHeight + top;
-        if (top < y && y < bottom &&
-            *(int *)(layout + 0xc) + base < x &&
-            x < *(int *)(layout + 0xc) + *(int *)(layout + 0x20) + this->listEntryWidth)
-            this->upButtonPressed = 1;
-        if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
-            base + *(int *)(layout + 0xc) < x &&
-            x < *(int *)(layout + 0x20) + *(int *)(layout + 0xc) + this->listEntryWidth)
-            this->downButtonPressed = 1;
-        _mtw_TouchButton_OnTouchMove(this->optBtnCC, y);
-        _mtw_TouchButton_OnTouchMove(this->optBtnD0, y);
-        _mtw_TouchSlider_OnTouchMove(*(void **)i32(this->sliders, 4), y);
-    } break;
-    case 7: // state 8
-        _mtw_MissionsWindow_OnTouchMove(this->missionsWindow, y);
-        break;
-    case 4:   // state 5
-    case 0xb: // state 12
-        break;
-    default: { // state 10 / 0xf and others -> top-level button + 0xc0 array
-        void **arr = (void **)this->buttons;
-        for (unsigned int i = 0; i < *(unsigned int *)arr; i++)
-            _mtw_TouchButton_OnTouchMove(((void **)arr[1])[i], y);
-        void **arr2 = (void **)this->scrollEntries;
-        unsigned int n = *(unsigned int *)arr2;
-        for (unsigned int i = 0; i < n; i++) {
-            int *e = (int *)((void **)arr2[1])[i];
-            if ((unsigned int)(e[0] - 0x17) < 2)
-                _mtw_TouchButton_OnTouchBegin(e, y);
-        }
-        for (unsigned int i = 0; i < n; i++) {
-            unsigned int *e = (unsigned int *)((void **)arr2[1])[i];
-            unsigned int t = e[0], id = e[1];
-            bool hit;
-            if (t == 5 && id == 0) hit = true;
-            else {
-                unsigned int x2 = (t != 0x11 || id != 0) ? (t ^ 100) : 0;
-                hit = (id == 0 && (t == 0x11 || x2 == 0)) || (id == 0 && t == 0x35);
-            }
-            if (hit) {
-                _mtw_TouchButton_OnTouchMove(e, y);
-                arr2 = (void **)this->scrollEntries;
-                n = *(unsigned int *)arr2;
-            }
-        }
-        if (state == 10)
-            _mtw_steerFromTouch(this, y, x);
-    } break;
-    }
-    return 0;
-}
+// (note) The two-argument OnTouchMove(int,int) does not exist as its own function in the
+// original binary -- ModMainMenu calls the three-argument form below with a null touch id,
+// and that single dispatcher carries the whole per-state body.
 
 // MenuTouchWindow::OnTouchMove(int y, int x, void *touchId). The touch-id-aware drag dispatcher.
 // Same per-state widget routing as the two-argument form, but the in-game cinematic/cutscene

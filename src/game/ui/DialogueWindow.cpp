@@ -21,11 +21,7 @@
 using AbyssEngine::PaintCanvas;
 
 // ---- foreign helpers (defined in the engine; linked elsewhere) -------------
-int GameText_getLanguage(void);
 int Globals_getDialogueSoundId(void *self, int textId, Agent *agent);
-
-struct Vec2 { float x; float y; };
-void TouchButton_getPosition(Vec2 *out, TouchButton *self);
 
 // Byte-offset accessor for EXTERNAL opaque objects (the engine sound-config
 // record) whose layout is not modelled here.
@@ -234,7 +230,7 @@ void DialogueWindow::loadContent() {
 
         if (kind == 1 || kind == 0 || kind == 2) {
             Agent *agent = mission->getAgent();
-            if (GameText_getLanguage() == 1 && agent != 0) {
+            if (GameText::getLanguage() == 1 && agent != 0) {
                 textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
                 textId = 0x188 + gRandom->nextInt(5);
@@ -562,17 +558,17 @@ void DialogueWindow::draw() {
     }
 
     if (*g_dw_drawPositionsReady == 0) {
-        Vec2 pos;
+        Vector pos;
         if (this->moreButton != 0) {
-            TouchButton_getPosition(&pos, this->moreButton);
+            pos = this->moreButton->getPosition();
             F<int>(g_dw_moreButtonX, 0x08) = (int)pos.x;
-            TouchButton_getPosition(&pos, this->moreButton);
+            pos = this->moreButton->getPosition();
             F<int>(g_dw_moreButtonY, 0x08) = (int)pos.y;
         }
         if (this->nextButton != 0) {
-            TouchButton_getPosition(&pos, this->nextButton);
+            pos = this->nextButton->getPosition();
             F<int>(g_dw_nextButtonX, 0x0c) = (int)pos.x;
-            TouchButton_getPosition(&pos, this->nextButton);
+            pos = this->nextButton->getPosition();
             F<int>(g_dw_nextButtonY, 0x0c) = (int)pos.y;
         }
         *g_dw_drawReadyFlag = 1;

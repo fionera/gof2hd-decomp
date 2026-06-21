@@ -186,6 +186,7 @@ public:
     void drawWindow5(const String *param, int p3, int p4, int p5, int p6);
     void drawWindow7(String *title, int x, int y, int w, int h, int drawBG);
     void enableFillScreen(bool v);
+    static String formatCredits(int n);
     int getFooterTransitionWidth();
     int getHelpButtonOffset();
     float getPulseValue(float speed);

@@ -71,7 +71,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
     this->up.z = 0.0f;
     this->side.x = 0.0f;
     this->side.z = 0.0f;
-    this->orientation.initIdentity();
+    this->orientation = AbyssEngine::AEMath::Matrix();
 
     void **canvas = (void **)g_PaintCanvas;
     this->useEgoOrientation = 0;

@@ -284,7 +284,7 @@ LevelScript::LevelScript(Level* level, Hud* hud, Radar* radar, TargetFollowCamer
     field_0x30 = 0;
     field_0x34 = 0;
 
-    m_matrix.initIdentity();
+    m_matrix = AbyssEngine::AEMath::Matrix();
 
     m_pHud = hud;
     m_pRadar = radar;

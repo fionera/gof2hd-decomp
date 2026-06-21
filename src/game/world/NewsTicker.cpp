@@ -10,7 +10,6 @@
 
 // Free-function bridges into engine singletons that have no own header here.
 void DisableClip();          // AbyssEngine::PaintCanvas::DisableClip
-int GameText_getLanguage();
 
 // Engine singletons the ticker reaches through, recovered as typed globals.
 extern PaintCanvas **g_NewsTicker_draw_canvas;
@@ -120,7 +119,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level)
         this->textWidth = canvas->GetTextWidth(font, this->tickerText);
     }
 
-    if (GameText_getLanguage() == 9) {
+    if (GameText::getLanguage() == 9) {
         width = -this->textWidth;
     }
     this->lastTouchX = 0;
@@ -159,7 +158,7 @@ void NewsTicker::draw()
                        (int)(this->scrollOffset + (float)this->x), this->y, false);
 
     float x = this->scrollOffset;
-    if (GameText_getLanguage() == 9) {
+    if (GameText::getLanguage() == 9) {
         if (x > (float)this->textWidth) {
             canvas->DrawString(font, this->tickerText,
                                (int)(x + (float)this->x), this->y, false);
@@ -182,7 +181,7 @@ void NewsTicker::update(int dt)
     }
 
     float step = ((float)dt / 1000.0f) * 50.0f;
-    if (GameText_getLanguage() == 9) {
+    if (GameText::getLanguage() == 9) {
         this->scrollOffset += step;
         if (this->scrollOffset > (float)this->width) {
             this->scrollOffset = (float)-this->textWidth;

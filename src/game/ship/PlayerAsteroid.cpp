@@ -263,7 +263,7 @@ void PlayerAsteroid::push(int delta)
     float t = (float)remaining / (float)this->pushDuration();
 
     Matrix identity;
-    identity.initIdentity();
+    identity = AbyssEngine::AEMath::Matrix();
     Matrix rotation;
     MatrixSetRotation(rotation, t * this->pushSpin().x, t * this->pushSpin().y,
                       t * this->pushSpin().z);

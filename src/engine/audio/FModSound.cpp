@@ -1,4 +1,5 @@
 #include "engine/audio/FModSound.h"
+#include "engine/core/GameText.h"
 #include "platform/libc.h"
 #include <cstring>
 
@@ -52,7 +53,6 @@ void  FMOD_EventCategory_stopAllEvents(void *category);                       //
 int   FMOD_EventCategory_getInfo(void *category, int *index, char **name);    // EventCategory slot 0
 }
 
-int GameText_getLanguage();
 
 // Globals the engine publishes for the reverb/property property-name handles.
 extern "C" void **gPauseProp;
@@ -423,7 +423,7 @@ int FModSound::init()
         this->fxSlots[i] = -1;
     FMOD_EventSystem_Create(&this->system);
     FMOD_EventSystem_init(this->system, 0x20, (void *)0x82, 0);
-    setAudioLanguage(GameText_getLanguage());
+    setAudioLanguage(GameText::getLanguage());
 
     char path[0x400];
     memset(path, 0, 0x400);

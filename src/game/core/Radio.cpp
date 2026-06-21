@@ -7,6 +7,7 @@
 #include "engine/audio/FModSound.h"
 #include "game/ui/Layout.h"
 #include "game/ship/Agent.h"
+#include "game/core/Globals.h"
 
 // ---------------------------------------------------------------------------
 // Cross-class engine entry points used through their own (not-yet-self-clean)
@@ -22,8 +23,6 @@ extern "C" String* _ZN8GameText7getTextEi(GameText* self, int key)
 
 // Globals text/line helpers. Globals.h does not model these draw-time methods;
 // the engine exposes them as free functions (see src/game/core/Globals.cpp).
-void Globals_getLineArray(void* globals, String* font, String* text, int maxWidth,
-                          Array<String*>* out);
 void Globals_drawLines(void* globals, String* font, Array<String*>* lines,
                        int x, int y);
 int Globals_getDialogueSoundId(void* globals, int textId, void* agent);
@@ -210,9 +209,10 @@ void Radio::update(long time, PlayerEgo* ego, LevelScript* script)
         this->font = *fontHolder;
 
         Layout* layout = *g_Radio_layoutForText;
-        Globals_getLineArray(*g_Radio_globals, this->font, &text,
-                             (this->boxWidth - 10) - layout->field_0x2d4,
-                             this->textLines);
+        static_cast<Globals*>(*g_Radio_globals)->getLineArray(
+            static_cast<unsigned int>(reinterpret_cast<std::size_t>(this->font)),
+            text, (this->boxWidth - 10) - layout->field_0x2d4,
+            this->textLines);
 
         this->startTime = (int64_t)time;
         this->soundPending = 1;

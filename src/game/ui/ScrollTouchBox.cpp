@@ -1,9 +1,8 @@
 #include "game/ui/ScrollTouchBox.h"
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
-
-int GameText_getLanguage();
-void Globals_getLineArray(void *self, int font, String *text, int lineWidth, void *array);
+#include "engine/core/GameText.h"
+#include "game/core/Globals.h"
 
 // Minimal view of the engine font object. It has no standalone header; only the
 // two fields ScrollTouchBox reads are modelled here.
@@ -156,7 +155,7 @@ __attribute__((visibility("hidden"))) extern uint8_t *g_ScrollTouchBox_dirty_135
 
 void ScrollTouchBox::draw()
 {
-    int language = GameText_getLanguage();
+    int language = GameText::getLanguage();
     unsigned special = 0;
     unsigned shifted = (unsigned)(language - 10);
     if ((unsigned short)shifted < 6)
@@ -194,7 +193,7 @@ void ScrollTouchBox::draw()
                 String *font = this->font;
                 String *line = lineArray->data()[i];
                 canvas = *canvasHolder;
-                if (GameText_getLanguage() == 9) {
+                if (GameText::getLanguage() == 9) {
                     *rtl = 0;
                     int left = this->x;
                     int width = this->width;
@@ -239,7 +238,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     void **globals = g_ScrollTouchBox_globals_135600;
     int lineWidth = this->textWidth;
     this->lines = lineArray;
-    Globals_getLineArray(*globals, font, &text, lineWidth, lineArray);
+    static_cast<Globals *>(*globals)->getLineArray(font, text, lineWidth, lineArray);
 
     FontMetrics **fontHolder = g_ScrollTouchBox_font_135600;
     int boxHeight = this->height;
@@ -261,7 +260,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
         int fontArg = font;
         lineWidth = this->width;
         this->lines = lineArray;
-        Globals_getLineArray(*globals, fontArg, &text, lineWidth, lineArray);
+        static_cast<Globals *>(*globals)->getLineArray(fontArg, text, lineWidth, lineArray);
 
         String *empty = new String(g_ScrollTouchBox_empty_135600, false);
         this->lines->push_back(empty);

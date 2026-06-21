@@ -1,9 +1,11 @@
 #include "game/menu/MTitle.h"
+#include "engine/core/GameText.h"
 #include "engine/audio/FModSound.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/ImageFactory.h"
 #include "game/ui/Layout.h"
 #include "game/core/PaintCanvasClass.h"
+#include "game/core/Globals.h"
 
 // Canonical render canvas singleton. PaintCanvasClass.h defines its own
 // PaintCanvas (to dodge Mesh/Transform clashes) and does not declare gCanvas,
@@ -13,12 +15,8 @@ extern PaintCanvas* gCanvas;
 // Engine singletons reached through fixed global slots in the shipped binary.
 extern Layout *g_currentLayout;         // the active full-screen Layout (may be null)
 extern ImageFactory *g_imageFactory;    // the shared UI image factory
-extern void *g_globalFont;              // the global font object Globals::loadFont mutates
 extern FModSound *g_sound;              // the FMOD sound manager
 
-// Localized text helpers (defined in GameText.cpp / Globals.cpp).
-int GameText_getLanguage();
-void Globals_loadFont(void *font, int lang);
 
 MTitle::MTitle()
 {
@@ -48,7 +46,7 @@ void MTitle::OnRelease()
 {
     gCanvas->ReleaseAllResources();
 
-    Globals_loadFont(g_globalFont, GameText_getLanguage());
+    gGlobals->loadFont(GameText::getLanguage());
 
     if (g_currentLayout != 0) {
         g_currentLayout->reload();

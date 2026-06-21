@@ -45,7 +45,8 @@ Touch GetTouch(int index);
 
 // Free the five native item-information string lists (five groups of five list ids on
 // the Globals singleton) and null their slots. Called when the item database is rebuilt.
-void ndk_resetNativeItemInformationList();
+// C-linkage JNI-style bridge entry point (the "ndk_" prefix marks it as such).
+extern "C" void ndk_resetNativeItemInformationList();
 
 // Galaxy on Fire 2 -- LODManager.
 // Tracks the active camera position and periodically updates the level-of-detail

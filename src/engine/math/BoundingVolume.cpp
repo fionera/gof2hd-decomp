@@ -36,12 +36,8 @@ int BoundingVolume::outerCollide(float, float, float)
     return 0;
 }
 
-// Base projectCollisionOnSurface is only reached on leaf subclasses (they
-// override it); a bare composite node projects the point onto itself (identity).
-BoundingVolume::Vector BoundingVolume::projectCollisionOnSurface(const Vector& point)
-{
-    return point;
-}
+// projectCollisionOnSurface has no base definition: it is pure virtual, so the
+// surface geometry lives entirely in the leaf subclasses.
 
 BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position)
 {

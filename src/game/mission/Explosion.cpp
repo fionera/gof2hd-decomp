@@ -278,7 +278,7 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
 }
 
 Explosion::Explosion(int type) {
-    this->rotation.initIdentity();
+    this->rotation = AbyssEngine::AEMath::Matrix();
     this->scale = 1.0f;
     this->type = type;
     this->primaryMesh = 0;

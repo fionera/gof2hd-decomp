@@ -10,6 +10,7 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ui/ListItemWindow.h"
 #include "game/ui/ScrollTouchWindow.h"
+#include "game/ui/ScrollTouchBox.h"
 #include "game/world/StarMap.h"
 #include "game/ship/Agent.h"
 #include "engine/core/GameText.h"
@@ -665,9 +666,19 @@ void SpaceLounge::onKeyPress(int key) {
             }
             this->mode = 0;
         } else if (key == 0x8000) {
-            this->scrollWindow->scroll(1);
+            if (ScrollTouchBox *box = this->scrollWindow->scrollBox) {
+                if (box->contentHeight - box->height > 0) {
+                    box->scrollOffset -= box->height;
+                    box->update(0);
+                }
+            }
         } else if (key == 0x4000) {
-            this->scrollWindow->scroll(-1);
+            if (ScrollTouchBox *box = this->scrollWindow->scrollBox) {
+                if (box->contentHeight - box->height > 0) {
+                    box->scrollOffset += box->height;
+                    box->update(0);
+                }
+            }
         }
     }
 }
@@ -977,7 +988,7 @@ SpaceLounge::SpaceLounge()
     this->silhouettePos.z = 0;
     this->field_0x9c = 0;
     this->field_0xa0 = 0;
-    this->baseMatrix.initIdentity();
+    this->baseMatrix = AbyssEngine::AEMath::Matrix();
 
     this->initialized = 0;
     this->starMap = 0;
@@ -1076,7 +1087,10 @@ void SpaceLounge::startChat() {
     right.ctor_copy((String *)((GameText *)(*(void **)texts))->getText(0x11), false);
 
     this->choiceWindow->set(title, body, true);
-    this->choiceWindow->setButtonText(left, right);
+    if (this->choiceWindow->leftButton != nullptr)
+        this->choiceWindow->leftButton->setText(left);
+    if (this->choiceWindow->rightButton != nullptr)
+        this->choiceWindow->rightButton->setText(right);
 
     if (((Agent *)(agent))->isKnown() == 0 && ((Agent *)(agent))->isStoryAgent() == 0) {
         if (((Agent *)(agent))->eventCount <= 0)

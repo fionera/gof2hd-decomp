@@ -41,7 +41,13 @@ public:
     virtual int collide(float x, float y, float z);
     virtual int outerCollide(float x, float y, float z);
     virtual void update(float x, float y, float z);
-    virtual Vector projectCollisionOnSurface(const Vector& point);
+    // Abstract surface projection: the base node never owns a surface of its own,
+    // so it declares the slot pure and leaves the geometry to its leaf
+    // subclasses (BoundingSphere/BoundingAAB). This makes BoundingVolume an
+    // abstract base -- it is only ever built as a derived subobject (base ctor
+    // C2, never a complete-object C1) and never deleted through a base pointer
+    // (dtor D1/D2, never the deleting D0), matching the original binary.
+    virtual Vector projectCollisionOnSurface(const Vector& point) = 0;
 
     // getCollisionNormal is not polymorphically dispatched (subclasses give it a
     // different signature), so it stays a plain method. The base composite has no

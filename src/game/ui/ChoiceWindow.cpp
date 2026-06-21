@@ -9,17 +9,6 @@
 #include "game/ui/TouchButton.h"
 #include "engine/render/PaintCanvas.h"
 
-// Foreign helpers defined in the engine and linked elsewhere. The line-array builder
-// and the TouchButton position read-back have no modelled member entry points, and the
-// per-screen config blob is an opaque metrics record (only loosely Layout-shaped), so
-// these stay as free functions / byte-offset reads.
-extern "C" {
-void Globals_getLineArray(void *self, void *font, String const &text, int width, void *array);
-void TouchButton_getPosition(float *out, void *self);
-// Layout::formatCredits(out, value) -- formats a credit amount into a String; the
-// Layout header does not expose this entry, so it stays a free function.
-void Layout_formatCredits(String *out, void *layout, int value);
-}
 
 int ChoiceWindow::OnTouchMove(int x, int y)
 {
@@ -274,9 +263,11 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     Array<String *> *lines = new Array<String *>();
 
     Layout *layout = *g_ChoiceWindow_layout_1469b0;
-    Globals_getLineArray(gGlobals, *g_ChoiceWindow_lineFont_1469b0, message,
-                         (this->width - layout->field_0x4c * 2) - layout->field_0x48,
-                         lines);
+    gGlobals->getLineArray(
+        static_cast<unsigned int>(reinterpret_cast<std::size_t>(*g_ChoiceWindow_lineFont_1469b0)),
+        message,
+        (this->width - layout->field_0x4c * 2) - layout->field_0x48,
+        lines);
 
     int contentHeight = layout->field_0x4 * (int)lines->size() + layout->field_0x8 +
                         layout->field_0x4c * 2 + this->padding * 2 +
@@ -387,7 +378,7 @@ extern int *g_ChoiceWindow_dirtyFlag_1471bc;
 
 void ChoiceWindow::draw()
 {
-    float pos[2];
+    Vector pos;
 
     Layout *layout = *g_ChoiceWindow_layout_1471bc;
     layout->drawMask();
@@ -413,9 +404,8 @@ void ChoiceWindow::draw()
 
         if (gStatus->hardCoreMode() == 0 &&
             gAchievements->isEliteMedal(this->medal) == 0) {
-            String creditsText;
-            Layout_formatCredits(&creditsText, layout,
-                                 F<int>(g_ChoiceWindow_creditValues_1471bc, this->count * 4));
+            String creditsText = Layout::formatCredits(
+                F<int>(g_ChoiceWindow_creditValues_1471bc, this->count * 4));
 
             void *font = *g_ChoiceWindow_font_1471bc_a;
             int textWidth = canvas->GetTextWidth((unsigned int)(unsigned long)font, creditsText);
@@ -440,22 +430,22 @@ void ChoiceWindow::draw()
 
         if (this->rightButton != nullptr) {
             this->rightButton->draw();
-            TouchButton_getPosition(pos, this->rightButton);
+            pos = this->rightButton->getPosition();
             F<int>(g_ChoiceWindow_posTargetA_1471bc, 0x8) = (int)pos[0];
-            TouchButton_getPosition(pos, this->rightButton);
+            pos = this->rightButton->getPosition();
             F<int>(g_ChoiceWindow_posTargetB_1471bc, 0x8) = (int)pos[1];
         }
 
         if (this->leftButton != nullptr) {
-            TouchButton_getPosition(pos, this->leftButton);
+            pos = this->leftButton->getPosition();
             F<int>(g_ChoiceWindow_posTargetC_1471bc, 0xc) = (int)pos[0];
-            TouchButton_getPosition(pos, this->leftButton);
+            pos = this->leftButton->getPosition();
             F<int>(g_ChoiceWindow_posTargetD_1471bc, 0xc) = (int)pos[1];
 
             if (this->rightButton == nullptr) {
-                TouchButton_getPosition(pos, this->leftButton);
+                pos = this->leftButton->getPosition();
                 F<int>(g_ChoiceWindow_posTargetC_1471bc, 0x8) = (int)pos[0];
-                TouchButton_getPosition(pos, this->leftButton);
+                pos = this->leftButton->getPosition();
                 F<int>(g_ChoiceWindow_posTargetD_1471bc, 0x8) = (int)pos[1];
             }
         }
@@ -482,15 +472,4 @@ void ChoiceWindow::right() {
 int ChoiceWindow::fire()
 {
     return 0;
-}
-
-// Retitles the two existing choice buttons. The hangar / lounge screens call this
-// alongside a set() overload when (re)opening an agent-chat dialog; it stays a
-// member because it touches the private TouchButton labels.
-void ChoiceWindow::setButtonText(String const &left, String const &right)
-{
-    if (this->leftButton != nullptr)
-        this->leftButton->setText(left);
-    if (this->rightButton != nullptr)
-        this->rightButton->setText(right);
 }

@@ -64,10 +64,5 @@ public:
     // Fire callback for the left choice button; the shipped build records the
     // press through hasChoice()/the button state, so this does no work itself.
     int fire();
-
-    // Retitles the two choice buttons in place. The shipped code combines this
-    // with the set() overloads when it opens an agent-chat dialog; it is kept as
-    // a standalone helper because it touches the private TouchButton labels.
-    void setButtonText(String const &left, String const &right);
 };
 #endif

@@ -162,7 +162,7 @@ extern int g_cItemListID_24 asm("_ZN7Globals14cItemListID_24E");
 // Release all five native item-information string lists and reset their slots.
 // Each list is five item-info id buffers freed all-or-nothing: only when every one
 // of the five is live are they released and their slots nulled.
-void ndk_resetNativeItemInformationList()
+extern "C" void ndk_resetNativeItemInformationList()
 {
     if (g_cItemListID_00 != 0 && g_cItemListID_01 != 0 && g_cItemListID_02 != 0 &&
         g_cItemListID_03 != 0 && g_cItemListID_04 != 0) {

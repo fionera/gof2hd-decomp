@@ -86,10 +86,3 @@ extern "C" void BoundingSphere_ctor(void* self, float cx, float cy, float cz, fl
 {
     new (self) BoundingSphere(cx, cy, cz, 0.0f, 0.0f, 0.0f, r);
 }
-
-// Default sphere (centre origin, zero radius); the Level asteroid builder
-// allocates the sphere then update()s it later.
-void BoundingSphere_ctor_ca(BoundingSphere* bs)
-{
-    new (bs) BoundingSphere(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-}

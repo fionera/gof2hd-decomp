@@ -97,7 +97,6 @@ float StatusWindow::getRelativeScrollStartPos() {
 
 extern "C" {
 void Status_replaceHash(void *out, void *key, void *a, void *b);
-void Globals_getLineArray(void *globals, void *font, void *text, void *outArr);
 void StatusWindow_getMedalHintText(void *out, int medalIndex);
 
 extern Layout **g_swe_layout;       // Layout singleton
@@ -171,8 +170,9 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     StatusWindow_getMedalHintText(&hint, this->selectedMedal);
                     full.addAssign_str(&hint);
 
-                    Globals_getLineArray(*g_swe_globals, *(void **)g_swe_font, &full,
-                                         (void *)(intptr_t)(this->boxWidth - layout->field_0x4c * 2));
+                    (*g_swe_globals)->getLineArray(
+                        static_cast<unsigned int>(reinterpret_cast<std::size_t>(*(void **)g_swe_font)),
+                        full, this->boxWidth - layout->field_0x4c * 2, this->detailLines);
                     (*this->medalButtons)[i]->setAlwaysPressed(true);
                 }
                 break;
@@ -427,10 +427,8 @@ void StatusWindow::reInit() {
 }
 
 extern "C" {
-int   GameText_getLanguage();
 
 void Layout_drawHeader(void *layout, void *title);
-void Layout_formatCredits(void *out, int credits);
 
 void  Globals_longToTimeStringNoSeconds(void *globals, void *out, unsigned long long t);
 void  Globals_drawLines(void *globals, void *font, void *arr, int y, char clip);
@@ -485,7 +483,7 @@ void StatusWindow::draw() {
     String creditStr;
     creditStr.ctor();
     String sep;
-    if (GameText_getLanguage() == 9)
+    if (GameText::getLanguage() == 9)
         sep.ctor_char("\xa1", false);
     else
         sep.ctor_char(":", false);
@@ -510,8 +508,7 @@ void StatusWindow::draw() {
         lbl.ctor_char("", false);
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
-        String credTmp;
-        Layout_formatCredits(&credTmp, gStatus->getCredits());
+        String credTmp = Layout::formatCredits(gStatus->getCredits());
         creditStr.assign(&credTmp);
         int tw = canvas->GetTextWidth((unsigned)(uintptr_t)font, creditStr);
         canvas->DrawString((unsigned)(uintptr_t)font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);

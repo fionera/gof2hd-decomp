@@ -62,7 +62,6 @@ extern int  *g_mw_titleTable;      // per-mission title id table (update)
 // String storage; they wrap the corresponding Status/Layout/Globals members.
 extern "C" void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 extern "C" void Globals_getAgentMissionText(void *out, void *agent);
-extern "C" void Layout_formatCredits(void *out, int credits);
 extern "C" void Layout_drawHeader(void *layout, void *title);
 extern "C" int  ApplicationManager_GetCurrentApplicationModule(void *appMgr);
 extern "C" int  _mw_GetTextHeight(void *canvas);
@@ -313,8 +312,7 @@ int MissionsWindow::init()
         String body(text);
         int rew = fm->getReward();
         int bonus = fm->getBonus();
-        String reward;
-        Layout_formatCredits(&reward, rew + bonus);
+        String reward = Layout::formatCredits(rew + bonus);
         String suffix("", false);
         String merged;
         Status_replaceHash(&merged, key, &body, &reward, &suffix);
