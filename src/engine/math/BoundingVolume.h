@@ -41,13 +41,13 @@ public:
     virtual int collide(float x, float y, float z);
     virtual int outerCollide(float x, float y, float z);
     virtual void update(float x, float y, float z);
-    // Abstract surface projection: the base node never owns a surface of its own,
-    // so it declares the slot pure and leaves the geometry to its leaf
-    // subclasses (BoundingSphere/BoundingAAB). This makes BoundingVolume an
-    // Surface projection: leaf subclasses (sphere/box) override this; the base
-    // default returns the point unchanged so BoundingVolume stays concrete
-    // (it is used directly as a scratch volume by e.g. PlayerStation).
-    virtual Vector projectCollisionOnSurface(const Vector& point);
+    // Abstract surface projection: the base node never owns a surface of its
+    // own, so the slot is pure -- only the leaf subclasses (BoundingSphere /
+    // BoundingAAB) carry real geometry and emit a body. This makes
+    // BoundingVolume an abstract base (it is never instantiated directly; the
+    // binary has no BoundingVolume::projectCollisionOnSurface symbol, hence no
+    // complete-object ctor C1 / deleting dtor D0 either).
+    virtual Vector projectCollisionOnSurface(const Vector& point) = 0;
 
     // getCollisionNormal is not polymorphically dispatched (subclasses give it a
     // different signature), so it stays a plain method. The base composite has no

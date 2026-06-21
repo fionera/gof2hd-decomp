@@ -15,7 +15,19 @@ Vector &Vector::operator*=(const Vector &rhs)
 } // namespace AEMath
 } // namespace AbyssEngine
 
-// AbyssEngine::AEMath::Vector::operator[](int) is defined inline in gof2/math.h.
+namespace AbyssEngine {
+namespace AEMath {
+
+// Conversion operators: expose the 3-float storage as a raw float array.
+Vector::operator float*()             { return &x; }
+Vector::operator const float*() const { return &x; }
+
+// Indexed access into the {x,y,z} storage.
+float &Vector::operator[](int i)       { return (&x)[i]; }
+float  Vector::operator[](int i) const { return (&x)[i]; }
+
+} // namespace AEMath
+} // namespace AbyssEngine
 
 namespace AbyssEngine {
 namespace AEMath {

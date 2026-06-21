@@ -11,10 +11,10 @@ namespace AEMath {
 
 struct Vector {
     float x, y, z;
-    operator float*()             { return &x; }
-    operator const float*() const { return &x; }
-    float&       operator[](int i)       { return (&x)[i]; }
-    float        operator[](int i) const { return (&x)[i]; }
+    operator float*();                   // out-of-line (the binary emits these accessors)
+    operator const float*() const;
+    float&       operator[](int i);
+    float        operator[](int i) const;
     Vector& operator=(const Vector& o);
     Vector& operator+=(const Vector& o);
     Vector& operator-=(const Vector& o);

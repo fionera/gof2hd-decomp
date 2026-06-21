@@ -36,12 +36,8 @@ int BoundingVolume::outerCollide(float, float, float)
     return 0;
 }
 
-// Base default: no surface of its own, so return the query point unchanged.
-// Leaf subclasses (BoundingSphere / BoundingAAB) override with real geometry.
-BoundingVolume::Vector BoundingVolume::projectCollisionOnSurface(const Vector& point)
-{
-    return point;
-}
+// projectCollisionOnSurface is pure virtual in the base (no body) -- only the
+// leaf subclasses (BoundingSphere / BoundingAAB) own a surface and define it.
 
 BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position)
 {

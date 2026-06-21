@@ -20,11 +20,6 @@ public:
     SpriteGun(Gun* gun, int kind);
     virtual ~SpriteGun();
 
-    // The deleting destructor variant (D0) traps in the original image: the
-    // class-scope operator delete aborts, so `delete`-ing a SpriteGun is a hard
-    // fault rather than a heap free.
-    static void operator delete(void*) { __builtin_trap(); }
-
     // Virtual methods in vtable order: setEnemies, setEnemy, update, render.
     virtual void setEnemies(Array<Player*>* enemies);
     virtual void setEnemy(Player* enemy);
