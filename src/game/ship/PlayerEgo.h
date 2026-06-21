@@ -59,9 +59,9 @@ public:
     int field_0xd0;                       // boost-rate denominator
     void* boostSoundId;                   // FMod sound handle for boost SFX
     void* rollGeometry;                   // roll/banking geometry node
-    float rotX;                           // setPosition3 source X
-    float rotY;                           // setPosition3 source Y
-    float rotZ;                           // setPosition3 source Z
+    float rotX;                           // setPosition source X
+    float rotY;                           // setPosition source Y
+    float rotZ;                           // setPosition source Z
     float waypointX;                      // steer-to-waypoint target X
     float waypointY;                      // steer-to-waypoint target Y
     void* gunBaseGeo;                     // gun base geometry (also waypoint-Z storage)
