@@ -2,6 +2,11 @@
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
 #include "game/world/Station.h"
+#include "engine/render/LODManager.h" // ArrayRemove<T>
+
+// Force the out-of-line ArrayRemove<Item*> container helper into this TU, paired
+// with the rest of the Item code that consumes it.
+template void ArrayRemove<Item*>(Item*, ItemArray&);
 
 // Persistent player/game state singleton (owned elsewhere).
 extern Status* status;
@@ -450,13 +455,8 @@ void Item::combineDuplicates(ItemArray* items)
     for (uint32_t i = 0; i < size; i++) {
         Item* item = (*items)[i];
         if (item->amount == 0 && item->stationAmount == 0) {
-            for (uint32_t k = 0; k < items->size(); k++) {
-                if ((*items)[k] == item) {
-                    items->erase(items->begin() + k);
-                    break;
-                }
-            }
-            size = static_cast<uint32_t>(items->size());
+            ArrayRemove<Item*>(item, *items);
+            size = items->size();
         }
     }
 }

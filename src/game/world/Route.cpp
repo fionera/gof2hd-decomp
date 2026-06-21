@@ -1,5 +1,34 @@
 #include "game/world/Route.h"
 #include "game/world/Waypoint.h"
+#include "game/ship/KIPlayer.h"
+#include "game/core/RadioMessage.h"
+#include "game/weapons/AbstractGun.h"
+
+// Deletes every owned pointee in the array (nulling each slot as it goes), then
+// frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;
+// the loop walks the full capacity, not just the live size.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; ++i) {
+        if (a.data_[i] != nullptr) {
+            delete a.data_[i];
+        }
+        a.data_[i] = nullptr;
+    }
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = nullptr;
+}
+
+// The original library exports these Array<T> container helpers out-of-line for the
+// route/AI/weapon pointer types handled here.
+template void ArrayAdd<Waypoint *>(Waypoint *, Array<Waypoint *> &);
+template void ArraySetLength<KIPlayer *>(unsigned int, Array<KIPlayer *> &);
+template void ArrayReleaseClasses<Waypoint *>(Array<Waypoint *> &);
+template void ArrayReleaseClasses<KIPlayer *>(Array<KIPlayer *> &);
+template void ArrayReleaseClasses<RadioMessage *>(Array<RadioMessage *> &);
+template void ArrayReleaseClasses<AbstractGun *>(Array<AbstractGun *> &);
 
 // Route::waypointDefined() -> whether the waypoint array has been allocated.
 bool Route::waypointDefined() {

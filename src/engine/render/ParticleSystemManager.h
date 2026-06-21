@@ -66,8 +66,10 @@ public:
                           unsigned short spriteTex, AbyssEngine::BlendMode spriteBlend,
                           bool spriteFlag, unsigned short meshTex,
                           AbyssEngine::BlendMode meshBlend, bool meshFlag);
+    ~ParticleSystemManager();
 
     void update(long long dt);
+    void renderPost3d();
     void reset();
     void releaseSprites();
     void construct();
@@ -90,9 +92,6 @@ public:
                          Array<ParticleSettings::ParticleSet> const &sets, bool flag);
     void initMesh();
     void enableSystemEmit(int handle, bool enable);
-    void enableSystemEmit2(int handle, bool enable);
-    void enableSystemEmit3(int handle, bool enable);
-    void attachSystem(int handle, bool enable);
     int  addSystem(AbyssEngine::AEMath::Matrix const *matrix, ParticleSettings::ParticleSet set, bool flag);
     int  init();
     void resetSystem(int handle);

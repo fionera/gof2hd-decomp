@@ -617,20 +617,23 @@ Array<Agent *> *FileRead::loadAgents()
     return agents;
 }
 
-// Shared body for the wreck/station/static collision tables: each is a sequence of
-// {id, count, int[count+1]} records; return the matching record's payload as an Array<int>.
-static Array<int32_t> *loadCollision(const char *fileName, uint32_t records, int32_t id)
+// The wreck/station/static collision tables share one record layout: a sequence of
+// {id, count, int[count+1]} entries. Each loader walks its file's records and returns the matching
+// record's payload as an Array<int>. In the original the body is duplicated into each loader (the
+// shared helper was inlined), so it is spelled out in full at every call site below.
+
+Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
 {
-    String path(fileName);
+    String path("wreck_collision.bin");
 
     Array<int32_t> *result = 0;
     if (AEFile::FileExist(path) != 0) {
         uint32_t handle;
-        AEFile::OpenRead(fileName, &handle);
+        AEFile::OpenRead("wreck_collision.bin", &handle);
 
         int32_t key = 0;
         uint32_t count = 0;
-        for (uint32_t i = 0; i < records; i++) {
+        for (uint32_t i = 0; i < 6; i++) {
             AEFile::Read(key, handle);
             AEFile::Read((int32_t &)count, handle);
             count++;
@@ -649,24 +652,76 @@ static Array<int32_t> *loadCollision(const char *fileName, uint32_t records, int
             AEFile::Skip(count << 2, handle);
         }
         AEFile::Close(handle);
-        result = 0;
     }
     return result;
 }
 
-Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
-{
-    return loadCollision("wreck_collision.bin", 6, id);
-}
-
 Array<int32_t> *FileRead::loadStationCollision(int32_t id)
 {
-    return loadCollision("station_collision.bin", 0x88, id);
+    String path("station_collision.bin");
+
+    Array<int32_t> *result = 0;
+    if (AEFile::FileExist(path) != 0) {
+        uint32_t handle;
+        AEFile::OpenRead("station_collision.bin", &handle);
+
+        int32_t key = 0;
+        uint32_t count = 0;
+        for (uint32_t i = 0; i < 0x88; i++) {
+            AEFile::Read(key, handle);
+            AEFile::Read((int32_t &)count, handle);
+            count++;
+            if (key == id) {
+                result = new Array<int32_t>();
+                int32_t *buffer = new int32_t[count];
+                AEFile::Read(count << 2, buffer, handle);
+                ArraySetLength<int32_t>(count, *result);
+                for (int32_t j = 0; j < (int32_t)count; j++) {
+                    result->data()[j] = buffer[j];
+                }
+                delete[] buffer;
+                AEFile::Close(handle);
+                return result;
+            }
+            AEFile::Skip(count << 2, handle);
+        }
+        AEFile::Close(handle);
+    }
+    return result;
 }
 
 Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
 {
-    return loadCollision("static_collision.bin", 7, id);
+    String path("static_collision.bin");
+
+    Array<int32_t> *result = 0;
+    if (AEFile::FileExist(path) != 0) {
+        uint32_t handle;
+        AEFile::OpenRead("static_collision.bin", &handle);
+
+        int32_t key = 0;
+        uint32_t count = 0;
+        for (uint32_t i = 0; i < 7; i++) {
+            AEFile::Read(key, handle);
+            AEFile::Read((int32_t &)count, handle);
+            count++;
+            if (key == id) {
+                result = new Array<int32_t>();
+                int32_t *buffer = new int32_t[count];
+                AEFile::Read(count << 2, buffer, handle);
+                ArraySetLength<int32_t>(count, *result);
+                for (int32_t j = 0; j < (int32_t)count; j++) {
+                    result->data()[j] = buffer[j];
+                }
+                delete[] buffer;
+                AEFile::Close(handle);
+                return result;
+            }
+            AEFile::Skip(count << 2, handle);
+        }
+        AEFile::Close(handle);
+    }
+    return result;
 }
 
 Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
@@ -878,3 +933,9 @@ Array<Ship *> *FileRead::loadShipsBinary()
     }
     return ships;
 }
+
+// Out-of-line container template instantiations emitted by this TU in the original binary.
+// loadSystemsBinary() drives the SolarSystem* table; the station-colour cache built by the no-arg
+// loadStationsBinary() drives the signed-char one.
+template void ArraySetLength<SolarSystem *>(unsigned int, Array<SolarSystem *> &);
+template void ArraySetLength<signed char>(unsigned int, Array<signed char> &);

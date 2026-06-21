@@ -332,3 +332,8 @@ void RepairBeam::update(int frameTime, Radar* radar, Level* level, Hud* hud) {
 RepairBeam* RepairBeam::create(int shipIndex, int sort) {
     return new RepairBeam(shipIndex, sort);
 }
+
+// Out-of-line container helpers for the beam-geometry and per-target charge pools,
+// instantiated here where those Array shapes are sized.
+template void ArraySetLength<AEGeometry*>(unsigned int, Array<AEGeometry*>&);
+template void ArraySetLength<float>(unsigned int, Array<float>&);

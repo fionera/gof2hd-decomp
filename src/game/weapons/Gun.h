@@ -57,7 +57,7 @@ public:
     uint8_t delayActive;
     char* wobbleOffsets;                // Array<Vector*> (byte-addressed header)
     float field_0xb0;
-    Player* enemies;
+    Array<Player*>* enemies;
     Sparks* impact;
     Player* target;
     Vector basePos;
@@ -81,12 +81,14 @@ public:
     ~Gun() noexcept(false);
 
     void calcCharacterCollision();
+    void calcLevelCollision();
     void* getEnemies();
     int getMagnitude();
     void ignite();
     uint8_t isPlayerGun();
     void removeAllEnemies();
     void render();
+    void setEnemies(Array<Player*>* enemies);
     void setEnemy(Player* enemy);
     void setErrorMagnitudePercentage(int v);
     void setFriendGun(bool v);
@@ -97,7 +99,6 @@ public:
     void setMagnitude(int v);
     void setOffset(Vector* v);
     void setOffset(int a, int b);
-    void setOffset_ii(int a, int b);
     void setPlayerGun(bool v);
     void shoot(Matrix m, int n, bool b);
     void shootAt(Matrix m, int n, Player* p, bool b);

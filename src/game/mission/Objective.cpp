@@ -5,6 +5,23 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
 
+// Deletes every owned pointee in the array (nulling each slot as it goes), then
+// frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;
+// the loop walks the full capacity, not just size.
+template<class T>
+void ArrayReleaseClasses(Array<T>& a) {
+    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
+        if (a.data_[i] != 0) {
+            delete a.data_[i];
+        }
+        a.data_[i] = 0;
+    }
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = 0;
+}
+
 Objective::Objective(int type, int value, Level* level)
 {
     this->type = type;
@@ -30,9 +47,7 @@ Objective::Objective(int type, int value, int calcValue, Level* level)
 Objective::~Objective()
 {
     if (this->children != nullptr) {
-        for (Objective* child : *this->children)
-            delete child;
-        this->children->clear();
+        ArrayReleaseClasses<Objective*>(*this->children);
         delete this->children;
         this->children = nullptr;
     }
@@ -47,7 +62,7 @@ Objective* Objective::addObjective(Objective* objective)
 {
     if (this->children == nullptr)
         this->children = new Array<Objective*>();
-    this->children->push_back(objective);
+    ArrayAdd<Objective*>(objective, *this->children);
     return this;
 }
 
@@ -216,3 +231,7 @@ extern "C" void* Objective_dtor(Objective* o)
     o->~Objective();
     return o;
 }
+
+// Out-of-line container helpers the original emits for the child-objective list.
+template void ArrayReleaseClasses<Objective*>(Array<Objective*>&);
+template void ArrayAdd<Objective*>(Objective*, Array<Objective*>&);

@@ -384,7 +384,7 @@ void PlayerEgo::setExhaustVisible(bool param) {
   Array<int>* arr = lvl->field_a8;
   if (arr != nullptr) {
     for (unsigned i = 0; i < arr->size(); i++) {
-      ((ParticleSystemManager *)(this->level->field_80))->enableSystemEmit2((*arr)[i], param);
+      ((ParticleSystemManager *)(this->level->field_80))->enableSystemEmit((*arr)[i], param);
     }
   }
 }
@@ -489,7 +489,7 @@ void PlayerEgo::addNukeVolatileForce(float v) {
 extern void* g_explode_obj;
 extern void (*g_explode_fn)(void*, int);
 void PlayerEgo::explode() {
-  ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit3(this->currentSystem, 1);
+  ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit(this->currentSystem, 1);
   if (((int&)this->explosion) != 0) return;
   ((TargetFollowCamera *)(((void*&)this->targetFollowCamera)))->setActive(0);
   Explosion* e = new Explosion(0);
@@ -1272,13 +1272,13 @@ void PlayerEgo::setLevel(Level* level) {
   Matrix* gm = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys = (void *)((ParticleSystemManager *)(src))->addSystem(gm, ParticleSettings::ParticleSet_9, 0);
   this->currentSystem = (int)(intptr_t)sys;
-  ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit3((int)(intptr_t)sys, 0);
+  ((ParticleSystemManager *)(this->level->field_74))->enableSystemEmit((int)(intptr_t)sys, 0);
   if (gStatus->getCurrentCampaignMission() > 1) return;
   void* src2 = (void*)(intptr_t)this->level->particleEmitBoolPtr;
   Matrix* gm2 = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys2 = (void *)((ParticleSystemManager *)(src2))->addSystem(gm2, ParticleSettings::ParticleSet_0xf, 0);
   this->smokeSystem = (int)(intptr_t)sys2;
-  ((ParticleSystemManager *)(this->level->particleEmitBoolPtr))->enableSystemEmit3((int)(intptr_t)sys2, 0);
+  ((ParticleSystemManager *)(this->level->particleEmitBoolPtr))->enableSystemEmit((int)(intptr_t)sys2, 0);
   void* src3 = (void*)(intptr_t)this->level->particleRenderBoolPtr;
   Matrix* gm3 = &((AEGeometry *)this->geometry)->getMatrix();
   void* sys3 = (void *)((ParticleSystemManager *)(src3))->addSystem(gm3, ParticleSettings::ParticleSet_0x2a, 0);

@@ -935,3 +935,7 @@ unsigned int Ship::hasJumpDriveIntegrated() {
     }
     return 0;
 }
+
+// Out-of-line in the original (ArrayRemoveAll<int>); emitted here as the TU
+// that owns the int-array helper instantiation.
+template void ArrayRemoveAll<int>(Array<int> &);

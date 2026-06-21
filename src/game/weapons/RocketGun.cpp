@@ -195,13 +195,13 @@ non_special:
         Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
         this->particleSystem = system;
-        manager->attachSystem(system, 0);
+        manager->enableSystemEmit(system, 0);
     } else {
         ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x84);
         Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
         this->particleSystem = system;
-        manager->attachSystem(system, 0);
+        manager->enableSystemEmit(system, 0);
     }
 }
 

@@ -15,6 +15,8 @@ extern "C" void  _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsign
 extern "C" void  _psm_spriteRender2(void *canvas, unsigned a);
 extern "C" void  _psm_arraySpriteCtor(void *arr);   // Array<ParticleSystemSprite*>::Array()
 extern "C" void  _psm_arrayMeshCtor(void *arr);      // Array<ParticleSystemMesh*>::Array()
+extern "C" void  _psm_arraySpriteDtor(void *arr);    // Array<ParticleSystemSprite*>::~Array()
+extern "C" void  _psm_arrayMeshDtor(void *arr);      // Array<ParticleSystemMesh*>::~Array()
 extern "C" void  _ips_enableUpdate(void *sys, bool enable);
 extern "C" short _ips_getParticleCount16(void *sys);
 extern "C" int   _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
@@ -436,23 +438,17 @@ void ParticleSystemManager::renderMeshes()
         _psm_meshRender4(this->canvas, this->transformId, this->meshExtraId, this->meshBlendMode);
 }
 
-// Binds a previously added sub-system (identified by its handle) into the active set via its
-// emit-enable entry, exactly like the sibling enableSystem* dispatchers.
-void ParticleSystemManager::attachSystem(int handle, bool enable)
+// Late post-3d hook. The scene calls this after the regular 3d pass; this manager has nothing
+// extra to draw there, so it is a no-op.
+void ParticleSystemManager::renderPost3d()
 {
-    IParticleSystem *sys = resolveSystem(this, handle);
-    if (sys != nullptr)
-        sys->enableEmit(enable);
 }
 
-// Secondary entry of the emit-enable dispatcher, used by the ego-craft thruster bookkeeping.
-void ParticleSystemManager::enableSystemEmit2(int handle, bool enable)
+// Tears the manager down: release the canvas-side resources, then destroy the two sub-system
+// arrays (the sprite array at the start of the array block, the mesh array after it).
+ParticleSystemManager::~ParticleSystemManager()
 {
-    enableSystemEmit(handle, enable);
-}
-
-// Tertiary entry of the emit-enable dispatcher; identical handle dispatch.
-void ParticleSystemManager::enableSystemEmit3(int handle, bool enable)
-{
-    enableSystemEmit(handle, enable);
+    release();
+    _psm_arrayMeshDtor(&this->meshSystemCount);
+    _psm_arraySpriteDtor(&this->spriteSystemCount);
 }

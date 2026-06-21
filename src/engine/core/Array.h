@@ -135,4 +135,70 @@ void ArraySetLength(unsigned int n, Array<T> &a) { a.resize(n); }
 template<class T>
 void ArrayRemoveAll(Array<T> &a) { a.clear(); }
 
+// ---------------------------------------------------------------------------
+// Out-of-line container helpers and their explicit instantiations.
+//
+// ArrayRemove / ArrayRelease / ArrayReleaseClasses / ArrayAddCached are the
+// remaining engine container free-functions. Their template *definitions* and
+// the explicit instantiations the original library exports out-of-line are
+// gathered here, but kept behind GOF2_ARRAY_INSTANTIATIONS so that ordinary
+// translation units (which only need the declarations, or carry their own
+// local copies of these templates) are unaffected. Exactly one TU --
+// Array.cpp -- defines the macro and materialises the symbols. The
+// instantiations emit with weak (COMDAT) linkage, matching the binary.
+// ---------------------------------------------------------------------------
+#ifdef GOF2_ARRAY_INSTANTIATIONS
+
+// Erase every element equal to `item` (in-place compaction), then shrink the
+// backing store to the new count (min one slot). Paired with ArrayAdd<T>.
+template<class T>
+void ArrayRemove(T item, Array<T> &a) {
+    unsigned int write = 0;
+    for (unsigned int read = 0; read < a.size_; ++read) {
+        T cur = a.data_[read];
+        if (cur != item)
+            a.data_[write++] = cur;
+    }
+    a.size_ = write;
+    unsigned int cap = write ? write : 1;
+    a.capacity_ = cap;
+    a.data_ = static_cast<T *>(realloc(a.data_, cap * sizeof(T)));
+}
+
+// Free an Array's backing store and null it, without touching the pointees.
+template<class T>
+void ArrayRelease(Array<T> &a) {
+    if (a.data_) ::operator delete[](a.data_);
+    a.data_ = nullptr;
+}
+
+// Delete every owned pointee across the full capacity (nulling each slot),
+// then free the backing store.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; ++i) {
+        if (a.data_[i]) delete a.data_[i];
+        a.data_[i] = nullptr;
+    }
+    if (a.data_) ::operator delete[](a.data_);
+    a.data_ = nullptr;
+}
+
+// Amortised-doubling append: only reallocate (to 2x, zero-filling the new
+// half) when the cached capacity is exhausted, then append.
+template<class T>
+void ArrayAddCached(T item, Array<T> &a) {
+    if (a.size_ >= a.capacity_) {
+        unsigned int oldCap = a.capacity_;
+        a.data_ = static_cast<T *>(realloc(a.data_, static_cast<size_t>(oldCap) * 2 * sizeof(T)));
+        memset(reinterpret_cast<char *>(a.data_) + static_cast<size_t>(oldCap) * sizeof(T),
+               0, static_cast<size_t>(oldCap) * sizeof(T));
+        a.capacity_ = oldCap * 2;
+    }
+    a.data_[a.size_] = item;
+    a.size_ = a.size_ + 1;
+}
+
+#endif // GOF2_ARRAY_INSTANTIATIONS
+
 #endif // GALAXYONFIRE2_ARRAY_H

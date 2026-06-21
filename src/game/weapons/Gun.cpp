@@ -66,6 +66,10 @@ void * Gun::getEnemies() {
     return this->enemies;
 }
 
+void Gun::setEnemies(Array<Player *> *enemies) {
+    this->enemies = enemies;
+}
+
 void Gun::setMagnitude(int v) {
     this->magnitude = v;
 }
@@ -155,18 +159,6 @@ void Gun::setIndex(int index) {
 extern int *const gSO_holder __attribute__((visibility("hidden")));
 extern short *const gSO_table __attribute__((visibility("hidden")));
 
-void Gun::setOffset_ii(int a, int b) {
-    short *row = (short *)((char *)gSO_table + b * 0x3c + a * 6);
-    Vector local;
-    local.x = (float)(int)row[0];
-    local.y = (float)(int)row[1];
-    local.z = (float)(int)row[2];
-    local.x = this->offset.x + local.x;
-    local.y = this->offset.y + local.y;
-    local.z = this->offset.z + local.z;
-    this->offset = local;
-}
-
 void Gun::setOffset(int a, int b) {
     short *row = (short *)((char *)gSO_table + b * 0x3c + a * 6);
     Vector local;
@@ -192,7 +184,7 @@ void Gun::ignite() {
         *(uint8_t *)(this->level + 0x69) = 0;
     }
 
-    unsigned *enemies = (unsigned *)this->enemies;
+    Array<Player *> *enemies = this->enemies;
     this->ignited = 1;
     if (enemies == 0)
         return;
@@ -201,8 +193,8 @@ void Gun::ignite() {
     Vector *base   = &this->basePos;
     this->lastHitKIPlayer = 0;
 
-    for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
-        Player *target = *(Player **)(enemies[1] + ei * 4);
+    for (unsigned ei = 0; ei < enemies->size(); ei = ei + 1) {
+        Player *target = enemies->data()[ei];
         this->target = target;
         if (this->weaponType == ITEM_SORT_EMP_BOMB && target->isAsteroid() != 0)
             continue;
@@ -358,7 +350,7 @@ void Gun::shoot(Matrix m, int n, bool b) {
 }
 
 void Gun::setEnemy(Player *enemy) {
-    this->enemies = enemy;
+    this->enemies = reinterpret_cast<Array<Player *> *>(enemy);
 }
 
 // Float offset applied to z (literal-pool constant in the target).
@@ -478,13 +470,18 @@ void Gun::shootAt(Matrix m, int n, Player *p, bool b) {
 extern int *const gCC_status __attribute__((visibility("hidden")));   // holder
 
 void Gun::calcCharacterCollision() {
-    unsigned *enemies = (unsigned *)this->enemies;
+    Array<Player *> *enemies = this->enemies;
     if (enemies == 0)
         return;
 
-    for (unsigned ei = 0; ei < *enemies; ei = ei + 1) {
-        Player *target = *(Player **)(enemies[1] + ei * 4);
+    for (unsigned ei = 0; ei < enemies->size(); ei = ei + 1) {
+        Player *target = enemies->data()[ei];
         this->target = target;
         // per-enemy / per-projectile collision sweep
     }
+}
+
+// Per-projectile collision against the level geometry. In this build the body
+// reduces to a no-op (the original compiles to a bare `bx lr`).
+void Gun::calcLevelCollision() {
 }

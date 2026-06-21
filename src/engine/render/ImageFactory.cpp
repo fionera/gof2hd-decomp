@@ -198,7 +198,7 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc)
 {
     if (desc == nullptr) return nullptr;
     Array<ImagePart *> *parts = new Array<ImagePart *>();
-    parts->resize(4);
+    ArraySetLength<ImagePart *>(4, *parts);
     int race = *desc++;
     for (int col = 0; col != 4; ++col) {
         int frameBase = desc[col];
@@ -242,3 +242,6 @@ int *ImageFactory::createChar(bool isMale, int race)
         desc[i + 1] = AbyssEngine::AERandom::nextInt(*(void **)gCreateChar2Rng2, partCounts[i]);
     return desc;
 }
+
+// Out-of-line container template instantiation emitted by this TU in the original binary.
+template void ArraySetLength<ImagePart *>(unsigned int, Array<ImagePart *> &);

@@ -455,3 +455,9 @@ int HangarList::init(Ship* ship, Array<Item*>* items, Array<Ship*>* ships,
     initBlueprintTab(blueprints);
     return 0;
 }
+
+// Out-of-line container helpers for the per-tab ListItem lists and the tab
+// table itself, instantiated here where those Array shapes are built.
+template void ArraySetLength<Array<ListItem*>*>(unsigned int, Array<Array<ListItem*>*>&);
+template void ArraySetLength<ListItem*>(unsigned int, Array<ListItem*>&);
+template void ArrayAdd<ListItem*>(ListItem*, Array<ListItem*>&);

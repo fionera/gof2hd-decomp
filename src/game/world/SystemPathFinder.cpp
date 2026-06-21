@@ -1,4 +1,28 @@
 #include "game/world/SystemPathFinder.h"
+#include "engine/render/LODManager.h" // ArrayRemove<T>
+
+// Deletes every owned pointee in the array (nulling each slot as it goes), then
+// frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;
+// the loop walks the full capacity, not just the live size.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; ++i) {
+        if (a.data_[i] != nullptr) {
+            delete a.data_[i];
+        }
+        a.data_[i] = nullptr;
+    }
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = nullptr;
+}
+
+// The original library exports these Array<Node*> container helpers out-of-line.
+template void ArrayAdd<Node *>(Node *, Array<Node *> &);
+template void ArraySetLength<Node *>(unsigned int, Array<Node *> &);
+template void ArrayRemove<Node *>(Node *, Array<Node *> &);
+template void ArrayReleaseClasses<Node *>(Array<Node *> &);
 
 // Stateless A* helper: the open/closed sets used by search() are created and
 // released within each call, so construction and destruction do nothing.

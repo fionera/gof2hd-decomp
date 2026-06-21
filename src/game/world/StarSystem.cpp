@@ -54,9 +54,13 @@ Vector operator*(const Vector &lhs, float rhs);
 extern "C" void ArrayRelease_KIPlayer(void *array);
 extern "C" void *Array_KIPlayer_dtor(void *array);
 extern "C" void Array_KIPlayer_ctor(void *array);
-extern "C" void ArraySetLength_KIPlayer(int length, void *array);
 extern "C" void Array_Station_release(void *array);
 extern "C" void *Array_Station_dtor(void *array);
+
+// Out-of-line length helper for the playerTargets container. The original sizes
+// it through ArraySetLength on the 4-byte element type (KIPlayer* collapses to
+// unsigned int for the {count,data,capacity} layout).
+template void ArraySetLength<unsigned int>(unsigned int, Array<unsigned int> &);
 
 static inline uint32_t flat_count(void *array) {
     return *(uint32_t *)array;
@@ -414,7 +418,10 @@ StarSystem::StarSystem(int mode) {
 
     this->playerTargets = ::operator new(0x0c);
     Array_KIPlayer_ctor(this->playerTargets);
-    ArraySetLength_KIPlayer(count, this->playerTargets);
+    // The original instantiates the length helper on the 4-byte element type
+    // (KIPlayer* collapses to unsigned int for the {count,data,capacity} container).
+    ArraySetLength<unsigned int>(static_cast<unsigned int>(count),
+                                 *static_cast<Array<unsigned int> *>(this->playerTargets));
 
     this->planetsArray = new Array<AEGeometry *>();
     this->planetsArray->resize(count + 1);

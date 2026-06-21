@@ -30,6 +30,26 @@ namespace AbyssEngine { namespace AEMath {
 void MatrixMultiply(const Matrix &, const Matrix &);
 } }
 
+// Deletes every owned pointee in the array (nulling each slot as it goes), then frees
+// the backing store. Out-of-line in the original as ArrayReleaseClasses<T>; the loop
+// walks the full capacity, not just size. ObjectGun owns the Array<Explosion*> pool, so
+// the original's ArraySetLength<Explosion*> / ArrayReleaseClasses<Explosion*> live here.
+template<class T>
+void ArrayReleaseClasses(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
+        if (a.data_[i] != 0) {
+            delete a.data_[i];
+        }
+        a.data_[i] = 0;
+    }
+    if (a.data_) {
+        ::operator delete[](a.data_);
+    }
+    a.data_ = 0;
+}
+template void ArraySetLength<Explosion*>(unsigned int, Array<Explosion*> &);
+template void ArrayReleaseClasses<Explosion*>(Array<Explosion*> &);
+
 // PaintCanvas transform/mesh helpers and the active canvas handle (engine globals).
 extern "C" void *g_PaintCanvas;
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
@@ -349,7 +369,9 @@ after_geometry:
     }
 }
 
-static inline void identity(Matrix *m)
+// The original inlined this matrix-identity helper into every caller (no standalone
+// symbol), so force it inline here too rather than letting -Oz emit it out-of-line.
+__attribute__((always_inline)) static inline void identity(Matrix *m)
 {
     for (uint32_t i = 0; i < 15; ++i)
         m->m[i] = 0.0f;
