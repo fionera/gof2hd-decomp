@@ -104,7 +104,6 @@ extern "C" void PlayerEgo_hackingShuffle_ext(int);
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo*, int);
 extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo*);
 extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo*);
-extern "C" void PlayerEgo_setPosition_v(PlayerEgo*);
 extern "C" void PlayerEgo_PauseEngineSound_ext(void*);
 extern "C" void PlayerEgo_setActive_ext(void*);
 extern "C" void PlayerEgo_setAutoTurret_ext(void*, int);
@@ -402,9 +401,6 @@ void PlayerEgo::resetMovement() {
 
 bool PlayerEgo::isHacking() {
     PlayerEgo *self = this; return this->hackingGame != 0; }
-
-void PlayerEgo::setPosition() {
-    PlayerEgo *self = this; return PlayerEgo_setPosition_v(self); }
 
 void PlayerEgo::setPosition(Vector v) {
   this->geometry->setPosition(v);
@@ -2494,7 +2490,10 @@ void PlayerEgo::revive() {
     player = this->player;
     ((Player *)(player))->setArmorHP(((Player *)(player))->getMaxArmorHP());
 
-    ((PlayerEgo *)(this))->setPosition();
+    if (this->geometry != nullptr) {
+        Vector pos = this->getPosition();
+        ((AEGeometry *)(this->geometry))->setPosition(pos);
+    }
 
     float fwd[3] = {0.0f, 0.0f, 1.0f};
     float fwdUp[3] = {0.0f, 1.0f, 0.0f};
@@ -3218,15 +3217,6 @@ extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo *self, int /*zero*/) {
 extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo *self, int /*zero*/) {
     if (self->geometry != 0)
         ((AEGeometry *)self->geometry)->setVisible(self->field_0x309 != 0);
-}
-
-// ---- setPosition continuation: push the ship matrix position to the geometry ----
-extern "C" void PlayerEgo_setPosition_v(PlayerEgo *self) {
-    void *geo = self->geometry;
-    if (geo != 0) {
-        Vector pos = ((PlayerEgo *)self)->getPosition();
-        ((AEGeometry *)geo)->setPosition(pos);
-    }
 }
 
 // ---- smoke / level emitter veneers -> ParticleSystemManager::enableSystemEmit

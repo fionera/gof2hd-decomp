@@ -112,17 +112,19 @@ void Globals::resetHints()
     ((Q16 *)(p + 0x10))->v = z;
 }
 
-void Globals_startNewSoundResourceList(void *self)
+// Discard the active sound-resource list and start a fresh one seeded with the two
+// always-present menu sound ids (0x7c then 0x7b).
+void Globals::startNewSoundResourceList()
 {
-    if (((Globals*)self)->soundResources != 0) {
-        ((Globals*)self)->soundResources->clear();
-        delete ((Globals*)self)->soundResources;
+    if (this->soundResources != nullptr) {
+        this->soundResources->clear();
+        delete this->soundResources;
     }
-    ((Globals*)self)->soundResources = 0;
-    Array<int> *a = new Array<int>();
-    ((Globals*)self)->soundResources = a;
-    a->push_back(0x7c);
-    return ((Globals*)self)->startNewSoundResourceList_tail(0x7b, ((Globals*)self)->soundResources);
+    this->soundResources = nullptr;
+    Array<int> *list = new Array<int>();
+    this->soundResources = list;
+    ArrayAdd<int>(0x7c, *list);
+    ArrayAdd<int>(0x7b, *this->soundResources);
 }
 
 // hidden PC-relative pointer-to-pointer global (deref'd twice).
@@ -160,9 +162,9 @@ extern void *const gDrinks_rng __attribute__((visibility("hidden")));
 
 void Globals::getRandomSystemForDrinks()
 {
-    int a = *(int *)gDrinks_a;
-    int r = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gDrinks_rng, 0x16);
-    return Globals::getRandomSystemForDrinks_tail(a, r);
+    int slot = *(int *)gDrinks_a;
+    int picked = nextInt_71ad0((AbyssEngine::AERandom *)*(int *)gDrinks_rng, 0x16);
+    *(int *)(long)slot = picked;   // store the drawn system index into the chosen slot
 }
 
 // Linear search; on no-match append `snd` to the active sound-resource list.
@@ -177,7 +179,7 @@ void Globals::addSoundResourceToList(int snd)
             return; // already present
         }
     }
-    addSoundResource_tail(snd, a);
+    ArrayAdd<int>(snd, *a);
 }
 
 // Globals::replaceKeyBindingTokens(String const&) returns a String by value (sret in r0).
@@ -211,17 +213,17 @@ Station *Globals::getRandomStation()
     return r;
 }
 
-// 4-arg Globals::drawLines(uint, Array<String*>*, int, int) forwards to the 6-value
-// drawLines variant with the first arg forced to 0, the incoming 5th stack value as the
-// "startY", and a trailing 0.
-void Globals_drawLines5(unsigned p1, void *font, Array<String *> *lines, int baseX,
-                                   int startY, int centered);
-
-void Globals_drawLines4(unsigned p1, void *font, Array<String *> *lines, int baseX,
-                                   int startY)
+// 4-arg Globals::drawLines(uint font, Array<String*>* lines, int baseX, int startY): the
+// non-centered, left-aligned default. Forwards to the 5-arg form with centered=false.
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY)
 {
-    (void)p1;
-    Globals_drawLines5(0, font, lines, baseX, startY, 0);
+    drawLines(font, lines, baseX, startY, false);
+}
+
+// Submit the player's current supernova-challenge score to the platform leaderboard.
+// The shipped Android build leaves this as a stub (no leaderboard wiring on this platform).
+void Globals::reportSupernovaChallengeScore()
+{
 }
 
 extern const char gGLA_newline[] __attribute__((visibility("hidden")));
@@ -305,21 +307,14 @@ extern const char gLTS2_sep2[] __attribute__((visibility("hidden")));
 // Globals::longToTimeString(long long ms, AbyssEngine::String& out)
 void Globals::longToTimeString(long long ms, String& out)
 {
-    int *guardP = *(int **)gLTS2_guardHolder;
-    volatile int saved = *guardP;
+    long long secQ = ms / 1000;
+    int seconds = (int)(secQ % 0x3c);
 
-    int rem = 0;
-    long long secQ = Globals::lts_divmod(ms, 1000, &rem);
-    int seconds = 0;
-    Globals::lts_divmod(secQ, 0x3c, &seconds);
+    long long minQ = ms / 0xea60;
+    int minute = (int)(minQ % 0x3c);
 
-    long long minQ = Globals::lts_divmod(ms, 0xea60, &rem);
-    int minute = 0;
-    Globals::lts_divmod(minQ, 0x3c, &minute);
-
-    long long hrQ = Globals::lts_divmod(ms, 0xea60, &rem);
-    int hours = 0;
-    Globals::lts_divmod(hrQ, 0x18, &hours);
+    long long hrQ = ms / 0xea60;
+    int hours = (int)(hrQ % 0x18);
 
     String secPart, secNum, secStr;
     secPart.ctor_char(seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, false);
@@ -337,8 +332,7 @@ void Globals::longToTimeString(long long ms, String& out)
         left = prefix + minStr;
         out = left + secStr;
     } else {
-        int rem4 = 0;
-        long long h = Globals::lts_divmod(ms, 0xea60, &rem4);
+        long long h = ms / 0xea60;
         int hv = (int)h * 0x18 + hours;
 
         String hrPart, hrNum, hrStr;
@@ -582,6 +576,10 @@ extern const char gGAMT_noAgent[] __attribute__((visibility("hidden")));
 extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));  // DAT_000f6178 (field 0xd0 counter)
 extern void *const gGAMT_modText __attribute__((visibility("hidden")));
 
+// Offer/event briefing-text assembly (the shipped binary inlines this into getAgentMissionText;
+// kept as a file-local helper, defined below).
+static void buildAgentMissionText(String *out, void *agent, int offer);
+
 // Globals::getAgentMissionText(Agent*) -> String by value.
 String Globals::getAgentMissionText(Agent *agent)
 {
@@ -622,13 +620,13 @@ String Globals::getAgentMissionText(Agent *agent)
             }
 
             // General offer/event briefing text: data-driven assembly into `acc`.
-            Globals::buildAgentMissionText(&acc, agent, offer);
+            buildAgentMissionText(&acc, agent, offer);
             *(int *)(*busy + 0xd0) -= 1;
         } else {
-            Globals::buildAgentMissionText(&acc, agent, -1);
+            buildAgentMissionText(&acc, agent, -1);
         }
     } else {
-        Globals::buildAgentMissionText(&acc, agent, -1);
+        buildAgentMissionText(&acc, agent, -1);
     }
 
     result.ctor_copy(&acc, false);
@@ -650,20 +648,18 @@ extern const char gIAP_id53[] __attribute__((visibility("hidden")));
 extern const char gIAP_id54[] __attribute__((visibility("hidden")));
 
 // Globals::getInAppPurchaseArrayIndex(int productCode, Array<String*>* list) -> index or -1.
-int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
+int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list)
 {
-    (void)self;
     int *guardP = *(int **)gIAP_guardHolder;
     volatile int saved = *guardP;
     int result = -1;
 
     if (list != 0) {
-        unsigned len = *(unsigned *)list;
+        unsigned len = list->size();
         unsigned i = 0;
         bool keepGoing = true;
         while (i < len && keepGoing) {
-            // RAWREAD: `list` is an opaque engine Array payload (void*); +4 is its data pointer.
-            void *entry = *(void **)(*(char **)((char *)list + 4) + i * 4);
+            String *entry = (*list)[i];
             String base, pb, prefix;
             base.ctor_char(gIAP_prefixA, false);
             pb.ctor_char(gIAP_prefixB, false);
@@ -694,7 +690,7 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
                     String suf, full;
                     suf.ctor_char(suffix, false);
                     full = prefix + suf;
-                    int cmp = ((String *)entry)->Compare_str(&full);
+                    int cmp = entry->Compare_str(&full);
                     if (cmp == 0) {
                         result = (int)i;
                         keepGoing = false;
@@ -717,7 +713,7 @@ int Globals_getInAppPurchaseArrayIndex(void *self, int productCode, void *list)
 
 // Default-construct a temp String, upper-case it, copy-construct the result into the sret
 // blob, then destroy the temp.
-String Globals_getKeyBindingReplaceString(Globals *, int key)
+String Globals::getKeyBindingReplaceString(int key)
 {
     (void)key;
 
@@ -741,26 +737,19 @@ extern const char gLTS_sep[] __attribute__((visibility("hidden")));         // D
 // Globals::longToTimeStringNoSeconds(long long ms, AbyssEngine::String& out)
 void Globals::longToTimeStringNoSeconds(long long ms, String& out)
 {
-    int *guardP = *(int **)gLTS_guardHolder;
-    volatile int saved = *guardP;
-
-    int rem = 0;
     // ms / 60000 -> total minutes (quotient), then minute-of-hour via %60.
-    long long q = Globals::lts_divmod(ms, 0xea60, &rem);
-    int minute = 0;
-    Globals::lts_divmod(q, 0x3c, &minute);   // minute = q % 60 (remainder)
+    long long q = ms / 0xea60;
+    int minute = (int)(q % 0x3c);
 
-    long long q2 = Globals::lts_divmod(ms, 0xea60, &rem);
-    int hours = 0;
-    Globals::lts_divmod(q2, 0x18, &hours);   // hours = q2 % 24
+    long long q2 = ms / 0xea60;
+    int hours = (int)(q2 % 0x18);
 
     String mPart, mNum, minStr;
     mPart.ctor_char(minute < 10 ? gLTS_minTens : gLTS_minEmpty, false);
     mNum.ctor_int(minute);
     minStr = mPart + mNum;
 
-    int rem3 = 0;
-    long long h = Globals::lts_divmod(ms, 0xea60, &rem3);
+    long long h = ms / 0xea60;
     int hv = (int)h * 0x18 + hours;
 
     String hPart, hNum, hrStr;
@@ -792,7 +781,85 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe)
     PaintCanvas *canvas = gCanvas;        // the shared PaintCanvas singleton
 
     if (kind == 0xf) {
-        return buildShipGroup0f(variant, canvas);
+        // kind==0xf (capital ships): three variants, each assembling an AEGeometry with LOD
+        // meshes/children. Variant 3 stitches a random-length articulated transform chain.
+        AEGeometry *geom;
+
+        if (variant == 0) {
+            geom = new AEGeometry((uint16_t)0x42a9, canvas, false);
+
+            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
+            canvas->TransformCreate(mesh0);
+            canvas->TransformAddMesh(mesh0, 0x42ae, false);
+            geom->addChild(mesh0);
+            canvas->TransformCreate(mesh1);
+            canvas->TransformAddMesh(mesh1, 0x42b2, false);
+            geom->addChild(mesh1);
+            canvas->TransformCreate(mesh2);
+            canvas->TransformAddMesh(mesh2, 0x42ad, false);
+            geom->addChild(mesh2);
+
+            uint16_t lodMeshes[2] = { 0x42aa, 0x42ab };  // DAT_000f551c + 0x1a001a = 0x42ab42aa
+            int       lodDists[2] = { 25000, 45000 };
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+            uint16_t lodChild = 0x42ae;                  // DAT_000f5520 = 0x42ae42ae
+            geom->setLodChildMeshes(&lodChild);
+        } else if (variant == 3) {
+            geom = new AEGeometry((uint16_t)0x4299, canvas, false);
+
+            unsigned head = 0xffffffff;
+            canvas->TransformCreate(head);
+            canvas->TransformAddMesh(head, 0x4299, true);
+            geom->addChild(head);
+
+            int segments = AERandom_nextIntB(0, 4);
+            unsigned prevA = 0xffffffff, prevB = 0xffffffff;
+            for (int i = 0; i < segments; i++) {
+                unsigned a = 0xffffffff, b = 0xffffffff;
+                canvas->TransformCreate(a);
+                canvas->TransformCreate(b);
+                canvas->TransformAddMesh(a, 0x429a, true);
+                canvas->TransformAddMesh(b, 0x429a, true);
+                unsigned keepA = a, keepB = b;
+                if (prevA != 0xffffffff) {
+                    canvas->TransformAddChild(prevA, a);
+                    canvas->TransformAddChild(prevB, b);
+                    keepA = prevA;
+                    keepB = prevB;
+                }
+                prevA = keepA;
+                prevB = keepB;
+            }
+            if (prevA != 0xffffffff) {
+                geom->addChild(prevA);
+            }
+
+            unsigned tail = 0xffffffff;
+            canvas->TransformCreate(tail);
+            canvas->TransformAddMesh(tail, 0x429a, true);
+            geom->addChild(tail);
+
+            uint16_t lodMeshes[1] = { 0x429a };
+            int       lodDists[1] = { 35000 };
+            geom->setLodMeshes(lodMeshes, lodDists, 1);
+            geom->setLodChildTransform(prevB);
+        } else {
+            geom = new AEGeometry((uint16_t)0x42a4, canvas, false);
+
+            unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
+            canvas->TransformCreate(mesh0);
+            canvas->TransformAddMesh(mesh0, 0x42a4, true);
+            geom->addChild(mesh0);
+            canvas->TransformCreate(mesh1);
+            canvas->TransformAddMesh(mesh1, 0x42a4, true);
+            geom->addChild(mesh1);
+
+            uint16_t lodMeshes[2] = { 0x42a6, 0x42a7 };  // DAT_000f551c + 0x160016 = 0x42a742a6
+            int       lodDists[2] = { 35000, 60000 };
+            geom->setLodMeshes(lodMeshes, lodDists, 2);
+        }
+
+        return geom;
     }
     if (kind == 0xe || kind == 0xd) {
         int resId = (kind == 0xe) ? 0x37e7 : 0x4275;
@@ -961,17 +1028,18 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
 extern void *const gDL2_canvas __attribute__((visibility("hidden")));
 extern void *const gDL2_lineHeight __attribute__((visibility("hidden")));
 
-// Globals::drawLines(uint, Array<String*>*, int, int, uint, bool) — 7-decl form.
-// When NOT centered: dx = rightX - GetTextWidth(); when centered: dx stays 0.
-void Globals_drawLines7(unsigned font, Array<String *> *lines, int baseX, int startY,
-                                   unsigned rightX, int centered)
+// Globals::drawLines(uint font, Array<String*>* lines, int baseX, int startY, uint rightX, bool centered):
+// right-aligned variant. When NOT centered each line is right-aligned so its right edge sits at
+// rightX (dx = rightX - GetTextWidth()); when centered the line stays at baseX.
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
+                        unsigned int rightX, bool centered)
 {
     int *cv = (int *)gDL2_canvas;          // global value (pointer); deref'd each iteration
     int **lh = (int **)gDL2_lineHeight;    // global value (pointer)
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
-        if (centered == 0) {
+        if (!centered) {
             int w = ((PaintCanvas *)(long)*cv)->GetTextWidth(font, *(*lines)[i]);
             dx = (int)rightX - w;
         }
@@ -1380,23 +1448,22 @@ Globals::~Globals() {
 extern void *const gDL_canvas __attribute__((visibility("hidden")));
 extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
 
-// Globals::drawLines(uint, Array<String*>*, int, int, bool) — 5-decl form; the body
-// consumes 6 incoming values: p1(unused), font(r1), lines(r2), baseX(r3), startY(stack0),
-// centered(stack1).
-void Globals_drawLines5(unsigned p1, void *font, Array<String *> *lines, int baseX,
-                                   int startY, int centered)
+// Globals::drawLines(uint font, Array<String*>* lines, int baseX, int startY, bool centered):
+// draw each wrapped line left-aligned at baseX (or horizontally centered on baseX when
+// `centered`), advancing one line-height per row.
+void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
+                        bool centered)
 {
-    (void)p1;
     int *cv = (int *)gDL_canvas;          // global value (pointer); deref'd each iteration
     int **lh = (int **)gDL_lineHeight;    // global value (pointer)
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
-        if (centered != 0) {
-            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth((unsigned)(uintptr_t)font, *(*lines)[i]);
+        if (centered) {
+            int w = ((PaintCanvas *)(long)*cv)->GetTextWidth(font, *(*lines)[i]);
             dx = -(w >> 1);
         }
-        ((PaintCanvas *)(long)*cv)->DrawString((unsigned)(uintptr_t)font, *(*lines)[i], dx + baseX, yacc, false);
+        ((PaintCanvas *)(long)*cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
         yacc += *(int *)((char *)*lh + 4);   // RAWREAD: opaque line-height object via hidden global (no header)
     }
 }
@@ -1599,7 +1666,11 @@ extern void *const gRR_arg __attribute__((visibility("hidden")));
 void Globals::releaseResources()
 {
     gCanvas->ReleaseAllResources();
-    return Globals::releaseResources_tail(*(void **)gRR_arg);
+    // The secondary canvas (when present) releases its resources too.
+    PaintCanvas *secondaryCanvas = *(PaintCanvas **)gRR_arg;
+    if (secondaryCanvas != nullptr) {
+        secondaryCanvas->ReleaseAllResources();
+    }
 }
 
 // Per-font canvas+font globals (PC-relative). canvasP/fontP each *(void**) -> object pointer.
@@ -1717,7 +1788,8 @@ epilogue: {
     ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*mainFont, 0);
     unsigned *extra = *(unsigned **)gLF_fontExtra;
     ((PaintCanvas *)(long)*mainCanvas)->FontCreate((unsigned short)0x2d7a, *extra, false);
-    Globals::loadFont_tail((void *)(long)*mainCanvas, (void *)(long)(int)*extra, 0);
+    // The freshly created extra font starts with zero glyph spacing.
+    ((PaintCanvas *)(long)*mainCanvas)->FontSetSpacing(*extra, 0);
 }
 }
 
@@ -1884,8 +1956,9 @@ extern void *const gPM_sndStatus __attribute__((visibility("hidden")));
 extern const int gPM_table0 __attribute__((visibility("hidden")));
 extern const int gPM_table1 __attribute__((visibility("hidden")));
 
-// Globals::playMusicAndFadeOutCurrent(int mode).
-int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
+// Globals::playMusicAndFadeOutCurrent(int mode): stop the current music stream and start the
+// context-appropriate track (mode 0 = system ambience, 1 = station, 2 = combat).
+void Globals::playMusicAndFadeOutCurrent(int mode)
 {
     int snd;
     int track;
@@ -1897,7 +1970,7 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
         snd = *sndP;
         track = 0x91;
         ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
-        return 0;
+        return;
     }
     if (mode == 1) {
         int *statSnd = *(int **)gPM_sndStatus;
@@ -1911,23 +1984,23 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
                 track = 0x91;
             }
             ((FModSound *)(snd))->play(track, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         ((SolarSystem *)(long)gStatus->getSystem())->getRace();
         int *sndP = *(int **)gPM_snd1;
         ((FModSound *)(*sndP))->stop(0);
         if (Station_getIndex((int)(long)gStatus->getStation()) == 0x6c) {
             ((FModSound *)(*sndP))->play(0x92, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         if (Station_getIndex((int)(long)gStatus->getStation()) == 0x65) {
             ((FModSound *)(*sndP))->play(0x93, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         if (gStatus->inSupernovaSystem() != 0) {
             if (gStatus->getCurrentCampaignMission() == 0x59) {
                 ((FModSound *)(*sndP))->play(0x8be, 0, 0, (float)vol);
-                return 0;
+                return;
             }
             if (gStatus->getMission() != 0 && ((Mission *)(long)gStatus->getMission())->isEmpty() == 0) {
                 int tgt = ((Mission *)(long)gStatus->getMission())->getTargetStation();
@@ -1935,29 +2008,29 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
                     int cm = gStatus->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
                     ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
-                    return 0;
+                    return;
                 }
             }
             ((FModSound *)(*sndP))->play(0x94, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         if (gStatus->inDeepScienceOrbit() != 0) {
             ((FModSound *)(*sndP))->play(0x98, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         if (Station_getIndex((int)(long)gStatus->getStation()) == 0x78 &&
             (gStatus->getCurrentCampaignMission() == 0x7e ||
              gStatus->getCurrentCampaignMission() == 0x85)) {
             ((FModSound *)(*sndP))->play(0x8bf, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         const int *table = &gPM_table1;
         track = table[((SolarSystem *)(long)gStatus->getSystem())->getRace()];
         ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
-        return 0;
+        return;
     }
     if (mode != 0) {
-        return prev;
+        return;
     }
 
     int race = ((SolarSystem *)(long)gStatus->getSystem())->getRace();
@@ -1965,32 +2038,35 @@ int Globals_playMusicAndFadeOutCurrent(int prev, int mode)
     ((FModSound *)(*sndP))->stop(0);
     if (Station_getIndex((int)(long)gStatus->getStation()) == 0x6c) {
         ((FModSound *)(*sndP))->play(0x84, 0, 0, (float)vol);
-        return 0;
+        return;
     }
     if (Station_getIndex((int)(long)gStatus->getStation()) == 0x65) {
         ((FModSound *)(*sndP))->play(0x83, 0, 0, (float)vol);
-        return 0;
+        return;
     }
     int idx = Station_getIndex((int)(long)gStatus->getStation());
     if (idx == 10 || Station_getIndex((int)(long)gStatus->getStation()) == 100) {
         if (Station_getIndex((int)(long)gStatus->getStation()) == 10 &&
             gStatus->getCurrentCampaignMission() == 0x9f) {
             ((FModSound *)(*sndP))->play(0x90, 0, 0, (float)vol);
-            return 0;
+            return;
         }
         ((FModSound *)(*sndP))->play(0x85, 0, 0, (float)vol);
-        return 0;
+        return;
     }
     const int *table = &gPM_table0;
     track = table[race];
     ((FModSound *)(*sndP))->play(track, 0, 0, (float)vol);
-    return 0;
 }
 
 // Static (dialogueCode, soundId) pair table, 47 entries; linear-searched first.
 extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));  // DAT_000f5a6c base
 // Per-(category) dialogue-code -> sound-id dispatch. category encodes race/gender bucket
 // (the resolved bucket value 0..5). Returns -1 when unmapped.
+
+// File-local dialogue-code -> sound-id table (the shipped binary inlines this into
+// getDialogueSoundId; defined below).
+static int dialogueDispatch(int category, int code, int isMale);
 
 // Globals::getDialogueSoundId(int code, Agent* agent)
 int Globals::getDialogueSoundId(int code, Agent *agent)
@@ -2166,79 +2242,12 @@ float Globals::sqrt_impl(float x)
     return __builtin_sqrtf(x);
 }
 
-// ---- lts_divmod ----
-// 64-bit signed divide: returns the quotient and writes the remainder through *rem.
-// (The target uses this as a single divmod step; longToTimeString chains several of them.)
-long long Globals::lts_divmod(long long num, int den, int *rem)
-{
-    long long q = num / den;
-    if (rem != 0) {
-        *rem = (int)(num - q * den);
-    }
-    return q;
-}
-
-// ---- startNewSoundResourceList_tail / addSoundResource_tail ----
-// Both route through the same Array<int>::add veneer in the target: append `val` to the list.
-void Globals::startNewSoundResourceList_tail(int val, Array<int> *list)
-{
-    if (list != 0) {
-        ArrayAdd<int>(val, *list);
-    }
-}
-
-void Globals::addSoundResource_tail(int val, Array<int> *list)
-{
-    if (list != 0) {
-        ArrayAdd<int>(val, *list);
-    }
-}
-
-// ---- addSoundResource_oi ----
-// The (list,id) overload form: add `val` to the active sound-resource list, skipping it if
-// already present (matches addSoundResourceToList's linear-search-then-append behaviour).
-void Globals::addSoundResource_oi(int val)
-{
-    Array<int> *list = this->soundResources;
-    if (list == 0) {
-        return;
-    }
-    for (unsigned i = 0; i < list->size(); i++) {
-        if ((*list)[i] == val) {
-            return;          // already present
-        }
-    }
-    ArrayAdd<int>(val, *list);
-}
-
-// ---- getRandomSystemForDrinks_tail ----
-// Tail of getRandomSystemForDrinks(): store the drawn system index into the chosen slot.
-void Globals::getRandomSystemForDrinks_tail(int systemSlot, int picked)
-{
-    *(int *)(long)systemSlot = picked;
-}
-
-// ---- loadFont_tail ----
-// Tail of loadFont(): after the extra font (0x2d7a) is created, its spacing is set to 0.
-void Globals::loadFont_tail(void *canvas, void *font, int spacing)
-{
-    ((PaintCanvas *)canvas)->FontSetSpacing((unsigned)(long)font, (short)spacing);
-}
-
-// ---- releaseResources_tail ----
-// Tail of releaseResources(): the secondary canvas' resources are released as well.
-void Globals::releaseResources_tail(void *secondaryCanvas)
-{
-    if (secondaryCanvas != 0) {
-        ((PaintCanvas *)secondaryCanvas)->ReleaseAllResources();
-    }
-}
-
 // ---- dialogueDispatch ----
 // Second stage of getDialogueSoundId(): given a resolved race/gender bucket (`category`) and a
-// dialogue code, return the mapped sound id (or -1). This is the big switch over `category` of the
-// target; the per-code base offsets are the same arithmetic the disassembly performs.
-int Globals::dialogueDispatch(int category, int code, int isMale)
+// dialogue code, return the mapped sound id (or -1). The shipped binary inlines this entirely into
+// getDialogueSoundId(); it is kept here as a file-local helper (no standalone Globals:: symbol) to
+// avoid duplicating the ~100-line table three times.
+static int dialogueDispatch(int category, int code, int isMale)
 {
     // Buckets 2 / 3 (and the race-3 fallback) share the "generic" table.
     auto genericTable = [](int c) -> int {
@@ -2353,97 +2362,12 @@ int Globals::dialogueDispatch(int category, int code, int isMale)
     }
 }
 
-// ---- buildShipGroup0f ----
-// The kind==0xf (capital-ship) branch of getShipGroup(). Three variants, each assembling an
-// AEGeometry with LOD meshes/children. Variant 3 stitches a random-length transform chain.
-AEGeometry *Globals::buildShipGroup0f(int variant, void *canvasArg)
-{
-    PaintCanvas *canvas = (PaintCanvas *)canvasArg;
-    AEGeometry *geom;
-
-    if (variant == 0) {
-        geom = new AEGeometry((uint16_t)0x42a9, canvas, false);
-
-        unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff, mesh2 = 0xffffffff;
-        canvas->TransformCreate(mesh0);
-        canvas->TransformAddMesh(mesh0, 0x42ae, false);
-        geom->addChild(mesh0);
-        canvas->TransformCreate(mesh1);
-        canvas->TransformAddMesh(mesh1, 0x42b2, false);
-        geom->addChild(mesh1);
-        canvas->TransformCreate(mesh2);
-        canvas->TransformAddMesh(mesh2, 0x42ad, false);
-        geom->addChild(mesh2);
-
-        uint16_t lodMeshes[2] = { 0x42aa, 0x42ab };  // DAT_000f551c + 0x1a001a = 0x42ab42aa
-        int       lodDists[2] = { 25000, 45000 };
-        geom->setLodMeshes(lodMeshes, lodDists, 2);
-        uint16_t lodChild = 0x42ae;                  // DAT_000f5520 = 0x42ae42ae
-        geom->setLodChildMeshes(&lodChild);
-    } else if (variant == 3) {
-        geom = new AEGeometry((uint16_t)0x4299, canvas, false);
-
-        unsigned head = 0xffffffff;
-        canvas->TransformCreate(head);
-        canvas->TransformAddMesh(head, 0x4299, true);
-        geom->addChild(head);
-
-        int segments = AERandom_nextIntB(0, 4);
-        unsigned prevA = 0xffffffff, prevB = 0xffffffff;
-        for (int i = 0; i < segments; i++) {
-            unsigned a = 0xffffffff, b = 0xffffffff;
-            canvas->TransformCreate(a);
-            canvas->TransformCreate(b);
-            canvas->TransformAddMesh(a, 0x429a, true);
-            canvas->TransformAddMesh(b, 0x429a, true);
-            unsigned keepA = a, keepB = b;
-            if (prevA != 0xffffffff) {
-                canvas->TransformAddChild(prevA, a);
-                canvas->TransformAddChild(prevB, b);
-                keepA = prevA;
-                keepB = prevB;
-            }
-            prevA = keepA;
-            prevB = keepB;
-        }
-        if (prevA != 0xffffffff) {
-            geom->addChild(prevA);
-        }
-
-        unsigned tail = 0xffffffff;
-        canvas->TransformCreate(tail);
-        canvas->TransformAddMesh(tail, 0x429a, true);
-        geom->addChild(tail);
-
-        uint16_t lodMeshes[1] = { 0x429a };
-        int       lodDists[1] = { 35000 };
-        geom->setLodMeshes(lodMeshes, lodDists, 1);
-        geom->setLodChildTransform(prevB);
-    } else {
-        geom = new AEGeometry((uint16_t)0x42a4, canvas, false);
-
-        unsigned mesh0 = 0xffffffff, mesh1 = 0xffffffff;
-        canvas->TransformCreate(mesh0);
-        canvas->TransformAddMesh(mesh0, 0x42a4, true);
-        geom->addChild(mesh0);
-        canvas->TransformCreate(mesh1);
-        canvas->TransformAddMesh(mesh1, 0x42a4, true);
-        geom->addChild(mesh1);
-
-        uint16_t lodMeshes[2] = { 0x42a6, 0x42a7 };  // DAT_000f551c + 0x160016 = 0x42a742a6
-        int       lodDists[2] = { 35000, 60000 };
-        geom->setLodMeshes(lodMeshes, lodDists, 2);
-    }
-
-    return geom;
-}
-
 // ---- buildAgentMissionText ----
 // Offer/event briefing-text assembly for getAgentMissionText(). The target builds a localized
 // briefing into `out` by selecting a base GameText line per offer and substituting hash tokens
 // (#name#, #amount#, #reward#, ...) via Status::replaceHash. The per-offer base text indices and
 // token substitutions are reproduced from the disassembly's GameText::getText(...) keys.
-void Globals::buildAgentMissionText(String *out, void *agentArg, int offer)
+static void buildAgentMissionText(String *out, void *agentArg, int offer)
 {
     Agent *agent = (Agent *)agentArg;
 

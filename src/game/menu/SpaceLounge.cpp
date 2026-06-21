@@ -472,11 +472,6 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     }
 }
 
-static inline int random_from(void *slot, int limit)
-{
-    return AbyssEngine::AERandom::nextInt(*(void **)slot, limit);
-}
-
 int SpaceLounge::getSoundId(Agent *agent)
 {
     String missionText;
@@ -505,9 +500,9 @@ int SpaceLounge::getSoundId(Agent *agent)
     switch (offer) {
     case 0:
         if (missionType == 0 || missionType == 0xb) {
-            soundId = random_from(&SpaceLounge_getSoundId_offer0_11, 4) + 0x301;
+            soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer0_11, 4) + 0x301;
         } else if (missionType == 0xc) {
-            soundId = random_from(&SpaceLounge_getSoundId_offer0_else, 4) + 0x2fa;
+            soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer0_else, 4) + 0x2fa;
         } else {
             void *random = *(void **)&SpaceLounge_getSoundId_offer0_else;
             int first = AbyssEngine::AERandom::nextInt(random, 2);
@@ -519,26 +514,26 @@ int SpaceLounge::getSoundId(Agent *agent)
         }
         break;
     case 1:
-        soundId = random_from(&SpaceLounge_getSoundId_offer1, 2) + 0x30d;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer1, 2) + 0x30d;
         break;
     case 2:
     case 3:
     case 8:
     case 9:
     case 10:
-        soundId = random_from(&SpaceLounge_getSoundId_offer2358910, 2) + 0x2f7;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer2358910, 2) + 0x2f7;
         break;
     case 4:
-        soundId = random_from(&SpaceLounge_getSoundId_offer4, 2) + 0x2fe;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer4, 2) + 0x2fe;
         break;
     case 5:
-        soundId = random_from(&SpaceLounge_getSoundId_offer5, 4) + 0x31b;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer5, 4) + 0x31b;
         break;
     case 6:
-        soundId = random_from(&SpaceLounge_getSoundId_offer6, 4) + 0x323;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer6, 4) + 0x323;
         break;
     case 7:
-        soundId = random_from(&SpaceLounge_getSoundId_offer7, 4) + 0x305;
+        soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer7, 4) + 0x305;
         break;
     default:
         soundId = -1;
@@ -547,15 +542,15 @@ int SpaceLounge::getSoundId(Agent *agent)
 
     if (offer != 1) {
         checkSpecialText = false;
-        if (random_from(&SpaceLounge_getSoundId_chance, 100) < 30) {
-            soundId = random_from(&SpaceLounge_getSoundId_offer1, 2) + 0x30d;
+        if (AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_chance, 100) < 30) {
+            soundId = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_offer1, 2) + 0x30d;
             checkSpecialText = true;
         }
     }
 
     int dummy = 0;
     if (((Agent *)(agent))->hasAcceptedOffer() != 0) {
-        dummy = random_from(&SpaceLounge_getSoundId_accepted, 2);
+        dummy = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_accepted, 2);
         soundId = dummy + 0x30d;
     }
 
@@ -575,7 +570,7 @@ int SpaceLounge::getSoundId(Agent *agent)
                 }
             }
         }
-        dummy = random_from(&SpaceLounge_getSoundId_specialRandom, 2);
+        dummy = AbyssEngine::AERandom::nextInt(*(void **)&SpaceLounge_getSoundId_specialRandom, 2);
         soundId = dummy + 0x314;
     }
 

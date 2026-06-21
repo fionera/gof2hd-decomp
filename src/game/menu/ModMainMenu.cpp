@@ -25,8 +25,6 @@ extern PaintCanvas* gCanvas;
 // ---- engine glue ---------------------------------------------------------------
 // These resolve to other game singletons/helpers in the full link; they are kept as
 // externs because the menu does not own the objects they refer to.
-void Globals_startNewSoundResourceList(void *soundRes);
-void Globals_playMusicAndFadeOutCurrent(int music);
 int  FModSound_tryToStopMusicForBGMusic();
 
 namespace AbyssEngine {
@@ -248,7 +246,7 @@ void ModMainMenu::OnInitialize()
 {
     if (this->cutScene == nullptr) {
         void **soundRes = g_ModMainMenu_initSoundRes;
-        Globals_startNewSoundResourceList(*soundRes);
+        static_cast<Globals *>(*soundRes)->startNewSoundResourceList();
         void (*addSound)(void *, int) = g_ModMainMenu_initAddSound;
         addSound(*soundRes, 0x7e);
         addSound(*soundRes, 0x15);
@@ -326,7 +324,7 @@ music:
     {
         int *musicSlot = g_ModMainMenu_initMusicSlot;
         if (*musicSlot != -1)
-            Globals_playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
+            gGlobals->playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
         *musicSlot = -1;
     }
     this->initialized = 1;

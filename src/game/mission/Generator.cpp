@@ -16,6 +16,7 @@
 
 // Generator is a stateless helper: nothing to initialise or release.
 Generator::Generator() {}
+Generator::~Generator() {}
 
 void Generator::computerTradeGoods(Station *station) {
     if (station->getIndex() != 0x6c) {

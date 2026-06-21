@@ -96,15 +96,11 @@ bool HangarWindow::readyToClose() {
 }
 
 void HangarWindow::render3D() {
+    // In the embedded item-list view mode the hangar has no 3D content of its own, so
+    // it hands the 3D pass off to the item-list sub-window.
     if (this->viewMode == 1) {
-        return this->render3D_thunk(this->listItemWindow);
+        this->listItemWindow->render();
     }
-}
-
-// In the embedded item-list view mode the hangar has no 3D content of its own, so it
-// hands the 3D pass off to the item-list sub-window.
-void HangarWindow::render3D_thunk(ListItemWindow *listItemWindow) {
-    listItemWindow->render();
 }
 
 bool HangarWindow::currentItemIsHighlighted() {
@@ -534,9 +530,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             Array<TouchButton*> *tabs = self->tabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++) {
                 if (((TouchButton *)(tabs->data()[i]))->OnTouchEnd(touch) != 0) {
-                    self->setSellMode();
-                    self->setSellMode();
-                    self->setSellMode();
+                    self->setSellMode(true);
                     self->selectedItem = 0;
                     self->hangarList->setCurrentTab(0, i != 0);
                     if (i == 2)
@@ -557,8 +551,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     self->hangarList->setCurrentItemIndex(row);
                     if (self->currentItemIsHighlighted() != 0 &&
                         self->sellConfirmPending != 0) {
-                        self->setSellMode();
-                        self->setSellMode();
+                        self->setSellMode(true);
                     }
                 }
             }
@@ -618,7 +611,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
 
         unsigned int tab = self->hangarList->getCurrentTab();
         if (tab == 4) {
-            self->setSellMode();
+            self->setSellMode(true);
             self->selectedItem = 0;
             self->hangarList->setCurrentTab(0, true);
             self->refreshCargoAvailabilityForBlueprints();
@@ -633,7 +626,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             self->refreshCargoAvailabilityForBlueprints();
             self->refreshCurrentContentHeight();
         } else if (self->readyToClose() != 0) {
-            self->setSellMode();
+            self->setSellMode(true);
             self->selectedItem = 0;
             self->hangarList->setCurrentItemIndex(-1);
         }
@@ -668,7 +661,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     self->bluePrint->complete();
                     self->highlightItem(self->hangarList->getCurrentItemAt(1));
                     self->buyMode = 1;
-                    self->setSellMode();
+                    self->setSellMode(true);
                     Status_changeCredits(globals);
                 }
             }
@@ -767,7 +760,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             bool revert = true;
             if (r == 0 && gStatus->getCredits() >= cost && self->localBluePrint == 0) {
                 Status_changeCredits(globals);
-                self->setSellMode();
+                self->setSellMode(true);
                 self->selectedItem = 0;
                 self->hangarList->setCurrentItemIndex(-1);
                 self->localBluePrint = 0;
@@ -847,8 +840,60 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 }
             }
         }
-        // The rest of the ship-swap and mission-offer flow lives in the helper.
-        self->buildMissionOffer(touch, coord);
+        // The rest of the ship-swap and mission-offer flow: with the equipment-swap
+        // ChoiceWindow (self->dialog) showing, route the touch result:
+        //   * OK on the swap dialog     -> keep the new equipment, restore the scroll.
+        //   * Cancel on the swap dialog -> undo: re-mount the demounted item / drop the
+        //                                  pending mount, and snapshot the scroll offset.
+        //   * buy-mode confirmation     -> commit or roll back the buy, resetting the
+        //                                  HangarList selection.
+        {
+            ChoiceWindow *swapDialog = self->dialog;
+
+            // Equipment swap confirmation.
+            int swapResult = swapDialog->OnTouchEnd(touch, coord);
+            if (swapResult == 1) {
+                self->dialogActive = 0;
+                self->replaceEquipPending = 0;
+                self->scrollOffset = self->savedScrollOffset;
+            } else if (swapResult == 0 && self->pendingMountItem != 0 &&
+                       self->pendingDemountItem != 0) {
+                self->demountItem(self->pendingDemountItem, -1);
+                self->savedScrollOffset = self->scrollOffset;
+                self->mountItem(self->pendingMountItem);
+                self->dialogActive = 0;
+                self->replaceEquipPending = 0;
+            }
+
+            // Buy-mode confirmation (shares the same ChoiceWindow).
+            uint8_t buying = self->buyMode;
+            int buyResult = swapDialog->OnTouchEnd(touch, coord);
+            if (buying != 0) {
+                if (buyResult == 1) {
+                    self->buyMode = 0;
+                    self->dialogActive = 0;
+                } else {
+                    if (buyResult != 0)
+                        return;
+                    if (self->routeWarningPending == 0) {
+                        self->dialogActive = 0;
+                        if (self->autoEquipped == 0) {
+                            self->buyMode = 1;
+                        } else {
+                            Array<TouchButton*> *tabs = self->tabButtons;
+                            for (unsigned int i = 0; i < tabs->size(); i++)
+                                ((TouchButton *)(tabs->data()[i]))->resetTouch();
+                        }
+                        return;
+                    }
+                    self->dialogActive = 0;
+                    self->routeWarningPending = 0;
+                    self->buyMode = 0;
+                }
+                self->selectedItem = 0;
+                self->hangarList->setCurrentItemIndex(-1);
+            }
+        }
         return;
     } else {
         // self+0xae set: free-credits intro window.
@@ -1024,68 +1069,6 @@ int HangarWindow::highlightItem(ListItem *item) {
     return 0;
 }
 
-// ---- buildMissionOffer (tail of OnTouchEnd_14c740) ---------------------------
-// The decompiler peeled the trailing equipment swap-confirmation / buy-mode dialog
-// flow out of OnTouchEnd() into this helper. With the equipment-swap ChoiceWindow
-// (this->dialog) showing, route the touch result:
-//   * OK on the swap dialog       -> keep the new equipment, restore the scroll.
-//   * Cancel on the swap dialog   -> undo: re-mount the demounted item / drop the
-//                                    pending mount, and snapshot the scroll offset.
-//   * buy-mode confirmation       -> commit or roll back the buy, resetting the
-//                                    HangarList selection.
-void HangarWindow::buildMissionOffer(int touch, int coord)
-{
-    HangarWindow *self = this;
-    ChoiceWindow *dialog = (ChoiceWindow *)self->dialog;
-
-    // Equipment swap confirmation.
-    int swapResult = dialog->OnTouchEnd(touch, coord);
-    if (swapResult == 1) {
-        // Confirmed: keep the swapped-in equipment, restore the saved scroll position.
-        self->dialogActive = 0;
-        self->replaceEquipPending = 0;
-        self->scrollOffset = self->savedScrollOffset;
-    } else if (swapResult == 0 && self->pendingMountItem != 0 && self->pendingDemountItem != 0) {
-        // Cancelled: undo the swap. Put the demounted item back and re-apply the mount.
-        self->demountItem(self->pendingDemountItem, -1);
-        self->savedScrollOffset = self->scrollOffset;
-        self->mountItem(self->pendingMountItem);
-        self->dialogActive = 0;
-        self->replaceEquipPending = 0;
-    }
-
-    // Buy-mode confirmation (shares the same ChoiceWindow).
-    uint8_t buyMode = self->buyMode;
-    int buyResult = dialog->OnTouchEnd(touch, coord);
-    if (buyMode != 0) {
-        HangarList *list = (HangarList *)self->hangarList;
-        if (buyResult == 1) {
-            self->buyMode = 0;
-            self->dialogActive = 0;
-        } else {
-            if (buyResult != 0)
-                return;
-            if (self->routeWarningPending == 0) {
-                self->dialogActive = 0;
-                if (self->autoEquipped == 0) {
-                    self->buyMode = 1;
-                } else {
-                    // Auto-equipped: clear any in-flight tab-button touches.
-                    Array<TouchButton*> *tabs = self->tabButtons;
-                    for (unsigned int i = 0; i < tabs->size(); i++)
-                        ((TouchButton *)(tabs->data()[i]))->resetTouch();
-                }
-                return;
-            }
-            self->dialogActive = 0;
-            self->routeWarningPending = 0;
-            self->buyMode = 0;
-        }
-        self->selectedItem = 0;
-        list->setCurrentItemIndex(-1);
-    }
-}
-
 __attribute__((visibility("hidden"))) extern FModSound **g_hw_sound;
 
 void HangarWindow::demountItem(Item *item, int slot) {
@@ -1124,10 +1107,10 @@ void HangarWindow::demountItem(Item *item, int slot) {
     }
     this->itemList = 0;
 
-    this->itemList = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
-    this->hangarList->initShipTab(statusShip());
+    this->itemList = Item::mixItems(gStatus->getShip()->getCargo(), gStatus->getStation()->getItems());
+    this->hangarList->initShipTab(gStatus->getShip());
 
-    ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
+    ItemArray *items = Item::mixItems(gStatus->getShip()->getCargo(), gStatus->getStation()->getItems());
     this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
     this->hangarList->setCurrentTab(0, false);
 
@@ -1338,175 +1321,6 @@ __attribute__((visibility("hidden"))) extern int *g_hw_sellTextId2;
 __attribute__((visibility("hidden"))) extern int *g_hw_routesTextId;
 __attribute__((visibility("hidden"))) extern int *g_hw_bpStations;
 
-void HangarWindow::setSellMode() {
-    HangarWindow *self = this;
-    ListItem *item = (ListItem *)self->selectedItem;
-
-    if (item == 0 ||
-        ((ListItem *)(item))->isShip() != 0 || ((ListItem *)(item))->isSlot() != 0 ||
-        ((ListItem *)(item))->isTextButton() != 0 || ((ListItem *)(item))->isSelectable() == 0 ||
-        ((ListItem *)(item))->isBluePrint() != 0) {
-        self->buyMode = 0;
-        return;
-    }
-
-    self->buyMode = 1;
-
-    int tab = self->hangarList->getCurrentTab();
-    if (tab == 1) {
-        if (self->buyMode == 0) {
-            if (((ListItem *)(item))->isItem() != 0 && ((Item *)(item->field_0x10))->getType() != 4) {
-                // RAWREAD: *g_hw_itemFlags is an opaque hint-flag block (void*); +0x1d/0x1e are
-                // "first-time tip shown" booleans, unmodeled.
-                void *flags = *g_hw_itemFlags;
-                if ((*(uint8_t *)((char *)(flags) + (0x1e))) == 0) {
-                    ((GameText *)(*g_hw_sellTextId1))->getText();
-                    self->dialog->set(g_HangarWindow_emptyDialogText);
-                    (*(uint8_t *)((char *)(flags) + (0x1e))) = 1;
-                    self->dialogActive = 1;
-                }
-            }
-            self->autoEquipPending = 1;
-            self->autoEquipIndex = self->hangarList->getCurrentItemIndex();
-        } else {
-            void *flags = *g_hw_itemFlags;
-            if ((*(uint8_t *)((char *)(flags) + (0x1d))) == 0) {
-                ((GameText *)(*g_hw_sellTextId2))->getText();
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-                (*(uint8_t *)((char *)(flags) + (0x1d))) = 1;
-                self->dialogActive = 1;
-            }
-            self->savedStationAmount = ((Item *)(item->field_0x10))->getStationAmount();
-            self->savedAmount = ((Item *)(item->field_0x10))->getAmount();
-            self->savedCredits = gStatus->getCredits();
-            self->savedLoad = self->currentLoad;
-        }
-
-        gStatus->getShip()->setCargo(Item::extractItems((ItemArray *)(self->itemList), true));
-        gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
-        if (self->itemList != 0) {
-            for (Item *it : *self->itemList) delete it;
-            self->itemList->clear();
-            delete self->itemList;
-        }
-        self->itemList = 0;
-
-        ItemArray *mixed = Item::mixItems((ItemArray *)(gStatus->getShip()->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
-        self->itemList = mixed;
-        self->hangarList->initShopTab((Array<Item *> *)(mixed), gStatus->getStation()->getShips());
-        self->hangarList->initShipTab(gStatus->getShip());
-
-        ListItem *ci = self->hangarList->getCurrentItem();
-        self->selectedItem = ci;
-        if (ci != nullptr && ci->isShip() != 0)
-            self->selectedItem->ship->adjustPrice();
-        refreshCurrentContentHeight();
-        return;
-    }
-
-    if (self->hangarList->getCurrentTab() != 4)
-        return;
-
-    if (self->buyMode == 0) {
-        if (self->bluePrintItem != 0 && self->bluePrint != 0) {
-            void *bpItem = ((ListItem *)self->bluePrintItem)->item;
-            self->bluePrint->addItem((Item *)bpItem, ((Item *)(bpItem))->getBlueprintAmount(), gStatus->getStation()->getIndex());
-        }
-
-        uint8_t completedFlag = 0;
-        if (self->bluePrint->isCompleted() != 0) {
-            Globals *globals = (Globals *)*g_hw_globals;
-            if (self->bluePrint->getStationIndex() == gStatus->getStation()->getIndex()) {
-                String line, copy, name, fmt, result;
-                ((String *)&copy)->ctor_copy(&line, false);
-                Status_replaceHash(&result, globals, &copy, &name, &fmt);
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-
-                int *stations = g_hw_bpStations;
-                int idx = stations[self->bluePrint->getIndex()];
-                self->bluePrint->getQuantity();
-                void *made = ((Item *)((void *)(uintptr_t)idx))->makeItem();
-                gStatus->getShip()->addCargo((Item *)made);
-                self->itemList->push_back((Item*)made);
-                self->hangarList->setCurrentTab(0, true);
-                self->refreshCurrentContentHeight();
-            } else {
-                String line, copy, name, fmt, result, line2, sname, fmt2;
-                ((String *)&copy)->ctor_copy(&line, false);
-                Status_replaceHash(&result, globals, &copy, &name, &fmt);
-
-                ((String *)&line2)->ctor_copy(&line, false);
-                self->bluePrint->getStationName();
-                String result2;
-                Status_replaceHash(&result2, globals, &line2, &sname, &fmt2);
-
-                self->dialog->set(g_HangarWindow_emptyDialogText);
-                ((Status *)(globals))->addPendingProduct((BluePrint *)self->bluePrint);
-                self->hangarList->setCurrentTab(0, true);
-                self->refreshCargoAvailabilityForBlueprints();
-            }
-            self->bluePrint->reset();
-            completedFlag = 1;
-        }
-
-        Globals *globals = (Globals *)*g_hw_globals;
-        ((Ship *)(this->statusShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
-        this->statusShip();
-        ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
-        self->hangarList->initShopTab((Array<Item *> *)(items), gStatus->getStation()->getShips());
-        self->hangarList->initBlueprintTab((Array<BluePrint *> *)(long)((Status *)(globals))->getBluePrints());
-        ItemArray *mix = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
-        self->itemList = mix;
-        self->dialogActive = completedFlag;
-
-        if (completedFlag) {
-            Array<ListItem*> *items2 = ((HangarList *)self->hangarList)->getCurrentTabItems();
-            for (unsigned int i = 0; i < items2->size(); i++) {
-                void *li = items2->data()[i];
-                if (li != 0 && ((ListItem *)(li))->isItem() != 0 &&
-                    ((Item *)((ListItem *)li)->item)->getIndex() == self->bluePrint->getIndex()) {
-                    if (gStatus->getShip()->hasEquipment(((Item *)((ListItem *)li)->item)->getIndex(), 1) != 0) {
-                        self->autoEquipIndex = i;
-                        self->autoEquipPending = 1;
-                        self->autoEquipSecondaryWeapons(i);
-                        self->autoEquipPending = 0;
-                        break;
-                    }
-                }
-            }
-        }
-        return;
-    }
-
-    self->bluePrintBuyCount = 0;
-    if (self->bluePrint->isEmpty() != 0 && ((Item *)(item->field_0x10))->getAmount() > 0) {
-        int idx = self->bluePrint->getIndex();
-        bool flag;
-        void *text;
-        if (idx == 0xd2 || self->bluePrint->getIndex() == 0xdf) {
-            if (((SolarSystem *)((void *)(long)gStatus->getSystem()))->getRoutes() != 0) {
-                text = ((GameText *)(*g_hw_sellTextId2))->getText();
-                flag = true;
-            } else {
-                self->routeWarningPending = 1;
-                text = ((GameText *)(*g_hw_routesTextId))->getText();
-                flag = false;
-            }
-        } else {
-            text = ((GameText *)(*g_hw_sellTextId2))->getText();
-            flag = true;
-        }
-        self->dialog->set(*(String *)text, flag);
-        self->dialogActive = 1;
-    }
-
-    self->savedBlueprintAmount = ((Item *)(item->field_0x10))->getBlueprintAmount();
-    self->savedAmount = ((Item *)(item->field_0x10))->getAmount();
-    self->savedCredits = gStatus->getCredits();
-    self->savedLoad = self->currentLoad;
-    self->bluePrintItem = self->selectedItem;
-}
-
 void HangarWindow::setSellMode(bool buy) {
     HangarWindow *self = this;
     ListItem *item = (ListItem *)self->selectedItem;
@@ -1619,8 +1433,8 @@ void HangarWindow::setSellMode(bool buy) {
         }
 
         Globals *globals = (Globals *)*g_hw_globals;
-        ((Ship *)(this->statusShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
-        this->statusShip();
+        ((Ship *)(gStatus->getShip()))->setCargo(Item::extractItems((ItemArray *)(((Ship *)(0))->getCargo()), true));
+        gStatus->getShip();
         ItemArray *items = Item::mixItems((ItemArray *)(((Ship *)(0))->getCargo()), (ItemArray *)(gStatus->getStation()->getItems()));
         self->hangarList->initShopTab((Array<Item *> *)(items), gStatus->getStation()->getShips());
         self->hangarList->initBlueprintTab((Array<BluePrint *> *)(long)((Status *)(globals))->getBluePrints());
@@ -2045,10 +1859,10 @@ void HangarWindow::mountItem(Item *item) {
         }
     }
 
-    statusShip()->setCargo(Item::extractItems(this->itemList, true));
-    this->hangarList->initShipTab(statusShip());
+    gStatus->getShip()->setCargo(Item::extractItems(this->itemList, true));
+    this->hangarList->initShipTab(gStatus->getShip());
 
-    ItemArray *items = Item::mixItems(statusShip()->getCargo(), gStatus->getStation()->getItems());
+    ItemArray *items = Item::mixItems(gStatus->getShip()->getCargo(), gStatus->getStation()->getItems());
     this->hangarList->initShopTab(items, gStatus->getStation()->getShips());
     this->hangarList->setCurrentTab(0, false);
 
@@ -2107,7 +1921,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
             Array<TouchButton*> *buttons = this->buttons;
             for (unsigned int i = 0; i < buttons->size(); i++)
                 buttons->data()[i]->OnTouchMove(touch);
-            this->setSellMode();
+            this->setSellMode(true);
             this->sellConfirmPending = 0;
             this->selectedItem = 0;
             ((TouchButton *)(btnUp))->resetTouch();
@@ -2160,9 +1974,9 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
             }
         }
 
-        ((Ship *)(this->statusShip()))->setEquipment((Item *)made);
-        ((Ship *)(this->statusShip()))->removeCargo(((Item *)(made))->getIndex(), ((Item *)(itm))->getAmount());
-        this->hangarList->initShipTab((Ship *)this->statusShip());
+        ((Ship *)(gStatus->getShip()))->setEquipment((Item *)made);
+        ((Ship *)(gStatus->getShip()))->removeCargo(((Item *)(made))->getIndex(), ((Item *)(itm))->getAmount());
+        this->hangarList->initShipTab((Ship *)gStatus->getShip());
 
         String msg, msgCopy, name, fmt;
         String result;
@@ -2593,7 +2407,12 @@ HangarWindow::HangarWindow() {
     this->iconOffsetY = *(int *)((char *)lay + 0x250);
 }
 
-// The hangar always edits the player's current ship, which the global Status owns.
-Ship *HangarWindow::statusShip() {
-    return gStatus->getShip();
+// Whether the hangar screen has been brought up and is active.
+bool HangarWindow::isInitialized() {
+    return this->active != 0;
+}
+
+// The list item the window currently has selected (the +0x68 slot).
+ListItem *HangarWindow::getCurrentItem() {
+    return reinterpret_cast<ListItem *>(this->progressBarBorderImage);
 }

@@ -31,6 +31,7 @@ Mission *Mission_ctor_full(Mission *self, int type, AbyssEngine::String *name,
 class Generator {
 public:
     Generator();
+    ~Generator();
 
     void computerTradeGoods(Station *station);
     int generateStationIndex(Array<SolarSystem *> *systems, int station);

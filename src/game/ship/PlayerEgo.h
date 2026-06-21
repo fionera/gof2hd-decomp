@@ -335,7 +335,6 @@ public:
     void setFreeLookMode(bool v);
     void setFreeze(bool v);
     void setLevel(Level* level);
-    void setPosition();
     void setPosition(Vector v);
     void setPosition(float x, float y, float z);   // was setPosition3 (PlayerEgo is not KIPlayer-derived)
     void setRocketControl(Gun* gun, AEGeometry* geo);

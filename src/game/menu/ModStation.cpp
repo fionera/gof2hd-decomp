@@ -791,7 +791,7 @@ void ModStation::OnUpdate() {
         if (*(char *)(appData + 0x41) != 0 && *(int **)(appData + 0x58) != 0 &&
             **(int **)(appData + 0x58) != 0 &&
             (unsigned)(*(int *)(appData + 0x48) - 0x32) < 5) {
-            int idx = Globals_getInAppPurchaseArrayIndex_ou(0, *(void **)(appData + 0x48));
+            int idx = gGlobals->getInAppPurchaseArrayIndex(*(int *)(appData + 0x48), (Array<String *> *)*(void **)(appData + 0x60));
             if (-1 < *(int *)(*(int *)(*(int *)(appData + 0x60) + 4) + idx * 4)) {
                 Status_changeCredits_ou(*status);
                 this->autosave();
@@ -1502,7 +1502,6 @@ int   StatusWindow_OnTouchEnd_ote(int w, int p1, int p2);
 int   MissionsWindow_OnTouchEnd_ote(int w, int p1);
 int   MenuTouchWindow_OnTouchEnd_ote(MenuTouchWindow *w, int p1, int p2, void *p3);
 void  MenuTouchWindow_ctor_ote(MenuTouchWindow *w, int kind);
-int   NewsTicker_OnTouchEnd_ote(int nt, int p1);
 int   TouchButton_OnTouchEnd_ote(int btn, int p1);
 
 void  FModSound_play_ote(int sound, int id, void *p, float vol);
@@ -1900,7 +1899,7 @@ void handleMainButtons(ModStation *self, int x, int y)
     if (Layout_helpPressed_ote((Layout *)*help) != 0)
         Layout_initHelpWindow_ote(*help, GameText_getText_ote(**g_ote_textRoot));
 
-    if (NewsTicker_OnTouchEnd_ote(*(int*)&self->newsTicker, x) == 0)
+    if (self->newsTicker->OnTouchEnd(x, 0) == 0)
         ModStation_ote_kickIdleCamera(self);
 }
 
@@ -2441,7 +2440,7 @@ void  CutScene_replacePlayerShip_oi(int cs, int shipIndex);
 
 void  TouchButton_setHalfTransparent_oi(int flag);
 
-void  Globals_startNewSoundResourceList_oi();
+void  static_cast<Globals *>(*sound)->startNewSoundResourceList();
 void  Globals_playMusicAndFadeOutCurrent_oi(int id);
 
 void  FModSound_play_oi(int sound, int id, void *pos, float vol);
@@ -2916,11 +2915,11 @@ void ModStation::OnInitialize() {
     } else if (state == 100) {
         // ---- enter-station screen ----
         int *sound = *(int **)g_oi_sound;
-        Globals_startNewSoundResourceList_oi();
+        static_cast<Globals *>(*sound)->startNewSoundResourceList();
         static const int snd[] = {0x5f, 0x7a, 0x6c, 0x60, 0x61, 0x62, 99, 0x65, 100,
                                   0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e};
         for (unsigned i = 0; i < sizeof(snd) / sizeof(snd[0]); i = i + 1)
-            ((Globals *)(*sound))->addSoundResource_oi(snd[i]);
+            ((Globals *)(*sound))->addSoundResourceToList(snd[i]);
 
         *(int *)((char *)this + 0xcc) = 0x32;           // RAWREAD: per-visit dock counter seed (+0xcc)
         int *st = *(int **)g_oi_status;
@@ -2950,7 +2949,7 @@ void ModStation::OnInitialize() {
 
         int *music = g_oi_musicId;
         if (*music != -1)
-            Globals_playMusicAndFadeOutCurrent_oi(**(int **)g_oi_sound);
+            gGlobals->playMusicAndFadeOutCurrent(**(int **)g_oi_sound);
         *music = -1;
         this->stationActive = 1;
         this->state = 100;

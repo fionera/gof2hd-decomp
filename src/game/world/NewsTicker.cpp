@@ -253,8 +253,3 @@ extern "C" void *NewsTicker_dtor(void *p)
     return p;
 }
 
-// Touch-release handler; non-zero when the ticker consumed the release.
-int NewsTicker_OnTouchEnd_ote(int nt, int p1)
-{
-    return (int)((NewsTicker *)(intptr_t)nt)->OnTouchEnd(p1, 0);
-}

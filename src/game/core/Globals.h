@@ -48,30 +48,16 @@ public:
 
     // Plain runtime sqrtf wrapper (the instance is unused).
     static float sqrt_impl(float x);
-    // 64-bit signed divide returning the quotient; the remainder is written through *rem.
-    static long long lts_divmod(long long num, int den, int* rem);
-    // Append a sound-resource id to the given list.
-    static void startNewSoundResourceList_tail(int val, Array<int>* list);
-    static void addSoundResource_tail(int val, Array<int>* list);
+    // Discard the active sound-resource list and start a fresh one seeded with the two
+    // always-present menu sound ids.
+    void startNewSoundResourceList();
+    // Stop the current music stream and start the context-appropriate track
+    // (mode 0 = system ambience, 1 = station, 2 = combat).
+    void playMusicAndFadeOutCurrent(int mode);
     // Add one sound resource to the active list (skipping it if already present).
-    void addSoundResource_oi(int val);
-    // Same, addressed by sound id (the assignGuns weapon-sound registration path).
     void addSoundResourceToList(int snd);
-    // Record the drawn system index for the chosen slot.
-    static void getRandomSystemForDrinks_tail(int systemSlot, int picked);
     // (Re)create the bitmap fonts for the given language/script kind and apply per-kind glyph spacing.
     void loadFont(int kind);
-    // Set the spacing of the freshly created extra font to 0.
-    static void loadFont_tail(void* canvas, void* font, int spacing);
-    // Release the secondary canvas' resources too.
-    static void releaseResources_tail(void* secondaryCanvas);
-    // Map a resolved race bucket (0..8) + gender + dialogue code to a sound id (-1 when unmapped).
-    // Only bucket 0/5 consults isMale; all other buckets ignore it.
-    int dialogueDispatch(int category, int code, int isMale);
-    // Offer/event briefing-text assembly used by getAgentMissionText().
-    static void buildAgentMissionText(String* out, void* agent, int offer);
-    // The kind==0xf (capital-ship) branch of getShipGroup(): build and return the articulated LOD geometry.
-    AEGeometry* buildShipGroup0f(int variant, void* canvas);
     // Word-wrap `text` to `maxWidth` (in the given font), producing one trimmed String per line
     // into `out` (which is resized to the line count and filled with freshly allocated Strings).
     void getLineArray(unsigned int font, const String& text, int maxWidth, Array<String*>* out);
@@ -123,6 +109,17 @@ public:
     String getRandomName(int kind, bool both);
     // The active sound-resource id list.
     Array<int>* getSoundResourceList();
+    // Index of the in-app-purchase product (productCode) within `list`, or -1 if absent.
+    int getInAppPurchaseArrayIndex(int productCode, Array<String*>* list);
+    // Localized, upper-cased key-binding replacement string for `key`.
+    String getKeyBindingReplaceString(int key);
+    // Submit the player's current supernova-challenge score to the leaderboard (no-op stub).
+    void reportSupernovaChallengeScore();
+    // Draw a block of pre-wrapped text lines, one per row, advancing one line-height each row.
+    void drawLines(unsigned int font, Array<String*>* lines, int baseX, int startY);
+    void drawLines(unsigned int font, Array<String*>* lines, int baseX, int startY, bool centered);
+    void drawLines(unsigned int font, Array<String*>* lines, int baseX, int startY,
+                   unsigned int rightX, bool centered);
 };
 
 extern Globals* gGlobals;          // canonical Globals singleton (binary .bss 0x2281d0)

@@ -201,6 +201,10 @@ public:
     void OnTouchBegin(int touch, int coord);
     void OnTouchEnd(int touch, int coord);
     unsigned int OnTouchMove(int touch, int coord);
+    // Trivial accessors. isInitialized() reports whether the window has been
+    // brought up; getCurrentItem() returns the window's current list item.
+    bool isInitialized();
+    ListItem *getCurrentItem();
     void autoEquipSecondaryWeapons(int row);
     bool currentItemIsHighlighted();
     void demountItem(Item *item, int slot);
@@ -219,7 +223,6 @@ public:
     void render();
     void render3D();
     void selectItem(ListItem *item);
-    void setSellMode();
     void setSellMode(bool buy);
     void showCreditsBuyWindow();
     void showFreeCreditsWindow();

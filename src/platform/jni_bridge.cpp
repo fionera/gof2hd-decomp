@@ -24,6 +24,7 @@
 #include "platform/gl.h"
 #include "game/mission/Status.h"
 #include "platform/recovered_a462c.h"
+#include "platform/recovered_7a41c.h"
 
 // Clears the cached native store item list (defined in LODManager.cpp); a plain
 // C-linkage loader hook, declared here to avoid pulling in the LOD render header.
@@ -920,4 +921,39 @@ extern "C" void ndk23_Init(const char *apkPath, int width, int height)
     engine->Initialize(&OnCreateApplication);
     engine->SetOnDestroyApp(&OnDestroyApplication);
     engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
+}
+
+// ---------------------------------------------------------------------------
+// Host-driven viewport resize: re-aims the GL viewport at the new framebuffer
+// size, caches it for the render path and replays the current virtual-pointer
+// state into the active module so the on-screen controls track the new bounds
+// (binary ghidra_addr 0xa3fac).
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk23_resize(int width, int height)
+{
+    glViewport(0, 0, width, height);
+
+    gRealHeight = height;
+    gRealWidth = width;
+
+    simulateTouch(gEngine);
+}
+
+// ---------------------------------------------------------------------------
+// Reserved host hooks. The display geometry is already established through the
+// init/resize path, and the host never polls a separate fired-weapon status in
+// this build, so both are inert (binary ghidra_addr 0xa3d50 / 0xa3d52).
+// ---------------------------------------------------------------------------
+
+extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width)
+{
+    // Display geometry is owned by InitWithZip/resize; nothing to do here.
+    (void)height;
+    (void)width;
+}
+
+extern "C" int ndk23_getCurrentFiredStatus()
+{
+    return 0;
 }

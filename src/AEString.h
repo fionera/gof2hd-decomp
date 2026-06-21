@@ -228,4 +228,13 @@ String operator+(const int &a, const String &b);
 
 using AbyssEngine::String;
 
+// Free helper (global namespace): number of UTF-16 code units before the terminating NUL in the
+// string's wide backing buffer. Walks GetAEWChar() to the NUL and returns the code-unit count.
+inline int GetStringLength(AbyssEngine::String str) {
+    const unsigned short *p = str.GetAEWChar();
+    while (*p)
+        ++p;
+    return static_cast<int>(p - str.GetAEWChar());
+}
+
 #endif // GOF2_AESTRING_H

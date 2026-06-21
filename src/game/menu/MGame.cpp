@@ -108,9 +108,7 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 extern "C" void *MGame_opnew(unsigned sz);
-void Globals_playMusicAndFadeOutCurrent(int track);
 extern "C" void MGame_opdelete(void *p);
-void Globals_startNewSoundResourceList();
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 extern "C" void applyThrust(MGame *self, int y);
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
@@ -333,7 +331,10 @@ void MGame::startJumpScene() {
         *(Vector*)((Vector *)((char *)&this->egoJumpPosX)) = *(const Vector*)((Vector *)vtmp);
         float nz = (float)this->egoJumpPosZ + *(float *)&g_jsOffsetZ;
         this->egoJumpPosZ = (int)nz;
-        this->player->setPosition();
+        if (this->player->geometry != nullptr) {
+            Vector pos = this->player->getPosition();
+            ((AEGeometry *)(this->player->geometry))->setPosition(pos);
+        }
         this->player->setComputerControlled(1);
         ((AEGeometry *)this->player->geometry)->setRotation((float)0, (float)0, (float)0);
         this->egoJumpPosX = (int)((float)this->egoJumpPosX + *(float *)&g_jsOffsetX);
@@ -703,11 +704,11 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             }
             if (self->gameRecord != 0) {
                 ((GameRecord *)(self->gameRecord))->load();
-                Globals_playMusicAndFadeOutCurrent(**g_tbRecordTrack);
+                gGlobals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
                 return self->appManager->SetCurrentApplicationModule(5);
             }
-            Globals_playMusicAndFadeOutCurrent(**g_tbMenuTrack);
+            gGlobals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->active = 0;
             self->appManager->SetCurrentApplicationModule(5);
             return;
@@ -1157,20 +1158,20 @@ void MGame::UseKhadorDrive() {
 // common cockpit/weapon/explosion set, then appends wingman, early-mission, warp-gate and
 // per-campaign-mission specific clips.
 void MGame::loadSoundResources() {
-    Globals_startNewSoundResourceList();
+    gGlobals->startNewSoundResourceList();
     static const int kCommon[] = {
         0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
         0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
     };
     for (int id : kCommon)
-        gGlobals->addSoundResource_oi(id);
+        gGlobals->addSoundResourceToList(id);
 
     if (gStatus->getWingmen() != 0)
         gGlobals->addSoundResourceToList(0x30);
 
-    gGlobals->addSoundResource_oi(0x3e);
-    gGlobals->addSoundResource_oi(0x3d);
-    gGlobals->addSoundResource_oi(0x24);
+    gGlobals->addSoundResourceToList(0x3e);
+    gGlobals->addSoundResourceToList(0x3d);
+    gGlobals->addSoundResourceToList(0x24);
 
     if (gStatus->getCurrentCampaignMission() < 2) {
         gGlobals->addSoundResourceToList(0x9c);
@@ -1185,12 +1186,12 @@ void MGame::loadSoundResources() {
 
     int cm = gStatus->getCurrentCampaignMission();
     if (cm == 0) {
-        gGlobals->addSoundResource_oi(0x8f);
-        gGlobals->addSoundResource_oi(0x9d);
-        gGlobals->addSoundResource_oi(0x9e);
-        gGlobals->addSoundResource_oi(0xa1);
-        gGlobals->addSoundResource_oi(0xa0);
-        gGlobals->addSoundResource_oi(0x9f);
+        gGlobals->addSoundResourceToList(0x8f);
+        gGlobals->addSoundResourceToList(0x9d);
+        gGlobals->addSoundResourceToList(0x9e);
+        gGlobals->addSoundResourceToList(0xa1);
+        gGlobals->addSoundResourceToList(0xa0);
+        gGlobals->addSoundResourceToList(0x9f);
     } else if (cm == 0xe) {
         gGlobals->addSoundResourceToList(0xf);
     } else if (cm == 0x18) {
@@ -1198,9 +1199,9 @@ void MGame::loadSoundResources() {
     } else if (cm == 0x1d) {
         gGlobals->addSoundResourceToList(0xe);
     } else if (cm == 0x29) {
-        gGlobals->addSoundResource_oi(0x9b);
-        gGlobals->addSoundResource_oi(0x99);
-        gGlobals->addSoundResource_oi(0x9a);
+        gGlobals->addSoundResourceToList(0x9b);
+        gGlobals->addSoundResourceToList(0x99);
+        gGlobals->addSoundResourceToList(0x9a);
     }
 }
 
@@ -1351,7 +1352,7 @@ void MGame::setupWeaponsAndAudio() {
 
     // Music: play the queued track (if any), then reset the queue and reset the sound pitch.
     if (*g_initMusicArmed != -1)
-        Globals_playMusicAndFadeOutCurrent(*g_initMusicTrack);
+        gGlobals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
     *g_initMusicArmed = -1;
     ((FModSound *)(*g_initFmod))->setDownPitch(false);
 
@@ -2398,7 +2399,10 @@ afterCam:
             float mtx[4];
             (*(void (**)(void *, void *))((char *)*(void **)node2 + 0x28))(node2, mtx);
             *(Vector*)((Vector *)((char *)&self->egoJumpPosX)) = *(const Vector*)((Vector *)mtx);
-            self->player->setPosition();
+            if (self->player->geometry != nullptr) {
+                Vector pos = self->player->getPosition();
+                ((AEGeometry *)(self->player->geometry))->setPosition(pos);
+            }
             PlayerEgo *p = self->player;
             p->inWormhole = 1;
             self->jumpDriveActive = 0;
