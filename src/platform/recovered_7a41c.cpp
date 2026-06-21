@@ -9,6 +9,7 @@
 #include "platform/recovered_7a41c.h"
 
 #include "engine/core/ApplicationManager.h"   // gAppManager, current module id
+#include "engine/render/Engine.h"             // Engine (appManager, DrawQuad, field_0x360)
 
 #include <cstring>
 #include <initializer_list>
@@ -34,7 +35,13 @@ struct VirtualKey {
     int baseY;         // +0x34
     int offsetX;       // +0x38
     int offsetY;       // +0x3c
-    void *touch;       // +0x40 touch handle
+    // +0x40 touch handle while driving a synthetic touch; the sub-menu gate
+    // instead reads it as a biased touch-window handle (see IsSubMenuActive), so
+    // the slot is modelled as a union of both views.
+    union {
+        void *touch;
+        int   touchWindowHandle;
+    };
     int field_0x44;
     int field_0x48;
     int action;        // +0x4c follow-up action code
@@ -98,11 +105,69 @@ int g_pointerBaseY;
 int g_pointerCaptureX;
 
 // ---------------------------------------------------------------------------
+// Touch-window / sub-menu gating (read by IsSubMenuActive).
+// ---------------------------------------------------------------------------
+// A virtual key's `touch` slot holds, while it is driving a synthetic touch, a
+// 1-based window handle biased by kTouchWindowBase: handle h is stored as
+// kTouchWindowBase + 1 + h. IsSubMenuActive maps the handle back and asks the
+// touch-window system whether that window is a blocking sub-menu/dialog.
+constexpr int kTouchWindowBase = 0x578;
+
+// Number of registered touch windows; a handle past this is stale -> not active.
+// Modelled, like the rest of this group, as a pointer to the live subsystem
+// global the binary reaches through its GOT slot.
+int *g_touchWindowCount;
+
+// The window subsystem's current dialog/menu state. `g_touchWindowMode` is the
+// active window kind (0 = none); `g_touchWindowFlags` is a sub-state. When a
+// window kind is active the gate only fires for kinds outside {1,2}.
+int *g_touchWindowMode;
+int *g_touchWindowFlags;
+
+// Index of the focused list/menu entry, or -1 when nothing is focused.
+int *g_touchWindowFocus;
+
+// ---------------------------------------------------------------------------
 // 32-bit hash finaliser table.
 // ---------------------------------------------------------------------------
 // Four 256-entry columns laid out contiguously (column c at byte offset
 // c * 0x400). Resolved at load time by the asset loader; null until then.
 const unsigned int *const *g_hashTable;
+
+// ---------------------------------------------------------------------------
+// Steering / pointer-recentre globals written by keyReleased.
+// ---------------------------------------------------------------------------
+// keyReleased recentres the relevant steering axis when a directional key is
+// let go: if the opposite-direction arrow key is still held the axis is nudged
+// back by one step (+/-0.1), otherwise it snaps to its 0.5 midpoint. Each axis
+// lives at a fixed offset inside its own module-private steering struct.
+constexpr float kAxisCenter = 0.5f;          // 0x3f000000
+constexpr float kAxisStep   = 0.1f;          // 0x3dcccccd
+
+struct SteeringAxis {
+    int   field_0x00;
+    float axis1;   // +0x04 written by release cases 0 and 1
+    float axis2;   // +0x08 written by release cases 2 and 3
+};
+// Two direct module-private steering structs (the binary addresses them through
+// PC-relative GOT-free literals, i.e. plain globals rather than indirections).
+SteeringAxis g_steeringX;   // case 0/1 recentre target
+SteeringAxis g_steeringY;   // case 2/3 recentre target
+
+// The four reset pointers keyReleased clears on every call (pending wheel/zoom
+// requests and the firing flag) and the follow-up action sink.
+int *g_pendingZoom;
+int *g_pendingWheelA;
+int *g_pendingWheelB;
+int *g_pendingFire;
+
+// Follow-up action posted when a key with a non-zero `action` is released; a
+// direct module-private global the game module consumes next frame.
+int g_followUpAction;
+
+// A secondary firing/aim flag cleared for the boost/brake keys (release cases
+// 6 and 7).
+int *g_aimAssist;
 
 } // namespace
 
@@ -210,6 +275,129 @@ void keyEventPressed(AbyssEngine::Engine *engine, char *name)
         VirtualKey &key = g_virtualKeys[i];
         if (std::strcmp(key.name, name) == 0)
             keyPressed(engine, key.keyCode);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Key-code binding.
+// ---------------------------------------------------------------------------
+// Binds `code` onto every virtual key whose label matches `name`. `slot` 0 is
+// the primary game key code; slots 1..3 are the three alternates.
+void SetKeyCode(const char *name, int slot, int code)
+{
+    if (name == nullptr)
+        return;
+
+    for (VirtualKey &key : g_virtualKeys) {
+        if (std::strcmp(key.name, name) != 0)
+            continue;
+        switch (slot) {
+        case 0: key.keyCode  = code; break;
+        case 1: key.altCode1 = code; break;
+        case 2: key.altCode2 = code; break;
+        case 3: key.altCode3 = code; break;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Sub-menu / dialog gating.
+// ---------------------------------------------------------------------------
+// While a directional virtual key drives a synthetic touch, its `touch` slot
+// holds a biased window handle. This reports whether that window is a blocking
+// sub-menu/dialog (so flight steering should be suppressed). A handle at or
+// below the bias means "no window" -> not active.
+int IsSubMenuActive(int player)
+{
+    const int handle = g_virtualKeys[player].touchWindowHandle;
+    if (handle <= kTouchWindowBase)
+        return false;
+
+    const int window = handle - (kTouchWindowBase + 1);
+    if (window >= *g_touchWindowCount)
+        return false;
+
+    if (*g_touchWindowMode != 0) {
+        // An active window kind blocks unless it is one of the two pass-through
+        // kinds (1 or 2).
+        const unsigned int mode = static_cast<unsigned int>(*g_touchWindowFlags - 1);
+        return mode > 1u ? 1 : 0;
+    }
+
+    if (*g_touchWindowFocus != -1)
+        return true;
+
+    // Nothing focused: only the store module (id 5) counts as a sub-menu here.
+    return gAppManager->currentModuleId == 5 ? 1 : 0;
+}
+
+// ---------------------------------------------------------------------------
+// Virtual-key release.
+// ---------------------------------------------------------------------------
+// Clears the key's pressed flag, ends the synthetic touch it was driving, draws
+// the release feedback quad, runs the key's follow-up action and recentres the
+// affected steering axis. The four pending wheel/zoom/fire requests are reset on
+// every call.
+void keyReleased(AbyssEngine::Engine *engine, int key)
+{
+    *g_pendingZoom = 0;
+    *g_pendingWheelA = 0;
+    *g_pendingWheelB = 0;
+    *g_pendingFire = 0;
+
+    if (engine == nullptr)
+        return;
+
+    // Index of the first low-numbered key (< 0xb) that was released; selects the
+    // steering recentre below.
+    int releasedIndex = -1;
+
+    for (int i = 0; i < kVirtualKeyCount; ++i) {
+        VirtualKey &vk = g_virtualKeys[i];
+        if (vk.keyCode != key && vk.altCode1 != key && vk.altCode2 != key &&
+            vk.altCode3 != key)
+            continue;
+
+        if (vk.pressed != 1)
+            continue;
+        vk.pressed = 0;
+
+        if (i < 0xb)
+            releasedIndex = i;
+
+        if (vk.hasTouch == 0)
+            continue;
+
+        engine->appManager->OnTouchEnd(vk.baseX + vk.offsetX, vk.baseY + vk.offsetY,
+                                       vk.touch);
+        engine->appManager->OnTouchEndSimple();
+        engine->DrawQuad(vk.offsetX, vk.offsetY, 10, 10);
+        if (vk.action != 0)
+            g_followUpAction = vk.action;
+    }
+
+    // Steering recentre. Each released directional key snaps its axis to the
+    // midpoint unless the opposite arrow key is still held, in which case the axis
+    // is nudged one step toward that direction instead.
+    switch (releasedIndex) {
+    case 0:  // released "up": fall back toward "down" if still held
+        g_steeringX.axis1 = (g_virtualKeys[1].pressed == 0) ? kAxisCenter : kAxisStep;
+        break;
+    case 1:  // released "down": fall back toward "up" if still held
+        g_steeringX.axis1 = (g_virtualKeys[0].pressed == 0) ? kAxisCenter : -kAxisStep;
+        break;
+    case 2:  // released "left": fall back toward "right" if still held
+        g_steeringY.axis2 = (g_virtualKeys[3].pressed == 0) ? kAxisCenter : -kAxisStep;
+        break;
+    case 3:  // released "right": fall back toward "left" if still held
+        g_steeringY.axis2 = (g_virtualKeys[2].pressed == 0) ? kAxisCenter : kAxisStep;
+        break;
+    case 6:
+    case 7:
+        *g_aimAssist = 0;
+        break;
+    default:
+        break;
     }
 }
 

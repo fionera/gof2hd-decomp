@@ -27,6 +27,15 @@ void MouseInput(int dx, int dy);
 // pending wheel accumulator.
 void MouseWheel(float delta, float residual);
 
+// Binds a game key code (slot 0 = primary, slots 1..3 = alternates) onto every
+// virtual key whose label matches `name`.
+void SetKeyCode(const char *name, int slot, int code);
+
+// True while the touch-window the player's directional key is driving counts as
+// an active sub-menu/dialog window (so the input layer should suppress flight
+// steering). `player` selects the directional virtual key.
+int IsSubMenuActive(int player);
+
 // True while any of the four on-screen arrow keys is held.
 bool ArrowKeyPressed();
 
