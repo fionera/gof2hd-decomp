@@ -59,4 +59,25 @@ public:
     int getHeight();
 };
 
+// ---------------------------------------------------------------------------
+// Menu / dialog visibility predicates.
+//
+// These free functions are the small state queries the input layer uses to
+// decide how a navigation gesture should be routed (back button, sub-menu
+// focus, star-map overlay, ...). Each takes an unused player/context index so
+// they all share one dispatch-table signature, and reads a handful of global
+// UI-state flags. They carry no instance state and live outside any class,
+// matching their plain global C++ symbols.
+bool IsDialogVisible(int);
+bool IsDialogNotVisible(int);
+bool IsDialogNotVisible2(int);
+bool IsStarMapNotVisible(int);
+bool IsInGameSubMenuNotActive(int);
+bool IsInPrimaryMenu(int);
+
+// Android hardware back-button handler: raises the pending-back flag the main
+// loop polls each frame. Exported under its JNI name so the Java activity can
+// invoke it directly.
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed();
+
 #endif

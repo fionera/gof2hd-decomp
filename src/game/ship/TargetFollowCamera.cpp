@@ -260,21 +260,24 @@ void TargetFollowCamera::setFastForwardMode(bool enabled) {
 // coefficients to the output doubles.
 void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion(
         float t, double &outB, double &outA, double &outC, double &outD, double &outE) {
-    double x  = (double)t;
+    double x  = static_cast<double>(t);
     double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
     double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
 
     // Evaluate each degree-8 damping-curve polynomial (c[0]=x^8 .. c[8]=1) at x.
-    auto poly8 = [&](const double *c) {
-        return x8 * c[0] + x7 * c[1] + x6 * c[2] + x5 * c[3] + x4 * c[4] +
-               x3 * c[5] + x2 * c[6] + x * c[7] + c[8];
-    };
+    // Written out inline (rather than via a helper) so it folds away exactly as
+    // the shipped binary does.
+    #define GOF2_TFC_POLY8(c) \
+        (x8 * (c)[0] + x7 * (c)[1] + x6 * (c)[2] + x5 * (c)[3] + x4 * (c)[4] + \
+         x3 * (c)[5] + x2 * (c)[6] + x  * (c)[7] +      (c)[8])
 
-    outB =  poly8(g_TFC_dampE);
-    outA = -poly8(g_TFC_dampA);
-    outC =  poly8(g_TFC_dampC);
-    outD =  poly8(g_TFC_dampD);
-    outE = -poly8(g_TFC_dampB);
+    outB =  GOF2_TFC_POLY8(g_TFC_dampE);
+    outA = -GOF2_TFC_POLY8(g_TFC_dampA);
+    outC =  GOF2_TFC_POLY8(g_TFC_dampC);
+    outD =  GOF2_TFC_POLY8(g_TFC_dampD);
+    outE = -GOF2_TFC_POLY8(g_TFC_dampB);
+
+    #undef GOF2_TFC_POLY8
 }
 
 // ---------------------------------------------------------------------------

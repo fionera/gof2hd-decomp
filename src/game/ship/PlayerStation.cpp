@@ -208,14 +208,11 @@ PlayerStation::PlayerStation(Station *station)
             AEGeometry *root = this->rootGeometry;
             AbyssEngine::Transform *t;
             t = (AbyssEngine::Transform *)canvas->TransformGetTransform(root->transform);
-            t->UpdatePtr((uint32_t)t->animationLength,
-                         (uint32_t)((uint64_t)t->animationLength >> 32), 0);
+            t->Update(t->animationLength, false);
             t = (AbyssEngine::Transform *)canvas->TransformGetTransform(root->childTransform);
-            t->UpdatePtr((uint32_t)t->animationLength,
-                         (uint32_t)((uint64_t)t->animationLength >> 32), 0);
+            t->Update(t->animationLength, false);
             t = (AbyssEngine::Transform *)canvas->TransformGetTransform(root->parentTransform);
-            t->UpdatePtr((uint32_t)t->animationLength,
-                         (uint32_t)((uint64_t)t->animationLength >> 32), 0);
+            t->Update(t->animationLength, false);
         } else {
             this->rootGeometry = new AEGeometry((uint16_t)0x403b, canvas, false);
             AEGeometry child(0x403e, canvas, false);

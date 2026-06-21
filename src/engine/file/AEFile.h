@@ -125,6 +125,12 @@ public:
     virtual void        ResetSaveDirectory()                          = 0;
 };
 
+// Free-function append-open entry point exported by the engine. On this build it is a stub: the
+// append-mode file path was never wired up, so it ignores its arguments and reports failure (a null
+// handle). The wide name buffer / size / append flag / mode parameters mirror the real OpenWrite
+// slot signature.
+void *OpenAppend(unsigned short *name, int size, bool append, unsigned int mode);
+
 // AEFile is a fully static utility class: a collection of file I/O routines over the active
 // FileInterface plus the registered .pak archives. It has no instance state.
 class AEFile {

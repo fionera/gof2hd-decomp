@@ -69,4 +69,10 @@ public:
     String       GetDirPreFix() override;
 };
 
+// Engine logging entry points (info / error). On the shipping Android build these are compiled to
+// no-ops that simply hand the message string back to the caller, so the surrounding logging code
+// keeps working while emitting nothing.
+char *logi(char *message);
+char *loge(char *message);
+
 #endif

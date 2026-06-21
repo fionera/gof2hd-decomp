@@ -138,9 +138,9 @@ static inline float bitsToFloat(int bits) {
 // their callers (init/updateOrbit/updateMissionOrbit/updateAlienAttackers/createGasClouds/
 // createWingmen/createScene); here they are factored out as static helpers (no external
 // Level:: symbol) and forward-declared so the callers above can reach them.
-static inline void levelInitPlacePlayer(Level *self, int statusA, int stationStack);
+static inline __attribute__((always_inline)) void levelInitPlacePlayer(Level *self, int statusA, int stationStack);
 static inline void levelSpawnFar(Level *self, int *kiPlayer);
-static inline void levelSpawnAt(Level *self, int *kiPlayer, int profile);
+static inline __attribute__((always_inline)) void levelSpawnAt(Level *self, int *kiPlayer, int profile);
 static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit);
 static inline void levelCloudRandomPos(Level *self, int rng, int boss, unsigned i, Vector *out);
 static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i);
@@ -2156,7 +2156,7 @@ void Level::enemyDied(int r1, bool r2arg) {
 struct RMSpec { int id, speaker, kind, delay; };
 
 // Builds an Array<RadioMessage*> at this+0x114 from a static spec table.
-static void buildQueue(Level *self, const RMSpec *specs, unsigned n)
+static inline __attribute__((always_inline)) void buildQueue(Level *self, const RMSpec *specs, unsigned n)
 {
     self->messages = new Array<void*>();
     self->messages->resize(n);
@@ -3296,7 +3296,7 @@ void Level::attackWanted(int index) {
 
 // --- initParticleSystems() (inlined): register one player-engine particle system
 // (kind) against a unit reference transform and return its handle.
-static inline int levelAddPlayerSystem(Level *self, ParticleSettings::ParticleSet kind) {
+static inline __attribute__((always_inline)) int levelAddPlayerSystem(Level *self, ParticleSettings::ParticleSet kind) {
     ParticleSystemManager *mgr = self->particleSystemMgr;
     if (mgr == nullptr)
         return -1;
@@ -3783,7 +3783,7 @@ static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
 // --- init() (inlined): choose the player spawn (station dock / warpgate / planet /
 // origin) for the current orbit and commit it. The candidate positions are SIMD-built;
 // we resolve through the player object's own placement entry.
-static inline void levelInitPlacePlayer(Level *self, int statusA, int stationStack) {
+static inline __attribute__((always_inline)) void levelInitPlacePlayer(Level *self, int statusA, int stationStack) {
     (void)statusA;
     PlayerEgo *player = self->player;
     if (player == nullptr)
@@ -3794,7 +3794,7 @@ static inline void levelInitPlacePlayer(Level *self, int statusA, int stationSta
 }
 
 // The level's player world position (origin when no player exists yet).
-static inline Vector levelPlayerPosition(Level *self) {
+static inline __attribute__((always_inline)) Vector levelPlayerPosition(Level *self) {
     if (self->player == 0) { Vector p; p.x = p.y = p.z = 0.0f; return p; }
     return (self->player)->getPosition();
 }
@@ -3812,7 +3812,7 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
 
 // --- updateMissionOrbit() (inlined): revive then reposition. profile 0 == far wave,
 // profile 1 == tighter boss-escort spread.
-static inline void levelSpawnAt(Level *self, int *kiPlayer, int profile) {
+static inline __attribute__((always_inline)) void levelSpawnAt(Level *self, int *kiPlayer, int profile) {
     AbyssEngine::AERandom *rng = gRandom;
     Vector p = levelPlayerPosition(self);
     int span = profile ? 40000 : 120000;

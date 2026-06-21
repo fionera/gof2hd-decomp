@@ -422,6 +422,19 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int)
     return new FileInterfaceAndroid(f, true);
 }
 
+// Logging stubs: on the shipping build the info/error loggers were stripped down to no-ops that
+// just return the message they were handed, so callers (which pass the formatted string through)
+// continue to work without producing any output.
+char *logi(char *message)
+{
+    return message;
+}
+
+char *loge(char *message)
+{
+    return message;
+}
+
 // C-ABI default constructor (C1): construct in place.
 extern "C" void FileInterfaceAndroid_ctor(void *self)
 {

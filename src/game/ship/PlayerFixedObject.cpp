@@ -469,7 +469,7 @@ afterMotion:
 void PlayerFixedObject::setExhaustVisible(bool v) {
     AEGeometry *geom = (AEGeometry *)this->geometry;
     if (geom != 0 && (int)geom->childTransform != -1) {
-        return ((AbyssEngine::Transform *)(gCanvas->TransformGetTransform(geom->transform)))->setExhaustVisible(v);
+        return ((AbyssEngine::Transform *)(gCanvas->TransformGetTransform(geom->transform)))->SetVisible(v);
     }
 }
 

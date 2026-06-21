@@ -58,8 +58,6 @@ void VectorCross(Vector *out, const Vector *a, const Vector *b);
 extern "C" void ObjectGun_setEnemies_impl(void *items);
 
 // Engine globals controlling per-weapon scaling and the geometry/mesh id tables.
-// vtable slot 8: the base ObjectGun is not a rocket gun (RocketGun overrides this).
-int ObjectGun::isRocketGun() { return 0; }
 extern "C" void *g_ObjectGunScaleFlag;
 extern "C" void *g_ObjectGunRenderScaleFlag;
 extern "C" MeshId g_ObjectGunGeometryIds[];

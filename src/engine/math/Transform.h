@@ -106,18 +106,8 @@ public:
     void InsertKeyFrame(const float *values, longlong flags, int time);
     void InsertKeyFrame_old(const float *values, longlong flags, int time);
     void Update(longlong time, bool updateBounds);
-    // 32-bit-ABI wrappers around Update(): the 64-bit animation time arrives split
-    // into two 32-bit register halves at the C call boundary. Update32 takes the
-    // time already in r2:r3 (low half = `elapsed`); UpdatePtr assembles it from
-    // explicit (lo, hi) words read out of a sibling transform's animationLength.
-    void Update32(uint32_t high, longlong elapsed, uint32_t updateBounds);
-    void UpdatePtr(uint32_t lo, uint32_t hi, int updateBounds);
-    // Toggle the transform (and its exhaust meshes) on/off — used when a station
-    // module or fixed-object exhaust is shown or hidden.
-    void SetActive();
-    void SetInactive();
-    void setExhaustVisible(bool visible);
     void InternUpdate(longlong time, bool updateBounds);
+    int  DebugOut(int value);
     void SetAnimationState(AnimationMode, void *);
     void AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
                      const AEMath::Vector &c, const AEMath::Vector &d,

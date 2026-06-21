@@ -130,6 +130,13 @@ inline uint32_t  AEStr_indexOf(const String &self, const String &needle) { retur
 
 } // namespace
 
+// Exported append-open stub: append-mode opening was never implemented on this build, so the
+// entry point simply ignores the requested name/size/flags and reports failure with a null handle.
+void *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/)
+{
+    return nullptr;
+}
+
 void AEFile::SetInterface(FileInterface *fileInterface)
 {
     if (fileInterface == nullptr || fileInterface->enabled == 0) {

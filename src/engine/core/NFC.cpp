@@ -276,3 +276,70 @@ int NFC::getHeight()
     NFC_DeleteLocalRef(env);
     return value;
 }
+
+// ---- menu / dialog visibility predicates ----------------------------------------------------
+//
+// Global UI-state flags shared with the rest of the engine. The input layer
+// only ever reads them here; the windows that own each flag set it elsewhere.
+extern "C" int is_dialogue_window_visible __attribute__((visibility("hidden")));
+extern "C" int is_choice_window_visible __attribute__((visibility("hidden")));
+extern "C" int is_menu_visible __attribute__((visibility("hidden")));
+extern "C" bool isStarMapVisible __attribute__((visibility("hidden")));
+extern "C" int subMenuIndex __attribute__((visibility("hidden")));
+extern "C" int topMenuIndex __attribute__((visibility("hidden")));
+extern "C" int menu_touch_window_type __attribute__((visibility("hidden")));
+extern "C" int g_android_back_button_pressed __attribute__((visibility("hidden")));
+
+// True while either the narrative dialogue box or its yes/no choice box is up.
+bool IsDialogVisible(int)
+{
+    return is_dialogue_window_visible != 0 || is_choice_window_visible != 0;
+}
+
+// Inverse of IsDialogVisible — no dialogue or choice box on screen.
+bool IsDialogNotVisible(int)
+{
+    return is_dialogue_window_visible == 0 && is_choice_window_visible == 0;
+}
+
+// Like IsDialogNotVisible but also requires the menu overlay to be closed.
+bool IsDialogNotVisible2(int)
+{
+    return is_dialogue_window_visible == 0 && is_choice_window_visible == 0 &&
+           is_menu_visible == 0;
+}
+
+// True while the galaxy star-map overlay is not being shown.
+bool IsStarMapNotVisible(int)
+{
+    return !isStarMapVisible;
+}
+
+// True while no in-game sub-menu is active: the top menu is at its root
+// (subMenuIndex == -1, topMenuIndex == 0) and the menu overlay is hidden.
+bool IsInGameSubMenuNotActive(int)
+{
+    if (subMenuIndex == -1 && topMenuIndex == 0)
+        return is_menu_visible == 0;
+    return false;
+}
+
+// True while the player sits on a primary (top-level) menu page: the menu
+// overlay is up, nothing deeper has focus (no sub-page, no touch window, no
+// dialogue/choice box) and the star-map overlay is closed.
+bool IsInPrimaryMenu(int)
+{
+    if (is_menu_visible == 0)
+        return false;
+    if (topMenuIndex != 0 || menu_touch_window_type != 0 ||
+        is_dialogue_window_visible != 0 || is_choice_window_visible != 0)
+        return false;
+    return !isStarMapVisible;
+}
+
+// ---- Android hardware back button -----------------------------------------------------------
+
+extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed()
+{
+    g_android_back_button_pressed = 1;
+}

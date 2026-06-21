@@ -26,9 +26,11 @@ extern void Hud_loadImages(Hud *self);
 extern void Hud_buildQuickMenu(Hud *self, int menuType);
 
 // File-local HUD helpers (factored panel renderers / queue + menu helpers). These
-// have no standalone symbol in the original binary; the compiler inlines them.
-static void refreshQuickMenu(Hud *self);
-static void hudEventBuild(Hud *self, int eventId, void *ego, int arg);
+// have no standalone symbol in the original binary; the compiler inlines them, so
+// the queue/menu/score helpers are marked always_inline to match.
+#define HUD_INLINE static inline __attribute__((always_inline))
+HUD_INLINE void refreshQuickMenu(Hud *self);
+HUD_INLINE void hudEventBuild(Hud *self, int eventId, void *ego, int arg);
 static void buildQuickMenu(Hud *self, int menuType);
 static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
 static void drawRadar(Hud *self);
@@ -36,7 +38,16 @@ static void drawBars(Hud *self, void *ego);
 static void drawSecondaryWeaponPanel(Hud *self);
 static void drawMissionBanner(Hud *self);
 static void drawMessage(Hud *self);
-static void drawChallengeModeScoreImpl(Hud *self);
+HUD_INLINE void drawChallengeModeScoreImpl(Hud *self);
+HUD_INLINE void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw);
+
+// drawControlsInterface(long long, long long, PlayerEgo*, bool, uint, uint) — the
+// on-screen controls overlay was compiled out in this build; the free function
+// survives only as an empty stub.
+void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
+                           unsigned int x, unsigned int y) {
+    (void)t0; (void)t1; (void)ego; (void)letterbox; (void)x; (void)y;
+}
 
 void Hud::enableFireForTutorial(bool value) {
     this->fireForTutorial = value;
@@ -989,7 +1000,7 @@ __attribute__((visibility("hidden"))) extern void **g_Hud_csStatus; // *holder -
 __attribute__((visibility("hidden"))) extern void **g_Hud_csScreenW;// *holder -> [0] width
 extern const char g_Hud_csZero[] __attribute__((visibility("hidden"))); // "0" pad
 
-static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw) {
+HUD_INLINE void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw) {
     int len = (int)((String *)str)->size();
     int x = x0;
     for (int i = 1; (unsigned int)(i - 1) < (unsigned int)len; i++) {
@@ -1004,7 +1015,7 @@ static void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw
     }
 }
 
-static void drawChallengeModeScoreImpl(Hud *self) {
+HUD_INLINE void drawChallengeModeScoreImpl(Hud *self) {
     int *layout = (int *)*g_Hud_csLayout;
     int *status = (int *)*g_Hud_csStatus;
     int screenW = *(int *)*g_Hud_csScreenW;
@@ -1231,7 +1242,7 @@ Hud::~Hud() {
 // Rebuilds the secondary-weapon label and re-derives the radial quick-menu's
 // "empty" state from the current ship. Shared by setCurrentSecondaryWeapon() and
 // checkIfQuickMenuIsEmpty().
-static void refreshQuickMenu(Hud *self) {
+HUD_INLINE void refreshQuickMenu(Hud *self) {
     self->updateSecondaryWeaponString();
 
     Ship *ship = gStatus->getShip();
@@ -1262,7 +1273,7 @@ static void refreshQuickMenu(Hud *self) {
 // the banner geometry so the line scrolls in from the correct side.
 extern unsigned int g_Hud_heImportantMask; // 1<<id bitmask of priority events
 
-static void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
+HUD_INLINE void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
     (void)ego; (void)arg;
 
     String *line = (String *)&self->field_0x1e0;

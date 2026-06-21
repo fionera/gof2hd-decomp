@@ -4,6 +4,7 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "game/weapons/AbstractGun.h"
 
 // Galaxy on Fire 2 -- ObjectGun: the renderable/animated wrapper around a Gun.
 // It owns the weapon's mesh transform, optional muzzle/effect geometry, and (for
@@ -15,7 +16,11 @@ class Gun;
 class Level;
 class Player;
 
-class ObjectGun {
+// Derives from AbstractGun, which supplies the weapon-kind predicate quartet
+// (isRocketGun/isBombGun/isMineGun/isAutoTurret) as virtuals that default to 0.
+// A plain ObjectGun is none of those, so it inherits those defaults unchanged;
+// concrete subclasses (RocketGun, MineGun, ...) override the one that applies.
+class ObjectGun : public AbstractGun {
 public:
     // (the +0x0 vptr is the compiler-managed C++ vtable; the class is polymorphic)
     int unusedSlot;                     // +0x4  init -1, never read (unused id/slot)
@@ -44,7 +49,6 @@ public:
 
     ObjectGun(int unused, Gun* gun, int mesh, uint32_t param, Level* level);
     virtual ~ObjectGun();
-    virtual int isRocketGun();          // vtable slot 8 (base: not a rocket gun)
 
     void setScaling(int x, int y, int z);
     void replaceGun(unsigned int mesh, int unused);
