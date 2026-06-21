@@ -151,16 +151,10 @@ void StarMap::render()
         this->starSystemRoot->render();
     }
     if (this->markerGeom != 0) {
-        return this->render_tail();
+        // Draw the highlighted jump-route / selected-system overlay geometry that
+        // sits on top of the system map.
+        this->markerGeom->render();
     }
-}
-
-// render() tail (binary: indirect AEGeometry::render thunk @0x1abdd4 reached when the
-// optional overlay mesh at +0xf8 is present): draws the highlighted jump-route /
-// selected-system overlay geometry that sits on top of the system map.
-void StarMap::render_tail()
-{
-    this->markerGeom->render();
 }
 
 // Background-render hook. The star map paints its whole scene (3D systems plus the
@@ -400,15 +394,9 @@ cleanup:
     }
     ((FModSound *)(*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
-    return this->depart_tail(gAppManager, 2);
-}
-
-// depart() tail (binary: module-switch trampoline @0x1ab908): the player has committed
-// to leaving the current station / jumping, so the running star-map module hands control
-// back to the application, switching it to the in-flight module (`moduleId` == 2).
-void StarMap::depart_tail(void *app, int moduleId)
-{
-    ((ApplicationManager *)app)->SetCurrentApplicationModule((unsigned)moduleId);
+    // The player has committed to leaving the station / jumping: hand control back to
+    // the application, switching it to the in-flight module (index 2).
+    gAppManager->SetCurrentApplicationModule(2);
 }
 
 static inline float absf_end(float v)
@@ -543,19 +531,10 @@ void StarMap::OnTouchEnd(int x, int y)
         }
     }
     if (((Layout *)(layout))->helpPressed() != 0) {
-        OnTouchEnd_tail();
+        // Open the localized help overlay (text id 0x1a5).
+        help.copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
+        ((Layout *)(layout))->initHelpWindow(help);
     }
-}
-
-// OnTouchEnd() tail: the help-window branch reached when the shared map layout reports its
-// help button was pressed. Opens the localized help overlay (text id 0x1a5) and releases the
-// temporary String. Split out as its own fragment in the binary (tail of OnTouchEnd).
-void StarMap::OnTouchEnd_tail()
-{
-    String help;
-    void *layout = *g_StarMap_end_layout;
-    help.copy((String *)((GameText *)(*g_StarMap_end_text))->getText(0x1a5), false);
-    ((Layout *)(layout))->initHelpWindow(help);
 }
 
 // StarMap::touch_end(x, y): touch-release handler used while the star map is embedded inside

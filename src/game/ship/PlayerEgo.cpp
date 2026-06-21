@@ -176,7 +176,6 @@ extern "C" void  PE_handleShip_orient(PlayerEgo *self, int dt, unsigned int tfHa
 extern "C" void (*g_stopBoost_fn)(void*, int);
 void *Globals_getShipGroup(void *g, int race, int group, bool b);
 extern "C" void *TractorBeam_new(void *geo, int kind);
-extern "C" void *RepairBeam_new(int idx, int sort);
 
 extern "C" void  PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void **canvasHolder);
 extern "C" void Player_addGun2(void*, void*, int);
@@ -2910,7 +2909,7 @@ void PlayerEgo::setShip(int race, int group) {
         if (it != 0) {
             if (this->repairBeams == 0)
                 this->repairBeams = new Array<RepairBeam *>();
-            RepairBeam *rb = (RepairBeam *)RepairBeam_new(((Item *)(it))->getIndex(), ((Item *)(it))->getSort());
+            RepairBeam *rb = new RepairBeam(((Item *)(it))->getIndex(), ((Item *)(it))->getSort());
             int idx = ((Item *)(it))->getIndex();
             if (idx == 0xde)
                 gGlobals->addSoundResourceToList(0x8db);

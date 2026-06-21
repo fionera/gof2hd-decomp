@@ -161,9 +161,9 @@ uint8_t PlayerFighter::hasCrateCaptured() {
     return this->crateCaptured == 0;
 }
 
-// setPosition(Vector const&) — slot 0x44 in the binary, which unpacks the vector and
-// calls slot 0x48 (the float setPosition3). Now a named virtual call.
-void PlayerFighter::setPosition_ref(const Vector &v) {
+// setPosition(Vector const&) — unpacks the vector and dispatches the float setPosition3
+// override through the actor vtable (slot 0x48).
+void PlayerFighter::setPosition(const Vector &v) {
     this->setPosition3(v.x, v.y, v.z);
 }
 

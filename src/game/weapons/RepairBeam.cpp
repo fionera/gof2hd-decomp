@@ -125,10 +125,13 @@ RepairBeam::~RepairBeam() {
 
 // Drive the repair/heal/shield beams: assign targets, animate beam geometry
 // toward them, apply heal/shield/damage effects and manage the looping sound.
-void RepairBeam::update(int dt, void* level, void* hud) {
+// The radar handle is unused; all work is driven off the frame time, the active
+// level and the hud.
+void RepairBeam::update(int dt, Radar* radar, Level* level, Hud* hud) {
+    (void)radar;
     (void)hud;
 
-    Array<KIPlayer*>* enemies = ((Level*)level)->getEnemies();
+    Array<KIPlayer*>* enemies = level->getEnemies();
     this->timer -= dt;
 
     if (enemies != nullptr) {
@@ -318,19 +321,6 @@ void RepairBeam::update(int dt, void* level, void* hud) {
             RB_FModSound_updateEvent3DAttributes(snd, evArr[shipIdx], &this->beamPosition, nullptr, false);
         }
     }
-}
-
-// Canonical per-frame entry (same signature the other beam weapons expose). The
-// radar handle is unused here; the work is driven entirely off the frame time,
-// the active level and the hud, so forward to the core update.
-void RepairBeam::update(int frameTime, Radar* radar, Level* level, Hud* hud) {
-    (void)radar;
-    this->update(frameTime, level, hud);
-}
-
-// Allocate then construct. PlayerEgo equips this when a repair-beam module is present.
-RepairBeam* RepairBeam::create(int shipIndex, int sort) {
-    return new RepairBeam(shipIndex, sort);
 }
 
 // Out-of-line container helpers for the beam-geometry and per-target charge pools,

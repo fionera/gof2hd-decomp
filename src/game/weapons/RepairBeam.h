@@ -29,12 +29,6 @@ public:
     ~RepairBeam();
 
     void render();
-    void update(int dt, void* level, void* hud);
-    void update(int frameTime, Radar* radar, Level* level, Hud* hud);
-
-    // Allocate and construct a RepairBeam for the given ship index and equipment
-    // sort (0x25 heal / 0x29 shield). Used by PlayerEgo when a repair-beam module
-    // is equipped.
-    static RepairBeam* create(int shipIndex, int sort);
+    void update(int dt, Radar* radar, Level* level, Hud* hud);
 };
 #endif

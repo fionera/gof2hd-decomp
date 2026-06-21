@@ -15,8 +15,6 @@ public:
          int slot0, int slot1, int slot2, int slot3, float handling);
     ~Ship();
 
-    void          recomputeAfterSlots();
-
     // ---- cargo ----
     void          addCargo(Array<Item*>* items);
     void          addCargo(Item* item);

@@ -140,7 +140,6 @@ public:
     void initStarSystem();
 
     void render();
-    void render_tail();              // draw the optional jump-route overlay geometry
     void renderBG();
     void draw();
     void drawKey();
@@ -151,11 +150,9 @@ public:
     uint32_t OnTouchBegin(int x, int y);
     void OnTouchMove(int x, int y);
     void OnTouchEnd(int x, int y);
-    void OnTouchEnd_tail();          // open the help overlay
     int  touch_end(int x, int y);    // embedded (lounge) touch-release; nonzero => map dismissed
 
     void depart(bool jump);
-    void depart_tail(void *app, int moduleId); // hand the application to module `moduleId`
     void setStart(int start, int target);
     void setJumpMapMode(bool enabled, bool value);
     void askForJumpIntoAlienWorld();

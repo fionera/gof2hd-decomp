@@ -223,7 +223,7 @@ void Station::visit() {
         return;
     visited = 1;
     gStatus->visitStation();
-    gGalaxy->setSystemVisited(index);
+    gGalaxy->visitStation(index);
 }
 
 uint32_t Station::getHiddenBlueprintIndex() {

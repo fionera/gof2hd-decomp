@@ -71,6 +71,11 @@ void Objective::setAchievedText(AbyssEngine::String* text)
     this->achievedText = new AbyssEngine::String(*text);
 }
 
+AbyssEngine::String* Objective::getAchievedText()
+{
+    return this->achievedText;
+}
+
 bool Objective::isSurvivalObjective()
 {
     return this->type == 3;

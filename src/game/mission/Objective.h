@@ -29,6 +29,7 @@ public:
 
     Objective* addObjective(Objective* objective);
     void setAchievedText(AbyssEngine::String* text);
+    AbyssEngine::String* getAchievedText();
     bool isSurvivalObjective();
     bool getCalcValue();
     unsigned int achieved(int value);

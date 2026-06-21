@@ -91,12 +91,6 @@ Ship::~Ship() {
     this->mods = 0;
 }
 
-// Invoked after any equipment-slot mutation to re-derive the ship's stats
-// (shield/armor/firepower/boost/etc.) and re-price it.
-void Ship::recomputeAfterSlots() {
-    refreshValue();
-}
-
 // ===========================================================================
 // Cargo
 // ===========================================================================
@@ -279,7 +273,7 @@ void Ship::setEquipment(Item *item) {
             break;
         }
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 void Ship::setEquipment(Item *item, int slot) {
@@ -295,7 +289,7 @@ void Ship::setEquipment(Item *item, int slot) {
         delete old;
     }
     this->equipment->data()[idx] = item;
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 void Ship::setEquipment(Array<Item*> *items) {
@@ -315,7 +309,7 @@ void Ship::replaceEquipment(Array<Item*> *equipment) {
         }
     }
     this->equipment = equipment;
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 int Ship::addEquipment(Item *item) {
@@ -434,7 +428,7 @@ void Ship::freeSlot(Item *item) {
             break;
         }
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 void Ship::freeSlot(Item *item, int slot) {
@@ -445,7 +439,7 @@ void Ship::freeSlot(Item *item, int slot) {
             break;
         }
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 void Ship::freeAllSlots() {
@@ -455,7 +449,7 @@ void Ship::freeAllSlots() {
             data[i] = 0;
         }
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 int Ship::slotAvailable(int sort) {
@@ -762,7 +756,7 @@ void Ship::addMod(int mod) {
         }
         *slot = 0;
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 void Ship::setMods(Array<int> *mods) {
@@ -788,7 +782,7 @@ void Ship::setMods(Array<int> *mods) {
             }
         }
     }
-    recomputeAfterSlots();
+    refreshValue();
 }
 
 Array<int>* Ship::getMods() {

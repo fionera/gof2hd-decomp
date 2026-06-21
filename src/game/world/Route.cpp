@@ -30,6 +30,15 @@ template void ArrayReleaseClasses<KIPlayer *>(Array<KIPlayer *> &);
 template void ArrayReleaseClasses<RadioMessage *>(Array<RadioMessage *> &);
 template void ArrayReleaseClasses<AbstractGun *>(Array<AbstractGun *> &);
 
+// KIPlayer's vtable slot writes its current position (3 floats) to *out. KIPlayer is
+// only ever held by pointer here, so its position is read through the vtable rather
+// than pulling in the full type.
+typedef void (*GetPosFn)(void *out);
+
+static inline void getPos(void *kip, void *out) {
+    (*(*(GetPosFn **)kip + 0xa))(out);
+}
+
 // Route::waypointDefined() -> whether the waypoint array has been allocated.
 bool Route::waypointDefined() {
     return this->waypoints != nullptr;
@@ -49,7 +58,7 @@ void Route::reset() {
 
 // Route::getWaypoint() -> waypoint at the current index.
 Waypoint *Route::getWaypoint() {
-    return getWaypointAt(this->currentIndex);
+    return getWaypoint(this->currentIndex);
 }
 
 // Route::getExactClone() -> a clone whose reached-waypoints are marked, sharing the current index.
@@ -90,55 +99,42 @@ int Route::getDockingTime(int index) {
     return 0;
 }
 
-// Route::getWaypoint(int) -> snap the waypoint's stored coords to its docking target's position.
+// Route::getWaypoint(int) -> waypoint at the given index, with its stored coords
+// snapped to its docking target's current position (if any).
 Waypoint *Route::getWaypoint(int index) {
-    return getWaypointAt(index);
-}
-
-// Route::getDockingTimeAt(int) -> docking time at the given index, or 0.
-int Route::getDockingTimeAt(int index) {
-    if (this->dockingTargets != nullptr) {
-        Array<int> *times = this->dockingTimes;
-        if (index < (int)times->size())
-            return (*times)[index];
+    char pos[12];
+    Waypoint *wp = nullptr;
+    if ((int)this->waypoints->size() > index &&
+        (wp = (*this->waypoints)[index]) != nullptr) {
+        void *k = (void *)(*this->dockingTargets)[index];
+        if (k != nullptr) {
+            getPos(k, pos);
+            wp->x = (int)*(float *)(pos + 0);
+            getPos((void *)(*this->dockingTargets)[index], pos);
+            wp->y = (int)*(float *)(pos + 4);
+            getPos((void *)(*this->dockingTargets)[index], pos);
+            wp->z = (int)*(float *)(pos + 8);
+        }
     }
-    return 0;
-}
-
-// Route::setNewCoords(x, y, z) -> overwrite the first waypoint's target coordinates.
-void Route::setNewCoords(float x, float y, float z) {
-    Waypoint *wp = (*this->waypoints)[0];
-    wp->x = (int)x;
-    wp->y = (int)y;
-    wp->z = (int)z;
+    return wp;
 }
 
 // Route::setNewCoords(Vector) -> overwrite the first waypoint's target coordinates.
 void Route::setNewCoords(Vector v) {
-    setNewCoords(v.x, v.y, v.z);
+    Waypoint *wp = (*this->waypoints)[0];
+    wp->x = (int)v.x;
+    wp->y = (int)v.y;
+    wp->z = (int)v.z;
 }
 
-// Route::getDockingTarget_i(int) -> docking target at the given index, or null.
-KIPlayer *Route::getDockingTarget_i(int index) {
-    Array<KIPlayer *> *targets = this->dockingTargets;
-    if (targets != nullptr && index < (int)targets->size())
-        return (*targets)[index];
-    return nullptr;
-}
-
-// Route::update(Vector const&) -> forward to update_xyz(v.x, v.y, v.z).
+// Route::update(Vector const&) -> forward to update(v.x, v.y, v.z).
 void Route::update(const Vector &v) {
-    update_xyz(v.x, v.y, v.z);
-}
-
-// Route::update(x, y, z) -> if close enough to the active waypoint, advance to the next.
-float Route::update(float x, float y, float z) {
-    return update_xyz(x, y, z);
+    update(v.x, v.y, v.z);
 }
 
 // Route::getLastWaypoint() -> last waypoint in the path.
 Waypoint *Route::getLastWaypoint() {
-    return getWaypointAt((int)this->waypoints->size() - 1);
+    return getWaypoint((int)this->waypoints->size() - 1);
 }
 
 // Route::translate(Vector const&) -> shift every waypoint's coords by the given vector.
@@ -210,36 +206,8 @@ Route *Route::clone() {
     return r;
 }
 
-// KIPlayer's vtable slot writes its current position (3 floats) to *out. KIPlayer is
-// only ever held by pointer here, so its position is read through the vtable rather
-// than pulling in the full type.
-typedef void (*GetPosFn)(void *out);
-
-static inline void getPos(void *kip, void *out) {
-    (*(*(GetPosFn **)kip + 0xa))(out);
-}
-
-// Route::getWaypointAt(int) -> snap the waypoint's stored coords to its docking target's position.
-Waypoint *Route::getWaypointAt(int index) {
-    char pos[12];
-    Waypoint *wp = nullptr;
-    if ((int)this->waypoints->size() > index &&
-        (wp = (*this->waypoints)[index]) != nullptr) {
-        void *k = (void *)(*this->dockingTargets)[index];
-        if (k != nullptr) {
-            getPos(k, pos);
-            wp->x = (int)*(float *)(pos + 0);
-            getPos((void *)(*this->dockingTargets)[index], pos);
-            wp->y = (int)*(float *)(pos + 4);
-            getPos((void *)(*this->dockingTargets)[index], pos);
-            wp->z = (int)*(float *)(pos + 8);
-        }
-    }
-    return wp;
-}
-
-// Route::update_xyz(x, y, z) -> if close enough to the active waypoint, advance to the next.
-float Route::update_xyz(float x, float y, float z) {
+// Route::update(x, y, z) -> if close enough to the active waypoint, advance to the next.
+float Route::update(float x, float y, float z) {
     int idx = this->currentIndex;
     Array<Waypoint *> *wps = this->waypoints;
     if (idx >= (int)wps->size())
@@ -282,7 +250,7 @@ float Route::update_xyz(float x, float y, float z) {
 
 // Route::getDockingTime() -> docking time at the current index.
 int Route::getDockingTime() {
-    return getDockingTimeAt(this->currentIndex);
+    return getDockingTime(this->currentIndex);
 }
 
 // Route(int*, int) — build a route from a flat [x,y,z, x,y,z, ...] coord array.

@@ -76,14 +76,6 @@ void Galaxy::visitStation(int index)
     this->visited[index] = 1;
 }
 
-// Tail-call target of Station::visit(): marks the given system index as visited.
-// Identical work to visitStation(int) — the station index equals the system index
-// on the star map.
-void Galaxy::setSystemVisited(int systemId)
-{
-    this->visited[systemId] = 1;
-}
-
 void Galaxy::setVisited(bool *src, int count)
 {
     for (int i = 0; i < count; ++i)

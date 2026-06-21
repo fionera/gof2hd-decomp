@@ -5,6 +5,8 @@
 //
 //   _Znwj   operator new(unsigned int)              0x1a3c94  (full body)
 //   _Znaj   operator new[](unsigned int)            0x1a3cf2  -> operator new
+//   _ZdlPv  operator delete(void*)                  0x1a3d10  -> free
+//   _ZdlPvj operator delete(void*, unsigned int)    0x1a3d18  -> operator delete
 //   _ZdaPv  operator delete[](void*)                0x1a3d1c  -> operator delete
 //   _ZdaPvj operator delete[](void*, unsigned int)  0x1a3d24  -> operator delete[]
 //
@@ -38,6 +40,22 @@ void *operator new(std::size_t size)
 void *operator new[](std::size_t size)
 {
     return ::operator new(size);
+}
+
+// operator delete(void*) -- 0x1a3d10 (_ZdlPv)
+// The scalar deallocation operator: a null pointer is a no-op, otherwise the
+// block is returned to the C heap. Every other delete form funnels through here.
+void operator delete(void *ptr) noexcept
+{
+    if (ptr != nullptr)
+        std::free(ptr);
+}
+
+// operator delete(void*, unsigned int) -- 0x1a3d18 (_ZdlPvj)
+// Sized delete: the size hint is unused, the request delegates to the unsized form.
+void operator delete(void *ptr, std::size_t) noexcept
+{
+    ::operator delete(ptr);
 }
 
 // operator delete[](void*) -- 0x1a3d1c (_ZdaPv)

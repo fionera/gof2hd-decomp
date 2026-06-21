@@ -25,7 +25,6 @@ public:
 
     // Mark a station/system index as visited.
     void visitStation(int index);
-    void setSystemVisited(int systemId);
 
     // Bulk-load the visited flags from a bool array, zero-filling the remainder.
     void setVisited(bool *src, int count);

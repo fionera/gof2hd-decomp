@@ -165,7 +165,7 @@ public:
     void setLevel(Level *lvl);
     void setMissionCrate(bool on);
     void setPosition3(float x, float y, float z) override;   // actor vtable slot +0x48
-    void setPosition_ref(const Vector &v);
+    void setPosition(const Vector &v);                       // unpacks and dispatches slot +0x48
     void setRotate(int v);
     void setShootError(int v);
     void setShipGroup(AEGeometry *geom, int group, bool flag) override;   // actor vtable slot +0x8
