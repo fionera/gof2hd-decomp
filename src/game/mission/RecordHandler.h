@@ -41,7 +41,6 @@ public:
     void   convertSDVersionSaves();
     bool   notEnoughMemory();
     void   loadOptions();
-    void   loadResolutionValue();
     void   loadResolutionValue(float resolution);
     void  *readAgent(unsigned int fd);
     void  *readAllPreviewRecords();
@@ -53,13 +52,10 @@ public:
     void   recoverSDVersionSaves();
     void  *readWanted(unsigned int fd);
     void  *recordStoreRead(int slot);
-    void   recordStoreRead_body(void *rec, unsigned int fd);
-    void   recordStoreWrite_body(unsigned int fd);
     void  *recordStoreReadPreview(int slot);
     void   recordStoreWrite(int slot);
     int    recordStoreWritePreview(GameRecord *rec, int slot);
     void   recordStoreWritePreview(int slot);
-    int    recordStoreWritePreview_int(int slot);
     void   saveOptions();
     void   writeAgent(Agent *agentPtr, unsigned int fd);
     void   writeByteArrayAsOptionsFile(signed char *buf, int n);
