@@ -57,11 +57,6 @@ extern "C" void Array_KIPlayer_ctor(void *array);
 extern "C" void Array_Station_release(void *array);
 extern "C" void *Array_Station_dtor(void *array);
 
-// Out-of-line length helper for the playerTargets container. The original sizes
-// it through ArraySetLength on the 4-byte element type (KIPlayer* collapses to
-// unsigned int for the {count,data,capacity} layout).
-template void ArraySetLength<unsigned int>(unsigned int, Array<unsigned int> &);
-
 static inline uint32_t flat_count(void *array) {
     return *(uint32_t *)array;
 }

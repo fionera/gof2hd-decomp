@@ -243,5 +243,3 @@ int *ImageFactory::createChar(bool isMale, int race)
     return desc;
 }
 
-// Out-of-line container template instantiation emitted by this TU in the original binary.
-template void ArraySetLength<ImagePart *>(unsigned int, Array<ImagePart *> &);

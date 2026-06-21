@@ -163,22 +163,3 @@ extern "C" void *EaseInOutMatrix_dtor(void *p)
     return p;
 }
 
-// Deletes every owned pointee in the array (nulling each slot as it goes),
-// then frees the backing store. Out-of-line in the original as
-// ArrayReleaseClasses<T>; the loop walks the full capacity, not just size.
-// Instantiated here for RepairBeam* (PlayerEgo's active-beam list).
-template<class T>
-void ArrayReleaseClasses(Array<T> &a) {
-    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
-        if (a.data_[i] != 0) {
-            delete a.data_[i];
-        }
-        a.data_[i] = 0;
-    }
-    if (a.data_) {
-        ::operator delete[](a.data_);
-    }
-    a.data_ = 0;
-}
-
-template void ArrayReleaseClasses<RepairBeam*>(Array<RepairBeam*> &);

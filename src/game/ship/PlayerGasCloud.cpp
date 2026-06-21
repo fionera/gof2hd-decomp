@@ -431,8 +431,3 @@ void PlayerGasCloud::render()
     }
 }
 
-// Out-of-line Array container instantiations the original binary emits from this TU.
-template void ArraySetLength<Mission*>(unsigned int, Array<Mission*>&);
-template void ArraySetLength<Station*>(unsigned int, Array<Station*>&);
-template void ArrayAdd<bool>(bool, Array<bool>&);
-template void ArrayAdd<float>(float, Array<float>&);

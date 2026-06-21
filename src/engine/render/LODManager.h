@@ -11,20 +11,6 @@ class AEGeometry;   // global engine type, used by pointer only
 // Erase every element equal to `item` from `a` (in-place compaction), then shrink the
 // backing store to the new count (min one slot). The engine's out-of-line container
 // helper: _Z11ArrayRemoveI...EvT_R5ArrayIS2_E in the binary, paired with ArrayAdd<T>.
-template <class T>
-void ArrayRemove(T item, Array<T> &a)
-{
-    unsigned int write = 0;
-    for (unsigned int read = 0; read < a.size_; ++read) {
-        T cur = a.data_[read];
-        if (cur != item)
-            a.data_[write++] = cur;
-    }
-    a.size_ = write;
-    unsigned int cap = write ? write : 1;
-    a.capacity_ = cap;
-    a.data_ = static_cast<T *>(realloc(a.data_, cap * sizeof(T)));
-}
 
 // A single live touch point, as tracked by the Android input bridge: screen x/y plus
 // the pointer id and action code. GetTouch() returns one of these by value.

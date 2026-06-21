@@ -34,21 +34,6 @@ void MatrixMultiply(const Matrix &, const Matrix &);
 // the backing store. Out-of-line in the original as ArrayReleaseClasses<T>; the loop
 // walks the full capacity, not just size. ObjectGun owns the Array<Explosion*> pool, so
 // the original's ArraySetLength<Explosion*> / ArrayReleaseClasses<Explosion*> live here.
-template<class T>
-void ArrayReleaseClasses(Array<T> &a) {
-    for (unsigned int i = 0; i < a.capacity_; i = i + 1) {
-        if (a.data_[i] != 0) {
-            delete a.data_[i];
-        }
-        a.data_[i] = 0;
-    }
-    if (a.data_) {
-        ::operator delete[](a.data_);
-    }
-    a.data_ = 0;
-}
-template void ArraySetLength<Explosion*>(unsigned int, Array<Explosion*> &);
-template void ArrayReleaseClasses<Explosion*>(Array<Explosion*> &);
 
 // PaintCanvas transform/mesh helpers and the active canvas handle (engine globals).
 extern "C" void *g_PaintCanvas;

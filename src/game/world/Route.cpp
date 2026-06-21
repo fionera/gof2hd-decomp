@@ -4,32 +4,6 @@
 #include "game/core/RadioMessage.h"
 #include "game/weapons/AbstractGun.h"
 
-// Deletes every owned pointee in the array (nulling each slot as it goes), then
-// frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;
-// the loop walks the full capacity, not just the live size.
-template<class T>
-void ArrayReleaseClasses(Array<T> &a) {
-    for (unsigned int i = 0; i < a.capacity_; ++i) {
-        if (a.data_[i] != nullptr) {
-            delete a.data_[i];
-        }
-        a.data_[i] = nullptr;
-    }
-    if (a.data_) {
-        ::operator delete[](a.data_);
-    }
-    a.data_ = nullptr;
-}
-
-// The original library exports these Array<T> container helpers out-of-line for the
-// route/AI/weapon pointer types handled here.
-template void ArrayAdd<Waypoint *>(Waypoint *, Array<Waypoint *> &);
-template void ArraySetLength<KIPlayer *>(unsigned int, Array<KIPlayer *> &);
-template void ArrayReleaseClasses<Waypoint *>(Array<Waypoint *> &);
-template void ArrayReleaseClasses<KIPlayer *>(Array<KIPlayer *> &);
-template void ArrayReleaseClasses<RadioMessage *>(Array<RadioMessage *> &);
-template void ArrayReleaseClasses<AbstractGun *>(Array<AbstractGun *> &);
-
 // KIPlayer's vtable slot writes its current position (3 floats) to *out. KIPlayer is
 // only ever held by pointer here, so its position is read through the vtable rather
 // than pulling in the full type.

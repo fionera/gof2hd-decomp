@@ -167,20 +167,6 @@ void ArraySetLength(unsigned int n, Array<T> &a) { a.resize(n); }
 template<class T>
 void ArrayRemoveAll(Array<T> &a) { a.clear(); }
 
-// ---------------------------------------------------------------------------
-// Out-of-line container helpers and their explicit instantiations.
-//
-// ArrayRemove / ArrayRelease / ArrayReleaseClasses / ArrayAddCached are the
-// remaining engine container free-functions. Their template *definitions* and
-// the explicit instantiations the original library exports out-of-line are
-// gathered here, but kept behind GOF2_ARRAY_INSTANTIATIONS so that ordinary
-// translation units (which only need the declarations, or carry their own
-// local copies of these templates) are unaffected. Exactly one TU --
-// Array.cpp -- defines the macro and materialises the symbols. The
-// instantiations emit with weak (COMDAT) linkage, matching the binary.
-// ---------------------------------------------------------------------------
-#ifdef GOF2_ARRAY_INSTANTIATIONS
-
 // Erase every element equal to `item` (in-place compaction), then shrink the
 // backing store to the new count (min one slot). Paired with ArrayAdd<T>.
 template<class T>
@@ -230,7 +216,5 @@ void ArrayAddCached(T item, Array<T> &a) {
     a.data_[a.size_] = item;
     a.size_ = a.size_ + 1;
 }
-
-#endif // GOF2_ARRAY_INSTANTIATIONS
 
 #endif // GALAXYONFIRE2_ARRAY_H

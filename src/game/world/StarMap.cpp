@@ -1467,34 +1467,3 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4)
     return 0;
 }
 
-// Out-of-line container free-function template instantiations emitted by this TU in the
-// original binary. The StarMap screen owns a few Array<T> helpers that no other TU pulls
-// out-of-line, so they are defined and instantiated here.
-
-// ArrayAdd<T>(buffer, count, array) is defined canonically in engine/core/Array.h.
-
-// ArrayRelease<T>: free the backing store and null it out, without touching the elements.
-template<class T>
-void ArrayRelease(Array<T> &a) {
-    if (a.data_) ::operator delete[](a.data_);
-    a.data_ = nullptr;
-}
-
-// ArrayReleaseClasses<T>: delete every owned pointee (nulling each slot), walking the full
-// capacity rather than just the size, then free the backing store.
-template<class T>
-void ArrayReleaseClasses(Array<T> &a) {
-    for (unsigned int i = 0; i < a.capacity_; i++) {
-        if (a.data_[i] != nullptr) {
-            delete a.data_[i];
-        }
-        a.data_[i] = nullptr;
-    }
-    if (a.data_) ::operator delete[](a.data_);
-    a.data_ = nullptr;
-}
-
-template void ArrayAdd<unsigned char>(const unsigned char *, unsigned int, Array<unsigned char> &);
-template void ArrayRelease<bool>(Array<bool> &);
-template void ArrayReleaseClasses<Wanted *>(Array<Wanted *> &);
-template void ArrayReleaseClasses<Station *>(Array<Station *> &);

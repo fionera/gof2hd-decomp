@@ -4,10 +4,6 @@
 #include "game/world/Station.h"
 #include "engine/render/LODManager.h" // ArrayRemove<T>
 
-// Force the out-of-line ArrayRemove<Item*> container helper into this TU, paired
-// with the rest of the Item code that consumes it.
-template void ArrayRemove<Item*>(Item*, ItemArray&);
-
 // Persistent player/game state singleton (owned elsewhere).
 extern Status* status;
 

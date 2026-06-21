@@ -1,9 +1,4 @@
 #include "engine/file/FileRead.h"
-
-// Agent.h references Mission only through pointers but does not forward-declare it; provide the
-// declaration here so this translation unit stays self-sufficient.
-class Mission;
-
 #include "engine/core/AERandom.h"
 #include "engine/math/AEMath.h"
 #include "game/mission/Item.h"
@@ -14,6 +9,8 @@ class Mission;
 #include "game/world/SpacePoint.h"
 #include "game/world/Station.h"
 #include "game/world/Wanted.h"
+#include "game/mission/Mission.h"
+#include "engine/core/Array.h"
 
 using AbyssEngine::AEMath::MatrixGetDir;
 using AbyssEngine::AEMath::MatrixIdentity;
@@ -933,9 +930,3 @@ Array<Ship *> *FileRead::loadShipsBinary()
     }
     return ships;
 }
-
-// Out-of-line container template instantiations emitted by this TU in the original binary.
-// loadSystemsBinary() drives the SolarSystem* table; the station-colour cache built by the no-arg
-// loadStationsBinary() drives the signed-char one.
-template void ArraySetLength<SolarSystem *>(unsigned int, Array<SolarSystem *> &);
-template void ArraySetLength<signed char>(unsigned int, Array<signed char> &);
