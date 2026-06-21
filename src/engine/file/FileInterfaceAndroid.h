@@ -43,33 +43,30 @@ public:
     ~FileInterfaceAndroid() override;
 
     // FileInterface backend slots.
-    void       *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6);
-    void       *OpenWrite(const String &name, uint32_t p2, uint32_t p3) override;
-    void       *OpenWrite(String name, int p2, bool p3, unsigned int p4);
+    void       *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) override;
+    void       *OpenWrite(String name, int p2, bool p3, unsigned int p4) override;
     uint32_t    Read(uint32_t n, void *buf) override;
     uint32_t    Write(uint32_t n, const void *buf) override;
     uint32_t    Seek(uint32_t n) override;
     uint32_t    GetFileSize() override;
-    uint32_t    FileExist(String name);
+    uint32_t    FileExist(String name) override;
     const char *GetAppRootDir() override;
     uint32_t    GetDeviceFreeSpace() override;
     void        SetAppRootDir(void *p) override;
     void        SetZipDirectory(void *p) override;
     void        ResetSaveDirectory() override;
 
-    // Not part of the FileInterface backend dispatch, but invoked directly.
-    void Close();
+    void        Close() override;
 
-    // Backend slots the platform layer never wired up on Android: emitted as standalone symbols
-    // by the original (mostly no-op stubs returning a constant). They are static because their
-    // bodies ignore the instance.
-    static void        *OpenAppend(String name, int p2, bool p3, unsigned int p4);
-    static char        *Output(char *line);
-    static void         FileDelete(String name);
-    static uint32_t     FileEnumInit(char *pattern, bool recurse);
-    static uint32_t     FileGetNextEnum(String &out);
-    static void         SetSaveDirectory(String dir);
-    static String       GetDirPreFix();
+    // Remaining FileInterface backend slots. Mostly no-op stubs on Android (their bodies ignore the
+    // instance), but they are real virtual overrides of the FileInterface base.
+    void        *OpenAppend(String name, int p2, bool p3, unsigned int p4) override;
+    char        *Output(char *line) override;
+    uint32_t     FileDelete(String name) override;
+    uint32_t     FileEnumInit(char *pattern, bool recurse) override;
+    uint32_t     FileGetNextEnum(String &out) override;
+    void         SetSaveDirectory(String dir) override;
+    String       GetDirPreFix() override;
 };
 
 #endif

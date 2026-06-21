@@ -112,7 +112,7 @@ uint8_t CutScene::isInitialized()
 void CutScene::update()
 {
     if (this->level != nullptr)
-        this->level->update((long long)(int)this->frameDelta, 0u, 0);
+        this->level->update((long long)(int)this->frameDelta, 0u);
 }
 
 // Long-branch veneer in the binary: tail-calls the nullary update(); the int
@@ -127,7 +127,7 @@ void CutScene::render3D()
     if (this->level != nullptr) {
         uint32_t t = (uint32_t)gAppManager->GetElapsedTimeMillis();
         this->frameDelta = t;
-        this->level->update((long long)(int)t, 0u, 0);
+        this->level->update((long long)(int)t, 0u);
         this->level->render(this->frameDelta);
     }
     if (this->geom28 != nullptr) this->geom28->render();

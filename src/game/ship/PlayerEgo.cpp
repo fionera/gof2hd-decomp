@@ -2430,7 +2430,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             ((void*&)this->autoPilotTarget) = wp;
         }
         if (wp == 0 || this->dockedToStream != 0) {
-            ((KIPlayer *)(this))->setAutoPilot(0);
+            this->setAutoPilot(nullptr);
         } else {
             // steer toward the current waypoint. wp is a Waypoint (a KIPlayer);
             // getPosition() is the actor vtable slot +0x28 virtual.

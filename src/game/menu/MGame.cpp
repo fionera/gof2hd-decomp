@@ -2698,7 +2698,7 @@ void MGame::OnRender2D() {
                     self->choiceWindowOpen != 0 || self->dockChoiceOpen != 0)
                     self->choiceWindow->draw();
                 if (self->field_0xca != 0)
-                    self->hud->drawMenu();
+                    self->hud->drawMenu(0);
             } else if (!(self->elapsedTimeHigh < (int)(self->elapsedTime < 0xbb9))) {
                 // Loading/jump splash text.
                 gCanvas->SetColor((unsigned)self->skyboxTexture);

@@ -303,7 +303,7 @@ void PlayerGasCloud::update(int dt)
                         g_pgcu_pickupSound->play(0x8d0, 0, 0, 0.0f);
                         PlayerEgo* ego = (PlayerEgo*)(intptr_t)this->level->getPlayer();
                         Hud* hud = (Hud*)(intptr_t)ego->getHUD();
-                        hud->catchCargo(this->itemId, false, true, false, true, false, 0, 0);
+                        hud->catchCargo(this->itemId, false, true, false, true, false, 0);
                     }
                 } else {
                     Item* def = *(Item**)((char*)*(void**)((char*)*(void**)g_pgcu_itemDefs + 4) + itemId * 4);
@@ -311,7 +311,7 @@ void PlayerGasCloud::update(int dt)
                     if (this->level->getPlayer() != 0) {
                         PlayerEgo* ego = (PlayerEgo*)(intptr_t)this->level->getPlayer();
                         Hud* hud = (Hud*)(intptr_t)ego->getHUD();
-                        hud->catchCargo(this->itemId, true, false, false, false, false, 0, 0);
+                        hud->catchCargo(this->itemId, true, false, false, false, false, 0);
 
                         char* camp = (char*)*(void**)g_pgcu_campaign;
                         if (camp[0x2d] == 0 &&

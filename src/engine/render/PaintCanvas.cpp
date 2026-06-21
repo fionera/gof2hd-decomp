@@ -2492,10 +2492,15 @@ using AbyssEngine::String;
 // Reverses `in` when the layout-direction byte at param2+0x1c is zero (RTL).
 static void GetReverseString(AbyssEngine::String *out, int param2, AbyssEngine::String *in)
 {
-    String tmp;
-    ((String *)&tmp)->ctor_copy((String *)in, false);
-    GetReverseString(out, 0, &tmp, *(char *)((char *)(unsigned long)param2 + 0x1c) == 0);
-    ((String *)&tmp)->dtor();
+    bool reverse = *(char *)((char *)(unsigned long)param2 + 0x1c) == 0;
+    if (!reverse) {
+        out->ctor_copy(in, false);
+        return;
+    }
+    String rev("");
+    for (int i = (int)in->size() - 1; i >= 0; --i)
+        rev += in->SubString((unsigned)i, (unsigned)(i + 1));
+    out->ctor_copy(&rev, false);
 }
 
 void PaintCanvas::GetAccelValue()

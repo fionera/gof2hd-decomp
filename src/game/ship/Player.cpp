@@ -658,7 +658,7 @@ void Player::damageEmp(int amount, bool flag) {
                 self->field_dc = prev + amount;
                 if (__aeabi_idiv(self->maxEmpPoints, 3) < prev + amount) {
                     self->turnedEnemy = 1;
-                    ((Level *)(self->kiPlayer->level))->friendTurnedEnemy();
+                    ((Level *)(self->kiPlayer->level))->friendTurnedEnemy(0);
                 }
             }
         }
@@ -1139,7 +1139,7 @@ void Player_damage_full(Player *self, int amount, int flag, int missionId) {
             float thr3 = (hc != 0) ? k_damage_hc2 : k_damage_full2;
 
             if (f1 < dmgF) {
-                ((Level *)(self->kiPlayer->level))->friendTurnedEnemy();
+                ((Level *)(self->kiPlayer->level))->friendTurnedEnemy(0);
                 void *ship = (void *)gStatus->getShip();
                 void *standing = (void *)(long)gStatus->getStanding();
                 if (((Ship *)(ship))->getSignatureRace() >= 0) {

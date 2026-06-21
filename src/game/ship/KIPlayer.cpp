@@ -503,7 +503,7 @@ void KIPlayer::captureCrate(Hud* hud) {
         if (avail == 0) {
             if (special)
                 this->diedWithMissionCrate = 1;
-            hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 1, 0, 0);
+            hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 1, 0);
             return;
         }
 
@@ -543,7 +543,7 @@ void KIPlayer::captureCrate(Hud* hud) {
             }
         }
 
-        hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 0, 0, 0);
+        hud->catchCargo(item->getIndex(), item->getAmount(), flagA, 0, 0, 0, 0);
         return;
     }
 }

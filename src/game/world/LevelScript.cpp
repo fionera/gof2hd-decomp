@@ -257,7 +257,7 @@ void LevelScript::process(int delta)
     Level* level = m_pLevel;
     level->getMessages();
     level->getPlayer();
-    level->getActiveMessages();
+    level->getMessages();
     int mission = gStatus->getCurrentCampaignMission();
 
     if (mission != 0) {

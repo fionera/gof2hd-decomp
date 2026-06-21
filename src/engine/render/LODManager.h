@@ -5,6 +5,7 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "mathtypes.h"
+#include "engine/render/AEGeometry.h"   // Array<AEGeometry*> objects + addObject/removeObject
 
 // A single live touch point, as tracked by the Android input bridge: screen x/y plus
 // the pointer id and action code. GetTouch() returns one of these by value.

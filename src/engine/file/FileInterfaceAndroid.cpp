@@ -288,10 +288,11 @@ char *FileInterfaceAndroid::Output(char *line)
 // Copy-constructs a throwaway String from the by-value argument's second backing word
 // reinterpreted as a String pointer (the original's degenerate FileDelete body); the copy is
 // discarded immediately.
-void FileInterfaceAndroid::FileDelete(String name)
+uint32_t FileInterfaceAndroid::FileDelete(String name)
 {
     String *src = *reinterpret_cast<String **>(reinterpret_cast<char *>(&name) + 4);
     String discard(*src, false);
+    return 0;
 }
 
 uint32_t FileInterfaceAndroid::FileEnumInit(char *, bool)
@@ -401,24 +402,7 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
 // and on success wraps the FILE* in a freshly-allocated FileInterfaceAndroid.
 extern const char *gModeWb __attribute__((visibility("hidden")));
 
-void *FileInterfaceAndroid::OpenWrite(const String &name, uint32_t, uint32_t)
-{
-    const unsigned short *w = GetAEWChar(name);
-    while (*w)
-        ++w;
-
-    String dir((const char *)this->appRootDir);
-    String wide;
-    wide.ctor_wchar(GetAEWChar(name), false);
-    String full = dir + wide;
-
-    FILE *f = fopen(full.GetAEChar(), gModeWb);
-    if (f == 0)
-        return 0;
-    return new FileInterfaceAndroid(f, true);
-}
-
-// Arity variant of OpenWrite taking the name by value (plus mode/flag args that do not affect
+// OpenWrite taking the name by value (plus mode/flag args that do not affect
 // the resolved path): builds "<dir><name>" from AppRootDir, fopen("..","wb"), and on success
 // wraps the FILE* in a freshly-allocated FileInterfaceAndroid.
 void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int)
