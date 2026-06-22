@@ -1,5 +1,11 @@
 # Scoping: re-model `AbyssEngine::String` to the binary's native layout
 
+> **STATUS: COMPLETE (2026-06-22).** All phases done. String is now the native 12-byte
+> `{vptr,data,length}` polymorphic type with a virtual `~String()`; the compiler emits the
+> binary's exact vtable/typeinfo/D0-D1-D2. verify wrong_type 1->0, `--fail-on-wrong-type`
+> passes. Method slice 27->33 linked-exact (avg 38.5%->55.0%); overall linked-exact 1434->1439,
+> byte-exact 710->714. Remaining String byte-match is ordinary per-function work, not structural.
+
 ## Why this is its own effort (and bigger than "1 wrong_type")
 
 The last `verify` wrong_type is `String::~String` (the D0 deleting destructor). It cannot be fixed in
