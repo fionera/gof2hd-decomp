@@ -1,6 +1,6 @@
 
 
-#include <jni.h>
+#include <../jni.h>
 #include <android/log.h>
 
 #include <cstdlib>
@@ -14,7 +14,7 @@
 #include "engine/core/AERandom.h"
 #include "engine/file/AEFile.h"
 #include "engine/file/FileInterfaceAndroid.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 #include "game/mission/Status.h"
 #include "game/mission/RecordHandler.h"
 #include "game/core/Globals.h"

@@ -1,7 +1,7 @@
 #include "engine/render/shaders/BumpRimCubeShader.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 extern "C" float g_rimGlobalA;
 extern "C" float g_rimGlobalB;

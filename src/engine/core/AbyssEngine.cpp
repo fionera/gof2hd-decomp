@@ -9,22 +9,13 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 #include <cstdlib>
 
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, size_t n);
 
 int __aeabi_uidiv(int num, int den);
-}
-
-namespace AbyssEngine {
-    class FBOContainer {
-    public:
-        FBOContainer(Engine *engine, String name);
-
-        void Create(int width, int height, bool a, bool linear);
-    };
 }
 
 namespace {
@@ -160,20 +151,6 @@ namespace AbyssEngine {
             p[7] = 1.0f - v1;
         }
     }
-}
-
-extern "C" {
-void glViewport(int, int, int, int);
-
-void glEnable(unsigned int);
-
-void glDisable(unsigned int);
-
-void glLineWidth(float);
-
-void glCullFace(unsigned int);
-
-void glGetIntegerv(unsigned int, void *);
 }
 
 namespace AbyssEngine {
@@ -489,9 +466,9 @@ namespace AbyssEngine {
     }
 }
 
+// ES 1.x fixed-function client-array entry points (no-op stubs in the binary);
+// not declared by <GLES2/gl2.h>.
 extern "C" {
-void glBindBuffer(unsigned int target, unsigned int buffer);
-
 void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
 
 void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
@@ -499,8 +476,6 @@ void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr)
 void glNormalPointer(unsigned int type, int stride, const void *ptr);
 
 void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
-
-void glDrawElements(unsigned int mode, int count, unsigned int type, const void *indices);
 }
 
 namespace AbyssEngine {
@@ -1968,18 +1943,6 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" {
-void glGenBuffers(int n, void *buffers);
-
-void glBindBuffer(unsigned int target, unsigned int buffer);
-
-void glBufferData(unsigned int target, unsigned int size, const void *data, unsigned int usage);
-
-void glDeleteBuffers(int n, const void *buffers);
-
-unsigned int glGetError();
-}
-
 namespace AbyssEngine {
     __attribute__ ((always_inline))
 
@@ -2126,27 +2089,9 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     extern "C" {
-    unsigned int glGetError();
-
-    void glGenTextures(int n, unsigned int *ids);
-
-    void glDeleteTextures(int n, const unsigned int *ids);
-
-    void glBindTexture(unsigned int target, unsigned int id);
-
-    void glPixelStorei(unsigned int pname, int param);
-
+    // ES 1.x fixed-function texture-environment entry point (no-op stub in the
+    // binary); not declared by <GLES2/gl2.h>.
     void glTexEnvi(unsigned int t, unsigned int p, int v);
-
-    void glTexParameteri(unsigned int target, unsigned int pname, int param);
-
-    void glTexParameterf(unsigned int target, unsigned int pname, float param);
-
-    void glTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int fmt, int type, const void *px);
-
-    void glCompressedTexImage2D(unsigned int t, int lvl, int ifmt, int w, int h, int b, int sz, const void *px);
-
-    void glGenerateMipmap(unsigned int target);
 
     char *g_cubemapEnabledFlag;
     char *g_texEnvFlag;

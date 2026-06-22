@@ -1,11 +1,7 @@
 #ifndef GOF2_FBOCONTAINER_H
 #define GOF2_FBOCONTAINER_H
-#include "engine/core/Array.h"
+#include "Engine.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
-
-using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
     class FBOContainer {

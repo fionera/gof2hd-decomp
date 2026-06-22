@@ -1,7 +1,7 @@
 #include "engine/render/shaders/TextureVtxColorShader.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 extern "C" bool _ZN11AbyssEngine6Engine10fogEnabledE;
 

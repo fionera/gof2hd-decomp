@@ -1,7 +1,7 @@
 #include "game/core/BumpShaderRefract.h"
 
 #include "engine/render/Engine.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 namespace AbyssEngine {
     int BumpShaderRefract::ShaderIndex;

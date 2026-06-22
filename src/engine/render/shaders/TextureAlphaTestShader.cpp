@@ -1,7 +1,7 @@
 #include "engine/render/shaders/TextureAlphaTestShader.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 extern "C" unsigned char g_TextureAlphaTestShader_useAlphaProgram;
 extern "C" unsigned char g_TextureAlphaTestShader_programIndex;

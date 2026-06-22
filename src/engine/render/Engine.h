@@ -2,11 +2,9 @@
 #define GOF2_ENGINE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
 #include "ShaderBaseStruct.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/core/ApplicationManager.h"
-
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"
 

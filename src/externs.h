@@ -134,8 +134,6 @@ void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
 
 long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
                            unsigned int dhi);
-
-void glDeleteBuffers(int n, const void *buffers);
 }
 
 extern "C" {

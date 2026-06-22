@@ -2,7 +2,7 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine * engine);
 extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine * engine);

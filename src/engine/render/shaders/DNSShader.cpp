@@ -2,7 +2,7 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 #include "game/core/String.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 extern "C" float DNSShader_g0;
 extern "C" float DNSShader_g1;

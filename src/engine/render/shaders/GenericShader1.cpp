@@ -1,7 +1,7 @@
 #include "engine/render/shaders/GenericShader1.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 namespace AbyssEngine {
     GenericShader1::GenericShader1() {

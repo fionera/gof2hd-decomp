@@ -1,7 +1,7 @@
 #ifndef GOF2_RECOVERED_A462C_H
 #define GOF2_RECOVERED_A462C_H
 
-#include <jni.h>
+#include "jni.h"
 
 extern "C" {
 int setBaughtCredits(int amount);

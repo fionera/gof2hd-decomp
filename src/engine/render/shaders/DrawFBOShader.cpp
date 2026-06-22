@@ -2,7 +2,7 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 #include <arm_neon.h>
 
 extern "C" unsigned int Engine_GetDisplayWidth(::Engine * engine);

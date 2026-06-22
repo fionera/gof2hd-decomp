@@ -54,3 +54,12 @@ file(GLOB_RECURSE GOF2_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/sr
 add_library(gof2 STATIC ${GOF2_SOURCES})
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_compile_options(gof2 PRIVATE -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast)
+
+# JNI
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/jni")
+
+# OpenGL ES 2.0 (Khronos registry headers, header-only)
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/gl")
+
+# ---- FMOD Ex 4.44.07 (audio) ------------------------------------------------------------------
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmod/inc")

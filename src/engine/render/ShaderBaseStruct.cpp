@@ -1,7 +1,7 @@
 #include "engine/render/ShaderBaseStruct.h"
 #include "game/core/String.h"
 #include "engine/file/AEFile.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 #include "platform/libc.h"
 
 namespace AbyssEngine {

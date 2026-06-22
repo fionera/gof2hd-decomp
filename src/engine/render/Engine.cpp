@@ -1,7 +1,7 @@
 
 
 #include "externs.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
@@ -28,6 +28,11 @@ extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
 
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 
+// OpenGL ES 1.x fixed-function entry points. The binary provides these as
+// internal no-op stubs (they are NOT imported from the GL driver), so they are
+// absent from <GLES2/gl2.h> and are declared locally. All ES 2.0 functions used
+// here (glColorMask, glDepthFunc, glGetString, glDrawElements, glDrawArrays,
+// glGetIntegerv, glLineWidth, glCullFace, glGetError, ...) come from gl.h.
 extern "C" void glMatrixMode(unsigned int mode);
 
 extern "C" void glLoadMatrixf(const float *matrix);
@@ -35,12 +40,6 @@ extern "C" void glLoadMatrixf(const float *matrix);
 extern "C" void glLoadIdentity();
 
 extern "C" void glScalef(float x, float y, float z);
-
-extern "C" void glColorMask(unsigned int red, unsigned int green, unsigned int blue, unsigned int alpha);
-
-extern "C" void glDepthFunc(unsigned int func);
-
-extern "C" const char *glGetString(unsigned int name);
 
 extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
 
@@ -51,12 +50,6 @@ extern "C" void glTexCoordPointer(int size, unsigned int type, int stride, const
 extern "C" void glNormalPointer(unsigned int type, int stride, const void *ptr);
 
 extern "C" void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
-
-extern "C" void glDrawElements(unsigned int mode, int count, unsigned int type, const void *indices);
-
-extern "C" void glDrawArrays(unsigned int mode, int first, int count);
-
-extern "C" void glGetIntegerv(unsigned int name, void *out);
 
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
 
@@ -70,13 +63,7 @@ extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *
 
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
 
-extern "C" void glLineWidth(float width);
-
-extern "C" void glCullFace(unsigned int mode);
-
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
-
-extern "C" void glGetError();
 
 extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer * self);
 extern "C" void FBOContainer_ActivateTexture(FBOContainer * self);

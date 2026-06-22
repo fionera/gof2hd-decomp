@@ -1,7 +1,7 @@
 #include "game/core/BumpShaderV4.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
-#include "platform/gl.h"
+#include <GLES2/gl2.h>
 
 namespace AbyssEngine {
     int BumpShaderV4::ShaderIndex;

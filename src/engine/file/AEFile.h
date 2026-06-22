@@ -3,8 +3,13 @@
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
 #include "fieldaccess.h"
+#include "FileInterface.h"
 
 #include "game/core/String.h"
+
+#include "AELowLevelFile.h"
+#include "AENormalFile.h"
+#include "AEPakFile.h"
 
 using String = AbyssEngine::String;
 
@@ -14,121 +19,6 @@ struct AEPakFileEntry {
     uint32_t offset;
     uint32_t packedSize;
     uint32_t size;
-};
-
-class AELowLevelFile {
-public:
-    virtual ~AELowLevelFile() {
-    }
-
-    virtual uint32_t Write(uint32_t bytes, void *buffer) { return 0; }
-    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; }
-    virtual uint32_t Skip(uint32_t bytes) { return 0; }
-    virtual uint32_t Release() { return 1; }
-    virtual uint32_t GetFileSize() { return 0; }
-};
-
-class AELowLevelHeldFile {
-public:
-    virtual ~AELowLevelHeldFile() {
-    }
-
-    virtual void *OpenRead(const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) { return nullptr; }
-    virtual void *OpenWrite(const String &, uint32_t, uint32_t) { return nullptr; }
-    virtual void *OpenAppend(const String &, uint32_t, uint32_t) { return nullptr; }
-    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; }
-    virtual uint32_t Write(uint32_t bytes, const void *buffer) { return 0; }
-    virtual uint32_t Skip(uint32_t bytes) { return 0; }
-    virtual uint32_t GetFileSize() { return 0; }
-};
-
-class AENormalFile : public AELowLevelFile {
-public:
-    FileInterface *file;
-
-    AENormalFile(FileInterface *file);
-
-    ~AENormalFile() override { Release(); }
-
-    uint32_t Write(uint32_t bytes, void *buffer) override;
-
-    uint32_t Read(uint32_t bytes, void *buffer) override;
-
-    uint32_t Skip(uint32_t bytes) override;
-
-    uint32_t Release() override;
-
-    uint32_t GetFileSize() override;
-};
-
-class AEPakFile : public AELowLevelFile {
-public:
-    FileInterface *fileInterface;
-    uint32_t sizeLimit;
-    uint32_t baseOffset;
-    uint32_t position;
-
-    AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset);
-
-    ~AEPakFile() override { Release(); }
-
-    uint32_t Write(uint32_t bytes, void *buffer) override;
-
-    uint32_t Read(uint32_t bytes, void *buffer) override;
-
-    uint32_t Skip(uint32_t bytes) override;
-
-    uint32_t Release() override;
-
-    uint32_t GetFileSize() override;
-};
-
-class FileInterface {
-public:
-    uint8_t enabled;
-
-    virtual ~FileInterface() {
-    }
-
-    virtual void *OpenRead(String name, int size, bool windowed, int packedSize, int rawSize, unsigned int offset) = 0;
-
-    virtual void *OpenWrite(String name, int size, bool append, unsigned int mode) = 0;
-
-    virtual void *OpenAppend(String name, int size, bool append, unsigned int mode) = 0;
-
-    virtual uint32_t Read(uint32_t bytes, void *buffer) = 0;
-
-    virtual uint32_t Write(uint32_t bytes, const void *buffer) = 0;
-
-    virtual uint32_t Seek(uint32_t bytes) = 0;
-
-    virtual uint32_t GetFileSize() = 0;
-
-    virtual uint32_t FileExist(String name) = 0;
-
-    virtual uint32_t FileDelete(String name) = 0;
-
-    virtual uint32_t GetDeviceFreeSpace() = 0;
-
-    virtual const char *GetAppRootDir() = 0;
-
-    virtual void SetAppRootDir(void *path) = 0;
-
-    virtual void SetZipDirectory(void *path) = 0;
-
-    virtual uint32_t FileEnumInit(char *pattern, bool recurse) = 0;
-
-    virtual uint32_t FileGetNextEnum(String &out) = 0;
-
-    virtual void Close() = 0;
-
-    virtual String GetDirPreFix() = 0;
-
-    virtual char *Output(char *line) = 0;
-
-    virtual void SetSaveDirectory(String dir) = 0;
-
-    virtual void ResetSaveDirectory() = 0;
 };
 
 void *OpenAppend(unsigned short *name, int size, bool append, unsigned int mode);

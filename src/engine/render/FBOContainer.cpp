@@ -1,39 +1,6 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-#include "platform/gl.h"
-
-extern "C" {
-void glGenFramebuffers(int n, uint32_t *framebuffers);
-
-void glDeleteFramebuffers(int n, const uint32_t *framebuffers);
-
-void glGenTextures(int n, uint32_t *textures);
-
-void glDeleteTextures(int n, const uint32_t *textures);
-
-void glPixelStorei(uint32_t pname, int param);
-
-void glTexParameteri(uint32_t target, uint32_t pname, int param);
-
-void glTexImage2D(uint32_t target, int level, int internalformat, int width,
-                  int height, int border, uint32_t format, uint32_t type, const void *pixels);
-
-void glFramebufferTexture2D(uint32_t target, uint32_t attachment, uint32_t textarget,
-                            uint32_t texture, int level);
-
-void glGenRenderbuffers(int n, uint32_t *renderbuffers);
-
-void glBindRenderbuffer(uint32_t target, uint32_t renderbuffer);
-
-void glDeleteRenderbuffers(int n, const uint32_t *renderbuffers);
-
-void glRenderbufferStorage(uint32_t target, uint32_t internalformat, int width, int height);
-
-void glFramebufferRenderbuffer(uint32_t target, uint32_t attachment, uint32_t renderbuffertarget,
-                               uint32_t renderbuffer);
-
-uint32_t glCheckFramebufferStatus(uint32_t target);
-}
+#include <GLES2/gl2.h>
 
 namespace AbyssEngine {
     FBOContainer::FBOContainer(Engine *engine, String name) {

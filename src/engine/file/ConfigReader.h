@@ -5,9 +5,7 @@
 #include "fieldaccess.h"
 
 #include "engine/file/AEFile.h"
-
-
-using ::AbyssEngine::Engine;
+#include "engine/render/Engine.h"
 
 namespace AbyssEngine {
 #define GOF2_CFG_INLINE __attribute__((always_inline)) inline
