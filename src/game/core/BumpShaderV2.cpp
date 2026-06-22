@@ -12,7 +12,7 @@ namespace AbyssEngine {
 BumpShaderV2::BumpShaderV2()
 {
     BumpShaderV2_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpShaderV2";
+    this->name = u"BumpShaderV2";
 }
 
 // Compiles the GLES2 program and caches its attribute/uniform locations.

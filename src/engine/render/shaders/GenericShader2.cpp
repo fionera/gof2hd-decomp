@@ -99,7 +99,7 @@ void GenericShader2::UpdateMeshData(Mesh *mesh, Engine *engine)
 GenericShader2::GenericShader2()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"GenericShader2";
+    this->name = u"GenericShader2";
 }
 
 } // namespace AbyssEngine

@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 VertexColorShader::VertexColorShader()
 {
-    this->name.s = u"VertexColorShader";
+    this->name = u"VertexColorShader";
 }
 
 // Compiles the vertex-colour program and caches its attribute/uniform locations.

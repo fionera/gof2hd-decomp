@@ -258,7 +258,7 @@ void GlowPPShader::Init(Engine *) {
 }
 
 GlowPPShader::GlowPPShader() {
-    this->name.s = u"GlowPPShader";
+    this->name = u"GlowPPShader";
 }
 
 GlowPPShader::~GlowPPShader() {}

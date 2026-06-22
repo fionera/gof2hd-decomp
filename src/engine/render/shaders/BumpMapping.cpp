@@ -10,7 +10,7 @@ int BumpMapping::ShaderIndex;
 BumpMapping::BumpMapping()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpMapping";
+    this->name = u"BumpMapping";
 }
 
 void BumpMapping::Init(Engine *)

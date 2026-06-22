@@ -17,7 +17,7 @@ int TextureVtxColorShader::ShaderIndex;
 
 TextureVtxColorShader::TextureVtxColorShader()
 {
-    this->name.s = u"TextureVtxColorShader";
+    this->name = u"TextureVtxColorShader";
     TextureVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }
 

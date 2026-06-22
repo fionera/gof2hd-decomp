@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 CubeMapping::CubeMapping()
 {
-    this->name.s = u"CubeMapping";
+    this->name = u"CubeMapping";
 }
 
 // Compiles the cube-mapping program and caches its attribute/uniform location handles.

@@ -597,7 +597,7 @@ PlayerFixedObject::~PlayerFixedObject() {
     Explosion *expl = self->explosion;
     if (expl != 0) delete expl;
     self->explosion = 0;
-    self->name.dtor();
+    self->name.clear();
 }
 
 // Tail-call thunks selected by object state.

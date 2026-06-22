@@ -77,7 +77,7 @@ void BloomShader::Init(Engine *)
 
 BloomShader::BloomShader()
 {
-    this->name.s = u"BloomShader";
+    this->name = u"BloomShader";
 }
 
 BloomShader::~BloomShader()

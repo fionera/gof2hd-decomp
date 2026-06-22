@@ -17,7 +17,7 @@ namespace AbyssEngine {
 
 PostBWShader::PostBWShader()
 {
-    this->name.s = u"PostBWShader";
+    this->name = u"PostBWShader";
 }
 
 PostBWShader::~PostBWShader()

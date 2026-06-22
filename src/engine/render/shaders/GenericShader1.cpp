@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 GenericShader1::GenericShader1()
 {
-    this->name.s = u"GenericShader1";
+    this->name = u"GenericShader1";
 }
 
 // Compiles GenericShader1.vsh/.fsh and caches the attribute and u_m0..u_m8 uniform locations.

@@ -126,7 +126,7 @@ GenericShader::GenericShader()
 {
     // Register this shader into the global registry list.
     *GenericShader_registerDst = GenericShader_registerSrc;
-    this->name.s = u"GenericShader";
+    this->name = u"GenericShader";
 }
 
 } // namespace AbyssEngine

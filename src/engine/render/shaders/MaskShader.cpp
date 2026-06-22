@@ -14,7 +14,7 @@ int MaskShader::ShaderIndex;
 MaskShader::MaskShader()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"MaskShader";
+    this->name = u"MaskShader";
 }
 
 void MaskShader::Init(::Engine *)

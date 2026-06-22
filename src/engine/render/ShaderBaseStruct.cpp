@@ -26,7 +26,7 @@ ShaderBaseStruct::~ShaderBaseStruct()
 String ShaderBaseStruct::GetShaderName()
 {
     String copy;
-    copy.s = this->name.s;
+    copy = this->name;
     return copy;
 }
 

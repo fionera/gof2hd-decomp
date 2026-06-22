@@ -1,11 +1,14 @@
 #include "game/core/String.h"
 #include "engine/core/GameText.h"
+#include <string>   // local scratch buffers only; String's storage is the native data/length
 
 // AbyssEngine::String, native re-expression.
-// The canonical type is common.h's `AbyssEngine::String { std::u16string s; }`. Every method
-// below operates on that std::u16string member instead of the original hand-managed
-// {vtable, ushort* data, uint length} layout. Behaviour (CP-1252 case tables, Cyrillic
-// transliteration, Compare sentinels, Split/SplitTags semantics) is preserved.
+// String is the binary's native 12-byte polymorphic string { vptr@0, unsigned short* data@4,
+// int length@8 } (see docs/STRING_REMODEL.md). `data` is a heap UTF-16 buffer managed with
+// operator new[]/delete[] and kept NUL-terminated; `length` is the code-unit count. The methods
+// below operate directly on data/length; a few building methods assemble into a local std::u16string
+// scratch and then copy into the native buffer with assignWide(). Behaviour (CP-1252 case tables,
+// Cyrillic transliteration, Compare sentinels, Split/SplitTags semantics) is preserved.
 
 extern "C" {
 // External (non-String) helpers kept as opaque imports.
@@ -19,57 +22,70 @@ void  String_concat(String *out, String *a, String *b);
 void  String_assign_op(String *self, String *src);
 }
 
+// AbyssEngine::String::~String() — the sole virtual. Frees the heap buffer; defined out-of-line so
+// this TU emits the engine's standalone vtable/typeinfo + D0 (deleting) / D1 / D2 destructor symbols,
+// byte-matching the binary (vtable @0x21CC8C: [0][typeinfo][D1 0x82594][D0 0x825b8]).
+String::~String() {
+    if (this->data)
+        delete[] this->data;
+    this->data = nullptr;
+}
+
 // AbyssEngine::String::GetAEChar() const - allocate an 8-bit (low-byte) copy of the wide buffer.
 char * String::GetAEChar() const {
-    unsigned int len = this->s.size();
+    unsigned int len = (unsigned int)this->length;
     unsigned int n = len + 1;
     char *out = new char[n];
     for (unsigned int i = 0; i < len; i++)
-        out[i] = (char)(this->s[i] & 0xff);
+        out[i] = (char)(this->data[i] & 0xff);
     out[len] = 0;
     return out;
 }
 
 // AbyssEngine::String::ReplaceString(find, repl) - replace each occurrence of `find` with `repl`.
 void String::ReplaceString(String find, String repl) {
-    if (this->s.empty() || find.s.empty())
+    if (this->length == 0 || find.length == 0)
         return;
 
     std::u16string acc;
     unsigned int pos = 0;
     int idx;
     while ((idx = (int)((String *)(this))->IndexOf_from(pos, &find)) != -1) {
-        acc.append(this->s, pos, (unsigned int)idx - pos);
-        acc.append(repl.s);
-        pos = (unsigned int)find.s.size() + idx;
+        acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int)idx - pos);
+        if (repl.length)
+            acc.append(reinterpret_cast<const char16_t *>(repl.data), (unsigned int)repl.length);
+        pos = (unsigned int)find.length + idx;
     }
 
-    if (pos != 0 && pos < this->s.size())
-        acc.append(this->s, pos, this->s.size() - pos);
+    if (pos != 0 && pos < (unsigned int)this->length)
+        acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int)this->length - pos);
 
     if (!acc.empty())
-        this->s = acc;
+        assignWide(reinterpret_cast<const unsigned short *>(acc.data()), (int)acc.size());
 }
 
 // AbyssEngine::String::ReplaceChar(char from, char to) - replace every matching code unit.
 void String::ReplaceChar(char from, char to) {
-    for (size_t i = 0; i < this->s.size(); i++)
-        if ((unsigned int)this->s[i] == (unsigned int)(int)from)
-            this->s[i] = (char16_t)(short)to;
+    for (int i = 0; i < this->length; i++)
+        if ((unsigned int)this->data[i] == (unsigned int)(int)from)
+            this->data[i] = (unsigned short)(short)to;
 }
 
 // AbyssEngine::String::Reverse() - reverse the code units (only for language id 9 / RTL).
 void String::Reverse() {
-    if (!this->s.empty() && GameText::getLanguage() == 9) {
-        std::u16string r(this->s.rbegin(), this->s.rend());
-        this->s = r;
+    if (this->length > 0 && GameText::getLanguage() == 9) {
+        for (int i = 0, j = this->length - 1; i < j; i++, j--) {
+            unsigned short t = this->data[i];
+            this->data[i] = this->data[j];
+            this->data[j] = t;
+        }
     }
 }
 
 // AbyssEngine::String::ToUpperCase() - uppercase ASCII plus a CP-1252 accented range.
 void String::ToUpperCase() {
-    for (size_t i = 0; i < this->s.size(); i++) {
-        short c = (short)this->s[i];
+    for (int i = 0; i < this->length; i++) {
+        short c = (short)this->data[i];
         unsigned short u = (unsigned short)(c - 0x61);
         bool above = u > 0x19;
         bool eq1a = u == 0x1a;
@@ -78,20 +94,20 @@ void String::ToUpperCase() {
             eq1a = u == 0x1e;
         }
         if (!above || u < 0x1e || eq1a) {
-            this->s[i] = (char16_t)(c - 0x20);
+            this->data[i] = (unsigned short)(c - 0x20);
         } else {
             // CP-1252 accented lowercase -> uppercase mapping.
             switch (c) {
-            case 0x81: this->s[i] = 0x9a; break;
-            case 0x82: this->s[i] = 0x90; break;
-            case 0x84: this->s[i] = 0x8e; break;
-            case 0x86: this->s[i] = 0x8f; break;
+            case 0x81: this->data[i] = 0x9a; break;
+            case 0x82: this->data[i] = 0x90; break;
+            case 0x84: this->data[i] = 0x8e; break;
+            case 0x86: this->data[i] = 0x8f; break;
             case 0x83: case 0x85:
                 break;   // no change
             default:
-                if (c == 0x91)      this->s[i] = 0x92;
-                else if (c == 0x94) this->s[i] = 0x99;
-                else if (c == 0xa4) this->s[i] = 0xa5;
+                if (c == 0x91)      this->data[i] = 0x92;
+                else if (c == 0x94) this->data[i] = 0x99;
+                else if (c == 0xa4) this->data[i] = 0xa5;
                 break;
             }
         }
@@ -108,7 +124,7 @@ int String::ValueOf() {
 
 // AbyssEngine::String::Split(sep) -> Array<String*>* (null if no splits).
 void * String::Split(String sep) {
-    if (!this->s.empty() && !sep.s.empty()) {
+    if (this->length != 0 && sep.length != 0) {
         Array<String *> *arr = new Array<String *>();
 
         unsigned int pos = 0;
@@ -119,11 +135,11 @@ void * String::Split(String sep) {
                 piece->SubString(this, pos, idx);
                 arr->push_back(piece);
             }
-            pos = (unsigned int)sep.s.size() + idx;
+            pos = (unsigned int)sep.length + idx;
         }
-        if (pos != 0 && pos < this->s.size()) {
+        if (pos != 0 && pos < (unsigned int)this->length) {
             String *piece = new String();
-            piece->SubString(this, pos, this->s.size());
+            piece->SubString(this, pos, (unsigned int)this->length);
             arr->push_back(piece);
         }
 
@@ -138,18 +154,18 @@ void * String::Split(String sep) {
 }
 
 // Returned for out-of-range indices: a static NUL code unit.
-static char16_t g_String_nullChar = 0;
+static unsigned short g_String_nullChar = 0;
 
 // AbyssEngine::String::operator[](int) - pointer to the index-th code unit, or &NUL on OOB.
 unsigned short *String::operator[](int i) {
-    if (i < 0 || (unsigned int)i >= this->s.size())
-        return reinterpret_cast<unsigned short *>(&g_String_nullChar);
-    return reinterpret_cast<unsigned short *>(&this->s[i]);
+    if (i < 0 || i >= this->length)
+        return &g_String_nullChar;
+    return this->data + i;
 }
 
 // AbyssEngine::String::Set(long long) - format a signed 64-bit integer as a decimal string.
 void String::Set(long long v) {
-    this->s.clear();
+    clear();
 
     if (v == 0) {
         this->Set("");
@@ -175,7 +191,7 @@ void String::Set(long long v) {
         out.push_back(u'-');
     for (int i = n - 1; i >= 0; i--)
         out.push_back(tmp[i]);
-    this->s = out;
+    assignWide(reinterpret_cast<const unsigned short *>(out.data()), (int)out.size());
 }
 
 // AbyssEngine::String::StrLen(char const*) - byte length of a NUL-terminated char string.
@@ -188,14 +204,14 @@ int String::StrLen(const char *s) {
 
 // AbyssEngine::String::Compare(char const*) - compare against an 8-bit string.
 unsigned int String::Compare(const char *s) {
-    if (this->s.empty())
+    if (this->length == 0)
         return 1;
 
     bool reachedEnd = false;
     uint16_t cur = 0;
     unsigned int other = 0;
-    size_t i = 0;
-    for (; i < this->s.size() && (cur = (uint16_t)this->s[i]) != 0; i++) {
+    int i = 0;
+    for (; i < this->length && (cur = (uint16_t)this->data[i]) != 0; i++) {
         other = (unsigned int)(unsigned char)*s;
         if (other == 0 || other != cur)
             goto done;
@@ -216,11 +232,21 @@ done:
 
 // AbyssEngine::String::Set(char const*) - replace contents from an 8-bit string (widened to 16-bit).
 void String::Set(const char *s) {
-    this->s.clear();
+    clear();
     if (s == 0)
         return;
+    int n = 0;
     for (const unsigned char *p = (const unsigned char *)s; *p != 0; p++)
-        this->s.push_back((char16_t)*p);
+        n++;
+    if (n == 0)
+        return;
+    unsigned short *nd = new unsigned short[n + 1];
+    const unsigned char *p = (const unsigned char *)s;
+    for (int i = 0; i < n; i++)
+        nd[i] = (unsigned short)p[i];
+    nd[n] = 0;
+    this->data = nd;
+    this->length = n;
 }
 
 // AbyssEngine::String::Compare(AbyssEngine::String const&)
@@ -228,13 +254,13 @@ void String::Set(const char *s) {
 int String::Compare(const String &otherRef) {
     const String *other = &otherRef;
     short result;
-    if (other->s.size() == this->s.size()) {
-        size_t i = 0;
+    if (other->length == this->length) {
+        int i = 0;
         short sc = 0, oc = 0;
         bool reachedEnd = false;
         while (true) {
-            sc = (i < this->s.size()) ? (short)this->s[i] : 0;
-            oc = (i < other->s.size()) ? (short)other->s[i] : 0;
+            sc = (i < this->length) ? (short)this->data[i] : 0;
+            oc = (i < other->length) ? (short)other->data[i] : 0;
             if (sc == 0) {
                 reachedEnd = true;
                 sc = 0;
@@ -263,28 +289,30 @@ int String::Compare(const String &otherRef) {
 
 // AbyssEngine::String::Trim() - strip leading/trailing spaces and tabs.
 void String::Trim() {
-    size_t len = this->s.size();
+    int len = this->length;
     if (len == 0)
         return;
 
-    size_t start = 0;
+    int start = 0;
     while (start < len) {
-        char16_t c = this->s[start];
+        unsigned short c = this->data[start];
         if (c != 0x20 && c != 9)
             break;
         start++;
     }
-    size_t end = len;
+    int end = len;
     while (end > 0) {
-        char16_t c = this->s[end - 1];
+        unsigned short c = this->data[end - 1];
         if (c != 0x20 && c != 9)
             break;
         end--;
     }
-    if (start < end)
-        this->s = this->s.substr(start, end - start);
-    else
-        this->s.clear();
+    if (start < end) {
+        std::u16string sub(reinterpret_cast<const char16_t *>(this->data) + start, end - start);
+        assignWide(reinterpret_cast<const unsigned short *>(sub.data()), (int)sub.size());
+    } else {
+        clear();
+    }
 }
 
 // AbyssEngine::String::GetStringLength(char const*) - byte length of a NUL-terminated char string.
@@ -304,8 +332,8 @@ int String_GetStringLength(const char *s)
 
 // AbyssEngine::String::ToLowerCase() - lowercase ASCII plus a CP-1252 accented range.
 void String::ToLowerCase() {
-    for (size_t i = 0; i < this->s.size(); i++) {
-        short c = (short)this->s[i];
+    for (int i = 0; i < this->length; i++) {
+        short c = (short)this->data[i];
         unsigned short u = (unsigned short)(c - 0x41);
         bool above = u > 0x19;
         bool eq1a = u == 0x1a;
@@ -314,22 +342,22 @@ void String::ToLowerCase() {
             eq1a = u == 0x1e;
         }
         if (!above || u < 0x1e || eq1a) {
-            this->s[i] = (char16_t)(c + 0x20);
+            this->data[i] = (unsigned short)(c + 0x20);
         } else {
             // CP-1252 accented uppercase -> lowercase mapping.
             switch (c) {
-            case 0x8e: this->s[i] = 0x84; break;
-            case 0x8f: this->s[i] = 0x86; break;
-            case 0x90: this->s[i] = 0x82; break;
-            case 0x92: this->s[i] = 0x91; break;
-            case 0x99: this->s[i] = 0x94; break;
-            case 0x9a: this->s[i] = 0x81; break;
+            case 0x8e: this->data[i] = 0x84; break;
+            case 0x8f: this->data[i] = 0x86; break;
+            case 0x90: this->data[i] = 0x82; break;
+            case 0x92: this->data[i] = 0x91; break;
+            case 0x99: this->data[i] = 0x94; break;
+            case 0x9a: this->data[i] = 0x81; break;
             case 0x91: case 0x93: case 0x94: case 0x95:
             case 0x96: case 0x97: case 0x98:
                 break;   // no change
             default:
                 if (c == 0xa5)
-                    this->s[i] = 0xa4;
+                    this->data[i] = 0xa4;
                 break;
             }
         }
@@ -337,29 +365,38 @@ void String::ToLowerCase() {
 }
 
 // AbyssEngine::String::operator=(AbyssEngine::String const&)
-// Re-Set from the other's wide buffer; an empty source leaves this string untouched.
+// Re-Set from the other's wide buffer; an empty source leaves this string untouched (matches 0x727a8).
 String &String::operator=(const String &other) {
-    if (!other.s.empty())
-        this->Set((const unsigned short *)other.s.c_str());
+    if (other.data != nullptr)
+        this->Set(other.data);
     return *this;
 }
 
 // AbyssEngine::String::Set(unsigned short const*) - replace contents from a wide string.
 void String::Set(const unsigned short *s) {
-    this->s.clear();
+    clear();
     if (s == 0)
         return;
-    for (const unsigned short *p = s; *p != 0; p++)
-        this->s.push_back((char16_t)*p);
+    int n = 0;
+    while (s[n] != 0)
+        n++;
+    if (n == 0)
+        return;
+    unsigned short *nd = new unsigned short[n + 1];
+    for (int i = 0; i < n; i++)
+        nd[i] = s[i];
+    nd[n] = 0;
+    this->data = nd;
+    this->length = n;
 }
 
 // AbyssEngine::String::ConvertFromUTF8() - reinterpret the stored bytes as UTF-8 and re-store.
 void String::ConvertFromUTF8() {
-    if (this->s.empty())
+    if (this->length == 0)
         return;
 
     char *bytes = ((String *)(this))->GetAEChar();
-    uint16_t *wide = String::getWCharFromUtf8(bytes, (int)this->s.size());
+    uint16_t *wide = String::getWCharFromUtf8(bytes, this->length);
     ((String *)(this))->Set_wchar(wide);
     delete[] bytes;
     delete[] wide;
@@ -373,16 +410,17 @@ static const char kSlash[] = "</";
 // AbyssEngine::String::SplitTags(AbyssEngine::String tag)
 // Wrap `tag` as "<tag>", split this string on it, ending each run at the matching "</".
 void String::SplitTags(String tag) {
-    if (this->s.empty() || tag.s.empty())
+    if (this->length == 0 || tag.length == 0)
         return;
 
     // tag := "<" + tag + ">"
     {
         std::u16string wrapped;
         wrapped.push_back(u'<');
-        wrapped.append(tag.s);
+        if (tag.length)
+            wrapped.append(reinterpret_cast<const char16_t *>(tag.data), (unsigned int)tag.length);
         wrapped.push_back(u'>');
-        tag.s = wrapped;
+        tag.assignWide(reinterpret_cast<const unsigned short *>(wrapped.data()), (int)wrapped.size());
     }
 
     Array<String *> *arr = new Array<String *>();
@@ -396,7 +434,7 @@ void String::SplitTags(String tag) {
             piece->SubString(this, pos, idx);
             arr->push_back(piece);
 
-            unsigned int afterTag = (unsigned int)tag.s.size() + idx;
+            unsigned int afterTag = (unsigned int)tag.length + idx;
             String closer;
             ((String *)(&closer))->ctor_char(kSlash, false);
             endPos = (int)((String *)(this))->IndexOf_from(afterTag, &closer);
@@ -410,9 +448,9 @@ void String::SplitTags(String tag) {
         pos = endPos + 1;
     }
 
-    if (pos != 0 && pos < this->s.size()) {
+    if (pos != 0 && pos < (unsigned int)this->length) {
         String *piece = new String();
-        piece->SubString(this, pos, this->s.size());
+        piece->SubString(this, pos, (unsigned int)this->length);
         arr->push_back(piece);
     }
 
@@ -466,7 +504,7 @@ void String::Set(float v) {
     }
 
     delete[] digitsW;
-    this->s = acc;
+    assignWide(reinterpret_cast<const unsigned short *>(acc.data()), (int)acc.size());
 }
 
 // AbyssEngine::String::StrLen(unsigned short const*) - length of a NUL-terminated wide string.
@@ -574,24 +612,24 @@ unsigned int String::IndexOf(unsigned int start, const String &needle) {
 
 // AbyssEngine::String::operator[](int) const - pointer to the index-th code unit, or &NUL on OOB.
 const unsigned short *String::operator[](int i) const {
-    if (i < 0 || (unsigned int)i >= this->s.size())
-        return reinterpret_cast<const unsigned short *>(&g_String_nullChar);
-    return reinterpret_cast<const unsigned short *>(&this->s[i]);
+    if (i < 0 || i >= this->length)
+        return &g_String_nullChar;
+    return this->data + i;
 }
 
 // AbyssEngine::String::GetAEWChar() const - the wide backing buffer.
 const unsigned short *String::GetAEWChar() const {
-    return reinterpret_cast<const unsigned short *>(this->s.c_str());
+    return this->data;
 }
 
 // AbyssEngine::String::operator unsigned short*() - implicit access to the wide backing buffer.
 String::operator unsigned short *() {
-    return reinterpret_cast<unsigned short *>(&this->s[0]);
+    return this->data;
 }
 
 // AbyssEngine::String::operator unsigned short const*() const - implicit wide-buffer access.
 String::operator const unsigned short *() const {
-    return reinterpret_cast<const unsigned short *>(this->s.c_str());
+    return this->data;
 }
 
 // AbyssEngine::String::PrintOut() - print the string via the platform helper.
@@ -603,18 +641,26 @@ void String::PrintOut() {
 // ---- Real engine constructor / operator+= overloads ----
 // These carry the original binary's mangled symbols and delegate to the recovered member bodies.
 
+// AbyssEngine::String::String() — default (empty); out-of-line so the standalone C1Ev/C2Ev symbols
+// are emitted (the compiler plants the vptr + zeroes data/length), matching the binary (0x72398).
+String::String() : data(nullptr), length(0) {}
+// AbyssEngine::String::String(char const*, bool)
+String::String(const char *cstr, bool reverse) : data(nullptr), length(0) {
+    Set(cstr);
+    if (reverse) Reverse();
+}
 // AbyssEngine::String::String(unsigned short const*, bool)
-String::String(const uint16_t *wstr, bool reverse) { ctor_wchar(wstr, reverse); }
+String::String(const uint16_t *wstr, bool reverse) : data(nullptr), length(0) { ctor_wchar(wstr, reverse); }
 // AbyssEngine::String::String(AbyssEngine::String const&, bool)
-String::String(const String &other, bool reverse) { ctor_copy(const_cast<String *>(&other), reverse); }
+String::String(const String &other, bool reverse) : data(nullptr), length(0) { ctor_copy(const_cast<String *>(&other), reverse); }
 // AbyssEngine::String::String(char)
-String::String(char c) { ctor_charval(c); }
+String::String(char c) : data(nullptr), length(0) { ctor_charval(c); }
 // AbyssEngine::String::String(int)
-String::String(int v) { ctor_int(v); }
+String::String(int v) : data(nullptr), length(0) { ctor_int(v); }
 // AbyssEngine::String::String(float)
-String::String(float v) { ctor_float(v); }
+String::String(float v) : data(nullptr), length(0) { ctor_float(v); }
 // AbyssEngine::String::String(long long)
-String::String(long long v) { ctor_longlong(v); }
+String::String(long long v) : data(nullptr), length(0) { ctor_longlong(v); }
 
 // AbyssEngine::String::operator+=(char const&)
 String &String::operator+=(const char &c) { addAssign_char(&c); return *this; }

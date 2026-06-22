@@ -21,7 +21,7 @@ int DrawFBOShader::ShaderIndex;
 
 DrawFBOShader::DrawFBOShader()
 {
-    this->name.s = u"DrawFBOShader";
+    this->name = u"DrawFBOShader";
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
 }
 

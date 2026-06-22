@@ -98,7 +98,7 @@ KIPlayer::KIPlayer(int faction, int group, Player* player, AEGeometry* geom,
         String tmp;
         tmp.ctor_char("", false);
         this->name.assign(&tmp);
-        tmp.dtor();
+        tmp.clear();
     }
 
     this->field_0x24 = 0;
@@ -176,7 +176,7 @@ KIPlayer::~KIPlayer() {
         this->spacePoints = 0;
     }
 
-    this->name.dtor();
+    this->name.clear();
 }
 
 // A bare actor has no propulsion of its own; subclasses report their real speed.

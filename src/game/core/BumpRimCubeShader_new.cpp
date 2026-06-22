@@ -17,7 +17,7 @@ int BumpRimCubeShader_new::ShaderIndex;
 BumpRimCubeShader_new::BumpRimCubeShader_new()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpRimCubeShader_new";
+    this->name = u"BumpRimCubeShader_new";
 }
 
 void BumpRimCubeShader_new::Init(Engine *)

@@ -104,8 +104,8 @@ DialogueWindow::~DialogueWindow() {
     delete this->moreButton;
     this->moreButton = 0;
 
-    this->agentName.dtor();
-    this->bodyText.dtor();
+    this->agentName.clear();
+    this->bodyText.clear();
 }
 
 int DialogueWindow::OnTouchMove(int x, int y) {
@@ -541,7 +541,7 @@ void DialogueWindow::draw() {
     String title;
     title.ctor_copy(&this->agentName, false);
     layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title, 1);
-    title.dtor();
+    title.clear();
 
     this->scrollWindow->draw();
 

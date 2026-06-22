@@ -16,7 +16,7 @@ int TextureAlphaTestShader::ShaderIndex;
 TextureAlphaTestShader::TextureAlphaTestShader()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"TextureAlphaTestShader";
+    this->name = u"TextureAlphaTestShader";
 }
 
 // Compiles the opaque and alpha-test GLES2 programs and caches each program's locations.

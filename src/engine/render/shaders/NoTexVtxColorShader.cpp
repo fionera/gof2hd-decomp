@@ -31,7 +31,7 @@ void NoTexVtxColorShader::Init(Engine *)
 NoTexVtxColorShader::NoTexVtxColorShader()
 {
     NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"NoTexVtxColorShader";
+    this->name = u"NoTexVtxColorShader";
 }
 
 void NoTexVtxColorShader::UpdateMeshData(Mesh *mesh, Engine *engine)

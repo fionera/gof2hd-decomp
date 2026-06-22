@@ -9,7 +9,7 @@ namespace AbyssEngine {
 CubeNormalMapping::CubeNormalMapping()
 {
     String tmp;
-    tmp.s = u"CubeNormalMapping";
+    tmp = u"CubeNormalMapping";
     this->name = tmp;
 }
 

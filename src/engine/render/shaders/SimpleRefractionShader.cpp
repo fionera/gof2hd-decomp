@@ -14,7 +14,7 @@ int SimpleRefractionShader::ShaderIndex;
 SimpleRefractionShader::SimpleRefractionShader()
 {
     SimpleRefractionShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"SimpleRefractionShader";
+    this->name = u"SimpleRefractionShader";
 }
 
 void SimpleRefractionShader::Init(::Engine *engine)

@@ -15,7 +15,7 @@ int BumpShaderParticle::ShaderIndex;
 BumpShaderParticle::BumpShaderParticle()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpShaderParticle";
+    this->name = u"BumpShaderParticle";
 }
 
 void BumpShaderParticle::Init(Engine *)

@@ -12,7 +12,7 @@ namespace AbyssEngine {
 
 TextureShader::TextureShader()
 {
-    this->name.s = u"TextureShader";
+    this->name = u"TextureShader";
 }
 
 // Compiles the base and extended GLES2 programs and caches each program's

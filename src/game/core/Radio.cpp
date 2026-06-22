@@ -55,7 +55,7 @@ static String radio_string_from_cstr(const char* c)
 {
     String r;
     for (const char* p = c; p && *p; ++p)
-        r.s.push_back((char16_t)(unsigned char)*p);
+        r.push_back((char16_t)(unsigned char)*p);
     return r;
 }
 

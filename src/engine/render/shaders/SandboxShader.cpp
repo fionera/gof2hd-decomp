@@ -88,7 +88,7 @@ SandboxShader::SandboxShader()
 {
     // Register this shader into the global registry list.
     *SandboxShader_registerDst = SandboxShader_registerSrc;
-    this->name.s = u"SandboxShader";
+    this->name = u"SandboxShader";
 }
 
 } // namespace AbyssEngine

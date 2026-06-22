@@ -3,12 +3,13 @@
 // NOTE: this file is AEString.h, NOT String.h — a header named String.h collides with the C
 // library's <string.h> on case-insensitive filesystems (macOS), breaking libc++'s <cstring>.
 //
-// AbyssEngine::String — the engine's UTF-16 string (backed by std::u16string), kept as a class
-// because it carries 43 game-specific methods (transliteration, Split, ReplaceString, ToLowerCase
-// with CP-1252 tables, ...). Method bodies live in src/game/core/String.cpp (and AbyssEngine.cpp
-// for operator+).
+// AbyssEngine::String — the engine's native UTF-16 string, modeled exactly as the Android binary:
+// a 12-byte polymorphic value { vptr@0, unsigned short* data@4, int length@8 } whose sole virtual
+// is the destructor (so the compiler emits the vtable [0][typeinfo][D1][D0] + D0/D1/D2, matching the
+// binary — see docs/STRING_REMODEL.md). `data` is a heap UTF-16 buffer (operator new[]/delete[],
+// NUL-terminated); `length` is the code-unit count. Method bodies live in src/game/core/String.cpp
+// (and AbyssEngine.cpp for operator+).
 #include <cstdint>
-#include <string>
 
 // The thin Compare/StrLen/index/ctor_*/addAssign_* adapters below are inlined into their call
 // sites in the original binary (no standalone symbol exists). always_inline guarantees the same
@@ -16,40 +17,50 @@
 #define AESTRING_SHIM inline __attribute__((always_inline))
 
 namespace AbyssEngine {
-struct String {
-    std::u16string s;
-    // Default constructor (recovered): empty string. Delegates to the recovered ctor() body,
-    // matching the original String::String() which zero-initializes the contents.
-    String() { ctor(); }
-    // Convenience C++ constructors/operators layered on the recovered engine methods, so call
-    // sites read like ordinary string code. The recovered ctor_*/assign/addAssign_* bodies do the
-    // actual work.
-    String(const char *cstr, bool reverse = false) { ctor_char(cstr, reverse); }
-    // Copy constructor: the original inlined it at every call site (no standalone symbol exists),
-    // so force-inline here to suppress the out-of-line (weak) variant other TUs would emit.
-    AESTRING_SHIM String(const String &other) { s = other.s; }
+class String {
+public:
+    // vptr lives at +0x00 (implicit, from the virtual destructor below).
+    unsigned short *data;   // +0x04  heap UTF-16 buffer, NUL-terminated (or null when empty)
+    int             length; // +0x08  code-unit count (excludes the terminating NUL)
+
+    // Default constructor: empty (null buffer), exactly as String::String() (0x72398). Out-of-line
+    // in String.cpp so the engine's standalone C1Ev/C2Ev symbols are emitted (the original ships
+    // them; the compiler also plants the vptr here).
+    String();
+    // Convenience C++ constructor; out-of-line in String.cpp so the original C1EPKcb/C2EPKcb symbols
+    // are emitted. The recovered Set/Reverse bodies do the actual work.
+    String(const char *cstr, bool reverse = false);
+    // Copy constructor: the original inlines a deep copy (data=0; Set(other.data)) at every call site
+    // (no standalone symbol exists), so force-inline here to suppress the out-of-line (weak) variant.
+    AESTRING_SHIM String(const String &other) : data(nullptr), length(0) { Set(other.data); }
     // Real engine overloads (recovered from the Android binary): these mangle to the original
-    // String::String(...) / operator+= symbols and delegate to the recovered member bodies.
-    // Defined out-of-line in String.cpp so the original symbols are emitted from that TU.
+    // String::String(...) symbols and are defined out-of-line in String.cpp.
     String(const uint16_t *wstr, bool reverse);
     String(const String &other, bool reverse);
     explicit String(char c);
     explicit String(int v);
     explicit String(float v);
     explicit String(long long v);
-    // operator=(String const&): recovered engine assignment (re-Sets from the other's wide buffer).
-    // Defined out-of-line in String.cpp so the original mangled symbol is emitted from that TU.
+    // Destructor: the sole virtual. Frees `data`. Out-of-line in String.cpp so the engine's
+    // standalone D0/D1/D2 + vtable/typeinfo are emitted, byte-matching the binary.
+    virtual ~String();
+
+    // operator=(String const&): recovered engine assignment (re-Sets from the other's wide buffer
+    // only when it is non-empty — matches the original 0x727a8). Out-of-line in String.cpp.
     String &operator=(const String &other);
-    String &operator=(const char *cstr) { Set_char(cstr); return *this; }
-    String &operator+=(const String &other) { s.append(other.s); return *this; }
+    String &operator=(const char *cstr) { Set(cstr); return *this; }
+    String &operator=(const char16_t *wstr) { Set(reinterpret_cast<const unsigned short *>(wstr)); return *this; }
+    // Append a single UTF-16 code unit (convenience for char-by-char builders).
+    AESTRING_SHIM void push_back(unsigned short c) { appendWide(&c, 1); }
+    String &operator+=(const String &other) { appendWide(other.data, other.length); return *this; }
     String &operator+=(const char &c);
     String &operator+=(const int &v);
     String &operator+=(const float &v);
     String &operator+=(const long long &v);
     // copy(src, reverse): copy-assign from another String, optionally reversing (RTL languages).
     void copy(const String *src, bool reverse) { ctor_copy(const_cast<String *>(src), reverse); }
-    const char16_t* text() const { return s.c_str(); }
-    uint32_t        size() const { return (uint32_t)s.size(); }
+    const char16_t *text() const { return reinterpret_cast<const char16_t *>(data); }
+    uint32_t        size() const { return (uint32_t)length; }
 
     // ---- recovered engine methods (mangle to the original AbyssEngine::String symbols) ----
     // Replace this string's contents from various sources.
@@ -85,12 +96,12 @@ struct String {
     // First index >= start where needle occurs, or 0xffffffff if not found. Inline (the original
     // inlined this worker into IndexOf / Split / ReplaceString rather than emitting a symbol).
     AESTRING_SHIM unsigned int IndexOf_from(unsigned int start, const String *needle) {
-        unsigned int slen = (unsigned int)this->s.size();
-        unsigned int nlen = (unsigned int)needle->s.size();
+        unsigned int slen = (unsigned int)this->length;
+        unsigned int nlen = (unsigned int)needle->length;
         while (start < slen && nlen <= slen - start) {
-            if (needle->s[0] == this->s[start]) {
+            if (needle->data[0] == this->data[start]) {
                 unsigned int k = 0;
-                while (start + k < slen && this->s[start + k] == needle->s[k]) {
+                while (start + k < slen && this->data[start + k] == needle->data[k]) {
                     if (nlen <= k + 1)
                         return start;
                     k++;
@@ -121,10 +132,11 @@ struct String {
     // out = self[start..end); empty when end <= start. Inline (the original inlined this worker
     // into Split / SplitTags / the public SubString rather than emitting a standalone symbol).
     AESTRING_SHIM void SubString(String *self, unsigned int start, unsigned int end) {
-        this->s.clear();
-        if (start < end && start < self->s.size()) {
-            unsigned int hi = end > self->s.size() ? (unsigned int)self->s.size() : end;
-            this->s = self->s.substr(start, hi - start);
+        clear();
+        unsigned int slen = (unsigned int)self->length;
+        if (start < end && start < slen) {
+            unsigned int hi = end > slen ? slen : end;
+            assignWide(self->data + start, (int)(hi - start));
         }
     }
     String SubString(unsigned int start, unsigned int end);
@@ -135,12 +147,13 @@ struct String {
     // operator+= helpers (one per value type). Each appends the formatted value to this string.
     // Inline: the original inlined these into the operator+= bodies rather than emitting symbols.
     AESTRING_SHIM String * addAssign_char(const char *c) {
-        this->s.push_back((char16_t)*(const unsigned char *)c);
+        unsigned short ch = (unsigned short)*(const unsigned char *)c;
+        appendWide(&ch, 1);
         return this;
     }
     AESTRING_SHIM String * addAssign_float(const float *v) {
         String tmp; tmp.ctor_float(*v);
-        this->s.append(tmp.s);
+        appendWide(tmp.data, tmp.length);
         return this;
     }
     AESTRING_SHIM String * addAssign_int(const int *v) {
@@ -149,11 +162,11 @@ struct String {
     }
     AESTRING_SHIM String * addAssign_longlong(const long long *v) {
         String tmp; tmp.ctor_longlong(*v);
-        this->s.append(tmp.s);
+        appendWide(tmp.data, tmp.length);
         return this;
     }
     AESTRING_SHIM String * addAssign_str(String *other) {
-        this->s.append(other->s);
+        appendWide(other->data, other->length);
         return this;
     }
     // Assign from another String, returning this; inline (the original inlined this into its
@@ -161,51 +174,41 @@ struct String {
     AESTRING_SHIM String * assign(String *other) { *this = *other; return this; }
     // ctor helpers (one per value type). Each resets this string and fills it from the argument.
     // Inline: the original inlined these into the matching String(...) constructor bodies.
-    AESTRING_SHIM void ctor() { this->s.clear(); }
+    AESTRING_SHIM void ctor() { clear(); }
     AESTRING_SHIM String * ctor_char(const char *s, bool reverse) {
-        this->s.clear();
         Set_char(s);
         if (reverse)
             Reverse();
         return this;
     }
     AESTRING_SHIM String * ctor_charval(char c) {
-        this->s.clear();
         Set_longlong((long long)c);
         return this;
     }
     AESTRING_SHIM String * ctor_copy(String *other, bool reverse) {
-        this->s = other->s;
+        Set(other->data);
         if (reverse)
             Reverse();
         return this;
     }
     AESTRING_SHIM String * ctor_float(float v) {
-        this->s.clear();
         Set_float(v);
         return this;
     }
     AESTRING_SHIM String * ctor_int(int v) {
-        this->s.clear();
         Set_longlong((long long)v);
         return this;
     }
     AESTRING_SHIM String * ctor_longlong(long long v) {
-        this->s.clear();
         Set_longlong(v);
         return this;
     }
     AESTRING_SHIM String * ctor_wchar(const uint16_t *s, bool reverse) {
-        this->s.clear();
         Set_wchar(s);
         if (reverse)
             Reverse();
         return this;
     }
-    // Destructor body / deleting-destructor; inline (the original inlined these into the real
-    // ~String() and the delete expression rather than emitting standalone symbols).
-    AESTRING_SHIM String * dtor() { this->s.clear(); return this; }
-    AESTRING_SHIM void dtor_del() { dtor(); delete this; }
     // Bounded element access; inline (no standalone symbol in the original).
     AESTRING_SHIM uint16_t * index(int i) {
         return reinterpret_cast<uint16_t *>((*this)[i]);
@@ -218,6 +221,39 @@ struct String {
     // Decode `len` UTF-8 bytes into a freshly allocated NUL-terminated wide buffer (caller frees
     // with operator delete[]); transliterates Cyrillic to Latin approximations.
     static uint16_t * getWCharFromUtf8(char *utf8, int len);
+
+    // ---- native buffer helpers (manual UTF-16 storage; not original symbols, force-inlined) ----
+    // Release the heap buffer and reset to the empty (null-buffer) state, as the dtor / Set do.
+    AESTRING_SHIM void clear() {
+        if (data) delete[] data;
+        data = nullptr;
+        length = 0;
+    }
+    // Replace the contents with a copy of `n` code units from `src` (NUL-terminated allocation of
+    // n+1), matching the engine's Set buffer convention. `src==nullptr`/`n<=0` -> empty.
+    AESTRING_SHIM void assignWide(const unsigned short *src, int n) {
+        if (data) delete[] data;
+        data = nullptr;
+        length = 0;
+        if (!src || n < 0) return;
+        unsigned short *nd = new unsigned short[n + 1];
+        for (int i = 0; i < n; i++) nd[i] = src[i];
+        nd[n] = 0;
+        data = nd;
+        length = n;
+    }
+    // Append `n` code units from `src`, reallocating the NUL-terminated buffer.
+    AESTRING_SHIM void appendWide(const unsigned short *src, int n) {
+        if (!src || n <= 0) return;
+        int newLen = length + n;
+        unsigned short *nd = new unsigned short[newLen + 1];
+        for (int i = 0; i < length; i++) nd[i] = data[i];
+        for (int i = 0; i < n; i++) nd[length + i] = src[i];
+        nd[newLen] = 0;
+        if (data) delete[] data;
+        data = nd;
+        length = newLen;
+    }
 };
 
 // AbyssEngine::operator+(String const&, String const&) - concatenate (body in AbyssEngine.cpp).

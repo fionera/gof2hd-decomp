@@ -1882,7 +1882,7 @@ done:
 MGame::~MGame() {
     MGame *self = this;
     ((MGame *)(self))->OnRelease();
-    this->gameOverTitle.dtor();
+    this->gameOverTitle.clear();
 }
 
 __attribute__((visibility("hidden"))) extern FModSound **g_fmod;

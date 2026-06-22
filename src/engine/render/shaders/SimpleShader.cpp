@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 SimpleShader::SimpleShader()
 {
-    this->name.s = u"SimpleShader";
+    this->name = u"SimpleShader";
 }
 
 void SimpleShader::Init(Engine *)

@@ -21,7 +21,7 @@ namespace AbyssEngine {
 
 PulseShader::PulseShader()
 {
-    this->name.s = u"PulseShader";
+    this->name = u"PulseShader";
 }
 
 void PulseShader::SetInActive()

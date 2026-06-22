@@ -293,7 +293,7 @@ void Hud::drawOrbitInformation() {
         char name[12];
         ((Station *)(name))->getName();
         gCanvas->DrawString((unsigned)(long)(font), *(String *)(name), (x), (char)layout[0x88], false);
-        ((String *)(name))->dtor();
+        ((String *)(name))->clear();
     }
     gCanvas->SetColor((unsigned)(-1));
 
@@ -315,11 +315,11 @@ void Hud::drawOrbitInformation() {
         void *txt = (*g_Hud_oiGameText)->getText(0); // id resolved by table
         *(String *)full = *(String *)acc + *(String *)txt;
         gCanvas->DrawString((unsigned)(long)(font), *(String *)(full), (x), (char)layout[0x89], false);
-        ((String *)(full))->dtor();
-        ((String *)(acc))->dtor();
-        ((String *)(sep))->dtor();
-        ((String *)(copy))->dtor();
-        ((String *)(sysName))->dtor();
+        ((String *)(full))->clear();
+        ((String *)(acc))->clear();
+        ((String *)(sep))->clear();
+        ((String *)(copy))->clear();
+        ((String *)(sysName))->clear();
     }
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
@@ -479,7 +479,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         char a58[12]; ((String *)(a58))->ctor_char(g_Hud_ccHashX, false);
         char out1[12]; Status_replaceHash(out1, tmpl, a40, a4c, a58);
         ((String *)(dst))->assign((String *)(out1));
-        ((String *)(out1))->dtor(); ((String *)(a58))->dtor(); ((String *)(a4c))->dtor(); ((String *)(a40))->dtor();
+        ((String *)(out1))->clear(); ((String *)(a58))->clear(); ((String *)(a4c))->clear(); ((String *)(a40))->clear();
 
         tmpl = *g_Hud_ccTemplate;
         char a64[12]; ((String *)(a64))->ctor_copy((String *)(dst), false);
@@ -487,7 +487,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         char a7c[12]; ((String *)(a7c))->ctor_char(g_Hud_ccHashN, false);
         char out2[12]; Status_replaceHash(out2, tmpl, a64, a70, a7c);
         ((String *)(dst))->assign((String *)(out2));
-        ((String *)(out2))->dtor(); ((String *)(a7c))->dtor(); ((String *)(a70))->dtor(); ((String *)(a64))->dtor();
+        ((String *)(out2))->clear(); ((String *)(a7c))->clear(); ((String *)(a70))->clear(); ((String *)(a64))->clear();
 
         String *str = new String(*(String *)dst);
         ListItem *item = new ListItem(str);
@@ -519,11 +519,11 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         char a88[12]; ((String *)(a88))->ctor_copy((String *)(a94), false);
         void *unit = gt->getText(itemId + 0x4fa);
         char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
-        ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
+        ((String *)(a88))->clear(); ((String *)(a94))->clear(); ((String *)(ac))->clear(); ((String *)(a0))->clear();
 
         char b8[12]; ((String *)(b8))->ctor_copy((String *)(k34), false);
         int idx = sameHudEventAsBeforeAggregate(*(String *)b8);
-        ((String *)(b8))->dtor();
+        ((String *)(b8))->clear();
         if (idx >= 0) {
             this->eventQueueTimer = 2000;
             this->cargoAggregateCount += count;
@@ -534,11 +534,11 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
             void *u2 = gt->getText(itemId + 0x4fa);
             char n88[12]; *(String *)n88 = *(String *)n94 + *(String *)u2;
             ((String *)((*this->eventQueue)[idx]->name))->assign((String *)(n88));
-            ((String *)(n88))->dtor(); ((String *)(n94))->dtor(); ((String *)(nA0))->dtor(); ((String *)(nC4))->dtor(); ((String *)(nAc))->dtor();
-            ((String *)(k34))->dtor();
+            ((String *)(n88))->clear(); ((String *)(n94))->clear(); ((String *)(nA0))->clear(); ((String *)(nC4))->clear(); ((String *)(nAc))->clear();
+            ((String *)(k34))->clear();
             return;
         }
-        ((String *)(k34))->dtor();
+        ((String *)(k34))->clear();
     }
 
     // fresh "+N <unit>" event
@@ -550,7 +550,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     void *unit = gt->getText(itemId + 0x4fa);
     char k34[12]; *(String *)k34 = *(String *)a88 + *(String *)unit;
     ((String *)(&this->field_0x1f4))->assign((String *)(k34));
-    ((String *)(k34))->dtor(); ((String *)(a88))->dtor(); ((String *)(a94))->dtor(); ((String *)(ac))->dtor(); ((String *)(a0))->dtor();
+    ((String *)(k34))->clear(); ((String *)(a88))->clear(); ((String *)(a94))->clear(); ((String *)(ac))->clear(); ((String *)(a0))->clear();
 
     String *str = new String(this->field_0x1f4);
     ListItem *item = new ListItem(str);
@@ -642,12 +642,12 @@ void Hud::updateSecondaryWeaponString() {
     *(String *)acc3 = *(String *)acc2 + *(String *)end;
 
     ((String *)(&this->field_0x3b4))->assign((String *)(acc3));
-    ((String *)(acc3))->dtor();
-    ((String *)(end))->dtor();
-    ((String *)(acc2))->dtor();
-    ((String *)(amount))->dtor();
-    ((String *)(acc1))->dtor();
-    ((String *)(sep))->dtor();
+    ((String *)(acc3))->clear();
+    ((String *)(end))->clear();
+    ((String *)(acc2))->clear();
+    ((String *)(amount))->clear();
+    ((String *)(acc1))->clear();
+    ((String *)(sep))->clear();
 
     int screenW = *(int *)*g_Hud_swScreenW;
     int w = gCanvas->GetTextWidth((unsigned)(long)(*g_Hud_swCanvas), *(String *)(*g_Hud_swFont));
@@ -794,7 +794,7 @@ int Hud::init() {
         char tmp[12];
         ((String *)(tmp))->ctor_char(g_Hud_initMsg, false);
         ((String *)(&this->field_0x51c))->assign((String *)(tmp));
-        ((String *)(tmp))->dtor();
+        ((String *)(tmp))->clear();
     }
 
     closeHudMenu();
@@ -900,8 +900,8 @@ void Hud::drawMenu(int unused) {
     ((String *)(prefix))->ctor_char(g_Hud_dmPrefix, false);
     ((String *)(num))->ctor_int(this->fuelGaugeValue);
     *(String *)label = *(String *)prefix + *(String *)num;
-    ((String *)(num))->dtor();
-    ((String *)(prefix))->dtor();
+    ((String *)(num))->clear();
+    ((String *)(prefix))->clear();
 
     int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     unsigned char gy = (unsigned char)((char)y + (char)(layout[0xc] / 2)
@@ -915,7 +915,7 @@ void Hud::drawMenu(int unused) {
     int th = gCanvas->GetTextHeight(0);
     char ty = (char)(((gy + (char)(ih / 2)) - (char)(th / 2)) + (char)layout[0x8d]);
     gCanvas->DrawString((unsigned)(long)(font), *(String *)(label), (barW + gx), (ty), false);
-    ((String *)(label))->dtor();
+    ((String *)(label))->clear();
 }
 
 void Hud::clearQueue() {
@@ -1007,7 +1007,7 @@ HUD_INLINE void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, in
         char ch[12];
         ((String *)(ch))->SubString((String *)str, i - 1, i);
         int frame = ((String *)(ch))->ValueOf();
-        ((String *)(ch))->dtor();
+        ((String *)(ch))->clear();
         ((Sprite *)(sprite))->setFrame(frame);
         ((Sprite *)(sprite))->setPosition(x, y);
         ((Sprite *)(sprite))->draw(1.0f, 1.0f);
@@ -1037,8 +1037,8 @@ HUD_INLINE void drawChallengeModeScoreImpl(Hud *self) {
             ((String *)(z))->ctor_char(g_Hud_csZero, false);
             *(String *)acc = *(String *)z + *(String *)score;
             ((String *)(score))->assign((String *)(acc));
-            ((String *)(acc))->dtor();
-            ((String *)(z))->dtor();
+            ((String *)(acc))->clear();
+            ((String *)(z))->clear();
         }
     }
 
@@ -1063,7 +1063,7 @@ HUD_INLINE void drawChallengeModeScoreImpl(Hud *self) {
                 int bl = (int)((String *)bonusStr)->size();
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
                 drawDigits(self, sprite, bonusStr, bx, fh + yRow + pad, dw);
-                ((String *)(bonusStr))->dtor();
+                ((String *)(bonusStr))->clear();
             }
         }
         gCanvas->DrawImage2D((unsigned)self->multiplierIconImage, pad + startX, 0);
@@ -1072,10 +1072,10 @@ HUD_INLINE void drawChallengeModeScoreImpl(Hud *self) {
         ((String *)(timeStr))->ctor_int(status[0x63]);
         int tx = (half + pad) - span + gCanvas->GetImage2DWidth((unsigned)(0));
         drawDigits(self, sprite, timeStr, tx, yRow, dw);
-        ((String *)(timeStr))->dtor();
+        ((String *)(timeStr))->clear();
     }
     gCanvas->SetColor((unsigned)(-1));
-    ((String *)(score))->dtor();
+    ((String *)(score))->clear();
 }
 
 // Single-arg form whose body is identical to the no-arg renderer; the argument is unused.
@@ -1110,17 +1110,17 @@ void Hud::hudEventMedal(int medalId, int percent) {
 
     void *dst = &this->field_0x1e0;
     ((String *)(dst))->assign((String *)(acc3));
-    ((String *)(acc3))->dtor();
-    ((String *)(end))->dtor();
-    ((String *)(acc2))->dtor();
-    ((String *)(num))->dtor();
-    ((String *)(acc1))->dtor();
-    ((String *)(sep))->dtor();
+    ((String *)(acc3))->clear();
+    ((String *)(end))->clear();
+    ((String *)(acc2))->clear();
+    ((String *)(num))->clear();
+    ((String *)(acc1))->clear();
+    ((String *)(sep))->clear();
 
     char probe[12];
     ((String *)(probe))->ctor_copy((String *)(dst), false);
     int same = sameHudEventAsBefore(*(String *)probe);
-    ((String *)(probe))->dtor();
+    ((String *)(probe))->clear();
     if (same != 0) return;
 
     String *str = new String(*(String *)dst);
@@ -1280,7 +1280,7 @@ HUD_INLINE void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
     char probe[12];
     ((String *)(probe))->ctor_copy(line, false);
     unsigned int dup = self->sameHudEventAsBefore(*(String *)probe);
-    ((String *)(probe))->dtor();
+    ((String *)(probe))->clear();
     if (dup != 0)
         return;
 

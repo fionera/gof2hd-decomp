@@ -52,7 +52,7 @@ void NoTexShader::Init(Engine *)
 NoTexShader::NoTexShader()
 {
     NoTexShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"NoTexShader";
+    this->name = u"NoTexShader";
 }
 
 } // namespace AbyssEngine

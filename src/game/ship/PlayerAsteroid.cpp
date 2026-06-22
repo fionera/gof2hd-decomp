@@ -114,7 +114,7 @@ String PlayerAsteroid::getQualityString()
     }
     String result;
     for (const char* p = text; *p; ++p)
-        result.s.push_back((char16_t)(unsigned char)*p);
+        result.push_back((char16_t)(unsigned char)*p);
     return result;
 }
 

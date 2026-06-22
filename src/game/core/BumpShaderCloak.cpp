@@ -13,7 +13,7 @@ int BumpShaderCloak::ShaderIndex;
 BumpShaderCloak::BumpShaderCloak()
 {
     BumpShaderCloak::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpShaderCloak";
+    this->name = u"BumpShaderCloak";
 }
 
 void BumpShaderCloak::Init(Engine *engine)

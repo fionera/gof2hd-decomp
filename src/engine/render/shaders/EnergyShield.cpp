@@ -105,7 +105,7 @@ void EnergyShield::Init(Engine *engine)
 EnergyShield::EnergyShield()
 {
     EnergyShield::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"EnergyShield";
+    this->name = u"EnergyShield";
 }
 
 } // namespace AbyssEngine

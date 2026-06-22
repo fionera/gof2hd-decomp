@@ -13,7 +13,7 @@ namespace AbyssEngine {
 
 DNSShader::DNSShader()
 {
-    this->name.s = u"DNSShader";
+    this->name = u"DNSShader";
 }
 
 void DNSShader::Init(Engine *)

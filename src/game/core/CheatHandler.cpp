@@ -39,7 +39,7 @@ void CheatHandler::AddCheatCode(const String &code, int value)
     ArrayAdd<CheatCode *>(c, *codes);
 
     for (uint32_t i = 0; i < code.size(); i = i + 1) {
-        uint16_t ch = (uint16_t)code.s[i];
+        uint16_t ch = (uint16_t)code.data[i];
         switch (ch) {
         case '0':
             ArrayAdd<uint16_t>((uint16_t)keys[0].code, *c->keys);

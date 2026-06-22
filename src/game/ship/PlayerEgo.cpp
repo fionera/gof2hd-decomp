@@ -2550,7 +2550,7 @@ void PlayerEgo::drawThrottle() {
     ((PaintCanvas*)(long)(canvas))->DrawString((unsigned int)(long)(canvas), *pctStr, (int)(long)(pct), (int)((anchor[0] - (float)(tw / 2)) - 1.0f), (bool)(int)(anchor[1] + (float)th / g_PE_t_textDiv));
     gCanvas->SetColor((unsigned int)(0xffffffff));
 
-    ((String *)(pct))->dtor();
+    ((String *)(pct))->clear();
 }
 
 void PlayerEgo::setAutoPilot(KIPlayer* kip) {

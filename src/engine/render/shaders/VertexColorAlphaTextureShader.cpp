@@ -13,7 +13,7 @@ __attribute__((visibility("hidden"))) extern int g_shaderIndexDst;
 VertexColorAlphaTextureShader::VertexColorAlphaTextureShader()
 {
     g_shaderIndexDst = g_shaderIndexSrc;
-    this->name.s = u"VCATShader";
+    this->name = u"VCATShader";
 }
 
 void VertexColorAlphaTextureShader::Init(Engine *)

@@ -10,7 +10,7 @@ int BumpShaderV4::ShaderIndex;
 BumpShaderV4::BumpShaderV4()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpShaderV4";
+    this->name = u"BumpShaderV4";
 }
 
 void BumpShaderV4::Init(Engine *)

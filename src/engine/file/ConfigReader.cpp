@@ -92,7 +92,7 @@ void ConfigReader::ParseFile(String name)
                     for (uint32_t i = 0; i < tokens.size(); i++) {
                         TokenStruct *token = tokens[i];
                         String section = StringSubString(line, 1, line.size() - 1);
-                        if (token->name.s == section.s) {
+                        if (token->name.Compare(section) == 0) {
                             token->read(this, token->context);
                             break;
                         }

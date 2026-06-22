@@ -17,7 +17,7 @@ int BumpShaderV3::ShaderIndex;
 BumpShaderV3::BumpShaderV3()
 {
     ShaderBaseStruct::shaderIndexIntern = ShaderIndex;
-    this->name.s = u"BumpShaderV3";
+    this->name = u"BumpShaderV3";
 }
 
 void BumpShaderV3::Init(Engine *)

@@ -176,7 +176,7 @@ void ChoiceWindow::setMedal(int medal, int count)
         unsigned uv = neg ? (unsigned)(-v) : (unsigned)v;
         do { buf[n++] = char('0' + uv % 10); uv /= 10; } while (uv);
         if (neg) buf[n++] = '-';
-        while (n--) number.s.push_back((char16_t)(unsigned char)buf[n]);
+        while (n--) number.push_back((char16_t)(unsigned char)buf[n]);
     }
 
     String finalText = gStatus->replaceHash(pattern, number);

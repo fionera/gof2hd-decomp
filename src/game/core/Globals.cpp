@@ -299,7 +299,7 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
         consumed += static_cast<int>(line->size());
         count++;
     }
-    line->dtor();
+    line->clear();
     ::operator delete(line);
 
     // Allocate one fresh String per line.
@@ -426,7 +426,7 @@ String Globals::getBoundedString(const String& text, int width)
         prefix.ctor_char(gGBS_prefix, false);
         result = prefix + *line;
 
-        line->dtor();
+        line->clear();
     }
 
     return result;

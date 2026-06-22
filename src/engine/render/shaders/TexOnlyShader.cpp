@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 TexOnlyShader::TexOnlyShader()
 {
-    this->name.s = u"TexOnlyShader";
+    this->name = u"TexOnlyShader";
 }
 
 void TexOnlyShader::Init(Engine *)

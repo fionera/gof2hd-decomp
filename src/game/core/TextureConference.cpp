@@ -9,7 +9,7 @@ namespace AbyssEngine {
 TextureConference::TextureConference()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"TextureConference";
+    this->name = u"TextureConference";
     this->animTime = 0;
 }
 

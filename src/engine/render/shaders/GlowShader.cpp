@@ -8,7 +8,7 @@ namespace AbyssEngine {
 GlowShader::GlowShader()
 {
     GlowShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"GlowShader";
+    this->name = u"GlowShader";
 }
 
 void GlowShader::Init(Engine *)

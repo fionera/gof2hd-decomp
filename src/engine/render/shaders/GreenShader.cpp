@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 GreenShader::GreenShader()
 {
-    this->name.s = u"GreenShader";
+    this->name = u"GreenShader";
 }
 
 // Compiles the GLES2 program and caches its attribute (a0..a4) and uniform (u0..u8) locations.

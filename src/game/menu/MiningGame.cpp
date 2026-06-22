@@ -471,8 +471,8 @@ void MiningGame::render2D()
     amountText->ctor_int((int)this->oreAmount);
     suffixText->ctor_char(g_MiningGame_oreSuffix, false);
     *oreText = *amountText + *suffixText;
-    suffixText->dtor();
-    amountText->dtor();
+    suffixText->clear();
+    amountText->clear();
 
     void *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
@@ -505,10 +505,10 @@ void MiningGame::render2D()
                            *g_MiningGame_screenWRender / 2 - promptWidth / 2,
                            I(layout, 0x70) + this->progressBarY, false);
         canvas->SetColor((unsigned int)-1);
-        amountText->dtor();
+        amountText->clear();
     }
 
-    oreText->dtor();
+    oreText->clear();
 }
 
 // C-ABI factory used at the asteroid-docking call site. PlayerEgo::approachAsteroid

@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 TextureLightShader::TextureLightShader()
 {
-    this->name.s = u"TextureLightShader";
+    this->name = u"TextureLightShader";
 }
 
 // Compiles the lit-texture program and caches its attribute/uniform location handles.

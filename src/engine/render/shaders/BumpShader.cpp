@@ -17,7 +17,7 @@ namespace AbyssEngine {
 
 BumpShader::BumpShader()
 {
-    this->name.s = u"BumpShader";
+    this->name = u"BumpShader";
 }
 
 void BumpShader::SetInActive()

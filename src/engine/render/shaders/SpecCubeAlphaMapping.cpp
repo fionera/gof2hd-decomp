@@ -8,7 +8,7 @@ namespace AbyssEngine {
 
 SpecCubeAlphaMapping::SpecCubeAlphaMapping()
 {
-    this->name.s = u"SpecCubeAlphaMapping";
+    this->name = u"SpecCubeAlphaMapping";
 }
 
 // Compiles the GLES2 program (falling back to the secondary fragment shader when the bound

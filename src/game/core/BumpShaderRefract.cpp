@@ -21,7 +21,7 @@ void BumpShaderRefract::SetInActive()
 BumpShaderRefract::BumpShaderRefract()
 {
     ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
-    this->name.s = u"BumpShaderRefract";
+    this->name = u"BumpShaderRefract";
 }
 
 void BumpShaderRefract::Init(::Engine *engine)
