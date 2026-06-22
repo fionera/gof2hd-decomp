@@ -35,12 +35,12 @@ public:
     virtual void      OnRelease()                               {}
     virtual long long OnKeyPress(long long key, long long)      { return key; }
     virtual long long OnKeyRelease(long long key, long long)    { return key; }
-    virtual int       OnTouchBegin(int x, int)                  { return x; }
-    virtual int       OnTouchMove(int x, int)                   { return x; }
+    virtual void      OnTouchBegin(int, int)                    {}
+    virtual void      OnTouchMove(int, int)                     {}
     virtual void      OnTouchEnd(int, int)                      {}
-    virtual int       OnTouchBegin(int x, int, void *)          { return x; }
-    virtual int       OnTouchMove(int x, int, void *)           { return x; }
-    virtual int       OnTouchEnd(int x, int, void *)            { return x; }
+    virtual void      OnTouchBegin(int, int, void *)            {}
+    virtual void      OnTouchMove(int, int, void *)             {}
+    virtual void      OnTouchEnd(int, int, void *)              {}
     virtual void      OnUpdate()                                {}
     virtual void      OnRender3D()                              {}
     virtual void      OnRender2D()                              {}

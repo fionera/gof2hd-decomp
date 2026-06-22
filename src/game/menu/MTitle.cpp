@@ -62,11 +62,11 @@ long long MTitle::OnKeyRelease(long long key, long long mod)
 {
 }
 
-int MTitle::OnTouchBegin(int x, int y)
+void MTitle::OnTouchBegin(int x, int y)
 {
 }
 
-int MTitle::OnTouchMove(int x, int y)
+void MTitle::OnTouchMove(int x, int y)
 {
 }
 

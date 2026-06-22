@@ -108,7 +108,6 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 extern "C" void *MGame_opnew(unsigned sz);
-extern "C" void MGame_opdelete(void *p);
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 extern "C" void applyThrust(MGame *self, int y);
 uint8_t TFC_isInLookAtMode(TargetFollowCamera *c);
@@ -186,6 +185,7 @@ void MGame::maneuverTouchBegin(int x, int y, void *p) {
 // Two-argument touch/key/lifecycle overrides. MGame routes all real input through the
 // void*-carrying touch overloads and the application manager, so the plain two-argument
 // vtable slots are empty no-ops in this module (matching the shipped stubs).
+// The plain two-argument touch slots are bare `bx lr` stubs in the shipped binary.
 void MGame::OnTouchBegin(int /*p1*/, int /*p2*/) {}
 void MGame::OnTouchEnd(int /*p1*/, int /*p2*/) {}
 void MGame::OnTouchMove(int /*p1*/, int /*p2*/) {}
@@ -317,7 +317,7 @@ void MGame::startJumpScene() {
     this->player->setCollide(0);
     TFC_setLookAtCam(this->camera, 1);
     this->player->stopBoost();
-    Engine *eng = (Engine *)this->appManager->GetEngine();
+    Engine *eng = (Engine *)this->applicationManager->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_jsPostEffect, 0);
 
     float camX, camY, camZ;
@@ -450,7 +450,7 @@ afterTurret:
         TFC_setRotationAroundTarget(this->camera, 0);
         this->player->setFreeLookMode(0);
         {
-            Engine *eng = (Engine *)this->appManager->GetEngine();
+            Engine *eng = (Engine *)this->applicationManager->GetEngine();
             // Engine layout lives in another translation unit (gof2/Engine.h is not
             // included here); write its +0x360 field via a typed byte offset.
             F<int>(eng, 0x360) = 0;
@@ -710,17 +710,17 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             int cm = gStatus->getCurrentCampaignMission();
             if (cm == 0x9e) {
                 self->active = 0;
-                return self->appManager->SetCurrentApplicationModule(2);
+                return self->applicationManager->SetCurrentApplicationModule(2);
             }
             if (self->gameRecord != 0) {
                 ((GameRecord *)(self->gameRecord))->load();
                 gGlobals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
-                return self->appManager->SetCurrentApplicationModule(5);
+                return self->applicationManager->SetCurrentApplicationModule(5);
             }
             gGlobals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->active = 0;
-            self->appManager->SetCurrentApplicationModule(5);
+            self->applicationManager->SetCurrentApplicationModule(5);
             return;
         }
     } else {
@@ -780,11 +780,11 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
 void MGame::OnUpdate() {
     // Clamp this frame's elapsed time to [0, 0x96] ms (cap large hitches).
     int delta;
-    int t = this->appManager->GetElapsedTimeMillis();
+    int t = this->applicationManager->GetElapsedTimeMillis();
     if (t < 0x97) {
-        delta = (this->appManager->GetElapsedTimeMillis() < 0) ? 0
-                : (this->appManager->GetElapsedTimeMillis() < 0x97
-                       ? this->appManager->GetElapsedTimeMillis()
+        delta = (this->applicationManager->GetElapsedTimeMillis() < 0) ? 0
+                : (this->applicationManager->GetElapsedTimeMillis() < 0x97
+                       ? this->applicationManager->GetElapsedTimeMillis()
                        : 0x96);
     } else {
         delta = 0x96;
@@ -926,7 +926,7 @@ void MGame::dockEvent(int p1, int p2) {
                         StarMap *sm = new StarMap(false, nullptr, false, -1);
                         this->starMap = sm;
                     }
-                    Engine *eng = (Engine *)this->appManager->GetEngine();
+                    Engine *eng = (Engine *)this->applicationManager->GetEngine();
                     ((Engine *)(eng))->SetPostEffect(g_dePostEffect, 0);
                     this->starMap->initLights();
                     this->starMap->setJumpMapMode(1, 0);
@@ -1027,7 +1027,7 @@ void MGame::dockEvent(int p1, int p2) {
             F<int>(status, 0x60) = pl->getArmorHP();
             F<int>(status, 0x68) = pl->getGammaHP();
         }
-        this->appManager->SetCurrentApplicationModule(5);
+        this->applicationManager->SetCurrentApplicationModule(5);
         this->active = 0;
     }
 
@@ -1078,10 +1078,9 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
     }
 }
 
-// MGame::~MGame() deleting destructor: run the complete dtor (which returns `this`)
-// then tail-call operator delete with that pointer — so `this` is never saved.
-
-// (deleting_dtor removed: the compiler generates MGame's deleting destructor from ~MGame.)
+// MGame is a polymorphic AbyssEngine::IApplicationModule: the compiler emits MGame's
+// vtable (_ZTV5MGame) and the D0 (deleting) / D1 (complete) / D2 (base) destructor
+// variants from the virtual ~MGame() definition below.
 
 // Tail helpers.
 // @0x1ac808
@@ -1151,7 +1150,7 @@ void MGame::UseKhadorDrive() {
             StarMap *sm = new StarMap(false, nullptr, false, -1);
             this->starMap = sm;
         }
-        Engine *eng = (Engine *)this->appManager->GetEngine();
+        Engine *eng = (Engine *)this->applicationManager->GetEngine();
         ((Engine *)(eng))->SetPostEffect(g_kdPostEffect, 0);
         this->starMap->initLights();
         this->usingJumpDrive = 1;
@@ -1201,7 +1200,7 @@ __attribute__((visibility("hidden"))) extern int   *g_initInfoWidth;    // @0x18
 // Level::getPlayer (int handle)
 
 // MGame::OnInitialize(): bootstrap a flight session (level, player, sounds, state).
-void MGame::OnInitialize() {
+int MGame::OnInitialize() {
     MGame *self = this;
     self->missionInfoLines = 0;   // this[2].field_4C low byte
     Level *level = self->level;
@@ -1217,8 +1216,8 @@ void MGame::OnInitialize() {
         } else {
             texSel = 0x2f08;
         }
-        gCanvas->TextureCreate((unsigned short)self->skyboxTexture, 0, (void *)0, texSel, false);
-        gCanvas->ChangeCubeTexture((unsigned)self->skyboxTexture);
+        gCanvas->TextureCreate((unsigned short)(unsigned)(intptr_t)self->paintCanvas, 0, (void *)0, texSel, false);
+        gCanvas->ChangeCubeTexture((unsigned)(intptr_t)self->paintCanvas);
 
         // Build the per-session sound-resource list (long sequential block).
         {
@@ -1276,8 +1275,8 @@ void MGame::OnInitialize() {
 
     if (((Level *)(level))->init() == 0) {
         self->loadProgress = 100;
-        
-        return;
+
+        return 100;
     }
 
     ((MGame *)(self))->reset();
@@ -1316,7 +1315,7 @@ void MGame::OnInitialize() {
     if (gStatus->inAlienOrbit() == 0)
         *(int *)((char *)*status + 0x84) = Station_getIndex(gStatus->getStation());
 
-    unsigned t = self->appManager->GetCurrentTimeMillis();
+    unsigned t = self->applicationManager->GetCurrentTimeMillis();
     self->field_0x1ac = 0;   // this[1].field_A4
     self->cloakAttributeMax = 0;   // this[1].field_AC
     self->startTime = t & 0xffff;
@@ -1495,7 +1494,7 @@ void MGame::OnInitialize() {
         ((FModSound *)(*g_initFmod))->setDownPitch(false);
 
         // Post-process effect for this flight session.
-        Engine *eng = (Engine *)self->appManager->GetEngine();
+        Engine *eng = (Engine *)self->applicationManager->GetEngine();
         ((Engine *)(eng))->SetPostEffect(g_initPostEffect, false);
 
         // Mission 0x9e: cloak the first enemy fighter.
@@ -1519,6 +1518,7 @@ void MGame::OnInitialize() {
                                *text, *g_initInfoWidth, self->missionInfoLines);
         self->active = 1;
     }
+    return 0;
 }
 
 void TFC_zoomTarget(void *cam, float z);
@@ -1593,7 +1593,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     }
     TFC_zoomTarget(this->camera, zoom);
 
-    
+
 }
 
 // The full button-action dispatch body (cutscene/pause menu, boost/shoot, dock,
@@ -1877,8 +1877,8 @@ done:
 
 // value) and the String destructor.
 
-// MGame::~MGame() complete destructor: install the MGame vtable, release game state,
-// destroy the embedded String at 0x64, and return this.
+// MGame::~MGame(): release game state and destroy the embedded String at +0x64. The
+// compiler synthesises the D0/D1/D2 variants and installs the vtable around this body.
 MGame::~MGame() {
     MGame *self = this;
     ((MGame *)(self))->OnRelease();
@@ -2078,7 +2078,7 @@ void MGame::reset() {
     this->maneuverActive = 0;
     this->maneuverStartX = 0; this->maneuverStartY = 0;
 
-    unsigned t = this->appManager->GetCurrentTimeMillis();
+    unsigned t = this->applicationManager->GetCurrentTimeMillis();
     // Binary does a 16-bit store of 0x0101 at +0x111 (strh), setting both
     // needsRedraw=1 (+0x111) and the padding byte at +0x112.
     *(uint16_t *)&this->needsRedraw = 0x101;
@@ -2110,7 +2110,7 @@ __attribute__((visibility("hidden"))) extern int g_accelTune;   // @0x1887d4 (*(
 
 // MGame::handleAccelerometer(): tilt-steer the ship from device accelerometer input.
 void MGame::handleAccelerometer() {
-    Engine *eng = (Engine *)this->appManager->GetEngine();
+    Engine *eng = (Engine *)this->applicationManager->GetEngine();
     double *acc = ((Engine *)(eng))->GetAccelValue();
 
     // Yaw from raw tilt (axis at +8, scaled by 2.5).
@@ -2135,7 +2135,7 @@ void MGame::handleAccelerometer() {
     this->player->right(0x32, steer * steer);
 
 afterYaw: {
-    ApplicationManager *appMgr = this->appManager;
+    ApplicationManager *appMgr = this->applicationManager;
 
     MGame_accelCtxBegin(appMgr);
     double *v1 = MGame_accelCtxValue();
@@ -2459,7 +2459,7 @@ afterCam:
             *(int *)((char *)gStatus + 0xf4) = self->player->getCurrentSecondaryWeaponIndex();
             **g_ujFlagC = 1;
             self->active = 0;
-            self->appManager->SetCurrentApplicationModule(5);
+            self->applicationManager->SetCurrentApplicationModule(5);
         }
     }
 
@@ -2469,7 +2469,8 @@ done:
 
 __attribute__((visibility("hidden"))) extern int g_mgameInitVal; // @0x187c00 (DAT_00187c00)
 
-// MGame::MGame() — install vtable, default-construct the title String, zero state.
+// MGame::MGame() — default-construct the title String and zero state. The compiler
+// installs the vtable (via the IApplicationModule base subobject) at entry.
 MGame::MGame() {
     this->gameOverTitle.ctor();
 
@@ -2547,7 +2548,7 @@ __attribute__((visibility("hidden"))) extern int **g_relImgFactory; // @0x18c878
 
 // MGame::OnRelease(): tear down the whole game session and reload UI resources.
 void MGame::OnRelease() {
-    Engine *eng = (Engine *)this->appManager->GetEngine();
+    Engine *eng = (Engine *)this->applicationManager->GetEngine();
     ((Engine *)(eng))->SetPostEffect(g_relPostEffect, 0);
 
     int *soundFlag = g_relSoundFlag;
@@ -2690,7 +2691,7 @@ void MGame::OnRender2D() {
             ((StarSystem *)(0))->render2D();
         }
         float v[4]; v[0] = 0.5f; v[1] = 0.5f; v[2] = 0;
-        Engine *eng = (Engine *)self->appManager->GetEngine();
+        Engine *eng = (Engine *)self->applicationManager->GetEngine();
         *(Vector *)&eng->field_0x3cc = *(const Vector *)(v);
         gCanvas->End2d();
         
@@ -2705,7 +2706,7 @@ void MGame::OnRender2D() {
             ((StarSystem *)(0))->render2D();
             if (self->levelScript->startSequenceOver() != 0 ||
                 self->levelScript->startSequence() == 0) {
-                long long now = (long long)self->appManager->GetSystemTimeMillis();
+                long long now = (long long)self->applicationManager->GetSystemTimeMillis();
                 self->radio->draw(now, (PlayerEgo *)(self->player),
                                   (LevelScript *)(self->levelScript));
             }
@@ -2723,7 +2724,7 @@ void MGame::OnRender2D() {
                 if (self->levelScript->getEvent() == 0)
                     self->hud->drawOrbitInformation();
                 {
-                    long long now = (long long)self->appManager->GetSystemTimeMillis();
+                    long long now = (long long)self->applicationManager->GetSystemTimeMillis();
                     self->radio->draw(now, (PlayerEgo *)(self->player),
                                       (LevelScript *)(self->levelScript));
                 }
@@ -2740,7 +2741,7 @@ void MGame::OnRender2D() {
                     self->hud->drawOrbitInformation();
                 if (self->levelScript->startSequenceOver() != 0 ||
                     self->levelScript->startSequence() == 0) {
-                    long long now = (long long)self->appManager->GetSystemTimeMillis();
+                    long long now = (long long)self->applicationManager->GetSystemTimeMillis();
                     self->radio->draw(now, (PlayerEgo *)(self->player),
                                       (LevelScript *)(self->levelScript));
                 }
@@ -2759,12 +2760,12 @@ void MGame::OnRender2D() {
                 if (self->cutsceneActive == 0) {
                     ((MGame *)(self))->nextCamId(self->cameraMode);
                     {
-                        long long now = (long long)self->appManager->GetSystemTimeMillis();
+                        long long now = (long long)self->applicationManager->GetSystemTimeMillis();
                         self->hud->draw(now, (long long)self->deltaTime, self->player,
                                         self->pauseOpen != 0, 0, 0);
                     }
                     {
-                        long long now = (long long)self->appManager->GetSystemTimeMillis();
+                        long long now = (long long)self->applicationManager->GetSystemTimeMillis();
                         self->radio->draw(now, (PlayerEgo *)(self->player),
                                           (LevelScript *)(self->levelScript));
                     }
@@ -2780,7 +2781,7 @@ void MGame::OnRender2D() {
                     self->hud->drawMenu(0);
             } else if (!(self->elapsedTimeHigh < (int)(self->elapsedTime < 0xbb9))) {
                 // Loading/jump splash text.
-                gCanvas->SetColor((unsigned)self->skyboxTexture);
+                gCanvas->SetColor((unsigned)(intptr_t)self->paintCanvas);
                 gCanvas->DrawImage2D((unsigned)self->loadingImage, 0, 0, (unsigned char)'D');
                 // Splash text is emitted inline by the fade path above; once the fade image
                 // and colour have been set there is nothing further to draw here.
@@ -2883,6 +2884,5 @@ extern "C" double *MGame_accelCtxValue() {
     return ((Engine *)g_accelEngine)->GetAccelValue();
 }
 
-// operator new / delete used by MGame's window allocations.
+// operator new used by MGame's window allocations.
 extern "C" void *MGame_opnew(unsigned sz) { return ::operator new(sz); }
-extern "C" void MGame_opdelete(void *p) { ::operator delete(p); }

@@ -4,6 +4,7 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/core/IApplicationModule.h"
 
 // MGame — the in-flight game module: drives a single flight session (level, player,
 // HUD, cameras, dialogue and the hyperspace-jump cinematic).
@@ -29,10 +30,12 @@ using ::AbyssEngine::ApplicationManager;
 struct Music;
 struct Cfg;
 
-class MGame {
+// MGame is an AbyssEngine::IApplicationModule: the base plants the vptr at +0x00 and
+// the engine-owned paintCanvas (+0x04) / applicationManager (+0x08) members. MGame's
+// own session state begins at +0x0c. The compiler emits MGame's vtable plus the D0/D1/D2
+// destructor variants from the virtual ~MGame() below.
+class MGame : public IApplicationModule {
 public:
-    unsigned skyboxTexture;             // +0x04  cube-texture handle
-    ApplicationManager* appManager;     // +0x08  owning application module
     int loadProgress;                   // +0x0c
     int loadingImage;                   // +0x10  fade/splash image handle
     int cameraMode;                     // +0x14
@@ -167,29 +170,32 @@ public:
     Array<AbyssEngine::String*>* missionInfoLines;  // +0x1ec  wrapped mission-info overlay lines
 
     MGame();
-    ~MGame();
+    ~MGame() override;
 
-    // Application-module lifecycle / per-frame callbacks.
-    void OnInitialize();
-    void OnRelease();
-    void OnRender2D();
-    void OnRender3D();
-    void OnResume();
-    void OnSuspend();
-    void OnTouchBegin(int p1, int p2, void* touchId);
-    void OnTouchEnd(int p1, int p2, void* touchId);
-    void OnTouchMove(int p1, int y, void* touch);
-    // Two-argument touch/key overrides: empty no-op stubs in this module (the real
-    // dispatch lives in the void*-carrying overloads above).
-    void OnTouchBegin(int p1, int p2);
-    void OnTouchEnd(int p1, int p2);
-    void OnTouchMove(int p1, int p2);
-    long long OnKeyPress(long long key, long long mod);
-    long long OnKeyRelease(long long key, long long mod);
+    // Application-module lifecycle / per-frame callbacks (IApplicationModule overrides,
+    // in vtable-slot order). The base declares each one virtual; these are the real
+    // overrides this module implements.
+    int       OnInitialize() override;
+    void      OnRelease() override;
+    long long OnKeyPress(long long key, long long mod) override;
+    long long OnKeyRelease(long long key, long long mod) override;
+    // Two-argument touch overrides: empty no-op stubs in this module (the real dispatch
+    // lives in the void*-carrying overloads below).
+    void      OnTouchBegin(int p1, int p2) override;
+    void      OnTouchMove(int p1, int p2) override;
+    void      OnTouchEnd(int p1, int p2) override;
+    void      OnTouchBegin(int p1, int p2, void* touchId) override;
+    void      OnTouchMove(int p1, int y, void* touch) override;
+    void      OnTouchEnd(int p1, int p2, void* touchId) override;
+    void      OnUpdate() override;
+    void      OnRender3D() override;
+    void      OnRender2D() override;
+    void      OnSuspend() override;
+    void      OnResume() override;
+    int       ShowLoadingScreen() override;
+
     void showLiteScreen();
-    int ShowLoadingScreen();
     void pause();
-    void OnUpdate();
 
     void UseKhadorDrive();
     void dialogueEvent();
