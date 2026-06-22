@@ -12,12 +12,12 @@
 
 namespace AbyssEngine {
     struct Resource {
-        unsigned short id; // resource id used to look the entry up
-        int kind; // 2 = ResourceTexture, 6 = ResourceMaterial
-        int unused; // always -1 at registration time
-        void *payload; // owned ResourceTexture* / ResourceMaterial*
+        unsigned short id;
+        int kind;
+        int unused;
+        void *payload;
     };
-} // namespace AbyssEngine
+}
 
 void loadLowTexturesAndMaterials(AbyssEngine::Engine *engine) {
     AbyssEngine::PaintCanvas *canvas = engine->appManager->paintCanvas;

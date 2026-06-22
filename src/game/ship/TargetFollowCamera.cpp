@@ -8,18 +8,19 @@ namespace AbyssEngine {
         Matrix MatrixGetLookAt(const Vector &pos, const Vector &at, const Vector &up);
 
         Matrix MatrixSetRotationOrdered(const Matrix &base, float x, float y, float z, int order);
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
-extern unsigned g_currentCamera; // active camera index
-extern void *g_cameraRng; // rumble/shake RNG handle
+extern unsigned g_currentCamera;
+extern void *g_cameraRng;
+
 extern int AERandom(void *rng, int bound);
 
-extern const double g_TFC_seedHandlingA; // initial handlingDampingA seed
-extern const double g_TFC_seedHandlingB; // initial handlingDampingB seed
-extern const float g_TFC_shakeMax; // hide-ship shake threshold (damped follow)
-extern const float g_TFC_rumbleScale; // first-person rumble scale
-extern const float g_TFC_shakeScale; // first-person shake scale
+extern const double g_TFC_seedHandlingA;
+extern const double g_TFC_seedHandlingB;
+extern const float g_TFC_shakeMax;
+extern const float g_TFC_rumbleScale;
+extern const float g_TFC_shakeScale;
 
 extern const double g_TFC_dampA[9];
 extern const double g_TFC_dampB[9];
@@ -49,7 +50,6 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     *getPosition() = zero;
     *getTargetPos() = zero;
 
-    // initial position from the target's current matrix
     Matrix m = target->getMatrix();
     *getTargetPos() = MatrixGetPosition(m);
     *getPosition() = MatrixGetPosition(m);
@@ -73,8 +73,6 @@ TargetFollowCamera::TargetFollowCamera(unsigned id, AEGeometry *target,
     this->zoom = zoom;
     this->fixed = 0;
 
-    // Seed both damping-curve coefficient sets: set A from the initial zoom, set B
-    // from the initial handling-damping seed.
     aproximateCooefficientsForAproximationOfDampingFunktion(
         zoom, dampCoeffA[0], dampCoeffA[1], dampCoeffA[2], dampCoeffA[3], dampCoeffA[4]);
     aproximateCooefficientsForAproximationOfDampingFunktion(
@@ -203,8 +201,8 @@ void TargetFollowCamera::setShipHandling(float handling) {
 }
 
 void TargetFollowCamera::resetShipHandling() {
-    this->handlingDampingA = bitsToFloat(0x3ba3d70a); // ~0.005
-    this->handlingDampingB = bitsToFloat(0x3bc49ba6); // ~0.006
+    this->handlingDampingA = bitsToFloat(0x3ba3d70a);
+    this->handlingDampingB = bitsToFloat(0x3bc49ba6);
     update(1);
 }
 
@@ -239,9 +237,6 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
     double x2 = x * x, x3 = x2 * x, x4 = x3 * x, x5 = x4 * x;
     double x6 = x5 * x, x7 = x6 * x, x8 = x7 * x;
 
-    // Evaluate each degree-8 damping-curve polynomial (c[0]=x^8 .. c[8]=1) at x.
-    // Written out inline (rather than via a helper) so it folds away exactly as
-    // the shipped binary does.
 #define GOF2_TFC_POLY8(c) \
         (x8 * (c)[0] + x7 * (c)[1] + x6 * (c)[2] + x5 * (c)[3] + x4 * (c)[4] + \
          x3 * (c)[5] + x2 * (c)[6] + x  * (c)[7] +      (c)[8])
@@ -257,7 +252,6 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
 
 void TargetFollowCamera::update(int dt) {
     if (this->fixed != 0) {
-        // Fixed-matrix path: read the camera position straight from the local matrix.
         *getPosition() = MatrixGetPosition(this->localMatrix);
         gCanvas->CameraSetLocal(g_currentCamera, this->localMatrix);
         if (this->target != 0) {
@@ -275,7 +269,6 @@ void TargetFollowCamera::update(int dt) {
     if (this->lookAtCam == 0) {
         if (this->locked == 0) {
             if (this->firstPerson == 0) {
-                // Damped spring follow.
                 Vector savedTarget = *getTargetPos();
                 Vector savedPos = *getPosition();
                 *getUp() = MatrixGetUp(m);
@@ -319,7 +312,6 @@ void TargetFollowCamera::update(int dt) {
                 diff2 += savedPos;
                 *getTargetPos() = diff2;
             } else {
-                // First-person matrix follow.
                 m = AbyssEngine::AEMath::Matrix();
                 Matrix rot;
                 MatrixSetRotation(rot, 0.0f, 0.0f, 0.0f);
@@ -353,7 +345,6 @@ void TargetFollowCamera::update(int dt) {
                 *getTargetPos() = MatrixGetPosition(m);
             }
         } else {
-            // Locked: snap to the target, store the delta toward the camera.
             this->hideShip = 0;
             *getTargetPos() = MatrixGetPosition(m);
             this->targetX -= this->posX;
@@ -361,7 +352,6 @@ void TargetFollowCamera::update(int dt) {
             this->targetZ -= this->posZ;
         }
     } else {
-        // First-person / look-at camera.
         Matrix fp = m;
         if (this->useTargetsUpVec == 0)
             fp = AbyssEngine::AEMath::Matrix();
@@ -370,7 +360,6 @@ void TargetFollowCamera::update(int dt) {
         this->hideShip = 0;
     }
 
-    // First-person matrix sync.
     if (this->firstPerson != 0) {
         Matrix fpm = this->firstPersonMatrix;
         *getPosition() = MatrixGetPosition(fpm);
@@ -380,7 +369,6 @@ void TargetFollowCamera::update(int dt) {
         *getTargetPos() = dir;
     }
 
-    // Rumble.
     if (this->rumbleActive != 0) {
         this->rumbleTimer -= dt;
         if (this->rumbleTimer < 1)
@@ -392,7 +380,6 @@ void TargetFollowCamera::update(int dt) {
         this->posZ += scale * (float) (AERandom(g_cameraRng, amt << 1) - amt);
     }
 
-    // Screen-shake.
     float shake = this->shakeAmount;
     if (shake > 0.0f) {
         int freq = this->shakeFrequency;
@@ -403,7 +390,6 @@ void TargetFollowCamera::update(int dt) {
         this->targetZ += scale * shake * (float) (AERandom(g_cameraRng, b) - freq);
     }
 
-    // Build the look-at matrix, roll it, push to the active camera, store local.
     Matrix look = AbyssEngine::AEMath::MatrixGetLookAt(*getPosition(), *getTargetPos(), *getUp());
     Matrix rollMat;
     MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);

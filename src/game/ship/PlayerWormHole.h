@@ -5,15 +5,13 @@
 
 #include "game/ship/PlayerStaticFar.h"
 
-class AEGeometry;
-
 class PlayerWormHole : public PlayerStaticFar {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
 
-    int timer; // open/close animation timer (ms; <0 = opening)
-    int scale; // current scale (12.4 fixed point, 0x1000 == 1.0)
-    uint8_t missionLock; // keep this wormhole open for the active mission
+
+    int timer;
+    int scale;
+    uint8_t missionLock;
 
     PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible);
 
@@ -31,7 +29,8 @@ public:
 
     void reset(bool shrinking);
 
-    void setPosition(float x, float y, float z) override; // actor vtable slot +0x48
+    void setPosition(float x, float y, float z) override;
+
     void update(int elapsed) override;
 };
 

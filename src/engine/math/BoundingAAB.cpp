@@ -35,7 +35,7 @@ int BoundingAAB::outerCollide(float x, float y, float z) {
 
 Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
     float distances[6];
-    Vector offsets[6] = {}; // each candidate face-offset, only one axis non-zero
+    Vector offsets[6] = {};
 
     float centerX = this->centerX + this->extentsX;
     float extentX = this->halfExtentX;
@@ -115,8 +115,6 @@ Vector BoundingAAB::getCollisionNormal(const Vector &) {
 }
 
 int BoundingAAB::collide(float x, float y, float z) {
-    // First test this box's own surface (virtual outerCollide), then the
-    // inherited composite children.
     if (this->outerCollide(x, y, z) == 0) {
         return 0;
     }

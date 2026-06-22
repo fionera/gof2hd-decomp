@@ -1,17 +1,11 @@
 #ifndef GOF2_FMODSOUND_H
 #define GOF2_FMODSOUND_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "engine/math/Vector.h"
 
 namespace FMOD {
-    struct Event;
-    struct EventParameter;
-    struct EventProject;
-    struct EventGroup;
-    struct EventCategory;
-    struct EventSystem;
 }
 
 using AbyssEngine::AEMath::Vector;
@@ -22,26 +16,26 @@ enum FMOD_RESULT {
 
 class FModSound {
 public:
-    int currentMusicEvent; // current music event id
-    int fadeTargetMusicEvent; // music event id being faded to
-    int downPitch; // down-pitch flag
-    char *appRootDir; // app root dir / .fev base path
-    uint8_t lowMemory; // low-memory flag (selects _low.fev)
-    uint8_t categoryEnabled[4]; // [0]=master, [1..3]=per-category enabled
-    FMOD::Event *events[0x8f5]; // event handle array (slot per system id)
-    void *category[4]; // EventCategory* per category
-    void *system; // FMOD::EventSystem*
-    void *music; // music Event*
-    int initialized; // init/ready flag
-    int reverbPreset; // current reverb preset index
-    int propSlot; // armed property slot id
-    int fxSlots[5]; // active sound-fx slot indices (-1 = free)
-    Vector *listenerPos; // cached listener position
-    Vector *listenerVel; // cached listener velocity
-    Vector *listenerForward; // cached listener forward
-    Vector *listenerUp; // cached listener up
-    Vector *eventPos; // cached event 3D position
-    Vector *eventVel; // cached event 3D velocity
+    int currentMusicEvent;
+    int fadeTargetMusicEvent;
+    int downPitch;
+    char *appRootDir;
+    uint8_t lowMemory;
+    uint8_t categoryEnabled[4];
+    FMOD::Event *events[0x8f5];
+    void *category[4];
+    void *system;
+    void *music;
+    int initialized;
+    int reverbPreset;
+    int propSlot;
+    int fxSlots[5];
+    Vector *listenerPos;
+    Vector *listenerVel;
+    Vector *listenerForward;
+    Vector *listenerUp;
+    Vector *eventPos;
+    Vector *eventVel;
 
     FModSound();
 
@@ -125,16 +119,10 @@ public:
 
     void enableCategory(int p1, bool enable);
 
-    // Hook used when entering a context that wants its own background music; the
-    // shipped build is a no-op that always reports "nothing stopped".
     int tryToStopMusicForBGMusic();
 
-    // Reports whether wired headphones are connected. The shipped build has no
-    // headset-detection backend, so it always reports "not plugged in".
     bool isHeadsetPluggedIn();
 
-    // Central error handler for FMOD return codes. The shipped build swallows the
-    // result and does nothing (release builds drop the diagnostic logging).
     void ERRCHECK(FMOD_RESULT result);
 };
 #endif

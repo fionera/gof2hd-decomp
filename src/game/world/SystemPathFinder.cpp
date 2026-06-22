@@ -66,7 +66,6 @@ Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     Array<Node *> *path = new Array<Node *>;
     path->resize(backwards->size());
 
-    // Reverse-copy the back-pointer chain into the forward path.
     uint32_t count = (uint32_t) backwards->size();
     for (uint32_t out = 0; out < count; ++out) {
         path->data()[out] = backwards->data()[count - 1 - out];

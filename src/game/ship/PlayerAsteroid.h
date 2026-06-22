@@ -1,29 +1,26 @@
 #ifndef GOF2_PLAYERASTEROID_H
 #define GOF2_PLAYERASTEROID_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/math/Matrix.h"
-class Hud; // referenced only by pointer in KIPlayer's interface, below
-#include "game/ship/KIPlayer.h"
 
-class AEGeometry;
-class Explosion;
+#include "engine/math/Matrix.h"
+#include "game/mission/Explosion.h"
+
+#include "game/ship/KIPlayer.h"
 
 class PlayerAsteroid : public KIPlayer {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
-    using Matrix = AbyssEngine::AEMath::Matrix;
 
-    // Asteroid-specific members (beyond the KIPlayer base footprint).
+
+
     uint8_t asteroidFlag;
     int asteroidIndex;
     Explosion *explosion;
     int lastDelta;
     float scaling;
     uint8_t minable;
-    Vector spin; // per-axis idle rotation rate
+    Vector spin;
     uint8_t rotationEnabled;
     int quality;
     int lastHitpoints;
@@ -40,12 +37,14 @@ public:
 
     void setAsteroidIndex(int asteroidIndex);
 
-    void translate(const Vector &delta) override; // actor vtable slot +0x20
+    void translate(const Vector &delta) override;
+
     void render() override;
 
     void setPosition(const Vector &position);
 
-    int outerCollide(float x, float y, float z) override; // slot +0x3c -> this->collide
+    int outerCollide(float x, float y, float z) override;
+
     int outerCollide(Vector point);
 
     Vector getPosition();
@@ -64,22 +63,23 @@ public:
 
     void update(int delta) override;
 
-    Vector getProjectionVector(const Vector &value) override; // actor vtable slot +0x50
+    Vector getProjectionVector(const Vector &value) override;
+
     void setAsteroidCenter(Vector center);
 
-    int collide(float x, float y, float z) override; // actor vtable slot +0x38
+    int collide(float x, float y, float z) override;
+
     void push(int delta) override;
 
-    void initPush(const Vector &target, int duration) override; // actor vtable slot +0x2c
+    void initPush(const Vector &target, int duration) override;
 
 private:
-    // Whether this asteroid should drop loot when destroyed (KIPlayer base slot 0x4c).
     int &dropsLoot() { return this->hasCargo; }
-    // Dropped-loot {itemId, count} list (reuses the KIPlayer base cargo slot 0x50).
+
     Array<int> *&loot() { return this->cargo; }
-    // Optional secondary mesh (reuses the KIPlayer base crateGeometry slot 0x78).
+
     AEGeometry *&secondaryGeometry() { return this->crateGeometry; }
-    // Bomb-push impulse state, overlaid on the KIPlayer base block 0x104..0x120.
+
     int &pushTimer() { return this->field_0x104; }
     int &pushDuration() { return *reinterpret_cast<int *>(reinterpret_cast<char *>(&this->field_0x104) + 4); }
     Vector &pushDirection() { return *reinterpret_cast<Vector *>(&this->field_0x10c); }

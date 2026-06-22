@@ -10,7 +10,7 @@ namespace AbyssEngine {
 
         void config_reader_register_token_callback(void *, void *) {
         }
-    } // namespace
+    }
 
     ConfigReader::ConfigReader(Engine *engine) {
         this->engine = engine;
@@ -64,7 +64,7 @@ namespace AbyssEngine {
 
             StringTrim(line);
 
-            int32_t commentIndex = StringIndexOf(line, StringFromAscii("//"));
+            int32_t commentIndex = StringIndexOf(line, StringFromAscii("
             if (commentIndex != -1) {
                 line = StringSubString(line, 0, commentIndex);
                 StringTrim(line);
@@ -101,4 +101,4 @@ namespace AbyssEngine {
             AEFile::Close(this->file_handle);
         }
     }
-} // namespace AbyssEngine
+}

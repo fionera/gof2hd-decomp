@@ -1,33 +1,28 @@
 #ifndef GOF2_BUMPSHADERREFRACT_H
 #define GOF2_BUMPSHADERREFRACT_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class BumpShaderRefract : public ShaderBaseStruct {
     public:
-        int aPosition; // attribute "a0"
-        int aTexCoord; // attribute "a1"
-        int uSampler0; // uniform "u0"
-        int uMvpMatrix; // uniform "u1"
-        int uSampler2; // uniform "u2" (sampler base, indexed)
-        int uSampler3; // uniform "u3"
-        int uPixelSize; // uniform "u4" (texel size)
-        int uRefractSampler; // uniform "u8" (refract sampler)
-        int uViewMatrix; // uniform "u5"
-        int uColorIndex; // uniform "u6"
-        int uColor; // uniform "u7"
+        int aPosition;
+        int aTexCoord;
+        int uSampler0;
+        int uMvpMatrix;
+        int uSampler2;
+        int uSampler3;
+        int uPixelSize;
+        int uRefractSampler;
+        int uViewMatrix;
+        int uColorIndex;
+        int uColor;
 
         static int ShaderIndex;
 
@@ -39,6 +34,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, ::Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

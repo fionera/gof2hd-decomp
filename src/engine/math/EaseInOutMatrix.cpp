@@ -53,15 +53,12 @@ namespace AbyssEngine {
 
         m_q0.Set(mn);
 
-        // Min translation.
         AEMath::Vector minPos = AEMath::MatrixGetPosition(mn);
         this->m_minPos = minPos;
 
-        // Orientation delta q1 = q(max) - q0.
         Quaternion qMax(mx);
         m_q1 = qMax - m_q0;
 
-        // Translation delta = pos(max) - pos(min).
         AEMath::Vector maxPos = AEMath::MatrixGetPosition(mx);
         this->m_posDelta = maxPos - minPos;
 
@@ -84,7 +81,6 @@ namespace AbyssEngine {
         Quaternion blended = m_q1 * w + m_q0;
         blended.Convert(current);
 
-        // Translation: min translation plus eased delta.
         AEMath::Vector t = this->m_minPos + this->m_posDelta * w;
         AEMath::MatrixSetTranslation(current, t);
     }
@@ -123,7 +119,7 @@ namespace AbyssEngine {
         SetRange(ident, ident);
         this->m_duration = 0.0f;
     }
-} // namespace AbyssEngine
+}
 
 extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration) {
     new(ease) AbyssEngine::EaseInOutMatrix(

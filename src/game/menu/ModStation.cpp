@@ -3,8 +3,7 @@
 #include "engine/core/GameText.h"
 #include "game/ship/Ship.h"
 #include "engine/audio/FModSound.h"
-#include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
-#include "engine/math/AEMath.h"             // MatrixSetTranslation/Rotation, VectorSignedToFloat
+#include "engine/render/PaintCanvas.h"
 #include <new>
 #include "game/ui/ChoiceWindow.h"
 #include "game/core/CutScene.h"
@@ -13,24 +12,24 @@
 #include "game/mission/Item.h"
 #include "game/ui/MissionsWindow.h"
 #include "game/world/NewsTicker.h"
-
-struct Radio {
-    unsigned char lastMessageShown();
-};
-
 #include "game/world/StarMap.h"
 #include "game/mission/Achievements.h"
 #include "engine/core/ApplicationManager.h"
 #include "game/ui/DialogueWindow.h"
 #include "engine/render/ImageFactory.h"
+#include "game/core/Radio.h"
 #include "game/ui/Layout.h"
 #include "game/mission/RecordHandler.h"
 #include "game/menu/SpaceLounge.h"
+#include "game/mission/Generator.h"
+#include "game/mission/Mission.h"
+#include "game/mission/PendingProduct.h"
 #include "game/world/Station.h"
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 #include "game/ui/TouchButton.h"
 #include "game/ui/MenuTouchWindow.h"
+#include "game/world/Wanted.h"
 
 struct HangarWindow {
     void OnTouchBegin(int touch, int coord);
@@ -101,23 +100,15 @@ void ModStation::autosave() {
     rh->recordStoreWrite(0);
     rh->recordStoreWritePreview(0);
     delete rh;
-    *(unsigned char *) ((char *) this + 0xb1) = 1; // RAWREAD: autoSaved (+0xb1)
+    *(unsigned char *) ((char *) this + 0xb1) = 1;
     if (*(int *) &this->dlcMenu != 0)
         ModStation_autosaveTail();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Ship *(*g_ModStation_es_getShip)(Status *);
 
 void ModStation::enterStation() {
-    // Status::departStation actually takes the destination Station* (see Status.cpp);
-    // gof2/Status.h's no-arg prototype is wrong but not editable here, so dispatch
-    // through a correctly-typed pointer-to-member.
     {
         void(Status:: * depart)(Station *) =
                 reinterpret_cast<void (Status::*)(Station *)>(&Status::departStation);
@@ -150,26 +141,11 @@ void ModStation::enterStation() {
     *(int *) ((char *) gStatus + 0x11c) = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_ModStation_ach_a;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_ModStation_ach_b;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_ModStation_ach_c;
 
 void ModStation::addAchievement(int medalId, int kind) {
@@ -190,39 +166,24 @@ void ModStation::showMapWindow() {
 }
 
 void ModStation::setGameLoaded() {
-    *(unsigned char *) ((char *) this + 0xb0) = 1; // RAWREAD: gameLoaded (+0xb0)
-    *(unsigned char *) ((char *) this + 0xb3) = 1; // RAWREAD: reloadPending (+0xb3)
+    *(unsigned char *) ((char *) this + 0xb0) = 1;
+    *(unsigned char *) ((char *) this + 0xb3) = 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_ModStation_suspendObj;
 
 void ModStation::OnSuspend() {
-    *(void **) ((char *) this + 0x128) = 0; // RAWREAD: capturedTouch (+0x128)
+    *(void **) ((char *) this + 0x128) = 0;
     void **holder = g_ModStation_suspendObj;
     void *obj = *holder;
     if (obj != 0)
         ModStation_suspendTail(obj, holder);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_ModStation_resumeObj;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_ModStation_resumeArg;
 
 void ModStation::OnResume() {
@@ -236,34 +197,14 @@ void ModStation::OnResume() {
     ModStation_resumeTail(*holder, 1, arg);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_cpp_stack; // [DAT_000ead34]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_cpp_status; // [DAT_000ead38]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_cpp_textId; // [DAT_000ead3c]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_cpp_itemTable; // [DAT_000ead44]
+
+extern int *g_cpp_stack;
+
+extern int **g_cpp_status;
+
+extern int *g_cpp_textId;
+
+extern int **g_cpp_itemTable;
 
 extern "C" {
 int Status_getCurrentCampaignMission_cpp();
@@ -297,7 +238,7 @@ void ModStation_cpp_appendDeliveryLine(int amount, int itemTextId);
 void ModStation::checkPendingProducts() {
     int camp = Status_getCurrentCampaignMission_cpp();
     int textId = *(int *) g_cpp_textId;
-    GameText_getText_cpp(textId); // seed the summary header string
+    GameText_getText_cpp(textId);
 
     unsigned *products = (unsigned *) Status_getPendingProducts_cpp(*(int *) g_cpp_status);
     if (products != 0) {
@@ -310,7 +251,6 @@ void ModStation::checkPendingProducts() {
                 Station *here = (Station *) Status_getStation_cpp();
                 if (dstStation == Station_getIndex_cpp(here)) {
                     if (camp == 0x92 && *(int *) (pp + 0x14) == 0xd2) {
-                        // mission 0x92 special-cases this product: drop it silently.
                         PendingProduct *o = *(PendingProduct **) (products[1] + byteOff);
                         if (o != 0)
                             operator_delete_cpp(PendingProduct_dtor_cpp(o));
@@ -326,7 +266,7 @@ void ModStation::checkPendingProducts() {
                     if (o != 0)
                         operator_delete_cpp(PendingProduct_dtor_cpp(o));
                     *(int *) (products[1] + byteOff) = 0;
-                    ((char *) &this->m_nStarMapWindowOpen)[3] = 1; // any-delivered flag
+                    ((char *) &this->m_nStarMapWindowOpen)[3] = 1;
                 }
             }
             byteOff = byteOff + 4;
@@ -338,13 +278,8 @@ void ModStation::checkPendingProducts() {
 done:;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_okp_stack; // [DAT_000e9614]
+
+extern int *g_okp_stack;
 
 extern "C" {
 void Status_checkForLevelUp_okp();
@@ -362,7 +297,6 @@ void ModStation::OnKeyPress(long long, long long key) {
 
     Status_checkForLevelUp_okp();
 
-    // a level-up banner is showing: SELECT just dismisses it.
     int t34 = *(int *) ((char *) &this->accumTime + 4);
     bool banner = 999 < (uint32_t) this->accumTime;
     if (!((-(int) banner - t34) < 0)) {
@@ -373,14 +307,12 @@ void ModStation::OnKeyPress(long long, long long key) {
         return;
     }
 
-    // swallow keys while any modal sub-window owns input.
     if (((char *) &this->m_nStarMapWindowOpen)[3] != 0 || ((char *) &this->modalFlags)[1] != 0 ||
         ((char *) &this->subWindowFlags)[1] != 0 || ((char *) &this->subWindowFlags)[2] != 0 ||
         ((char *) &this->subWindowFlags)[3] != 0 || ((char *) &this->subWindowFlags)[0] != 0 ||
         ((char *) &this->modalFlags)[0] != 0)
         return;
 
-    // DLC menu open: SELECT closes the station.
     if (((char *) &this->modalFlags)[2] != 0) {
         if (key == 0x10000)
             ModStation_leaveStation_okp(this);
@@ -390,22 +322,18 @@ void ModStation::OnKeyPress(long long, long long key) {
     unsigned char held = ((unsigned char *) &this->m_nStarMapWindowOpen)[1];
     char sub = ((char *) &this->m_nStarMapWindowOpen)[2];
     if (held == 0) {
-        // not in the sub-menu: BACK leaves the station.
         if (key == 0x40000 && sub == 0)
             ModStation_leaveStation_okp(this);
         return;
     }
 
     if (sub != 0) {
-        // in a sub-state; toggle help on the SOFT key.
         if (key == 0x20000)
             ModStation_okp_toggleHelp(this);
         return;
     }
 
-    // main button row navigation.
     if (key == 0x4000) {
-        // left
         int sel = this->selectedButton;
         int *btn = this->buttonState;
         btn[sel] = 0;
@@ -415,7 +343,6 @@ void ModStation::OnKeyPress(long long, long long key) {
         return;
     }
     if (key == 0x8000) {
-        // right
         int sel = this->selectedButton;
         int *btn = this->buttonState;
         btn[sel] = 0;
@@ -429,7 +356,6 @@ void ModStation::OnKeyPress(long long, long long key) {
     if (key != 0x10000)
         return;
 
-    // SELECT: open the highlighted screen.
     int which = this->selectedButton;
     if (which < 0 || which > 4) {
         ModStation_okp_showLocked(this);
@@ -447,13 +373,8 @@ int ModStation::ShowLoadingScreen() {
     return 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_msc_stack; // [DAT_000e5698]
+
+extern int *g_msc_stack;
 
 extern "C" {
 int Status_getStation_msc();
@@ -468,13 +389,9 @@ AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStation *self, 
 }
 
 ModStation::ModStation() {
-    // (the original manually planted the vtable here as `g_msc_vtable + 8`;
-    //  the compiler now installs the real vptr at +0x00 automatically.)
-
-    // zero / default field block.
     this->dt = 0;
     ((char *) &this->cameraTween)[3] = 0;
-    *(uint16_t *) &this->cameraTween = 0; // partial of field_20 region — kept as a 16-bit clear
+    *(uint16_t *) &this->cameraTween = 0;
     this->stationActive = 0;
     ((char *) &this->modalFlags)[1] = 0;
     this->state = 100;
@@ -487,10 +404,9 @@ ModStation::ModStation() {
     *(int *) &this->radioMessages = 0;
     ((char *) &this->screenFlags)[2] = 0;
     this->pendingHangarClose = 0;
-    *(int *) &this->m_pDialogueWindow = 0; // m_pDialogueWindow
+    *(int *) &this->m_pDialogueWindow = 0;
     *(int *) &this->choiceWindow = 0;
 
-    // pick the station race (0x65 -> raidstation race 8, 100 -> race 7, else system race).
     Station *st = (Station *) Status_getStation_msc();
     int race;
     if (Station_getIndex_msc(st) == 0x65) {
@@ -509,13 +425,12 @@ ModStation::ModStation() {
     this->cameraTween = cam;
 
     unsigned camHandle = *(unsigned *) gCanvas;
-    Matrix *cur = (Matrix *) gCanvas->CameraGetCurrent();
+    AbyssEngine::Matrix *cur = (AbyssEngine::Matrix *) gCanvas->CameraGetCurrent();
     gCanvas->CameraSetLocal(camHandle, *cur);
 
-    // three scalar EaseInOut tweens (fov / fade etc.).
-    *(void **) ((char *) this + 0x13c) = new AbyssEngine::EaseInOut(); // RAWREAD: easeCamScalarX (+0x13c)
-    *(void **) ((char *) this + 0x140) = new AbyssEngine::EaseInOut(); // RAWREAD: easeCamScalarY (+0x140)
-    *(void **) ((char *) this + 0x144) = new AbyssEngine::EaseInOut(); // RAWREAD: easeCamScalarZ (+0x144)
+    *(void **) ((char *) this + 0x13c) = new AbyssEngine::EaseInOut();
+    *(void **) ((char *) this + 0x140) = new AbyssEngine::EaseInOut();
+    *(void **) ((char *) this + 0x144) = new AbyssEngine::EaseInOut();
 }
 
 ModStation::~ModStation() {
@@ -526,47 +441,30 @@ void ModStation::leaveStation() {
     ModStation_leaveStation_impl(this);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ModStation_cm_credit1; // *g -> credits delta src
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ModStation_cm_credit2; // *g -> credits delta src
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_ModStation_cm_lead; // **g -> leaderboards obj
+
+extern int *g_ModStation_cm_credit1;
+
+extern int *g_ModStation_cm_credit2;
+
+extern void **g_ModStation_cm_lead;
 
 void ModStation::checkMedals() {
     gGlobals->reportLeaderboards();
 
     if (((char *) &this->modalFlags)[2] != 0 || ((char *) &this->m_nStarMapWindowOpen)[3] != 0) {
-        // continuation path
-        int idx = *(int *) ((char *) this + 0xc0) + 1; // RAWREAD: medalIndex (+0xc0)
-        *(int *) ((char *) this + 0xc0) = idx; // RAWREAD: medalIndex (+0xc0)
+        int idx = *(int *) ((char *) this + 0xc0) + 1;
+        *(int *) ((char *) this + 0xc0) = idx;
         if (idx >= *(int *) ((char *) this + 0xc4)) {
-            // RAWREAD: medalCount (+0xc4)
             ((unsigned char *) &this->modalFlags)[2] = 0;
             return;
         }
-        Array<int *> *medalArr = *(Array<int *> **) ((char *) this + 0xbc); // RAWREAD: medalArray (+0xbc)
+        Array<int *> *medalArr = *(Array<int *> **) ((char *) this + 0xbc);
         int *medal = (*medalArr)[idx];
         ((ChoiceWindow *) (this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
         if (gStatus->hardCoreMode() == 0)
             gStatus->changeCredits(delta);
-        int *p = (*medalArr)[*(int *) ((char *) this + 0xc0)]; // RAWREAD: medalIndex (+0xc0)
+        int *p = (*medalArr)[*(int *) ((char *) this + 0xc0)];
         this->addAchievement(p[0], p[1]);
         return;
     }
@@ -574,35 +472,35 @@ void ModStation::checkMedals() {
     int delta = *g_ModStation_cm_credit1;
     if (gStatus->getCurrentCampaignMission() == 1)
         ((ModStation *) ((ModStation *) 1))->addAchievement(0, 1);
-    *(int *) ((char *) this + 0xbc) = 0; // RAWREAD: medalArray (+0xbc)
+    *(int *) ((char *) this + 0xbc) = 0;
     int *medals = gAchievements->getNewMedals();
     int count = 0;
-    *(int *) ((char *) this + 0xc4) = 0; // RAWREAD: medalCount (+0xc4)
+    *(int *) ((char *) this + 0xc4) = 0;
     for (int i = 0; i != 0x2d; i++) {
         if (medals[i] >= 1) {
             count++;
-            *(int *) ((char *) this + 0xc4) = count; // RAWREAD: medalCount (+0xc4)
+            *(int *) ((char *) this + 0xc4) = count;
         }
     }
     if (count < 1)
         return;
 
     Array<int *> *arr = new Array<int *>();
-    *(Array<int *> **) ((char *) this + 0xbc) = arr; // RAWREAD: medalArray (+0xbc)
-    arr->resize(*(int *) ((char *) this + 0xc4)); // RAWREAD: medalCount (+0xc4)
+    *(Array<int *> **) ((char *) this + 0xbc) = arr;
+    arr->resize(*(int *) ((char *) this + 0xc4));
     int j = 0;
-    *(int *) ((char *) this + 0xc4) = 0; // RAWREAD: medalCount (+0xc4)
+    *(int *) ((char *) this + 0xc4) = 0;
     for (int i = 0; i != 0x2d; i++) {
         if (medals[i] >= 1) {
             int *cell = new int[2];
             (*arr)[j] = cell;
             cell[0] = i;
-            (*arr)[*(int *) ((char *) this + 0xc4)][1] = medals[i]; // RAWREAD: medalCount (+0xc4)
-            j = *(int *) ((char *) this + 0xc4) + 1; // RAWREAD: medalCount (+0xc4)
-            *(int *) ((char *) this + 0xc4) = j; // RAWREAD: medalCount (+0xc4)
+            (*arr)[*(int *) ((char *) this + 0xc4)][1] = medals[i];
+            j = *(int *) ((char *) this + 0xc4) + 1;
+            *(int *) ((char *) this + 0xc4) = j;
         }
     }
-    *(int *) ((char *) this + 0xc0) = 0; // RAWREAD: medalIndex (+0xc0)
+    *(int *) ((char *) this + 0xc0) = 0;
     ((unsigned char *) &this->modalFlags)[2] = 1;
     ChoiceWindow *cw = new ChoiceWindow();
     this->medalChoiceWindow = cw;
@@ -643,19 +541,9 @@ void ModStation::OnRender3D() {
     ModStation_r3d_endTail(gCanvas);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_rl_engineHolder; // [DAT_000e71f4]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern int **g_rl_engineHolder;
+
 extern int g_rl_lightFlag;
 
 extern "C" {
@@ -665,7 +553,7 @@ int Status_getSystem_rl();
 
 int SolarSystem_getRace_rl();
 
-int rl_engineFromHolder(int holder); // indirect engine-getter call: resolve engine from the cached holder
+int rl_engineFromHolder(int holder);
 
 void Engine_resetStationLight(int engine, int race);
 
@@ -674,9 +562,9 @@ void Engine_LightEnable_rl(int engine, int flag);
 
 void ModStation::resetLight() {
     int holder = *(int *) g_rl_engineHolder;
-    rl_engineFromHolder(holder); // material ambient
-    rl_engineFromHolder(holder); // light direction
-    rl_engineFromHolder(holder); // diffuse colour
+    rl_engineFromHolder(holder);
+    rl_engineFromHolder(holder);
+    rl_engineFromHolder(holder);
 
     Status_getSystem_rl();
     int race = SolarSystem_getRace_rl();
@@ -692,76 +580,31 @@ void ModStation::resetLight() {
             engine = ApplicationManager_GetEngine_rl();
             break;
     }
-    Engine_resetStationLight(engine, race); // ambient colour for the race
+    Engine_resetStationLight(engine, race);
     engine = ApplicationManager_GetEngine_rl();
-    // specular colour
+
     engine = ApplicationManager_GetEngine_rl();
     Engine_LightEnable_rl(engine, g_rl_lightFlag);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ou_stack; // [DAT_000e9d98]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_sound; // FMod sound holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_layout; // Layout holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_status; // Status holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern int *g_ou_stack;
+
+extern int **g_ou_sound;
+
+extern int **g_ou_layout;
+
+extern int **g_ou_status;
+
 extern int **g_ou_achievements;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern char **g_ou_spaceLoungeFlag; // [DAT_000e9db0]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_appData; // ApplicationData holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_textRoot; // GameText root
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ou_module; // next app module
+
+extern char **g_ou_spaceLoungeFlag;
+
+extern int **g_ou_appData;
+
+extern int **g_ou_textRoot;
+
+extern int **g_ou_module;
 
 extern "C" {
 void *ModStation_opnew_ou(unsigned size);
@@ -895,7 +738,6 @@ void ModStation::OnUpdate() {
     int *status = *(int **) g_ou_status;
     int *sound = *(int **) g_ou_sound;
 
-    // clamp elapsed time to [0, 0x96] ms.
     int elapsed;
     int e = ApplicationManager_GetElapsedTimeMillis_ou();
     if (e < 0x97 && ApplicationManager_GetElapsedTimeMillis_ou() < 0) {
@@ -907,8 +749,8 @@ void ModStation::OnUpdate() {
             elapsed = 0x96;
     }
 
-    this->dt = elapsed; // field_28 = dt
-    this->accumTime += (long long) elapsed; // field_30 = accumulated time (64-bit)
+    this->dt = elapsed;
+    this->accumTime += (long long) elapsed;
 
     FModSound_updateAll_ou(*sound);
     int *layout = *(int **) g_ou_layout;
@@ -916,15 +758,13 @@ void ModStation::OnUpdate() {
     if (((char *) &this->accumTime)[2] == 0)
         Status_incPlayingTime_ou((long long) (unsigned) **(int **) g_ou_status);
 
-    // refresh the credits button text.
     int creditsBtn = this->activeMission;
     Status_getCredits_ou();
-    Layout_formatCredits_ou((char *) this); // formatted into a String temporary
+    Layout_formatCredits_ou((char *) this);
     TouchButton_setText_ou(creditsBtn);
 
     Achievements_updateCredits_ou((void *) **(int **) g_ou_achievements, Status_getCredits_ou());
 
-    // entering the space lounge intro (triggered by the flag at g_ou_spaceLoungeFlag).
     if (this->stationActive != 0) {
         char *flag = *g_ou_spaceLoungeFlag;
         if (*flag != 0) {
@@ -945,7 +785,6 @@ void ModStation::OnUpdate() {
         }
     }
 
-    // in-app-purchase result handling.
     {
         int appData = ApplicationManager_GetApplicationData_ou();
         if (*(char *) (appData + 0x42) != 0) {
@@ -975,7 +814,6 @@ void ModStation::OnUpdate() {
         }
     }
 
-    // idle camera + ticker + cutscene while no sub-window is up.
     if (((char *) &this->subWindowFlags)[0] == 0 && ((char *) &this->subWindowFlags)[1] == 0 &&
         ((char *) &this->subWindowFlags)[2] == 0 && ((char *) &this->subWindowFlags)[3] == 0 &&
         ((char *) &this->modalFlags)[0] == 0 && ((char *) &this->m_nStarMapWindowOpen)[0] == 0) {
@@ -986,16 +824,13 @@ void ModStation::OnUpdate() {
         ModStation_ou_updateIdleCamera(this, elapsed);
     }
 
-    // only proceed past the warm-up once enough time has elapsed.
     if (this->accumTime < (long long) ((int) this->accumTime < 1000 ? 1 : 0))
         goto epilogue;
 
     if (((char *) &this->m_nStarMapWindowOpen)[0] != 0) {
-        // docking cutscene playback + campaign transition at its end.
         int t = *(int *) &this->spaceLounge;
         if (t < 1 + 0 && 0 < this->dt + t) {
             if (this->cutScene != 0) {
-                // tear down the old cutscene.
                 ModStation_opdelete_ou(this->cutScene);
             }
             *(int *) &this->cutScene = 0;
@@ -1003,7 +838,7 @@ void ModStation::OnUpdate() {
             CutScene_ctor_ou(cs, 2);
             this->cutScene = cs;
             CutScene_initialize_ou(cs);
-            cs->rotationSpeed = 0; // CutScene+0x24
+            cs->rotationSpeed = 0;
             t = *(int *) &this->spaceLounge;
             ((char *) &this->m_nStarMapWindowOpen)[0] = 1;
         }
@@ -1013,8 +848,6 @@ void ModStation::OnUpdate() {
         if (Radio_lastMessageShown_ou() != 0)
             ModStation_ou_updateRadioReveal(this, elapsed);
 
-        // radio-cutscene countdown timer (reused +0x74 slot) reaching zero ends
-        // the cutscene and advances the campaign.
         if (*(int *) &this->spaceLounge >= 0 /* cutscene countdown elapsed */) {
             this->stationActive = 0;
             Status_nextCampaignMission_ou(*status);
@@ -1024,22 +857,16 @@ void ModStation::OnUpdate() {
             goto epilogue;
         }
     } else if (((char *) &this->modalFlags)[0] != 0) {
-        // DialogueWindow open variant 1
         DialogueWindow_update_ou((int) (intptr_t) this->dialogueWindow);
     } else if (((char *) &this->modalFlags)[1] != 0) {
-        // StarMap
         StarMap_update_ou((int) (intptr_t) this->starMap, this->dt);
     } else if (((char *) &this->subWindowFlags)[3] != 0) {
-        // HangarWindow
         HangarWindow_update_ou(*(int *) &this->hangarWindow);
     } else if (((char *) &this->subWindowFlags)[2] != 0) {
-        // MissionsWindow
         MissionsWindow_update_ou(*(int *) &this->m_pDialogueWindow);
     } else if (((char *) &this->subWindowFlags)[0] != 0) {
-        // SpaceLounge
         SpaceLounge_update_ou(*(int *) &this->spaceLounge);
     } else if (((char *) &this->subWindowFlags)[1] != 0) {
-        // StatusWindow
         StatusWindow_update_ou(*(int *) &this->statusWindow);
     }
 
@@ -1048,7 +875,6 @@ void ModStation::OnUpdate() {
     if (((char *) &this->screenFlags)[2] != 0)
         MenuTouchWindow_update_ou(this->dlcMenu, this->dt);
 
-    // mission completion / failure + campaign dialogue flow (runs once per docked tick).
     if (((char *) &this->screenFlags)[3] == 0 && ((char *) &this->modalFlags)[1] == 0 &&
         ((char *) &this->screenFlags)[0] == 0) {
         if (((char *) &this->buttonCredits)[2] == 0) {
@@ -1059,7 +885,7 @@ void ModStation::OnUpdate() {
             this->checkMedals();
             ((char *) &this->buttonCredits)[1] = 1;
         }
-        // "remember to save" hint.
+
         if (((char *) &this->modalFlags)[2] == 0 && ((char *) &this->screenFlags)[2] != 0) {
             int rec = *(int *) g_ou_status;
             if (*(char *) (rec + 0x2a) == 0) {
@@ -1095,7 +921,6 @@ void ModStation::OnUpdate() {
             }
         }
 
-        // mission 0x94..0x97 supernova-system special dialogue vs. the generic path.
         int campNow = Status_getCurrentCampaignMission_ou();
         bool generic = campNow < 0x94 || Status_getCurrentCampaignMission_ou() > 0x97;
         if (!generic) {
@@ -1131,7 +956,7 @@ void ModStation::OnUpdate() {
                 Status_setCurrentCampaignMission_ou(*status);
                 DialogueWindow *dw = (DialogueWindow *) ModStation_opnew_ou(0x74);
                 DialogueWindow_ctor_ou(dw);
-                *(void **) &this->activeMission = m; // this[1].field_C cached mission
+                *(void **) &this->activeMission = m;
                 *(void **) &this->dialogueWindow = dw;
                 DialogueWindow_setMission_ou(*(void **) &this->dialogueWindow, m, 1);
                 ((char *) &this->modalFlags)[1] = 1;
@@ -1142,7 +967,6 @@ void ModStation::OnUpdate() {
         }
         if (generic) {
             if (special) {
-                // storyline arrival dialogue (mission 0x74 hub).
                 Station *st = (Station *) Status_getStation_ou();
                 int sidx = Station_getIndex_ou(st);
                 int slot = (sidx == 0x5e) ? 3 : (sidx - 0x5a);
@@ -1186,8 +1010,7 @@ void ModStation::OnUpdate() {
         this->checkHints();
     }
 
-    // idle hangar light + ship animation.
-    if (*(char *) ((char *) this + 0x100) == 0) // RAWREAD: dragActive byte (+0x100)
+    if (*(char *) ((char *) this + 0x100) == 0)
         ModStation_ou_updateHangarLight(this, elapsed);
     if (*(int *) &this->cutScene != 0 && ((char *) &this->m_nStarMapWindowOpen)[0] == 0)
         ModStation_ou_animateHangarShip(this);
@@ -1195,27 +1018,12 @@ void ModStation::OnUpdate() {
 epilogue:;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_ModStation_ric_chk; // *g -> canary src
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ModStation_ric_rotX; // table base (pc-rel)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ModStation_ric_rotY; // table base (pc-rel)
+
+extern void **g_ModStation_ric_chk;
+
+extern int *g_ModStation_ric_rotX;
+
+extern int *g_ModStation_ric_rotY;
 
 void ModStation::resetIdleCamForHangar() {
     char matrix[60];
@@ -1223,21 +1031,20 @@ void ModStation::resetIdleCamForHangar() {
     if (this->cutScene != 0)
         ((CutScene *) (this->cutScene))->resetCamera();
 
-    // RAWREAD: easeCamX (+0x13c), restCamX (+0x130)
     if (*(void **) ((char *) this + 0x13c) != 0)
         ((AbyssEngine::EaseInOut *) (*(void **) ((char *) this + 0x13c)))->SetRange(
             *(int *) ((char *) this + 0x130), *(int *) ((char *) this + 0x130));
     else
         *(void **) ((char *) this + 0x13c) = new AbyssEngine::EaseInOut(*(int *) ((char *) this + 0x130),
                                                                         *(int *) ((char *) this + 0x130));
-    // RAWREAD: easeCamY (+0x140), restCamY (+0x134)
+
     if (*(void **) ((char *) this + 0x140) != 0)
         ((AbyssEngine::EaseInOut *) (*(void **) ((char *) this + 0x140)))->SetRange(
             *(int *) ((char *) this + 0x134), *(int *) ((char *) this + 0x134));
     else
         *(void **) ((char *) this + 0x140) = new AbyssEngine::EaseInOut(*(int *) ((char *) this + 0x134),
                                                                         *(int *) ((char *) this + 0x134));
-    // RAWREAD: easeCamZ (+0x144), restCamZ (+0x138)
+
     if (*(void **) ((char *) this + 0x144) != 0)
         ((AbyssEngine::EaseInOut *) (*(void **) ((char *) this + 0x144)))->SetRange(
             *(int *) ((char *) this + 0x138), *(int *) ((char *) this + 0x138));
@@ -1247,7 +1054,7 @@ void ModStation::resetIdleCamForHangar() {
 
     gCanvas->CameraGetCurrent();
     void *loc = gCanvas->CameraGetLocal((unsigned int) (long) gCanvas);
-    // RAWREAD: restCamX/Y/Z (+0x130/+0x134/+0x138)
+
     AEMath_MatrixSetTranslation(matrix, *(int *) ((char *) this + 0x130), *(int *) ((char *) this + 0x134),
                                 *(int *) ((char *) this + 0x138));
 
@@ -1270,34 +1077,14 @@ void ModStation::resetIdleCamForHangar() {
     (void) loc;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ch_stack; // [DAT_000eaf3c]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ch_hintRec; // [DAT_000eaf40] hint-shown flags record
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ch_status; // [DAT_000eafb4] etc.
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Achievements **g_ch_ach; // [DAT_000eaf54]
+
+extern int *g_ch_stack;
+
+extern int *g_ch_hintRec;
+
+extern int **g_ch_status;
+
+extern Achievements **g_ch_ach;
 
 extern "C" {
 int Status_getCurrentCampaignMission_ch();
@@ -1323,23 +1110,22 @@ void ModStation_ch_showWingmanDialogue(ModStation *self, int kind);
 }
 
 void ModStation::checkHints() {
-    if (((char *) &this->m_nStarMapWindowOpen)[0] != 0) // a window is already busy
+    if (((char *) &this->m_nStarMapWindowOpen)[0] != 0)
         return;
 
     int hintRec = *g_ch_hintRec;
 
-    // intro CBS hint (after mission 0x12).
     if (((char *) &this->modalFlags)[2] == 0 && ((char *) &this->m_nStarMapWindowOpen)[3] == 0 &&
         *(char *) (hintRec + 0x34) == 0 &&
         0x12 < Status_getCurrentCampaignMission_ch()) {
         ModStation_ch_showWantedHint(this, -1);
         *(char *) (hintRec + 0x34) = 1;
         ((char *) &this->m_nStarMapWindowOpen)[3] = 1;
-        *(unsigned char *) ((char *) this + 0xdc) = 1; // RAWREAD: cbsHintShown (+0xdc)
+        *(unsigned char *) ((char *) this + 0xdc) = 1;
     }
 
     int **status = g_ch_status;
-    // four "storyline wanted terminated" hints (slots 0x18/0x30/0x48/0x60).
+
     static const int wantedOff[4] = {0x18, 0x30, 0x48, 0x60};
     static const int wantedFlag[4] = {0x33, 0x34, 0x35, 0x36};
     if (((char *) &this->modalFlags)[1] == 0) {
@@ -1356,7 +1142,6 @@ void ModStation::checkHints() {
         }
     }
 
-    // achievement-completion hints.
     if (((char *) &this->modalFlags)[2] == 0) {
         if (((char *) &this->m_nStarMapWindowOpen)[3] == 0 && *(char *) (hintRec + 0x1a) == 0 &&
             Achievements_gotAllMedals_ch(*g_ch_ach) != 0) {
@@ -1371,7 +1156,7 @@ void ModStation::checkHints() {
             *(char *) (hintRec + 0x1b) = 1;
             ((char *) &this->m_nStarMapWindowOpen)[3] = 1;
         }
-        // supernova blueprint unlock.
+
         if (((char *) &this->modalFlags)[2] == 0 && ((char *) &this->m_nStarMapWindowOpen)[3] == 0) {
             void *statPtr = (void *) *status;
             if (Status_isBlueprintUnlocked_ch(statPtr, 0xe8) == 0 &&
@@ -1383,7 +1168,7 @@ void ModStation::checkHints() {
                 ((char *) &this->m_nStarMapWindowOpen)[3] = 1;
             }
         }
-        // hardcore-unlock hint.
+
         if (((char *) &this->modalFlags)[2] == 0 && ((char *) &this->m_nStarMapWindowOpen)[3] == 0 &&
             *(char *) (hintRec + 0x3a) == 0 &&
             0xa1 < Status_getCurrentCampaignMission_ch()) {
@@ -1400,39 +1185,27 @@ void ModStation::checkHints() {
         }
     }
 
-    // wingman recruit / dismissal dialogue.
     if (((char *) &this->modalFlags)[1] == 0 && ((char *) &this->modalFlags)[2] == 0 &&
         ((char *) &this->m_nStarMapWindowOpen)[3] == 0)
         ModStation_ch_showWingmanDialogue(this, 0);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_ModStation_tm_layout; // g -> P, *P -> layout obj
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_ModStation_tm_screenH; // **g -> screen height
+
+extern Layout **g_ModStation_tm_layout;
+
+extern void **g_ModStation_tm_screenH;
 
 void ModStation::OnTouchMove(int x, int y, void *touch) {
-    if (*(void **) ((char *) this + 0x128) != touch) // RAWREAD: capturedTouch (+0x128)
+    if (*(void **) ((char *) this + 0x128) != touch)
         return;
-    *(int *) ((char *) this + 0x110) = x; // RAWREAD: scrollOffset / touch X (+0x110)
-    *(int *) ((char *) this + 0x114) = y; // RAWREAD: scrollTarget / touch Y (+0x114)
+    *(int *) ((char *) this + 0x110) = x;
+    *(int *) ((char *) this + 0x114) = y;
     if (((char *) &this->m_nStarMapWindowOpen)[0] != 0)
         return;
 
     Layout **layoutHolder = g_ModStation_tm_layout;
     Layout *layoutObj = *layoutHolder;
     if (layoutObj->choiceWindowOpen != 0) {
-        // Layout+0x0
         layoutObj->OnTouchMove(x, y);
         return;
     }
@@ -1486,36 +1259,21 @@ void ModStation::OnTouchMove(int x, int y, void *touch) {
         return;
     if (*(int *) *g_ModStation_tm_screenH - layout->field_0x10 <= y)
         return;
-    if (x <= *(int *) ((char *) this + 0xa8)) // RAWREAD: news-ticker drag left-bound X (+0xa8)
+    if (x <= *(int *) ((char *) this + 0xa8))
         return;
-    int delta = x - *(int *) ((char *) this + 0xe8); // RAWREAD: dragOriginX (+0xe8)
-    *(int *) ((char *) this + 0xf0) = delta; // RAWREAD: dragVelX (+0xf0)
-    *(int *) ((char *) this + 0xf4) = 0x3f800000; // RAWREAD: dragScaleX = 1.0f (+0xf4)
-    *(int *) ((char *) this + 0xe4) = *(int *) ((char *) this + 0xe4) + delta; // RAWREAD: dragAccumX (+0xe4)
-    *(int *) ((char *) this + 0xe8) = x; // RAWREAD: dragOriginX (+0xe8)
+    int delta = x - *(int *) ((char *) this + 0xe8);
+    *(int *) ((char *) this + 0xf0) = delta;
+    *(int *) ((char *) this + 0xf4) = 0x3f800000;
+    *(int *) ((char *) this + 0xe4) = *(int *) ((char *) this + 0xe4) + delta;
+    *(int *) ((char *) this + 0xe8) = x;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern FModSound **g_ModStation_or_sound; // *g -> flag
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_ModStation_or_reload; // *g -> reload flag obj
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern ImageFactory **g_ModStation_or_imgfac; // *g -> image factory
+
+extern FModSound **g_ModStation_or_sound;
+
+extern Layout **g_ModStation_or_reload;
+
+extern ImageFactory **g_ModStation_or_imgfac;
 
 void ModStation::OnRelease() {
     FModSound **soundHolder = g_ModStation_or_sound;
@@ -1595,13 +1353,13 @@ void ModStation::OnRelease() {
     delete this->cameraTween;
     this->cameraTween = 0;
 
-    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x13c); // RAWREAD: easeCamX (+0x13c)
+    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x13c);
     *(void **) ((char *) this + 0x13c) = 0;
 
-    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x140); // RAWREAD: easeCamY (+0x140)
+    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x140);
     *(void **) ((char *) this + 0x140) = 0;
 
-    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x144); // RAWREAD: easeCamZ (+0x144)
+    delete (AbyssEngine::EaseInOut *) *(void **) ((char *) this + 0x144);
     *(void **) ((char *) this + 0x144) = 0;
 
     if (*(void **) &this->activeMission != 0)
@@ -1612,88 +1370,33 @@ void ModStation::OnRelease() {
         ms_op_delete(ScrollTouchBox_dtor(this->scrollBox));
     this->scrollBox = 0;
 
-    *(uint16_t *) ((char *) this + 0xb0) = 0; // RAWREAD: gameLoaded/autoSaved cleared (+0xb0)
+    *(uint16_t *) ((char *) this + 0xb0) = 0;
     if (*soundHolder != 0)
         ModStation_or_tail();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_ote_stack; // [DAT_000e7908]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_helpLayout; // [DAT_000e790c] help-window layout
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_status; // Status holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern int *g_ote_stack;
+
+extern int **g_ote_helpLayout;
+
+extern int **g_ote_status;
+
 extern int **g_ote_achievements;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_module; // next application module
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_canvas; // paint canvas
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_sound; // FMod sound
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_textRoot; // GameText root
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_galaxy; // Galaxy holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_itemTable; // item descriptor table
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_ote_shipTable; // ship descriptor table
+
+extern int **g_ote_module;
+
+extern int **g_ote_canvas;
+
+extern int **g_ote_sound;
+
+extern int **g_ote_textRoot;
+
+extern int **g_ote_galaxy;
+
+extern int **g_ote_itemTable;
+
+extern int **g_ote_shipTable;
 
 extern "C" {
 void *ModStation_opnew_ote(unsigned size);
@@ -1883,37 +1586,31 @@ static int *help_layout() {
     return *(int **) g_ote_helpLayout;
 }
 
-// campaign-advance handler.
 void ModStation::OnTouchEnd(int x, int y, void *touch) {
     int *status = *(int **) g_ote_status;
 
-    // only react to the touch we captured; clear the captured-touch slot.
-    if (*(void **) ((char *) this + 0x128) != touch) // RAWREAD: capturedTouch (+0x128)
+    if (*(void **) ((char *) this + 0x128) != touch)
         return;
     int starMapOpen = ((char *) &this->m_nStarMapWindowOpen)[0];
-    *(unsigned char *) ((char *) this + 0x118) = 0; // RAWREAD: hangarLightIntensity byte (+0x118)
-    *(void **) ((char *) this + 0x128) = 0; // RAWREAD: capturedTouch (+0x128)
+    *(unsigned char *) ((char *) this + 0x118) = 0;
+    *(void **) ((char *) this + 0x128) = 0;
     if (starMapOpen != 0)
         return;
 
-    // help window takes priority.
     int *help = *(int **) g_ote_helpLayout;
     if (((Layout *) *help)->choiceWindowOpen != 0) {
-        // Layout+0x0
         if (Layout_OnTouchEndR_ote((Layout *) *help, x, y) != 0)
             ((Layout *) *help)->choiceWindowOpen = 0;
         return;
     }
 
-    // ---- dialogue window open ----
     if (((char *) &this->modalFlags)[1] != 0) {
         if (DialogueWindow_OnTouchEnd_ote(*(int *) &this->dialogueWindow, x) != 0) {
             if (this->activeMission != 0) {
-                // this[1].field_C: an active mission
                 handleMissionComplete(this);
                 return;
             }
-            // plain dialogue dismissal.
+
             DialogueWindow *dw = (DialogueWindow *) *(void **) &this->dialogueWindow;
             ((char *) &this->modalFlags)[1] = 0;
             if (dw != 0) {
@@ -1948,7 +1645,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
             return;
     }
 
-    // ---- choice window (jump confirm / docking fee / reward) ----
     if (((char *) &this->screenFlags)[3] != 0) {
         int r = ChoiceWindow_OnTouchEnd_ote(*(int *) &this->choiceWindow, x);
         if (r == 1) {
@@ -1973,9 +1669,7 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
 
-    // ---- main station screen: dispatch to the open sub-window, else the button strip ----
     if (((char *) &this->modalFlags)[0] != 0) {
-        // StatusWindow
         if (StatusWindow_OnTouchEnd_ote(*(int *) &this->statusWindow, x, y) != 0) {
             ((char *) &this->modalFlags)[0] = 0;
             ModStation_resetLight_ote(this);
@@ -1983,7 +1677,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->subWindowFlags)[3] != 0) {
-        // StarMap
         if (StarMap_OnTouchEnd_ote((int) (intptr_t) this->starMap, x) != 0) {
             ((char *) &this->subWindowFlags)[3] = 0;
             ModStation_resetLight_ote(this);
@@ -1991,10 +1684,9 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->subWindowFlags)[2] != 0) {
-        // HangarWindow
         if (HangarWindow_OnTouchEnd_ote((HangarWindow *) this->hangarWindow, x, y) != 0) {
             int *st = *(int **) g_ote_status;
-            // tally any tradeable cargo sold this visit.
+
             Status_getShip_ote();
             unsigned *cargo = (unsigned *) Ship_getCargo_ote();
             int sold = 0;
@@ -2031,7 +1723,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->subWindowFlags)[0] != 0) {
-        // SpaceLounge
         if (SpaceLounge_OnTouchEnd_ote(*(int *) &this->spaceLounge, x, y) != 0) {
             ((char *) &this->subWindowFlags)[1] = 0;
             this->resetIdleCamForHangar();
@@ -2052,7 +1743,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->subWindowFlags)[1] != 0) {
-        // MissionsWindow
         if (MissionsWindow_OnTouchEnd_ote(*(int *) &this->m_pDialogueWindow, x) != 0) {
             ((char *) &this->subWindowFlags)[0] = 0;
             int snd = **(int **) g_ote_sound;
@@ -2061,7 +1751,6 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->screenFlags)[2] != 0) {
-        // MenuTouchWindow (DLC)
         if (MenuTouchWindow_OnTouchEnd_ote((MenuTouchWindow *) this->dlcMenu,
                                            x, y, touch) != 0) {
             ((char *) &this->screenFlags)[2] = 0;
@@ -2070,19 +1759,16 @@ void ModStation::OnTouchEnd(int x, int y, void *touch) {
         return;
     }
     if (((char *) &this->screenFlags)[1] != 0) {
-        // m_nStarMapWindowOpen+1: button strip active
         handleMainButtons(this, x, y);
     }
 }
 
-// --- the decline branch of the jump/depart choice window ---
 void handleChoiceDecline(ModStation *self, int x, int y) {
     int *status = *(int **) g_ote_status;
     (void) x;
     (void) y;
 
     if (((char *) &self->departPending)[2] != 0) {
-        // a departure was pending
         ((char *) &self->departPending)[2] = 0;
         int camp = Status_getCurrentCampaignMission_ote();
         if (camp == 0x18) {
@@ -2125,10 +1811,8 @@ void handleChoiceDecline(ModStation *self, int x, int y) {
     }
 
     if (((char *) &self->modalFlags)[3] != 0) {
-        // standing-penalty branch
         int credits = Status_getCredits_ote();
         if (*(int *) &self->buttonCredits <= credits) {
-            // this[1].field_44 == price
             Status_changeCredits_ote(*status);
             ((char *) &self->modalFlags)[3] = 0;
             ((char *) &self->buttonCredits)[0] = 1;
@@ -2150,12 +1834,10 @@ void handleChoiceDecline(ModStation *self, int x, int y) {
     handleChoiceDeclineTail(self);
 }
 
-// the post-standing-penalty continuation (mission-0x6c reward / level-up cleanup).
 void handleChoiceDeclineTail(ModStation *self) {
     int *status = *(int **) g_ote_status;
 
     if (((char *) &self->scrollBox)[0] != 0) {
-        // this[1].field_4C: pending app-data flag
         ((char *) &self->screenFlags)[3] = 0;
         ((char *) &self->scrollBox)[0] = 0;
         int appData = ApplicationManager_GetApplicationData_ote();
@@ -2164,7 +1846,6 @@ void handleChoiceDeclineTail(ModStation *self) {
     }
     if (((char *) &self->screenFlags)[0] == 0) {
         if (((char *) &self->screenFlags)[1] != 0) {
-            // this->field_6C+1: reward-mission state
             int credits = Status_getCredits_ote();
             if (credits < 25000) {
                 ModStation_ote_showRewardChoice(self, credits);
@@ -2198,15 +1879,12 @@ void handleChoiceDeclineTail(ModStation *self) {
     }
 }
 
-// --- main button strip dispatch (launch / buy ship / DLC menu / news ticker) ---
 void handleMainButtons(ModStation *self, int x, int y) {
     int *help = *(int **) g_ote_helpLayout;
 
-    // launch button.
     if (TouchButton_OnTouchEnd_ote(*(int *) &self->dlcMenu, x) != 0)
         return;
 
-    // "buy credits" button -> hangar credits window.
     if (TouchButton_OnTouchEnd_ote(self->activeMission, x) != 0) {
         RecordHandler *rh = (RecordHandler *) **(int **) g_ote_status;
         *(char *) (*(int *) g_ote_status + 0x4e) = 1;
@@ -2222,18 +1900,16 @@ void handleMainButtons(ModStation *self, int x, int y) {
         HangarWindow_showCreditsBuyWindow_ote((HangarWindow *) self->hangarWindow);
     }
 
-    // the five DLC / station-menu buttons.
     self->selectedButton = -1;
     for (unsigned i = 0; i < 5; i = i + 1) {
         if (TouchButton_OnTouchEnd_ote(*(int *) ((int) (intptr_t) self->buttonRow + i * 4), x) != 0) {
             self->selectedButton = (int) i;
-            // launch the currently loaded station application module.
+
             ModStation_ote_launchModule(**(int **) g_ote_module, 0x10000);
             return;
         }
     }
 
-    // the layout (system info box) hot area.
     if (Layout_OnTouchEndR_ote((Layout *) *help, x, y) != 0) {
         if (self->dlcMenu == 0) {
             MenuTouchWindow *w = (MenuTouchWindow *) ModStation_opnew_ote(0x240);
@@ -2253,13 +1929,11 @@ void handleMainButtons(ModStation *self, int x, int y) {
         ModStation_ote_kickIdleCamera(self);
 }
 
-// --- the full mission-completion + campaign-advance handler (reached on dialogue accept) ---
 void handleMissionComplete(ModStation *self) {
     int *status = *(int **) g_ote_status;
 
     Mission *mission = (Mission *) self->activeMission;
 
-    // mission-type specific cargo cleanup before scoring.
     if (mission != 0) {
         int type = Mission_getType_ote();
         int campaign = Mission_isCampaignMission_ote(mission);
@@ -2325,7 +1999,6 @@ void handleMissionComplete(ModStation *self) {
         }
     }
 
-    // --- scoring / campaign advance (LAB_000e7962) ---
     if (Mission_isCampaignMission_ote(mission) == 0) {
         Status_incMissionCount_ote(*status);
         int reward = Mission_getReward_ote();
@@ -2337,7 +2010,6 @@ void handleMissionComplete(ModStation *self) {
 
     int camp = Status_getCurrentCampaignMission_ote();
     if (camp == 0x2b) {
-        // mining-plant unlock -> supernova radio cutscene.
         Status_removeMission_ote(*status);
         Status_setMission_ote(*status);
         ((char *) &self->modalFlags)[1] = 0;
@@ -2371,14 +2043,14 @@ void handleMissionComplete(ModStation *self) {
             Status_setMission_ote(*status);
             self->selectedButton = 1;
             ((char *) &self->modalFlags)[1] = 0;
-            // launch the currently loaded station application module.
+
             ModStation_ote_launchModule(**(int **) g_ote_module, 0x10000);
             return;
         }
         if (d != 0)
-            handled = false; // fall through to the 0x4b.. handling
+            handled = false;
         else
-            handled = true; // d == 0 (mission 0x2c): handled by the 0x9 reset path below
+            handled = true;
     }
 
     if (!handled) {
@@ -2388,7 +2060,6 @@ void handleMissionComplete(ModStation *self) {
         }
     }
 
-    // missions 0x2c / 9 / 0x4b / 0x4c / 0x53: launch the storyline cutscene module.
     Status_removeMission_ote(*status);
     self->activeMission = 0;
     Status_setMission_ote(*status);
@@ -2397,7 +2068,6 @@ void handleMissionComplete(ModStation *self) {
     ModStation_ote_launchModule(**(int **) g_ote_module, 5);
 }
 
-// per-mission campaign station/ship side effects, then either restock-and-reward or depart.
 void handleCampaignTransition(ModStation *self, int cm) {
     int *status = *(int **) g_ote_status;
 
@@ -2450,7 +2120,6 @@ void handleCampaignTransition(ModStation *self, int cm) {
         return;
     }
 
-    // the remaining campaign ids each set a module flag and depart.
     if (cm == 0xa0 || cm == 0x90 || cm == 99 || cm == 0x77 || cm == 0x85 || cm == 0x6d ||
         cm == 0x59) {
         Station *home = (Station *) *status;
@@ -2482,7 +2151,6 @@ void handleCampaignTransition(ModStation *self, int cm) {
     finishMissionReward(self);
 }
 
-// credits the reward, removes the mission and refreshes the lounge.
 void finishMissionReward(ModStation *self) {
     int *status = *(int **) g_ote_status;
 
@@ -2499,45 +2167,28 @@ void finishMissionReward(ModStation *self) {
     self->checkHints();
 }
 
-// Globals.
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_ModStation_tb_layout; // g -> P, *P -> layout obj
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_ModStation_tb_screenH; // **g -> screen height
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_ModStation_tb_clear; // *g -> slot zeroed
 
-// ModStation::OnTouchBegin(int, int, void*)
+extern Layout **g_ModStation_tb_layout;
+
+extern void **g_ModStation_tb_screenH;
+
+extern void **g_ModStation_tb_clear;
+
 void ModStation::OnTouchBegin(int x, int y, void *touch) {
-    if (*(void **) ((char *) this + 0x128) != 0) // RAWREAD: capturedTouch (+0x128)
+    if (*(void **) ((char *) this + 0x128) != 0)
         return;
-    *(unsigned char *) ((char *) this + 0x118) = 1; // RAWREAD: hangarLightIntensity byte (+0x118)
-    *(void **) ((char *) this + 0x128) = touch; // RAWREAD: capturedTouch (+0x128)
+    *(unsigned char *) ((char *) this + 0x118) = 1;
+    *(void **) ((char *) this + 0x128) = touch;
     int flag = this->m_nStarMapWindowOpen;
-    *(int *) ((char *) this + 0x110) = x; // RAWREAD: scrollOffset / touch X (+0x110)
-    *(int *) ((char *) this + 0x114) = y; // RAWREAD: scrollTarget / touch Y (+0x114)
+    *(int *) ((char *) this + 0x110) = x;
+    *(int *) ((char *) this + 0x114) = y;
     if (flag != 0) {
         if (((Radio *) (*(void **) &this->activeMission))->lastMessageShown() != 0) {
             (unsigned char &) this->stationActive = 0;
             gStatus->nextCampaignMission(true);
             unsigned int mod = *(unsigned int *) gAppManager;
             *(int *) *g_ModStation_tb_clear = 0;
-            // `mod` is the target module id; dispatch on the ApplicationManager singleton.
+
             gAppManager->SetCurrentApplicationModule(mod);
             (unsigned char &) this->m_nStarMapWindowOpen = 0;
         }
@@ -2546,7 +2197,6 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     Layout **layoutHolder = g_ModStation_tb_layout;
     Layout *layoutObj = *layoutHolder;
     if (layoutObj->choiceWindowOpen != 0) {
-        // Layout+0x0
         layoutObj->OnTouchBegin(x, y);
         return;
     }
@@ -2600,35 +2250,22 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         return;
     if (*(int *) *g_ModStation_tb_screenH - layout->field_0x10 <= y)
         return;
-    if (x <= *(int *) ((char *) this + 0xa8)) // RAWREAD: news-ticker drag left-bound X (+0xa8)
+    if (x <= *(int *) ((char *) this + 0xa8))
         return;
-    *(int *) ((char *) this + 0xfc) = x; // RAWREAD: dragStartX (+0xfc)
-    *(int *) ((char *) this + 0xe8) = x; // RAWREAD: dragOriginX (+0xe8)
-    *(int *) ((char *) this + 0xf0) = 0; // RAWREAD: dragVelX (+0xf0)
-    *(unsigned char *) ((char *) this + 0x100) = 1; // RAWREAD: dragActive byte (+0x100)
+    *(int *) ((char *) this + 0xfc) = x;
+    *(int *) ((char *) this + 0xe8) = x;
+    *(int *) ((char *) this + 0xf0) = 0;
+    *(unsigned char *) ((char *) this + 0x100) = 1;
 }
 
-// Two-arg engine-dispatch touch stubs: the base touch interface invokes these
-// handle-less variants, which the original binary implements as no-ops that
-// simply return their first coordinate.
 int ModStation::OnTouchBegin(int x, int y) { return x; }
 int ModStation::OnTouchEnd(int x, int y) { return x; }
 int ModStation::OnTouchMove(int x, int y) { return x; }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_r2d_stack; // [DAT_000eba2c]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_r2d_helpLayout; // [DAT_000eba30]
+
+extern int *g_r2d_stack;
+
+extern int **g_r2d_helpLayout;
 
 extern "C" {
 void HangarWindow_render_r2d(ModStation * self);
@@ -2651,46 +2288,34 @@ void CutScene_render2D_r2d();
 void ChoiceWindow_draw_r2d(ModStation * self);
 void DialogueWindow_draw_r2d(ModStation * self);
 void Layout_drawHelpWindow_r2d(Layout * l);
-// The full station-HUD pass (header, footer, system box, news ticker, buttons, reward banner) —
-// dozens of SIMD string-layout calls the decompiler corrupted.
+
 void ModStation_r2d_drawStationHud(ModStation * self);
 }
 
-// ModStation::OnRender2D() — top-level 2D pass; dispatches to whichever station sub-screen is
-// currently open, then overlays the choice/dialogue/help windows.
 void ModStation::OnRender2D() {
     gCanvas->Begin2d();
     gCanvas->SetColor(this->fadeColor);
 
     if (this->stationActive == 0) {
-        // station screen not active yet — nothing to draw this frame.
         return;
     }
 
     if (((char *) &this->subWindowFlags)[2] != 0) {
-        // hangar
         HangarWindow_render_r2d(this);
     } else if (((char *) &this->subWindowFlags)[1] != 0) {
-        // space lounge
         SpaceLounge_draw_r2d(this);
     } else if (((char *) &this->subWindowFlags)[0] != 0) {
-        // missions
         MissionsWindow_draw_r2d(this->m_pDialogueWindow);
     } else if (((char *) &this->subWindowFlags)[3] != 0) {
-        // star map
         StarMap_draw_r2d(this);
     } else if (((char *) &this->modalFlags)[0] != 0) {
-        // status
         StatusWindow_draw_r2d(this);
     } else if (((char *) &this->modalFlags)[2] != 0) {
-        // DLC menu
         MenuTouchWindow_draw_r2d(this);
     } else if (((char *) &this->screenFlags)[0] != 0) {
-        // radio / cutscene overlay
         Radio_draw_r2d(this);
         CutScene_render2D_r2d();
     } else {
-        // default: the station information HUD.
         ModStation_r2d_drawStationHud(this);
     }
 
@@ -2700,14 +2325,12 @@ void ModStation::OnRender2D() {
         DialogueWindow_draw_r2d(this);
 
     Layout **help = (Layout **) g_r2d_helpLayout;
-    if ((*help)->choiceWindowOpen != 0) // Layout+0x0
+    if ((*help)->choiceWindowOpen != 0)
         Layout_drawHelpWindow_r2d((Layout *) *help);
 
     gCanvas->End2d();
 
-    // 3D hangar/ship pass when no help window is up.
     if ((*help)->choiceWindowOpen == 0) {
-        // Layout+0x0
         if (((char *) &this->subWindowFlags)[2] != 0) {
             HangarWindow_render3D_r2d();
         }
@@ -2718,87 +2341,35 @@ void ModStation::OnRender2D() {
     gCanvas->SwapBuffer();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_oi_stack; // [DAT_000e5a3c]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_status; // status holder (multiple DATs alias it)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_itemTable; // item descriptor table
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_shipTable; // ship descriptor table
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_canvas; // paint canvas holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_settings; // settings record
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_sound; // FMod sound holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_oi_textRoot; // GameText root
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern char **g_oi_demoFlag; // demo-mode flag
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_oi_musicId; // pending music id
+
+extern int *g_oi_stack;
+
+extern int **g_oi_status;
+
+extern int **g_oi_itemTable;
+
+extern int **g_oi_shipTable;
+
+extern int **g_oi_canvas;
+
+extern int **g_oi_settings;
+
+extern int **g_oi_sound;
+
+extern int **g_oi_textRoot;
+
+extern char **g_oi_demoFlag;
+
+extern int *g_oi_musicId;
 
 extern "C" {
 void *ModStation_opnew_oi(unsigned size);
 
 void ModStation_opdelete_oi(void *p);
 
-// --- self methods reached as direct calls in the original ---
 void ModStation_resetLight_oi(ModStation * self);
 void ModStation_enterStation_oi(ModStation * self);
 
-// --- Status / world queries ---
 int Status_getCurrentCampaignMission_oi();
 
 int Status_getStation_oi();
@@ -2934,40 +2505,26 @@ void Generator_dtor_oi(Generator * g);
 void Generator_computerTradeGoods_oi(Generator * g, Station * s);
 int Generator_getShipBuyList_oi(Station * s);
 
-// --- big corrupted blocks delegated to helpers (SIMD camera/light/easing + String chains) ---
-
-// Builds the cutscene camera framing + idle light easing for the docked-station screen (state 0x14):
-// camera dir read, light direction, EaseInOut(+0x13c/+0x140/+0x144), EaseInOutMatrix(+0x20) and all
-// the MatrixSetRotation/Translation SIMD math the decompiler corrupted. `race` selects the framing.
 void ModStation_oi_setupHangarCamera(ModStation *self, int race);
 
-// Pops the "pay docking fee / standing penalty" choice window with its formatted-credits String
-// (a long AbyssEngine::String temporary chain Ghidra mangled). Returns nonzero if a window was shown.
 int ModStation_oi_showDockingFeeChoice(ModStation *self, int standing, int credits);
 
-// Spawns the pirate-base agent dialogue window (+0x84) with its sound (Agent String temporaries).
 void ModStation_oi_showPirateDialogue(ModStation * self);
 
-// Builds the "wanted activated" choice text from the count (String hash-replace chain).
 void ModStation_oi_showWantedActivated(ModStation *self, int count);
 
-// Builds the mission-0x6c reward Mission + its dialogue window (Mission/String temporaries).
 void ModStation_oi_showRewardMission(ModStation * self);
-// Builds the news ticker (+0x1c) for the leave-station screen (state 0x3c) — NewsTicker layout math.
+
 void ModStation_oi_buildNewsTicker(ModStation * self);
-// Builds the DLC sub-menu buttons (+0x8c array) for state 0x50 — TouchButton layout SIMD math.
+
 void ModStation_oi_buildDlcMenu(ModStation * self);
 }
 
-// ModStation::OnInitialize() — per-screen-state setup. The current state is at self+0xc; each branch
-// configures its screen (load cutscene, hangar camera, news ticker, DLC menu, ...) and advances the
-// state machine. State 0x14=hangar, 0x28=station info, 0x3c=leave, 0x50=DLC menu, 0x64=enter.
 void ModStation::OnInitialize() {
     int *status = *(int **) g_oi_status;
 
     this->introTimer = 0;
 
-    // lazily build the docking cutscene.
     if (*(int *) &this->cutScene == 0) {
         CutScene *cs = (CutScene *) ModStation_opnew_oi(0xa0);
         CutScene_ctor_oi(cs, 0x17);
@@ -2979,8 +2536,6 @@ void ModStation::OnInitialize() {
     int next;
 
     if (state == 0x14) {
-        // ---- hangar screen ----
-        // RAWREAD: autoSaved (+0xb1), gameLoaded (+0xb0), dragActive[1] (+0x101)
         if (*(char *) ((char *) this + 0xb1) == 0 && *(char *) ((char *) this + 0xb0) == 0 &&
             *(char *) ((char *) this + 0x101) != 0) {
             bool skip = false;
@@ -2994,7 +2549,7 @@ void ModStation::OnInitialize() {
         }
 
         int *shipTbl = *(int **) g_oi_shipTable;
-        // mission 1: hand the player their first equipped ship.
+
         if (Status_getCurrentCampaignMission_oi() == 1) {
             Ship *ship = (Ship *) *shipTbl;
             Ship_makeShip_oi(**(int **) (**g_oi_shipTable + 4));
@@ -3009,7 +2564,6 @@ void ModStation::OnInitialize() {
             CutScene_replacePlayerShip_oi(*(int *) &this->cutScene, Ship_getIndex_oi());
         }
 
-        // half-transparent docking buttons depending on campaign progress.
         int camp = Status_getCurrentCampaignMission_oi();
         bool special = false;
         if (camp < 5) {
@@ -3033,7 +2587,6 @@ void ModStation::OnInitialize() {
         if (showShop)
             TouchButton_setHalfTransparent_oi(*(int *) (*(int *) ((int) (intptr_t) this->buttonRow + 4) + 4));
 
-        // camera framing race selection.
         int race;
         Station *st = (Station *) Status_getStation_oi();
         if (Station_getIndex_oi(st) == 0x65) {
@@ -3049,10 +2602,9 @@ void ModStation::OnInitialize() {
         }
         ModStation_oi_setupHangarCamera(this, race);
         ModStation_resetLight_oi(this);
-        if (*(char *) ((char *) this + 0x101) != 0) // RAWREAD: dragActive[1] (+0x101)
+        if (*(char *) ((char *) this + 0x101) != 0)
             ModStation_enterStation_oi(this);
 
-        // mission 0x4d: re-price a special ship in the shipyard.
         if (Status_getCurrentCampaignMission_oi() == 0x4d) {
             Station *st2 = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st2) == 100) {
@@ -3067,7 +2619,6 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // optional "you have no jump fuel" warning.
         if (((char *) &this->modalFlags)[1] == 0 && ((char *) &this->modalFlags)[2] == 0 &&
             ((char *) &this->m_nStarMapWindowOpen)[3] == 0 &&
             *(char *) (**g_oi_textRoot + 0x2ec) == 0) {
@@ -3088,46 +2639,42 @@ void ModStation::OnInitialize() {
         }
 
         *(char *) (*(int *) g_oi_status + 0xf8) = 1;
-        *(unsigned char *) ((char *) this + 0x118) = 0; // RAWREAD: hangarLightIntensity (+0x118)
-        *(void **) ((char *) this + 0x128) = 0; // RAWREAD: capturedTouch (+0x128)
-        *(unsigned char *) ((char *) this + 0xb3) = 0; // RAWREAD: reloadPending (+0xb3)
+        *(unsigned char *) ((char *) this + 0x118) = 0;
+        *(void **) ((char *) this + 0x128) = 0;
+        *(unsigned char *) ((char *) this + 0xb3) = 0;
         this->loadTick = 0;
-        *(unsigned char *) ((char *) this + 0x148) = 0; // RAWREAD: idleCamFlag (+0x148)
+        *(unsigned char *) ((char *) this + 0x148) = 0;
         next = 1;
     } else if (state == 0x28) {
-        // ---- station information screen ----
-        // various mission/station combos force the "alarm" flag at +0xd8.
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x78) {
                 int camp = Status_getCurrentCampaignMission_oi();
                 if (camp == 0x62 || Status_getCurrentCampaignMission_oi() == 100)
-                    *(unsigned char *) ((char *) this + 0xd8) = 1; // RAWREAD: alarmActive (+0xd8)
+                    *(unsigned char *) ((char *) this + 0xd8) = 1;
             }
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x3a && Status_getCurrentCampaignMission_oi() == 0x8a)
-                *(unsigned char *) ((char *) this + 0xd8) = 1; // RAWREAD: alarmActive (+0xd8)
+                *(unsigned char *) ((char *) this + 0xd8) = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x7e && Status_getCurrentCampaignMission_oi() == 0x78)
-                *(unsigned char *) ((char *) this + 0xd8) = 1; // RAWREAD: alarmActive (+0xd8)
+                *(unsigned char *) ((char *) this + 0xd8) = 1;
         }
         if (Status_inAlienOrbit_oi() == 0) {
             Station *st = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st) == 0x4e && Status_getCurrentCampaignMission_oi() == 0x8d)
-                *(unsigned char *) ((char *) this + 0xd8) = 1; // RAWREAD: alarmActive (+0xd8)
+                *(unsigned char *) ((char *) this + 0xd8) = 1;
         }
         if (Status_inSupernovaSystem_oi() != 0)
-            *(unsigned char *) ((char *) this + 0xd8) = 1; // RAWREAD: alarmActive (+0xd8)
+            *(unsigned char *) ((char *) this + 0xd8) = 1;
         if (**g_oi_demoFlag != 0)
-            *(uint16_t *) ((char *) this + 0xd8) = 0x101; // RAWREAD: alarmActive+miningPlantFlag (+0xd8)
+            *(uint16_t *) ((char *) this + 0xd8) = 0x101;
 
         if (*(char *) ((char *) this + 0xb0) == 0) {
-            // RAWREAD: gameLoaded (+0xb0)
-            // decide whether to show the standing / docking-fee choice.
             bool gate = false;
             Station *st = (Station *) Status_getStation_oi();
             if (Station_getIndex_oi(st) == 4) gate = true;
@@ -3137,7 +2684,6 @@ void ModStation::OnInitialize() {
                 else {
                     Status_getStation_oi();
                     if (Station_stationHasPirateBase_oi() != 0) {
-                        // pirate base -> agent dialogue instead.
                         if (this->dialogueWindow == 0)
                             ModStation_oi_showPirateDialogue(this);
                         goto afterGate;
@@ -3180,7 +2726,6 @@ void ModStation::OnInitialize() {
         afterGate:;
         }
 
-        // ---- post-dock world updates (LAB_000e6870) ----
         Station *here = (Station *) Status_getStation_oi();
         int hereIdx = Station_getIndex_oi(here);
         Status_getCampaignMission_oi();
@@ -3203,14 +2748,13 @@ void ModStation::OnInitialize() {
             Mission_getTargetStation_oi() == hereIdx) {
             Ship_removeCargo_oi(Status_getShip_oi());
         }
-        // mining-plant flag (+0xd9).
+
         if (Status_getCurrentCampaignMission_oi() == 0x2b) {
-            if (hereIdx == 10) *(unsigned char *) ((char *) this + 0xd9) = 1; // RAWREAD: miningPlantFlag (+0xd9)
+            if (hereIdx == 10) *(unsigned char *) ((char *) this + 0xd9) = 1;
         } else if (hereIdx == 10 && Status_getCurrentCampaignMission_oi() == 0x2c) {
-            *(unsigned char *) ((char *) this + 0xd9) = 1; // RAWREAD: miningPlantFlag (+0xd9)
+            *(unsigned char *) ((char *) this + 0xd9) = 1;
         }
 
-        // station-10 endgame goods.
         bool isS100;
         if (hereIdx == 10 && Status_gameWon_oi() != 0) {
             int ship = Status_getShip_oi();
@@ -3242,7 +2786,6 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // station-10 restock if the player has all gold medals.
         Station *st10 = (Station *) Status_getStation_oi();
         if (Station_getIndex_oi(st10) == 10 && Achievements_gotAllGoldMedals_oi() != 0) {
             Status_getStation_oi();
@@ -3272,7 +2815,6 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // DLC ship grants at stations 100/101.
         if (isS100 &&
             (Status_dlc1Won_oi() != 0 ||
              Status_getCurrentCampaignMission_oi() == 0x50 ||
@@ -3297,13 +2839,11 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // station-0x6c reward mission window.
         Station *st6c = (Station *) Status_getStation_oi();
         bool atReward = Station_getIndex_oi(st6c) == 0x6c;
         int rewardState = atReward ? *(int *) (*(int *) g_oi_status + 0x114) : 0;
         if (atReward && rewardState == 1) {
             if (*(void **) &this->dialogueWindow != 0) {
-                // DialogueWindow dtor delegated via reward helper path.
             }
             this->dialogueWindow = 0;
             ModStation_oi_showRewardMission(this);
@@ -3321,7 +2861,6 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // freelance delivery mission item.
         if (Status_getFreelanceMission_oi() != 0 && Mission_getType_oi() == 0xe) {
             Station *st = (Station *) Status_getStation_oi();
             if (Mission_getTargetStation_oi() == Station_getIndex_oi(st) &&
@@ -3332,7 +2871,6 @@ void ModStation::OnInitialize() {
             }
         }
 
-        // contextual hint windows driven by settings-record flags.
         int settings = *(int *) g_oi_settings;
         int rec = *(int *) g_oi_textRoot;
         (void) rec;
@@ -3356,7 +2894,6 @@ void ModStation::OnInitialize() {
         }
         (void) settings2;
 
-        // newly-activated wanted criminal banner.
         int wanted = Status_activateNewWanted_oi();
         if (wanted > 0 && ((char *) &this->m_nStarMapWindowOpen)[3] == 0) {
             if (wanted == 1)
@@ -3367,44 +2904,38 @@ void ModStation::OnInitialize() {
         }
         next = 0x14;
     } else if (state == 0x3c) {
-        // ---- leave-station screen ----
-        // Binary clears the drag-camera scratch block, then seeds the idle-camera
-        // yaw angle into the dragAccumX slot (+0xe4). Offsets verified against
-        // OnInitialize@0xe5708 (state 0x3c branch).
-        *(unsigned char *) ((char *) this + 0x100) = 0; // RAWREAD: dragActive byte (+0x100)
-        *(uint32_t *) ((char *) this + 0xe8) = 0; // RAWREAD: dragOriginX (+0xe8)
-        *(uint32_t *) ((char *) this + 0xe0) = 0; // RAWREAD: scratch (+0xe0)
-        *(uint32_t *) ((char *) this + 0xf0) = 0; // RAWREAD: dragVelX (+0xf0)
-        *(uint32_t *) ((char *) this + 0xf4) = 0; // RAWREAD: dragScaleX (+0xf4)
-        *(uint32_t *) ((char *) this + 0xf8) = 0; // RAWREAD: scratch (+0xf8)
-        *(uint32_t *) ((char *) this + 0xfc) = 0; // RAWREAD: dragStartX (+0xfc)
+        *(unsigned char *) ((char *) this + 0x100) = 0;
+        *(uint32_t *) ((char *) this + 0xe8) = 0;
+        *(uint32_t *) ((char *) this + 0xe0) = 0;
+        *(uint32_t *) ((char *) this + 0xf0) = 0;
+        *(uint32_t *) ((char *) this + 0xf4) = 0;
+        *(uint32_t *) ((char *) this + 0xf8) = 0;
+        *(uint32_t *) ((char *) this + 0xfc) = 0;
         Status_getSystem_oi();
         int angle = (SolarSystem_getRace_oi() == 2) ? (int) 0xffffff38 : 0x10e;
-        *(uint32_t *) ((char *) this + 0xe4) = angle; // RAWREAD: dragAccumX / idle-camera yaw seed (+0xe4)
+        *(uint32_t *) ((char *) this + 0xe4) = angle;
         if (this->cutScene != 0)
-            this->cutScene->cameraRotX = (float) angle / 120.0f; // binary divisor 0x42f00000
-        *(uint32_t *) ((char *) this + 0xec) = 0; // RAWREAD: scratch (+0xec)
-        *(unsigned char *) ((char *) this + 0xb0) = // RAWREAD: gameLoaded (+0xb0)
-                *(unsigned char *) ((char *) this + 0xb3); // RAWREAD: reloadPending (+0xb3)
+            this->cutScene->cameraRotX = (float) angle / 120.0f;
+        *(uint32_t *) ((char *) this + 0xec) = 0;
+        *(unsigned char *) ((char *) this + 0xb0) =
+                *(unsigned char *) ((char *) this + 0xb3);
         ModStation_oi_buildNewsTicker(this);
         next = 0x28;
     } else if (state == 0x50) {
-        // ---- DLC sub-menu screen ----
         *(uint32_t *) ((char *) &this->m_nStarMapWindowOpen + 2) = 0;
         ((char *) &this->screenFlags)[2] = 0;
         *(uint16_t *) &this->screenFlags = 0;
         this->modalFlags = 0;
         *(uint16_t *) ((char *) &this->subWindowFlags + 2) = 0;
         *(uint16_t *) &this->m_nStarMapWindowOpen = 0x100;
-        *(unsigned char *) ((char *) this + 0xdc) = 0; // RAWREAD: cbsHintShown (+0xdc)
-        *(uint16_t *) ((char *) this + 0xde) = 0; // RAWREAD: scratch (+0xde)
-        *(unsigned char *) ((char *) this + 0x12c) = 0; // RAWREAD: touchPadFlag (+0x12c)
+        *(unsigned char *) ((char *) this + 0xdc) = 0;
+        *(uint16_t *) ((char *) this + 0xde) = 0;
+        *(unsigned char *) ((char *) this + 0x12c) = 0;
         this->pendingHangarClose = 0;
         ((char *) &this->m_nStarMapWindowOpen)[3] = 0;
         ModStation_oi_buildDlcMenu(this);
         next = 0x3c;
     } else if (state == 100) {
-        // ---- enter-station screen ----
         int *sound = *(int **) g_oi_sound;
         reinterpret_cast<Globals *>(*sound)->startNewSoundResourceList();
         static const int snd[] = {
@@ -3414,12 +2945,11 @@ void ModStation::OnInitialize() {
         for (unsigned i = 0; i < sizeof(snd) / sizeof(snd[0]); i = i + 1)
             ((Globals *) (*sound))->addSoundResourceToList(snd[i]);
 
-        *(int *) ((char *) this + 0xcc) = 0x32; // RAWREAD: per-visit dock counter seed (+0xcc)
+        *(int *) ((char *) this + 0xcc) = 0x32;
         int *st = *(int **) g_oi_status;
-        *(unsigned char *) ((char *) this + 0x101) = 1; // RAWREAD: dragActive[1] (+0x101)
+        *(unsigned char *) ((char *) this + 0x101) = 1;
         Status_getStation_oi();
         Station_getName_oi();
-        // String assign of station name into this+0x38 (temporary chain).
 
         long long enterTime = *(long long *) (*st + 0x70);
         long long now = (long long) (unsigned) Status_getPlayingTime_lo_oi();
@@ -3434,7 +2964,6 @@ void ModStation::OnInitialize() {
         }
         next = 0x50;
     } else {
-        // ---- any other state: just play the dock ambience and advance to 'entered' ----
         int *sound = *(int **) g_oi_sound;
         FModSound_play_oi(*sound, 0x7a, 0, 0.0f);
         FModSound_enableReverb_oi(*sound);
@@ -3447,11 +2976,9 @@ void ModStation::OnInitialize() {
         this->stationActive = 1;
         this->state = 100;
 
-        // snapshot the docking button positions.
         unsigned *btns = (unsigned *) this->buttonRow;
         if (btns != 0) {
             for (unsigned i = 0; i < *btns; i = i + 1) {
-                // button positions cached by the engine helper (TouchButton::getPosition SIMD).
                 (void) i;
             }
         }
@@ -3461,34 +2988,14 @@ void ModStation::OnInitialize() {
     this->state = next;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_dlc_stack; // [DAT_000ec28c]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_dlc_btnX; // [DAT_000ec290] cached button X array
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_dlc_btnY; // [DAT_000ec294]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_dlc_btnCount; // [DAT_000ec298]
+
+extern int *g_dlc_stack;
+
+extern int *g_dlc_btnX;
+
+extern int *g_dlc_btnY;
+
+extern int **g_dlc_btnCount;
 
 extern "C" {
 void *ModStation_opnew_dlc(unsigned size);
@@ -3500,8 +3007,6 @@ void MenuTouchWindow_callDlcMenu_dlc(MenuTouchWindow * w);
 void TouchButton_getPosition_dlc(void *dst, void *win, unsigned idx);
 }
 
-// ModStation::showDlcMenu() — opens (creating it on first use) the in-station DLC store window,
-// snapshotting the current button layout first.
 void ModStation::showDlcMenu() {
     MenuTouchWindow *win = (MenuTouchWindow *) this->dlcMenu;
     if (win == 0) {
@@ -3528,21 +3033,10 @@ void ModStation::showDlcMenu() {
     MenuTouchWindow_callDlcMenu_dlc(win);
 }
 
-// PC-relative cookie + the localized-string lookup tables this message uses.
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_cbs_stack; // [DAT_000ec1a4]
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_cbs_textId; // [DAT_000ec1b0]
+
+extern int *g_cbs_stack;
+
+extern int **g_cbs_textId;
 
 extern "C" {
 int GameText_getText_cbs(int id);
@@ -3551,8 +3045,6 @@ void ChoiceWindow_set_cbs(ChoiceWindow *cw, String *title, String *ok, int modal
                           String *a, String *b, String *c, int d, int e);
 }
 
-// ModStation::showCBSMessage() — pops the "Cross-Buy Support" notice via the station's choice
-// window and flags it as open.
 void ModStation::showCBSMessage() {
     String emptyA, emptyB, ok;
 
@@ -3560,100 +3052,43 @@ void ModStation::showCBSMessage() {
     String *title = (String *) GameText_getText_cbs(**g_cbs_textId);
     ChoiceWindow_set_cbs(cw, title, &ok, 1, &emptyA, &emptyB, &emptyA, -1, -1);
 
-    // mark both "CBS message open" flags.
-    *(unsigned char *) ((char *) this + 0xdd) = 1; // RAWREAD: cbsMessageOpen (+0xdd)
+    *(unsigned char *) ((char *) this + 0xdd) = 1;
     ((char *) &this->modalFlags)[3] = 1;
 }
 
-// ===========================================================================
-// Recovered tail-call fragments and compiler helper veneers.
-//
-// Each ModStation::OnXxx() above peels its terminal tail-branch out into a
-// small *_tail / *_impl helper (the decompiler split the basic block at the
-// `b.w` to the PLT/long-branch veneer). The body of each forwards into the
-// engine/runtime routine the original code branched to. The veneer targets are
-// resolved by cross-referencing the identical tail-branches in the sibling
-// session modules (MGame / ModMainMenu), which call the very same engine
-// entry points through the same veneer slots.
-// ===========================================================================
-
-// The global leave-station handler (separate TU, reached through a PLT veneer
-// at 0x75244): tears the station module down and transitions back to flight.
 extern "C" void leaveStation();
 
-// autosave(): once the slot-0 record + preview have been written, the docked
-// menu reloads its save-slot preview thumbnails so the UI reflects the new
-// state (veneer 0x1ac0f8 -> MenuTouchWindow::loadPreviewRecords). In the binary
-// the tail-branch carries the menu window (ModStation+0x50, already non-null
-// guarded by the caller) in r0 as the receiver; this lossy `()` shim does not
-// thread that pointer, so the reload is driven via the menu window argument.
 extern "C" void ModStation_autosaveTail_recv(MenuTouchWindow *menu) {
     menu->loadPreviewRecords();
 }
 
 extern "C" void ModStation_autosaveTail() {
-    // Receiver not threaded through the no-arg veneer signature; see *_recv.
 }
 
-// OnSuspend(): the app is being backgrounded, so flush the player's options to
-// the record store (veneer 0x1ac188 -> RecordHandler::saveOptions; obj is the
-// RecordHandler singleton).
 extern "C" void ModStation_suspendTail(void *obj, void ** /*holder*/) {
     ((RecordHandler *) obj)->saveOptions();
 }
 
-// OnResume(): the background-music event survived the suspend, so restore its
-// channel volume to bring the track back up (veneer 0x1ac178 ->
-// FModSound::setVolume; obj = FModSound, channel 1, vol = arg).
 extern "C" void ModStation_resumeTail(void *obj, int channel, int arg) {
     ((FModSound *) obj)->setVolume(channel, (float) arg);
 }
 
-// OnRender3D(): close the 3D pass that drew the hangar / star-map / cut-scene
-// (veneer 0x1ab928 -> PaintCanvas::End3d).
 extern "C" void ModStation_r3d_endTail(void *c) {
     ((PaintCanvas *) c)->End3d();
 }
 
-// OnRelease(): after every owned window/resource has been freed, release all
-// remaining FMOD event handles owned by the sound manager (veneer 0x1ac168 ->
-// FModSound::freeAllEvents; guarded by the live sound singleton).
 extern "C" void ModStation_or_tail() {
     (*g_ModStation_or_sound)->freeAllEvents();
 }
 
-// (checkMedals()'s terminal `b.w` into ModStation::addAchievement is now a
-// direct `this->addAchievement(...)` member call at its two call sites.)
-
-// leaveStation(): a 16-byte veneer that tail-calls the real leave-station
-// handler (which tears the station module down and returns to flight).
 extern "C" void ModStation_leaveStation_impl(ModStation * /*self*/) {
     leaveStation();
 }
 
-// Method-to-wrapper shim: MenuTouchWindow re-enters ModStation::setGameLoaded()
-// through this `extern "C"` thunk; forward to the real member.
 extern "C" void _mtw_ModStation_setGameLoaded(void *ms) {
     ((ModStation *) ms)->setGameLoaded();
 }
 
-// ===========================================================================
-// Recovered decompiler sub-fragments.
-//
-// Every method above was reconstructed from a single monolithic Ghidra
-// function; the decompiler split the dense / corrupted basic blocks (SIMD
-// camera + light math, the long AbyssEngine::String hash-replace chains, and
-// the per-parent sibling-method calls) out into named `*_<suffix>` fragments.
-// `<suffix>` identifies the parent the block was lifted from (oi=OnInitialize,
-// ou=OnUpdate, ote=OnTouchEnd, okp=OnKeyPress, ch=checkHints, msc=ctor,
-// r2d=OnRender2D). The bodies below are those fragments, reattached to the
-// engine routine / sibling method / allocation the original block performed.
-// They only ADD definitions; the call sites are wired by a later pass.
-// ===========================================================================
-
-// ---- per-screen storage allocators (operator new sizeof(window)) ----------
-// Each parent allocated its windows through the class-local operator new; these
-// are the per-parent split-outs of that single `operator new(size)` call.
 extern "C" void *ModStation_opnew_oi(unsigned size) { return ::operator new(size); }
 extern "C" void *ModStation_opnew_ou(unsigned size) { return ::operator new(size); }
 extern "C" void *ModStation_opnew_ote(unsigned size) { return ::operator new(size); }
@@ -3662,24 +3097,13 @@ extern "C" void ModStation_opdelete_oi(void *p) { ::operator delete(p); }
 extern "C" void ModStation_opdelete_ou(void *p) { ::operator delete(p); }
 extern "C" void ModStation_opdelete_ote(void *p) { ::operator delete(p); }
 
-// ---- member forwarders -----------------------------------------------------
-// enterStation()/resetLight() are real ModStation members; these split-outs
-// (the per-parent block lift-outs OnInitialize/OnTouchEnd performed) just
-// re-enter the member on `self`.
 extern "C" void ModStation_enterStation_oi(ModStation *self) { self->enterStation(); }
 extern "C" void ModStation_enterStation_ote(ModStation *self) { self->enterStation(); }
 extern "C" void ModStation_resetLight_oi(ModStation *self) { self->resetLight(); }
 extern "C" void ModStation_resetLight_ote(ModStation *self) { self->resetLight(); }
 
-// leaveStation reached from the SELECT key path: same 16-byte veneer that
-// tail-calls the global leave-station handler (see ModStation_leaveStation_impl).
 extern "C" void ModStation_leaveStation_okp(ModStation * /*self*/) { leaveStation(); }
 
-// ---------------------------------------------------------------------------
-// Engine entry points used by the content fragments below. These mirror the
-// throwaway `*_<suffix>` thunks the existing parent bodies already use; the
-// underlying engine routines are the real recovered members.
-// ---------------------------------------------------------------------------
 extern "C" {
 int GameText_getText_frag(int id);
 
@@ -3689,41 +3113,29 @@ void ChoiceWindow_setNotice_frag(void *cw, int textStr);
 
 void ChoiceWindow_set6_frag(void *cw, int a, int b, int yesNo, int c, int d, int e);
 
-int Status_holder_frag(); // *g -> Status object
-int GameText_root_frag(); // **g -> base text id
+int Status_holder_frag();
+
+int GameText_root_frag();
 }
 
-// ---- OnKeyPress fragments --------------------------------------------------
-// SELECT on the main button row opens the highlighted station screen. The
-// heavy per-screen build (window alloc, campaign gating, sound, help window,
-// hangar rebuild) lives inline in OnKeyPress's recovered body; this split-out
-// just reports whether `which` is a valid, openable screen index so the caller
-// can fall through to the "feature locked" notice otherwise.
 extern "C" int ModStation_okp_openScreen(ModStation * /*self*/, int which) {
     return (which >= 0 && which <= 4) ? 1 : 0;
 }
 
-// The "feature locked for your campaign progress" choice notice: re-uses the
-// station's choice window (+0x70) and the localized lock message.
 extern "C" void ModStation_okp_showLocked(ModStation *self) {
     ChoiceWindow_set1_frag(self->choiceWindow, GameText_getText_frag(GameText_root_frag()));
 }
 
-// SOFT key inside a sub-state toggles the contextual help overlay flag (+0x61).
 extern "C" void ModStation_okp_toggleHelp(ModStation *self) {
     ((unsigned char *) &self->m_nStarMapWindowOpen)[1] = (unsigned char) (
         ((unsigned char *) &self->m_nStarMapWindowOpen)[1] ^ 1);
 }
 
-// ---- checkHints fragments --------------------------------------------------
-// `wantedFieldOff == -1` is the post-mission-0x12 intro CBS hint: a six-option
-// choice window built from the fixed help-text ids the parent passed. A real
-// wanted slot offset builds the "criminal terminated" notice (name/ship
-// substitution); both end by handing the assembled String to the choice window.
 extern "C" {
 int GameText_getText_ch(int id);
 
-int GameText_text_ch(int slot); // **g -> text id for `slot`
+int GameText_text_ch(int slot);
+
 void ChoiceWindow_set6_ch(void *cw, int a, int b, int c, int d, int e);
 
 void ChoiceWindow_set1_ch(void *cw, int textStr);
@@ -3732,29 +3144,20 @@ void ChoiceWindow_set1_ch(void *cw, int textStr);
 extern "C" void ModStation_ch_showWantedHint(ModStation *self, int wantedFieldOff) {
     void *cw = self->choiceWindow;
     if (wantedFieldOff == -1) {
-        // intro Cross-Buy-Support hint: six localized strings (ids 0x3e/0x49/
-        // 0x7e/0x7f/0x20c) wired through the choice window's 6-arg setter.
         ChoiceWindow_set6_ch(cw,
                              GameText_getText_ch(0x3e), GameText_getText_ch(0x49),
                              GameText_getText_ch(0x7e), GameText_getText_ch(0x7f),
                              GameText_getText_ch(0x20c));
         return;
     }
-    // storyline wanted terminated: the message body is the localized template
-    // with the criminal name/ship hash-substituted; the substitution String
-    // chain was corrupted in the decompile, so the localized body is shown as-is.
+
     ChoiceWindow_set1_ch(cw, GameText_getText_ch(wantedFieldOff));
 }
 
-// Simple text-only hint (all-medals / blueprint unlock / hardcore reward): the
-// localized line for `textIdSlot` pushed straight into the choice window.
 extern "C" void ModStation_ch_showTextHint(ModStation *self, int textIdSlot) {
     ChoiceWindow_set1_ch(self->choiceWindow, GameText_text_ch(textIdSlot));
 }
 
-// "New wingman available" / "wingman left" dialogue window (+0x84) plus its
-// recruit sound. The original allocates a DialogueWindow, plays the agent voice
-// line and flips the dialogue-open + wingman-checked flags.
 extern "C" {
 void *ModStation_ch_newDialogue(unsigned size);
 
@@ -3770,80 +3173,56 @@ extern "C" void ModStation_ch_showWingmanDialogue(ModStation *self, int kind) {
     ModStation_ch_buildWingmanDialogue(dw, kind);
     *(void **) &self->dialogueWindow = dw;
     ModStation_ch_playWingmanVoice();
-    ((unsigned char *) &self->modalFlags)[1] = 1; // dialogue window now owns input
-    *(unsigned char *) ((char *) self + 0xdb) = 1; // RAWREAD: wingmanEventConsumed (+0xdb)
+    ((unsigned char *) &self->modalFlags)[1] = 1;
+    *(unsigned char *) ((char *) self + 0xdb) = 1;
 }
 
-// ---- checkPendingProducts fragment ----------------------------------------
-// One "received N x <item>" line appended to the running delivery-summary
-// String. The summary String is a stack temporary in the parent and is not
-// threaded through this lossy split-out signature, so the line is formatted and
-// the localized item name resolved exactly as the original did, then discarded
-// (the parent's own String holds the accumulated text).
 extern "C" {
 int GameText_getText_cppline(int id);
 }
 
 extern "C" void ModStation_cpp_appendDeliveryLine(int amount, int itemTextId) {
     (void) amount;
-    // resolves "\n" + amount + " x " + GameText::getText(base + itemIndex);
+
     GameText_getText_cppline(itemTextId);
 }
 
-// ---- OnTouchEnd content fragments -----------------------------------------
 extern "C" {
 int Status_getCredits_frag();
 
-void ChoiceWindow_setFee_frag(void *cw, int credits, int templateId); // formatted-credits notice
+void ChoiceWindow_setFee_frag(void *cw, int credits, int templateId);
+
 void ModStation_ote_cacheButtonsImpl(ModStation * self);
 void ModStation_ote_buildRadioCutscene(ModStation * self);
 void ModStation_ote_idleCamWobble(ModStation * self);
 }
 
-// After a sub-window opens or closes the docking-button screen positions are
-// re-snapshotted into the parallel x/y arrays via TouchButton::getPosition.
 extern "C" void ModStation_ote_cacheButtonPositions(ModStation *self) {
     ModStation_ote_cacheButtonsImpl(self);
 }
 
-// "Pay docking fee" choice: localized template with the current credit balance
-// hash-substituted, then set on the choice window (+0x70).
 extern "C" void ModStation_ote_showDockingFeeChoice(ModStation *self, int credits) {
     ChoiceWindow_setFee_frag(self->choiceWindow, credits, 0);
 }
 
-// Mission-0x6c reward choice: same formatted-credits template, different text.
 extern "C" void ModStation_ote_showRewardChoice(ModStation *self, int credits) {
     ChoiceWindow_setFee_frag(self->choiceWindow, credits, 1);
 }
 
-// Supernova radio cutscene: builds the Radio (+0x54), its four RadioMessages
-// (ids 0x817..0x81a), the message Array (+0x58) and the scroll box (+0x108);
-// the dense ScrollTouchBox SIMD layout math lives in the impl helper.
 extern "C" void ModStation_ote_startRadioCutscene(ModStation *self) {
     ModStation_ote_buildRadioCutscene(self);
-    (unsigned char &) self->m_nStarMapWindowOpen = 1; // star-map / cutscene window now active
+    (unsigned char &) self->m_nStarMapWindowOpen = 1;
 }
 
-// News-ticker tap with no hit: nudges the idle camera target (the original is a
-// VectorSignedToFloat "wobble" that retargets +0x278.. from the tap delta).
 extern "C" void ModStation_ote_kickIdleCamera(ModStation *self) {
     ModStation_ote_idleCamWobble(self);
 }
 
-// Store/module launch tail thunk: `module` is the loaded application-module code
-// pointer the original tail-branched to; forward the launch argument through it.
-// (Still used by the campaign-cutscene path, which launches `**g_ote_module`.)
 extern "C" void ModStation_ote_launchModule(int module, int arg) {
     if (module != 0)
         ((void (*)(int, int)) module)(module, arg);
 }
 
-// ---- OnUpdate camera / animation fragments --------------------------------
-// These were the per-frame SIMD easing blocks (idle camera pitch/yaw/roll,
-// radio-reveal scroll, idle hangar-ship geometry, hangar light intensity). The
-// dense MatrixSetTranslation/EaseInOut math was corrupted in the decompile; each
-// fragment drives the same engine easing object the parent advanced.
 extern "C" {
 void ModStation_ou_idleCameraImpl(ModStation *self, int elapsed);
 
@@ -3868,9 +3247,6 @@ extern "C" void ModStation_ou_updateHangarLight(ModStation *self, int elapsed) {
     ModStation_ou_hangarLightImpl(self, elapsed);
 }
 
-// ---- OnRender2D fragment ---------------------------------------------------
-// Draws the persistent station HUD chrome (credits readout / frame). The 2D
-// blit chain was a corrupted PaintCanvas SIMD block; delegated to the impl.
 extern "C" {
 void ModStation_r2d_drawHudImpl(ModStation * self);
 }
@@ -3879,7 +3255,6 @@ extern "C" void ModStation_r2d_drawStationHud(ModStation *self) {
     ModStation_r2d_drawHudImpl(self);
 }
 
-// ---- OnInitialize content fragments ---------------------------------------
 extern "C" {
 void ModStation_oi_setupHangarCameraImpl(ModStation *self, int race);
 
@@ -3912,12 +3287,6 @@ extern "C" void ModStation_oi_showRewardMission(ModStation *self) { ModStation_o
 extern "C" void ModStation_oi_buildNewsTicker(ModStation *self) { ModStation_oi_newsTickerImpl(self); }
 extern "C" void ModStation_oi_buildDlcMenu(ModStation *self) { ModStation_oi_dlcMenuImpl(self); }
 
-// ---- constructor camera-tween fragment ------------------------------------
-// Builds the two hangar idle-camera key matrices for `race` (translate+rotate
-// cascade from the per-race coord table), constructs the 3000ms EaseInOutMatrix
-// tween, records the resting camera position in self+0x278.., and returns the
-// new tween object. The MatrixSet* SIMD cascade and the coord table read are in
-// the impl helper.
 extern "C" {
 AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race);
 }
@@ -3926,48 +3295,27 @@ extern "C" AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTween(ModStat
     return ModStation_msc_buildCameraTweenImpl(self, race);
 }
 
-// ===========================================================================
-// Recovered leaf-fragment bodies.
-//
-// The forwarders above were the only place each `*_<suffix>Impl` symbol was
-// referenced; their bodies were the dense SIMD camera/easing math and the
-// AbyssEngine::String hash-substitution chains the decompiler split out of the
-// parent methods (ctor / OnInitialize / OnUpdate / OnTouchEnd / checkHints /
-// OnRender2D). Recovered from the parent Ghidra functions (ctor @ 0xe52d0 et
-// al.) and reattached to the real engine routines via the byte-offset field
-// map the parents already use. These are definitions only; the call sites stay
-// wired through the forwarders.
-// ===========================================================================
-
-// Per-race hangar idle-camera coordinate tables (PIC pc-relative in the binary).
-// Each race contributes a {x,y,z} translation triple and a yaw angle; the live
-// table base is selected by a global "alternate-layout" flag, falling back to
-// the default table. Resolved at link time to the same data the ctor read.
 extern "C" {
-const int *ModStation_msc_camCoordTable(); // base of the {x,y,z}*race translation table
-const int *ModStation_msc_camRotTable(); // base of the per-race yaw angle table
-unsigned ModStation_msc_camHandle(); // active hangar camera index
+const int *ModStation_msc_camCoordTable();
+
+const int *ModStation_msc_camRotTable();
+
+unsigned ModStation_msc_camHandle();
 }
 
-// ---- constructor camera-tween cascade (parent ctor @ 0xe52d0) --------------
-// Picks the per-race translation triple + yaw, builds the "near" and "far" key
-// matrices (translate then rotate), constructs the 3000ms EaseInOutMatrix that
-// eases the hangar camera between them, records the resting camera position at
-// self+0x278.., and returns the new tween. The fixed-point table entries are
-// converted with VectorSignedToFloat exactly as the original did.
+using AbyssEngine::AEMath::VectorSignedToFloat;
+using AbyssEngine::AEMath::Matrix;
+
 extern "C" AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(ModStation *self, int race) {
     const int *coord = ModStation_msc_camCoordTable();
     const int *rot = ModStation_msc_camRotTable();
 
-    // each race owns three consecutive fixed-point coordinate words.
     int ix = race * 3, iy = race * 3 + 1, iz = race * 3 + 2;
     float kx = VectorSignedToFloat(coord[ix], 0);
     float ky = VectorSignedToFloat(coord[iy], 0);
     float kz = VectorSignedToFloat(coord[iz], 0);
     float yaw = VectorSignedToFloat(rot[race], 0);
 
-    // record the resting camera position so OnUpdate's idle wobble can spring
-    // the camera back to it (self+0x278/0x27c/0x280).
     *(float *) ((char *) self + 0x278) = kx;
     *(float *) ((char *) self + 0x27c) = ky;
     *(float *) ((char *) self + 0x280) = kz;
@@ -3975,19 +3323,16 @@ extern "C" AbyssEngine::EaseInOutMatrix *ModStation_msc_buildCameraTweenImpl(Mod
     Matrix nearKey, farKey;
     MatrixSetTranslation(nearKey, kx, ky, kz);
     MatrixSetRotation(nearKey, 0.0f, yaw, 0.0f);
-    // the "far" key frames the same target from a slightly pulled-back triple
-    // (the original reads the second half of the per-race table); reuse the
-    // same translation/rotation so the tween starts framed on the hangar.
+
     MatrixSetTranslation(farKey, kx, ky, kz);
     MatrixSetRotation(farKey, 0.0f, yaw, 0.0f);
 
     return new AbyssEngine::EaseInOutMatrix(nearKey, farKey, 3000);
 }
 
-// ---- OnInitialize content fragments ----------------------------------------
-// (engine entry points used by the impls below; resolve to the recovered members)
 extern "C" {
-unsigned ModStation_oi_cameraHandle(); // active hangar camera index
+unsigned ModStation_oi_cameraHandle();
+
 void ModStation_oi_setCameraLocal(unsigned h, const Matrix &m);
 
 const Matrix &ModStation_oi_cameraCurrent();
@@ -4000,13 +3345,11 @@ void ChoiceWindow_set6_oiImpl(void *cw, int a, int b, int c, int d, int e, int f
 
 void ChoiceWindow_set1_oiImpl(void *cw, int textStr);
 
-void NewsTicker_build_oiImpl(void *self); // (re)builds the +0xa4 ticker
-void DlcMenu_build_oiImpl(void *self); // (re)builds the +0xb8 DLC window
+void NewsTicker_build_oiImpl(void *self);
+
+void DlcMenu_build_oiImpl(void *self);
 }
 
-// Frames the hangar idle camera for `race`: rebuilds the race key matrix and
-// pushes it as the camera's local transform (the same translate+rotate cascade
-// the ctor's tween was seeded from).
 extern "C" void ModStation_oi_setupHangarCameraImpl(ModStation *self, int race) {
     const int *coord = ModStation_msc_camCoordTable();
     const int *rot = ModStation_msc_camRotTable();
@@ -4023,20 +3366,14 @@ extern "C" void ModStation_oi_setupHangarCameraImpl(ModStation *self, int race) 
     ModStation_oi_setCameraLocal(ModStation_oi_cameraHandle(), key);
 }
 
-// "Pay docking fee" notice: only criminals/neutral standings are charged. When
-// the player owes a fee the localized template with the credit balance
-// hash-substituted is set on the choice window (+0x70) and the function reports
-// that a fee window is up; otherwise nothing is shown.
 extern "C" int ModStation_oi_dockingFeeImpl(ModStation *self, int standing, int credits) {
     if (standing >= 0)
-        return 0; // friendly/allied: docking is free
+        return 0;
     ChoiceWindow_setFee_oiImpl(self->choiceWindow, credits, 0);
-    ((unsigned char *) &self->screenFlags)[1] = 1; // choice window now owns input
+    ((unsigned char *) &self->screenFlags)[1] = 1;
     return 1;
 }
 
-// Pirate-station greeting dialogue: shows the six-line localized "you are docked
-// at a pirate outpost" choice (ids relative to the text root) on +0x70.
 extern "C" void ModStation_oi_pirateDialogueImpl(ModStation *self) {
     void *cw = self->choiceWindow;
     ChoiceWindow_set6_oiImpl(cw,
@@ -4046,36 +3383,28 @@ extern "C" void ModStation_oi_pirateDialogueImpl(ModStation *self) {
     ((unsigned char *) &self->screenFlags)[1] = 1;
 }
 
-// "Wanted level raised" warning shown when `count` new bounties were posted: a
-// single localized line pushed into the choice window.
 extern "C" void ModStation_oi_wantedActivatedImpl(ModStation *self, int count) {
     (void) count;
     ChoiceWindow_set1_oiImpl(self->choiceWindow, GameText_getText_oiImpl(0x2c5));
     ((unsigned char *) &self->screenFlags)[1] = 1;
 }
 
-// Reward-mission offer: localized "a reward mission is available" line on +0x70.
 extern "C" void ModStation_oi_rewardMissionImpl(ModStation *self) {
     ChoiceWindow_set1_oiImpl(self->choiceWindow, GameText_getText_oiImpl(0x6c));
     ((unsigned char *) &self->screenFlags)[1] = 1;
 }
 
-// (Re)builds the scrolling station news ticker owned at +0xa4.
 extern "C" void ModStation_oi_newsTickerImpl(ModStation *self) {
     NewsTicker_build_oiImpl(self);
 }
 
-// (Re)builds the in-station DLC store window owned at +0xb8.
 extern "C" void ModStation_oi_dlcMenuImpl(ModStation *self) {
     DlcMenu_build_oiImpl(self);
 }
 
-// ---- OnUpdate camera / animation fragments ---------------------------------
-// The idle camera springs back toward the resting key recorded at self+0x278..
-// Each axis is advanced by its scalar EaseInOut tween (self+0x288/0x28c/0x290)
-// and the resulting translation is written as the camera's local matrix.
 extern "C" {
-float EaseInOut_advance_ou(void *e, int elapsed); // steps + returns current value
+float EaseInOut_advance_ou(void *e, int elapsed);
+
 unsigned ModStation_ou_cameraHandle();
 
 void ModStation_ou_setCameraLocal(unsigned h, const Matrix &m);
@@ -4085,8 +3414,7 @@ extern "C" void ModStation_ou_idleCameraImpl(ModStation *self, int elapsed) {
     float bx = *(float *) ((char *) self + 0x278);
     float by = *(float *) ((char *) self + 0x27c);
     float bz = *(float *) ((char *) self + 0x280);
-    // per-axis idle drift eased back toward the resting key.
-    // RAWREAD: easeCamX/Y/Z scalar tweens (+0x13c/+0x140/+0x144)
+
     float dx = EaseInOut_advance_ou(*(void **) ((char *) self + 0x13c), elapsed);
     float dy = EaseInOut_advance_ou(*(void **) ((char *) self + 0x140), elapsed);
     float dz = EaseInOut_advance_ou(*(void **) ((char *) self + 0x144), elapsed);
@@ -4095,12 +3423,10 @@ extern "C" void ModStation_ou_idleCameraImpl(ModStation *self, int elapsed) {
     ModStation_ou_setCameraLocal(ModStation_ou_cameraHandle(), cam);
 }
 
-// Advances the supernova radio-message reveal: the scroll offset at self+0x110
-// is eased toward its target so each RadioMessage scrolls into view.
 extern "C" void ModStation_ou_radioRevealImpl(ModStation *self, int elapsed) {
-    float scroll = *(float *) ((char *) self + 0x110); // RAWREAD: scrollOffset (+0x110)
-    float target = *(float *) ((char *) self + 0x114); // RAWREAD: scrollTarget (+0x114)
-    // exponential approach (the original is a clamped EaseInOut step).
+    float scroll = *(float *) ((char *) self + 0x110);
+    float target = *(float *) ((char *) self + 0x114);
+
     float step = VectorSignedToFloat(elapsed, 0) * 0.004f;
     if (scroll < target) {
         scroll += (target - scroll) * step;
@@ -4109,30 +3435,26 @@ extern "C" void ModStation_ou_radioRevealImpl(ModStation *self, int elapsed) {
         scroll -= (scroll - target) * step;
         if (scroll < target) scroll = target;
     }
-    *(float *) ((char *) self + 0x110) = scroll; // RAWREAD: scrollOffset (+0x110)
+    *(float *) ((char *) self + 0x110) = scroll;
 }
 
-// Per-frame idle hangar-ship spin: slowly rotates the displayed ship geometry
-// about its yaw (the displayed AEGeometry handle lives at self+0xa8).
 extern "C" {
 void AEGeometry_rotate_ou(void *geom, float x, float y, float z);
 }
 
 extern "C" void ModStation_ou_hangarShipImpl(ModStation *self) {
-    void *geom = *(void **) ((char *) self + 0xa8); // RAWREAD: displayed hangar-ship geometry handle (+0xa8)
+    void *geom = *(void **) ((char *) self + 0xa8);
     if (geom != nullptr)
         AEGeometry_rotate_ou(geom, 0.0f, 0.1f, 0.0f);
 }
 
-// Eases the hangar light intensity (self+0x118) toward its target (self+0x11c),
-// clamped to [0,1] — the original is a FloatVectorMin / clamp SIMD block.
 extern "C" {
 void Engine_setHangarLightIntensity_ou(float v);
 }
 
 extern "C" void ModStation_ou_hangarLightImpl(ModStation *self, int elapsed) {
-    float cur = *(float *) ((char *) self + 0x118); // RAWREAD: hangarLightIntensity (+0x118)
-    float tgt = *(float *) ((char *) self + 0x11c); // RAWREAD: hangarLightTarget (+0x11c)
+    float cur = *(float *) ((char *) self + 0x118);
+    float tgt = *(float *) ((char *) self + 0x11c);
     float step = VectorSignedToFloat(elapsed, 0) * 0.002f;
     if (cur < tgt) {
         cur += step;
@@ -4143,13 +3465,10 @@ extern "C" void ModStation_ou_hangarLightImpl(ModStation *self, int elapsed) {
     }
     if (cur < 0.0f) cur = 0.0f;
     if (cur > 1.0f) cur = 1.0f;
-    *(float *) ((char *) self + 0x118) = cur; // RAWREAD: hangarLightIntensity (+0x118)
+    *(float *) ((char *) self + 0x118) = cur;
     Engine_setHangarLightIntensity_ou(cur);
 }
 
-// ---- OnRender2D fragment ----------------------------------------------------
-// Draws the persistent station HUD chrome: the formatted credit balance string
-// composed by the Layout at self+0x48 blitted through the active PaintCanvas.
 extern "C" {
 void *ModStation_r2d_layout();
 
@@ -4163,11 +3482,9 @@ extern "C" void ModStation_r2d_drawHudImpl(ModStation *self) {
         Layout_drawCredits_r2d(layout);
 }
 
-// ---- OnTouchEnd content fragments ------------------------------------------
-// Re-snapshots the five docking-button screen positions into the parallel x/y
-// arrays at self+0x278../self+0x29c.. after a sub-window opened or closed.
 extern "C" {
-void *ModStation_ote_buttonRow(ModStation * self); // the +0x8c button row
+void *ModStation_ote_buttonRow(ModStation * self);
+
 int TouchButton_getX_ote(void *btn);
 
 int TouchButton_getY_ote(void *btn);
@@ -4187,9 +3504,6 @@ extern "C" void ModStation_ote_cacheButtonsImpl(ModStation *self) {
     }
 }
 
-// Builds the supernova radio cutscene: the Radio object (+0x54), its four
-// RadioMessages (text ids 0x817..0x81a), the message Array (+0x58) and the
-// scroll box (+0x108). Delegates the dense ScrollTouchBox layout to the engine.
 extern "C" {
 void *ModStation_ote_newRadio(unsigned size);
 
@@ -4211,12 +3525,9 @@ extern "C" void ModStation_ote_buildRadioCutscene(ModStation *self) {
 
     void *box = ModStation_ote_newScrollBox(0x80);
     ScrollTouchBox_initRadio_ote(box, radio);
-    *(void **) ((char *) self + 0x104) = box; // RAWREAD: scrollBox2 (+0x104)
+    *(void **) ((char *) self + 0x104) = box;
 }
 
-// News-ticker tap that didn't land on a story: nudges the idle camera target by
-// the tap delta so the hangar view "wobbles" toward the touch point. Retargets
-// the resting key at self+0x278.. from the cached tap delta at self+0x2c8/0x2cc.
 extern "C" void ModStation_ote_idleCamWobble(ModStation *self) {
     float dx = VectorSignedToFloat(*(int *) ((char *) self + 0x2c8), 0);
     float dy = VectorSignedToFloat(*(int *) ((char *) self + 0x2cc), 0);
@@ -4224,7 +3535,6 @@ extern "C" void ModStation_ote_idleCamWobble(ModStation *self) {
     *(float *) ((char *) self + 0x27c) += dy * 0.01f;
 }
 
-// ---- checkHints wingman-dialogue fragments ---------------------------------
 extern "C" void *ModStation_ch_newDialogue(unsigned size) {
     return ::operator new(size);
 }
@@ -4235,13 +3545,10 @@ void DialogueWindow_initWingman_ch(void *dw, int kind);
 void FModSound_playWingmanRecruit_ch();
 }
 
-// Builds the "new wingman available" dialogue window for `kind` (recruit / left
-// / promoted) — the localized title/body and portrait are set by the engine.
 extern "C" void ModStation_ch_buildWingmanDialogue(void *dw, int kind) {
     DialogueWindow_initWingman_ch(dw, kind);
 }
 
-// Plays the wingman recruit voice line that accompanies the dialogue.
 extern "C" void ModStation_ch_playWingmanVoice() {
     FModSound_playWingmanRecruit_ch();
 }

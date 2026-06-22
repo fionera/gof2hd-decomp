@@ -5,7 +5,7 @@
 #include "engine/math/Transform.h"
 #include "engine/math/AEMath.h"
 #include "game/world/LevelScript.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "engine/audio/FModSound.h"
@@ -45,16 +45,15 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     this->detonationPosition = Vector{0.0f, 0.0f, 0.0f};
     this->cameraTargetOffset = Vector{0.0f, 0.0f, 0.0f};
 
-    // Pick the Explosion variant from the bomb type / weapon item.
     int explosionType;
     if (bombType == ITEM_SORT_EMP_BOMB) {
-        explosionType = 7; // EMP burst
+        explosionType = 7;
     } else if (bombType == ITEM_SORT_SHOCK_BLAST) {
-        explosionType = 0xb; // large nuke
+        explosionType = 0xb;
     } else if (gun->itemIndex == 0xe8) {
-        explosionType = 0xd; // special weapon
+        explosionType = 0xd;
     } else {
-        explosionType = 0; // default
+        explosionType = 0;
     }
 
     this->explosion = new Explosion(explosionType);
@@ -72,13 +71,10 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
     PaintCanvas *canvas = activeCanvas();
 
     if (!simpleMesh) {
-        // Normal launch: attach a pre-authored geometry, unless the weapon explicitly
-        // opts out (item 0xe8 with weaponType 0x22).
         int item = gun->itemIndex;
         bool customWeapon = item != 0xe8;
         int sel = customWeapon ? gun->weaponType : item;
         if (customWeapon && sel != ITEM_SORT_IONIZING_MISSILE) {
-            // Mesh id depends on the projectile model.
             uint16_t geomMesh = 0x395d;
             if (meshId == 0x395a) geomMesh = 0x395b;
             if (meshId == 0x3958) geomMesh = 0x3959;
@@ -97,8 +93,6 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
             delete geo;
         }
     } else {
-        // Simple-mesh path: build a transform tree from the bomb's own mesh plus a
-        // trail geometry, then re-parent it under the rocket transform.
         canvas->TransformCreate(this->meshTransformId);
         canvas->TransformAddMesh(this->meshTransformId, this->meshId, false);
 
@@ -114,13 +108,11 @@ BombGun::BombGun(Gun *gun, uint32_t meshId, int rocketArg, int bombType, bool si
         delete geo;
     }
 
-    // Two fixed rocket-cam offsets: camera (0, 450, -1400) and target (0, 0, 1700).
     this->cameraOffset = Vector{0.0f, 450.0f, -1400.0f};
     this->cameraTargetOffset = Vector{0.0f, 0.0f, 1700.0f};
 
     this->player = nullptr;
 
-    // Trail geometry attached to the active scene canvas.
     this->trailGeometry = new AEGeometry(canvas);
 }
 
@@ -167,9 +159,7 @@ void BombGun::update(int elapsed) {
                 transform->SetAnimationState((AbyssEngine::AnimationMode) 3, nullptr);
                 transform = (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
                 transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
-                // Snapshot the wrapped Player's pose matrix into the PlayerEgo body.
-                // This is a raw cross-object copy the recovery could not bind to a
-                // named PlayerEgo field, so it stays as an explicit memory move.
+
                 *(Matrix *) ((char *) player + 0x10) = *(const Matrix *) ((char *) player->player + 4);
                 sound()->play(0x45c, nullptr, nullptr, 0.0f);
             }

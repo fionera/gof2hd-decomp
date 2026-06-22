@@ -6,9 +6,9 @@
 
 struct FontMetrics {
     int field_0x0;
-    int lineHeight; // +0x4
-    int field_0x08[16]; // padding up to +0x48
-    int wrapMargin; // +0x48
+    int lineHeight;
+    int field_0x08[16];
+    int wrapMargin;
 };
 
 void ScrollTouchBox::setTextCentered(bool centered) {
@@ -69,12 +69,7 @@ void ScrollTouchBox::OnTouchBegin(int x, int y) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern String **g_ScrollTouchBox_defaultFont_135598;
 
 ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
@@ -95,12 +90,7 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
     this->font = *g_ScrollTouchBox_defaultFont_135598;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int **g_ScrollTouchBox_defaultWidth_13570c;
 
 void ScrollTouchBox::setText(AbyssEngine::String text) {
@@ -146,40 +136,15 @@ apply:
     this->velocity = (float) pull * 0.5f;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_ScrollTouchBox_canvas_135778;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *g_ScrollTouchBox_flag_135778;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FontMetrics **g_ScrollTouchBox_font_135778;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_ScrollTouchBox_rtl_135778;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_ScrollTouchBox_dirty_135778;
 
 void ScrollTouchBox::draw() {
@@ -249,26 +214,11 @@ void ScrollTouchBox::draw() {
     *g_ScrollTouchBox_dirty_135778 = 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_ScrollTouchBox_globals_135600;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FontMetrics **g_ScrollTouchBox_font_135600;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char g_ScrollTouchBox_empty_135600[];
 
 void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
@@ -280,7 +230,6 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
         this->lines = 0;
     }
 
-    // The font/colour slot id is stored directly in the font pointer field.
     this->font = (String *) (std::size_t) font;
     Array<String *> *lineArray = new Array<String *>();
 

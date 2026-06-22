@@ -2,9 +2,8 @@
 #define GOF2_LEVEL_H
 #include "game/world/StarSystem.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 #include "game/world/Route.h"
 #include "game/world/Waypoint.h"
@@ -24,7 +23,7 @@
 
 class Level {
 public:
-    LODManager *lodManager; // owning LOD manager (offset 0; Level is non-polymorphic)
+    LODManager *lodManager;
     int skyboxMesh;
     int field_08;
     int skyboxTexture;
@@ -32,8 +31,8 @@ public:
     int field_14;
     int field_18;
     int field_1c;
-    int killCountA; // friendly-fire kill tally
-    int killCountB; // player kill tally
+    int killCountA;
+    int killCountB;
     Objective *objectivesA;
     Objective *objectivesB;
     int field_30;
@@ -60,7 +59,7 @@ public:
     ParticleSystemManager *particleSystemMgr;
     ParticleSystemManager *field_80;
     ParticleSystemManager *particleRenderBoolPtr;
-    ParticleSystemManager *skybox2Mesh; // engine-trail PSM (legacy name)
+    ParticleSystemManager *skybox2Mesh;
     ParticleSystemManager *field_8c;
     ParticleSystemManager *field_90;
     ParticleSystemManager *field_94;
@@ -68,17 +67,17 @@ public:
     ParticleSystemManager *field_9c;
     LodMeshMerger *field_a0;
     Array<AEGeometry *> *field_a4;
-    Array<int> *field_a8; // value array; no element dtors
+    Array<int> *field_a8;
     int miningPlantIndex;
-    Array<KIPlayer *> *field_b0; // sentry guns; elements also owned via enemies
+    Array<KIPlayer *> *field_b0;
     int field_b4;
     int field_b8;
     int field_bc;
-    int missionPtr; // ctor argument
+    int missionPtr;
     BoundingVolume *collisionVolume;
-    float field_c8; // asteroid-field centre X (built in createAsteroids)
-    float field_cc; // asteroid-field centre Y
-    float field_d0; // asteroid-field centre Z
+    float field_c8;
+    float field_cc;
+    float field_d0;
     int field_d4;
     Waypoint *asteroidWaypoint;
     int field_dc;
@@ -95,7 +94,7 @@ public:
     Route *playerRoute;
     Route *friendRoute;
     Route *enemyRoute;
-    Array<void *> *messages; // opaque RadioMessage* elements
+    Array<void *> *messages;
     int enemiesLeft;
     int friendsLeft;
     int field_120;
@@ -114,17 +113,17 @@ public:
     uint8_t flashActive;
     uint8_t pad_159[3];
     int flashType;
-    int friendCount; // active friendly slot count
+    int friendCount;
     int field_164;
     int field_168;
-    int hostileCount; // trailing hostile slot count
-    int alienAttackTimer; // updateAlienAttackers accumulator
-    int orbitWaveTimer; // updateOrbit/updateMissionOrbit wave timer
+    int hostileCount;
+    int alienAttackTimer;
+    int orbitWaveTimer;
     int field_178;
     int field_17c;
     Route *field_180;
     int field_184;
-    uint16_t field_188; // low byte friendTurnedEnemy flag, high byte alarm flag
+    uint16_t field_188;
     uint8_t field_18a;
     uint8_t pad_18b;
     int field_18c;
@@ -133,7 +132,7 @@ public:
     int field_198;
     int field_19c;
     int field_1a0;
-    float skyRotX; // stored skybox Euler angles (built into sub_20c)
+    float skyRotX;
     float skyRotY;
     float skyRotZ;
     uint8_t field_1b0;
@@ -145,19 +144,19 @@ public:
     int supernovaFlareTexture;
     int field_1c8;
     int supernovaFlareMesh;
-    uint8_t sub_1d0[0x3c]; // skybox-matrix sub-object
-    uint8_t sub_20c[0x3c]; // cloud-layer matrix sub-object
-    uint8_t sub_248[0x3c]; // ring matrix sub-object
+    uint8_t sub_1d0[0x3c];
+    uint8_t sub_20c[0x3c];
+    uint8_t sub_248[0x3c];
     int field_284;
-    uint8_t field_288; // boss-present flag
-    uint8_t supernovaFlareActive; // supernova flare visible flag
+    uint8_t field_288;
+    uint8_t supernovaFlareActive;
     uint8_t pad_28a[2];
     int miningPlant;
     int numDeliveredOre;
     int numDeliveredPassengers;
     int field_298;
-    uint8_t field_29c; // attackWanted flag
-    uint8_t field_29d; // killWanted flag
+    uint8_t field_29c;
+    uint8_t field_29d;
     uint8_t field_29e;
     uint8_t pad_29f;
 
@@ -205,7 +204,6 @@ public:
 
     Array<KIPlayer *> *getGasClouds();
 
-    // `kind` is the item "sort" (ItemSort); kept as int so the mangled symbol matches the original.
     Gun *createGun(int idx, int owner, int kind, int hp, int dmg, int rate, int cool, int color);
 
     int createStaticObject(Waypoint *wp, int type, bool jitter);
@@ -218,8 +216,6 @@ public:
 
     void createRadioMessages(int set);
 
-    // Build the Array<BoundingVolume*> for a station/static-object collision mesh.
-    // `param` is unused; `kind` (as an int) selects station (<2000) vs static collision.
     void *getBoundingVolume(int param, AEGeometry *kind);
 
     PlayerEgo *getPlayer();
@@ -344,19 +340,12 @@ public:
 
     void incNumDeliveredPassengers(int delta);
 
-    // createRadioMessage(): hand the finished message queue to the player-ego's
-    // comm controller. A null queue clears the channel.
     void crm_dispatch(int egoComm, void *queue);
 };
 
-// Per-entry record of the case-8 radio-stage table (g_crm_table8). The table is a
-// flat array of 8-byte {imageID, textID} records, indexed as base + off*8. Each
-// entry feeds RadioMessage(textID, imageID, kind, delay): offset 0 is the image
-// argument (`arg` at Level.cpp:968 -> tbl[k*2]), offset 4 is the message text id
-// (tbl[k*2+1]).
 struct RadioStageEntry {
-    int radioStageEntry; // +0x00: image argument (imageID) for the RadioMessage
-    int textID; // +0x04: message text id for the RadioMessage
+    int radioStageEntry;
+    int textID;
 };
 
 #endif

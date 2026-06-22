@@ -54,4 +54,4 @@ namespace AbyssEngine {
         delete this->arr_38;
         delete this->arr_2c;
     }
-} // namespace AbyssEngine
+}

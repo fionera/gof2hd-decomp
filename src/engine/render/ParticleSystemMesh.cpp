@@ -342,7 +342,6 @@ int ParticleSystemMesh::init(uint32_t mesh, uint16_t firstPoint) {
 
     this->initialized = 1;
 
-    // The original tail-calls the per-system reset hook (vtable slot 2) to prime the system.
     this->reset();
     return 0;
 }

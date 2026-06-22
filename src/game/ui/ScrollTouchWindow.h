@@ -1,18 +1,16 @@
 #ifndef GOF2_SCROLLTOUCHWINDOW_H
 #define GOF2_SCROLLTOUCHWINDOW_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class ScrollTouchBox;
+#include "ScrollTouchBox.h"
 
 class ScrollTouchWindow {
 public:
-    ScrollTouchBox *scrollBox; // the scrollable content box
-    String title; // title text
-    uint8_t touchActive; // touch-active flag (set by OnTouchMove/End)
-    uint8_t hasFrame; // whether the window draws a frame
+    ScrollTouchBox *scrollBox;
+    String title;
+    uint8_t touchActive;
+    uint8_t hasFrame;
     int x;
     int y;
     int width;

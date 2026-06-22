@@ -145,4 +145,4 @@ namespace AbyssEngine {
         glVertexAttribPointer((uint32_t) loc_a_VertexColor[index], 4, 0x1406, 0, 0,
                               mesh->colors);
     }
-} // namespace AbyssEngine
+}

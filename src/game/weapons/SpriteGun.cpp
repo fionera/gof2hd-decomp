@@ -1,28 +1,13 @@
 #include "game/weapons/SpriteGun.h"
 #include "game/weapons/Gun.h"
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*SpriteGun_enemiesHandler_slot)(void *);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*SpriteGun_enemyHandler_slot)(void *);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*SpriteGun_updateHandler_slot)(void *);
 
 SpriteGun::SpriteGun(Gun * /*gun*/, int /*kind*/) {

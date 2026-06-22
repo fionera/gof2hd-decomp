@@ -2,45 +2,38 @@
 #define GOF2_PLAYERTURRET_H
 
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
 
-class Player;
-class AEGeometry;
-class Explosion;
-class Level;
+#include "game/ship/KIPlayer.h"
 
 class PlayerTurret : public KIPlayer {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
 
-    // ---- PlayerTurret-specific state (stored in base-class padding slots in the
-    // original 32-bit layout; modelled here as real members) ----
-    bool turretEnabled; // turret tracking/firing active
-    char field_0x3e; // set in ctor
-    bool isSentryGun; // sentry-gun vs ship-turret discriminator
-    Vector cachedPosition; // cached world position
-    Vector hostWorldOffset; // host mount offset rotated into world space
-    Vector aimPoint; // current aim/target point
-    int reviveFlag; // reset to 0 on revive
 
-    int frameDelta; // last update delta (ms)
-    int spawnInvulnTimer; // spawn invulnerability timer
-    int explosionTimer; // death/explosion timer
-    int pickEnemyTimer; // enemy re-acquisition / fire timer
-    int rotationAccum; // main-geometry rotation accumulator
-    int particleSystemId; // engine/death particle system id
-    Explosion *explosion; // death explosion
-    AEGeometry *baseGeometry; // base geometry
-    AEGeometry *turretGeometry; // turret (barrel) geometry
-    AEGeometry *helperGeometry; // helper/pivot geometry
-    Player *currentEnemy; // current target
-    Player *previousEnemy; // previous target
-    KIPlayer *turretHost; // host KIPlayer (mounted ship)
-    Vector hostOffset; // mount offset relative to host
-    int turretRange; // max acquisition range
+    bool turretEnabled;
+    char field_0x3e;
+    bool isSentryGun;
+    Vector cachedPosition;
+    Vector hostWorldOffset;
+    Vector aimPoint;
+    int reviveFlag;
+
+    int frameDelta;
+    int spawnInvulnTimer;
+    int explosionTimer;
+    int pickEnemyTimer;
+    int rotationAccum;
+    int particleSystemId;
+    Explosion *explosion;
+    AEGeometry *baseGeometry;
+    AEGeometry *turretGeometry;
+    AEGeometry *helperGeometry;
+    Player *currentEnemy;
+    Player *previousEnemy;
+    KIPlayer *turretHost;
+    Vector hostOffset;
+    int turretRange;
 
     PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z);
 

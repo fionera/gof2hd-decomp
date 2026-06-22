@@ -1,18 +1,18 @@
 #ifndef GOF2_MTITLE_H
 #define GOF2_MTITLE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/core/IApplicationModule.h"
 
 class MTitle : public IApplicationModule {
 public:
-    int renderPriority; // render priority (= 100)
-    uint32_t logoImage; // first logo image2d handle
-    uint32_t logoImage2; // second logo image2d handle
-    int step; // logo-sequence step (0,1 -> done at 2)
-    int timer; // elapsed-time accumulator for the current step
+    int renderPriority;
+    uint32_t logoImage;
+    uint32_t logoImage2;
+    int step;
+    int timer;
 
     MTitle();
 

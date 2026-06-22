@@ -1,7 +1,7 @@
 #include "engine/render/ParticleSystemSprite.h"
 
 #define GOF2_ENUM_BlendMode
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "externs.h"
 #include "platform/libc.h"
 
@@ -63,7 +63,7 @@ int ParticleSystemSprite::init(uint32_t spriteId, uint16_t idOffset) {
     this->spriteId = spriteId;
     this->idOffset = idOffset;
     this->initialized = 1;
-    // The original tail-calls the per-system reset hook (vtable slot 2) to prime the system.
+
     this->reset();
     return 0;
 }
@@ -88,7 +88,6 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t
     canvas->SetTexture(texture, 0);
     canvas->SetBlendMode(blend);
 
-    // Identity affine transform (3x4 rows + trailing vector).
     float m[16] = {
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
@@ -100,7 +99,6 @@ void ParticleSystemSprite::render(PaintCanvas *canvas, uint32_t handle, uint32_t
 }
 
 void ParticleSystemSprite::updateSingle(int index, float dt) {
-    // Active flag: sign bit of (flags << 24).
     if ((int) ((uint32_t) this->flags << 0x18) < 0)
         return;
 
@@ -112,7 +110,6 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
     int8_t *setIdx = this->setIndices;
     char *set = g_particleSetBase + (int) setIdx[index] * 0xa0;
 
-    // Age the particle.
     float age = VectorSignedToFloat(ages[index], 0);
     age = (float) (int) (age + dt);
     ages[index] = (int) age;
@@ -124,16 +121,13 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
         return;
     }
 
-    // Grow size.
     VectorSignedToFloat(*(int *) (set + 0x44), 0);
     pc->SpriteSystemAddSize(handle, id, (short) this->idOffset + (short) index);
 
-    // Colour.
     float ca, cr, cg, cb;
     _pss_interpolateColor(this, index, &ca, &cr, &cg, &cb);
     pc->SpriteSystemSetRGBA(handle, id, cg, 0.0f, cb, 0.0f);
 
-    // UV flipbook animation (when the set has frames at +0x9c).
     int frames = *(int *) (set + 0x9c);
     if (frames != 0) {
         int span = *(int *) (set + 0x28);
@@ -155,7 +149,7 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
 
             float *out = uv;
             float uvRot[4];
-            // UV rotation flag: sign bit of (flags2 << 30).
+
             if ((int) ((uint32_t) this->flags2 << 0x1e) < 0)
                 out = _pss_rotateUVs(this, uv, index, uvRot);
 
@@ -163,7 +157,6 @@ void ParticleSystemSprite::updateSingle(int index, float dt) {
         }
     }
 
-    // Integrate velocity into position.
     float pos[4] = {0, 0, 0, 0};
     pc->SpriteSystemAddPosition(handle, id, pos[1], 0.0f, pos[2]);
 }

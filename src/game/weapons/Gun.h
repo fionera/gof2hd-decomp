@@ -1,42 +1,37 @@
 #ifndef GOF2_GUN_H
 #define GOF2_GUN_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "engine/render/Sparks.h"
+
 #include "game/ItemSort.h"
-
-// Vector/Matrix are provided at global scope by common.h (math.h).
-
-class Player;
-class Sparks;
-class Item;
-class Level;
+#include "game/ship/Player.h"
 
 class Gun {
 public:
     int lastHitKIPlayer;
     Player *owner;
     unsigned count;
-    char *positions; // vertex buffer (byte-addressed Array<Vector>)
+    char *positions;
     int directionCount;
-    char *velocities; // velocity buffer (byte-addressed Array<Vector>)
+    char *velocities;
     int field_0x20;
     char *upVectors;
     int field_0x2c;
-    char *hitPositions; // impact points (byte-addressed Array<Vector>)
+    char *hitPositions;
     int level;
-    int *lifetimes; // projectile time-left buffer (new int[count])
+    int *lifetimes;
     uint8_t *hitFlags;
     int initialLifetime;
     int fireDelay;
-    uint8_t active; // +0x4c  gun-active flag (the "gun row" activeFlag read in PlayerEgo)
+    uint8_t active;
     uint8_t hitSmall;
 
     union {
         float pitchRate;
-        // +0x50  projectile speed / maneuver-rate scalar (ctor p7); PlayerEgo reads it as the rocket-control pitch rate
-        float field_0x50; // legacy alias other TUs (Gun.cpp/RocketGun.cpp/ObjectGun.cpp) still use
+
+        float field_0x50;
     };
 
     uint8_t field_0x54;
@@ -49,7 +44,7 @@ public:
     int delayTimer;
     int ammoCount;
     int field_0x78;
-    Vector offset; // muzzle offset
+    Vector offset;
     uint8_t ignited;
     char field_0x89;
     int32_t field_0x8c;
@@ -60,7 +55,7 @@ public:
     int field_0xa4;
     uint8_t field_0xa8;
     uint8_t delayActive;
-    char *wobbleOffsets; // Array<Vector*> (byte-addressed header)
+    char *wobbleOffsets;
     float field_0xb0;
     Array<Player *> *enemies;
     Sparks *impact;
@@ -69,18 +64,18 @@ public:
     int field_0xcc;
     int field_0xd0;
     int field_0xd4;
-    Vector targetDir; // direction toward target; .z reused as render translation
-    Vector velocity; // cached muzzle velocity (dir * speed)
+    Vector targetDir;
+    Vector velocity;
     uint8_t playerGun;
     int slotIndex;
     uint8_t levelCollision;
     uint8_t friendGun;
-    float errorMagnitudePercentage; // +0xfc
-    int magnitude; // +0x100
-    int customRadius; // +0x104
-    uint8_t homing; // +0x108
-    int *geometries; // +0x10c  per-projectile transform handles (new int[count])
-    uint8_t *randomFlags; // +0x110  per-projectile random flags (new uint8_t[count])
+    float errorMagnitudePercentage;
+    int magnitude;
+    int customRadius;
+    uint8_t homing;
+    int *geometries;
+    uint8_t *randomFlags;
 
     Gun(int kind, int p2, int count, int p4, int p5, int p6, float p7, Vector dir, Vector vel);
 

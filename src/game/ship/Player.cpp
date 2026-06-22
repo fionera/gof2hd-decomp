@@ -482,7 +482,7 @@ void Player::addEnemies(Array<Player *> *enemies) {
 
 Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int numTertiary) {
     Player * self = this;
-    // transform[] is the raw storage of the 3x4 matrix at +0x04; default-init it in place.
+
     *reinterpret_cast<AbyssEngine::AEMath::Matrix *>(self->transform) = AbyssEngine::AEMath::Matrix();
     self->shieldHP = 0.0f;
     self->armorHP = 0;
@@ -617,7 +617,7 @@ void Player::damageEmp(int amount, bool flag) {
                 runLab = false;
             }
         }
-        // LAB_000b3016
+
         if (runLab && self->alwaysEnemy == 0 && self->kiPlayer->isWingMan() == 0 &&
             (unsigned int) (self->kiPlayer->shipGroup - 9) > 1 &&
             gStatus->getSystem() != 0) {
@@ -657,7 +657,6 @@ void Player::damageEmp(int amount, bool flag) {
             goto lab_30e2;
         }
         if (*(char *) ((char *) ki + 0x3d) != 0) {
-            // RAWREAD: ki+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
             goto lab_30f4;
         }
         if (ki->field_0x42 != 0) {
@@ -694,7 +693,7 @@ void Player::damageEmp(int amount, bool flag) {
     }
 
 lab_3164:
-    // LAB_000b3164
+
     float f = (float) self->empData;
     self->empDisabled = 1;
     self->empPoints = 0;
@@ -806,7 +805,7 @@ void Player::reset() {
     self->shieldHP = shield;
     ((Player *) (self))->updateDamageRate();
     self->vulnerable = 1;
-    self->active = 1; // active = 1, damaged = 0
+    self->active = 1;
     self->field_54 = 0;
     self->destroyed = 0;
     self->damageDoneByPlayer = 0;
@@ -820,7 +819,7 @@ void Player::reset() {
     self->bombForce = 0;
     self->empForce = 0;
     (self->pad_dd[0]) = 0;
-    (((uint8_t *) &self->empForce)[1]) = 0; // RAWREAD: byte at +0xd9 punned through empForce (no modeled field)
+    (((uint8_t *) &self->empForce)[1]) = 0;
 }
 
 void Player::addGun(Gun *gun, int slot) {
@@ -854,7 +853,6 @@ void Player::calcWeaponSounds(int count) {
         int *table = g_cws_items;
         do {
             for (; i < (int) n; i++) {
-                // RAWREAD: g_cws_items is an int* into an opaque engine container; +4 = its data ptr
                 int *dataArr = *(int **) ((char *) (*(void **) table) + 4);
                 int a = ((Item *) (*(void **) &dataArr[order[i - 1]]))->getSinglePrice();
                 dataArr = *(int **) ((char *) table + 4);
@@ -1117,9 +1115,6 @@ void Player::damage(int amount, bool flag, int missionId) {
     }
 
 LAB_342a: {
-        // NOTE: the "g_damage_globals" holder actually resolves (GOT 0x22015c) to the
-        // Status singleton, not Globals (prior-session label was wrong). The write below
-        // targets a Status field at offset 0x110 as a 16-bit store.
         if (gStatus->inBlackMarketSystem() != 0) {
             KIPlayer *ki = self->kiPlayer;
             if (ki != 0 && ki->shipGroup == 8) {
@@ -1165,7 +1160,7 @@ LAB_3488: {
         int hp;
         KIPlayer *ki = self->kiPlayer;
         if (ki != 0 && ki->stealFlag == 0 && *(char *) ((char *) ki + 0x3d) == 0 &&
-            // RAWREAD: ki+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
+
             ki->field_0x42 != 0) {
             hp = self->hitpoints;
             if (__aeabi_idiv(self->maxHitpoints, 3) > hp) {
@@ -1183,7 +1178,7 @@ LAB_3488: {
             } else {
                 KIPlayer *ki2 = self->kiPlayer;
                 if (ki2 != 0 && ki2->stealFlag == 0 && *(char *) ((char *) ki2 + 0x3d) == 0 &&
-                    // RAWREAD: ki2+0x3d (no KIPlayer member at +0x3d; byte inside stealFlag int at 0x3c)
+
                     gStatus->inBlackMarketSystem() == 0) {
                     if (self->kiPlayer->field_0x42 == 0) {
                         void *st = (void *) (long) gStatus->getStanding();
@@ -1191,12 +1186,10 @@ LAB_3488: {
                     }
                     int mission = gStatus->getCampaignMission();
                     KIPlayer *ki3 = self->kiPlayer;
-                    // NOTE: original text-table key for this name lookup was dropped by the
-                    // decompiler; using missionId (the only contextual id) to keep it compiling.
+
                     void *txt = ((GameText *) (*g_damage_text[0]))->getText(missionId);
                     int cmp = (&ki3->name)->Compare_str((String *) txt);
                     if (missionId == 0xb3 && cmp == 0) {
-                        // Ghidra: mission->setStatusValue(mission->getStatusValue() + 1)
                         ((Mission *) (intptr_t) mission)->setStatusValue(
                             ((Mission *) (intptr_t) mission)->getStatusValue() + 1);
                     }
@@ -1215,11 +1208,10 @@ LAB_3488: {
         int slave = self->kiPlayer->field_0x10;
         if (slave != 0) {
             Player * other = *(Player **) (slave + 4);
-            // RAWREAD: slave+4 (slave is an untyped int handle, not a modeled class)
+
             other->vulnerable = 1;
             other->damage(amount);
             *(char *) (*(int *) (self->kiPlayer->field_0x10 + 4) + 0xc2) = 0;
-            // RAWREAD: slave+4, +0xc2 (untyped int handle)
         }
     }
 }
@@ -1299,7 +1291,8 @@ void Player::setMaxArmorHP(int value) {
 
 extern "C" const float k_shoot_inc;
 
-extern "C" void (**g_update_transform)(void *, void *, int); // DAT_b41e2 fn ptr table
+extern "C" void (**g_update_transform)(void *, void *, int);
+
 extern "C" const float k_update_a;
 extern "C" const float k_update_b;
 extern "C" const float k_update_c;
@@ -1394,7 +1387,6 @@ void Player::shoot(int a, int b, long long pos, bool flag, Matrix mat) {
                     ((Gun *) (g))->ignite();
                 } else if (g->itemIndex == (int) pos && g->fireDelay < g->timer) {
                     if (sortIdx < 0x1d && ((1u << (sortIdx & 0xff)) & mask) != 0) {
-                        // RAWREAD: byte at +0x69 of g->lifetimes (an int* projectile buffer, not a modeled class)
                         *(char *) ((intptr_t) g->lifetimes + 0x69) = 1;
                     }
                     ((Gun *) (g))->shoot(mat, flag, false);
@@ -1562,43 +1554,22 @@ extern "C" void Player_setUnknown(void *player, bool enabled) {
 }
 
 extern "C" void Player_addGun_a(void *player) {
-    // veneer -> Player::addGun(Gun*, int) at 0x7252c
     static_cast<Player *>(player)->addGun(static_cast<Gun *>(nullptr), 0);
 }
 
 extern "C" void Player_addGun_b(void *player) {
-    // veneer -> Player::addGun(Array<Gun*>*, int) at 0x72544
     static_cast<Player *>(player)->addGun(static_cast<Array<Gun *> *>(nullptr), 0);
 }
 
-// handler drops the player out of the active simulation.
 extern "C" void Player_setActive_(int player) {
     reinterpret_cast<Player *>(static_cast<__INTPTR_TYPE__>(player))->setActive(false);
 }
 
-// LevelScript autopilot routing: the warp/station autopilot helper branches into
-// the Player autopilot-target setter (veneer at DAT_001abc24 -> setAutoPilot,
-// 0x728d4). There is no static Player::setAutoPilotTarget body — it is a virtual
-// dispatch through the live vtable — so it is exposed as a forwarder the wiring
-// pass routes to the resolved virtual method.
 extern "C" void Player_setAutoPilotTarget(void *player, void *target) {
     (void) player;
     (void) target; /* virtual Player autopilot-target setter — resolved via vtable */
 }
 
-// =====================================================================
-// PlayerEgo weapon-fire dispatch (shootPrimary / shootSecondary / shootTurret).
-//
-// PlayerEgo::shoot(weapon, type) splits into three calls of the Player::shoot
-// family depending on weapon class:
-//   - type==1  -> secondary launch: Player::shoot(kind, lockIdx, pos, flag), int
-//   - turret   -> Player::shoot(2, weapon, ..., matrix) with a combined geometry
-//                 matrix supplied externally (the turret aims independently of the
-//                 hull transform)
-//   - else     -> primary fire: Player::shoot(type, weapon, pos, flag)
-// The (weapon, hi) pair is the low/high half of the 64-bit gun id/position the
-// canonical Player::shoot(int,int,long long,bool) overload consumes.
-// =====================================================================
 extern "C" int Player_shootPrimary(void *player, int kind, int weapon, int hi, int zero) {
     (void) zero;
     long long pos = ((long long) hi << 32) | (unsigned int) weapon;
@@ -1616,9 +1587,7 @@ extern "C" int Player_shootSecondary(void *player, int kind, int idx, int hi, in
 extern "C" int Player_shootTurret(void *player, int kind, int weapon, int hi,
                                   int flag, const void *matrix) {
     (void) flag;
-    // Turret fire aims through an externally-combined geometry matrix rather than
-    // the hull transform, so it routes through the matrix-taking secondary-launch
-    // overload Player::shoot(int, long long, bool, Matrix).
+
     const float *m = static_cast<const float *>(matrix);
     Matrix mat;
     for (int k = 0; k < 15; ++k) mat.m[k] = m[k];

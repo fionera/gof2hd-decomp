@@ -1,7 +1,7 @@
 #include "game/ship/PlayerWormHole.h"
 
 #include "engine/render/AEGeometry.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "engine/math/Transform.h"
 #include "engine/math/AEMath.h"
 #include "engine/core/GameText.h"
@@ -14,66 +14,26 @@
 #include "game/ui/Hud.h"
 #include "game/core/String.h"
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_playerWormHole_text;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern AbyssEngine::PaintCanvas **g_playerWormHole_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern AbyssEngine::PaintCanvas **g_playerWormHole_update_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Status **g_playerWormHole_update_status;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_playerWormHole_update_random;
 
 typedef int (*RandomNextIntFn)(void *random, int limit);
 
 typedef PlayerEgo *(*GetPlayerFn)(Level *level);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern RandomNextIntFn g_playerWormHole_update_randomAlien;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern RandomNextIntFn g_playerWormHole_update_randomNormal;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GetPlayerFn g_playerWormHole_update_getPlayer;
 
 static inline int wormholeSign(int value) {

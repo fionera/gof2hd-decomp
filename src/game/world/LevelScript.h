@@ -1,31 +1,25 @@
 #ifndef GOF2_LEVELSCRIPT_H
 #define GOF2_LEVELSCRIPT_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Level;
-class Hud;
-class Radar;
-class TargetFollowCamera;
-class Explosion;
-class AEGeometry;
+#include "Level.h"
+#include "game/ship/TargetFollowCamera.h"
 
 class LevelScript {
 public:
-    int m_nTimeLimit; // Level::getTimeLimit() snapshot
+    int m_nTimeLimit;
     int field_0x4;
     int field_0x8;
     int field_0xc;
-    uint16_t m_nFlags; // init 0x100
+    uint16_t m_nFlags;
     uint16_t field_0x12;
     TargetFollowCamera *m_pCamera;
     Level *m_pLevel;
-    int m_nState; // current scripted-event / start-sequence step id
-    uint16_t m_bStartSequence; // start-sequence active flag (init 1)
+    int m_nState;
+    uint16_t m_bStartSequence;
     uint8_t m_bStartSequenceOver;
-    int field_0x24; // mission cinematic timer/flag
+    int field_0x24;
     int field_0x28;
     int field_0x2c;
     int field_0x30;
@@ -37,13 +31,13 @@ public:
     int field_0x48;
     Matrix m_matrix;
     int field_0x8c;
-    int m_nScriptTimerA; // +0x90 mission script timer
-    int m_nScriptCounterA; // +0x94 mission script counter
-    int m_nScriptTimerB; // +0x98 mission script timer
-    int m_nScriptCounterB; // +0x9c mission script counter
+    int m_nScriptTimerA;
+    int m_nScriptCounterA;
+    int m_nScriptTimerB;
+    int m_nScriptCounterB;
     int field_0xa0;
     int field_0xa4;
-    uint8_t m_bRenderParticles; // +0xa8 enables the particle render pass
+    uint8_t m_bRenderParticles;
     AEGeometry *m_pParticleGeom0;
     AEGeometry *m_pParticleGeom1;
     AEGeometry *m_pParticleGeom2;

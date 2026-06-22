@@ -2,22 +2,18 @@
 #define GOF2_SPRITEGUN_H
 #include <cstdint>
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Gun;
-class Player;
+#include "Gun.h"
 
 class SpriteGun {
 public:
-    int32_t field_0x4; // zero-initialised; semantics not recovered
+    int32_t field_0x4;
 
     SpriteGun(Gun *gun, int kind);
 
     virtual ~SpriteGun();
 
-    // Virtual methods in vtable order: setEnemies, setEnemy, update, render.
     virtual void setEnemies(Array<Player *> *enemies);
 
     virtual void setEnemy(Player *enemy);

@@ -149,4 +149,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->positionLoc);
         glDisableVertexAttribArray(this->texCoordLoc);
     }
-} // namespace AbyssEngine
+}

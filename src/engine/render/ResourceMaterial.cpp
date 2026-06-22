@@ -41,7 +41,7 @@ namespace AbyssEngine {
         int unused;
         void *payload;
     };
-} // namespace AbyssEngine
+}
 
 extern "C" char *g_Portraits_ipadLargeFlag;
 extern "C" char *g_Portraits_ipad1440Flag;
@@ -68,7 +68,6 @@ addPortrait(AbyssEngine::PaintCanvas *canvas,
 void loadPortraits(AbyssEngine::Engine *engine) {
     AbyssEngine::PaintCanvas *canvas = engine->appManager->paintCanvas;
 
-    // Pick the per-device texture-name infix.
     const char *infix;
     if (*g_Portraits_ipadLargeFlag != 0)
         infix = "_ipad_large";

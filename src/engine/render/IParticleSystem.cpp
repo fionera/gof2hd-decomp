@@ -36,12 +36,7 @@ extern "C" void AERandom_dtor(void *self);
 
 extern "C" void AERandom_ctor(void *self);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *ParticleSet_definitions;
 
 void IParticleSystem::enableUpdate(bool enabled) {

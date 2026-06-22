@@ -1,17 +1,14 @@
 #ifndef GOF2_AEGEOMETRY_H
 #define GOF2_AEGEOMETRY_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/math/AEMath.h"
 #include "engine/math/Matrix.h"
 
-namespace AbyssEngine {
-    class PaintCanvas;
-} // real type in engine/render/PaintCanvas.h; pointer only
+
 using ::AbyssEngine::PaintCanvas;
-class LodMeshMerger; // engine/render/LodMeshMerger.h; pointer only (global scope)
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -26,8 +23,8 @@ namespace AbyssEngine {
         Vector MatrixGetPosition(const Matrix &m);
 
         Vector MatrixGetDir(const Matrix &m);
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
 struct AEGeomCanvas {
     static uint32_t TransformGetLocal(uint32_t canvas, uint32_t tf);
@@ -54,8 +51,6 @@ public:
     int32_t currentLod;
     PaintCanvas *canvas;
 
-    // rotation.xyz are the Euler angles; scalingX aliases the rotation block's
-    // fourth slot in the original layout, so it is kept as a sibling field.
     Vector rotation;
     float scalingX;
     float scalingY;
@@ -65,7 +60,6 @@ public:
     int32_t rotationOrder;
     int32_t lodCount;
 
-    // Per-LOD parallel arrays (length == lodCount), allocated lazily.
     uint32_t *lodTransforms;
     uint32_t *lodChildTransforms;
     uint16_t *lodMeshes;

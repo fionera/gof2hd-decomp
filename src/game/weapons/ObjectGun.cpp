@@ -211,7 +211,7 @@ void ObjectGun::update(int dt) {
             Player *owner = gun->owner;
             if (owner != nullptr) {
                 KIPlayer *ki = owner->getKIPlayer();
-                // RAWREAD: original-ABI byte 0x3f status flag; KIPlayer header is recompiled 64-bit so named offsets don't align.
+
                 if (ki != nullptr && F<uint8_t>(ki, 0x3f) != 0) {
                     this->hasGeometry = 1;
                     this->geometry = new AEGeometry(
@@ -244,7 +244,7 @@ void ObjectGun::update(int dt) {
         void *matrixSource = player;
         if (gun->isPlayerGun() == 0)
             matrixSource = (char *) &gun->owner;
-        // RAWREAD: matrixSource is an opaque void* (PlayerEgo or &owner); deref of slot 0 then +4 reaches the matrix payload.
+
         memcpy(&playerMatrix, (char *) F<void *>(matrixSource, 0x0) + 0x4, 0x3c);
 
         offsets.x = gun->offset.x;
@@ -289,7 +289,6 @@ void ObjectGun::update(int dt) {
         }
 
         if (gun->field_0xa4 != 0) {
-            // RAWREAD: 0xa5..0xa7 are barrel-mirror sub-bytes packed inside Gun::field_0xa4 (int); no separate named members.
             if (weapon == 0xb5) {
                 offsets.x = F<uint8_t>(gun, 0xa6) != 0 ? -1.5f : 1.5f;
             } else {
@@ -464,8 +463,7 @@ void ObjectGun::render() {
                 } else {
                     Player *player = (Player *) (uint64_t) this->level->getPlayer();
                     identity(&local);
-                    // RAWREAD: PlayerEgo::maneuverParam / field_0x80 (orig ABI 0x7c/0x80) and the orig-ABI 0x40 matrix,
-                    // reached through a Player* local that is really a PlayerEgo*; recompiled 64-bit header offsets don't align.
+
                     MatrixSetRotation(&scaleMatrix, F<float>(player, 0x7c), F<float>(player, 0x80), 0.0f);
                     AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) ((char *) player + 0x40), local);
                     this->orientation = *(const Matrix *) ((char *) player + 0x40);

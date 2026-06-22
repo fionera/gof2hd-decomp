@@ -1,25 +1,21 @@
 #ifndef GOF2_LISTITEM_H
 #define GOF2_LISTITEM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Agent;
-class BluePrint;
-class Item;
-class Mission;
-class PendingProduct;
-class Ship;
+#include "game/mission/BluePrint.h"
+#include "game/mission/Mission.h"
+#include "game/mission/PendingProduct.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
 
 class ListItem {
 public:
-    Array<AbyssEngine::String *> *lines; // text lines
+    Array<AbyssEngine::String *> *lines;
     Agent *agent;
     BluePrint *bluePrint;
     Ship *ship;
-    // item / selectable / slot / buttonKind are also read by Hud.cpp and HangarList.cpp via
-    // their legacy field_0xNN names; an anonymous union keeps both spellings available.
+
     union {
         Item *item;
         Item *field_0x10;
@@ -27,8 +23,9 @@ public:
 
     Mission *mission;
     PendingProduct *pendingProduct;
-    AbyssEngine::String *name; // owned String (title)
-    AbyssEngine::String *name2; // owned String (subtitle)
+    AbyssEngine::String *name;
+    AbyssEngine::String *name2;
+
     union {
         uint8_t selectable;
         uint8_t field_0x24;
@@ -37,36 +34,38 @@ public:
     union {
         int slot;
         int field_0x28;
-    }; // slot index / medal tier (-1 sentinel)
-    // itemId / inTabIndex are also read by Hud.cpp, HangarWindow.cpp and HangarList.cpp via
-    // their legacy field_0xNN names; anonymous unions keep both spellings available.
+    };
+
     union {
         int itemId;
         int field_0x2c;
-    }; // -1 sentinel
+    };
+
     union {
         int buttonKind;
         int field_0x30;
-    }; // 0=sell, 1=move-to-cargo
-    int imageIndex; // -1 sentinel / image index
+    };
+
+    int imageIndex;
     uint8_t textButton;
 
     union {
         int inTabIndex;
         int field_0x3c;
-    }; // -1 sentinel / tab index
+    };
+
     union {
         int subTabIndex;
         int field_0x40;
-    }; // -1 sentinel / tab index
-    uint8_t text; // text flag
+    };
+
+    uint8_t text;
+
     union {
         uint8_t craftable;
         uint8_t field_0x45;
-    }; // blueprint craftable tint flag (read @HangarWindow render 0x1598e0)
+    };
 
-    // Exactly one payload pointer is set per overload. The String overloads take the
-    // engine String by pointer and deep-copy it into an owned title/subtitle String.
     ListItem(Agent *a);
 
     ListItem(Array<AbyssEngine::String *> *arr);
@@ -93,7 +92,8 @@ public:
 
     ListItem(ListItem *src);
 
-    ListItem(int v); // also the "slot" entry
+    ListItem(int v);
+
     ListItem(int a, int b);
 
     ListItem(int a, int b, AbyssEngine::String *src);

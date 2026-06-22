@@ -1,5 +1,5 @@
 #include "engine/core/GameText.h"
-GameText *gGameText = nullptr; // canonical localized-text singleton
+GameText *gGameText = nullptr;
 #include "engine/file/AEFile.h"
 #include "platform/libc.h"
 
@@ -52,7 +52,6 @@ void GameText::setLanguage(short stringCount, int langId) {
 
     String path(gLangPathDefault);
 
-    // Arabic-class languages (1..9, 12..15) retain their id for shaping; others map to 0.
     unsigned short code;
     const char *p;
     switch (langId) {
@@ -111,7 +110,6 @@ void GameText::setLanguage(short stringCount, int langId) {
     path = String(p);
     *g_langCode = code;
 
-    // Fall back to English when the selected file is absent.
     if (AEFile::FileExist(path) == 0) {
         path = String(gLangPathEnglish);
         *g_langCode = 0;
@@ -157,19 +155,18 @@ GameText::GameText() {
     String tmp(gInitLangStr);
 }
 
-extern const unsigned int gArabForms[]; // 41 rows * 5 {base, isolated, final, initial, medial}
-extern const unsigned int gLamAlef[]; // first-letter map (10)
-extern const unsigned int gLamAlefForms[]; // 0x29 rows * 5
+extern const unsigned int gArabForms[];
+extern const unsigned int gLamAlef[];
+extern const unsigned int gLamAlefForms[];
 
 static inline bool isJoiner(unsigned short c) {
     return c >= 0x600 && c != 0x60c && c != 0x61f;
 }
 
 String GameText::convertStringFromArabic(String in) {
-    // Working copy of the wide buffer (length + NUL).
     String work;
     work.ctor_wchar(in.index(0), false);
-    unsigned int len = work.size(); // character count
+    unsigned int len = work.size();
 
     unsigned short *buf = new unsigned short[len + 1];
     memcpy(buf, work.index(0), (unsigned long) (len * 2 + 2));
@@ -180,7 +177,6 @@ String GameText::convertStringFromArabic(String in) {
 
     while (true) {
         if (i > 0x7fffffff) {
-            // Underflowed past 0: finished. Emit the reshaped buffer.
             String result;
             result.ctor_wchar(buf, false);
             delete[] buf;
@@ -191,7 +187,6 @@ String GameText::convertStringFromArabic(String in) {
             unsigned short prev = *in.index(i - 1);
             unsigned short cur = *in.index(i);
             if (prev == 0x644) {
-                // LAM + ALEF-family ligature.
                 unsigned short form = 2;
                 switch (cur) {
                     case 0x622: form = 5;
@@ -204,7 +199,6 @@ String GameText::convertStringFromArabic(String in) {
                 }
                 buf[i] = form;
 
-                // Splice: keep [0,i-1) and [i+1,end), join via SubString + addAssign.
                 String merged;
                 merged.ctor_wchar(buf, false);
                 String head, tail;
@@ -220,7 +214,6 @@ String GameText::convertStringFromArabic(String in) {
                 --i;
             }
 
-            // Map the LAM-ALEF result through the secondary form table.
             unsigned int k = 0;
             for (; k < 10; ++k)
                 if (gLamAlef[k * 4] == (unsigned int) prev)
@@ -238,7 +231,6 @@ String GameText::convertStringFromArabic(String in) {
                 }
             }
         } else {
-            // i == 0: standalone first letter contextual form.
             for (unsigned int r = 0; r < 0x334 / 20; ++r) {
                 const unsigned int *row = &gArabForms[r * 5];
                 if (row[0] == (unsigned int) buf[0]) {
@@ -282,7 +274,6 @@ AbyssEngine::String *GameText::getText(int key) {
         return &s5001;
     }
 
-    // Remap via the substitute pair-table: entries are (from, to) int pairs.
     uint32_t pairCount = (uint32_t) this->substitutes.size();
     int *pairs = this->substitutes.data();
     for (uint32_t i = 0; i < pairCount; i += 2) {
@@ -311,7 +302,7 @@ void GameText::ReadLangFile(unsigned int file, int count) {
             this->release();
             break;
         }
-        // Length field is stored big-endian; byte-swap to host order.
+
         unsigned int byteLen = (unsigned int) ((len >> 8) | (len << 8)) & 0xffff;
 
         char *utf8 = new char[byteLen + 1];

@@ -10,19 +10,9 @@ void TouchSlider::setPosition(int x, int y) {
     this->knobX = (int) (knobBase + this->value * trackRange);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_TouchSlider_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_TouchSlider_app;
 
 TouchSlider::TouchSlider(int type, int x, int y, float value) {
@@ -47,13 +37,11 @@ TouchSlider::TouchSlider(int type, int x, int y, float value) {
     this->trackWidth = (*canvas)->GetImage2DWidth(this->trackImage);
     this->trackHeight = (*canvas)->GetImage2DHeight(this->trackImage);
 
-    // strh r5,[r4,#0x34]: 16-bit zero store clears both adjacent flag bytes
     this->isDragging = 0;
     this->isDisabled = 0;
     setPosition(x, y);
     this->numSteps = 0;
-    // RAWREAD: app object at g_TouchSlider_app is an unmodeled engine type;
-    // field at +0x7c is the global touch-padding/hit-slop value.
+
     this->touchPadding = *(int *) ((char *) *g_TouchSlider_app + 0x7c);
 }
 

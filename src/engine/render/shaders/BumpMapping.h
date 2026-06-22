@@ -1,31 +1,26 @@
 #ifndef GOF2_BUMPMAPPING_H
 #define GOF2_BUMPMAPPING_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class BumpMapping : public ShaderBaseStruct {
     public:
-        int a0Loc; // attribute a_position
-        int a1Loc; // attribute a_normal
-        int a2Loc; // attribute a_tangent
-        int a3Loc; // attribute a_binormal
-        int a4Loc; // attribute a_texCoord
-        int u0Loc; // uniform u_mvpMatrix
-        int u1Loc; // uniform u_lightDir
-        int u2Loc; // uniform u_texture
-        int u3Loc; // uniform u_normalMap
+        int a0Loc;
+        int a1Loc;
+        int a2Loc;
+        int a3Loc;
+        int a4Loc;
+        int u0Loc;
+        int u1Loc;
+        int u2Loc;
+        int u3Loc;
 
         static int ShaderIndex;
 
@@ -37,6 +32,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

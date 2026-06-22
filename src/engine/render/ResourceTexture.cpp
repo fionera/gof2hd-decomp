@@ -23,4 +23,4 @@ namespace AbyssEngine {
         delete[] this->name;
         this->name = nullptr;
     }
-} // namespace AbyssEngine
+}

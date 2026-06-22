@@ -1,26 +1,19 @@
 #ifndef GOF2_OBJECTIVE_H
 #define GOF2_OBJECTIVE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Level;
-class KIPlayer;
-
-namespace AbyssEngine {
-    struct String;
-}
+#include "game/world/Level.h"
 
 class Objective {
 public:
-    int type; // objective type discriminator
-    int value; // value / index parameter
-    int calcValue; // calc value / end-of-range parameter
-    Level *level; // owning level
-    Array<Objective *> *children; // child objectives
-    AbyssEngine::String *achievedText; // achieved-text message
-    int storedValue; // captured value when type == 0xd
+    int type;
+    int value;
+    int calcValue;
+    Level *level;
+    Array<Objective *> *children;
+    AbyssEngine::String *achievedText;
+    int storedValue;
 
     Objective(int type, int value, Level *level);
 

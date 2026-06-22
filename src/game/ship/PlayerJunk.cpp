@@ -65,9 +65,7 @@ void PlayerJunk::update(int elapsed) {
                 this->createCrate(3);
             } else {
                 this->player->setActive(false);
-                // The Level's player object holds a target reference at
-                // [0x14]->[0x1c]; clear it if it points at this junk (opaque
-                // Level-internal layout, not modelled here).
+
                 void *playerObj = (void *) this->level->getPlayer();
                 void **targetSlot = (void **) ((char *) *(void **) ((char *) playerObj + 0x14) + 0x1c);
                 if (*targetSlot == this)
@@ -82,8 +80,7 @@ void PlayerJunk::update(int elapsed) {
             zero.x = 0.0f;
             zero.y = 0.0f;
             zero.z = 0.0f;
-            // The Level holds the particle-system-manager handle at +0x74 and an
-            // emitter Vector* at +0x34 (opaque Level-internal layout).
+
             Level *level = this->level;
             int psManager = *(int *) ((char *) level + 0x74);
             Vector *emitter = *(Vector **) ((char *) level + 0x34);

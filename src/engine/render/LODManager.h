@@ -1,10 +1,10 @@
 #ifndef GOF2_LODMANAGER_H
 #define GOF2_LODMANAGER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/render/AEGeometry.h"   // Array<AEGeometry*> objects + addObject/removeObject
+
+#include "engine/render/AEGeometry.h"
 
 struct Touch {
     int x;

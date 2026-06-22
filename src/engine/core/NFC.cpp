@@ -292,10 +292,10 @@ bool IsInPrimaryMenu(int) {
     return !isStarMapVisible;
 }
 
-static int g_mouseHidden; // 1 while the emulated pointer is hidden
-static int g_mouseCaptured; // 1 while the pointer is captured for relative motion
-static int g_mouseConfig; // selected touch-control configuration
-static int g_useJoystick; // 1 while on-screen joystick input is enabled
+static int g_mouseHidden;
+static int g_mouseCaptured;
+static int g_mouseConfig;
+static int g_useJoystick;
 
 int HideMouse() {
     return g_mouseHidden;

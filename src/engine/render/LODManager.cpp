@@ -1,6 +1,6 @@
 #include "engine/render/LODManager.h"
 #include "engine/render/AEGeometry.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 #include <cstdlib>
 
@@ -12,8 +12,8 @@ uint32_t CameraGetCurrent(void *canvas);
 
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
-extern PaintCanvas **g_LOD_canvas; // *g_LOD_canvas = PaintCanvas*
-extern void *g_LOD_settings; // float at +0x28 = LOD distance factor
+extern PaintCanvas **g_LOD_canvas;
+extern void *g_LOD_settings;
 
 LODManager::LODManager() {
     this->cameraPos.x = 0;

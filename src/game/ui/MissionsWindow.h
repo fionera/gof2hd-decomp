@@ -1,39 +1,36 @@
 #ifndef GOF2_MISSIONSWINDOW_H
 #define GOF2_MISSIONSWINDOW_H
+#include "ChoiceWindow.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class ScrollTouchWindow;
-class StarMap;
-class ChoiceWindow;
-class WantedWindow;
-class TouchButton;
-class ImagePart;
+#include "ScrollTouchWindow.h"
+#include "WantedWindow.h"
+#include "engine/render/ImagePart.h"
+#include "game/world/StarMap.h"
 
 class MissionsWindow {
 public:
-    ScrollTouchWindow *m_pCampaignWindow; // +0x00 left (campaign) scroll window
-    ScrollTouchWindow *m_pFreelanceWindow; // +0x04 right (freelance) scroll window
-    StarMap *m_pStarMap; // +0x08 star-map overlay (active when m_starMapActive)
-    ChoiceWindow *m_pChoiceWindow; // +0x0c confirm/choice dialog
-    WantedWindow *m_pWantedWindow; // +0x10 wanted-board window (active when m_mode == 1)
-    Array<TouchButton *> *m_pTabButtons; // +0x14 tab buttons (campaign / freelance)
-    Array<ImagePart *> *m_pAgentImageParts; // +0x18 freelance-agent portrait image parts
-    int m_textHalfHeight; // +0x1c cached (font line height / 2 - 1)
-    uint8_t m_choiceActive; // +0x20 confirm dialog open flag
-    uint8_t m_field_0x21; // +0x21 secondary choice-window draw flag
-    uint8_t m_starMapActive; // +0x22 star-map overlay active flag
-    uint8_t m_hangarNeedsUpdate; // +0x23 hangar-needs-update flag
-    TouchButton *m_pAcceptButton; // +0x24 accept-mission button
-    TouchButton *m_pRejectButton; // +0x28 reject-mission button
-    TouchButton *m_pMapButton; // +0x2c show-on-map button
-    int m_x; // +0x30 window x
-    int m_y; // +0x34 window y
-    int m_width; // +0x38 window width
-    int m_height; // +0x3c window height
-    int m_mode; // +0x40 active mode (1 == wanted board)
+    ScrollTouchWindow *m_pCampaignWindow;
+    ScrollTouchWindow *m_pFreelanceWindow;
+    StarMap *m_pStarMap;
+    ChoiceWindow *m_pChoiceWindow;
+    WantedWindow *m_pWantedWindow;
+    Array<TouchButton *> *m_pTabButtons;
+    Array<ImagePart *> *m_pAgentImageParts;
+    int m_textHalfHeight;
+    uint8_t m_choiceActive;
+    uint8_t m_field_0x21;
+    uint8_t m_starMapActive;
+    uint8_t m_hangarNeedsUpdate;
+    TouchButton *m_pAcceptButton;
+    TouchButton *m_pRejectButton;
+    TouchButton *m_pMapButton;
+    int m_x;
+    int m_y;
+    int m_width;
+    int m_height;
+    int m_mode;
 
     MissionsWindow();
 

@@ -1,20 +1,15 @@
 #ifndef GOF2_CUBENORMALMAPPING_H
 #define GOF2_CUBENORMALMAPPING_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class CubeNormalMapping : public ShaderBaseStruct {
     public:
         int attribA0;
@@ -44,5 +39,5 @@ namespace AbyssEngine {
 
         void SetInActive() override;
     };
-} // namespace AbyssEngine
+}
 #endif

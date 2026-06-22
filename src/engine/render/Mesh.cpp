@@ -1,6 +1,6 @@
 #include "engine/render/Mesh.h"
 #include "engine/math/AEMath.h"
-#include "engine/math/Transform.h"   // real AbyssEngine::Transform (+ AEMath::BSphere)
+#include "engine/math/Transform.h"
 #include "engine/file/AEFile.h"
 
 namespace AbyssEngine {
@@ -8,6 +8,8 @@ namespace AbyssEngine {
 
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
@@ -17,7 +19,6 @@ namespace AbyssEngine {
     Mesh::Mesh(Mesh *src) {
         Mesh * self = this;
 
-        // Default-initialize the embedded bounding sphere (+0x3c) and Vector (+0x50).
         self->boundsCenterX = 0.0f;
         self->boundsCenterY = 0.0f;
         self->boundsCenterZ = 1.0f;
@@ -29,11 +30,9 @@ namespace AbyssEngine {
         if (src == 0)
             return;
 
-        // Make sure the source's arrays are resident in GL buffers before sharing them.
         if (src->vboEligible != 0)
             MeshConvertToVBO(src);
 
-        // Copy the embedded bounding sphere (center xyz, radius, radius^2).
         self->boundsCenterX = src->boundsCenterX;
         self->boundsCenterY = src->boundsCenterY;
         self->boundsCenterZ = src->boundsCenterZ;
@@ -64,11 +63,9 @@ namespace AbyssEngine {
         if (srcAnim == nullptr) {
             self->animation = nullptr;
         } else {
-            // Deep-copy the animation track via the Transform copy constructor.
             self->animation = new Transform(srcAnim);
         }
 
-        // Copy the embedded pivot Vector (xy used).
         self->pivotX = src->pivotX;
         self->pivotY = src->pivotY;
 
@@ -90,62 +87,80 @@ namespace AbyssEngine {
 
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxA; // position scalar
+    extern float *g_maxA;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxB; // position vector
+    extern float *g_maxB;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxC; // rotation scalar
+    extern float *g_maxC;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxD; // rotation vector
+    extern float *g_maxD;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxE; // scale scalar
+    extern float *g_maxE;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxF; // scale vector
+    extern float *g_maxF;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxG; // pivot
+    extern float *g_maxG;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
     )
-    extern float *g_maxH; // material/uv
+    extern float *g_maxH;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
@@ -153,6 +168,8 @@ namespace AbyssEngine {
     extern float *g_animRate;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
@@ -215,14 +232,12 @@ namespace AbyssEngine {
             }
             return true;
         }
-    } // namespace
+    }
 
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
         Mesh * self = this;
         Transform *anim = new Transform();
 
-        // Bounding sphere: center x/y/z and radius. The y/z pair is swapped and z negated to
-        // convert from the file's coordinate convention to the engine's.
         if (AEFile::Read(4, &self->boundsCenterX, file) == 0) goto fail;
         if (AEFile::Read(4, &self->boundsCenterY, file) == 0) goto fail;
         if (AEFile::Read(4, &self->boundsCenterZ, file) == 0) goto fail;
@@ -236,7 +251,6 @@ namespace AbyssEngine {
         {
             unsigned short type;
 
-            // --- Position track ---
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
                 if (!readVectorTrack(file, anim, g_maxB, 7)) goto fail;
@@ -244,7 +258,6 @@ namespace AbyssEngine {
                 if (!readScalarTrack(file, anim, g_maxA, 1, 4, 2, true)) goto fail;
             }
 
-            // --- Rotation track ---
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
                 if (!readVectorTrack(file, anim, g_maxD, 0x1c0)) goto fail;
@@ -252,7 +265,6 @@ namespace AbyssEngine {
                 if (!readScalarTrack(file, anim, g_maxC, 0x40, 0x80, 0x100, false)) goto fail;
             }
 
-            // --- Scale track ---
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
                 if (!readVectorTrack(file, anim, g_maxF, 0x38)) goto fail;
@@ -260,7 +272,6 @@ namespace AbyssEngine {
                 if (!readScalarTrack(file, anim, g_maxE, 8, 0x10, 0x20, false)) goto fail;
             }
 
-            // --- Optional pivot track (flags & 0x18, header type 2) ---
             if ((flags & 0x18) != 0) {
                 if (AEFile::Read(2, &type, file) == 0) goto fail;
                 if (type == 2) {
@@ -277,7 +288,6 @@ namespace AbyssEngine {
                 }
             }
 
-            // --- Optional material / uv track (flags & 0x10): up to 7 channels ---
             if ((flags & 0x10) != 0) {
                 unsigned short present;
                 if (AEFile::Read(2, &present, file) == 0) goto fail;
@@ -305,9 +315,6 @@ namespace AbyssEngine {
             }
         }
 
-        // Attach the track if it gathered any frames, otherwise discard it. The recovered
-        // code tested Transform's keyFrameCount slot; in the modernized Transform that count
-        // is the size of the embedded keyFrames Array.
         if (anim->keyFrames.size() < 1) {
             delete anim;
         } else {
@@ -322,4 +329,4 @@ namespace AbyssEngine {
         delete anim;
         return -1;
     }
-} // namespace AbyssEngine
+}

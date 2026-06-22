@@ -115,4 +115,4 @@ namespace AbyssEngine {
         }
         glUseProgram(this->program);
     }
-} // namespace AbyssEngine
+}

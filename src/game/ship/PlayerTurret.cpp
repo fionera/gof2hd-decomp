@@ -8,7 +8,7 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
 #include "game/world/Standing.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
 
 class Status {
@@ -16,7 +16,7 @@ public:
     int getStanding();
 };
 
-extern Status *gStatus; // canonical Status singleton (binary .bss 0x2281b0)
+extern Status *gStatus;
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -37,16 +37,17 @@ namespace AbyssEngine {
         Vector operator*(const Vector &, float);
 
         Matrix operator*(const Matrix &, const Matrix &);
-    } // namespace AEMath
+    }
+
     namespace AERandom {
         int nextInt(int rng, int max);
     }
-} // namespace AbyssEngine
+}
 
 extern FModSound **g_turretSound;
 extern int g_turretRandom;
 
-extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
+extern PaintCanvas *gCanvas;
 
 void PlayerTurret::setTurretRange(int range) {
     this->turretRange = range;
@@ -77,8 +78,7 @@ void PlayerTurret::render() {
         this->explosion->render();
         state = this->state;
     }
-    // Draw the inherited KIPlayer representation (the turret geometry) whenever the
-    // turret is not in the mid-explosion states (state in {3,4}).
+
     if ((uint32_t)(state - 3) >= 2) {
         this->KIPlayer::render();
     }

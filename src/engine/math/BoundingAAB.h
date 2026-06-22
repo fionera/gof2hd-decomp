@@ -1,9 +1,9 @@
 #ifndef GOF2_BOUNDINGAAB_H
 #define GOF2_BOUNDINGAAB_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/math/BoundingVolume.h"
 
 class BoundingAAB : public BoundingVolume {

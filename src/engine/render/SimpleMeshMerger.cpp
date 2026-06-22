@@ -2,7 +2,7 @@
 #include "engine/render/Mesh.h"
 #include "game/core/Vector.h"
 #include "engine/math/AEMath.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
@@ -18,7 +18,6 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
     this->matrixCount = (int) transforms.size();
     this->meshes.resize(meshIds.size());
 
-    // pass 1: load source meshes, accumulate vertex + triangle totals
     int16_t totalV = 0;
     int16_t totalI = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
@@ -30,12 +29,10 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
         totalI = (int16_t)(totalI + aeabi_uidiv16(m->indexCount, 3));
     }
 
-    // allocate the merged mesh, seeding its vertex-format flags from the first source mesh
     Mesh *m0 = this->meshes[0];
     canvas->MeshCreate((uint16_t) totalV, (uint16_t) totalI, (signed char) m0->vertexFormat,
                        flags, this->mergedMeshId);
 
-    // pass 2: copy transformed vertices and rebased triangles
     int16_t vtxBase = 0;
     int16_t triBase = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {

@@ -3,17 +3,10 @@
 #include "engine/core/Array.h"
 #include "AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
-namespace AbyssEngine {
-    class ApplicationManager;
-}
 
 using ::AbyssEngine::ApplicationManager;
 
-namespace AbyssEngine {
-    class PaintCanvas;
-}
 
 using ::AbyssEngine::PaintCanvas;
 
@@ -29,11 +22,6 @@ namespace AbyssEngine {
         virtual ~IApplicationModule() {
         }
 
-        // Default no-op virtual interface, in vtable order. Concrete modules
-        // (MTitle, ...) override the handlers they care about; the rest fall through
-        // to these inline passthrough stubs. The bodies are inline-in-class so the
-        // base only contributes them to its vtable -- exactly as the shipped binary,
-        // which emits no standalone out-of-line symbol for any of them.
         virtual int OnInitialize() { return 0; }
 
         virtual void OnRelease() {
@@ -79,6 +67,7 @@ namespace AbyssEngine {
 
         void SetApplicationManager(ApplicationManager *manager);
     };
-} // namespace AbyssEngine
+}
+
 using ::AbyssEngine::IApplicationModule;
 #endif

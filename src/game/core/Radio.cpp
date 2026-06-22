@@ -5,6 +5,7 @@
 #include "engine/render/ImageFactory.h"
 #include "engine/render/ImagePart.h"
 #include "engine/audio/FModSound.h"
+#include "engine/core/GameText.h"
 #include "game/ui/Layout.h"
 #include "game/ship/Agent.h"
 #include "game/core/Globals.h"
@@ -15,131 +16,41 @@ asm("_ZN8GameText7getTextEi");
 void Globals_drawLines(void *globals, String *font, Array<String *> *lines,
                        int x, int y);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Wanted *> **g_Radio_wantedRoot;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **g_Radio_imageFactoryCreate;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **g_Radio_imageFactoryLoad;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_Radio_imagePartTable[];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 GameText **g_Radio_gameText;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 String **g_Radio_fontNormal;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 String **g_Radio_fontWide;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Layout **g_Radio_layoutForText;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_Radio_globals;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char g_Radio_agentName[];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Layout **g_Radio_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int **g_Radio_screenWidth;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 FModSound **g_Radio_drawSound;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Layout **g_Radio_drawLayout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Wanted *> **g_Radio_drawWantedRoot;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 GameText **g_Radio_drawGameText;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **g_Radio_drawImageFactory;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_Radio_drawGlobals;
 
 static String radio_string_from_cstr(const char *c) {

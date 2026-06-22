@@ -12,21 +12,7 @@
 #include "engine/render/AEGeometry.h"
 #include "game/ship/Ship.h"
 
-namespace AbyssEngine {
-    namespace AEMath {
-        void MatrixGetPosition(Vector *out, const float *matrix);
-
-        void MatrixMultiply(const Matrix &lhs, const Matrix &rhs);
-
-        Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
-
-        float VectorLength(const Vector &value);
-
-        Vector operator+(const Vector &lhs, const Vector &rhs);
-
-        Vector operator-(const Vector &lhs, const Vector &rhs);
-    }
-}
+using AbyssEngine::Matrix;
 
 extern "C" void FModSound_resumeEvent(void *player, int channel);
 
@@ -73,7 +59,6 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     this->field_0xc8 = 0;
     this->spacePoints = 0;
 
-    // When a parent geometry is supplied (and it has a base transform) build a child group.
     bool haveChild = (geom != 0) && (geom->baseTransform != 0);
     if (geom != 0 && haveChild) {
         this->parentGeometry = geom;
@@ -444,13 +429,11 @@ void KIPlayer::captureCrate(Hud *hud) {
         if (amount < 1)
             continue;
 
-        // Randomise the captured amount unless we are in a "guaranteed" state.
         if ((unsigned) (this->state - 3) >= 2)
             amount = ((AbyssEngine::AERandom *) (*(void **) gAERandom))->nextInt();
 
         Status *status = gStatus;
 
-        // Clamp to the ship's free space.
         int free1 = status->getShip()->getFreeSpace();
         int amt = amount;
         if (free1 <= amount)
@@ -463,23 +446,20 @@ void KIPlayer::captureCrate(Hud *hud) {
                 amount = status->getShip()->getFreeSpace();
         }
 
-        // Resolve the item info and decrement the crate's remaining count.
         int itemId = (*this->cargo)[i];
-        // RAWREAD: gItemDb internal table (untyped ItemDb handle; no modeled class/layout)
+
         int infoPtr = *(int *) (*(char **) (*(char **) gItemDb + 4) + itemId * 4);
         Item *item = ((Item *) (intptr_t) infoPtr)->makeItem();
         (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
         if (item == 0)
             return;
 
-        // RAWREAD: player+0x5d (high byte of Player::enemyFlags @ +0x5c; no member at exactly +0x5d)
         if (*((char *) this->player + 0x5d) != 0)
             this->level->stealFriendCargo();
 
         if (this->stealFlag == 0)
             ((Standing *) (intptr_t) status->getStanding())->applyStealCargo(this->shipGroup);
 
-        // Determine whether this is a special (illegal) cargo item.
         bool special = false;
         if (this->carriesMissionCrate != 0) {
             int idx = item->getIndex();

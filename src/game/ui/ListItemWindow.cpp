@@ -9,7 +9,7 @@
 #include "engine/render/ImageFactory.h"
 #include "game/ui/Layout.h"
 #include "game/ui/ListItem.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 extern "C" void liw_set_buildShipPreview(void *self, void *item, void *layout);
 
@@ -17,19 +17,14 @@ extern "C" void liw_set_fillRows(void *self, void *item, void *layout, int isShi
 
 extern "C" void _liw_render_tail(void *c, int a, int h, void *sp);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int **g_liw_screen;
 
 void ListItemWindow::OnTouchBegin(int x, int y) {
     this->scrollWindow->OnTouchBegin(x, y);
     if (this->shows3DShipFlag &&
         this->x + (this->width >> 1) < x) {
-        Layout *obj = (Layout *) *g_liw_screen; // screen-state Layout
+        Layout *obj = (Layout *) *g_liw_screen;
         if (y < this->y + obj->field_0xc + obj->field_0x20 + this->previewHeight) {
             this->dragLastX = x;
             this->dragStartX = x;
@@ -71,19 +66,9 @@ void ListItemWindow::OnTouchEnd(int x, int y) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_liw_r_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_liw_r_obj;
 
 void ListItemWindow::render() {
@@ -93,7 +78,7 @@ void ListItemWindow::render() {
     PaintCanvas *canvas = *g_liw_r_canvas;
     canvas->Begin3d();
 
-    Layout *obj = (Layout *) *g_liw_r_obj; // layout/screen-state Layout
+    Layout *obj = (Layout *) *g_liw_r_obj;
     int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
     canvas->EnableClip(
@@ -110,53 +95,23 @@ void ListItemWindow::render() {
     _liw_render_tail((void *) canvas, 0, h, &dummy);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char **g_liw_s_fullscreen;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char **g_liw_s_modeFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char **g_liw_s_altFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_liw_s_screenW;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_liw_s_screenH;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_liw_s_layoutHolder;
 
 extern const float g_liw_s_wFull;
 extern const float g_liw_s_wAlt;
 extern const float g_liw_s_wMode;
-extern const unsigned int g_liw_s_baseAngle; // default preview angle bits
+extern const unsigned int g_liw_s_baseAngle;
 
 void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6) {
@@ -170,7 +125,6 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
 
     int w, h, x, y;
     if (*g_liw_s_fullscreen == 0) {
-        // borderless: window spans the whole screen origin.
         this->x = 0;
         this->y = 0;
         w = *g_liw_s_screenW;
@@ -180,7 +134,6 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         x = 0;
         y = 0;
     } else {
-        // pick width/height from the HUD-mode + language flags.
         float wf;
         if (**g_liw_s_modeFlag != 0) {
             h = 0x392;
@@ -198,17 +151,16 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         this->x = x;
         this->y = y;
     }
-    *(uint32_t *) &this->baseAngle = g_liw_s_baseAngle; // default preview angle bits
+    *(uint32_t *) &this->baseAngle = g_liw_s_baseAngle;
     layout->setWindowDimensions(x, y, h, w);
 
-    // Tear down the label array.
     if (this->labels != 0) {
         for (String *str: *this->labels) delete str;
         this->labels->clear();
         delete this->labels;
     }
     this->labels = 0;
-    // Tear down the value array.
+
     if (this->values != 0) {
         for (String *str: *this->values) delete str;
         this->values->clear();
@@ -224,24 +176,21 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         this->previewHeight = 0;
         this->shows3DShipFlag = 0;
     } else {
-        // progress bar height + 3D ship preview (transform/camera/light setup).
         this->previewHeight =
                 ((((this->height - layout->field_0xc) - layout->field_0x10) - layout->field_0x20) - layout->field_0x24)
                 / 2
                 - layout->field_0x2c;
-        *(uint32_t *) &this->previewAngle = g_liw_s_baseAngle; // default preview angle bits
+        *(uint32_t *) &this->previewAngle = g_liw_s_baseAngle;
         this->shows3DShipFlag = 1;
         liw_set_buildShipPreview(this, item, layout);
 
-        // ship stat rows need the two int arrays too.
         this->statsCur = new Array<int>();
         this->statsPrev = new Array<int>();
     }
 
-    // Inner scroll window, positioned below the preview / header.
     {
         int progH = this->previewHeight;
-        // selector: field_0x1c (row spacing) when a preview is shown, else field_0x5c.
+
         int sel = (progH > 0) ? layout->field_0x1c : layout->field_0x5c;
         int rowH = layout->field_0x2c;
         int sx = this->x + rowH + (this->width >> 1);
@@ -253,10 +202,8 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
         this->scrollWindow = new ScrollTouchWindow(sx, sy, sw, sh, false);
     }
 
-    // Populate the rows (ship stats / item attribute table / blueprint price).
     liw_set_fillRows(this, item, layout, isShip, p6);
 
-    // Reset the rotating-preview spin state.
     this->dragging = 0;
     this->previewAngle = 0.0f;
     this->dragAccum = 0x104;
@@ -295,75 +242,25 @@ ListItemWindow::~ListItemWindow() {
     this->scrollWindow = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *g_liw_d_maskFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_liw_d_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_liw_d_layout;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_liw_d_headerId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_liw_d_gameText;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageFactory **g_liw_d_imageFactory;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_liw_d_itemDB;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern String **g_liw_d_arrowL;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern String **g_liw_d_arrowR;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_liw_d_scrollLimit;
 
 void ListItemWindow::draw() {
@@ -416,13 +313,13 @@ void ListItemWindow::draw() {
 
             ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
-            char *L = (char *) layout; // RAWREAD: 0x124/0x2c8 have no named Layout member (sparse layout)
+            char *L = (char *) layout;
             fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c,
                           ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - i32(L, 0x2c8) /
                            2) + i32(L, 0x124));
         }
     } else {
-        char *L = (char *) layout; // RAWREAD: 0x124/0x2c8 have no named Layout member (sparse layout)
+        char *L = (char *) layout;
         int boxX = this->x, boxY = this->y, w = this->width;
         int c0c = layout->field_0xc, c20 = layout->field_0x20, c28 = layout->buttonInsetX, c2c = layout->field_0x2c;
         int color = layout->field_0x5c;
@@ -459,7 +356,6 @@ void ListItemWindow::draw() {
                                        i32(L, 0x2c8) / 2));
     }
 
-    // Visible value rows.
     Array<String *> *rows = this->labels;
     if (rows != 0) {
         uint32_t n = rows->size();
@@ -487,9 +383,9 @@ void ListItemWindow::draw() {
                     if (i < cur - 1) {
                         int a = (*this->statsCur)[i];
                         int b = (*this->statsPrev)[i];
-                        int trendImage = this->arrowEqualImage; // equal
-                        if (a < b) trendImage = this->arrowDownImage; // down
-                        if (b < a) trendImage = this->arrowUpImage; // up
+                        int trendImage = this->arrowEqualImage;
+                        if (a < b) trendImage = this->arrowDownImage;
+                        if (b < a) trendImage = this->arrowUpImage;
                         canvas->DrawImage2D(trendImage,
                                             ((this->x + (this->width >> 1)) - layout->field_0x2c) - this->
                                             arrowSeparator, 0);
@@ -517,7 +413,6 @@ void ListItemWindow::draw() {
         }
     }
 
-    // Footer / progress.
     if (this->previewHeight < 1) {
         String s;
         s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
@@ -556,20 +451,10 @@ void MatrixSetRotation(void *m, float x, float y, float z);
 
 extern "C" void MatrixSetScaling(void *m, float x, float y, float z);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern uint32_t *g_liw_u_tf; // preview transform handle
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern const float *g_liw_u_angleTable; // per-ship base angle
+
+extern uint32_t *g_liw_u_tf;
+
+extern const float *g_liw_u_angleTable;
 extern const float g_liw_u_angleScale;
 
 void ListItemWindow::update(int frameTime) {
@@ -612,19 +497,9 @@ void ListItemWindow::update(int frameTime) {
     this->previewGeometry->setRotation(tableAngle, tableAngle, tableAngle);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void ***g_liw_a;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void ***g_liw_b;
 
 ListItemWindow::ListItemWindow() {

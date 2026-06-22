@@ -164,4 +164,4 @@ namespace AbyssEngine {
         matrix.m[9] = (yz_minus + yz_minus) * inv;
         matrix.m[10] = ((-xx - yy) + zz + ww) * inv;
     }
-} // namespace AbyssEngine
+}

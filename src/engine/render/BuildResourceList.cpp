@@ -22,7 +22,7 @@ namespace AbyssEngine {
         unsigned short lo;
         unsigned short hi;
     };
-} // namespace AbyssEngine
+}
 
 void loadPortraits(AbyssEngine::Engine * engine);
 void loadLowTexturesAndMaterials(AbyssEngine::Engine * engine);
@@ -43,14 +43,13 @@ namespace {
         p->hi = hi;
         return p;
     }
-} // namespace
+}
 
 void BuildResourceList(AbyssEngine::Engine *engine) {
     using namespace AbyssEngine;
     PaintCanvas *canvas = engine->appManager->paintCanvas;
     canvas->TextureCreateGlobal(String("data/assets/main/3d/textures/low/etc/fx/cloak_map.aei"), 6);
 
-    // ---- Phase A: 2488-slot resource array ----
     static Resource *resources[2488] = {};
     resources[0] = makeRes(
         11742, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/suns/sn_sun_011.aei",
@@ -5142,12 +5141,10 @@ void BuildResourceList(AbyssEngine::Engine *engine) {
                                                 27301, false));
     canvas->SetResourceList(resources, 2488);
 
-    // ---- 152 generated image resources (ids 5000.., image variants 10200..) ----
     for (int i = 0; i < 152; ++i)
         canvas->AddResource(makeRes((unsigned short) (i + 5000), 3,
                                     newImage((unsigned short) (i + 10200), 0)));
 
-    // ---- Phase B: individual AddResource entries ----
     canvas->AddResource(
         makeRes(11635, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ar_1440.aei", 0.0f)));
     canvas->AddResource(

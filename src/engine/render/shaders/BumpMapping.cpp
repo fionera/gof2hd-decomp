@@ -60,4 +60,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->a3Loc);
         glDisableVertexAttribArray(this->a4Loc);
     }
-} // namespace AbyssEngine
+}

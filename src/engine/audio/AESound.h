@@ -4,13 +4,10 @@
 namespace AbyssEngine {
     class AESound {
     public:
-        // Open/prepare the named sample. The stub simply hands the name back.
         char *loadSound(const char *name);
 
-        // Free the backing resource.
         void unloadSound();
 
-        // Transport.
         void play();
 
         void play(float volume);
@@ -23,12 +20,10 @@ namespace AbyssEngine {
 
         void stop();
 
-        // State queries -- the stub always reports loaded/playing.
         int isPlaying();
 
         int loaded();
 
-        // Mixer parameters.
         void setGain(int gain);
 
         void setVolume(int volume);
@@ -37,9 +32,8 @@ namespace AbyssEngine {
 
         void setMusicVolume(int volume);
 
-        // Free the voice.
         void release();
     };
-} // namespace AbyssEngine
+}
 
 #endif

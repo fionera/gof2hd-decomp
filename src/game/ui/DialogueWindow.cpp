@@ -22,11 +22,9 @@
 template<class T>
 static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }
 
-// Foreign engine sound-configuration record. Only the auto-advance flag at +0xe
-// is referenced from this translation unit.
 struct EngineSoundConfig {
     char field_0x0[0xe];
-    uint8_t autoAdvanceEnabled; // +0xe: auto-advance dialogue pages when voice finishes
+    uint8_t autoAdvanceEnabled;
 };
 
 int DialogueWindow::OnTouchBegin(int x, int y) {
@@ -41,19 +39,9 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_briefingCounts[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_successCounts[];
 
 int DialogueWindow::getMode() {
@@ -150,12 +138,7 @@ bool DialogueWindow::isLastPage() {
     return this->page == len - 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_briefingDialogueIds[];
 
 bool DialogueWindow::hasBriefingDialogue(int id) {
@@ -163,12 +146,7 @@ bool DialogueWindow::hasBriefingDialogue(int id) {
     return g_dw_briefingDialogueIds[id] > 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_successDialogueIds[];
 
 bool DialogueWindow::hasSuccessDialogue(int id) {
@@ -198,54 +176,19 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_dw_gameTextLoad;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_soundLoad;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageFactory **g_dw_imageFactoryLoad;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_dw_emptyLoad[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_campaignBriefingTextIds[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_campaignSuccessTextIds[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void *g_dw_defaultClientImage;
 
 void DialogueWindow::loadContent() {
@@ -356,19 +299,9 @@ DialogueWindow::DialogueWindow() {
     this->init();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern EngineSoundConfig *g_dw_soundConfig;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_fmodSound;
 
 void DialogueWindow::update(int dt) {
@@ -390,40 +323,15 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_soundChoice;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_soundVoice;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_soundPrev;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_dw_soundNext;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_dw_gameTextTouchEnd;
 
 int DialogueWindow::OnTouchEnd(int x, int y) {
@@ -466,54 +374,19 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_briefingPartCounts[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_successPartCounts[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_dw_defaultAgentName[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_screenWidth;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_dw_layoutInit;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_screenHeight;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_dw_gameTextInit;
 
 static inline int half_round_to_zero(int v) {
@@ -588,33 +461,13 @@ int DialogueWindow::init() {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_dw_emptyString[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageFactory **g_dw_imageFactoryCtor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_dw_gameTextCtor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_dw_layoutCtor;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
@@ -656,26 +509,11 @@ DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->set(mission, kind, -1);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_germanBriefingTexts[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_germanSuccessTexts[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int g_dw_germanOtherTexts[];
 
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
@@ -718,68 +556,23 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     return *picked;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_drawGuard;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_dw_layoutDraw;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageFactory **g_dw_imageFactoryDraw;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_drawPositionsReady;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_moreButtonX;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_moreButtonY;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_nextButtonX;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_nextButtonY;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_dw_drawReadyFlag;
 
 void DialogueWindow::draw() {
@@ -860,6 +653,6 @@ extern "C" void DialogueWindow_dtor_ote(DialogueWindow *dw) {
 }
 
 extern "C" void DialogueWindow_draw_r2d(void *modStation) {
-    DialogueWindow *dw = ((ModStation *) modStation)->dialogueWindow;
+    DialogueWindow * dw = ((ModStation *) modStation)->dialogueWindow;
     if (dw != 0) dw->draw();
 }

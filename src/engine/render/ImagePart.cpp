@@ -1,19 +1,9 @@
 #include "engine/render/ImagePart.h"
 #include "engine/render/PaintCanvas.h"
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_ImagePart_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_ImagePart_draw_canvas;
 
 ImagePart::ImagePart(unsigned id, int field04, int posY) {

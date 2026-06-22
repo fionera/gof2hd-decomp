@@ -1,25 +1,22 @@
 #ifndef GOF2_REPAIRBEAM_H
 #define GOF2_REPAIRBEAM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/math/Vector.h"
+#include "Radar.h"
 
-class AEGeometry; // ::AEGeometry, engine/render/AEGeometry.h; pointer only
-class Radar; // ::Radar, game/weapons/Radar.h; pointer only
-class Level; // ::Level, game/world/Level.h; pointer only
-class Hud; // ::Hud, game/ui/Hud.h; pointer only
+#include "engine/math/Vector.h"
+#include "engine/render/AEGeometry.h"
 
 class RepairBeam {
 public:
-    int shipIndex; // sound-event array index
-    AbyssEngine::AEMath::Vector beamPosition; // current beam endpoint
-    Array<AEGeometry *> *geometries; // one beam geometry per target slot
-    Array<int> *targetIds; // target enemy slot, -1 = empty
-    Array<float> *charges; // per-target charge accumulator
-    int sort; // equipment sort (0x25 heal / 0x29 shield)
-    int timer; // re-arm countdown timer
+    int shipIndex;
+    AbyssEngine::AEMath::Vector beamPosition;
+    Array<AEGeometry *> *geometries;
+    Array<int> *targetIds;
+    Array<float> *charges;
+    int sort;
+    int timer;
 
     RepairBeam(int shipIndex, int sort);
 

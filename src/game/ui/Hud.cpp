@@ -206,33 +206,25 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     (void) t0;
     (void) t1;
 
-    // background/letterbox state recorded for the panel renderers
     this->letterbox = (unsigned char) letterbox;
 
-    // world-space HUD elements (reticle, target brackets, radar)
     drawReticleAndBrackets(this, ego, x, y);
     drawRadar(this);
 
-    // player status (shield / armor / energy bars + secondary weapon)
     drawBars(this, ego);
     drawSecondaryWeaponPanel(this);
 
-    // contextual banners
     drawOrbitInformation();
     drawMissionBanner(this);
 
-    // transient event lines
     drawEventQueue();
 
-    // the radial quick-menu, when open
     if (this->quickMenuOpen != 0)
         drawMenu(0);
 
-    // challenge-mode score/time readout
     if (gStatus != nullptr && gStatus->inSupernovaSystem() != 0)
         drawChallengeModeScoreImpl(this);
 
-    // pause button and any pending full-screen message
     drawPauseButton();
     if (this->messageActive != 0)
         drawMessage(this);
@@ -268,36 +260,16 @@ void Hud::updateQueue(int dt) {
     this->eventQueuePaused = v;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_oiLayout; // *holder -> layout (+0x21c..+0x228)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_oiStatus; // *holder -> status (+0x114)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_oiFont; // *holder -> font String
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern GameText **g_Hud_oiGameText; // *holder -> GameText
+
+extern void **g_Hud_oiLayout;
+
+extern void **g_Hud_oiStatus;
+
+extern void **g_Hud_oiFont;
+
+extern GameText **g_Hud_oiGameText;
 extern const char g_Hud_oiSep[] __attribute__((visibility("hidden")));
-extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden"))); // 4 x 12-byte RGB rows
+extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden")));
 
 void Hud::drawOrbitInformation() {
     if (gStatus->inAlienOrbit() != 0) return;
@@ -310,7 +282,7 @@ void Hud::drawOrbitInformation() {
         gCanvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
 
     void *font = *g_Hud_oiFont;
-    // station name
+
     {
         char name[12];
         ((Station *) (name))->getName();
@@ -327,14 +299,13 @@ void Hud::drawOrbitInformation() {
     int *status = (int *) *g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] > 1) sec = 3;
 
-    // system name + separator
     {
         char sysName[12], copy[12], sep[12], acc[12], full[12];
         ((SolarSystem *) (sysName))->getName();
         ((String *) (copy))->ctor_copy((String *) (sysName), false);
         ((String *) (sep))->ctor_char(g_Hud_oiSep, false);
         *(String *) acc = *(String *) copy + *(String *) sep;
-        void *txt = (*g_Hud_oiGameText)->getText(0); // id resolved by table
+        void *txt = (*g_Hud_oiGameText)->getText(0);
         *(String *) full = *(String *) acc + *(String *) txt;
         gCanvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
         ((String *) (full))->clear();
@@ -357,8 +328,7 @@ unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
         if ((*this->keyArray)[i] == key && this->elementBits[i] == 0x20)
             goto found;
     }
-    // not the analog-stick key: treat the drag as a fresh touch-begin so a
-    // wandering touch that lands on a button still registers.
+
     return touchBegin(a, (unsigned int) -1, key);
 found:
     int dx = (int) a - (int) this->reticleX;
@@ -380,27 +350,12 @@ found:
     return 0x20;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_teCinematic; // *holder -> [0] byte
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_teScreenW; // *holder -> [0] width
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_teScreenH; // *holder -> [0] height
+
+extern void **g_Hud_teCinematic;
+
+extern void **g_Hud_teScreenW;
+
+extern void **g_Hud_teScreenH;
 
 static inline bool span(unsigned short o, int w, unsigned int v) {
     return o <= v && v <= (unsigned int) o + w;
@@ -413,7 +368,6 @@ static inline bool cspan(unsigned short o, int w, unsigned int v) {
 unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
     Array<TouchButton *> *menu = this->menuButtons;
     if (this->quickMenuOpen != 0 && menu != 0) {
-        // quick-menu open: delegate to its buttons
         for (unsigned int i = 0; i < menu->size(); i++) {
             if ((*menu)[i]->OnTouchBegin((int) x, (int) y) != 0)
                 return *(unsigned int *) (*this->menuButtons)[i];
@@ -451,7 +405,6 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
         return 0;
     }
 
-    // normal layout: extra weapon-select buttons first
     if (this->hackingGameActive != 0) {
         if (span(this->field_0x454, w, x) && span(this->field_0x456, w, y)) return 0x200;
         if (span(this->field_0x458, w, x) && span(this->field_0x45a, w, y)) return 0x400;
@@ -484,25 +437,13 @@ unsigned int Hud::touchedElement(unsigned int x, unsigned int y) {
 }
 
 Hud::Hud() {
-    // The scratch and labelled String members are default-constructed with the
-    // object; init() wires up the rest of the HUD state.
     init();
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_Hud_ccGameText;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_ccTemplate; // *holder -> base format String
+
+extern void **g_Hud_ccTemplate;
 extern const char g_Hud_ccHashX[] __attribute__((visibility("hidden")));
 extern const char g_Hud_ccHashN[] __attribute__((visibility("hidden")));
 extern const char g_Hud_ccUnit[] __attribute__((visibility("hidden")));
@@ -514,8 +455,6 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     this->cargoFullFlag = single ? 1 : 0;
 
     if (missionDelivery) {
-        // mission-delivery line: GameText(0x219) run through two replaceHash passes that
-        // substitute the mission-type word and the count into the localized template.
         GameText *gt = *g_Hud_ccGameText;
         void *base = gt->getText(0x219);
         void *dst = &this->field_0x1f4;
@@ -561,7 +500,6 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     }
 
     if (single) {
-        // "cargo full" notice: GameText(0x142) pushed as its own event line
         GameText *gt = *g_Hud_ccGameText;
         void *txt = gt->getText(0x142);
         ((String *) (&this->field_0x1f4))->assign((String *) (txt));
@@ -571,11 +509,10 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         return;
     }
 
-    if (count < 1) return; // nothing to add to the running "+N" tally
+    if (count < 1) return;
 
     GameText *gt = *g_Hud_ccGameText;
 
-    // aggregate into the previous "+N <unit>" event when one is still showing
     if (aggregate && this->eventQueueDirty != 0) {
         char a0[12];
         ((String *) (a0))->ctor_int(this->cargoAggregateCount);
@@ -623,7 +560,6 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         ((String *) (k34))->clear();
     }
 
-    // fresh "+N <unit>" event
     this->cargoAggregateCount = count;
     char a0[12];
     ((String *) (a0))->ctor_int(this->cargoAggregateCount);
@@ -651,27 +587,12 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
     addToEventQueue(item);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_font; // *holder -> font String
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_canvas2; // *holder -> PaintCanvas
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_screenW; // *holder -> [0] = screen width
+
+extern void **g_Hud_font;
+
+extern void **g_Hud_canvas2;
+
+extern void **g_Hud_screenW;
 
 void Hud::drawEventString(String text, bool rightAlign) {
     void *font = *g_Hud_font;
@@ -719,36 +640,16 @@ int Hud::sameHudEventAsBeforeAggregate(String str) {
     return i;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_Hud_gameText;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_swCanvas; // font holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_swFont; // string holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_swScreenW; // [0]=screen width
-extern const char g_Hud_swSep[] __attribute__((visibility("hidden"))); // " x" separator
-extern const char g_Hud_swEnd[] __attribute__((visibility("hidden"))); // trailing string
+
+extern void **g_Hud_swCanvas;
+
+extern void **g_Hud_swFont;
+
+extern void **g_Hud_swScreenW;
+extern const char g_Hud_swSep[] __attribute__((visibility("hidden")));
+extern const char g_Hud_swEnd[] __attribute__((visibility("hidden")));
 
 void Hud::updateSecondaryWeaponString() {
     void *item = this->currentSecondaryWeapon;
@@ -780,34 +681,14 @@ void Hud::updateSecondaryWeaponString() {
     this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_eqLetterbox; // *holder -> [0] byte
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_eqSelf; // *holder -> a Hud-like obj (+0x1e0/+0x1e4)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_eqScreenW; // *holder -> [0] width
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_eqFont; // *holder -> font String
+
+extern void **g_Hud_eqLetterbox;
+
+extern void **g_Hud_eqSelf;
+
+extern void **g_Hud_eqScreenW;
+
+extern void **g_Hud_eqFont;
 
 void Hud::drawEventQueue() {
     char letterbox = *(char *) *g_Hud_eqLetterbox;
@@ -853,8 +734,7 @@ void Hud::drawEventQueue() {
         char y = (char) ((char) yOff + (char) dispBase + cinematicY);
         gCanvas->DrawString((unsigned) (long) (font), *label, ((screenW >> 1) - w / 2), (y), false);
     }
-    // restore the canvas colour to full white so the next HUD layer is not
-    // tinted by the event-banner colour.
+
     gCanvas->SetColor(0xffffffffu);
 }
 
@@ -906,41 +786,16 @@ unsigned int Hud::sameHudEventAsBefore(String str) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_initLayout; // *holder -> layout (+0x194,+0x198)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_initBound; // *holder -> [0] x bound
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_initOutX; // *holder -> int cell (x out)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_initOutY; // *holder -> int cell (y out)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern const unsigned short g_Hud_raceBadge[]; // race->atlas id
+
+extern void **g_Hud_initLayout;
+
+extern void **g_Hud_initBound;
+
+extern void **g_Hud_initOutX;
+
+extern void **g_Hud_initOutY;
+
+extern const unsigned short g_Hud_raceBadge[];
 extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
 
 int Hud::init() {
@@ -949,7 +804,6 @@ int Hud::init() {
     this->messageActive = 0;
     this->hackingGameActive = 0;
 
-    // key-state arrays: 0x19 slots each
     this->keyArray = new Array<void *>();
     this->keyArray->resize(0x19);
     this->elementBits = new int[0x19];
@@ -959,13 +813,11 @@ int Hud::init() {
     }
     this->touchFlags = 0;
 
-    // current system faction badge
     if (gStatus->inAlienOrbit() == 0) {
         int race = ((SolarSystem *) (((void *) (long) gStatus->getSystem())))->getRace();
         Image2DCreate(gCanvas, g_Hud_raceBadge[race], &this->factionLogoImage);
     }
 
-    // seed the (empty) HUD message
     this->secondaryLabelTimerSeed = -1;
     this->secondaryLabelTimer = 0;
     {
@@ -997,8 +849,6 @@ void Hud::drawPauseButton() {
     return gCanvas->DrawImage2D((unsigned) (img), (x), (y));
 }
 
-// , then tail-calls the menu-refresh hook.
-
 Hud *Hud::checkIfQuickMenuIsEmpty() {
     Ship *ship = gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
@@ -1026,20 +876,10 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
     return this;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_dmLayout; // *holder -> layout obj
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_dmFont; // *holder -> font String
+
+extern void **g_Hud_dmLayout;
+
+extern void **g_Hud_dmFont;
 extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
 
 void Hud::drawMenu(int unused) {
@@ -1047,16 +887,15 @@ void Hud::drawMenu(int unused) {
     int *layout = (int *) *g_Hud_dmLayout;
     ((Layout *) (layout))->drawMask();
 
-    // top cap
     gCanvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
-    // header glyph (centered)
+
     int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     char hy = (char) ((char) this->menuOriginYBase + (char) this->menuOriginY + (char) (this->menuRowHeight / 2)
                       - (char) layout[0x8b]);
     gCanvas->DrawImage2D((unsigned) this->quickMenuHeaderImage, hx, hy, (unsigned char) 0x11);
 
     int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
-    // repeated middle slices (one per button beyond the first)
+
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int count = (unsigned int) this->menuButtons->size();
         for (unsigned int i = 0; i < count - 1; i++) {
@@ -1065,10 +904,9 @@ void Hud::drawMenu(int unused) {
             count = (unsigned int) this->menuButtons->size();
         }
     }
-    // bottom cap
+
     gCanvas->DrawImage2D((unsigned) this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
 
-    // the actual buttons
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int n = (unsigned int) this->menuButtons->size();
         for (unsigned int i = 0; i < n; i++) {
@@ -1119,7 +957,7 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
     switch (eventId) {
         case 1:
         case 2:
-            // autofire on/off notice — only when the autofire UI is present
+
             if (this->hasAutofireUI == 0) return;
             hudEventBuild(this, eventId, ego, arg);
             return;
@@ -1132,7 +970,6 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
             hudEventBuild(this, eventId, ego, arg);
             return;
 
-        // ---- pure status-flag events (no queue entry) ----
         case 0x23:
             this->field_0x468 = 0;
             this->field_0x27a = 1;
@@ -1157,40 +994,25 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 0x26:
         case 0x28:
         case 0x2a:
-            // these clear the "showing" flag (low byte only) and set a fixed localized line, no queue
+
             *(unsigned char *) &this->weaponSelectState = 0;
             hudEventBuild(this, eventId, ego, arg);
             return;
 
         default:
-            // all remaining events compose a localized line and enqueue it
+
             hudEventBuild(this, eventId, ego, arg);
             return;
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_csLayout; // *holder -> layout (+0x2c row pad)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_csStatus; // *holder -> status (+0x180 score,+0x184,+0x18c)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_csScreenW; // *holder -> [0] width
-extern const char g_Hud_csZero[] __attribute__((visibility("hidden"))); // "0" pad
+
+extern void **g_Hud_csLayout;
+
+extern void **g_Hud_csStatus;
+
+extern void **g_Hud_csScreenW;
+extern const char g_Hud_csZero[] __attribute__((visibility("hidden")));
 
 HUD_INLINE
 
@@ -1223,7 +1045,6 @@ void drawChallengeModeScoreImpl(Hud *self) {
     int fh = ((Sprite *) (sprite))->getFrameHeight();
     int y = layout[0xb];
 
-    // score string at status+0x184, right-padded to 7 digits
     char score[12];
     ((String *) (score))->ctor_int(status[0x61]);
     int slen = (int) ((String *) score)->size();
@@ -1279,34 +1100,14 @@ void Hud::drawChallengeModeScore(int unused) {
     drawChallengeModeScoreImpl(this);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_Hud_gameText;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_meCanvas; // font holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_meFont; // string holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_meScreenW; // [0]=screen width
+
+extern void **g_Hud_meCanvas;
+
+extern void **g_Hud_meFont;
+
+extern void **g_Hud_meScreenW;
 extern const char g_Hud_meSep[] __attribute__((visibility("hidden")));
 extern const char g_Hud_meEnd[] __attribute__((visibility("hidden")));
 
@@ -1349,51 +1150,20 @@ void Hud::hudEventMedal(int medalId, int percent) {
     this->letterbox = ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w) ? 1 : 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imLayout; // *holder -> layout obj
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imLetterbox; // *holder -> [0] byte
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imCargoA; // *holder -> obj (+0x54 cargo cur)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imCargoB; // *holder -> obj (+0x58 cargo max)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imFlagA; // *holder -> [0] byte
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_Hud_imFlagB; // *holder -> [0] byte
+
+extern void **g_Hud_imLayout;
+
+extern void **g_Hud_imLetterbox;
+
+extern void **g_Hud_imCargoA;
+
+extern void **g_Hud_imCargoB;
+
+extern void **g_Hud_imFlagA;
+
+extern void **g_Hud_imFlagB;
 
 void Hud::initHudMenu(int menuType, Level *lvl) {
-    // tear down old menu buttons
     if (this->menuButtons != 0) {
         for (TouchButton *b: *this->menuButtons) delete b;
         this->menuButtons->clear();
@@ -1403,24 +1173,20 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     this->menuLevel = lvl;
     this->menuButtons = new Array<TouchButton *>();
 
-    // refresh secondary-weapon equipment + label (equipment is owned by the Ship,
-    // so the Array<Item*> wrapper itself is released but not its elements)
     delete this->equipmentArray;
     this->equipmentArray = gStatus->getShip()->getEquipment(1);
     updateSecondaryWeaponString();
 
     this->menuOriginX = 0;
     int *layout = (int *) *g_Hud_imLayout;
-    int rowH = *(int *) (layout[0] + 0x1dc); // first row height
-    // RAWREAD: layout is an opaque int* holder (from a void** global); layout[0] is an
-    // untyped pointer with no modeled class, so +0x1dc has no named member.
+    int rowH = *(int *) (layout[0] + 0x1dc);
+
     char letterbox = *(char *) *g_Hud_imLetterbox;
 
     int yOrigin;
     if (letterbox == 0) {
         yOrigin = this->menuBaseY;
     } else {
-        // cargo-bay percentage shifts the menu up in letterboxed mode
         CargoBay *cargoA = (CargoBay *) *g_Hud_imCargoA;
         float v;
         if ((long) this->menuLevel == 3)
@@ -1500,7 +1266,7 @@ void refreshQuickMenu(Hud *self) {
     self->quickMenuEmpty = empty;
 }
 
-extern unsigned int g_Hud_heImportantMask; // 1<<id bitmask of priority events
+extern unsigned int g_Hud_heImportantMask;
 
 HUD_INLINE
 
@@ -1517,7 +1283,7 @@ void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
         return;
 
     String *str = new String(*line);
-    // "important" ids get the alternate ListItem ctor that marks them priority.
+
     unsigned int idBit = (unsigned int) (eventId - 1);
     ListItem *item;
     if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
@@ -1545,15 +1311,12 @@ static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigne
     (void) y;
     PaintCanvas *canvas = gCanvas;
 
-    // Reticle image, tinted normally unless an interaction (autopilot/docking/
-    // turret) suppresses the highlight; the lock bracket follows at +0x424/+0x41e.
     canvas->DrawImage2D((unsigned) self->reticleImage, self->field_0x42c, 0);
 
     unsigned char flags = self->touchFlags;
     unsigned short bx, by;
     int img;
     if ((flags & 0x40) != 0) {
-        // (flags<<0x19)<0  -> locked bracket frozen
         bx = self->reticleX;
         by = self->reticleY;
         img = self->lockBracketLockedImage;
@@ -1568,13 +1331,8 @@ static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigne
     (void) ego;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Level **g_Hud_level; // *holder -> Level
+
+extern Level **g_Hud_level;
 
 static void drawRadar(Hud *self) {
     PaintCanvas *canvas = gCanvas;
@@ -1584,12 +1342,11 @@ static void drawRadar(Hud *self) {
     if (st->inAlienOrbit() == 0) {
         show = true;
     } else if (st->getCurrentCampaignMission() == 0x9a) {
-        // alien-orbit mission 0x9a: only when there are docking targets
         Level *lvl = *g_Hud_level;
         if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
     }
     if (show && st->getCurrentCampaignMission() > 1) {
-        int img = ((self->touchFlags & 0x80) != 0) // (flags<<0x19)<0
+        int img = ((self->touchFlags & 0x80) != 0)
                       ? self->orbitMarkerActiveImage
                       : self->orbitMarkerIdleImage;
         canvas->DrawImage2D((unsigned) img, self->field_0x3f8, 0);
@@ -1599,11 +1356,10 @@ static void drawRadar(Hud *self) {
 static void drawBars(Hud *self, void *ego) {
     PaintCanvas *canvas = gCanvas;
     PlayerEgo *e = (PlayerEgo *) ego;
-    Player *player = *(Player **) ego; // the ego embeds a Player* at +0
+    Player *player = *(Player **) ego;
     float scale = (float) self->field_0x446;
     canvas->SetColor((unsigned) 0xffffffffu);
 
-    // -- shield bar (only when the shield element +0x21f is enabled) --
     unsigned short barX = self->field_0x442;
     unsigned short barY = self->field_0x44a;
     if (self->hasShieldBar != 0) {
@@ -1620,7 +1376,6 @@ static void drawBars(Hud *self, void *ego) {
         barY = self->field_0x448;
     }
 
-    // -- hull/armor bar --
     int ahp = player->getArmorHP();
     int aframe = (ahp < 1) ? self->armorFrameLowImage : self->armorFrameImage;
     canvas->DrawImage2D((unsigned) aframe, self->field_0x43c, barX);
@@ -1631,7 +1386,6 @@ static void drawBars(Hud *self, void *ego) {
     canvas->DrawRegion2D((unsigned) self->armorBarFillImage, 0, 0, hw, self->field_0x44c,
                          (float) hw, 0, 0, 0, self->field_0x440);
 
-    // -- armor regeneration overlay (element +0x220) --
     if (self->hasArmorRegen != 0) {
         int arate = player->getArmorDamageRate();
         int aw = (int) ((float) arate * scale);
@@ -1650,7 +1404,6 @@ static void drawSecondaryWeaponPanel(Hud *self) {
         int img = on ? self->autoTurretOnImage : self->autoTurretOffImage;
         canvas->DrawImage2D((unsigned) img, self->field_0x3fe, 0);
     } else {
-        // no auto-turret: replay the transient "weapon changed" label timer
         if (self->secondaryLabelTimer > 0) {
             void *font = *g_Hud_font;
             int screenW = *(int *) *g_Hud_screenW;
@@ -1674,7 +1427,6 @@ static void drawMissionBanner(Hud *self) {
     PaintCanvas *canvas = gCanvas;
     canvas->SetColor((unsigned) 0xffffffffu);
 
-    // banner background frame
     canvas->DrawImage2D((unsigned) self->missionBannerImage, self->field_0x438, 0);
 }
 

@@ -1,14 +1,11 @@
 #ifndef GOF2_PLAYERFIXEDOBJECT_H
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
+#include "game/mission/Explosion.h"
 
-class BoundingVolume;
-class AEGeometry;
-class Explosion;
+#include "game/ship/KIPlayer.h"
 
 typedef AbyssEngine::AEMath::Vector V3;
 
@@ -16,29 +13,29 @@ class PlayerFixedObject : public KIPlayer {
 public:
     unsigned char empActive;
     int faction;
-    Vector position; // current world position
+    Vector position;
     uint8_t field_0x40;
     uint8_t field_0x41;
     unsigned char hasCargo;
-    Array<int> *lootList; // loot id/amount pairs
+    Array<int> *lootList;
     float spawnX;
     float spawnY;
     float spawnZ;
-    AEGeometry *secondaryGeometry; // optional cargo/secondary mesh
-    uint8_t collisionEnabled; // gate for collide()/outerCollide()
-    Vector targetPos; // homing-target world position
+    AEGeometry *secondaryGeometry;
+    uint8_t collisionEnabled;
+    Vector targetPos;
     int kind;
     int explosionTimer;
-    int32_t aiActiveCounter; // KIPlayer "active for tutorial" countdown
+    int32_t aiActiveCounter;
     unsigned char finished;
-    AEGeometry *wreckGeometry; // wrecked-ship mesh
-    Array<BoundingVolume *> *boundingVolumes; // active bounding volumes
-    Array<BoundingVolume *> *wreckCollision; // wreck collision volumes
+    AEGeometry *wreckGeometry;
+    Array<BoundingVolume *> *boundingVolumes;
+    Array<BoundingVolume *> *wreckCollision;
     int32_t deltaTime;
     unsigned char moving;
-    Vector respawnPos; // spawn position copy used by reset()
-    Vector homingTarget; // re-homed enemy position snapshot
-    Vector homingDir; // homingTarget - position (drift direction)
+    Vector respawnPos;
+    Vector homingTarget;
+    Vector homingDir;
     uint32_t field_0x15c;
     uint64_t field_0x160;
     int32_t targetEnemy;
@@ -49,7 +46,7 @@ public:
     int32_t intPosY;
     int32_t intPosZ;
     uint16_t wreckMeshId;
-    Explosion *explosion; // one-shot death explosion effect
+    Explosion *explosion;
     int explosionElapsed;
     int wreckType;
     int rumbleTimer;
@@ -57,33 +54,36 @@ public:
     int wreckMaterial;
     int dockingType;
     int transportID;
-    String name; // display name
+    String name;
     uint8_t shipHidden;
 
-    // The three floats are the spawn position; they seed both the KIPlayer base
-    // position and this object's position (the binary passes them once).
     PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
                       float x, float y, float z);
 
     ~PlayerFixedObject();
 
-    int collide(float x, float y, float z) override; // actor vtable slot +0x38
+    int collide(float x, float y, float z) override;
+
     int getDockingType();
 
     String getName();
 
-    V3 getPosition() override; // actor vtable slot +0x28
-    V3 getProjectionVector(const Vector &vec) override; // actor vtable slot +0x50
+    V3 getPosition() override;
+
+    V3 getProjectionVector(const Vector &vec) override;
+
     int getTransportID();
 
     void hideShip();
 
     void moveForward(int amount);
 
-    int outerCollide(float x, float y, float z) override; // actor vtable slot +0x3c
+    int outerCollide(float x, float y, float z) override;
+
     void outerCollide(Vector v);
 
-    V3 projectCollisionOnSurface(const Vector &vec) override; // actor vtable slot +0x58
+    V3 projectCollisionOnSurface(const Vector &vec) override;
+
     void render() override;
 
     void reset();
@@ -102,14 +102,16 @@ public:
 
     void *setName(String name);
 
-    void setPosition(float x, float y, float z) override; // actor vtable slot +0x48
+    void setPosition(float x, float y, float z) override;
+
     void setPosition(const Vector &v);
 
     void setTransportID(int v);
 
     void setWreckedMeshId(int meshId);
 
-    void translate(const Vector &d) override; // actor vtable slot +0x20
+    void translate(const Vector &d) override;
+
     void update(int dt) override;
 };
 #endif

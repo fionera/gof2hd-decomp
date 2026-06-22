@@ -1,32 +1,24 @@
 #ifndef GOF2_EXPLOSION_H
 #define GOF2_EXPLOSION_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class AEGeometry;
-class TargetFollowCamera;
-
-namespace AbyssEngine {
-    namespace AEMath {
-        struct Vector;
-        struct Matrix;
-    }
-}
+#include "engine/core/AbyssEngine.h"
+#include "engine/render/AEGeometry.h"
+#include "game/ship/TargetFollowCamera.h"
 
 class Explosion {
 public:
-    int type; // +0x00 explosion type
-    AEGeometry *primaryMesh; // +0x04 primary mesh
-    AEGeometry *secondaryMesh; // +0x08 secondary mesh (optional)
-    Array<AEGeometry *> *fireStreaks; // +0x0c fire-streak meshes (optional)
-    long long duration; // +0x10 total duration
-    long long elapsed; // +0x18 elapsed time
-    uint8_t playing; // +0x20 playing flag
-    float scale; // +0x24 scale
-    int weaponIndex; // +0x28 sound id (-1 == none)
-    Matrix rotation; // +0x2c rotation matrix
+    int type;
+    AEGeometry *primaryMesh;
+    AEGeometry *secondaryMesh;
+    Array<AEGeometry *> *fireStreaks;
+    long long duration;
+    long long elapsed;
+    uint8_t playing;
+    float scale;
+    int weaponIndex;
+    AbyssEngine::Matrix rotation;
 
     explicit Explosion(int type);
 
@@ -38,7 +30,7 @@ public:
 
     bool peakReached();
 
-    void playSound(Vector *pos);
+    void playSound(AbyssEngine::Vector *pos);
 
     void render();
 
@@ -48,13 +40,13 @@ public:
 
     void setWeaponIndex(int index);
 
-    void start(const Vector &position, const Vector &direction);
+    void start(const AbyssEngine::Vector &position, const AbyssEngine::Vector &direction);
 
-    void start(const Matrix &matrix);
+    void start(const AbyssEngine::Matrix &matrix);
 
-    void translate(const Vector &v);
+    void translate(const AbyssEngine::Vector &v);
 
-    void update(int dt, const Vector &position);
+    void update(int dt, const AbyssEngine::Vector &position);
 
     void update(int dt, TargetFollowCamera *camera);
 };

@@ -1,29 +1,23 @@
 #ifndef GOF2_DRAWFBOSHADER_H
 #define GOF2_DRAWFBOSHADER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-    class FBOContainer;
-
     class DrawFBOShader : public ShaderBaseStruct {
     public:
         static int ShaderIndex;
 
-        int positionLoc; // attribute "position"
-        int worldViewMatrixLoc; // uniform "worldViewMatrix"
-        int texCoordLoc; // attribute "texCoord"
-        int textureLoc; // uniform "texture"
+        int positionLoc;
+        int worldViewMatrixLoc;
+        int texCoordLoc;
+        int textureLoc;
 
         DrawFBOShader();
 
@@ -37,6 +31,6 @@ namespace AbyssEngine {
 
         void RenderEffect(FBOContainer *fbo, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

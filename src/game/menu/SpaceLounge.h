@@ -1,81 +1,77 @@
 #ifndef GOF2_SPACELOUNGE_H
 #define GOF2_SPACELOUNGE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Agent;
-class StarMap;
-class ChoiceWindow;
-class ListItemWindow;
-class CutScene;
-class ScrollTouchWindow;
-class TouchButton;
-class ImagePart;
-
-namespace AbyssEngine {
-    class EaseInOutMatrix;
-    class EaseInOut;
-}
+#include "engine/core/AbyssEngine.h"
+#include "engine/math/EaseInOut.h"
+#include "engine/math/EaseInOutMatrix.h"
+#include "engine/math/Vector.h"
+#include "engine/render/ImagePart.h"
+#include "game/core/CutScene.h"
+#include "game/ship/Agent.h"
+#include "game/ui/ChoiceWindow.h"
+#include "game/ui/ListItemWindow.h"
+#include "game/ui/ScrollTouchWindow.h"
+#include "game/ui/TouchButton.h"
+#include "game/world/StarMap.h"
 
 class SpaceLounge {
 public:
-    // (+0x0 is the compiler-managed C++ vptr; this screen is polymorphic)
-    StarMap *starMap; // active star-map sub-screen
-    ChoiceWindow *choiceWindow; // owned yes/no chat dialog
-    ListItemWindow *listWindow; // owned ship/list sub-window
-    int mode; // lounge interaction mode (0..3)
-    int field_0x18; // init/redraw guard, only ever reset to 0
-    uint8_t chatActive; // chat session active
-    uint8_t popupActive; // +0x1a confirm-popup taking input
-    uint8_t choiceVisible; // choice window taking input
-    uint8_t listVisible; // list window taking input
-    int selectedAgent; // index of selected agent
-    Array<Agent *> *agents; // Station::agents (cross-object)
-    Array<String *> *agentTexts; // per-agent text array
-    int chatScroll; // +0x2c offer-text scroll offset
-    int chatAnswer; // +0x30 selected chat answer
-    uint8_t mapVisible; // star-map mode active
-    uint8_t hangarUpdate; // hangar needs refresh flag
-    uint8_t singleOffer; // +0x36 show only the primary offer button
-    Array<Array<ImagePart *> *> *silhouetteGrid; // per-system agent silhouette grid
-    Array<ImagePart *> *agentImageParts; // selected-agent silhouette parts
-    Array<Vector *> *agentRects; // per-agent screen hit-rect pairs
-    CutScene *cutScene; // owned lounge backdrop cutscene
-    AbyssEngine::EaseInOutMatrix *cameraEase; // owned camera-pan ease
-    Vector silhouettePos; // projected silhouette position
-    char *agentVisited; // per-agent visited byte buffer
-    Array<TouchButton *> *buttons; // owned offer buttons
-    ScrollTouchWindow *scrollWindow; // owned offer-text scroll window
-    int buttonsHeight; // +0x64 total stacked button height
-    int visibleButtonCount; // +0x68 number of offer buttons shown
-    int panelWidth; // agent panel width
-    int panelX; // agent panel x
-    int panelY; // agent panel y
-    int buttonPanelY; // button panel y
-    int buttonY1; // button row y (single)
-    int buttonY0; // button row y (base)
-    int buttonX; // button x
-    int hoverAgent; // hovered agent index
+    StarMap *starMap;
+    ChoiceWindow *choiceWindow;
+    ListItemWindow *listWindow;
+    int mode;
+    int field_0x18;
+    uint8_t chatActive;
+    uint8_t popupActive;
+    uint8_t choiceVisible;
+    uint8_t listVisible;
+    int selectedAgent;
+    Array<Agent *> *agents;
+    Array<String *> *agentTexts;
+    int chatScroll;
+    int chatAnswer;
+    uint8_t mapVisible;
+    uint8_t hangarUpdate;
+    uint8_t singleOffer;
+    Array<Array<ImagePart *> *> *silhouetteGrid;
+    Array<ImagePart *> *agentImageParts;
+    Array<AbyssEngine::AEMath::Vector *> *agentRects;
+    CutScene *cutScene;
+    AbyssEngine::EaseInOutMatrix *cameraEase;
+    AbyssEngine::Vector silhouettePos;
+    char *agentVisited;
+    Array<TouchButton *> *buttons;
+    ScrollTouchWindow *scrollWindow;
+    int buttonsHeight;
+    int visibleButtonCount;
+    int panelWidth;
+    int panelX;
+    int panelY;
+    int buttonPanelY;
+    int buttonY1;
+    int buttonY0;
+    int buttonX;
+    int hoverAgent;
     int field_0x8c;
     int field_0x90;
     int field_0x94;
     int field_0x98;
     int field_0x9c;
     int field_0xa0;
-    String title; // header title String
-    uint8_t initialized; // ctor/init completed
-    uint8_t touchDown; // touch currently down
-    int touchX; // last touch x
-    int touchY; // last touch y
-    uint8_t cameraAnimating; // +0xbc camera ease still running
-    uint8_t introDone; // intro/camera intro finished
-    AbyssEngine::EaseInOut *headEase; // owned head-bob ease
-    uint8_t headBobReverse; // +0xc4 head-bob easing toward lower bound
-    Matrix baseMatrix; // base camera matrix
-    float headBobPhase; // +0x104 wave-time accumulator
-    int headBobSteps; // +0x108 head-bob rotation step count
+    String title;
+    uint8_t initialized;
+    uint8_t touchDown;
+    int touchX;
+    int touchY;
+    uint8_t cameraAnimating;
+    uint8_t introDone;
+    AbyssEngine::EaseInOut *headEase;
+    uint8_t headBobReverse;
+    AbyssEngine::Matrix baseMatrix;
+    float headBobPhase;
+    int headBobSteps;
 
     SpaceLounge();
 

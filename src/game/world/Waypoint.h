@@ -2,12 +2,10 @@
 #define GOF2_WAYPOINT_H
 
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
 
-struct Route;
+#include "game/ship/KIPlayer.h"
 
 class Waypoint : public KIPlayer {
 public:

@@ -14,4 +14,4 @@ namespace AbyssEngine {
         delete[] name;
         name = nullptr;
     }
-} // namespace AbyssEngine
+}

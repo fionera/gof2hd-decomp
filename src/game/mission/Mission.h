@@ -1,11 +1,9 @@
 #ifndef GOF2_MISSION_H
 #define GOF2_MISSION_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Agent;
+#include "game/ship/Agent.h"
 
 using AbyssEngine::String;
 
@@ -15,22 +13,22 @@ public:
     uint8_t won;
     Agent *agent;
     int id;
-    String name; // client name
+    String name;
     String targetName;
     int *clientImage;
     int clientRace;
-    int costs; // reward / costs slot (getReward/getCosts read this)
-    int costsValue; // +0x34 separate costs slot (setCosts writes this)
+    int costs;
+    int costsValue;
     int bonus;
     int targetStation;
     String targetStationName;
     String targetSystemName;
-    int reward; // difficulty slot (getDifficulty reads this)
+    int reward;
     uint8_t instantAction;
     int distance;
     int campaign;
-    int productionGoodsA; // production good index
-    int productionGoodsB; // production good amount
+    int productionGoodsA;
+    int productionGoodsB;
     int statusValue;
     uint8_t visible;
 
@@ -43,8 +41,6 @@ public:
     Mission(int id, AbyssEngine::String client, int *clientImage, int clientRace,
             int costs, int station, int reward);
 
-    // Polymorphic only via its virtual destructor (vtable = [D1, D0]); no other
-    // virtual methods. The virtual dtor plants the vptr at offset 0.
     virtual ~Mission();
 
     void calcDistance();

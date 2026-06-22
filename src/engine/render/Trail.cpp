@@ -55,8 +55,6 @@ void Trail::update(float ax, float ay, float az, float bx, float by, float bz) {
     points[10] = (int) by;
     points[11] = (int) bz;
 
-    // Shift the existing strip back by one segment (two verts) so the new head
-    // vertices written above lead the trail.
     int *copy = points + this->pointCount;
     for (int i = this->pointCount - 1; 10 < i; i -= 6) {
         copy[-2] = copy[-8];

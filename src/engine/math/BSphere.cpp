@@ -27,7 +27,6 @@ namespace AbyssEngine {
                 return;
 
             if (this->radius == 0.0f) {
-                // Dest empty: copy source wholesale.
                 *this = other;
                 return;
             }
@@ -41,18 +40,15 @@ namespace AbyssEngine {
             float r2 = other.radius;
 
             if (dist == 0.0f) {
-                // Concentric: keep the larger radius.
                 if (r2 < r1)
                     r2 = r1;
                 this->radius = r2;
                 return;
             }
 
-            // Source fully inside dest -> nothing to do.
             if (r1 > dist + r2)
                 return;
 
-            // Dest fully inside source -> become source.
             if (dist - r2 < -r1) {
                 this->cx = other.cx;
                 this->cy = other.cy;
@@ -61,7 +57,6 @@ namespace AbyssEngine {
                 return;
             }
 
-            // Partial overlap: shift center along the axis and grow to cover both.
             float t = (((dist + r2) - r1) * 0.5f) / dist;
             this->cx = this->cx + dx * t;
             this->cy = this->cy + dy * t;
@@ -70,9 +65,6 @@ namespace AbyssEngine {
         }
 
         void BSphere::Merge(const Transform &t) {
-            // Transform layout: world matrix at +0x00, bounding radius at +0xe0. The full
-            // Transform definition cannot be included here because gof2/engine/math/Transform.h
-            // (and AEMath.h) still define a conflicting inline AEMath::BSphere.
             const Matrix &worldMatrix = *reinterpret_cast<const Matrix *>(&t);
             float boundingRadius = *reinterpret_cast<const float *>(
                 reinterpret_cast<const char *>(&t) + 0xe0);
@@ -97,5 +89,5 @@ namespace AbyssEngine {
             world.maxRadius = 1.0f;
             Merge(world);
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}

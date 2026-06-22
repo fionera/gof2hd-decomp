@@ -39,7 +39,7 @@ namespace AbyssEngine {
         uniformU13 = glGetUniformLocation(this->program, "u13");
 
         glUseProgram(this->program);
-        // Samplers u5 (+0x48) and u6 (+0x4c) are consecutive int fields, indexed at runtime.
+
         int *samplers = &uniformU5;
         for (int i = 0; i != 2; i++) {
             int loc = samplers[i];
@@ -133,4 +133,4 @@ namespace AbyssEngine {
         if (uniformU0 >= 0)
             glDisableVertexAttribArray(uniformU0);
     }
-} // namespace AbyssEngine
+}

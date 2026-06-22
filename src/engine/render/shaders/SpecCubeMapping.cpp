@@ -63,7 +63,6 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->attribNormal);
 
         if (mesh->uploaded == 0) {
-            // Client-side vertex arrays.
             glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, mesh->positions);
             uint8_t flags = mesh->vertexFormat;
             if (flags & 2) {
@@ -74,7 +73,6 @@ namespace AbyssEngine {
                 glVertexAttribPointer(this->attribNormal, 3, 0x1406, 0, 0, mesh->normals);
             }
         } else {
-            // Buffer-object meshes: bind each VBO before wiring up the attribute.
             glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->attribPosition, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
@@ -89,4 +87,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->attribNormal);
         glDisableVertexAttribArray(this->attribTexCoord);
     }
-} // namespace AbyssEngine
+}

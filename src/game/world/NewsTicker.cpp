@@ -41,7 +41,6 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     AbyssEngine::AERandom *random = *g_NewsTicker_ctor_random;
     int wanted = random->nextInt(1) + 2;
 
-    // Mandatory items: any ticker entry valid for this faction and level range.
     for (uint32_t i = 0; i < allItems->size(); ++i) {
         NewsItem *item = (*allItems)[i];
         if (item->field_0x10 > 0 && item->field_0x10 <= level && level <= item->field_0x14) {
@@ -51,7 +50,6 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
         }
     }
 
-    // Optional items: randomly fill the rest, honoring recurrence cooldowns.
     Status *status = *g_NewsTicker_ctor_status;
     int added = 0;
     int attempts = 0;
@@ -87,7 +85,6 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
         ++added;
     }
 
-    // Compose the scrolling line from each item's localized text.
     String separator(g_NewsTicker_ctor_separator);
     GameText *gameText = *g_NewsTicker_ctor_text;
     for (uint32_t i = 0; i < items->size(); ++i) {

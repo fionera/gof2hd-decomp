@@ -32,12 +32,12 @@ void SentryGun::update(int dt) {
             (owner->isActive() == 0 || owner->isDead())) {
             level->field_6c += 1;
 
-            obj->revive(); // actor vtable slot 0x18
+            obj->revive();
 
             Gun *g = this->gun;
             AbyssEngine::AEMath::Vector *spawnPos =
                     (AbyssEngine::AEMath::Vector *) (g->positions + g->fireIndex * 12);
-            // slot 0x44 (setPosition(Vector const&)) unpacks to the virtual setPosition (0x48).
+
             obj->setPosition(spawnPos->x, spawnPos->y, spawnPos->z);
             return;
         }

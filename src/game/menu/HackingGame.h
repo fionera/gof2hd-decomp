@@ -36,28 +36,28 @@ public:
 
     int update(int dt);
 
-    int difficulty; // +0x00 puzzle difficulty/type (drives reInit branching)
-    uint32_t reserved_14; // +0x14 unused slot (Ghidra undefined4, never read)
-    uint32_t reserved_18; // +0x18 unused slot (Ghidra undefined4, never read)
-    int target[6]; // goal tile arrangement
-    int current[6]; // currently displayed tile arrangement
-    int working[6]; // scratch arrangement used while rotating
-    int tileImages[48]; // per-variant tile-image handle table (variant*0x30 + cell*4)
-    int topImage; // cached title/top image handle
-    int mainImage; // cached center/reference image handle
-    int bottomImage; // cached bottom image handle
-    int arrowActive; // arrow image while rotating
-    int arrowIdle; // arrow image while idle
-    int markImage; // target/check mark image handle
-    int type; // image-set/variant index (drives tile typeOffset)
-    bool rotatingLeft; // a left rotation is currently animating
-    bool rotatingRight; // a right rotation is currently animating
+    int difficulty;
+    uint32_t reserved_14;
+    uint32_t reserved_18;
+    int target[6];
+    int current[6];
+    int working[6];
+    int tileImages[48];
+    int topImage;
+    int mainImage;
+    int bottomImage;
+    int arrowActive;
+    int arrowIdle;
+    int markImage;
+    int type;
+    bool rotatingLeft;
+    bool rotatingRight;
     uint16_t pad_12a;
-    int rotateTimer; // elapsed time of the in-progress rotation (ms)
-    int wonTimer; // elapsed time since the puzzle was solved (ms)
+    int rotateTimer;
+    int wonTimer;
     int rewardItem;
     int rewardAmount;
     int dockingIndex;
-    uint8_t trailingState[0x320 - 0x140]; // +0x140 opaque trailing state block (never accessed in this TU)
+    uint8_t trailingState[0x320 - 0x140];
 };
 #endif

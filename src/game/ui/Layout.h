@@ -2,32 +2,23 @@
 #define GOF2_LAYOUT_H
 
 #include <cstdint>
+
+#include "ChoiceWindow.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class TouchButton;
-class ChoiceWindow;
-
-namespace AbyssEngine {
-    class PaintCanvas;
-}
+#include "TouchButton.h"
+#include "engine/render/PaintCanvas.h"
 
 using ::AbyssEngine::PaintCanvas;
 
 class Layout {
 public:
-    // Field layout reconstructed to match the binary (Ghidra ground truth,
-    // 0x411 bytes of fields; struct rounds to 0x414 with tail padding).
-    // Every named field sits at its exact byte offset so raw field<T>(p,off)
-    // reads convert to clean member access. _pad_* fill unmapped gaps and must
-    // not be reordered. union { ... } groups same-offset aliases used by
-    // different translation units.
     union {
         uint8_t choiceWindowOpen;
         uint8_t layoutVisibleFlag;
-    }; // 0x0
+    };
+
     uint8_t _pad_0x1[3];
     int field_0x4;
     int windowTopInset;
@@ -35,11 +26,13 @@ public:
     union {
         int field_0xc;
         int field_0xc_leftMargin;
-    }; // 0xc
+    };
+
     union {
         int field_0x10;
         int field_0x10_rightMargin;
-    }; // 0x10
+    };
+
     int field_0x14;
     int field_0x18;
     int field_0x1c;
@@ -47,21 +40,25 @@ public:
     union {
         int field_0x20;
         int field_0x20_top;
-    }; // 0x20
+    };
+
     int field_0x24;
 
     union {
         int field_0x28;
         int buttonInsetX;
-    }; // 0x28
+    };
+
     union {
         int field_0x2c;
         int field_0x2c_rowHeight;
-    }; // 0x2c
+    };
+
     union {
         int field_0x30;
         int field_0x30_rowHeight;
-    }; // 0x30
+    };
+
     int field_0x34;
     int field_0x38;
     int field_0x3c;
@@ -81,7 +78,8 @@ public:
         int field_0x70;
         int field_0x70_rowHeight;
         int promptYOffset;
-    }; // 0x70
+    };
+
     int field_0x74;
     int field_0x78;
     uint8_t _pad_0x7c[8];
@@ -119,7 +117,8 @@ public:
     union {
         int field_0x114;
         int field_0x114_strip5c;
-    }; // 0x114
+    };
+
     uint8_t _pad_0x118[16];
     int field_0x128;
     uint8_t _pad_0x12c[4];
@@ -163,7 +162,8 @@ public:
     union {
         uint8_t field_0x284;
         uint8_t field_0x284_sliderSlot5Enabled;
-    }; // 0x284
+    };
+
     uint8_t field_0x285;
     uint8_t field_0x286;
     uint8_t _pad_0x287[1];
@@ -278,7 +278,6 @@ public:
 
     ~Layout();
 
-    // ---- methods ----
     int OnTouchBegin(int x, int y);
 
     int OnTouchEnd(int x, int y);
@@ -353,7 +352,6 @@ public:
 
     void update(int dt);
 
-    // ---- canonical-named public draw entries ----
     void drawWindow(String title, int x, int y, int w, int h);
 
     void drawWindow(String title);

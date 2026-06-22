@@ -17,6 +17,6 @@ namespace gof2 {
     };
 
     extern const JNIEnvCallAnchors kJNIEnvCallAnchors;
-} // namespace gof2
+}
 
 #endif

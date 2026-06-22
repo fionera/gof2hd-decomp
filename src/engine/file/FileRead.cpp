@@ -79,8 +79,7 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
                 AEFile::ReadSwitched(x, handle);
                 AEFile::ReadSwitched(y, handle);
                 AEFile::ReadSwitched(z, handle);
-                // Floats in the .bin tables are stored big-endian, so read the raw 32 bits switched
-                // and reinterpret them as a float.
+
                 float extraX = 0.0f;
                 float extraY = 0.0f;
                 float extraZ = 0.0f;
@@ -139,8 +138,7 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
         for (uint32_t i = 0; i < count; i++) {
             uint16_t type;
             AEFile::Read(type, handle);
-            // Floats in the .bin tables are stored big-endian, so read the raw 32 bits switched and
-            // reinterpret them as a float.
+
             float a;
             float b;
             float c;

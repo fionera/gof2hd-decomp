@@ -1,14 +1,9 @@
 #ifndef GOF2_ROUTE_H
 #define GOF2_ROUTE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-struct Waypoint;
-struct KIPlayer;
-
-typedef AbyssEngine::AEMath::Vector Vector;
+#include "Waypoint.h"
 
 class Route {
 public:

@@ -398,4 +398,4 @@ namespace AbyssEngine {
             target->EndCapture();
         }
     }
-} // namespace AbyssEngine
+}

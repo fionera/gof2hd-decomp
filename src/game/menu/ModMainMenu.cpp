@@ -4,7 +4,7 @@
 #include "game/world/Level.h"
 #include "game/world/StarSystem.h"
 #include "game/core/CutScene.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 #include "engine/audio/FModSound.h"
 #include "game/ui/MenuTouchWindow.h"

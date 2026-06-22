@@ -7,19 +7,9 @@ namespace AbyssEngine {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_ctor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_random_ctor;
 
 Sparks::Sparks(int kind) {
@@ -61,12 +51,7 @@ Sparks::Sparks(int kind) {
     this->elapsed = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_translate;
 
 void Sparks::translate(Vector const &v) {
@@ -89,12 +74,7 @@ bool Sparks::isRocket() {
     return this->kind == 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_update;
 
 void Sparks::update(int step) {
@@ -133,33 +113,13 @@ void Sparks::update(int step) {
     this->elapsed = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_explode_rocket;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_explode_single;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_random_explode;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int (*g_Sparks_nextInt_explode)(void *rng, int bound);
 
 void Sparks::explode(int x, int y, int z) {
@@ -193,12 +153,7 @@ void Sparks::explode(int x, int y, int z) {
     this->active = 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_Sparks_canvas_render;
 
 void Sparks::render() {

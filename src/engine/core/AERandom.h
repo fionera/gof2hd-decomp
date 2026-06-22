@@ -5,23 +5,27 @@
 namespace AbyssEngine {
     class AERandom {
     public:
-        uint32_t seedLow; // PRNG state low 32 bits
-        uint32_t seedHigh; // PRNG state high 16 bits
+        uint32_t seedLow;
+        uint32_t seedHigh;
 
-        AERandom(); // time-seeded
+        AERandom();
+
         explicit AERandom(long long seed);
 
         ~AERandom();
 
         void setSeed(long long seed);
 
-        void reset(); // re-seed from current time
+        void reset();
 
-        uint32_t next(int bits); // raw next(bits) generator
-        int nextInt(); // 31-bit non-negative int
-        int nextInt(int bound); // [0, bound)
+        uint32_t next(int bits);
+
+        int nextInt();
+
+        int nextInt(int bound);
     };
-} // namespace AbyssEngine
-extern AbyssEngine::AERandom *gRandom; // canonical shared RNG singleton (binary .bss 0x2281cc)
+}
+
+extern AbyssEngine::AERandom *gRandom;
 
 #endif

@@ -34,4 +34,4 @@ namespace AbyssEngine {
         pos = np;
         return p == n;
     }
-} // namespace AbyssEngine
+}

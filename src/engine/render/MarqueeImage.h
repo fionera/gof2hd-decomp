@@ -1,26 +1,17 @@
 #ifndef GOF2_MARQUEEIMAGE_H
 #define GOF2_MARQUEEIMAGE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
-namespace AbyssEngine {
-    class PaintCanvas;
-}
 
 using ::AbyssEngine::PaintCanvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_MarqueeImage_canvas;
 
 class MarqueeImage {
 public:
-    uint32_t image; // image2D handle (filled by PaintCanvas::Image2DCreate)
+    uint32_t image;
     int32_t imageWidth;
     int32_t imageHeight;
     int32_t x;

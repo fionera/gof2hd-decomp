@@ -1,7 +1,7 @@
 #include "game/ui/HangarWindow.h"
 #include <algorithm>
 #include "game/world/SolarSystem.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/ui/ChoiceWindow.h"
 #include "engine/audio/FModSound.h"
 #include "game/core/HangarList.h"
@@ -18,7 +18,7 @@
 #include "game/ship/Ship.h"
 #include "engine/core/NFC.h"
 
-extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
+extern PaintCanvas *gCanvas;
 
 static const String g_HangarWindow_emptyDialogText;
 
@@ -54,19 +54,14 @@ bool HangarWindow::isInSpecialMode() {
     return this->dialogActive != 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
 
 void HangarWindow::refreshCurrentContentHeight() {
     Array<ListItem *> *items = ((HangarList *) this->hangarList)->getCurrentTabItems();
     if (items != 0) {
         int n = (int) items->size();
-        // RAWREAD: *g_hw_globals is an untyped void* here; Globals has no member at +0x70.
+
         int rowH = (*(int *) ((char *) (*g_hw_globals) + (0x70)));
         this->currentContentHeight = this->field_0x100.d * (n - 1) + n * rowH;
     }
@@ -95,8 +90,6 @@ bool HangarWindow::readyToClose() {
 }
 
 void HangarWindow::render3D() {
-    // In the embedded item-list view mode the hangar has no 3D content of its own, so
-    // it hands the 3D pass off to the item-list sub-window.
     if (this->viewMode == 1) {
         this->listItemWindow->render();
     }
@@ -137,7 +130,6 @@ HangarWindow::~HangarWindow() {
 float HangarWindow::getRelativeScrollStartPos() {
     int range = this->scrollOffset;
     if (range > 0) {
-        // Float pool DAT_0015b6e8 = 0x00000000.
         return 0.0f;
     }
     return -(float) range / (float) this->currentContentHeight;
@@ -147,103 +139,33 @@ void HangarWindow::hideMessage() {
     this->dialogActive = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_hw_layout; // layout config singleton
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern Layout **g_hw_layout;
+
 extern int *g_hw_screenWidth;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_screenHeight;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_font;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern RecordHandler **g_hw_recordHandler;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_optionFlags;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern unsigned int *g_hw_dlcModuleId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_blackMarketHintFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_introHintFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_headerTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_shipNameBase;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_itemNameBase;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float g_hw_lineScale;
 extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
         hw_rnd_d[], hw_rnd_e[], hw_rnd_x[];
@@ -251,10 +173,10 @@ extern "C" extern const char hw_rnd_empty[], hw_rnd_a[], hw_rnd_b[], hw_rnd_c[],
 void HangarWindow::render() {
     Layout *layout = *g_hw_layout;
     PaintCanvas *canvas = gCanvas;
-    ((PaintCanvas *) canvas)->SetColor(0xffffffffu); // white @0x1590fe
+    ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
 
     void *dlc = AppManager_GetApplicationModule(*g_hw_dlcModuleId);
-    // RAWREAD: dlc is an opaque IApplicationModule (void*); +0x18 is its "active" flag, unmodeled.
+
     bool dlcShown = dlc != 0 && (*(uint8_t *) ((char *) (dlc) + (0x18))) != 0;
 
     if (dlc == 0 || !dlcShown) {
@@ -286,7 +208,6 @@ void HangarWindow::render() {
                 int baseY = layout->field_0x2cc;
                 int colW = layout->field_0x4c;
 
-                // Black-market scrolling hint strip.
                 if (*g_hw_blackMarketHintFlag != 0 && *g_hw_introHintFlag == 0) {
                     int iw = ((PaintCanvas *) canvas)->GetImage2DWidth(0);
                     int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(0);
@@ -306,7 +227,6 @@ void HangarWindow::render() {
 
                 int contentBase = colW + baseY + rowGap;
 
-                // Hide all action buttons before re-laying them out per row.
                 Array<TouchButton *> *btnArr = this->buttons;
                 for (int i = 0; i != 0x18; i++) {
                     if (this->dragging == 0) {
@@ -328,7 +248,6 @@ void HangarWindow::render() {
                     if (((ListItem *) (li))->isSelectable() == 0)
                         continue;
 
-                    // Row background box (selected vs unselected, by tab).
                     if (this->selectedItem == li && ((ListItem *) (li))->isTextButton() == 0) {
                         String boxText;
                         if (tab == 0 && ((ListItem *) li)->field_0x3c >= 0) {
@@ -348,20 +267,18 @@ void HangarWindow::render() {
                                                        layout->field_0x70, &boxText);
                     }
 
-                    ((PaintCanvas *) canvas)->SetColor(0xffffffffu); // white @0x159492
+                    ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
                     String label;
 
                     if (((ListItem *) (li))->isItem() == 0) {
                         if (((ListItem *) (li))->isShip() != 0) {
-                            // Ship row: name + price + ship icon.
                             ((ListItem *) li)->ship->getIndex();
-                            // Affordability tint: green when the player can pay, the
-                            // muted price colour otherwise (binary @0x159a16-28).
+
                             int shipCredits = gStatus->getCredits();
                             int shipPrice = ((ListItem *) li)->ship->getPrice();
                             unsigned int shipPriceColor = (shipCredits > shipPrice)
-                                                              ? 0xa35b5bffu // affordable (green)
-                                                              : 0x7aa35bffu; // pool @0x159c70
+                                                              ? 0xa35b5bffu
+                                                              : 0x7aa35bffu;
                             ((PaintCanvas *) canvas)->SetColor(shipPriceColor);
                             String price = Layout::formatCredits(((ListItem *) li)->ship->getPrice());
                             ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, price,
@@ -370,7 +287,7 @@ void HangarWindow::render() {
                             ((ImageFactory *) (*g_hw_globals))->drawShip(
                                 ((ListItem *) li)->ship->getIndex(), this->hintOffsetX + layout->field_0x28 + rowGap,
                                 this->iconOffsetY + y);
-                            ((PaintCanvas *) canvas)->SetColor(0xffffffffu); // white @0x159ace
+                            ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
                         } else if (((ListItem *) (li))->isSlot() != 0) {
                             if (tab == 4 && i == items->size() - 1) {
                                 (*this->buttons)[(0x5c) >> 2]->setPosition(
@@ -400,7 +317,7 @@ void HangarWindow::render() {
                                                                       (layout->field_0x70 / 2) + 2 + y,
                                                                       (unsigned char) 0x11);
                                 ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
-                                // binary literal @0x1599cc, between border image and percent label
+
                                 String pct, sfx, sum;
                                 pct.ctor_int((int) (rate * 100.0f));
                                 sum = pct + sfx;
@@ -409,17 +326,17 @@ void HangarWindow::render() {
                                                                      hintOffsetX +
                                                                      this->progressBarWidth + layout->field_0x2c, 0,
                                                                      (bool) 0);
-                                ((PaintCanvas *) canvas)->SetColor(0xffffffffu); // white @0x15987e
+                                ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
                             }
                             int bpIdx = ((ListItem *) li)->bluePrint->getIndex();
-                            // RAWREAD: indexes the opaque item-pointer table reached via *g_hw_globals(void*)+0x4.
+
                             int type = ((Item *) ((*(void * *) (
                                 (char *) ((*(void * *) ((char *) (*g_hw_globals) + (0x4)))) + (bpIdx)))))->getType();
                             ((ImageFactory *) (*g_hw_globals))->drawItem(
                                 bpIdx, type, layout->field_0x28 + rowGap + this->hintOffsetX);
-                            // Green tint when the blueprint is craftable (ListItem+0x45) @0x1598e0.
+
                             if (((ListItem *) li)->field_0x45 != 0)
-                                ((PaintCanvas *) canvas)->SetColor(0x00ed00ffu); // green @0x1598f0
+                                ((PaintCanvas *) canvas)->SetColor(0x00ed00ffu);
                         } else if (((ListItem *) (li))->isPendingProduct() != 0) {
                             int amt = ((ListItem *) li)->pendingProduct->quantity;
                             String head;
@@ -451,19 +368,17 @@ void HangarWindow::render() {
                                                            layout->field_0x1c, &txt);
                         }
                     } else {
-                        // Regular item row: name + amounts + price + icon.
                         ((Item *) ((ListItem *) li)->item)->getIndex();
-                        ((PaintCanvas *) canvas)->SetColor(0xffffffffu); // white @0x159d3e
-                        // Item-price colour: on the shop tab (tab 1) tint by affordability,
-                        // otherwise use the muted price colour (binary @0x15a114-0x15a14c).
+                        ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
+
                         if (tab == 1) {
                             int itemCredits = gStatus->getCredits();
                             int itemPrice = ((Item *) ((ListItem *) li)->item)->getSinglePrice();
                             ((PaintCanvas *) canvas)->SetColor((itemCredits > itemPrice)
-                                                                   ? 0xa35b5bffu // affordable (green)
-                                                                   : 0x7aa35bffu); // pool @0x15a45c
+                                                                   ? 0xa35b5bffu
+                                                                   : 0x7aa35bffu);
                         } else {
-                            ((PaintCanvas *) canvas)->SetColor(0x777777ffu); // pool @0x15a460
+                            ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
                         }
                         if (this->upgradeMode == 0) {
                             String price = Layout::formatCredits(((Item *) ((ListItem *) li)->item)->getSinglePrice());
@@ -482,7 +397,6 @@ void HangarWindow::render() {
                                                          (bool) 0);
                 }
 
-                // Scroll bar when the content overflows.
                 if (scrollPx > 0 || startPx > 0) {
                     ((Layout *) (layout))->drawScrollBar(
                         ((*g_hw_screenHeight - layout->field_0x48) - layout->field_0x28) -
@@ -507,7 +421,6 @@ void HangarWindow::render() {
         }
     }
 
-    // --- Footer + credits button (always drawn). ---
     layout = *g_hw_layout;
     ((Layout *) (layout))->drawFooter();
     Array<TouchButton *> *btns = this->buttons;
@@ -526,7 +439,6 @@ void HangarWindow::render() {
 
     if (this->buyCreditsActive == 0) {
         if (this->freeCreditsActive != 0) {
-            // Free-credits action button column.
             for (unsigned int i = 0; i < 5; i++) {
                 void *b = (*btns)[(i * 4 + 0x48) >> 2];
                 bool vis;
@@ -543,11 +455,9 @@ void HangarWindow::render() {
             }
         }
     } else {
-        // Buy-credits / IAP grid.
         void *appData = AppManager_GetApplicationData();
         (void) appData;
         if (this->listModeFlag == 0) {
-            // Five fixed-label buttons.
             for (int slot = 0x30; slot <= 0x40; slot += 4) {
                 void *b = (*btns)[(slot) >> 2];
                 ((TouchButton *) (b))->setVisible(true);
@@ -557,7 +467,6 @@ void HangarWindow::render() {
                 ((TouchButton *) (b))->draw();
             }
         } else {
-            // List-mode: per-index labelled buttons with icons.
             for (unsigned int i = 0; i <= 4; i++) {
                 void *b = (*btns)[(i * 4 + 0x30) >> 2];
                 ((TouchButton *) (b))->setVisible(true);
@@ -591,7 +500,7 @@ void HangarWindow::render() {
                 ((TouchButton *) (b))->replaceTextKeepSize(&label);
                 ((TouchButton *) (b))->setSplitText(&split);
                 ((TouchButton *) (b))->draw();
-                // RAWREAD: tabIcons is an opaque heap array of image handles; indexes element i.
+
                 ((PaintCanvas *) canvas)->DrawImage2D((unsigned) (*(int *) ((char *) (this->tabIcons) + (i * 4))), x,
                                                       yy - layout->field_0x2c, (unsigned char) 0x11);
             }
@@ -606,82 +515,27 @@ void HangarWindow::render() {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_hw_layout;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern RecordHandler **g_hw_recordHandler;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_optionFlags;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern unsigned int *g_hw_dlcModuleId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern unsigned int *g_hw_modStationId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_bpDoneTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_notEnoughTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_helpTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_sellShipTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_baseTextId;
 
 void HangarWindow::OnTouchEnd(int touch, int coord) {
@@ -696,14 +550,12 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
     }
 
     if (self->dialogActive == 0) {
-        // --- No modal dialog active: normal list / button handling. ---
         if (self->viewMode == 1)
             self->listItemWindow->OnTouchEnd(touch, coord);
 
         Layout *layout = *g_hw_layout;
         int handled = ((Layout *) (layout))->OnTouchEnd(touch, coord);
         if (handled == 0) {
-            // Inertial scroll bookkeeping.
             int delta = self->scrollDelta;
             int newScroll = self->scrollOffset + delta;
             float vel = (float) delta;
@@ -746,7 +598,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 return;
             }
 
-            // "Auto-complete blueprint" button.
             if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch) != 0) {
                 self->bluePrint->getAutoCompletionPrice();
                 String line, priceStr, fmt, msg;
@@ -761,7 +612,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 Array<TouchButton *> *btns = self->buttons;
                 for (unsigned int i = 0; i < btns->size(); i++) {
                     if (((TouchButton *) (btns->data()[i]))->OnTouchEnd(touch) != 0) {
-                        // Dispatch on the slot index (original used a jump table).
                         if ((i & 0x7fffffff) < 0xc)
                             return;
                     }
@@ -780,7 +630,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 }
             }
 
-            // "Buy credits" footer button.
             if ((*self->buttons)[(0x2c) >> 2]->OnTouchEnd(touch) != 0) {
                 g_hw_optionFlags[0x4e] = 1;
                 (*g_hw_recordHandler)->saveOptions();
@@ -819,9 +668,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         return;
     }
 
-    // --- A modal dialog is active (self+0x3c set). Route to the right handler. ---
     if (self->autoCompletePending != 0) {
-        // Blueprint auto-completion confirmation.
         int r = self->dialog->OnTouchEnd(touch, coord);
         if (r == 1) {
             self->dialogActive = 0;
@@ -842,7 +689,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     if (self->bluePrint->isEmpty() != 0) {
                         ((BluePrint *) self->bluePrint)->stationIndex = gStatus->getStation()->getIndex();
                         gStatus->getStation()->getName();
-                        // String nameOut; assign into bp+0x14 (skipped: name handled inline)
                     }
                     self->bluePrint->complete();
                     self->highlightItem(self->hangarList->getCurrentItemAt(1));
@@ -857,7 +703,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
     }
 
     if (self->replaceEquipPending != 0) {
-        // Equipment-replacement confirmation.
         int r = self->dialog->OnTouchEnd(touch, coord);
         if (r == 1) {
             self->dialogActive = 0;
@@ -870,9 +715,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             self->dialogActive = 0;
             self->replaceEquipPending = 0;
         }
-        // fallthrough to buy/sell confirmation below
     } else if (self->notEnoughCredits != 0) {
-        // "Not enough credits" -> offer to buy credits.
         int r = self->dialog->OnTouchEnd(touch, coord);
         if (r == 1) {
             self->notEnoughCredits = 0;
@@ -884,7 +727,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         }
     } else if (self->buyCreditsActive == 0) {
         if (self->freeCreditsActive != 0) {
-            // Free-credits action buttons.
             int r = self->dialog->OnTouchEnd(touch, coord);
             if (r == 0) {
                 for (int i = 0x12; i != 0x17; i++)
@@ -892,8 +734,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->freeCreditsActive = 0;
                 self->showCreditsBuyWindow();
             }
-            // RAWREAD: appData is the opaque ApplicationData (void*, no header); +0xNN are its
-            // unmodeled per-reward "claimed" flags.
+
             void *appData = AppManager_GetApplicationData();
             RecordHandler *rh = *g_hw_recordHandler;
             for (unsigned int i = 0; i != 5; i++) {
@@ -940,7 +781,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         }
 
         if (self->bluePrintPurchasePending != 0) {
-            // Blueprint cargo-purchase confirmation.
             int r = self->dialog->OnTouchEnd(touch, coord);
             int cost = ((Item *) ((ListItem *) self->bluePrintItem)->item)->getBlueprintAmount() * 200;
             bool revert = true;
@@ -984,7 +824,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         }
 
         if (self->sellShipPending != 0) {
-            // Ship sale confirmation.
             int r = self->dialog->OnTouchEnd(touch, coord);
             if (r == 1) {
                 self->sellShipPending = 0;
@@ -1001,8 +840,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             return;
         }
 
-        // Ship purchase confirmation (the large branch). The mission-offer tail
-        // is delegated to a helper because its decompile is unrecoverable.
         int r = self->dialog->OnTouchEnd(touch, coord);
         bool special = globals->field_0x114 == 3 && self->upgradeMode == 0;
         if (special && self->dlcMenuPending != 0 && r == 1) {
@@ -1026,17 +863,10 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 }
             }
         }
-        // The rest of the ship-swap and mission-offer flow: with the equipment-swap
-        // ChoiceWindow (self->dialog) showing, route the touch result:
-        //   * OK on the swap dialog     -> keep the new equipment, restore the scroll.
-        //   * Cancel on the swap dialog -> undo: re-mount the demounted item / drop the
-        //                                  pending mount, and snapshot the scroll offset.
-        //   * buy-mode confirmation     -> commit or roll back the buy, resetting the
-        //                                  HangarList selection.
+
         {
             ChoiceWindow *swapDialog = self->dialog;
 
-            // Equipment swap confirmation.
             int swapResult = swapDialog->OnTouchEnd(touch, coord);
             if (swapResult == 1) {
                 self->dialogActive = 0;
@@ -1051,7 +881,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 self->replaceEquipPending = 0;
             }
 
-            // Buy-mode confirmation (shares the same ChoiceWindow).
             uint8_t buying = self->buyMode;
             int buyResult = swapDialog->OnTouchEnd(touch, coord);
             if (buying != 0) {
@@ -1082,10 +911,8 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         }
         return;
     } else {
-        // self+0xae set: free-credits intro window.
         int r = self->dialog->OnTouchEnd(touch, coord);
         if (r != 0) {
-            // Buy-credits grid.
             Array<TouchButton *> *btns = self->buttons;
             for (unsigned int i = 0; i < 5; i++) {
                 if ((*btns)[(i * 4 + 0x30) >> 2]->OnTouchEnd(touch) != 0) {
@@ -1130,7 +957,6 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         return;
     }
 
-    // --- Shared buy/sell confirmation tail (reached from 0x11c branch). ---
     uint8_t buying = self->buyMode;
     int r2 = self->dialog->OnTouchEnd(touch, coord);
     if (buying != 0) {
@@ -1242,12 +1068,7 @@ void HangarWindow::update(int delta) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_hw_sound;
 
 int HangarWindow::highlightItem(ListItem *item) {
@@ -1266,12 +1087,7 @@ int HangarWindow::highlightItem(ListItem *item) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_hw_sound;
 
 void HangarWindow::demountItem(Item *item, int slot) {
@@ -1322,33 +1138,13 @@ void HangarWindow::demountItem(Item *item, int slot) {
     (*g_hw_sound)->play(0x60, nullptr, nullptr, 0.0f);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_hw_layout;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_screenWidth;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_bpTextId;
 
 void HangarWindow::OnTouchBegin(int touch, int coord) {
@@ -1458,40 +1254,15 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_buyTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_buyTextId2;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *g_hw_buyFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_buyWidth;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_buyHeight;
 
 extern "C" {
@@ -1548,7 +1319,7 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
     if (arr == nullptr) return;
     for (uint32_t i = 0; i < arr->size(); i++) {
         ListItem *it = arr->data()[i];
-        // "blueprint craftable" hint flag at +0x45 (not modeled in ListItem).
+
         *((uint8_t *) it + 0x45) = 0;
         if (it != nullptr && it->isBluePrint() != 0) {
             BluePrint *bp = it->bluePrint;
@@ -1572,40 +1343,15 @@ void HangarWindow::refreshCargoAvailabilityForBlueprints() {
 }
 
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_itemFlags;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_sellTextId1;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_sellTextId2;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_routesTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_bpStations;
 
 void HangarWindow::setSellMode(bool buy) {
@@ -1626,8 +1372,6 @@ void HangarWindow::setSellMode(bool buy) {
     if (tab == 1) {
         if (self->buyMode == 0) {
             if (((ListItem *) (item))->isItem() != 0 && ((Item *) (item->field_0x10))->getType() != 4) {
-                // RAWREAD: *g_hw_itemFlags is an opaque hint-flag block (void*); +0x1d/0x1e are
-                // "first-time tip shown" booleans, unmodeled.
                 void *flags = *g_hw_itemFlags;
                 if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
                     ((GameText *) (*g_hw_sellTextId1))->getText();
@@ -1781,61 +1525,21 @@ void HangarWindow::setSellMode(bool buy) {
     self->bluePrintItem = self->selectedItem;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_itemFlags;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_unsaleableTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_slotMsgTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_buyBaseTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_notEnoughTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_sellMsgTextId1;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_sellMsgTextId2;
 
 void HangarWindow::selectItem(ListItem *item) {
@@ -1864,7 +1568,6 @@ void HangarWindow::selectItem(ListItem *item) {
         if (((ListItem *) (item))->isSelectable() == 0)
             return;
         if (((ListItem *) (item))->isShip() == 0) {
-            // Buying / selling a regular item.
             if (((Item *) (li->field_0x10))->isUnsaleable() != 0)
                 return;
 
@@ -1894,8 +1597,6 @@ void HangarWindow::selectItem(ListItem *item) {
                 }
                 int li = ((ListItem *) (item))->getIndex();
                 if (li > 0x83 && ((ListItem *) (item))->getIndex() < 0x9a) {
-                    // RAWREAD: Globals::field_0xac is an opaque table handle; +0x4 is its byte-array
-                    // payload pointer, indexed by (item index - 0x84). No modeled type.
                     int base = ((Globals *) *g_hw_globals)->field_0xac;
                     *((uint8_t *) (*(int *) ((char *) ((void *) (uintptr_t) base) + (4))) + ((ListItem *) (item))->
                       getIndex() - 0x84) = 1;
@@ -1921,7 +1622,6 @@ void HangarWindow::selectItem(ListItem *item) {
             return;
         }
 
-        // Buying a ship.
         int price = ((Ship *) (li->ship))->getPrice();
         Globals *globals = (Globals *) *g_hw_globals;
         int credits = gStatus->getCredits();
@@ -1973,7 +1673,6 @@ void HangarWindow::selectItem(ListItem *item) {
         return;
     }
 
-    // Tab 0: cargo / equipment management.
     if (((ListItem *) (item))->isSelectable() == 0)
         return;
 
@@ -2029,7 +1728,6 @@ void HangarWindow::selectItem(ListItem *item) {
         return;
     }
 
-    // Mounting: check for an existing equipment of the same sort.
     Globals *globals = (Globals *) *g_hw_globals;
     int sort = li->field_0x10->getSort();
     Item *existing = gStatus->getShip()->getFirstEquipmentOfSort(sort);
@@ -2064,7 +1762,6 @@ float HangarWindow::getRelativeScrollHeight() {
     int a = this->currentContentHeight;
     int b = this->visibleHeight;
     if (a < b) {
-        // Float pool DAT_0015b73c = 0x00000000.
         return 0.0f;
     }
     int e = this->scrollOffset;
@@ -2079,26 +1776,11 @@ float HangarWindow::getRelativeScrollHeight() {
     return (float) num / (float) a;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_unsaleableTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_notEnoughTextId;
 
 void HangarWindow::transaction(bool buy) {
@@ -2116,8 +1798,7 @@ void HangarWindow::transaction(bool buy) {
         unsigned int result = ((Item *) cur)->transaction(buy, this->currentLoad, this->upgradeMode);
         unsigned int idx = ((Item *) (cur))->getIndex();
         Globals *globals = (Globals *) *g_hw_globals;
-        // RAWREAD: Globals::field_0x54 is an opaque [count, byte-array-addr] descriptor; avail[1]
-        // is the payload address indexed by item index. No modeled type.
+
         unsigned int *avail = globals->field_0x54;
         if (idx < avail[0])
             *((uint8_t *) avail[1] + ((Item *) (cur))->getIndex()) = 1;
@@ -2183,12 +1864,7 @@ void HangarWindow::transaction(bool buy) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_hw_sound;
 
 void HangarWindow::mountItem(Item *item) {
@@ -2238,19 +1914,9 @@ void HangarWindow::mountItem(Item *item) {
     (*g_hw_sound)->play(0x62, nullptr, nullptr, 0.0f);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_hw_layout;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_screenWidth;
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
@@ -2314,19 +1980,9 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_equipTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_hw_globals;
 
 void HangarWindow::autoEquipSecondaryWeapons(int row) {
@@ -2380,19 +2036,9 @@ void HangarWindow::autoEquipSecondaryWeapons(int row) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_freeCreditsTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern Layout **g_hw_layout;
 
 void HangarWindow::showFreeCreditsWindow() {
@@ -2426,103 +2072,33 @@ void HangarWindow::showFreeCreditsWindow() {
     this->notEnoughCredits = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_hw_globals; // game-state object at .bss 0x2281d4 (NOT a canonical singleton)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_hw_layout; // layout config singleton
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern void **g_hw_globals;
+
+extern Layout **g_hw_layout;
+
 extern int *g_hw_screenWidth;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_screenHeight;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_hw_helpTextId;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_hw_posXArray; // DAT for X positions
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_hw_posYArray; // DAT for Y positions
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_hw_imageCountSlot; // mirror of tab count
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern void **g_hw_posXArray;
+
+extern void **g_hw_posYArray;
+
+extern void **g_hw_imageCountSlot;
+
 extern uint8_t *g_hw_specialModeFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_blackMarketHintFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern RecordHandler **g_hw_recordHandler;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_listModeFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint8_t *g_hw_introHintFlag;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float g_hw_posScale;
 extern "C" extern const char hw_init_buy[], hw_init_sell[], hw_init_lbl[],
         hw_init_more[], hw_init_back[], hw_init_help[];
@@ -2531,21 +2107,18 @@ void HangarWindow::initialize() {
     HangarWindow *self = this;
     Globals *status = (Globals *) *g_hw_globals;
 
-    // Special "shipyard upgrade" mode at station 0x6c with campaign stage 3.
     uint8_t special = 0;
     if (gStatus->getStation()->getIndex() == 0x6c)
         special = (status->field_0x114 == 3);
     self->upgradeMode = special;
     ((Status *) (status))->calcCargoPrices();
 
-    // Build the hangar item list.
     HangarList *list = new HangarList();
     self->hangarList = list;
     self->itemList = Item::mixItems(gStatus->getShip()->getCargo(), gStatus->getStation()->getItems());
     list->init(gStatus->getShip(), 0, gStatus->getStation()->getShips(),
                (Array<BluePrint *> *) (long) ((Status *) (*g_hw_globals))->getBluePrints());
 
-    // Tab bar: 3 help/info buttons across the top.
     self->tabButtons = new Array<TouchButton *>();
     self->tabButtons->resize(3);
 
@@ -2572,11 +2145,10 @@ void HangarWindow::initialize() {
     (*self->tabButtons)[(0) >> 2] = (TouchButton *) (b2);
     self->listModeFlag = *g_hw_listModeFlag;
 
-    // Six tab icons.
     void *icons = ::operator new[](0x18);
     self->tabIcons = icons;
     for (int i = 0; i != 6; i++)
-        // RAWREAD: icons is a raw image-handle array; this addresses element i (array index, not a field).
+
         gCanvas->Image2DCreate((unsigned short) (i + 0x232a), *(unsigned int *) ((char *) icons + i * 4));
 
     int *posX = (int *) *g_hw_posXArray;
@@ -2596,7 +2168,6 @@ void HangarWindow::initialize() {
     gCanvas->Image2DCreate((unsigned short) (0x52e), self->blueprintIconImage);
     gCanvas->Image2DCreate((unsigned short) (0x544), self->pendingIconImage);
 
-    // Action button bank (24 entries).
     self->buttons = new Array<TouchButton *>();
     self->buttons->resize(0x18);
 
@@ -2666,7 +2237,6 @@ void HangarWindow::initialize() {
         (*self->buttons)[(0x2c) >> 2] = (TouchButton *) (e11);
     }
 
-    // Five collapsible "more" rows (indices 0x0c..0x10 in slot terms).
     uint8_t listMode = self->listModeFlag;
     int row = 0;
     for (int slot = 0xc; (unsigned int) (slot - 0xc) < 5; slot++) {
@@ -2704,7 +2274,6 @@ void HangarWindow::initialize() {
         (*self->buttons)[(0x5c) >> 2] = (TouchButton *) (btn);
     }
 
-    // Tab selector icons (5 entries with paired up/down images).
     unsigned int imgA, imgB;
     for (int i = 0x12; (unsigned int) (i - 0x12) < 5; i++) {
         imgB = 0xffffffff;
@@ -2736,7 +2305,6 @@ void HangarWindow::initialize() {
     self->progressBarWidth = gCanvas->GetImage2DWidth(0);
     self->progressBarHeight = gCanvas->GetImage2DHeight(0);
 
-    // Recompute best cargo prices from known equipment when not in a black market.
     if (self->itemList != 0 && gStatus->inBlackMarketSystem() == 0 &&
         self->upgradeMode == 0) {
         Array<Item *> *equip = ((Ship *) (gStatus->getShip()))->getEquipment();
@@ -2752,9 +2320,7 @@ void HangarWindow::initialize() {
                 int price = ((Item *) (itemPtr))->getSinglePrice();
                 int idx = ((Item *) (itemPtr))->getIndex();
                 Globals *globals = (Globals *) *g_hw_globals;
-                // RAWREAD: the buy/sell/system price tables (Globals::field_0x3c/0x40/0x48 and the
-                // void* at *g_hw_globals+0x44) are opaque container objects; +0x4 is their int[]
-                // payload pointer, indexed by item id. No modeled element type.
+
                 int *buyTbl = (int *) (*(int *) ((char *) (globals->field_0x40) + (4)));
                 if (buyTbl[idx] < price || buyTbl[idx] == 0) {
                     buyTbl[idx] = price;
@@ -2827,7 +2393,6 @@ void HangarWindow::initialize() {
     self->shipSwapPending = 0;
     self->swapConfirmFlag = 0;
 
-    // Zero the 16-byte block at 0xc1 and the touch-drag block at 0xb4.
     self->field_0xc1 = 0;
     self->field_0xc5 = 0;
     self->field_0xc9 = 0;
@@ -2842,7 +2407,6 @@ void HangarWindow::initialize() {
     self->scrollOffsetBackup = 0;
     self->scrollDelta = 0;
 
-    // First-visit hint at later campaign stages.
     if (gStatus->getCurrentCampaignMission() > 0xd) {
         uint8_t *introFlag = g_hw_introHintFlag;
         if (introFlag[0x4e] == 0) {
@@ -2883,9 +2447,6 @@ HangarWindow::HangarWindow() {
     this->freeCreditsActive = 0;
     this->autoCompletePending = 0;
 
-    // Seed the grid-spacing block from the layout config geometry table.
-    // RAWREAD: lay is void*; this copies a raw 16-byte geometry block at +0x238 plus three ints at
-    // +0x248/0x24c/0x250 that Layout does not model as named members.
     this->field_0x100 = *(Blk16 *) ((char *) lay + 0x238);
     this->buttonHeight = *(int *) ((char *) lay + 0x248);
     this->field_0x114 = *(int *) ((char *) lay + 0x24c);

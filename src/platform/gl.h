@@ -81,6 +81,6 @@ void glEnable(uint32_t cap);
 void glDisable(uint32_t cap);
 
 void glViewport(int x, int y, int width, int height);
-} // extern "C"
+}
 
-#endif // GOF2_PLATFORM_GL_H
+#endif

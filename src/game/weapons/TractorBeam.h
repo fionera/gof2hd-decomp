@@ -1,28 +1,21 @@
 #ifndef GOF2_TRACTORBEAM_H
 #define GOF2_TRACTORBEAM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class AEGeometry;
-class KIPlayer;
-class Level;
-class Hud;
-class Radar;
+#include "game/ship/KIPlayer.h"
 
 class TractorBeam {
 public:
-    float dirX; // working direction/offset vector .x
-    float dirY; // working direction/offset vector .y
-    float dirZ; // working direction/offset vector .z
-    KIPlayer *grabbedCrate; // currently grabbed crate (null = none)
-    uint8_t active; // beam is active
-    uint8_t soundPlaying; // pull sound is currently playing
-    AEGeometry *beamGeometry; // beam mesh geometry
-    int storedHitpoints; // grabbed crate's hitpoints snapshot
+    float dirX;
+    float dirY;
+    float dirZ;
+    KIPlayer *grabbedCrate;
+    uint8_t active;
+    uint8_t soundPlaying;
+    AEGeometry *beamGeometry;
+    int storedHitpoints;
 
-    // Constructs the beam mesh from base mesh id 0x3798 offset by `kind`.
     TractorBeam(AEGeometry *unused, int kind);
 
     ~TractorBeam();

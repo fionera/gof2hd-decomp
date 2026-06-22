@@ -36,12 +36,7 @@ void Generator::computerTradeGoods(Station *station) {
     }
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_stationBlockList[0x34];
 
@@ -115,76 +110,31 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
     } while (true);
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Item *> **volatile
 g_Generator_agentsItems;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_offerItemIds[12];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_offerShipIds[6];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Ship *> **volatile
 g_Generator_agentsShips;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_storyNames;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **volatile
 g_Generator_storyImages;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_enemyRaces[4];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_enemyNames;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **volatile
 g_Generator_enemyImages;
 
@@ -343,28 +293,13 @@ Array<Agent *> *Generator::createAgents(Station *station) {
     return result;
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *volatile
 g_Generator_missionFlags;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Item *> **volatile
 g_Generator_missionItems;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_targetNames;
 
@@ -609,28 +544,13 @@ Mission *Generator::createMission(Agent *agent,
     return mission;
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_nameSource;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ImageFactory **volatile
 g_Generator_imageFactory;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Item *> **volatile
 g_Generator_agentItems;
 
@@ -724,36 +644,16 @@ Agent *Generator::createAgent(Station *station) {
     return agent;
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Ship *> **volatile
 g_Generator_allShips;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_shipRaces[0x40];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *volatile
 g_Generator_shipFlags;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **volatile
 g_Generator_wantedList;
 
@@ -934,60 +834,25 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
 typedef Item *(*ItemFactory)(Item *, int, int);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Item *> **volatile
 g_Generator_allItems;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 ItemFactory volatile
 g_Generator_introFactory;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_jumpDriveBoost;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *volatile
 g_Generator_weaponBoost;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *volatile
 g_Generator_unlockFlags;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_kaamoAllowed[10];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_blockedItems[9];
 
@@ -1216,20 +1081,10 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     return result;
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Array<Item *> **volatile
 g_Generator_lootItems;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int volatile
 g_Generator_typeChances[8];
 
@@ -1312,12 +1167,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     return result;
 }
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 const volatile int
 kaamoSpecialItems[9];
 

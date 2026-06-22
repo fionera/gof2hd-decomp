@@ -1,9 +1,9 @@
 #ifndef GOF2_SHIP_H
 #define GOF2_SHIP_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "game/mission/Item.h"
 
 class Ship {
@@ -13,7 +13,6 @@ public:
 
     ~Ship();
 
-    // ---- cargo ----
     void addCargo(Array<Item *> *items);
 
     void addCargo(Item *item);
@@ -48,7 +47,6 @@ public:
 
     void changeLoad(int delta);
 
-    // ---- equipment / slots ----
     void setEquipment(Item *item);
 
     void setEquipment(Item *item, int slot);
@@ -91,7 +89,6 @@ public:
 
     Array<Item *> *getEquipment(int type);
 
-    // ---- valuation / pricing ----
     Ship *clone();
 
     bool equals(Ship *other);
@@ -104,7 +101,6 @@ public:
 
     Ship *makeShip(int price);
 
-    // ---- mods ----
     void addMod(int mod);
 
     void setMods(Array<int> *mods);
@@ -115,7 +111,6 @@ public:
 
     int getModdedLoad();
 
-    // ---- simple stat accessors ----
     int getIndex();
 
     int getRace();
@@ -196,7 +191,7 @@ public:
 
     unsigned int hasJumpDriveIntegrated();
 
-    int index; // ship id / type
+    int index;
     int baseHP;
     int value;
     int baseLoad;
@@ -225,7 +220,7 @@ public:
     unsigned char pad5d[3];
     int signatureRace;
     int race;
-    int *slots; // int[4] slot-count array
+    int *slots;
     Array<Item *> *equipment;
     Array<Item *> *cargo;
     int currentWeaponSlot;

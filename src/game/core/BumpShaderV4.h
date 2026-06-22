@@ -1,20 +1,15 @@
 #ifndef GOF2_BUMPSHADERV4_H
 #define GOF2_BUMPSHADERV4_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class BumpShaderV4 : public ShaderBaseStruct {
     public:
         int aPosition;
@@ -43,6 +38,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

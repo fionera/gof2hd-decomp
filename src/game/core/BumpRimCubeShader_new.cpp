@@ -66,8 +66,6 @@ namespace AbyssEngine {
     }
 
     void BumpRimCubeShader_new::UpdateMeshData(Mesh *mesh, Engine *engine) {
-        // The shader header forward-declares AbyssEngine::Engine, but the full
-        // renderer layout lives at top-level ::Engine (gof2/engine/render/Engine.h).
         ::Engine *eng = (::Engine *) engine;
         if (this->uniform0 >= 0)
             glUniformMatrix4fv(this->uniform0, 1, 0, eng->worldViewProjMatrix);
@@ -202,4 +200,4 @@ namespace AbyssEngine {
         if (loc >= 0)
             glDisableVertexAttribArray(loc);
     }
-} // namespace AbyssEngine
+}

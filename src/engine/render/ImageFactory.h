@@ -1,30 +1,23 @@
 #ifndef GOF2_IMAGEFACTORY_H
 #define GOF2_IMAGEFACTORY_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/render/Sprite.h"
 
-class ImagePart;
+#include "engine/render/Sprite.h"
 
 class ImageFactory {
 public:
-    Sprite *sprite; ///< owned composite sprite (frame array)
-    unsigned int itemImage; ///< item glyph image2d handle (id 0x485)
-    unsigned int shipImage; ///< foreground glyph image2d handle (id 0x511)
+    Sprite *sprite;
+    unsigned int itemImage;
+    unsigned int shipImage;
 
     ImageFactory();
 
     ~ImageFactory();
 
-    /// Picks a random sex (50/50), then builds a random character of `race`.
     void createChar(int race);
 
-    /// Builds a 5-int char descriptor: a race slot followed by four random
-    /// part indices. `race` selects a 4-entry row in the part-count table;
-    /// race 3 (Midorian) rerolls to 0 or 2; race 0 (Terran) maps to row 10
-    /// (Woman) unless `isMale` is set; race 5 (Cyborg) collapses to row 0.
     int *createChar(bool isMale, int race);
 
     void drawChar(Array<ImagePart *> *parts, int x, int y, bool flag);

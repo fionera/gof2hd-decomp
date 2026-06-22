@@ -1,7 +1,7 @@
 #include "game/ui/MissionsWindow.h"
 #include "game/ship/Ship.h"
 #include "game/ship/Agent.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/ui/ChoiceWindow.h"
 #include "game/ui/ScrollTouchWindow.h"
 #include "game/ui/TouchButton.h"
@@ -19,40 +19,40 @@
 #include "engine/render/ImageFactory.h"
 #include "engine/render/ImagePart.h"
 
-extern GameText *g_mw_gameText; // active GameText table
-extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
+extern GameText *g_mw_gameText;
+extern PaintCanvas *gCanvas;
 
-extern Layout **g_mw_m_layout; // Layout singleton (OnTouchMove)
-extern Layout **g_mw_b_layout; // Layout singleton (OnTouchBegin)
+extern Layout **g_mw_m_layout;
+extern Layout **g_mw_b_layout;
 
-extern Layout **g_mwi_layout; // Layout singleton (init)
-extern int *g_mwi_titleTable; // GameText id base (init)
-extern char *g_mwi_flagA; // layout-state flag A
-extern char *g_mwi_flagB; // layout-state flag B
-extern char *g_mwi_flagC; // layout-state flag C
-extern int *g_mwi_screenW; // screen width
-extern int *g_mwi_screenH; // screen height
-extern void *g_mwi_campaign; // campaign-state record (untyped)
-extern ImageFactory **g_mwi_imageFactory; // image factory
-extern int g_mwi_actionColor; // action-button text colour
+extern Layout **g_mwi_layout;
+extern int *g_mwi_titleTable;
+extern char *g_mwi_flagA;
+extern char *g_mwi_flagB;
+extern char *g_mwi_flagC;
+extern int *g_mwi_screenW;
+extern int *g_mwi_screenH;
+extern void *g_mwi_campaign;
+extern ImageFactory **g_mwi_imageFactory;
+extern int g_mwi_actionColor;
 
-extern Layout **g_mwd_layout; // Layout singleton (draw)
-extern int *g_mwd_textId; // GameText id base (draw)
-extern void *g_mwd_color; // box colour
-extern ImageFactory **g_mwd_imageFactory; // image factory (draw)
-extern void *g_mwd_font; // default font
+extern Layout **g_mwd_layout;
+extern int *g_mwd_textId;
+extern void *g_mwd_color;
+extern ImageFactory **g_mwd_imageFactory;
+extern void *g_mwd_font;
 
-extern char *g_mwt_flagA; // layout-state flag A (touch)
-extern char *g_mwt_flagB; // layout-state flag B (touch)
-extern char *g_mwt_flagC; // layout-state flag C (touch)
-extern int *g_mwt_screenW; // screen width (touch)
-extern int *g_mwt_screenH; // screen height (touch)
-extern Layout **g_mwt_layout; // Layout singleton (touch)
-extern Layout **g_mwt_resetLayout; // layout for resetWindowDimensions
+extern char *g_mwt_flagA;
+extern char *g_mwt_flagB;
+extern char *g_mwt_flagC;
+extern int *g_mwt_screenW;
+extern int *g_mwt_screenH;
+extern Layout **g_mwt_layout;
+extern Layout **g_mwt_resetLayout;
 
-extern void *g_mw_campaign; // campaign-state record (update)
-extern int *g_mw_textBase; // GameText id base (update)
-extern int *g_mw_titleTable; // per-mission title id table (update)
+extern void *g_mw_campaign;
+extern int *g_mw_textBase;
+extern int *g_mw_titleTable;
 
 extern "C" void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
@@ -168,7 +168,6 @@ int MissionsWindow::init() {
     Layout *L = *g_mwi_layout;
     int titleId = *g_mwi_titleTable;
 
-    // --- window geometry (orientation / state dependent) ---
     if (*g_mwi_flagA == 0) {
         this->m_x = 0;
         this->m_y = 0;
@@ -190,7 +189,6 @@ int MissionsWindow::init() {
         this->m_y = (*g_mwi_screenH >> 1) - (w >> 1);
     }
 
-    // --- two tab buttons ---
     Array<TouchButton *> *tabs = new Array<TouchButton *>();
     this->m_pTabButtons = tabs;
     tabs->resize(2);
@@ -213,7 +211,6 @@ int MissionsWindow::init() {
 
     L->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
 
-    // --- tear down any previous sub-objects ---
     if (this->m_pAgentImageParts) {
         for (ImagePart *e: *this->m_pAgentImageParts) delete e;
         this->m_pAgentImageParts->clear();
@@ -235,7 +232,6 @@ int MissionsWindow::init() {
     this->m_pMapButton = nullptr;
     this->m_choiceActive = 0;
 
-    // --- left (campaign) scroll window ---
     int topY = L->field_0xc + this->m_y + L->field_0x20 + L->field_0x5c + L->field_0x2c;
     int reserve = (gStatus->gameWon() == 0) ? L->field_0x30 : 0;
     this->m_pCampaignWindow = new ScrollTouchWindow(
@@ -244,7 +240,6 @@ int MissionsWindow::init() {
         (((((this->m_y - topY) + this->m_height) - L->field_0x10) - L->field_0x24) - reserve)
         + L->field_0x2c * -2, false);
 
-    // --- campaign-mission summary text ---
     bool campShow = (gStatus->gameWon() == 0) ||
                     (*(char *) (*(char **) g_mwi_campaign + 0x37) != 0 ||
                      *(char *) (*(char **) g_mwi_campaign + 0x35) != 0);
@@ -288,7 +283,6 @@ int MissionsWindow::init() {
         (void) useGold;
     }
 
-    // --- right (freelance) scroll window ---
     int fmEmpty = gStatus->getFreelanceMission()->isEmpty();
     int half = this->m_width >> 1;
     int pad = L->field_0x2c;
@@ -328,7 +322,6 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText(a, b);
     }
 
-    // --- action buttons (Accept / Reject / Show-on-map) ---
     if (gStatus->inAlienOrbit() == 0) {
         int btnY = ((this->m_width >> 1) >> 1) - L->buttonInsetX;
         if (gStatus->gameWon() == 0) {
@@ -403,7 +396,6 @@ void MissionsWindow::draw() {
     int ox = this->m_x, oy = this->m_y;
     int ow = this->m_width, oh = this->m_height;
 
-    // Campaign-mission title box + body box.
     {
         String *t = g_mw_gameText->getText(titleId);
         String box(*t);
@@ -425,7 +417,6 @@ void MissionsWindow::draw() {
     this->m_pCampaignWindow->draw();
     if (this->m_pAcceptButton) this->m_pAcceptButton->draw();
 
-    // Freelance-mission title + body box (right column).
     {
         String *t = g_mw_gameText->getText(titleId);
         String box(*t);
@@ -444,7 +435,6 @@ void MissionsWindow::draw() {
                    ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, (unsigned) (uintptr_t) canvas);
     }
 
-    // Active freelance mission details.
     Mission *fm = gStatus->getFreelanceMission();
     if (fm != nullptr && fm->isEmpty() == 0 && this->m_pAgentImageParts != nullptr) {
         (*g_mwd_imageFactory)->drawChar(
@@ -482,7 +472,6 @@ void MissionsWindow::render3D() {
 }
 
 void MissionsWindow::OnTouchEnd(int y, int z) {
-    // Wanted-board sub-window active.
     if (this->m_mode == 1) {
         this->m_pWantedWindow->OnTouchEnd(y, z);
         if (*(int *) this->m_pWantedWindow == 0) {
@@ -493,14 +482,12 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
     }
 
     if (this->m_choiceActive != 0) {
-        // Confirmation dialog open.
         int r = this->m_pChoiceWindow->OnTouchEnd(y, z);
         if (r == 1) {
             this->m_choiceActive = 0;
             return;
         }
         if (r == 0) {
-            // Confirmed: clear out the freelance-mission cargo/passengers and re-init.
             Status *st = gStatus;
             Mission *fm = st->getFreelanceMission();
             int type = fm->getType();
@@ -531,10 +518,8 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             this->m_hangarNeedsUpdate = savedFlag;
             return;
         }
-        // r != 0 and != 1: fall through to the normal touch handling.
     }
 
-    // Normal (no dialog) path, unless the star-map overlay is showing.
     if (this->m_starMapActive == 0) {
         if (gStatus->wantedBoardAccessible() != 0) {
             Array<TouchButton *> *tabs = this->m_pTabButtons;
@@ -547,7 +532,6 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
         this->m_pFreelanceWindow->OnTouchEnd(y, z);
 
         if (this->m_pAcceptButton && this->m_pAcceptButton->OnTouchEnd(y, z) != 0) {
-            // "Show on map" for the campaign mission.
             ApplicationManager *appMgr = gAppManager;
             void *mod = appMgr->GetApplicationModule(5);
             void *map = *(void **) ((char *) mod + 0x10);
@@ -574,7 +558,6 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
                 this->m_choiceActive = 1;
             }
             if (this->m_pRejectButton && this->m_pRejectButton->OnTouchEnd(y, z) != 0) {
-                // "Show on map" for the freelance mission.
                 ApplicationManager *appMgr = gAppManager;
                 void *mod = appMgr->GetApplicationModule(5);
                 void *map = *(void **) ((char *) mod + 0x10);
@@ -605,7 +588,6 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             }
         }
     } else {
-        // Star-map overlay is showing.
         if (StarMap_OnTouchEnd(this->m_pStarMap, y, z) != 0) {
             int wantW, wantH, posX;
             if (*g_mwt_flagA == 0) {
@@ -640,12 +622,11 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
 }
 
 void MissionsWindow::update(int dt) {
-    // Mode 1: advance the wanted board and bail out.
     if (this->m_mode == 1) {
         this->m_pWantedWindow->update(0);
         return;
     }
-    // Star-map overlay active: advance it and bail out.
+
     if (this->m_starMapActive != 0) {
         this->m_pStarMap->update(0);
         return;
@@ -687,7 +668,6 @@ void MissionsWindow::update(int dt) {
         }
     }
 
-    // Highlight the selected tab.
     Array<TouchButton *> *tabs = this->m_pTabButtons;
     for (unsigned int i = 0; i < tabs->size(); i++)
         (*tabs)[i]->setAlwaysPressed((int) i == this->m_mode);

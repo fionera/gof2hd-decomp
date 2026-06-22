@@ -1,9 +1,8 @@
 #ifndef GOF2_CHEATHANDLER_H
 #define GOF2_CHEATHANDLER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 namespace AbyssEngine {
     struct CheatCode {
@@ -17,8 +16,6 @@ namespace AbyssEngine {
 
         bool Update(uint16_t key);
     };
-
-    class KeyCode;
 
     typedef void (*CheatFunc)(int, void *);
 
@@ -39,7 +36,7 @@ namespace AbyssEngine {
 
         void Update(uint16_t key);
     };
-} // namespace AbyssEngine
+}
 
 void OnCheatActivated(int code, void *data);
 

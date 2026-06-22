@@ -3,16 +3,11 @@
 #include <cstdint>
 #include <cstddef>
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
-namespace AbyssEngine {
-    class Mesh;
-} // engine-opaque, namespaced
-namespace AbyssEngine {
-    class Engine;
-} // real definition in engine/render/Engine.h
+
+
 using ::AbyssEngine::Engine;
 
 extern "C" {
@@ -117,7 +112,7 @@ float **g_update_speed;
 }
 
 extern "C" {
-void AE_AEMath_matMul(Matrix *out, const Matrix *in);
+void AE_AEMath_matMul(AbyssEngine::Matrix *out, const AbyssEngine::Matrix *in);
 
 void AE_SpriteSystem_pushMatrix(
     unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3, unsigned int m4,
@@ -151,4 +146,4 @@ void *operator_new_helper(size_t);
 float sqrtf(float);
 }
 
-#endif // GOF2_EXTERNS_H
+#endif

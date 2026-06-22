@@ -84,4 +84,4 @@ namespace AbyssEngine {
     float EaseInOut::GetMinValue() {
         return m_min;
     }
-} // namespace AbyssEngine
+}

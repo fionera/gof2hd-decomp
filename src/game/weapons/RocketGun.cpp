@@ -9,8 +9,8 @@
 
 class Radar {
 public:
-    void *level; // +0x00
-    void *field_0x4; // +0x04
+    void *level;
+    void *field_0x4;
 };
 
 namespace AbyssEngine {
@@ -22,7 +22,7 @@ namespace AbyssEngine {
 
         void TransformSetLocal(unsigned int index, const Matrix &matrix);
     };
-} // namespace AbyssEngine
+}
 
 extern PaintCanvas *g_paintCanvas;
 
@@ -70,7 +70,7 @@ RocketGun::~RocketGun() {
     this->trailTimers = nullptr;
 }
 
-static const float kRocketTurnRate = 0.3f; // 0x3e99999a
+static const float kRocketTurnRate = 0.3f;
 
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
@@ -248,8 +248,6 @@ have_enemy:
         toTarget = enemyPos - muzzlePositions[index];
         VectorRotateToTarget(rotated, toTarget);
 
-        // The steering accumulator IS the member at this+0xb4 (steerX/Y/Z); the
-        // engine accumulates in place and stores raw float bits, no truncation.
         Vector &steer = *(Vector *) &this->steerX;
         steer = rotated;
 
@@ -263,11 +261,11 @@ have_enemy:
     }
 }
 
-static const float kMuzzleZAdd = -100.0f; // 0xc2c80000
-static const float kScaleDiv = -200.0f; // 0xc3480000
-static const float kScaleMul = 255.0f; // 0x437f0000
-static const float kZeroCompare = 50000.0f; // 0x47435000
-static const float kWave = 0.003f; // 0x3b449ba6
+static const float kMuzzleZAdd = -100.0f;
+static const float kScaleDiv = -200.0f;
+static const float kScaleMul = 255.0f;
+static const float kZeroCompare = 50000.0f;
+static const float kWave = 0.003f;
 
 void RocketGun::update(int elapsed) {
     Vector norm;

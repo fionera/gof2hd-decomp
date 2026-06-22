@@ -10,10 +10,10 @@ namespace AbyssEngine {
 
     class EaseInOut {
     public:
-        float m_min; // base/start output value
-        float m_range; // span (max - min)
-        float m_t; // angle parameter (radians)
-        float m_current; // current output value
+        float m_min;
+        float m_range;
+        float m_t;
+        float m_current;
 
         EaseInOut();
 
@@ -35,12 +35,10 @@ namespace AbyssEngine {
 
         void UpdateCurrentValue();
 
-        // Current animated output value.
         float GetValue();
 
-        // Base (start) output value.
         float GetMinValue();
     };
-} // namespace AbyssEngine
+}
 
 #endif

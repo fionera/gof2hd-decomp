@@ -1,66 +1,65 @@
 #ifndef GOF2_LISTITEMWINDOW_H
 #define GOF2_LISTITEMWINDOW_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/math/Matrix.h"
+#include "ListItem.h"
+#include "ScrollTouchWindow.h"
 
-class AEGeometry;
-class ListItem;
-class ScrollTouchWindow;
+#include "engine/math/Matrix.h"
+#include "engine/render/AEGeometry.h"
 
 class ListItemWindow {
 public:
-    Array<AbyssEngine::String *> *labels; // label-row strings (owns elements)
-    Array<AbyssEngine::String *> *values; // value-row strings (owns elements)
-    Array<int> *statsCur; // current ship-stat values
-    Array<int> *statsPrev; // previous ship-stat values
+    Array<AbyssEngine::String *> *labels;
+    Array<AbyssEngine::String *> *values;
+    Array<int> *statsCur;
+    Array<int> *statsPrev;
 
-    AEGeometry *previewGeometry; // rotating 3D ship preview
-    ListItem *item; // the ListItem being displayed
-    ScrollTouchWindow *scrollWindow; // inner scroll window hosting the rows
-    int textHalfHeight; // half the canvas text height (row centring)
-    int previewHeight; // height of the preview/progress region
+    AEGeometry *previewGeometry;
+    ListItem *item;
+    ScrollTouchWindow *scrollWindow;
+    int textHalfHeight;
+    int previewHeight;
 
-    int scrollBarX; // +0x24 scrollbar thumb x
-    int scrollBarY; // +0x28 scrollbar thumb baseline y
-    int scrollBarOffsetX; // +0x2c scrollbar thumb x offset
-    int scrollBarTrackLength; // +0x30 scrollbar track length
+    int scrollBarX;
+    int scrollBarY;
+    int scrollBarOffsetX;
+    int scrollBarTrackLength;
 
-    uint32_t param2; // mode/colour parameter (from set())
+    uint32_t param2;
     uint32_t param3;
     uint32_t param4;
     uint32_t param5;
 
-    int scrollThumbImage; // scrollbar thumb image id
-    int arrowUpImage; // "trend up" arrow image id
-    int arrowDownImage; // "trend down" arrow image id
-    int arrowEqualImage; // "trend equal" arrow image id
-    uint8_t shows3DShipFlag; // true => render the rotating preview
+    int scrollThumbImage;
+    int arrowUpImage;
+    int arrowDownImage;
+    int arrowEqualImage;
+    uint8_t shows3DShipFlag;
 
-    int arrowSeparator; // trend-arrow separator width
-    int x; // window x
-    int y; // window y
-    int width; // window width
-    int height; // window height
+    int arrowSeparator;
+    int x;
+    int y;
+    int width;
+    int height;
 
-    AbyssEngine::String str74; // window-scoped scratch string
-    AbyssEngine::String str80; // window-scoped scratch string
+    AbyssEngine::String str74;
+    AbyssEngine::String str80;
 
-    int previewSentinel; // -1 => no secondary transform pass
-    AbyssEngine::AEMath::Matrix previewTransform; // preview world transform
-    AbyssEngine::AEMath::Matrix previewTransform2; // preview secondary transform
-    float baseAngle; // per-ship base preview angle
-    float previewAngle; // current preview rotation angle (radians)
-    int dragAccum; // accumulated drag angle (integer steps)
-    int dragLastX; // last touch x captured for drag delta
-    int dragSettled; // settled drag angle
-    int dragDelta; // current drag delta
-    float spinDamping; // spin-damping factor
-    float spinVelocity; // spin velocity
-    int dragStartX; // drag start x
-    uint8_t dragging; // true while the preview is being spun
+    int previewSentinel;
+    AbyssEngine::AEMath::Matrix previewTransform;
+    AbyssEngine::AEMath::Matrix previewTransform2;
+    float baseAngle;
+    float previewAngle;
+    int dragAccum;
+    int dragLastX;
+    int dragSettled;
+    int dragDelta;
+    float spinDamping;
+    float spinVelocity;
+    int dragStartX;
+    uint8_t dragging;
 
     ListItemWindow();
 

@@ -1,17 +1,14 @@
 #ifndef GOF2_RESOURCETEXTURE_H
 #define GOF2_RESOURCETEXTURE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 namespace AbyssEngine {
-    class String;
-
     class ResourceTexture {
     public:
-        char *name; // heap copy of the resource name C-string
-        float value; // associated scalar value
+        char *name;
+        float value;
 
         ResourceTexture(const char *name, float value);
 
@@ -19,6 +16,6 @@ namespace AbyssEngine {
 
         ~ResourceTexture();
     };
-} // namespace AbyssEngine
+}
 
 #endif

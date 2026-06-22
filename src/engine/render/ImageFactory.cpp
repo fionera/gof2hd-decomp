@@ -11,75 +11,25 @@ namespace AbyssEngine {
 
 typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 GetTextFn *g_reload_getText;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_reload_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_drawChar_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_IF_drawShip_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_drawItem_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_IF_idTable;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_IF_drawItem4_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char *g_ctor_flagA;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char *g_ctor_flagB;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_ctor_dst;
 extern int g_ctor_src[] __attribute__((visibility("hidden")));
 
@@ -88,61 +38,21 @@ extern int gCreateChar2Table __attribute__((visibility("hidden")));
 extern void *const gCreateChar2Rng2 __attribute__((visibility("hidden")));
 extern void *const gCreateCharRng __attribute__((visibility("hidden")));
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 unsigned *g_IF_li_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char *g_IF_flagA;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char *g_IF_flagB;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int g_IF_posTableA[];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int g_IF_posTableB[];
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_IF_posTableC;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char *g_IF_flagC;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_IF_posTableD;
 
 int ImageFactory::getItemImageId(int itemId) {
@@ -233,7 +143,7 @@ void ImageFactory::drawItem(int itemId, int x, int y) {
 }
 
 void *ImageFactory::loadImage(int row, int col, int frameBase) {
-    int id = g_IF_idTable[row * 4 + col]; // 0x10-byte rows / 4-byte cells
+    int id = g_IF_idTable[row * 4 + col];
     if (id < 0)
         return nullptr;
 

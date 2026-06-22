@@ -5,14 +5,13 @@
 
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
-
-class Hud;
+#include "game/ui/Hud.h"
 
 struct MiningHostObject {
-    uint8_t field_0x0[0x37]; // +0x00 reserved (unmodeled prefix)
-    uint8_t miningActiveFlag; // +0x37 mining-active/host gate flag (set to 0 on start)
-    uint8_t field_0x38[0x124 - 0x38]; // +0x38 reserved (unmodeled middle)
-    int miningResultSlot; // +0x124 mining result/win slot (cleared on stop)
+    uint8_t field_0x0[0x37];
+    uint8_t miningActiveFlag;
+    uint8_t field_0x38[0x124 - 0x38];
+    int miningResultSlot;
 };
 
 static_assert(offsetof(MiningHostObject, miningActiveFlag) == 0x37,
@@ -22,22 +21,22 @@ static_assert(offsetof(MiningHostObject, miningResultSlot) == 0x124,
 
 class MiningGame {
 public:
-    float inputX; ///< velocity x (steering input)
-    float inputY; ///< velocity y (steering input)
-    float driftX; ///< drift x
-    float driftY; ///< drift y
-    float posX; ///< reticle position x
-    float posY; ///< reticle position y
+    float inputX;
+    float inputY;
+    float driftX;
+    float driftY;
+    float posX;
+    float posY;
     int layer;
     int station;
     int lossTimer;
     float oreAmount;
     float oreRate;
     float controlDivisor;
-    int field_0x30; // +0x30 (unused layout slot)
+    int field_0x30;
     int oreImageHeight;
-    int field_0x38; // +0x38 (unused layout slot)
-    int field_0x3c; // +0x3c (unused layout slot)
+    int field_0x38;
+    int field_0x3c;
     int oreIconOffsetX;
     int oreIconOffsetY;
     int progressBarWidth;
@@ -48,9 +47,9 @@ public:
     int centerY;
     int coreImageId;
     float textAlpha;
-    float animAccumulator; ///< sprite animation accumulator
+    float animAccumulator;
     int driftTimer;
-    int failThreshold; // +0x70 (loss threshold seed = 2500)
+    int failThreshold;
     int layerTimer;
     int currentLayer;
     int targetLayer;
@@ -64,18 +63,18 @@ public:
     MarqueeImage *leftMarquee;
     MarqueeImage *rightMarquee;
     Sprite *drillSprite;
-    int oreIconImageId; ///< ore icon image (res 0x4e7)
-    int oreLabelImageId; ///< ore label glow image (res 0x4e5)
-    int oreTextImageId; ///< ore-amount text strip image (res 0x4e4)
-    int cornerImageId; ///< progress-bar corner decoration (res 0x4e3)
-    int progressBarImageId; ///< progress bar image (res 0x4e8)
-    int ringEvenNear; ///< even-layer ring tile, near band (res 0x4e2)
-    int ringEvenFar; ///< even-layer ring tile, far band (res 0x4dd)
-    int ringEvenMid; ///< even-layer ring tile, mid band (res 0x4de)
-    int ringOddNear; ///< odd-layer ring tile, near band (res 0x4e1)
-    int ringOddMid; ///< odd-layer ring tile, mid band (res 0x4df)
-    int ringOddFar; ///< odd-layer ring tile, far band (res 0x4e0)
-    int progressLabelImageId; ///< progress-bar label image (res 0x4ed)
+    int oreIconImageId;
+    int oreLabelImageId;
+    int oreTextImageId;
+    int cornerImageId;
+    int progressBarImageId;
+    int ringEvenNear;
+    int ringEvenFar;
+    int ringEvenMid;
+    int ringOddNear;
+    int ringOddMid;
+    int ringOddFar;
+    int progressLabelImageId;
     int marqueeWidth;
     int promptPulseTimer;
     Hud *hud;

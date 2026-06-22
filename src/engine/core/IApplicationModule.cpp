@@ -6,4 +6,4 @@ namespace AbyssEngine {
         this->applicationManager = manager;
         this->paintCanvas = static_cast<PaintCanvas *>(manager->paintCanvas);
     }
-} // namespace AbyssEngine
+}

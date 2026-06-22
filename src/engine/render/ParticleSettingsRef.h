@@ -3,8 +3,6 @@
 
 class ParticleSettingsRef {
 public:
-    // Initialise the two referenced ParticleSettings singletons and seed the
-    // shared particle counter.
     static void initialize();
 };
 

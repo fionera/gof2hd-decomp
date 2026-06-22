@@ -1,13 +1,11 @@
 #ifndef GOF2_STATION_H
 #define GOF2_STATION_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Item;
-class Ship;
-class Agent;
+#include "game/mission/Item.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
 
 class Station {
 public:

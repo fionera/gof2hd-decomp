@@ -1,29 +1,24 @@
 #ifndef GOF2_RADIOMESSAGE_H
 #define GOF2_RADIOMESSAGE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Radio;
-class Objective;
-class PlayerEgo;
-class LevelScript;
-class Player;
+#include "Radio.h"
+#include "game/mission/Objective.h"
 
 class RadioMessage {
 public:
-    Radio *radio; // owning radio
-    Objective *objective; // associated mission objective (condition type 0x0b)
-    int textID; // dialogue text id
-    int imageID; // speaker portrait image id
-    int conditionType; // selects the trigger evaluated in triggered()
-    int conditionValue; // condition parameter (target index/count/threshold)
-    int targetCount; // number of entries in targetIndices
-    int *targetIndices; // enemy-list indices this message watches
-    uint8_t triggeredFlag; // condition currently satisfied flag
-    uint8_t over; // message finished/consumed flag
-    int lastRouteIndex; // last seen route waypoint (condition types 0/0x19)
+    Radio *radio;
+    Objective *objective;
+    int textID;
+    int imageID;
+    int conditionType;
+    int conditionValue;
+    int targetCount;
+    int *targetIndices;
+    uint8_t triggeredFlag;
+    uint8_t over;
+    int lastRouteIndex;
 
     RadioMessage(int textID, int imageID, int conditionType, int conditionValue, int targetCount);
 

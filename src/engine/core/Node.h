@@ -3,18 +3,16 @@
 #include "engine/core/Array.h"
 #include "AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 class Node {
 public:
-    Array<Node *> *children; // +0x00  child / neighbour nodes
-    Node *parent; // +0x04  back-pointer to parent
-    int value; // +0x08  node value / system index
-    uint8_t reserved_0x0c[0x24]; // +0x0c  unused padding up to +0x30
-    // Sprite-system material handle. Other TUs (PaintCanvas) still read it as
-    // field_0x30, so keep that name working via the union alias.
+    Array<Node *> *children;
+    Node *parent;
+    int value;
+    uint8_t reserved_0x0c[0x24];
+
     union {
-        unsigned int spriteMaterial; // +0x30  material handle (sprite system)
+        unsigned int spriteMaterial;
         unsigned int field_0x30;
     };
 

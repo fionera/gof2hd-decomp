@@ -1,20 +1,19 @@
 #ifndef GOF2_NEWSTICKER_H
 #define GOF2_NEWSTICKER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 class NewsTicker {
 public:
-    float scrollOffset; // current horizontal scroll position
-    int x; // banner origin x
-    int y; // banner origin y
-    int width; // banner width
-    int textWidth; // rendered width of the full ticker string
-    String tickerText; // concatenated, localized ticker text
-    uint8_t touched; // set while the banner is being manually dragged
-    int lastTouchX; // x of the previous touch sample (for drag delta)
+    float scrollOffset;
+    int x;
+    int y;
+    int width;
+    int textWidth;
+    String tickerText;
+    uint8_t touched;
+    int lastTouchX;
 
     NewsTicker(int x, int y, int width, int faction, int level);
 

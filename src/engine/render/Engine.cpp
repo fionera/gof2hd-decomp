@@ -5,7 +5,7 @@
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-Engine *gEngine = nullptr; // canonical Engine singleton
+Engine *gEngine = nullptr;
 
 bool AbyssEngine::Engine::vboSupported = false;
 bool AbyssEngine::Engine::clampTextures = false;
@@ -13,13 +13,13 @@ bool AbyssEngine::Engine::vfc = false;
 float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
 unsigned int AbyssEngine::Engine::countryCode = 0;
-bool AbyssEngine::Engine::EnablePostEffect = false; // 0x2250d8
+bool AbyssEngine::Engine::EnablePostEffect = false;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
 #include "game/core/String.h"
 #include "engine/render/Mesh.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
 #include <cstdarg>
@@ -114,7 +114,7 @@ void glError() {
 double *Engine::GetAccelValue() {
     double x = this->accelRaw[0];
     double y;
-    if (this->appManager->paintCanvas->field_0x30 == 1) {
+    if (this->appManager->paintCanvas->gameOrientation == 1) {
         x = -x;
         y = -this->accelRaw[1];
     } else {
@@ -153,7 +153,7 @@ uint32_t Engine::GetDisplayWidth() {
 double *Engine::GetGravValue() {
     double x = this->gravRaw[0];
     double y;
-    if (this->appManager->paintCanvas->field_0x30 == 1) {
+    if (this->appManager->paintCanvas->gameOrientation == 1) {
         x = -x;
         y = -this->gravRaw[1];
     } else {
@@ -524,7 +524,7 @@ void Engine::RenderMesh(MeshFull *mesh) {
         glVertexPointer(3, 0x1406, 0, mesh->positions);
         this->AEClientState(0x8074, true);
         bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
-        // RAWREAD: material +4 is an opaque material payload field (void* target).
+
         if (tex && (mesh->material == 0 ||
                     *(int *) ((char *) mesh->material + 4) == -1)) {
             glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
@@ -546,7 +546,7 @@ void Engine::RenderMesh(MeshFull *mesh) {
         } else {
             glDrawArrays(4, 0, mesh->vertexCount);
         }
-        // RAWREAD: material +4 is an opaque material payload field (void* target).
+
         if (tex && mesh->material != 0 &&
             *(int *) ((char *) mesh->material + 4) != -1) {
             this->AEClientState(0x8078, false);
@@ -661,7 +661,6 @@ Engine::~Engine() {
     this->ReleaseGL();
     delete this->shaders;
     delete this->triangleCounts;
-    // str_0x14 / str_0x3c / str_0x4c are real String members: auto-destructed.
 }
 
 void Engine::ReleaseGL() {
@@ -702,20 +701,20 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 }
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
-    uint32_t count = manager->field_0x10; // loaded-texture-name list: count
+    PaintCanvas *manager = this->appManager->paintCanvas;
+    uint32_t count = manager->field_0x10;
     if (count == 0 || slot >= 8 || textureIndex > count - 1) {
         return;
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
-    // RAWREAD: field_0x14 entry is an opaque texture-name payload (char**), no struct header.
+
     void *textureEntry = *(void **) (manager->field_0x14 + textureIndex);
     uint32_t texture = **(uint32_t **) (&textureEntry);
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = *(float *) ((char *) textureEntry + 0x10); // RAWREAD: opaque texture-entry +0x10 texEnv
+    float env = *(float *) ((char *) textureEntry + 0x10);
     if (g_Engine_texEnv != env) {
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
@@ -725,7 +724,7 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
             g_Engine_texEnvDirty = 0;
         }
     }
-    // RAWREAD: opaque texture-entry +0x14 cube-map flag
+
     glBindTexture(*(uint8_t *) ((char *) textureEntry + 0x14) == 0 ? 0xde1 : 0x8513, texture);
     *bound = texture;
 }
@@ -900,7 +899,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         this->postEffectFBO = new FBOContainer(this, String("posteffect"));
         int width;
         int height;
-        if (this->appManager->paintCanvas->field_0x30 == 2) {
+        if (this->appManager->paintCanvas->gameOrientation == 2) {
             width = this->displayWidth;
             height = this->displayHeight;
         } else {
@@ -1125,7 +1124,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 
 Engine::Engine() {
     Engine * self = this;
-    // str_0x14 / str_0x3c / str_0x4c are real String members: auto-constructed.
+
     self->field_0x340 = 0;
     self->lightColor.x = 0;
     self->lightColor.z = 0;
@@ -1150,7 +1149,7 @@ Engine::Engine() {
     up.x = 0.5f;
     up.y = 0.0f;
     up.z = 0.0f;
-    *(Vector *) &self->field_0x3cc = up; // vector spans 0x3cc(x,y)+0x3d4(z)
+    *(Vector *) &self->field_0x3cc = up;
     self->addData = 0;
     self->postEffectFBO = 0;
     self->refractFBO = 0;
@@ -1200,8 +1199,8 @@ Engine::Engine() {
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
-    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
-    uint32_t count = manager->field_0x10; // loaded-texture-name list: count
+    PaintCanvas *manager = this->appManager->paintCanvas;
+    uint32_t count = manager->field_0x10;
     if (count == 0 || first > count - 1) {
         return;
     }
@@ -1217,7 +1216,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         }
         return;
     }
-    // RAWREAD: field_0x14 entry is an opaque texture-name payload, handle at +0x0
+
     uint32_t texture = **(uint32_t **) (manager->field_0x14 + second);
     if (this->boundTextures[1] != texture) {
         glActiveTexture(0x84c1);
@@ -1337,9 +1336,8 @@ void Engine::LightSetLight(unsigned int light) {
 }
 
 void Engine::SetTexturesExt(uint32_t first, ...) {
-    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
+    PaintCanvas *manager = this->appManager->paintCanvas;
     if (manager->field_0x10 != 0) {
-        // loaded-texture-name list: count
         va_list args;
         va_start(args, first);
         uint32_t slot = 0;

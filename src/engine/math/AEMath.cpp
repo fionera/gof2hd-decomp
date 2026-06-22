@@ -594,5 +594,5 @@ namespace AbyssEngine {
         void MatrixDebugOut(const Matrix &matrix) {
             (void) matrix;
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}

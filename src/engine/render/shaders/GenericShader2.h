@@ -1,20 +1,15 @@
 #ifndef GOF2_GENERICSHADER2_H
 #define GOF2_GENERICSHADER2_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class GenericShader2 : public ShaderBaseStruct {
     public:
         int aPosition;
@@ -42,6 +37,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

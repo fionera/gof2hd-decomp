@@ -1,37 +1,32 @@
 #ifndef GOF2_BUMPSHADERV2_H
 #define GOF2_BUMPSHADERV2_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    struct Mesh;
-
     class BumpShaderV2 : public ShaderBaseStruct {
     public:
-        int aPosition; // a_position
-        int aNormal; // a_normal
-        int aTexCoord; // a_texCoord
-        int aTangent; // a_tangent
-        int aBinormal; // a_binormal
-        int uMvpMatrix; // u_mvpMatrix
-        int uNormalMatrix; // u_normalMatrix
-        int uLightDir; // u_lightDir
-        int uEyePos; // u_eyePos
-        int uTexture0; // u_texture0
-        int uTexture1; // u_texture1
-        int uAmbient; // u_ambient
-        int uDiffuse; // u_diffuse
-        int uSpecular; // u_specular
-        int uEmissive; // u_emissive
+        int aPosition;
+        int aNormal;
+        int aTexCoord;
+        int aTangent;
+        int aBinormal;
+        int uMvpMatrix;
+        int uNormalMatrix;
+        int uLightDir;
+        int uEyePos;
+        int uTexture0;
+        int uTexture1;
+        int uAmbient;
+        int uDiffuse;
+        int uSpecular;
+        int uEmissive;
 
         BumpShaderV2();
 
@@ -41,6 +36,6 @@ namespace AbyssEngine {
 
         void SetInActive() override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

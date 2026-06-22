@@ -76,4 +76,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aNormal, 3, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

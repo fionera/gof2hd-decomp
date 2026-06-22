@@ -101,4 +101,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->aTexCoord);
         glDisableVertexAttribArray(this->aNormal);
     }
-} // namespace AbyssEngine
+}

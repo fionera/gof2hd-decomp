@@ -1,21 +1,21 @@
 #ifndef GOF2_STANDING_H
 #define GOF2_STANDING_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 class Standing {
 public:
-    int *standings; // heap array of per-race standing values
-    int currentRace; // player signature race; -1 == use raw standings[]
+    int *standings;
+    int currentRace;
 
     Standing();
 
     ~Standing();
 
-    int *getStandings(); // raw per-race standings array
-    void setStandings(int *arr); // replace the standings array pointer
+    int *getStandings();
+
+    void setStandings(int *arr);
 
     void applyDelict(int kind, int severity);
 

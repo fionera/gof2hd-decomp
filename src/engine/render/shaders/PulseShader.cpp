@@ -110,4 +110,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->a4Loc, 3, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

@@ -6,7 +6,8 @@ namespace AbyssEngine {
         struct Vector {
             float x, y, z;
 
-            operator float *(); // out-of-line (the binary emits these accessors)
+            operator float *();
+
             operator const float *() const;
 
             float &operator[](int i);
@@ -27,12 +28,12 @@ namespace AbyssEngine {
 
             Vector &operator/=(const Vector &o);
         };
-    } // namespace AEMath
+    }
 
     static_assert(sizeof(AEMath::Vector) == 0x0c, "AEMath::Vector size");
     static_assert(__builtin_offsetof(AEMath::Vector, x) == 0x00, "AEMath::Vector::x offset");
     static_assert(__builtin_offsetof(AEMath::Vector, y) == 0x04, "AEMath::Vector::y offset");
     static_assert(__builtin_offsetof(AEMath::Vector, z) == 0x08, "AEMath::Vector::z offset");
-} // namespace AbyssEngine
+}
 
-#endif // GOF2_VECTOR_H
+#endif

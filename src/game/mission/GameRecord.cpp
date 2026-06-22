@@ -11,17 +11,14 @@
 #include "game/ship/Ship.h"
 
 GameRecord::~GameRecord() {
-    // String members are destroyed last-constructed-first.
 }
 
 GameRecord::GameRecord() {
     char *t = (char *) this;
 
-    // Visited-systems bitmap (0x87 entries).
     this->data = new uint8_t[0x87];
     *(uint32_t *) (t + 0x11c) = 0;
 
-    // Zero the record payload, then seed the few non-zero defaults.
     memset(t + 0x8, 0, 0x8c);
 
     *(uint32_t *) (t + 0xb8) = 0;
@@ -71,12 +68,6 @@ GameRecord::GameRecord() {
     *(uint32_t *) (t + 0x1b4) = 0;
 }
 
-// structural translation of the recovered deserializer: the packed save image is
-// read positionally from this record, and the values are written into the live
-// Status / Galaxy / Achievements singletons (resolved through the engine's global
-// singleton tables). The singleton field writes that have no modelled accessor are
-// kept as positional stores against the partially-modelled singleton layouts.
-
 typedef uint32_t uint;
 
 extern "C" {
@@ -87,19 +78,9 @@ long Station_getIndex(...);
 long Station_getSystem(...);
 }
 
-// The mission-system singletons below are reached through global pointer-to-pointer
-// slots in the binary's .bss that this port does not yet model with a typed header.
-// load() reads the live pointer out of each slot and pokes a handful of flag bytes;
-// the slots are addressed by their resolved absolute .bss addresses (the original
-// PC-relative DAT_ loads) and kept as RAWREAD escape-hatches.
-//   0x220290 -> active mission/campaign controller (its +0x31 "force-change" flag,
-//               +0x35/+0x36 hard-core flags)
-//   0x2202bc -> KIPlayer singleton (holds the live Mission pointer)
 static char *const *const kMissionCtrlSlot = (char *const *const) 0x220290;
 static char *const *const kKiPlayerSlot = (char *const *const) 0x2202bc;
 
-// Save-image format marker stored at record word 0x6f; the extended payload block
-// is only applied when the record carries this tag.
 static const uint32_t kRecordExtendedTag = 0x6e6a78;
 
 void GameRecord::load() {
@@ -111,7 +92,7 @@ void GameRecord::load() {
     uint32_t *srcVec;
     char *blueprint;
     char *station;
-    char *statusBytes; // (char*)gStatus, for positional field stores
+    char *statusBytes;
     char *statusField;
     int targetStation;
     uint32_t *srcVec2;
@@ -203,25 +184,25 @@ void GameRecord::load() {
     }
     if (((*(char *) ((long) rec + 0x117) != '\0') || (*(char *) (rec + 0x46) != '\0')) &&
         ((rec[0x10] == 0x56 && (targetStation = ((Mission *) rec[0x16])->getTargetStation(), targetStation != 100)))) {
-        (*kMissionCtrlSlot)[0x31] = 1; // RAWREAD: force mission re-targeting flag
+        (*kMissionCtrlSlot)[0x31] = 1;
         Mission *m = new Mission(0xb, 0, 100);
         gStatus->setCampaignMission(m);
     }
     if (((*(char *) ((long) rec + 0x117) != '\0') || (*(char *) (rec + 0x46) != '\0')) &&
         ((rec[0x10] == 0x57 && (targetStation = ((Mission *) rec[0x16])->getTargetStation(), targetStation != 10)))) {
-        (*kMissionCtrlSlot)[0x31] = 1; // RAWREAD: force mission re-targeting flag
+        (*kMissionCtrlSlot)[0x31] = 1;
         Mission *m = new Mission(4, 0, 10);
         gStatus->setCampaignMission(m);
     }
     if ((((*(char *) ((long) rec + 0x117) != '\0') || (*(char *) (rec + 0x46) != '\0')) &&
          (rec[0x10] == 0x58)) && (targetStation = ((Mission *) rec[0x16])->getTargetStation(), targetStation != 10)) {
-        (*kMissionCtrlSlot)[0x31] = 1; // RAWREAD: force mission re-targeting flag
+        (*kMissionCtrlSlot)[0x31] = 1;
         Mission *m = new Mission(0xb, 0, 10);
         gStatus->setCampaignMission(m);
     }
     if (((*(char *) ((long) rec + 0x117) != '\0') || (*(char *) (rec + 0x46) != '\0')) &&
         ((rec[0x10] == 0x59 && (targetStation = ((Mission *) rec[0x16])->getTargetStation(), targetStation != 10)))) {
-        (*kMissionCtrlSlot)[0x31] = 1; // RAWREAD: force mission re-targeting flag
+        (*kMissionCtrlSlot)[0x31] = 1;
         gStatus->setCurrentCampaignMission(0x56);
         Mission *m = new Mission(0xb, 0, 100);
         gStatus->setCampaignMission(m);
@@ -239,7 +220,7 @@ void GameRecord::load() {
             if ((0xc < campaignStage - 0x5bU) || (*(char *) (*(int *) (rec[0x58] + 4) + 0x1b) != '\0'))
                 goto stationStackLoaded;
         }
-        (*kMissionCtrlSlot)[0x31] = 1; // RAWREAD: force mission re-targeting flag
+        (*kMissionCtrlSlot)[0x31] = 1;
         rec[0x10] = 0x56;
         gStatus->setCurrentCampaignMission(rec[0x10]);
         Mission *m = new Mission(0xb, 0, 100);
@@ -274,8 +255,7 @@ stationStackLoaded:
     }
     *(uint32_t *) statusField = rec[0x1c];
     *(uint32_t *) (statusBytes + 0x10c) = rec[0x34];
-    // RAWREAD: second mission-system singleton (resolved .bss slot 0x22016c) whose
-    // +0x35/+0x36 bytes are hard-core / valkyrie flags.
+
     char *missionFlags = *(char **) 0x22016c;
     statusBytes[0x110] = *(char *) (rec + 0x35);
     statusBytes[0x111] = *(char *) (rec + 0x37);
@@ -383,7 +363,7 @@ afterDlcUnsaleable:
     statusBytes = (char *) gStatus;
     *(uint32_t *) (statusBytes + 0x8c) = rec[0x4d];
     ((Status *) (statusBytes))->setStation((Station *) rec[0x4e]);
-    gStatus->setMission(*(Mission **) (*kKiPlayerSlot)); // RAWREAD: KIPlayer's live Mission
+    gStatus->setMission(*(Mission **) (*kKiPlayerSlot));
     *(uint32_t *) ((char *) gStatus + 0x14) = rec[0x4f];
     for (i = 0; i < *(uint *) rec[0x50]; i = i + 1) {
         *(uint32_t *) (*(int *) (*(int *) ((char *) gStatus + 0x18) + 4) + i * 4) =
@@ -440,13 +420,12 @@ afterDlcUnsaleable:
             *(uint8_t *) (srcVec[1] + j) = *(uint8_t *) (srcVec2[1] + j);
         }
     }
-    // RAWREAD: KIPlayer record fields (resolved .bss slot 0x220290 deref).
+
     char *kiPlayer = *(char **) 0x220290;
     qword = *(uint64_t *) (rec + 0x3b);
     *(uint64_t *) (kiPlayer + 8) = *(uint64_t *) (rec + 0x39);
     *(uint64_t *) (kiPlayer + 0x10) = qword;
-    // The binary writes rec[0x47] to missionFlags+0x2c (str r2,[r12,#0x2c] where
-    // r12 is the 0x22016c mission-flags singleton), NOT to gStatus+0x2c.
+
     *(uint32_t *) (missionFlags + 0x2c) = rec[0x47];
     scalar = rec[0x33];
     *(uint32_t *) (statusBytes + 0x100) = rec[0x32];

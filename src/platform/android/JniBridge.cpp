@@ -16,10 +16,10 @@
 #include "engine/file/FileInterfaceAndroid.h"
 #include "platform/gl.h"
 #include "game/mission/Status.h"
-#include "game/mission/RecordHandler.h"      // BuildResourceList, loadingScreen
-#include "game/core/Globals.h"               // Globals + device flags, gLayout/gFont/...
-#include "game/core/CheatHandler.h"          // OnCheatActivated
-#include "game/ui/Layout.h"                  // Layout::initTip
+#include "game/mission/RecordHandler.h"
+#include "game/core/Globals.h"
+#include "game/core/CheatHandler.h"
+#include "game/ui/Layout.h"
 #include "game/menu/MGame.h"
 #include "game/menu/ModMainMenu.h"
 #include "game/menu/ModStation.h"
@@ -33,13 +33,13 @@ static JavaVM *g_pVM;
 
 extern "C" JNIEnv *g_pEnv;
 JNIEnv *g_pEnv;
-static jobject g_pClass; // 0x22d310 (the native method's declaring jclass)
-extern "C" jobject g_pActivity; // 0x226970
+static jobject g_pClass;
+extern "C" jobject g_pActivity;
 jobject g_pActivity;
 
-extern "C" char *g_apkPath; // 0x2279a4
+extern "C" char *g_apkPath;
 char *g_apkPath;
-extern "C" char *g_zipPath; // 0x2279a8
+extern "C" char *g_zipPath;
 char *g_zipPath;
 
 extern "C" AbyssEngine::Engine **g_pEngine;
@@ -55,6 +55,8 @@ static float g_gamepadAxisY;
 void AppMgr_SetExitCallback(ApplicationManager * self, void(*cb)())
 asm
 (
+
+
 "_ZN11AbyssEngine18ApplicationManager15SetExitCallbackEPFvvE"
 );
 
@@ -70,6 +72,8 @@ asm("_ZN11AbyssEngine18ApplicationManager10OnTouchEndEiiPv");
 void AppMgr_OnTouchEnd(ApplicationManager * self)
 asm
 (
+
+
 "_ZN11AbyssEngine18ApplicationManager10OnTouchEndEv"
 );
 
@@ -79,6 +83,8 @@ asm("_ZN11AbyssEngine18ApplicationManager8OnUpdateEx");
 char *AppMgr_GetApplicationData(ApplicationManager * self)
 asm
 (
+
+
 "_ZN11AbyssEngine18ApplicationManager18GetApplicationDataEv"
 );
 
@@ -145,7 +151,6 @@ extern "C" void ndk_autosave();
 void OnCreateApplication(AbyssEngine::Engine *engine) {
     using AbyssEngine::Engine;
 
-    // --- Allocate and zero-seed the game-wide application data. --------------
     GameData *data = new GameData();
     data->field_0x04 = 0;
     data->field_0x0c = 0;
@@ -171,16 +176,10 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0x68 = 0;
     data->field_0x6c = 0;
 
-    // The game-wide Globals singleton is owned by the GameData (offset 0).
     data->globals = new Globals();
 
-    // --- Device screen-class probe. ------------------------------------------
-    // GetDeviceInfo() reports the live NFC width/height and the iPad flag; the
-    // capability flags below are derived from those thresholds.
     DeviceInfo dev = engine->GetDeviceInfo();
 
-    // A tall (>=640px) non-pad screen is treated as a retina display; otherwise a
-    // pad with a >800px screen is the retina/high-DPI case.
     if (dev.height < 640 || dev.isPad != 0) {
         DeviceInfo padDev = engine->GetDeviceInfo();
         Globals::retinaDisplay = (padDev.isPad != 0) && (static_cast<int>(dev.height) > 800);
@@ -188,7 +187,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
         Globals::retinaDisplay = true;
     }
 
-    // --- Cached asset / DLC path strings (empty at bring-up). ----------------
     data->field_0xa8 = AbyssEngine::String("", false);
     data->field_0xa5 = 0;
     data->field_0xb8 = AbyssEngine::String("", false);
@@ -202,11 +200,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->field_0xa4 = 0;
     data->field_0xa0 = 0;
 
-    // An exactly 480x864 portrait screen identifies the iPad reference layout.
     Globals::iPad = (dev.height == 480) && (dev.width == 864);
 
-    // --- Second device probe: derive the remaining iPad / large-screen flags. -
-    // (The original re-probes here; the capability flags below use the first probe.)
     engine->GetDeviceInfo();
     Globals::iPadHD = 0;
     Globals::iPad = dev.isPad;
@@ -221,7 +216,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     Globals::switch_to_target_setting = -1;
     Globals::enterSpaceLounge = 0;
 
-    // --- Resource list + canvas geometry. ------------------------------------
     BuildResourceList(engine);
 
     gAppManager = engine->appManager;
@@ -229,7 +223,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     gScreenWidth = gCanvas->GetWidth();
     gScreenHeight = gCanvas->GetHeight();
 
-    // --- Localized text, fonts and RNG. --------------------------------------
     GameText *text = new GameText();
     gGameText = text;
     text->setLanguage(static_cast<short>(Engine::countryCode), 3401);
@@ -239,7 +232,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->SetApplicationData(data);
     engine->appManager->SetLoadingCallback(&loadingScreen, gFont);
 
-    // --- Register the top-level application modules. -------------------------
     engine->appManager->RegisterApplicationModule(
         2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
     engine->appManager->RegisterApplicationModule(
@@ -249,13 +241,11 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->RegisterApplicationModule(
         0, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MTitle()));
 
-    // --- Cheat handler + codes. ----------------------------------------------
     engine->appManager->CheatSetCallback(&OnCheatActivated, nullptr);
     engine->appManager->CheatAddCode(AbyssEngine::String("754753835", false), 0);
     engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
     engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
 
-    // --- Title bring-up. -----------------------------------------------------
     gLayout->initTip();
     gStatus->resetGame();
     AbyssEngine::Engine::vfc = true;
@@ -263,7 +253,6 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->SetCurrentApplicationModule(0);
     AbyssEngine::Engine::clampTextures = false;
 
-    // Pre-create the global power-up flash texture in unit 2.
     engine->appManager->paintCanvas->TextureCreateGlobal(
         AbyssEngine::String("data/textures/pow_texture.aei", false), 2);
 
@@ -285,7 +274,6 @@ extern "C" void ndk23_setZipDirectory(const char *path) {
 }
 
 extern "C" void ndk23_setCountryCode(unsigned int code) {
-    // The locale table only has sixteen entries; anything past it falls back to 0.
     countryCode = (code > 15) ? 0u : code;
 }
 
@@ -356,12 +344,10 @@ extern "C" void ndk23_handleAcceleration(float x, float y, float z) {
     double *gravity = gAccelFilterState;
     double gz;
     if (engine->appManager->paintCanvas->initialized) {
-        // Running low-pass: blend the new sample into the smoothed gravity.
         gravity[0] = gravity[0] * 0.95 + tiltB * 0.05;
         gravity[1] = gravity[1] * 0.95 + tiltA * 0.05;
         gz = gravity[2] * 0.95 + z * 0.05;
     } else {
-        // Rotation disabled: seed the estimate straight from the X tilt.
         gravity[0] = tiltB * 0.95;
         gravity[1] = tiltB * 0.95;
         gz = tiltB * 0.95;
@@ -444,7 +430,6 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories(
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    // Reserved Java entry point: the native side has nothing to do at startup.
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_initialize(
@@ -501,7 +486,6 @@ extern "C" void ndk23_newrender(long long now) {
 
     int touchCount = gof2_GetTouchCount();
     for (int i = 0; i < touchCount; ++i) {
-        // GetTouch fills a 4-word record: [touch, phase, x, y].
         int rec[4];
         gof2_GetTouch(reinterpret_cast<int>(rec));
         void *touch = reinterpret_cast<void *>(rec[0]);
@@ -795,8 +779,6 @@ extern "C" jint Java_net_fishlabs_playhaven_ToJNI_getCurrentApplicationModule(
 
 extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits(
     JNIEnv * /*env*/, jclass /*clazz*/, jint amount) {
-    // Queue the offerwall reward; ndk_checkPlaytimeAndSpendOfferwallCredits
-    // banks it on the next frame once the player has logged any play time.
     gb_android_offerwallCreditAmount = amount;
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
@@ -836,7 +818,6 @@ extern "C" void ndk23_resize(int width, int height) {
 }
 
 extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) {
-    // Display geometry is owned by InitWithZip/resize; nothing to do here.
     (void) height;
     (void) width;
 }

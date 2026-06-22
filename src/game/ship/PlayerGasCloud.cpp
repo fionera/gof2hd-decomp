@@ -12,7 +12,7 @@
 #include "game/ship/Ship.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerEgo.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/world/Station.h"
 
 namespace AbyssEngine {
@@ -21,15 +21,15 @@ namespace AbyssEngine {
     }
 }
 
-extern PaintCanvas **g_pgc_canvas; // paint canvas (intact-cloud geometry)
-extern void *g_pgc_itemList; // root item table
-extern PaintCanvas **g_pgc_canvasRoot; // paint canvas (spark geometry)
-extern AbyssEngine::AERandom **g_pgc_rng; // random generator
-extern PaintCanvas **g_pgc_canvas2; // paint canvas (render camera)
-extern PaintCanvas **g_pgcu_canvasRoot; // paint canvas (update transforms)
-extern void *g_pgcu_itemDefs; // item-definition table
-extern FModSound *g_pgcu_pickupSound; // pickup FModSound
-extern void *g_pgcu_campaign; // campaign state
+extern PaintCanvas **g_pgc_canvas;
+extern void *g_pgc_itemList;
+extern PaintCanvas **g_pgc_canvasRoot;
+extern AbyssEngine::AERandom **g_pgc_rng;
+extern PaintCanvas **g_pgc_canvas2;
+extern PaintCanvas **g_pgcu_canvasRoot;
+extern void *g_pgcu_itemDefs;
+extern FModSound *g_pgcu_pickupSound;
+extern void *g_pgcu_campaign;
 
 extern float g_pgc_countScale;
 extern float g_pgc_attrDiv;
@@ -48,7 +48,6 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
                                AEGeometry *geometry, const Vector &position)
     : KIPlayer(itemId, -1, new Player(0, 9999999, 0, 0, 0), geometry,
                position.x, position.y, position.z, false) {
-    // player/geometry and setKIPlayer are wired by the KIPlayer base ctor above.
     this->center.x = 0;
     this->center.y = 0;
     this->center.z = 0;
@@ -57,7 +56,7 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
     this->setPosition(position);
 
     this->elapsedSinceExplosion = 0;
-    this->crateGeometry = 0; // KIPlayer base slot (was field_0x78)
+    this->crateGeometry = 0;
     this->field_0x25 = 0;
 
     int cloudMesh = 0x4a35;
@@ -84,10 +83,10 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
     this->modelGeometry = new AEGeometry(this->cloudMeshId, *g_pgc_canvas, false);
     this->modelGeometry->setPosition(position);
 
-    this->hasCargo = 1; // KIPlayer base slot (was field_0x4c)
+    this->hasCargo = 1;
     this->field_0x44 = 1;
     this->state = 0;
-    this->visibleFlag = 1; // KIPlayer base slot (was active)
+    this->visibleFlag = 1;
     this->settled = 0;
 }
 
@@ -176,13 +175,11 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
     this->sparkInSight = new Array<bool>();
     this->sparkScale = new Array<float>();
 
-    // Distance from the explosion source to the cloud centre.
     Vector delta = src - this->center;
     float dist = VectorLength(delta);
     float t = 1.5f - dist / radius;
     float countBase = t * g_pgc_countScale;
 
-    // Item-defined intensity multiplier.
     void *itemTable = *(void **) ((char *) *(void **) g_pgc_itemList);
     Item *item = *(Item **) ((char *) *(void **) ((char *) itemTable + 4) + itemIndex * 4);
     int attr = item->getAttribute(0);
@@ -207,7 +204,6 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
         p.y = ((this->center.y + delta.y) - spread) + t * jy;
         p.z = ((this->center.z + delta.z) - spread) + t * jz;
 
-        // Direction = normalized (p - center).
         Vector d = p - this->center;
         Vector dn;
         VectorNormalize(&dn, &d);
@@ -232,7 +228,6 @@ void PlayerGasCloud::update(int dt) {
 
     Array<AEGeometry *> *arr = this->sparkGeometries;
     if (this->exploded == 0 || this->settled != 0 || arr == 0) {
-        // Idle / pre-explosion: just advance the bound transform.
         AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                 (*g_pgcu_canvasRoot)->TransformGetTransform(
                     *(unsigned int *) ((char *) this->modelGeometry + 0xc));
@@ -257,7 +252,6 @@ void PlayerGasCloud::update(int dt) {
         if (newLife < lifeMin)
             *life = lifeMin;
 
-        // Distance from this shard to the player's turret.
         PlayerEgo *player = (PlayerEgo *) (intptr_t) this->level->getPlayer();
         Vector turretPos = player->getTurretPosition();
         Vector shardPos;
@@ -312,7 +306,6 @@ void PlayerGasCloud::update(int dt) {
         }
 
         if (!collected) {
-            // Fade / grow the shard's scale based on its remaining timer.
             int tval = (*this->sparkTimers)[i];
             float *scale = &(*this->sparkScale)[i];
             if (tval <= 0) {
@@ -329,7 +322,6 @@ void PlayerGasCloud::update(int dt) {
             t->Update(1, (bool) dt);
         }
 
-        // Advance the shard's position.
         AEGeometry *moveGeom;
         Vector moved;
         bool homing = (*this->sparkInSight)[i] != 0 &&
@@ -338,7 +330,6 @@ void PlayerGasCloud::update(int dt) {
         if (homing) {
             Ship *ship = gStatus->getShip();
             if (ship->getFirstEquipmentOfSort(0x23) != 0) {
-                // Steer toward the turret.
                 Vector dir = turretPos - shardPos;
                 Vector dn;
                 VectorNormalize(&dn, &dir);

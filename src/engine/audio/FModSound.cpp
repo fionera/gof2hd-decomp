@@ -74,11 +74,15 @@ int FMOD_EventSystem_update(int system);
 
 float VectorSignedToFloat(int v, int mode);
 
-void FMOD_MusicSystem_promptCue(void *music, int cueId); // MusicSystem slot +0x28
-void FMOD_MusicSystem_setParameterValue(void *music, int paramId, float v); // MusicSystem slot +0x34
-void FMOD_EventCategory_setVolume(void *category, float volume); // EventCategory slot +0x20
-void FMOD_EventCategory_stopAllEvents(void *category); // EventCategory slot +0x1c
-int FMOD_EventCategory_getInfo(void *category, int *index, char **name); // EventCategory slot 0
+void FMOD_MusicSystem_promptCue(void *music, int cueId);
+
+void FMOD_MusicSystem_setParameterValue(void *music, int paramId, float v);
+
+void FMOD_EventCategory_setVolume(void *category, float volume);
+
+void FMOD_EventCategory_stopAllEvents(void *category);
+
+int FMOD_EventCategory_getInfo(void *category, int *index, char **name);
 }
 
 extern "C" void **gPauseProp;
@@ -245,8 +249,6 @@ int FModSound::getEventPauseLength(int idx) {
 }
 
 void FModSound::enableReverb(int p1) {
-    // One stack array holds both the FMOD_REVERB_PROPERTIES (buf[0..0x4f]) and the
-    // preset count (buf+0x50).
     if (!this->system)
         return;
     char buf[0x54];
@@ -309,7 +311,6 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
 
         bool havePos = false, haveVel = false;
         if (pos != 0) {
-            // Cache the 3D position into our reusable Vector slot, allocating once.
             if (this->eventPos == 0)
                 this->eventPos = new Vector();
             *this->eventPos = *pos;
@@ -548,7 +549,6 @@ afterListener:
         if (slotIdx != -1 && ev != 0 && isPlaying(slotIdx) == 0) {
             FMOD::EventGroup *group = 0;
             if (FMOD_Event_getParentGroup(*evp, &group) == 0) {
-                // Release the event back to the system.
                 FMOD_EventSystem_freeEventData(this->system, *evp, 0);
                 *evp = 0;
                 this->fxSlots[i] = -1;
@@ -584,7 +584,7 @@ void FModSound::freeAllEvents() {
                         FMOD_Event_getState(this->events[i], &st);
                         if ((st & 0x0a) == 0) {
                             FMOD::Event *ee = this->events[i];
-                            FMOD_Event_stop(ee, 0); // Event vtable slot +8
+                            FMOD_Event_stop(ee, 0);
                             this->events[i] = 0;
                         }
                     }
@@ -679,7 +679,6 @@ FMOD::Event *FModSound::updateEvent3DAttributes(FMOD::Event *event, int idx, Vec
         return ev;
     }
 
-    // Direct-event path (event already resolved).
     if (this->categoryEnabled[idx + 1] == 0)
         return event;
 

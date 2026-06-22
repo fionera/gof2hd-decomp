@@ -54,4 +54,4 @@ namespace AbyssEngine {
         if (this->a_texCoordLoc >= 0)
             glVertexAttribPointer(this->a_texCoordLoc, 2, 0x1406, 0, 0, mesh->texCoords);
     }
-} // namespace AbyssEngine
+}

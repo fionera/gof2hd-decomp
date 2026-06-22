@@ -5,54 +5,54 @@
 
 class TouchButton {
 public:
-    int field_0x0; // cleared in init()
-    int field_0x4; // cleared in init()
-    uint32_t fontId; // active-font handle / id
-    String text; // primary label
-    String splitText; // secondary / value label
-    int subId; // sub-image / achievement-stage id (-1 == none)
-    uint32_t image; // pre-supplied image handle (init case 0x13)
-    String numberText; // shortcut / corner label
-    int adornImage; // small adornment image id (-1 == none)
-    int imgFrameTL; // 9-patch frame / pressed image
-    int imgFrameT; // 9-patch frame (top / pressed-mid)
-    int imgFrameTR; // 9-patch frame (top-right / pressed-right)
-    int imgFrameL; // normal base image / left frame
-    int imgFrameM; // normal mid frame
-    int imgFrameR; // normal right frame
-    int imgFrameBL; // disabled base image / disabled-left frame
-    int imgFrameB; // disabled mid frame
-    int imgFrameBR; // disabled right frame
-    uint32_t iconImage; // medal/icon image (kind 4)
-    int iconOverlay; // elite/overlay image (-1 == none)
-    int iconSmall; // small medal overlay image (-1 == none)
-    int requestedWidth; // caller-requested width (<1 == auto)
-    int kind; // button kind / style selector
-    unsigned char flags0; // placement anchor flags
-    unsigned char flags1; // text-alignment flags
-    int x; // current x
-    int y; // current y
-    int initX; // base x passed to init/setPosition
-    int initY; // base y passed to init/setPosition
-    int height; // image height
-    int layoutHeight; // layout/hit height
-    int width; // total width
-    int leftWidth; // left frame width
-    int midWidth; // mid frame width
-    int rightWidth; // right frame width
-    int midStretch; // middle stretch width
-    int textOffsetX; // label x offset
-    int textOffsetY; // label y offset
-    int textColor; // label colour (ARGB, -1 == default)
-    unsigned char touched; // currently pressed
-    unsigned char alwaysPressed; // forced-pressed flag
-    unsigned char visible; // visible flag
-    unsigned char halfTransparent; // disabled/half-transparent flag
-    uint32_t iconTexId; // icon texture id (kind 4)
-    unsigned char progressHighlight; // press-progress highlight flag
-    float pressProgress; // press-progress fill (0..1)
-    int touchMargin; // hit-test margin (from layout metrics)
-    int fontSpacing; // cached font kerning/spacing
+    int field_0x0;
+    int field_0x4;
+    uint32_t fontId;
+    String text;
+    String splitText;
+    int subId;
+    uint32_t image;
+    String numberText;
+    int adornImage;
+    int imgFrameTL;
+    int imgFrameT;
+    int imgFrameTR;
+    int imgFrameL;
+    int imgFrameM;
+    int imgFrameR;
+    int imgFrameBL;
+    int imgFrameB;
+    int imgFrameBR;
+    uint32_t iconImage;
+    int iconOverlay;
+    int iconSmall;
+    int requestedWidth;
+    int kind;
+    unsigned char flags0;
+    unsigned char flags1;
+    int x;
+    int y;
+    int initX;
+    int initY;
+    int height;
+    int layoutHeight;
+    int width;
+    int leftWidth;
+    int midWidth;
+    int rightWidth;
+    int midStretch;
+    int textOffsetX;
+    int textOffsetY;
+    int textColor;
+    unsigned char touched;
+    unsigned char alwaysPressed;
+    unsigned char visible;
+    unsigned char halfTransparent;
+    uint32_t iconTexId;
+    unsigned char progressHighlight;
+    float pressProgress;
+    int touchMargin;
+    int fontSpacing;
 
     TouchButton(String const &text, int x, int y, int p4, unsigned char p5);
 

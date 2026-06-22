@@ -115,7 +115,7 @@ namespace {
     inline uint32_t AEStr_indexOf(const String &self, const String &needle) {
         return const_cast<String &>(self).IndexOf(needle);
     }
-} // namespace
+}
 
 void *OpenAppend(unsigned short * /*name*/, int /*size*/, bool /*append*/, unsigned int /*mode*/) {
     return nullptr;
@@ -520,7 +520,6 @@ void AEFile::sortPakFileEntryList() {
         return;
     }
 
-    // Bubble sort the entries by CRC ascending, so findPakFile can binary-search them.
     for (int32_t pass = count - 1; pass > 0; pass--) {
         for (int32_t index = 0; index < pass; index++) {
             AEPakFileEntry **data = entries->data();
@@ -725,7 +724,7 @@ namespace {
         0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
         0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
     };
-} // namespace
+}
 
 uint32_t AEFile::crc32_ccitt(const String &text) {
     uint32_t crc = 0;

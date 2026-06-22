@@ -157,15 +157,18 @@ int TouchButton::getHeight() {
     return this->height;
 }
 
-extern "C" unsigned int TB_iconTexId(int eliteVariant, int stage); // -> icon texture id
-extern "C" unsigned short TB_iconImgId(int eliteVariant, int stage); // image for icon create
-extern "C" unsigned short TB_medalSmallId(int achId); // small medal overlay
-extern "C" unsigned short TB_frameId(int useAltSkin, unsigned int kind, int slot); // 9-patch frame ids
+extern "C" unsigned int TB_iconTexId(int eliteVariant, int stage);
 
-extern char *g_TB_useAltSkin; // bool: alternate skin table
-extern char *g_TB_langWide; // bool: wide-language toggle
-extern char *g_TB_langWide2; // bool: second toggle
-extern void **g_TB_layoutMetrics; // Layout providing the touch-margin / default-height metrics
+extern "C" unsigned short TB_iconImgId(int eliteVariant, int stage);
+
+extern "C" unsigned short TB_medalSmallId(int achId);
+
+extern "C" unsigned short TB_frameId(int useAltSkin, unsigned int kind, int slot);
+
+extern char *g_TB_useAltSkin;
+extern char *g_TB_langWide;
+extern char *g_TB_langWide2;
+extern void **g_TB_layoutMetrics;
 extern const char g_TB_emptyStr[];
 
 int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x,
@@ -175,7 +178,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
     this->kind = (int) kind;
     this->visible = 1;
     this->text = text;
-    this->subId = achStage; // generic "second image / sub-id" slot
+    this->subId = achStage;
     this->textColor = -1;
     this->requestedWidth = width;
     this->field_0x0 = 0;
@@ -202,7 +205,6 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
 
     switch (kind) {
         case 4: {
-            // medal / achievement button
             void *ach = gAchievements;
             int elite = (((Achievements *) (ach))->isEliteMedal(achId) != 0) ? 1 : 0;
             this->iconTexId = TB_iconTexId(elite, achStage);
@@ -228,7 +230,6 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             break;
         }
         case 10: {
-            // toggle-style button with a 0x2329 background
             unsigned int frameH;
             ((PaintCanvas *) (canvas))->Image2DCreate(9000, frameH);
             this->imgFrameL = frameH;
@@ -247,14 +248,12 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             break;
         }
         case 0xc: {
-            // simple two-image button (0x472 / 0x473)
             unsigned int frameH;
             ((PaintCanvas *) (canvas))->Image2DCreate(0x472, frameH);
             this->imgFrameL = frameH;
             ((PaintCanvas *) (canvas))->Image2DCreate(0x473, frameH);
             this->imgFrameTL = frameH;
             {
-                // centred label geometry from the just-created image
                 this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
                 int w = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
                 this->layoutHeight = this->height;
@@ -276,7 +275,6 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             this->imgFrameTL = frameH;
             this->imgFrameBL = this->imgFrameTL;
             {
-                // centred label geometry from the just-created image
                 this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
                 int w = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
                 this->layoutHeight = this->height;
@@ -307,13 +305,11 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             goto wide_text_layout;
         }
         case 0x10: {
-            // background supplied by caller
             unsigned int frameH;
             this->imgFrameL = achStage;
             ((PaintCanvas *) (canvas))->Image2DCreate(0xbb9, frameH);
             this->imgFrameTL = frameH;
             {
-                // centred label geometry from the just-created image
                 this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
                 int w = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
                 this->layoutHeight = this->height;
@@ -351,11 +347,10 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             this->imgFrameTL = frameH;
             goto wide_text_layout;
         }
-        case 0x13: // pre-supplied images (caller + ctor variant)
+        case 0x13:
             this->imgFrameL = achStage;
             this->imgFrameTL = (int) this->image;
             {
-                // centred label geometry from the just-created image
                 this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
                 int w = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
                 this->layoutHeight = this->height;
@@ -369,7 +364,6 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             }
             break;
         default: {
-            // generic menu button: 9-patch frame from the skin table
             int alt = (*g_TB_useAltSkin != 0) ? 1 : 0;
             unsigned int frameH;
             ((PaintCanvas *) (canvas))->Image2DCreate(TB_frameId(alt, kind, 0), frameH);
@@ -392,11 +386,11 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
             this->imgFrameBR = frameH;
 
             this->height = ((PaintCanvas *) (canvas))->GetImage2DHeight(0);
-            this->leftWidth = ((PaintCanvas *) (canvas))->GetImage2DWidth(0); // left frame width
-            this->midWidth = ((PaintCanvas *) (canvas))->GetImage2DWidth(0); // mid frame width
+            this->leftWidth = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
+            this->midWidth = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
             int rightW = ((PaintCanvas *) (canvas))->GetImage2DWidth(0);
             this->rightWidth = rightW;
-            // height: kind 0xb uses the raw image height; otherwise a layout default
+
             if (kind != 0xb)
                 this->layoutHeight = *(int *) ((char *) *g_TB_layoutMetrics + 0x30);
             else
@@ -420,8 +414,6 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
     goto done;
 
 wide_text_layout: {
-        // Shared epilogue for the 'arrow' style kinds (0xe/0xf/0x11/0x12/0x14):
-        // a language-dependent vertical text factor is applied.
         unsigned int lang = GameText::getLanguage();
         float factor;
         if ((lang & 0xffff) < 0x10 && ((1 << (lang & 0xff)) & 0x8c00) != 0)
@@ -448,7 +440,7 @@ done:
     return 0;
 }
 
-extern unsigned int *g_TB_defSpacing; // default glyph spacing
+extern unsigned int *g_TB_defSpacing;
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
                          unsigned char flags0, unsigned char flags1) {
@@ -460,12 +452,12 @@ TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
     this->init(tmp, kind, a, b, c, d, -1, -1, flags0, flags1);
 }
 
-extern Layout **g_TB_d_layoutA; // pressed/disabled tint layout
-extern Layout **g_TB_d_layoutBG; // background-pattern layout
-extern Layout **g_TB_d_layoutC; // progress-fill layout
-extern Layout **g_TB_d_layoutEnd; // final restore layout
-extern String **g_TB_d_unitStr; // "%"-style unit String
-extern unsigned int g_TB_d_frameMask; // kinds that get a frame
+extern Layout **g_TB_d_layoutA;
+extern Layout **g_TB_d_layoutBG;
+extern Layout **g_TB_d_layoutC;
+extern Layout **g_TB_d_layoutEnd;
+extern String **g_TB_d_unitStr;
+extern unsigned int g_TB_d_frameMask;
 
 void TouchButton::draw() {
     void *canvas = gCanvas;
@@ -485,7 +477,7 @@ void TouchButton::draw() {
     ((PaintCanvas *) (canvas))->FontSetSpacing(this->fontId, (short) this->fontSpacing);
 
     unsigned int kind = this->kind;
-    int icon = -1; // image to draw at the tail
+    int icon = -1;
     int iconY = 0;
     bool tailIcon = false;
 
@@ -511,7 +503,6 @@ void TouchButton::draw() {
         ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
                                                this->y + this->textOffsetY, false);
     } else {
-        // generic frame / label kinds.
         int base;
         if (this->touched != 0)
             base = this->imgFrameTL;
@@ -521,7 +512,6 @@ void TouchButton::draw() {
             base = this->imgFrameL;
 
         if (kind <= 0x14 && ((1u << (kind & 0xff)) & g_TB_d_frameMask) != 0) {
-            // draw the 9-patch background frame + middle stretch.
             unsigned int frameLeft;
             int frameMid;
             if (this->touched != 0) {
@@ -543,7 +533,6 @@ void TouchButton::draw() {
         Layout *layoutC = *g_TB_d_layoutC;
         layoutC->setDrawColor(-1);
 
-        // optional progress fill.
         float prog = this->pressProgress;
         if (prog > 0.0f) {
             gCanvas->SetColor(0xffffffff);
@@ -575,7 +564,6 @@ void TouchButton::draw() {
             layoutC->setDrawColor(-1);
         }
 
-        // label colour: tinted when disabled.
         unsigned int lblColor = (unsigned int) this->textColor;
         if (this->halfTransparent != 0)
             gCanvas->SetColor((unsigned char) (lblColor >> 16), (unsigned char) (lblColor >> 8),
@@ -584,11 +572,9 @@ void TouchButton::draw() {
             gCanvas->SetColor(0xffffffff);
 
         if (this->subId == -1) {
-            // primary label
             ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
                                                    this->y + this->textOffsetY, false);
 
-            // secondary / value label when its length is set.
             if (this->splitText.size() != 0) {
                 String *t = &this->text;
                 int px = this->x;
@@ -608,7 +594,6 @@ void TouchButton::draw() {
                 ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->splitText, tx, ty, false);
             }
 
-            // shortcut / corner label when its length is set.
             if (this->numberText.size() != 0) {
                 gCanvas->SetColor(0xffffffff);
                 String *u = *g_TB_d_unitStr;
@@ -618,7 +603,6 @@ void TouchButton::draw() {
                 gCanvas->SetColor(0xffffffff);
             }
 
-            // small adornment image when set.
             if (this->adornImage != -1) {
                 gCanvas->SetColor(0xffffffff);
                 ((PaintCanvas *) (canvas))->DrawImage2D(this->adornImage, (this->x + this->width + 6) - this->leftWidth,
@@ -640,7 +624,7 @@ void TouchButton::draw() {
     gCanvas->SetColor(savedColor);
 }
 
-extern int **g_TB_c1; // active-font id holder (double-deref)
+extern int **g_TB_c1;
 
 TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
     this->fontId = (uint32_t) * *g_TB_c1;

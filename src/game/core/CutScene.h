@@ -1,50 +1,43 @@
 #ifndef GOF2_CUTSCENE_H
 #define GOF2_CUTSCENE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class AEGeometry; // engine/render/AEGeometry.h; used by pointer only
-class TargetFollowCamera; // game/ship/TargetFollowCamera.h; used by pointer only
-class PlayerEgo; // game/ship/PlayerEgo.h; used by pointer only
-
-struct Level;
 
 class CutScene {
 public:
-    Level *level; // self-contained cinematic level
-    float cameraRotX; // camera X-rotation accumulator
-    Vector vec8; // zero-initialized vector blob
-    float vec8w; // fourth word of the zero-init block
-    int shipPosY; // ship spawn offset (DeepOpen shipPosY)
-    int shipPosZ; // ship spawn offset (DeepOpen shipPosZ)
-    AEGeometry *rootGeom; // scene root geometry
-    float rotationSpeed; // per-frame rotation factor
-    AEGeometry *geom28; // cinematic geometry
-    AEGeometry *geom2c; // cinematic geometry
-    AEGeometry *geom30; // cinematic geometry
-    AEGeometry *geom34; // cinematic geometry
-    Array<AEGeometry *> *geometries; // owned AEGeometry array
-    uint32_t renderAtTimeLo; // current-frame time low word (renderAtTime)
-    uint32_t renderAtTimeHi; // current-frame time high word
-    uint32_t prevTimeLo; // previous-frame time low word (lastRenderAtTime)
-    uint32_t prevTimeHi; // previous-frame time high word
-    uint32_t accumLo; // 64-bit elapsed accumulator low
-    uint32_t accumHi; // 64-bit elapsed accumulator high
-    uint32_t frameDelta; // current frame delta (ms)
-    uint8_t initialized; // isInitialized() flag
-    PlayerEgo *player; // level player
-    AEGeometry *turretGeom; // turret root geometry
+    Level *level;
+    float cameraRotX;
+    Vector vec8;
+    float vec8w;
+    int shipPosY;
+    int shipPosZ;
+    AEGeometry *rootGeom;
+    float rotationSpeed;
+    AEGeometry *geom28;
+    AEGeometry *geom2c;
+    AEGeometry *geom30;
+    AEGeometry *geom34;
+    Array<AEGeometry *> *geometries;
+    uint32_t renderAtTimeLo;
+    uint32_t renderAtTimeHi;
+    uint32_t prevTimeLo;
+    uint32_t prevTimeHi;
+    uint32_t accumLo;
+    uint32_t accumHi;
+    uint32_t frameDelta;
+    uint8_t initialized;
+    PlayerEgo *player;
+    AEGeometry *turretGeom;
     TargetFollowCamera *followCamera;
-    uint32_t cameraId6c; // camera handle (mode 4)
-    uint32_t cameraId70; // camera handle (mode 0x17)
-    uint32_t cameraId74; // camera handle (mode 2)
-    uint32_t transformId78; // transform handle (mode 0x17)
-    int animTimer7c; // animation timer
-    int animTimer80; // animation timer
-    int fogTimer84; // fog/anim timer
-    int mode; // cutscene mode (ctor param)
+    uint32_t cameraId6c;
+    uint32_t cameraId70;
+    uint32_t cameraId74;
+    uint32_t transformId78;
+    int animTimer7c;
+    int animTimer80;
+    int fogTimer84;
+    int mode;
 
     CutScene(int mode);
 

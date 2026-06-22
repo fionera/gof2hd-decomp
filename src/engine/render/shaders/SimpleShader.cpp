@@ -34,4 +34,4 @@ namespace AbyssEngine {
         }
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
     }
-} // namespace AbyssEngine
+}

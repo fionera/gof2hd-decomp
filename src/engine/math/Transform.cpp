@@ -117,7 +117,6 @@ namespace AbyssEngine {
             }
             this->keyFrames.clear();
         }
-        // rotation / localRotation are real members; their dtors run automatically.
     }
 
     void Transform::InitAnimationRangeInTime() {
@@ -162,7 +161,7 @@ namespace AbyssEngine {
     }
 
     void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-        char *key = (char *) keyFrame; // KeyFrame fields accessed via key+0xNN
+        char *key = (char *) keyFrame;
 
         Array<KeyFrame *> &items = this->keyFrames;
         int i = 0;
@@ -178,44 +177,63 @@ namespace AbyssEngine {
             uint next0 = *(uint *) (next + 0x58);
             uint next1 = *(uint *) (next + 0x5c);
 
-            if ((flags0 & 0x40) && !(next0 & 0x40)) *(float *) (next + 0x18) = lerp_float(
-                                                        *(float *) (prev + 0x18), *(float *) (key + 0x18), t);
-            if ((flags0 & 0x80) && !(next0 & 0x80)) *(float *) (next + 0x1c) = lerp_float(
-                                                        *(float *) (prev + 0x1c), *(float *) (key + 0x1c), t);
-            if ((flags0 & 0x100) && !(next0 & 0x100)) *(float *) (next + 0x20) = lerp_float(
-                                                          *(float *) (prev + 0x20), *(float *) (key + 0x20), t);
-            if ((flags0 & 0x1) && !(next0 & 0x1)) *(float *) (next + 0x00) = lerp_float(
-                                                      *(float *) (prev + 0x00), *(float *) (key + 0x00), t);
-            if ((flags0 & 0x2) && !(next0 & 0x2)) *(float *) (next + 0x04) = lerp_float(
-                                                      *(float *) (prev + 0x04), *(float *) (key + 0x04), t);
-            if ((flags0 & 0x4) && !(next0 & 0x4)) *(float *) (next + 0x08) = lerp_float(
-                                                      *(float *) (prev + 0x08), *(float *) (key + 0x08), t);
-            if ((flags0 & 0x8) && !(next0 & 0x8)) *(float *) (next + 0x0c) = lerp_float(
-                                                      *(float *) (prev + 0x0c), *(float *) (key + 0x0c), t);
-            if ((flags0 & 0x10) && !(next0 & 0x10)) *(float *) (next + 0x10) = lerp_float(
-                                                        *(float *) (prev + 0x10), *(float *) (key + 0x10), t);
-            if ((flags0 & 0x20) && !(next0 & 0x20)) *(float *) (next + 0x14) = lerp_float(
-                                                        *(float *) (prev + 0x14), *(float *) (key + 0x14), t);
-            if ((flags0 & 0x200) && !(next0 & 0x200)) *(float *) (next + 0x48) = lerp_float(
-                                                          *(float *) (prev + 0x48), *(float *) (key + 0x48), t);
-            if ((flags0 & 0x10000) && !(next0 & 0x10000)) *(float *) (next + 0x3c) = lerp_float(
-                                                              *(float *) (prev + 0x3c), *(float *) (key + 0x3c), t);
-            if ((flags0 & 0x20000) && !(next0 & 0x20000)) *(float *) (next + 0x40) = lerp_float(
-                                                              *(float *) (prev + 0x40), *(float *) (key + 0x40), t);
-            if ((flags0 & 0x40000) && !(next0 & 0x40000)) *(float *) (next + 0x44) = lerp_float(
-                                                              *(float *) (prev + 0x44), *(float *) (key + 0x44), t);
-            if ((flags0 & 0x400) && !(next0 & 0x400)) *(float *) (next + 0x24) = lerp_float(
-                                                          *(float *) (prev + 0x24), *(float *) (key + 0x24), t);
-            if ((flags0 & 0x800) && !(next0 & 0x800)) *(float *) (next + 0x28) = lerp_float(
-                                                          *(float *) (prev + 0x28), *(float *) (key + 0x28), t);
-            if ((flags0 & 0x1000) && !(next0 & 0x1000)) *(float *) (next + 0x2c) = lerp_float(
-                                                            *(float *) (prev + 0x2c), *(float *) (key + 0x2c), t);
-            if ((flags0 & 0x2000) && !(next0 & 0x2000)) *(float *) (next + 0x30) = lerp_float(
-                                                            *(float *) (prev + 0x30), *(float *) (key + 0x30), t);
-            if ((flags0 & 0x4000) && !(next0 & 0x4000)) *(float *) (next + 0x34) = lerp_float(
-                                                            *(float *) (prev + 0x34), *(float *) (key + 0x34), t);
-            if ((flags0 & 0x8000) && !(next0 & 0x8000)) *(float *) (next + 0x38) = lerp_float(
-                                                            *(float *) (prev + 0x38), *(float *) (key + 0x38), t);
+            if ((flags0 & 0x40) && !(next0 & 0x40))
+                *(float *) (next + 0x18) = lerp_float(
+                    *(float *) (prev + 0x18), *(float *) (key + 0x18), t);
+            if ((flags0 & 0x80) && !(next0 & 0x80))
+                *(float *) (next + 0x1c) = lerp_float(
+                    *(float *) (prev + 0x1c), *(float *) (key + 0x1c), t);
+            if ((flags0 & 0x100) && !(next0 & 0x100))
+                *(float *) (next + 0x20) = lerp_float(
+                    *(float *) (prev + 0x20), *(float *) (key + 0x20), t);
+            if ((flags0 & 0x1) && !(next0 & 0x1))
+                *(float *) (next + 0x00) = lerp_float(
+                    *(float *) (prev + 0x00), *(float *) (key + 0x00), t);
+            if ((flags0 & 0x2) && !(next0 & 0x2))
+                *(float *) (next + 0x04) = lerp_float(
+                    *(float *) (prev + 0x04), *(float *) (key + 0x04), t);
+            if ((flags0 & 0x4) && !(next0 & 0x4))
+                *(float *) (next + 0x08) = lerp_float(
+                    *(float *) (prev + 0x08), *(float *) (key + 0x08), t);
+            if ((flags0 & 0x8) && !(next0 & 0x8))
+                *(float *) (next + 0x0c) = lerp_float(
+                    *(float *) (prev + 0x0c), *(float *) (key + 0x0c), t);
+            if ((flags0 & 0x10) && !(next0 & 0x10))
+                *(float *) (next + 0x10) = lerp_float(
+                    *(float *) (prev + 0x10), *(float *) (key + 0x10), t);
+            if ((flags0 & 0x20) && !(next0 & 0x20))
+                *(float *) (next + 0x14) = lerp_float(
+                    *(float *) (prev + 0x14), *(float *) (key + 0x14), t);
+            if ((flags0 & 0x200) && !(next0 & 0x200))
+                *(float *) (next + 0x48) = lerp_float(
+                    *(float *) (prev + 0x48), *(float *) (key + 0x48), t);
+            if ((flags0 & 0x10000) && !(next0 & 0x10000))
+                *(float *) (next + 0x3c) = lerp_float(
+                    *(float *) (prev + 0x3c), *(float *) (key + 0x3c), t);
+            if ((flags0 & 0x20000) && !(next0 & 0x20000))
+                *(float *) (next + 0x40) = lerp_float(
+                    *(float *) (prev + 0x40), *(float *) (key + 0x40), t);
+            if ((flags0 & 0x40000) && !(next0 & 0x40000))
+                *(float *) (next + 0x44) = lerp_float(
+                    *(float *) (prev + 0x44), *(float *) (key + 0x44), t);
+            if ((flags0 & 0x400) && !(next0 & 0x400))
+                *(float *) (next + 0x24) = lerp_float(
+                    *(float *) (prev + 0x24), *(float *) (key + 0x24), t);
+            if ((flags0 & 0x800) && !(next0 & 0x800))
+                *(float *) (next + 0x28) = lerp_float(
+                    *(float *) (prev + 0x28), *(float *) (key + 0x28), t);
+            if ((flags0 & 0x1000) && !(next0 & 0x1000))
+                *(float *) (next + 0x2c) = lerp_float(
+                    *(float *) (prev + 0x2c), *(float *) (key + 0x2c), t);
+            if ((flags0 & 0x2000) && !(next0 & 0x2000))
+                *(float *) (next + 0x30) = lerp_float(
+                    *(float *) (prev + 0x30), *(float *) (key + 0x30), t);
+            if ((flags0 & 0x4000) && !(next0 & 0x4000))
+                *(float *) (next + 0x34) = lerp_float(
+                    *(float *) (prev + 0x34), *(float *) (key + 0x34), t);
+            if ((flags0 & 0x8000) && !(next0 & 0x8000))
+                *(float *) (next + 0x38) = lerp_float(
+                    *(float *) (prev + 0x38), *(float *) (key + 0x38), t);
             *(uint *) (next + 0x58) = next0 | flags0;
             *(uint *) (next + 0x5c) = next1 | flags1;
             ++i;
@@ -322,9 +340,6 @@ namespace AbyssEngine {
     }
 
     Transform::Transform(Transform *other) {
-        // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
-        // real members and are default-constructed automatically.
-
         this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
         this->boundingRadius = 0.0f;
         this->boundingRadius2 = 1.0f;
@@ -388,9 +403,6 @@ namespace AbyssEngine {
     }
 
     Transform::Transform() {
-        // worldMatrix / rotationMatrix / localMatrix / rotation / localRotation are
-        // real members and are default-constructed automatically.
-
         this->boundingCenter = AEMath::Vector{0.0f, 0.0f, 0.0f};
         this->boundingRadius = 0.0f;
         this->boundingRadius2 = 1.0f;
@@ -445,13 +457,11 @@ namespace AbyssEngine {
             Array<KeyFrame *> &items = this->keyFrames;
             char *last = (char *) items[items.size() - 1];
             if (*(longlong *) (last + 0x50) < current) {
-                // KeyFrame+0x50 (timestamp)
-                current = *(longlong *) (last + 0x50); // KeyFrame+0x50
+                current = *(longlong *) (last + 0x50);
             }
 
             int index = 0;
             while (*(longlong *) ((char *) items[index] + 0x50) < current) {
-                // KeyFrame+0x50
                 ++index;
             }
             this->currentKeyFrameIndex = index;
@@ -464,7 +474,6 @@ namespace AbyssEngine {
                     this->localMatrix.m[5] = 1.0f;
                 }
             } else if (current == 0) {
-                // KeyFrame fields below (+0x18 rot, +0x00 pos, +0x0c scale, +0x48 alpha, +0x3c/+0x24/+0x30)
                 char *key = (char *) items[index];
                 this->rotation.Set(*(float *) (key + 0x18), *(float *) (key + 0x1c), *(float *) (key + 0x20));
                 this->translation = *(AEMath::Vector *) (key + 0x00);
@@ -474,7 +483,6 @@ namespace AbyssEngine {
                 this->localTranslation = *(AEMath::Vector *) (key + 0x24);
                 this->localScale = *(AEMath::Vector *) (key + 0x30);
             } else {
-                // KeyFrame fields (prev/next) below
                 char *prev = (char *) items[index - 1];
                 char *next = (char *) items[index];
                 float t = (float) (current - *(longlong *) (prev + 0x50)) /
@@ -872,4 +880,4 @@ namespace AbyssEngine {
 
         return CameraIsSphereinViewFrustum(center, this->boundingRadius2 * x, camera);
     }
-} // namespace AbyssEngine
+}

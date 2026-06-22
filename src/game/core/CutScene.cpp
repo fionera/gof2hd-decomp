@@ -1,7 +1,7 @@
 #include "game/core/CutScene.h"
 #include "engine/core/AERandom.h"
 #include "game/ship/TargetFollowCamera.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/mission/Status.h"
 #include "game/core/Globals.h"
 #include "game/world/SolarSystem.h"
@@ -11,7 +11,7 @@
 #include "engine/math/Transform.h"
 #include "engine/core/ApplicationManager.h"
 #include "game/world/Level.h"
-#include "game/world/LevelScript.h"   // PlayerEgo.h references LevelScript but omits its include
+#include "game/world/LevelScript.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/PlayerFighter.h"
 #include "game/ship/Ship.h"
@@ -60,7 +60,7 @@ CutScene::CutScene(int mode) {
     this->geom2c = nullptr;
     this->geom30 = nullptr;
     this->geom34 = nullptr;
-    // rotationSpeed is initialized from the literal-pool bit pattern 0x3851b717.
+
     uint32_t bits = 0x3851b717u;
     __builtin_memcpy(&this->rotationSpeed, &bits, sizeof bits);
 }
@@ -138,7 +138,7 @@ void CutScene::process(int /*delta*/) {
     unsigned int now = (unsigned int) gAppManager->GetCurrentTimeMillis();
     unsigned int prev = this->prevTimeLo;
     unsigned int dt = now - prev;
-    // 64-bit elapsed accumulator.
+
     unsigned int lo = this->accumLo;
     this->accumLo = lo + dt;
     this->accumHi = this->accumHi + ((int) dt >> 31) + (lo + dt < lo ? 1u : 0u);
@@ -167,7 +167,7 @@ void CutScene::process(int /*delta*/) {
         if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
             unsigned int n = enemies->size();
             void *e0 = (*enemies)[n - 2];
-            // The KIPlayer entry's embedded AEGeometry* lives at +8.
+
             if (e0 != nullptr && *(int *) ((char *) e0 + 8) != 0) {
                 AEGeometry *g0 = *(AEGeometry **) ((char *) e0 + 8);
                 float f = VectorSignedToFloat(this->frameDelta, 0);
@@ -243,7 +243,7 @@ void CutScene::process(int /*delta*/) {
         char mtx[0x3c];
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
         Array<KIPlayer *> *enemies = this->level->getEnemies();
-        // The lead enemy's geometry (KIPlayer+0x8) carries the camera transform at +0xc.
+
         void *leadGeom = *(void **) ((char *) (*enemies)[0] + 8);
         canvas->TransformSetLocal(0, *(const Matrix *) (*(void **) ((char *) leadGeom + 0xc)));
         Array<KIPlayer *> *arr = this->level->getEnemies();
@@ -377,7 +377,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
         return;
 
     Array<KIPlayer *> *enemies = this->level->getEnemies();
-    // The lead enemy is element [0]; its embedded AEGeometry* lives at KIPlayer+0x8.
+
     AEGeometry *oldGeom = *(AEGeometry **) ((char *) (*enemies)[0] + 8);
     if (oldGeom != nullptr) {
         if (this->turretGeom != nullptr) {
@@ -396,16 +396,13 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
         *(AEGeometry **) ((char *) (*en3)[0] + 8) = grp;
 
         Array<KIPlayer *> *en4 = this->level->getEnemies();
-        // The matrix is the old ship's local transform saved into `matrix` above.
+
         (*(AEGeometry **) ((char *) (*en4)[0] + 8))->setMatrix(*(const Matrix *) matrix);
 
         Array<KIPlayer *> *en5 = this->level->getEnemies();
         KIPlayer *ship = (*en5)[0];
         float bank = VectorSignedToFloat(CutScene_shipBankTable[b], 0);
-        // Position the lead ship along the bank axis via the actor setPosition virtual
-        // (slot +0x48, Ghidra-verified). The decompiler recovered this as a vptr
-        // double-indirection (`obj = *(void**)ship`) + raw slot read — a known artifact;
-        // the faithful dispatch is the object's own virtual setPosition.
+
         ship->setPosition(0.0f, bank, 0.0f);
 
         Array<KIPlayer *> *en6 = this->level->getEnemies();
@@ -460,10 +457,7 @@ void CutScene::initialize() {
                 v[0] = VectorSignedToFloat(rx - 24000, 0);
                 v[1] = 0.0f;
                 v[2] = VectorSignedToFloat(ry + 0x9a4c, 0);
-                // e0 and e1 are both positioned via setPosition_vec (slot +0x44), which
-                // unpacks the vector and calls setPosition (slot +0x48); call the virtual
-                // setPosition directly (Ghidra-verified). e0's site was recovered as a
-                // mangled vtable[0] double-deref — a decompiler artifact for the same dispatch.
+
                 ((KIPlayer *) e0)->setPosition(v[0], v[1], v[2]);
                 v[0] = VectorSignedToFloat(rx - 0x5b68, 0);
                 v[2] = VectorSignedToFloat(ry + 0x96c8, 0);
@@ -542,7 +536,7 @@ void CutScene::resetCamera() {
         }
         canvas->CameraSetCurrent(this->cameraId70);
         canvas->CameraSetPerspective(0, CutScene_persp_fov_mode17, CutScene_persp_znear, CutScene_persp_zfar);
-        // Tail: notify the lead enemy ship.
+
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         void *lead = (*enemies)[0];
         (void) lead;
@@ -588,8 +582,8 @@ void CutScene::checkForTurret() {
 
     int idx = item->getIndex();
 
-    unsigned short id0 = 0xffff; // base geometry
-    unsigned short id1 = 0xffff; // second geometry
+    unsigned short id0 = 0xffff;
+    unsigned short id1 = 0xffff;
     int child0 = -1;
     int child1 = -1;
     int child2 = -1;

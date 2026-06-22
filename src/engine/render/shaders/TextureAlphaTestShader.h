@@ -1,36 +1,30 @@
 #ifndef GOF2_TEXTUREALPHATESTSHADER_H
 #define GOF2_TEXTUREALPHATESTSHADER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class TextureAlphaTestShader : public ShaderBaseStruct {
     public:
-        int alphaProgram; // GL program handle (alpha-test variant, index 1)
+        int alphaProgram;
 
-        int aPositionLoc[2]; // a_Position
-        int aTexCoordLoc[2]; // a_TexCoord
-        int uMVPMatrixLoc[2]; // u_MVPMatrix
-        int uColorLoc[2]; // u_Color
-        int uTextureLoc[2]; // u_Texture
-        int uLightPosLoc[2]; // u_LightPos
-        int uAmbientLoc[2]; // u_Ambient
-        int uDiffuseLoc[2]; // u_Diffuse
-        int uSamplerLoc[2]; // u_Sampler
-        int uFogColorLoc[2]; // u_FogColor
+        int aPositionLoc[2];
+        int aTexCoordLoc[2];
+        int uMVPMatrixLoc[2];
+        int uColorLoc[2];
+        int uTextureLoc[2];
+        int uLightPosLoc[2];
+        int uAmbientLoc[2];
+        int uDiffuseLoc[2];
+        int uSamplerLoc[2];
+        int uFogColorLoc[2];
 
-        // Snapshot of ShaderBaseStruct::shaderIndexIntern taken at construction.
         static int ShaderIndex;
 
         TextureAlphaTestShader();
@@ -45,6 +39,6 @@ namespace AbyssEngine {
 
         void UseShader(bool useExtra) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

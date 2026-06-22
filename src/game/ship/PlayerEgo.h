@@ -1,81 +1,73 @@
 #ifndef GOF2_PLAYEREGO_H
 #define GOF2_PLAYEREGO_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
+#include "TargetFollowCamera.h"
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"
+#include "engine/render/AEGeometry.h"
+#include "game/weapons/Radar.h"
+#include "game/weapons/RepairBeam.h"
+#include "game/world/Level.h"
 
 typedef AbyssEngine::AEMath::Vector Vec3;
 
-class AEGeometry;
-class Player;
-class Level;
-class LevelScript;
-class RepairBeam;
-class Gun;
-class KIPlayer;
-class Route;
-class TargetFollowCamera;
-class Hud;
-class Radar;
-class Radio;
-
 struct ExplosionEmitterHolder {
-    int emitterFirstId; // +0x00 first effect/sound id, replayed on explode
+    int emitterFirstId;
 };
 
 struct MiningInputFlags {
-    uint8_t field_0x00[0x10]; // +0x00 unmodeled leading bytes
-    uint8_t invertAxisFlag; // +0x10 when set, swaps the down/up steering axis
+    uint8_t field_0x00[0x10];
+    uint8_t invertAxisFlag;
 };
 
 class PlayerEgo {
 public:
-    void *player; // wrapped Player (ship logic / HP / guns)
-    AEGeometry *field_0x4; // transform-local source geometry
-    AEGeometry *geometry; // hull / ship root geometry
+    void *player;
+    AEGeometry *field_0x4;
+    AEGeometry *geometry;
     Level *level;
     LevelScript *levelScript;
-    void *field_0x14; // KIPlayer-style handle
-    Radio *radioRef; // +0x18 cached Radio* (set from MGame on radio messages)
-    int field_0x1c; // +0x1c ship-class engine/handling sound id
-    int field_0x20; // +0x20
-    uint8_t freeze; // frozen / collide-off flag
+    void *field_0x14;
+    Radio *radioRef;
+    int field_0x1c;
+    int field_0x20;
+    uint8_t freeze;
     uint8_t inWormhole;
     void *turretGeometry;
-    void *field_0x2c; // geometry node (freed in dtor)
-    void *field_0x30; // geometry node (freed in dtor)
-    void *gunYawGeo; // gun yaw (barrel) geometry
-    void *gunMuzzleRoot; // gun muzzle root geometry
-    void *gunExtraGeo; // optional extra gun child geometry
-    float maneuverParam; // scripted-maneuver pitch param
+    void *field_0x2c;
+    void *field_0x30;
+    void *gunYawGeo;
+    void *gunMuzzleRoot;
+    void *gunExtraGeo;
+    float maneuverParam;
     float field_0x80;
-    int targetFollowCamera; // TargetFollowCamera handle
+    int targetFollowCamera;
     void *explosion;
     void *explosion2;
-    int field_0xac; // emergency-system effect geometry
-    int field_0xb0; // handling store
-    uint8_t switchToStandardCam; // one-shot "switch to standard cam" flag
+    int field_0xac;
+    int field_0xb0;
+    uint8_t switchToStandardCam;
     uint8_t field_0xb2;
-    int engineSoundId; // FMod sound handle for engine/gamma SFX
+    int engineSoundId;
     int speed;
     float thrust;
     uint8_t freeLookMode;
     int boostSpeed;
-    int field_0xcc; // boost-percentage period base
-    int field_0xd0; // boost-rate denominator
-    void *boostSoundId; // FMod sound handle for boost SFX
-    void *rollGeometry; // roll/banking geometry node
-    float rotX; // setPosition source X
-    float rotY; // setPosition source Y
-    float rotZ; // setPosition source Z
-    float waypointX; // steer-to-waypoint target X
-    float waypointY; // steer-to-waypoint target Y
-    void *gunBaseGeo; // gun base geometry (also waypoint-Z storage)
-    int route; // Route*
-    int pitchAccumDir; // pitch direction flag (-1/+1)
-    int yawAccumDir; // yaw direction flag (-1/+1)
+    int field_0xcc;
+    int field_0xd0;
+    void *boostSoundId;
+    void *rollGeometry;
+    float rotX;
+    float rotY;
+    float rotZ;
+    float waypointX;
+    float waypointY;
+    void *gunBaseGeo;
+    int route;
+    int pitchAccumDir;
+    int yawAccumDir;
     int currentSecondaryWeaponIndex;
     float yawAccumulator;
     float pitchAccumulator;
@@ -85,136 +77,136 @@ public:
     int shakeIntensity;
     int boostTimer;
     uint8_t boostingFlag;
-    uint8_t collide; // collide-disable flag
+    uint8_t collide;
     uint8_t field_0x145;
-    uint8_t field_0x146; // boost-enabled flag
-    AbyssEngine::AEMath::Vector dockOffsetVec; // dock-rig offset vector (x/y/z)
+    uint8_t field_0x146;
+    AbyssEngine::AEMath::Vector dockOffsetVec;
     int boostDelay;
     int handling;
     uint8_t autoPilot;
-    int autoPilotTarget; // current waypoint/landmark
+    int autoPilotTarget;
     uint8_t goingToWaypointFlag;
-    AbyssEngine::AEMath::Vector headingVec; // desired heading vector (moveToPosition)
-    uint8_t turretMode; // turret available/equipped flag
-    uint32_t turretCamera; // turret/dock camera handle
-    void *dockCameraNode; // dock/turret camera node geometry (root)
-    void *dockCameraLeaf; // dock/turret camera leaf node
+    AbyssEngine::AEMath::Vector headingVec;
+    uint8_t turretMode;
+    uint32_t turretCamera;
+    void *dockCameraNode;
+    void *dockCameraLeaf;
     uint8_t autoTurretEquipped;
-    int autoTurretTimer; // rescan timer (every 3s)
+    int autoTurretTimer;
     int autoTurretFireTimer;
-    void *autoTurretTarget; // current auto-turret target
+    void *autoTurretTarget;
     void *autoTurretPrevTarget;
-    int rocketControlGun; // rocket-control gun handle
+    int rocketControlGun;
     int rocketBanking;
-    void *dockCameraMid; // dock/turret camera mid node
-    uint8_t turretActive; // in-turret-mode flag
+    void *dockCameraMid;
+    uint8_t turretActive;
     uint8_t field_0x1a1;
-    float lookPitch; // turret look pitch accumulator
-    float lookYaw; // turret look yaw accumulator
+    float lookPitch;
+    float lookYaw;
     uint8_t cloaked;
     uint8_t chargingCloak;
-    void *cloak; // cloak device handle
+    void *cloak;
     void *tractorBeam;
-    Array<RepairBeam *> *repairBeams; // active repair-beam effects
-    int asteroidTarget; // docked/approached asteroid
-    int dockingState; // docking-procedure flag
-    int dockingPointIndex; // docking-point/landing state index
+    Array<RepairBeam *> *repairBeams;
+    int asteroidTarget;
+    int dockingState;
+    int dockingPointIndex;
+
     union {
         int dockApproachDist;
-        uint8_t resumeFlag; // +0x150 low byte: resume/fast-forward flag set by MGame on touch-end resume
+        uint8_t resumeFlag;
     };
 
     int dockApproachThreshold;
     int field_0x1d0;
     int dockScaling;
     int miningSettleTimer;
-    void *dockStation; // station/target being approached
-    int miningGame; // MiningGame*
-    int hackingGame; // HackingGame*
-    short docked; // docked-to-* state word
+    void *dockStation;
+    int miningGame;
+    int hackingGame;
+    short docked;
     uint8_t dockedToStream;
     uint8_t dockingToPlanet;
     int planetDockTimer;
     uint8_t computerControlled;
     int turretPitch;
-    int driveCharge; // jump-drive charge timer
+    int driveCharge;
     int driveChargeMax;
     uint8_t chargingDrive;
     int cloakCharge;
     int cloakRechargeTimer;
-    int cloakChargeMax; // cloak full-charge threshold
+    int cloakChargeMax;
     int cloakDischargeMax;
-    int hud; // Hud handle
-    AbyssEngine::AEMath::Vector turretOffsetVec; // turret-rig offset vector (x/y/z)
+    int hud;
+    AbyssEngine::AEMath::Vector turretOffsetVec;
     uint8_t collidesWithStationFlag;
-    uint8_t hardCoreMode; // +0x235 hardcore-mode flag (disables flight assists)
-    int hpGaugeImage; // HP-gauge image handle
-    int dockArrowImage; // dock-arrow image handle
+    uint8_t hardCoreMode;
+    int hpGaugeImage;
+    int dockArrowImage;
     int radarBlipImage1;
     int radarBlipImage2;
     int radarBlipImage3;
-    int shakeAccum; // hit-shake accumulator timer
-    float pitchRamp; // pitch ramp rate
-    float yawRamp; // yaw ramp rate
+    int shakeAccum;
+    float pitchRamp;
+    float yawRamp;
     double rollAccum;
     double yawAccumD;
-    double pitchAccumD; // pitch ramp accumulator
-    float yawAccumF; // yaw ramp accumulator
+    double pitchAccumD;
+    float yawAccumF;
     int field_0x2a4;
     uint8_t field_0x2a8;
-    uint8_t rollDirection; // roll/auto-level direction (0/1/2)
-    AbyssEngine::AEMath::Matrix rollMatrix; // embedded roll matrix
+    uint8_t rollDirection;
+    AbyssEngine::AEMath::Matrix rollMatrix;
     void *field_0x2c0;
-    uint8_t gunExtraVisible; // extra-gun visibility flag
-    float rotateX; // setRotation X
-    float rotateY; // setRotation Y
-    float rotateZ; // setRotation Z
-    uint8_t rolling; // roll-active flag
+    uint8_t gunExtraVisible;
+    float rotateX;
+    float rotateY;
+    float rotateZ;
+    uint8_t rolling;
     uint8_t field_0x2f5;
     int explosionTimer;
-    int currentSystem; // current SolarSystem handle
-    int smokeSystem; // smoke particle system
-    int explosionSmoke; // explosion smoke particle system
-    uint8_t field_0x309; // visible mirror
+    int currentSystem;
+    int smokeSystem;
+    int explosionSmoke;
+    uint8_t field_0x309;
     int emergencySystemTimer;
-    int emergencyVal1; // cached emergency-system value
-    AbyssEngine::AEMath::Vector emergencyVec; // cached emergency transform vector
+    int emergencyVal1;
+    AbyssEngine::AEMath::Vector emergencyVec;
     float emergencyVal2;
-    uint8_t autoLevel; // auto-level (horizon-align) flag
+    uint8_t autoLevel;
     int hitShakeTimer;
-    uint8_t hitShake; // hit-shake active flag
+    uint8_t hitShake;
     uint8_t field_0x32d;
     uint8_t visible;
     uint8_t exhaustVisible;
     uint8_t aboutToReachAutoTargetFlag;
-    int maneuverType; // scripted-maneuver type
-    AbyssEngine::AEMath::Vector strafeTargetVec; // strafe-run target vector (x/y/z)
-    AbyssEngine::AEMath::Vector facingVec; // current facing direction vector
-    void *navPoint; // nearest navigation point
+    int maneuverType;
+    AbyssEngine::AEMath::Vector strafeTargetVec;
+    AbyssEngine::AEMath::Vector facingVec;
+    void *navPoint;
     uint8_t autoTurretEnabled;
-    uint8_t dockedFlag; // docked / in-station flag
-    void *easeMatrix; // EaseInOutMatrix*
+    uint8_t dockedFlag;
+    void *easeMatrix;
     int dockTotalAmount;
     int dockTransferedAmount;
     int cloakRechargeMax;
-    int spacePoint; // SpacePoint handle (route navigation)
+    int spacePoint;
     uint8_t throttleStarted;
     int throttle;
-    float strafeAccel; // lateral strafe acceleration
-    void *strafeNavPoint; // nav SpacePoint (also strafe-target storage)
-    int cloakMaterial1; // cloak material handle
+    float strafeAccel;
+    void *strafeNavPoint;
+    int cloakMaterial1;
     int cloakMaterial2;
     int cloakMaterial3;
-    void *field_0x394; // mesh-derived handle
+    void *field_0x394;
     uint8_t volatileGoods;
     uint8_t lostMiningGameFlag;
-    AbyssEngine::AEMath::Matrix turretHudMatrix; // embedded turret/HUD matrix
+    AbyssEngine::AEMath::Matrix turretHudMatrix;
 
     PlayerEgo(Player *player);
 
     ~PlayerEgo() noexcept(false);
 
-    // ---- methods ----
     Vec3 GetDirVector();
 
     Vec3 GetUpVector();
@@ -483,7 +475,8 @@ public:
 
     void setPosition(AbyssEngine::AEMath::Vector v);
 
-    void setPosition(float x, float y, float z); // was setPosition3 (PlayerEgo is not KIPlayer-derived)
+    void setPosition(float x, float y, float z);
+
     void setRocketControl(Gun *gun, AEGeometry *geo);
 
     void setRotation(float rx, float ry, float rz);

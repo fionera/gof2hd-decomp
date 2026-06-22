@@ -1,5 +1,5 @@
 #include "engine/core/AERandom.h"
-AbyssEngine::AERandom *gRandom = nullptr; // canonical shared RNG singleton
+AbyssEngine::AERandom *gRandom = nullptr;
 #include <ctime>
 
 namespace AbyssEngine {
@@ -43,7 +43,6 @@ namespace AbyssEngine {
 
     int AERandom::nextInt(int bound) {
         if ((bound & -bound) == bound) {
-            // power of two: use high bits directly
             return static_cast<int>((static_cast<int64_t>(bound) * next(31)) >> 31);
         }
 
@@ -55,4 +54,4 @@ namespace AbyssEngine {
         } while (bits - value + (bound - 1) < 0);
         return value;
     }
-} // namespace AbyssEngine
+}

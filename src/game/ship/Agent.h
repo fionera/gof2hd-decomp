@@ -1,12 +1,11 @@
 #ifndef GOF2_AGENT_H
 #define GOF2_AGENT_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/core/String.h"
 
-class Mission;
+#include "game/core/String.h"
+#include "game/mission/Mission.h"
 
 struct Triple {
     int a, b, c;
@@ -15,27 +14,28 @@ struct Triple {
 class Agent {
 public:
     AbyssEngine::String name;
-    AbyssEngine::String *wingman1; // friend-name String* (1st wingman)
-    AbyssEngine::String *wingman2; // friend-name String* (2nd wingman)
+    AbyssEngine::String *wingman1;
+    AbyssEngine::String *wingman2;
     int wingmanCount;
     AbyssEngine::String systemName;
-    // Dialogue flags persisted by RecordHandler (read elsewhere as agent->field_0x24/25),
-    // matching DeepOpen's wasAskedForDifficulty / wasAskedForLocation booleans.
+
     union {
         uint8_t wasAskedForDifficulty;
         uint8_t field_0x24;
-    }; // +0x24
+    };
+
     union {
         uint8_t wasAskedForLocation;
         uint8_t field_0x25;
-    }; // +0x25
-    int field_0x28; // +0x28 (write-only cache, inited -1; no reader)
-    int field_0x2c; // +0x2c (write-only cache, inited -1; no reader)
-    int field_0x30; // +0x30 (write-only cache, inited -1; no reader)
+    };
+
+    int field_0x28;
+    int field_0x2c;
+    int field_0x30;
     int sellItemIndex;
     int sellItemQuantity;
     int sellItemPrice;
-    unsigned type; // (== index)
+    unsigned type;
     int station;
     int system;
     int race;
@@ -113,7 +113,6 @@ public:
 
     void setWingmanFriendNames(Array<AbyssEngine::String *> *param);
 
-    // ---- simple field accessors ----
     int getStation();
 
     int getSystem();

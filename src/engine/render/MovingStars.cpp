@@ -18,7 +18,8 @@ MovingStars::~MovingStars() {
 
 typedef void *(*AllocFn)(int);
 
-extern "C" int MovingStars_nextIntBounded(uint32_t rng, int bound); // AERandom::nextInt(seed,bound)
+extern "C" int MovingStars_nextIntBounded(uint32_t rng, int bound);
+
 extern "C" void MovingStars_TransformCreate(void *canvas, uint32_t *out);
 
 extern "C" void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh);
@@ -30,33 +31,13 @@ extern "C" void MovingStars_MatrixSetTranslationFrom(void *out, const void *base
 
 extern "C" void MovingStars_TextureCreate(void *canvas, int id, void *flag, int b);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern AllocFn g_MovingStars_alloc;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MovingStars_rng_ctor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MovingStars_globals_ctor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MovingStars_canvas_ctor;
 
 static const float kBB0 = 1.0f, kBB1 = 2.0f, kBB2 = 3.0f, kBB3 = 4.0f;
@@ -111,26 +92,18 @@ namespace AbyssEngine {
 extern "C" {
 float VectorSignedToFloat(int v, int mode);
 
-void MovingStars_TransformSetLocal(void *canvas, void *matrix); // PaintCanvas::TransformSetLocal
-int MovingStars_nextInt(void *rng); // AERandom::nextInt
+void MovingStars_TransformSetLocal(void *canvas, void *matrix);
+
+int MovingStars_nextInt(void *rng);
+
 void MovingStars_MatrixSetTranslation(void *m, float x, float y, float z);
 
 void MovingStars_SetAnimVec(void *transform, uint32_t tf, int idx, float x, float y, float z);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MovingStars_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MovingStars_random;
 
 extern "C" {
@@ -203,7 +176,7 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
             this->lifeArray[i] = life - delta;
             memcpy(localMatrix, (const void *) MovingStars_TransformGetLocal(canvas, 0), 0x3c);
             float f = VectorSignedToFloat(this->velocityArray[i], 0);
-            // pos -= velocity * f  (three rows of the translation column)
+
             *(float *) (localMatrix + 0x24) -= *(float *) (localMatrix + 0x18) * f;
             *(float *) (localMatrix + 0x28) -= *(float *) (localMatrix + 0x1c) * f;
             *(float *) (localMatrix + 0x2c) -= *(float *) (localMatrix + 0x20) * f;
@@ -244,12 +217,7 @@ extern "C" void MovingStars_MatrixGetPosition(void *out, const void *m);
 
 extern "C" void MovingStars_VectorAddAssign(void *self, const Vector &other);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MovingStars_canvas_translate;
 
 void MovingStars::translate(const Vector &v) {
@@ -269,12 +237,7 @@ void MovingStars::translate(const Vector &v) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_MovingStars_canvas_render;
 
 void MovingStars::render() {

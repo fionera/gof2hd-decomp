@@ -81,8 +81,7 @@ int setBaughtCredits(int amount) {
     } else {
         return 0;
     }
-    // On first fulfilment of a still-pending pack, run the one-shot
-    // first-purchase bookkeeping; then persist the game.
+
     if (*packFlag != 0) {
         *packFlag = 0;
         checkFirstCreditPackBoughtWriteAction();
@@ -92,8 +91,6 @@ int setBaughtCredits(int amount) {
 }
 
 void checkFirstCreditPackBoughtWriteAction() {
-    // Return value is intentionally discarded: the call is kept for parity with
-    // the original, which reads the campaign mission as a side effect anchor.
     Globals_status->getCurrentCampaignMission();
     if (Globals_options[0x62] == 0) {
         Globals_options[0x62] = 1;
@@ -104,9 +101,6 @@ void checkFirstCreditPackBoughtWriteAction() {
 
 const char *getStringUTFChars(JNIEnv *env, jstring str) {
     if (env != nullptr && str != nullptr) {
-        // Tail-jump straight to the GetStringUTFChars dispatch slot (index 169,
-        // byte offset 0x2a4) leaving env/str in place; the original never passes
-        // an isCopy argument.
         return reinterpret_cast<const char *(*)(JNIEnv *, jstring)>(
             env->functions->GetStringUTFChars)(env, str);
     }
@@ -141,7 +135,7 @@ void ndk23_sendingPauseSignal() {
     if (*g_pEngine == nullptr)
         return;
     Globals_sound->pauseAll();
-    // Suspend the running application module (vtable OnSuspend slot).
+
     static_cast<IApplicationModule *>(gAppManager->currentModule)->OnSuspend();
 }
 
@@ -195,7 +189,7 @@ bool ndk_getDLC_5_BOUGHT() {
 void ndk_iapBoughtConsumable(unsigned int consumable) {
     if (consumable > 4 || *g_pEngine == nullptr)
         return;
-    // Map the credit-pack index to its credit value and award it.
+
     static const int kCreditPackValue[5] = {
         100000, 300000, 1000000, 3000000, 10000000
     };
@@ -206,7 +200,6 @@ void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought) {
     if (*g_pEngine == nullptr || pack > 4)
         return;
 
-    // Clear this pack's "purchase pending" flag if it was raised.
     int *pendingFlags[5] = {
         &gi_iap_buy_dlc1_pressed, &gi_iap_buy_dlc2_pressed,
         &gi_iap_buy_dlc3_pressed, &gi_iap_buy_dlc4_pressed,
@@ -215,7 +208,6 @@ void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought) {
     if (*pendingFlags[pack] != 0)
         *pendingFlags[pack] = 0;
 
-    // Record the resolved bought/refunded state in the options record.
     Globals_options[0x35 + pack] = (bought == 1) ? 1 : 0;
 }
 
@@ -227,9 +219,6 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
     if (env == nullptr)
         return;
 
-    // The store list holds five products, each described by five parallel string
-    // arrays. Pull every element out as a jstring, copy it into the owning
-    // Globals::cItemList* slot, then release the JNI references.
     jstring elems[5][5];
     jobjectArray arrays[5] = {ids, names, descriptions, currencies, prices};
     for (int col = 0; col < 5; ++col)
@@ -242,8 +231,6 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
         for (int row = 0; row < 5; ++row)
             utf[col][row] = env->GetStringUTFChars(elems[col][row], nullptr);
 
-    // Destination globals, grouped by column (id / name / description / currency /
-    // price), five rows each.
     char **slots[5][5] = {
         {
             &Globals_cItemListID_00, &Globals_cItemListID_01, &Globals_cItemListID_02,

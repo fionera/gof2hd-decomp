@@ -47,4 +47,4 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass clazz,
                                       jobjectArray prices);
 }
 
-#endif // GOF2_RECOVERED_A462C_H
+#endif

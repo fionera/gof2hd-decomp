@@ -27,7 +27,7 @@ public:
 };
 
 #include "engine/math/Transform.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 class Achievements {
 public:
@@ -41,7 +41,7 @@ public:
 #undef __aeabi_memcpy
 #include "engine/core/GameText.h"
 #include "game/ui/Layout.h"
-#include "game/mission/Mission.h"   // pulls in Station.h -> Agent.h, the canonical String
+#include "game/mission/Mission.h"
 #include "game/world/Station.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/Wanted.h"
@@ -49,190 +49,70 @@ public:
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void (*g_StarMap_render_geometry)(void *);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_alien_text;
 
 extern "C" void *SystemPathFinder_dtor(void *finder);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_draw_status;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_draw_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_draw_text;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_draw_font;
 
 extern "C" float EaseInOut_GetValue(void *ease);
 
 extern "C" float EaseInOut_GetMinValue(void *ease);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_depart_store0_a;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *g_StarMap_depart_flag_a;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *g_StarMap_depart_jumpFlag_a;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_depart_jumpCost_a;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_depart_targetStation;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *g_StarMap_depart_flag_b;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_depart_status2;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *g_StarMap_depart_jumpFlag_b;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_depart_jumpCost_b;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_depart_sound;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_depart_modstation_flag;
 
 extern "C" int Station_getSystem(void *station);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_end_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_end_sound;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_end_text;
 
 extern "C" int Station_getIndex(void *station);
 
 void MatrixGetPosition(Vector *out, void *matrix);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_lights_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_update_sound;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_update_screenW;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_update_screenH;
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
@@ -243,210 +123,80 @@ extern "C" void EaseInOut_Update(void *ease, float dt);
 
 extern "C" float EaseInOut_GetCurrentValue(void *ease);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void (*g_StarMap_ctor_vecCtor)(void *);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_touch_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_touch_screenH;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_touch_sound;
 
 extern "C" void FileRead_ctor(void *reader);
 
 extern "C" void *FileRead_dtor(void *reader);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_move_guard;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_move_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_drawKey_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_drawKey_screenW;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_drawKey_screenH;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void (*g_StarMap_drawKey_drawImage)(uint32_t, uint32_t, int, int);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_drawKey_text;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 String *(*g_StarMap_drawKey_getText)(void *, int);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_drawKey_font;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void (*g_StarMap_drawKey_drawString)(uint32_t, void *, String *, int, int, bool);
 
 extern "C" int Station_getTextureIndex(void *station);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_info_screenW;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_info_screenH;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_info_font;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_info_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_info_text;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 uint8_t *g_StarMap_info_isGerman;
 
 extern "C" int Station_getTecLevel(void *station);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void (*g_StarMap_init_imageCreate)(uint32_t, int, void *);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_init_layout;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_init_text;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 void **g_StarMap_init_font;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_init_screenW;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_StarMap_init_screenH;
 
 void MatrixSetRotation(void *matrix, float x, float y, float z, float w);
 
 extern "C" void *SystemPathFinder_ctor(void *finder);
 
-extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
-extern Achievements *gAchievements; // canonical Achievements singleton (binary .bss 0x2282b4)
+extern PaintCanvas *gCanvas;
+extern Achievements *gAchievements;
 
 uint8_t StarMap::missionChanged() {
     return this->missionChangedFlag;
@@ -468,8 +218,6 @@ void StarMap::render() {
         this->starSystemRoot->render();
     }
     if (this->markerGeom != 0) {
-        // Draw the highlighted jump-route / selected-system overlay geometry that
-        // sits on top of the system map.
         this->markerGeom->render();
     }
 }
@@ -705,8 +453,7 @@ cleanup: {
     }
     ((FModSound *) (*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
-    // The player has committed to leaving the station / jumping: hand control back to
-    // the application, switching it to the in-flight module (index 2).
+
     gAppManager->SetCurrentApplicationModule(2);
 }
 
@@ -779,8 +526,7 @@ int StarMap::OnTouchEnd(int x, int y) {
             ((FModSound *) (*g_StarMap_end_sound))->play(0x6b, 0, 0, 0.0f);
             return 0;
         }
-        // Back/exit button on a non-galaxy map: restore the host camera and report
-        // that the map was dismissed.
+
         gCanvas->CameraSetCurrent((unsigned int) (this->prevCamera));
         ((FModSound *) (*g_StarMap_end_sound))->stop(0x66);
         return 1;
@@ -843,7 +589,6 @@ int StarMap::OnTouchEnd(int x, int y) {
         }
     }
     if (((Layout *) (layout))->helpPressed() != 0) {
-        // Open the localized help overlay (text id 0x1a5).
         help.copy((String *) ((GameText *) (*g_StarMap_end_text))->getText(0x1a5), false);
         ((Layout *) (layout))->initHelpWindow(help);
     }
@@ -1175,7 +920,8 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
         return 0;
     }
     this->backButton->OnTouchBegin(x, y);
-    if (((Layout *) layout)->field_0xc_leftMargin >= y || y >= *g_StarMap_touch_screenH - ((Layout *) layout)->field_0x10_rightMargin) {
+    if (((Layout *) layout)->field_0xc_leftMargin >= y || y >= *g_StarMap_touch_screenH - ((Layout *) layout)->
+        field_0x10_rightMargin) {
         return 0;
     }
     if (this->autoMode != 0 && this->autoTimer < 4000) {
@@ -1536,7 +1282,8 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
                 value.ctor_int(Station_getTecLevel(station));
                 name = line + value;
                 ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
-                                                              drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4, false);
+                                                              drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4,
+                                                              false);
             }
             ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
                                                            (unsigned char) (0x11));
@@ -1733,8 +1480,9 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->jumpMapModeB = 0;
     this->exitRequested = 0;
     String *back = (String *) ((GameText *) (*g_StarMap_init_text))->getText(0x190);
-    this->backButton = new TouchButton(*back, 0, *g_StarMap_init_screenW - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight,
-                                       *g_StarMap_init_screenH - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight, 0x22);
+    this->backButton = new TouchButton(
+        *back, 0, *g_StarMap_init_screenW - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight,
+        *g_StarMap_init_screenH - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight, 0x22);
     this->systemPath = (Array<int> *) 0;
     this->choiceWindow = new ChoiceWindow();
     this->pathFinder = (SystemPathFinder *) SystemPathFinder_ctor(operator new(1));
@@ -1771,7 +1519,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     }
     this->keyBoxWidth += ((Layout *) *g_StarMap_init_layout)->field_0x8c;
     this->keyBoxHeight =
-            ((Layout *) *g_StarMap_init_layout)->field_0x4 * 5 + ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight * 2;
+            ((Layout *) *g_StarMap_init_layout)->field_0x4 * 5 + ((Layout *) *g_StarMap_init_layout)->
+            field_0x2c_rowHeight * 2;
     this->autoTimer = 0;
     void *cargo = (void *) ((Ship *) (gStatus->getShip()))->getCargo();
     this->cargoAmount = cargo != 0 ? ((Item *) (cargo))->getAmount() : 0;

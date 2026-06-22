@@ -1,20 +1,15 @@
 #ifndef GOF2_CONFIGREADER_H
 #define GOF2_CONFIGREADER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/file/AEFile.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class ConfigReader;
-
 #define GOF2_CFG_INLINE __attribute__((always_inline)) inline
 
     GOF2_CFG_INLINE String StringFromAscii(const char *cstr) {
@@ -82,5 +77,5 @@ namespace AbyssEngine {
 
         void ParseFile(String name);
     };
-} // namespace AbyssEngine
+}
 #endif

@@ -3,17 +3,13 @@
 
 #include <cstdint>
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Agent;
-class Item;
-class Mission;
-class Ship;
-class SolarSystem;
-class Station;
-class Status;
+#include "Mission.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/Station.h"
 
 Mission *Mission_ctor_full(Mission *self, int type, AbyssEngine::String *name,
                            int *imageParts, int race, int reward,

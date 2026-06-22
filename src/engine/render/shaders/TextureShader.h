@@ -1,36 +1,31 @@
 #ifndef GOF2_TEXTURESHADER_H
 #define GOF2_TEXTURESHADER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class TextureShader : public ShaderBaseStruct {
     public:
-        uint32_t programExt; // extended GL program handle (slot 1)
-        int positionAttrib[2]; // position
-        int texcoordAttrib[2]; // texcoord
-        int mvpUniform[2]; // mvp
-        int colorUniform[2]; // color
-        int textureUniform[2]; // texture
-        int worldViewUniform[2]; // worldView
-        int textureModeUniform[2]; // textureMode
-        int lightUniform[2]; // light
-        int fogNearUniform[2]; // fogNear
-        int fogFarUniform[2]; // fogFar
-        int activeTextureUniform[2]; // activeTexture
-        int fogColorUniform[2]; // fogColor
-        int alphaUniform[2]; // alpha
+        uint32_t programExt;
+        int positionAttrib[2];
+        int texcoordAttrib[2];
+        int mvpUniform[2];
+        int colorUniform[2];
+        int textureUniform[2];
+        int worldViewUniform[2];
+        int textureModeUniform[2];
+        int lightUniform[2];
+        int fogNearUniform[2];
+        int fogFarUniform[2];
+        int activeTextureUniform[2];
+        int fogColorUniform[2];
+        int alphaUniform[2];
 
         TextureShader();
 
@@ -44,6 +39,6 @@ namespace AbyssEngine {
 
         void ConnectShaderComponents(uint32_t program, int slot);
     };
-} // namespace AbyssEngine
+}
 
 #endif

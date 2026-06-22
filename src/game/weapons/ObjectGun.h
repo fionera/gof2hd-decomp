@@ -1,43 +1,37 @@
 #ifndef GOF2_OBJECTGUN_H
 #define GOF2_OBJECTGUN_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/weapons/AbstractGun.h"
+#include "Gun.h"
 
-class AEGeometry;
-class Explosion;
-class Gun;
-class Level;
-class Player;
+#include "game/weapons/AbstractGun.h"
 
 class ObjectGun : public AbstractGun {
 public:
-    // (the +0x0 vptr is the compiler-managed C++ vtable; the class is polymorphic)
-    int unusedSlot; // +0x4  init -1, never read (unused id/slot)
-    Gun *gun; // +0x8  owned weapon
-    Level *level; // +0xc  owning level
-    uint32_t transform; // +0x10 primary mesh transform handle
-    int secondaryTransform; // +0x14 init -1, used by TransformSetLocal
-    AEGeometry *geometry; // +0x18 muzzle/effect geometry
-    uint8_t hasGeometry; // +0x1c geometry created flag
-    uint8_t wasFiring; // +0x1d prev-frame delayActive snapshot
-    float rollAngle; // +0x20 roll angle for secondary transform
-    uint8_t useEgoOrientation; // +0x24 orientation source flag
-    int meshId; // +0x28 gun mesh id
-    Array<Explosion *> *explosions; // +0x2c explosions for cluster guns
-    uint8_t *explosionReady; // +0x30 per-explosion ready flags
-    int deltaTime; // +0x34 last update delta (ms)
-    float scaleX; // +0x3c
-    float scaleY; // +0x40
-    float scaleZ; // +0x44
-    float spinAngle; // +0x48 beam/sentry roll angle
-    uint8_t visible; // +0x4c
-    Vector dir; // +0x50 forward direction
-    Vector up; // +0x60 up vector
-    Vector side; // +0x70 side vector
-    Matrix orientation; // +0x84 world orientation matrix
+    int unusedSlot;
+    Gun *gun;
+    Level *level;
+    uint32_t transform;
+    int secondaryTransform;
+    AEGeometry *geometry;
+    uint8_t hasGeometry;
+    uint8_t wasFiring;
+    float rollAngle;
+    uint8_t useEgoOrientation;
+    int meshId;
+    Array<Explosion *> *explosions;
+    uint8_t *explosionReady;
+    int deltaTime;
+    float scaleX;
+    float scaleY;
+    float scaleZ;
+    float spinAngle;
+    uint8_t visible;
+    Vector dir;
+    Vector up;
+    Vector side;
+    Matrix orientation;
 
     ObjectGun(int unused, Gun *gun, int mesh, uint32_t param, Level *level);
 

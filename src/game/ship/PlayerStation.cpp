@@ -10,7 +10,7 @@
 #include "engine/math/Transform.h"
 #include "game/ship/Player.h"
 #include "game/world/Station.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 extern PaintCanvas **g_PaintCanvas;
 
@@ -59,10 +59,6 @@ void PlayerStation::setPosition(const Vector &position) {
 }
 
 Vector PlayerStation::projectCollisionOnSurface(const Vector &position) {
-    // The helper writes the projected center into the first three floats of its
-    // `this` storage (centerX/Y/Z at offset 0), so alias the return Vector as the
-    // scratch volume and project directly into it (BoundingVolume is abstract and
-    // never instantiated; this mirrors the original).
     Vector result;
     reinterpret_cast<BoundingVolume *>(&result)->staticProjectCollisionOnSurface(
         position, (BoundingVolumeList *) this->boundingVolumes);

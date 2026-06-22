@@ -1,7 +1,7 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
-#include "game/ship/KIPlayer.h"   // for the virtual getPosition() call
+#include "game/ship/KIPlayer.h"
 
 namespace AbyssEngine {
     extern PaintCanvas *gPaintCanvas;
@@ -11,7 +11,7 @@ namespace AbyssEngine {
     extern PaintCanvas **gRadarCanvasSlot;
     extern void *gRadarLayoutSlot;
     extern uint8_t *gRadarDrawCurrentLockFlag;
-} // namespace AbyssEngine
+}
 
 extern "C" int Radar_GetMissionState(void *mission);
 
@@ -147,7 +147,7 @@ int Radar::getPlanetDockIndex() {
 }
 
 void Radar::update(KIPlayer *player) {
-    Vector position = player->getPosition(); // actor vtable slot 0x28
+    Vector position = player->getPosition();
     update(position);
 }
 
@@ -160,12 +160,7 @@ void Radar::update(Vector value) {
     this->radarPosZ = -this->radarPosZ;
 
     Vector screen = value;
-    // NOTE: in the shipped binary (Radar::update @ 0013dec0) GetScreenPosition
-    // RETURNS the visibility flag (iVar4), which is stored into onScreen and
-    // gates the elipsoidIntersect fallback. The corrected PaintCanvas signature
-    // declares this overload `void`, so the flag can no longer be recovered at
-    // the call site. Fixing this properly requires PaintCanvas::GetScreenPosition
-    // to return int (another file). Arguments corrected (refs, drop &) here.
+
     int visible = (gPaintCanvas->GetScreenPosition(value, screen) != 0);
     this->onScreen = static_cast<uint8_t>(visible);
 

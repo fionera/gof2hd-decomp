@@ -1,36 +1,31 @@
 #ifndef GOF2_GENERICSHADER1_H
 #define GOF2_GENERICSHADER1_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class GenericShader1 : public ShaderBaseStruct {
     public:
-        int aPosition; // a_position
-        int aNormal; // a_normal
-        int aTangent; // a_tangent
-        int aBinormal; // a_binormal
-        int aTexCoord; // a_texCoord
-        int uM0; // u_m0
-        int uM1; // u_m1
-        int uM2; // u_m2
-        int uM3; // u_m3
-        int uM4; // u_m4
-        int uM5; // u_m5
-        int uM6; // u_m6
-        int uM7; // u_m7
-        int uM8; // u_m8
+        int aPosition;
+        int aNormal;
+        int aTangent;
+        int aBinormal;
+        int aTexCoord;
+        int uM0;
+        int uM1;
+        int uM2;
+        int uM3;
+        int uM4;
+        int uM5;
+        int uM6;
+        int uM7;
+        int uM8;
 
         GenericShader1();
 
@@ -40,6 +35,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

@@ -120,4 +120,4 @@ namespace AbyssEngine {
         glActiveTexture(0x84c0);
         engine->boundTextures[0] = 0xffffffff;
     }
-} // namespace AbyssEngine
+}

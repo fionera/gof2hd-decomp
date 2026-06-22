@@ -1,32 +1,27 @@
 #ifndef GOF2_MODMAINMENU_H
 #define GOF2_MODMAINMENU_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-struct CutScene;
-struct MenuTouchWindow;
 
 class ModMainMenu {
 public:
-    int paintCanvas; // paint canvas handle
-    void *appManager; // ApplicationManager*
-    int state; // state-machine state (100 = idle)
-    uint8_t initialized; // init-complete flag
-    int frameTime; // clamped frame delta (ms)
-    MenuTouchWindow *touchWindow; // touch-driven menu window
-    CutScene *cutScene; // rotating cut-scene backdrop
-    int logoImage; // logo image handle
-    int fadeTimer; // logo fade accumulator (ms)
-    uint8_t logoActive; // logo / touch-lock active flag
-    uint8_t hasSavedGame; // saved-game preview present
+    int paintCanvas;
+    void *appManager;
+    int state;
+    uint8_t initialized;
+    int frameTime;
+    MenuTouchWindow *touchWindow;
+    CutScene *cutScene;
+    int logoImage;
+    int fadeTimer;
+    uint8_t logoActive;
+    uint8_t hasSavedGame;
 
     ModMainMenu();
 
     virtual ~ModMainMenu();
 
-    // Virtual methods in vtable order (application-module interface).
     virtual void OnInitialize();
 
     virtual void OnRelease();

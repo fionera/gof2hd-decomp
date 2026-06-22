@@ -7,28 +7,25 @@
 #include "engine/math/Vector.h"
 
 namespace AbyssEngine {
-    class Mesh; // pointer-only
+    class Mesh;
 
     class Material {
     public:
-        using Matrix = AEMath::Matrix;
-        using Vector = AEMath::Vector;
+        int textures[8];
 
-        int textures[8]; // +0x00  texture handles (-1 = unset)
         union {
-            // +0x20  render/material mode (4 bytes)
-            int materialMode; //   primary name (set to 0xe to cloak)
-            int blendMode; //   legacy alias kept for existing TUs
+            int materialMode;
+            int blendMode;
         };
 
-        void *addData; // +0x24  scratch buffer (operator new[])
-        uint32_t addDataSize; // +0x28
-        Array<Matrix> *arr_2c; // +0x2c
-        Array<Matrix> *arr_38; // +0x38
-        Array<Mesh *> *meshes; // +0x44
-        Array<uint32_t> *arr_50; // +0x50
-        Array<Matrix> *arr_5c; // +0x5c
-        Vector ambientColor; // +0x68  (3 floats: R, G, B)
+        void *addData;
+        uint32_t addDataSize;
+        Array<AEMath::Matrix> *arr_2c;
+        Array<AEMath::Matrix> *arr_38;
+        Array<Mesh *> *meshes;
+        Array<uint32_t> *arr_50;
+        Array<AEMath::Matrix> *arr_5c;
+        AEMath::Vector ambientColor;
 
         Material();
 
@@ -36,7 +33,7 @@ namespace AbyssEngine {
 
         ~Material();
     };
-} // namespace AbyssEngine
+}
 
 using ::AbyssEngine::Material;
 

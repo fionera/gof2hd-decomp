@@ -4,14 +4,14 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/ImageFactory.h"
 #include "game/ui/Layout.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
 extern PaintCanvas *gCanvas;
 
-extern Layout *g_currentLayout; // the active full-screen Layout (may be null)
-extern ImageFactory *g_imageFactory; // the shared UI image factory
-extern FModSound *g_sound; // the FMOD sound manager
+extern Layout *g_currentLayout;
+extern ImageFactory *g_imageFactory;
+extern FModSound *g_sound;
 
 MTitle::MTitle() {
     this->renderPriority = 100;
@@ -69,7 +69,6 @@ void MTitle::OnRender2D() {
     g_currentLayout->drawHeader();
     g_currentLayout->drawEmptyFooter(0);
 
-    // Advance the step timer, clamping the per-frame delta to 50ms.
     int delta = (int) this->applicationManager->GetElapsedTimeMillis();
     if (delta > 50)
         delta = 50;
@@ -79,8 +78,6 @@ void MTitle::OnRender2D() {
     int image;
     float fade;
     if (t > 4000) {
-        // Current logo has fully faded out: advance to the next logo (or hand
-        // control to the main menu once both logos have played).
         this->step += 1;
         this->timer = 0;
         if (this->step == 2) {
@@ -92,11 +89,11 @@ void MTitle::OnRender2D() {
     } else {
         image = (int) (this->step == 0 ? this->logoImage2 : this->logoImage);
         if (t < 1000) {
-            fade = (float) t / 1000.0f; // fade in
+            fade = (float) t / 1000.0f;
         } else if (t < 3001) {
-            fade = 1.0f; // hold
+            fade = 1.0f;
         } else {
-            fade = (float) (t - 3000) / -1000.0f + 1.0f; // fade out
+            fade = (float) (t - 3000) / -1000.0f + 1.0f;
         }
     }
 
@@ -113,7 +110,6 @@ void MTitle::OnRender3D() {
 }
 
 void MTitle::OnTouchEnd(int x, int y) {
-    // Tapping the title skips straight to the end of the logo sequence.
     this->timer = 5000;
 }
 

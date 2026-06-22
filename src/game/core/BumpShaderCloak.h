@@ -1,36 +1,31 @@
 #ifndef GOF2_BUMPSHADERCLOAK_H
 #define GOF2_BUMPSHADERCLOAK_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class BumpShaderCloak : public ShaderBaseStruct {
     public:
-        int attrib_a0; // vertex position
-        int attrib_a1; // texcoord
-        int attrib_a2; // normal
-        int attrib_a3; // tangent
-        int attrib_a4; // binormal
+        int attrib_a0;
+        int attrib_a1;
+        int attrib_a2;
+        int attrib_a3;
+        int attrib_a4;
 
-        int uniform_u0; // mvp matrix (mat4)
-        int uniform_u1; // normal matrix (mat3)
-        int uniform_u2; // light/ambient color
-        int uniform_u3; // fallback diffuse color
+        int uniform_u0;
+        int uniform_u1;
+        int uniform_u2;
+        int uniform_u3;
         int uniform_u4;
-        int uniform_u5; // texture sampler 0
-        int uniform_u6; // texture sampler 1
-        int uniform_u7; // texture sampler 6
+        int uniform_u5;
+        int uniform_u6;
+        int uniform_u7;
         int uniform_u8;
         int uniform_u9;
         int uniform_u12;
@@ -40,10 +35,10 @@ namespace AbyssEngine {
         int uniform_u14;
         int uniform_u15;
         int uniform_u16;
-        int uniform_u18; // mesh-derived param @mesh+0x1c
-        int uniform_u19; // mesh-derived param @mesh+0x20
-        int uniform_u17; // viewport inverse-size (vec2)
-        int uniform_u20; // refraction sampler 7
+        int uniform_u18;
+        int uniform_u19;
+        int uniform_u17;
+        int uniform_u20;
 
         static int ShaderIndex;
 
@@ -55,6 +50,6 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 
 #endif

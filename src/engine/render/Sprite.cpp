@@ -1,26 +1,11 @@
 #include "engine/render/Sprite.h"
 #include "engine/render/PaintCanvas.h"
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_Sprite_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_Sprite_draw_image_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern PaintCanvas **g_Sprite_draw_region_canvas;
 
 void Sprite::setPosition(int x, int y) {

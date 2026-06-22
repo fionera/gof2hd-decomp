@@ -1,60 +1,54 @@
 #ifndef GOF2_GLOWPPSHADER_H
 #define GOF2_GLOWPPSHADER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-    class FBOContainer;
-
     class GlowPPShader : public ShaderBaseStruct {
     public:
-        unsigned int copyProgram; // copy program GL handle
-        int copyAttribPosition; // "position"
-        int copyUniformWorldView; // "worldView"
-        int copyAttribTexCoord; // "texcoord"
-        int copyUniformTexture; // "texture"
+        unsigned int copyProgram;
+        int copyAttribPosition;
+        int copyUniformWorldView;
+        int copyAttribTexCoord;
+        int copyUniformTexture;
 
-        FBOContainer *copyTarget; // copy render target
+        FBOContainer *copyTarget;
 
-        unsigned int blurXProgram; // blurX program GL handle
-        int blurXAttribPosition; // "position"
-        int blurXUniformWorldView; // "worldView"
-        int blurXAttribTexCoord; // "texcoord"
-        int blurXUniformTexture; // "texture"
-        int blurXUniformSampleSize; // "sampleSize"
+        unsigned int blurXProgram;
+        int blurXAttribPosition;
+        int blurXUniformWorldView;
+        int blurXAttribTexCoord;
+        int blurXUniformTexture;
+        int blurXUniformSampleSize;
 
-        FBOContainer *blurXTarget; // blurX render target
+        FBOContainer *blurXTarget;
 
-        unsigned int blurYProgram; // blurY program GL handle
-        int blurYAttribPosition; // "position"
-        int blurYUniformWorldView; // "worldView"
-        int blurYAttribTexCoord; // "texcoord"
-        int blurYUniformTexture; // "texture"
-        int blurYUniformSampleSize; // "sampleSize"
+        unsigned int blurYProgram;
+        int blurYAttribPosition;
+        int blurYUniformWorldView;
+        int blurYAttribTexCoord;
+        int blurYUniformTexture;
+        int blurYUniformSampleSize;
 
-        FBOContainer *blurYTarget; // blurY render target
+        FBOContainer *blurYTarget;
 
-        unsigned int combineProgram; // combine program GL handle
-        int combineAttribPosition; // "position"
-        int combineUniformWorldView; // "worldView"
-        int combineAttribTexCoord; // "texcoord"
-        int combineUniformTexture; // "texture"
-        int combineUniformTexture2; // "texture2"
+        unsigned int combineProgram;
+        int combineAttribPosition;
+        int combineUniformWorldView;
+        int combineAttribTexCoord;
+        int combineUniformTexture;
+        int combineUniformTexture2;
 
-        int meshAttribPosition; // attribute used in UpdateMeshData/SetInActive
-        int meshAttribTexCoord; // attribute used in UpdateMeshData/SetInActive
+        int meshAttribPosition;
+        int meshAttribTexCoord;
 
-        FBOContainer *backgroundTarget; // combine/background render target
+        FBOContainer *backgroundTarget;
 
         GlowPPShader();
 
@@ -72,5 +66,5 @@ namespace AbyssEngine {
 
         void UpdateMeshData(Mesh *mesh, Engine *engine) override;
     };
-} // namespace AbyssEngine
+}
 #endif

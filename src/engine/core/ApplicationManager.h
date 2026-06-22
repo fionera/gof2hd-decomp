@@ -1,33 +1,17 @@
 #ifndef GOF2_APPLICATIONMANAGER_H
 #define GOF2_APPLICATIONMANAGER_H
-#include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/render/Engine.h"            // Engine (ctor receiver)
-#include "engine/core/IApplicationModule.h"  // IApplicationModule (SetApplicationModule)
-#include "engine/core/KeyCode.h"             // KeyCode (KeyCodeSetMapping)
-#include "engine/file/ConfigReader.h"        // ConfigReader, ConfigTokenReadFunction
-#include <new>             // placement new (key-mapping / config-string construction)
+#include "engine/render/Engine.h"
+#include "engine/core/IApplicationModule.h"
+#include "engine/core/KeyCode.h"
+#include "engine/file/ConfigReader.h"
+#include <new>
+#include "engine/audio/AESoundRessource.h"
+#include "engine/render/PaintCanvas.h"
+#include "game/core/CheatHandler.h"
 
-namespace AbyssEngine {
-    class PaintCanvas;
-} // render canvas (game/core/PaintCanvasClass.h)
 using ::AbyssEngine::PaintCanvas;
-
-namespace AbyssEngine {
-    class Engine;
-} // renderer/device root (engine/render/Engine.h)
 using ::AbyssEngine::Engine;
-
-namespace AbyssEngine {
-    class ConfigReader; // engine/file/ConfigReader.h
-    class CheatHandler; // game/core/CheatHandler.h
-    class AESoundRessource; // engine/audio/AESoundRessource.h
-    struct AESoundInfo; // engine/audio/AESoundRessource.h
-}
-
-using String = AbyssEngine::String;
 
 typedef void LoadingCallback_t(PaintCanvas *canvas, int loading, void *data);
 
@@ -38,40 +22,40 @@ typedef void QuitCallback_t();
 namespace AbyssEngine {
     class ApplicationManager {
     public:
-        PaintCanvas *paintCanvas; // +0x00 owned render canvas (object starts here)
-        uint32_t currentKey; // +0x08
-        uint32_t currentKeyHigh; // +0x0c
-        char *keyMappingTable; // +0x10 key-code -> (mask, String) mapping table
-        bool orientationTrackingEnabled; // +0x14
-        void *currentModule; // +0x18 active IApplicationModule (raw-vtable dispatch)
-        QuitCallback_t *quitCallback; // +0x1c
-        LoadingCallback_t *loadingCallback; // +0x20
-        void *loadingCallbackData; // +0x24
-        ResumeCallback_t *resumeCallback; // +0x28
-        void *resumeCallbackData; // +0x2c
-        AbyssEngine::CheatHandler *cheatHandler; // +0x30
-        bool cheatsEnabled; // +0x34
-        AbyssEngine::ConfigReader *configReader; // +0x38
-        int state; // +0x3c frame state-machine state
-        int savedState; // +0x40 state saved across suspend/resume
-        Array<void *> *modules; // +0x48 loaded application modules (IApplicationModule*)
-        Array<unsigned int> *moduleIds; // +0x50 module-id table (parallel to `modules`)
-        unsigned int currentModuleId; // +0x5c active module (raw-vtable dispatch handle)
-        void *pendingModule; // +0x60 module to switch to next frame (raw-vtable dispatch)
-        void *applicationData; // +0x64 opaque host application-data pointer
-        uint64_t currentTimeMs; // +0x68
-        uint64_t frameTimeMs; // +0x70
-        uint64_t previousFrameTimeMs; // +0x78
-        uint32_t keyState; // +0x80
-        uint32_t keyStateHigh; // +0x84
-        Array<long long> *actionTable; // +0x8c action table: pairs of (action, key) longs
-        uint32_t actionMask; // +0x98
-        uint32_t actionMaskHigh; // +0x9c
-        uint32_t actionState; // +0xa0
-        uint32_t actionStateHigh; // +0xa4
-        Engine *engine; // +0xa8
-        AbyssEngine::AESoundRessource *soundResource; // +0xac
-        bool soundFxEnabled; // +0xb0
+        PaintCanvas *paintCanvas;
+        uint32_t currentKey;
+        uint32_t currentKeyHigh;
+        char *keyMappingTable;
+        bool orientationTrackingEnabled;
+        void *currentModule;
+        QuitCallback_t *quitCallback;
+        LoadingCallback_t *loadingCallback;
+        void *loadingCallbackData;
+        ResumeCallback_t *resumeCallback;
+        void *resumeCallbackData;
+        CheatHandler *cheatHandler;
+        bool cheatsEnabled;
+        ConfigReader *configReader;
+        int state;
+        int savedState;
+        Array<void *> *modules;
+        Array<unsigned int> *moduleIds;
+        unsigned int currentModuleId;
+        void *pendingModule;
+        void *applicationData;
+        uint64_t currentTimeMs;
+        uint64_t frameTimeMs;
+        uint64_t previousFrameTimeMs;
+        uint32_t keyState;
+        uint32_t keyStateHigh;
+        Array<long long> *actionTable;
+        uint32_t actionMask;
+        uint32_t actionMaskHigh;
+        uint32_t actionState;
+        uint32_t actionStateHigh;
+        Engine *engine;
+        AESoundRessource *soundResource;
+        bool soundFxEnabled;
         bool musicEnabled;
         bool vibrateEnabled;
         int lastTouchX;
@@ -83,7 +67,7 @@ namespace AbyssEngine {
 
         bool CheckCrack(const char *path);
 
-        void CheatAddCode(const AbyssEngine::String &code, int value);
+        void CheatAddCode(const String &code, int value);
 
         void CheatEnable(bool enable);
 
@@ -95,12 +79,12 @@ namespace AbyssEngine {
 
         void *ConfigGetKeysForAction(long long action);
 
-        void ConfigReadFile(AbyssEngine::String name);
+        void ConfigReadFile(String name);
 
         void ConfigRegisterAction(long long value, long long key);
 
-        void ConfigRegisterTokenReadFunction(AbyssEngine::String name,
-                                             AbyssEngine::ConfigTokenReadFunction read, void *context);
+        void ConfigRegisterTokenReadFunction(String name,
+                                             ConfigTokenReadFunction read, void *context);
 
         void ConvertTouchCoords(int &x, int &y);
 
@@ -112,7 +96,7 @@ namespace AbyssEngine {
 
         void *GetApplicationModule(unsigned int id);
 
-        AbyssEngine::String GetApplicationVersionString();
+        String GetApplicationVersionString();
 
         void *GetCurrentApplicationModule() const;
 
@@ -126,7 +110,7 @@ namespace AbyssEngine {
 
         uint64_t GetSystemTimeMillis();
 
-        void KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array);
+        void KeyCodeSetMapping(Array<KeyCode *> *array);
 
         void LoadingCallbackShow(int mode, void *data);
 
@@ -138,14 +122,15 @@ namespace AbyssEngine {
 
         void OnTouchEnd(int xArg, int yArg, void *touch);
 
-        void OnTouchEnd(); // no-arg finalizer: clears key/action input state
+        void OnTouchEnd();
+
         void OnTouchMove(int xArg, int yArg, void *touch);
 
         void OnUpdate(long long now);
 
         void Quit();
 
-        void RegisterApplicationModule(unsigned int id, AbyssEngine::IApplicationModule *module);
+        void RegisterApplicationModule(unsigned int id, IApplicationModule *module);
 
         void ResetKeyState();
 
@@ -153,7 +138,7 @@ namespace AbyssEngine {
 
         void SetApplicationData(void *data);
 
-        void SetApplicationModule(AbyssEngine::IApplicationModule *module);
+        void SetApplicationModule(IApplicationModule *module);
 
         void SetCurrentApplicationModule(unsigned int id);
 
@@ -193,7 +178,7 @@ namespace AbyssEngine {
 
         void SoundResumeSounds();
 
-        void SoundSet(const AbyssEngine::AESoundInfo *info, int count);
+        void SoundSet(const AESoundInfo *info, int count);
 
         void SoundSetFXVolume(int volume);
 
@@ -213,11 +198,10 @@ namespace AbyssEngine {
 
         void VibrateSupported();
     };
-} // namespace AbyssEngine
-using ::AbyssEngine::ApplicationManager;
+}
 
-extern ApplicationManager *gAppManager; // canonical ApplicationManager singleton (binary .bss 0x2281d8)
+extern AbyssEngine::ApplicationManager *gAppManager;
 
-AbyssEngine::Engine *GetEngine();
+Engine *GetEngine();
 
 #endif

@@ -1,16 +1,14 @@
 #ifndef GOF2_HANGARLIST_H
 #define GOF2_HANGARLIST_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Ship;
-class Item;
-class BluePrint;
-class ListItem;
-class GameText;
-class Status;
+#include "engine/core/GameText.h"
+#include "game/mission/BluePrint.h"
+#include "game/mission/Item.h"
+#include "game/mission/Status.h"
+#include "game/ship/Ship.h"
+#include "game/ui/ListItem.h"
 
 extern Status *g_HangarList_status;
 extern GameText **g_HangarList_gameText;

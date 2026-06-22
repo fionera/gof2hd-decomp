@@ -10,12 +10,7 @@ int HackingGame::getDockingIndex() {
     return this->dockingIndex;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_HackingGame_sound_left;
 
 void HackingGame::rotateLeftCW(bool sound) {
@@ -58,12 +53,7 @@ int HackingGame::gameWon() {
     } while (true);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_HackingGame_sound_right;
 
 void HackingGame::rotateRightCW(bool sound) {
@@ -109,12 +99,7 @@ void HackingGame::rotateRightCW(int *state) {
 
 typedef void (*ImageCreateFn)(void *canvas, uint16_t image, uint32_t *out);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageCreateFn g_HackingGame_ctor_imageCreate;
 
 HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex) {
@@ -148,40 +133,15 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
 
 typedef int (*ImageMeasureFn)(void *canvas, int image);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_HackingGame_render_screen_w_a;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_HackingGame_render_screen_w_b;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_HackingGame_render_screen_h;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern ImageMeasureFn g_HackingGame_render_height_fn;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_HackingGame_render_layout;
 
 static inline int half_i(int value) {
@@ -461,12 +421,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern FModSound **g_HackingGame_update_sound;
 
 int HackingGame::update(int dt) {

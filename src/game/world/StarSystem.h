@@ -1,42 +1,38 @@
 #ifndef GOF2_STARSYSTEM_H
 #define GOF2_STARSYSTEM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class AEGeometry;
-class LensFlare;
+#include "engine/render/LensFlare.h"
+#include "game/ship/KIPlayer.h"
 
 class StarSystem {
 public:
-    Vector sunLightColor; // sun light/diffuse color (r,g,b)
-    uint8_t supernovaSystem; // inSupernovaSystem() flag
-    uint32_t supernovaSunTexture; // supernova sun billboard texture handle
-    Array<uint32_t> *texturesArray; // station/planet texture handles
-    void *playerTargets; // flattened Array<KIPlayer*> (intro camera targets)
-    Array<AEGeometry *> *planetsArray; // sun + planet/station billboard meshes
-    Array<Vector> *positionsArray; // per-mesh world positions
-    Array<int> *stationIdxArray; // station indices
-    uint8_t abstractSystem; // getSystem()==0 (no real solar system) flag
-    LensFlare *lensFlare; // sun lens flare
+    Vector sunLightColor;
+    uint8_t supernovaSystem;
+    uint32_t supernovaSunTexture;
+    Array<uint32_t> *texturesArray;
+    void *playerTargets;
+    Array<AEGeometry *> *planetsArray;
+    Array<Vector> *positionsArray;
+    Array<int> *stationIdxArray;
+    uint8_t abstractSystem;
+    LensFlare *lensFlare;
     Vector lightDirection;
-    uint32_t tintColor; // lens-flare / system tint color
-    AEGeometry *sunStreak; // sun-streak billboard geometry
-    AEGeometry *planetRing; // planet-ring billboard geometry
-    uint32_t planetRingTexture; // planet-ring texture handle
-    int planetRingIndex; // index of planet that has a ring (-1 = none)
-    uint32_t selectedStationSlot; // special/selected station slot index
-    uint8_t fogEnabled; // fog enabled flag
-    float planetScale; // selected-planet base scale
-    float planetRingScaleOffset; // selected-planet scale offset
+    uint32_t tintColor;
+    AEGeometry *sunStreak;
+    AEGeometry *planetRing;
+    uint32_t planetRingTexture;
+    int planetRingIndex;
+    uint32_t selectedStationSlot;
+    uint8_t fogEnabled;
+    float planetScale;
+    float planetRingScaleOffset;
 
     StarSystem(int mode);
 
     ~StarSystem();
 
-    // playerTargets is a flattened {count,data} Array<KIPlayer*> container because
-    // LevelScript.cpp dereferences it directly; getPlanets() returns the typed array.
     void *getPlanetTargets();
 
     void *getPlanets();

@@ -4,22 +4,22 @@
 
 class Sprite {
 public:
-    uint32_t *frames; ///< frame image handle array (null => single image)
-    uint32_t image; ///< single image handle (-1 when using frame array)
-    int32_t refPixelX; ///< reference pixel X
-    int32_t refPixelY; ///< reference pixel Y
-    int32_t posX; ///< position X
-    int32_t posY; ///< position Y
-    int32_t frameWidth; ///< frame width
-    int32_t frameHeight; ///< frame height
-    int32_t imageWidth; ///< source image width
-    int32_t imageHeight; ///< source image height
-    int32_t frameSrcX; ///< current frame source X
-    int32_t frameSrcY; ///< current frame source Y
-    int32_t columns; ///< grid columns
-    int32_t rows; ///< grid rows
-    int32_t currentFrame; ///< current frame index
-    int32_t frameCount; ///< total frame count
+    uint32_t *frames;
+    uint32_t image;
+    int32_t refPixelX;
+    int32_t refPixelY;
+    int32_t posX;
+    int32_t posY;
+    int32_t frameWidth;
+    int32_t frameHeight;
+    int32_t imageWidth;
+    int32_t imageHeight;
+    int32_t frameSrcX;
+    int32_t frameSrcY;
+    int32_t columns;
+    int32_t rows;
+    int32_t currentFrame;
+    int32_t frameCount;
 
     Sprite(uint32_t image, int frameWidth, int frameHeight);
 

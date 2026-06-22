@@ -1,6 +1,6 @@
 #include "game/weapons/RepairBeam.h"
 #include "engine/render/AEGeometry.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/ship/Ship.h"
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
@@ -13,99 +13,34 @@ namespace AbyssEngine {
         float VectorLength(const Vector &v);
 
         Vector VectorNormalize(const Vector &v);
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 PaintCanvas **g_RepairBeam_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 PaintCanvas **g_RB_canvas;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_RB_dmgThresh;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 float g_RB_scaleDiv;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 float g_RB_healMul;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 float g_RB_shieldMul;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_RB_sndPlay;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_RB_sndPlayEv;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int **g_RB_sndStop;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_RB_sndDead;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int **g_RB_sndUpd;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 int *g_RB_sndUpdEv;
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 char **g_RB_sndFlag;
 
 extern "C" void *RB_Level_getPlayer(void *level);
@@ -172,7 +107,6 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
     Item *equip = ship->getFirstEquipmentOfSort(sort);
     int count = equip->getAttribute(/*RepairBeamCount*/ 0x37);
 
-    // geometry pool
     this->geometries = new Array<AEGeometry *>();
     ArraySetLength<AEGeometry *>(count, *this->geometries);
 
@@ -181,14 +115,12 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
     for (int i = 0; i < count; ++i)
         (*this->geometries)[i] = new AEGeometry(geoId, canvas, false);
 
-    // target-id pool (all slots start empty)
     this->targetIds = new Array<int>();
     this->targetIds->resize(count);
     this->timer = 0x9c4;
     for (unsigned k = 0; k < this->targetIds->size(); ++k)
         (*this->targetIds)[k] = -1;
 
-    // charge accumulator pool
     this->charges = new Array<float>();
     ArraySetLength<float>(count, *this->charges);
     for (unsigned j = 0; j < this->charges->size(); ++j)
@@ -226,7 +158,6 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
             Vector &beamPos = this->beamPosition;
 
             if (this->timer < 0) {
-                // re-arm: clear all target slots and charges
                 for (unsigned i = 0; i < ids.size(); ++i) {
                     ids[i] = -1;
                     (*this->charges)[i] = 0.0f;
@@ -289,7 +220,6 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
                 }
             }
 
-            // animate beams
             float scaleDiv = g_RB_scaleDiv;
             float dtF = (float) dt;
             PaintCanvas *canvas = *g_RB_canvas;
@@ -382,7 +312,6 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
         }
     }
 
-    // stop beam sound when player dead
     void *ego2 = RB_Level_getPlayer(level);
     if (RB_PlayerEgo_isDead(ego2) != 0) {
         int snd = *g_RB_sndDead;
@@ -390,7 +319,6 @@ void RepairBeam::update(int dt, Radar *radar, Level *level, Hud *hud) {
             RB_FModSound_stop(snd);
     }
 
-    // 3D-attribute update of the looping sound
     if ((*g_RB_sndFlag)[0xf] != 0) {
         int *evArr = g_RB_sndUpdEv;
         int *snd = *g_RB_sndUpd;

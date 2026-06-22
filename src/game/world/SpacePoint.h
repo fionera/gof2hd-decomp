@@ -5,7 +5,6 @@
 
 #include "engine/math/Vector.h"
 
-
 class SpacePoint {
 public:
     AbyssEngine::AEMath::Vector position;

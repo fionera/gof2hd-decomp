@@ -1,6 +1,6 @@
 #include "game/menu/MiningGame.h"
 
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/core/String.h"
 #include "game/ui/Hud.h"
 #include "game/ui/Layout.h"
@@ -50,26 +50,11 @@ int MiningGame::getAsteroidType() {
     return this->station;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_sqrt;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_layout;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MiningGame_layerSizes;
 
 bool MiningGame::isInCurrentLayer() {
@@ -120,62 +105,22 @@ MiningGame::~MiningGame() {
     this->drillSprite = nullptr;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_random;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int (*g_MiningGame_randomNext)(void *random, int limit);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_layoutUpdate;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *g_MiningGame_layerSpeedUpdate;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_sound;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_statusUpdate;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_achievements;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_statusMedal;
 
 int MiningGame::update(int delta) {
@@ -309,47 +254,17 @@ int MiningGame::update(int delta) {
     return 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_layoutCtor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_statusCtor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_canvasCtor;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MiningGame_screenW;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MiningGame_screenH;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *g_MiningGame_layerSpeed;
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
@@ -471,71 +386,26 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_canvasRender;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MiningGame_layerTableRender;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_layoutRender;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*g_MiningGame_drawLayer)(void *canvas, int image, int x, int y,
                                       int w, int h, int anchor, int tile,
                                       int frame);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_statusRender;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char g_MiningGame_oreSuffix[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_fontString;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_MiningGame_gameText;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *g_MiningGame_screenWRender;
 
 void MiningGame::render2D() {

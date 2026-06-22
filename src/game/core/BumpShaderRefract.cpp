@@ -41,7 +41,7 @@ namespace AbyssEngine {
         uRefractSampler = glGetUniformLocation(this->program, "u8");
 
         glUseProgram(this->program);
-        // samplers uSampler2 (+0x30) and uSampler3 (+0x34): consecutive int fields, indexed at runtime.
+
         int *samplers = &uSampler2;
         for (int i = 0; i != 2; i++) {
             int loc = samplers[i];
@@ -111,4 +111,4 @@ namespace AbyssEngine {
         }
         glVertexAttribPointer(last, 4, 0x1406, 0, 0, ptr);
     }
-} // namespace AbyssEngine
+}

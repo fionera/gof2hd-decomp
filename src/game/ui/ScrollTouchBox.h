@@ -1,13 +1,12 @@
 #ifndef GOF2_SCROLLTOUCHBOX_H
 #define GOF2_SCROLLTOUCHBOX_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 class ScrollTouchBox {
 public:
-    Array<String *> *lines; // wrapped lines of laid-out text
+    Array<String *> *lines;
     int x;
     int y;
     int width;

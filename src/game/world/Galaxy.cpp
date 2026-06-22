@@ -1,5 +1,5 @@
 #include "game/world/Galaxy.h"
-Galaxy *gGalaxy = nullptr; // canonical Galaxy singleton
+Galaxy *gGalaxy = nullptr;
 
 #include "engine/file/FileRead.h"
 #include "game/core/Globals.h"
@@ -8,7 +8,7 @@ Galaxy *gGalaxy = nullptr; // canonical Galaxy singleton
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-extern Array<Item *> *g_items; // the item table
+extern Array<Item *> *g_items;
 
 extern float g_galaxyDistanceScale;
 
@@ -26,8 +26,7 @@ Galaxy::Galaxy() {
 Galaxy::~Galaxy() {
     delete[] this->visited;
     this->visited = 0;
-    // Free the loaded SolarSystem objects (full capacity, nulling each slot)
-    // before releasing the table itself.
+
     ArrayReleaseClasses<SolarSystem *>(*this->systems);
     delete this->systems;
     this->systems = 0;

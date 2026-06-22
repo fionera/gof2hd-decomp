@@ -50,4 +50,4 @@ namespace AbyssEngine {
         glDisableVertexAttribArray(this->aPosition);
         glDisableVertexAttribArray(this->aTexCoord);
     }
-} // namespace AbyssEngine
+}

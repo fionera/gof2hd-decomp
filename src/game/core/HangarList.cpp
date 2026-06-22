@@ -4,6 +4,7 @@
 #include "game/mission/Status.h"
 #include "game/world/Station.h"
 #include "engine/core/GameText.h"
+#include "game/mission/PendingProduct.h"
 #include "game/ui/ListItem.h"
 #include "game/ship/Ship.h"
 

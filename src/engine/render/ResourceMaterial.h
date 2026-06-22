@@ -20,6 +20,6 @@ namespace AbyssEngine {
         int field_20;
         int field_24;
     };
-} // namespace AbyssEngine
+}
 
 #endif

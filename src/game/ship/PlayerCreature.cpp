@@ -54,7 +54,7 @@ void PlayerCreature::render() {
     if (this->renderGeometry != nullptr) {
         this->renderGeometry->render();
     }
-    // In the non-dying states (anything other than 3 or 4), draw through the base.
+
     if ((uint32_t)(this->state - 3) >= 2) {
         PlayerJunk_render((PlayerJunk *) this);
     }
@@ -112,7 +112,7 @@ PlayerCreature::~PlayerCreature() {
 
 void PlayerCreature::hook(int value) {
     this->hooked = 1;
-    // Hooking the creature also enrages it.
+
     this->rage(value);
 }
 
@@ -167,7 +167,6 @@ void PlayerCreature::update(int elapsed) {
             (*PlayerCreature_sound)->play(0x16, nullptr, nullptr, 0.0f);
             this->player->setActive(false);
 
-            // Detach this creature from the level's active player, if it is the one hooked.
             Level *level = this->level;
             void *player = (void *) (intptr_t) level->getPlayer();
             if (*(PlayerCreature **) ((char *) (*(void **) ((char *) player + 0x14)) + 0x1c) == this) {
@@ -197,7 +196,6 @@ void PlayerCreature::update(int elapsed) {
         this->geometry->moveForward((float) elapsed);
     }
 
-    // Mirror the creature's transform back onto the player ship.
     Matrix current = this->geometry->getMatrix();
     memcpy(this->player->transform, &current, sizeof(this->player->transform));
 }

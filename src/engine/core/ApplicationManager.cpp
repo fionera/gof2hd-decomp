@@ -1,14 +1,14 @@
 #include "engine/core/ApplicationManager.h"
-ApplicationManager *gAppManager = nullptr; // canonical ApplicationManager singleton
+ApplicationManager *gAppManager = nullptr;
 #include "engine/audio/AESoundRessource.h"
 #include "engine/core/IApplicationModule.h"
 #include "engine/file/ConfigReader.h"
 #include "engine/render/Engine.h"
 #include "game/core/CheatHandler.h"
-#include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
-#include "externs.h"                        // engine g_* globals / host glue
+#include "engine/render/PaintCanvas.h"
+#include "externs.h"
 
-extern PaintCanvas *gCanvas; // canonical canvas singleton (defined in PaintCanvas.cpp)
+extern PaintCanvas *gCanvas;
 extern "C" int pc_GetWidth(PaintCanvas * self);
 extern "C" int pc_GetHeight(PaintCanvas * self);
 
@@ -34,8 +34,8 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas(engine);
-    gCanvas = this->paintCanvas; // publish the global canvas singleton
-    gEngine = engine; // publish the global engine singleton
+    gCanvas = this->paintCanvas;
+    gEngine = engine;
 
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;
@@ -47,9 +47,6 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->vibrateEnabled = true;
     this->orientationTrackingEnabled = false;
 
-    // Key-mapping table: a length-prefixed run of 0x40 fixed (mask, String) entries.
-    // [-8] = entry size (0x10), [-4] = entry count (0x40), then `count` 16-byte slots
-    // each holding a uint32 mask followed by a default-constructed String.
     char *storage = new char[0x408];
     *(uint32_t *) storage = 0x10;
     *(uint32_t *) (storage + 4) = 0x40;
@@ -66,9 +63,6 @@ ApplicationManager::ApplicationManager(Engine *engine) {
 }
 
 ApplicationManager::~ApplicationManager() {
-    // Shut down the active module (vtable slot +0x0c), then release/clear every loaded
-    // module (slot +0x04). Modules are polymorphic IApplicationModule instances whose
-    // full vtable is not exposed; dispatch stays through the recovered slot offsets.
     void *module = this->currentModule;
     if (module != 0) {
         void (**vtable)(void *) = *(void (***)(void *)) module;
@@ -120,7 +114,6 @@ void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
 }
 
 void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
-    // Optional performance-test counter (engine global), kept as recovered.
     if (g_perfPending != 0) {
         uint64_t value = g_perfCounter + 1;
         g_perfCounter = value;
@@ -264,7 +257,7 @@ void ApplicationManager::OnUpdate(long long now) {
                 Engine *engine = this->engine;
                 engine->field_0x68 = 0;
                 engine->field_0x58 = 0;
-                this->paintCanvas->field_0x4 = 0;
+                this->paintCanvas->culledCount = 0;
                 vtable[0x34 / 4](module);
                 ResumeCallback_t *resume = this->resumeCallback;
                 if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
@@ -413,7 +406,7 @@ void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array)
 
 void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     PaintCanvas *canvas = this->paintCanvas;
-    int orientation = canvas->field_0x30;
+    int orientation = canvas->gameOrientation;
     int newY;
 
     if (orientation != 3) {
@@ -558,7 +551,7 @@ void ApplicationManager::CheckForOrientationChange() {
 
     if (tilt < -0.5) {
         canvas = this->paintCanvas;
-        if (canvas->field_0x30 == 0) {
+        if (canvas->gameOrientation == 0) {
             timer = &g_orientationLeft;
             target = AbyssEngine::LandscapeMode_1;
             if (update_orientation_timer(this, timer)) {
@@ -571,7 +564,7 @@ void ApplicationManager::CheckForOrientationChange() {
 
     if (tilt > 0.5) {
         canvas = this->paintCanvas;
-        if (canvas->field_0x30 == 3) {
+        if (canvas->gameOrientation == 3) {
             timer = &g_orientationRight;
             target = AbyssEngine::LandscapeMode_2;
             if (update_orientation_timer(this, timer)) {
@@ -580,7 +573,7 @@ void ApplicationManager::CheckForOrientationChange() {
             }
             return;
         }
-        if (canvas->field_0x30 == 1) {
+        if (canvas->gameOrientation == 1) {
             timer = &g_orientationFlat;
             if (update_orientation_timer(this, timer)) {
                 canvas->SetGameOrientation(AbyssEngine::LandscapeMode_dummy);
@@ -592,7 +585,7 @@ void ApplicationManager::CheckForOrientationChange() {
 
     if (tilt < -0.5) {
         canvas = this->paintCanvas;
-        if (canvas->field_0x30 == 2) {
+        if (canvas->gameOrientation == 2) {
             timer = &g_orientationUpsideDown;
             target = AbyssEngine::LandscapeMode_3;
             if (update_orientation_timer(this, timer)) {

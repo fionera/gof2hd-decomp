@@ -1,31 +1,29 @@
 #ifndef GOF2_RADIO_H
 #define GOF2_RADIO_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class RadioMessage;
-class ImagePart;
-class PlayerEgo;
-class LevelScript;
+#include "RadioMessage.h"
+#include "engine/render/ImagePart.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/world/LevelScript.h"
 
 class Radio {
 public:
-    Array<RadioMessage *> *messages; // scripted message list
-    RadioMessage *currentMessage; // message currently being shown
-    Array<String *> *textLines; // wrapped lines of the active message
-    Array<ImagePart *> *imageParts; // loaded portrait glyph tiles
-    int *imagePartBuffer; // raw 5-int portrait descriptor
-    int64_t startTime; // time the active message appeared
-    int displayDuration; // how long the message stays on screen
-    uint8_t lastMessageShownFlag; // last scripted message has been shown
-    uint8_t soundPending; // voice sample still needs to be played
-    int soundId; // resolved dialogue sound id (-1 = none)
-    String *font; // font used for the active message
-    int boxWidth; // overlay box width
-    int boxX; // overlay box left edge
-    int boxY; // overlay box top edge
+    Array<RadioMessage *> *messages;
+    RadioMessage *currentMessage;
+    Array<String *> *textLines;
+    Array<ImagePart *> *imageParts;
+    int *imagePartBuffer;
+    int64_t startTime;
+    int displayDuration;
+    uint8_t lastMessageShownFlag;
+    uint8_t soundPending;
+    int soundId;
+    String *font;
+    int boxWidth;
+    int boxX;
+    int boxY;
 
     Radio();
 

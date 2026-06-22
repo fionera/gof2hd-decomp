@@ -1,30 +1,20 @@
 #ifndef GOF2_DIALOGUEWINDOW_H
 #define GOF2_DIALOGUEWINDOW_H
+#include "ChoiceWindow.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "ScrollTouchWindow.h"
+#include "TouchButton.h"
+#include "engine/render/ImagePart.h"
+#include "game/mission/Mission.h"
+#include "game/world/Level.h"
 
-class Mission;
-class Level;
-class Agent;
-class ImagePart;
-class TouchButton;
-class ChoiceWindow;
-class ScrollTouchWindow;
-
-// File-static German fallback-text tables (g_dw_germanSuccessTexts /
-// g_dw_germanOtherTexts / g_dw_germanBriefingTexts). A flat int[] table read two
-// ways: male agents index a per-race row block starting at offset 0
-// (base + race*8 + variant*4, two int variants per race), female agents read a
-// shared two-int variant block at offset 0x48 (base + 0x48 + variant*4). Both
-// fields are the int element at the start of their respective region; callers
-// add the race*8/variant*4 index past it.
 struct DialogueWindowGermanTextTable {
-    int maleRaceRow;       // +0x00 start of the male per-race row block (race*8 + variant*4 indexed)
-    int field_0x4[17];     // remainder of the male per-race rows
-    int femaleVariantBase; // +0x48 start of the shared female two-int variant block (variant*4 indexed)
-    int field_0x4c[1];     // second female variant slot
+    int maleRaceRow;
+    int field_0x4[17];
+    int femaleVariantBase;
+    int field_0x4c[1];
 };
 
 class DialogueWindow {
@@ -32,15 +22,15 @@ public:
     TouchButton *prevButton;
     TouchButton *nextButton;
     TouchButton *moreButton;
-    Array<ImagePart *> *faceParts; // face image-part list (loadChar result)
+    Array<ImagePart *> *faceParts;
     int campaignMission;
     int frameX;
     int frameY;
     int frameWidth;
     int frameHeight;
     void *clientImage;
-    String bodyText; // dialogue body text
-    String agentName; // agent / client name (title text)
+    String bodyText;
+    String agentName;
     ScrollTouchWindow *scrollWindow;
     int kind;
     int page;
@@ -48,12 +38,12 @@ public:
     ChoiceWindow *choiceWindow;
     uint8_t choiceActive;
     Level *level;
-    int *briefingOffsets; // campaign briefing offset table
-    int *successOffsets; // campaign success offset table
+    int *briefingOffsets;
+    int *successOffsets;
     int voiceSound;
     int autoAdvanceTimer;
     int pauseLength;
-    uint8_t mirrorFace; // draw the portrait mirrored
+    uint8_t mirrorFace;
 
     DialogueWindow();
 
@@ -97,8 +87,6 @@ public:
 
     void update(int dt);
 
-    // Static campaign-dialogue lookups: do the offset tables list a briefing /
-    // success dialogue for this campaign-mission id?  (id capped at 0xa1.)
     static bool hasBriefingDialogue(int id);
 
     static bool hasSuccessDialogue(int id);

@@ -14,7 +14,7 @@ extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matr
 namespace AbyssEngine {
     BlurShader::BlurShader() {
         this->name = u"BlurShader";
-        this->strength = -4.051786824441422e-28f; // 0x92006800
+        this->strength = -4.051786824441422e-28f;
         this->blurScale = 2.0f;
     }
 
@@ -50,10 +50,10 @@ namespace AbyssEngine {
 
         engine->projMatrix[0] = 2.0f / (float) Engine_GetDisplayWidth(engine);
         engine->projMatrix[5] = -(2.0f / (float) Engine_GetDisplayHeight(engine));
-        engine->projMatrix[10] = -1.0f; // -1.0f
-        engine->projMatrix[12] = -1.0f; // -1.0f
-        engine->projMatrix[13] = 1.0f; //  1.0f
-        engine->projMatrix[15] = 1.0f; //  1.0f
+        engine->projMatrix[10] = -1.0f;
+        engine->projMatrix[12] = -1.0f;
+        engine->projMatrix[13] = 1.0f;
+        engine->projMatrix[15] = 1.0f;
         Engine_SetWorldViewMatrix(engine, (const uint32_t *) matrix);
 
         glDisable(0xb71);
@@ -202,4 +202,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->texCoordAttrib, 2, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

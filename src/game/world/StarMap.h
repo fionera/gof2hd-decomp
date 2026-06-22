@@ -1,93 +1,86 @@
 #ifndef GOF2_STARMAP_H
 #define GOF2_STARMAP_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class AEGeometry;
-class ChoiceWindow;
-class Mission;
-class SolarSystem;
-class Station;
-class SystemPathFinder;
-class TouchButton;
-
-namespace AbyssEngine {
-    class EaseInOut;
-}
+#include "SystemPathFinder.h"
+#include "engine/core/AbyssEngine.h"
+#include "engine/math/EaseInOut.h"
+#include "engine/render/AEGeometry.h"
+#include "game/ui/ChoiceWindow.h"
+#include "game/ui/TouchButton.h"
 
 class StarMap {
 public:
-    uint8_t exitRequested; // set to 1 to leave the screen (restore prev camera)
-    uint8_t field_0x01; // init-only flag
-    int32_t mode; // 0 = galaxy map, 3 = star-system/planet view
-    float cameraBaseX; // camera pan base X (screen/20)
-    float cameraBaseZ; // camera pan base Z (screen/20)
-    int32_t field_0x10; // (= 500)
-    int32_t field_0x14; // (= 500)
-    int32_t lastDt; // last update() delta-time
-    uint32_t keyImageRetreat; // legend image: jump
-    uint32_t keyImageWanted; // legend image
-    uint32_t keyImageMission; // legend image
-    uint32_t keyImageCurrent; // legend image
-    uint32_t keyImageDiscovered; // legend image
-    uint32_t systemNameImage; // selected system name image
-    uint32_t selectIcon; // selection marker image
-    uint32_t cursorIcon; // cursor marker image
-    uint32_t currentMarkerIcon; // current-system marker
+    uint8_t exitRequested;
+    uint8_t field_0x01;
+    int32_t mode;
+    float cameraBaseX;
+    float cameraBaseZ;
+    int32_t field_0x10;
+    int32_t field_0x14;
+    int32_t lastDt;
+    uint32_t keyImageRetreat;
+    uint32_t keyImageWanted;
+    uint32_t keyImageMission;
+    uint32_t keyImageCurrent;
+    uint32_t keyImageDiscovered;
+    uint32_t systemNameImage;
+    uint32_t selectIcon;
+    uint32_t cursorIcon;
+    uint32_t currentMarkerIcon;
     TouchButton *backButton;
     SystemPathFinder *pathFinder;
-    Array<SolarSystem *> *systems; // Galaxy::getSystems()
-    Array<Station *> *stations; // current-system stations
+    Array<SolarSystem *> *systems;
+    Array<Station *> *stations;
     ChoiceWindow *choiceWindow;
     int32_t selectedSystem;
     int32_t selectedStation;
-    Array<AEGeometry *> *systemGeoms; // per-system 3D icons
-    AEGeometry *systemRoot; // galaxy-view root geometry
-    uint32_t camera; // star-map camera handle
-    uint32_t prevCamera; // camera to restore on exit
-    Vector scratchVector; // scratch screen-space Vector
-    Vector scratchVector2; // second scratch Vector
-    Array<AEGeometry *> *stationGeoms; // per-station 3D icons (system view)
-    Array<AEGeometry *> *ringGeoms; // orbit-ring geometries
-    int *stationAngles; // per-station orbit angle
-    int *stationDistances; // per-station orbit radius
-    Array<int> *systemPath; // jump-route system index path
-    AEGeometry *starSystemRoot; // system-view root geometry
-    uint8_t pad_0xa8_a; // jump-map mode flag
-    uint8_t choiceVisible; // choice window shown
-    uint8_t jumpMapModeA; // set by setJumpMapMode `enabled`
-    uint8_t jumpMapModeB; // set by setJumpMapMode `value`
-    Vector field_0xac;
-    Vector field_0xbc;
-    Vector field_0xcc;
+    Array<AEGeometry *> *systemGeoms;
+    AEGeometry *systemRoot;
+    uint32_t camera;
+    uint32_t prevCamera;
+    AbyssEngine::Vector scratchVector;
+    AbyssEngine::Vector scratchVector2;
+    Array<AEGeometry *> *stationGeoms;
+    Array<AEGeometry *> *ringGeoms;
+    int *stationAngles;
+    int *stationDistances;
+    Array<int> *systemPath;
+    AEGeometry *starSystemRoot;
+    uint8_t pad_0xa8_a;
+    uint8_t choiceVisible;
+    uint8_t jumpMapModeA;
+    uint8_t jumpMapModeB;
+    AbyssEngine::Vector field_0xac;
+    AbyssEngine::Vector field_0xbc;
+    AbyssEngine::Vector field_0xcc;
     uint8_t missionChangedFlag;
     int32_t field_0xe8;
     int32_t field_0xec;
-    uint8_t isGalaxyMode; // campaign > 0xf
-    AEGeometry *markerGeom; // optional jump-route overlay mesh
-    int *iconBuffer; // scratch int[5] info-icon image ids
-    Array<uint8_t> *usedFlags; // per-station "used" flags
-    int32_t targetSystem; // jump-map target system index
-    uint8_t showKey; // legend visible
+    uint8_t isGalaxyMode;
+    AEGeometry *markerGeom;
+    int *iconBuffer;
+    Array<uint8_t> *usedFlags;
+    int32_t targetSystem;
+    uint8_t showKey;
     int32_t keyBoxWidth;
     int32_t keyBoxHeight;
-    int32_t pulseSystem; // auto-select system index
-    uint8_t autoMode; // tutorial/auto
-    int32_t autoTimer; // auto-select countdown (ms)
+    int32_t pulseSystem;
+    uint8_t autoMode;
+    int32_t autoTimer;
     uint8_t alienJumpPending;
     uint32_t raceImageNeutral;
     uint32_t raceImageA;
     uint32_t raceImageB;
     uint32_t raceImageDefault;
     uint32_t image_0x134;
-    uint8_t transitionIn; // zoom-into-system transition active
-    uint8_t transitionOut; // zoom-out-to-galaxy transition active
-    uint8_t pathAnim; // jump-route auto-pan active
-    uint8_t stationCenterAnim; // station-centering animation active
-    int32_t panX; // galaxy pan offset X
-    int32_t panY; // galaxy pan offset Y
+    uint8_t transitionIn;
+    uint8_t transitionOut;
+    uint8_t pathAnim;
+    uint8_t stationCenterAnim;
+    int32_t panX;
+    int32_t panY;
     float touchStartX;
     float touchStartY;
     float field_0x14c;
@@ -97,7 +90,7 @@ public:
     float lastTouchX;
     float lastTouchY;
     int32_t field_0x164;
-    float momentumFactor; // drag-momentum decay
+    float momentumFactor;
     float velocityX;
     float velocityY;
     uint8_t dragging;
@@ -105,11 +98,11 @@ public:
     AbyssEngine::EaseInOut *easeX;
     AbyssEngine::EaseInOut *easeY;
     AbyssEngine::EaseInOut *easeZ;
-    float yaw; // system-view yaw
-    float pitch; // system-view pitch
+    float yaw;
+    float pitch;
     int32_t field_0x190;
-    Array<Vector *> *systemPositions; // per-system screen positions
-    Array<Vector *> *stationPositions; // per-station screen positions
+    Array<AbyssEngine::Vector *> *systemPositions;
+    Array<AbyssEngine::Vector *> *stationPositions;
     int32_t lastSelectedSystem;
     int32_t lastSelectedStation;
     int32_t alpha;
@@ -118,11 +111,11 @@ public:
     AEGeometry *bgLayer0;
     AEGeometry *bgLayer1;
     AEGeometry *bgLayer2;
-    AEGeometry *planetGeom; // system-view planet mesh
-    float spin; // star-icon spin accumulator
-    int32_t centeredStation; // station index being centered (-1 none)
-    int32_t hitRadius; // touch-pick radius
-    float dragScale; // layout drag-scale factor
+    AEGeometry *planetGeom;
+    float spin;
+    int32_t centeredStation;
+    int32_t hitRadius;
+    float dragScale;
     int32_t jumpCost;
     uint8_t noRoute;
     int32_t cargoAmount;
@@ -156,8 +149,6 @@ public:
 
     void OnTouchMove(int x, int y);
 
-    // Touch-release handler. Returns nonzero when the map was dismissed (the host
-    // screen should then restore its own camera), zero while the map stays open.
     int OnTouchEnd(int x, int y);
 
     void depart(bool jump);

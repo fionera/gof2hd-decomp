@@ -181,4 +181,4 @@ namespace AbyssEngine {
         if (loc >= 0)
             glDisableVertexAttribArray(loc);
     }
-} // namespace AbyssEngine
+}

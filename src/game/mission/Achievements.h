@@ -2,7 +2,7 @@
 #define GOF2_ACHIEVEMENTS_H
 #include <cstdint>
 
-class PlayerEgo;
+#include "game/ship/PlayerEgo.h"
 
 class Achievements {
 public:
@@ -72,6 +72,6 @@ public:
     void updateCredits(int value);
 };
 
-extern Achievements *gAchievements; // canonical Achievements singleton (binary .bss 0x2282b4)
+extern Achievements *gAchievements;
 
 #endif

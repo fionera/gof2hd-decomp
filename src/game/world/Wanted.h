@@ -1,9 +1,8 @@
 #ifndef GOF2_WANTED_H
 #define GOF2_WANTED_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 class Wanted {
 public:

@@ -4,13 +4,13 @@
 #include "engine/core/GameText.h"
 #include "engine/file/FileInterfaceAndroid.h"
 #include "engine/math/AEMath.h"
-#include "engine/math/Transform.h"   // also provides AEMath::BSphere (node-local layout)
+#include "engine/math/Transform.h"
 #include "game/core/String.h"
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "platform/gl.h"
-#include <cstdlib>   // realloc, for the engine raw-array helpers below
+#include <cstdlib>
 
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, size_t n);
@@ -57,7 +57,7 @@ namespace {
         ((T *) a->data)[a->count] = item;
         a->count = a->count + 1;
     }
-} // namespace
+}
 
 unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const char *label) {
     (void) name;
@@ -70,7 +70,7 @@ namespace AbyssEngine {
         if (font != 0)
             s16(font, 0x12) = yOffset;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int CameraIsPointinViewFrustum(const Vector &point, Matrix *extra, Camera *cam) {
@@ -78,8 +78,8 @@ namespace AbyssEngine {
             return 1;
 
         char *c = (char *) cam;
-        Matrix local; // camera-local matrix (0x3c bytes used)
-        Matrix transformed; // normalized-axis scratch
+        Matrix local;
+        Matrix transformed;
         Vector pos, dir, axis;
         Vector camPoint = {0.0f, 0.0f, 0.0f};
 
@@ -122,7 +122,7 @@ namespace AbyssEngine {
         float vLimit = hLimit * f32(c, 0x50);
         return (right <= vLimit && right >= -vLimit) ? 1 : 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     Quaternion operator*(const Quaternion &a, float s) {
@@ -130,7 +130,7 @@ namespace AbyssEngine {
         float wv = a.w * s;
         return Quaternion(wv, 0.0f, yv, 0.0f);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const String &a, const String &b) {
@@ -138,7 +138,7 @@ namespace AbyssEngine {
         result += b;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void SpriteSystemSetAllUv(float u0, float v0, float u1, float v1, SpriteSystem *sys) {
@@ -160,7 +160,7 @@ namespace AbyssEngine {
             p[7] = 1.0f - v1;
         }
     }
-} // namespace AbyssEngine
+}
 
 extern "C" {
 void glViewport(int, int, int, int);
@@ -233,7 +233,7 @@ namespace AbyssEngine {
             fbo->Create((int) self->framebufferWidth, (int) self->framebufferHeight, true, false);
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys) {
@@ -246,7 +246,6 @@ namespace AbyssEngine {
         char flag = *g_SpriteSystem_uvFlipFlag;
         float *p = (float *) ((char *) pp(pp(sys, 0x8), 0x8) + (unsigned int) idx * 0x20);
 
-        // In the binary, `c` (in_r2) and `d` (in_stack_00000000) are flipped when flag==0.
         if (flag == 0) {
             c = 1.0f - c;
             d = 1.0f - d;
@@ -260,14 +259,14 @@ namespace AbyssEngine {
         p[6] = a;
         p[7] = d;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetYOffset(ImageFont *font) {
         short v = (font == 0) ? (short) 0 : s16(font, 0x12);
         return (int) v;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     Quaternion operator-(const Quaternion &a, const Quaternion &b) {
@@ -275,7 +274,7 @@ namespace AbyssEngine {
         float wv = a.w - b.w;
         return Quaternion(wv, 0.0f, yv, 0.0f);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
@@ -301,21 +300,19 @@ namespace AbyssEngine {
             if (want[k] != magic[k])
                 return -1;
 
-        // Header: skip 1 byte, then atlas width/height into region+0x08, +0x0a, and region count.
         unsigned short regionCount = 0;
         if (AEFile::Skip((uint32_t)(1), handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), r + 0x08, handle) == 0) return -1; // atlas width
-        if (AEFile::Read((uint32_t)(2), r + 0x0a, handle) == 0) return -1; // atlas height
+        if (AEFile::Read((uint32_t)(2), r + 0x08, handle) == 0) return -1;
+        if (AEFile::Read((uint32_t)(2), r + 0x0a, handle) == 0) return -1;
         if (AEFile::Read((uint32_t)(2), &regionCount, handle) == 0) return -1;
         if (regionCount <= index) return -1;
 
         if (MeshCreate(engine, 4, 2, 0x13, (void **) region) != 1)
             return -2;
 
-        unsigned char mode = 0; // fpscr rounding mode bits; 0 is the common default
+        unsigned char mode = 0;
         for (unsigned short i = 0; i < regionCount; ++i) {
             if (i == index) {
-                // Region record: offX, offY, sizeX, sizeY shorts into region+0x0c..0x12.
                 if (AEFile::Read((uint32_t)(2), r + 0x0c, handle) == 0) goto fail;
                 if (AEFile::Read((uint32_t)(2), r + 0x0e, handle) == 0) goto fail;
                 if (AEFile::Read((uint32_t)(2), r + 0x10, handle) == 0) goto fail;
@@ -323,7 +320,7 @@ namespace AbyssEngine {
 
                 Mesh *mesh = *(Mesh **) r;
                 float *pos = (float *) mesh->positions;
-                // Half width/height of the quad in object units (region size).
+
                 float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x10), mode);
                 pos[0] = 0;
                 pos[1] = 0;
@@ -363,9 +360,7 @@ namespace AbyssEngine {
                 unsigned int *draw = (unsigned int *) mesh->indices;
                 draw[0] = 0x20000;
                 draw[1] = 1;
-                draw[2] = 0; // DAT default
-
-                // i++ then loop falls through to close.
+                draw[2] = 0;
             } else {
                 if (AEFile::Skip((uint32_t)(8), handle) == 0)
                     goto fail;
@@ -379,7 +374,7 @@ namespace AbyssEngine {
         MeshRelease(engine, (Mesh **) region);
         return -1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int count) {
@@ -394,7 +389,7 @@ namespace AbyssEngine {
             for (;;) {
                 unsigned int u = idx;
                 if (glyphCount <= u)
-                    goto next; // character not found -> contributes nothing
+                    goto next;
                 idx = idx + 1;
                 code = *(unsigned short *) ((char *) pp(font, 0x4) + u * 2);
                 if (code == str[i])
@@ -403,7 +398,7 @@ namespace AbyssEngine {
             {
                 unsigned int found = (unsigned int) (unsigned short) (idx - 1);
                 Mesh *glyph = *(Mesh **) ((char *) pp(font, 0xc) + found * 4);
-                int w = (int) ((float *) glyph->positions)[3]; // advance width at positions+0xc
+                int w = (int) ((float *) glyph->positions)[3];
                 int adv = (int) s16(font, 0x10) + w;
                 int contrib = adv;
                 if (w == 0xb)
@@ -416,7 +411,7 @@ namespace AbyssEngine {
         }
         return total;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     struct Vec2 {
@@ -429,7 +424,7 @@ namespace AbyssEngine {
 
         for (;;) {
             if ((unsigned int) mesh->indexCount <= i) {
-                out.u = -1.0f; // miss sentinel: inline 0xbf800000 literal (pool@0x7dab8)
+                out.u = -1.0f;
                 out.v = -1.0f;
                 return out;
             }
@@ -444,7 +439,6 @@ namespace AbyssEngine {
             float bx = b[0], bz = b[2];
             float cx = c[0], cz = c[2];
 
-            // XZ bounding box of the triangle.
             float minZ = az, maxZ = bz;
             if (bz < az) {
                 minZ = bz;
@@ -461,7 +455,6 @@ namespace AbyssEngine {
             if (cx < minX) minX = cx;
 
             if (maxZ >= qz && minX <= qx && maxX >= qx && minZ <= qz) {
-                // Edge tests using outward 2D normals; "inside" means all three <= 0.
                 float ex = bx - ax, ez = bz - az;
                 float len = sqrtf(ez * ez + ex * ex);
                 float side = (ex / len) * qz + (-ez / len) * qx -
@@ -494,7 +487,7 @@ namespace AbyssEngine {
             i += 3;
         }
     }
-} // namespace AbyssEngine
+}
 
 extern "C" {
 void glBindBuffer(unsigned int target, unsigned int buffer);
@@ -523,7 +516,6 @@ namespace AbyssEngine {
             glBindBuffer(0x8893, mesh->indexVBO);
 
             if (flags & 2) {
-                // has UVs
                 glBindBuffer(0x8892, mesh->texCoordVBO);
                 engine->AEClientState(0x8078, true);
                 glTexCoordPointer(2, 0x1406, 0, 0);
@@ -532,7 +524,6 @@ namespace AbyssEngine {
             }
 
             if (flags & 4) {
-                // has normals
                 glBindBuffer(0x8892, mesh->normalVBO);
                 engine->AEClientState(0x8075, true);
                 glNormalPointer(0x1406, 0, 0);
@@ -541,7 +532,6 @@ namespace AbyssEngine {
             }
 
             if (flags & 8) {
-                // has colors
                 glBindBuffer(0x8892, mesh->colorVBO);
                 engine->AEClientState(0x8076, true);
                 glColorPointer(4, 0x1406, 0, 0);
@@ -569,7 +559,7 @@ namespace AbyssEngine {
         }
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys) {
@@ -587,7 +577,7 @@ namespace AbyssEngine {
             p[v * 4 + 3] = a;
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -614,7 +604,7 @@ namespace AbyssEngine {
         }
         return ret;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *str, unsigned int start,
@@ -646,7 +636,7 @@ namespace AbyssEngine {
 
             unsigned int gi = (unsigned int) (unsigned short) (idx - 1);
             Mesh *glyph = *(Mesh **) ((char *) pp(font, 0xc) + gi * 4);
-            int w = (int) ((float *) glyph->positions)[3]; // advance width at positions+0xc
+            int w = (int) ((float *) glyph->positions)[3];
             int adv = (int) s16(font, 0x10) + w;
             int contrib = adv;
             if (w == 0xb)
@@ -657,7 +647,7 @@ namespace AbyssEngine {
         }
         return total;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void CurveRelease(Curve **slot) {
@@ -685,7 +675,7 @@ namespace AbyssEngine {
             operator delete((void *) *slot);
         *slot = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshDraw(Engine * engine, Mesh * mesh);
@@ -694,10 +684,6 @@ namespace AbyssEngine {
         if (canvas == 0 || mat == 0)
             return;
 
-        // RAWREAD: this recovered MaterialDraw operates on a legacy/non-byte-faithful Material
-        // layout (it reads 0x44 as a submesh count and steps inline per-submesh blocks at
-        // 0x3c/0x48/0x54/0x60+i*0x3c), which does not match the cleaned Material header's
-        // Array<T>* members at those offsets. Left as pointer arithmetic to preserve semantics.
         char *m = (char *) mat;
 
         if (setTextures) {
@@ -734,14 +720,13 @@ namespace AbyssEngine {
             engine->LightSetGlobalSceneColorAmbient(f32(m, 0x68), 0.0f, 0.0f);
         }
 
-        // Reset per-frame submesh accumulators.
         i32(m, 0x2c) = 0;
         i32(m, 0x5c) = 0;
         i32(m, 0x38) = 0;
         i32(m, 0x44) = 0;
         i32(m, 0x50) = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
@@ -776,12 +761,12 @@ namespace AbyssEngine {
             operator delete((void *) *slot);
         *slot = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     extern "C" {
-    char *g_uvFlipFlag; // **(DAT + 0x7c904) / 0x7c9d2
-    char *g_tangentEnabled; // **(DAT + 0x7cc36)
+    char *g_uvFlipFlag;
+    char *g_tangentEnabled;
     }
 
     int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
@@ -793,16 +778,14 @@ namespace AbyssEngine {
         unsigned int subBit = flags & 0x1a;
         unsigned char mode = 0;
 
-        // Optional skinning/extra matrix block.
         if (subBit != 0) {
             if (AEFile::Read((uint32_t)(0xc), &(*slot)->pivotX, handle) == 0)
                 return -1;
         }
 
         Mesh *m = *slot;
-        // Indexed geometry.
+
         if (m->vertexFormat & 0x10) {
-            // (byte<<0x1b) negative
             if (AEFile::Read((uint32_t)(2), &m->indexCount, handle) == 0)
                 return -1;
             void *idx = ::operator new[]((unsigned int) m->indexCount << 1);
@@ -812,18 +795,15 @@ namespace AbyssEngine {
             m = *slot;
         }
 
-        // Vertex count.
         if (AEFile::Read((uint32_t)(2), &m->vertexCount, handle) == 0)
             return -1;
 
-        // Bounding-box accumulators (min/max for x,y,z).
         float minv[3] = {1e30f, 1e30f, 1e30f};
         float maxv[3] = {-1e30f, -1e30f, -1e30f};
         bool compressedPos = (int) (flags << 0x1d) < 0;
         unsigned int vcount = (*slot)->vertexCount;
 
         if (compressedPos) {
-            // 16-bit compressed positions: 3 shorts per vertex.
             void *raw = ::operator new[](vcount * 6);
             if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
                 ::operator delete[](raw);
@@ -846,7 +826,6 @@ namespace AbyssEngine {
             }
             ::operator delete[](raw);
         } else if ((flags & 3) == 0) {
-            // Raw float positions, read straight in (no per-element bbox here for the enhanced path).
             if ((flags & 0x18) != 0) {
                 m = *slot;
                 void *pos = ::operator new[](vcount * 0xc);
@@ -855,7 +834,6 @@ namespace AbyssEngine {
                     return -1;
             }
         } else {
-            // Float positions, element-by-element with bbox.
             void *raw = ::operator new[](vcount * 0xc);
             if (AEFile::Read((uint32_t)(vcount * 0xc), raw, handle) == 0) {
                 ::operator delete[](raw);
@@ -879,7 +857,6 @@ namespace AbyssEngine {
             ::operator delete[](raw);
         }
 
-        // BSphere center = box center, radius = half-diagonal length.
         float center[3];
         center[0] = (maxv[0] + minv[0]) * 0.5f;
         center[1] = (maxv[1] + minv[1]) * 0.5f;
@@ -890,9 +867,8 @@ namespace AbyssEngine {
         (*slot)->boundsRadius = AEMath::VectorLength(*(const Vector *) center);
 
         m = *slot;
-        // UV coordinates.
+
         if (m->vertexFormat & 2) {
-            // (byte<<0x1e) negative
             if (compressedPos) {
                 void *raw = ::operator new[](vcount << 2);
                 if (AEFile::Read((uint32_t)(vcount << 2), raw, handle) == 0) {
@@ -936,9 +912,8 @@ namespace AbyssEngine {
         }
 
         m = *slot;
-        // Normals (+ tangent/binormal generation).
+
         if (m->vertexFormat & 4) {
-            // (byte<<0x1d) negative
             if (compressedPos) {
                 void *raw = ::operator new[](vcount * 6);
                 if (AEFile::Read((uint32_t)(vcount * 6), raw, handle) == 0) {
@@ -989,7 +964,6 @@ namespace AbyssEngine {
                     return -1;
             }
 
-            // Per-triangle tangent/binormal generation.
             if (*g_tangentEnabled != 0) {
                 m = *slot;
                 void *tan = ::operator new[](vcount * 0xc);
@@ -1001,7 +975,7 @@ namespace AbyssEngine {
 
                 unsigned int triCount = (unsigned int) __aeabi_uidiv((int) (unsigned short) m->indexCount, 3);
                 void *accum = ::operator new[](vcount * 0xc);
-                // Zero accumulator.
+
                 for (unsigned int b = 0; b < vcount * 0xc; ++b) ((char *) accum)[b] = 0;
 
                 int triOff = 0;
@@ -1043,7 +1017,6 @@ namespace AbyssEngine {
                     triOff += 6;
                 }
 
-                // Orthonormalize tangent against the normal, store tangent/binormal.
                 int off = 0;
                 for (unsigned int v = 0; v < vcount; ++v) {
                     m = *slot;
@@ -1079,7 +1052,7 @@ namespace AbyssEngine {
         }
 
         m = *slot;
-        // Vertex colors. (byte<<0x1c) negative -> bit 0x8 set.
+
         if (m->vertexFormat & 8) {
             if (compressedPos) {
                 void *raw = ::operator new[](vcount << 2);
@@ -1108,7 +1081,6 @@ namespace AbyssEngine {
             }
         }
 
-        // Enhanced data / submesh recursion.
         if (subBit != 0) {
             if ((*slot)->ReadEnhancedDataFromFile(handle, flags) == 0)
                 return -1;
@@ -1122,7 +1094,7 @@ namespace AbyssEngine {
                 char *child = (char *) ::operator new(0x88);
                 for (int b = 0; b < 0x88; ++b) child[b] = 0;
                 Mesh *childPtr = (Mesh *) child;
-                childPtr->boundsRadiusSq = 1.0f; // +0x4c (IEEE 0x3f800000)
+                childPtr->boundsRadiusSq = 1.0f;
                 childPtr->vboEligible = 1;
                 childPtr->vertexFormat = (*slot)->vertexFormat;
                 childPtr->material = (*slot)->material;
@@ -1136,7 +1108,7 @@ namespace AbyssEngine {
 
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const String &a, const long long &b) {
@@ -1146,7 +1118,7 @@ namespace AbyssEngine {
         result += num;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void TransformRelease(Engine * engine, Transform * *slot);
@@ -1154,15 +1126,13 @@ namespace AbyssEngine {
     void MeshRelease(Engine *engine, Mesh **slot) {
         if (engine != 0 && *slot != 0) {
             TransformRelease(engine, &(*slot)->animation);
-            // Tail-call through a runtime function pointer (MeshReleaseIntern) that frees the mesh
-            // body. The first argument is the engine pointer (preserved in r0 across the void
-            // TransformRelease call in the shipped code).
+
             typedef void (*FreeFn)(Engine *, Mesh **);
-            extern void *g_MeshRelease_freeFn; // *(DAT_001ab034 + 0x1ab038)
+            extern void *g_MeshRelease_freeFn;
             ((FreeFn) g_MeshRelease_freeFn)(engine, slot);
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const float &a, const String &b) {
@@ -1171,7 +1141,7 @@ namespace AbyssEngine {
         result += b;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
@@ -1228,7 +1198,6 @@ namespace AbyssEngine {
             __aeabi_memclr(pp(*out, 0x8), (n << 1));
         }
 
-        // Fill the index buffer: two triangles (0,1,2, 0,2,3) per quad.
         unsigned short base = 0;
         char *idx = (char *) indexArr;
         for (unsigned int off = 0; (off & 0xffff) < n * 6; off += 6) {
@@ -1245,12 +1214,10 @@ namespace AbyssEngine {
         Mesh *m = (Mesh *) pp(*out, 0x10);
         unsigned int vcount = (unsigned int) (unsigned short) m->vertexCount;
 
-        // Default vertex colors to white (1.0 per channel).
         float *colors = (float *) m->colors;
         for (unsigned int i = 0; i <= vcount * 4 && vcount * 4 - i != 0; ++i)
             colors[i] = 1.0f;
 
-        // Default normals (and optionally tangents/binormals) to the identity basis.
         char tangent = *g_SpriteSystem_tangentFlag;
         int vo = 0;
         char *normals = (char *) m->normals;
@@ -1276,7 +1243,7 @@ namespace AbyssEngine {
 
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void ImageRelease(Image * *slot);
@@ -1300,7 +1267,6 @@ namespace AbyssEngine {
             return -1;
         }
 
-        // Validate "AEImage"-style 8-byte magic.
         static const char magic[8] = {'*', '*', '*', '*', 0, 0, 0, 0};
         char hdr[8];
         for (int i = 0; i < 4; ++i) hdr[i] = '*';
@@ -1316,14 +1282,14 @@ namespace AbyssEngine {
             unsigned char fmt = 0;
             unsigned short palCount = 0;
             if (AEFile::Read((uint32_t)(1), &fmt, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), im + 0x0, handle) == 0) goto fail; // width
-            if (AEFile::Read((uint32_t)(2), im + 0x2, handle) == 0) goto fail; // height
-            if (AEFile::Read((uint32_t)(2), &palCount, handle) == 0) goto fail; // palette entries
+            if (AEFile::Read((uint32_t)(2), im + 0x0, handle) == 0) goto fail;
+            if (AEFile::Read((uint32_t)(2), im + 0x2, handle) == 0) goto fail;
+            if (AEFile::Read((uint32_t)(2), &palCount, handle) == 0) goto fail;
 
             AEFile::Skip((uint32_t)((unsigned int) palCount << 3), handle);
 
             if (fmt & 2)
-                u8(im, 0x8) = 1; // mipmapped
+                u8(im, 0x8) = 1;
 
             unsigned int dataLen = 0;
             switch (fmt) {
@@ -1417,7 +1383,7 @@ namespace AbyssEngine {
         AEFile::Close(handle);
         return -1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void ImageRelease(Image **slot) {
@@ -1429,7 +1395,7 @@ namespace AbyssEngine {
             *slot = 0;
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
@@ -1442,7 +1408,7 @@ namespace AbyssEngine {
             *slot = 0;
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshCreate(Engine * /*engine*/, unsigned short vertexCount, unsigned short triCount,
@@ -1452,16 +1418,13 @@ namespace AbyssEngine {
 
         Mesh *m = (Mesh *) operator new(0x88);
 
-        // Zero the identity/colour/transform region. The decompile splats a 16-byte zero vector
-        // across many slots; clearing the whole struct is the faithful net effect, after which we
-        // write the few non-zero defaults.
         __aeabi_memclr4(m, 0x88);
-        m->boundsRadiusSq = 1.0f; // +0x4c default scale = 1.0
+        m->boundsRadiusSq = 1.0f;
 
         *out = m;
         m->vertexCount = (short) vertexCount;
         m->vertexFormat = vertexFormat;
-        m->indexCount = (short) (triCount + (triCount << 1)); // 3 * triCount (index count)
+        m->indexCount = (short) (triCount + (triCount << 1));
         m->field_0x2a = (short) triCount;
 
         unsigned int posBytes = (unsigned int) vertexCount * 0xc;
@@ -1470,19 +1433,16 @@ namespace AbyssEngine {
         __aeabi_memclr4(p, posBytes);
 
         if (vertexFormat & 0x10) {
-            // (fmt<<0x1b) negative -> index array
             p = operator new[]((unsigned int) triCount * 6);
             m->indices = p;
             __aeabi_memclr(p, (unsigned int) triCount * 6);
         }
         if (vertexFormat & 2) {
-            // (fmt<<0x1e) negative -> uv array
             p = operator new[]((unsigned int) vertexCount << 3);
             m->texCoords = p;
             __aeabi_memclr4(p, (unsigned int) vertexCount << 3);
         }
         if (vertexFormat & 4) {
-            // (fmt<<0x1d) negative -> normal array (+ tangents/binormals)
             p = operator new[](posBytes);
             m->normals = p;
             __aeabi_memclr4(p, posBytes);
@@ -1496,7 +1456,6 @@ namespace AbyssEngine {
             }
         }
         if (vertexFormat & 8) {
-            // (fmt<<0x1c) negative -> colour array
             p = operator new[]((unsigned int) vertexCount << 4);
             m->colors = p;
             __aeabi_memclr4(p, (unsigned int) vertexCount << 4);
@@ -1504,7 +1463,7 @@ namespace AbyssEngine {
 
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -1535,20 +1494,18 @@ namespace AbyssEngine {
         }
         return ret;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void ImageFontSetSpacing(ImageFont *font, short spacing) {
         if (font != 0)
             s16(font, 0x10) = spacing;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetHeight(ImageFont *font) {
         if (font != 0) {
-            // First glyph mesh's positions[7] (mesh@(*(font+0xc))[0], positions+0x1c) as int;
-            // clamp 0x18 to 0x13.
             void *p = pp(font, 0xc);
             Mesh *q = (Mesh *) pp(p, 0x0);
             float *r = (float *) q->positions;
@@ -1559,7 +1516,7 @@ namespace AbyssEngine {
         }
         return 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const String &a, const int &b) {
@@ -1569,20 +1526,20 @@ namespace AbyssEngine {
         result += num;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetSpacing(ImageFont *font) {
         short v = (font == 0) ? (short) 0 : s16(font, 0x10);
         return (int) v;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const String &a) {
         return String(a);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontDrawString(ImageFont *font, const unsigned short *str, unsigned int len, int x,
@@ -1600,7 +1557,7 @@ namespace AbyssEngine {
             ImageFontDrawString(font, str, len, x, y, canvas, engine, flag);
         }
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int ImageFontGetWidth(ImageFont *font, const unsigned short *text, unsigned int len);
@@ -1631,13 +1588,12 @@ namespace AbyssEngine {
             bottom = h + top;
         }
         int side = (x <= dispW) ? bottom : (dispW - x);
-        // Off-screen clip on X.
+
         if ((side < 0) != (dispW < x))
             return 0;
         if (top > (int) engine->GetDisplayHeight())
             return 0;
 
-        // Scan direction: forward by default; reversed for RTL or when batching is requested.
         int step = -1;
         int idx = (int) len - 1;
         bool batched = (u8(pc, 0x1c) != 0) || rtl;
@@ -1648,7 +1604,6 @@ namespace AbyssEngine {
 
         bool shaderMode = (engine->shaderModeFlag != 0);
         if (shaderMode) {
-            // Arabic special-case: force forward scan.
             if (*g_GameText_arabicEnabledFlag != 0 && GameText::getLanguage() == 9 &&
                 GameText::isNonArabicString(text, len) != 0) {
                 idx = 0;
@@ -1659,7 +1614,6 @@ namespace AbyssEngine {
         float baseY = AbyssEngine::AEMath::VectorSignedToFloat(top - 2, mode);
 
         for (unsigned int i = 0; i < len; ++i) {
-            // Find glyph slot for codepoint text[idx].
             unsigned int slot = 0;
             unsigned short glyphCount = u16(f, 0x0);
             bool found = false;
@@ -1673,16 +1627,13 @@ namespace AbyssEngine {
 
             if (found) {
                 Mesh *glyphMesh = *(Mesh **) (*(int *) (f + 0xc) + slot * 4);
-                int advance = (int) ((float *) glyphMesh->positions)[3]; // advance width at positions+0xc
+                int advance = (int) ((float *) glyphMesh->positions)[3];
 
                 if (x + advance >= 0 && x <= (int) engine->GetDisplayWidth()) {
                     if (!shaderMode) {
                         ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) canvas);
                         MeshDraw(engine, *(Mesh **) (*(int *) (f + 0xc) + slot * 4));
                     } else {
-                        // Batched path: append this glyph's quad into the sprite buffer at
-                        // canvas+8 (vertex/color/matrix arrays), flush when the slot count
-                        // reaches the buffer capacity.
                         int spr = *(int *) (pc + 8);
                         int n = *(int *) (pc + 0xc);
                         float fx = AbyssEngine::AEMath::VectorSignedToFloat(x, mode);
@@ -1731,7 +1682,6 @@ namespace AbyssEngine {
             idx += step;
         }
 
-        // Flush any remaining batched glyphs.
         if (shaderMode) {
             int n = *(int *) (pc + 0xc);
             if (n > 0) {
@@ -1744,7 +1694,7 @@ namespace AbyssEngine {
 
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const int &a, const String &b) {
@@ -1753,7 +1703,7 @@ namespace AbyssEngine {
         result += b;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshCreate(Engine *engine, unsigned short vertexCount, unsigned short triCount,
@@ -1773,7 +1723,7 @@ namespace AbyssEngine {
         pos[5] = 0;
         pos[3] = halfW;
         pos[6] = halfW;
-        float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat(offY, mode); // mirrors decompile's field reuse
+        float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat(offY, mode);
         pos[8] = 0;
         pos[9] = 0;
         pos[11] = 0;
@@ -1836,7 +1786,6 @@ namespace AbyssEngine {
         if (AEFile::Read((uint32_t)(2), &fontCount, handle) == 0) goto fail;
         if (AEFile::Skip((uint32_t)((unsigned int) fontCount << 3), handle) == 0) goto fail;
 
-        // Skip the format-specific palette/data block (size depends on fmt).
         {
             unsigned int fb = (unsigned int) fmt - 3;
             if (fb < 0x1f) {
@@ -1864,7 +1813,7 @@ namespace AbyssEngine {
         for (unsigned short g = 0; g < glyphCount; ++g) {
             if (g == index) {
                 char *font = (char *) *out;
-                if (AEFile::Read((uint32_t)(2), font + 0x0, handle) == 0) goto fail; // glyph count
+                if (AEFile::Read((uint32_t)(2), font + 0x0, handle) == 0) goto fail;
                 void *codes = ::operator new[]((unsigned int) u16(font, 0x0) << 1);
                 pp(font, 0x4) = codes;
                 if (AEFile::Read((uint32_t)((unsigned int) u16((char *) *out, 0x0) << 1), pp((char *) *out, 0x4),
@@ -1901,7 +1850,7 @@ namespace AbyssEngine {
         ImageFontRelease(engine, out);
         return -1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     Quaternion operator+(const Quaternion &a, const Quaternion &b) {
@@ -1909,7 +1858,7 @@ namespace AbyssEngine {
         float wv = a.w + b.w;
         return Quaternion(wv, 0.0f, yv, 0.0f);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void SpriteSystemSetAllSize(short size, SpriteSystem *sys) {
@@ -1925,15 +1874,15 @@ namespace AbyssEngine {
         for (unsigned int i = 0; i < count; ++i)
             sizes[i] = size;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     float MODF(float value, float *intPart) {
-        float ip = (float) (int) value; // VectorSignedToFloat == truncating int<->float convert
+        float ip = (float) (int) value;
         *intPart = ip;
         return value - ip;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshDraw(Engine * engine, Mesh * mesh);
@@ -1974,7 +1923,6 @@ namespace AbyssEngine {
             sizeIdx = (unsigned short) (((sharedSize ^ 1) & 0xff) + sizeIdx);
             float half = (float) ((int) sizeCpu[si] >> 1);
 
-            // Transform the sprite center by the world matrix (column-major 3x4 used here).
             float cx = W[0xc / 4 + 0] + W[4 / 4] * py + W[0] * px + W[8 / 4] * pz;
             float cy = W[0x1c / 4] + py * W[0x14 / 4] + px * W[0x10 / 4] + pz * W[0x18 / 4];
             float cz = W[0x2c / 4] + py * W[0x24 / 4] + px * W[0x20 / 4] + pz * W[0x28 / 4];
@@ -2003,16 +1951,12 @@ namespace AbyssEngine {
             void *batch = mesh->material;
             ArrayAddCachedRaw<Mesh *>(mesh, (char *) batch + 0x44);
 
-            // Record the view / unit / world transforms into the deferred batch command buffer.
-            // AE_SpriteSystem_pushMatrix copies a 4x4 matrix (15 explicit words; m33 implicit) into
-            // the destination slot. It is a runtime-resolved (GOT) indirect helper with no statically
-            // visible body, so it stays a documented extern (see externs.h).
             const float *v = view;
             AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
                                        f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
                                        f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) batch + 0x2c);
             unsigned int one = 0x3f800000;
-            unsigned int negOne = 0xbf800000; // V-flip diagonal: inline -1.0f literal (pool@0x97058)
+            unsigned int negOne = 0xbf800000;
             AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
                                        one, one, one, (int) (intptr_t) batch + 0x38);
             const float *w = world;
@@ -2022,7 +1966,7 @@ namespace AbyssEngine {
             ArrayAddCachedRaw<unsigned int>(0xffffffff, (char *) batch + 0x50);
         }
     }
-} // namespace AbyssEngine
+}
 
 extern "C" {
 void glGenBuffers(int n, void *buffers);
@@ -2053,20 +1997,16 @@ namespace AbyssEngine {
 
         unsigned int vcount = m->vertexCount;
 
-        // The colors/tangents/binormals slots hold array pointers (kept as 32-bit-wide fields
-        // to preserve the struct layout); read them back as real pointers for the GL calls.
         void *colArr = m->colors;
         void *tanArr = m->tangents;
         void *binArr = m->binormals;
 
-        // Position buffer (always present).
         glGenBuffers(1, &m->positionVBO);
         glBindBuffer(0x8892, m->positionVBO);
         glBufferData(0x8892, vcount * 0xc, m->positions, 0x88e4);
 
         unsigned char flags = m->vertexFormat;
         if (flags & 2) {
-            // has UVs -> upload uv buffer and the index buffer
             glGenBuffers(1, &m->texCoordVBO);
             glBindBuffer(0x8892, m->texCoordVBO);
             glBufferData(0x8892, vcount << 3, m->texCoords, 0x88e4);
@@ -2080,7 +2020,6 @@ namespace AbyssEngine {
         }
 
         if (flags & 4) {
-            // has normals (+ optional tangent/binormal pair)
             glGenBuffers(1, &m->normalVBO);
             glBindBuffer(0x8892, m->normalVBO);
             glBufferData(0x8892, vcount * 0xc, m->normals, 0x88e4);
@@ -2098,7 +2037,6 @@ namespace AbyssEngine {
         }
 
         if (m->vertexFormat & 8) {
-            // has colors
             glGenBuffers(1, &m->colorVBO);
             glBindBuffer(0x8892, m->colorVBO);
             glBufferData(0x8892, vcount << 4, colArr, 0x88e4);
@@ -2123,7 +2061,6 @@ namespace AbyssEngine {
             return 1;
         }
 
-        // GL error path: delete whatever buffers were created.
         if (m->uploaded != 0) {
             glDeleteBuffers(1, &m->positionVBO);
             glDeleteBuffers(1, &m->indexVBO);
@@ -2145,7 +2082,7 @@ namespace AbyssEngine {
         m->vboByteSize = 0;
         return -1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshConvertToVBO(Mesh * mesh);
@@ -2159,7 +2096,7 @@ namespace AbyssEngine {
         }
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void ImageFontCheckString(ImageFont * /*font*/, const unsigned short * /*str*/, unsigned int count) {
@@ -2170,7 +2107,7 @@ namespace AbyssEngine {
             i = i + 1;
         } while (v < count);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     typedef void (*ImageCallback)(Image *, void *);
@@ -2185,7 +2122,7 @@ namespace AbyssEngine {
                                     (AELoadedTexture *) 0, false);
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     extern "C" {
@@ -2211,11 +2148,11 @@ namespace AbyssEngine {
 
     void glGenerateMipmap(unsigned int target);
 
-    char *g_cubemapEnabledFlag; // **(DAT + 0x7f860)
-    char *g_texEnvFlag; // **(DAT + 0x7f998)
-    char *g_clampFlag; // **(DAT + 0x7f9b2)
-    float *g_anisoMaxPtr; // **(DAT + 0x7fa00)
-    char *g_labelObjectsFlag; // **(DAT + 0x7c9d2) (reused)
+    char *g_cubemapEnabledFlag;
+    char *g_texEnvFlag;
+    char *g_clampFlag;
+    float *g_anisoMaxPtr;
+    char *g_labelObjectsFlag;
     }
 
     int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
@@ -2268,7 +2205,6 @@ namespace AbyssEngine {
         int format = (int) u32(img, 0x4);
 
         if (format == 6) {
-            // Cubemap: six square faces packed vertically.
             if (*g_cubemapEnabledFlag != 0) {
                 glBindTexture(0x8513, *outIds);
                 glTexParameteri(0x8513, 0x2800, 0x2601);
@@ -2298,7 +2234,6 @@ namespace AbyssEngine {
             }
             glTexParameteri(0xde1, 0x2803, wrap);
 
-            // Min/mag filters depend on mipmap availability and anisotropy settings.
             if (u8(img, 0x8) == 0) {
                 if (engine->linearFilterFlag != 0) {
                     glTexParameteri(0xde1, 0x2800, 0x2601);
@@ -2335,7 +2270,7 @@ namespace AbyssEngine {
                     glTexImage2D(0xde1, 0, 0x1908, w, h, 0, 0x1908, 0x1401, pp(img, 0xc));
                     if (u8(img, 0x8) != 0) glGenerateMipmap(0xde1);
                     break;
-                case 4: // ETC1 / DXT1-ish
+                case 4:
                     if (u8(img, 0x8) == 0)
                         glCompressedTexImage2D(0xde1, 0, 0x8c03, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
                     else
@@ -2376,7 +2311,6 @@ namespace AbyssEngine {
             }
         }
 
-        // Verify upload and either label the texture or cache it.
         if (outTex == 0) {
             int err = (int) glGetError();
             engine->lastGlError = (unsigned int) err;
@@ -2407,7 +2341,7 @@ namespace AbyssEngine {
         ImageRelease(&imgPtr);
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const long long &a, const String &b) {
@@ -2416,7 +2350,7 @@ namespace AbyssEngine {
         result += b;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
@@ -2441,7 +2375,7 @@ namespace AbyssEngine {
             operator delete((void *) *slot);
         *slot = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int CurveCreate(void **src, unsigned short count, Curve **out) {
@@ -2455,7 +2389,7 @@ namespace AbyssEngine {
         __aeabi_memcpy4(data, src, (unsigned int) count << 2);
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     bool operator==(const String &a, const String &b) {
@@ -2463,7 +2397,7 @@ namespace AbyssEngine {
         int cmp = tmp.Compare_str(const_cast<String *>(&b));
         return cmp != 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     __attribute__ ((always_inline))
@@ -2479,7 +2413,6 @@ namespace AbyssEngine {
         if (m == 0)
             return;
 
-        // Skip GL/array teardown for a shared/aliased mesh: it does not own them.
         if (m->shared == 0) {
             if (m->uploaded != 0) {
                 glDeleteBuffers(1, &m->positionVBO);
@@ -2518,7 +2451,7 @@ namespace AbyssEngine {
         operator delete((void *) m);
         *slot = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     String operator+(const String &a, const float &b) {
@@ -2528,7 +2461,7 @@ namespace AbyssEngine {
         result += num;
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshConvertToVBOIntern(Mesh * mesh);
@@ -2545,7 +2478,7 @@ namespace AbyssEngine {
         }
         return result;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void esMatrixMultiply(ESMatrix *out, ESMatrix *a, ESMatrix *b) {
@@ -2562,7 +2495,7 @@ namespace AbyssEngine {
 
         __aeabi_memcpy(out, local, 0x40);
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int MeshReadData(Engine *engine, const unsigned int &handle, unsigned int flags, Mesh **slot,
@@ -2572,8 +2505,8 @@ namespace AbyssEngine {
 
     static void initMesh(Mesh *m) {
         for (int i = 0; i < 0x88; ++i) ((char *) m)[i] = 0;
-        // Identity-ish: scale field at 0x4c = 1.0; the matrix slots default to 0 here.
-        m->boundsRadiusSq = 1.0f; // IEEE 0x3f800000
+
+        m->boundsRadiusSq = 1.0f;
     }
 
     int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat) {
@@ -2601,7 +2534,6 @@ namespace AbyssEngine {
             return -1;
         }
 
-        // Classify magic into a 5-bit format mask (one bit per known signature).
         static const char sig0[7] = {'A', 'E', 'M', 'e', 's', 'h', 0};
         static const char sig1[7] = {'A', 'E', 'A', 'n', 'i', 'm', 0};
         static const char sig2[7] = {'A', 'E', 'S', 'k', 'i', 'n', 0};
@@ -2613,7 +2545,7 @@ namespace AbyssEngine {
             if (sig0[i] != ch) fmt &= ~1u;
             if (sig1[i] != ch) fmt &= ~8u;
             if (sig2[i] != ch) fmt &= ~0x10u;
-            if (sig3[i] != ch) fmt &= ~4u; // sig3 -> bit2 (LOD)
+            if (sig3[i] != ch) fmt &= ~4u;
             if (sig4[i] != ch) fmt &= ~2u;
         }
 
@@ -2623,7 +2555,6 @@ namespace AbyssEngine {
             return -1;
         }
 
-        // Optional version word for some formats.
         if ((fmt & 0x1b) != 0) {
             unsigned short ver = 0;
             if (AEFile::Read((uint32_t)(2), &ver, handle) == 0) {
@@ -2632,7 +2563,7 @@ namespace AbyssEngine {
                 return -1;
             }
         }
-        // Read the first byte (vertex-format flag) into mesh+0x00.
+
         if (AEFile::Read((uint32_t)(1), &(*out)->vertexFormat, handle) == 0 || (*out)->vertexFormat == 0) {
             MeshRelease(engine, out);
             AEFile::Close(handle);
@@ -2689,11 +2620,10 @@ namespace AbyssEngine {
         AEFile::Close(handle);
         return -1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     int CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam) {
-        // Ghidra aliases the camera-data pointer through r3; cam is the frustum data here.
         char *c = (char *) cam;
 
         if (!(radius != 0.0f && *g_Camera_frustumEnabledFlag != 0))
@@ -2725,7 +2655,6 @@ namespace AbyssEngine {
         Vector normAxis = AEMath::VectorNormalize(axis);
         float fwd = AEMath::VectorDot(pos, normAxis);
 
-        // Near/far range padded by the radius.
         if (fwd > f32(c, 0x8) + radius)
             return 0;
         if (fwd < f32(c, 0x4) - radius)
@@ -2755,11 +2684,11 @@ namespace AbyssEngine {
 
         return 1;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     struct CurveRec {
-        Curve *curve; // r0 sret in the original ABI (unused as output here)
+        Curve *curve;
     };
 
     long long CurveGetValue(unsigned long long time, Curve *curve) {
@@ -2776,14 +2705,12 @@ namespace AbyssEngine {
         if (count == 0)
             return 0;
 
-        // Outside the curve on the low side -> clamp to first keyframe value.
         int first = entries[0];
         if ((unsigned long long) time <
             (((unsigned long long) keyTimeHi(first) << 32) | keyTimeLo(first))) {
             return keyVal(first);
         }
 
-        // Outside on the high side -> clamp to last keyframe value.
         unsigned int idx = (unsigned int) (unsigned short) (count - 1);
         int last = entries[idx];
         if ((unsigned long long) time >
@@ -2791,7 +2718,6 @@ namespace AbyssEngine {
             return keyVal(last);
         }
 
-        // Scan backward for the segment whose start time is <= query time.
         int seg = last;
         unsigned int segIdx = idx;
         while (segIdx > 0) {
@@ -2808,7 +2734,6 @@ namespace AbyssEngine {
         int v0 = keyVal(seg);
 
         if (tag == 1) {
-            // Constant: hold the segment value.
             return v0;
         }
 
@@ -2817,7 +2742,6 @@ namespace AbyssEngine {
                 ((unsigned long long) keyTimeHi(nextKf) << 32) | keyTimeLo(nextKf);
         int v1 = keyVal(nextKf);
 
-        // Normalized position t in [0, 0x1000) (12.20 fixed point) within the segment.
         unsigned int num = (unsigned int) ((time - segStart)) << 12;
         unsigned int numHi = (unsigned int) (((time - segStart)) >> 20);
         unsigned int den = (unsigned int) (segEnd - segStart);
@@ -2825,12 +2749,10 @@ namespace AbyssEngine {
         unsigned int t = (unsigned int) tq;
 
         if (tag == 2) {
-            // Linear: v0 + t*(v1 - v0).
             long long d = (long long) (v1 - v0) * (unsigned int) t;
             return (int) ((unsigned int) (d >> 12)) + v0;
         }
 
-        // tag == 3: cubic Hermite-style blend using the segment's two coefficients.
         int c0 = *(int *) (seg + 0x14);
         int c1 = *(int *) (seg + 0x18);
         unsigned long long t2_64 = (unsigned long long) t * t;
@@ -2838,22 +2760,19 @@ namespace AbyssEngine {
         unsigned long long t3_64 = (unsigned long long) t2 * t;
         unsigned int t3 = (unsigned int) (t3_64 >> 12);
 
-        // value = v0 + c0 * (t - 2*t2 + t3) + c1 * (t3 - t2) + (v1 - v0) * (3*t2 - 2*t3)
         long long term0 = (long long) c0 * (int) (t - 2 * t2 + t3);
         long long term1 = (long long) c1 * (int) (t3 - t2);
         long long term2 = (long long) (v1 - v0) * (int) (3 * t2 - 2 * t3);
         int value = v0 + (int) (term0 >> 12) + (int) (term1 >> 12) + (int) (term2 >> 12);
         return value;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void computeFloatString(float value, int intValue, int *precision, int *exponentOut, int extra) {
         unsigned short *buf = (unsigned short *) operator new[](0x42);
 
-        // Clamp precision into [0, 0x1e]; the *flag* slot pointed to by the 5th argument context
-        // (sign output) starts cleared.
-        int prec = *precision & ~(*precision >> 31); // max(prec, 0)
+        int prec = *precision & ~(*precision >> 31);
         if (prec > 0x1d)
             prec = 0x1e;
 
@@ -2864,13 +2783,12 @@ namespace AbyssEngine {
             intValue = (int) v;
             sign = 1;
         }
-        // Communicate the sign through the buffer's terminating context (mirrors *param5 = sign).
+
         (void) sign;
 
-        float ip = (float) (int) v; // integer part as float
+        float ip = (float) (int) v;
         float frac = (float) intValue - ip;
 
-        // Emit the integer digits (most-significant first) into the front of the buffer.
         int digitCount = 0;
         unsigned short *w = buf;
         if ((int) v != 0) {
@@ -2888,7 +2806,6 @@ namespace AbyssEngine {
             for (int i = n - 1; i >= 0; --i)
                 *w++ = tmp[i];
         } else {
-            // No integer part; skip leading zeros in the fraction, tracking a negative exponent.
             digitCount = 0;
             if (frac != 0.0f) {
                 float f = frac;
@@ -2901,7 +2818,6 @@ namespace AbyssEngine {
 
         *exponentOut = digitCount;
 
-        // Emit fractional digits up to the precision, then round.
         int limit = (extra == 0) ? (prec + (digitCount > 0 ? digitCount : 0)) : prec;
         float f = frac;
         int produced = 0;
@@ -2913,7 +2829,6 @@ namespace AbyssEngine {
             ++produced;
         }
 
-        // Round the last emitted digit (carry propagation can bump earlier digits / the exponent).
         if (w > buf) {
             unsigned short *p = w - 1;
             unsigned short d = (unsigned short) (*p + 5);
@@ -2934,9 +2849,9 @@ namespace AbyssEngine {
             }
         }
 
-        *w = 0; // NUL terminate
+        *w = 0;
     }
-} // namespace AbyssEngine
+}
 
 namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
@@ -2956,7 +2871,7 @@ namespace AbyssEngine {
             t = (Transform *) *slot;
         }
     }
-} // namespace AbyssEngine
+}
 
 int GetStringLength(AbyssEngine::String str) {
     const unsigned short *p = str.GetAEWChar();

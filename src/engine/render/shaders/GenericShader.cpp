@@ -30,7 +30,7 @@ namespace AbyssEngine {
         this->uMaterialShininess = glGetUniformLocation(this->program, "u11");
 
         glUseProgram(this->program);
-        // bind the three texture sampler uniforms u4,u5,u6 to texture units 0,1,2.
+
         int *samplers = &this->uTexture0;
         for (int i = 0; i != 3; i++) {
             if (samplers[i] >= 0)
@@ -113,8 +113,7 @@ namespace AbyssEngine {
     }
 
     GenericShader::GenericShader() {
-        // Register this shader into the global registry list.
         *GenericShader_registerDst = GenericShader_registerSrc;
         this->name = u"GenericShader";
     }
-} // namespace AbyssEngine
+}

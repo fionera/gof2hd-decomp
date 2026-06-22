@@ -131,8 +131,7 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
             }
         }
     }
-    // Release the consumed source array once its elements have been moved into
-    // wingmanNames.
+
     delete param;
 }
 
@@ -153,8 +152,6 @@ Agent::~Agent() noexcept(false) {
     this->imageParts = nullptr;
     delete this->wingman1;
     this->wingman1 = nullptr;
-    // name / systemName / missionString / stationName are real String members and
-    // are destroyed automatically.
 }
 
 void Agent::setMissionString(String src) {

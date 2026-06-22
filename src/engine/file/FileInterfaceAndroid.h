@@ -1,33 +1,30 @@
 #ifndef GOF2_FILEINTERFACEANDROID_H
 #define GOF2_FILEINTERFACEANDROID_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/file/AEFile.h"
 
 using AbyssEngine::String;
 
-struct _jobject;
 typedef struct _jobject *jobject;
-
-struct zip_file;
 
 class FileInterfaceAndroid : public FileInterface {
 public:
-    void *file; // +0x08 stdio FILE*
-    void *zipFile; // +0x0c zip_file*
-    void *jniStream; // +0x10 jobject / jmethodID stream handle
-    uint8_t modeFlag; // +0x14 append/write-mode flag
+    void *file;
+    void *zipFile;
+    void *jniStream;
+    uint8_t modeFlag;
     char pad_15[7];
-    int32_t zipReadPos; // +0x1c  zip read position tracker (zeroed on open)
+    int32_t zipReadPos;
     char pad_20[4];
-    uint8_t zipAppend; // +0x24  append flag for the zip path
+    uint8_t zipAppend;
     char pad_25[3];
-    int32_t zipReadLen; // +0x28  zip read length tracker (zeroed on open)
+    int32_t zipReadLen;
     char pad_2c[4];
-    void *appRootDir; // +0x30 (holds the void* from SetAppRootDir; GetAppRootDir casts back to const char*)
-    void *zipDirectory; // +0x34
+    void *appRootDir;
+    void *zipDirectory;
 
     FileInterfaceAndroid();
 
@@ -39,7 +36,6 @@ public:
 
     ~FileInterfaceAndroid() override;
 
-    // FileInterface backend slots.
     void *OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) override;
 
     void *OpenWrite(String name, int p2, bool p3, unsigned int p4) override;
@@ -66,8 +62,6 @@ public:
 
     void Close() override;
 
-    // Remaining FileInterface backend slots. Mostly no-op stubs on Android (their bodies ignore the
-    // instance), but they are real virtual overrides of the FileInterface base.
     void *OpenAppend(String name, int p2, bool p3, unsigned int p4) override;
 
     char *Output(char *line) override;

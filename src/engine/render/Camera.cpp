@@ -10,4 +10,4 @@ namespace AbyssEngine {
         new(&this->projection) AEMath::Matrix();
         CameraSetPerspective(fov, aspect, nearPlane, farPlane, param5, this);
     }
-} // namespace AbyssEngine
+}

@@ -110,15 +110,13 @@ namespace {
     uint8_t enemyFriendFlag(Player *player) {
         return static_cast<uint8_t>(player->enemyFlags >> 8);
     }
-} // namespace
+}
 
 int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script) {
     if (this->triggeredFlag != 0) {
         return 0;
     }
 
-    // Mark the message (and, when satisfied, promote it to the radio's current
-    // message); return whether the condition fired.
     auto setResult = [this](int value) -> int {
         this->triggeredFlag = static_cast<uint8_t>(value);
         if (value == 0) {
@@ -132,7 +130,7 @@ int RadioMessage::triggered(int64_t time, PlayerEgo *ego, LevelScript *script) {
         this->radio->currentMessage = this;
         return 1;
     };
-    // Resolve the i-th watched enemy from the ego's enemy list.
+
     auto selectTarget = [this](Array<Player *> *list, int i) -> Player * {
         return list->data()[this->targetIndices[i]];
     };

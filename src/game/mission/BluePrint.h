@@ -1,24 +1,23 @@
 #ifndef GOF2_BLUEPRINT_H
 #define GOF2_BLUEPRINT_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/core/String.h"
+#include "Item.h"
 
-class Item;
+#include "game/core/String.h"
 
 class BluePrint {
 public:
-    Array<int> *ingredientCounters; // ingredient remaining-quantity counters
-    int32_t spentValue; // value spent so far
-    uint8_t locked; // unlock flag
-    int32_t productionCount; // number of completed productions
-    int32_t stationIndex; // station index (-1 if unset)
-    AbyssEngine::String stationName; // station name
-    int32_t itemIndex; // produced item index
-    int32_t batchMultiplier; // batch multiplier
-    int32_t remainingBatch; // remaining batch count
+    Array<int> *ingredientCounters;
+    int32_t spentValue;
+    uint8_t locked;
+    int32_t productionCount;
+    int32_t stationIndex;
+    AbyssEngine::String stationName;
+    int32_t itemIndex;
+    int32_t batchMultiplier;
+    int32_t remainingBatch;
 
     explicit BluePrint(int item);
 
@@ -40,10 +39,8 @@ public:
 
     int getQuantity();
 
-    // Base (unscaled) batch quantity for one production cycle.
     int getBaseQuantity();
 
-    // Accumulated spend on this blueprint.
     int getMoneySpent();
 
     void setMoneySpent(int value);

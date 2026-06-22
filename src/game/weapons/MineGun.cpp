@@ -4,17 +4,12 @@
 #include "game/ship/TargetFollowCamera.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/mission/Explosion.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern "C" void *g_PaintCanvas;
 
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)

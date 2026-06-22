@@ -137,4 +137,4 @@ namespace AbyssEngine {
             glDisableVertexAttribArray(this->aColor);
         }
     }
-} // namespace AbyssEngine
+}

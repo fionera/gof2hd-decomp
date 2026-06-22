@@ -1,14 +1,13 @@
 #ifndef GOF2_TARGETFOLLOWCAMERA_H
 #define GOF2_TARGETFOLLOWCAMERA_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "engine/core/AbyssEngine.h"
+#include "engine/render/AEGeometry.h"
 
-class AEGeometry;
-
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
+using AbyssEngine::Matrix;
+using AbyssEngine::Vector;
 
 class TargetFollowCamera {
 public:
@@ -39,10 +38,10 @@ public:
     float rotX;
     float rotY;
     float rotZ;
-    double dampCoeffA[5]; // damping-curve coefficient set A (position axis)
-    double dampCoeffB[5]; // damping-curve coefficient set B
+    double dampCoeffA[5];
+    double dampCoeffB[5];
     float zoom;
-    Matrix firstPersonMatrix;
+    AbyssEngine::Matrix firstPersonMatrix;
     char firstPerson;
     float fpOffsetX;
     float fpOffsetY;
@@ -60,10 +59,10 @@ public:
     float rollAngle;
     float shipHandling;
     uint8_t fixed;
-    Matrix localMatrix;
+    AbyssEngine::Matrix localMatrix;
 
     TargetFollowCamera(unsigned id, AEGeometry *target,
-                       Vector camOffset, Vector targetOffset);
+                       AbyssEngine::Vector camOffset, AbyssEngine::Vector targetOffset);
 
     ~TargetFollowCamera();
 

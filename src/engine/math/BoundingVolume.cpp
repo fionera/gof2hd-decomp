@@ -5,7 +5,6 @@ namespace AEMath = AbyssEngine::AEMath;
 
 BoundingVolume::~BoundingVolume() {
     if (children != nullptr) {
-        // owning array: delete each child pointee, then free the array itself
         for (BoundingVolume *child: *children) {
             delete child;
         }
@@ -66,6 +65,8 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<Boun
     if (vols != nullptr) {
         for (int pass = 0; pass != 2; pass++) {
             for (BoundingVolume * bv
+
+
             :
             *vols
             )
@@ -84,6 +85,8 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<Boun
 void BoundingVolume::update(float x, float y, float z) {
     if (children != nullptr) {
         for (BoundingVolume * child
+
+
         :
         *children
         )

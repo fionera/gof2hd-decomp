@@ -8,4 +8,4 @@ namespace gof2 {
         &_JNIEnv::CallStaticVoidMethod,
         &_JNIEnv::CallStaticBooleanMethod,
     };
-} // namespace gof2
+}

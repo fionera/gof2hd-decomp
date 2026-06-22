@@ -2,7 +2,7 @@
 #include "engine/render/Mesh.h"
 #include "game/core/Vector.h"
 #include "engine/math/AEMath.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
 
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
@@ -37,7 +37,6 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
     Mesh **table = new Mesh *[count];
     this->sourceMeshes = table;
 
-    // Per-source meshes: create them and tally vertex/index totals.
     int16_t totalV = 0;
     int16_t totalI = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
@@ -49,7 +48,6 @@ MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
         totalI = (int16_t)(totalI + aeabi_uidiv16(m->indexCount, 3));
     }
 
-    // Create the combined target mesh.
     Mesh *m0 = table[0];
     canvas->MeshCreate((uint16_t) totalV, (uint16_t) totalI, (signed char) m0->vertexFormat,
                        flags, this->mergedMeshId);
@@ -145,7 +143,7 @@ MeshMerger::MeshMerger(int rows, int cols, PaintCanvas *canvas, uint16_t flags) 
         new((void *) (matrices + off)) Matrix();
     this->matrices = matrices;
 
-    Matrix ident; // engine identity matrix
+    Matrix ident;
     int n = this->rows;
     for (int i = 0, off = 0; i < n; i++, off += 0x3c)
         *(Matrix *) (matrices + off) = ident;
@@ -255,8 +253,8 @@ void MeshMerger::update() {
     }
 
     Mesh *out = (Mesh *) this->mergedMesh;
-    int idxOff = 0; // running index offset into the merged buffers
-    int vtxOff = 0; // running vertex offset into the merged buffers
+    int idxOff = 0;
+    int vtxOff = 0;
     for (int j = 0; j < rows; j++) {
         if (((int8_t *) this->enabledFlags)[j] != 0 &&
             ((int8_t *) this->visibleFlags)[j] != 0) {
@@ -335,8 +333,6 @@ int MeshMerger::init() {
     this->canvas->TransformAddMeshId(this->transformId, this->mergedMeshId);
     this->dirty = 1;
 
-    // The merged mesh, its pointer and the shared transform are now built; flag the
-    // merger as initialised and run the first merge pass (dirty was just raised).
     this->initialized = 1;
     this->update();
     return this->initialized;
@@ -385,7 +381,6 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         }
     }
 
-    // Build the bounding sphere from the transformed center + original radius.
     Vector center;
     AEMath_MatrixTransformVector(&center, (const Vector *) &m);
     float bs[4];

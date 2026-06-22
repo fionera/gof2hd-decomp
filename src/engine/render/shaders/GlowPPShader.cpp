@@ -260,4 +260,4 @@ namespace AbyssEngine {
 
     GlowPPShader::~GlowPPShader() {
     }
-} // namespace AbyssEngine
+}

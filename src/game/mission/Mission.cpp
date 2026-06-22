@@ -5,12 +5,7 @@
 #include "engine/core/GameText.h"
 #include "game/world/Station.h"
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GameText **g_gameText;
 
 uint8_t Mission::isInstantActionMission() {
@@ -165,7 +160,6 @@ Mission::Mission(int id, int goods, int station) {
 }
 
 Mission::~Mission() {
-    // The four String members are destroyed automatically.
 }
 
 Mission::Mission() {

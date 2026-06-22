@@ -9,7 +9,8 @@
 #include "engine/render/IParticleSystem.h"
 #include "engine/render/PaintCanvas.h"
 
-extern "C" void _psm_ArrayReleaseSprites(void *arr); // ArrayReleaseClasses<ParticleSystemSprite*>
+extern "C" void _psm_ArrayReleaseSprites(void *arr);
+
 extern "C" void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
 
 extern "C" void _psm_renderMeshes(void *self);
@@ -26,8 +27,10 @@ extern "C" void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigne
 
 extern "C" void _psm_spriteRender2(void *canvas, unsigned a);
 
-extern "C" void _psm_arraySpriteCtor(void *arr); // Array<ParticleSystemSprite*>::Array()
-extern "C" void _psm_arraySpriteDtor(void *arr); // Array<ParticleSystemSprite*>::~Array()
+extern "C" void _psm_arraySpriteCtor(void *arr);
+
+extern "C" void _psm_arraySpriteDtor(void *arr);
+
 extern "C" void _ips_enableUpdate(void *sys, bool enable);
 
 extern "C" short _ips_getParticleCount16(void *sys);
@@ -43,17 +46,14 @@ extern "C" void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned 
 extern "C" void _psm_meshRender2(void *canvas, unsigned a);
 
 extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                              bool b4, bool b5); // ParticleSystemMesh ctor
-extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                           bool b4, bool b5); // ParticleSystemSprite ctor
-extern "C" int _ips_getParticleCount(void *sys); // IParticleSystem::getParticleCount
+                              bool b4, bool b5);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+                           bool b4, bool b5);
+
+extern "C" int _ips_getParticleCount(void *sys);
+
+
 extern char *g_activeParticleSet;
 
 __attribute__ ((always_inline))
@@ -179,9 +179,6 @@ void ParticleSystemManager::reset() {
 }
 
 void ParticleSystemManager::releaseSprites() {
-    // ArrayReleaseClasses<ParticleSystemSprite*> -- forwarded: the full ParticleSystemSprite type
-    // (required to destroy the pointees) cannot be included in this TU alongside ParticleSystemMesh.h
-    // because both headers define the same unguarded AbyssEngine::BlendMode enum.
     _psm_ArrayReleaseSprites(&this->spriteSystemCount);
     if (this->spriteSystemId != 0xffffffff) {
         _psm_ReleaseSpriteSystemResource(this->canvas, this->spriteSystemId);
@@ -327,7 +324,7 @@ void ParticleSystemManager::initSprites() {
     IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems;
     for (unsigned i = 0; i < this->spriteSystemCount; ++i) {
         IParticleSystem *sys = sprites[i];
-        sys->init(this->spriteSystemId, (uint16_t) offset); // slot 0
+        sys->init(this->spriteSystemId, (uint16_t) offset);
         offset += _ips_getParticleCount16(sprites[i]);
     }
 }
@@ -371,7 +368,7 @@ void ParticleSystemManager::initMesh() {
     IParticleSystem **meshes = (IParticleSystem **) this->meshSystems;
     for (unsigned i = 0; i < this->meshSystemCount; ++i) {
         IParticleSystem *sys = meshes[i];
-        sys->init(this->meshId, (uint16_t) offset); // slot 0
+        sys->init(this->meshId, (uint16_t) offset);
 
         short count = _ips_getParticleCount16(meshes[i]);
         offset += (short) (count * 4);

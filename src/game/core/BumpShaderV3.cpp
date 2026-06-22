@@ -44,7 +44,7 @@ namespace AbyssEngine {
         this->uIsGlowMat = glGetUniformLocation(this->program, "u19");
 
         glUseProgram(this->program);
-        // bind the three sampler uniforms (u5/u6/u7) to texture units 0/1/2.
+
         int textureUniforms[3] = {this->uTexDiffuse, this->uTexNormal, this->uTexSpecular};
         for (int i = 0; i != 3; i++) {
             int loc = textureUniforms[i];
@@ -151,4 +151,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aBitangent, 3, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

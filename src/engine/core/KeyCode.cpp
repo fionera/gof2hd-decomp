@@ -6,4 +6,4 @@ namespace AbyssEngine {
         this->name = other.name;
         return *this;
     }
-} // namespace AbyssEngine
+}

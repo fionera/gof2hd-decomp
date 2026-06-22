@@ -1,40 +1,36 @@
 #ifndef GOF2_MESHMERGER_H
 #define GOF2_MESHMERGER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
-namespace AbyssEngine {
-    class PaintCanvas;
-    class Mesh;
-}
 
 using ::AbyssEngine::PaintCanvas;
 
 class MeshMerger {
 public:
     using Mesh = AbyssEngine::Mesh;
-    using Matrix = AbyssEngine::AEMath::Matrix;
-    using Vector = AbyssEngine::AEMath::Vector;
 
-    int rows; // source-mesh rows (mesh count)
-    uint16_t flags; // merged-mesh creation flags
-    uint8_t initialized; // non-zero once the merge has been built
-    void *sourceMeshes; // source mesh pointer table (rows * cols)
-    PaintCanvas *canvas; // owning paint canvas
-    uint32_t mergedMeshId; // id of the merged mesh
-    uint32_t transformId; // shared transform id
-    void **transformedMeshes; // transformed-mesh slot table (rows * cols)
-    char *matrices; // per-row transform matrices (each 0x3c bytes)
-    void *mergedMesh; // merged Mesh pointer
-    int8_t *lods; // active LOD per row
-    uint8_t *enabledFlags; // per-row enabled flag
-    uint8_t *visibleFlags; // per-row visibility flag
-    int cols; // LOD levels per row
-    uint8_t dirty; // merged geometry needs rebuilding
+
+
+    int rows;
+    uint16_t flags;
+    uint8_t initialized;
+    void *sourceMeshes;
+    PaintCanvas *canvas;
+    uint32_t mergedMeshId;
+    uint32_t transformId;
+    void **transformedMeshes;
+    char *matrices;
+    void *mergedMesh;
+    int8_t *lods;
+    uint8_t *enabledFlags;
+    uint8_t *visibleFlags;
+    int cols;
+    uint8_t dirty;
 
     MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                PaintCanvas *canvas, uint16_t flags);

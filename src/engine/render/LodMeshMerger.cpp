@@ -1,6 +1,6 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/AEMath.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
 
 void LodMeshMerger::setEnabled(int index, bool value) {
@@ -50,7 +50,6 @@ void LodMeshMerger::update() {
         return;
     }
 
-    // Sum the index counts of every active LOD slice.
     int indexBudget = 0;
     for (int j = 0; j < rows; j++) {
         if (enabled[j] != 0 && visible[j] != 0) {
@@ -60,7 +59,6 @@ void LodMeshMerger::update() {
         }
     }
 
-    // While over budget, drop to coarser LODs.
     for (int j = 0; indexBudget >= 0x10000 && j < rows; j++) {
         if (enabled[j] != 0 && visible[j] != 0) {
             signed char lod = lodLevels[j];
@@ -74,7 +72,6 @@ void LodMeshMerger::update() {
         }
     }
 
-    // Copy each active slice into the merged mesh.
     Mesh *out = (Mesh *) mergedMesh;
     int vtxOffset = 0;
     int idxOffset = 0;
@@ -136,7 +133,6 @@ LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas *canvas_, uint16_
 
     transforms = new Matrix[n];
     for (uint32_t i = 0; i < n; i++) {
-        // 15-float packed affine identity.
         Matrix tmp;
         tmp.m[0] = 1.0f;
         tmp.m[1] = 0.0f;
@@ -197,8 +193,6 @@ int LodMeshMerger::init() {
     canvas->TransformAddMeshId(transformId, mergedMeshId);
     dirty = 1;
 
-    // Flag the merger as built and run the first merge pass (dirty was just set,
-    // so update() copies every enabled LOD slice into the merged mesh).
     initialized = 1;
     update();
     return initialized;
@@ -207,18 +201,15 @@ int LodMeshMerger::init() {
 void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     Mesh *out = (Mesh *) ::operator new(sizeof(Mesh));
 
-    // zero-initialise the new mesh, then set the default bsphere radius.
     memset(out, 0, sizeof(Mesh));
     out->boundsRadiusSq = 1.0f;
 
-    // copy counts/flags from source.
     uint32_t vcount = src->vertexCount;
     out->vertexCount = src->vertexCount;
     out->indexCount = src->indexCount;
     uint8_t f = src->vertexFormat;
     out->vertexFormat = f;
 
-    // conditional pointer copies based on flag bits (texcoords / colours / indices).
     if (f & 0x2)
         out->texCoords = src->texCoords;
     if (f & 0x10)
@@ -226,7 +217,6 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     if (f & 0x20)
         out->indices = src->indices;
 
-    // transform vertex positions.
     if (f & 0x1) {
         out->positions = new char[vcount * 0xc];
         int o = 0;
@@ -239,7 +229,6 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
         f = src->vertexFormat;
     }
 
-    // rotate + normalise normals.
     if (f & 0x4) {
         out->normals = new char[vcount * 0xc];
         int o = 0;
@@ -251,8 +240,6 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
         }
     }
 
-    // recompute bounding sphere: transform the centre, then derive a conservative
-    // radius from the transformed extents.
     float r = src->boundsRadius;
     Vector ext = {r, r, r};
     Vector tExt = AEMath::MatrixTransformVector(m, ext);
@@ -273,16 +260,10 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
     return out;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*const g_freeFn)(void *);
 
 LodMeshMerger::~LodMeshMerger() {
-    // Release every transformed mesh (its position/normal buffers, then the mesh).
     int count = rows * cols;
     for (int i = 0; i < count; i++) {
         Mesh *cell = (Mesh *) transformedMeshes[i];
@@ -312,7 +293,6 @@ LodMeshMerger::~LodMeshMerger() {
     delete[] transforms;
     transforms = nullptr;
 
-    // Release the embedded source-mesh array's backing buffer.
     sourceMeshes.clear();
     sourceMeshes.shrink_to_fit();
 }

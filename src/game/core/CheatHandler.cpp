@@ -81,7 +81,7 @@ namespace AbyssEngine {
             }
         }
     }
-} // namespace AbyssEngine
+}
 
 extern "C" void CheatHandler_ctor(void *cheats, void *keys) {
     new(cheats) AbyssEngine::CheatHandler((AbyssEngine::KeyCode *) keys);

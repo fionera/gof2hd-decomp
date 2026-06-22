@@ -1,9 +1,8 @@
 #ifndef GOF2_STRING_H
 #define GOF2_STRING_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
 extern "C" {
 void String_ctor(String * self);

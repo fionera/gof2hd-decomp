@@ -1,10 +1,12 @@
 #include "game/core/String.h"
 #include "engine/core/GameText.h"
-#include <string>   // local scratch buffers only; String's storage is the native data/length
+#include <string>
 
 extern "C" {
-int atoi(const char *s); // libc
-void String_printImpl(const char *s); // 0x1ab108 platform print
+int atoi(const char *s);
+
+void String_printImpl(const char *s);
+
 uint16_t *String_computeFloatString(float v, int base, int *outExp, int *outNeg);
 
 void String_concat(String * out, String * a, String * b);
@@ -78,7 +80,6 @@ void String::ToUpperCase() {
         if (!above || u < 0x1e || eq1a) {
             this->data[i] = (unsigned short) (c - 0x20);
         } else {
-            // CP-1252 accented lowercase -> uppercase mapping.
             switch (c) {
                 case 0x81: this->data[i] = 0x9a;
                     break;
@@ -90,7 +91,7 @@ void String::ToUpperCase() {
                     break;
                 case 0x83:
                 case 0x85:
-                    break; // no change
+                    break;
                 default:
                     if (c == 0x91) this->data[i] = 0x92;
                     else if (c == 0x94) this->data[i] = 0x99;
@@ -131,7 +132,6 @@ void *String::Split(String sep) {
         if (arr->size() != 0)
             return arr;
 
-        // No elements collected: tear the array down and report failure.
         arr->clear();
         delete arr;
     }
@@ -315,7 +315,6 @@ void String::ToLowerCase() {
         if (!above || u < 0x1e || eq1a) {
             this->data[i] = (unsigned short) (c + 0x20);
         } else {
-            // CP-1252 accented uppercase -> lowercase mapping.
             switch (c) {
                 case 0x8e: this->data[i] = 0x84;
                     break;
@@ -336,7 +335,7 @@ void String::ToLowerCase() {
                 case 0x96:
                 case 0x97:
                 case 0x98:
-                    break; // no change
+                    break;
                 default:
                     if (c == 0xa5)
                         this->data[i] = 0xa4;
@@ -388,7 +387,6 @@ void String::SplitTags(String tag) {
     if (this->length == 0 || tag.length == 0)
         return;
 
-    // tag := "<" + tag + ">"
     {
         std::u16string wrapped;
         wrapped.push_back(u'<');
@@ -450,7 +448,6 @@ void String::Set(float v) {
     std::u16string acc;
 
     if (exp < 1) {
-        // Leading "0." plus |exp| zeros.
         for (const char *p = kZeroDot; *p; p++)
             acc.push_back((char16_t) (unsigned char) *p);
         for (int i = 0; exp < i; i--)
@@ -496,7 +493,6 @@ String String::SubString(unsigned int start, unsigned int end) {
 }
 
 uint16_t *String::getWCharFromUtf8(char *s, int len) {
-    // First pass: count output code units (continuation bytes collapse multi-byte sequences).
     int outCount = 0;
     for (int i = 0; i < len; i = i + 1) {
         if (((unsigned char) s[i] & 0xe0) == 0xc0)
@@ -509,7 +505,6 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
     uint16_t *out = new uint16_t[outCount + 1];
     uint16_t *w = out;
 
-    // Second pass: decode each sequence to a code point.
     for (int i = 0; i < len; i = i + 1) {
         unsigned short cp = (unsigned short) (unsigned char) s[i];
         unsigned short val = cp;
@@ -529,33 +524,32 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
     }
     out[outCount] = 0;
 
-    // Third pass: transliterate Cyrillic letters to ASCII approximations.
     for (int i = 0; i != outCount; i = i + 1) {
         unsigned short c = out[i];
         unsigned short r = c;
         switch (c) {
             case 0x410: r = 0x41;
-                break; // A
+                break;
             case 0x412: r = 0x42;
-                break; // B
+                break;
             case 0x415: r = 0x45;
-                break; // E
+                break;
             case 0x41a: r = 0x4b;
-                break; // K
+                break;
             case 0x41c: r = 0x4d;
-                break; // M
+                break;
             case 0x41d: r = 0x48;
-                break; // H
+                break;
             case 0x41e: r = 0x4f;
-                break; // O
+                break;
             case 0x420: r = 0x50;
-                break; // P
+                break;
             case 0x421: r = 0x43;
-                break; // C
+                break;
             case 0x422: r = 0x54;
-                break; // T
+                break;
             case 0x425: r = 0x58;
-                break; // X
+                break;
             case 0x411:
             case 0x413:
             case 0x414:
@@ -567,28 +561,28 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
             case 0x41f:
             case 0x423:
             case 0x424:
-                break; // no Latin equivalent
+                break;
             case 0x43e:
             case 0xba: r = 0x6f;
-                break; // o
+                break;
             case 0x440: r = 0x70;
-                break; // p
+                break;
             case 0x441: r = 0x63;
-                break; // c
+                break;
             case 0x445: r = 0x78;
-                break; // x
+                break;
             case 0x43f:
             case 0x442:
             case 0x443:
             case 0x444:
                 break;
             case 0x435: r = 0x65;
-                break; // e
+                break;
             case 0xaa:
             case 0x430: r = 0x61;
-                break; // a
+                break;
             case 0x60: r = 0x27;
-                break; // backtick -> apostrophe
+                break;
             default:
                 break;
         }

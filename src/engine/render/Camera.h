@@ -7,11 +7,11 @@
 namespace AbyssEngine {
     class Camera {
     public:
-        float position[3]; // camera position block (three floats)
-        AEMath::Matrix projection; // projection matrix
+        float position[3];
+        AEMath::Matrix projection;
 
         Camera(float fov, float aspect, float nearPlane, float farPlane, float param5);
     };
-} // namespace AbyssEngine
+}
 
 #endif

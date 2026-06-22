@@ -1,46 +1,46 @@
 #include "game/core/Globals.h"
-Globals *gGlobals = nullptr; // canonical Globals singleton
+Globals *gGlobals = nullptr;
 
-int Globals::is_dialogue_window_visible = 0; // 0x227cc8
-int Globals::is_choice_window_visible = 0; // 0x227ccc
-int Globals::is_menu_visible = 0; // 0x227cd0
-int Globals::is_hacking_visible = 0; // 0x227cd4
-unsigned char Globals::isStarMapVisible = 0; // 0x227ce8
-unsigned char Globals::isCinematicModeActive = 0; // 0x228300
-int Globals::mouseCursorActivated = 0; // 0x228304
-unsigned char Globals::showMouseDuringGameOver = 0; // 0x2281a4
-unsigned char Globals::keyBindings[8] = {}; // 0x2281a8
+int Globals::is_dialogue_window_visible = 0;
+int Globals::is_choice_window_visible = 0;
+int Globals::is_menu_visible = 0;
+int Globals::is_hacking_visible = 0;
+unsigned char Globals::isStarMapVisible = 0;
+unsigned char Globals::isCinematicModeActive = 0;
+int Globals::mouseCursorActivated = 0;
+unsigned char Globals::showMouseDuringGameOver = 0;
+unsigned char Globals::keyBindings[8] = {};
 
-int Globals::left_edge = 0; // 0x227cac
-int Globals::right_edge = 0; // 0x227cb0
-int Globals::top_edge = 0; // 0x227cb4
-int Globals::bottom_edge = 0; // 0x227cb8
-int Globals::resetKeyboard = 0; // 0x227ce4
-int Globals::rotateShipInStation = 0; // 0x227cec
-int Globals::translateStarMapInXDirection = 0; // 0x227cf0
-int Globals::translateStarMapInYDirection = 0; // 0x227cf4
-int Globals::smallButton_dim = 0; // 0x227ca8
-int Globals::touch_stick_x = 0; // 0x227c90
-int Globals::touch_stick_y = 0; // 0x227c94
+int Globals::left_edge = 0;
+int Globals::right_edge = 0;
+int Globals::top_edge = 0;
+int Globals::bottom_edge = 0;
+int Globals::resetKeyboard = 0;
+int Globals::rotateShipInStation = 0;
+int Globals::translateStarMapInXDirection = 0;
+int Globals::translateStarMapInYDirection = 0;
+int Globals::smallButton_dim = 0;
+int Globals::touch_stick_x = 0;
+int Globals::touch_stick_y = 0;
 
-unsigned char Globals::iPad = 0; // 0x2282c0
-unsigned char Globals::iPadHD = 0; // 0x2282d5
-unsigned char Globals::retinaDisplay = 0; // 0x2282d6
-unsigned char Globals::n9 = 0; // 0x2282d7
-unsigned char Globals::iPadLarge = 0; // 0x2282dc
-unsigned char Globals::iPadLargePossible = 0; // 0x228310
-unsigned char Globals::iPadAssetsWithLowerRes = 0; // 0x228311
-unsigned char Globals::enterSpaceLounge = 0; // 0x22837c
-int Globals::switch_to_target_setting = 0; // 0x228378
+unsigned char Globals::iPad = 0;
+unsigned char Globals::iPadHD = 0;
+unsigned char Globals::retinaDisplay = 0;
+unsigned char Globals::n9 = 0;
+unsigned char Globals::iPadLarge = 0;
+unsigned char Globals::iPadLargePossible = 0;
+unsigned char Globals::iPadAssetsWithLowerRes = 0;
+unsigned char Globals::enterSpaceLounge = 0;
+int Globals::switch_to_target_setting = 0;
 
-Layout *gLayout = nullptr; // 0x2281d4
-void *gFont = nullptr; // 0x2281c0
-int gScreenWidth = 0; // 0x2282e0
-int gScreenHeight = 0; // 0x2282d8
-AbyssEngine::ApplicationManager *gAppManager = nullptr; // 0x2281d8
+Layout *gLayout = nullptr;
+void *gFont = nullptr;
+int gScreenWidth = 0;
+int gScreenHeight = 0;
+AbyssEngine::ApplicationManager *gAppManager = nullptr;
 #include "engine/render/Mesh.h"
 #include "game/ship/Ship.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 extern PaintCanvas *gCanvas;
 #include "engine/render/AEGeometry.h"
@@ -50,7 +50,7 @@ extern PaintCanvas *gCanvas;
 #include "game/world/Galaxy.h"
 #include "game/mission/Achievements.h"
 #include "engine/core/AERandom.h"
-#include "game/ship/Agent.h"          // defines the canonical global `struct String` (12-byte String sret)
+#include "game/ship/Agent.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/GameText.h"
 #include "engine/render/ImageFactory.h"
@@ -124,12 +124,7 @@ void ParticleSettingsRef_initialize();
 
 extern "C" int Station_getIndex(int station);
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Status **g_status;
 
 extern void *const gLB_dest __attribute__((visibility("hidden")));
@@ -152,7 +147,7 @@ struct __attribute__ ((packed)) Q16 { v4si v; };
 extern void *const gHints __attribute__((visibility("hidden")));
 
 void Globals::resetHints() {
-    char *p = (char *) gHints; // RAWREAD: opaque hint blob via hidden global (no modeled type/members)
+    char *p = (char *) gHints;
     const v4si z = {0, 0, 0, 0};
     ((Q16 *) (p + 0x00))->v = z;
     ((Q16 *) (p + 0x2b))->v = z;
@@ -196,7 +191,7 @@ extern void *const gDrinks_rng __attribute__((visibility("hidden")));
 void Globals::getRandomSystemForDrinks() {
     int slot = *(int *) gDrinks_a;
     int picked = nextInt_71ad0((AbyssEngine::AERandom *) *(int *) gDrinks_rng, 0x16);
-    *(int *) (long) slot = picked; // store the drawn system index into the chosen slot
+    *(int *) (long) slot = picked;
 }
 
 void Globals::addSoundResourceToList(int snd) {
@@ -206,7 +201,7 @@ void Globals::addSoundResourceToList(int snd) {
     }
     for (unsigned i = 0; i < a->size(); ++i) {
         if ((*a)[i] == snd) {
-            return; // already present
+            return;
         }
     }
     ArrayAdd<int>(snd, *a);
@@ -250,19 +245,17 @@ extern const char gGLA_newline[] __attribute__((visibility("hidden")));
 
 void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
                            Array<String *> *out) {
-    // Reusable scratch slot getLine writes the next line into; its length is the chars consumed.
     String *line = static_cast<String *>(::operator new(sizeof(String)));
     line->ctor();
 
     String work;
-    work.ctor_copy(const_cast<String *>(&text), false); // work = copy of text + '\n'
+    work.ctor_copy(const_cast<String *>(&text), false);
     String nl;
     nl.ctor_char(gGLA_newline, false);
     work.addAssign_str(&nl);
 
     const int total = static_cast<int>(work.size());
 
-    // First pass: count the lines.
     unsigned count = 0;
     for (int consumed = 0; consumed < total;) {
         String rest;
@@ -274,7 +267,6 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     line->clear();
     ::operator delete(line);
 
-    // Allocate one fresh String per line.
     out->resize(count);
     for (unsigned i = 0; i < count; i++) {
         String *s = static_cast<String *>(::operator new(sizeof(String)));
@@ -282,7 +274,6 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
         (*out)[i] = s;
     }
 
-    // Second pass: fill each slot with the trimmed line text.
     int consumed = 0;
     for (unsigned i = 0; i < count; i++) {
         String *slot = (*out)[i];
@@ -291,7 +282,6 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
         getLine(font, rest, maxWidth, slot);
         consumed += static_cast<int>(slot->size());
 
-        // Trim leading and trailing spaces, in place.
         int lo = 0;
         int hi = static_cast<int>(slot->size());
         while (*slot->index(lo) == 0x20) {
@@ -415,10 +405,10 @@ extern const float gSCS_f8728 __attribute__((visibility("hidden")));
 extern const float gSCS_f872c __attribute__((visibility("hidden")));
 extern const float gSCS_f8730 __attribute__((visibility("hidden")));
 
-extern void *const gSCS_screenH __attribute__((visibility("hidden"))); // DAT_000f8734 -> int*
-extern void *const gSCS_isPhone __attribute__((visibility("hidden"))); // DAT_000f8738 -> char*
+extern void *const gSCS_screenH __attribute__((visibility("hidden")));
+extern void *const gSCS_isPhone __attribute__((visibility("hidden")));
 extern void *const gSCS_flagB __attribute__((visibility("hidden")));
-extern void *const gSCS_objA __attribute__((visibility("hidden"))); // DAT_000f8740 -> obj (field 0x54)
+extern void *const gSCS_objA __attribute__((visibility("hidden")));
 extern void *const gSCS_objB __attribute__((visibility("hidden")));
 extern void *const gSCS_flagC __attribute__((visibility("hidden")));
 extern void *const gSCS_flagD __attribute__((visibility("hidden")));
@@ -454,7 +444,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
     if (thresh < fp1) {
         iv = (int) fp1;
         uv = (unsigned short) iv;
-        rdobj(gSCS_objB)[0x54 / 4] = (int) fp1; // RAWREAD: opaque settings sub-object via hidden global (no header)
+        rdobj(gSCS_objB)[0x54 / 4] = (int) fp1;
         char flag8;
         if (isPhone == 0) {
             flag8 = rdflag(gSCS_flagC);
@@ -480,13 +470,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         if (isPhone == 0) {
             char flag = rdflag(gSCS_flagD);
             iv = (flag == 0) ? 0x96 : 0x12c;
-            rdobj(gSCS_objC)[0x54 / 4] = iv; // RAWREAD: opaque settings sub-object via hidden global (no header)
+            rdobj(gSCS_objC)[0x54 / 4] = iv;
             char flag8 = (flag == 0) ? 0 : 1;
             (void) flag8;
             goto label8508;
         }
         uv = 0xd2;
-        rdobj(gSCS_objA)[0x54 / 4] = 0xd2; // RAWREAD: opaque settings sub-object via hidden global (no header)
+        rdobj(gSCS_objA)[0x54 / 4] = 0xd2;
     }
 
 common: {
@@ -580,7 +570,7 @@ label8556: {
 
 extern void *const gGAMT_guard __attribute__((visibility("hidden")));
 extern const char gGAMT_noAgent[] __attribute__((visibility("hidden")));
-extern void *const gGAMT_busyObj __attribute__((visibility("hidden"))); // DAT_000f6178 (field 0xd0 counter)
+extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));
 extern void *const gGAMT_modText __attribute__((visibility("hidden")));
 
 static inline __attribute__ ((always_inline))
@@ -604,8 +594,8 @@ String Globals::getAgentMissionText(Agent *agent) {
         int event = agent->getEvent();
         if (event < 1 && agent->hasAcceptedOffer() == 0) {
             int *busy = *(int **) gGAMT_busyObj;
-            // RAWREAD: opaque re-entrancy-guard object via hidden global (no header/named member at +0xd0).
-            *(int *) (*busy + 0xd0) += 1; // mark "assembling text" re-entrancy guard
+
+            *(int *) (*busy + 0xd0) += 1;
             int offer = agent->getOffer();
 
             if (offer == 8) {
@@ -624,7 +614,6 @@ String Globals::getAgentMissionText(Agent *agent) {
                 }
             }
 
-            // General offer/event briefing text: data-driven assembly into `acc`.
             buildAgentMissionText(&acc, agent, offer);
             *(int *) (*busy + 0xd0) -= 1;
         } else {
@@ -699,7 +688,7 @@ int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) 
                         break;
                 }
                 if (!known) {
-                    keepGoing = true; // treat unknown like "no match, continue"
+                    keepGoing = true;
                 } else {
                     String suf, full;
                     suf.ctor_char(suffix, false);
@@ -725,20 +714,19 @@ String Globals::getKeyBindingReplaceString(int key) {
 
     String tmp;
     tmp.ctor();
-    tmp.ToUpperCase(); // in-place; returns void
+    tmp.ToUpperCase();
     String result;
     return result;
 }
 
 extern void *const gLTS_guardHolder __attribute__((visibility("hidden")));
-extern const char gLTS_minTens[] __attribute__((visibility("hidden"))); // DAT_000f3df0 "0"
-extern const char gLTS_minEmpty[] __attribute__((visibility("hidden"))); // DAT_000f3df4 ""
-extern const char gLTS_hrTens[] __attribute__((visibility("hidden"))); // DAT_000f3df8 "0"
-extern const char gLTS_hrEmpty[] __attribute__((visibility("hidden"))); // DAT_000f3dfc ""
-extern const char gLTS_sep[] __attribute__((visibility("hidden"))); // DAT_000f3e00 ":"
+extern const char gLTS_minTens[] __attribute__((visibility("hidden")));
+extern const char gLTS_minEmpty[] __attribute__((visibility("hidden")));
+extern const char gLTS_hrTens[] __attribute__((visibility("hidden")));
+extern const char gLTS_hrEmpty[] __attribute__((visibility("hidden")));
+extern const char gLTS_sep[] __attribute__((visibility("hidden")));
 
 void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
-    // ms / 60000 -> total minutes (quotient), then minute-of-hour via %60.
     long long q = ms / 0xea60;
     int minute = (int) (q % 0x3c);
 
@@ -769,15 +757,13 @@ void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
 extern const unsigned short gGSG_resTable[] __attribute__((visibility("hidden")));
 extern const unsigned short gGSG_meshTable[] __attribute__((visibility("hidden")));
 extern const short gGSG_extraTable[] __attribute__((visibility("hidden")));
-extern const unsigned gGSG_lodTable[] __attribute__((visibility("hidden"))); // DAT_000f5548 (3/group)
-extern const unsigned gGSG_childTable[] __attribute__((visibility("hidden"))); // DAT_000f5550 (3/group)
+extern const unsigned gGSG_lodTable[] __attribute__((visibility("hidden")));
+extern const unsigned gGSG_childTable[] __attribute__((visibility("hidden")));
 
 AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
-    PaintCanvas *canvas = gCanvas; // the shared PaintCanvas singleton
+    PaintCanvas *canvas = gCanvas;
 
     if (kind == 0xf) {
-        // kind==0xf (capital ships): three variants, each assembling an AEGeometry with LOD
-        // meshes/children. Variant 3 stitches a random-length articulated transform chain.
         AEGeometry *geom;
 
         if (variant == 0) {
@@ -794,10 +780,10 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
             canvas->TransformAddMesh(mesh2, 0x42ad, false);
             geom->addChild(mesh2);
 
-            uint16_t lodMeshes[2] = {0x42aa, 0x42ab}; // DAT_000f551c + 0x1a001a = 0x42ab42aa
+            uint16_t lodMeshes[2] = {0x42aa, 0x42ab};
             int lodDists[2] = {25000, 45000};
             geom->setLodMeshes(lodMeshes, lodDists, 2);
-            uint16_t lodChild = 0x42ae; // DAT_000f5520 = 0x42ae42ae
+            uint16_t lodChild = 0x42ae;
             geom->setLodChildMeshes(&lodChild);
         } else if (variant == 3) {
             geom = new AEGeometry((uint16_t) 0x4299, canvas, false);
@@ -849,7 +835,7 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
             canvas->TransformAddMesh(mesh1, 0x42a4, true);
             geom->addChild(mesh1);
 
-            uint16_t lodMeshes[2] = {0x42a6, 0x42a7}; // DAT_000f551c + 0x160016 = 0x42a742a6
+            uint16_t lodMeshes[2] = {0x42a6, 0x42a7};
             int lodDists[2] = {35000, 60000};
             geom->setLodMeshes(lodMeshes, lodDists, 2);
         }
@@ -880,7 +866,6 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
         return geom;
     }
 
-    // Generic path: per-ship table-driven build indexed by `kind`.
     {
         AEGeometry *geom = new AEGeometry((uint16_t) gGSG_resTable[kind], canvas, true);
         unsigned short mesh = gGSG_meshTable[kind];
@@ -920,9 +905,7 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
             geom->addChild(t);
         }
 
-        // Count up to 2 LOD meshes for this ship.
-        // Ghidra (uVar12 init): when count==0 the distance arg is 2, not the accumulated 5000.
-        unsigned lastVisibleDist = 2; // last accumulated LOD distance (overwritten when count!=0)
+        unsigned lastVisibleDist = 2;
         const unsigned *lod = &gGSG_lodTable[kind * 3];
         unsigned count = 0;
         for (int i = 0; i != 2; i++) {
@@ -1025,8 +1008,8 @@ extern void *const gDL2_lineHeight __attribute__((visibility("hidden")));
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         unsigned int rightX, bool centered) {
-    int *cv = (int *) gDL2_canvas; // global value (pointer); deref'd each iteration
-    int **lh = (int **) gDL2_lineHeight; // global value (pointer)
+    int *cv = (int *) gDL2_canvas;
+    int **lh = (int **) gDL2_lineHeight;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -1035,7 +1018,7 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
             dx = (int) rightX - w;
         }
         ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *) ((char *) *lh + 4); // RAWREAD: opaque line-height object via hidden global (no header)
+        yacc += *(int *) ((char *) *lh + 4);
     }
 }
 
@@ -1063,7 +1046,6 @@ unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, fl
     meshCanvas->MeshSetTriangle((unsigned int) mesh, 4, 8, 9, 10);
     meshCanvas->MeshSetTriangle((unsigned int) mesh, 5, 10, 9, 0xb);
 
-    // UV coords: pairs (u0,v0) and (u0,v1) drive the texture mapping of each face.
     meshCanvas->MeshSetUv((unsigned int) mesh, 0, u0, 0);
     meshCanvas->MeshSetUv((unsigned int) mesh, 1, u1, 0);
     meshCanvas->MeshSetUv((unsigned int) mesh, 2, v1, u0);
@@ -1115,8 +1097,8 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
     if (data != 0) {
         int count = (*data)[0];
 
-        float v[3] = {0, 0, 0}; // collision-shape extent vector
-        float c[3] = {0, 0, 0}; // collision-shape center/scalar parts
+        float v[3] = {0, 0, 0};
+        float c[3] = {0, 0, 0};
 
         outArr = new Array<BoundingVolume *>();
         outArr->resize((unsigned) count);
@@ -1175,12 +1157,12 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
 }
 
 extern int **const gGC_p_f31f6 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f31fc __attribute__((visibility("hidden"))); // DAT_000f33cc
-extern void **const gGC_p_f3200 __attribute__((visibility("hidden"))); // DAT_000f33d0
-extern void **const gGC_p_f3204 __attribute__((visibility("hidden"))); // DAT_000f33d4
-extern void **const gGC_p_f3208 __attribute__((visibility("hidden"))); // DAT_000f33d8
-extern void **const gGC_p_f320e __attribute__((visibility("hidden"))); // DAT_000f33dc (main settings/state object)
-extern void **const gGC_p_f3216 __attribute__((visibility("hidden"))); // DAT_000f33e0
+extern void **const gGC_p_f31fc __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3200 __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3204 __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3208 __attribute__((visibility("hidden")));
+extern void **const gGC_p_f320e __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3216 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f322a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3242 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f324a __attribute__((visibility("hidden")));
@@ -1191,24 +1173,24 @@ extern int **const gGC_p_f326a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3272 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f327a __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3288 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f32bc __attribute__((visibility("hidden"))); // DAT_000f340c (secondary object)
+extern void **const gGC_p_f32bc __attribute__((visibility("hidden")));
 extern char **const gGC_p_f32ec __attribute__((visibility("hidden")));
 extern char **const gGC_p_f32f4 __attribute__((visibility("hidden")));
 extern char **const gGC_p_f3300 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f330c __attribute__((visibility("hidden"))); // DAT_000f341c (secondary object)
-extern void **const gGC_p_f3316 __attribute__((visibility("hidden"))); // DAT_000f3420
-extern void **const gGC_p_f3366 __attribute__((visibility("hidden"))); // DAT_000f3424
+extern void **const gGC_p_f330c __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3316 __attribute__((visibility("hidden")));
+extern void **const gGC_p_f3366 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3368 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3372 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f337c __attribute__((visibility("hidden"))); // DAT_000f3430
+extern void **const gGC_p_f337c __attribute__((visibility("hidden")));
 extern int **const gGC_p_f337e __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3388 __attribute__((visibility("hidden")));
 extern int **const gGC_p_f3390 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f339e __attribute__((visibility("hidden"))); // DAT_000f3440 (secondary object)
+extern void **const gGC_p_f339e __attribute__((visibility("hidden")));
 
 Globals::Globals() {
     Globals * self = this;
-    void *settings = *gGC_p_f320e; // the main settings/state sub-object
+    void *settings = *gGC_p_f320e;
     int *secondary = (int *) *gGC_p_f32bc;
     void *p5 = *gGC_p_f3216;
     void *p7 = *gGC_p_f3200;
@@ -1232,18 +1214,16 @@ Globals::Globals() {
     *(int *) self = 0;
 
     char *s = (char *) settings;
-    // RAWREAD: `settings` is an opaque state sub-object reached via a hidden global; no modeled
-    // header exists in this TU, so the following field writes stay as raw byte offsets.
-    // Vector pairs (DAT_000f33b8 / DAT_000f33c0) written as 8-byte vst1 blocks at +0x14 and +0x1c.
+
     *(float *) (s + 0x00) = 0.5f;
     *(float *) (s + 0x04) = 0.5f;
     *(float *) (s + 0x08) = 0.5f;
     *(short *) (s + 0x0c) = 0x101;
     *(short *) (s + 0x10) = 0;
-    // *(undefined8*)(puVar8+5)=DAT_000f33b8 (0.5f,0.5f at +0x14/+0x18)
+
     *(float *) (s + 0x14) = 0.5f;
     *(float *) (s + 0x18) = 0.5f;
-    // *(undefined8*)(puVar8+7)=DAT_000f33c0 (0.6f,0.6f at +0x1c/+0x20)
+
     *(float *) (s + 0x1c) = 0.6f;
     *(float *) (s + 0x20) = 0.6f;
     *(float *) (s + 0x24) = 0.5f;
@@ -1258,7 +1238,7 @@ Globals::Globals() {
     *(int *) (s + 0x31) = 0;
     secondary[1] = 0;
     *(unsigned char *) ((char *) secondary + 0x13) = 0;
-    // RAWREAD: opaque secondary sub-object via hidden global (no header)
+
     *(unsigned char *) (s + 0x3f) = 0;
     *(int *) (s + 0x3b) = 0;
     *(unsigned char *) (s + 0x4e) = 0;
@@ -1312,7 +1292,7 @@ extern void **const gG_gameText __attribute__((visibility("hidden")));
 extern void **const gG_random __attribute__((visibility("hidden")));
 extern void **const gG_layout __attribute__((visibility("hidden")));
 extern void **const gG_generator __attribute__((visibility("hidden")));
-extern void **const gG_polyObj __attribute__((visibility("hidden"))); // DAT_000f35fc (vtable dtor)
+extern void **const gG_polyObj __attribute__((visibility("hidden")));
 extern void **const gG_fmod __attribute__((visibility("hidden")));
 extern void **const gG_items __attribute__((visibility("hidden")));
 extern void **const gG_ships __attribute__((visibility("hidden")));
@@ -1367,9 +1347,6 @@ Globals::~Globals() {
     void **polySlot = gG_polyObj;
     void *poly = *polySlot;
     if (poly != 0) {
-        // gG_polyObj holds a polymorphic engine singleton whose concrete type is not
-        // modelled here; it owns a compiler vptr at offset 0 and is torn down through its
-        // virtual (deleting) destructor — exactly what `delete` through this interface emits.
         delete static_cast<PolymorphicSingleton *>(poly);
     }
     *polySlot = 0;
@@ -1426,8 +1403,8 @@ extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         bool centered) {
-    int *cv = (int *) gDL_canvas; // global value (pointer); deref'd each iteration
-    int **lh = (int **) gDL_lineHeight; // global value (pointer)
+    int *cv = (int *) gDL_canvas;
+    int **lh = (int **) gDL_lineHeight;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -1436,7 +1413,7 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
             dx = -(w >> 1);
         }
         ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *) ((char *) *lh + 4); // RAWREAD: opaque line-height object via hidden global (no header)
+        yacc += *(int *) ((char *) *lh + 4);
     }
 }
 
@@ -1543,7 +1520,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
         }
         wField = VectorSignedToFloat(rint(gSCF_screenW3) - p2, 0);
         iv = (int) fp1b;
-        robj(gSCF_objC)[0x58 / 4] = (int) fp1b; // RAWREAD: opaque settings sub-object via hidden global (no header)
+        robj(gSCF_objC)[0x58 / 4] = (int) fp1b;
         adj13 = gSCF_b90;
         if (isPhone == 0) {
             char flag6 = rf(gSCF_flagG);
@@ -1554,12 +1531,12 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
             char flag6 = rf(gSCF_flagD);
             iv = (flag6 == 0) ? 0x96 : 0x12c;
-            robj(gSCF_objB)[0x58 / 4] = iv; // RAWREAD: opaque settings sub-object via hidden global (no header)
+            robj(gSCF_objB)[0x58 / 4] = iv;
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         } else {
             iv = 0xd2;
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
-            robj(gSCF_objA)[0x58 / 4] = 0xd2; // RAWREAD: opaque settings sub-object via hidden global (no header)
+            robj(gSCF_objA)[0x58 / 4] = 0xd2;
         }
     }
 
@@ -1631,7 +1608,7 @@ extern void *const gRR_arg __attribute__((visibility("hidden")));
 
 void Globals::releaseResources() {
     gCanvas->ReleaseAllResources();
-    // The secondary canvas (when present) releases its resources too.
+
     PaintCanvas *secondaryCanvas = *(PaintCanvas **) gRR_arg;
     if (secondaryCanvas != nullptr) {
         secondaryCanvas->ReleaseAllResources();
@@ -1646,14 +1623,14 @@ extern void *const gLF_canvas11 __attribute__((visibility("hidden")));
 extern void *const gLF_font11 __attribute__((visibility("hidden")));
 extern void *const gLF_canvas14 __attribute__((visibility("hidden")));
 extern void *const gLF_font14 __attribute__((visibility("hidden")));
-extern void *const gLF_canvasD __attribute__((visibility("hidden"))); // DAT_000f49b0 default
+extern void *const gLF_canvasD __attribute__((visibility("hidden")));
 extern void *const gLF_font15 __attribute__((visibility("hidden")));
 extern void *const gLF_fontDef __attribute__((visibility("hidden")));
 extern void *const gLF_canvasMain __attribute__((visibility("hidden")));
 extern void *const gLF_fontMain __attribute__((visibility("hidden")));
 extern void *const gLF_fontExtra __attribute__((visibility("hidden")));
 
-extern void *const gLF_flagA __attribute__((visibility("hidden"))); // DAT_000f4988 / shared
+extern void *const gLF_flagA __attribute__((visibility("hidden")));
 extern void *const gLF_flagB __attribute__((visibility("hidden")));
 extern void *const gLF_flagC __attribute__((visibility("hidden")));
 extern void *const gLF_flagD __attribute__((visibility("hidden")));
@@ -1727,7 +1704,6 @@ void Globals::loadFont(int kind) {
         }
     }
 
-    // cases 10/11/14: common creation tail
     ((PaintCanvas *) *canvasP)->FontCreate((unsigned short) glyph, **fontP, false);
     if (flag(gLF_flagA) != 0) {
         spacing = -6;
@@ -1742,24 +1718,24 @@ epilogue: {
         int *mainCanvas = *(int **) gLF_canvasMain;
         unsigned *mainFont = *(unsigned **) gLF_fontMain;
         int cv = *mainCanvas;
-        // RAWREAD: `cv` is an opaque int canvas handle (no modeled type in this TU).
+
         *(unsigned char *) (cv + 0x1c) = isMainFontPersian;
         ((PaintCanvas *) (long) cv)->FontCreate((unsigned short) 0x51e, *mainFont, false);
         ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*mainFont, 0);
         unsigned *extra = *(unsigned **) gLF_fontExtra;
         ((PaintCanvas *) (long) *mainCanvas)->FontCreate((unsigned short) 0x2d7a, *extra, false);
-        // The freshly created extra font starts with zero glyph spacing.
+
         ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*extra, 0);
     }
 }
 
 extern int **const gI_mission __attribute__((visibility("hidden")));
-extern void **const gI_settings __attribute__((visibility("hidden"))); // DAT_000f38cc (settings object)
-extern int **const gI_flagFFFF __attribute__((visibility("hidden"))); // DAT_000f38d0
+extern void **const gI_settings __attribute__((visibility("hidden")));
+extern int **const gI_flagFFFF __attribute__((visibility("hidden")));
 extern int **const gI_langSettingSlot __attribute__((visibility("hidden")));
-// DAT_000f38d4: language-dependent settings int
-extern char **const gI_langFlag __attribute__((visibility("hidden"))); // DAT_000f38d8 (language flag byte)
-extern char **const gI_zeroByte __attribute__((visibility("hidden"))); // DAT_000f38dc
+
+extern char **const gI_langFlag __attribute__((visibility("hidden")));
+extern char **const gI_zeroByte __attribute__((visibility("hidden")));
 extern void ***const gI_galaxy __attribute__((visibility("hidden")));
 extern void ***const gI_achieve __attribute__((visibility("hidden")));
 extern void ***const gI_status __attribute__((visibility("hidden")));
@@ -1773,14 +1749,14 @@ extern void ***const gI_random __attribute__((visibility("hidden")));
 extern void ***const gI_generator __attribute__((visibility("hidden")));
 extern void ***const gI_recHandler __attribute__((visibility("hidden")));
 extern void ***const gI_fmod __attribute__((visibility("hidden")));
-extern void **const gI_setMusVol __attribute__((visibility("hidden"))); // DAT_000f3914 (fn ptr)
-extern void **const gI_setSfxVol __attribute__((visibility("hidden"))); // DAT_000f3918 (fn ptr)
+extern void **const gI_setMusVol __attribute__((visibility("hidden")));
+extern void **const gI_setSfxVol __attribute__((visibility("hidden")));
 extern int ***const gI_g381c __attribute__((visibility("hidden")));
-extern char **const gI_g381a __attribute__((visibility("hidden"))); // DAT_000f3920
-extern int ***const gI_g381e __attribute__((visibility("hidden"))); // DAT_000f3924 (vector-triple object)
-extern int **const gI_g3822 __attribute__((visibility("hidden"))); // DAT_000f3928
-extern char ***const gI_g3824 __attribute__((visibility("hidden"))); // DAT_000f392c
-extern char **const gI_g383a __attribute__((visibility("hidden"))); // DAT_000f3930
+extern char **const gI_g381a __attribute__((visibility("hidden")));
+extern int ***const gI_g381e __attribute__((visibility("hidden")));
+extern int **const gI_g3822 __attribute__((visibility("hidden")));
+extern char ***const gI_g3824 __attribute__((visibility("hidden")));
+extern char **const gI_g383a __attribute__((visibility("hidden")));
 extern void ***const gI_layout __attribute__((visibility("hidden")));
 
 typedef void (*VolFn)(void *snd, int channel, int value);
@@ -1801,8 +1777,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     char *zeroByte = *gI_zeroByte;
 
     char *s = (char *) settings;
-    // RAWREAD: `settings` is an opaque state sub-object reached via a hidden global; no modeled
-    // header exists in this TU, so the following field writes stay as raw byte offsets.
+
     *(unsigned char *) (s + 0x11) = 1;
     *(unsigned char *) (s + 0x30) = 1;
     *(float *) (s + 0x00) = 0.5f;
@@ -1875,10 +1850,9 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
         *(unsigned char *) (s + 0xd) = 0;
     }
 
-    // Camera/transform-style zeroing of a vector-triple struct.
     **gI_g381c = 0;
     **gI_g381a = 1;
-    int *obj = (int *) *gI_g381e; // RAWREAD: opaque vector-triple sub-object via hidden global (no header)
+    int *obj = (int *) *gI_g381e;
     obj[0] = 0;
     obj[1] = 0;
     obj[2] = 0;
@@ -1910,7 +1884,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 }
 
 extern void *const gPM_snd0 __attribute__((visibility("hidden")));
-extern void *const gPM_snd1 __attribute__((visibility("hidden"))); // DAT_000f5808 / 0x580c
+extern void *const gPM_snd1 __attribute__((visibility("hidden")));
 extern void *const gPM_snd2 __attribute__((visibility("hidden")));
 extern void *const gPM_sndStatus __attribute__((visibility("hidden")));
 extern const int gPM_table0 __attribute__((visibility("hidden")));
@@ -2016,14 +1990,13 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
 }
 
-extern const int gGDS_pairTable[] __attribute__((visibility("hidden"))); // DAT_000f5a6c base
+extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));
 
 static inline __attribute__ ((always_inline))
 
 int dialogueDispatch(int category, int code, int isMale);
 
 int Globals::getDialogueSoundId(int code, Agent *agent) {
-    // Phase 1: linear search of the static pair table (47 pairs).
     const int *t = gGDS_pairTable;
     for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
         if (t[i] == code) {
@@ -2044,14 +2017,13 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
         if (parts != 0) {
             int *p = ((Agent *) (agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
-            // bucket 0 dispatch differs by gender; dialogueDispatch consults isMale internally.
+
             return dialogueDispatch(category, code, male);
         }
-        // No image parts: race-3 fallback uses the "case 2/3" generic dialogue table.
+
         return dialogueDispatch(2, code, male);
     }
 
-    // Non-Klingon races: bucket by race index; only bucket 0/5 is gendered.
     category = race;
     return dialogueDispatch(category, code, male);
 }
@@ -2074,7 +2046,7 @@ extern const char gGRN_noFirst[] __attribute__((visibility("hidden")));
 extern void *const gGRN_rng1 __attribute__((visibility("hidden")));
 extern const char gGRN_noLast[] __attribute__((visibility("hidden")));
 extern void *const gGRN_rng2 __attribute__((visibility("hidden")));
-extern const char gGRN_space[] __attribute__((visibility("hidden"))); // DAT_000f422c (" ")
+extern const char gGRN_space[] __attribute__((visibility("hidden")));
 
 String Globals::getRandomName(int kind, bool both) {
     int *guardP = *(int **) gGRN_guardHolder;
@@ -2111,7 +2083,6 @@ String Globals::getRandomName(int kind, bool both) {
     }
     ::operator delete(FileRead_dtor(fr));
 
-    // When the first name is empty, just copy firstStr; otherwise join "first last".
     String result;
     if (firstStr.size() == 0) {
         result.ctor_copy(&firstStr, false);
@@ -2170,14 +2141,9 @@ void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
 
 #include "engine/core/AERandom.h"
 
-// Second stage of getDialogueSoundId(): given a resolved race/gender bucket (`category`) and a
-// dialogue code, return the mapped sound id (or -1). The shipped binary inlines this entirely into
-// getDialogueSoundId(); it is kept here as a file-local helper (no standalone Globals:: symbol) to
-// avoid duplicating the ~100-line table three times.
 static inline __attribute__ ((always_inline))
 
 int dialogueDispatch(int category, int code, int isMale) {
-    // Buckets 2 / 3 (and the race-3 fallback) share the "generic" table.
     auto genericTable = [](int c) -> int {
         switch (c) {
             case 0x172: return 0x27e;
@@ -2221,7 +2187,6 @@ int dialogueDispatch(int category, int code, int isMale) {
         case 0:
         case 5: {
             if (isMale == 0) {
-                // Female sub-table (codes 0x172..0x185 only; DAT_000f5d88 indexed at 0x00211a20).
                 if ((unsigned) (code - 0x172) > 0x13) {
                     return -1;
                 }
@@ -2231,7 +2196,7 @@ int dialogueDispatch(int category, int code, int isMale) {
                 };
                 return femaleTable[code - 0x172];
             }
-            // Male sub-table.
+
             switch (code) {
                 case 0x172: return 0x2bb;
                 case 0x173: return 0x2af;
@@ -2391,21 +2356,14 @@ int dialogueDispatch(int category, int code, int isMale) {
     }
 }
 
-// ---- buildAgentMissionText ----
-// Offer/event briefing-text assembly for getAgentMissionText(). The target builds a localized
-// briefing into `out` by selecting a base GameText line per offer and substituting hash tokens
-// (#name#, #amount#, #reward#, ...) via Status::replaceHash. The per-offer base text indices and
-// token substitutions are reproduced from the disassembly's GameText::getText(...) keys.
 static inline __attribute__ ((always_inline))
 
 void buildAgentMissionText(String *out, void *agentArg, int offer) {
     Agent *agent = (Agent *) agentArg;
 
-    // Working accumulator string.
     String acc;
     acc.ctor();
 
-    // For the generic / offer<0 path the briefing is just the agent's plain greeting line.
     if (offer < 0 || agent == 0) {
         void *line = ((GameText *) (void *) (long) **(int **) &g_status)->getText(0x300);
         acc.assign((String *) line);
@@ -2413,30 +2371,27 @@ void buildAgentMissionText(String *out, void *agentArg, int offer) {
         return;
     }
 
-    // The base line key is offer-dependent; the disassembly seeds it from a per-offer GameText
-    // bucket and then layers in any cached (sticky) random sub-line indices held on the agent.
     int baseKey;
     switch (offer) {
         case 8: baseKey = 0x36a;
-            break; // item-sale briefing
+            break;
         case 9: baseKey = 0x36a;
-            break; // bulk-item-sale briefing
+            break;
         case 10: baseKey = 0x36a;
-            break; // commodity-sale briefing
+            break;
         case 4: baseKey = 0x36a;
-            break; // system-travel briefing
+            break;
         default: baseKey = 0x36a;
-            break; // blueprint / fallback briefing
+            break;
     }
 
     void *base = ((GameText *) (void *) (long) **(int **) &g_status)->getText(baseKey);
     acc.assign((String *) base);
 
-    // Splice the agent's display name into the briefing (#name# token).
     {
         String tok;
         tok.ctor();
-        // getName() returns a String by value; reuse the agent's name text directly.
+
         ((Agent *) agent)->getName();
     }
 

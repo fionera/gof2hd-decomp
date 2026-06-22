@@ -1,6 +1,6 @@
 #include "game/world/StarSystem.h"
 #include "engine/math/Transform.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "engine/core/AERandom.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
@@ -16,11 +16,11 @@ extern PaintCanvas *gCanvas;
 
 class LensFlare {
 public:
-    float intensity; // current flare alpha
+    float intensity;
     PaintCanvas *canvas;
     int width;
     int height;
-    uint32_t *images; // three Image2D sprite handles
+    uint32_t *images;
 
     explicit LensFlare(PaintCanvas *canvas);
 
@@ -28,7 +28,7 @@ public:
 
     void render2D(float srcX, float srcY, float alpha, int colorIndex);
 
-    void update(int); // mirrors engine/render/LensFlare.h (kept in sync)
+    void update(int);
 };
 
 namespace AbyssEngine {
@@ -128,33 +128,13 @@ StarSystem::~StarSystem() {
 
 typedef Engine *(*EngineGetter)(ApplicationManager *app);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern EngineGetter g_StarSystem_init_getEngine;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float g_StarSystem_init_sunColors[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float g_StarSystem_init_lightColors[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float g_StarSystem_init_stationColors[];
 
 static inline uint32_t rgba_scaled(uint32_t color, float scale) {
@@ -266,7 +246,7 @@ void StarSystem::initLight() {
             for (uint32_t i = 1; i < this->planetsArray->size(); ++i) {
                 AEGeometry *geom = (*this->planetsArray)[i];
                 void *transform = gCanvas->TransformGetTransform(geom->transform);
-                // fog-color field of the opaque engine transform object.
+
                 *(uint32_t *) ((char *) transform + 0x48) = fogColor;
             }
             return;
@@ -309,26 +289,11 @@ void StarSystem::render2D() {
     this->lensFlare->render2D(pos.x, pos.y, pos.z, this->tintColor);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint16_t g_StarSystem_ctor_planetTextures[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint16_t g_StarSystem_ctor_stationTextures[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint32_t g_StarSystem_ctor_systemColors[];
 
 StarSystem::StarSystem(int mode) {
@@ -451,8 +416,7 @@ StarSystem::StarSystem(int mode) {
 
     this->playerTargets = ::operator new(0x0c);
     Array_KIPlayer_ctor(this->playerTargets);
-    // The original instantiates the length helper on the 4-byte element type
-    // (KIPlayer* collapses to unsigned int for the {count,data,capacity} container).
+
     ArraySetLength<unsigned int>(static_cast<unsigned int>(count),
                                  *static_cast<Array<unsigned int> *>(this->playerTargets));
 
@@ -554,26 +518,11 @@ typedef void *(*GetTransformFn)(PaintCanvas *canvas, int transform_id);
 
 typedef void (*SetTransformModeFn)(void *transform, int mode, int value);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern GetTransformFn g_StarSystem_intro_getTransform;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern SetTransformModeFn g_StarSystem_intro_setTransformMode;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint32_t g_StarSystem_intro_colors[];
 
 void StarSystem::switchSunForSupernovaIntro() {
@@ -598,12 +547,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     this->tintColor = g_StarSystem_intro_colors[system->getIndex()];
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern uint32_t *g_StarSystem_render_station_index;
 
 void StarSystem::render() {

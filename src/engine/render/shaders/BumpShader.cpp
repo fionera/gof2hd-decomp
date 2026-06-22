@@ -96,7 +96,6 @@ namespace AbyssEngine {
                 glUniform1i(this->u21Loc, *gBumpFlag);
 
             if (ctx->field_0x32c < 2) {
-                // single-light path: zero the matrix uniforms, set the light dir.
                 glUniform3f(this->u11Loc, 0, 0, 0);
                 glUniform3f(this->u12Loc, 0, 0, 0);
                 glUniform3f(this->u13Loc, 0, 0, 0);
@@ -135,4 +134,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->a2Loc, 3, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

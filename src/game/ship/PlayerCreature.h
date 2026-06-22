@@ -2,13 +2,10 @@
 #define GOF2_PLAYERCREATURE_H
 
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
 
-class Player;
-class AEGeometry;
+#include "game/ship/KIPlayer.h"
 
 class PlayerCreature : public KIPlayer {
 public:
@@ -24,7 +21,7 @@ public:
     int endurance;
     int lastHitpoints;
     int itemIndex;
-    Matrix rageMatrix; // rage-shake rotation matrix
+    AbyssEngine::Matrix rageMatrix;
 
     PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                    float x, float y, float z);
@@ -57,9 +54,9 @@ public:
 
     void update(int elapsed) override;
 
-    // The creature exposes no collidable surface, so both query forms report no hit.
-    int collide(float x, float y, float z) override; // actor vtable slot +0x38
-    int outerCollide(float x, float y, float z) override; // actor vtable slot +0x3c
+    int collide(float x, float y, float z) override;
+
+    int outerCollide(float x, float y, float z) override;
 };
 
 #endif

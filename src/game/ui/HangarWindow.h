@@ -1,17 +1,13 @@
 #ifndef GOF2_HANGARWINDOW_H
 #define GOF2_HANGARWINDOW_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "game/core/HangarList.h"
+#include "game/mission/Item.h"
+
 #include "game/ui/ChoiceWindow.h"
 #include "game/ui/ListItemWindow.h"
-
-class HangarList;
-class ListItem;
-class Item;
-class BluePrint;
-class Ship;
 
 struct Blk16 {
     int a, b, c, d;
@@ -54,7 +50,8 @@ struct Layout {
 
     void drawBox(int style, int x, int y, int h, int w, void *text);
 
-    void drawHeader(String title); // mirrors Layout::drawHeader(String)
+    void drawHeader(String title);
+
     void drawFooter();
 
     void drawScrollBar(int x, int y, int trackH, int pos, int range);
@@ -67,7 +64,8 @@ struct Layout {
 
     unsigned char helpPressed();
 
-    static String formatCredits(int n); // mirrors game/ui/Layout.h
+    static String formatCredits(int n);
+
     void initHelpWindow(void *text);
 
     void resetWindowDimensions();
@@ -76,44 +74,6 @@ struct Layout {
 int Layout_getHelpButtonOffset();
 
 int Layout_getFooterTransitionWidth();
-
-struct TouchButton {
-    int OnTouchBegin(int coord);
-
-    int OnTouchEnd(int coord);
-
-    int OnTouchMove(int coord);
-
-    void draw();
-
-    int getHeight();
-
-    int getWidth();
-
-    uint8_t isTouched();
-
-    uint8_t isVisible();
-
-    void replaceTextKeepSize(void *text);
-
-    void resetTouch();
-
-    void setAlwaysPressed(bool value);
-
-    void setPosition(int x, int y, int flags);
-
-    void setPosition(int x, int y);
-
-    void setSplitText(void *value);
-
-    void setText(void *text);
-
-    void setVisible(bool value);
-};
-
-struct GameText {
-    AbyssEngine::String *getText();
-};
 
 class HangarWindow {
 public:
@@ -130,8 +90,8 @@ public:
     Item *pendingMountItem;
     Item *pendingDemountItem;
     void *tabIcons;
-    unsigned int scrollHintImageA; // +0x34 (Image2D handle, id 0x233e)
-    unsigned int scrollHintImageB; // +0x38 (Image2D handle, id 0x233f)
+    unsigned int scrollHintImageA;
+    unsigned int scrollHintImageB;
     uint8_t dialogActive;
     int field_0x40;
     int field_0x44;
@@ -143,17 +103,17 @@ public:
     ListItem *selectedItem;
     int holdTime;
     int repeatTimer;
-    unsigned int progressBarBorderImage; // +0x74 (Image2D handle, id 0x477)
-    int progressBarBgImage; // +0x78
-    unsigned int progressBarFillImage; // +0x7c
+    unsigned int progressBarBorderImage;
+    int progressBarBgImage;
+    unsigned int progressBarFillImage;
     BluePrint *bluePrint;
     ListItem *bluePrintItem;
     uint8_t buyMode;
     uint8_t specialMode;
     int savedStationAmount;
     uint16_t shipSwapPending;
-    uint8_t dlcMenuPending; // +0x92 (Ghidra +0x92)
-    uint8_t swapConfirmFlag; // +0x93
+    uint8_t dlcMenuPending;
+    uint8_t swapConfirmFlag;
     uint8_t sellShipPending;
     int bluePrintBuyCount;
     int savedCredits;
@@ -180,19 +140,19 @@ public:
     int field_0xcd;
     uint8_t dragging;
     uint8_t suppressTouchEnd;
-    uint8_t sellConfirmPending; // +0xd2
+    uint8_t sellConfirmPending;
     int currentContentHeight;
     int visibleHeight;
     int progressBarWidth;
     int progressBarHeight;
     int savedScrollOffset;
-    unsigned int blueprintIconImage; // +0xe8 (Image2D handle, id 0x52e)
-    unsigned int pendingIconImage; // +0xec (Image2D handle, id 0x544)
-    int hintImage; // +0xf0
+    unsigned int blueprintIconImage;
+    unsigned int pendingIconImage;
+    int hintImage;
     int hintOffsetX;
     uint8_t autoEquipPending;
     unsigned int autoEquipIndex;
-    Blk16 field_0x100; // field_0x100.d (+0x10c) = per-row spacing
+    Blk16 field_0x100;
     int buttonHeight;
     int field_0x114;
     int iconOffsetY;
@@ -204,7 +164,7 @@ public:
     int gridButtonHeight;
     int gridSpacingX;
     int gridSpacingY;
-    uint8_t routeWarningPending; // +0x130
+    uint8_t routeWarningPending;
 
     HangarWindow();
 
@@ -216,8 +176,6 @@ public:
 
     unsigned int OnTouchMove(int touch, int coord);
 
-    // Trivial accessors. isInitialized() reports whether the window has been
-    // brought up; getCurrentItem() returns the window's current list item.
     bool isInitialized();
 
     ListItem *getCurrentItem();
@@ -268,17 +226,10 @@ public:
 
     void update(int delta);
 
-    // Tail of OnTouchEnd(): the equipment swap-confirmation / buy-mode dialog flow.
-    // Resolves the active ChoiceWindow's touch result and commits (or cancels) the
-    // pending mount/demount.
     void buildMissionOffer(int touch, int coord);
 
-    // The ship the hangar acts on: always the player's current ship held by the
-    // global Status. Static because it depends on no per-window state.
     static Ship *statusShip();
 
-    // render3D()'s tail-call thunk: in the embedded item-list view mode the 3D pass
-    // is delegated to the item-list sub-window.
     static void render3D_thunk(ListItemWindow *listItemWindow);
 };
 #endif

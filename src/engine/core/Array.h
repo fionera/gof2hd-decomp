@@ -6,22 +6,17 @@
 template<class T>
 class Array {
 public:
-    // @0  element count. `size_`/`count` are the same 4-byte uint32 field; the
-    // alias lets raw-offset (+0x0) call sites read it as a named member.
     union {
         unsigned int size_;
         unsigned int count;
     };
 
-    // @4  backing store (grown with realloc); raw-offset (+0x4) call sites read this pointer.
-    // `data_`/`wantedListData` are the same 4-byte pointer field; the alias lets raw-offset (+0x4)
-    // call sites (e.g. Status::getWanted()->data, indexing the Wanted list) read it as a named member.
     union {
         T *data_;
         T *wantedListData;
     };
 
-    unsigned int capacity_; // @8  allocated element count
+    unsigned int capacity_;
 
     Array() {
         T *p = static_cast<T *>(::operator new[](sizeof(T)));
@@ -36,8 +31,6 @@ public:
         data_ = nullptr;
     }
 
-    // The engine treats elements as trivially relocatable (realloc/memclr). A deep copy keeps the
-    // by-value / const& uses (e.g. Array<Matrix>) well-defined.
     Array(const Array &o) {
         capacity_ = o.capacity_ ? o.capacity_ : 1;
         data_ = static_cast<T *>(::operator new[](capacity_ * sizeof(T)));
@@ -70,7 +63,6 @@ public:
     T &back() { return data_[size_ - 1]; }
     T &at(unsigned int i) { return data_[i]; }
 
-    // push_back == ArrayAdd: grow by exactly one (exact-fit realloc), then append.
     void push_back(T item) {
         capacity_ = size_ + 1;
         data_ = static_cast<T *>(realloc(data_, capacity_ * sizeof(T)));
@@ -78,7 +70,6 @@ public:
         size_ = capacity_;
     }
 
-    // resize == ArraySetLength: (re)allocate only when capacity differs, zero the buffer, set size.
     void resize(unsigned int n) {
         T *p;
         unsigned int c;
@@ -96,7 +87,6 @@ public:
         size_ = n;
     }
 
-    // clear == ArrayRemoveAll: shrink to a 1-element zeroed buffer.
     void clear() {
         capacity_ = 1;
         size_ = 0;
@@ -118,7 +108,6 @@ public:
         data_[idx] = item;
     }
 
-    // Range insert (used for bulk byte loads). Only the append-at-end() case occurs in the tree.
     template<class It>
     void insert(T *pos, It first, It last) {
         unsigned int idx = static_cast<unsigned int>(pos - data_);
@@ -128,7 +117,6 @@ public:
         }
     }
 
-    // The engine's Array has no spare capacity to release; clear() already shrinks to one slot.
     void shrink_to_fit() {
     }
 };
@@ -217,4 +205,4 @@ void ArrayAddCached(T item, Array<T> &a) {
     a.size_ = a.size_ + 1;
 }
 
-#endif // GALAXYONFIRE2_ARRAY_H
+#endif

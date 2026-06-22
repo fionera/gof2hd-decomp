@@ -75,7 +75,6 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->aBinormal);
 
         if (mesh->uploaded == 0) {
-            // Client-side vertex arrays.
             if (this->aPosition >= 0)
                 glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, mesh->positions);
             if (this->aNormal >= 0)
@@ -87,7 +86,6 @@ namespace AbyssEngine {
             if (this->aBinormal >= 0)
                 glVertexAttribPointer(this->aBinormal, 3, 0x1406, 0, 0, mesh->binormals);
         } else {
-            // VBO path: bind each buffer and use zero offset.
             glBindBuffer(0x8892, mesh->positionVBO);
             glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0, 0);
             glBindBuffer(0x8892, mesh->texCoordVBO);
@@ -113,4 +111,4 @@ namespace AbyssEngine {
         if (this->aBinormal >= 0)
             glDisableVertexAttribArray(this->aBinormal);
     }
-} // namespace AbyssEngine
+}

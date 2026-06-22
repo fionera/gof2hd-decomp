@@ -1,5 +1,5 @@
 #include "game/mission/Status.h"
-Status *gStatus = nullptr; // canonical Status singleton
+Status *gStatus = nullptr;
 #include "game/mission/PendingProduct.h"
 #include "game/core/GameSettings.h"
 #include "engine/core/AERandom.h"
@@ -405,8 +405,8 @@ void Status::changeCredits(int delta) {
     }
 }
 
-static const int kFreighterMaskA = 0x40008401; // stations 0x1e,0x28,0x2d,0x3c
-static const int kFreighterMaskB = 0x02008401; // stations 0x46,0x50,0x55,0x5f
+static const int kFreighterMaskA = 0x40008401;
+static const int kFreighterMaskB = 0x02008401;
 
 int Status::isFreighterMissionStation(int station) {
     if ((unsigned) (station - 0x1e) < 0x1f && ((1 << ((station - 0x1e) & 0xff)) & kFreighterMaskA) != 0)
@@ -513,8 +513,8 @@ void Status::calcCargoPrices() {
     Galaxy *gal = gGalaxy;
     Array<SolarSystem *> *systems = gal->getSystems();
     AbyssEngine::AERandom *rng = gRandom;
-    const float kPriceScale = 100.0f; // pool @0x000bccac = 0x42c80000
-    const float kJitter = 0.02f; // pool @0x000bccb0 = 0x3ca3d70a
+    const float kPriceScale = 100.0f;
+    const float kJitter = 0.02f;
 
     for (int src = 0; src != 3; src = src + 1) {
         Array<Item *> *list;
@@ -527,7 +527,6 @@ void Status::calcCargoPrices() {
         if (list == 0)
             continue;
 
-        // seed by the station index so prices are deterministic per visit.
         rng->setSeed((long long) station->getIndex());
         bool ringWorld = false;
         if (!inAlienOrbit())
@@ -564,8 +563,6 @@ void Status::calcCargoPrices() {
                     price = (base - jitterMax) + rng->nextInt((jitterMax << 1) | 1);
                 }
                 if (*g_ccpPriceMod != 0 && **g_ccpPriceMod != 0) {
-                    // apply a global price modifier when present.
-                    // price + (price * priceMod) * 0.01f   (pool @0x000bccb4 = 0x3c23d70a)
                     price = (int) ((float) price + (float) price * (float) (**g_ccpPriceMod) * 0.01f);
                 }
                 item->setPrice(price);
@@ -594,7 +591,7 @@ bool Status::inAlienOrbit() {
     return station != playerStation;
 }
 
-extern int *g_rg_settings; // -> settings record
+extern int *g_rg_settings;
 extern Array<Item *> **g_rg_itemTable;
 extern int **g_rg_statusSlotC;
 extern int **g_rg_zeroSlotA;
@@ -607,9 +604,6 @@ extern void (*g_rg_addCargo)(int, int, int);
 
 #include "game/core/Globals.h"
 
-//   Wipes the persistent player state back to a fresh new-game baseline: zeroes
-//   counters, recreates the bonus/visibility arrays, blueprint list, agents/
-//   wanted, standing, the starting mission, ship and station.
 void Status::resetGame() {
     int *settings = g_rg_settings;
     GameSettings *srec = (GameSettings *) *settings;
@@ -650,7 +644,6 @@ void Status::resetGame() {
     this->field_0x111 = 0;
     this->field_114 = hardcore != 0 ? 3 : 0;
 
-    // recreate the per-game scratch "void" station.
     if (this->voidStation != nullptr) {
         delete this->voidStation;
         this->voidStation = nullptr;
@@ -686,7 +679,6 @@ void Status::resetGame() {
     for (unsigned j = 0; j < this->field_b4->size(); j = j + 1)
         (*this->field_b4)[j] = 0;
 
-    // free any stations on the stack.
     if (this->stationStack != 0) {
         for (unsigned k = 0; k < this->stationStack->size(); k = k + 1) {
             Station *st = (*this->stationStack)[k];
@@ -704,7 +696,6 @@ void Status::resetGame() {
     for (unsigned j = 0; j < this->field_50->size(); j = j + 1)
         (*this->field_50)[j] = 0;
 
-    // array at 0x54: first 0xb0 entries = 1, rest = 0.
     Array<bool> &arr54 = *this->field_54;
     for (int j = 0; j != 0xb0; j = j + 1)
         arr54[j] = 1;
@@ -716,7 +707,7 @@ void Status::resetGame() {
     arr54[0x3d] = 0;
     this->passengers = 0;
     this->field_b8 = 0;
-    // zero the two ship-equipment-slot vectors.
+
     this->field_e0 = 0;
     this->field_e4 = 0;
     this->field_e8 = 0;
@@ -730,7 +721,6 @@ void Status::resetGame() {
     this->field_d8 = 0;
     this->field_dc = 0;
 
-    // a few scalar globals get zeroed.
     **g_rg_zeroSlotA = 0;
     **g_rg_zeroSlotB = 0;
     **g_rg_zeroSlotC = 0;
@@ -745,7 +735,6 @@ void Status::resetGame() {
 
     gAchievements->init();
 
-    // recreate the four int arrays at 0x40/0x3c/0x48/0x44 (length 0xe9).
     Array<int> **off4[4] = {
         &this->field_0x40, &this->field_0x3c,
         &this->field_0x48, &this->field_0x44
@@ -771,26 +760,22 @@ void Status::resetGame() {
         }
     }
 
-    // bool array at 0x4c (length 4).
     delete this->field_4c;
     this->field_4c = new Array<bool>();
     this->field_4c->resize(4);
     for (int j = 0; j != 4; j = j + 1) (*this->field_4c)[j] = 0;
 
-    // bool array at 0x58 (length 5).
     delete this->field_58;
     this->field_58 = new Array<bool>();
     this->field_58->resize(5);
     for (int j = 0; j != 5; j = j + 1) (*this->field_58)[j] = 0;
 
-    // system visibilities from the galaxy systems.
     Array<SolarSystem *> *systems = gal->getSystems();
     Array<bool> &vis = *this->systemVisibilities;
     for (unsigned k = 0; k < systems->size(); k = k + 1) {
         vis[k] = (*systems)[k]->isVisible() != 0;
     }
 
-    // count craftable blueprints.
     unsigned bpCount = 0;
     Array<Item *> *items = *g_rg_itemTable;
     for (unsigned k = 0; k < items->size(); k = k + 1) {
@@ -824,7 +809,6 @@ void Status::resetGame() {
     loadAgents();
     loadWanted();
 
-    // recreate Standing.
     if (this->standing != 0) {
         delete this->standing;
         this->standing = 0;
@@ -833,7 +817,7 @@ void Status::resetGame() {
     this->field_7c = -1;
     this->field_80 = -1;
     this->field_84 = 0;
-    // missions[0] gets a base value from a status slot.
+
     (*this->missions)[0]->setType(**g_rg_statusSlotC);
     this->currentCampaignMission = 0;
 
@@ -842,7 +826,7 @@ void Status::resetGame() {
     this->mission = (*this->missions)[0];
     setShip(gStatus->ship->makeShip(-1));
     this->ship->priceDecline();
-    setStation((Station *) (intptr_t) gal->getStation(0)); // new-game home station (index 0)
+    setStation((Station *) (intptr_t) gal->getStation(0));
     this->ship->setCargo(0);
 
     int (*makeItemB)(int) = g_rg_makeItemB;
@@ -873,8 +857,6 @@ void Status::resetGame() {
 
 extern int g_anwSysMask;
 
-// Walks the wanted roster and activates any newly-eligible bounty, routing it
-// onto a random reachable station pair. Returns the number of bounties activated.
 int Status::activateNewWanted() {
     Status * slot = gStatus;
     Array<Wanted *> *w = slot->wanted;
@@ -1002,8 +984,6 @@ int Status::activateNewWanted() {
     return activated;
 }
 
-// Merges `bp` into the pending-products list, bumping an existing matching entry's
-// quantity or appending a freshly constructed PendingProduct.
 void Status::addPendingProduct(BluePrint *bp) {
     if (pendingProducts == 0) {
         pendingProducts = new Array<PendingProduct *>();
@@ -1023,7 +1003,6 @@ void Status::addPendingProduct(BluePrint *bp) {
 
 extern int g_emptyOrbitMask;
 
-// True when the current orbit has no station/special content to interact with.
 bool Status::inEmptyOrbit() {
     int idx = station->getIndex();
     if (idx == 0x4e && currentCampaignMission < 2) {
@@ -1053,13 +1032,11 @@ bool Status::inEmptyOrbit() {
     return true;
 }
 
-// Reads the wanted/bounty list from disk via a transient FileRead helper.
 void Status::loadWanted() {
     FileRead fr;
     wanted = fr.loadWanted();
 }
 
-// Unlocks every blueprint whose item index matches `index`.
 void Status::unlockBluePrint(int index) {
     for (unsigned i = 0; i < bluePrints->size(); i = i + 1) {
         BluePrint *bp = (*bluePrints)[i];
@@ -1069,9 +1046,6 @@ void Status::unlockBluePrint(int index) {
     }
 }
 
-// Per-second gamma-ray damage near supernova/storm orbits, keyed by station/system
-// ids. Returns the float result as raw bits (the engine treats it as float at the
-// call site).
 extern const float g_gammaTableA[5];
 extern const float g_gammaTableB[5];
 
@@ -1108,8 +1082,6 @@ int Status::getGammaRayDamagePerSecond(int station, int system) {
     return as_int(result);
 }
 
-// Pushes `s` onto the 3-deep station stack (shifting older entries down), unless
-// it is already present. Returns 1 if the stack was modified, 0 otherwise.
 int Status::addStationToStack(Station *s) {
     if (isOnStack(s)) {
         setStation(s);
@@ -1143,8 +1115,6 @@ int Status::addStationToStack(Station *s) {
 
 extern int *g_missionSentinel;
 
-// Removes `mission` from the active list: clears the campaign slot, detaches its
-// agent, and resets the slot to the sentinel value.
 void Status::removeMission(Mission *mission) {
     int *sentinel = g_missionSentinel;
     Mission **slots = missions->data();
@@ -1167,13 +1137,10 @@ void Status::removeMission(Mission *mission) {
     }
 }
 
-extern int g_ncmAchTable[3]; // 3 mission ids
+extern int g_ncmAchTable[3];
 
 extern void Status_addMissionTail(Status * self, Mission * m);
 
-// Per-campaign-step mission descriptor (the bulk of the switch is "build
-// Mission(type,param,station) and register it" -- either as the campaign mission
-// or via the add-mission tail).
 struct Step {
     short type;
     int param;
@@ -1181,8 +1148,6 @@ struct Step {
     unsigned char campaign;
 };
 
-// Table indexed by campaign step (recovered from the engine's switch). Steps with
-// extra side effects are handled specially below; the rest follow this descriptor.
 static const Step kSteps[] = {
     /*0x00*/ {0, 0, 0, 0},
     /*0x01*/ {0x9a, 0, 0x4e, 1}, /*0x02*/ {0xb, 0, 0x4e, 0}, /*0x03*/ {0x9a, 0, 0x4e, 1},
@@ -1217,15 +1182,6 @@ static const Step kSteps[] = {
     /*0x58*/ {0x4, 0, 0x6d, 0},
 };
 
-// Status::nextCampaignMission(bool advance)
-//   Advances the campaign by one step: bumps the campaign-mission counter,
-//   snapshots the playing-time, runs the achievement check, then spawns and
-//   registers the next scripted Mission for that step (with a few steps
-//   performing extra cargo/equipment bookkeeping).
-//
-//   The `advance` argument is loaded but immediately overwritten with the current
-//   campaign step before the dispatch switch, so it has no effect on the work
-//   performed; it is accepted only to preserve the engine's call signature.
 void Status::nextCampaignMission(bool advance) {
     (void) advance;
     int prevTimeLo = (int) this->playingTime;
@@ -1234,7 +1190,6 @@ void Status::nextCampaignMission(bool advance) {
     int step = this->currentCampaignMission;
     int next = step + 1;
 
-    // achievement check: flag if the new step matches any tracked mission id.
     for (int k = 0; k < 3; k = k + 1) {
         if (next == g_ncmAchTable[k])
             this->field_0x17c = 1;
@@ -1245,9 +1200,8 @@ void Status::nextCampaignMission(bool advance) {
     this->field_0x104 = prevTimeHi;
 
     if (step == 0)
-        return; // step 0 has no mission.
+        return;
 
-    // --- steps with extra side effects ------------------------------------
     if (step == 3) {
         this->ship->setCargo(0);
     } else if (step == 5) {
@@ -1274,10 +1228,9 @@ void Status::nextCampaignMission(bool advance) {
     } else if (step == 9) {
         Item *old = this->ship->getFirstEquipmentOfSort(0);
         this->ship->removeEquipment(old);
-        this->ship->addEquipment(((Item *) 0)->makeItem()); // item id 0x158
+        this->ship->addEquipment(((Item *) 0)->makeItem());
     }
 
-    // --- spawn + register the step's mission -------------------------------
     if ((unsigned) step < sizeof(kSteps) / sizeof(kSteps[0])) {
         const Step &s = kSteps[step];
         Mission *m;
@@ -1291,13 +1244,10 @@ void Status::nextCampaignMission(bool advance) {
         else
             Status_addMissionTail(this, m);
     } else {
-        // beyond the scripted range: default freelance hop.
         Status_addMissionTail(this, new Mission(0xb, 0, 100));
     }
 }
 
-// Travels to `s`: marks its system visible, then rebuilds the planet name and
-// texture tables for every station in the destination system.
 void Status::setStation(Station *s) {
     if (station == s) {
         return;
@@ -1353,9 +1303,6 @@ void Status::setStation(Station *s) {
     delete list;
 }
 
-// Status::replaceHash(haystack, needle, replacement) -> String
-//   Replaces the first occurrence of `needle` in `haystack` with `replacement`.
-//   If `needle` is absent, returns a copy of `haystack`.
 String Status::replaceHash(String haystack, String needle, String replacement) {
     int idx = (int) haystack.IndexOf(needle);
     if (idx < 0) {
@@ -1374,13 +1321,10 @@ String Status::replaceHash(String haystack, String needle, String replacement) {
     return prefix + replacement + suffix;
 }
 
-// Status::replaceHash(haystack, needle) -> String
-//   Forwards to the three-argument overload, substituting an empty replacement.
 String Status::replaceHash(String haystack, String needle) {
     return replaceHash(haystack, needle, String(""));
 }
 
-// Adjusts the player rating by `delta`, clamping the result to [-10, 10].
 void Status::changeRating(int delta) {
     int updated = delta + rating;
     rating = updated;
@@ -1396,13 +1340,7 @@ void Status::changeRating(int delta) {
 
 extern int g_dsTypeMask;
 
-// Status::departStation(Station* dest)
-//   Leaving the current station to travel to `dest`: refreshes inventories, stacks
-//   the prior station, regenerates the destination's wares/ships/agents, then
-//   re-targets the active campaign/freelance mission, moves wanted criminals, and
-//   clears per-cargo station amounts.
 void Status::departStation(Station *dest) {
-    // refresh the just-departed station inventory if it is the campaign hub in state 3.
     if (!inAlienOrbit()) {
         bool hub = station->getIndex() == 0x6c;
         if (hub && field_114 == 3) {
@@ -1443,7 +1381,6 @@ void Status::departStation(Station *dest) {
         field_74 = (int) (playingTime >> 32);
     }
 
-    // pick the active mission target for the new station.
     Status * st = gStatus;
     this->mission = 0;
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
@@ -1484,7 +1421,6 @@ void Status::departStation(Station *dest) {
         }
     }
 
-    // recompute the next freelance destination station.
     if (currentCampaignMission < 0x2d) {
         if (currentCampaignMission >= 0x20) {
             bool same = false;
@@ -1519,7 +1455,6 @@ void Status::departStation(Station *dest) {
     if (wantedMove)
         moveWanted();
 
-    // clear the per-cargo station-amount counters.
     Array<Item *> *cargo = ship->getCargo();
     if (cargo != 0) {
         for (unsigned i = 0; i < cargo->size(); i = i + 1) {
@@ -1531,10 +1466,6 @@ void Status::departStation(Station *dest) {
     field_0x108 = 0;
 }
 
-// Status::missionCompleted(bool atStation, bool docked, long long extra)
-//   Scans the active mission list; for the first unfinished mission whose
-//   completion criteria are met it returns that Mission (some types auto-mark
-//   themselves won). Mission-type-specific checks mirror the engine's dispatch.
 Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) {
     unsigned which = (unsigned) docked;
     unsigned both = which & (unsigned) extra;
@@ -1544,7 +1475,6 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
         if (m->hasWon() != 0)
             return 0;
 
-        // skip irrelevant missions (no agent/target/campaign tie-in).
         if (m == 0 ||
             (!m->isCampaignMission() && m->getAgent() == 0 &&
              m->getClientImage() == 0 && m->getTargetStation() == 0))
@@ -1703,11 +1633,8 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 }
                 break;
             default:
-                // legacy mission ids 8..0xe.
+
                 if (type == 8) {
-                    // Campaign pending-product hand-in special case (binary @0x000bc460):
-                    // when on the campaign mission 0x8f and not yet docked, look for a
-                    // pending product whose word @+0x14 == 0xd2 at the target station.
                     if (m->isCampaignMission() && gStatus->currentCampaignMission == 0x8f && !docked) {
                         if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
                             for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
@@ -1740,21 +1667,17 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
     return 0;
 }
 
-// Reads the agent roster from disk via a transient FileRead helper.
 void Status::loadAgents() {
     FileRead fr;
     agents = fr.loadAgents();
 }
 
-// Identity passthrough variant: hands back the agent list it was given unchanged.
 Array<int> *Status::loadAgents(Array<int> *agents) {
     return agents;
 }
 
 extern int g_levelXPTable[];
 
-// Recomputes the player level from the weighted experience sum against the XP
-// threshold table.
 void Status::checkForLevelUp() {
     int d4 = field_d4 / 3;
     int a0d = field_a0 / 0x32;
@@ -1768,10 +1691,6 @@ void Status::checkForLevelUp() {
 
 extern Station **g_mwPrevStation;
 
-// Status::moveWanted()
-//   Advances each active, non-terminated wanted criminal one hop along a pathfound
-//   route toward its destination (subject to system-visibility and forbidden-system
-//   rules), updating its current location / travels-to / last-seen state.
 void Status::moveWanted() {
     Array<SolarSystem *> *systemsTable = 0;
     SystemPathFinder *pf = 0;
@@ -1793,14 +1712,12 @@ void Status::moveWanted() {
                 continue;
         }
 
-        // lazily load the systems table + pathfinder on first need.
         if (pf == 0) {
             FileRead fr;
             systemsTable = fr.loadSystemsBinary();
             pf = new SystemPathFinder();
         }
 
-        // resolve the from/to stations.
         Station *fromSt = gGlobals->getRandomStation();
         int fromSys = fromSt->getSystem();
         Station *toSt = gGlobals->getRandomStation();
@@ -1808,7 +1725,6 @@ void Status::moveWanted() {
 
         Array<int> *path = 0;
         if (fromSt->getIndex() == toSt->getIndex()) {
-            // already at destination system: re-roll a random reachable target.
             unsigned lo, hi;
             if (i < 2) {
                 hi = 4;
@@ -1862,7 +1778,6 @@ void Status::moveWanted() {
     }
 }
 
-// Replaces the wingmen roster with deep copies of the strings in `list` (or clears it).
 void Status::setWingmen(Array<String *> *list) {
     Array<String *> *cur = (Array<String *> *) (intptr_t) wingmen;
     if (cur != 0) {

@@ -1,21 +1,18 @@
 #ifndef GOF2_STATUS_H
 #define GOF2_STATUS_H
+#include "BluePrint.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+#include "Mission.h"
+#include "PendingProduct.h"
+#include "game/ship/Agent.h"
+#include "game/ship/Ship.h"
+#include "game/world/Standing.h"
+#include "game/world/Station.h"
+#include "game/world/Wanted.h"
 
 using AbyssEngine::String;
-
-class Mission;
-class Station;
-class Ship;
-class Wanted;
-class Agent;
-class BluePrint;
-class Item;
-class PendingProduct;
-class Standing;
 
 class Status {
 public:
@@ -25,24 +22,36 @@ public:
     Array<BluePrint *> *bluePrints;
     Array<PendingProduct *> *pendingProducts;
     Array<Agent *> *agents;
-    int32_t wingmen; // holds Array<String*>* as int
-    int32_t field_0x28; // wingmen backing buffer
+    int32_t wingmen;
+    int32_t field_0x28;
+
     union {
-        int32_t field_0x30; // wingmen count
-        uint32_t fadeValue; // physical +0x2c: saved fade value copied from MenuTouchWindow (gGof2StatusObj+0x2c)
+        int32_t field_0x30;
+        uint32_t fadeValue;
     };
+
     int32_t passengers;
-    // physical +0x34..+0x37. systemVisibilities pointer overlaps two byte flags that
-    // raw +0x35 / +0x37 accesses in MenuTouchWindow read/write.
+
     union {
         Array<bool> *systemVisibilities;
+
         struct {
             uint8_t field_0x34_b0;
-            union { uint8_t dlcOverrideFlag; uint8_t flag_0x35; };     // physical +0x35
+
+            union {
+                uint8_t dlcOverrideFlag;
+                uint8_t flag_0x35;
+            };
+
             uint8_t field_0x36_b2;
-            union { uint8_t versionOverrideFlag; uint8_t flag_0x37; }; // physical +0x37
+
+            union {
+                uint8_t versionOverrideFlag;
+                uint8_t flag_0x37;
+            };
         };
     };
+
     Array<int> *field_0x3c;
     Array<int> *field_0x40;
     Array<int> *field_0x44;
@@ -51,21 +60,23 @@ public:
     Array<bool> *field_50;
     Array<bool> *field_54;
     Array<bool> *field_58;
-    int32_t field_5c; // ship max shield HP
-    int32_t field_60; // ship max armor HP
-    int32_t field_64; // ship max HP
+    int32_t field_5c;
+    int32_t field_60;
+    int32_t field_64;
     int32_t field_68;
     int32_t field_6c;
-    int32_t field_70; // last-station playing-time lo
-    int32_t field_74; // last-station playing-time hi
+    int32_t field_70;
+    int32_t field_74;
     Station *playerStation;
-    int32_t field_7c; // current/random system index
-    int32_t field_80; // target/dest station index
+    int32_t field_7c;
+    int32_t field_80;
     int32_t field_84;
+
     union {
-        int32_t field_8c; // freelance retry counter
-        int32_t preSetField0x84; // physical +0x84: new-game pre-set value (0x1a0a) written via *statusHolder
+        int32_t field_8c;
+        int32_t preSetField0x84;
     };
+
     Array<int> *field_90;
     Array<bool> *field_94;
     Array<bool> *field_98;
@@ -93,22 +104,21 @@ public:
     int16_t field_0xf0;
     int32_t field_f4;
     int16_t field_f8;
-    int32_t field_0x100; // last-position lo, copy of playingTime lo
-    int32_t field_0x104; // last-position hi, copy of playingTime hi
+    int32_t field_0x100;
+    int32_t field_0x104;
     uint8_t field_0x108;
     int32_t field_10c;
     int16_t field_110;
     uint8_t field_0x111;
-    int32_t field_114; // difficulty/mode: 0 or 3
+    int32_t field_114;
     int32_t field_118;
     int32_t field_11c;
-    // physical +0x114. The MenuTouchWindow new-game path writes *(int*)(status+0x114)=3
-    // (difficulty/hardcore mode). field_120 (uint8) is the existing low byte at this offset;
-    // mode_0x114 is the int32 view used by that raw 4-byte store.
+
     union {
         uint8_t field_120;
         int32_t mode_0x114;
     };
+
     int32_t field_124;
     uint8_t field_128;
     int32_t field_12c;
@@ -121,9 +131,8 @@ public:
     uint8_t field_148;
 
     union {
-        // +0x14c: per-game scratch "void" Station
         Station *voidStation;
-        int32_t field_14c; // legacy int view (external readers cast this)
+        int32_t field_14c;
     };
 
     int32_t field_150;
@@ -387,6 +396,6 @@ public:
     int getFreighterMissionStationBit(int station);
 };
 
-extern Status *gStatus; // canonical Status singleton (binary .bss 0x2281b0)
+extern Status *gStatus;
 
 #endif

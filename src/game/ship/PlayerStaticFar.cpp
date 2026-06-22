@@ -7,7 +7,7 @@
 #include "engine/render/AEGeometry.h"
 #include "game/ship/PlayerStatic.h"
 #include "game/ship/Player.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 static PaintCanvas *g_cameraHolder;
 static int g_distLimit;
@@ -76,12 +76,10 @@ void PlayerStaticFar::update(int /*delta*/) {
     float len = VectorLength(this->viewDirection);
 
     if ((int) len < g_distLimit) {
-        // Close: full-scale at the literal integer position.
         this->geometry->setScaling(1.0f);
         this->geometry->setPosition(
             Vector{(float) this->posX, (float) this->posY, (float) this->posZ});
     } else {
-        // Far: place on a sphere of radius g_radius along the view direction.
         this->viewDirection = VectorNormalize(this->viewDirection);
         this->viewDirection *= g_radius;
         this->viewDirection += this->cameraPosition;

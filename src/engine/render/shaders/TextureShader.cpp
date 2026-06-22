@@ -121,4 +121,4 @@ namespace AbyssEngine {
         glUseProgram(program);
         glUniform1i(this->textureUniform[slot], 0);
     }
-} // namespace AbyssEngine
+}

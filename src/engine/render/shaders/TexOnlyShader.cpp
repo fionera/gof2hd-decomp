@@ -41,4 +41,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

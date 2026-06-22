@@ -7,7 +7,7 @@ namespace AbyssEngine {
     public:
         void SetCurrentAnimationTime(long long value);
     };
-} // namespace AbyssEngine
+}
 
 extern "C" void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
 
@@ -66,7 +66,6 @@ uint16_t AEGeometry::getID() { return this->mesh; }
 uint8_t AEGeometry::isVisible() { return (uint8_t) this->visibility; }
 
 void AEGeometry::setVisible(bool v) {
-    // Both bytes of the visibility pair are set together.
     this->visibility = v ? 0x0101 : 0;
 }
 
@@ -354,7 +353,6 @@ void AEGeometry::moveForward(float dist) {
 }
 
 void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
-    // Mirror the high byte of the visibility pair into the low byte.
     this->visibility = (this->visibility & 0xff00) | (this->visibility >> 8);
 
     char matrixCopy[60];
@@ -371,7 +369,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
     unsigned long long lastVis = this->lastVisibleDistSq;
     bool visible;
     if (lastVis == 0) {
-        visible = true; // no clamp configured -> always considered visible
+        visible = true;
     } else {
         visible = this->distSq < lastVis;
         this->visibility = (this->visibility & 0xff00) | (visible ? 1 : 0);
@@ -384,13 +382,11 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
 
     Transform_GetTransform((uint32_t)(uintptr_t)this->canvas);
 
-    // Detail factor: tighter LOD thresholds when the object is small on screen.
     float factor = (screenScale <= 0.0625f) ? 0.75f : 1.0f;
     float detail = (0.03125f < screenScale) ? factor : 0.5f;
 
     int level = this->lodCount;
 
-    // Walk levels high->low; stop at the first whose scaled threshold is met.
     while (level >= 1) {
         int idx = level - 1;
         float thresh = (float) this->lodDistancesSq[idx];
@@ -399,7 +395,7 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
             level = idx;
             continue;
         }
-        // This level is the one to use.
+
         uint32_t lodTf = this->lodTransforms[idx];
         if (lodTf != this->transform) {
             AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, (Matrix *) (uintptr_t) lodTf);
@@ -416,7 +412,6 @@ void AEGeometry::updateLod(const Vector &camPos, float screenScale) {
         return;
     }
 
-    // No level matched: fall back to the base mesh.
     AEGeomCanvas::TransformSetLocal(this->canvas, this->transform, (Matrix *) (uintptr_t) this->baseTransform);
     this->currentLod = 0;
     this->transform = this->baseTransform;
@@ -429,21 +424,18 @@ void AEGeometry::setDirection(const Vector &dir, const Vector &up) {
     uint32_t loc = AEGeomCanvas::TransformGetLocal((uint32_t)(uintptr_t)this->canvas, this->transform);
     memcpy(local, (void *) loc, 0x3c);
 
-    // right = normalize(up x dir)
     Vector right = up;
     VectorCross(&right, &dir);
     Vector tmp;
     VectorNormalize(&tmp, &right);
     right = tmp;
 
-    // recomputedUp = normalize(right x dir)
     Vector rUp;
-    VectorCross(&tmp, &dir); // tmp currently == normalized right
+    VectorCross(&tmp, &dir);
     rUp = tmp;
     VectorNormalize(&tmp, &rUp);
     rUp = tmp;
 
-    // Assemble basis rows (right, up, forward) into the local matrix.
     Matrix &m = *(Matrix *) local;
     m.m[0] = right.x;
     m.m[1] = right.y;

@@ -1,19 +1,14 @@
 #ifndef GOF2_SYSTEMPATHFINDER_H
 #define GOF2_SYSTEMPATHFINDER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/core/Node.h"
 #include "game/world/SolarSystem.h"
 #include "game/mission/Status.h"
 
-extern "C" __attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+extern "C"
 Status **volatile
 g_SystemPathFinder_status;
 

@@ -5,10 +5,10 @@
 #include "game/mission/Status.h"
 #include "engine/math/Transform.h"
 #include "engine/math/BoundingSphere.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
-extern PaintCanvas *g_PaintCanvas; // PaintCanvas singleton pointer
-extern Status **g_Status; // Status singleton holder
+extern PaintCanvas *g_PaintCanvas;
+extern Status **g_Status;
 
 static PaintCanvas *paintCanvas() {
     return g_PaintCanvas;

@@ -84,4 +84,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->a_color, 2, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

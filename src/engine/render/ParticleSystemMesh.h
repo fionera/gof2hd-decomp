@@ -1,14 +1,13 @@
 #ifndef GOF2_PARTICLESYSTEMMESH_H
 #define GOF2_PARTICLESYSTEMMESH_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/IParticleSystem.h"
-#include "engine/render/ParticleSettings.h"   // canonical ParticleSettings::ParticleSet nested type
+#include "engine/render/ParticleSettings.h"
 
 namespace AbyssEngine {
-    class PaintCanvas; // real type lives here (engine/render/PaintCanvas.h); pointer-only use
     enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
 }
 
@@ -19,22 +18,22 @@ using ParticleSet = ParticleSettings::ParticleSet;
 
 class ParticleSystemMesh : public IParticleSystem {
 public:
-    uint8_t dirty; // reset() marks the system live/dirty
-    uint8_t visible; // emit() gate
-    Vector motion; // embedded direction/motion vector (scaled in updateUsualEdges)
-    uint8_t trailFlags; // bit7 selects trail-mode particles
-    uint8_t edgeFlags; // bit3 selects the embedded-motion edge source
+    uint8_t dirty;
+    uint8_t visible;
+    Vector motion;
+    uint8_t trailFlags;
+    uint8_t edgeFlags;
     uint8_t colorMask;
     uint32_t particleCount;
-    uint8_t flipRight; // negate the right basis vector
+    uint8_t flipRight;
     int currentId;
     uint32_t mesh;
     uint32_t firstPoint;
-    uint8_t initialized; // init() completed
+    uint8_t initialized;
     uint32_t emitCounter;
-    Vector *positions; // positions/edge-vector buffer (12-byte elements)
-    int *ages; // per-particle age array
-    int8_t *setIds; // per-particle set-id array
+    Vector *positions;
+    int *ages;
+    int8_t *setIds;
     uint32_t pointCount;
     uint8_t wide;
     uint32_t field_0x78;
@@ -51,8 +50,6 @@ public:
 
     ~ParticleSystemMesh();
 
-    // IParticleSystem virtual overrides (slot order: emit=1, reset=2, getQuadCount=4,
-    // updateSingle=5, setParticle=6, init=0).
     void emit(int delta) override;
 
     int getQuadCount() override;
@@ -81,7 +78,6 @@ public:
 
     void finishCurrentTrailParticle(ParticleSet set, int id, const Vector &first, const Vector &second);
 
-    // Full 12-argument setter; the 11-arg virtual override forwards into this one.
     void setParticle(const Vector &pos, float scale, uint32_t color, float u0, float u1, float v0, float v1,
                      bool useMaskedColor, float upScale, float dirScale, const Vector &delta, bool finish);
 

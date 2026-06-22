@@ -18,7 +18,7 @@
 #include "game/mission/Status.h"
 #include "engine/math/BoundingVolume.h"
 #include "game/ship/Player.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 #include "game/world/Station.h"
 
@@ -103,33 +103,13 @@ V3 PlayerFixedObject::getPosition() {
 
 extern PaintCanvas *gCanvas;
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern FModSound **g_pfo_fmod; // FModSound holder
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_pfo_audioFlag; // *holder+0xf = positional flag
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_pfo_egoA; // PlayerEgo holder (achievements path)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
+extern FModSound **g_pfo_fmod;
+
+extern void **g_pfo_audioFlag;
+
+extern void **g_pfo_egoA;
+
 extern const int g_pfo_dmgVal;
 
 static inline bool typeIsPirateOrE(PlayerFixedObject *self) {
@@ -141,21 +121,19 @@ void PlayerFixedObject::update(int dt) {
     PlayerFixedObject *self = this;
     self->deltaTime = dt;
 
-    // ship's KIPlayer "is active for tutorial" flag derived from aiActiveCounter/moving
     bool kiFlag = (self->aiActiveCounter + 1 != 0) && (self->moving != 0);
     ((Player *) (self->player))->update(dt, kiFlag);
 
-    // Player::enemyFlags: low byte = alwaysEnemy, high byte = alwaysFriend.
     Player *player = (Player *) self->player;
     unsigned char enemyFlag = 0;
     if ((self->faction & 0xfffffffe) == 8) {
-        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = 1; // low byte: alwaysEnemy
+        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = 1;
         enemyFlag = 0;
     } else {
         int st = gStatus->getStanding();
         unsigned char e = ((Standing *) ((void *) (long) st))->isEnemy(self->faction);
         player = (Player *) self->player;
-        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = e; // low byte: alwaysEnemy
+        reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = e;
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
@@ -164,7 +142,7 @@ void PlayerFixedObject::update(int dt) {
             player = (Player *) self->player;
         }
     }
-    reinterpret_cast<uint8_t *>(&player->enemyFlags)[1] = enemyFlag; // high byte: alwaysFriend
+    reinterpret_cast<uint8_t *>(&player->enemyFlags)[1] = enemyFlag;
 
     if (reinterpret_cast<Player *>(self->player)->turnedEnemy() != 0)
         ((Player *) self->player)->enemyFlags = 1;
@@ -212,7 +190,6 @@ void PlayerFixedObject::update(int dt) {
 afterMotion:
 
     if (((Player *) (self->player))->getHitpoints() < 1 && (unsigned int) (self->state - 3) >= 2) {
-        // ---- death transition ----
         if ((char) ((Player *) self->player)->enemyFlags == 0) {
             ((Level *) (self->level))->friendDied();
         } else {
@@ -243,7 +220,6 @@ afterMotion:
             }
         }
 
-        // particle + sound for the explosion (shared tail for both branches)
         Level *lod = (Level *) self->level;
         void *mgr = *(void **) &lod->field_74;
         int sys = typeIsPirateOrE(self) ? lod->field_54 : lod->field_50;
@@ -251,7 +227,7 @@ afterMotion:
         ((ParticleSystemManager *) (mgr))->systemSetMatrix(sys, m);
         int sndHandle = sys;
         Vector *pos = 0;
-        // RAWREAD: *g_pfo_audioFlag is an opaque engine holder (void*), no modeled type
+
         if (*(char *) ((char *) *g_pfo_audioFlag + 0xf) != 0)
             pos = &self->position;
         (*g_pfo_fmod)->play(0x14, pos, (Vector *) 0, (float) sndHandle);
@@ -275,7 +251,7 @@ afterMotion:
             Array<KIPlayer *> *enemies = ((Level *) self->level)->getEnemies();
             for (unsigned int i = 0; i < enemies->size(); i++) {
                 KIPlayer *obj = (*enemies)[i];
-                // RAWREAD: KIPlayer has no member at +0x3e (gap before field_0x3f)
+
                 if (*(char *) ((char *) obj + 0x3e) != 0) {
                     obj = (*enemies)[i];
                     ((Player *) (obj->player))->damage(g_pfo_dmgVal);
@@ -284,7 +260,7 @@ afterMotion:
             if (self->kind == 0xe &&
                 (char) ((Player *) self->player)->destroyed == 0) {
                 void *egoObj = *g_pfo_egoA;
-                // RAWREAD: egoObj is an opaque PlayerEgo holder (void*); +0x118 unmodeled
+
                 *(int *) ((char *) egoObj + 0x118) = *(int *) ((char *) egoObj + 0x118) + 1;
                 if (gAchievements->hasMedal(0x27, 1) == 0) {
                     float cur = (float) *(int *) ((char *) egoObj + 0x118);
@@ -303,7 +279,6 @@ afterMotion:
 
     int state = self->state;
     if (state == 3) {
-        // dying: run explosion, drift, advance the wreck transform until done
         if (self->explosion != 0)
             self->explosion->update(dt, self->position);
         if (self->kind != 0x37a3) {
@@ -367,7 +342,6 @@ afterMotion:
             }
         }
     } else if (state == 4) {
-        // exploding
         self->explosionElapsed = self->explosionElapsed + dt;
         if (self->explosion != 0)
             self->explosion->update(dt, self->position);
@@ -420,7 +394,7 @@ afterMotion:
                     self->wreckGeometry->meshId,
                     matOut);
             }
-            // rumble ramp
+
             if (((Level *) self->level)->getPlayer() != 0) {
                 void *ego = (void *) (intptr_t)((Level *) self->level)->getPlayer();
                 void *cam = (void *) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getTargetFollowCamera();
@@ -443,7 +417,6 @@ afterMotion:
             }
         }
     } else if (state == 5) {
-        // dead-but-selectable: search for a nearby active enemy to re-home on
         Array<Player *> *enemies = ((Player *) (self->player))->getEnemies();
         if (enemies != nullptr) {
             self->targetEnemy = 0;
@@ -478,8 +451,6 @@ afterMotion:
         }
     }
 
-    // mirror the integer position into the Player object
-    // RAWREAD: Player +0x48/+0x4c/+0x50 fall in the pad_46 region (no named members)
     void *p = self->player;
     *(int *) ((char *) p + 0x48) = self->intPosX;
     *(int *) ((char *) p + 0x4c) = self->intPosY;
@@ -525,12 +496,7 @@ void PlayerFixedObject::setBV(BoundingVolume *bv) {
 
 typedef void (*VecAssignFn)(void *dst, void *src);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern VecAssignFn *g_pfo_vecAssignZero;
 
 void PlayerFixedObject::reset() {
@@ -560,7 +526,7 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     AEGeometry *geom = new AEGeometry((uint16_t) meshId, gCanvas, true);
     this->wreckGeometry = geom;
     void *t = gCanvas->TransformGetTransform(geom->transform);
-    *(int *) &((AbyssEngine::Transform *) t)->boundingRadius = 0x48f42400; // 500000.0f far-clip constant (raw bits)
+    *(int *) &((AbyssEngine::Transform *) t)->boundingRadius = 0x48f42400;
 
     int kind = this->kind;
     int sel;
@@ -627,8 +593,9 @@ PlayerFixedObject::~PlayerFixedObject() {
     self->name.clear();
 }
 
-extern "C" void render_thunk_state5(void *geom); // arg = this->geometry
-extern "C" void render_thunk_other(void *expl); // arg = this->explosion (Explosion*)
+extern "C" void render_thunk_state5(void *geom);
+
+extern "C" void render_thunk_other(void *expl);
 
 void PlayerFixedObject::render() {
     PlayerFixedObject *self = this;
@@ -658,27 +625,16 @@ void PlayerFixedObject::render() {
     return render_thunk_other(expl);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const int g_pfo_stationIdx[4];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern const int g_pfo_lootParams[8]; // pairs at +0 used; [idx*2+1]
+
+extern const int g_pfo_lootParams[8];
 
 PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeometry *geom,
                                      float x, float y, float z)
     : KIPlayer(kind, -1, player, geom, x, y, z, false) {
     PlayerFixedObject * self = this;
 
-    // Zero the contiguous respawnPos/homingTarget/homingDir vector region.
     Vector zeroVec = {0.0f, 0.0f, 0.0f};
     self->respawnPos = zeroVec;
     self->homingTarget = zeroVec;
@@ -715,7 +671,6 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
     self->intPosY = (int32_t) y;
     self->intPosZ = (int32_t) z;
 
-    // Name string from a fixed literal.
     {
         String tmp("", false);
         self->name = tmp;
@@ -775,7 +730,6 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
         delete gen;
     }
 
-    // RAWREAD: Player +0x45 (high byte of 'destroyed' region) is not a distinct named member
     *(uint8_t *) ((char *) self->player + 0x45) = 1;
     if (kind != 0x37a3) {
         self->aiActiveCounter = 0x2f;

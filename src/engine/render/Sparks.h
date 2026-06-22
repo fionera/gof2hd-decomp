@@ -1,22 +1,22 @@
 #ifndef GOF2_SPARKS_H
 #define GOF2_SPARKS_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/math/Vector.h"
 
 class Sparks {
 public:
-    int *lifetimeThresholds; // per-spark lifetime thresholds
-    uint32_t spriteSystem; // sprite system handle
-    uint32_t texture; // texture handle
-    int elapsed; // elapsed time
-    uint8_t active; // active flag
-    int kind; // burst kind (0 = hit, 1 = rocket)
-    uint32_t count; // spark count
-    int lifetime; // total lifetime
-    int totalThreshold; // sum of per-spark thresholds
+    int *lifetimeThresholds;
+    uint32_t spriteSystem;
+    uint32_t texture;
+    int elapsed;
+    uint8_t active;
+    int kind;
+    uint32_t count;
+    int lifetime;
+    int totalThreshold;
 
     Sparks(int kind);
 

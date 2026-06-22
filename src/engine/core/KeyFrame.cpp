@@ -13,4 +13,4 @@ namespace AbyssEngine {
         field_0x5c = 0;
         alpha = 1.0f;
     }
-} // namespace AbyssEngine
+}

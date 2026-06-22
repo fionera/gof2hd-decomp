@@ -1,23 +1,21 @@
 #ifndef GOF2_STATUSWINDOW_H
 #define GOF2_STATUSWINDOW_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class TouchButton;
-class ImagePart;
+#include "TouchButton.h"
+#include "engine/render/ImagePart.h"
 
 typedef AbyssEngine::String String;
 
 class StatusWindow {
 public:
-    int medalCount; // number of medal buttons
+    int medalCount;
     Array<TouchButton *> *tabButtons;
     Array<TouchButton *> *medalButtons;
-    Array<ImagePart *> *imageParts; // glyph image tiles for drawChar
+    Array<ImagePart *> *imageParts;
     Array<String *> *detailLines;
-    unsigned rankImage0; // rank/medal tile image handles
+    unsigned rankImage0;
     unsigned rankImage1;
     unsigned rankImage2;
     unsigned rankImage3;
@@ -25,24 +23,24 @@ public:
     unsigned standingBarImage;
     unsigned standingFrameImage;
     unsigned activeTab;
-    int selectedMedal; // selected medal index (-1 == none)
+    int selectedMedal;
     int scrollOffset;
     int lastTouchY;
     int scrollTarget;
     int scrollVelocity;
-    float scrollDamping; // inertia damping factor
-    float scrollVelocityF; // float scroll velocity
+    float scrollDamping;
+    float scrollVelocityF;
     int touchStartY;
     unsigned char isDragging;
-    int contentHeight; // current-tab content height
-    int viewportHeight; // scrollable viewport height
-    int charImageWidth; // credit-glyph image width
-    int charImageHeight; // credit-glyph image height
-    int *tabHeights; // per-tab scroll content heights
-    int boxWidth; // content column / box width
-    int standingBarWidth; // standing bar half-width
+    int contentHeight;
+    int viewportHeight;
+    int charImageWidth;
+    int charImageHeight;
+    int *tabHeights;
+    int boxWidth;
+    int standingBarWidth;
     int standingBarHeight;
-    int medalRowHeight; // medal grid row height
+    int medalRowHeight;
 
     StatusWindow();
 

@@ -27,4 +27,4 @@ static inline uint8_t &u8(void *self, unsigned int offset) {
     return *(uint8_t *) ((char *) self + offset);
 }
 
-#endif // GOF2_FIELDACCESS_H
+#endif

@@ -10,6 +10,6 @@ namespace AbyssEngine {
 
         KeyCode &operator=(const KeyCode &other);
     };
-} // namespace AbyssEngine
+}
 
 #endif

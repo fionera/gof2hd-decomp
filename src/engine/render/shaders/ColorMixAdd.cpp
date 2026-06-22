@@ -7,7 +7,6 @@ namespace AbyssEngine {
     int ColorMixAdd::ShaderIndex;
 
     ColorMixAdd::ColorMixAdd() {
-        // ShaderBaseStruct base subobject is default-constructed implicitly.
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"ColorMixAdd";
     }
@@ -64,4 +63,4 @@ namespace AbyssEngine {
             glDisableVertexAttribArray(this->a1Loc);
         }
     }
-} // namespace AbyssEngine
+}

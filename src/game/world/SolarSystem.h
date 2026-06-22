@@ -1,17 +1,15 @@
 #ifndef GOF2_SOLARSYSTEM_H
 #define GOF2_SOLARSYSTEM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class Station;
+#include "Station.h"
 
 class SolarSystem {
 public:
-    int starR; // +0x0
-    int starG; // +0x4
-    int starB; // +0x8
+    int starR;
+    int starG;
+    int starB;
     AbyssEngine::String name;
     int systemId;
     int securityLevel;

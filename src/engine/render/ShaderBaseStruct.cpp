@@ -152,4 +152,4 @@ namespace AbyssEngine {
 
         return result;
     }
-} // namespace AbyssEngine
+}

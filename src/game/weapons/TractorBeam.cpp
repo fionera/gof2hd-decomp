@@ -7,17 +7,17 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/mission/Status.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 
 struct Radar {
-    void *level; // +0x00
-    void *field_0x4; // +0x04
-    void *field_0x8; // +0x08
-    void *lockedAsteroid; // +0x0c
-    int field_0x10; // +0x10
-    int field_0x14; // +0x14
-    int field_0x18; // +0x18
-    void *field_0x1c; // +0x1c
+    void *level;
+    void *field_0x4;
+    void *field_0x8;
+    void *lockedAsteroid;
+    int field_0x10;
+    int field_0x14;
+    int field_0x18;
+    void *field_0x1c;
 };
 
 struct Player {
@@ -65,7 +65,6 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
             goto detach;
     }
 
-    // Drop the beam if the crate has lost its body or the carrier is gone.
     if (crate->crateGeometry == nullptr ||
         (crate->stealFlag == 0 && ((Player *) crate)->isActive() == 0)) {
     detach:
@@ -76,12 +75,10 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
         return;
     }
 
-    // Advance the canvas transform for this frame.
     PaintCanvas *canvas = gCanvasRoot;
     AbyssEngine::Transform *tf = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
     tf->Update(frameTime, false);
 
-    // Working vector = crate position - player position.
     Vector cratePos = ((AEGeometry *) this->grabbedCrate->crateGeometry)->getPosition();
     Vector playerPos = player->getPosition();
     Vector working = cratePos - playerPos;
@@ -90,7 +87,6 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     this->dirZ = working.z;
     float dist = VectorLength(working);
 
-    // Beam length depends on the equipped ship hull.
     int shipIndex = gStatus->getShip()->getIndex();
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (shipIndex == 0x2c) {
@@ -104,14 +100,12 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     }
     this->beamGeometry->setScaling(offset.x);
 
-    // Aim the beam at the crate and place its tail at the player position.
     AEGeometry *beam = this->beamGeometry;
     Vector dirN = VectorNormalize(offset - working);
     beam->setDirection(dirN, dirN);
     beam->setPosition(player->getPosition());
 
     if (dist > gCaptureDistance) {
-        // Crate still far -- pull it toward the ship along the beam.
         radar->field_0x1c = nullptr;
         dirN = VectorNormalize(working);
         working = dirN * (float) (frameTime * 10);
@@ -123,7 +117,6 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
             this->soundPlaying = 1;
         }
     } else {
-        // Crate reached the ship -- capture it.
         this->grabbedCrate->captureCrate(hud);
         this->grabbedCrate = nullptr;
         this->active = 0;

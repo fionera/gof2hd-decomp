@@ -111,4 +111,4 @@ namespace AbyssEngine {
     void FBOContainer::EndCapture() {
         glBindFramebuffer(0x8d40, this->engine->field_0x40c);
     }
-} // namespace AbyssEngine
+}

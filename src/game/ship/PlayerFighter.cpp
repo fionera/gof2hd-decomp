@@ -31,7 +31,7 @@ namespace AbyssEngine {
 
         void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
     };
-} // namespace AbyssEngine
+}
 
 extern PaintCanvas *gCanvas;
 
@@ -104,7 +104,7 @@ void PlayerFighter::awake() {
     if (geom == 0) {
         geom = this->geometry;
     }
-    // awake() tail: make the (sub)geometry visible. Inherited AEGeometry::setVisible.
+
     return ((AEGeometry *) (intptr_t) geom)->setVisible(true);
 }
 
@@ -121,8 +121,7 @@ void PlayerFighter::setCloakingPossible(bool v) {
     self->cloakingPossible = v;
     if (!v && self->field_0x13c != 0) {
         self->cloakTimer = self->cloakDuration + 1;
-        // Forcing cloakTimer past the duration and re-entering handleCloaking()
-        // runs the cloak-deactivation path (restores the material, hides exhaust).
+
         return self->handleCloaking();
     }
 }
@@ -213,7 +212,7 @@ void PlayerFighter::setLevel(Level *lvl) {
 
 extern void *const gPFC_guard __attribute__((visibility("hidden")));
 extern int *const gPFC_sharedRoute __attribute__((visibility("hidden")));
-extern const int gPFC_defaultRoute __attribute__((visibility("hidden"))); // DAT_000ec81c (0x30 bytes)
+extern const int gPFC_defaultRoute __attribute__((visibility("hidden")));
 
 PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeometry *geom,
                              float x, float y, float z, bool flag)
@@ -225,9 +224,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->field_0x200 = 0;
     self->field_0x204 = 0;
     self->field_0x208 = 0;
-    // Original cleared 0x48 bytes from 0x158; the modeled members in that span are
-    // the working position and the two transient reset vectors (trailing bytes hold
-    // no named members in the packed layout).
+
     self->workingPosition = (Vector)
     {
         0, 0, 0
@@ -244,7 +241,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     AEMath_Matrix_ctor(&self->rollMatrix);
 
     int rng = (int) (intptr_t) gRandom;
-    // 9 candidate waypoints (3 floats each) drawn from the RNG.
+
     float wp[27];
     int r;
     r = PF_nextInt(rng);
@@ -320,7 +317,6 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->field_0x1f4 = 0;
     self->wingmanCommand = wingmanCmd;
 
-    // Four 16-byte zero blocks (an int followed by a 3-field vector each).
     self->maneuverTimer = 0;
     self->field_0x1c0 = 0;
     self->field_0x1c4 = 0;
@@ -338,7 +334,6 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->field_0x1ec = 0;
     self->currentRotate = 0;
 
-    // Original stored the raw `flag` bit-pattern as workingPosition.x.
     self->workingPosition.x = *(float *) &flag;
     self->workingPosition.y = 0;
     self->workingPosition.z = 0;
@@ -423,14 +418,12 @@ void PlayerFighter::update(int dt) {
     int *guardP = *(int **) gUpd_guard;
     volatile int saved = *guardP;
 
-    // Dead-and-explosion-finished early-out: tear down via the dead veneer.
     if (this->state == 4 && this->explosion->isPlaying() == 0 &&
         (this->crateCaptured == 0 || 60000 < this->deathTimer)) {
         PF_update_dead(this);
         return;
     }
 
-    // Advance per-frame timers.
     this->field_0x1c0 += dt;
     this->maneuverTimer += dt;
     if (this->wingmanCommand == 1) {
@@ -439,12 +432,10 @@ void PlayerFighter::update(int dt) {
     this->deltaTime = dt;
     this->deltaTimeHi = dt >> 31;
 
-    // Sync world position from the geometry.
     float pos[3];
     ((AEGeometry *) (pos))->getPosition();
     this->renderPosition = *(Vector *) pos;
 
-    // Recompute the "is enemy" flag unless the ship is in a non-combat mode.
     if (this->field_0x43 == 0) {
         unsigned char enemy;
         if ((this->wingmanCommand & 0xfffffffe) == 8) {
@@ -457,7 +448,6 @@ void PlayerFighter::update(int dt) {
         *(unsigned char *) (this->player + 0x5c) = enemy;
     }
 
-    // Remaining per-frame state machine.
     PF_update_body(this, dt);
 
     return;
@@ -511,7 +501,6 @@ void PlayerFighter::roll(int angle) {
         float absX = (0.0f < fwdX) ? fwdX : -fwdX;
         if (0x3b < angle) angle = 0x3c;
 
-        // Snap-back to identity when banked back near level.
         if (fwdY >= 0.0f && absX < gRoll_threshold) {
             unsigned char tmp[60];
             AEMath_MatrixIdentity(tmp, &self->rollMatrix);
@@ -521,10 +510,10 @@ void PlayerFighter::roll(int angle) {
             goto done;
         }
 
-        float bank; // fVar11
-        float roll; // fVar10 (z rotation)
+        float bank;
+        float roll;
         if (self->field_0x254 != 0) {
-            roll = (fwdY == fwdY) ? gRoll_f20 : gRoll_f1c; // NaN(fVar10) selection
+            roll = (fwdY == fwdY) ? gRoll_f20 : gRoll_f1c;
             bank = (fwdX < 0.0f) ? roll : gRoll_f18;
         } else {
             bank = 0.0f;
@@ -587,7 +576,7 @@ void PlayerFighter::setMissionCrate(bool on) {
         int type = ((Mission *) (mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         this->lootList->push_back(item);
-        // setMissionCrate() tail: append the slot marker (1) to the loot list.
+
         ArrayAdd<int>(1, *this->lootList);
     }
 }
@@ -611,7 +600,7 @@ int PlayerFighter::collide(float x, float y, float z) {
 void PlayerFighter::setBV(BoundingVolume *bv) {
     Array<BoundingVolume *> *a = new Array<BoundingVolume *>();
     this->boundingVolumes = a;
-    // setBV() tail: append the bounding volume to the newly created array.
+
     ArrayAdd<BoundingVolume *>(bv, *a);
 }
 
@@ -669,14 +658,13 @@ int PlayerFighter::outerCollide(float x, float y, float z) {
 }
 
 static inline void AEMath_VectorScale(void *out, float s, void *v) {
-    // out = s * v
     *(AbyssEngine::AEMath::Vector *) out =
             s * *(const AbyssEngine::AEMath::Vector *) v;
 }
 
 extern void *const gIP_guard __attribute__((visibility("hidden")));
 extern const float gIP_strength __attribute__((visibility("hidden")));
-extern void *const gIP_rngFn __attribute__((visibility("hidden"))); // DAT_000efdc0 (fn ptr)
+extern void *const gIP_rngFn __attribute__((visibility("hidden")));
 
 typedef int (*RngFn)(int rng, int bound);
 
@@ -684,8 +672,6 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     int *guardP = *(int **) gIP_guard;
     volatile int saved = *guardP;
 
-    // pos = this->getPosition() — PlayerFighter inherits KIPlayer::getPosition
-    // (binary vtable slot +0x28 resolves to KIPlayer::getPosition for a PlayerFighter).
     AbyssEngine::AEMath::Vector gp = this->getPosition();
     float pos[3] = {gp.x, gp.y, gp.z};
 
@@ -732,15 +718,15 @@ void PlayerFighter::setExhaustVisible(bool vis) {
         int id = (sub != 0) ? *(int *) (sub + 0x14) : *(int *) (geom + 0x14);
         if (id != -1) {
             unsigned t = (unsigned) (unsigned long) gCanvas->TransformGetTransform(*(unsigned *) gExhaustCanvas);
-            // setExhaustVisible() tail: toggle the exhaust transform's visibility.
+
             return ((AbyssEngine::Transform *) (unsigned long) t)->SetVisible(vis);
         }
     }
 }
 
-extern void *const gR_g3 __attribute__((visibility("hidden"))); // case 3 transform-id global
-extern void *const gR_g4 __attribute__((visibility("hidden"))); // case 4 transform-id global
-extern void *const gR_g5 __attribute__((visibility("hidden"))); // default-case transform-id global
+extern void *const gR_g3 __attribute__((visibility("hidden")));
+extern void *const gR_g4 __attribute__((visibility("hidden")));
+extern void *const gR_g5 __attribute__((visibility("hidden")));
 
 void PlayerFighter::render() {
     if (this->wreckGeometry != 0) {
@@ -764,7 +750,6 @@ void PlayerFighter::render() {
                 goto done;
             }
             if (this->subGeometry == 0) {
-                // render() tail: render the bare geometry (no sub-geometry override).
                 return ((AEGeometry *) (intptr_t) this->geometry)->render();
             }
             idp = *(unsigned **) gR_g3;
@@ -805,7 +790,7 @@ done:
     ;
 }
 
-extern "C" void AEMath_MatrixMul(void *out, void *m); // operator*(out, m)
+extern "C" void AEMath_MatrixMul(void *out, void *m);
 
 extern void *const gPush_guard __attribute__((visibility("hidden")));
 extern const float gPush_div __attribute__((visibility("hidden")));
@@ -831,8 +816,7 @@ void PlayerFighter::push(int dt) {
             void *geom = (void *) (intptr_t) this->geometry;
             void *m = (void *) &((AEGeometry *) ((int) (long) geom))->getMatrix();
             AEMath_MatrixMul(rot, m);
-            // The recovered argument is the rot buffer just multiplied above; the
-            // decompiler had dropped the second (matrix) operand of setMatrix.
+
             ((AEGeometry *) ((int) (long) geom))->setMatrix(*(const Matrix *) rot);
             lo = this->deltaTime;
             hi = this->deltaTimeHi;
@@ -859,7 +843,6 @@ void PlayerFighter::reset() {
     ((KIPlayer *) (this))->reset();
     this->crateCaptured = 1;
 
-    // Snap the working and render positions back to the spawn point.
     Vector spawn = {this->posX, this->posY, this->posZ};
     this->workingPosition = spawn;
     this->renderPosition = spawn;
@@ -899,9 +882,11 @@ void PlayerFighter::reset() {
     this->aiDisabled = 0;
 }
 
-extern "C" void PF_cloakStart(PlayerFighter * self); // -> 0x1ac1e8
-extern "C" void PF_cloakStop(PlayerFighter *self, int on); // -> 0x1ac1f8
-extern "C" void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag); // -> 0x1ac208
+extern "C" void PF_cloakStart(PlayerFighter * self);
+
+extern "C" void PF_cloakStop(PlayerFighter *self, int on);
+
+extern "C" void PF_cloakApply(void *meshPtr, int arg, float alpha, int flag);
 
 extern const float gHC_divIn __attribute__((visibility("hidden")));
 extern const float gHC_divOut __attribute__((visibility("hidden")));

@@ -1,37 +1,31 @@
 #ifndef GOF2_ENERGYSHIELD_H
 #define GOF2_ENERGYSHIELD_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class EnergyShield : public ShaderBaseStruct {
     public:
-        // GL locations (the tex0/tex1 pair is accessed dynamically as &uTex0 + i).
-        int aPosition; // a_position
-        int aTexCoord; // a_texCoord
-        int uM0; // u_m0
-        int uM1; // u_m1
-        int uM2; // u_m2
-        int uM3; // u_m3
-        int uTex0; // u_tex0
-        int uTex1; // u_tex1
-        int uM4; // u_m4
-        int uM5; // u_m5
-        int uM7; // u_m7
-        int uRefract; // u_refract
-        int uM6; // u_m6
-        int uM8; // u_m8
+        int aPosition;
+        int aTexCoord;
+        int uM0;
+        int uM1;
+        int uM2;
+        int uM3;
+        int uTex0;
+        int uTex1;
+        int uM4;
+        int uM5;
+        int uM7;
+        int uRefract;
+        int uM6;
+        int uM8;
 
         static int ShaderIndex;
 
@@ -43,7 +37,7 @@ namespace AbyssEngine {
 
         void SetInActive() override;
     };
-} // namespace AbyssEngine
+}
 
 extern "C" {
 extern char EnergyShield_vtable[];

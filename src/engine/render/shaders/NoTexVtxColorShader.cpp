@@ -52,4 +52,4 @@ namespace AbyssEngine {
         }
         glVertexAttribPointer(index, size, 0x1406, 0, stride, ptr);
     }
-} // namespace AbyssEngine
+}

@@ -1,7 +1,7 @@
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Material.h"
 #include "engine/core/Array.h"
-PaintCanvas *gCanvas = nullptr; // canonical render canvas singleton
+PaintCanvas *gCanvas = nullptr;
 
 namespace {
     struct PCArrayHeader {
@@ -59,7 +59,7 @@ namespace {
         }
         a->count = 0;
     }
-} // namespace
+}
 
 extern "C" void paintcanvas_ext_has_vibration(void *);
 
@@ -921,7 +921,6 @@ void *PaintCanvas::CameraGetLocal(unsigned int index) {
 
 void PaintCanvas::DrawTextLines(unsigned int font,
                                 AbyssEngine::Array<AbyssEngine::String *> *arr, int x, int y) {
-    // Thin forwarder to the (font, arr, x, y, p5, flag) overload.
     this->DrawTextLines(font, arr, x, y, 0u, false);
 }
 
@@ -998,12 +997,7 @@ void PaintCanvas::TransformCreate(unsigned int &out) {
     out = this->transformCount - 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_dr_flag_79368;
 
 void PaintCanvas::DrawRectangle(int x, int y, int w, int h) {
@@ -1212,12 +1206,7 @@ void *PaintCanvas::MaterialGetMaterial(unsigned int index) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 char *paintcanvas_g_bg_flag;
 
 void PaintCanvas::EndBG() {
@@ -1239,8 +1228,6 @@ void *PaintCanvas::FindResource(unsigned short id) {
 
 AbyssEngine::Mesh *PaintCanvas::MeshGetPointer(unsigned int index) {
     if (index < this->meshCount) {
-        // meshes[index] is a mesh handle stored in a char* slot; reinterpret it
-        // as the Mesh* it actually is without a pointer cast (C++14, no-cast rule).
         AbyssEngine::Mesh *mesh;
         char *slot = (this->meshes)[index];
         memcpy(&mesh, &slot, sizeof(mesh));
@@ -1411,8 +1398,7 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     m[12] = 1.0f;
     m[13] = 1.0f;
     m[14] = 1.0f;
-    // The delegated 4-arg overload returns the on-screen visibility flag in r0
-    // (see android GetScreenPosition @ 0x7bd58: r6 = 1 only when fully on-screen).
+
     return paintcanvas_ext_getscreenpos_m(this, buf, &a, &b);
 }
 
@@ -1668,19 +1654,9 @@ void PaintCanvas::MeshConvertToVBO(unsigned int index) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const float g_di2_one_88d90;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const float g_di2_def_88d94;
 
 void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
@@ -1740,19 +1716,9 @@ void PaintCanvas::FontSetYOffset(unsigned int index, short yoff) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_sbm_flag_8cb62;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_sbm_const_8ce34;
 
 void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
@@ -1880,26 +1846,20 @@ void PaintCanvas::SetBlendMode(AbyssEngine::BlendMode mode) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_gla_nl_8c4c0[];
 
 void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str, int width,
                                ::Array<AbyssEngine::String *> *outArray) {
     AbyssEngine::String *acc = paintcanvas_ext_gla_str_new();
 
-    char src[16]; // working string
+    char src[16];
     char nl[16];
     paintcanvas_ext_dsc_str_copy(src, &str, false);
     paintcanvas_ext_gla_str_fromchar(nl, g_gla_nl_8c4c0, false);
     paintcanvas_ext_gla_str_append(src, nl);
     paintcanvas_ext_gla_str_dtor(nl);
 
-    // Pass 1: count lines.
     unsigned int count = 0;
     int pos = 0;
     int srcLen = *(int *) (src + 8);
@@ -1916,13 +1876,11 @@ void PaintCanvas::GetLineArray(unsigned int font, const AbyssEngine::String &str
     }
     paintcanvas_ext_gla_str_vdtor(acc);
 
-    // Allocate the output array of count Strings.
     paintcanvas_ext_gla_arr_setlen(count, outArray);
     for (unsigned int i = 0; i < count; i++) {
         outArray->data_[i] = paintcanvas_ext_gla_str_new();
     }
 
-    // Pass 2: fill and trim each line.
     for (unsigned int i = 0; i < count; i++) {
         char sub[16];
         char line[16];
@@ -1987,8 +1945,6 @@ void PaintCanvas::ChangeCubeTexture(unsigned int idx) {
     }
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::TransformCreate(unsigned short resId, unsigned int &out) {
     char *res = (char *) paintcanvas_ext_tfc_findres(this, resId);
@@ -2064,26 +2020,15 @@ int PaintCanvas::GetTextHeight(unsigned int index) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_init_const_7e7b4;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_init_const_7e7b8;
 
 void PaintCanvas::Initialize(bool landscape) {
     this->gameOrientation = landscape ? 2 : 0;
     paintcanvas_ext_init_setorientation(this->engine);
 
-    // zero out the four 4-float blocks at 0x78, 0x88, 0x98, 0xa8
     memset(&this->projOrthoMatrix.m[0], 0, 0x10);
     memset(&this->projOrthoMatrix.m[4], 0, 0x10);
     memset(&this->projOrthoMatrix.m[8], 0, 0x10);
@@ -2150,52 +2095,21 @@ int PaintCanvas::FontGetYOffset(unsigned int index) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_spm_p0_7b826;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_spm_p1_7b82a;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_spm_p2_7b82c;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_spm_p3_7b82e;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_spm_p4_7b830;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_spm_const_7b950;
 
 void PaintCanvas::SetProjectionMatrix3d(float fov, float nearPlane,
                                         float farPlane) {
-    // stash parameters into the engine globals
     *g_spm_p0_7b826 = farPlane;
     *g_spm_p1_7b82a = nearPlane;
     *g_spm_p4_7b830 = fov;
@@ -2210,7 +2124,6 @@ void PaintCanvas::SetProjectionMatrix3d(float fov, float nearPlane,
     float fw = paintcanvas_ext_spm_signedtofloat(w, 0);
     float fh = paintcanvas_ext_spm_signedtofloat(h, 0);
 
-    // zero the four matrix rows at 0x38,0x48,0x58,0x68
     memset(&this->projMatrix3d.m[12], 0, 0x10);
     memset(&this->projMatrix3d.m[8], 0, 0x10);
     memset(&this->projMatrix3d.m[4], 0, 0x10);
@@ -2244,12 +2157,7 @@ void PaintCanvas::SetProjectionMatrix3d(float fov, float nearPlane,
     this->projMatrix3d.m[14] = ((farPlane + farPlane) * nearPlane) / (nearPlane - farPlane);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_dss1_gravscale_8ac10;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int index) {
@@ -2296,7 +2204,6 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index) {
             *(unsigned int *) &rotM[1] = *(unsigned int *) &s ^ 0x80000000;
             rotM[4] = s;
 
-            // copy the active camera's view matrix (at cam+0xc) into scratch
             char *cam = ((char **) this->cameras)[this->currentCamera];
             paintcanvas_ext_dss1_memcpy(scratch, cam + 0xc, 0x3c);
             paintcanvas_ext_dss1_mtx_muleq(scratch, rotM);
@@ -2329,12 +2236,7 @@ float PaintCanvas::MeshSetPoint(unsigned int index, unsigned short vtx,
     return x;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_getline_empty_7c428[];
 
 extern "C" int paintcanvas_ext_gl_textwidth(void *self, unsigned int font, const AbyssEngine::String *str,
@@ -2342,7 +2244,7 @@ extern "C" int paintcanvas_ext_gl_textwidth(void *self, unsigned int font, const
 
 void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWidth,
                           AbyssEngine::String *out) {
-    char tmp[16]; // String scratch
+    char tmp[16];
     unsigned int lastSpace = 0;
     int width = 5;
     unsigned int i = 0;
@@ -2357,7 +2259,6 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
             lastSpace = i;
         }
         if (width >= maxWidth) {
-            // break out: word-wrap path
             if ((int) lastSpace < 1) {
                 paintcanvas_ext_gl_substr(tmp, &str, 0, next);
             } else {
@@ -2393,12 +2294,7 @@ void PaintCanvas::GetLine(unsigned int font, AbyssEngine::String str, int maxWid
     paintcanvas_ext_gl_str_dtor(tmp);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_dl_flag_794ee;
 
 void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
@@ -2492,7 +2388,6 @@ extern char paintcanvas_g_bg_a;
 extern char paintcanvas_g_bg_b;
 
 void PaintCanvas::BeginBG() {
-    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
     *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 0;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
@@ -2513,8 +2408,6 @@ void PaintCanvas::BeginBG() {
     return paintcanvas_ext_gl_done();
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::FontCreate(unsigned short resId, unsigned int &out,
                              bool /*unused*/) {
@@ -2601,12 +2494,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
 extern "C" int tcg_TextureCreateFromFile(void *engine, const char *path, void *cb, void *ud,
                                          unsigned *outId, bool b, float f);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int **g_tcg_canary;
 
 void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int unit) {
@@ -2630,7 +2518,6 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
 extern char paintcanvas_g_use_matgl;
 
 void PaintCanvas::Begin3d() {
-    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
     *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 0;
     paintcanvas_ext_gl_enable(0xb71);
     paintcanvas_ext_gl_depthmask(1);
@@ -2670,8 +2557,6 @@ AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in, bool r
     return out;
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
                                      unsigned short matResId, unsigned int &out) {
@@ -2716,7 +2601,6 @@ void PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix
         return;
     }
 
-    // copy {m[0xc], m[0x1c], m[0x2c]} into the output vector
     float src[3];
     src[0] = srcMatrix.m[3];
     src[1] = srcMatrix.m[7];
@@ -2748,8 +2632,6 @@ void PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix
     double halfH = (double) paintcanvas_ext_gsp_signedtofloat(h1 >> 1, 0);
     outVec[1] = (float) (halfH + termY * fh);
 
-    // remaining clamp/visibility checks have no observable side-effects on output
-    // (they compute booleans only); reproduce the visible reads to keep behavior.
     char *cam2 = ((char **) this->cameras)[this->currentCamera];
     if (outVec[2] <= *(float *) (cam2 + 4)) {
         float fy = outVec[1];
@@ -2767,8 +2649,6 @@ void PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Matrix &srcMatrix
     }
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::SpriteSystemCreate(unsigned short resId,
                                      bool flag, unsigned int &out) {
@@ -2811,12 +2691,7 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     out = this->materialCount - 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_cisvf_gravscale_7bcd8;
 
 int PaintCanvas::CameraIsSphereinViewFrustum(const AbyssEngine::AEMath::Vector &point, float radius) {
@@ -2863,12 +2738,7 @@ void PaintCanvas::MeshChangeShaderAnimValue(AbyssEngine::Mesh *mesh, float value
     return paintcanvas_ext_shader_anim(this, mesh->animation);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *const g_resume_curtex_7e828;
 
 extern "C" int paintcanvas_ext_rs_texfromfile(void *eng, char *path, void *cb, void *ud,
@@ -2896,8 +2766,6 @@ void PaintCanvas::Resume() {
     }
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::TransformAddMeshId(unsigned int transformIndex, unsigned int meshIndex) {
     if (transformIndex >= this->transformCount ||
@@ -2937,40 +2805,15 @@ void PaintCanvas::GetAccelValue() {
     return paintcanvas_ext_get_accel(this->engine);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_rpm_fov_8d0dc;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_rpm_const_8d234;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_rpm_near_8d196;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *const g_rpm_far_8d1a4;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_rpm_flag_8d1b8;
 
 void PaintCanvas::ResetPersMatrix() {
@@ -3031,12 +2874,7 @@ void PaintCanvas::ResetPersMatrix() {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_cipvf_gravscale_7bba8;
 
 int PaintCanvas::CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &point) {
@@ -3044,7 +2882,6 @@ int PaintCanvas::CameraIsPointinViewFrustum(const AbyssEngine::AEMath::Vector &p
         return 1;
     }
 
-    // identity matrix scratch
     float m[16];
     memset(m, 0, sizeof(m));
     m[0] = 1.0f;
@@ -3076,7 +2913,6 @@ void PaintCanvas::SetTexture(unsigned int, unsigned int) {
 PaintCanvas::~PaintCanvas() {
     paintcanvas_ext_dtor_releaseall(this);
 
-    // Walk the resource list (count at 0x134, array at 0x138), releasing each.
     for (unsigned int i = 0; i < this->resourceCount; i++) {
         void *res = (this->resources)[i];
         if (res != 0) {
@@ -3112,7 +2948,6 @@ PaintCanvas::~PaintCanvas() {
             }
             (this->resources)[i] = 0;
 
-            // glow scratch arrays released per-iteration in the original
             PCArrayReleaseClasses(&this->glowMeshes_count);
             PCArrayDtor(&this->glowMatA_count);
             PCArrayDtor(&this->glowMatB_count);
@@ -3124,7 +2959,6 @@ PaintCanvas::~PaintCanvas() {
     paintcanvas_ext_dtor_meshrelease(this->engine, &this->quad2dMesh);
     paintcanvas_ext_dtor_meshrelease(this->engine, &this->lineMesh);
 
-    // Release the loaded-texture name strings (count at 0x10, array at 0x14).
     for (unsigned int i = 0; i < this->cubeTextureCount; i++) {
         void *tex = (this->cubeTextures)[i];
         if (tex != 0) {
@@ -3150,8 +2984,6 @@ PaintCanvas::~PaintCanvas() {
     PCArrayDtor(&this->cubeTextureCount);
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::Image2DCreate(unsigned short resId, unsigned int &out) {
     char *res = (char *) paintcanvas_ext_i2d_findres(this, resId);
@@ -3186,12 +3018,7 @@ void PaintCanvas::Image2DCreate(unsigned short resId, unsigned int &out) {
     out = idx;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_gsp2_gravscale_8bfa8;
 
 void PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
@@ -3199,7 +3026,6 @@ void PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
                                     AbyssEngine::AEMath::Vector &outVec) {
     (void) m;
 
-    // first transform the input world position
     char transformed[16];
     paintcanvas_ext_gsp2_transformvec(transformed, &worldPos);
 
@@ -3267,7 +3093,6 @@ void PaintCanvas::GetScreenPosition(AbyssEngine::AEMath::Matrix &m,
     double halfH = (double) paintcanvas_ext_gsp2_signedtofloat(h1 >> 1, 0);
     outVec[1] = (float) (halfH + (((double) py * 0.5) / (double) denomY) * fh);
 
-    // remaining bound checks compute booleans only (no observable output)
     float nx = outVec[0];
     if (nx >= 0.0f) {
         float ny = outVec[1];
@@ -3378,26 +3203,27 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y) {
     }
 }
 
-extern "C" void paintcanvas_ctor_matrix(void *); // 0x6f118  f8
+extern "C" void paintcanvas_ctor_matrix(void *);
+
 extern "C" void paintcanvas_ext_meshcreate5(void *, unsigned short, unsigned short,
                                             signed char, void *);
 
 PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
-    PCArrayCtor(&this->cubeTextureCount); // loaded-texture-name list
-    PCArrayCtor(&this->meshCount); // meshes
+    PCArrayCtor(&this->cubeTextureCount);
+    PCArrayCtor(&this->meshCount);
     paintcanvas_ctor_matrix(&this->identityMatrix);
-    PCArrayCtor(&this->resourceCount); // resources
-    PCArrayCtor(&this->fontCount); // fonts
-    PCArrayCtor(&this->imageCount); // images
-    PCArrayCtor(&this->transformCount); // transforms
-    PCArrayCtor(&this->cameraCount); // cameras
-    PCArrayCtor(&this->materialCount); // materials
-    PCArrayCtor(&this->spriteSystemCount); // sprite systems
-    PCArrayCtor(&this->glowMeshes_count); // glow meshes
-    PCArrayCtor(&this->glowMatA_count); // glow matrices
-    PCArrayCtor(&this->glowMatB_count); // glow matrices
-    PCArrayCtor(&this->glowUints_count); // glow uints
-    PCArrayCtor(&this->glowMatC_count); // glow matrices
+    PCArrayCtor(&this->resourceCount);
+    PCArrayCtor(&this->fontCount);
+    PCArrayCtor(&this->imageCount);
+    PCArrayCtor(&this->transformCount);
+    PCArrayCtor(&this->cameraCount);
+    PCArrayCtor(&this->materialCount);
+    PCArrayCtor(&this->spriteSystemCount);
+    PCArrayCtor(&this->glowMeshes_count);
+    PCArrayCtor(&this->glowMatA_count);
+    PCArrayCtor(&this->glowMatB_count);
+    PCArrayCtor(&this->glowUints_count);
+    PCArrayCtor(&this->glowMatC_count);
 
     this->fogMode = 0;
     this->mask2dImage = 0;
@@ -3580,7 +3406,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     }
     paintcanvas_ext_di4_settexture(this, *(unsigned int *) (img + 4));
 
-    // horizontal base placement (alignFlags low bits)
     int baseX = x;
     int hOff;
     if ((alignFlags & 7) == 4) {
@@ -3592,7 +3417,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
         hOff = 0;
     }
 
-    // horizontal flip-span (alignFlags bit 3)
     int spanW = w;
     if (alignFlags & 8) {
         spanW = paintcanvas_ext_di4_getwidth(this) - (w + x);
@@ -3601,7 +3425,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     char *region = *(char **) (*(char **) (((char **) this->images)[index]) + 4);
     float regW = *(float *) (region + 0xc);
 
-    // vertical flip-span (alignFlags bit 7)
     int spanH = h;
     if (alignFlags & 0x80) {
         spanH = paintcanvas_ext_di4_getheight(this) - (h + y);
@@ -3610,7 +3433,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     float fSpanH = paintcanvas_ext_di4_signedtofloat(spanH, 0);
     float regH = *(float *) (region + 0x1c);
 
-    // vertical base placement (alignFlags high nibble)
     int baseY = y;
     int vOff;
     if ((alignFlags & 0x70) == 0x40) {
@@ -3622,7 +3444,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
         vOff = 0;
     }
 
-    // anchor offset X (anchorFlags low bits)
     int anchorX;
     if ((anchorFlags & 7) == 4) {
         if ((alignFlags & 8) == 0) {
@@ -3643,7 +3464,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
     float scaleX = fSpanW / regW;
     float scaleY = fSpanH / regH;
 
-    // anchor offset Y (anchorFlags high nibble)
     int anchorY;
     if ((anchorFlags & 0x70) == 0x40) {
         if ((alignFlags & 0x80) == 0) {
@@ -3718,7 +3538,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float /*unused*/, int rotStep
     float negpx = paintcanvas_ext_dr2_signedtofloat(-pivotX, 0);
     float negpy = paintcanvas_ext_dr2_signedtofloat(-pivotY, 0);
 
-    // translation matrix (identity + translation in column 3)
     float transM[16];
     memset(transM, 0, sizeof(transM));
     transM[0] = 1.0f;
@@ -3728,7 +3547,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float /*unused*/, int rotStep
     transM[3] = py + rot * scaleX;
     transM[7] = tx + px * scaleY;
 
-    // pivot matrix
     float pivotM[16];
     memset(pivotM, 0, sizeof(pivotM));
     pivotM[0] = 1.0f;
@@ -3738,7 +3556,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float /*unused*/, int rotStep
     pivotM[3] = negpx * scaleX;
     pivotM[7] = negpy * scaleY;
 
-    // rotation matrix
     float s = paintcanvas_ext_dr2_sinf(negpx * scaleX);
     float c = paintcanvas_ext_dr2_cosf(negpx * scaleX);
     float rotM[16];
@@ -3753,7 +3570,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, float /*unused*/, int rotStep
     float scaleBuf[16];
     paintcanvas_ext_dr2_setscaling(scaleBuf, scaleX, scaleY, 1.0f);
 
-    // build the composed matrix
     float composed[16];
     paintcanvas_ext_dr2_mtx_mul(scaleBuf, rotM, transM);
     paintcanvas_ext_dr2_mtx_assign(composed, scaleBuf);
@@ -3784,19 +3600,9 @@ void PaintCanvas::MeshSetTriangle(unsigned int meshIndex, unsigned short tri,
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_sgo_const_8e6b4;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_sgo_const_8e6b8;
 
 static void zero16(void *p) {
@@ -3918,8 +3724,6 @@ void PaintCanvas::SetGameOrientation(AbyssEngine::LandscapeMode orientation) {
 extern "C" int paintcanvas_ext_mc_meshcreate(void *eng, unsigned short a, unsigned short b,
                                              signed char c, void **out);
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangleCount,
                              signed char meshType, unsigned short matResId, unsigned int &out) {
@@ -3931,7 +3735,6 @@ void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangle
                                            meshType, &mesh);
     if (ok == 1) {
         if (0xfffffffe < this->materialCount) {
-            // material pointer back-reference: write last element ptr into mesh+0x30
             void *m = *(void **) (this->materials - 4);
             if (mesh) {
                 ((AbyssEngine::Mesh *) mesh)->field_0x30 = m;
@@ -3944,12 +3747,7 @@ void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangle
     out = (unsigned int) result;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const float g_dm_255_8ee80;
 
 static unsigned int mulColors(unsigned int a, unsigned int b) {
@@ -3970,7 +3768,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
 
     unsigned int meshColor = color;
 
-    // If the mesh has an attached resource (animation transform), apply its local transform.
     if (mesh->animation != 0) {
         ::Transform *resTf = mesh->animation;
         float a[16], b[16];
@@ -4018,7 +3815,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     paintcanvas_ext_dm_rotatevec(&uvM, &worldM);
     paintcanvas_ext_dm_vec_assign(ext, &uvM);
 
-    // radius from the larger absolute component
     float ax = ext[0] < 0.0f ? -ext[0] : ext[0];
     float ay = ext[1] < 0.0f ? -ext[1] : ext[1];
     float az = ext[2] < 0.0f ? -ext[2] : ext[2];
@@ -4052,7 +3848,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
                 paintcanvas_ext_dm_meshdraw(this->engine, mesh);
                 paintcanvas_ext_dm_resetuvmatrix(this->engine);
             } else {
-                // batch into the glow target at resource+0x44/0x2c/0x38/0x5c/0x50
                 char *res = (char *) mesh->material;
                 paintcanvas_ext_dm_addcached_mesh(mesh, res + 0x44);
                 paintcanvas_ext_dm_pushmat(worldM, res + 0x2c);
@@ -4063,7 +3858,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
         }
     }
 
-    // recurse over child meshes (count 0x3c / array 0x40) and child transforms (0x4c / 0x50)
     if (mesh->animation != 0) {
         ::Transform *res = mesh->animation;
         unsigned int n = res->field_0x3c;
@@ -4086,7 +3880,6 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
 extern char *paintcanvas_g_b2d_flag HIDDEN;
 
 void PaintCanvas::Begin2d() {
-    // field_0xfd is a uint16_t flag; the original store is byte-width, preserve that.
     *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 1;
     paintcanvas_ext_gl_disable(0xb71);
     paintcanvas_ext_gl_depthmask(0);
@@ -4127,19 +3920,9 @@ void PaintCanvas::DrawString(unsigned int index, const unsigned short *str,
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_dsc_pipe_882c4[];
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const char g_dsc_fmt_882ee[];
 
 extern "C" void paintcanvas_ext_dsc_fontdraw(void *font, unsigned short *txt, unsigned int len,
@@ -4190,14 +3973,8 @@ void PaintCanvas::DrawStringColor(unsigned int index, const AbyssEngine::String 
     paintcanvas_ext_dsc_str_dtor(str);
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::SetMatForGlow(AbyssEngine::Material *glowSource) {
-    // Mirror each entry of the material's per-mesh glow state onto this canvas'
-    // glow lists: the mesh handles (meshes @0x44/0x48), the three parallel matrix
-    // lists (arr_2c @0x30, arr_38 @0x3c, arr_5c @0x60) and the uint list
-    // (arr_50 @0x54). The matrices convert to const float* via Matrix::operator.
     for (unsigned int i = 0; i < glowSource->meshes->size_; i++) {
         ArrayAdd<AbyssEngine::Mesh *>(glowSource->meshes->data_[i],
                                       *reinterpret_cast<::Array<AbyssEngine::Mesh *> *>(&this->glowMeshes_count));
@@ -4266,7 +4043,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
         paintcanvas_ext_di3_restore(*(unsigned char *) (img + 0x14), img);
     }
 
-    // Horizontal placement offset (placeFlags low bits) + vertical (placeFlags high nibble).
     int hOff;
     if ((placeFlags & 7) == 4) {
         hOff = paintcanvas_ext_di3_getwidth(this) >> 1;
@@ -4288,7 +4064,6 @@ void PaintCanvas::DrawImage2D(unsigned int index, int x, int y,
         vOff = 0;
     }
 
-    // Region-based offsets from the image's source region (regionAlignFlags = second align flag).
     int rx;
     char *region = *(char **) (img + 4);
     if ((regionAlignFlags & 7) == 4) {
@@ -4361,16 +4136,9 @@ void *PaintCanvas::TransformGetTransform(unsigned int index) {
     return 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_meshcreate_vboflag_79d5c;
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
                              bool forceClone) {
@@ -4417,26 +4185,11 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
     out = idx;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern char *const g_fsp_flag_8cf40;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_fsp_255d_8d070;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const float g_fsp_255f_8d078;
 
 void PaintCanvas::FogSetParameter(AbyssEngine::FogMode mode, float fogStart, float fogEnd,
@@ -4473,12 +4226,7 @@ void PaintCanvas::FogSetParameter(AbyssEngine::FogMode mode, float fogStart, flo
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_dr3_const_88808;
 
 void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
@@ -4494,23 +4242,21 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
 
     *(unsigned char *) (mesh + 0x14) = 1;
 
-    // vertex positions (8 floats) at mesh[0]+4 -> +0xc
     float fw = paintcanvas_ext_dr3_signedtofloat(destW, 0);
     float fh = paintcanvas_ext_dr3_signedtofloat(destH, 0);
     float *verts = (float *) (*(char **) (meshObj + 4));
     verts[0] = 0.0f;
     verts[1] = 0.0f;
     verts[2] = 0.0f;
-    verts[3] = fw; // +0xc
-    verts[4] = 0.0f; // +0x10
+    verts[3] = fw;
+    verts[4] = 0.0f;
     verts[5] = 0.0f;
     verts[6] = fw;
-    verts[7] = fh; // +0x1c
+    verts[7] = fh;
     verts[8] = 0.0f;
     verts[9] = 0.0f;
-    verts[10] = fh; // +0x28
+    verts[10] = fh;
 
-    // UV computations from the source region metadata stored in mesh fields 0x8..0xe
     float u0 = paintcanvas_ext_dr3_unsignedtofloat(*(unsigned short *) (mesh + 0xa), 0);
     float w = paintcanvas_ext_dr3_unsignedtofloat(*(unsigned short *) (mesh + 8), 0);
     float h = paintcanvas_ext_dr3_unsignedtofloat(*(unsigned short *) (mesh + 0xc), 0);
@@ -4535,13 +4281,11 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
     uv[6] = ulo;
     uv[7] = vhi;
 
-    // blend-mode field at meshObj+0x2c
     unsigned int *blend = *(unsigned int **) (meshObj + 0x2c);
     blend[0] = 0x20000;
     blend[1] = 1;
     blend[2] = g_dr3_const_88808;
 
-    // pivot translation matrix
     float pivotM[16];
     memset(pivotM, 0, sizeof(pivotM));
     pivotM[0] = 1.0f;
@@ -4551,7 +4295,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
     pivotM[3] = paintcanvas_ext_dr3_signedtofloat(-pivotX, 0);
     pivotM[7] = paintcanvas_ext_dr3_signedtofloat(-pivotY, 0);
 
-    // inverse-pivot translation
     float invPivotM[16];
     memset(invPivotM, 0, sizeof(invPivotM));
     invPivotM[0] = 1.0f;
@@ -4561,7 +4304,6 @@ void PaintCanvas::DrawRegion2D(unsigned int index, int srcX, int srcY,
     invPivotM[3] = paintcanvas_ext_dr3_signedtofloat(transX + pivotX, 0);
     invPivotM[7] = paintcanvas_ext_dr3_signedtofloat(transY + pivotY, 0);
 
-    // rotation matrix (angle = invPivotM[7])
     float rotAng = invPivotM[7];
     float s = paintcanvas_ext_dr3_sinf(rotAng);
     float c = paintcanvas_ext_dr3_cosf(rotAng);
@@ -4673,38 +4415,21 @@ void PaintCanvas::MeshSet2DMask(unsigned int index, int, int) {
     this->mask2dImage = arr[i];
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *const g_rar_curtex_87c98;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *const g_rar_texcount_87cce;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int *const g_rar_tricount_87d96;
 
 void PaintCanvas::ReleaseAllResources() {
     *g_rar_curtex_87c98 = 0;
 
-    // mark all resources as unloaded
     for (int i = 0; i < this->resourceCount; i++) {
         char *res = ((char **) this->resources)[i];
         *(int *) (res + 8) = -1;
     }
 
-    // textures
     for (unsigned int i = 0; i < this->cubeTextureCount; i++) {
         int *tex = ((int **) this->cubeTextures)[i];
         if (*tex != -1) {
@@ -4724,7 +4449,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     this->cubeTextureCount = 0;
 
-    // fonts
     for (unsigned int i = 0; i < this->fontCount; i++) {
         if (((void **) this->fonts)[i] != 0) {
             paintcanvas_ext_rar_fontrelease(this->engine,
@@ -4733,7 +4457,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     PCArrayRemoveAll(&this->fontCount);
 
-    // image2D
     for (unsigned int i = 0; i < this->imageCount; i++) {
         if (((void **) this->images)[i] != 0) {
             paintcanvas_ext_rar_img2drelease(this->engine,
@@ -4742,7 +4465,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     PCArrayRemoveAll(&this->imageCount);
 
-    // meshes
     for (unsigned int i = 0; i < this->meshCount; i++) {
         char *mesh = ((char **) this->meshes)[i];
         if (mesh != 0) {
@@ -4753,7 +4475,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     PCArrayRemoveAll(&this->meshCount);
 
-    // transforms
     for (unsigned int i = 0; i < this->transformCount; i++) {
         void *tf = ((void **) this->transforms)[i];
         if (tf != 0) {
@@ -4763,7 +4484,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     PCArrayRemoveAll(&this->transformCount);
 
-    // cameras
     for (unsigned int i = 0; i < this->cameraCount; i++) {
         void *cam = ((void **) this->cameras)[i];
         if (cam != 0) {
@@ -4774,7 +4494,6 @@ void PaintCanvas::ReleaseAllResources() {
     PCArrayRemoveAll(&this->cameraCount);
     this->currentCamera = -1;
 
-    // materials
     for (unsigned int i = 0; i < this->materialCount; i++) {
         void *mat = ((void **) this->materials)[i];
         if (mat != 0) {
@@ -4784,7 +4503,6 @@ void PaintCanvas::ReleaseAllResources() {
     }
     PCArrayRemoveAll(&this->materialCount);
 
-    // sprite systems
     for (unsigned int i = 0; i < this->spriteSystemCount; i++) {
         if (((void **) this->spriteSystems)[i] != 0) {
             paintcanvas_ext_rar_ssrelease(this->engine,
@@ -4795,12 +4513,7 @@ void PaintCanvas::ReleaseAllResources() {
     this->field_0x1cc = 0;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_tg2d_defval_7b590;
 
 PaintCanvas::PickedTextureRegion
@@ -4861,8 +4574,6 @@ void PaintCanvas::ReloadTextures() {
     }
 }
 
-namespace AbyssEngine {
-}
 
 void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
     char *res = (char *) paintcanvas_ext_matc_findres(this, resId);
@@ -4899,12 +4610,7 @@ void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
     out = idx;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const unsigned int g_tg2di_neg1_8b588;
 
 PaintCanvas::PickedTextureRegion
@@ -4915,7 +4621,6 @@ PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, in
     float vy = paintcanvas_ext_tg2di_signedtofloat((y >> shift) >> shift, 0);
     float vx = paintcanvas_ext_tg2di_signedtofloat((z >> shift) >> shift, 0);
 
-    // First: test the node's own meshes (offset 0x3c count, 0x40 array)
     unsigned int i = 0;
     bool found = false;
     while (i < *(unsigned int *) (tf + 0x3c)) {
@@ -4931,7 +4636,6 @@ PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, in
         return result;
     }
 
-    // Then: recurse over child transforms (0x4c count, 0x50 array)
     float fy = paintcanvas_ext_tg2di_signedtofloat(z, 0);
     float fx = paintcanvas_ext_tg2di_signedtofloat(y, 0);
     float fz = paintcanvas_ext_tg2di_signedtofloat(w, 0);
@@ -4960,12 +4664,7 @@ PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, in
     return result;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_dt_gravscale_898d8;
 
 void PaintCanvas::DrawTransform(unsigned int index, const AbyssEngine::AEMath::Matrix *viewMatrix) {
@@ -5069,12 +4768,7 @@ void PaintCanvas::CameraCreate(unsigned int &out) {
     out = this->cameraCount - 1;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_dss_gravscale_8ada0;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matrix mat) {
@@ -5086,7 +4780,6 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index, AbyssEngine::AEMath::Matr
         return;
     }
 
-    // local copy of the incoming matrix
     float local[15];
     memcpy(local, mat, sizeof(local));
 
@@ -5183,12 +4876,7 @@ void PaintCanvas::ReleaseSpriteSystemResource(unsigned int index) {
     }
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern const double g_dss2_gravscale_8af58;
 
 void PaintCanvas::DrawSpriteSystem(unsigned int index,
@@ -5200,7 +4888,6 @@ void PaintCanvas::DrawSpriteSystem(unsigned int index,
         return;
     }
 
-    // local copies: matA -> world, matB -> view
     float world[15];
     float view[15];
     memcpy(world, matA, sizeof(world));

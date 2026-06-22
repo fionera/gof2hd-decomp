@@ -4,16 +4,10 @@
 #include "engine/audio/FModSound.h"
 #include "engine/math/Transform.h"
 #include "engine/core/AERandom.h"
-#include "game/core/PaintCanvasClass.h"
+#include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
 
-namespace AbyssEngine {
-    namespace AEMath {
-        Vector operator-(const Vector &, const Vector &);
-
-        void MatrixMultiply(Matrix &, const Matrix &);
-    }
-}
+using AbyssEngine::Matrix;
 
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 
@@ -38,8 +32,8 @@ static inline PaintCanvas *explosionCanvas() {
     return (PaintCanvas *) (intptr_t) Explosion_paintCanvas;
 }
 
-static inline AbyssEngine::Transform *meshTransform(PaintCanvas *canvas, uint32_t index) {
-    return (AbyssEngine::Transform *) canvas->TransformGetTransform(index);
+static inline Transform *meshTransform(PaintCanvas *canvas, uint32_t index) {
+    return (Transform *) canvas->TransformGetTransform(index);
 }
 
 static inline AbyssEngine::AERandom *explosionRandom() {
@@ -252,7 +246,7 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
         Vector diff = position - cameraPosition;
         float distance = VectorLength(&diff);
 
-        AbyssEngine::Transform *transform = meshTransform(canvas, this->primaryMesh->transform);
+        Transform *transform = meshTransform(canvas, this->primaryMesh->transform);
         int anim = (int) transform->currentTime;
         if (anim <= 0x7d0) {
             float capped = 30000.0f;

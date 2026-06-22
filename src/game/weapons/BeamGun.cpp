@@ -21,35 +21,15 @@ void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector)
 
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **BeamGun_canvas;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern int32_t BeamGun_secondaryMeshes[];
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*BeamGun_enemiesHandler_slot)(void *);
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void (*BeamGun_enemyHandler_slot)(void *);
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {

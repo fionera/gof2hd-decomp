@@ -3,16 +3,14 @@
 
 #include <cstdint>
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-
-class StarMap;
-class ScrollTouchWindow;
-class TouchButton;
-class ImagePart;
-class Wanted;
-class Mission;
+#include "ScrollTouchWindow.h"
+#include "TouchButton.h"
+#include "engine/render/ImagePart.h"
+#include "game/mission/Mission.h"
+#include "game/world/StarMap.h"
+#include "game/world/Wanted.h"
 
 class WantedWindow {
 public:
@@ -32,12 +30,12 @@ public:
     uint32_t selectedWanted;
     uint32_t highlightedWanted;
     Array<Wanted *> *wantedList;
-    String fromText; // detail: "from" line (origin station + system)
-    String toText; // detail: "to" line (destination station + system)
-    String nameText; // selected wanted's name
-    String detailText; // detail line (assigned getText(0xc9d))
-    String atText; // detail: "at" line (current station + system)
-    String rewardText; // detail: reward line
+    String fromText;
+    String toText;
+    String nameText;
+    String detailText;
+    String atText;
+    String rewardText;
     int scrollOffset;
     int lastDragY;
     int scrollOffsetSnapshot;

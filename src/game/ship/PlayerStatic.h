@@ -1,20 +1,18 @@
 #ifndef GOF2_PLAYERSTATIC_H
 #define GOF2_PLAYERSTATIC_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
 
-class AEGeometry;
+#include "game/ship/KIPlayer.h"
 
 class PlayerStatic : public KIPlayer {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
 
-    int32_t positionX; // integer fallback x position
-    int32_t positionY; // integer fallback y position
-    int32_t positionZ; // integer fallback z position
+
+    int32_t positionX;
+    int32_t positionY;
+    int32_t positionZ;
 
     PlayerStatic(int playerId, AEGeometry *geometry, float x, float y, float z);
 
@@ -24,9 +22,6 @@ public:
 
     Vector getPosition();
 
-    // A static actor never moves, ticks or takes part in collision: every
-    // motion/collision virtual is overridden to do nothing (the binary emits a
-    // bare stub for each one).
     void update(int dt) override;
 
     void translate(const Vector &v) override;

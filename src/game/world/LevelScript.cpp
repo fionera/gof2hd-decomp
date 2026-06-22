@@ -65,6 +65,8 @@ void LevelScript::render3D() {
     if (m_pGeometry3) m_pGeometry3->render();
 
     if (m_pExplosion &&m_pExplosion
+
+
     ->
     isPlaying()
     )

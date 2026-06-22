@@ -134,8 +134,6 @@ uint32_t FileInterfaceAndroid::GetFileSize() {
 }
 
 const char *FileInterfaceAndroid::GetAppRootDir() {
-    // appRootDir now holds a void* (set by SetAppRootDir(void*)); GetAppRootDir must hand back
-    // a const char*. This single internal cast mirrors the binary's own behavior.
     return (const char *) this->appRootDir;
 }
 
@@ -179,25 +177,24 @@ uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
     void *r9 = *gEnvR;
     void *env = *(void **) r9;
     void *table = *(void **) env;
-    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(env, n); // NewByteArray
+    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(env, n);
     unsigned int got = JNI_CallIntMethod(*(void **) r9, this->jniStream, *(void **) gReadMidArg, arr);
 
     bool ok;
     table = *(void **) (*(void **) r9);
     if ((*(fn_check *) ((char *) table + 0x3c))(*(void **) r9) == 0 && got == n) {
-        // ExceptionCheck
         env = *(void **) r9;
         table = *(void **) env;
-        (*(fn_getregion *) ((char *) table + 0x320))(env, arr, 0, n, buf); // GetByteArrayRegion
+        (*(fn_getregion *) ((char *) table + 0x320))(env, arr, 0, n, buf);
         ok = true;
     } else {
         table = *(void **) (*(void **) r9);
-        (*(fn_void *) ((char *) table + 0x40))(*(void **) r9); // ExceptionDescribe
-        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9); // ExceptionClear
+        (*(fn_void *) ((char *) table + 0x40))(*(void **) r9);
+        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9);
         ok = false;
     }
     table = *(void **) (*(void **) r9);
-    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr); // DeleteLocalRef
+    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr);
     return ok;
 }
 
@@ -234,17 +231,17 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
     void *r9 = *gEnvW;
     void *envObj = *(void **) r9;
     void *table = *(void **) envObj;
-    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(envObj, n); // NewByteArray
+    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(envObj, n);
     envObj = *(void **) r9;
     table = *(void **) envObj;
-    (*(fn_setregion *) ((char *) table + 0x340))(envObj, arr, 0, n, buf); // SetByteArrayRegion
+    (*(fn_setregion *) ((char *) table + 0x340))(envObj, arr, 0, n, buf);
     JNI_CallVoidMethod(envObj, this->jniStream, *(void **) gWriteMidArg, arr);
     table = *(void **) (*(void **) r9);
-    bool ok = (*(fn_check *) ((char *) table + 0x3c))(*(void **) r9) == 0; // ExceptionCheck
+    bool ok = (*(fn_check *) ((char *) table + 0x3c))(*(void **) r9) == 0;
     if (!ok)
-        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9); // ExceptionClear
+        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9);
     table = *(void **) (*(void **) r9);
-    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr); // DeleteLocalRef
+    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr);
     return ok;
 }
 

@@ -8,15 +8,18 @@ namespace AbyssEngine {
     public:
         float x, y, z, w;
 
-        Quaternion(); // out-of-line so the binary's C1/C2 symbols emit
-        Quaternion(float x_, float y_, float z_, float w_); // out-of-line (matches the original)
+        Quaternion();
+
+        Quaternion(float x_, float y_, float z_, float w_);
+
         Quaternion(AEMath::Vector angles);
 
         Quaternion(Quaternion *other);
 
         Quaternion(const AEMath::Matrix &matrix);
 
-        ~Quaternion(); // out-of-line (the binary emits D1/D2)
+        ~Quaternion();
+
         void Set(AEMath::Vector angles);
 
         void Set(const AEMath::Matrix &matrix);
@@ -37,7 +40,8 @@ namespace AbyssEngine {
 
         void Convert(AEMath::Matrix &matrix);
 
-        operator float *(); // out-of-line (the binary emits these accessors)
+        operator float *();
+
         operator const float *() const;
 
         float &operator[](int i);
@@ -50,6 +54,6 @@ namespace AbyssEngine {
     static_assert(__builtin_offsetof(Quaternion, y) == 0x4, "Quaternion::y offset");
     static_assert(__builtin_offsetof(Quaternion, z) == 0x8, "Quaternion::z offset");
     static_assert(__builtin_offsetof(Quaternion, w) == 0xc, "Quaternion::w offset");
-} // namespace AbyssEngine
+}
 
-#endif // GOF2_QUATERNION_H
+#endif

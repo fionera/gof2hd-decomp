@@ -1,21 +1,16 @@
 #ifndef GOF2_TRANSFORM_H
 #define GOF2_TRANSFORM_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "engine/math/AEMath.h"   // AEMath::Matrix / Vector + math free-functions (VectorLerp, MatrixTransformVector, ...)
+
+#include "engine/math/AEMath.h"
 
 using uint = uint32_t;
 using longlong = int64_t;
 using ulonglong = uint64_t;
 
 namespace AbyssEngine {
-    class Camera;
-    class KeyFrame;
-    class Mesh;
-    class Transform;
-
     namespace AEMath {
         struct BSphere {
             Vector center;
@@ -26,7 +21,7 @@ namespace AbyssEngine {
 
             void Merge(const BSphere &other);
         };
-    } // namespace AEMath
+    }
 
     enum AnimationMode {
         AnimationMode_0 = 0
@@ -36,8 +31,8 @@ namespace AbyssEngine {
 
     class Transform {
     public:
-        AEMath::Matrix worldMatrix; // final world matrix; InCameraVF reads it as *(Matrix*)this
-        int color; // packed RGBA (per-channel alpha)
+        AEMath::Matrix worldMatrix;
+        int color;
         uint32_t field_0x4c;
         uint32_t field_0x50;
         uint32_t field_0x54;
@@ -45,12 +40,13 @@ namespace AbyssEngine {
         union {
             int renderMode;
             int field_0x58;
-        }; // +0x58 render mode/flag (ctor sets 2); PlayerTurret reads field_0x58
-        AEMath::Matrix rotationMatrix; // rotation part (Quaternion::Convert)
-        AEMath::Matrix localMatrix; // composed local transform
+        };
+
+        AEMath::Matrix rotationMatrix;
+        AEMath::Matrix localMatrix;
         AEMath::Vector boundingCenter;
         float boundingRadius;
-        float boundingRadius2; // +0xe4 squared radius (BSphere::radius2); also tracks max animated scale
+        float boundingRadius2;
         int animationStart;
         bool visible;
         bool animating;
@@ -60,27 +56,22 @@ namespace AbyssEngine {
         longlong rangeEnd;
         longlong currentTime;
         int currentKeyFrameIndex;
-        // Per the binary (Transform ctor/dtor construct/destruct these in place), the mesh / child /
-        // keyframe lists are EMBEDDED Array<T> objects (count+data+cap inline), not pointers: the ctor
-        // does Array<Mesh*>::Array(&this->meshes) and the dtor ~Array<Mesh*>(&this->meshes). meshes are
-        // at +0x3c, children at +0x4c, keyFrames at +0x11c in the 32-bit layout.
-        Transform *parent; // +0x34 scene-graph parent
-        int id; // +0x48
+
+        Transform *parent;
+        int id;
         Array<Mesh *> meshes;
         Array<Transform *> children;
         Array<KeyFrame *> keyFrames;
-        Quaternion rotation; // current pose rotation
-        AEMath::Vector translation; // current pose translation
-        AEMath::Vector scale; // current pose scale
-        Quaternion localRotation; // secondary (local) rotation
-        AEMath::Vector localTranslation; // secondary translation
-        AEMath::Vector localScale; // secondary scale
-        float alpha; // animated alpha value [0..1]
+        Quaternion rotation;
+        AEMath::Vector translation;
+        AEMath::Vector scale;
+        Quaternion localRotation;
+        AEMath::Vector localTranslation;
+        AEMath::Vector localScale;
+        float alpha;
         bool vfcEnabled;
-        bool keyFramesShared; // when true, keyFrames are not owned
+        bool keyFramesShared;
 
-        // boundingCenter/boundingRadius/field_0xe4 are contiguous and laid out exactly
-        // like a BSphere; this exposes them as one so Update can Merge child bounds.
         AEMath::BSphere &bounds() { return *(AEMath::BSphere *) &boundingCenter; }
 
         Transform();
@@ -138,5 +129,5 @@ namespace AbyssEngine {
 
         int InCameraVF(AEMath::Matrix *matrix, Camera *camera);
     };
-} // namespace AbyssEngine
+}
 #endif

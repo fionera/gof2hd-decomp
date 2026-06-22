@@ -94,7 +94,6 @@ namespace AbyssEngine {
 
             int viewportLoc = this->uniform_u17;
             if (viewportLoc >= 0) {
-                // The render-target's mode (at [[engine+0x30]+0x30]) picks portrait vs landscape.
                 float invW, invH;
                 if (*(int *) (eng->field_0x30[0] + 0x30) == 2) {
                     invW = 1.0f / (float) eng->GetDisplayWidth();
@@ -163,4 +162,4 @@ namespace AbyssEngine {
             glVertexAttribPointer(this->attrib_a4, 3, 0x1406, 0, 0, 0);
         }
     }
-} // namespace AbyssEngine
+}

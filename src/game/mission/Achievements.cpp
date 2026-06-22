@@ -1,5 +1,5 @@
 #include "game/mission/Achievements.h"
-Achievements *gAchievements = nullptr; // canonical Achievements singleton
+Achievements *gAchievements = nullptr;
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
@@ -100,7 +100,6 @@ void Achievements::incKills() {
     this->kills += 1;
 }
 
-// getValue returns table[index*3 + sub - 1].
 extern const int gAchievementValues[] __attribute__((visibility("hidden")));
 
 int Achievements::getValue(int index, int sub) {
@@ -140,7 +139,6 @@ void Achievements::countMedals() {
     this->gotAllMedals_ = (total == 0x24);
 }
 
-// pc-rel base for the per-medal requirement table (index*0xc + sub*4).
 extern const int gCFN_req[] __attribute__((visibility("hidden")));
 
 void Achievements::checkForNewMedal(PlayerEgo *ego) {
@@ -156,7 +154,6 @@ void Achievements::checkForNewMedal(PlayerEgo *ego) {
                     break;
                 if (got > 0)
                     break;
-                // per-kind requirement test (the 44-case switch) determines `got`.
             }
             int cur = this->medals[m];
             if (got < cur || cur == 0)
@@ -180,11 +177,10 @@ void Achievements::applyNewMedals() {
     if (this->medalCount == 0x23) {
         this->newMedals[0x23] = 1;
         this->medals[0x23] = 1;
-        countMedals(); // recount so medalCount includes the "all medals" flag
+        countMedals();
     }
 }
 
-// Status singleton holder: pc-rel -> holder; *holder is the Status object.
 extern Status *const* gAchStatusHolder __attribute__((visibility("hidden")));
 
 void Achievements::initCheckEquipmentAndWeapons() {

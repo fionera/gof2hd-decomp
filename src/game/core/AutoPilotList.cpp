@@ -1,74 +1,31 @@
-#include "game/core/AutoPilotList.h"   // also pulls in SolarSystem.h (String + SolarSystem)
+#include "game/core/AutoPilotList.h"
 #include "engine/core/GameText.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 #include "game/world/Level.h"
 #include "game/mission/Status.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/world/Route.h"
-#include "game/core/PaintCanvasClass.h"
-
-struct Station {
-    String getName();
-};
+#include "game/world/SolarSystem.h"
+#include "game/world/Station.h"
 
 extern PaintCanvas *gCanvas;
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_APL_apFlag; // status-active flag
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern GameText **g_APL_gametext; // GameText singleton
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_APL_font; // measurement font String*
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_APL_screenW; // screen width
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int **g_APL_screenH; // screen height
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern Layout **g_APL_layout_draw; // Layout (draw())
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern GameText **g_APL_gametext_draw; // GameText (draw())
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern AbyssEngine::String **g_APL_font_draw; // String* font (draw())
+extern int **g_APL_apFlag;
+
+extern GameText **g_APL_gametext;
+
+extern void **g_APL_font;
+
+extern int **g_APL_screenW;
+
+extern int **g_APL_screenH;
+
+extern Layout **g_APL_layout_draw;
+
+extern GameText **g_APL_gametext_draw;
+
+extern AbyssEngine::String **g_APL_font_draw;
 
 extern const char kEmpty[] __attribute__((visibility("hidden")));
 extern const char kApLit1[] __attribute__((visibility("hidden")));

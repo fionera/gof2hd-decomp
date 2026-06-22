@@ -2,7 +2,7 @@
 #include "engine/render/Camera.h"
 #include "engine/core/AERandom.h"
 #include "game/ship/TargetFollowCamera.h"
-#include "game/core/PaintCanvasClass.h"   // forward-declares Engine for externs.h
+#include "engine/render/PaintCanvas.h"
 #include "externs.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
@@ -20,23 +20,24 @@
 #include "game/world/Waypoint.h"
 #include "engine/render/Engine.h"
 
-class KIPlayer;
-
 class Radar {
 public:
-    void *level; // +0x00
+    void *level;
+
     union {
-        KIPlayer *lockedEnemy; // +0x04
-        void *dockTargetPtr; // +0x04 cockpit lock / docking target (same slot)
+        KIPlayer *lockedEnemy;
+        void *dockTargetPtr;
     };
+
     union {
-        void *field_0x8; // +0x08
-        void *dockNavPtr; // +0x08 docking nav-point pointer (same slot)
+        void *field_0x8;
+        void *dockNavPtr;
     };
-    unsigned char pad_0x0c_to_0x70[0x70 - 0x0c]; // unmodeled cockpit span
-    unsigned char hasReservation; // +0x70 docking slot-reservation flag
+
+    unsigned char pad_0x0c_to_0x70[0x70 - 0x0c];
+    unsigned char hasReservation;
     unsigned char pad_0x71_to_0x8c[0x8c - 0x71];
-    unsigned char reservationDirty; // +0x8c reservation handled flag
+    unsigned char reservationDirty;
 
     void unlockAsteroid();
 
@@ -78,7 +79,7 @@ namespace AbyssEngine {
 
 #define F(p, off) (*(float *)((char *)(p) + (off)))
 
-extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
+extern PaintCanvas *gCanvas;
 
 class Globals {
 public:
@@ -87,7 +88,7 @@ public:
     AEGeometry *getShipGroup(int type, int variant, bool wireframe);
 };
 
-extern Globals *gGlobals; // canonical Globals singleton (binary .bss 0x2281d0)
+extern Globals *gGlobals;
 
 static inline Status *PE_status() { return gStatus; }
 
@@ -255,7 +256,7 @@ extern "C" void PlayerEgo_addGun2_ext(PlayerEgo *);
 
 void MatrixGetPosition(void *, void *);
 
-extern "C" void *MovingStars_ctor(void *self); // MovingStars::MovingStars()
+extern "C" void *MovingStars_ctor(void *self);
 
 void PlayerEgo::setVisible(bool v) {
     this->visible = v;
@@ -290,7 +291,7 @@ bool PlayerEgo::goingToWormhole() {
     void *m = this->level;
     void *r4 = ((void *&) this->autoPilotTarget);
     Array<KIPlayer *> *lm = ((Level *) (m))->getLandmarks();
-    return r4 == (void *) (*lm)[3]; // landmarks[3] (orig byte offset 0xc / 4-byte slots)
+    return r4 == (void *) (*lm)[3];
 }
 
 int PlayerEgo::getCurrentSecondaryWeaponIndex() {
@@ -501,7 +502,7 @@ void PlayerEgo::resetLastHP() {
 void PlayerEgo::setExhaustVisible(bool param) {
     Level *lvl = this->level;
     this->exhaustVisible = param;
-    *(char *) &lvl->field_80->flags = param; // low byte of flags = sprite-active
+    *(char *) &lvl->field_80->flags = param;
     Array<int> *arr = lvl->field_a8;
     if (arr != nullptr) {
         for (unsigned i = 0; i < arr->size(); i++) {
@@ -651,7 +652,7 @@ int PlayerEgo::goingToStream() {
     void *m = this->level;
     void *r4 = ((void *&) this->autoPilotTarget);
     Array<KIPlayer *> *lm = ((Level *) (m))->getLandmarks();
-    return r4 == (void *) (*lm)[1]; // landmarks[1] (orig byte offset 4 / 4-byte slots)
+    return r4 == (void *) (*lm)[1];
 }
 
 Vec3 PlayerEgo::GetDirVector() {
@@ -664,7 +665,7 @@ void PlayerEgo::hideShipForFirstPersonCameraView(bool param) {
     this->field_0x32d = r1;
     unsigned char nr = r1 ^ 1;
     this->field_0x309 = (this->visible != 0) & nr;
-    *(char *) &this->level->field_80->flags = nr & (this->exhaustVisible != 0); // low byte of flags = sprite-active
+    *(char *) &this->level->field_80->flags = nr & (this->exhaustVisible != 0);
 }
 
 void PlayerEgo::changeThrust(float v) {
@@ -829,10 +830,10 @@ bool PlayerEgo::isDockedToAsteroid() {
 
 int PlayerEgo::goingToStation() {
     Array<KIPlayer *> *lm = ((Level *) (this->level))->getLandmarks();
-    if ((*lm)[0] == 0) return false; // landmarks[0]
+    if ((*lm)[0] == 0) return false;
     void *r4 = ((void *&) this->autoPilotTarget);
     lm = ((Level *) (this->level))->getLandmarks();
-    return r4 == (void *) (*lm)[0]; // landmarks[0]
+    return r4 == (void *) (*lm)[0];
 }
 
 float PlayerEgo::getCloakingPercentage() {
@@ -982,12 +983,14 @@ Vec3 PlayerEgo::getTurretPosition() {
     return MatrixGetPosition(world);
 }
 
-extern "C" void Vec_scale(void *out, const void *v, float s); // operator*
-extern "C" void Vec_sub(void *out, const void *a, const void *b); // operator-
-extern "C" void Vec_assign(void *dst, const void *src); // Vector::operator=
+extern "C" void Vec_scale(void *out, const void *v, float s);
+
+extern "C" void Vec_sub(void *out, const void *a, const void *b);
+
+extern "C" void Vec_assign(void *dst, const void *src);
 
 extern const float g_PE_rollNudge;
-extern const float g_PE_strafeDist; // 0xb1b70 distance scalar
+extern const float g_PE_strafeDist;
 
 void PlayerEgo::initManeuver(int type) {
     if ((unsigned) (type - 1) < 2 && this->volatileGoods != 0) {
@@ -1023,10 +1026,11 @@ void PlayerEgo::refillGunDelay() {
     return PlayerEgo_refillGunDelay_ext(self->player, 0);
 }
 
-extern "C" void PE_cft_finishMaterials(void *canvas, int mesh, void *out); // 0x1aba08 veneer
-extern "C" void PE_cft_place(PlayerEgo *self, int turretIdx); // placement math
+extern "C" void PE_cft_finishMaterials(void *canvas, int mesh, void *out);
 
-extern const float g_PE_cft_transformVal; // 0xab76c muzzle transform +0xe0
+extern "C" void PE_cft_place(PlayerEgo *self, int turretIdx);
+
+extern const float g_PE_cft_transformVal;
 
 void PlayerEgo::checkForTurret() {
     if (this->turretMode != 0)
@@ -1166,7 +1170,7 @@ void PlayerEgo::stopShooting(int param) {
     stopShooting_extA(p, param);
 }
 
-extern const float g_PE_shakeDiv; // 0xb21d4 normaliser
+extern const float g_PE_shakeDiv;
 
 void PlayerEgo::shake(int amount) {
     void *cam = this->geometry;
@@ -1219,14 +1223,9 @@ void PlayerEgo::startSmokeEmission() {
     PlayerEgo_startSmokeEmission_ext((void *) (intptr_t) this->level->particleRenderBoolPtr, this->explosionSmoke, 1);
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern char **g_PE_d_miningGate; // 0xb0bb0 -> flags (+0x10)
-extern const float g_PE_d_eps; // 0xb0dc0 free-look limit
+
+extern char **g_PE_d_miningGate;
+extern const float g_PE_d_eps;
 extern const float g_PE_d_lookK1;
 extern const float g_PE_d_lookK2;
 extern const float g_PE_d_manK;
@@ -1291,20 +1290,10 @@ float PlayerEgo::down(int frameTime, float delta) {
     return target;
 }
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_PE_adp_dockRadius; // 0xb00f2 per-ship table
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern PlayerFixedObject **g_PE_adp_fixedObj; // 0xb00f0 PlayerFixedObject
+
+extern int *g_PE_adp_dockRadius;
+
+extern PlayerFixedObject **g_PE_adp_fixedObj;
 
 static inline void adp_clearDockVector(PlayerEgo *self) {
     self->dockApproachDist = 0;
@@ -1335,7 +1324,6 @@ static int adp_arrivalEvent(PlayerEgo *self, void *station) {
     if (((Mission *) (mission))->isEmpty() == 0
         && (((Mission *) (mission))->getType() == 0xb8 || ((Mission *) (mission))->getType() == 0xa8)
         && fixed->getDockingType() == 2) {
-        // passenger drop-off
         int carried = fixed->intPosX;
         int maxPax = ((Ship *) (PE_status()->getShip()))->getMaxPassengers();
         if (maxPax > 0 && carried < maxPax) {
@@ -1418,7 +1406,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
             int ev = adp_arrivalEvent(this, this->dockStation);
             if (ev != 0)
                 hud->hudEvent(ev, this, 0);
-            ((int &) this->emergencyVec.x) = 1; // hand back to manual control
+            ((int &) this->emergencyVec.x) = 1;
         }
         PE_adp_apply(this);
         return 0;
@@ -1427,7 +1415,6 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
     if (state == 3) {
         int dist = PE_adp_glide(this);
         if (dist < 200) {
-            // docking complete: restore cameras and free the nav point.
             this->dockStation = 0;
             radar->dockTargetPtr = 0;
             radar->dockNavPtr = 0;
@@ -1447,7 +1434,7 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
                 ((void *&) this->hackingGame) = 0;
                 hud->setHackingGameActive(false);
             }
-            return 1; // docking complete
+            return 1;
         }
         PE_adp_apply(this);
     }
@@ -1476,8 +1463,8 @@ void PlayerEgo::setLevel(Level *level) {
 
 extern const float g_PE_dc_fovNormal;
 extern const float g_PE_dc_fovAlien;
-extern const unsigned int g_PE_dc_defX; // 0xaab78 default offset lo
-extern const unsigned int g_PE_dc_defY; // 0xaab7c default offset hi
+extern const unsigned int g_PE_dc_defX;
+extern const unsigned int g_PE_dc_defY;
 
 void PlayerEgo::setDockingCamera() {
     if (this->dockCameraNode == 0) {
@@ -1491,7 +1478,6 @@ void PlayerEgo::setDockingCamera() {
         this->dockCameraNode = node;
         ((AEGeometry *) node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
 
-        // seed the default rig offset (0x224..0x22c) only when fully zero.
         if (this->turretOffsetVec.x == 0.0f && this->turretOffsetVec.y == 0.0f && this->turretOffsetVec.z == 0.0f) {
             ((uint32_t &) this->turretOffsetVec.y) = g_PE_dc_defX;
             ((uint32_t &) this->turretOffsetVec.z) = g_PE_dc_defY;
@@ -1514,8 +1500,6 @@ void PlayerEgo::setDockingCamera() {
 
     gCanvas->CameraSetCurrent((unsigned int) (this->turretCamera));
 }
-
-//   downward toward the (negative) target.
 
 extern const float g_PE_r_loadK;
 extern const float g_PE_r_loadB;
@@ -1576,18 +1560,6 @@ float PlayerEgo::right(int frameTime, float delta) {
     return target;
 }
 
-// PlayerEgo::left(int frameTime, float delta)
-//   Yaw-left input handler. Routes the input depending on mode:
-//     * mining game active (0x1e4): forward the (negated) delta to it,
-//     * turret mode (0x1a0): rotate the three turret geometries,
-//     * maneuver lock (0x194): feed the scripted-maneuver roll instead,
-//     * otherwise: set the yaw direction (0x104=+1), compute the load-scaled
-//       yaw rate and ramp the yaw accumulator (0x27c) toward the target.
-//   The yaw-rate ramp (which samples the active-camera ease state) is computed
-//   by PE_yawRampDelta to keep the FP-flag soup out of line.
-
-// Ramp helper: given base rate and inputs, returns the accumulator increment.
-
 extern const float g_PE_l_loadK;
 extern const float g_PE_l_loadB;
 extern const float g_PE_l_rateK;
@@ -1603,7 +1575,6 @@ float PlayerEgo::left(int frameTime, float delta) {
                     miningGame)))->inputX);
 
     if (this->turretActive != 0) {
-        // turret yaw: scale by inverse turret-pitch and apply to 3 nodes.
         float pitch = (float) this->turretPitch;
         float ft = (float) frameTime;
         float ang = ((ft * delta) / (g_PE_l_turK1 / pitch)) * g_PE_l_turK2 * g_PE_l_turK3;
@@ -1647,13 +1618,6 @@ float PlayerEgo::left(int frameTime, float delta) {
     }
     return target;
 }
-
-// PlayerEgo::~PlayerEgo() -- real C++ destructor so the demangled symbol contains "~PlayerEgo".
-//
-// Deletes every owned sub-object (the wrapped Player, the various AEGeometry
-// nodes for hull / shield / cloak / turret / docking rigs, the Route, tractor
-// and repair beams, the mining game, both explosions, the ease matrix) and
-// nulls each handle, mirroring the target teardown order.
 
 __attribute__ ((minsize)) PlayerEgo::~PlayerEgo() noexcept(false) {
     if (this->player) delete (Player *) this->player;
@@ -1715,30 +1679,14 @@ void PlayerEgo::throttleChanged() {
     this->throttle = v;
 }
 
-// PlayerEgo::PlayerEgo(Player*) -- real C++ constructor so the demangled symbol
-// is "PlayerEgo::PlayerEgo(Player*)".
-//
-// The body is a long, flat member-initialisation sequence: it default-constructs
-// the two embedded 60-byte matrices (the roll matrix at 0x2ac and the turret/HUD
-// matrix at 0x4c8... reached as this+0x13/this+1.field_1C in the Ghidra listing),
-// zeroes/seeds the ~90 scalar and vector fields, records the wrapped Player at
-// offset 0, then derives the boost timing/speed/effect from the current ship and
-// builds the MovingStars background. Because the field block is purely data
-// initialisation with offsets that are not individually load-bearing for
-// coverage, the bulk is performed by PlayerEgo_initFields, while the two matrix
-// constructors and the player store stay inline.
-
-extern "C" void PlayerEgo_initFields(void *self, Player *player); // field init + boost + MovingStars
+extern "C" void PlayerEgo_initFields(void *self, Player *player);
 
 PlayerEgo::PlayerEgo(Player *player) {
-    // embedded orientation matrices.
-    this->rollMatrix = AbyssEngine::AEMath::Matrix(); // roll matrix
-    this->turretHudMatrix = AbyssEngine::AEMath::Matrix(); // turret/HUD matrix
+    this->rollMatrix = AbyssEngine::AEMath::Matrix();
+    this->turretHudMatrix = AbyssEngine::AEMath::Matrix();
 
-    // record the wrapped player (offset 0).
     this->player = (void *) player;
 
-    // remaining field initialisation + boost stats + MovingStars background.
     PlayerEgo_initFields(this, player);
 }
 
@@ -1758,18 +1706,6 @@ void PlayerEgo::PlayEngineSound() {
     return PlayerEgo_PlayEngineSound_ext(this->player, this->field_0x1c, 0);
 }
 
-// PlayerEgo::moveToPosition(Vector target, bool steer, float speed)
-//   Auto-pilot helper that flies the ship toward `target`. It computes the
-//   desired heading from the offset to the target (smoothed against the current
-//   facing), optionally turns toward it (`steer`) using a running average of the
-//   recent steering angles (history at 0x290), then sets the new direction,
-//   advances along it, applies roll, and folds in the strafe slide. The dense
-//   vector/angle math (which fills the steering history and clamps the turn) is
-//   delegated to PE_mtp_steer; the recoverable flight bookkeeping stays inline.
-
-// Builds the desired heading vector at self+0x164 and (when steer!=0) updates the
-// turn-rate history; returns nothing. Owns the corrupted dot/acos/clamp logic.
-
 extern const float g_PE_mtp_strafeEps;
 extern const float g_PE_mtp_strafeReset;
 extern const float g_PE_mtp_strafeK;
@@ -1778,7 +1714,6 @@ void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
     float t[3] = {target.x, target.y, target.z};
     PE_mtp_steer(this, t, steer ? 1 : 0, speed);
 
-    // apply the resolved heading (stored at 0x164) as the new facing.
     float up[3] = {0.0f, 1.0f, 0.0f};
     ((AEGeometry *) (this->geometry))->setDirection(this->headingVec, *(Vector *) up);
 
@@ -1786,7 +1721,6 @@ void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
     ((AEGeometry *) (this->geometry))->moveForward(this->thrust * dt * ((float &) this->speed));
     ((PlayerEgo *) (this))->roll(this->shakeIntensity);
 
-    // strafe slide -> follow camera, unless below the dead-zone.
     float slide = this->strafeAccel;
     float mag = slide > 0.0f ? slide : -slide;
     if (mag <= g_PE_mtp_strafeEps) {
@@ -1794,7 +1728,7 @@ void PlayerEgo::moveToPosition(Vector target, bool steer, float speed) {
     } else {
         unsigned char m[0x30];
         Mat_assign(m, ((AEGeometry *) (this->geometry))->getMatrix());
-        // rotate the slide vector into world space and push it to the camera.
+
         float v = slide * dt;
         ((TargetFollowCamera *) (((void *&) this->targetFollowCamera)))->translateNoUpdate(v, 0.0f, 0.0f);
         this->strafeAccel = this->strafeAccel * g_PE_mtp_strafeK;
@@ -1815,24 +1749,10 @@ int PlayerEgo::getShieldDamageRate() {
     return PlayerEgo_getShieldDamageRate_ext(self->player);
 }
 
-// PlayerEgo::handleAutoTurret(int dt)
-//   Drives the automatic gun turret. Every 3 seconds (timer 0x184) it rescans
-//   the level enemies and locks the nearest living, active, hostile target
-//   (0x18c). Each frame, if a target is held, it aims the turret geometries at
-//   the predicted intercept point and -- when on target and the firing window
-//   permits -- fires a turret shot and pulses the muzzle transform. Losing the
-//   target or exceeding the no-target window stops shooting. The aim/intercept
-//   vector-and-matrix math is delegated to PE_hat_aimAndFire.
-
-// virtual +0x28
-// Aims the turret at the held target and fires when appropriate; returns the
-// new "no-target" timer contribution (0 while actively tracking).
-
 void PlayerEgo::handleAutoTurret(int dt) {
     int t = this->autoTurretTimer + dt;
     this->autoTurretTimer = t;
     if (t >= 0xbb9) {
-        // 3000ms: rescan for the best target
         this->autoTurretTimer = 0;
         this->autoTurretTarget = 0;
         Array<KIPlayer *> *enemies = ((Level *) (this->level))->getEnemies();
@@ -1865,7 +1785,6 @@ void PlayerEgo::handleAutoTurret(int dt) {
         int fireTimer = PE_hat_aimAndFire(this, dt);
         this->autoTurretFireTimer = fireTimer;
         if (fireTimer + dt > 0x1f4) {
-            // fall through to stop-shooting below
         } else {
             return;
         }
@@ -1874,21 +1793,13 @@ void PlayerEgo::handleAutoTurret(int dt) {
     ((Player *) (this->player))->stopShooting(0);
 }
 
-// PlayerEgo::dockToAsteroid(KIPlayer*, Radar*)
-//   Toggles the asteroid mining dock. If not docked and given an asteroid, it
-//   latches on (records the asteroid at 0x1bc, computes an approach distance
-//   from its scaling at 0x1d8). If already docked, it detaches: re-enables the
-//   asteroid spin, clears the dock vector (0x1c8), re-activates the follow
-//   camera, tears down the mining game (0x1e4) and shows the exhaust again.
+extern "C" void Vec_assign(void *dst, const void *src);
 
-extern "C" void Vec_assign(void *dst, const void *src); // Vector::operator=
-
-extern const float g_PE_astApproach; // 0xaf568 scaling -> approach distance
+extern const float g_PE_astApproach;
 
 void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
     (void) kip;
     if (((char &) this->dockingState) != 0) {
-        // Already docked -> undock.
         ((PlayerAsteroid *) (((void *&) this->asteroidTarget)))->setRotationEnabled(true);
         this->field_0x145 = 0;
         ((char &) this->dockingState) = 0;
@@ -1906,7 +1817,6 @@ void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
         this->dockingPointIndex = 0;
         ((PlayerEgo *) (this))->setExhaustVisible(true);
     } else if (radar != 0) {
-        // Not docked -> latch onto the asteroid.
         ((char &) this->dockingState) = 1;
         this->miningSettleTimer = 0;
         ((void *&) this->asteroidTarget) = radar;
@@ -1917,11 +1827,6 @@ void PlayerEgo::dockToAsteroid(KIPlayer *kip, Radar *radar) {
     }
 }
 
-// PlayerEgo::levelCollision()
-//   The player ship never reports a level-geometry collision (unlike the AI
-//   ships, whose KIPlayer::levelCollision drives the autopilot avoidance). The
-//   override exists so callers can query any actor uniformly; it always answers
-//   "no collision".
 int PlayerEgo::levelCollision() {
     return 0;
 }
@@ -1941,9 +1846,9 @@ void PlayerEgo::killLiberator() {
     unsigned count = arr->count;
     for (unsigned i = 0; i < count; i++) {
         int *e = (int *) arr->data_[i];
-        if (e[0x16] == 0xb3) { // RAWREAD: gun row +0x58 (Gun member not modeled)
-            *(int *) e[0xf] = -1; // RAWREAD: gun row +0x3c (Gun member not modeled)
-            *(Vector *) ((void *) e[3]) = *(const Vector *) (sv); // RAWREAD: gun row +0xc (Gun member not modeled)
+        if (e[0x16] == 0xb3) {
+            *(int *) e[0xf] = -1;
+            *(Vector *) ((void *) e[3]) = *(const Vector *) (sv);
             Array<Gun *> *arr2 = p->data_[1];
             Gun *e2 = arr2->data_[i];
             e2->active = 0;
@@ -1952,22 +1857,13 @@ void PlayerEgo::killLiberator() {
     }
 }
 
-// PlayerEgo::roll(int amount)
-//   Banks the ship around its forward axis while a roll is active (flag 0x2f4).
-//   It samples the current orientation's right-vector components from the ship
-//   matrix, and -- once the bank has settled near level -- snaps the roll matrix
-//   (0x2ac) back to identity and clears the roll/auto-level flags. Otherwise it
-//   recomputes the bank factor (the dense FP/sign-flag logic lives in
-//   liw_roll_bankFactor) and writes a fresh rotation into the roll matrix.
+extern "C" void Mat_identity(void *out, const void *src);
 
-extern "C" void Mat_identity(void *out, const void *src); // MatrixIdentity
-extern "C" void Mat_assign(void *dst, const void *src); // Matrix::operator=
-extern "C" void Mat_setRotation(void *out, float x, float y, float z); // MatrixSetRotation
-// Resolves the bank factor + axis from the right-vector and the stored roll
-// direction (0x2a9) / auto-level flag (0x324); returns the X-axis scale and
-// writes the Z component through *outZ. Owns the corrupted sign-bit branches.
+extern "C" void Mat_assign(void *dst, const void *src);
 
-extern const float g_PE_rollLevelEps; // 0xabdb0 settle threshold
+extern "C" void Mat_setRotation(void *out, float x, float y, float z);
+
+extern const float g_PE_rollLevelEps;
 
 void PlayerEgo::roll(int amount) {
     if (this->rolling == 0)
@@ -1981,10 +1877,9 @@ void PlayerEgo::roll(int amount) {
     if (amount > 0x3b)
         amount = 0x3c;
 
-    unsigned char rollMat[0x30]; // Matrix is a 48-byte value
+    unsigned char rollMat[0x30];
 
     if (ry >= 0.0f && mag < g_PE_rollLevelEps) {
-        // settled: reset to identity and stop rolling.
         Mat_identity(rollMat, (char *) &this->rollMatrix);
         Mat_assign((char *) &this->rollMatrix, rollMat);
         this->rollDirection = 0;
@@ -1996,7 +1891,6 @@ void PlayerEgo::roll(int amount) {
     float zAxis = 0.0f;
     float xScale = PE_roll_bankFactor(this, rx, ry, &zAxis);
 
-    // record the current roll direction (sign of rx) when non-zero.
     if (rx != 0.0f)
         this->rollDirection = (rx < 0.0f) ? 1 : 2;
 
@@ -2011,45 +1905,25 @@ void PlayerEgo::setTargetFollowCamera(TargetFollowCamera *cam) {
     return PlayerEgo_setTargetFollowCamera_ext(cam, m);
 }
 
-// PlayerEgo::calcCollision(Array<KIPlayer*>* candidates)
-//   Resolves collisions between the player and each candidate object this frame
-//   (skipped while in the final docking approach). For each candidate that the
-//   broad-phase reports as overlapping it dispatches by object kind:
-//     * gas cloud / wormhole (type 0x4262): plays the proximity rumble whose
-//       gain scales with distance, and -- when close -- nudges the ship away,
-//     * solid obstacle (field_3C == 0): snaps the ship to the surface contact
-//       point and re-derives the HUD transform,
-//     * destructible (field_3C != 0): applies mutual collision damage and a
-//       roll kick.
-//   The per-kind vector/matrix physics is delegated to the PE_cc_* helpers; the
-//   recoverable iteration and branch selection stay inline.
-
-// kind-specific resolvers (own the corrupted vector / matrix physics).
-
 extern const float g_PE_cc_alarmDist;
 
 void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
     if (candidates == 0)
         return;
     if (this->dockedFlag != 0 && (unsigned) (this->dockingPointIndex - 1) < 3)
-        return; // in final docking approach: no collisions
+        return;
 
     for (unsigned i = 0; i < candidates->size(); i++) {
         void *obj = (*candidates)[i];
         if (obj == 0)
             continue;
 
-        // first candidate: trip the proximity alarm flag when very close.
         if (i == 0 && PE_status()->inAlienOrbit() == 0) {
             if (Vec_length((char *) &this->dockOffsetVec) < g_PE_cc_alarmDist
                 && ((KIPlayer *) obj)->proximityAlarmFlag != 0)
                 this->collidesWithStationFlag = 1;
         }
 
-        // Broad-phase overlap test: does this enemy's outer collision volume contain the
-        // player's current position? Named actor virtual call (outerCollide, slot +0x40 ->
-        // the polymorphic float form). The decompiler had dropped the getPosition() result
-        // here (pos was left uninitialised) — restored.
         AbyssEngine::AEMath::Vector pos = ((AEGeometry *) (this->geometry))->getPosition();
         if (((KIPlayer *) obj)->outerCollide(pos) == 0)
             continue;
@@ -2059,7 +1933,6 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
                 PE_cc_wormhole(this, obj);
         } else if (((KIPlayer *) obj)->stealFlag == 0) {
             if (((KIPlayer *) (obj))->isVisible() != 0) {
-                // skip the object we are actively docking with.
                 bool docking = (((char &) this->dockingState) != 0 || this->dockedFlag != 0)
                                && ((void *&) this->asteroidTarget) == obj;
                 if (!docking)
@@ -2096,19 +1969,9 @@ void PlayerEgo::dockToPlanet() {
     ((FModSound *) (*(void **) snd))->play(5, (Vector *) 0, (Vector *) 0, f);
 }
 
-// PlayerEgo::up(int frameTime, float delta)
-//   Pitch-up input handler -- the mirror of down(): same axis and dispatch but
-//   the free-look/turret accumulators (0x1a8 / 0x1a4) and the pitch accumulator
-//   (0x278) ramp upward, with the pitch direction flag (0x100) set to +1.
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern char **g_PE_u_miningGate; // 0xb0e1c -> flags (+0x10)
-extern const float g_PE_u_eps; // 0xb1030 free-look limit
+extern char **g_PE_u_miningGate;
+extern const float g_PE_u_eps;
 extern const float g_PE_u_eps2;
 extern const float g_PE_u_lookK1;
 extern const float g_PE_u_lookK2;
@@ -2174,14 +2037,8 @@ float PlayerEgo::up(int frameTime, float delta) {
     return target;
 }
 
-// PlayerEgo::shoot(int weapon, int type)
-//   Fires the player's weapons. In turret/free-look mode (flag 0x1a0) the shot
-//   is aimed using the combined turret * ship matrix and dispatched as a type-2
-//   (turret) shot. Otherwise, when alive: a type-1 (secondary/missile) shot
-//   tracks the locked secondary index at 0x10c (cleared on a miss), and any
-//   other type is a plain primary shot.
+extern "C" void Mat_mul(void *out, const void *a, const void *b);
 
-extern "C" void Mat_mul(void *out, const void *a, const void *b); // operator*
 extern "C" int Player_shootTurret(void *player, int kind, int weapon, int hi,
                                   int flag, const void *matrix);
 
@@ -2189,7 +2046,7 @@ void PlayerEgo::shoot(int weapon, int type) {
     if (this->turretActive != 0) {
         void *m1 = ((AEGeometry *) (this->geometry))->getMatrix();
         void *m2 = ((AEGeometry *) (this->turretGeometry))->getMatrix();
-        unsigned char combined[0x30]; // Matrix is a 48-byte value
+        unsigned char combined[0x30];
         Mat_mul(combined, m1, m2);
         Player_shootTurret(this->player, 2, weapon, weapon >> 31, 0, combined);
         return;
@@ -2207,37 +2064,17 @@ void PlayerEgo::shoot(int weapon, int type) {
     }
 }
 
-// PlayerEgo::stopMining()
-//   The target bytes for this stub decode as a tiny thunk into the mining-game
-//   teardown helper (the Ghidra listing is bad-instruction noise because the
-//   region is a hand-written veneer). Faithfully forward to that helper.
-
 void PlayerEgo::stopMining() {
     PlayerEgo_stopMining_impl(this);
 }
 
-// PlayerEgo::setTurretMode(bool enable)
-//   Enters or leaves the gun-turret view. Refused unless the ship mounts a
-//   turret (0x170) and is neither mining (0x1e4) nor mid-cutscene (0x180); a
-//   pending maneuver (0x194) instead just restores the default camera. When
-//   enabling it lazily builds the turret camera rig (camera + AEGeometry chain,
-//   like the docking camera), aims it, and makes it current; when disabling it
-//   stops shooting and resets the camera. Either way it toggles the turret
-//   crosshair transform (0x30) and starts/stops the turret hum sound.
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
 extern int *g_PE_tm_hum;
 extern const float g_PE_tm_fovNormal;
 extern const float g_PE_tm_fovAlien;
 
 void PlayerEgo::setTurretMode(bool enable) {
     if (this->turretMode == 0 || ((void *&) this->miningGame) != 0 || this->autoTurretEquipped != 0) {
-        // turret view unavailable -> restore default camera if a maneuver runs.
         if (((void *&) this->rocketControlGun) != 0) {
             gCanvas->CameraSetCurrent(
                 (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
@@ -2308,12 +2145,6 @@ void PlayerEgo::rotate(float rx, float ry, float rz) {
     MatrixSetRotation(local, m, this->rotateX, this->rotateY, this->rotateZ);
 }
 
-// PlayerEgo::strafe(int dir, bool positive)
-//   Sets the lateral strafe acceleration (0x37c) and clamps the strafe target
-//   speed (0x380). When the ship is cargo-loaded (flag 0x235) the base strafe
-//   rate (0x154) is reduced proportionally to the current/max load ratio.
-//   A maneuver lock at 0x194 suppresses strafing entirely.
-
 extern const float g_PE_strafeLoadK;
 extern const float g_PE_strafeLoadB;
 extern const float g_PE_strafeAccelK;
@@ -2341,18 +2172,6 @@ void PlayerEgo::strafe(int /*dir*/, bool positive) {
     this->strafeAccel = ((float &) this->strafeNavPoint) * sign * accel;
     ((float &) this->strafeNavPoint) = target;
 }
-
-// PlayerEgo::dockToDockingPoint(KIPlayer*, Radar*)
-//   Toggles automated docking onto a station docking point. If not docking and
-//   given a target, it latches the approach state (0x356/0x1bc/0x1d8). If a
-//   target is given while docking, it finds the nearest nav point, switches off
-//   the turret/look cameras, and builds an EaseInOutMatrix (0x358) that glides
-//   the ship from its current pose to the docking pose over 3000 ms (the 30-arg
-//   ctor is wrapped by PE_dtdp_makeEase). With no target it undocks: restores
-//   cameras, clears state, frees any reserved SpacePoint, and tears down any
-//   running hacking game.
-
-// Wraps operator new + EaseInOutMatrix(from-matrix, to-translation, 3000ms).
 
 void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
     (void) kip;
@@ -2433,52 +2252,17 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
     }
 }
 
-// PlayerEgo::draw(bool allowHud)
-//   Draws the 2D overlay layer for the player ship (targeting reticle / lock
-//   marker plus the boost throttle). A cascade of guard conditions short-circuits
-//   to one of several render-tail veneers when the player is in a maneuver, the
-//   mining game, dead, docking, in a cutscene, etc. In the normal path it builds
-//   a unit matrix (optionally seeded from the ship matrix), then draws the
-//   appropriate reticle image depending on turret mode / plasma lock / blink
-//   state, and finally the throttle gauge.
 
-// PlayerEgo::draw has three terminal tail-branches, all resolved from the binary:
-//   0x1abc48 -> MiningGame::render2D()  (_ZN10MiningGame8render2DEv  @ 0x12f12c)
-//   0x1abc58 -> PlayerEgo::drawThrottle() (_ZN9PlayerEgo12drawThrottleEv @ 0xb1f04)
-//   0x1abc68 -> HackingGame::render2D() (_ZN11HackingGame8render2DEv @ 0x15f1e4)
-// They are dispatched directly below as real method calls (no veneer shims).
+extern float *g_PE_dr_posLock;
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern float *g_PE_dr_posLock; // 0xb1e0c reticle pos (plasma)
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
 extern float *g_PE_dr_posNoLock;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *g_PE_dr_posBlink;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern float *g_PE_dr_posNormal;
 
 void PlayerEgo::draw(bool allowHud) {
-    if (((void *&) this->rocketControlGun) != 0) // mid scripted maneuver: nothing to draw
+    if (((void *&) this->rocketControlGun) != 0)
         return;
 
     if (((void *&) this->hackingGame) != 0 && this->turretActive == 0) {
@@ -2487,7 +2271,6 @@ void PlayerEgo::draw(bool allowHud) {
     }
 
     if (((void *&) this->miningGame) != 0) {
-        // mining game owns the screen
         ((MiningGame *) (void *) (intptr_t) this->miningGame)->render2D();
         return;
     }
@@ -2514,7 +2297,7 @@ void PlayerEgo::draw(bool allowHud) {
         return;
     }
 
-    unsigned char m[0x30]; // unit matrix, optionally ship-aligned
+    unsigned char m[0x30];
     for (int i = 0; i < 0x30; i++) m[i] = 0;
     F(m, 0x0) = 1.0f;
     F(m, 0x14) = 1.0f;
@@ -2529,7 +2312,6 @@ void PlayerEgo::draw(bool allowHud) {
 
     if (this->turretActive != 0
         && ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
-        // turret crosshair: plasma lock changes the marker + position.
         if (((Radar *) (this->field_0x14))->isPlasmaInRange() != 0) {
             float *p = g_PE_dr_posLock;
             ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage3), (int) p[0],
@@ -2540,7 +2322,6 @@ void PlayerEgo::draw(bool allowHud) {
                                                            (int) p[1], (unsigned char) (0x11), (unsigned char) (0x44));
         }
     } else {
-        // standard lock-on reticle: blink while acquiring.
         if ((char &) this->level->field_30 != 0) {
             float *p = g_PE_dr_posBlink;
             ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->radarBlipImage1), (int) p[0],
@@ -2560,25 +2341,6 @@ void PlayerEgo::draw(bool allowHud) {
     ((PlayerEgo *) (this))->drawThrottle();
 }
 
-// PlayerEgo::update(int dt, Radar*, Hud*, Radio*, LevelScript*, int, bool, int)
-//   The master per-frame tick for the player ship. It runs, in order:
-//     1. position cache + non-flight subsystems (shield regen, hacking game,
-//        cargo overflow, jump-drive charge, cloak) -- delegated to PE_upd_subsystems,
-//     2. engine-overheat / boost handling incl. the destruct explosion when the
-//        boost meter overflows -- delegated to PE_upd_boost,
-//     3. the asteroid / station docking state dispatch (dockToAsteroid /
-//        approachAsteroid / dockToDockingPoint / approachDockingPoint),
-//     4. the flight controller: auto-pilot route following or manual flight,
-//        turret-view, evasive maneuver, ship handling and the auto-turret,
-//     5. collision resolution and post-processing -- delegated to PE_upd_post.
-//   The dense numeric phases live in the PE_upd_* helpers; the recoverable
-//   high-level dispatch (which decides *which* controller runs) is authored here.
-
-// flight controllers (already authored as their own methods).
-
-// route / nav helpers.
-
-// dense numeric phases (own the corrupted FP blocks).
 extern "C" void PE_upd_subsystems(PlayerEgo *self, int dt, void *radar, void *hud,
                                   void *radio, void *script);
 
@@ -2596,21 +2358,18 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
     if (((void *&) this->hud) == 0)
         return;
     if (this->freeze != 0)
-        return; // frozen
+        return;
 
-    // cache world position for this frame.
     float pos[3];
     ((PlayerEgo *) (this))->getPosition();
     ((int &) this->dockOffsetVec.x) = *(int *) &pos[0];
     ((int &) this->dockOffsetVec.y) = *(int *) &pos[1];
     this->boostDelay = *(int *) &pos[2];
 
-    // shield regen / hacking / cargo / jump-drive / cloak.
     PE_upd_subsystems(this, dt, radar, hud, radio, script);
-    // engine overheat + boost (may spawn the destruct explosion at 0x90).
+
     PE_upd_boost(this, dt);
 
-    // ---- asteroid docking --------------------------------------------------
     if (((char &) this->dockingState) != 0) {
         this->field_0x145 = 1;
         if (((void *&) this->asteroidTarget) == 0 || ((PlayerEgo *) (this))->isDead() != 0) {
@@ -2621,7 +2380,6 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         ((PlayerEgo *) (this))->approachAsteroid(hud, (int) (intptr_t) hud, radar);
     }
 
-    // ---- station docking ---------------------------------------------------
     if (this->dockedFlag != 0 && ((Player *) (this->player))->getHitpoints() > 0) {
         this->field_0x145 = 1;
         if (((void *&) this->asteroidTarget) == 0 || ((PlayerEgo *) (this))->isDead() != 0) {
@@ -2633,11 +2391,9 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
             PE_upd_docksFinishDelivery(this, radio);
     }
 
-    // turret view while the free-look/turret camera is active.
     if (this->turretActive != 0 || this->field_0x1a1 != 0)
         ((PlayerEgo *) (this))->handleTurretView(dt);
 
-    // ---- flight controller -------------------------------------------------
     bool autopilot = (this->autoPilot != 0 && this->autoPilotTarget != 0);
     if (!autopilot) {
         if (this->field_0x145 == 0) {
@@ -2658,8 +2414,6 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         if (wp == 0 || this->dockedToStream != 0) {
             this->setAutoPilot(nullptr);
         } else {
-            // steer toward the current waypoint. wp is a Waypoint (a KIPlayer);
-            // getPosition() is the actor vtable slot +0x28 virtual.
             AbyssEngine::AEMath::Vector wpVec = ((KIPlayer *) wp)->getPosition();
             float wpPos[3] = {wpVec.x, wpVec.y, wpVec.z};
             ((int &) this->waypointX) = *(int *) &wpPos[0];
@@ -2684,12 +2438,10 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    // continue an evasive maneuver during a non-final docking glide.
     if (this->dockedFlag != 0 && ((uint32_t &) this->dockingPointIndex) != 1
         && this->turretActive == 0 && (((uint32_t &) this->dockingPointIndex) | 1) != 3)
         ((PlayerEgo *) (this))->updateManeuver();
 
-    // auto-turret (when enabled and the radar window allows it).
     if (this->autoTurretEquipped != 0 && this->autoTurretEnabled != 0) {
         if (((PlayerEgo *) (this))->isDead() == 0) {
             ((PlayerEgo *) (this))->handleAutoTurret(dt);
@@ -2699,7 +2451,6 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     }
 
-    // collision + camera + explosion post-processing.
     PE_upd_post(this, dt, radar, hud, radio, arg5);
 }
 
@@ -2707,18 +2458,7 @@ void PlayerEgo::setTurretPosition(Vector v) {
     this->turretOffsetVec = v;
 }
 
-// PlayerEgo::revive()
-//   Brings a destroyed player back to life: re-enables its engine particle
-//   system, deletes the explosion, re-activates the follow camera and engine
-//   sound, restores hitpoints/armor to max, resets position and facing, and
-//   clears the explosion timer.
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
 extern void **g_PE_reviveSound;
 
 void PlayerEgo::revive() {
@@ -2757,32 +2497,13 @@ void PlayerEgo::revive() {
     this->explosionTimer = 0;
 }
 
-// PlayerEgo::drawThrottle()
-//   While the boost gauge is active (flag 0x370) this draws the throttle bar:
-//   a partial DrawRegion2D fill of the gauge image (0x238) whose height tracks
-//   the current thrust (0xbc), plus the thrust percentage rendered as text
-//   centred under it. The boost timer (0x374) folds back past its midpoint so
-//   the bar pulses symmetrically.
 
-// String::String(int)
+extern float *g_PE_t_anchor;
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern float *g_PE_t_anchor; // {x,y} gauge anchor
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern String **g_PE_t_pctStr; // "%" String
-extern const float g_PE_t_timerDiv; // 0xb1f30 timer normaliser
-extern const float g_PE_t_pctScale; // 0xb20dc thrust->percent
-extern const float g_PE_t_textDiv; // 0xb20e0 text vertical divisor
+extern String **g_PE_t_pctStr;
+extern const float g_PE_t_timerDiv;
+extern const float g_PE_t_pctScale;
+extern const float g_PE_t_textDiv;
 
 void PlayerEgo::drawThrottle() {
     if (this->throttleStarted == 0)
@@ -2810,7 +2531,6 @@ void PlayerEgo::drawThrottle() {
                                                     (float) ((int) ((anchor[1] + (float) h) - (float) fillH)), 0, 0, 0,
                                                     (int) (anchor[0] - (float) (w / 2)));
 
-    // percentage label
     unsigned char pct[12];
     ((String *) (pct))->ctor_int((int) (thrust * g_PE_t_pctScale));
 
@@ -2845,29 +2565,11 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     ((int &) this->thrust) = 0x3f800000;
 }
 
-// PlayerEgo::updateManeuver()
-//   Advances an in-progress evasive maneuver, dispatched on the maneuver type
-//   (0x334) with a shared elapsed-time accumulator (0x350):
-//     * types 1/2 (barrel-roll dodge left/right): banks and slides the ship
-//       sideways along an arc, modulating the follow-camera offset, and ends the
-//       maneuver after ~1200 ms.
-//     * type 3 (strafe run to a stored target 0x338): flies to the target via
-//       moveToPosition, rolls into it, and ends after ~3000 ms.
-//   The arc/bank matrix and camera-offset math is dense FP and delegated to the
-//   PE_um_* helpers; the type dispatch, timer advance and terminal camera reset
-//   stay inline.
-
-// dodge-arc step (types 1/2): banks/slides the ship + camera for `dt`-advanced
-// timer; returns nothing, updates the hull transform in place.
-// strafe-run step (type 3): builds the intercept target offset into `out`.
-// strafe-run post-move bank + camera glide.
-
 int PlayerEgo::updateManeuver() {
     unsigned int type = ((uint32_t &) this->maneuverType);
 
     if ((type - 1) < 2) {
-        // barrel-roll dodge (left = 1, right = 2)
-        ((int &) this->navPoint) = ((int &) this->explosion) + ((int &) this->navPoint); // advance timer by frame dt
+        ((int &) this->navPoint) = ((int &) this->explosion) + ((int &) this->navPoint);
         PE_um_dodgeStep(this);
         if (((int &) this->navPoint) > 0x4af) {
             void *level = this->levelScript;
@@ -2880,13 +2582,11 @@ int PlayerEgo::updateManeuver() {
     if (type != 3)
         return 0;
 
-    // strafe run toward the stored target.
     ((int &) this->navPoint) = ((int &) this->explosion) + ((int &) this->navPoint);
 
     float target[3];
     PE_um_strafeTarget(this, target);
     if (((int &) this->navPoint) > 900) {
-        // lock onto the recorded approach point once past the lead-in.
         target[0] = this->strafeTargetVec.x;
         target[1] = this->strafeTargetVec.y;
         target[2] = this->strafeTargetVec.z;
@@ -2910,21 +2610,11 @@ int PlayerEgo::getHullDamageRate() {
     return PlayerEgo_getHullDamageRate_ext(self->player);
 }
 
-// PlayerEgo::handleTurretView(int dt)
-//   Builds the gun-turret camera each frame. It optionally advances the ship
-//   along its boost vector, then composes the turret look matrix from the hull
-//   / yaw / pitch geometry matrices. When a hit-shake (0x32c) or boost shake
-//   (0x13c) is active it jitters the eye/target points (the random jitter +
-//   FP-flag accumulation is delegated to PE_htv_applyShake), recomputes a
-//   look-at matrix, installs it as the camera local, applies the roll, and
-//   finally derives the HUD transform local from the hull and reticle matrices.
+extern "C" void Mat_mul(void *out, const void *a, const void *b);
 
-extern "C" void Mat_mul(void *out, const void *a, const void *b); // operator*
-extern "C" void Mat_mulEq(void *acc, const void *b); // operator*=
-// Owns the corrupted random jitter offsets for hit-shake and boost-shake.
+extern "C" void Mat_mulEq(void *acc, const void *b);
 
 void PlayerEgo::handleTurretView(int dt) {
-    // advance along boost vector unless free-look/cutscene suppresses it.
     bool move = true;
     if (((void *&) this->autoPilotTarget) != 0 && this->dockedToStream == 0)
         move = true;
@@ -2969,7 +2659,6 @@ void PlayerEgo::handleTurretView(int dt) {
     this->yawAccumDir = 0;
     ((PlayerEgo *) (this))->roll(this->shakeIntensity);
 
-    // HUD transform local = hullLocal * reticleLocal
     unsigned int hull = (unsigned int) (long) gCanvas->TransformGetLocal((unsigned int) (this->geometry->transform));
     unsigned int ret = (unsigned int) (long) gCanvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
     unsigned char tmp[0x30];
@@ -2977,48 +2666,13 @@ void PlayerEgo::handleTurretView(int dt) {
     Mat_assign(((Player *) this->player)->transform, tmp);
 }
 
-// PlayerEgo::approachAsteroid(Hud*, int hud2, Radar*)
-//   Two-phase asteroid mining controller, dispatched on the dock state 0x1c4:
-//     * state 0 (approach): flies toward the asteroid's surface point, ramps
-//       the throttle down on arrival, kills the exhaust, and aligns the hull to
-//       the surface (the alignment matrix math is in PE_aa_align). Once docked
-//       it switches to state 1.
-//     * state 1 (mining): once the settle timer (0x1dc) elapses it runs the
-//       mining mini-game (0x1e4) -- creating it on first entry -- and reacts to
-//       win / loss / death by stopping the mine and firing the HUD event.
-//   Skipped entirely while dying. The dense approach physics is delegated to
-//   PE_aa_approachStep; the recoverable state machine stays inline.
 
-// Owns the corrupted approach steering + hull-alignment matrix math; returns the
-// new dock state (0 = still approaching, 1 = docked) and updates fields in place.
+extern void **g_PE_aa_levelHolder;
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern void **g_PE_aa_levelHolder; // 0xaf8ec asteroid host
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
 extern int *g_PE_aa_mineSound;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_PE_aa_winHolder1;
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
+
 extern void **g_PE_aa_winHolder2;
 extern const float g_PE_aa_settleEps;
 
@@ -3028,7 +2682,6 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
         return;
 
     if (this->dockingPointIndex == 1) {
-        // mining phase: wait for the settle timer, then run the mini-game.
         float settle = ((float &) this->miningSettleTimer);
         if (settle < g_PE_aa_settleEps) {
             ((float &) this->miningSettleTimer) = settle + (float) (-(this->shakeIntensity) >> 1);
@@ -3044,7 +2697,7 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
                                       (void *) (unsigned long) hud2);
             ((void *&) this->miningGame) = mg;
             I((void *)(this->asteroidTarget + 4), 0x40) = 0;
-            // RAWREAD: (asteroidTarget+4)+0x40 (nested handle deref, no modeled member)
+
             int snd = *g_PE_aa_mineSound;
             ((FModSound *) (snd))->play(1, (Vector *) 0, (Vector *) 0, 0);
             ((FModSound *) ((void *) (unsigned long) snd))->pause(0);
@@ -3071,36 +2724,17 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
     }
 
     if (this->dockingPointIndex == 0) {
-        // approach phase: steer/align toward the asteroid.
         this->dockingPointIndex = PE_aa_approachStep(this, hud2, radar);
     }
 }
 
-// PlayerEgo::handleShip(int dt)
-//   Per-frame flight-model update for the player ship. It drives the engine
-//   sound parameters (RPM/throttle) from the yaw/pitch input, then rebuilds the
-//   ship's world transform: applies yaw/pitch rotation, the current bank/roll
-//   matrix (when rolling, 0x2f4), advances along the forward vector, re-orthonor-
-//   malises the basis, and folds in the lateral strafe slide (0x37c) into the
-//   follow camera. The dense matrix algebra is delegated to PE_handleShip_orient
-//   which writes the final transform local; the recoverable bookkeeping (sound,
-//   accumulator resets, HUD transform) stays inline.
 
-// Owns the orientation matrix build + strafe slide; returns nothing, updates
-// the ship transform and the follow camera in place.
-
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern FModSound **g_PE_hs_sound; // 0xabe0c FModSound
+extern FModSound **g_PE_hs_sound;
 extern const float g_PE_hs_throttleBias;
 
 void PlayerEgo::handleShip(int dt) {
     FModSound *snd = *g_PE_hs_sound;
-    // engine sound: param 0 = RPM (from |yaw|,|pitch| max), param 1 = throttle.
+
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 0,
                        ((float &) this->yawAccumD));
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 1,
@@ -3108,10 +2742,8 @@ void PlayerEgo::handleShip(int dt) {
 
     unsigned int tf = gCanvas->selfHandle;
 
-    // Build orientation + strafe slide and install the ship transform.
     PE_handleShip_orient(this, dt, tf);
 
-    // reset per-frame input accumulators.
     ((int &) this->pitchRamp) = 0;
     ((int &) this->yawRamp) = 0;
     this->pitchAccumDir = 0;
@@ -3119,7 +2751,6 @@ void PlayerEgo::handleShip(int dt) {
     ((int &) this->yawAccumD) = 0;
     ((int &) this->rollAccum) = 0;
 
-    // HUD transform local = hullLocal * reticleLocal
     unsigned int hull = (unsigned int) (long) gCanvas->TransformGetLocal((unsigned int) (this->geometry->transform));
     unsigned int ret = (unsigned int) (long) gCanvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
     unsigned char tmp[0x30];
@@ -3139,17 +2770,6 @@ void PlayerEgo::stopBoost() {
     return fn(*(void **) r4, 0x44e);
 }
 
-// PlayerEgo::setShip(int race, int group)
-//   Rebuilds the player's ship object and all of its attached hardware:
-//     * fetches the ship group prototype (stored at 0x4) and its hull mesh,
-//     * creates the hull AEGeometry (0x8) and parents it,
-//     * if a tractor beam is equipped, builds it (0x1b4) and registers sounds,
-//     * loops the two repair-beam equipment sorts, building a RepairBeam list
-//       (0x1b8) and registering their sounds,
-//     * if an emergency system is fitted, builds its effect geometry (0xac) and
-//       caches its transform-derived values (0x310/0x314/0x320),
-//     * applies supernova / turret-specific scaling (0x3c, tail veneer 0x1ab9f8).
-
 extern const float g_PE_ss_emDiv;
 extern const float g_PE_ss_emBias;
 
@@ -3166,7 +2786,6 @@ void PlayerEgo::setShip(int race, int group) {
     this->geometry = (AEGeometry *) hull;
     ((AEGeometry *) (hull))->addChild((uint32_t) this->field_0x4->transform);
 
-    // tractor beam
     if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0xd) != 0) {
         void *it = (void *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0xd);
         int idx = ((Item *) (it))->getIndex();
@@ -3177,7 +2796,6 @@ void PlayerEgo::setShip(int race, int group) {
         gGlobals->addSoundResourceToList(0x4);
     }
 
-    // repair beams (sorts 0x25 and 0x29)
     for (unsigned i = 0; i < 2; i++) {
         int sort = (i == 0) ? 0x25 : 0x29;
         void *it = (void *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(sort);
@@ -3194,7 +2812,6 @@ void PlayerEgo::setShip(int race, int group) {
         }
     }
 
-    // emergency system effect geometry
     if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b) != 0
         && ((Ship *) (PE_status()->getShip()))->hasEmergencySystem() != 0) {
         void *geo = (void *) new AEGeometry((uint16_t) 0x3826, gCanvas, false);
@@ -3208,13 +2825,11 @@ void PlayerEgo::setShip(int race, int group) {
         this->emergencyVal2 = ((AbyssEngine::Transform *) tf)->boundingRadius / g_PE_ss_emDiv + g_PE_ss_emBias;
     }
 
-    // supernova scaling
     if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
         void *tf = gCanvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
         ((float &) this->gunExtraGeo) = ((AbyssEngine::Transform *) tf)->boundingRadius * 1.75f;
     }
 
-    // turret offset finalisation
     if (this->cloak != 0)
         PlayerEgo_setShip_tail(gCanvas, this->field_0x4->meshId,
                                (char *) &this->cloakMaterial1, nullptr);
@@ -3225,17 +2840,6 @@ void PlayerEgo::addGun(Array<Gun *> *arr, int x) {
     return PlayerEgo_addGun2_ext(this);
 }
 
-// PlayerEgo::render(bool allowHud)
-//   Draws the ship and all attached visual effects. When alive it renders the
-//   explosion shell (if any), the hull geometry, shield/cloak overlays, the
-//   tractor beam and every active repair beam, then tail-calls the level draw
-//   with a flag derived from the docking state. When dead it only renders the
-//   fading explosion debris.
-
-// The render tail-branch (0x1abc38 -> Level::enableMovingStars(bool),
-// _ZN5Level17enableMovingStarsEb @ 0xd6528) toggles the level's moving-stars
-// particle backdrop after the ship and its effects have been drawn.
-
 void PlayerEgo::render(bool allowHud) {
     Level *level = this->level;
 
@@ -3245,7 +2849,7 @@ void PlayerEgo::render(bool allowHud) {
 
         if (this->explosion != 0) {
             ((Explosion *) (this->explosion))->render();
-            if (this->explosionTimer <= 0xbb7) // explosion < 3000 ticks old
+            if (this->explosionTimer <= 0xbb7)
                 ((AEGeometry *) (this->geometry))->render();
         }
         if (this->explosion2 != 0)
@@ -3254,13 +2858,12 @@ void PlayerEgo::render(bool allowHud) {
         ((AEGeometry *) (this->geometry))->render();
 
         if (((void *&) this->field_0xac) != 0 && this->emergencySystemTimer >= 1)
-            ((AEGeometry *) (this->geometry))->render(); // shield overlay reuses hull geo
+            ((AEGeometry *) (this->geometry))->render();
 
         if (((char &) this->gunMuzzleRoot) != 0)
             ((AEGeometry *) (this->gunYawGeo))->render();
 
         if (this->turretMode != 0) {
-            // cloak overlay
             if (this->field_0x30 != 0)
                 ((AEGeometry *) (this->field_0x30))->setVisible(this->turretActive != 0);
             ((AEGeometry *) (this->field_0x2c))->render();
@@ -3294,26 +2897,11 @@ void PlayerEgo::render(bool allowHud) {
     }
 }
 
-// PlayerEgo::toggleCloaking()
-//   Engages or disengages the cloaking device. When uncloaked and chargeable
-//   (and carrying enough plasma, item 0x7a), it consumes the plasma, sets the
-//   cloak flag and fires the two HUD events. When already cloaked and the cloak
-//   timer has run out, it switches the hull (and, for ships with secondary
-//   meshes, the wing meshes) to the cloak material 0xe, retunes their shader
-//   anim values, and -- for the appropriate ship variant -- creates and binds
-//   the resource material.
 
-__attribute__ ((visibility
-(
-"hidden"
-)
-)
-)
-extern int *g_PE_tc_sound; // 0xaa786 cloak sound
+extern int *g_PE_tc_sound;
 
 void PlayerEgo::toggleCloaking() {
     if (this->chargingCloak == 0) {
-        // currently uncloaked -> try to cloak
         if (this->cloaked != 0 || this->cloakRechargeTimer > 0)
             return;
         int need = ((Item *) (this->cloak))->getAttribute(0);
@@ -3328,7 +2916,6 @@ void PlayerEgo::toggleCloaking() {
         return;
     }
 
-    // currently cloaked -> uncloak once the cloak hold timer elapses
     if (this->cloakDischargeMax > this->cloakCharge)
         return;
 
@@ -3339,7 +2926,7 @@ void PlayerEgo::toggleCloaking() {
     this->cloaked = 1;
 
     ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial((unsigned int) (this->cloakMaterial1));
-    // returned ptr +0x20 = 0xe below
+
     ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
         (unsigned int) (this->cloakMaterial1)))->materialMode = 0xe;
     ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial((unsigned int) (this->field_0x4->meshId),
@@ -3397,18 +2984,6 @@ void PlayerEgo::toggleCloaking() {
     }
 }
 
-// =====================================================================
-// Recovered helper fragments (the "_ext" / "_tail" veneers the methods
-// above tail-call into). In the binary each of these is an ARM/Thumb PLT
-// veneer that branches into a sibling-object method (Player / HackingGame
-// / MiningGame / Explosion / TargetFollowCamera) or a small PlayerEgo-side
-// continuation. They are provided here as real definitions so the methods
-// above link with their genuine semantics. Signatures match the existing
-// extern "C" declarations verbatim; call sites are left untouched.
-// =====================================================================
-
-// ---- engine-sound veneers -> Player engine-sound members ----
-// The first argument is always self->player (the embedded Player at +0x0).
 extern "C" void PlayerEgo_PauseEngineSound_ext(void *player) {
     ((Player *) player)->PauseEngineSound();
 }
@@ -3422,12 +2997,9 @@ extern "C" void PlayerEgo_StopEngineSound_ext(void *player) {
 }
 
 extern "C" void PlayerEgo_PlayEngineSound_ext(void *player, int /*posHandle*/, int /*zero*/) {
-    // Player::PlayEngineSound takes the 3D source position; the engine reads it
-    // from the player's own cached sound-position vector (Player::field_f4).
     ((Player *) player)->PlayEngineSound(0, (Vector *) 0);
 }
 
-// ---- Player scalar getters (self->player receiver) ----
 extern "C" int PlayerEgo_getHitpoints_ext(void *player) {
     return ((Player *) player)->getHitpoints();
 }
@@ -3437,11 +3009,9 @@ extern "C" int PlayerEgo_getShieldDamageRate_ext(void *player) {
 }
 
 extern "C" int PlayerEgo_getHullDamageRate_ext(void *player) {
-    // hull damage == armor damage in the Player model.
     return ((Player *) player)->getArmorDamageRate();
 }
 
-// ---- gun-bank veneers (slot 0) ----
 extern "C" void PlayerEgo_refillGunDelay_ext(void *player, int slot) {
     ((Player *) player)->refillGunDelay(slot);
 }
@@ -3451,21 +3021,15 @@ extern "C" void PlayerEgo_resetGunDelay_ext(void *player, int slot) {
 }
 
 extern "C" void PlayerEgo_pitchAllPrimaryGuns_ext(void *player) {
-    // The pitch angle arrives in the caller's r1 (the method's float parameter);
-    // forward it through the player. The continuation re-pitches every primary gun.
     ((Player *) player)->pitchAllPrimaryGuns(0.0f);
 }
 
-// resetGunDelay variant used by dockToPlanet, typed to return the play gain that
-// the subsequent FModSound::play uses. It still clears the primary-gun delays.
 extern "C" float PlayerEgo_resetGunDelay_f(PlayerEgo *self) {
     ((Player *) self->player)->resetGunDelay(0);
-    return 1.0f; // full play gain
+    return 1.0f;
 }
 
-// ---- addGun continuations: after Player::addGun(2), refresh the gun matrices ----
 extern "C" void PlayerEgo_addGun_ext(PlayerEgo *self) {
-    // Continuation re-derives the rocket/turret gun reference; reset its slot.
     ((Player *) self->player)->resetGunDelay(0);
 }
 
@@ -3473,17 +3037,14 @@ extern "C" void PlayerEgo_addGun2_ext(PlayerEgo *self) {
     ((Player *) self->player)->resetGunDelay(0);
 }
 
-// ---- (de)activation ----
 extern "C" void PlayerEgo_setActive_ext(void *player) {
     ((Player *) player)->setActive(false);
 }
 
 extern "C" void PlayerEgo_setAutoTurret_ext(void *player, int slot) {
-    // Disabling the auto-turret stops shooting on the turret weapon slot.
     ((Player *) player)->stopShooting(slot);
 }
 
-// ---- hacking mini-game veneers (receiver is the HackingGame at +0x1e8) ----
 extern "C" int PlayerEgo_getHackingGameDockIndex_ext(int hg) {
     return ((HackingGame *) hg)->getDockingIndex();
 }
@@ -3504,14 +3065,10 @@ extern "C" void PlayerEgo_hackingRotateRCW_ext(int hg, int sound) {
     ((HackingGame *) hg)->rotateRightCW(sound != 0);
 }
 
-// ---- mining mini-game veneer (receiver is the MiningGame at +0x1e4) ----
 extern "C" int PlayerEgo_getCurrentMiningAmount_ext(int mg) {
     return ((MiningGame *) mg)->getOreAmount();
 }
 
-// ---- explosion veneers ----
-// explode() has just built the Explosion at +0x8c and seeded the camera/sound;
-// the tail seeds the explosion debris from the ship's current world matrix.
 extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
     Explosion *e = (Explosion *) self->explosion;
     if (e != 0) {
@@ -3520,28 +3077,20 @@ extern "C" void PlayerEgo_explode_ext(PlayerEgo *self, int /*zero*/) {
     }
 }
 
-// endExplosion() forwards to the explosion's final update so it can release.
 extern "C" void PlayerEgo_endExplosion_ext(int exp) {
     ((Explosion *) exp)->update(0, (TargetFollowCamera *) 0);
 }
 
-// ---- camera veneers ----
-// hitCamera(): the camera (at +0x88) is told to rumble/shake.
 extern "C" void PlayerEgo_hitCamera_ext(int cam) {
     ((TargetFollowCamera *) cam)->setRumblePercentage(1.0f, 250);
 }
 
-// setTargetFollowCamera(): apply the cached ship-handling to the new camera.
 extern "C" void PlayerEgo_setTargetFollowCamera_ext(void *cam, void * /*handling*/) {
     ((TargetFollowCamera *) cam)->resetShipHandling();
 }
 
-// ---- steering veneers (negative / positive turn) -------------------
-// turnHorizontal/turnVertical branch on the sign of the requested rate to one
-// of two yaw/pitch integrators. Both apply the per-frame angular impulse stored
-// in the ship-handling fields; here they nudge the corresponding accumulator.
 extern "C" void PlayerEgo_turnHorizontal_neg(PlayerEgo *self) {
-    self->yawAccumulator -= self->yawRate; // yaw accumulator -= yaw rate
+    self->yawAccumulator -= self->yawRate;
 }
 
 extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo *self) {
@@ -3549,19 +3098,13 @@ extern "C" void PlayerEgo_turnHorizontal_pos(PlayerEgo *self) {
 }
 
 extern "C" void PlayerEgo_turnVertical_neg() {
-    // (receiver in r0; positive/negative pitch integrators are symmetric)
 }
 
 extern "C" void PlayerEgo_turnVertical_pos(PlayerEgo *self) {
-    self->pitchAccumulator += self->pitchRate; // pitch accumulator += pitch rate
+    self->pitchAccumulator += self->pitchRate;
 }
 
-// ---- visibility / docking / rocket-control shared continuation -----
-// setVisible / dockToStream / setRocketControl / explode all push the ship's
-// visibility flag down to the hull geometry. The original inlined this short
-// "sync visual state" sequence at each site, so it appears here at each caller.
 extern "C" void PlayerEgo_setVisible_ext() {
-    // receiver passed in r0 by the caller; nothing further is observable here.
 }
 
 extern "C" void PlayerEgo_dockToStream_ext(PlayerEgo *self, int /*zero*/) {
@@ -3574,7 +3117,6 @@ extern "C" void PlayerEgo_setRocketControl_ext(PlayerEgo *self, int /*zero*/) {
         ((AEGeometry *) self->geometry)->setVisible(self->field_0x309 != 0);
 }
 
-// ---- smoke / level emitter veneers -> ParticleSystemManager::enableSystemEmit
 extern "C" void PlayerEgo_startSmokeEmission_ext(void *psm, int system, int enable) {
     ((ParticleSystemManager *) psm)->enableSystemEmit((int) (intptr_t) system, enable != 0);
 }
@@ -3583,16 +3125,12 @@ extern "C" void PlayerEgo_setLevel_ext(void *psm, int system, int enable) {
     ((ParticleSystemManager *) psm)->enableSystemEmit((int) (intptr_t) system, enable != 0);
 }
 
-// ---- setShip turret-offset finalisation -----------------------------
-// Builds the turret muzzle geometry from the ship mesh and stores its local
-// offset into self+0x388. *canvasHolder is the PaintCanvas; meshId the hull mesh.
 extern "C" void PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void ** /*canvasHolder*/) {
     AbyssEngine::Mesh *mesh = ((PaintCanvas *) (long) canvas)->MeshGetPointer((unsigned int) meshId);
     if (mesh != 0)
         Vec_assign(out, &mesh->localOffset);
 }
 
-// ---- stopMining: tear the mining game down (receiver self) ----------
 extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self) {
     void *mg = ((void *&) self->miningGame);
     if (mg != 0) {
@@ -3601,33 +3139,15 @@ extern "C" void PlayerEgo_stopMining_impl(PlayerEgo *self) {
     }
 }
 
-// ---- render / draw tail-branches: resolved to real method calls --------
-// The decompiler had left these as empty "_tail" veneer shims. Each was a
-// terminal b.w into a long-branch veneer whose final target is a real local
-// method (resolved from the binary's PLT/GOT relocations):
-//   render: 0x1abc38 -> Level::enableMovingStars(bool)   @ 0xd6528
-//   draw:   0x1abc48 -> MiningGame::render2D()           @ 0x12f12c
-//           0x1abc58 -> PlayerEgo::drawThrottle()        @ 0xb1f04
-//           0x1abc68 -> HackingGame::render2D()          @ 0x15f1e4
-// They are now dispatched inline in PlayerEgo::render / PlayerEgo::draw, so the
-// empty shims are gone. (The hacking-game branch in draw had been mis-recovered
-// as a bare `return`; it actually tail-calls HackingGame::render2D().)
-
-// ---- constructor field-initialisation block (the bulk of the ctor) --
-// Zeroes/seeds the ~90 scalar+vector fields, derives boost timing/speed from the
-// current ship and builds the MovingStars background. The two embedded matrices
-// and the player store are done inline by the ctor above.
 extern "C" void PlayerEgo_initFields(void *selfp, Player *player) {
     PlayerEgo * self = (PlayerEgo *) selfp;
 
-    // record wrapped player and enable its shoot SFX (slot 2).
     self->player = (void *) player;
     player->setPlayShootSound(true, 2);
 
-    // boost / drive timing defaults seeded from the current ship.
     Ship *ship = (Ship *) PE_status()->getShip();
-    self->boostTimer = 0; // boost timer
-    self->boostingFlag = 0; // boosting flag
+    self->boostTimer = 0;
+    self->boostingFlag = 0;
     if (ship != 0) {
         self->boostDelay = ship->getBoostDelay();
         self->handling = ship->getBoostTime();
@@ -3635,19 +3155,17 @@ extern "C" void PlayerEgo_initFields(void *selfp, Player *player) {
         self->field_0xb0 = ship->getHandling();
     }
 
-    // shield / cloak / dock state cleared.
-    ((int &) self->explosion) = 0; // explosion ptr
+    ((int &) self->explosion) = 0;
     ((int &) self->explosion2) = 0;
-    self->autoTurretEnabled = 0; // auto-turret off
-    self->dockedFlag = 0; // not docked
-    self->miningGame = 0; // mining game ptr
-    self->hackingGame = 0; // hacking game ptr
-    self->visible = 1; // visible
+    self->autoTurretEnabled = 0;
+    self->dockedFlag = 0;
+    self->miningGame = 0;
+    self->hackingGame = 0;
+    self->visible = 1;
     self->field_0x309 = 1;
     self->exhaustVisible = 1;
-    self->dockingPointIndex = -1; // docking-point index
+    self->dockingPointIndex = -1;
 
-    // moving-stars background (constructed in 0x1c bytes of heap storage).
     void *stars = ::operator new(0x1c);
     MovingStars_ctor(stars);
     self->dockCameraNode = stars;

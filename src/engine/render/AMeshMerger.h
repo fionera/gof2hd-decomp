@@ -1,13 +1,9 @@
 #ifndef GOF2_AMESHMERGER_H
 #define GOF2_AMESHMERGER_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
 
-namespace AbyssEngine {
-    class Mesh;
-}
 
 void AMeshMerger_drawMeshes(void *canvas, uint32_t transformId, uint32_t flags);
 

@@ -2,7 +2,7 @@
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
 #include "game/world/Station.h"
-#include "engine/render/LODManager.h" // ArrayRemove<T>
+#include "engine/render/LODManager.h"
 
 extern Status *status;
 
@@ -380,6 +380,8 @@ void Item::fabricate(Item *item, ItemArray *items, int amount) {
     ItemArray *made = new ItemArray();
     made->push_back(item->makeItem(amount));
     for (Item * element
+
+
     :
     *items
     )
@@ -490,7 +492,6 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
 
         delete mixed;
 
-        // Bubble-sort by item index, then merge duplicates.
         uint32_t size = static_cast<uint32_t>(trimmed->size());
         bool swapped;
         do {

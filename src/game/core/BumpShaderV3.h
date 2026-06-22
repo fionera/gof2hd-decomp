@@ -1,30 +1,23 @@
 #ifndef GOF2_BUMPSHADERV3_H
 #define GOF2_BUMPSHADERV3_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "engine/render/ShaderBaseStruct.h"
 
-namespace AbyssEngine {
-    class Engine;
-}
 
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
-    class Mesh;
-
     class BumpShaderV3 : public ShaderBaseStruct {
     public:
-        // ---- vertex attribute locations ----
         int aPosition;
         int aTexCoord;
         int aNormal;
         int aTangent;
         int aBitangent;
 
-        // ---- uniform locations ----
         int uModelViewProjectionMatrix;
         int uModelMatrix;
         int uLightDirModel0;
@@ -56,6 +49,6 @@ namespace AbyssEngine {
 
         static int ShaderIndex;
     };
-} // namespace AbyssEngine
+}
 
 #endif

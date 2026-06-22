@@ -1,9 +1,9 @@
 #ifndef GOF2_AEFILE_H
 #define GOF2_AEFILE_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
+
 #include "game/core/String.h"
 
 using String = AbyssEngine::String;
@@ -31,17 +31,16 @@ public:
 class AELowLevelHeldFile {
 public:
     virtual ~AELowLevelHeldFile() {
-    } // +0x04 Free
+    }
+
     virtual void *OpenRead(const String &, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) { return nullptr; }
     virtual void *OpenWrite(const String &, uint32_t, uint32_t) { return nullptr; }
     virtual void *OpenAppend(const String &, uint32_t, uint32_t) { return nullptr; }
-    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; } // +0x14
-    virtual uint32_t Write(uint32_t bytes, const void *buffer) { return 0; } // +0x18
-    virtual uint32_t Skip(uint32_t bytes) { return 0; } // +0x1c
-    virtual uint32_t GetFileSize() { return 0; } // +0x20
+    virtual uint32_t Read(uint32_t bytes, void *buffer) { return 0; }
+    virtual uint32_t Write(uint32_t bytes, const void *buffer) { return 0; }
+    virtual uint32_t Skip(uint32_t bytes) { return 0; }
+    virtual uint32_t GetFileSize() { return 0; }
 };
-
-class FileInterface;
 
 class AENormalFile : public AELowLevelFile {
 public:

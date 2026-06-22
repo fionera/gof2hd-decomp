@@ -6,6 +6,8 @@
 namespace AbyssEngine {
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
@@ -13,6 +15,8 @@ namespace AbyssEngine {
     extern int g_shaderIndexSrc;
     __attribute__ ((visibility
     (
+
+
     "hidden"
     )
     )
@@ -129,4 +133,4 @@ namespace AbyssEngine {
         if (this->attrib0 >= 0)
             glDisableVertexAttribArray(this->attrib0);
     }
-} // namespace AbyssEngine
+}

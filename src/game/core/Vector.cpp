@@ -1,3 +1,4 @@
+#include "engine/math/Vector.h"
 #include "game/core/Vector.h"
 
 namespace AbyssEngine {
@@ -8,8 +9,8 @@ namespace AbyssEngine {
             z *= rhs.z;
             return *this;
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -18,8 +19,8 @@ namespace AbyssEngine {
 
         float &Vector::operator[](int i) { return (&x)[i]; }
         float Vector::operator[](int i) const { return (&x)[i]; }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -29,8 +30,8 @@ namespace AbyssEngine {
             z -= rhs.z;
             return *this;
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -40,8 +41,8 @@ namespace AbyssEngine {
             z /= rhs.z;
             return *this;
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -51,5 +52,5 @@ namespace AbyssEngine {
             z = rhs.z;
             return *this;
         }
-    } // namespace AEMath
-} // namespace AbyssEngine
+    }
+}

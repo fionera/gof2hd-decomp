@@ -153,7 +153,6 @@ void ChoiceWindow::setMedal(int medal, int count) {
     int value = gAchievements->getValue(medal, count);
     String number;
     {
-        // Build the decimal text of `value` directly into the String.
         int v = value;
         char buf[16];
         int n = 0;

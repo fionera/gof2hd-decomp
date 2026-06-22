@@ -90,4 +90,4 @@ namespace AbyssEngine {
         if (this->aTexCoord >= 0)
             glDisableVertexAttribArray(this->aTexCoord);
     }
-} // namespace AbyssEngine
+}

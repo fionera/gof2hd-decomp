@@ -1,20 +1,17 @@
 #ifndef GOF2_PLAYERGASCLOUD_H
 #define GOF2_PLAYERGASCLOUD_H
 #include "engine/core/Array.h"
-#include "AEString.h"
+#include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "aetypes.h"
-#include "game/ship/KIPlayer.h"
 
-class AEGeometry;
-class ParticleSystemManager;
+#include "game/ship/KIPlayer.h"
 
 class PlayerGasCloud : public KIPlayer {
 public:
-    Vector center; // cloud centre
-    AEGeometry *modelGeometry; // intact-cloud render geometry
-    Array<AEGeometry *> *sparkGeometries; // per-spark render geometry
-    Array<Vector *> *sparkVelocities; // per-spark velocity (owned Vector*)
+    Vector center;
+    AEGeometry *modelGeometry;
+    Array<AEGeometry *> *sparkGeometries;
+    Array<Vector *> *sparkVelocities;
     Array<float> *sparkLife;
     Array<float> *sparkLifeMin;
     Array<float> *sparkScale;
@@ -32,7 +29,8 @@ public:
 
     ~PlayerGasCloud();
 
-    void translate(const Vector &v) override; // actor vtable slot +0x20
+    void translate(const Vector &v) override;
+
     bool isSparkAlive(int index);
 
     void setSparkInSight(int index, bool inSight);
