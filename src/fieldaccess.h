@@ -3,30 +3,10 @@
 
 #include <cstdint>
 
-static inline bool &BL(void *p, int off) { return *(bool *) ((char *) p + off); }
-static inline char &C(void *p, int off) { return *(char *) ((char *) p + off); }
-static inline double &D(void *p, int off) { return *(double *) ((char *) p + off); }
-
 template<class T>
 static inline T &F(void *p, uint32_t off) {
     return *(T *) ((char *) p + off);
 }
-
-static inline float &FL(void *self, uint32_t off) {
-    return *(float *) ((char *) self + off);
-}
-
-template<class T>
-static inline T &G(void *p, uint32_t off) { return *(T *) ((char *) p + off); }
-
-static inline short &S(void *p, int off) { return *(short *) ((char *) p + off); }
-
-static inline uint32_t &U(void *self, uint32_t off) {
-    return *(uint32_t *) ((char *) self + off);
-}
-
-static inline uint8_t &UC(void *self, int offset) { return *(uint8_t *) ((char *) self + offset); }
-static inline uint16_t &US(void *self, int offset) { return *(uint16_t *) ((char *) self + offset); }
 
 static inline float &f32(void *self, unsigned int offset) {
     return *(float *) ((char *) self + offset);
