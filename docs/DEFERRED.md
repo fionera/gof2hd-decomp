@@ -504,3 +504,25 @@ Finishing this entry would require either forbidden forward-decl/stub/cast-to-ad
 - [ ] FIELD Globals: static int rotateShipInStation;        // _ZN7Globals19rotateShipInStationE (binary 0x217cec, size 4)
 - [ ] FIELD Globals: static int translateStarMapInYDirection; // _ZN7Globals28translateStarMapInYDirectionE (binary 0x217cf4, size 4)
 - [ ] FIELD Globals: static char* keyBindings;              // _ZN7Globals11keyBindingsE (binary 0x2181a8, size 4); ActualizeMouseVisibilty reads keyBindings[4]
+
+## BuildResourceList — the last absent (155 KB resource table; needs a correct Thumb decoder)
+3 of the 4 deep functions are DONE (ActualizeMouseVisibilty, OnCreateApplication, simulateTouch).
+BuildResourceList(Engine*) @ ghidra 0xf8f54 (vaddr 0xe8f54..0x11ede2, ~155KB) remains. It is a pure
+data table: TextureCreateGlobal up front; a 2488-slot Resource* array (~2434 entries at recovered
+sparse indices) -> SetResourceList; a 152-iter loop of kind-3 image Resources; ~394 Phase-B
+AddResource; then loadPortraits + loadLowTexturesAndMaterials.
+STATE: Phase-A indices/ids/paths mostly extracted (_work/brl_all.json, decoder _work/thumb.py).
+BLOCKERS (why not emitted — would be CORRUPT, directive forbids):
+  1. The hand Thumb-2 decoder DRIFTS on VFP/VLDR + some literal-load encodings it doesn't model
+     (verified: read_memory(0x105ff4)=`98 ed`=VLDR but decoder reports movs there). Stream alignment
+     is lost near material float-arg loads, so some entries are misattributed.
+  2. kind=3 IMAGE payloads (552) are a `new(4)` holding a PC-relative-loaded packed int; the load is
+     in the drifted/undecoded region. Hypothesized `((id-1100)<<16)|0x274e` is UNVERIFIED.
+  3. kind=1 (8) payload looks like `movw #(id-1)` (derivable) but unconfirmed; 60 reused payloads +
+     394 Phase-B `res` unresolved; Ghidra under-bounds the fn and mis-disassembles the 0xff000+ tail
+     as ARM (region not Thumb-marked), so it can't cross-check.
+TO FINISH: either (a) complete the Thumb-2 decoder (VLDR/VFP + all LDR-literal forms) so the stream
+never drifts and every payload literal resolves, then re-extract + generate the ~15-25k-line file
+(style per src/platform/recovered_128188.cpp) + build-gate + spot-check; or (b) get Ghidra to claim
+the full function as Thumb (set TMode on 0xff000..0x11ede2, create_function) and decompile in chunks.
+Then absent -> 0.
