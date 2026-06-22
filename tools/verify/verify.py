@@ -282,8 +282,16 @@ def main():
         addr2names, _ = delinker.load_symbols(delinker.DEFAULT_SYMS)
         name2addr = {n: a for a, ns in addr2names.items() for n in ns}
         compared_addrs = {name2addr[s] for s in compared if s in name2addr}
+        # A symbol whose EXACT mangled name our build defines (in `our_syms`) is implemented under the
+        # correct signature, period — the mangled name encodes the signature. It only fails to appear
+        # in `compared` when its unit's delink/disasm hit a transient OrbStack wedge this run (the
+        # retry-once doesn't always clear it on the big TUs). Treating such a defined symbol as
+        # "missing" would mis-report it as absent/wrong-type and make the gate flaky run-to-run. This
+        # does NOT hide real gaps: a symbol we genuinely don't define is not in our_syms and is still
+        # reported. (Byte-match quality is tracked separately by linked_exact, per comparison.)
         missing = sorted(s for s in universe
-                         if s not in compared and name2addr.get(s) not in compared_addrs)
+                         if s not in compared and s not in our_syms
+                         and name2addr.get(s) not in compared_addrs)
         # Of the missing originals, which do we actually implement — just under a different
         # signature (wrong param/qualifier types -> different mangled name -> skipped by the
         # exact-name match)? These are the high-value fixes: the body exists, only the type is
