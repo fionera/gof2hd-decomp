@@ -19,14 +19,18 @@ D0, and unblock the callers — not merely flip one gate entry.
 
 ## Ground truth (from Ghidra, `android_2.0.16`, image_base 0x10000)
 
-Native layout — **12 bytes**:
+Native layout — **12 bytes** (Phase 0 RESOLVED — String is polymorphic, virtual destructor only):
 
 ```cpp
-struct String {            // sizeof == 0x0c
-    void*           vptr;   // +0x00  set in ctor to (vtable_data + 8); see "open question" below
-    unsigned short* data;   // +0x04  heap UTF-16 buffer, NUL-terminated, operator new[]/delete[]
-    int             length; // +0x08  code-unit count (excludes NUL)
+namespace AbyssEngine {
+class String {                 // sizeof == 0x0c
+public:                        // (vptr at +0x00, implicit from the virtual destructor)
+    unsigned short* data;      // +0x04  heap UTF-16 buffer, NUL-terminated, operator new[]/delete[]
+    int             length;    // +0x08  code-unit count (excludes NUL)
+    virtual ~String();         // the ONLY virtual; emits the vtable + typeinfo + D0/D1/D2
+    // ... ctors, Set, operators ...
 };
+}
 ```
 
 Evidence:
@@ -38,19 +42,26 @@ Evidence:
 - `String::operator[](int)` (0x72378): bounds-check `param < length`, returns `data + param`, else a
   shared static NUL.
 
-**Open question for Phase 0:** there is **no `_ZTV`/`_ZTI`/`_ZTS` symbol** for String, yet ctor/dtor
-set `vptr = vtable_data + 8` (i.e. past offset-to-top + typeinfo to the first function slot) and no
-String method ever *dispatches* through `vptr`. Two possibilities, decide before coding:
-1. **Virtual destructor only** — String is polymorphic; the vtable `[0][typeinfo][D1][D0]` exists but
-   its symbol was stripped. Modeling `virtual ~String()` makes clang plant the vptr + emit D0/D1/D2
-   automatically. Risk: our build emits `_ZTVN11AbyssEngine6StringE` (data) which the stripped binary
-   lacks → may show as one `extra` (vtables are data, likely filtered — confirm).
-2. **Manual header pointer** — offset 0 is a non-functional tag/base-subobject pointer, and D0 comes
-   from an explicit out-of-line dtor whose address is taken by a container's element-destructor table
-   (the `delete (String*)` thunk at 0x6f678 + table @0x220b68). Then we model it as a real first
-   field set explicitly.
-   Resolve by reading the literal the ctor loads (find the vtable/struct it points at) and checking
-   for a typeinfo word before the function slots.
+**Phase 0 RESOLVED (2026-06-22) — virtual destructor only.** The `_ZTV`/`_ZTI`/`_ZTS` symbols are
+stripped, but the vtable + typeinfo DATA is present and is a textbook C++ vtable. Traced from the
+ctor: `ldr` literal @0x823ac = `0x19daac`; `add pc`(=0x823a0) → GOT @0x21FE4C → vtable base **0x21CC8C**;
+ctor stores base+8 = **0x21CC94** into the vptr. The structure:
+
+```
+0x21CC8C: 00000000     offset-to-top = 0
+0x21CC90: 0021CC9C     typeinfo ptr ───────────────┐
+0x21CC94: 00082594     D1  (complete dtor)  ← vptr  │   (vtable has ONLY the two dtor slots —
+0x21CC98: 000825B8     D0  (deleting dtor)          │    no other virtual functions)
+0x21CC9C: 0021EB98 / 001F79E0   __class_type_info ←─┘   { type_info-vtable+8, name }
+0x1F79E0: "N11AbyssEngine6StringE\0"   ← typeinfo name = AbyssEngine::String
+```
+
+The typeinfo is the bare `__class_type_info` form (vtable-ptr + name only, **no base-class records**),
+so String has no base — it is a standalone class whose sole virtual is `~String()`. Modeling
+`class String { unsigned short* data; int length; virtual ~String(); ... }` makes clang reproduce all
+of the above (vptr@0, vtable `[0][typeinfo][D1][D0]`, `_ZTV/_ZTI/_ZTS`, D0/D1/D2, `vptr = vtable+8` in
+ctor/dtor) — byte-identical to the binary. **Phase-4 watch:** the binary's `_ZTV/_ZTI/_ZTS` symbols
+are stripped (data present), so confirm `scope_filter`/`verify` don't count our emitted ones as `extra`.
 
 ## Native method set to re-implement (~50)
 
@@ -79,10 +90,10 @@ instead of `std::u16string`, decompiling the original at its address to match th
 
 ## Phased plan
 
-- **Phase 0 — settle the model.** Resolve the vptr open question (virtual-dtor vs header pointer) by
-  reading the ctor's literal + the pointed-at data. Lock the exact struct (field order/types/size
-  0x0c), the empty-string sentinel (`operator[]` OOB target), and the allocation convention
-  (`operator new[]` sizing, NUL handling) from Ghidra. Write them into this doc.
+- **Phase 0 — settle the model. ✅ DONE.** Virtual destructor only; layout locked above (vtable
+  traced to 0x21CC8C, typeinfo names `AbyssEngine::String`, no base class). Still to pin in Phase 1
+  from Ghidra: the empty-string sentinel (`operator[]` OOB target) and the exact `operator new[]`
+  sizing / NUL-handling branches in `Set` (note `(len*2)` vs `(len+1)*2` paths).
 - **Phase 1 — layout + lifecycle.** Swap AEString.h to the native layout; implement
   ctors/`~String`(D0/D1/D2)/`operator=`/copy on the manual buffer. Build-gate; confirm D0/D1/D2 (and
   vtable, if polymorphic) emit and that `String()`, `~String`, `Set` match in `verify-fn`. Expect a
