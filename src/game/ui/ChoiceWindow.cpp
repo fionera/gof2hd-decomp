@@ -415,22 +415,22 @@ void ChoiceWindow::draw() {
         if (this->rightButton != nullptr) {
             this->rightButton->draw();
             pos = this->rightButton->getPosition();
-            F<int>(g_ChoiceWindow_posTargetA_1471bc, 0x8) = (int) pos[0];
+            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetA_1471bc)->rightButtonPosX = (int) pos[0];
             pos = this->rightButton->getPosition();
-            F<int>(g_ChoiceWindow_posTargetB_1471bc, 0x8) = (int) pos[1];
+            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetB_1471bc)->rightButtonPosY = (int) pos[1];
         }
 
         if (this->leftButton != nullptr) {
             pos = this->leftButton->getPosition();
-            F<int>(g_ChoiceWindow_posTargetC_1471bc, 0xc) = (int) pos[0];
+            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetC_1471bc)->leftButtonPosX = (int) pos[0];
             pos = this->leftButton->getPosition();
-            F<int>(g_ChoiceWindow_posTargetD_1471bc, 0xc) = (int) pos[1];
+            ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetD_1471bc)->leftButtonPosY = (int) pos[1];
 
             if (this->rightButton == nullptr) {
                 pos = this->leftButton->getPosition();
-                F<int>(g_ChoiceWindow_posTargetC_1471bc, 0x8) = (int) pos[0];
+                ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetC_1471bc)->singleButtonPosX = (int) pos[0];
                 pos = this->leftButton->getPosition();
-                F<int>(g_ChoiceWindow_posTargetD_1471bc, 0x8) = (int) pos[1];
+                ((ChoiceWindowButtonPosCache *) g_ChoiceWindow_posTargetD_1471bc)->singleButtonPosY = (int) pos[1];
             }
         }
 

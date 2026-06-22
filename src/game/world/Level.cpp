@@ -50,6 +50,10 @@
 #include "game/weapons/MineGun.h"
 #include "game/weapons/SentryGun.h"
 #include "engine/math/Transform.h"
+#include "engine/render/Mesh.h"
+#include "game/core/GameSettings.h"
+#include "engine/render/EngineColorTable.h"
+#include "game/mission/DifficultyRecord.h"
 
 extern PaintCanvas *gCanvas;
 
@@ -1064,10 +1068,10 @@ void Level::alarmAllFriends(int race, bool message) {
 void Level::setPlayerEngineColor(short color) {
     int c = color;
     if (player != nullptr && field_a4 != nullptr) {
-        unsigned int *p = (unsigned int *) ((char *) g_engineColorBase + 0x1254);
+        unsigned int *p = &((EngineColorTable *) g_engineColorBase)->engineColorEntry0;
         for (int i = (int) field_a4->size(); i != 0; i = i - 1) {
             *p = c << 0x10 | c << 0x18 | c << 8 | 0xff;
-            p = p + 0x28;
+            p = (unsigned int *) ((char *) p + 0xa0); // 0x28 uint32s = next record
         }
     }
 }
@@ -1258,8 +1262,8 @@ void Level::createSpace() {
             if (0xf < ((SolarSystem *) gStatus->getSystem())->getTextureIndex()) {
                 Engine *eng = (Engine *) gAppManager->GetEngine();
                 if (eng->IsPostEffectActivated() != false) {
-                    int mp = (int) (long) gCanvas->MeshGetPointer((unsigned int) *(unsigned *) &this->skyboxMesh);
-                    *(int *) (mp + 0x1c) = 0; // RAWREAD: engine mesh-record pointer (opaque, no modeled type)
+                    AbyssEngine::Mesh *mp = gCanvas->MeshGetPointer((unsigned int) *(unsigned *) &this->skyboxMesh);
+                    mp->meshPostEffectFlag = 0;
                 }
             }
         } else {
@@ -1604,10 +1608,9 @@ int Level::init() {
         if (campaign) {
             if (this->missionPtr != 3) { madeScene = true; } else {
                 int won = gStatus->gameWon();
-                int *settings = *g_init_settings;
-                // RAWREAD: g_init_settings is an opaque engine settings table (no modeled type).
-                bool skip = won != 0 && *(char *) (settings + 0x37) == 0 &&
-                            *(char *) (settings + 0x35) == 0;
+                GameSettings *settings = (GameSettings *) *g_init_settings;
+                bool skip = won != 0 && settings->settingSkipIntroFlag == 0 &&
+                            settings->settingSkipCampaignFlag == 0;
                 if (skip) {
                     thisptr->createMission();
                     if (**g_init_bmFlag != 0 && gStatus->inBlackMarketSystem() != 0)
@@ -1658,13 +1661,11 @@ int Level::init() {
     if (this->enemies != nullptr) {
         for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            // RAWREAD: +0x41 (mid field_0x40), +0x71 (mid field_0x70) — no byte-level members.
-            if (*(char *) ((char *) e + 0x41) == 0 && *(char *) ((char *) e + 0x71) == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->inactiveFlag == 0 && e->field_0x3f == 0) {
                 int wm = e->isWingMan();
                 if (wm == 0) {
-                    // RAWREAD: +0x3c, +0x3d — unnamed gap after stealFlag (no members).
-                    if ((char) e->field_0x44 == 0 && *(char *) ((char *) e + 0x3c) == 0)
-                        enemies = enemies + (*(unsigned char *) ((char *) e + 0x3d) ^ 1);
+                    if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0)
+                        enemies = enemies + (e->countsAsEnemyExcludeFlag ^ 1);
                 }
             }
         }
@@ -1702,7 +1703,7 @@ void Level::createFighterTurrets() {
                 t->setHost(ki, *(Vector *) offset);
                 *(PlayerTurret **) &ki->field_0x10 = t;
                 t->shipGroup = (kind == 0x2d) ? 8 : 0;
-                C(t, 0x74) = 1; // RAWREAD: KIPlayer t+0x74 (no member at 0x74; mid-field of field_0x73)
+                t->noTargetFlag = 1;
                 this->enemies->push_back((KIPlayer *) t);
             }
         }

@@ -1,6 +1,6 @@
 #ifndef GOF2_AEMATH_H
 #define GOF2_AEMATH_H
-#include "mathtypes.h"
+#include "Vector.h"
 
 namespace AbyssEngine {
     namespace AEMath {

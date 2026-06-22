@@ -1,6 +1,8 @@
 #include "engine/math/BSphere.h"
-#include "mathtypes.h"
 #include <cmath>
+
+#include "Matrix.h"
+#include "Vector.h"
 
 namespace AbyssEngine {
     namespace AEMath {

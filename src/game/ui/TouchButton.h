@@ -1,7 +1,7 @@
 #ifndef GOF2_TOUCHBUTTON_H
 #define GOF2_TOUCHBUTTON_H
+#include "engine/math/Vector.h"
 #include "game/core/String.h"
-#include "mathtypes.h"
 
 class TouchButton {
 public:
@@ -81,7 +81,7 @@ public:
 
     int getHeight();
 
-    Vector getPosition();
+    AbyssEngine::AEMath::Vector getPosition();
 
     String getText();
 

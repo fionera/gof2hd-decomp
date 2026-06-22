@@ -597,15 +597,16 @@ void StarMap::draw() {
         if (system->hasNoOwner() == 0) {
             gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
                               (unsigned char) (this->alpha ^ 0xff));
-            gCanvas->DrawImage2D((unsigned int) (this->systemNameImage), field<int32_t>(*g_StarMap_draw_layout, 0x2c),
-                                 field<int32_t>(*g_StarMap_draw_layout, 0xc) +
-                                 field<int32_t>(*g_StarMap_draw_layout, 0x2c), (unsigned char) (0));
+            Layout *drawLayout = (Layout *) *g_StarMap_draw_layout;
+            gCanvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
+                                 drawLayout->field_0xc_leftMargin +
+                                 drawLayout->field_0x2c_rowHeight, (unsigned char) (0));
             ((SolarSystem *) (&tmp))->getName();
             gCanvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
                                 gCanvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
-                                field<int32_t>(*g_StarMap_draw_layout, 0x2c) * 2,
-                                field<int32_t>(*g_StarMap_draw_layout, 0xc) +
-                                field<int32_t>(*g_StarMap_draw_layout, 0x2c) + 2, false);
+                                drawLayout->field_0x2c_rowHeight * 2,
+                                drawLayout->field_0xc_leftMargin +
+                                drawLayout->field_0x2c_rowHeight + 2, false);
         }
         for (uint32_t i = 0; i < this->stations->size(); i++) {
             if (i != (uint32_t) this->selectedStation) {
@@ -659,11 +660,10 @@ void StarMap::depart(bool jump) {
             goto cleanup;
         }
 
-        int *statusWords = (int *) gStatus;
-        statusWords[0x5c / 4] = -1;
-        statusWords[0x60 / 4] = -1;
-        statusWords[0x64 / 4] = -1;
-        statusWords[0x68 / 4] = -1;
+        gStatus->field_5c = -1;
+        gStatus->field_60 = -1;
+        gStatus->field_64 = -1;
+        gStatus->field_68 = -1;
         gStatus->departStation((Station *) gStatus->getStation());
 
         Station *target = this->stations->data()[this->selectedStation];
@@ -767,7 +767,7 @@ int StarMap::OnTouchEnd(int x, int y) {
         return 0;
     }
     void *layout = *g_StarMap_end_layout;
-    if (*(uint8_t *) layout == 0 && ((Layout *) (layout))->OnTouchEnd(x, y) != 0) {
+    if (((Layout *) layout)->layoutVisibleFlag == 0 && ((Layout *) (layout))->OnTouchEnd(x, y) != 0) {
         if (this->mode == 3 && this->isGalaxyMode != 0) {
             this->transitionOut = 1;
             this->momentumFactor = 0.0f;
@@ -1086,7 +1086,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->field_0x190 = 0;
 
     this->mode = 0;
-    this->hitRadius = field<int32_t>(gStatus, 0x88);
+    this->hitRadius = gStatus->field_8c;
     this->selectedSystem = -1;
     this->starSystemRoot = (AEGeometry *) 0;
     this->stations = (Array<Station *> *) 0;
@@ -1141,7 +1141,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->markerGeom = (AEGeometry *) 0;
     this->choiceVisible = 0;
     if (gStatus->getCurrentCampaignMission() > 0x1f &&
-        field<int32_t>(gStatus, 0x7c) >= 0) {
+        gStatus->field_7c >= 0) {
         AEGeometry *marker = new AEGeometry((uint16_t) 0x4262, gCanvas, false);
         this->markerGeom = marker;
         Vector p;
@@ -1175,7 +1175,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
         return 0;
     }
     this->backButton->OnTouchBegin(x, y);
-    if (field<int32_t>(layout, 0xc) >= y || y >= *g_StarMap_touch_screenH - field<int32_t>(layout, 0x10)) {
+    if (((Layout *) layout)->field_0xc_leftMargin >= y || y >= *g_StarMap_touch_screenH - ((Layout *) layout)->field_0x10_rightMargin) {
         return 0;
     }
     if (this->autoMode != 0 && this->autoTimer < 4000) {
@@ -1346,10 +1346,10 @@ void StarMap::drawKey() {
     int screenH = *g_StarMap_drawKey_screenH;
     int boxW = this->keyBoxWidth;
     int boxH = this->keyBoxHeight;
-    int marginY = field<int32_t>(layout, 4);
-    int padY = field<int32_t>(layout, 8);
-    int rightPad = field<int32_t>(layout, 0x10);
-    int lineH = field<int32_t>(layout, 0x2c);
+    int marginY = ((Layout *) layout)->field_0x4;
+    int padY = ((Layout *) layout)->windowTopInset;
+    int rightPad = ((Layout *) layout)->field_0x10_rightMargin;
+    int lineH = ((Layout *) layout)->field_0x2c_rowHeight;
 
     String empty;
     int x = screenH - boxW;
@@ -1367,16 +1367,16 @@ void StarMap::drawKey() {
     void(*drawString)(uint32_t, void *, String *, int, int, bool) = g_StarMap_drawKey_drawString;
 
     drawString(canvas, *fontHolder, getText(*textHolder, 0x112), textX, y, false);
-    y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
+    y -= ((Layout *) layout)->field_0x4;
     drawImage(canvas, this->keyImageDiscovered, drawX, y);
     drawString(canvas, *fontHolder, getText(*textHolder, 0x191), textX, y, false);
-    y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
+    y -= ((Layout *) layout)->field_0x4;
     drawImage(canvas, this->keyImageCurrent, drawX, y);
     drawString(canvas, *fontHolder, getText(*textHolder, 0x223), textX, y, false);
-    y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
+    y -= ((Layout *) layout)->field_0x4;
     drawImage(canvas, this->keyImageMission, drawX, y);
     drawString(canvas, *fontHolder, getText(*textHolder, 0x22c), textX, y, false);
-    y -= field<int32_t>(*g_StarMap_drawKey_layout, 4);
+    y -= ((Layout *) layout)->field_0x4;
     drawImage(canvas, this->keyImageWanted, drawX, y);
     drawString(canvas, *fontHolder, getText(*textHolder, 0x22b), textX, y, false);
 }
@@ -1428,8 +1428,8 @@ void StarMap::initStarSystem() {
         float scale = (float) (tex << 4) * 0.001f;
         geom->setScaling(scale);
         root->addChild(geom->transform);
-        if (this->markerGeom != 0 && this->selectedSystem == field<int32_t>(gStatus, 0x7c) &&
-            Station_getIndex(this->stations->data()[stationIndex]) == field<int32_t>(gStatus, 0x80)) {
+        if (this->markerGeom != 0 && this->selectedSystem == gStatus->field_7c &&
+            Station_getIndex(this->stations->data()[stationIndex]) == gStatus->field_80) {
             this->centeredStation = i;
         }
     }
@@ -1536,7 +1536,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
                 value.ctor_int(Station_getTecLevel(station));
                 name = line + value;
                 ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
-                                                              drawY + field<int32_t>(*g_StarMap_info_layout, 4), false);
+                                                              drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4, false);
             }
             ((PaintCanvas *) (long) (canvas))->DrawImage2D((unsigned int) (this->selectIcon), (int) x, (int) y,
                                                            (unsigned char) (0x11));
@@ -1680,7 +1680,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->easeX = new AbyssEngine::EaseInOut();
     this->easeY = new AbyssEngine::EaseInOut();
     this->easeZ = new AbyssEngine::EaseInOut();
-    this->dragScale = field<int32_t>(*g_StarMap_init_layout, 0x90);
+    this->dragScale = ((Layout *) *g_StarMap_init_layout)->field_0x90;
     this->prevCamera = (uint32_t)((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
     ((PaintCanvas *) (long) (canvas))->CameraCreate(this->camera);
     ((PaintCanvas *) (long) (canvas))->CameraSetPerspective(this->camera, 60.0f, 1.0f, 10000.0f);
@@ -1733,8 +1733,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->jumpMapModeB = 0;
     this->exitRequested = 0;
     String *back = (String *) ((GameText *) (*g_StarMap_init_text))->getText(0x190);
-    this->backButton = new TouchButton(*back, 0, *g_StarMap_init_screenW - field<int32_t>(*g_StarMap_init_layout, 0x2c),
-                                       *g_StarMap_init_screenH - field<int32_t>(*g_StarMap_init_layout, 0x2c), 0x22);
+    this->backButton = new TouchButton(*back, 0, *g_StarMap_init_screenW - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight,
+                                       *g_StarMap_init_screenH - ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight, 0x22);
     this->systemPath = (Array<int> *) 0;
     this->choiceWindow = new ChoiceWindow();
     this->pathFinder = (SystemPathFinder *) SystemPathFinder_ctor(operator new(1));
@@ -1769,9 +1769,9 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
             this->keyBoxWidth = width;
         }
     }
-    this->keyBoxWidth += field<int32_t>(*g_StarMap_init_layout, 0x8c);
+    this->keyBoxWidth += ((Layout *) *g_StarMap_init_layout)->field_0x8c;
     this->keyBoxHeight =
-            field<int32_t>(*g_StarMap_init_layout, 4) * 5 + field<int32_t>(*g_StarMap_init_layout, 0x2c) * 2;
+            ((Layout *) *g_StarMap_init_layout)->field_0x4 * 5 + ((Layout *) *g_StarMap_init_layout)->field_0x2c_rowHeight * 2;
     this->autoTimer = 0;
     void *cargo = (void *) ((Ship *) (gStatus->getShip()))->getCargo();
     this->cargoAmount = cargo != 0 ? ((Item *) (cargo))->getAmount() : 0;

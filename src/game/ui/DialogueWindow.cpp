@@ -21,6 +21,13 @@
 template<class T>
 static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }
 
+// Foreign engine sound-configuration record. Only the auto-advance flag at +0xe
+// is referenced from this translation unit.
+struct EngineSoundConfig {
+    char field_0x0[0xe];
+    uint8_t autoAdvanceEnabled; // +0xe: auto-advance dialogue pages when voice finishes
+};
+
 int DialogueWindow::OnTouchBegin(int x, int y) {
     if (this->choiceActive != 0) {
         this->choiceWindow->OnTouchBegin(x, y);
@@ -67,7 +74,7 @@ int DialogueWindow::length() {
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
         int result = 6;
-        if (((int *) gStatus)[0x45] == 2) result = 0x12;
+        if (gStatus->field_114 == 2) result = 0x12;
         return result;
     }
     return 1;
@@ -354,7 +361,7 @@ __attribute__ ((visibility
 )
 )
 )
-extern void *g_dw_soundConfig;
+extern EngineSoundConfig *g_dw_soundConfig;
 __attribute__ ((visibility
 (
 "hidden"
@@ -370,7 +377,7 @@ void DialogueWindow::update(int dt) {
     if (this->choiceActive != 0) {
         this->choiceWindow->update(dt);
     }
-    if (F<uint8_t>(g_dw_soundConfig, 0xe) != 0 && this->voiceSound != -1) {
+    if (g_dw_soundConfig->autoAdvanceEnabled != 0 && this->voiceSound != -1) {
         FModSound *sound = *g_dw_fmodSound;
         sound->getPlayingProgress(this->voiceSound);
         if (sound->isPlaying(this->voiceSound) == 0 && this->isLastPage() == 0) {

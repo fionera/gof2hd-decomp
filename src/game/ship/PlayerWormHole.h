@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-#include "mathtypes.h"
 #include "game/ship/PlayerStaticFar.h"
 
 class AEGeometry;

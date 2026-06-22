@@ -1096,18 +1096,15 @@ void MGame::dockEvent(int p1, int p2) {
             return;
         }
         if (this->touchesStream != 0) {
-            // Snapshot the player's combat stats into the Status object.  Fields at
-            // +0x5c/0x60/0x64/0x68 are not modeled in gof2/Status.h (owned by another
-            // batch); write them via typed byte offsets.
+            // Snapshot the player's combat stats into the Status object.
             {
                 Player *pl = (Player *) this->player->player;
-                F<int>(status, 0x64) = pl->getHitpoints();
-                F<int>(status, 0x5c) = pl->getShieldHP();
-                F<int>(status, 0x60) = pl->getArmorHP();
-                F<int>(status, 0x68) = pl->getGammaHP();
+                gStatus->field_64 = pl->getHitpoints();
+                gStatus->field_5c = pl->getShieldHP();
+                gStatus->field_60 = pl->getArmorHP();
+                gStatus->field_68 = pl->getGammaHP();
             }
-            // Status +0xf4 is not modeled in gof2/Status.h (owned by another batch).
-            F<int>(status, 0xf4) = this->player->getCurrentSecondaryWeaponIndex();
+            gStatus->field_f4 = this->player->getCurrentSecondaryWeaponIndex();
             int autop = this->player->isAutoPilot();
             int *autoFlag = g_deAutoFlag;
             if (*autoFlag == 0 || autop == 0) {
@@ -1223,10 +1220,10 @@ void MGame::dockEvent(int p1, int p2) {
         // Snapshot the player's combat stats into the Status object (see dockEvent).
         {
             Player *pl = (Player *) this->player->player;
-            F<int>(status, 0x64) = pl->getHitpoints();
-            F<int>(status, 0x5c) = pl->getShieldHP();
-            F<int>(status, 0x60) = pl->getArmorHP();
-            F<int>(status, 0x68) = pl->getGammaHP();
+            gStatus->field_64 = pl->getHitpoints();
+            gStatus->field_5c = pl->getShieldHP();
+            gStatus->field_60 = pl->getArmorHP();
+            gStatus->field_68 = pl->getGammaHP();
         }
         this->applicationManager->SetCurrentApplicationModule(5);
         this->active = 0;
@@ -1305,7 +1302,6 @@ extern int g_kdPostEffect; // @0x189f98 (DAT)
 void MGame::UseKhadorDrive() {
     if (this->player->isChargingDrive() != 0) return;
 
-    int *status = ((int *) &gStatus);
     Mission *m = gStatus->getMission();
     bool special =
             ((Mission *) (m))->isEmpty() != 0 ||
@@ -1333,7 +1329,7 @@ void MGame::UseKhadorDrive() {
 
     this->player->resetGunDelay();
     if (gStatus->getCurrentCampaignMission() == 0x4e) {
-        **g_kdJumpDst = *(int *) ((char *) *status + 0x78);
+        **g_kdJumpDst = (int) (intptr_t) gStatus->playerStation;
         this->usingJumpDrive = 1;
         ((MGame *) (this))->startChargingJumpDrive();
         this->pauseOpen = 0;
@@ -1376,7 +1372,7 @@ void MGame::UseKhadorDrive() {
 
     // In alien orbit.
     if (gStatus->getCurrentCampaignMission() == 0x50)
-        *(int *) ((char *) *status + 0x84) = 100;
+        gStatus->field_84 = 100;
     int station = ((Galaxy *) (*(int *) gGalaxy))->getStation(
         gStatus->getCurrentCampaignMission() /* index: arg lost in decomp */);
     **g_kdAlienDst = station;
@@ -1540,24 +1536,22 @@ int MGame::OnInitialize() {
 
     ((MGame *) (self))->reset();
 
-    int *status = ((int *) &gStatus);
     {
-        int statusObj = *((int *) &gStatus);
         Player *pl = (Player *) self->player->player;
 
-        if (*(int *) ((char *) statusObj + 0x64) >= 0) pl->setHitpoints(*(int *) ((char *) statusObj + 0x64));
-        if (*(int *) ((char *) statusObj + 0x5c) >= 0) pl->setShieldHP(*(int *) ((char *) statusObj + 0x5c));
-        if (*(int *) ((char *) statusObj + 0x60) >= 0) pl->setArmorHP(*(int *) ((char *) statusObj + 0x60));
-        if (*(int *) ((char *) statusObj + 0x68) >= 0) pl->setGammaHP(*(int *) ((char *) statusObj + 0x68));
+        if (gStatus->field_64 >= 0) pl->setHitpoints(gStatus->field_64);
+        if (gStatus->field_5c >= 0) pl->setShieldHP(gStatus->field_5c);
+        if (gStatus->field_60 >= 0) pl->setArmorHP(gStatus->field_60);
+        if (gStatus->field_68 >= 0) pl->setGammaHP(gStatus->field_68);
 
         self->player->resetLastHP();
 
         if (gStatus->getCurrentCampaignMission() != 0x5f) {
             Ship *ship = gStatus->getShip();
-            *(int *) ((char *) statusObj + 0x64) = ship->getMaxHP();
-            *(int *) ((char *) statusObj + 0x5c) = ship->getMaxShieldHP();
-            *(int *) ((char *) statusObj + 0x60) = ship->getMaxArmorHP();
-            *(int *) ((char *) statusObj + 0x68) = 100;
+            gStatus->field_64 = ship->getMaxHP();
+            gStatus->field_5c = ship->getMaxShieldHP();
+            gStatus->field_60 = ship->getMaxArmorHP();
+            gStatus->field_68 = 100;
 
             int stIdx = ((Station *) (gStatus->getStation()))->getIndex();
             int cm = gStatus->getCurrentCampaignMission();
@@ -1572,7 +1566,7 @@ int MGame::OnInitialize() {
         // (Ship max-HP restore delegated within restorePlayerStats variant)
     }
     if (gStatus->inAlienOrbit() == 0)
-        *(int *) ((char *) *status + 0x84) = Station_getIndex(gStatus->getStation());
+        gStatus->field_84 = Station_getIndex(gStatus->getStation());
 
     unsigned t = self->applicationManager->GetCurrentTimeMillis();
     self->field_0x1ac = 0; // this[1].field_A4
@@ -1583,11 +1577,11 @@ int MGame::OnInitialize() {
     self->lastTimeHigh = 0;
 
     if (Radar::hasScanner() != 0)
-        *(int *) ((char *) *status + 0x11c) = 0;
-    *(int *) ((char *) *status + 300) = 0;
-    *(int *) ((char *) *status + 0x134) = 0;
-    *(int *) ((char *) *status + 0x13c) = 0;
-    *(int *) ((char *) *status + 0x144) = 0;
+        gStatus->field_11c = 0;
+    gStatus->field_12c = 0;
+    gStatus->field_134 = 0;
+    gStatus->field_13c = 0;
+    gStatus->field_144 = 0;
 
     Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &gStatus)))->getShip()))->getFirstEquipmentOfSort(0x15);
     if (eq != 0) {

@@ -2,9 +2,8 @@
 #define GOF2_EASEINOUTMATRIX_H
 #include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-#include "aetypes.h"
-#include "mathtypes.h"
+#include "Matrix.h"
+#include "Quaternion.h"
 #include "engine/math/AEMath.h"
 
 namespace AbyssEngine {

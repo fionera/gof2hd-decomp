@@ -1,13 +1,11 @@
 #ifndef GOF2_BOUNDINGSPHERE_H
 #define GOF2_BOUNDINGSPHERE_H
 
-#include "mathtypes.h"
+#include "Vector.h"
 #include "engine/math/BoundingVolume.h"
 
 class BoundingSphere : public BoundingVolume {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
-
     float radius;
 
     BoundingSphere(float x, float y, float z, float ex, float ey, float ez, float radius);
@@ -20,9 +18,9 @@ public:
 
     void update(float x, float y, float z) override;
 
-    Vector projectCollisionOnSurface(const Vector &position) override;
+    AbyssEngine::AEMath::Vector projectCollisionOnSurface(const AbyssEngine::AEMath::Vector &position) override;
 
-    Vector getCollisionNormal(const Vector &position);
+    AbyssEngine::AEMath::Vector getCollisionNormal(const AbyssEngine::AEMath::Vector &position);
 };
 
 #endif

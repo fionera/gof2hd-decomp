@@ -8,6 +8,30 @@
 class TouchButton;
 class ScrollTouchWindow;
 
+// Draw-time button-position cache record. ChoiceWindow::draw() stashes the
+// on-screen pixel coordinates of its choice buttons into a small int-record
+// pointed to by the g_ChoiceWindow_posTarget{A,B,C,D} globals so other code can
+// read where the buttons ended up. The record stores two int32 coordinate
+// slots: one at +0x8 and one at +0xc. The same physical slot carries different
+// meaning depending on which posTarget global points at the record, so the
+// per-call-site names are exposed as a union over the same memory.
+struct ChoiceWindowButtonPosCache {
+    void *field_0x0;        // +0x0 opaque
+    int field_0x4;          // +0x4 opaque
+    union {                 // +0x8 int32 coordinate slot
+        int field_0x8;
+        int rightButtonPosX;    // posTargetA->[+0x8]
+        int rightButtonPosY;    // posTargetB->[+0x8]
+        int singleButtonPosX;   // posTargetC->[+0x8] (single-button layout)
+        int singleButtonPosY;   // posTargetD->[+0x8] (single-button layout)
+    };
+    union {                 // +0xc int32 coordinate slot
+        int field_0xc;
+        int leftButtonPosX;     // posTargetC->[+0xc]
+        int leftButtonPosY;     // posTargetD->[+0xc]
+    };
+};
+
 class ChoiceWindow {
 public:
     int x;

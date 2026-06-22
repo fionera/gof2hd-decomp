@@ -1,9 +1,10 @@
 #ifndef GOF2_MATERIAL_H
 #define GOF2_MATERIAL_H
 #include <cstdint>
-#include "mathtypes.h"   // AbyssEngine::AEMath::{Vector,Matrix} (used by value)
 
 #include "engine/core/Array.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
     class Mesh; // pointer-only

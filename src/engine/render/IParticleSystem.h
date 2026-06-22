@@ -4,7 +4,8 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 #include "engine/render/ParticleSettings.h"
 
 namespace AbyssEngine {
@@ -25,9 +26,9 @@ public:
     uint8_t renderEnabled;
     uint8_t updateEnabled;
     uint8_t random[8]; // embedded AERandom PRNG state
-    Matrix const *matrix;
-    Vector emitterVelocity;
-    Vector lastEmitterPosition;
+    AbyssEngine::AEMath::Matrix const *matrix;
+    AbyssEngine::AEMath::Vector emitterVelocity;
+    AbyssEngine::AEMath::Vector lastEmitterPosition;
     int32_t field_0x2c;
     int32_t field_0x30;
     uint32_t flags;
@@ -40,12 +41,12 @@ public:
     int32_t field_0x58;
     uint8_t field_0x5c;
     float emitTimer;
-    Vector *particleVelocities; // per-particle velocity buffer (one Vector per particle)
+    AbyssEngine::AEMath::Vector *particleVelocities; // per-particle velocity buffer (one Vector per particle)
     int *particleAges; // per-particle age in ms, -1 == slot free
     int8_t *particleSetIds; // per-particle source particle-set index
     Array<ParticleSettings::ParticleSet> *particleSets; // configured particle-set indices
 
-    IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
+    IParticleSystem(PaintCanvas *canvas, AbyssEngine::AEMath::Matrix const *matrix,
                     Array<ParticleSettings::ParticleSet> const &sets,
                     bool mirror, bool alphaFade);
 
@@ -72,9 +73,9 @@ public:
     virtual void release() = 0; // slot 3
     virtual int getQuadCount() = 0; // slot 4
     virtual void updateSingle(int index, float delta) = 0; // slot 5
-    virtual void setParticle(Vector const &pos, float scale, uint32_t color,
+    virtual void setParticle(AbyssEngine::AEMath::Vector const &pos, float scale, uint32_t color,
                              float u0, float u1, float v0, float v1, bool maskedColor,
-                             float size0, float size1, Vector const &velocity) = 0; // slot 6
+                             float size0, float size1, AbyssEngine::AEMath::Vector const &velocity) = 0; // slot 6
 
     int getParticleCount();
 
@@ -82,7 +83,7 @@ public:
 
     void setParticleSetIndex(uint8_t index);
 
-    void setMatrix(Matrix const *matrix);
+    void setMatrix(AbyssEngine::AEMath::Matrix const *matrix);
 
     void enableEmit(bool enabled);
 
@@ -92,7 +93,7 @@ public:
 
     void update(int delta);
 
-    void emitManual(Vector position, int particleSet, Vector const *velocity, float lifetime);
+    void emitManual(AbyssEngine::AEMath::Vector position, int particleSet, AbyssEngine::AEMath::Vector const *velocity, float lifetime);
 
     void interpolateColor(int index, float &alpha, float &red, float &green, float &blue);
 

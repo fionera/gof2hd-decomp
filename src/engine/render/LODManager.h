@@ -4,7 +4,6 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
 #include "engine/render/AEGeometry.h"   // Array<AEGeometry*> objects + addObject/removeObject
 
 struct Touch {
@@ -27,7 +26,7 @@ extern "C" void ndk_resetNativeItemInformationList();
 class LODManager {
 public:
     Array<AEGeometry *> *objects;
-    AEMath::Vector cameraPos;
+    AbyssEngine::AEMath::Vector cameraPos;
     int timer;
 
     LODManager();

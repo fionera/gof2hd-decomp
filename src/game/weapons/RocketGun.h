@@ -4,7 +4,8 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 #include "game/weapons/ObjectGun.h"
 
 class Gun;
@@ -23,7 +24,7 @@ public:
     int particleSystem; // single trail/muzzle particle system handle
     int rocketKind; // rocket weapon kind
     int fadeTimer; // trail fade-out countdown (ms)
-    Array<Matrix> *trailMatrices; // per-shot trail transform matrices
+    Array<AbyssEngine::AEMath::Matrix> *trailMatrices; // per-shot trail transform matrices
     Array<int> *trailSystems; // per-shot particle-system handles
     Array<int> *trailTimers; // per-shot trail fade timers
     int particleManager; // ParticleSystemManager handle for the trails
@@ -37,7 +38,7 @@ public:
 
     void render();
 
-    void translate(const Vector &v); // no-op override (rockets ignore camera translation)
+    void translate(const AbyssEngine::AEMath::Vector &v); // no-op override (rockets ignore camera translation)
     void setRadar(Radar *radar);
 
     void seekEnemy(int unused, int index);

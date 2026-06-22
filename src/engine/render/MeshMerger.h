@@ -4,7 +4,8 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
     class PaintCanvas;

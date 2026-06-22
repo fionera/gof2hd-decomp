@@ -4,6 +4,12 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
+#include "engine/math/Vector.h"
+#include "engine/math/Matrix.h"
+
+// The class body below uses the unqualified spellings `Vector` (engine math vec3)
+// for its color/light/direction fields; bring it into scope here.
+namespace AbyssEngine { using AEMath::Vector; }
 
 namespace AbyssEngine {
     class FBOContainer;
@@ -213,8 +219,17 @@ namespace AbyssEngine {
             Vector lightDir;
             Vector field_0x330;
         }; // scene light direction (rgb-as-xyz)
-        Vector field_0x33c;
-        uint64_t field_0x340;
+        // +0x33c second light-direction vector (shaders read .x/.y/.z at 0x33c/0x340/0x344).
+        // The binary init also zeroes its .y by name as field_0x340, so alias it here. Modeled
+        // as a 12-byte Vector (NOT Vector+uint64, which would over-size the slot by 8 bytes).
+        union {
+            Vector field_0x33c;
+            struct {
+                float field_0x33c_x;
+                uint32_t field_0x340;
+                float field_0x344;
+            };
+        };
 
         union {
             int lineVertexBase;
@@ -233,8 +248,15 @@ namespace AbyssEngine {
             int autoPilotEngaged;
             uint32_t field_0x360;
         }; // +0x360 autopilot-engaged flag (PlayerEgo::setAutoPilot)
-        int displayWidth; // +0x368 GL display width (GetDisplayWidth)
-        int displayHeight; // +0x36c GL display height (GetDisplayHeight)
+        uint8_t _pad0x364[4]; //  0x364..0x367 (Ghidra gap before framebufferWidth)
+        union {
+            int framebufferWidth;
+            int displayWidth;
+        }; // +0x368 GL framebuffer/display width (GetDisplayWidth)
+        union {
+            int framebufferHeight;
+            int displayHeight;
+        }; // +0x36c GL framebuffer/display height (GetDisplayHeight)
         int viewportWidth; // +0x370
         int viewportHeight; // +0x374
         float lightDirty[2]; // per-light "direction is in eye space" flag
@@ -248,9 +270,14 @@ namespace AbyssEngine {
         float projMatrix[16]; // projection / ortho matrix (shader path)
         uint8_t field_0x3c4;
         uint32_t field_0x3c8;
-        uint64_t field_0x3cc;
-        uint32_t field_0x3d4;
-        Array<int> *triangleCounts; // per-shader triangle counters
+        // +0x3cc MGame writes a Vector here via *(Vector*)&field_0x3cc. Modeled as two 4-byte
+        // words (NOT a uint64, which would 8-align the field to 0x3d0 and shift the tail).
+        uint32_t field_0x3cc; // +0x3cc
+        uint32_t field_0x3d0; // +0x3d0
+        uint32_t field_0x3d4; // +0x3d4
+        uint32_t field_0x3d8; // +0x3d8 (Ghidra has a live word here before triangleCounts)
+        Array<int> *triangleCounts; // +0x3dc per-shader triangle counters
+        uint32_t field_0x3e0; // +0x3e0 (Ghidra gap before currentProgram)
         union {
             int currentProgram;
             int field_0x3e4;
@@ -267,27 +294,47 @@ namespace AbyssEngine {
             Vector fogColor;
             Vector field_0x3f0;
         }; // u_fogColor (rgb)
-        Vector eyePosition; // eye/camera position (SetEyePosition)
-        uint64_t field_0x400;
-
+        // +0x3fc eye/camera position (SetEyePosition writes (field_0x3f0).field_0xc, i.e. 0x3fc).
+        // The init zeroes 0x400 by name as field_0x400 (= eyePosition.y), so alias it here.
+        union {
+            Vector eyePosition;
+            struct {
+                float eyePosition_x;
+                uint32_t field_0x400;
+                float eyePosition_z;
+            };
+        };
+        uint8_t _pad0x408[4]; //  0x408..0x40b (Ghidra gap before viewFramebuffer)
         union {
             uint32_t viewFramebuffer;
             uint32_t field_0x40c;
         }; // +0x40c default GL framebuffer (view buffer)
         uint32_t postEffectFlags; // +0x410 active post-effect flags
         AbyssEngine::FBOContainer *postEffectFBO; // +0x414 post-effect render target
-        AbyssEngine::FBOContainer *refractFBO; // +0x418 refraction render target
+        union {
+            AbyssEngine::FBOContainer *fboContainer;
+            AbyssEngine::FBOContainer *refractFBO;
+        }; // +0x418 refraction render target (fboContainer)
         uint8_t glowActive; // +0x41c glow pass currently active
         uint32_t glEnableFlags; // +0x420 GlEnable() shader-path capability bits
         uint8_t lightingEnabled; // +0x424 fixed-function lighting enabled
         float uvMatrixGL[16]; // fixed-function UV matrix (glLoadMatrixf)
-        Vector field_0x468; // light[0] direction (light array base)
-        Vector field_0x474; // light[1] direction
-        uint64_t field_0x478;
+        Vector field_0x468; // +0x468 light[0] direction (light array base) (0x468..0x473)
+        // +0x474 light[1] direction. The init zeroes 0x478 by name as field_0x478 (= .y), so alias it.
+        // Modeled as a 12-byte Vector (NOT Vector+uint64, which would over-size the slot by 8 bytes).
+        union {
+            Vector field_0x474;
+            struct {
+                float field_0x474_x;
+                uint32_t field_0x478;
+                float field_0x47c;
+            };
+        };
         bool hasVibration; // +0x480 device supports vibration (HasVibration)
         DestroyCallback *onDestroyCallback; // +0x484 app-destroy callback (SetOnDestroyApp)
         float materialAlpha; // +0x488 current material alpha (LightSetMaterialColorAlpha)
-        int frameBufferTextures[2]; // FBO color-texture id per slot
+        int frameBufferTextures[2]; // +0x48c FBO color-texture id per slot (0x48c..0x493)
+        uint8_t _pad0x494[16]; //  0x494..0x4a3 (Ghidra gap before clientStateFlagsAE)
         uint32_t clientStateFlagsAE; // +0x4a4 AEClientState() enable bits
         uint32_t field_0x4a8;
 
@@ -319,7 +366,8 @@ namespace AbyssEngine {
             };
         };
 
-        Array<AbyssEngine::ShaderBaseStruct *> *shaders; // registered shaders
+        uint32_t shaderCount; // +0x510 registered-shader count (Ghidra shaderCount)
+        Array<AbyssEngine::ShaderBaseStruct *> *shaders; // +0x514 registered shaders
 
         Engine();
 

@@ -266,15 +266,15 @@ void ModMainMenu::OnInitialize() {
         goto music;
 
     {
-        void *options = g_ModMainMenu_initOptions;
-        if (UC(options, 0x48) == 0) {
+        OptionsRecord *options = (OptionsRecord *) g_ModMainMenu_initOptions;
+        if (options->firstRunPreviewChecked == 0) {
             void **recordHolder = g_ModMainMenu_initRecord;
             void *record = ((RecordHandler *) (*recordHolder))->recordStoreReadPreview(0);
             if (record != nullptr) {
                 this->hasSavedGame = 1;
                 delete (GameRecord *) record;
             }
-            UC(options, 0x48) = 1;
+            options->firstRunPreviewChecked = 1;
             ((RecordHandler *) (*recordHolder))->saveOptions();
         }
 

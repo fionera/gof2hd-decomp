@@ -12,6 +12,29 @@ class PlayerEgo;
 class Level;
 class Radar;
 
+// Event-banner display-state object reached via the *g_Hud_eqSelf holder in
+// Hud::drawEventQueue. This is a distinct "Hud-like" object (NOT a Hud: Hud has
+// a String at +0x1e0), carrying the cinematic event-banner display offset/scale.
+// Only the two fields actually accessed are named; the rest is opaque padding so
+// the named members land at their exact verified offsets.
+struct HudEventDisplay {
+    unsigned char pad_0x0[0x1e0];
+    float eventBannerDisplayScale; // +0x1e0 event-banner display scale (float)
+    int eventBannerDisplayBase;    // +0x1e4 event-banner display base offset (int)
+};
+
+// Cargo-bay layout object reached via the *g_Hud_imCargoA / *g_Hud_imCargoB holders
+// in Hud::initHudMenu. The holders are the same opaque game-settings singleton
+// (binary .bss 0x2281e8); initHudMenu reads the two cargo counters as signed ints
+// (fed through VectorSignedToFloat) to shift the radial menu in letterboxed mode.
+// Only the two accessed fields are named; the rest is opaque padding so the named
+// members land at their exact verified offsets.
+struct CargoBay {
+    unsigned char pad_0x0[0x54];
+    int cargoCurrent; // +0x54 current cargo amount (signed int)
+    int cargoMax;     // +0x58 maximum cargo capacity (signed int)
+};
+
 class Hud {
 public:
     unsigned char field_0x0;
@@ -65,8 +88,11 @@ public:
     unsigned char eventQueueDirty;
     int eventQueuePaused;
     unsigned char jumpMapSelectedFlag;
-    int field_0x278;
+    unsigned char field_0x275;
+    unsigned short field_0x276;
+    unsigned short weaponSelectState; // +0x278 weapon/cloak select state (uint16; low+high bytes)
     unsigned char field_0x27a;
+    unsigned char field_0x27b;
     int fuelGaugeValue; // +0x27c gauge numeric value
     unsigned char field_0x280;
     unsigned char field_0x281;
@@ -273,4 +299,13 @@ public:
 
     bool drawTitleImage(bool visible);
 };
+
+static_assert(__builtin_offsetof(HudEventDisplay, eventBannerDisplayScale) == 0x1e0,
+              "HudEventDisplay::eventBannerDisplayScale must live at +0x1e0");
+static_assert(__builtin_offsetof(HudEventDisplay, eventBannerDisplayBase) == 0x1e4,
+              "HudEventDisplay::eventBannerDisplayBase must live at +0x1e4");
+static_assert(__builtin_offsetof(CargoBay, cargoCurrent) == 0x54,
+              "CargoBay::cargoCurrent must live at +0x54");
+static_assert(__builtin_offsetof(CargoBay, cargoMax) == 0x58,
+              "CargoBay::cargoMax must live at +0x58");
 #endif

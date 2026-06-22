@@ -183,24 +183,24 @@ namespace AbyssEngine {
         int width = AE_getInitGLWidth();
         int height = AE_getInitGLHeight();
 
-        pp(c, 0x418) = 0;
-        u32(c, 0x368) = width;
-        u32(c, 0x36c) = height;
-        u32(c, 0x370) = width;
-        u32(c, 0x374) = height;
+        self->fboContainer = 0;
+        self->framebufferWidth = width;
+        self->framebufferHeight = height;
+        self->viewportWidth = width;
+        self->viewportHeight = height;
 
         FileInterfaceAndroid *fileIface = new FileInterfaceAndroid();
-        pp(c, 0x24) = fileIface;
+        self->fileInterface = fileIface;
         AEFile::SetInterface((FileInterface *) fileIface);
 
-        u32(c, 0x10) = 0;
+        self->lastGlError = 0;
         u8(c, 0x2c) = 0;
         u8(c, 0x480) = 0;
 
         char *shaderFlag = g_Engine_shaderModeFlag;
         u32(c, 0x40c) = 0;
         self->ResetLightParam();
-        glViewport(0, 0, i32(c, 0x374), i32(c, 0x370));
+        glViewport(0, 0, self->viewportHeight, self->viewportWidth);
 
         if (*shaderFlag == 0) {
             glEnable(0x803a);
@@ -222,15 +222,15 @@ namespace AbyssEngine {
         glCullFace(0x405);
         glEnable(0xb44);
         self->AfterGLInit();
-        ((PaintCanvas *) *(void **) pp(c, 0x30))->Initialize(false);
+        ((PaintCanvas *) *(void **) self->paintCanvas)->Initialize(false);
 
-        u32(c, 0xc) = 0;
-        glGetIntegerv(0xd33, c + 0xc);
+        self->maxTextureSize = 0;
+        glGetIntegerv(0xd33, &self->maxTextureSize);
 
         if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
             FBOContainer *fbo = new FBOContainer(self, String(""));
-            pp(c, 0x418) = fbo;
-            fbo->Create((int) i32(c, 0x368), (int) i32(c, 0x36c), true, false);
+            self->fboContainer = fbo;
+            fbo->Create((int) self->framebufferWidth, (int) self->framebufferHeight, true, false);
         }
     }
 } // namespace AbyssEngine
@@ -554,11 +554,11 @@ namespace AbyssEngine {
             if (u8(engine, 0xfe) != 0) {
                 int tris = __aeabi_uidiv((int) mesh->indexCount, 3);
                 if (u8(engine, 0xfd) == 0) {
-                    i32(engine, 0x64) += 1;
-                    i32(engine, 0x68) += tris;
+                    engine->drawCallCountA += 1;
+                    engine->triangleCountA += tris;
                 } else {
-                    i32(engine, 0x6c) += tris;
-                    i32(engine, 0x60) += 1;
+                    engine->triangleCountB += tris;
+                    engine->drawCallCountB += 1;
                 }
             }
 
@@ -795,7 +795,7 @@ namespace AbyssEngine {
 
         // Optional skinning/extra matrix block.
         if (subBit != 0) {
-            if (AEFile::Read((uint32_t)(0xc), (char *) *slot + 0x50, handle) == 0)
+            if (AEFile::Read((uint32_t)(0xc), &(*slot)->pivotX, handle) == 0)
                 return -1;
         }
 
@@ -1153,7 +1153,7 @@ namespace AbyssEngine {
 
     void MeshRelease(Engine *engine, Mesh **slot) {
         if (engine != 0 && *slot != 0) {
-            TransformRelease(engine, (Transform **) ((char *) *slot + 0x34));
+            TransformRelease(engine, &(*slot)->animation);
             // Tail-call through a runtime function pointer (MeshReleaseIntern) that frees the mesh
             // body. The first argument is the engine pointer (preserved in r0 across the void
             // TransformRelease call in the shipped code).
@@ -1646,7 +1646,7 @@ namespace AbyssEngine {
             idx = 0;
         }
 
-        bool shaderMode = (u8(en, 0xfc) != 0);
+        bool shaderMode = (engine->shaderModeFlag != 0);
         if (shaderMode) {
             // Arabic special-case: force forward scan.
             if (*g_GameText_arabicEnabledFlag != 0 && GameText::getLanguage() == 9 &&
@@ -2254,10 +2254,9 @@ namespace AbyssEngine {
     int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *),
                                     void *user, unsigned int *outIds, float aniso,
                                     AELoadedTexture *outTex, bool /*flag*/) {
-        char *en = (char *) engine;
         Image *imgPtr = 0;
         *outIds = 0;
-        u32(en, 0x10) = glGetError();
+        engine->lastGlError = glGetError();
 
         if (ImageCreateFromFile(engine, path, &imgPtr) != 1)
             return -4;
@@ -2301,7 +2300,7 @@ namespace AbyssEngine {
 
             // Min/mag filters depend on mipmap availability and anisotropy settings.
             if (u8(img, 0x8) == 0) {
-                if (u8(en, 0x20) != 0) {
+                if (engine->linearFilterFlag != 0) {
                     glTexParameteri(0xde1, 0x2800, 0x2601);
                     glTexParameteri(0xde1, 0x2801, 0x2601);
                 } else {
@@ -2380,10 +2379,10 @@ namespace AbyssEngine {
         // Verify upload and either label the texture or cache it.
         if (outTex == 0) {
             int err = (int) glGetError();
-            u32(en, 0x10) = (unsigned int) err;
+            engine->lastGlError = (unsigned int) err;
             if (err != 0) {
                 String tmp(path);
-                ((::String *) (en + 0x14))->assign(&tmp);
+                engine->lastErrorPath.assign(&tmp);
                 glDeleteTextures(1, outIds);
                 ImageRelease(&imgPtr);
                 return -4;
@@ -2402,7 +2401,7 @@ namespace AbyssEngine {
                 u32(tex, 0x18) = 0;
                 glDeleteTextures(1, outIds);
             }
-            i32(en, 0x70) += (int) u32(tex, 0x18);
+            engine->textureByteCounter += (int) u32(tex, 0x18);
         }
 
         ImageRelease(&imgPtr);

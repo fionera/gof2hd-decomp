@@ -4,7 +4,7 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Vector.h"
 
 class AEGeometry; // ::AEGeometry, engine/render/AEGeometry.h; pointer only
 class Radar; // ::Radar, game/weapons/Radar.h; pointer only

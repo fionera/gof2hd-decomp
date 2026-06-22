@@ -39,6 +39,17 @@ struct ItemTable {
     void *itemTableEntry0x12; // @0x48 entry[0x12] (Item*) — EMP-gun item, getAttribute(0xa)
 };
 
+// ItemDatabase: the item-table singleton object reached opaquely via void** globals
+// (e.g. g_liw_d_itemDB, g_ag_itemTblA/B). It is in fact an Array<Item*> holder: the
+// leading 4-byte word @0x0 is the element count and @0x4 is the backing-store pointer
+// (data_) — the Item** table base. Call sites index fixed entries off that base by raw
+// byte offset (entry N at base + N*4). Modeled here as a named view so raw-offset reads
+// of +0x4 become clean member access without shifting Array<Item*>'s real layout.
+struct ItemDatabase {
+    unsigned int field_0x0; // @0x0 element count (Array<Item*>::size_)
+    Item **itemTable;       // @0x4 backing-store base (Array<Item*>::data_); entry N at itemTable[N]
+};
+
 class Item {
 public:
     int index;

@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "mathtypes.h"
 #include "engine/math/AEMath.h"
 #include "engine/math/BoundingVolume.h"
 #include "engine/render/AEGeometry.h"
@@ -68,7 +67,7 @@ void PlayerStaticFar::update(int /*delta*/) {
 
     PaintCanvas *camera = g_cameraHolder;
     unsigned int cur = camera->CameraGetCurrent();
-    Matrix *matrix = reinterpret_cast<Matrix *>(camera->CameraGetLocal(cur));
+    AbyssEngine::AEMath::Matrix *matrix = reinterpret_cast<AbyssEngine::AEMath::Matrix *>(camera->CameraGetLocal(cur));
 
     this->cameraPosition = MatrixGetPosition(*matrix);
     this->objectPosition = {(float) this->posX, (float) this->posY, (float) this->posZ};

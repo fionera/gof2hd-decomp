@@ -1,18 +1,11 @@
 #ifndef GOF2_BOUNDINGVOLUME_H
 #define GOF2_BOUNDINGVOLUME_H
 
-#include <cstdint>
-#include <vector>
-
+#include "Vector.h"
 #include "engine/core/Array.h"
-#include "AEString.h"
-#include "fieldaccess.h"
-#include "aetypes.h"
-#include "mathtypes.h"
 
 class BoundingVolume {
 public:
-    using Vector = AbyssEngine::AEMath::Vector;
 
     // Real C++ polymorphic base: the dispatch table is the compiler-managed
     // vptr at offset 0 (it replaces the former hand-installed `void* vtable`
@@ -46,21 +39,21 @@ public:
     // BoundingVolume an abstract base (it is never instantiated directly; the
     // binary has no BoundingVolume::projectCollisionOnSurface symbol, hence no
     // complete-object ctor C1 / deleting dtor D0 either).
-    virtual Vector projectCollisionOnSurface(const Vector &point) = 0;
+    virtual AbyssEngine::AEMath::Vector projectCollisionOnSurface(const AbyssEngine::AEMath::Vector &point) = 0;
 
     // getCollisionNormal is not polymorphically dispatched (subclasses give it a
     // different signature), so it stays a plain method. The base composite has no
     // surface of its own, so it returns a zero normal (BoundingAAB matches).
-    Vector getCollisionNormal(const Vector &position);
+    AbyssEngine::AEMath::Vector getCollisionNormal(const AbyssEngine::AEMath::Vector &position);
 
     void setVolume(BoundingVolume *src);
 
     // Store the child-volume array directly (str r1,[r0,#4] -> children).
     void setVolumes(Array<BoundingVolume *> *arr);
 
-    void staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols);
+    void staticProjectCollisionOnSurface(const AbyssEngine::AEMath::Vector &v, Array<BoundingVolume *> *vols);
 
-    Vector getProjectionVector(const Vector &v);
+    AbyssEngine::AEMath::Vector getProjectionVector(const AbyssEngine::AEMath::Vector &v);
 };
 
 #endif

@@ -5,7 +5,6 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
 #include "game/ship/KIPlayer.h"
 
 class Player;

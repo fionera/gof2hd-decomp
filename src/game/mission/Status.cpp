@@ -1,6 +1,7 @@
 #include "game/mission/Status.h"
 Status *gStatus = nullptr; // canonical Status singleton
 #include "game/mission/PendingProduct.h"
+#include "game/core/GameSettings.h"
 #include "engine/core/AERandom.h"
 #include "game/world/Galaxy.h"
 #include "game/mission/Item.h"
@@ -611,7 +612,7 @@ extern void (*g_rg_addCargo)(int, int, int);
 //   wanted, standing, the starting mission, ship and station.
 void Status::resetGame() {
     int *settings = g_rg_settings;
-    char *srec = (char *) *settings;
+    GameSettings *srec = (GameSettings *) *settings;
 
     this->field_8c = 0;
     this->boughtEquipment = 0;
@@ -645,7 +646,7 @@ void Status::resetGame() {
     this->field_140 = 0;
     this->field_148 = 0;
 
-    char hardcore = *(char *) (srec + 0x36);
+    char hardcore = srec->hardCoreFlag;
     this->field_0x111 = 0;
     this->field_114 = hardcore != 0 ? 3 : 0;
 
@@ -858,7 +859,7 @@ void Status::resetGame() {
     addCargo((int) (intptr_t) gStatus->ship,
              (int) (intptr_t)((Item *) (intptr_t) srcShip[0x24])->makeItem(), 0);
 
-    if (*(char *) (srec + 0x35) != 0)
+    if (srec->blackMarketUnlockedFlag != 0)
         (*this->systemVisibilities)[0x19] = 1;
 
     this->field_64 = this->ship->getMaxHP();
@@ -1711,7 +1712,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                         if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
                             for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
                                 PendingProduct *pp = (*pendingProducts)[j];
-                                if (pp != 0 && i32(pp, 0x14) == 0xd2)
+                                if (pp != 0 && pp->blueprintIndex == 0xd2)
                                     return m;
                             }
                         }

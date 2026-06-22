@@ -1,7 +1,8 @@
 #ifndef GOF2_CAMERA_H
 #define GOF2_CAMERA_H
 #include <cstdint>
-#include "mathtypes.h"   // AEMath::Matrix (by value)
+
+#include "engine/math/Matrix.h"
 
 namespace AbyssEngine {
     class Camera {

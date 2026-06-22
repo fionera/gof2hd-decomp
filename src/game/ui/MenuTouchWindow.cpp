@@ -2,6 +2,12 @@
 #include "game/ui/TouchSlider.h"
 #include "game/core/PaintCanvasClass.h"
 #include "engine/render/Engine.h"
+#include "game/mission/GameRecord.h"
+#include "game/ui/Layout.h"
+#include "game/mission/Status.h"
+#include "game/mission/RecordHandler.h"   // OptionsRecord (option-flag object)
+#include "game/ship/ShipDefTable.h"
+#include "game/core/GameSettings.h"        // cinematic steer/fire anchors
 #include <math.h>
 
 extern PaintCanvas *g_PaintCanvas;
@@ -542,8 +548,8 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         s48.ctor();
         String s54;
 
-        void *rec = this->previewRecords;
-        bool empty = (rec == 0) || (*(int *) (i32(rec, 4) + i * 4) == 0);
+        Array<GameRecord *> *rec = (Array<GameRecord *> *) this->previewRecords;
+        bool empty = (rec == 0) || (rec->data_[i] == 0);
 
         if (empty) {
             s54.ctor();

@@ -4,7 +4,8 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"   // AbyssEngine::AEMath::Vector / Matrix, AbyssEngine::Quaternion
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
     class Engine;

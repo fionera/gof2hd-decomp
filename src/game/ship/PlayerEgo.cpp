@@ -436,7 +436,7 @@ void PlayerEgo::setRocketControl(Gun *gun, AEGeometry *geo) {
     int psm_arg = lvl->movingStarsIndex;
     void *psm = (void *) (intptr_t) lvl->skybox2Mesh;
     if (gun == 0) {
-        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, &F<Matrix>(this->player, 4));
+        ((ParticleSystemManager *) (psm))->systemSetMatrix(psm_arg, (Matrix *) ((Player *) this->player)->transform);
         this->rocketBanking = 0;
         return;
     }
@@ -608,7 +608,7 @@ void PlayerEgo::explode() {
     Player_setActive_(pl);
     void *o = g_explode_obj;
     void (*fn)(void *, int) = g_explode_fn;
-    fn(*(void **) o, *(int *) (*(void **) o));
+    fn(*(void **) o, ((ExplosionEmitterHolder *) (*(void **) o))->emitterFirstId);
     fn(*(void **) o, this->field_0x1c);
     fn(*(void **) o, 0x1b);
     fn(*(void **) o, 0x23);
@@ -1016,12 +1016,11 @@ void PlayerEgo::checkForTurret() {
         return;
 
     this->autoTurretEquipped = 0;
-    int equip = (int) (intptr_t)((Ship *) (PE_status()->getShip()))->getEquipment(2);
-    void *item = *(void **) (equip + 4);
-    // RAWREAD: equip+4 (getEquipment() result kept as int handle; no modeled class)
-    this->turretPitch = (int) ((double) ((Item *) (*(void **) (item)))->getAttribute(0) * 1.5);
+    Array<Item *> *equip = ((Ship *) (PE_status()->getShip()))->getEquipment(2);
+    Item **item = equip->data_;
+    this->turretPitch = (int) ((double) item[0]->getAttribute(0) * 1.5);
 
-    int idx = ((Item *) (*(void **) (item)))->getIndex();
+    int idx = item[0]->getIndex();
     unsigned short base = 0xffff, barrel = 0xffff;
     int muzzle = -1, child = -1, extra = -1, extra2 = -1;
 
@@ -2275,8 +2274,7 @@ void PlayerEgo::setTurretMode(bool enable) {
     }
 
     if (this->field_0x30 != 0) {
-        void *tf = gCanvas->TransformGetTransform((unsigned int) (U((void *) gCanvas, 0)));
-        // RAWREAD: gCanvas+0x0 (PaintCanvas has no member at +0; vtable/untracked slot)
+        void *tf = gCanvas->TransformGetTransform((unsigned int) (gCanvas->selfHandle));
         ((AbyssEngine::Transform *) (tf))->SetVisible(enable != 0);
         int v = (enable != 0);
         if (enable == 0)
@@ -3097,8 +3095,7 @@ void PlayerEgo::handleShip(int dt) {
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 1,
                        ((float &) this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
 
-    unsigned int tf = *(unsigned int *) ((char *) gCanvas);
-    // RAWREAD: gCanvas+0x0 (PaintCanvas has no member at +0; vtable/untracked slot)
+    unsigned int tf = gCanvas->selfHandle;
 
     // Build orientation + strafe slide and install the ship transform.
     PE_handleShip_orient(this, dt, tf);
@@ -3331,8 +3328,8 @@ void PlayerEgo::toggleCloaking() {
 
     ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial((unsigned int) (this->cloakMaterial1));
     // returned ptr +0x20 = 0xe below
-    I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial1)), 0x20) = 0xe;
-    // RAWREAD: material+0x20 (untyped MaterialGetMaterial() result, no modeled class)
+    ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
+        (unsigned int) (this->cloakMaterial1)))->materialMode = 0xe;
     ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial((unsigned int) (this->field_0x4->meshId),
                                                           (unsigned int) (this->cloakMaterial1));
     ((PaintCanvas *) (long) (canvas))->MeshChangeShaderAnimValue(
@@ -3343,10 +3340,10 @@ void PlayerEgo::toggleCloaking() {
         (unsigned int) (0));
 
     if (this->turretMode != 0) {
-        I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial2)), 0x20) = 0xe;
-        // RAWREAD: material+0x20 (untyped MaterialGetMaterial() result)
-        I(((PaintCanvas*)(long)(canvas))->MaterialGetMaterial((unsigned int)(this->cloakMaterial3)), 0x20) = 0xe;
-        // RAWREAD: material+0x20 (untyped MaterialGetMaterial() result)
+        ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
+            (unsigned int) (this->cloakMaterial2)))->materialMode = 0xe;
+        ((AbyssEngine::Material *) ((PaintCanvas *) (long) (canvas))->MaterialGetMaterial(
+            (unsigned int) (this->cloakMaterial3)))->materialMode = 0xe;
         ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(
             (unsigned int) (((AEGeometry *) this->rollGeometry)->meshId), (unsigned int) (this->cloakMaterial2));
         ((PaintCanvas *) (long) (canvas))->MeshChangeMaterial(

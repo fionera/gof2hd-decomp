@@ -6,6 +6,32 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
+// Opaque application / module-transition holder. The first slot (+0x0) is a
+// transition callback the menu invokes to switch the active app module. The
+// holder is reached as *(void**)gXxxTransition and its first 4 bytes are read
+// as a function pointer (ARM32). Two call shapes share offset 0:
+//   void(*)(void*, int)        - startValkyrie / startSupernova  (mode arg)
+//   void(*)(void*, int, int)   - startGOF2                       (two args)
+struct ModuleTransitionThunk {
+    union {
+        void (*transitionFn)(void *app, int mode);      // +0x0 (2-arg shape)
+        void (*transitionFn3)(void *app, int a, int b); // +0x0 (3-arg shape)
+        void *field_0x0;                                // +0x0 raw alias
+    };
+};
+
+// Opaque refresh-thunk holder. The first slot (+0x0) is a no-arg callback the
+// menu invokes after (re)loading the preview records to refresh the visible
+// list. Reached as *(void**)gPrevRefreshThunk and its first 4 bytes are read as
+// a function pointer (ARM32): loadPreviewRecords does
+//   (*(code *)(thunkSlot))();   // void(*)()
+struct RefreshThunk {
+    union {
+        void (*refreshFn)();  // +0x0 no-arg refresh callback
+        void *field_0x0;      // +0x0 raw alias
+    };
+};
+
 class MenuTouchWindow {
 public:
     uint8_t cinematicSteerActive; // steer engaged (set when Layout consumes touch in state 0xd)

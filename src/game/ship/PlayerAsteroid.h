@@ -4,7 +4,7 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Matrix.h"
 class Hud; // referenced only by pointer in KIPlayer's interface, below
 #include "game/ship/KIPlayer.h"
 

@@ -4,7 +4,8 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-#include "mathtypes.h"
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 #include "engine/render/Mesh.h"
 
 namespace AbyssEngine {
@@ -16,8 +17,8 @@ using ::AbyssEngine::Mesh;
 
 class LodMeshMerger {
 public:
-    using Matrix = AEMath::Matrix;
-    using Vector = AEMath::Vector;
+    using Matrix = AbyssEngine::AEMath::Matrix;
+    using Vector = AbyssEngine::AEMath::Vector;
 
     int rows; // source-mesh rows
     uint16_t flags; // merged-mesh creation flags

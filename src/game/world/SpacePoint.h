@@ -3,7 +3,8 @@
 
 #include <cstdint>
 
-#include "mathtypes.h"
+#include "engine/math/Vector.h"
+
 
 class SpacePoint {
 public:
