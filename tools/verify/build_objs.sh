@@ -51,7 +51,15 @@ compile_one() {
   if up_to_date "$obj" "$src" "$dep"; then
     return 0
   fi
-  if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS -MMD -MF "$dep" -c "$src" -o "$obj" >"$log" 2>&1; then
+  # src/runtime/ holds thin wrappers that compile NDK toolchain runtime sources (e.g. libc++abi's
+  # own operator new/delete in src/runtime/ndk_libcxxabi_new_delete.cpp). They build with the
+  # toolchain library's own flags — the libc++abi src/ dir on the include path and the C++17
+  # aligned-allocation feature — so the objects byte-match what the binary linked from libc++abi.
+  local extra=""
+  case "$src" in
+    src/runtime/*) extra="-faligned-allocation -isystem ${NDK:-/opt/android-ndk-r18b}/sources/cxx-stl/llvm-libc++abi/src" ;;
+  esac
+  if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS $extra -MMD -MF "$dep" -c "$src" -o "$obj" >"$log" 2>&1; then
     rm -f "$log"
     return 0
   fi
@@ -59,7 +67,7 @@ compile_one() {
   return 1
 }
 export -f up_to_date compile_one
-export HERE BASE LOGS BUILD GOF2_MATCH_CXXFLAGS
+export HERE BASE LOGS BUILD GOF2_MATCH_CXXFLAGS NDK
 
 # (portable: macOS ships bash 3.2 which lacks `mapfile`)
 total=$(find src -name '*.cpp' | wc -l | tr -d ' ')
