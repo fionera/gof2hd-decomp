@@ -777,8 +777,7 @@ void Level::pirateStationAction(bool param) {
         int idx = gStatus->getStation()->getPirateStationIndex();
         *(unsigned char *) (*(int *) (tbl + 4) + idx) = 1;
         // RAWREAD: Array<bool> payload (engine container, not a modeled field)
-        *(unsigned char *) ((char *) gStatus + 0xf9) = 1;
-        // RAWREAD: Status +0xf9 (no member; sits in the int16 gap after field_f8)
+        *((unsigned char *) &gStatus->field_f8 + 1) = 1; // +0xf9: high byte of field_f8
     }
     // veneer 0x1ac028 -> Level::createRadioMessage(type, sub)
     createRadioMessage(param ? 3 : 4, 8);
@@ -1308,7 +1307,6 @@ void Level::createRadioMessage(int type, int sub) {
     if (this->player == nullptr || this->player->field_0x1c == 0)
         return;
 
-    int **statusHolder = (int **) &gStatus;
     gStatus->getMission();
     if (((Mission *) gStatus->getMission())->isEmpty() == 0)
         return;
@@ -1339,8 +1337,7 @@ void Level::createRadioMessage(int type, int sub) {
         case 0:
         case 1: {
             // local-station hail: skip if you're docked at the relevant station.
-            // RAWREAD: murky double-indirection through the gStatus global slot (engine Array payload).
-            int *stations = *(int **) (*statusHolder[0] + 0x90);
+            int *stations = (int *) gStatus->field_90;
             bool atStation = false;
             if (stations != 0) {
                 for (unsigned k = 0; k < (unsigned) *stations; k = k + 1) {
@@ -1386,8 +1383,7 @@ void Level::createRadioMessage(int type, int sub) {
         case 0xd: id = gRandom->nextInt() + 0x1c7;
             break;
         case 0xe: {
-            // RAWREAD: murky double-indirection through the gStatus global slot (engine Array payload).
-            int *st = *(int **) (*statusHolder[0] + 0x90);
+            int *st = (int *) gStatus->field_90;
             id = 0x88f;
             if (st != 0) {
                 for (int k = 0; k != *st; k = k + 1)
@@ -1396,8 +1392,7 @@ void Level::createRadioMessage(int type, int sub) {
             break;
         }
         case 0xf: {
-            // RAWREAD: murky double-indirection through the gStatus global slot (engine Array payload).
-            int *st = *(int **) (*statusHolder[0] + 0x90);
+            int *st = (int *) gStatus->field_90;
             id = 0x88e;
             if (st != 0) {
                 for (int k = 0; k != *st; k = k + 1)
@@ -1416,13 +1411,13 @@ void Level::createRadioMessage(int type, int sub) {
             for (int k = 0; k < stage; k = k + 1)
                 off = off + g_crm_counts8[k];
             int cnt = g_crm_counts8[stage];
-            int *tbl = (int *) ((char *) g_crm_table8 + off * 8);
+            RadioStageEntry *tbl = (RadioStageEntry *) ((char *) g_crm_table8 + off * 8);
             for (int k = 0; k < cnt; k = k + 1) {
                 int delay = (k == 0) ? 5000 : (k - 1);
-                int arg = tbl[k * 2];
+                int arg = tbl[k].radioStageEntry;
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 int kind = (k == 0) ? 5 : 6;
-                new(m) RadioMessage(tbl[k * 2 + 1], arg, kind, delay);
+                new(m) RadioMessage(tbl[k].textID, arg, kind, delay);
                 this->messages->push_back(m);
             }
             builtInline = true;
@@ -2197,16 +2192,14 @@ void Level::reset() {
         count = 0;
         for (unsigned int i = 0; i < this->enemies->size(); i = i + 1) {
             KIPlayer *e = (*this->enemies)[i];
-            // RAWREAD: +0x41 (mid field_0x40), +0x71 (mid field_0x70) — no byte-level members.
-            if (*(char *) ((char *) e + 0x41) == 0 && *(char *) ((char *) e + 0x71) == 0 && e->field_0x3f == 0) {
+            if (e->deadFlag == 0 && e->inactiveFlag == 0 && e->field_0x3f == 0) {
                 // The original passes the enemy being examined as the receiver; the
                 // decompiler dropped it (ambient-register thiscall). isWingMan reads
                 // wingmanFlag at +0xdc of this enemy KIPlayer.
                 int wm = e->isWingMan();
                 if (wm == 0) {
-                    // RAWREAD: +0x3c, +0x3d — unnamed gap after stealFlag (no members).
-                    if ((char) e->field_0x44 == 0 && *(char *) ((char *) e + 0x3c) == 0) {
-                        count = count + (*(unsigned char *) ((char *) e + 0x3d) ^ 1);
+                    if ((char) e->field_0x44 == 0 && e->stealFlagByte == 0) {
+                        count = count + (e->countsAsEnemyExcludeFlag ^ 1);
                     }
                 }
             }
@@ -2523,8 +2516,7 @@ void Level::connectPlayers() {
                 int slot = 0;
                 for (unsigned k = 0; k < this->enemies->size(); k = k + 1) {
                     int o = (int) (intptr_t)(*this->enemies)[k];
-                    // RAWREAD: +0x3c — unnamed gap after stealFlag (no member).
-                    if (o != e && *(char *) (o + 0x3c) == 0 &&
+                    if (o != e && ((KIPlayer *) (intptr_t) o)->stealFlagByte == 0 &&
                         (((~wmAll) & (((KIPlayer *) (intptr_t) o)->shipGroup == eFaction)) == 0)) {
                         bool add;
                         if (notM24 || notFirst) {
@@ -3330,7 +3322,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
     } else {
         empB = 15000;
     }
-    hp = (int) ((float) hp + (*(float *) (*g_cs_diffRec + 0x2c) - 0.5f) * (float) hp);
+    hp = (int) ((float) hp + (((DifficultyRecord *) (intptr_t) *g_cs_diffRec)->hpScale - 0.5f) * (float) hp);
     if (camp == 0x9a) {
         int alien = gStatus->inAlienOrbit();
         hp = hp << (alien & (race == 9));
@@ -3405,10 +3397,9 @@ void Level::almostKillWanted(int index) {
     e->player->setAlwaysEnemy(0);
     ((Player *) (int) (intptr_t)(*this->enemies)[1])->resetDamageDoneByPlayer();
     *(unsigned char *) &e->player->enemyFlags = 0;
-    *(unsigned char *) ((char *) e + 0x43) = 1; // RAWREAD: KIPlayer +0x43 (gap after field_0x42; no member)
-    int w = (int) (intptr_t) gStatus->getWanted();
-    // RAWREAD: indexes the returned wanted-list Array payload (engine container, not a modeled field).
-    return ((Wanted *) (intptr_t)(((int *) (*(int *) (w + 4)))[index]))->setActive(0 != 0);
+    e->reviveLockFlag = 1;
+    Array<Wanted *> *w = gStatus->getWanted();
+    return w->wantedListData[index]->setActive(0 != 0);
 }
 
 // Level::assignGuns() — equips every active ship in the level with weapons scaled to the player
@@ -3428,7 +3419,7 @@ void Level::assignGuns() {
     if (lvlPower >= 20.0f) lvlPower = 20.0f;
     if (lvlPower < 0.0f) lvlPower = (float) (gStatus->getLevel() - 2) * g_ag_perLevel;
 
-    float diffScale = *(float *) (*g_ag_diffRec + 0x2c);
+    float diffScale = ((DifficultyRecord *) (intptr_t) *g_ag_diffRec)->hpScale;
     int camp = gStatus->getCurrentCampaignMission();
     int basePower = (int) (lvlPower + lvlPower * (diffScale - 0.5f));
     Wanted *wanted = (Wanted *) gStatus->getWantedInCurrentOrbit();
@@ -3716,8 +3707,7 @@ void Level::assignGuns() {
 
     wingmanExtra:
         if (((KIPlayer *) e)->isWingMan() != 0 &&
-            // RAWREAD: garbled decompile — reads the array slot address, with +0x25 outside the deref; left verbatim.
-            *(char *) ((int) (intptr_t) & (*this->enemies)[i]) + 0x25 != 0) {
+            (char) (*this->enemies)[i]->field_0x25 != 0) {
             Gun *gun = (Gun *) ::operator new(0x114);
             new(gun) Gun(0x12, 0, 4, -1, 3000, 400, 16.0f, Vector{0.0f, 0.0f, 0.0f}, Vector{0.0f, 0.0f, 0.0f});
             gun->setFriendGun(1);
@@ -3728,7 +3718,7 @@ void Level::assignGuns() {
             new(o) ObjectGun(0x12, gun, 0x1a8a, 0x2711, this);
             (*this->enemyGuns)[outIdx] = o;
             gun->setIndex(0x12);
-            int attr = ((Item *) (intptr_t)(*(int *) (*(int *) (*g_ag_itemTblB + 4) + 0x48)))->getAttribute(0xa);
+            int attr = ((Item *) ((ItemTable *) (intptr_t) (*(int *) (*g_ag_itemTblB + 4)))->itemTableEntry0x12)->getAttribute(0xa);
             gun->empDamage = attr;
             ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun, 0);
             // EMP-gun sound id is 0x4a.
@@ -3979,8 +3969,6 @@ void Level::initParticleSystems() {
 
 // Level::createWingmen() — spawns the player's hired escort fighters in formation.
 void Level::createWingmen() {
-    int **statusB = (int **) &gStatus;
-
     if (gStatus->inSupernovaSystem() != 0 ||
         gStatus->getCurrentCampaignMission() == 0x9e ||
         gStatus->getWingmen() == 0 ||
@@ -3996,7 +3984,7 @@ void Level::createWingmen() {
         int seed = **g_cwm_seedSrc;
         gStatus->getWingmen();
         ((AbyssEngine::AERandom *) (intptr_t) seed)->setSeed((long long) seed);
-        int fighter = (int) gGlobals->getRandomEnemyFighter(*(int *) (*statusB + 0x2c));
+        int fighter = (int) gGlobals->getRandomEnemyFighter(gStatus->field_0x30);
         int ship = (int) (intptr_t) createShip(5, 0, fighter, 0, 1, 0);
         (*arr)[i] = (KIPlayer *) (intptr_t) ship;
 
@@ -4010,8 +3998,7 @@ void Level::createWingmen() {
         int wmList = gStatus->getWingmen();
         (*arr)[i]->name =
                 **(String **) (*(int *) (wmList + 4) + i * 4);
-        // RAWREAD: Status +0x2c (player race; ambiguous field placement near field_0x28/field_0x30).
-        (*arr)[i]->shipGroup = *(int *) (*statusB + 0x2c);
+        (*arr)[i]->shipGroup = gStatus->field_0x30;
 
         gStatus->getMission();
         if (((Mission *) gStatus->getMission())->getType() == 0xc)
@@ -4230,8 +4217,6 @@ void Level::createScene() {
 // t is the elapsed-time/frame word the cutscene passes through verbatim.
 void Level::renderBG(int t) {
     uintptr_t canvas = (uintptr_t) gCanvas;
-    // matrix dirty/cache flags live inside the sub_1d0 skybox matrix sub-object.
-    char *skyMatrixFlags = (char *) &this->sub_1d0;
 
     ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
     ((PaintCanvas *) (long) (canvas))->BeginBG();
@@ -4240,9 +4225,9 @@ void Level::renderBG(int t) {
 
     Matrix *sky = (Matrix *) ((char *) &this->sub_1d0);
     (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
-    *(int *) (skyMatrixFlags + 0x1c) = 0;
-    *(int *) (skyMatrixFlags + 0x0c) = 0;
-    *(int *) (skyMatrixFlags + 0x2c) = 0;
+    sky->e7 = 0;
+    sky->e3 = 0;
+    sky->e11 = 0;
 
     // Build the skybox orientation into sub_20c, then compose it onto sub_1d0.
     Matrix *cloudMtx = (Matrix *) ((char *) &this->sub_20c);
@@ -4277,9 +4262,9 @@ void Level::renderBG(int t) {
         ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         (*sky = *sky);
-        *(int *) (skyMatrixFlags + 0x1c) = 0;
-        *(int *) (skyMatrixFlags + 0x0c) = 0;
-        *(int *) (skyMatrixFlags + 0x2c) = 0;
+        sky->e7 = 0;
+        sky->e3 = 0;
+        sky->e11 = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         ((PaintCanvas *) (long) (canvas))->
                 DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1b4), nullptr);
@@ -4326,9 +4311,9 @@ void Level::renderBG(int t) {
             AbyssEngine::AEMath::MatrixSetRotation(*(Matrix *) ((char *) &this->sub_248), ax, ay, az);
         }
         (*sky *= *(Matrix *) ((char *) &this->sub_248));
-        *(int *) (skyMatrixFlags + 0x0c) = 0;
-        *(int *) (skyMatrixFlags + 0x1c) = 0;
-        *(int *) (skyMatrixFlags + 0x2c) = 0;
+        sky->e3 = 0;
+        sky->e7 = 0;
+        sky->e11 = 0;
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         ((PaintCanvas *) (long) (canvas))->
                 DrawTransform((unsigned int) (long) (*(Matrix **) &this->field_1bc), nullptr);
@@ -4336,14 +4321,14 @@ void Level::renderBG(int t) {
 
     // supernova flare mesh (when the explosion timeline is past its trigger).
     if (this->supernovaFlareActive != 0 &&
-        1.0f <= *(float *) ((int) (intptr_t) gEngine + 0x28)) {
+        1.0f <= gEngine->explosionTimeline) {
         ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
         ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
         (*sky = *sky);
-        *(int *) (skyMatrixFlags + 0x1c) = 0;
-        *(int *) (skyMatrixFlags + 0x0c) = 0;
-        *(int *) (skyMatrixFlags + 0x2c) = 0;
+        sky->e7 = 0;
+        sky->e3 = 0;
+        sky->e11 = 0;
         ((PaintCanvas *) (long) (canvas))->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) &this->sub_1d0);
         ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
         const AbyssEngine::AEMath::Matrix *eng =

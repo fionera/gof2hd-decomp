@@ -587,8 +587,8 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             ((void **) rowData)[5] = e;
         } else {
             s54.ctor();
-            int slot = *(int *) (i32(rec, 4) + i * 4);
-            _mtw_Globals_longToTimeStringNoSeconds((long long) slot, *(void **) (slot + 0x10));
+            GameRecord *slot = rec->data_[i];
+            _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, slot->playTimeObj);
             void *e;
             int *rowData;
 
@@ -598,9 +598,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             ((void **) rowData)[0] = e;
 
             e = ::operator new(0xc);
-            // RAWREAD: GameRecord+0x194/+0x20/+0x11c (preview record held as int32 in Array<GameRecord*>; name/kills/rank members not modeled in GameRecord.h)
-            ((String *) e)->ctor_copy((String *) (void *) (*(int *) (i32(this->previewRecords, 4) + i * 4) + 0x194),
-                                      false);
+            ((String *) e)->ctor_copy(&slot->pilotName, false);
             rowData = (int *) i32(this->recordRows->data_[i], 4);
             ((void **) rowData)[1] = e;
 
@@ -623,13 +621,13 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             String s60;
             _mtw_String_op_plus(&s60, label);
             String s78;
-            s78.ctor_copy((String *) (long) (*(int *) (i32(this->previewRecords, 4) + i * 4) + 0x20), false);
+            s78.ctor_copy((String *) &slot->killsText, false);
             _mtw_String_op_plus(combined, &s60);
             rowData = (int *) i32(this->recordRows->data_[i], 4);
             ((void **) rowData)[4] = combined;
 
             e = ::operator new(0xc);
-            float rank = *(float *) (*(int *) (i32(this->previewRecords, 4) + i * 4) + 0x11c);
+            float rank = slot->rank;
             void *rankTxt;
             if (rank <= 0.0f) rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x207);
             else if (rank <= 0.5f) rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x207);
@@ -646,23 +644,24 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         ::operator delete(_mtw_TouchButton_dtor(this->okButton));
         this->okButton = 0;
     }
-    int *layout = (int *) *(void **) gCrbLayout;
+    Layout *layout = (Layout *) *(void **) gCrbLayout;
     char backForm = *(char *) *(void **) gCrbBackFlag;
-    int extra = layout[0x42]; // [0x108]
+    int extra = layout->field_0x108;
     void *okBtn = ::operator new(0xc8);
     int screenW = *(int *) *(void **) gCrbScreenW;
-    int x = (screenW - this->listX) - layout[0xa]; // -[0x28]
-    int y = layout[8] + layout[3] + extra; // [0x20]+[0xc]
+    int x = (screenW - this->listX) - layout->buttonInsetX;
+    int y = layout->field_0x20_top + layout->field_0xc + extra;
     void *okLabel = _mtw_GameText_getText(*(void **) gtHolder, inSaveMode ? 0x1fa : 0x1f9);
     if (backForm)
         _mtw_TouchButton_ctor7(okBtn, okLabel, 7, x, y, 0x12);
     else
-        _mtw_TouchButton_ctorFull(okBtn, okLabel, 0, x, y, layout[0xa9] /*+0x2a4*/, 0x12, 0x04);
+        _mtw_TouchButton_ctorFull(okBtn, okLabel, 0, x, y, layout->field_0x2a4_metricA, 0x12, 0x04);
     this->okButton = okBtn;
 
     _mtw_TouchButton_setPosition(okBtn,
-                                 (screenW - this->listX) - layout[0xa],
-                                 (layout[0x1c] + this->listRowGap) * this->selectedRow + layout[3] + extra + layout[8] +
+                                 (screenW - this->listX) - layout->buttonInsetX,
+                                 (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
+                                 + layout->field_0xc + extra + layout->field_0x20_top +
                                  this->scrollOffset);
 
     // back button (+0xc8)
@@ -673,8 +672,8 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     void *backBtn = ::operator new(0xc8);
     void *backLabel = _mtw_GameText_getText(*(void **) gtHolder, 0x41);
     _mtw_TouchButton_ctor7(backBtn, backLabel, 7,
-                           (screenW - this->listX) - layout[0xa],
-                           layout[3] + extra + layout[8], 0x12);
+                           (screenW - this->listX) - layout->buttonInsetX,
+                           layout->field_0xc + extra + layout->field_0x20_top, 0x12);
     this->backButton = backBtn;
 }
 
@@ -706,37 +705,36 @@ void MenuTouchWindow::startValkyrie() {
     _mtw_Mission_ctor(mission);
     _mtw_Status_setMission(status);
 
-    int *defs = (int *) (*(int *) (*(void **) gValShipTable) + 4);
+    ShipDefTable *row = *(ShipDefTable **) (*(int *) (*(void **) gValShipTable) + 4);
     status = *statusHolder;
-    _mtw_Ship_makeShip(*(int *) (defs[0] + 0x14)); // defs is table; [4]->row; +0x14
+    _mtw_Ship_makeShip(row->shipDefId); // table[4]->row; +0x14
     _mtw_Status_setShip(status);
 
     void *ship = *statusHolder;
     int race = (int) (long) _mtw_Status_getShip(ship);
     _mtw_Ship_setRace(ship, race);
 
-    int *row = (int *) (*(int *) (*(void **) gValShipTable) + 4);
     void *it;
     void *sh;
-    it = _mtw_Item_make(*(int *) (row[0] + 8));
+    it = _mtw_Item_make(row->itemDef_primary);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x14));
+    it = _mtw_Item_make(row->itemDef_secondary);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_makeQty(*(int *) (row[0] + 0x90), 0xa);
+    it = _mtw_Item_makeQty(row->itemDef_missile, 0xa);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x144));
+    it = _mtw_Item_make(row->itemDef_equip0x144);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_make(*(int *) (row[0] + 0xcc));
+    it = _mtw_Item_make(row->itemDef_equip0xcc);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_makeQty(*(int *) (row[0] + 0x158), 0xa);
+    it = _mtw_Item_makeQty(row->itemDef_equip0x158, 0xa);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 2);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x154));
+    it = _mtw_Item_make(row->itemDef_equip0x154);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 3);
 
@@ -748,27 +746,25 @@ void MenuTouchWindow::startValkyrie() {
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
-    // RAWREAD: opt+* / optB+* / Status(*statusHolder)+0x84 (untyped char* holders gValOptA/gValOptB/gValStatus;
-    //          option-flag objects and Status pre-set fields not modeled)
-    char *opt = (char *) *(void **) gValOptA;
+    OptionsRecord *opt = (OptionsRecord *) *(void **) gValOptA;
     void *ach = *(void **) gValAch;
-    char *optB = (char *) *(void **) gValOptB;
-    *(int *) (*(char **) statusHolder + 0x84) = 0x1a0a;
-    *(unsigned short *) (opt + 8) = 0x101;
-    *(unsigned short *) (opt + 0xd) = 0x101;
-    *(unsigned short *) (opt + 0x1c) = 0x101;
-    *(int *) (opt + 0x20) = 0x1010101;
-    opt[0x17] = 1;
-    opt[0xa] = 1;
-    opt[0x15] = 1;
-    opt[0x13] = 1;
-    opt[0xf] = 1;
-    opt[0x1e] = 1;
-    opt[0x24] = 1;
-    opt[0x36] = 0;
-    *(int *) (opt + 0x32) = 0;
-    opt[0x38] = 1;
-    optB[0x34] = 1;
+    OptionsRecord *optB = (OptionsRecord *) *(void **) gValOptB;
+    ((Status *) *statusHolder)->preSetField0x84 = 0x1a0a;
+    opt->flag_word_0x8 = 0x101;
+    opt->flag_word_0xd = 0x101;
+    opt->flag_word_0x1c = 0x101;
+    opt->flag_dword_0x20 = 0x1010101;
+    opt->flag_0x17 = 1;
+    opt->flag_0xa = 1;
+    opt->flag_0x15 = 1;
+    opt->flag_0x13 = 1;
+    opt->flag_0xf = 1;
+    opt->flag_0x1e = 1;
+    opt->flag_0x24 = 1;
+    opt->flag_0x36 = 0;
+    opt->flag_dword_0x32 = 0;
+    opt->flag_0x38 = 1;
+    optB->flag_0x34 = 1;
 
     _mtw_Achievements_setMedal(ach, 0x17, 3);
     _mtw_Achievements_setMedal(*(void **) gValAch, 0x1e, 1);
@@ -777,9 +773,9 @@ void MenuTouchWindow::startValkyrie() {
     _mtw_FModSound_stop(*(void **) gValFmod);
 
     void **app = (void **) gValTransition;
-    *(uint32_t *) (optB + 0x2c) = this->fadeValue;
-    TransitionFn fn = *(TransitionFn *) ((char *) app); // module-transition thunk
-    fn(*app, 5);
+    optB->fadeValue = this->fadeValue;
+    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) app;
+    thunk->transitionFn(*app, 5);
 }
 
 extern void *const gBgLayout   __attribute__((visibility("hidden"))); // *holder -> layout
@@ -803,8 +799,8 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
         return 0;
     }
 
-    char *layout = (char *) *(void **) gBgLayout;
-    if (*layout != 0) {
+    Layout *layout = (Layout *) *(void **) gBgLayout;
+    if (layout->choiceWindowOpen != 0) {
         _mtw_Layout_OnTouchBegin(layout, y);
         return 0;
     }
@@ -818,20 +814,20 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             this->dragVelocity = 0;
             this->dragging = 1;
             int oldRow = this->selectedRow;
-            int leftMargin = *(int *) (layout + 0xc);
-            if (leftMargin < x && x < *(int *) *(void **) gBgScreenW - *(int *) (layout + 0x10)) {
-                int rowH = *(int *) (layout + 0x70);
+            int leftMargin = layout->field_0xc_leftMargin;
+            if (leftMargin < x && x < *(int *) *(void **) gBgScreenW - layout->field_0x10_rightMargin) {
+                int rowH = layout->field_0x70_rowHeight;
                 int gap = this->listRowGap;
-                int top = *(int *) (layout + 0x20);
+                int top = layout->field_0x20_top;
                 int off = this->scrollOffset;
                 int row = _mtw_idiv(x + ((-top - leftMargin) - off), 1);
                 if (row < *(int *) *(void **) gBgScrollDiv) {
                     int *posX = (int *) *(void **) gBgListPosX;
                     this->selectedRow = row;
                     float v = _mtw_TouchButton_setPosition(this->okButton,
-                                                           (*posX - this->listX) - *(int *) (layout + 0x28),
-                                                           row * (gap + rowH) + top + leftMargin + off + *(int *) (
-                                                               layout + 0x108));
+                                                           (*posX - this->listX) - layout->buttonInsetX,
+                                                           row * (gap + rowH) + top + leftMargin + off +
+                                                               layout->field_0x108);
                     _mtw_FModSound_play(*(void **) gBgFmod, 0x7c, 0, v);
                 }
             }
@@ -848,20 +844,20 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             }
             _mtw_TouchButton_OnTouchBegin(this->scrollUpButton, y);
             this->upButtonPressed = 0;
-            int b28 = *(int *) (layout + 0x28);
+            int b28 = layout->buttonInsetX;
             int top = b28 + this->listTopY;
             if (top < y && y < this->listEntryHeight + top &&
-                *(int *) (layout + 0xc) + b28 < x &&
-                x < *(int *) (layout + 0xc) + *(int *) (layout + 0x20) + this->listEntryWidth) {
+                layout->field_0xc_leftMargin + b28 < x &&
+                x < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
                 _mtw_FModSound_play(*(void **) gBgFmod, 0x7c, 0, 0);
-                b28 = *(int *) (layout + 0x28);
+                b28 = layout->buttonInsetX;
                 top = b28 + this->listTopY;
             }
             int bottom = top + this->listEntryHeight;
             if (bottom < y && y < (this->listTopY - b28) + this->listBottomY &&
-                b28 + *(int *) (layout + 0xc) < x &&
-                x < *(int *) (layout + 0x20) + *(int *) (layout + 0xc) + this->listEntryWidth) {
+                b28 + layout->field_0xc_leftMargin < x &&
+                x < layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth) {
                 this->downButtonPressed = 1;
                 _mtw_FModSound_play(*(void **) gBgFmod, 0x7c, 0, 0);
             }
@@ -900,28 +896,28 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             void **arr = (void **) this->sliders;
             unsigned int n = *(unsigned int *) arr;
             for (unsigned int i = 1; i < n; i++) {
-                if (i == 5 && (unsigned char) *(char *) (*(char **) gBgLayout + 0x284) == 0) continue;
+                if (i == 5 && ((Layout *) *(void **) gBgLayout)->field_0x284_sliderSlot5Enabled == 0) continue;
                 _mtw_TouchSlider_OnTouchBegin(((void **) arr[1])[i], y);
             }
         }
         break;
         case 8: {
             this->upButtonPressed = 0;
-            int b28 = *(int *) (layout + 0x28);
+            int b28 = layout->buttonInsetX;
             int top = b28 + this->listTopY;
             if (top < y && y < this->listEntryHeight + top &&
-                *(int *) (layout + 0xc) + b28 < x &&
-                x < *(int *) (layout + 0xc) + *(int *) (layout + 0x20) + this->listEntryWidth) {
+                layout->field_0xc_leftMargin + b28 < x &&
+                x < layout->field_0xc_leftMargin + layout->field_0x20_top + this->listEntryWidth) {
                 this->upButtonPressed = 1;
                 _mtw_FModSound_play(*(void **) gBgFmod, 0x7c, 0, 0);
-                layout = (char *) *(void **) gBgLayout;
-                b28 = *(int *) (layout + 0x28);
+                layout = (Layout *) *(void **) gBgLayout;
+                b28 = layout->buttonInsetX;
                 top = b28 + this->listTopY;
             }
             int bottom = top + this->listEntryHeight;
             if (bottom < y && y < (this->listTopY - b28) + this->listBottomY &&
-                b28 + *(int *) (layout + 0xc) < x &&
-                x < *(int *) (layout + 0x20) + *(int *) (layout + 0xc) + this->listEntryWidth) {
+                b28 + layout->field_0xc_leftMargin < x &&
+                x < layout->field_0x20_top + layout->field_0xc_leftMargin + this->listEntryWidth) {
                 this->downButtonPressed = 1;
                 _mtw_FModSound_play(*(void **) gBgFmod, 0x7c, 0, 0);
             }
@@ -937,15 +933,16 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             if (*(char *) *(void **) gBgFlagC != 0 && *(char *) *(void **) gBgFlagD == 0) {
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnA, y);
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnB, y);
-                // RAWREAD: gBgObjA+0x54 / gBgObjB+0x58 (untyped char* holders; cinematic hit-zone X anchors, objects not modeled)
+                GameSettings *steerCtl = *(GameSettings **) gBgObjA;
+                GameSettings *fireCtl = *(GameSettings **) gBgObjB;
                 if (touchId != 0 &&
                     (this->cinematicTouchIdA != 0 || y > 0xd1 || this->cinematicTouchIdB == touchId ||
-                     x <= *(int *) (*(char **) gBgObjA + 0x54) - 0x14 ||
-                     *(int *) (*(char **) gBgObjA + 0x54) + 300 <= x)) {
+                     x <= steerCtl->steerAnchorX - 0x14 ||
+                     steerCtl->steerAnchorX + 300 <= x)) {
                     if (this->cinematicTouchIdB == touchId || touchId == 0 ||
                         this->cinematicTouchIdB != 0 || y <= *(int *) *(void **) gBgScreenH2 - 0xdc ||
-                        x <= *(int *) (*(char **) gBgObjB + 0x58) - 0x14 ||
-                        *(int *) (*(char **) gBgObjB + 0x58) + 0xe6 <= x) {
+                        x <= fireCtl->fireAnchorX - 0x14 ||
+                        fireCtl->fireAnchorX + 0xe6 <= x) {
                         this->cinematicTouchState = 0;
                     } else {
                         this->cinematicTouchIdB = touchId;
@@ -995,18 +992,18 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
 
             void *img = *(void **) gBgScrollImg;
             int bound = *(int *) *(void **) gBgScreenW2;
-            int b28 = *(int *) (*(char **) gBgLayout + 0x28);
+            int b28 = ((Layout *) *(void **) gBgLayout)->buttonInsetX;
             int iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
             unsigned char hit;
             if ((bound - b28) - iw < y) {
-                int lc = *(int *) (*(char **) gBgLayout + 0xc);
-                int tp = *(int *) (*(char **) gBgLayout + 0x20);
+                int lc = ((Layout *) *(void **) gBgLayout)->field_0xc_leftMargin;
+                int tp = ((Layout *) *(void **) gBgLayout)->field_0x20_top;
                 int ih = g_PaintCanvas->GetImage2DHeight((unsigned int) (long) img);
                 hit = (x < ih + tp + lc) ? 1 : 0;
             } else hit = 0;
             this->scrollbarHit = hit;
 
-            b28 = *(int *) (*(char **) gBgLayout + 0x28);
+            b28 = ((Layout *) *(void **) gBgLayout)->buttonInsetX;
             iw = g_PaintCanvas->GetImage2DWidth((unsigned int) (long) img);
             if (y < iw + b28) {
                 this->dragStartX = x;
@@ -1078,11 +1075,11 @@ int MenuTouchWindow::loadGame(int slot) {
         return 0;
     }
 
-    void *flags = *(void **) gLoadStatusFlags;
-    // RAWREAD: flags+0x37 / flags+0x35 (untyped void* holder gLoadStatusFlags; Status flag object, byte members not modeled)
-    bool versionOk = (u8(rec, 0x117) == 0) || (*(char *) ((char *) flags + 0x37) != 0);
+    Status *flags = (Status *) *(void **) gLoadStatusFlags;
+    GameRecord *record = (GameRecord *) rec;
+    bool versionOk = (record->versionMismatchFlag == 0) || (flags->flag_0x37 != 0);
     if (versionOk) {
-        bool dlcOk = (u8(rec, 0x115) == 0) || (*(char *) ((char *) flags + 0x35) != 0);
+        bool dlcOk = (record->dlcRequiredFlag == 0) || (flags->flag_0x35 != 0);
         if (dlcOk) {
             // fully compatible -> load it
             _mtw_Status_resetGame();
@@ -1132,14 +1129,14 @@ void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Arra
     int btnW = this->buttonWidth;
     int screenW = *(int *) *(void **) gAddBtnScreenW;
     int screenH = *(int *) *(void **) gAddBtnScreenH;
-    int rowH = *(int *) ((char *) *(void **) gAddBtnLayout + 0x30);
+    int rowH = ((Layout *) *(void **) gAddBtnLayout)->field_0x30_rowHeight;
 
     int x = screenW / 2 - btnW / 2;
     int y = (rowH + this->buttonRowGap) * row + (yOff - this->buttonYBias) + screenH / 2;
 
     _mtw_TouchButton_ctor(btn, &label, 0, x, y, btnW, 0x11, 0x04);
-    i32(btn, 0) = id;
-    i32(btn, 4) = id >> 31;
+    ((TouchButton *) btn)->field_0x0 = id;
+    ((TouchButton *) btn)->field_0x4 = id >> 31;
     ArrayAdd<TouchButton *>((TouchButton *) btn, *arr);
 
     int *posX = (int *) *(void **) gAddBtnPosX;
@@ -1162,8 +1159,8 @@ void MenuTouchWindow::setCutsceneMode(bool mode) {
     this->cutsceneMode = (uint8_t) mode;
     void **arr = (void **) this->buttons;
     for (uint32_t i = 0; i < *(uint32_t *) arr; i++) {
-        void *btn = ((void **) arr[1])[i];
-        if (i32(btn, 0) == 0x13 && i32(btn, 4) == 0) {
+        TouchButton *btn = (TouchButton *) ((void **) arr[1])[i];
+        if (btn->field_0x0 == 0x13 && btn->field_0x4 == 0) {
             _mtw_TouchButton_setVisible(btn, (bool) ((uint8_t) mode ^ 1));
         }
         arr = (void **) this->buttons;
@@ -1189,13 +1186,14 @@ void MenuTouchWindow::loadPreviewRecords() {
     this->dragging = 0;
 
     int *metrics = (int *) *(void **) gPrevScreenW;
-    int *layout = (int *) *(void **) gPrevLayout;
+    Layout *layout = (Layout *) *(void **) gPrevLayout;
     int *rowObj = (int *) *(void **) gPrevRowCnt;
 
-    // content height = width - margins (+0x10,+0xc,+0x20,+0x24 of layout)
-    this->contentHeight = (((metrics[0] - layout[3]) - layout[2]) - layout[8]) - layout[9];
+    // content height = width - margins (+0xc,+0x8,+0x20,+0x24 of layout)
+    this->contentHeight = (((metrics[0] - layout->field_0xc) - layout->windowTopInset)
+                           - layout->field_0x20) - layout->field_0x24;
     // page height = rowCount * (rowHeight + this->0x1b4)
-    this->pageHeight = rowObj[0] * (layout[0x1c] + this->listRowGap);
+    this->pageHeight = rowObj[0] * (layout->field_0x70_rowHeight + this->listRowGap);
 
     void *rec = this->previewRecords;
     if (rec != 0) {
@@ -1207,8 +1205,7 @@ void MenuTouchWindow::loadPreviewRecords() {
     this->previewRecords = _mtw_RecordHandler_readAllPreviewRecords(rh);
     _mtw_RecordHandler_dtor(rh);
 
-    RefreshFn refresh = *(RefreshFn *) ((char *) gPrevRefreshThunk);
-    refresh();
+    ((RefreshThunk *) gPrevRefreshThunk)->refreshFn();
 }
 
 extern void *const gSaveGameText __attribute__((visibility("hidden")));
@@ -1291,21 +1288,20 @@ void MenuTouchWindow::update(int dt) {
     if (busy != 0 || this->purchaseRestorePending != 0) {
         // a purchase flow is active: maybe rebuild list geometry
         if (*(char *) ((char *) appData + 0x40) != 0) {
-            int *layout = (int *) *(void **) gUpLayout;
+            Layout *layout = (Layout *) *(void **) gUpLayout;
             void *canvas = *(void **) gUpCanvas;
-            this->contentHeight = (((*(int *) *(void **) gUpScreenW - layout[4]) - layout[3])
-                                   - layout[8]) - layout[9];
+            this->contentHeight = (((*(int *) *(void **) gUpScreenW - layout->field_0x10_rightMargin)
+                                    - layout->field_0xc) - layout->field_0x20) - layout->field_0x24;
             int ih = ((PaintCanvas *) canvas)->GetImage2DHeight(this->scrollbarImageId);
             this->contentHeightCache = ih;
-            // RAWREAD: optObj+0x3b (untyped void* holder gUpOptObj; options/Status flag object, byte member not modeled)
-            void *optObj = *(void **) gUpOptObj;
-            int rowH = layout[0xb]; // +0x2c
+            OptionsRecord *optObj = (OptionsRecord *) *(void **) gUpOptObj;
+            int rowH = layout->field_0x2c_rowHeight;
             this->menuState = 0xf;
             this->messageShowing = 0;
             this->dlcMessageShowing = 0;
             this->pageHeight = (ih + rowH) * 5;
-            *(char *) ((char *) appData + 0x40) = 0;
-            *(char *) ((char *) optObj + 0x3b) = 1;
+            *(char *) ((char *) appData + 0x40) = 0; // appData (opaque ApplicationData, no header)
+            optObj->flag_0x3b = 1;
             _mtw_RecordHandler_saveOptions(*(void **) gUpRecHandler);
             busy = this->dlcMessageShowing;
         }
@@ -1330,37 +1326,36 @@ void MenuTouchWindow::update(int dt) {
         void *cw = this->choiceWindow;
         switch (code) {
             case 0: {
-                // RAWREAD: gUpStatusObj+0x35/0x37/0x114, gUpOptObj+0x36/0x38 (untyped void* holders; Status/options flag objects, members not modeled)
-                void *status = *(void **) gUpStatusObj;
-                *(char *) (*(char **) gUpStatusObj + 0x35) = 1;
+                Status *status = (Status *) *(void **) gUpStatusObj;
+                status->flag_0x35 = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[1]));
             }
             break;
             case 1: {
-                *(int *) (*(char **) gUpStatusObj + 0x114) = 3;
-                *(char *) (*(char **) gUpOptObj + 0x36) = 1;
+                ((Status *) *(void **) gUpStatusObj)->mode_0x114 = 3;
+                ((OptionsRecord *) *(void **) gUpOptObj)->flag_0x36 = 1;
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[2]));
             }
             break;
             case 2: {
-                void *status = *(void **) gUpStatusObj;
-                *(char *) (*(char **) gUpStatusObj + 0x37) = 1;
+                Status *status = (Status *) *(void **) gUpStatusObj;
+                status->flag_0x37 = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[3]));
             }
             break;
             case 3: {
-                *(char *) (*(char **) gUpOptObj + 0x38) = 1;
+                ((OptionsRecord *) *(void **) gUpOptObj)->flag_0x38 = 1;
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[4]));
             }
             break;
             case 4: {
-                char *flags = *(char **) gUpOptObj;
-                void *status = *(void **) gUpStatusObj;
-                flags[0x35] = 1;
-                flags[0x39] = 1;
-                flags[0x37] = 1;
+                OptionsRecord *flags = (OptionsRecord *) *(void **) gUpOptObj;
+                Status *status = (Status *) *(void **) gUpStatusObj;
+                flags->flag_0x35 = 1;
+                flags->flag_0x39 = 1;
+                flags->flag_0x37 = 1;
                 _mtw_Status_setSystemVisibility(status, 0x19, true);
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[5]));
             }
@@ -1389,14 +1384,13 @@ void MenuTouchWindow::update(int dt) {
 
     // supernova nag dialog
     if (*(char *) *(void **) gUpStatusGuard != 0) {
-        void *flags = *(void **) gUpDlcFlags;
-        // RAWREAD: flags+0x35 (untyped void* holder gUpDlcFlags; DLC/options flag object, byte member not modeled)
-        if (this->messageShowing == 0 && *(char *) ((char *) flags + 0x35) == 0) {
+        OptionsRecord *flags = (OptionsRecord *) *(void **) gUpDlcFlags;
+        if (this->messageShowing == 0 && flags->flag_0x35 == 0) {
             void *cw = this->choiceWindow;
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[7]));
             this->supernovaPurchaseDialogShowing = 1;
             this->messageShowing = 1;
-            *(char *) ((char *) flags + 0x35) = 1;
+            flags->flag_0x35 = 1;
             _mtw_Status_setSystemVisibility(*(void **) gUpStatusObj, 0x19, true);
             _mtw_RecordHandler_saveOptions(*(void **) gUpRecHandler);
         }
@@ -1407,19 +1401,19 @@ void MenuTouchWindow::update(int dt) {
     if (state == 0) {
         if (this->backgroundEnabled == 1) {
             int rowGap = this->buttonRowGap;
-            int *layout = (int *) *(void **) gUpListLayout;
+            Layout *layout = (Layout *) *(void **) gUpListLayout;
             void **arr = (void **) this->buttons;
             unsigned int n = *(unsigned int *) arr;
-            int total = n * layout[0xc]; // +0x30
+            int total = n * layout->field_0x30_rowHeight;
             int screenH = *(int *) *(void **) gUpScreenH;
             for (unsigned int i = 0; i < n; i++) {
                 _mtw_TouchButton_setYPosition(((void **) arr[1])[i],
-                                              (layout[0xc] + this->buttonRowGap) * i +
+                                              (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
                                               (screenH / 2 - (int) ((unsigned int) (rowGap * (n - 1) + total) >> 1)));
-                void *b = this->buttons->data_[i];
-                if (i32(b, 0) == 0x12 && i32(b, 4) == 0 && _mtw_TouchButton_isVisible(b) != 0 &&
+                TouchButton *b = (TouchButton *) this->buttons->data_[i];
+                if (b->field_0x0 == 0x12 && b->field_0x4 == 0 && _mtw_TouchButton_isVisible(b) != 0 &&
                     this->cutsceneMode != 0) {
-                    b = this->buttons->data_[i];
+                    b = (TouchButton *) this->buttons->data_[i];
                     char pos[12];
                     _mtw_TouchButton_getPosition(pos, b);
                     _mtw_TouchButton_setYPosition(b, (int) *(float *) (pos + 4));
@@ -1430,15 +1424,15 @@ void MenuTouchWindow::update(int dt) {
         }
     } else if (state == 3) {
         int rowGap = this->buttonRowGap;
-        int *layout = (int *) *(void **) gUpListLayout;
+        Layout *layout = (Layout *) *(void **) gUpListLayout;
         void **arr = (void **) this->optionsButtons;
         unsigned int n = *(unsigned int *) arr;
         int firstCount = *(int *) *(void **) this->buttons;
-        int total = n * layout[0xc];
+        int total = n * layout->field_0x30_rowHeight;
         int screenH = *(int *) *(void **) gUpScreenH;
         for (unsigned int i = 0; i < n; i++) {
             _mtw_TouchButton_setYPosition(((void **) arr[1])[i],
-                                          (layout[0xc] + this->buttonRowGap) * i +
+                                          (layout->field_0x30_rowHeight + this->buttonRowGap) * i +
                                           (screenH / 2 - (int) (
                                                (unsigned int) ((firstCount - 1) * rowGap + total) >> 1)));
             arr = (void **) this->optionsButtons;
@@ -1646,7 +1640,7 @@ extern void *const gMvScrollBound __attribute__((visibility("hidden")));
 static inline __attribute__ ((always_inline))
 
 void scrollStateMove(MenuTouchWindow *self, int y, int x) {
-    char *layout = (char *) *(void **) gMvLayout;
+    Layout *layout = (Layout *) *(void **) gMvLayout;
 
     _mtw_ScrollTouchWindow_OnTouchMove(self->scrollWindowB, y);
 
@@ -1661,9 +1655,9 @@ void scrollStateMove(MenuTouchWindow *self, int y, int x) {
     for (unsigned int i = 0; i < *(unsigned int *) slots; i++)
         _mtw_TouchButton_OnTouchMove(((void **) slots[1])[i], y);
 
-    if (*(int *) (layout + 0xc) < x &&
-        x < *(int *) *(void **) gMvScrollBound - *(int *) (layout + 0x10)) {
-        int b28 = *(int *) (layout + 0x28);
+    if (layout->field_0xc < x &&
+        x < *(int *) *(void **) gMvScrollBound - layout->field_0x10_rightMargin) {
+        int b28 = layout->buttonInsetX;
         int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) self->heapBufA);
         if (y < iw + b28) {
             int dx = x - self->dragLastX;
@@ -1680,8 +1674,8 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         _mtw_ChoiceWindow_OnTouchMove(this->choiceWindow, y);
         return 0;
     }
-    char *layout = (char *) *(void **) gMvLayout;
-    if (*layout != 0) {
+    Layout *layout = (Layout *) *(void **) gMvLayout;
+    if (layout->choiceWindowOpen != 0) {
         _mtw_Layout_OnTouchMove(layout, y);
         return 0;
     }
@@ -1690,8 +1684,8 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
     switch (state - 1) {
         case 0: // state 1
         case 1: // state 2 list-drag (scroll)
-            if (*(int *) (layout + 0xc) < x &&
-                x < *(int *) *(void **) gMvScreenW - *(int *) (layout + 0x10)) {
+            if (layout->field_0xc < x &&
+                x < *(int *) *(void **) gMvScreenW - layout->field_0x10_rightMargin) {
                 int dx = x - this->dragLastX;
                 this->dragLastX = x;
                 this->dragVelocity = dx;
@@ -1709,16 +1703,16 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             } else {
                 _mtw_TouchButton_OnTouchMove(this->okButton, y);
                 this->upButtonPressed = 0;
-                int base = *(int *) (layout + 0x28);
+                int base = layout->buttonInsetX;
                 int top = base + this->listTopY;
                 int bottom = this->listEntryHeight + top;
                 if (top < y && y < bottom &&
-                    *(int *) (layout + 0xc) + base < x &&
-                    x < *(int *) (layout + 0xc) + *(int *) (layout + 0x20) + this->listEntryWidth)
+                    layout->field_0xc + base < x &&
+                    x < layout->field_0xc + layout->field_0x20_top + this->listEntryWidth)
                     this->upButtonPressed = 1;
                 if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
-                    base + *(int *) (layout + 0xc) < x &&
-                    x < *(int *) (layout + 0x20) + *(int *) (layout + 0xc) + this->listEntryWidth)
+                    base + layout->field_0xc < x &&
+                    x < layout->field_0x20_top + layout->field_0xc + this->listEntryWidth)
                     this->downButtonPressed = 1;
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnCC, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD0, y, x);
@@ -1759,7 +1753,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             {
                 void **arr = (void **) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++) {
-                    if (i == 5 && (unsigned char) *(char *) (*(char **) gMvLayout + 0x284) == 0) continue;
+                    if (i == 5 && ((Layout *) *(void **) gMvLayout)->field_0x284_sliderSlot5Enabled == 0) continue;
                     _mtw_TouchSlider_OnTouchMove(((void **) arr[1])[i], y);
                 }
             }
@@ -1767,16 +1761,16 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
         case 7: {
             // state 8 -> options up/down hit-test + cc/d0 + first slider
             this->upButtonPressed = 0;
-            int base = *(int *) (layout + 0x28);
+            int base = layout->buttonInsetX;
             int top = base + this->listTopY;
             int bottom = this->listEntryHeight + top;
             if (top < y && y < bottom &&
-                *(int *) (layout + 0xc) + base < x &&
-                x < *(int *) (layout + 0xc) + *(int *) (layout + 0x20) + this->listEntryWidth)
+                layout->field_0xc + base < x &&
+                x < layout->field_0xc + layout->field_0x20_top + this->listEntryWidth)
                 this->upButtonPressed = 1;
             if (bottom < y && y < (this->listTopY - base) + this->listBottomY &&
-                base + *(int *) (layout + 0xc) < x &&
-                x < *(int *) (layout + 0x20) + *(int *) (layout + 0xc) + this->listEntryWidth)
+                base + layout->field_0xc < x &&
+                x < layout->field_0x20_top + layout->field_0xc + this->listEntryWidth)
                 this->downButtonPressed = 1;
             _mtw_TouchButton_OnTouchMove(this->optBtnCC, y);
             _mtw_TouchButton_OnTouchMove(this->optBtnD0, y);
@@ -1865,14 +1859,14 @@ extern void *const gCtorLayout __attribute__((visibility("hidden"))); // *holder
 
 MenuTouchWindow::MenuTouchWindow(int menuType) {
     // copy the 8-word layout metric block (+0x294..+0x2b0 of the layout) into +0x1a8..
-    int *layout = (int *) *(void **) gCtorLayout;
-    this->buttonWidth = layout[0xa5]; // +0x294
-    this->buttonYBias = layout[0xa6];
-    this->buttonRowGap = layout[0xa7];
-    this->listRowGap = layout[0xa8];
-    this->metricA = layout[0xa9];
-    this->metricB = layout[0xaa];
-    this->metricC = layout[0xab];
+    Layout *layout = (Layout *) *(void **) gCtorLayout;
+    this->buttonWidth = layout->field_0x294_buttonWidth;
+    this->buttonYBias = layout->field_0x298_buttonYBias;
+    this->buttonRowGap = layout->field_0x29c_buttonRowGap;
+    this->listRowGap = layout->field_0x2a0_listRowGap;
+    this->metricA = layout->field_0x2a4_metricA;
+    this->metricB = layout->field_0x2a8_metricB;
+    this->metricC = layout->field_0x2ac_metricC;
 
     this->backgroundEnabled = menuType;
 
@@ -1914,8 +1908,8 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     void **arr = (void **) this->buttons;
     if (arr != 0) {
         for (uint32_t i = 0; i < *(uint32_t *) arr; i++) {
-            void *btn = ((void **) arr[1])[i];
-            if (btn != 0 && i32(btn, 0) == 0x12 && i32(btn, 4) == 0) {
+            TouchButton *btn = (TouchButton *) ((void **) arr[1])[i];
+            if (btn != 0 && btn->field_0x0 == 0x12 && btn->field_0x4 == 0) {
                 _mtw_TouchButton_setVisible(btn, visible);
                 arr = (void **) this->buttons;
             }
@@ -1939,16 +1933,16 @@ extern void *const gDlsImgFact  __attribute__((visibility("hidden"))); // *holde
 
 void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     (void) param1;
-    int *layout = (int *) *(void **) gDlsLayout;
+    Layout *layout = (Layout *) *(void **) gDlsLayout;
     void *canvas = *(void **) gDlsCanvas;
 
-    int rowBaseY = layout[0x43]; // +0x10c
+    int rowBaseY = layout->field_0x10c_rowBaseY;
     ((PaintCanvas *) canvas)->SetColor(0xffffffff);
 
     int scrollOff = this->listX;
-    int margin = layout[0xa]; // +0x28
-    int strip58 = layout[0x44]; // +0x110
-    int strip5c = layout[0x45]; // +0x114
+    int margin = layout->buttonInsetX; // +0x28
+    int strip58 = layout->field_0x110_strip58;
+    int strip5c = layout->field_0x114_strip5c;
     int screenBound = *(int *) *(void **) gDlsScreenW;
     int inner = screenBound + margin * -2 + scrollOff * -2;
 
@@ -1970,76 +1964,80 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
         int yy = 0;
         for (int k = 0; k <= count; k++) {
             ((PaintCanvas *) canvas)->DrawImage2D(this->scrollbarImageId,
-                                                  (layout[0xa] - iw) + this->listX, yy, (unsigned char) 1);
+                                                  (layout->buttonInsetX - iw) + this->listX, yy, (unsigned char) 1);
             ((PaintCanvas *) canvas)->DrawImage2D(this->scrollbarImageId,
-                                                  layout[0xa] + inner + this->listX, yy, (unsigned char) 0);
+                                                  layout->buttonInsetX + inner + this->listX, yy, (unsigned char) 0);
             yy += ih;
         }
         scrollOff = this->listX;
-        margin = layout[0xa];
+        margin = layout->buttonInsetX;
     }
 
     _mtw_TouchButton_setPosition(this->okButton,
                                  (screenBound - scrollOff) - margin,
-                                 (layout[0x1c] + this->listRowGap) * this->selectedRow + this->scrollOffset
-                                 + layout[8] + layout[3] + layout[0x42]);
+                                 (layout->field_0x70_rowHeight + this->listRowGap) * this->selectedRow
+                                 + this->scrollOffset
+                                 + layout->field_0x20_top + layout->field_0xc + layout->field_0x108);
 
     int rowCount = *(int *) *(void **) gDlsRowCount;
     int rowMax = *(int *) *(void **) gDlsRowMax;
 
     for (int i = 0; i < rowCount; i++) {
-        int rowY = (layout[0x1c] + this->listRowGap) * i + this->scrollOffset + layout[8] + layout[3];
+        int rowY = (layout->field_0x70_rowHeight + this->listRowGap) * i + this->scrollOffset
+                   + layout->field_0x20_top + layout->field_0xc;
         if (rowY < 0 || rowY > rowMax) continue;
 
         ((PaintCanvas *) canvas)->SetColor(0xffffffff);
-        int boxX = layout[0xa] + this->listX;
+        int boxX = layout->buttonInsetX + this->listX;
         String box;
         box.ctor_char(gDlsBoxStr, false);
         int mode = (i == this->selectedRow) ? 4 : 3;
-        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout[0x1c], &box);
+        _mtw_Layout_drawBox(layout, mode, boxX, rowY, inner - 3, layout->field_0x70_rowHeight, &box);
 
         void *font = *(void **) *(void **) gDlsFont;
         int yName = strip58 + rowY;
         String **cols = (String **) (long) i32(this->recordRows->data_[i], 4);
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[0],
-                                             layout[0xa] + this->listX + layout[0xb] /*+0x2c*/, (char) yName, false);
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight,
+                                             (char) yName, false);
 
-        int slot = *(int *) (i32(this->previewRecords, 4) + i * 4);
+        GameRecord *slot = ((Array<GameRecord *> *) this->previewRecords)->data_[i];
         if (slot != 0) {
-            // RAWREAD: GameRecord(slot)+0x1a0 (slot is an int handle into Array<GameRecord*>; shipId member not modeled in GameRecord.h)
-            unsigned int shipId = *(unsigned int *) (slot + 0x1a0);
+            unsigned int shipId = slot->shipId;
             if (shipId < 0x40) {
                 _mtw_ImageFactory_drawShip(*(void **) gDlsImgFact, shipId,
-                                           layout[0xb] + layout[0xa] + this->listX + this->metricB,
+                                           layout->field_0x2c_rowHeight + layout->buttonInsetX + this->listX +
+                                           this->metricB,
                                            rowBaseY + rowY);
             }
         }
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[1],
-                                             layout[0xa] + this->listX + layout[0xb] * 2 + this->metricB + layout[0xb1]
-                                             /*+0x2c4*/,
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight * 2 +
+                                             this->metricB + layout->field_0x2c4,
                                              yName, (bool) 0);
 
         ((PaintCanvas *) canvas)->SetColor(0x777777ff);
         int rowY2 = rowY + strip5c;
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[2],
-                                             layout[0xa] + this->listX + layout[0xb],
-                                             rowY2 + layout[0x1c] / 2, (bool) 0);
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight,
+                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[3],
-                                             layout[0xa] + this->listX + layout[0xb] * 2 + this->metricB + layout[0xb1],
-                                             rowY2 + layout[0x1c] / 2, (bool) 0);
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight * 2 +
+                                             this->metricB + layout->field_0x2c4,
+                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[4],
-                                             layout[0xa] + this->listX + layout[0xb1] + (layout[0xb] + this->metricA) *
-                                             2,
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c4 +
+                                             (layout->field_0x2c_rowHeight + this->metricA) * 2,
                                              yName, (bool) 0);
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[5],
-                                             layout[0xa] + this->listX + layout[0xb1] + (layout[0xb] + this->metricA) *
-                                             2,
-                                             rowY2 + layout[0x1c] / 2, (bool) 0);
+                                             layout->buttonInsetX + this->listX + layout->field_0x2c4 +
+                                             (layout->field_0x2c_rowHeight + this->metricA) * 2,
+                                             rowY2 + layout->field_0x70_rowHeight / 2, (bool) 0);
 
         if (i == this->selectedRow)
             _mtw_TouchButton_draw(this->okButton);
@@ -2073,48 +2071,47 @@ void MenuTouchWindow::startSupernova() {
 
     _mtw_Status_setMission(*statusHolder);
     void *status = *statusHolder;
-    int *defs = (int *) (*(int *) (*(void **) gSnShipTable) + 4);
-    _mtw_Ship_makeShip(*(int *) (defs[0] + 0x78));
+    ShipDefTable *row = *(ShipDefTable **) (*(int *) (*(void **) gSnShipTable) + 4);
+    _mtw_Ship_makeShip(row->shipDefId_0x78);
     _mtw_Status_setShip(status);
 
     void *ship = *statusHolder;
     int race = (int) (long) _mtw_Status_getShip(ship);
     _mtw_Ship_setRace(ship, race);
 
-    int *row = (int *) (*(int *) (*(void **) gSnShipTable) + 4);
     void *it;
     void *sh;
-    it = _mtw_Item_make(*(int *) (row[0] + 0x2c0));
+    it = _mtw_Item_make(row->itemDef_0x2c0);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x50));
+    it = _mtw_Item_make(row->itemDef_0x50);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_makeQty(*(int *) (row[0] + 0x90), 0x14);
+    it = _mtw_Item_makeQty(row->itemDef_missile, 0x14);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_makeQty(*(int *) (row[0] + 0xb0), 0x14);
+    it = _mtw_Item_makeQty(row->itemDef_0xb0, 0x14);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x144));
+    it = _mtw_Item_make(row->itemDef_equip0x144);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 0);
-    it = _mtw_Item_make(*(int *) (row[0] + 0xcc));
+    it = _mtw_Item_make(row->itemDef_equip0xcc);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 1);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x110));
+    it = _mtw_Item_make(row->itemDef_0x110);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 2);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x158));
+    it = _mtw_Item_make(row->itemDef_equip0x158);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 3);
-    it = _mtw_Item_make(*(int *) (row[0] + 0x154));
+    it = _mtw_Item_make(row->itemDef_equip0x154);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 4);
-    it = _mtw_Item_make(*(int *) (row[0] + 0xe0));
+    it = _mtw_Item_make(row->itemDef_0xe0);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_setItem(sh, it, 5);
-    it = _mtw_Item_makeQty(*(int *) (row[0] + 0x1e8), 8);
+    it = _mtw_Item_makeQty(row->itemDef_cargo0x1e8, 8);
     sh = _mtw_Status_getShip(*statusHolder);
     _mtw_Ship_addCargo(sh, it);
 
@@ -2126,29 +2123,27 @@ void MenuTouchWindow::startSupernova() {
     _mtw_Status_setSystemVisibility(*statusHolder, 0x19, true);
     _mtw_Status_setCredits(*statusHolder);
 
-    // RAWREAD: opt+* / optB+* / Status(*statusHolder)+0x84 (untyped char* holders gSnOptA/gSnOptB/gSnStatus;
-    //          option-flag objects and Status pre-set fields not modeled)
-    char *opt = (char *) *(void **) gSnOptA;
-    char *optB = (char *) *(void **) gSnOptB;
-    *(int *) (*(char **) statusHolder + 0x84) = 0x1a0a;
-    *(int *) (opt + 0x20) = 0x1010101;
-    opt[0x17] = 1;
-    opt[0x36] = 0;
-    *(int *) (opt + 0x32) = 0;
-    *(unsigned short *) (opt + 8) = 0x101;
-    opt[0xa] = 1;
-    opt[0x15] = 1;
-    opt[0x13] = 1;
-    *(unsigned short *) (opt + 0xd) = 0x101;
-    opt[0xf] = 1;
-    opt[0x26] = 1;
-    opt[0x31] = 1;
-    opt[0x24] = 1;
-    *(unsigned short *) (opt + 0x1c) = 0x101;
-    opt[0x1e] = 1;
-    *(unsigned short *) (opt + 0x38) = 0x101;
+    OptionsRecord *opt = (OptionsRecord *) *(void **) gSnOptA;
+    OptionsRecord *optB = (OptionsRecord *) *(void **) gSnOptB;
+    ((Status *) *statusHolder)->preSetField0x84 = 0x1a0a;
+    opt->flag_dword_0x20 = 0x1010101;
+    opt->flag_0x17 = 1;
+    opt->flag_0x36 = 0;
+    opt->flag_dword_0x32 = 0;
+    opt->flag_word_0x8 = 0x101;
+    opt->flag_0xa = 1;
+    opt->flag_0x15 = 1;
+    opt->flag_0x13 = 1;
+    opt->flag_word_0xd = 0x101;
+    opt->flag_0xf = 1;
+    opt->flag_0x26 = 1;
+    opt->flag_0x31 = 1;
+    opt->flag_0x24 = 1;
+    opt->flag_word_0x1c = 0x101;
+    opt->flag_0x1e = 1;
+    opt->flag_word_0x38 = 0x101;
     void *ach = *(void **) gSnAch;
-    optB[0x34] = 1;
+    optB->flag_0x34 = 1;
 
     _mtw_Achievements_setMedal(ach, 0x17, 3);
     _mtw_Achievements_setMedal(*(void **) gSnAch, 0x1e, 1);
@@ -2157,9 +2152,9 @@ void MenuTouchWindow::startSupernova() {
     _mtw_FModSound_stop(*(void **) gSnFmod);
 
     void **app = (void **) gSnTransition;
-    *(uint32_t *) (optB + 0x2c) = this->fadeValue;
-    TransitionFn fn = *(TransitionFn *) ((char *) app);
-    fn(*app, 5);
+    optB->fadeValue = this->fadeValue;
+    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) app;
+    thunk->transitionFn(*app, 5);
 }
 
 extern void *const gGof2Fmod __attribute__((visibility("hidden")));
@@ -2172,12 +2167,11 @@ void MenuTouchWindow::startGOF2() {
     _mtw_Status_resetGame();
     void *snd = *(void **) gGof2Fmod;
     // copy the saved fade value (+0x1a4) into the status object at +0x2c
-    // RAWREAD: Status(gGof2StatusObj)+0x2c (untyped void* holder; fade-value field not modeled)
-    *(uint32_t *) ((char *) *(void **) gGof2StatusObj + 0x2c) = this->fadeValue;
+    ((Status *) *(void **) gGof2StatusObj)->fadeValue = this->fadeValue;
     float v = _mtw_FModSound_stop(snd);
     _mtw_FModSound_play(snd, 0x8f, 0, v);
     void *appHolder = *(void **) gGof2Transition;
-    TransitionFn3 fn = *(TransitionFn3 *) ((char *) appHolder); // module-transition thunk
-    fn(*(void **) appHolder, 2, 0);
+    ModuleTransitionThunk *thunk = (ModuleTransitionThunk *) appHolder;
+    thunk->transitionFn3(*(void **) appHolder, 2, 0);
 }
 

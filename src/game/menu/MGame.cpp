@@ -528,9 +528,7 @@ afterTurret:
             this->player->setFreeLookMode(0);
             {
                 Engine *eng = (Engine *) this->applicationManager->GetEngine();
-                // Engine layout lives in another translation unit (gof2/Engine.h is not
-                // included here); write its +0x360 field via a typed byte offset.
-                F<int>(eng, 0x360) = 0;
+                eng->field_0x360 = 0;
             }
             goto firstPerson;
         case 1:
@@ -1594,21 +1592,19 @@ int MGame::OnInitialize() {
     if (gStatus->dlc1Won() != 0 && gStatus->inAlienOrbit() != 0 &&
         gStatus->getCurrentCampaignMission() < 0x93) {
         if (self->player != 0 && self->radio != 0)
-            // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
-            *(Radio **) ((char *) self->player + 0x18) = self->radio;
+            self->player->radioRef = self->radio;
         self->level->createRadioMessage(8, 0);
     }
 
     if (gStatus->inBlackMarketSystem() == 0) {
-        *(uint16_t *) ((char *) *status + 0x110) = 0;
+        gStatus->field_110 = 0;
     } else {
         if (self->player != 0 && self->radio != 0)
-            // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
-            *(Radio **) ((char *) self->player + 0x18) = self->radio;
-        if (*(uint8_t *) ((char *) *status + 0x110) == 0) {
+            self->player->radioRef = self->radio;
+        if (*(uint8_t *) ((char *) gStatus + 0x110) == 0) {
             int id;
             Level *lvl;
-            if (*(uint8_t *) ((char *) *status + 0x111) == 0) {
+            if (gStatus->field_0x111 == 0) {
                 Array<KIPlayer *> *enemies = self->level->getEnemies();
                 if (enemies != nullptr) {
                     int n = (int) enemies->size();
@@ -1643,8 +1639,6 @@ int MGame::OnInitialize() {
     // post-process effect, ensure the pause window and the mission-information overlay
     // text exist.  Runs as the tail of OnInitialize.
     {
-        int statusObj = *((int *) &gStatus);
-
         // Mission 0x7d freighter visit: flag this station as serviced the first time and
         // raise its radio briefing.
         if (gStatus->inAlienOrbit() == 0 && gStatus->getCurrentCampaignMission() == 0x7d) {
@@ -1659,8 +1653,7 @@ int MGame::OnInitialize() {
                         ((Station *) (gStatus->getStation()))->getIndex());
                     ((Mission *) (m))->setStatusValue(statusVal | (1 << (bit2 & 0xff)));
                     if (self->player != 0 && self->radio != 0)
-                        // RAWREAD: PlayerEgo +0x18 has no named member in PlayerEgo.h.
-                        *(Radio **) ((char *) self->player + 0x18) = self->radio;
+                        self->player->radioRef = self->radio;
                     self->level->createRadioMessage(0x13, 0);
                 }
             }
@@ -1670,7 +1663,7 @@ int MGame::OnInitialize() {
         // ship still carries it; otherwise fall back to the first secondary in slot type 1.
         Array<Item *> *secondary = gStatus->getShip()->getEquipment(1);
         if (secondary != 0) {
-            int savedId = *(int *) ((char *) statusObj + 0xf4);
+            int savedId = gStatus->field_f4;
             if (gStatus->getShip()->hasEquipment(savedId, 1) == 0) {
                 Item *first = secondary->empty() ? 0 : (*secondary)[0];
                 if (first != 0) {
@@ -1886,9 +1879,7 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
     int wasAutoPilot = this->player->isAutoPilot();
     this->flFastForwardWeight = 1.0f; // fast-forward weight
     TFC_setFastForwardMode(this->camera, 0);
-    // RAWREAD: PlayerEgo +0x150 resume-flag; offset not pinned to a named member
-    // in PlayerEgo.h (no +0x offset comments in that region).
-    *(uint8_t *) ((char *) this->player + 0x150) = 1;
+    this->player->resumeFlag = 1;
 
     unsigned hr = 0;
     if (this->pauseOpen == 0) {
@@ -2237,8 +2228,7 @@ void MGame::startChargingJumpDrive() {
     int *jf = g_jumpFlag;
     if (hc != 0) needed = 2;
     int cost;
-    // RAWREAD: Status +0x78 (current station ptr) not modeled in gof2/Status.h.
-    if (*jf == *(int *) ((char *) gStatus + 0x78)) {
+    if (*jf == (int) (intptr_t) gStatus->playerStation) {
         cost = needed << 1;
     } else {
         cost = **g_alienAmt;
@@ -2262,8 +2252,7 @@ void MGame::startChargingJumpDrive() {
         return;
     }
     this->player->startJumpDrive();
-    // RAWREAD: Status +0x78 (current station ptr) not modeled in gof2/Status.h.
-    if (*jf != *(int *) ((char *) gStatus + 0x78)) {
+    if (*jf != (int) (intptr_t) gStatus->playerStation) {
         if (gStatus->inAlienOrbit() == 0) needed = **g_alienCost;
     }
     this->hud->hudEvent(0x1e, this->player, needed);
@@ -2569,19 +2558,19 @@ afterYaw: {
         float roll = (aAbs < bAbs) ? b3 : a3;
 
         float rollMag = 1.0f;
-        int shipOff = (this->timeWarpState > 0) ? 0x44 : 0x40;
+        int *shipField = (this->timeWarpState > 0) ? &this->field_0x44 : &this->deltaTime;
         if (roll <= 1.0f) {
             rollMag = -1.0f;
             if (roll < -1.0f) {
-                return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
+                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
             }
             rollMag = roll;
             if (roll < 0.0f) {
-                return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
+                return this->player->turnHorizontal(*shipField, rollMag * rollMag);
             }
             if (roll == 0.0f) return;
         }
-        return this->player->turnHorizontal(F<int>(this, shipOff), rollMag * rollMag);
+        return this->player->turnHorizontal(*shipField, rollMag * rollMag);
     }
 }
 
@@ -2933,19 +2922,18 @@ afterCam:
             self->level->setInitStreamOut();
             if (self->usingJumpDrive == 0)
                 ((Status *) ((Station *) gStatus))->jumpgateUsed();
-            if (((Station *) ((Station *) *stationPtr))->equals(*(Station **) ((char *) gStatus + 0x78)) != 0) {
+            if (((Station *) ((Station *) *stationPtr))->equals(gStatus->playerStation) != 0) {
                 **g_ujFlagA = 1;
                 **g_ujFlagB = 1;
                 ((Status *) ((Station *) gStatus))->setStation(
                     (Station *) *stationPtr /* station: arg lost in decomp */);
             }
             *stationPtr = 0;
-            // RAWREAD: Status HP fields +0x64/0x5c/0x60/0x68 not modeled in gof2/Status.h.
-            *(int *) ((char *) gStatus + 100) = ((Player *) (self->player->player))->getHitpoints();
-            *(int *) ((char *) gStatus + 0x5c) = ((Player *) (self->player->player))->getShieldHP();
-            *(int *) ((char *) gStatus + 0x60) = ((Player *) (self->player->player))->getArmorHP();
-            *(int *) ((char *) gStatus + 0x68) = ((Player *) (self->player->player))->getGammaHP();
-            *(int *) ((char *) gStatus + 0xf4) = self->player->getCurrentSecondaryWeaponIndex();
+            gStatus->field_64 = ((Player *) (self->player->player))->getHitpoints();
+            gStatus->field_5c = ((Player *) (self->player->player))->getShieldHP();
+            gStatus->field_60 = ((Player *) (self->player->player))->getArmorHP();
+            gStatus->field_68 = ((Player *) (self->player->player))->getGammaHP();
+            gStatus->field_f4 = self->player->getCurrentSecondaryWeaponIndex();
             **g_ujFlagC = 1;
             self->active = 0;
             self->applicationManager->SetCurrentApplicationModule(5);

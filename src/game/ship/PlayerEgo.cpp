@@ -14,9 +14,30 @@
 #include "engine/render/ParticleSystemManager.h"
 #include "game/ship/PlayerAsteroid.h"
 #include "game/ship/PlayerWormHole.h"
+#include "game/weapons/Gun.h"
+#include "engine/render/Mesh.h"
+#include "engine/render/Material.h"
+#include "game/world/Waypoint.h"
+#include "engine/render/Engine.h"
+
+class KIPlayer;
 
 class Radar {
 public:
+    void *level; // +0x00
+    union {
+        KIPlayer *lockedEnemy; // +0x04
+        void *dockTargetPtr; // +0x04 cockpit lock / docking target (same slot)
+    };
+    union {
+        void *field_0x8; // +0x08
+        void *dockNavPtr; // +0x08 docking nav-point pointer (same slot)
+    };
+    unsigned char pad_0x0c_to_0x70[0x70 - 0x0c]; // unmodeled cockpit span
+    unsigned char hasReservation; // +0x70 docking slot-reservation flag
+    unsigned char pad_0x71_to_0x8c[0x8c - 0x71];
+    unsigned char reservationDirty; // +0x8c reservation handled flag
+
     void unlockAsteroid();
 
     bool isPlasmaInRange();
@@ -1215,7 +1236,7 @@ extern const float g_PE_d_rateK;
 
 float PlayerEgo::down(int frameTime, float delta) {
     if (((void *&) this->miningGame) != 0) {
-        if (C(*g_PE_d_miningGate, 0x10) == 0) // RAWREAD: opaque flags struct via global holder (no modeled class)
+        if (((MiningInputFlags *) *g_PE_d_miningGate)->invertAxisFlag == 0)
             return ((MiningGame *) (((void *&) this->miningGame)))->down(delta);
         return ((MiningGame *) (((void *&) this->miningGame)))->up(-delta);
     }
@@ -1238,8 +1259,7 @@ float PlayerEgo::down(int frameTime, float delta) {
     }
 
     if (((void *&) this->rocketControlGun) != 0) {
-        float v = (float) frameTime * g_PE_d_manK * F(((void*&)this->rocketControlGun), 0x50);
-        // RAWREAD: rocketControlGun is an int gun handle (Gun.h not in this TU; +0x50 unnamed)
+        float v = (float) frameTime * g_PE_d_manK * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
         this->maneuverParam = v;
         return v;
     }
@@ -1409,8 +1429,8 @@ int PlayerEgo::approachDockingPoint(Hud *hud, int /*hud2*/, Radar *radar) {
         if (dist < 200) {
             // docking complete: restore cameras and free the nav point.
             this->dockStation = 0;
-            P(radar, 0x4) = 0; // RAWREAD: radar+0x4 (Radar modeled as minimal stub, no fields)
-            P(radar, 0x8) = 0; // RAWREAD: radar+0x8 (Radar modeled as minimal stub, no fields)
+            radar->dockTargetPtr = 0;
+            radar->dockNavPtr = 0;
             adp_clearDockVector(this);
             ((TargetFollowCamera *) (((void *&) this->targetFollowCamera)))->setActive(true);
             ((TargetFollowCamera *) (((void *&) this->targetFollowCamera)))->setLookAtCam(false);
@@ -1523,8 +1543,7 @@ float PlayerEgo::right(int frameTime, float delta) {
 
     if (((void *&) this->rocketControlGun) != 0) {
         float ft = (float) frameTime;
-        this->field_0x80 = delta * g_PE_r_manK1 * F(((void*&)this->rocketControlGun), 0x50);
-        // RAWREAD: rocketControlGun is an int gun handle (Gun.h not in this TU; +0x50 unnamed)
+        this->field_0x80 = delta * g_PE_r_manK1 * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
         ((float &) this->rocketBanking) = ((float &) this->rocketBanking) + (ft * delta) * g_PE_r_manK2;
         return ft * delta;
     }
@@ -1596,8 +1615,7 @@ float PlayerEgo::left(int frameTime, float delta) {
 
     if (((void *&) this->rocketControlGun) != 0) {
         float ft = (float) frameTime;
-        this->field_0x80 = delta * g_PE_l_manK1 * F(((void*&)this->rocketControlGun), 0x50);
-        // RAWREAD: rocketControlGun is an int gun handle (Gun.h not in this TU; +0x50 unnamed)
+        this->field_0x80 = delta * g_PE_l_manK1 * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
         ((float &) this->rocketBanking) = ((float &) this->rocketBanking) + (ft * delta) * g_PE_l_manK2;
         return ft * delta;
     }
@@ -1826,7 +1844,7 @@ void PlayerEgo::handleAutoTurret(int dt) {
                 if (((KIPlayer *) (e))->isDying() != 0) continue;
                 if (((Player *) (((KIPlayer *) e)->player))->isActive() == 0) continue;
                 if (((KIPlayer *) (e))->isEnemy() == 0) continue;
-                if (C(e, 0x74) != 0) continue; // RAWREAD: KIPlayer e+0x74 (no member at 0x74; mid-field of field_0x73)
+                if (((KIPlayer *) e)->noTargetFlag != 0) continue;
 
                 float epos[3];
                 ((KIPlayer *) (e))->getPosition();
@@ -1910,28 +1928,26 @@ int PlayerEgo::levelCollision() {
 
 void PlayerEgo::killLiberator() {
     char sv[12];
-    // RAWREAD: arr/e below are untyped Array internals (the guns array and its
-    // element rows); no modeled class at those nested offsets.
-    void *p = ((Player *) this->player)->guns;
+    Array<Array<Gun *> *> *p = ((Player *) this->player)->guns;
     if (p == 0) return;
-    void *arr = P(P(p, 4), 4);
+    Array<Gun *> *arr = p->data_[1];
     if (arr == 0) return;
-    if (I(p, 0) == 0) return;
-    if (I(arr, 0) == 0) return;
+    if (p->count == 0) return;
+    if (arr->count == 0) return;
     if (this->currentSecondaryWeaponIndex != 0xb3) return;
     *(int *) (sv + 0) = -1;
     *(int *) (sv + 4) = -1;
     *(int *) (sv + 8) = -1;
-    unsigned count = U(arr, 0);
+    unsigned count = arr->count;
     for (unsigned i = 0; i < count; i++) {
-        int *e = (int *) (*(int *) ((char *) arr + 4) + i * 4);
-        if (e[0x16] == 0xb3) {
-            *(int *) e[0xf] = -1;
-            *(Vector *) ((void *) e[3]) = *(const Vector *) (sv);
-            void *arr2 = P(P(p, 4), 4);
-            int *e2 = (int *) (*(int *) ((char *) arr2 + 4) + i * 4);
-            *((char *) e2 + 0x4c) = 0;
-            count = U(arr2, 0);
+        int *e = (int *) arr->data_[i];
+        if (e[0x16] == 0xb3) { // RAWREAD: gun row +0x58 (Gun member not modeled)
+            *(int *) e[0xf] = -1; // RAWREAD: gun row +0x3c (Gun member not modeled)
+            *(Vector *) ((void *) e[3]) = *(const Vector *) (sv); // RAWREAD: gun row +0xc (Gun member not modeled)
+            Array<Gun *> *arr2 = p->data_[1];
+            Gun *e2 = arr2->data_[i];
+            e2->active = 0;
+            count = arr2->count;
         }
     }
 }
@@ -1957,11 +1973,9 @@ void PlayerEgo::roll(int amount) {
     if (this->rolling == 0)
         return;
 
-    void *m = ((AEGeometry *) (this->geometry))->getMatrix();
-    float rx = F(m, 0x10);
-    // RAWREAD: flat AEMath::Matrix element (AEMath.h not in this TU; positional, not a named member)
-    float ry = F(m, 0x14);
-    // RAWREAD: flat AEMath::Matrix element (AEMath.h not in this TU; positional, not a named member)
+    AbyssEngine::AEMath::Matrix &m = ((AEGeometry *) (this->geometry))->getMatrix();
+    float rx = m.m11_rightY;
+    float ry = m.m12_upY;
     float mag = rx > 0.0f ? rx : -rx;
 
     if (amount > 0x3b)
@@ -2027,8 +2041,8 @@ void PlayerEgo::calcCollision(Array<KIPlayer *> *candidates) {
 
         // first candidate: trip the proximity alarm flag when very close.
         if (i == 0 && PE_status()->inAlienOrbit() == 0) {
-            if (Vec_length((char *) &this->dockOffsetVec) < g_PE_cc_alarmDist && C(obj, 0x71) != 0)
-                // RAWREAD: KIPlayer obj+0x71 (no member at 0x71; mid-field of field_0x70)
+            if (Vec_length((char *) &this->dockOffsetVec) < g_PE_cc_alarmDist
+                && ((KIPlayer *) obj)->proximityAlarmFlag != 0)
                 this->collidesWithStationFlag = 1;
         }
 
@@ -2105,7 +2119,7 @@ extern const float g_PE_u_rateK;
 
 float PlayerEgo::up(int frameTime, float delta) {
     if (((void *&) this->miningGame) != 0) {
-        if (C(*g_PE_u_miningGate, 0x10) == 0) // RAWREAD: opaque flags struct via global holder (no modeled class)
+        if (((MiningInputFlags *) *g_PE_u_miningGate)->invertAxisFlag == 0)
             return ((MiningGame *) (((void *&) this->miningGame)))->up(-delta);
         return ((MiningGame *) (((void *&) this->miningGame)))->down(delta);
     }
@@ -2128,8 +2142,7 @@ float PlayerEgo::up(int frameTime, float delta) {
     }
 
     if (((void *&) this->rocketControlGun) != 0) {
-        float v = (float) frameTime * g_PE_u_manK * F(((void*&)this->rocketControlGun), 0x50);
-        // RAWREAD: rocketControlGun is an int gun handle (Gun.h not in this TU; +0x50 unnamed)
+        float v = (float) frameTime * g_PE_u_manK * ((Gun *) (intptr_t) this->rocketControlGun)->pitchRate;
         this->maneuverParam = v;
         return v;
     }
@@ -2364,12 +2377,12 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
         SpacePoint *sp = (SpacePoint *) (unsigned long) this->spacePoint;
         void *nav = ((KIPlayer *) (radar))->getNearestNavigationPoint(pos, sp);
         if (nav == 0) {
-            if (C(radar, 0x70) != 0) // RAWREAD: radar+0x70 (Radar minimal stub, no fields)
-                C(radar, 0x8c) = 1; // RAWREAD: radar+0x8c (Radar minimal stub, no fields)
+            if (radar->hasReservation != 0)
+                radar->reservationDirty = 1;
             undock = true;
         } else {
-            if (C(radar, 0x70) != 0) // RAWREAD: radar+0x70 (Radar minimal stub, no fields)
-                C(radar, 0x8c) = 1; // RAWREAD: radar+0x8c (Radar minimal stub, no fields)
+            if (radar->hasReservation != 0)
+                radar->reservationDirty = 1;
 
             ((PlayerEgo *) (this))->setTurretMode(0);
             this->field_0x1a1 = 0;
@@ -2638,8 +2651,7 @@ void PlayerEgo::update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript
         }
     } else if (this->field_0x145 == 0 && ((PlayerEgo *) (this))->updateManeuver() == 0) {
         void *wp = (void *) (intptr_t) this->autoPilotTarget;
-        if (this->goingToWaypointFlag != 0 && wp != 0 && I(wp, 0x134) != 0) {
-            // RAWREAD: wp+0x134 (untyped void* autopilot target; Waypoint.h not in this TU)
+        if (this->goingToWaypointFlag != 0 && wp != 0 && ((Waypoint *) wp)->route != 0) {
             wp = ((Route *) (this->autoPilotTarget))->getWaypoint();
             ((void *&) this->autoPilotTarget) = wp;
         }
@@ -2820,8 +2832,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     unsigned char old = this->autoPilot;
     this->autoPilot = (v != 0) ? 1 : 0;
     if (v == 0) {
-        I(this->field_0x14, 0x2c) = 0;
-        // RAWREAD: field_0x14+0x2c (field_0x14 is an untyped void* KIPlayer-style handle)
+        ((KIPlayer *) this->field_0x14)->autoPilotState = 0;
         if (old != 0) {
             this->field_0x2a8 = 0;
             this->field_0x2a4 = 0;
@@ -2830,7 +2841,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
     }
     if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
     void *eng = gAppManager->GetEngine();
-    I(eng, 0x360) = 0; // RAWREAD: eng+0x360 (untyped GetEngine() result, no modeled class)
+    ((AbyssEngine::Engine *) eng)->autoPilotEngaged = 0;
     ((int &) this->thrust) = 0x3f800000;
 }
 
@@ -3027,7 +3038,7 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
         if (((void *&) this->miningGame) == 0) {
             this->field_0x2f5 = 0;
             this->lostMiningGameFlag = 0;
-            C(*g_PE_aa_levelHolder, 0x37) = 0; // RAWREAD: opaque object via global holder (no modeled class)
+            ((MiningHostObject *) *g_PE_aa_levelHolder)->miningActiveFlag = 0;
             void *mg = MiningGame_new(((PlayerAsteroid *) (((void *&) this->asteroidTarget)))->getQuality(),
                                       ((PlayerAsteroid *) ((void *&) this->asteroidTarget))->asteroidIndex,
                                       (void *) (unsigned long) hud2);
@@ -3047,12 +3058,12 @@ void PlayerEgo::approachAsteroid(Hud *hud, int hud2, Radar *radar) {
                 ((PlayerEgo *) (this))->stopMining();
             } else if (((MiningGame *) (((void *&) this->miningGame)))->gameLost() != 0) {
                 this->lostMiningGameFlag = 1;
-                I(*g_PE_aa_winHolder1, 0x124) = 0; // RAWREAD: opaque object via global holder (no modeled class)
+                ((MiningHostObject *) *g_PE_aa_winHolder1)->miningResultSlot = 0;
                 ((PlayerEgo *) (this))->stopMining();
                 ((Hud *) ((void *) (unsigned long) hud2))->hudEvent(8, this, 0);
             }
         } else if (((KIPlayer *) (this))->isDying() != 0 || ((KIPlayer *) (this))->isDead() != 0) {
-            I(*g_PE_aa_winHolder2, 0x124) = 0; // RAWREAD: opaque object via global holder (no modeled class)
+            ((MiningHostObject *) *g_PE_aa_winHolder2)->miningResultSlot = 0;
             ((PlayerEgo *) (this))->stopMining();
             ((Hud *) ((void *) (unsigned long) hud2))->hudEvent(8, this, 0);
         }
@@ -3147,8 +3158,9 @@ void PlayerEgo::setShip(int race, int group) {
     this->field_0x4 = grp;
 
     void *canvas = (void *) gCanvas;
-    void *mesh = ((PaintCanvas *) (long) (canvas))->MeshGetPointer((unsigned int) (((AEGeometry *) grp)->meshId));
-    this->field_0x394 = *(void **) (I(mesh, 0x30) + 0x20); // RAWREAD: mesh+0x30 (untyped mesh handle, no modeled class)
+    AbyssEngine::Mesh *mesh = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
+        (unsigned int) (((AEGeometry *) grp)->meshId));
+    this->field_0x394 = *(void **) ((char *) mesh->materialBlock + 0x20);
 
     void *hull = (void *) new AEGeometry(gCanvas);
     this->geometry = (AEGeometry *) hull;
@@ -3575,9 +3587,9 @@ extern "C" void PlayerEgo_setLevel_ext(void *psm, int system, int enable) {
 // Builds the turret muzzle geometry from the ship mesh and stores its local
 // offset into self+0x388. *canvasHolder is the PaintCanvas; meshId the hull mesh.
 extern "C" void PlayerEgo_setShip_tail(void *canvas, int meshId, void *out, void ** /*canvasHolder*/) {
-    void *mesh = ((PaintCanvas *) (long) canvas)->MeshGetPointer((unsigned int) meshId);
+    AbyssEngine::Mesh *mesh = ((PaintCanvas *) (long) canvas)->MeshGetPointer((unsigned int) meshId);
     if (mesh != 0)
-        Vec_assign(out, (char *) mesh + 0x20); // RAWREAD: mesh+0x20 (untyped MeshGetPointer() result, no modeled class)
+        Vec_assign(out, &mesh->localOffset);
 }
 
 // ---- stopMining: tear the mining game down (receiver self) ----------

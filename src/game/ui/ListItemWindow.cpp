@@ -29,8 +29,8 @@ void ListItemWindow::OnTouchBegin(int x, int y) {
     this->scrollWindow->OnTouchBegin(x, y);
     if (this->shows3DShipFlag &&
         this->x + (this->width >> 1) < x) {
-        int *obj = *g_liw_screen; // RAWREAD: opaque screen-state int array, no modeled class
-        if (y < this->y + obj[0xc / 4] + obj[0x20 / 4] + this->previewHeight) {
+        Layout *obj = (Layout *) *g_liw_screen; // screen-state Layout
+        if (y < this->y + obj->field_0xc + obj->field_0x20 + this->previewHeight) {
             this->dragLastX = x;
             this->dragStartX = x;
             this->dragDelta = 0;
@@ -93,13 +93,13 @@ void ListItemWindow::render() {
     PaintCanvas *canvas = *g_liw_r_canvas;
     canvas->Begin3d();
 
-    int *obj = (int *) *g_liw_r_obj; // RAWREAD: opaque layout/screen-state int array, no modeled class
-    int s = obj[0x128 / 4];
+    Layout *obj = (Layout *) *g_liw_r_obj; // layout/screen-state Layout
+    int s = obj->field_0x128;
     int h = this->previewHeight - s * 2;
     canvas->EnableClip(
-        this->x + s + (this->width >> 1) + obj[0x2c / 4],
-        this->y + s + obj[0xc / 4] + obj[0x20 / 4],
-        ((this->width >> 1) - (obj[0x2c / 4] + s * 2)) - obj[0x28 / 4],
+        this->x + s + (this->width >> 1) + obj->field_0x2c,
+        this->y + s + obj->field_0xc + obj->field_0x20,
+        ((this->width >> 1) - (obj->field_0x2c + s * 2)) - obj->buttonInsetX,
         h);
     canvas->SetColor((unsigned int) (long) canvas);
     void *m = canvas->CameraGetLocal((unsigned int) (long) canvas);
@@ -440,12 +440,12 @@ void ListItemWindow::draw() {
         Item *itemPtr;
         if (li->isItem() == 0) {
             int idx;
-            void *db = *g_liw_d_itemDB; // RAWREAD: itemDB is an opaque/unmodeled engine struct
+            ItemDatabase *db = (ItemDatabase *) *g_liw_d_itemDB;
             if (li->isBluePrint() == 0)
                 idx = li->pendingProduct->blueprintIndex;
             else
                 idx = li->bluePrint->getIndex();
-            itemPtr = *(Item **) (i32(db, 0x4) + idx * 4);
+            itemPtr = db->itemTable[idx];
         } else {
             itemPtr = li->item;
         }

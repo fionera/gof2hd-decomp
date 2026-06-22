@@ -813,11 +813,9 @@ void Hud::drawEventQueue() {
     char letterbox = *(char *) *g_Hud_eqLetterbox;
     char cinematicY = (letterbox == 0) ? 0 : (char) this->field_0x3e2;
 
-    void *src = *g_Hud_eqSelf;
-    // RAWREAD: src is an opaque "Hud-like" holder (void*) from a void** global; +0x1e0/+0x1e4
-    // are int/float display state there, not Hud members (Hud has a String at +0x1e0).
-    int dispBase = F<int>(src, 0x1e4);
-    float dispScale = F<float>(src, 0x1e0);
+    HudEventDisplay *src = (HudEventDisplay *) *g_Hud_eqSelf;
+    int dispBase = src->eventBannerDisplayBase;
+    float dispScale = src->eventBannerDisplayScale;
 
     gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0));
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
@@ -1138,29 +1136,29 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 0x23:
             this->field_0x468 = 0;
             this->field_0x27a = 1;
-            *(unsigned short *) &this->field_0x278 = 1;
+            this->weaponSelectState = 1;
             return;
         case 0x25:
             this->field_0x468 = 0;
             this->field_0x27a = 1;
-            *(unsigned short *) &this->field_0x278 = 0x101;
+            this->weaponSelectState = 0x101;
             return;
         case 0x27:
             this->field_0x468 = 0;
             this->field_0x27a = 0;
-            *(unsigned short *) &this->field_0x278 = 1;
+            this->weaponSelectState = 1;
             return;
         case 0x29:
             this->field_0x468 = 0;
             this->field_0x27a = 0;
-            *(unsigned short *) &this->field_0x278 = 0x101;
+            this->weaponSelectState = 0x101;
             return;
         case 0x24:
         case 0x26:
         case 0x28:
         case 0x2a:
-            // these clear the "showing" flag and set a fixed localized line, no queue
-            this->field_0x278 = 0;
+            // these clear the "showing" flag (low byte only) and set a fixed localized line, no queue
+            *(unsigned char *) &this->weaponSelectState = 0;
             hudEventBuild(this, eventId, ego, arg);
             return;
 
@@ -1423,14 +1421,12 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
         yOrigin = this->menuBaseY;
     } else {
         // cargo-bay percentage shifts the menu up in letterboxed mode
-        // RAWREAD: cargoA / *g_Hud_imCargoA / *g_Hud_imCargoB are opaque void* holders (from
-        // void** globals); +0x54 (cargo cur) / +0x58 (cargo max) belong to an unmodeled class.
-        void *cargoA = *g_Hud_imCargoA;
+        CargoBay *cargoA = (CargoBay *) *g_Hud_imCargoA;
         float v;
         if ((long) this->menuLevel == 3)
-            v = (float) *(int *) ((char *) cargoA + 0x54);
+            v = (float) cargoA->cargoCurrent;
         else {
-            v = (float) *(int *) ((char *) cargoA + 0x58);
+            v = (float) cargoA->cargoMax;
             float adj = 0.0f;
             if (*(char *) *g_Hud_imFlagA == 0)
                 adj = (*(char *) *g_Hud_imFlagB == 0) ? 1.0f : 0.0f;
@@ -1439,9 +1435,9 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
         float yf = 0.0f;
         if (v >= 0.0f) {
             if ((long) this->menuLevel == 3)
-                yf = (float) *(int *) ((char *) *g_Hud_imCargoA + 0x54);
+                yf = (float) ((CargoBay *) *g_Hud_imCargoA)->cargoCurrent;
             else {
-                float v2 = (float) *(int *) ((char *) *g_Hud_imCargoB + 0x58);
+                float v2 = (float) ((CargoBay *) *g_Hud_imCargoB)->cargoMax;
                 float adj = (*(char *) *g_Hud_imFlagA == 0)
                                 ? ((*(char *) *g_Hud_imFlagB == 0) ? 1.0f : 0.0f)
                                 : 0.0f;

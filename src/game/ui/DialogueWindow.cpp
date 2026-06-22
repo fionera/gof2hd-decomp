@@ -16,6 +16,7 @@
 #include "game/core/String.h"
 #include "game/core/Globals.h"
 #include "game/ui/TouchButton.h"
+#include "game/menu/ModStation.h"
 #include "platform/libc.h"
 
 template<class T>
@@ -698,21 +699,21 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     }
 
     int index;
-    int *texts;
+    DialogueWindowGermanTextTable *texts;
     if (kind == 2) {
         index = gRandom->nextInt(2);
-        texts = g_dw_germanSuccessTexts;
+        texts = (DialogueWindowGermanTextTable *) g_dw_germanSuccessTexts;
     } else if (kind != 0) {
         index = gRandom->nextInt(2);
-        texts = g_dw_germanOtherTexts;
+        texts = (DialogueWindowGermanTextTable *) g_dw_germanOtherTexts;
     } else {
         index = gRandom->nextInt(2);
-        texts = g_dw_germanBriefingTexts;
+        texts = (DialogueWindowGermanTextTable *) g_dw_germanBriefingTexts;
     }
 
-    int *picked = (int *) ((char *) texts + index * 4 + 0x48);
+    int *picked = &(&texts->femaleVariantBase)[index];
     if (male != 0) {
-        picked = (int *) ((char *) texts + race * 8 + index * 4);
+        picked = &(&texts->maleRaceRow)[race * 2 + index];
     }
     return *picked;
 }
@@ -859,6 +860,6 @@ extern "C" void DialogueWindow_dtor_ote(DialogueWindow *dw) {
 }
 
 extern "C" void DialogueWindow_draw_r2d(void *modStation) {
-    DialogueWindow * dw = *(DialogueWindow **) ((char *) modStation + 0x84);
+    DialogueWindow *dw = ((ModStation *) modStation)->dialogueWindow;
     if (dw != 0) dw->draw();
 }
