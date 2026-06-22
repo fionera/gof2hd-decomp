@@ -3,6 +3,14 @@
 Goal: a **matching decompilation** of the full *Abyss Engine* + *Galaxy on Fire 2* game
 (C++), recompilable back to byte-identical binaries.
 
+> **Milestone (2026-06-22): the verify gate is GREEN.** `cmake --build cmake-build-match --target
+> verify` exits 0 — **0 wrong-signature symbols** (`--fail-on-wrong-type` passes). 198 TUs compile,
+> 0 failures. 4347 comparisons, avg 66.9%, linked-exact 1444, byte-exact 714; coverage 4153/4524,
+> missing 369, extra 161 (the extras are the informational ctor/dtor-alias + `setPosition3`
+> cross-hierarchy items tracked in DEFERRED.md, not gated). The last wrong_type
+> (`String::~String` D0) was closed by re-modeling `String` to its native binary layout — see
+> STRING_REMODEL.md. Remaining work is per-function byte-match refinement and the deferred extras.
+
 ---
 
 ## 1. Source inventory & triage
