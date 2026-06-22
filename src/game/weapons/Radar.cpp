@@ -1,6 +1,6 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 #include "game/ship/KIPlayer.h"
 
 namespace AbyssEngine {

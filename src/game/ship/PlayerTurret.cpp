@@ -9,7 +9,7 @@
 #include "game/ship/Player.h"
 #include "game/world/Standing.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 class Status {
 public:

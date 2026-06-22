@@ -9,7 +9,7 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 extern "C" {
 void TouchButton_footerAnim(...);

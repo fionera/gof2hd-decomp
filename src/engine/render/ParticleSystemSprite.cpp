@@ -3,7 +3,7 @@
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
 #include "externs.h"
-#include "platform/libc.h"
+
 
 extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
                                const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);

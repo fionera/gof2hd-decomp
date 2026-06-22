@@ -4,7 +4,7 @@
 #include "engine/render/Engine.h"
 #include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
-#include "platform/libc.h"
+
 
 extern ApplicationManager *g_ApplicationManager;
 

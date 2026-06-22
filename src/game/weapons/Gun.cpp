@@ -3,7 +3,7 @@
 #include "game/mission/Item.h"
 #include "engine/render/Sparks.h"
 #include "engine/render/AEGeometry.h"
-#include "platform/libc.h"
+
 
 extern "C" void Gun_VecArray_ctor(void *a);
 

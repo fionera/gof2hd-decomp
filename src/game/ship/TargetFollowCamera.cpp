@@ -1,7 +1,7 @@
 #include "game/ship/TargetFollowCamera.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     namespace AEMath {

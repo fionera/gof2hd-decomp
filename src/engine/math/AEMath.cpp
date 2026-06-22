@@ -1,5 +1,5 @@
 #include "engine/math/AEMath.h"
-#include "platform/libc.h"
+
 #include <cmath>
 
 namespace AbyssEngine {

@@ -1,7 +1,7 @@
 #include "engine/core/GameText.h"
 GameText *gGameText = nullptr;
 #include "engine/file/AEFile.h"
-#include "platform/libc.h"
+
 
 extern short *g_GameText_language;
 extern unsigned short *g_GameText_langReset;

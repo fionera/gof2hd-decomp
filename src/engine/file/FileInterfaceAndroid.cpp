@@ -1,6 +1,6 @@
 #include "engine/file/FileInterfaceAndroid.h"
 #include "game/core/String.h"
-#include "platform/libc.h"
+
 #include <cstdio>
 #include <new>
 

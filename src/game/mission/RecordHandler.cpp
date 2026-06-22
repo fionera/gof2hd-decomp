@@ -19,8 +19,8 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Wanted.h"
 #include "game/ship/Agent.h"
-#include "platform/libc.h"
-#include "jni.h"
+
+#include <jni.h>
 
 extern "C" const char *g_android_origami_super_club;
 const char *g_android_origami_super_club = nullptr;

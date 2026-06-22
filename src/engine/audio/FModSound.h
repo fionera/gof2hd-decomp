@@ -4,15 +4,9 @@
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 #include "engine/math/Vector.h"
-
-namespace FMOD {
-}
+#include "fmod_event.hpp"
 
 using AbyssEngine::AEMath::Vector;
-
-enum FMOD_RESULT {
-    FMOD_OK = 0
-};
 
 class FModSound {
 public:

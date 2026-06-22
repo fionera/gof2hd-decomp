@@ -1,6 +1,6 @@
 #include "engine/render/ResourceTexture.h"
 #include "game/core/String.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     ResourceTexture::ResourceTexture(const char *name, float value) {

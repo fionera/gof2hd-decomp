@@ -1,6 +1,6 @@
 #include "engine/render/AEGeometry.h"
 #include "engine/render/LodMeshMerger.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     class Transform {

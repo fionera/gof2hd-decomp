@@ -5,7 +5,7 @@
 #include "engine/math/Transform.h"
 #include "engine/core/AERandom.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 using AbyssEngine::Matrix;
 

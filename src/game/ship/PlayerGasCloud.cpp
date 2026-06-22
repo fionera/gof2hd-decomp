@@ -1,5 +1,5 @@
 #include "game/ship/PlayerGasCloud.h"
-#include "platform/libc.h"
+
 #include "engine/core/AERandom.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"

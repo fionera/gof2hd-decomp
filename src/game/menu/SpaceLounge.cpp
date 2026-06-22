@@ -1,4 +1,4 @@
-#include "platform/libc.h"
+
 #include "game/menu/SpaceLounge.h"
 #include "game/world/SolarSystem.h"
 #include "engine/render/AEGeometry.h"

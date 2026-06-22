@@ -6,7 +6,7 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerJunk.h"
-#include "platform/libc.h"
+
 
 extern int PlayerCreature_weightTable[];
 extern int PlayerCreature_rageTable[];

@@ -1,6 +1,6 @@
 #include "engine/audio/FModSound.h"
 #include "engine/core/GameText.h"
-#include "platform/libc.h"
+
 #include <cstring>
 
 extern "C" {
@@ -37,8 +37,6 @@ int FMOD_EventSystem_setReverbProperties(void *system, void *props);
 int FMOD_Event_getParameterByIndex(FMOD::Event *event, int idx, FMOD::EventParameter **out);
 
 int FMOD_EventParameter_setValue(FMOD::EventParameter *p, float v);
-
-void FMOD_EventSystem_Create(void *out);
 
 int FMOD_EventSystem_init(void *system, int maxch, void *extdriver, int flags);
 
@@ -420,7 +418,7 @@ int FModSound::init() {
 
     for (int i = 0; i != 5; i++)
         this->fxSlots[i] = -1;
-    FMOD_EventSystem_Create(&this->system);
+    FMOD_EventSystem_Create((FMOD_EVENTSYSTEM **) &this->system);
     FMOD_EventSystem_init(this->system, 0x20, (void *) 0x82, 0);
     setAudioLanguage(GameText::getLanguage());
 

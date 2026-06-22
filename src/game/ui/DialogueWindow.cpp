@@ -17,7 +17,7 @@
 #include "game/core/Globals.h"
 #include "game/ui/TouchButton.h"
 #include "game/menu/ModStation.h"
-#include "platform/libc.h"
+
 
 template<class T>
 static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }

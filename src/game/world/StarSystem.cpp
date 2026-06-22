@@ -10,7 +10,7 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/Engine.h"
 #include "game/ship/PlayerStatic.h"
-#include "platform/libc.h"
+
 
 extern PaintCanvas *gCanvas;
 

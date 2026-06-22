@@ -1,7 +1,7 @@
 #include "engine/render/MovingStars.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
-#include "platform/libc.h"
+
 
 extern "C" int MovingStars_kSpawnI_value;
 

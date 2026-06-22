@@ -1,5 +1,5 @@
 #include "game/mission/GameRecord.h"
-#include "platform/libc.h"
+
 #include "game/world/Galaxy.h"
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"

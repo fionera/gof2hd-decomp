@@ -5,7 +5,7 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Gun.h"
 #include "game/ship/Player.h"
-#include "platform/libc.h"
+
 
 class Radar {
 public:

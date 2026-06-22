@@ -15,7 +15,7 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/PlayerFighter.h"
 #include "game/ship/Ship.h"
-#include "platform/libc.h"
+
 
 extern PaintCanvas *gCanvas;
 

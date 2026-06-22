@@ -1,6 +1,6 @@
 #include "engine/render/ResourceMesh.h"
 #include "game/core/String.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     ResourceMesh::ResourceMesh(const char *name, unsigned short id, bool flag)

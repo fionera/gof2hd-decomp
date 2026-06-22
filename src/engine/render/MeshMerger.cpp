@@ -3,7 +3,7 @@
 #include "game/core/Vector.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 

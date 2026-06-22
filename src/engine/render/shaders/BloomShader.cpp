@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/FBOContainer.h"
 #include <GLES2/gl2.h>
-#include "platform/libc.h"
+
 
 extern "C" unsigned char g_BloomShader_internalInitNeeded;
 extern "C" unsigned int g_BloomShader_shaderMode;

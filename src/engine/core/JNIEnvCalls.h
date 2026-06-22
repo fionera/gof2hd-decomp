@@ -1,7 +1,7 @@
 #ifndef GOF2_JNIENVCALLS_H
 #define GOF2_JNIENVCALLS_H
 
-#include <../../platform/jni.h>
+#include <jni.h>
 
 namespace gof2 {
     struct JNIEnvCallAnchors {

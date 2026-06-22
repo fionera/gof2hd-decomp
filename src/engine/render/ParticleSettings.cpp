@@ -1,5 +1,5 @@
 #include "engine/render/ParticleSettings.h"
-#include "platform/libc.h"
+
 
 ParticleSettings::ParticleSettings() {
 }

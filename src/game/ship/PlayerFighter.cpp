@@ -12,7 +12,7 @@
 #include "game/world/Standing.h"
 #include "engine/math/Transform.h"
 #include "engine/math/EaseInOutMatrix.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     class PaintCanvas {

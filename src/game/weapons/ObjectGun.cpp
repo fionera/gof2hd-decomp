@@ -7,7 +7,7 @@
 #include "game/weapons/Gun.h"
 #include "game/ship/Player.h"
 #include "engine/render/AEGeometry.h"
-#include "platform/libc.h"
+
 
 template<class T>
 static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }

@@ -5,7 +5,7 @@
 #include "game/weapons/Gun.h"
 #include "game/ship/PlayerEgo.h"
 #include "engine/render/AEGeometry.h"
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     namespace AEMath {

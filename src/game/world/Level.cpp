@@ -39,7 +39,7 @@
 #include "game/ship/PlayerStatic.h"
 #include "game/weapons/RocketGun.h"
 #include "game/world/Galaxy.h"
-#include "platform/libc.h"
+
 #include "game/ship/PlayerFixedObject.h"
 #include <new>
 #include "game/ship/Agent.h"

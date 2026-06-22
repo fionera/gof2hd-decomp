@@ -1,9 +1,10 @@
 #ifndef GOF2_FBOCONTAINER_H
 #define GOF2_FBOCONTAINER_H
-#include "Engine.h"
 #include "../core/AEString.h"
 
 namespace AbyssEngine {
+    class Engine;
+
     class FBOContainer {
     public:
         uint32_t framebuffer;

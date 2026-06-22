@@ -5,7 +5,11 @@
 #include "fieldaccess.h"
 
 #include "engine/file/AEFile.h"
-
+#include "engine/math/Vector.h"
+#include "game/world/NewsItem.h"
+#include "game/world/SolarSystem.h"
+#include "game/world/SpacePoint.h"
+#include "game/world/Wanted.h"
 
 class FileRead {
 public:
@@ -17,7 +21,7 @@ public:
 
     int32_t loadStationsBinary();
 
-    Array<Array<Vector *> *> *loadWeaponPositions(int32_t id);
+    Array<Array<AbyssEngine::AEMath::Vector *> *> *loadWeaponPositions(int32_t id);
 
     Array<SpacePoint *> *loadSpacePoints(int32_t id, int32_t group);
 

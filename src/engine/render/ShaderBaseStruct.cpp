@@ -2,7 +2,7 @@
 #include "game/core/String.h"
 #include "engine/file/AEFile.h"
 #include <GLES2/gl2.h>
-#include "platform/libc.h"
+
 
 namespace AbyssEngine {
     int ShaderBaseStruct::shaderIndexIntern;

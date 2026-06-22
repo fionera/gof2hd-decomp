@@ -1,7 +1,7 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
-#include "platform/libc.h"
+
 
 void LodMeshMerger::setEnabled(int index, bool value) {
     if (enabled[index] != value) {

@@ -1,5 +1,5 @@
 #include "engine/render/ParticleSystemMesh.h"
-#include "platform/libc.h"
+
 
 extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
 
