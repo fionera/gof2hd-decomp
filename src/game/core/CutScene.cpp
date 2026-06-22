@@ -17,9 +17,9 @@
 #include "game/ship/Ship.h"
 #include "platform/libc.h"
 
-using AbyssEngine::AERandom;
-using AbyssEngine::AnimationMode;
-using AbyssEngine::AEMath::Matrix;
+
+
+
 
 // PaintCanvas singleton declared locally: this TU uses the lean PaintCanvasClass.h
 // (full PaintCanvas.h clashes with the Transform/Mesh definitions pulled in here),

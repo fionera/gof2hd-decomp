@@ -13,7 +13,7 @@
 #include "game/core/String.h"
 #include "game/ui/TouchButton.h"
 
-using AbyssEngine::PaintCanvas;
+
 
 extern "C" __attribute__((visibility("hidden"))) Layout **g_SWm_layout;
 extern "C" __attribute__((visibility("hidden"))) int *g_SWm_height;

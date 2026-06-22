@@ -19,7 +19,7 @@
 #include "engine/render/ImageFactory.h"
 #include "engine/render/ImagePart.h"
 
-using AbyssEngine::String;
+
 
 // Engine singletons reached through PC-relative globals. The decompiler folded the
 // active-table pointer and the lookup key into a single receiver cast and could not

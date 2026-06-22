@@ -10,7 +10,7 @@
 // PaintCanvas is pulled in by pointer only (forward-declared by AEGeometry.h):
 // its full header conflicts with Transform.h during this migration, so reach its
 // transform table through the engine helper shim below.
-using AbyssEngine::Transform;
+
 
 namespace AbyssEngine { namespace AEMath {
 Vector operator+(const Vector& lhs, const Vector& rhs);

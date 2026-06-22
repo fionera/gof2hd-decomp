@@ -8,7 +8,7 @@
 #include "game/ship/KIPlayer.h"
 #include "platform/libc.h"
 
-using AbyssEngine::AEMath::Vector;
+
 
 // The active Status singleton (same holder TractorBeam/MGame use).
 

@@ -4,7 +4,7 @@
 #include "game/mission/Status.h"
 #include "game/core/String.h"
 
-using AbyssEngine::String;
+
 
 // SolarSystem(...) — initialise the system's metadata and take ownership of its
 // station-id, linked-system and forbidden-goods lists. The display name is copied.

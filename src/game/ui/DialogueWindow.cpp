@@ -18,7 +18,7 @@
 #include "game/ui/TouchButton.h"
 #include "platform/libc.h"
 
-using AbyssEngine::PaintCanvas;
+
 
 // Byte-offset accessor for EXTERNAL opaque objects (the engine sound-config
 // record) whose layout is not modelled here.

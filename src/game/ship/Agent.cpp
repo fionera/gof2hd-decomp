@@ -2,7 +2,7 @@
 #include "game/core/String.h"
 #include "game/mission/Mission.h"
 
-using AbyssEngine::String;
+
 
 String Agent::getStationName() {
     return this->stationName;

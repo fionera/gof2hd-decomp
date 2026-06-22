@@ -3,13 +3,13 @@
 
 #include <new>
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::VectorDot;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::AEMath::operator+;
-using AbyssEngine::AEMath::operator-;
-using AbyssEngine::AEMath::operator*;
+
+
+
+
+
+
+
 
 BoundingSphere::BoundingSphere(
     float x, float y, float z, float ex, float ey, float ez, float radius)

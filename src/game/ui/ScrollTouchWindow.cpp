@@ -4,8 +4,8 @@
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
 
-using AbyssEngine::PaintCanvas;
-using AbyssEngine::String;
+
+
 
 void ScrollTouchWindow::OnTouchEnd(int x, int y)
 {

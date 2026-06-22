@@ -29,7 +29,7 @@ public:
     void TransformSetLocal(unsigned int index, const Matrix &matrix);
 };
 } // namespace AbyssEngine
-using ::AbyssEngine::PaintCanvas;
+
 
 // Engine globals: PaintCanvas handle pointer and the vector/matrix helpers used
 // by the homing/trail math. Provided by the engine; declared here by pointer.

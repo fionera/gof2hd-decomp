@@ -39,7 +39,7 @@ struct PaintCanvas {
     void *GetScreenPosition(AbyssEngine::AEMath::Vector *a, AbyssEngine::AEMath::Vector *b);
 };
 } // namespace AbyssEngine
-using ::AbyssEngine::PaintCanvas;
+
 extern "C" int pc_GetWidth(PaintCanvas *self);
 extern "C" int pc_GetHeight(PaintCanvas *self);
 

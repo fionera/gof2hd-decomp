@@ -9,7 +9,7 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-using AbyssEngine::AEMath::Vector;
+
 
 // PaintCanvas singleton handle (points at the active PaintCanvas*).
 __attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;

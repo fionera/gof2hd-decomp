@@ -18,7 +18,7 @@ public:
 // SystemPathFinder.h declares stub `struct SolarSystem`/`struct Status` that collide with
 // the real class headers. StarMap only needs the SystemPathFinder class itself, so declare a
 // minimal version here (its array params use the real SolarSystem, forward-declared below).
-class SolarSystem;
+
 // Level::setInitStreamOut() is a static method; declare it minimally to avoid pulling Level.h.
 class Level {
 public:

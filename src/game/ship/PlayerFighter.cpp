@@ -18,8 +18,6 @@
 // locally because the full PaintCanvas.h / AERandom.h headers clash with the
 // AbyssEngine stubs already pulled in by Trail.h; these match the canonical
 // definitions (::PaintCanvas* gCanvas, AbyssEngine::AERandom* gRandom).
-namespace AbyssEngine { class AERandom; }
-extern AbyssEngine::AERandom* gRandom;
 
 // Local minimal view of AbyssEngine::PaintCanvas (the full headers
 // gof2/PaintCanvas.h / PaintCanvasClass.h cannot be included here: Trail.h
@@ -39,7 +37,7 @@ public:
     void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
 };
 } // namespace AbyssEngine
-using ::AbyssEngine::PaintCanvas;
+
 
 // Canonical render-canvas singleton (binary .bss 0x2281b8), typed against the
 // local ::PaintCanvas view above to avoid the Trail.h type clash.

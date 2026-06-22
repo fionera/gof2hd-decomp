@@ -1,6 +1,6 @@
 #include "engine/render/LensFlare.h"
 
-using AbyssEngine::PaintCanvas;
+
 
 // PC-relative pointer-to-pointer global: the engine PaintCanvas singleton used to
 // create the flare's three Image2D sprites, and the same holder reused at draw time.

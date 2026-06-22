@@ -20,13 +20,13 @@ namespace AbyssEngine { namespace AEMath {
 float VectorLength(const Vector& value);
 } }
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::operator-;
-using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::MatrixGetDir;
-using AbyssEngine::AEMath::MatrixGetUp;
+
+
+
+
+
+
+
 
 // Status singleton, reached via the global Status pointer (same pattern as Hud/Player).
 

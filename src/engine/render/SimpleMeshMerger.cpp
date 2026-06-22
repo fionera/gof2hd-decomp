@@ -4,9 +4,9 @@
 #include "engine/math/AEMath.h"
 #include "game/core/PaintCanvasClass.h"
 
-using AbyssEngine::Mesh;
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
+
+
+
 
 // ARM EABI 16-bit divide helper (indexCount / 3 -> triangle count).
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);

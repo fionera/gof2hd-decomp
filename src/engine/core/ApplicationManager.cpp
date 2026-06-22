@@ -21,11 +21,11 @@ extern "C" void Engine_PreUpdate(void *engine);
 extern "C" void Engine_Vibrate(void *engine, unsigned short duration);
 extern "C" void Engine_VibrateSupported(void *engine);
 
-using AbyssEngine::AESoundRessource;
-using AbyssEngine::AESoundInfo;
-using AbyssEngine::CheatHandler;
-using AbyssEngine::ConfigReader;
-using AbyssEngine::ConfigTokenReadFunction;
+
+
+
+
+
 
 ApplicationManager::ApplicationManager(Engine *engine) {
     this->modules = new Array<void *>();

@@ -5,7 +5,7 @@
 #include "game/world/Station.h"
 #include "game/core/String.h"
 
-using AbyssEngine::String;
+
 
 // The item table (database root). Indexed by item id.
 extern Array<Item *> *g_items;

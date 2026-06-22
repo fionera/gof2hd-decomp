@@ -88,11 +88,11 @@ void ModStation::autosave() {
         ModStation_autosaveTail();
 }
 
-struct Status;
-struct Station;
-struct Ship;
-struct Item;
-struct Achievements;
+
+
+
+
+
 
 // getShip veneer accessed via a function-pointer global.
 __attribute__((visibility("hidden"))) extern Ship *(*g_ModStation_es_getShip)(Status *);
@@ -135,7 +135,7 @@ void ModStation::enterStation()
     *(int *)((char *)gStatus + 0x11c) = 0;
 }
 
-struct Achievements;
+
 // Three target-struct holders: each g -> P, *P -> the struct (stores at fixed offsets).
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_a;
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ach_b;
@@ -198,9 +198,9 @@ void ModStation::OnResume()
     ModStation_resumeTail(*holder, 1, arg);
 }
 
-struct Station;
-struct Item;
-struct PendingProduct;
+
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_cpp_stack;     // [DAT_000ead34]
 __attribute__((visibility("hidden"))) extern int **g_cpp_status;    // [DAT_000ead38]
@@ -380,8 +380,8 @@ int ModStation::ShowLoadingScreen() {
     return 1;
 }
 
-struct Station;
-struct SolarSystem;
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_msc_stack;     // [DAT_000e5698]
 
@@ -464,8 +464,8 @@ void ModStation::leaveStation() {
     ModStation_leaveStation_impl(this);
 }
 
-struct Achievements;
-struct ChoiceWindow;
+
+
 
 __attribute__((visibility("hidden"))) extern int *g_ModStation_cm_credit1;  // *g -> credits delta src
 __attribute__((visibility("hidden"))) extern int *g_ModStation_cm_credit2;  // *g -> credits delta src
@@ -539,10 +539,10 @@ void ModStation::checkMedals() {
     this->addAchievement(p[0], p[1]);
 }
 
-struct SpaceLounge;
-struct StarMap;
-struct CutScene;
-struct MissionsWindow;
+
+
+
+
 
 // Tail veneer at 0x1ab918.
 
@@ -576,9 +576,7 @@ void ModStation::OnRender3D() {
     ModStation_r3d_endTail(gCanvas);
 }
 
-namespace AbyssEngine { class Engine; }
-using ::AbyssEngine::Engine;
-struct SolarSystem;
+
 
 __attribute__((visibility("hidden"))) extern int **g_rl_engineHolder; // [DAT_000e71f4]
 __attribute__((visibility("hidden"))) extern int   g_rl_lightFlag;
@@ -620,11 +618,11 @@ void ModStation::resetLight()
     Engine_LightEnable_rl(engine, g_rl_lightFlag);
 }
 
-struct Station;
-struct Mission;
-struct DialogueWindow;
-struct CutScene;
-struct SpaceLounge;
+
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_ou_stack;     // [DAT_000e9d98]
 __attribute__((visibility("hidden"))) extern int **g_ou_sound;     // FMod sound holder
@@ -1023,7 +1021,7 @@ void ModStation::OnUpdate() {
 epilogue:;
 }
 
-struct Station;
+
 
 __attribute__((visibility("hidden"))) extern void **g_ModStation_ric_chk;    // *g -> canary src
 __attribute__((visibility("hidden"))) extern int *g_ModStation_ric_rotX;     // table base (pc-rel)
@@ -1076,10 +1074,10 @@ void ModStation::resetIdleCamForHangar() {
     (void)loc;
 }
 
-struct Wanted;
-struct Agent;
-struct DialogueWindow;
-struct Achievements;
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_ch_stack;      // [DAT_000eaf3c]
 __attribute__((visibility("hidden"))) extern int  *g_ch_hintRec;    // [DAT_000eaf40] hint-shown flags record
@@ -1190,15 +1188,15 @@ void ModStation::checkHints() {
         ModStation_ch_showWingmanDialogue(this, 0);
 }
 
-struct HangarWindow;
-struct StarMap;
-struct SpaceLounge;
-struct StatusWindow;
-struct MissionsWindow;
-struct MenuTouchWindow;
-struct ChoiceWindow;
-struct DialogueWindow;
-struct NewsTicker;
+
+
+
+
+
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern Layout **g_ModStation_tm_layout;  // g -> P, *P -> layout obj
 __attribute__((visibility("hidden"))) extern void **g_ModStation_tm_screenH; // **g -> screen height
@@ -1385,19 +1383,19 @@ void ModStation::OnRelease() {
         ModStation_or_tail();
 }
 
-struct Station;
-struct Ship;
-struct Item;
-struct Mission;
-struct Agent;
-struct DialogueWindow;
-struct HangarWindow;
-struct MenuTouchWindow;
-struct Radio;
-struct RadioMessage;
-struct ScrollTouchBox;
-struct RecordHandler;
-struct Layout;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_ote_stack;     // [DAT_000e7908]
 __attribute__((visibility("hidden"))) extern int **g_ote_helpLayout;// [DAT_000e790c] help-window layout
@@ -2152,15 +2150,15 @@ void finishMissionReward(ModStation *self)
     self->checkHints();
 }
 
-struct SpaceLounge;
-struct StarMap;
-struct HangarWindow;
-struct StatusWindow;
-struct MissionsWindow;
-struct MenuTouchWindow;
-struct ChoiceWindow;
-struct DialogueWindow;
-struct NewsTicker;
+
+
+
+
+
+
+
+
+
 
 // Globals.
 __attribute__((visibility("hidden"))) extern Layout **g_ModStation_tb_layout;  // g -> P, *P -> layout obj
@@ -2259,7 +2257,7 @@ int ModStation::OnTouchBegin(int x, int y) { return x; }
 int ModStation::OnTouchEnd(int x, int y) { return x; }
 int ModStation::OnTouchMove(int x, int y) { return x; }
 
-struct Layout;
+
 
 __attribute__((visibility("hidden"))) extern int  *g_r2d_stack;       // [DAT_000eba2c]
 __attribute__((visibility("hidden"))) extern int **g_r2d_helpLayout;  // [DAT_000eba30]
@@ -2337,16 +2335,16 @@ void ModStation::OnRender2D() {
     gCanvas->SwapBuffer();
 }
 
-struct Station;
-struct Ship;
-struct Item;
-struct Mission;
-struct CutScene;
-struct DialogueWindow;
-struct Generator;
-struct NewsTicker;
-struct TouchButton;
-struct Agent;
+
+
+
+
+
+
+
+
+
+
 
 __attribute__((visibility("hidden"))) extern int  *g_oi_stack;       // [DAT_000e5a3c]
 __attribute__((visibility("hidden"))) extern int **g_oi_status;      // status holder (multiple DATs alias it)
@@ -2967,7 +2965,7 @@ void ModStation::OnInitialize() {
     this->state = next;
 }
 
-struct MenuTouchWindow;
+
 
 __attribute__((visibility("hidden"))) extern int  *g_dlc_stack;     // [DAT_000ec28c]
 __attribute__((visibility("hidden"))) extern int  *g_dlc_btnX;      // [DAT_000ec290] cached button X array
@@ -3373,9 +3371,9 @@ const int  *ModStation_msc_camRotTable();      // base of the per-race yaw angle
 unsigned    ModStation_msc_camHandle();        // active hangar camera index
 }
 
-using AbyssEngine::AEMath::VectorSignedToFloat;
-using AbyssEngine::AEMath::MatrixSetTranslation;
-using AbyssEngine::AEMath::MatrixSetRotation;
+
+
+
 
 // ---- constructor camera-tween cascade (parent ctor @ 0xe52d0) --------------
 // Picks the per-race translation triple + yaw, builds the "near" and "far" key

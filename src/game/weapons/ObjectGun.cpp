@@ -2,8 +2,8 @@
 
 // PlayerEgo.h references LevelScript by pointer only; it previously came from the
 // (now-removed) global fwd.h, so forward-declare it here to keep that header usable.
-class LevelScript;
-class KIPlayer;
+
+
 
 #include "game/world/Level.h"
 #include "engine/math/Transform.h"

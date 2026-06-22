@@ -1,7 +1,7 @@
 #include "engine/render/ImagePart.h"
 #include "engine/render/PaintCanvas.h"
 
-using AbyssEngine::PaintCanvas;
+
 
 extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_canvas;
 extern "C" __attribute__((visibility("hidden"))) void **g_ImagePart_draw_canvas;

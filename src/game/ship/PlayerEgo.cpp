@@ -38,7 +38,7 @@ public:
 // Radio.h is intentionally NOT included here (its full definition is not needed and
 // pulling it in clashes with other minimal stubs in this TU). update() only needs
 // the type name to form a Radio* parameter that is forwarded to void*-taking helpers.
-class Radio;
+
 #include "game/mission/Mission.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerFixedObject.h"

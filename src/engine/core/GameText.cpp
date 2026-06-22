@@ -3,7 +3,7 @@ GameText* gGameText = nullptr;        // canonical localized-text singleton
 #include "engine/file/AEFile.h"
 #include "platform/libc.h"
 
-using String = AbyssEngine::String;
+
 
 extern short *g_GameText_language;
 extern unsigned short *g_GameText_langReset;

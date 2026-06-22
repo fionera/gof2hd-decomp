@@ -7,11 +7,11 @@
 #include "game/ship/Player.h"
 #include "engine/math/Transform.h"
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::MatrixSetRotation;
+
+
+
+
+
 
 // The PaintCanvas transform node carries the model-space bounding radius at +0xe0.
 // This veneer maps the canvas' TransformGetTransform helper to the engine's

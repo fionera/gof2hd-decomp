@@ -1,8 +1,5 @@
 // Engine is referenced by the engine glue (externs.h), so it must be visible before that
 // header is parsed. Its real type lives in namespace AbyssEngine; the alias keeps bare `Engine`.
-namespace AbyssEngine { class Engine; }
-using ::AbyssEngine::Engine;
-
 #include "externs.h"
 #include "platform/gl.h"
 #include "engine/math/AEMath.h"
@@ -29,12 +26,12 @@ bool         AbyssEngine::Engine::EnablePostEffect = false;  // 0x2250d8
 #include <arm_neon.h>
 #include <cstdarg>
 
-using AbyssEngine::FBOContainer;
-using AbyssEngine::ShaderBaseStruct;
-using AbyssEngine::AEMath::MatrixGetGL;
-using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::AEMath::MatrixInverseRotateVector;
-using AbyssEngine::AEMath::MatrixInverseTransformVector;
+
+
+
+
+
+
 
 // ARM EABI runtime helpers emitted as explicit calls (host-build externs).
 extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);

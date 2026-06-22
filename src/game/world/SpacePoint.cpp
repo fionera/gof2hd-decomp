@@ -1,6 +1,6 @@
 #include "game/world/SpacePoint.h"
 
-using AbyssEngine::AEMath::Vector;
+
 
 SpacePoint::SpacePoint(int type, const Vector& position, const Vector& direction, int param)
     : position(position), direction(direction), type(type), free(1), param(param) {}

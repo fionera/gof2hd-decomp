@@ -11,8 +11,8 @@
 #include "game/core/PaintCanvasClass.h"
 #include "platform/libc.h"
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
+
+
 
 // Status singleton. Status isn't otherwise modelled in this TU, so declare the
 // minimal surface needed here: the canonical singleton pointer plus getStanding()
@@ -38,14 +38,14 @@ Matrix operator*(const Matrix&, const Matrix&);
 namespace AERandom { int nextInt(int rng, int max); }
 } // namespace AbyssEngine
 
-using AbyssEngine::AEMath::MatrixGetDir;
-using AbyssEngine::AEMath::VectorNormalize;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::MatrixRotateVector;
-using AbyssEngine::AEMath::MatrixInverseTransformVector;
-using AbyssEngine::AEMath::operator+;
-using AbyssEngine::AEMath::operator-;
-using AbyssEngine::AEMath::operator*;
+
+
+
+
+
+
+
+
 
 // Engine globals: sound bank and RNG id (file-local, not shared singletons).
 extern FModSound** g_turretSound;

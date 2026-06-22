@@ -4,8 +4,8 @@
 #include <cstdio>
 #include <new>
 
-struct zip_file;
-using AbyssEngine::String;
+
+
 
 extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);

@@ -14,7 +14,7 @@ public:
 };
 } // namespace AbyssEngine
 
-using namespace AbyssEngine::AEMath;
+
 
 extern "C" void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
 extern "C" void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t meshId);

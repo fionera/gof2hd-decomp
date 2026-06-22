@@ -46,7 +46,7 @@ Sparks::Sparks(int kind)
     this->elapsed = 0;
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_translate;
 
@@ -150,7 +150,7 @@ void Sparks::explode(int x, int y, int z)
     this->active = 1;
 }
 
-using AbyssEngine::AEMath::Matrix;
+
 
 __attribute__((visibility("hidden"))) extern void **g_Sparks_canvas_render;
 

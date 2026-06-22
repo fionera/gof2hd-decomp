@@ -692,7 +692,7 @@ void PaintCanvas::SpriteSystemSetAllUv(unsigned int index,
     return paintcanvas_ext_sprite_alluv(a, b, c, d, sprite);
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub, Vector &out)
 {
@@ -780,7 +780,7 @@ void *PaintCanvas::TransformGetLocal(unsigned int index)
     return result;
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 void PaintCanvas::MeshSetTangent(unsigned int index, unsigned short vtx, const Vector &value)
 {
@@ -896,7 +896,7 @@ void PaintCanvas::SpriteSystemAddSize(unsigned int index, unsigned short sub, sh
     }
 }
 
-using AbyssEngine::AEMath::Matrix;
+
 
 void PaintCanvas::TransformSetLocal(unsigned int index, const Matrix &matrix)
 {
@@ -992,7 +992,7 @@ void PaintCanvas::SpriteSystemAddPosition(unsigned int index, unsigned short sub
     }
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 void PaintCanvas::MeshSetBiTangent(unsigned int index, unsigned short vtx, const Vector &value)
 {
@@ -1006,7 +1006,7 @@ void PaintCanvas::MeshSetBiTangent(unsigned int index, unsigned short vtx, const
     }
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
                                    AbyssEngine::AEMath::Vector &b)
@@ -1185,7 +1185,7 @@ void PaintCanvas::MeshSetColor(unsigned int index, unsigned short sub,
     }
 }
 
-using AbyssEngine::AEMath::Vector;
+
 
 void PaintCanvas::MeshSetNormal(unsigned int index, unsigned short vtx, const Vector &value)
 {
@@ -1263,7 +1263,7 @@ void PaintCanvas::SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &)
     return paintcanvas_ext_set_wvm(this->engine);
 }
 
-using AbyssEngine::AEMath::Matrix;
+
 
 void PaintCanvas::CameraSetLocal(unsigned int index, const Matrix &matrix)
 {
@@ -2214,7 +2214,7 @@ void PaintCanvas::TransformAddMesh(unsigned int transformIndex,
 // AbyssEngine::PaintCanvas::GetReverseString(String in, bool reverse)
 // When `reverse` is false, returns a plain copy of `in`; otherwise returns `in` with its
 // characters in reverse order (built one SubString per character).
-using AbyssEngine::String;
+
 
 AbyssEngine::String PaintCanvas::GetReverseString(AbyssEngine::String in, bool reverse)
 {
@@ -4102,8 +4102,8 @@ void PaintCanvas::RestoreImage2D(AbyssEngine::Image2D *image)
     ipd[2] = 0x20003;
 }
 
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::Vector;
+
+
 
 void PaintCanvas::SpriteSystemGetPosition(unsigned int index, unsigned short sub,
                              const Matrix &m, Vector &out)

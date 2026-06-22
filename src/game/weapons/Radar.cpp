@@ -3,10 +3,10 @@
 #include "platform/libc.h"
 #include "game/ship/KIPlayer.h"   // for the virtual getPosition() call
 
-using AbyssEngine::PaintCanvas;
-using AbyssEngine::String;
-using Vector = AbyssEngine::AEMath::Vector;
-using Matrix = AbyssEngine::AEMath::Matrix;
+
+
+
+
 
 namespace AbyssEngine {
 
@@ -23,12 +23,12 @@ extern uint8_t* gRadarDrawCurrentLockFlag;
 
 } // namespace AbyssEngine
 
-using AbyssEngine::gPaintCanvas;
-using AbyssEngine::gRadarCanvasForDraw;
-using AbyssEngine::gRadarMissionSlot;
-using AbyssEngine::gRadarCanvasSlot;
-using AbyssEngine::gRadarLayoutSlot;
-using AbyssEngine::gRadarDrawCurrentLockFlag;
+
+
+
+
+
+
 
 extern "C" int Radar_GetMissionState(void* mission);
 extern "C" int Radar_GetMissionType(void* mission);

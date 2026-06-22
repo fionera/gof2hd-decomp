@@ -1,9 +1,9 @@
 #include "engine/render/Trail.h"
 #include "engine/render/PaintCanvas.h"
 
-using AbyssEngine::PaintCanvas;
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
+
+
+
 namespace AEMath = AbyssEngine::AEMath;
 
 void Trail::update(const Vector &a, const Vector &b)

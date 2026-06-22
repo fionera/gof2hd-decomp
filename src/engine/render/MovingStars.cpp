@@ -3,9 +3,9 @@
 #include "game/core/Globals.h"
 #include "platform/libc.h"
 
-using AbyssEngine::PaintCanvas;
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
+
+
+
 
 extern "C" int MovingStars_kSpawnI_value;
 

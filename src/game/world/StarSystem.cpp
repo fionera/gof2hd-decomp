@@ -12,7 +12,7 @@
 #include "game/ship/PlayerStatic.h"
 #include "platform/libc.h"
 
-using AbyssEngine::AERandom;
+
 
 // PaintCanvas.h cannot be included here (its self-contained Mesh/Transform
 // definitions clash with the leaner PaintCanvasClass.h used by this TU), so

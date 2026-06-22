@@ -75,7 +75,7 @@ extern PaintCanvas* gCanvas;
 
 // Status / AEGeometry / String full layouts are not needed here: Globals only takes
 // Status* as an opaque handle and reaches the engine via extern "C" free functions.
-struct Status;
+
 
 extern "C" float VectorSignedToFloat(int v, int mode);
 extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
@@ -83,7 +83,6 @@ extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
 //   nextInt_71aa4(self)        -> unbounded 32-bit draw (1-arg call form)
 //   nextInt_71ad0(self, bound) -> bounded draw            (2-arg call form)
 // The decompiler folded both into one variadic AERandom_nextInt thunk; call the real symbols.
-namespace AbyssEngine { class AERandom; }
 uint32_t nextInt_71aa4(AbyssEngine::AERandom *self);
 int      nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 extern "C" int idiv(int a, int b);
@@ -120,7 +119,7 @@ extern "C" int Station_getIndex(int station);
 // MGame/Mission/PlayerTurret reach). Recover the receiver as gStatus->method().
 extern "C" __attribute__((visibility("hidden"))) Status **g_status;
 
-struct Status;
+
 // Hidden PC-relative leaderboard destination slot (g_android_leaderboard_scores @ 0x22d2c0;
 // NOT a shared singleton). The kills source resolves to the canonical Status singleton.
 extern void *const gLB_dest __attribute__((visibility("hidden")));
@@ -2141,8 +2140,8 @@ int Globals::getDialogueSoundId(int code, Agent *agent)
     return dialogueDispatch(category, code, male);
 }
 
-struct FileRead;
-struct Station;
+
+
 extern void *const gPlanetRng __attribute__((visibility("hidden")));
 
 // Returns a random planet (station) name.

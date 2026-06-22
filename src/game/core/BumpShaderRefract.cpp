@@ -1,7 +1,7 @@
 #include "game/core/BumpShaderRefract.h"
 // Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
-class FBOContainer;
-class ShaderBaseStruct;
+
+
 #include "engine/render/Engine.h"
 #include "platform/gl.h"
 namespace AbyssEngine {

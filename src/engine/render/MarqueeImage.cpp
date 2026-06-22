@@ -1,7 +1,7 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/PaintCanvas.h"
 
-using AbyssEngine::PaintCanvas;
+
 
 MarqueeImage::~MarqueeImage()
 {

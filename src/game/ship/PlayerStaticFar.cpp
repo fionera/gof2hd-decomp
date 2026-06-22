@@ -10,7 +10,7 @@
 #include "game/ship/Player.h"
 #include "game/core/PaintCanvasClass.h"
 
-using namespace AbyssEngine::AEMath;
+
 
 // Engine-resolved placement parameters for the far-projection: the camera holder,
 // the distance threshold below which the object is drawn at full scale, the sphere

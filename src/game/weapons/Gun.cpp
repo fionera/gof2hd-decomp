@@ -13,7 +13,7 @@ extern "C" void Gun_VecPtrArray_ctor(void *a);
 extern "C" void Gun_VecArray_setLength(int n, void *a);
 extern "C" void Gun_VecPtrArray_setLength(int n, void *a);
 
-struct VecArray;
+
 extern "C" void Gun_ArrayReleaseClasses(VecArray *a);
 extern "C" void *Gun_ArrayDtor(VecArray *a);
 

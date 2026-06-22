@@ -4,8 +4,6 @@
 
 namespace AbyssEngine {
 
-class Transform;
-
 namespace AEMath {
 
 // Engine math helpers (defined in AEMath.cpp).

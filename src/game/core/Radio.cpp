@@ -17,7 +17,7 @@
 
 // GameText::getText(int) — localized text table lookup. GameText.h currently
 // double-defines String and cannot be co-included with common.h.
-class GameText;
+
 extern "C" String* _ZN8GameText7getTextEi(GameText* self, int key)
     asm("_ZN8GameText7getTextEi");
 

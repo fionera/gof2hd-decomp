@@ -12,8 +12,8 @@
 #include "engine/render/AEGeometry.h"
 #include "game/ship/Ship.h"
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
+
+
 
 // Engine math free-functions (defined in libgof2hd).
 namespace AbyssEngine { namespace AEMath {
@@ -24,10 +24,10 @@ float  VectorLength(const Vector& value);
 Vector operator+(const Vector& lhs, const Vector& rhs);
 Vector operator-(const Vector& lhs, const Vector& rhs);
 } }
-using AbyssEngine::AEMath::MatrixRotateVector;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::operator+;
-using AbyssEngine::AEMath::operator-;
+
+
+
+
 
 // FMOD audio event shims.
 extern "C" void FModSound_resumeEvent(void* player, int channel);

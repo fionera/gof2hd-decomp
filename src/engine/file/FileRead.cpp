@@ -12,10 +12,10 @@
 #include "game/mission/Mission.h"
 #include "engine/core/Array.h"
 
-using AbyssEngine::AEMath::MatrixGetDir;
-using AbyssEngine::AEMath::MatrixIdentity;
-using AbyssEngine::AEMath::MatrixSetRotation;
-using AbyssEngine::AEMath::ROTATION_ORDER_XZY;
+
+
+
+
 
 // FileRead carries no state of its own (every loadXxx() opens, reads and closes its file locally),
 // so both the constructor and destructor have empty bodies.

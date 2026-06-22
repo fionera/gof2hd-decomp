@@ -5,8 +5,6 @@
 
 // externs.h references `Engine` (formerly supplied by the removed fwd.h); the engine type is
 // AbyssEngine::Engine and externs only takes it by pointer, so an incomplete decl satisfies it.
-namespace AbyssEngine { class Engine; }
-using ::AbyssEngine::Engine;
 #include "externs.h"
 
 

@@ -14,9 +14,9 @@
 #include "game/mission/Status.h"
 #include "game/mission/Explosion.h"
 
-using AbyssEngine::AEMath::operator+;
-using AbyssEngine::AEMath::operator-;
-using AbyssEngine::AEMath::operator*;
+
+
+
 
 // Engine globals: the active scene canvas and the FMOD / game-state singletons.
 extern "C" PaintCanvas **g_PaintCanvas;

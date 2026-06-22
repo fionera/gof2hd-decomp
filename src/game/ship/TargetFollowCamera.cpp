@@ -3,15 +3,15 @@
 #include "engine/render/PaintCanvas.h"
 #include "platform/libc.h"
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::Matrix;
-using AbyssEngine::AEMath::MatrixGetUp;
-using AbyssEngine::AEMath::MatrixGetDir;
-using AbyssEngine::AEMath::MatrixGetPosition;
-using AbyssEngine::AEMath::MatrixTransformVector;
-using AbyssEngine::AEMath::MatrixSetRotation;
-using AbyssEngine::AEMath::MatrixMultiply;
-using AbyssEngine::AEMath::VectorLength;
+
+
+
+
+
+
+
+
+
 
 // Engine globals / singletons the camera reads while updating (rumble/shake RNG,
 // the active camera index, the damping-curve constant tables). These live in the

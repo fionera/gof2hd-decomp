@@ -23,6 +23,7 @@
 #include "engine/core/GameText.h"
 #include "engine/core/AERandom.h"
 #include "engine/file/AEFile.h"
+#include "engine/file/FileInterfaceAndroid.h"
 #include "platform/gl.h"
 #include "game/mission/Status.h"
 #include "game/mission/RecordHandler.h"      // BuildResourceList, loadingScreen

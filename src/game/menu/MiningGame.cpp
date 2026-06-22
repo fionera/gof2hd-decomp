@@ -6,7 +6,7 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
 
-using AbyssEngine::String;
+
 
 // Engine-internal entry points reached through opaque global singletons. These
 // operate on engine objects (status/ship/item/achievements/sound/layout/text)

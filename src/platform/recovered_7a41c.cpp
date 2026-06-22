@@ -773,7 +773,7 @@ void actualizeButtonPositions(AbyssEngine::Engine * /*engine*/)
 // ---------------------------------------------------------------------------
 namespace {
 
-using AbyssEngine::AEMath::VectorSignedToFloat;
+
 
 // Several "int" Globals here (rotateShipInStation, translateStarMapInX/Y) carry
 // a float steering value in their bit pattern, exactly as the binary stores the

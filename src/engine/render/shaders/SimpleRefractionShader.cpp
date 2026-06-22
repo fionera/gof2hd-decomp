@@ -1,7 +1,7 @@
 #include "engine/render/shaders/SimpleRefractionShader.h"
 // Engine.h reaches these by unqualified (global-scope) name; satisfy it without modeling them.
-class FBOContainer;
-class ShaderBaseStruct;
+
+
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 #include "platform/gl.h"

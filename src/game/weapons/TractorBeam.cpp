@@ -9,9 +9,9 @@
 #include "game/mission/Status.h"
 #include "game/core/PaintCanvasClass.h"
 
-using AbyssEngine::AEMath::Vector;
-using AbyssEngine::AEMath::VectorLength;
-using AbyssEngine::AEMath::VectorNormalize;
+
+
+
 
 // The original binary mangles the radar parameter as a global ::Radar (P5Radar),
 // not AbyssEngine::Radar. Radar.h (which defines AbyssEngine::Radar) is therefore
