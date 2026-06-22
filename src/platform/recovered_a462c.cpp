@@ -1,6 +1,5 @@
-// In-app-purchase credit-pack handling and JNI string glue, recovered from the
-// Android binary (ghidra_addr 0xa462c..0xa482e). The symbols are all unmangled
-// C-linkage helpers shared by the purchase callbacks and the Android JNI bridge.
+
+
 #include "platform/recovered_a462c.h"
 
 #include <cstdlib>
@@ -13,41 +12,21 @@
 #include "engine/render/Engine.h"
 #include "engine/audio/FModSound.h"
 
-// Globals::status is the canonical Status singleton (binary .bss 0x2281b0) under
-// its real mangled name; Globals::options is the inline 100-byte game-options
-// record (binary .bss 0x2281e8) whose byte at offset 0x62 is the one-shot
-// "first credit pack bought" flag. Neither is declared in Globals.h, so reach
-// them here through their exact mangled symbols.
 extern Status *Globals_status asm("_ZN7Globals6statusE");
 extern unsigned char Globals_options[100] asm("_ZN7Globals7optionsE");
 
-// Further Globals members the NDK hooks read, none of them exposed by Globals.h:
-//   sound        the FModSound singleton                (binary .bss 0x2282bc)
-//   logoIsShown  boot-logo-finished flag                (binary .bss 0x2256bc)
-//   isInMainMenu title/main-menu-visible flag           (binary .bss 0x2256c0)
 extern FModSound *Globals_sound asm("_ZN7Globals5soundE");
 extern int Globals_logoIsShown asm("_ZN7Globals11logoIsShownE");
 extern int Globals_isInMainMenu asm("_ZN7Globals12isInMainMenuE");
 
-// The Engine root slot the rest of the NDK layer publishes (binary .bss
-// 0x227b24, the slot GetEngine() double-derefs). It is still null until the
-// engine has been brought up, so every hook below uses it as an "is the game
-// running yet" guard.
 extern "C" AbyssEngine::Engine **g_pEngine;
 
-// "Purchase pending" flags raised by the store UI for the five premium DLC
-// packs; ndk_iapBoughtPremium clears the one it just resolved (mirrors the
-// gi_iap_buy_credit_packN_pressed flags used by setBaughtCredits).
 extern "C" int gi_iap_buy_dlc1_pressed;
 extern "C" int gi_iap_buy_dlc2_pressed;
 extern "C" int gi_iap_buy_dlc3_pressed;
 extern "C" int gi_iap_buy_dlc4_pressed;
 extern "C" int gi_iap_buy_dlc5_pressed;
 
-// Cached store item list (binary .bss 0x228314..0x228374): five products, each
-// with id / name / description / currency / price strings owned as malloc'd
-// copies. These Globals members are not declared in Globals.h either, so they
-// are reached through their exact mangled symbols.
 extern char *Globals_cItemListID_00 asm("_ZN7Globals14cItemListID_00E");
 extern char *Globals_cItemListID_01 asm("_ZN7Globals14cItemListID_01E");
 extern char *Globals_cItemListID_02 asm("_ZN7Globals14cItemListID_02E");
@@ -74,19 +53,15 @@ extern char *Globals_cItemListPrice_02 asm("_ZN7Globals17cItemListPrice_02E");
 extern char *Globals_cItemListPrice_03 asm("_ZN7Globals17cItemListPrice_03E");
 extern char *Globals_cItemListPrice_04 asm("_ZN7Globals17cItemListPrice_04E");
 
-// The five "credit pack purchase pending" flags set by the IAP UI when a pack
-// button is pressed; setBaughtCredits clears the one that was just fulfilled.
 extern "C" int gi_iap_buy_credit_pack1_pressed;
 extern "C" int gi_iap_buy_credit_pack2_pressed;
 extern "C" int gi_iap_buy_credit_pack3_pressed;
 extern "C" int gi_iap_buy_credit_pack4_pressed;
 extern "C" int gi_iap_buy_credit_pack5_pressed;
 
-// Host callback that persists the game after a purchase.
 extern "C" void ndk_autosave();
 
-int setBaughtCredits(int amount)
-{
+int setBaughtCredits(int amount) {
     int *packFlag;
     if (amount == 10000000) {
         Globals_status->changeCredits(amount);
@@ -116,8 +91,7 @@ int setBaughtCredits(int amount)
     return 1;
 }
 
-void checkFirstCreditPackBoughtWriteAction()
-{
+void checkFirstCreditPackBoughtWriteAction() {
     // Return value is intentionally discarded: the call is kept for parity with
     // the original, which reads the campaign mission as a side effect anchor.
     Globals_status->getCurrentCampaignMission();
@@ -128,8 +102,7 @@ void checkFirstCreditPackBoughtWriteAction()
     }
 }
 
-const char *getStringUTFChars(JNIEnv *env, jstring str)
-{
+const char *getStringUTFChars(JNIEnv *env, jstring str) {
     if (env != nullptr && str != nullptr) {
         // Tail-jump straight to the GetStringUTFChars dispatch slot (index 169,
         // byte offset 0x2a4) leaving env/str in place; the original never passes
@@ -140,8 +113,7 @@ const char *getStringUTFChars(JNIEnv *env, jstring str)
     return nullptr;
 }
 
-void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars)
-{
+void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars) {
     if (env != nullptr && str != nullptr && chars != nullptr) {
         env->ReleaseStringUTFChars(str, chars);
         return;
@@ -154,8 +126,7 @@ void releaseStringUTFChars(JNIEnv *env, jstring str, const char *chars)
     }
 }
 
-char *pConstToNonConst(const char *s)
-{
+char *pConstToNonConst(const char *s) {
     if (s != nullptr) {
         char *copy = static_cast<char *>(std::malloc(std::strlen(s) + 1));
         if (copy != nullptr) {
@@ -166,12 +137,7 @@ char *pConstToNonConst(const char *s)
     return nullptr;
 }
 
-// ---------------------------------------------------------------------------
-// NDK frame / state hooks. All of them no-op until *g_pEngine is set.
-// ---------------------------------------------------------------------------
-
-void ndk23_sendingPauseSignal()
-{
+void ndk23_sendingPauseSignal() {
     if (*g_pEngine == nullptr)
         return;
     Globals_sound->pauseAll();
@@ -179,77 +145,64 @@ void ndk23_sendingPauseSignal()
     static_cast<IApplicationModule *>(gAppManager->currentModule)->OnSuspend();
 }
 
-void ndk23_sendingResumeSignal()
-{
+void ndk23_sendingResumeSignal() {
     if (*g_pEngine == nullptr)
         return;
     Globals_sound->resumeAll();
 }
 
-void ndk_autosave()
-{
+void ndk_autosave() {
     RecordHandler *handler = new RecordHandler;
     handler->recordStoreWrite(0);
     handler->recordStoreWritePreview(0);
     delete handler;
 }
 
-int ndk_getCurrentApplicationModule()
-{
+int ndk_getCurrentApplicationModule() {
     if (*g_pEngine == nullptr)
         return -1;
     return static_cast<int>(gAppManager->currentModuleId);
 }
 
-int ndk_getLogoShown()
-{
+int ndk_getLogoShown() {
     return Globals_logoIsShown;
 }
 
-int ndk_isInMainMenu()
-{
+int ndk_isInMainMenu() {
     return Globals_isInMainMenu;
 }
 
-// The five premium-DLC "bought" flags live in Globals::options at bytes
-// 0x35..0x39; each getter reports false while the engine is still down.
-bool ndk_getDLC_1_BOUGHT()
-{
+bool ndk_getDLC_1_BOUGHT() {
     return *g_pEngine != nullptr && Globals_options[0x35] != 0;
 }
 
-bool ndk_getDLC_2_BOUGHT()
-{
+bool ndk_getDLC_2_BOUGHT() {
     return *g_pEngine != nullptr && Globals_options[0x36] != 0;
 }
 
-bool ndk_getDLC_3_BOUGHT()
-{
+bool ndk_getDLC_3_BOUGHT() {
     return *g_pEngine != nullptr && Globals_options[0x37] != 0;
 }
 
-bool ndk_getDLC_4_BOUGHT()
-{
+bool ndk_getDLC_4_BOUGHT() {
     return *g_pEngine != nullptr && Globals_options[0x38] != 0;
 }
 
-bool ndk_getDLC_5_BOUGHT()
-{
+bool ndk_getDLC_5_BOUGHT() {
     return *g_pEngine != nullptr && Globals_options[0x39] != 0;
 }
 
-void ndk_iapBoughtConsumable(unsigned int consumable)
-{
+void ndk_iapBoughtConsumable(unsigned int consumable) {
     if (consumable > 4 || *g_pEngine == nullptr)
         return;
     // Map the credit-pack index to its credit value and award it.
     static const int kCreditPackValue[5] = {
-        100000, 300000, 1000000, 3000000, 10000000};
+        100000, 300000, 1000000, 3000000, 10000000
+    };
     setBaughtCredits(kCreditPackValue[consumable]);
 }
 
-void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought)
-{
+void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought) {
     if (*g_pEngine == nullptr || pack > 4)
         return;
 
@@ -257,7 +210,8 @@ void ndk_iapBoughtPremium(unsigned int pack, unsigned int bought)
     int *pendingFlags[5] = {
         &gi_iap_buy_dlc1_pressed, &gi_iap_buy_dlc2_pressed,
         &gi_iap_buy_dlc3_pressed, &gi_iap_buy_dlc4_pressed,
-        &gi_iap_buy_dlc5_pressed};
+        &gi_iap_buy_dlc5_pressed
+    };
     if (*pendingFlags[pack] != 0)
         *pendingFlags[pack] = 0;
 
@@ -269,8 +223,7 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
                                       jobjectArray ids, jobjectArray names,
                                       jobjectArray descriptions,
                                       jobjectArray currencies,
-                                      jobjectArray prices)
-{
+                                      jobjectArray prices) {
     if (env == nullptr)
         return;
 
@@ -282,7 +235,7 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
     for (int col = 0; col < 5; ++col)
         for (int row = 0; row < 5; ++row)
             elems[col][row] =
-                static_cast<jstring>(env->GetObjectArrayElement(arrays[col], row));
+                    static_cast<jstring>(env->GetObjectArrayElement(arrays[col], row));
 
     const char *utf[5][5];
     for (int col = 0; col < 5; ++col)
@@ -292,18 +245,29 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
     // Destination globals, grouped by column (id / name / description / currency /
     // price), five rows each.
     char **slots[5][5] = {
-        {&Globals_cItemListID_00, &Globals_cItemListID_01, &Globals_cItemListID_02,
-         &Globals_cItemListID_03, &Globals_cItemListID_04},
-        {&Globals_cItemListName_00, &Globals_cItemListName_01, &Globals_cItemListName_02,
-         &Globals_cItemListName_03, &Globals_cItemListName_04},
-        {&Globals_cItemListDescription_00, &Globals_cItemListDescription_01,
-         &Globals_cItemListDescription_02, &Globals_cItemListDescription_03,
-         &Globals_cItemListDescription_04},
-        {&Globals_cItemListCurrency_00, &Globals_cItemListCurrency_01,
-         &Globals_cItemListCurrency_02, &Globals_cItemListCurrency_03,
-         &Globals_cItemListCurrency_04},
-        {&Globals_cItemListPrice_00, &Globals_cItemListPrice_01, &Globals_cItemListPrice_02,
-         &Globals_cItemListPrice_03, &Globals_cItemListPrice_04}};
+        {
+            &Globals_cItemListID_00, &Globals_cItemListID_01, &Globals_cItemListID_02,
+            &Globals_cItemListID_03, &Globals_cItemListID_04
+        },
+        {
+            &Globals_cItemListName_00, &Globals_cItemListName_01, &Globals_cItemListName_02,
+            &Globals_cItemListName_03, &Globals_cItemListName_04
+        },
+        {
+            &Globals_cItemListDescription_00, &Globals_cItemListDescription_01,
+            &Globals_cItemListDescription_02, &Globals_cItemListDescription_03,
+            &Globals_cItemListDescription_04
+        },
+        {
+            &Globals_cItemListCurrency_00, &Globals_cItemListCurrency_01,
+            &Globals_cItemListCurrency_02, &Globals_cItemListCurrency_03,
+            &Globals_cItemListCurrency_04
+        },
+        {
+            &Globals_cItemListPrice_00, &Globals_cItemListPrice_01, &Globals_cItemListPrice_02,
+            &Globals_cItemListPrice_03, &Globals_cItemListPrice_04
+        }
+    };
     for (int col = 0; col < 5; ++col)
         for (int row = 0; row < 5; ++row)
             *slots[col][row] = pConstToNonConst(utf[col][row]);

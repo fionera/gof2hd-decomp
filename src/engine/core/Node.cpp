@@ -1,14 +1,12 @@
 #include "engine/core/Node.h"
 
-Node::Node(int value)
-{
+Node::Node(int value) {
     this->parent = nullptr;
     this->value = value;
-    this->children = new Array<Node*>();
+    this->children = new Array<Node *>();
 }
 
-Node::~Node()
-{
+Node::~Node() {
     delete this->children;
 }
 

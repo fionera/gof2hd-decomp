@@ -2,9 +2,7 @@
 #include "engine/render/ResourceTexture.h"
 #include "engine/render/Engine.h"
 #include "engine/core/ApplicationManager.h"
-// PaintCanvas.h supplies PaintCanvas::AddResource and the (forward-declared) Resource
-// type. ResourceTexture.h / ResourceMaterial.h above already define the canonical
-// BlendMode enum, so flag its guard before PaintCanvas.h pulls in its own copy.
+
 #ifndef GOF2_ENUM_BlendMode
 #define GOF2_ENUM_BlendMode
 #endif
@@ -12,82 +10,62 @@
 #include "game/core/String.h"
 
 namespace AbyssEngine {
+    ResourceMaterial::ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend) {
+        this->blendMode = static_cast<int>(blend);
+        this->field_14 = 0;
+        this->field_18 = 0;
+        this->field_1c = 0x3f800000;
+        this->field_20 = 0;
+        this->field_24 = 0;
+        for (int i = 0; i != 8; ++i)
+            this->texIndices[i] = 0xffff;
+        this->texIndices[1] = texId2;
+        this->texIndices[0] = texId;
+    }
 
-// field_1c is initialised to 0x3f800000, the IEEE-754 bit pattern of 1.0f.
+    ResourceMaterial::ResourceMaterial(uint16_t texId, BlendMode blend) {
+        this->blendMode = static_cast<int>(blend);
+        this->field_14 = 0;
+        this->field_18 = 0;
+        this->field_1c = 0x3f800000;
+        this->field_20 = 0;
+        this->field_24 = 0;
+        for (int i = 0; i != 8; ++i)
+            this->texIndices[i] = 0xffff;
+        this->texIndices[0] = texId;
+    }
 
-ResourceMaterial::ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend)
-{
-    this->blendMode = static_cast<int>(blend);
-    this->field_14  = 0;
-    this->field_18  = 0;
-    this->field_1c  = 0x3f800000;
-    this->field_20  = 0;
-    this->field_24  = 0;
-    for (int i = 0; i != 8; ++i)
-        this->texIndices[i] = 0xffff;
-    this->texIndices[1] = texId2;
-    this->texIndices[0] = texId;
-}
-
-ResourceMaterial::ResourceMaterial(uint16_t texId, BlendMode blend)
-{
-    this->blendMode = static_cast<int>(blend);
-    this->field_14  = 0;
-    this->field_18  = 0;
-    this->field_1c  = 0x3f800000;
-    this->field_20  = 0;
-    this->field_24  = 0;
-    for (int i = 0; i != 8; ++i)
-        this->texIndices[i] = 0xffff;
-    this->texIndices[0] = texId;
-}
-
-// A PaintCanvas resource table entry (size 0x10): an id-tagged owner of a payload.
-// Same shape used by the sibling resource loaders (see recovered_128188.cpp):
-//   id@0x0, kind@0x4 (2 = texture), unused@0x8 (always -1), payload@0xc.
-struct Resource {
-    unsigned short id;
-    int            kind;
-    int            unused;
-    void          *payload;
-};
-
+    struct Resource {
+        unsigned short id;
+        int kind;
+        int unused;
+        void *payload;
+    };
 } // namespace AbyssEngine
 
-// Device-class config flags, addressed absolutely in the binary. Each is a heap
-// C-string whose first byte is non-empty when that device class is active; the
-// portrait textures pick an asset-name infix accordingly. They live in the shared
-// extern table (src/externs.h) like the other engine feature-flag globals.
 extern "C" char *g_Portraits_ipadLargeFlag;
 extern "C" char *g_Portraits_ipad1440Flag;
 extern "C" char *g_Portraits_ipadFlagA;
 extern "C" char *g_Portraits_ipadFlagB;
 extern "C" char *g_Portraits_ipadFlagC;
 
-// Registers a single portrait texture on the canvas: builds the asset name
-// "<base><suffix>.aei" and wraps the ResourceTexture in an id-tagged Resource
-// (kind 2 = texture). Inlined at every call site by loadPortraits below.
-__attribute__((always_inline)) static inline void
+__attribute__ ((always_inline))
+
+static inline void
 addPortrait(AbyssEngine::PaintCanvas *canvas,
             const AbyssEngine::String &suffix,
-            unsigned short id, const char *base)
-{
+            unsigned short id, const char *base) {
     AbyssEngine::String fullName = AbyssEngine::String(base, false) + suffix +
                                    AbyssEngine::String(".aei", false);
     AbyssEngine::Resource *res = new AbyssEngine::Resource;
-    res->id      = id;
-    res->kind    = 2;
-    res->unused  = -1;
+    res->id = id;
+    res->kind = 2;
+    res->unused = -1;
     res->payload = new AbyssEngine::ResourceTexture(fullName, 0.0f);
     canvas->AddResource(res);
 }
 
-// loadPortraits(Engine*): registers the full set of pilot/portrait textures on the
-// engine PaintCanvas. Each portrait is a ResourceTexture whose asset name is
-// "<base><deviceInfix>.aei"; the wrapper Resource carries a sequential id (starting
-// at 0x27d8), the texture kind tag (2) and the owned texture.
-void loadPortraits(AbyssEngine::Engine *engine)
-{
+void loadPortraits(AbyssEngine::Engine *engine) {
     AbyssEngine::PaintCanvas *canvas = engine->appManager->paintCanvas;
 
     // Pick the per-device texture-name infix.

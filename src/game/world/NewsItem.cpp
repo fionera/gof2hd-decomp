@@ -1,8 +1,7 @@
 #include "game/world/NewsItem.h"
 
-NewsItem::NewsItem(int id, bool flag, bool *data, int length, int minLevel, int maxLevel)
-{
-    this->flag = (uint8_t)flag;
+NewsItem::NewsItem(int id, bool flag, bool *data, int length, int minLevel, int maxLevel) {
+    this->flag = (uint8_t) flag;
     this->id = id;
     this->data = data;
     this->length = length;
@@ -11,21 +10,18 @@ NewsItem::NewsItem(int id, bool flag, bool *data, int length, int minLevel, int 
     this->used = 0;
 }
 
-NewsItem::~NewsItem()
-{
-    delete[] (uint8_t *)this->data;
+NewsItem::~NewsItem() {
+    delete[] (uint8_t *) this->data;
     this->data = nullptr;
 }
 
-// Deep-copies the byte buffer and the fields into a freshly allocated NewsItem.
-NewsItem *NewsItem::clone()
-{
+NewsItem *NewsItem::clone() {
     int len = this->length;
     bool *buf = new bool[len];
     for (int i = 0; i < len; i = i + 1) {
-        buf[i] = ((uint8_t *)this->data)[i];
+        buf[i] = ((uint8_t *) this->data)[i];
     }
-    NewsItem *out = new NewsItem(this->id, this->flag != 0, buf, len,
-                                this->minLevel, this->maxLevel);
+    NewsItem * out = new NewsItem(this->id, this->flag != 0, buf, len,
+                                  this->minLevel, this->maxLevel);
     return out;
 }

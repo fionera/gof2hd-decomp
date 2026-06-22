@@ -2,8 +2,6 @@
 #include "game/core/String.h"
 #include "game/mission/Mission.h"
 
-
-
 String Agent::getStationName() {
     return this->stationName;
 }
@@ -16,19 +14,19 @@ bool Agent::isStoryAgent() {
     return this->category == 0;
 }
 
-Array<AbyssEngine::String*>* Agent::getWingmanNames() {
+Array<AbyssEngine::String *> *Agent::getWingmanNames() {
     return this->wingmanNames;
 }
 
-int* Agent::getImageParts() {
+int *Agent::getImageParts() {
     return this->imageParts;
 }
 
-Mission* Agent::getMission() {
+Mission *Agent::getMission() {
     return this->mission;
 }
 
-void Agent::setMission(Mission* mission) {
+void Agent::setMission(Mission *mission) {
     this->mission = mission;
 }
 
@@ -52,8 +50,7 @@ String Agent::getName() {
     return this->name;
 }
 
-// Per-mod-slot price percentage; slots beyond the table charge the default 40%.
-static const int kModPriceTable[4] = { 0, 0, 0, 0 };
+static const int kModPriceTable[4] = {0, 0, 0, 0};
 
 int Agent::getModPricePercentage() {
     uint32_t i = this->sellModIndex;
@@ -98,38 +95,35 @@ void Agent::giveRewardAtNextChat(bool v) {
     this->rewardAtNextChat = v;
 }
 
-Triple* Agent::setSellItemData(int index, int quantity, int price) {
+Triple *Agent::setSellItemData(int index, int quantity, int price) {
     this->sellItemIndex = index;
     this->sellItemQuantity = quantity;
     this->sellItemPrice = price;
-    return reinterpret_cast<Triple*>(&this->sellItemIndex);
+    return reinterpret_cast<Triple *>(&this->sellItemIndex);
 }
 
-// Rebuild the wingman name list from a fresh source array: the player's own name
-// goes first, followed by up to two wingman friend names taken from `param`. Any
-// previously held wingman names and list are released, and `param` is consumed.
-void Agent::setWingmanFriendNames(Array<AbyssEngine::String*>* param) {
+void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
     delete this->wingman1;
     this->wingman1 = nullptr;
     delete this->wingman2;
     this->wingman2 = nullptr;
     delete this->wingmanNames;
 
-    this->wingmanNames = new Array<AbyssEngine::String*>();
+    this->wingmanNames = new Array<AbyssEngine::String *>();
     this->wingmanNames->push_back(new String(this->name));
     this->wingmanCount = 0;
     if (param == nullptr)
         return;
 
     if (param->size() != 0) {
-        String* w0 = (*param)[0];
+        String *w0 = (*param)[0];
         if (w0 != nullptr) {
             this->wingmanCount = 1;
             this->wingman1 = w0;
             this->wingmanNames->push_back(w0);
         }
         if (param->size() >= 2) {
-            String* w1 = (*param)[1];
+            String *w1 = (*param)[1];
             if (w1 != nullptr) {
                 this->wingman2 = w1;
                 this->wingmanCount += 1;
@@ -167,8 +161,6 @@ void Agent::setMissionString(String src) {
     this->missionString = src;
 }
 
-// ---- simple field accessors ----
-
 int Agent::getStation() {
     return this->station;
 }
@@ -182,7 +174,7 @@ int Agent::getRace() {
 }
 
 int Agent::getIndex() {
-    return (int)this->type;
+    return (int) this->type;
 }
 
 int Agent::getCosts() {
@@ -269,7 +261,7 @@ Agent::Agent(int kind, String name, int station, int system, int race,
     this->wingmanNames = nullptr;
     this->field_0x28 = -1;
     this->field_0x2c = -1;
-    this->category = (unsigned)kind >> 31;
+    this->category = (unsigned) kind >> 31;
     if (sellModIndex >= 0)
         this->offer = 8;
     if (kind == 0x19)

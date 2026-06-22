@@ -18,11 +18,8 @@
 #include "game/ui/TouchButton.h"
 #include "platform/libc.h"
 
-
-
-// Byte-offset accessor for EXTERNAL opaque objects (the engine sound-config
-// record) whose layout is not modelled here.
-template <class T> static inline T &F(void *p, int off) { return *(T *)((char *)p + off); }
+template<class T>
+static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }
 
 int DialogueWindow::OnTouchBegin(int x, int y) {
     if (this->choiceActive != 0) {
@@ -36,8 +33,20 @@ int DialogueWindow::OnTouchBegin(int x, int y) {
     return 0;
 }
 
-__attribute__((visibility("hidden"))) extern int g_dw_briefingCounts[];
-__attribute__((visibility("hidden"))) extern int g_dw_successCounts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_briefingCounts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_successCounts[];
 
 int DialogueWindow::getMode() {
     return this->kind;
@@ -58,7 +67,7 @@ int DialogueWindow::length() {
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
         int result = 6;
-        if (((int *)gStatus)[0x45] == 2) result = 0x12;
+        if (((int *) gStatus)[0x45] == 2) result = 0x12;
         return result;
     }
     return 1;
@@ -78,12 +87,9 @@ bool DialogueWindow::hasLevel() {
     return this->level != 0;
 }
 
-// Releases the face-part image array, the campaign briefing/success offset
-// tables, the scroll window and the three touch buttons, then destroys the
-// agent-name / body-text strings.
 DialogueWindow::~DialogueWindow() {
     if (this->faceParts != 0) {
-        for (ImagePart *part : *this->faceParts) delete part;
+        for (ImagePart *part: *this->faceParts) delete part;
         this->faceParts->clear();
         delete this->faceParts;
         this->faceParts = 0;
@@ -136,14 +142,26 @@ bool DialogueWindow::isLastPage() {
     return this->page == len - 1;
 }
 
-__attribute__((visibility("hidden"))) extern int g_dw_briefingDialogueIds[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_briefingDialogueIds[];
 
 bool DialogueWindow::hasBriefingDialogue(int id) {
     if (id > 0xa1) return false;
     return g_dw_briefingDialogueIds[id] > 0;
 }
 
-__attribute__((visibility("hidden"))) extern int g_dw_successDialogueIds[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_successDialogueIds[];
 
 bool DialogueWindow::hasSuccessDialogue(int id) {
     if (id > 0xa1) return false;
@@ -172,13 +190,55 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
     this->loadContent();
 }
 
-__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextLoad;
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundLoad;
-__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryLoad;
-__attribute__((visibility("hidden"))) extern const char g_dw_emptyLoad[];
-__attribute__((visibility("hidden"))) extern int g_dw_campaignBriefingTextIds[];
-__attribute__((visibility("hidden"))) extern int g_dw_campaignSuccessTextIds[];
-__attribute__((visibility("hidden"))) extern void *g_dw_defaultClientImage;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_dw_gameTextLoad;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_soundLoad;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern ImageFactory **g_dw_imageFactoryLoad;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_dw_emptyLoad[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_campaignBriefingTextIds[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_campaignSuccessTextIds[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void *g_dw_defaultClientImage;
 
 void DialogueWindow::loadContent() {
     GameText *gameText = *g_dw_gameTextLoad;
@@ -193,7 +253,7 @@ void DialogueWindow::loadContent() {
     this->nextButton->setPressProgress(0);
 
     if (this->faceParts != 0) {
-        for (ImagePart *part : *this->faceParts) delete part;
+        for (ImagePart *part: *this->faceParts) delete part;
         this->faceParts->clear();
         delete this->faceParts;
         this->faceParts = 0;
@@ -224,7 +284,7 @@ void DialogueWindow::loadContent() {
             this->agentName.assign(gameText->getText(0x63d));
             this->mirrorFace = 1;
         } else {
-            this->clientImage = (void *)(intptr_t)mission->getClientImage();
+            this->clientImage = (void *) (intptr_t) mission->getClientImage();
             this->agentName = mission->getClientName();
             this->mirrorFace = 0;
         }
@@ -243,7 +303,7 @@ void DialogueWindow::loadContent() {
 
         if (kind == 1) {
             int standing = gStatus->getStanding();
-            ((Standing *)(intptr_t)standing)->applyMissionCompleted(mission->getClientRace());
+            ((Standing *) (intptr_t) standing)->applyMissionCompleted(mission->getClientRace());
         }
         if (mission->getTargetStation() == 0x6c && kind == 0) {
             textId = 0x1ca;
@@ -267,13 +327,13 @@ void DialogueWindow::loadContent() {
 
     this->prevButton->setVisible(this->page != 0);
     this->moreButton->setVisible(this->length() > 1);
-    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar((int *)this->clientImage);
+    this->faceParts = (*g_dw_imageFactoryLoad)->loadChar((int *) this->clientImage);
 
     if (this->isLastPage() != 0) {
         this->nextButton->replaceTextKeepSize(*gameText->getText(0xb5));
     }
 
-    Agent *agent = mission == 0 ? (Agent *)0 : mission->getAgent();
+    Agent *agent = mission == 0 ? (Agent *) 0 : mission->getAgent();
     int soundId = gGlobals->getDialogueSoundId(textId, agent);
     this->voiceSound = soundId;
     if (soundId >= 0) {
@@ -288,8 +348,20 @@ DialogueWindow::DialogueWindow() {
     this->init();
 }
 
-__attribute__((visibility("hidden"))) extern void *g_dw_soundConfig;
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_fmodSound;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void *g_dw_soundConfig;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_fmodSound;
 
 void DialogueWindow::update(int dt) {
     if (this->scrollWindow != 0) {
@@ -310,11 +382,41 @@ void DialogueWindow::update(int dt) {
     }
 }
 
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundChoice;
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundVoice;
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundPrev;
-__attribute__((visibility("hidden"))) extern FModSound **g_dw_soundNext;
-__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextTouchEnd;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_soundChoice;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_soundVoice;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_soundPrev;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FModSound **g_dw_soundNext;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_dw_gameTextTouchEnd;
 
 int DialogueWindow::OnTouchEnd(int x, int y) {
     if (this->choiceActive != 0) {
@@ -356,16 +458,58 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
     return 0;
 }
 
-__attribute__((visibility("hidden"))) extern int g_dw_briefingPartCounts[];
-__attribute__((visibility("hidden"))) extern int g_dw_successPartCounts[];
-__attribute__((visibility("hidden"))) extern const char g_dw_defaultAgentName[];
-__attribute__((visibility("hidden"))) extern int *g_dw_screenWidth;
-__attribute__((visibility("hidden"))) extern void **g_dw_layoutInit;
-__attribute__((visibility("hidden"))) extern int *g_dw_screenHeight;
-__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextInit;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_briefingPartCounts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_successPartCounts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_dw_defaultAgentName[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_screenWidth;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_dw_layoutInit;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_screenHeight;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_dw_gameTextInit;
 
 static inline int half_round_to_zero(int v) {
-    return (v + ((unsigned)v >> 31)) >> 1;
+    return (v + ((unsigned) v >> 31)) >> 1;
 }
 
 int DialogueWindow::init() {
@@ -416,30 +560,54 @@ int DialogueWindow::init() {
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     this->prevButton = new TouchButton(*gameText->getText(0xb3), 5,
-        this->frameX + margin, this->frameY - margin + this->frameHeight,
-        F<int>(layout, 0x50), 0x21, 4);
+                                       this->frameX + margin, this->frameY - margin + this->frameHeight,
+                                       F<int>(layout, 0x50), 0x21, 4);
 
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     this->nextButton = new TouchButton(*gameText->getText(0xb4), 6,
-        this->frameX + this->frameWidth - margin,
-        this->frameY - margin + this->frameHeight,
-        F<int>(layout, 0x50), 0x22, 4);
+                                       this->frameX + this->frameWidth - margin,
+                                       this->frameY - margin + this->frameHeight,
+                                       F<int>(layout, 0x50), 0x22, 4);
 
     layout = *g_dw_layoutInit;
     margin = F<int>(layout, 0x4c);
     this->moreButton = new TouchButton(*gameText->getText(0x18b), 0,
-        this->frameX + half_round_to_zero(this->frameWidth),
-        this->frameY + this->frameHeight - margin,
-        this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
+                                       this->frameX + half_round_to_zero(this->frameWidth),
+                                       this->frameY + this->frameHeight - margin,
+                                       this->frameWidth - margin * 4 - F<int>(layout, 0x50) * 2, 0x24, 4);
     this->choiceActive = 0;
     return 0;
 }
 
-__attribute__((visibility("hidden"))) extern const char g_dw_emptyString[];
-__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryCtor;
-__attribute__((visibility("hidden"))) extern GameText **g_dw_gameTextCtor;
-__attribute__((visibility("hidden"))) extern void **g_dw_layoutCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_dw_emptyString[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern ImageFactory **g_dw_imageFactoryCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_dw_gameTextCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_dw_layoutCtor;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     this->bodyText.ctor();
@@ -480,9 +648,27 @@ DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
     this->set(mission, kind, -1);
 }
 
-__attribute__((visibility("hidden"))) extern int g_dw_germanBriefingTexts[];
-__attribute__((visibility("hidden"))) extern int g_dw_germanSuccessTexts[];
-__attribute__((visibility("hidden"))) extern int g_dw_germanOtherTexts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_germanBriefingTexts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_germanSuccessTexts[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_dw_germanOtherTexts[];
 
 int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind, Agent *agent) {
     int race = agent->getRace();
@@ -517,25 +703,79 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
         texts = g_dw_germanBriefingTexts;
     }
 
-    int *picked = (int *)((char *)texts + index * 4 + 0x48);
+    int *picked = (int *) ((char *) texts + index * 4 + 0x48);
     if (male != 0) {
-        picked = (int *)((char *)texts + race * 8 + index * 4);
+        picked = (int *) ((char *) texts + race * 8 + index * 4);
     }
     return *picked;
 }
 
-__attribute__((visibility("hidden"))) extern int *g_dw_drawGuard;
-__attribute__((visibility("hidden"))) extern Layout **g_dw_layoutDraw;
-__attribute__((visibility("hidden"))) extern ImageFactory **g_dw_imageFactoryDraw;
-__attribute__((visibility("hidden"))) extern int *g_dw_drawPositionsReady;
-__attribute__((visibility("hidden"))) extern int *g_dw_moreButtonX;
-__attribute__((visibility("hidden"))) extern int *g_dw_moreButtonY;
-__attribute__((visibility("hidden"))) extern int *g_dw_nextButtonX;
-__attribute__((visibility("hidden"))) extern int *g_dw_nextButtonY;
-__attribute__((visibility("hidden"))) extern int *g_dw_drawReadyFlag;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_drawGuard;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern Layout **g_dw_layoutDraw;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern ImageFactory **g_dw_imageFactoryDraw;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_drawPositionsReady;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_moreButtonX;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_moreButtonY;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_nextButtonX;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_nextButtonY;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_dw_drawReadyFlag;
 
 void DialogueWindow::draw() {
-    gCanvas->SetColor((unsigned int)-1);
+    gCanvas->SetColor((unsigned int) -1);
     Layout *layout = *g_dw_layoutDraw;
     layout->drawMask();
     String title;
@@ -548,7 +788,8 @@ void DialogueWindow::draw() {
     layout = *g_dw_layoutDraw;
     int margin = F<int>(layout, 0x4c);
     (*g_dw_imageFactoryDraw)->drawChar(this->faceParts,
-        this->frameX + margin, this->frameY + margin + F<int>(layout, 0x8), this->mirrorFace);
+                                       this->frameX + margin, this->frameY + margin + F<int>(layout, 0x8),
+                                       this->mirrorFace);
 
     this->prevButton->draw();
     this->nextButton->draw();
@@ -562,66 +803,55 @@ void DialogueWindow::draw() {
         Vector pos;
         if (this->moreButton != 0) {
             pos = this->moreButton->getPosition();
-            F<int>(g_dw_moreButtonX, 0x08) = (int)pos.x;
+            F<int>(g_dw_moreButtonX, 0x08) = (int) pos.x;
             pos = this->moreButton->getPosition();
-            F<int>(g_dw_moreButtonY, 0x08) = (int)pos.y;
+            F<int>(g_dw_moreButtonY, 0x08) = (int) pos.y;
         }
         if (this->nextButton != 0) {
             pos = this->nextButton->getPosition();
-            F<int>(g_dw_nextButtonX, 0x0c) = (int)pos.x;
+            F<int>(g_dw_nextButtonX, 0x0c) = (int) pos.x;
             pos = this->nextButton->getPosition();
-            F<int>(g_dw_nextButtonY, 0x0c) = (int)pos.y;
+            F<int>(g_dw_nextButtonY, 0x0c) = (int) pos.y;
         }
         *g_dw_drawReadyFlag = 1;
     }
 }
 
-// Attach the campaign Level whose briefing/success text this window is showing.
-// hasLevel() reports whether a level was bound this way.
 void DialogueWindow::setLevel(Level *level) {
     this->level = level;
 }
 
-// ---- ABI shims -------------------------------------------------------------
-// ModStation builds and drives its embedded DialogueWindow through a handful of
-// other-unit-inlined entry points; each forwards to the recovered members. The
-// raw object pointer is allocated by ModStation, so the constructors run via
-// placement-new on the supplied storage.
 extern "C" void DialogueWindow_ctor_ou(DialogueWindow *dw) {
-    new (dw) DialogueWindow();
+    new(dw) DialogueWindow();
 }
 
 extern "C" void DialogueWindow_ctor_mission_ou(DialogueWindow *dw, void *mission,
                                                int level, int kind) {
-    new (dw) DialogueWindow((Mission *)mission, (Level *)(intptr_t)level, kind);
+    new(dw) DialogueWindow((Mission *) mission, (Level *) (intptr_t) level, kind);
 }
 
 extern "C" void DialogueWindow_ctor_msg_ou(DialogueWindow *dw, int titleStr,
                                            int bodyStr, int *parts) {
-    new (dw) DialogueWindow((String *)(intptr_t)titleStr, (String *)(intptr_t)bodyStr, parts);
+    new(dw) DialogueWindow((String *) (intptr_t) titleStr, (String *) (intptr_t) bodyStr, parts);
 }
 
-// set()/update() reached from the inlined station logic.  setMission passes the
-// "won" kind (1) and lets the window resolve the current campaign mission (-1).
 extern "C" void DialogueWindow_setMission_ou(void *dw, void *mission, int kind) {
-    ((DialogueWindow *)dw)->set((Mission *)mission, kind, -1);
+    ((DialogueWindow *) dw)->set((Mission *) mission, kind, -1);
 }
 
 extern "C" void DialogueWindow_update_ou(int dw) {
-    ((DialogueWindow *)(intptr_t)dw)->update(0);
+    ((DialogueWindow *) (intptr_t) dw)->update(0);
 }
 
 extern "C" int DialogueWindow_OnTouchEnd_ote(int dw, int xy) {
-    return ((DialogueWindow *)(intptr_t)dw)->OnTouchEnd(xy, xy);
+    return ((DialogueWindow *) (intptr_t) dw)->OnTouchEnd(xy, xy);
 }
 
 extern "C" void DialogueWindow_dtor_ote(DialogueWindow *dw) {
     dw->~DialogueWindow();
 }
 
-// Render: ModStation passes itself; the live DialogueWindow pointer lives at
-// ModStation + 0x84 (m_pDialogueWindow).  Draw it through the real member.
 extern "C" void DialogueWindow_draw_r2d(void *modStation) {
-    DialogueWindow *dw = *(DialogueWindow **)((char *)modStation + 0x84);
+    DialogueWindow * dw = *(DialogueWindow **) ((char *) modStation + 0x84);
     if (dw != 0) dw->draw();
 }

@@ -3,11 +3,10 @@
 
 namespace AEMath = AbyssEngine::AEMath;
 
-BoundingVolume::~BoundingVolume()
-{
+BoundingVolume::~BoundingVolume() {
     if (children != nullptr) {
         // owning array: delete each child pointee, then free the array itself
-        for (BoundingVolume* child : *children) {
+        for (BoundingVolume *child: *children) {
             delete child;
         }
         children->clear();
@@ -16,11 +15,9 @@ BoundingVolume::~BoundingVolume()
     children = nullptr;
 }
 
-// Composite node: each child is polled through its own virtual collide().
-int BoundingVolume::collide(float, float, float)
-{
+int BoundingVolume::collide(float, float, float) {
     if (children != nullptr) {
-        for (BoundingVolume* child : *children) {
+        for (BoundingVolume *child: *children) {
             if (child->collide(centerX, centerY, centerZ) != 0) {
                 return 1;
             }
@@ -29,19 +26,12 @@ int BoundingVolume::collide(float, float, float)
     return 0;
 }
 
-// Base composite outerCollide: a plain volume has no outer surface of its own
-// (binary BoundingVolume::outerCollide returns 0); leaf subclasses override.
-int BoundingVolume::outerCollide(float, float, float)
-{
+int BoundingVolume::outerCollide(float, float, float) {
     return 0;
 }
 
-// projectCollisionOnSurface is pure virtual in the base (no body) -- only the
-// leaf subclasses (BoundingSphere / BoundingAAB) own a surface and define it.
-
-BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position)
-{
-    (void)position;
+BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector &position) {
+    (void) position;
     Vector out;
     out.x = 0.0f;
     out.y = 0.0f;
@@ -49,21 +39,16 @@ BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector& position
     return out;
 }
 
-// Allocate a fresh child-volume array and register the source volume into it.
-void BoundingVolume::setVolume(BoundingVolume* src)
-{
-    children = new Array<BoundingVolume*>();
+void BoundingVolume::setVolume(BoundingVolume *src) {
+    children = new Array<BoundingVolume *>();
     children->push_back(src);
 }
 
-// Store the child-volume array directly (the binary is a single str at +4).
-void BoundingVolume::setVolumes(Array<BoundingVolume*>* arr)
-{
+void BoundingVolume::setVolumes(Array<BoundingVolume *> *arr) {
     children = arr;
 }
 
-BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez)
-{
+BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez) {
     children = nullptr;
     centerX = cx;
     centerY = cy;
@@ -73,17 +58,18 @@ BoundingVolume::BoundingVolume(float cx, float cy, float cz, float ex, float ey,
     extentsZ = ez;
 }
 
-// Seed this->center with v, then run two passes projecting the point onto every
-// colliding volume's surface, dispatched through each volume's virtuals.
-void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<BoundingVolume*>* vols)
-{
+void BoundingVolume::staticProjectCollisionOnSurface(const Vector &v, Array<BoundingVolume *> *vols) {
     centerX = v.x;
     centerY = v.y;
     centerZ = v.z;
 
     if (vols != nullptr) {
         for (int pass = 0; pass != 2; pass++) {
-            for (BoundingVolume* bv : *vols) {
+            for (BoundingVolume * bv
+            :
+            *vols
+            )
+            {
                 if (bv->outerCollide(centerX, centerY, centerZ) != 0) {
                     Vector out = bv->projectCollisionOnSurface(Vector{centerX, centerY, centerZ});
                     centerX = out.x;
@@ -95,10 +81,13 @@ void BoundingVolume::staticProjectCollisionOnSurface(const Vector& v, Array<Boun
     }
 }
 
-void BoundingVolume::update(float x, float y, float z)
-{
+void BoundingVolume::update(float x, float y, float z) {
     if (children != nullptr) {
-        for (BoundingVolume* child : *children) {
+        for (BoundingVolume * child
+        :
+        *children
+        )
+        {
             child->update(x, y, z);
         }
     }
@@ -107,9 +96,7 @@ void BoundingVolume::update(float x, float y, float z)
     centerZ = z;
 }
 
-// Returns normalize(v - this->center).
-BoundingVolume::Vector BoundingVolume::getProjectionVector(const Vector& v)
-{
+BoundingVolume::Vector BoundingVolume::getProjectionVector(const Vector &v) {
     Vector center;
     center.x = centerX;
     center.y = centerY;

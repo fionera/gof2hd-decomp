@@ -11,74 +11,64 @@
 #include "game/core/PaintCanvasClass.h"
 #include "platform/libc.h"
 
-
-
-
-// Status singleton. Status isn't otherwise modelled in this TU, so declare the
-// minimal surface needed here: the canonical singleton pointer plus getStanding()
-// (which returns the Standing table id, cast to Standing* at the call site).
 class Status {
 public:
     int getStanding();
 };
-extern Status* gStatus;            // canonical Status singleton (binary .bss 0x2281b0)
+
+extern Status *gStatus; // canonical Status singleton (binary .bss 0x2281b0)
 
 namespace AbyssEngine {
-namespace AEMath {
-Vector MatrixGetDir(const Matrix& matrix);
-Vector VectorNormalize(const Vector& v);
-float  VectorLength(const Vector& v);
-Vector MatrixRotateVector(const Matrix& matrix, const Vector& vector);
-Vector MatrixInverseTransformVector(const Matrix& matrix, const Vector& vector);
-Vector operator+(const Vector&, const Vector&);
-Vector operator-(const Vector&, const Vector&);
-Vector operator*(const Vector&, float);
-Matrix operator*(const Matrix&, const Matrix&);
-} // namespace AEMath
-namespace AERandom { int nextInt(int rng, int max); }
+    namespace AEMath {
+        Vector MatrixGetDir(const Matrix &matrix);
+
+        Vector VectorNormalize(const Vector &v);
+
+        float VectorLength(const Vector &v);
+
+        Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
+
+        Vector MatrixInverseTransformVector(const Matrix &matrix, const Vector &vector);
+
+        Vector operator+(const Vector &, const Vector &);
+
+        Vector operator-(const Vector &, const Vector &);
+
+        Vector operator*(const Vector &, float);
+
+        Matrix operator*(const Matrix &, const Matrix &);
+    } // namespace AEMath
+    namespace AERandom {
+        int nextInt(int rng, int max);
+    }
 } // namespace AbyssEngine
 
+extern FModSound **g_turretSound;
+extern int g_turretRandom;
 
+extern PaintCanvas *gCanvas; // canonical render canvas singleton (binary .bss 0x2281b8)
 
-
-
-
-
-
-
-
-// Engine globals: sound bank and RNG id (file-local, not shared singletons).
-extern FModSound** g_turretSound;
-extern int         g_turretRandom;
-// Canonical render-canvas singleton. PaintCanvas.h clashes with PaintCanvasClass.h
-// in this TU, so declare the canonical pointer locally (matches the real definition).
-extern PaintCanvas* gCanvas;       // canonical render canvas singleton (binary .bss 0x2281b8)
-
-void PlayerTurret::setTurretRange(int range)
-{
+void PlayerTurret::setTurretRange(int range) {
     this->turretRange = range;
 }
 
-void PlayerTurret::handleSentryGun(int delta)
-{
+void PlayerTurret::handleSentryGun(int delta) {
     this->pickEnemyTimer += delta;
     this->pickEnemy();
-    Player* enemy = this->currentEnemy;
+    Player *enemy = this->currentEnemy;
     if (enemy != nullptr && enemy->field_5e == 0) {
-        AEGeometry* geometry = this->geometry;
+        AEGeometry *geometry = this->geometry;
         this->handleRotation(delta, geometry, geometry);
     }
 }
 
-void PlayerTurret::setHost(KIPlayer* host, const Vector& offset)
-{
+void PlayerTurret::setHost(KIPlayer *host, const Vector &offset) {
     this->turretHost = host;
     this->hostOffset = offset;
 }
 
-void PlayerTurret::render()
-{
-    AEGeometry* visible = this->crateGeometry;
+void PlayerTurret::render() {
+    AEGeometry *visible = this->crateGeometry;
     if (visible != nullptr) {
         visible->render();
     }
@@ -94,36 +84,30 @@ void PlayerTurret::render()
     }
 }
 
-// Turrets are never queried for hull/proximity collisions; both vtable slots are
-// inert stubs that report "no collision".
-int PlayerTurret::collide(float x, float y, float z)
-{
+int PlayerTurret::collide(float x, float y, float z) {
     return 0;
 }
 
-int PlayerTurret::outerCollide(float x, float y, float z)
-{
+int PlayerTurret::outerCollide(float x, float y, float z) {
     return 0;
 }
 
-void PlayerTurret::handleTurret(int delta)
-{
+void PlayerTurret::handleTurret(int delta) {
     this->pickEnemyTimer += delta;
     this->pickEnemy();
-    Player* enemy = this->currentEnemy;
+    Player *enemy = this->currentEnemy;
     if (enemy != nullptr && enemy->field_5e == 0) {
         this->handleRotation(delta, this->helperGeometry, this->turretGeometry);
     }
 }
 
-void PlayerTurret::revive()
-{
+void PlayerTurret::revive() {
     this->player->reset();
     this->crateGeometry = nullptr;
     this->state = 1;
     this->reviveFlag = 0;
     this->explosion->reset();
-    AEGeometry* geometry = this->parentGeometry;
+    AEGeometry *geometry = this->parentGeometry;
     this->spawnInvulnTimer = 0;
     this->visibleFlag = 1;
     if (geometry == nullptr) {
@@ -132,43 +116,37 @@ void PlayerTurret::revive()
     geometry->setVisible(true);
 }
 
-void PlayerTurret::setPosition(const Vector& position)
-{
+void PlayerTurret::setPosition(const Vector &position) {
     this->geometry->setPosition(position);
     this->posX = position.x;
     this->posY = position.y;
     this->posZ = position.z;
 }
 
-void PlayerTurret::reset()
-{
+void PlayerTurret::reset() {
     this->KIPlayer::reset();
     this->state = 0;
 }
 
-void PlayerTurret::setLevel(Level* level)
-{
+void PlayerTurret::setLevel(Level *level) {
     this->KIPlayer::setLevel(level);
-    ParticleSystemManager* manager = (ParticleSystemManager*)this->level->field_74;
+    ParticleSystemManager *manager = (ParticleSystemManager *) this->level->field_74;
     int system = manager->addSystem(&this->geometry->getReferenceMatrix(), ParticleSettings::ParticleSet_9, false);
     this->particleSystemId = system;
     manager->enableSystemEmit(system, false);
 }
 
-KIPlayer* PlayerTurret::getHost()
-{
+KIPlayer *PlayerTurret::getHost() {
     return this->turretHost;
 }
 
-void PlayerTurret::setScaling(float scale)
-{
+void PlayerTurret::setScaling(float scale) {
     this->helperGeometry->setScaling(scale);
 }
 
-void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometry* turretGeometry)
-{
+void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometry *turretGeometry) {
     Matrix matrix;
-    matrix = *(const Matrix*)this->currentEnemy->transform;
+    matrix = *(const Matrix *) this->currentEnemy->transform;
     Vector enemyPos = this->currentEnemy->getPosition();
 
     Vector dir = MatrixGetDir(matrix);
@@ -191,10 +169,10 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
     bool ready = false;
     float yaw;
     if (aim.x > 0.0f) {
-        yaw = (float)delta;
+        yaw = (float) delta;
         turretGeometry->rotate(0.0f, yaw * 0.001f * 0.25f, 0.0f);
     } else if (aim.x < -0.05f) {
-        yaw = (float)-delta;
+        yaw = (float) -delta;
         turretGeometry->rotate(0.0f, yaw * 0.001f * 0.25f, 0.0f);
     } else {
         ready = true;
@@ -206,9 +184,9 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
             this->pickEnemyTimer += delta;
             return;
         }
-        float step = (float)this->frameDelta;
-        float next = (float)this->rotationAccum - step;
-        this->rotationAccum = (int)next;
+        float step = (float) this->frameDelta;
+        float next = (float) this->rotationAccum - step;
+        this->rotationAccum = (int) next;
         mainGeometry->rotate(next, 0.0f, step * 0.001f * 0.25f);
         this->previousEnemy = nullptr;
         return;
@@ -219,9 +197,9 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
             this->pickEnemyTimer += delta;
             return;
         }
-        float step = (float)this->frameDelta;
-        float next = (float)this->rotationAccum + step;
-        this->rotationAccum = (int)next;
+        float step = (float) this->frameDelta;
+        float next = (float) this->rotationAccum + step;
+        this->rotationAccum = (int) next;
         mainGeometry->rotate(next, 0.0f, step * 0.001f * -0.25f);
         this->previousEnemy = nullptr;
         return;
@@ -229,17 +207,16 @@ void PlayerTurret::handleRotation(int delta, AEGeometry* mainGeometry, AEGeometr
 
     if (ready) {
         this->player->shoot(0, delta, delta >> 31, 0);
-        AbyssEngine::Transform* transform =
-            (AbyssEngine::Transform*)gCanvas->TransformGetTransform(turretGeometry->transform);
+        AbyssEngine::Transform *transform =
+                (AbyssEngine::Transform *) gCanvas->TransformGetTransform(turretGeometry->transform);
         transform->Update(delta, delta >> 31);
     }
 }
 
-void PlayerTurret::update(int delta)
-{
+void PlayerTurret::update(int delta) {
     this->frameDelta = delta;
 
-    Player* player = this->player;
+    Player *player = this->player;
     if (!player->isActive()) {
         return;
     }
@@ -254,14 +231,14 @@ void PlayerTurret::update(int delta)
     }
 
     if (this->turretHost != nullptr) {
-        const Matrix& hostMatrix = *(const Matrix*)this->turretHost->player->transform;
+        const Matrix &hostMatrix = *(const Matrix *) this->turretHost->player->transform;
         this->hostWorldOffset = MatrixRotateVector(hostMatrix, this->hostOffset);
         this->geometry->setMatrix(hostMatrix);
         this->geometry->translate(this->hostWorldOffset);
     }
 
     Matrix geomMatrix = this->geometry->getMatrix();
-    *(Matrix*)player->transform = geomMatrix;
+    *(Matrix *) player->transform = geomMatrix;
     this->cachedPosition = this->geometry->getPosition();
 
     int hp = player->getHitpoints();
@@ -271,7 +248,7 @@ void PlayerTurret::update(int delta)
         this->state = 3;
         (*g_turretSound)->play(0x16, nullptr, nullptr, 0.0f);
         Vector zero = {0.0f, 0.0f, 0.0f};
-        ParticleSystemManager* manager = (ParticleSystemManager*)this->level->field_74;
+        ParticleSystemManager *manager = (ParticleSystemManager *) this->level->field_74;
         manager->emitManual(this->level->field_3c, this->cachedPosition, 0, 0.0f);
         manager->enableSystemEmit(this->particleSystemId, true);
         this->explosion->start(this->cachedPosition, zero);
@@ -283,9 +260,9 @@ void PlayerTurret::update(int delta)
             this->cargo->push_back(AbyssEngine::AERandom::nextInt(g_turretRandom, 10) + 1);
             this->createCrate(3);
         } else {
-            Player* levelPlayer = (Player*)(intptr_t)this->level->getPlayer();
+            Player *levelPlayer = (Player *) (intptr_t) this->level->getPlayer();
             if (levelPlayer != nullptr && levelPlayer->kiPlayer != nullptr &&
-                levelPlayer->kiPlayer->wingmanTarget == (KIPlayer*)this) {
+                levelPlayer->kiPlayer->wingmanTarget == (KIPlayer *) this) {
                 levelPlayer->kiPlayer->wingmanTarget = nullptr;
             }
         }
@@ -299,7 +276,7 @@ void PlayerTurret::update(int delta)
         this->explosionTimer += delta;
         this->explosion->update(delta, *static_cast<const Vector *>(nullptr));
         if (this->explosionTimer > 4500) {
-            ((ParticleSystemManager*)this->level->field_74)->enableSystemEmit(this->particleSystemId, false);
+            ((ParticleSystemManager *) this->level->field_74)->enableSystemEmit(this->particleSystemId, false);
             this->explosionTimer = 0;
             this->state = 4;
             player->setActive(false);
@@ -314,11 +291,11 @@ void PlayerTurret::update(int delta)
     if ((faction & 0xfffffffeU) == 8) {
         player->enemyFlags = 1;
     } else {
-        Standing* standing = (Standing*)(intptr_t)gStatus->getStanding();
+        Standing *standing = (Standing *) (intptr_t) gStatus->getStanding();
         bool enemy = standing->isEnemy(faction);
         bool friendly = false;
         if ((faction & 0xfffffffeU) != 8) {
-            friendly = ((Standing*)(intptr_t)gStatus->getStanding())->isFriend(faction);
+            friendly = ((Standing *) (intptr_t) gStatus->getStanding())->isFriend(faction);
         }
         player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }
@@ -336,8 +313,7 @@ void PlayerTurret::update(int delta)
     }
 }
 
-void PlayerTurret::pickEnemy()
-{
+void PlayerTurret::pickEnemy() {
     if (this->pickEnemyTimer <= 3000) {
         return;
     }
@@ -346,14 +322,14 @@ void PlayerTurret::pickEnemy()
     this->pickEnemyTimer = 0;
     this->currentEnemy = nullptr;
 
-    Array<Player*>* enemies = this->player->getEnemies();
+    Array<Player *> *enemies = this->player->getEnemies();
     if (enemies == nullptr) {
         return;
     }
 
-    const Vector& position = this->cachedPosition;
+    const Vector &position = this->cachedPosition;
     for (uint32_t i = 0; i < enemies->size(); ++i) {
-        Player* enemy = (*enemies)[i];
+        Player *enemy = (*enemies)[i];
         if (enemy->isDead() || !enemy->isActive()) {
             continue;
         }
@@ -375,9 +351,9 @@ void PlayerTurret::pickEnemy()
 
         Vector enemyPos = enemy->getPosition();
         Vector diff = position - enemyPos;
-        int distance = (int)VectorLength(diff);
+        int distance = (int) VectorLength(diff);
         if (distance < bestRange) {
-            Player* current = this->currentEnemy;
+            Player *current = this->currentEnemy;
             if (current == nullptr || current != this->previousEnemy) {
                 bestRange = distance;
                 this->currentEnemy = enemy;
@@ -386,8 +362,7 @@ void PlayerTurret::pickEnemy()
     }
 }
 
-PlayerTurret::~PlayerTurret()
-{
+PlayerTurret::~PlayerTurret() {
     if (this->explosion != nullptr) {
         delete this->explosion;
     }
@@ -409,9 +384,8 @@ PlayerTurret::~PlayerTurret()
     this->helperGeometry = nullptr;
 }
 
-PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float x, float y, float z)
-    : KIPlayer(0, 0, player, geometry, x, y, z, false)
-{
+PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float x, float y, float z)
+    : KIPlayer(0, 0, player, geometry, x, y, z, false) {
     this->turretEnabled = true;
     this->field_0x3e = 1;
     this->isSentryGun = false;
@@ -422,28 +396,28 @@ PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float
     this->hostOffset = Vector{0.0f, 0.0f, 0.0f};
     this->turretRange = 50000;
 
-    this->baseGeometry = new AEGeometry((uint16_t)mesh, gCanvas, false);
+    this->baseGeometry = new AEGeometry((uint16_t) mesh, gCanvas, false);
 
     if (mesh == 0x381b) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x381c, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x381c, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a76) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x1a77, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a77, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a74) {
-        AEGeometry* turret = new AEGeometry((uint16_t)0x1a75, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a75, gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     }
 
     this->helperGeometry = new AEGeometry(gCanvas);
-    AbyssEngine::Transform* helperTransform =
-        (AbyssEngine::Transform*)gCanvas->TransformGetTransform(this->helperGeometry->transform);
+    AbyssEngine::Transform *helperTransform =
+            (AbyssEngine::Transform *) gCanvas->TransformGetTransform(this->helperGeometry->transform);
     helperTransform->field_0x58 = 0;
 
     this->setPosition(Vector{x, y, z});
@@ -463,7 +437,7 @@ PlayerTurret::PlayerTurret(int mesh, Player* player, AEGeometry* geometry, float
         if (mesh == 0x49c0) {
             childMesh = 0x49c6;
         }
-        AEGeometry* child = new AEGeometry(childMesh, gCanvas, false);
+        AEGeometry *child = new AEGeometry(childMesh, gCanvas, false);
         geometry->addChild(child->transform);
         delete child;
         geometry->setScaling(0.5f);

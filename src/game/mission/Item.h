@@ -8,12 +8,36 @@
 class Station;
 class Item;
 
-// Item lists are vectors of Item*; data() is reinterpreted as int* for the
-// packed attribute/quantity blobs loaded from the .bin tables.
-typedef Array<Item*> ItemArray;
-// The ingredient/quantity/attribute tables are flat int arrays loaded from the
-// .bin tables (the original constructor takes Array<int>* for all three).
+typedef Array<Item *> ItemArray;
+
 typedef Array<int> IntArray;
+
+// ItemTable: the backing store (Item* entry buffer) reached via *(int*)(*g_ag_itemTbl* + 4),
+// i.e. the data_ pointer of the global Array<Item*> item table. Call sites index fixed entries
+// off this buffer by raw byte offset (entry N lives at offset N*4). Each slot is an Item*.
+// Only the named entries below are referenced via raw offsets; the leading slots are padding so
+// the named members land at their exact byte offsets without shifting the buffer layout.
+struct ItemTable {
+    void *field_0x0; // entry[0x00]
+    void *field_0x4; // entry[0x01]
+    void *field_0x8; // entry[0x02]
+    void *field_0xc; // entry[0x03]
+    void *field_0x10; // entry[0x04]
+    void *field_0x14; // entry[0x05]
+    void *field_0x18; // entry[0x06]
+    void *field_0x1c; // entry[0x07]
+    void *field_0x20; // entry[0x08]
+    void *field_0x24; // entry[0x09]
+    void *field_0x28; // entry[0x0a]
+    void *field_0x2c; // entry[0x0b]
+    void *field_0x30; // entry[0x0c]
+    void *field_0x34; // entry[0x0d]
+    void *field_0x38; // entry[0x0e]
+    void *field_0x3c; // entry[0x0f]
+    void *field_0x40; // entry[0x10]
+    void *field_0x44; // entry[0x11]
+    void *itemTableEntry0x12; // @0x48 entry[0x12] (Item*) — EMP-gun item, getAttribute(0xa)
+};
 
 class Item {
 public:
@@ -27,72 +51,124 @@ public:
     int occurence;
     int minPrice;
     int maxPrice;
-    IntArray* ingredients;
-    IntArray* quantities;
-    IntArray* attributes;
+    IntArray *ingredients;
+    IntArray *quantities;
+    IntArray *attributes;
     int amount;
     int stationAmount;
     int blueprintAmount;
     int missingIngredients;
     bool unsaleable;
 
-    Item(IntArray* ingredients, IntArray* quantities, IntArray* attributes);
+    Item(IntArray *ingredients, IntArray *quantities, IntArray *attributes);
+
     ~Item();
 
     void init();
+
     void setUnsaleable(bool value);
+
     bool canBeInstalledMultipleTimes();
+
     int getIndex();
+
     int getType();
+
     int getTecLevel();
+
     int getSort();
+
     int getSinglePrice();
+
     int getTotalPrice();
+
     int getMaxPrice();
+
     int getMinPrice();
+
     int getMaxPriceSystem();
+
     int getMinPriceSystem();
+
     void setPrice(int value);
+
     void setMinPrice(int value);
+
     void setMaxPrice(int value);
+
     float getPriceRate();
+
     void setAmount(int value);
+
     int getOccurence();
+
     int getAmount();
+
     void changeAmount(int delta);
+
     int getMissingIngredients();
+
     void setMissingIngredients(int value);
+
     void setStationAmount(int value);
+
     int getStationAmount();
+
     void changeStationAmount(int delta);
+
     void setBlueprintAmount(int value);
+
     int getBlueprintAmount();
+
     void changeBlueprintAmount(int delta);
-    IntArray* getIngredients();
-    IntArray* getQuantities();
-    IntArray* getAttributes();
+
+    IntArray *getIngredients();
+
+    IntArray *getQuantities();
+
+    IntArray *getAttributes();
+
     int getAttribute(int attribute);
+
     int transaction(bool buy, int priceAdjustment, bool useCredits);
+
     int transactionBlueprint(bool fabricate, int mode);
-    bool equals(Item* other);
+
+    bool equals(Item *other);
+
     bool isWeapon();
-    Item* makeItem();
-    Item* makeItem(int amount);
-    Item* makeItem(int amount, int price);
-    Item* clone();
+
+    Item *makeItem();
+
+    Item *makeItem(int amount);
+
+    Item *makeItem(int amount, int price);
+
+    Item *clone();
+
     bool checkCredits();
-    void adjustPrice(Station* station);
+
+    void adjustPrice(Station *station);
+
     bool checkCargoSpace();
+
     bool isUnsaleable();
 
-    static bool isInList(int index, int amount, ItemArray* items);
-    static bool isInList(int index, ItemArray* items);
-    static bool isInList(Item* item, ItemArray* items);
-    static void fabricate(Item* item, ItemArray* items, int amount);
-    static ItemArray* combineItems(ItemArray* items, ItemArray* stationItems);
-    static ItemArray* extractItems(ItemArray* items, bool station);
-    static void combineDuplicates(ItemArray* items);
-    static ItemArray* mixItems(ItemArray* items, ItemArray* stationItems);
+    static bool isInList(int index, int amount, ItemArray *items);
+
+    static bool isInList(int index, ItemArray *items);
+
+    static bool isInList(Item *item, ItemArray *items);
+
+    static void fabricate(Item *item, ItemArray *items, int amount);
+
+    static ItemArray *combineItems(ItemArray *items, ItemArray *stationItems);
+
+    static ItemArray *extractItems(ItemArray *items, bool station);
+
+    static void combineDuplicates(ItemArray *items);
+
+    static ItemArray *mixItems(ItemArray *items, ItemArray *stationItems);
 };
 
 #endif

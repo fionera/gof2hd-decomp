@@ -3,60 +3,35 @@
 #include "platform/libc.h"
 #include "game/ship/KIPlayer.h"   // for the virtual getPosition() call
 
-
-
-
-
-
 namespace AbyssEngine {
+    extern PaintCanvas *gPaintCanvas;
 
-// Game singletons (defined in the host engine; referenced by pointer here).
-extern PaintCanvas* gPaintCanvas;
-
-// The radar's lock-target, mission and per-frame canvas state live in engine
-// singletons addressed through these slots in the shipped binary.
-extern PaintCanvas** gRadarCanvasForDraw;
-extern void* gRadarMissionSlot;
-extern PaintCanvas** gRadarCanvasSlot;
-extern void* gRadarLayoutSlot;
-extern uint8_t* gRadarDrawCurrentLockFlag;
-
+    extern PaintCanvas **gRadarCanvasForDraw;
+    extern void *gRadarMissionSlot;
+    extern PaintCanvas **gRadarCanvasSlot;
+    extern void *gRadarLayoutSlot;
+    extern uint8_t *gRadarDrawCurrentLockFlag;
 } // namespace AbyssEngine
 
+extern "C" int Radar_GetMissionState(void *mission);
 
+extern "C" int Radar_GetMissionType(void *mission);
 
+extern void *Radar_GetSystemStations();
 
-
-
-
-
-extern "C" int Radar_GetMissionState(void* mission);
-extern "C" int Radar_GetMissionType(void* mission);
-
-// Planet-dock station lookup goes through the persistent game Status singleton,
-// whose accessors return id-typed views (kept opaque here to avoid pulling in
-// Status/SolarSystem headers, which would trigger placement-new redefinitions).
-extern void* Radar_GetSystemStations();
-
-// ---- engine-opaque state read by raw byte offset ---------------------------
-// Layout and Station are modelled elsewhere; their fields are read positionally
-// (pulling in their full headers triggers placement-new redefinitions vs the STL).
-static inline int layout_i32(void* layout, unsigned off)
-{
-    return *reinterpret_cast<int*>(static_cast<char*>(layout) + off);
-}
-static inline uint8_t station_u8(void* station, unsigned off)
-{
-    return *reinterpret_cast<uint8_t*>(static_cast<char*>(station) + off);
+static inline int layout_i32(void *layout, unsigned off) {
+    return *reinterpret_cast<int *>(static_cast<char *>(layout) + off);
 }
 
-int Radar::getTurretScopeWidth()
-{
+static inline uint8_t station_u8(void *station, unsigned off) {
+    return *reinterpret_cast<uint8_t *>(static_cast<char *>(station) + off);
+}
+
+int Radar::getTurretScopeWidth() {
     return this->turretScopeHalfWidth << 1;
 }
 
-Radar::Radar(Level* level)
-{
+Radar::Radar(Level *level) {
     this->field_0x174 = 0;
     this->field_0x178 = 0;
     this->field_0x17c = 0;
@@ -95,7 +70,7 @@ Radar::Radar(Level* level)
     this->field_0x1a8 = 0;
     this->level = level;
 
-    void* layout = *reinterpret_cast<void**>(gRadarLayoutSlot);
+    void *layout = *reinterpret_cast<void **>(gRadarLayoutSlot);
     if (layout != nullptr) {
         int width = layout_i32(layout, 0xac);
         int height = layout_i32(layout, 0xa8);
@@ -107,7 +82,7 @@ Radar::Radar(Level* level)
         this->originY = layout_i32(layout, 0xa4);
     }
 
-    PaintCanvas* canvas = *gRadarCanvasSlot;
+    PaintCanvas *canvas = *gRadarCanvasSlot;
     unsigned int image = 0;
     canvas->Image2DCreate(0x4c7, image);
     this->radarImage = static_cast<int>(image);
@@ -120,14 +95,13 @@ Radar::Radar(Level* level)
     this->weightX = 1.0f / static_cast<float>(imageWidth * imageWidth);
     this->weightY = 1.0f / static_cast<float>(imageHeight * imageHeight);
 
-    Array<String*>* strings = new Array<String*>();
-    ArraySetLength<String*>(4, *strings);
+    Array<String *> *strings = new Array<String *>();
+    ArraySetLength<String *>(4, *strings);
     this->labelStrings = strings;
 }
 
-Radar::~Radar()
-{
-    Array<KIPlayer*>* players = this->players;
+Radar::~Radar() {
+    Array<KIPlayer *> *players = this->players;
     if (players != nullptr) {
         delete players;
     }
@@ -135,61 +109,51 @@ Radar::~Radar()
     this->lockLabel.~String();
 }
 
-uint8_t Radar::hasScanner()
-{
+uint8_t Radar::hasScanner() {
     return this->scannerAvailable;
 }
 
-uint8_t Radar::isPlasmaInRange()
-{
+uint8_t Radar::isPlasmaInRange() {
     return this->plasmaInRange;
 }
 
-bool Radar::stationLocked()
-{
-    void* station = this->lockedStation;
+bool Radar::stationLocked() {
+    void *station = this->lockedStation;
     if (station != nullptr) {
         return station_u8(station, 0x71) != 0;
     }
     return false;
 }
 
-KIPlayer* Radar::getLockedEnemy()
-{
+KIPlayer *Radar::getLockedEnemy() {
     return this->lockedEnemy;
 }
 
-KIPlayer* Radar::getLockedAsteroid()
-{
+KIPlayer *Radar::getLockedAsteroid() {
     return this->lockedAsteroid;
 }
 
-KIPlayer* Radar::getLockedGasCloud()
-{
+KIPlayer *Radar::getLockedGasCloud() {
     return this->lockedGasCloud;
 }
 
-void Radar::unlockAsteroid()
-{
+void Radar::unlockAsteroid() {
     this->lockedAsteroid = nullptr;
 }
 
-int Radar::getPlanetDockIndex()
-{
-    void* stations = Radar_GetSystemStations();
-    return reinterpret_cast<int*>(stations)[this->planetDockIndex];
+int Radar::getPlanetDockIndex() {
+    void *stations = Radar_GetSystemStations();
+    return reinterpret_cast<int *>(stations)[this->planetDockIndex];
 }
 
-void Radar::update(KIPlayer* player)
-{
-    Vector position = player->getPosition();   // actor vtable slot 0x28
+void Radar::update(KIPlayer *player) {
+    Vector position = player->getPosition(); // actor vtable slot 0x28
     update(position);
 }
 
-void Radar::update(Vector value)
-{
+void Radar::update(Vector value) {
     Vector transformed = AbyssEngine::AEMath::MatrixTransformVector(this->transform, value);
-    Vector* current = reinterpret_cast<Vector*>(&this->radarPosX);
+    Vector *current = reinterpret_cast<Vector *>(&this->radarPosX);
     *current = transformed;
 
     this->radarPosY = -this->radarPosY;
@@ -217,8 +181,7 @@ void Radar::update(Vector value)
     }
 }
 
-long long Radar::draw(Player*, Hud*, int mode)
-{
+long long Radar::draw(Player *, Hud *, int mode) {
     if (this->enabled == 0) {
         return 0;
     }
@@ -226,10 +189,10 @@ long long Radar::draw(Player*, Hud*, int mode)
     this->drawMode = 0;
     this->plasmaInRange = 0;
 
-    PaintCanvas* canvas = *gRadarCanvasForDraw;
+    PaintCanvas *canvas = *gRadarCanvasForDraw;
     canvas->SetColor(static_cast<unsigned int>(-1));
 
-    void* mission = *reinterpret_cast<void**>(gRadarMissionSlot);
+    void *mission = *reinterpret_cast<void **>(gRadarMissionSlot);
     int missionState = Radar_GetMissionState(mission);
     if (missionState == 0 && Radar_GetMissionType(mission) == 0) {
         this->drawMode = static_cast<uint8_t>(mode);
@@ -238,8 +201,7 @@ long long Radar::draw(Player*, Hud*, int mode)
     return 0;
 }
 
-Vector Radar::elipsoidIntersect(int y, int x, Vector value)
-{
+Vector Radar::elipsoidIntersect(int y, int x, Vector value) {
     int centerY = this->centerY;
     float dy = static_cast<float>(centerY - x);
     float dy2 = dy * dy;
@@ -261,8 +223,7 @@ Vector Radar::elipsoidIntersect(int y, int x, Vector value)
     return value;
 }
 
-void Radar::drawCurrentLock(Hud*)
-{
+void Radar::drawCurrentLock(Hud *) {
     if (this->enabled == 0) {
         return;
     }
@@ -272,7 +233,7 @@ void Radar::drawCurrentLock(Hud*)
     String label;
 
     if (this->field_0x14 == 0) {
-        void* locked = this->lockedAsteroid;
+        void *locked = this->lockedAsteroid;
         if (locked == nullptr) {
             locked = this->lockedGasCloud;
             if (locked == nullptr) {
@@ -291,8 +252,7 @@ void Radar::drawCurrentLock(Hud*)
     }
 }
 
-void Radar::calcDistance(float, float a, float b, float c, float d, float e)
-{
+void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
     long long dx = static_cast<long long>(a * 0.5f - d * 0.5f);
     long long dy = static_cast<long long>(c * 0.5f - e * 0.5f);
     long long dz = static_cast<long long>(b * 0.5f - e * 0.5f);
@@ -322,18 +282,11 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e)
     }
 }
 
-// ---- ABI shims -------------------------------------------------------------
-// MGame owns its Radar by raw pointer (allocated with operator new), so it
-// constructs and destroys it through these C entry points that wrap the real
-// special members. The destructor returns the object pointer so the caller can
-// hand it straight to operator delete (mirroring the binary's call sequence).
-extern "C" void Radar_ctor(Radar* r, Level* level)
-{
-    new (r) Radar(level);
+extern "C" void Radar_ctor(Radar *r, Level *level) {
+    new(r) Radar(level);
 }
 
-extern "C" void* Radar_dtor(Radar* r)
-{
+extern "C" void *Radar_dtor(Radar *r) {
     r->~Radar();
     return r;
 }

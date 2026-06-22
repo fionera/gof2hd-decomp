@@ -6,18 +6,6 @@
 #include "aetypes.h"
 #include <type_traits>
 
-// Galaxy on Fire 2 - particle-emitter settings table.
-// ParticleSettings is an array of 48 ParticleSet parameter blocks (0xa0 bytes each,
-// 0x1e00 bytes total). Every ParticleSet begins with an AbyssEngine::String name, so the
-// embedded String members construct/destruct automatically with the array.
-
-// One particle-emitter parameter block (0xa0 bytes). Most slots hold either an int or a
-// float bit pattern depending on the field, so the generic slots stay uint32_t and are
-// reinterpreted where used as floats.
-// Field roles recovered from how IParticleSystem / ParticleSystemSprite / ParticleSystemMesh
-// read this block (they index it by raw `def + 0xNN` pointer arithmetic, so the member NAMES
-// below are private to this TU and safe to rename). Many slots hold a float bit pattern in a
-// generic 32-bit word, so those stay uint32_t and are reinterpreted via asFloat() where used.
 class ParticleSettings {
 public:
     // ParticleSettings::ParticleSet -- the per-particle preset *index* type. In the original
@@ -59,44 +47,44 @@ public:
     // operator= assigns the embedded `name` String then bulk-copies the remaining 0x94 bytes -- which
     // is exactly what the binary does -- so the `sets[d] = sets[s]` copies below emit that symbol.
     struct {
-        String   name;              // +0x00 emitter/texture name
-        uint32_t flags;             // +0x0c
-        int32_t  count;             // +0x10 particles emitted
-        uint32_t lifeBase;          // +0x14 base particle lifetime (float bits)
-        int32_t  lifeRandom;        // +0x18 random lifetime added on top
-        uint32_t startSize;         // +0x1c initial sprite size (float bits)
-        uint32_t endSize;           // +0x20 final sprite size (float bits)
-        uint32_t velocityFromSlot;  // +0x24 slot-velocity scale (float bits)
-        int32_t  lifetime;          // +0x28 emitter lifetime / colour-blend duration
-        uint32_t flLifetime;        // +0x2c emit rate (float bits)
-        uint32_t oneShot;           // +0x30 ==1 -> emit single burst
-        uint32_t color0;            // +0x34 start colour (RGBA)
-        uint32_t color1;            // +0x38 end colour (RGBA)
-        int32_t  fadeFrames;        // +0x3c colour fade frame count
-        uint32_t colorFlag;         // +0x40 selects per-particle colour mode (float bits)
-        int32_t  posBase;           // +0x44 position spawn base
-        int32_t  posSpread;         // +0x48 position spread
-        int32_t  ySpread;           // +0x4c vertical spread
-        int32_t  velSpread;         // +0x50 velocity spread
-        uint32_t field_0x54;        // +0x54 unmodelled slot
-        uint32_t velBaseX;          // +0x58 base velocity X (float bits)
-        uint32_t velBaseY;          // +0x5c base velocity Y (float bits)
-        uint32_t velBaseZ;          // +0x60 base velocity Z (float bits)
-        uint32_t drag;              // +0x64 velocity drag / emitter inheritance (float bits)
-        uint32_t velRight;          // +0x68 velocity along right axis (float bits)
-        uint32_t velUp;             // +0x6c velocity along up axis (float bits)
-        uint32_t velDir;            // +0x70 velocity along facing axis (float bits)
-        uint32_t field_0x74;        // +0x74 unmodelled slot
-        uint32_t posRight;          // +0x78 spawn offset along right axis (float bits)
-        uint32_t posUp;             // +0x7c spawn offset along up axis (float bits)
-        uint32_t posDir;            // +0x80 spawn offset along facing axis (float bits)
-        uint32_t posDirRandom;      // +0x84 random spawn offset along facing axis (float bits)
-        uint32_t uvU0;              // +0x88 texture-rect u0 (float bits)
-        uint32_t uvV0;              // +0x8c texture-rect v0 (float bits)
-        uint32_t uvU1;              // +0x90 texture-rect u1 (float bits)
-        uint32_t uvV1;              // +0x94 texture-rect v1 (float bits)
-        int32_t  speedThreshold;    // +0x98 minimum emitter speed^2 to emit
-        int32_t  frames;            // +0x9c animation frame count
+        String name; // +0x00 emitter/texture name
+        uint32_t flags; // +0x0c
+        int32_t count; // +0x10 particles emitted
+        uint32_t lifeBase; // +0x14 base particle lifetime (float bits)
+        int32_t lifeRandom; // +0x18 random lifetime added on top
+        uint32_t startSize; // +0x1c initial sprite size (float bits)
+        uint32_t endSize; // +0x20 final sprite size (float bits)
+        uint32_t velocityFromSlot; // +0x24 slot-velocity scale (float bits)
+        int32_t lifetime; // +0x28 emitter lifetime / colour-blend duration
+        uint32_t flLifetime; // +0x2c emit rate (float bits)
+        uint32_t oneShot; // +0x30 ==1 -> emit single burst
+        uint32_t color0; // +0x34 start colour (RGBA)
+        uint32_t color1; // +0x38 end colour (RGBA)
+        int32_t fadeFrames; // +0x3c colour fade frame count
+        uint32_t colorFlag; // +0x40 selects per-particle colour mode (float bits)
+        int32_t posBase; // +0x44 position spawn base
+        int32_t posSpread; // +0x48 position spread
+        int32_t ySpread; // +0x4c vertical spread
+        int32_t velSpread; // +0x50 velocity spread
+        uint32_t field_0x54; // +0x54 unmodelled slot
+        uint32_t velBaseX; // +0x58 base velocity X (float bits)
+        uint32_t velBaseY; // +0x5c base velocity Y (float bits)
+        uint32_t velBaseZ; // +0x60 base velocity Z (float bits)
+        uint32_t drag; // +0x64 velocity drag / emitter inheritance (float bits)
+        uint32_t velRight; // +0x68 velocity along right axis (float bits)
+        uint32_t velUp; // +0x6c velocity along up axis (float bits)
+        uint32_t velDir; // +0x70 velocity along facing axis (float bits)
+        uint32_t field_0x74; // +0x74 unmodelled slot
+        uint32_t posRight; // +0x78 spawn offset along right axis (float bits)
+        uint32_t posUp; // +0x7c spawn offset along up axis (float bits)
+        uint32_t posDir; // +0x80 spawn offset along facing axis (float bits)
+        uint32_t posDirRandom; // +0x84 random spawn offset along facing axis (float bits)
+        uint32_t uvU0; // +0x88 texture-rect u0 (float bits)
+        uint32_t uvV0; // +0x8c texture-rect v0 (float bits)
+        uint32_t uvU1; // +0x90 texture-rect u1 (float bits)
+        uint32_t uvV1; // +0x94 texture-rect v1 (float bits)
+        int32_t speedThreshold; // +0x98 minimum emitter speed^2 to emit
+        int32_t frames; // +0x9c animation frame count
     } sets[48];
 
     // Spelling for the anonymous element type above, so this TU can name `SetDefinition *` locals
@@ -104,6 +92,7 @@ public:
     using SetDefinition = std::remove_reference<decltype(sets[0])>::type;
 
     ParticleSettings();
+
     ~ParticleSettings();
 
     // Populate the 48 SetDefinition entries with the built-in emitter presets.

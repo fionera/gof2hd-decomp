@@ -1,25 +1,27 @@
 #ifndef GOF2_AERANDOM_H
 #define GOF2_AERANDOM_H
 #include <cstdint>
+
 namespace AbyssEngine {
-// Java-style 48-bit linear congruential PRNG (java.util.Random equivalent).
-class AERandom {
-public:
-    uint32_t seedLow;     // PRNG state low 32 bits
-    uint32_t seedHigh;    // PRNG state high 16 bits
+    class AERandom {
+    public:
+        uint32_t seedLow; // PRNG state low 32 bits
+        uint32_t seedHigh; // PRNG state high 16 bits
 
-    AERandom();                 // time-seeded
-    explicit AERandom(long long seed);
-    ~AERandom();
+        AERandom(); // time-seeded
+        explicit AERandom(long long seed);
 
-    void setSeed(long long seed);
-    void reset();               // re-seed from current time
+        ~AERandom();
 
-    uint32_t next(int bits);    // raw next(bits) generator
-    int nextInt();              // 31-bit non-negative int
-    int nextInt(int bound);     // [0, bound)
-};
+        void setSeed(long long seed);
+
+        void reset(); // re-seed from current time
+
+        uint32_t next(int bits); // raw next(bits) generator
+        int nextInt(); // 31-bit non-negative int
+        int nextInt(int bound); // [0, bound)
+    };
 } // namespace AbyssEngine
-extern AbyssEngine::AERandom* gRandom;  // canonical shared RNG singleton (binary .bss 0x2281cc)
+extern AbyssEngine::AERandom *gRandom; // canonical shared RNG singleton (binary .bss 0x2281cc)
 
 #endif

@@ -5,9 +5,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "engine/math/BoundingVolume.h"
-// Galaxy on Fire 2 -- BoundingAAB (axis-aligned box) bounding volume.
-// Derives from BoundingVolume; adds per-axis half-extents on top of the
-// inherited center/extents.
 
 class BoundingAAB : public BoundingVolume {
 public:
@@ -17,11 +14,17 @@ public:
 
     BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                 float width, float height, float depth);
+
     ~BoundingAAB();
+
     int outerCollide(float x, float y, float z) override;
+
     Vector projectCollisionOnSurface(const Vector &point) override;
+
     Vector getCollisionNormal(const Vector &point);
+
     int collide(float x, float y, float z) override;
+
     void update(float x, float y, float z) override;
 };
 #endif

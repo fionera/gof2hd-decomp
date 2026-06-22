@@ -7,8 +7,7 @@
 #include "game/ship/Agent.h"
 #include "game/ship/Ship.h"
 
-// Shared player/game status singleton.
-extern Status* status;
+extern Status *status;
 
 bool ListItem::isMission() {
     return this->mission != 0;
@@ -18,7 +17,7 @@ bool ListItem::isItem() {
     return this->item != 0;
 }
 
-ListItem::ListItem(BluePrint* bp) {
+ListItem::ListItem(BluePrint *bp) {
     this->init();
     this->selectable = 1;
     this->bluePrint = bp;
@@ -27,7 +26,7 @@ ListItem::ListItem(BluePrint* bp) {
 int ListItem::checkSort() {
     if (this->item == 0)
         return 0;
-    Ship* ship = status->getShip();
+    Ship *ship = status->getShip();
     int sort = this->item->getSort();
     return ship->slotAvailable(sort);
 }
@@ -39,7 +38,6 @@ ListItem::ListItem(int a, int b) {
     this->selectable = 1;
 }
 
-// Destroy the two owned title/subtitle Strings.
 ListItem::~ListItem() {
     delete this->name;
     this->name = 0;
@@ -54,7 +52,7 @@ bool ListItem::isCargo() {
 int ListItem::getNumLines() {
     if (this->text == 0)
         return 0;
-    return (int)this->lines->size();
+    return (int) this->lines->size();
 }
 
 bool ListItem::isBluePrint() {
@@ -65,7 +63,7 @@ uint8_t ListItem::isSelectable() {
     return this->selectable;
 }
 
-ListItem::ListItem(Ship* s) {
+ListItem::ListItem(Ship *s) {
     this->init();
     this->selectable = 1;
     this->ship = s;
@@ -74,7 +72,7 @@ ListItem::ListItem(Ship* s) {
 int ListItem::checkSlot() {
     int r = 0;
     if (this->item != 0) {
-        Ship* ship = status->getShip();
+        Ship *ship = status->getShip();
         int type = this->item->getType();
         if (ship->getFreeSlots(type) > 0)
             r = 1;
@@ -82,7 +80,7 @@ int ListItem::checkSlot() {
     return r;
 }
 
-ListItem::ListItem(AbyssEngine::String* src, int v) {
+ListItem::ListItem(AbyssEngine::String *src, int v) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->buttonKind = v;
@@ -95,7 +93,7 @@ ListItem::ListItem(int v) {
     this->slot = v;
 }
 
-ListItem::ListItem(AbyssEngine::String* p1, AbyssEngine::String* p2) {
+ListItem::ListItem(AbyssEngine::String *p1, AbyssEngine::String *p2) {
     this->init();
     this->name = new AbyssEngine::String(*p1);
     this->name2 = new AbyssEngine::String(*p2);
@@ -106,7 +104,7 @@ bool ListItem::isImage() {
     return this->imageIndex >= 0;
 }
 
-ListItem::ListItem(int a, int b, AbyssEngine::String* src) {
+ListItem::ListItem(int a, int b, AbyssEngine::String *src) {
     this->init();
     this->imageIndex = a;
     this->name = new AbyssEngine::String(*src);
@@ -114,8 +112,6 @@ ListItem::ListItem(int a, int b, AbyssEngine::String* src) {
     this->selectable = 1;
 }
 
-// getIndex() — default 999999 when nothing is set; the PendingProduct path reads
-// its produced-item index.
 int ListItem::getIndex() {
     if (this->ship)
         return this->ship->getIndex();
@@ -128,19 +124,19 @@ int ListItem::getIndex() {
     return this->pendingProduct->blueprintIndex;
 }
 
-ListItem::ListItem(Item* it) {
+ListItem::ListItem(Item *it) {
     this->init();
     this->selectable = 1;
     this->item = it;
 }
 
-ListItem::ListItem(Array<AbyssEngine::String*>* arr) {
+ListItem::ListItem(Array<AbyssEngine::String *> *arr) {
     this->init();
     this->selectable = 0;
     this->lines = arr;
 }
 
-ListItem::ListItem(Mission* m) {
+ListItem::ListItem(Mission *m) {
     this->init();
     this->selectable = 1;
     this->mission = m;
@@ -166,7 +162,7 @@ bool ListItem::checkCredits() {
     return price <= status->getCredits();
 }
 
-ListItem::ListItem(AbyssEngine::String* p1, bool b) {
+ListItem::ListItem(AbyssEngine::String *p1, bool b) {
     this->init();
     this->name = new AbyssEngine::String(*p1);
     this->text = b;
@@ -195,7 +191,6 @@ bool ListItem::isPendingProduct() {
     return this->pendingProduct != 0;
 }
 
-// A tab is a non-selectable, non-textButton entry whose title String is non-empty.
 bool ListItem::isTab() {
     if (this->selectable == 0 && this->name != 0 && this->name->size() != 0)
         return this->textButton == 0;
@@ -212,25 +207,25 @@ bool ListItem::isSellButton() {
     return this->buttonKind == 0;
 }
 
-ListItem::ListItem(AbyssEngine::String* src) {
+ListItem::ListItem(AbyssEngine::String *src) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->selectable = 0;
 }
 
-ListItem::ListItem(PendingProduct* pp) {
+ListItem::ListItem(PendingProduct *pp) {
     this->init();
     this->selectable = 1;
     this->pendingProduct = pp;
 }
 
-ListItem::ListItem(Agent* a) {
+ListItem::ListItem(Agent *a) {
     this->init();
     this->selectable = 1;
     this->agent = a;
 }
 
-ListItem::ListItem(AbyssEngine::String* src, bool b, int v) {
+ListItem::ListItem(AbyssEngine::String *src, bool b, int v) {
     this->init();
     this->name = new AbyssEngine::String(*src);
     this->textButton = 1;
@@ -238,9 +233,7 @@ ListItem::ListItem(AbyssEngine::String* src, bool b, int v) {
     this->selectable = b;
 }
 
-// init() — zero/sentinel-init all fields. Returns the address of the payload-pointer
-// block (agent..item) so the constructors can store their payload there.
-void* ListItem::init() {
+void *ListItem::init() {
     this->lines = 0;
     this->agent = 0;
     this->bluePrint = 0;
@@ -262,9 +255,7 @@ void* ListItem::init() {
     return &this->agent;
 }
 
-// Pointer copy constructor: payload/value fields are copied verbatim; the two owned
-// title/subtitle Strings are deep-cloned when present.
-ListItem::ListItem(ListItem* src) {
+ListItem::ListItem(ListItem *src) {
     this->init();
     this->agent = src->agent;
     this->bluePrint = src->bluePrint;
@@ -273,7 +264,7 @@ ListItem::ListItem(ListItem* src) {
     this->mission = src->mission;
     this->selectable = src->selectable;
 
-    this->name  = src->name  ? new AbyssEngine::String(*src->name)  : 0;
+    this->name = src->name ? new AbyssEngine::String(*src->name) : 0;
     this->name2 = src->name2 ? new AbyssEngine::String(*src->name2) : 0;
 
     this->slot = src->slot;

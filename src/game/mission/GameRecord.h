@@ -5,16 +5,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// GameRecord — a saved-game snapshot (top-level class, no AbyssEngine namespace).
-//
-// A GameRecord is the in-memory image of a single save slot: it is filled by
-// RecordHandler's deserializer and then applied to the live game singletons by
-// load(). Because it mirrors the on-disk serialization format, the bulk of the
-// record is a flat block of scalar fields and Array<T>* slots addressed by the
-// reader/writer; only the heap data pointer, the two embedded name strings and
-// the player-ship slot are referenced symbolically here. The remaining record
-// payload is kept as a packed storage block so the save layout stays stable.
-
 class GameRecord {
 public:
     // Heap buffer holding the visited-systems bitmap (0x87 entries) and the
@@ -31,6 +21,7 @@ public:
     String descString;
 
     GameRecord();
+
     ~GameRecord();
 
     // Apply this saved snapshot to the live game singletons (Status, Galaxy,

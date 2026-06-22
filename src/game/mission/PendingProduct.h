@@ -12,12 +12,13 @@ class BluePrint;
 // fields. Created either from a BluePrint or directly from saved field values.
 class PendingProduct {
 public:
-    String stationName;     // station the product is being built at
-    int    stationIndex;    // index of that station
-    int    quantity;        // number of units ordered
-    int    blueprintIndex;  // produced item / blueprint index
+    String stationName; // station the product is being built at
+    int stationIndex; // index of that station
+    int quantity; // number of units ordered
+    int blueprintIndex; // produced item / blueprint index
 
     explicit PendingProduct(BluePrint *bp);
+
     PendingProduct(int blueprintIndex, String stationName,
                    int stationIndex, int quantity);
 

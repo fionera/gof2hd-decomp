@@ -16,7 +16,5 @@ PendingProduct::PendingProduct(BluePrint *bp)
       blueprintIndex(bp->getIndex()) {
 }
 
-// Destroys the embedded stationName String (the only non-trivial member); compiles to
-// a thunk into String::~String() exactly as the original.
 PendingProduct::~PendingProduct() {
 }

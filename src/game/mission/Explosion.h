@@ -8,40 +8,55 @@
 class AEGeometry;
 class TargetFollowCamera;
 
-namespace AbyssEngine { namespace AEMath { struct Vector; struct Matrix; } }
+namespace AbyssEngine {
+    namespace AEMath {
+        struct Vector;
+        struct Matrix;
+    }
+}
 
-// Explosion: a transient VFX object that drives one or two AEGeometry meshes
-// (plus an optional vector of fire-streak meshes) through their transform
-// animations.
 class Explosion {
 public:
-    int                  type;          // +0x00 explosion type
-    AEGeometry          *primaryMesh;   // +0x04 primary mesh
-    AEGeometry          *secondaryMesh; // +0x08 secondary mesh (optional)
-    Array<AEGeometry *> *fireStreaks;   // +0x0c fire-streak meshes (optional)
-    long long            duration;      // +0x10 total duration
-    long long            elapsed;       // +0x18 elapsed time
-    uint8_t              playing;       // +0x20 playing flag
-    float                scale;         // +0x24 scale
-    int                  weaponIndex;   // +0x28 sound id (-1 == none)
-    Matrix               rotation;      // +0x2c rotation matrix
+    int type; // +0x00 explosion type
+    AEGeometry *primaryMesh; // +0x04 primary mesh
+    AEGeometry *secondaryMesh; // +0x08 secondary mesh (optional)
+    Array<AEGeometry *> *fireStreaks; // +0x0c fire-streak meshes (optional)
+    long long duration; // +0x10 total duration
+    long long elapsed; // +0x18 elapsed time
+    uint8_t playing; // +0x20 playing flag
+    float scale; // +0x24 scale
+    int weaponIndex; // +0x28 sound id (-1 == none)
+    Matrix rotation; // +0x2c rotation matrix
 
     explicit Explosion(int type);
+
     ~Explosion();
 
-    void    addFireStreaks();
+    void addFireStreaks();
+
     uint8_t isPlaying();
-    bool    peakReached();
-    void    playSound(Vector *pos);
-    void    render();
-    void    reset();
-    void    setScaling(float scale);
-    void    setWeaponIndex(int index);
-    void    start(const Vector &position, const Vector &direction);
-    void    start(const Matrix &matrix);
-    void    translate(const Vector &v);
-    void    update(int dt, const Vector &position);
-    void    update(int dt, TargetFollowCamera *camera);
+
+    bool peakReached();
+
+    void playSound(Vector *pos);
+
+    void render();
+
+    void reset();
+
+    void setScaling(float scale);
+
+    void setWeaponIndex(int index);
+
+    void start(const Vector &position, const Vector &direction);
+
+    void start(const Matrix &matrix);
+
+    void translate(const Vector &v);
+
+    void update(int dt, const Vector &position);
+
+    void update(int dt, TargetFollowCamera *camera);
 };
 
 #endif

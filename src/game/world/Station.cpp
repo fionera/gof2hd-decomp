@@ -7,11 +7,8 @@
 #include "game/ship/Agent.h"
 #include "game/core/String.h"
 
-// Stations that hide a blueprint / host a pirate base. The discovery flags and the
-// alien-attack target are reached through the game's persistent-state singleton
-// (gStatus); these were previously opaque holders pointing at the same Status object.
-static const int kHiddenBlueprints[5] = { 0, 0, 0, 0, 0 };
-static const int kPirateStations[4] = { 0, 0, 0, 0 };
+static const int kHiddenBlueprints[5] = {0, 0, 0, 0, 0};
+static const int kPirateStations[4] = {0, 0, 0, 0};
 
 Station::Station()
     : name("Station"),
@@ -24,7 +21,8 @@ Station::Station()
       attackedFriends(0),
       items(nullptr),
       ships(nullptr),
-      agents(nullptr) {}
+      agents(nullptr) {
+}
 
 Station::Station(String name, int index, int systemIndex, int techLevel, int textureIndex)
     : name(name),
@@ -37,27 +35,28 @@ Station::Station(String name, int index, int systemIndex, int techLevel, int tex
       attackedFriends(0),
       items(nullptr),
       ships(nullptr),
-      agents(nullptr) {}
+      agents(nullptr) {
+}
 
 Station::~Station() {
     if (ships != nullptr) {
-        for (Ship* s : *ships) delete s;
+        for (Ship *s: *ships) delete s;
         ships->clear();
         delete ships;
         ships = nullptr;
     }
     if (items != nullptr) {
-        for (Item* it : *items) delete it;
+        for (Item *it: *items) delete it;
         items->clear();
         delete items;
         items = nullptr;
     }
     if (agents != nullptr) {
-        Mission* campaign = reinterpret_cast<Mission*>(gStatus->getCampaignMission());
-        Mission* freelance = gStatus->getFreelanceMission();
-        Agent* campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
-        Agent* freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
-        for (Agent* a : *agents) {
+        Mission *campaign = reinterpret_cast<Mission *>(gStatus->getCampaignMission());
+        Mission *freelance = gStatus->getFreelanceMission();
+        Agent *campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
+        Agent *freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
+        for (Agent *a: *agents) {
             if (a != nullptr && a != campaignAgent && a != freelanceAgent && !a->isStoryAgent())
                 delete a;
         }
@@ -66,7 +65,7 @@ Station::~Station() {
     }
 }
 
-Station* Station::clone() {
+Station *Station::clone() {
     return new Station(name, index, systemIndex, techLevel, textureIndex);
 }
 
@@ -77,13 +76,13 @@ int Station::getTextureIndex() { return textureIndex; }
 bool Station::isPlanet() { return planet; }
 String Station::getName() { return name; }
 
-Array<Agent*>* Station::getAgents() { return agents; }
-Array<Item*>* Station::getItems() { return items; }
-Array<Ship*>* Station::getShips() { return ships; }
+Array<Agent *> *Station::getAgents() { return agents; }
+Array<Item *> *Station::getItems() { return items; }
+Array<Ship *> *Station::getShips() { return ships; }
 
-void Station::addItem(Item* item) {
+void Station::addItem(Item *item) {
     if (items == nullptr) {
-        items = new Array<Item*>();
+        items = new Array<Item *>();
     } else {
         for (uint32_t i = 0; i < items->size(); i++) {
             if ((*items)[i]->equals(item)) {
@@ -95,9 +94,9 @@ void Station::addItem(Item* item) {
     items->push_back(item);
 }
 
-void Station::addShip(Ship* ship) {
+void Station::addShip(Ship *ship) {
     if (ships == nullptr) {
-        ships = new Array<Ship*>();
+        ships = new Array<Ship *>();
     } else {
         for (uint32_t i = 0; i < ships->size(); i++) {
             if ((*ships)[i]->equals(ship))
@@ -107,7 +106,7 @@ void Station::addShip(Ship* ship) {
     ships->push_back(ship);
 }
 
-void Station::removeShip(Ship* ship) {
+void Station::removeShip(Ship *ship) {
     if (ships == nullptr)
         return;
     ArrayRemove(ship, *ships);
@@ -115,21 +114,21 @@ void Station::removeShip(Ship* ship) {
 
 void Station::removeShips() {
     if (ships != nullptr) {
-        for (Ship* s : *ships) delete s;
+        for (Ship *s: *ships) delete s;
         ships->clear();
         delete ships;
     }
     ships = nullptr;
 }
 
-bool Station::equals(Station* other) {
+bool Station::equals(Station *other) {
     return other != nullptr && index == other->index;
 }
 
 uint32_t Station::hasItem(int index) {
     if (items != nullptr) {
         for (uint32_t i = 0; i < items->size(); i++) {
-            Item* it = (*items)[i];
+            Item *it = (*items)[i];
             if (it != nullptr && it->getIndex() == index)
                 return 1;
         }
@@ -140,7 +139,7 @@ uint32_t Station::hasItem(int index) {
 uint32_t Station::hasShip(int index) {
     if (ships != nullptr) {
         for (uint32_t i = 0; i < ships->size(); i++) {
-            Ship* sh = (*ships)[i];
+            Ship *sh = (*ships)[i];
             if (sh != nullptr && sh->getIndex() == index)
                 return 1;
         }
@@ -148,14 +147,14 @@ uint32_t Station::hasShip(int index) {
     return 0;
 }
 
-void Station::setItems(Array<Item*>* items, bool deep) {
+void Station::setItems(Array<Item *> *items, bool deep) {
     if (this->items != nullptr)
         delete this->items;
     this->items = nullptr;
     if (items == nullptr || !deep) {
         this->items = items;
     } else {
-        Array<Item*>* copy = new Array<Item*>();
+        Array<Item *> *copy = new Array<Item *>();
         this->items = copy;
         copy->resize(items->size());
         for (uint32_t i = 0; i < items->size(); i++)
@@ -163,9 +162,9 @@ void Station::setItems(Array<Item*>* items, bool deep) {
     }
 }
 
-void Station::setShips(Array<Ship*>* ships, bool deep) {
+void Station::setShips(Array<Ship *> *ships, bool deep) {
     if (this->ships != nullptr) {
-        for (Ship* s : *this->ships) delete s;
+        for (Ship *s: *this->ships) delete s;
         this->ships->clear();
         delete this->ships;
     }
@@ -173,7 +172,7 @@ void Station::setShips(Array<Ship*>* ships, bool deep) {
     if (ships == nullptr || !deep) {
         this->ships = ships;
     } else {
-        Array<Ship*>* copy = new Array<Ship*>();
+        Array<Ship *> *copy = new Array<Ship *>();
         this->ships = copy;
         copy->resize(ships->size());
         for (uint32_t i = 0; i < ships->size(); i++)
@@ -181,11 +180,11 @@ void Station::setShips(Array<Ship*>* ships, bool deep) {
     }
 }
 
-void Station::setAgents(Array<Agent*>* agents) {
+void Station::setAgents(Array<Agent *> *agents) {
     if (this->agents == agents)
         return;
     if (this->agents != nullptr) {
-        for (Agent* a : *this->agents) delete a;
+        for (Agent *a: *this->agents) delete a;
         this->agents->clear();
         delete this->agents;
     }
@@ -201,7 +200,7 @@ uint8_t Station::hasAttackedFriends() {
 }
 
 bool Station::isAttackedByAliens() {
-    return index == *(int*)((char*)gStatus + 0x80);
+    return index == *(int *) ((char *) gStatus + 0x80);
 }
 
 uint8_t Station::isDiscovered() {
@@ -233,12 +232,12 @@ uint32_t Station::getPirateStationIndex() {
 }
 
 uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
-    char* base = (char*)gStatus;
+    char *base = (char *) gStatus;
     for (uint32_t i = 0; i < 5; i++) {
         if (kHiddenBlueprints[i] == index) {
             if (ignoreFound)
                 return 1;
-            char* flags = *(char**)(*(char**)(base + 0x58) + 4);
+            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
             if (flags[i] == 0)
                 return 1;
         }
@@ -247,10 +246,10 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
 }
 
 uint32_t Station::stationHasPirateBase() {
-    char* base = (char*)gStatus;
+    char *base = (char *) gStatus;
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
-            char* flags = *(char**)(*(char**)(base + 0x4c) + 4);
+            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;
         }

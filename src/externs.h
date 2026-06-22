@@ -6,30 +6,26 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 #include "aetypes.h"
-namespace AbyssEngine { class Mesh; }   // engine-opaque, namespaced
-namespace AbyssEngine { class Engine; }   // real definition in engine/render/Engine.h
-using ::AbyssEngine::Engine;
-// Centralized declarations of GENUINE externals — engine/host symbols defined in libgof2hd,
-// not in this source tree. First section: engine data globals (basic-typed flags/sentinels).
 
-// ---- engine global data (flags/sentinels read by the renderer & game logic) ----
+namespace AbyssEngine {
+    class Mesh;
+} // engine-opaque, namespaced
+namespace AbyssEngine {
+    class Engine;
+} // real definition in engine/render/Engine.h
+using ::AbyssEngine::Engine;
+
 extern "C" {
 unsigned char g_BloomShader_internalInitNeeded;
 unsigned int g_BloomShader_shaderMode;
-char * g_Camera_frustumEnabledFlag;
-// g_Engine_* : module-static renderer state. In the binary these are absolute-addressed
-// .data/.bss globals (the engine is a singleton), read/written by Engine methods and the
-// renderer free functions WITHOUT going through an Engine `this`. They are deliberately kept
-// as globals rather than promoted to Engine members so they keep aliasing the same storage
-// across every call site. Shader slots (default/alt/line/cloak/post* are indices into the
-// Engine shader array); useShaders/supportsFBO/texEnv* are GL-capability/feature flags;
-// shaderDirty/shaderDrew and postEffect* are per-frame draw bookkeeping.
+char *g_Camera_frustumEnabledFlag;
+
 int g_Engine_activeShader;
 int g_Engine_altShader;
 int g_Engine_cloakShader;
 int g_Engine_currentShader;
 int g_Engine_defaultShader;
-char * g_Engine_fboEnabledFlag;
+char *g_Engine_fboEnabledFlag;
 int g_Engine_lineShader;
 int g_Engine_postEffectBW;
 int g_Engine_postEffectBlur;
@@ -38,7 +34,7 @@ uint8_t g_Engine_postEffectFlag;
 int g_Engine_postEffectPending;
 uint8_t g_Engine_shaderDirty;
 uint8_t g_Engine_shaderDrew;
-char * g_Engine_shaderModeFlag;
+char *g_Engine_shaderModeFlag;
 int g_Engine_shaderPostA;
 int g_Engine_shaderPostB;
 int g_Engine_shaderPostC;
@@ -46,40 +42,40 @@ uint8_t g_Engine_supportsFBO;
 float g_Engine_texEnv;
 uint8_t g_Engine_texEnvDirty;
 uint8_t g_Engine_useShaders;
-void* g_FMod_singleton;
-char * g_GameText_arabicEnabledFlag;
-uint8_t * g_GlowPPShader_internalInitNeededPtr;
-uint32_t * g_GlowPPShader_shaderModePtr;
-char * g_MeshIntersect_flipVFlag;
+void *g_FMod_singleton;
+char *g_GameText_arabicEnabledFlag;
+uint8_t *g_GlowPPShader_internalInitNeededPtr;
+uint32_t *g_GlowPPShader_shaderModePtr;
+char *g_MeshIntersect_flipVFlag;
 float g_MeshIntersect_missValue;
-char * g_Mesh_extraArraysFlag;
-char * g_Mesh_keepCpuCopyFlag;
-char * g_Mesh_shaderPathFlag;
-char * g_Mesh_tangentDelFlag;
-char * g_Mesh_tangentEnabledFlag;
-int * g_Mesh_vboByteCounter;
-char * g_Mesh_vboEnabledFlag;
-void * g_ObjectGunRenderScaleFlag;
-void * g_ObjectGunScaleFlag;
-void * g_PaintCanvas;
+char *g_Mesh_extraArraysFlag;
+char *g_Mesh_keepCpuCopyFlag;
+char *g_Mesh_shaderPathFlag;
+char *g_Mesh_tangentDelFlag;
+char *g_Mesh_tangentEnabledFlag;
+int *g_Mesh_vboByteCounter;
+char *g_Mesh_vboEnabledFlag;
+void *g_ObjectGunRenderScaleFlag;
+void *g_ObjectGunScaleFlag;
+void *g_PaintCanvas;
 unsigned int g_SpriteSystem_oneHalf;
-char * g_SpriteSystem_tangentFlag;
-char * g_SpriteSystem_uvFlipFlag;
-void* g_boost_fmod;
-float * g_bsv3_floatA;
-float * g_bsv3_floatB;
-int * g_campaignSentinel;
-int * g_cws_items;
-int * g_cws_sound;
-int * g_cws_sound2;
-int * g_cws_sound3;
-void ** g_damageEmp_achievements;
-int ** g_damageEmp_progress;
-int ** g_damage_globals;
-int ** g_damage_text;
-void* g_dockToPlanet_fmod;
-void * g_incKillsHook;
-void * g_incPirateKillsHook;
+char *g_SpriteSystem_tangentFlag;
+char *g_SpriteSystem_uvFlipFlag;
+void *g_boost_fmod;
+float *g_bsv3_floatA;
+float *g_bsv3_floatB;
+int *g_campaignSentinel;
+int *g_cws_items;
+int *g_cws_sound;
+int *g_cws_sound2;
+int *g_cws_sound3;
+void **g_damageEmp_achievements;
+int **g_damageEmp_progress;
+int **g_damage_globals;
+int **g_damage_text;
+void *g_dockToPlanet_fmod;
+void *g_incKillsHook;
+void *g_incPirateKillsHook;
 int g_orientationFlat;
 int g_orientationInactive;
 int g_orientationLeft;
@@ -105,55 +101,53 @@ unsigned char g_rimnByteGlobal;
 float g_rimnGlobalA;
 float g_rimnGlobalB;
 float g_rimnGlobalC;
-void* g_rotate_transform;
-void* g_setRotation_transform;
+void *g_rotate_transform;
+void *g_setRotation_transform;
 unsigned int g_shoot_mask;
-void* g_stopBoost_obj;
+void *g_stopBoost_obj;
 char g_touchDown;
 float g_touchFloat;
 int g_touchMode;
 char g_touchToggle;
 int g_touchValue;
-int ** g_update_clock;
-char ** g_update_flag;
-void ** g_update_sound;
-float ** g_update_speed;
+int **g_update_clock;
+char **g_update_flag;
+void **g_update_sound;
+float **g_update_speed;
 }
 
-// ---- engine & runtime functions (defined in libgof2hd / host runtime; not in this tree) ----
 extern "C" {
-// Matrix multiply (AEMath::MatrixMultiply, sret form): out = lhs * rhs. The renderer reaches it
-// with the right-hand operand passed in r2, which the decompiler cannot recover to a source-level
-// expression — so the second multiplicand is genuinely not statically visible at these call sites.
-// Kept as a documented extern; out=r0(sret), in=r1(lhs), the r2 operand stays host-supplied.
 void AE_AEMath_matMul(Matrix *out, const Matrix *in);
-// Copies a 4x4 transform (15 explicit row words; m33 implicit) into a deferred-batch command
-// slot during SpriteSystemDraw's shadow/batch path. Resolved through a GOT pointer at runtime —
-// no statically visible body, so it is kept as a documented extern.
+
 void AE_SpriteSystem_pushMatrix(
     unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3, unsigned int m4,
     unsigned int m5, unsigned int m6, unsigned int m7, unsigned int m8, unsigned int m9,
     unsigned int m10, unsigned int m11, unsigned int m12, unsigned int m13, unsigned int m14,
     int dst);
-// Returns the Engine singleton currently being GL-initialized (the InitGL `this`), supplied
-// by the host runtime in a register the decompiler can't model; kept as a documented extern.
+
 Engine *AE_getInitGLThis();
-// The width/height arguments to InitGL(bool, int width, int height), supplied by the host
-// runtime in registers (r2/r3) the parameterless decompiled model can't see; documented externs.
+
 int AE_getInitGLWidth();
+
 int AE_getInitGLHeight();
+
 void *__aeabi_memclr(void *dst, size_t n);
+
 void *__aeabi_memclr4(void *dst, size_t n);
+
 void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
+
 long long __aeabi_uldivmod(unsigned int nlo, unsigned int nhi, unsigned int dlo,
-                                      unsigned int dhi);
+                           unsigned int dhi);
+
 void glDeleteBuffers(int n, const void *buffers);
 }
 
-// ---- AbyssEngine engine glue (renderer/engine fns; external) ----
 extern "C" {
 long long __aeabi_f2lz(float v);
+
 void *operator_new_helper(size_t);
+
 float sqrtf(float);
 }
 

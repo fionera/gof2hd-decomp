@@ -9,22 +9,24 @@
 
 struct Route;
 
-// A single navigation node on a Route. A Waypoint is a stationary KIPlayer whose
-// underlying Player marks the target position the route steers the ship toward.
 class Waypoint : public KIPlayer {
 public:
     int32_t x;
     int32_t y;
     int32_t z;
     uint16_t state;
-    Route* route;
+    Route *route;
 
-    Waypoint(int x, int y, int z, Route* route);
+    Waypoint(int x, int y, int z, Route *route);
+
     ~Waypoint();
 
     void setActive(bool active);
+
     void reached();
+
     Vector getPosition();
+
     void reset();
 };
 

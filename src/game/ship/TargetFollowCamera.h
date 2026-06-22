@@ -5,11 +5,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// Galaxy on Fire 2 -- TargetFollowCamera.
-// A chase/first-person camera that follows a renderable target (AEGeometry). It
-// maintains a damped spring toward the target, optional rotate-around and look-at
-// modes, rumble and screen-shake, and pushes a look-at matrix to the active camera.
-
 class AEGeometry;
 
 using Vector = AbyssEngine::AEMath::Vector;
@@ -17,102 +12,142 @@ using Matrix = AbyssEngine::AEMath::Matrix;
 
 class TargetFollowCamera {
 public:
-    unsigned           id;
-    AEGeometry        *target;
-    float              posX;
-    float              posY;
-    float              posZ;
-    float              targetX;
-    float              targetY;
-    float              targetZ;
-    float              upX;
-    float              upY;
-    float              upZ;
-    float              targetOffsetX;
-    float              targetOffsetY;
-    float              targetOffsetZ;
-    float              camOffsetX;
-    float              camOffsetY;
-    float              camOffsetZ;
-    uint8_t            locked;
-    uint8_t            lookAtCam;
-    uint8_t            active;
-    uint8_t            rumbleActive;
-    int                rumbleTimer;
-    uint8_t            rotateAroundTargetEnabled;
-    uint8_t            fastForward;
-    float              rotX;
-    float              rotY;
-    float              rotZ;
-    double             dampCoeffA[5];   // damping-curve coefficient set A (position axis)
-    double             dampCoeffB[5];   // damping-curve coefficient set B
-    float              zoom;
-    Matrix             firstPersonMatrix;
-    char               firstPerson;
-    float              fpOffsetX;
-    float              fpOffsetY;
-    float              fpOffsetZ;
-    uint8_t            hideShip;
-    float              shakeAccum;
-    float              shakeReference;
-    uint8_t            useTargetsUpVec;
-    float              shakeAmount;
-    int                shakeFrequency;
-    int                rumbleStrength;
-    uint8_t            smallRumble;
-    float              handlingDampingA;
-    float              handlingDampingB;
-    float              rollAngle;
-    float              shipHandling;
-    uint8_t            fixed;
-    Matrix             localMatrix;
+    unsigned id;
+    AEGeometry *target;
+    float posX;
+    float posY;
+    float posZ;
+    float targetX;
+    float targetY;
+    float targetZ;
+    float upX;
+    float upY;
+    float upZ;
+    float targetOffsetX;
+    float targetOffsetY;
+    float targetOffsetZ;
+    float camOffsetX;
+    float camOffsetY;
+    float camOffsetZ;
+    uint8_t locked;
+    uint8_t lookAtCam;
+    uint8_t active;
+    uint8_t rumbleActive;
+    int rumbleTimer;
+    uint8_t rotateAroundTargetEnabled;
+    uint8_t fastForward;
+    float rotX;
+    float rotY;
+    float rotZ;
+    double dampCoeffA[5]; // damping-curve coefficient set A (position axis)
+    double dampCoeffB[5]; // damping-curve coefficient set B
+    float zoom;
+    Matrix firstPersonMatrix;
+    char firstPerson;
+    float fpOffsetX;
+    float fpOffsetY;
+    float fpOffsetZ;
+    uint8_t hideShip;
+    float shakeAccum;
+    float shakeReference;
+    uint8_t useTargetsUpVec;
+    float shakeAmount;
+    int shakeFrequency;
+    int rumbleStrength;
+    uint8_t smallRumble;
+    float handlingDampingA;
+    float handlingDampingB;
+    float rollAngle;
+    float shipHandling;
+    uint8_t fixed;
+    Matrix localMatrix;
 
     TargetFollowCamera(unsigned id, AEGeometry *target,
                        Vector camOffset, Vector targetOffset);
+
     ~TargetFollowCamera();
 
     AEGeometry *getTarget();
+
     Vector *getPosition();
+
     Vector *getTargetPos() { return reinterpret_cast<Vector *>(&this->targetX); }
-    Vector *getUp()        { return reinterpret_cast<Vector *>(&this->upX); }
+    Vector *getUp() { return reinterpret_cast<Vector *>(&this->upX); }
+
     Vector *getTargetOffset();
+
     Vector *getCamOffset();
-    Vector *getRotation()  { return reinterpret_cast<Vector *>(&this->rotX); }
-    Matrix  getLocal();
-    void    setLocal(Matrix m);
-    void    setTarget(AEGeometry *target);
-    void    setCamOffset(const Vector &offset);
-    void    setTargetOffset(const Vector &offset);
-    void    setPosition(const Vector &position);
-    void    setPosition(float x, float y, float z);
-    void    setFirstPersonMatrix(Matrix &m);
-    void    zoomTarget(float zoom);
-    void    setRoll(float roll);
-    void    roll(float delta);
-    void    setLookAtCam(bool enabled);
-    void    setActive(bool enabled);
-    void    setLocked(bool locked);
-    void    setFixed(bool enabled);
-    void    setRotationAroundTarget(bool enabled);
-    void    rotateAroundTarget(float x, float y, float z);
-    void    enableFirstPersonCam(bool enabled);
-    void    setFastForwardMode(bool enabled);
-    void    useTargetsUpVector(bool enabled);
-    void    setRumblePercentage(float pct, int frequency);
-    void    setBoostPercentage(float pct, int frequency);
-    void    setShipHandling(float handling);
-    void    resetShipHandling();
-    void    calculateCoefficents(float t);
-    void    aproximateCooefficientsForAproximationOfDampingFunktion(
-                float t, double &outB, double &outA, double &outC,
-                double &outD, double &outE);
-    void    hit();
-    void    hitSmall();
-    void    translate(float dx, float dy, float dz);
-    void    translateNoUpdate(float dx, float dy, float dz);
-    bool    isInLookAtMode();
-    bool    isInFastForwardMode();
-    bool    hideShipForFirstPersonCam();
-    void    update(int dt);
+
+    Vector *getRotation() { return reinterpret_cast<Vector *>(&this->rotX); }
+
+    Matrix getLocal();
+
+    void setLocal(Matrix m);
+
+    void setTarget(AEGeometry *target);
+
+    void setCamOffset(const Vector &offset);
+
+    void setTargetOffset(const Vector &offset);
+
+    void setPosition(const Vector &position);
+
+    void setPosition(float x, float y, float z);
+
+    void setFirstPersonMatrix(Matrix &m);
+
+    void zoomTarget(float zoom);
+
+    void setRoll(float roll);
+
+    void roll(float delta);
+
+    void setLookAtCam(bool enabled);
+
+    void setActive(bool enabled);
+
+    void setLocked(bool locked);
+
+    void setFixed(bool enabled);
+
+    void setRotationAroundTarget(bool enabled);
+
+    void rotateAroundTarget(float x, float y, float z);
+
+    void enableFirstPersonCam(bool enabled);
+
+    void setFastForwardMode(bool enabled);
+
+    void useTargetsUpVector(bool enabled);
+
+    void setRumblePercentage(float pct, int frequency);
+
+    void setBoostPercentage(float pct, int frequency);
+
+    void setShipHandling(float handling);
+
+    void resetShipHandling();
+
+    void calculateCoefficents(float t);
+
+    void aproximateCooefficientsForAproximationOfDampingFunktion(
+        float t, double &outB, double &outA, double &outC,
+        double &outD, double &outE);
+
+    void hit();
+
+    void hitSmall();
+
+    void translate(float dx, float dy, float dz);
+
+    void translateNoUpdate(float dx, float dy, float dz);
+
+    bool isInLookAtMode();
+
+    bool isInFastForwardMode();
+
+    bool hideShipForFirstPersonCam();
+
+    void update(int dt);
 };
 #endif

@@ -6,29 +6,27 @@
 #include "aetypes.h"
 #include "mathtypes.h"
 
-class AEGeometry;   // ::AEGeometry, engine/render/AEGeometry.h; pointer only
-class Radar;        // ::Radar, game/weapons/Radar.h; pointer only
-class Level;        // ::Level, game/world/Level.h; pointer only
-class Hud;          // ::Hud, game/ui/Hud.h; pointer only
+class AEGeometry; // ::AEGeometry, engine/render/AEGeometry.h; pointer only
+class Radar; // ::Radar, game/weapons/Radar.h; pointer only
+class Level; // ::Level, game/world/Level.h; pointer only
+class Hud; // ::Hud, game/ui/Hud.h; pointer only
 
-// Repair / heal / shield beam emitter. Maintains a fixed pool of beam geometries
-// (sized to the equipped module's target-count attribute) and, on each update,
-// assigns nearby enemy targets, animates the beams toward them and applies the
-// heal / shield / damage effect for the configured equipment sort.
 class RepairBeam {
 public:
-    int                                 shipIndex;     // sound-event array index
-    AbyssEngine::AEMath::Vector         beamPosition;  // current beam endpoint
-    Array<AEGeometry*>*                 geometries;    // one beam geometry per target slot
-    Array<int>*                         targetIds;     // target enemy slot, -1 = empty
-    Array<float>*                       charges;       // per-target charge accumulator
-    int                                 sort;          // equipment sort (0x25 heal / 0x29 shield)
-    int                                 timer;         // re-arm countdown timer
+    int shipIndex; // sound-event array index
+    AbyssEngine::AEMath::Vector beamPosition; // current beam endpoint
+    Array<AEGeometry *> *geometries; // one beam geometry per target slot
+    Array<int> *targetIds; // target enemy slot, -1 = empty
+    Array<float> *charges; // per-target charge accumulator
+    int sort; // equipment sort (0x25 heal / 0x29 shield)
+    int timer; // re-arm countdown timer
 
     RepairBeam(int shipIndex, int sort);
+
     ~RepairBeam();
 
     void render();
-    void update(int dt, Radar* radar, Level* level, Hud* hud);
+
+    void update(int dt, Radar *radar, Level *level, Hud *hud);
 };
 #endif

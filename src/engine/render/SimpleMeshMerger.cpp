@@ -4,29 +4,18 @@
 #include "engine/math/AEMath.h"
 #include "game/core/PaintCanvasClass.h"
 
-
-
-
-
-// ARM EABI 16-bit divide helper (indexCount / 3 -> triangle count).
 extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
-// AEMath transform helpers (Matrix * point / direction), defined in AEMath.cpp.
 extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
+
 extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
-// SimpleMeshMerger(meshIds, transforms, canvas, flags)
-//   Builds a single merged mesh by transforming each source mesh's vertices,
-//   normals, uvs, colours and triangles into one combined vertex/index buffer,
-//   then creates a transform holding the merged mesh. Construction records the
-//   produced merged-mesh and transform handles and marks the merger valid.
-SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
+SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                    Array<Matrix> transforms,
-                                   PaintCanvas* canvas, unsigned short flags)
-{
-    this->mergeFactor = (short)flags;
+                                   PaintCanvas *canvas, unsigned short flags) {
+    this->mergeFactor = (short) flags;
     this->canvas = canvas;
-    this->matrixCount = (int)transforms.size();
+    this->matrixCount = (int) transforms.size();
     this->meshes.resize(meshIds.size());
 
     // pass 1: load source meshes, accumulate vertex + triangle totals
@@ -35,7 +24,7 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t localId;
         canvas->MeshCreate(meshIds.data()[i], localId, false);
-        this->meshes[i] = (Mesh *)canvas->MeshGetPointer(localId);
+        this->meshes[i] = (Mesh *) canvas->MeshGetPointer(localId);
         Mesh *m = this->meshes[i];
         totalV = (int16_t)(totalV + m->vertexCount);
         totalI = (int16_t)(totalI + aeabi_uidiv16(m->indexCount, 3));
@@ -43,7 +32,7 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
 
     // allocate the merged mesh, seeding its vertex-format flags from the first source mesh
     Mesh *m0 = this->meshes[0];
-    canvas->MeshCreate((uint16_t)totalV, (uint16_t)totalI, (signed char)m0->vertexFormat,
+    canvas->MeshCreate((uint16_t) totalV, (uint16_t) totalI, (signed char) m0->vertexFormat,
                        flags, this->mergedMeshId);
 
     // pass 2: copy transformed vertices and rebased triangles
@@ -60,22 +49,22 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
             uint8_t fl = m->vertexFormat;
             Vector tmp;
             if (fl & 1) {
-                AEMath_MatrixTransformVector(&tmp, (const Vector *)xf);
+                AEMath_MatrixTransformVector(&tmp, (const Vector *) xf);
                 canvas->MeshSetPoint(this->mergedMeshId, (uint16_t)(vtxBase + v), tmp.x, tmp.y, tmp.z);
                 fl = m->vertexFormat;
             }
             if (fl & 4) {
-                AEMath_MatrixRotateVector(&tmp, (const Vector *)xf);
+                AEMath_MatrixRotateVector(&tmp, (const Vector *) xf);
                 canvas->MeshSetNormal(this->mergedMeshId, (uint16_t)(vtxBase + v), tmp);
                 fl = m->vertexFormat;
             }
             if (fl & 2) {
-                float *uv = (float *)((char *)m->texCoords + uvOff);
+                float *uv = (float *) ((char *) m->texCoords + uvOff);
                 canvas->MeshSetUv(this->mergedMeshId, (uint16_t)(vtxBase + v), uv[1], uv[0]);
                 fl = m->vertexFormat;
             }
             if (fl & 8) {
-                float *col = (float *)((char *)(uintptr_t)m->colors + colOff);
+                float *col = (float *) ((char *) (uintptr_t) m->colors + colOff);
                 canvas->MeshSetColor(this->mergedMeshId, (uint16_t)(vtxBase + v),
                                      col[1], col[2], col[3], col[0]);
             }
@@ -87,7 +76,7 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short>& meshIds,
         int triOff = 0;
         for (uint16_t t = 0; t < tris; t++) {
             if (m->vertexFormat & 0x10) {
-                int16_t *ix = (int16_t *)((char *)m->indices + triOff);
+                int16_t *ix = (int16_t *) ((char *) m->indices + triOff);
                 canvas->MeshSetTriangle(this->mergedMeshId, (uint16_t)(triBase + t),
                                         (uint16_t)(ix[0] + vtxBase), (uint16_t)(ix[1] + vtxBase),
                                         (uint16_t)(ix[2] + vtxBase));

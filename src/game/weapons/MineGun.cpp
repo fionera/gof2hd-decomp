@@ -9,14 +9,16 @@
 #include "engine/math/AEMath.h"
 #include "engine/math/Transform.h"
 
-
-
-// PaintCanvas singleton handle (points at the active PaintCanvas*).
-__attribute__((visibility("hidden"))) extern "C" void *g_PaintCanvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern "C" void *g_PaintCanvas;
 
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
-    : ObjectGun(param, gun, mesh, 0, level)
-{
+    : ObjectGun(param, gun, mesh, 0, level) {
     this->field_0xc0 = 0;
     this->field_0xc4 = 0;
     this->field_0xc8 = 0;
@@ -33,18 +35,17 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
         this->readyFlags[i] = 1;
     }
 
-    void **canvas = (void **)g_PaintCanvas;
-    this->geometry = new AEGeometry((uint16_t)(mesh + 1), (PaintCanvas *)*canvas, false);
-    ((PaintCanvas *)*canvas)->TransformAddChild(this->transform, this->geometry->transform);
+    void **canvas = (void **) g_PaintCanvas;
+    this->geometry = new AEGeometry((uint16_t)(mesh + 1), (PaintCanvas *) *canvas, false);
+    ((PaintCanvas *) *canvas)->TransformAddChild(this->transform, this->geometry->transform);
 
-    void *transform = ((PaintCanvas *)*canvas)->TransformGetTransform(this->geometry->transform);
-    ((AbyssEngine::Transform *)transform)->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
+    void *transform = ((PaintCanvas *) *canvas)->TransformGetTransform(this->geometry->transform);
+    ((AbyssEngine::Transform *) transform)->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
 }
 
-MineGun::~MineGun()
-{
+MineGun::~MineGun() {
     if (this->explosions != nullptr) {
-        for (Explosion *explosion : *this->explosions) {
+        for (Explosion *explosion: *this->explosions) {
             delete explosion;
         }
         this->explosions->clear();
@@ -59,13 +60,11 @@ MineGun::~MineGun()
     this->geometry = nullptr;
 }
 
-int MineGun::isMineGun()
-{
+int MineGun::isMineGun() {
     return 1;
 }
 
-void MineGun::render()
-{
+void MineGun::render() {
     ObjectGun::render();
     for (uint32_t i = 0; i < this->gun->count; ++i) {
         if (this->gun->hitFlags[i] != 0) {
@@ -74,20 +73,18 @@ void MineGun::render()
     }
 }
 
-void MineGun::setPlayer(PlayerEgo *player)
-{
+void MineGun::setPlayer(PlayerEgo *player) {
     this->player = player;
 }
 
-void MineGun::update(int delta)
-{
+void MineGun::update(int delta) {
     ObjectGun::update(delta);
 
-    void **canvas = (void **)g_PaintCanvas;
+    void **canvas = (void **) g_PaintCanvas;
     if (this->gun->active != 0) {
         void *transform =
-            ((PaintCanvas *)*canvas)->TransformGetTransform(this->geometry->transform);
-        ((AbyssEngine::Transform *)transform)->Update((long long)delta, 0);
+                ((PaintCanvas *) *canvas)->TransformGetTransform(this->geometry->transform);
+        ((AbyssEngine::Transform *) transform)->Update((long long) delta, 0);
     }
 
     const float rumbleRange = 30000.0f;
@@ -97,19 +94,19 @@ void MineGun::update(int delta)
             continue;
         }
 
-        Vector *minePosition = (Vector *)positions;
+        Vector *minePosition = (Vector *) positions;
         if (this->readyFlags[i] != 0) {
             this->rumbleTimer = 0;
 
             Vector playerPosition = this->player->getPosition();
             Vector toPlayer =
-                AbyssEngine::AEMath::operator-(*minePosition, playerPosition);
+                    AbyssEngine::AEMath::operator-(*minePosition, playerPosition);
             float distance = AbyssEngine::AEMath::VectorLength(toPlayer);
             float clamped = (distance < rumbleRange) ? distance : rumbleRange;
             this->rumblePercentage = 1.0f - clamped / rumbleRange;
 
             TargetFollowCamera *camera =
-                (TargetFollowCamera *)(intptr_t)this->player->getTargetFollowCamera();
+                    (TargetFollowCamera *) (intptr_t) this->player->getTargetFollowCamera();
             camera->setRumblePercentage(this->rumblePercentage, 0x32);
 
             Vector direction = {0.0f, 0.0f, 0.0f};
@@ -127,13 +124,13 @@ void MineGun::update(int delta)
         this->rumbleTimer = timer;
 
         TargetFollowCamera *camera =
-            (TargetFollowCamera *)(intptr_t)this->player->getTargetFollowCamera();
-        float pct = this->rumblePercentage * ((float)this->rumbleTimer / -2000.0f + 1.0f);
+                (TargetFollowCamera *) (intptr_t) this->player->getTargetFollowCamera();
+        float pct = this->rumblePercentage * ((float) this->rumbleTimer / -2000.0f + 1.0f);
         camera->setRumblePercentage(pct, 0x32);
 
         if (explosion->isPlaying() == 0) {
             TargetFollowCamera *doneCamera =
-                (TargetFollowCamera *)(intptr_t)this->player->getTargetFollowCamera();
+                    (TargetFollowCamera *) (intptr_t) this->player->getTargetFollowCamera();
             doneCamera->setRumblePercentage(0.0f, 0);
             this->rumbleTimer = 0;
             this->gun->hitFlags[i] = 0;

@@ -4,24 +4,22 @@
 #include <cstdint>
 
 namespace AbyssEngine {
+    enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
 
-enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
+    class ResourceMaterial {
+    public:
+        ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend);
 
-// A render material: a set of texture indices plus blend/color state.
-class ResourceMaterial {
-public:
-    ResourceMaterial(uint16_t texId, uint16_t texId2, BlendMode blend);
-    ResourceMaterial(uint16_t texId, BlendMode blend);
+        ResourceMaterial(uint16_t texId, BlendMode blend);
 
-    uint16_t texIndices[8];
-    int      blendMode;
-    int      field_14;
-    int      field_18;
-    int      field_1c;
-    int      field_20;
-    int      field_24;
-};
-
+        uint16_t texIndices[8];
+        int blendMode;
+        int field_14;
+        int field_18;
+        int field_1c;
+        int field_20;
+        int field_24;
+    };
 } // namespace AbyssEngine
 
 #endif

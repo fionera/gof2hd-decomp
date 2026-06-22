@@ -4,16 +4,11 @@
 #include "game/mission/Status.h"
 #include "game/core/String.h"
 
-
-
-// SolarSystem(...) — initialise the system's metadata and take ownership of its
-// station-id, linked-system and forbidden-goods lists. The display name is copied.
 SolarSystem::SolarSystem(int unk0, String displayName, int security,
                          bool isVisible, int factionId, int x, int y, int z,
-                         int jumpgateId, int texture, int* starRGB,
-                         Array<int>* stations, Array<int>* linkedSystems,
-                         Array<int>* forbidden)
-{
+                         int jumpgateId, int texture, int *starRGB,
+                         Array<int> *stations, Array<int> *linkedSystems,
+                         Array<int> *forbidden) {
     this->name = displayName;
     this->systemId = unk0;
     this->visible = isVisible;
@@ -32,8 +27,6 @@ SolarSystem::SolarSystem(int unk0, String displayName, int security,
     this->linkedSystemIds = linkedSystems;
 }
 
-// Releases the three owned Array<int> lists; the embedded `name` is destroyed
-// automatically by its own destructor.
 SolarSystem::~SolarSystem() {
     if (this->stationIds != nullptr) {
         this->stationIds->clear();
@@ -52,35 +45,32 @@ SolarSystem::~SolarSystem() {
     this->linkedSystemIds = nullptr;
 }
 
-// Status singleton: the player's current docking/orbit state.
-extern Status** gStatusOrbit __attribute__((visibility("hidden")));
+extern Status ** gStatusOrbit __attribute__((visibility("hidden")));
 
 bool SolarSystem::currentOrbitHasWarpGate() {
     int orbit = this->jumpgateStationId;
-    Station* st = (*gStatusOrbit)->getStation();
+    Station *st = (*gStatusOrbit)->getStation();
     return orbit == st->getIndex();
 }
 
-// ---- simple field accessors ----
-int SolarSystem::getIndex()          { return systemId; }
-int SolarSystem::getRace()           { return (int)faction; }
-int SolarSystem::getSecurityLevel()  { return securityLevel; }
-int SolarSystem::getTextureIndex()   { return textureIndex; }
-int SolarSystem::getX()              { return mapX; }
-int SolarSystem::getY()              { return mapY; }
-int SolarSystem::getZ()              { return mapZ; }
-int SolarSystem::getWarpGateIndex()  { return jumpgateStationId; }
-uint32_t* SolarSystem::getStations()      { return (uint32_t*)stationIds; }
-uint32_t* SolarSystem::getRoutes()        { return (uint32_t*)linkedSystemIds; }
-void*     SolarSystem::getForbiddenGoods() { return forbiddenGoods; }
+int SolarSystem::getIndex() { return systemId; }
+int SolarSystem::getRace() { return (int) faction; }
+int SolarSystem::getSecurityLevel() { return securityLevel; }
+int SolarSystem::getTextureIndex() { return textureIndex; }
+int SolarSystem::getX() { return mapX; }
+int SolarSystem::getY() { return mapY; }
+int SolarSystem::getZ() { return mapZ; }
+int SolarSystem::getWarpGateIndex() { return jumpgateStationId; }
+uint32_t *SolarSystem::getStations() { return (uint32_t *) stationIds; }
+uint32_t *SolarSystem::getRoutes() { return (uint32_t *) linkedSystemIds; }
+void *SolarSystem::getForbiddenGoods() { return forbiddenGoods; }
 
 uint8_t SolarSystem::isVisible() {
     return this->visible;
 }
 
-// Scan the station-index array for `idx`.
 int SolarSystem::stationIsInSystem(int idx) {
-    Array<int>* arr = this->stationIds;
+    Array<int> *arr = this->stationIds;
     uint32_t n = arr->size();
     for (uint32_t i = 0; i < n; i++) {
         if ((*arr)[i] == idx)
@@ -89,10 +79,9 @@ int SolarSystem::stationIsInSystem(int idx) {
     return 0;
 }
 
-// This system always counts; otherwise scan the linked-routes array.
 int SolarSystem::systemIsInSystemRoutes(int sys) {
     if (this->systemId != sys) {
-        Array<int>* arr = this->linkedSystemIds;
+        Array<int> *arr = this->linkedSystemIds;
         if (arr == nullptr)
             return 0;
         uint32_t n = arr->size();
@@ -109,9 +98,8 @@ void SolarSystem::setVisible(bool v) {
     this->visible = v;
 }
 
-// Index of the matching station in the station array, or -1.
 uint32_t SolarSystem::getStationEnumIndex(int idx) {
-    Array<int>* arr = this->stationIds;
+    Array<int> *arr = this->stationIds;
     for (uint32_t i = 0; i < arr->size(); i++) {
         if ((*arr)[i] == idx)
             return i;
@@ -123,17 +111,15 @@ String SolarSystem::getName() {
     return this->name;
 }
 
-// Pirate-base station-index table.
 extern const int kPirateBaseStations[4] __attribute__((visibility("hidden")));
-// Singleton root whose +0x4c slot holds the per-station pirate-flag table.
-extern void* gPirateBaseRoot __attribute__((visibility("hidden")));
 
-// True if a pirate station in this system still has its flag cleared.
+extern void * gPirateBaseRoot __attribute__((visibility("hidden")));
+
 int SolarSystem::hasPirateBase() {
-    char* base = *(char**)gPirateBaseRoot;
+    char *base = *(char **) gPirateBaseRoot;
     for (uint32_t i = 0; i <= 3; i++) {
         if (stationIsInSystem(kPirateBaseStations[i]) != 0) {
-            char* flags = *(char**)(*(char**)(base + 0x4c) + 4);
+            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
             if (flags[i] == 0)
                 return 1;
         }
@@ -141,7 +127,6 @@ int SolarSystem::hasPirateBase() {
     return 0;
 }
 
-// faction indexes a 4-entry table; out-of-range maps to 8.
 extern const int kAttackRaceTable[4] __attribute__((visibility("hidden")));
 
 int SolarSystem::getAttackRace() {
@@ -151,8 +136,6 @@ int SolarSystem::getAttackRace() {
     return 8;
 }
 
-// Map a contiguous systemId range onto an owner bitmask: ids 0x17..0x21 with bits
-// set in 0x60b are unowned, everything else has an owner.
 uint32_t SolarSystem::hasNoOwner() {
     uint32_t x = this->systemId - 0x17;
     if (x < 0xb)
@@ -160,17 +143,15 @@ uint32_t SolarSystem::hasNoOwner() {
     return 0;
 }
 
-// Hidden-blueprint station-index table.
 extern const int kBlueprintStations[5] __attribute__((visibility("hidden")));
-// Singleton root whose +0x58 slot holds the per-station blueprint-flag table.
-extern void* gBlueprintRoot __attribute__((visibility("hidden")));
 
-// True if a blueprint station in this system still has its flag cleared.
+extern void * gBlueprintRoot __attribute__((visibility("hidden")));
+
 int SolarSystem::hasHiddenBlueprint() {
-    char* base = *(char**)gBlueprintRoot;
+    char *base = *(char **) gBlueprintRoot;
     for (uint32_t i = 0; i <= 4; i++) {
         if (stationIsInSystem(kBlueprintStations[i]) != 0) {
-            char* flags = *(char**)(*(char**)(base + 0x58) + 4);
+            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
             if (flags[i] == 0)
                 return 1;
         }
@@ -183,24 +164,20 @@ void SolarSystem::setCoords(int x, int y) {
     this->mapY = y;
 }
 
-// Resolving the warp-gate's enum index is the same array lookup used for
-// ordinary stations, so it forwards straight to getStationEnumIndex().
 int SolarSystem::getWarpGateEnumIndex() {
-    return (int)getStationEnumIndex(this->jumpgateStationId);
+    return (int) getStationEnumIndex(this->jumpgateStationId);
 }
 
-// Galaxy singleton: tracks which stations the player has visited.
-extern Galaxy** gGalaxyDiscover __attribute__((visibility("hidden")));
+extern Galaxy ** gGalaxyDiscover __attribute__((visibility("hidden")));
 
-// True once every station in this system has been visited.
 int SolarSystem::isFullyDiscovered() {
-    Array<int>* arr = this->stationIds;
+    Array<int> *arr = this->stationIds;
     uint32_t i = 0;
-    Galaxy* gal = *gGalaxyDiscover;
+    Galaxy *gal = *gGalaxyDiscover;
     while (true) {
         if (i >= arr->size())
             return 1;
-        char* visited = (char*)gal->getVisited();
+        char *visited = (char *) gal->getVisited();
         arr = this->stationIds;
         uint32_t flagIdx = (*arr)[i];
         i++;
@@ -209,8 +186,7 @@ int SolarSystem::isFullyDiscovered() {
     }
 }
 
-// Resolve the station's index and scan the station-index array for it.
-int SolarSystem::stationIsInSystem(Station* station) {
+int SolarSystem::stationIsInSystem(Station *station) {
     if (station == nullptr)
         return 0;
     return stationIsInSystem(station->getIndex());

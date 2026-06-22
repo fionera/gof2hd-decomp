@@ -6,34 +6,35 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Galaxy on Fire 2 - AbyssEngine::MaskShader (GLES2 masked/textured shader).
+namespace AbyssEngine {
+    class Engine;
+}
 
-namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class MaskShader : public ShaderBaseStruct {
+    public:
+        int a_position; // +0x20 attribute a_position
+        int a_texCoord; // +0x24 attribute a_texCoord
+        int a_color; // +0x28 attribute a_color (mask tex coord)
+        int u_mvpMatrix; // +0x2c uniform u_mvpMatrix (world matrix)
+        int u_texture0; // +0x30 uniform u_texture0
+        int u_texture1; // +0x34 uniform u_texture1
+        int u_color; // +0x38 uniform u_color
 
-// AbyssEngine::MaskShader
-class MaskShader : public ShaderBaseStruct {
-public:
-    int a_position;     // +0x20 attribute a_position
-    int a_texCoord;     // +0x24 attribute a_texCoord
-    int a_color;        // +0x28 attribute a_color (mask tex coord)
-    int u_mvpMatrix;    // +0x2c uniform u_mvpMatrix (world matrix)
-    int u_texture0;     // +0x30 uniform u_texture0
-    int u_texture1;     // +0x34 uniform u_texture1
-    int u_color;        // +0x38 uniform u_color
+        static int ShaderIndex;
 
-    static int ShaderIndex;
+        MaskShader();
 
-    MaskShader();
-    void Init(::Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, ::Engine *engine) override;
-};
+        void Init(::Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, ::Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

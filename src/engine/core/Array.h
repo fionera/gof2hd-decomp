@@ -6,8 +6,21 @@
 template<class T>
 class Array {
 public:
-    unsigned int size_; // @0  element count
-    T *data_; // @4  backing store (grown with realloc)
+    // @0  element count. `size_`/`count` are the same 4-byte uint32 field; the
+    // alias lets raw-offset (+0x0) call sites read it as a named member.
+    union {
+        unsigned int size_;
+        unsigned int count;
+    };
+
+    // @4  backing store (grown with realloc); raw-offset (+0x4) call sites read this pointer.
+    // `data_`/`wantedListData` are the same 4-byte pointer field; the alias lets raw-offset (+0x4)
+    // call sites (e.g. Status::getWanted()->data, indexing the Wanted list) read it as a named member.
+    union {
+        T *data_;
+        T *wantedListData;
+    };
+
     unsigned int capacity_; // @8  allocated element count
 
     Array() {
@@ -116,11 +129,10 @@ public:
     }
 
     // The engine's Array has no spare capacity to release; clear() already shrinks to one slot.
-    void shrink_to_fit() {}
+    void shrink_to_fit() {
+    }
 };
 
-// The engine's container free-functions (out-of-line symbols in the original: _Z8ArrayAdd...,
-// _Z14ArraySetLength..., _Z14ArrayRemoveAll...). Bodies match the binary so call sites match too.
 template<class T>
 void ArrayAdd(T item, Array<T> &a) {
     a.capacity_ = a.size_ + 1;
@@ -129,8 +141,6 @@ void ArrayAdd(T item, Array<T> &a) {
     a.size_ = a.capacity_;
 }
 
-// Bulk append: grow by exactly `count` (exact-fit realloc), then block-copy the
-// incoming run onto the end. Overload of the single-item ArrayAdd above.
 template<class T>
 void ArrayAdd(const T *src, unsigned int count, Array<T> &a) {
     a.capacity_ = a.size_ + count;
@@ -139,8 +149,6 @@ void ArrayAdd(const T *src, unsigned int count, Array<T> &a) {
     a.size_ = a.capacity_;
 }
 
-// Replace the array's contents with `count` elements copied from `src`. Only
-// reallocates when the cached capacity differs; the new size is exactly `count`.
 template<class T>
 void ArraySet(const T *src, unsigned int count, Array<T> &a) {
     T *p;
@@ -155,7 +163,6 @@ void ArraySet(const T *src, unsigned int count, Array<T> &a) {
     a.size_ = count;
 }
 
-// Replace the array's contents with a copy of `src`'s elements.
 template<class T>
 void ArraySet(const Array<T> &src, Array<T> &a) {
     ArraySet(src.data_, src.size_, a);
@@ -167,8 +174,6 @@ void ArraySetLength(unsigned int n, Array<T> &a) { a.resize(n); }
 template<class T>
 void ArrayRemoveAll(Array<T> &a) { a.clear(); }
 
-// Erase every element equal to `item` (in-place compaction), then shrink the
-// backing store to the new count (min one slot). Paired with ArrayAdd<T>.
 template<class T>
 void ArrayRemove(T item, Array<T> &a) {
     unsigned int write = 0;
@@ -183,15 +188,12 @@ void ArrayRemove(T item, Array<T> &a) {
     a.data_ = static_cast<T *>(realloc(a.data_, cap * sizeof(T)));
 }
 
-// Free an Array's backing store and null it, without touching the pointees.
 template<class T>
 void ArrayRelease(Array<T> &a) {
     if (a.data_) ::operator delete[](a.data_);
     a.data_ = nullptr;
 }
 
-// Delete every owned pointee across the full capacity (nulling each slot),
-// then free the backing store.
 template<class T>
 void ArrayReleaseClasses(Array<T> &a) {
     for (unsigned int i = 0; i < a.capacity_; ++i) {
@@ -202,8 +204,6 @@ void ArrayReleaseClasses(Array<T> &a) {
     a.data_ = nullptr;
 }
 
-// Amortised-doubling append: only reallocate (to 2x, zero-filling the new
-// half) when the cached capacity is exhausted, then append.
 template<class T>
 void ArrayAddCached(T item, Array<T> &a) {
     if (a.size_ >= a.capacity_) {

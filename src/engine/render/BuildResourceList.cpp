@@ -1,8 +1,5 @@
-// Recovered AbyssEngine boot-time master resource table (ghidra 0xf8f54, ~155KB in the binary).
-// BuildResourceList(Engine*) registers ~2826 resources: a 2488-slot Resource* array handed to
-// PaintCanvas::SetResourceList, a 152-entry generated image block, and ~393 further AddResource
-// entries, then loadPortraits + loadLowTexturesAndMaterials. Reconstructed by a validated Thumb-2
-// extractor over the binary (see _work/thumb.py / extract2.py). Symbol: _Z17BuildResourceListPN11AbyssEngine6EngineE
+
+
 #include "engine/render/ResourceTexture.h"
 #include "engine/render/ResourceMaterial.h"
 #include "engine/render/ResourceMesh.h"
@@ -14,97 +11,205 @@
 #include "engine/render/PaintCanvas.h"
 
 namespace AbyssEngine {
-// PaintCanvas resource-table entry (size 0x10): id@0, kind@4, -1@8, owned payload@0xc.
-struct Resource { unsigned short id; int kind; int unused; void *payload; };
-// kind-3 (image) / kind-1 payloads are a 4-byte packed pair the binary writes inline.
-struct ResourceImage { unsigned short lo; unsigned short hi; };
+    struct Resource {
+        unsigned short id;
+        int kind;
+        int unused;
+        void *payload;
+    };
+
+    struct ResourceImage {
+        unsigned short lo;
+        unsigned short hi;
+    };
 } // namespace AbyssEngine
 
-// loadPortraits / loadLowTexturesAndMaterials are the two resource sub-loaders this table tail-calls.
-void loadPortraits(AbyssEngine::Engine *engine);
-void loadLowTexturesAndMaterials(AbyssEngine::Engine *engine);
+void loadPortraits(AbyssEngine::Engine * engine);
+void loadLowTexturesAndMaterials(AbyssEngine::Engine * engine);
 
 namespace {
-inline AbyssEngine::Resource *makeRes(unsigned short id, int kind, void *payload) {
-    AbyssEngine::Resource *r = new AbyssEngine::Resource;
-    r->id = id; r->kind = kind; r->unused = -1; r->payload = payload; return r;
-}
-inline AbyssEngine::ResourceImage *newImage(unsigned short lo, unsigned short hi) {
-    AbyssEngine::ResourceImage *p = new AbyssEngine::ResourceImage; p->lo = lo; p->hi = hi; return p;
-}
+    inline AbyssEngine::Resource *makeRes(unsigned short id, int kind, void *payload) {
+        AbyssEngine::Resource *r = new AbyssEngine::Resource;
+        r->id = id;
+        r->kind = kind;
+        r->unused = -1;
+        r->payload = payload;
+        return r;
+    }
+
+    inline AbyssEngine::ResourceImage *newImage(unsigned short lo, unsigned short hi) {
+        AbyssEngine::ResourceImage *p = new AbyssEngine::ResourceImage;
+        p->lo = lo;
+        p->hi = hi;
+        return p;
+    }
 } // namespace
 
-void BuildResourceList(AbyssEngine::Engine *engine)
-{
+void BuildResourceList(AbyssEngine::Engine *engine) {
     using namespace AbyssEngine;
     PaintCanvas *canvas = engine->appManager->paintCanvas;
     canvas->TextureCreateGlobal(String("data/assets/main/3d/textures/low/etc/fx/cloak_map.aei"), 6);
 
     // ---- Phase A: 2488-slot resource array ----
     static Resource *resources[2488] = {};
-    resources[0] = makeRes(11742, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/suns/sn_sun_011.aei", 0.0f));
-    resources[1] = makeRes(27335, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_diffuse.aei", 0.0f));
-    resources[2] = makeRes(27336, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_normal_specular.aei", 0.0f));
+    resources[0] = makeRes(
+        11742, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/suns/sn_sun_011.aei",
+                                                   0.0f));
+    resources[1] = makeRes(27335, 2, new AbyssEngine::ResourceTexture(
+                               "data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_diffuse.aei", 0.0f));
+    resources[2] = makeRes(27336, 2, new AbyssEngine::ResourceTexture(
+                               "data/assets/supernova/3d/textures/low/etc/misc/sn_fireworks_rocket_normal_specular.aei",
+                               0.0f));
     resources[3] = makeRes(27337, 6, new AbyssEngine::ResourceMaterial(27335, 27336, static_cast<BlendMode>(28)));
-    resources[4] = makeRes(27338, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_fireworks_rocket.aem", 27337, false));
-    resources[5] = makeRes(27309, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_fireworks.aei", 0.0f));
+    resources[4] = makeRes(
+        27338, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_fireworks_rocket.aem", 27337,
+                                                false));
+    resources[5] = makeRes(
+        27309, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_fireworks.aei",
+                                                   0.0f));
     resources[6] = makeRes(27308, 6, new AbyssEngine::ResourceMaterial(27309, BlendMode_2));
-    resources[7] = makeRes(16809, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_fireworks_lookat_anim_add.aem", 27308, false));
-    resources[8] = makeRes(27320, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sprite_fireworks_rocket_sparks.aei", 0.0f));
+    resources[7] = makeRes(
+        16809, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_fireworks_lookat_anim_add.aem",
+                                                27308, false));
+    resources[8] = makeRes(27320, 2, new AbyssEngine::ResourceTexture(
+                               "data/assets/supernova/3d/textures/low/etc/fx/sn_sprite_fireworks_rocket_sparks.aei",
+                               0.0f));
     resources[9] = makeRes(27321, 6, new AbyssEngine::ResourceMaterial(27320, BlendMode_2));
-    resources[10] = makeRes(29100, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_projectiles.aei", 0.0f));
+    resources[10] = makeRes(
+        29100, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_projectiles.aei",
+                                                   0.0f));
     resources[11] = makeRes(29101, 6, new AbyssEngine::ResourceMaterial(29100, BlendMode_2));
     resources[12] = makeRes(29102, 6, new AbyssEngine::ResourceMaterial(29100, BlendMode_1));
-    resources[13] = makeRes(19090, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_228_anim_add.aem", 29101, false));
-    resources[14] = makeRes(19091, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_229_anim_alpha.aem", 29102, false));
-    resources[15] = makeRes(19094, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_231_anim_add.aem", 29101, false));
-    resources[16] = makeRes(19092, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_207_anim_add.aem", 29101, false));
-    resources[17] = makeRes(19093, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_222_anim_add.aem", 29101, false));
-    resources[18] = makeRes(29001, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream.aei", 0.0f));
-    resources[19] = makeRes(29002, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream_normal.aei", 0.0f));
+    resources[13] = makeRes(
+        19090, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_228_anim_add.aem",
+                                                29101, false));
+    resources[14] = makeRes(
+        19091, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_229_anim_alpha.aem",
+                                                29102, false));
+    resources[15] = makeRes(
+        19094, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_231_anim_add.aem",
+                                                29101, false));
+    resources[16] = makeRes(
+        19092, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_207_anim_add.aem",
+                                                29101, false));
+    resources[17] = makeRes(
+        19093, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_projectile_222_anim_add.aem",
+                                                29101, false));
+    resources[18] = makeRes(
+        29001, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream.aei",
+                                                   0.0f));
+    resources[19] = makeRes(
+        29002, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_stream_normal.aei", 0.0f));
     resources[20] = makeRes(29003, 6, new AbyssEngine::ResourceMaterial(29001, static_cast<BlendMode>(3)));
-    resources[21] = makeRes(19071, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_stream_anim_add.aem", 29003, false));
-    resources[22] = makeRes(29004, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_explosion.aei", 0.0f));
+    resources[21] = makeRes(
+        19071, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_stream_anim_add.aem",
+                                                29003, false));
+    resources[22] = makeRes(
+        29004, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_explosion.aei", 0.0f));
     resources[23] = makeRes(29005, 6, new AbyssEngine::ResourceMaterial(29004, static_cast<BlendMode>(3)));
-    resources[24] = makeRes(19070, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_explosion_anim_lookat_add.aem", 29005, false));
-    resources[25] = makeRes(29006, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_sphere.aei", 0.0f));
-    resources[26] = makeRes(29008, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_glow.aei", 0.0f));
+    resources[24] = makeRes(19070, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/fx/sn_plasma_explosion_anim_lookat_add.aem", 29005,
+                                false));
+    resources[25] = makeRes(
+        29006, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_sphere.aei", 0.0f));
+    resources[26] = makeRes(
+        29008, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_shock_blast_glow.aei", 0.0f));
     resources[27] = makeRes(29007, 6, new AbyssEngine::ResourceMaterial(29006, static_cast<BlendMode>(3)));
     resources[28] = makeRes(29009, 6, new AbyssEngine::ResourceMaterial(29008, static_cast<BlendMode>(3)));
-    resources[29] = makeRes(18995, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_sphere_anim_add.aem", 29007, false));
-    resources[30] = makeRes(18996, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_glow_anim_lookat_add.aem", 29009, false));
-    resources[31] = makeRes(29046, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_diffuse.aei", 0.0f));
-    resources[32] = makeRes(29047, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_normal_specular.aei", 0.0f));
+    resources[29] = makeRes(
+        18995, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_shock_blast_sphere_anim_add.aem",
+                                                29007, false));
+    resources[30] = makeRes(18996, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/fx/sn_shock_blast_glow_anim_lookat_add.aem", 29009,
+                                false));
+    resources[31] = makeRes(
+        29046, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_diffuse.aei", 0.0f));
+    resources[32] = makeRes(29047, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_001_normal_specular.aei",
+                                0.0f));
     resources[33] = makeRes(29048, 6, new AbyssEngine::ResourceMaterial(29046, 29047, static_cast<BlendMode>(28)));
     resources[34] = makeRes(29049, 6, new AbyssEngine::ResourceMaterial(29046, BlendMode_2));
-    resources[35] = makeRes(18880, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001.aem", 29048, false));
-    resources[36] = makeRes(18883, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim.aem", 29048, false));
-    resources[37] = makeRes(18886, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_add.aem", 29049, false));
-    resources[38] = makeRes(18889, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim_add.aem", 29049, false));
-    resources[39] = makeRes(29050, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_diffuse.aei", 0.0f));
-    resources[40] = makeRes(29051, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_normal_specular.aei", 0.0f));
+    resources[35] = makeRes(
+        18880, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001.aem", 29048,
+                                                false));
+    resources[36] = makeRes(
+        18883, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim.aem",
+                                                29048, false));
+    resources[37] = makeRes(
+        18886, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_add.aem", 29049,
+                                                false));
+    resources[38] = makeRes(
+        18889, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_001_anim_add.aem",
+                                                29049, false));
+    resources[39] = makeRes(
+        29050, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_diffuse.aei", 0.0f));
+    resources[40] = makeRes(29051, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_002_normal_specular.aei",
+                                0.0f));
     resources[41] = makeRes(29052, 6, new AbyssEngine::ResourceMaterial(29050, 29051, static_cast<BlendMode>(28)));
     resources[42] = makeRes(29053, 6, new AbyssEngine::ResourceMaterial(29050, BlendMode_2));
-    resources[43] = makeRes(18881, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002.aem", 29052, false));
-    resources[44] = makeRes(18884, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim.aem", 29052, false));
-    resources[45] = makeRes(18887, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_add.aem", 29053, false));
-    resources[46] = makeRes(18890, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim_add.aem", 29053, false));
-    resources[47] = makeRes(29054, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_diffuse.aei", 0.0f));
-    resources[48] = makeRes(29055, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_normal_specular.aei", 0.0f));
+    resources[43] = makeRes(
+        18881, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002.aem", 29052,
+                                                false));
+    resources[44] = makeRes(
+        18884, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim.aem",
+                                                29052, false));
+    resources[45] = makeRes(
+        18887, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_add.aem", 29053,
+                                                false));
+    resources[46] = makeRes(
+        18890, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_002_anim_add.aem",
+                                                29053, false));
+    resources[47] = makeRes(
+        29054, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_diffuse.aei", 0.0f));
+    resources[48] = makeRes(29055, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/misc/sn_sentry_gun_003_normal_specular.aei",
+                                0.0f));
     resources[49] = makeRes(29056, 6, new AbyssEngine::ResourceMaterial(29054, 29055, static_cast<BlendMode>(28)));
     resources[50] = makeRes(29057, 6, new AbyssEngine::ResourceMaterial(29054, BlendMode_2));
-    resources[51] = makeRes(18882, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003.aem", 29056, false));
-    resources[52] = makeRes(18885, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim.aem", 29056, false));
-    resources[53] = makeRes(18888, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_add.aem", 29057, false));
-    resources[54] = makeRes(18891, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim_add.aem", 29057, false));
-    resources[55] = makeRes(18847, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_planet_ring_alpha.aem", 65535, false));
-    resources[56] = makeRes(29018, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_planet_ring.aei", 0.0f));
-    resources[57] = makeRes(18848, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_storms_anim_add.aem", 65535, false));
-    resources[58] = makeRes(29019, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_storms.aei", 0.0f));
-    resources[59] = makeRes(11700, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_diffuse.aei", 0.0f));
-    resources[60] = makeRes(11702, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_diffuse.aei", 0.0f));
-    resources[61] = makeRes(11701, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_normal_specular.aei", 0.0f));
-    resources[62] = makeRes(11703, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_normal_specular.aei", 0.0f));
+    resources[51] = makeRes(
+        18882, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003.aem", 29056,
+                                                false));
+    resources[52] = makeRes(
+        18885, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim.aem",
+                                                29056, false));
+    resources[53] = makeRes(
+        18888, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_add.aem", 29057,
+                                                false));
+    resources[54] = makeRes(
+        18891, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_sentry_gun_003_anim_add.aem",
+                                                29057, false));
+    resources[55] = makeRes(18847, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/skyboxes/sn_skybox_planet_ring_alpha.aem", 65535,
+                                false));
+    resources[56] = makeRes(
+        29018, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_planet_ring.aei", 0.0f));
+    resources[57] = makeRes(
+        18848, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/skyboxes/sn_skybox_storms_anim_add.aem", 65535, false));
+    resources[58] = makeRes(
+        29019, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/skyboxes/sn_skybox_storms.aei", 0.0f));
+    resources[59] = makeRes(11700, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_diffuse.aei",
+                                0.0f));
+    resources[60] = makeRes(11702, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_diffuse.aei",
+                                0.0f));
+    resources[61] = makeRes(11701, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part1_normal_specular.aei",
+                                0.0f));
+    resources[62] = makeRes(11703, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/stations/sn_station_mining_plant_part2_normal_specular.aei",
+                                0.0f));
     resources[63] = makeRes(11704, 6, new AbyssEngine::ResourceMaterial(11700, 11701, static_cast<BlendMode>(28)));
     resources[64] = makeRes(11708, 6, new AbyssEngine::ResourceMaterial(11702, 11703, static_cast<BlendMode>(28)));
     resources[65] = makeRes(11705, 6, new AbyssEngine::ResourceMaterial(11700, BlendMode_2));
@@ -113,129 +218,321 @@ void BuildResourceList(AbyssEngine::Engine *engine)
     resources[68] = makeRes(11709, 6, new AbyssEngine::ResourceMaterial(11702, BlendMode_2));
     resources[69] = makeRes(11710, 6, new AbyssEngine::ResourceMaterial(11702, BlendMode_1));
     resources[70] = makeRes(11711, 6, new AbyssEngine::ResourceMaterial(11702, BlendMode_dummy));
-    resources[71] = makeRes(19080, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1.aem", 11704, false));
-    resources[72] = makeRes(19081, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_add.aem", 11705, false));
-    resources[73] = makeRes(19084, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_alpha.aem", 11706, false));
-    resources[74] = makeRes(19085, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_emissive.aem", 11707, false));
-    resources[75] = makeRes(19082, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_glow_anim_add.aem", 11705, false));
-    resources[76] = makeRes(19083, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_fire_anim_add.aem", 11705, false));
-    resources[77] = makeRes(19086, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2.aem", 11708, false));
-    resources[78] = makeRes(19087, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_add.aem", 11709, false));
-    resources[79] = makeRes(19088, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_emissive.aem", 11711, false));
-    resources[80] = makeRes(11712, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_diffuse.aei", 0.0f));
-    resources[81] = makeRes(11713, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_normal_specular.aei", 0.0f));
+    resources[71] = makeRes(19080, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1.aem", 11704,
+                                false));
+    resources[72] = makeRes(19081, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_add.aem", 11705,
+                                false));
+    resources[73] = makeRes(19084, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_alpha.aem",
+                                11706, false));
+    resources[74] = makeRes(19085, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_emissive.aem",
+                                11707, false));
+    resources[75] = makeRes(19082, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_glow_anim_add.aem",
+                                11705, false));
+    resources[76] = makeRes(19083, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part1_fire_anim_add.aem",
+                                11705, false));
+    resources[77] = makeRes(19086, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2.aem", 11708,
+                                false));
+    resources[78] = makeRes(19087, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_add.aem", 11709,
+                                false));
+    resources[79] = makeRes(19088, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/stations/sn_station_mining_plant_part2_emissive.aem",
+                                11711, false));
+    resources[80] = makeRes(11712, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_diffuse.aei",
+                                0.0f));
+    resources[81] = makeRes(11713, 2, new AbyssEngine::ResourceTexture(
+                                "data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_array_midorian_normal_specular.aei",
+                                0.0f));
     resources[82] = makeRes(11714, 6, new AbyssEngine::ResourceMaterial(11712, 11713, static_cast<BlendMode>(28)));
     resources[83] = makeRes(11715, 6, new AbyssEngine::ResourceMaterial(11712, BlendMode_2));
     resources[84] = makeRes(11716, 6, new AbyssEngine::ResourceMaterial(11712, BlendMode_1));
-    resources[85] = makeRes(18750, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001.aem", 11714, false));
-    resources[86] = makeRes(18751, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_anim_add.aem", 11715, false));
-    resources[87] = makeRes(18752, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_alpha.aem", 11716, false));
-    resources[88] = makeRes(18753, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002.aem", 11714, false));
-    resources[89] = makeRes(18754, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_anim_add.aem", 11715, false));
-    resources[90] = makeRes(18755, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_alpha.aem", 11716, false));
-    resources[91] = makeRes(18756, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003.aem", 11714, false));
-    resources[92] = makeRes(18757, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_anim_add.aem", 11715, false));
-    resources[93] = makeRes(18758, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_alpha.aem", 11716, false));
-    resources[94] = makeRes(18759, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004.aem", 11714, false));
-    resources[95] = makeRes(18760, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_anim_add.aem", 11715, false));
-    resources[96] = makeRes(18761, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_alpha.aem", 11716, false));
-    resources[97] = makeRes(18762, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005.aem", 11714, false));
-    resources[98] = makeRes(18763, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_lights_anim_add.aem", 11715, false));
-    resources[99] = makeRes(18765, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_glow_anim_add.aem", 11715, false));
-    resources[100] = makeRes(18764, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_alpha.aem", 11716, false));
-    resources[101] = makeRes(19050, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_explosion_anim.aem", 11714, false));
-    resources[102] = makeRes(11725, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_diffuse.aei", 0.0f));
-    resources[103] = makeRes(11726, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_normal_specular.aei", 0.0f));
+    resources[85] = makeRes(18750, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001.aem", 11714,
+                                false));
+    resources[86] = makeRes(18751, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_anim_add.aem",
+                                11715, false));
+    resources[87] = makeRes(18752, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_001_alpha.aem",
+                                11716, false));
+    resources[88] = makeRes(18753, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002.aem", 11714,
+                                false));
+    resources[89] = makeRes(18754, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_anim_add.aem",
+                                11715, false));
+    resources[90] = makeRes(18755, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_002_alpha.aem",
+                                11716, false));
+    resources[91] = makeRes(18756, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003.aem", 11714,
+                                false));
+    resources[92] = makeRes(18757, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_anim_add.aem",
+                                11715, false));
+    resources[93] = makeRes(18758, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_003_alpha.aem",
+                                11716, false));
+    resources[94] = makeRes(18759, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004.aem", 11714,
+                                false));
+    resources[95] = makeRes(18760, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_anim_add.aem",
+                                11715, false));
+    resources[96] = makeRes(18761, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_004_alpha.aem",
+                                11716, false));
+    resources[97] = makeRes(18762, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005.aem", 11714,
+                                false));
+    resources[98] = makeRes(18763, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_lights_anim_add.aem",
+                                11715, false));
+    resources[99] = makeRes(18765, 4, new AbyssEngine::ResourceMesh(
+                                "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_glow_anim_add.aem",
+                                11715, false));
+    resources[100] = makeRes(18764, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_stage_005_alpha.aem",
+                                 11716, false));
+    resources[101] = makeRes(19050, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_array_midorian_explosion_anim.aem",
+                                 11714, false));
+    resources[102] = makeRes(11725, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_diffuse.aei",
+                                 0.0f));
+    resources[103] = makeRes(11726, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/misc/sn_plasma_gun_valkyrie_normal_specular.aei",
+                                 0.0f));
     resources[104] = makeRes(11727, 6, new AbyssEngine::ResourceMaterial(11725, 11726, static_cast<BlendMode>(28)));
     resources[105] = makeRes(11728, 6, new AbyssEngine::ResourceMaterial(11725, BlendMode_2));
     resources[106] = makeRes(11729, 6, new AbyssEngine::ResourceMaterial(11725, static_cast<BlendMode>(10)));
-    resources[107] = makeRes(18768, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie.aem", 11727, false));
-    resources[108] = makeRes(18769, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_lights_add.aem", 11728, false));
-    resources[109] = makeRes(18770, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_alpha.aem", 11729, false));
-    resources[110] = makeRes(11850, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_gun_fx_valkyrie.aei", 0.0f));
+    resources[107] = makeRes(
+        18768, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie.aem",
+                                                11727, false));
+    resources[108] = makeRes(18769, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_lights_add.aem", 11728,
+                                 false));
+    resources[109] = makeRes(
+        18770, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_gun_valkyrie_alpha.aem",
+                                                11729, false));
+    resources[110] = makeRes(
+        11850, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_plasma_gun_fx_valkyrie.aei", 0.0f));
     resources[111] = makeRes(11851, 6, new AbyssEngine::ResourceMaterial(11850, static_cast<BlendMode>(3)));
-    resources[112] = makeRes(19061, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_beam_anim_add.aem", 11851, false));
-    resources[113] = makeRes(19062, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_cone_anim_add.aem", 11851, false));
-    resources[114] = makeRes(19063, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_star_add.aem", 11851, false));
-    resources[115] = makeRes(29093, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_diffuse.aei", 0.0f));
-    resources[116] = makeRes(29094, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_normal_specular.aei", 0.0f));
+    resources[112] = makeRes(19061, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_beam_anim_add.aem",
+                                 11851, false));
+    resources[113] = makeRes(19062, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_cone_anim_add.aem",
+                                 11851, false));
+    resources[114] = makeRes(19063, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/fx/sn_plasma_gun_fx_valkyrie_star_add.aem", 11851,
+                                 false));
+    resources[115] = makeRes(29093, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_diffuse.aei",
+                                 0.0f));
+    resources[116] = makeRes(29094, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_cargo_midorian_wrecked_normal_specular.aei",
+                                 0.0f));
     resources[117] = makeRes(29090, 6, new AbyssEngine::ResourceMaterial(29093, 29094, static_cast<BlendMode>(28)));
     resources[118] = makeRes(29091, 6, new AbyssEngine::ResourceMaterial(29093, BlendMode_2));
     resources[119] = makeRes(29092, 6, new AbyssEngine::ResourceMaterial(29093, BlendMode_dummy));
-    resources[120] = makeRes(18766, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked.aem", 29090, false));
-    resources[121] = makeRes(19072, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_anim.aem", 29090, false));
-    resources[122] = makeRes(19073, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_add.aem", 29091, false));
-    resources[123] = makeRes(19074, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_anim_add.aem", 29091, false));
-    resources[124] = makeRes(19075, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_add.aem", 0, false));
-    resources[125] = makeRes(19076, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_emissive.aem", 29092, false));
-    resources[126] = makeRes(11730, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_diffuse.aei", 0.0f));
-    resources[127] = makeRes(11731, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_normal_specular.aei", 0.0f));
+    resources[120] = makeRes(18766, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked.aem", 29090,
+                                 false));
+    resources[121] = makeRes(19072, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_anim.aem", 29090,
+                                 false));
+    resources[122] = makeRes(19073, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_add.aem",
+                                 29091, false));
+    resources[123] = makeRes(19074, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_glow_anim_add.aem",
+                                 29091, false));
+    resources[124] = makeRes(19075, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_add.aem",
+                                 0, false));
+    resources[125] = makeRes(19076, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_cargo_001_midorian_wrecked_lights_emissive.aem",
+                                 29092, false));
+    resources[126] = makeRes(11730, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_diffuse.aei",
+                                 0.0f));
+    resources[127] = makeRes(11731, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/stations/sn_stations_midorian_wrecked_normal_specular.aei",
+                                 0.0f));
     resources[128] = makeRes(11732, 6, new AbyssEngine::ResourceMaterial(11730, 11731, static_cast<BlendMode>(28)));
     resources[129] = makeRes(11733, 6, new AbyssEngine::ResourceMaterial(11730, static_cast<BlendMode>(10)));
-    resources[130] = makeRes(18771, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked.aem", 11732, false));
-    resources[131] = makeRes(18772, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked_alpha_emissive.aem", 11733, false));
-    resources[132] = makeRes(11747, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire.aei", 0.0f));
-    resources[133] = makeRes(11750, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire_normal.aei", 0.0f));
+    resources[130] = makeRes(18771, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked.aem", 11732,
+                                 false));
+    resources[131] = makeRes(18772, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_station_midorian_wrecked_alpha_emissive.aem",
+                                 11733, false));
+    resources[132] = makeRes(11747, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire.aei",
+                                 0.0f));
+    resources[133] = makeRes(11750, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/stations/sn_burning_station_fire_normal.aei",
+                                 0.0f));
     resources[134] = makeRes(11748, 6, new AbyssEngine::ResourceMaterial(11747, static_cast<BlendMode>(3)));
     resources[135] = makeRes(11749, 6, new AbyssEngine::ResourceMaterial(11747, BlendMode_1));
-    resources[136] = makeRes(18781, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station.aem", 20007, false));
-    resources[137] = makeRes(18782, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_emissive.aem", 20008, false));
-    resources[138] = makeRes(18783, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_add.aem", 11748, false));
-    resources[139] = makeRes(18784, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_alpha.aem", 11749, false));
-    resources[140] = makeRes(18832, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_add.aem", 11748, false));
-    resources[141] = makeRes(18833, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_alpha.aem", 11749, false));
-    resources[142] = makeRes(19095, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_fire_anim_add.aem", 11748, false));
-    resources[143] = makeRes(19096, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_smoke_anim_alpha.aem", 11749, false));
-    resources[144] = makeRes(19097, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_fire_anim_add.aem", 11748, false));
-    resources[145] = makeRes(19098, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_smoke_anim_alpha.aem", 11749, false));
-    resources[146] = makeRes(18785, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian.aem", 0, false));
-    resources[147] = makeRes(18831, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian_add.aem", 0, false));
-    resources[148] = makeRes(29095, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_diffuse.aei", 0.0f));
-    resources[149] = makeRes(29096, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_normal_specular.aei", 0.0f));
+    resources[136] = makeRes(
+        18781, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_burning_station.aem",
+                                                20007, false));
+    resources[137] = makeRes(18782, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_station_emissive.aem", 20008,
+                                 false));
+    resources[138] = makeRes(18783, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_add.aem", 11748,
+                                 false));
+    resources[139] = makeRes(18784, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_anim_alpha.aem",
+                                 11749, false));
+    resources[140] = makeRes(18832, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_add.aem",
+                                 11748, false));
+    resources[141] = makeRes(18833, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_station_fire_intro_anim_alpha.aem",
+                                 11749, false));
+    resources[142] = makeRes(19095, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_fire_anim_add.aem",
+                                 11748, false));
+    resources[143] = makeRes(19096, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_1_smoke_anim_alpha.aem",
+                                 11749, false));
+    resources[144] = makeRes(19097, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_fire_anim_add.aem",
+                                 11748, false));
+    resources[145] = makeRes(19098, 6, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/stations/sn_burning_valkyrie_stage_2_smoke_anim_alpha.aem",
+                                 11749, false));
+    resources[146] = makeRes(
+        18785, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian.aem",
+                                                0, false));
+    resources[147] = makeRes(
+        18831, 6, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/misc/sn_secure_container_nivelian_add.aem", 0, false));
+    resources[148] = makeRes(
+        29095, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_diffuse.aei", 0.0f));
+    resources[149] = makeRes(29096, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/misc/sn_junk_field_normal_specular.aei",
+                                 0.0f));
     resources[150] = makeRes(29097, 6, new AbyssEngine::ResourceMaterial(29095, 29096, static_cast<BlendMode>(28)));
-    resources[151] = makeRes(18786, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_junk_field.aem", 29097, false));
-    resources[152] = makeRes(11755, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames.aei", 0.0f));
-    resources[153] = makeRes(11759, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames_normal.aei", 0.0f));
+    resources[151] = makeRes(
+        18786, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_junk_field.aem", 29097,
+                                                false));
+    resources[152] = makeRes(
+        11755, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames.aei", 0.0f));
+    resources[153] = makeRes(
+        11759, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_flames_normal.aei", 0.0f));
     resources[154] = makeRes(11756, 6, new AbyssEngine::ResourceMaterial(11755, static_cast<BlendMode>(3)));
-    resources[155] = makeRes(11757, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_glow.aei", 0.0f));
+    resources[155] = makeRes(
+        11757, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_ship_blaze_glow.aei", 0.0f));
     resources[156] = makeRes(11758, 6, new AbyssEngine::ResourceMaterial(11757, static_cast<BlendMode>(3)));
-    resources[157] = makeRes(18803, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_flames_anim_add.aem", 11756, false));
-    resources[158] = makeRes(18802, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_glow_anim_add.aem", 11758, false));
-    resources[159] = makeRes(29021, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_diffuse.aei", 0.0f));
-    resources[160] = makeRes(29022, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_normal_specular.aei", 0.0f));
+    resources[157] = makeRes(
+        18803, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_flames_anim_add.aem",
+                                                11756, false));
+    resources[158] = makeRes(
+        18802, 6, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/fx/sn_ship_blaze_glow_anim_add.aem",
+                                                11758, false));
+    resources[159] = makeRes(29021, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_diffuse.aei",
+                                 0.0f));
+    resources[160] = makeRes(29022, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_001_normal_specular.aei",
+                                 0.0f));
     resources[161] = makeRes(29023, 6, new AbyssEngine::ResourceMaterial(29021, 29022, static_cast<BlendMode>(28)));
     resources[162] = makeRes(29024, 6, new AbyssEngine::ResourceMaterial(29021, BlendMode_2));
     resources[163] = makeRes(29025, 6, new AbyssEngine::ResourceMaterial(29021, BlendMode_8));
-    resources[164] = makeRes(18787, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001.aem", 29023, false));
-    resources[165] = makeRes(18788, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_add.aem", 29024, false));
-    resources[166] = makeRes(18791, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim.aem", 29023, false));
-    resources[167] = makeRes(18790, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim_add.aem", 29024, false));
-    resources[168] = makeRes(29027, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_diffuse.aei", 0.0f));
-    resources[169] = makeRes(29028, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_normal_specular.aei", 0.0f));
+    resources[164] = makeRes(
+        18787, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001.aem",
+                                                29023, false));
+    resources[165] = makeRes(18788, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_add.aem", 29024,
+                                 false));
+    resources[166] = makeRes(18791, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim.aem", 29023,
+                                 false));
+    resources[167] = makeRes(18790, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_001_gun_anim_add.aem",
+                                 29024, false));
+    resources[168] = makeRes(29027, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_diffuse.aei",
+                                 0.0f));
+    resources[169] = makeRes(29028, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_002_normal_specular.aei",
+                                 0.0f));
     resources[170] = makeRes(29029, 6, new AbyssEngine::ResourceMaterial(29027, 29028, static_cast<BlendMode>(28)));
     resources[171] = makeRes(29030, 6, new AbyssEngine::ResourceMaterial(29027, BlendMode_2));
     resources[172] = makeRes(29031, 6, new AbyssEngine::ResourceMaterial(29027, BlendMode_8));
-    resources[173] = makeRes(18792, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002.aem", 29029, false));
-    resources[174] = makeRes(18793, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_add.aem", 29030, false));
-    resources[175] = makeRes(18795, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim.aem", 29029, false));
-    resources[176] = makeRes(18794, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim_add.aem", 29030, false));
-    resources[177] = makeRes(29033, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_diffuse.aei", 0.0f));
-    resources[178] = makeRes(29034, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_normal_specular.aei", 0.0f));
+    resources[173] = makeRes(
+        18792, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002.aem",
+                                                29029, false));
+    resources[174] = makeRes(18793, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_add.aem", 29030,
+                                 false));
+    resources[175] = makeRes(18795, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim.aem", 29029,
+                                 false));
+    resources[176] = makeRes(18794, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_002_gun_anim_add.aem",
+                                 29030, false));
+    resources[177] = makeRes(29033, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_diffuse.aei",
+                                 0.0f));
+    resources[178] = makeRes(29034, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_plasma_collector_003_normal_specular.aei",
+                                 0.0f));
     resources[179] = makeRes(29035, 6, new AbyssEngine::ResourceMaterial(29033, 29034, static_cast<BlendMode>(28)));
     resources[180] = makeRes(29036, 6, new AbyssEngine::ResourceMaterial(29033, BlendMode_2));
     resources[181] = makeRes(29037, 6, new AbyssEngine::ResourceMaterial(29033, BlendMode_8));
     resources[182] = makeRes(29038, 6, new AbyssEngine::ResourceMaterial(29033, BlendMode_dummy));
-    resources[183] = makeRes(18796, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003.aem", 29035, false));
-    resources[184] = makeRes(18797, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_add.aem", 29036, false));
-    resources[185] = makeRes(18799, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim.aem", 29035, false));
-    resources[186] = makeRes(18800, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_emissive.aem", 29038, false));
-    resources[187] = makeRes(18798, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim_add.aem", 29036, false));
-    resources[188] = makeRes(11770, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_diffuse.aei", 0.0f));
-    resources[189] = makeRes(11771, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_diffuse.aei", 0.0f));
-    resources[190] = makeRes(11772, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_diffuse.aei", 0.0f));
-    resources[191] = makeRes(11773, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_normal_specular.aei", 0.0f));
-    resources[192] = makeRes(11774, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_normal_specular.aei", 0.0f));
-    resources[193] = makeRes(11775, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_normal_specular.aei", 0.0f));
+    resources[183] = makeRes(
+        18796, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003.aem",
+                                                29035, false));
+    resources[184] = makeRes(18797, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_add.aem", 29036,
+                                 false));
+    resources[185] = makeRes(18799, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim.aem", 29035,
+                                 false));
+    resources[186] = makeRes(18800, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_emissive.aem",
+                                 29038, false));
+    resources[187] = makeRes(18798, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/turrets/sn_plasma_collector_003_gun_anim_add.aem",
+                                 29036, false));
+    resources[188] = makeRes(11770, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_diffuse.aei",
+                                 0.0f));
+    resources[189] = makeRes(11771, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_diffuse.aei",
+                                 0.0f));
+    resources[190] = makeRes(11772, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_diffuse.aei",
+                                 0.0f));
+    resources[191] = makeRes(11773, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_1_normal_specular.aei",
+                                 0.0f));
+    resources[192] = makeRes(11774, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_2_normal_specular.aei",
+                                 0.0f));
+    resources[193] = makeRes(11775, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_carrier_terran_3_normal_specular.aei",
+                                 0.0f));
     resources[194] = makeRes(11776, 6, new AbyssEngine::ResourceMaterial(11770, 11773, static_cast<BlendMode>(28)));
     resources[195] = makeRes(11777, 6, new AbyssEngine::ResourceMaterial(11771, 11774, static_cast<BlendMode>(28)));
     resources[196] = makeRes(11778, 6, new AbyssEngine::ResourceMaterial(11772, 11775, static_cast<BlendMode>(28)));
@@ -243,384 +540,1058 @@ void BuildResourceList(AbyssEngine::Engine *engine)
     resources[198] = makeRes(11780, 6, new AbyssEngine::ResourceMaterial(11771, BlendMode_dummy));
     resources[199] = makeRes(11781, 6, new AbyssEngine::ResourceMaterial(11772, BlendMode_dummy));
     resources[200] = makeRes(11782, 6, new AbyssEngine::ResourceMaterial(11772, BlendMode_2));
-    resources[201] = makeRes(18804, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1.aem", 11776, false));
-    resources[202] = makeRes(18805, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2.aem", 11777, false));
-    resources[203] = makeRes(18807, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3.aem", 11778, false));
-    resources[204] = makeRes(18808, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1_emissive.aem", 11779, false));
-    resources[205] = makeRes(18809, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2_emissive.aem", 11780, false));
-    resources[206] = makeRes(18810, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3_emissive.aem", 11781, false));
-    resources[207] = makeRes(18806, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_lights_add.aem", 11782, false));
-    resources[208] = makeRes(29039, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_diffuse.aei", 0.0f));
-    resources[209] = makeRes(29040, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_normal_specular.aei", 0.0f));
+    resources[201] = makeRes(
+        18804, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1.aem", 11776,
+                                                false));
+    resources[202] = makeRes(
+        18805, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2.aem", 11777,
+                                                false));
+    resources[203] = makeRes(
+        18807, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3.aem", 11778,
+                                                false));
+    resources[204] = makeRes(
+        18808, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_carrier_terran_1_emissive.aem", 11779, false));
+    resources[205] = makeRes(
+        18809, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_carrier_terran_2_emissive.aem", 11780, false));
+    resources[206] = makeRes(
+        18810, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_carrier_terran_3_emissive.aem", 11781, false));
+    resources[207] = makeRes(
+        18806, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_carrier_terran_lights_add.aem", 11782, false));
+    resources[208] = makeRes(29039, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_diffuse.aei",
+                                 0.0f));
+    resources[209] = makeRes(29040, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_battleship_vossk_normal_specular.aei",
+                                 0.0f));
     resources[210] = makeRes(29041, 6, new AbyssEngine::ResourceMaterial(29039, 29040, static_cast<BlendMode>(28)));
     resources[211] = makeRes(29042, 6, new AbyssEngine::ResourceMaterial(29039, BlendMode_2));
-    resources[212] = makeRes(19052, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_add.aem", 29042, false));
-    resources[213] = makeRes(19053, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_lights_add.aem", 29042, false));
-    resources[214] = makeRes(19051, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk.aem", 29041, false));
-    resources[215] = makeRes(17251, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian.aem", 0, false));
-    resources[216] = makeRes(18779, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lights.aem", 32544, false));
-    resources[217] = makeRes(18044, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_add.aem", 32544, false));
-    resources[218] = makeRes(17252, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_1.aem", 0, false));
-    resources[219] = makeRes(17253, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_2.aem", 0, false));
-    resources[220] = makeRes(17257, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted.aem", 0, false));
-    resources[221] = makeRes(18045, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_add.aem", 32545, false));
-    resources[222] = makeRes(18811, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_lights.aem", 32545, false));
-    resources[223] = makeRes(17263, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted.aem", 0, false));
-    resources[224] = makeRes(18046, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_add.aem", 32546, false));
-    resources[225] = makeRes(18812, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_lights_add.aem", 32546, false));
-    resources[226] = makeRes(17269, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted.aem", 0, false));
-    resources[227] = makeRes(18813, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_lights_add.aem", 32547, false));
-    resources[228] = makeRes(18047, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_add.aem", 32547, false));
-    resources[229] = makeRes(17275, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted.aem", 0, false));
-    resources[230] = makeRes(18780, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_lights.aem", 32548, false));
-    resources[231] = makeRes(18048, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_add.aem", 32548, false));
-    resources[232] = makeRes(17281, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian.aem", 0, false));
-    resources[233] = makeRes(18049, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_add.aem", 32549, false));
-    resources[234] = makeRes(17286, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_lights_add.aem", 32549, false));
-    resources[235] = makeRes(17293, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran.aem", 0, false));
-    resources[236] = makeRes(18051, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_add.aem", 32551, false));
-    resources[237] = makeRes(18814, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_lights.aem", 32551, false));
-    resources[238] = makeRes(17299, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro.aem", 0, false));
-    resources[239] = makeRes(18052, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_add.aem", 32552, false));
-    resources[240] = makeRes(18815, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_lights_add.aem", 32552, false));
-    resources[241] = makeRes(17311, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk.aem", 0, false));
-    resources[242] = makeRes(18054, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_add.aem", 32554, false));
-    resources[243] = makeRes(17316, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_emissive.aem", 0, false));
-    resources[244] = makeRes(17317, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified.aem", 0, false));
-    resources[245] = makeRes(18818, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_lights_add.aem", 32555, false));
-    resources[246] = makeRes(17323, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified.aem", 0, false));
-    resources[247] = makeRes(18819, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_lights_add.aem", 32556, false));
-    resources[248] = makeRes(17329, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified.aem", 0, false));
-    resources[249] = makeRes(18820, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_lights_add.aem", 32557, false));
-    resources[250] = makeRes(17335, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified.aem", 0, false));
-    resources[251] = makeRes(18821, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_lights_add.aem", 32558, false));
-    resources[252] = makeRes(17341, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified.aem", 0, false));
-    resources[253] = makeRes(18822, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_lights_add.aem", 32559, false));
-    resources[254] = makeRes(17347, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified.aem", 0, false));
-    resources[255] = makeRes(18823, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_lights_add.aem", 0, false));
-    resources[256] = makeRes(17353, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype.aem", 0, false));
-    resources[257] = makeRes(18824, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_lights_add.aem", 32561, false));
-    resources[258] = makeRes(17359, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype.aem", 0, false));
-    resources[259] = makeRes(18825, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_lights_add.aem", 32562, false));
-    resources[260] = makeRes(17365, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype.aem", 0, false));
-    resources[261] = makeRes(18826, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_add.aem", 32563, false));
-    resources[262] = makeRes(17370, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_emissive.aem", 0, false));
-    resources[263] = makeRes(11741, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_supernova.aei", 0.0f));
-    resources[264] = makeRes(11761, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_ring_anim_add.aem", 0.0f));
-    resources[265] = makeRes(11762, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/meshes/fx/sn_sun_explosion_core_anim_add.aem", 0.0f));
-    resources[266] = makeRes(11764, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_ring.aei", 0.0f));
-    resources[267] = makeRes(11763, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_core.aei", 0.0f));
-    resources[268] = makeRes(11870, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma.aei", 0.0f));
-    resources[269] = makeRes(11871, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma_normal.aei", 0.0f));
+    resources[212] = makeRes(
+        19052, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_add.aem",
+                                                29042, false));
+    resources[213] = makeRes(19053, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_battleship_vossk_lights_add.aem", 29042,
+                                 false));
+    resources[214] = makeRes(
+        19051, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_battleship_vossk.aem", 29041,
+                                                false));
+    resources[215] = makeRes(
+        17251, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian.aem",
+                                                0, false));
+    resources[216] = makeRes(18779, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lights.aem", 32544,
+                                 false));
+    resources[217] = makeRes(18044, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_add.aem",
+                                 32544, false));
+    resources[218] = makeRes(
+        17252, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_1.aem", 0, false));
+    resources[219] = makeRes(
+        17253, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_lod_2.aem", 0, false));
+    resources[220] = makeRes(
+        17257, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted.aem", 0,
+                                                false));
+    resources[221] = makeRes(18045, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_add.aem", 32545,
+                                 false));
+    resources[222] = makeRes(18811, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_lights.aem", 32545,
+                                 false));
+    resources[223] = makeRes(
+        17263, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted.aem", 0,
+                                                false));
+    resources[224] = makeRes(18046, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_add.aem", 32546,
+                                 false));
+    resources[225] = makeRes(18812, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_lights_add.aem", 32546,
+                                 false));
+    resources[226] = makeRes(
+        17269, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted.aem", 0,
+                                                false));
+    resources[227] = makeRes(18813, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_lights_add.aem", 32547,
+                                 false));
+    resources[228] = makeRes(18047, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_add.aem", 32547,
+                                 false));
+    resources[229] = makeRes(
+        17275, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted.aem", 0,
+                                                false));
+    resources[230] = makeRes(18780, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_lights.aem", 32548,
+                                 false));
+    resources[231] = makeRes(18048, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_add.aem", 32548,
+                                 false));
+    resources[232] = makeRes(
+        17281, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian.aem",
+                                                0, false));
+    resources[233] = makeRes(18049, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_add.aem",
+                                 32549, false));
+    resources[234] = makeRes(17286, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_lights_add.aem",
+                                 32549, false));
+    resources[235] = makeRes(
+        17293, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran.aem",
+                                                0, false));
+    resources[236] = makeRes(18051, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_add.aem",
+                                 32551, false));
+    resources[237] = makeRes(18814, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_lights.aem", 32551,
+                                 false));
+    resources[238] = makeRes(
+        17299, 4,
+        new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro.aem", 0, false));
+    resources[239] = makeRes(
+        18052, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_add.aem", 32552, false));
+    resources[240] = makeRes(
+        18815, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_lights_add.aem", 32552, false));
+    resources[241] = makeRes(
+        17311, 4,
+        new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk.aem", 0, false));
+    resources[242] = makeRes(
+        18054, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_add.aem", 32554, false));
+    resources[243] = makeRes(
+        17316, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_emissive.aem",
+                                                0, false));
+    resources[244] = makeRes(
+        17317, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified.aem", 0,
+                                                false));
+    resources[245] = makeRes(18818, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_lights_add.aem", 32555,
+                                 false));
+    resources[246] = makeRes(
+        17323, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified.aem", 0,
+                                                false));
+    resources[247] = makeRes(18819, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_lights_add.aem", 32556,
+                                 false));
+    resources[248] = makeRes(
+        17329, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified.aem", 0,
+                                                false));
+    resources[249] = makeRes(18820, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_lights_add.aem", 32557,
+                                 false));
+    resources[250] = makeRes(
+        17335, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified.aem", 0,
+                                                false));
+    resources[251] = makeRes(18821, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_lights_add.aem", 32558,
+                                 false));
+    resources[252] = makeRes(
+        17341, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified.aem", 0,
+                                                false));
+    resources[253] = makeRes(18822, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_lights_add.aem", 32559,
+                                 false));
+    resources[254] = makeRes(
+        17347, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified.aem", 0,
+                                                false));
+    resources[255] = makeRes(
+        18823, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_lights_add.aem", 0, false));
+    resources[256] = makeRes(
+        17353, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype.aem", 0, false));
+    resources[257] = makeRes(18824, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_lights_add.aem",
+                                 32561, false));
+    resources[258] = makeRes(
+        17359, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype.aem", 0, false));
+    resources[259] = makeRes(
+        18825, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_lights_add.aem",
+                                                32562, false));
+    resources[260] = makeRes(
+        17365, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype.aem", 0,
+                                                false));
+    resources[261] = makeRes(18826, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_add.aem", 32563,
+                                 false));
+    resources[262] = makeRes(17370, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_lights_emissive.aem", 0,
+                                 false));
+    resources[263] = makeRes(
+        11741, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/fx/sn_supernova.aei",
+                                                   0.0f));
+    resources[264] = makeRes(
+        11761, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/meshes/fx/sn_sun_explosion_ring_anim_add.aem", 0.0f));
+    resources[265] = makeRes(
+        11762, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/meshes/fx/sn_sun_explosion_core_anim_add.aem", 0.0f));
+    resources[266] = makeRes(
+        11764, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_ring.aei", 0.0f));
+    resources[267] = makeRes(
+        11763, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/fx/sn_sun_explosion_core.aei", 0.0f));
+    resources[268] = makeRes(
+        11870, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma.aei",
+                                                   0.0f));
+    resources[269] = makeRes(
+        11871, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_gas_plasma_normal.aei", 0.0f));
     resources[270] = makeRes(29045, 6, new AbyssEngine::ResourceMaterial(11870, BlendMode_2));
-    resources[271] = makeRes(18997, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_green_anim_lookat_add.aem", 29045, false));
-    resources[272] = makeRes(18998, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_blue_anim_lookat_add.aem", 29045, false));
-    resources[273] = makeRes(18999, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_violet_anim_lookat_add.aem", 29045, false));
-    resources[274] = makeRes(19000, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_gas_cloud_red_anim_lookat_add.aem", 29045, false));
-    resources[275] = makeRes(19001, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_green_anim_lookat_add.aem", 29045, false));
-    resources[276] = makeRes(19002, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_blue_anim_lookat_add.aem", 29045, false));
-    resources[277] = makeRes(19003, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_violet_anim_lookat_add.aem", 29045, false));
-    resources[278] = makeRes(19004, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_plasma_red_anim_lookat_add.aem", 29045, false));
+    resources[271] = makeRes(18997, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_gas_cloud_green_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[272] = makeRes(18998, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_gas_cloud_blue_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[273] = makeRes(18999, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_gas_cloud_violet_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[274] = makeRes(19000, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_gas_cloud_red_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[275] = makeRes(19001, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_green_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[276] = makeRes(19002, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_blue_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[277] = makeRes(19003, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/misc/sn_plasma_violet_anim_lookat_add.aem", 29045,
+                                 false));
+    resources[278] = makeRes(
+        19004, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/supernova/3d/meshes/misc/sn_plasma_red_anim_lookat_add.aem", 29045, false));
     resources[279] = makeRes(11753, 6, new AbyssEngine::ResourceMaterial(10080, BlendMode_dummy));
     resources[280] = makeRes(11754, 6, new AbyssEngine::ResourceMaterial(10084, BlendMode_dummy));
     resources[281] = makeRes(11783, 6, new AbyssEngine::ResourceMaterial(10081, BlendMode_dummy));
     resources[282] = makeRes(29060, 6, new AbyssEngine::ResourceMaterial(10082, BlendMode_dummy));
     resources[283] = makeRes(29061, 6, new AbyssEngine::ResourceMaterial(10083, BlendMode_dummy));
-    resources[284] = makeRes(17815, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015.aem", 11753, false));
-    resources[285] = makeRes(17824, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_1_anim.aem", 65535, false));
-    resources[286] = makeRes(17825, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_2_anim.aem", 65535, false));
-    resources[287] = makeRes(17816, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_016.aem", 11783, false));
-    resources[288] = makeRes(17817, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_017.aem", 29060, false));
-    resources[289] = makeRes(17818, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_018.aem", 29061, false));
+    resources[284] = makeRes(
+        17815, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015.aem", 11753,
+                                                false));
+    resources[285] = makeRes(17824, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_1_anim.aem", 65535,
+                                 false));
+    resources[286] = makeRes(17825, 4, new AbyssEngine::ResourceMesh(
+                                 "data/assets/supernova/3d/meshes/skyboxes/sn_skybox_015_flares_2_anim.aem", 65535,
+                                 false));
+    resources[287] = makeRes(
+        17816, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_016.aem", 11783,
+                                                false));
+    resources[288] = makeRes(
+        17817, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_017.aem", 29060,
+                                                false));
+    resources[289] = makeRes(
+        17818, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/skyboxes/sn_skybox_018.aem", 29061,
+                                                false));
     resources[290] = makeRes(10150, 4, new AbyssEngine::ResourceMesh("data/textures/lens_flare_0.aei", 65535, false));
     resources[291] = makeRes(10151, 4, new AbyssEngine::ResourceMesh("data/textures/lens_flare_1.aei", 65535, false));
     resources[292] = makeRes(10152, 4, new AbyssEngine::ResourceMesh("data/textures/lens_flare_2.aei", 65535, false));
-    resources[293] = makeRes(34500, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_midorian.aei", 0.0f));
-    resources[294] = makeRes(34501, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_nivelian.aei", 0.0f));
-    resources[295] = makeRes(34502, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_pirates.aei", 0.0f));
-    resources[296] = makeRes(34503, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_terran.aei", 0.0f));
-    resources[297] = makeRes(34504, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_vossk.aei", 0.0f));
-    resources[298] = makeRes(34505, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_void.aei", 0.0f));
-    resources[299] = makeRes(10031, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_000.aei", 0.0f));
-    resources[300] = makeRes(10032, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_001.aei", 0.0f));
-    resources[301] = makeRes(10033, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_002.aei", 0.0f));
-    resources[302] = makeRes(10034, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_003.aei", 0.0f));
-    resources[303] = makeRes(10035, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_004.aei", 0.0f));
-    resources[304] = makeRes(10036, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_005.aei", 0.0f));
-    resources[305] = makeRes(10037, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_006.aei", 0.0f));
-    resources[306] = makeRes(10038, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_007.aei", 0.0f));
-    resources[307] = makeRes(10039, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_008.aei", 0.0f));
-    resources[308] = makeRes(10040, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_009.aei", 0.0f));
-    resources[309] = makeRes(10041, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_010.aei", 0.0f));
+    resources[293] = makeRes(
+        34500, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_midorian.aei", 0.0f));
+    resources[294] = makeRes(
+        34501, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_nivelian.aei", 0.0f));
+    resources[295] = makeRes(
+        34502, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_pirates.aei", 0.0f));
+    resources[296] = makeRes(
+        34503, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_terran.aei", 0.0f));
+    resources[297] = makeRes(
+        34504, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_vossk.aei", 0.0f));
+    resources[298] = makeRes(
+        34505, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/glow_void.aei", 0.0f));
+    resources[299] = makeRes(
+        10031, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_000.aei", 0.0f));
+    resources[300] = makeRes(
+        10032, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_001.aei", 0.0f));
+    resources[301] = makeRes(
+        10033, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_002.aei", 0.0f));
+    resources[302] = makeRes(
+        10034, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_003.aei", 0.0f));
+    resources[303] = makeRes(
+        10035, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_004.aei", 0.0f));
+    resources[304] = makeRes(
+        10036, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_005.aei", 0.0f));
+    resources[305] = makeRes(
+        10037, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_006.aei", 0.0f));
+    resources[306] = makeRes(
+        10038, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_007.aei", 0.0f));
+    resources[307] = makeRes(
+        10039, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_008.aei", 0.0f));
+    resources[308] = makeRes(
+        10040, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_009.aei", 0.0f));
+    resources[309] = makeRes(
+        10041, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/suns/sun_010.aei", 0.0f));
     resources[310] = makeRes(6801, 4, newImage(0x0u, 0x0u));
-    resources[311] = makeRes(33011, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_terran_normal_specular.aei", 0.0f));
-    resources[312] = makeRes(33008, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_diffuse.aei", 0.0f));
-    resources[313] = makeRes(33009, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_normal_specular.aei", 0.0f));
-    resources[314] = makeRes(33006, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_diffuse.aei", 0.0f));
-    resources[315] = makeRes(33007, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_nivelian_normal_specular.aei", 0.0f));
-    resources[316] = makeRes(33004, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_diffuse.aei", 0.0f));
-    resources[317] = makeRes(33005, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_midorian_normal_specular.aei", 0.0f));
-    resources[318] = makeRes(33014, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_diffuse.aei", 0.0f));
-    resources[319] = makeRes(33015, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_vossk_normal_specular.aei", 0.0f));
-    resources[320] = makeRes(33012, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_diffuse.aei", 0.0f));
-    resources[321] = makeRes(33013, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_normal_specular.aei", 0.0f));
-    resources[322] = makeRes(33016, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_void_glow.aei", 0.0f));
+    resources[311] = makeRes(33011, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_terran_normal_specular.aei",
+                                 0.0f));
+    resources[312] = makeRes(
+        33008, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_pirates_diffuse.aei", 0.0f));
+    resources[313] = makeRes(33009, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[314] = makeRes(
+        33006, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_nivelian_diffuse.aei", 0.0f));
+    resources[315] = makeRes(33007, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[316] = makeRes(
+        33004, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_midorian_diffuse.aei", 0.0f));
+    resources[317] = makeRes(33005, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[318] = makeRes(
+        33014, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_vossk_diffuse.aei", 0.0f));
+    resources[319] = makeRes(33015, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_vossk_normal_specular.aei",
+                                 0.0f));
+    resources[320] = makeRes(
+        33012, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_void_diffuse.aei", 0.0f));
+    resources[321] = makeRes(33013, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_void_normal_specular.aei",
+                                 0.0f));
+    resources[322] = makeRes(
+        33016, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/stations_void_glow.aei", 0.0f));
     resources[323] = makeRes(20048, 6, new AbyssEngine::ResourceMaterial(65535, BlendMode_dummy));
-    resources[324] = makeRes(34000, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_diffuse.aei", 0.0f));
-    resources[325] = makeRes(34001, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_diffuse.aei", 0.0f));
-    resources[326] = makeRes(34002, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_diffuse.aei", 0.0f));
-    resources[327] = makeRes(34003, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_diffuse.aei", 0.0f));
-    resources[328] = makeRes(34004, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_diffuse.aei", 0.0f));
-    resources[329] = makeRes(34005, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_diffuse.aei", 0.0f));
-    resources[330] = makeRes(34006, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_diffuse.aei", 0.0f));
-    resources[331] = makeRes(34007, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_diffuse.aei", 0.0f));
-    resources[332] = makeRes(34008, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_diffuse.aei", 0.0f));
-    resources[333] = makeRes(34009, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_diffuse.aei", 0.0f));
-    resources[334] = makeRes(34010, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_diffuse.aei", 0.0f));
-    resources[335] = makeRes(34011, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_diffuse.aei", 0.0f));
-    resources[336] = makeRes(34012, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_diffuse.aei", 0.0f));
-    resources[337] = makeRes(34016, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_diffuse.aei", 0.0f));
-    resources[338] = makeRes(34017, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_diffuse.aei", 0.0f));
-    resources[339] = makeRes(34018, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_diffuse.aei", 0.0f));
-    resources[340] = makeRes(34019, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_diffuse.aei", 0.0f));
-    resources[341] = makeRes(34020, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_diffuse.aei", 0.0f));
-    resources[342] = makeRes(34021, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_diffuse.aei", 0.0f));
-    resources[343] = makeRes(34022, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_diffuse.aei", 0.0f));
-    resources[344] = makeRes(34023, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_diffuse.aei", 0.0f));
-    resources[345] = makeRes(34024, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_diffuse.aei", 0.0f));
-    resources[346] = makeRes(34025, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_diffuse.aei", 0.0f));
-    resources[347] = makeRes(34026, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_diffuse.aei", 0.0f));
-    resources[348] = makeRes(34027, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_diffuse.aei", 0.0f));
-    resources[349] = makeRes(34028, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_diffuse.aei", 0.0f));
-    resources[350] = makeRes(34029, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_diffuse.aei", 0.0f));
-    resources[351] = makeRes(34030, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_diffuse.aei", 0.0f));
-    resources[352] = makeRes(34031, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_diffuse.aei", 0.0f));
-    resources[353] = makeRes(34032, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_diffuse.aei", 0.0f));
-    resources[354] = makeRes(34033, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_diffuse.aei", 0.0f));
-    resources[355] = makeRes(34034, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_diffuse.aei", 0.0f));
-    resources[356] = makeRes(34035, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_diffuse.aei", 0.0f));
-    resources[357] = makeRes(34036, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_diffuse.aei", 0.0f));
-    resources[358] = makeRes(34037, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_diffuse.aei", 0.0f));
-    resources[359] = makeRes(34038, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_diffuse.aei", 0.0f));
-    resources[360] = makeRes(34039, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_diffuse.aei", 0.0f));
-    resources[361] = makeRes(34040, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_diffuse.aei", 0.0f));
-    resources[362] = makeRes(34041, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_diffuse.aei", 0.0f));
-    resources[363] = makeRes(18083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
-    resources[364] = makeRes(34043, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_diffuse.aei", 0.0f));
-    resources[365] = makeRes(34044, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_diffuse.aei", 0.0f));
-    resources[366] = makeRes(34045, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_diffuse.aei", 0.0f));
-    resources[367] = makeRes(34046, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_diffuse.aei", 0.0f));
-    resources[368] = makeRes(34047, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_diffuse.aei", 0.0f));
-    resources[369] = makeRes(34048, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_diffuse.aei", 0.0f));
-    resources[370] = makeRes(34049, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_diffuse.aei", 0.0f));
-    resources[371] = makeRes(34051, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_diffuse.aei", 0.0f));
-    resources[372] = makeRes(34052, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_diffuse.aei", 0.0f));
-    resources[373] = makeRes(34054, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_diffuse.aei", 0.0f));
-    resources[374] = makeRes(34055, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_diffuse.aei", 0.0f));
-    resources[375] = makeRes(34056, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_diffuse.aei", 0.0f));
-    resources[376] = makeRes(34057, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_diffuse.aei", 0.0f));
-    resources[377] = makeRes(34058, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_diffuse.aei", 0.0f));
-    resources[378] = makeRes(34059, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_diffuse.aei", 0.0f));
-    resources[379] = makeRes(34060, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_diffuse.aei", 0.0f));
-    resources[380] = makeRes(34061, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_diffuse.aei", 0.0f));
-    resources[381] = makeRes(34062, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_diffuse.aei", 0.0f));
-    resources[382] = makeRes(18086, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
-    resources[383] = makeRes(34100, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_normal_specular.aei", 0.0f));
-    resources[384] = makeRes(34101, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_001_terran_normal_specular.aei", 0.0f));
-    resources[385] = makeRes(34102, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_normal_specular.aei", 0.0f));
-    resources[386] = makeRes(34103, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_normal_specular.aei", 0.0f));
-    resources[387] = makeRes(34104, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_normal_specular.aei", 0.0f));
-    resources[388] = makeRes(34105, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_005_terran_normal_specular.aei", 0.0f));
-    resources[389] = makeRes(34106, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_normal_specular.aei", 0.0f));
-    resources[390] = makeRes(34107, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_007_terran_normal_specular.aei", 0.0f));
-    resources[391] = makeRes(34108, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_008_void_normal_specular.aei", 0.0f));
-    resources[392] = makeRes(34109, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_normal_specular.aei", 0.0f));
-    resources[393] = makeRes(34110, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_010_terran_normal_specular.aei", 0.0f));
-    resources[394] = makeRes(34111, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_normal_specular.aei", 0.0f));
-    resources[395] = makeRes(34112, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_normal_specular.aei", 0.0f));
-    resources[396] = makeRes(34116, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_normal_specular.aei", 0.0f));
-    resources[397] = makeRes(34117, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_017_terran_normal_specular.aei", 0.0f));
-    resources[398] = makeRes(34118, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_normal_specular.aei", 0.0f));
-    resources[399] = makeRes(34119, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_normal_specular.aei", 0.0f));
-    resources[400] = makeRes(34120, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_normal_specular.aei", 0.0f));
-    resources[401] = makeRes(34121, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_normal_specular.aei", 0.0f));
-    resources[402] = makeRes(34122, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_022_terran_normal_specular.aei", 0.0f));
-    resources[403] = makeRes(34123, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_normal_specular.aei", 0.0f));
-    resources[404] = makeRes(34124, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_normal_specular.aei", 0.0f));
-    resources[405] = makeRes(34125, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_normal_specular.aei", 0.0f));
-    resources[406] = makeRes(34126, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_026_terran_normal_specular.aei", 0.0f));
-    resources[407] = makeRes(34127, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_027_terran_normal_specular.aei", 0.0f));
-    resources[408] = makeRes(34128, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_028_terran_normal_specular.aei", 0.0f));
-    resources[409] = makeRes(34129, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_normal_specular.aei", 0.0f));
-    resources[410] = makeRes(34130, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_normal_specular.aei", 0.0f));
-    resources[411] = makeRes(34131, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_normal_specular.aei", 0.0f));
-    resources[412] = makeRes(34132, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_normal_specular.aei", 0.0f));
-    resources[413] = makeRes(34133, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_033_terran_normal_specular.aei", 0.0f));
-    resources[414] = makeRes(34134, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_034_terran_normal_specular.aei", 0.0f));
-    resources[415] = makeRes(34135, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_normal_specular.aei", 0.0f));
-    resources[416] = makeRes(34136, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_036_terran_normal_specular.aei", 0.0f));
-    resources[417] = makeRes(34137, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_normal_specular.aei", 0.0f));
-    resources[418] = makeRes(34138, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_normal_specular.aei", 0.0f));
-    resources[419] = makeRes(34139, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_normal_specular.aei", 0.0f));
-    resources[420] = makeRes(34140, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_normal_specular.aei", 0.0f));
-    resources[421] = makeRes(34141, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_normal_specular.aei", 0.0f));
-    resources[422] = makeRes(34142, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_042_retro_normal_specular.aei", 0.0f));
-    resources[423] = makeRes(34143, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_043_retro_normal_specular.aei", 0.0f));
-    resources[424] = makeRes(34144, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_normal_specular.aei", 0.0f));
-    resources[425] = makeRes(34145, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_normal_specular.aei", 0.0f));
-    resources[426] = makeRes(34146, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_normal_specular.aei", 0.0f));
-    resources[427] = makeRes(34147, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_normal_specular.aei", 0.0f));
-    resources[428] = makeRes(34148, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_normal_specular.aei", 0.0f));
-    resources[429] = makeRes(34149, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_normal_specular.aei", 0.0f));
-    resources[430] = makeRes(34151, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_normal_specular.aei", 0.0f));
-    resources[431] = makeRes(34152, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_normal_specular.aei", 0.0f));
-    resources[432] = makeRes(34154, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_normal_specular.aei", 0.0f));
-    resources[433] = makeRes(34155, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_normal_specular.aei", 0.0f));
-    resources[434] = makeRes(34156, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_normal_specular.aei", 0.0f));
-    resources[435] = makeRes(34157, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_normal_specular.aei", 0.0f));
-    resources[436] = makeRes(34158, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_normal_specular.aei", 0.0f));
-    resources[437] = makeRes(34159, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_normal_specular.aei", 0.0f));
-    resources[438] = makeRes(34160, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_normal_specular.aei", 0.0f));
-    resources[439] = makeRes(34161, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_normal_specular.aei", 0.0f));
-    resources[440] = makeRes(34162, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_normal_specular.aei", 0.0f));
-    resources[441] = makeRes(34163, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_normal_specular.aei", 0.0f));
-    resources[442] = makeRes(10107, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/asteroid_explosion.aei", 0.0f));
-    resources[443] = makeRes(10155, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_diffuse.aei", 0.0f));
-    resources[444] = makeRes(10156, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_normal_specular.aei", 0.0f));
-    resources[445] = makeRes(27314, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_explosion.aei", 0.0f));
-    resources[446] = makeRes(28999, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_diffuse.aei", 0.0f));
-    resources[447] = makeRes(29000, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_normal_specular.aei", 0.0f));
-    resources[448] = makeRes(10104, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/wormhole.aei", 0.0f));
-    resources[449] = makeRes(10121, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/fog.aei", 0.0f));
-    resources[450] = makeRes(10132, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_fog_ice.aei", 0.0f));
-    resources[451] = makeRes(10100, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_bg.aei", 0.0f));
-    resources[452] = makeRes(10101, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_0.aei", 0.0f));
-    resources[453] = makeRes(10102, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_1.aei", 0.0f));
-    resources[454] = makeRes(10145, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_planets_diffuse.aei", 0.0f));
-    resources[455] = makeRes(10144, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_orbit.aei", 0.0f));
-    resources[456] = makeRes(10159, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/galaxymap/v_galaxymap_planets.aei", 0.0f));
-    resources[457] = makeRes(18180, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_000.aem", 20027, false));
-    resources[458] = makeRes(0, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_vossk.aei", 0.0f));
-    resources[459] = makeRes(18186, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_006.aem", 20027, false));
-    resources[460] = makeRes(33403, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_midorian.aei", 0.0f));
-    resources[461] = makeRes(33404, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_shadow.aei", 0.0f));
-    resources[462] = makeRes(10161, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/galaxymap/sn_galaxymap_planets.aei", 0.0f));
-    resources[463] = makeRes(11606, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_bobolan.aei", 0.0f));
-    resources[464] = makeRes(11607, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_grey.aei", 0.0f));
-    resources[465] = makeRes(11608, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_multipod.aei", 0.0f));
-    resources[466] = makeRes(11609, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_nivelian.aei", 0.0f));
-    resources[467] = makeRes(11610, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_f.aei", 0.0f));
-    resources[468] = makeRes(11611, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_m.aei", 0.0f));
-    resources[469] = makeRes(11612, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_vossk.aei", 0.0f));
-    resources[470] = makeRes(10157, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_diffuse.aei", 0.0f));
-    resources[471] = makeRes(10158, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_normal_specular.aei", 0.0f));
-    resources[472] = makeRes(10134, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_diffuse.aei", 0.0f));
-    resources[473] = makeRes(10135, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_normal_specular.aei", 0.0f));
+    resources[324] = makeRes(
+        34000, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_diffuse.aei", 0.0f));
+    resources[325] = makeRes(
+        34001, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_001_terran_diffuse.aei", 0.0f));
+    resources[326] = makeRes(
+        34002, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_diffuse.aei", 0.0f));
+    resources[327] = makeRes(
+        34003, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_diffuse.aei", 0.0f));
+    resources[328] = makeRes(
+        34004, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_diffuse.aei", 0.0f));
+    resources[329] = makeRes(
+        34005, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_005_terran_diffuse.aei", 0.0f));
+    resources[330] = makeRes(
+        34006, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_diffuse.aei", 0.0f));
+    resources[331] = makeRes(
+        34007, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_007_terran_diffuse.aei", 0.0f));
+    resources[332] = makeRes(
+        34008, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_008_void_diffuse.aei", 0.0f));
+    resources[333] = makeRes(
+        34009, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_diffuse.aei", 0.0f));
+    resources[334] = makeRes(
+        34010, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_010_terran_diffuse.aei", 0.0f));
+    resources[335] = makeRes(
+        34011, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_diffuse.aei", 0.0f));
+    resources[336] = makeRes(
+        34012, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_diffuse.aei", 0.0f));
+    resources[337] = makeRes(
+        34016, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_diffuse.aei", 0.0f));
+    resources[338] = makeRes(
+        34017, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_017_terran_diffuse.aei", 0.0f));
+    resources[339] = makeRes(
+        34018, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_diffuse.aei", 0.0f));
+    resources[340] = makeRes(
+        34019, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_diffuse.aei", 0.0f));
+    resources[341] = makeRes(
+        34020, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_diffuse.aei", 0.0f));
+    resources[342] = makeRes(
+        34021, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_diffuse.aei", 0.0f));
+    resources[343] = makeRes(
+        34022, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_022_terran_diffuse.aei", 0.0f));
+    resources[344] = makeRes(
+        34023, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_diffuse.aei", 0.0f));
+    resources[345] = makeRes(
+        34024, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_diffuse.aei", 0.0f));
+    resources[346] = makeRes(
+        34025, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_diffuse.aei", 0.0f));
+    resources[347] = makeRes(
+        34026, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_026_terran_diffuse.aei", 0.0f));
+    resources[348] = makeRes(
+        34027, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_027_terran_diffuse.aei", 0.0f));
+    resources[349] = makeRes(
+        34028, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_028_terran_diffuse.aei", 0.0f));
+    resources[350] = makeRes(
+        34029, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_diffuse.aei", 0.0f));
+    resources[351] = makeRes(
+        34030, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_diffuse.aei", 0.0f));
+    resources[352] = makeRes(
+        34031, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_diffuse.aei", 0.0f));
+    resources[353] = makeRes(
+        34032, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_diffuse.aei", 0.0f));
+    resources[354] = makeRes(
+        34033, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_033_terran_diffuse.aei", 0.0f));
+    resources[355] = makeRes(
+        34034, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_034_terran_diffuse.aei", 0.0f));
+    resources[356] = makeRes(
+        34035, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_diffuse.aei", 0.0f));
+    resources[357] = makeRes(
+        34036, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_036_terran_diffuse.aei", 0.0f));
+    resources[358] = makeRes(34037, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_diffuse.aei",
+                                 0.0f));
+    resources[359] = makeRes(34038, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_diffuse.aei",
+                                 0.0f));
+    resources[360] = makeRes(
+        34039, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_diffuse.aei", 0.0f));
+    resources[361] = makeRes(34040, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_diffuse.aei",
+                                 0.0f));
+    resources[362] = makeRes(
+        34041, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_diffuse.aei", 0.0f));
+    resources[363] = makeRes(
+        18083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
+    resources[364] = makeRes(
+        34043, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_043_retro_diffuse.aei", 0.0f));
+    resources[365] = makeRes(34044, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_diffuse.aei",
+                                 0.0f));
+    resources[366] = makeRes(34045, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_diffuse.aei",
+                                 0.0f));
+    resources[367] = makeRes(34046, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_diffuse.aei",
+                                 0.0f));
+    resources[368] = makeRes(34047, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_diffuse.aei",
+                                 0.0f));
+    resources[369] = makeRes(34048, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_diffuse.aei",
+                                 0.0f));
+    resources[370] = makeRes(34049, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_diffuse.aei",
+                                 0.0f));
+    resources[371] = makeRes(34051, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_diffuse.aei",
+                                 0.0f));
+    resources[372] = makeRes(
+        34052, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_diffuse.aei", 0.0f));
+    resources[373] = makeRes(
+        34054, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_diffuse.aei", 0.0f));
+    resources[374] = makeRes(34055, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_diffuse.aei",
+                                 0.0f));
+    resources[375] = makeRes(34056, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_diffuse.aei",
+                                 0.0f));
+    resources[376] = makeRes(34057, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_diffuse.aei",
+                                 0.0f));
+    resources[377] = makeRes(34058, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_diffuse.aei",
+                                 0.0f));
+    resources[378] = makeRes(34059, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_diffuse.aei",
+                                 0.0f));
+    resources[379] = makeRes(34060, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_diffuse.aei",
+                                 0.0f));
+    resources[380] = makeRes(34061, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_diffuse.aei",
+                                 0.0f));
+    resources[381] = makeRes(
+        34062, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_diffuse.aei", 0.0f));
+    resources[382] = makeRes(
+        18086, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
+    resources[383] = makeRes(34100, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_000_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[384] = makeRes(34101, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_001_terran_normal_specular.aei",
+                                 0.0f));
+    resources[385] = makeRes(34102, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_002_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[386] = makeRes(34103, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_003_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[387] = makeRes(34104, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_004_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[388] = makeRes(34105, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_005_terran_normal_specular.aei",
+                                 0.0f));
+    resources[389] = makeRes(34106, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_006_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[390] = makeRes(34107, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_007_terran_normal_specular.aei",
+                                 0.0f));
+    resources[391] = makeRes(
+        34108, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_008_void_normal_specular.aei", 0.0f));
+    resources[392] = makeRes(
+        34109, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_009_vossk_normal_specular.aei", 0.0f));
+    resources[393] = makeRes(34110, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_010_terran_normal_specular.aei",
+                                 0.0f));
+    resources[394] = makeRes(34111, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_011_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[395] = makeRes(34112, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_012_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[396] = makeRes(34116, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_016_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[397] = makeRes(34117, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_017_terran_normal_specular.aei",
+                                 0.0f));
+    resources[398] = makeRes(34118, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_018_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[399] = makeRes(34119, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_019_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[400] = makeRes(34120, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_020_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[401] = makeRes(34121, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_021_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[402] = makeRes(34122, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_022_terran_normal_specular.aei",
+                                 0.0f));
+    resources[403] = makeRes(34123, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_023_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[404] = makeRes(34124, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_024_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[405] = makeRes(34125, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_025_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[406] = makeRes(34126, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_026_terran_normal_specular.aei",
+                                 0.0f));
+    resources[407] = makeRes(34127, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_027_terran_normal_specular.aei",
+                                 0.0f));
+    resources[408] = makeRes(34128, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_028_terran_normal_specular.aei",
+                                 0.0f));
+    resources[409] = makeRes(34129, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_029_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[410] = makeRes(34130, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_030_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[411] = makeRes(34131, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_031_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[412] = makeRes(34132, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_032_pirates_normal_specular.aei",
+                                 0.0f));
+    resources[413] = makeRes(34133, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_033_terran_normal_specular.aei",
+                                 0.0f));
+    resources[414] = makeRes(34134, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_034_terran_normal_specular.aei",
+                                 0.0f));
+    resources[415] = makeRes(34135, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_035_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[416] = makeRes(34136, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_036_terran_normal_specular.aei",
+                                 0.0f));
+    resources[417] = makeRes(34137, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_037_deep_science_normal_specular.aei",
+                                 0.0f));
+    resources[418] = makeRes(34138, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_038_deep_science_normal_specular.aei",
+                                 0.0f));
+    resources[419] = makeRes(34139, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_039_vossk_normal_specular.aei",
+                                 0.0f));
+    resources[420] = makeRes(34140, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_040_deep_science_normal_specular.aei",
+                                 0.0f));
+    resources[421] = makeRes(34141, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/ships/v_ship_041_vossk_normal_specular.aei",
+                                 0.0f));
+    resources[422] = makeRes(
+        34142, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_042_retro_normal_specular.aei", 0.0f));
+    resources[423] = makeRes(
+        34143, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_043_retro_normal_specular.aei", 0.0f));
+    resources[424] = makeRes(34144, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_044_elite_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[425] = makeRes(34145, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_045_most_wanted_normal_specular.aei",
+                                 0.0f));
+    resources[426] = makeRes(34146, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_046_most_wanted_normal_specular.aei",
+                                 0.0f));
+    resources[427] = makeRes(34147, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_047_most_wanted_normal_specular.aei",
+                                 0.0f));
+    resources[428] = makeRes(34148, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_048_most_wanted_normal_specular.aei",
+                                 0.0f));
+    resources[429] = makeRes(34149, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_049_boss_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[430] = makeRes(34151, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_051_dropship_terran_normal_specular.aei",
+                                 0.0f));
+    resources[431] = makeRes(34152, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_052_retro_normal_specular.aei",
+                                 0.0f));
+    resources[432] = makeRes(34154, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_054_vossk_normal_specular.aei",
+                                 0.0f));
+    resources[433] = makeRes(34155, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_055_modified_normal_specular.aei",
+                                 0.0f));
+    resources[434] = makeRes(34156, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_056_modified_normal_specular.aei",
+                                 0.0f));
+    resources[435] = makeRes(34157, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_057_modified_normal_specular.aei",
+                                 0.0f));
+    resources[436] = makeRes(34158, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_058_modified_normal_specular.aei",
+                                 0.0f));
+    resources[437] = makeRes(34159, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_059_modified_normal_specular.aei",
+                                 0.0f));
+    resources[438] = makeRes(34160, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/ships/sn_ship_060_modified_normal_specular.aei",
+                                 0.0f));
+    resources[439] = makeRes(34161, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_061_elite_nivelian_prototype_normal_specular.aei",
+                                 0.0f));
+    resources[440] = makeRes(34162, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/ships/ship_062_prototype_normal_specular.aei",
+                                 0.0f));
+    resources[441] = makeRes(
+        34163, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/ships/ship_063_vossk_normal_specular.aei", 0.0f));
+    resources[442] = makeRes(
+        10107, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/asteroid_explosion.aei",
+                                                   0.0f));
+    resources[443] = makeRes(
+        10155, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_diffuse.aei", 0.0f));
+    resources[444] = makeRes(10156, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/misc/v_asteroid_ice_normal_specular.aei",
+                                 0.0f));
+    resources[445] = makeRes(27314, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_explosion.aei",
+                                 0.0f));
+    resources[446] = makeRes(
+        28999, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_diffuse.aei", 0.0f));
+    resources[447] = makeRes(29000, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/misc/sn_asteroid_magma_normal_specular.aei",
+                                 0.0f));
+    resources[448] = makeRes(
+        10104, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/wormhole.aei", 0.0f));
+    resources[449] = makeRes(
+        10121, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/fog.aei", 0.0f));
+    resources[450] = makeRes(
+        10132, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_fog_ice.aei", 0.0f));
+    resources[451] = makeRes(
+        10100, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_bg.aei",
+                                                   0.0f));
+    resources[452] = makeRes(
+        10101, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_0.aei", 0.0f));
+    resources[453] = makeRes(
+        10102, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_fog_layer_1.aei", 0.0f));
+    resources[454] = makeRes(
+        10145, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_planets_diffuse.aei", 0.0f));
+    resources[455] = makeRes(
+        10144, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/galaxymap/galaxymap_orbit.aei",
+                                                   0.0f));
+    resources[456] = makeRes(
+        10159, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/galaxymap/v_galaxymap_planets.aei", 0.0f));
+    resources[457] = makeRes(
+        18180, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_000.aem", 20027, false));
+    resources[458] = makeRes(
+        0, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_vossk.aei",
+                                               0.0f));
+    resources[459] = makeRes(
+        18186, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_006.aem", 20027, false));
+    resources[460] = makeRes(
+        33403, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/bars/bar_visitor_glow_midorian.aei", 0.0f));
+    resources[461] = makeRes(
+        33404, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/bar_visitor_shadow.aei",
+                                                   0.0f));
+    resources[462] = makeRes(
+        10161, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/galaxymap/sn_galaxymap_planets.aei", 0.0f));
+    resources[463] = makeRes(
+        11606, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_bobolan.aei",
+                                                   0.0f));
+    resources[464] = makeRes(
+        11607, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_grey.aei", 0.0f));
+    resources[465] = makeRes(
+        11608, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_multipod.aei",
+                                                   0.0f));
+    resources[466] = makeRes(
+        11609, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_nivelian.aei",
+                                                   0.0f));
+    resources[467] = makeRes(
+        11610, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_f.aei",
+                                                   0.0f));
+    resources[468] = makeRes(
+        11611, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_terran_m.aei",
+                                                   0.0f));
+    resources[469] = makeRes(
+        11612, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/bars/visitor_vossk.aei",
+                                                   0.0f));
+    resources[470] = makeRes(10157, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_diffuse.aei",
+                                 0.0f));
+    resources[471] = makeRes(10158, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_battlestation_normal_specular.aei",
+                                 0.0f));
+    resources[472] = makeRes(10134, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_diffuse.aei",
+                                 0.0f));
+    resources[473] = makeRes(10135, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/hangars/v_hangar_deep_science_normal_specular.aei",
+                                 0.0f));
     resources[474] = makeRes(11600, 2, new AbyssEngine::ResourceTexture("data/textures/col_test.aei", 0.0f));
-    resources[475] = makeRes(12000, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_diffuse.aei", 0.0f));
-    resources[476] = makeRes(12001, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_normal_specular.aei", 0.0f));
-    resources[477] = makeRes(11601, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_explosion.aei", 0.0f));
-    resources[478] = makeRes(11602, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_smoke.aei", 0.0f));
-    resources[479] = makeRes(11599, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_fire.aei", 0.0f));
-    resources[480] = makeRes(11598, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion.aei", 0.0f));
-    resources[481] = makeRes(12002, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_diffuse.aei", 0.0f));
-    resources[482] = makeRes(12003, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_001_normal_specular.aei", 0.0f));
-    resources[483] = makeRes(12004, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_diffuse.aei", 0.0f));
-    resources[484] = makeRes(12005, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_002_normal_specular.aei", 0.0f));
-    resources[485] = makeRes(12006, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_diffuse.aei", 0.0f));
-    resources[486] = makeRes(12007, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/turrets/turret_003_normal_specular.aei", 0.0f));
-    resources[487] = makeRes(11860, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_diffuse.aei", 0.0f));
-    resources[488] = makeRes(11861, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_normal_specular.aei", 0.0f));
-    resources[489] = makeRes(12050, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_diffuse.aei", 0.0f));
-    resources[490] = makeRes(12051, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_normal_specular.aei", 0.0f));
-    resources[491] = makeRes(12052, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_diffuse.aei", 0.0f));
-    resources[492] = makeRes(12053, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_normal_specular.aei", 0.0f));
-    resources[493] = makeRes(12054, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_diffuse.aei", 0.0f));
-    resources[494] = makeRes(12055, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_normal_specular.aei", 0.0f));
-    resources[495] = makeRes(12008, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_diffuse.aei", 0.0f));
-    resources[496] = makeRes(12009, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/scanner_probe_normal_specular.aei", 0.0f));
-    resources[497] = makeRes(11594, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_diffuse.aei", 0.0f));
-    resources[498] = makeRes(11595, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_normal_specular.aei", 0.0f));
-    resources[499] = makeRes(10148, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_diffuse.aei", 0.0f));
-    resources[500] = makeRes(10149, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_normal_specular.aei", 0.0f));
-    resources[501] = makeRes(10126, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_000_explosion.aei", 0.0f));
-    resources[502] = makeRes(10127, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_001_explosion.aei", 0.0f));
-    resources[503] = makeRes(10128, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_002_explosion.aei", 0.0f));
-    resources[504] = makeRes(24210, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_diffuse.aei", 0.0f));
-    resources[505] = makeRes(24211, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_normal_specular.aei", 0.0f));
-    resources[506] = makeRes(24212, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_diffuse.aei", 0.0f));
-    resources[507] = makeRes(24213, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_normal_specular.aei", 0.0f));
-    resources[508] = makeRes(24214, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_diffuse.aei", 0.0f));
-    resources[509] = makeRes(24215, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_normal_specular.aei", 0.0f));
-    resources[510] = makeRes(11617, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_diffuse.aei", 0.0f));
-    resources[511] = makeRes(11618, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_normal_specular.aei", 0.0f));
-    resources[512] = makeRes(11615, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_diffuse.aei", 0.0f));
-    resources[513] = makeRes(11616, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_normal_specular.aei", 0.0f));
-    resources[514] = makeRes(11620, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_glow.aei", 0.0f));
-    resources[515] = makeRes(34816, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_emitters.aei", 0.0f));
-    resources[516] = makeRes(11628, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/tex_player_station_fx.aei", 0.0f));
-    resources[517] = makeRes(11633, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_normal.aei", 0.0f));
-    resources[518] = makeRes(11634, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_noise.aei", 0.0f));
-    resources[519] = makeRes(33300, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/khador_jump.aei", 0.0f));
-    resources[520] = makeRes(24203, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/hyper_drive.aei", 0.0f));
+    resources[475] = makeRes(
+        12000, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_junk_diffuse.aei",
+                                                   0.0f));
+    resources[476] = makeRes(
+        12001, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/space_junk_normal_specular.aei", 0.0f));
+    resources[477] = makeRes(
+        11601, 2,
+        new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_explosion.aei", 0.0f));
+    resources[478] = makeRes(
+        11602, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_smoke.aei", 0.0f));
+    resources[479] = makeRes(
+        11599, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/sprite_fire.aei", 0.0f));
+    resources[480] = makeRes(
+        11598, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/explosion.aei", 0.0f));
+    resources[481] = makeRes(
+        12002, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_001_diffuse.aei", 0.0f));
+    resources[482] = makeRes(
+        12003, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_001_normal_specular.aei", 0.0f));
+    resources[483] = makeRes(
+        12004, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_002_diffuse.aei", 0.0f));
+    resources[484] = makeRes(
+        12005, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_002_normal_specular.aei", 0.0f));
+    resources[485] = makeRes(
+        12006, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_003_diffuse.aei", 0.0f));
+    resources[486] = makeRes(
+        12007, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/turrets/turret_003_normal_specular.aei", 0.0f));
+    resources[487] = makeRes(
+        11860, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_diffuse.aei", 0.0f));
+    resources[488] = makeRes(11861, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/supernova/3d/textures/low/etc/turrets/sn_turret_004_normal_specular.aei",
+                                 0.0f));
+    resources[489] = makeRes(
+        12050, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_diffuse.aei", 0.0f));
+    resources[490] = makeRes(12051, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_001_normal_specular.aei",
+                                 0.0f));
+    resources[491] = makeRes(
+        12052, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_diffuse.aei", 0.0f));
+    resources[492] = makeRes(12053, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_002_normal_specular.aei",
+                                 0.0f));
+    resources[493] = makeRes(
+        12054, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_diffuse.aei", 0.0f));
+    resources[494] = makeRes(12055, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/turrets/v_autoturret_003_normal_specular.aei",
+                                 0.0f));
+    resources[495] = makeRes(
+        12008, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/scanner_probe_diffuse.aei", 0.0f));
+    resources[496] = makeRes(
+        12009, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/scanner_probe_normal_specular.aei", 0.0f));
+    resources[497] = makeRes(
+        11594, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/beer_and_bra_diffuse.aei",
+                                                   0.0f));
+    resources[498] = makeRes(
+        11595, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/beer_and_bra_normal_specular.aei", 0.0f));
+    resources[499] = makeRes(
+        10148, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_diffuse.aei", 0.0f));
+    resources[500] = makeRes(10149, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/misc/v_guided_missile_normal_specular.aei",
+                                 0.0f));
+    resources[501] = makeRes(
+        10126, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_000_explosion.aei", 0.0f));
+    resources[502] = makeRes(
+        10127, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_001_explosion.aei", 0.0f));
+    resources[503] = makeRes(
+        10128, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/fx/v_scattergun_002_explosion.aei", 0.0f));
+    resources[504] = makeRes(
+        24210, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_diffuse.aei", 0.0f));
+    resources[505] = makeRes(
+        24211, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_001_normal_specular.aei", 0.0f));
+    resources[506] = makeRes(
+        24212, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_diffuse.aei", 0.0f));
+    resources[507] = makeRes(
+        24213, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_002_normal_specular.aei", 0.0f));
+    resources[508] = makeRes(
+        24214, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_diffuse.aei", 0.0f));
+    resources[509] = makeRes(
+        24215, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/misc/v_mine_003_normal_specular.aei", 0.0f));
+    resources[510] = makeRes(11617, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_diffuse.aei",
+                                 0.0f));
+    resources[511] = makeRes(11618, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_battlestation_normal_specular.aei",
+                                 0.0f));
+    resources[512] = makeRes(11615, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_diffuse.aei",
+                                 0.0f));
+    resources[513] = makeRes(11616, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_normal_specular.aei",
+                                 0.0f));
+    resources[514] = makeRes(11620, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_glow.aei",
+                                 0.0f));
+    resources[515] = makeRes(34816, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/valkyrie/3d/textures/low/etc/stations/v_station_deep_science_emitters.aei",
+                                 0.0f));
+    resources[516] = makeRes(
+        11628, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/stations/tex_player_station_fx.aei", 0.0f));
+    resources[517] = makeRes(
+        11633, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_normal.aei",
+                                                   0.0f));
+    resources[518] = makeRes(
+        11634, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_shield_noise.aei",
+                                                   0.0f));
+    resources[519] = makeRes(
+        33300, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/khador_jump.aei", 0.0f));
+    resources[520] = makeRes(
+        24203, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/hyper_drive.aei", 0.0f));
     resources[521] = makeRes(11647, 2, new AbyssEngine::ResourceTexture("data/textures/gas_cloud.aei", 0.0f));
-    resources[523] = makeRes(33411, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_normal_specular.aei", 0.0f));
+    resources[523] = makeRes(33411, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/skyboxes/skybox_asteroid_belt_normal_specular.aei",
+                                 0.0f));
     resources[524] = makeRes(27160, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
-    resources[526] = makeRes(33241, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_003_terran_normal_specular.aei", 0.0f));
-    resources[527] = makeRes(33242, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_diffuse.aei", 0.0f));
-    resources[528] = makeRes(33243, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_004_vossk_normal_specular.aei", 0.0f));
-    resources[529] = makeRes(33244, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_diffuse.aei", 0.0f));
-    resources[530] = makeRes(33245, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_normal_specular.aei", 0.0f));
-    resources[531] = makeRes(33246, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_diffuse.aei", 0.0f));
-    resources[532] = makeRes(33247, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/container_001_midorian_normal_specular.aei", 0.0f));
-    resources[533] = makeRes(24202, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/particles.aei", 0.0f));
-    resources[534] = makeRes(24208, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_diffuse.aei", 0.0f));
-    resources[535] = makeRes(24209, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/space_particle_normal_specular.aei", 0.0f));
+    resources[526] = makeRes(33241, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/container_003_terran_normal_specular.aei",
+                                 0.0f));
+    resources[527] = makeRes(
+        33242, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/container_004_vossk_diffuse.aei", 0.0f));
+    resources[528] = makeRes(33243, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/container_004_vossk_normal_specular.aei",
+                                 0.0f));
+    resources[529] = makeRes(
+        33244, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_diffuse.aei", 0.0f));
+    resources[530] = makeRes(33245, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/container_002_nivelian_normal_specular.aei",
+                                 0.0f));
+    resources[531] = makeRes(
+        33246, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/container_001_midorian_diffuse.aei", 0.0f));
+    resources[532] = makeRes(33247, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/container_001_midorian_normal_specular.aei",
+                                 0.0f));
+    resources[533] = makeRes(
+        24202, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/particles.aei", 0.0f));
+    resources[534] = makeRes(
+        24208, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/space_particle_diffuse.aei", 0.0f));
+    resources[535] = makeRes(
+        24209, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/space_particle_normal_specular.aei", 0.0f));
     resources[536] = makeRes(20092, 6, new AbyssEngine::ResourceMaterial(24208, 24209, static_cast<BlendMode>(36)));
     resources[537] = makeRes(20090, 6, new AbyssEngine::ResourceMaterial(24202, static_cast<BlendMode>(3)));
     resources[539] = makeRes(27300, 6, new AbyssEngine::ResourceMaterial(33301, BlendMode_2));
-    resources[541] = makeRes(33341, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_normal_specular.aei", 0.0f));
+    resources[541] = makeRes(33341, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/stations/stations_pirates_dmg_normal_specular.aei",
+                                 0.0f));
     resources[542] = makeRes(33357, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
     resources[543] = makeRes(33352, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
     resources[544] = makeRes(33353, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
     resources[545] = makeRes(33354, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
     resources[546] = makeRes(33355, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
     resources[547] = makeRes(33356, 6, new AbyssEngine::ResourceMaterial(65535, 0, static_cast<BlendMode>(28)));
-    resources[548] = makeRes(12020, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_terran.aei", 0.0f));
-    resources[549] = makeRes(12021, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_vossk.aei", 0.0f));
-    resources[550] = makeRes(12022, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_nivelian.aei", 0.0f));
-    resources[551] = makeRes(12023, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_midorian.aei", 0.0f));
-    resources[552] = makeRes(12030, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_000.aei", 0.0f));
-    resources[553] = makeRes(12031, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_001.aei", 0.0f));
-    resources[554] = makeRes(12032, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_002.aei", 0.0f));
-    resources[555] = makeRes(12033, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_003.aei", 0.0f));
-    resources[556] = makeRes(12034, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_004.aei", 0.0f));
-    resources[557] = makeRes(12035, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_005.aei", 0.0f));
-    resources[558] = makeRes(12036, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_006.aei", 0.0f));
-    resources[559] = makeRes(12037, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_007.aei", 0.0f));
-    resources[560] = makeRes(12038, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_008.aei", 0.0f));
-    resources[561] = makeRes(12039, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_009.aei", 0.0f));
-    resources[562] = makeRes(12040, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_010.aei", 0.0f));
-    resources[563] = makeRes(12041, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_011.aei", 0.0f));
-    resources[564] = makeRes(12042, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_012.aei", 0.0f));
-    resources[565] = makeRes(12043, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_013.aei", 0.0f));
-    resources[566] = makeRes(12044, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_014.aei", 0.0f));
-    resources[567] = makeRes(12045, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_015.aei", 0.0f));
-    resources[568] = makeRes(12046, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_016.aei", 0.0f));
-    resources[569] = makeRes(12047, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_017.aei", 0.0f));
-    resources[570] = makeRes(12048, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_018.aei", 0.0f));
-    resources[572] = makeRes(33304, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_diffuse.aei", 0.0f));
-    resources[573] = makeRes(33305, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_normal_specular.aei", 0.0f));
-    resources[574] = makeRes(33307, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_diffuse.aei", 0.0f));
-    resources[575] = makeRes(33308, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_normal_specular.aei", 0.0f));
-    resources[576] = makeRes(33310, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_diffuse.aei", 0.0f));
-    resources[578] = makeRes(24204, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_diffuse.aei", 0.0f));
-    resources[579] = makeRes(24205, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_explosive_normal_specular.aei", 0.0f));
-    resources[580] = makeRes(24206, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_diffuse.aei", 0.0f));
-    resources[581] = makeRes(24207, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_normal_specular.aei", 0.0f));
-    resources[583] = makeRes(34812, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/ship_engine_glow.aei", 0.0f));
+    resources[548] = makeRes(
+        12020, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_terran.aei", 0.0f));
+    resources[549] = makeRes(
+        12021, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_vossk.aei", 0.0f));
+    resources[550] = makeRes(
+        12022, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_nivelian.aei", 0.0f));
+    resources[551] = makeRes(
+        12023, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_hangar_midorian.aei", 0.0f));
+    resources[552] = makeRes(
+        12030, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_000.aei", 0.0f));
+    resources[553] = makeRes(
+        12031, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_001.aei", 0.0f));
+    resources[554] = makeRes(
+        12032, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_002.aei", 0.0f));
+    resources[555] = makeRes(
+        12033, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_003.aei", 0.0f));
+    resources[556] = makeRes(
+        12034, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_004.aei", 0.0f));
+    resources[557] = makeRes(
+        12035, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_005.aei", 0.0f));
+    resources[558] = makeRes(
+        12036, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_006.aei", 0.0f));
+    resources[559] = makeRes(
+        12037, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_007.aei", 0.0f));
+    resources[560] = makeRes(
+        12038, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_008.aei", 0.0f));
+    resources[561] = makeRes(
+        12039, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_009.aei", 0.0f));
+    resources[562] = makeRes(
+        12040, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/cubemaps/cubemap_skybox_010.aei", 0.0f));
+    resources[563] = makeRes(
+        12041, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_011.aei", 0.0f));
+    resources[564] = makeRes(
+        12042, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_012.aei", 0.0f));
+    resources[565] = makeRes(
+        12043, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_013.aei", 0.0f));
+    resources[566] = makeRes(
+        12044, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/cubemaps/v_cubemap_skybox_014.aei", 0.0f));
+    resources[567] = makeRes(
+        12045, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_015.aei", 0.0f));
+    resources[568] = makeRes(
+        12046, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_016.aei", 0.0f));
+    resources[569] = makeRes(
+        12047, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_017.aei", 0.0f));
+    resources[570] = makeRes(
+        12048, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/cubemaps/sn_cubemap_skybox_018.aei", 0.0f));
+    resources[572] = makeRes(
+        33304, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_diffuse.aei", 0.0f));
+    resources[573] = makeRes(33305, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/bomb_explosive_a_normal_specular.aei",
+                                 0.0f));
+    resources[574] = makeRes(
+        33307, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_diffuse.aei", 0.0f));
+    resources[575] = makeRes(33308, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/bomb_explosive_b_normal_specular.aei",
+                                 0.0f));
+    resources[576] = makeRes(
+        33310, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/bomb_emp_a_diffuse.aei",
+                                                   0.0f));
+    resources[578] = makeRes(
+        24204, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/rocket_explosive_diffuse.aei", 0.0f));
+    resources[579] = makeRes(24205, 2, new AbyssEngine::ResourceTexture(
+                                 "data/assets/main/3d/textures/low/etc/misc/rocket_explosive_normal_specular.aei",
+                                 0.0f));
+    resources[580] = makeRes(
+        24206, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/misc/rocket_emp_diffuse.aei",
+                                                   0.0f));
+    resources[581] = makeRes(
+        24207, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/main/3d/textures/low/etc/misc/rocket_emp_normal_specular.aei", 0.0f));
+    resources[583] = makeRes(
+        34812, 2,
+        new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/fx/ship_engine_glow.aei", 0.0f));
     resources[584] = makeRes(34813, 6, new AbyssEngine::ResourceMaterial(65535, BlendMode_2));
-    resources[585] = makeRes(34814, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_ship_engine_glow.aei", 0.0f));
+    resources[585] = makeRes(
+        34814, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/fx/v_ship_engine_glow.aei",
+                                                   0.0f));
     resources[586] = makeRes(34815, 6, new AbyssEngine::ResourceMaterial(65535, BlendMode_2));
     resources[587] = makeRes(27301, 6, new AbyssEngine::ResourceMaterial(0, static_cast<BlendMode>(3)));
     resources[588] = makeRes(27302, 6, new AbyssEngine::ResourceMaterial(0, BlendMode_1));
@@ -1553,970 +2524,2698 @@ void BuildResourceList(AbyssEngine::Engine *engine)
     resources[1556] = makeRes(6606, 3, newImage(0x733cu, 0x6u));
     resources[1557] = makeRes(6607, 3, newImage(0x733cu, 0x7u));
     resources[1558] = makeRes(6650, 3, newImage(0x733du, 0x0u));
-    resources[1559] = makeRes(14379, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian.aem", 24071, false));
-    resources[1560] = makeRes(14310, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_add.aem", 20069, false));
-    resources[1561] = makeRes(14264, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_alpha.aem", 20106, false));
-    resources[1562] = makeRes(14377, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk.aem", 24074, false));
-    resources[1563] = makeRes(14304, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk_anim_add.aem", 20071, false));
-    resources[1564] = makeRes(14378, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian.aem", 24073, false));
-    resources[1565] = makeRes(14307, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_alpha.aem", 20074, false));
-    resources[1566] = makeRes(14308, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_add.aem", 20075, false));
-    resources[1567] = makeRes(14376, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran.aem", 24070, false));
-    resources[1568] = makeRes(14301, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_alpha.aem", 20077, false));
-    resources[1569] = makeRes(14302, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_add.aem", 20078, false));
-    resources[1570] = makeRes(14354, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation.aem", 20157, false));
-    resources[1571] = makeRes(14355, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_emissive.aem", 27138, false));
-    resources[1572] = makeRes(14356, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_alpha.aem", 27139, false));
-    resources[1573] = makeRes(14357, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_add.aem", 27140, false));
-    resources[1574] = makeRes(14358, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_emissive.aem", 27141, false));
-    resources[1575] = makeRes(14359, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_alpha.aem", 27142, false));
-    resources[1576] = makeRes(14360, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_anim_add.aem", 27143, false));
-    resources[1577] = makeRes(14362, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science.aem", 27144, false));
-    resources[1578] = makeRes(14265, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim.aem", 24070, false));
-    resources[1579] = makeRes(14266, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim.aem", 24070, false));
-    resources[1580] = makeRes(14267, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim.aem", 24070, false));
-    resources[1581] = makeRes(14268, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim.aem", 24070, false));
-    resources[1582] = makeRes(14269, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim_add.aem", 20078, false));
-    resources[1583] = makeRes(14270, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim_add.aem", 20078, false));
-    resources[1584] = makeRes(14271, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim_add.aem", 20078, false));
-    resources[1585] = makeRes(14272, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim_add.aem", 20078, false));
-    resources[1586] = makeRes(14273, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim.aem", 24073, false));
-    resources[1587] = makeRes(14274, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim.aem", 24073, false));
-    resources[1588] = makeRes(14275, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim.aem", 24073, false));
-    resources[1589] = makeRes(14276, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim_add.aem", 20075, false));
-    resources[1590] = makeRes(14277, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim_add.aem", 20075, false));
-    resources[1591] = makeRes(14278, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim_add.aem", 20075, false));
-    resources[1592] = makeRes(14380, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1.aem", 24070, false));
-    resources[1593] = makeRes(14381, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1_shadow_alpha.aem", 20077, false));
-    resources[1594] = makeRes(14382, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2.aem", 24070, false));
-    resources[1595] = makeRes(14383, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2_shadow_alpha.aem", 20077, false));
-    resources[1596] = makeRes(14384, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3.aem", 24070, false));
-    resources[1597] = makeRes(14385, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3_shadow_alpha.aem", 20077, false));
-    resources[1598] = makeRes(14386, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4.aem", 24070, false));
-    resources[1599] = makeRes(14387, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4_shadow_alpha.aem", 20077, false));
-    resources[1600] = makeRes(14388, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5.aem", 24070, false));
-    resources[1601] = makeRes(14389, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5_shadow_alpha.aem", 20077, false));
-    resources[1602] = makeRes(14390, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x6.aem", 24070, false));
-    resources[1603] = makeRes(14391, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1.aem", 24071, false));
-    resources[1604] = makeRes(14392, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1_shadow_alpha.aem", 20106, false));
-    resources[1605] = makeRes(14393, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2.aem", 24071, false));
-    resources[1606] = makeRes(14394, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2_shadow_alpha.aem", 20106, false));
-    resources[1607] = makeRes(14395, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3.aem", 24071, false));
-    resources[1608] = makeRes(14396, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3_shadow_alpha.aem", 20106, false));
-    resources[1609] = makeRes(14397, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4.aem", 24071, false));
-    resources[1610] = makeRes(14398, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4_shadow_alpha.aem", 20106, false));
-    resources[1611] = makeRes(14399, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false));
-    resources[1612] = makeRes(14400, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
-    resources[1613] = makeRes(14401, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071, false));
-    resources[1614] = makeRes(14402, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
-    resources[1615] = makeRes(14403, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1.aem", 24073, false));
-    resources[1616] = makeRes(14404, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1_shadow_alpha.aem", 20074, false));
-    resources[1617] = makeRes(14405, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2.aem", 24073, false));
-    resources[1618] = makeRes(14406, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2_shadow_alpha.aem", 20074, false));
-    resources[1619] = makeRes(14407, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3.aem", 24073, false));
-    resources[1620] = makeRes(14408, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3_shadow_alpha.aem", 20074, false));
-    resources[1621] = makeRes(14409, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4.aem", 24073, false));
-    resources[1622] = makeRes(14410, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4_shadow_alpha.aem", 20074, false));
-    resources[1623] = makeRes(14411, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5.aem", 24073, false));
-    resources[1624] = makeRes(14412, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5_shadow_alpha.aem", 20074, false));
-    resources[1625] = makeRes(14025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran.aem", 20056, false));
-    resources[1626] = makeRes(14026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_add.aem", 20057, false));
-    resources[1627] = makeRes(14027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_alpha.aem", 20058, false));
-    resources[1628] = makeRes(14280, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim.aem", 20056, false));
-    resources[1629] = makeRes(14279, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim_add.aem", 20057, false));
-    resources[1630] = makeRes(14028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk.aem", 20059, false));
-    resources[1631] = makeRes(14029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk_anim_add.aem", 20060, false));
-    resources[1632] = makeRes(14031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian.aem", 20062, false));
-    resources[1633] = makeRes(14032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_anim_add.aem", 20063, false));
-    resources[1634] = makeRes(14033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_alpha.aem", 20064, false));
-    resources[1635] = makeRes(14034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_anim.aem", 20065, false));
-    resources[1636] = makeRes(14035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_add.aem", 20066, false));
-    resources[1637] = makeRes(14036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha.aem", 20067, false));
-    resources[1638] = makeRes(14038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha_anim.aem", 20067, false));
-    resources[1639] = makeRes(14725, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_m.aem", 20119, false));
-    resources[1640] = makeRes(14724, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_f.aem", 20118, false));
-    resources[1641] = makeRes(14726, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_vossk.aem", 20120, false));
-    resources[1642] = makeRes(14723, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_nivelian.aem", 20117, false));
-    resources[1643] = makeRes(14722, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_multipod.aem", 20116, false));
-    resources[1644] = makeRes(14720, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_bobolan.aem", 20114, false));
-    resources[1645] = makeRes(14721, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_grey.aem", 20115, false));
-    resources[1646] = makeRes(14281, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
-    resources[1647] = makeRes(14282, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
-    resources[1648] = makeRes(14283, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
-    resources[1649] = makeRes(14284, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
-    resources[1650] = makeRes(14348, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_shadow.aem", 65535, false));
-    resources[1651] = makeRes(17800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_000.aem", 20009, false));
-    resources[1652] = makeRes(17801, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_001.aem", 20010, false));
-    resources[1653] = makeRes(17802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_002.aem", 20011, false));
-    resources[1654] = makeRes(17803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_003.aem", 20012, false));
-    resources[1655] = makeRes(17804, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_004.aem", 20013, false));
-    resources[1656] = makeRes(17805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_005.aem", 20014, false));
-    resources[1657] = makeRes(17806, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_006.aem", 20015, false));
-    resources[1658] = makeRes(17807, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_007.aem", 20016, false));
-    resources[1659] = makeRes(17808, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_008.aem", 20017, false));
-    resources[1660] = makeRes(17809, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_009.aem", 20018, false));
-    resources[1661] = makeRes(17810, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_010.aem", 20019, false));
-    resources[1662] = makeRes(17811, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_011.aem", 20130, false));
-    resources[1663] = makeRes(17812, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_012.aem", 20131, false));
-    resources[1664] = makeRes(17813, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 20132, false));
-    resources[1665] = makeRes(17814, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 27149, false));
-    resources[1666] = makeRes(17850, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20009, false));
-    resources[1667] = makeRes(17851, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20010, false));
-    resources[1668] = makeRes(17852, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20011, false));
-    resources[1669] = makeRes(6768, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 65535, false));
-    resources[1670] = makeRes(16916, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_005_void.aem", 65535, false));
-    resources[1671] = makeRes(16805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_emp_anim_lookat_add.aem", 27300, false));
-    resources[1672] = makeRes(16820, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_add.aem", 27252, false));
-    resources[1673] = makeRes(16821, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_alpha.aem", 27253, false));
-    resources[1674] = makeRes(16806, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20151, false));
-    resources[1675] = makeRes(16807, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20152, false));
-    resources[1676] = makeRes(16808, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem", 20153, false));
-    resources[1677] = makeRes(6754, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_000_anim_add.aem", 24201, false));
-    resources[1678] = makeRes(6755, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_001_anim_add.aem", 24201, false));
-    resources[1679] = makeRes(6756, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_002_anim_add.aem", 24201, false));
-    resources[1680] = makeRes(6760, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_003_anim_add.aem", 24201, false));
-    resources[1681] = makeRes(6761, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_004_anim_add.aem", 24201, false));
-    resources[1682] = makeRes(6762, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_005_anim_add.aem", 24201, false));
-    resources[1683] = makeRes(6763, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_006_anim_add.aem", 24201, false));
-    resources[1684] = makeRes(6764, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_007_anim_add.aem", 24201, false));
-    resources[1685] = makeRes(6765, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_008_anim_add.aem", 24201, false));
-    resources[1686] = makeRes(14297, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_183_anim_add.aem", 24096, false));
-    resources[1687] = makeRes(6788, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_012_anim_add.aem", 24201, false));
-    resources[1688] = makeRes(6789, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_013_anim_add.aem", 24201, false));
-    resources[1689] = makeRes(6790, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_014_anim_add.aem", 24201, false));
-    resources[1690] = makeRes(6791, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_015_anim_add.aem", 24201, false));
-    resources[1691] = makeRes(6792, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_016_anim_add.aem", 24201, false));
-    resources[1692] = makeRes(6793, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_017_anim_add.aem", 24201, false));
-    resources[1693] = makeRes(6794, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_018_anim_add.aem", 24201, false));
-    resources[1694] = makeRes(6795, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_019_anim_add.aem", 24201, false));
-    resources[1695] = makeRes(6796, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_020_anim_add.aem", 24201, false));
-    resources[1696] = makeRes(6797, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_021_anim_add.aem", 24201, false));
-    resources[1697] = makeRes(6798, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_022_anim_add.aem", 24201, false));
-    resources[1698] = makeRes(6799, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_023_anim_add.aem", 24201, false));
-    resources[1699] = makeRes(6800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_024_anim_add.aem", 24201, false));
-    resources[1701] = makeRes(6802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_026_anim_add.aem", 24201, false));
-    resources[1702] = makeRes(6803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_027_anim_add.aem", 24201, false));
-    resources[1703] = makeRes(14232, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_068_anim_add.aem", 24201, false));
-    resources[1704] = makeRes(14233, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_069_anim_add.aem", 24201, false));
-    resources[1705] = makeRes(14234, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_070_anim_add.aem", 24201, false));
-    resources[1706] = makeRes(14229, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_009_anim_add.aem", 24201, false));
-    resources[1707] = makeRes(14230, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_010_anim_add.aem", 24201, false));
-    resources[1708] = makeRes(14231, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_011_anim_add.aem", 24201, false));
-    resources[1709] = makeRes(14236, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_028_anim_add.aem", 24201, false));
-    resources[1710] = makeRes(14237, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_029_anim_add.aem", 24201, false));
-    resources[1711] = makeRes(14238, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_030_anim_add.aem", 24201, false));
-    resources[1712] = makeRes(6900, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_176_anim_add.aem", 24096, false));
-    resources[1713] = makeRes(6901, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_177_anim_add.aem", 24096, false));
-    resources[1714] = makeRes(6902, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_178_anim_add.aem", 24096, false));
-    resources[1715] = makeRes(6905, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_180_anim_add.aem", 24096, false));
-    resources[1716] = makeRes(6906, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_181_anim_add.aem", 24096, false));
-    resources[1717] = makeRes(14239, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_193_anim_add.aem", 24096, false));
-    resources[1718] = makeRes(14235, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_194_anim_add.aem", 24096, false));
-    resources[1719] = makeRes(14247, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive.aem", 65535, false));
-    resources[1720] = makeRes(14248, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive_add.aem", 0, false));
-    resources[1721] = makeRes(14249, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp.aem", 65535, false));
-    resources[1722] = makeRes(14250, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp_add.aem", 0, false));
-    resources[1723] = makeRes(14680, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a.aem", 65535, false));
-    resources[1724] = makeRes(14681, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a_add.aem", 0, false));
-    resources[1725] = makeRes(14682, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b.aem", 65535, false));
-    resources[1726] = makeRes(14683, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b_add.aem", 0, false));
-    resources[1727] = makeRes(14684, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a.aem", 65535, false));
-    resources[1728] = makeRes(14685, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a_add.aem", 0, false));
-    resources[1729] = makeRes(14293, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_anim.aem", 20125, false));
-    resources[1730] = makeRes(14294, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_add.aem", 20126, false));
-    resources[1731] = makeRes(15000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran.aem", 20004, false));
-    resources[1732] = makeRes(15016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_1.aem", 20004, false));
-    resources[1733] = makeRes(15020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_2.aem", 20004, false));
-    resources[1734] = makeRes(15002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_emissive.aem", 20003, false));
-    resources[1735] = makeRes(15001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_anim_add.aem", 3, false));
-    resources[1736] = makeRes(15003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_jump_anim_add.aem", 3, false));
-    resources[1737] = makeRes(15004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim.aem", 20032, false));
-    resources[1738] = makeRes(15017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_anim.aem", 20032, false));
-    resources[1739] = makeRes(15021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_anim.aem", 20032, false));
-    resources[1740] = makeRes(15006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_emissive.aem", 20031, false));
-    resources[1741] = makeRes(15024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_emissive.aem", 20031, false));
-    resources[1742] = makeRes(15025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_emissive.aem", 20031, false));
-    resources[1743] = makeRes(15005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim_add.aem", 20033, false));
-    resources[1744] = makeRes(15007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_jump_anim_add.aem", 20033, false));
-    resources[1745] = makeRes(15008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian.aem", 20005, false));
-    resources[1746] = makeRes(15018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_1.aem", 20005, false));
-    resources[1747] = makeRes(15022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_2.aem", 20005, false));
-    resources[1748] = makeRes(15010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_emissive.aem", 20006, false));
-    resources[1749] = makeRes(15009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_anim_add.aem", 34810, false));
-    resources[1750] = makeRes(15011, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_jump_anim_add.aem", 34810, false));
-    resources[1751] = makeRes(15012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian.aem", 20007, false));
-    resources[1752] = makeRes(15019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_1.aem", 20007, false));
-    resources[1753] = makeRes(15023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_2.aem", 20007, false));
-    resources[1754] = makeRes(15014, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_emissive.aem", 20008, false));
-    resources[1755] = makeRes(15013, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_anim_add.aem", 34600, false));
-    resources[1756] = makeRes(15015, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_jump_anim_add.aem", 34600, false));
-    resources[1757] = makeRes(15026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/khador_jump.aem", 27260, false));
-    resources[1758] = makeRes(15027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/hyper_drive.aem", 27262, false));
-    resources[1759] = makeRes(16917, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_001.aem", 20094, false));
-    resources[1760] = makeRes(16918, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_002.aem", 20094, false));
-    resources[1761] = makeRes(16919, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_003.aem", 20094, false));
-    resources[1762] = makeRes(16920, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_004.aem", 20094, false));
-    resources[1763] = makeRes(16926, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_junk.aem", 20023, false));
-    resources[1764] = makeRes(16927, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_junk.aem", 20103, false));
-    resources[1765] = makeRes(16992, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_003_terran.aem", 27254, false));
-    resources[1766] = makeRes(16990, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_001_midorian.aem", 27257, false));
-    resources[1767] = makeRes(16991, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_004_vossk.aem", 27255, false));
-    resources[1768] = makeRes(16993, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_002_nivelian.aem", 27256, false));
-    resources[1769] = makeRes(16994, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/wormhole_anim_add.aem", 20093, false));
-    resources[1770] = makeRes(16921, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void.aem", 20103, false));
-    resources[1771] = makeRes(16922, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_1.aem", 20103, false));
-    resources[1772] = makeRes(16923, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_2.aem", 20103, false));
-    resources[1773] = makeRes(16924, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_3.aem", 20103, false));
-    resources[1774] = makeRes(16925, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_explosion_anim.aem", 20103, false));
-    resources[1775] = makeRes(14311, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran.aem", 0, false));
-    resources[1776] = makeRes(14312, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_1.aem", 0, false));
-    resources[1777] = makeRes(14313, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_2.aem", 0, false));
-    resources[1778] = makeRes(14315, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_add.aem", 65535, false));
-    resources[1779] = makeRes(14316, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_emissive.aem", 65535, false));
-    resources[1780] = makeRes(18304, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_explosion_anim.aem", 0, false));
-    resources[1781] = makeRes(17060, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian.aem", 34811, false));
-    resources[1782] = makeRes(17062, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_1.aem", 34811, false));
-    resources[1783] = makeRes(17063, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_2.aem", 34811, false));
-    resources[1784] = makeRes(17064, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_engine_add.aem", 34810, false));
-    resources[1785] = makeRes(17061, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lights_add.aem", 65535, false));
-    resources[1786] = makeRes(18301, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_explosion_anim.aem", 34811, false));
-    resources[1787] = makeRes(17065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran.aem", 34811, false));
-    resources[1788] = makeRes(17066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_1.aem", 34811, false));
-    resources[1789] = makeRes(17067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_2.aem", 34811, false));
-    resources[1790] = makeRes(17069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_engine_add.aem", 3, false));
-    resources[1791] = makeRes(17074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_add.aem", 0, false));
-    resources[1792] = makeRes(17070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_emissive.aem", 0, false));
-    resources[1793] = makeRes(18302, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_explosion_anim.aem", 34811, false));
-    resources[1794] = makeRes(17049, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian.aem", 0, false));
-    resources[1795] = makeRes(17050, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_1.aem", 0, false));
-    resources[1796] = makeRes(17051, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_2.aem", 0, false));
-    resources[1797] = makeRes(17052, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container.aem", 0, false));
-    resources[1798] = makeRes(17053, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container_lod_1.aem", 0, false));
-    resources[1799] = makeRes(17054, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_engine_add.aem", 65535, false));
-    resources[1800] = makeRes(17055, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lights_emissive.aem", 65535, false));
-    resources[1801] = makeRes(18300, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_explosion_anim.aem", 0, false));
-    resources[1802] = makeRes(17038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_engine_add.aem", 65535, false));
-    resources[1803] = makeRes(18303, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_explosion_anim.aem", 0, false));
-    resources[1804] = makeRes(17139, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_1.aem", 0, false));
-    resources[1805] = makeRes(17140, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_2.aem", 0, false));
-    resources[1806] = makeRes(18713, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lights_emissive.aem", 65535, false));
-    resources[1807] = makeRes(17013, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk.aem", 0, false));
-    resources[1808] = makeRes(14363, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret.aem", 20135, false));
-    resources[1809] = makeRes(14364, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret_gun.aem", 20135, false));
-    resources[1810] = makeRes(14365, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_shield.aem", 20135, false));
-    resources[1811] = makeRes(14366, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_laser_anim_add.aem", 20158, false));
-    resources[1812] = makeRes(6770, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001.aem", 24075, false));
-    resources[1813] = makeRes(6771, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001_gun.aem", 24075, false));
-    resources[1814] = makeRes(6772, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002.aem", 24076, false));
-    resources[1815] = makeRes(6773, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002_gun.aem", 24076, false));
-    resources[1816] = makeRes(6774, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003.aem", 24077, false));
-    resources[1817] = makeRes(6775, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003_gun.aem", 24077, false));
-    resources[1818] = makeRes(18842, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004.aem", 24085, false));
-    resources[1819] = makeRes(18843, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun.aem", 24085, false));
-    resources[1820] = makeRes(18844, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_add.aem", 24086, false));
-    resources[1821] = makeRes(18845, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun_add.aem", 24086, false));
-    resources[1822] = makeRes(6805, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_anim.aem", 24081, false));
-    resources[1823] = makeRes(6806, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_gun_anim.aem", 24081, false));
-    resources[1824] = makeRes(6807, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002.aem", 24082, false));
-    resources[1825] = makeRes(6808, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002_gun.aem", 24082, false));
-    resources[1826] = makeRes(6809, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003.aem", 24083, false));
-    resources[1827] = makeRes(6810, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003_gun.aem", 24083, false));
-    resources[1828] = makeRes(14050, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001.aem", 20121, false));
-    resources[1829] = makeRes(14051, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001_add.aem", 20154, false));
-    resources[1830] = makeRes(14054, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002.aem", 20122, false));
-    resources[1831] = makeRes(14055, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002_add.aem", 20155, false));
-    resources[1832] = makeRes(14052, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003.aem", 20123, false));
-    resources[1833] = makeRes(14053, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003_add.aem", 20156, false));
-    resources[1834] = makeRes(6779, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_orbit.aem", 20029, false));
-    resources[1835] = makeRes(14288, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/beer.aem", 20111, false));
-    resources[1836] = makeRes(14289, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bra.aem", 20111, false));
-    resources[1837] = makeRes(14290, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/scanner_probe.aem", 20113, false));
-    resources[1838] = makeRes(14291, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_alpha.aem", 27253, false));
-    resources[1839] = makeRes(14292, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_add.aem", 27252, false));
-    resources[1840] = makeRes(14600, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_000_lookat_anim_add.aem", 24201, false));
-    resources[1841] = makeRes(14601, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_001_lookat_anim_add.aem", 24201, false));
-    resources[1842] = makeRes(14602, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_002_lookat_anim_add.aem", 24201, false));
-    resources[1843] = makeRes(14603, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_003_lookat_anim_add.aem", 24201, false));
-    resources[1844] = makeRes(14604, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_004_lookat_anim_add.aem", 24201, false));
-    resources[1845] = makeRes(14605, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_005_lookat_anim_add.aem", 24201, false));
-    resources[1846] = makeRes(14606, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_006_lookat_anim_add.aem", 24201, false));
-    resources[1847] = makeRes(14500, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_000_anim_add.aem", 24201, false));
-    resources[1848] = makeRes(14501, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_001_anim_add.aem", 24201, false));
-    resources[1849] = makeRes(14502, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_002_anim_add.aem", 24201, false));
-    resources[1850] = makeRes(14503, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_003_anim_add.aem", 24201, false));
-    resources[1851] = makeRes(14504, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_004_anim_add.aem", 24201, false));
-    resources[1852] = makeRes(14505, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_005_anim_add.aem", 24201, false));
-    resources[1853] = makeRes(14506, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_006_anim_add.aem", 24201, false));
-    resources[1854] = makeRes(14507, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_007_anim_add.aem", 24201, false));
-    resources[1855] = makeRes(14508, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_008_anim_add.aem", 24201, false));
-    resources[1856] = makeRes(14509, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_009_anim_add.aem", 24096, false));
-    resources[1857] = makeRes(14510, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_010_anim_add.aem", 24096, false));
-    resources[1858] = makeRes(18070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
-    resources[1859] = makeRes(18071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
-    resources[1860] = makeRes(18072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
-    resources[1861] = makeRes(18073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27283, false));
-    resources[1862] = makeRes(18074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
-    resources[1863] = makeRes(18075, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
-    resources[1864] = makeRes(18076, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
-    resources[1865] = makeRes(18077, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
-    resources[1866] = makeRes(18078, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
-    resources[1867] = makeRes(18079, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27289, false));
-    resources[1868] = makeRes(18080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27290, false));
-    resources[1869] = makeRes(27281, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
-    resources[1870] = makeRes(18082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
-    resources[1872] = makeRes(18084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
-    resources[1873] = makeRes(18085, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
-    resources[1875] = makeRes(18087, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
-    resources[1876] = makeRes(27286, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
-    resources[1878] = makeRes(18181, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_001.aem", 20027, false));
-    resources[1879] = makeRes(18182, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_002.aem", 20027, false));
-    resources[1880] = makeRes(20027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_003.aem", 20027, false));
-    resources[1881] = makeRes(18184, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_004.aem", 20027, false));
-    resources[1882] = makeRes(20027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_005.aem", 20027, false));
-    resources[1884] = makeRes(18187, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_007.aem", 20027, false));
-    resources[1885] = makeRes(20027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_008.aem", 20027, false));
-    resources[1886] = makeRes(18189, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_009.aem", 20027, false));
-    resources[1888] = makeRes(18191, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_011.aem", 20027, false));
-    resources[1889] = makeRes(18192, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_012.aem", 20027, false));
-    resources[1891] = makeRes(18194, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_014.aem", 20027, false));
-    resources[1892] = makeRes(18195, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_015.aem", 20027, false));
-    resources[1893] = makeRes(18196, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_016.aem", 20027, false));
-    resources[1894] = makeRes(18197, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_017.aem", 20027, false));
-    resources[1895] = makeRes(18198, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_018.aem", 20027, false));
-    resources[1896] = makeRes(18199, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_019.aem", 20027, false));
-    resources[1897] = makeRes(18200, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_020.aem", 27305, false));
-    resources[1898] = makeRes(18201, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_021.aem", 27305, false));
-    resources[1899] = makeRes(18202, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_022.aem", 27305, false));
-    resources[1900] = makeRes(18204, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_024.aem", 27306, false));
-    resources[1901] = makeRes(18205, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_025.aem", 27306, false));
-    resources[1902] = makeRes(18206, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_026.aem", 27306, false));
-    resources[1903] = makeRes(17900, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_glow_add.aem", 34811, false));
-    resources[1904] = makeRes(17901, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_glow_add.aem", 34811, false));
-    resources[1905] = makeRes(17902, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_glow_add.aem", 34811, false));
-    resources[1906] = makeRes(17903, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_glow_add.aem", 34811, false));
-    resources[1907] = makeRes(17904, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1908] = makeRes(17905, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_glow_add.aem", 34811, false));
-    resources[1909] = makeRes(17906, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_glow_add.aem", 34811, false));
-    resources[1910] = makeRes(17907, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_glow_add.aem", 34811, false));
-    resources[1911] = makeRes(17908, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_glow_add.aem", 34811, false));
-    resources[1912] = makeRes(17909, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_glow_add.aem", 34811, false));
-    resources[1913] = makeRes(17910, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_glow_add.aem", 34811, false));
-    resources[1914] = makeRes(17911, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_glow_add.aem", 34811, false));
-    resources[1915] = makeRes(17912, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1916] = makeRes(17916, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1917] = makeRes(17917, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_glow_add.aem", 34811, false));
-    resources[1918] = makeRes(17918, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1919] = makeRes(17919, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_glow_add.aem", 34811, false));
-    resources[1920] = makeRes(17920, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_glow_add.aem", 34811, false));
-    resources[1921] = makeRes(17921, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1922] = makeRes(17922, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_glow_add.aem", 34811, false));
-    resources[1923] = makeRes(17923, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_glow_add.aem", 34811, false));
-    resources[1924] = makeRes(17924, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_glow_add.aem", 34811, false));
-    resources[1925] = makeRes(17925, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_glow_add.aem", 34811, false));
-    resources[1926] = makeRes(17926, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_glow_add.aem", 34811, false));
-    resources[1927] = makeRes(17927, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_glow_add.aem", 34811, false));
-    resources[1928] = makeRes(17928, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_glow_add.aem", 34811, false));
-    resources[1929] = makeRes(17929, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_glow_add.aem", 34811, false));
-    resources[1930] = makeRes(17930, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_glow_add.aem", 34811, false));
-    resources[1931] = makeRes(17931, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1932] = makeRes(17932, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_glow_add.aem", 34811, false));
-    resources[1933] = makeRes(17933, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_glow_add.aem", 34811, false));
-    resources[1934] = makeRes(17934, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_glow_add.aem", 34811, false));
-    resources[1935] = makeRes(17935, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_glow_add.aem", 34811, false));
-    resources[1936] = makeRes(17936, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_glow_add.aem", 34811, false));
-    resources[1937] = makeRes(17937, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_glow_add.aem", 0, false));
-    resources[1938] = makeRes(17938, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_glow_add.aem", 0, false));
-    resources[1939] = makeRes(17940, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_glow_add.aem", 0, false));
-    resources[1940] = makeRes(17942, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_engine_glow_add.aem", 34811, false));
-    resources[1941] = makeRes(17943, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_engine_glow_add.aem", 34811, false));
-    resources[1942] = makeRes(17944, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_glow_add.aem", 32544, false));
-    resources[1943] = makeRes(17945, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_glow_add.aem", 32545, false));
-    resources[1944] = makeRes(17946, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_glow_add.aem", 32546, false));
-    resources[1945] = makeRes(17947, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_glow_add.aem", 32547, false));
-    resources[1946] = makeRes(17948, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_glow_add.aem", 32548, false));
-    resources[1947] = makeRes(17949, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_glow_add.aem", 32549, false));
-    resources[1948] = makeRes(17951, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_glow_add.aem", 32551, false));
-    resources[1949] = makeRes(17952, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_glow_add.aem", 32552, false));
-    resources[1950] = makeRes(17954, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_glow_add.aem", 32554, false));
-    resources[1951] = makeRes(17955, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_engine_glow_add.aem", 34811, false));
-    resources[1952] = makeRes(17956, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_engine_glow_add.aem", 34811, false));
-    resources[1953] = makeRes(17957, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_engine_glow_add.aem", 34811, false));
-    resources[1954] = makeRes(17958, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_engine_glow_add.aem", 34811, false));
-    resources[1955] = makeRes(17959, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_engine_glow_add.aem", 34811, false));
-    resources[1956] = makeRes(17960, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_engine_glow_add.aem", 34811, false));
-    resources[1957] = makeRes(17961, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_engine_glow_add.aem", 32561, false));
-    resources[1958] = makeRes(17962, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_062_prototype_engine_glow_add.aem", 32562, false));
-    resources[1959] = makeRes(17963, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_engine_glow_add.aem", 32563, false));
-    resources[1960] = makeRes(17000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian.aem", 0, false));
-    resources[1961] = makeRes(17100, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_1.aem", 0, false));
-    resources[1962] = makeRes(17101, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_2.aem", 0, false));
-    resources[1963] = makeRes(18000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_add.aem", 34600, false));
-    resources[1964] = makeRes(18700, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lights_add.aem", 34600, false));
-    resources[1965] = makeRes(17001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran.aem", 0, false));
-    resources[1966] = makeRes(17103, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_1.aem", 0, false));
-    resources[1967] = makeRes(17104, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_2.aem", 0, false));
-    resources[1968] = makeRes(18001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_add.aem", 3, false));
-    resources[1969] = makeRes(18701, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lights_add.aem", 3, false));
-    resources[1970] = makeRes(17002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates.aem", 0, false));
-    resources[1971] = makeRes(17106, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_1.aem", 0, false));
-    resources[1972] = makeRes(17107, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_2.aem", 0, false));
-    resources[1973] = makeRes(18002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_add.aem", 34811, false));
-    resources[1974] = makeRes(18702, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lights_add.aem", 34811, false));
-    resources[1975] = makeRes(17003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian.aem", 0, false));
-    resources[1976] = makeRes(17109, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_1.aem", 0, false));
-    resources[1977] = makeRes(17110, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_2.aem", 0, false));
-    resources[1978] = makeRes(18003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_add.aem", 34600, false));
-    resources[1979] = makeRes(18703, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lights_add.aem", 34600, false));
-    resources[1980] = makeRes(17004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian.aem", 0, false));
-    resources[1981] = makeRes(17112, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_1.aem", 0, false));
-    resources[1982] = makeRes(17113, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_2.aem", 0, false));
-    resources[1983] = makeRes(18004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_add.aem", 34810, false));
-    resources[1984] = makeRes(18704, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lights_add.aem", 34810, false));
-    resources[1985] = makeRes(17005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran.aem", 0, false));
-    resources[1986] = makeRes(17115, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_1.aem", 0, false));
-    resources[1987] = makeRes(17116, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_2.aem", 0, false));
-    resources[1988] = makeRes(18005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_add.aem", 3, false));
-    resources[1989] = makeRes(18705, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lights_add.aem", 3, false));
-    resources[1990] = makeRes(17006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian.aem", 0, false));
-    resources[1991] = makeRes(17118, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_1.aem", 0, false));
-    resources[1992] = makeRes(17119, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_2.aem", 0, false));
-    resources[1993] = makeRes(18006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_add.aem", 34600, false));
-    resources[1994] = makeRes(18706, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lights_add.aem", 34600, false));
-    resources[1995] = makeRes(17007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran.aem", 0, false));
-    resources[1996] = makeRes(17121, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_1.aem", 0, false));
-    resources[1997] = makeRes(17122, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_2.aem", 0, false));
-    resources[1998] = makeRes(18007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_add.aem", 3, false));
-    resources[1999] = makeRes(18707, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lights_add.aem", 3, false));
-    resources[2000] = makeRes(17008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void.aem", 0, false));
-    resources[2001] = makeRes(17124, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_1.aem", 0, false));
-    resources[2002] = makeRes(17125, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_2.aem", 0, false));
-    resources[2003] = makeRes(18008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_add.aem", 0, false));
-    resources[2004] = makeRes(18708, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lights_add.aem", 0, false));
-    resources[2005] = makeRes(17009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk.aem", 0, false));
-    resources[2006] = makeRes(17127, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_1.aem", 0, false));
-    resources[2007] = makeRes(17128, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_2.aem", 0, false));
-    resources[2008] = makeRes(18009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_add.aem", 65535, false));
-    resources[2009] = makeRes(18709, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lights_add.aem", 65535, false));
-    resources[2010] = makeRes(17010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran.aem", 0, false));
-    resources[2011] = makeRes(17130, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_1.aem", 0, false));
-    resources[2012] = makeRes(17131, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_2.aem", 0, false));
-    resources[2013] = makeRes(18010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_add.aem", 3, false));
-    resources[2014] = makeRes(18710, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lights_add.aem", 3, false));
-    resources[2015] = makeRes(17011, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates.aem", 0, false));
-    resources[2016] = makeRes(17133, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_1.aem", 0, false));
-    resources[2017] = makeRes(17134, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_2.aem", 0, false));
-    resources[2018] = makeRes(18011, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_add.aem", 34811, false));
-    resources[2019] = makeRes(18711, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lights_add.aem", 34811, false));
-    resources[2020] = makeRes(17012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian.aem", 0, false));
-    resources[2021] = makeRes(17136, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_1.aem", 0, false));
-    resources[2022] = makeRes(17137, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_2.aem", 0, false));
-    resources[2023] = makeRes(18012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_add.aem", 34810, false));
-    resources[2024] = makeRes(18712, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lights_add.aem", 34810, false));
-    resources[2025] = makeRes(17016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian.aem", 0, false));
-    resources[2026] = makeRes(17148, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_1.aem", 0, false));
-    resources[2027] = makeRes(17149, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_2.aem", 0, false));
-    resources[2028] = makeRes(18016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_add.aem", 34810, false));
-    resources[2029] = makeRes(18716, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lights_add.aem", 34810, false));
-    resources[2030] = makeRes(17017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran.aem", 0, false));
-    resources[2031] = makeRes(17151, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_1.aem", 0, false));
-    resources[2032] = makeRes(17152, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_2.aem", 0, false));
-    resources[2033] = makeRes(18017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_add.aem", 3, false));
-    resources[2034] = makeRes(18717, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lights_add.aem", 3, false));
-    resources[2035] = makeRes(17018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian.aem", 0, false));
-    resources[2036] = makeRes(17154, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_1.aem", 0, false));
-    resources[2037] = makeRes(17155, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_2.aem", 0, false));
-    resources[2038] = makeRes(18018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_add.aem", 34810, false));
-    resources[2039] = makeRes(18718, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lights_add.aem", 34810, false));
-    resources[2040] = makeRes(17019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian.aem", 0, false));
-    resources[2041] = makeRes(17157, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_1.aem", 0, false));
-    resources[2042] = makeRes(17158, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_2.aem", 0, false));
-    resources[2043] = makeRes(18019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_add.aem", 34600, false));
-    resources[2044] = makeRes(18719, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lights_add.aem", 34600, false));
-    resources[2045] = makeRes(17020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian.aem", 0, false));
-    resources[2046] = makeRes(17160, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_1.aem", 0, false));
-    resources[2047] = makeRes(17161, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_2.aem", 0, false));
-    resources[2048] = makeRes(18020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_add.aem", 34600, false));
-    resources[2049] = makeRes(18720, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lights_add.aem", 34600, false));
-    resources[2050] = makeRes(17021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian.aem", 0, false));
-    resources[2051] = makeRes(17163, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_1.aem", 0, false));
-    resources[2052] = makeRes(17164, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_2.aem", 0, false));
-    resources[2053] = makeRes(18021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_add.aem", 34810, false));
-    resources[2054] = makeRes(18721, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lights_add.aem", 34810, false));
-    resources[2055] = makeRes(17022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran.aem", 0, false));
-    resources[2056] = makeRes(17166, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_1.aem", 0, false));
-    resources[2057] = makeRes(17167, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_2.aem", 0, false));
-    resources[2058] = makeRes(18022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_add.aem", 3, false));
-    resources[2059] = makeRes(18722, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lights_add.aem", 3, false));
-    resources[2060] = makeRes(17023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates.aem", 0, false));
-    resources[2061] = makeRes(17169, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_1.aem", 0, false));
-    resources[2062] = makeRes(17170, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_2.aem", 0, false));
-    resources[2063] = makeRes(18023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_add.aem", 34811, false));
-    resources[2064] = makeRes(18723, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lights_add.aem", 34811, false));
-    resources[2065] = makeRes(17024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates.aem", 0, false));
-    resources[2066] = makeRes(17172, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_1.aem", 0, false));
-    resources[2067] = makeRes(17173, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_2.aem", 0, false));
-    resources[2068] = makeRes(18024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_add.aem", 34811, false));
-    resources[2069] = makeRes(18724, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lights_add.aem", 34811, false));
-    resources[2070] = makeRes(17025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates.aem", 0, false));
-    resources[2071] = makeRes(17175, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_1.aem", 0, false));
-    resources[2072] = makeRes(17176, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_2.aem", 0, false));
-    resources[2073] = makeRes(18025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_add.aem", 34811, false));
-    resources[2074] = makeRes(18725, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lights_add.aem", 34811, false));
-    resources[2075] = makeRes(17026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran.aem", 0, false));
-    resources[2076] = makeRes(17178, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_1.aem", 0, false));
-    resources[2077] = makeRes(17179, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_2.aem", 0, false));
-    resources[2078] = makeRes(18026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_add.aem", 3, false));
-    resources[2079] = makeRes(18726, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lights_add.aem", 3, false));
-    resources[2080] = makeRes(17027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran.aem", 0, false));
-    resources[2081] = makeRes(17181, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_1.aem", 0, false));
-    resources[2082] = makeRes(17182, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_2.aem", 0, false));
-    resources[2083] = makeRes(18027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_add.aem", 3, false));
-    resources[2084] = makeRes(18727, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lights_add.aem", 3, false));
-    resources[2085] = makeRes(17028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran.aem", 0, false));
-    resources[2086] = makeRes(17184, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_1.aem", 0, false));
-    resources[2087] = makeRes(17185, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_2.aem", 0, false));
-    resources[2088] = makeRes(18028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_add.aem", 3, false));
-    resources[2089] = makeRes(18728, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lights_add.aem", 3, false));
-    resources[2090] = makeRes(17029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates.aem", 0, false));
-    resources[2091] = makeRes(17187, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_1.aem", 0, false));
-    resources[2092] = makeRes(17188, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_2.aem", 0, false));
-    resources[2093] = makeRes(18029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_add.aem", 34811, false));
-    resources[2094] = makeRes(18729, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lights_add.aem", 34811, false));
-    resources[2095] = makeRes(17030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian.aem", 0, false));
-    resources[2096] = makeRes(17190, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_1.aem", 0, false));
-    resources[2097] = makeRes(17191, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_2.aem", 0, false));
-    resources[2098] = makeRes(18030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_add.aem", 34600, false));
-    resources[2099] = makeRes(18730, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lights_add.aem", 34600, false));
-    resources[2100] = makeRes(17031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian.aem", 0, false));
-    resources[2101] = makeRes(17193, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_1.aem", 0, false));
-    resources[2102] = makeRes(17194, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_2.aem", 0, false));
-    resources[2103] = makeRes(18031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_add.aem", 34810, false));
-    resources[2104] = makeRes(18731, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lights_add.aem", 34810, false));
-    resources[2105] = makeRes(17032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates.aem", 0, false));
-    resources[2106] = makeRes(17196, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_1.aem", 0, false));
-    resources[2107] = makeRes(17197, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_2.aem", 0, false));
-    resources[2108] = makeRes(18032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_add.aem", 34811, false));
-    resources[2109] = makeRes(18732, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lights_add.aem", 34811, false));
-    resources[2110] = makeRes(17033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran.aem", 0, false));
-    resources[2111] = makeRes(17199, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_1.aem", 0, false));
-    resources[2112] = makeRes(17200, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_2.aem", 0, false));
-    resources[2113] = makeRes(18033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_add.aem", 3, false));
-    resources[2114] = makeRes(18733, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lights_add.aem", 3, false));
-    resources[2115] = makeRes(17034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran.aem", 0, false));
-    resources[2116] = makeRes(17202, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_1.aem", 0, false));
-    resources[2117] = makeRes(17203, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_2.aem", 0, false));
-    resources[2118] = makeRes(18034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_add.aem", 3, false));
-    resources[2119] = makeRes(18734, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lights_add.aem", 3, false));
-    resources[2120] = makeRes(17035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian.aem", 0, false));
-    resources[2121] = makeRes(17205, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_1.aem", 0, false));
-    resources[2122] = makeRes(17206, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_2.aem", 0, false));
-    resources[2123] = makeRes(18035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_add.aem", 34810, false));
-    resources[2124] = makeRes(18735, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lights_add.aem", 34810, false));
-    resources[2125] = makeRes(17036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran.aem", 0, false));
-    resources[2126] = makeRes(17208, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_1.aem", 0, false));
-    resources[2127] = makeRes(17209, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_2.aem", 0, false));
-    resources[2128] = makeRes(18036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_add.aem", 3, false));
-    resources[2129] = makeRes(18736, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lights_add.aem", 3, false));
-    resources[2130] = makeRes(17211, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science.aem", 65535, false));
-    resources[2131] = makeRes(17215, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_lights_anim_add.aem", 32537, false));
-    resources[2132] = makeRes(18037, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_add.aem", 32537, false));
-    resources[2133] = makeRes(17216, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science.aem", 65535, false));
-    resources[2134] = makeRes(18738, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_lights_anim_add.aem", 32538, false));
-    resources[2135] = makeRes(18038, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_add.aem", 32538, false));
-    resources[2136] = makeRes(17221, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk.aem", 0, false));
-    resources[2137] = makeRes(17222, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_1.aem", 0, false));
-    resources[2138] = makeRes(17223, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_2.aem", 0, false));
-    resources[2139] = makeRes(18739, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lights_add.aem", 32539, false));
-    resources[2140] = makeRes(18039, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_engine_add.aem", 32539, false));
-    resources[2141] = makeRes(17227, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science.aem", 65535, false));
-    resources[2142] = makeRes(17231, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_lights_add.aem", 32540, false));
-    resources[2143] = makeRes(18040, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_add.aem", 32540, false));
-    resources[2144] = makeRes(17233, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk.aem", 0, false));
-    resources[2145] = makeRes(17234, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_1.aem", 0, false));
-    resources[2146] = makeRes(17235, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_2.aem", 0, false));
-    resources[2147] = makeRes(18741, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lights_add.aem", 32541, false));
-    resources[2148] = makeRes(18041, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_engine_add.aem", 32541, false));
-    resources[2149] = makeRes(17239, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro.aem", 0, false));
-    resources[2150] = makeRes(17240, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_1.aem", 0, false));
-    resources[2151] = makeRes(17241, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_2.aem", 0, false));
-    resources[2152] = makeRes(17243, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lights_add.aem", 32542, false));
-    resources[2153] = makeRes(17245, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro.aem", 0, false));
-    resources[2154] = makeRes(17246, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_1.aem", 0, false));
-    resources[2155] = makeRes(17247, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_2.aem", 0, false));
-    resources[2156] = makeRes(17249, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lights_add.aem", 32543, false));
+    resources[1559] = makeRes(
+        14379, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian.aem", 24071,
+                                                false));
+    resources[1560] = makeRes(
+        14310, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_add.aem", 20069,
+                                                false));
+    resources[1561] = makeRes(
+        14264, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_alpha.aem", 20106,
+                                                false));
+    resources[1562] = makeRes(
+        14377, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk.aem", 24074, false));
+    resources[1563] = makeRes(
+        14304, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_vossk_anim_add.aem", 20071,
+                                                false));
+    resources[1564] = makeRes(
+        14378, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian.aem", 24073,
+                                                false));
+    resources[1565] = makeRes(
+        14307, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_alpha.aem", 20074,
+                                                false));
+    resources[1566] = makeRes(
+        14308, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_add.aem", 20075,
+                                                false));
+    resources[1567] = makeRes(
+        14376, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran.aem", 24070, false));
+    resources[1568] = makeRes(
+        14301, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_alpha.aem", 20077,
+                                                false));
+    resources[1569] = makeRes(
+        14302, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_add.aem", 20078,
+                                                false));
+    resources[1570] = makeRes(
+        14354, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation.aem",
+                                                20157, false));
+    resources[1571] = makeRes(14355, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_emissive.aem", 27138,
+                                  false));
+    resources[1572] = makeRes(14356, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_alpha.aem", 27139,
+                                  false));
+    resources[1573] = makeRes(
+        14357, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_battlestation_add.aem",
+                                                27140, false));
+    resources[1574] = makeRes(14358, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_emissive.aem", 27141,
+                                  false));
+    resources[1575] = makeRes(
+        14359, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_alpha.aem", 27142, false));
+    resources[1576] = makeRes(14360, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science_anim_add.aem", 27143,
+                                  false));
+    resources[1577] = makeRes(
+        14362, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/hangars/v_hangar_deep_science.aem",
+                                                27144, false));
+    resources[1578] = makeRes(
+        14265, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim.aem",
+                                                24070, false));
+    resources[1579] = makeRes(
+        14266, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim.aem",
+                                                24070, false));
+    resources[1580] = makeRes(
+        14267, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim.aem",
+                                                24070, false));
+    resources[1581] = makeRes(
+        14268, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim.aem",
+                                                24070, false));
+    resources[1582] = makeRes(
+        14269, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_a_anim_add.aem",
+                                                20078, false));
+    resources[1583] = makeRes(
+        14270, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_b_anim_add.aem",
+                                                20078, false));
+    resources[1584] = makeRes(
+        14271, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_c_anim_add.aem",
+                                                20078, false));
+    resources[1585] = makeRes(
+        14272, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_bot_d_anim_add.aem",
+                                                20078, false));
+    resources[1586] = makeRes(
+        14273, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim.aem",
+                                                24073, false));
+    resources[1587] = makeRes(
+        14274, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim.aem",
+                                                24073, false));
+    resources[1588] = makeRes(
+        14275, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim.aem",
+                                                24073, false));
+    resources[1589] = makeRes(
+        14276, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_a_anim_add.aem",
+                                                20075, false));
+    resources[1590] = makeRes(
+        14277, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_b_anim_add.aem",
+                                                20075, false));
+    resources[1591] = makeRes(
+        14278, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_bot_c_anim_add.aem",
+                                                20075, false));
+    resources[1592] = makeRes(
+        14380, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1.aem", 24070, false));
+    resources[1593] = makeRes(
+        14381, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x1_shadow_alpha.aem",
+                                                20077, false));
+    resources[1594] = makeRes(
+        14382, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2.aem", 24070, false));
+    resources[1595] = makeRes(
+        14383, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x2_shadow_alpha.aem",
+                                                20077, false));
+    resources[1596] = makeRes(
+        14384, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3.aem", 24070, false));
+    resources[1597] = makeRes(
+        14385, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x3_shadow_alpha.aem",
+                                                20077, false));
+    resources[1598] = makeRes(
+        14386, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4.aem", 24070, false));
+    resources[1599] = makeRes(
+        14387, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x4_shadow_alpha.aem",
+                                                20077, false));
+    resources[1600] = makeRes(
+        14388, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5.aem", 24070, false));
+    resources[1601] = makeRes(
+        14389, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x5_shadow_alpha.aem",
+                                                20077, false));
+    resources[1602] = makeRes(
+        14390, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_terran_x6.aem", 24070, false));
+    resources[1603] = makeRes(
+        14391, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x1.aem", 24071,
+                                                false));
+    resources[1604] = makeRes(
+        14392, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x1_shadow_alpha.aem", 20106, false));
+    resources[1605] = makeRes(
+        14393, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x2.aem", 24071,
+                                                false));
+    resources[1606] = makeRes(
+        14394, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x2_shadow_alpha.aem", 20106, false));
+    resources[1607] = makeRes(
+        14395, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x3.aem", 24071,
+                                                false));
+    resources[1608] = makeRes(
+        14396, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x3_shadow_alpha.aem", 20106, false));
+    resources[1609] = makeRes(
+        14397, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x4.aem", 24071,
+                                                false));
+    resources[1610] = makeRes(
+        14398, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x4_shadow_alpha.aem", 20106, false));
+    resources[1611] = makeRes(
+        14399, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071,
+                                                false));
+    resources[1612] = makeRes(
+        14400, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
+    resources[1613] = makeRes(
+        14401, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_midorian_x5.aem", 24071,
+                                                false));
+    resources[1614] = makeRes(
+        14402, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_midorian_x5_shadow_alpha.aem", 20106, false));
+    resources[1615] = makeRes(
+        14403, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x1.aem", 24073,
+                                                false));
+    resources[1616] = makeRes(
+        14404, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_nivelian_x1_shadow_alpha.aem", 20074, false));
+    resources[1617] = makeRes(
+        14405, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x2.aem", 24073,
+                                                false));
+    resources[1618] = makeRes(
+        14406, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_nivelian_x2_shadow_alpha.aem", 20074, false));
+    resources[1619] = makeRes(
+        14407, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x3.aem", 24073,
+                                                false));
+    resources[1620] = makeRes(
+        14408, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_nivelian_x3_shadow_alpha.aem", 20074, false));
+    resources[1621] = makeRes(
+        14409, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x4.aem", 24073,
+                                                false));
+    resources[1622] = makeRes(
+        14410, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_nivelian_x4_shadow_alpha.aem", 20074, false));
+    resources[1623] = makeRes(
+        14411, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/hangars/hangar_nivelian_x5.aem", 24073,
+                                                false));
+    resources[1624] = makeRes(
+        14412, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/hangars/hangar_nivelian_x5_shadow_alpha.aem", 20074, false));
+    resources[1625] = makeRes(
+        14025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran.aem", 20056, false));
+    resources[1626] = makeRes(
+        14026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_add.aem", 20057, false));
+    resources[1627] = makeRes(
+        14027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_alpha.aem", 20058, false));
+    resources[1628] = makeRes(
+        14280, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim.aem", 20056, false));
+    resources[1629] = makeRes(
+        14279, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_terran_bot_anim_add.aem", 20057,
+                                                false));
+    resources[1630] = makeRes(
+        14028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk.aem", 20059, false));
+    resources[1631] = makeRes(
+        14029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_vossk_anim_add.aem", 20060,
+                                                false));
+    resources[1632] = makeRes(
+        14031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian.aem", 20062, false));
+    resources[1633] = makeRes(
+        14032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_anim_add.aem", 20063,
+                                                false));
+    resources[1634] = makeRes(
+        14033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_nivelian_alpha.aem", 20064,
+                                                false));
+    resources[1635] = makeRes(
+        14034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_anim.aem", 20065, false));
+    resources[1636] = makeRes(
+        14035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_add.aem", 20066, false));
+    resources[1637] = makeRes(
+        14036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha.aem", 20067,
+                                                false));
+    resources[1638] = makeRes(
+        14038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_midorian_alpha_anim.aem", 20067,
+                                                false));
+    resources[1639] = makeRes(
+        14725, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_m.aem", 20119,
+                                                false));
+    resources[1640] = makeRes(
+        14724, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_terran_f.aem", 20118,
+                                                false));
+    resources[1641] = makeRes(
+        14726, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_vossk.aem", 20120, false));
+    resources[1642] = makeRes(
+        14723, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_nivelian.aem", 20117,
+                                                false));
+    resources[1643] = makeRes(
+        14722, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_multipod.aem", 20116,
+                                                false));
+    resources[1644] = makeRes(
+        14720, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_bobolan.aem", 20114, false));
+    resources[1645] = makeRes(
+        14721, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_grey.aem", 20115, false));
+    resources[1646] = makeRes(
+        14281, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
+    resources[1647] = makeRes(
+        14282, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
+    resources[1648] = makeRes(
+        14283, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
+    resources[1649] = makeRes(
+        14284, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_glow.aem", 65535, false));
+    resources[1650] = makeRes(
+        14348, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/bars/bar_visitor_shadow.aem", 65535,
+                                                false));
+    resources[1651] = makeRes(
+        17800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_000.aem", 20009, false));
+    resources[1652] = makeRes(
+        17801, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_001.aem", 20010, false));
+    resources[1653] = makeRes(
+        17802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_002.aem", 20011, false));
+    resources[1654] = makeRes(
+        17803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_003.aem", 20012, false));
+    resources[1655] = makeRes(
+        17804, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_004.aem", 20013, false));
+    resources[1656] = makeRes(
+        17805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_005.aem", 20014, false));
+    resources[1657] = makeRes(
+        17806, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_006.aem", 20015, false));
+    resources[1658] = makeRes(
+        17807, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_007.aem", 20016, false));
+    resources[1659] = makeRes(
+        17808, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_008.aem", 20017, false));
+    resources[1660] = makeRes(
+        17809, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_009.aem", 20018, false));
+    resources[1661] = makeRes(
+        17810, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_010.aem", 20019, false));
+    resources[1662] = makeRes(
+        17811, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_011.aem", 20130,
+                                                false));
+    resources[1663] = makeRes(
+        17812, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_012.aem", 20131,
+                                                false));
+    resources[1664] = makeRes(
+        17813, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 20132,
+                                                false));
+    resources[1665] = makeRes(
+        17814, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/skyboxes/v_skybox_013.aem", 27149,
+                                                false));
+    resources[1666] = makeRes(
+        17850, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20009, false));
+    resources[1667] = makeRes(
+        17851, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20010, false));
+    resources[1668] = makeRes(
+        17852, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_stars.aem", 20011, false));
+    resources[1669] = makeRes(
+        6768, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 65535, false));
+    resources[1670] = makeRes(
+        16916, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_005_void.aem", 65535,
+                                                false));
+    resources[1671] = makeRes(
+        16805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_emp_anim_lookat_add.aem",
+                                                27300, false));
+    resources[1672] = makeRes(
+        16820, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_add.aem", 27252,
+                                                false));
+    resources[1673] = makeRes(
+        16821, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_anim_lookat_alpha.aem", 27253,
+                                                false));
+    resources[1674] = makeRes(16806, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem",
+                                  20151, false));
+    resources[1675] = makeRes(16807, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem",
+                                  20152, false));
+    resources[1676] = makeRes(16808, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/fx/v_scattergun_000_explosion_lookat_anim_add.aem",
+                                  20153, false));
+    resources[1677] = makeRes(
+        6754, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_000_anim_add.aem", 24201,
+                                               false));
+    resources[1678] = makeRes(
+        6755, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_001_anim_add.aem", 24201,
+                                               false));
+    resources[1679] = makeRes(
+        6756, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_002_anim_add.aem", 24201,
+                                               false));
+    resources[1680] = makeRes(
+        6760, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_003_anim_add.aem", 24201,
+                                               false));
+    resources[1681] = makeRes(
+        6761, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_004_anim_add.aem", 24201,
+                                               false));
+    resources[1682] = makeRes(
+        6762, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_005_anim_add.aem", 24201,
+                                               false));
+    resources[1683] = makeRes(
+        6763, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_006_anim_add.aem", 24201,
+                                               false));
+    resources[1684] = makeRes(
+        6764, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_007_anim_add.aem", 24201,
+                                               false));
+    resources[1685] = makeRes(
+        6765, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_008_anim_add.aem", 24201,
+                                               false));
+    resources[1686] = makeRes(
+        14297, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_183_anim_add.aem",
+                                                24096, false));
+    resources[1687] = makeRes(
+        6788, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_012_anim_add.aem", 24201,
+                                               false));
+    resources[1688] = makeRes(
+        6789, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_013_anim_add.aem", 24201,
+                                               false));
+    resources[1689] = makeRes(
+        6790, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_014_anim_add.aem", 24201,
+                                               false));
+    resources[1690] = makeRes(
+        6791, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_015_anim_add.aem", 24201,
+                                               false));
+    resources[1691] = makeRes(
+        6792, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_016_anim_add.aem", 24201,
+                                               false));
+    resources[1692] = makeRes(
+        6793, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_017_anim_add.aem", 24201,
+                                               false));
+    resources[1693] = makeRes(
+        6794, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_018_anim_add.aem", 24201,
+                                               false));
+    resources[1694] = makeRes(
+        6795, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_019_anim_add.aem", 24201,
+                                               false));
+    resources[1695] = makeRes(
+        6796, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_020_anim_add.aem", 24201,
+                                               false));
+    resources[1696] = makeRes(
+        6797, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_021_anim_add.aem", 24201,
+                                               false));
+    resources[1697] = makeRes(
+        6798, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_022_anim_add.aem", 24201,
+                                               false));
+    resources[1698] = makeRes(
+        6799, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_023_anim_add.aem", 24201,
+                                               false));
+    resources[1699] = makeRes(
+        6800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_024_anim_add.aem", 24201,
+                                               false));
+    resources[1701] = makeRes(
+        6802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_026_anim_add.aem", 24201,
+                                               false));
+    resources[1702] = makeRes(
+        6803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_027_anim_add.aem", 24201,
+                                               false));
+    resources[1703] = makeRes(
+        14232, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_068_anim_add.aem", 24201,
+                                                false));
+    resources[1704] = makeRes(
+        14233, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_069_anim_add.aem", 24201,
+                                                false));
+    resources[1705] = makeRes(
+        14234, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_070_anim_add.aem", 24201,
+                                                false));
+    resources[1706] = makeRes(
+        14229, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_009_anim_add.aem", 24201,
+                                                false));
+    resources[1707] = makeRes(
+        14230, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_010_anim_add.aem", 24201,
+                                                false));
+    resources[1708] = makeRes(
+        14231, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_011_anim_add.aem", 24201,
+                                                false));
+    resources[1709] = makeRes(
+        14236, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_028_anim_add.aem", 24201,
+                                                false));
+    resources[1710] = makeRes(
+        14237, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_029_anim_add.aem", 24201,
+                                                false));
+    resources[1711] = makeRes(
+        14238, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/projectile_030_anim_add.aem", 24201,
+                                                false));
+    resources[1712] = makeRes(
+        6900, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_176_anim_add.aem", 24096,
+                                               false));
+    resources[1713] = makeRes(
+        6901, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_177_anim_add.aem", 24096,
+                                               false));
+    resources[1714] = makeRes(
+        6902, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_178_anim_add.aem", 24096,
+                                               false));
+    resources[1715] = makeRes(
+        6905, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_180_anim_add.aem", 24096,
+                                               false));
+    resources[1716] = makeRes(
+        6906, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_181_anim_add.aem", 24096,
+                                               false));
+    resources[1717] = makeRes(
+        14239, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_193_anim_add.aem",
+                                                24096, false));
+    resources[1718] = makeRes(
+        14235, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_projectile_194_anim_add.aem",
+                                                24096, false));
+    resources[1719] = makeRes(
+        14247, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive.aem", 65535, false));
+    resources[1720] = makeRes(
+        14248, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_explosive_add.aem", 0, false));
+    resources[1721] = makeRes(
+        14249, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp.aem", 65535, false));
+    resources[1722] = makeRes(
+        14250, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/rocket_emp_add.aem", 0, false));
+    resources[1723] = makeRes(
+        14680, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a.aem", 65535, false));
+    resources[1724] = makeRes(
+        14681, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_a_add.aem", 0, false));
+    resources[1725] = makeRes(
+        14682, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b.aem", 65535, false));
+    resources[1726] = makeRes(
+        14683, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_explosive_b_add.aem", 0, false));
+    resources[1727] = makeRes(
+        14684, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a.aem", 65535, false));
+    resources[1728] = makeRes(
+        14685, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bomb_emp_a_add.aem", 0, false));
+    resources[1729] = makeRes(
+        14293, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_anim.aem", 20125,
+                                                false));
+    resources[1730] = makeRes(
+        14294, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_guided_missile_add.aem", 20126,
+                                                false));
+    resources[1731] = makeRes(
+        15000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran.aem", 20004,
+                                                false));
+    resources[1732] = makeRes(
+        15016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_1.aem", 20004,
+                                                false));
+    resources[1733] = makeRes(
+        15020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_lod_2.aem", 20004,
+                                                false));
+    resources[1734] = makeRes(
+        15002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_emissive.aem",
+                                                20003, false));
+    resources[1735] = makeRes(
+        15001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_terran_anim_add.aem", 3,
+                                                false));
+    resources[1736] = makeRes(
+        15003, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/jumpgates/jumpgate_terran_jump_anim_add.aem", 3, false));
+    resources[1737] = makeRes(
+        15004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim.aem", 20032,
+                                                false));
+    resources[1738] = makeRes(
+        15017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_anim.aem",
+                                                20032, false));
+    resources[1739] = makeRes(
+        15021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_anim.aem",
+                                                20032, false));
+    resources[1740] = makeRes(
+        15006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_emissive.aem",
+                                                20031, false));
+    resources[1741] = makeRes(
+        15024, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_1_emissive.aem", 20031, false));
+    resources[1742] = makeRes(
+        15025, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_lod_2_emissive.aem", 20031, false));
+    resources[1743] = makeRes(
+        15005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_anim_add.aem",
+                                                20033, false));
+    resources[1744] = makeRes(
+        15007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_vossk_jump_anim_add.aem",
+                                                20033, false));
+    resources[1745] = makeRes(
+        15008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian.aem", 20005,
+                                                false));
+    resources[1746] = makeRes(
+        15018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_1.aem",
+                                                20005, false));
+    resources[1747] = makeRes(
+        15022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_lod_2.aem",
+                                                20005, false));
+    resources[1748] = makeRes(
+        15010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_emissive.aem",
+                                                20006, false));
+    resources[1749] = makeRes(
+        15009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_anim_add.aem",
+                                                34810, false));
+    resources[1750] = makeRes(15011, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/jumpgates/jumpgate_nivelian_jump_anim_add.aem", 34810,
+                                  false));
+    resources[1751] = makeRes(
+        15012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian.aem", 20007,
+                                                false));
+    resources[1752] = makeRes(
+        15019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_1.aem",
+                                                20007, false));
+    resources[1753] = makeRes(
+        15023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_lod_2.aem",
+                                                20007, false));
+    resources[1754] = makeRes(
+        15014, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_emissive.aem",
+                                                20008, false));
+    resources[1755] = makeRes(
+        15013, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_anim_add.aem",
+                                                34600, false));
+    resources[1756] = makeRes(15015, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/jumpgates/jumpgate_midorian_jump_anim_add.aem", 34600,
+                                  false));
+    resources[1757] = makeRes(
+        15026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/khador_jump.aem", 27260, false));
+    resources[1758] = makeRes(
+        15027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/hyper_drive.aem", 27262, false));
+    resources[1759] = makeRes(
+        16917, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_001.aem", 20094, false));
+    resources[1760] = makeRes(
+        16918, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_002.aem", 20094, false));
+    resources[1761] = makeRes(
+        16919, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_003.aem", 20094, false));
+    resources[1762] = makeRes(
+        16920, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/space_junk_004.aem", 20094, false));
+    resources[1763] = makeRes(
+        16926, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_junk.aem", 20023, false));
+    resources[1764] = makeRes(
+        16927, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_junk.aem", 20103,
+                                                false));
+    resources[1765] = makeRes(
+        16992, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_003_terran.aem", 27254,
+                                                false));
+    resources[1766] = makeRes(
+        16990, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_001_midorian.aem", 27257,
+                                                false));
+    resources[1767] = makeRes(
+        16991, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_004_vossk.aem", 27255, false));
+    resources[1768] = makeRes(
+        16993, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/container_002_nivelian.aem", 27256,
+                                                false));
+    resources[1769] = makeRes(
+        16994, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/wormhole_anim_add.aem", 20093, false));
+    resources[1770] = makeRes(
+        16921, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void.aem", 20103, false));
+    resources[1771] = makeRes(
+        16922, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_1.aem", 20103, false));
+    resources[1772] = makeRes(
+        16923, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_2.aem", 20103, false));
+    resources[1773] = makeRes(
+        16924, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_lod_3.aem", 20103, false));
+    resources[1774] = makeRes(
+        16925, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_void_explosion_anim.aem",
+                                                20103, false));
+    resources[1775] = makeRes(
+        14311, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran.aem", 0, false));
+    resources[1776] = makeRes(
+        14312, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_1.aem", 0,
+                                                false));
+    resources[1777] = makeRes(
+        14313, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lod_2.aem", 0,
+                                                false));
+    resources[1778] = makeRes(
+        14315, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_lights_add.aem",
+                                                65535, false));
+    resources[1779] = makeRes(
+        14316, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/battleship_terran_lights_emissive.aem", 65535, false));
+    resources[1780] = makeRes(
+        18304, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/battleship_terran_explosion_anim.aem",
+                                                0, false));
+    resources[1781] = makeRes(
+        17060, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian.aem", 34811, false));
+    resources[1782] = makeRes(
+        17062, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_1.aem", 34811,
+                                                false));
+    resources[1783] = makeRes(
+        17063, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lod_2.aem", 34811,
+                                                false));
+    resources[1784] = makeRes(
+        17064, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[1785] = makeRes(
+        17061, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_002_nivelian_lights_add.aem",
+                                                65535, false));
+    resources[1786] = makeRes(
+        18301, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/cargo_002_nivelian_explosion_anim.aem", 34811, false));
+    resources[1787] = makeRes(
+        17065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran.aem", 34811, false));
+    resources[1788] = makeRes(
+        17066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_1.aem", 34811,
+                                                false));
+    resources[1789] = makeRes(
+        17067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lod_2.aem", 34811,
+                                                false));
+    resources[1790] = makeRes(
+        17069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_engine_add.aem", 3,
+                                                false));
+    resources[1791] = makeRes(
+        17074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_add.aem", 0,
+                                                false));
+    resources[1792] = makeRes(
+        17070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_lights_emissive.aem",
+                                                0, false));
+    resources[1793] = makeRes(
+        18302, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_003_terran_explosion_anim.aem",
+                                                34811, false));
+    resources[1794] = makeRes(
+        17049, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian.aem", 0, false));
+    resources[1795] = makeRes(
+        17050, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_1.aem", 0,
+                                                false));
+    resources[1796] = makeRes(
+        17051, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_lod_2.aem", 0,
+                                                false));
+    resources[1797] = makeRes(
+        17052, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_container.aem", 0,
+                                                false));
+    resources[1798] = makeRes(
+        17053, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/cargo_001_midorian_container_lod_1.aem", 0, false));
+    resources[1799] = makeRes(
+        17054, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_001_midorian_engine_add.aem",
+                                                65535, false));
+    resources[1800] = makeRes(17055, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/ships/cargo_001_midorian_lights_emissive.aem", 65535,
+                                  false));
+    resources[1801] = makeRes(
+        18300, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/cargo_001_midorian_explosion_anim.aem", 0, false));
+    resources[1802] = makeRes(
+        17038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_engine_add.aem",
+                                                65535, false));
+    resources[1803] = makeRes(
+        18303, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_explosion_anim.aem",
+                                                0, false));
+    resources[1804] = makeRes(
+        17139, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_1.aem", 0,
+                                                false));
+    resources[1805] = makeRes(
+        17140, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lod_2.aem", 0,
+                                                false));
+    resources[1806] = makeRes(
+        18713, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk_lights_emissive.aem",
+                                                65535, false));
+    resources[1807] = makeRes(
+        17013, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/cargo_004_vossk.aem", 0, false));
+    resources[1808] = makeRes(14363, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret.aem", 20135,
+                                  false));
+    resources[1809] = makeRes(14364, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_turret_gun.aem",
+                                  20135, false));
+    resources[1810] = makeRes(14365, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_shield.aem", 20135,
+                                  false));
+    resources[1811] = makeRes(14366, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_laser_anim_add.aem",
+                                  20158, false));
+    resources[1812] = makeRes(
+        6770, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001.aem", 24075, false));
+    resources[1813] = makeRes(
+        6771, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_001_gun.aem", 24075, false));
+    resources[1814] = makeRes(
+        6772, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002.aem", 24076, false));
+    resources[1815] = makeRes(
+        6773, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_002_gun.aem", 24076, false));
+    resources[1816] = makeRes(
+        6774, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003.aem", 24077, false));
+    resources[1817] = makeRes(
+        6775, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/turrets/turret_003_gun.aem", 24077, false));
+    resources[1818] = makeRes(
+        18842, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004.aem", 24085,
+                                                false));
+    resources[1819] = makeRes(
+        18843, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun.aem", 24085,
+                                                false));
+    resources[1820] = makeRes(
+        18844, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_add.aem", 24086,
+                                                false));
+    resources[1821] = makeRes(
+        18845, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/turrets/sn_turret_004_gun_add.aem",
+                                                24086, false));
+    resources[1822] = makeRes(
+        6805, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_anim.aem",
+                                               24081, false));
+    resources[1823] = makeRes(
+        6806, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_001_gun_anim.aem",
+                                               24081, false));
+    resources[1824] = makeRes(
+        6807, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002.aem", 24082,
+                                               false));
+    resources[1825] = makeRes(
+        6808, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_002_gun.aem", 24082,
+                                               false));
+    resources[1826] = makeRes(
+        6809, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003.aem", 24083,
+                                               false));
+    resources[1827] = makeRes(
+        6810, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/turrets/v_autoturret_003_gun.aem", 24083,
+                                               false));
+    resources[1828] = makeRes(
+        14050, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001.aem", 20121, false));
+    resources[1829] = makeRes(
+        14051, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_001_add.aem", 20154,
+                                                false));
+    resources[1830] = makeRes(
+        14054, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002.aem", 20122, false));
+    resources[1831] = makeRes(
+        14055, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_002_add.aem", 20155,
+                                                false));
+    resources[1832] = makeRes(
+        14052, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003.aem", 20123, false));
+    resources[1833] = makeRes(
+        14053, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_mine_003_add.aem", 20156,
+                                                false));
+    resources[1834] = makeRes(
+        6779, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_orbit.aem", 20029, false));
+    resources[1835] = makeRes(
+        14288, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/beer.aem", 20111, false));
+    resources[1836] = makeRes(
+        14289, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/bra.aem", 20111, false));
+    resources[1837] = makeRes(
+        14290, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/scanner_probe.aem", 20113, false));
+    resources[1838] = makeRes(
+        14291, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_alpha.aem", 27253,
+                                                false));
+    resources[1839] = makeRes(
+        14292, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_debris_anim_add.aem", 27252,
+                                                false));
+    resources[1840] = makeRes(
+        14600, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_000_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1841] = makeRes(
+        14601, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_001_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1842] = makeRes(
+        14602, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_002_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1843] = makeRes(
+        14603, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_003_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1844] = makeRes(
+        14604, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_004_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1845] = makeRes(
+        14605, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_005_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1846] = makeRes(
+        14606, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/impact_006_lookat_anim_add.aem", 24201,
+                                                false));
+    resources[1847] = makeRes(
+        14500, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_000_anim_add.aem", 24201,
+                                                false));
+    resources[1848] = makeRes(
+        14501, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_001_anim_add.aem", 24201,
+                                                false));
+    resources[1849] = makeRes(
+        14502, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_002_anim_add.aem", 24201,
+                                                false));
+    resources[1850] = makeRes(
+        14503, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_003_anim_add.aem", 24201,
+                                                false));
+    resources[1851] = makeRes(
+        14504, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_004_anim_add.aem", 24201,
+                                                false));
+    resources[1852] = makeRes(
+        14505, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_005_anim_add.aem", 24201,
+                                                false));
+    resources[1853] = makeRes(
+        14506, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_006_anim_add.aem", 24201,
+                                                false));
+    resources[1854] = makeRes(
+        14507, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_007_anim_add.aem", 24201,
+                                                false));
+    resources[1855] = makeRes(
+        14508, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/muzzle_flash_008_anim_add.aem", 24201,
+                                                false));
+    resources[1856] = makeRes(
+        14509, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_009_anim_add.aem",
+                                                24096, false));
+    resources[1857] = makeRes(
+        14510, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_muzzle_flash_010_anim_add.aem",
+                                                24096, false));
+    resources[1858] = makeRes(
+        18070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
+    resources[1859] = makeRes(
+        18071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
+    resources[1860] = makeRes(
+        18072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
+    resources[1861] = makeRes(
+        18073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27283, false));
+    resources[1862] = makeRes(
+        18074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27284, false));
+    resources[1863] = makeRes(
+        18075, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
+    resources[1864] = makeRes(
+        18076, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
+    resources[1865] = makeRes(
+        18077, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27287, false));
+    resources[1866] = makeRes(
+        18078, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
+    resources[1867] = makeRes(
+        18079, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27289, false));
+    resources[1868] = makeRes(
+        18080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27290, false));
+    resources[1869] = makeRes(
+        27281, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27281, false));
+    resources[1870] = makeRes(
+        18082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27288, false));
+    resources[1872] = makeRes(
+        18084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27280, false));
+    resources[1873] = makeRes(
+        18085, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27285, false));
+    resources[1875] = makeRes(
+        18087, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27282, false));
+    resources[1876] = makeRes(
+        27286, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/plane.aem", 27286, false));
+    resources[1878] = makeRes(
+        18181, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_001.aem", 20027, false));
+    resources[1879] = makeRes(
+        18182, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_002.aem", 20027, false));
+    resources[1880] = makeRes(
+        20027, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_003.aem", 20027, false));
+    resources[1881] = makeRes(
+        18184, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_004.aem", 20027, false));
+    resources[1882] = makeRes(
+        20027, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_005.aem", 20027, false));
+    resources[1884] = makeRes(
+        18187, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_007.aem", 20027, false));
+    resources[1885] = makeRes(
+        20027, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_008.aem", 20027, false));
+    resources[1886] = makeRes(
+        18189, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_009.aem", 20027, false));
+    resources[1888] = makeRes(
+        18191, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_011.aem", 20027, false));
+    resources[1889] = makeRes(
+        18192, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_012.aem", 20027, false));
+    resources[1891] = makeRes(
+        18194, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_014.aem", 20027, false));
+    resources[1892] = makeRes(
+        18195, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_015.aem", 20027, false));
+    resources[1893] = makeRes(
+        18196, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_016.aem", 20027, false));
+    resources[1894] = makeRes(
+        18197, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_017.aem", 20027, false));
+    resources[1895] = makeRes(
+        18198, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_018.aem", 20027, false));
+    resources[1896] = makeRes(
+        18199, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_019.aem", 20027, false));
+    resources[1897] = makeRes(
+        18200, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_020.aem", 27305,
+                                                false));
+    resources[1898] = makeRes(
+        18201, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_021.aem", 27305,
+                                                false));
+    resources[1899] = makeRes(
+        18202, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/galaxymap/v_map_planet_022.aem", 27305,
+                                                false));
+    resources[1900] = makeRes(
+        18204, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_024.aem",
+                                                27306, false));
+    resources[1901] = makeRes(
+        18205, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_025.aem",
+                                                27306, false));
+    resources[1902] = makeRes(
+        18206, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/galaxymap/sn_map_planet_026.aem",
+                                                27306, false));
+    resources[1903] = makeRes(
+        17900, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_000_midorian_engine_glow_add.aem", 34811, false));
+    resources[1904] = makeRes(
+        17901, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1905] = makeRes(
+        17902, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1906] = makeRes(
+        17903, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_003_midorian_engine_glow_add.aem", 34811, false));
+    resources[1907] = makeRes(
+        17904, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1908] = makeRes(
+        17905, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1909] = makeRes(
+        17906, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_006_midorian_engine_glow_add.aem", 34811, false));
+    resources[1910] = makeRes(
+        17907, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1911] = makeRes(
+        17908, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_glow_add.aem",
+                                                34811, false));
+    resources[1912] = makeRes(
+        17909, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_glow_add.aem",
+                                                34811, false));
+    resources[1913] = makeRes(
+        17910, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1914] = makeRes(
+        17911, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1915] = makeRes(
+        17912, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1916] = makeRes(
+        17916, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1917] = makeRes(
+        17917, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1918] = makeRes(
+        17918, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1919] = makeRes(
+        17919, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_019_midorian_engine_glow_add.aem", 34811, false));
+    resources[1920] = makeRes(
+        17920, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_020_midorian_engine_glow_add.aem", 34811, false));
+    resources[1921] = makeRes(
+        17921, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1922] = makeRes(
+        17922, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1923] = makeRes(
+        17923, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1924] = makeRes(
+        17924, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1925] = makeRes(
+        17925, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1926] = makeRes(
+        17926, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1927] = makeRes(
+        17927, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1928] = makeRes(
+        17928, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1929] = makeRes(
+        17929, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1930] = makeRes(
+        17930, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_030_midorian_engine_glow_add.aem", 34811, false));
+    resources[1931] = makeRes(
+        17931, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1932] = makeRes(
+        17932, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_glow_add.aem",
+                                                34811, false));
+    resources[1933] = makeRes(
+        17933, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1934] = makeRes(
+        17934, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1935] = makeRes(
+        17935, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_glow_add.aem", 34811, false));
+    resources[1936] = makeRes(
+        17936, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_glow_add.aem",
+                                                34811, false));
+    resources[1937] = makeRes(17937, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_glow_add.aem", 0,
+                                  false));
+    resources[1938] = makeRes(17938, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_glow_add.aem", 0,
+                                  false));
+    resources[1939] = makeRes(17940, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_glow_add.aem", 0,
+                                  false));
+    resources[1940] = makeRes(
+        17942, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_engine_glow_add.aem",
+                                                34811, false));
+    resources[1941] = makeRes(
+        17943, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_engine_glow_add.aem",
+                                                34811, false));
+    resources[1942] = makeRes(17944, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_044_elite_nivelian_engine_glow_add.aem",
+                                  32544, false));
+    resources[1943] = makeRes(17945, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_045_most_wanted_engine_glow_add.aem",
+                                  32545, false));
+    resources[1944] = makeRes(17946, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_046_most_wanted_engine_glow_add.aem",
+                                  32546, false));
+    resources[1945] = makeRes(17947, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_047_most_wanted_engine_glow_add.aem",
+                                  32547, false));
+    resources[1946] = makeRes(17948, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_048_most_wanted_engine_glow_add.aem",
+                                  32548, false));
+    resources[1947] = makeRes(17949, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_049_boss_nivelian_engine_glow_add.aem",
+                                  32549, false));
+    resources[1948] = makeRes(17951, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_051_dropship_terran_engine_glow_add.aem",
+                                  32551, false));
+    resources[1949] = makeRes(17952, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_052_retro_engine_glow_add.aem", 32552,
+                                  false));
+    resources[1950] = makeRes(17954, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_054_vossk_engine_glow_add.aem", 32554,
+                                  false));
+    resources[1951] = makeRes(17955, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_055_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1952] = makeRes(17956, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_056_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1953] = makeRes(17957, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_057_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1954] = makeRes(17958, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_058_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1955] = makeRes(17959, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_059_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1956] = makeRes(17960, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/ships/sn_ship_060_modified_engine_glow_add.aem",
+                                  34811, false));
+    resources[1957] = makeRes(17961, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/ships/ship_061_elite_nivelian_prototype_engine_glow_add.aem",
+                                  32561, false));
+    resources[1958] = makeRes(17962, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/ships/ship_062_prototype_engine_glow_add.aem", 32562,
+                                  false));
+    resources[1959] = makeRes(17963, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/ships/ship_063_vossk_prototype_engine_glow_add.aem",
+                                  32563, false));
+    resources[1960] = makeRes(
+        17000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian.aem", 0, false));
+    resources[1961] = makeRes(
+        17100, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_1.aem", 0,
+                                                false));
+    resources[1962] = makeRes(
+        17101, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lod_2.aem", 0,
+                                                false));
+    resources[1963] = makeRes(
+        18000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_engine_add.aem",
+                                                34600, false));
+    resources[1964] = makeRes(
+        18700, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_000_midorian_lights_add.aem",
+                                                34600, false));
+    resources[1965] = makeRes(
+        17001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran.aem", 0, false));
+    resources[1966] = makeRes(
+        17103, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_1.aem", 0,
+                                                false));
+    resources[1967] = makeRes(
+        17104, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lod_2.aem", 0,
+                                                false));
+    resources[1968] = makeRes(
+        18001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_engine_add.aem", 3,
+                                                false));
+    resources[1969] = makeRes(
+        18701, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_001_terran_lights_add.aem", 3,
+                                                false));
+    resources[1970] = makeRes(
+        17002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates.aem", 0, false));
+    resources[1971] = makeRes(
+        17106, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_1.aem", 0, false));
+    resources[1972] = makeRes(
+        17107, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lod_2.aem", 0, false));
+    resources[1973] = makeRes(
+        18002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_engine_add.aem",
+                                                34811, false));
+    resources[1974] = makeRes(
+        18702, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_002_pirates_lights_add.aem",
+                                                34811, false));
+    resources[1975] = makeRes(
+        17003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian.aem", 0, false));
+    resources[1976] = makeRes(
+        17109, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_1.aem", 0,
+                                                false));
+    resources[1977] = makeRes(
+        17110, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lod_2.aem", 0,
+                                                false));
+    resources[1978] = makeRes(
+        18003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_engine_add.aem",
+                                                34600, false));
+    resources[1979] = makeRes(
+        18703, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_003_midorian_lights_add.aem",
+                                                34600, false));
+    resources[1980] = makeRes(
+        17004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian.aem", 0, false));
+    resources[1981] = makeRes(
+        17112, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[1982] = makeRes(
+        17113, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[1983] = makeRes(
+        18004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[1984] = makeRes(
+        18704, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_004_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[1985] = makeRes(
+        17005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran.aem", 0, false));
+    resources[1986] = makeRes(
+        17115, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_1.aem", 0,
+                                                false));
+    resources[1987] = makeRes(
+        17116, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lod_2.aem", 0,
+                                                false));
+    resources[1988] = makeRes(
+        18005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_engine_add.aem", 3,
+                                                false));
+    resources[1989] = makeRes(
+        18705, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_005_terran_lights_add.aem", 3,
+                                                false));
+    resources[1990] = makeRes(
+        17006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian.aem", 0, false));
+    resources[1991] = makeRes(
+        17118, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_1.aem", 0,
+                                                false));
+    resources[1992] = makeRes(
+        17119, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lod_2.aem", 0,
+                                                false));
+    resources[1993] = makeRes(
+        18006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_engine_add.aem",
+                                                34600, false));
+    resources[1994] = makeRes(
+        18706, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_006_midorian_lights_add.aem",
+                                                34600, false));
+    resources[1995] = makeRes(
+        17007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran.aem", 0, false));
+    resources[1996] = makeRes(
+        17121, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_1.aem", 0,
+                                                false));
+    resources[1997] = makeRes(
+        17122, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lod_2.aem", 0,
+                                                false));
+    resources[1998] = makeRes(
+        18007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_engine_add.aem", 3,
+                                                false));
+    resources[1999] = makeRes(
+        18707, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_007_terran_lights_add.aem", 3,
+                                                false));
+    resources[2000] = makeRes(
+        17008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void.aem", 0, false));
+    resources[2001] = makeRes(
+        17124, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_1.aem", 0, false));
+    resources[2002] = makeRes(
+        17125, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lod_2.aem", 0, false));
+    resources[2003] = makeRes(
+        18008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_engine_add.aem", 0,
+                                                false));
+    resources[2004] = makeRes(
+        18708, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_008_void_lights_add.aem", 0,
+                                                false));
+    resources[2005] = makeRes(
+        17009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk.aem", 0, false));
+    resources[2006] = makeRes(
+        17127, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_1.aem", 0, false));
+    resources[2007] = makeRes(
+        17128, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lod_2.aem", 0, false));
+    resources[2008] = makeRes(
+        18009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_engine_add.aem", 65535,
+                                                false));
+    resources[2009] = makeRes(
+        18709, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_009_vossk_lights_add.aem", 65535,
+                                                false));
+    resources[2010] = makeRes(
+        17010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran.aem", 0, false));
+    resources[2011] = makeRes(
+        17130, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_1.aem", 0,
+                                                false));
+    resources[2012] = makeRes(
+        17131, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lod_2.aem", 0,
+                                                false));
+    resources[2013] = makeRes(
+        18010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_engine_add.aem", 3,
+                                                false));
+    resources[2014] = makeRes(
+        18710, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_010_terran_lights_add.aem", 3,
+                                                false));
+    resources[2015] = makeRes(
+        17011, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates.aem", 0, false));
+    resources[2016] = makeRes(
+        17133, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_1.aem", 0, false));
+    resources[2017] = makeRes(
+        17134, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lod_2.aem", 0, false));
+    resources[2018] = makeRes(
+        18011, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2019] = makeRes(
+        18711, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_011_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2020] = makeRes(
+        17012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian.aem", 0, false));
+    resources[2021] = makeRes(
+        17136, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2022] = makeRes(
+        17137, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2023] = makeRes(
+        18012, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2024] = makeRes(
+        18712, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_012_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2025] = makeRes(
+        17016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian.aem", 0, false));
+    resources[2026] = makeRes(
+        17148, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2027] = makeRes(
+        17149, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2028] = makeRes(
+        18016, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2029] = makeRes(
+        18716, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_016_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2030] = makeRes(
+        17017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran.aem", 0, false));
+    resources[2031] = makeRes(
+        17151, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_1.aem", 0,
+                                                false));
+    resources[2032] = makeRes(
+        17152, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lod_2.aem", 0,
+                                                false));
+    resources[2033] = makeRes(
+        18017, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_engine_add.aem", 3,
+                                                false));
+    resources[2034] = makeRes(
+        18717, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_017_terran_lights_add.aem", 3,
+                                                false));
+    resources[2035] = makeRes(
+        17018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian.aem", 0, false));
+    resources[2036] = makeRes(
+        17154, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2037] = makeRes(
+        17155, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2038] = makeRes(
+        18018, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2039] = makeRes(
+        18718, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_018_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2040] = makeRes(
+        17019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian.aem", 0, false));
+    resources[2041] = makeRes(
+        17157, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_1.aem", 0,
+                                                false));
+    resources[2042] = makeRes(
+        17158, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lod_2.aem", 0,
+                                                false));
+    resources[2043] = makeRes(
+        18019, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_engine_add.aem",
+                                                34600, false));
+    resources[2044] = makeRes(
+        18719, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_019_midorian_lights_add.aem",
+                                                34600, false));
+    resources[2045] = makeRes(
+        17020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian.aem", 0, false));
+    resources[2046] = makeRes(
+        17160, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_1.aem", 0,
+                                                false));
+    resources[2047] = makeRes(
+        17161, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lod_2.aem", 0,
+                                                false));
+    resources[2048] = makeRes(
+        18020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_engine_add.aem",
+                                                34600, false));
+    resources[2049] = makeRes(
+        18720, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_020_midorian_lights_add.aem",
+                                                34600, false));
+    resources[2050] = makeRes(
+        17021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian.aem", 0, false));
+    resources[2051] = makeRes(
+        17163, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2052] = makeRes(
+        17164, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2053] = makeRes(
+        18021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2054] = makeRes(
+        18721, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_021_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2055] = makeRes(
+        17022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran.aem", 0, false));
+    resources[2056] = makeRes(
+        17166, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_1.aem", 0,
+                                                false));
+    resources[2057] = makeRes(
+        17167, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lod_2.aem", 0,
+                                                false));
+    resources[2058] = makeRes(
+        18022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_engine_add.aem", 3,
+                                                false));
+    resources[2059] = makeRes(
+        18722, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_022_terran_lights_add.aem", 3,
+                                                false));
+    resources[2060] = makeRes(
+        17023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates.aem", 0, false));
+    resources[2061] = makeRes(
+        17169, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_1.aem", 0, false));
+    resources[2062] = makeRes(
+        17170, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lod_2.aem", 0, false));
+    resources[2063] = makeRes(
+        18023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2064] = makeRes(
+        18723, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_023_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2065] = makeRes(
+        17024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates.aem", 0, false));
+    resources[2066] = makeRes(
+        17172, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_1.aem", 0, false));
+    resources[2067] = makeRes(
+        17173, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lod_2.aem", 0, false));
+    resources[2068] = makeRes(
+        18024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2069] = makeRes(
+        18724, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_024_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2070] = makeRes(
+        17025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates.aem", 0, false));
+    resources[2071] = makeRes(
+        17175, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_1.aem", 0, false));
+    resources[2072] = makeRes(
+        17176, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lod_2.aem", 0, false));
+    resources[2073] = makeRes(
+        18025, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2074] = makeRes(
+        18725, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_025_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2075] = makeRes(
+        17026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran.aem", 0, false));
+    resources[2076] = makeRes(
+        17178, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_1.aem", 0,
+                                                false));
+    resources[2077] = makeRes(
+        17179, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lod_2.aem", 0,
+                                                false));
+    resources[2078] = makeRes(
+        18026, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_engine_add.aem", 3,
+                                                false));
+    resources[2079] = makeRes(
+        18726, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_026_terran_lights_add.aem", 3,
+                                                false));
+    resources[2080] = makeRes(
+        17027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran.aem", 0, false));
+    resources[2081] = makeRes(
+        17181, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_1.aem", 0,
+                                                false));
+    resources[2082] = makeRes(
+        17182, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lod_2.aem", 0,
+                                                false));
+    resources[2083] = makeRes(
+        18027, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_engine_add.aem", 3,
+                                                false));
+    resources[2084] = makeRes(
+        18727, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_027_terran_lights_add.aem", 3,
+                                                false));
+    resources[2085] = makeRes(
+        17028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran.aem", 0, false));
+    resources[2086] = makeRes(
+        17184, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_1.aem", 0,
+                                                false));
+    resources[2087] = makeRes(
+        17185, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lod_2.aem", 0,
+                                                false));
+    resources[2088] = makeRes(
+        18028, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_engine_add.aem", 3,
+                                                false));
+    resources[2089] = makeRes(
+        18728, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_028_terran_lights_add.aem", 3,
+                                                false));
+    resources[2090] = makeRes(
+        17029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates.aem", 0, false));
+    resources[2091] = makeRes(
+        17187, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_1.aem", 0, false));
+    resources[2092] = makeRes(
+        17188, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lod_2.aem", 0, false));
+    resources[2093] = makeRes(
+        18029, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2094] = makeRes(
+        18729, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_029_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2095] = makeRes(
+        17030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian.aem", 0, false));
+    resources[2096] = makeRes(
+        17190, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_1.aem", 0,
+                                                false));
+    resources[2097] = makeRes(
+        17191, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lod_2.aem", 0,
+                                                false));
+    resources[2098] = makeRes(
+        18030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_engine_add.aem",
+                                                34600, false));
+    resources[2099] = makeRes(
+        18730, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_030_midorian_lights_add.aem",
+                                                34600, false));
+    resources[2100] = makeRes(
+        17031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian.aem", 0, false));
+    resources[2101] = makeRes(
+        17193, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2102] = makeRes(
+        17194, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2103] = makeRes(
+        18031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2104] = makeRes(
+        18731, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_031_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2105] = makeRes(
+        17032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates.aem", 0, false));
+    resources[2106] = makeRes(
+        17196, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_1.aem", 0, false));
+    resources[2107] = makeRes(
+        17197, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lod_2.aem", 0, false));
+    resources[2108] = makeRes(
+        18032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_engine_add.aem",
+                                                34811, false));
+    resources[2109] = makeRes(
+        18732, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_032_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2110] = makeRes(
+        17033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran.aem", 0, false));
+    resources[2111] = makeRes(
+        17199, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_1.aem", 0,
+                                                false));
+    resources[2112] = makeRes(
+        17200, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lod_2.aem", 0,
+                                                false));
+    resources[2113] = makeRes(
+        18033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_engine_add.aem", 3,
+                                                false));
+    resources[2114] = makeRes(
+        18733, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_033_terran_lights_add.aem", 3,
+                                                false));
+    resources[2115] = makeRes(
+        17034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran.aem", 0, false));
+    resources[2116] = makeRes(
+        17202, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_1.aem", 0,
+                                                false));
+    resources[2117] = makeRes(
+        17203, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lod_2.aem", 0,
+                                                false));
+    resources[2118] = makeRes(
+        18034, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_engine_add.aem", 3,
+                                                false));
+    resources[2119] = makeRes(
+        18734, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_034_terran_lights_add.aem", 3,
+                                                false));
+    resources[2120] = makeRes(
+        17035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian.aem", 0, false));
+    resources[2121] = makeRes(
+        17205, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_1.aem", 0,
+                                                false));
+    resources[2122] = makeRes(
+        17206, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lod_2.aem", 0,
+                                                false));
+    resources[2123] = makeRes(
+        18035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_engine_add.aem",
+                                                34810, false));
+    resources[2124] = makeRes(
+        18735, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_035_nivelian_lights_add.aem",
+                                                34810, false));
+    resources[2125] = makeRes(
+        17036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran.aem", 0, false));
+    resources[2126] = makeRes(
+        17208, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_1.aem", 0,
+                                                false));
+    resources[2127] = makeRes(
+        17209, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lod_2.aem", 0,
+                                                false));
+    resources[2128] = makeRes(
+        18036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_engine_add.aem", 3,
+                                                false));
+    resources[2129] = makeRes(
+        18736, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_036_terran_lights_add.aem", 3,
+                                                false));
+    resources[2130] = makeRes(
+        17211, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science.aem",
+                                                65535, false));
+    resources[2131] = makeRes(17215, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_lights_anim_add.aem",
+                                  32537, false));
+    resources[2132] = makeRes(18037, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_037_deep_science_engine_add.aem", 32537,
+                                  false));
+    resources[2133] = makeRes(
+        17216, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science.aem",
+                                                65535, false));
+    resources[2134] = makeRes(18738, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_lights_anim_add.aem",
+                                  32538, false));
+    resources[2135] = makeRes(18038, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_038_deep_science_engine_add.aem", 32538,
+                                  false));
+    resources[2136] = makeRes(
+        17221, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk.aem", 0, false));
+    resources[2137] = makeRes(
+        17222, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_1.aem", 0,
+                                                false));
+    resources[2138] = makeRes(
+        17223, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lod_2.aem", 0,
+                                                false));
+    resources[2139] = makeRes(
+        18739, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_lights_add.aem",
+                                                32539, false));
+    resources[2140] = makeRes(
+        18039, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_039_vossk_engine_add.aem",
+                                                32539, false));
+    resources[2141] = makeRes(
+        17227, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science.aem",
+                                                65535, false));
+    resources[2142] = makeRes(17231, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_lights_add.aem", 32540,
+                                  false));
+    resources[2143] = makeRes(18040, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/ships/v_ship_040_deep_science_engine_add.aem", 32540,
+                                  false));
+    resources[2144] = makeRes(
+        17233, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk.aem", 0, false));
+    resources[2145] = makeRes(
+        17234, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_1.aem", 0,
+                                                false));
+    resources[2146] = makeRes(
+        17235, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lod_2.aem", 0,
+                                                false));
+    resources[2147] = makeRes(
+        18741, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_lights_add.aem",
+                                                32541, false));
+    resources[2148] = makeRes(
+        18041, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/ships/v_ship_041_vossk_engine_add.aem",
+                                                32541, false));
+    resources[2149] = makeRes(
+        17239, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro.aem", 0, false));
+    resources[2150] = makeRes(
+        17240, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_1.aem", 0, false));
+    resources[2151] = makeRes(
+        17241, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lod_2.aem", 0, false));
+    resources[2152] = makeRes(
+        17243, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_042_retro_lights_add.aem", 32542,
+                                                false));
+    resources[2153] = makeRes(
+        17245, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro.aem", 0, false));
+    resources[2154] = makeRes(
+        17246, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_1.aem", 0, false));
+    resources[2155] = makeRes(
+        17247, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lod_2.aem", 0, false));
+    resources[2156] = makeRes(
+        17249, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/ships/ship_043_retro_lights_add.aem", 32543,
+                                                false));
     resources[2157] = makeRes(16800, 4, new AbyssEngine::ResourceMesh("data/meshes/col_box.aem", 20087, false));
     resources[2158] = makeRes(16801, 4, new AbyssEngine::ResourceMesh("data/meshes/col_sphere.aem", 20087, false));
-    resources[2159] = makeRes(14243, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates.aem", 20104, false));
-    resources[2160] = makeRes(14244, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_emissive.aem", 20105, false));
-    resources[2161] = makeRes(14245, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_lights_add.aem", 34811, false));
-    resources[2162] = makeRes(14246, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_explosion_anim.aem", 20104, false));
-    resources[2163] = makeRes(16851, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_0.aem", 20025, false));
-    resources[2164] = makeRes(16852, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_1.aem", 20026, false));
-    resources[2165] = makeRes(16850, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_bg_plane.aem", 20024, false));
-    resources[2166] = makeRes(16853, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_ring.aem", 20030, false));
-    resources[2167] = makeRes(16904, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice.aem", 20134, false));
-    resources[2168] = makeRes(16905, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_1.aem", 20134, false));
-    resources[2169] = makeRes(16906, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_2.aem", 20134, false));
-    resources[2170] = makeRes(16907, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_3.aem", 20134, false));
-    resources[2171] = makeRes(16908, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim.aem", 20134, false));
-    resources[2172] = makeRes(16909, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim_alpha.aem", 20133, false));
-    resources[2173] = makeRes(16900, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01.aem", 20023, false));
-    resources[2174] = makeRes(16901, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_1.aem", 20023, false));
-    resources[2175] = makeRes(16902, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_2.aem", 20023, false));
-    resources[2176] = makeRes(16903, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_3.aem", 20023, false));
-    resources[2177] = makeRes(16913, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_explosion_anim.aem", 20023, false));
-    resources[2178] = makeRes(16915, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_explosion_anim_alpha.aem", 20051, false));
-    resources[2179] = makeRes(18836, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma.aem", 27312, false));
-    resources[2180] = makeRes(18837, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_1.aem", 27312, false));
-    resources[2181] = makeRes(18838, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_2.aem", 27312, false));
-    resources[2182] = makeRes(18839, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_3.aem", 27312, false));
-    resources[2183] = makeRes(18840, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim.aem", 27312, false));
-    resources[2184] = makeRes(18841, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim_alpha.aem", 27313, false));
-    resources[2185] = makeRes(16928, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim.aem", 20135, false));
-    resources[2186] = makeRes(16929, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_emissive.aem", 20136, false));
-    resources[2187] = makeRes(16930, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_add.aem", 20158, false));
-    resources[2188] = makeRes(16931, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science.aem", 27145, false));
-    resources[2189] = makeRes(16932, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emissive.aem", 27146, false));
-    resources[2190] = makeRes(16933, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_add.aem", 27147, false));
-    resources[2191] = makeRes(16936, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emitters_anim_add.aem", 0, false));
-    resources[2192] = makeRes(16934, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1.aem", 27145, false));
-    resources[2193] = makeRes(16935, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1_emissive.aem", 27146, false));
-    resources[2194] = makeRes(14367, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim.aem", 27145, false));
-    resources[2195] = makeRes(14368, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emissive.aem", 27146, false));
-    resources[2196] = makeRes(14369, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim_add.aem", 27147, false));
-    resources[2197] = makeRes(14370, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_laser_anim_add.aem", 27147, false));
-    resources[2198] = makeRes(16937, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emitters_anim_add.aem", 0, false));
-    resources[2199] = makeRes(14371, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged.aem", 27145, false));
-    resources[2200] = makeRes(14372, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emissive.aem", 27146, false));
-    resources[2201] = makeRes(14373, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_add.aem", 27147, false));
-    resources[2202] = makeRes(16938, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emitters_anim_add.aem", 0, false));
-    resources[2203] = makeRes(14374, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_shield.aem", 27150, false));
-    resources[2204] = makeRes(14375, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_asteroid_belt_alpha.aem", 27160, false));
-    resources[2205] = makeRes(21108, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club.aem", 20007, false));
-    resources[2206] = makeRes(21908, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_emissive.aem", 20008, false));
-    resources[2207] = makeRes(22900, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim.aem", 27162, false));
-    resources[2208] = makeRes(22901, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_emissive.aem", 27163, false));
-    resources[2209] = makeRes(22902, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_add.aem", 27164, false));
-    resources[2210] = makeRes(22903, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_alpha.aem", 27165, false));
+    resources[2159] = makeRes(
+        14243, 4,
+        new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates.aem", 20104, false));
+    resources[2160] = makeRes(
+        14244, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_emissive.aem",
+                                                20105, false));
+    resources[2161] = makeRes(
+        14245, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_pirates_lights_add.aem",
+                                                34811, false));
+    resources[2162] = makeRes(
+        14246, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/stations/station_pirates_explosion_anim.aem", 20104, false));
+    resources[2163] = makeRes(
+        16851, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_0.aem", 20025,
+                                                false));
+    resources[2164] = makeRes(
+        16852, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_fog_layer_1.aem", 20026,
+                                                false));
+    resources[2165] = makeRes(
+        16850, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_bg_plane.aem", 20024, false));
+    resources[2166] = makeRes(
+        16853, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/galaxymap/map_planet_ring.aem", 20030,
+                                                false));
+    resources[2167] = makeRes(
+        16904, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice.aem", 20134,
+                                                false));
+    resources[2168] = makeRes(
+        16905, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_1.aem", 20134,
+                                                false));
+    resources[2169] = makeRes(
+        16906, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_2.aem", 20134,
+                                                false));
+    resources[2170] = makeRes(
+        16907, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_lod_3.aem", 20134,
+                                                false));
+    resources[2171] = makeRes(
+        16908, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim.aem",
+                                                20134, false));
+    resources[2172] = makeRes(16909, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/misc/v_asteroid_ice_explosion_anim_alpha.aem", 20133,
+                                  false));
+    resources[2173] = makeRes(
+        16900, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01.aem", 20023, false));
+    resources[2174] = makeRes(
+        16901, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_1.aem", 20023, false));
+    resources[2175] = makeRes(
+        16902, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_2.aem", 20023, false));
+    resources[2176] = makeRes(
+        16903, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_lod_3.aem", 20023, false));
+    resources[2177] = makeRes(
+        16913, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_01_explosion_anim.aem", 20023,
+                                                false));
+    resources[2178] = makeRes(
+        16915, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/misc/asteroid_explosion_anim_alpha.aem",
+                                                20051, false));
+    resources[2179] = makeRes(
+        18836, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma.aem", 27312,
+                                                false));
+    resources[2180] = makeRes(
+        18837, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_1.aem",
+                                                27312, false));
+    resources[2181] = makeRes(
+        18838, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_2.aem",
+                                                27312, false));
+    resources[2182] = makeRes(
+        18839, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_lod_3.aem",
+                                                27312, false));
+    resources[2183] = makeRes(18840, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim.aem", 27312,
+                                  false));
+    resources[2184] = makeRes(18841, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/misc/sn_asteroid_magma_explosion_anim_alpha.aem",
+                                  27313, false));
+    resources[2185] = makeRes(16928, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim.aem", 20135,
+                                  false));
+    resources[2186] = makeRes(16929, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_emissive.aem",
+                                  20136, false));
+    resources[2187] = makeRes(16930, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_battlestation_anim_add.aem", 20158,
+                                  false));
+    resources[2188] = makeRes(
+        16931, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_deep_science.aem",
+                                                27145, false));
+    resources[2189] = makeRes(16932, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emissive.aem", 27146,
+                                  false));
+    resources[2190] = makeRes(
+        16933, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_add.aem", 27147, false));
+    resources[2191] = makeRes(16936, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_emitters_anim_add.aem",
+                                  0, false));
+    resources[2192] = makeRes(16934, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1.aem", 27145,
+                                  false));
+    resources[2193] = makeRes(16935, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_lod_1_emissive.aem",
+                                  27146, false));
+    resources[2194] = makeRes(14367, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim.aem",
+                                  27145, false));
+    resources[2195] = makeRes(14368, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emissive.aem",
+                                  27146, false));
+    resources[2196] = makeRes(14369, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_anim_add.aem",
+                                  27147, false));
+    resources[2197] = makeRes(14370, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_laser_anim_add.aem",
+                                  27147, false));
+    resources[2198] = makeRes(16937, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_explosion_emitters_anim_add.aem",
+                                  0, false));
+    resources[2199] = makeRes(14371, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged.aem", 27145,
+                                  false));
+    resources[2200] = makeRes(14372, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emissive.aem",
+                                  27146, false));
+    resources[2201] = makeRes(14373, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_add.aem",
+                                  27147, false));
+    resources[2202] = makeRes(16938, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_deep_science_damaged_emitters_anim_add.aem",
+                                  0, false));
+    resources[2203] = makeRes(
+        14374, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/fx/v_shield.aem", 27150, false));
+    resources[2204] = makeRes(
+        14375, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/skyboxes/skybox_asteroid_belt_alpha.aem",
+                                                27160, false));
+    resources[2205] = makeRes(
+        21108, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club.aem", 20007,
+                                                false));
+    resources[2206] = makeRes(
+        21908, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_emissive.aem",
+                                                20008, false));
+    resources[2207] = makeRes(
+        22900, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim.aem",
+                                                27162, false));
+    resources[2208] = makeRes(22901, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_emissive.aem", 27163,
+                                  false));
+    resources[2209] = makeRes(
+        22902, 4, new AbyssEngine::ResourceMesh(
+            "data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_add.aem", 27164, false));
+    resources[2210] = makeRes(22903, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_kaamo_club_fx_anim_alpha.aem", 27165,
+                                  false));
     resources[2211] = makeRes(19080, 4, new AbyssEngine::ResourceMesh("data/meshes/test_dock.aem", 20004, false));
     resources[2212] = makeRes(18830, 4, new AbyssEngine::ResourceMesh("data/meshes/carrier.aem", 20034, false));
-    resources[2213] = makeRes(18834, 4, new AbyssEngine::ResourceMesh("data/meshes/gas_cloud_a_anim_lookat_add.aem", 27311, false));
-    resources[2214] = makeRes(18835, 4, new AbyssEngine::ResourceMesh("data/meshes/gas_cloud_b_anim_lookat_add.aem", 27311, false));
-    resources[2215] = makeRes(21000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian.aem", 20005, false));
-    resources[2216] = makeRes(21001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian.aem", 20005, false));
-    resources[2217] = makeRes(21002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian.aem", 20005, false));
-    resources[2218] = makeRes(21003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian.aem", 20005, false));
-    resources[2219] = makeRes(21004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian.aem", 20005, false));
-    resources[2220] = makeRes(21005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran.aem", 20004, false));
-    resources[2221] = makeRes(21006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran.aem", 20004, false));
-    resources[2222] = makeRes(21007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran.aem", 20004, false));
-    resources[2223] = makeRes(21008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran.aem", 20004, false));
-    resources[2224] = makeRes(21009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran.aem", 20004, false));
-    resources[2225] = makeRes(21010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran.aem", 20004, false));
-    resources[2226] = makeRes(21020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian.aem", 20007, false));
-    resources[2227] = makeRes(21021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian.aem", 20007, false));
-    resources[2228] = makeRes(21022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian.aem", 20007, false));
-    resources[2229] = makeRes(21023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian.aem", 20007, false));
-    resources[2230] = makeRes(21024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian.aem", 20007, false));
-    resources[2231] = makeRes(21030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian.aem", 20005, false));
-    resources[2232] = makeRes(21031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian.aem", 20005, false));
-    resources[2233] = makeRes(21032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian.aem", 20005, false));
-    resources[2234] = makeRes(21033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian.aem", 20005, false));
-    resources[2235] = makeRes(21035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran.aem", 20004, false));
-    resources[2236] = makeRes(21036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran.aem", 20004, false));
-    resources[2237] = makeRes(21037, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran.aem", 20004, false));
-    resources[2238] = makeRes(21038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran.aem", 20004, false));
-    resources[2239] = makeRes(21039, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran.aem", 20004, false));
-    resources[2240] = makeRes(21040, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran.aem", 20004, false));
-    resources[2241] = makeRes(21041, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran.aem", 20004, false));
-    resources[2242] = makeRes(21042, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran.aem", 20004, false));
-    resources[2243] = makeRes(21043, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran.aem", 20004, false));
-    resources[2244] = makeRes(21044, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran.aem", 20004, false));
-    resources[2245] = makeRes(21045, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian.aem", 20005, false));
-    resources[2246] = makeRes(21046, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian.aem", 20005, false));
-    resources[2247] = makeRes(21047, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian.aem", 20005, false));
-    resources[2248] = makeRes(21048, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian.aem", 20005, false));
-    resources[2249] = makeRes(21049, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian.aem", 20005, false));
-    resources[2250] = makeRes(21055, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran.aem", 20004, false));
-    resources[2251] = makeRes(21056, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran.aem", 20004, false));
-    resources[2252] = makeRes(21057, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran.aem", 20004, false));
-    resources[2253] = makeRes(21065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran.aem", 20004, false));
-    resources[2254] = makeRes(21066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran.aem", 20004, false));
-    resources[2255] = makeRes(21067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran.aem", 20004, false));
-    resources[2256] = makeRes(21068, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran.aem", 20004, false));
-    resources[2257] = makeRes(21069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran.aem", 20004, false));
-    resources[2258] = makeRes(21070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran.aem", 20004, false));
-    resources[2259] = makeRes(21071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran.aem", 20004, false));
-    resources[2260] = makeRes(21072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran.aem", 20004, false));
-    resources[2261] = makeRes(21073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran.aem", 20004, false));
-    resources[2262] = makeRes(21074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran.aem", 20004, false));
-    resources[2263] = makeRes(21075, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian.aem", 20007, false));
-    resources[2264] = makeRes(21076, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian.aem", 20007, false));
-    resources[2265] = makeRes(21077, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian.aem", 20007, false));
-    resources[2266] = makeRes(21078, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian.aem", 20007, false));
-    resources[2267] = makeRes(21079, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian.aem", 20007, false));
-    resources[2268] = makeRes(21080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran.aem", 20004, false));
-    resources[2269] = makeRes(21081, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran.aem", 20004, false));
-    resources[2270] = makeRes(21082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran.aem", 20004, false));
-    resources[2271] = makeRes(21083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran.aem", 20004, false));
-    resources[2272] = makeRes(21084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran.aem", 20004, false));
-    resources[2273] = makeRes(21085, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian.aem", 20005, false));
-    resources[2274] = makeRes(21086, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian.aem", 20005, false));
-    resources[2275] = makeRes(21087, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian.aem", 20005, false));
-    resources[2276] = makeRes(21088, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian.aem", 20005, false));
-    resources[2277] = makeRes(21089, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian.aem", 20005, false));
-    resources[2278] = makeRes(21090, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran.aem", 20004, false));
-    resources[2279] = makeRes(21091, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran.aem", 20004, false));
-    resources[2280] = makeRes(21092, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran.aem", 20004, false));
-    resources[2281] = makeRes(21093, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran.aem", 20004, false));
-    resources[2282] = makeRes(21094, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran.aem", 20004, false));
-    resources[2283] = makeRes(21095, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran.aem", 20004, false));
-    resources[2284] = makeRes(21096, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran.aem", 20004, false));
-    resources[2285] = makeRes(21097, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran.aem", 20004, false));
-    resources[2286] = makeRes(21098, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran.aem", 20004, false));
-    resources[2287] = makeRes(21099, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran.aem", 20004, false));
-    resources[2288] = makeRes(21105, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma.aem", 20007, false));
-    resources[2289] = makeRes(21106, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma.aem", 20007, false));
-    resources[2290] = makeRes(21107, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma.aem", 20007, false));
-    resources[2291] = makeRes(21112, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian.aem", 20007, false));
-    resources[2292] = makeRes(21113, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian.aem", 20007, false));
-    resources[2293] = makeRes(21114, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian.aem", 20007, false));
-    resources[2294] = makeRes(21115, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian.aem", 20007, false));
-    resources[2295] = makeRes(21116, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian.aem", 20007, false));
-    resources[2296] = makeRes(21117, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian.aem", 20007, false));
-    resources[2297] = makeRes(21118, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian.aem", 20007, false));
-    resources[2298] = makeRes(21119, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian.aem", 20005, false));
-    resources[2299] = makeRes(21120, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian.aem", 20005, false));
-    resources[2300] = makeRes(21121, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian.aem", 20005, false));
-    resources[2301] = makeRes(21122, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian.aem", 20005, false));
-    resources[2302] = makeRes(21123, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian.aem", 20005, false));
-    resources[2303] = makeRes(21800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_emissive.aem", 20006, false));
-    resources[2304] = makeRes(21801, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_emissive.aem", 20006, false));
-    resources[2305] = makeRes(21802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_emissive.aem", 20006, false));
-    resources[2306] = makeRes(21803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_emissive.aem", 20006, false));
-    resources[2307] = makeRes(21804, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_emissive.aem", 20006, false));
-    resources[2308] = makeRes(21805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_emissive.aem", 20003, false));
-    resources[2309] = makeRes(21806, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_emissive.aem", 20003, false));
-    resources[2310] = makeRes(21807, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_emissive.aem", 20003, false));
-    resources[2311] = makeRes(21808, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_emissive.aem", 20003, false));
-    resources[2312] = makeRes(21809, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_emissive.aem", 20003, false));
-    resources[2313] = makeRes(21810, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_emissive.aem", 20003, false));
-    resources[2314] = makeRes(21820, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_emissive.aem", 20008, false));
-    resources[2315] = makeRes(21821, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_emissive.aem", 20008, false));
-    resources[2316] = makeRes(21822, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_emissive.aem", 20008, false));
-    resources[2317] = makeRes(21823, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_emissive.aem", 20008, false));
-    resources[2318] = makeRes(21824, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_emissive.aem", 20008, false));
-    resources[2319] = makeRes(21830, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_emissive.aem", 20006, false));
-    resources[2320] = makeRes(21831, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_emissive.aem", 20006, false));
-    resources[2321] = makeRes(21832, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_emissive.aem", 20006, false));
-    resources[2322] = makeRes(21833, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_emissive.aem", 20006, false));
-    resources[2323] = makeRes(21835, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_emissive.aem", 20003, false));
-    resources[2324] = makeRes(21836, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_emissive.aem", 20003, false));
-    resources[2325] = makeRes(21837, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_emissive.aem", 20003, false));
-    resources[2326] = makeRes(21838, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_emissive.aem", 20003, false));
-    resources[2327] = makeRes(21839, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_emissive.aem", 20003, false));
-    resources[2328] = makeRes(21840, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_emissive.aem", 20003, false));
-    resources[2329] = makeRes(21841, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_emissive.aem", 20003, false));
-    resources[2330] = makeRes(21842, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_emissive.aem", 20003, false));
-    resources[2331] = makeRes(21843, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_emissive.aem", 20003, false));
-    resources[2332] = makeRes(21844, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_emissive.aem", 20003, false));
-    resources[2333] = makeRes(21845, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_emissive.aem", 20006, false));
-    resources[2334] = makeRes(21846, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_emissive.aem", 20006, false));
-    resources[2335] = makeRes(21847, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_emissive.aem", 20006, false));
-    resources[2336] = makeRes(21848, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_emissive.aem", 20006, false));
-    resources[2337] = makeRes(21849, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_emissive.aem", 20006, false));
-    resources[2338] = makeRes(21855, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_emissive.aem", 20003, false));
-    resources[2339] = makeRes(21856, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_emissive.aem", 20003, false));
-    resources[2340] = makeRes(21857, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_emissive.aem", 20003, false));
-    resources[2341] = makeRes(21865, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_emissive.aem", 20003, false));
-    resources[2342] = makeRes(21866, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_emissive.aem", 20003, false));
-    resources[2343] = makeRes(21867, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_emissive.aem", 20003, false));
-    resources[2344] = makeRes(21868, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_emissive.aem", 20003, false));
-    resources[2345] = makeRes(21869, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_emissive.aem", 20003, false));
-    resources[2346] = makeRes(21870, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_emissive.aem", 20003, false));
-    resources[2347] = makeRes(21871, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_emissive.aem", 20003, false));
-    resources[2348] = makeRes(21872, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_emissive.aem", 20003, false));
-    resources[2349] = makeRes(21873, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_emissive.aem", 20003, false));
-    resources[2350] = makeRes(21874, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_emissive.aem", 20003, false));
-    resources[2351] = makeRes(21875, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_emissive.aem", 20008, false));
-    resources[2352] = makeRes(21876, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_emissive.aem", 20008, false));
-    resources[2353] = makeRes(21877, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_emissive.aem", 20008, false));
-    resources[2354] = makeRes(21878, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_emissive.aem", 20008, false));
-    resources[2355] = makeRes(21879, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_emissive.aem", 20008, false));
-    resources[2356] = makeRes(21880, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_emissive.aem", 20003, false));
-    resources[2357] = makeRes(21881, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_emissive.aem", 20003, false));
-    resources[2358] = makeRes(21882, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_emissive.aem", 20003, false));
-    resources[2359] = makeRes(21883, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_emissive.aem", 20003, false));
-    resources[2360] = makeRes(21884, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_emissive.aem", 20003, false));
-    resources[2361] = makeRes(21885, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_emissive.aem", 20006, false));
-    resources[2362] = makeRes(21886, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_emissive.aem", 20006, false));
-    resources[2363] = makeRes(21887, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_emissive.aem", 20006, false));
-    resources[2364] = makeRes(21888, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_emissive.aem", 20006, false));
-    resources[2365] = makeRes(21889, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_emissive.aem", 20006, false));
-    resources[2366] = makeRes(21890, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_emissive.aem", 20003, false));
-    resources[2367] = makeRes(21891, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_emissive.aem", 20003, false));
-    resources[2368] = makeRes(21892, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_emissive.aem", 20003, false));
-    resources[2369] = makeRes(21893, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_emissive.aem", 20003, false));
-    resources[2370] = makeRes(21894, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_emissive.aem", 20003, false));
-    resources[2371] = makeRes(21895, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_emissive.aem", 20003, false));
-    resources[2372] = makeRes(21896, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_emissive.aem", 20003, false));
-    resources[2373] = makeRes(21897, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_emissive.aem", 20003, false));
-    resources[2374] = makeRes(21898, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_emissive.aem", 20003, false));
-    resources[2375] = makeRes(21899, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_emissive.aem", 20003, false));
-    resources[2376] = makeRes(21905, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_emissive.aem", 20008, false));
-    resources[2377] = makeRes(21906, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_emissive.aem", 20008, false));
-    resources[2378] = makeRes(21907, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_emissive.aem", 20008, false));
-    resources[2379] = makeRes(21912, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_emissive.aem", 20008, false));
-    resources[2380] = makeRes(21913, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_emissive.aem", 20008, false));
-    resources[2381] = makeRes(21914, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_emissive.aem", 20008, false));
-    resources[2382] = makeRes(21915, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_emissive.aem", 20008, false));
-    resources[2383] = makeRes(21916, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_emissive.aem", 20008, false));
-    resources[2384] = makeRes(21917, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_emissive.aem", 20008, false));
-    resources[2385] = makeRes(21918, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_emissive.aem", 20008, false));
-    resources[2386] = makeRes(21919, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_emissive.aem", 20006, false));
-    resources[2387] = makeRes(21920, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_emissive.aem", 20006, false));
-    resources[2388] = makeRes(21921, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_emissive.aem", 20006, false));
-    resources[2389] = makeRes(21922, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_emissive.aem", 20006, false));
-    resources[2390] = makeRes(21923, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_emissive.aem", 20006, false));
-    resources[2391] = makeRes(22000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_lights_add.aem", 34810, false));
-    resources[2392] = makeRes(22001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_lights_add.aem", 34810, false));
-    resources[2393] = makeRes(22002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_lights_add.aem", 34810, false));
-    resources[2394] = makeRes(22003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_lights_add.aem", 34810, false));
-    resources[2395] = makeRes(22004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_lights_add.aem", 34810, false));
-    resources[2396] = makeRes(22005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_lights_add.aem", 3, false));
-    resources[2397] = makeRes(22006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_lights_add.aem", 3, false));
-    resources[2398] = makeRes(22007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_lights_add.aem", 3, false));
-    resources[2399] = makeRes(22008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_lights_add.aem", 3, false));
-    resources[2400] = makeRes(22009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_lights_add.aem", 3, false));
-    resources[2401] = makeRes(22010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_lights_add.aem", 3, false));
-    resources[2402] = makeRes(22020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_lights_add.aem", 34600, false));
-    resources[2403] = makeRes(22021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_lights_add.aem", 34600, false));
-    resources[2404] = makeRes(22022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_lights_add.aem", 34600, false));
-    resources[2405] = makeRes(22023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_lights_add.aem", 34600, false));
-    resources[2406] = makeRes(22024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_lights_add.aem", 34600, false));
-    resources[2407] = makeRes(22030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_lights_add.aem", 34810, false));
-    resources[2408] = makeRes(22031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_lights_add.aem", 34810, false));
-    resources[2409] = makeRes(22032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_lights_add.aem", 34810, false));
-    resources[2410] = makeRes(22033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_lights_add.aem", 34810, false));
-    resources[2411] = makeRes(22035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_lights_add.aem", 3, false));
-    resources[2412] = makeRes(22036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_lights_add.aem", 3, false));
-    resources[2413] = makeRes(22037, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_lights_add.aem", 3, false));
-    resources[2414] = makeRes(22038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_lights_add.aem", 3, false));
-    resources[2415] = makeRes(22039, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_lights_add.aem", 3, false));
-    resources[2416] = makeRes(22040, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_lights_add.aem", 3, false));
-    resources[2417] = makeRes(22041, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_lights_add.aem", 3, false));
-    resources[2418] = makeRes(22042, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_lights_add.aem", 3, false));
-    resources[2419] = makeRes(22043, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_lights_add.aem", 3, false));
-    resources[2420] = makeRes(22044, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_lights_add.aem", 3, false));
-    resources[2421] = makeRes(22045, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_lights_add.aem", 34810, false));
-    resources[2422] = makeRes(22046, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_lights_add.aem", 34810, false));
-    resources[2423] = makeRes(22047, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_lights_add.aem", 34810, false));
-    resources[2424] = makeRes(22048, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_lights_add.aem", 34810, false));
-    resources[2425] = makeRes(22049, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_lights_add.aem", 34810, false));
-    resources[2426] = makeRes(22055, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_lights_add.aem", 3, false));
-    resources[2427] = makeRes(22056, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_lights_add.aem", 3, false));
-    resources[2428] = makeRes(22057, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_lights_add.aem", 3, false));
-    resources[2429] = makeRes(22065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_lights_add.aem", 3, false));
-    resources[2430] = makeRes(22066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_lights_add.aem", 3, false));
-    resources[2431] = makeRes(22067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_lights_add.aem", 3, false));
-    resources[2432] = makeRes(22068, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_lights_add.aem", 3, false));
-    resources[2433] = makeRes(22069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_lights_add.aem", 3, false));
-    resources[2434] = makeRes(22070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_lights_add.aem", 3, false));
-    resources[2435] = makeRes(22071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_lights_add.aem", 3, false));
-    resources[2436] = makeRes(22072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_lights_add.aem", 3, false));
-    resources[2437] = makeRes(22073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_lights_add.aem", 3, false));
-    resources[2438] = makeRes(22074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_lights_add.aem", 3, false));
-    resources[2439] = makeRes(22075, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_lights_add.aem", 34600, false));
-    resources[2440] = makeRes(22076, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_lights_add.aem", 34600, false));
-    resources[2441] = makeRes(22077, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_lights_add.aem", 34600, false));
-    resources[2442] = makeRes(22078, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_lights_add.aem", 34600, false));
-    resources[2443] = makeRes(22079, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_lights_add.aem", 34600, false));
-    resources[2444] = makeRes(22080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_lights_add.aem", 3, false));
-    resources[2445] = makeRes(22081, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_lights_add.aem", 3, false));
-    resources[2446] = makeRes(22082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_lights_add.aem", 3, false));
-    resources[2447] = makeRes(22083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_lights_add.aem", 3, false));
-    resources[2448] = makeRes(22084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_lights_add.aem", 3, false));
-    resources[2449] = makeRes(22085, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_lights_add.aem", 34810, false));
-    resources[2450] = makeRes(22086, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_lights_add.aem", 34810, false));
-    resources[2451] = makeRes(22087, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_lights_add.aem", 34810, false));
-    resources[2452] = makeRes(22088, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_lights_add.aem", 34810, false));
-    resources[2453] = makeRes(22089, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_lights_add.aem", 34810, false));
-    resources[2454] = makeRes(22090, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_lights_add.aem", 3, false));
-    resources[2455] = makeRes(22091, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_lights_add.aem", 3, false));
-    resources[2456] = makeRes(22092, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_lights_add.aem", 3, false));
-    resources[2457] = makeRes(22093, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_lights_add.aem", 3, false));
-    resources[2458] = makeRes(22094, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_lights_add.aem", 3, false));
-    resources[2459] = makeRes(22095, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_lights_add.aem", 3, false));
-    resources[2460] = makeRes(22096, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_lights_add.aem", 3, false));
-    resources[2461] = makeRes(22097, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_lights_add.aem", 3, false));
-    resources[2462] = makeRes(22098, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_lights_add.aem", 3, false));
-    resources[2463] = makeRes(22099, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_lights_add.aem", 3, false));
-    resources[2464] = makeRes(22105, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_lights_add.aem", 34600, false));
-    resources[2465] = makeRes(22106, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_lights_add.aem", 34600, false));
-    resources[2466] = makeRes(22107, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_lights_add.aem", 34600, false));
-    resources[2467] = makeRes(22112, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_add.aem", 34600, false));
-    resources[2468] = makeRes(22113, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_add.aem", 34600, false));
-    resources[2469] = makeRes(22114, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_add.aem", 34600, false));
-    resources[2470] = makeRes(22115, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_add.aem", 34600, false));
-    resources[2471] = makeRes(22116, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_add.aem", 34600, false));
-    resources[2472] = makeRes(22117, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_add.aem", 34600, false));
-    resources[2473] = makeRes(22118, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_add.aem", 34600, false));
-    resources[2474] = makeRes(22119, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_add.aem", 34810, false));
-    resources[2475] = makeRes(22120, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_add.aem", 34810, false));
-    resources[2476] = makeRes(22121, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_add.aem", 34810, false));
-    resources[2477] = makeRes(22122, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_add.aem", 34810, false));
-    resources[2478] = makeRes(22123, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_add.aem", 34810, false));
-    resources[2479] = makeRes(16436, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk.aem", 20032, false));
-    resources[2480] = makeRes(16439, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_emissive.aem", 20031, false));
-    resources[2481] = makeRes(16442, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_lights_add.aem", 20033, false));
-    resources[2482] = makeRes(16443, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void.aem", 20045, false));
-    resources[2483] = makeRes(16446, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void_emissive.aem", 20048, false));
-    resources[2484] = makeRes(16449, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void_add.aem", 20047, false));
-    resources[2485] = makeRes(14285, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add.aem", 27301, false));
-    resources[2486] = makeRes(14286, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add_lookat.aem", 27301, false));
+    resources[2213] = makeRes(
+        18834, 4, new AbyssEngine::ResourceMesh("data/meshes/gas_cloud_a_anim_lookat_add.aem", 27311, false));
+    resources[2214] = makeRes(
+        18835, 4, new AbyssEngine::ResourceMesh("data/meshes/gas_cloud_b_anim_lookat_add.aem", 27311, false));
+    resources[2215] = makeRes(
+        21000, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian.aem", 20005,
+                                                false));
+    resources[2216] = makeRes(
+        21001, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian.aem", 20005,
+                                                false));
+    resources[2217] = makeRes(
+        21002, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian.aem", 20005,
+                                                false));
+    resources[2218] = makeRes(
+        21003, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian.aem", 20005,
+                                                false));
+    resources[2219] = makeRes(
+        21004, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian.aem", 20005,
+                                                false));
+    resources[2220] = makeRes(
+        21005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran.aem", 20004,
+                                                false));
+    resources[2221] = makeRes(
+        21006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran.aem", 20004,
+                                                false));
+    resources[2222] = makeRes(
+        21007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran.aem", 20004,
+                                                false));
+    resources[2223] = makeRes(
+        21008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran.aem", 20004,
+                                                false));
+    resources[2224] = makeRes(
+        21009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran.aem", 20004,
+                                                false));
+    resources[2225] = makeRes(
+        21010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran.aem", 20004,
+                                                false));
+    resources[2226] = makeRes(
+        21020, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian.aem", 20007,
+                                                false));
+    resources[2227] = makeRes(
+        21021, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian.aem", 20007,
+                                                false));
+    resources[2228] = makeRes(
+        21022, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian.aem", 20007,
+                                                false));
+    resources[2229] = makeRes(
+        21023, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian.aem", 20007,
+                                                false));
+    resources[2230] = makeRes(
+        21024, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian.aem", 20007,
+                                                false));
+    resources[2231] = makeRes(
+        21030, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian.aem", 20005,
+                                                false));
+    resources[2232] = makeRes(
+        21031, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian.aem", 20005,
+                                                false));
+    resources[2233] = makeRes(
+        21032, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian.aem", 20005,
+                                                false));
+    resources[2234] = makeRes(
+        21033, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian.aem", 20005,
+                                                false));
+    resources[2235] = makeRes(
+        21035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran.aem", 20004,
+                                                false));
+    resources[2236] = makeRes(
+        21036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran.aem", 20004,
+                                                false));
+    resources[2237] = makeRes(
+        21037, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran.aem", 20004,
+                                                false));
+    resources[2238] = makeRes(
+        21038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran.aem", 20004,
+                                                false));
+    resources[2239] = makeRes(
+        21039, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran.aem", 20004,
+                                                false));
+    resources[2240] = makeRes(
+        21040, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran.aem", 20004,
+                                                false));
+    resources[2241] = makeRes(
+        21041, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran.aem", 20004,
+                                                false));
+    resources[2242] = makeRes(
+        21042, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran.aem", 20004,
+                                                false));
+    resources[2243] = makeRes(
+        21043, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran.aem", 20004,
+                                                false));
+    resources[2244] = makeRes(
+        21044, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran.aem", 20004,
+                                                false));
+    resources[2245] = makeRes(
+        21045, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian.aem", 20005,
+                                                false));
+    resources[2246] = makeRes(
+        21046, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian.aem", 20005,
+                                                false));
+    resources[2247] = makeRes(
+        21047, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian.aem", 20005,
+                                                false));
+    resources[2248] = makeRes(
+        21048, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian.aem", 20005,
+                                                false));
+    resources[2249] = makeRes(
+        21049, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian.aem", 20005,
+                                                false));
+    resources[2250] = makeRes(
+        21055, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran.aem", 20004,
+                                                false));
+    resources[2251] = makeRes(
+        21056, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran.aem", 20004,
+                                                false));
+    resources[2252] = makeRes(
+        21057, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran.aem", 20004,
+                                                false));
+    resources[2253] = makeRes(
+        21065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran.aem", 20004,
+                                                false));
+    resources[2254] = makeRes(
+        21066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran.aem", 20004,
+                                                false));
+    resources[2255] = makeRes(
+        21067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran.aem", 20004,
+                                                false));
+    resources[2256] = makeRes(
+        21068, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran.aem", 20004,
+                                                false));
+    resources[2257] = makeRes(
+        21069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran.aem", 20004,
+                                                false));
+    resources[2258] = makeRes(
+        21070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran.aem", 20004,
+                                                false));
+    resources[2259] = makeRes(
+        21071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran.aem", 20004,
+                                                false));
+    resources[2260] = makeRes(
+        21072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran.aem", 20004,
+                                                false));
+    resources[2261] = makeRes(
+        21073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran.aem", 20004,
+                                                false));
+    resources[2262] = makeRes(
+        21074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran.aem", 20004,
+                                                false));
+    resources[2263] = makeRes(
+        21075, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian.aem", 20007,
+                                                false));
+    resources[2264] = makeRes(
+        21076, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian.aem", 20007,
+                                                false));
+    resources[2265] = makeRes(
+        21077, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian.aem", 20007,
+                                                false));
+    resources[2266] = makeRes(
+        21078, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian.aem", 20007,
+                                                false));
+    resources[2267] = makeRes(
+        21079, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian.aem", 20007,
+                                                false));
+    resources[2268] = makeRes(
+        21080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran.aem", 20004,
+                                                false));
+    resources[2269] = makeRes(
+        21081, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran.aem", 20004,
+                                                false));
+    resources[2270] = makeRes(
+        21082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran.aem", 20004,
+                                                false));
+    resources[2271] = makeRes(
+        21083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran.aem", 20004,
+                                                false));
+    resources[2272] = makeRes(
+        21084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran.aem", 20004,
+                                                false));
+    resources[2273] = makeRes(
+        21085, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian.aem", 20005,
+                                                false));
+    resources[2274] = makeRes(
+        21086, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian.aem", 20005,
+                                                false));
+    resources[2275] = makeRes(
+        21087, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian.aem", 20005,
+                                                false));
+    resources[2276] = makeRes(
+        21088, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian.aem", 20005,
+                                                false));
+    resources[2277] = makeRes(
+        21089, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian.aem", 20005,
+                                                false));
+    resources[2278] = makeRes(
+        21090, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran.aem", 20004,
+                                                false));
+    resources[2279] = makeRes(
+        21091, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran.aem", 20004,
+                                                false));
+    resources[2280] = makeRes(
+        21092, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran.aem", 20004,
+                                                false));
+    resources[2281] = makeRes(
+        21093, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran.aem", 20004,
+                                                false));
+    resources[2282] = makeRes(
+        21094, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran.aem", 20004,
+                                                false));
+    resources[2283] = makeRes(
+        21095, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran.aem", 20004,
+                                                false));
+    resources[2284] = makeRes(
+        21096, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran.aem", 20004,
+                                                false));
+    resources[2285] = makeRes(
+        21097, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran.aem", 20004,
+                                                false));
+    resources[2286] = makeRes(
+        21098, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran.aem", 20004,
+                                                false));
+    resources[2287] = makeRes(
+        21099, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran.aem", 20004,
+                                                false));
+    resources[2288] = makeRes(
+        21105, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_105_loma.aem", 20007,
+                                                false));
+    resources[2289] = makeRes(
+        21106, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_106_loma.aem", 20007,
+                                                false));
+    resources[2290] = makeRes(
+        21107, 4, new AbyssEngine::ResourceMesh("data/assets/valkyrie/3d/meshes/stations/v_station_107_loma.aem", 20007,
+                                                false));
+    resources[2291] = makeRes(
+        21112, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_112_midorian.aem",
+                                                20007, false));
+    resources[2292] = makeRes(
+        21113, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_113_midorian.aem",
+                                                20007, false));
+    resources[2293] = makeRes(
+        21114, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_114_midorian.aem",
+                                                20007, false));
+    resources[2294] = makeRes(
+        21115, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_115_midorian.aem",
+                                                20007, false));
+    resources[2295] = makeRes(
+        21116, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_116_midorian.aem",
+                                                20007, false));
+    resources[2296] = makeRes(
+        21117, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_117_midorian.aem",
+                                                20007, false));
+    resources[2297] = makeRes(
+        21118, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_118_midorian.aem",
+                                                20007, false));
+    resources[2298] = makeRes(
+        21119, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian.aem",
+                                                20005, false));
+    resources[2299] = makeRes(
+        21120, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian.aem",
+                                                20005, false));
+    resources[2300] = makeRes(
+        21121, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian.aem",
+                                                20005, false));
+    resources[2301] = makeRes(
+        21122, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian.aem",
+                                                20005, false));
+    resources[2302] = makeRes(
+        21123, 4, new AbyssEngine::ResourceMesh("data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian.aem",
+                                                20005, false));
+    resources[2303] = makeRes(
+        21800, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_000_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2304] = makeRes(
+        21801, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_001_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2305] = makeRes(
+        21802, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_002_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2306] = makeRes(
+        21803, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_003_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2307] = makeRes(
+        21804, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_004_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2308] = makeRes(
+        21805, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_emissive.aem",
+                                                20003, false));
+    resources[2309] = makeRes(
+        21806, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_emissive.aem",
+                                                20003, false));
+    resources[2310] = makeRes(
+        21807, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_emissive.aem",
+                                                20003, false));
+    resources[2311] = makeRes(
+        21808, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_emissive.aem",
+                                                20003, false));
+    resources[2312] = makeRes(
+        21809, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_emissive.aem",
+                                                20003, false));
+    resources[2313] = makeRes(
+        21810, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_emissive.aem",
+                                                20003, false));
+    resources[2314] = makeRes(
+        21820, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_020_midorian_emissive.aem",
+                                                20008, false));
+    resources[2315] = makeRes(
+        21821, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_021_midorian_emissive.aem",
+                                                20008, false));
+    resources[2316] = makeRes(
+        21822, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_022_midorian_emissive.aem",
+                                                20008, false));
+    resources[2317] = makeRes(
+        21823, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_023_midorian_emissive.aem",
+                                                20008, false));
+    resources[2318] = makeRes(
+        21824, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_024_midorian_emissive.aem",
+                                                20008, false));
+    resources[2319] = makeRes(
+        21830, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_030_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2320] = makeRes(
+        21831, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_031_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2321] = makeRes(
+        21832, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_032_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2322] = makeRes(
+        21833, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_033_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2323] = makeRes(
+        21835, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_emissive.aem",
+                                                20003, false));
+    resources[2324] = makeRes(
+        21836, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_emissive.aem",
+                                                20003, false));
+    resources[2325] = makeRes(
+        21837, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_emissive.aem",
+                                                20003, false));
+    resources[2326] = makeRes(
+        21838, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_emissive.aem",
+                                                20003, false));
+    resources[2327] = makeRes(
+        21839, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_emissive.aem",
+                                                20003, false));
+    resources[2328] = makeRes(
+        21840, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_emissive.aem",
+                                                20003, false));
+    resources[2329] = makeRes(
+        21841, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_emissive.aem",
+                                                20003, false));
+    resources[2330] = makeRes(
+        21842, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_emissive.aem",
+                                                20003, false));
+    resources[2331] = makeRes(
+        21843, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_emissive.aem",
+                                                20003, false));
+    resources[2332] = makeRes(
+        21844, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_emissive.aem",
+                                                20003, false));
+    resources[2333] = makeRes(
+        21845, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_045_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2334] = makeRes(
+        21846, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_046_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2335] = makeRes(
+        21847, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_047_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2336] = makeRes(
+        21848, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_048_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2337] = makeRes(
+        21849, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_049_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2338] = makeRes(
+        21855, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_emissive.aem",
+                                                20003, false));
+    resources[2339] = makeRes(
+        21856, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_emissive.aem",
+                                                20003, false));
+    resources[2340] = makeRes(
+        21857, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_emissive.aem",
+                                                20003, false));
+    resources[2341] = makeRes(
+        21865, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_emissive.aem",
+                                                20003, false));
+    resources[2342] = makeRes(
+        21866, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_emissive.aem",
+                                                20003, false));
+    resources[2343] = makeRes(
+        21867, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_emissive.aem",
+                                                20003, false));
+    resources[2344] = makeRes(
+        21868, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_emissive.aem",
+                                                20003, false));
+    resources[2345] = makeRes(
+        21869, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_emissive.aem",
+                                                20003, false));
+    resources[2346] = makeRes(
+        21870, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_emissive.aem",
+                                                20003, false));
+    resources[2347] = makeRes(
+        21871, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_emissive.aem",
+                                                20003, false));
+    resources[2348] = makeRes(
+        21872, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_emissive.aem",
+                                                20003, false));
+    resources[2349] = makeRes(
+        21873, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_emissive.aem",
+                                                20003, false));
+    resources[2350] = makeRes(
+        21874, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_emissive.aem",
+                                                20003, false));
+    resources[2351] = makeRes(
+        21875, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_075_midorian_emissive.aem",
+                                                20008, false));
+    resources[2352] = makeRes(
+        21876, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_076_midorian_emissive.aem",
+                                                20008, false));
+    resources[2353] = makeRes(
+        21877, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_077_midorian_emissive.aem",
+                                                20008, false));
+    resources[2354] = makeRes(
+        21878, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_078_midorian_emissive.aem",
+                                                20008, false));
+    resources[2355] = makeRes(
+        21879, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_079_midorian_emissive.aem",
+                                                20008, false));
+    resources[2356] = makeRes(
+        21880, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_emissive.aem",
+                                                20003, false));
+    resources[2357] = makeRes(
+        21881, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_emissive.aem",
+                                                20003, false));
+    resources[2358] = makeRes(
+        21882, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_emissive.aem",
+                                                20003, false));
+    resources[2359] = makeRes(
+        21883, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_emissive.aem",
+                                                20003, false));
+    resources[2360] = makeRes(
+        21884, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_emissive.aem",
+                                                20003, false));
+    resources[2361] = makeRes(
+        21885, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_085_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2362] = makeRes(
+        21886, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_086_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2363] = makeRes(
+        21887, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_087_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2364] = makeRes(
+        21888, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_088_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2365] = makeRes(
+        21889, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_089_nivelian_emissive.aem",
+                                                20006, false));
+    resources[2366] = makeRes(
+        21890, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_emissive.aem",
+                                                20003, false));
+    resources[2367] = makeRes(
+        21891, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_emissive.aem",
+                                                20003, false));
+    resources[2368] = makeRes(
+        21892, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_emissive.aem",
+                                                20003, false));
+    resources[2369] = makeRes(
+        21893, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_emissive.aem",
+                                                20003, false));
+    resources[2370] = makeRes(
+        21894, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_emissive.aem",
+                                                20003, false));
+    resources[2371] = makeRes(
+        21895, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_emissive.aem",
+                                                20003, false));
+    resources[2372] = makeRes(
+        21896, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_emissive.aem",
+                                                20003, false));
+    resources[2373] = makeRes(
+        21897, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_emissive.aem",
+                                                20003, false));
+    resources[2374] = makeRes(
+        21898, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_emissive.aem",
+                                                20003, false));
+    resources[2375] = makeRes(
+        21899, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_emissive.aem",
+                                                20003, false));
+    resources[2376] = makeRes(21905, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_emissive.aem", 20008,
+                                  false));
+    resources[2377] = makeRes(21906, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_emissive.aem", 20008,
+                                  false));
+    resources[2378] = makeRes(21907, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_emissive.aem", 20008,
+                                  false));
+    resources[2379] = makeRes(21912, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_emissive.aem",
+                                  20008, false));
+    resources[2380] = makeRes(21913, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_emissive.aem",
+                                  20008, false));
+    resources[2381] = makeRes(21914, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_emissive.aem",
+                                  20008, false));
+    resources[2382] = makeRes(21915, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_emissive.aem",
+                                  20008, false));
+    resources[2383] = makeRes(21916, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_emissive.aem",
+                                  20008, false));
+    resources[2384] = makeRes(21917, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_emissive.aem",
+                                  20008, false));
+    resources[2385] = makeRes(21918, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_emissive.aem",
+                                  20008, false));
+    resources[2386] = makeRes(21919, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_emissive.aem",
+                                  20006, false));
+    resources[2387] = makeRes(21920, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_emissive.aem",
+                                  20006, false));
+    resources[2388] = makeRes(21921, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_emissive.aem",
+                                  20006, false));
+    resources[2389] = makeRes(21922, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_emissive.aem",
+                                  20006, false));
+    resources[2390] = makeRes(21923, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_emissive.aem",
+                                  20006, false));
+    resources[2391] = makeRes(22000, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_000_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2392] = makeRes(22001, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_001_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2393] = makeRes(22002, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_002_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2394] = makeRes(22003, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_003_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2395] = makeRes(22004, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_004_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2396] = makeRes(
+        22005, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_005_terran_lights_add.aem",
+                                                3, false));
+    resources[2397] = makeRes(
+        22006, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_006_terran_lights_add.aem",
+                                                3, false));
+    resources[2398] = makeRes(
+        22007, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_007_terran_lights_add.aem",
+                                                3, false));
+    resources[2399] = makeRes(
+        22008, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_008_terran_lights_add.aem",
+                                                3, false));
+    resources[2400] = makeRes(
+        22009, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_009_terran_lights_add.aem",
+                                                3, false));
+    resources[2401] = makeRes(
+        22010, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_010_terran_lights_add.aem",
+                                                3, false));
+    resources[2402] = makeRes(22020, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_020_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2403] = makeRes(22021, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_021_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2404] = makeRes(22022, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_022_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2405] = makeRes(22023, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_023_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2406] = makeRes(22024, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_024_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2407] = makeRes(22030, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_030_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2408] = makeRes(22031, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_031_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2409] = makeRes(22032, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_032_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2410] = makeRes(22033, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_033_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2411] = makeRes(
+        22035, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_035_terran_lights_add.aem",
+                                                3, false));
+    resources[2412] = makeRes(
+        22036, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_036_terran_lights_add.aem",
+                                                3, false));
+    resources[2413] = makeRes(
+        22037, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_037_terran_lights_add.aem",
+                                                3, false));
+    resources[2414] = makeRes(
+        22038, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_038_terran_lights_add.aem",
+                                                3, false));
+    resources[2415] = makeRes(
+        22039, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_039_terran_lights_add.aem",
+                                                3, false));
+    resources[2416] = makeRes(
+        22040, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_040_terran_lights_add.aem",
+                                                3, false));
+    resources[2417] = makeRes(
+        22041, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_041_terran_lights_add.aem",
+                                                3, false));
+    resources[2418] = makeRes(
+        22042, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_042_terran_lights_add.aem",
+                                                3, false));
+    resources[2419] = makeRes(
+        22043, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_043_terran_lights_add.aem",
+                                                3, false));
+    resources[2420] = makeRes(
+        22044, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_044_terran_lights_add.aem",
+                                                3, false));
+    resources[2421] = makeRes(22045, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_045_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2422] = makeRes(22046, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_046_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2423] = makeRes(22047, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_047_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2424] = makeRes(22048, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_048_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2425] = makeRes(22049, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_049_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2426] = makeRes(
+        22055, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_055_terran_lights_add.aem",
+                                                3, false));
+    resources[2427] = makeRes(
+        22056, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_056_terran_lights_add.aem",
+                                                3, false));
+    resources[2428] = makeRes(
+        22057, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_057_terran_lights_add.aem",
+                                                3, false));
+    resources[2429] = makeRes(
+        22065, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_065_terran_lights_add.aem",
+                                                3, false));
+    resources[2430] = makeRes(
+        22066, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_066_terran_lights_add.aem",
+                                                3, false));
+    resources[2431] = makeRes(
+        22067, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_067_terran_lights_add.aem",
+                                                3, false));
+    resources[2432] = makeRes(
+        22068, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_068_terran_lights_add.aem",
+                                                3, false));
+    resources[2433] = makeRes(
+        22069, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_069_terran_lights_add.aem",
+                                                3, false));
+    resources[2434] = makeRes(
+        22070, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_070_terran_lights_add.aem",
+                                                3, false));
+    resources[2435] = makeRes(
+        22071, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_071_terran_lights_add.aem",
+                                                3, false));
+    resources[2436] = makeRes(
+        22072, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_072_terran_lights_add.aem",
+                                                3, false));
+    resources[2437] = makeRes(
+        22073, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_073_terran_lights_add.aem",
+                                                3, false));
+    resources[2438] = makeRes(
+        22074, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_074_terran_lights_add.aem",
+                                                3, false));
+    resources[2439] = makeRes(22075, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_075_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2440] = makeRes(22076, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_076_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2441] = makeRes(22077, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_077_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2442] = makeRes(22078, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_078_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2443] = makeRes(22079, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_079_midorian_lights_add.aem", 34600,
+                                  false));
+    resources[2444] = makeRes(
+        22080, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_080_terran_lights_add.aem",
+                                                3, false));
+    resources[2445] = makeRes(
+        22081, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_081_terran_lights_add.aem",
+                                                3, false));
+    resources[2446] = makeRes(
+        22082, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_082_terran_lights_add.aem",
+                                                3, false));
+    resources[2447] = makeRes(
+        22083, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_083_terran_lights_add.aem",
+                                                3, false));
+    resources[2448] = makeRes(
+        22084, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_084_terran_lights_add.aem",
+                                                3, false));
+    resources[2449] = makeRes(22085, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_085_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2450] = makeRes(22086, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_086_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2451] = makeRes(22087, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_087_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2452] = makeRes(22088, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_088_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2453] = makeRes(22089, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/main/3d/meshes/stations/station_089_nivelian_lights_add.aem", 34810,
+                                  false));
+    resources[2454] = makeRes(
+        22090, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_090_terran_lights_add.aem",
+                                                3, false));
+    resources[2455] = makeRes(
+        22091, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_091_terran_lights_add.aem",
+                                                3, false));
+    resources[2456] = makeRes(
+        22092, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_092_terran_lights_add.aem",
+                                                3, false));
+    resources[2457] = makeRes(
+        22093, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_093_terran_lights_add.aem",
+                                                3, false));
+    resources[2458] = makeRes(
+        22094, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_094_terran_lights_add.aem",
+                                                3, false));
+    resources[2459] = makeRes(
+        22095, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_095_terran_lights_add.aem",
+                                                3, false));
+    resources[2460] = makeRes(
+        22096, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_096_terran_lights_add.aem",
+                                                3, false));
+    resources[2461] = makeRes(
+        22097, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_097_terran_lights_add.aem",
+                                                3, false));
+    resources[2462] = makeRes(
+        22098, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_098_terran_lights_add.aem",
+                                                3, false));
+    resources[2463] = makeRes(
+        22099, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_099_terran_lights_add.aem",
+                                                3, false));
+    resources[2464] = makeRes(22105, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_105_loma_lights_add.aem", 34600,
+                                  false));
+    resources[2465] = makeRes(22106, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_106_loma_lights_add.aem", 34600,
+                                  false));
+    resources[2466] = makeRes(22107, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/valkyrie/3d/meshes/stations/v_station_107_loma_lights_add.aem", 34600,
+                                  false));
+    resources[2467] = makeRes(22112, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_112_midorian_add.aem", 34600,
+                                  false));
+    resources[2468] = makeRes(22113, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_113_midorian_add.aem", 34600,
+                                  false));
+    resources[2469] = makeRes(22114, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_114_midorian_add.aem", 34600,
+                                  false));
+    resources[2470] = makeRes(22115, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_115_midorian_add.aem", 34600,
+                                  false));
+    resources[2471] = makeRes(22116, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_116_midorian_add.aem", 34600,
+                                  false));
+    resources[2472] = makeRes(22117, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_117_midorian_add.aem", 34600,
+                                  false));
+    resources[2473] = makeRes(22118, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_118_midorian_add.aem", 34600,
+                                  false));
+    resources[2474] = makeRes(22119, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_119_nivelian_add.aem", 34810,
+                                  false));
+    resources[2475] = makeRes(22120, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_120_nivelian_add.aem", 34810,
+                                  false));
+    resources[2476] = makeRes(22121, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_121_nivelian_add.aem", 34810,
+                                  false));
+    resources[2477] = makeRes(22122, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_122_nivelian_add.aem", 34810,
+                                  false));
+    resources[2478] = makeRes(22123, 4, new AbyssEngine::ResourceMesh(
+                                  "data/assets/supernova/3d/meshes/stations/sn_station_123_nivelian_add.aem", 34810,
+                                  false));
+    resources[2479] = makeRes(
+        16436, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk.aem", 20032, false));
+    resources[2480] = makeRes(
+        16439, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_emissive.aem", 20031,
+                                                false));
+    resources[2481] = makeRes(
+        16442, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_vossk_lights_add.aem",
+                                                20033, false));
+    resources[2482] = makeRes(
+        16443, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void.aem", 20045, false));
+    resources[2483] = makeRes(
+        16446, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void_emissive.aem", 20048,
+                                                false));
+    resources[2484] = makeRes(
+        16449, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/stations/station_void_add.aem", 20047,
+                                                false));
+    resources[2485] = makeRes(
+        14285, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add.aem", 27301,
+                                                false));
+    resources[2486] = makeRes(
+        14286, 4, new AbyssEngine::ResourceMesh("data/assets/main/3d/meshes/fx/explosion_void_station_add_lookat.aem",
+                                                27301, false));
     canvas->SetResourceList(resources, 2488);
 
     // ---- 152 generated image resources (ids 5000.., image variants 10200..) ----
     for (int i = 0; i < 152; ++i)
-        canvas->AddResource(makeRes((unsigned short)(i + 5000), 3,
-                                    newImage((unsigned short)(i + 10200), 0)));
+        canvas->AddResource(makeRes((unsigned short) (i + 5000), 3,
+                                    newImage((unsigned short) (i + 10200), 0)));
 
     // ---- Phase B: individual AddResource entries ----
-    canvas->AddResource(makeRes(11635, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ar_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11637, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_cht_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11639, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_chs_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11643, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_kr_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11645, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ja_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11641, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_langselect_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(10062, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface_ipad_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11635, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ar_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11637, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_cht_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11639, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_chs_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11643, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_kr_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11645, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ja_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11641, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_langselect_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10062, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface_ipad_1440.aei", 0.0f)));
     canvas->AddResource(makeRes(10002, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_logos_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(27340, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_credits_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_ipad_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_ipad_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(27340, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_credits_1440.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_ipad_1440.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_ipad_1440.aei", 0.0f)));
     canvas->AddResource(makeRes(0, 0, nullptr));
-    canvas->AddResource(makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(10063, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface2_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_2_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_ipad_large.aei", 0.0f)));
-    canvas->AddResource(makeRes(11635, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ar_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11637, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_cht_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11639, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_chs_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11643, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_kr_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11645, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ja_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11641, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_langselect_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(10062, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(10002, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_logos_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(27340, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_credits_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_iphone4_2.aei", 0.0f)));
-    canvas->AddResource(makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_iphone4.aei", 0.0f)));
-    canvas->AddResource(makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_ipad_large.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10063, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface2_ipad_large.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_large.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_2_large.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface_ipad_large.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_ipad_large.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_ipad_large.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11635, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ar_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11637, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_cht_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11639, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_chs_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11643, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_kr_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11645, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_ja_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11641, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_font_langselect_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10062, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10002, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_logos_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(27340, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_credits_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_iphone4_2.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_iphone4.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        27341, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_challenge_interface_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(27342, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_campaign_select_iphone4.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11630, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_dlc_interface.aei", 0.0f)));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));
@@ -2623,10 +5322,14 @@ void BuildResourceList(AbyssEngine::Engine *engine)
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));
-    canvas->AddResource(makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(10063, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface2_ipad_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_1440.aei", 0.0f)));
-    canvas->AddResource(makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_2_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10089, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface3_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10063, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_interface2_ipad_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(10064, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_1440.aei", 0.0f)));
+    canvas->AddResource(
+        makeRes(11632, 2, new AbyssEngine::ResourceTexture("data/textures/gof2_items_ipad_2_1440.aei", 0.0f)));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(3001, 3, newImage(0x2d6eu, 0x0u)));
     canvas->AddResource(makeRes(0, 0, nullptr));
@@ -2764,33 +5467,87 @@ void BuildResourceList(AbyssEngine::Engine *engine)
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(7005, 3, newImage(0x2712u, 0x5u)));
     canvas->AddResource(makeRes(0, 0, nullptr));
-    canvas->AddResource(makeRes(10011, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_000_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10012, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_001_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10013, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_002_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10014, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_003_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10015, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_004_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10016, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_005_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10017, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_006_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10018, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_007_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10019, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_008_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10020, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_009_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10021, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_010_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10022, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_011_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10023, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_012_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10024, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_013_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10025, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_014_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10026, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_015_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10027, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_016_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10028, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_017_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10029, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_018_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(10030, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_019_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11621, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_020_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11622, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_021_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11623, 2, new AbyssEngine::ResourceTexture("data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_022_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11784, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/planets/sn_planet_024_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11785, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/planets/sn_planet_025_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(11786, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/planets/sn_planet_026_small.aei", 0.0f)));
-    canvas->AddResource(makeRes(29080, 2, new AbyssEngine::ResourceTexture("data/assets/supernova/3d/textures/low/etc/planets/sn_planet_ring.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        10011, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_000_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10012, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_001_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10013, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_002_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10014, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_003_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10015, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_004_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10016, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_005_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10017, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_006_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10018, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_007_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10019, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_008_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10020, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_009_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10021, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_010_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10022, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_011_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10023, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_012_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10024, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_013_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10025, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_014_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10026, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_015_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10027, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_016_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10028, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_017_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10029, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_018_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        10030, 2, new AbyssEngine::ResourceTexture("data/assets/main/3d/textures/low/etc/planets/planet_019_small.aei",
+                                                   0.0f)));
+    canvas->AddResource(makeRes(
+        11621, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_020_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        11622, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_021_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        11623, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/valkyrie/3d/textures/low/etc/planets/v_planet_022_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        11784, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/planets/sn_planet_024_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        11785, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/planets/sn_planet_025_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        11786, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/planets/sn_planet_026_small.aei", 0.0f)));
+    canvas->AddResource(makeRes(
+        29080, 2, new AbyssEngine::ResourceTexture(
+            "data/assets/supernova/3d/textures/low/etc/planets/sn_planet_ring.aei", 0.0f)));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));
     canvas->AddResource(makeRes(0, 0, nullptr));

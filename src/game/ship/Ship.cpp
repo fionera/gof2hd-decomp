@@ -4,32 +4,19 @@
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
-// Game data tables reached through the recovered indirection chains. These do
-// not resolve to any of the shared singletons and are left as-is.
 extern int **gShipDataRoot  __attribute__((visibility("hidden")));
 extern int *gRaceTable      __attribute__((visibility("hidden")));
 extern int *gDifficultyPtr  __attribute__((visibility("hidden")));
 extern int *gShopRoot;
 
-// Deletes every owned pointee in the array (nulling each slot as it goes),
-// then frees the backing store. Out-of-line in the original as
-// ArrayReleaseClasses<T>; the loop walks the full capacity, not just size.
-
-// ===========================================================================
-// Construction / destruction
-// ===========================================================================
-
-// Builds a fresh ship from its base stats: id, hull/load/value, the four
-// slot-counts (weapon/secondary/shield/device), and the handling rating
-// (stored normalised by dividing the design value by 100).
 Ship::Ship(int index, int baseHP, int baseLoad, int value,
            int slot0, int slot1, int slot2, int slot3, float handling) {
-    this->index       = index;
-    this->baseHP      = baseHP;
-    this->value       = value;
-    this->baseLoad    = baseLoad;
+    this->index = index;
+    this->baseHP = baseHP;
+    this->value = value;
+    this->baseLoad = baseLoad;
     this->currentLoad = 0;
-    this->price       = value;
+    this->price = value;
 
     this->slots = new int[4];
     this->slots[0] = slot0;
@@ -39,23 +26,21 @@ Ship::Ship(int index, int baseHP, int baseLoad, int value,
 
     this->handling = handling / 100.0f;
 
-    this->equipment = new Array<Item*>();
-    ArraySetLength<Item*>(slot0 + slot1 + slot2 + slot3, *this->equipment);
+    this->equipment = new Array<Item *>();
+    ArraySetLength<Item *>(slot0 + slot1 + slot2 + slot3, *this->equipment);
 
-    this->race                = 0;
-    this->cargo               = 0;
-    this->mods                = 0;
+    this->race = 0;
+    this->cargo = 0;
+    this->mods = 0;
     this->numAddedDeviceSlots = 0;
 
     refreshValue();
 }
 
-// Releases the owned equipment / cargo item lists, the slot-count array and
-// the installed-mods list.
 Ship::~Ship() {
     if (this->equipment != 0) {
         if (this->equipment->size() != 0) {
-            ArrayReleaseClasses<Item*>(*this->equipment);
+            ArrayReleaseClasses<Item *>(*this->equipment);
         }
         delete this->equipment;
     }
@@ -63,7 +48,7 @@ Ship::~Ship() {
 
     if (this->cargo != 0) {
         if (this->cargo->size() != 0) {
-            ArrayReleaseClasses<Item*>(*this->cargo);
+            ArrayReleaseClasses<Item *>(*this->cargo);
         }
         delete this->cargo;
     }
@@ -78,28 +63,18 @@ Ship::~Ship() {
     this->mods = 0;
 }
 
-// ===========================================================================
-// Cargo
-// ===========================================================================
-
-// Merges the supplied items into the current cargo hold (stacking matching
-// goods) and commits the combined list as the new cargo.
-void Ship::addCargo(Array<Item*> *items) {
+void Ship::addCargo(Array<Item *> *items) {
     setCargo(Item::combineItems(this->cargo, items));
 }
 
-// Wraps a single item in a fresh array, then commits it to the cargo hold.
 void Ship::addCargo(Item *item) {
-    Array<Item*> *a = new Array<Item*>();
-    ArrayAdd<Item*>(item, *a);
+    Array<Item *> *a = new Array<Item *>();
+    ArrayAdd<Item *>(item, *a);
     setCargo(a);
 }
 
-// Removes up to `amount` units of the good with the given index from the
-// cargo hold. Returns 1 if the good was fully depleted (and the hold
-// compacted), 0 otherwise.
 int Ship::removeCargo(int index, int amount) {
-    Array<Item*> *c = this->cargo;
+    Array<Item *> *c = this->cargo;
     if (c == 0) {
         return 0;
     }
@@ -134,9 +109,7 @@ void Ship::removeAllCargo() {
     this->cargo = 0;
 }
 
-// Installs `cargo` as the new hold, recomputes the current load and updates
-// the world's peak free-cargo high-water mark.
-void Ship::setCargo(Array<Item*> *cargo) {
+void Ship::setCargo(Array<Item *> *cargo) {
     this->currentLoad = 0;
     this->cargo = cargo;
     if (cargo != 0) {
@@ -146,13 +119,13 @@ void Ship::setCargo(Array<Item*> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = (int *)gStatus;
+    int *world = (int *) gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
 }
 
-void Ship::replaceCargo(Array<Item*> *cargo) {
+void Ship::replaceCargo(Array<Item *> *cargo) {
     this->currentLoad = 0;
     this->cargo = cargo;
     for (unsigned int i = 0; i < cargo->size(); i = i + 1) {
@@ -160,18 +133,18 @@ void Ship::replaceCargo(Array<Item*> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = (int *)gStatus;
+    int *world = (int *) gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
 }
 
-Array<Item*>* Ship::getCargo() {
+Array<Item *> *Ship::getCargo() {
     return this->cargo;
 }
 
-Item* Ship::getCargo(int index) {
-    Array<Item*> *c = this->cargo;
+Item *Ship::getCargo(int index) {
+    Array<Item *> *c = this->cargo;
     if (c == 0) {
         return 0;
     }
@@ -185,7 +158,7 @@ Item* Ship::getCargo(int index) {
 }
 
 bool Ship::hasCargo(int index, int amount) {
-    Array<Item*> *c = this->cargo;
+    Array<Item *> *c = this->cargo;
     if (c == 0) {
         return false;
     }
@@ -199,7 +172,7 @@ bool Ship::hasCargo(int index, int amount) {
 }
 
 bool Ship::hasCargoType(int type) {
-    Array<Item*> *c = this->cargo;
+    Array<Item *> *c = this->cargo;
     if (c == 0) {
         return false;
     }
@@ -218,7 +191,7 @@ bool Ship::hasVolatileGoods() {
 
 int Ship::getCargoValue() {
     int total = 0;
-    Array<Item*> *c = this->cargo;
+    Array<Item *> *c = this->cargo;
     if (c != 0) {
         for (unsigned int i = 0; i < c->size(); i = i + 1) {
             Item *it = c->data()[i];
@@ -241,19 +214,14 @@ int Ship::getFreeSpace() {
 void Ship::changeLoad(int delta) {
     this->currentLoad += delta;
     int freeSpace = (this->baseLoad - this->currentLoad) + this->cargoPlus;
-    int *world = (int *)gStatus;
+    int *world = (int *) gStatus;
     if (world[0xdc / 4] < freeSpace) {
         world[0xdc / 4] = freeSpace;
     }
 }
 
-// ===========================================================================
-// Equipment / slots
-// ===========================================================================
-
-// Places `item` into the first empty equipment slot, then recomputes stats.
 void Ship::setEquipment(Item *item) {
-    Array<Item*> *eq = this->equipment;
+    Array<Item *> *eq = this->equipment;
     for (unsigned int i = 0; i < eq->size(); i = i + 1) {
         if (eq->data()[i] == 0) {
             eq->data()[i] = item;
@@ -264,7 +232,7 @@ void Ship::setEquipment(Item *item) {
 }
 
 void Ship::setEquipment(Item *item, int slot) {
-    unsigned int idx = (unsigned int)slot;
+    unsigned int idx = (unsigned int) slot;
     for (int i = 0; i < item->getType(); i = i + 1) {
         idx += this->slots[i];
     }
@@ -279,13 +247,13 @@ void Ship::setEquipment(Item *item, int slot) {
     refreshValue();
 }
 
-void Ship::setEquipment(Array<Item*> *items) {
+void Ship::setEquipment(Array<Item *> *items) {
     for (unsigned int i = 0; i < items->size(); i = i + 1) {
         setEquipment(items->data()[i]);
     }
 }
 
-void Ship::replaceEquipment(Array<Item*> *equipment) {
+void Ship::replaceEquipment(Array<Item *> *equipment) {
     if (equipment != 0) {
         int *slots = this->slots;
         unsigned int total = slots[0] + slots[1] + slots[2] + slots[3];
@@ -319,7 +287,7 @@ int Ship::addEquipment(Item *item) {
 }
 
 void Ship::removeEquipment(Item *item) {
-    Array<Item*> *eq = this->equipment;
+    Array<Item *> *eq = this->equipment;
     if (eq == 0) {
         return;
     }
@@ -332,8 +300,8 @@ void Ship::removeEquipment(Item *item) {
     }
 }
 
-Item* Ship::getFirstEquipmentOfSort(int sort) {
-    Array<Item*> *eq = this->equipment;
+Item *Ship::getFirstEquipmentOfSort(int sort) {
+    Array<Item *> *eq = this->equipment;
     if (eq != 0) {
         for (unsigned int i = 0; i < eq->size(); i = i + 1) {
             Item *it = eq->data()[i];
@@ -343,7 +311,7 @@ Item* Ship::getFirstEquipmentOfSort(int sort) {
         }
         if (sort == 0x15 && (this->index == 0x31 || this->index == 0x2c)) {
             int *q = gShopRoot;
-            return *(Item **)(*(int *)((char *)q + 4) + 0x17c);
+            return *(Item **) (*(int *) ((char *) q + 4) + 0x17c);
         }
     }
     return 0;
@@ -393,7 +361,7 @@ unsigned int Ship::getSlotPos(Item *item) {
     if (item == 0) {
         return 0xffffffffu;
     }
-    Array<Item*> *eq = this->equipment;
+    Array<Item *> *eq = this->equipment;
     unsigned int pos = 0xffffffffu;
     for (unsigned int i = 0; i < eq->size(); i = i + 1) {
         if (eq->data()[i] == item) {
@@ -421,7 +389,7 @@ void Ship::freeSlot(Item *item) {
 void Ship::freeSlot(Item *item, int slot) {
     for (unsigned int i = 0; i < this->equipment->size(); i = i + 1) {
         Item *it = this->equipment->data()[i];
-        if (it != 0 && (unsigned int)slot == i && it->equals(item)) {
+        if (it != 0 && (unsigned int) slot == i && it->equals(item)) {
             this->equipment->data()[slot] = 0;
             break;
         }
@@ -452,7 +420,7 @@ int Ship::slotAvailable(int sort) {
 }
 
 bool Ship::hasEquipment(int index, int amount) {
-    Array<Item*> *e = this->equipment;
+    Array<Item *> *e = this->equipment;
     if (e == 0) {
         return false;
     }
@@ -478,18 +446,16 @@ bool Ship::hasSecondaryWeapons() {
     return false;
 }
 
-Array<Item*>* Ship::getEquipment() {
+Array<Item *> *Ship::getEquipment() {
     return this->equipment;
 }
 
-// Returns a freshly built array of the items installed in the slot-type's
-// contiguous slot range, or null if the ship has no slots of that type.
-Array<Item*>* Ship::getEquipment(int type) {
+Array<Item *> *Ship::getEquipment(int type) {
     if (type >= 4 || this->slots[type] == 0) {
         return 0;
     }
-    Array<Item*> *result = new Array<Item*>();
-    ArraySetLength<Item*>(this->slots[type], *result);
+    Array<Item *> *result = new Array<Item *>();
+    ArraySetLength<Item *>(this->slots[type], *result);
     int base = 0;
     for (int i = 0; i < type; i = i + 1) {
         base += this->slots[i];
@@ -504,15 +470,11 @@ Array<Item*>* Ship::getEquipment(int type) {
     return result;
 }
 
-// ===========================================================================
-// Valuation / pricing
-// ===========================================================================
-
-Ship* Ship::clone() {
-    Ship *s = new Ship(this->index, this->baseHP, this->baseLoad, this->price,
-                       this->slots[0], this->slots[1], this->slots[2],
-                       this->slots[3] - this->numAddedDeviceSlots,
-                       this->handling * 1.6f);
+Ship *Ship::clone() {
+    Ship * s = new Ship(this->index, this->baseHP, this->baseLoad, this->price,
+                        this->slots[0], this->slots[1], this->slots[2],
+                        this->slots[3] - this->numAddedDeviceSlots,
+                        this->handling * 1.6f);
     Array<int> *m = this->mods;
     if (m != 0) {
         for (unsigned int i = 0; i < m->size(); i = i + 1) {
@@ -548,13 +510,13 @@ void Ship::refreshValue() {
     this->boostDelay = 0;
     this->boostTime = 0;
     if (gStatus != 0 && gStatus->getStanding() != 0) {
-        ((Standing *)((void *)(intptr_t)gStatus->getStanding()))->setPlayerSignatureRace(-1);
+        ((Standing *) ((void *) (intptr_t) gStatus->getStanding()))->setPlayerSignatureRace(-1);
     }
     this->value = this->price;
 
     unsigned int i = 0;
     unsigned int n = 0;
-    Array<Item*> *eq;
+    Array<Item *> *eq;
     for (;;) {
         eq = this->equipment;
         n = eq->size();
@@ -564,73 +526,79 @@ void Ship::refreshValue() {
         Item *cur = eq->data()[i];
         if (cur != 0) {
             switch (cur->getSort()) {
-            case 0: case 1: case 2: case 3: case 8: case 0x19: {
-                float a = (float)cur->getAttribute(9);
-                float b = (float)cur->getAttribute(0xb);
-                this->firePower = (int)((float)this->firePower + (a / b) * 1.0f);
-                break;
-            }
-            case 9:
-                this->maxShieldHP = cur->getAttribute(0x12);
-                this->shieldRegen = cur->getAttribute(0x13);
-                break;
-            case 10:
-                this->maxArmorHP = cur->getAttribute(0x14);
-                break;
-            case 0xc:
-                this->cargoPlus = cur->getAttribute(0x16) + this->cargoPlus;
-                break;
-            case 0xe:
-                this->boostSpeed = cur->getAttribute(0x19);
-                this->boostTime = cur->getAttribute(0x1b);
-                this->boostDelay = cur->getAttribute(0x1a);
-                break;
-            case 0xf: {
-                int idx = cur->getIndex();
-                this->repairType = idx != 0x4b;
-                break;
-            }
-            case 0x10:
-                this->agility = cur->getAttribute(0x1c);
-                break;
-            case 0x11:
-                this->radarType = cur->getAttribute(0x1f);
-                break;
-            case 0x12:
-                this->hasJumpDriveFlag = 1;
-                break;
-            case 0x14:
-                this->firePower = cur->getAttribute(0x22) + this->firePower;
-                break;
-            case 0x15:
-                this->hasCloakFlag = 1;
-                break;
-            case 0x1b:
-                this->hasEmergency = 1;
-                break;
-            case 0x1c: {
-                float r = (float)cur->getAttribute(0x27);
-                r = 1.0f - r / 100.0f;
-                if (r == 0.0f) {
-                    r = 1.0f;
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 8:
+                case 0x19: {
+                    float a = (float) cur->getAttribute(9);
+                    float b = (float) cur->getAttribute(0xb);
+                    this->firePower = (int) ((float) this->firePower + (a / b) * 1.0f);
+                    break;
                 }
-                this->fireRateFactor = r;
-                float d = (float)cur->getAttribute(0x28);
-                d = d / 100.0f + 1.0f;
-                this->damageFactor = d;
-                if (d == 0.0f) {
-                    this->damageFactor = 1.0f;
+                case 9:
+                    this->maxShieldHP = cur->getAttribute(0x12);
+                    this->shieldRegen = cur->getAttribute(0x13);
+                    break;
+                case 10:
+                    this->maxArmorHP = cur->getAttribute(0x14);
+                    break;
+                case 0xc:
+                    this->cargoPlus = cur->getAttribute(0x16) + this->cargoPlus;
+                    break;
+                case 0xe:
+                    this->boostSpeed = cur->getAttribute(0x19);
+                    this->boostTime = cur->getAttribute(0x1b);
+                    this->boostDelay = cur->getAttribute(0x1a);
+                    break;
+                case 0xf: {
+                    int idx = cur->getIndex();
+                    this->repairType = idx != 0x4b;
+                    break;
                 }
-                break;
-            }
-            case 0x1d: {
-                int idx = cur->getIndex();
-                this->signatureRace = idx - 0xbd;
-                if (gStatus != 0 && gStatus->getStanding() != 0) {
-                    ((Standing *)((void *)(intptr_t)gStatus->getStanding()))->setPlayerSignatureRace(this->signatureRace);
+                case 0x10:
+                    this->agility = cur->getAttribute(0x1c);
+                    break;
+                case 0x11:
+                    this->radarType = cur->getAttribute(0x1f);
+                    break;
+                case 0x12:
+                    this->hasJumpDriveFlag = 1;
+                    break;
+                case 0x14:
+                    this->firePower = cur->getAttribute(0x22) + this->firePower;
+                    break;
+                case 0x15:
+                    this->hasCloakFlag = 1;
+                    break;
+                case 0x1b:
+                    this->hasEmergency = 1;
+                    break;
+                case 0x1c: {
+                    float r = (float) cur->getAttribute(0x27);
+                    r = 1.0f - r / 100.0f;
+                    if (r == 0.0f) {
+                        r = 1.0f;
+                    }
+                    this->fireRateFactor = r;
+                    float d = (float) cur->getAttribute(0x28);
+                    d = d / 100.0f + 1.0f;
+                    this->damageFactor = d;
+                    if (d == 0.0f) {
+                        this->damageFactor = 1.0f;
+                    }
+                    break;
                 }
-                break;
-            }
+                case 0x1d: {
+                    int idx = cur->getIndex();
+                    this->signatureRace = idx - 0xbd;
+                    if (gStatus != 0 && gStatus->getStanding() != 0) {
+                        ((Standing *) ((void *) (intptr_t) gStatus->getStanding()))->setPlayerSignatureRace(
+                            this->signatureRace);
+                    }
+                    break;
+                }
             }
             this->value = cur->getTotalPrice() + this->value;
         }
@@ -643,9 +611,9 @@ void Ship::refreshValue() {
         unsigned int sort;
         if (cur != 0 && (sort = cur->getSort()) < 0x1a && (1 << (sort & 0xff) & 0x4000) != 0) {
             float dmg = this->damageFactor;
-            float a = (float)cur->getAttribute(9);
-            float b = (float)cur->getAttribute(0xb);
-            this->firePower = (int)((float)this->firePower + ((dmg * a) / (this->fireRateFactor * b)) * 1.0f);
+            float a = (float) cur->getAttribute(9);
+            float b = (float) cur->getAttribute(0xb);
+            this->firePower = (int) ((float) this->firePower + ((dmg * a) / (this->fireRateFactor * b)) * 1.0f);
         }
         eq = this->equipment;
         n = eq->size();
@@ -661,56 +629,52 @@ void Ship::refreshValue() {
         }
     }
     int cargoPlus = this->cargoPlus;
-    float cp = (float)cargoPlus;
-    float bl = (float)(this->baseLoad + loadBonus);
-    this->cargoPlus = loadBonus + (int)((cp * bl) / 100.0f);
+    float cp = (float) cargoPlus;
+    float bl = (float) (this->baseLoad + loadBonus);
+    this->cargoPlus = loadBonus + (int) ((cp * bl) / 100.0f);
     this->compression = cargoPlus;
     this->value = getCargoValue() + this->value;
 }
 
 void Ship::adjustPrice() {
     if (gStatus->getStation() != 0 && this->price > 0) {
-        int *root = (int *)gShipDataRoot;
-        int *table = *(int **)(*(int *)root + 4);
-        int *entry = *(int **)((char *)table + this->index * 4);
+        int *root = (int *) gShipDataRoot;
+        int *table = *(int **) (*(int *) root + 4);
+        int *entry = *(int **) ((char *) table + this->index * 4);
         int cat = *entry;
-        SolarSystem *system = (SolarSystem *)(intptr_t)gStatus->getSystem();
+        SolarSystem *system = (SolarSystem *) (intptr_t) gStatus->getSystem();
         int race = system->getRace();
-        int *table2 = *(int **)(*(int *)root + 4);
-        int *entry2 = *(int **)((char *)table2 + this->index * 4);
-        float base = (float)entry2[0x14 / 4];
+        int *table2 = *(int **) (*(int *) root + 4);
+        int *entry2 = *(int **) ((char *) table2 + this->index * 4);
+        float base = (float) entry2[0x14 / 4];
         float bonus = 0.1f;
         if (gRaceTable[cat] == race) {
             bonus = base * 0.3f;
         }
         float acc = bonus + base;
         float diff = 0.1f;
-        int dv = *(int *)gDifficultyPtr;
+        int dv = *(int *) gDifficultyPtr;
         if (dv != 0) {
-            diff = base * (float)dv * 0.7f;
+            diff = base * (float) dv * 0.7f;
         }
-        this->price = (int)(acc + diff);
+        this->price = (int) (acc + diff);
     }
 }
 
 void Ship::priceDecline() {
     int *q = *gShipDataRoot;
-    int *table = *(int **)((char *)q + 4);
-    int *entry = (int *)table[this->index];
-    this->price = (int)((float)entry[0x14 / 4] / 1.25f);
+    int *table = *(int **) ((char *) q + 4);
+    int *entry = (int *) table[this->index];
+    this->price = (int) ((float) entry[0x14 / 4] / 1.25f);
 }
 
-Ship* Ship::makeShip(int price) {
-    Ship *s = clone();
+Ship *Ship::makeShip(int price) {
+    Ship * s = clone();
     if (price >= 0) {
         s->price = price;
     }
     return s;
 }
-
-// ===========================================================================
-// Mods
-// ===========================================================================
 
 void Ship::addMod(int mod) {
     Array<int> *m = this->mods;
@@ -735,7 +699,7 @@ void Ship::addMod(int mod) {
         this->slots[3] += 1;
         this->numAddedDeviceSlots += 1;
         Item *it = new Item(nullptr, nullptr, nullptr);
-        ArrayAdd<Item*>(it, *this->equipment);
+        ArrayAdd<Item *>(it, *this->equipment);
         Item **slot = &this->equipment->data()[this->equipment->size() - 1];
         if (*slot != 0) {
             delete *slot;
@@ -759,7 +723,7 @@ void Ship::setMods(Array<int> *mods) {
                 this->slots[3] += 1;
                 this->numAddedDeviceSlots += 1;
                 Item *it = new Item(nullptr, nullptr, nullptr);
-                ArrayAdd<Item*>(it, *this->equipment);
+                ArrayAdd<Item *>(it, *this->equipment);
                 Item **slot = &this->equipment->data()[this->equipment->size() - 1];
                 if (*slot != 0) {
                     delete *slot;
@@ -772,7 +736,7 @@ void Ship::setMods(Array<int> *mods) {
     refreshValue();
 }
 
-Array<int>* Ship::getMods() {
+Array<int> *Ship::getMods() {
     return this->mods;
 }
 
@@ -801,41 +765,37 @@ int Ship::getModdedLoad() {
     return load;
 }
 
-// ===========================================================================
-// Simple stat accessors
-// ===========================================================================
-
-int Ship::getIndex()              { return this->index; }
-int Ship::getRace()               { return this->race; }
-void Ship::setRace(int race)      { this->race = race; }
-int Ship::getSignatureRace()      { return this->signatureRace; }
-int Ship::getBaseHP()             { return this->baseHP; }
-int Ship::getMaxShieldHP()        { return this->maxShieldHP; }
-int Ship::getMaxArmorHP()         { return this->maxArmorHP; }
-int Ship::getShieldRegen()        { return this->shieldRegen; }
-int Ship::getBaseLoad()           { return this->baseLoad; }
-int Ship::getMaxLoad()            { return this->cargoPlus + this->baseLoad; }
-int Ship::getCurrentLoad()        { return this->currentLoad; }
-int Ship::getCargoPlus()          { return this->cargoPlus; }
-int Ship::getCompression()        { return this->compression; }
-int Ship::getValue()              { return this->value; }
-int Ship::getPrice()              { return this->price; }
-void Ship::setPrice(int price)    { this->price = price; }
-int Ship::getUnmoddedHandling()   { return *(int *)&this->handling; }
-int Ship::getFireRateFactor()     { return *(int *)&this->fireRateFactor; }
-int Ship::getDamageFactor()       { return *(int *)&this->damageFactor; }
-int Ship::getFirePower()          { return this->firePower; }
-int Ship::getAgility()            { return this->agility; }
-int Ship::getRadarType()          { return this->radarType; }
-int Ship::getRepairType()         { return this->repairType; }
-int Ship::getMaxPassengers()      { return this->maxPassengers; }
-int Ship::getBoostSpeed()         { return this->boostSpeed; }
-int Ship::getBoostDelay()         { return this->boostDelay; }
-int Ship::getBoostTime()          { return this->boostTime; }
-bool Ship::hasBooster()           { return this->boostSpeed > 0; }
-int Ship::getCurrentWeaponSlot()  { return this->currentWeaponSlot; }
+int Ship::getIndex() { return this->index; }
+int Ship::getRace() { return this->race; }
+void Ship::setRace(int race) { this->race = race; }
+int Ship::getSignatureRace() { return this->signatureRace; }
+int Ship::getBaseHP() { return this->baseHP; }
+int Ship::getMaxShieldHP() { return this->maxShieldHP; }
+int Ship::getMaxArmorHP() { return this->maxArmorHP; }
+int Ship::getShieldRegen() { return this->shieldRegen; }
+int Ship::getBaseLoad() { return this->baseLoad; }
+int Ship::getMaxLoad() { return this->cargoPlus + this->baseLoad; }
+int Ship::getCurrentLoad() { return this->currentLoad; }
+int Ship::getCargoPlus() { return this->cargoPlus; }
+int Ship::getCompression() { return this->compression; }
+int Ship::getValue() { return this->value; }
+int Ship::getPrice() { return this->price; }
+void Ship::setPrice(int price) { this->price = price; }
+int Ship::getUnmoddedHandling() { return *(int *) &this->handling; }
+int Ship::getFireRateFactor() { return *(int *) &this->fireRateFactor; }
+int Ship::getDamageFactor() { return *(int *) &this->damageFactor; }
+int Ship::getFirePower() { return this->firePower; }
+int Ship::getAgility() { return this->agility; }
+int Ship::getRadarType() { return this->radarType; }
+int Ship::getRepairType() { return this->repairType; }
+int Ship::getMaxPassengers() { return this->maxPassengers; }
+int Ship::getBoostSpeed() { return this->boostSpeed; }
+int Ship::getBoostDelay() { return this->boostDelay; }
+int Ship::getBoostTime() { return this->boostTime; }
+bool Ship::hasBooster() { return this->boostSpeed > 0; }
+int Ship::getCurrentWeaponSlot() { return this->currentWeaponSlot; }
 void Ship::setCurrentWeaponSlot(int slot) { this->currentWeaponSlot = slot; }
-int Ship::getNumAddedDeviceSlots(){ return this->numAddedDeviceSlots; }
+int Ship::getNumAddedDeviceSlots() { return this->numAddedDeviceSlots; }
 unsigned char Ship::hasEmergencySystem() { return this->hasEmergency; }
 
 int Ship::getMaxHP() {
@@ -902,7 +862,7 @@ unsigned int Ship::hasJumpDrive() {
     if (this->hasJumpDriveFlag != 0) {
         return 1;
     }
-    unsigned int v = (unsigned int)this->index - 0x25u;
+    unsigned int v = (unsigned int) this->index - 0x25u;
     if (v < 4) {
         return 0xbu >> (v & 0xf) & 1;
     }
@@ -910,7 +870,7 @@ unsigned int Ship::hasJumpDrive() {
 }
 
 unsigned int Ship::hasJumpDriveIntegrated() {
-    unsigned int v = (unsigned int)this->index - 0x25u;
+    unsigned int v = (unsigned int) this->index - 0x25u;
     if (v < 4) {
         return 0xbu >> (v & 0xf) & 1;
     }

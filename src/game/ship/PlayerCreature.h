@@ -10,45 +10,56 @@
 class Player;
 class AEGeometry;
 
-// A creature the player can hook and reel in: a KIPlayer-driven object that fights
-// back by enraging (shaking its geometry and draining the player's hitpoints) until
-// its endurance runs out and it is either caught or calmed.
 class PlayerCreature : public KIPlayer {
 public:
-    AEGeometry* renderGeometry;
-    int         creatureType;
-    int         lastElapsed;
-    uint16_t    raging;
-    uint8_t     hooked;
-    uint8_t     caught;
-    float       rageScale;
-    int         rageTimer;
-    int         maxEndurance;
-    int         endurance;
-    int         lastHitpoints;
-    int         itemIndex;
-    Matrix      rageMatrix;   // rage-shake rotation matrix
+    AEGeometry *renderGeometry;
+    int creatureType;
+    int lastElapsed;
+    uint16_t raging;
+    uint8_t hooked;
+    uint8_t caught;
+    float rageScale;
+    int rageTimer;
+    int maxEndurance;
+    int endurance;
+    int lastHitpoints;
+    int itemIndex;
+    Matrix rageMatrix; // rage-shake rotation matrix
 
-    PlayerCreature(int kind, int itemIndex, Player* player, AEGeometry* geometry,
+    PlayerCreature(int kind, int itemIndex, Player *player, AEGeometry *geometry,
                    float x, float y, float z);
+
     ~PlayerCreature();
 
     uint8_t isHooked();
-    void    calmDown();
-    void    unhook();
-    void    render() override;
-    int     getEndurance();
-    int     getWeight();
+
+    void calmDown();
+
+    void unhook();
+
+    void render() override;
+
+    int getEndurance();
+
+    int getWeight();
+
     uint8_t isCaught();
-    void    rage(int amount);
-    int     getMaxEndurance();
-    int     getItemIndex();
-    void    reset();
-    void    hook(int value);
-    void    update(int elapsed) override;
+
+    void rage(int amount);
+
+    int getMaxEndurance();
+
+    int getItemIndex();
+
+    void reset();
+
+    void hook(int value);
+
+    void update(int elapsed) override;
+
     // The creature exposes no collidable surface, so both query forms report no hit.
-    int     collide(float x, float y, float z) override;      // actor vtable slot +0x38
-    int     outerCollide(float x, float y, float z) override; // actor vtable slot +0x3c
+    int collide(float x, float y, float z) override; // actor vtable slot +0x38
+    int outerCollide(float x, float y, float z) override; // actor vtable slot +0x3c
 };
 
 #endif

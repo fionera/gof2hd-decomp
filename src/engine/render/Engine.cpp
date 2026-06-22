@@ -1,21 +1,19 @@
-// Engine is referenced by the engine glue (externs.h), so it must be visible before that
-// header is parsed. Its real type lives in namespace AbyssEngine; the alias keeps bare `Engine`.
+
+
 #include "externs.h"
 #include "platform/gl.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-Engine* gEngine = nullptr;            // canonical Engine singleton
+Engine *gEngine = nullptr; // canonical Engine singleton
 
-// Device render-capability globals (AbyssEngine::Engine static members; seeded by
-// OnCreateApplication). Defaults match the binary's .bss/.data init.
-bool         AbyssEngine::Engine::vboSupported  = false;
-bool         AbyssEngine::Engine::clampTextures = false;
-bool         AbyssEngine::Engine::vfc           = false;
-float        AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
-float        AbyssEngine::Engine::lodBiasNormal  = 0.0f;
-unsigned int AbyssEngine::Engine::countryCode    = 0;
-bool         AbyssEngine::Engine::EnablePostEffect = false;  // 0x2250d8
+bool AbyssEngine::Engine::vboSupported = false;
+bool AbyssEngine::Engine::clampTextures = false;
+bool AbyssEngine::Engine::vfc = false;
+float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
+float AbyssEngine::Engine::lodBiasNormal = 0.0f;
+unsigned int AbyssEngine::Engine::countryCode = 0;
+bool AbyssEngine::Engine::EnablePostEffect = false; // 0x2250d8
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
@@ -26,68 +24,94 @@ bool         AbyssEngine::Engine::EnablePostEffect = false;  // 0x2250d8
 #include <arm_neon.h>
 #include <cstdarg>
 
-
-
-
-
-
-
-
-// ARM EABI runtime helpers emitted as explicit calls (host-build externs).
 extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
+
 extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 
-// Fixed-function (GLES1) entry points not covered by platform/gl.h.
 extern "C" void glMatrixMode(unsigned int mode);
+
 extern "C" void glLoadMatrixf(const float *matrix);
+
 extern "C" void glLoadIdentity();
+
 extern "C" void glScalef(float x, float y, float z);
+
 extern "C" void glColorMask(unsigned int red, unsigned int green, unsigned int blue, unsigned int alpha);
+
 extern "C" void glDepthFunc(unsigned int func);
+
 extern "C" const char *glGetString(unsigned int name);
+
 extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
+
 extern "C" void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
+
 extern "C" void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
+
 extern "C" void glNormalPointer(unsigned int type, int stride, const void *ptr);
+
 extern "C" void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
+
 extern "C" void glDrawElements(unsigned int mode, int count, unsigned int type, const void *indices);
+
 extern "C" void glDrawArrays(unsigned int mode, int first, int count);
+
 extern "C" void glGetIntegerv(unsigned int name, void *out);
+
 extern "C" void glColor4f(float red, float green, float blue, float alpha);
+
 extern "C" void glTexEnvf(unsigned int target, unsigned int pname, float value);
+
 extern "C" void glEnableClientState(unsigned int array);
+
 extern "C" void glDisableClientState(unsigned int array);
+
 extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *params);
+
 extern "C" void glLightModelfv(unsigned int pname, const void *params);
+
 extern "C" void glLineWidth(float width);
+
 extern "C" void glCullFace(unsigned int mode);
+
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
+
 extern "C" void glGetError();
 
-// Engine free-functions / host glue resolved by a later externs pass.
-extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer *self);
-extern "C" void FBOContainer_ActivateTexture(FBOContainer *self);
-extern "C" void FBOContainer_DeactivateRender2Texture(FBOContainer *self);
+extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer * self);
+extern "C" void FBOContainer_ActivateTexture(FBOContainer * self);
+extern "C" void FBOContainer_DeactivateRender2Texture(FBOContainer * self);
+
 extern "C" void ShaderUpdateRimColor();
+
 extern "C" void ShaderUpdateMaterialColor();
+
 extern "C" void FileInterfaceAndroid_ctor(void *self);
+
 extern "C" void ShaderCtor_0(void *);
+
 extern "C" void ShaderCtor_1(void *);
+
 extern "C" void ShaderCtor_2(void *);
+
 extern "C" void ShaderCtor_3(void *);
+
 extern "C" void ShaderCtor_4(void *);
+
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
+
 void MeshRelease(Engine *self, void *meshSlot);
+
 void MeshCreate(Engine *self, int vertices, int faces, int flags, void *outMesh);
+
 void esMatrixMultiply(void *out, const void *lhs, const void *rhs);
 
-// Poll-and-clear the GLES error flag (debug helper, result discarded).
 void glError() {
     glGetError();
 }
 
-double * Engine::GetAccelValue() {
+double *Engine::GetAccelValue() {
     double x = this->accelRaw[0];
     double y;
     if (this->appManager->paintCanvas->field_0x30 == 1) {
@@ -99,7 +123,7 @@ double * Engine::GetAccelValue() {
     this->accelValue[0] = x;
     this->accelValue[1] = y;
     this->accelValue[2] = this->accelRaw[2];
-    return (double *)this->accelValue;
+    return (double *) this->accelValue;
 }
 
 void Engine::ActivateRender2FracFBO() {
@@ -126,7 +150,7 @@ uint32_t Engine::GetDisplayWidth() {
     return this->displayWidth;
 }
 
-double * Engine::GetGravValue() {
+double *Engine::GetGravValue() {
     double x = this->gravRaw[0];
     double y;
     if (this->appManager->paintCanvas->field_0x30 == 1) {
@@ -138,7 +162,7 @@ double * Engine::GetGravValue() {
     this->gravValue[0] = x;
     this->gravValue[1] = y;
     this->gravValue[2] = this->gravRaw[2];
-    return (double *)this->gravValue;
+    return (double *) this->gravValue;
 }
 
 uint32_t Engine::GetDisplayHeight() {
@@ -208,7 +232,8 @@ void Engine::ActivateRender2TextureFBO() {
 }
 
 typedef void Materialfv(unsigned int face, unsigned int pname, const void *params);
-static Materialfv * volatile g_Engine_glMaterialfv;
+
+static Materialfv *volatile g_Engine_glMaterialfv;
 
 void Engine::LightSetMaterialColorAlpha(float alpha) {
     if (this->lightingEnabled == 0) {
@@ -235,7 +260,7 @@ void Engine::ResetUVMatrix() {
     if (g_Engine_useShaders != 0) {
         uint32_t one = 0x3f800000;
         uint32x4_t zero = vdupq_n_u32(0);
-        uint32_t *uv = (uint32_t *)this->uvMatrix;
+        uint32_t *uv = (uint32_t *) this->uvMatrix;
         uv[0] = one;
         uv[5] = one;
         uv[10] = one;
@@ -377,8 +402,7 @@ void Engine::ShaderUpdate() {
     }
 }
 
-bool Engine::IsExtensionSupported(const char *extension)
-{
+bool Engine::IsExtensionSupported(const char *extension) {
     const char *extensions = glGetString(0x1f03);
 
     uint32_t allLength = 0;
@@ -499,24 +523,24 @@ void Engine::RenderMesh(MeshFull *mesh) {
     if (g_Engine_useShaders == 0) {
         glVertexPointer(3, 0x1406, 0, mesh->positions);
         this->AEClientState(0x8074, true);
-        bool tex = ((uint32_t)mesh->vertexFormat << 30) < 0;
+        bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
         // RAWREAD: material +4 is an opaque material payload field (void* target).
         if (tex && (mesh->material == 0 ||
-                    *(int *)((char *)mesh->material + 4) == -1)) {
+                    *(int *) ((char *) mesh->material + 4) == -1)) {
             glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
         }
         this->AEClientState(0x8078, tex);
-        bool normals = ((uint32_t)mesh->vertexFormat << 29) < 0;
+        bool normals = ((uint32_t) mesh->vertexFormat << 29) < 0;
         if (normals) {
             glNormalPointer(0x1406, 0, mesh->normals);
         }
         this->AEClientState(0x8075, normals);
-        bool colors = ((uint32_t)mesh->vertexFormat << 28) < 0;
+        bool colors = ((uint32_t) mesh->vertexFormat << 28) < 0;
         if (colors) {
-            glColorPointer(4, 0x1406, 0, (void *)(uintptr_t)mesh->colors);
+            glColorPointer(4, 0x1406, 0, (void *) (uintptr_t) mesh->colors);
         }
         this->AEClientState(0x8076, colors);
-        if (((uint32_t)mesh->vertexFormat << 27) < 0) {
+        if (((uint32_t) mesh->vertexFormat << 27) < 0) {
             glDrawElements(4, mesh->indexCount, 0x1403,
                            mesh->indices);
         } else {
@@ -524,7 +548,7 @@ void Engine::RenderMesh(MeshFull *mesh) {
         }
         // RAWREAD: material +4 is an opaque material payload field (void* target).
         if (tex && mesh->material != 0 &&
-            *(int *)((char *)mesh->material + 4) != -1) {
+            *(int *) ((char *) mesh->material + 4) != -1) {
             this->AEClientState(0x8078, false);
         }
     } else {
@@ -533,7 +557,7 @@ void Engine::RenderMesh(MeshFull *mesh) {
         if (g_Engine_shaderDrew != 0) {
             int oldBuffer = 0;
             glGetIntegerv(0x8ca6, &oldBuffer);
-            if (((uint32_t)mesh->vertexFormat << 27) < 0) {
+            if (((uint32_t) mesh->vertexFormat << 27) < 0) {
                 if (mesh->uploaded == 0) {
                     glDrawElements(4, mesh->indexCount, 0x1403,
                                    mesh->indices);
@@ -555,13 +579,13 @@ done:
 }
 
 void Engine::DrawQuad(int x, int y, int width, int height) {
-    float fx = (float)x;
-    float fy = (float)y;
-    float right = (float)(x + width);
-    float bottom = (float)(height + y);
+    float fx = (float) x;
+    float fy = (float) y;
+    float right = (float) (x + width);
+    float bottom = (float) (height + y);
 
     MeshFull *mesh = this->quadMesh;
-    float *positions = (float *)mesh->positions;
+    float *positions = (float *) mesh->positions;
     positions[0] = fx;
     positions[1] = fy;
     positions[3] = right;
@@ -577,7 +601,7 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
         1.0f, 1.0f,
         0.0f, 1.0f,
     };
-    float *uv = (float *)mesh->texCoords;
+    float *uv = (float *) mesh->texCoords;
     float32x4_t uv0 = vld1q_f32(uvs);
     float32x4_t uv1 = vld1q_f32(uvs + 4);
     vst1q_f32(uv, uv0);
@@ -600,8 +624,8 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
     self->glColor[2] = blue;
     self->glColor[3] = alpha;
     self->packedColor =
-        (int)(green * 255.0f) * 0x10000 + (int)(red * 255.0f) * 0x1000000 +
-        (int)(blue * 255.0f) * 0x100 + (int)(alpha * 255.0f);
+            (int) (green * 255.0f) * 0x10000 + (int) (red * 255.0f) * 0x1000000 +
+            (int) (blue * 255.0f) * 0x100 + (int) (alpha * 255.0f);
     if (g_Engine_useShaders != 0) {
         return ShaderUpdateMaterialColor();
     }
@@ -609,8 +633,7 @@ void Engine::SetColor(float red, float green, float blue, float alpha) {
     return glColor4f(red, green, blue, alpha);
 }
 
-Engine::~Engine()
-{
+Engine::~Engine() {
     DestroyCallback *destroy = this->onDestroyCallback;
     if (destroy != 0) {
         destroy(this);
@@ -619,7 +642,7 @@ Engine::~Engine()
     delete this->appManager;
     this->appManager = nullptr;
 
-    delete (FileInterface *)this->fileInterface;
+    delete (FileInterface *) this->fileInterface;
     this->fileInterface = 0;
 
     AEFile::Release();
@@ -641,8 +664,6 @@ Engine::~Engine()
     // str_0x14 / str_0x3c / str_0x4c are real String members: auto-destructed.
 }
 
-// Releases GL-side resources owned by the engine. Empty in this build (GL teardown is
-// handled by the driver / deferred), but kept as a real method invoked from ~Engine().
 void Engine::ReleaseGL() {
 }
 
@@ -650,7 +671,7 @@ void Engine::AfterGLInit() {
     this->ResetLightParam();
     MeshCreate(this, 4, 2, 0x13, &this->quadMesh);
 
-    uint32_t *indices = (uint32_t *)this->quadMesh->indices;
+    uint32_t *indices = (uint32_t *) this->quadMesh->indices;
     indices[0] = 0x20000;
     indices[1] = 1;
     indices[2] = 0x30002;
@@ -681,31 +702,31 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
 }
 
 void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
-    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
-    uint32_t count = manager->field_0x10;                    // loaded-texture-name list: count
+    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
+    uint32_t count = manager->field_0x10; // loaded-texture-name list: count
     if (count == 0 || slot >= 8 || textureIndex > count - 1) {
         return;
     }
-    uint32_t *bound = (uint32_t *)&this->boundTextures[slot];
+    uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
     // RAWREAD: field_0x14 entry is an opaque texture-name payload (char**), no struct header.
-    void *textureEntry = *(void **)(manager->field_0x14 + textureIndex);
-    uint32_t texture = **(uint32_t **)(&textureEntry);
+    void *textureEntry = *(void **) (manager->field_0x14 + textureIndex);
+    uint32_t texture = **(uint32_t **) (&textureEntry);
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = *(float *)((char *)textureEntry + 0x10);   // RAWREAD: opaque texture-entry +0x10 texEnv
+    float env = *(float *) ((char *) textureEntry + 0x10); // RAWREAD: opaque texture-entry +0x10 texEnv
     if (g_Engine_texEnv != env) {
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = *(void **)(manager->field_0x14 + textureIndex);
+            textureEntry = *(void **) (manager->field_0x14 + textureIndex);
         } else if (g_Engine_texEnvDirty != 0) {
             g_Engine_texEnvDirty = 0;
         }
     }
     // RAWREAD: opaque texture-entry +0x14 cube-map flag
-    glBindTexture(*(uint8_t *)((char *)textureEntry + 0x14) == 0 ? 0xde1 : 0x8513, texture);
+    glBindTexture(*(uint8_t *) ((char *) textureEntry + 0x14) == 0 ? 0xde1 : 0x8513, texture);
     *bound = texture;
 }
 
@@ -713,11 +734,15 @@ void Engine::AEClientState(unsigned int state, bool enable) {
     uint32_t bits = this->clientStateFlagsAE;
     uint32_t mask = 0;
     switch (state) {
-    case 0x8074: mask = 2; break;
-    case 0x8075: mask = 1; break;
-    case 0x8076: mask = 8; break;
-    case 0x8078: mask = 4; break;
-    default: return;
+        case 0x8074: mask = 2;
+            break;
+        case 0x8075: mask = 1;
+            break;
+        case 0x8076: mask = 8;
+            break;
+        case 0x8078: mask = 4;
+            break;
+        default: return;
     }
     if (enable) {
         if ((bits & mask) != 0) {
@@ -759,7 +784,7 @@ void Engine::DrawLine2D(float *verts, int count, bool strip) {
 void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
     while (shaderIndex == -1) {
         shaderIndex = g_Engine_defaultShader;
-        if ((((uint32_t)mesh->vertexFormat) << 30) >= 0) {
+        if ((((uint32_t) mesh->vertexFormat) << 30) >= 0) {
             shaderIndex = g_Engine_altShader;
         }
     }
@@ -886,7 +911,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
     }
 
     uint32_t flags = this->postEffectFlags;
-    if (effect == (uint32_t)g_Engine_postEffectBW) {
+    if (effect == (uint32_t) g_Engine_postEffectBW) {
         if (enable) {
             if (g_Engine_postEffectCounter > 0) {
                 g_Engine_postEffectCounter -= 1;
@@ -900,7 +925,7 @@ void Engine::SetPostEffect(uint32_t effect, bool enable) {
         } else {
             g_Engine_postEffectFlag = g_Engine_postEffectCounter < 1;
         }
-    } else if (effect == (uint32_t)g_Engine_postEffectBlur) {
+    } else if (effect == (uint32_t) g_Engine_postEffectBlur) {
         g_Engine_postEffectFlag = enable;
         flags = enable ? (flags | 2) : (flags & ~2u);
     } else if (effect == 0x1400000) {
@@ -935,7 +960,7 @@ void Engine::initFileInterface() {
     void *fileInterface = operator new(0x38);
     FileInterfaceAndroid_ctor(fileInterface);
     this->fileInterface = fileInterface;
-    return AEFile::SetInterface((FileInterface *)fileInterface);
+    return AEFile::SetInterface((FileInterface *) fileInterface);
 }
 
 void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
@@ -963,7 +988,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     void *fileInterface = operator new(0x38);
     FileInterfaceAndroid_ctor(fileInterface);
     this->fileInterface = fileInterface;
-    AEFile::SetInterface((FileInterface *)fileInterface);
+    AEFile::SetInterface((FileInterface *) fileInterface);
 
     this->field_0x10 = 0;
     this->vibrationSupported = 0;
@@ -1009,14 +1034,13 @@ int Engine::InitGL(bool shaders, int width, int height) {
     return 1;
 }
 
-void Engine::ClearBuffer(uint32_t color)
-{
+void Engine::ClearBuffer(uint32_t color) {
     const double scale = 255.0;
-    double red = (double)(color >> 24) / scale;
-    double green = (double)((color >> 16) & 0xff) / scale;
-    double blue = (double)((color >> 8) & 0xff) / scale;
-    double alpha = (double)(color & 0xff) / scale;
-    glClearColor((float)red, (float)green, (float)blue, (float)alpha);
+    double red = (double) (color >> 24) / scale;
+    double green = (double) ((color >> 16) & 0xff) / scale;
+    double blue = (double) ((color >> 8) & 0xff) / scale;
+    double alpha = (double) (color & 0xff) / scale;
+    glClearColor((float) red, (float) green, (float) blue, (float) alpha);
     return glClear(0x4100);
 }
 
@@ -1100,7 +1124,7 @@ void Engine::LightSetLightColorDiffuse(float red, float green, float blue, unsig
 }
 
 Engine::Engine() {
-    Engine *self = this;
+    Engine * self = this;
     // str_0x14 / str_0x3c / str_0x4c are real String members: auto-constructed.
     self->field_0x340 = 0;
     self->lightColor.x = 0;
@@ -1117,7 +1141,7 @@ Engine::Engine() {
     self->field_0x400 = 0;
     self->field_0x468 = up;
     self->fogColor = up;
-    self->shaders = new Array<ShaderBaseStruct*>();
+    self->shaders = new Array<ShaderBaseStruct *>();
     self->quadMesh = nullptr;
     self->viewFramebuffer = 0;
     self->postEffectFlags = 0;
@@ -1126,7 +1150,7 @@ Engine::Engine() {
     up.x = 0.5f;
     up.y = 0.0f;
     up.z = 0.0f;
-    *(Vector *)&self->field_0x3cc = up;   // vector spans 0x3cc(x,y)+0x3d4(z)
+    *(Vector *) &self->field_0x3cc = up; // vector spans 0x3cc(x,y)+0x3d4(z)
     self->addData = 0;
     self->postEffectFBO = 0;
     self->refractFBO = 0;
@@ -1176,8 +1200,8 @@ Engine::Engine() {
 }
 
 void Engine::SetTextures(uint32_t first, uint32_t second) {
-    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
-    uint32_t count = manager->field_0x10;                    // loaded-texture-name list: count
+    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
+    uint32_t count = manager->field_0x10; // loaded-texture-name list: count
     if (count == 0 || first > count - 1) {
         return;
     }
@@ -1194,7 +1218,7 @@ void Engine::SetTextures(uint32_t first, uint32_t second) {
         return;
     }
     // RAWREAD: field_0x14 entry is an opaque texture-name payload, handle at +0x0
-    uint32_t texture = **(uint32_t **)(manager->field_0x14 + second);
+    uint32_t texture = **(uint32_t **) (manager->field_0x14 + second);
     if (this->boundTextures[1] != texture) {
         glActiveTexture(0x84c1);
         this->GlEnable(0xde1, true);
@@ -1220,7 +1244,7 @@ uint32_t Engine::ShaderInit() {
     for (uint32_t i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i += 1) {
         void *shader = operator new(sizes[i]);
         ctors[i % 5](shader);
-        this->ShaderRegister((ShaderBaseStruct *)shader);
+        this->ShaderRegister((ShaderBaseStruct *) shader);
     }
     glGetError();
     return 1;
@@ -1230,14 +1254,17 @@ uint64_t Engine::SetEyePosition(float x, float y, float z) {
     this->eyePosition.x = x;
     this->eyePosition.y = y;
     this->eyePosition.z = z;
-    union { float f; uint32_t u; } cx, cy;
+    union {
+        float f;
+        uint32_t u;
+    } cx, cy;
     cx.f = x;
     cy.f = y;
-    return (uint64_t)cx.u | ((uint64_t)cy.u << 32);
+    return (uint64_t) cx.u | ((uint64_t) cy.u << 32);
 }
 
 void Engine::SetModelMatrix(const Matrix &matrix) {
-    Engine *self = this;
+    Engine * self = this;
     const float *m = matrix;
     if (g_Engine_useShaders != 0) {
         self->normalMatrix[0] = m[0];
@@ -1298,10 +1325,10 @@ void Engine::LightSetLight(unsigned int light) {
         this->lightCount = count;
 
         const Vector &dir = (&this->field_0x468)[index];
-        values[0] = *(const uint32_t *)&dir.x;
-        values[1] = *(const uint32_t *)&dir.y;
-        values[2] = *(const uint32_t *)&dir.z;
-        values[3] = *(const uint32_t *)&this->lightDirty[index];
+        values[0] = *(const uint32_t *) &dir.x;
+        values[1] = *(const uint32_t *) &dir.y;
+        values[2] = *(const uint32_t *) &dir.z;
+        values[3] = *(const uint32_t *) &this->lightDirty[index];
         if (g_Engine_useShaders == 0) {
             glLightfv(light, 0x1203, values);
         }
@@ -1310,8 +1337,9 @@ void Engine::LightSetLight(unsigned int light) {
 }
 
 void Engine::SetTexturesExt(uint32_t first, ...) {
-    PaintCanvas *manager = this->appManager->paintCanvas;   // texture manager lives in the canvas
-    if (manager->field_0x10 != 0) {                          // loaded-texture-name list: count
+    PaintCanvas *manager = this->appManager->paintCanvas; // texture manager lives in the canvas
+    if (manager->field_0x10 != 0) {
+        // loaded-texture-name list: count
         va_list args;
         va_start(args, first);
         uint32_t slot = 0;
@@ -1330,8 +1358,6 @@ void Engine::SetTexturesExt(uint32_t first, ...) {
     return;
 }
 
-// Screenshot, framebuffer-scaling and device hooks below are iOS-only entry points.
-// On the Android port they have no platform implementation and stay as no-ops.
 void Engine::PreUpdate() {
 }
 
@@ -1347,7 +1373,7 @@ void Engine::SetFrameBufferScaleFactor(float factor, int slot) {
 void Engine::GrabFrameBuffer() {
 }
 
-void* Engine::GetJPEGImageData(float quality) {
+void *Engine::GetJPEGImageData(float quality) {
     return nullptr;
 }
 
@@ -1480,11 +1506,8 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     this->glEnableFlags = flags;
 }
 
-// Engine::LightEnable(bool) toggles fixed-function lighting on the engine. In the shipped
-// binary this is a single long-branch veneer (B.W) into the GL backend whose target lies
-// outside the analyzed range, so the body cannot be statically recovered; forward to the
-// engine's own symbol to preserve the exact runtime behaviour.
 extern "C" void _ZN11AbyssEngine6Engine11LightEnableEb(Engine *self, bool enabled);
+
 void Engine::LightEnable(bool enabled) {
     _ZN11AbyssEngine6Engine11LightEnableEb(this, enabled);
 }

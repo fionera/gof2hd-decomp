@@ -4,32 +4,27 @@
 #include "engine/core/GameText.h"
 #include "game/core/Globals.h"
 
-// Minimal view of the engine font object. It has no standalone header; only the
-// two fields ScrollTouchBox reads are modelled here.
 struct FontMetrics {
     int field_0x0;
-    int lineHeight;          // +0x4
-    int field_0x08[16];      // padding up to +0x48
-    int wrapMargin;          // +0x48
+    int lineHeight; // +0x4
+    int field_0x08[16]; // padding up to +0x48
+    int wrapMargin; // +0x48
 };
 
-void ScrollTouchBox::setTextCentered(bool centered)
-{
+void ScrollTouchBox::setTextCentered(bool centered) {
     this->centered = centered;
 }
 
-float ScrollTouchBox::getRelativeScrollStartPos()
-{
+float ScrollTouchBox::getRelativeScrollStartPos() {
     int pos = this->scrollOffset;
     if (pos > 0)
         return 0.0f;
-    return -(float)pos / (float)this->contentHeight;
+    return -(float) pos / (float) this->contentHeight;
 }
 
-ScrollTouchBox::~ScrollTouchBox()
-{
+ScrollTouchBox::~ScrollTouchBox() {
     if (this->lines != 0) {
-        for (String *line : *this->lines)
+        for (String *line: *this->lines)
             delete line;
         this->lines->clear();
         delete this->lines;
@@ -37,19 +32,17 @@ ScrollTouchBox::~ScrollTouchBox()
     }
 }
 
-void ScrollTouchBox::setPosition(int x, int y)
-{
+void ScrollTouchBox::setPosition(int x, int y) {
     this->x = x;
     this->y = y;
 }
 
-void ScrollTouchBox::OnTouchEnd(int x, int y)
-{
+void ScrollTouchBox::OnTouchEnd(int x, int y) {
     if (this->dragging != 0) {
         int delta = this->lastDelta;
         float speed = 0.0f;
         if ((delta < 0 ? -delta : delta) > 3)
-            speed = (float)delta;
+            speed = (float) delta;
         this->damping = 0.95f;
         this->dragging = 0;
         this->scrollOffset = delta + this->scrollOffset;
@@ -57,8 +50,7 @@ void ScrollTouchBox::OnTouchEnd(int x, int y)
     }
 }
 
-void ScrollTouchBox::OnTouchMove(int x, int y)
-{
+void ScrollTouchBox::OnTouchMove(int x, int y) {
     if (this->dragging != 0 && this->contentHeight > this->height) {
         int delta = y - this->lastTouchY;
         this->lastTouchY = y;
@@ -68,8 +60,7 @@ void ScrollTouchBox::OnTouchMove(int x, int y)
     }
 }
 
-void ScrollTouchBox::OnTouchBegin(int x, int y)
-{
+void ScrollTouchBox::OnTouchBegin(int x, int y) {
     if (touchIsInside(x, y)) {
         this->touchStartY = y;
         this->lastTouchY = y;
@@ -78,10 +69,15 @@ void ScrollTouchBox::OnTouchBegin(int x, int y)
     }
 }
 
-__attribute__((visibility("hidden"))) extern String **g_ScrollTouchBox_defaultFont_135598;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern String **g_ScrollTouchBox_defaultFont_135598;
 
-ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
-{
+ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
     this->touchStartY = 0;
     this->lines = 0;
     this->x = x;
@@ -99,16 +95,20 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height)
     this->font = *g_ScrollTouchBox_defaultFont_135598;
 }
 
-__attribute__((visibility("hidden"))) extern int **g_ScrollTouchBox_defaultWidth_13570c;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int **g_ScrollTouchBox_defaultWidth_13570c;
 
-void ScrollTouchBox::setText(AbyssEngine::String text)
-{
+void ScrollTouchBox::setText(AbyssEngine::String text) {
     String tmp(text);
     setText(tmp, **g_ScrollTouchBox_defaultWidth_13570c);
 }
 
-void ScrollTouchBox::update(int dt)
-{
+void ScrollTouchBox::update(int dt) {
     int height = this->height;
     int contentHeight = this->contentHeight;
     if (contentHeight < height)
@@ -121,7 +121,7 @@ void ScrollTouchBox::update(int dt)
             absVelocity = velocity;
         this->velocity = velocity;
         if (absVelocity > 1.5f)
-            this->scrollOffset = (int)(velocity + (float)this->scrollOffset);
+            this->scrollOffset = (int) (velocity + (float) this->scrollOffset);
     }
 
     int pos = this->scrollOffset;
@@ -132,8 +132,7 @@ void ScrollTouchBox::update(int dt)
     pull = -pos;
     goto apply;
 
-negative:
-    {
+negative: {
         int over = contentHeight - height;
         int min = -over;
         if (min <= pos)
@@ -144,28 +143,57 @@ negative:
 
 apply:
     this->damping = 1.0f;
-    this->velocity = (float)pull * 0.5f;
+    this->velocity = (float) pull * 0.5f;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_ScrollTouchBox_canvas_135778;
-__attribute__((visibility("hidden"))) extern char *g_ScrollTouchBox_flag_135778;
-__attribute__((visibility("hidden"))) extern FontMetrics **g_ScrollTouchBox_font_135778;
-__attribute__((visibility("hidden"))) extern uint8_t *g_ScrollTouchBox_rtl_135778;
-__attribute__((visibility("hidden"))) extern uint8_t *g_ScrollTouchBox_dirty_135778;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_ScrollTouchBox_canvas_135778;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern char *g_ScrollTouchBox_flag_135778;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FontMetrics **g_ScrollTouchBox_font_135778;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern uint8_t *g_ScrollTouchBox_rtl_135778;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern uint8_t *g_ScrollTouchBox_dirty_135778;
 
-void ScrollTouchBox::draw()
-{
+void ScrollTouchBox::draw() {
     int language = GameText::getLanguage();
     unsigned special = 0;
-    unsigned shifted = (unsigned)(language - 10);
-    if ((unsigned short)shifted < 6)
+    unsigned shifted = (unsigned) (language - 10);
+    if ((unsigned short) shifted < 6)
         special = (0x33U >> (shifted & 0x3f)) & 1;
 
     void **canvasHolder = g_ScrollTouchBox_canvas_135778;
     void *canvas = *canvasHolder;
-    ((PaintCanvas*)canvas)->SetColor((unsigned int)-1);
+    ((PaintCanvas *) canvas)->SetColor((unsigned int) -1);
 
-    Array<String*> *firstLineArray = this->lines;
+    Array<String *> *firstLineArray = this->lines;
     if (firstLineArray != 0) {
         unsigned notSpecial = special ^ (firstLineArray != 0);
         char *flag = g_ScrollTouchBox_flag_135778;
@@ -173,8 +201,8 @@ void ScrollTouchBox::draw()
         uint8_t *rtl = g_ScrollTouchBox_rtl_135778;
 
         for (unsigned i = 0; i < this->lines->size(); ++i) {
-            Array<String*> *lineArray = this->lines;
-            unsigned count = (unsigned)lineArray->size();
+            Array<String *> *lineArray = this->lines;
+            unsigned count = (unsigned) lineArray->size();
             int lastOffset;
             if (i != count - 1 || notSpecial != 0) {
                 lastOffset = 0;
@@ -185,10 +213,11 @@ void ScrollTouchBox::draw()
             }
 
             int yBase = this->y;
-            int lineY = (*fontHolder)->lineHeight * (int)i + yBase + this->scrollOffset;
+            int lineY = (*fontHolder)->lineHeight * (int) i + yBase + this->scrollOffset;
             if (count == 1 ||
                 (yBase <= lineY &&
-                 lineY + lastOffset <= (this->height + yBase) - ((PaintCanvas*)canvas)->GetTextHeight((unsigned int)(unsigned long)this->font))) {
+                 lineY + lastOffset <= (this->height + yBase) - ((PaintCanvas *) canvas)->GetTextHeight(
+                     (unsigned int) (unsigned long) this->font))) {
                 int x;
                 String *font = this->font;
                 String *line = lineArray->data()[i];
@@ -198,18 +227,21 @@ void ScrollTouchBox::draw()
                     int left = this->x;
                     int width = this->width;
                     if (this->centered == 0) {
-                        x = (left + width) - ((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line);
+                        x = (left + width) - ((PaintCanvas *) canvas)->GetTextWidth(
+                                (unsigned int) (unsigned long) font, *line);
                     } else {
-                        x = (left + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line) >> 1);
+                        x = (left + (width >> 1)) - (((PaintCanvas *) canvas)->GetTextWidth(
+                                                         (unsigned int) (unsigned long) font, *line) >> 1);
                     }
                 } else {
                     x = this->x;
                     if (this->centered != 0) {
                         int width = this->width;
-                        x = (x + (width >> 1)) - (((PaintCanvas*)canvas)->GetTextWidth((unsigned int)(unsigned long)font, *line) >> 1);
+                        x = (x + (width >> 1)) - (((PaintCanvas *) canvas)->GetTextWidth(
+                                                      (unsigned int) (unsigned long) font, *line) >> 1);
                     }
                 }
-                ((PaintCanvas*)canvas)->DrawString((unsigned int)(unsigned long)font, *line, x, lineY, false);
+                ((PaintCanvas *) canvas)->DrawString((unsigned int) (unsigned long) font, *line, x, lineY, false);
             }
         }
     }
@@ -217,14 +249,31 @@ void ScrollTouchBox::draw()
     *g_ScrollTouchBox_dirty_135778 = 1;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_ScrollTouchBox_globals_135600;
-__attribute__((visibility("hidden"))) extern FontMetrics **g_ScrollTouchBox_font_135600;
-__attribute__((visibility("hidden"))) extern char g_ScrollTouchBox_empty_135600[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_ScrollTouchBox_globals_135600;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern FontMetrics **g_ScrollTouchBox_font_135600;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern char g_ScrollTouchBox_empty_135600[];
 
-void ScrollTouchBox::setText(AbyssEngine::String text, int font)
-{
+void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     if (this->lines != 0) {
-        for (String *line : *this->lines)
+        for (String *line: *this->lines)
             delete line;
         this->lines->clear();
         delete this->lines;
@@ -232,8 +281,8 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     }
 
     // The font/colour slot id is stored directly in the font pointer field.
-    this->font = (String *)(std::size_t)font;
-    Array<String*> *lineArray = new Array<String*>();
+    this->font = (String *) (std::size_t) font;
+    Array<String *> *lineArray = new Array<String *>();
 
     void **globals = g_ScrollTouchBox_globals_135600;
     int lineWidth = this->textWidth;
@@ -242,21 +291,21 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
 
     FontMetrics **fontHolder = g_ScrollTouchBox_font_135600;
     int boxHeight = this->height;
-    Array<String*> *curLines = this->lines;
+    Array<String *> *curLines = this->lines;
     FontMetrics *fontObj = *fontHolder;
-    int contentHeight = fontObj->lineHeight * (int)curLines->size();
+    int contentHeight = fontObj->lineHeight * (int) curLines->size();
     this->contentHeight = contentHeight;
     if (contentHeight > boxHeight) {
         this->width = this->textWidth - fontObj->wrapMargin;
         if (curLines != 0) {
-            for (String *line : *curLines)
+            for (String *line: *curLines)
                 delete line;
             curLines->clear();
             delete curLines;
             this->lines = 0;
         }
 
-        lineArray = new Array<String*>();
+        lineArray = new Array<String *>();
         int fontArg = font;
         lineWidth = this->width;
         this->lines = lineArray;
@@ -264,9 +313,9 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
 
         String *empty = new String(g_ScrollTouchBox_empty_135600, false);
         this->lines->push_back(empty);
-        Array<String*> *finalLines = this->lines;
+        Array<String *> *finalLines = this->lines;
         FontMetrics *finalFont = *fontHolder;
-        int finalCount = (int)finalLines->size();
+        int finalCount = (int) finalLines->size();
         int finalLineHeight = finalFont->lineHeight;
         this->contentHeight = finalLineHeight * finalCount;
     }
@@ -278,8 +327,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font)
     this->touchStartY = 0;
 }
 
-float ScrollTouchBox::getRelativeScrollHeight()
-{
+float ScrollTouchBox::getRelativeScrollHeight() {
     int height = this->height;
     int contentHeight = this->contentHeight;
     if (height > contentHeight)
@@ -294,11 +342,10 @@ float ScrollTouchBox::getRelativeScrollHeight()
         pos = height;
     }
 
-    return (float)pos / (float)contentHeight;
+    return (float) pos / (float) contentHeight;
 }
 
-bool ScrollTouchBox::touchIsInside(int x, int y)
-{
+bool ScrollTouchBox::touchIsInside(int x, int y) {
     int left = this->x;
     int top = 0;
     if (left <= x)
@@ -312,8 +359,6 @@ bool ScrollTouchBox::touchIsInside(int x, int y)
     return inside;
 }
 
-// Move the box vertically without re-laying out its text (the line array and
-// content height are unaffected; only the top edge changes).
 void ScrollTouchBox::setYPosition(int y) {
     this->y = y;
 }

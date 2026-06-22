@@ -6,10 +6,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// Galaxy on Fire 2 -- BeamGun: a beam weapon that renders a primary beam
-// geometry plus an optional secondary (muzzle) geometry tracking the gun's
-// delay state.
-
 class Gun;
 class Level;
 class Player;
@@ -17,28 +13,33 @@ class AEGeometry;
 
 class BeamGun {
 public:
-    int32_t field_0x4;                  // zero-initialised; semantics not recovered
-    Gun* gun;                           // owning gun
-    Level* level;
-    int32_t owner;                      // owner id
-    int32_t meshKind;                   // mesh-kind index
-    AEGeometry* primaryGeometry;        // primary beam geometry
-    AEGeometry* secondaryGeometry;      // secondary beam geometry
-    uint8_t hasSecondary;               // secondary geometry present
-    uint8_t secondaryVisible;           // secondary visible (tracks gun delay)
+    int32_t field_0x4; // zero-initialised; semantics not recovered
+    Gun *gun; // owning gun
+    Level *level;
+    int32_t owner; // owner id
+    int32_t meshKind; // mesh-kind index
+    AEGeometry *primaryGeometry; // primary beam geometry
+    AEGeometry *secondaryGeometry; // secondary beam geometry
+    uint8_t hasSecondary; // secondary geometry present
+    uint8_t secondaryVisible; // secondary visible (tracks gun delay)
 
-    BeamGun(int owner, Gun* gun, int meshKind, Level* level);
+    BeamGun(int owner, Gun *gun, int meshKind, Level *level);
+
     virtual ~BeamGun();
 
     // Virtual methods in vtable order: setEnemies, setEnemy, update, render.
-    virtual void setEnemies(Array<Player*>* enemies);
-    virtual void setEnemy(Player* enemy);
+    virtual void setEnemies(Array<Player *> *enemies);
+
+    virtual void setEnemy(Player *enemy);
+
     virtual void update(int elapsed);
+
     virtual void render();
 
     // No-op weapon hooks: the beam mesh follows the gun every frame, so swapping
     // the underlying mesh and applying a camera-relative translate do nothing here.
     void replaceGun(unsigned int mesh, int unused);
-    void translate(const Vector& v);
+
+    void translate(const Vector &v);
 };
 #endif

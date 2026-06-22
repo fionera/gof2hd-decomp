@@ -4,52 +4,39 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
 
-// SentryGun::SentryGun(Gun*, int, int, int, Level*).
-// Runs the ObjectGun base constructor (with reordered arguments) and then seeds the
-// spawn index from the gun's item index. The SentryGun vtable is installed by the
-// compiler-generated base-init sequence.
-SentryGun::SentryGun(Gun* gun, int mesh, int unused, int p4, Level* level)
-    : ObjectGun(unused, gun, mesh, 0, level)
-{
-    (void)p4;
+SentryGun::SentryGun(Gun *gun, int mesh, int unused, int p4, Level *level)
+    : ObjectGun(unused, gun, mesh, 0, level) {
+    (void) p4;
     this->cooldown = gun->itemIndex * 3 - 0x279;
 }
 
-// SentryGun::~SentryGun() — out-of-line so all destructor variants (D0/D1/D2) emit
-// in this TU, matching the original binary. Body is the implicit base/member cleanup,
-// which the compiler regenerates identically.
-SentryGun::~SentryGun()
-{
+SentryGun::~SentryGun() {
 }
 
-// SentryGun::update(int) — virtual override of ObjectGun::update.
-// Advances the owned gun, and on a fire pulse re-activates an idle junk object from
-// the level's sentry pool, positions it at the current muzzle slot, and spawns it.
-void SentryGun::update(int dt)
-{
+void SentryGun::update(int dt) {
     this->gun->update(dt);
 
-    Gun* gun = this->gun;
+    Gun *gun = this->gun;
     if (gun->hitSmall == 0)
         return;
     gun->hitSmall = 0;
 
-    Level* level = static_cast<Level*>(this->level);
-    Array<KIPlayer*>& pool = *level->field_b0;
+    Level *level = static_cast<Level *>(this->level);
+    Array<KIPlayer *> &pool = *level->field_b0;
 
     int base = this->cooldown;
     for (int i = base; i < base + 3; i++) {
-        KIPlayer* obj = pool[i];
-        Player* owner = static_cast<Player*>(obj->player);
+        KIPlayer *obj = pool[i];
+        Player *owner = static_cast<Player *>(obj->player);
         if (obj->isDying() == false &&
             (owner->isActive() == 0 || owner->isDead())) {
             level->field_6c += 1;
 
-            obj->revive();   // actor vtable slot 0x18
+            obj->revive(); // actor vtable slot 0x18
 
-            Gun* g = this->gun;
-            AbyssEngine::AEMath::Vector* spawnPos =
-                (AbyssEngine::AEMath::Vector*)(g->positions + g->fireIndex * 12);
+            Gun *g = this->gun;
+            AbyssEngine::AEMath::Vector *spawnPos =
+                    (AbyssEngine::AEMath::Vector *) (g->positions + g->fireIndex * 12);
             // slot 0x44 (setPosition(Vector const&)) unpacks to the virtual setPosition (0x48).
             obj->setPosition(spawnPos->x, spawnPos->y, spawnPos->z);
             return;
@@ -58,9 +45,5 @@ void SentryGun::update(int dt)
     }
 }
 
-// SentryGun::render() — overrides ObjectGun::render to draw nothing. The sentry's
-// spawned junk objects render themselves through the level, so the gun wrapper has
-// no geometry of its own to draw. Empty body, matching the original (a bare return).
-void SentryGun::render()
-{
+void SentryGun::render() {
 }

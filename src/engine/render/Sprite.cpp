@@ -1,43 +1,53 @@
 #include "engine/render/Sprite.h"
 #include "engine/render/PaintCanvas.h"
 
-// Active 2D paint canvas the engine renders sprites into. Resolved by a later
-// externs pass; left as engine globals for now.
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_canvas;
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_draw_image_canvas;
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_Sprite_draw_region_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern PaintCanvas **g_Sprite_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern PaintCanvas **g_Sprite_draw_image_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern PaintCanvas **g_Sprite_draw_region_canvas;
 
-void Sprite::setPosition(int x, int y)
-{
+void Sprite::setPosition(int x, int y) {
     this->posX = x;
     this->posY = y;
 }
 
-void Sprite::setRefPixelPosition(int x, int y)
-{
+void Sprite::setRefPixelPosition(int x, int y) {
     this->posX = x;
     this->posY = y;
 }
 
-Sprite::~Sprite()
-{
+Sprite::~Sprite() {
     delete[] this->frames;
     this->frames = nullptr;
 }
 
-void Sprite::defineReferencePixel(int x, int y)
-{
+void Sprite::defineReferencePixel(int x, int y) {
     this->refPixelX = x;
     this->refPixelY = y;
 }
 
-void Sprite::nextFrame()
-{
+void Sprite::nextFrame() {
     return setFrame(this->currentFrame + 1);
 }
 
-void Sprite::draw(float scaleX, float scaleY)
-{
+void Sprite::draw(float scaleX, float scaleY) {
     uint32_t *frames = this->frames;
 
     if (frames == nullptr) {
@@ -60,19 +70,18 @@ void Sprite::draw(float scaleX, float scaleY)
         return canvas->DrawImage2D(image, x, y);
     }
 
-    float frameWidth = (float)this->frameWidth;
-    float frameHeight = (float)this->frameHeight;
-    int scaledWidth = (int)(frameWidth * scaleX);
-    int scaledHeight = (int)(frameHeight * scaleY);
-    int drawX = (int)((float)x - ((scaleX - 1.0f) * frameWidth) * 0.5f);
-    int drawY = (int)((float)y - ((scaleY - 1.0f) * frameHeight) * 0.5f);
+    float frameWidth = (float) this->frameWidth;
+    float frameHeight = (float) this->frameHeight;
+    int scaledWidth = (int) (frameWidth * scaleX);
+    int scaledHeight = (int) (frameHeight * scaleY);
+    int drawX = (int) ((float) x - ((scaleX - 1.0f) * frameWidth) * 0.5f);
+    int drawY = (int) ((float) y - ((scaleY - 1.0f) * frameHeight) * 0.5f);
 
     canvas->DrawImage2D(image, drawX, drawY, scaledWidth, scaledHeight,
-                        (unsigned char)0x11, (unsigned char)0x11, (unsigned char)0);
+                        (unsigned char) 0x11, (unsigned char) 0x11, (unsigned char) 0);
 }
 
-Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
-{
+Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight) {
     PaintCanvas *canvas = *g_Sprite_canvas;
 
     this->frames = nullptr;
@@ -94,13 +103,11 @@ Sprite::Sprite(uint32_t image, int frameWidth, int frameHeight)
     setFrame(0);
 }
 
-void Sprite::prevFrame()
-{
+void Sprite::prevFrame() {
     return setFrame(this->currentFrame - 1);
 }
 
-void Sprite::drawRegion(int srcX, int srcY, int w, int h)
-{
+void Sprite::drawRegion(int srcX, int srcY, int w, int h) {
     PaintCanvas *canvas = *g_Sprite_canvas;
     int refX = this->refPixelX;
     int x = this->posX + srcX - refX;
@@ -116,12 +123,11 @@ void Sprite::drawRegion(int srcX, int srcY, int w, int h)
                          w, h, 0.0f, 0, 0, x, y);
 }
 
-Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight)
-{
+Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight) {
     PaintCanvas *canvas = *g_Sprite_canvas;
 
     this->frames = frames;
-    this->image = (uint32_t)-1;
+    this->image = (uint32_t) - 1;
     this->frameWidth = frameWidth;
     this->frameHeight = frameHeight;
 
@@ -139,28 +145,23 @@ Sprite::Sprite(uint32_t *frames, int frameCount, int frameWidth, int frameHeight
     setFrame(0);
 }
 
-int Sprite::getFrameWidth()
-{
+int Sprite::getFrameWidth() {
     return this->frameWidth;
 }
 
-int Sprite::getFrameHeight()
-{
+int Sprite::getFrameHeight() {
     return this->frameHeight;
 }
 
-int Sprite::getFrame()
-{
+int Sprite::getFrame() {
     return this->currentFrame;
 }
 
-int Sprite::getRawFrameCount()
-{
+int Sprite::getRawFrameCount() {
     return this->frameCount;
 }
 
-void Sprite::setFrame(int frame)
-{
+void Sprite::setFrame(int frame) {
     if (frame < 0) {
         frame = -frame;
     }

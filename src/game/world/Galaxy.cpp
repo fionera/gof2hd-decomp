@@ -1,5 +1,5 @@
 #include "game/world/Galaxy.h"
-Galaxy* gGalaxy = nullptr;            // canonical Galaxy singleton
+Galaxy *gGalaxy = nullptr; // canonical Galaxy singleton
 
 #include "engine/file/FileRead.h"
 #include "game/core/Globals.h"
@@ -8,20 +8,13 @@ Galaxy* gGalaxy = nullptr;            // canonical Galaxy singleton
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-// Engine singletons (kept as raw globals, like the rest of the port).
-extern Array<Item *> *g_items;        // the item table
+extern Array<Item *> *g_items; // the item table
 
-// The map-distance unit factor applied by distance().
 extern float g_galaxyDistanceScale;
-
-// Deletes every owned pointee in the array (nulling each slot as it goes),
-// then frees the backing store. Out-of-line in the original as
-// ArrayReleaseClasses<T>; the loop walks the full capacity, not just size.
 
 static const int kStationCount = 0x87;
 
-Galaxy::Galaxy()
-{
+Galaxy::Galaxy() {
     this->visited = new uint8_t[kStationCount];
     for (int i = 0; i < kStationCount; ++i)
         this->visited[i] = 0;
@@ -30,8 +23,7 @@ Galaxy::Galaxy()
     this->systems = loader.loadSystemsBinary();
 }
 
-Galaxy::~Galaxy()
-{
+Galaxy::~Galaxy() {
     delete[] this->visited;
     this->visited = 0;
     // Free the loaded SolarSystem objects (full capacity, nulling each slot)
@@ -41,69 +33,58 @@ Galaxy::~Galaxy()
     this->systems = 0;
 }
 
-void Galaxy::reset()
-{
+void Galaxy::reset() {
     for (int i = 0; i < kStationCount; ++i)
         this->visited[i] = 0;
 }
 
-int Galaxy::distancePercent(int x1, int y1, int x2, int y2)
-{
+int Galaxy::distancePercent(int x1, int y1, int x2, int y2) {
     int dx = x2 - x1;
     int dy = y2 - y1;
-    float sum = (float)(dy * dy + dx * dx);
-    return (int)gGlobals->sqrt(sum);
+    float sum = (float) (dy * dy + dx * dx);
+    return (int) gGlobals->sqrt(sum);
 }
 
-int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2)
-{
+int Galaxy::invDistancePercent(int x1, int y1, int x2, int y2) {
     return 100 - distancePercent(x1, y1, x2, y2);
 }
 
-void Galaxy::visitStation(int index)
-{
+void Galaxy::visitStation(int index) {
     this->visited[index] = 1;
 }
 
-void Galaxy::setVisited(bool *src, int count)
-{
+void Galaxy::setVisited(bool *src, int count) {
     for (int i = 0; i < count; ++i)
-        this->visited[i] = (uint8_t)src[i];
+        this->visited[i] = (uint8_t) src[i];
     for (int i = count; i < kStationCount; ++i)
         this->visited[i] = 0;
 }
 
-int Galaxy::getSystem(int index)
-{
+int Galaxy::getSystem(int index) {
     if (index < 0)
         return 0;
-    return (int)(intptr_t)(*this->systems)[index];
+    return (int) (intptr_t)(*this->systems)[index];
 }
 
-// Euclidean distance between the two systems' galactic-map positions, with the Z
-// coordinate compressed by 1/10 (the star map is much flatter in depth than in
-// plane), scaled by the global unit factor. Same-system pairs are distance 0.
-float Galaxy::distance(SolarSystem *a, SolarSystem *b)
-{
+float Galaxy::distance(SolarSystem *a, SolarSystem *b) {
     if (a->getIndex() == b->getIndex())
         return 0.0f;
 
     Vector pa;
     Vector pb;
-    pa.x = (float)a->getX();
-    pa.y = (float)a->getY();
-    pa.z = (float)(a->getZ() / 10);
-    pb.x = (float)b->getX();
-    pb.y = (float)b->getY();
-    pb.z = (float)(b->getZ() / 10);
+    pa.x = (float) a->getX();
+    pa.y = (float) a->getY();
+    pa.z = (float) (a->getZ() / 10);
+    pb.x = (float) b->getX();
+    pb.y = (float) b->getY();
+    pb.z = (float) (b->getZ() / 10);
 
     pa -= pb;
     float sq = pa.x * pa.x + pa.y * pa.y + pa.z * pa.z;
     return gGlobals->sqrt(sq) * g_galaxyDistanceScale;
 }
 
-void *Galaxy::getPlasmaProbabilities(Station *station)
-{
+void *Galaxy::getPlasmaProbabilities(Station *station) {
     int alien = gStatus->inAlienOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
     Array<Item *> *itemTable = g_items;
@@ -180,8 +161,7 @@ void *Galaxy::getPlasmaProbabilities(Station *station)
     return out;
 }
 
-void *Galaxy::getAsteroidProbabilities(Station *station)
-{
+void *Galaxy::getAsteroidProbabilities(Station *station) {
     int alien = gStatus->inAlienOrbit() ? 1 : 0;
     int supernova = gStatus->inSupernovaOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
@@ -264,21 +244,18 @@ void *Galaxy::getAsteroidProbabilities(Station *station)
     return out;
 }
 
-int Galaxy::getStation(int index)
-{
+int Galaxy::getStation(int index) {
     if (index < 0)
-        return (int)(intptr_t)gStatus->playerStation;
+        return (int) (intptr_t) gStatus->playerStation;
 
     FileRead loader;
     return loader.loadStation(index);
 }
 
-Array<SolarSystem *> *Galaxy::getSystems()
-{
+Array<SolarSystem *> *Galaxy::getSystems() {
     return this->systems;
 }
 
-uint8_t *Galaxy::getVisited()
-{
+uint8_t *Galaxy::getVisited() {
     return this->visited;
 }

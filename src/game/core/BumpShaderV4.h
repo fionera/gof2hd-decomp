@@ -6,45 +6,43 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
+namespace AbyssEngine {
+    class Engine;
+}
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class BumpShaderV4 : public ShaderBaseStruct {
+    public:
+        int aPosition;
+        int aTexCoord;
+        int aNormal;
+        int aTangent;
+        int aBitangent;
+        int uMvpMatrix;
+        int uModelMatrix;
+        int uLightDirModel;
+        int uEyePosModel;
+        int uTexture0;
+        int uTexture1;
+        int uColor;
+        int uAmbientColor;
+        int uDiffuseColor;
+        int uSpecularColor;
 
-// AbyssEngine::BumpShaderV4 - GLES2 bump-mapping shader variant. Resolves the
-// vertex attribute and uniform locations of BumpShaderV4.vsh/.fsh in Init() and
-// feeds per-mesh geometry and per-frame lighting state to the program.
-class BumpShaderV4 : public ShaderBaseStruct {
-public:
-    int aPosition;
-    int aTexCoord;
-    int aNormal;
-    int aTangent;
-    int aBitangent;
-    int uMvpMatrix;
-    int uModelMatrix;
-    int uLightDirModel;
-    int uEyePosModel;
-    int uTexture0;
-    int uTexture1;
-    int uColor;
-    int uAmbientColor;
-    int uDiffuseColor;
-    int uSpecularColor;
+        static int ShaderIndex;
 
-    static int ShaderIndex;
+        BumpShaderV4();
 
-    BumpShaderV4();
+        void Init(Engine *engine) override;
 
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-};
+        void SetInActive() override;
 
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

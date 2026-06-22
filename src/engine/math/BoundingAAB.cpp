@@ -3,8 +3,7 @@
 #include "engine/math/AEMath.h"
 #include <cmath>
 
-int BoundingAAB::outerCollide(float x, float y, float z)
-{
+int BoundingAAB::outerCollide(float x, float y, float z) {
     float centerX = this->centerX + this->extentsX;
     float extentX = this->halfExtentX;
     if (!(centerX - extentX < x)) {
@@ -34,10 +33,9 @@ int BoundingAAB::outerCollide(float x, float y, float z)
     return 0;
 }
 
-Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
-{
+Vector BoundingAAB::projectCollisionOnSurface(const Vector &point) {
     float distances[6];
-    Vector offsets[6] = {};   // each candidate face-offset, only one axis non-zero
+    Vector offsets[6] = {}; // each candidate face-offset, only one axis non-zero
 
     float centerX = this->centerX + this->extentsX;
     float extentX = this->halfExtentX;
@@ -81,8 +79,7 @@ Vector BoundingAAB::projectCollisionOnSurface(const Vector &point)
 
 BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez,
                          float width, float height, float depth)
-    : BoundingVolume(x, y, z, ex, ey, ez)
-{
+    : BoundingVolume(x, y, z, ex, ey, ez) {
     float halfWidth = width * 0.5f;
     float extentX = width * -0.5f;
     if (0.0f < halfWidth) {
@@ -106,12 +103,10 @@ BoundingAAB::BoundingAAB(float x, float y, float z, float ex, float ey, float ez
     this->halfExtentZ = extentZ;
 }
 
-BoundingAAB::~BoundingAAB()
-{
+BoundingAAB::~BoundingAAB() {
 }
 
-Vector BoundingAAB::getCollisionNormal(const Vector &)
-{
+Vector BoundingAAB::getCollisionNormal(const Vector &) {
     Vector out;
     out.x = 0.0f;
     out.y = 0.0f;
@@ -119,8 +114,7 @@ Vector BoundingAAB::getCollisionNormal(const Vector &)
     return out;
 }
 
-int BoundingAAB::collide(float x, float y, float z)
-{
+int BoundingAAB::collide(float x, float y, float z) {
     // First test this box's own surface (virtual outerCollide), then the
     // inherited composite children.
     if (this->outerCollide(x, y, z) == 0) {
@@ -129,7 +123,6 @@ int BoundingAAB::collide(float x, float y, float z)
     return BoundingVolume::collide(x, y, z);
 }
 
-void BoundingAAB::update(float x, float y, float z)
-{
+void BoundingAAB::update(float x, float y, float z) {
     BoundingVolume::update(x, y, z);
 }

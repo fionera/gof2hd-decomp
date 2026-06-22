@@ -1,21 +1,31 @@
 #include "game/ui/TouchSlider.h"
 #include "engine/render/PaintCanvas.h"
 
-void TouchSlider::setPosition(int x, int y)
-{
-    float trackRange = (float)(this->trackWidth - this->knobWidth);
-    float knobBase = (float)(x + this->knobWidth / 2);
+void TouchSlider::setPosition(int x, int y) {
+    float trackRange = (float) (this->trackWidth - this->knobWidth);
+    float knobBase = (float) (x + this->knobWidth / 2);
     this->x = x;
     this->y = y;
     this->knobY = y + this->trackHeight / 2;
-    this->knobX = (int)(knobBase + this->value * trackRange);
+    this->knobX = (int) (knobBase + this->value * trackRange);
 }
 
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_TouchSlider_canvas;
-__attribute__((visibility("hidden"))) extern void **g_TouchSlider_app;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern PaintCanvas **g_TouchSlider_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_TouchSlider_app;
 
-TouchSlider::TouchSlider(int type, int x, int y, float value)
-{
+TouchSlider::TouchSlider(int type, int x, int y, float value) {
     this->type = type;
     this->value = value;
     PaintCanvas **canvas = g_TouchSlider_canvas;
@@ -44,34 +54,29 @@ TouchSlider::TouchSlider(int type, int x, int y, float value)
     this->numSteps = 0;
     // RAWREAD: app object at g_TouchSlider_app is an unmodeled engine type;
     // field at +0x7c is the global touch-padding/hit-slop value.
-    this->touchPadding = *(int *)((char *)*g_TouchSlider_app + 0x7c);
+    this->touchPadding = *(int *) ((char *) *g_TouchSlider_app + 0x7c);
 }
 
-TouchSlider::~TouchSlider()
-{
+TouchSlider::~TouchSlider() {
 }
 
-int TouchSlider::getWidth()
-{
+int TouchSlider::getWidth() {
     return this->trackWidth;
 }
 
-void TouchSlider::setFixedScale(int numSteps)
-{
+void TouchSlider::setFixedScale(int numSteps) {
     this->numSteps = numSteps;
 }
 
-int TouchSlider::OnTouchBegin(int x, int y)
-{
+int TouchSlider::OnTouchBegin(int x, int y) {
     if (this->isDisabled != 0)
         return 0;
     int inside = touchedInside(x, y);
-    this->isDragging = (uint8_t)inside;
+    this->isDragging = (uint8_t) inside;
     return inside;
 }
 
-int TouchSlider::OnTouchEnd(int x, int y)
-{
+int TouchSlider::OnTouchEnd(int x, int y) {
     if (this->isDisabled != 0)
         return 0;
 
@@ -81,7 +86,7 @@ int TouchSlider::OnTouchEnd(int x, int y)
     } else {
         int steps = this->numSteps;
         if (steps > 0) {
-            float stepCount = (float)(steps + 1);
+            float stepCount = (float) (steps + 1);
             float currentValue = getValue();
             float snappedValue;
             float threshold = 0.0f;
@@ -104,17 +109,15 @@ int TouchSlider::OnTouchEnd(int x, int y)
     return result;
 }
 
-void TouchSlider::draw()
-{
+void TouchSlider::draw() {
     PaintCanvas **canvas = g_TouchSlider_canvas;
     int color = this->isDisabled != 0 ? 0xFFFFFF2F : -1;
-    (*canvas)->SetColor((unsigned int)color);
+    (*canvas)->SetColor((unsigned int) color);
     (*canvas)->DrawImage2D(this->trackImage, this->x, this->y);
-    (*canvas)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char)0x11, (unsigned char)0x44);
+    (*canvas)->DrawImage2D(this->knobImage, this->knobX, this->knobY, (unsigned char) 0x11, (unsigned char) 0x44);
 }
 
-bool TouchSlider::OnTouchMove(int x, int y)
-{
+bool TouchSlider::OnTouchMove(int x, int y) {
     if (this->isDisabled != 0)
         return false;
     if (this->isDragging != 0) {
@@ -131,20 +134,17 @@ bool TouchSlider::OnTouchMove(int x, int y)
     return this->isDragging != 0;
 }
 
-float TouchSlider::getValue()
-{
-    float trackRange = (float)(this->trackWidth - this->knobWidth);
-    float knobOffset = (float)((this->knobX - this->knobWidth / 2) - this->x);
+float TouchSlider::getValue() {
+    float trackRange = (float) (this->trackWidth - this->knobWidth);
+    float knobOffset = (float) ((this->knobX - this->knobWidth / 2) - this->x);
     return knobOffset / trackRange;
 }
 
-void TouchSlider::setHalfTransparent(bool transparent)
-{
+void TouchSlider::setHalfTransparent(bool transparent) {
     this->isDisabled = transparent;
 }
 
-int TouchSlider::touchedInside(int x, int y)
-{
+int TouchSlider::touchedInside(int x, int y) {
     int halfKnob = this->knobWidth >> 1;
     int centerX = this->knobX;
     int pad = this->touchPadding;
@@ -159,9 +159,8 @@ int TouchSlider::touchedInside(int x, int y)
     return y <= halfKnobH + centerY + pad;
 }
 
-void TouchSlider::setValue(float value)
-{
-    float trackRange = (float)(this->trackWidth - this->knobWidth);
-    float knobBase = (float)(this->x + this->knobWidth / 2);
-    this->knobX = (int)(knobBase + trackRange * value);
+void TouchSlider::setValue(float value) {
+    float trackRange = (float) (this->trackWidth - this->knobWidth);
+    float knobBase = (float) (this->x + this->knobWidth / 2);
+    this->knobX = (int) (knobBase + trackRange * value);
 }

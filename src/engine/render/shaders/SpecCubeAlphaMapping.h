@@ -5,41 +5,42 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
-// AbyssEngine::SpecCubeAlphaMapping — GLES2 specular-cube + alpha-mapping shader.
-// Derives from ShaderBaseStruct; holds one GL program plus its attrib/uniform locations.
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class SpecCubeAlphaMapping : public ShaderBaseStruct {
+    public:
+        int attrA0; // attrib a0 (position)
+        int attrA1; // attrib a1 (normal)
+        int attrA2; // attrib a2 (texcoord)
+        int uniU0; // uniform u0 (mvp)
+        int uniU1; // uniform u1 (normal matrix)
+        int uniU2;
+        int uniU3;
+        int uniU5;
+        int uniU4;
+        int uniU6;
+        int uniU7;
+        int uniU8;
+        int uniU9;
+        int uniU10;
+        int uniU11;
 
-class SpecCubeAlphaMapping : public ShaderBaseStruct {
-public:
-    int attrA0;     // attrib a0 (position)
-    int attrA1;     // attrib a1 (normal)
-    int attrA2;     // attrib a2 (texcoord)
-    int uniU0;      // uniform u0 (mvp)
-    int uniU1;      // uniform u1 (normal matrix)
-    int uniU2;
-    int uniU3;
-    int uniU5;
-    int uniU4;
-    int uniU6;
-    int uniU7;
-    int uniU8;
-    int uniU9;
-    int uniU10;
-    int uniU11;
+        SpecCubeAlphaMapping();
 
-    SpecCubeAlphaMapping();
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-};
+        void Init(Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

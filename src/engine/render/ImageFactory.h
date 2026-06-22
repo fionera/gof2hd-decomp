@@ -8,16 +8,14 @@
 
 class ImagePart;
 
-/// Builds and draws the composite glyph / item / ship images used by the UI.
-/// Owns a Sprite for the animated composite layers and caches two glyph
-/// image2d handles fetched from the global PaintCanvas.
 class ImageFactory {
 public:
-    Sprite      *sprite;       ///< owned composite sprite (frame array)
-    unsigned int itemImage;    ///< item glyph image2d handle (id 0x485)
-    unsigned int shipImage;    ///< foreground glyph image2d handle (id 0x511)
+    Sprite *sprite; ///< owned composite sprite (frame array)
+    unsigned int itemImage; ///< item glyph image2d handle (id 0x485)
+    unsigned int shipImage; ///< foreground glyph image2d handle (id 0x511)
 
     ImageFactory();
+
     ~ImageFactory();
 
     /// Picks a random sex (50/50), then builds a random character of `race`.
@@ -30,11 +28,17 @@ public:
     int *createChar(bool isMale, int race);
 
     void drawChar(Array<ImagePart *> *parts, int x, int y, bool flag);
+
     void drawItem(int itemId, int x, int y);
+
     void drawItem(int itemId, int frame, int x, int y);
+
     void drawShip(int shipId, int x, int y);
+
     Array<ImagePart *> *loadChar(int *desc);
+
     void *loadImage(int row, int col, int frameBase);
+
     void reload();
 
     int getItemImageId(int itemId);

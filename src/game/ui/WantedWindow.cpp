@@ -16,8 +16,6 @@
 #include "game/world/Wanted.h"
 #include "game/core/String.h"
 
-
-// Engine globals: live UI/screen state and the shared singletons the bounty board reads.
 extern Layout **g_WantedWindow_move_layout;
 extern int *g_WantedWindow_move_screen_h;
 extern int *g_WantedWindow_move_screen_w_a;
@@ -87,21 +85,21 @@ void WantedWindow::update(int dt) {
         }
         this->scrollVelocity = delta;
         if (mag > 1.0f) {
-            this->scrollOffset = (int)(delta + (float)this->scrollOffset);
+            this->scrollOffset = (int) (delta + (float) this->scrollOffset);
         }
     }
 
     int scroll = this->scrollOffset;
     if (scroll > 0) {
         this->scrollDamping = 1.0f;
-        this->scrollVelocity = (float)-scroll * 0.5f;
+        this->scrollVelocity = (float) -scroll * 0.5f;
     }
 
     int limit = this->visibleHeight - this->contentHeight;
     if (limit <= -1) {
         if (scroll < limit) {
             this->scrollDamping = 1.0f;
-            this->scrollVelocity = (float)(limit - scroll) * 0.5f;
+            this->scrollVelocity = (float) (limit - scroll) * 0.5f;
         }
     } else {
         this->scrollOffset = 0;
@@ -148,11 +146,14 @@ void WantedWindow::render3D() {
 float WantedWindow::getRelativeScrollStartPos() {
     int pos = this->scrollOffset;
     if (pos > 0) {
-        union { uint32_t u; float f; } c;
+        union {
+            uint32_t u;
+            float f;
+        } c;
         c.u = 0x4650a903u;
         return c.f;
     }
-    return -(float)pos / (float)this->contentHeight;
+    return -(float) pos / (float) this->contentHeight;
 }
 
 extern Layout **g_WantedWindow_hit_layout;
@@ -162,7 +163,7 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
         return 0xffffffffu;
     }
 
-    Array<Wanted*> *list = this->wantedList;
+    Array<Wanted *> *list = this->wantedList;
     Layout *layout = *g_WantedWindow_hit_layout;
     int numerator = y - this->windowY;
     numerator -= layout->field_0xc;
@@ -170,10 +171,10 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     numerator -= layout->field_0x5c;
     numerator -= this->scrollOffset;
     int idx = numerator / (layout->field_0x70 + layout->field_0x34);
-    if ((uint32_t)idx > (uint32_t)((int)list->size() - 1)) {
+    if ((uint32_t) idx > (uint32_t)((int) list->size() - 1)) {
         return 0xffffffffu;
     }
-    return (uint32_t)idx;
+    return (uint32_t) idx;
 }
 
 extern uint8_t *g_WantedWindow_end_fullscreen;
@@ -226,7 +227,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     float velocity = 0.0f;
     int mag = delta < 0 ? -delta : delta;
     if (mag > 3) {
-        velocity = (float)delta;
+        velocity = (float) delta;
     }
     this->scrollDamping = 0.95f;
     this->dragging = 0;
@@ -245,7 +246,7 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         uint32_t idx = this->getWantedAtPosition(x, y);
         this->selectedWanted = idx;
         this->highlightedWanted = idx;
-        this->selectWanted((int)idx);
+        this->selectWanted((int) idx);
     }
 
     bool openMap = false;
@@ -260,11 +261,11 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     if (openMap) {
         ApplicationManager *app = gAppManager;
         void *module = app->GetApplicationModule(5);
-        this->starMap = *(StarMap **)((char *)module + 0x10);
+        this->starMap = *(StarMap **) ((char *) module + 0x10);
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         int lastSeen = wanted->getLastSeen();
         int stationIndex = gGalaxy->getStation(lastSeen);
-        Station *station = (Station *)(long)stationIndex;
+        Station *station = (Station *) (long) stationIndex;
         delete this->mission;
         this->mission = nullptr;
 
@@ -274,8 +275,8 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         StarMap *map = this->starMap;
         if (map == nullptr) {
             map = new StarMap(true, mission, false, -1);
-            *(StarMap **)((char *)app->GetApplicationModule(5) + 0x10) = map;
-            map = *(StarMap **)((char *)app->GetApplicationModule(5) + 0x10);
+            *(StarMap **) ((char *) app->GetApplicationModule(5) + 0x10) = map;
+            map = *(StarMap **) ((char *) app->GetApplicationModule(5) + 0x10);
             this->starMap = map;
         } else {
             map->init(true, mission, false, -1);
@@ -316,21 +317,21 @@ void WantedWindow::draw() {
 
     canvas->EnableClip(this->windowX,
                        this->windowY + layout->field_0xc +
-                           layout->field_0x20 + layout->field_0x5c,
+                       layout->field_0x20 + layout->field_0x5c,
                        this->windowWidth,
                        layout->field_0x2c + this->visibleHeight);
 
     float relStart = this->getRelativeScrollStartPos();
-    float visf = (float)this->visibleHeight;
+    float visf = (float) this->visibleHeight;
     float relHeight = this->getRelativeScrollHeight();
-    int barSize = (int)(relHeight * visf);
-    int barStart = (int)(relStart * visf);
+    int barSize = (int) (relHeight * visf);
+    int barStart = (int) (relStart * visf);
     if (barSize >= 1 || barStart >= 0) {
         layout->drawScrollBar(((this->windowX + (this->windowWidth >> 1)) -
-                              layout->field_0x2c) - layout->field_0x48,
+                               layout->field_0x2c) - layout->field_0x48,
                               this->windowY + layout->field_0x2c +
-                                  layout->field_0xc + layout->field_0x20 +
-                                  layout->field_0x5c,
+                              layout->field_0xc + layout->field_0x20 +
+                              layout->field_0x5c,
                               this->visibleHeight, barStart, barSize);
     }
 
@@ -343,7 +344,7 @@ void WantedWindow::draw() {
         String boxLabel("", false);
         layout->drawBox(style, layout->buttonInsetX + this->windowX, y,
                         (this->windowWidth >> 1) -
-                            (inset + layout->buttonInsetX + layout->field_0x2c),
+                        (inset + layout->buttonInsetX + layout->field_0x2c),
                         layout->field_0x70, boxLabel, 0);
 
         Wanted *wanted = (*this->wantedList)[i];
@@ -352,7 +353,7 @@ void WantedWindow::draw() {
         int textY = y + layout->field_0x70 / 2 - canvas->GetTextHeight(font) / 2;
         canvas->DrawString(font, name,
                            this->windowX + layout->buttonInsetX +
-                               layout->field_0x44,
+                           layout->field_0x44,
                            textY, false);
 
         int campaign = gStatus->getCurrentCampaignMission();
@@ -363,7 +364,7 @@ void WantedWindow::draw() {
             int textW = canvas->GetTextWidth(font, marked);
             canvas->DrawImage2D(this->bgImage,
                                 this->windowX + layout->buttonInsetX +
-                                    layout->field_0x44 + textW,
+                                layout->field_0x44 + textW,
                                 textY);
         }
 
@@ -390,13 +391,13 @@ void WantedWindow::draw() {
     String leftBody("", false);
     layout->drawBox(5, layout->buttonInsetX + this->windowX,
                     this->windowY + layout->field_0xc + layout->field_0x20 +
-                        layout->field_0x5c + layout->field_0x2c,
+                    layout->field_0x5c + layout->field_0x2c,
                     (this->windowWidth >> 1) - (layout->field_0x2c + layout->buttonInsetX),
                     ((this->windowHeight -
                       (layout->field_0x20 + layout->field_0xc +
                        layout->field_0x5c + layout->field_0x2c * 2)) -
                      layout->field_0x10) -
-                        layout->field_0x24,
+                    layout->field_0x24,
                     leftBody, 0);
 
     String rightHdr;
@@ -409,13 +410,13 @@ void WantedWindow::draw() {
     String rightBody("", false);
     layout->drawBox(5, this->windowX + (this->windowWidth >> 1) + layout->field_0x2c,
                     this->windowY + layout->field_0x2c + layout->field_0xc +
-                        layout->field_0x20 + layout->field_0x5c,
+                    layout->field_0x20 + layout->field_0x5c,
                     ((this->windowWidth >> 1) - layout->field_0x2c) - layout->buttonInsetX,
                     ((this->windowHeight -
                       (layout->field_0xc + layout->field_0x2c * 2 +
                        layout->field_0x20 + layout->field_0x5c)) -
                      layout->field_0x10) -
-                        layout->field_0x24,
+                    layout->field_0x24,
                     rightBody, 0);
 
     if (this->imageParts != nullptr) {
@@ -461,19 +462,19 @@ int WantedWindow::init() {
     this->scrollOffsetSnapshot = 0;
     this->dragDelta = 0;
 
-    this->wantedList = new Array<Wanted*>();
+    this->wantedList = new Array<Wanted *>();
 
     Status *status = gStatus;
-    Array<Wanted*> *allWanted = status->getWanted();
+    Array<Wanted *> *allWanted = status->getWanted();
     Layout *layout = *g_WantedWindow_init_layout;
 
     for (uint32_t i = 0; i < allWanted->size(); ++i) {
-        int race = ((SolarSystem *)(long)status->getSystem())->getRace();
+        int race = ((SolarSystem *) (long) status->getSystem())->getRace();
         Wanted *wanted = (*allWanted)[i];
         if (race == wanted->getBoard()) {
-            race = ((SolarSystem *)(long)status->getSystem())->getRace();
+            race = ((SolarSystem *) (long) status->getSystem())->getRace();
             if (race != 0 || status->getCurrentCampaignMission() < 0x80) {
-                race = ((SolarSystem *)(long)status->getSystem())->getRace();
+                race = ((SolarSystem *) (long) status->getSystem())->getRace();
                 if (race == 0 && status->getCurrentCampaignMission() >= 0xa2) {
                     this->wantedList->push_back(wanted);
                 }
@@ -515,7 +516,7 @@ int WantedWindow::init() {
 
     uint32_t selected = 0;
     for (;;) {
-        Array<Wanted*> *arr = this->wantedList;
+        Array<Wanted *> *arr = this->wantedList;
         uint32_t count = arr->size();
         if (selected >= count) {
             selected = this->selectedWanted;
@@ -543,9 +544,9 @@ int WantedWindow::init() {
     }
 
     this->highlightedWanted = selected;
-    this->selectWanted((int)selected);
+    this->selectWanted((int) selected);
 
-    Array<TouchButton*> *buttons = new Array<TouchButton*>();
+    Array<TouchButton *> *buttons = new Array<TouchButton *>();
     this->buttons = buttons;
     buttons->resize(2);
 
@@ -553,15 +554,15 @@ int WantedWindow::init() {
     {
         String *label = text->getText(0xc93);
         int helpOff = layout->getHelpButtonOffset();
-        (*buttons)[1] = new TouchButton(this->windowX + (int)this->windowWidth - helpOff,
+        (*buttons)[1] = new TouchButton(this->windowX + (int) this->windowWidth - helpOff,
                                         this->windowY, *label, 3, 0x12, 0);
     }
     {
         String *label = text->getText(0x81);
         int helpOff = layout->getHelpButtonOffset();
         int width = (*buttons)[1]->getWidth();
-        (*buttons)[0] = new TouchButton(this->windowX + (int)this->windowWidth - helpOff -
-                                            width + layout->field_0x38,
+        (*buttons)[0] = new TouchButton(this->windowX + (int) this->windowWidth - helpOff -
+                                        width + layout->field_0x38,
                                         this->windowY, *label, 3, 0x12, 0);
     }
 
@@ -570,11 +571,11 @@ int WantedWindow::init() {
 
     layout = *g_WantedWindow_init_layout;
     this->contentHeight = (layout->field_0x34 + layout->field_0x70) *
-                          (int)this->wantedList->size();
+                          (int) this->wantedList->size();
     this->visibleHeight =
-        (((((this->windowHeight - layout->field_0x10) - layout->field_0xc) -
-           layout->field_0x20) - layout->field_0x24) - layout->field_0x5c) +
-        layout->field_0x2c;
+            (((((this->windowHeight - layout->field_0x10) - layout->field_0xc) -
+               layout->field_0x20) - layout->field_0x24) - layout->field_0x5c) +
+            layout->field_0x2c;
 
     delete this->detailButton;
     this->starMap = nullptr;
@@ -617,14 +618,14 @@ WantedWindow::WantedWindow() {
 
 WantedWindow::~WantedWindow() {
     if (this->imageParts != nullptr) {
-        for (ImagePart *part : *this->imageParts) delete part;
+        for (ImagePart *part: *this->imageParts) delete part;
         this->imageParts->clear();
         delete this->imageParts;
     }
     this->imageParts = nullptr;
 
     if (this->buttons != nullptr) {
-        for (TouchButton *btn : *this->buttons) delete btn;
+        for (TouchButton *btn: *this->buttons) delete btn;
         this->buttons->clear();
         delete this->buttons;
     }
@@ -655,7 +656,10 @@ float WantedWindow::getRelativeScrollHeight() {
     int content = this->contentHeight;
     int visible = this->visibleHeight;
     if (content < visible) {
-        union { uint32_t u; float f; } c;
+        union {
+            uint32_t u;
+            float f;
+        } c;
         c.u = 0x4605e009u;
         return c.f;
     }
@@ -668,7 +672,7 @@ float WantedWindow::getRelativeScrollHeight() {
     } else {
         num = scroll + content;
     }
-    return (float)num / (float)content;
+    return (float) num / (float) content;
 }
 
 extern ImageFactory **g_WantedWindow_select_factory;
@@ -689,9 +693,9 @@ void WantedWindow::selectWanted(int idx) {
 
     if (wanted->isActive() != 0) {
         Galaxy *galaxy = gGalaxy;
-        Station *last = (Station *)(long)galaxy->getStation(wanted->getLastSeen());
-        Station *travel = (Station *)(long)galaxy->getStation(wanted->getTravelsTo());
-        Station *current = (Station *)(long)galaxy->getStation(wanted->getCurrentLocation());
+        Station *last = (Station *) (long) galaxy->getStation(wanted->getLastSeen());
+        Station *travel = (Station *) (long) galaxy->getStation(wanted->getTravelsTo());
+        Station *current = (Station *) (long) galaxy->getStation(wanted->getCurrentLocation());
 
         this->fromText = last->getName() + String("from ", false) + String(" ", false);
         this->toText = travel->getName() + String("to ", false) + String(" ", false);

@@ -6,21 +6,19 @@
 #include "aetypes.h"
 
 namespace AbyssEngine {
+    class String;
 
-class String;
+    class ResourceTexture {
+    public:
+        char *name; // heap copy of the resource name C-string
+        float value; // associated scalar value
 
-// AbyssEngine::ResourceTexture — pairs a heap-owned texture resource name with a
-// scalar value (e.g. an LOD bias or weighting factor).
-class ResourceTexture {
-public:
-    char* name;    // heap copy of the resource name C-string
-    float value;   // associated scalar value
+        ResourceTexture(const char *name, float value);
 
-    ResourceTexture(const char *name, float value);
-    ResourceTexture(const String &name, float value);
-    ~ResourceTexture();
-};
+        ResourceTexture(const String &name, float value);
 
+        ~ResourceTexture();
+    };
 } // namespace AbyssEngine
 
 #endif

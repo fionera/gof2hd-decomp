@@ -6,40 +6,42 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Galaxy on Fire 2 - AbyssEngine::GenericShader2 (GLES2 bump/lit shader).
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class GenericShader2 : public ShaderBaseStruct {
+    public:
+        int aPosition;
+        int aNormal;
+        int aTangent;
+        int aBinormal;
+        int aTexCoord;
+        int uM0;
+        int uM1;
+        int uM2;
+        int uM3;
+        int uM4;
+        int uM5;
+        int uM6;
+        int uM7;
+        int uM8;
 
-class GenericShader2 : public ShaderBaseStruct {
-public:
-    int aPosition;
-    int aNormal;
-    int aTangent;
-    int aBinormal;
-    int aTexCoord;
-    int uM0;
-    int uM1;
-    int uM2;
-    int uM3;
-    int uM4;
-    int uM5;
-    int uM6;
-    int uM7;
-    int uM8;
+        static int ShaderIndex;
 
-    static int ShaderIndex;
+        GenericShader2();
 
-    GenericShader2();
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-};
+        void Init(Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

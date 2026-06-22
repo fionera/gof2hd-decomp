@@ -22,51 +22,72 @@
 #include "platform/libc.h"
 #include <jni.h>
 
-// JNI-supplied UTF-8 string naming the "Origami Super Club" promo bundle. The setter native
 // stashes the JVM-owned pointer here; the release native hands it back to the JVM.
 extern "C" const char *g_android_origami_super_club;
 const char *g_android_origami_super_club = nullptr;
 
 // net.fishlabs.gof2hdallandroid2012.GOF2HD2012.SetOrigamiSuperClub(String) native.
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub(
-    JNIEnv *env, jobject /*thiz*/, jstring value)
-{
+    JNIEnv *env, jobject /*thiz*/, jstring value) {
     jboolean isCopy;
     g_android_origami_super_club = env->GetStringUTFChars(value, &isCopy);
 }
 
 // net.fishlabs.gof2hdallandroid2012.GOF2HD2012.ReleaseOrigamiSuperClub(String) native.
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigamiSuperClub(
-    JNIEnv *env, jobject /*thiz*/, jstring value)
-{
+    JNIEnv *env, jobject /*thiz*/, jstring value) {
     env->ReleaseStringUTFChars(value, g_android_origami_super_club);
 }
 
 // SHA-256 hashing used to sign records (digest appended on write, verified on read).
 extern "C" void SHA256_Init(void *c);
+
 extern "C" void SHA256_Update(void *c, const void *data, int n);
+
 extern "C" void SHA256_Final(unsigned char *md, void *c);
+
 extern "C" void AEFile_ReadBool(void *out, unsigned int fd);
+
 extern "C" void AEFile_ReadInt(void *out, unsigned int fd);
+
 extern "C" void AEFile_ReadString(void *out, unsigned int fd, int flag);
+
 extern "C" void AEFile_Read_i64(void *dst, unsigned int fd);
+
 extern "C" void AEFile_Read_i32(void *dst, unsigned int fd);
+
 extern "C" void AEFile_Read_bool(void *dst, unsigned int fd, int b);
+
 extern "C" void AEFile_Read_f32(void *dst, unsigned int fd);
+
 extern "C" void AEFile_Write_i64(long long v, unsigned int fd);
+
 extern "C" void AEFile_Write_i32(int v, unsigned int fd);
+
 extern "C" void AEFile_Write_str(void *s, unsigned int fd, int b);
+
 extern "C" void AEFile_Write_f32(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteInt(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteBool(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteString(void *s, unsigned int fd, int flag);
+
 extern "C" void AEFile_ReadByte(void *out, unsigned int fd);
+
 extern "C" void AEFile_ReadFloat(void *out, unsigned int fd);
+
 extern "C" void AEFile_ReadShort(void *out, unsigned int fd);
+
 extern "C" void AEFile_WriteByte(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteFloat(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteShort(int v, unsigned int fd);
+
 extern "C" void AEFile_WriteLong(long long v, unsigned int fd);
+
 extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 
 // ---- loadingScreen(PaintCanvas*, int, void*) ----
@@ -74,13 +95,55 @@ extern "C" void AEFile_ReadLong(void *out, unsigned int fd);
 // original reads (the secondary draw canvas, the Globals/Layout objects and the cached
 // screen width/height, the localized-text object and the "saving vs loading" flag); they are
 // reached through the file's typed-handle idiom because Globals.h does not model them.
-__attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas *g_LS_canvas; // Globals::Canvas (spinner/bar canvas)
-__attribute__((visibility("hidden"))) extern unsigned char *g_LS_globals;            // Globals::globals (layout-metrics object)
-__attribute__((visibility("hidden"))) extern Layout *g_LS_layout;                    // Globals::layout
-__attribute__((visibility("hidden"))) extern int g_LS_screenW;                       // Globals::w
-__attribute__((visibility("hidden"))) extern int g_LS_screenH;                       // Globals::h
-__attribute__((visibility("hidden"))) extern GameText *g_LS_gameText;                // Globals::gameText
-__attribute__((visibility("hidden"))) extern bool g_LS_gameSaving;                   // Globals::gameSaving
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern AbyssEngine::PaintCanvas *g_LS_canvas; // Globals::Canvas (spinner/bar canvas)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char *g_LS_globals; // Globals::globals (layout-metrics object)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern Layout *g_LS_layout; // Globals::layout
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_LS_screenW; // Globals::w
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_LS_screenH; // Globals::h
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText *g_LS_gameText; // Globals::gameText
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern bool g_LS_gameSaving; // Globals::gameSaving
 
 void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourceHolder) {
     canvas->ClearBuffer(0xff);
@@ -108,13 +171,14 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
     g_LS_canvas->Image2DCreate(0x504, spinner);
     g_LS_canvas->Image2DCreate(0x505, barFill);
 
-    int barFillW  = g_LS_canvas->GetImage2DWidth(barFill);
-    int spinnerW  = g_LS_canvas->GetImage2DWidth(spinner);
-    int barFillH  = g_LS_canvas->GetImage2DHeight(barFill);
+    int barFillW = g_LS_canvas->GetImage2DWidth(barFill);
+    int spinnerW = g_LS_canvas->GetImage2DWidth(spinner);
+    int barFillH = g_LS_canvas->GetImage2DHeight(barFill);
 
     // Window chrome. The top margin used to centre the caption/spinner is read from the
     // layout-metrics object (Globals::globals +0x27c); the bar baseline from +0x290.
-    int topMargin = *reinterpret_cast<int *>(g_LS_globals + 0x27c);   // RAWREAD: Globals::globals +0x27c (unnamed top margin)
+    int topMargin = *reinterpret_cast<int *>(g_LS_globals + 0x27c);
+    // RAWREAD: Globals::globals +0x27c (unnamed top margin)
     g_LS_layout->drawBG();
     g_LS_layout->drawHeader();
     g_LS_layout->drawEmptyFooter(false);
@@ -129,9 +193,9 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
     if (progress > 0) barShortfall = 100 - progress;
 
     // Layout metrics live as raw fields on the Globals::globals object.
-    int *layoutFields  = reinterpret_cast<int *>(*reinterpret_cast<void **>(g_LS_layout));  // RAWREAD: Layout body fields
-    int globalsCenterX = *reinterpret_cast<int *>(g_LS_globals);                            // RAWREAD: Globals::globals +0x00 (content width)
-    int barBaseline    = *reinterpret_cast<int *>(g_LS_globals + 0x290);                    // RAWREAD: Globals::globals +0x290 (bar baseline)
+    int *layoutFields = reinterpret_cast<int *>(*reinterpret_cast<void **>(g_LS_layout)); // RAWREAD: Layout body fields
+    int globalsCenterX = *reinterpret_cast<int *>(g_LS_globals); // RAWREAD: Globals::globals +0x00 (content width)
+    int barBaseline = *reinterpret_cast<int *>(g_LS_globals + 0x290); // RAWREAD: Globals::globals +0x290 (bar baseline)
 
     // Centred caption.
     int captionW = canvas->GetTextWidth(resId, caption);
@@ -171,11 +235,17 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
 }
 
 // Global holder: g -> P, *P -> the record count.
-__attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_RH_recordCount;
 
 // RecordHandler::readAllRecords() -> Array<GameRecord*>*
-void * RecordHandler::readAllRecords() {
-    Array<void*> *arr = new Array<void*>();
+void *RecordHandler::readAllRecords() {
+    Array<void *> *arr = new Array<void *>();
     int *cnt = g_RH_recordCount;
     arr->resize(*cnt);
     for (int i = 0; i < *cnt; i++) {
@@ -186,11 +256,17 @@ void * RecordHandler::readAllRecords() {
 }
 
 // Global holder: g -> P, *P -> the record count.
-__attribute__((visibility("hidden"))) extern int *g_RH_recordCount;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_RH_recordCount;
 
 // RecordHandler::readAllPreviewRecords() -> Array<GameRecord*>*
-void * RecordHandler::readAllPreviewRecords() {
-    Array<void*> *arr = new Array<void*>();
+void *RecordHandler::readAllPreviewRecords() {
+    Array<void *> *arr = new Array<void *>();
     int *cnt = g_RH_recordCount;
     arr->resize(*cnt);
     for (int i = 0; i < *cnt; i++) {
@@ -201,26 +277,31 @@ void * RecordHandler::readAllPreviewRecords() {
 }
 
 // RecordHandler::notEnoughMemory() -> bool: free space < 900.
-bool RecordHandler::notEnoughMemory()
-{
+bool RecordHandler::notEnoughMemory() {
     return AEFile::GetDeviceFreeSpace() < 900;
 }
 
-__attribute__((visibility("hidden"))) extern int *g_CSV_count;   // P, *P = record count
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_CSV_count; // P, *P = record count
 
 // RecordHandler::convertSDVersionSaves()
 void RecordHandler::convertSDVersionSaves() {
-    Array<signed char*> *a0 = new Array<signed char*>();
+    Array<signed char *> *a0 = new Array<signed char *>();
     int *cnt = g_CSV_count;
     a0->resize(*cnt);
-    Array<signed char*> *a1 = new Array<signed char*>();
+    Array<signed char *> *a1 = new Array<signed char *>();
     a1->resize(*cnt);
 
     unsigned n = *cnt;
     int *sizes0 = new int[n];
     int *sizes1 = new int[n];
 
-    for (int i = 0; i < (int)n; i++) {
+    for (int i = 0; i < (int) n; i++) {
         sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
         sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
 
@@ -237,13 +318,16 @@ void RecordHandler::convertSDVersionSaves() {
 
     int i = 0;
     while (true) {
-        int last = (int)n - 1;
+        int last = (int) n - 1;
         int j = i;
         signed char *rec = 0;
         bool found = false;
         while (j < last) {
             rec = (*a0)[j];
-            if (rec != 0) { found = true; break; }
+            if (rec != 0) {
+                found = true;
+                break;
+            }
             j++;
         }
         if (!found) {
@@ -252,7 +336,7 @@ void RecordHandler::convertSDVersionSaves() {
             if (lastRec != 0) {
                 this->writeByteArrayAsRecord(lastRec, sizes0[last], 0, false);
                 this->addHash(0);
-                int idx = (int)(*cnt) - 1;
+                int idx = (int) (*cnt) - 1;
                 this->writeByteArrayAsRecord((*a1)[idx], sizes1[idx], 0, true);
             }
             break;
@@ -265,9 +349,9 @@ void RecordHandler::convertSDVersionSaves() {
         n = *cnt;
     }
 
-    for (signed char *e : *a0) delete[] e;
+    for (signed char *e: *a0) delete[] e;
     a0->clear();
-    for (signed char *e : *a1) delete[] e;
+    for (signed char *e: *a1) delete[] e;
     a1->clear();
     delete a0;
     delete a1;
@@ -277,8 +361,20 @@ void RecordHandler::convertSDVersionSaves() {
     return;
 }
 
-__attribute__((visibility("hidden"))) extern const unsigned char RH_ah_salt[]; // (25 bytes)
-__attribute__((visibility("hidden"))) extern unsigned char **RH_ah_key;        // (16-byte key)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const unsigned char RH_ah_salt[]; // (25 bytes)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char **RH_ah_key; // (16-byte key)
 
 // RecordHandler::addHash(int slot)
 void RecordHandler::addHash(int slot) {
@@ -295,8 +391,8 @@ void RecordHandler::addHash(int slot) {
 
         signed char *out = new signed char[len + 0x20];
         memcpy(out, data, len);
-        unsigned long long *dst = (unsigned long long *)(out + len);
-        unsigned long long *src = (unsigned long long *)md;
+        unsigned long long *dst = (unsigned long long *) (out + len);
+        unsigned long long *src = (unsigned long long *) md;
         dst[0] = src[0];
         dst[1] = src[1];
         dst[2] = src[2];
@@ -336,7 +432,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
 
 // RecordHandler::readRecord(int slot) — thin forwarder to the record-store reader
 // (the original tail-calls recordStoreRead with the slot unchanged).
-void * RecordHandler::readRecord(int slot) {
+void *RecordHandler::readRecord(int slot) {
     return this->recordStoreRead(slot);
 }
 
@@ -345,10 +441,9 @@ void * RecordHandler::readRecord(int slot) {
 void RecordHandler::recoverSDVersionSaves() {
 }
 
-
 // RecordHandler::readWanted(unsigned int fd) -> Wanted* (in r0 on return).
-void * RecordHandler::readWanted(unsigned int fd) {
-    (void)this;
+void *RecordHandler::readWanted(unsigned int fd) {
+    (void) this;
     bool active = false;
     bool terminated = false;
     int currentLocation = -1;
@@ -403,23 +498,35 @@ void * RecordHandler::readWanted(unsigned int fd) {
 }
 
 // Global holder: g -> P, *P -> the record count.
-__attribute__((visibility("hidden"))) extern int *g_RH_csd_count;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_RH_csd_count;
 // Flag holder: g -> P, *P -> the flag object (byte set to 1).
-__attribute__((visibility("hidden"))) extern char **g_RH_csd_flag;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern char **g_RH_csd_flag;
 
 // RecordHandler::changeSaveDirectoryToBackupDirectory()
 void RecordHandler::changeSaveDirectoryToBackupDirectory() {
-    Array<signed char*> *a0 = new Array<signed char*>();
+    Array<signed char *> *a0 = new Array<signed char *>();
     int *cnt = g_RH_csd_count;
     a0->resize(*cnt);
-    Array<signed char*> *a1 = new Array<signed char*>();
+    Array<signed char *> *a1 = new Array<signed char *>();
     a1->resize(*cnt);
 
     unsigned int n = *cnt;
     int *sizes0 = new int[n];
     int *sizes1 = new int[n];
 
-    for (int i = 0; i < (int)n; i++) {
+    for (int i = 0; i < (int) n; i++) {
         sizes0[i] = this->readRecordAsByteArray(&(*a0)[i], i, false);
         sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
         n = *cnt;
@@ -427,7 +534,7 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
 
     **g_RH_csd_flag = 1;
     int i = 0;
-    while (i < (int)n) {
+    while (i < (int) n) {
         signed char *rec = (*a0)[i];
         if (rec == 0) {
             i++;
@@ -441,9 +548,9 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
         }
     }
 
-    for (signed char *e : *a0) delete[] e;
+    for (signed char *e: *a0) delete[] e;
     a0->clear();
-    for (signed char *e : *a1) delete[] e;
+    for (signed char *e: *a1) delete[] e;
     a1->clear();
     delete a0;
     delete a1;
@@ -452,7 +559,7 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
 }
 
 // RecordHandler::recordStoreReadPreview(int)
-void * RecordHandler::recordStoreReadPreview(int slot) {
+void *RecordHandler::recordStoreReadPreview(int slot) {
     String path;
     String num;
 
@@ -465,23 +572,41 @@ void * RecordHandler::recordStoreReadPreview(int slot) {
         AEFile::OpenRead(path, &fd);
         gr = new GameRecord();
         // RAWREAD: GameRecord payload is a positional save-image blob (no per-field members in GameRecord.h).
-        AEFile_Read_i64((char *)gr + 0x10, fd);
-        AEFile_Read_i32((char *)gr + 0x8, fd);
-        AEFile_Read_bool((char *)gr + 0x194, fd, true);
-        AEFile_Read_bool((char *)gr + 0x188, fd, true);
-        AEFile_Read_i32((char *)gr + 0x40, fd);
-        AEFile_Read_i32((char *)gr + 0x20, fd);
-        AEFile_Read_f32((char *)gr + 0x11c, fd);
-        AEFile_Read_i32((char *)gr + 0x1a0, fd);
+        AEFile_Read_i64((char *) gr + 0x10, fd);
+        AEFile_Read_i32((char *) gr + 0x8, fd);
+        AEFile_Read_bool((char *) gr + 0x194, fd, true);
+        AEFile_Read_bool((char *) gr + 0x188, fd, true);
+        AEFile_Read_i32((char *) gr + 0x40, fd);
+        AEFile_Read_i32((char *) gr + 0x20, fd);
+        AEFile_Read_f32((char *) gr + 0x11c, fd);
+        AEFile_Read_i32((char *) gr + 0x1a0, fd);
         AEFile::Close(fd);
     }
     return gr;
 }
 
 // Path-prefix literals for the options file and the record directories.
-__attribute__((visibility("hidden"))) extern const char RH_lit0[];
-__attribute__((visibility("hidden"))) extern const char RH_lit1[];
-__attribute__((visibility("hidden"))) extern const char RH_lit2[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char RH_lit0[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char RH_lit1[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char RH_lit2[];
 
 RecordHandler::RecordHandler()
     : currentMission(0),
@@ -503,12 +628,18 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
     AEFile::OpenWrite(tmp, &fd);
-    ((AEFile *)(n))->Write(buf, fd);
+    ((AEFile *) (n))->Write(buf, fd);
     AEFile::Close(fd);
 }
 
 // Holds the object whose +0x2c float is written near the end of the preview record.
-__attribute__((visibility("hidden"))) extern int *g_RH_wp_float;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_RH_wp_float;
 
 // RecordHandler::recordStoreWritePreview(int) — the single-arg preview writer pulls the
 // preview fields from the live Status/Station/SolarSystem/Ship state.
@@ -527,56 +658,69 @@ void RecordHandler::recordStoreWritePreview(int slot) {
     AEFile_Write_i64(gStatus->getPlayingTime(), fd);
     AEFile_Write_i32(gStatus->getCredits(), fd);
 
-    num = ((Station *)(&num))->getName();
+    num = ((Station *) (&num))->getName();
     AEFile_Write_str(&num, fd, true);
 
-    num = ((SolarSystem *)(&num))->getName();
+    num = ((SolarSystem *) (&num))->getName();
     AEFile_Write_str(&num, fd, true);
 
     AEFile_Write_i32(gStatus->getCurrentCampaignMission(), fd);
     AEFile_Write_i32(gStatus->getLevel(), fd);
-    AEFile_Write_f32(*(int *)((char *)*(void **)g_RH_wp_float + 0x2c), fd);   // RAWREAD: opaque global object (g_RH_wp_float), unmodeled +0x2c float
-    AEFile_Write_i32(((Ship *)(gStatus->getShip()))->getIndex(), fd);
+    AEFile_Write_f32(*(int *) ((char *) *(void **) g_RH_wp_float + 0x2c), fd);
+    // RAWREAD: opaque global object (g_RH_wp_float), unmodeled +0x2c float
+    AEFile_Write_i32(((Ship *) (gStatus->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
 }
 
-__attribute__((visibility("hidden"))) extern const char g_WA_empty1[];
-__attribute__((visibility("hidden"))) extern const char g_WA_empty2[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_WA_empty1[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_WA_empty2[];
 
 // RecordHandler::writeAgent(Agent*, unsigned int fd)
 void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
-    RecordHandler *self = this;
+    RecordHandler * self = this;
     Agent *agent = agentPtr;
-    AEFile_WriteInt(((Agent *)(agent))->getCosts(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSellSystemIndex(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSellBlueprintIndex(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getEvent(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getIndex(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getOffer(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getRace(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSellItemIndex(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSellItemPrice(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSellItemQuantity(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getStation(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getSystem(), fd);
-    AEFile_WriteInt(((Agent *)(agent))->getWingmanFriendsCount(), fd);
-    AEFile_WriteBool(((Agent *)(agent))->isMale(), fd);
-    AEFile_WriteBool(((Agent *)(agent))->hasReward(), fd);
-    AEFile_WriteBool(((Agent *)(agent))->hasAcceptedOffer(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getCosts(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSellSystemIndex(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSellBlueprintIndex(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getEvent(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getIndex(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getOffer(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getRace(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSellItemIndex(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSellItemPrice(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSellItemQuantity(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getStation(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getSystem(), fd);
+    AEFile_WriteInt(((Agent *) (agent))->getWingmanFriendsCount(), fd);
+    AEFile_WriteBool(((Agent *) (agent))->isMale(), fd);
+    AEFile_WriteBool(((Agent *) (agent))->hasReward(), fd);
+    AEFile_WriteBool(((Agent *) (agent))->hasAcceptedOffer(), fd);
     AEFile_WriteBool(agent->field_0x24, fd);
     AEFile_WriteBool(agent->field_0x25, fd);
 
-    if (((Agent *)(agent))->getImageParts() == 0) {
+    if (((Agent *) (agent))->getImageParts() == 0) {
         AEFile_WriteInt(-1, fd);
     } else {
         AEFile_WriteInt(5, fd);
         for (int i = 0; i != 5; i++) {
-            int *img = ((Agent *)(agent))->getImageParts();
+            int *img = ((Agent *) (agent))->getImageParts();
             AEFile_WriteInt(img[i], fd);
         }
     }
-    if (0x12 < ((Agent *)(agent))->getIndex()) {
-        AEFile_WriteInt(((Agent *)(agent))->getSellModIndex(), fd);
+    if (0x12 < ((Agent *) (agent))->getIndex()) {
+        AEFile_WriteInt(((Agent *) (agent))->getSellModIndex(), fd);
     }
 
     String s;
@@ -616,10 +760,9 @@ void RecordHandler::writeAgent(Agent *agentPtr, unsigned int fd) {
     return;
 }
 
-
 // RecordHandler::writeMission(Mission*, unsigned int fd)
 void RecordHandler::writeMission(Mission *m, unsigned int fd) {
-    RecordHandler *self = this;
+    RecordHandler * self = this;
     AEFile_WriteInt(m->getType(), fd);
     if (m->isEmpty() == 0) {
         String s;
@@ -638,7 +781,7 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
         } else {
             AEFile_WriteInt(5, fd);
             for (int i = 0; i != 5; i++) {
-                int *img = (int *)(long)m->getClientImage();
+                int *img = (int *) (long) m->getClientImage();
                 AEFile_WriteInt(img[i], fd);
             }
         }
@@ -666,15 +809,69 @@ void RecordHandler::writeMission(Mission *m, unsigned int fd) {
     return;
 }
 
-__attribute__((visibility("hidden"))) extern unsigned char *g_LO_settings; // settings struct base
-__attribute__((visibility("hidden"))) extern int **g_LO_statusObj;   // *->obj (field 0xfa)
-__attribute__((visibility("hidden"))) extern int *g_LO_nameSlot;     // name String* holder
-__attribute__((visibility("hidden"))) extern int *g_LO_extraInt;     // int
-__attribute__((visibility("hidden"))) extern bool *g_LO_flag1;       // bool
-__attribute__((visibility("hidden"))) extern bool *g_LO_flag2;       // bool
-__attribute__((visibility("hidden"))) extern int *g_LO_textObj;      // *->obj
-__attribute__((visibility("hidden"))) extern int *g_LO_fontKind;     // *->int
-__attribute__((visibility("hidden"))) extern int *g_LO_fmodSlot;     // FModSound* holder
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char *g_LO_settings; // settings struct base
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int **g_LO_statusObj; // *->obj (field 0xfa)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_LO_nameSlot; // name String* holder
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_LO_extraInt; // int
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern bool *g_LO_flag1; // bool
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern bool *g_LO_flag2; // bool
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_LO_textObj; // *->obj
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_LO_fontKind; // *->int
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_LO_fmodSlot; // FModSound* holder
 
 // RecordHandler::loadOptions()
 void RecordHandler::loadOptions() {
@@ -690,7 +887,8 @@ void RecordHandler::loadOptions() {
 
             AEFile_ReadByte(s + 0x10, fd);
             AEFile_ReadByte(s + 0x11, fd);
-            *(unsigned char *)(*(int *)g_LO_statusObj + 0xfa) = s[0x11];   // RAWREAD: opaque status handle (g_LO_statusObj), original-layout byte 0xfa
+            *(unsigned char *) (*(int *) g_LO_statusObj + 0xfa) = s[0x11];
+            // RAWREAD: opaque status handle (g_LO_statusObj), original-layout byte 0xfa
             AEFile_ReadInt(s + 0x14, fd);
             AEFile_ReadInt(s + 0x18, fd);
             AEFile_ReadInt(s + 0x1c, fd);
@@ -704,7 +902,7 @@ void RecordHandler::loadOptions() {
             int *nameSlot = g_LO_nameSlot;
             if (*nameSlot != 0) {
                 // Free the previously-stored option name (a heap String*) before reading the new one.
-                delete (String *)(long)*nameSlot;
+                delete (String *) (long) *nameSlot;
                 *nameSlot = 0;
             }
 
@@ -712,7 +910,7 @@ void RecordHandler::loadOptions() {
             name.ctor();
             AEFile_ReadString(&name, fd, 0);
             String *ns = new String(name);
-            *nameSlot = (int)(long)ns;
+            *nameSlot = (int) (long) ns;
 
             AEFile_ReadInt(g_LO_extraInt, fd);
             AEFile_ReadBool(g_LO_flag1, fd);
@@ -756,21 +954,21 @@ void RecordHandler::loadOptions() {
             int langVal = lang;
             if (-1 < langVal) {
                 if (langVal == 9) langVal = 0;
-                ((GameText *)((short)**(int **)g_LO_textObj))->setLanguage_i(langVal);
-                gGlobals->loadFont(**(int **)g_LO_fontKind);
+                ((GameText *) ((short) **(int **) g_LO_textObj))->setLanguage_i(langVal);
+                gGlobals->loadFont(**(int **) g_LO_fontKind);
             }
 
             int *fmodSlot = g_LO_fmodSlot;
             if (*fmodSlot != 0) {
-                void *fm = (void *)(long)*fmodSlot;
-                ((FModSound *)(fm))->setAudioLanguage(lang);
+                void *fm = (void *) (long) *fmodSlot;
+                ((FModSound *) (fm))->setAudioLanguage(lang);
                 // Apply the per-category enable flags and volumes just read from the options file.
-                ((FModSound *)(fm))->enableCategory(0, *(bool *)(s + 0x32));
-                ((FModSound *)(fm))->enableCategory(1, *(bool *)(s + 0x33));
-                ((FModSound *)(fm))->enableCategory(2, *(bool *)(s + 0x34));
-                ((FModSound *)(fm))->setVolume(0, *(float *)(s + 0x08));
-                ((FModSound *)(fm))->setVolume(1, *(float *)(s + 0x20));
-                ((FModSound *)(fm))->setVolume(2, *(float *)(s + 0x44));
+                ((FModSound *) (fm))->enableCategory(0, *(bool *) (s + 0x32));
+                ((FModSound *) (fm))->enableCategory(1, *(bool *) (s + 0x33));
+                ((FModSound *) (fm))->enableCategory(2, *(bool *) (s + 0x34));
+                ((FModSound *) (fm))->setVolume(0, *(float *) (s + 0x08));
+                ((FModSound *) (fm))->setVolume(1, *(float *) (s + 0x20));
+                ((FModSound *) (fm))->setVolume(2, *(float *) (s + 0x44));
             }
 
             AEFile_ReadBool(s + 0x62, fd);
@@ -780,12 +978,11 @@ void RecordHandler::loadOptions() {
     return;
 }
 
-
 // RecordHandler::loadResolutionValue(float) — reads the options file at self+8 into a
 // settings scratch struct (the path String lives at self+8). The resolution argument is not
 // used by the read path.
 void RecordHandler::loadResolutionValue(float resolution) {
-    (void)resolution;
+    (void) resolution;
     String &path = this->optionsPath;
     if (AEFile::FileExist(path) != 0) {
         unsigned int fd;
@@ -793,7 +990,7 @@ void RecordHandler::loadResolutionValue(float resolution) {
 
         // Scratch settings record (mirrors the on-stack layout the target fills in).
         unsigned char buf[0x4c];
-        char *r = (char *)buf;
+        char *r = (char *) buf;
 
         AEFile_ReadByte(r + 0x10, fd);
         AEFile_ReadByte(r + 0x11, fd);
@@ -859,14 +1056,13 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     if (AEFile::FileExist(path) != 0)
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
-    ((AEFile *)(n))->Write(buf, fd);
+    ((AEFile *) (n))->Write(buf, fd);
     AEFile::Close(fd);
     return n;
 }
 
-
 // RecordHandler::readMission(unsigned int fd) -> Mission* (in r0).
-void * RecordHandler::readMission(unsigned int fd) {
+void *RecordHandler::readMission(unsigned int fd) {
     void *mission = 0;
 
     int type = 0;
@@ -888,10 +1084,10 @@ void * RecordHandler::readMission(unsigned int fd) {
         unsigned imgCount = 0;
         AEFile_ReadInt(&imgCount, fd);
         int *img = 0;
-        if ((int)imgCount >= 1) {
+        if ((int) imgCount >= 1) {
             img = new int[imgCount];
             int *p = img;
-            for (int i = 0; i < (int)imgCount; i++) {
+            for (int i = 0; i < (int) imgCount; i++) {
                 AEFile_ReadInt(p, fd);
                 p++;
             }
@@ -922,32 +1118,67 @@ void * RecordHandler::readMission(unsigned int fd) {
         } else {
             mission = new Mission(type, reward, targetStationIdx);
         }
-        ((Mission *)(mission))->setCosts(costs);
-        ((Mission *)(mission))->setBonus(bonus);
-        ((Mission *)(mission))->setProductionGoods(prodIdx, prodAmt);
-        ((Mission *)(mission))->setStatusValue(statusValue);
-        ((Mission *)(mission))->setVisible(visible);
-        ((Mission *)(mission))->setAgent((Agent *)agent);
+        ((Mission *) (mission))->setCosts(costs);
+        ((Mission *) (mission))->setBonus(bonus);
+        ((Mission *) (mission))->setProductionGoods(prodIdx, prodAmt);
+        ((Mission *) (mission))->setStatusValue(statusValue);
+        ((Mission *) (mission))->setVisible(visible);
+        ((Mission *) (mission))->setAgent((Agent *) agent);
 
         String tgtNameCopy;
         tgtNameCopy.ctor_copy(&targetName, false);
-        ((Mission *)(mission))->setTargetName(tgtNameCopy);
+        ((Mission *) (mission))->setTargetName(tgtNameCopy);
 
         if (agent != 0) {
-            ((Agent *)(agent))->setMission((Mission *)mission);
+            ((Agent *) (agent))->setMission((Mission *) mission);
         }
-
     }
 
     return mission;
 }
 
-__attribute__((visibility("hidden"))) extern unsigned char *g_SO_settings; // settings struct
-__attribute__((visibility("hidden"))) extern String **g_SO_playerName; // *->String*
-__attribute__((visibility("hidden"))) extern const char g_SO_defName[];
-__attribute__((visibility("hidden"))) extern int *g_SO_extraInt;     // *->int
-__attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag1; // byte
-__attribute__((visibility("hidden"))) extern unsigned char *g_SO_flag2; // byte
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char *g_SO_settings; // settings struct
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern String **g_SO_playerName; // *->String*
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const char g_SO_defName[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_SO_extraInt; // *->int
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char *g_SO_flag1; // byte
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char *g_SO_flag2; // byte
 
 // RecordHandler::saveOptions()
 void RecordHandler::saveOptions() {
@@ -962,15 +1193,15 @@ void RecordHandler::saveOptions() {
 
     AEFile_WriteByte(s[0x10], fd);
     AEFile_WriteByte(s[0x11], fd);
-    AEFile_WriteInt(*(int *)(s + 0x14), fd);
-    AEFile_WriteInt(*(int *)(s + 0x18), fd);
-    AEFile_WriteInt(*(int *)(s + 0x1c), fd);
-    AEFile_WriteInt(*(int *)(s + 0x00), fd);
+    AEFile_WriteInt(*(int *) (s + 0x14), fd);
+    AEFile_WriteInt(*(int *) (s + 0x18), fd);
+    AEFile_WriteInt(*(int *) (s + 0x1c), fd);
+    AEFile_WriteInt(*(int *) (s + 0x00), fd);
     AEFile_WriteByte(s[0x0c], fd);
     AEFile_WriteByte(s[0x0d], fd);
-    AEFile_WriteInt(*(int *)(s + 0x04), fd);
-    AEFile_WriteInt(*(int *)(s + 0x24), fd);
-    AEFile_WriteInt(*(int *)(s + 0x28), fd);
+    AEFile_WriteInt(*(int *) (s + 0x04), fd);
+    AEFile_WriteInt(*(int *) (s + 0x24), fd);
+    AEFile_WriteInt(*(int *) (s + 0x28), fd);
 
     String *name = *g_SO_playerName;
     if (name == 0) {
@@ -982,14 +1213,14 @@ void RecordHandler::saveOptions() {
 
     AEFile_WriteInt(*g_SO_extraInt, fd);
     AEFile_WriteByte(*g_SO_flag1, fd);
-    AEFile_WriteInt(*(int *)(s + 0x54), fd);
-    AEFile_WriteInt(*(int *)(s + 0x58), fd);
-    AEFile_WriteInt(*(int *)(s + 0x08), fd);
+    AEFile_WriteInt(*(int *) (s + 0x54), fd);
+    AEFile_WriteInt(*(int *) (s + 0x58), fd);
+    AEFile_WriteInt(*(int *) (s + 0x08), fd);
     AEFile_WriteByte(s[0x0e], fd);
     AEFile_WriteByte(s[0x32], fd);
     AEFile_WriteByte(s[0x33], fd);
     AEFile_WriteByte(s[0x34], fd);
-    AEFile_WriteInt(*(int *)(s + 0x20), fd);
+    AEFile_WriteInt(*(int *) (s + 0x20), fd);
 
     AEFile_WriteShort(GameText::getLanguage(), fd);
     AEFile_WriteByte(*g_SO_flag2, fd);
@@ -1004,7 +1235,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteByte(s[0x3f], fd);
     AEFile_WriteByte(s[0x40], fd);
     AEFile_WriteByte(s[0x41], fd);
-    AEFile_WriteInt(*(int *)(s + 0x44), fd);
+    AEFile_WriteInt(*(int *) (s + 0x44), fd);
     AEFile_WriteByte(s[0x48], fd);
     AEFile_WriteByte(s[0x38], fd);
     AEFile_WriteByte(s[0x4e], fd);
@@ -1013,7 +1244,7 @@ void RecordHandler::saveOptions() {
     AEFile_WriteByte(s[0x4b], fd);
     AEFile_WriteByte(s[0x4c], fd);
     AEFile_WriteByte(s[0x4d], fd);
-    AEFile_WriteInt(*(int *)(s + 0x50), fd);
+    AEFile_WriteInt(*(int *) (s + 0x50), fd);
     AEFile_WriteByte(s[0x60], fd);
     AEFile_WriteByte(s[0x61], fd);
     AEFile_WriteByte(s[0x62], fd);
@@ -1023,9 +1254,8 @@ void RecordHandler::saveOptions() {
     return;
 }
 
-
 // RecordHandler::readAgent(unsigned int fd) -> Agent* (in r0).
-void * RecordHandler::readAgent(unsigned int fd) {
+void *RecordHandler::readAgent(unsigned int fd) {
     int costs = 0, sellSys = 0, sellBp = 0, event = 0, idx = 0, offer = 0, race = 0;
     int sellItemIdx = 0, sellItemPrice = 0, sellItemQty = 0, station = 0, system = 0;
     unsigned wingmen = 0;
@@ -1055,10 +1285,10 @@ void * RecordHandler::readAgent(unsigned int fd) {
     unsigned imgCount = 0;
     AEFile_ReadInt(&imgCount, fd);
     int *img = 0;
-    if (0 < (int)imgCount) {
+    if (0 < (int) imgCount) {
         img = new int[imgCount];
         int *p = img;
-        for (int i = 0; i < (int)imgCount; i++) {
+        for (int i = 0; i < (int) imgCount; i++) {
             AEFile_ReadInt(p, fd);
             p++;
         }
@@ -1091,10 +1321,10 @@ void * RecordHandler::readAgent(unsigned int fd) {
     nameCopy.ctor_copy(&name, false);
     Agent *agent = new Agent(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
-    ((Agent *)(agent))->setCosts(costs);
-    ((Agent *)(agent))->setEvent(event);
-    ((Agent *)(agent))->setOffer(offer);
-    ((Agent *)(agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
+    ((Agent *) (agent))->setCosts(costs);
+    ((Agent *) (agent))->setEvent(event);
+    ((Agent *) (agent))->setOffer(offer);
+    ((Agent *) (agent))->setSellItemData(sellItemPrice, sellItemQty, sellItemIdx);
 
     if (strE.size() != 0) {
         String *s = new String();
@@ -1108,27 +1338,27 @@ void * RecordHandler::readAgent(unsigned int fd) {
     }
     agent->wingmanCount = wingmen;
 
-    Array<String*> *arr = new Array<String*>();
+    Array<String *> *arr = new Array<String *>();
     arr->resize(wingmen);
-    for (int i = 0; i < (int)wingmen; i++) {
+    for (int i = 0; i < (int) wingmen; i++) {
         String *s = new String();
         String *src = (i == 0) ? &strE : &strF;
         s->ctor_copy(src, false);
         (*arr)[i] = s;
     }
-    ((Agent *)(agent))->setWingmanFriendNames(arr);
-    ((Agent *)(agent))->giveRewardAtNextChat(hasReward);
-    ((Agent *)(agent))->setOfferAccepted(accepted);
-    ((Agent *)(agent))->setImageParts(img);
+    ((Agent *) (agent))->setWingmanFriendNames(arr);
+    ((Agent *) (agent))->giveRewardAtNextChat(hasReward);
+    ((Agent *) (agent))->setOfferAccepted(accepted);
+    ((Agent *) (agent))->setImageParts(img);
 
     String tmp;
     tmp.ctor_copy(&missionStr, false);
-    ((Agent *)(agent))->setMissionString(tmp);
+    ((Agent *) (agent))->setMissionString(tmp);
     tmp.ctor_copy(&stationName, false);
-    ((Agent *)(agent))->setStationName(tmp);
+    ((Agent *) (agent))->setStationName(tmp);
     tmp.ctor_copy(&systemName, false);
-    ((Agent *)(agent))->setSystemName(tmp);
-    ((Agent *)(agent))->setMission((Mission *)mission);
+    ((Agent *) (agent))->setSystemName(tmp);
+    ((Agent *) (agent))->setMission((Mission *) mission);
 
     agent->field_0x24 = raw24;
     agent->field_0x25 = raw25;
@@ -1136,10 +1366,9 @@ void * RecordHandler::readAgent(unsigned int fd) {
     return agent;
 }
 
-
 // RecordHandler::writeWanted(Wanted*, unsigned int fd)
 void RecordHandler::writeWanted(Wanted *w, unsigned int fd) {
-    (void)this;
+    (void) this;
     AEFile_WriteBool(w->isActive(), fd);
     AEFile_WriteBool(w->isTerminated(), fd);
     AEFile_WriteInt(w->getCurrentLocation(), fd);
@@ -1189,17 +1418,18 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     AEFile::OpenWrite(path, &fd);
 
     // RAWREAD: GameRecord payload is a positional save-image blob (no per-field members in GameRecord.h).
-    AEFile_Write_i64(*(long long *)((char *)rec + 0x10), fd);
-    AEFile_Write_i32(*(int *)((char *)rec + 0x8), fd);
+    AEFile_Write_i64(*(long long *) ((char *) rec + 0x10), fd);
+    AEFile_Write_i32(*(int *) ((char *) rec + 0x8), fd);
 
-    num = ((Station *)(&num))->getName();
+    num = ((Station *) (&num))->getName();
     AEFile_Write_str(&num, fd, true);
 
-    AEFile_Write_str((char *)rec + 0x188, fd, true);
-    AEFile_Write_i32(*(int *)((char *)rec + 0x40), fd);
-    AEFile_Write_i32(*(int *)((char *)rec + 0x20), fd);
-    AEFile_Write_f32(*(int *)((char *)rec + 0x11c), fd);
-    AEFile_Write_i32(((Ship *)(*(Ship **)((char *)rec + 0x130)))->getIndex(), fd);   // RAWREAD: GameRecord+0x130 (blob; Ship* slot not modeled in GameRecord.h)
+    AEFile_Write_str((char *) rec + 0x188, fd, true);
+    AEFile_Write_i32(*(int *) ((char *) rec + 0x40), fd);
+    AEFile_Write_i32(*(int *) ((char *) rec + 0x20), fd);
+    AEFile_Write_f32(*(int *) ((char *) rec + 0x11c), fd);
+    AEFile_Write_i32(((Ship *) (*(Ship **) ((char *) rec + 0x130)))->getIndex(), fd);
+    // RAWREAD: GameRecord+0x130 (blob; Ship* slot not modeled in GameRecord.h)
     AEFile::Close(fd);
     return 1;
 }
@@ -1207,15 +1437,35 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
 // The remaining game-state serialization (ship, station, standings, items, missions, agents)
 // is a long straight-line writer over the live object graph, emitted inline at the tail of
 // recordStoreWrite() below.
-__attribute__((visibility("hidden"))) extern void  *g_RSW_optFlags;   // option-flag block base
-__attribute__((visibility("hidden"))) extern void  *g_RSW_uiFlags;    // secondary flag block base
-__attribute__((visibility("hidden"))) extern int    g_RSW_modVersion; // ship-mod table version tag
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void *g_RSW_optFlags; // option-flag block base
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void *g_RSW_uiFlags; // secondary flag block base
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_RSW_modVersion; // ship-mod table version tag
 
 // Item / Achievements / Standing live in out-of-batch headers whose full layout is not
 // pulled in here; their accessors are reached through extern "C" shims (codebase style).
 
 // Helper: write a length-prefixed bool[] backed by an Array<bool>.
-static inline __attribute__((always_inline)) void RSW_writeBoolArray(Array<bool> *arr, unsigned int fd) {
+static inline __attribute__ ((always_inline))
+
+void RSW_writeBoolArray(Array<bool> *arr, unsigned int fd) {
     AEFile_WriteInt(arr->size(), fd);
     for (unsigned i = 0; i < arr->size(); i++) {
         AEFile_WriteBool((*arr)[i], fd);
@@ -1223,7 +1473,9 @@ static inline __attribute__((always_inline)) void RSW_writeBoolArray(Array<bool>
 }
 
 // Helper: write a length-prefixed int[] backed by an Array<int>.
-static inline __attribute__((always_inline)) void RSW_writeIntArray(Array<int> *arr, unsigned int fd) {
+static inline __attribute__ ((always_inline))
+
+void RSW_writeIntArray(Array<int> *arr, unsigned int fd) {
     AEFile_WriteInt(arr->size(), fd);
     for (unsigned i = 0; i < arr->size(); i++) {
         AEFile_WriteInt((*arr)[i], fd);
@@ -1231,38 +1483,59 @@ static inline __attribute__((always_inline)) void RSW_writeIntArray(Array<int> *
 }
 
 // Helper: write a ship's equipment list (index, amount, unsaleable) or 0 when absent.
-static inline __attribute__((always_inline)) void RSW_writeEquipment(Ship *ship, unsigned int fd) {
-    Array<Item*> *eq = ((Ship *)ship)->getEquipment();
-    if (eq == 0) { AEFile_WriteInt(0, fd); return; }
+static inline __attribute__ ((always_inline))
+
+void RSW_writeEquipment(Ship *ship, unsigned int fd) {
+    Array<Item *> *eq = ((Ship *) ship)->getEquipment();
+    if (eq == 0) {
+        AEFile_WriteInt(0, fd);
+        return;
+    }
     AEFile_WriteInt(eq->size(), fd);
     for (unsigned i = 0; i < eq->size(); i++) {
         Item *it = (*eq)[i];
-        if (it == 0) { AEFile_WriteInt(-1, fd); continue; }
-        AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
-        AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
-        AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
+        if (it == 0) {
+            AEFile_WriteInt(-1, fd);
+            continue;
+        }
+        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
     }
 }
 
 // Helper: write a ship's cargo list (index, amount, single price, unsaleable) or 0.
-static inline __attribute__((always_inline)) void RSW_writeCargo(Ship *ship, unsigned int fd) {
-    Array<Item*> *cg = ((Ship *)ship)->getCargo();
-    if (cg == 0) { AEFile_WriteInt(0, fd); return; }
+static inline __attribute__ ((always_inline))
+
+void RSW_writeCargo(Ship *ship, unsigned int fd) {
+    Array<Item *> *cg = ((Ship *) ship)->getCargo();
+    if (cg == 0) {
+        AEFile_WriteInt(0, fd);
+        return;
+    }
     AEFile_WriteInt(cg->size(), fd);
     for (unsigned i = 0; i < cg->size(); i++) {
         Item *it = (*cg)[i];
-        AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
-        AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
-        AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
-        AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
+        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+        AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
+        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
     }
 }
 
 // Helper: write a ship's installed-mod list or 0 when the ship has none.
-static inline __attribute__((always_inline)) void RSW_writeMods(Ship *ship, unsigned int fd) {
-    if (ship == 0) { AEFile_WriteInt(0, fd); return; }
-    Array<int> *mods = ((Ship *)ship)->getMods();
-    if (mods == 0) { AEFile_WriteInt(0, fd); return; }
+static inline __attribute__ ((always_inline))
+
+void RSW_writeMods(Ship *ship, unsigned int fd) {
+    if (ship == 0) {
+        AEFile_WriteInt(0, fd);
+        return;
+    }
+    Array<int> *mods = ((Ship *) ship)->getMods();
+    if (mods == 0) {
+        AEFile_WriteInt(0, fd);
+        return;
+    }
     AEFile_WriteInt(mods->size(), fd);
     for (unsigned i = 0; i < mods->size(); i++) {
         AEFile_WriteInt((*mods)[i], fd);
@@ -1282,10 +1555,10 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile::OpenWrite(path, &fd);
 
     // Visited-systems bitmap (0x87 entries).
-    long visited = (long)gGalaxy->getVisited();
+    long visited = (long) gGalaxy->getVisited();
     AEFile_WriteInt(0x87, fd);
     for (unsigned i = 0; i < 0x87; i++) {
-        AEFile_WriteBool(*(bool *)(visited + i), fd);
+        AEFile_WriteBool(*(bool *) (visited + i), fd);
     }
 
     AEFile_WriteInt(gStatus->getCredits(), fd);
@@ -1299,7 +1572,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     AEFile_WriteInt(gStatus->getStationsVisited(), fd);
     AEFile_WriteInt(gStatus->getCurrentCampaignMission(), fd);
     this->writeMission(gStatus->getFreelanceMission(), fd);
-    this->writeMission(reinterpret_cast<Mission*>(gStatus->getCampaignMission()), fd);
+    this->writeMission(reinterpret_cast<Mission *>(gStatus->getCampaignMission()), fd);
     AEFile_WriteInt(gStatus->getJumpgateUsed(), fd);
     AEFile_WriteInt(gStatus->getCapturedCrates(), fd);
     AEFile_WriteInt(gStatus->getBoughtEquipment(), fd);
@@ -1312,13 +1585,14 @@ void RecordHandler::recordStoreWrite(int slot) {
     // ship-mod tables).
     {
         Status *status = gStatus;
-        char *flags = (char *)g_RSW_optFlags;   // option/progress flag block
-        char *ui = (char *)g_RSW_uiFlags;       // secondary flag block
+        char *flags = (char *) g_RSW_optFlags; // option/progress flag block
+        char *ui = (char *) g_RSW_uiFlags; // secondary flag block
 
         // Standings unlock bitmap and the various progress / discovery bitmaps.
         AEFile_WriteInt(status->field_7c, fd);
         AEFile_WriteInt(status->field_84, fd);
-        AEFile_WriteInt(*(int *)((char *)status + 0x88), fd);   // RAWREAD: Status+0x88 (no named member; gap between field_84 and field_8c)
+        AEFile_WriteInt(*(int *) ((char *) status + 0x88), fd);
+        // RAWREAD: Status+0x88 (no named member; gap between field_84 and field_8c)
         RSW_writeBoolArray(status->field_94, fd);
         RSW_writeBoolArray(status->field_98, fd);
         AEFile_WriteInt(status->field_9c, fd);
@@ -1329,127 +1603,130 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteInt(status->field_b0, fd);
         RSW_writeBoolArray(status->field_b4, fd);
         AEFile_WriteInt(status->field_b8, fd);
-        AEFile_WriteLong(*(long long *)((char *)status + 0xc0), fd);   // RAWREAD: Status+0xc0 (i64 spans field_c0/field_c4 int32 members)
+        AEFile_WriteLong(*(long long *) ((char *) status + 0xc0), fd);
+        // RAWREAD: Status+0xc0 (i64 spans field_c0/field_c4 int32 members)
         for (int off = 0xc8; off <= 0xec; off += 4) {
-            AEFile_WriteInt(*(int *)((char *)status + off), fd);       // RAWREAD: Status+0xc8..0xec (loop over field_c8..field_ec)
+            AEFile_WriteInt(*(int *) ((char *) status + off), fd);
+            // RAWREAD: Status+0xc8..0xec (loop over field_c8..field_ec)
         }
 
         // Achievement medals (0x2d entries).
-        int medals = (int)(intptr_t)gAchievements->getMedals();
+        int medals = (int) (intptr_t) gAchievements->getMedals();
         AEFile_WriteInt(0x2d, fd);
         for (unsigned i = 0; i < 0x2d; i++) {
-            AEFile_WriteInt(*(int *)(medals + i * 4), fd);
+            AEFile_WriteInt(*(int *) (medals + i * 4), fd);
         }
 
         // Player ship: index, race, equipment, cargo.
         Ship *ship = status->getShip();
-        AEFile_WriteInt(((Ship *)ship)->getIndex(), fd);
-        AEFile_WriteInt(((Ship *)ship)->getRace(), fd);
+        AEFile_WriteInt(((Ship *) ship)->getIndex(), fd);
+        AEFile_WriteInt(((Ship *) ship)->getRace(), fd);
         RSW_writeEquipment(ship, fd);
         RSW_writeCargo(ship, fd);
 
         // Station stack (3 fixed slots + current station): items, ships, agents, hostility flag.
-        Array<Station*> *stack = status->getStationStack();
+        Array<Station *> *stack = status->getStationStack();
         AEFile_WriteInt(3, fd);
         for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size()) ? (Station *)status->getStation()
-                                         : (*stack)[i];
-            if (cur == 0) { AEFile_WriteInt(-1, fd); continue; }
-            AEFile_WriteInt(((Station *)cur)->getIndex(), fd);
+            Station *cur = (i == stack->size())
+                               ? (Station *) status->getStation()
+                               : (*stack)[i];
+            if (cur == 0) {
+                AEFile_WriteInt(-1, fd);
+                continue;
+            }
+            AEFile_WriteInt(((Station *) cur)->getIndex(), fd);
 
-            Array<Item*> *items = (Array<Item*> *)((Station *)cur)->getItems();
-            if (items == 0) { AEFile_WriteInt(0, fd); }
-            else {
+            Array<Item *> *items = (Array<Item *> *) ((Station *) cur)->getItems();
+            if (items == 0) { AEFile_WriteInt(0, fd); } else {
                 AEFile_WriteInt(items->size(), fd);
                 for (unsigned j = 0; j < items->size(); j++) {
                     Item *it = (*items)[j];
-                    AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
-                    AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
-                    AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
-                    AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
+                    AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
                 }
             }
-            Array<Ship*> *ships = (Array<Ship*> *)((Station *)cur)->getShips();
-            if (ships == 0) { AEFile_WriteInt(0, fd); }
-            else {
+            Array<Ship *> *ships = (Array<Ship *> *) ((Station *) cur)->getShips();
+            if (ships == 0) { AEFile_WriteInt(0, fd); } else {
                 AEFile_WriteInt(ships->size(), fd);
                 for (unsigned j = 0; j < ships->size(); j++) {
                     Ship *s = (*ships)[j];
-                    AEFile_WriteInt(((Ship *)s)->getIndex(), fd);
-                    AEFile_WriteInt(((Ship *)s)->getRace(), fd);
+                    AEFile_WriteInt(((Ship *) s)->getIndex(), fd);
+                    AEFile_WriteInt(((Ship *) s)->getRace(), fd);
                 }
             }
-            Array<Agent*> *agents = (Array<Agent*> *)((Station *)cur)->getAgents();
-            if (agents == 0) { AEFile_WriteInt(0, fd); }
-            else {
+            Array<Agent *> *agents = (Array<Agent *> *) ((Station *) cur)->getAgents();
+            if (agents == 0) { AEFile_WriteInt(0, fd); } else {
                 AEFile_WriteInt(agents->size(), fd);
                 for (unsigned j = 0; j < agents->size(); j++) {
                     this->writeAgent((*agents)[j], fd);
                 }
             }
-            AEFile_WriteBool(((Station *)cur)->hasAttackedFriends(), fd);
+            AEFile_WriteBool(((Station *) cur)->hasAttackedFriends(), fd);
         }
 
         // Standings (2 races).
-        int standings = (int)(intptr_t)((Standing *)(status->getStanding()))->getStandings();
+        int standings = (int) (intptr_t)((Standing *) (status->getStanding()))->getStandings();
         AEFile_WriteInt(2, fd);
         for (unsigned i = 0; i < 2; i++) {
-            AEFile_WriteInt(*(int *)(standings + i * 4), fd);
+            AEFile_WriteInt(*(int *) (standings + i * 4), fd);
         }
 
         // Blueprints: per blueprint the ingredient list, then its scalar fields and name.
-        unsigned int *bps = (unsigned int *)status->getBluePrints();
+        unsigned int *bps = (unsigned int *) status->getBluePrints();
         AEFile_WriteInt(*bps, fd);
         for (unsigned i = 0; i < *bps; i++) {
-            int *bp = *(int **)(bps[1] + i * 4);
-            unsigned int *ingredients = (unsigned int *)bp[0];
+            int *bp = *(int **) (bps[1] + i * 4);
+            unsigned int *ingredients = (unsigned int *) bp[0];
             for (unsigned j = 0; j < *ingredients; j++) {
-                AEFile_WriteInt(*(int *)(ingredients[1] + j * 4), fd);
+                AEFile_WriteInt(*(int *) (ingredients[1] + j * 4), fd);
             }
             AEFile_WriteInt(bp[1], fd);
-            AEFile_WriteBool((bool)(char)bp[2], fd);
+            AEFile_WriteBool((bool) (char) bp[2], fd);
             AEFile_WriteInt(bp[3], fd);
             AEFile_WriteInt(bp[4], fd);
-            AEFile_WriteString((char *)(bp + 5), fd, true);
+            AEFile_WriteString((char *) (bp + 5), fd, true);
         }
 
         // Pending products (only the populated slots are written; -1 when none).
-        unsigned int *pending = (unsigned int *)status->getPendingProducts();
-        if (pending == 0) { AEFile_WriteInt(-1, fd); }
-        else {
+        unsigned int *pending = (unsigned int *) status->getPendingProducts();
+        if (pending == 0) { AEFile_WriteInt(-1, fd); } else {
             int count = 0;
             for (unsigned i = 0; i < *pending; i++) {
-                if (*(int *)(pending[1] + i * 4) != 0) count++;
+                if (*(int *) (pending[1] + i * 4) != 0) count++;
             }
-            if (count == 0) { AEFile_WriteInt(-1, fd); }
-            else {
+            if (count == 0) { AEFile_WriteInt(-1, fd); } else {
                 AEFile_WriteInt(count, fd);
                 for (unsigned i = 0; i < *pending; i++) {
-                    int pp = *(int *)(pending[1] + i * 4);
+                    int pp = *(int *) (pending[1] + i * 4);
                     if (pp == 0) continue;
                     // RAWREAD: original-layout PendingProduct offsets; the cleaned struct's String pushes
                     // the scalar members to 0x18+, so these +0xc..+0x14 reads don't map to named members.
-                    AEFile_WriteInt(*(int *)(pp + 0x14), fd);
-                    AEFile_WriteInt(*(int *)(pp + 0x10), fd);
-                    AEFile_WriteInt(*(int *)(pp + 0xc), fd);
-                    AEFile_WriteString(*(char **)(pending[1] + i * 4), fd, true);
+                    AEFile_WriteInt(*(int *) (pp + 0x14), fd);
+                    AEFile_WriteInt(*(int *) (pp + 0x10), fd);
+                    AEFile_WriteInt(*(int *) (pp + 0xc), fd);
+                    AEFile_WriteString(*(char **) (pending[1] + i * 4), fd, true);
                 }
             }
         }
 
         // Wingmen list (String[]) + its trailing scalar fields, or -1 when absent.
-        unsigned int *wingmen = *(unsigned int **)((char *)status + 0x24);  // RAWREAD: Status+0x24 (wingmen field is int32 reinterpreted as Array<String*>*)
-        if (wingmen == 0) { AEFile_WriteInt(-1, fd); }
-        else {
+        unsigned int *wingmen = *(unsigned int **) ((char *) status + 0x24);
+        // RAWREAD: Status+0x24 (wingmen field is int32 reinterpreted as Array<String*>*)
+        if (wingmen == 0) { AEFile_WriteInt(-1, fd); } else {
             AEFile_WriteInt(*wingmen, fd);
             for (unsigned i = 0; i < *wingmen; i++) {
-                AEFile_WriteString(*(char **)(wingmen[1] + i * 4), fd, true);
+                AEFile_WriteString(*(char **) (wingmen[1] + i * 4), fd, true);
             }
-            AEFile_WriteInt(*(int *)((char *)status + 0x2c), fd);     // RAWREAD: Status+0x2c (no named member; between field_0x28 and field_0x30)
+            AEFile_WriteInt(*(int *) ((char *) status + 0x2c), fd);
+            // RAWREAD: Status+0x2c (no named member; between field_0x28 and field_0x30)
             AEFile_WriteInt(status->field_0x30, fd);
             AEFile_WriteInt(5, fd);
             for (unsigned i = 0; i < 5; i++) {
-                AEFile_WriteInt(*(int *)(*(int *)((char *)status + 0x28) + i * 4), fd);  // RAWREAD: Status+0x28 (field_0x28 int32 reinterpreted as int[] base)
+                AEFile_WriteInt(*(int *) (*(int *) ((char *) status + 0x28) + i * 4), fd);
+                // RAWREAD: Status+0x28 (field_0x28 int32 reinterpreted as int[] base)
             }
         }
 
@@ -1462,7 +1739,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         RSW_writeBoolArray(status->field_4c, fd);
 
         // Agents.
-        Array<Agent*> *agents = status->agents;
+        Array<Agent *> *agents = status->agents;
         AEFile_WriteInt(agents->size(), fd);
         for (unsigned i = 0; i < agents->size(); i++) {
             this->writeAgent((*agents)[i], fd);
@@ -1470,25 +1747,26 @@ void RecordHandler::recordStoreWrite(int slot) {
 
         // Tutorial / one-shot progress flags (option block +0x8 .. +0x24).
         for (int off = 0x8; off <= 0x20; off++) {
-            if (off == 0x21) continue;            // 0x22 is written before 0x21 below
-            AEFile_WriteBool(*(bool *)(flags + off), fd);
+            if (off == 0x21) continue; // 0x22 is written before 0x21 below
+            AEFile_WriteBool(*(bool *) (flags + off), fd);
         }
-        AEFile_WriteBool(*(bool *)(flags + 0x22), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x21), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x23), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x24), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x22), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x21), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x23), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x24), fd);
 
-        AEFile_WriteLong(*(long long *)((char *)status + 0x100), fd);   // RAWREAD: Status+0x100 (i64 spans field_0x100/field_0x104 int32 members)
-        AEFile_WriteBool(*(bool *)(flags + 0x25), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x26), fd);
+        AEFile_WriteLong(*(long long *) ((char *) status + 0x100), fd);
+        // RAWREAD: Status+0x100 (i64 spans field_0x100/field_0x104 int32 members)
+        AEFile_WriteBool(*(bool *) (flags + 0x25), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x26), fd);
 
         // Optional wingman ship (index, race, equipment, cargo) or 0.
-        Ship *wingShip = *(Ship **)((char *)status + 0x8c);   // RAWREAD: Status+0x8c (field_8c int32 reinterpreted as Ship*)
-        if (wingShip == 0) { AEFile_WriteInt(0, fd); }
-        else {
+        Ship *wingShip = *(Ship **) ((char *) status + 0x8c);
+        // RAWREAD: Status+0x8c (field_8c int32 reinterpreted as Ship*)
+        if (wingShip == 0) { AEFile_WriteInt(0, fd); } else {
             AEFile_WriteInt(1, fd);
-            AEFile_WriteInt(((Ship *)wingShip)->getIndex(), fd);
-            AEFile_WriteInt(((Ship *)wingShip)->getRace(), fd);
+            AEFile_WriteInt(((Ship *) wingShip)->getIndex(), fd);
+            AEFile_WriteInt(((Ship *) wingShip)->getRace(), fd);
             RSW_writeEquipment(wingShip, fd);
             RSW_writeCargo(wingShip, fd);
         }
@@ -1500,52 +1778,53 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteBool(status->field_0x111, fd);
 
         // Current station's items / ships (re-read off the current station).
-        Station *station = (Station *)status->getStation();
-        Array<Item*> *sItems = (Array<Item*> *)((Station *)station)->getItems();
-        if (sItems == 0) { AEFile_WriteInt(0, fd); }
-        else {
+        Station *station = (Station *) status->getStation();
+        Array<Item *> *sItems = (Array<Item *> *) ((Station *) station)->getItems();
+        if (sItems == 0) { AEFile_WriteInt(0, fd); } else {
             AEFile_WriteInt(sItems->size(), fd);
             for (unsigned i = 0; i < sItems->size(); i++) {
                 Item *it = (*sItems)[i];
-                AEFile_WriteInt(((Item *)(it))->getIndex(), fd);
-                AEFile_WriteInt(((Item *)(it))->getAmount(), fd);
-                AEFile_WriteInt(((Item *)(it))->getSinglePrice(), fd);
-                AEFile_WriteBool(((Item *)(it))->isUnsaleable(), fd);
+                AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
+                AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
             }
         }
-        Array<Ship*> *sShips = (Array<Ship*> *)((Station *)station)->getShips();
-        if (sShips == 0) { AEFile_WriteInt(0, fd); }
-        else {
+        Array<Ship *> *sShips = (Array<Ship *> *) ((Station *) station)->getShips();
+        if (sShips == 0) { AEFile_WriteInt(0, fd); } else {
             AEFile_WriteInt(sShips->size(), fd);
             for (unsigned i = 0; i < sShips->size(); i++) {
                 Ship *s = (*sShips)[i];
-                AEFile_WriteInt(((Ship *)s)->getIndex(), fd);
-                AEFile_WriteInt(((Ship *)s)->getRace(), fd);
+                AEFile_WriteInt(((Ship *) s)->getIndex(), fd);
+                AEFile_WriteInt(((Ship *) s)->getRace(), fd);
             }
         }
 
-        AEFile_WriteBool(*(bool *)(flags + 0x27), fd);
-        AEFile_WriteBool(*(bool *)(ui + 0x35), fd);
-        AEFile_WriteBool(*(bool *)(ui + 0x36), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x27), fd);
+        AEFile_WriteBool(*(bool *) (ui + 0x35), fd);
+        AEFile_WriteBool(*(bool *) (ui + 0x36), fd);
         RSW_writeBoolArray(status->field_54, fd);
 
         // Ship-mod table version tag + mod lists for player, wingman and every station ship.
         AEFile_WriteInt(g_RSW_modVersion, fd);
         RSW_writeMods(ship, fd);
         RSW_writeMods(wingShip, fd);
-        if (sShips == 0) { AEFile_WriteInt(0, fd); }
-        else {
+        if (sShips == 0) { AEFile_WriteInt(0, fd); } else {
             AEFile_WriteInt(sShips->size(), fd);
             for (unsigned i = 0; i < sShips->size(); i++) {
                 RSW_writeMods((*sShips)[i], fd);
             }
         }
         for (unsigned i = 0; i < stack->size() + 1; i++) {
-            Station *cur = (i == stack->size()) ? (Station *)status->getStation()
-                                         : (*stack)[i];
+            Station *cur = (i == stack->size())
+                               ? (Station *) status->getStation()
+                               : (*stack)[i];
             if (cur == 0) continue;
-            Array<Ship*> *cShips = (Array<Ship*> *)((Station *)cur)->getShips();
-            if (cShips == 0) { AEFile_WriteInt(0, fd); continue; }
+            Array<Ship *> *cShips = (Array<Ship *> *) ((Station *) cur)->getShips();
+            if (cShips == 0) {
+                AEFile_WriteInt(0, fd);
+                continue;
+            }
             AEFile_WriteInt(cShips->size(), fd);
             for (unsigned j = 0; j < cShips->size(); j++) {
                 RSW_writeMods((*cShips)[j], fd);
@@ -1553,7 +1832,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         }
 
         // Wanted board, collected bounties, and the remaining one-shot UI/progress flags.
-        Array<Wanted*> *wanted = status->wanted;   // engine Array<Wanted*> payload
+        Array<Wanted *> *wanted = status->wanted; // engine Array<Wanted*> payload
         AEFile_WriteInt(wanted->size(), fd);
         for (unsigned i = 0; i < wanted->size(); i++) {
             this->writeWanted((*wanted)[i], fd);
@@ -1561,29 +1840,29 @@ void RecordHandler::recordStoreWrite(int slot) {
         for (unsigned i = 0; i < 4; i++) {
             AEFile_WriteInt(status->getCollectedBounties(i), fd);
         }
-        AEFile_WriteBool(*(bool *)(ui + 0x37), fd);
+        AEFile_WriteBool(*(bool *) (ui + 0x37), fd);
         AEFile_WriteInt(status->field_178, fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x28), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x29), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2c), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2a), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2b), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2e), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2f), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x30), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x28), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x29), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2c), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2a), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2b), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2e), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2f), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x30), fd);
         RSW_writeBoolArray(status->field_58, fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x31), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x2d), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x32), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x31), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x2d), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x32), fd);
         AEFile_WriteInt(status->field_118, fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x33), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x34), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x35), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x36), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x37), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x38), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x39), fd);
-        AEFile_WriteBool(*(bool *)(flags + 0x3a), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x33), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x34), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x35), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x36), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x37), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x38), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x39), fd);
+        AEFile_WriteBool(*(bool *) (flags + 0x3a), fd);
     }
 
     AEFile::Close(fd);
@@ -1598,29 +1877,52 @@ void RecordHandler::recordStoreWrite(int slot) {
 // agents, bitmaps, flags, mods, wanteds and bounties) from the already-open file `fd`. The
 // caller handled open/prefix/hash and performs Close.
 extern "C" void *Galaxy_getStationByIndex(int idx);
-extern "C" void *Standing_new();                         // operator new + Standing::Standing
-extern "C" void  Standing_setStandingsArr(void *st, int *standings);
+
+extern "C" void *Standing_new(); // operator new + Standing::Standing
+extern "C" void Standing_setStandingsArr(void *st, int *standings);
+
 // operator new + BluePrint(index)
-extern "C" void *RH_str_make(void *src);                 // operator new + String copy-ctor
+extern "C" void *RH_str_make(void *src); // operator new + String copy-ctor
 // Item-definition tables and the ship-definition table (PC-relative singletons).
-__attribute__((visibility("hidden"))) extern void **g_RSR_itemDefs;
-__attribute__((visibility("hidden"))) extern void **g_RSR_shipDefs;
-__attribute__((visibility("hidden"))) extern int    g_RSR_modVersion;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_RSR_itemDefs;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_RSR_shipDefs;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int g_RSR_modVersion;
 
 // Read a saved item (index/amount[/price]/unsaleable) into the table slot, or null when -1.
-static inline __attribute__((always_inline)) void *RSR_readItem(unsigned int fd, bool withPrice) {
+static inline __attribute__ ((always_inline))
+
+void *RSR_readItem(unsigned int fd, bool withPrice) {
     int idx = 0;
     AEFile_ReadInt(&idx, fd);
     if (idx == -1) return 0;
-    int amount = 0, price = 0; bool uns = false;
+    int amount = 0, price = 0;
+    bool uns = false;
     AEFile_ReadInt(&amount, fd);
     if (withPrice) AEFile_ReadInt(&price, fd);
     AEFile_Read_bool(&uns, fd, 0);
-    void *def = (*(void ***)g_RSR_itemDefs)[idx];
-    ((Item *)(def))->getMaxPrice();
-    void *it = ((Item *)(def))->makeItem(amount);
-    if (withPrice) ((Item *)(it))->setPrice(price);
-    ((Item *)(it))->setUnsaleable(uns);
+    void *def = (*(void ***) g_RSR_itemDefs)[idx];
+    ((Item *) (def))->getMaxPrice();
+    void *it = ((Item *) (def))->makeItem(amount);
+    if (withPrice) ((Item *) (it))->setPrice(price);
+    ((Item *) (it))->setUnsaleable(uns);
     return it;
 }
 
@@ -1648,9 +1950,8 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 // ships, wanteds, flags). A very long straight-line reader delegated to a helper so this
 // translation preserves the path/hash/open/prefix/close flow while staying tractable.
 
-
 // RecordHandler::recordStoreRead(int slot)
-void * RecordHandler::recordStoreRead(int slot) {
+void *RecordHandler::recordStoreRead(int slot) {
     char *rec = 0;
     String num, path;
     num.ctor_int(slot);
@@ -1665,14 +1966,14 @@ void * RecordHandler::recordStoreRead(int slot) {
             AEFile::OpenRead(path, &fd);
             // RAWREAD: rec is the GameRecord save-image; its payload is a positional blob with no
             // per-field members in GameRecord.h, so all `rec + 0xNN` accesses target the opaque payload.
-            rec = (char *)new GameRecord();
+            rec = (char *) new GameRecord();
 
             // Visited-systems bitmap at rec+4 (count then booleans).
             char *visited = rec + 4;
-            *(int *)visited = 0;
+            *(int *) visited = 0;
             AEFile_ReadInt(visited, fd);
-            for (unsigned i = 0; i < *(unsigned *)visited; i++) {
-                AEFile_ReadBool((bool *)(*(int *)rec + i), fd);
+            for (unsigned i = 0; i < *(unsigned *) visited; i++) {
+                AEFile_ReadBool((bool *) (*(int *) rec + i), fd);
             }
 
             AEFile_ReadInt(rec + 8, fd);
@@ -1685,8 +1986,8 @@ void * RecordHandler::recordStoreRead(int slot) {
             AEFile_ReadInt(rec + 0x28, fd);
             AEFile_ReadInt(rec + 0x3c, fd);
             AEFile_ReadInt(rec + 0x40, fd);
-            *(void **)(rec + 0x54) = this->readMission(fd);
-            *(void **)(rec + 0x58) = this->readMission(fd);
+            *(void **) (rec + 0x54) = this->readMission(fd);
+            *(void **) (rec + 0x58) = this->readMission(fd);
             AEFile_ReadInt(rec + 0x30, fd);
             AEFile_ReadInt(rec + 0x34, fd);
             AEFile_ReadInt(rec + 0x38, fd);
@@ -1698,20 +1999,24 @@ void * RecordHandler::recordStoreRead(int slot) {
 
             // Two boolean arrays (mission flags / equipment flags).
             Array<bool> *flags0 = new Array<bool>();
-            *(void **)(rec + 0x68) = flags0;
+            *(void **) (rec + 0x68) = flags0;
             unsigned n0 = 0;
             AEFile_ReadInt(&n0, fd);
             flags0->resize(n0);
-            for (int i = 0; i < (int)n0; i++) {
-                bool v = false; AEFile_ReadBool(&v, fd); (*flags0)[i] = v;
+            for (int i = 0; i < (int) n0; i++) {
+                bool v = false;
+                AEFile_ReadBool(&v, fd);
+                (*flags0)[i] = v;
             }
             Array<bool> *flags1 = new Array<bool>();
-            *(void **)(rec + 0x6c) = flags1;
+            *(void **) (rec + 0x6c) = flags1;
             unsigned n1 = 0;
             AEFile_ReadInt(&n1, fd);
             flags1->resize(n1);
-            for (int i = 0; i < (int)n1; i++) {
-                bool v = false; AEFile_ReadBool(&v, fd); (*flags1)[i] = v;
+            for (int i = 0; i < (int) n1; i++) {
+                bool v = false;
+                AEFile_ReadBool(&v, fd);
+                (*flags1)[i] = v;
             }
 
             // Remaining object-graph read (reconstructs the saved object graph into the
@@ -1721,7 +2026,7 @@ void * RecordHandler::recordStoreRead(int slot) {
                 // RAWREAD: rec is the GameRecord save-image; its payload is a positional blob
                 // with no per-field members in GameRecord.h, so all `rec + 0xNN` writes target
                 // the opaque payload.
-                void **shipDefs = *(void ***)g_RSR_shipDefs;
+                void **shipDefs = *(void ***) g_RSR_shipDefs;
 
                 AEFile_ReadInt(rec + 0x74, fd);
                 AEFile_ReadInt(rec + 0x78, fd);
@@ -1730,16 +2035,28 @@ void * RecordHandler::recordStoreRead(int slot) {
 
                 // bitmap at rec+0x84
                 Array<bool> *flags84 = new Array<bool>();
-                *(void **)(rec + 0x84) = flags84;
-                int n84 = 0; AEFile_ReadInt(&n84, fd); flags84->resize(n84);
-                for (int i = 0; i < n84; i++) { bool v = false; AEFile_ReadBool(&v, fd); (*flags84)[i] = v; }
+                *(void **) (rec + 0x84) = flags84;
+                int n84 = 0;
+                AEFile_ReadInt(&n84, fd);
+                flags84->resize(n84);
+                for (int i = 0; i < n84; i++) {
+                    bool v = false;
+                    AEFile_ReadBool(&v, fd);
+                    (*flags84)[i] = v;
+                }
 
                 AEFile_ReadInt(rec + 0x88, fd);
 
                 Array<bool> *flags8c = new Array<bool>();
-                *(void **)(rec + 0x8c) = flags8c;
-                int n8c = 0; AEFile_ReadInt(&n8c, fd); flags8c->resize(n8c);
-                for (int i = 0; i < n8c; i++) { bool v = false; AEFile_ReadBool(&v, fd); (*flags8c)[i] = v; }
+                *(void **) (rec + 0x8c) = flags8c;
+                int n8c = 0;
+                AEFile_ReadInt(&n8c, fd);
+                flags8c->resize(n8c);
+                for (int i = 0; i < n8c; i++) {
+                    bool v = false;
+                    AEFile_ReadBool(&v, fd);
+                    (*flags8c)[i] = v;
+                }
 
                 AEFile_ReadInt(rec + 0x90, fd);
                 AEFile_ReadLong(rec + 0x98, fd);
@@ -1747,148 +2064,194 @@ void * RecordHandler::recordStoreRead(int slot) {
 
                 // int[] at rec+0x60 (length at rec+100/0x64)
                 AEFile_ReadInt(rec + 0x64, fd);
-                unsigned len60 = *(unsigned *)(rec + 0x64);
+                unsigned len60 = *(unsigned *) (rec + 0x64);
                 int *buf60 = new int[len60];
-                *(void **)(rec + 0x60) = buf60;
+                *(void **) (rec + 0x60) = buf60;
                 for (unsigned i = 0; i < len60; i++) { AEFile_ReadInt(buf60 + i, fd); }
 
                 // Player ship: definition index, race, equipment, cargo.
-                int shipIdx = 0; AEFile_ReadInt(&shipIdx, fd);
-                void *pship = ((Ship *)((int)(intptr_t)shipDefs[shipIdx]))->makeShip(-1);
-                *(void **)(rec + 0x130) = pship;
-                int race = 0; AEFile_ReadInt(&race, fd); ((Ship *)(pship))->setRace(race);
+                int shipIdx = 0;
+                AEFile_ReadInt(&shipIdx, fd);
+                void *pship = ((Ship *) ((int) (intptr_t) shipDefs[shipIdx]))->makeShip(-1);
+                *(void **) (rec + 0x130) = pship;
+                int race = 0;
+                AEFile_ReadInt(&race, fd);
+                ((Ship *) (pship))->setRace(race);
 
-                int eqN = 0; AEFile_ReadInt(&eqN, fd);
+                int eqN = 0;
+                AEFile_ReadInt(&eqN, fd);
                 if (eqN > 0) {
-                    Array<Item*> *items = new Array<Item*>(); items->resize(eqN);
+                    Array<Item *> *items = new Array<Item *>();
+                    items->resize(eqN);
                     for (int i = 0; i < eqN; i++)
-                        (*items)[i] = (Item *)RSR_readItem(fd, false);
-                    ((Ship *)(pship))->replaceEquipment(items);
+                        (*items)[i] = (Item *) RSR_readItem(fd, false);
+                    ((Ship *) (pship))->replaceEquipment(items);
                 }
-                int cgN = 0; AEFile_ReadInt(&cgN, fd);
+                int cgN = 0;
+                AEFile_ReadInt(&cgN, fd);
                 if (cgN > 0) {
-                    Array<Item*> *items = new Array<Item*>(); items->resize(cgN);
+                    Array<Item *> *items = new Array<Item *>();
+                    items->resize(cgN);
                     for (int i = 0; i < cgN; i++)
-                        (*items)[i] = (Item *)RSR_readItem(fd, true);
-                    ((Ship *)(pship))->replaceCargo(items);
+                        (*items)[i] = (Item *) RSR_readItem(fd, true);
+                    ((Ship *) (pship))->replaceCargo(items);
                 }
 
                 // Station stack (3 slots + current). For each present station: items, ships, agents, flag.
-                Array<Station*> *stationArr = new Array<Station*>();
-                int stN = 0; AEFile_ReadInt(&stN, fd); stationArr->resize(stN);
+                Array<Station *> *stationArr = new Array<Station *>();
+                int stN = 0;
+                AEFile_ReadInt(&stN, fd);
+                stationArr->resize(stN);
                 unsigned stCount = stationArr->size();
                 for (unsigned k = 0; k < stCount + 1; k++) {
-                    int sIdx = 0; AEFile_ReadInt(&sIdx, fd);
+                    int sIdx = 0;
+                    AEFile_ReadInt(&sIdx, fd);
                     void *st = 0;
                     if (sIdx != -1) {
                         st = Galaxy_getStationByIndex(sIdx);
-                        int iN = 0; AEFile_ReadInt(&iN, fd);
+                        int iN = 0;
+                        AEFile_ReadInt(&iN, fd);
                         if (iN > 0) {
-                            Array<Item*> *items = new Array<Item*>(); items->resize(iN);
+                            Array<Item *> *items = new Array<Item *>();
+                            items->resize(iN);
                             for (int i = 0; i < iN; i++)
-                                (*items)[i] = (Item *)RSR_readItem(fd, true);
-                            ((Station *)(st))->setItems(items, false);
+                                (*items)[i] = (Item *) RSR_readItem(fd, true);
+                            ((Station *) (st))->setItems(items, false);
                         }
-                        int shN = 0; AEFile_ReadInt(&shN, fd);
+                        int shN = 0;
+                        AEFile_ReadInt(&shN, fd);
                         if (shN > 0) {
-                            Array<Ship*> *ships = new Array<Ship*>(); ships->resize(shN);
+                            Array<Ship *> *ships = new Array<Ship *>();
+                            ships->resize(shN);
                             for (int i = 0; i < shN; i++) {
-                                int si = 0; AEFile_ReadInt(&si, fd);
-                                void *sh = ((Ship *)((int)(intptr_t)shipDefs[si]))->makeShip(-1);
-                                (*ships)[i] = (Ship *)sh;
-                                int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(sh))->setRace(r);
+                                int si = 0;
+                                AEFile_ReadInt(&si, fd);
+                                void *sh = ((Ship *) ((int) (intptr_t) shipDefs[si]))->makeShip(-1);
+                                (*ships)[i] = (Ship *) sh;
+                                int r = 0;
+                                AEFile_ReadInt(&r, fd);
+                                ((Ship *) (sh))->setRace(r);
                             }
-                            ((Station *)(st))->setShips(ships, false);
+                            ((Station *) (st))->setShips(ships, false);
                         }
-                        int agN = 0; AEFile_ReadInt(&agN, fd);
+                        int agN = 0;
+                        AEFile_ReadInt(&agN, fd);
                         if (agN > 0) {
-                            Array<Agent*> *agents = new Array<Agent*>(); agents->resize(agN);
+                            Array<Agent *> *agents = new Array<Agent *>();
+                            agents->resize(agN);
                             for (int i = 0; i < agN; i++)
-                                (*agents)[i] = (Agent *)this->readAgent(fd);
-                            ((Station *)(st))->setAgents(agents);
+                                (*agents)[i] = (Agent *) this->readAgent(fd);
+                            ((Station *) (st))->setAgents(agents);
                         }
-                        bool atk = false; AEFile_Read_bool(&atk, fd, 0);
-                        ((Station *)(st))->setAttackedFriends(atk);
+                        bool atk = false;
+                        AEFile_Read_bool(&atk, fd, 0);
+                        ((Station *) (st))->setAttackedFriends(atk);
                     }
-                    if (k == stationArr->size()) *(void **)(rec + 0x138) = st;
-                    else (*stationArr)[k] = (Station *)st;
+                    if (k == stationArr->size()) *(void **) (rec + 0x138) = st;
+                    else (*stationArr)[k] = (Station *) st;
                 }
-                *(void **)(rec + 0x5c) = stationArr;
+                *(void **) (rec + 0x5c) = stationArr;
 
                 // Standings (count then values).
-                int sdN = 0; AEFile_ReadInt(&sdN, fd);
+                int sdN = 0;
+                AEFile_ReadInt(&sdN, fd);
                 int *standings = new int[sdN];
                 for (int i = 0; i < sdN; i++) AEFile_ReadInt(standings + i, fd);
                 void *standing = Standing_new();
-                *(void **)(rec + 0x13c) = standing;
+                *(void **) (rec + 0x13c) = standing;
                 Standing_setStandingsArr(standing, standings);
 
                 // Blueprints.
-                Array<void*> *bpArr = new Array<void*>();   // generic Array<T*> container reuse
-                int bpN = 0; AEFile_ReadInt(&bpN, fd); bpArr->resize(bpN);
+                Array<void *> *bpArr = new Array<void *>(); // generic Array<T*> container reuse
+                int bpN = 0;
+                AEFile_ReadInt(&bpN, fd);
+                bpArr->resize(bpN);
                 for (unsigned i = 0; i < bpArr->size(); i++) {
-                    unsigned int *liveBps = (unsigned int *)gStatus->getBluePrints();
-                    int liveIdx = ((BluePrint *)(*(void **)(liveBps[1] + i * 4)))->getIndex();
-                    int *bp = (int *)(new BluePrint(liveIdx));
+                    unsigned int *liveBps = (unsigned int *) gStatus->getBluePrints();
+                    int liveIdx = ((BluePrint *) (*(void **) (liveBps[1] + i * 4)))->getIndex();
+                    int *bp = (int *) (new BluePrint(liveIdx));
                     (*bpArr)[i] = bp;
-                    unsigned int *ingredients = (unsigned int *)bp[0];
+                    unsigned int *ingredients = (unsigned int *) bp[0];
                     int byteoff = 0;
-                    for (unsigned j = 0; j < *ingredients; j++) { AEFile_ReadInt((void *)(intptr_t)(ingredients[1] + byteoff), fd); byteoff += 4; }
+                    for (unsigned j = 0; j < *ingredients; j++) {
+                        AEFile_ReadInt((void *) (intptr_t)(ingredients[1] + byteoff), fd);
+                        byteoff += 4;
+                    }
                     AEFile_ReadInt(bp + 1, fd);
-                    AEFile_ReadByte((bool *)(bp + 2), fd);
+                    AEFile_ReadByte((bool *) (bp + 2), fd);
                     AEFile_ReadInt(bp + 3, fd);
                     AEFile_ReadInt(bp + 4, fd);
-                    String tmp; tmp.ctor(); AEFile_ReadString(&tmp, fd, 1);
-                    *(String *)(bp + 5) = tmp;
+                    String tmp;
+                    tmp.ctor();
+                    AEFile_ReadString(&tmp, fd, 1);
+                    *(String *) (bp + 5) = tmp;
                 }
-                *(void **)(rec + 0x140) = bpArr;
+                *(void **) (rec + 0x140) = bpArr;
 
                 // Pending products (-1 / 0 == none).
-                int ppN = 0; AEFile_ReadInt(&ppN, fd);
-                if (ppN < 1) { *(void **)(rec + 0x144) = 0; }
-                else {
-                    Array<PendingProduct*> *ppArr = new Array<PendingProduct*>(); ppArr->resize(ppN);
+                int ppN = 0;
+                AEFile_ReadInt(&ppN, fd);
+                if (ppN < 1) { *(void **) (rec + 0x144) = 0; } else {
+                    Array<PendingProduct *> *ppArr = new Array<PendingProduct *>();
+                    ppArr->resize(ppN);
                     for (unsigned i = 0; i < ppArr->size(); i++) {
-                        int a = 0, c = 0, d = 0; AEFile_ReadInt(&a, fd); AEFile_ReadInt(&c, fd); AEFile_ReadInt(&d, fd);
-                        String nm; nm.ctor(); AEFile_ReadString(&nm, fd, 1);
+                        int a = 0, c = 0, d = 0;
+                        AEFile_ReadInt(&a, fd);
+                        AEFile_ReadInt(&c, fd);
+                        AEFile_ReadInt(&d, fd);
+                        String nm;
+                        nm.ctor();
+                        AEFile_ReadString(&nm, fd, 1);
                         void *nameCopy = RH_str_make(&nm);
-                        void *pp = new PendingProduct(a, *(const String *)nameCopy, d, c);
-                        (*ppArr)[i] = (PendingProduct *)pp;
+                        void *pp = new PendingProduct(a, *(const String *) nameCopy, d, c);
+                        (*ppArr)[i] = (PendingProduct *) pp;
                     }
-                    *(void **)(rec + 0x144) = ppArr;
+                    *(void **) (rec + 0x144) = ppArr;
                 }
 
                 // Wingmen string list (+ trailing scalar/int[] fields) or none.
-                int wmN = 0; AEFile_ReadInt(&wmN, fd);
-                if (wmN < 1) { *(void **)(rec + 0x14c) = 0; }
-                else {
-                    Array<String*> *strArr = new Array<String*>(); strArr->resize(wmN);
+                int wmN = 0;
+                AEFile_ReadInt(&wmN, fd);
+                if (wmN < 1) { *(void **) (rec + 0x14c) = 0; } else {
+                    Array<String *> *strArr = new Array<String *>();
+                    strArr->resize(wmN);
                     for (int i = 0; i < wmN; i++) {
-                        String nm; nm.ctor(); AEFile_ReadString(&nm, fd, 1);
-                        (*strArr)[i] = (String *)RH_str_make(&nm);
+                        String nm;
+                        nm.ctor();
+                        AEFile_ReadString(&nm, fd, 1);
+                        (*strArr)[i] = (String *) RH_str_make(&nm);
                     }
-                    *(void **)(rec + 0x14c) = strArr;
+                    *(void **) (rec + 0x14c) = strArr;
                     AEFile_ReadInt(rec + 0x150, fd);
                     AEFile_ReadInt(rec + 0x154, fd);
-                    int cnt = 0; AEFile_ReadInt(&cnt, fd);
+                    int cnt = 0;
+                    AEFile_ReadInt(&cnt, fd);
                     int *buf158 = new int[cnt];
-                    *(void **)(rec + 0x158) = buf158;
+                    *(void **) (rec + 0x158) = buf158;
                     for (int i = 0; i < cnt; i++) AEFile_ReadInt(buf158 + i, fd);
                 }
 
                 AEFile_ReadInt(rec + 0x15c, fd);
 
                 // bool[] rec+0x160
-                int b160 = 0; AEFile_ReadInt(&b160, fd);
-                Array<bool> *arr160 = new Array<bool>(); *(void **)(rec + 0x160) = arr160;
+                int b160 = 0;
+                AEFile_ReadInt(&b160, fd);
+                Array<bool> *arr160 = new Array<bool>();
+                *(void **) (rec + 0x160) = arr160;
                 arr160->resize(b160);
-                for (unsigned i = 0; i < arr160->size(); i++) { bool v = false; AEFile_ReadBool(&v, fd); (*arr160)[i] = v; }
+                for (unsigned i = 0; i < arr160->size(); i++) {
+                    bool v = false;
+                    AEFile_ReadBool(&v, fd);
+                    (*arr160)[i] = v;
+                }
 
                 // int[] rec+0x168, 0x164, 0x170, 0x16c
                 const int intArrOffs[4] = {0x168, 0x164, 0x170, 0x16c};
                 for (int a = 0; a < 4; a++) {
-                    int cnt = 0; AEFile_ReadInt(&cnt, fd);
-                    Array<int> *arr = new Array<int>(); *(void **)(rec + intArrOffs[a]) = arr;
+                    int cnt = 0;
+                    AEFile_ReadInt(&cnt, fd);
+                    Array<int> *arr = new Array<int>();
+                    *(void **) (rec + intArrOffs[a]) = arr;
                     arr->resize(cnt);
                     for (unsigned i = 0; i < arr->size(); i++) {
                         AEFile_ReadInt(&(*arr)[i], fd);
@@ -1896,16 +2259,25 @@ void * RecordHandler::recordStoreRead(int slot) {
                 }
 
                 // bool[] rec+0x174
-                int b174 = 0; AEFile_ReadInt(&b174, fd);
-                Array<bool> *arr174 = new Array<bool>(); *(void **)(rec + 0x174) = arr174;
+                int b174 = 0;
+                AEFile_ReadInt(&b174, fd);
+                Array<bool> *arr174 = new Array<bool>();
+                *(void **) (rec + 0x174) = arr174;
                 arr174->resize(b174);
-                for (unsigned i = 0; i < arr174->size(); i++) { bool v = false; AEFile_ReadBool(&v, fd); (*arr174)[i] = v; }
+                for (unsigned i = 0; i < arr174->size(); i++) {
+                    bool v = false;
+                    AEFile_ReadBool(&v, fd);
+                    (*arr174)[i] = v;
+                }
 
                 // Agents.
-                int agN = 0; AEFile_ReadInt(&agN, fd);
-                Array<Agent*> *agents = new Array<Agent*>(); *(void **)(rec + 0x148) = agents; agents->resize(agN);
+                int agN = 0;
+                AEFile_ReadInt(&agN, fd);
+                Array<Agent *> *agents = new Array<Agent *>();
+                *(void **) (rec + 0x148) = agents;
+                agents->resize(agN);
                 for (unsigned i = 0; i < agents->size(); i++)
-                    (*agents)[i] = (Agent *)this->readAgent(fd);
+                    (*agents)[i] = (Agent *) this->readAgent(fd);
 
                 // Single-byte flag block rec+0xe4 .. 0x100.
                 for (int off = 0xe4; off <= 0x100; off++) AEFile_ReadByte(rec + off, fd);
@@ -1915,31 +2287,42 @@ void * RecordHandler::recordStoreRead(int slot) {
                 AEFile_ReadByte(rec + 0x102, fd);
 
                 // Optional wingman ship.
-                int hasWing = 0; AEFile_ReadInt(&hasWing, fd);
+                int hasWing = 0;
+                AEFile_ReadInt(&hasWing, fd);
                 if (hasWing > 0) {
-                    int wi = 0; AEFile_ReadInt(&wi, fd);
-                    void *wship = ((Ship *)((int)(intptr_t)shipDefs[wi]))->makeShip(-1);
-                    *(void **)(rec + 0x134) = wship;
-                    int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(wship))->setRace(r);
-                    int eN = 0; AEFile_ReadInt(&eN, fd);
+                    int wi = 0;
+                    AEFile_ReadInt(&wi, fd);
+                    void *wship = ((Ship *) ((int) (intptr_t) shipDefs[wi]))->makeShip(-1);
+                    *(void **) (rec + 0x134) = wship;
+                    int r = 0;
+                    AEFile_ReadInt(&r, fd);
+                    ((Ship *) (wship))->setRace(r);
+                    int eN = 0;
+                    AEFile_ReadInt(&eN, fd);
                     if (eN > 0) {
-                        Array<Item*> *items = new Array<Item*>(); items->resize(eN);
+                        Array<Item *> *items = new Array<Item *>();
+                        items->resize(eN);
                         for (int i = 0; i < eN; i++)
-                            (*items)[i] = (Item *)RSR_readItem(fd, false);
-                        ((Ship *)(wship))->replaceEquipment(items);
+                            (*items)[i] = (Item *) RSR_readItem(fd, false);
+                        ((Ship *) (wship))->replaceEquipment(items);
                     }
-                    int cN = 0; AEFile_ReadInt(&cN, fd);
+                    int cN = 0;
+                    AEFile_ReadInt(&cN, fd);
                     if (cN > 0) {
-                        Array<Item*> *items = new Array<Item*>(); items->resize(cN);
+                        Array<Item *> *items = new Array<Item *>();
+                        items->resize(cN);
                         for (int i = 0; i < cN; i++)
-                            (*items)[i] = (Item *)RSR_readItem(fd, true);
-                        ((Ship *)(wship))->replaceCargo(items);
+                            (*items)[i] = (Item *) RSR_readItem(fd, true);
+                        ((Ship *) (wship))->replaceCargo(items);
                     }
                 }
 
                 // int[] rec+0x70.
-                Array<int> *arr70 = new Array<int>(); *(void **)(rec + 0x70) = arr70;
-                int n70 = 0; AEFile_ReadInt(&n70, fd); arr70->resize(n70);
+                Array<int> *arr70 = new Array<int>();
+                *(void **) (rec + 0x70) = arr70;
+                int n70 = 0;
+                AEFile_ReadInt(&n70, fd);
+                arr70->resize(n70);
                 for (int i = 0; i < n70; i++) { AEFile_ReadInt(&(*arr70)[i], fd); }
 
                 AEFile_ReadInt(rec + 0xd0, fd);
@@ -1948,24 +2331,31 @@ void * RecordHandler::recordStoreRead(int slot) {
                 AEFile_ReadByte(rec + 0xdc, fd);
 
                 // Station shop items (rec+0x180) and ships (rec+0x184).
-                int siN = 0; AEFile_ReadInt(&siN, fd);
+                int siN = 0;
+                AEFile_ReadInt(&siN, fd);
                 if (siN > 0) {
-                    Array<Item*> *items = new Array<Item*>(); items->resize(siN);
+                    Array<Item *> *items = new Array<Item *>();
+                    items->resize(siN);
                     for (int i = 0; i < siN; i++)
-                        (*items)[i] = (Item *)RSR_readItem(fd, true);
-                    *(void **)(rec + 0x180) = items;
+                        (*items)[i] = (Item *) RSR_readItem(fd, true);
+                    *(void **) (rec + 0x180) = items;
                 }
-                int ssN = 0; AEFile_ReadInt(&ssN, fd);
-                Array<Ship*> *recShips = 0;
+                int ssN = 0;
+                AEFile_ReadInt(&ssN, fd);
+                Array<Ship *> *recShips = 0;
                 if (ssN > 0) {
-                    Array<Ship*> *ships = new Array<Ship*>(); ships->resize(ssN);
+                    Array<Ship *> *ships = new Array<Ship *>();
+                    ships->resize(ssN);
                     for (int i = 0; i < ssN; i++) {
-                        int si = 0; AEFile_ReadInt(&si, fd);
-                        void *sh = ((Ship *)((int)(intptr_t)shipDefs[si]))->makeShip(-1);
-                        (*ships)[i] = (Ship *)sh;
-                        int r = 0; AEFile_ReadInt(&r, fd); ((Ship *)(sh))->setRace(r);
+                        int si = 0;
+                        AEFile_ReadInt(&si, fd);
+                        void *sh = ((Ship *) ((int) (intptr_t) shipDefs[si]))->makeShip(-1);
+                        (*ships)[i] = (Ship *) sh;
+                        int r = 0;
+                        AEFile_ReadInt(&r, fd);
+                        ((Ship *) (sh))->setRace(r);
                     }
-                    *(void **)(rec + 0x184) = ships;
+                    *(void **) (rec + 0x184) = ships;
                     recShips = ships;
                 }
 
@@ -1974,55 +2364,80 @@ void * RecordHandler::recordStoreRead(int slot) {
                 AEFile_ReadByte(rec + 0x116, fd);
 
                 // bool[] rec+0x178
-                int b178 = 0; AEFile_ReadInt(&b178, fd);
-                Array<bool> *arr178 = new Array<bool>(); *(void **)(rec + 0x178) = arr178;
+                int b178 = 0;
+                AEFile_ReadInt(&b178, fd);
+                Array<bool> *arr178 = new Array<bool>();
+                *(void **) (rec + 0x178) = arr178;
                 arr178->resize(b178);
-                for (unsigned i = 0; i < arr178->size(); i++) { bool v = false; AEFile_ReadBool(&v, fd); (*arr178)[i] = v; }
+                for (unsigned i = 0; i < arr178->size(); i++) {
+                    bool v = false;
+                    AEFile_ReadBool(&v, fd);
+                    (*arr178)[i] = v;
+                }
 
                 // Version-gated tail: ship-mod tables, wanteds, bounties and the final flag block.
                 AEFile_ReadInt(rec + 0x1bc, fd);
-                if (*(int *)(rec + 0x1bc) == g_RSR_modVersion) {
-
-                    int m0 = 0; AEFile_ReadInt(&m0, fd);
-                    if (m0 > 0) { Array<int> *a = new Array<int>(); a->resize(m0);
+                if (*(int *) (rec + 0x1bc) == g_RSR_modVersion) {
+                    int m0 = 0;
+                    AEFile_ReadInt(&m0, fd);
+                    if (m0 > 0) {
+                        Array<int> *a = new Array<int>();
+                        a->resize(m0);
                         for (int i = 0; i < m0; i++) { AEFile_ReadInt(&(*a)[i], fd); }
-                        ((Ship *)(*(void **)(rec + 0x130)))->setMods(a); }
-                    int m1 = 0; AEFile_ReadInt(&m1, fd);
-                    if (m1 > 0) { Array<int> *a = new Array<int>(); a->resize(m1);
+                        ((Ship *) (*(void **) (rec + 0x130)))->setMods(a);
+                    }
+                    int m1 = 0;
+                    AEFile_ReadInt(&m1, fd);
+                    if (m1 > 0) {
+                        Array<int> *a = new Array<int>();
+                        a->resize(m1);
                         for (int i = 0; i < m1; i++) { AEFile_ReadInt(&(*a)[i], fd); }
-                        ((Ship *)(*(void **)(rec + 0x134)))->setMods(a); }
+                        ((Ship *) (*(void **) (rec + 0x134)))->setMods(a);
+                    }
 
-                    int stShipGroups = 0; AEFile_ReadInt(&stShipGroups, fd);
+                    int stShipGroups = 0;
+                    AEFile_ReadInt(&stShipGroups, fd);
                     for (int g = 0; g < stShipGroups; g++) {
-                        int mc = 0; AEFile_ReadInt(&mc, fd);
-                        if (mc > 0) { Array<int> *a = new Array<int>(); a->resize(mc);
+                        int mc = 0;
+                        AEFile_ReadInt(&mc, fd);
+                        if (mc > 0) {
+                            Array<int> *a = new Array<int>();
+                            a->resize(mc);
                             for (int i = 0; i < mc; i++) { AEFile_ReadInt(&(*a)[i], fd); }
-                            ((Ship *)((*recShips)[g]))->setMods(a); }
+                            ((Ship *) ((*recShips)[g]))->setMods(a);
+                        }
                     }
 
                     // Per-station ship mods (applied incrementally via addMod).
-                    Array<Station*> *stArr = (Array<Station*> *)*(void **)(rec + 0x5c);
+                    Array<Station *> *stArr = (Array<Station *> *) *(void **) (rec + 0x5c);
                     for (unsigned k = 0; k < stArr->size() + 1; k++) {
-                        void *cur = (k == stArr->size()) ? *(void **)(rec + 0x138)
-                                                              : (void *)(*stArr)[k];
+                        void *cur = (k == stArr->size())
+                                        ? *(void **) (rec + 0x138)
+                                        : (void *) (*stArr)[k];
                         if (cur == 0) continue;
-                        int groups = 0; AEFile_ReadInt(&groups, fd);
+                        int groups = 0;
+                        AEFile_ReadInt(&groups, fd);
                         for (int i = 0; i < groups; i++) {
-                            int mc = 0; AEFile_ReadInt(&mc, fd);
+                            int mc = 0;
+                            AEFile_ReadInt(&mc, fd);
                             for (int j = 0; j < mc; j++) {
-                                int mod = 0; AEFile_ReadInt(&mod, fd);
-                                Array<Ship*> *cShips = (Array<Ship*> *)((Station *)cur)->getShips();
-                                ((Ship *)((*cShips)[i]))->addMod(mod);
+                                int mod = 0;
+                                AEFile_ReadInt(&mod, fd);
+                                Array<Ship *> *cShips = (Array<Ship *> *) ((Station *) cur)->getShips();
+                                ((Ship *) ((*cShips)[i]))->addMod(mod);
                             }
                         }
                     }
 
                     // Wanteds.
-                    int wN = 0; AEFile_ReadInt(&wN, fd);
+                    int wN = 0;
+                    AEFile_ReadInt(&wN, fd);
                     if (wN > 0) {
-                        Array<Wanted*> *wArr = new Array<Wanted*>(); *(void **)(rec + 0x1b4) = wArr; wArr->resize(wN);
+                        Array<Wanted *> *wArr = new Array<Wanted *>();
+                        *(void **) (rec + 0x1b4) = wArr;
+                        wArr->resize(wN);
                         for (int i = 0; i < wN; i++)
-                            (*wArr)[i] = (Wanted *)this->readWanted(fd);
+                            (*wArr)[i] = (Wanted *) this->readWanted(fd);
                     }
 
                     // Collected bounties + the remaining one-shot UI/progress flags.
@@ -2038,10 +2453,16 @@ void * RecordHandler::recordStoreRead(int slot) {
                     AEFile_ReadByte(rec + 0x10b, fd);
                     AEFile_ReadByte(rec + 0x10c, fd);
 
-                    int bX = 0; AEFile_ReadInt(&bX, fd);
-                    Array<bool> *arr17c = new Array<bool>(); *(void **)(rec + 0x17c) = arr17c;
+                    int bX = 0;
+                    AEFile_ReadInt(&bX, fd);
+                    Array<bool> *arr17c = new Array<bool>();
+                    *(void **) (rec + 0x17c) = arr17c;
                     arr17c->resize(bX);
-                    for (unsigned i = 0; i < arr17c->size(); i++) { bool v = false; AEFile_ReadBool(&v, fd); (*arr17c)[i] = v; }
+                    for (unsigned i = 0; i < arr17c->size(); i++) {
+                        bool v = false;
+                        AEFile_ReadBool(&v, fd);
+                        (*arr17c)[i] = v;
+                    }
 
                     AEFile_ReadByte(rec + 0x119, fd);
                     AEFile_ReadByte(rec + 0x109, fd);
@@ -2058,20 +2479,31 @@ void * RecordHandler::recordStoreRead(int slot) {
     return rec;
 }
 
-__attribute__((visibility("hidden"))) extern const unsigned char RH_ch_salt[]; // (25 bytes)
-__attribute__((visibility("hidden"))) extern unsigned char **RH_ch_key;        // (16-byte key)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const unsigned char RH_ch_salt[]; // (25 bytes)
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char **RH_ch_key; // (16-byte key)
 
 // RecordHandler::checkHash(unsigned int fd) -> bool (1=valid, 0=invalid).
-bool RecordHandler::checkHash(unsigned int fd)
-{
+bool RecordHandler::checkHash(unsigned int fd) {
     int result = 0;
 
     int sz = AEFile::GetFileSize(fd);
     if (-1 < sz) {
-        unsigned char *buf = new unsigned char[(unsigned)sz];
-        AEFile::Read((unsigned)sz, (signed char *)buf, fd);
+        unsigned char *buf = new unsigned char[(unsigned) sz];
+        AEFile::Read((unsigned) sz, (signed char *) buf, fd);
         Array<unsigned char> *arr = new Array<unsigned char>();
-        arr->insert(arr->end(), buf, buf + (unsigned)sz);
+        arr->insert(arr->end(), buf, buf + (unsigned) sz);
         delete[] buf;
 
         unsigned len = arr->size();
@@ -2080,7 +2512,7 @@ bool RecordHandler::checkHash(unsigned int fd)
             unsigned char *c = new unsigned char[0x70];
             SHA256_Init(c);
             unsigned char *data = arr->data();
-            SHA256_Update(c, data, (int)len - 0x20);
+            SHA256_Update(c, data, (int) len - 0x20);
             SHA256_Update(c, RH_ch_salt, 0x19);
             SHA256_Update(c, *RH_ch_key, 0x10);
             SHA256_Final(md, c);
@@ -2088,7 +2520,7 @@ bool RecordHandler::checkHash(unsigned int fd)
             unsigned i = 0;
             // compare 32 computed bytes against the trailing 32 bytes of the record
             while (i < 0x20) {
-                unsigned char want = data[(int)len + i - 0x20];
+                unsigned char want = data[(int) len + i - 0x20];
                 if (md[i] != want) break;
                 i++;
             }
@@ -2102,8 +2534,20 @@ bool RecordHandler::checkHash(unsigned int fd)
 }
 
 // SHA-256 salt blob (25 bytes) and the 16-byte signing key for the options file.
-__attribute__((visibility("hidden"))) extern const unsigned char RH_aho_salt[];
-__attribute__((visibility("hidden"))) extern unsigned char **RH_aho_key;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern const unsigned char RH_aho_salt[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern unsigned char **RH_aho_key;
 
 // RecordHandler::addHashToOptions()
 void RecordHandler::addHashToOptions() {
@@ -2122,8 +2566,8 @@ void RecordHandler::addHashToOptions() {
 
     signed char *out = new signed char[len + 0x20];
     memcpy(out, data, len);
-    unsigned long long *dst = (unsigned long long *)(out + len);
-    unsigned long long *src = (unsigned long long *)md;
+    unsigned long long *dst = (unsigned long long *) (out + len);
+    unsigned long long *src = (unsigned long long *) md;
     dst[0] = src[0];
     dst[1] = src[1];
     dst[2] = src[2];

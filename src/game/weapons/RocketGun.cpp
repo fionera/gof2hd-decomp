@@ -7,65 +7,59 @@
 #include "game/ship/Player.h"
 #include "platform/libc.h"
 
-// The owning radar is referenced here only by pointer; in the original binary it is
-// the global-scope Radar class. Radar.h declares it inside namespace AbyssEngine,
-// which would mangle setRadar's parameter wrong, so provide a minimal global Radar
-// with just the two fields this TU reads (level at +0x00, the lock contact at +0x04).
 class Radar {
 public:
-    void *level;        // +0x00
-    void *field_0x4;    // +0x04
+    void *level; // +0x00
+    void *field_0x4; // +0x04
 };
 
-// Radar.h defines a competing AbyssEngine::PaintCanvas stub, so the real
-// PaintCanvas headers cannot be co-included here. Complete AbyssEngine::PaintCanvas
-// (forward-declared by AEGeometry.h) with only the methods this TU calls;
-// signatures match PaintCanvas.h so the mangled symbols resolve.
 namespace AbyssEngine {
-class PaintCanvas {
-public:
-    void TransformAddChild(unsigned int parent, unsigned int child);
-    Matrix *TransformGetLocal(unsigned int index);
-    void TransformSetLocal(unsigned int index, const Matrix &matrix);
-};
+    class PaintCanvas {
+    public:
+        void TransformAddChild(unsigned int parent, unsigned int child);
+
+        Matrix *TransformGetLocal(unsigned int index);
+
+        void TransformSetLocal(unsigned int index, const Matrix &matrix);
+    };
 } // namespace AbyssEngine
 
-
-// Engine globals: PaintCanvas handle pointer and the vector/matrix helpers used
-// by the homing/trail math. Provided by the engine; declared here by pointer.
 extern PaintCanvas *g_paintCanvas;
+
 void MatrixRotateVector(Vector &out, const Matrix &matrix, const Vector &vec);
+
 void MatrixGetDir(Vector &out, const Matrix &matrix);
+
 void VectorCross(Vector &out, const Vector &a, const Vector &b);
+
 void VectorNormalize(Vector &out, const Vector &in);
+
 void VectorRotateToTarget(Vector &out, const Vector &in);
+
 void VectorScale(Vector &out, const Vector &in, float scale);
 
 extern "C" uint32_t __aeabi_uidiv(uint32_t a, uint32_t b);
 
 namespace AbyssEngine {
-namespace AEMath {
-Vector operator+(const Vector &a, const Vector &b);
-Vector operator-(const Vector &a, const Vector &b);
-Vector operator*(const Vector &v, float scale);
-}
+    namespace AEMath {
+        Vector operator+(const Vector &a, const Vector &b);
+
+        Vector operator-(const Vector &a, const Vector &b);
+
+        Vector operator*(const Vector &v, float scale);
+    }
 }
 
-// vtable slot 8: a RocketGun (and its BombGun subclass) IS a rocket gun.
 int RocketGun::isRocketGun() { return 1; }
 
-void RocketGun::render()
-{
+void RocketGun::render() {
     ObjectGun::render();
 }
 
-// Rockets are placed in world space directly, so a camera-relative translate is a no-op.
-void RocketGun::translate(const Vector & /*v*/)
-{
+void RocketGun::translate(const Vector & /*v*/) {
 }
 
-RocketGun::~RocketGun()
-{
+RocketGun::~RocketGun() {
     delete this->trailMatrices;
     this->trailMatrices = nullptr;
 
@@ -76,12 +70,11 @@ RocketGun::~RocketGun()
     this->trailTimers = nullptr;
 }
 
-static const float kRocketTurnRate = 0.3f;   // 0x3e99999a
+static const float kRocketTurnRate = 0.3f; // 0x3e99999a
 
 RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
                      uint32_t flags, int rocketKind, bool homing, Level *level)
-    : ObjectGun(meshVariantId, gun, mesh, flags, level)
-{
+    : ObjectGun(meshVariantId, gun, mesh, flags, level) {
     this->fadeTimer = 0;
     this->trailMatrices = nullptr;
     this->trailSystems = nullptr;
@@ -109,10 +102,9 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
     }
 }
 
-void RocketGun::setRadar(Radar *radar)
-{
+void RocketGun::setRadar(Radar *radar) {
     this->radar = radar;
-    Level *radarLevel = (Level *)radar->level;
+    Level *radarLevel = (Level *) radar->level;
     Gun *gun = this->gun;
     this->particleManager = F<int>(radarLevel, 0x80);
 
@@ -147,9 +139,9 @@ void RocketGun::setRadar(Radar *radar)
             ParticleSystemManager *manager;
             if (this->gun->itemIndex == 0xc1) {
                 this->particleManager = F<int>(radarLevel, 0x98);
-                manager = (ParticleSystemManager *)this->particleManager;
+                manager = (ParticleSystemManager *) this->particleManager;
             } else {
-                manager = (ParticleSystemManager *)this->particleManager;
+                manager = (ParticleSystemManager *) this->particleManager;
             }
 
             ParticleSettings::ParticleSet effect;
@@ -163,7 +155,7 @@ void RocketGun::setRadar(Radar *radar)
 
             int system = manager->addSystem(&(*this->trailMatrices)[i], effect, false);
             (*this->trailSystems)[i] = system;
-            ((ParticleSystemManager *)this->particleManager)->enableSystemEmit(system, false);
+            ((ParticleSystemManager *) this->particleManager)->enableSystemEmit(system, false);
             (*this->trailTimers)[i] = 0;
         }
         return;
@@ -181,7 +173,7 @@ non_special:
         this->trailTimers->resize(this->gun->count);
 
         for (uint32_t i = 0; i < this->gun->count; i++) {
-            ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x80);
+            ParticleSystemManager *manager = (ParticleSystemManager *) F<int>(radarLevel, 0x80);
             int system = manager->addSystem(&(*this->trailMatrices)[i], ParticleSettings::ParticleSet_0x27, false);
             (*this->trailSystems)[i] = system;
             manager->enableSystemEmit(system, false);
@@ -191,13 +183,13 @@ non_special:
     }
 
     if (gunType == 0xe8) {
-        ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x9c);
+        ParticleSystemManager *manager = (ParticleSystemManager *) F<int>(radarLevel, 0x9c);
         Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
         this->particleSystem = system;
         manager->enableSystemEmit(system, 0);
     } else {
-        ParticleSystemManager *manager = (ParticleSystemManager *)F<int>(radarLevel, 0x84);
+        ParticleSystemManager *manager = (ParticleSystemManager *) F<int>(radarLevel, 0x84);
         Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
         this->particleSystem = system;
@@ -205,8 +197,7 @@ non_special:
     }
 }
 
-void RocketGun::seekEnemy(int unused, int index)
-{
+void RocketGun::seekEnemy(int unused, int index) {
     Vector rotated;
     Vector toTarget;
     Vector enemyPos;
@@ -241,25 +232,25 @@ fallback:
             return;
         if (F<uint8_t>(contact, 0x76) == 0 || F<uint8_t>(contact, 0x74) != 0)
             return;
-        Level *radarLevel = (Level *)this->radar->level;
-        if (((PlayerEgo *)(long)radarLevel->getPlayer())->isInFreeLookMode() != 0)
+        Level *radarLevel = (Level *) this->radar->level;
+        if (((PlayerEgo *) (long) radarLevel->getPlayer())->isInFreeLookMode() != 0)
             return;
-        enemy = (Player *)F<void *>(this->radar->field_0x4, 0x4);
+        enemy = (Player *) F<void *>(this->radar->field_0x4, 0x4);
     }
 
 have_enemy:
     if (enemy != nullptr) {
         Gun *g = this->gun;
         enemyPos = enemy->getPosition();
-        Vector *muzzlePositions = (Vector *)g->positions;
-        Vector *muzzleVelocities = (Vector *)g->velocities;
+        Vector *muzzlePositions = (Vector *) g->positions;
+        Vector *muzzleVelocities = (Vector *) g->velocities;
 
         toTarget = enemyPos - muzzlePositions[index];
         VectorRotateToTarget(rotated, toTarget);
 
         // The steering accumulator IS the member at this+0xb4 (steerX/Y/Z); the
         // engine accumulates in place and stores raw float bits, no truncation.
-        Vector &steer = *(Vector *)&this->steerX;
+        Vector &steer = *(Vector *) &this->steerX;
         steer = rotated;
 
         VectorRotateToTarget(rotated, muzzleVelocities[index]);
@@ -272,14 +263,13 @@ have_enemy:
     }
 }
 
-static const float kMuzzleZAdd = -100.0f;     // 0xc2c80000
-static const float kScaleDiv = -200.0f;       // 0xc3480000
-static const float kScaleMul = 255.0f;        // 0x437f0000
-static const float kZeroCompare = 50000.0f;   // 0x47435000
-static const float kWave = 0.003f;            // 0x3b449ba6
+static const float kMuzzleZAdd = -100.0f; // 0xc2c80000
+static const float kScaleDiv = -200.0f; // 0xc3480000
+static const float kScaleMul = 255.0f; // 0x437f0000
+static const float kZeroCompare = 50000.0f; // 0x47435000
+static const float kWave = 0.003f; // 0x3b449ba6
 
-void RocketGun::update(int elapsed)
-{
+void RocketGun::update(int elapsed) {
     Vector norm;
     Matrix matrix;
     Vector axis;
@@ -291,7 +281,7 @@ void RocketGun::update(int elapsed)
     gun->update(elapsed);
 
     if (this->hasGeometry != 0 && gun->delayActive != 0) {
-        PlayerEgo *player = (PlayerEgo *)(long)this->level->getPlayer();
+        PlayerEgo *player = (PlayerEgo *) (long) this->level->getPlayer();
         Vector basePos = player->getPosition();
         gunVec.x = gun->offset.x;
         gunVec.y = gun->offset.y;
@@ -300,8 +290,8 @@ void RocketGun::update(int elapsed)
         basePos += axis;
         this->geometry->setPosition(basePos);
 
-        float scaling = (float)gun->delayTimer;
-        scaling = (float)(int)((scaling / kScaleDiv + 1.0f) * kScaleMul);
+        float scaling = (float) gun->delayTimer;
+        scaling = (float) (int) ((scaling / kScaleDiv + 1.0f) * kScaleMul);
         scaling = scaling / kScaleMul;
         this->geometry->setScaling(scaling);
 
@@ -322,10 +312,10 @@ void RocketGun::update(int elapsed)
 
         void *local = g_paintCanvas->TransformGetLocal(this->transform);
         int shot = gun->fireIndex;
-        Vector *positions = (Vector *)gun->positions;
+        Vector *positions = (Vector *) gun->positions;
         MatrixSetTranslation(matrix, positions[shot].x, positions[shot].y, positions[shot].z);
 
-        Vector *velocities = (Vector *)gun->velocities;
+        Vector *velocities = (Vector *) gun->velocities;
         gunVec = velocities[shot];
 
         local = g_paintCanvas->TransformGetLocal(this->transform);
@@ -356,22 +346,22 @@ void RocketGun::update(int elapsed)
             int kind = this->rocketKind;
             if ((uint32_t)(kind - 4) < 2 || kind == 0x28) {
                 ParticleSystemManager *manager =
-                    (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x80);
+                        (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x80);
                 manager->enableSystemRender(this->particleSystem, true);
                 manager->enableSystemEmit(this->particleSystem, true);
             } else {
                 ParticleSystemManager *manager;
                 if (gun->itemIndex == 0xe8)
-                    manager = (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x9c);
+                    manager = (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x9c);
                 else
-                    manager = (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x84);
+                    manager = (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x84);
                 manager->enableSystemEmit(this->particleSystem, this->particleSystem != 0);
             }
         } else {
             int shotIndex = gun->fireIndex;
-            Vector *shotPositions = (Vector *)gun->positions;
+            Vector *shotPositions = (Vector *) gun->positions;
             int system = (*this->trailSystems)[shotIndex];
-            ParticleSystemManager *manager = (ParticleSystemManager *)this->particleManager;
+            ParticleSystemManager *manager = (ParticleSystemManager *) this->particleManager;
             if (shotPositions[shotIndex].z != kZeroCompare) {
                 (*this->trailMatrices)[shotIndex] = matrix;
                 manager->resetSystem(system);
@@ -395,7 +385,7 @@ void RocketGun::update(int elapsed)
         }
     }
 
-    Vector *positions = (Vector *)gun->positions;
+    Vector *positions = (Vector *) gun->positions;
     if (gun->active != 0 && gun->count == 1 && positions[0].z == kZeroCompare) {
         gun->active = 0;
         int kind = this->rocketKind;
@@ -403,12 +393,12 @@ void RocketGun::update(int elapsed)
         if ((uint32_t)(kind - 4) < 2 || kind == 0x28) {
             if (this->fadeTimer == 0)
                 this->fadeTimer = 2000;
-            manager = (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x80);
+            manager = (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x80);
         } else {
             if (gun->itemIndex == 0xe8)
-                manager = (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x9c);
+                manager = (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x9c);
             else
-                manager = (ParticleSystemManager *)F<int>((Level *)this->radar->level, 0x84);
+                manager = (ParticleSystemManager *) F<int>((Level *) this->radar->level, 0x84);
         }
         manager->enableSystemEmit(this->particleSystem, false);
     } else if (this->fadeTimer > 0 && gun->count == 1 && positions[0].z == kZeroCompare) {
@@ -416,16 +406,16 @@ void RocketGun::update(int elapsed)
         this->fadeTimer = timer;
         if (timer < 1) {
             this->fadeTimer = 0;
-            ((ParticleSystemManager *)this->particleManager)
-                ->enableSystemRender(this->particleSystem, false);
+            ((ParticleSystemManager *) this->particleManager)
+                    ->enableSystemRender(this->particleSystem, false);
         }
     }
 
-    float dt = (float)elapsed;
+    float dt = (float) elapsed;
     for (uint32_t i = 0; i < this->gun->count; i++) {
         gun = this->gun;
-        Vector *gunPositions = (Vector *)gun->positions;
-        Vector *gunVelocities = (Vector *)gun->velocities;
+        Vector *gunPositions = (Vector *) gun->positions;
+        Vector *gunVelocities = (Vector *) gun->velocities;
 
         axis = gunVelocities[i] * dt;
         gunVec = axis * 0.5f;
@@ -443,28 +433,28 @@ void RocketGun::update(int elapsed)
                 }
 
                 if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
-                    uint32_t total = (uint32_t)gun->initialLifetime;
+                    uint32_t total = (uint32_t) gun->initialLifetime;
                     uint32_t base = __aeabi_uidiv(total * i, gun->count);
-                    float waveIn = (float)base +
-                                   (float)(gun->initialLifetime - F<int>(gun->lifetimes, i * 4));
+                    float waveIn = (float) base +
+                                   (float) (gun->initialLifetime - F<int>(gun->lifetimes, i * 4));
                     float s = AbyssEngine::AEMath::Sinf(waveIn * kWave);
                     float c = AbyssEngine::AEMath::Cosf(waveIn * kWave);
-                    Vector *up = (Vector *)gun->upVectors;
+                    Vector *up = (Vector *) gun->upVectors;
                     Vector cross;
                     VectorCross(gunVec, gunVelocities[i], up[i]);
                     VectorNormalize(cross, gunVec);
                     VectorScale(axis, cross, s + s);
                     VectorScale(gunVec, axis, dt);
-                    ((Vector *)gun->positions)[i] += gunVec;
+                    ((Vector *) gun->positions)[i] += gunVec;
                     VectorScale(axis, up[i], c + c);
                     VectorScale(gunVec, axis, dt);
-                    ((Vector *)gun->positions)[i] += gunVec;
+                    ((Vector *) gun->positions)[i] += gunVec;
                 }
             } else {
                 if (this->trailMatrices != nullptr) {
                     int system = (*this->trailSystems)[i];
-                    ((ParticleSystemManager *)this->particleManager)
-                        ->enableSystemEmit(system, false);
+                    ((ParticleSystemManager *) this->particleManager)
+                            ->enableSystemEmit(system, false);
                     int *timer = &(*this->trailTimers)[i];
                     if (*timer == 0)
                         *timer = 2000;
@@ -473,8 +463,8 @@ void RocketGun::update(int elapsed)
 
             if (this->trailMatrices != nullptr) {
                 gun = this->gun;
-                gunPositions = (Vector *)gun->positions;
-                gunVelocities = (Vector *)gun->velocities;
+                gunPositions = (Vector *) gun->positions;
+                gunVelocities = (Vector *) gun->velocities;
                 axis = gunVelocities[i] * dt;
                 gunVec = axis * 0.5f;
                 advanced = gunPositions[i] + gunVec;
@@ -495,8 +485,8 @@ void RocketGun::update(int elapsed)
                 *timer = left;
                 if (left < 1) {
                     *timer = 0;
-                    ((ParticleSystemManager *)this->particleManager)
-                        ->enableSystemRender((*this->trailSystems)[i], false);
+                    ((ParticleSystemManager *) this->particleManager)
+                            ->enableSystemRender((*this->trailSystems)[i], false);
                 }
             }
         }

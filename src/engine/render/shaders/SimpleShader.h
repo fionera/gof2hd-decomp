@@ -6,30 +6,29 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Galaxy on Fire 2 - AbyssEngine::SimpleShader (GLES2 solid-color shader).
-// Renders meshes with a single uniform color modulated by a world matrix.
+namespace AbyssEngine {
+    class Engine;
+}
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class SimpleShader : public ShaderBaseStruct {
+    public:
+        int aPosition; // attribute a_position
+        int uWorldMatrix; // uniform u_WorldMatrix
+        int uColor; // uniform u_color
 
-class SimpleShader : public ShaderBaseStruct {
-public:
-    int aPosition;      // attribute a_position
-    int uWorldMatrix;   // uniform u_WorldMatrix
-    int uColor;         // uniform u_color
+        SimpleShader();
 
-    SimpleShader();
+        void Init(Engine *engine) override;
 
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-};
+        void SetInActive() override;
 
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

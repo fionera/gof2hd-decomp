@@ -6,29 +6,30 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Galaxy on Fire 2 - AbyssEngine::NoTexVtxColorShader (GLES2 untextured, per-vertex-color shader).
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class NoTexVtxColorShader : public ShaderBaseStruct {
+    public:
+        int aPosition; // attribute a_position
+        int aColor; // attribute a_color
+        int uMvpMatrix; // uniform u_mvp
+        int uColor; // uniform u_color
 
-// AbyssEngine::NoTexVtxColorShader
-class NoTexVtxColorShader : public ShaderBaseStruct {
-public:
-    int aPosition;      // attribute a_position
-    int aColor;         // attribute a_color
-    int uMvpMatrix;     // uniform u_mvp
-    int uColor;         // uniform u_color
+        NoTexVtxColorShader();
 
-    NoTexVtxColorShader();
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-};
+        void Init(Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

@@ -1,25 +1,19 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/PaintCanvas.h"
 
-
-
-MarqueeImage::~MarqueeImage()
-{
+MarqueeImage::~MarqueeImage() {
 }
 
-void MarqueeImage::setSpeed(float speed)
-{
+void MarqueeImage::setSpeed(float speed) {
     this->speed = speed;
 }
 
-void MarqueeImage::setPosition(int x, int y)
-{
+void MarqueeImage::setPosition(int x, int y) {
     this->x = x;
     this->y = y;
 }
 
-MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
-{
+MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed) {
     PaintCanvas **holder = g_MarqueeImage_canvas;
 
     (*holder)->Image2DCreate(image, this->image);
@@ -34,16 +28,14 @@ MarqueeImage::MarqueeImage(uint16_t image, int width, int x, int y, float speed)
     this->scrollPosition = 0;
 }
 
-void MarqueeImage::draw()
-{
+void MarqueeImage::draw() {
     return draw(this->x, this->y);
 }
 
-void MarqueeImage::update(int dt)
-{
+void MarqueeImage::update(int dt) {
     float position = this->scrollPosition;
-    float delta = ((float)dt / 1000.0f) * this->speed;
-    float width = (float)this->imageWidth;
+    float delta = ((float) dt / 1000.0f) * this->speed;
+    float width = (float) this->imageWidth;
     position += delta;
     this->scrollPosition = position;
     if (width < position) {
@@ -51,11 +43,10 @@ void MarqueeImage::update(int dt)
         this->scrollPosition = position;
     }
 
-    this->scrollOffset = (int)(width - position);
+    this->scrollOffset = (int) (width - position);
 }
 
-void MarqueeImage::draw(int x, int y)
-{
+void MarqueeImage::draw(int x, int y) {
     int32_t offset = this->scrollOffset;
     this->x = x;
     this->y = y;
@@ -68,15 +59,15 @@ void MarqueeImage::draw(int x, int y)
             drawWidth = visibleWidth;
         }
 
-        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int)this->scrollPosition,
-                                 0, drawWidth, this->imageHeight, 0.0f, 0, 0, x, y);
+        (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, (int) this->scrollPosition,
+                                               0, drawWidth, this->imageHeight, 0.0f, 0, 0, x, y);
         offset = this->scrollOffset;
     }
 
     if (offset <= visibleWidth) {
         (*g_MarqueeImage_canvas)->DrawRegion2D(this->image, 0, 0,
-                                 visibleWidth - offset,
-                                 this->imageHeight, 0.0f, 0, 0,
-                                 offset + x, y);
+                                               visibleWidth - offset,
+                                               this->imageHeight, 0.0f, 0, 0,
+                                               offset + x, y);
     }
 }

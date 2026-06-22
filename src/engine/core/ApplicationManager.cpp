@@ -1,5 +1,5 @@
 #include "engine/core/ApplicationManager.h"
-ApplicationManager* gAppManager = nullptr;  // canonical ApplicationManager singleton
+ApplicationManager *gAppManager = nullptr; // canonical ApplicationManager singleton
 #include "engine/audio/AESoundRessource.h"
 #include "engine/core/IApplicationModule.h"
 #include "engine/file/ConfigReader.h"
@@ -8,24 +8,15 @@ ApplicationManager* gAppManager = nullptr;  // canonical ApplicationManager sing
 #include "game/core/PaintCanvasClass.h"   // real PaintCanvas:: methods
 #include "externs.h"                        // engine g_* globals / host glue
 
-// PaintCanvas::GetWidth()/GetHeight() return void in the recovered class; the
-// underlying int-returning implementation is exposed as pc_GetWidth/pc_GetHeight
-// (defined alongside PaintCanvas.cpp).
-extern PaintCanvas* gCanvas;   // canonical canvas singleton (defined in PaintCanvas.cpp)
-extern "C" int pc_GetWidth(PaintCanvas *self);
-extern "C" int pc_GetHeight(PaintCanvas *self);
+extern PaintCanvas *gCanvas; // canonical canvas singleton (defined in PaintCanvas.cpp)
+extern "C" int pc_GetWidth(PaintCanvas * self);
+extern "C" int pc_GetHeight(PaintCanvas * self);
 
-// Engine/host glue that is not a statically resolvable typed method (PLT veneers /
-// per-frame engine hook). Kept as documented externs.
 extern "C" void Engine_PreUpdate(void *engine);
+
 extern "C" void Engine_Vibrate(void *engine, unsigned short duration);
+
 extern "C" void Engine_VibrateSupported(void *engine);
-
-
-
-
-
-
 
 ApplicationManager::ApplicationManager(Engine *engine) {
     this->modules = new Array<void *>();
@@ -43,8 +34,8 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas(engine);
-    gCanvas = this->paintCanvas;     // publish the global canvas singleton
-    gEngine = engine;                // publish the global engine singleton
+    gCanvas = this->paintCanvas; // publish the global canvas singleton
+    gEngine = engine; // publish the global engine singleton
 
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;
@@ -60,16 +51,16 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     // [-8] = entry size (0x10), [-4] = entry count (0x40), then `count` 16-byte slots
     // each holding a uint32 mask followed by a default-constructed String.
     char *storage = new char[0x408];
-    *(uint32_t *)storage = 0x10;
-    *(uint32_t *)(storage + 4) = 0x40;
+    *(uint32_t *) storage = 0x10;
+    *(uint32_t *) (storage + 4) = 0x40;
     char *keys = storage + 8;
     for (int offset = 0; offset != 0x400; offset += 0x10) {
-        new ((String *)(keys + offset + 4)) String();
-        *(uint32_t *)(keys + offset) = 0;
+        new((String *) (keys + offset + 4)) String();
+        *(uint32_t *) (keys + offset) = 0;
     }
     this->keyMappingTable = keys;
 
-    this->cheatHandler = new CheatHandler((AbyssEngine::KeyCode *)keys);
+    this->cheatHandler = new CheatHandler((AbyssEngine::KeyCode *) keys);
     this->lastTouchX = -1;
     this->lastTouchY = -1;
 }
@@ -80,14 +71,14 @@ ApplicationManager::~ApplicationManager() {
     // full vtable is not exposed; dispatch stays through the recovered slot offsets.
     void *module = this->currentModule;
     if (module != 0) {
-        void (**vtable)(void *) = *(void (***)(void *))module;
+        void (**vtable)(void *) = *(void (***)(void *)) module;
         vtable[0x0c / 4](module);
     }
 
     for (unsigned int i = 0; i < this->modules->size(); ++i) {
         void *entry = (*this->modules)[i];
         if (entry != 0) {
-            void (**vtable)(void *) = *(void (***)(void *))entry;
+            void (**vtable)(void *) = *(void (***)(void *)) entry;
             vtable[1](entry);
         }
         (*this->modules)[i] = 0;
@@ -109,9 +100,9 @@ ApplicationManager::~ApplicationManager() {
 
     char *keys = this->keyMappingTable;
     if (keys != 0) {
-        unsigned int count = *(unsigned int *)(keys - 4);
+        unsigned int count = *(unsigned int *) (keys - 4);
         for (unsigned int i = count; i != 0; --i) {
-            ((String *)(keys - 12 + i * 0x10))->~String();
+            ((String *) (keys - 12 + i * 0x10))->~String();
         }
         delete[] (keys - 8);
     }
@@ -121,8 +112,6 @@ ApplicationManager::~ApplicationManager() {
     delete this->moduleIds;
     delete this->modules;
 }
-
-// ---- module registration / lookup ----------------------------------------------------
 
 void ApplicationManager::SetApplicationModule(IApplicationModule *module) {
     void *current = this->currentModule;
@@ -135,9 +124,9 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
     if (g_perfPending != 0) {
         uint64_t value = g_perfCounter + 1;
         g_perfCounter = value;
-        if ((long long)(value - g_perfLimit) >= 0) {
-            *(volatile char *)&g_perfExpired = 1;
-            *(volatile char *)&g_perfPending = 0;
+        if ((long long) (value - g_perfLimit) >= 0) {
+            *(volatile char *) &g_perfExpired = 1;
+            *(volatile char *) &g_perfPending = 0;
         }
     }
 
@@ -156,7 +145,7 @@ void ApplicationManager::SetCurrentApplicationModule(unsigned int id) {
 void *ApplicationManager::GetApplicationModule(unsigned int id) {
     unsigned int count = this->moduleIds->size();
     for (unsigned int index = 0; index < count; ++index) {
-        if ((int)(*this->moduleIds)[index] == (int)id) {
+        if ((int) (*this->moduleIds)[index] == (int) id) {
             return (*this->modules)[index];
         }
     }
@@ -167,17 +156,15 @@ void *ApplicationManager::GetEngine() {
     return this->engine;
 }
 
-// ---- frame state machine -------------------------------------------------------------
-
 void ApplicationManager::Resume(bool arg) {
-    (void)arg;
+    (void) arg;
     if (this->state != 3) {
         return;
     }
 
     void *module = this->currentModule;
     if (module != 0) {
-        void (**vtable)(void *) = *(void (***)(void *))module;
+        void (**vtable)(void *) = *(void (***)(void *)) module;
         vtable[0x40 / 4](module);
         if (this->engine != 0) {
             this->engine->Resume();
@@ -198,7 +185,7 @@ void ApplicationManager::Suspend() {
 
     void *module = this->currentModule;
     if (module != 0) {
-        void (**vtable)(void *) = *(void (***)(void *))module;
+        void (**vtable)(void *) = *(void (***)(void *)) module;
         vtable[0x3c / 4](module);
         if (this->engine != 0) {
             this->engine->Suspend();
@@ -220,78 +207,76 @@ void ApplicationManager::OnUpdate(long long now) {
     }
 
     switch (this->state) {
-    case 0: {
-        void *next = this->pendingModule;
-        void *module = next != 0 ? next : this->currentModule;
-        if (next != 0) {
-            this->pendingModule = 0;
-            this->currentModule = next;
-        }
-        if (module != 0) {
-            int (**vtable)(void *) = *(int (***)(void *))module;
-            int loading = vtable[2](module);
-            LoadingCallback_t *callback = this->loadingCallback;
-            if (callback != 0) {
-                callback(this->paintCanvas, loading, this->loadingCallbackData);
+        case 0: {
+            void *next = this->pendingModule;
+            void *module = next != 0 ? next : this->currentModule;
+            if (next != 0) {
+                this->pendingModule = 0;
+                this->currentModule = next;
             }
-            if (loading == 0) {
-                this->actionState = 0;
-                this->state = 5;
-                this->currentTimeMs = 0;
-                this->frameTimeMs = now;
-                this->previousFrameTimeMs = now - 1;
-                this->keyState = 0;
-            } else {
-                uint64_t previous = this->frameTimeMs;
-                this->currentTimeMs += (uint64_t)now - previous;
-                this->previousFrameTimeMs = previous;
-                this->frameTimeMs = now;
+            if (module != 0) {
+                int (**vtable)(void *) = *(int (***)(void *)) module;
+                int loading = vtable[2](module);
+                LoadingCallback_t *callback = this->loadingCallback;
+                if (callback != 0) {
+                    callback(this->paintCanvas, loading, this->loadingCallbackData);
+                }
+                if (loading == 0) {
+                    this->actionState = 0;
+                    this->state = 5;
+                    this->currentTimeMs = 0;
+                    this->frameTimeMs = now;
+                    this->previousFrameTimeMs = now - 1;
+                    this->keyState = 0;
+                } else {
+                    uint64_t previous = this->frameTimeMs;
+                    this->currentTimeMs += (uint64_t) now - previous;
+                    this->previousFrameTimeMs = previous;
+                    this->frameTimeMs = now;
+                }
             }
+            break;
         }
-        break;
-    }
-    case 1: {
-        void *module = this->currentModule;
-        if (module != 0) {
-            void (**vtable)(void *) = *(void (***)(void *))module;
-            vtable[3](module);
-            this->engine->ResetLightParam();
-            this->state = 0;
-            this->currentModule = 0;
-        }
-        break;
-    }
-    case 4:
-        this->actionState = 0;
-        this->state = this->savedState;
-        this->currentTimeMs += 1;
-        this->frameTimeMs = now;
-        this->previousFrameTimeMs = now - 1;
-        this->keyState = 0;
-        break;
-    case 5: {
-        void *module = this->currentModule;
-        if (module != 0) {
-            void (**vtable)(void *) = *(void (***)(void *))module;
-            vtable[0x30 / 4](module);
-            Engine *engine = this->engine;
-            engine->field_0x68 = 0;
-            engine->field_0x58 = 0;
-            this->paintCanvas->field_0x4 = 0;
-            vtable[0x34 / 4](module);
-            ResumeCallback_t *resume = this->resumeCallback;
-            if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
-                vtable[0x38 / 4](module);
+        case 1: {
+            void *module = this->currentModule;
+            if (module != 0) {
+                void (**vtable)(void *) = *(void (***)(void *)) module;
+                vtable[3](module);
+                this->engine->ResetLightParam();
+                this->state = 0;
+                this->currentModule = 0;
             }
+            break;
         }
-        break;
-    }
-    default:
-        break;
+        case 4:
+            this->actionState = 0;
+            this->state = this->savedState;
+            this->currentTimeMs += 1;
+            this->frameTimeMs = now;
+            this->previousFrameTimeMs = now - 1;
+            this->keyState = 0;
+            break;
+        case 5: {
+            void *module = this->currentModule;
+            if (module != 0) {
+                void (**vtable)(void *) = *(void (***)(void *)) module;
+                vtable[0x30 / 4](module);
+                Engine *engine = this->engine;
+                engine->field_0x68 = 0;
+                engine->field_0x58 = 0;
+                this->paintCanvas->field_0x4 = 0;
+                vtable[0x34 / 4](module);
+                ResumeCallback_t *resume = this->resumeCallback;
+                if (resume == 0 || !resume(this->paintCanvas, this->resumeCallbackData)) {
+                    vtable[0x38 / 4](module);
+                }
+            }
+            break;
+        }
+        default:
+            break;
     }
 }
-
-// ---- input: keys ---------------------------------------------------------------------
 
 void ApplicationManager::OnKeyPress(int key) {
     this->actionMask = 0;
@@ -304,10 +289,10 @@ void ApplicationManager::OnKeyPress(int key) {
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = (int *)this->keyMappingTable;
+    int *mapping = (int *) this->keyMappingTable;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
-            int highIndex = (int)keyIndex - 0x20;
+            int highIndex = (int) keyIndex - 0x20;
             keyLow = 1u << keyIndex;
             if (highIndex >= 0) {
                 keyLow = 0;
@@ -319,13 +304,13 @@ void ApplicationManager::OnKeyPress(int key) {
             this->keyState |= keyLow;
             this->keyStateHigh |= keyHigh;
 
-            char *table = (char *)this->actionTable->data();
+            char *table = (char *) this->actionTable->data();
             unsigned int offset = 0;
             for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
                 char *entry = table + offset;
-                if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
-                    actionLow |= *(uint32_t *)entry;
-                    actionHigh |= *(uint32_t *)(entry + 4);
+                if (*(unsigned int *) (entry + 8) == keyIndex && *(int *) (entry + 0x0c) == 0) {
+                    actionLow |= *(uint32_t *) entry;
+                    actionHigh |= *(uint32_t *) (entry + 4);
                     this->actionMask = actionLow;
                     this->actionMaskHigh = actionHigh;
                     this->actionState |= actionLow;
@@ -342,7 +327,7 @@ void ApplicationManager::OnKeyPress(int key) {
     void *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         void (**vtable)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int) =
-            *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int))module;
+                *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int)) module;
         vtable[0x10 / 4](module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
 }
@@ -356,10 +341,10 @@ void ApplicationManager::OnKeyRelease(int key) {
     unsigned int actionLow = 0;
     unsigned int actionHigh = 0;
     unsigned int keyIndex = 0;
-    int *mapping = (int *)this->keyMappingTable;
+    int *mapping = (int *) this->keyMappingTable;
     while (keyIndex <= 0x3f) {
         if (*mapping == key) {
-            int highIndex = (int)keyIndex - 0x20;
+            int highIndex = (int) keyIndex - 0x20;
             keyLow = 1u << keyIndex;
             if (highIndex >= 0) {
                 keyLow = 0;
@@ -371,13 +356,13 @@ void ApplicationManager::OnKeyRelease(int key) {
             this->keyState &= ~keyLow;
             this->keyStateHigh &= ~keyHigh;
 
-            char *table = (char *)this->actionTable->data();
+            char *table = (char *) this->actionTable->data();
             unsigned int offset = 0;
             for (unsigned int i = 0; i < this->actionTable->size(); i += 2) {
                 char *entry = table + offset;
-                if (*(unsigned int *)(entry + 8) == keyIndex && *(int *)(entry + 0x0c) == 0) {
-                    actionLow |= *(uint32_t *)entry;
-                    actionHigh |= *(uint32_t *)(entry + 4);
+                if (*(unsigned int *) (entry + 8) == keyIndex && *(int *) (entry + 0x0c) == 0) {
+                    actionLow |= *(uint32_t *) entry;
+                    actionHigh |= *(uint32_t *) (entry + 4);
                     this->actionMask = actionLow;
                     this->actionMaskHigh = actionHigh;
                     this->actionState &= ~actionLow;
@@ -394,7 +379,7 @@ void ApplicationManager::OnKeyRelease(int key) {
     void *module = this->currentModule;
     if (module != 0 && this->state == 5) {
         void (**vtable)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int) =
-            *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int))module;
+                *(void (***)(void *, void *, unsigned int, unsigned int, unsigned int, unsigned int)) module;
         vtable[0x14 / 4](module, module, keyLow, keyHigh, actionLow, actionHigh);
     }
 }
@@ -411,22 +396,20 @@ uint64_t ApplicationManager::GetActionState() {
     return this->actionState;
 }
 
-void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode*> *array) {
+void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array) {
     unsigned int count = array->size();
     if (count == 0x40) {
         int offset = 0;
         for (unsigned int index = 0; index < count; ++index) {
             AbyssEngine::KeyCode *mapping = (*array)[index];
             char *dst = this->keyMappingTable + offset;
-            *(uint32_t *)dst = (uint32_t)mapping->code;
-            ((String *)(dst + 4))->assign(&mapping->name);
+            *(uint32_t *) dst = (uint32_t) mapping->code;
+            ((String *) (dst + 4))->assign(&mapping->name);
             offset += 0x10;
             count = array->size();
         }
     }
 }
-
-// ---- input: touch --------------------------------------------------------------------
 
 void ApplicationManager::ConvertTouchCoords(int &x, int &y) {
     PaintCanvas *canvas = this->paintCanvas;
@@ -460,10 +443,10 @@ void ApplicationManager::OnTouchBegin(int xArg, int yArg, void *touch) {
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *)) module;
         vtable[0x24 / 4](module, x, y, touch);
         module = this->currentModule;
-        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int)) module;
         vtable2[0x18 / 4](module, x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
@@ -508,10 +491,10 @@ void ApplicationManager::OnTouchMove(int xArg, int yArg, void *touch) {
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *)) module;
         vtable[0x28 / 4](module, x, y, touch);
         module = this->currentModule;
-        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int)) module;
         vtable2[0x1c / 4](module, x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
@@ -527,10 +510,10 @@ void ApplicationManager::OnTouchEnd(int xArg, int yArg, void *touch) {
     if (module != 0 && this->state == 5) {
         this->ConvertTouchCoords(x, y);
         module = this->currentModule;
-        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *))module;
+        void (**vtable)(void *, int, int, void *) = *(void (***)(void *, int, int, void *)) module;
         vtable[0x2c / 4](module, x, y, touch);
         module = this->currentModule;
-        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int))module;
+        void (**vtable2)(void *, int, int) = *(void (***)(void *, int, int)) module;
         vtable2[0x20 / 4](module, x, y);
         this->lastTouchX = x;
         this->lastTouchY = y;
@@ -548,8 +531,6 @@ void ApplicationManager::OnTouchEnd() {
     this->actionStateHigh = 0;
 }
 
-// ---- timing --------------------------------------------------------------------------
-
 uint64_t ApplicationManager::GetSystemTimeMillis() {
     return this->currentTimeMs;
 }
@@ -562,8 +543,6 @@ uint64_t ApplicationManager::GetElapsedTimeMillis() {
     return this->frameTimeMs - this->previousFrameTimeMs;
 }
 
-// ---- orientation tracking ------------------------------------------------------------
-
 static bool update_orientation_timer(ApplicationManager *self, int *timer) {
     int elapsed = self->frameTimeMs - self->previousFrameTimeMs;
     int value = *timer + elapsed;
@@ -572,7 +551,7 @@ static bool update_orientation_timer(ApplicationManager *self, int *timer) {
 }
 
 void ApplicationManager::CheckForOrientationChange() {
-    double tilt = *(double *)((char *)this->engine + 0x4b0);
+    double tilt = *(double *) ((char *) this->engine + 0x4b0);
     PaintCanvas *canvas;
     int *timer;
     AbyssEngine::LandscapeMode target;
@@ -627,39 +606,35 @@ void ApplicationManager::CheckForOrientationChange() {
     g_orientationInactive = 0;
 }
 
-// ---- config --------------------------------------------------------------------------
-
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
     this->actionTable->push_back(value);
     this->actionTable->push_back(key);
 }
 
 void *ApplicationManager::ConfigGetKeysForAction(long long action) {
-    int low = (int)action;
-    int high = (int)(action >> 32);
+    int low = (int) action;
+    int high = (int) (action >> 32);
     unsigned int byteOffset = 0;
     Array<String *> *result = 0;
 
     for (unsigned int index = 0; index < this->actionTable->size(); index += 2) {
-        char *actions = (char *)this->actionTable->data();
-        int actionLow = *(int *)(actions + byteOffset);
-        int actionHigh = *(int *)(actions + byteOffset + 4);
+        char *actions = (char *) this->actionTable->data();
+        int actionLow = *(int *) (actions + byteOffset);
+        int actionHigh = *(int *) (actions + byteOffset + 4);
         if (((actionLow ^ low) | (actionHigh ^ high)) == 0) {
             if (result == 0) {
                 result = new Array<String *>();
             }
-            actions = (char *)this->actionTable->data();
+            actions = (char *) this->actionTable->data();
             char *keys = this->keyMappingTable;
-            unsigned int keyIndex = *(unsigned int *)(actions + byteOffset + 8);
-            String *string = new String(*(String *)(keys + keyIndex * 0x10 + 4));
+            unsigned int keyIndex = *(unsigned int *) (actions + byteOffset + 8);
+            String *string = new String(*(String *) (keys + keyIndex * 0x10 + 4));
             result->push_back(string);
         }
         byteOffset += 0x10;
     }
     return result;
 }
-
-// ---- application callbacks -----------------------------------------------------------
 
 void ApplicationManager::SetLoadingCallback(LoadingCallback_t *callback, void *data) {
     this->loadingCallback = callback;
@@ -685,8 +660,6 @@ void ApplicationManager::Quit() {
     }
 }
 
-// ---- cheats --------------------------------------------------------------------------
-
 void ApplicationManager::CheatUpdate(unsigned short key) {
     if (this->cheatsEnabled && this->cheatHandler != 0) {
         this->cheatHandler->Update(key);
@@ -708,8 +681,6 @@ void ApplicationManager::CheatSetCallback(void (*callback)(int, void *), void *d
 void ApplicationManager::CheatEnable(bool enable) {
     this->cheatsEnabled = enable;
 }
-
-// ---- audio ---------------------------------------------------------------------------
 
 void ApplicationManager::SoundPlay(int soundId) {
     if (this->soundResource != 0 && this->soundFxEnabled) {
@@ -827,8 +798,6 @@ void ApplicationManager::SoundMusicEnable(bool enable) {
     this->musicEnabled = enable;
 }
 
-// ---- vibration -----------------------------------------------------------------------
-
 void ApplicationManager::Vibrate(unsigned short duration) {
     if (this->vibrateEnabled) {
         Engine_Vibrate(this->engine, duration);
@@ -843,11 +812,8 @@ void ApplicationManager::VibrateSupported() {
     Engine_VibrateSupported(this->engine);
 }
 
-// ---- application data / lifecycle ----------------------------------------------------
-
-// Anti-piracy hook: the shipped binary performs no check and always reports "not cracked".
 bool ApplicationManager::CheckCrack(const char *path) {
-    (void)path;
+    (void) path;
     return false;
 }
 
@@ -867,14 +833,10 @@ void *ApplicationManager::GetCurrentApplicationModule() const {
     return reinterpret_cast<void *>(this->currentModuleId);
 }
 
-// Returns the build version string.
 String ApplicationManager::GetApplicationVersionString() {
     return String("2.0.16");
 }
 
-// ---- config / modules / sound (operate on the public manager state) ------------------
-
-// Parse a named config file through the manager's ConfigReader.
 void ApplicationManager::ConfigReadFile(String name) {
     ConfigReader *reader = this->configReader;
     if (reader != 0) {
@@ -882,7 +844,6 @@ void ApplicationManager::ConfigReadFile(String name) {
     }
 }
 
-// Register a section handler with the manager's ConfigReader.
 void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigTokenReadFunction read,
                                                          void *context) {
     ConfigReader *reader = this->configReader;
@@ -891,10 +852,9 @@ void ApplicationManager::ConfigRegisterTokenReadFunction(String name, ConfigToke
     }
 }
 
-// Arm the per-frame performance counter (engine-global bookkeeping).
 void ApplicationManager::EnablePerformanceTest(int count) {
     g_perfElapsed = 0;
-    g_perfActionCount = (long long)count;
+    g_perfActionCount = (long long) count;
     g_perfLimitValue = 0;
     g_perfTotal = 0;
     g_perfFrame = 0;
@@ -902,7 +862,6 @@ void ApplicationManager::EnablePerformanceTest(int count) {
     g_perfPendingFlag = 0;
 }
 
-// Install the sound-info table and initialise each loaded sound slot.
 void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
     if (info != 0 && this->soundResource != 0) {
         AESoundRessource *sound = this->soundResource;
@@ -913,7 +872,6 @@ void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
     }
 }
 
-// Register an application module under `id`, binding it back to this manager.
 void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
     if (module != 0) {
         module->SetApplicationManager(this);
@@ -922,12 +880,8 @@ void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplication
     }
 }
 
-// The Engine root the NDK layer publishes (binary .bss 0x227b24); defined in the
-// JNI bridge. The free GetEngine() below double-dereferences this slot.
 extern "C" Engine **g_pEngine;
 
-// Global Engine accessor used throughout the NDK render/input layer: returns the
-// live engine (null until the engine has been brought up).
 Engine *GetEngine() {
     return *g_pEngine;
 }

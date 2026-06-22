@@ -5,12 +5,24 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// Game types referenced by pointer only.
 struct Agent;
 struct Mission;
 struct Wanted;
 struct GameRecord;
-namespace AbyssEngine { class PaintCanvas; class Engine; }
+
+namespace AbyssEngine {
+    class PaintCanvas;
+    class Engine;
+}
+
+// OptionsRecord — the persistent game options/settings record managed by RecordHandler
+// (see saveOptions/loadOptions). The pointer is held opaquely as g_ModMainMenu_initOptions
+// in the menu code; only fields actually accessed by name are modeled here. Unmodeled bytes
+// are left as raw padding so existing offsets are preserved exactly.
+struct OptionsRecord {
+    uint8_t field_0x00[0x48]; // unmodeled leading options bytes
+    uint8_t firstRunPreviewChecked; // +0x48: set once the first-run saved-game preview probe has run
+};
 
 // Builds the application's startup resource list (textures/sounds/fonts the active
 // device profile needs). Called from OnCreateApplication; the body lives in its own TU.
@@ -29,42 +41,70 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
 // prefixes for the options file and the primary/backup record directories.
 class RecordHandler {
 public:
-    Mission *currentMission;   // mission being serialized (cycle guard)
-    void    *currentAgent;     // agent being serialized (cycle guard)
-    String   optionsPath;      // options file path
-    String   recordDir;        // primary save-record directory prefix
-    String   backupDir;        // backup save-record directory prefix
+    Mission *currentMission; // mission being serialized (cycle guard)
+    void *currentAgent; // agent being serialized (cycle guard)
+    String optionsPath; // options file path
+    String recordDir; // primary save-record directory prefix
+    String backupDir; // backup save-record directory prefix
 
     RecordHandler();
+
     ~RecordHandler();
 
-    void   addHash(int slot);
-    void   addHashToOptions();
-    void   changeSaveDirectoryToBackupDirectory();
-    bool   checkHash(unsigned int fd);
-    void   convertSDVersionSaves();
-    bool   notEnoughMemory();
-    void   loadOptions();
-    void   loadResolutionValue(float resolution);
-    void  *readAgent(unsigned int fd);
-    void  *readAllPreviewRecords();
-    void  *readAllRecords();
-    void  *readMission(unsigned int fd);
-    int    readOptionsFileAsByteArray(signed char **out);
-    void  *readRecord(int slot);
-    int    readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
-    void   recoverSDVersionSaves();
-    void  *readWanted(unsigned int fd);
-    void  *recordStoreRead(int slot);
-    void  *recordStoreReadPreview(int slot);
-    void   recordStoreWrite(int slot);
-    int    recordStoreWritePreview(GameRecord *rec, int slot);
-    void   recordStoreWritePreview(int slot);
-    void   saveOptions();
-    void   writeAgent(Agent *agentPtr, unsigned int fd);
-    void   writeByteArrayAsOptionsFile(signed char *buf, int n);
-    int    writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
-    void   writeMission(Mission *m, unsigned int fd);
-    void   writeWanted(Wanted *w, unsigned int fd);
+    void addHash(int slot);
+
+    void addHashToOptions();
+
+    void changeSaveDirectoryToBackupDirectory();
+
+    bool checkHash(unsigned int fd);
+
+    void convertSDVersionSaves();
+
+    bool notEnoughMemory();
+
+    void loadOptions();
+
+    void loadResolutionValue(float resolution);
+
+    void *readAgent(unsigned int fd);
+
+    void *readAllPreviewRecords();
+
+    void *readAllRecords();
+
+    void *readMission(unsigned int fd);
+
+    int readOptionsFileAsByteArray(signed char **out);
+
+    void *readRecord(int slot);
+
+    int readRecordAsByteArray(signed char **out, int slot, bool fromBackup);
+
+    void recoverSDVersionSaves();
+
+    void *readWanted(unsigned int fd);
+
+    void *recordStoreRead(int slot);
+
+    void *recordStoreReadPreview(int slot);
+
+    void recordStoreWrite(int slot);
+
+    int recordStoreWritePreview(GameRecord *rec, int slot);
+
+    void recordStoreWritePreview(int slot);
+
+    void saveOptions();
+
+    void writeAgent(Agent *agentPtr, unsigned int fd);
+
+    void writeByteArrayAsOptionsFile(signed char *buf, int n);
+
+    int writeByteArrayAsRecord(signed char *buf, int n, int slot, bool toBackup);
+
+    void writeMission(Mission *m, unsigned int fd);
+
+    void writeWanted(Wanted *w, unsigned int fd);
 };
 #endif

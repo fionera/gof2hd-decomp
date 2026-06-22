@@ -6,37 +6,36 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class ColorMixAdd : public ShaderBaseStruct {
+    public:
+        static int ShaderIndex;
 
-// AbyssEngine::ColorMixAdd — GLES2 color-mix/add shader (derives from ShaderBaseStruct).
-// Caches two vertex-attribute locations (a0,a1) and six uniform locations (u0..u5)
-// after Init resolves them from the linked program.
-class ColorMixAdd : public ShaderBaseStruct {
-public:
-    static int ShaderIndex;
+        int a0Loc; // attribute a0
+        int a1Loc; // attribute a1
+        int u1Loc; // uniform u1
+        int u2Loc; // uniform u2
+        int u0Loc; // uniform u0
+        int u4Loc; // uniform u4
+        int u3Loc; // uniform u3
+        int u5Loc; // uniform u5
 
-    int a0Loc;              // attribute a0
-    int a1Loc;              // attribute a1
-    int u1Loc;              // uniform u1
-    int u2Loc;              // uniform u2
-    int u0Loc;              // uniform u0
-    int u4Loc;              // uniform u4
-    int u3Loc;              // uniform u3
-    int u5Loc;              // uniform u5
+        ColorMixAdd();
 
-    ColorMixAdd();
-    void Init(Engine *engine) override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void SetInActive() override;
-};
+        void Init(Engine *engine) override;
 
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+
+        void SetInActive() override;
+    };
 } // namespace AbyssEngine
-
 
 #endif

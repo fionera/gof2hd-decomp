@@ -12,40 +12,51 @@ class ListItem;
 class GameText;
 class Status;
 
-// Engine globals backing the hangar/shop list model: the active player Status,
-// the current GameText catalogue and the global item table.
-extern Status* g_HangarList_status;
-extern GameText** g_HangarList_gameText;
-extern Array<Item*>* g_HangarList_items;
+extern Status *g_HangarList_status;
+extern GameText **g_HangarList_gameText;
+extern Array<Item *> *g_HangarList_items;
 
-// The hangar/shop/blueprint list model. tabs holds an Array of per-tab Arrays of
-// ListItem*; currentTab is the selected tab index; currentItem caches the current
-// selection (stored as an int index, not a live pointer).
 class HangarList {
 public:
-    Array<Array<ListItem*>*>* tabs;
-    uint32_t                  currentTab;
-    ListItem*                 currentItem;
+    Array<Array<ListItem *> *> *tabs;
+    uint32_t currentTab;
+    ListItem *currentItem;
 
     HangarList();
+
     ~HangarList();
 
     void release();
+
     void setCurrentTab(int tab, bool blueprintIngredients);
+
     void setCurrentItemIndex(int index);
+
     uint32_t getCurrentItemIndex();
+
     uint32_t getCurrentTab();
-    Array<Array<ListItem*>*>* getItems();
+
+    Array<Array<ListItem *> *> *getItems();
+
     uint32_t getCurrentLength();
-    Array<ListItem*>* getCurrentTabItems();
-    ListItem* getCurrentItem();
-    ListItem* getCurrentItemAt(int index);
-    void initBlueprintTab(Array<BluePrint*>* blueprints);
-    void fillIngredientsList(BluePrint* blueprint, bool flag);
-    void fillBuyList(ListItem* item);
-    void initShipTab(Ship* ship);
-    void initShopTab(Array<Item*>* shopItems, Array<Ship*>* ships);
-    int  init(Ship* ship, Array<Item*>* items, Array<Ship*>* ships,
-              Array<BluePrint*>* blueprints);
+
+    Array<ListItem *> *getCurrentTabItems();
+
+    ListItem *getCurrentItem();
+
+    ListItem *getCurrentItemAt(int index);
+
+    void initBlueprintTab(Array<BluePrint *> *blueprints);
+
+    void fillIngredientsList(BluePrint *blueprint, bool flag);
+
+    void fillBuyList(ListItem *item);
+
+    void initShipTab(Ship *ship);
+
+    void initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships);
+
+    int init(Ship *ship, Array<Item *> *items, Array<Ship *> *ships,
+             Array<BluePrint *> *blueprints);
 };
 #endif

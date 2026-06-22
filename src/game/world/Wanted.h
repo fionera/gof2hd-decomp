@@ -5,8 +5,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// Galaxy on Fire 2 — a wanted target (bounty) shown on the bounty board.
-
 class Wanted {
 public:
     String name;
@@ -33,35 +31,61 @@ public:
     Wanted(int index, String name, int board, int race, bool male,
            int shipId, int weapon, int hitpoints, int lootItemId, int lootAmount,
            int reward, int requiredBounties, int requiredMission, int numWingmen);
+
     ~Wanted();
 
     String getName();
+
     uint8_t isActive();
+
     uint8_t isTerminated();
+
     void setActive(bool v);
+
     void setTerminated(bool v);
 
-    int  getIndex();
-    int  getBoard();
-    int  getRace();
-    int  isMale();
-    int  getShip();
-    int  getWeapon();
-    int  getHitpoints();
-    int  getLoot();
-    int  getLootAmount();
-    int  getReward();
-    int  getRequiredBounties();
-    int  getRequiredMission();
-    int  getNumWingmen();
-    int  getCurrentLocation();
-    int  getTravelsTo();
-    int  getLastSeen();
+    int getIndex();
+
+    int getBoard();
+
+    int getRace();
+
+    int isMale();
+
+    int getShip();
+
+    int getWeapon();
+
+    int getHitpoints();
+
+    int getLoot();
+
+    int getLootAmount();
+
+    int getReward();
+
+    int getRequiredBounties();
+
+    int getRequiredMission();
+
+    int getNumWingmen();
+
+    int getCurrentLocation();
+
+    int getTravelsTo();
+
+    int getLastSeen();
+
     int *getImageParts();
+
     void setImageParts(int *parts);
+
     void setRequiredMission(int v);
+
     void setCurrentLocation(int v);
+
     void setTravelsTo(int v);
+
     void setLastSeen(int v);
 };
 #endif

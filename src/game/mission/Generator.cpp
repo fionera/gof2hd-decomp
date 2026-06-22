@@ -14,9 +14,11 @@
 #include "game/world/Wanted.h"
 #include "game/mission/Status.h"
 
-// Generator is a stateless helper: nothing to initialise or release.
-Generator::Generator() {}
-Generator::~Generator() {}
+Generator::Generator() {
+}
+
+Generator::~Generator() {
+}
 
 void Generator::computerTradeGoods(Station *station) {
     if (station->getIndex() != 0x6c) {
@@ -34,8 +36,14 @@ void Generator::computerTradeGoods(Station *station) {
     }
 }
 
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_stationBlockList[0x34];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_stationBlockList[0x34];
 
 int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) {
     AbyssEngine::AERandom *random = gRandom;
@@ -55,7 +63,7 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
             if (roll < 40) {
                 int currentIndex = status->getSystem();
                 Array<int> *stations =
-                    (Array<int> *)systems->data()[currentIndex]->getStations();
+                        (Array<int> *) systems->data()[currentIndex]->getStations();
                 int pick = random->nextInt();
                 selected = stations->data()[pick];
             } else {
@@ -65,7 +73,7 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
 
         if (status->getSystem() == 0xf) {
             Array<int> *stations =
-                (Array<int> *)systems->data()[status->getSystem()]->getStations();
+                    (Array<int> *) systems->data()[status->getSystem()]->getStations();
             int pick = random->nextInt();
             selected = stations->data()[pick];
         }
@@ -100,31 +108,85 @@ int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) 
         }
 
         if (systems->data()[systemIndex]->getRoutes() == nullptr) {
-            if (systemIndex != (uint32_t)status->getSystem()) {
+            if (systemIndex != (uint32_t) status->getSystem()) {
                 accepted = false;
             }
         }
     } while (true);
 }
 
-extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
-    g_Generator_agentsItems;
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_offerItemIds[12];
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_offerShipIds[6];
-extern "C" __attribute__((visibility("hidden"))) Array<Ship *> **volatile
-    g_Generator_agentsShips;
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_storyNames;
-extern "C" __attribute__((visibility("hidden"))) ImageFactory **volatile
-    g_Generator_storyImages;
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_enemyRaces[4];
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_enemyNames;
-extern "C" __attribute__((visibility("hidden"))) ImageFactory **volatile
-    g_Generator_enemyImages;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Item *> **volatile
+g_Generator_agentsItems;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_offerItemIds[12];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_offerShipIds[6];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Ship *> **volatile
+g_Generator_agentsShips;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_storyNames;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+ImageFactory **volatile
+g_Generator_storyImages;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_enemyRaces[4];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_enemyNames;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+ImageFactory **volatile
+g_Generator_enemyImages;
 
 Array<Agent *> *Generator::createAgents(Station *station) {
     Status *status = gStatus;
@@ -132,7 +194,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
 
     Array<Agent *> *result = nullptr;
     if (status->inSupernovaSystem() == 0) {
-        Array<Agent *> *existing = (Array<Agent *> *)(long)status->getAgents();
+        Array<Agent *> *existing = (Array<Agent *> *) (long) status->getAgents();
         int mission = status->getCurrentCampaignMission();
         bool keepExisting = mission > 0x10;
         if (!status->dlc1Won()) {
@@ -149,7 +211,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
 
         if (station->getIndex() != 0x6c) {
             int roll = random->nextInt();
-            if ((int)(roll + count + 3) < 5) {
+            if ((int) (roll + count + 3) < 5) {
                 count += 3 + random->nextInt();
             } else {
                 count = 5;
@@ -182,8 +244,8 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                     Array<int> *choices = new Array<int>();
                     for (int j = 0; j != 6; ++j) {
                         int shipId = g_Generator_offerShipIds[j];
-                        if (((Station *)(intptr_t)status->field_14c)
-                                ->hasShip(shipId) == 0) {
+                        if (((Station *) (intptr_t) status->field_14c)
+                            ->hasShip(shipId) == 0) {
                             if (status->getShip()->getIndex() != shipId) {
                                 choices->push_back(shipId);
                             }
@@ -205,7 +267,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
 
         Array<SolarSystem *> *systems =
-            gGalaxy->getSystems();
+                gGalaxy->getSystems();
         if (status->getCurrentCampaignMission() == 0x17 &&
             station->getIndex() == 10) {
             AbyssEngine::String name = gGlobals->getRandomName(0, true);
@@ -233,7 +295,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
 
         if (random->nextInt() < 0x23) {
-            Standing *standing = (Standing *)(intptr_t)status->getStanding();
+            Standing *standing = (Standing *) (intptr_t) status->getStanding();
             for (uint32_t raceIndex = 0; raceIndex < 4; ++raceIndex) {
                 int race = g_Generator_enemyRaces[raceIndex];
                 if (standing->isEnemy(race)) {
@@ -242,7 +304,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         if (agent->isGenericAgent() && agent->getOffer() != 7) {
                             result->data()[i] = nullptr;
                             AbyssEngine::String name =
-                                gGlobals->getRandomName(race, true);
+                                    gGlobals->getRandomName(race, true);
                             agent = new Agent(-1, name, station->getIndex(),
                                               status->getSystem(), race, 1, -1,
                                               -1, -1, -1);
@@ -281,12 +343,30 @@ Array<Agent *> *Generator::createAgents(Station *station) {
     return result;
 }
 
-extern "C" __attribute__((visibility("hidden"))) uint8_t *volatile
-    g_Generator_missionFlags;
-extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
-    g_Generator_missionItems;
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_targetNames;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+uint8_t *volatile
+g_Generator_missionFlags;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Item *> **volatile
+g_Generator_missionItems;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_targetNames;
 
 Mission *Generator::createMission(Agent *agent,
                                   Array<SolarSystem *> *systems) {
@@ -297,7 +377,7 @@ Mission *Generator::createMission(Agent *agent,
     int targetStation = generateStationIndex(systems, agentStation);
     if (status->getSystem() == 0xf) {
         Array<int> *stations =
-            (Array<int> *)systems->data()[status->getSystem()]->getStations();
+                (Array<int> *) systems->data()[status->getSystem()]->getStations();
         targetStation = stations->data()[0] + random->nextInt();
     }
 
@@ -305,7 +385,7 @@ Mission *Generator::createMission(Agent *agent,
     uint32_t type = 0;
     bool selected = false;
     int guard = 999;
-    Array<uint8_t> *used = (Array<uint8_t> *)status->field_50;
+    Array<uint8_t> *used = (Array<uint8_t> *) status->field_50;
     while (!selected) {
         selected = guard < 1;
         uint32_t pick = random->nextInt();
@@ -345,22 +425,22 @@ Mission *Generator::createMission(Agent *agent,
     if (status->getCurrentCampaignMission() < 0x10 ||
         (type == 0xf && g_Generator_missionFlags[0x37] == 0)) {
         switch (random->nextInt()) {
-        case 1:
-            type = 0;
-            break;
-        case 2:
-            type = 7;
-            break;
-        case 3:
-            type = 4;
-            break;
-        case 4:
-            type = 0xc;
-            targetStation = agent->getStation();
-            break;
-        default:
-            type = 0xb;
-            break;
+            case 1:
+                type = 0;
+                break;
+            case 2:
+                type = 7;
+                break;
+            case 3:
+                type = 4;
+                break;
+            case 4:
+                type = 0xc;
+                targetStation = agent->getStation();
+                break;
+            default:
+                type = 0xb;
+                break;
         }
     } else if (type == 0xc) {
         targetStation = agent->getStation();
@@ -383,10 +463,10 @@ Mission *Generator::createMission(Agent *agent,
                 bool ok = false;
                 while (!ok) {
                     targetStation =
-                        generateStationIndex(systems, agent->getStation());
+                            generateStationIndex(systems, agent->getStation());
                     for (uint32_t i = 0; i < systems->size(); ++i) {
                         if (systems->data()[i]->stationIsInSystem(targetStation) &&
-                            (uint32_t)systems->data()[i]->getRace() == race) {
+                            (uint32_t) systems->data()[i]->getRace() == race) {
                             ok = true;
                             break;
                         }
@@ -415,37 +495,37 @@ Mission *Generator::createMission(Agent *agent,
         amount = random->nextInt() + 5;
     } else {
         switch (type) {
-        case 0:
-            itemId = random->nextInt();
-            amount = (int)(((float)difficulty / 10.0f) * 35.0f) + 5;
-            break;
-        case 2:
-            amount = (int)((float)random->nextInt()) + 2;
-            break;
-        case 3:
-        case 5:
-            itemId = type == 3 ? 0x74 : 0x75;
-            amount = (int)(((float)difficulty / 10.0f) * 8.0f) + 2;
-            break;
-        case 0xb:
-            amount = (int)(((float)difficulty / 10.0f) * 18.0f) + 2;
-            break;
-        case 0xf:
-            amount = random->nextInt() + 30;
-            for (uint32_t i = 0; i < systems->size(); ++i) {
-                if (systems->data()[i]->stationIsInSystem(targetStation)) {
-                    int *prob =
-                        (int *)gGalaxy
-                            ->getAsteroidProbabilities(status->getStation());
-                    itemId = prob[random->nextInt() * 2];
-                    break;
+            case 0:
+                itemId = random->nextInt();
+                amount = (int) (((float) difficulty / 10.0f) * 35.0f) + 5;
+                break;
+            case 2:
+                amount = (int) ((float) random->nextInt()) + 2;
+                break;
+            case 3:
+            case 5:
+                itemId = type == 3 ? 0x74 : 0x75;
+                amount = (int) (((float) difficulty / 10.0f) * 8.0f) + 2;
+                break;
+            case 0xb:
+                amount = (int) (((float) difficulty / 10.0f) * 18.0f) + 2;
+                break;
+            case 0xf:
+                amount = random->nextInt() + 30;
+                for (uint32_t i = 0; i < systems->size(); ++i) {
+                    if (systems->data()[i]->stationIsInSystem(targetStation)) {
+                        int *prob =
+                                (int *) gGalaxy
+                                ->getAsteroidProbabilities(status->getStation());
+                        itemId = prob[random->nextInt() * 2];
+                        break;
+                    }
                 }
-            }
-            break;
-        default:
-            amount = 0;
-            itemId = 0;
-            break;
+                break;
+            default:
+                amount = 0;
+                itemId = 0;
+                break;
         }
     }
 
@@ -454,47 +534,48 @@ Mission *Generator::createMission(Agent *agent,
     }
 
     SolarSystem *from =
-        systems->data()[status->getStation()->getSystem()];
+            systems->data()[status->getStation()->getSystem()];
     SolarSystem *to = systems->data()
-        [((Station *)(intptr_t)gGalaxy
-              ->getStation(targetStation))->getSystem()];
-    int distance = (int)gGalaxy->distance(to, from);
-    float reward = ((float)distance / 1000.0f + 1.0f) *
-                   (float)((int)(((float)difficulty / 10.0f) * 1400.0f) +
-                           1500);
+    [((Station *) (intptr_t) gGalaxy
+        ->getStation(targetStation))->getSystem()];
+    int distance = (int) gGalaxy->distance(to, from);
+    float reward = ((float) distance / 1000.0f + 1.0f) *
+                   (float) ((int) (((float) difficulty / 10.0f) * 1400.0f) +
+                            1500);
     if (type == 9) {
         reward *= 0.25f;
     } else if (type == 7) {
         reward *= 0.5f;
     } else if (type == 8) {
-        reward = (float)(amount * (*g_Generator_missionItems)
-                                      ->data()[itemId]
-                                      ->getSinglePrice()) *
+        reward = (float) (amount * (*g_Generator_missionItems)
+                          ->data()[itemId]
+                          ->getSinglePrice()) *
                  1.2f;
     } else if (type == 3 || type == 5) {
         reward += reward;
     } else if (type == 0xb) {
-        reward = reward * 0.4f + ((reward * 0.4f) / 5.0f) * (float)amount;
+        reward = reward * 0.4f + ((reward * 0.4f) / 5.0f) * (float) amount;
     }
 
     int level = status->getLevel();
-    reward += (float)(level * level * level * 10);
+    reward += (float) (level * level * level * 10);
 
     int bonus = 0;
     if ((type | 4) != 0xc) {
-        Standing *standing = (Standing *)(intptr_t)status->getStanding();
+        Standing *standing = (Standing *) (intptr_t) status->getStanding();
         int rawBonus =
-            (int)(reward * standing->getMissionBonus(agent->getRace()));
+                (int) (reward * standing->getMissionBonus(agent->getRace()));
         bonus = rawBonus + rawBonus % 50;
         if (bonus % 50 != 0) {
             bonus = rawBonus - rawBonus % 50;
         }
     }
 
-    int rewardInt = (int)reward;
+    int rewardInt = (int) reward;
     int remainder = rewardInt % 50;
-    rewardInt = ((rewardInt + remainder) % 50 == 0) ? rewardInt + remainder
-                                                    : rewardInt - remainder;
+    rewardInt = ((rewardInt + remainder) % 50 == 0)
+                    ? rewardInt + remainder
+                    : rewardInt - remainder;
 
     Mission *mission = new Mission();
     AbyssEngine::String missionName;
@@ -503,7 +584,7 @@ Mission *Generator::createMission(Agent *agent,
 
     int costs = rewardInt / 10 + random->nextInt();
     if (type == 8) {
-        costs = (int)((float)costs * 0.5f);
+        costs = (int) ((float) costs * 0.5f);
     } else if (type == 6) {
         AbyssEngine::String targetName = gGlobals->getRandomName(0, true);
         mission->setTargetName(targetName);
@@ -528,18 +609,36 @@ Mission *Generator::createMission(Agent *agent,
     return mission;
 }
 
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_nameSource;
-extern "C" __attribute__((visibility("hidden"))) ImageFactory **volatile
-    g_Generator_imageFactory;
-extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
-    g_Generator_agentItems;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_nameSource;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+ImageFactory **volatile
+g_Generator_imageFactory;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Item *> **volatile
+g_Generator_agentItems;
 
 Agent *Generator::createAgent(Station *station) {
     Status *status = gStatus;
     AbyssEngine::AERandom *random = gRandom;
 
-    int race = ((SolarSystem *)(intptr_t)status->getSystem())->getRace();
+    int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
     if (random->nextInt() < 20) {
         race = random->nextInt();
     }
@@ -583,9 +682,9 @@ Agent *Generator::createAgent(Station *station) {
     if (agent->getOffer() == 6) {
         uint32_t count = random->nextInt();
         Array<AbyssEngine::String *> *friendNames =
-            new Array<AbyssEngine::String *>();
+                new Array<AbyssEngine::String *>();
         friendNames->resize(count);
-        for (int i = 0; i < (int)count; ++i) {
+        for (int i = 0; i < (int) count; ++i) {
             AbyssEngine::String *friendName = new AbyssEngine::String(
                 gGlobals->getRandomName(agent->getRace(), true));
             friendNames->data()[i] = friendName;
@@ -616,25 +715,51 @@ Agent *Generator::createAgent(Station *station) {
         } else {
             amount += 5;
         }
-        float factor = (float)(random->nextInt() + 0x28) / 100.0f;
+        float factor = (float) (random->nextInt() + 0x28) / 100.0f;
         int price = item->getSinglePrice();
         agent->setSellItemData(selected, amount,
-                               amount * (int)(factor * (float)price));
+                               amount * (int) (factor * (float) price));
     }
 
     return agent;
 }
 
-extern "C" __attribute__((visibility("hidden"))) Array<Ship *> **volatile
-    g_Generator_allShips;
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_shipRaces[0x40];
-extern "C" __attribute__((visibility("hidden"))) uint8_t *volatile
-    g_Generator_shipFlags;
-extern "C" __attribute__((visibility("hidden"))) void **volatile
-    g_Generator_wantedList;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Ship *> **volatile
+g_Generator_allShips;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_shipRaces[0x40];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+uint8_t *volatile
+g_Generator_shipFlags;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+void **volatile
+g_Generator_wantedList;
 
-static inline __attribute__((always_inline)) void
+static inline __attribute__ ((always_inline))
+
+void
 addShip(Array<Ship *> *list, Ship *base, int race) {
     Ship *ship = base->makeShip(-1);
     list->push_back(ship);
@@ -673,13 +798,13 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             }
         }
         if (g_Generator_shipFlags[0x37] != 0) {
-            Array<void *> *wanted = *(Array<void *> **)*g_Generator_wantedList;
+            Array<void *> *wanted = *(Array<void *> **) *g_Generator_wantedList;
             if (wanted != nullptr && wanted->size() != 0) {
                 const int offsets[4] = {0x18, 0x30, 0x48, 0x60};
                 const int ships[4] = {0x2d, 0x2e, 0x2f, 0x30};
                 for (int i = 0; i != 4; ++i) {
-                    void *w = *(void **)((char *)wanted->data() + offsets[i]);
-                    if (((Wanted *)w)->isTerminated()) {
+                    void *w = *(void **) ((char *) wanted->data() + offsets[i]);
+                    if (((Wanted *) w)->isTerminated()) {
                         addShip(result, allShips->data()[ships[i]], 8);
                     }
                 }
@@ -688,7 +813,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         return result;
     }
 
-    int race = ((SolarSystem *)(intptr_t)status->getSystem())->getRace();
+    int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
     bool gold = station->getIndex() == 10 &&
                 gAchievements->gotAllGoldMedals();
     int stationIndex = station->getIndex();
@@ -717,7 +842,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         while (!unique) {
             if (!forced && (stationIndex != 0x4e || !first)) {
                 shipIndex =
-                    gGlobals->getRandomEnemyFighter(race);
+                        gGlobals->getRandomEnemyFighter(race);
             }
             if (count > 1 &&
                 gRandom->nextInt() < 0x16) {
@@ -809,20 +934,62 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
 typedef Item *(*ItemFactory)(Item *, int, int);
 
-extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
-    g_Generator_allItems;
-extern "C" __attribute__((visibility("hidden"))) ItemFactory volatile
-    g_Generator_introFactory;
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_jumpDriveBoost;
-extern "C" __attribute__((visibility("hidden"))) int *volatile
-    g_Generator_weaponBoost;
-extern "C" __attribute__((visibility("hidden"))) uint8_t *volatile
-    g_Generator_unlockFlags;
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_kaamoAllowed[10];
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_blockedItems[9];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Item *> **volatile
+g_Generator_allItems;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+ItemFactory volatile
+g_Generator_introFactory;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_jumpDriveBoost;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int *volatile
+g_Generator_weaponBoost;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+uint8_t *volatile
+g_Generator_unlockFlags;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_kaamoAllowed[10];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_blockedItems[9];
 
 Array<Item *> *Generator::getItemBuyList(Station *station) {
     Status *status = gStatus;
@@ -877,7 +1044,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
     AbyssEngine::AERandom *random = gRandom;
     float campaignFactor =
-        (float)(status->getCurrentCampaignMission() + 0x19) / 100.0f;
+            (float) (status->getCurrentCampaignMission() + 0x19) / 100.0f;
     if (campaignFactor > 1.5f) {
         campaignFactor = 1.5f;
     }
@@ -913,15 +1080,15 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
         int occurrence = item->getOccurence();
         if (item->getIndex() == 0x7a && *g_Generator_jumpDriveBoost != 0) {
-            occurrence = (int)((float)occurrence +
-                               (float)(occurrence *
-                                       *g_Generator_jumpDriveBoost) *
-                                   0.05f);
+            occurrence = (int) ((float) occurrence +
+                                (float) (occurrence *
+                                         *g_Generator_jumpDriveBoost) *
+                                0.05f);
         }
         if (item->getType() == 1 && *g_Generator_weaponBoost != 0) {
             occurrence =
-                (int)((float)occurrence +
-                      (float)(occurrence * *g_Generator_weaponBoost) * 0.05f);
+                    (int) ((float) occurrence +
+                           (float) (occurrence * *g_Generator_weaponBoost) * 0.05f);
         }
 
         int sort = item->getSort();
@@ -947,9 +1114,9 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
                     (sort != 0x1d || status->inBlackMarketSystem() != 0)) {
                     int roll = random->nextInt();
                     occurrence =
-                        (int)((float)roll +
-                              ((float)item->getTecLevel() / -10.0f + 1.0f) *
-                                  30.0f);
+                            (int) ((float) roll +
+                                   ((float) item->getTecLevel() / -10.0f + 1.0f) *
+                                   30.0f);
                 }
             }
         }
@@ -964,7 +1131,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
                 item->getSinglePrice() != 0) {
                 if (item->getAttribute(0x3c) == 1 &&
                     systems->data()[station->getSystem()]->getRace() !=
-                        1) {
+                    1) {
                     continue;
                 }
                 if (stationId != 0x6a && systemGood &&
@@ -996,7 +1163,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             continue;
         }
 
-        int randomGate = (int)(campaignFactor * (float)occurrence);
+        int randomGate = (int) (campaignFactor * (float) occurrence);
         if (!forcedStation) {
             if ((itemTec > stationTec && !systemGood) ||
                 random->nextInt() >= randomGate) {
@@ -1015,15 +1182,15 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
         int stationX = systems->data()[stationSystem]->getX();
         int stationY = systems->data()[stationSystem]->getY();
         int distance =
-            galaxy->invDistancePercent(stationX, stationY, minX, minY);
+                galaxy->invDistancePercent(stationX, stationY, minX, minY);
         int amount = random->nextInt() + 5;
 
         if (item->getType() == 4 || item->getType() == 1) {
             if (item->getIndex() != 0x6d && item->getType() == 4) {
                 if (distance > 0x32) {
                     float hard = status->hardCoreMode() ? 2.0f : 20.0f;
-                    int scaled = (int)(((float)(distance - 0x32) / 100.0f) *
-                                       hard);
+                    int scaled = (int) (((float) (distance - 0x32) / 100.0f) *
+                                        hard);
                     if (scaled < 2) {
                         scaled = 1;
                     }
@@ -1049,10 +1216,22 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     return result;
 }
 
-extern "C" __attribute__((visibility("hidden"))) Array<Item *> **volatile
-    g_Generator_lootItems;
-extern "C" __attribute__((visibility("hidden"))) int volatile
-    g_Generator_typeChances[8];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+Array<Item *> **volatile
+g_Generator_lootItems;
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+int volatile
+g_Generator_typeChances[8];
 
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
@@ -1065,7 +1244,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     Array<Item *> **itemsPtr = g_Generator_lootItems;
     Array<Item *> *itemsForOccurence = *itemsPtr;
     Array<Item *> *items = *itemsPtr;
-    int itemCount = (int)itemsForOccurence->size();
+    int itemCount = (int) itemsForOccurence->size();
 
     int pairCount = gRandom->nextInt();
     if (gRandom->nextInt() == 0) {
@@ -1092,7 +1271,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
                 gRandom->nextInt() < g_Generator_typeChances[type]) {
                 int roll = gRandom->nextInt();
                 int occurrence =
-                    itemsForOccurence->data()[selected]->getOccurence();
+                        itemsForOccurence->data()[selected]->getOccurence();
                 if (roll < occurrence && item->getSinglePrice() >= 1) {
                     found = true;
                     if ((uint32_t)(selected - 0xd9) < 2 || selected == 0xa4 ||
@@ -1133,8 +1312,14 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     return result;
 }
 
-extern "C" __attribute__((visibility("hidden"))) const volatile int
-    kaamoSpecialItems[9];
+extern "C" __attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+const volatile int
+kaamoSpecialItems[9];
 
 bool Generator::isKaamoSpecialItem(int item) {
     for (uint32_t i = 0;;) {

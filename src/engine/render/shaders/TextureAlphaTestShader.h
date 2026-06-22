@@ -6,45 +6,45 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
 
-class Mesh;
+    class TextureAlphaTestShader : public ShaderBaseStruct {
+    public:
+        int alphaProgram; // GL program handle (alpha-test variant, index 1)
 
-// AbyssEngine::TextureAlphaTestShader — GLES2 texture shader with an optional alpha-test variant.
-// Derives from ShaderBaseStruct and owns two GL programs: the opaque program (in the base
-// ShaderBaseStruct::program, index 0) and the alpha-test program (alphaProgram, index 1). Every
-// cached attribute/uniform location is a 2-element array indexed by program (0 = opaque,
-// 1 = alpha).
-class TextureAlphaTestShader : public ShaderBaseStruct {
-public:
-    int alphaProgram;          // GL program handle (alpha-test variant, index 1)
+        int aPositionLoc[2]; // a_Position
+        int aTexCoordLoc[2]; // a_TexCoord
+        int uMVPMatrixLoc[2]; // u_MVPMatrix
+        int uColorLoc[2]; // u_Color
+        int uTextureLoc[2]; // u_Texture
+        int uLightPosLoc[2]; // u_LightPos
+        int uAmbientLoc[2]; // u_Ambient
+        int uDiffuseLoc[2]; // u_Diffuse
+        int uSamplerLoc[2]; // u_Sampler
+        int uFogColorLoc[2]; // u_FogColor
 
-    int aPositionLoc[2];       // a_Position
-    int aTexCoordLoc[2];       // a_TexCoord
-    int uMVPMatrixLoc[2];      // u_MVPMatrix
-    int uColorLoc[2];          // u_Color
-    int uTextureLoc[2];        // u_Texture
-    int uLightPosLoc[2];       // u_LightPos
-    int uAmbientLoc[2];        // u_Ambient
-    int uDiffuseLoc[2];        // u_Diffuse
-    int uSamplerLoc[2];        // u_Sampler
-    int uFogColorLoc[2];       // u_FogColor
+        // Snapshot of ShaderBaseStruct::shaderIndexIntern taken at construction.
+        static int ShaderIndex;
 
-    // Snapshot of ShaderBaseStruct::shaderIndexIntern taken at construction.
-    static int ShaderIndex;
+        TextureAlphaTestShader();
 
-    TextureAlphaTestShader();
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void ConnectShaderComponents(unsigned int program, int index);
-    void UseShader(bool useExtra) override;
-};
+        void Init(Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+
+        void ConnectShaderComponents(unsigned int program, int index);
+
+        void UseShader(bool useExtra) override;
+    };
 } // namespace AbyssEngine
 
 #endif

@@ -4,63 +4,50 @@
 
 #include <cstdlib>
 
-// Android touch-input bridge state (binary .bss). curTouchSize/maxTouchSize are the
-// live and allocated touch counts; touches is the base of the Touch buffer (grown by
-// realloc). All three are populated by the JNI input layer.
-extern "C" int    curTouchSize;
-extern "C" int    maxTouchSize;
+extern "C" int curTouchSize;
+extern "C" int maxTouchSize;
 extern "C" Touch *touches;
 
-// Engine camera/canvas helpers (resolved against the active PaintCanvas).
 uint32_t CameraGetCurrent(void *canvas);
-Matrix  *CameraGetLocal(void *canvas, uint32_t index);
 
-// Engine singletons; a later externs pass will give these their real types.
-extern PaintCanvas **g_LOD_canvas;  // *g_LOD_canvas = PaintCanvas*
-extern void  *g_LOD_settings;  // float at +0x28 = LOD distance factor
+Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
-LODManager::LODManager()
-{
+extern PaintCanvas **g_LOD_canvas; // *g_LOD_canvas = PaintCanvas*
+extern void *g_LOD_settings; // float at +0x28 = LOD distance factor
+
+LODManager::LODManager() {
     this->cameraPos.x = 0;
     this->cameraPos.y = 0;
     this->cameraPos.z = 0;
     this->timer = 0x3e9;
-    this->objects = new Array<AEGeometry*>();
+    this->objects = new Array<AEGeometry *>();
 }
 
-LODManager::~LODManager()
-{
+LODManager::~LODManager() {
     delete this->objects;
     this->objects = nullptr;
 }
 
-// Register a geometry for LOD tracking, but only if it actually has LOD levels.
-void LODManager::addObject(AEGeometry *g)
-{
+void LODManager::addObject(AEGeometry *g) {
     if (!g->hasLod())
         return;
     ArrayAdd(g, *this->objects);
 }
 
-// Erase the matching geometry from the managed object list.
-void LODManager::removeObject(AEGeometry *g)
-{
+void LODManager::removeObject(AEGeometry *g) {
     for (uint32_t i = 0; i < this->objects->size(); i++) {
-        Array<AEGeometry*> *arr = this->objects;
+        Array<AEGeometry *> *arr = this->objects;
         if ((*arr)[i] == g)
             ArrayRemove(g, *arr);
     }
 }
 
-// Recompute the camera position from the active camera transform and refresh the
-// LOD level of every registered geometry.
-void LODManager::forceUpdate(int dt, bool useParent)
-{
+void LODManager::forceUpdate(int dt, bool useParent) {
     void *canvas = *g_LOD_canvas;
-    float factor = *(float*)((char*)g_LOD_settings + 0x28);
+    float factor = *(float *) ((char *) g_LOD_settings + 0x28);
 
     uint32_t cam = CameraGetCurrent(canvas);
-    Matrix  *m   = CameraGetLocal(canvas, cam);
+    Matrix *m = CameraGetLocal(canvas, cam);
     this->cameraPos = AEMath::MatrixGetPosition(*m);
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
@@ -70,10 +57,7 @@ void LODManager::forceUpdate(int dt, bool useParent)
     }
 }
 
-// Drive the periodic LOD refresh: accumulate elapsed time and force an update
-// once roughly a second has passed.
-void LODManager::update(int dt)
-{
+void LODManager::update(int dt) {
     this->timer += dt;
     if (this->timer > 1000) {
         this->timer = 0;
@@ -81,14 +65,7 @@ void LODManager::update(int dt)
     }
 }
 
-// ---------------------------------------------------------------------------
-// Android touch-input bridge
-// ---------------------------------------------------------------------------
-
-// Append a touch point. Grows the buffer (exact-fit realloc, one slot at a time)
-// only when the live count has caught up with the allocated count.
-void AddTouch(int x, int y, int id, int action)
-{
+void AddTouch(int x, int y, int id, int action) {
     int index = curTouchSize;
     curTouchSize = index + 1;
 
@@ -108,31 +85,18 @@ void AddTouch(int x, int y, int id, int action)
     slot->action = action;
 }
 
-// Current number of live touch points.
-int GetTouchCount()
-{
+int GetTouchCount() {
     return curTouchSize;
 }
 
-// Drop all touch points (the buffer is retained for reuse).
-void RemoveTouches()
-{
+void RemoveTouches() {
     curTouchSize = 0;
 }
 
-// Fetch the touch point at the given index (returned by value).
-Touch GetTouch(int index)
-{
+Touch GetTouch(int index) {
     return touches[index];
 }
 
-// ---------------------------------------------------------------------------
-// Native item-information list teardown
-// ---------------------------------------------------------------------------
-
-// The 25 native item-information list pointers live as static members of Globals
-// (binary .bss 0x228314..); they are not declared in Globals.h, so reach them here
-// through their exact mangled symbols. Each holds a malloc'd id buffer (or null).
 extern int g_cItemListID_00 asm("_ZN7Globals14cItemListID_00E");
 extern int g_cItemListID_01 asm("_ZN7Globals14cItemListID_01E");
 extern int g_cItemListID_02 asm("_ZN7Globals14cItemListID_02E");
@@ -159,11 +123,7 @@ extern int g_cItemListID_22 asm("_ZN7Globals14cItemListID_22E");
 extern int g_cItemListID_23 asm("_ZN7Globals14cItemListID_23E");
 extern int g_cItemListID_24 asm("_ZN7Globals14cItemListID_24E");
 
-// Release all five native item-information string lists and reset their slots.
-// Each list is five item-info id buffers freed all-or-nothing: only when every one
-// of the five is live are they released and their slots nulled.
-extern "C" void ndk_resetNativeItemInformationList()
-{
+extern "C" void ndk_resetNativeItemInformationList() {
     if (g_cItemListID_00 != 0 && g_cItemListID_01 != 0 && g_cItemListID_02 != 0 &&
         g_cItemListID_03 != 0 && g_cItemListID_04 != 0) {
         operator delete[](reinterpret_cast<void *>(g_cItemListID_00));

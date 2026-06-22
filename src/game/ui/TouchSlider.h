@@ -2,7 +2,6 @@
 #define GOF2_TOUCHSLIDER_H
 #include <cstdint>
 
-// A draggable horizontal slider control with an image track and knob.
 class TouchSlider {
 public:
     int x;
@@ -23,17 +22,29 @@ public:
     int touchPadding;
 
     TouchSlider(int type, int x, int y, float value);
+
     ~TouchSlider();
+
     void setPosition(int x, int y);
+
     int getWidth();
+
     void setFixedScale(int numSteps);
+
     int OnTouchBegin(int x, int y);
+
     int OnTouchEnd(int x, int y);
+
     bool OnTouchMove(int x, int y);
+
     void draw();
+
     float getValue();
+
     void setValue(float value);
+
     void setHalfTransparent(bool transparent);
+
     int touchedInside(int x, int y);
 };
 #endif

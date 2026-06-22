@@ -14,34 +14,74 @@
 #include "game/ui/Hud.h"
 #include "game/core/String.h"
 
-// Runtime singletons the original reaches through hidden global slots. They are
-// resolved engine objects (GameText / PaintCanvas / Status / Random), kept as
-// pointer-to-pointer externs in line with the rest of the port's global glue.
-__attribute__((visibility("hidden"))) extern GameText                     **g_playerWormHole_text;
-__attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas      **g_playerWormHole_canvas;
-__attribute__((visibility("hidden"))) extern AbyssEngine::PaintCanvas      **g_playerWormHole_update_canvas;
-__attribute__((visibility("hidden"))) extern Status                        **g_playerWormHole_update_status;
-__attribute__((visibility("hidden"))) extern void                         **g_playerWormHole_update_random;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_playerWormHole_text;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern AbyssEngine::PaintCanvas **g_playerWormHole_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern AbyssEngine::PaintCanvas **g_playerWormHole_update_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern Status **g_playerWormHole_update_status;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_playerWormHole_update_random;
 
-// Random number source and the two unresolved engine helpers (relocate-target
-// lookup and the Level's far player accessor) are reached through ARM->Thumb
-// veneers that could not be tied back to a named method, so they remain as
-// typed indirect calls.
-typedef int   (*RandomNextIntFn)(void *random, int limit);
+typedef int (*RandomNextIntFn)(void *random, int limit);
+
 typedef PlayerEgo *(*GetPlayerFn)(Level *level);
 
-__attribute__((visibility("hidden"))) extern RandomNextIntFn g_playerWormHole_update_randomAlien;
-__attribute__((visibility("hidden"))) extern RandomNextIntFn g_playerWormHole_update_randomNormal;
-__attribute__((visibility("hidden"))) extern GetPlayerFn     g_playerWormHole_update_getPlayer;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern RandomNextIntFn g_playerWormHole_update_randomAlien;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern RandomNextIntFn g_playerWormHole_update_randomNormal;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GetPlayerFn g_playerWormHole_update_getPlayer;
 
-static inline int wormholeSign(int value)
-{
+static inline int wormholeSign(int value) {
     return value == 0 ? 1 : -1;
 }
 
 PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, float y, float z, bool visible)
-    : PlayerStaticFar(playerId, geometry, x, y, z)
-{
+    : PlayerStaticFar(playerId, geometry, x, y, z) {
     GameText *text = *g_playerWormHole_text;
     this->name = *text->getText(0x221);
     this->setVisible(visible);
@@ -49,71 +89,62 @@ PlayerWormHole::PlayerWormHole(int playerId, AEGeometry *geometry, float x, floa
 
     AbyssEngine::PaintCanvas *canvas = *g_playerWormHole_canvas;
     AbyssEngine::Transform *transform =
-        (AbyssEngine::Transform *)canvas->TransformGetTransform(this->geometry->transform);
-    transform->SetAnimationState((AbyssEngine::AnimationMode)2, 0);
+            (AbyssEngine::Transform *) canvas->TransformGetTransform(this->geometry->transform);
+    transform->SetAnimationState((AbyssEngine::AnimationMode) 2, 0);
 
     this->missionLock = 1;
     this->timer = 0;
     this->scale = 0x1000;
 }
 
-PlayerWormHole::~PlayerWormHole()
-{
+PlayerWormHole::~PlayerWormHole() {
 }
 
-bool PlayerWormHole::isShrinking()
-{
+bool PlayerWormHole::isShrinking() {
     return this->timer > 60000;
 }
 
-int PlayerWormHole::open()
-{
+int PlayerWormHole::open() {
     this->timer = -3000;
     this->scale = 0;
-    return (int)(intptr_t)this;
+    return (int) (intptr_t) this;
 }
 
-PlayerWormHole::Vector PlayerWormHole::getPosition()
-{
-    Vector result = {(float)this->positionX, (float)this->positionY, (float)this->positionZ};
+PlayerWormHole::Vector PlayerWormHole::getPosition() {
+    Vector result = {(float) this->positionX, (float) this->positionY, (float) this->positionZ};
     return result;
 }
 
-void PlayerWormHole::freeMissionLock()
-{
+void PlayerWormHole::freeMissionLock() {
     this->missionLock = 0;
 }
 
-void PlayerWormHole::render()
-{
+void PlayerWormHole::render() {
     if (!this->visibleFlag)
         return;
     this->geometry->render();
 }
 
-void PlayerWormHole::reset(bool shrinking)
-{
+void PlayerWormHole::reset(bool shrinking) {
     this->timer = shrinking ? 59000 : 0;
     this->scale = 0x1000;
 }
 
-void PlayerWormHole::setPosition(float x, float y, float z)
-{
+void PlayerWormHole::setPosition(float x, float y, float z) {
     this->posX = x;
     this->posY = y;
     this->posZ = z;
-    this->positionX = (int)x;
-    this->positionY = (int)y;
-    this->positionZ = (int)z;
+    this->positionX = (int) x;
+    this->positionY = (int) y;
+    this->positionZ = (int) z;
     this->geometry->setPosition(x, y, z);
 }
 
-void PlayerWormHole::update(int elapsed)
-{
+void PlayerWormHole::update(int elapsed) {
     AbyssEngine::PaintCanvas *canvas = *g_playerWormHole_update_canvas;
     AbyssEngine::Transform *transform =
-        (AbyssEngine::Transform *)canvas->TransformGetTransform(this->geometry->transform);
-    transform->Update((long long)elapsed, false);
+            (AbyssEngine::Transform *) canvas->TransformGetTransform(this->geometry->transform);
+    transform->Update((long long) elapsed, false);
 
     if (!this->visibleFlag)
         return;
@@ -122,7 +153,7 @@ void PlayerWormHole::update(int elapsed)
     int time = this->timer;
 
     if (time < 0) {
-        this->scale = 0x1000 - (int)(((float)-time / 3000.0f) * 4096.0f);
+        this->scale = 0x1000 - (int) (((float) -time / 3000.0f) * 4096.0f);
     } else if (time > 60000) {
         Status *status = *g_playerWormHole_update_status;
         int mission = status->getCurrentCampaignMission();
@@ -141,11 +172,11 @@ void PlayerWormHole::update(int elapsed)
             }
         }
 
-        this->scale = 0x1000 - (int)(((float)(current - 60000) / 3000.0f) * 4096.0f);
+        this->scale = 0x1000 - (int) (((float) (current - 60000) / 3000.0f) * 4096.0f);
 
         if (current > 63000) {
             bool stationUnderAttack =
-                status->inAlienOrbit() || status->getStation()->isAttackedByAliens();
+                    status->inAlienOrbit() || status->getStation()->isAttackedByAliens();
             if (!stationUnderAttack) {
                 this->visibleFlag = 0;
                 this->geometry->setVisible(false);
@@ -153,7 +184,7 @@ void PlayerWormHole::update(int elapsed)
             }
 
             bool closeWormhole =
-                this->missionLock != 0 && mission == 0x2a && !status->inAlienOrbit();
+                    this->missionLock != 0 && mission == 0x2a && !status->inAlienOrbit();
             if (closeWormhole) {
                 this->visibleFlag = 0;
                 this->geometry->setVisible(false);
@@ -177,19 +208,19 @@ void PlayerWormHole::update(int elapsed)
             }
 
             if (mission == 0x1d || mission == 0x29) {
-                PlayerEgo *ego = (PlayerEgo *)(intptr_t)this->level->getPlayer();
+                PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
                 this->cameraPosition = ego->getPosition();
-                x = (int)(this->cameraPosition.x + (float)x * 1.7f + (float)x);
-                y = (int)(this->cameraPosition.y + (float)y * 1.7f + (float)y);
-                z = (int)(this->cameraPosition.z + (float)z * 1.7f + (float)z);
+                x = (int) (this->cameraPosition.x + (float) x * 1.7f + (float) x);
+                y = (int) (this->cameraPosition.y + (float) y * 1.7f + (float) y);
+                z = (int) (this->cameraPosition.z + (float) z * 1.7f + (float) z);
             }
 
-            this->setPosition((float)x, (float)y, (float)z);
+            this->setPosition((float) x, (float) y, (float) z);
 
-            PlayerEgo *ego = (PlayerEgo *)(intptr_t)this->level->getPlayer();
+            PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
             if (ego->goingToWormhole()) {
                 PlayerEgo *target = g_playerWormHole_update_getPlayer(this->level);
-                Hud *hud = (Hud *)(intptr_t)target->getHUD();
+                Hud *hud = (Hud *) (intptr_t) target->getHUD();
                 target = g_playerWormHole_update_getPlayer(this->level);
                 hud->hudEvent(6, target, 0);
                 target = g_playerWormHole_update_getPlayer(this->level);
@@ -203,9 +234,10 @@ void PlayerWormHole::update(int elapsed)
     canvas = *g_playerWormHole_update_canvas;
     unsigned int currentCamera = canvas->CameraGetCurrent();
     this->cameraPosition =
-        AbyssEngine::AEMath::MatrixGetPosition(*(AbyssEngine::AEMath::Matrix *)canvas->CameraGetLocal(currentCamera));
+            AbyssEngine::AEMath::MatrixGetPosition(
+                *(AbyssEngine::AEMath::Matrix *) canvas->CameraGetLocal(currentCamera));
 
-    float scale = (float)(this->scale << 4) * 0.0000152587890625f;
+    float scale = (float) (this->scale << 4) * 0.0000152587890625f;
     this->geometry->setScaling(scale);
 
     this->viewDirection = this->geometry->getPosition();

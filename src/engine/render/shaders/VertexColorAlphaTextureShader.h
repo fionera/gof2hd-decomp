@@ -6,42 +6,41 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// AbyssEngine::VertexColorAlphaTextureShader — GLES2 shader with per-vertex color +
-// alpha (derives from ShaderBaseStruct). The GL program handle lives in the base
-// (ShaderBaseStruct::program); this class caches its six vertex attribute locations
-// and nine uniform locations at its tail.
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    struct Mesh;
 
-struct Mesh;
+    class VertexColorAlphaTextureShader : public ShaderBaseStruct {
+    public:
+        int attrib1; // a1
+        int attrib2; // a2
+        int attrib3; // a3
+        int attrib4; // a4
+        int attrib5; // a5
+        int attrib0; // a0
+        int uniform0; // u0
+        int uniform1; // u1
+        int uniform2; // u2
+        int uniform3; // u3
+        int uniform4; // u4
+        int uniform5; // u5
+        int uniform6; // u6
+        int uniform7; // u7
+        int uniform8; // u8
 
-class VertexColorAlphaTextureShader : public ShaderBaseStruct {
-public:
-    int attrib1;       // a1
-    int attrib2;       // a2
-    int attrib3;       // a3
-    int attrib4;       // a4
-    int attrib5;       // a5
-    int attrib0;       // a0
-    int uniform0;      // u0
-    int uniform1;      // u1
-    int uniform2;      // u2
-    int uniform3;      // u3
-    int uniform4;      // u4
-    int uniform5;      // u5
-    int uniform6;      // u6
-    int uniform7;      // u7
-    int uniform8;      // u8
+        VertexColorAlphaTextureShader();
 
-    VertexColorAlphaTextureShader();
-    void Init(Engine *engine) override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void SetInActive() override;
-};
+        void Init(Engine *engine) override;
 
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+
+        void SetInActive() override;
+    };
 } // namespace AbyssEngine
 
 #endif

@@ -11,110 +11,132 @@ using longlong = int64_t;
 using ulonglong = uint64_t;
 
 namespace AbyssEngine {
+    class Camera;
+    class KeyFrame;
+    class Mesh;
+    class Transform;
 
-class Camera;
-class KeyFrame;
-class Mesh;
-class Transform;
+    namespace AEMath {
+        struct BSphere {
+            Vector center;
+            float radius;
+            float radius2;
 
-namespace AEMath {
+            BSphere &operator=(const BSphere &other);
 
-// Bounding sphere as laid out inside a Transform (center / radius / squared-radius).
-// Distinct from the engine-wide BSphere.h variant, whose field naming does not match
-// this node's in-place bounds storage.
-struct BSphere {
-    Vector center;
-    float radius;
-    float radius2;
+            void Merge(const BSphere &other);
+        };
+    } // namespace AEMath
 
-    BSphere &operator=(const BSphere &other);
-    void Merge(const BSphere &other);
-};
+    enum AnimationMode {
+        AnimationMode_0 = 0
+    };
 
-} // namespace AEMath
+    int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, Camera *camera);
 
-enum AnimationMode {
-    AnimationMode_0 = 0
-};
+    class Transform {
+    public:
+        AEMath::Matrix worldMatrix; // final world matrix; InCameraVF reads it as *(Matrix*)this
+        int color; // packed RGBA (per-channel alpha)
+        uint32_t field_0x4c;
+        uint32_t field_0x50;
+        uint32_t field_0x54;
 
-// Frustum test used by Transform::InCameraVF (resolves to the engine's camera code).
-int CameraIsSphereinViewFrustum(const AEMath::Vector &center, float radius, Camera *camera);
+        union {
+            int renderMode;
+            int field_0x58;
+        }; // +0x58 render mode/flag (ctor sets 2); PlayerTurret reads field_0x58
+        AEMath::Matrix rotationMatrix; // rotation part (Quaternion::Convert)
+        AEMath::Matrix localMatrix; // composed local transform
+        AEMath::Vector boundingCenter;
+        float boundingRadius;
+        float boundingRadius2; // +0xe4 squared radius (BSphere::radius2); also tracks max animated scale
+        int animationStart;
+        bool visible;
+        bool animating;
+        float animationSpeed;
+        longlong animationLength;
+        longlong rangeStart;
+        longlong rangeEnd;
+        longlong currentTime;
+        int currentKeyFrameIndex;
+        // Per the binary (Transform ctor/dtor construct/destruct these in place), the mesh / child /
+        // keyframe lists are EMBEDDED Array<T> objects (count+data+cap inline), not pointers: the ctor
+        // does Array<Mesh*>::Array(&this->meshes) and the dtor ~Array<Mesh*>(&this->meshes). meshes are
+        // at +0x3c, children at +0x4c, keyFrames at +0x11c in the 32-bit layout.
+        Transform *parent; // +0x34 scene-graph parent
+        int id; // +0x48
+        Array<Mesh *> meshes;
+        Array<Transform *> children;
+        Array<KeyFrame *> keyFrames;
+        Quaternion rotation; // current pose rotation
+        AEMath::Vector translation; // current pose translation
+        AEMath::Vector scale; // current pose scale
+        Quaternion localRotation; // secondary (local) rotation
+        AEMath::Vector localTranslation; // secondary translation
+        AEMath::Vector localScale; // secondary scale
+        float alpha; // animated alpha value [0..1]
+        bool vfcEnabled;
+        bool keyFramesShared; // when true, keyFrames are not owned
 
-class Transform {
-public:
-    AEMath::Matrix worldMatrix;             // final world matrix; InCameraVF reads it as *(Matrix*)this
-    int color;                              // packed RGBA (per-channel alpha)
-    uint32_t field_0x4c;
-    uint32_t field_0x50;
-    uint32_t field_0x54;
-    union { int renderMode; int field_0x58; }; // +0x58 render mode/flag (ctor sets 2); PlayerTurret reads field_0x58
-    AEMath::Matrix rotationMatrix;          // rotation part (Quaternion::Convert)
-    AEMath::Matrix localMatrix;             // composed local transform
-    AEMath::Vector boundingCenter;
-    float boundingRadius;
-    float boundingRadius2;                   // +0xe4 squared radius (BSphere::radius2); also tracks max animated scale
-    int animationStart;
-    bool visible;
-    bool animating;
-    float animationSpeed;
-    longlong animationLength;
-    longlong rangeStart;
-    longlong rangeEnd;
-    longlong currentTime;
-    int currentKeyFrameIndex;
-    // Per the binary (Transform ctor/dtor construct/destruct these in place), the mesh / child /
-    // keyframe lists are EMBEDDED Array<T> objects (count+data+cap inline), not pointers: the ctor
-    // does Array<Mesh*>::Array(&this->meshes) and the dtor ~Array<Mesh*>(&this->meshes). meshes are
-    // at +0x3c, children at +0x4c, keyFrames at +0x11c in the 32-bit layout.
-    Transform* parent;                      // +0x34 scene-graph parent
-    int id;                                 // +0x48
-    Array<Mesh*> meshes;
-    Array<Transform*> children;
-    Array<KeyFrame*> keyFrames;
-    Quaternion rotation;                    // current pose rotation
-    AEMath::Vector translation;             // current pose translation
-    AEMath::Vector scale;                   // current pose scale
-    Quaternion localRotation;               // secondary (local) rotation
-    AEMath::Vector localTranslation;        // secondary translation
-    AEMath::Vector localScale;              // secondary scale
-    float alpha;                            // animated alpha value [0..1]
-    bool vfcEnabled;
-    bool keyFramesShared;                   // when true, keyFrames are not owned
+        // boundingCenter/boundingRadius/field_0xe4 are contiguous and laid out exactly
+        // like a BSphere; this exposes them as one so Update can Merge child bounds.
+        AEMath::BSphere &bounds() { return *(AEMath::BSphere *) &boundingCenter; }
 
-    // boundingCenter/boundingRadius/field_0xe4 are contiguous and laid out exactly
-    // like a BSphere; this exposes them as one so Update can Merge child bounds.
-    AEMath::BSphere &bounds() { return *(AEMath::BSphere *)&boundingCenter; }
+        Transform();
 
-    Transform();
-    Transform(Transform *other);
-    ~Transform();
-    void SetCurrentAnimationTime(longlong value);
-    void SetAnimationRangeInKeyFrames(int first, int last);
-    void SetVisible(bool value);
-    void SetVFCFlag(bool value);
-    void PauseAnimationWithKeyFrame(int index);
-    void PauseAnimationWithTimeStamp(longlong time);
-    void SetAnimationSpeed(float value);
-    void CollectAnimationData();
-    void InitAnimationRangeInTime();
-    int  IsRunning();
-    void UpdateKeyFrames(KeyFrame *keyFrame, int index);
-    void SetAnimationLength(longlong value);
-    void SetAnimationRangeInTime(longlong start, longlong end);
-    void InsertKeyFrame(KeyFrame *keyFrame, int index);
-    void InsertKeyFrame(unsigned int channel, float value);
-    void InsertKeyFrame(const float *values, longlong flags, int time);
-    void InsertKeyFrame_old(const float *values, longlong flags, int time);
-    void Update(longlong time, bool updateBounds);
-    void InternUpdate(longlong time, bool updateBounds);
-    int  DebugOut(int value);
-    void SetAnimationState(AnimationMode, void *);
-    void AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
-                     const AEMath::Vector &c, const AEMath::Vector &d,
-                     const AEMath::Vector &e, const AEMath::Vector &f,
-                     int time);
-    int  InCameraVF(AEMath::Matrix *matrix, Camera *camera);
-};
+        Transform(Transform *other);
 
+        ~Transform();
+
+        void SetCurrentAnimationTime(longlong value);
+
+        void SetAnimationRangeInKeyFrames(int first, int last);
+
+        void SetVisible(bool value);
+
+        void SetVFCFlag(bool value);
+
+        void PauseAnimationWithKeyFrame(int index);
+
+        void PauseAnimationWithTimeStamp(longlong time);
+
+        void SetAnimationSpeed(float value);
+
+        void CollectAnimationData();
+
+        void InitAnimationRangeInTime();
+
+        int IsRunning();
+
+        void UpdateKeyFrames(KeyFrame *keyFrame, int index);
+
+        void SetAnimationLength(longlong value);
+
+        void SetAnimationRangeInTime(longlong start, longlong end);
+
+        void InsertKeyFrame(KeyFrame *keyFrame, int index);
+
+        void InsertKeyFrame(unsigned int channel, float value);
+
+        void InsertKeyFrame(const float *values, longlong flags, int time);
+
+        void InsertKeyFrame_old(const float *values, longlong flags, int time);
+
+        void Update(longlong time, bool updateBounds);
+
+        void InternUpdate(longlong time, bool updateBounds);
+
+        int DebugOut(int value);
+
+        void SetAnimationState(AnimationMode, void *);
+
+        void AddKeyFrame(const AEMath::Vector &a, const AEMath::Vector &b,
+                         const AEMath::Vector &c, const AEMath::Vector &d,
+                         const AEMath::Vector &e, const AEMath::Vector &f,
+                         int time);
+
+        int InCameraVF(AEMath::Matrix *matrix, Camera *camera);
+    };
 } // namespace AbyssEngine
 #endif

@@ -6,34 +6,37 @@
 #include "aetypes.h"
 #include "engine/render/ShaderBaseStruct.h"
 
-// Engine is the global ::Engine type (defined in Engine.h); referenced by pointer only.
-namespace AbyssEngine { class Engine; }
+namespace AbyssEngine {
+    class Engine;
+}
+
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {
+    class Mesh;
+    class FBOContainer;
 
-class Mesh;
-class FBOContainer;
+    class DrawFBOShader : public ShaderBaseStruct {
+    public:
+        static int ShaderIndex;
 
-// AbyssEngine::DrawFBOShader — GLES2 full-screen FBO blit shader (derives from ShaderBaseStruct).
-class DrawFBOShader : public ShaderBaseStruct {
-public:
-    static int ShaderIndex;
+        int positionLoc; // attribute "position"
+        int worldViewMatrixLoc; // uniform "worldViewMatrix"
+        int texCoordLoc; // attribute "texCoord"
+        int textureLoc; // uniform "texture"
 
-    int positionLoc;            // attribute "position"
-    int worldViewMatrixLoc;     // uniform "worldViewMatrix"
-    int texCoordLoc;            // attribute "texCoord"
-    int textureLoc;             // uniform "texture"
+        DrawFBOShader();
 
-    DrawFBOShader();
-    ~DrawFBOShader();
+        ~DrawFBOShader();
 
-    void Init(Engine *engine) override;
-    void SetInActive() override;
-    void UpdateMeshData(Mesh *mesh, Engine *engine) override;
-    void RenderEffect(FBOContainer *fbo, Engine *engine) override;
-};
+        void Init(Engine *engine) override;
 
+        void SetInActive() override;
+
+        void UpdateMeshData(Mesh *mesh, Engine *engine) override;
+
+        void RenderEffect(FBOContainer *fbo, Engine *engine) override;
+    };
 } // namespace AbyssEngine
 
 #endif

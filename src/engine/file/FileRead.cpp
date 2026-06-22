@@ -12,27 +12,22 @@
 #include "game/mission/Mission.h"
 #include "engine/core/Array.h"
 
+FileRead::FileRead() {
+}
 
+FileRead::~FileRead() {
+}
 
-
-
-
-// FileRead carries no state of its own (every loadXxx() opens, reads and closes its file locally),
-// so both the constructor and destructor have empty bodies.
-FileRead::FileRead() {}
-FileRead::~FileRead() {}
-
-int32_t FileRead::loadStation(int32_t id)
-{
-    int16_t selected = (int16_t)id;
+int32_t FileRead::loadStation(int32_t id) {
+    int16_t selected = (int16_t) id;
     Array<Station *> *stations = loadStationsBinary(&selected, 1);
-    int32_t result = (int32_t)(intptr_t)stations->data()[0];
+    int32_t result = (int32_t)(intptr_t)
+    stations->data()[0];
     delete stations;
     return result;
 }
 
-int32_t FileRead::loadStationsBinary()
-{
+int32_t FileRead::loadStationsBinary() {
     String path("stations_binary.bin");
     if (AEFile::FileExist(path) != 0) {
         uint32_t handle;
@@ -55,8 +50,7 @@ int32_t FileRead::loadStationsBinary()
     return 0;
 }
 
-Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
-{
+Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id) {
     String path("weapon_positions.bin");
 
     Array<Array<Vector *> *> *positions = 0;
@@ -100,9 +94,9 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
                         positions->data()[type] = new Array<Vector *>();
                     }
                     Vector *pos = new Vector;
-                    pos->x = (float)x;
-                    pos->y = (float)z;
-                    pos->z = (float)-y;
+                    pos->x = (float) x;
+                    pos->y = (float) z;
+                    pos->z = (float) -y;
                     ArrayAdd<Vector *>(pos, *positions->data()[type]);
                     if (type == 3) {
                         Vector *extra = new Vector;
@@ -119,8 +113,7 @@ Array<Array<Vector *> *> *FileRead::loadWeaponPositions(int32_t id)
     return positions;
 }
 
-Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
-{
+Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
     String path("space_points.bin");
 
     Array<SpacePoint *> *points = 0;
@@ -133,10 +126,10 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
         do {
             AEFile::Read(current, handle);
             AEFile::Read(count, handle);
-            if ((uint32_t)current != (uint32_t)id) {
-                AEFile::Skip((uint32_t)count * 0x26, handle);
+            if ((uint32_t) current != (uint32_t) id) {
+                AEFile::Skip((uint32_t) count * 0x26, handle);
             }
-        } while ((uint32_t)current != (uint32_t)id);
+        } while ((uint32_t) current != (uint32_t) id);
 
         points = new Array<SpacePoint *>();
 
@@ -175,15 +168,15 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
             Matrix matrix;
             MatrixIdentity(matrix);
             Matrix rotation =
-                MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale, ROTATION_ORDER_XZY);
+                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale, ROTATION_ORDER_XZY);
             Vector direction = MatrixGetDir(rotation);
 
             uint32_t selected = 0;
             if (group != -1) {
                 selected = i >> 1;
             }
-            if (group == -1 || selected == (uint32_t)group) {
-                SpacePoint *point = new SpacePoint((int32_t)type, position, direction, (int32_t)i);
+            if (group == -1 || selected == (uint32_t) group) {
+                SpacePoint *point = new SpacePoint((int32_t) type, position, direction, (int32_t) i);
                 ArrayAdd<SpacePoint *>(point, *points);
             }
         }
@@ -192,8 +185,7 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group)
     return points;
 }
 
-Array<SolarSystem *> *FileRead::loadSystemsBinary()
-{
+Array<SolarSystem *> *FileRead::loadSystemsBinary() {
     String path("systems_binary.bin");
 
     Array<SolarSystem *> *systems = 0;
@@ -227,15 +219,15 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
             AEFile::ReadSwitched(e, handle);
             AEFile::ReadSwitched(f, handle);
 
-            AEFile::ReadSwitched((int32_t &)count, handle);
+            AEFile::ReadSwitched((int32_t &) count, handle);
             int32_t *routes = new int32_t[count];
-            for (int32_t j = 0; j < (int32_t)count; j++) {
+            for (int32_t j = 0; j < (int32_t) count; j++) {
                 AEFile::ReadSwitched(routes[j], handle);
             }
 
-            AEFile::ReadSwitched((int32_t &)count, handle);
+            AEFile::ReadSwitched((int32_t &) count, handle);
             Array<int32_t> *stations;
-            if ((int32_t)count < 1) {
+            if ((int32_t) count < 1) {
                 stations = 0;
             } else {
                 stations = new Array<int32_t>();
@@ -245,9 +237,9 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
                 }
             }
 
-            AEFile::ReadSwitched((int32_t &)count, handle);
+            AEFile::ReadSwitched((int32_t &) count, handle);
             Array<int32_t> *wrecks;
-            if ((int32_t)count < 1) {
+            if ((int32_t) count < 1) {
                 wrecks = 0;
             } else {
                 wrecks = new Array<int32_t>();
@@ -257,9 +249,9 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
                 }
             }
 
-            AEFile::ReadSwitched((int32_t &)count, handle);
+            AEFile::ReadSwitched((int32_t &) count, handle);
             Array<int32_t> *statics;
-            if ((int32_t)count < 1) {
+            if ((int32_t) count < 1) {
                 statics = 0;
             } else {
                 statics = new Array<int32_t>();
@@ -269,7 +261,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
                 }
             }
 
-            SolarSystem *system = new SolarSystem((int32_t)i, name, faction, flag == 1, a, b, c, d, e, f,
+            SolarSystem *system = new SolarSystem((int32_t) i, name, faction, flag == 1, a, b, c, d, e, f,
                                                   routes, stations, wrecks, statics);
             systems->data()[i] = system;
             delete[] routes;
@@ -279,8 +271,7 @@ Array<SolarSystem *> *FileRead::loadSystemsBinary()
     return systems;
 }
 
-Array<Wanted *> *FileRead::loadWanted()
-{
+Array<Wanted *> *FileRead::loadWanted() {
     String path("wanted_binary.bin");
 
     Array<Wanted *> *wanted = 0;
@@ -345,8 +336,7 @@ Array<Wanted *> *FileRead::loadWanted()
     return wanted;
 }
 
-Array<NewsItem *> *FileRead::loadTicker()
-{
+Array<NewsItem *> *FileRead::loadTicker() {
     String path("ticker_binary.bin");
 
     Array<NewsItem *> *items = 0;
@@ -375,7 +365,7 @@ Array<NewsItem *> *FileRead::loadTicker()
                 bits[j] = flags[j] != 0;
             }
 
-            NewsItem *item = new NewsItem((int32_t)i, active != 0, bits, 4, a, b);
+            NewsItem *item = new NewsItem((int32_t) i, active != 0, bits, 4, a, b);
             items->data()[i] = item;
         }
         AEFile::Close(handle);
@@ -383,8 +373,7 @@ Array<NewsItem *> *FileRead::loadTicker()
     return items;
 }
 
-Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
-{
+Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
     Array<Station *> *stations = new Array<Station *>();
     ArraySetLength<Station *>(count, *stations);
 
@@ -410,7 +399,7 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
         AEFile::ReadSwitched(c, handle);
         AEFile::ReadSwitched(d, handle);
         for (int32_t i = 0; i < count; i++) {
-            if (stationId == (uint32_t)ids[i]) {
+            if (stationId == (uint32_t) ids[i]) {
                 Station *station = new Station(name, a, b, c, d);
                 stations->data()[out] = station;
                 out++;
@@ -424,71 +413,70 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count)
 extern AbyssEngine::AERandom *gNameRandomA;
 extern AbyssEngine::AERandom *gNameRandomB;
 
-Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second)
-{
+Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second) {
     Array<String *> *names = 0;
     String path;
 
     switch (type) {
-    case 0: {
-        const char *text = "names_0_ab";
-        if (!first) {
-            text = "names_0_b";
+        case 0: {
+            const char *text = "names_0_ab";
+            if (!first) {
+                text = "names_0_b";
+            }
+            if (!second) {
+                text = "names_0_a";
+            }
+            path = text;
+            break;
         }
-        if (!second) {
-            text = "names_0_a";
+        case 1: {
+            path = second ? "names_1_b" : "names_1_a";
+            break;
         }
-        path = text;
-        break;
-    }
-    case 1: {
-        path = second ? "names_1_b" : "names_1_a";
-        break;
-    }
-    case 2: {
-        path = second ? "names_2_b" : "names_2_a";
-        break;
-    }
-    case 3: {
-        if (second) {
-            path = gNameRandomA->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
-        } else {
-            path = gNameRandomA->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
+        case 2: {
+            path = second ? "names_2_b" : "names_2_a";
+            break;
         }
-        break;
-    }
-    case 4: {
-        path = second ? "names_4_b" : "names_4_a";
-        break;
-    }
-    case 5: {
-        if (!second) {
+        case 3: {
+            if (second) {
+                path = gNameRandomA->nextInt(2) != 0 ? "names_3_b" : "names_3_a";
+            } else {
+                path = gNameRandomA->nextInt(2) != 0 ? "names_3_d" : "names_3_c";
+            }
+            break;
+        }
+        case 4: {
+            path = second ? "names_4_b" : "names_4_a";
+            break;
+        }
+        case 5: {
+            if (!second) {
+                return names;
+            }
+            path = "names_5";
+            break;
+        }
+        case 6: {
+            path = second ? "names_6_b" : "names_6_a";
+            break;
+        }
+        case 7: {
+            if (!second) {
+                return names;
+            }
+            path = "names_7";
+            break;
+        }
+        case 8: {
+            if (second) {
+                path = gNameRandomB->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
+            } else {
+                path = gNameRandomB->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
+            }
+            break;
+        }
+        default:
             return names;
-        }
-        path = "names_5";
-        break;
-    }
-    case 6: {
-        path = second ? "names_6_b" : "names_6_a";
-        break;
-    }
-    case 7: {
-        if (!second) {
-            return names;
-        }
-        path = "names_7";
-        break;
-    }
-    case 8: {
-        if (second) {
-            path = gNameRandomB->nextInt(2) != 0 ? "names_8_b" : "names_8_a";
-        } else {
-            path = gNameRandomB->nextInt(2) != 0 ? "names_8_d" : "names_8_c";
-        }
-        break;
-    }
-    default:
-        return names;
     }
 
     path = String(".bin") + path;
@@ -497,13 +485,13 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
         uint32_t handle;
         uint32_t count;
         AEFile::OpenRead(path, &handle);
-        AEFile::ReadSwitched((int32_t &)count, handle);
+        AEFile::ReadSwitched((int32_t &) count, handle);
 
         names = new Array<String *>();
         ArraySetLength<String *>(count, *names);
 
         String tmp;
-        for (int32_t i = 0; i < (int32_t)count; i++) {
+        for (int32_t i = 0; i < (int32_t) count; i++) {
             AEFile::ReadSwitched(tmp, handle);
             names->data()[i] = new String(tmp);
         }
@@ -513,8 +501,7 @@ Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second
     return names;
 }
 
-Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
-{
+Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system) {
     Array<Station *> *stations = new Array<Station *>();
 
     String path("stations_binary.bin");
@@ -542,7 +529,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
         AEFile::ReadSwitched(c, handle);
         AEFile::ReadSwitched(d, handle);
         for (uint32_t i = 0; i < ids->size(); i++) {
-            if ((uint32_t)ids->data()[i] == stationId) {
+            if ((uint32_t) ids->data()[i] == stationId) {
                 Station *station = new Station(name, a, b, c, d);
                 stations->data()[out++] = station;
             }
@@ -556,8 +543,7 @@ Array<Station *> *FileRead::loadStationsBinary(SolarSystem *system)
     return stations;
 }
 
-Array<Agent *> *FileRead::loadAgents()
-{
+Array<Agent *> *FileRead::loadAgents() {
     String path("agents_binary.bin");
 
     Array<Agent *> *agents = 0;
@@ -614,13 +600,7 @@ Array<Agent *> *FileRead::loadAgents()
     return agents;
 }
 
-// The wreck/station/static collision tables share one record layout: a sequence of
-// {id, count, int[count+1]} entries. Each loader walks its file's records and returns the matching
-// record's payload as an Array<int>. In the original the body is duplicated into each loader (the
-// shared helper was inlined), so it is spelled out in full at every call site below.
-
-Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
-{
+Array<int32_t> *FileRead::loadWreckCollision(int32_t id) {
     String path("wreck_collision.bin");
 
     Array<int32_t> *result = 0;
@@ -632,14 +612,14 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
         uint32_t count = 0;
         for (uint32_t i = 0; i < 6; i++) {
             AEFile::Read(key, handle);
-            AEFile::Read((int32_t &)count, handle);
+            AEFile::Read((int32_t &) count, handle);
             count++;
             if (key == id) {
                 result = new Array<int32_t>();
                 int32_t *buffer = new int32_t[count];
                 AEFile::Read(count << 2, buffer, handle);
                 ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t)count; j++) {
+                for (int32_t j = 0; j < (int32_t) count; j++) {
                     result->data()[j] = buffer[j];
                 }
                 delete[] buffer;
@@ -653,8 +633,7 @@ Array<int32_t> *FileRead::loadWreckCollision(int32_t id)
     return result;
 }
 
-Array<int32_t> *FileRead::loadStationCollision(int32_t id)
-{
+Array<int32_t> *FileRead::loadStationCollision(int32_t id) {
     String path("station_collision.bin");
 
     Array<int32_t> *result = 0;
@@ -666,14 +645,14 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id)
         uint32_t count = 0;
         for (uint32_t i = 0; i < 0x88; i++) {
             AEFile::Read(key, handle);
-            AEFile::Read((int32_t &)count, handle);
+            AEFile::Read((int32_t &) count, handle);
             count++;
             if (key == id) {
                 result = new Array<int32_t>();
                 int32_t *buffer = new int32_t[count];
                 AEFile::Read(count << 2, buffer, handle);
                 ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t)count; j++) {
+                for (int32_t j = 0; j < (int32_t) count; j++) {
                     result->data()[j] = buffer[j];
                 }
                 delete[] buffer;
@@ -687,8 +666,7 @@ Array<int32_t> *FileRead::loadStationCollision(int32_t id)
     return result;
 }
 
-Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
-{
+Array<int32_t> *FileRead::loadStaticCollision(int32_t id) {
     String path("static_collision.bin");
 
     Array<int32_t> *result = 0;
@@ -700,14 +678,14 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
         uint32_t count = 0;
         for (uint32_t i = 0; i < 7; i++) {
             AEFile::Read(key, handle);
-            AEFile::Read((int32_t &)count, handle);
+            AEFile::Read((int32_t &) count, handle);
             count++;
             if (key == id) {
                 result = new Array<int32_t>();
                 int32_t *buffer = new int32_t[count];
                 AEFile::Read(count << 2, buffer, handle);
                 ArraySetLength<int32_t>(count, *result);
-                for (int32_t j = 0; j < (int32_t)count; j++) {
+                for (int32_t j = 0; j < (int32_t) count; j++) {
                     result->data()[j] = buffer[j];
                 }
                 delete[] buffer;
@@ -721,8 +699,7 @@ Array<int32_t> *FileRead::loadStaticCollision(int32_t id)
     return result;
 }
 
-Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
-{
+Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special) {
     String path("station_parts.bin");
 
     Array<int32_t> *parts = 0;
@@ -744,7 +721,7 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
             AEFile::Read(count, handle);
 
             parts = new Array<int32_t>();
-            ArraySetLength<int32_t>((int8_t)count * 7 + 7, *parts);
+            ArraySetLength<int32_t>((int8_t) count * 7 + 7, *parts);
             int32_t *data = parts->data();
             data[0] = station;
             data[1] = 0;
@@ -769,7 +746,7 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
                 data[off + 6] = value;
             }
 
-            if (wanted == (int8_t)group) {
+            if (wanted == (int8_t) group) {
                 return parts;
             }
             delete parts;
@@ -780,8 +757,7 @@ Array<int32_t> *FileRead::loadStationParts(int32_t id, int32_t special)
     return parts;
 }
 
-Array<int32_t> *FileRead::loadShipParts(int32_t id)
-{
+Array<int32_t> *FileRead::loadShipParts(int32_t id) {
     String path("ship_parts.bin");
 
     Array<int32_t> *parts = 0;
@@ -801,7 +777,7 @@ Array<int32_t> *FileRead::loadShipParts(int32_t id)
             AEFile::Read(count, handle);
 
             parts = new Array<int32_t>();
-            ArraySetLength<int32_t>((int8_t)count * 10, *parts);
+            ArraySetLength<int32_t>((int8_t) count * 10, *parts);
             int32_t *data = parts->data();
             for (uint32_t off = 0; off < parts->size(); off += 10) {
                 int16_t value;
@@ -823,7 +799,7 @@ Array<int32_t> *FileRead::loadShipParts(int32_t id)
                 AEFile::ReadSwitched(value, handle);
                 data[off + 9] = value;
             }
-            if (wanted == (int8_t)group) {
+            if (wanted == (int8_t) group) {
                 break;
             }
         }
@@ -831,8 +807,7 @@ Array<int32_t> *FileRead::loadShipParts(int32_t id)
     return parts;
 }
 
-Array<Item *> *FileRead::loadItemsBinary()
-{
+Array<Item *> *FileRead::loadItemsBinary() {
     String path("items_binary.bin");
 
     Array<Item *> *items = 0;
@@ -851,35 +826,35 @@ Array<Item *> *FileRead::loadItemsBinary()
             IntArray *a1;
             IntArray *a2;
 
-            AEFile::ReadSwitched((int32_t &)count0, handle);
-            if ((int32_t)count0 < 1) {
+            AEFile::ReadSwitched((int32_t &) count0, handle);
+            if ((int32_t) count0 < 1) {
                 a0 = 0;
             } else {
                 a0 = new IntArray();
                 ArraySetLength<int32_t>(count0, *a0);
-                for (int32_t j = 0; j < (int32_t)count0; j++) {
+                for (int32_t j = 0; j < (int32_t) count0; j++) {
                     AEFile::ReadSwitched(a0->data()[j], handle);
                 }
             }
 
-            AEFile::ReadSwitched((int32_t &)count1, handle);
-            if ((int32_t)count1 < 1) {
+            AEFile::ReadSwitched((int32_t &) count1, handle);
+            if ((int32_t) count1 < 1) {
                 a1 = 0;
             } else {
                 a1 = new IntArray();
                 ArraySetLength<int32_t>(count1, *a1);
-                for (int32_t j = 0; j < (int32_t)count1; j++) {
+                for (int32_t j = 0; j < (int32_t) count1; j++) {
                     AEFile::ReadSwitched(a1->data()[j], handle);
                 }
             }
 
-            AEFile::ReadSwitched((int32_t &)count2, handle);
-            if ((int32_t)count2 < 1) {
+            AEFile::ReadSwitched((int32_t &) count2, handle);
+            if ((int32_t) count2 < 1) {
                 a2 = 0;
             } else {
                 a2 = new IntArray();
                 ArraySetLength<int32_t>(count2, *a2);
-                for (int32_t j = 0; j < (int32_t)count2; j++) {
+                for (int32_t j = 0; j < (int32_t) count2; j++) {
                     AEFile::ReadSwitched(a2->data()[j], handle);
                 }
             }
@@ -892,8 +867,7 @@ Array<Item *> *FileRead::loadItemsBinary()
     return items;
 }
 
-Array<Ship *> *FileRead::loadShipsBinary()
-{
+Array<Ship *> *FileRead::loadShipsBinary() {
     String path("ships_binary.bin");
 
     Array<Ship *> *ships = 0;
@@ -923,7 +897,7 @@ Array<Ship *> *FileRead::loadShipsBinary()
             AEFile::ReadSwitched(g, handle);
             AEFile::ReadSwitched(h, handle);
             AEFile::ReadSwitched(speed, handle);
-            Ship *ship = new Ship(a, b, c, d, e, f, g, h, (float)speed);
+            Ship *ship = new Ship(a, b, c, d, e, f, g, h, (float) speed);
             ships->data()[i] = ship;
         }
         AEFile::Close(handle);

@@ -4,12 +4,10 @@
 #include "game/world/Station.h"
 #include "engine/render/LODManager.h" // ArrayRemove<T>
 
-// Persistent player/game state singleton (owned elsewhere).
-extern Status* status;
+extern Status *status;
 
-int Item::getAttribute(int attribute)
-{
-    int* data = attributes->data();
+int Item::getAttribute(int attribute) {
+    int *data = attributes->data();
     uint32_t size = attributes->size();
     for (uint32_t index = 0; index < size; index += 2) {
         if (data[index] == attribute) {
@@ -19,7 +17,7 @@ int Item::getAttribute(int attribute)
     return static_cast<int>(0xc5997825);
 }
 
-IntArray* Item::getQuantities() {
+IntArray *Item::getQuantities() {
     return quantities;
 }
 
@@ -27,8 +25,7 @@ int Item::getMissingIngredients() {
     return missingIngredients;
 }
 
-void Item::adjustPrice(Station* station)
-{
+void Item::adjustPrice(Station *station) {
     int basePrice = minPrice;
     price = basePrice + static_cast<int>((static_cast<float>(10 - station->getTecLevel()) / 10.0f) *
                                          static_cast<float>(maxPrice - minPrice));
@@ -38,8 +35,7 @@ int Item::getTecLevel() {
     return tecLevel;
 }
 
-void Item::setUnsaleable(bool value)
-{
+void Item::setUnsaleable(bool value) {
     unsaleable = value;
 }
 
@@ -47,8 +43,7 @@ void Item::setMaxPrice(int value) {
     maxPrice = value;
 }
 
-bool Item::checkCredits()
-{
+bool Item::checkCredits() {
     return status->getCredits() >= price;
 }
 
@@ -60,31 +55,28 @@ void Item::setMissingIngredients(int value) {
     missingIngredients = value;
 }
 
-Item* Item::makeItem(int amount)
-{
+Item *Item::makeItem(int amount) {
     int savedPrice = price;
-    Item* item = clone();
+    Item *item = clone();
     item->price = savedPrice;
     item->amount = amount;
     return item;
 }
 
 static const bool canBeInstalledMultipleTimesBySort[] = {
-    true,  true,  true,  true,  true,  true,  true,  true,
-    false, false, false, true,  true,  false, false, false,
-    false, false, false, false, true,  false, true,  true,
-    true,  true,  false, false, false, false, false, false,
-    true,  false, true,  false, true,  false, false, true,
-    true,  false, true,
+    true, true, true, true, true, true, true, true,
+    false, false, false, true, true, false, false, false,
+    false, false, false, false, true, false, true, true,
+    true, true, false, false, false, false, false, false,
+    true, false, true, false, true, false, false, true,
+    true, false, true,
 };
 
-bool Item::canBeInstalledMultipleTimes()
-{
+bool Item::canBeInstalledMultipleTimes() {
     return canBeInstalledMultipleTimesBySort[sort];
 }
 
-int Item::transaction(bool buy, int, bool useCredits)
-{
+int Item::transaction(bool buy, int, bool useCredits) {
     if (buy) {
         int currentStationAmount = stationAmount;
         if (currentStationAmount > 0) {
@@ -114,7 +106,7 @@ void Item::setStationAmount(int value) {
     stationAmount = value;
 }
 
-IntArray* Item::getIngredients() {
+IntArray *Item::getIngredients() {
     return ingredients;
 }
 
@@ -130,8 +122,7 @@ void Item::setAmount(int value) {
     amount = value;
 }
 
-bool Item::isInList(Item* item, ItemArray* items)
-{
+bool Item::isInList(Item *item, ItemArray *items) {
     return isInList(item->index, items);
 }
 
@@ -143,13 +134,11 @@ void Item::setMinPrice(int value) {
     minPrice = value;
 }
 
-int Item::getMinPriceSystem()
-{
+int Item::getMinPriceSystem() {
     return minPriceSystem;
 }
 
-int Item::getStationAmount()
-{
+int Item::getStationAmount() {
     return stationAmount;
 }
 
@@ -157,23 +146,21 @@ int Item::getTotalPrice() {
     return price * amount;
 }
 
-void Item::changeAmount(int delta)
-{
+void Item::changeAmount(int delta) {
     amount += delta;
 }
 
-Item* Item::makeItem(int amount, int price)
-{
-    Item* item = clone();
+Item *Item::makeItem(int amount, int price) {
+    Item *item = clone();
     item->price = price;
     item->amount = amount;
     return item;
 }
 
-Item::~Item() {}
+Item::~Item() {
+}
 
-int Item::transactionBlueprint(bool fabricate, int mode)
-{
+int Item::transactionBlueprint(bool fabricate, int mode) {
     if (mode == 0) {
         if (amount > 0) {
             amount -= 1;
@@ -196,14 +183,13 @@ int Item::getSort() {
     return sort;
 }
 
-int Item::getBlueprintAmount()
-{
+int Item::getBlueprintAmount() {
     return blueprintAmount;
 }
 
-Item* Item::makeItem() {
+Item *Item::makeItem() {
     int savedPrice = price;
-    Item* item = clone();
+    Item *item = clone();
     item->price = savedPrice;
     item->amount = 1;
     return item;
@@ -222,12 +208,11 @@ float Item::getPriceRate() {
            static_cast<float>(maxPrice - minPrice);
 }
 
-bool Item::isInList(int index, int amount, ItemArray* items)
-{
+bool Item::isInList(int index, int amount, ItemArray *items) {
     if (items != nullptr) {
         uint32_t size = items->size();
         for (uint32_t i = 0; i < size; i++) {
-            Item* item = (*items)[i];
+            Item *item = (*items)[i];
             if (item->index == index && amount <= item->amount) {
                 return true;
             }
@@ -236,21 +221,19 @@ bool Item::isInList(int index, int amount, ItemArray* items)
     return false;
 }
 
-bool Item::isInList(int index, ItemArray* items) {
+bool Item::isInList(int index, ItemArray *items) {
     return isInList(index, 1, items);
 }
 
-bool Item::equals(Item* other)
-{
+bool Item::equals(Item *other) {
     if (other != nullptr) {
         return index == other->index;
     }
     return false;
 }
 
-Item* Item::clone()
-{
-    Item* copy = new Item(ingredients, quantities, attributes);
+Item *Item::clone() {
+    Item *copy = new Item(ingredients, quantities, attributes);
     copy->price = price;
     copy->unsaleable = unsaleable;
     copy->amount = amount;
@@ -258,7 +241,7 @@ Item* Item::clone()
     return copy;
 }
 
-IntArray* Item::getAttributes() {
+IntArray *Item::getAttributes() {
     return attributes;
 }
 
@@ -266,13 +249,12 @@ int Item::getMinPrice() {
     return minPrice;
 }
 
-void Item::init()
-{
+void Item::init() {
     if (attributes == nullptr) {
         return;
     }
 
-    int* data = attributes->data();
+    int *data = attributes->data();
 
     index = data[1];
     type = data[3];
@@ -291,14 +273,12 @@ void Item::init()
     price = minPrice + (maxPrice - minPrice) / 2;
 }
 
-bool Item::isUnsaleable()
-{
+bool Item::isUnsaleable() {
     return unsaleable;
 }
 
-Item::Item(IntArray* ingredients_, IntArray* quantities_, IntArray* attributes_)
-    : ingredients(ingredients_), quantities(quantities_), attributes(attributes_)
-{
+Item::Item(IntArray *ingredients_, IntArray *quantities_, IntArray *attributes_)
+    : ingredients(ingredients_), quantities(quantities_), attributes(attributes_) {
     init();
 }
 
@@ -318,19 +298,16 @@ void Item::setBlueprintAmount(int value) {
     blueprintAmount = value;
 }
 
-bool Item::checkCargoSpace()
-{
+bool Item::checkCargoSpace() {
     int requiredLoad = amount + status->getShip()->getCurrentLoad();
     return requiredLoad <= status->getShip()->getMaxLoad();
 }
 
-bool Item::isWeapon()
-{
+bool Item::isWeapon() {
     return static_cast<uint32_t>(type) < 3;
 }
 
-ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
-{
+ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
     if (items == nullptr) {
         return stationItems;
     }
@@ -338,7 +315,7 @@ ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
         return items;
     }
 
-    ItemArray* stationCopy = new ItemArray();
+    ItemArray *stationCopy = new ItemArray();
     stationCopy->resize(stationItems->size());
     for (uint32_t i = 0; i < stationItems->size(); i++) {
         (*stationCopy)[i] = (*stationItems)[i];
@@ -347,9 +324,9 @@ ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
     uint32_t remaining = static_cast<uint32_t>(stationCopy->size());
     for (uint32_t itemIndex = 0; itemIndex < items->size(); itemIndex++) {
         for (uint32_t stationIndex = 0; stationIndex < stationCopy->size(); stationIndex++) {
-            Item* stationItem = (*stationCopy)[stationIndex];
+            Item * stationItem = (*stationCopy)[stationIndex];
             if (stationItem != nullptr) {
-                Item* item = (*items)[itemIndex];
+                Item * item = (*items)[itemIndex];
                 if (item->index == stationItem->index) {
                     remaining--;
                     item->amount += stationItem->amount;
@@ -359,13 +336,13 @@ ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
         }
     }
 
-    ItemArray* result = items;
+    ItemArray *result = items;
     if (static_cast<int>(remaining) > 0) {
-        ItemArray* unmatched = new ItemArray();
+        ItemArray *unmatched = new ItemArray();
         unmatched->resize(remaining);
         uint32_t unmatchedIndex = 0;
         for (uint32_t i = 0; i < stationCopy->size(); i++) {
-            Item* item = (*stationCopy)[i];
+            Item * item = (*stationCopy)[i];
             if (item != nullptr) {
                 (*unmatched)[unmatchedIndex++] = item;
             }
@@ -384,16 +361,15 @@ ItemArray* Item::combineItems(ItemArray* items, ItemArray* stationItems)
     return result;
 }
 
-void Item::fabricate(Item* item, ItemArray* items, int amount)
-{
-    int* ingredientIds = item->ingredients->data();
-    int* ingredientQuantities = item->quantities->data();
+void Item::fabricate(Item *item, ItemArray *items, int amount) {
+    int *ingredientIds = item->ingredients->data();
+    int *ingredientQuantities = item->quantities->data();
     uint32_t ingredientCount = ingredientIds[0];
 
     for (uint32_t i = 0; i < ingredientCount; i++) {
         int wantedId = ingredientIds[i + 1];
         for (uint32_t j = 0; j < items->size(); j++) {
-            Item* candidate = (*items)[j];
+            Item * candidate = (*items)[j];
             if (candidate->index == wantedId) {
                 candidate->amount -= ingredientQuantities[i + 1] * amount;
                 break;
@@ -401,22 +377,25 @@ void Item::fabricate(Item* item, ItemArray* items, int amount)
         }
     }
 
-    ItemArray* made = new ItemArray();
+    ItemArray *made = new ItemArray();
     made->push_back(item->makeItem(amount));
-    for (Item* element : *items) {
+    for (Item * element
+    :
+    *items
+    )
+    {
         made->push_back(element);
     }
 }
 
-ItemArray* Item::extractItems(ItemArray* items, bool station)
-{
+ItemArray *Item::extractItems(ItemArray *items, bool station) {
     if (items == nullptr) {
         return nullptr;
     }
 
-    ItemArray* extracted = new ItemArray();
+    ItemArray *extracted = new ItemArray();
     for (uint32_t i = 0; i < items->size(); i++) {
-        Item* item = (*items)[i];
+        Item * item = (*items)[i];
         int amount = station ? item->amount : item->stationAmount;
         if (amount > 0) {
             extracted->push_back(item->makeItem());
@@ -429,8 +408,7 @@ ItemArray* Item::extractItems(ItemArray* items, bool station)
     return extracted;
 }
 
-void Item::combineDuplicates(ItemArray* items)
-{
+void Item::combineDuplicates(ItemArray *items) {
     if (items == nullptr) {
         return;
     }
@@ -438,8 +416,8 @@ void Item::combineDuplicates(ItemArray* items)
     uint32_t size = static_cast<uint32_t>(items->size());
     for (uint32_t i = 0; i < size; i++) {
         for (uint32_t j = i + 1; j < size; j++) {
-            Item* left = (*items)[i];
-            Item* right = (*items)[j];
+            Item * left = (*items)[i];
+            Item * right = (*items)[j];
             if (left->index == right->index) {
                 left->amount += right->amount;
                 right->amount = 0;
@@ -449,31 +427,30 @@ void Item::combineDuplicates(ItemArray* items)
         }
     }
     for (uint32_t i = 0; i < size; i++) {
-        Item* item = (*items)[i];
+        Item * item = (*items)[i];
         if (item->amount == 0 && item->stationAmount == 0) {
-            ArrayRemove<Item*>(item, *items);
+            ArrayRemove<Item *>(item, *items);
             size = items->size();
         }
     }
 }
 
-ItemArray* Item::mixItems(ItemArray* items, ItemArray* stationItems)
-{
+ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
     uint32_t itemCount = items ? static_cast<uint32_t>(items->size()) : 0;
     int stationCount = stationItems ? static_cast<int>(stationItems->size()) : 0;
 
-    ItemArray* mixed = new ItemArray();
+    ItemArray *mixed = new ItemArray();
     mixed->resize(stationCount + itemCount);
 
     if (static_cast<int>(itemCount) >= 1 && stationCount == 0) {
         for (uint32_t i = 0; i < items->size(); i++) {
-            Item* item = (*items)[i];
+            Item * item = (*items)[i];
             (*mixed)[i] = item->makeItem(item->amount);
         }
     } else if (itemCount == 0 && stationCount > 0) {
         for (uint32_t i = 0; i < stationItems->size(); i++) {
-            Item* item = (*stationItems)[i];
-            Item* copy = item->makeItem(0);
+            Item * item = (*stationItems)[i];
+            Item * copy = item->makeItem(0);
             (*mixed)[i] = copy;
             copy->stationAmount = item->amount;
         }
@@ -481,23 +458,23 @@ ItemArray* Item::mixItems(ItemArray* items, ItemArray* stationItems)
         mixed = nullptr;
     } else {
         for (uint32_t i = 0; i < items->size(); i++) {
-            Item* item = (*items)[i];
+            Item * item = (*items)[i];
             (*mixed)[i] = item->makeItem(item->amount);
         }
 
         for (uint32_t stationIndex = 0; stationIndex < stationItems->size(); stationIndex++) {
             for (uint32_t mixedIndex = 0; mixedIndex < mixed->size(); mixedIndex++) {
-                Item* mixedItem = (*mixed)[mixedIndex];
-                Item* stationItem = (*stationItems)[stationIndex];
+                Item * mixedItem = (*mixed)[mixedIndex];
+                Item * stationItem = (*stationItems)[stationIndex];
                 if (mixedItem == nullptr) {
-                    Item* copy = stationItem->makeItem(0);
+                    Item * copy = stationItem->makeItem(0);
                     itemCount++;
                     (*mixed)[mixedIndex] = copy;
                     copy->stationAmount = stationItem->amount;
                     break;
                 }
                 if (stationItem->index == mixedItem->index) {
-                    Item* copy = stationItem->makeItem(mixedItem->amount);
+                    Item * copy = stationItem->makeItem(mixedItem->amount);
                     (*mixed)[mixedIndex] = copy;
                     copy->stationAmount = stationItem->amount;
                     break;
@@ -505,7 +482,7 @@ ItemArray* Item::mixItems(ItemArray* items, ItemArray* stationItems)
             }
         }
 
-        ItemArray* trimmed = new ItemArray();
+        ItemArray *trimmed = new ItemArray();
         trimmed->resize(itemCount);
         for (uint32_t i = 0; i < itemCount; i++) {
             (*trimmed)[i] = (*mixed)[i];
@@ -519,8 +496,8 @@ ItemArray* Item::mixItems(ItemArray* items, ItemArray* stationItems)
         do {
             swapped = false;
             for (uint32_t i = 1; i < size; i++) {
-                Item* right = (*trimmed)[i];
-                Item* left = (*trimmed)[i - 1];
+                Item * right = (*trimmed)[i];
+                Item * left = (*trimmed)[i - 1];
                 if (right->index < left->index) {
                     (*trimmed)[i - 1] = right;
                     (*trimmed)[i] = left;

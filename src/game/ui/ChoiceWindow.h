@@ -5,9 +5,6 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// ChoiceWindow -- top-level modal choice/medal dialog. Hosts a scrollable message
-// (ScrollTouchWindow) plus up to three TouchButtons and an optional medal graphic.
-
 class TouchButton;
 class ScrollTouchWindow;
 
@@ -17,15 +14,15 @@ public:
     int y;
     int width;
     int height;
-    TouchButton* leftButton;
-    TouchButton* rightButton;
-    TouchButton* miscButton;
-    ScrollTouchWindow* scrollWindow;
+    TouchButton *leftButton;
+    TouchButton *rightButton;
+    TouchButton *miscButton;
+    ScrollTouchWindow *scrollWindow;
     String title;
     int count;
     int medal;
-    int medalImage;          // -1 == none
-    int medalBgImage;        // -1 == none
+    int medalImage; // -1 == none
+    int medalBgImage; // -1 == none
     String medalText;
     int padding;
     int padding2;
@@ -35,30 +32,45 @@ public:
     uint8_t buttonsVisible;
 
     ChoiceWindow();
+
     ~ChoiceWindow();
 
     void set(String const &text);
+
     void set(String const &text, bool flag);
+
     void set(String const &a, String const &b);
+
     void set(String const &title, String const &message, bool flag);
+
     void set(String const &title, String const &message, bool hasButtons,
              String const &left, String const &right, String const &single,
              int y, int width);
 
     void setWidth(int width);
+
     void setHeight(int height);
+
     void setMedal(int medal, int count);
+
     void setMiscButton(String const &text);
+
     void removeButtons();
+
     uint8_t hasChoice();
+
     void left();
+
     void right();
 
     void update(int dt);
+
     void draw();
 
     int OnTouchBegin(int x, int y);
+
     int OnTouchMove(int x, int y);
+
     int OnTouchEnd(int x, int y);
 
     // Fire callback for the left choice button; the shipped build records the

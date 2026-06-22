@@ -7,63 +7,66 @@
 #include "game/core/PaintCanvasClass.h"
 #include "platform/libc.h"
 
-// Engine math free-functions (ARM-ABI pointer-output variants used by the recovered code).
-namespace AbyssEngine { namespace AEMath {
-    Vector operator-(const Vector &, const Vector &);
-    void MatrixMultiply(Matrix &, const Matrix &);
-} }
+namespace AbyssEngine {
+    namespace AEMath {
+        Vector operator-(const Vector &, const Vector &);
+
+        void MatrixMultiply(Matrix &, const Matrix &);
+    }
+}
+
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
+
 float VectorLength(const Vector *self);
+
 void MatrixGetPosition(Vector *out, const Matrix *matrix);
+
 void MatrixSetTranslation(Matrix *out, Matrix *base, float x, float y, float z);
+
 void MatrixSetScaling(Matrix *out, Matrix *base, float x, float y, float z);
+
 void MatrixGetUp(Vector *out, const Matrix *matrix);
+
 void MatrixGetDir(Vector *out, const Matrix *matrix);
+
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
 
-// Game singletons (raw handles stored as integers in the shipped binary).
-extern int   Explosion_paintCanvas;
+extern int Explosion_paintCanvas;
 extern void *Explosion_random;
 
-// The runtime transform handles returned by PaintCanvas::TransformGetTransform have an
-// internal byte layout that is not modelled by AbyssEngine::Transform; a few fields are
-// still poked by offset (an enabled flag, the huge bounding radius that disables view-frustum
-// culling, the animation length, and the current animation time read for the camera rumble).
-// RAWREAD: TransformGetTransform returns an opaque void* runtime handle (not an
-// AbyssEngine::Transform), so every UC()/F<T>() poke below stays raw pointer arithmetic.
-static const int kTransformEnabledFlag   = 0xed;  // uint8
+static const int kTransformEnabledFlag = 0xed; // uint8
 static const int kTransformBoundingRadius = 0xe0; // float
-static const int kTransformAnimLength    = 0xf8;  // uint64
-static const int kTransformAnimTime      = 0x110; // int
+static const int kTransformAnimLength = 0xf8; // uint64
+static const int kTransformAnimTime = 0x110; // int
 
 static inline PaintCanvas *explosionCanvas() {
-    return (PaintCanvas *)(intptr_t)Explosion_paintCanvas;
+    return (PaintCanvas *) (intptr_t) Explosion_paintCanvas;
 }
 
 static inline AbyssEngine::Transform *meshTransform(PaintCanvas *canvas, uint32_t index) {
-    return (AbyssEngine::Transform *)canvas->TransformGetTransform(index);
+    return (AbyssEngine::Transform *) canvas->TransformGetTransform(index);
 }
 
 static inline AbyssEngine::AERandom *explosionRandom() {
-    return (AbyssEngine::AERandom *)Explosion_random;
+    return (AbyssEngine::AERandom *) Explosion_random;
 }
 
 void Explosion::reset() {
     PaintCanvas *canvas = explosionCanvas();
 
-    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
-    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
+    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
 
     uint32_t lodTransform = this->primaryMesh->altTransform;
     if (lodTransform != 0xffffffffu) {
-        meshTransform(canvas, lodTransform)->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
-        meshTransform(canvas, this->primaryMesh->altTransform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        meshTransform(canvas, lodTransform)->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
+        meshTransform(canvas, this->primaryMesh->altTransform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
     }
 
     AEGeometry *secondary = this->secondaryMesh;
     if (secondary != 0) {
-        meshTransform(canvas, secondary->transform)->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
-        meshTransform(canvas, this->secondaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        meshTransform(canvas, secondary->transform)->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
+        meshTransform(canvas, this->secondaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
     }
 
     if (this->type == 6) {
@@ -75,8 +78,8 @@ void Explosion::reset() {
     if (streaks != 0) {
         for (uint32_t i = 0; i < streaks->size(); i++) {
             AEGeometry *geometry = (*streaks)[i];
-            meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode)3, 0);
-            meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+            meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode) 3, 0);
+            meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
         }
     }
 
@@ -97,7 +100,7 @@ Explosion::~Explosion() {
 
     Array<AEGeometry *> *streaks = this->fireStreaks;
     if (streaks != 0) {
-        for (AEGeometry *e : *streaks) {
+        for (AEGeometry *e: *streaks) {
             delete e;
         }
         streaks->clear();
@@ -110,7 +113,6 @@ uint8_t Explosion::isPlaying() {
     return this->playing;
 }
 
-// Selects which explosion sound cue is used (-1 == derive from explosion type).
 void Explosion::setWeaponIndex(int index) {
     this->weaponIndex = index;
 }
@@ -142,7 +144,7 @@ void Explosion::setScaling(float scale) {
         speed = speed * 0.5f;
     }
     if ((uint32_t)(type - 8) < 3) {
-        speed = 0.7f + (float)explosionRandom()->nextInt(0x3c) * 0.01f;
+        speed = 0.7f + (float) explosionRandom()->nextInt(0x3c) * 0.01f;
     }
 
     PaintCanvas *canvas = explosionCanvas();
@@ -161,7 +163,7 @@ void Explosion::setScaling(float scale) {
         }
     }
 
-    this->duration = (long long)((float)this->duration / speed);
+    this->duration = (long long) ((float) this->duration / speed);
 }
 
 bool Explosion::peakReached() {
@@ -188,10 +190,10 @@ void Explosion::start(const Vector &position, const Vector &direction) {
     int type = this->type;
     if ((uint32_t)(type - 8) < 3) {
         Matrix rotation;
-        float angle = (float)explosionRandom()->nextInt(0xc45) / 1000.0f;
+        float angle = (float) explosionRandom()->nextInt(0xc45) / 1000.0f;
         MatrixSetRotation(&rotation, &this->rotation, 0, 0, angle);
 
-        float scale = 0.6f + (float)explosionRandom()->nextInt(0x28) * 0.01f;
+        float scale = 0.6f + (float) explosionRandom()->nextInt(0x28) * 0.01f;
         this->setScaling(scale);
     } else if (type == 0xb) {
         Vector up;
@@ -225,7 +227,7 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
     }
 
     PaintCanvas *canvas = explosionCanvas();
-    long long delta = (long long)dt;
+    long long delta = (long long) dt;
     meshTransform(canvas, this->primaryMesh->transform)->Update(delta, 0);
 
     uint32_t lodTransform = this->primaryMesh->altTransform;
@@ -246,12 +248,12 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
         }
     }
 
-    if (camera != 0 && (uint32_t)this->type < 2) {
+    if (camera != 0 && (uint32_t) this->type < 2) {
         Vector cameraPosition;
         Vector position = this->primaryMesh->getPosition();
 
         unsigned int current = canvas->CameraGetCurrent();
-        MatrixGetPosition(&cameraPosition, (const Matrix *)canvas->CameraGetLocal(current));
+        MatrixGetPosition(&cameraPosition, (const Matrix *) canvas->CameraGetLocal(current));
         Vector diff = position - cameraPosition;
         float distance = VectorLength(&diff);
 
@@ -262,7 +264,7 @@ void Explosion::update(int dt, TargetFollowCamera *camera) {
             if (distance < 30000.0f) {
                 capped = distance;
             }
-            float value = (1.0f - capped / 30000.0f) * ((float)anim / -2000.0f + 1.0f);
+            float value = (1.0f - capped / 30000.0f) * ((float) anim / -2000.0f + 1.0f);
             camera->setRumblePercentage(value, 0x32);
         }
     }
@@ -288,70 +290,70 @@ Explosion::Explosion(int type) {
     PaintCanvas *canvas = explosionCanvas();
 
     switch (type) {
-    case 0:
-    case 6: {
-        this->primaryMesh = new AEGeometry((uint16_t)0x41b5, canvas, false);
-        AEGeometry *geometry = new AEGeometry((uint16_t)0x41b4, canvas, false);
-        this->primaryMesh->addChild(geometry->transform);
-        delete geometry;
-        break;
-    }
-    default:
-        if (type == 13) {
-            this->primaryMesh = new AEGeometry((uint16_t)0x41a9, canvas, false);
-            this->setScaling(0.25f);
-            meshTransform(canvas, this->primaryMesh->transform)->SetAnimationSpeed(1.0f);
-        } else {
-            this->primaryMesh = new AEGeometry((uint16_t)0x4213, canvas, false);
-            this->secondaryMesh = new AEGeometry((uint16_t)0x4211, canvas, false);
+        case 0:
+        case 6: {
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41b5, canvas, false);
+            AEGeometry *geometry = new AEGeometry((uint16_t) 0x41b4, canvas, false);
+            this->primaryMesh->addChild(geometry->transform);
+            delete geometry;
+            break;
         }
-        break;
-    case 3:
-        this->primaryMesh = new AEGeometry((uint16_t)0x4213, canvas, false);
-        this->secondaryMesh = new AEGeometry((uint16_t)0x421d, canvas, false);
-        break;
-    case 4:
-        this->primaryMesh = new AEGeometry((uint16_t)0x420d, canvas, false);
-        this->secondaryMesh = new AEGeometry((uint16_t)0x420c, canvas, false);
-        break;
-    case 5:
-        this->primaryMesh = new AEGeometry((uint16_t)0x4999, canvas, false);
-        this->secondaryMesh = new AEGeometry((uint16_t)0x4998, canvas, false);
-        break;
-    case 7:
-        this->primaryMesh = new AEGeometry((uint16_t)0x41a5, canvas, false);
-        break;
-    case 8:
-        this->primaryMesh = new AEGeometry((uint16_t)0x41a6, canvas, false);
-        break;
-    case 9:
-        this->primaryMesh = new AEGeometry((uint16_t)0x41a7, canvas, false);
-        break;
-    case 10:
-        this->primaryMesh = new AEGeometry((uint16_t)0x41a8, canvas, false);
-        break;
-    case 11:
-        this->primaryMesh = new AEGeometry((uint16_t)0x4a34, canvas, false);
-        this->secondaryMesh = new AEGeometry((uint16_t)0x4a33, canvas, false);
-        break;
-    case 12:
-        this->primaryMesh = new AEGeometry((uint16_t)0x4a7e, canvas, false);
-        break;
+        default:
+            if (type == 13) {
+                this->primaryMesh = new AEGeometry((uint16_t) 0x41a9, canvas, false);
+                this->setScaling(0.25f);
+                meshTransform(canvas, this->primaryMesh->transform)->SetAnimationSpeed(1.0f);
+            } else {
+                this->primaryMesh = new AEGeometry((uint16_t) 0x4213, canvas, false);
+                this->secondaryMesh = new AEGeometry((uint16_t) 0x4211, canvas, false);
+            }
+            break;
+        case 3:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4213, canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x421d, canvas, false);
+            break;
+        case 4:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x420d, canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x420c, canvas, false);
+            break;
+        case 5:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4999, canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x4998, canvas, false);
+            break;
+        case 7:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a5, canvas, false);
+            break;
+        case 8:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a6, canvas, false);
+            break;
+        case 9:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a7, canvas, false);
+            break;
+        case 10:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x41a8, canvas, false);
+            break;
+        case 11:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4a34, canvas, false);
+            this->secondaryMesh = new AEGeometry((uint16_t) 0x4a33, canvas, false);
+            break;
+        case 12:
+            this->primaryMesh = new AEGeometry((uint16_t) 0x4a7e, canvas, false);
+            break;
     }
 
-    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+    meshTransform(canvas, this->primaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
 
     if (this->secondaryMesh != 0) {
-        meshTransform(canvas, this->secondaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        meshTransform(canvas, this->secondaryMesh->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
         F<float>(canvas->TransformGetTransform(this->secondaryMesh->transform), kTransformBoundingRadius) = 10000.0f;
     }
 
     uint64_t primaryDuration =
-        F<uint64_t>(canvas->TransformGetTransform(this->primaryMesh->transform), kTransformAnimLength);
+            F<uint64_t>(canvas->TransformGetTransform(this->primaryMesh->transform), kTransformAnimLength);
     uint64_t duration = 0;
     if (this->secondaryMesh != 0) {
         uint64_t secondaryDuration =
-            F<uint64_t>(canvas->TransformGetTransform(this->secondaryMesh->transform), kTransformAnimLength);
+                F<uint64_t>(canvas->TransformGetTransform(this->secondaryMesh->transform), kTransformAnimLength);
         duration = secondaryDuration < primaryDuration ? primaryDuration : secondaryDuration;
     } else if (primaryDuration != 0) {
         duration = primaryDuration;
@@ -363,9 +365,9 @@ Explosion::Explosion(int type) {
     this->reset();
 }
 
-extern int  Explosion_soundDefault;
-extern int  Explosion_soundFallback;
-extern int  Explosion_soundSpecial;
+extern int Explosion_soundDefault;
+extern int Explosion_soundFallback;
+extern int Explosion_soundSpecial;
 extern char Explosion_soundSettings[];
 
 void Explosion::playSound(Vector *pos) {
@@ -380,42 +382,42 @@ void Explosion::playSound(Vector *pos) {
         if (offset <= 0x15) {
             cue = 0xf;
             switch (soundId) {
-            case 0x29:
-                break;
-            case 0x2a:
-                cue = 0x10;
-                break;
-            case 0x2b:
-                cue = 0x11;
-                break;
-            case 0x2c:
-                cue = 0xe;
-                break;
-            case 0x2d:
-                cue = 0xd;
-                break;
-            case 0x2e:
-                cue = 0xc;
-                break;
-            case 0x2f:
-            case 0x30:
-            case 0x31:
-            case 0x32:
-            case 0x33:
-            case 0x34:
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            case 0x38:
-            case 0x39:
-            case 0x3a:
-            case 0x3b:
-                return;
-            case 0x3c:
-            case 0x3d:
-            case 0x3e:
-                cue = 0x16;
-                break;
+                case 0x29:
+                    break;
+                case 0x2a:
+                    cue = 0x10;
+                    break;
+                case 0x2b:
+                    cue = 0x11;
+                    break;
+                case 0x2c:
+                    cue = 0xe;
+                    break;
+                case 0x2d:
+                    cue = 0xd;
+                    break;
+                case 0x2e:
+                    cue = 0xc;
+                    break;
+                case 0x2f:
+                case 0x30:
+                case 0x31:
+                case 0x32:
+                case 0x33:
+                case 0x34:
+                case 0x35:
+                case 0x36:
+                case 0x37:
+                case 0x38:
+                case 0x39:
+                case 0x3a:
+                case 0x3b:
+                    return;
+                case 0x3c:
+                case 0x3d:
+                case 0x3e:
+                    cue = 0x16;
+                    break;
             }
         } else {
             offset = (uint32_t)(soundId - 0xb0);
@@ -443,7 +445,7 @@ void Explosion::playSound(Vector *pos) {
             if (enabled == 0) {
                 soundPos = 0;
             }
-            ((FModSound *)(intptr_t)sound)->play(0x15, soundPos, 0, 0);
+            ((FModSound *) (intptr_t) sound)->play(0x15, soundPos, 0, 0);
             return;
         }
         if (type != 0) {
@@ -461,11 +463,9 @@ void Explosion::playSound(Vector *pos) {
     if (enabled == 0) {
         soundPos = 0;
     }
-    ((FModSound *)(intptr_t)sound)->play(cue, soundPos, 0, 0);
+    ((FModSound *) (intptr_t) sound)->play(cue, soundPos, 0, 0);
 }
 
-// Matrix-based public entry: positions the explosion meshes from a full
-// transform matrix. The by-reference sibling of start(Vector, Vector).
 void Explosion::start(const Matrix &matrix) {
     Vector position;
 
@@ -476,10 +476,10 @@ void Explosion::start(const Matrix &matrix) {
         MatrixGetPosition(&position, &matrix);
         this->secondaryMesh->setPosition(position);
     } else {
-        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&matrix);
+        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &matrix);
         AEGeometry *secondary = this->secondaryMesh;
         if (secondary != 0) {
-            secondary->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&matrix);
+            secondary->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &matrix);
         }
     }
 
@@ -517,7 +517,7 @@ void Explosion::render() {
     Vector up;
 
     if (this->playing != 0) {
-        uint32_t type = (uint32_t)this->type;
+        uint32_t type = (uint32_t) this->type;
         if ((type > 0xd || ((1u << (type & 0xff)) & 0x2780u) == 0) && this->secondaryMesh != 0) {
             this->secondaryMesh->render();
         }
@@ -541,14 +541,14 @@ void Explosion::render() {
         MatrixSetScaling(&work, &cameraLocal, scale, scale, scale);
 
         if (type - 8 < 3) {
-            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *)&cameraLocal, *(const Matrix *)&this->rotation);
+            AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) &cameraLocal, *(const Matrix *) &this->rotation);
         }
 
-        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *)&cameraLocal);
+        this->primaryMesh->setMatrix(*(const AbyssEngine::AEMath::Matrix *) &cameraLocal);
         this->primaryMesh->setPosition(position);
 
         current = canvas->CameraGetCurrent();
-        cameraLocal = *(const Matrix *)canvas->CameraGetLocal(current);
+        cameraLocal = *(const Matrix *) canvas->CameraGetLocal(current);
         Vector direction;
         MatrixGetDir(&direction, &cameraLocal);
         MatrixGetUp(&cameraPosition, &cameraLocal);
@@ -565,16 +565,13 @@ void Explosion::render() {
     }
 }
 
-// Advances the explosion animation by dt; positions the optional fire-streak
-// meshes at `position`. Most callers carry no streaks and bind a null reference
-// here, so `position` is only ever read when fireStreaks is populated.
 void Explosion::update(int dt, const Vector &position) {
     if (this->playing == 0) {
         return;
     }
 
     PaintCanvas *canvas = explosionCanvas();
-    long long delta = (long long)dt;
+    long long delta = (long long) dt;
     meshTransform(canvas, this->primaryMesh->transform)->Update(delta, 0);
 
     uint32_t lodTransform = this->primaryMesh->altTransform;
@@ -616,31 +613,27 @@ void Explosion::addFireStreaks() {
     PaintCanvas *canvas = explosionCanvas();
 
     for (uint32_t i = 0; i < this->fireStreaks->size(); i++) {
-        AEGeometry *geometry = new AEGeometry((uint16_t)0x37d4, canvas, false);
+        AEGeometry *geometry = new AEGeometry((uint16_t) 0x37d4, canvas, false);
         (*this->fireStreaks)[i] = geometry;
 
-        meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode)1, 0);
+        meshTransform(canvas, geometry->transform)->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
         F<float>(canvas->TransformGetTransform(geometry->transform), kTransformBoundingRadius) = 10000.0f;
 
-        float x = (float)explosionRandom()->nextInt(0x168);
-        float y = (float)explosionRandom()->nextInt(0x168);
-        float z = (float)explosionRandom()->nextInt(0x168);
+        float x = (float) explosionRandom()->nextInt(0x168);
+        float y = (float) explosionRandom()->nextInt(0x168);
+        float z = (float) explosionRandom()->nextInt(0x168);
         geometry->setRotation((x / 180.0f) * 3.1415927f,
                               (y / 180.0f) * 3.1415927f,
                               (z / 180.0f) * 3.1415927f);
 
         int scaleInt = explosionRandom()->nextInt(0x32) + 0x32;
-        float scale = (float)scaleInt / 100.0f;
+        float scale = (float) scaleInt / 100.0f;
         geometry->setScaling(scale, scale, scale);
     }
 }
 
-// Explosions are pooled by raw pointer (operator new) in BombGun / ObjectGun / the various
-// Player* objects, so construction and teardown go through these C entry points wrapping the
-// real special members. Explosion_dtor returns the object pointer so the caller can pass it
-// straight to operator delete.
 extern "C" void Explosion_ctor(Explosion *self, int type) {
-    new (self) Explosion(type);
+    new(self) Explosion(type);
 }
 
 extern "C" void *Explosion_dtor(Explosion *self) {

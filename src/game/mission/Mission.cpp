@@ -5,8 +5,13 @@
 #include "engine/core/GameText.h"
 #include "game/world/Station.h"
 
-// hidden pc-relative globals.
-__attribute__((visibility("hidden"))) extern GameText** g_gameText;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern GameText **g_gameText;
 
 uint8_t Mission::isInstantActionMission() {
     return this->instantAction;
@@ -28,8 +33,6 @@ String Mission::getTargetSystemName() {
     return this->targetSystemName;
 }
 
-// Campaign missions use a fixed name; freelance ones look up "<id+0x162>" in the
-// global text table.
 String Mission::getName() {
     if (this->campaign != 0) {
         return String("");
@@ -42,7 +45,7 @@ void Mission::setProductionGoods(int a, int b) {
     this->productionGoodsB = b;
 }
 
-void* Mission::setTargetName(String rhs) {
+void *Mission::setTargetName(String rhs) {
     this->targetName = rhs;
     return &this->targetName;
 }
@@ -67,7 +70,7 @@ void Mission::setInstantActionMission(bool v) {
     this->instantAction = v;
 }
 
-void* Mission::setTargetSystemName(const String& rhs) {
+void *Mission::setTargetSystemName(const String &rhs) {
     this->targetSystemName = rhs;
     return &this->targetSystemName;
 }
@@ -76,25 +79,21 @@ void Mission::setVisible(bool v) {
     this->visible = v;
 }
 
-// Deep-copies this mission into a freshly allocated one via the seven-argument
-// constructor, then carries over the instant-action flag.
-Mission* Mission::clone() {
-    Mission* m = new Mission(this->id, this->name, this->clientImage,
+Mission *Mission::clone() {
+    Mission *m = new Mission(this->id, this->name, this->clientImage,
                              this->clientRace, this->costs, this->targetStation,
                              this->reward);
     m->instantAction = this->instantAction;
     return m;
 }
 
-// Sets the target station index and caches that station's name.
 void Mission::setTargetStation(int idx) {
     this->targetStation = idx;
-    Station* st = (Station*)(long)gGalaxy->getStation(idx);
+    Station *st = (Station *) (long) gGalaxy->getStation(idx);
     this->targetStationName = st->getName();
 }
 
-// The freelance-mission constructor.
-Mission::Mission(int id, AbyssEngine::String client, int* clientImage, int clientRace,
+Mission::Mission(int id, AbyssEngine::String client, int *clientImage, int clientRace,
                  int costs, int station, int reward) {
     this->id = id;
     this->name = client;
@@ -102,7 +101,7 @@ Mission::Mission(int id, AbyssEngine::String client, int* clientImage, int clien
     this->clientRace = clientRace;
     this->costs = costs;
     this->targetStation = station;
-    Station* st = (Station*)(long)gGalaxy->getStation(station);
+    Station *st = (Station *) (long) gGalaxy->getStation(station);
     this->targetStationName = st->getName();
     this->reward = reward;
     this->targetSystemName = String("");
@@ -115,7 +114,6 @@ Mission::Mission(int id, AbyssEngine::String client, int* clientImage, int clien
     this->bonus = 0;
 }
 
-// Like the default constructor but stores the given id.
 Mission::Mission(int id) {
     this->name = String("");
     this->campaign = 0;
@@ -134,19 +132,16 @@ Mission::Mission(int id) {
     this->targetStation = 0;
 }
 
-// Computes the distance (light years) from the player's current system to this
-// mission's target station system.
 void Mission::calcDistance() {
-    Galaxy* g = gGalaxy;
-    Station* st = (Station*)(long)g->getStation(this->targetStation);
-    Array<SolarSystem*>* sys = g->getSystems();
-    SolarSystem* a = (*sys)[gStatus->getStation()->getSystem()];
-    SolarSystem* b = (*sys)[st->getSystem()];
-    this->distance = (int)g->distance(a, b);
+    Galaxy *g = gGalaxy;
+    Station *st = (Station *) (long) g->getStation(this->targetStation);
+    Array<SolarSystem *> *sys = g->getSystems();
+    SolarSystem *a = (*sys)[gStatus->getStation()->getSystem()];
+    SolarSystem *b = (*sys)[st->getSystem()];
+    this->distance = (int) g->distance(a, b);
     delete st;
 }
 
-// The campaign-mission constructor.
 Mission::Mission(int id, int goods, int station) {
     this->costs = goods;
     this->targetStation = station;
@@ -156,7 +151,7 @@ Mission::Mission(int id, int goods, int station) {
     if (station < 0) {
         this->targetStationName = String("");
     } else {
-        Station* st = (Station*)(long)gGalaxy->getStation(station);
+        Station *st = (Station *) (long) gGalaxy->getStation(station);
         this->targetStationName = st->getName();
     }
     this->targetSystemName = String("");
@@ -173,8 +168,6 @@ Mission::~Mission() {
     // The four String members are destroyed automatically.
 }
 
-// Default constructor: installs the vtable, names the mission from a literal, and
-// zero-inits the rest.
 Mission::Mission() {
     this->name = String("");
     this->campaign = 0;
@@ -193,12 +186,10 @@ Mission::Mission() {
     this->targetStation = 0;
 }
 
-// The mission "type" is just its id.
 int Mission::getType() {
     return this->id;
 }
 
-// getReward()/getCosts() both read the costs slot; setReward() writes it.
 int Mission::getReward() {
     return this->costs;
 }
@@ -239,15 +230,15 @@ void Mission::setStatusValue(int value) {
     this->statusValue = value;
 }
 
-Agent* Mission::getAgent() {
+Agent *Mission::getAgent() {
     return this->agent;
 }
 
-void Mission::setAgent(Agent* agent) {
+void Mission::setAgent(Agent *agent) {
     this->agent = agent;
 }
 
-int* Mission::getClientImage() {
+int *Mission::getClientImage() {
     return this->clientImage;
 }
 
@@ -287,17 +278,14 @@ void Mission::setCampaignMission(bool flag) {
     this->campaign = flag ? 1 : 0;
 }
 
-// The base implementation always reports true.
 bool Mission::isOutsideMission() {
     return true;
 }
 
-// The "type" is stored in the same slot as the id.
 void Mission::setType(int type) {
     this->id = type;
 }
 
-// The difficulty is stored in the same slot as the reward.
 void Mission::setDifficulty(int difficulty) {
     this->reward = difficulty;
 }

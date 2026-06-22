@@ -1,14 +1,11 @@
 #include "game/world/SystemPathFinder.h"
 #include "engine/render/LODManager.h"
 
-// Deletes every owned pointee in the array (nulling each slot as it goes), then
-// frees the backing store. Out-of-line in the original as ArrayReleaseClasses<T>;
-// the loop walks the full capacity, not just the live size.
+SystemPathFinder::SystemPathFinder() {
+}
 
-// Stateless A* helper: the open/closed sets used by search() are created and
-// released within each call, so construction and destruction do nothing.
-SystemPathFinder::SystemPathFinder() {}
-SystemPathFinder::~SystemPathFinder() {}
+SystemPathFinder::~SystemPathFinder() {
+}
 
 int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
     for (uint32_t i = 0; i < nodes->size(); ++i) {
@@ -53,7 +50,7 @@ int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
                                       int to) {
     Array<int> *path = getSystemPath(systems, from, to);
     if (path != nullptr) {
-        int length = (int)path->size();
+        int length = (int) path->size();
         delete path;
         return length - 1;
     }
@@ -70,7 +67,7 @@ Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     path->resize(backwards->size());
 
     // Reverse-copy the back-pointer chain into the forward path.
-    uint32_t count = (uint32_t)backwards->size();
+    uint32_t count = (uint32_t) backwards->size();
     for (uint32_t out = 0; out < count; ++out) {
         path->data()[out] = backwards->data()[count - 1 - out];
     }
@@ -86,24 +83,24 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
     nodes->resize(systems->size());
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
-        nodes->data()[i] = new Node((int)i);
+        nodes->data()[i] = new Node((int) i);
     }
 
     Status **statusPtr = g_SystemPathFinder_status;
     for (uint32_t s = 0; s < systems->size(); ++s) {
-        Array<int> *routes = (Array<int> *)systems->data()[s]->getRoutes();
+        Array<int> *routes = (Array<int> *) systems->data()[s]->getRoutes();
         if (routes == nullptr) {
             continue;
         }
         for (uint32_t j = 0; j < routes->size(); ++j) {
             Array<uint8_t> *visibilities =
-                (Array<uint8_t> *)(*statusPtr)->getSystemVisibilities();
+                    (Array<uint8_t> *) (*statusPtr)->getSystemVisibilities();
             if (visibilities == nullptr) {
                 continue;
             }
             int routeIndex = routes->data()[j];
             int targetIndex = systems->data()[routeIndex]->getIndex();
-            if (visibilities->size() > (uint32_t)targetIndex &&
+            if (visibilities->size() > (uint32_t) targetIndex &&
                 visibilities->data()[targetIndex] != 0) {
                 nodes->data()[s]->children->push_back(
                     nodes->data()[routeIndex]);
@@ -112,7 +109,7 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
     }
 
     Array<Node *> *nodePath =
-        search(nodes->data()[start], nodes->data()[to]);
+            search(nodes->data()[start], nodes->data()[to]);
     Array<int> *path = nullptr;
     if (nodePath != nullptr) {
         if (!nodePath->empty()) {

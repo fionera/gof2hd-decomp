@@ -11,10 +11,6 @@
 #include "mathtypes.h"
 #include "game/ship/PlayerStatic.h"
 
-// Galaxy on Fire 2 -- PlayerStaticFar: a PlayerStatic that additionally projects
-// distant objects onto a fixed-radius sphere around the camera so they stay
-// visible (and scaled down) at long range.
-
 class Player;
 class AEGeometry;
 class BoundingVolume;
@@ -23,25 +19,28 @@ class PlayerStaticFar : public PlayerStatic {
 public:
     using Vector = AbyssEngine::AEMath::Vector;
 
-    Player *player;                          // owning player instance
-    Vector  initPosition;                    // original spawn position
-    Vector  cameraPosition;                  // camera position captured each update
-    Vector  objectPosition;                  // object position (float, from integer pos)
-    Array<BoundingVolume*> *boundingVolumes;  // bounding-volume container
-    Vector  viewDirection;                   // camera->object direction
+    Player *player; // owning player instance
+    Vector initPosition; // original spawn position
+    Vector cameraPosition; // camera position captured each update
+    Vector objectPosition; // object position (float, from integer pos)
+    Array<BoundingVolume *> *boundingVolumes; // bounding-volume container
+    Vector viewDirection; // camera->object direction
 
     PlayerStaticFar(int playerId, AEGeometry *geometry, float x, float y, float z);
+
     ~PlayerStaticFar();
 
-    Vector getProjectionVector(const Vector &value) override;        // actor vtable slot +0x50
-    void   render() override;
-    Vector projectCollisionOnSurface(const Vector &value) override;  // actor vtable slot +0x58
-    int    outerCollide(float x, float y, float z) override;   // slot +0x3c -> this->collide
-    int    outerCollide(Vector value);                         // Vector overload -> this->collide
-    Vector getInitPosition(Vector value);                      // Vector overload -> initPosition
-    void   setYRotation(int yRotation);                        // no-op: a static far object never rotates
-    void   update(int delta) override;
-    int    collide(float x, float y, float z) override;   // actor vtable slot +0x38
+    Vector getProjectionVector(const Vector &value) override; // actor vtable slot +0x50
+    void render() override;
+
+    Vector projectCollisionOnSurface(const Vector &value) override; // actor vtable slot +0x58
+    int outerCollide(float x, float y, float z) override; // slot +0x3c -> this->collide
+    int outerCollide(Vector value); // Vector overload -> this->collide
+    Vector getInitPosition(Vector value); // Vector overload -> initPosition
+    void setYRotation(int yRotation); // no-op: a static far object never rotates
+    void update(int delta) override;
+
+    int collide(float x, float y, float z) override; // actor vtable slot +0x38
 };
 
 #endif

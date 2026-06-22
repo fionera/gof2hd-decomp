@@ -8,11 +8,10 @@
 class SolarSystem;
 class Station;
 
-// Galaxy — the star-map model: owns the per-station visited-flag array and the
-// table of SolarSystem objects loaded from the game's binary data files.
 class Galaxy {
 public:
     Galaxy();
+
     ~Galaxy();
 
     // Reset every per-station visited flag to "not visited".
@@ -21,6 +20,7 @@ public:
     // Percentage-style proximity metric between two map points (planar distance,
     // scaled to roughly 0..100). invDistancePercent() returns its 100-complement.
     int distancePercent(int x1, int y1, int x2, int y2);
+
     int invDistancePercent(int x1, int y1, int x2, int y2);
 
     // Mark a station/system index as visited.
@@ -34,6 +34,7 @@ public:
 
     // Probability tables (plasma / asteroid resource yields) for a given station.
     void *getPlasmaProbabilities(Station *station);
+
     void *getAsteroidProbabilities(Station *station);
 
     // Resolve a station index; negative resolves to the player's current station.
@@ -45,11 +46,13 @@ public:
 
     // Accessors for the two owned members.
     Array<SolarSystem *> *getSystems();
+
     uint8_t *getVisited();
 
-    uint8_t *visited;                 // heap array of 0x87 per-station visited flags
-    Array<SolarSystem *> *systems;    // table of loaded SolarSystem objects
+    uint8_t *visited; // heap array of 0x87 per-station visited flags
+    Array<SolarSystem *> *systems; // table of loaded SolarSystem objects
 };
-extern Galaxy* gGalaxy;            // canonical Galaxy singleton (binary .bss 0x2281ac)
+
+extern Galaxy *gGalaxy; // canonical Galaxy singleton (binary .bss 0x2281ac)
 
 #endif

@@ -1,19 +1,15 @@
 #include "engine/render/ResourceTransform.h"
 
 namespace AbyssEngine {
+    ResourceTransform::~ResourceTransform() {
+        if (this->dataA != nullptr) {
+            ::operator delete[](this->dataA);
+        }
+        this->dataA = nullptr;
 
-// Release the two owned heap arrays and null the slots.
-ResourceTransform::~ResourceTransform()
-{
-    if (this->dataA != nullptr) {
-        ::operator delete[](this->dataA);
+        if (this->dataB != nullptr) {
+            ::operator delete[](this->dataB);
+        }
+        this->dataB = nullptr;
     }
-    this->dataA = nullptr;
-
-    if (this->dataB != nullptr) {
-        ::operator delete[](this->dataB);
-    }
-    this->dataB = nullptr;
-}
-
 } // namespace AbyssEngine

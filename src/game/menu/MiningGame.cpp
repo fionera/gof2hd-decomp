@@ -6,55 +6,75 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
 
-
-
-// Engine-internal entry points reached through opaque global singletons. These
-// operate on engine objects (status/ship/item/achievements/sound/layout/text)
-// that have no clean header here, so they stay as thin C-ABI forwarders.
 extern "C" float MiningGame_sqrt(void *globals, float value);
+
 extern "C" void MiningGame_FModSound_setParamValue(void *sound, int index, int param, float value);
+
 extern "C" void MiningGame_FModSound_play(void *sound, int id, void *a, void *b, void *c);
+
 extern "C" void MiningGame_FModSound_stop(void *sound, int id);
+
 extern "C" int MiningGame_Achievements_hasMedal(void *achievements, int medal, int value);
+
 extern "C" int MiningGame_Achievements_getValue(void *achievements, int medal, int value);
+
 extern "C" void MiningGame_Hud_hudEventMedal(void *hud, int medal, int value);
+
 extern "C" void *MiningGame_Status_getShip(void *status);
+
 extern "C" void *MiningGame_Ship_getFirstEquipmentOfSort(void *ship, int sort);
+
 extern "C" int MiningGame_Item_getAttribute(void *item, int attribute);
+
 extern "C" int MiningGame_Status_getCurrentCampaignMission(void *status);
+
 extern "C" float MiningGame_Layout_getPulseValue(void *layout, float value);
+
 extern "C" void *MiningGame_Status_getShip_render(void *status);
+
 extern "C" int MiningGame_Ship_getFreeSpace(void *ship);
+
 extern "C" int MiningGame_Status_getCurrentCampaignMission_render(void *status);
+
 extern "C" String *MiningGame_GameText_getText(void *gameText, int id);
 
-// Generic typed field accessors over engine singletons reached only as void*.
-// RAWREAD: every I()/F()/UC() target here is an opaque engine singleton
-// (layout/status) handed back through a void** global, not a byte-faithful typed
-// object. The Layout/Status headers are sparse (no members at these offsets), so
-// these stay as raw offset reads rather than invented named members.
-static inline int &I(void *p, unsigned off) { return *(int *)((char *)p + off); }
-static inline float &F(void *p, unsigned off) { return *(float *)((char *)p + off); }
-static inline uint8_t &UC(void *p, unsigned off) { return *(uint8_t *)((char *)p + off); }
+static inline int &I(void *p, unsigned off) { return *(int *) ((char *) p + off); }
+static inline float &F(void *p, unsigned off) { return *(float *) ((char *) p + off); }
+static inline uint8_t &UC(void *p, unsigned off) { return *(uint8_t *) ((char *) p + off); }
 
-int MiningGame::getOreAmount()
-{
-    return (int)this->oreAmount;
+int MiningGame::getOreAmount() {
+    return (int) this->oreAmount;
 }
 
-int MiningGame::getAsteroidType()
-{
+int MiningGame::getAsteroidType() {
     return this->station;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_sqrt;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_layout;
-__attribute__((visibility("hidden"))) extern int *g_MiningGame_layerSizes;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_sqrt;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_layout;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_MiningGame_layerSizes;
 
-bool MiningGame::isInCurrentLayer()
-{
-    float dx = this->posX - (float)this->centerX;
-    float dy = this->posY - (float)this->centerY;
+bool MiningGame::isInCurrentLayer() {
+    float dx = this->posX - (float) this->centerX;
+    float dy = this->posY - (float) this->centerY;
     void **sqrtHolder = g_MiningGame_sqrt;
     int current = this->currentLayer;
     int layer = this->targetLayer;
@@ -64,61 +84,101 @@ bool MiningGame::isInCurrentLayer()
     int size = row[current];
     float scale = F(*layoutHolder, 0xe8);
     float distance = MiningGame_sqrt(globals, dx * dx + dy * dy);
-    return distance < scale * (float)(size / 2);
+    return distance < scale * (float) (size / 2);
 }
 
-float MiningGame::up(float amount)
-{
+float MiningGame::up(float amount) {
     return this->inputY = amount * 3.0f;
 }
 
-uint8_t MiningGame::gameWon()
-{
+uint8_t MiningGame::gameWon() {
     return this->gameWonFlag;
 }
 
-float MiningGame::down(float amount)
-{
+float MiningGame::down(float amount) {
     return this->inputY = amount * 3.0f;
 }
 
-uint8_t MiningGame::gotCore()
-{
+uint8_t MiningGame::gotCore() {
     return this->gotCoreFlag;
 }
 
-float MiningGame::left(float amount)
-{
+float MiningGame::left(float amount) {
     return this->inputX = amount * 3.0f;
 }
 
-uint8_t MiningGame::gameLost()
-{
+uint8_t MiningGame::gameLost() {
     return this->gameLostFlag;
 }
 
-float MiningGame::right(float amount)
-{
+float MiningGame::right(float amount) {
     return this->inputX = amount * 3.0f;
 }
 
-MiningGame::~MiningGame()
-{
+MiningGame::~MiningGame() {
     delete this->drillSprite;
     this->drillSprite = nullptr;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_random;
-__attribute__((visibility("hidden"))) extern int (*g_MiningGame_randomNext)(void *random, int limit);
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutUpdate;
-__attribute__((visibility("hidden"))) extern float *g_MiningGame_layerSpeedUpdate;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_sound;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_statusUpdate;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_achievements;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_statusMedal;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_random;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int (*g_MiningGame_randomNext)(void *random, int limit);
 
-int MiningGame::update(int delta)
-{
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_layoutUpdate;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern float *g_MiningGame_layerSpeedUpdate;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_sound;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_statusUpdate;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_achievements;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_statusMedal;
+
+int MiningGame::update(int delta) {
     int pulse = this->promptPulseTimer + delta;
     if (pulse >= 2000) {
         pulse = 0;
@@ -138,14 +198,14 @@ int MiningGame::update(int delta)
         if (next(*randomHolder, 2) == 0) {
             sign = 1;
         }
-        this->driftX = ((float)((value + 5) * sign) / 10.0f) / this->controlDivisor;
+        this->driftX = ((float) ((value + 5) * sign) / 10.0f) / this->controlDivisor;
 
         value = next(*randomHolder, 7);
         sign = -1;
         if (next(*randomHolder, 2) == 0) {
             sign = 1;
         }
-        this->driftY = ((float)(sign * (value + 5)) / 10.0f) / this->controlDivisor;
+        this->driftY = ((float) (sign * (value + 5)) / 10.0f) / this->controlDivisor;
 
         if (this->isCoreLayer != 0 && this->currentLayer == this->targetLayer - 1) {
             this->driftX *= 0.3f;
@@ -154,13 +214,13 @@ int MiningGame::update(int delta)
     }
 
     if (this->campaignFlag == 0 && !isInCurrentLayer()) {
-        this->driftX = ((float)this->centerX - this->posX) * 0.03f;
-        this->driftY = ((float)this->centerY - this->posY) * 0.03f;
+        this->driftX = ((float) this->centerX - this->posX) * 0.03f;
+        this->driftY = ((float) this->centerY - this->posY) * 0.03f;
     }
 
     void **layoutHolder = g_MiningGame_layoutUpdate;
     void *layout = *layoutHolder;
-    float frameScale = (float)delta;
+    float frameScale = (float) delta;
     this->posX += ((this->inputX + this->driftX) / F(layout, 0xe4)) * frameScale;
     this->posY += ((this->inputY + this->driftY) / F(layout, 0xe4)) * frameScale;
 
@@ -189,7 +249,7 @@ int MiningGame::update(int delta)
         this->oreMarquee->update(delta);
         int nextLayer = this->currentLayer + 1;
         float oldOre = this->oreAmount;
-        float layerFactor = 0.15f + ((float)nextLayer / 7.0f) * 2.35f;
+        float layerFactor = 0.15f + ((float) nextLayer / 7.0f) * 2.35f;
         float newOre = oldOre + ((this->oreRate * layerFactor) / 1000.0f) * frameScale;
         this->oreAmount = newOre;
         float alpha = oldOre < newOre ? 0.0f : this->textAlpha;
@@ -213,11 +273,11 @@ int MiningGame::update(int delta)
                     int count = I(*statusHolder, 0x124) + 1;
                     I(*statusHolder, 0x124) = count;
                     int goal = MiningGame_Achievements_getValue(*achHolder, 0x26, 1);
-                    int percent = (int)(((float)count / (float)goal) * 100.0f);
+                    int percent = (int) (((float) count / (float) goal) * 100.0f);
                     if (percent % 10 == 0) {
-                        int shown = (int)(((float)I(*statusHolder, 0x124) /
-                                           (float)MiningGame_Achievements_getValue(*achHolder, 0x26, 1)) *
-                                          100.0f);
+                        int shown = (int) (((float) I(*statusHolder, 0x124) /
+                                            (float) MiningGame_Achievements_getValue(*achHolder, 0x26, 1)) *
+                                           100.0f);
                         if (shown > 29) {
                             MiningGame_Hud_hudEventMedal(this->hud, 0x26, shown);
                         }
@@ -250,15 +310,50 @@ int MiningGame::update(int delta)
     return 1;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutCtor;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_statusCtor;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_canvasCtor;
-__attribute__((visibility("hidden"))) extern int *g_MiningGame_screenW;
-__attribute__((visibility("hidden"))) extern int *g_MiningGame_screenH;
-__attribute__((visibility("hidden"))) extern float *g_MiningGame_layerSpeed;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_layoutCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_statusCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_canvasCtor;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_MiningGame_screenW;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_MiningGame_screenH;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern float *g_MiningGame_layerSpeed;
 
-MiningGame::MiningGame(int layer, int station, Hud *hud)
-{
+MiningGame::MiningGame(int layer, int station, Hud *hud) {
     int imageId[2];
     imageId[0] = -1;
 
@@ -289,28 +384,28 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->gameWonFlag = 0;
     this->gameLostFlag = 0;
     this->gotCoreFlag = 0;
-    this->posX = (float)centerX;
+    this->posX = (float) centerX;
     this->inputX = 0.0f;
     this->inputY = 0.0f;
     this->driftX = 0.0f;
     this->driftY = 0.0f;
-    this->posY = (float)centerY;
+    this->posY = (float) centerY;
 
     void *ship = MiningGame_Status_getShip(*statusHolder);
     void *equipment = MiningGame_Ship_getFirstEquipmentOfSort(ship, 0x13);
     if (equipment != 0) {
         int value = MiningGame_Item_getAttribute(equipment, 0x20);
-        this->controlDivisor = 0.3f + ((float)value / 100.0f) * 1.5f;
+        this->controlDivisor = 0.3f + ((float) value / 100.0f) * 1.5f;
         value = MiningGame_Item_getAttribute(equipment, 0x21);
-        this->oreRate = (float)value / 100.0f;
+        this->oreRate = (float) value / 100.0f;
     }
 
-    PaintCanvas *canvas = (PaintCanvas *)*g_MiningGame_canvasCtor;
+    PaintCanvas *canvas = (PaintCanvas *) *g_MiningGame_canvasCtor;
     unsigned int drillImageId;
     canvas->Image2DCreate(0x4e6, drillImageId);
     imageId[0] = drillImageId;
     int imageHeight = canvas->GetImage2DHeight(imageId[0]);
-    Sprite *sprite = new Sprite((uint32_t)imageId[0], imageHeight, imageHeight);
+    Sprite *sprite = new Sprite((uint32_t) imageId[0], imageHeight, imageHeight);
     this->drillSprite = sprite;
     sprite->defineReferencePixel(imageHeight / 2, imageHeight / 2);
 
@@ -368,7 +463,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->oreImageHeight = canvas->GetImage2DHeight(this->oreTextImageId);
 
     MarqueeImage *oreMarquee =
-        new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
+            new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
     this->oreMarquee = oreMarquee;
     oreMarquee->speed = F(layout, 0xe0) * g_MiningGame_layerSpeed[this->currentLayer];
 
@@ -377,20 +472,74 @@ MiningGame::MiningGame(int layer, int station, Hud *hud)
     this->campaignFlag = MiningGame_Status_getCurrentCampaignMission(*statusHolder) > 4;
 }
 
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_canvasRender;
-__attribute__((visibility("hidden"))) extern int *g_MiningGame_layerTableRender;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_layoutRender;
-__attribute__((visibility("hidden"))) extern void (*g_MiningGame_drawLayer)(void *canvas, int image, int x, int y,
-                                                                            int w, int h, int anchor, int tile,
-                                                                            int frame);
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_statusRender;
-__attribute__((visibility("hidden"))) extern char g_MiningGame_oreSuffix[];
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_fontString;
-__attribute__((visibility("hidden"))) extern void **g_MiningGame_gameText;
-__attribute__((visibility("hidden"))) extern int *g_MiningGame_screenWRender;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_canvasRender;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_MiningGame_layerTableRender;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_layoutRender;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void (*g_MiningGame_drawLayer)(void *canvas, int image, int x, int y,
+                                      int w, int h, int anchor, int tile,
+                                      int frame);
 
-void MiningGame::render2D()
-{
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_statusRender;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern char g_MiningGame_oreSuffix[];
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_fontString;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern void **g_MiningGame_gameText;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern int *g_MiningGame_screenWRender;
+
+void MiningGame::render2D() {
     String amountStorage;
     String suffixStorage;
     String oreStorage;
@@ -398,8 +547,8 @@ void MiningGame::render2D()
     String *suffixText = &suffixStorage;
     String *oreText = &oreStorage;
 
-    PaintCanvas *canvas = (PaintCanvas *)*g_MiningGame_canvasRender;
-    canvas->SetColor((unsigned int)-1);
+    PaintCanvas *canvas = (PaintCanvas *) *g_MiningGame_canvasRender;
+    canvas->SetColor((unsigned int) -1);
 
     int *layerTable = g_MiningGame_layerTableRender;
     void **layoutHolder = g_MiningGame_layoutRender;
@@ -408,7 +557,7 @@ void MiningGame::render2D()
 
     for (int layerIndex = this->currentLayer; layerIndex < this->targetLayer; layerIndex++) {
         int raw = layerTable[(layerIndex - this->targetLayer * 7) + 0x31];
-        int radius = (int)(F(layout, 0xe8) * (float)raw);
+        int radius = (int) (F(layout, 0xe8) * (float) raw);
         int *imageSlot;
         if ((layerIndex & 1) == 0) {
             imageSlot = &this->ringEvenNear;
@@ -436,11 +585,11 @@ void MiningGame::render2D()
     }
 
     if (this->isCoreLayer != 0) {
-        canvas->DrawImage2D(this->coreImageId, this->centerX, this->centerY, (unsigned char)0x4411);
+        canvas->DrawImage2D(this->coreImageId, this->centerX, this->centerY, (unsigned char) 0x4411);
     }
 
-    canvas->DrawImage2D(this->oreIconImageId, (int)this->posX, (int)this->posY, (unsigned char)0x4411);
-    this->drillSprite->setRefPixelPosition((int)this->posX, (int)this->posY);
+    canvas->DrawImage2D(this->oreIconImageId, (int) this->posX, (int) this->posY, (unsigned char) 0x4411);
+    this->drillSprite->setRefPixelPosition((int) this->posX, (int) this->posY);
     this->drillSprite->draw(1.0f, 1.0f);
 
     canvas->DrawImage2D(this->cornerImageId, this->progressBarX - I(layout, 0xfc),
@@ -450,25 +599,26 @@ void MiningGame::render2D()
     if (lossTimer > 0x341) {
         float red = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
         float green = MiningGame_Layout_getPulseValue(layout, 10.0f) * 255.0f;
-        canvas->SetColor((unsigned char)0xff, (unsigned char)(int)red, (unsigned char)(int)green, (unsigned char)0xff);
+        canvas->SetColor((unsigned char) 0xff, (unsigned char) (int) red, (unsigned char) (int) green,
+                         (unsigned char) 0xff);
     }
 
-    int width = (int)(((2500.0f - (float)lossTimer) / 2500.0f) * (float)this->progressBarWidth);
-    canvas->DrawRegion2D(this->progressBarImageId, 0, 0, width, this->progressBarHeight, (float)width, 0, 0, 0,
+    int width = (int) (((2500.0f - (float) lossTimer) / 2500.0f) * (float) this->progressBarWidth);
+    canvas->DrawRegion2D(this->progressBarImageId, 0, 0, width, this->progressBarHeight, (float) width, 0, 0, 0,
                          this->progressBarX);
-    canvas->SetColor((unsigned int)-1);
-    canvas->DrawImage2D(this->progressLabelImageId, this->centerX, this->progressBarY - 3, (unsigned char)0x2411);
+    canvas->SetColor((unsigned int) -1);
+    canvas->DrawImage2D(this->progressLabelImageId, this->centerX, this->progressBarY - 3, (unsigned char) 0x2411);
 
     this->leftMarquee->draw();
     this->rightMarquee->draw();
-    this->oreMarquee->draw((int)(this->posX + (float)this->oreIconOffsetX),
-                           (int)(this->posY - (float)this->oreImageHeight));
+    this->oreMarquee->draw((int) (this->posX + (float) this->oreIconOffsetX),
+                           (int) (this->posY - (float) this->oreImageHeight));
 
     canvas->DrawImage2D(this->oreLabelImageId,
-                        (int)((this->posX + (float)this->oreIconOffsetX) - (float)I(layout, 0xfc)),
-                        (int)(this->posY - (float)I(layout, 0x100)));
+                        (int) ((this->posX + (float) this->oreIconOffsetX) - (float) I(layout, 0xfc)),
+                        (int) (this->posY - (float) I(layout, 0x100)));
 
-    amountText->ctor_int((int)this->oreAmount);
+    amountText->ctor_int((int) this->oreAmount);
     suffixText->ctor_char(g_MiningGame_oreSuffix, false);
     *oreText = *amountText + *suffixText;
     suffixText->clear();
@@ -476,52 +626,47 @@ void MiningGame::render2D()
 
     void *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
-    int alpha = (int)(this->textAlpha * 255.0f);
-    if (freeSpace < (int)this->oreAmount) {
-        canvas->SetColor((unsigned char)0xff, (unsigned char)0x2a, (unsigned char)0, (unsigned char)alpha);
+    int alpha = (int) (this->textAlpha * 255.0f);
+    if (freeSpace < (int) this->oreAmount) {
+        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0x2a, (unsigned char) 0, (unsigned char) alpha);
     } else {
-        canvas->SetColor((unsigned char)0xff, (unsigned char)0xff, (unsigned char)0xff, (unsigned char)alpha);
+        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) alpha);
     }
 
-    String *font = (String *)*g_MiningGame_fontString;
-    int textWidth = canvas->GetTextWidth((unsigned int)(long)font, *oreText);
-    int textX = (int)(((this->posX + (float)this->oreIconOffsetX + (float)this->oreIconOffsetY) -
-                       (float)I(layout, 0xfc)) -
-                      (float)(textWidth / 2));
-    int textY = (int)(this->posY + (float)I(layout, 0x104));
-    canvas->DrawString((unsigned int)(long)font, *oreText, textX, textY, false);
-    canvas->SetColor((unsigned int)-1);
+    String *font = (String *) *g_MiningGame_fontString;
+    int textWidth = canvas->GetTextWidth((unsigned int) (long) font, *oreText);
+    int textX = (int) (((this->posX + (float) this->oreIconOffsetX + (float) this->oreIconOffsetY) -
+                        (float) I(layout, 0xfc)) -
+                       (float) (textWidth / 2));
+    int textY = (int) (this->posY + (float) I(layout, 0x104));
+    canvas->DrawString((unsigned int) (long) font, *oreText, textX, textY, false);
+    canvas->SetColor((unsigned int) -1);
 
     if (MiningGame_Status_getCurrentCampaignMission_render(*g_MiningGame_statusRender) < 5) {
-        int promptAlpha = (int)(((float)this->promptPulseTimer / 2500.0f) * 255.0f);
+        int promptAlpha = (int) (((float) this->promptPulseTimer / 2500.0f) * 255.0f);
         if (promptAlpha > 255) {
             promptAlpha = 255 - promptAlpha;
         }
-        canvas->SetColor((unsigned char)0xff, (unsigned char)0xff, (unsigned char)0xff, (unsigned char)(uint8_t)promptAlpha);
+        canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff,
+                         (unsigned char) (uint8_t) promptAlpha);
         String *prompt = MiningGame_GameText_getText(*g_MiningGame_gameText, 0x268);
         amountText->ctor_copy(prompt, false);
-        int promptWidth = canvas->GetTextWidth((unsigned int)(long)font, *amountText);
-        canvas->DrawString((unsigned int)(long)font, *amountText,
+        int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
+        canvas->DrawString((unsigned int) (long) font, *amountText,
                            *g_MiningGame_screenWRender / 2 - promptWidth / 2,
                            I(layout, 0x70) + this->progressBarY, false);
-        canvas->SetColor((unsigned int)-1);
+        canvas->SetColor((unsigned int) -1);
         amountText->clear();
     }
 
     oreText->clear();
 }
 
-// C-ABI factory used at the asteroid-docking call site. PlayerEgo::approachAsteroid
-// allocates the instance and runs the constructor with the asteroid quality/seed.
-extern "C" void *MiningGame_new(int quality, int seed, void *hud)
-{
-    return new MiningGame(quality, seed, (Hud *)hud);
+extern "C" void *MiningGame_new(int quality, int seed, void *hud) {
+    return new MiningGame(quality, seed, (Hud *) hud);
 }
 
-// C-ABI destructor: runs ~MiningGame() and returns the storage so the caller can
-// hand it to operator delete.
-extern "C" void *MiningGame_dtor(void *mg)
-{
-    if (mg) ((MiningGame *)mg)->~MiningGame();
+extern "C" void *MiningGame_dtor(void *mg) {
+    if (mg) ((MiningGame *) mg)->~MiningGame();
     return mg;
 }

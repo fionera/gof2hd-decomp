@@ -5,31 +5,43 @@
 #include "fieldaccess.h"
 #include "aetypes.h"
 
-// Forward-declare only: a pointer-to-pointer extern needs no complete type, and
-// including engine/render/PaintCanvas.h here collides with game/core/PaintCanvasClass.h
-// (a second PaintCanvas definition) in TUs that pull in both. The .cpp includes the full type.
-namespace AbyssEngine { class PaintCanvas; }
+namespace AbyssEngine {
+    class PaintCanvas;
+}
+
 using ::AbyssEngine::PaintCanvas;
-__attribute__((visibility("hidden"))) extern PaintCanvas **g_MarqueeImage_canvas;
+__attribute__ ((visibility
+(
+"hidden"
+)
+)
+)
+extern PaintCanvas **g_MarqueeImage_canvas;
 
 class MarqueeImage {
 public:
-    uint32_t image;          // image2D handle (filled by PaintCanvas::Image2DCreate)
-    int32_t  imageWidth;
-    int32_t  imageHeight;
-    int32_t  x;
-    int32_t  y;
-    int32_t  visibleWidth;
+    uint32_t image; // image2D handle (filled by PaintCanvas::Image2DCreate)
+    int32_t imageWidth;
+    int32_t imageHeight;
+    int32_t x;
+    int32_t y;
+    int32_t visibleWidth;
     volatile float scrollPosition;
-    float    speed;
-    int32_t  scrollOffset;
+    float speed;
+    int32_t scrollOffset;
 
     MarqueeImage(uint16_t image, int width, int x, int y, float speed);
+
     ~MarqueeImage();
+
     void setSpeed(float speed);
+
     void setPosition(int x, int y);
+
     void update(int dt);
+
     void draw();
+
     void draw(int x, int y);
 };
 #endif

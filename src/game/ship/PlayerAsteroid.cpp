@@ -7,42 +7,33 @@
 #include "game/ship/Player.h"
 #include "engine/math/Transform.h"
 
+namespace AbyssEngine {
+    namespace AERandom {
+        int nextInt(int rng, int bound);
+    }
+}
 
+AbyssEngine::Transform *PlayerAsteroidTransformGetTransform(void *canvas, uint32_t handle);
 
-
-
-
-
-// The PaintCanvas transform node carries the model-space bounding radius at +0xe0.
-// This veneer maps the canvas' TransformGetTransform helper to the engine's
-// Transform node so its boundingRadius can be read directly.
-namespace AbyssEngine { namespace AERandom { int nextInt(int rng, int bound); } }
-AbyssEngine::Transform* PlayerAsteroidTransformGetTransform(void* canvas, uint32_t handle);
-
-// Game-state singletons owned elsewhere in the level/world layer.
-extern void*  g_playerAsteroidCanvas;
-extern Level* g_playerAsteroidLevel;
-extern int    g_playerAsteroidRandom;
+extern void *g_playerAsteroidCanvas;
+extern Level *g_playerAsteroidLevel;
+extern int g_playerAsteroidRandom;
 extern Vector g_playerAsteroidCenter;
-extern int    g_playerAsteroidCenterLength;
+extern int g_playerAsteroidCenterLength;
 
-// Quality-name lookup table (mining grade -> display string).
-extern const char* g_playerAsteroidQualityNames[];
-extern const char  g_playerAsteroidQualityDefault[];
-extern const char  g_playerAsteroidQualityFour[];
+extern const char *g_playerAsteroidQualityNames[];
+extern const char g_playerAsteroidQualityDefault[];
+extern const char g_playerAsteroidQualityFour[];
 
-void PlayerAsteroid::setAsteroidIndex(int asteroidIndex)
-{
+void PlayerAsteroid::setAsteroidIndex(int asteroidIndex) {
     this->asteroidIndex = asteroidIndex;
 }
 
-void PlayerAsteroid::translate(const Vector& delta)
-{
+void PlayerAsteroid::translate(const Vector &delta) {
     this->geometry->translate(delta);
 }
 
-void PlayerAsteroid::render()
-{
+void PlayerAsteroid::render() {
     if (this->visibleFlag == 0)
         return;
     if (this->secondaryGeometry() != nullptr)
@@ -53,58 +44,46 @@ void PlayerAsteroid::render()
         this->explosion->render();
 }
 
-void PlayerAsteroid::setPosition(const Vector& position)
-{
+void PlayerAsteroid::setPosition(const Vector &position) {
     this->geometry->setPosition(position);
 }
 
-Vector PlayerAsteroid::getPosition()
-{
+Vector PlayerAsteroid::getPosition() {
     return this->geometry->getPosition();
 }
 
-void PlayerAsteroid::setRotationEnabled(bool enabled)
-{
+void PlayerAsteroid::setRotationEnabled(bool enabled) {
     this->rotationEnabled = enabled;
 }
 
-int PlayerAsteroid::getQualityFrameIndex()
-{
+int PlayerAsteroid::getQualityFrameIndex() {
     return 7 - this->quality;
 }
 
-// slot +0x3c: the asteroid's outer surface test is its bounding-sphere collide (slot +0x38).
-int PlayerAsteroid::outerCollide(float x, float y, float z)
-{
+int PlayerAsteroid::outerCollide(float x, float y, float z) {
     return this->collide(x, y, z);
 }
 
-// Vector-form outer surface test: unpack into the bounding-sphere collide (slot +0x38).
-int PlayerAsteroid::outerCollide(Vector point)
-{
+int PlayerAsteroid::outerCollide(Vector point) {
     return this->collide(point.x, point.y, point.z);
 }
 
-int PlayerAsteroid::getQuality()
-{
+int PlayerAsteroid::getQuality() {
     return this->quality;
 }
 
-float PlayerAsteroid::getScaling()
-{
+float PlayerAsteroid::getScaling() {
     return this->scaling;
 }
 
-uint8_t PlayerAsteroid::isMinable()
-{
+uint8_t PlayerAsteroid::isMinable() {
     return this->minable;
 }
 
-String PlayerAsteroid::getQualityString()
-{
+String PlayerAsteroid::getQualityString() {
     int quality = this->quality;
     unsigned int index = quality - 5U;
-    const char* text;
+    const char *text;
     if (index < 3U) {
         text = g_playerAsteroidQualityNames[index];
     } else if (quality == 4) {
@@ -113,18 +92,17 @@ String PlayerAsteroid::getQualityString()
         text = g_playerAsteroidQualityDefault;
     }
     String result;
-    for (const char* p = text; *p; ++p)
-        result.push_back((char16_t)(unsigned char)*p);
+    for (const char *p = text; *p; ++p)
+        result.push_back((char16_t) (unsigned char) *p);
     return result;
 }
 
-void PlayerAsteroid::update(int delta)
-{
+void PlayerAsteroid::update(int delta) {
     this->lastDelta = delta;
     if (delta == 0)
         return;
 
-    Player* player = this->player;
+    Player *player = this->player;
     if (player->isActive() == 0 && this->state == 4) {
         this->asteroidFlag = 0;
         return;
@@ -190,7 +168,7 @@ void PlayerAsteroid::update(int delta)
     }
 
     if (this->rotationEnabled != 0) {
-        Vector rotation = this->spin * ((float)delta * 0.001f);
+        Vector rotation = this->spin * ((float) delta * 0.001f);
         this->geometry->rotate(rotation);
     }
 
@@ -203,7 +181,7 @@ void PlayerAsteroid::update(int delta)
             clamped = 1.0f;
         if (scaling < 0.5f)
             clamped = 1.0f;
-        float force = (float)(int)(bombForce * 0.1f * (clamped / 2.0f + 1.0f));
+        float force = (float) (int) (bombForce * 0.1f * (clamped / 2.0f + 1.0f));
         hit = hit * force;
         KIPlayer::translate(hit);
         this->explosion->translate(hit);
@@ -216,28 +194,25 @@ void PlayerAsteroid::update(int delta)
     }
 }
 
-Vector PlayerAsteroid::getProjectionVector(const Vector& value)
-{
+Vector PlayerAsteroid::getProjectionVector(const Vector &value) {
     Vector position = this->geometry->getPosition();
     Vector toCenter = position - value;
     return VectorNormalize(toCenter);
 }
 
-void PlayerAsteroid::setAsteroidCenter(Vector center)
-{
+void PlayerAsteroid::setAsteroidCenter(Vector center) {
     g_playerAsteroidCenter = center;
-    g_playerAsteroidCenterLength = (int)VectorLength(center);
+    g_playerAsteroidCenterLength = (int) VectorLength(center);
 }
 
-int PlayerAsteroid::collide(float x, float y, float z)
-{
+int PlayerAsteroid::collide(float x, float y, float z) {
     if (this->player->getHitpoints() <= 0)
         return false;
 
     Vector position = this->geometry->getPosition();
     int radiusInt = this->player->getRadius();
-    float radius = (float)radiusInt;
-    float negativeRadius = (float)-radiusInt;
+    float radius = (float) radiusInt;
+    float negativeRadius = (float) -radiusInt;
 
     float dx = x - position.x;
     if (dx >= radius || dx <= negativeRadius)
@@ -251,15 +226,14 @@ int PlayerAsteroid::collide(float x, float y, float z)
     return true;
 }
 
-void PlayerAsteroid::push(int delta)
-{
+void PlayerAsteroid::push(int delta) {
     int remaining = this->pushTimer();
     if (remaining <= 0)
         return;
 
     remaining -= delta;
     this->pushTimer() = remaining;
-    float t = (float)remaining / (float)this->pushDuration();
+    float t = (float) remaining / (float) this->pushDuration();
 
     Matrix identity;
     identity = AbyssEngine::AEMath::Matrix();
@@ -268,7 +242,7 @@ void PlayerAsteroid::push(int delta)
                       t * this->pushSpin().z);
 
     int frameDelta = this->lastDelta;
-    AEGeometry* geometry = this->geometry;
+    AEGeometry *geometry = this->geometry;
     if (frameDelta > 0) {
         Matrix geometryMatrix = geometry->getMatrix();
         Matrix combined = rotation * geometryMatrix;
@@ -276,19 +250,18 @@ void PlayerAsteroid::push(int delta)
         frameDelta = this->lastDelta;
     }
 
-    Vector baseMove = this->pushDirection() * ((float)frameDelta);
-    float scale = (2.0f - t) * 3.0f * ((float)this->pushDuration() / 1000.0f);
+    Vector baseMove = this->pushDirection() * ((float) frameDelta);
+    float scale = (2.0f - t) * 3.0f * ((float) this->pushDuration() / 1000.0f);
     Vector move = baseMove * scale;
     geometry->translate(move);
 }
 
-void PlayerAsteroid::initPush(const Vector& target, int duration)
-{
+void PlayerAsteroid::initPush(const Vector &target, int duration) {
     Vector current = this->getPosition();
     Vector delta = target - current;
-    float ratio = VectorLength(delta) / (float)duration;
+    float ratio = VectorLength(delta) / (float) duration;
     float clamped = (ratio < 1.0f) ? ratio : 1.0f;
-    int pushFrames = (int)((1.0f - clamped) * 1000.0f);
+    int pushFrames = (int) ((1.0f - clamped) * 1000.0f);
     this->pushTimer() = pushFrames;
     this->pushDuration() = pushFrames;
 
@@ -297,19 +270,18 @@ void PlayerAsteroid::initPush(const Vector& target, int duration)
     this->pushDirection() = VectorNormalize(directionSource);
 
     Vector randomVector = {
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
     };
     this->pushSpin() = VectorNormalize(randomVector) * 0.01f;
 }
 
-PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry* geometry, int explosionType,
-                               int asteroidIndex, const Vector& position, float scaling,
+PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosionType,
+                               int asteroidIndex, const Vector &position, float scaling,
                                int quality)
     : KIPlayer(playerId, 0, new Player(0x5dc, 0x1e, 0, 0, 0), geometry,
-               position.x, position.y, position.z, true)
-{
+               position.x, position.y, position.z, true) {
     this->player->setKIPlayer(this);
 
     this->asteroidFlag = 0;
@@ -321,10 +293,10 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry* geometry, int explosion
     this->field_0x168 = 0;
     this->field_0x16c = 0;
 
-    AbyssEngine::Transform* transform =
-        PlayerAsteroidTransformGetTransform(g_playerAsteroidCanvas, geometry->transform);
-    this->player->setRadius((int)(transform->boundingRadius * scaling * 0.5f));
-    this->player->setMaxHitpoints((int)(scaling * 100.0f + 30.0f));
+    AbyssEngine::Transform *transform =
+            PlayerAsteroidTransformGetTransform(g_playerAsteroidCanvas, geometry->transform);
+    this->player->setRadius((int) (transform->boundingRadius * scaling * 0.5f));
+    this->player->setMaxHitpoints((int) (scaling * 100.0f + 30.0f));
     this->minable = quality > 3;
     this->lastHitpoints = this->player->getHitpoints();
 
@@ -334,16 +306,16 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry* geometry, int explosion
     this->setPosition(position);
 
     this->geometry->setRotation(
-        (float)AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
-        (float)AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
-        (float)AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f);
+        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
+        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
+        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f);
 
     this->secondaryGeometry() = nullptr;
     this->rotationEnabled = 1;
     Vector axis = {
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
-        (float)(AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
+        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
     };
     this->spin = axis;
 
@@ -353,8 +325,7 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry* geometry, int explosion
     this->hitFlashTimer = 0.0f;
 }
 
-PlayerAsteroid::~PlayerAsteroid()
-{
+PlayerAsteroid::~PlayerAsteroid() {
     if (this->explosion != nullptr) {
         delete this->explosion;
         this->explosion = nullptr;

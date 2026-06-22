@@ -1,103 +1,80 @@
 #include "game/core/Matrix.h"
 
-// AbyssEngine::AEMath::Matrix::Matrix()
-// Default-constructs the identity transform. The original lays the matrix out so that the
-// set entries are m[0], m[5], m[12] and m[14] (the latter from the {0,0,1,0} tail loaded at
-// offset 0x28); every other entry is zeroed.
-
 namespace AbyssEngine {
-namespace AEMath {
+    namespace AEMath {
+        Matrix::Matrix() {
+            m[0] = 1.0f;
+            m[1] = 0.0f;
+            m[2] = 0.0f;
+            m[3] = 0.0f;
+            m[4] = 0.0f;
+            m[5] = 1.0f;
+            m[6] = 0.0f;
+            m[7] = 0.0f;
+            m[8] = 0.0f;
+            m[9] = 0.0f;
+            m[10] = 0.0f;
+            m[11] = 0.0f;
+            m[12] = 1.0f;
+            m[13] = 0.0f;
+            m[14] = 1.0f;
+        }
 
-Matrix::Matrix()
-{
-    m[0]  = 1.0f; m[1]  = 0.0f; m[2]  = 0.0f; m[3]  = 0.0f;
-    m[4]  = 0.0f; m[5]  = 1.0f; m[6]  = 0.0f; m[7]  = 0.0f;
-    m[8]  = 0.0f; m[9]  = 0.0f; m[10] = 0.0f; m[11] = 0.0f;
-    m[12] = 1.0f; m[13] = 0.0f; m[14] = 1.0f;
-}
-
-// Conversion operators: expose the 16-float storage as a raw float array.
-Matrix::operator float*()             { return m; }
-Matrix::operator const float*() const { return m; }
-
-} // namespace AEMath
+        Matrix::operator float *() { return m; }
+        Matrix::operator const float *() const { return m; }
+    } // namespace AEMath
 } // namespace AbyssEngine
 
-// AbyssEngine::AEMath::Matrix::operator*=(Matrix const&)
-// In-place affine 3x4 matrix multiply: this = this * rhs. Rows of 4 floats; the 4th
-// column (offsets 0xc/0x1c/0x2c) is translation and accumulates onto its existing value.
-// Finishes by multiplying the embedded Vector at +0x30.
-
 namespace AbyssEngine {
-namespace AEMath {
+    namespace AEMath {
+        Matrix &Matrix::operator*=(const Matrix &p) {
+            float *t = this->m;
+            const float *b = p.m;
 
-// Vector::operator*=(Vector const&)
+            // Row 0
+            float a0 = t[0], a1 = t[1], a2 = t[2];
+            t[0] = a1 * b[4] + a0 * b[0] + a2 * b[8];
+            t[1] = a1 * b[5] + a0 * b[1] + a2 * b[9];
+            t[2] = a1 * b[6] + a0 * b[2] + a2 * b[10];
+            t[3] = t[3] + a1 * b[7] + a0 * b[3] + a2 * b[11];
 
-Matrix &Matrix::operator*=(const Matrix &p)
-{
-    float *t = this->m;
-    const float *b = p.m;
+            // Row 1
+            float c0 = t[4], c1 = t[5], c2 = t[6];
+            t[4] = c0 * b[0] + b[4] * c1 + b[8] * c2;
+            t[5] = c0 * b[1] + b[5] * c1 + b[9] * c2;
+            t[6] = c0 * b[2] + b[6] * c1 + b[10] * c2;
+            t[7] = t[7] + c0 * b[3] + b[7] * c1 + b[11] * c2;
 
-    // Row 0
-    float a0 = t[0], a1 = t[1], a2 = t[2];
-    t[0] = a1 * b[4] + a0 * b[0] + a2 * b[8];
-    t[1] = a1 * b[5] + a0 * b[1] + a2 * b[9];
-    t[2] = a1 * b[6] + a0 * b[2] + a2 * b[10];
-    t[3] = t[3] + a1 * b[7] + a0 * b[3] + a2 * b[11];
+            // Row 2
+            float e1 = t[9], e0 = t[8], e2 = t[10];
+            t[8] = e1 * b[4] + b[0] * e0 + b[8] * e2;
+            t[9] = e1 * b[5] + b[1] * e0 + b[9] * e2;
+            t[10] = e1 * b[6] + b[2] * e0 + b[10] * e2;
+            t[11] = t[11] + e1 * b[7] + b[3] * e0 + b[11] * e2;
 
-    // Row 1
-    float c0 = t[4], c1 = t[5], c2 = t[6];
-    t[4] = c0 * b[0] + b[4] * c1 + b[8] * c2;
-    t[5] = c0 * b[1] + b[5] * c1 + b[9] * c2;
-    t[6] = c0 * b[2] + b[6] * c1 + b[10] * c2;
-    t[7] = t[7] + c0 * b[3] + b[7] * c1 + b[11] * c2;
-
-    // Row 2
-    float e1 = t[9], e0 = t[8], e2 = t[10];
-    t[8]  = e1 * b[4] + b[0] * e0 + b[8] * e2;
-    t[9]  = e1 * b[5] + b[1] * e0 + b[9] * e2;
-    t[10] = e1 * b[6] + b[2] * e0 + b[10] * e2;
-    t[11] = t[11] + e1 * b[7] + b[3] * e0 + b[11] * e2;
-
-    *(Vector *)&this->m[12] *= *(const Vector *)&p.m[12];
-    return *this;
-}
-
-} // namespace AEMath
+            *(Vector *) &this->m[12] *= *(const Vector *) &p.m[12];
+            return *this;
+        }
+    } // namespace AEMath
 } // namespace AbyssEngine
 
-// AbyssEngine::AEMath::Matrix::operator=(Matrix const&)
-// Copies the 48-byte (12-float) affine part, then delegates the embedded Vector at +0x30.
-
 namespace AbyssEngine {
-namespace AEMath {
-
-// Vector::operator=(Vector const&)
-
-Matrix &Matrix::operator=(const Matrix &other)
-{
-    for (int i = 0; i < 12; ++i)
-        this->m[i] = other.m[i];
-    *(Vector *)&this->m[12] = *(const Vector *)&other.m[12];
-    return *this;
-}
-
-} // namespace AEMath
+    namespace AEMath {
+        Matrix &Matrix::operator=(const Matrix &other) {
+            for (int i = 0; i < 12; ++i)
+                this->m[i] = other.m[i];
+            *(Vector *) &this->m[12] = *(const Vector *) &other.m[12];
+            return *this;
+        }
+    } // namespace AEMath
 } // namespace AbyssEngine
 
-// ---------------------------------------------------------------------------
-// AbyssEngine::Quaternion value-type accessors (out-of-line so the binary's
-// standalone symbols emit). The dtor is trivial; the conversion operators and
-// subscript operators expose the {x,y,z,w} float storage as a 4-float array.
-// ---------------------------------------------------------------------------
-
 namespace AbyssEngine {
+    Quaternion::~Quaternion() {
+    }
 
-Quaternion::~Quaternion() {}
-
-Quaternion::operator float*()             { return &x; }
-Quaternion::operator const float*() const { return &x; }
-float& Quaternion::operator[](int i)       { return (&x)[i]; }
-float  Quaternion::operator[](int i) const { return (&x)[i]; }
-
+    Quaternion::operator float *() { return &x; }
+    Quaternion::operator const float *() const { return &x; }
+    float &Quaternion::operator[](int i) { return (&x)[i]; }
+    float Quaternion::operator[](int i) const { return (&x)[i]; }
 } // namespace AbyssEngine

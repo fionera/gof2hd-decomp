@@ -1,5 +1,5 @@
 #include "game/mission/Achievements.h"
-Achievements* gAchievements = nullptr;  // canonical Achievements singleton
+Achievements *gAchievements = nullptr; // canonical Achievements singleton
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
@@ -8,11 +8,11 @@ uint8_t Achievements::hasMedal(int index, int value) {
     return this->medals[index] == value;
 }
 
-int* Achievements::getMedals() {
+int *Achievements::getMedals() {
     return this->medals;
 }
 
-int* Achievements::getNewMedals() {
+int *Achievements::getNewMedals() {
     return this->newMedals;
 }
 
@@ -56,7 +56,7 @@ int Achievements::init() {
     this->catches = 0;
     this->pirateKills = 0;
     this->weaponCount = 0;
-    return (int)(intptr_t)&this->kills;
+    return (int) (intptr_t) & this->kills;
 }
 
 uint8_t Achievements::isEliteMedal(int index) {
@@ -100,12 +100,11 @@ void Achievements::incKills() {
     this->kills += 1;
 }
 
-// Static medal-threshold table embedded in the binary, addressed PC-relative.
 // getValue returns table[index*3 + sub - 1].
 extern const int gAchievementValues[] __attribute__((visibility("hidden")));
 
 int Achievements::getValue(int index, int sub) {
-    const int* row = gAchievementValues + index * 3;
+    const int *row = gAchievementValues + index * 3;
     return row[sub - 1];
 }
 
@@ -144,8 +143,8 @@ void Achievements::countMedals() {
 // pc-rel base for the per-medal requirement table (index*0xc + sub*4).
 extern const int gCFN_req[] __attribute__((visibility("hidden")));
 
-void Achievements::checkForNewMedal(PlayerEgo* ego) {
-    (void)ego;
+void Achievements::checkForNewMedal(PlayerEgo *ego) {
+    (void) ego;
     initCheckEquipmentAndWeapons();
 
     for (unsigned m = 0; m < 0x2d; ++m) {
@@ -181,26 +180,26 @@ void Achievements::applyNewMedals() {
     if (this->medalCount == 0x23) {
         this->newMedals[0x23] = 1;
         this->medals[0x23] = 1;
-        countMedals();   // recount so medalCount includes the "all medals" flag
+        countMedals(); // recount so medalCount includes the "all medals" flag
     }
 }
 
 // Status singleton holder: pc-rel -> holder; *holder is the Status object.
-extern Status* const* gAchStatusHolder __attribute__((visibility("hidden")));
+extern Status *const* gAchStatusHolder __attribute__((visibility("hidden")));
 
 void Achievements::initCheckEquipmentAndWeapons() {
-    Status* status = *gAchStatusHolder;
+    Status *status = *gAchStatusHolder;
     uint8_t result;
     if (status->getCurrentCampaignMission() < 8) {
         result = 1;
     } else {
-        Ship* ship = status->getShip();
-        Array<Item*>* eq = ship->getEquipment();
+        Ship *ship = status->getShip();
+        Array<Item *> *eq = ship->getEquipment();
         int weapons = 0;
         int turrets = 0;
         if (eq != nullptr) {
             for (unsigned i = 0; i < eq->size(); ++i) {
-                Item* it = (*eq)[i];
+                Item *it = (*eq)[i];
                 if (it != nullptr && it->getType() != 4) {
                     if (it->getType() == 0) {
                         this->weaponCount += 1;
@@ -217,10 +216,10 @@ void Achievements::initCheckEquipmentAndWeapons() {
     this->hasTurretAndWeapon = result;
 }
 
-void Achievements::setMedals(int* src, int count) {
+void Achievements::setMedals(int *src, int count) {
     for (int i = 0; i < count; ++i) {
-        unsigned v = (unsigned)src[i];
-        this->medals[i] = (v < 4) ? (int)v : 0;
+        unsigned v = (unsigned) src[i];
+        this->medals[i] = (v < 4) ? (int) v : 0;
     }
     for (; count < 0x2d; ++count)
         this->medals[count] = 0;

@@ -17,52 +17,46 @@
 #include "engine/render/ImageFactory.h"
 #include "engine/core/AERandom.h"
 
-// PaintCanvas.h cannot be co-included here (its self-contained Mesh/Transform
-// definitions clash with this TU's headers); the canonical render singleton is
-// declared locally, matching the definition in PaintCanvas.h.
-extern PaintCanvas* gCanvas;
+extern PaintCanvas *gCanvas;
 
-// ---- engine glue ---------------------------------------------------------------
-// These resolve to other game singletons/helpers in the full link; they are kept as
-// externs because the menu does not own the objects they refer to.
-int  FModSound_tryToStopMusicForBGMusic();
+int FModSound_tryToStopMusicForBGMusic();
 
 namespace AbyssEngine {
-namespace AEMath { float Sinf(float value); }
+    namespace AEMath {
+        float Sinf(float value);
+    }
 }
-
 
 void **g_ModMainMenu_releaseReload;
 void **g_ModMainMenu_releaseImageFactory;
 void **g_ModMainMenu_releaseSound;
 
-int  *g_ModMainMenu_resumeObj;
-int  *g_ModMainMenu_resumeArg;
+int *g_ModMainMenu_resumeObj;
+int *g_ModMainMenu_resumeArg;
 
-int  *g_ModMainMenu_suspendObj;
+int *g_ModMainMenu_suspendObj;
 
-int  *g_ModMainMenu_touchEndFlag;
+int *g_ModMainMenu_touchEndFlag;
 
 AbyssEngine::String **g_ModMainMenu_r2d_string;
-int  *g_ModMainMenu_r2d_textId;
-int  *g_ModMainMenu_r2d_screenW;
-int  *g_ModMainMenu_r2d_screenH;
+int *g_ModMainMenu_r2d_textId;
+int *g_ModMainMenu_r2d_screenW;
+int *g_ModMainMenu_r2d_screenH;
 
 void **g_ModMainMenu_initSoundRes;
+
 void (*g_ModMainMenu_initAddSound)(void *, int);
+
 void *g_ModMainMenu_initOptions;
 void **g_ModMainMenu_initRecord;
-int  *g_ModMainMenu_initTouchFlag;
-int  *g_ModMainMenu_initMusicSlot;
-int  *g_ModMainMenu_initMusic;
+int *g_ModMainMenu_initTouchFlag;
+int *g_ModMainMenu_initMusicSlot;
+int *g_ModMainMenu_initMusic;
 
 void **g_ModMainMenu_updateLayout;
 void **g_ModMainMenu_updateListener;
 
-// --------------------------------------------------------------------------------
-
-ModMainMenu::ModMainMenu()
-{
+ModMainMenu::ModMainMenu() {
     this->initialized = 0;
     this->hasSavedGame = 0;
     this->state = 100;
@@ -71,32 +65,25 @@ ModMainMenu::ModMainMenu()
     this->cutScene = nullptr;
 }
 
-ModMainMenu::~ModMainMenu()
-{
+ModMainMenu::~ModMainMenu() {
     OnRelease();
 }
 
-// Default application-module input stubs: key handlers pass the key code
-// straight through, and the loading-screen hook always reports ready.
-long long ModMainMenu::OnKeyPress(long long key, long long mod)
-{
-    (void)mod;
+long long ModMainMenu::OnKeyPress(long long key, long long mod) {
+    (void) mod;
     return key;
 }
 
-long long ModMainMenu::OnKeyRelease(long long key, long long mod)
-{
-    (void)mod;
+long long ModMainMenu::OnKeyRelease(long long key, long long mod) {
+    (void) mod;
     return key;
 }
 
-int ModMainMenu::ShowLoadingScreen()
-{
+int ModMainMenu::ShowLoadingScreen() {
     return 1;
 }
 
-void ModMainMenu::OnRelease()
-{
+void ModMainMenu::OnRelease() {
     if (this->cutScene != nullptr)
         delete this->cutScene;
     this->cutScene = nullptr;
@@ -111,29 +98,27 @@ void ModMainMenu::OnRelease()
 
     void **reload = g_ModMainMenu_releaseReload;
     if (*reload != nullptr) {
-        ((Layout *)(*reload))->reload();
-        ((ImageFactory *)(*g_ModMainMenu_releaseImageFactory))->reload();
-        ((Layout *)(*reload))->initTip();
+        ((Layout *) (*reload))->reload();
+        ((ImageFactory *) (*g_ModMainMenu_releaseImageFactory))->reload();
+        ((Layout *) (*reload))->initTip();
     }
 
     void *sound = *g_ModMainMenu_releaseSound;
     if (sound != nullptr)
-        ((FModSound *)sound)->freeAllEvents();
+        ((FModSound *) sound)->freeAllEvents();
 }
 
-void ModMainMenu::OnResume()
-{
+void ModMainMenu::OnResume() {
     int *holder = g_ModMainMenu_resumeObj;
     if (*holder == 0)
         return;
     if (FModSound_tryToStopMusicForBGMusic() != 0)
         return;
     int arg = *g_ModMainMenu_resumeArg;
-    ((FModSound *)(intptr_t)*holder)->setVolume(1, (float)arg);
+    ((FModSound *) (intptr_t) * holder)->setVolume(1, (float) arg);
 }
 
-void ModMainMenu::OnRender3D()
-{
+void ModMainMenu::OnRender3D() {
     gCanvas->ClearBuffer(0);
     this->cutScene->renderBG();
     gCanvas->Begin3d();
@@ -141,34 +126,30 @@ void ModMainMenu::OnRender3D()
     gCanvas->End3d();
 }
 
-void ModMainMenu::OnTouchMove(int x, int y, void *touch)
-{
-    (void)touch;
+void ModMainMenu::OnTouchMove(int x, int y, void *touch) {
+    (void) touch;
     if (this->logoActive != 0)
         return;
     this->touchWindow->OnTouchMove(x, y, nullptr);
 }
 
-void ModMainMenu::OnTouchMove(int x, int y)
-{
-    (void)x;
-    (void)y;
+void ModMainMenu::OnTouchMove(int x, int y) {
+    (void) x;
+    (void) y;
 }
 
-void ModMainMenu::OnSuspend()
-{
+void ModMainMenu::OnSuspend() {
     int obj = *g_ModMainMenu_suspendObj;
     if (obj != 0)
-        ((RecordHandler *)(intptr_t)obj)->saveOptions();
+        ((RecordHandler *) (intptr_t) obj)->saveOptions();
 }
 
-void ModMainMenu::OnTouchEnd(int x, int y, void *touch)
-{
-    (void)touch;
+void ModMainMenu::OnTouchEnd(int x, int y, void *touch) {
+    (void) touch;
     if (this->logoActive == 0) {
         this->touchWindow->OnTouchEnd(x, y, nullptr);
-        Level *level = *(Level **)this->cutScene;
-        ((StarSystem *)(intptr_t)level->getStarSystem())->initLight();
+        Level *level = *(Level **) this->cutScene;
+        ((StarSystem *) (intptr_t) level->getStarSystem())->initLight();
         return;
     }
 
@@ -176,29 +157,25 @@ void ModMainMenu::OnTouchEnd(int x, int y, void *touch)
     *g_ModMainMenu_touchEndFlag = 0;
 }
 
-void ModMainMenu::OnTouchEnd(int x, int y)
-{
-    (void)x;
-    (void)y;
+void ModMainMenu::OnTouchEnd(int x, int y) {
+    (void) x;
+    (void) y;
 }
 
-void ModMainMenu::OnTouchBegin(int x, int y, void *touch)
-{
+void ModMainMenu::OnTouchBegin(int x, int y, void *touch) {
     if (this->logoActive != 0)
         return;
     this->touchWindow->OnTouchBegin(x, y, touch);
 }
 
-void ModMainMenu::OnTouchBegin(int x, int y)
-{
-    (void)x;
-    (void)y;
+void ModMainMenu::OnTouchBegin(int x, int y) {
+    (void) x;
+    (void) y;
 }
 
-void ModMainMenu::OnRender2D()
-{
-    ((PaintCanvas *)(long)this->paintCanvas)->Begin2d();
-    ((PaintCanvas *)(long)this->paintCanvas)->SetColor((unsigned int)this->paintCanvas);
+void ModMainMenu::OnRender2D() {
+    ((PaintCanvas *) (long) this->paintCanvas)->Begin2d();
+    ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
     this->cutScene->render2D();
 
     if (this->logoActive == 0) {
@@ -206,44 +183,43 @@ void ModMainMenu::OnRender2D()
     } else {
         int time = this->fadeTimer;
         int color = time <= 0x0f3b
-                        ? (int)(((float)time / 3900.0f) * 255.0f) - 0x100
+                        ? (int) (((float) time / 3900.0f) * 255.0f) - 0x100
                         : -1;
-        (void)color;
-        ((PaintCanvas *)(long)this->paintCanvas)->SetColor((unsigned int)this->paintCanvas);
+        (void) color;
+        ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
 
-        gCanvas->DrawImage2D((unsigned int)this->logoImage, 0, 0, (unsigned char)'D');
+        gCanvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
 
         if (this->fadeTimer >= 0x0f3c) {
-            int canvas = (int)(intptr_t)gCanvas;
+            int canvas = (int) (intptr_t) gCanvas;
             float pulse = AbyssEngine::AEMath::Sinf(
-                (float)gAppManager->GetSystemTimeMillis() * 0.003f);
+                (float) gAppManager->GetSystemTimeMillis() * 0.003f);
             float signedPulse = pulse > 0.0f ? pulse : -pulse;
-            int alpha = (unsigned int)(signedPulse * 255.0f);
-            (void)alpha;
-            gCanvas->SetColor((unsigned char)canvas, 0xff, 0xff, 0xff);
+            int alpha = (unsigned int) (signedPulse * 255.0f);
+            (void) alpha;
+            gCanvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
 
             AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
             int *textIdHolder = g_ModMainMenu_r2d_textId;
-            int drawCanvas = (int)(intptr_t)gCanvas;
+            int drawCanvas = (int) (intptr_t) gCanvas;
             AbyssEngine::String *drawStr = *stringHolder;
-            int text = (int)(long)((GameText *)(*textIdHolder))->getText(0xc7);
+            int text = (int) (long) ((GameText *) (*textIdHolder))->getText(0xc7);
 
             int screenW = *g_ModMainMenu_r2d_screenW;
-            int textWidth = gCanvas->GetTextWidth((unsigned int)drawCanvas, *drawStr);
+            int textWidth = gCanvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
 
             int screenH = *g_ModMainMenu_r2d_screenH;
-            int imageHeight = gCanvas->GetImage2DHeight((unsigned int)(intptr_t)gCanvas);
-            gCanvas->DrawString((unsigned int)drawCanvas, *drawStr, text,
-                                   (screenW >> 1) - (textWidth >> 1),
-                                   (bool)((char)(screenH >> 1) + (char)(imageHeight >> 1) + '\n'));
+            int imageHeight = gCanvas->GetImage2DHeight((unsigned int) (intptr_t) gCanvas);
+            gCanvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
+                                (screenW >> 1) - (textWidth >> 1),
+                                (bool) ((char) (screenH >> 1) + (char) (imageHeight >> 1) + '\n'));
         }
     }
 
-    ((PaintCanvas *)(intptr_t)this->paintCanvas)->End2d();
+    ((PaintCanvas *) (intptr_t) this->paintCanvas)->End2d();
 }
 
-void ModMainMenu::OnInitialize()
-{
+void ModMainMenu::OnInitialize() {
     if (this->cutScene == nullptr) {
         void **soundRes = g_ModMainMenu_initSoundRes;
         static_cast<Globals *>(*soundRes)->startNewSoundResourceList();
@@ -258,7 +234,7 @@ void ModMainMenu::OnInitialize()
         gRandom->reset();
 
         int station = gGalaxy->getStation(gRandom->nextInt(100));
-        gStatus->setStation((Station *)(intptr_t)station);
+        gStatus->setStation((Station *) (intptr_t) station);
 
         CutScene *cutscene = new CutScene(2);
         this->cutScene = cutscene;
@@ -269,13 +245,13 @@ void ModMainMenu::OnInitialize()
         if (gStatus->inAlienOrbit() != 0) {
             texture = 0x2f08;
         } else {
-            texture = (((SolarSystem *)(intptr_t)gStatus->getSystem())->getTextureIndex() +
+            texture = (((SolarSystem *) (intptr_t) gStatus->getSystem())->getTextureIndex() +
                        0x2efe) &
                       0xffff;
         }
         unsigned int texSlot = 0xffffffff;
-        ((PaintCanvas *)(long)canvas)->TextureCreate((unsigned short)texture, texSlot, true);
-        ((PaintCanvas *)(long)this->paintCanvas)->ChangeCubeTexture((unsigned int)this->paintCanvas);
+        ((PaintCanvas *) (long) canvas)->TextureCreate((unsigned short) texture, texSlot, true);
+        ((PaintCanvas *) (long) this->paintCanvas)->ChangeCubeTexture((unsigned int) this->paintCanvas);
         return;
     }
 
@@ -293,13 +269,13 @@ void ModMainMenu::OnInitialize()
         void *options = g_ModMainMenu_initOptions;
         if (UC(options, 0x48) == 0) {
             void **recordHolder = g_ModMainMenu_initRecord;
-            void *record = ((RecordHandler *)(*recordHolder))->recordStoreReadPreview(0);
+            void *record = ((RecordHandler *) (*recordHolder))->recordStoreReadPreview(0);
             if (record != nullptr) {
                 this->hasSavedGame = 1;
-                delete (GameRecord *)record;
+                delete (GameRecord *) record;
             }
             UC(options, 0x48) = 1;
-            ((RecordHandler *)(*recordHolder))->saveOptions();
+            ((RecordHandler *) (*recordHolder))->saveOptions();
         }
 
         gStatus->setPlayingTime(0);
@@ -320,8 +296,7 @@ state60:
 state30:
     this->state = 1;
 
-music:
-    {
+music: {
         int *musicSlot = g_ModMainMenu_initMusicSlot;
         if (*musicSlot != -1)
             gGlobals->playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
@@ -341,31 +316,30 @@ state80:
     this->state = 0x3c;
 }
 
-void ModMainMenu::OnUpdate()
-{
-    ApplicationManager *app = (ApplicationManager *)this->appManager;
-    int elapsed = (int)app->GetElapsedTimeMillis();
+void ModMainMenu::OnUpdate() {
+    ApplicationManager *app = (ApplicationManager *) this->appManager;
+    int elapsed = (int) app->GetElapsedTimeMillis();
     int frameTime;
-    if (elapsed < 0x97 && (elapsed = (int)app->GetElapsedTimeMillis()) < 0) {
+    if (elapsed < 0x97 && (elapsed = (int) app->GetElapsedTimeMillis()) < 0) {
         frameTime = 0;
     } else {
-        elapsed = (int)app->GetElapsedTimeMillis();
+        elapsed = (int) app->GetElapsedTimeMillis();
         if (elapsed > 0x96)
             frameTime = 0x96;
         else
-            frameTime = (int)app->GetElapsedTimeMillis();
+            frameTime = (int) app->GetElapsedTimeMillis();
     }
 
     this->frameTime = frameTime;
 
     void **layout = g_ModMainMenu_updateLayout;
-    ((Layout *)(*layout))->update(frameTime);
+    ((Layout *) (*layout))->update(frameTime);
     this->cutScene->update();
     if (this->logoActive == 0)
         this->touchWindow->update(this->frameTime);
-    ((Layout *)(*layout))->update(this->frameTime);
+    ((Layout *) (*layout))->update(this->frameTime);
 
     void **listener = g_ModMainMenu_updateListener;
     this->fadeTimer = this->frameTime + this->fadeTimer;
-    ((FModSound *)(*listener))->updateAll(nullptr, nullptr, nullptr, nullptr);
+    ((FModSound *) (*listener))->updateAll(nullptr, nullptr, nullptr, nullptr);
 }
