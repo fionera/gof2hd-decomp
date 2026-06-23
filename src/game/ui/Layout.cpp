@@ -175,9 +175,9 @@ void Layout::drawFooterNoBackButton() {
         PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
-    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
     String sMax;
-    sMax.ctor_int(status->getShip()->getMaxLoad());
+    sMax.Set((long long) (status->getShip())->getMaxLoad());
     String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
 
     {
@@ -247,9 +247,9 @@ void Layout::drawFooter() {
         PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
-    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
     String sMax;
-    sMax.ctor_int(status->getShip()->getMaxLoad());
+    sMax.Set((long long) (status->getShip())->getMaxLoad());
     String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
 
     {
@@ -588,7 +588,7 @@ String Layout::formatNumber(int value) {
     unsigned mag = (value < 0) ? (unsigned) (-value) : (unsigned) value;
 
     String digits;
-    digits.ctor_int((int) mag);
+    digits.Set((long long) (int) mag);
     int len = (int) digits.size();
 
     String out(g_fnEmpty);
@@ -601,18 +601,18 @@ String Layout::formatNumber(int value) {
         sep = String(g_fnSepB);
 
     if (len < 4) {
-        out.assign(&digits);
+        out = digits;
     } else {
         int i = len;
         while (i > 2) {
             i -= 3;
             String grp;
-            grp.SubString(&digits, i, len);
+            grp = digits.SubString(i, len);
             String prefix = (out.size() < 2) ? String() : sep;
             out = prefix + grp + out;
         }
         String head;
-        head.SubString(&digits, 0, i);
+        head = digits.SubString(0, i);
         if (head.size() != 0)
             out = head + sep + out;
     }
@@ -1263,9 +1263,9 @@ void Layout::drawFooterStation() {
         PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
-    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
     String sMax;
-    sMax.ctor_int(status->getShip()->getMaxLoad());
+    sMax.Set((long long) (status->getShip())->getMaxLoad());
     String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
 
     {
@@ -1463,9 +1463,9 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
         PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
-    sLoad.ctor_int(status->getShip()->getCurrentLoad());
+    sLoad.Set((long long) (status->getShip())->getCurrentLoad());
     String sMax;
-    sMax.ctor_int(status->getShip()->getMaxLoad());
+    sMax.Set((long long) (status->getShip())->getMaxLoad());
     String loadStr = sLoad + String(g_dfSep) + sMax + String(g_dfTail);
 
     {

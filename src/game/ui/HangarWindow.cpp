@@ -359,7 +359,7 @@ void HangarWindow::render() {
                                 ((PaintCanvas *) canvas)->SetColor(0x777777ffu);
 
                                 String pct, sfx, sum;
-                                pct.ctor_int((int) (rate * 100.0f));
+                                pct.Set((long long) (int) (rate * 100.0f));
                                 sum = pct + sfx;
                                 ((PaintCanvas *) canvas)->DrawString((unsigned) (uintptr_t) * g_hw_font, sum,
                                                                      contentBase + 2 + layout->field_0x28 + this->
@@ -402,7 +402,7 @@ void HangarWindow::render() {
                             (*this->buttons)[(0x14) >> 2]->draw();
                         } else {
                             String txt;
-                            ((String *) &txt)->ctor_copy((String *) ((ListItem *) li)->name, false);
+                            ((String *) &txt)->Set(((String *) ((ListItem *) li)->name)->data);
                             ((Layout *) (layout))->drawBox(0, this->hintOffsetX + layout->field_0x28,
                                                            (y + layout->field_0x70) - layout->field_0x1c, topY,
                                                            layout->field_0x1c, txt);
@@ -709,7 +709,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 Status_replaceHash(&msg, globals, &line, &priceStr);
                 GameText::gGameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
-                ((String *) &msg)->addAssign_str(&combined);
+                *((String *) &msg) += combined;
                 self->dialog->set(*(String *) &msg, true);
                 self->notEnoughCredits = 1;
             } else {
@@ -883,7 +883,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     Status_replaceHash(&msg, globals, &line, &priceStr);
                     GameText::gGameText->getText(*g_hw_sellShipTextId);
                     combined = suffix + suffix;
-                    ((String *) &msg)->addAssign_str(&combined);
+                    *((String *) &msg) += combined;
                     self->dialog->set(*(String *) &msg, true);
                     self->dialogActive = 1;
                     self->notEnoughCredits = 1;
@@ -1232,17 +1232,17 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
             self->localBluePrint = localBp;
 
             String msg;
-            ((String *) &msg)->ctor();
+            { String *_s = (String *) &msg; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
             String line;
 
             if (self->localBluePrint == 0) {
                 String copy, sname, fmt, result;
-                ((String *) &copy)->ctor_copy(&msg, false);
+                ((String *) &copy)->Set((msg).data);
                 self->bluePrint->getStationName();
                 Status_replaceHash(&result, globals, &copy, &sname, &fmt);
 
                 String copy2, priceStr, fmt2, result2;
-                ((String *) &copy2)->ctor_copy(&msg, false);
+                ((String *) &copy2)->Set((msg).data);
                 priceStr = Layout::formatCredits(
                     ((Item *) ((ListItem *) self->bluePrintItem)->item)->getBlueprintAmount());
                 Status_replaceHash(&result2, globals, &copy2, &priceStr, &fmt2);
@@ -1441,7 +1441,7 @@ void HangarWindow::setSellMode(bool buy) {
             Globals *globals = (Globals *) *g_hw_globals;
             if (self->bluePrint->getStationIndex() == Status::gStatus->getStation()->getIndex()) {
                 String line, copy, name, fmt, result;
-                ((String *) &copy)->ctor_copy(&line, false);
+                ((String *) &copy)->Set((line).data);
                 Status_replaceHash(&result, globals, &copy, &name, &fmt);
                 self->dialog->set(g_HangarWindow_emptyDialogText);
 
@@ -1455,10 +1455,10 @@ void HangarWindow::setSellMode(bool buy) {
                 self->refreshCurrentContentHeight();
             } else {
                 String line, copy, name, fmt, result, line2, sname, fmt2;
-                ((String *) &copy)->ctor_copy(&line, false);
+                ((String *) &copy)->Set((line).data);
                 Status_replaceHash(&result, globals, &copy, &name, &fmt);
 
-                ((String *) &line2)->ctor_copy(&line, false);
+                ((String *) &line2)->Set((line).data);
                 self->bluePrint->getStationName();
                 String result2;
                 Status_replaceHash(&result2, globals, &line2, &sname, &fmt2);
@@ -1629,11 +1629,11 @@ void HangarWindow::selectItem(ListItem *item) {
             String line, priceStr, fmt, msg, suffix, combined;
             priceStr = Layout::formatCredits(
                 ((ListItem *) (item))->getPrice() - Status::gStatus->getCredits() - Status::gStatus->getShip()->getPrice());
-            ((String *) &line)->ctor_copy(&priceStr, false);
+            ((String *) &line)->Set((priceStr).data);
             Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
             GameText::gGameText->getText(*g_hw_notEnoughTextId);
             combined = suffix + suffix;
-            ((String *) &msg)->addAssign_str(&combined);
+            *((String *) &msg) += combined;
             self->dialog->set(*(String *) &msg, true);
             self->dialogActive = 1;
             self->notEnoughCredits = 1;
@@ -1741,7 +1741,7 @@ void HangarWindow::selectItem(ListItem *item) {
 
     if (conflict && li->field_0x10->canBeInstalledMultipleTimes() == 0) {
         String name, copy, etext, fmt, result, etext2, fmt2, result2;
-        ((String *) &copy)->ctor_copy(&name, false);
+        ((String *) &copy)->Set((name).data);
         ((Item *) (existing))->getIndex();
         Status_replaceHash(&result, globals, &copy, &etext, &fmt);
         ((Item *) (li->field_0x10))->getIndex();
@@ -1814,11 +1814,11 @@ void HangarWindow::transaction(bool buy) {
                     return;
                 String line, priceStr, fmt, msg, suffix, combined;
                 priceStr = Layout::formatCredits(((Item *) (cur))->getSinglePrice());
-                ((String *) &line)->ctor_copy(&priceStr, false);
+                ((String *) &line)->Set((priceStr).data);
                 Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
                 GameText::gGameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
-                ((String *) &msg)->addAssign_str(&combined);
+                *((String *) &msg) += combined;
                 this->dialog->set(*(String *) &msg, true);
                 this->dialogActive = 1;
                 this->notEnoughCredits = 1;

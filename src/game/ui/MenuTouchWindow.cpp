@@ -448,18 +448,6 @@ void _mtw_ArrayReleaseClasses_TB(void *arr);
 
 void _mtw_ArrayReleaseClasses_Str(void *arr);
 
-static inline __attribute__ ((always_inline))
-
-void freeArrayTB(void **slot) {
-    void *a = *slot;
-    if (a != 0) {
-        _mtw_ArrayReleaseClasses_TB(a);
-        void *b = *slot;
-        if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
-    }
-    *slot = 0;
-}
-
 static inline void freeObj(void **slot, void *(*dtor)(void *)) {
     void *o = *slot;
     if (o != 0) ::operator delete(dtor(o));
@@ -467,12 +455,60 @@ static inline void freeObj(void **slot, void *(*dtor)(void *)) {
 }
 
 MenuTouchWindow::~MenuTouchWindow() {
-    freeArrayTB((void **) &this->buttons);
-    freeArrayTB((void **) &this->optionsButtons);
-    freeArrayTB((void **) &this->scrollEntries);
-    freeArrayTB((void **) &this->buttonsB4);
-    freeArrayTB((void **) &this->buttonsB8);
-    freeArrayTB((void **) &this->buttonsB0);
+    {
+        void *a = this->buttons;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->buttons;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->buttons = 0;
+    }
+    {
+        void *a = this->optionsButtons;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->optionsButtons;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->optionsButtons = 0;
+    }
+    {
+        void *a = this->scrollEntries;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->scrollEntries;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->scrollEntries = 0;
+    }
+    {
+        void *a = this->buttonsB4;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->buttonsB4;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->buttonsB4 = 0;
+    }
+    {
+        void *a = this->buttonsB8;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->buttonsB8;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->buttonsB8 = 0;
+    }
+    {
+        void *a = this->buttonsB0;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->buttonsB0;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->buttonsB0 = 0;
+    }
 
     {
         Array<TouchSlider *> *a = (Array<TouchSlider *> *) this->sliders;
@@ -484,7 +520,15 @@ MenuTouchWindow::~MenuTouchWindow() {
         this->sliders = 0;
     }
 
-    freeArrayTB((void **) &this->scrollSlots);
+    {
+        void *a = this->scrollSlots;
+        if (a != 0) {
+            _mtw_ArrayReleaseClasses_TB(a);
+            void *b = this->scrollSlots;
+            if (b != 0) ::operator delete(_mtw_Array_TB_dtor(b));
+        }
+        this->scrollSlots = 0;
+    }
 
     {
         void **slots[2] = {(void **) &this->previewStrings0, (void **) &this->previewStrings1};
@@ -570,28 +614,28 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         _mtw_ArraySetLength_Str(6, this->recordRows->data_[i]);
 
         String s48;
-        s48.ctor();
+        { if (s48.data) delete[] s48.data; s48.data = nullptr; s48.length = 0; }
         String s54;
 
         Array<GameRecord *> *rec = (Array<GameRecord *> *) this->previewRecords;
         bool empty = (rec == 0) || (rec->data_[i] == 0);
 
         if (empty) {
-            s54.ctor();
+            { if (s54.data) delete[] s54.data; s54.data = nullptr; s54.length = 0; }
             _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) timeHolder, 0);
             void *e;
             int *rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
 
             e = ::operator new(0xc);
-            ((String *) e)->ctor_copy(&s54, false);
+            ((String *) e)->Set((s54).data);
             ((void **) rowData)[0] = e;
             e = ::operator new(0xc);
-            ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0xae), false);
+            ((String *) e)->Set(((String *) _mtw_GameText_getText(*(void **) gtHolder, 0xae))->data);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[1] = e;
 
             e = ::operator new(0xc);
-            if (i == 0) ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6), false);
+            if (i == 0) ((String *) e)->Set(((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6))->data);
             else ((String *) e)->ctor_char(gCrbDash, false);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[2] = e;
@@ -611,24 +655,24 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[5] = e;
         } else {
-            s54.ctor();
+            { if (s54.data) delete[] s54.data; s54.data = nullptr; s54.length = 0; }
             GameRecord *slot = rec->data_[i];
             _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) slot, slot->playTimeObj);
             void *e;
             int *rowData;
 
             e = ::operator new(0xc);
-            ((String *) e)->ctor_copy(&s54, false);
+            ((String *) e)->Set((s54).data);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[0] = e;
 
             e = ::operator new(0xc);
-            ((String *) e)->ctor_copy((String *) &slot->pilotName, false);
+            ((String *) e)->Set(((String *) &slot->pilotName)->data);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[1] = e;
 
             e = ::operator new(0xc);
-            if (i == 0) ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6), false);
+            if (i == 0) ((String *) e)->Set(((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6))->data);
             else ((String *) e)->ctor_char(gCrbDash, false);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[2] = e;
@@ -645,7 +689,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             String s60;
             _mtw_String_op_plus(&s60, label);
             String s78;
-            s78.ctor_copy((String *) &slot->killsText, false);
+            s78.Set(((String *) &slot->killsText)->data);
             _mtw_String_op_plus(combined, &s60);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[4] = combined;
@@ -657,7 +701,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             else if (rank <= 0.5f) rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x207);
             else if (rank <= 1.0f) rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x207);
             else rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x19);
-            ((String *) e)->ctor_copy((String *) rankTxt, false);
+            ((String *) e)->Set(((String *) rankTxt)->data);
             rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[5] = e;
         }
@@ -1645,50 +1689,7 @@ static void *const gMvFlagA = nullptr;
 static void *const gMvFlagB = nullptr;
 static void *const gMvFmod = nullptr;
 
-static inline __attribute__ ((always_inline))
-
-void doSliders(void *self, int y) {
-    void *fmod = *(void **) gMvFmod;
-    int *sl = (int *) ((Array<TouchSlider *> *) ((MenuTouchWindow *) self)->sliders)->data_;
-    if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
-        _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[1]));
-    _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[2]));
-    _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[3]));
-}
-
 static void *const gMvScrollBound = nullptr;
-
-static inline __attribute__ ((always_inline))
-
-void scrollStateMove(MenuTouchWindow *self, int y, int x) {
-    Layout *layout = (Layout *) *(void **) gMvLayout;
-
-    _mtw_ScrollTouchWindow_OnTouchMove(self->scrollWindowB, y);
-
-    void **arr = (void **) self->scrollEntries;
-    for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
-        unsigned int *e = (unsigned int *) ((void **) arr[1])[i];
-        if ((e[0] | 8) == 0x3c && e[1] == 0)
-            _mtw_TouchButton_OnTouchMove(e, y);
-    }
-
-    void **slots = (void **) self->scrollSlots;
-    for (unsigned int i = 0; i < *(unsigned int *) slots; i++)
-        _mtw_TouchButton_OnTouchMove(((void **) slots[1])[i], y);
-
-    if (layout->field_0xc < x &&
-        x < *(int *) *(void **) gMvScrollBound - layout->field_0x10_rightMargin) {
-        int b28 = layout->buttonInsetX;
-        int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) self->heapBufA);
-        if (y < iw + b28) {
-            int dx = x - self->dragLastX;
-            self->dragLastX = x;
-            self->dragVelocity = dx;
-            self->inertiaDecay = 0x3f800000;
-            self->scrollOffset = self->scrollOffset + dx;
-        }
-    }
-}
 
 int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
     if (this->messageShowing != 0) {
@@ -1740,7 +1741,14 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
-                doSliders(this, y);
+                {
+                    void *fmod = *(void **) gMvFmod;
+                    int *sl = (int *) ((Array<TouchSlider *> *) this->sliders)->data_;
+                    if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
+                        _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[1]));
+                    _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[2]));
+                    _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[3]));
+                }
                 void **arr = (void **) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++)
                     _mtw_TouchSlider_OnTouchMove(((void **) arr[1])[i], y);
@@ -1768,7 +1776,14 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
             _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
             _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
-            doSliders(this, y);
+            {
+                void *fmod = *(void **) gMvFmod;
+                int *sl = (int *) ((Array<TouchSlider *> *) this->sliders)->data_;
+                if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
+                    _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[1]));
+                _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[2]));
+                _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[3]));
+            }
             {
                 void **arr = (void **) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++) {
@@ -1813,9 +1828,36 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 _mtw_TouchButton_OnTouchMove(((void **) arr[1])[i], y);
         }
         break;
-        case 0xe:
-            scrollStateMove(this, y, x);
+        case 0xe: {
+            Layout *slayout = (Layout *) *(void **) gMvLayout;
+
+            _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowB, y);
+
+            void **arr = (void **) this->scrollEntries;
+            for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
+                unsigned int *e = (unsigned int *) ((void **) arr[1])[i];
+                if ((e[0] | 8) == 0x3c && e[1] == 0)
+                    _mtw_TouchButton_OnTouchMove(e, y);
+            }
+
+            void **slots = (void **) this->scrollSlots;
+            for (unsigned int i = 0; i < *(unsigned int *) slots; i++)
+                _mtw_TouchButton_OnTouchMove(((void **) slots[1])[i], y);
+
+            if (slayout->field_0xc < x &&
+                x < *(int *) *(void **) gMvScrollBound - slayout->field_0x10_rightMargin) {
+                int b28 = slayout->buttonInsetX;
+                int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
+                if (y < iw + b28) {
+                    int dx = x - this->dragLastX;
+                    this->dragLastX = x;
+                    this->dragVelocity = dx;
+                    this->inertiaDecay = 0x3f800000;
+                    this->scrollOffset = this->scrollOffset + dx;
+                }
+            }
             break;
+        }
         case 0xf: {
             void **arr = (void **) this->scrollEntries;
             for (unsigned int i = 0; i < *(unsigned int *) arr; i++) {
@@ -1823,7 +1865,35 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 if ((unsigned int) (e[0] - 0x65) < 5)
                     _mtw_TouchButton_OnTouchMove(e, y);
             }
-            scrollStateMove(this, y, x);
+            {
+                Layout *slayout = (Layout *) *(void **) gMvLayout;
+
+                _mtw_ScrollTouchWindow_OnTouchMove(this->scrollWindowB, y);
+
+                void **arr2 = (void **) this->scrollEntries;
+                for (unsigned int i = 0; i < *(unsigned int *) arr2; i++) {
+                    unsigned int *e = (unsigned int *) ((void **) arr2[1])[i];
+                    if ((e[0] | 8) == 0x3c && e[1] == 0)
+                        _mtw_TouchButton_OnTouchMove(e, y);
+                }
+
+                void **slots = (void **) this->scrollSlots;
+                for (unsigned int i = 0; i < *(unsigned int *) slots; i++)
+                    _mtw_TouchButton_OnTouchMove(((void **) slots[1])[i], y);
+
+                if (slayout->field_0xc < x &&
+                    x < *(int *) *(void **) gMvScrollBound - slayout->field_0x10_rightMargin) {
+                    int b28 = slayout->buttonInsetX;
+                    int iw = g_PaintCanvas->GetImage2DWidth(*(unsigned int *) this->heapBufA);
+                    if (y < iw + b28) {
+                        int dx = x - this->dragLastX;
+                        this->dragLastX = x;
+                        this->dragVelocity = dx;
+                        this->inertiaDecay = 0x3f800000;
+                        this->scrollOffset = this->scrollOffset + dx;
+                    }
+                }
+            }
         }
         break;
         case 0x10: {

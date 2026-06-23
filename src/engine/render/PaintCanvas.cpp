@@ -398,16 +398,6 @@ namespace {
         a->capacity = 0;
     }
 
-    __attribute__ ((always_inline))
-
-    inline void PCArrayDtor(void *arrayHeader) {
-        PCArrayHeader *a = (PCArrayHeader *) arrayHeader;
-        ::operator delete(a->data);
-        a->data = nullptr;
-        a->count = 0;
-        a->capacity = 0;
-    }
-
     template<class T>
     inline void PCArrayAdd(T item, void *arrayHeader) {
         PCArrayHeader *a = (PCArrayHeader *) arrayHeader;
@@ -429,17 +419,6 @@ namespace {
         a->count = 0;
     }
 
-    __attribute__ ((always_inline))
-
-    inline void PCArrayReleaseClasses(void *arrayHeader) {
-        PCArrayHeader *a = (PCArrayHeader *) arrayHeader;
-        for (uint32_t i = 0; i < a->count; ++i) {
-            void *e = ((void **) a->data)[i];
-            if (e != nullptr)
-                ::operator delete(e);
-        }
-        a->count = 0;
-    }
 }
 
 void paintcanvas_ext_has_vibration(void *);
@@ -3349,11 +3328,45 @@ PaintCanvas::~PaintCanvas() {
             }
             (this->resources)[i] = 0;
 
-            PCArrayReleaseClasses(&this->glowMeshes_count);
-            PCArrayDtor(&this->glowMatA_count);
-            PCArrayDtor(&this->glowMatB_count);
-            PCArrayReleaseClasses(&this->glowUints_count);
-            PCArrayDtor(&this->glowMatC_count);
+            {
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes_count;
+                for (uint32_t j = 0; j < a->count; ++j) {
+                    void *e = ((void **) a->data)[j];
+                    if (e != nullptr)
+                        ::operator delete(e);
+                }
+                a->count = 0;
+            }
+            {
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA_count;
+                ::operator delete(a->data);
+                a->data = nullptr;
+                a->count = 0;
+                a->capacity = 0;
+            }
+            {
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB_count;
+                ::operator delete(a->data);
+                a->data = nullptr;
+                a->count = 0;
+                a->capacity = 0;
+            }
+            {
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowUints_count;
+                for (uint32_t j = 0; j < a->count; ++j) {
+                    void *e = ((void **) a->data)[j];
+                    if (e != nullptr)
+                        ::operator delete(e);
+                }
+                a->count = 0;
+            }
+            {
+                PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC_count;
+                ::operator delete(a->data);
+                a->data = nullptr;
+                a->count = 0;
+                a->capacity = 0;
+            }
         }
     }
 
@@ -3369,20 +3382,104 @@ PaintCanvas::~PaintCanvas() {
         (this->cubeTextures)[i] = 0;
     }
 
-    PCArrayDtor(&this->glowMatC_count);
-    PCArrayDtor(&this->glowUints_count);
-    PCArrayDtor(&this->glowMatB_count);
-    PCArrayDtor(&this->glowMatA_count);
-    PCArrayDtor(&this->glowMeshes_count);
-    PCArrayDtor(&this->spriteSystemCount);
-    PCArrayDtor(&this->materialCount);
-    PCArrayDtor(&this->cameraCount);
-    PCArrayDtor(&this->transformCount);
-    PCArrayDtor(&this->imageCount);
-    PCArrayDtor(&this->fontCount);
-    PCArrayDtor(&this->resourceCount);
-    PCArrayDtor(&this->meshCount);
-    PCArrayDtor(&this->cubeTextureCount);
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatC_count;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowUints_count;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatB_count;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMatA_count;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->glowMeshes_count;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->spriteSystemCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->materialCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->cameraCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->transformCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->imageCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->fontCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->resourceCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->meshCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
+    {
+        PCArrayHeader *a = (PCArrayHeader *) &this->cubeTextureCount;
+        ::operator delete(a->data);
+        a->data = nullptr;
+        a->count = 0;
+        a->capacity = 0;
+    }
 }
 
 

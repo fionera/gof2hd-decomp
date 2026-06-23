@@ -8,15 +8,6 @@ static Array<AEPakFileEntry *> *g_AEFile_pakFiles = nullptr;
 static uint32_t g_AEFile_initialized = 0;
 
 namespace {
-    __attribute__ ((always_inline))
-    inline void AEStr_init(String *self, const char *s) { self->ctor_char(s, false); }
-
-    __attribute__ ((always_inline))
-    inline void AEStr_init(String *self, const uint16_t *s) { self->ctor_wchar(s, false); }
-
-    __attribute__ ((always_inline))
-    inline void AEStr_init(String *self, const String &other) { self->ctor_copy(const_cast<String *>(&other), false); }
-
     inline void AEStr_set(String &self, const char *s) { self.Set_char(s); }
     inline void AEStr_set(String &self, const uint16_t *s) { self.Set_wchar(s); }
 
@@ -87,15 +78,15 @@ uint32_t AEFile::Open(String &path, FileOpenType openType, uint32_t *handle) {
 
     if (openType == OPEN_WRITE) {
         String localPath;
-        AEStr_init(&localPath, text);
+        localPath.Set((const unsigned short *) (text));
         nativeHandle = fileInterface->OpenWrite(localPath, path.size(), false, 0);
     } else if (openType == OPEN_APPEND) {
         String localPath;
-        AEStr_init(&localPath, text);
+        localPath.Set((const unsigned short *) (text));
         nativeHandle = fileInterface->OpenAppend(localPath, path.size(), false, 0);
     } else if (openType == OPEN_READ) {
         String localPath;
-        AEStr_init(&localPath, text);
+        localPath.Set((const unsigned short *) (text));
         nativeHandle = fileInterface->OpenRead(localPath, path.size(), 0, 0, 0, 0);
         if (nativeHandle == nullptr) {
             if (*AEStr_index(path, 0) != '/') {
@@ -151,7 +142,7 @@ uint32_t AEFile::OpenRead(String &path, uint32_t *handle) {
 
 uint32_t AEFile::OpenRead(const char *path, uint32_t *handle) {
     String string;
-    AEStr_init(&string, path);
+    string.ctor_char(path, false);
     return OpenRead(string, handle);
 }
 
@@ -161,7 +152,7 @@ uint32_t AEFile::OpenWrite(String &path, uint32_t *handle) {
 
 uint32_t AEFile::OpenWrite(const char *path, uint32_t *handle) {
     String string;
-    AEStr_init(&string, path);
+    string.ctor_char(path, false);
     return OpenWrite(string, handle);
 }
 
@@ -171,7 +162,7 @@ uint32_t AEFile::OpenAppend(String &path, uint32_t *handle) {
 
 uint32_t AEFile::OpenAppend(const char *path, uint32_t *handle) {
     String string;
-    AEStr_init(&string, path);
+    string.ctor_char(path, false);
     return OpenAppend(string, handle);
 }
 
@@ -366,7 +357,7 @@ void AEFile::collectPakFiles(const String &path) {
         String entry;
         while (fileInterface->FileGetNextEnum(entry) != 0) {
             String entryCopy;
-            AEStr_init(&entryCopy, entry);
+            entryCopy.Set((const_cast<String *>(&entry))->data);
             String suffix(".pak");
             if (AEStr_indexOf(entry, suffix) != 0xffffffffu) {
                 collectFilesInPakFiles(entryCopy);
@@ -402,7 +393,7 @@ void AEFile::collectFilesInPakFiles(String &path) {
 
         AEPakFileEntry *entry = new AEPakFileEntry();
         String nameString;
-        AEStr_init(&nameString, name);
+        nameString.ctor_char(name, false);
         entry->crc = crc32_ccitt(nameString);
 
         entry->name = path;
@@ -468,7 +459,7 @@ AELowLevelFile *AEFile::findPakFile(const String &path) {
             uint16_t *name = AEStr_wchar(entry->name);
             FileInterface *fileInterface = g_AEFile_fileInterface;
             String entryName;
-            AEStr_init(&entryName, name);
+            entryName.Set((const unsigned short *) (name));
             void *handle;
 
             if (entry->size == 0xffffffff) {
@@ -502,13 +493,13 @@ uint32_t AEFile::FileExist(const String &path) {
     }
 
     String nativePath;
-    AEStr_init(&nativePath, path);
+    nativePath.Set((const_cast<String *>(&path))->data);
     if (fileInterface->FileExist(nativePath) != 0) {
         return 1;
     }
 
     String pakPath;
-    AEStr_init(&pakPath, path);
+    pakPath.Set((const_cast<String *>(&path))->data);
     if (*AEStr_index(pakPath, 0) != '/') {
         String prefix("/");
         pakPath = prefix + path;
@@ -523,7 +514,7 @@ uint32_t AEFile::FileDelete(const String &path) {
         return 0;
     }
     String localPath;
-    AEStr_init(&localPath, path);
+    localPath.Set((const_cast<String *>(&path))->data);
     return fileInterface->FileDelete(localPath);
 }
 
@@ -561,7 +552,7 @@ void AEFile::SetSaveDirectory(String path) {
     FileInterface *fileInterface = g_AEFile_fileInterface;
     if (fileInterface != nullptr) {
         String savePath;
-        AEStr_init(&savePath, path);
+        savePath.Set((const_cast<String *>(&path))->data);
         fileInterface->SetSaveDirectory(savePath);
     }
 }

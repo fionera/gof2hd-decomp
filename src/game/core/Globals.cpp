@@ -481,31 +481,31 @@ static const char gGLA_newline[] = "";
 void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
                            Array<String *> *out) {
     String *line = static_cast<String *>(::operator new(sizeof(String)));
-    line->ctor();
+    { String *_s = line; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 
     String work;
-    work.ctor_copy(const_cast<String *>(&text), false);
+    work.Set((const_cast<String *>(&text))->data);
     String nl;
     nl.ctor_char(gGLA_newline, false);
-    work.addAssign_str(&nl);
+    work += nl;
 
     const int total = static_cast<int>(work.size());
 
     unsigned count = 0;
     for (int consumed = 0; consumed < total;) {
         String rest;
-        rest.SubString(&work, consumed, total);
+        rest = work.SubString(consumed, total);
         getLine(font, rest, maxWidth, line);
         consumed += static_cast<int>(line->size());
         count++;
     }
-    line->clear();
+    { String *_s = line; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
     ::operator delete(line);
 
     out->resize(count);
     for (unsigned i = 0; i < count; i++) {
         String *s = static_cast<String *>(::operator new(sizeof(String)));
-        s->ctor();
+        { String *_s = s; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
         (*out)[i] = s;
     }
 
@@ -513,7 +513,7 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     for (unsigned i = 0; i < count; i++) {
         String *slot = (*out)[i];
         String rest;
-        rest.SubString(&work, consumed, total);
+        rest = work.SubString(consumed, total);
         getLine(font, rest, maxWidth, slot);
         consumed += static_cast<int>(slot->size());
 
@@ -528,8 +528,8 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
         } while (*slot->index(hi - 2) == 0x20);
 
         String trimmed;
-        trimmed.SubString(slot, lo, hi);
-        slot->assign(&trimmed);
+        trimmed = slot->SubString(lo, hi);
+        *slot = trimmed;
     }
 }
 
@@ -556,12 +556,12 @@ void Globals::longToTimeString(long long ms, String &out) {
 
     String secPart, secNum, secStr;
     secPart.ctor_char(seconds < 10 ? gLTS2_secTens : gLTS2_secEmpty, false);
-    secNum.ctor_int(seconds);
+    secNum.Set((long long) (seconds));
     secStr = secPart + secNum;
 
     String minPart, minNum, minStr;
     minPart.ctor_char(minute < 10 ? gLTS2_minTens : gLTS2_minEmpty, false);
-    minNum.ctor_int(minute);
+    minNum.Set((long long) (minute));
     minStr = minPart + minNum;
 
     if (hours == 0) {
@@ -575,7 +575,7 @@ void Globals::longToTimeString(long long ms, String &out) {
 
         String hrPart, hrNum, hrStr;
         hrPart.ctor_char(hv < 10 ? gLTS2_hrTens : gLTS2_hrEmpty, false);
-        hrNum.ctor_int(hv);
+        hrNum.Set((long long) (hv));
         hrStr = hrPart + hrNum;
 
         String s1, a, b, s2, c;
@@ -600,25 +600,25 @@ String Globals::getBoundedString(const String &text, int width) {
     volatile int saved = *guardP;
 
     String result;
-    result.ctor_copy(const_cast<String *>(&text), false);
+    result.Set((const_cast<String *>(&text))->data);
 
     String **strPtr = *(String ***) gGBS_strPtr;
     int **canvas = *(int ***) gGBS_canvas;
     int w = ((PaintCanvas *) (long) **canvas)->GetTextWidth(0, **strPtr);
     if (width < w) {
         String *line = (String *) ::operator new(0xc);
-        line->ctor();
+        { String *_s = line; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 
         int font = (int) (long) *strPtr;
         String tmpText;
-        tmpText.ctor_copy(const_cast<String *>(&text), false);
+        tmpText.Set((const_cast<String *>(&text))->data);
         Globals::gGlobals->getLine((unsigned) font, tmpText, width - 3, line);
 
         String prefix;
         prefix.ctor_char(gGBS_prefix, false);
         result = prefix + *line;
 
-        line->clear();
+        { String *_s = line; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
     }
 
     return result;
@@ -809,10 +809,6 @@ static const char gGAMT_noAgent[] = "";
 static void *const gGAMT_busyObj = nullptr;
 static void *const gGAMT_modText = nullptr;
 
-static inline __attribute__ ((always_inline))
-
-void buildAgentMissionText(String *out, void *agent, int offer);
-
 String Globals::getAgentMissionText(Agent *agent) {
     int *guardP = *(int **) gGAMT_guard;
     volatile int saved = *guardP;
@@ -846,21 +842,117 @@ String Globals::getAgentMissionText(Agent *agent) {
                     void *t = ((GameText *) ((void *) (long) **(int **) gGAMT_modText))->getText(modIdx);
                     (void) t;
                     busy->guardCounter -= 1;
-                    result.ctor_copy(&acc, false);
+                    result.Set((acc).data);
                     return result;
                 }
             }
 
-            buildAgentMissionText(&acc, agent, offer);
+            {
+                Agent *agentArg = agent;
+                int bamtOffer = offer;
+                String mt;
+                { if (mt.data) delete[] mt.data; mt.data = nullptr; mt.length = 0; }
+                if (bamtOffer < 0 || agentArg == 0) {
+                    void *line = ((GameText *) (void *) (long) **(int **) &g_status)->getText(0x300);
+                    mt = *(String *) line;
+                    acc.Set((mt).data);
+                } else {
+                    int baseKey;
+                    switch (bamtOffer) {
+                        case 8: baseKey = 0x36a;
+                            break;
+                        case 9: baseKey = 0x36a;
+                            break;
+                        case 10: baseKey = 0x36a;
+                            break;
+                        case 4: baseKey = 0x36a;
+                            break;
+                        default: baseKey = 0x36a;
+                            break;
+                    }
+                    void *base = ((GameText *) (void *) (long) **(int **) &g_status)->getText(baseKey);
+                    mt = *(String *) base;
+                    {
+                        String tok;
+                        { if (tok.data) delete[] tok.data; tok.data = nullptr; tok.length = 0; }
+                        ((Agent *) agentArg)->getName();
+                    }
+                    acc.Set((mt).data);
+                }
+            }
             busy->guardCounter -= 1;
         } else {
-            buildAgentMissionText(&acc, agent, -1);
+            {
+                Agent *agentArg = agent;
+                int bamtOffer = -1;
+                String mt;
+                { if (mt.data) delete[] mt.data; mt.data = nullptr; mt.length = 0; }
+                if (bamtOffer < 0 || agentArg == 0) {
+                    void *line = ((GameText *) (void *) (long) **(int **) &g_status)->getText(0x300);
+                    mt = *(String *) line;
+                    acc.Set((mt).data);
+                } else {
+                    int baseKey;
+                    switch (bamtOffer) {
+                        case 8: baseKey = 0x36a;
+                            break;
+                        case 9: baseKey = 0x36a;
+                            break;
+                        case 10: baseKey = 0x36a;
+                            break;
+                        case 4: baseKey = 0x36a;
+                            break;
+                        default: baseKey = 0x36a;
+                            break;
+                    }
+                    void *base = ((GameText *) (void *) (long) **(int **) &g_status)->getText(baseKey);
+                    mt = *(String *) base;
+                    {
+                        String tok;
+                        { if (tok.data) delete[] tok.data; tok.data = nullptr; tok.length = 0; }
+                        ((Agent *) agentArg)->getName();
+                    }
+                    acc.Set((mt).data);
+                }
+            }
         }
     } else {
-        buildAgentMissionText(&acc, agent, -1);
+        {
+            Agent *agentArg = agent;
+            int bamtOffer = -1;
+            String mt;
+            { if (mt.data) delete[] mt.data; mt.data = nullptr; mt.length = 0; }
+            if (bamtOffer < 0 || agentArg == 0) {
+                void *line = ((GameText *) (void *) (long) **(int **) &g_status)->getText(0x300);
+                mt = *(String *) line;
+                acc.Set((mt).data);
+            } else {
+                int baseKey;
+                switch (bamtOffer) {
+                    case 8: baseKey = 0x36a;
+                        break;
+                    case 9: baseKey = 0x36a;
+                        break;
+                    case 10: baseKey = 0x36a;
+                        break;
+                    case 4: baseKey = 0x36a;
+                        break;
+                    default: baseKey = 0x36a;
+                        break;
+                }
+                void *base = ((GameText *) (void *) (long) **(int **) &g_status)->getText(baseKey);
+                mt = *(String *) base;
+                {
+                    String tok;
+                    { if (tok.data) delete[] tok.data; tok.data = nullptr; tok.length = 0; }
+                    ((Agent *) agentArg)->getName();
+                }
+                acc.Set((mt).data);
+            }
+        }
     }
 
-    result.ctor_copy(&acc, false);
+    result.Set((acc).data);
     return result;
 }
 
@@ -950,7 +1042,7 @@ String Globals::getKeyBindingReplaceString(int key) {
     (void) key;
 
     String tmp;
-    tmp.ctor();
+    { if (tmp.data) delete[] tmp.data; tmp.data = nullptr; tmp.length = 0; }
     tmp.ToUpperCase();
     String result;
     return result;
@@ -972,7 +1064,7 @@ void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
 
     String mPart, mNum, minStr;
     mPart.ctor_char(minute < 10 ? gLTS_minTens : gLTS_minEmpty, false);
-    mNum.ctor_int(minute);
+    mNum.Set((long long) (minute));
     minStr = mPart + mNum;
 
     long long h = ms / 0xea60;
@@ -980,7 +1072,7 @@ void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
 
     String hPart, hNum, hrStr;
     hPart.ctor_char(hv < 10 ? gLTS_hrTens : gLTS_hrEmpty, false);
-    hNum.ctor_int(hv);
+    hNum.Set((long long) (hv));
     hrStr = hPart + hNum;
 
     String sep, left;
@@ -2227,10 +2319,6 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
 
 static const int gGDS_pairTable[1] = {};
 
-static inline __attribute__ ((always_inline))
-
-int dialogueDispatch(int category, int code, int isMale);
-
 int Globals::getDialogueSoundId(int code, Agent *agent) {
     const int *t = gGDS_pairTable;
     for (unsigned i = 0; (i >> 6) < 0x2f; i += 2) {
@@ -2252,172 +2340,14 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
         if (parts != 0) {
             int *p = ((Agent *) (agent))->getImageParts();
             category = (*p == 2) ? 3 : 0;
-
-            return dialogueDispatch(category, code, male);
+        } else {
+            category = 2;
         }
-
-        return dialogueDispatch(2, code, male);
-    }
-
-    category = race;
-    return dialogueDispatch(category, code, male);
-}
-
-static void *const gPlanetRng = nullptr;
-
-String Globals::getRandomPlanetName() {
-    FileRead *f = (FileRead *) ::operator new(1);
-    FileRead_ctor(f);
-    int which = nextInt_71ad0((AbyssEngine::AERandom *) *(int *) gPlanetRng, 0x64);
-    Station *st = f->loadStation(which);
-    String name = st->getName();
-    delete st;
-    ::operator delete(FileRead_dtor(f));
-    return name;
-}
-
-static void *const gGRN_guardHolder = nullptr;
-static const char gGRN_noFirst[] = "";
-static void *const gGRN_rng1 = nullptr;
-static const char gGRN_noLast[] = "";
-static void *const gGRN_rng2 = nullptr;
-static const char gGRN_space[] = "";
-
-String Globals::getRandomName(int kind, bool both) {
-    int *guardP = *(int **) gGRN_guardHolder;
-    volatile int saved = *guardP;
-
-    void *fr = ::operator new(1);
-    FileRead_ctor(fr);
-    Array<String *> *first = ((FileRead *) fr)->loadNamesBinary(kind, both, 1);
-    Array<String *> *last = ((FileRead *) fr)->loadNamesBinary(kind, both, 0);
-
-    String firstStr, lastStr;
-    if (first == 0) {
-        firstStr.ctor_char(gGRN_noFirst, false);
     } else {
-        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **(int **) gGRN_rng1);
-        firstStr.ctor_copy((*first)[idx], false);
-    }
-    if (last == 0) {
-        lastStr.ctor_char(gGRN_noLast, false);
-    } else {
-        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **(int **) gGRN_rng2);
-        lastStr.ctor_copy((*last)[idx], false);
+        category = race;
     }
 
-    if (first != 0) {
-        for (String *e: *first) delete e;
-        first->clear();
-        delete first;
-    }
-    if (last != 0) {
-        for (String *e: *last) delete e;
-        last->clear();
-        delete last;
-    }
-    ::operator delete(FileRead_dtor(fr));
-
-    String result;
-    if (firstStr.size() == 0) {
-        result.ctor_copy(&firstStr, false);
-    } else {
-        String space, mid;
-        space.ctor_char(gGRN_space, false);
-        mid = firstStr + space;
-        result = mid + lastStr;
-    }
-
-    return result;
-}
-
-static void *const gGL_canvas = nullptr;
-static const char gGL_empty[] = "";
-
-void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
-    int lang = GameText::getLanguage();
-    int width = 5;
-    if (((unsigned) (lang | 1)) == 0xb) width = 0xf;
-    if ((unsigned) lang == 0xf) width = 0xf;
-
-    int *canvas = *(int **) gGL_canvas;
-    unsigned lastSpace = 0;
-    unsigned len = text.size();
-
-    String tmp;
-    for (unsigned i = 0; i < len;) {
-        short ch = *text.index(i);
-        width += ((PaintCanvas *) (long) *canvas)->GetTextWidth(font, text, i, i + 1);
-        if (ch == 0x20) {
-            lastSpace = i;
-        }
-        if (maxWidth <= width) {
-            if (ch == 0x0a || ch == 0x0d) {
-                tmp.SubString(&text, 0, i + 1);
-            } else if ((int) lastSpace < 1) {
-                tmp.SubString(&text, 0, i + 1);
-            } else {
-                tmp.SubString(&text, 0, lastSpace + 1);
-            }
-            *out = tmp;
-            return;
-        }
-        i++;
-        len = text.size();
-    }
-
-    if ((int) len < 2) {
-        tmp.ctor_char(gGL_empty, false);
-    } else {
-        tmp.SubString(&text, 0, len);
-    }
-    *out = tmp;
-}
-
-#include "engine/core/AERandom.h"
-
-static inline __attribute__ ((always_inline))
-
-int dialogueDispatch(int category, int code, int isMale) {
-    auto genericTable = [](int c) -> int {
-        switch (c) {
-            case 0x172: return 0x27e;
-            case 0x173: return 0x272;
-            case 0x174: return 0x278;
-            case 0x175: return 0x279;
-            case 0x176: return 0x27a;
-            case 0x177: return 0x27b;
-            case 0x178: return 0x27c;
-            case 0x179: return 0x27d;
-            case 0x17a: return 0x26c;
-            case 0x17b: return 0x273;
-            case 0x17c: return 0x274;
-            case 0x17d: return 0x275;
-            case 0x17e: return 0x276;
-            case 0x17f: return 0x277;
-            case 0x180: return 0x26d;
-            case 0x181: return 0x26e;
-            case 0x182: return 0x26f;
-            case 0x183: return 0x270;
-            case 0x184: return 0x271;
-            case 0x185: return 0x26b;
-            case 0x1aa: return 0x285;
-            case 0x1ab: return 0x286;
-            case 0x1ac: return 0x287;
-            case 0x1ad: return 0x28a;
-            case 0x1ae: return 0x28b;
-            case 0x1af: return 0x28c;
-            case 0x1b0: return 0x24c;
-            case 0x1b2: return 0x24a;
-            case 0x1ba: return 0x24d;
-            case 0x1bd: return 0x27f;
-            case 0x1be: return 0x281;
-            case 0x1bf: return 0x282;
-            case 0x139: return 0x28f;
-            default: return -1;
-        }
-    };
-
+    int isMale = male;
     switch (category) {
         case 0:
         case 5: {
@@ -2502,7 +2432,42 @@ int dialogueDispatch(int category, int code, int isMale) {
         }
         case 2:
         case 3:
-            return genericTable(code);
+            switch (code) {
+                case 0x172: return 0x27e;
+                case 0x173: return 0x272;
+                case 0x174: return 0x278;
+                case 0x175: return 0x279;
+                case 0x176: return 0x27a;
+                case 0x177: return 0x27b;
+                case 0x178: return 0x27c;
+                case 0x179: return 0x27d;
+                case 0x17a: return 0x26c;
+                case 0x17b: return 0x273;
+                case 0x17c: return 0x274;
+                case 0x17d: return 0x275;
+                case 0x17e: return 0x276;
+                case 0x17f: return 0x277;
+                case 0x180: return 0x26d;
+                case 0x181: return 0x26e;
+                case 0x182: return 0x26f;
+                case 0x183: return 0x270;
+                case 0x184: return 0x271;
+                case 0x185: return 0x26b;
+                case 0x1aa: return 0x285;
+                case 0x1ab: return 0x286;
+                case 0x1ac: return 0x287;
+                case 0x1ad: return 0x28a;
+                case 0x1ae: return 0x28b;
+                case 0x1af: return 0x28c;
+                case 0x1b0: return 0x24c;
+                case 0x1b2: return 0x24a;
+                case 0x1ba: return 0x24d;
+                case 0x1bd: return 0x27f;
+                case 0x1be: return 0x281;
+                case 0x1bf: return 0x282;
+                case 0x139: return 0x28f;
+                default: return -1;
+            }
         case 4: {
             switch (code) {
                 case 0x172: return 0x267;
@@ -2591,44 +2556,117 @@ int dialogueDispatch(int category, int code, int isMale) {
     }
 }
 
-static inline __attribute__ ((always_inline))
+static void *const gPlanetRng = nullptr;
 
-void buildAgentMissionText(String *out, void *agentArg, int offer) {
-    Agent *agent = (Agent *) agentArg;
-
-    String acc;
-    acc.ctor();
-
-    if (offer < 0 || agent == 0) {
-        void *line = ((GameText *) (void *) (long) **(int **) &g_status)->getText(0x300);
-        acc.assign((String *) line);
-        out->ctor_copy(&acc, false);
-        return;
-    }
-
-    int baseKey;
-    switch (offer) {
-        case 8: baseKey = 0x36a;
-            break;
-        case 9: baseKey = 0x36a;
-            break;
-        case 10: baseKey = 0x36a;
-            break;
-        case 4: baseKey = 0x36a;
-            break;
-        default: baseKey = 0x36a;
-            break;
-    }
-
-    void *base = ((GameText *) (void *) (long) **(int **) &g_status)->getText(baseKey);
-    acc.assign((String *) base);
-
-    {
-        String tok;
-        tok.ctor();
-
-        ((Agent *) agent)->getName();
-    }
-
-    out->ctor_copy(&acc, false);
+String Globals::getRandomPlanetName() {
+    FileRead *f = (FileRead *) ::operator new(1);
+    FileRead_ctor(f);
+    int which = nextInt_71ad0((AbyssEngine::AERandom *) *(int *) gPlanetRng, 0x64);
+    Station *st = f->loadStation(which);
+    String name = st->getName();
+    delete st;
+    ::operator delete(FileRead_dtor(f));
+    return name;
 }
+
+static void *const gGRN_guardHolder = nullptr;
+static const char gGRN_noFirst[] = "";
+static void *const gGRN_rng1 = nullptr;
+static const char gGRN_noLast[] = "";
+static void *const gGRN_rng2 = nullptr;
+static const char gGRN_space[] = "";
+
+String Globals::getRandomName(int kind, bool both) {
+    int *guardP = *(int **) gGRN_guardHolder;
+    volatile int saved = *guardP;
+
+    void *fr = ::operator new(1);
+    FileRead_ctor(fr);
+    Array<String *> *first = ((FileRead *) fr)->loadNamesBinary(kind, both, 1);
+    Array<String *> *last = ((FileRead *) fr)->loadNamesBinary(kind, both, 0);
+
+    String firstStr, lastStr;
+    if (first == 0) {
+        firstStr.ctor_char(gGRN_noFirst, false);
+    } else {
+        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **(int **) gGRN_rng1);
+        firstStr.Set(((*first)[idx])->data);
+    }
+    if (last == 0) {
+        lastStr.ctor_char(gGRN_noLast, false);
+    } else {
+        int idx = nextInt_71aa4((AbyssEngine::AERandom *) **(int **) gGRN_rng2);
+        lastStr.Set(((*last)[idx])->data);
+    }
+
+    if (first != 0) {
+        for (String *e: *first) delete e;
+        first->clear();
+        delete first;
+    }
+    if (last != 0) {
+        for (String *e: *last) delete e;
+        last->clear();
+        delete last;
+    }
+    ::operator delete(FileRead_dtor(fr));
+
+    String result;
+    if (firstStr.size() == 0) {
+        result.Set((firstStr).data);
+    } else {
+        String space, mid;
+        space.ctor_char(gGRN_space, false);
+        mid = firstStr + space;
+        result = mid + lastStr;
+    }
+
+    return result;
+}
+
+static void *const gGL_canvas = nullptr;
+static const char gGL_empty[] = "";
+
+void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
+    int lang = GameText::getLanguage();
+    int width = 5;
+    if (((unsigned) (lang | 1)) == 0xb) width = 0xf;
+    if ((unsigned) lang == 0xf) width = 0xf;
+
+    int *canvas = *(int **) gGL_canvas;
+    unsigned lastSpace = 0;
+    unsigned len = text.size();
+
+    String tmp;
+    for (unsigned i = 0; i < len;) {
+        short ch = *text.index(i);
+        width += ((PaintCanvas *) (long) *canvas)->GetTextWidth(font, text, i, i + 1);
+        if (ch == 0x20) {
+            lastSpace = i;
+        }
+        if (maxWidth <= width) {
+            if (ch == 0x0a || ch == 0x0d) {
+                tmp = text.SubString(0, i + 1);
+            } else if ((int) lastSpace < 1) {
+                tmp = text.SubString(0, i + 1);
+            } else {
+                tmp = text.SubString(0, lastSpace + 1);
+            }
+            *out = tmp;
+            return;
+        }
+        i++;
+        len = text.size();
+    }
+
+    if ((int) len < 2) {
+        tmp.ctor_char(gGL_empty, false);
+    } else {
+        tmp = text.SubString(0, len);
+    }
+    *out = tmp;
+}
+
+#include "engine/core/AERandom.h"
+
+

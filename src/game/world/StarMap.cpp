@@ -1212,7 +1212,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
                                                         (unsigned char) (0xff), (unsigned char) (this->alpha));
             if (Station_getTecLevel(station) > 0) {
                 line.copy((String *) ((GameText *) (*g_StarMap_info_text))->getText(0x200), false);
-                value.ctor_int(Station_getTecLevel(station));
+                value.Set((long long) (Station_getTecLevel(station)));
                 name = line + value;
                 ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (*g_StarMap_info_font), name, drawX,
                                                               drawY + ((Layout *) *g_StarMap_info_layout)->field_0x4,

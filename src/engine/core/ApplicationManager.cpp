@@ -488,7 +488,7 @@ void ApplicationManager::KeyCodeSetMapping(Array<AbyssEngine::KeyCode *> *array)
         for (unsigned int index = 0; index < count; ++index) {
             AbyssEngine::KeyCode *mapping = (*array)[index];
             entries[index].code = mapping->code;
-            entries[index].name.assign(&mapping->name);
+            entries[index].name = mapping->name;
             count = array->size();
         }
     }

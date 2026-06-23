@@ -135,6 +135,5 @@ private:
         return *reinterpret_cast<Array<ParticleSystemMesh *> *>(&meshSystemCount);
     }
 
-    IParticleSystem *resolveSystem(int handle);
 };
 #endif

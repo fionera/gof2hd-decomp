@@ -46,7 +46,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
     if (((SolarSystem *) Status::gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
         String *s = new String;
-        s->ctor_copy((*g_APL_gametext)->getText(0x223), false);
+        s->Set(((*g_APL_gametext)->getText(0x223))->data);
         (*this->entries)[1] = s;
         this->count++;
     }
@@ -60,7 +60,7 @@ AutoPilotList::AutoPilotList(Level *level) {
     }
 
     String *cancel = new String;
-    cancel->ctor_copy((*g_APL_gametext)->getText(0x225), false);
+    cancel->Set(((*g_APL_gametext)->getText(0x225))->data);
     (*this->entries)[3] = cancel;
     this->count++;
 
@@ -68,7 +68,7 @@ AutoPilotList::AutoPilotList(Level *level) {
         Route *route = (Route *) (intptr_t)((PlayerEgo *) ((Level *) level)->getPlayer())->getRoute();
         if (*((uint8_t *) route->getLastWaypoint() + 0x130) == 0) {
             String *s = new String;
-            s->ctor_copy((*g_APL_gametext)->getText(0x23d), false);
+            s->Set(((*g_APL_gametext)->getText(0x23d))->data);
             (*this->entries)[4] = s;
             this->count++;
         }
@@ -147,7 +147,7 @@ String AutoPilotList::getTargetString() {
 
 void AutoPilotList::draw() {
     String title;
-    title.ctor_copy((*g_APL_gametext_draw)->getText(0x23c), false);
+    title.Set(((*g_APL_gametext_draw)->getText(0x23c))->data);
     (*g_APL_layout_draw)->drawWindow(title, this->x, this->y, this->width,
                                      this->count * 0xf + 0x16);
 

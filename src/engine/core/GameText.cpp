@@ -151,7 +151,7 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
 static const char gInitLangStr[] = "";
 
 GameText::GameText() {
-    this->fallbackText.ctor();
+    { if (this->fallbackText.data) delete[] this->fallbackText.data; this->fallbackText.data = nullptr; this->fallbackText.length = 0; }
     *g_GameText_langReset = 0xffff;
     this->textTable = nullptr;
     this->textCount = 0;
@@ -168,7 +168,7 @@ static inline bool isJoiner(unsigned short c) {
 
 String GameText::convertStringFromArabic(String in) {
     String work;
-    work.ctor_wchar(in.index(0), false);
+    work.Set((const unsigned short *) (in.index(0)));
     unsigned int len = work.size();
 
     unsigned short *buf = new unsigned short[len + 1];
@@ -181,7 +181,7 @@ String GameText::convertStringFromArabic(String in) {
     while (true) {
         if (i > 0x7fffffff) {
             String result;
-            result.ctor_wchar(buf, false);
+            result.Set((const unsigned short *) (buf));
             delete[] buf;
             return result;
         }
@@ -203,11 +203,11 @@ String GameText::convertStringFromArabic(String in) {
                 buf[i] = form;
 
                 String merged;
-                merged.ctor_wchar(buf, false);
+                merged.Set((const unsigned short *) (buf));
                 String head, tail;
-                head.SubString(&merged, 0, i);
-                tail.SubString(&merged, i + 1, merged.size());
-                head.addAssign_str(&tail);
+                head = merged.SubString(0, i);
+                tail = merged.SubString(i + 1, merged.size());
+                head += tail;
 
                 delete[] buf;
 
@@ -321,11 +321,11 @@ void GameText::ReadLangFile(unsigned int file, int count) {
         String *s = new String;
         if (lang == 9) {
             String tmp;
-            tmp.ctor_wchar(wide, false);
+            tmp.Set((const unsigned short *) (wide));
             *s = this->convertStringFromArabic(tmp);
             this->textTable[i] = s;
         } else {
-            s->ctor_wchar(wide, false);
+            s->Set((const unsigned short *) (wide));
             this->textTable[i] = s;
         }
 

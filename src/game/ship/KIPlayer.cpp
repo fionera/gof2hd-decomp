@@ -38,7 +38,7 @@ struct ItemDb {
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
                    float x, float y, float z, bool active) {
-    this->name.ctor();
+    { if (this->name.data) delete[] this->name.data; this->name.data = nullptr; this->name.length = 0; }
 
     this->field_0x90 = 0;
     this->field_0x94 = 0;
@@ -99,8 +99,8 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     {
         String tmp;
         tmp.ctor_char("", false);
-        this->name.assign(&tmp);
-        tmp.clear();
+        this->name = tmp;
+        { if (tmp.data) delete[] tmp.data; tmp.data = nullptr; tmp.length = 0; }
     }
 
     this->field_0x24 = 0;
@@ -174,7 +174,7 @@ KIPlayer::~KIPlayer() {
         this->spacePoints = 0;
     }
 
-    this->name.clear();
+    { if (this->name.data) delete[] this->name.data; this->name.data = nullptr; this->name.length = 0; }
 }
 
 int KIPlayer::getSpeed() {

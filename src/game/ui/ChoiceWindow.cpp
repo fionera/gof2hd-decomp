@@ -163,7 +163,7 @@ void ChoiceWindow::setMedal(int medal, int count) {
             uv /= 10;
         } while (uv);
         if (neg) buf[n++] = '-';
-        while (n--) number.push_back((char16_t) (unsigned char) buf[n]);
+        while (n--) { int _nl = number.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < number.length; _i++) _nd[_i] = number.data[_i]; _nd[number.length] = (unsigned short) ((char16_t) (unsigned char) buf[n]); _nd[_nl] = 0; if (number.data) delete[] number.data; number.data = _nd; number.length = _nl; }
     }
 
     String finalText = Status::gStatus->replaceHash(pattern, number);

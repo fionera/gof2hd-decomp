@@ -703,7 +703,7 @@ void WantedWindow::selectWanted(int idx) {
         this->atText = current->getName() + String("at ", false) + String(" ", false);
 
         String reward;
-        reward.ctor_int(wanted->getReward());
+        reward.Set((long long) (wanted->getReward()));
         this->rewardText = reward + String("reward ", false);
 
         delete last;
@@ -718,7 +718,7 @@ void WantedWindow::selectWanted(int idx) {
         this->fromText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
         this->toText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
         String reward;
-        reward.ctor_int(wanted->getReward());
+        reward.Set((long long) (wanted->getReward()));
         this->rewardText = reward + String("reward ", false);
         this->atText = *(*g_WantedWindow_select_text_a)->getText(0xc9d);
     }

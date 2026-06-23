@@ -470,27 +470,6 @@ namespace {
     }
 }
 
-static inline __attribute__ ((always_inline))
-
-int amvHideAndReportChange(bool rewindLatch, bool arrowPressed) {
-    Globals::mouseCursorActivated = 0;
-    if (rewindLatch) {
-        const bool latchArmed = (g_mousePointerLatch + 1 != 0);
-        g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
-    }
-    if (arrowPressed || Globals::showMouseDuringGameOver != 0)
-        g_mousePointerLatch = 0;
-    return 1;
-}
-
-static inline __attribute__ ((always_inline))
-
-int amvReportNoChange() {
-    if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
-        g_mousePointerLatch = 0;
-    return 0;
-}
-
 int ActualizeMouseVisibilty(int force) {
     const bool arrowPressed = ArrowKeyPressed();
 
@@ -514,14 +493,31 @@ int ActualizeMouseVisibilty(int force) {
                 if ((static_cast<int>(steerActive) | static_cast<int>(menuHidden)) == 1 &&
                     Globals::isStarMapVisible == 0 && force == 0 &&
                     Globals::showMouseDuringGameOver == 0) {
-                    if (arrowPressed && currentModuleIs(2))
-                        return amvHideAndReportChange(true, arrowPressed);
-                    return amvReportNoChange();
+                    if (arrowPressed && currentModuleIs(2)) {
+                        Globals::mouseCursorActivated = 0;
+                        {
+                            const bool latchArmed = (g_mousePointerLatch + 1 != 0);
+                            g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
+                        }
+                        if (arrowPressed || Globals::showMouseDuringGameOver != 0)
+                            g_mousePointerLatch = 0;
+                        return 1;
+                    }
+                    if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
+                        g_mousePointerLatch = 0;
+                    return 0;
                 }
             }
         }
 
-        return amvHideAndReportChange(force == 0, arrowPressed);
+        Globals::mouseCursorActivated = 0;
+        if (force == 0) {
+            const bool latchArmed = (g_mousePointerLatch + 1 != 0);
+            g_mousePointerLatch = (Globals::is_hacking_visible == 0 && latchArmed) ? 1 : 0;
+        }
+        if (arrowPressed || Globals::showMouseDuringGameOver != 0)
+            g_mousePointerLatch = 0;
+        return 1;
     }
 
     bool reshow = false;
@@ -543,7 +539,9 @@ int ActualizeMouseVisibilty(int force) {
         return -1;
     }
 
-    return amvReportNoChange();
+    if (g_mousePointerLatch != 0 && currentModuleIs(5) && Globals::keyBindings[4] != 0)
+        g_mousePointerLatch = 0;
+    return 0;
 }
 
 void KeyboardAnimationTimer(AbyssEngine::Engine * /*engine*/) {

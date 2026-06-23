@@ -1322,10 +1322,10 @@ String Status::replaceHash(String haystack, String needle, String replacement) {
     }
 
     String prefix;
-    prefix.SubString(&haystack, 0, idx);
+    prefix = haystack.SubString(0, idx);
 
     String suffix;
-    suffix.SubString(&haystack, needle.size() + idx, haystack.size());
+    suffix = haystack.SubString(needle.size() + idx, haystack.size());
 
     if (prefix.size() == 0) {
         return replacement + suffix;

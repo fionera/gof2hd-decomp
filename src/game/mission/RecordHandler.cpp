@@ -310,11 +310,11 @@ void RecordHandler::convertSDVersionSaves() {
         sizes1[i] = this->readRecordAsByteArray(&(*a1)[i], i, true);
 
         String num, path;
-        num.ctor_int(i);
+        num.Set((long long) (i));
         path = this->recordDir + num;
         AEFile::FileDelete(path);
 
-        num.ctor_int(i);
+        num.Set((long long) (i));
         path = this->backupDir + num;
         AEFile::FileDelete(path);
         n = *cnt;
@@ -404,7 +404,7 @@ int RecordHandler::readRecordAsByteArray(signed char **out, int slot, bool fromB
     unsigned int fd;
     int sz;
 
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     String &dir = fromBackup ? this->backupDir : this->recordDir;
     path = dir + num;
 
@@ -442,7 +442,7 @@ void *RecordHandler::readWanted(unsigned int fd) {
     AEFile_ReadInt(&lastSeen, fd);
 
     String name;
-    name.ctor();
+    { if (name.data) delete[] name.data; name.data = nullptr; name.length = 0; }
 
     int idx = 0, board = 0, race = 0;
     bool male = true;
@@ -536,7 +536,7 @@ void *RecordHandler::recordStoreReadPreview(int slot) {
     String path;
     String num;
 
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     path = this->backupDir + num;
 
     unsigned int fd;
@@ -580,7 +580,7 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
     String tmp;
     unsigned int fd;
 
-    tmp.ctor_copy(&this->optionsPath, false);
+    tmp.Set((this->optionsPath).data);
     if (AEFile::FileExist(tmp) != 0)
         AEFile::FileDelete(tmp);
     AEFile::OpenWrite(tmp, &fd);
@@ -603,7 +603,7 @@ void RecordHandler::recordStoreWritePreview(int slot) {
     String num;
     unsigned int fd;
 
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     path = this->backupDir + num;
 
     if (AEFile::FileExist(path) != 0)
@@ -803,7 +803,7 @@ void RecordHandler::loadOptions() {
             }
 
             String name;
-            name.ctor();
+            { if (name.data) delete[] name.data; name.data = nullptr; name.length = 0; }
             AEFile_ReadString(&name, fd, 0);
             String *ns = new String(name);
             *nameSlot = (int) (long) ns;
@@ -897,7 +897,7 @@ void RecordHandler::loadResolutionValue(float resolution) {
         AEFile_ReadInt(&r->i32_0x28, fd);
 
         String name;
-        name.ctor();
+        { if (name.data) delete[] name.data; name.data = nullptr; name.length = 0; }
         AEFile_ReadString(&name, fd, 0);
 
         int iv9c;
@@ -940,7 +940,7 @@ int RecordHandler::writeByteArrayAsRecord(signed char *buf, int n, int slot, boo
     String path;
     unsigned int fd;
 
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     String &dir = toBackup ? this->backupDir : this->recordDir;
     path = dir + num;
 
@@ -959,13 +959,13 @@ void *RecordHandler::readMission(unsigned int fd) {
     AEFile_ReadInt(&type, fd);
     if (type != -1) {
         String clientName, targetName, targetStation, targetSystem;
-        clientName.ctor();
+        { if (clientName.data) delete[] clientName.data; clientName.data = nullptr; clientName.length = 0; }
         AEFile_ReadString(&clientName, fd, 1);
-        targetName.ctor();
+        { if (targetName.data) delete[] targetName.data; targetName.data = nullptr; targetName.length = 0; }
         AEFile_ReadString(&targetName, fd, 1);
-        targetStation.ctor();
+        { if (targetStation.data) delete[] targetStation.data; targetStation.data = nullptr; targetStation.length = 0; }
         AEFile_ReadString(&targetStation, fd, 1);
-        targetSystem.ctor();
+        { if (targetSystem.data) delete[] targetSystem.data; targetSystem.data = nullptr; targetSystem.length = 0; }
         AEFile_ReadString(&targetSystem, fd, 1);
 
         bool isEmpty = false;
@@ -1003,7 +1003,7 @@ void *RecordHandler::readMission(unsigned int fd) {
 
         if (!isEmpty) {
             String nameCopy;
-            nameCopy.ctor_copy(&clientName, false);
+            nameCopy.Set((clientName).data);
             mission = new Mission(type, nameCopy, img, clientRace, reward, targetStationIdx, difficulty);
         } else {
             mission = new Mission(type, reward, targetStationIdx);
@@ -1016,7 +1016,7 @@ void *RecordHandler::readMission(unsigned int fd) {
         ((Mission *) (mission))->setAgent((Agent *) agent);
 
         String tgtNameCopy;
-        tgtNameCopy.ctor_copy(&targetName, false);
+        tgtNameCopy.Set((targetName).data);
         ((Mission *) (mission))->setTargetName(tgtNameCopy);
 
         if (agent != 0) {
@@ -1158,12 +1158,12 @@ void *RecordHandler::readAgent(unsigned int fd) {
     }
 
     String missionStr, name, stationName, systemName, strE, strF;
-    missionStr.ctor();
-    name.ctor();
-    stationName.ctor();
-    systemName.ctor();
-    strE.ctor();
-    strF.ctor();
+    { if (missionStr.data) delete[] missionStr.data; missionStr.data = nullptr; missionStr.length = 0; }
+    { if (name.data) delete[] name.data; name.data = nullptr; name.length = 0; }
+    { if (stationName.data) delete[] stationName.data; stationName.data = nullptr; stationName.length = 0; }
+    { if (systemName.data) delete[] systemName.data; systemName.data = nullptr; systemName.length = 0; }
+    { if (strE.data) delete[] strE.data; strE.data = nullptr; strE.length = 0; }
+    { if (strF.data) delete[] strF.data; strF.data = nullptr; strF.length = 0; }
     AEFile_ReadString(&missionStr, fd, 1);
     AEFile_ReadString(&name, fd, 1);
     AEFile_ReadString(&stationName, fd, 1);
@@ -1176,7 +1176,7 @@ void *RecordHandler::readAgent(unsigned int fd) {
     void *mission = (hasMission < 1) ? 0 : this->readMission(fd);
 
     String nameCopy;
-    nameCopy.ctor_copy(&name, false);
+    nameCopy.Set((name).data);
     Agent *agent = new Agent(idx, nameCopy, station, system, race, male, sellSys, sellBp, sellMod, sellItemIdx);
 
     ((Agent *) (agent))->setCosts(costs);
@@ -1186,12 +1186,12 @@ void *RecordHandler::readAgent(unsigned int fd) {
 
     if (strE.size() != 0) {
         String *s = new String();
-        s->ctor_copy(&strE, false);
+        s->Set((strE).data);
         agent->wingman1 = s;
     }
     if (strF.size() != 0) {
         String *s = new String();
-        s->ctor_copy(&strF, false);
+        s->Set((strF).data);
         agent->wingman2 = s;
     }
     agent->wingmanCount = wingmen;
@@ -1201,7 +1201,7 @@ void *RecordHandler::readAgent(unsigned int fd) {
     for (int i = 0; i < (int) wingmen; i++) {
         String *s = new String();
         String *src = (i == 0) ? &strE : &strF;
-        s->ctor_copy(src, false);
+        s->Set((src)->data);
         (*arr)[i] = s;
     }
     ((Agent *) (agent))->setWingmanFriendNames(arr);
@@ -1210,11 +1210,11 @@ void *RecordHandler::readAgent(unsigned int fd) {
     ((Agent *) (agent))->setImageParts(img);
 
     String tmp;
-    tmp.ctor_copy(&missionStr, false);
+    tmp.Set((missionStr).data);
     ((Agent *) (agent))->setMissionString(tmp);
-    tmp.ctor_copy(&stationName, false);
+    tmp.Set((stationName).data);
     ((Agent *) (agent))->setStationName(tmp);
-    tmp.ctor_copy(&systemName, false);
+    tmp.Set((systemName).data);
     ((Agent *) (agent))->setSystemName(tmp);
     ((Agent *) (agent))->setMission((Mission *) mission);
 
@@ -1266,7 +1266,7 @@ int RecordHandler::recordStoreWritePreview(GameRecord *rec, int slot) {
     String num;
     unsigned int fd;
 
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     path = this->backupDir + num;
 
     if (AEFile::FileExist(path) != 0)
@@ -1308,84 +1308,9 @@ struct UiFlagsBlob {
 };
 #pragma pack(pop)
 
-static inline __attribute__ ((always_inline))
-
-void RSW_writeBoolArray(Array<bool> *arr, unsigned int fd) {
-    AEFile_WriteInt(arr->size(), fd);
-    for (unsigned i = 0; i < arr->size(); i++) {
-        AEFile_WriteBool((*arr)[i], fd);
-    }
-}
-
-static inline __attribute__ ((always_inline))
-
-void RSW_writeIntArray(Array<int> *arr, unsigned int fd) {
-    AEFile_WriteInt(arr->size(), fd);
-    for (unsigned i = 0; i < arr->size(); i++) {
-        AEFile_WriteInt((*arr)[i], fd);
-    }
-}
-
-static inline __attribute__ ((always_inline))
-
-void RSW_writeEquipment(Ship *ship, unsigned int fd) {
-    Array<Item *> *eq = ((Ship *) ship)->getEquipment();
-    if (eq == 0) {
-        AEFile_WriteInt(0, fd);
-        return;
-    }
-    AEFile_WriteInt(eq->size(), fd);
-    for (unsigned i = 0; i < eq->size(); i++) {
-        Item *it = (*eq)[i];
-        if (it == 0) {
-            AEFile_WriteInt(-1, fd);
-            continue;
-        }
-        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
-        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
-        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
-    }
-}
-
-static inline __attribute__ ((always_inline))
-
-void RSW_writeCargo(Ship *ship, unsigned int fd) {
-    Array<Item *> *cg = ((Ship *) ship)->getCargo();
-    if (cg == 0) {
-        AEFile_WriteInt(0, fd);
-        return;
-    }
-    AEFile_WriteInt(cg->size(), fd);
-    for (unsigned i = 0; i < cg->size(); i++) {
-        Item *it = (*cg)[i];
-        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
-        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
-        AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
-        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
-    }
-}
-
-static inline __attribute__ ((always_inline))
-
-void RSW_writeMods(Ship *ship, unsigned int fd) {
-    if (ship == 0) {
-        AEFile_WriteInt(0, fd);
-        return;
-    }
-    Array<int> *mods = ((Ship *) ship)->getMods();
-    if (mods == 0) {
-        AEFile_WriteInt(0, fd);
-        return;
-    }
-    AEFile_WriteInt(mods->size(), fd);
-    for (unsigned i = 0; i < mods->size(); i++) {
-        AEFile_WriteInt((*mods)[i], fd);
-    }
-}
-
 void RecordHandler::recordStoreWrite(int slot) {
     String num, path;
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     path = this->recordDir + num;
 
     if (AEFile::FileExist(path) != 0) {
@@ -1427,15 +1352,39 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteInt(status->field_84, fd);
         AEFile_WriteInt((int) (intptr_t) status->field_90, fd);
 
-        RSW_writeBoolArray(status->field_94, fd);
-        RSW_writeBoolArray(status->field_98, fd);
+        {
+            Array<bool> *arr = status->field_94;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
+        {
+            Array<bool> *arr = status->field_98;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
         AEFile_WriteInt(status->field_9c, fd);
         AEFile_WriteInt(status->field_a0, fd);
         AEFile_WriteInt(status->field_a4, fd);
         AEFile_WriteInt(status->field_a8, fd);
-        RSW_writeBoolArray(status->field_ac, fd);
+        {
+            Array<bool> *arr = status->field_ac;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
         AEFile_WriteInt(status->field_b0, fd);
-        RSW_writeBoolArray(status->field_b4, fd);
+        {
+            Array<bool> *arr = status->field_b4;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
         AEFile_WriteInt(status->field_b8, fd);
         AEFile_WriteLong(status->field_c8_q, fd);
 
@@ -1460,8 +1409,39 @@ void RecordHandler::recordStoreWrite(int slot) {
         Ship *ship = status->getShip();
         AEFile_WriteInt(((Ship *) ship)->getIndex(), fd);
         AEFile_WriteInt(((Ship *) ship)->getRace(), fd);
-        RSW_writeEquipment(ship, fd);
-        RSW_writeCargo(ship, fd);
+        {
+            Array<Item *> *eq = ((Ship *) ship)->getEquipment();
+            if (eq == 0) {
+                AEFile_WriteInt(0, fd);
+            } else {
+                AEFile_WriteInt(eq->size(), fd);
+                for (unsigned i = 0; i < eq->size(); i++) {
+                    Item *it = (*eq)[i];
+                    if (it == 0) {
+                        AEFile_WriteInt(-1, fd);
+                        continue;
+                    }
+                    AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                    AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
+                }
+            }
+        }
+        {
+            Array<Item *> *cg = ((Ship *) ship)->getCargo();
+            if (cg == 0) {
+                AEFile_WriteInt(0, fd);
+            } else {
+                AEFile_WriteInt(cg->size(), fd);
+                for (unsigned i = 0; i < cg->size(); i++) {
+                    Item *it = (*cg)[i];
+                    AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                    AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
+                    AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
+                }
+            }
+        }
 
         Array<Station *> *stack = status->getStationStack();
         AEFile_WriteInt(3, fd);
@@ -1565,12 +1545,48 @@ void RecordHandler::recordStoreWrite(int slot) {
         }
 
         AEFile_WriteInt(status->passengers, fd);
-        RSW_writeBoolArray(status->systemVisibilities, fd);
-        RSW_writeIntArray(status->field_0x40, fd);
-        RSW_writeIntArray(status->field_0x3c, fd);
-        RSW_writeIntArray(status->field_0x48, fd);
-        RSW_writeIntArray(status->field_0x44, fd);
-        RSW_writeBoolArray(status->field_4c, fd);
+        {
+            Array<bool> *arr = status->systemVisibilities;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
+        {
+            Array<int> *arr = status->field_0x40;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteInt((*arr)[i], fd);
+            }
+        }
+        {
+            Array<int> *arr = status->field_0x3c;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteInt((*arr)[i], fd);
+            }
+        }
+        {
+            Array<int> *arr = status->field_0x48;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteInt((*arr)[i], fd);
+            }
+        }
+        {
+            Array<int> *arr = status->field_0x44;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteInt((*arr)[i], fd);
+            }
+        }
+        {
+            Array<bool> *arr = status->field_4c;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
 
         Array<Agent *> *agents = status->agents;
         AEFile_WriteInt(agents->size(), fd);
@@ -1598,11 +1614,48 @@ void RecordHandler::recordStoreWrite(int slot) {
             AEFile_WriteInt(1, fd);
             AEFile_WriteInt(((Ship *) wingShip)->getIndex(), fd);
             AEFile_WriteInt(((Ship *) wingShip)->getRace(), fd);
-            RSW_writeEquipment(wingShip, fd);
-            RSW_writeCargo(wingShip, fd);
+            {
+                Array<Item *> *eq = ((Ship *) wingShip)->getEquipment();
+                if (eq == 0) {
+                    AEFile_WriteInt(0, fd);
+                } else {
+                    AEFile_WriteInt(eq->size(), fd);
+                    for (unsigned i = 0; i < eq->size(); i++) {
+                        Item *it = (*eq)[i];
+                        if (it == 0) {
+                            AEFile_WriteInt(-1, fd);
+                            continue;
+                        }
+                        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
+                    }
+                }
+            }
+            {
+                Array<Item *> *cg = ((Ship *) wingShip)->getCargo();
+                if (cg == 0) {
+                    AEFile_WriteInt(0, fd);
+                } else {
+                    AEFile_WriteInt(cg->size(), fd);
+                    for (unsigned i = 0; i < cg->size(); i++) {
+                        Item *it = (*cg)[i];
+                        AEFile_WriteInt(((Item *) (it))->getIndex(), fd);
+                        AEFile_WriteInt(((Item *) (it))->getAmount(), fd);
+                        AEFile_WriteInt(((Item *) (it))->getSinglePrice(), fd);
+                        AEFile_WriteBool(((Item *) (it))->isUnsaleable(), fd);
+                    }
+                }
+            }
         }
 
-        RSW_writeIntArray(status->field_90, fd);
+        {
+            Array<int> *arr = status->field_90;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteInt((*arr)[i], fd);
+            }
+        }
         AEFile_WriteInt(status->field_10c, fd);
         AEFile_WriteBool(status->field_110, fd);
         AEFile_WriteInt(status->field_114, fd);
@@ -1633,15 +1686,52 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteBool((flags->flag[0x27] != 0), fd);
         AEFile_WriteBool((ui->flag[0x35] != 0), fd);
         AEFile_WriteBool((ui->flag[0x36] != 0), fd);
-        RSW_writeBoolArray(status->field_54, fd);
+        {
+            Array<bool> *arr = status->field_54;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
 
         AEFile_WriteInt(g_RSW_modVersion, fd);
-        RSW_writeMods(ship, fd);
-        RSW_writeMods(wingShip, fd);
+        {
+            Ship *mShip = ship;
+            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
+            if (mShip == 0 || mods == 0) {
+                AEFile_WriteInt(0, fd);
+            } else {
+                AEFile_WriteInt(mods->size(), fd);
+                for (unsigned i = 0; i < mods->size(); i++) {
+                    AEFile_WriteInt((*mods)[i], fd);
+                }
+            }
+        }
+        {
+            Ship *mShip = wingShip;
+            Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
+            if (mShip == 0 || mods == 0) {
+                AEFile_WriteInt(0, fd);
+            } else {
+                AEFile_WriteInt(mods->size(), fd);
+                for (unsigned i = 0; i < mods->size(); i++) {
+                    AEFile_WriteInt((*mods)[i], fd);
+                }
+            }
+        }
         if (sShips == 0) { AEFile_WriteInt(0, fd); } else {
             AEFile_WriteInt(sShips->size(), fd);
             for (unsigned i = 0; i < sShips->size(); i++) {
-                RSW_writeMods((*sShips)[i], fd);
+                Ship *mShip = (*sShips)[i];
+                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
+                if (mShip == 0 || mods == 0) {
+                    AEFile_WriteInt(0, fd);
+                } else {
+                    AEFile_WriteInt(mods->size(), fd);
+                    for (unsigned k = 0; k < mods->size(); k++) {
+                        AEFile_WriteInt((*mods)[k], fd);
+                    }
+                }
             }
         }
         for (unsigned i = 0; i < stack->size() + 1; i++) {
@@ -1656,7 +1746,16 @@ void RecordHandler::recordStoreWrite(int slot) {
             }
             AEFile_WriteInt(cShips->size(), fd);
             for (unsigned j = 0; j < cShips->size(); j++) {
-                RSW_writeMods((*cShips)[j], fd);
+                Ship *mShip = (*cShips)[j];
+                Array<int> *mods = (mShip == 0) ? 0 : ((Ship *) mShip)->getMods();
+                if (mShip == 0 || mods == 0) {
+                    AEFile_WriteInt(0, fd);
+                } else {
+                    AEFile_WriteInt(mods->size(), fd);
+                    for (unsigned k = 0; k < mods->size(); k++) {
+                        AEFile_WriteInt((*mods)[k], fd);
+                    }
+                }
             }
         }
 
@@ -1678,7 +1777,13 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteBool((flags->flag[0x2e] != 0), fd);
         AEFile_WriteBool((flags->flag[0x2f] != 0), fd);
         AEFile_WriteBool((flags->flag[0x30] != 0), fd);
-        RSW_writeBoolArray(status->field_58, fd);
+        {
+            Array<bool> *arr = status->field_58;
+            AEFile_WriteInt(arr->size(), fd);
+            for (unsigned i = 0; i < arr->size(); i++) {
+                AEFile_WriteBool((*arr)[i], fd);
+            }
+        }
         AEFile_WriteBool((flags->flag[0x31] != 0), fd);
         AEFile_WriteBool((flags->flag[0x2d] != 0), fd);
         AEFile_WriteBool((flags->flag[0x32] != 0), fd);
@@ -1714,31 +1819,12 @@ static void **g_RSR_shipDefs = nullptr;
 
 static int g_RSR_modVersion = 0;
 
-static inline __attribute__ ((always_inline))
-
-void *RSR_readItem(unsigned int fd, bool withPrice) {
-    int idx = 0;
-    AEFile_ReadInt(&idx, fd);
-    if (idx == -1) return 0;
-    int amount = 0, price = 0;
-    bool uns = false;
-    AEFile_ReadInt(&amount, fd);
-    if (withPrice) AEFile_ReadInt(&price, fd);
-    AEFile_Read_bool(&uns, fd, 0);
-    void *def = (*(void ***) g_RSR_itemDefs)[idx];
-    ((Item *) (def))->getMaxPrice();
-    void *it = ((Item *) (def))->makeItem(amount);
-    if (withPrice) ((Item *) (it))->setPrice(price);
-    ((Item *) (it))->setUnsaleable(uns);
-    return it;
-}
-
 int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
     String tmp;
     unsigned int fd;
     int sz;
 
-    tmp.ctor_copy(&this->optionsPath, false);
+    tmp.Set((this->optionsPath).data);
     if (AEFile::FileExist(tmp) != 0) {
         AEFile::OpenRead(tmp, &fd);
         sz = AEFile::GetFileSize(fd);
@@ -1755,7 +1841,7 @@ int RecordHandler::readOptionsFileAsByteArray(signed char **out) {
 void *RecordHandler::recordStoreRead(int slot) {
     GameRecord *rec = 0;
     String num, path;
-    num.ctor_int(slot);
+    num.Set((long long) (slot));
     path = this->recordDir + num;
 
     if (AEFile::FileExist(path) != 0) {
@@ -1882,8 +1968,23 @@ void *RecordHandler::recordStoreRead(int slot) {
                 if (eqN > 0) {
                     Array<Item *> *items = new Array<Item *>();
                     items->resize(eqN);
-                    for (int i = 0; i < eqN; i++)
-                        (*items)[i] = (Item *) RSR_readItem(fd, false);
+                    for (int i = 0; i < eqN; i++) {
+                        int idx = 0;
+                        AEFile_ReadInt(&idx, fd);
+                        if (idx == -1) {
+                            (*items)[i] = (Item *) 0;
+                        } else {
+                            int amount = 0;
+                            bool uns = false;
+                            AEFile_ReadInt(&amount, fd);
+                            AEFile_Read_bool(&uns, fd, 0);
+                            void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                            ((Item *) (def))->getMaxPrice();
+                            void *it = ((Item *) (def))->makeItem(amount);
+                            ((Item *) (it))->setUnsaleable(uns);
+                            (*items)[i] = (Item *) it;
+                        }
+                    }
                     ((Ship *) (pship))->replaceEquipment(items);
                 }
                 int cgN = 0;
@@ -1891,8 +1992,25 @@ void *RecordHandler::recordStoreRead(int slot) {
                 if (cgN > 0) {
                     Array<Item *> *items = new Array<Item *>();
                     items->resize(cgN);
-                    for (int i = 0; i < cgN; i++)
-                        (*items)[i] = (Item *) RSR_readItem(fd, true);
+                    for (int i = 0; i < cgN; i++) {
+                        int idx = 0;
+                        AEFile_ReadInt(&idx, fd);
+                        if (idx == -1) {
+                            (*items)[i] = (Item *) 0;
+                        } else {
+                            int amount = 0, price = 0;
+                            bool uns = false;
+                            AEFile_ReadInt(&amount, fd);
+                            AEFile_ReadInt(&price, fd);
+                            AEFile_Read_bool(&uns, fd, 0);
+                            void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                            ((Item *) (def))->getMaxPrice();
+                            void *it = ((Item *) (def))->makeItem(amount);
+                            ((Item *) (it))->setPrice(price);
+                            ((Item *) (it))->setUnsaleable(uns);
+                            (*items)[i] = (Item *) it;
+                        }
+                    }
                     ((Ship *) (pship))->replaceCargo(items);
                 }
 
@@ -1912,8 +2030,25 @@ void *RecordHandler::recordStoreRead(int slot) {
                         if (iN > 0) {
                             Array<Item *> *items = new Array<Item *>();
                             items->resize(iN);
-                            for (int i = 0; i < iN; i++)
-                                (*items)[i] = (Item *) RSR_readItem(fd, true);
+                            for (int i = 0; i < iN; i++) {
+                                int idx = 0;
+                                AEFile_ReadInt(&idx, fd);
+                                if (idx == -1) {
+                                    (*items)[i] = (Item *) 0;
+                                } else {
+                                    int amount = 0, price = 0;
+                                    bool uns = false;
+                                    AEFile_ReadInt(&amount, fd);
+                                    AEFile_ReadInt(&price, fd);
+                                    AEFile_Read_bool(&uns, fd, 0);
+                                    void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                                    ((Item *) (def))->getMaxPrice();
+                                    void *it = ((Item *) (def))->makeItem(amount);
+                                    ((Item *) (it))->setPrice(price);
+                                    ((Item *) (it))->setUnsaleable(uns);
+                                    (*items)[i] = (Item *) it;
+                                }
+                            }
                             ((Station *) (st))->setItems(items, false);
                         }
                         int shN = 0;
@@ -1976,7 +2111,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                     AEFile_ReadInt(&bp->productionCount, fd);
                     AEFile_ReadInt(&bp->stationIndex, fd);
                     String tmp;
-                    tmp.ctor();
+                    { if (tmp.data) delete[] tmp.data; tmp.data = nullptr; tmp.length = 0; }
                     AEFile_ReadString(&tmp, fd, 1);
                     bp->stationName = tmp;
                 }
@@ -1993,7 +2128,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                         AEFile_ReadInt(&c, fd);
                         AEFile_ReadInt(&d, fd);
                         String nm;
-                        nm.ctor();
+                        { if (nm.data) delete[] nm.data; nm.data = nullptr; nm.length = 0; }
                         AEFile_ReadString(&nm, fd, 1);
                         void *nameCopy = RH_str_make(&nm);
                         void *pp = new PendingProduct(a, *(const String *) nameCopy, d, c);
@@ -2009,7 +2144,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                     strArr->resize(wmN);
                     for (int i = 0; i < wmN; i++) {
                         String nm;
-                        nm.ctor();
+                        { if (nm.data) delete[] nm.data; nm.data = nullptr; nm.length = 0; }
                         AEFile_ReadString(&nm, fd, 1);
                         (*strArr)[i] = (String *) RH_str_make(&nm);
                     }
@@ -2090,8 +2225,23 @@ void *RecordHandler::recordStoreRead(int slot) {
                     if (eN > 0) {
                         Array<Item *> *items = new Array<Item *>();
                         items->resize(eN);
-                        for (int i = 0; i < eN; i++)
-                            (*items)[i] = (Item *) RSR_readItem(fd, false);
+                        for (int i = 0; i < eN; i++) {
+                            int idx = 0;
+                            AEFile_ReadInt(&idx, fd);
+                            if (idx == -1) {
+                                (*items)[i] = (Item *) 0;
+                            } else {
+                                int amount = 0;
+                                bool uns = false;
+                                AEFile_ReadInt(&amount, fd);
+                                AEFile_Read_bool(&uns, fd, 0);
+                                void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                                ((Item *) (def))->getMaxPrice();
+                                void *it = ((Item *) (def))->makeItem(amount);
+                                ((Item *) (it))->setUnsaleable(uns);
+                                (*items)[i] = (Item *) it;
+                            }
+                        }
                         ((Ship *) (wship))->replaceEquipment(items);
                     }
                     int cN = 0;
@@ -2099,8 +2249,25 @@ void *RecordHandler::recordStoreRead(int slot) {
                     if (cN > 0) {
                         Array<Item *> *items = new Array<Item *>();
                         items->resize(cN);
-                        for (int i = 0; i < cN; i++)
-                            (*items)[i] = (Item *) RSR_readItem(fd, true);
+                        for (int i = 0; i < cN; i++) {
+                            int idx = 0;
+                            AEFile_ReadInt(&idx, fd);
+                            if (idx == -1) {
+                                (*items)[i] = (Item *) 0;
+                            } else {
+                                int amount = 0, price = 0;
+                                bool uns = false;
+                                AEFile_ReadInt(&amount, fd);
+                                AEFile_ReadInt(&price, fd);
+                                AEFile_Read_bool(&uns, fd, 0);
+                                void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                                ((Item *) (def))->getMaxPrice();
+                                void *it = ((Item *) (def))->makeItem(amount);
+                                ((Item *) (it))->setPrice(price);
+                                ((Item *) (it))->setUnsaleable(uns);
+                                (*items)[i] = (Item *) it;
+                            }
+                        }
                         ((Ship *) (wship))->replaceCargo(items);
                     }
                 }
@@ -2122,8 +2289,25 @@ void *RecordHandler::recordStoreRead(int slot) {
                 if (siN > 0) {
                     Array<Item *> *items = new Array<Item *>();
                     items->resize(siN);
-                    for (int i = 0; i < siN; i++)
-                        (*items)[i] = (Item *) RSR_readItem(fd, true);
+                    for (int i = 0; i < siN; i++) {
+                        int idx = 0;
+                        AEFile_ReadInt(&idx, fd);
+                        if (idx == -1) {
+                            (*items)[i] = (Item *) 0;
+                        } else {
+                            int amount = 0, price = 0;
+                            bool uns = false;
+                            AEFile_ReadInt(&amount, fd);
+                            AEFile_ReadInt(&price, fd);
+                            AEFile_Read_bool(&uns, fd, 0);
+                            void *def = (*(void ***) g_RSR_itemDefs)[idx];
+                            ((Item *) (def))->getMaxPrice();
+                            void *it = ((Item *) (def))->makeItem(amount);
+                            ((Item *) (it))->setPrice(price);
+                            ((Item *) (it))->setUnsaleable(uns);
+                            (*items)[i] = (Item *) it;
+                        }
+                    }
                     *reinterpret_cast<void **>(&rec->field_0x180) = items;
                 }
                 int ssN = 0;

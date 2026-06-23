@@ -496,7 +496,7 @@ void MGame::useCloak() {
     String s0, s1, s2, s3, s4, s5;
     s2.ctor_char("", false);
     s3 = *(String *) txt + s2;
-    s1.ctor_int(attr);
+    s1.Set((long long) (attr));
     s4 = s3 + s1;
     s0.ctor_char("", false);
     s5 = s4 + s0;
@@ -542,12 +542,12 @@ void MGame::gameOverCheck() {
             if (this->player->explosionEnded() != 0) {
                 this->gameOverActive = 1;
                 String *t = (String *) ((GameText *) (**g_goDeathText))->getText(0);
-                this->gameOverTitle.assign(t);
+                this->gameOverTitle = *(t);
             }
         } else {
             this->gameOverActive = 1;
             String *t = (String *) ((GameText *) (**g_goWormText))->getText(0);
-            this->gameOverTitle.assign(t);
+            this->gameOverTitle = *(t);
             this->needsRedraw = 1;
         }
 
@@ -1735,7 +1735,7 @@ done:
 MGame::~MGame() {
     MGame *self = this;
     ((MGame *) (self))->OnRelease();
-    this->gameOverTitle.clear();
+    { if (this->gameOverTitle.data) delete[] this->gameOverTitle.data; this->gameOverTitle.data = nullptr; this->gameOverTitle.length = 0; }
 }
 
 
@@ -2358,7 +2358,7 @@ done:
 static int g_mgameInitVal;
 
 MGame::MGame() {
-    this->gameOverTitle.ctor();
+    { if (this->gameOverTitle.data) delete[] this->gameOverTitle.data; this->gameOverTitle.data = nullptr; this->gameOverTitle.length = 0; }
 
     int z = 0;
     int initVal = g_mgameInitVal;

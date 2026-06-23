@@ -181,57 +181,6 @@ namespace AbyssEngine {
             if (v > 0.0f && *slot < v)
                 *slot = v;
         }
-
-        __attribute__ ((always_inline))
-
-        inline
-        bool readVectorTrack(unsigned int file, Transform *anim, float *maxSlot, unsigned int channel) {
-            unsigned short count;
-            if (AEFile::Read(2, &count, file) == 0)
-                return false;
-            for (unsigned int i = 0; i < count; ++i) {
-                float key;
-                if (AEFile::Read(4, &key, file) == 0)
-                    return false;
-                bumpMax(maxSlot, key);
-                unsigned char vec[12];
-                if (AEFile::Read(0xc, vec, file) == 0)
-                    return false;
-                anim->InsertKeyFrame(channel, key);
-            }
-            return true;
-        }
-
-        __attribute__ ((always_inline))
-
-        inline
-        bool readScalarTrack(unsigned int file, Transform *anim, float *maxSlot,
-                             unsigned int ch0, unsigned int ch1, unsigned int ch2,
-                             bool negateMiddle) {
-            for (unsigned int axis = 0; axis < 3; ++axis) {
-                unsigned short count;
-                if (AEFile::Read(2, &count, file) == 0)
-                    return false;
-                for (unsigned int j = 0; j < count; ++j) {
-                    float value;
-                    if (AEFile::Read(4, &value, file) == 0)
-                        return false;
-                    bumpMax(maxSlot, value);
-                    float key;
-                    if (AEFile::Read(4, &key, file) == 0)
-                        return false;
-                    if (axis == 2) {
-                        anim->InsertKeyFrame(ch2, value);
-                    } else if (axis == 1) {
-                        if (negateMiddle) value = -value;
-                        anim->InsertKeyFrame(ch1, value);
-                    } else {
-                        anim->InsertKeyFrame(ch0, value);
-                    }
-                }
-            }
-            return true;
-        }
     }
 
     int Mesh::ReadEnhancedDataFromFile(unsigned int file, unsigned int flags) {
@@ -253,23 +202,102 @@ namespace AbyssEngine {
 
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
-                if (!readVectorTrack(file, anim, g_maxB, 7)) goto fail;
+                unsigned short count;
+                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                for (unsigned int i = 0; i < count; ++i) {
+                    float key;
+                    if (AEFile::Read(4, &key, file) == 0) goto fail;
+                    bumpMax(g_maxB, key);
+                    unsigned char vec[12];
+                    if (AEFile::Read(0xc, vec, file) == 0) goto fail;
+                    anim->InsertKeyFrame(7, key);
+                }
             } else if (type == 0) {
-                if (!readScalarTrack(file, anim, g_maxA, 1, 4, 2, true)) goto fail;
+                for (unsigned int axis = 0; axis < 3; ++axis) {
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int j = 0; j < count; ++j) {
+                        float value;
+                        if (AEFile::Read(4, &value, file) == 0) goto fail;
+                        bumpMax(g_maxA, value);
+                        float key;
+                        if (AEFile::Read(4, &key, file) == 0) goto fail;
+                        if (axis == 2) {
+                            anim->InsertKeyFrame(2, value);
+                        } else if (axis == 1) {
+                            value = -value;
+                            anim->InsertKeyFrame(4, value);
+                        } else {
+                            anim->InsertKeyFrame(1, value);
+                        }
+                    }
+                }
             }
 
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
-                if (!readVectorTrack(file, anim, g_maxD, 0x1c0)) goto fail;
+                unsigned short count;
+                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                for (unsigned int i = 0; i < count; ++i) {
+                    float key;
+                    if (AEFile::Read(4, &key, file) == 0) goto fail;
+                    bumpMax(g_maxD, key);
+                    unsigned char vec[12];
+                    if (AEFile::Read(0xc, vec, file) == 0) goto fail;
+                    anim->InsertKeyFrame(0x1c0, key);
+                }
             } else if (type == 0) {
-                if (!readScalarTrack(file, anim, g_maxC, 0x40, 0x80, 0x100, false)) goto fail;
+                for (unsigned int axis = 0; axis < 3; ++axis) {
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int j = 0; j < count; ++j) {
+                        float value;
+                        if (AEFile::Read(4, &value, file) == 0) goto fail;
+                        bumpMax(g_maxC, value);
+                        float key;
+                        if (AEFile::Read(4, &key, file) == 0) goto fail;
+                        if (axis == 2) {
+                            anim->InsertKeyFrame(0x100, value);
+                        } else if (axis == 1) {
+                            anim->InsertKeyFrame(0x80, value);
+                        } else {
+                            anim->InsertKeyFrame(0x40, value);
+                        }
+                    }
+                }
             }
 
             if (AEFile::Read(2, &type, file) == 0) goto fail;
             if (type == 1) {
-                if (!readVectorTrack(file, anim, g_maxF, 0x38)) goto fail;
+                unsigned short count;
+                if (AEFile::Read(2, &count, file) == 0) goto fail;
+                for (unsigned int i = 0; i < count; ++i) {
+                    float key;
+                    if (AEFile::Read(4, &key, file) == 0) goto fail;
+                    bumpMax(g_maxF, key);
+                    unsigned char vec[12];
+                    if (AEFile::Read(0xc, vec, file) == 0) goto fail;
+                    anim->InsertKeyFrame(0x38, key);
+                }
             } else if (type == 0) {
-                if (!readScalarTrack(file, anim, g_maxE, 8, 0x10, 0x20, false)) goto fail;
+                for (unsigned int axis = 0; axis < 3; ++axis) {
+                    unsigned short count;
+                    if (AEFile::Read(2, &count, file) == 0) goto fail;
+                    for (unsigned int j = 0; j < count; ++j) {
+                        float value;
+                        if (AEFile::Read(4, &value, file) == 0) goto fail;
+                        bumpMax(g_maxE, value);
+                        float key;
+                        if (AEFile::Read(4, &key, file) == 0) goto fail;
+                        if (axis == 2) {
+                            anim->InsertKeyFrame(0x20, value);
+                        } else if (axis == 1) {
+                            anim->InsertKeyFrame(0x10, value);
+                        } else {
+                            anim->InsertKeyFrame(8, value);
+                        }
+                    }
+                }
             }
 
             if ((flags & 0x18) != 0) {

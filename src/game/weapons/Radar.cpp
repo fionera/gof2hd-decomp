@@ -276,7 +276,7 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
         }
 
         String head;
-        head.SubString(&text, 0, 1);
+        head = text.SubString(0, 1);
         text = head;
 
         unsigned kilometers = static_cast<unsigned>(distance) / 125u;

@@ -35,7 +35,7 @@ static void **g_Radio_drawGlobals;
 static String radio_string_from_cstr(const char *c) {
     String r;
     for (const char *p = c; p && *p; ++p)
-        r.push_back((char16_t) (unsigned char) *p);
+        { int _nl = r.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < r.length; _i++) _nd[_i] = r.data[_i]; _nd[r.length] = (unsigned short) ((char16_t) (unsigned char) *p); _nd[_nl] = 0; if (r.data) delete[] r.data; r.data = _nd; r.length = _nl; }
     return r;
 }
 

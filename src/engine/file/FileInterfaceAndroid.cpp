@@ -278,9 +278,9 @@ static const char *gModeRb = nullptr;
 
 uint32_t FileInterfaceAndroid::FileExist(String name) {
     String a(gZipPrefixA);
-    a.addAssign_str(&name);
+    a += name;
     String b(gZipPrefixB);
-    b.addAssign_str(&name);
+    b += name;
 
     void *z1 = zip_fopen((struct zip *) *gZipMain, a.GetAEChar(), 0);
     void *z2 = zip_fopen((struct zip *) *FileInterfaceAndroid::gZipPatch, b.GetAEChar(), 0);
@@ -333,12 +333,12 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
 
     String a(gPrefixSlash);
     String wide;
-    wide.ctor_wchar(body, false);
-    a.addAssign_str(&wide);
+    wide.Set((const unsigned short *) (body));
+    a += wide;
     String b(gPrefixPlain);
     String wide2;
-    wide2.ctor_wchar(body, false);
-    b.addAssign_str(&wide2);
+    wide2.Set((const unsigned short *) (body));
+    b += wide2;
 
     AndroidIoState *ioState = *reinterpret_cast<AndroidIoState **>(gStderrBase);
     fprintf(ioState->stderrFile, gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
@@ -370,7 +370,7 @@ void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
 
     String dir((const char *) this->appRootDir);
     String wide;
-    wide.ctor_wchar(GetAEWChar(name), false);
+    wide.Set((const unsigned short *) (GetAEWChar(name)));
     String full = dir + wide;
 
     FILE *f = fopen(full.GetAEChar(), gModeWb);

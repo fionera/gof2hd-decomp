@@ -487,11 +487,11 @@ void MiningGame::render2D() {
                         (int) ((this->posX + (float) this->oreIconOffsetX) - (float) layout->hudInset),
                         (int) (this->posY - (float) layout->oreLabelYOffset));
 
-    amountText->ctor_int((int) this->oreAmount);
+    amountText->Set((long long) (int) this->oreAmount);
     suffixText->ctor_char(g_MiningGame_oreSuffix, false);
     *oreText = *amountText + *suffixText;
-    suffixText->clear();
-    amountText->clear();
+    { String *_s = suffixText; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
+    { String *_s = amountText; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 
     void *ship = MiningGame_Status_getShip_render(*g_MiningGame_statusRender);
     int freeSpace = MiningGame_Ship_getFreeSpace(ship);
@@ -519,14 +519,14 @@ void MiningGame::render2D() {
         canvas->SetColor((unsigned char) 0xff, (unsigned char) 0xff, (unsigned char) 0xff,
                          (unsigned char) (uint8_t) promptAlpha);
         String *prompt = MiningGame_GameText_getText(*g_MiningGame_gameText, 0x268);
-        amountText->ctor_copy(prompt, false);
+        amountText->Set((prompt)->data);
         int promptWidth = canvas->GetTextWidth((unsigned int) (long) font, *amountText);
         canvas->DrawString((unsigned int) (long) font, *amountText,
                            *g_MiningGame_screenWRender / 2 - promptWidth / 2,
                            layout->promptYOffset + this->progressBarY, false);
         canvas->SetColor((unsigned int) -1);
-        amountText->clear();
+        { String *_s = amountText; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
     }
 
-    oreText->clear();
+    { String *_s = oreText; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 }

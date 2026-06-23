@@ -706,9 +706,9 @@ void Engine::AfterGLInit() {
     indices[2] = 0x30002;
 
     String vendor((const char *) glGetString(0x1f00));
-    g_Engine_vendorString->assign(&vendor);
+    *g_Engine_vendorString = vendor;
     String renderer((const char *) glGetString(0x1f01));
-    g_Engine_rendererString->assign(&renderer);
+    *g_Engine_rendererString = renderer;
 }
 
 void Engine::DrawCloakFBO(FBOContainer *fbo) {

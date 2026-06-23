@@ -149,14 +149,14 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     String hdr, valStr, valTmp, full;
                     void *key = *(void **) g_swe_status;
                     String *t = (*g_swe_gameText)->getText(this->selectedMedal + 0x610);
-                    hdr.ctor_copy(t, false);
+                    hdr.Set((t)->data);
                     void *val = (void *) (intptr_t) ach->getValue(this->selectedMedal, count);
-                    valStr.ctor_copy((String *) val, false);
-                    valTmp.ctor_copy(&valStr, false);
+                    valStr.Set(((String *) val)->data);
+                    valTmp.Set((valStr).data);
                     Status_replaceHash(&full, key, &hdr, &valTmp);
 
                     String hint = this->getMedalHintText(this->selectedMedal);
-                    full.addAssign_str(&hint);
+                    full += hint;
 
                     (*g_swe_globals)->getLineArray(
                         static_cast<unsigned int>(reinterpret_cast<std::size_t>(*(void **) g_swe_font)),
@@ -172,12 +172,12 @@ void StatusWindow::OnTouchEnd(int x, int y) {
         if (this->activeTab == 1) {
             String title;
             String *t = (*g_swe_gameText)->getText(0x287);
-            title.ctor_copy(t, false);
+            title.Set((t)->data);
             layout->initHelpWindow(title);
         } else if (this->activeTab == 0) {
             String title;
             String *t = (*g_swe_gameText)->getText(0x280);
-            title.ctor_copy(t, false);
+            title.Set((t)->data);
             layout->initHelpWindow(title);
         }
     }
@@ -263,7 +263,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
     int state = medals[medalIndex];
 
     String out;
-    out.ctor();
+    { if (out.data) delete[] out.data; out.data = nullptr; out.length = 0; }
 
     if (state != 0) {
         String tmpA;
@@ -273,7 +273,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            out.addAssign_str(&tmpB);
+            out += tmpB;
 
             Status *base = Status::gStatus;
             Array<bool> *list = base->field_94;
@@ -282,14 +282,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x594 + (int) i);
                     tmpB = tmpA + *t;
-                    out.addAssign_str(&tmpB);
+                    out += tmpB;
                 }
             }
         } else if (medalIndex == 3 && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            out.addAssign_str(&tmpB);
+            out += tmpB;
 
             Status *base = Status::gStatus;
             Array<bool> *list = base->field_98;
@@ -298,14 +298,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x59f + (int) i);
                     tmpB = tmpA + *t;
-                    out.addAssign_str(&tmpB);
+                    out += tmpB;
                 }
             }
         } else if (medalIndex == 9 && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            out.addAssign_str(&tmpB);
+            out += tmpB;
 
             Status *base = Status::gStatus;
             Array<bool> *list = base->field_ac;
@@ -314,14 +314,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                     tmpA.ctor_char("\n", false);
                     String *t = (*g_swh_gameText)->getText(0x57e + (int) i);
                     tmpB = tmpA + *t;
-                    out.addAssign_str(&tmpB);
+                    out += tmpB;
                 }
             }
         } else if (medalIndex == 0xd && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            out.addAssign_str(&tmpB);
+            out += tmpB;
 
             Status *root = Status::gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
@@ -331,14 +331,14 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                     int idx = bp->getIndex();
                     String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
-                    out.addAssign_str(&tmpB);
+                    out += tmpB;
                 }
             }
         } else if (medalIndex == 0xe && state == 2) {
             tmpA.ctor_char("\n", false);
             String *hdr = (*g_swh_gameText)->getText(0x114);
             tmpB = tmpA + *hdr;
-            out.addAssign_str(&tmpB);
+            out += tmpB;
 
             Status *root = Status::gStatus;
             for (unsigned int i = 0; i < 0xd; i++) {
@@ -348,7 +348,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
                     int idx = bp->getIndex();
                     String *t = (*g_swh_gameText)->getText(idx + 0x4fa);
                     tmpB = tmpA + *t;
-                    out.addAssign_str(&tmpB);
+                    out += tmpB;
                 }
             }
         }
@@ -446,7 +446,7 @@ void StatusWindow::draw() {
     this->boxWidth = colW + layout->buttonInsetX * -2;
 
     String creditStr;
-    creditStr.ctor();
+    { if (creditStr.data) delete[] creditStr.data; creditStr.data = nullptr; creditStr.length = 0; }
     String sep;
     if (GameText::getLanguage() == 9)
         sep.ctor_char("\xa1", false);
@@ -463,7 +463,7 @@ void StatusWindow::draw() {
         String lbl;
 
         String *t = (*g_swd_gameText)->getText(*g_swd_textId);
-        lbl.ctor_copy(t, false);
+        lbl.Set((t)->data);
         layout->drawBox(0, x0, top, boxW, layout->field_0x1c, lbl, 0);
 
         int y = layout->field_0x1c + top + pad;
@@ -472,7 +472,7 @@ void StatusWindow::draw() {
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
         String credTmp = Layout::formatCredits(Status::gStatus->getCredits());
-        creditStr.assign(&credTmp);
+        creditStr = credTmp;
         int tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
@@ -482,8 +482,8 @@ void StatusWindow::draw() {
         lvlText = *lt;
         int lvl = Status::gStatus->getLevel();
         lvlFull = lvlText;
-        lvlFull.addAssign_int(&lvl);
-        creditStr.assign(&lvlFull);
+        lvlFull += lvl;
+        creditStr = lvlFull;
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
@@ -502,17 +502,17 @@ void StatusWindow::draw() {
         String frac, fracStr, pct;
         int firePow = Status::gStatus->getShip()->getFirePower();
         float firePowF = *(float *) &firePow;
-        frac.ctor_int((int) ((firePowF - (float) (int) firePowF) * 100.0f));
-        fracStr.SubString(&frac, 0, 2);
+        frac.Set((long long) (int) ((firePowF - (float) (int) firePowF) * 100.0f));
+        fracStr = frac.SubString(0, 2);
         int fp2 = Status::gStatus->getShip()->getFirePower();
         pct.ctor_char("%", false);
         String fpFull = (fp2 + pct) + fracStr;
-        creditStr.assign(&fpFull);
+        creditStr = fpFull;
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, ((y + x0) - pad) - tw, y, false);
 
         String hpStr;
-        hpStr.ctor_int(Status::gStatus->getShip()->getCombinedHP());
+        hpStr.Set((long long) (Status::gStatus->getShip())->getCombinedHP());
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, hpStr);
         canvas->DrawString((unsigned) (uintptr_t) font, hpStr, ((y + x0) - pad) - tw, y, false);
 
@@ -559,7 +559,7 @@ void StatusWindow::draw() {
             }
             String *labelTxt = (*g_swd_gameText)->getText(*g_swd_textId);
             canvas->DrawString((unsigned) (uintptr_t) font, *labelTxt, rowX, y, false);
-            rowStr.ctor_int(rowVal);
+            rowStr.Set((long long) (rowVal));
             tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, rowStr);
             canvas->DrawString((unsigned) (uintptr_t) font, rowStr, ((y + x0) - pad) - tw, y, false);
         }
@@ -579,7 +579,7 @@ void StatusWindow::draw() {
         if (drewStats != 0) {
             String hdr;
             String *t = (*g_swd_gameText)->getText(*g_swd_textId);
-            hdr.ctor_copy(t, false);
+            hdr.Set((t)->data);
             layout->drawBox(0, boxW + x0 * 2, top, x0 + boxW, layout->field_0x1c, hdr, 0);
             gridY0 += layout->field_0x1c + layout->field_0x2c;
         }
@@ -617,7 +617,7 @@ void StatusWindow::draw() {
 
     String header;
     String *ht = (*g_swd_gameText)->getText(*g_swd_textId);
-    header.ctor_copy(ht, false);
+    header.Set((ht)->data);
     layout->drawHeader(header);
     layout->drawFooter();
 

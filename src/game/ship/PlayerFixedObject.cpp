@@ -68,7 +68,7 @@ String PlayerFixedObject::getName() {
 }
 
 void *PlayerFixedObject::setName(String name) {
-    return this->name.assign(&name);
+    return this->name = name;
 }
 
 void PlayerFixedObject::setMoving(bool v) {
@@ -612,7 +612,7 @@ PlayerFixedObject::~PlayerFixedObject() {
     Explosion *expl = self->explosion;
     if (expl != 0) delete expl;
     self->explosion = 0;
-    self->name.clear();
+    { if (self->name.data) delete[] self->name.data; self->name.data = nullptr; self->name.length = 0; }
 }
 
 static void render_thunk_state5(void *geom) {
@@ -668,7 +668,7 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
     self->field_0x15c = 0;
     self->field_0x160 = 0;
 
-    self->name.ctor();
+    { if (self->name.data) delete[] self->name.data; self->name.data = nullptr; self->name.length = 0; }
     self->explosion = 0;
     self->wreckMeshId = 0;
     self->faction = param2;

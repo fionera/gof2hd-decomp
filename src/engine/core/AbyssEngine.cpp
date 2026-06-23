@@ -75,17 +75,6 @@ namespace {
         uint32_t capacity;
     };
 
-    template<class T>
-    __attribute__ ((always_inline))
-
-    inline void ArrayAddRaw(T item, void *arrayHeader) {
-        EngineArrayHeader *a = (EngineArrayHeader *) arrayHeader;
-        a->capacity = a->count + 1;
-        a->data = realloc(a->data, (a->count + 1) * sizeof(T));
-        ((T *) a->data)[a->count] = item;
-        a->count = a->capacity;
-    }
-
     char *g_Camera_frustumEnabledFlag;
     char *g_Engine_fboEnabledFlag;
     char *g_Engine_shaderModeFlag;
@@ -1125,7 +1114,13 @@ namespace AbyssEngine {
                     return -1;
                 ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(
                     *(const AEMath::BSphere *) &childPtr->boundsCenterX);
-                ArrayAddRaw<Mesh *>(childPtr, &(*slot)->animation->meshes);
+                {
+                    EngineArrayHeader *a = (EngineArrayHeader *) &(*slot)->animation->meshes;
+                    a->capacity = a->count + 1;
+                    a->data = realloc(a->data, (a->count + 1) * sizeof(Mesh *));
+                    ((Mesh **) a->data)[a->count] = childPtr;
+                    a->count = a->capacity;
+                }
             }
         }
 
@@ -1544,7 +1539,7 @@ namespace AbyssEngine {
     String operator+(const String &a, const int &b) {
         String result(a);
         String num;
-        num.ctor_int(b);
+        num.Set((long long) (b));
         result += num;
         return result;
     }
@@ -1718,7 +1713,7 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     String operator+(const int &a, const String &b) {
         String result;
-        result.ctor_int(a);
+        result.Set((long long) (a));
         result += b;
         return result;
     }
@@ -1988,14 +1983,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    __attribute__ ((always_inline))
-
-    static inline void freeArray(void *&arr) {
-        if (arr != 0)
-            operator delete[](arr);
-        arr = 0;
-    }
-
     int MeshConvertToVBOIntern(Mesh *m) {
         if (m == 0 || *g_Mesh_vboEnabledFlag == 0)
             return -4;
@@ -2055,13 +2042,20 @@ namespace AbyssEngine {
 
         if (glGetError() == 0) {
             if (*g_Mesh_keepCpuCopyFlag == 0) {
-                freeArray(m->positions);
-                freeArray(m->texCoords);
-                freeArray(m->indices);
-                freeArray(m->normals);
-                freeArray(m->colors);
-                freeArray(m->tangents);
-                freeArray(m->binormals);
+                if (m->positions != 0) operator delete[](m->positions);
+                m->positions = 0;
+                if (m->texCoords != 0) operator delete[](m->texCoords);
+                m->texCoords = 0;
+                if (m->indices != 0) operator delete[](m->indices);
+                m->indices = 0;
+                if (m->normals != 0) operator delete[](m->normals);
+                m->normals = 0;
+                if (m->colors != 0) operator delete[](m->colors);
+                m->colors = 0;
+                if (m->tangents != 0) operator delete[](m->tangents);
+                m->tangents = 0;
+                if (m->binormals != 0) operator delete[](m->binormals);
+                m->binormals = 0;
             }
             m->uploaded = 1;
             *g_Mesh_vboByteCounter += m->vboByteSize;
@@ -2155,28 +2149,6 @@ namespace AbyssEngine {
         return 1;
     }
 
-    __attribute__ ((always_inline))
-
-    static inline void uploadCompressedChain(Image *img, unsigned int glFmt, int divShift, int minBlock) {
-        unsigned int w = (unsigned int) img->width;
-        unsigned int h = (unsigned int) img->height;
-        int level = 0;
-        for (unsigned int off = 0; off < img->dataLen;) {
-            unsigned int blockSz = (w * h) >> divShift;
-            if ((int) blockSz < minBlock)
-                blockSz = (unsigned int) minBlock;
-            glCompressedTexImage2D(0xde1, level, glFmt, (int) w, (int) h, 0, (int) blockSz,
-                                   (unsigned char *) img->data + off);
-            off += blockSz;
-            unsigned int nw = 1, nh = 1;
-            if (h >> 1 > 1) nh = h >> 1;
-            if (w >> 1 > 1) nw = w >> 1;
-            ++level;
-            w = nw;
-            h = nh;
-        }
-    }
-
     int TextureCreateFromFileIntern(Engine *engine, const char *path, void (*cb)(Image *, void *),
                                     void *user, unsigned int *outIds, float aniso,
                                     AELoadedTexture *outTex, bool /*flag*/) {
@@ -2262,20 +2234,71 @@ namespace AbyssEngine {
                 case 4:
                     if (img->hasMipmaps == 0)
                         glCompressedTexImage2D(0xde1, 0, 0x8c03, w, h, 0, (int) img->dataLen, img->data);
-                    else
-                        uploadCompressedChain(img, 0x8c03, 1, 0x10);
+                    else {
+                        unsigned int cw = (unsigned int) img->width;
+                        unsigned int ch = (unsigned int) img->height;
+                        int level = 0;
+                        for (unsigned int off = 0; off < img->dataLen;) {
+                            unsigned int blockSz = (cw * ch) >> 1;
+                            if ((int) blockSz < 0x10)
+                                blockSz = (unsigned int) 0x10;
+                            glCompressedTexImage2D(0xde1, level, 0x8c03, (int) cw, (int) ch, 0, (int) blockSz,
+                                                   (unsigned char *) img->data + off);
+                            off += blockSz;
+                            unsigned int nw = 1, nh = 1;
+                            if (ch >> 1 > 1) nh = ch >> 1;
+                            if (cw >> 1 > 1) nw = cw >> 1;
+                            ++level;
+                            cw = nw;
+                            ch = nh;
+                        }
+                    }
                     break;
                 case 5:
                     if (img->hasMipmaps == 0)
                         glCompressedTexImage2D(0xde1, 0, 0x8c02, w, h, 0, (int) img->dataLen, img->data);
-                    else
-                        uploadCompressedChain(img, 0x8c02, 1, 0x10);
+                    else {
+                        unsigned int cw = (unsigned int) img->width;
+                        unsigned int ch = (unsigned int) img->height;
+                        int level = 0;
+                        for (unsigned int off = 0; off < img->dataLen;) {
+                            unsigned int blockSz = (cw * ch) >> 1;
+                            if ((int) blockSz < 0x10)
+                                blockSz = (unsigned int) 0x10;
+                            glCompressedTexImage2D(0xde1, level, 0x8c02, (int) cw, (int) ch, 0, (int) blockSz,
+                                                   (unsigned char *) img->data + off);
+                            off += blockSz;
+                            unsigned int nw = 1, nh = 1;
+                            if (ch >> 1 > 1) nh = ch >> 1;
+                            if (cw >> 1 > 1) nw = cw >> 1;
+                            ++level;
+                            cw = nw;
+                            ch = nh;
+                        }
+                    }
                     break;
                 case 7:
                     if (img->hasMipmaps == 0)
                         glCompressedTexImage2D(0xde1, 0, 0x8c93, w, h, 0, (int) img->dataLen, img->data);
-                    else
-                        uploadCompressedChain(img, 0x8c93, 0, 0x10);
+                    else {
+                        unsigned int cw = (unsigned int) img->width;
+                        unsigned int ch = (unsigned int) img->height;
+                        int level = 0;
+                        for (unsigned int off = 0; off < img->dataLen;) {
+                            unsigned int blockSz = (cw * ch) >> 0;
+                            if ((int) blockSz < 0x10)
+                                blockSz = (unsigned int) 0x10;
+                            glCompressedTexImage2D(0xde1, level, 0x8c93, (int) cw, (int) ch, 0, (int) blockSz,
+                                                   (unsigned char *) img->data + off);
+                            off += blockSz;
+                            unsigned int nw = 1, nh = 1;
+                            if (ch >> 1 > 1) nh = ch >> 1;
+                            if (cw >> 1 > 1) nw = cw >> 1;
+                            ++level;
+                            cw = nw;
+                            ch = nh;
+                        }
+                    }
                     break;
                 case 8:
                 case 9:
@@ -2285,15 +2308,49 @@ namespace AbyssEngine {
                     if (format == 10) glFmt = 0x83f3;
                     if (img->hasMipmaps == 0)
                         glCompressedTexImage2D(0xde1, 0, glFmt, w, h, 0, (int) img->dataLen, img->data);
-                    else
-                        uploadCompressedChain(img, glFmt, 1, 0x10);
+                    else {
+                        unsigned int cw = (unsigned int) img->width;
+                        unsigned int ch = (unsigned int) img->height;
+                        int level = 0;
+                        for (unsigned int off = 0; off < img->dataLen;) {
+                            unsigned int blockSz = (cw * ch) >> 1;
+                            if ((int) blockSz < 0x10)
+                                blockSz = (unsigned int) 0x10;
+                            glCompressedTexImage2D(0xde1, level, glFmt, (int) cw, (int) ch, 0, (int) blockSz,
+                                                   (unsigned char *) img->data + off);
+                            off += blockSz;
+                            unsigned int nw = 1, nh = 1;
+                            if (ch >> 1 > 1) nh = ch >> 1;
+                            if (cw >> 1 > 1) nw = cw >> 1;
+                            ++level;
+                            cw = nw;
+                            ch = nh;
+                        }
+                    }
                     break;
                 }
                 case 0xb:
                     if (img->hasMipmaps == 0)
                         glCompressedTexImage2D(0xde1, 0, 0x8d64, w, h, 0, (int) img->dataLen, img->data);
-                    else
-                        uploadCompressedChain(img, 0x8d64, 1, 8);
+                    else {
+                        unsigned int cw = (unsigned int) img->width;
+                        unsigned int ch = (unsigned int) img->height;
+                        int level = 0;
+                        for (unsigned int off = 0; off < img->dataLen;) {
+                            unsigned int blockSz = (cw * ch) >> 1;
+                            if ((int) blockSz < 8)
+                                blockSz = (unsigned int) 8;
+                            glCompressedTexImage2D(0xde1, level, 0x8d64, (int) cw, (int) ch, 0, (int) blockSz,
+                                                   (unsigned char *) img->data + off);
+                            off += blockSz;
+                            unsigned int nw = 1, nh = 1;
+                            if (ch >> 1 > 1) nh = ch >> 1;
+                            if (cw >> 1 > 1) nw = cw >> 1;
+                            ++level;
+                            cw = nw;
+                            ch = nh;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -2305,7 +2362,7 @@ namespace AbyssEngine {
             engine->lastGlError = (unsigned int) err;
             if (err != 0) {
                 String tmp(path);
-                engine->lastErrorPath.assign(&tmp);
+                engine->lastErrorPath = tmp;
                 glDeleteTextures(1, outIds);
                 ImageRelease(&imgPtr);
                 return -4;
@@ -2389,14 +2446,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    __attribute__ ((always_inline))
-
-    static inline void releaseArray(void *&arr) {
-        if (arr != 0)
-            operator delete[](arr);
-        arr = 0;
-    }
-
     void MeshReleaseIntern(Engine * /*engine*/, Mesh **slot) {
         Mesh *m = *slot;
         if (m == 0)
@@ -2422,15 +2471,22 @@ namespace AbyssEngine {
                     glDeleteBuffers(1, &m->colorVBO);
             }
 
-            releaseArray(m->indices);
-            releaseArray(m->positions);
-            releaseArray(m->texCoords);
-            releaseArray(m->colors);
-            releaseArray(m->normals);
+            if (m->indices != 0) operator delete[](m->indices);
+            m->indices = 0;
+            if (m->positions != 0) operator delete[](m->positions);
+            m->positions = 0;
+            if (m->texCoords != 0) operator delete[](m->texCoords);
+            m->texCoords = 0;
+            if (m->colors != 0) operator delete[](m->colors);
+            m->colors = 0;
+            if (m->normals != 0) operator delete[](m->normals);
+            m->normals = 0;
 
             if (*g_Mesh_extraArraysFlag != 0) {
-                releaseArray(m->tangents);
-                releaseArray(m->binormals);
+                if (m->tangents != 0) operator delete[](m->tangents);
+                m->tangents = 0;
+                if (m->binormals != 0) operator delete[](m->binormals);
+                m->binormals = 0;
             }
         }
 
@@ -2584,7 +2640,13 @@ namespace AbyssEngine {
                     }
                     ((AEMath::BSphere *) &(*out)->boundsCenterX)->Merge(
                         *(const AEMath::BSphere *) &childPtr->boundsCenterX);
-                    ArrayAddRaw<Mesh *>(childPtr, &(*out)->animation->meshes);
+                    {
+                        EngineArrayHeader *a = (EngineArrayHeader *) &(*out)->animation->meshes;
+                        a->capacity = a->count + 1;
+                        a->data = realloc(a->data, (a->count + 1) * sizeof(Mesh *));
+                        ((Mesh **) a->data)[a->count] = childPtr;
+                        a->count = a->capacity;
+                    }
                 }
                 ok = true;
             }

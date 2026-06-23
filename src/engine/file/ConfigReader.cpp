@@ -15,14 +15,25 @@ namespace AbyssEngine {
     ConfigReader::ConfigReader(Engine *engine) {
         this->engine = engine;
 
+        String readFileName;
+        for (const char *p = "ConfigReadFile"; p && *p; ++p)
+            { int _nl = readFileName.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < readFileName.length; _i++) _nd[_i] = readFileName.data[_i]; _nd[readFileName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p))); _nd[_nl] = 0; if (readFileName.data) delete[] readFileName.data; readFileName.data = _nd; readFileName.length = _nl; }
         RegisterTokenReadFunction(
-            StringFromAscii("ConfigReadFile"),
+            readFileName,
             (ConfigTokenReadFunction) config_reader_read_file_callback, engine);
+
+        String keysForActionName;
+        for (const char *p = "ConfigGetKeysForAction"; p && *p; ++p)
+            { int _nl = keysForActionName.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < keysForActionName.length; _i++) _nd[_i] = keysForActionName.data[_i]; _nd[keysForActionName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p))); _nd[_nl] = 0; if (keysForActionName.data) delete[] keysForActionName.data; keysForActionName.data = _nd; keysForActionName.length = _nl; }
         RegisterTokenReadFunction(
-            StringFromAscii("ConfigGetKeysForAction"),
+            keysForActionName,
             (ConfigTokenReadFunction) config_reader_keys_for_action_callback, engine);
+
+        String registerTokenName;
+        for (const char *p = "ConfigRegisterTokenReadFunction"; p && *p; ++p)
+            { int _nl = registerTokenName.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < registerTokenName.length; _i++) _nd[_i] = registerTokenName.data[_i]; _nd[registerTokenName.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p))); _nd[_nl] = 0; if (registerTokenName.data) delete[] registerTokenName.data; registerTokenName.data = _nd; registerTokenName.length = _nl; }
         RegisterTokenReadFunction(
-            StringFromAscii("ConfigRegisterTokenReadFunction"),
+            registerTokenName,
             (ConfigTokenReadFunction) config_reader_register_token_callback, engine);
     }
 
@@ -58,20 +69,42 @@ namespace AbyssEngine {
                     break;
                 }
                 if (c != '\r') {
-                    StringAppendChar(line, c);
+                    { int _nl = line.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < line.length; _i++) _nd[_i] = line.data[_i]; _nd[line.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(c))); _nd[_nl] = 0; if (line.data) delete[] line.data; line.data = _nd; line.length = _nl; }
                 }
             }
 
-            StringTrim(line);
+            {
+                int b = 0, e = line.length;
+                while (b < line.length && line.data[b] == static_cast<unsigned short>(' ')) b++;
+                while (e > b && line.data[e - 1] == static_cast<unsigned short>(' ')) e--;
+                if (b >= e) {
+                    { if (line.data) delete[] line.data; line.data = nullptr; line.length = 0; }
+                } else {
+                    line = line.SubString(static_cast<unsigned int>(b), static_cast<unsigned int>(e));
+                }
+            }
 
-            int32_t commentIndex = StringIndexOf(line, StringFromAscii("//"));
+            String commentNeedle;
+            for (const char *p = "//"; p && *p; ++p)
+                { int _nl = commentNeedle.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < commentNeedle.length; _i++) _nd[_i] = commentNeedle.data[_i]; _nd[commentNeedle.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p))); _nd[_nl] = 0; if (commentNeedle.data) delete[] commentNeedle.data; commentNeedle.data = _nd; commentNeedle.length = _nl; }
+            unsigned int commentPos = line.IndexOf(commentNeedle);
+            int32_t commentIndex = commentPos == 0xffffffffu ? -1 : static_cast<int32_t>(commentPos);
             if (commentIndex != -1) {
-                line = StringSubString(line, 0, commentIndex);
-                StringTrim(line);
+                line = line.SubString(0, 0 + static_cast<uint32_t>(commentIndex));
+                {
+                    int b = 0, e = line.length;
+                    while (b < line.length && line.data[b] == static_cast<unsigned short>(' ')) b++;
+                    while (e > b && line.data[e - 1] == static_cast<unsigned short>(' ')) e--;
+                    if (b >= e) {
+                        { if (line.data) delete[] line.data; line.data = nullptr; line.length = 0; }
+                    } else {
+                        line = line.SubString(static_cast<unsigned int>(b), static_cast<unsigned int>(e));
+                    }
+                }
             }
 
             if (line.size() == 0 && read == 0) {
-                StringSetAscii(line, "EOF");
+                line.Set("EOF");
             }
         }
 
@@ -81,14 +114,14 @@ namespace AbyssEngine {
     void ConfigReader::ParseFile(String name) {
         if (AEFile::OpenRead(name, &this->file_handle) != 0) {
             String line = GetNewLine();
-            while (StringCompareAscii(line, "EOF") != 0) {
-                uint16_t *first = StringCharAt(line, 0);
+            while ((line.Compare("EOF") == 0 ? 0 : 1) != 0) {
+                uint16_t *first = reinterpret_cast<uint16_t *>(&line.data[0]);
                 if (*first == '[') {
-                    uint16_t *last = StringCharAt(line, line.size() - 1);
+                    uint16_t *last = reinterpret_cast<uint16_t *>(&line.data[line.size() - 1]);
                     if (*last == ']') {
                         for (uint32_t i = 0; i < tokens.size(); i++) {
                             TokenStruct *token = tokens[i];
-                            String section = StringSubString(line, 1, line.size() - 1);
+                            String section = line.SubString(1, 1 + (line.size() - 1));
                             if (token->name.Compare(section) == 0) {
                                 token->read(this, token->context);
                                 break;

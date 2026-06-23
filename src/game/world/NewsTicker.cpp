@@ -27,7 +27,7 @@ static int **g_NewsTicker_touchBegin_font = nullptr;
 static int *g_NewsTicker_touchBegin_screen = nullptr;
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
-    this->tickerText.ctor();
+    { if (this->tickerText.data) delete[] this->tickerText.data; this->tickerText.data = nullptr; this->tickerText.length = 0; }
     this->x = x;
     this->y = y;
     this->width = width;

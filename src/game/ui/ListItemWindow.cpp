@@ -295,7 +295,7 @@ void ListItemWindow::draw() {
 
     {
         String s;
-        s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
+        s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
         layout->drawHeader(s);
     }
 
@@ -312,7 +312,7 @@ void ListItemWindow::draw() {
             int textId = *g_liw_d_headerId;
             li->ship->getIndex();
             String s;
-            s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
+            s.Set(((*g_liw_d_gameText)->getText(textId))->data);
             {
                 unsigned savedColor = layout->drawColor;
                 layout->drawColor = static_cast<unsigned>(color);
@@ -333,7 +333,7 @@ void ListItemWindow::draw() {
         int textId = *g_liw_d_headerId;
         li->getIndex();
         String s;
-        s.ctor_copy((*g_liw_d_gameText)->getText(textId), false);
+        s.Set(((*g_liw_d_gameText)->getText(textId))->data);
         {
             unsigned savedColor = layout->drawColor;
             layout->drawColor = static_cast<unsigned>(color);
@@ -375,7 +375,7 @@ void ListItemWindow::draw() {
             canvas->SetColor(canvasHandle);
             int color = layout->field_0x1c;
             String s;
-            s.ctor_copy((*rows)[i], false);
+            s.Set(((*rows)[i])->data);
             layout->drawBox(6, layout->buttonInsetX + this->x, ycur,
                             (this->width >> 1) - (layout->field_0x2c + layout->buttonInsetX), color, s, 0);
             canvas->SetColor(canvasHandle);
@@ -422,7 +422,7 @@ void ListItemWindow::draw() {
 
     if (this->previewHeight < 1) {
         String s;
-        s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
+        s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
         layout->drawBox(1, this->x + (this->width >> 1) + layout->field_0x2c,
                         this->y + layout->field_0xc + layout->field_0x20,
                         ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x5c, s, 0);
@@ -440,7 +440,7 @@ void ListItemWindow::draw() {
         if (prog > 0) yBox = yBox + prog + layout->field_0x2c;
         {
             String s;
-            s.ctor_copy((*g_liw_d_gameText)->getText(*g_liw_d_headerId), false);
+            s.Set(((*g_liw_d_gameText)->getText(*g_liw_d_headerId))->data);
             layout->drawBox(0, this->x + (this->width >> 1) + layout->field_0x2c, yBox,
                             ((this->width >> 1) - layout->field_0x2c) - layout->buttonInsetX, layout->field_0x1c, s, 0);
         }

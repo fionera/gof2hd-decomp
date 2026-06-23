@@ -35,7 +35,7 @@ void String::ReplaceString(String find, String repl) {
     std::u16string acc;
     unsigned int pos = 0;
     int idx;
-    while ((idx = (int) ((String *) (this))->IndexOf_from(pos, &find)) != -1) {
+    while ((idx = (int) ((String *) (this))->IndexOf(pos, find)) != -1) {
         acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int) idx - pos);
         if (repl.length)
             acc.append(reinterpret_cast<const char16_t *>(repl.data), (unsigned int) repl.length);
@@ -46,7 +46,20 @@ void String::ReplaceString(String find, String repl) {
         acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int) this->length - pos);
 
     if (!acc.empty())
-        assignWide(reinterpret_cast<const unsigned short *>(acc.data()), (int) acc.size());
+        {
+            const unsigned short *_src = reinterpret_cast<const unsigned short *>(acc.data());
+            int _n = (int) acc.size();
+            if (this->data) delete[] this->data;
+            this->data = nullptr;
+            this->length = 0;
+            if (_src && _n >= 0) {
+                unsigned short *_nd = new unsigned short[_n + 1];
+                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+                _nd[_n] = 0;
+                this->data = _nd;
+                this->length = _n;
+            }
+        }
 }
 
 void String::ReplaceChar(char from, char to) {
@@ -113,17 +126,17 @@ void *String::Split(String sep) {
 
         unsigned int pos = 0;
         unsigned int idx;
-        while ((idx = ((String *) (this))->IndexOf_from(pos, &sep)) != 0xffffffff) {
+        while ((idx = ((String *) (this))->IndexOf(pos, sep)) != 0xffffffff) {
             if (pos < idx) {
                 String *piece = new String();
-                piece->SubString(this, pos, idx);
+                *piece = this->SubString(pos, idx);
                 arr->push_back(piece);
             }
             pos = (unsigned int) sep.length + idx;
         }
         if (pos != 0 && pos < (unsigned int) this->length) {
             String *piece = new String();
-            piece->SubString(this, pos, (unsigned int) this->length);
+            *piece = this->SubString(pos, (unsigned int) this->length);
             arr->push_back(piece);
         }
 
@@ -145,7 +158,9 @@ unsigned short *String::operator[](int i) {
 }
 
 void String::Set(long long v) {
-    clear();
+    if (this->data) delete[] this->data;
+    this->data = nullptr;
+    this->length = 0;
 
     if (v == 0) {
         this->Set("");
@@ -171,7 +186,20 @@ void String::Set(long long v) {
         out.push_back(u'-');
     for (int i = n - 1; i >= 0; i--)
         out.push_back(tmp[i]);
-    assignWide(reinterpret_cast<const unsigned short *>(out.data()), (int) out.size());
+    {
+        const unsigned short *_src = reinterpret_cast<const unsigned short *>(out.data());
+        int _n = (int) out.size();
+        if (this->data) delete[] this->data;
+        this->data = nullptr;
+        this->length = 0;
+        if (_src && _n >= 0) {
+            unsigned short *_nd = new unsigned short[_n + 1];
+            for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+            _nd[_n] = 0;
+            this->data = _nd;
+            this->length = _n;
+        }
+    }
 }
 
 int String::StrLen(const char *s) {
@@ -209,7 +237,9 @@ done:
 }
 
 void String::Set(const char *s) {
-    clear();
+    if (this->data) delete[] this->data;
+    this->data = nullptr;
+    this->length = 0;
     if (s == 0)
         return;
     int n = 0;
@@ -283,9 +313,24 @@ void String::Trim() {
     }
     if (start < end) {
         std::u16string sub(reinterpret_cast<const char16_t *>(this->data) + start, end - start);
-        assignWide(reinterpret_cast<const unsigned short *>(sub.data()), (int) sub.size());
+        {
+            const unsigned short *_src = reinterpret_cast<const unsigned short *>(sub.data());
+            int _n = (int) sub.size();
+            if (this->data) delete[] this->data;
+            this->data = nullptr;
+            this->length = 0;
+            if (_src && _n >= 0) {
+                unsigned short *_nd = new unsigned short[_n + 1];
+                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+                _nd[_n] = 0;
+                this->data = _nd;
+                this->length = _n;
+            }
+        }
     } else {
-        clear();
+        if (this->data) delete[] this->data;
+        this->data = nullptr;
+        this->length = 0;
     }
 }
 
@@ -346,7 +391,9 @@ String &String::operator=(const String &other) {
 }
 
 void String::Set(const unsigned short *s) {
-    clear();
+    if (this->data) delete[] this->data;
+    this->data = nullptr;
+    this->length = 0;
     if (s == 0)
         return;
     int n = 0;
@@ -387,7 +434,20 @@ void String::SplitTags(String tag) {
         if (tag.length)
             wrapped.append(reinterpret_cast<const char16_t *>(tag.data), (unsigned int) tag.length);
         wrapped.push_back(u'>');
-        tag.assignWide(reinterpret_cast<const unsigned short *>(wrapped.data()), (int) wrapped.size());
+        {
+            const unsigned short *_src = reinterpret_cast<const unsigned short *>(wrapped.data());
+            int _n = (int) wrapped.size();
+            if (tag.data) delete[] tag.data;
+            tag.data = nullptr;
+            tag.length = 0;
+            if (_src && _n >= 0) {
+                unsigned short *_nd = new unsigned short[_n + 1];
+                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+                _nd[_n] = 0;
+                tag.data = _nd;
+                tag.length = _n;
+            }
+        }
     }
 
     Array<String *> *arr = new Array<String *>();
@@ -395,21 +455,21 @@ void String::SplitTags(String tag) {
     int endPos = 0;
     unsigned int pos = 0;
     unsigned int idx;
-    while ((idx = ((String *) (this))->IndexOf_from(pos, &tag)) != 0xffffffff) {
+    while ((idx = ((String *) (this))->IndexOf(pos, tag)) != 0xffffffff) {
         if (pos <= idx) {
             String *piece = new String();
-            piece->SubString(this, pos, idx);
+            *piece = this->SubString(pos, idx);
             arr->push_back(piece);
 
             unsigned int afterTag = (unsigned int) tag.length + idx;
             String closer;
             ((String *) (&closer))->ctor_char(kSlash, false);
-            endPos = (int) ((String *) (this))->IndexOf_from(afterTag, &closer);
+            endPos = (int) ((String *) (this))->IndexOf(afterTag, closer);
             if (endPos == -1)
                 goto done;
 
             String *piece2 = new String();
-            piece2->SubString(this, afterTag, (unsigned int) endPos);
+            *piece2 = this->SubString(afterTag, (unsigned int) endPos);
             arr->push_back(piece2);
         }
         pos = endPos + 1;
@@ -417,7 +477,7 @@ void String::SplitTags(String tag) {
 
     if (pos != 0 && pos < (unsigned int) this->length) {
         String *piece = new String();
-        piece->SubString(this, pos, (unsigned int) this->length);
+        *piece = this->SubString(pos, (unsigned int) this->length);
         arr->push_back(piece);
     }
 
@@ -468,7 +528,20 @@ void String::Set(float v) {
     }
 
     delete[] digitsW;
-    assignWide(reinterpret_cast<const unsigned short *>(acc.data()), (int) acc.size());
+    {
+        const unsigned short *_src = reinterpret_cast<const unsigned short *>(acc.data());
+        int _n = (int) acc.size();
+        if (this->data) delete[] this->data;
+        this->data = nullptr;
+        this->length = 0;
+        if (_src && _n >= 0) {
+            unsigned short *_nd = new unsigned short[_n + 1];
+            for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+            _nd[_n] = 0;
+            this->data = _nd;
+            this->length = _n;
+        }
+    }
 }
 
 int String::StrLen(const unsigned short *s) {
@@ -482,7 +555,24 @@ int String::StrLen(const unsigned short *s) {
 
 String String::SubString(unsigned int start, unsigned int end) {
     String out;
-    out.SubString(this, start, end);
+    unsigned int slen = (unsigned int) this->length;
+    if (start < end && start < slen) {
+        unsigned int hi = end > slen ? slen : end;
+        {
+            const unsigned short *_src = this->data + start;
+            int _n = (int) (hi - start);
+            if (out.data) delete[] out.data;
+            out.data = nullptr;
+            out.length = 0;
+            if (_src && _n >= 0) {
+                unsigned short *_nd = new unsigned short[_n + 1];
+                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
+                _nd[_n] = 0;
+                out.data = _nd;
+                out.length = _n;
+            }
+        }
+    }
     return out;
 }
 
@@ -586,11 +676,26 @@ uint16_t *String::getWCharFromUtf8(char *s, int len) {
 }
 
 unsigned int String::IndexOf(const String &needle) {
-    return ((String *) (this))->IndexOf_from(0, &needle);
+    return this->IndexOf(0, needle);
 }
 
 unsigned int String::IndexOf(unsigned int start, const String &needle) {
-    return this->IndexOf_from(start, &needle);
+    unsigned int slen = (unsigned int) this->length;
+    unsigned int nlen = (unsigned int) needle.length;
+    while (start < slen && nlen <= slen - start) {
+        if (needle.data[0] == this->data[start]) {
+            unsigned int k = 0;
+            while (start + k < slen && this->data[start + k] == needle.data[k]) {
+                if (nlen <= k + 1)
+                    return start;
+                k++;
+            }
+            start += k;
+        } else {
+            start++;
+        }
+    }
+    return 0xffffffff;
 }
 
 const unsigned short *String::operator[](int i) const {
@@ -624,36 +729,69 @@ String::String(const char *cstr, bool reverse) : data(nullptr), length(0) {
     if (reverse) Reverse();
 }
 
-String::String(const uint16_t *wstr, bool reverse) : data(nullptr), length(0) { ctor_wchar(wstr, reverse); }
-
-String::String(const String &other, bool reverse) : data(nullptr), length(0) {
-    ctor_copy(const_cast<String *>(&other), reverse);
+String::String(const uint16_t *wstr, bool reverse) : data(nullptr), length(0) {
+    Set((const unsigned short *) wstr);
+    if (reverse) Reverse();
 }
 
-String::String(char c) : data(nullptr), length(0) { ctor_charval(c); }
+String::String(const String &other, bool reverse) : data(nullptr), length(0) {
+    Set(other.data);
+    if (reverse) Reverse();
+}
 
-String::String(int v) : data(nullptr), length(0) { ctor_int(v); }
+String::String(char c) : data(nullptr), length(0) { Set((long long) c); }
+
+String::String(int v) : data(nullptr), length(0) { Set((long long) v); }
 
 String::String(float v) : data(nullptr), length(0) { ctor_float(v); }
 
 String::String(long long v) : data(nullptr), length(0) { ctor_longlong(v); }
 
+String &String::operator+=(const String &other) {
+    const unsigned short *src = other.data;
+    int n = other.length;
+    if (src && n > 0) {
+        int newLen = this->length + n;
+        unsigned short *nd = new unsigned short[newLen + 1];
+        for (int i = 0; i < this->length; i++) nd[i] = this->data[i];
+        for (int i = 0; i < n; i++) nd[this->length + i] = src[i];
+        nd[newLen] = 0;
+        if (this->data) delete[] this->data;
+        this->data = nd;
+        this->length = newLen;
+    }
+    return *this;
+}
+
 String &String::operator+=(const char &c) {
-    addAssign_char(&c);
+    unsigned short ch = (unsigned short) *(const unsigned char *) &c;
+    {
+        int newLen = this->length + 1;
+        unsigned short *nd = new unsigned short[newLen + 1];
+        for (int i = 0; i < this->length; i++) nd[i] = this->data[i];
+        nd[this->length] = ch;
+        nd[newLen] = 0;
+        if (this->data) delete[] this->data;
+        this->data = nd;
+        this->length = newLen;
+    }
     return *this;
 }
 
 String &String::operator+=(const int &v) {
-    addAssign_int(&v);
+    String tmp((long long) v);
+    *this += tmp;
     return *this;
 }
 
 String &String::operator+=(const float &v) {
-    addAssign_float(&v);
+    String tmp(v);
+    *this += tmp;
     return *this;
 }
 
 String &String::operator+=(const long long &v) {
-    addAssign_longlong(&v);
+    String tmp(v);
+    *this += tmp;
     return *this;
 }

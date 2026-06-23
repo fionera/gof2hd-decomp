@@ -352,16 +352,6 @@ after_geometry:
     }
 }
 
-__attribute__ ((always_inline))
-
-static inline void identity(Matrix *m) {
-    for (uint32_t i = 0; i < 15; ++i)
-        m->m[i] = 0.0f;
-    m->m[0] = 1.0f;
-    m->m[5] = 1.0f;
-    m->m[14] = 1.0f;
-}
-
 void ObjectGun::render() {
     Matrix local;
     Matrix cameraLocal;
@@ -385,14 +375,22 @@ void ObjectGun::render() {
     }
 
     if (gun->active != 0) {
-        identity(&cameraLocal);
+        for (uint32_t i = 0; i < 15; ++i)
+            cameraLocal.m[i] = 0.0f;
+        cameraLocal.m[0] = 1.0f;
+        cameraLocal.m[5] = 1.0f;
+        cameraLocal.m[14] = 1.0f;
         if (gun->weaponType == ITEM_SORT_TURRET) {
             void **canvas = (void **) g_PaintCanvas;
             void *paint = *canvas;
             void *camera = CameraGetCurrent(paint);
             cameraLocal = *(const Matrix *) CameraGetLocal(paint, camera);
             if (this->visible != 0) {
-                identity(&rotate);
+                for (uint32_t mi = 0; mi < 15; ++mi)
+                    rotate.m[mi] = 0.0f;
+                rotate.m[0] = 1.0f;
+                rotate.m[5] = 1.0f;
+                rotate.m[14] = 1.0f;
                 MatrixSetRotation(&scaleMatrix, this->spinAngle, 0.0f, 0.0f);
                 rotate = scaleMatrix;
                 AbyssEngine::AEMath::MatrixMultiply(cameraLocal, rotate);
@@ -476,7 +474,11 @@ void ObjectGun::render() {
                 } else {
                     Player *player = (Player *) (uint64_t) this->level->getPlayer();
                     EgoPlayerView *playerView = (EgoPlayerView *) player;
-                    identity(&local);
+                    for (uint32_t mi = 0; mi < 15; ++mi)
+                        local.m[mi] = 0.0f;
+                    local.m[0] = 1.0f;
+                    local.m[5] = 1.0f;
+                    local.m[14] = 1.0f;
 
                     MatrixSetRotation(&scaleMatrix, player->empPointsF, player->maxEmpPointsF, 0.0f);
                     AbyssEngine::AEMath::MatrixMultiply(playerView->orientation, local);

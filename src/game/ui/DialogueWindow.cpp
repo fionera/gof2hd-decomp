@@ -102,8 +102,8 @@ DialogueWindow::~DialogueWindow() {
     delete this->moreButton;
     this->moreButton = 0;
 
-    this->agentName.clear();
-    this->bodyText.clear();
+    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
+    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
 }
 
 int DialogueWindow::OnTouchMove(int x, int y) {
@@ -226,12 +226,12 @@ void DialogueWindow::loadContent() {
             textId = 0x10 + 0x63d;
         }
         this->clientImage = g_dw_defaultClientImage;
-        this->agentName.assign(gameText->getText(0x63d + (textId & 0xff)));
-        this->bodyText.assign(gameText->getText(textId));
+        this->agentName = *(gameText->getText(0x63d + (textId & 0xff)));
+        this->bodyText = *(gameText->getText(textId));
     } else if (mission != 0) {
         if ((page & 1) != 0) {
             this->clientImage = g_dw_defaultClientImage;
-            this->agentName.assign(gameText->getText(0x63d));
+            this->agentName = *(gameText->getText(0x63d));
             this->mirrorFace = 1;
         } else {
             this->clientImage = (void *) (intptr_t) mission->getClientImage();
@@ -249,7 +249,7 @@ void DialogueWindow::loadContent() {
         } else {
             textId = 0x20f;
         }
-        this->bodyText.assign(gameText->getText(textId));
+        this->bodyText = *(gameText->getText(textId));
 
         if (kind == 1) {
             int standing = Status::gStatus->getStanding();
@@ -257,22 +257,22 @@ void DialogueWindow::loadContent() {
         }
         if (mission->getTargetStation() == 0x6c && kind == 0) {
             textId = 0x1ca;
-            this->bodyText.assign(gameText->getText(textId));
+            this->bodyText = *(gameText->getText(textId));
         }
         if (mission->getType() == 0x0c && kind == 0) {
             textId = 0x174;
-            this->bodyText.assign(gameText->getText(textId));
+            this->bodyText = *(gameText->getText(textId));
         }
     } else {
         this->clientImage = g_dw_defaultClientImage;
         textId = 0x10;
-        this->bodyText.assign(gameText->getText(textId));
-        this->agentName.assign(gameText->getText(0x63d));
+        this->bodyText = *(gameText->getText(textId));
+        this->agentName = *(gameText->getText(0x63d));
     }
 
     String style(g_dw_emptyLoad, false);
     String body;
-    body.ctor_copy(&this->bodyText, false);
+    body.Set((this->bodyText).data);
     this->scrollWindow->setText(style, body, 0);
 
     this->prevButton->setVisible(this->page != 0);
@@ -293,8 +293,8 @@ void DialogueWindow::loadContent() {
 }
 
 DialogueWindow::DialogueWindow() {
-    this->bodyText.ctor();
-    this->agentName.ctor();
+    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
+    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
     this->init();
 }
 
@@ -484,13 +484,13 @@ static void *g_dw_layoutCtor_storage = nullptr;
 static void **g_dw_layoutCtor = &g_dw_layoutCtor_storage;
 
 DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
-    this->bodyText.ctor();
-    this->agentName.ctor();
+    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
+    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
     this->init();
 
     String blank(g_dw_emptyString, false);
     String copy;
-    copy.ctor_copy(text, false);
+    copy.Set((text)->data);
     this->scrollWindow->setText(blank, copy);
 
     this->moreButton->setVisible(false);
@@ -508,15 +508,15 @@ DialogueWindow::DialogueWindow(String *text, String *agentName, int *parts) {
     int width = this->frameWidth - margin * 4 - layout->field_0x50 * 2;
     this->nextButton = new TouchButton(*gameText->getText(0x20c), 0, x, y, width, 0x24, 4);
 
-    this->agentName.assign(agentName);
+    this->agentName = *(agentName);
     this->voiceSound = -1;
     this->page = 0;
     this->pauseLength = 0;
 }
 
 DialogueWindow::DialogueWindow(Mission *mission, Level *level, int kind) {
-    this->bodyText.ctor();
-    this->agentName.ctor();
+    { if (this->bodyText.data) delete[] this->bodyText.data; this->bodyText.data = nullptr; this->bodyText.length = 0; }
+    { if (this->agentName.data) delete[] this->agentName.data; this->agentName.data = nullptr; this->agentName.length = 0; }
     this->init();
     this->level = level;
     this->set(mission, kind, -1);
@@ -602,9 +602,9 @@ void DialogueWindow::draw() {
     Layout *layout = *g_dw_layoutDraw;
     layout->drawMask();
     String title;
-    title.ctor_copy(&this->agentName, false);
+    title.Set((this->agentName).data);
     layout->drawBox(7, this->frameX, this->frameY, this->frameWidth, this->frameHeight, title, 1);
-    title.clear();
+    { if (title.data) delete[] title.data; title.data = nullptr; title.length = 0; }
 
     this->scrollWindow->draw();
 

@@ -401,7 +401,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
         if (((Layout *) (layout))->helpPressed() != 0) {
             void *texts = *(void **) &SpaceLounge_touch_list_help_text_slot;
             void *text = ((GameText *) (*(void **) texts))->getText(0x283);
-            helpSmall.ctor_copy((String *) text, false);
+            helpSmall.Set(((String *) text)->data);
             ((Layout *) (layout))->initHelpWindow(helpSmall);
         }
         return;
@@ -467,7 +467,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     if (((Layout *) (layout))->helpPressed() != 0) {
         void *texts = *(void **) &SpaceLounge_touch_help_text_slot;
         void *text = ((GameText *) (*(void **) texts))->getText(0x273);
-        helpBig.ctor_copy((String *) text, false);
+        helpBig.Set(((String *) text)->data);
         ((Layout *) (layout))->initHelpWindow(helpBig);
     }
 }
@@ -782,14 +782,14 @@ void SpaceLounge::drawLounge() {
             } else {
                 void *texts = *(void **) &SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *) (*(void **) texts))->getText(((Agent *) (agent))->getRace() + 0x196);
-                s0.ctor_copy((String *) text, false);
+                s0.Set(((String *) text)->data);
             }
 
             void *mission = ((Agent *) (agent))->getMission();
             if (mission != 0) {
                 void *texts = *(void **) &SpaceLounge_lounge_text_slot;
                 void *text = ((GameText *) (*(void **) texts))->getText(((Mission *) (mission))->getType() + 0x162);
-                s1.ctor_copy((String *) text, false);
+                s1.Set(((String *) text)->data);
             } else {
                 int offer = ((Agent *) (agent))->getOffer();
                 void *texts = *(void **) &SpaceLounge_lounge_text_slot;
@@ -802,7 +802,7 @@ void SpaceLounge::drawLounge() {
                     id = 0x130;
                 }
                 if (id != 0) {
-                    s1.ctor_copy((String *) ((GameText *) (*(void **) texts))->getText(id), false);
+                    s1.Set(((String *) ((GameText *) (*(void **) texts))->getText(id))->data);
                 } else {
                     s1 = "";
                 }
@@ -1087,10 +1087,10 @@ void SpaceLounge::startChat() {
         bodyId = 0x133;
     }
 
-    title.ctor_copy((String *) ((GameText *) (*(void **) texts))->getText(titleId), false);
-    body.ctor_copy((String *) ((GameText *) (*(void **) texts))->getText(bodyId), false);
-    left.ctor_copy((String *) ((GameText *) (*(void **) texts))->getText(0x10), false);
-    right.ctor_copy((String *) ((GameText *) (*(void **) texts))->getText(0x11), false);
+    title.Set(((String *) ((GameText *) (*(void **) texts))->getText(titleId))->data);
+    body.Set(((String *) ((GameText *) (*(void **) texts))->getText(bodyId))->data);
+    left.Set(((String *) ((GameText *) (*(void **) texts))->getText(0x10))->data);
+    right.Set(((String *) ((GameText *) (*(void **) texts))->getText(0x11))->data);
 
     this->choiceWindow->set(title, body, true);
     if (this->choiceWindow->leftButton != nullptr)
@@ -1210,7 +1210,7 @@ void SpaceLounge::draw() {
     void *layout = *(void **) layoutSlot;
     void *textsSlot = *(void **) &SpaceLounge_draw_text_slot;
     void *text = ((GameText *) (*(void **) textsSlot))->getText(0x18e);
-    title.ctor_copy((String *) text, false);
+    title.Set(((String *) text)->data);
     ((Layout *) (layout))->drawHeader(title, false);
 
     ((SpaceLounge *) (this))->drawLounge();

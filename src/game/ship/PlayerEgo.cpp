@@ -2516,7 +2516,7 @@ void PlayerEgo::drawThrottle() {
                                                     (int) (anchor[0] - (float) (w / 2)));
 
     unsigned char pct[12];
-    ((String *) (pct))->ctor_int((int) (thrust * g_PE_t_pctScale));
+    ((String *) (pct))->Set((long long) (int) (thrust * g_PE_t_pctScale));
 
     int th = ((PaintCanvas *) (long) (canvas))->GetImage2DHeight((unsigned int) (img));
     String *pctStr = *g_PE_t_pctStr;
@@ -2526,7 +2526,7 @@ void PlayerEgo::drawThrottle() {
                                                   (bool) (int) (anchor[1] + (float) th / g_PE_t_textDiv));
     PaintCanvas::gCanvas->SetColor((unsigned int) (0xffffffff));
 
-    ((String *) (pct))->clear();
+    { String *_s = ((String *) (pct)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 }
 
 void PlayerEgo::setAutoPilot(KIPlayer *kip) {

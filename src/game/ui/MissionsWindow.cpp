@@ -287,7 +287,7 @@ int MissionsWindow::init() {
             int need = cm->getProductionGoodAmount();
             int have = cm->getStatusValue();
             String val;
-            val.ctor_int(need - have);
+            val.Set((long long) (need - have));
             Status_replaceHash(&merged, key, &hdr, &val, &suffix);
         } else {
             String hdr(text);
@@ -682,7 +682,7 @@ void MissionsWindow::update(int dt) {
                 int need = cm->getProductionGoodAmount();
                 int have = cm->getStatusValue();
                 String amount;
-                amount.ctor_int(need - have);
+                amount.Set((long long) (need - have));
                 String suffix("", false);
                 String merged;
                 Status_replaceHash(&merged, key, &hdr, &amount, &suffix);
