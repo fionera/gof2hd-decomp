@@ -28,6 +28,10 @@ GOLD = NDK + "/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-li
 LIBDIR = NDK + "/platforms/android-16/arch-arm/usr/lib"
 SONAME = "libgof2hdaa.so"
 NEEDED = ["log", "GLESv2", "GLESv1_CM", "EGL", "android", "m", "dl", "c"]
+# Static C++ ABI/runtime the original statically linked (provides std::bad_*,
+# type_info, __cxa_*, terminate/unexpected/new_handler). Linked as an archive so
+# only the objects our code references are pulled in (matching the original subset).
+CXX_RUNTIME = [NDK + "/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a"]
 # objects that duplicate a C++ TU and pull in undefined C-name globals
 DROP = {"recovered_a3cc4.o"}
 
@@ -43,6 +47,7 @@ def link(objs):
     for n in NEEDED:
         cmd += ["-l", n]
     cmd += objs
+    cmd += CXX_RUNTIME
     cmd += [os.path.join(LIBDIR, "crtend_so.o"), "-o", OUT]
     return orb(*cmd)
 
