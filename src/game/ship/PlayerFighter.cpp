@@ -52,10 +52,6 @@ namespace AbyssEngine {
     }
 }
 
-static inline float AEMath_VectorLength(void *v) {
-    return AbyssEngine::AEMath::VectorLength(*(const AbyssEngine::AEMath::Vector *) v);
-}
-
 int AERandom_nextIntB(int rng, int bound);
 
 void PF_vscale(void *out, void *vec, float scalar);
@@ -663,7 +659,7 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
 
     float diff[3];
     *reinterpret_cast<Vector *>(diff) = target - *reinterpret_cast<const Vector *>(pos);
-    float len = AEMath_VectorLength(diff);
+    float len = AbyssEngine::AEMath::VectorLength(*reinterpret_cast<const AbyssEngine::AEMath::Vector *>(diff));
     float r = VectorSignedToFloat(radius, 0);
     float t = 1.0f;
     if (len / r < 1.0f) t = len / r;

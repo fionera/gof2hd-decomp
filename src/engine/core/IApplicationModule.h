@@ -24,7 +24,7 @@ namespace AbyssEngine {
         IApplicationModule() {
         }
 
-        virtual ~IApplicationModule() = 0;
+        virtual ~IApplicationModule() {}
 
         virtual int OnInitialize() = 0;
 
