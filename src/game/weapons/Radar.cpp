@@ -285,12 +285,3 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
         text = km + text;
     }
 }
-
-void Radar_ctor(Radar *r, Level *level) {
-    new(r) Radar(level);
-}
-
-void *Radar_dtor(Radar *r) {
-    r->~Radar();
-    return r;
-}

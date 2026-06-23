@@ -623,12 +623,3 @@ void Explosion::addFireStreaks() {
         geometry->setScaling(scale, scale, scale);
     }
 }
-
-void Explosion_ctor(Explosion *self, int type) {
-    new(self) Explosion(type);
-}
-
-void *Explosion_dtor(Explosion *self) {
-    self->~Explosion();
-    return self;
-}

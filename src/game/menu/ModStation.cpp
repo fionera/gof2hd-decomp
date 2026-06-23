@@ -142,7 +142,6 @@ void *Radio_dtor(void *p);
 
 void *Array_RM_dtor(void *p);
 
-void *NewsTicker_dtor(void *p);
 
 void *ScrollTouchBox_dtor(void *p);
 
@@ -1376,7 +1375,7 @@ void ModStation::OnRelease() {
     this->radioMessages = 0;
 
     if (this->newsTicker != 0)
-        ms_op_delete(NewsTicker_dtor(this->newsTicker));
+        ms_op_delete((this->newsTicker->~NewsTicker(), this->newsTicker));
     this->newsTicker = 0;
 
     if (this->choiceWindow != 0)

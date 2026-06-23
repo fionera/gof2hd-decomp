@@ -18,6 +18,7 @@ bool AbyssEngine::Engine::fogEnabled = false;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
+#include "engine/file/FileInterfaceAndroid.h"
 #include "game/core/String.h"
 #include "engine/render/Mesh.h"
 #include "engine/render/Material.h"
@@ -74,8 +75,6 @@ void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
 void ShaderUpdateRimColor();
 
 void ShaderUpdateMaterialColor();
-
-void FileInterfaceAndroid_ctor(void *self);
 
 void ShaderCtor_0(void *);
 
@@ -987,8 +986,7 @@ void Engine::LightSetMaterialColorDiffuse(float red, float green, float blue) {
 }
 
 void Engine::initFileInterface() {
-    void *fileInterface = operator new(0x38);
-    FileInterfaceAndroid_ctor(fileInterface);
+    void *fileInterface = new (operator new(0x38)) FileInterfaceAndroid();
     this->fileInterface = fileInterface;
     return AEFile::SetInterface((FileInterface *) fileInterface);
 }
@@ -1015,8 +1013,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     this->viewportWidth = width;
     this->viewportHeight = height;
 
-    void *fileInterface = operator new(0x38);
-    FileInterfaceAndroid_ctor(fileInterface);
+    void *fileInterface = new (operator new(0x38)) FileInterfaceAndroid();
     this->fileInterface = fileInterface;
     AEFile::SetInterface((FileInterface *) fileInterface);
 

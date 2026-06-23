@@ -1532,8 +1532,6 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 
 static uint8_t **g_scFlag;
 
-void *Objective_dtor(Objective * o);
-
 void Status_replaceHash(String * out, Status * self, String * haystack,
                                    String * needle, String * repl);
 
@@ -1723,12 +1721,12 @@ deliverFollowup:
 
         int *level = (int *) this->level;
         if (level[10] != 0) {
-            ::operator delete(Objective_dtor((Objective *) (intptr_t) level[10]));
+            delete (Objective *) (intptr_t) level[10];
             level = (int *) this->level;
         }
         level[10] = 0;
         if (level[11] != 0) {
-            ::operator delete(Objective_dtor((Objective *) (intptr_t) level[11]));
+            delete (Objective *) (intptr_t) level[11];
             level = (int *) this->level;
         }
         level[11] = 0;
@@ -1841,8 +1839,6 @@ void *TargetFollowCamera_dtor(void *c);
 void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                                         int a, int b, int d, int e, int f, int g);
 
-void Radar_ctor(Radar * r, Level * l);
-
 static int g_resAspectA;
 
 static int g_resAspectB;
@@ -1913,8 +1909,7 @@ void MGame::reset() {
     this->player->setTargetFollowCamera(this->camera);
     this->camera->resetShipHandling();
 
-    Radar *radar = (Radar *) ::operator new(0x248);
-    Radar_ctor(radar, this->level);
+    Radar *radar = new Radar(this->level);
     this->radar = radar;
 
     if (Status::gStatus->getMission() != 0)
@@ -2461,8 +2456,6 @@ MGame::MGame() {
     this->field_0x1e0 = z;
 }
 
-void *Radar_dtor(void *r);
-
 void *Radio_dtor(...);
 
 void *DialogueWindow_dtor(...);
@@ -2531,7 +2524,7 @@ void MGame::OnRelease() {
     this->levelScript = 0;
 
     if (this->radar != 0)
-        ::operator delete(Radar_dtor(this->radar));
+        delete this->radar;
     this->radar = 0;
 
     if (this->radio != 0)

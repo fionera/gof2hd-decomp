@@ -386,17 +386,3 @@ char *logi(char *message) {
 char *loge(char *message) {
     return message;
 }
-
-void FileInterfaceAndroid_ctor(void *self) {
-    new(self) FileInterfaceAndroid();
-}
-
-void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self) {
-    if (self)
-        self->~FileInterfaceAndroid();
-    return self;
-}
-
-void FileInterfaceAndroid_deletingDtor(FileInterfaceAndroid *self) {
-    delete self;
-}

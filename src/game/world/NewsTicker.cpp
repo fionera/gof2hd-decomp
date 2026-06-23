@@ -227,8 +227,3 @@ String NewsTicker::replaceTokens(String text) {
     return text;
 }
 
-void *NewsTicker_dtor(void *p) {
-    if (p) ((NewsTicker *) p)->~NewsTicker();
-    return p;
-}
-

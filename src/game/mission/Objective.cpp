@@ -201,8 +201,3 @@ void Objective_ctor_akw(int o, int type, int value, int calcValue, Level *level)
     new((void *) (intptr_t) o) Objective(type, value, calcValue, level);
 }
 
-void *Objective_dtor(Objective *o) {
-    o->~Objective();
-    return o;
-}
-

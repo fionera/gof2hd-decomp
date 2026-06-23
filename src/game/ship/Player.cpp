@@ -71,7 +71,6 @@ static int gShootSoundsByIndex[256];
 static void *gAppManagerA = nullptr;
 static void *gAppManagerB = nullptr;
 static void *gAppManagerC = nullptr;
-void Player_StopEngineSound(Player * self);
 
 void FloatVectorMax(void *out, float a, float b, int c, int d);
 
@@ -928,33 +927,6 @@ void Player::calcWeaponSounds(int count) {
     }
 }
 
-__attribute__ ((minsize))
-
-void Player_PauseEngineSound(Player *self) {
-    FMOD::Event *event = self->engineEvent;
-    if (event != 0) {
-        self->enginePaused = ((FModSound *) (gFModSound))->pause(event);
-    }
-}
-
-struct Mat {
-    float m[12];
-};
-
-__attribute__ ((minsize))
-
-void Player_PlayEngineSound(Player *self, Vector *vec) {
-    self->enginePositionVec = vec;
-    if (reinterpret_cast<AudioStateView *>(ApplicationManager::gAppManager)->soundEnabledFlag != 0) {
-        Mat pos;
-        MatrixGetPosition(&pos, self->transform);
-        FMOD::Event *ev = ((FModSound *) (gFModSoundPtr[0]))->updateEvent3DAttributes(
-            self->engineEvent, 0, (Vector *) self->enginePositionVec, (Vector *) &pos, false);
-        self->engineEvent = ev;
-        self->engineSoundPlaying = 1;
-    }
-}
-
 void Player::setEnemies(Array<Player *> *enemies) {
     if (this->enemies != 0) {
         delete this->enemies;
@@ -982,17 +954,6 @@ void Player::setEnemies(Array<Player *> *enemies) {
                 }
             }
         }
-    }
-}
-
-__attribute__ ((minsize))
-
-void Player_StopEngineSound(Player *self) {
-    FMOD::Event *event = self->engineEvent;
-    if (event != 0) {
-        ((FModSound *) (gFModSound))->stop(event);
-        self->engineSoundPlaying = 0;
-        self->engineEvent = 0;
     }
 }
 
@@ -1258,15 +1219,6 @@ void Player::addEnemy(Player *enemy) {
     delete tmp;
 }
 
-__attribute__ ((minsize))
-
-void Player_ResumeEngineSound(Player *self, bool force) {
-    FMOD::Event *event = self->engineEvent;
-    if (event != 0 && (self->enginePaused != 0 || force)) {
-        self->enginePaused = ((FModSound *) (gFModSound))->resume(event) ^ 1;
-    }
-}
-
 void Player::damage(int amount) {
     this->damage(amount, false, -1);
 }
@@ -1349,7 +1301,7 @@ Vector *Player::update(int dt, bool doSound) {
     AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(Engine::gEngine);
     if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (void *) (__INTPTR_TYPE__) -1) {
         if (self->engineSoundPlaying != 0) {
-            Player_StopEngineSound(self);
+            self->StopEngineSound();
         }
     } else {
         float *transform = self->transform;
@@ -1552,11 +1504,6 @@ void Player::StopEngineSound() {
         this->engineSoundPlaying = 0;
         this->engineEvent = 0;
     }
-}
-
-void *Player_dtor(void *p) {
-    static_cast<Player *>(p)->~Player();
-    return p;
 }
 
 void Player_addGun2(void *player, void *gunList, int slot) {

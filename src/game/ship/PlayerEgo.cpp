@@ -21,6 +21,7 @@
 
 #include "game/mission/Status.h"
 #include "engine/math/Transform.h"
+#include "engine/math/EaseInOutMatrix.h"
 #include "engine/core/ApplicationManager.h"
 #include "game/mission/Explosion.h"
 
@@ -251,8 +252,6 @@ void PE_adp_apply(PlayerEgo * self);
 void PlayerEgo_setLevel_ext(void *, int, int);
 
 float PE_yawRampDelta(float rate, int frameTime);
-
-void *EaseInOutMatrix_dtor(void *);
 
 void PlayerEgo_PlayEngineSound_ext(void *, int, int);
 
@@ -1694,7 +1693,10 @@ __attribute__ ((minsize)) PlayerEgo::~PlayerEgo() noexcept(false) {
     this->explosion = 0;
     if (this->explosion2) delete (Explosion *) (intptr_t) this->explosion2;
     this->explosion2 = 0;
-    if (this->easeMatrix) ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
+    if (this->easeMatrix) {
+        ((AbyssEngine::EaseInOutMatrix *) this->easeMatrix)->~EaseInOutMatrix();
+        ::operator delete(this->easeMatrix);
+    }
     this->easeMatrix = 0;
     if (Array<RepairBeam *> *beams = this->repairBeams) {
         for (RepairBeam *beam: *beams)
@@ -2233,8 +2235,10 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
             ((TargetFollowCamera *) (((void *&) this->targetFollowCamera)))->setLookAtCam(false);
             ((TargetFollowCamera *) (((void *&) this->targetFollowCamera)))->useTargetsUpVector(false);
 
-            if (this->easeMatrix != 0)
-                ::operator delete(EaseInOutMatrix_dtor(this->easeMatrix));
+            if (this->easeMatrix != 0) {
+                ((AbyssEngine::EaseInOutMatrix *) this->easeMatrix)->~EaseInOutMatrix();
+                ::operator delete(this->easeMatrix);
+            }
             this->easeMatrix = 0;
 
             pos = ((PlayerEgo *) (this))->getPosition();
