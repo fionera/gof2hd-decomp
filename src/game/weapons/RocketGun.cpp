@@ -21,8 +21,6 @@ void VectorRotateToTarget(Vector &out, const Vector &in);
 
 void VectorScale(Vector &out, const Vector &in, float scale);
 
-extern "C" uint32_t __aeabi_uidiv(uint32_t a, uint32_t b);
-
 namespace AbyssEngine {
     namespace AEMath {
         Vector operator+(const Vector &a, const Vector &b);
@@ -415,7 +413,7 @@ void RocketGun::update(int elapsed) {
 
                 if (gun->weaponType == ITEM_SORT_CLUSTER_MISSILE) {
                     uint32_t total = (uint32_t) gun->initialLifetime;
-                    uint32_t base = __aeabi_uidiv(total * i, gun->count);
+                    uint32_t base = ((unsigned) (total * i) / (unsigned) (gun->count));
                     float waveIn = (float) base +
                                    (float) (gun->initialLifetime - gun->lifetimes[i]);
                     float s = AbyssEngine::AEMath::Sinf(waveIn * kWave);

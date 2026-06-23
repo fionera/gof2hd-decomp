@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 
 namespace {
 
@@ -56,18 +57,6 @@ namespace AbyssEngine {
                                     unsigned int m12, unsigned int m13, unsigned int m14, int dst);
 }
 
-extern "C" {
-void *__aeabi_memcpy(void *dst, const void *src, size_t n);
-void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
-void *__aeabi_memclr(void *dst, size_t n);
-void *__aeabi_memclr4(void *dst, size_t n);
-
-int __aeabi_uidiv(int num, int den);
-long long __aeabi_uldivmod(unsigned int numLo, unsigned int numHi,
-                           unsigned int denLo, unsigned int denHi);
-long long __aeabi_f2lz(float value);
-}
-
 namespace {
     struct EngineArrayHeader {
         uint32_t count;
@@ -97,7 +86,7 @@ namespace {
         if (a->count >= a->capacity) {
             uint32_t oldCap = a->capacity;
             a->data = realloc(a->data, (size_t) oldCap * 2 * sizeof(T));
-            __aeabi_memclr4((T *) a->data + oldCap, oldCap * sizeof(T));
+            memset((T *) a->data + oldCap, 0, oldCap * sizeof(T));
             a->capacity = oldCap * 2;
         }
         ((T *) a->data)[a->count] = item;
@@ -133,7 +122,7 @@ namespace AbyssEngine {
         if (extra == 0) {
             dstMatrix = &local;
         } else {
-            __aeabi_memcpy(&local, srcMatrix, 0x3c);
+            memcpy(&local, srcMatrix, 0x3c);
             local *= *extra;
             dstMatrix = &transformed;
             srcMatrix = &local;
@@ -569,7 +558,7 @@ namespace AbyssEngine {
             glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
 
             if (engine->statsEnabled != 0) {
-                int tris = __aeabi_uidiv((int) mesh->indexCount, 3);
+                int tris = (int) ((unsigned) mesh->indexCount / (unsigned) 3);
                 if (engine->statsBucketFlag == 0) {
                     engine->drawCallCountA += 1;
                     engine->triangleCountA += tris;
@@ -837,7 +826,7 @@ namespace AbyssEngine {
             float *posFloats = (float *) m->positions;
             unsigned int n3 = vcount * 3;
             for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) __aeabi_uidiv((int) i, 3);
+                int axis = (int) ((unsigned) i / (unsigned) 3);
                 axis = (int) i - axis * 3;
                 float v = AbyssEngine::AEMath::VectorSignedToFloat((int) rawShorts[i], mode);
                 posFloats[i] = v;
@@ -867,7 +856,7 @@ namespace AbyssEngine {
             float *posFloats = (float *) m->positions;
             unsigned int n3 = vcount * 3;
             for (unsigned int i = 0; i < n3; ++i) {
-                int axis = (int) __aeabi_uidiv((int) i, 3);
+                int axis = (int) ((unsigned) i / (unsigned) 3);
                 axis = (int) i - axis * 3;
                 float v = AbyssEngine::AEMath::VectorSignedToFloat(rawInts[i], mode);
                 posFloats[i] = v;
@@ -990,7 +979,7 @@ namespace AbyssEngine {
                 m->binormals = bin;
                 m = *slot;
 
-                unsigned int triCount = (unsigned int) __aeabi_uidiv((int) (unsigned short) m->indexCount, 3);
+                unsigned int triCount = (unsigned int) ((unsigned) (unsigned short) m->indexCount / (unsigned) 3);
                 float *accum = (float *) ::operator new[](vcount * 0xc);
 
                 for (unsigned int b = 0; b < vcount * 3; ++b) accum[b] = 0.0f;
@@ -1105,7 +1094,7 @@ namespace AbyssEngine {
                 ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(xf->bounds());
             for (unsigned int c = 0; c < childCount; ++c) {
                 Mesh *childPtr = (Mesh *) ::operator new(0x88);
-                __aeabi_memclr4(childPtr, 0x88);
+                memset(childPtr, 0, 0x88);
                 childPtr->boundsRadiusSq = 1.0f;
                 childPtr->vboEligible = 1;
                 childPtr->vertexFormat = (*slot)->vertexFormat;
@@ -1201,7 +1190,7 @@ namespace AbyssEngine {
 
         void *posCpu = operator new[](n * 0xc);
         s->posCpu = (float *) posCpu;
-        __aeabi_memclr4((*out)->posCpu, n * 0xc);
+        memset((*out)->posCpu, 0, n * 0xc);
 
         s = *out;
         s->sharedSize = sharedSize ? 1 : 0;
@@ -1212,7 +1201,7 @@ namespace AbyssEngine {
         } else {
             void *sz = operator new[]((n << 1));
             s->sizeCpu = (int16_t *) sz;
-            __aeabi_memclr((*out)->sizeCpu, (n << 1));
+            memset((*out)->sizeCpu, 0, (n << 1));
         }
 
         unsigned short base = 0;
@@ -1435,7 +1424,7 @@ namespace AbyssEngine {
 
         Mesh *m = (Mesh *) operator new(0x88);
 
-        __aeabi_memclr4(m, 0x88);
+        memset(m, 0, 0x88);
         m->boundsRadiusSq = 1.0f;
 
         *out = m;
@@ -1447,35 +1436,35 @@ namespace AbyssEngine {
         unsigned int posBytes = (unsigned int) vertexCount * 0xc;
         void *p = operator new[](posBytes);
         m->positions = p;
-        __aeabi_memclr4(p, posBytes);
+        memset(p, 0, posBytes);
 
         if (vertexFormat & 0x10) {
             p = operator new[]((unsigned int) triCount * 6);
             m->indices = p;
-            __aeabi_memclr(p, (unsigned int) triCount * 6);
+            memset(p, 0, (unsigned int) triCount * 6);
         }
         if (vertexFormat & 2) {
             p = operator new[]((unsigned int) vertexCount << 3);
             m->texCoords = p;
-            __aeabi_memclr4(p, (unsigned int) vertexCount << 3);
+            memset(p, 0, (unsigned int) vertexCount << 3);
         }
         if (vertexFormat & 4) {
             p = operator new[](posBytes);
             m->normals = p;
-            __aeabi_memclr4(p, posBytes);
+            memset(p, 0, posBytes);
             if (*g_Mesh_tangentEnabledFlag != 0) {
                 p = operator new[](posBytes);
                 m->tangents = p;
-                __aeabi_memclr4(p, posBytes);
+                memset(p, 0, posBytes);
                 p = operator new[](posBytes);
                 m->binormals = p;
-                __aeabi_memclr4(p, posBytes);
+                memset(p, 0, posBytes);
             }
         }
         if (vertexFormat & 8) {
             p = operator new[]((unsigned int) vertexCount << 4);
             m->colors = p;
-            __aeabi_memclr4(p, (unsigned int) vertexCount << 4);
+            memset(p, 0, (unsigned int) vertexCount << 4);
         }
 
         return 1;
@@ -2170,7 +2159,7 @@ namespace AbyssEngine {
                 glBindTexture(0x8513, *outIds);
                 glTexParameteri(0x8513, 0x2800, 0x2601);
                 glTexParameteri(0x8513, 0x2801, 0x2601);
-                int faceH = __aeabi_uidiv((int) img->height, 6);
+                int faceH = (int) ((unsigned) img->height / (unsigned) 6);
                 unsigned int w = img->width;
                 const unsigned int faces[6] = {0x8517, 0x8516, 0x8519, 0x8515, 0x851a, 0x8518};
                 int faceBytes = faceH * (int) w;
@@ -2432,7 +2421,7 @@ namespace AbyssEngine {
 
         void *data = operator new[]((unsigned int) count << 2);
         curve->entries = data;
-        __aeabi_memcpy4(data, src, (unsigned int) count << 2);
+        memcpy(data, src, (unsigned int) count << 2);
         return 1;
     }
 }
@@ -2538,7 +2527,7 @@ namespace AbyssEngine {
             }
         }
 
-        __aeabi_memcpy(out, local, 0x40);
+        memcpy(out, local, 0x40);
     }
 }
 
@@ -2553,7 +2542,7 @@ namespace AbyssEngine {
             return -4;
 
         Mesh *m = (Mesh *) ::operator new(0x88);
-        __aeabi_memclr4(m, 0x88);
+        memset(m, 0, 0x88);
         m->boundsRadiusSq = 1.0f;
         *out = m;
         m->material = mat;
@@ -2628,7 +2617,7 @@ namespace AbyssEngine {
                 (*out)->animation = new Transform();
                 for (unsigned int s = 0; s < subCount; ++s) {
                     Mesh *childPtr = (Mesh *) ::operator new(0x88);
-                    __aeabi_memclr4(childPtr, 0x88);
+                    memset(childPtr, 0, 0x88);
                     childPtr->boundsRadiusSq = 1.0f;
                     childPtr->vboEligible = 1;
                     childPtr->vertexFormat = (*out)->vertexFormat;
@@ -2657,7 +2646,7 @@ namespace AbyssEngine {
             Transform *xf = (*out)->animation;
             if (xf != 0) {
                 xf->CollectAnimationData();
-                long long t = __aeabi_f2lz(0.0f);
+                long long t = (long long) (0.0f);
                 xf->SetAnimationRangeInTime(t, t);
             }
             return 1;
@@ -2684,7 +2673,7 @@ namespace AbyssEngine {
         if (extra == 0) {
             dstMatrix = &local;
         } else {
-            __aeabi_memcpy(&local, srcMatrix, 0x3c);
+            memcpy(&local, srcMatrix, 0x3c);
             local *= *extra;
             dstMatrix = &transformed;
             srcMatrix = &local;
@@ -2790,7 +2779,9 @@ namespace AbyssEngine {
         unsigned int num = (unsigned int) ((time - segStart)) << 12;
         unsigned int numHi = (unsigned int) (((time - segStart)) >> 20);
         unsigned int den = (unsigned int) (segEnd - segStart);
-        long long tq = __aeabi_uldivmod(num, numHi, den, (unsigned int) ((segEnd - segStart) >> 32));
+        long long tq = (((unsigned long long) (numHi) << 32 | (unsigned) (num)) /
+                        ((unsigned long long) ((unsigned int) ((segEnd - segStart) >> 32)) << 32 |
+                         (unsigned) (den)));
         unsigned int t = (unsigned int) tq;
 
         if (tag == 2) {

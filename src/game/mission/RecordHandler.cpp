@@ -21,6 +21,7 @@
 #include "game/ship/Agent.h"
 
 #include <jni.h>
+#include <openssl/sha.h>
 #include <cstdint>
 #include <cstddef>
 
@@ -118,12 +119,6 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ReleaseOrigami
     JNIEnv *env, jobject /*thiz*/, jstring value) {
     env->ReleaseStringUTFChars(value, g_android_origami_super_club);
 }
-
-extern "C" void SHA256_Init(void *c);
-
-extern "C" void SHA256_Update(void *c, const void *data, int n);
-
-extern "C" void SHA256_Final(unsigned char *md, void *c);
 
 void AEFile_ReadBool(void *out, unsigned int fd);
 

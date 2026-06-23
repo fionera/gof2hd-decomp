@@ -22,9 +22,7 @@
 
 #include "engine/core/ApplicationManager.h"
 
-#define __aeabi_memcpy __aeabi_memcpy_engine_unused
 #include "engine/render/Engine.h"
-#undef __aeabi_memcpy
 #include "engine/core/GameText.h"
 #include "game/ui/Layout.h"
 #include "game/mission/Mission.h"

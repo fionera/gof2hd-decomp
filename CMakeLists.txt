@@ -66,3 +66,6 @@ target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/
 
 # libzip 0.9.3 (asset/APK archive access)
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libzip")
+
+# OpenSSL libcrypto (vendored SHA-256 API subset for record integrity hashing)
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/crypto")

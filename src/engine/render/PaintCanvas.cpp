@@ -632,7 +632,6 @@ void paintcanvas_ext_init_setpersp(void *self, float a, float b, float c);
 
 void paintcanvas_ext_draw_mesh(void *, void *);
 
-extern "C" unsigned int __aeabi_uidiv(unsigned int, unsigned int);
 
 int paintcanvas_ext_font_get_yoff(void *);
 
@@ -2445,7 +2444,7 @@ int PaintCanvas::MeshGetTriCount(AbyssEngine::Mesh *mesh) {
         } else {
             tri = paintcanvas_ext_transform_tricount(this, mesh->animation);
         }
-        int q = (int) __aeabi_uidiv(mesh->indexCount, 3);
+        int q = (int) ((unsigned) (mesh->indexCount) / (unsigned) (3));
         return q + tri;
     }
     return 0;

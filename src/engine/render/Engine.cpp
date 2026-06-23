@@ -27,10 +27,7 @@ bool AbyssEngine::Engine::fogEnabled = false;
 #include "engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
 #include <cstdarg>
-
-extern "C" void *__aeabi_memcpy(void *dest, const void *src, unsigned long n);
-
-extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
+#include <cstring>
 
 // OpenGL ES 1.x fixed-function entry points. The binary provides these as
 // internal no-op stubs (they are NOT imported from the GL driver), so they are
@@ -804,7 +801,7 @@ void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
     shader = (*this->shaders)[shaderIndex];
     shader->UpdateMeshData(mesh, this);
     if (mesh != 0) {
-        uint32_t triangles = __aeabi_uidiv(mesh->indexCount, 3);
+        uint32_t triangles = ((unsigned) (mesh->indexCount) / (unsigned) (3));
         (*this->triangleCounts)[shaderIndex] += triangles;
     }
 }
@@ -968,7 +965,7 @@ void Engine::SetOrthoMatrix(float *projection, float *view, bool multiply) {
         }
         if (multiply) {
             float local[16];
-            __aeabi_memcpy(local, view, 0x40);
+            memcpy(local, view, 0x40);
             esMatrixMultiply(this->projMatrix, local, this->projMatrix);
         }
     }
@@ -1278,7 +1275,7 @@ void Engine::SetModelMatrix(const Matrix &matrix) {
             m[2], m[6], m[10], 0.0f,
             m[3], m[7], m[11], 1.0f,
         };
-        __aeabi_memcpy(self->modelMatrixGL, gl, 0x40);
+        memcpy(self->modelMatrixGL, gl, 0x40);
         Vector tmp;
         if (self->lightDirty[0] == 0.0f) {
             tmp = AbyssEngine::AEMath::MatrixInverseRotateVector(
@@ -1394,7 +1391,7 @@ void Engine::SetWorldViewMatrix(const Matrix &matrix) {
             m[2], m[6], m[10], 0.0f,
             m[3], m[7], m[11], 1.0f,
         };
-        __aeabi_memcpy(this->worldViewMatrixGL, gl, 0x40);
+        memcpy(this->worldViewMatrixGL, gl, 0x40);
         esMatrixMultiply(this->worldViewProjMatrix, gl, this->projMatrix);
     } else {
         MatrixGetGL(matrix, this->uvMatrixGL);

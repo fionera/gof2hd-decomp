@@ -191,7 +191,6 @@ static inline Status *PE_status() { return Status::gStatus; }
 
 
 
-extern "C" int __aeabi_idiv(int, int);
 
 
 
@@ -724,7 +723,7 @@ bool PlayerEgo::explosionEnded() {
 }
 
 float PlayerEgo::getBoostPercentage() {
-    float den = (float) __aeabi_idiv(this->field_0xcc, 6);
+    float den = (float) (this->field_0xcc / 6);
     float d = (float) this->boostTimer / den;
     float r;
     if (d < 1.0f) {
