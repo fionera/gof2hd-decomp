@@ -1,4 +1,3 @@
-#include <new>
 #include "game/core/CheatHandler.h"
 #include "engine/core/KeyCode.h"
 
@@ -81,12 +80,4 @@ namespace AbyssEngine {
             }
         }
     }
-}
-
-void CheatHandler_ctor(void *cheats, void *keys) {
-    new(cheats) AbyssEngine::CheatHandler((AbyssEngine::KeyCode *) keys);
-}
-
-void CheatHandler_dtor(void *cheats) {
-    ((AbyssEngine::CheatHandler *) cheats)->~CheatHandler();
 }

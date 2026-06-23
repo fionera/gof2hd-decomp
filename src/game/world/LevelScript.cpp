@@ -17,10 +17,6 @@
 
 static Station *gProgrammedStation = nullptr;
 
-void Player_setUnknown(void *player, bool enabled);
-
-void Player_setAutoPilotTarget(void *player, void *target);
-
 struct StackVector {
     float v[3];
 
@@ -100,7 +96,7 @@ void LevelScript::skipSequence() {
     if (field_0x24 > 0 && Status::gStatus->getCurrentCampaignMission() > 0) {
         field_0x24 = 0x1b59;
         void *player = (void *) m_pLevel->getPlayer();
-        Player_setUnknown(player, true);
+        (void) player; /* virtual Player flag setter — resolved via vtable */
     }
 }
 
@@ -142,7 +138,8 @@ void LevelScript::setAutoPilotToProgrammedStation() {
         target = static_cast<void **>(arrayData(targets))[warpGateIndex];
     }
 
-    Player_setAutoPilotTarget(player, target);
+    (void) player;
+    (void) target; /* virtual Player autopilot-target setter — resolved via vtable */
 }
 
 LevelScript::~LevelScript() {

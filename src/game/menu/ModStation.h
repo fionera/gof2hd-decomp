@@ -202,6 +202,23 @@ public:
     void showDlcMenu();
 
     void showMapWindow();
+
+private:
+    void cacheButtonPositions();
+
+    void launchModule(int module, int arg);
+
+    void finishMissionReward();
+
+    void handleChoiceDeclineTail();
+
+    void handleChoiceDecline(int x, int y);
+
+    void handleMainButtons(int x, int y);
+
+    void handleMissionComplete();
+
+    void handleCampaignTransition(int cm);
 };
 
 #endif

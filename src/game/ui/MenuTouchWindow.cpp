@@ -1,4 +1,5 @@
 #include "game/ui/MenuTouchWindow.h"
+#include "game/menu/ModStation.h"
 #include "engine/core/AbyssEngine.h"
 #include "game/ui/TouchSlider.h"
 #include "engine/render/PaintCanvas.h"
@@ -172,8 +173,6 @@ void _mtw_GameRecord_load(void *gr);
 void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
 
 void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
-
-void _mtw_ModStation_setGameLoaded(void *ms);
 
 void _mtw_TouchButton_getPosition(void *out, void *btn);
 
@@ -1113,7 +1112,7 @@ int MenuTouchWindow::loadGame(int slot) {
             ::operator delete(_mtw_GameRecord_dtor(rec));
             void *app = *(void **) gLoadAppHolder;
             void *ms = _mtw_AppMgr_GetApplicationModule(*(void **) app, 5);
-            _mtw_ModStation_setGameLoaded(ms);
+            ((ModStation *) ms)->setGameLoaded();
             *(int *) *(void **) gLoadResetCell = 0;
             _mtw_AppMgr_SetCurrentApplicationModule(*(void **) app, 5);
             return 1;

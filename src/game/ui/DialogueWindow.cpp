@@ -16,7 +16,6 @@
 #include "game/core/String.h"
 #include "game/core/Globals.h"
 #include "game/ui/TouchButton.h"
-#include "game/menu/ModStation.h"
 
 
 struct EngineSoundConfig {
@@ -643,39 +642,4 @@ void DialogueWindow::draw() {
 
 void DialogueWindow::setLevel(Level *level) {
     this->level = level;
-}
-
-void DialogueWindow_ctor_ou(DialogueWindow *dw) {
-    new(dw) DialogueWindow();
-}
-
-void DialogueWindow_ctor_mission_ou(DialogueWindow *dw, void *mission,
-                                    int level, int kind) {
-    new(dw) DialogueWindow((Mission *) mission, (Level *) (intptr_t) level, kind);
-}
-
-void DialogueWindow_ctor_msg_ou(DialogueWindow *dw, int titleStr,
-                                int bodyStr, int *parts) {
-    new(dw) DialogueWindow((String *) (intptr_t) titleStr, (String *) (intptr_t) bodyStr, parts);
-}
-
-void DialogueWindow_setMission_ou(void *dw, void *mission, int kind) {
-    ((DialogueWindow *) dw)->set((Mission *) mission, kind, -1);
-}
-
-void DialogueWindow_update_ou(int dw) {
-    ((DialogueWindow *) (intptr_t) dw)->update(0);
-}
-
-int DialogueWindow_OnTouchEnd_ote(int dw, int xy) {
-    return ((DialogueWindow *) (intptr_t) dw)->OnTouchEnd(xy, xy);
-}
-
-void DialogueWindow_dtor_ote(DialogueWindow *dw) {
-    dw->~DialogueWindow();
-}
-
-void DialogueWindow_draw_r2d(void *modStation) {
-    DialogueWindow * dw = ((ModStation *) modStation)->dialogueWindow;
-    if (dw != 0) dw->draw();
 }

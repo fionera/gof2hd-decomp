@@ -286,6 +286,9 @@ AbyssEngine::ApplicationManager *ApplicationManager::gAppManager = nullptr;
 #include "game/mission/RecordHandler.h"
 #include "game/world/SolarSystem.h"
 #include "game/core/String.h"
+#include "engine/math/BoundingSphere.h"
+
+#include <new>
 
 float VectorSignedToFloat(int v, int mode);
 
@@ -306,8 +309,6 @@ void FileRead_ctor(void *self);
 void *FileRead_dtor(void *self);
 
 float VectorScale(void *vec, float scalar);
-
-void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
 
 void *Galaxy_dtor(void *g);
 
@@ -1376,7 +1377,7 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
                     VectorScale(v, mag);
                 }
                 bound = ::operator new(0x48);
-                BoundingSphere_ctor(bound, c[2], c[1], c[0], v[0]);
+                new(bound) BoundingSphere(c[2], c[1], c[0], 0.0f, 0.0f, 0.0f, v[0]);
                 pos += 5;
             } else {
                 pos += 1;

@@ -65,11 +65,7 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 
-void *MGame_opnew(unsigned sz);
-
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
-
-void applyThrust(MGame *self, int y);
 
 uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
 
@@ -1772,8 +1768,7 @@ void MGame::startChargingJumpDrive() {
     if (((Ship *) (Status::gStatus->getShip()))->hasCargo(0x7a, 1) == 0) {
         ChoiceWindow *w = this->choiceWindow;
         if (w == 0) {
-            w = (ChoiceWindow *) MGame_opnew(0x5c);
-            new(w) ChoiceWindow();
+            w = new ChoiceWindow();
             this->choiceWindow = w;
         }
         void *txt = ((GameText *) (*(int *) Status::gStatus))->getText(0x243);
@@ -1798,8 +1793,7 @@ void MGame::startChargingJumpDrive() {
     if (((Item *) (0))->getAmount() < cost) {
         ChoiceWindow *w = this->choiceWindow;
         if (w == 0) {
-            w = (ChoiceWindow *) MGame_opnew(0x5c);
-            new(w) ChoiceWindow();
+            w = new ChoiceWindow();
             this->choiceWindow = w;
         }
         int hc2 = Status::gStatus->hardCoreMode();
@@ -1971,11 +1965,6 @@ void MGame::reset() {
     Status::gStatus->field_0x18c = 1;
 }
 
-void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager * appMgr);
-
-double *MGame_accelCtxValue();
-
-
 static int g_accelTune;
 
 // g_accelTune holds a pointer (as int) to the accelerometer-tuning config.
@@ -2025,11 +2014,10 @@ void MGame::handleAccelerometer() {
 afterYaw: {
         AbyssEngine::ApplicationManager *appMgr = this->applicationManager;
 
-        MGame_accelCtxBegin(appMgr);
-        double *v1 = MGame_accelCtxValue();
+        double *v1 = ((Engine *) appMgr->GetEngine())->GetAccelValue();
         double d0 = *v1;
-        MGame_accelCtxBegin(appMgr);
-        AccelCtxValue *c2 = (AccelCtxValue *) MGame_accelCtxValue();
+        AccelCtxValue *c2 =
+            (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
 
         float base = (float) d0;
         AccelTune *tune = (AccelTune *) (intptr_t) g_accelTune;
@@ -2037,8 +2025,8 @@ afterYaw: {
         float ref = tune->refValue;
         char sign = tune->invertSign;
 
-        MGame_accelCtxBegin(appMgr);
-        AccelCtxValue *c3 = (AccelCtxValue *) MGame_accelCtxValue();
+        AccelCtxValue *c3 =
+            (AccelCtxValue *) ((Engine *) appMgr->GetEngine())->GetAccelValue();
 
         float a, b;
         if (sign == 0) {
@@ -2125,7 +2113,7 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
                     int ok = (f8 == 0) ||
                              (f8 == 0x20 && self->activeTouchId != touch);
                     if (ok) {
-                        float thrust;
+                        bool apply = false;
                         if (self->thrustEngaged == 0) {
                             float fy = (float) y;
                             float start = (float) self->thrustStartY;
@@ -2137,14 +2125,22 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
                                 int ny = dir + y;
                                 self->thrustResetX = 0;
                                 self->thrustStartY = ny;
-                                thrust = self->player->getThrust();
-                                self->thrustBase = (int) thrust;
-                                self->thrustEngaged = 1;
-                                applyThrust(self, y);
+                                self->thrustBase = (int) self->player->getThrust();
+                                apply = true;
                             }
                         } else {
+                            apply = true;
+                        }
+                        if (apply) {
                             self->thrustEngaged = 1;
-                            applyThrust(self, y);
+                            float divisor = *(float *) &(*g_resShipTune)[0x2f8 / 4];
+                            float t = ((float) self->thrustStartY - (float) y -
+                                       (float) self->thrustResetX) / divisor +
+                                      (float) self->thrustBase;
+                            if (t < 0.0f) t = 0.0f;
+                            if (t > 1.0f) t = 1.0f;
+                            self->player->setThrust(t);
+                            self->player->throttleChanged();
                         }
                     }
                 }
@@ -2743,9 +2739,8 @@ void MGame::dialogueEvent() {
         if (((Mission *) (Status::gStatus->getMission()))->getType() == 0xb) return;
     }
     if (this->dialogueWindow == 0) {
-        DialogueWindow *w = (DialogueWindow *) MGame_opnew(0x74);
-        DialogueWindow_ctor(w, Status::gStatus->getMission(), this->level, 0);
-        this->dialogueWindow = w;
+        this->dialogueWindow = new DialogueWindow(
+            (Mission *) (intptr_t) Status::gStatus->getMission(), this->level, 0);
     }
     this->player->setTurretMode(0);
     this->levelScript->resetCamera((Level *) (this->level) /* level: arg lost in decomp */);
@@ -2784,15 +2779,3 @@ int MGame::nextCamId(int cur) {
     return id;
 }
 
-static void *g_accelEngine = 0;
-
-void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager *appMgr) {
-    g_accelEngine = appMgr->GetEngine();
-    return g_accelEngine;
-}
-
-double *MGame_accelCtxValue() {
-    return ((Engine *) g_accelEngine)->GetAccelValue();
-}
-
-void *MGame_opnew(unsigned sz) { return ::operator new(sz); }

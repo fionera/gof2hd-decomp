@@ -1,8 +1,6 @@
 #include "engine/math/BoundingSphere.h"
 #include "engine/math/AEMath.h"
 
-#include <new>
-
 BoundingSphere::BoundingSphere(
     float x, float y, float z, float ex, float ey, float ez, float radius)
     : BoundingVolume(x, y, z, ex, ey, ez) {
@@ -44,13 +42,4 @@ int BoundingSphere::collide(float x, float y, float z) {
         return 1;
     }
     return BoundingVolume::collide(x, y, z);
-}
-
-void BoundingSphere_constructor(void *self, float cx, float cy, float cz,
-                                float radius, float ex, float ey, float ez) {
-    new(self) BoundingSphere(cx, cy, cz, ex, ey, ez, radius);
-}
-
-void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r) {
-    new(self) BoundingSphere(cx, cy, cz, 0.0f, 0.0f, 0.0f, r);
 }

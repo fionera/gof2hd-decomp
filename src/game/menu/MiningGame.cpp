@@ -530,12 +530,3 @@ void MiningGame::render2D() {
 
     oreText->clear();
 }
-
-void *MiningGame_new(int quality, int seed, void *hud) {
-    return new MiningGame(quality, seed, (Hud *) hud);
-}
-
-void *MiningGame_dtor(void *mg) {
-    if (mg) ((MiningGame *) mg)->~MiningGame();
-    return mg;
-}
