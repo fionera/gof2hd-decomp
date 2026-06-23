@@ -1,72 +1,93 @@
 #!/usr/bin/env python3
-"""relink.py - assemble the recovered objects into libgof2hdaa.so.
+"""relink.py - assemble the recovered match-build objects into libgof2hdaa.so.
 
-Final-assembly step toward symbol/byte parity (see docs/RELINK.md). The target was
-linked with NDK r18b **GNU gold 1.12** against Android platform stub libs + libc++.
-Those aren't extracted in every environment, so this script:
-  1. collects every match-build object (cmake-build-match/verify/base/*.o),
-  2. checks for the linker + sysroot stub libs,
-  3. links libgof2hdaa.so with the right SONAME / NEEDED / --build-id if it can,
-  4. otherwise prints exactly what's missing (so the gate is actionable, not silent).
+Links every match-build object (cmake-build-match/verify/base/**/*.o, recursively)
+into a shared object using the NDK r18b GNU gold linker, run *inside OrbStack* (the
+match toolchain is Linux-only, same as tools/verify/orbcc). Produces a .so suitable
+for whole-binary symbol comparison via tools/symdiff.py.
 
-After a successful link, run:  python3 tools/symdiff.py  (must show 0 extra / 0 missing)
+Handles the three real link blockers found in this tree:
+  * objects that emit R_ARM_REL32 under -fpic are recompiled -fPIC (to a temp dir),
+  * recovered_a3cc4.o (hand-asm loadAPK/loadAPKAndZip that references C-name
+    gZipMain/gZipPatch) is dropped -- ApkLoader.cpp supersedes it with the C++
+    FileInterfaceAndroid::gZipMain statics,
+  * crtbegin_so.o / crtend_so.o supply __dso_handle + init/fini.
+FMOD and other app-provided imports stay undefined (--unresolved-symbols=ignore-all),
+exactly as in the original .so.
+
+After a successful link, run:  python3 tools/symdiff.py
 """
-import os, sys, glob, shutil, subprocess
+import os, sys, glob, subprocess, tempfile, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BASE = os.path.join(ROOT, "cmake-build-match", "verify", "base")
 OUT = os.path.join(ROOT, "cmake-build-match", "libgof2hdaa.so")
 NDK = os.environ.get("NDK", "/opt/android-ndk-r18b")
-
+MACHINE = os.environ.get("GOF2_ORB_MACHINE", "ubuntu")
+GOLD = NDK + "/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/arm-linux-androideabi/bin/ld.gold"
+LIBDIR = NDK + "/platforms/android-16/arch-arm/usr/lib"
 SONAME = "libgof2hdaa.so"
-NEEDED = ["liblog.so", "libGLESv2.so", "libGLESv1_CM.so", "libEGL.so", "libandroid.so",
-          "libfmodex.so", "libfmodevent.so", "libm.so", "libdl.so", "libc.so"]
+NEEDED = ["log", "GLESv2", "GLESv1_CM", "EGL", "android", "m", "dl", "c"]
+# objects that duplicate a C++ TU and pull in undefined C-name globals
+DROP = {"recovered_a3cc4.o"}
 
 
-def find_gold():
-    for c in ("arm-linux-androideabi-ld.gold", "ld.gold", "arm-linux-gnueabihf-ld.gold"):
-        p = shutil.which(c)
-        if p:
-            return p
-    cand = os.path.join(NDK, "toolchains", "arm-linux-androideabi-4.9", "prebuilt")
-    for sub in glob.glob(os.path.join(cand, "*", "arm-linux-androideabi", "bin", "ld.gold")):
-        return sub
-    return None
+def orb(*cmd):
+    return subprocess.run(["orb", "-m", MACHINE, *cmd], capture_output=True, text=True)
+
+
+def link(objs):
+    cmd = [GOLD, "-shared", "-soname", SONAME, "--build-id",
+           "--unresolved-symbols=ignore-all", "--allow-multiple-definition",
+           os.path.join(LIBDIR, "crtbegin_so.o"), "-L", LIBDIR]
+    for n in NEEDED:
+        cmd += ["-l", n]
+    cmd += objs
+    cmd += [os.path.join(LIBDIR, "crtend_so.o"), "-o", OUT]
+    return orb(*cmd)
 
 
 def main():
-    objs = sorted(glob.glob(os.path.join(BASE, "*.o")))
-    print(f"[relink] recovered objects: {len(objs)} in {os.path.relpath(BASE, ROOT)}")
+    objs = [p for p in sorted(glob.glob(os.path.join(BASE, "**", "*.o"), recursive=True))
+            if os.path.basename(p) not in DROP]
+    print(f"[relink] objects: {len(objs)} (recursive, minus {len(DROP)} superseded)")
     if not objs:
-        print("[relink] BLOCKED: no objects. Build the match target first:")
-        print("         cmake --preset match && python3 tools/verify/verify.py")
+        print("[relink] BLOCKED: no objects. Run: python3 tools/verify/verify.py")
         return 2
-    gold = find_gold()
-    sysroot_lib = os.path.join(NDK, "platforms", "android-16", "arch-arm", "usr", "lib")
-    blockers = []
-    if not gold:
-        blockers.append("GNU gold linker not found (need NDK r18b arm-linux-androideabi-ld.gold; "
-                        "set $NDK or run tools/verify/setup.sh)")
-    if not os.path.isdir(sysroot_lib):
-        blockers.append(f"Android platform stub libs not found at {sysroot_lib} "
-                        "(extract NDK platforms/ to resolve liblog/libGLESv2/... )")
-    if blockers:
-        print("[relink] BLOCKED toward a real link:")
-        for b in blockers:
-            print("   - " + b)
-        print("[relink] (docs/RELINK.md: byte-identical needs gold 1.12 + version script + platform libs)")
-        return 2
-    cmd = [gold, "-shared", "-soname", SONAME, "--build-id", "-o", OUT]
-    for n in NEEDED:
-        cmd += ["-l", n[3:-3]]
-    cmd += ["-L", sysroot_lib, *objs]
-    print("[relink] linking:", " ".join(cmd[:8]), "...")
-    r = subprocess.run(cmd)
-    if r.returncode != 0:
-        print("[relink] link failed")
-        return r.returncode
-    print(f"[relink] wrote {OUT}\n[relink] now run: python3 tools/symdiff.py")
-    return 0
+    # First attempt; if gold reports objects needing -fPIC, rebuild those -fPIC and retry.
+    for attempt in range(3):
+        r = link(objs)
+        if r.returncode == 0:
+            print(f"[relink] wrote {os.path.relpath(OUT, ROOT)}\n[relink] now run: python3 tools/symdiff.py")
+            return 0
+        rel32 = sorted(set(re.findall(r'(\S+\.o): requires unsupported dynamic reloc R_ARM_REL32', r.stderr)))
+        if not rel32:
+            print("[relink] link failed:\n" + "\n".join(r.stderr.splitlines()[:20]))
+            return 1
+        print(f"[relink] {len(rel32)} object(s) need -fPIC; rebuilding: {[os.path.basename(x) for x in rel32]}")
+        flags = subprocess.run([". tools/verify/match_flags.sh; echo $GOF2_MATCH_CXXFLAGS"],
+                               shell=True, cwd=ROOT, capture_output=True, text=True).stdout.split()
+        tmp = tempfile.mkdtemp(prefix="relink_pic_")
+        fixed = {}
+        for o in rel32:
+            src = guess_src(o)
+            if not src:
+                print(f"[relink] cannot map {o} to a source; aborting"); return 1
+            po = os.path.join(tmp, os.path.basename(o))
+            cc = subprocess.run(["tools/verify/orbcc", *flags, "-fPIC", "-c", src, "-o", po],
+                                cwd=ROOT, capture_output=True, text=True)
+            if cc.returncode != 0:
+                print(f"[relink] -fPIC rebuild of {src} failed:\n{cc.stderr[:400]}"); return 1
+            fixed[os.path.abspath(o)] = po
+        objs = [fixed.get(os.path.abspath(o), o) for o in objs]
+    print("[relink] still failing after PIC retries"); return 1
+
+
+def guess_src(obj):
+    # base/<rel>.o  -> src/<rel>.cpp
+    rel = os.path.relpath(os.path.abspath(obj), BASE)
+    cand = os.path.join(ROOT, "src", rel[:-2] + ".cpp")
+    return cand if os.path.exists(cand) else None
 
 
 if __name__ == "__main__":
