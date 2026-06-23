@@ -140,7 +140,7 @@ namespace {
     unsigned char g_simTouchActive;
 }
 
-unsigned int F(unsigned int value) {
+extern "C" unsigned int F(unsigned int value) {
     const unsigned int *table = *g_hashTable;
     const unsigned int *col0 = table;
     const unsigned int *col1 = table + 0x100;

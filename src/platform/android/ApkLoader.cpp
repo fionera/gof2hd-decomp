@@ -1,6 +1,6 @@
 #include "engine/file/FileInterfaceAndroid.h"
 
-int loadAPK(const char *path) {
+extern "C" int loadAPK(const char *path) {
     void *za = zip_open(path, 0, 0);
     *FileInterfaceAndroid::gZipMain = za;
     if (za == 0)
@@ -14,7 +14,7 @@ int loadAPK(const char *path) {
     return 1;
 }
 
-int loadAPKAndZip(const char *apkPath, const char *patchPath) {
+extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath) {
     void *apk = zip_open(apkPath, 0, 0);
     *FileInterfaceAndroid::gZipMain = apk;
 

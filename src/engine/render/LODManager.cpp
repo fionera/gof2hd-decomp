@@ -112,7 +112,7 @@ Touch GetTouch(int index) {
     return touches[index];
 }
 
-void ndk_resetNativeItemInformationList() {
+extern "C" void ndk_resetNativeItemInformationList() {
     if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&
         Globals::cItemListID_02 != nullptr && Globals::cItemListID_03 != nullptr &&
         Globals::cItemListID_04 != nullptr) {

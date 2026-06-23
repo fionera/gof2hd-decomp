@@ -44,26 +44,26 @@ static bool g_speedUp;
 static float g_gamepadAxisX;
 static float g_gamepadAxisY;
 
-void ndk_checkPlaytimeAndSpendOfferwallCredits();
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits();
 
-void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
                        int width, int height);
 
-void ndk23_setRootDirectory(const char *path);
+extern "C" void ndk23_setRootDirectory(const char *path);
 
-void ndk23_setZipDirectory(const char *path);
+extern "C" void ndk23_setZipDirectory(const char *path);
 
 void ndk23_renderstep(int width, int height);
 
-int ndk23_getExitFlag();
+extern "C" int ndk23_getExitFlag();
 
-int ndk23_getScreenshotFlag();
+extern "C" int ndk23_getScreenshotFlag();
 
-void ndk23_resetScreenshotFlag();
+extern "C" void ndk23_resetScreenshotFlag();
 
-void ndk23_setCountryCode(unsigned int code);
+extern "C" void ndk23_setCountryCode(unsigned int code);
 
-void ndk23_handleAcceleration(float x, float y, float z);
+extern "C" void ndk23_handleAcceleration(float x, float y, float z);
 
 static int gRealWidth;
 static int gRealHeight;
@@ -80,7 +80,7 @@ static int gb_android_offerwallCreditAmount;
 AbyssEngine::Engine **AbyssEngine::Engine::g_pEngine;
 static AbyssEngine::Engine **&g_pEngine = AbyssEngine::Engine::g_pEngine;
 
-int loadAPKAndZip(const char *apkPath, const char *patchPath);
+extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath);
 
 void OnCreateApplication(AbyssEngine::Engine * engine);
 
@@ -199,32 +199,32 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
 }
 
-void ndk23_setRootDirectory(const char *path) {
+extern "C" void ndk23_setRootDirectory(const char *path) {
     rootDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
     std::strcpy(rootDirectory, path);
 }
 
-void ndk23_setZipDirectory(const char *path) {
+extern "C" void ndk23_setZipDirectory(const char *path) {
     ZIPDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
     std::strcpy(ZIPDirectory, path);
 }
 
-void ndk23_setCountryCode(unsigned int code) {
+extern "C" void ndk23_setCountryCode(unsigned int code) {
     countryCode = (code > 15) ? 0u : code;
 }
 
-int ndk23_getExitFlag() {
+extern "C" int ndk23_getExitFlag() {
     return forceExit;
 }
 
-int ndk23_getScreenshotFlag() {
+extern "C" int ndk23_getScreenshotFlag() {
     return 0;
 }
 
-void ndk23_resetScreenshotFlag() {
+extern "C" void ndk23_resetScreenshotFlag() {
 }
 
-void ndk_checkPlaytimeAndSpendOfferwallCredits() {
+extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() {
     if (Globals::status->getPlayingTime() >= 1) {
         int amount = gb_android_offerwallCreditAmount;
         if (amount > 0) {
@@ -237,7 +237,7 @@ void ndk_checkPlaytimeAndSpendOfferwallCredits() {
 
 double gAccelFilterState[6];
 
-void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
                        int width, int height) {
     glViewport(0, 0, width, height);
 
@@ -263,7 +263,7 @@ void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
 
 static int rotateAccelValues;
 
-void ndk23_handleAcceleration(float x, float y, float z) {
+extern "C" void ndk23_handleAcceleration(float x, float y, float z) {
     double tiltA, tiltB;
     if (rotateAccelValues != 0) {
         tiltA = -x;
@@ -416,7 +416,7 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer
 
 void ExitFunction();
 
-void ndk23_newrender(long long now) {
+extern "C" void ndk23_newrender(long long now) {
     ApplicationManager *manager = (*g_pEngine)->appManager;
     manager->SetExitCallback(&ExitFunction);
 
@@ -469,7 +469,7 @@ void ndk23_newrender(long long now) {
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
+extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
                                float x, float y) {
     ApplicationManager *manager = (*g_pEngine)->appManager;
     int px = static_cast<int>(x);
@@ -484,12 +484,12 @@ void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
     }
 }
 
-void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase,
+extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase,
                                   float x, float y) {
     ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
 }
 
-void ndk23_ndkDone() {
+extern "C" void ndk23_ndkDone() {
     AbyssEngine::Engine *engine = *g_pEngine;
     if (engine != nullptr) {
         engine->Release();
@@ -718,9 +718,9 @@ extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits(
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-int loadAPK(const char *path);
+extern "C" int loadAPK(const char *path);
 
-void ndk23_Init(const char *apkPath, int width, int height) {
+extern "C" void ndk23_Init(const char *apkPath, int width, int height) {
     glViewport(0, 0, width, height);
 
     for (int i = 0; i < 6; ++i)
@@ -743,7 +743,7 @@ void ndk23_Init(const char *apkPath, int width, int height) {
     engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }
 
-void ndk23_resize(int width, int height) {
+extern "C" void ndk23_resize(int width, int height) {
     glViewport(0, 0, width, height);
 
     gRealHeight = height;
@@ -752,11 +752,11 @@ void ndk23_resize(int width, int height) {
     simulateTouch(Engine::gEngine);
 }
 
-void ndk23_setDisplayHeightAndWidth(int height, int width) {
+extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) {
     (void) height;
     (void) width;
 }
 
-int ndk23_getCurrentFiredStatus() {
+extern "C" int ndk23_getCurrentFiredStatus() {
     return 0;
 }

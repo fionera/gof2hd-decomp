@@ -22,7 +22,7 @@ void RemoveTouches();
 
 Touch GetTouch(int index);
 
-void ndk_resetNativeItemInformationList();
+extern "C" void ndk_resetNativeItemInformationList();
 
 class LODManager {
 public:

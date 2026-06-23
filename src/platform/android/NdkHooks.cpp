@@ -27,6 +27,8 @@ static int gi_iap_buy_credit_pack3_pressed;
 static int gi_iap_buy_credit_pack4_pressed;
 static int gi_iap_buy_credit_pack5_pressed;
 
+extern "C" {
+
 int setBaughtCredits(int amount) {
     int *packFlag;
     if (amount == 10000000) {
@@ -229,3 +231,5 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
         for (int row = 0; row < 5; ++row)
             env->ReleaseStringUTFChars(elems[col][row], utf[col][row]);
 }
+
+} // extern "C"
