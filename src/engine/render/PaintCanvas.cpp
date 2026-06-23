@@ -1,4 +1,5 @@
 #include "engine/render/PaintCanvas.h"
+#include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/Material.h"
 #include "engine/core/Array.h"

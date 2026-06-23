@@ -1,6 +1,7 @@
 
 
 #include <GLES2/gl2.h>
+#include <GLES/gl.h>
 #include "engine/core/AbyssEngine.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
@@ -36,38 +37,6 @@ extern "C" unsigned int __aeabi_uidiv(unsigned int num, unsigned int den);
 // absent from <GLES2/gl2.h> and are declared locally. All ES 2.0 functions used
 // here (glColorMask, glDepthFunc, glGetString, glDrawElements, glDrawArrays,
 // glGetIntegerv, glLineWidth, glCullFace, glGetError, ...) come from gl.h.
-extern "C" void glMatrixMode(unsigned int mode);
-
-extern "C" void glLoadMatrixf(const float *matrix);
-
-extern "C" void glLoadIdentity();
-
-extern "C" void glScalef(float x, float y, float z);
-
-extern "C" void glMaterialf(unsigned int face, unsigned int pname, float value);
-
-extern "C" void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
-
-extern "C" void glTexCoordPointer(int size, unsigned int type, int stride, const void *ptr);
-
-extern "C" void glNormalPointer(unsigned int type, int stride, const void *ptr);
-
-extern "C" void glColorPointer(int size, unsigned int type, int stride, const void *ptr);
-
-extern "C" void glColor4f(float red, float green, float blue, float alpha);
-
-extern "C" void glTexEnvf(unsigned int target, unsigned int pname, float value);
-
-extern "C" void glEnableClientState(unsigned int array);
-
-extern "C" void glDisableClientState(unsigned int array);
-
-extern "C" void glMaterialfv(unsigned int face, unsigned int pname, const void *params);
-
-extern "C" void glLightModelfv(unsigned int pname, const void *params);
-
-extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
-
 void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
 void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
 void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
@@ -1357,7 +1326,7 @@ void Engine::LightSetLight(unsigned int light) {
         values[2] = *(const uint32_t *) &dir.z;
         values[3] = *(const uint32_t *) &this->lightDirty[index];
         if (g_Engine_useShaders == 0) {
-            glLightfv(light, 0x1203, values);
+            glLightfv(light, 0x1203, reinterpret_cast<const float *>(values));
         }
     }
     return;
