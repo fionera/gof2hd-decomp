@@ -24,25 +24,20 @@ namespace AbyssEngine {
         IApplicationModule() {
         }
 
-        virtual ~IApplicationModule() {
-        }
+        virtual ~IApplicationModule() = 0;
 
-        virtual int OnInitialize() { return 0; }
+        virtual int OnInitialize() = 0;
 
-        virtual void OnRelease() {
-        }
+        virtual void OnRelease() = 0;
 
-        virtual long long OnKeyPress(long long key, long long) { return key; }
-        virtual long long OnKeyRelease(long long key, long long) { return key; }
+        virtual long long OnKeyPress(long long key, long long) = 0;
+        virtual long long OnKeyRelease(long long key, long long) = 0;
 
-        virtual void OnTouchBegin(int, int) {
-        }
+        virtual void OnTouchBegin(int, int) = 0;
 
-        virtual void OnTouchMove(int, int) {
-        }
+        virtual void OnTouchMove(int, int) = 0;
 
-        virtual void OnTouchEnd(int, int) {
-        }
+        virtual void OnTouchEnd(int, int) = 0;
 
         virtual void OnTouchBegin(int x, int y, void *data);
 
@@ -50,20 +45,17 @@ namespace AbyssEngine {
 
         virtual void OnTouchEnd(int x, int y, void *data);
 
-        virtual void OnUpdate() {
-        }
+        virtual void OnUpdate() = 0;
 
-        virtual void OnRender3D() {
-        }
+        virtual void OnRender3D() = 0;
 
-        virtual void OnRender2D() {
-        }
+        virtual void OnRender2D() = 0;
 
         virtual void OnSuspend();
 
         virtual void OnResume();
 
-        virtual int ShowLoadingScreen() { return 0; }
+        virtual int ShowLoadingScreen() = 0;
 
         void SetApplicationManager(ApplicationManager *manager);
     };

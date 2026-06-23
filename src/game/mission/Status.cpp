@@ -1143,19 +1143,6 @@ void Status::removeMission(Mission *mission) {
 
 static int g_ncmAchTable[3] = {0, 0, 0};
 
-static void Status_addMissionTail(Status * self, Mission * m);
-
-static void Status_addMissionTail(Status * self, Mission * m) {
-    Array<Mission *> *missions = self->getMissions();
-    for (unsigned i = 0; i < missions->size(); i = i + 1) {
-        if ((*missions)[i] == 0) {
-            (*missions)[i] = m;
-            return;
-        }
-    }
-    missions->push_back(m);
-}
-
 struct Step {
     short type;
     int param;
@@ -1246,6 +1233,7 @@ void Status::nextCampaignMission(bool advance) {
         this->ship->addEquipment(((Item *) 0)->makeItem());
     }
 
+    Mission *tailMission;
     if ((unsigned) step < sizeof(kSteps) / sizeof(kSteps[0])) {
         const Step &s = kSteps[step];
         Mission *m;
@@ -1254,13 +1242,22 @@ void Status::nextCampaignMission(bool advance) {
         } else {
             m = new Mission(s.type, s.param, s.station);
         }
-        if (s.campaign)
+        if (s.campaign) {
             setCampaignMission(m);
-        else
-            Status_addMissionTail(this, m);
+            return;
+        }
+        tailMission = m;
     } else {
-        Status_addMissionTail(this, new Mission(0xb, 0, 100));
+        tailMission = new Mission(0xb, 0, 100);
     }
+
+    for (unsigned i = 0; i < missions->size(); i = i + 1) {
+        if ((*missions)[i] == 0) {
+            (*missions)[i] = tailMission;
+            return;
+        }
+    }
+    missions->push_back(tailMission);
 }
 
 void Status::setStation(Station *s) {

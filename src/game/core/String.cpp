@@ -296,10 +296,6 @@ int String::GetStringLength(const char *s) {
     return (int) (p - s);
 }
 
-int String_GetStringLength(const char *s) {
-    return String::GetStringLength(s);
-}
-
 void String::ToLowerCase() {
     for (int i = 0; i < this->length; i++) {
         short c = (short) this->data[i];

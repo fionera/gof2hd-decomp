@@ -2492,18 +2492,13 @@ namespace AbyssEngine {
 
     void MeshRelease(Engine * engine, Mesh * *slot);
 
-    static void initMesh(Mesh *m) {
-        __aeabi_memclr4(m, 0x88);
-
-        m->boundsRadiusSq = 1.0f;
-    }
-
     int MeshCreateFromFile(Engine *engine, const char *path, Mesh **out, Material *mat) {
         if (engine == 0 || path == 0)
             return -4;
 
         Mesh *m = (Mesh *) ::operator new(0x88);
-        initMesh(m);
+        __aeabi_memclr4(m, 0x88);
+        m->boundsRadiusSq = 1.0f;
         *out = m;
         m->material = mat;
 
@@ -2577,7 +2572,8 @@ namespace AbyssEngine {
                 (*out)->animation = new Transform();
                 for (unsigned int s = 0; s < subCount; ++s) {
                     Mesh *childPtr = (Mesh *) ::operator new(0x88);
-                    initMesh(childPtr);
+                    __aeabi_memclr4(childPtr, 0x88);
+                    childPtr->boundsRadiusSq = 1.0f;
                     childPtr->vboEligible = 1;
                     childPtr->vertexFormat = (*out)->vertexFormat;
                     childPtr->material = mat;

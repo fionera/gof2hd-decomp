@@ -70,8 +70,6 @@ int String_StrLen_char(String *self, const char *s);
 
 int String_StrLen_wchar(String *self, const uint16_t *s);
 
-int String_GetStringLength(const char *s);
-
 void String_PrintOut(String * self);
 
 #endif

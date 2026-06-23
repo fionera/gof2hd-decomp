@@ -61,10 +61,6 @@ namespace AbyssEngine {
     }
 }
 
-static inline float AEMath_VectorLength(Vector *v) {
-    return AbyssEngine::AEMath::VectorLength(*v);
-}
-
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 
 uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
@@ -464,7 +460,7 @@ void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
     } else {
         if (this->menuTime >= 1000) goto tail;
         this->flCameraRoll = 0;
-        float len = AEMath_VectorLength(TFC_getCamOffset(this->camera));
+        float len = AbyssEngine::AEMath::VectorLength(*TFC_getCamOffset(this->camera));
         *(volatile float *) (buf + 4) = fy;
         *(volatile float *) (buf + 0) = fx;
         this->flCameraRoll = len;

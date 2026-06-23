@@ -197,7 +197,3 @@ unsigned int Objective::achieved(int value) {
     return result;
 }
 
-void Objective_ctor_akw(int o, int type, int value, int calcValue, Level *level) {
-    new((void *) (intptr_t) o) Objective(type, value, calcValue, level);
-}
-

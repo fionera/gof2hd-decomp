@@ -4,7 +4,7 @@
 
 namespace AbyssEngine {
     ResourceTexture::ResourceTexture(const char *name, float value) {
-        uint32_t len = String_GetStringLength(name);
+        uint32_t len = String::GetStringLength(name);
         this->name = new char[len + 1U];
         memcpy(this->name, name, len + 1U);
         this->value = value;
@@ -12,7 +12,7 @@ namespace AbyssEngine {
 
     ResourceTexture::ResourceTexture(const String &name, float value) {
         char *utf8 = String_GetAEChar(const_cast<String *>(&name));
-        uint32_t len = String_GetStringLength(utf8);
+        uint32_t len = String::GetStringLength(utf8);
         this->name = new char[len + 1U];
         memcpy(this->name, utf8, len + 1U);
         this->value = value;

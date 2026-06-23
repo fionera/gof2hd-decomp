@@ -24,29 +24,7 @@ void Hud_loadImages(Hud * self);
 
 void Hud_buildQuickMenu(Hud *self, int menuType);
 
-#define HUD_INLINE static inline __attribute__((always_inline))
-HUD_INLINE
-void refreshQuickMenu(Hud * self);
-HUD_INLINE
-
-void hudEventBuild(Hud *self, int eventId, void *ego, int arg);
-
-static void buildQuickMenu(Hud *self, int menuType);
-
-static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y);
-
-static void drawRadar(Hud * self);
-
-static void drawBars(Hud *self, void *ego);
-
-static void drawSecondaryWeaponPanel(Hud * self);
-static void drawMissionBanner(Hud * self);
-static void drawMessage(Hud * self);
-HUD_INLINE
-void drawChallengeModeScoreImpl(Hud * self);
-HUD_INLINE
-
-void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw);
+static unsigned int g_Hud_heImportantMask = 0;
 
 void drawControlsInterface(long long t0, long long t1, PlayerEgo *ego, bool letterbox,
                            unsigned int x, unsigned int y) {
@@ -202,20 +180,134 @@ uint8_t Hud::jumpMapSelected() {
     return this->jumpMapSelectedFlag;
 }
 
+static void **g_Hud_font = nullptr;
+static void **g_Hud_canvas2 = nullptr;
+static void **g_Hud_screenW = nullptr;
+static Level **g_Hud_level = nullptr;
+
 void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsigned int x, unsigned int y) {
     (void) t0;
     (void) t1;
+    (void) x;
+    (void) y;
 
     this->letterbox = (unsigned char) letterbox;
 
-    drawReticleAndBrackets(this, ego, x, y);
-    drawRadar(this);
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
-    drawBars(this, ego);
-    drawSecondaryWeaponPanel(this);
+    // --- reticle and lock brackets ---
+    canvas->DrawImage2D((unsigned) this->reticleImage, this->field_0x42c, 0);
+    {
+        unsigned char flags = this->touchFlags;
+        unsigned short bx, by;
+        int img;
+        if ((flags & 0x40) != 0) {
+            bx = this->reticleX;
+            by = this->reticleY;
+            img = this->lockBracketLockedImage;
+            this->lockBracketX = bx;
+            this->lockBracketY = by;
+        } else {
+            bx = this->lockBracketX;
+            by = this->lockBracketY;
+            img = this->lockBracketImage;
+        }
+        canvas->DrawImage2D((unsigned) img, bx, by, '\x11');
+    }
+
+    // --- radar / orbit marker ---
+    {
+        Status *st = Status::gStatus;
+        bool show = false;
+        if (st->inAlienOrbit() == 0) {
+            show = true;
+        } else if (st->getCurrentCampaignMission() == 0x9a) {
+            Level *lvl = *g_Hud_level;
+            if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
+        }
+        if (show && st->getCurrentCampaignMission() > 1) {
+            int img = ((this->touchFlags & 0x80) != 0)
+                          ? this->orbitMarkerActiveImage
+                          : this->orbitMarkerIdleImage;
+            canvas->DrawImage2D((unsigned) img, this->field_0x3f8, 0);
+        }
+    }
+
+    // --- shield/armor bars ---
+    {
+        PlayerEgo *e = ego;
+        Player *player = *(Player **) ego;
+        float scale = (float) this->field_0x446;
+        canvas->SetColor((unsigned) 0xffffffffu);
+
+        unsigned short barX = this->field_0x442;
+        unsigned short barY = this->field_0x44a;
+        if (this->hasShieldBar != 0) {
+            int shp = player->getShieldHP();
+            int frame = (shp < 2 || this->shieldHitFlash == 0) ? this->shieldFrameImage : this->shieldFrameHitImage;
+            canvas->DrawImage2D((unsigned) frame, this->field_0x43c, this->field_0x442);
+            canvas->DrawImage2D((unsigned) this->barDividerImage, this->field_0x43e, this->field_0x442);
+            canvas->DrawImage2D((unsigned) this->shieldBarBgImage, this->field_0x440, this->field_0x44a);
+            int rate = player->getShieldDamageRate();
+            int w = (int) ((float) rate * scale);
+            canvas->DrawRegion2D((unsigned) this->shieldBarFillImage, 0, 0, w, this->field_0x44c,
+                                 (float) w, 0, 0, 0, this->field_0x440);
+            barX = this->field_0x444;
+            barY = this->field_0x448;
+        }
+
+        int ahp = player->getArmorHP();
+        int aframe = (ahp < 1) ? this->armorFrameLowImage : this->armorFrameImage;
+        canvas->DrawImage2D((unsigned) aframe, this->field_0x43c, barX);
+        canvas->DrawImage2D((unsigned) this->barDividerImage, this->field_0x43e, barX);
+        canvas->DrawImage2D((unsigned) this->armorBarBgImage, this->field_0x440, barY);
+        int hrate = e->getHullDamageRate();
+        int hw = (int) ((float) hrate * scale);
+        canvas->DrawRegion2D((unsigned) this->armorBarFillImage, 0, 0, hw, this->field_0x44c,
+                             (float) hw, 0, 0, 0, this->field_0x440);
+
+        if (this->hasArmorRegen != 0) {
+            int arate = player->getArmorDamageRate();
+            int aw = (int) ((float) arate * scale);
+            canvas->DrawRegion2D((unsigned) this->armorRegenFillImage, 0, 0, aw, this->field_0x44c,
+                                 (float) aw, 0, 0, 0, this->field_0x440);
+        }
+    }
+
+    // --- secondary weapon panel ---
+    {
+        Level *lvl = *g_Hud_level;
+        PlayerEgo *player = (PlayerEgo *) (lvl ? (void *) (long) lvl->getPlayer() : (void *) 0);
+
+        if (player != 0 && player->hasAutoTurret() != 0) {
+            bool on = player->autoTurretIsEnabled() != 0 || ((this->autoTurretFlags & 0x20) != 0);
+            int img = on ? this->autoTurretOnImage : this->autoTurretOffImage;
+            canvas->DrawImage2D((unsigned) img, this->field_0x3fe, 0);
+        } else {
+            if (this->secondaryLabelTimer > 0) {
+                void *font = *g_Hud_font;
+                int screenW = *(int *) *g_Hud_screenW;
+                unsigned short iconW = this->field_0x3ec;
+                canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
+                canvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3ec, 0);
+                int textW = PaintCanvas::gCanvas->GetTextWidth(
+                    (unsigned) (long) canvas, *(String *) (font));
+                int tx = this->field_0x3ec + ((screenW - iconW) - textW) / 2;
+                PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
+                                    this->field_0x51c, tx, 0, false);
+                canvas->SetColor((unsigned) 0xffffffffu);
+                int t = this->secondaryLabelTimer;
+                if (t > 4000) t = 0;
+                this->secondaryLabelTimer = t;
+            }
+        }
+    }
 
     drawOrbitInformation();
-    drawMissionBanner(this);
+
+    // --- mission banner ---
+    canvas->SetColor((unsigned) 0xffffffffu);
+    canvas->DrawImage2D((unsigned) this->missionBannerImage, this->field_0x438, 0);
 
     drawEventQueue();
 
@@ -223,11 +315,20 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         drawMenu(0);
 
     if (Status::gStatus != nullptr && Status::gStatus->inSupernovaSystem() != 0)
-        drawChallengeModeScoreImpl(this);
+        drawChallengeModeScore(0);
 
     drawPauseButton();
-    if (this->messageActive != 0)
-        drawMessage(this);
+
+    // --- message ---
+    if (this->messageActive != 0) {
+        canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
+        void *font = *g_Hud_font;
+        int screenW = *(int *) *g_Hud_screenW;
+        int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
+        PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
+                            this->field_0x51c, screenW / 2 - w / 2, this->field_0x3e2, false);
+        canvas->SetColor((unsigned) 0xffffffffu);
+    }
 }
 
 void Hud::updateQueue(int dt) {
@@ -588,12 +689,6 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 }
 
 
-static void **g_Hud_font = nullptr;
-
-static void **g_Hud_canvas2 = nullptr;
-
-static void **g_Hud_screenW = nullptr;
-
 void Hud::drawEventString(String text, bool rightAlign) {
     void *font = *g_Hud_font;
     void *canvas = *g_Hud_canvas2;
@@ -624,7 +719,31 @@ void Hud::drawEventString(String text, bool rightAlign) {
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
     this->currentSecondaryWeapon = item;
-    refreshQuickMenu(this);
+
+    updateSecondaryWeaponString();
+
+    Ship *ship = Status::gStatus->getShip();
+    Array<Item *> *equip = ship->getEquipment(1);
+    this->equipmentArray = equip;
+
+    bool hasSecondary = false;
+    if (equip != 0) {
+        for (unsigned int i = 0; i < equip->size(); i++) {
+            if ((*equip)[i] != 0) {
+                hasSecondary = true;
+                break;
+            }
+        }
+    }
+    unsigned char empty;
+    if (hasSecondary) {
+        empty = 0;
+    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
+        empty = (unsigned char) (ship->hasCloak() == 0);
+    } else {
+        empty = 0;
+    }
+    this->quickMenuEmpty = empty;
 }
 
 int Hud::sameHudEventAsBeforeAggregate(String str) {
@@ -872,7 +991,32 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
         empty = 0;
     }
     this->quickMenuEmpty = empty;
-    refreshQuickMenu(this);
+
+    updateSecondaryWeaponString();
+    {
+        Ship *ship2 = Status::gStatus->getShip();
+        Array<Item *> *equip2 = ship2->getEquipment(1);
+        this->equipmentArray = equip2;
+
+        bool hasSecondary2 = false;
+        if (equip2 != 0) {
+            for (unsigned int i = 0; i < equip2->size(); i++) {
+                if ((*equip2)[i] != 0) {
+                    hasSecondary2 = true;
+                    break;
+                }
+            }
+        }
+        unsigned char empty2;
+        if (hasSecondary2) {
+            empty2 = 0;
+        } else if (ship2->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
+            empty2 = (unsigned char) (ship2->hasCloak() == 0);
+        } else {
+            empty2 = 0;
+        }
+        this->quickMenuEmpty = empty2;
+    }
     return this;
 }
 
@@ -954,21 +1098,19 @@ void Hud::clearQueue() {
 }
 
 void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
+    (void) ego;
+
     switch (eventId) {
         case 1:
         case 2:
-
             if (this->hasAutofireUI == 0) return;
-            hudEventBuild(this, eventId, ego, arg);
-            return;
+            break;
         case 3:
             if (this->hasBoostButton == 0 || ((PlayerEgo *) ((void *) (long) arg))->readyToBoost() == 0) return;
-            hudEventBuild(this, eventId, ego, arg);
-            return;
+            break;
         case 4:
             if (this->hasBoostButton == 0) return;
-            hudEventBuild(this, eventId, ego, arg);
-            return;
+            break;
 
         case 0x23:
             this->field_0x468 = 0;
@@ -994,16 +1136,38 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
         case 0x26:
         case 0x28:
         case 0x2a:
-
             *(unsigned char *) &this->weaponSelectState = 0;
-            hudEventBuild(this, eventId, ego, arg);
-            return;
+            break;
 
         default:
-
-            hudEventBuild(this, eventId, ego, arg);
-            return;
+            break;
     }
+
+    String *line = (String *) &this->field_0x1e0;
+    char probe[12];
+    ((String *) (probe))->ctor_copy(line, false);
+    unsigned int dup = sameHudEventAsBefore(*(String *) probe);
+    ((String *) (probe))->clear();
+    if (dup != 0)
+        return;
+
+    String *str = new String(*line);
+
+    unsigned int idBit = (unsigned int) (eventId - 1);
+    ListItem *item;
+    if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
+        item = new ListItem(str, 1);
+    else
+        item = new ListItem(str, 0);
+    addToEventQueue(item);
+
+    void *font = *g_Hud_font;
+    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (PaintCanvas::gCanvas), *(String *) (font));
+    int screenW = *(int *) *g_Hud_screenW;
+    this->eventScrollTick = 0;
+    this->eventScrolls = 1;
+    this->letterbox =
+            (unsigned char) ((screenW / 2 - this->eventLineMargin) + this->eventLineMarginAlt * -2 < w);
 }
 
 
@@ -1014,30 +1178,12 @@ static void **g_Hud_csStatus = nullptr;
 static void **g_Hud_csScreenW = nullptr;
 static const char g_Hud_csZero[1] = {0};
 
-HUD_INLINE
-
-void drawDigits(Hud *self, void *sprite, void *str, int x0, int y, int dw) {
-    int len = (int) ((String *) str)->size();
-    int x = x0;
-    for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
-        char ch[12];
-        ((String *) (ch))->SubString((String *) str, i - 1, i);
-        int frame = ((String *) (ch))->ValueOf();
-        ((String *) (ch))->clear();
-        ((Sprite *) (sprite))->setFrame(frame);
-        ((Sprite *) (sprite))->setPosition(x, y);
-        ((Sprite *) (sprite))->draw(1.0f, 1.0f);
-        x += dw;
-    }
-}
-
-HUD_INLINE
-
-void drawChallengeModeScoreImpl(Hud *self) {
+void Hud::drawChallengeModeScore(int unused) {
+    (void) unused;
     int *layout = (int *) *g_Hud_csLayout;
     int *status = (int *) *g_Hud_csStatus;
     int screenW = *(int *) *g_Hud_csScreenW;
-    void *sprite = self->digitSprite;
+    void *sprite = this->digitSprite;
 
     PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     int fw = ((Sprite *) (sprite))->getFrameWidth();
@@ -1064,7 +1210,20 @@ void drawChallengeModeScoreImpl(Hud *self) {
     int half = screenW / 2;
     int span = (dw * 7) / 2;
     int startX = half - span;
-    drawDigits(self, sprite, score, startX, y, dw);
+    {
+        int len = (int) ((String *) score)->size();
+        int x = startX;
+        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
+            char ch[12];
+            ((String *) (ch))->SubString((String *) score, i - 1, i);
+            int frame = ((String *) (ch))->ValueOf();
+            ((String *) (ch))->clear();
+            ((Sprite *) (sprite))->setFrame(frame);
+            ((Sprite *) (sprite))->setPosition(x, y);
+            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
+            x += dw;
+        }
+    }
 
     if (status[0x60] > 0 && status[0x63] > 1) {
         PaintCanvas::gCanvas->SetColor((unsigned) (-1));
@@ -1079,25 +1238,43 @@ void drawChallengeModeScoreImpl(Hud *self) {
                 ((String *) (bonusStr))->ctor_int((int) ((bonus * 0.0f + 1.0f) * base));
                 int bl = (int) ((String *) bonusStr)->size();
                 int bx = (screenW / 2 - ((bl * dw) >> 1));
-                drawDigits(self, sprite, bonusStr, bx, fh + yRow + pad, dw);
+                int bonusY = fh + yRow + pad;
+                int len = (int) ((String *) bonusStr)->size();
+                int x = bx;
+                for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
+                    char ch[12];
+                    ((String *) (ch))->SubString((String *) bonusStr, i - 1, i);
+                    int frame = ((String *) (ch))->ValueOf();
+                    ((String *) (ch))->clear();
+                    ((Sprite *) (sprite))->setFrame(frame);
+                    ((Sprite *) (sprite))->setPosition(x, bonusY);
+                    ((Sprite *) (sprite))->draw(1.0f, 1.0f);
+                    x += dw;
+                }
                 ((String *) (bonusStr))->clear();
             }
         }
-        PaintCanvas::gCanvas->DrawImage2D((unsigned) self->multiplierIconImage, pad + startX, 0);
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) this->multiplierIconImage, pad + startX, 0);
 
         char timeStr[12];
         ((String *) (timeStr))->ctor_int(status[0x63]);
         int tx = (half + pad) - span + PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (0));
-        drawDigits(self, sprite, timeStr, tx, yRow, dw);
+        int len = (int) ((String *) timeStr)->size();
+        int x = tx;
+        for (int i = 1; (unsigned int) (i - 1) < (unsigned int) len; i++) {
+            char ch[12];
+            ((String *) (ch))->SubString((String *) timeStr, i - 1, i);
+            int frame = ((String *) (ch))->ValueOf();
+            ((String *) (ch))->clear();
+            ((Sprite *) (sprite))->setFrame(frame);
+            ((Sprite *) (sprite))->setPosition(x, yRow);
+            ((Sprite *) (sprite))->draw(1.0f, 1.0f);
+            x += dw;
+        }
         ((String *) (timeStr))->clear();
     }
     PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     ((String *) (score))->clear();
-}
-
-void Hud::drawChallengeModeScore(int unused) {
-    (void) unused;
-    drawChallengeModeScoreImpl(this);
 }
 
 
@@ -1214,7 +1391,8 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     }
     (void) yOrigin;
 
-    buildQuickMenu(this, menuType);
+    Hud_buildQuickMenu(this, menuType);
+    this->quickMenuOpen = 1;
 }
 
 Hud::~Hud() {
@@ -1233,211 +1411,6 @@ Hud::~Hud() {
 
     delete this->uintArray;
     this->uintArray = 0;
-}
-
-HUD_INLINE
-
-void refreshQuickMenu(Hud *self) {
-    self->updateSecondaryWeaponString();
-
-    Ship *ship = Status::gStatus->getShip();
-    Array<Item *> *equip = ship->getEquipment(1);
-    self->equipmentArray = equip;
-
-    bool hasSecondary = false;
-    if (equip != 0) {
-        for (unsigned int i = 0; i < equip->size(); i++) {
-            if ((*equip)[i] != 0) {
-                hasSecondary = true;
-                break;
-            }
-        }
-    }
-    unsigned char empty;
-    if (hasSecondary) {
-        empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
-        empty = (unsigned char) (ship->hasCloak() == 0);
-    } else {
-        empty = 0;
-    }
-    self->quickMenuEmpty = empty;
-}
-
-static unsigned int g_Hud_heImportantMask = 0;
-
-HUD_INLINE
-
-void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
-    (void) ego;
-    (void) arg;
-
-    String *line = (String *) &self->field_0x1e0;
-    char probe[12];
-    ((String *) (probe))->ctor_copy(line, false);
-    unsigned int dup = self->sameHudEventAsBefore(*(String *) probe);
-    ((String *) (probe))->clear();
-    if (dup != 0)
-        return;
-
-    String *str = new String(*line);
-
-    unsigned int idBit = (unsigned int) (eventId - 1);
-    ListItem *item;
-    if (idBit < 0x15 && ((1u << (idBit & 0x1f)) & g_Hud_heImportantMask) != 0)
-        item = new ListItem(str, 1);
-    else
-        item = new ListItem(str, 0);
-    self->addToEventQueue(item);
-
-    void *font = *g_Hud_font;
-    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (PaintCanvas::gCanvas), *(String *) (font));
-    int screenW = *(int *) *g_Hud_screenW;
-    self->eventScrollTick = 0;
-    self->eventScrolls = 1;
-    self->letterbox =
-            (unsigned char) ((screenW / 2 - self->eventLineMargin) + self->eventLineMarginAlt * -2 < w);
-}
-
-static void buildQuickMenu(Hud *self, int menuType) {
-    Hud_buildQuickMenu(self, menuType);
-    self->quickMenuOpen = 1;
-}
-
-static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y) {
-    (void) x;
-    (void) y;
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-
-    canvas->DrawImage2D((unsigned) self->reticleImage, self->field_0x42c, 0);
-
-    unsigned char flags = self->touchFlags;
-    unsigned short bx, by;
-    int img;
-    if ((flags & 0x40) != 0) {
-        bx = self->reticleX;
-        by = self->reticleY;
-        img = self->lockBracketLockedImage;
-        self->lockBracketX = bx;
-        self->lockBracketY = by;
-    } else {
-        bx = self->lockBracketX;
-        by = self->lockBracketY;
-        img = self->lockBracketImage;
-    }
-    canvas->DrawImage2D((unsigned) img, bx, by, '\x11');
-    (void) ego;
-}
-
-
-static Level **g_Hud_level = nullptr;
-
-static void drawRadar(Hud *self) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-    Status *st = Status::gStatus;
-
-    bool show = false;
-    if (st->inAlienOrbit() == 0) {
-        show = true;
-    } else if (st->getCurrentCampaignMission() == 0x9a) {
-        Level *lvl = *g_Hud_level;
-        if (lvl != 0 && lvl->getNumDockingTargets() > 0) show = true;
-    }
-    if (show && st->getCurrentCampaignMission() > 1) {
-        int img = ((self->touchFlags & 0x80) != 0)
-                      ? self->orbitMarkerActiveImage
-                      : self->orbitMarkerIdleImage;
-        canvas->DrawImage2D((unsigned) img, self->field_0x3f8, 0);
-    }
-}
-
-static void drawBars(Hud *self, void *ego) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-    PlayerEgo *e = (PlayerEgo *) ego;
-    Player *player = *(Player **) ego;
-    float scale = (float) self->field_0x446;
-    canvas->SetColor((unsigned) 0xffffffffu);
-
-    unsigned short barX = self->field_0x442;
-    unsigned short barY = self->field_0x44a;
-    if (self->hasShieldBar != 0) {
-        int shp = player->getShieldHP();
-        int frame = (shp < 2 || self->shieldHitFlash == 0) ? self->shieldFrameImage : self->shieldFrameHitImage;
-        canvas->DrawImage2D((unsigned) frame, self->field_0x43c, self->field_0x442);
-        canvas->DrawImage2D((unsigned) self->barDividerImage, self->field_0x43e, self->field_0x442);
-        canvas->DrawImage2D((unsigned) self->shieldBarBgImage, self->field_0x440, self->field_0x44a);
-        int rate = player->getShieldDamageRate();
-        int w = (int) ((float) rate * scale);
-        canvas->DrawRegion2D((unsigned) self->shieldBarFillImage, 0, 0, w, self->field_0x44c,
-                             (float) w, 0, 0, 0, self->field_0x440);
-        barX = self->field_0x444;
-        barY = self->field_0x448;
-    }
-
-    int ahp = player->getArmorHP();
-    int aframe = (ahp < 1) ? self->armorFrameLowImage : self->armorFrameImage;
-    canvas->DrawImage2D((unsigned) aframe, self->field_0x43c, barX);
-    canvas->DrawImage2D((unsigned) self->barDividerImage, self->field_0x43e, barX);
-    canvas->DrawImage2D((unsigned) self->armorBarBgImage, self->field_0x440, barY);
-    int hrate = e->getHullDamageRate();
-    int hw = (int) ((float) hrate * scale);
-    canvas->DrawRegion2D((unsigned) self->armorBarFillImage, 0, 0, hw, self->field_0x44c,
-                         (float) hw, 0, 0, 0, self->field_0x440);
-
-    if (self->hasArmorRegen != 0) {
-        int arate = player->getArmorDamageRate();
-        int aw = (int) ((float) arate * scale);
-        canvas->DrawRegion2D((unsigned) self->armorRegenFillImage, 0, 0, aw, self->field_0x44c,
-                             (float) aw, 0, 0, 0, self->field_0x440);
-    }
-}
-
-static void drawSecondaryWeaponPanel(Hud *self) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-    Level *lvl = *g_Hud_level;
-    PlayerEgo *player = (PlayerEgo *) (lvl ? (void *) (long) lvl->getPlayer() : (void *) 0);
-
-    if (player != 0 && player->hasAutoTurret() != 0) {
-        bool on = player->autoTurretIsEnabled() != 0 || ((self->autoTurretFlags & 0x20) != 0);
-        int img = on ? self->autoTurretOnImage : self->autoTurretOffImage;
-        canvas->DrawImage2D((unsigned) img, self->field_0x3fe, 0);
-    } else {
-        if (self->secondaryLabelTimer > 0) {
-            void *font = *g_Hud_font;
-            int screenW = *(int *) *g_Hud_screenW;
-            unsigned short iconW = self->field_0x3ec;
-            canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-            canvas->DrawImage2D((unsigned) self->eventBannerImage, self->field_0x3ec, 0);
-            int textW = PaintCanvas::gCanvas->GetTextWidth(
-                (unsigned) (long) canvas, *(String *) (font));
-            int tx = self->field_0x3ec + ((screenW - iconW) - textW) / 2;
-            PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
-                                self->field_0x51c, tx, 0, false);
-            canvas->SetColor((unsigned) 0xffffffffu);
-            int t = self->secondaryLabelTimer;
-            if (t > 4000) t = 0;
-            self->secondaryLabelTimer = t;
-        }
-    }
-}
-
-static void drawMissionBanner(Hud *self) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-    canvas->SetColor((unsigned) 0xffffffffu);
-
-    canvas->DrawImage2D((unsigned) self->missionBannerImage, self->field_0x438, 0);
-}
-
-static void drawMessage(Hud *self) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
-
-    canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
-    void *font = *g_Hud_font;
-    int screenW = *(int *) *g_Hud_screenW;
-    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
-    PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
-                        self->field_0x51c, screenW / 2 - w / 2, self->field_0x3e2, false);
-    canvas->SetColor((unsigned) 0xffffffffu);
 }
 
 bool Hud::drawTitleImage(bool visible) {
