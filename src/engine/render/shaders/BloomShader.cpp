@@ -5,6 +5,7 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/PaintCanvas.h"
 #include <GLES2/gl2.h>
+#include <arm_neon.h>
 
 
 static unsigned char g_BloomShader_internalInitNeeded;
@@ -125,15 +126,11 @@ namespace AbyssEngine {
             this->fboBlack->EndCapture();
         }
 
-        typedef unsigned int u32x4 __attribute__((vector_size (16), aligned(4)
-        )
-        )
-        ;
-        u32x4 zero = {0, 0, 0, 0};
-        *(u32x4 *) &engine->projMatrix[12] = zero;
-        *(u32x4 *) &engine->projMatrix[8] = zero;
-        *(u32x4 *) &engine->projMatrix[4] = zero;
-        *(u32x4 *) &engine->projMatrix[0] = zero;
+        const uint32x4_t zero = vdupq_n_u32(0);
+        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
         float matrix[16] = {};
         matrix[0] = 1.0f;
         matrix[5] = 1.0f;
@@ -274,15 +271,11 @@ namespace AbyssEngine {
             this->fboBlack->EndCapture();
         }
 
-        typedef unsigned int u32x4 __attribute__((vector_size (16), aligned(4)
-        )
-        )
-        ;
-        u32x4 zero = {0, 0, 0, 0};
-        *(u32x4 *) &engine->projMatrix[12] = zero;
-        *(u32x4 *) &engine->projMatrix[8] = zero;
-        *(u32x4 *) &engine->projMatrix[4] = zero;
-        *(u32x4 *) &engine->projMatrix[0] = zero;
+        const uint32x4_t zero = vdupq_n_u32(0);
+        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
         float matrix[16] = {};
         matrix[0] = 1.0f;
         matrix[5] = 1.0f;

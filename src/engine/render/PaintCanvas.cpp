@@ -423,8 +423,6 @@ namespace {
 
 void paintcanvas_ext_has_vibration(void *);
 
-__attribute__ ((disable_tail_calls))
-
 void MatrixIdentity(void *result, void *matrix);
 
 int paintcanvas_ext_dtl_textwidth(void *, unsigned int, void *);
@@ -1763,11 +1761,10 @@ int PaintCanvas::GetScreenPosition(const AbyssEngine::AEMath::Vector &a,
     return paintcanvas_ext_getscreenpos_m(this, buf, &a, &b);
 }
 
-#define HIDDEN __attribute__((visibility("hidden")))
-static char paintcanvas_g_fog_flag_storage HIDDEN = 0;
-static char paintcanvas_g_fog_ptr_storage HIDDEN = 0;
-static char *paintcanvas_g_fog_flag HIDDEN = &paintcanvas_g_fog_flag_storage;
-static char *paintcanvas_g_fog_ptr HIDDEN = &paintcanvas_g_fog_ptr_storage;
+static char paintcanvas_g_fog_flag_storage = 0;
+static char paintcanvas_g_fog_ptr_storage = 0;
+static char *paintcanvas_g_fog_flag = &paintcanvas_g_fog_flag_storage;
+static char *paintcanvas_g_fog_ptr = &paintcanvas_g_fog_ptr_storage;
 
 void PaintCanvas::FogEnable(bool mode, AbyssEngine::FogMode enable) {
     this->fogEnableFlag = enable;
@@ -1798,13 +1795,12 @@ void PaintCanvas::MeshSetColor(unsigned int index, unsigned short sub,
     }
 }
 
-#define HIDDEN __attribute__((visibility("hidden")))
-static float paintcanvas_g_pom_persp_storage HIDDEN = 0.0f;
-static float paintcanvas_g_pom_a_storage HIDDEN = 0.0f;
-static float paintcanvas_g_pom_b_storage HIDDEN = 0.0f;
-static float *paintcanvas_g_pom_persp HIDDEN = &paintcanvas_g_pom_persp_storage;
-static float *paintcanvas_g_pom_a HIDDEN = &paintcanvas_g_pom_a_storage;
-static float *paintcanvas_g_pom_b HIDDEN = &paintcanvas_g_pom_b_storage;
+static float paintcanvas_g_pom_persp_storage = 0.0f;
+static float paintcanvas_g_pom_a_storage = 0.0f;
+static float paintcanvas_g_pom_b_storage = 0.0f;
+static float *paintcanvas_g_pom_persp = &paintcanvas_g_pom_persp_storage;
+static float *paintcanvas_g_pom_a = &paintcanvas_g_pom_a_storage;
+static float *paintcanvas_g_pom_b = &paintcanvas_g_pom_b_storage;
 
 void PaintCanvas::SetProjOrthoMatrix() {
     float g = *paintcanvas_g_pom_persp;
@@ -2755,8 +2751,6 @@ void PaintCanvas::GetGravValue() {
     return paintcanvas_ext_get_grav(this->engine);
 }
 
-#define HIDDEN __attribute__((visibility("hidden")))
-
 static char paintcanvas_g_bg_a = 0;
 static char paintcanvas_g_bg_b = 0;
 
@@ -2886,8 +2880,6 @@ void PaintCanvas::TextureCreateGlobal(AbyssEngine::String name, unsigned int uni
     }
     ::operator delete[](path);
 }
-
-#define HIDDEN __attribute__((visibility("hidden")))
 
 static char paintcanvas_g_use_matgl = 0;
 
@@ -4376,9 +4368,8 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     }
 }
 
-#define HIDDEN __attribute__((visibility("hidden")))
-static char paintcanvas_g_b2d_flag_storage HIDDEN = 0;
-static char *paintcanvas_g_b2d_flag HIDDEN = &paintcanvas_g_b2d_flag_storage;
+static char paintcanvas_g_b2d_flag_storage = 0;
+static char *paintcanvas_g_b2d_flag = &paintcanvas_g_b2d_flag_storage;
 
 void PaintCanvas::Begin2d() {
     *(unsigned char *) &((Engine *) this->engine)->field_0xfd = 1;

@@ -61,11 +61,6 @@ namespace AbyssEngine {
         }
     }
 
-    typedef uint64_t unaligned_u64 __attribute__((aligned (1)
-
-    )
-    );
-
     void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
         // engine->projMatrix is a float[16]; the original built the FBO ortho
         // matrix here via NEON stores into projMatrix[0..15] (engine+0x384).
@@ -92,8 +87,8 @@ namespace AbyssEngine {
         uint32_t one = 0x3f800000;  // 1.0f bit pattern, for the local matrix below
         uint32_t matrix[16];
         vst1q_u32(matrix + 4, zero);
-        vst1q_u64((unaligned_u64 *) (matrix + 6), vreinterpretq_u64_u32(zero));
-        vst1q_u64((unaligned_u64 *) (matrix + 10), tail);
+        vst1q_u64((uint64_t *) (matrix + 6), vreinterpretq_u64_u32(zero));
+        vst1q_u64((uint64_t *) (matrix + 10), tail);
         matrix[0] = one;
         matrix[5] = one;
         matrix[14] = one;

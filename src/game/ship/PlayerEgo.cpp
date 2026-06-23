@@ -1603,7 +1603,7 @@ float PlayerEgo::left(int frameTime, float delta) {
     return target;
 }
 
-__attribute__ ((minsize)) PlayerEgo::~PlayerEgo() noexcept(false) {
+PlayerEgo::~PlayerEgo() noexcept(false) {
     if (this->player) delete (Player *) this->player;
     this->player = 0;
     if (this->field_0x4) delete (AEGeometry *) this->field_0x4;

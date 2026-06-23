@@ -50,8 +50,6 @@ namespace AbyssEngine {
         glUniform1i(loc_s_texture[index], 0);
     }
 
-    __attribute__ ((minsize))
-
     void TextureVtxColorShader::UseShader(bool) {
         if (EngineFogEnabled() && this->fogProgram != 0) {
             glUseProgram(this->fogProgram);

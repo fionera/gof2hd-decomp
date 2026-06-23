@@ -1,4 +1,5 @@
 #include "game/core/Globals.h"
+#include <arm_neon.h>
 #include <cstdint>
 
 // Named models for the untyped handles that Globals.cpp touches by raw byte
@@ -363,15 +364,10 @@ Array<int> *Globals::getSoundResourceList() {
     return soundResources;
 }
 
-typedef int v4si __attribute__((vector_size (16)
+#pragma pack(push, 1)
+struct Q16 { int32x4_t v; };
 
-)
-);
-struct __attribute__ ((packed)) Q16 { v4si v; };
-
-static void *const gHints = nullptr;
-
-struct __attribute__((packed)) HintsBuffer {
+struct HintsBuffer {
     union {
         Q16 quad[4]; // 16-byte SIMD-aligned views at 0x00/0x10/0x20/0x30
         struct {
@@ -380,10 +376,13 @@ struct __attribute__((packed)) HintsBuffer {
         };
     };
 };
+#pragma pack(pop)
+
+static void *const gHints = nullptr;
 
 void Globals::resetHints() {
     HintsBuffer *hints = (HintsBuffer *) gHints;
-    const v4si z = {0, 0, 0, 0};
+    const int32x4_t z = vdupq_n_s32(0);
     hints->quad[0].v = z;    // 0x00
     hints->quadAt2b.v = z;   // 0x2b
     hints->quad[2].v = z;    // 0x20

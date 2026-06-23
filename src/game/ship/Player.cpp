@@ -752,7 +752,7 @@ void Player::regenerateHull() {
     this->updateDamageRate();
 }
 
-__attribute__ ((minsize)) Player::~Player() {
+Player::~Player() {
     Array<Array<Gun *> *> *guns = this->guns;
     if (guns != 0) {
         for (unsigned int i = 0; i < guns->size(); i++) {

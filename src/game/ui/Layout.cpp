@@ -367,7 +367,7 @@ void Layout::drawEmptyFooter(bool showBack) {
                     screenW - w, screenH - (*g_efMetric)[0x10 / 4], (unsigned char) (0x01));
     if (showBack == 0) return;
     this->backButton->setVisible(1);
-    unsigned char sp[8] __attribute__((aligned(4)));
+    alignas(4) unsigned char sp[8];
     TouchButton_footerAnim(this->backButton, 1, footerH, sp);
 }
 
@@ -1324,7 +1324,7 @@ void Layout::drawHeader(String title, bool transition) {
     }
     this->helpButtonEnabled = transition;
     if (transition && this->choiceWindowOpen == 0) {
-        unsigned char sp[8] __attribute__((aligned(4)));
+        alignas(4) unsigned char sp[8];
         TouchButton_footerAnim(this->helpButton, 0, 0, sp);
     }
 }

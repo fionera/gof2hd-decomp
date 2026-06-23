@@ -5,6 +5,7 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/PaintCanvas.h"
 #include <GLES2/gl2.h>
+#include <arm_neon.h>
 
 unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine * engine);
 unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine * engine);
@@ -59,15 +60,11 @@ namespace AbyssEngine {
     }
 
     void PostBWShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
-        typedef unsigned int u32x4 __attribute__((vector_size (16), aligned(4)
-        )
-        )
-        ;
-        u32x4 zero = {0, 0, 0, 0};
-        *(u32x4 *) &engine->projMatrix[12] = zero;
-        *(u32x4 *) &engine->projMatrix[8] = zero;
-        *(u32x4 *) &engine->projMatrix[4] = zero;
-        *(u32x4 *) &engine->projMatrix[0] = zero;
+        uint32x4_t zero = vdupq_n_u32(0);
+        vst1q_u32((uint32_t *) &engine->projMatrix[12], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[8], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[4], zero);
+        vst1q_u32((uint32_t *) &engine->projMatrix[0], zero);
         engine->field_0x3e4 = this->program;
 
         engine->projMatrix[0] = 2.0f / (float) AbyssEngine_Engine_GetDisplayWidth(engine);

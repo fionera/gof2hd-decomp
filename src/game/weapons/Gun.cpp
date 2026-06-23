@@ -68,8 +68,7 @@ void Gun_VecPtrArray_setLength(int n, void *a);
 void Gun_ArrayReleaseClasses(VecArray * a);
 void *Gun_ArrayDtor(VecArray * a);
 
-typedef void (*dtor_fn)(void *) __attribute__((nothrow)
-);
+typedef void (*dtor_fn)(void *);
 static dtor_fn const gGunStringDtor = nullptr;
 
 Gun::~Gun() noexcept(false) {
