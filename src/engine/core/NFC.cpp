@@ -1,11 +1,11 @@
 #include "engine/core/NFC.h"
 
-extern void **nfc_env __attribute__((visibility("hidden")));
-extern int *nfc_purchase_flag __attribute__((visibility("hidden")));
-extern void **nfc_class_slot __attribute__((visibility("hidden")));
-extern char nfc_class_name[] __attribute__((visibility("hidden")));
-extern const char nfc_method_name[] __attribute__((visibility("hidden")));
-extern const char nfc_method_sig[] __attribute__((visibility("hidden")));
+static void **nfc_env;
+static int *nfc_purchase_flag;
+static void **nfc_class_slot;
+static char nfc_class_name[1];
+static const char nfc_method_name[1] = {0};
+static const char nfc_method_sig[1] = {0};
 
 NFC::NFC() {
 }
@@ -247,14 +247,14 @@ int NFC::getHeight() {
     return value;
 }
 
-extern "C" int is_dialogue_window_visible __attribute__((visibility("hidden")));
-extern "C" int is_choice_window_visible __attribute__((visibility("hidden")));
-extern "C" int is_menu_visible __attribute__((visibility("hidden")));
-extern "C" bool isStarMapVisible __attribute__((visibility("hidden")));
-extern "C" int subMenuIndex __attribute__((visibility("hidden")));
-extern "C" int topMenuIndex __attribute__((visibility("hidden")));
-extern "C" int menu_touch_window_type __attribute__((visibility("hidden")));
-extern "C" int g_android_back_button_pressed __attribute__((visibility("hidden")));
+static int is_dialogue_window_visible;
+static int is_choice_window_visible;
+static int is_menu_visible;
+static bool isStarMapVisible;
+static int subMenuIndex;
+static int topMenuIndex;
+static int menu_touch_window_type;
+int NFC::g_android_back_button_pressed = 0;
 
 bool IsDialogVisible(int) {
     return is_dialogue_window_visible != 0 || is_choice_window_visible != 0;
@@ -319,5 +319,5 @@ int GetUseJoystick() {
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed() {
-    g_android_back_button_pressed = 1;
+    NFC::g_android_back_button_pressed = 1;
 }

@@ -14,9 +14,9 @@
 #include "game/mission/Status.h"
 #include "game/mission/Explosion.h"
 
-extern "C" PaintCanvas **g_PaintCanvas;
-extern "C" FModSound **g_FMod_singleton;
-extern Status *g_mining_status;
+static PaintCanvas **g_PaintCanvas = nullptr;
+static FModSound **g_FMod_singleton = nullptr;
+static Status *g_mining_status = nullptr;
 
 static inline PaintCanvas *activeCanvas() {
     return *g_PaintCanvas;
@@ -160,7 +160,7 @@ void BombGun::update(int elapsed) {
                 transform = (AbyssEngine::Transform *) canvas->TransformGetTransform(this->transform);
                 transform->SetAnimationState((AbyssEngine::AnimationMode) 1, nullptr);
 
-                *(Matrix *) ((char *) player + 0x10) = *(const Matrix *) ((char *) player->player + 4);
+                player->rocketReturnMatrix = ((Player *) player->player)->transformMatrix;
                 sound()->play(0x45c, nullptr, nullptr, 0.0f);
             }
 

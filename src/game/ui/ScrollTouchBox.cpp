@@ -70,7 +70,7 @@ void ScrollTouchBox::OnTouchBegin(int x, int y) {
 }
 
 
-extern String **g_ScrollTouchBox_defaultFont_135598;
+static String **g_ScrollTouchBox_defaultFont_135598 = nullptr;
 
 ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
     this->touchStartY = 0;
@@ -91,7 +91,7 @@ ScrollTouchBox::ScrollTouchBox(int x, int y, int width, int height) {
 }
 
 
-extern int **g_ScrollTouchBox_defaultWidth_13570c;
+static int **g_ScrollTouchBox_defaultWidth_13570c = nullptr;
 
 void ScrollTouchBox::setText(AbyssEngine::String text) {
     String tmp(text);
@@ -137,15 +137,15 @@ apply:
 }
 
 
-extern void **g_ScrollTouchBox_canvas_135778;
+static void **g_ScrollTouchBox_canvas_135778 = nullptr;
 
-extern char *g_ScrollTouchBox_flag_135778;
+static char *g_ScrollTouchBox_flag_135778 = nullptr;
 
-extern FontMetrics **g_ScrollTouchBox_font_135778;
+static FontMetrics **g_ScrollTouchBox_font_135778 = nullptr;
 
-extern uint8_t *g_ScrollTouchBox_rtl_135778;
+static uint8_t *g_ScrollTouchBox_rtl_135778 = nullptr;
 
-extern uint8_t *g_ScrollTouchBox_dirty_135778;
+static uint8_t *g_ScrollTouchBox_dirty_135778 = nullptr;
 
 void ScrollTouchBox::draw() {
     int language = GameText::getLanguage();
@@ -215,11 +215,11 @@ void ScrollTouchBox::draw() {
 }
 
 
-extern void **g_ScrollTouchBox_globals_135600;
+static void **g_ScrollTouchBox_globals_135600 = nullptr;
 
-extern FontMetrics **g_ScrollTouchBox_font_135600;
+static FontMetrics **g_ScrollTouchBox_font_135600 = nullptr;
 
-extern char g_ScrollTouchBox_empty_135600[];
+static char g_ScrollTouchBox_empty_135600[1] = {0};
 
 void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     if (this->lines != 0) {

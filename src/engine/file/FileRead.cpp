@@ -412,8 +412,8 @@ Array<Station *> *FileRead::loadStationsBinary(int16_t *ids, int32_t count) {
     return stations;
 }
 
-extern AbyssEngine::AERandom *gNameRandomA;
-extern AbyssEngine::AERandom *gNameRandomB;
+static AbyssEngine::AERandom *gNameRandomA = nullptr;
+static AbyssEngine::AERandom *gNameRandomB = nullptr;
 
 Array<String *> *FileRead::loadNamesBinary(int32_t type, bool first, bool second) {
     Array<String *> *names = 0;

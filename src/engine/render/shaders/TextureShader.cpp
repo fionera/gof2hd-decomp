@@ -3,8 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" uint8_t g_TextureShader_hasSecondProgram;
-extern "C" uint8_t g_TextureShader_activeSlot;
+static uint8_t g_TextureShader_hasSecondProgram = 0;
+static uint8_t g_TextureShader_activeSlot = 0;
 
 namespace AbyssEngine {
     TextureShader::TextureShader() {

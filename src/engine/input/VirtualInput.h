@@ -7,7 +7,7 @@ namespace AbyssEngine {
     class Engine;
  }
 
-extern "C" unsigned int F(unsigned int value);
+unsigned int F(unsigned int value);
 
 int GetKeyState(char *name);
 

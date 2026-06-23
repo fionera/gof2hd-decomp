@@ -45,7 +45,7 @@ SolarSystem::~SolarSystem() {
     this->linkedSystemIds = nullptr;
 }
 
-extern Status ** gStatusOrbit __attribute__((visibility("hidden")));
+static Status ** gStatusOrbit = nullptr;
 
 bool SolarSystem::currentOrbitHasWarpGate() {
     int orbit = this->jumpgateStationId;
@@ -111,9 +111,9 @@ String SolarSystem::getName() {
     return this->name;
 }
 
-extern const int kPirateBaseStations[4] __attribute__((visibility("hidden")));
+static const int kPirateBaseStations[4] = {0, 0, 0, 0};
 
-extern void * gPirateBaseRoot __attribute__((visibility("hidden")));
+static void * gPirateBaseRoot = nullptr;
 
 int SolarSystem::hasPirateBase() {
     char *base = *(char **) gPirateBaseRoot;
@@ -127,7 +127,7 @@ int SolarSystem::hasPirateBase() {
     return 0;
 }
 
-extern const int kAttackRaceTable[4] __attribute__((visibility("hidden")));
+static const int kAttackRaceTable[4] = {0, 0, 0, 0};
 
 int SolarSystem::getAttackRace() {
     uint32_t r = this->faction;
@@ -143,9 +143,9 @@ uint32_t SolarSystem::hasNoOwner() {
     return 0;
 }
 
-extern const int kBlueprintStations[5] __attribute__((visibility("hidden")));
+static const int kBlueprintStations[5] = {0, 0, 0, 0, 0};
 
-extern void * gBlueprintRoot __attribute__((visibility("hidden")));
+static void * gBlueprintRoot = nullptr;
 
 int SolarSystem::hasHiddenBlueprint() {
     char *base = *(char **) gBlueprintRoot;
@@ -168,7 +168,7 @@ int SolarSystem::getWarpGateEnumIndex() {
     return (int) getStationEnumIndex(this->jumpgateStationId);
 }
 
-extern Galaxy ** gGalaxyDiscover __attribute__((visibility("hidden")));
+static Galaxy ** gGalaxyDiscover = nullptr;
 
 int SolarSystem::isFullyDiscovered() {
     Array<int> *arr = this->stationIds;

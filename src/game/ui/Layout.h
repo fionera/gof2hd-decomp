@@ -6,9 +6,9 @@
 #include "ChoiceWindow.h"
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "TouchButton.h"
 #include "engine/render/PaintCanvas.h"
+#include "Blk16.h"
 
 class ChoiceWindow;
 class TouchButton;
@@ -101,7 +101,8 @@ public:
 
     int field_0x74;
     int field_0x78;
-    uint8_t _pad_0x7c[8];
+    int field_0x7c;
+    int field_0x80_touchMargin;
     int field_0x84;
     uint8_t _pad_0x88[4];
     int field_0x8c;
@@ -138,7 +139,8 @@ public:
         int field_0x114_strip5c;
     };
 
-    uint8_t _pad_0x118[16];
+    uint8_t _pad_0x118[12];
+    int field_0x124;
     int field_0x128;
     uint8_t _pad_0x12c[4];
     int field_0x130;
@@ -170,10 +172,22 @@ public:
     int field_0x200;
     uint8_t _pad_0x204[48];
     int field_0x234;
-    int field_0x238;
-    uint8_t _pad_0x23c[40];
+    union {
+        int field_0x238;
+        Blk16 field_0x238_blk16;
+    };
+    int field_0x248;
+    int field_0x24c;
+    int field_0x250;
+    int field_0x254;
+    int field_0x258;
+    int field_0x25c;
+    int field_0x260;
     int field_0x264;
-    uint8_t _pad_0x268[16];
+    int field_0x268;
+    int field_0x26c;
+    int field_0x270;
+    int field_0x274;
     int field_0x278;
     int field_0x27c;
     int field_0x280;

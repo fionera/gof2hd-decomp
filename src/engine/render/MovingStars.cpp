@@ -3,7 +3,7 @@
 #include "game/core/Globals.h"
 
 
-extern "C" int MovingStars_kSpawnI_value;
+static int MovingStars_kSpawnI_value = 0;
 
 MovingStars::~MovingStars() {
     if (this->billboardIds) delete[] this->billboardIds;
@@ -18,27 +18,27 @@ MovingStars::~MovingStars() {
 
 typedef void *(*AllocFn)(int);
 
-extern "C" int MovingStars_nextIntBounded(uint32_t rng, int bound);
+int MovingStars_nextIntBounded(uint32_t rng, int bound);
 
-extern "C" void MovingStars_TransformCreate(void *canvas, uint32_t *out);
+void MovingStars_TransformCreate(void *canvas, uint32_t *out);
 
-extern "C" void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh);
+void MovingStars_TransformAddMeshId(void *canvas, uint32_t tf, uint32_t mesh);
 
-extern "C" uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);
+uint32_t MovingStars_TransformGetLocal(void *canvas, uint32_t tf);
 
-extern "C" void MovingStars_MatrixSetTranslationFrom(void *out, const void *base,
-                                                     float x, float y, float z);
+void MovingStars_MatrixSetTranslationFrom(void *out, const void *base,
+                                          float x, float y, float z);
 
-extern "C" void MovingStars_TextureCreate(void *canvas, int id, void *flag, int b);
+void MovingStars_TextureCreate(void *canvas, int id, void *flag, int b);
 
 
-extern AllocFn g_MovingStars_alloc;
+static AllocFn g_MovingStars_alloc = nullptr;
 
-extern int *g_MovingStars_rng_ctor;
+static int *g_MovingStars_rng_ctor = nullptr;
 
-extern int *g_MovingStars_globals_ctor;
+static int *g_MovingStars_globals_ctor = nullptr;
 
-extern void **g_MovingStars_canvas_ctor;
+static void **g_MovingStars_canvas_ctor = nullptr;
 
 static const float kBB0 = 1.0f, kBB1 = 2.0f, kBB2 = 3.0f, kBB3 = 4.0f;
 
@@ -89,7 +89,6 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" {
 float VectorSignedToFloat(int v, int mode);
 
 void MovingStars_TransformSetLocal(void *canvas, void *matrix);
@@ -99,18 +98,15 @@ int MovingStars_nextInt(void *rng);
 void MovingStars_MatrixSetTranslation(void *m, float x, float y, float z);
 
 void MovingStars_SetAnimVec(void *transform, uint32_t tf, int idx, float x, float y, float z);
-}
 
 
-extern void **g_MovingStars_canvas;
+static void **g_MovingStars_canvas = nullptr;
 
-extern void **g_MovingStars_random;
+static void **g_MovingStars_random = nullptr;
 
-extern "C" {
-extern float MovingStars_kSpawn, MovingStars_kZ, MovingStars_kZ2;
-extern float MovingStars_kA, MovingStars_kB, MovingStars_kC, MovingStars_kD;
-extern float MovingStars_kSpeed, MovingStars_kVel, MovingStars_kZSpawn;
-}
+static float MovingStars_kSpawn = 0, MovingStars_kZ = 0, MovingStars_kZ2 = 0;
+static float MovingStars_kA = 0, MovingStars_kB = 0, MovingStars_kC = 0, MovingStars_kD = 0;
+static float MovingStars_kSpeed = 0, MovingStars_kVel = 0, MovingStars_kZSpawn = 0;
 
 void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
     (void) param1;
@@ -213,12 +209,12 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
     }
 }
 
-extern "C" void MovingStars_MatrixGetPosition(void *out, const void *m);
+void MovingStars_MatrixGetPosition(void *out, const void *m);
 
-extern "C" void MovingStars_VectorAddAssign(void *self, const Vector &other);
+void MovingStars_VectorAddAssign(void *self, const Vector &other);
 
 
-extern void **g_MovingStars_canvas_translate;
+static void **g_MovingStars_canvas_translate = nullptr;
 
 void MovingStars::translate(const Vector &v) {
     char pos[12];
@@ -238,7 +234,7 @@ void MovingStars::translate(const Vector &v) {
 }
 
 
-extern PaintCanvas **g_MovingStars_canvas_render;
+static PaintCanvas **g_MovingStars_canvas_render = nullptr;
 
 void MovingStars::render() {
     PaintCanvas **canvas = g_MovingStars_canvas_render;

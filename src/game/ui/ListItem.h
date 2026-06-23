@@ -2,7 +2,6 @@
 #define GOF2_LISTITEM_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "game/mission/BluePrint.h"
 #include "game/mission/Mission.h"
 #include "game/mission/PendingProduct.h"

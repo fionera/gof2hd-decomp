@@ -2,10 +2,8 @@
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
-extern "C"
-void **g_ImagePart_canvas;
-extern "C"
-void **g_ImagePart_draw_canvas;
+static void **g_ImagePart_canvas;
+static void **g_ImagePart_draw_canvas;
 
 ImagePart::ImagePart(unsigned id, int field04, int posY) {
     this->id = id;

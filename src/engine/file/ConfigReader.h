@@ -3,8 +3,6 @@
 #include "engine/core/Array.h"
 #include "engine/file/TokenStruct.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/file/AEFile.h"
 
 namespace AbyssEngine {

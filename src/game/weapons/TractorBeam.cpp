@@ -11,10 +11,10 @@
 #include "game/weapons/Radar.h"
 #include "game/ship/Player.h"
 
-extern PaintCanvas *gCanvasRoot;
-extern FModSound *gPullSound;
-extern FModSound *gCaptureSound;
-extern const float gCaptureDistance;
+static PaintCanvas *gCanvasRoot = nullptr;
+static FModSound *gPullSound = nullptr;
+static FModSound *gCaptureSound = nullptr;
+static const float gCaptureDistance = 0.0f;
 
 void TractorBeam::render() {
     if (!this->active)
@@ -72,7 +72,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     this->dirZ = working.z;
     float dist = VectorLength(working);
 
-    int shipIndex = gStatus->getShip()->getIndex();
+    int shipIndex = Status::gStatus->getShip()->getIndex();
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (shipIndex == 0x2c) {
         offset = player->GetDirVector() * 0.5f;

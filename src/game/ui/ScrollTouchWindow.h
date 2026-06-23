@@ -2,7 +2,6 @@
 #define GOF2_SCROLLTOUCHWINDOW_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "ScrollTouchBox.h"
 
 class ScrollTouchBox;

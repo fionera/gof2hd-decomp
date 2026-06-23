@@ -2,9 +2,6 @@
 #define GOF2_STRING_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
-extern "C" {
 void String_ctor(String * self);
 
 String *String_ctor_char(String *self, const char *s, bool reverse);
@@ -76,6 +73,5 @@ int String_StrLen_wchar(String *self, const uint16_t *s);
 int String_GetStringLength(const char *s);
 
 void String_PrintOut(String * self);
-}
 
 #endif

@@ -3,8 +3,6 @@
 #include "game/world/StarSystem.h"
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "game/world/Route.h"
 #include "game/world/Waypoint.h"
 #include "game/ship/KIPlayer.h"
@@ -21,6 +19,7 @@
 #include "engine/math/BoundingVolume.h"
 
 #include "engine/math/Vector.h"
+#include "engine/math/Matrix.h"
 
 
 
@@ -143,7 +142,8 @@ public:
     int field_17c;
     Route *field_180;
     int field_184;
-    uint16_t field_188;
+    uint8_t field_188;
+    uint8_t alarmRequested;
     uint8_t field_18a;
     uint8_t pad_18b;
     int field_18c;
@@ -164,9 +164,9 @@ public:
     int supernovaFlareTexture;
     int field_1c8;
     int supernovaFlareMesh;
-    uint8_t sub_1d0[0x3c];
-    uint8_t sub_20c[0x3c];
-    uint8_t sub_248[0x3c];
+    AbyssEngine::AEMath::Matrix skyMatrix;
+    AbyssEngine::AEMath::Matrix cloudMatrix;
+    AbyssEngine::AEMath::Matrix reversalMatrix;
     int field_284;
     uint8_t field_288;
     uint8_t supernovaFlareActive;
@@ -362,6 +362,16 @@ public:
 
     void crm_dispatch(int egoComm, void *queue);
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(Level, field_188) == 0x188, "Level::field_188 offset");
+static_assert(__builtin_offsetof(Level, alarmRequested) == 0x189, "Level::alarmRequested offset");
+static_assert(__builtin_offsetof(Level, field_18a) == 0x18a, "Level::field_18a offset");
+static_assert(__builtin_offsetof(Level, skyMatrix) == 0x1d0, "Level::skyMatrix offset");
+static_assert(__builtin_offsetof(Level, cloudMatrix) == 0x20c, "Level::cloudMatrix offset");
+static_assert(__builtin_offsetof(Level, reversalMatrix) == 0x248, "Level::reversalMatrix offset");
+static_assert(__builtin_offsetof(Level, field_284) == 0x284, "Level::field_284 offset");
+#endif
 
 
 #endif

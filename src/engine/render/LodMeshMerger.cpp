@@ -1,6 +1,7 @@
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
+#include <cstdlib>
 
 
 void LodMeshMerger::setEnabled(int index, bool value) {
@@ -261,7 +262,7 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
 }
 
 
-extern void (*const g_freeFn)(void *);
+static void (*const g_freeFn)(void *) = ::free;
 
 LodMeshMerger::~LodMeshMerger() {
     int count = rows * cols;

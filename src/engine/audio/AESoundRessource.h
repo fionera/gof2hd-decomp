@@ -2,8 +2,6 @@
 #define GOF2_AESOUNDRESSOURCE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/audio/AESoundInfo.h"
 #include "engine/audio/AESoundInterface.h"
 namespace AbyssEngine {

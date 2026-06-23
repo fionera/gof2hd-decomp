@@ -30,14 +30,12 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" void *AERandom_seed_ctor(void *self, long long seed);
+void *AERandom_seed_ctor(void *self, long long seed);
 
-extern "C" void AERandom_dtor(void *self);
-
-extern "C" void AERandom_ctor(void *self);
+void AERandom_ctor(void *self);
 
 
-extern char *ParticleSet_definitions;
+static char *ParticleSet_definitions = nullptr;
 
 void IParticleSystem::enableUpdate(bool enabled) {
     this->updateEnabled = enabled;

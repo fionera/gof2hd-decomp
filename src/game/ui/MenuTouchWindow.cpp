@@ -10,212 +10,244 @@
 #include "game/ship/ShipDefTable.h"
 #include "game/core/GameSettings.h"
 #include <math.h>
+#include <cstddef>
 
-extern PaintCanvas *g_PaintCanvas;
+static PaintCanvas *g_PaintCanvas = nullptr;
 
-extern "C" void *_mtw_GameText_getText(void *gt, int id);
+// Minimal byte-faithful model of the untyped handle returned by
+// _mtw_AppMgr_GetApplicationData(). Only the fields this translation unit
+// touches are named; the rest is padding to keep offsets exact.
+struct MtwAppData {
+    uint8_t pad_0x0[5];
+    uint8_t screenshotResultFlag;   // 0x5
+    uint8_t pad_0x6[2];
+    int storeResultCode;            // 0x8
+    uint8_t storeInitFlag;          // 0xc
+    uint8_t pad_0xd[0x30];
+    uint8_t dlcMenuRequestFlag;     // 0x3d
+    uint8_t pad_0x3e[2];
+    uint8_t purchaseReadyFlag;      // 0x40
+    uint8_t purchaseResultFlag;     // 0x41
+    uint8_t purchaseErrorFlag;      // 0x42
+    uint8_t pad_0x43[5];
+    unsigned int purchaseCode;      // 0x48
+    uint8_t dlcMenuAckFlag;         // 0x4c
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(MtwAppData, screenshotResultFlag) == 0x5, "appdata 0x5");
+static_assert(offsetof(MtwAppData, storeResultCode) == 0x8, "appdata 0x8");
+static_assert(offsetof(MtwAppData, storeInitFlag) == 0xc, "appdata 0xc");
+static_assert(offsetof(MtwAppData, dlcMenuRequestFlag) == 0x3d, "appdata 0x3d");
+static_assert(offsetof(MtwAppData, purchaseReadyFlag) == 0x40, "appdata 0x40");
+static_assert(offsetof(MtwAppData, purchaseResultFlag) == 0x41, "appdata 0x41");
+static_assert(offsetof(MtwAppData, purchaseErrorFlag) == 0x42, "appdata 0x42");
+static_assert(offsetof(MtwAppData, purchaseCode) == 0x48, "appdata 0x48");
+static_assert(offsetof(MtwAppData, dlcMenuAckFlag) == 0x4c, "appdata 0x4c");
+#endif
+
+void *_mtw_GameText_getText(void *gt, int id);
 
 void _mtw_ChoiceWindow_set(void *cw, void *s1, void *s2, bool b);
 
-extern "C" void _mtw_render3D_inner(void *obj);
+void _mtw_render3D_inner(void *obj);
 
-extern "C" int _mtw_Layout_OnTouchEnd(void *layout, int y, int x);
+int _mtw_Layout_OnTouchEnd(void *layout, int y, int x);
 
-extern "C" int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
+int _mtw_ChoiceWindow_OnTouchEnd(void *cw, int y);
 
-extern "C" void _mtw_FModSound_resumeAll(void *snd);
+void _mtw_FModSound_resumeAll(void *snd);
 
-extern "C" void _mtw_FModSound_stopAll();
+void _mtw_FModSound_stopAll();
 
-extern "C" void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id);
+void _mtw_AppMgr_SetCurrentApplicationModule(void *app, int id);
 
-extern "C" void _mtw_AppMgr_Quit(void *app);
+void _mtw_AppMgr_Quit(void *app);
 
-extern "C" void _mtw_Globals_reportLeaderboards();
+void _mtw_Globals_reportLeaderboards();
 
-extern "C" int _mtw_onTouchEnd_listState(void *self, int y, int x, int state);
+int _mtw_onTouchEnd_listState(void *self, int y, int x, int state);
 
-extern "C" int _mtw_onTouchEnd_optionsState(void *self, int y, int x);
+int _mtw_onTouchEnd_optionsState(void *self, int y, int x);
 
-extern "C" int _mtw_onTouchEnd_scrollState(void *self, int y, int x, int which);
+int _mtw_onTouchEnd_scrollState(void *self, int y, int x, int which);
 
-extern "C" int _mtw_onTouchEnd_missionsState(void *self, int y, int x);
+int _mtw_onTouchEnd_missionsState(void *self, int y, int x);
 
-extern "C" int _mtw_onTouchEnd_cinematicState(void *self, int y, int x);
+int _mtw_onTouchEnd_cinematicState(void *self, int y, int x);
 
-extern "C" int _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff);
+int _mtw_onTouchEnd_genericButtons(void *self, int y, int x, int fieldOff);
 
-extern "C" void *_mtw_Array_TB_dtor(void *arr);
+void *_mtw_Array_TB_dtor(void *arr);
 
-extern "C" void *_mtw_Array_TS_dtor(void *arr);
+void *_mtw_Array_TS_dtor(void *arr);
 
-extern "C" void *_mtw_Array_Str_dtor(void *arr);
+void *_mtw_Array_Str_dtor(void *arr);
 
-extern "C" void *_mtw_TouchButton_dtor(void *p);
+void *_mtw_TouchButton_dtor(void *p);
 
-extern "C" void *_mtw_ChoiceWindow_dtor(void *p);
+void *_mtw_ChoiceWindow_dtor(void *p);
 
-extern "C" void *_mtw_ScrollTouchWindow_dtor(void *p);
+void *_mtw_ScrollTouchWindow_dtor(void *p);
 
-extern "C" void *_mtw_Array_Str_dtor(void *p);
+void *_mtw_Array_Str_dtor(void *p);
 
-extern "C" void *_mtw_Array_StrArr_dtor(void *p);
+void *_mtw_Array_StrArr_dtor(void *p);
 
-extern "C" void _mtw_Array_StrArr_ctor(void *p);
+void _mtw_Array_StrArr_ctor(void *p);
 
-extern "C" void _mtw_Array_Str_ctor(void *p);
+void _mtw_Array_Str_ctor(void *p);
 
-extern "C" void _mtw_ArraySetLength_StrArr(int n, void *arr);
+void _mtw_ArraySetLength_StrArr(int n, void *arr);
 
-extern "C" void _mtw_ArraySetLength_Str(int n, void *arr);
+void _mtw_ArraySetLength_Str(int n, void *arr);
 
-extern "C" void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out);
+void _mtw_Globals_longToTimeStringNoSeconds(long long t, void *out);
 
-extern "C" void _mtw_Layout_formatCredits(void *out);
+void _mtw_Layout_formatCredits(void *out);
 
-extern "C" void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type);
+void _mtw_TouchButton_ctor7(void *btn, void *label, int a, int x, int y, char type);
 
-extern "C" void _mtw_Status_resetGame();
+void _mtw_Status_resetGame();
 
-extern "C" void _mtw_Status_nextCampaignMission(bool a);
+void _mtw_Status_nextCampaignMission(bool a);
 
-extern "C" void _mtw_Mission_ctor(void *m);
+void _mtw_Mission_ctor(void *m);
 
-extern "C" void _mtw_Status_setMission(void *status);
+void _mtw_Status_setMission(void *status);
 
-extern "C" void *_mtw_Ship_makeShip(int shipDef);
+void *_mtw_Ship_makeShip(int shipDef);
 
-extern "C" void _mtw_Status_setShip(void *status);
+void _mtw_Status_setShip(void *status);
 
-extern "C" void _mtw_Ship_setRace(void *ship, int race);
+void _mtw_Ship_setRace(void *ship, int race);
 
-extern "C" void *_mtw_Item_makeItem(int itemDef, int qty);
+void *_mtw_Item_makeItem(int itemDef, int qty);
 
-extern "C" void *_mtw_makeItem2(int itemDef);
+void *_mtw_makeItem2(int itemDef);
 
-extern "C" void _mtw_Status_setCredits(void *status);
+void _mtw_Status_setCredits(void *status);
 
-extern "C" void *_mtw_Galaxy_getStation(void *galaxy, int idx);
+void *_mtw_Galaxy_getStation(void *galaxy, int idx);
 
-extern "C" void _mtw_Status_setStation(void *status);
+void _mtw_Status_setStation(void *status);
 
-extern "C" void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis);
+void _mtw_Status_setSystemVisibility(void *status, int sys, bool vis);
 
-extern "C" void _mtw_Achievements_setMedal(void *ach, int id, int n);
+void _mtw_Achievements_setMedal(void *ach, int id, int n);
 
-extern "C" void _mtw_RecordHandler_saveOptions(void *rh);
+void _mtw_RecordHandler_saveOptions(void *rh);
 
-extern "C" void _mtw_Status_setKills(void *status, int count);
+void _mtw_Status_setKills(void *status, int count);
 
-extern "C" void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y);
+void _mtw_ChoiceWindow_OnTouchBegin(void *cw, int y);
 
-extern "C" int _mtw_Layout_OnTouchBegin(void *layout, int y);
+int _mtw_Layout_OnTouchBegin(void *layout, int y);
 
-extern "C" void _mtw_TouchButton_OnTouchBegin(void *btn, int y);
+void _mtw_TouchButton_OnTouchBegin(void *btn, int y);
 
-extern "C" void _mtw_TouchButton_OnTouchBeginXY(void *btn, int y, int x);
+void _mtw_TouchButton_OnTouchBeginXY(void *btn, int y, int x);
 
-extern "C" float _mtw_TouchButton_setPosition(void *btn, int x, int y);
+float _mtw_TouchButton_setPosition(void *btn, int x, int y);
 
-extern "C" void _mtw_TouchSlider_OnTouchBegin(void *sl, int y);
+void _mtw_TouchSlider_OnTouchBegin(void *sl, int y);
 
-extern "C" void _mtw_ScrollTouchWindow_OnTouchBegin(void *w, int y);
+void _mtw_ScrollTouchWindow_OnTouchBegin(void *w, int y);
 
-extern "C" void _mtw_MissionsWindow_OnTouchBegin(void *w, int y);
+void _mtw_MissionsWindow_OnTouchBegin(void *w, int y);
 
-extern "C" void _mtw_FModSound_play(void *snd, int id, void *pos, float v);
+void _mtw_FModSound_play(void *snd, int id, void *pos, float v);
 
-extern "C" int _mtw_idiv(int a, int b);
+int _mtw_idiv(int a, int b);
 
-extern "C" void _mtw_RecordHandler_ctor(void *rh);
+void _mtw_RecordHandler_ctor(void *rh);
 
-extern "C" void *_mtw_RecordHandler_readRecord(void *rh);
+void *_mtw_RecordHandler_readRecord(void *rh);
 
-extern "C" void *_mtw_RecordHandler_dtor(void *rh);
+void *_mtw_RecordHandler_dtor(void *rh);
 
-extern "C" void *_mtw_GameRecord_dtor(void *gr);
+void *_mtw_GameRecord_dtor(void *gr);
 
-extern "C" void _mtw_GameRecord_load(void *gr);
+void _mtw_GameRecord_load(void *gr);
 
 void _mtw_ChoiceWindow_set(void *cw, void *s, bool b);
 
-extern "C" void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
+void *_mtw_AppMgr_GetApplicationModule(void *app, int id);
 
-extern "C" void _mtw_ModStation_setGameLoaded(void *ms);
+void _mtw_ModStation_setGameLoaded(void *ms);
 
-extern "C" void _mtw_TouchButton_getPosition(void *out, void *btn);
+void _mtw_TouchButton_getPosition(void *out, void *btn);
 
-extern "C" void _mtw_TouchButton_setVisible(void *btn, bool v);
+void _mtw_TouchButton_setVisible(void *btn, bool v);
 
-extern "C" void *_mtw_Array_GameRecord_dtor(void *p);
+void *_mtw_Array_GameRecord_dtor(void *p);
 
-extern "C" void *_mtw_RecordHandler_readAllPreviewRecords(void *rh);
+void *_mtw_RecordHandler_readAllPreviewRecords(void *rh);
 
-extern "C" void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot);
+void _mtw_RecordHandler_recordStoreWrite(void *rh, int slot);
 
-extern "C" void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot);
+void _mtw_RecordHandler_recordStoreWritePreview(void *rh, int slot);
 
-extern "C" void *_mtw_RecordHandler_recordStoreReadPreview(void *rh);
+void *_mtw_RecordHandler_recordStoreReadPreview(void *rh);
 
-extern "C" void _mtw_createRecordButtons(void *self, bool b);
+void _mtw_createRecordButtons(void *self, bool b);
 
-extern "C" void *_mtw_AppMgr_GetApplicationData();
+void *_mtw_AppMgr_GetApplicationData();
 
-extern "C" void *_mtw_AppMgr_GetEngine();
+void *_mtw_AppMgr_GetEngine();
 
 void _mtw_ChoiceWindow_set(void *cw, void *s);
 
-extern "C" void _mtw_ChoiceWindow_update(void *cw);
+void _mtw_ChoiceWindow_update(void *cw);
 
-extern "C" void _mtw_TouchButton_setYPosition(void *btn, int y);
+void _mtw_TouchButton_setYPosition(void *btn, int y);
 
-extern "C" int _mtw_TouchButton_isVisible(void *btn);
+int _mtw_TouchButton_isVisible(void *btn);
 
-extern "C" void _mtw_ScrollTouchWindow_update(void *w);
+void _mtw_ScrollTouchWindow_update(void *w);
 
-extern "C" void _mtw_MissionsWindow_update(void *w);
+void _mtw_MissionsWindow_update(void *w);
 
-extern "C" void _mtw_startSupernovaChallenge_impl(void *self);
+void _mtw_startSupernovaChallenge_impl(void *self);
 
-extern "C" void *_mtw_GetApplicationData(void *app);
+void *_mtw_GetApplicationData(void *app);
 
-extern "C" void _mtw_DlcMenu_call(void *win, void *s1, void *s2);
+void _mtw_DlcMenu_call(void *win, void *s1, void *s2);
 
-extern "C" void _mtw_Layout_drawBG();
+void _mtw_Layout_drawBG();
 
-extern "C" void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y);
+void _mtw_ChoiceWindow_OnTouchMove(void *cw, int y);
 
-extern "C" void _mtw_TouchButton_OnTouchMove(void *btn, int y);
+void _mtw_TouchButton_OnTouchMove(void *btn, int y);
 
-extern "C" void _mtw_TouchButton_OnTouchMoveXY(void *btn, int y, int x);
+void _mtw_TouchButton_OnTouchMoveXY(void *btn, int y, int x);
 
-extern "C" void _mtw_TouchSlider_OnTouchMove(void *sl, int y);
+void _mtw_TouchSlider_OnTouchMove(void *sl, int y);
 
-extern "C" float _mtw_TouchSlider_getValue(void *sl);
+float _mtw_TouchSlider_getValue(void *sl);
 
-extern "C" void _mtw_ScrollTouchWindow_OnTouchMove(void *w, int y);
+void _mtw_ScrollTouchWindow_OnTouchMove(void *w, int y);
 
-extern "C" void _mtw_MissionsWindow_OnTouchMove(void *w, int y);
+void _mtw_MissionsWindow_OnTouchMove(void *w, int y);
 
-extern "C" int _mtw_FModSound_tryToStopMusicForBGMusic();
+int _mtw_FModSound_tryToStopMusicForBGMusic();
 
-extern "C" void _mtw_FModSound_setVolume(void *snd, float v);
+void _mtw_FModSound_setVolume(void *snd, float v);
 
-extern "C" void _mtw_Array_TB_ctor(void *a);
+void _mtw_Array_TB_ctor(void *a);
 
-extern "C" void _mtw_loadPreviewRecords(void *self);
+void _mtw_loadPreviewRecords(void *self);
 
-extern "C" void _mtw_TouchButton_draw(void *btn);
+void _mtw_TouchButton_draw(void *btn);
 
-extern "C" void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str);
+void _mtw_Layout_drawBox(void *layout, int mode, int x, int y, int w, int h, void *str);
 
-extern "C" void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y);
+void _mtw_ImageFactory_drawShip(void *imgF, unsigned int shipId, int x, int y);
 
-extern "C" void _mtw_Ship_addCargo(void *ship, void *item);
+void _mtw_Ship_addCargo(void *ship, void *item);
 
-extern "C" float _mtw_FModSound_stop(void *snd);
+float _mtw_FModSound_stop(void *snd);
 
-extern void *const gSupernovaGameText __attribute__((visibility("hidden")));
+static void *const gSupernovaGameText = nullptr;
 
 void MenuTouchWindow::showSupernovaMessage() {
     void *cw = this->choiceWindow;
@@ -263,13 +295,13 @@ float MenuTouchWindow::getRelativeScrollStartPos() {
     return -(float) offset / (float) this->pageHeight;
 }
 
-extern void *const gEndLayoutGuard __attribute__((visibility("hidden")));
-extern void *const gEndStatusObj   __attribute__((visibility("hidden")));
-extern void *const gEndAppHolder   __attribute__((visibility("hidden")));
-extern void *const gEndFmod        __attribute__((visibility("hidden")));
-extern void *const gEndQuitApp     __attribute__((visibility("hidden")));
-extern void *const gEndModuleId    __attribute__((visibility("hidden")));
-extern void *const gEndPendingFlag __attribute__((visibility("hidden")));
+static void *const gEndLayoutGuard = nullptr;
+static void *const gEndStatusObj = nullptr;
+static void *const gEndAppHolder = nullptr;
+static void *const gEndFmod = nullptr;
+static void *const gEndQuitApp = nullptr;
+static void *const gEndModuleId = nullptr;
+static void *const gEndPendingFlag = nullptr;
 
 int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
     if (this->menuState == 0xb && touchId != 0) {
@@ -283,7 +315,7 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
     this->pendingActivate = 0;
     this->dragging = 0;
 
-    char *layoutGuard = (char *) *(void **) gEndLayoutGuard;
+    uint8_t *layoutGuard = (uint8_t *) *(void **) gEndLayoutGuard;
     if (*layoutGuard != 0) {
         if (_mtw_Layout_OnTouchEnd(layoutGuard, y, x) != 0)
             *layoutGuard = 0;
@@ -413,9 +445,9 @@ int MenuTouchWindow::OnTouchEnd(int y, int x, void *touchId) {
     return 0;
 }
 
-extern "C" void _mtw_ArrayReleaseClasses_TB(void *arr);
+void _mtw_ArrayReleaseClasses_TB(void *arr);
 
-extern "C" void _mtw_ArrayReleaseClasses_Str(void *arr);
+void _mtw_ArrayReleaseClasses_Str(void *arr);
 
 static inline __attribute__ ((always_inline))
 
@@ -488,22 +520,22 @@ MenuTouchWindow::~MenuTouchWindow() {
     this->heapBufB = 0;
 }
 
-extern "C" void _mtw_ArrayReleaseClasses_Str(void *arr);
+void _mtw_ArrayReleaseClasses_Str(void *arr);
 
-extern "C" void _mtw_ArrayReleaseClasses_StrArr(void *arr);
+void _mtw_ArrayReleaseClasses_StrArr(void *arr);
 
-extern "C" void *_mtw_String_op_plus(void *out, void *rhs);
+void *_mtw_String_op_plus(void *out, void *rhs);
 
-extern "C" void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w,
+void _mtw_TouchButton_ctorFull(void *btn, void *label, int a, int x, int y, int w,
                                           char type, char id);
 
-extern void *const gCrbRowCount __attribute__((visibility("hidden")));
-extern void *const gCrbTimeVal  __attribute__((visibility("hidden")));
-extern void *const gCrbGameText __attribute__((visibility("hidden")));
-extern const char gCrbDash[] __attribute__((visibility("hidden")));
-extern void *const gCrbLayout   __attribute__((visibility("hidden")));
-extern void *const gCrbScreenW  __attribute__((visibility("hidden")));
-extern void *const gCrbBackFlag __attribute__((visibility("hidden")));
+static void *const gCrbRowCount = nullptr;
+static void *const gCrbTimeVal = nullptr;
+static void *const gCrbGameText = nullptr;
+static const char gCrbDash[] = "";
+static void *const gCrbLayout = nullptr;
+static void *const gCrbScreenW = nullptr;
+static void *const gCrbBackFlag = nullptr;
 
 void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     Array<void *> *rows = this->recordRows;
@@ -549,35 +581,35 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             s54.ctor();
             _mtw_Globals_longToTimeStringNoSeconds((long long) (int) (long) timeHolder, 0);
             void *e;
-            int *rowData = (int *) i32(this->recordRows->data_[i], 4);
+            int *rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
 
             e = ::operator new(0xc);
             ((String *) e)->ctor_copy(&s54, false);
             ((void **) rowData)[0] = e;
             e = ::operator new(0xc);
             ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0xae), false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6), false);
             else ((String *) e)->ctor_char(gCrbDash, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[2] = e;
 
             e = ::operator new(0xc);
             ((String *) e)->ctor_char(gCrbDash, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[3] = e;
 
             e = ::operator new(0xc);
             ((String *) e)->ctor_char(gCrbDash, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[4] = e;
 
             e = ::operator new(0xc);
             ((String *) e)->ctor_char(gCrbDash, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[5] = e;
         } else {
             s54.ctor();
@@ -588,23 +620,23 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
 
             e = ::operator new(0xc);
             ((String *) e)->ctor_copy(&s54, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[0] = e;
 
             e = ::operator new(0xc);
-            ((String *) e)->ctor_copy(&slot->pilotName, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            ((String *) e)->ctor_copy((String *) &slot->pilotName, false);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[1] = e;
 
             e = ::operator new(0xc);
             if (i == 0) ((String *) e)->ctor_copy((String *) _mtw_GameText_getText(*(void **) gtHolder, 0x1e6), false);
             else ((String *) e)->ctor_char(gCrbDash, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[2] = e;
 
             void *credits = ::operator new(0xc);
             _mtw_Layout_formatCredits(credits);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[3] = credits;
 
             void *combined = ::operator new(0xc);
@@ -616,7 +648,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             String s78;
             s78.ctor_copy((String *) &slot->killsText, false);
             _mtw_String_op_plus(combined, &s60);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[4] = combined;
 
             e = ::operator new(0xc);
@@ -627,7 +659,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
             else if (rank <= 1.0f) rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x207);
             else rankTxt = _mtw_GameText_getText(*(void **) gtHolder, 0x19);
             ((String *) e)->ctor_copy((String *) rankTxt, false);
-            rowData = (int *) i32(this->recordRows->data_[i], 4);
+            rowData = (int *) ((Array<void *> *) this->recordRows->data_[i])->data_;
             ((void **) rowData)[5] = e;
         }
     }
@@ -637,7 +669,7 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
         this->okButton = 0;
     }
     Layout *layout = (Layout *) *(void **) gCrbLayout;
-    char backForm = *(char *) *(void **) gCrbBackFlag;
+    char backForm = *(uint8_t *) *(void **) gCrbBackFlag;
     int extra = layout->field_0x108;
     void *okBtn = ::operator new(0xc8);
     int screenW = *(int *) *(void **) gCrbScreenW;
@@ -668,23 +700,23 @@ void MenuTouchWindow::createRecordButtons(bool inSaveMode) {
     this->backButton = backBtn;
 }
 
-extern "C" void *_mtw_Status_getShip(void *status);
+void *_mtw_Status_getShip(void *status);
 
-extern "C" void *_mtw_Item_make(int itemDef);
+void *_mtw_Item_make(int itemDef);
 
-extern "C" void *_mtw_Item_makeQty(int itemDef, int qty);
+void *_mtw_Item_makeQty(int itemDef, int qty);
 
-extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot);
+void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
-extern void *const gValStatus    __attribute__((visibility("hidden")));
-extern void *const gValShipTable __attribute__((visibility("hidden")));
-extern void *const gValGalaxy    __attribute__((visibility("hidden")));
-extern void *const gValOptA      __attribute__((visibility("hidden")));
-extern void *const gValAch       __attribute__((visibility("hidden")));
-extern void *const gValOptB      __attribute__((visibility("hidden")));
-extern void *const gValOptHolder __attribute__((visibility("hidden")));
-extern void *const gValFmod      __attribute__((visibility("hidden")));
-extern void *const gValTransition __attribute__((visibility("hidden")));
+static void *const gValStatus = nullptr;
+static void *const gValShipTable = nullptr;
+static void *const gValGalaxy = nullptr;
+static void *const gValOptA = nullptr;
+static void *const gValAch = nullptr;
+static void *const gValOptB = nullptr;
+static void *const gValOptHolder = nullptr;
+static void *const gValFmod = nullptr;
+static void *const gValTransition = nullptr;
 
 typedef void (*TransitionFn)(void *app, int mode);
 
@@ -772,20 +804,20 @@ void MenuTouchWindow::startValkyrie() {
     thunk->transitionFn(*app, 5);
 }
 
-extern void *const gBgLayout   __attribute__((visibility("hidden")));
-extern void *const gBgScreenW  __attribute__((visibility("hidden")));
-extern void *const gBgScrollDiv __attribute__((visibility("hidden")));
-extern void *const gBgListPosX __attribute__((visibility("hidden")));
-extern void *const gBgFmod     __attribute__((visibility("hidden")));
-extern void *const gBgFlagA    __attribute__((visibility("hidden")));
-extern void *const gBgFlagB    __attribute__((visibility("hidden")));
-extern void *const gBgFlagC    __attribute__((visibility("hidden")));
-extern void *const gBgFlagD    __attribute__((visibility("hidden")));
-extern void *const gBgObjA     __attribute__((visibility("hidden")));
-extern void *const gBgObjB     __attribute__((visibility("hidden")));
-extern void *const gBgScreenH2 __attribute__((visibility("hidden")));
-extern void *const gBgScrollImg __attribute__((visibility("hidden")));
-extern void *const gBgScreenW2 __attribute__((visibility("hidden")));
+static void *const gBgLayout = nullptr;
+static void *const gBgScreenW = nullptr;
+static void *const gBgScrollDiv = nullptr;
+static void *const gBgListPosX = nullptr;
+static void *const gBgFmod = nullptr;
+static void *const gBgFlagA = nullptr;
+static void *const gBgFlagB = nullptr;
+static void *const gBgFlagC = nullptr;
+static void *const gBgFlagD = nullptr;
+static void *const gBgObjA = nullptr;
+static void *const gBgObjB = nullptr;
+static void *const gBgScreenH2 = nullptr;
+static void *const gBgScrollImg = nullptr;
+static void *const gBgScreenW2 = nullptr;
 
 int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
     if (this->messageShowing != 0) {
@@ -830,7 +862,7 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
         }
         break;
         case 3: {
-            if (*(char *) *(void **) gBgFlagA == 0) {
+            if (*(uint8_t *) *(void **) gBgFlagA == 0) {
                 void **arr = (void **) this->optionsButtons;
                 for (unsigned int i = 0; i < *(unsigned int *) arr; i++)
                     _mtw_TouchButton_OnTouchBegin(((void **) arr[1])[i], y);
@@ -857,14 +889,14 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             }
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnCC, y, x);
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnD0, y, x);
-            _mtw_TouchSlider_OnTouchBegin(*(void **) i32(this->sliders, 4), y);
+            _mtw_TouchSlider_OnTouchBegin(*(void **) ((Array<TouchSlider *> *) this->sliders)->data_, y);
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnD4, y, x);
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnD8, y, x);
             _mtw_TouchButton_OnTouchBeginXY(this->optBtnDC, y, x);
             void **arr = (void **) this->sliders;
             for (unsigned int i = 1; i < *(unsigned int *) arr; i++)
                 _mtw_TouchSlider_OnTouchBegin(((void **) arr[1])[i], y);
-            if (*(char *) *(void **) gBgFlagB != 0 && this->scrollExtraButton != 0)
+            if (*(uint8_t *) *(void **) gBgFlagB != 0 && this->scrollExtraButton != 0)
                 _mtw_TouchButton_OnTouchBegin(this->scrollExtraButton, y);
         }
         break;
@@ -917,14 +949,14 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
             }
             _mtw_TouchButton_OnTouchBegin(this->optBtnCC, y);
             _mtw_TouchButton_OnTouchBegin(this->optBtnD0, y);
-            _mtw_TouchSlider_OnTouchBegin(*(void **) i32(this->sliders, 4), y);
+            _mtw_TouchSlider_OnTouchBegin(*(void **) ((Array<TouchSlider *> *) this->sliders)->data_, y);
         }
         break;
         case 9:
             _mtw_MissionsWindow_OnTouchBegin(this->missionsWindow, y);
             break;
         case 0xb: {
-            if (*(char *) *(void **) gBgFlagC != 0 && *(char *) *(void **) gBgFlagD == 0) {
+            if (*(uint8_t *) *(void **) gBgFlagC != 0 && *(uint8_t *) *(void **) gBgFlagD == 0) {
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnA, y);
                 _mtw_TouchButton_OnTouchBegin(this->cinematicBtnB, y);
                 GameSettings *steerCtl = *(GameSettings **) gBgObjA;
@@ -1048,10 +1080,10 @@ int MenuTouchWindow::OnTouchBegin(int y, int x, void *touchId) {
     return 0;
 }
 
-extern void *const gLoadStatusFlags __attribute__((visibility("hidden")));
-extern void *const gLoadGameText __attribute__((visibility("hidden")));
-extern void *const gLoadAppHolder __attribute__((visibility("hidden")));
-extern void *const gLoadResetCell __attribute__((visibility("hidden")));
+static void *const gLoadStatusFlags = nullptr;
+static void *const gLoadGameText = nullptr;
+static void *const gLoadAppHolder = nullptr;
+static void *const gLoadResetCell = nullptr;
 
 int MenuTouchWindow::loadGame(int slot) {
     void *rh = ::operator new(0x2c);
@@ -1105,15 +1137,15 @@ int MenuTouchWindow::loadGame(int slot) {
     return 0;
 }
 
-extern "C" void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w,
+void _mtw_TouchButton_ctor(void *btn, void *label, int a, int x, int y, int w,
                                       char type, char id);
 
-extern void *const gAddBtnScreenW __attribute__((visibility("hidden")));
-extern void *const gAddBtnLayout  __attribute__((visibility("hidden")));
-extern void *const gAddBtnScreenH __attribute__((visibility("hidden")));
-extern void *const gAddBtnPosX    __attribute__((visibility("hidden")));
-extern void *const gAddBtnPosY    __attribute__((visibility("hidden")));
-extern void *const gAddBtnCount   __attribute__((visibility("hidden")));
+static void *const gAddBtnScreenW = nullptr;
+static void *const gAddBtnLayout = nullptr;
+static void *const gAddBtnScreenH = nullptr;
+static void *const gAddBtnPosX = nullptr;
+static void *const gAddBtnPosY = nullptr;
+static void *const gAddBtnCount = nullptr;
 
 void MenuTouchWindow::addButton(int id, AbyssEngine::String label, int row, Array<TouchButton *> *arr, int yOff) {
     void *btn = ::operator new(0xc8);
@@ -1159,13 +1191,13 @@ void MenuTouchWindow::setCutsceneMode(bool mode) {
     }
 }
 
-extern void *const gPrevScreenW __attribute__((visibility("hidden")));
-extern void *const gPrevLayout __attribute__((visibility("hidden")));
-extern void *const gPrevRowCnt __attribute__((visibility("hidden")));
+static void *const gPrevScreenW = nullptr;
+static void *const gPrevLayout = nullptr;
+static void *const gPrevRowCnt = nullptr;
 
 typedef void (*RefreshFn)();
 
-extern void *const gPrevRefreshThunk __attribute__((visibility("hidden")));
+static void *const gPrevRefreshThunk = nullptr;
 
 void MenuTouchWindow::loadPreviewRecords() {
     this->scrollOffset = 0;
@@ -1199,7 +1231,7 @@ void MenuTouchWindow::loadPreviewRecords() {
     ((RefreshThunk *) gPrevRefreshThunk)->refreshFn();
 }
 
-extern void *const gSaveGameText __attribute__((visibility("hidden")));
+static void *const gSaveGameText = nullptr;
 
 void MenuTouchWindow::saveGame(int slot) {
     void *rh = ::operator new(0x2c);
@@ -1207,19 +1239,19 @@ void MenuTouchWindow::saveGame(int slot) {
     _mtw_RecordHandler_recordStoreWrite(rh, slot);
     _mtw_RecordHandler_recordStoreWritePreview(rh, slot);
 
-    int *arr = (int *) i32(this->previewRecords, 4);
+    int *arr = (int *) ((Array<GameRecord *> *) this->previewRecords)->data_;
     void *rec = *(void **) (arr + slot);
     int *cell;
     if (rec == 0) {
         cell = arr + slot;
     } else {
         ::operator delete(_mtw_GameRecord_dtor(rec));
-        cell = (int *) (i32(this->previewRecords, 4) + slot * 4);
+        cell = (int *) &((Array<GameRecord *> *) this->previewRecords)->data_[slot];
     }
     *cell = 0;
 
     void *preview = _mtw_RecordHandler_recordStoreReadPreview(rh);
-    *(void **) (i32(this->previewRecords, 4) + slot * 4) = preview;
+    *(void **) &((Array<GameRecord *> *) this->previewRecords)->data_[slot] = preview;
     ::operator delete(_mtw_RecordHandler_dtor(rh));
 
     _mtw_createRecordButtons(this, true);
@@ -1230,19 +1262,19 @@ void MenuTouchWindow::saveGame(int slot) {
     this->messageShowing = 1;
 }
 
-extern void *const gUpStatusGuard __attribute__((visibility("hidden")));
-extern void *const gUpLayout      __attribute__((visibility("hidden")));
-extern void *const gUpScreenW     __attribute__((visibility("hidden")));
-extern void *const gUpCanvas      __attribute__((visibility("hidden")));
-extern void *const gUpOptObj      __attribute__((visibility("hidden")));
-extern void *const gUpRecHandler  __attribute__((visibility("hidden")));
-extern void *const gUpGameText    __attribute__((visibility("hidden")));
-extern void *const gUpStatusObj   __attribute__((visibility("hidden")));
-extern void *const gUpDlcFlags    __attribute__((visibility("hidden")));
-extern void *const gUpScreenH     __attribute__((visibility("hidden")));
-extern void *const gUpListLayout  __attribute__((visibility("hidden")));
+static void *const gUpStatusGuard = nullptr;
+static void *const gUpLayout = nullptr;
+static void *const gUpScreenW = nullptr;
+static void *const gUpCanvas = nullptr;
+static void *const gUpOptObj = nullptr;
+static void *const gUpRecHandler = nullptr;
+static void *const gUpGameText = nullptr;
+static void *const gUpStatusObj = nullptr;
+static void *const gUpDlcFlags = nullptr;
+static void *const gUpScreenH = nullptr;
+static void *const gUpListLayout = nullptr;
 
-extern const int g_mtw_upTextIds[16] __attribute__((visibility("hidden")));
+static const int g_mtw_upTextIds[16] = {};
 
 void MenuTouchWindow::update(int dt) {
     unsigned int st = this->menuState;
@@ -1271,11 +1303,11 @@ void MenuTouchWindow::update(int dt) {
         }
     }
 
-    void *appData = _mtw_AppMgr_GetApplicationData();
+    MtwAppData *appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
     unsigned char busy = this->dlcMessageShowing;
 
     if (busy != 0 || this->purchaseRestorePending != 0) {
-        if (*(char *) ((char *) appData + 0x40) != 0) {
+        if (appData->purchaseReadyFlag != 0) {
             Layout *layout = (Layout *) *(void **) gUpLayout;
             void *canvas = *(void **) gUpCanvas;
             this->contentHeight = (((*(int *) *(void **) gUpScreenW - layout->field_0x10_rightMargin)
@@ -1288,28 +1320,28 @@ void MenuTouchWindow::update(int dt) {
             this->messageShowing = 0;
             this->dlcMessageShowing = 0;
             this->pageHeight = (ih + rowH) * 5;
-            *(char *) ((char *) appData + 0x40) = 0;
+            appData->purchaseReadyFlag = 0;
             optObj->flag_0x3b = 1;
             _mtw_RecordHandler_saveOptions(*(void **) gUpRecHandler);
             busy = this->dlcMessageShowing;
         }
         if (busy != 0) {
-            if (*(char *) ((char *) appData + 0x42) != 0) {
+            if (appData->purchaseErrorFlag != 0) {
                 void *cw = this->choiceWindow;
                 void *s = _mtw_GameText_getText(*(void **) gUpGameText, g_mtw_upTextIds[0]);
                 _mtw_ChoiceWindow_set(cw, s);
                 this->dlcErrorDialogShowing = 1;
                 this->messageShowing = 1;
                 this->dlcMessageShowing = 0;
-                *(char *) ((char *) appData + 0x42) = 0;
+                appData->purchaseErrorFlag = 0;
                 this->purchaseRestorePending = 0;
             }
         }
     }
 
-    unsigned int code = *(unsigned int *) ((char *) appData + 0x48);
+    unsigned int code = appData->purchaseCode;
     bool handled = false;
-    if (code <= 4 && *(char *) ((char *) appData + 0x41) != 0) {
+    if (code <= 4 && appData->purchaseResultFlag != 0) {
         void *cw = this->choiceWindow;
         switch (code) {
             case 0: {
@@ -1352,9 +1384,9 @@ void MenuTouchWindow::update(int dt) {
         this->dlcResultDialogShowing = 1;
         this->dlcMessageShowing = 0;
         this->messageShowing = 1;
-        *(char *) ((char *) appData + 0x41) = 0;
+        appData->purchaseResultFlag = 0;
         handled = true;
-    } else if (this->purchaseRestorePending != 0 && *(char *) ((char *) appData + 0x41) != 0) {
+    } else if (this->purchaseRestorePending != 0 && appData->purchaseResultFlag != 0) {
         _mtw_RecordHandler_saveOptions(*(void **) gUpRecHandler);
         if (this->purchaseRestorePending != 0) {
             void *cw = this->choiceWindow;
@@ -1364,12 +1396,12 @@ void MenuTouchWindow::update(int dt) {
         this->dlcResultDialogShowing = 1;
         this->dlcMessageShowing = 0;
         this->messageShowing = 1;
-        *(char *) ((char *) appData + 0x41) = 0;
+        appData->purchaseResultFlag = 0;
         handled = true;
     }
     (void) handled;
 
-    if (*(char *) *(void **) gUpStatusGuard != 0) {
+    if (*(uint8_t *) *(void **) gUpStatusGuard != 0) {
         OptionsRecord *flags = (OptionsRecord *) *(void **) gUpDlcFlags;
         if (this->messageShowing == 0 && flags->flag_0x35 == 0) {
             void *cw = this->choiceWindow;
@@ -1435,8 +1467,8 @@ void MenuTouchWindow::update(int dt) {
         _mtw_ChoiceWindow_update(this->choiceWindow);
 
     if (state == 0xd) {
-        appData = _mtw_AppMgr_GetApplicationData();
-        if (*(char *) ((char *) appData + 0xc) != 0) {
+        appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+        if (appData->storeInitFlag != 0) {
             Engine *eng = (Engine *) _mtw_AppMgr_GetEngine();
             int r = eng->field_0x100;
             if (r == 2 || r == 1) {
@@ -1445,24 +1477,24 @@ void MenuTouchWindow::update(int dt) {
                 _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, id));
                 this->storeInitDialogShowing = 0;
                 this->messageShowing = 1;
-                appData = _mtw_AppMgr_GetApplicationData();
-                *(char *) ((char *) appData + 0xc) = 0;
+                appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+                appData->storeInitFlag = 0;
             }
         }
     }
 
-    appData = _mtw_AppMgr_GetApplicationData();
-    if (*(char *) ((char *) appData + 5) != 0) {
-        appData = _mtw_AppMgr_GetApplicationData();
-        int r = *(int *) ((char *) appData + 8);
+    appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+    if (appData->screenshotResultFlag != 0) {
+        appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+        int r = appData->storeResultCode;
         if (r == 2 || r == 1) {
             void *cw = this->choiceWindow;
             int id = (r == 2) ? g_mtw_upTextIds[10] : g_mtw_upTextIds[11];
             _mtw_ChoiceWindow_set(cw, _mtw_GameText_getText(*(void **) gUpGameText, id));
             this->screenshotState = -1;
             this->messageShowing = 1;
-            appData = _mtw_AppMgr_GetApplicationData();
-            *(char *) ((char *) appData + 5) = 0;
+            appData = (MtwAppData *) _mtw_AppMgr_GetApplicationData();
+            appData->screenshotResultFlag = 0;
         }
     }
 }
@@ -1471,17 +1503,17 @@ void MenuTouchWindow::startSupernovaChallenge() {
     _mtw_startSupernovaChallenge_impl(this);
 }
 
-extern void *const gAppHolder __attribute__((visibility("hidden")));
-extern void *const gDlcGameText __attribute__((visibility("hidden")));
+static void *const gAppHolder = nullptr;
+static void *const gDlcGameText = nullptr;
 
 void MenuTouchWindow::callDlcMenu() {
     void *holder = gAppHolder;
 
-    void *ad = _mtw_GetApplicationData(*(void **) holder);
-    u8(ad, 0x4c) = 0;
-    ad = _mtw_GetApplicationData(*(void **) holder);
+    MtwAppData *ad = (MtwAppData *) _mtw_GetApplicationData(*(void **) holder);
+    ad->dlcMenuAckFlag = 0;
+    ad = (MtwAppData *) _mtw_GetApplicationData(*(void **) holder);
     void *gt = gDlcGameText;
-    u8(ad, 0x3d) = 1;
+    ad->dlcMenuRequestFlag = 1;
     void *win = this->choiceWindow;
     this->messageShowing = 1;
     this->dlcMessageShowing = 1;
@@ -1490,38 +1522,38 @@ void MenuTouchWindow::callDlcMenu() {
     return _mtw_DlcMenu_call(win, s1, s2);
 }
 
-extern "C" void _mtw_draw_mainMenu(void *self);
+void _mtw_draw_mainMenu(void *self);
 
-extern "C" void _mtw_draw_loadSaveList(void *self);
+void _mtw_draw_loadSaveList(void *self);
 
-extern "C" void _mtw_draw_optionsTabs(void *self);
+void _mtw_draw_optionsTabs(void *self);
 
-extern "C" void _mtw_draw_scrollA(void *self);
+void _mtw_draw_scrollA(void *self);
 
-extern "C" void _mtw_draw_audioOptions(void *self);
+void _mtw_draw_audioOptions(void *self);
 
-extern "C" void _mtw_draw_keyConfig(void *self);
+void _mtw_draw_keyConfig(void *self);
 
-extern "C" void _mtw_draw_missions(void *self);
+void _mtw_draw_missions(void *self);
 
-extern "C" void _mtw_draw_cinematic(void *self);
+void _mtw_draw_cinematic(void *self);
 
-extern "C" void _mtw_draw_buttonsB4(void *self);
+void _mtw_draw_buttonsB4(void *self);
 
-extern "C" void _mtw_draw_store(void *self);
+void _mtw_draw_store(void *self);
 
-extern "C" void _mtw_draw_buttonsB0(void *self);
+void _mtw_draw_buttonsB0(void *self);
 
-extern "C" void _mtw_draw_scrollB(void *self);
+void _mtw_draw_scrollB(void *self);
 
-extern "C" void _mtw_draw_buttonsB8(void *self);
+void _mtw_draw_buttonsB8(void *self);
 
-extern void *const gDrawDrawingFlag __attribute__((visibility("hidden")));
-extern void *const gDrawStatePub    __attribute__((visibility("hidden")));
-extern void *const gDrawPosX        __attribute__((visibility("hidden")));
-extern void *const gDrawPosY        __attribute__((visibility("hidden")));
-extern void *const gDrawCountObj    __attribute__((visibility("hidden")));
-extern void *const gDrawColorSrc    __attribute__((visibility("hidden")));
+static void *const gDrawDrawingFlag = nullptr;
+static void *const gDrawStatePub = nullptr;
+static void *const gDrawPosX = nullptr;
+static void *const gDrawPosY = nullptr;
+static void *const gDrawCountObj = nullptr;
+static void *const gDrawColorSrc = nullptr;
 
 void MenuTouchWindow::draw() {
     *(int *) *(void **) gDrawDrawingFlag = 1;
@@ -1604,28 +1636,28 @@ float MenuTouchWindow::getRelativeScrollHeight() {
     return (float) numer / (float) page;
 }
 
-extern "C" void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId);
+void _mtw_steerFromTouchId(void *self, int y, int x, void *touchId);
 
-extern "C" void _mtw_Layout_OnTouchMove(void *layout, int y);
+void _mtw_Layout_OnTouchMove(void *layout, int y);
 
-extern void *const gMvLayout    __attribute__((visibility("hidden")));
-extern void *const gMvScreenW   __attribute__((visibility("hidden")));
-extern void *const gMvFlagA     __attribute__((visibility("hidden")));
-extern void *const gMvFlagB     __attribute__((visibility("hidden")));
-extern void *const gMvFmod      __attribute__((visibility("hidden")));
+static void *const gMvLayout = nullptr;
+static void *const gMvScreenW = nullptr;
+static void *const gMvFlagA = nullptr;
+static void *const gMvFlagB = nullptr;
+static void *const gMvFmod = nullptr;
 
 static inline __attribute__ ((always_inline))
 
 void doSliders(void *self, int y) {
     void *fmod = *(void **) gMvFmod;
-    int *sl = (int *) i32(((MenuTouchWindow *) self)->sliders, 4);
+    int *sl = (int *) ((Array<TouchSlider *> *) ((MenuTouchWindow *) self)->sliders)->data_;
     if (_mtw_FModSound_tryToStopMusicForBGMusic() == 0)
         _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[1]));
     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[2]));
     _mtw_FModSound_setVolume(fmod, _mtw_TouchSlider_getValue(((void **) sl)[3]));
 }
 
-extern void *const gMvScrollBound __attribute__((visibility("hidden")));
+static void *const gMvScrollBound = nullptr;
 
 static inline __attribute__ ((always_inline))
 
@@ -1685,7 +1717,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
             _mtw_TouchButton_OnTouchMove(this->okButton, y);
             break;
         case 2: {
-            if (*(char *) *(void **) gMvFlagA == 0) {
+            if (*(uint8_t *) *(void **) gMvFlagA == 0) {
                 void **arr = (void **) this->optionsButtons;
                 for (unsigned int i = 0; i < *(unsigned int *) arr; i++)
                     _mtw_TouchButton_OnTouchMove(((void **) arr[1])[i], y);
@@ -1705,7 +1737,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                     this->downButtonPressed = 1;
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnCC, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD0, y, x);
-                _mtw_TouchSlider_OnTouchMove(*(void **) i32(this->sliders, 4), y);
+                _mtw_TouchSlider_OnTouchMove(*(void **) ((Array<TouchSlider *> *) this->sliders)->data_, y);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD4, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnD8, y, x);
                 _mtw_TouchButton_OnTouchMoveXY(this->optBtnDC, y, x);
@@ -1713,7 +1745,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 void **arr = (void **) this->sliders;
                 for (unsigned int i = 1; i < *(unsigned int *) arr; i++)
                     _mtw_TouchSlider_OnTouchMove(((void **) arr[1])[i], y);
-                if (*(char *) *(void **) gMvFlagB != 0 && this->okButton != 0)
+                if (*(uint8_t *) *(void **) gMvFlagB != 0 && this->okButton != 0)
                     _mtw_TouchButton_OnTouchMove(this->okButton, y);
             }
         }
@@ -1761,7 +1793,7 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
                 this->downButtonPressed = 1;
             _mtw_TouchButton_OnTouchMove(this->optBtnCC, y);
             _mtw_TouchButton_OnTouchMove(this->optBtnD0, y);
-            _mtw_TouchSlider_OnTouchMove(*(void **) i32(this->sliders, 4), y);
+            _mtw_TouchSlider_OnTouchMove(*(void **) ((Array<TouchSlider *> *) this->sliders)->data_, y);
         }
         break;
         case 8:
@@ -1835,9 +1867,9 @@ int MenuTouchWindow::OnTouchMove(int y, int x, void *touchId) {
     return 0;
 }
 
-extern "C" void _mtw_buildMenu(void *self, int menuType);
+void _mtw_buildMenu(void *self, int menuType);
 
-extern void *const gCtorLayout __attribute__((visibility("hidden")));
+static void *const gCtorLayout = nullptr;
 
 MenuTouchWindow::MenuTouchWindow(int menuType) {
     Layout *layout = (Layout *) *(void **) gCtorLayout;
@@ -1898,19 +1930,19 @@ void MenuTouchWindow::setSkipButtonVisible(bool visible) {
     }
 }
 
-extern void *const gDlsLayout   __attribute__((visibility("hidden")));
-extern void *const gDlsCanvas   __attribute__((visibility("hidden")));
-extern void *const gDlsScreenW  __attribute__((visibility("hidden")));
-extern void *const gDlsScrollOn __attribute__((visibility("hidden")));
-extern void *const gDlsScrollNo __attribute__((visibility("hidden")));
-extern void *const gDlsFlagA    __attribute__((visibility("hidden")));
-extern void *const gDlsFlagB    __attribute__((visibility("hidden")));
-extern void *const gDlsTileCnt  __attribute__((visibility("hidden")));
-extern void *const gDlsRowCount __attribute__((visibility("hidden")));
-extern void *const gDlsRowMax   __attribute__((visibility("hidden")));
-extern const char gDlsBoxStr[] __attribute__((visibility("hidden")));
-extern void *const gDlsFont     __attribute__((visibility("hidden")));
-extern void *const gDlsImgFact  __attribute__((visibility("hidden")));
+static void *const gDlsLayout = nullptr;
+static void *const gDlsCanvas = nullptr;
+static void *const gDlsScreenW = nullptr;
+static void *const gDlsScrollOn = nullptr;
+static void *const gDlsScrollNo = nullptr;
+static void *const gDlsFlagA = nullptr;
+static void *const gDlsFlagB = nullptr;
+static void *const gDlsTileCnt = nullptr;
+static void *const gDlsRowCount = nullptr;
+static void *const gDlsRowMax = nullptr;
+static const char gDlsBoxStr[] = "";
+static void *const gDlsFont = nullptr;
+static void *const gDlsImgFact = nullptr;
 
 void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     (void) param1;
@@ -1927,11 +1959,11 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     int screenBound = *(int *) *(void **) gDlsScreenW;
     int inner = screenBound + margin * -2 + scrollOff * -2;
 
-    if (*(char *) *(void **) gDlsScrollOn != 0 && *(char *) *(void **) gDlsScrollNo == 0) {
+    if (*(uint8_t *) *(void **) gDlsScrollOn != 0 && *(uint8_t *) *(void **) gDlsScrollNo == 0) {
         strip5c = 8;
-        if (*(char *) *(void **) gDlsFlagA == 0) {
+        if (*(uint8_t *) *(void **) gDlsFlagA == 0) {
             strip58 = 0xc;
-            if (*(char *) *(void **) gDlsTileCnt == 0) {
+            if (*(uint8_t *) *(void **) gDlsTileCnt == 0) {
                 strip5c = 4;
                 strip58 = 6;
             }
@@ -1977,7 +2009,7 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
 
         void *font = *(void **) *(void **) gDlsFont;
         int yName = strip58 + rowY;
-        String **cols = (String **) (long) i32(this->recordRows->data_[i], 4);
+        String **cols = (String **) (long) ((Array<void *> *) this->recordRows->data_[i])->data_;
 
         ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, *cols[0],
                                              layout->buttonInsetX + this->listX + layout->field_0x2c_rowHeight,
@@ -2025,23 +2057,23 @@ void MenuTouchWindow::drawLoadSaveMenu(bool param1) {
     }
 }
 
-extern "C" void *_mtw_Status_getShip(void *status);
+void *_mtw_Status_getShip(void *status);
 
-extern "C" void *_mtw_Item_make(int itemDef);
+void *_mtw_Item_make(int itemDef);
 
-extern "C" void *_mtw_Item_makeQty(int itemDef, int qty);
+void *_mtw_Item_makeQty(int itemDef, int qty);
 
-extern "C" void _mtw_Ship_setItem(void *ship, void *item, int slot);
+void _mtw_Ship_setItem(void *ship, void *item, int slot);
 
-extern void *const gSnStatus    __attribute__((visibility("hidden")));
-extern void *const gSnShipTable __attribute__((visibility("hidden")));
-extern void *const gSnGalaxy    __attribute__((visibility("hidden")));
-extern void *const gSnOptA      __attribute__((visibility("hidden")));
-extern void *const gSnAch       __attribute__((visibility("hidden")));
-extern void *const gSnOptB      __attribute__((visibility("hidden")));
-extern void *const gSnOptHolder __attribute__((visibility("hidden")));
-extern void *const gSnFmod      __attribute__((visibility("hidden")));
-extern void *const gSnTransition __attribute__((visibility("hidden")));
+static void *const gSnStatus = nullptr;
+static void *const gSnShipTable = nullptr;
+static void *const gSnGalaxy = nullptr;
+static void *const gSnOptA = nullptr;
+static void *const gSnAch = nullptr;
+static void *const gSnOptB = nullptr;
+static void *const gSnOptHolder = nullptr;
+static void *const gSnFmod = nullptr;
+static void *const gSnTransition = nullptr;
 
 typedef void (*TransitionFn)(void *app, int mode);
 
@@ -2139,9 +2171,9 @@ void MenuTouchWindow::startSupernova() {
     thunk->transitionFn(*app, 5);
 }
 
-extern void *const gGof2Fmod __attribute__((visibility("hidden")));
-extern void *const gGof2StatusObj __attribute__((visibility("hidden")));
-extern void *const gGof2Transition __attribute__((visibility("hidden")));
+static void *const gGof2Fmod = nullptr;
+static void *const gGof2StatusObj = nullptr;
+static void *const gGof2Transition = nullptr;
 
 typedef void (*TransitionFn3)(void *app, int a, int b);
 

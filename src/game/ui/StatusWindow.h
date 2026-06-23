@@ -2,7 +2,6 @@
 #define GOF2_STATUSWINDOW_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "TouchButton.h"
 #include "engine/render/ImagePart.h"
 

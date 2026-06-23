@@ -2,8 +2,6 @@
 #define GOF2_AEGEOMETRY_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/AEMath.h"
 #include "engine/math/Matrix.h"
 

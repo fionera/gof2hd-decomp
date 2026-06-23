@@ -4,15 +4,15 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" uint8_t *g_GlowPPShader_internalInitNeededPtr;
-extern "C" uint32_t *g_GlowPPShader_shaderModePtr;
+static uint8_t *g_GlowPPShader_internalInitNeededPtr = nullptr;
+static uint32_t *g_GlowPPShader_shaderModePtr = nullptr;
 
-extern "C" unsigned int Engine_GetDisplayWidth(::Engine * engine);
-extern "C" unsigned int Engine_GetDisplayHeight(::Engine * engine);
+unsigned int Engine_GetDisplayWidth(::Engine * engine);
+unsigned int Engine_GetDisplayHeight(::Engine * engine);
 
-extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 
-extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
+void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
     void GlowPPShader::SetInActive() {

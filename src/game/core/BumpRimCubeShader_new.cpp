@@ -3,10 +3,10 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-extern "C" float g_rimnGlobalA;
-extern "C" float g_rimnGlobalB;
-extern "C" float g_rimnGlobalC;
-extern "C" unsigned char g_rimnByteGlobal;
+static float g_rimnGlobalA = 0.0f;
+static float g_rimnGlobalB = 0.0f;
+static float g_rimnGlobalC = 0.0f;
+static unsigned char g_rimnByteGlobal = 0;
 
 namespace AbyssEngine {
     int BumpRimCubeShader_new::ShaderIndex;

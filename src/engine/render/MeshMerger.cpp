@@ -5,25 +5,25 @@
 #include "engine/render/PaintCanvas.h"
 
 
-extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
+uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
-extern "C" void aeabi_memcpy4(void *dst, const void *src, uint32_t n);
+void aeabi_memcpy4(void *dst, const void *src, uint32_t n);
 
-extern "C" void *aeabi_memclr4(void *p, uint32_t n);
+void *aeabi_memclr4(void *p, uint32_t n);
 
-extern "C" void *aeabi_memclr(void *p, uint32_t n);
+void *aeabi_memclr(void *p, uint32_t n);
 
-extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
+void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
 
-extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
+void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
-extern "C" void AEMath_BSphere_assign(void *dst, const void *src);
+void AEMath_BSphere_assign(void *dst, const void *src);
 
-extern void (**g_mmRenderFn)(PaintCanvas *canvas, uint32_t transformId, int z);
+static void (**g_mmRenderFn)(PaintCanvas *canvas, uint32_t transformId, int z) = nullptr;
 
-extern void *(**g_allocFn)(int);
+static void *(**g_allocFn)(int) = nullptr;
 
-extern void (**g_freeFn)(void *);
+static void (**g_freeFn)(void *) = nullptr;
 
 MeshMerger::MeshMerger(const Array<uint16_t> &meshIds, Array<Matrix> transforms,
                        PaintCanvas *canvas, uint16_t flags) {

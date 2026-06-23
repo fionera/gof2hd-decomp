@@ -3,9 +3,9 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" float g_rimGlobalA;
-extern "C" float g_rimGlobalB;
-extern "C" unsigned char g_rimByteGlobal;
+static float g_rimGlobalA = 0.0f;
+static float g_rimGlobalB = 0.0f;
+static unsigned char g_rimByteGlobal = 0;
 
 namespace AbyssEngine {
     int BumpRimCubeShader::ShaderIndex;

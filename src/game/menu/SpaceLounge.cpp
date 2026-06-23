@@ -23,8 +23,8 @@
 
 #include "engine/render/PaintCanvas.h"
 
-extern "C" int pc_GetWidth(PaintCanvas * self);
-extern "C" int pc_GetHeight(PaintCanvas * self);
+int pc_GetWidth(PaintCanvas * self);
+int pc_GetHeight(PaintCanvas * self);
 
 static inline int &layoutMetric(Layout *layout, int off) {
     return *(int *) ((char *) layout + off);
@@ -42,18 +42,18 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" void *SpaceLounge_layout_move;
-extern "C" void *SpaceLounge_layout_begin;
+static void *SpaceLounge_layout_move;
+static void *SpaceLounge_layout_begin;
 
 void MatrixSetTranslation(void *matrix, float x, float y, float z);
 
 void MatrixSetRotation(void *matrix, float x, float y, float z);
 
-extern "C" void *SpaceLounge_touch_layout_slot;
-extern "C" void *SpaceLounge_touch_help_text_slot;
-extern "C" void *SpaceLounge_touch_list_help_text_slot;
-extern "C" void *SpaceLounge_touch_camera_slot;
-extern "C" int SpaceLounge_touch_race_vectors[];
+static void *SpaceLounge_touch_layout_slot;
+static void *SpaceLounge_touch_help_text_slot;
+static void *SpaceLounge_touch_list_help_text_slot;
+static void *SpaceLounge_touch_camera_slot;
+static int SpaceLounge_touch_race_vectors[64];
 
 namespace AbyssEngine {
     namespace AERandom {
@@ -61,20 +61,20 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" int *SpaceLounge_getSoundId_missionText;
-extern "C" void *SpaceLounge_getSoundId_offerText;
-extern "C" void *SpaceLounge_getSoundId_offer2358910;
-extern "C" void *SpaceLounge_getSoundId_offer5;
-extern "C" void *SpaceLounge_getSoundId_offer7;
-extern "C" void *SpaceLounge_getSoundId_offer4;
-extern "C" void *SpaceLounge_getSoundId_offer6;
-extern "C" void *SpaceLounge_getSoundId_offer0_11;
-extern "C" void *SpaceLounge_getSoundId_offer0_else;
-extern "C" void *SpaceLounge_getSoundId_chance;
-extern "C" void *SpaceLounge_getSoundId_offer1;
-extern "C" void *SpaceLounge_getSoundId_accepted;
-extern "C" void *SpaceLounge_getSoundId_specialText;
-extern "C" void *SpaceLounge_getSoundId_specialRandom;
+static int *SpaceLounge_getSoundId_missionText;
+static void *SpaceLounge_getSoundId_offerText;
+static void *SpaceLounge_getSoundId_offer2358910;
+static void *SpaceLounge_getSoundId_offer5;
+static void *SpaceLounge_getSoundId_offer7;
+static void *SpaceLounge_getSoundId_offer4;
+static void *SpaceLounge_getSoundId_offer6;
+static void *SpaceLounge_getSoundId_offer0_11;
+static void *SpaceLounge_getSoundId_offer0_else;
+static void *SpaceLounge_getSoundId_chance;
+static void *SpaceLounge_getSoundId_offer1;
+static void *SpaceLounge_getSoundId_accepted;
+static void *SpaceLounge_getSoundId_specialText;
+static void *SpaceLounge_getSoundId_specialRandom;
 
 void MatrixGetRight(void *out, void *matrix);
 
@@ -86,38 +86,38 @@ void MatrixGetLookAt(void *out, void *pos, void *target, void *up);
 
 void MatrixGetDir(void *out, void *matrix);
 
-extern "C" void *SpaceLounge_screen_level_slot;
-extern "C" void *SpaceLounge_screen_canvas_slot;
-extern "C" void *SpaceLounge_screen_projector;
-extern "C" void *SpaceLounge_lounge_canvas_slot;
-extern "C" void *SpaceLounge_lounge_layout_slot;
-extern "C" void *SpaceLounge_lounge_image_factory_slot;
-extern "C" void *SpaceLounge_lounge_text_slot;
-extern "C" void *SpaceLounge_lounge_font_slot;
+static void *SpaceLounge_screen_level_slot;
+static void *SpaceLounge_screen_canvas_slot;
+static void *SpaceLounge_screen_projector;
+static void *SpaceLounge_lounge_canvas_slot;
+static void *SpaceLounge_lounge_layout_slot;
+static void *SpaceLounge_lounge_image_factory_slot;
+static void *SpaceLounge_lounge_text_slot;
+static void *SpaceLounge_lounge_font_slot;
 
-extern "C" void *Station_getAgents(void *station);
+void *Station_getAgents(void *station);
 
-extern "C" void *SpaceLounge_init_layout_slot;
-extern "C" void *SpaceLounge_init_text_slot;
-extern "C" void *SpaceLounge_init_camera_slot;
+static void *SpaceLounge_init_layout_slot;
+static void *SpaceLounge_init_text_slot;
+static void *SpaceLounge_init_camera_slot;
 
-extern "C" void ArrayRemove_AgentPtr(void *agent, void *array);
+void ArrayRemove_AgentPtr(void *agent, void *array);
 
-extern "C" void *SpaceLounge_ctor_camera_slot;
-extern "C" void *SpaceLounge_start_text_slot;
-extern "C" void *SpaceLounge_draw_layout_slot;
-extern "C" void *SpaceLounge_draw_canvas_slot;
-extern "C" void *SpaceLounge_draw_text_slot;
+static void *SpaceLounge_ctor_camera_slot;
+static void *SpaceLounge_start_text_slot;
+static void *SpaceLounge_draw_layout_slot;
+static void *SpaceLounge_draw_canvas_slot;
+static void *SpaceLounge_draw_text_slot;
 
 float Sinf(float value);
 
-extern "C" void *SpaceLounge_update_camera_slot_a;
-extern "C" void *SpaceLounge_update_camera_slot_b;
-extern "C" void *SpaceLounge_update_camera_slot_c;
-extern "C" void *SpaceLounge_update_random_slot;
-extern "C" int *SpaceLounge_update_width_slot;
-extern "C" int *SpaceLounge_update_height_slot;
-extern "C" int *SpaceLounge_update_top_slot;
+static void *SpaceLounge_update_camera_slot_a;
+static void *SpaceLounge_update_camera_slot_b;
+static void *SpaceLounge_update_camera_slot_c;
+static void *SpaceLounge_update_random_slot;
+static int *SpaceLounge_update_width_slot;
+static int *SpaceLounge_update_height_slot;
+static int *SpaceLounge_update_top_slot;
 
 int SpaceLounge::OnTouchMove(int x, int y) {
     this->touchX = x;
@@ -410,7 +410,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
     switch (this->mode) {
         case 0:
             if (this->introDone == 0) {
-                void *system = (void *) (long) gStatus->getSystem();
+                void *system = (void *) (long) Status::gStatus->getSystem();
                 int race = ((SolarSystem *) (system))->getRace();
                 int *v = &SpaceLounge_touch_race_vectors[race * 3];
                 MatrixSetTranslation(matrix, (float) v[2], (float) v[0], (float) v[1]);
@@ -492,7 +492,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
         }
     }
 
-    missionText = gGlobals->getAgentMissionText(static_cast<Agent *>(agent));
+    missionText = Globals::gGlobals->getAgentMissionText(static_cast<Agent *>(agent));
 
     bool checkSpecialText = true;
     int soundId;
@@ -740,7 +740,7 @@ void SpaceLounge::updateScreenPositions() {
 
         mapped->setPosition(this->silhouettePos.x, this->silhouettePos.y, this->silhouettePos.z);
 
-        if (((SolarSystem *) ((void *) (long) gStatus->getSystem()))->getRace() == 0) {
+        if (((SolarSystem *) ((void *) (long) Status::gStatus->getSystem()))->getRace() == 0) {
             MatrixSetRotation(look, 0.0f, 0.0f, 0.0f);
             AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) (camera), *(const Matrix *) (look));
         }
@@ -905,7 +905,7 @@ int SpaceLounge::init() {
     this->touchDown = 0;
     this->initialized = 0;
     this->cameraAnimating = 0;
-    this->agents = (Array<Agent *> *) Station_getAgents(gStatus->getStation());
+    this->agents = (Array<Agent *> *) Station_getAgents(Status::gStatus->getStation());
 
     if (this->choiceWindow != 0) {
         delete this->choiceWindow;
@@ -1043,7 +1043,7 @@ SpaceLounge::SpaceLounge() {
         this->cutScene->initialize();
     }
 
-    int race = ((SolarSystem *) ((void *) (long) gStatus->getSystem()))->getRace();
+    int race = ((SolarSystem *) ((void *) (long) Status::gStatus->getSystem()))->getRace();
     MatrixSetTranslation(from, (float) race, 0.0f, 0.0f);
     MatrixSetRotation(from, 0.0f, 0.0f, 0.0f);
     MatrixSetTranslation(to, (float) race, 0.0f, 0.0f);

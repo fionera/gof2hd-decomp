@@ -3,7 +3,6 @@
 #include "engine/core/Array.h"
 #include "engine/math/BSphere.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
 #include "Quaternion.h"
 #include "engine/core/KeyFrame.h"
 

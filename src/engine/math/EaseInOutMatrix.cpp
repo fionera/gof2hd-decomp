@@ -120,14 +120,14 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration) {
+void EaseInOutMatrix_ctor(void *ease, void *from, void *to, int duration) {
     new(ease) AbyssEngine::EaseInOutMatrix(
         *(AbyssEngine::AEMath::Matrix *) from,
         *(AbyssEngine::AEMath::Matrix *) to,
         duration);
 }
 
-extern "C" void *EaseInOutMatrix_dtor(void *p) {
+void *EaseInOutMatrix_dtor(void *p) {
     if (p) ((AbyssEngine::EaseInOutMatrix *) p)->~EaseInOutMatrix();
     return p;
 }

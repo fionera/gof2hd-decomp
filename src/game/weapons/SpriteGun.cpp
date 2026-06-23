@@ -2,13 +2,13 @@
 #include "game/weapons/Gun.h"
 
 
-extern void (*SpriteGun_enemiesHandler_slot)(void *);
+static void (*SpriteGun_enemiesHandler_slot)(void *) = nullptr;
 
 
-extern void (*SpriteGun_enemyHandler_slot)(void *);
+static void (*SpriteGun_enemyHandler_slot)(void *) = nullptr;
 
 
-extern void (*SpriteGun_updateHandler_slot)(void *);
+static void (*SpriteGun_updateHandler_slot)(void *) = nullptr;
 
 SpriteGun::SpriteGun(Gun * /*gun*/, int /*kind*/) {
     this->field_0x4 = 0;

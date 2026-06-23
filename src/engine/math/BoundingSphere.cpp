@@ -46,11 +46,11 @@ int BoundingSphere::collide(float x, float y, float z) {
     return BoundingVolume::collide(x, y, z);
 }
 
-extern "C" void BoundingSphere_constructor(void *self, float cx, float cy, float cz,
-                                           float radius, float ex, float ey, float ez) {
+void BoundingSphere_constructor(void *self, float cx, float cy, float cz,
+                                float radius, float ex, float ey, float ez) {
     new(self) BoundingSphere(cx, cy, cz, ex, ey, ez, radius);
 }
 
-extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r) {
+void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r) {
     new(self) BoundingSphere(cx, cy, cz, 0.0f, 0.0f, 0.0f, r);
 }

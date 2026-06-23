@@ -9,14 +9,8 @@
 #include "game/ship/Player.h"
 #include "game/world/Standing.h"
 #include "engine/render/PaintCanvas.h"
+#include "game/mission/Status.h"
 
-
-class Status {
-public:
-    int getStanding();
-};
-
-extern Status *gStatus;
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -44,10 +38,8 @@ namespace AbyssEngine {
     }
 }
 
-extern FModSound **g_turretSound;
-extern int g_turretRandom;
-
-extern PaintCanvas *gCanvas;
+static FModSound **g_turretSound = nullptr;
+static int g_turretRandom = 0;
 
 void PlayerTurret::setTurretRange(int range) {
     this->turretRange = range;
@@ -208,7 +200,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     if (ready) {
         this->player->shoot(0, delta, delta >> 31, 0);
         AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) gCanvas->TransformGetTransform(turretGeometry->transform);
+                (AbyssEngine::Transform *) PaintCanvas::gCanvas->TransformGetTransform(turretGeometry->transform);
         transform->Update(delta, delta >> 31);
     }
 }
@@ -291,11 +283,11 @@ void PlayerTurret::update(int delta) {
     if ((faction & 0xfffffffeU) == 8) {
         player->enemyFlags = 1;
     } else {
-        Standing *standing = (Standing *) (intptr_t) gStatus->getStanding();
+        Standing *standing = (Standing *) (intptr_t) Status::gStatus->getStanding();
         bool enemy = standing->isEnemy(faction);
         bool friendly = false;
         if ((faction & 0xfffffffeU) != 8) {
-            friendly = ((Standing *) (intptr_t) gStatus->getStanding())->isFriend(faction);
+            friendly = ((Standing *) (intptr_t) Status::gStatus->getStanding())->isFriend(faction);
         }
         player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }
@@ -396,28 +388,28 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     this->hostOffset = Vector{0.0f, 0.0f, 0.0f};
     this->turretRange = 50000;
 
-    this->baseGeometry = new AEGeometry((uint16_t) mesh, gCanvas, false);
+    this->baseGeometry = new AEGeometry((uint16_t) mesh, PaintCanvas::gCanvas, false);
 
     if (mesh == 0x381b) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x381c, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x381c, PaintCanvas::gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a76) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a77, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a77, PaintCanvas::gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a74) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a75, gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a75, PaintCanvas::gCanvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     }
 
-    this->helperGeometry = new AEGeometry(gCanvas);
+    this->helperGeometry = new AEGeometry(PaintCanvas::gCanvas);
     AbyssEngine::Transform *helperTransform =
-            (AbyssEngine::Transform *) gCanvas->TransformGetTransform(this->helperGeometry->transform);
+            (AbyssEngine::Transform *) PaintCanvas::gCanvas->TransformGetTransform(this->helperGeometry->transform);
     helperTransform->flags = 0;
 
     this->setPosition(Vector{x, y, z});
@@ -437,7 +429,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         if (mesh == 0x49c0) {
             childMesh = 0x49c6;
         }
-        AEGeometry *child = new AEGeometry(childMesh, gCanvas, false);
+        AEGeometry *child = new AEGeometry(childMesh, PaintCanvas::gCanvas, false);
         geometry->addChild(child->transform);
         delete child;
         geometry->setScaling(0.5f);

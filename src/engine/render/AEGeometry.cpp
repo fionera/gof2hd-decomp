@@ -3,35 +3,35 @@
 #include "engine/math/Transform.h"
 
 
-extern "C" void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
+void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
 
-extern "C" void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t meshId);
+void _ae_TransformAddMeshId(uint32_t canvas, uint32_t tf, uint32_t meshId);
 
-extern "C" void _ae_TransformAddMesh(uint32_t canvas, uint32_t tf, uint16_t mesh, int z);
+void _ae_TransformAddMesh(uint32_t canvas, uint32_t tf, uint16_t mesh, int z);
 
-extern "C" void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order);
+void _ae_MatrixSetRotation(void *out, uint32_t loc, float x, float y, float z, int order);
 
-extern "C" void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz);
+void _ae_MatrixSetScaling(void *out, uint32_t loc, float sx, float sy, float sz);
 
-extern "C" void _ae_setPosition3(void *self, float x, float y, float z);
+void _ae_setPosition3(void *self, float x, float y, float z);
 
-extern "C" void _ae_TransformRemoveChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);
+void _ae_TransformRemoveChild(PaintCanvas *canvas, uint32_t tf, uint32_t child);
 
-extern "C" void _ae_setmesh_a(uint32_t canvas, uint32_t tf, uint32_t mesh, int z);
+void _ae_setmesh_a(uint32_t canvas, uint32_t tf, uint32_t mesh, int z);
 
-extern "C" void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
+void _ae_setmesh_b(uint32_t canvas, uint32_t mesh, uint32_t *tfp);
 
-extern "C" void _ae_MatrixSetTranslation(void *out, float x, float y, float z);
+void _ae_MatrixSetTranslation(void *out, float x, float y, float z);
 
-extern "C" void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m);
+void _ae_TransformSetLocal(uint32_t canvas, uint32_t tf, void *m);
 
-extern "C" void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag);
+void _ae_MeshCreate(PaintCanvas *c, uint16_t mesh, uint32_t *out, bool flag);
 
-extern "C" void _ae_getDirection(void *self, Vector *out);
+void _ae_getDirection(void *self, Vector *out);
 
-extern "C" void _ae_getPosition(void *self, Vector *out);
+void _ae_getPosition(void *self, Vector *out);
 
-extern "C" uint32_t Transform_GetTransform(uint32_t tf);
+uint32_t Transform_GetTransform(uint32_t tf);
 
 void VectorCross(Vector *out, const Vector *b);
 

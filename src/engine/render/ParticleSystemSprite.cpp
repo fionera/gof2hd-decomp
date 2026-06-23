@@ -4,29 +4,28 @@
 #include "engine/render/PaintCanvas.h"
 
 
-extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
-                               const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
+void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
+                    const Array<ParticleSettings::ParticleSet> &sets, bool mirror, bool alphaFade);
 
-extern "C" void _pss_base_dtor(ParticleSystemSprite * self);
+void _pss_base_dtor(ParticleSystemSprite * self);
 
-extern "C" void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
-                                      float *green, float *blue);
+void _pss_interpolateColor(ParticleSystemSprite *self, int index, float *alpha, float *red,
+                           float *green, float *blue);
 
-extern "C" float *_pss_rotateUVs(ParticleSystemSprite *self, float *src, int index, float *dst);
+float *_pss_rotateUVs(ParticleSystemSprite *self, float *src, int index, float *dst);
 
-extern "C" void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int index, float dt);
+void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *self, int index, float dt);
 
-extern "C" float VectorSignedToFloat(int v, uint8_t mode);
+using AbyssEngine::AEMath::VectorSignedToFloat;
+using AbyssEngine::AEMath::VectorUnsignedToFloat;
 
-extern "C" float VectorUnsignedToFloat(uint32_t v, uint8_t mode);
+static void *g_PaintCanvas = nullptr;
 
-extern "C" void *g_PaintCanvas;
+static char *g_particleSetBase = nullptr;
 
-extern "C" char *g_particleSetBase;
+static float g_uvRoundBias = 0.0f;
 
-extern "C" float g_uvRoundBias;
-
-extern "C" float g_colorScale;
+static float g_colorScale = 0.0f;
 
 ParticleSystemSprite::~ParticleSystemSprite() {
     this->release();

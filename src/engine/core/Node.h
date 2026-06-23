@@ -2,8 +2,6 @@
 #define GOF2_NODE_H
 #include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-
 class Node {
 public:
     Array<Node *> *children;

@@ -2,8 +2,6 @@
 #define GOF2_SENTRYGUN_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "game/weapons/ObjectGun.h"
 
 class Gun;

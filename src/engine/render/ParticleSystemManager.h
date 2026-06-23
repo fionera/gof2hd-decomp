@@ -3,8 +3,6 @@
 #include "engine/core/Array.h"
 #include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/ParticleSettings.h"
 
 #include "engine/math/AEMath.h"
@@ -32,7 +30,10 @@ using ::AbyssEngine::PaintCanvas;
 
 class ParticleSystemManager {
 public:
-    uint16_t flags;
+    union {
+        uint16_t flags;
+        uint8_t flagsLow;   // low byte; some callers write only this byte
+    };
     void *canvas;
     int32_t cameraSet;
     int32_t accumulatedDt;

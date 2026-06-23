@@ -1,19 +1,34 @@
 #include "engine/render/LODManager.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
+#include "game/core/Globals.h"
 
 #include <cstdlib>
 
-extern "C" int curTouchSize;
-extern "C" int maxTouchSize;
-extern "C" Touch *touches;
+static int curTouchSize = 0;
+static int maxTouchSize = 0;
+static Touch *touches = nullptr;
 
 uint32_t CameraGetCurrent(void *canvas);
 
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
-extern PaintCanvas **g_LOD_canvas;
-extern void *g_LOD_settings;
+static PaintCanvas **g_LOD_canvas = nullptr;
+
+// g_LOD_settings is an untyped engine settings handle. The only field accessed
+// here is a float LOD distance factor at byte offset 0x28. Model it with a
+// minimal struct carrying named members at the accessed offsets so the access
+// can be expressed as a named struct-member read instead of pointer arithmetic.
+struct LODSettings {
+    unsigned char reserved_0x00[0x28];
+    float distanceFactor; // 0x28
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(LODSettings, distanceFactor) == 0x28,
+              "LODSettings::distanceFactor must sit at offset 0x28");
+#endif
+
+static LODSettings *g_LOD_settings = nullptr;
 
 LODManager::LODManager() {
     this->cameraPos.x = 0;
@@ -44,7 +59,7 @@ void LODManager::removeObject(AEGeometry *g) {
 
 void LODManager::forceUpdate(int dt, bool useParent) {
     void *canvas = *g_LOD_canvas;
-    float factor = *(float *) ((char *) g_LOD_settings + 0x28);
+    float factor = g_LOD_settings->distanceFactor;
 
     uint32_t cam = CameraGetCurrent(canvas);
     Matrix *m = CameraGetLocal(canvas, cam);
@@ -97,96 +112,75 @@ Touch GetTouch(int index) {
     return touches[index];
 }
 
-extern int g_cItemListID_00 asm("_ZN7Globals14cItemListID_00E");
-extern int g_cItemListID_01 asm("_ZN7Globals14cItemListID_01E");
-extern int g_cItemListID_02 asm("_ZN7Globals14cItemListID_02E");
-extern int g_cItemListID_03 asm("_ZN7Globals14cItemListID_03E");
-extern int g_cItemListID_04 asm("_ZN7Globals14cItemListID_04E");
-extern int g_cItemListID_05 asm("_ZN7Globals14cItemListID_05E");
-extern int g_cItemListID_06 asm("_ZN7Globals14cItemListID_06E");
-extern int g_cItemListID_07 asm("_ZN7Globals14cItemListID_07E");
-extern int g_cItemListID_08 asm("_ZN7Globals14cItemListID_08E");
-extern int g_cItemListID_09 asm("_ZN7Globals14cItemListID_09E");
-extern int g_cItemListID_10 asm("_ZN7Globals14cItemListID_10E");
-extern int g_cItemListID_11 asm("_ZN7Globals14cItemListID_11E");
-extern int g_cItemListID_12 asm("_ZN7Globals14cItemListID_12E");
-extern int g_cItemListID_13 asm("_ZN7Globals14cItemListID_13E");
-extern int g_cItemListID_14 asm("_ZN7Globals14cItemListID_14E");
-extern int g_cItemListID_15 asm("_ZN7Globals14cItemListID_15E");
-extern int g_cItemListID_16 asm("_ZN7Globals14cItemListID_16E");
-extern int g_cItemListID_17 asm("_ZN7Globals14cItemListID_17E");
-extern int g_cItemListID_18 asm("_ZN7Globals14cItemListID_18E");
-extern int g_cItemListID_19 asm("_ZN7Globals14cItemListID_19E");
-extern int g_cItemListID_20 asm("_ZN7Globals14cItemListID_20E");
-extern int g_cItemListID_21 asm("_ZN7Globals14cItemListID_21E");
-extern int g_cItemListID_22 asm("_ZN7Globals14cItemListID_22E");
-extern int g_cItemListID_23 asm("_ZN7Globals14cItemListID_23E");
-extern int g_cItemListID_24 asm("_ZN7Globals14cItemListID_24E");
-
-extern "C" void ndk_resetNativeItemInformationList() {
-    if (g_cItemListID_00 != 0 && g_cItemListID_01 != 0 && g_cItemListID_02 != 0 &&
-        g_cItemListID_03 != 0 && g_cItemListID_04 != 0) {
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_00));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_01));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_02));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_03));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_04));
-        g_cItemListID_01 = 0;
-        g_cItemListID_00 = 0;
-        g_cItemListID_02 = 0;
-        g_cItemListID_03 = 0;
-        g_cItemListID_04 = 0;
+void ndk_resetNativeItemInformationList() {
+    if (Globals::cItemListID_00 != nullptr && Globals::cItemListID_01 != nullptr &&
+        Globals::cItemListID_02 != nullptr && Globals::cItemListID_03 != nullptr &&
+        Globals::cItemListID_04 != nullptr) {
+        operator delete[](Globals::cItemListID_00);
+        operator delete[](Globals::cItemListID_01);
+        operator delete[](Globals::cItemListID_02);
+        operator delete[](Globals::cItemListID_03);
+        operator delete[](Globals::cItemListID_04);
+        Globals::cItemListID_01 = nullptr;
+        Globals::cItemListID_00 = nullptr;
+        Globals::cItemListID_02 = nullptr;
+        Globals::cItemListID_03 = nullptr;
+        Globals::cItemListID_04 = nullptr;
     }
-    if (g_cItemListID_05 != 0 && g_cItemListID_06 != 0 && g_cItemListID_07 != 0 &&
-        g_cItemListID_08 != 0 && g_cItemListID_09 != 0) {
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_05));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_06));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_07));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_08));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_09));
-        g_cItemListID_06 = 0;
-        g_cItemListID_05 = 0;
-        g_cItemListID_07 = 0;
-        g_cItemListID_08 = 0;
-        g_cItemListID_09 = 0;
+    if (Globals::cItemListID_05 != nullptr && Globals::cItemListID_06 != nullptr &&
+        Globals::cItemListID_07 != nullptr && Globals::cItemListID_08 != nullptr &&
+        Globals::cItemListID_09 != nullptr) {
+        operator delete[](Globals::cItemListID_05);
+        operator delete[](Globals::cItemListID_06);
+        operator delete[](Globals::cItemListID_07);
+        operator delete[](Globals::cItemListID_08);
+        operator delete[](Globals::cItemListID_09);
+        Globals::cItemListID_06 = nullptr;
+        Globals::cItemListID_05 = nullptr;
+        Globals::cItemListID_07 = nullptr;
+        Globals::cItemListID_08 = nullptr;
+        Globals::cItemListID_09 = nullptr;
     }
-    if (g_cItemListID_10 != 0 && g_cItemListID_11 != 0 && g_cItemListID_12 != 0 &&
-        g_cItemListID_13 != 0 && g_cItemListID_14 != 0) {
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_10));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_11));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_12));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_13));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_14));
-        g_cItemListID_11 = 0;
-        g_cItemListID_10 = 0;
-        g_cItemListID_12 = 0;
-        g_cItemListID_13 = 0;
-        g_cItemListID_14 = 0;
+    if (Globals::cItemListID_10 != nullptr && Globals::cItemListID_11 != nullptr &&
+        Globals::cItemListID_12 != nullptr && Globals::cItemListID_13 != nullptr &&
+        Globals::cItemListID_14 != nullptr) {
+        operator delete[](Globals::cItemListID_10);
+        operator delete[](Globals::cItemListID_11);
+        operator delete[](Globals::cItemListID_12);
+        operator delete[](Globals::cItemListID_13);
+        operator delete[](Globals::cItemListID_14);
+        Globals::cItemListID_11 = nullptr;
+        Globals::cItemListID_10 = nullptr;
+        Globals::cItemListID_12 = nullptr;
+        Globals::cItemListID_13 = nullptr;
+        Globals::cItemListID_14 = nullptr;
     }
-    if (g_cItemListID_15 != 0 && g_cItemListID_16 != 0 && g_cItemListID_17 != 0 &&
-        g_cItemListID_18 != 0 && g_cItemListID_19 != 0) {
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_15));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_16));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_17));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_18));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_19));
-        g_cItemListID_16 = 0;
-        g_cItemListID_15 = 0;
-        g_cItemListID_17 = 0;
-        g_cItemListID_18 = 0;
-        g_cItemListID_19 = 0;
+    if (Globals::cItemListID_15 != nullptr && Globals::cItemListID_16 != nullptr &&
+        Globals::cItemListID_17 != nullptr && Globals::cItemListID_18 != nullptr &&
+        Globals::cItemListID_19 != nullptr) {
+        operator delete[](Globals::cItemListID_15);
+        operator delete[](Globals::cItemListID_16);
+        operator delete[](Globals::cItemListID_17);
+        operator delete[](Globals::cItemListID_18);
+        operator delete[](Globals::cItemListID_19);
+        Globals::cItemListID_16 = nullptr;
+        Globals::cItemListID_15 = nullptr;
+        Globals::cItemListID_17 = nullptr;
+        Globals::cItemListID_18 = nullptr;
+        Globals::cItemListID_19 = nullptr;
     }
-    if (g_cItemListID_20 != 0 && g_cItemListID_21 != 0 && g_cItemListID_22 != 0 &&
-        g_cItemListID_23 != 0 && g_cItemListID_24 != 0) {
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_20));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_21));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_22));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_23));
-        operator delete[](reinterpret_cast<void *>(g_cItemListID_24));
-        g_cItemListID_21 = 0;
-        g_cItemListID_20 = 0;
-        g_cItemListID_22 = 0;
-        g_cItemListID_23 = 0;
-        g_cItemListID_24 = 0;
+    if (Globals::cItemListID_20 != nullptr && Globals::cItemListID_21 != nullptr &&
+        Globals::cItemListID_22 != nullptr && Globals::cItemListID_23 != nullptr &&
+        Globals::cItemListID_24 != nullptr) {
+        operator delete[](Globals::cItemListID_20);
+        operator delete[](Globals::cItemListID_21);
+        operator delete[](Globals::cItemListID_22);
+        operator delete[](Globals::cItemListID_23);
+        operator delete[](Globals::cItemListID_24);
+        Globals::cItemListID_21 = nullptr;
+        Globals::cItemListID_20 = nullptr;
+        Globals::cItemListID_22 = nullptr;
+        Globals::cItemListID_23 = nullptr;
+        Globals::cItemListID_24 = nullptr;
     }
 }

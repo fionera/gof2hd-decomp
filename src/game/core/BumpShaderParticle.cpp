@@ -3,8 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern float g_particleGlobalA;
-extern float g_particleGlobalB;
+static float g_particleGlobalA;
+static float g_particleGlobalB;
 
 namespace AbyssEngine {
     int BumpShaderParticle::ShaderIndex;

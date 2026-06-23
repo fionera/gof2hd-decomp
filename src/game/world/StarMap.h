@@ -2,7 +2,6 @@
 #define GOF2_STARMAP_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "SystemPathFinder.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/math/EaseInOut.h"

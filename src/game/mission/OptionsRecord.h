@@ -2,7 +2,6 @@
 #define GOF2_OPTIONSRECORD_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "GameRecord.h"
 #include "Mission.h"
 #include "engine/render/Engine.h"
@@ -70,4 +69,5 @@ struct OptionsRecord {
     uint8_t field_0x3c[0xc];
     uint8_t firstRunPreviewChecked;
 };
+
 #endif

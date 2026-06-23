@@ -2,10 +2,10 @@
 #include "game/core/String.h"
 #include <new>
 
-extern FileInterface *g_AEFile_fileInterface;
-extern Array<AELowLevelFile *> *g_AEFile_openFiles;
-extern Array<AEPakFileEntry *> *g_AEFile_pakFiles;
-extern uint32_t g_AEFile_initialized;
+static FileInterface *g_AEFile_fileInterface = nullptr;
+static Array<AELowLevelFile *> *g_AEFile_openFiles = nullptr;
+static Array<AEPakFileEntry *> *g_AEFile_pakFiles = nullptr;
+static uint32_t g_AEFile_initialized = 0;
 
 namespace {
     __attribute__ ((always_inline))

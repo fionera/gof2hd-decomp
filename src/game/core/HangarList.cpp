@@ -8,6 +8,10 @@
 #include "game/ui/ListItem.h"
 #include "game/ship/Ship.h"
 
+static Status *g_HangarList_status = nullptr;
+static GameText **g_HangarList_gameText = nullptr;
+static Array<Item *> *g_HangarList_items = nullptr;
+
 Array<int> *BluePrint_getIngredientList(BluePrint * blueprint);
 
 HangarList::HangarList() {

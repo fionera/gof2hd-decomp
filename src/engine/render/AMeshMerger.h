@@ -2,8 +2,6 @@
 #define GOF2_AMESHMERGER_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 namespace AbyssEngine { 
     class Mesh;
  }

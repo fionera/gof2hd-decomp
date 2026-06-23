@@ -2,18 +2,20 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 #include "engine/render/FBOContainer.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/render/PaintCanvas.h"
 #include <GLES2/gl2.h>
 
 
-extern "C" unsigned char g_BloomShader_internalInitNeeded;
-extern "C" unsigned int g_BloomShader_shaderMode;
+static unsigned char g_BloomShader_internalInitNeeded;
+static unsigned int g_BloomShader_shaderMode;
 
-extern "C" unsigned int Engine_GetDisplayWidth(::Engine * engine);
-extern "C" unsigned int Engine_GetDisplayHeight(::Engine * engine);
+unsigned int Engine_GetDisplayWidth(::Engine * engine);
+unsigned int Engine_GetDisplayHeight(::Engine * engine);
 
-extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 
-extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
+void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
     void BloomShader::Init(Engine *) {
@@ -158,9 +160,9 @@ namespace AbyssEngine {
         const float *mvp = engine->worldViewProjMatrix;
         glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
         glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 4));
+                              engine->quadMesh->positions);
         glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 8));
+                              engine->quadMesh->texCoords);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->downSampleAttribPosition);
@@ -176,9 +178,9 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurHAttribTexCoord);
             glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
             glVertexAttribPointer(this->blurHAttribPosition, 3, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 4));
+                                  engine->quadMesh->positions);
             glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 8));
+                                  engine->quadMesh->texCoords);
             glUniform1f(this->blurHUniformTexSize, (float) this->fboBlurH->width);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -193,9 +195,9 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurVAttribTexCoord);
             glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
             glVertexAttribPointer(this->blurVAttribPosition, 3, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 4));
+                                  engine->quadMesh->positions);
             glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 8));
+                                  engine->quadMesh->texCoords);
             glUniform1f(this->blurVUniformTexSize, (float) this->fboBlurV->height);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -230,7 +232,7 @@ namespace AbyssEngine {
         glBindFramebuffer(0x8d40, engine->field_0x40c);
         unsigned int width;
         unsigned int height;
-        if (*(int *) ((char *) engine->field_0x30 + 0x30) == 2) {
+        if (engine->appManager->paintCanvas->gameOrientation == 2) {
             width = Engine_GetDisplayWidth(engine);
             height = Engine_GetDisplayHeight(engine);
         } else {
@@ -243,9 +245,9 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->finalAttribTexCoord);
         glUniformMatrix4fv(this->finalUniformWorldMatrix, 1, 0, mvp);
         glVertexAttribPointer(this->finalAttribPosition, 3, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 4));
+                              engine->quadMesh->positions);
         glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 8));
+                              engine->quadMesh->texCoords);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->finalAttribPosition);
@@ -307,9 +309,9 @@ namespace AbyssEngine {
         const float *mvp = engine->worldViewProjMatrix;
         glUniformMatrix4fv(this->downSampleUniformWorldMatrix, 1, 0, mvp);
         glVertexAttribPointer(this->downSampleAttribPosition, 3, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 4));
+                              engine->quadMesh->positions);
         glVertexAttribPointer(this->downSampleAttribTexCoord, 2, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 8));
+                              engine->quadMesh->texCoords);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->downSampleAttribPosition);
@@ -325,9 +327,9 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurHAttribTexCoord);
             glUniformMatrix4fv(this->blurHUniformWorldMatrix, 1, 0, mvp);
             glVertexAttribPointer(this->blurHAttribPosition, 3, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 4));
+                                  engine->quadMesh->positions);
             glVertexAttribPointer(this->blurHAttribTexCoord, 2, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 8));
+                                  engine->quadMesh->texCoords);
             glUniform1f(this->blurHUniformTexSize, (float) this->fboBlurH->width);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -342,9 +344,9 @@ namespace AbyssEngine {
             glEnableVertexAttribArray(this->blurVAttribTexCoord);
             glUniformMatrix4fv(this->blurVUniformWorldMatrix, 1, 0, mvp);
             glVertexAttribPointer(this->blurVAttribPosition, 3, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 4));
+                                  engine->quadMesh->positions);
             glVertexAttribPointer(this->blurVAttribTexCoord, 2, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 8));
+                                  engine->quadMesh->texCoords);
             glUniform1f(this->blurVUniformTexSize, (float) this->fboBlurV->height);
             glClear(0x4000);
             Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
@@ -384,9 +386,9 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->finalAttribTexCoord);
         glUniformMatrix4fv(this->finalUniformWorldMatrix, 1, 0, mvp);
         glVertexAttribPointer(this->finalAttribPosition, 3, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 4));
+                              engine->quadMesh->positions);
         glVertexAttribPointer(this->finalAttribTexCoord, 2, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 8));
+                              engine->quadMesh->texCoords);
         glClear(0x4000);
         Engine_DrawQuad(engine, 0, 0, Engine_GetDisplayWidth(engine), Engine_GetDisplayHeight(engine));
         glDisableVertexAttribArray(this->finalAttribPosition);

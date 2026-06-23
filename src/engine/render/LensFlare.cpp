@@ -1,11 +1,11 @@
 #include "engine/render/LensFlare.h"
 
-extern PaintCanvas *const gLensFlareCanvas __attribute__((visibility("hidden")));
-extern PaintCanvas *const gLF_Canvas2 __attribute__((visibility("hidden")));
+static PaintCanvas *const gLensFlareCanvas = nullptr;
+static PaintCanvas *const gLF_Canvas2 = nullptr;
 
-extern const uint32_t gFlareR[] __attribute__((visibility("hidden")));
-extern const uint32_t gFlareG[] __attribute__((visibility("hidden")));
-extern const uint32_t gFlareB[] __attribute__((visibility("hidden")));
+static const uint32_t gFlareR[5] = {0};
+static const uint32_t gFlareG[5] = {0};
+static const uint32_t gFlareB[5] = {0};
 
 LensFlare::LensFlare(PaintCanvas *canvas) {
     this->images = new uint32_t[3];

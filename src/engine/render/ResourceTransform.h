@@ -2,8 +2,6 @@
 #define GOF2_RESOURCETRANSFORM_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include <cstdint>
 
 namespace AbyssEngine {

@@ -16,13 +16,13 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
 
-extern void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
+void Status_replaceHash(void *out, void *tmpl, void *a, void *b, void *c);
 
 void Image2DCreate(void *canvas, unsigned short id, void *outField);
 
-extern void Hud_loadImages(Hud * self);
+void Hud_loadImages(Hud * self);
 
-extern void Hud_buildQuickMenu(Hud *self, int menuType);
+void Hud_buildQuickMenu(Hud *self, int menuType);
 
 #define HUD_INLINE static inline __attribute__((always_inline))
 HUD_INLINE
@@ -222,7 +222,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     if (this->quickMenuOpen != 0)
         drawMenu(0);
 
-    if (gStatus != nullptr && gStatus->inSupernovaSystem() != 0)
+    if (Status::gStatus != nullptr && Status::gStatus->inSupernovaSystem() != 0)
         drawChallengeModeScoreImpl(this);
 
     drawPauseButton();
@@ -261,41 +261,41 @@ void Hud::updateQueue(int dt) {
 }
 
 
-extern void **g_Hud_oiLayout;
+static void **g_Hud_oiLayout = nullptr;
 
-extern void **g_Hud_oiStatus;
+static void **g_Hud_oiStatus = nullptr;
 
-extern void **g_Hud_oiFont;
+static void **g_Hud_oiFont = nullptr;
 
-extern GameText **g_Hud_oiGameText;
-extern const char g_Hud_oiSep[] __attribute__((visibility("hidden")));
-extern const unsigned char g_Hud_secColors[] __attribute__((visibility("hidden")));
+static GameText **g_Hud_oiGameText = nullptr;
+static const char g_Hud_oiSep[1] = {0};
+static const unsigned char g_Hud_secColors[4 * 0xc] = {0};
 
 void Hud::drawOrbitInformation() {
-    if (gStatus->inAlienOrbit() != 0) return;
+    if (Status::gStatus->inAlienOrbit() != 0) return;
 
     int *layout = (int *) *g_Hud_oiLayout;
-    gCanvas->SetColor((unsigned) (-1));
-    int x = gCanvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
+    int x = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
 
-    if (((SolarSystem *) (((void *) (long) gStatus->getSystem())))->hasNoOwner() == 0)
-        gCanvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
+    if (((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->hasNoOwner() == 0)
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
 
     void *font = *g_Hud_oiFont;
 
     {
         char name[12];
         ((Station *) (name))->getName();
-        gCanvas->DrawString((unsigned) (long) (font), *(String *) (name), (x), (char) layout[0x88], false);
+        PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), *(String *) (name), (x), (char) layout[0x88], false);
         ((String *) (name))->clear();
     }
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
 
-    if (gStatus->getCurrentCampaignMission() <= 0xf) return;
+    if (Status::gStatus->getCurrentCampaignMission() <= 0xf) return;
 
-    void *sys = ((void *) (long) gStatus->getSystem());
+    void *sys = ((void *) (long) Status::gStatus->getSystem());
     int sec = ((SolarSystem *) (sys))->getSecurityLevel();
-    int idx = ((SolarSystem *) (((void *) (long) gStatus->getSystem())))->getIndex();
+    int idx = ((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->getIndex();
     int *status = (int *) *g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] > 1) sec = 3;
 
@@ -307,7 +307,7 @@ void Hud::drawOrbitInformation() {
         *(String *) acc = *(String *) copy + *(String *) sep;
         void *txt = (*g_Hud_oiGameText)->getText(0);
         *(String *) full = *(String *) acc + *(String *) txt;
-        gCanvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
+        PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), *(String *) (full), (x), (char) layout[0x89], false);
         ((String *) (full))->clear();
         ((String *) (acc))->clear();
         ((String *) (sep))->clear();
@@ -316,10 +316,10 @@ void Hud::drawOrbitInformation() {
     }
 
     const unsigned char *row = g_Hud_secColors + sec * 0xc;
-    gCanvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
+    PaintCanvas::gCanvas->SetColor((unsigned char) (row[0]), (unsigned char) (row[4]), (unsigned char) (row[8]),
                       (unsigned char) (0xff));
     void *secTxt = (*g_Hud_oiGameText)->getText(sec);
-    gCanvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
+    PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), *(String *) (secTxt), (x), (char) layout[0x8a], false);
 }
 
 unsigned int Hud::touchMove(unsigned int a, unsigned int b, void *key) {
@@ -334,7 +334,7 @@ found:
     int dx = (int) a - (int) this->reticleX;
     int dy = (int) b - (int) this->reticleY;
     float f = (float) (dy * dy + dx * dx);
-    float r = gGlobals->sqrt(f);
+    float r = Globals::gGlobals->sqrt(f);
     int denom = this->analogStickRadius;
     int len = (int) r;
     if (denom < len) {
@@ -351,11 +351,11 @@ found:
 }
 
 
-extern void **g_Hud_teCinematic;
+static void **g_Hud_teCinematic = nullptr;
 
-extern void **g_Hud_teScreenW;
+static void **g_Hud_teScreenW = nullptr;
 
-extern void **g_Hud_teScreenH;
+static void **g_Hud_teScreenH = nullptr;
 
 static inline bool span(unsigned short o, int w, unsigned int v) {
     return o <= v && v <= (unsigned int) o + w;
@@ -441,13 +441,13 @@ Hud::Hud() {
 }
 
 
-extern GameText **g_Hud_ccGameText;
+static GameText **g_Hud_ccGameText = nullptr;
 
-extern void **g_Hud_ccTemplate;
-extern const char g_Hud_ccHashX[] __attribute__((visibility("hidden")));
-extern const char g_Hud_ccHashN[] __attribute__((visibility("hidden")));
-extern const char g_Hud_ccUnit[] __attribute__((visibility("hidden")));
-extern const char g_Hud_ccUnit2[] __attribute__((visibility("hidden")));
+static void **g_Hud_ccTemplate = nullptr;
+static const char g_Hud_ccHashX[1] = {0};
+static const char g_Hud_ccHashN[1] = {0};
+static const char g_Hud_ccUnit[1] = {0};
+static const char g_Hud_ccUnit2[1] = {0};
 
 void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, bool extender,
                      bool slotMode, bool aggregate) {
@@ -463,7 +463,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12];
         ((String *) (a40))->ctor_copy((String *) (dst), false);
-        int type = gStatus->getMission()->getType();
+        int type = Status::gStatus->getMission()->getType();
         void *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
         char a4c[12];
         ((String *) (a4c))->ctor_copy((String *) (typeTxt), false);
@@ -588,11 +588,11 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
 }
 
 
-extern void **g_Hud_font;
+static void **g_Hud_font = nullptr;
 
-extern void **g_Hud_canvas2;
+static void **g_Hud_canvas2 = nullptr;
 
-extern void **g_Hud_screenW;
+static void **g_Hud_screenW = nullptr;
 
 void Hud::drawEventString(String text, bool rightAlign) {
     void *font = *g_Hud_font;
@@ -602,7 +602,7 @@ void Hud::drawEventString(String text, bool rightAlign) {
         int base = this->eventLineMargin;
         int yBase = this->eventLineX;
         if (rightAlign == 0) {
-            int w = gCanvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
+            int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
             x = (base + 3) - w;
         } else {
             x = -3 - base;
@@ -612,14 +612,14 @@ void Hud::drawEventString(String text, bool rightAlign) {
         if (rightAlign == 0) {
             int margin = this->eventLineMarginAlt;
             int screenW = *(int *) *g_Hud_screenW;
-            int w = gCanvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
+            int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (canvas), *(String *) (font));
             x = ((screenW - 1) - margin) - w;
         } else {
             x = this->eventLineMarginAlt + 1;
         }
     }
     char y = (char) (this->eventLineY - 1);
-    gCanvas->DrawString((unsigned) (long) (font), text, (x), (y), false);
+    PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), text, (x), (y), false);
 }
 
 void Hud::setCurrentSecondaryWeapon(Item *item) {
@@ -641,15 +641,15 @@ int Hud::sameHudEventAsBeforeAggregate(String str) {
 }
 
 
-extern GameText **g_Hud_gameText;
+static GameText **g_Hud_gameText = nullptr;
 
-extern void **g_Hud_swCanvas;
+static void **g_Hud_swCanvas = nullptr;
 
-extern void **g_Hud_swFont;
+static void **g_Hud_swFont = nullptr;
 
-extern void **g_Hud_swScreenW;
-extern const char g_Hud_swSep[] __attribute__((visibility("hidden")));
-extern const char g_Hud_swEnd[] __attribute__((visibility("hidden")));
+static void **g_Hud_swScreenW = nullptr;
+static const char g_Hud_swSep[1] = {0};
+static const char g_Hud_swEnd[1] = {0};
 
 void Hud::updateSecondaryWeaponString() {
     void *item = this->currentSecondaryWeapon;
@@ -677,18 +677,18 @@ void Hud::updateSecondaryWeaponString() {
     ((String *) (sep))->clear();
 
     int screenW = *(int *) *g_Hud_swScreenW;
-    int w = gCanvas->GetTextWidth((unsigned) (long) (*g_Hud_swCanvas), *(String *) (*g_Hud_swFont));
+    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (*g_Hud_swCanvas), *(String *) (*g_Hud_swFont));
     this->secondaryLabelX = (screenW >> 1) - (w >> 1);
 }
 
 
-extern void **g_Hud_eqLetterbox;
+static void **g_Hud_eqLetterbox = nullptr;
 
-extern void **g_Hud_eqSelf;
+static void **g_Hud_eqSelf = nullptr;
 
-extern void **g_Hud_eqScreenW;
+static void **g_Hud_eqScreenW = nullptr;
 
-extern void **g_Hud_eqFont;
+static void **g_Hud_eqFont = nullptr;
 
 void Hud::drawEventQueue() {
     char letterbox = *(char *) *g_Hud_eqLetterbox;
@@ -698,11 +698,11 @@ void Hud::drawEventQueue() {
     int dispBase = src->eventBannerDisplayBase;
     float dispScale = src->eventBannerDisplayScale;
 
-    gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0));
+    PaintCanvas::gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0));
     float mul = (letterbox == 0) ? -2.0f : -1.0f;
     int yOff = (int) (mul * dispScale);
 
-    gCanvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3e0, 0);
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->eventBannerImage, this->field_0x3e0, 0);
 
     ListItem *item = (*this->eventQueue)[1];
     if (item != 0) {
@@ -725,17 +725,17 @@ void Hud::drawEventQueue() {
             b3 = 0xff;
             b4 = 0xff;
         }
-        gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (b2), (unsigned char) (b3), (unsigned char) (b4));
+        PaintCanvas::gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (b2), (unsigned char) (b3), (unsigned char) (b4));
 
         String *label = (String *) item->name;
         void *font = *g_Hud_eqFont;
         int screenW = *(int *) *g_Hud_eqScreenW;
-        int w = gCanvas->GetTextWidth((unsigned) (long) (gCanvas), *(String *) (font));
+        int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (PaintCanvas::gCanvas), *(String *) (font));
         char y = (char) ((char) yOff + (char) dispBase + cinematicY);
-        gCanvas->DrawString((unsigned) (long) (font), *label, ((screenW >> 1) - w / 2), (y), false);
+        PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), *label, ((screenW >> 1) - w / 2), (y), false);
     }
 
-    gCanvas->SetColor(0xffffffffu);
+    PaintCanvas::gCanvas->SetColor(0xffffffffu);
 }
 
 unsigned int Hud::touchBegin(unsigned int a, unsigned int b, void *key) {
@@ -787,16 +787,16 @@ unsigned int Hud::sameHudEventAsBefore(String str) {
 }
 
 
-extern void **g_Hud_initLayout;
+static void **g_Hud_initLayout = nullptr;
 
-extern void **g_Hud_initBound;
+static void **g_Hud_initBound = nullptr;
 
-extern void **g_Hud_initOutX;
+static void **g_Hud_initOutX = nullptr;
 
-extern void **g_Hud_initOutY;
+static void **g_Hud_initOutY = nullptr;
 
-extern const unsigned short g_Hud_raceBadge[];
-extern const char g_Hud_initMsg[] __attribute__((visibility("hidden")));
+static const unsigned short g_Hud_raceBadge[16] = {0};
+static const char g_Hud_initMsg[1] = {0};
 
 int Hud::init() {
     Hud_loadImages(this);
@@ -813,9 +813,9 @@ int Hud::init() {
     }
     this->touchFlags = 0;
 
-    if (gStatus->inAlienOrbit() == 0) {
-        int race = ((SolarSystem *) (((void *) (long) gStatus->getSystem())))->getRace();
-        Image2DCreate(gCanvas, g_Hud_raceBadge[race], &this->factionLogoImage);
+    if (Status::gStatus->inAlienOrbit() == 0) {
+        int race = ((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->getRace();
+        Image2DCreate(PaintCanvas::gCanvas, g_Hud_raceBadge[race], &this->factionLogoImage);
     }
 
     this->secondaryLabelTimerSeed = -1;
@@ -833,7 +833,7 @@ int Hud::init() {
     this->uintArray = 0;
 
     int *layout = (int *) *g_Hud_initLayout;
-    int w = gCanvas->GetImage2DWidth((unsigned) (0));
+    int w = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (0));
     int bound = *(int *) *g_Hud_initBound;
     *(int *) *g_Hud_initOutX = (bound - w) - layout[0x65];
     *(int *) *g_Hud_initOutY = layout[0x66];
@@ -841,16 +841,16 @@ int Hud::init() {
 }
 
 void Hud::drawPauseButton() {
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     unsigned char flag = this->touchFlags;
     int y = this->field_0x40c;
     int x = this->field_0x40a;
     int img = (flag & 1) == 0 ? this->pauseButtonImage : this->pauseButtonPressedImage;
-    return gCanvas->DrawImage2D((unsigned) (img), (x), (y));
+    return PaintCanvas::gCanvas->DrawImage2D((unsigned) (img), (x), (y));
 }
 
 Hud *Hud::checkIfQuickMenuIsEmpty() {
-    Ship *ship = gStatus->getShip();
+    Ship *ship = Status::gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
     this->equipmentArray = equip;
 
@@ -866,7 +866,7 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
     }
     if (hasSecondary) {
         empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && gStatus->getWingmen() == 0) {
+    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
         empty = (unsigned char) ship->hasCloak();
     } else {
         empty = 0;
@@ -877,35 +877,35 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
 }
 
 
-extern void **g_Hud_dmLayout;
+static void **g_Hud_dmLayout = nullptr;
 
-extern void **g_Hud_dmFont;
-extern const char g_Hud_dmPrefix[] __attribute__((visibility("hidden")));
+static void **g_Hud_dmFont = nullptr;
+static const char g_Hud_dmPrefix[1] = {0};
 
 void Hud::drawMenu(int unused) {
     (void) unused;
     int *layout = (int *) *g_Hud_dmLayout;
     ((Layout *) (layout))->drawMask();
 
-    gCanvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->quickMenuTopImage, this->field_0x3c4 + this->menuOriginX, 0);
 
     int hx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     char hy = (char) ((char) this->menuOriginYBase + (char) this->menuOriginY + (char) (this->menuRowHeight / 2)
                       - (char) layout[0x8b]);
-    gCanvas->DrawImage2D((unsigned) this->quickMenuHeaderImage, hx, hy, (unsigned char) 0x11);
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->quickMenuHeaderImage, hx, hy, (unsigned char) 0x11);
 
     int y = this->menuOriginY + this->menuOriginYBase + this->menuRowHeight;
 
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int count = (unsigned int) this->menuButtons->size();
         for (unsigned int i = 0; i < count - 1; i++) {
-            gCanvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX, 0);
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) this->quickMenuMiddleImage, this->field_0x3c4 + this->menuOriginX, 0);
             y += this->field_0x3d0;
             count = (unsigned int) this->menuButtons->size();
         }
     }
 
-    gCanvas->DrawImage2D((unsigned) this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->quickMenuBottomImage, this->field_0x3c4 + this->menuOriginX, 0);
 
     if (this->menuButtons != 0 && this->menuButtons->size() != 0) {
         unsigned int n = (unsigned int) this->menuButtons->size();
@@ -917,7 +917,7 @@ void Hud::drawMenu(int unused) {
 
     if (this->menuLevel != 0) return;
 
-    Ship *ship = gStatus->getShip();
+    Ship *ship = Status::gStatus->getShip();
     if (!ship->hasCloak() && ship->hasJumpDrive() == 0) return;
 
     char prefix[12], num[12], label[12];
@@ -930,16 +930,16 @@ void Hud::drawMenu(int unused) {
     int gx = this->menuOriginX + this->field_0x3d4 + this->field_0x3dc / 2;
     unsigned char gy = (unsigned char) ((char) y + (char) (layout[0xc] / 2)
                                         + (char) layout[0xa2]);
-    gCanvas->DrawImage2D((unsigned) this->fuelGaugeBarImage, gx, gy, (unsigned char) 0x11);
-    gCanvas->DrawImage2D((unsigned) this->fuelGaugeIconImage, gx - layout[0x8c],
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->fuelGaugeBarImage, gx, gy, (unsigned char) 0x11);
+    PaintCanvas::gCanvas->DrawImage2D((unsigned) this->fuelGaugeIconImage, gx - layout[0x8c],
                          (char) layout[0xc] + (char) gy + (char) layout[0xa3], (unsigned char) 0x11);
 
     int barW = layout[0x8c];
     void *font = *g_Hud_dmFont;
-    int ih = gCanvas->GetImage2DHeight((unsigned) (0));
-    int th = gCanvas->GetTextHeight(0);
+    int ih = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (0));
+    int th = PaintCanvas::gCanvas->GetTextHeight(0);
     char ty = (char) (((gy + (char) (ih / 2)) - (char) (th / 2)) + (char) layout[0x8d]);
-    gCanvas->DrawString((unsigned) (long) (font), *(String *) (label), (barW + gx), (ty), false);
+    PaintCanvas::gCanvas->DrawString((unsigned) (long) (font), *(String *) (label), (barW + gx), (ty), false);
     ((String *) (label))->clear();
 }
 
@@ -1007,12 +1007,12 @@ void Hud::hudEvent(int eventId, PlayerEgo *ego, int arg) {
 }
 
 
-extern void **g_Hud_csLayout;
+static void **g_Hud_csLayout = nullptr;
 
-extern void **g_Hud_csStatus;
+static void **g_Hud_csStatus = nullptr;
 
-extern void **g_Hud_csScreenW;
-extern const char g_Hud_csZero[] __attribute__((visibility("hidden")));
+static void **g_Hud_csScreenW = nullptr;
+static const char g_Hud_csZero[1] = {0};
 
 HUD_INLINE
 
@@ -1039,7 +1039,7 @@ void drawChallengeModeScoreImpl(Hud *self) {
     int screenW = *(int *) *g_Hud_csScreenW;
     void *sprite = self->digitSprite;
 
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     int fw = ((Sprite *) (sprite))->getFrameWidth();
     int pad = layout[0xb];
     int fh = ((Sprite *) (sprite))->getFrameHeight();
@@ -1059,7 +1059,7 @@ void drawChallengeModeScoreImpl(Hud *self) {
         }
     }
 
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     int dw = fw - pad;
     int half = screenW / 2;
     int span = (dw * 7) / 2;
@@ -1067,7 +1067,7 @@ void drawChallengeModeScoreImpl(Hud *self) {
     drawDigits(self, sprite, score, startX, y, dw);
 
     if (status[0x60] > 0 && status[0x63] > 1) {
-        gCanvas->SetColor((unsigned) (-1));
+        PaintCanvas::gCanvas->SetColor((unsigned) (-1));
         int yRow = y + fh + pad;
         int scoreVal = status[0x60];
         if (scoreVal < 0xbb9) {
@@ -1083,15 +1083,15 @@ void drawChallengeModeScoreImpl(Hud *self) {
                 ((String *) (bonusStr))->clear();
             }
         }
-        gCanvas->DrawImage2D((unsigned) self->multiplierIconImage, pad + startX, 0);
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) self->multiplierIconImage, pad + startX, 0);
 
         char timeStr[12];
         ((String *) (timeStr))->ctor_int(status[0x63]);
-        int tx = (half + pad) - span + gCanvas->GetImage2DWidth((unsigned) (0));
+        int tx = (half + pad) - span + PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (0));
         drawDigits(self, sprite, timeStr, tx, yRow, dw);
         ((String *) (timeStr))->clear();
     }
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     ((String *) (score))->clear();
 }
 
@@ -1101,15 +1101,13 @@ void Hud::drawChallengeModeScore(int unused) {
 }
 
 
-extern GameText **g_Hud_gameText;
+static void **g_Hud_meCanvas = nullptr;
 
-extern void **g_Hud_meCanvas;
+static void **g_Hud_meFont = nullptr;
 
-extern void **g_Hud_meFont;
-
-extern void **g_Hud_meScreenW;
-extern const char g_Hud_meSep[] __attribute__((visibility("hidden")));
-extern const char g_Hud_meEnd[] __attribute__((visibility("hidden")));
+static void **g_Hud_meScreenW = nullptr;
+static const char g_Hud_meSep[1] = {0};
+static const char g_Hud_meEnd[1] = {0};
 
 void Hud::hudEventMedal(int medalId, int percent) {
     GameText *gt = *g_Hud_gameText;
@@ -1143,7 +1141,7 @@ void Hud::hudEventMedal(int medalId, int percent) {
     ListItem *item = new ListItem(str, 3);
     addToEventQueue(item);
 
-    int w = gCanvas->GetTextWidth((unsigned) (long) (*g_Hud_meCanvas), *(String *) (*g_Hud_meFont));
+    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (*g_Hud_meCanvas), *(String *) (*g_Hud_meFont));
     int screenW = *(int *) *g_Hud_meScreenW;
     this->eventScrollTick = 0;
     this->eventScrolls = 1;
@@ -1151,17 +1149,17 @@ void Hud::hudEventMedal(int medalId, int percent) {
 }
 
 
-extern void **g_Hud_imLayout;
+static void **g_Hud_imLayout = nullptr;
 
-extern void **g_Hud_imLetterbox;
+static void **g_Hud_imLetterbox = nullptr;
 
-extern void **g_Hud_imCargoA;
+static void **g_Hud_imCargoA = nullptr;
 
-extern void **g_Hud_imCargoB;
+static void **g_Hud_imCargoB = nullptr;
 
-extern void **g_Hud_imFlagA;
+static void **g_Hud_imFlagA = nullptr;
 
-extern void **g_Hud_imFlagB;
+static void **g_Hud_imFlagB = nullptr;
 
 void Hud::initHudMenu(int menuType, Level *lvl) {
     if (this->menuButtons != 0) {
@@ -1174,7 +1172,7 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     this->menuButtons = new Array<TouchButton *>();
 
     delete this->equipmentArray;
-    this->equipmentArray = gStatus->getShip()->getEquipment(1);
+    this->equipmentArray = Status::gStatus->getShip()->getEquipment(1);
     updateSecondaryWeaponString();
 
     this->menuOriginX = 0;
@@ -1242,7 +1240,7 @@ HUD_INLINE
 void refreshQuickMenu(Hud *self) {
     self->updateSecondaryWeaponString();
 
-    Ship *ship = gStatus->getShip();
+    Ship *ship = Status::gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
     self->equipmentArray = equip;
 
@@ -1258,7 +1256,7 @@ void refreshQuickMenu(Hud *self) {
     unsigned char empty;
     if (hasSecondary) {
         empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && gStatus->getWingmen() == 0) {
+    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
         empty = (unsigned char) (ship->hasCloak() == 0);
     } else {
         empty = 0;
@@ -1266,7 +1264,7 @@ void refreshQuickMenu(Hud *self) {
     self->quickMenuEmpty = empty;
 }
 
-extern unsigned int g_Hud_heImportantMask;
+static unsigned int g_Hud_heImportantMask = 0;
 
 HUD_INLINE
 
@@ -1293,7 +1291,7 @@ void hudEventBuild(Hud *self, int eventId, void *ego, int arg) {
     self->addToEventQueue(item);
 
     void *font = *g_Hud_font;
-    int w = gCanvas->GetTextWidth((unsigned) (long) (gCanvas), *(String *) (font));
+    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) (PaintCanvas::gCanvas), *(String *) (font));
     int screenW = *(int *) *g_Hud_screenW;
     self->eventScrollTick = 0;
     self->eventScrolls = 1;
@@ -1309,7 +1307,7 @@ static void buildQuickMenu(Hud *self, int menuType) {
 static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigned int y) {
     (void) x;
     (void) y;
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     canvas->DrawImage2D((unsigned) self->reticleImage, self->field_0x42c, 0);
 
@@ -1332,11 +1330,11 @@ static void drawReticleAndBrackets(Hud *self, void *ego, unsigned int x, unsigne
 }
 
 
-extern Level **g_Hud_level;
+static Level **g_Hud_level = nullptr;
 
 static void drawRadar(Hud *self) {
-    PaintCanvas *canvas = gCanvas;
-    Status *st = gStatus;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    Status *st = Status::gStatus;
 
     bool show = false;
     if (st->inAlienOrbit() == 0) {
@@ -1354,7 +1352,7 @@ static void drawRadar(Hud *self) {
 }
 
 static void drawBars(Hud *self, void *ego) {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     PlayerEgo *e = (PlayerEgo *) ego;
     Player *player = *(Player **) ego;
     float scale = (float) self->field_0x446;
@@ -1395,7 +1393,7 @@ static void drawBars(Hud *self, void *ego) {
 }
 
 static void drawSecondaryWeaponPanel(Hud *self) {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     Level *lvl = *g_Hud_level;
     PlayerEgo *player = (PlayerEgo *) (lvl ? (void *) (long) lvl->getPlayer() : (void *) 0);
 
@@ -1410,10 +1408,10 @@ static void drawSecondaryWeaponPanel(Hud *self) {
             unsigned short iconW = self->field_0x3ec;
             canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
             canvas->DrawImage2D((unsigned) self->eventBannerImage, self->field_0x3ec, 0);
-            int textW = gCanvas->GetTextWidth(
+            int textW = PaintCanvas::gCanvas->GetTextWidth(
                 (unsigned) (long) canvas, *(String *) (font));
             int tx = self->field_0x3ec + ((screenW - iconW) - textW) / 2;
-            gCanvas->DrawString((unsigned) (long) canvas,
+            PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
                                 self->field_0x51c, tx, 0, false);
             canvas->SetColor((unsigned) 0xffffffffu);
             int t = self->secondaryLabelTimer;
@@ -1424,20 +1422,20 @@ static void drawSecondaryWeaponPanel(Hud *self) {
 }
 
 static void drawMissionBanner(Hud *self) {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     canvas->SetColor((unsigned) 0xffffffffu);
 
     canvas->DrawImage2D((unsigned) self->missionBannerImage, self->field_0x438, 0);
 }
 
 static void drawMessage(Hud *self) {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
     void *font = *g_Hud_font;
     int screenW = *(int *) *g_Hud_screenW;
-    int w = gCanvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
-    gCanvas->DrawString((unsigned) (long) canvas,
+    int w = PaintCanvas::gCanvas->GetTextWidth((unsigned) (long) canvas, *(String *) (font));
+    PaintCanvas::gCanvas->DrawString((unsigned) (long) canvas,
                         self->field_0x51c, screenW / 2 - w / 2, self->field_0x3e2, false);
     canvas->SetColor((unsigned) 0xffffffffu);
 }

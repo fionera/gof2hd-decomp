@@ -1,74 +1,74 @@
 #include "engine/render/ParticleSystemMesh.h"
 
 
-extern "C" void _psm_emitTrail(ParticleSystemMesh *self, int id);
+void _psm_emitTrail(ParticleSystemMesh *self, int id);
 
-extern "C" void _psm_emitUsual(ParticleSystemMesh *self, int id);
+void _psm_emitUsual(ParticleSystemMesh *self, int id);
 
-extern "C" void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
+void _psm_meshSetPoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
 
-extern "C" void _psm_mesh_base_dtor(ParticleSystemMesh * self);
+void _psm_mesh_base_dtor(ParticleSystemMesh * self);
 
-extern "C" void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
+void _psm_render2(PaintCanvas *canvas, uint32_t texture, uint32_t camera);
 
-extern "C" void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
+void _psm_vectorMinus(Vector *out, const Vector *a, const Vector *b);
 
-extern "C" void _psm_vectorPlus(void *out, const Vector *a, const Vector *b);
+void _psm_vectorPlus(void *out, const Vector *a, const Vector *b);
 
-extern "C" char g_ParticleSetData[];
+static char g_ParticleSetData[1];
 
-extern "C" void _psm_matrixGetRight(Vector *out, const Matrix *m);
+void _psm_matrixGetRight(Vector *out, const Matrix *m);
 
-extern "C" void _psm_matrixGetUp(Vector *out, const Matrix *m);
+void _psm_matrixGetUp(Vector *out, const Matrix *m);
 
-extern "C" void _psm_matrixGetDir(Vector *out, const Matrix *m);
+void _psm_matrixGetDir(Vector *out, const Matrix *m);
 
-extern "C" void _psm_vectorScale(Vector *out, const Vector *v, float scale);
+void _psm_vectorScale(Vector *out, const Vector *v, float scale);
 
-extern "C" void _psm_vectorAssign(Vector *dst, const Vector *src);
+void _psm_vectorAssign(Vector *dst, const Vector *src);
 
-extern "C" void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta);
+void _psm_setQuadEdge(ParticleSystemMesh *self, const Vector *edge, int point, const Vector *delta);
 
-extern "C" void _psm_meshSetColorWord(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t color);
+void _psm_meshSetColorWord(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t color);
 
-extern "C" void _psm_meshSetUV2(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u, float v);
+void _psm_meshSetUV2(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u, float v);
 
-extern "C" void _psm_meshSetUV(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u, float v);
+void _psm_meshSetUV(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float u, float v);
 
-extern "C" void _psm_meshSetZero(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t value);
+void _psm_meshSetZero(PaintCanvas *canvas, uint32_t mesh, uint16_t point, uint32_t value);
 
-extern "C" void _psm_meshTranslatePoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
+void _psm_meshTranslatePoint(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y, float z);
 
-extern "C" void _psm_interpolateColor(ParticleSystemMesh *self, int id, float *b, float *g, float *a, float *r);
+void _psm_interpolateColor(ParticleSystemMesh *self, int id, float *b, float *g, float *a, float *r);
 
-extern "C" void _psm_canvasSetTexture(PaintCanvas *canvas, uint32_t texture, uint32_t fallback);
+void _psm_canvasSetTexture(PaintCanvas *canvas, uint32_t texture, uint32_t fallback);
 
-extern "C" void _psm_canvasSetBlendMode(PaintCanvas *canvas, BlendMode mode);
+void _psm_canvasSetBlendMode(PaintCanvas *canvas, BlendMode mode);
 
-extern "C" uint32_t _psm_cameraGetCurrent(PaintCanvas * canvas);
+uint32_t _psm_cameraGetCurrent(PaintCanvas * canvas);
 
-extern "C" uint32_t _psm_cameraGetLocal(PaintCanvas *canvas, uint32_t current);
+uint32_t _psm_cameraGetLocal(PaintCanvas *canvas, uint32_t current);
 
-extern "C" void _psm_updateUsualEdges(ParticleSystemMesh *self, int id, int delta);
+void _psm_updateUsualEdges(ParticleSystemMesh *self, int id, int delta);
 
-extern "C" void _psm_updateTrailEdges(ParticleSystemMesh *self, int id, int delta);
+void _psm_updateTrailEdges(ParticleSystemMesh *self, int id, int delta);
 
-extern "C" void _psm_updateSingleColor(ParticleSystemMesh *self, int id);
+void _psm_updateSingleColor(ParticleSystemMesh *self, int id);
 
-extern "C" void _psm_meshSetPointIndirect(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y,
-                                          float z);
+void _psm_meshSetPointIndirect(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float x, float y,
+                               float z);
 
-extern "C" void _psm_meshSetTriangle(PaintCanvas *canvas, uint32_t mesh, uint16_t triangle, uint16_t a, uint16_t b,
-                                     uint16_t c);
+void _psm_meshSetTriangle(PaintCanvas *canvas, uint32_t mesh, uint16_t triangle, uint16_t a, uint16_t b,
+                          uint16_t c);
 
-extern "C" void _psm_meshSetColor(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float a, float r, float g,
-                                  float b);
+void _psm_meshSetColor(PaintCanvas *canvas, uint32_t mesh, uint16_t point, float a, float r, float g,
+                       float b);
 
-extern "C" void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, ParticleSet set, int id, const Vector *a,
-                                                const Vector *b);
+void _psm_finishCurrentTrailParticle(ParticleSystemMesh *self, ParticleSet set, int id, const Vector *a,
+                                     const Vector *b);
 
-extern "C" void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix, const void *sets,
-                               bool a, bool b);
+void _psm_base_ctor(ParticleSystemMesh *self, PaintCanvas *canvas, const Matrix *matrix, const void *sets,
+                    bool a, bool b);
 
 int ParticleSystemMesh::getPrevId(int id) {
     if (id == 0)

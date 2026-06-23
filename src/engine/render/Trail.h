@@ -2,8 +2,6 @@
 #define GOF2_TRAIL_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
@@ -56,29 +54,8 @@ namespace AbyssEngine {
     using ::Trail;
 }
 
-extern "C" void Trail_renderTransform(AbyssEngine::PaintCanvas *canvas, uint32_t transform, int mode);
+void Trail_renderTransform(AbyssEngine::PaintCanvas *canvas, uint32_t transform, int mode);
 
-extern "C" void Trail_transformSetColor(AbyssEngine::PaintCanvas *canvas, uint32_t transform, uint32_t color);
-
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasRender;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasType1;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasType2;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasType3;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasTypeDefault;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasType5;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasType8;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasCtor;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasUpdate;
-
-extern AbyssEngine::PaintCanvas **gTrailCanvasSetWidth;
+void Trail_transformSetColor(AbyssEngine::PaintCanvas *canvas, uint32_t transform, uint32_t color);
 
 #endif

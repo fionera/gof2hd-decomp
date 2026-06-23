@@ -9,27 +9,27 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-extern PaintCanvas *gCanvas;
+// PaintCanvas::gCanvas is declared in PaintCanvas.h (included above).
 
-extern int **g_APL_apFlag;
+static int **g_APL_apFlag = nullptr;
 
-extern GameText **g_APL_gametext;
+static GameText **g_APL_gametext = nullptr;
 
-extern void **g_APL_font;
+static void **g_APL_font = nullptr;
 
-extern int **g_APL_screenW;
+static int **g_APL_screenW = nullptr;
 
-extern int **g_APL_screenH;
+static int **g_APL_screenH = nullptr;
 
-extern Layout **g_APL_layout_draw;
+static Layout **g_APL_layout_draw = nullptr;
 
-extern GameText **g_APL_gametext_draw;
+static GameText **g_APL_gametext_draw = nullptr;
 
-extern AbyssEngine::String **g_APL_font_draw;
+static AbyssEngine::String **g_APL_font_draw = nullptr;
 
-extern const char kEmpty[] __attribute__((visibility("hidden")));
-extern const char kApLit1[] __attribute__((visibility("hidden")));
-extern const char kApLit2[] __attribute__((visibility("hidden")));
+static const char kEmpty[] = "";
+static const char kApLit1[] = "";
+static const char kApLit2[] = "";
 
 AutoPilotList::AutoPilotList(Level *level) {
     this->entries = new Array<String *>();
@@ -44,14 +44,14 @@ AutoPilotList::AutoPilotList(Level *level) {
         this->count++;
     }
 
-    if (((SolarSystem *) gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
+    if (((SolarSystem *) Status::gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
         String *s = new String;
         s->ctor_copy((*g_APL_gametext)->getText(0x223), false);
         (*this->entries)[1] = s;
         this->count++;
     }
 
-    if (gStatus->inEmptyOrbit() == 0) {
+    if (Status::gStatus->inEmptyOrbit() == 0) {
         String c = ((Station *) (&c))->getName();
         String b(kApLit2);
         String a = b + c;
@@ -79,7 +79,7 @@ AutoPilotList::AutoPilotList(Level *level) {
     void *font = *g_APL_font;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
-            int w = gCanvas->GetTextWidth(
+            int w = PaintCanvas::gCanvas->GetTextWidth(
                         (unsigned int) (uintptr_t) font, *(*this->entries)[i]) + 0x13;
             if (this->width < w)
                 this->width = w;
@@ -155,7 +155,7 @@ void AutoPilotList::draw() {
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         String *text = (*this->entries)[i];
         if (text != nullptr) {
-            gCanvas->DrawString(
+            PaintCanvas::gCanvas->DrawString(
                 (unsigned int) (uintptr_t) * g_APL_font_draw, *text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;

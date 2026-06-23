@@ -4,7 +4,9 @@
 #include "game/world/Station.h"
 #include "engine/render/LODManager.h"
 
-extern Status *status;
+static Status *&status = Status::gStatus;
+
+Array<Item *> *Item::g_items = nullptr;
 
 int Item::getAttribute(int attribute) {
     int *data = attributes->data();

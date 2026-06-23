@@ -106,8 +106,12 @@ namespace AbyssEngine {
 
         int packedColor;
         uint8_t _pad0xe4[24];
-        unsigned char shaderModeFlag;
-        uint16_t field_0xfd;
+        unsigned char shaderModeFlag;  // 0xfc
+        unsigned char statsBucketFlag; // 0xfd
+        union {
+            uint16_t field_0xfd;       // 0xfe (kept name/offset for cross-file users)
+            unsigned char statsEnabled; // 0xfe (low byte)
+        };
         uint32_t field_0x100;
         float worldViewProjMatrix[16];
         float modelMatrixGL[16];
@@ -528,6 +532,8 @@ namespace AbyssEngine {
 
         void Vibrate(unsigned short duration);
 
+        void VibrateSupported();
+
         void SetUVMatrix(const AbyssEngine::AEMath::Matrix &matrix);
 
         void SetWorldViewMatrix(const AbyssEngine::AEMath::Matrix &matrix);
@@ -556,9 +562,15 @@ namespace AbyssEngine {
         static unsigned int countryCode;
 
         static bool EnablePostEffect;
+
+        static bool fogEnabled;
+
+        static Engine **g_pEngine;
+
+        static Engine *gEngine;
     };
 }
 
-extern AbyssEngine::Engine *gEngine;
+using ::AbyssEngine::Engine;
 
 #endif

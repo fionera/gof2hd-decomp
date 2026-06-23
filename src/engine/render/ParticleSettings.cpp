@@ -7,11 +7,9 @@ ParticleSettings::ParticleSettings() {
 ParticleSettings::~ParticleSettings() {
 }
 
-extern "C" {
 void ParticleSettings_initSub(void *dst, void *parent);
 
-extern const char ParticleSettings_str[];
-}
+static const char ParticleSettings_str[401401] = {0};
 
 static inline float &asFloat(uint32_t &slot) {
     return reinterpret_cast<float &>(slot);

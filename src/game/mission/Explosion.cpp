@@ -357,10 +357,10 @@ Explosion::Explosion(int type) {
     this->reset();
 }
 
-extern int Explosion_soundDefault;
-extern int Explosion_soundFallback;
-extern int Explosion_soundSpecial;
-extern char Explosion_soundSettings[];
+static int Explosion_soundDefault;
+static int Explosion_soundFallback;
+static int Explosion_soundSpecial;
+static char Explosion_soundSettings[0x10];
 
 void Explosion::playSound(Vector *pos) {
     Vector *soundPos = pos;
@@ -624,11 +624,11 @@ void Explosion::addFireStreaks() {
     }
 }
 
-extern "C" void Explosion_ctor(Explosion *self, int type) {
+void Explosion_ctor(Explosion *self, int type) {
     new(self) Explosion(type);
 }
 
-extern "C" void *Explosion_dtor(Explosion *self) {
+void *Explosion_dtor(Explosion *self) {
     self->~Explosion();
     return self;
 }

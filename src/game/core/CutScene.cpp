@@ -20,31 +20,29 @@
 using AbyssEngine::AERandom;
 using AbyssEngine::AnimationMode;
 
-extern PaintCanvas *gCanvas;
+static float CutScene_proc_tx0, CutScene_proc_tz0;
+static float CutScene_proc_rx0, CutScene_proc_rz0, CutScene_proc_rz1;
+static float CutScene_fogColorMode17, CutScene_fogDensityMode17;
+static float CutScene_fogColorMode4, CutScene_fogDensityMode4;
+static float CutScene_initStartXRotMode2;
+static float CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar;
+static float CutScene_fogDensity_mode17;
+static float CutScene_fogDensity_mode4;
+static float CutScene_fogColor;
+static float CutScene_persp_fov_mode17;
+static float CutScene_persp_fov_mode4;
+static float CutScene_turret_tx, CutScene_turret_ty, CutScene_turret_tz;
+static float CutScene_turret_rx, CutScene_turret_ry, CutScene_turret_rz;
+static float CutScene_turret_rx2, CutScene_turret_ry2, CutScene_turret_rz2;
+static int CutScene_shipBankTable[256];
 
-extern float CutScene_proc_tx0, CutScene_proc_tz0;
-extern float CutScene_proc_rx0, CutScene_proc_rz0, CutScene_proc_rz1;
-extern float CutScene_fogColorMode17, CutScene_fogDensityMode17;
-extern float CutScene_fogColorMode4, CutScene_fogDensityMode4;
-extern float CutScene_initStartXRotMode2;
-extern float CutScene_persp_fov, CutScene_persp_znear, CutScene_persp_zfar;
-extern float CutScene_fogDensity_mode17;
-extern float CutScene_fogDensity_mode4;
-extern float CutScene_fogColor;
-extern float CutScene_persp_fov_mode17;
-extern float CutScene_persp_fov_mode4;
-extern float CutScene_turret_tx, CutScene_turret_ty, CutScene_turret_tz;
-extern float CutScene_turret_rx, CutScene_turret_ry, CutScene_turret_rz;
-extern float CutScene_turret_rx2, CutScene_turret_ry2, CutScene_turret_rz2;
-extern int CutScene_shipBankTable[];
+float VectorSignedToFloat(int v, int mode);
 
-extern "C" float VectorSignedToFloat(int v, int mode);
+void MatrixSetRotation(void *m, float x, float y, float z);
 
-extern "C" void MatrixSetRotation(void *m, float x, float y, float z);
+void MatrixSetTranslation(void *m, float x, float y, float z);
 
-extern "C" void MatrixSetTranslation(void *m, float x, float y, float z);
-
-extern "C" int Station_getIndex(void *station);
+int Station_getIndex(void *station);
 
 CutScene::CutScene(int mode) {
     this->shipPosY = 0;
@@ -78,7 +76,7 @@ CutScene::~CutScene() {
     delete this->level;
     this->level = nullptr;
 
-    gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    PaintCanvas::gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
 
     delete this->geom28;
     this->geom28 = nullptr;
@@ -113,7 +111,7 @@ void CutScene::update(int /*delta*/) {
 
 void CutScene::render3D() {
     if (this->level != nullptr) {
-        uint32_t t = (uint32_t) gAppManager->GetElapsedTimeMillis();
+        uint32_t t = (uint32_t) ApplicationManager::gAppManager->GetElapsedTimeMillis();
         this->frameDelta = t;
         this->level->update((long long) (int) t, 0u);
         this->level->render(this->frameDelta);
@@ -138,7 +136,7 @@ void CutScene::process(int /*delta*/) {
     if (this->initialized == 0)
         return;
 
-    unsigned int now = (unsigned int) gAppManager->GetCurrentTimeMillis();
+    unsigned int now = (unsigned int) ApplicationManager::gAppManager->GetCurrentTimeMillis();
     unsigned int prev = this->prevTimeLo;
     unsigned int dt = now - prev;
 
@@ -154,7 +152,7 @@ void CutScene::process(int /*delta*/) {
     if (this->followCamera != nullptr)
         this->followCamera->update((int) this->frameDelta);
 
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     if (this->mode == 2) {
         float ft = VectorSignedToFloat((int) this->frameDelta, 0);
@@ -165,14 +163,14 @@ void CutScene::process(int /*delta*/) {
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
         canvas->CameraSetLocal(0, *(const Matrix *) (uintptr_t) this->cameraId74);
 
-        long long pt = gStatus->getPlayingTime();
+        long long pt = Status::gStatus->getPlayingTime();
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
             unsigned int n = enemies->size();
             void *e0 = (*enemies)[n - 2];
 
-            if (e0 != nullptr && *(int *) ((char *) e0 + 8) != 0) {
-                AEGeometry *g0 = *(AEGeometry **) ((char *) e0 + 8);
+            if (e0 != nullptr && ((KIPlayer *) e0)->geometry != nullptr) {
+                AEGeometry *g0 = ((KIPlayer *) e0)->geometry;
                 float f = VectorSignedToFloat(this->frameDelta, 0);
                 g0->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
                 float f1 = VectorSignedToFloat(this->frameDelta, 0);
@@ -180,8 +178,8 @@ void CutScene::process(int /*delta*/) {
                 g0->rotate(f1 * CutScene_proc_rx0, 0.0f, f2 * CutScene_proc_rz0);
             }
             void *e1 = (*enemies)[n - 1];
-            if (e1 != nullptr && *(int *) ((char *) e1 + 8) != 0) {
-                AEGeometry *g1 = *(AEGeometry **) ((char *) e1 + 8);
+            if (e1 != nullptr && ((KIPlayer *) e1)->geometry != nullptr) {
+                AEGeometry *g1 = ((KIPlayer *) e1)->geometry;
                 float f = VectorSignedToFloat(this->frameDelta, 0);
                 g1->translate(f * CutScene_proc_tx0, 0.0f, 0.0f);
                 float f1 = VectorSignedToFloat(this->frameDelta, 0);
@@ -191,19 +189,19 @@ void CutScene::process(int /*delta*/) {
         }
     } else if (this->mode == 0x17) {
         unsigned int kind;
-        void *st = gStatus->getStation();
+        void *st = Status::gStatus->getStation();
         if (Station_getIndex(st) == 0x65) {
             kind = 10;
         } else {
-            st = gStatus->getStation();
+            st = Status::gStatus->getStation();
             if (Station_getIndex(st) == 100) {
                 kind = 7;
             } else {
-                kind = (unsigned int) ((SolarSystem *) (long) gStatus->getSystem())->getRace() | 2;
+                kind = (unsigned int) ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() | 2;
             }
         }
         this->fogTimer84 = this->frameDelta + this->fogTimer84;
-        if (((SolarSystem *) (long) gStatus->getSystem())->getRace() == 1) {
+        if (((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() == 1) {
             canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode17, 1.0f,
                                     CutScene_fogDensityMode17);
         } else if (kind == 2 && this->geometries != nullptr) {
@@ -215,7 +213,7 @@ void CutScene::process(int /*delta*/) {
             }
             if (this->fogTimer84 > 3000) {
                 this->fogTimer84 = 0;
-                AERandom *rng = gRandom;
+                AERandom *rng = AERandom::gRandom;
                 for (unsigned int i = 0; i < n; i++) {
                     if (rng->nextInt() < 0x14) {
                         AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -247,8 +245,8 @@ void CutScene::process(int /*delta*/) {
         MatrixSetRotation(mtx, 0.0f, 0.0f, 0.0f);
         Array<KIPlayer *> *enemies = this->level->getEnemies();
 
-        void *leadGeom = *(void **) ((char *) (*enemies)[0] + 8);
-        canvas->TransformSetLocal(0, *(const Matrix *) (*(void **) ((char *) leadGeom + 0xc)));
+        AEGeometry *leadGeom = (*enemies)[0]->geometry;
+        canvas->TransformSetLocal(0, *(const Matrix *) (uintptr_t) leadGeom->transform);
         Array<KIPlayer *> *arr = this->level->getEnemies();
         for (unsigned int i = 0; i < arr->size(); i++) {
             Array<KIPlayer *> *en = this->level->getEnemies();
@@ -269,12 +267,12 @@ void CutScene::process(int /*delta*/) {
             arr = this->level->getEnemies();
         }
 
-        int race = ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+        int race = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
         if (race == 0) {
             AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
             t->Update((long long) (unsigned) this->frameDelta, (bool) (unsigned char) this->frameDelta);
         } else {
-            int race1 = ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+            int race1 = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
             if (race1 == 1) {
                 canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColorMode4, 1.0f,
                                         CutScene_fogDensityMode4);
@@ -290,7 +288,7 @@ void CutScene::process(int /*delta*/) {
                     this->animTimer7c = acc;
                     if (acc > 20000) {
                         this->animTimer7c = 0;
-                        if (gRandom->nextInt() < 100) {
+                        if (AERandom::gRandom->nextInt() < 100) {
                             AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                             a->SetAnimationState((AnimationMode) 3, nullptr);
                             a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -305,7 +303,7 @@ void CutScene::process(int /*delta*/) {
                     this->animTimer80 = acc;
                     if (acc > 22000) {
                         this->animTimer80 = 0;
-                        if (gRandom->nextInt() < 100) {
+                        if (AERandom::gRandom->nextInt() < 100) {
                             AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                             a->SetAnimationState((AnimationMode) 3, nullptr);
                             canvas->TransformGetTransform(0);
@@ -317,7 +315,7 @@ void CutScene::process(int /*delta*/) {
                 if (this->level != nullptr) this->level->getEnemies();
                 return;
             }
-            int race3 = ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+            int race3 = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
             if (race3 == 3) {
                 this->level->getEnemies();
                 this->level->getEnemies();
@@ -335,7 +333,7 @@ void CutScene::process(int /*delta*/) {
                 this->animTimer80 = acc80;
                 if (acc7c > 1000 && this->geom28 != nullptr) {
                     this->animTimer7c = 0;
-                    if (gRandom->nextInt() < 0x28) {
+                    if (AERandom::gRandom->nextInt() < 0x28) {
                         AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                         a->SetAnimationState((AnimationMode) 3, nullptr);
                         a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -345,7 +343,7 @@ void CutScene::process(int /*delta*/) {
                 }
                 if (acc80 > 2000) {
                     this->animTimer80 = 0;
-                    if (gRandom->nextInt() < 0x1e) {
+                    if (AERandom::gRandom->nextInt() < 0x1e) {
                         AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                         a->SetAnimationState((AnimationMode) 3, nullptr);
                         canvas->TransformGetTransform(0);
@@ -356,7 +354,7 @@ void CutScene::process(int /*delta*/) {
                 if (this->level != nullptr) this->level->getEnemies();
                 return;
             }
-            if (((SolarSystem *) (long) gStatus->getSystem())->getRace() != 2)
+            if (((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() != 2)
                 return;
             if (this->level != nullptr) this->level->getEnemies();
             if (this->level != nullptr) this->level->getEnemies();
@@ -381,26 +379,26 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
 
     Array<KIPlayer *> *enemies = this->level->getEnemies();
 
-    AEGeometry *oldGeom = *(AEGeometry **) ((char *) (*enemies)[0] + 8);
+    AEGeometry *oldGeom = (*enemies)[0]->geometry;
     if (oldGeom != nullptr) {
         if (this->turretGeom != nullptr) {
-            PaintCanvas *canvas = gCanvas;
+            PaintCanvas *canvas = PaintCanvas::gCanvas;
             Array<KIPlayer *> *en2 = this->level->getEnemies();
-            AEGeometry *lead = *(AEGeometry **) ((char *) (*en2)[0] + 8);
+            AEGeometry *lead = (*en2)[0]->geometry;
             canvas->TransformRemoveChild(lead->childTransform, this->turretGeom->childTransform);
         }
 
         char matrix[0x3c];
         memcpy(matrix, &oldGeom->getMatrix(), 0x3c);
 
-        AEGeometry *grp = gGlobals->getShipGroup(b, 0, false);
+        AEGeometry *grp = Globals::gGlobals->getShipGroup(b, 0, false);
 
         Array<KIPlayer *> *en3 = this->level->getEnemies();
-        *(AEGeometry **) ((char *) (*en3)[0] + 8) = grp;
+        (*en3)[0]->geometry = grp;
 
         Array<KIPlayer *> *en4 = this->level->getEnemies();
 
-        (*(AEGeometry **) ((char *) (*en4)[0] + 8))->setMatrix(*(const Matrix *) matrix);
+        (*en4)[0]->geometry->setMatrix(*(const Matrix *) matrix);
 
         Array<KIPlayer *> *en5 = this->level->getEnemies();
         KIPlayer *ship = (*en5)[0];
@@ -431,7 +429,7 @@ void CutScene::initialize() {
     this->level->initParticleSystems();
 
     char localMatrix[0x3c];
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     if (this->mode == 2) {
         canvas->CameraCreate(this->cameraId74);
@@ -440,7 +438,7 @@ void CutScene::initialize() {
         char tmp[0x3c];
         memcpy(tmp, canvas->CameraGetLocal(0), 0x3c);
 
-        AERandom *rng = gRandom;
+        AERandom *rng = AERandom::gRandom;
         int rx = rng->nextInt();
         int ry = rng->nextInt();
         float tx = VectorSignedToFloat(rx - 20000, 0);
@@ -450,7 +448,7 @@ void CutScene::initialize() {
         MatrixSetRotation(localMatrix, 0.0f, 0.0f, 0.0f);
         canvas->CameraSetLocal(0, *(const Matrix *) (uintptr_t) this->cameraId74);
 
-        long long pt = gStatus->getPlayingTime();
+        long long pt = Status::gStatus->getPlayingTime();
         Array<KIPlayer *> *enemies = this->level->getEnemies();
         if (pt != 0 && enemies != nullptr && enemies->size() > 1) {
             unsigned int n = enemies->size();
@@ -494,20 +492,20 @@ void CutScene::initialize() {
         }
         canvas->CameraSetCurrent(this->cameraId6c);
         this->resetCamera();
-        int race = ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+        int race = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
         if (race == 3) {
             this->geom2c = new AEGeometry((uint16_t) 0x36d6, canvas, false);
             AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
             t->SetAnimationState((AnimationMode) 0, nullptr);
         } else {
-            if (((SolarSystem *) (long) gStatus->getSystem())->getRace() == 0) {
+            if (((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() == 0) {
                 this->geom30 = new AEGeometry((uint16_t) 0x37c8, canvas, false);
                 this->geom34 = new AEGeometry((uint16_t) 0x37c7, canvas, false);
                 this->geom30->addChild(this->geom34->childTransform);
                 delete this->geom34;
                 this->geom34 = nullptr;
             } else {
-                ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+                ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
             }
         }
     }
@@ -521,7 +519,7 @@ void CutScene::initialize() {
     this->animTimer80 = 0;
     this->fogTimer84 = 0;
 
-    unsigned int now = (unsigned int) gAppManager->GetCurrentTimeMillis();
+    unsigned int now = (unsigned int) ApplicationManager::gAppManager->GetCurrentTimeMillis();
     this->initialized = 1;
     this->renderAtTimeLo = now & 0xffff;
     this->renderAtTimeHi = 0;
@@ -530,10 +528,10 @@ void CutScene::initialize() {
 }
 
 void CutScene::resetCamera() {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     if (this->mode == 0x17) {
-        if (((SolarSystem *) (long) gStatus->getSystem())->getRace() == 1) {
+        if (((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() == 1) {
             canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode17);
             canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
         }
@@ -549,7 +547,7 @@ void CutScene::resetCamera() {
     if (this->mode != 4)
         return;
 
-    if (((SolarSystem *) (long) gStatus->getSystem())->getRace() == 1) {
+    if (((SolarSystem *) (long) Status::gStatus->getSystem())->getRace() == 1) {
         canvas->FogSetParameter(AbyssEngine::FogMode_dummy, 0, CutScene_fogColor, 1.0f, CutScene_fogDensity_mode4);
         canvas->FogEnable(1, AbyssEngine::FogMode_dummy);
     }
@@ -567,15 +565,15 @@ public:
 };
 
 void CutScene::checkForTurret() {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     if (this->turretGeom != nullptr) {
         Array<KIPlayer *> *enemies = this->level->getEnemies();
-        AEGeometry *lead = *(AEGeometry **) ((char *) (*enemies)[0] + 8);
+        AEGeometry *lead = (*enemies)[0]->geometry;
         canvas->TransformRemoveChild(lead->childTransform, this->turretGeom->childTransform);
     }
 
-    Ship *ship = gStatus->getShip();
+    Ship *ship = Status::gStatus->getShip();
     Array<Item *> *equip = ship->getEquipment(2);
     if (equip == nullptr || equip->size() == 0)
         return;
@@ -667,7 +665,7 @@ void CutScene::checkForTurret() {
     this->turretGeom = new AEGeometry(canvas);
 
     FileRead fr;
-    int shipIdx = gStatus->getShip()->getIndex();
+    int shipIdx = Status::gStatus->getShip()->getIndex();
     Array<Array<Vector *> *> *positions = fr.loadWeaponPositions(shipIdx);
 
     Vector *posVec = (*(*positions)[0])[0];
@@ -684,7 +682,7 @@ void CutScene::checkForTurret() {
     this->turretGeom->addChild(geom0->childTransform);
     this->turretGeom->addChild(geom1->childTransform);
     Array<KIPlayer *> *enemies2 = this->level->getEnemies();
-    (*(AEGeometry **) ((char *) (*enemies2)[0] + 8))->addChild(this->turretGeom->childTransform);
+    (*enemies2)[0]->geometry->addChild(this->turretGeom->childTransform);
 
     if (positions == nullptr)
         return;

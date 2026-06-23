@@ -7,8 +7,8 @@
 #include "engine/math/BoundingSphere.h"
 #include "engine/render/PaintCanvas.h"
 
-extern PaintCanvas *g_PaintCanvas;
-extern Status **g_Status;
+static PaintCanvas *g_PaintCanvas = nullptr;
+static Status **g_Status = nullptr;
 
 static PaintCanvas *paintCanvas() {
     return g_PaintCanvas;

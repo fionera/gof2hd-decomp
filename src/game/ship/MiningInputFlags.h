@@ -2,7 +2,6 @@
 #define GOF2_MININGINPUTFLAGS_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "TargetFollowCamera.h"
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"

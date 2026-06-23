@@ -13,13 +13,38 @@
 #include <GLES2/gl2.h>
 #include <cstdlib>
 #include <cmath>
+#include <cstdint>
+
+namespace {
+
+// A single keyframe record (heap-allocated; the Curve::entries array holds
+// one pointer per keyframe). Layout recovered from the original ARM
+// disassembly of CurveGetValue / CurveRelease.
+struct CurveKeyframe {    // size >= 0x1c
+    uint8_t  tag;         // 0x00: 1=step, 2=linear, 3=hermite
+    uint8_t  pad0x1[7];   // 0x01
+    uint32_t timeLo;      // 0x08: keyframe time, low 32 bits
+    uint32_t timeHi;      // 0x0c: keyframe time, high 32 bits
+    int32_t  value;       // 0x10
+    int32_t  c0;          // 0x14: hermite tangent in
+    int32_t  c1;          // 0x18: hermite tangent out
+};
+
+#if __SIZEOF_POINTER__ == 4
+#include <cstddef>
+static_assert(offsetof(CurveKeyframe, tag) == 0x0, "CurveKeyframe.tag");
+static_assert(offsetof(CurveKeyframe, timeLo) == 0x8, "CurveKeyframe.timeLo");
+static_assert(offsetof(CurveKeyframe, timeHi) == 0xc, "CurveKeyframe.timeHi");
+static_assert(offsetof(CurveKeyframe, value) == 0x10, "CurveKeyframe.value");
+static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
+static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
+#endif
+
+} // anonymous namespace
 
 namespace AbyssEngine {
-    class ImageFont;
-    class SpriteSystem;
-    class Curve;
-    class Image;
-    class AELoadedTexture;
+    // ImageFont, SpriteSystem, Curve, Image, AELoadedTexture are defined in
+    // AbyssEngine.h (layouts recovered from the original disassembly).
 
     Engine *AE_getInitGLThis();
     int AE_getInitGLWidth();
@@ -83,7 +108,7 @@ namespace {
         if (a->count >= a->capacity) {
             uint32_t oldCap = a->capacity;
             a->data = realloc(a->data, (size_t) oldCap * 2 * sizeof(T));
-            __aeabi_memclr4((char *) a->data + oldCap * sizeof(T), oldCap * sizeof(T));
+            __aeabi_memclr4((T *) a->data + oldCap, oldCap * sizeof(T));
             a->capacity = oldCap * 2;
         }
         ((T *) a->data)[a->count] = item;
@@ -100,7 +125,7 @@ unsigned int AELabelObject(unsigned int glIdentifier, unsigned int name, const c
 namespace AbyssEngine {
     void ImageFontSetYOffset(ImageFont *font, short yOffset) {
         if (font != 0)
-            s16(font, 0x12) = yOffset;
+            font->yOffset = yOffset;
     }
 }
 
@@ -109,13 +134,12 @@ namespace AbyssEngine {
         if (*g_Camera_frustumEnabledFlag == 0)
             return 1;
 
-        char *c = (char *) cam;
         Matrix local;
         Matrix transformed;
         Vector pos, dir, axis;
         Vector camPoint = {0.0f, 0.0f, 0.0f};
 
-        Matrix *srcMatrix = (Matrix *) (c + 0xc);
+        Matrix *srcMatrix = &cam->projection;
         Matrix *dstMatrix;
         if (extra == 0) {
             dstMatrix = &local;
@@ -136,14 +160,14 @@ namespace AbyssEngine {
         Vector normAxis = AEMath::VectorNormalize(axis);
         float fwd = AEMath::VectorDot(pos, normAxis);
 
-        if (fwd > f32(c, 0x8) || fwd < f32(c, 0x4))
+        if (fwd > cam->position[2] || fwd < cam->position[1])
             return 0;
 
         axis = AEMath::MatrixGetUp(*dstMatrix);
         normAxis = AEMath::VectorNormalize(axis);
         float up = AEMath::VectorDot(pos, normAxis);
 
-        float hLimit = fwd * f32(c, 0x48);
+        float hLimit = fwd * cam->frustumTanHalfFov;
         if (up > hLimit || up < -hLimit)
             return 0;
 
@@ -151,7 +175,7 @@ namespace AbyssEngine {
         normAxis = AEMath::VectorNormalize(axis);
         float right = AEMath::VectorDot(pos, normAxis);
 
-        float vLimit = hLimit * f32(c, 0x50);
+        float vLimit = hLimit * cam->frustumAspect;
         return (right <= vLimit && right >= -vLimit) ? 1 : 0;
     }
 }
@@ -177,11 +201,11 @@ namespace AbyssEngine {
         if (sys == 0)
             return;
 
-        unsigned short count = u16(sys, 0x0);
-        char *uvBase = (char *) pp(pp(sys, 0x8), 0x8);
+        unsigned short count = sys->count;
+        float *uvBase = (float *) sys->mesh->texCoords;
 
         for (unsigned int idx = 0; (idx & 0xffff) < (unsigned int) (count << 3); idx += 8) {
-            float *p = (float *) (uvBase + (idx & 0xffff) * 4);
+            float *p = uvBase + (idx & 0xffff);
             p[0] = u0;
             p[1] = 1.0f - v0;
             p[2] = u1;
@@ -197,7 +221,6 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     void getAppVersion() {
         Engine *self = AE_getInitGLThis();
-        char *c = (char *) self;
         int width = AE_getInitGLWidth();
         int height = AE_getInitGLHeight();
 
@@ -212,11 +235,11 @@ namespace AbyssEngine {
         AEFile::SetInterface((FileInterface *) fileIface);
 
         self->lastGlError = 0;
-        u8(c, 0x2c) = 0;
-        u8(c, 0x480) = 0;
+        self->vibrationSupported = 0;
+        self->hasVibration = false;
 
         char *shaderFlag = g_Engine_shaderModeFlag;
-        u32(c, 0x40c) = 0;
+        self->field_0x40c = 0;
         self->ResetLightParam();
         glViewport(0, 0, self->viewportHeight, self->viewportWidth);
 
@@ -229,10 +252,10 @@ namespace AbyssEngine {
         }
 
         float zero3[3] = {0, 0, 0};
-        *(Vector *) (c + 0x468) = *(const Vector *) zero3;
-        u32(c, 0x378) = 0;
-        *(Vector *) (c + 0x474) = *(const Vector *) zero3;
-        u32(c, 0x37c) = 0;
+        self->field_0x468 = *(const Vector *) zero3;
+        self->lightDirty[0] = 0;
+        self->field_0x474 = *(const Vector *) zero3;
+        self->lightDirty[1] = 0;
 
         glEnable(0xb71);
         self->GlEnable(0xde1, true);
@@ -257,12 +280,12 @@ namespace AbyssEngine {
     void SpriteSystemSetUv(unsigned short idx, float a, float b, float c, float d, SpriteSystem *sys) {
         unsigned int count = 0;
         if (sys != 0)
-            count = u16(sys, 0x0);
+            count = sys->count;
         if (sys == 0 || idx >= count)
             return;
 
         char flag = *g_SpriteSystem_uvFlipFlag;
-        float *p = (float *) ((char *) pp(pp(sys, 0x8), 0x8) + (unsigned int) idx * 0x20);
+        float *p = (float *) sys->mesh->texCoords + (unsigned int) idx * 8;
 
         if (flag == 0) {
             c = 1.0f - c;
@@ -281,7 +304,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int ImageFontGetYOffset(ImageFont *font) {
-        short v = (font == 0) ? (short) 0 : s16(font, 0x12);
+        short v = (font == 0) ? (short) 0 : font->yOffset;
         return (int) v;
     }
 }
@@ -304,7 +327,6 @@ namespace AbyssEngine {
         if (engine == 0 || path == 0)
             return -4;
 
-        char *r = (char *) region;
         unsigned int handle = 0;
         if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0)
             return -1;
@@ -320,8 +342,8 @@ namespace AbyssEngine {
 
         unsigned short regionCount = 0;
         if (AEFile::Skip((uint32_t)(1), handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), r + 0x08, handle) == 0) return -1;
-        if (AEFile::Read((uint32_t)(2), r + 0x0a, handle) == 0) return -1;
+        if (AEFile::Read((uint32_t)(2), &region->atlasW, handle) == 0) return -1;
+        if (AEFile::Read((uint32_t)(2), &region->atlasH, handle) == 0) return -1;
         if (AEFile::Read((uint32_t)(2), &regionCount, handle) == 0) return -1;
         if (regionCount <= index) return -1;
 
@@ -331,15 +353,15 @@ namespace AbyssEngine {
         unsigned char mode = 0;
         for (unsigned short i = 0; i < regionCount; ++i) {
             if (i == index) {
-                if (AEFile::Read((uint32_t)(2), r + 0x0c, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), r + 0x0e, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), r + 0x10, handle) == 0) goto fail;
-                if (AEFile::Read((uint32_t)(2), r + 0x12, handle) == 0) goto fail;
+                if (AEFile::Read((uint32_t)(2), &region->offX, handle) == 0) goto fail;
+                if (AEFile::Read((uint32_t)(2), &region->offY, handle) == 0) goto fail;
+                if (AEFile::Read((uint32_t)(2), &region->sizeX, handle) == 0) goto fail;
+                if (AEFile::Read((uint32_t)(2), &region->sizeY, handle) == 0) goto fail;
 
-                Mesh *mesh = *(Mesh **) r;
+                Mesh *mesh = region->mesh;
                 float *pos = (float *) mesh->positions;
 
-                float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x10), mode);
+                float halfW = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->sizeX, mode);
                 pos[0] = 0;
                 pos[1] = 0;
                 pos[2] = 0;
@@ -347,19 +369,19 @@ namespace AbyssEngine {
                 pos[5] = 0;
                 pos[3] = halfW;
                 pos[6] = halfW;
-                float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x12), mode);
+                float halfH = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->sizeY, mode);
                 pos[8] = 0;
                 pos[9] = 0;
                 pos[11] = 0;
                 pos[7] = halfH;
                 pos[10] = halfH;
 
-                double atlasH = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x0a), mode);
-                double atlasW = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x08), mode);
-                float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) u16(r, 0x0e), mode);
-                float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) u16(r, 0x0c), mode);
-                float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x0e), mode);
-                float offXu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) u16(r, 0x0c), mode);
+                double atlasH = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasH, mode);
+                double atlasW = (double) AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->atlasW, mode);
+                float offYs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offY, mode);
+                float offXs = AbyssEngine::AEMath::VectorSignedToFloat((int) (short) region->offX, mode);
+                float offYu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->offY, mode);
+                float offXu = AbyssEngine::AEMath::VectorUnsignedToFloat((unsigned int) region->offX, mode);
 
                 float *uv = (float *) mesh->texCoords;
                 float u0 = offXu * (float) (1.0 / atlasW);
@@ -400,7 +422,7 @@ namespace AbyssEngine {
         if (font == 0 || str == 0)
             return 0;
 
-        unsigned short glyphCount = u16(font, 0x0);
+        unsigned short glyphCount = font->glyphCount;
         for (unsigned short i = 0; i < count; ++i) {
             unsigned short idx = 0;
             unsigned short code;
@@ -409,15 +431,15 @@ namespace AbyssEngine {
                 if (glyphCount <= u)
                     goto next;
                 idx = idx + 1;
-                code = *(unsigned short *) ((char *) pp(font, 0x4) + u * 2);
+                code = font->codes[u];
                 if (code == str[i])
                     break;
             }
             {
                 unsigned int found = (unsigned int) (unsigned short) (idx - 1);
-                Mesh *glyph = *(Mesh **) ((char *) pp(font, 0xc) + found * 4);
+                Mesh *glyph = font->glyphMeshes[found];
                 int w = (int) ((float *) glyph->positions)[3];
-                int adv = (int) s16(font, 0x10) + w;
+                int adv = (int) font->spacing + w;
                 int contrib = adv;
                 if (w == 0xb)
                     contrib = adv - 2;
@@ -557,9 +579,9 @@ namespace AbyssEngine {
 
             glDrawElements(4, (int) mesh->indexCount, 0x1403, 0);
 
-            if (u8(engine, 0xfe) != 0) {
+            if (engine->statsEnabled != 0) {
                 int tris = __aeabi_uidiv((int) mesh->indexCount, 3);
-                if (u8(engine, 0xfd) == 0) {
+                if (engine->statsBucketFlag == 0) {
                     engine->drawCallCountA += 1;
                     engine->triangleCountA += tris;
                 } else {
@@ -581,11 +603,11 @@ namespace AbyssEngine {
     void SpriteSystemSetRGBA(unsigned short idx, float r, float g, float b, float a, SpriteSystem *sys) {
         unsigned int count = 0;
         if (sys != 0)
-            count = u16(sys, 0x0);
+            count = sys->count;
         if (sys == 0 || idx >= count)
             return;
 
-        float *p = (float *) ((char *) pp(pp(sys, 0x8), 0xc) + (unsigned int) idx * 0x40);
+        float *p = (float *) sys->mesh->colors + (unsigned int) idx * 16;
         for (int v = 0; v < 4; ++v) {
             p[v * 4 + 0] = r;
             p[v * 4 + 1] = g;
@@ -629,7 +651,7 @@ namespace AbyssEngine {
             return 0;
 
         unsigned int end = len + start;
-        unsigned short glyphCount = u16(font, 0x0);
+        unsigned short glyphCount = font->glyphCount;
         int total = 0;
 
         for (; (start & 0xffff) < end; ++start) {
@@ -641,7 +663,7 @@ namespace AbyssEngine {
                 if (glyphCount <= u)
                     break;
                 idx = idx + 1;
-                code = *(unsigned short *) ((char *) pp(font, 0x4) + u * 2);
+                code = font->codes[u];
                 if (code == str[start & 0xffff]) {
                     found = true;
                     break;
@@ -651,9 +673,9 @@ namespace AbyssEngine {
                 continue;
 
             unsigned int gi = (unsigned int) (unsigned short) (idx - 1);
-            Mesh *glyph = *(Mesh **) ((char *) pp(font, 0xc) + gi * 4);
+            Mesh *glyph = font->glyphMeshes[gi];
             int w = (int) ((float *) glyph->positions)[3];
-            int adv = (int) s16(font, 0x10) + w;
+            int adv = (int) font->spacing + w;
             int contrib = adv;
             if (w == 0xb)
                 contrib = adv - 2;
@@ -671,10 +693,11 @@ namespace AbyssEngine {
         if (curve == 0)
             return;
 
-        void *data = 0;
-        for (unsigned int i = 0; (data = pp(curve, 0x4)), i < (unsigned int) u16(curve, 0x0); ++i) {
-            char *entry = *(char **) ((char *) data + i * 4);
-            char tag = entry[0];
+        CurveKeyframe **data = 0;
+        for (unsigned int i = 0; (data = (CurveKeyframe **) curve->entries),
+                                 i < (unsigned int) curve->count; ++i) {
+            CurveKeyframe *entry = data[i];
+            char tag = (char) entry->tag;
             if (tag == 3 || tag == 2)
                 operator delete(entry);
             else if (tag == 1)
@@ -685,7 +708,7 @@ namespace AbyssEngine {
         if (data != 0)
             operator delete[](data);
         curve = (Curve *) *slot;
-        pp(curve, 0x4) = 0;
+        curve->entries = 0;
 
         if (*slot != 0)
             operator delete((void *) *slot);
@@ -700,47 +723,43 @@ namespace AbyssEngine {
         if (canvas == 0 || mat == 0)
             return;
 
-        char *m = (char *) mat;
-
         if (setTextures) {
-            engine->SetTexturesExt(u32(m, 0x0), u32(m, 0x4), u32(m, 0x8), 0xffffffff);
+            engine->SetTexturesExt(mat->textures[0], mat->textures[1], mat->textures[2], 0xffffffff);
         }
-        engine->SetAddData(pp(m, 0x24), i32(m, 0x28));
+        engine->SetAddData(mat->addData, (int) mat->addDataSize);
 
-        float ambient = f32(m, 0x68);
+        float ambient = mat->ambientColor.x;
         if (ambient != -10.0f) {
             engine->LightSetGlobalSceneColorAmbient(ambient, 0.0f, 0.0f);
         }
 
         const float inv255 = 1.0f / 255.0f;
-        int matOff = 0;
-        for (unsigned int i = 0; i < u32(m, 0x44); ++i) {
+        for (unsigned int i = 0; i < mat->meshes.size_; ++i) {
             Matrix world;
-            AE_AEMath_matMul(&world, (const Matrix *) ((char *) pp(m, 0x60) + matOff));
-            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) canvas);
+            AE_AEMath_matMul(&world, &mat->arr_5c.data_[i]);
+            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
             engine->SetModelMatrix(world);
-            engine->SetUVMatrix(F<Matrix>(m, 0x3c + matOff));
+            engine->SetUVMatrix(mat->arr_38.data_[i]);
 
-            unsigned int packed = *(unsigned int *) ((char *) pp(m, 0x54) + i * 4);
+            unsigned int packed = mat->arr_50.data_[i];
             float ca = (float) ((packed >> 24) & 0xff);
             float cr = (float) ((packed >> 16) & 0xff);
             float cg = (float) ((packed >> 8) & 0xff);
             float cb = (float) (packed & 0xff);
             engine->SetColor(ca * inv255, cr * inv255, cg * inv255, cb * inv255);
 
-            MeshDraw(engine, *(Mesh **) ((char *) pp(m, 0x48) + i * 4));
-            matOff += 0x3c;
+            MeshDraw(engine, mat->meshes.data_[i]);
         }
 
-        if (f32(m, 0x68) != -10.0f) {
-            engine->LightSetGlobalSceneColorAmbient(f32(m, 0x68), 0.0f, 0.0f);
+        if (mat->ambientColor.x != -10.0f) {
+            engine->LightSetGlobalSceneColorAmbient(mat->ambientColor.x, 0.0f, 0.0f);
         }
 
-        i32(m, 0x2c) = 0;
-        i32(m, 0x5c) = 0;
-        i32(m, 0x38) = 0;
-        i32(m, 0x44) = 0;
-        i32(m, 0x50) = 0;
+        mat->arr_2c.size_ = 0;
+        mat->arr_5c.size_ = 0;
+        mat->arr_38.size_ = 0;
+        mat->meshes.size_ = 0;
+        mat->arr_50.size_ = 0;
     }
 }
 
@@ -751,27 +770,25 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        void *table = pp(*slot, 0x4);
+        void *table = (*slot)->codes;
         if (table != 0)
             operator delete[](table);
-        pp(*slot, 0x4) = 0;
+        (*slot)->codes = 0;
 
-        int off = 0;
         unsigned int i = 0;
-        void *glyphs;
+        Mesh **glyphs;
         for (;;) {
-            ImageFont *f = (ImageFont *) *slot;
-            glyphs = pp(f, 0xc);
-            if (u16(f, 0x0) <= i)
+            ImageFont *f = *slot;
+            glyphs = f->glyphMeshes;
+            if (f->glyphCount <= i)
                 break;
-            MeshRelease(engine, (Mesh **) ((char *) glyphs + off));
-            off += 4;
+            MeshRelease(engine, &glyphs[i]);
             ++i;
         }
 
         if (glyphs != 0)
             operator delete[](glyphs);
-        pp(*slot, 0xc) = 0;
+        (*slot)->glyphMeshes = 0;
 
         if (*slot != 0)
             operator delete((void *) *slot);
@@ -780,10 +797,8 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    extern "C" {
-    char *g_uvFlipFlag;
-    char *g_tangentEnabled;
-    }
+    static char *g_uvFlipFlag;
+    static char *g_tangentEnabled;
 
     int MeshReadData(Engine *engine, const unsigned int &handleRef, unsigned int flags, Mesh **slot,
                      Material *mat);
@@ -829,14 +844,14 @@ namespace AbyssEngine {
             void *pos = ::operator new[](vcount * 0xc);
             m->positions = pos;
             m = *slot;
-            int dst = 0;
+            short *rawShorts = (short *) raw;
+            float *posFloats = (float *) m->positions;
             unsigned int n3 = vcount * 3;
             for (unsigned int i = 0; i < n3; ++i) {
                 int axis = (int) __aeabi_uidiv((int) i, 3);
                 axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat((int) *(short *) ((char *) raw + i * 2), mode);
-                *(float *) ((char *) m->positions + dst) = v;
-                dst += 4;
+                float v = AbyssEngine::AEMath::VectorSignedToFloat((int) rawShorts[i], mode);
+                posFloats[i] = v;
                 if (v < minv[axis]) minv[axis] = v;
                 if (maxv[axis] < v) maxv[axis] = v;
             }
@@ -859,14 +874,14 @@ namespace AbyssEngine {
             void *pos = ::operator new[](vcount * 0xc);
             m->positions = pos;
             m = *slot;
-            int dst = 0;
+            int *rawInts = (int *) raw;
+            float *posFloats = (float *) m->positions;
             unsigned int n3 = vcount * 3;
             for (unsigned int i = 0; i < n3; ++i) {
                 int axis = (int) __aeabi_uidiv((int) i, 3);
                 axis = (int) i - axis * 3;
-                float v = AbyssEngine::AEMath::VectorSignedToFloat(*(int *) ((char *) raw + i * 4), mode);
-                *(float *) ((char *) m->positions + dst) = v;
-                dst += 4;
+                float v = AbyssEngine::AEMath::VectorSignedToFloat(rawInts[i], mode);
+                posFloats[i] = v;
                 if (v < minv[axis]) minv[axis] = v;
                 if (maxv[axis] < v) maxv[axis] = v;
             }
@@ -896,16 +911,16 @@ namespace AbyssEngine {
                 m->texCoords = uv;
                 m = *slot;
                 char flip = *g_uvFlipFlag;
-                int dst = 0;
+                short *rawShorts = (short *) raw;
+                float *uvFloats = (float *) m->texCoords;
                 const double scale = 1.0 / 32767.0;
                 for (unsigned int i = 0; i < (vcount << 1); i += 2) {
                     double u = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) *(short *) ((char *) raw + i * 2), mode) * scale;
-                    float *p = (float *) ((char *) m->texCoords + dst);
-                    dst += 8;
+                                   (int) rawShorts[i], mode) * scale;
+                    float *p = uvFloats + i;
                     p[0] = (float) u;
                     double v = (double) AbyssEngine::AEMath::VectorSignedToFloat(
-                                   (int) *(short *) ((char *) raw + i * 2 + 2), mode) * scale;
+                                   (int) rawShorts[i + 1], mode) * scale;
                     double vv = (flip == 0) ? v : (1.0 - v);
                     p[1] = (float) vv;
                 }
@@ -917,10 +932,9 @@ namespace AbyssEngine {
                     return -1;
                 if (*g_uvFlipFlag != 0) {
                     m = *slot;
-                    int off = 4;
+                    float *uvFloats = (float *) m->texCoords;
                     for (unsigned int i = 0; i < (unsigned int) (m->vertexCount << 1); i += 2) {
-                        float *p = (float *) ((char *) m->texCoords + off);
-                        off += 8;
+                        float *p = uvFloats + (i + 1);
                         *p = 1.0f - *p;
                     }
                 }
@@ -942,14 +956,13 @@ namespace AbyssEngine {
                 m = *slot;
                 const double scale = 1.0 / 32767.0;
                 short *s = (short *) raw;
-                int off = 4;
                 for (unsigned int i = 0; i < vcount * 3; i += 3) {
                     float nx = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[0], mode) * scale);
                     float ny = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[1], mode) * scale);
                     float nz = (float) ((double) AbyssEngine::AEMath::VectorSignedToFloat((int) s[2], mode) * scale);
                     float len2 = nx * nx + ny * ny + nz * nz;
                     float len = sqrtf(len2);
-                    char *base = (char *) m->normals;
+                    float *normalFloats = (float *) m->normals;
                     if (len != 0.0f) {
                         nx /= len;
                         ny /= len;
@@ -960,16 +973,15 @@ namespace AbyssEngine {
                         if (ny > 1.0f) ny = 1.0f;
                         if (nz < -1.0f) nz = -1.0f;
                         if (nz > 1.0f) nz = 1.0f;
-                        ((float *) (base + off))[-1] = ny;
-                        *(float *) (base + off) = nx;
-                        *(float *) (base + off + 4) = nz;
+                        normalFloats[i + 0] = ny;
+                        normalFloats[i + 1] = nx;
+                        normalFloats[i + 2] = nz;
                     } else {
-                        *(unsigned int *) (base + off) = 0x3f800000;
-                        *(unsigned int *) (base + off - 4) = 0;
-                        *(float *) (base + off + 4) = 1.0f;
+                        ((unsigned int *) normalFloats)[i + 1] = 0x3f800000;
+                        ((unsigned int *) normalFloats)[i + 0] = 0;
+                        normalFloats[i + 2] = 1.0f;
                     }
                     s += 3;
-                    off += 0xc;
                     m = *slot;
                 }
                 ::operator delete[](raw);
@@ -990,78 +1002,74 @@ namespace AbyssEngine {
                 m = *slot;
 
                 unsigned int triCount = (unsigned int) __aeabi_uidiv((int) (unsigned short) m->indexCount, 3);
-                void *accum = ::operator new[](vcount * 0xc);
+                float *accum = (float *) ::operator new[](vcount * 0xc);
 
-                for (unsigned int b = 0; b < vcount * 0xc; ++b) ((char *) accum)[b] = 0;
+                for (unsigned int b = 0; b < vcount * 3; ++b) accum[b] = 0.0f;
 
-                int triOff = 0;
                 for (unsigned int t = 0; t < triCount; ++t) {
                     m = *slot;
-                    char *posBase = (char *) m->positions;
-                    char *uvBase = (char *) m->texCoords;
-                    char *idxBase = (char *) m->indices + triOff;
-                    unsigned int i0 = (unsigned int) *(unsigned short *) (idxBase);
-                    unsigned int i2 = (unsigned int) *(unsigned short *) (idxBase + 4);
-                    unsigned int i1 = (unsigned int) *(unsigned short *) (idxBase + 2);
+                    float *posBase = (float *) m->positions;
+                    float *uvBase = (float *) m->texCoords;
+                    unsigned short *idxBase = (unsigned short *) m->indices + t * 3;
+                    unsigned int i0 = (unsigned int) idxBase[0];
+                    unsigned int i2 = (unsigned int) idxBase[2];
+                    unsigned int i1 = (unsigned int) idxBase[1];
 
-                    float uv0v = *(float *) (uvBase + (i0 << 3 | 4));
-                    float uv0u = *(float *) (uvBase + i0 * 8);
-                    float dv1 = *(float *) (uvBase + (i2 << 3 | 4)) - uv0v;
-                    float dv2 = *(float *) (uvBase + (i1 << 3 | 4)) - uv0v;
-                    float *p0 = (float *) (posBase + i0 * 0xc);
-                    float *p2 = (float *) (posBase + i2 * 0xc);
-                    float *p1 = (float *) (posBase + i1 * 0xc);
-                    float denom = (*(float *) (uvBase + i1 * 8) - uv0u) * dv1 -
-                                  (*(float *) (uvBase + i2 * 8) - uv0u) * dv2;
+                    float uv0v = uvBase[i0 * 2 + 1];
+                    float uv0u = uvBase[i0 * 2];
+                    float dv1 = uvBase[i2 * 2 + 1] - uv0v;
+                    float dv2 = uvBase[i1 * 2 + 1] - uv0v;
+                    float *p0 = posBase + i0 * 3;
+                    float *p2 = posBase + i2 * 3;
+                    float *p1 = posBase + i1 * 3;
+                    float denom = (uvBase[i1 * 2] - uv0u) * dv1 -
+                                  (uvBase[i2 * 2] - uv0u) * dv2;
                     float r = (denom != 0.0f) ? (1.0f / denom) : 0.0f;
                     float tng[3];
                     tng[1] = ((p1[1] - p0[1]) * dv1 - (p2[1] - p0[1]) * dv2) * r;
                     tng[0] = ((p1[0] - p0[0]) * dv1 - (p2[0] - p0[0]) * dv2) * r;
                     tng[2] = ((p1[2] - p0[2]) * dv1 - (p2[2] - p0[2]) * dv2) * r;
-                    float *a = (float *) ((char *) accum + i0 * 0xc);
+                    float *a = accum + i0 * 3;
                     a[0] += tng[0];
                     a[1] += tng[1];
                     a[2] += tng[2];
-                    a = (float *) ((char *) accum + i1 * 0xc);
+                    a = accum + i1 * 3;
                     a[0] += tng[0];
                     a[1] += tng[1];
                     a[2] += tng[2];
-                    a = (float *) ((char *) accum + i2 * 0xc);
+                    a = accum + i2 * 3;
                     a[0] += tng[0];
                     a[1] += tng[1];
                     a[2] += tng[2];
-                    triOff += 6;
                 }
 
-                int off = 0;
                 for (unsigned int v = 0; v < vcount; ++v) {
                     m = *slot;
-                    char *nrmBase = (char *) m->normals;
+                    float *nrmBase = (float *) m->normals;
                     float nrm[3];
-                    nrm[0] = *(float *) (nrmBase + off);
-                    nrm[1] = *(float *) (nrmBase + off + 4);
-                    nrm[2] = *(float *) (nrmBase + off + 8);
+                    nrm[0] = nrmBase[v * 3 + 0];
+                    nrm[1] = nrmBase[v * 3 + 1];
+                    nrm[2] = nrmBase[v * 3 + 2];
                     float tg[3];
-                    tg[0] = *(float *) ((char *) accum + off);
-                    tg[1] = *(float *) ((char *) accum + off + 4);
-                    tg[2] = *(float *) ((char *) accum + off + 8);
+                    tg[0] = accum[v * 3 + 0];
+                    tg[1] = accum[v * 3 + 1];
+                    tg[2] = accum[v * 3 + 2];
                     float d = AEMath::VectorDot(*(const Vector *) nrm, *(const Vector *) tg);
                     float scaled[3] = {nrm[0], nrm[1], nrm[2]};
                     *(Vector *) scaled *= d;
                     *(Vector *) tg -= *(const Vector *) scaled;
                     float tanOut[3];
                     *(Vector *) tanOut = AEMath::VectorNormalize(*(const Vector *) tg);
-                    char *tb = (char *) (*slot)->tangents + off;
-                    *(float *) (tb) = tanOut[0];
-                    *(float *) (tb + 4) = tanOut[1];
-                    *(float *) (tb + 8) = tanOut[2];
+                    float *tb = (float *) (*slot)->tangents + v * 3;
+                    tb[0] = tanOut[0];
+                    tb[1] = tanOut[1];
+                    tb[2] = tanOut[2];
                     float binOut[3] = {tg[0], tg[1], tg[2]};
                     *(Vector *) binOut = AEMath::VectorCross(*(const Vector *) binOut, *(const Vector *) nrm);
-                    char *bb = (char *) (*slot)->binormals + off;
-                    *(float *) (bb) = binOut[0];
-                    *(float *) (bb + 4) = binOut[1];
-                    *(float *) (bb + 8) = binOut[2];
-                    off += 0xc;
+                    float *bb = (float *) (*slot)->binormals + v * 3;
+                    bb[0] = binOut[0];
+                    bb[1] = binOut[1];
+                    bb[2] = binOut[2];
                 }
                 ::operator delete[](accum);
             }
@@ -1081,12 +1089,12 @@ namespace AbyssEngine {
                 m->colors = col;
                 m = *slot;
                 const float inv = 255.0f;
-                int dst = 0;
+                unsigned char *rawBytes = (unsigned char *) raw;
+                float *colorFloats = (float *) m->colors;
                 for (unsigned int i = 0; i < (vcount << 2); ++i) {
                     float c = AbyssEngine::AEMath::VectorUnsignedToFloat(
-                        (unsigned int) *((unsigned char *) raw + i), mode);
-                    *(float *) ((char *) m->colors + dst) = c / inv;
-                    dst += 4;
+                        (unsigned int) rawBytes[i], mode);
+                    colorFloats[i] = c / inv;
                 }
                 ::operator delete[](raw);
             } else if ((flags & 0x18) != 0) {
@@ -1107,9 +1115,8 @@ namespace AbyssEngine {
             if (xf != 0)
                 ((AEMath::BSphere *) &(*slot)->boundsCenterX)->Merge(xf->bounds());
             for (unsigned int c = 0; c < childCount; ++c) {
-                char *child = (char *) ::operator new(0x88);
-                for (int b = 0; b < 0x88; ++b) child[b] = 0;
-                Mesh *childPtr = (Mesh *) child;
+                Mesh *childPtr = (Mesh *) ::operator new(0x88);
+                __aeabi_memclr4(childPtr, 0x88);
                 childPtr->boundsRadiusSq = 1.0f;
                 childPtr->vboEligible = 1;
                 childPtr->vertexFormat = (*slot)->vertexFormat;
@@ -1169,54 +1176,54 @@ namespace AbyssEngine {
         if (n == 0)
             return -4;
 
-        char *sys = (char *) operator new(0x14);
-        pp(sys, 0x4) = 0;
-        pp(sys, 0x8) = 0;
-        pp(sys, 0x10) = 0;
-        *out = (SpriteSystem *) sys;
-        u16(sys, 0x0) = count;
+        SpriteSystem *sys = (SpriteSystem *) operator new(0x14);
+        sys->posCpu = 0;
+        sys->sizeCpu = 0;
+        sys->mesh = 0;
+        *out = sys;
+        sys->count = count;
 
         unsigned int triCount = (n << 1) & 0xffff;
         int rc = MeshCreate(engine, (unsigned short) ((n & 0x3fff) << 2), (unsigned short) triCount,
-                            0x1f, (void **) (sys + 0x10));
-        char *s = (char *) *out;
+                            0x1f, (void **) &sys->mesh);
+        SpriteSystem *s = *out;
         if (rc != 1) {
-            MeshRelease(engine, (Mesh **) (s + 0x10));
-            if (pp(*out, 0x4) != 0)
-                operator delete[](pp(*out, 0x4));
-            pp(*out, 0x4) = 0;
-            if (pp(*out, 0x8) != 0)
-                operator delete[](pp(*out, 0x8));
-            pp(*out, 0x8) = 0;
+            MeshRelease(engine, &s->mesh);
+            if (s->posCpu != 0)
+                operator delete[]((*out)->posCpu);
+            (*out)->posCpu = 0;
+            if ((*out)->sizeCpu != 0)
+                operator delete[]((*out)->sizeCpu);
+            (*out)->sizeCpu = 0;
             if (*out != 0)
                 operator delete((void *) *out);
             *out = 0;
             return -1;
         }
 
-        Mesh *mesh = (Mesh *) pp(s, 0x10);
+        Mesh *mesh = s->mesh;
         int *indexArr = (int *) mesh->indices;
 
         void *posCpu = operator new[](n * 0xc);
-        pp(s, 0x4) = posCpu;
-        __aeabi_memclr4(pp(*out, 0x4), n * 0xc);
+        s->posCpu = (float *) posCpu;
+        __aeabi_memclr4((*out)->posCpu, n * 0xc);
 
-        s = (char *) *out;
-        u8(s, 0xc) = sharedSize ? 1 : 0;
+        s = *out;
+        s->sharedSize = sharedSize ? 1 : 0;
         if (sharedSize) {
             void *sz = operator new[](2);
-            pp(s, 0x8) = sz;
-            *(unsigned short *) pp(*out, 0x8) = 0;
+            s->sizeCpu = (int16_t *) sz;
+            *(unsigned short *) (*out)->sizeCpu = 0;
         } else {
             void *sz = operator new[]((n << 1));
-            pp(s, 0x8) = sz;
-            __aeabi_memclr(pp(*out, 0x8), (n << 1));
+            s->sizeCpu = (int16_t *) sz;
+            __aeabi_memclr((*out)->sizeCpu, (n << 1));
         }
 
         unsigned short base = 0;
-        char *idx = (char *) indexArr;
+        unsigned short *idx = (unsigned short *) indexArr;
         for (unsigned int off = 0; (off & 0xffff) < n * 6; off += 6) {
-            unsigned short *p = (unsigned short *) (idx + (off & 0xffff) * 2);
+            unsigned short *p = idx + (off & 0xffff);
             p[0] = base;
             p[1] = base | 1;
             p[2] = base | 2;
@@ -1226,7 +1233,7 @@ namespace AbyssEngine {
             base = base + 4;
         }
 
-        Mesh *m = (Mesh *) pp(*out, 0x10);
+        Mesh *m = (*out)->mesh;
         unsigned int vcount = (unsigned int) (unsigned short) m->vertexCount;
 
         float *colors = (float *) m->colors;
@@ -1234,26 +1241,26 @@ namespace AbyssEngine {
             colors[i] = 1.0f;
 
         char tangent = *g_SpriteSystem_tangentFlag;
-        int vo = 0;
-        char *normals = (char *) m->normals;
-        char *tangents = (char *) m->tangents;
-        char *binormals = (char *) m->binormals;
+        float *normals = (float *) m->normals;
+        float *tangents = (float *) m->tangents;
+        float *binormals = (float *) m->binormals;
+        unsigned int vi = 0;
         for (unsigned int k = vcount; k != 0; --k) {
-            float *nrm = (float *) (normals + vo);
+            float *nrm = normals + vi;
             nrm[0] = 0.0f;
             nrm[1] = 0.0f;
             nrm[2] = 1.0f;
             if (tangent != 0) {
-                float *tan = (float *) (tangents + vo);
+                float *tan = tangents + vi;
                 tan[0] = 1.0f;
                 tan[1] = 0.0f;
                 tan[2] = 0.0f;
-                float *bin = (float *) (binormals + vo);
+                float *bin = binormals + vi;
                 bin[0] = 0.0f;
                 bin[1] = 1.0f;
                 bin[2] = 0.0f;
             }
-            vo += 0xc;
+            vi += 3;
         }
 
         return 1;
@@ -1267,12 +1274,12 @@ namespace AbyssEngine {
         if (engine == 0 || path == 0)
             return -4;
 
-        char *img = (char *) ::operator new(0x14);
-        u8(img, 0x8) = 0;
-        u32(img, 0x0) = 0;
-        u32(img, 0x4) = 0;
-        u32(img, 0xc) = 0;
-        *out = (Image *) img;
+        Image *img = (Image *) ::operator new(0x14);
+        img->hasMipmaps = 0;
+        *(uint32_t *) &img->width = 0;
+        img->format = 0;
+        img->data = 0;
+        *out = img;
 
         unsigned int handle = 0;
         if (AEFile::OpenRead(path, (uint32_t *) (&handle)) == 0) {
@@ -1293,61 +1300,61 @@ namespace AbyssEngine {
         }
 
         {
-            char *im = (char *) *out;
+            Image *im = *out;
             unsigned char fmt = 0;
             unsigned short palCount = 0;
             if (AEFile::Read((uint32_t)(1), &fmt, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), im + 0x0, handle) == 0) goto fail;
-            if (AEFile::Read((uint32_t)(2), im + 0x2, handle) == 0) goto fail;
+            if (AEFile::Read((uint32_t)(2), &im->width, handle) == 0) goto fail;
+            if (AEFile::Read((uint32_t)(2), &im->height, handle) == 0) goto fail;
             if (AEFile::Read((uint32_t)(2), &palCount, handle) == 0) goto fail;
 
             AEFile::Skip((uint32_t)((unsigned int) palCount << 3), handle);
 
             if (fmt & 2)
-                u8(im, 0x8) = 1;
+                im->hasMipmaps = 1;
 
             unsigned int dataLen = 0;
             switch (fmt) {
                 case 1:
                 case 3:
                 case 0x81: {
-                    unsigned int sz = (unsigned int) u16(im, 0x0) * (unsigned int) u16(im, 0x2) * 4;
+                    unsigned int sz = (unsigned int) im->width * (unsigned int) im->height * 4;
                     void *p = ::operator new[](sz);
-                    pp(im, 0xc) = p;
-                    im = (char *) *out;
-                    if (AEFile::Read((uint32_t)(sz), pp(im, 0xc), handle) == 0) goto fail;
-                    im = (char *) *out;
-                    u32(im, 0x10) = sz;
+                    im->data = p;
+                    im = *out;
+                    if (AEFile::Read((uint32_t)(sz), im->data, handle) == 0) goto fail;
+                    im = *out;
+                    im->dataLen = sz;
                     {
                         unsigned int v = (unsigned int) (int) (signed char) fmt;
                         unsigned int code = ((int) v < 0) ? ((v > 0x7fffffff) ? 6u : v) : 3u;
                         if ((int) v >= 0) code = 3;
-                        u32(im, 0x4) = code;
+                        im->format = code;
                     }
                     break;
                 }
                 case 0xd:
                 case 0xf:
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    pp(im, 0xc) = ::operator new[](dataLen);
-                    if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
-                    u32(im, 0x4) = 4;
-                    u32(im, 0x10) = dataLen;
+                    im->data = ::operator new[](dataLen);
+                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
+                    im->format = 4;
+                    im->dataLen = dataLen;
                     break;
                 case 0x10:
                 case 0x12:
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    pp(im, 0xc) = ::operator new[](dataLen);
-                    if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
-                    u32(im, 0x4) = 5;
-                    u32(im, 0x10) = dataLen;
+                    im->data = ::operator new[](dataLen);
+                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
+                    im->format = 5;
+                    im->dataLen = dataLen;
                     break;
                 case 0x11:
                 case 0x13:
-                    if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
-                    u32(im, 0x4) = 7;
-                    pp(im, 0xc) = ::operator new[](u32(im, 0x10));
-                    if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
+                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
+                    im->format = 7;
+                    im->data = ::operator new[](im->dataLen);
+                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x14:
                 case 0x16:
@@ -1355,35 +1362,35 @@ namespace AbyssEngine {
                 case 0x40:
                 case 0x42:
                     if (fmt == 0x40)
-                        u8(im, 0x8) = 0;
+                        im->hasMipmaps = 0;
                     if (AEFile::Read((uint32_t)(4), &dataLen, handle) == 0) goto fail;
-                    pp(im, 0xc) = ::operator new[](dataLen);
-                    if (AEFile::Read((uint32_t)(dataLen), pp(im, 0xc), handle) == 0) goto fail;
-                    u32(im, 0x4) = 0xb;
-                    u32(im, 0x10) = dataLen;
+                    im->data = ::operator new[](dataLen);
+                    if (AEFile::Read((uint32_t)(dataLen), im->data, handle) == 0) goto fail;
+                    im->format = 0xb;
+                    im->dataLen = dataLen;
                     if (fmt == 0x17)
-                        u8(im, 0x8) = 0;
+                        im->hasMipmaps = 0;
                     break;
                 case 0x20:
                 case 0x22:
-                    if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
-                    u32(im, 0x4) = 8;
-                    pp(im, 0xc) = ::operator new[](u32(im, 0x10));
-                    if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
+                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
+                    im->format = 8;
+                    im->data = ::operator new[](im->dataLen);
+                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x21:
                 case 0x23:
-                    if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
-                    u32(im, 0x4) = 9;
-                    pp(im, 0xc) = ::operator new[](u32(im, 0x10));
-                    if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
+                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
+                    im->format = 9;
+                    im->data = ::operator new[](im->dataLen);
+                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 case 0x24:
                 case 0x26:
-                    if (AEFile::Read((uint32_t)(4), im + 0x10, handle) == 0) goto fail;
-                    u32(im, 0x4) = 10;
-                    pp(im, 0xc) = ::operator new[](u32(im, 0x10));
-                    if (AEFile::Read((uint32_t)(u32(im, 0x10)), pp(im, 0xc), handle) == 0) goto fail;
+                    if (AEFile::Read((uint32_t)(4), &im->dataLen, handle) == 0) goto fail;
+                    im->format = 10;
+                    im->data = ::operator new[](im->dataLen);
+                    if (AEFile::Read((uint32_t)(im->dataLen), im->data, handle) == 0) goto fail;
                     break;
                 default:
                     break;
@@ -1403,8 +1410,8 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     void ImageRelease(Image **slot) {
         if (*slot != 0) {
-            operator delete[](pp(*slot, 0xc));
-            pp(*slot, 0xc) = 0;
+            operator delete[]((*slot)->data);
+            (*slot)->data = 0;
             if (*slot != 0)
                 operator delete((void *) *slot);
             *slot = 0;
@@ -1514,15 +1521,15 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     void ImageFontSetSpacing(ImageFont *font, short spacing) {
         if (font != 0)
-            s16(font, 0x10) = spacing;
+            font->spacing = spacing;
     }
 }
 
 namespace AbyssEngine {
     int ImageFontGetHeight(ImageFont *font) {
         if (font != 0) {
-            void *p = pp(font, 0xc);
-            Mesh *q = (Mesh *) pp(p, 0x0);
+            Mesh **p = font->glyphMeshes;
+            Mesh *q = p[0];
             float *r = (float *) q->positions;
             int v = (int) r[7];
             if (v == 0x18)
@@ -1545,7 +1552,7 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int ImageFontGetSpacing(ImageFont *font) {
-        short v = (font == 0) ? (short) 0 : s16(font, 0x10);
+        short v = (font == 0) ? (short) 0 : font->spacing;
         return (int) v;
     }
 }
@@ -1585,16 +1592,13 @@ namespace AbyssEngine {
         if (text == 0 || font == 0)
             return 0;
 
-        char *f = (char *) font;
-        char *pc = (char *) canvas;
-        char *en = (char *) engine;
         unsigned char mode = 0;
 
         int w = ImageFontGetWidth(font, text, len);
         if (w + x < 0)
             return 0;
 
-        int top = (int) (short) s16(f, 0x12);
+        int top = (int) (short) font->yOffset;
         int h = ImageFontGetHeight(font);
         int dispW = engine->GetDisplayWidth();
         int bottom = dispW;
@@ -1611,7 +1615,7 @@ namespace AbyssEngine {
 
         int step = -1;
         int idx = (int) len - 1;
-        bool batched = (u8(pc, 0x1c) != 0) || rtl;
+        bool batched = (canvas->field_0x1c != 0) || rtl;
         if (batched) {
             step = 1;
             idx = 0;
@@ -1630,10 +1634,10 @@ namespace AbyssEngine {
 
         for (unsigned int i = 0; i < len; ++i) {
             unsigned int slot = 0;
-            unsigned short glyphCount = u16(f, 0x0);
+            unsigned short glyphCount = font->glyphCount;
             bool found = false;
             while (slot < glyphCount) {
-                if (*(unsigned short *) (*(int *) (f + 4) + slot * 2) == text[idx]) {
+                if (font->codes[slot] == text[idx]) {
                     found = true;
                     break;
                 }
@@ -1641,19 +1645,19 @@ namespace AbyssEngine {
             }
 
             if (found) {
-                Mesh *glyphMesh = *(Mesh **) (*(int *) (f + 0xc) + slot * 4);
+                Mesh *glyphMesh = font->glyphMeshes[slot];
                 int advance = (int) ((float *) glyphMesh->positions)[3];
 
                 if (x + advance >= 0 && x <= (int) engine->GetDisplayWidth()) {
                     if (!shaderMode) {
-                        ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) canvas);
-                        MeshDraw(engine, *(Mesh **) (*(int *) (f + 0xc) + slot * 4));
+                        ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                        MeshDraw(engine, font->glyphMeshes[slot]);
                     } else {
-                        int spr = *(int *) (pc + 8);
-                        int n = *(int *) (pc + 0xc);
+                        Mesh *spr = (Mesh *) canvas->quad2dMesh;
+                        int n = canvas->field_0xc;
                         float fx = AbyssEngine::AEMath::VectorSignedToFloat(x, mode);
                         float *vsrc = (float *) glyphMesh->positions;
-                        float *vdst = (float *) (*(int *) (spr + 4) + n * 0x30);
+                        float *vdst = (float *) spr->positions + n * 12;
                         vdst[0] = vsrc[0] + fx;
                         vdst[1] = vsrc[1] + baseY;
                         vdst[3] = vsrc[3] + fx;
@@ -1664,28 +1668,28 @@ namespace AbyssEngine {
                         vdst[10] = vsrc[10] + baseY;
 
                         unsigned int *csrc = (unsigned int *) glyphMesh->texCoords;
-                        unsigned int *cdst = (unsigned int *) (*(int *) (spr + 8) + (n << 5));
+                        unsigned int *cdst = (unsigned int *) spr->texCoords + n * 8;
                         for (int k = 0; k < 8; ++k) cdst[k] = csrc[k];
 
-                        unsigned int *mdst = (unsigned int *) (*(int *) (spr + 0xc) + (n << 6));
+                        unsigned int *mdst = (unsigned int *) spr->colors + n * 16;
                         for (int r = 0; r < 4; ++r) {
-                            mdst[r * 4 + 0] = u32(en, 0xd0);
-                            mdst[r * 4 + 1] = u32(en, 0xd4);
-                            mdst[r * 4 + 2] = u32(en, 0xd8);
-                            mdst[r * 4 + 3] = u32(en, 0xdc);
+                            mdst[r * 4 + 0] = *(uint32_t *) &engine->flCurrentColorR;
+                            mdst[r * 4 + 1] = *(uint32_t *) &engine->field_0xd4;
+                            mdst[r * 4 + 2] = *(uint32_t *) &engine->field_0xd8;
+                            mdst[r * 4 + 3] = *(uint32_t *) &engine->field_0xdc;
                         }
-                        *(int *) (pc + 0xc) = n + 1;
+                        canvas->field_0xc = n + 1;
 
                         if (n > 0x62) {
-                            s16(*(void **) (pc + 8), 0x28) = (short) ((n + 1) * 6);
-                            ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) canvas);
-                            MeshDraw(engine, *(Mesh **) (pc + 8));
-                            *(int *) (pc + 0xc) = 0;
+                            ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + 1) * 6);
+                            ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                            MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
+                            canvas->field_0xc = 0;
                         }
                     }
                 }
 
-                int adv = (int) (short) s16(f, 0x10) + advance;
+                int adv = (int) (short) font->spacing + advance;
                 int eff = adv;
                 if (text[idx] == 0x20)
                     eff = adv - 2;
@@ -1698,12 +1702,12 @@ namespace AbyssEngine {
         }
 
         if (shaderMode) {
-            int n = *(int *) (pc + 0xc);
+            int n = canvas->field_0xc;
             if (n > 0) {
-                s16(*(void **) (pc + 8), 0x28) = (short) ((n + (n << 1)) * 2);
-                ((PaintCanvas *) canvas)->SetWorldViewMatrix(*(const AbyssEngine::AEMath::Matrix *) canvas);
-                MeshDraw(engine, *(Mesh **) (pc + 8));
-                *(int *) (pc + 0xc) = 0;
+                ((Mesh *) canvas->quad2dMesh)->indexCount = (short) ((n + (n << 1)) * 2);
+                ((PaintCanvas *) canvas)->SetWorldViewMatrix(canvas->worldViewMatrix);
+                MeshDraw(engine, (Mesh *) canvas->quad2dMesh);
+                canvas->field_0xc = 0;
             }
         }
 
@@ -1818,29 +1822,29 @@ namespace AbyssEngine {
         if (glyphCount <= index) goto fail;
 
         {
-            char *font = (char *) ::operator new(0x14);
-            u16(font, 0x0) = 0;
-            *(unsigned long long *) (font + 4) = 0;
-            *(unsigned long long *) (font + 0xc) = 0;
-            *out = (ImageFont *) font;
+            ImageFont *font = (ImageFont *) ::operator new(0x14);
+            font->glyphCount = 0;
+            *(unsigned long long *) &font->codes = 0;
+            *(unsigned long long *) &font->glyphMeshes = 0;
+            *out = font;
         }
 
         for (unsigned short g = 0; g < glyphCount; ++g) {
             if (g == index) {
-                char *font = (char *) *out;
-                if (AEFile::Read((uint32_t)(2), font + 0x0, handle) == 0) goto fail;
-                void *codes = ::operator new[]((unsigned int) u16(font, 0x0) << 1);
-                pp(font, 0x4) = codes;
-                if (AEFile::Read((uint32_t)((unsigned int) u16((char *) *out, 0x0) << 1), pp((char *) *out, 0x4),
+                ImageFont *font = *out;
+                if (AEFile::Read((uint32_t)(2), &font->glyphCount, handle) == 0) goto fail;
+                void *codes = ::operator new[]((unsigned int) font->glyphCount << 1);
+                font->codes = (uint16_t *) codes;
+                if (AEFile::Read((uint32_t)((unsigned int) (*out)->glyphCount << 1), (*out)->codes,
                                  handle) == 0)
                     goto fail;
-                font = (char *) *out;
-                void *meshes = ::operator new[]((unsigned int) u16(font, 0x0) << 2);
-                pp(font, 0xc) = meshes;
+                font = *out;
+                void *meshes = ::operator new[]((unsigned int) font->glyphCount << 2);
+                font->glyphMeshes = (Mesh **) meshes;
 
-                unsigned int n = u16((char *) *out, 0x0);
+                unsigned int n = (*out)->glyphCount;
                 for (unsigned int gi = 0; gi < n; ++gi) {
-                    void **meshSlot = (void **) (*(int *) (pp((char *) *out, 0xc)) + gi * 4);
+                    void **meshSlot = (void **) &(*out)->glyphMeshes[gi];
                     if (MeshCreate(engine, 4, 2, 0x13, meshSlot) != 1)
                         goto fail;
                     unsigned short sizeY = 0, sizeX = 0, offX = 0, offY = 0;
@@ -1848,7 +1852,7 @@ namespace AbyssEngine {
                     if (AEFile::Read((uint32_t)(2), &sizeX, handle) == 0) goto fail;
                     if (AEFile::Read((uint32_t)(2), &offX, handle) == 0) goto fail;
                     if (AEFile::Read((uint32_t)(2), &offY, handle) == 0) goto fail;
-                    Mesh *mesh = *(Mesh **) (*(int *) (pp((char *) *out, 0xc)) + gi * 4);
+                    Mesh *mesh = (*out)->glyphMeshes[gi];
                     buildGlyphQuad(mesh, offX, offY, sizeX, sizeY, atlasW, atlasH, mode);
                 }
             } else {
@@ -1880,12 +1884,12 @@ namespace AbyssEngine {
         if (sys == 0)
             return;
 
-        short *sizes = (short *) pp(sys, 0x8);
-        if (u8(sys, 0xc) != 0) {
+        short *sizes = sys->sizeCpu;
+        if (sys->sharedSize != 0) {
             sizes[0] = size;
             return;
         }
-        unsigned int count = u16(sys, 0x0);
+        unsigned int count = sys->count;
         for (unsigned int i = 0; i < count; ++i)
             sizes[i] = size;
     }
@@ -1915,16 +1919,16 @@ namespace AbyssEngine {
         if (sys == 0)
             return;
 
-        Mesh *mesh = (Mesh *) pp(sys, 0x10);
+        Mesh *mesh = sys->mesh;
         float *vbuf = (float *) mesh->positions;
 
         Matrix mv;
         AE_AEMath_matMul(&mv, &view);
 
-        unsigned short count = u16(sys, 0x0);
-        unsigned char sharedSize = u8(sys, 0xc);
-        float *posCpu = (float *) pp(sys, 0x4);
-        short *sizeCpu = (short *) pp(sys, 0x8);
+        unsigned short count = sys->count;
+        unsigned char sharedSize = sys->sharedSize;
+        float *posCpu = sys->posCpu;
+        short *sizeCpu = sys->sizeCpu;
         const float *W = world;
 
         unsigned short sizeIdx = 0;
@@ -1963,22 +1967,22 @@ namespace AbyssEngine {
         if (mesh->material == 0) {
             MeshDraw(engine, mesh);
         } else {
-            void *batch = mesh->material;
-            ArrayAddCachedRaw<Mesh *>(mesh, (char *) batch + 0x44);
+            Material *batch = (Material *) mesh->material;
+            ArrayAddCachedRaw<Mesh *>(mesh, &batch->meshes);
 
             const float *v = view;
             AE_SpriteSystem_pushMatrix(f2u(v[0]), f2u(v[1]), f2u(v[2]), f2u(v[3]), f2u(v[4]), f2u(v[5]),
                                        f2u(v[6]), f2u(v[7]), f2u(v[8]), f2u(v[9]), f2u(v[10]), f2u(v[11]),
-                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) batch + 0x2c);
+                                       f2u(v[12]), f2u(v[13]), f2u(v[14]), (int) (intptr_t) &batch->arr_2c);
             unsigned int one = 0x3f800000;
             unsigned int negOne = 0xbf800000;
             AE_SpriteSystem_pushMatrix(one, 0, 0, 0, 0, negOne, 0, 0, 0, 0, one, 0,
-                                       one, one, one, (int) (intptr_t) batch + 0x38);
+                                       one, one, one, (int) (intptr_t) &batch->arr_38);
             const float *w = world;
             AE_SpriteSystem_pushMatrix(f2u(w[0]), f2u(w[1]), f2u(w[2]), f2u(w[3]), f2u(w[4]), f2u(w[5]),
                                        f2u(w[6]), f2u(w[7]), f2u(w[8]), f2u(w[9]), f2u(w[10]), f2u(w[11]),
-                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) batch + 0x5c);
-            ArrayAddCachedRaw<unsigned int>(0xffffffff, (char *) batch + 0x50);
+                                       f2u(w[12]), f2u(w[13]), f2u(w[14]), (int) (intptr_t) &batch->arr_5c);
+            ArrayAddCachedRaw<unsigned int>(0xffffffff, &batch->arr_50);
         }
     }
 }
@@ -2128,17 +2132,17 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    extern "C" {
     // ES 1.x fixed-function texture-environment entry point (no-op stub in the
     // binary); not declared by <GLES2/gl2.h>.
+    extern "C" {
     void glTexEnvi(unsigned int t, unsigned int p, int v);
-
-    char *g_cubemapEnabledFlag;
-    char *g_texEnvFlag;
-    char *g_clampFlag;
-    float *g_anisoMaxPtr;
-    char *g_labelObjectsFlag;
     }
+
+    static char *g_cubemapEnabledFlag;
+    static char *g_texEnvFlag;
+    static char *g_clampFlag;
+    static float *g_anisoMaxPtr;
+    static char *g_labelObjectsFlag;
 
     int ImageCreateFromFile(Engine *engine, const char *path, Image **out);
 
@@ -2153,16 +2157,16 @@ namespace AbyssEngine {
 
     __attribute__ ((always_inline))
 
-    static inline void uploadCompressedChain(char *img, unsigned int glFmt, int divShift, int minBlock) {
-        unsigned int w = (unsigned int) u16(img, 0x0);
-        unsigned int h = (unsigned int) u16(img, 0x2);
+    static inline void uploadCompressedChain(Image *img, unsigned int glFmt, int divShift, int minBlock) {
+        unsigned int w = (unsigned int) img->width;
+        unsigned int h = (unsigned int) img->height;
         int level = 0;
-        for (unsigned int off = 0; off < u32(img, 0x10);) {
+        for (unsigned int off = 0; off < img->dataLen;) {
             unsigned int blockSz = (w * h) >> divShift;
             if ((int) blockSz < minBlock)
                 blockSz = (unsigned int) minBlock;
             glCompressedTexImage2D(0xde1, level, glFmt, (int) w, (int) h, 0, (int) blockSz,
-                                   (char *) pp(img, 0xc) + off);
+                                   (unsigned char *) img->data + off);
             off += blockSz;
             unsigned int nw = 1, nh = 1;
             if (h >> 1 > 1) nh = h >> 1;
@@ -2186,21 +2190,21 @@ namespace AbyssEngine {
             cb(imgPtr, user);
 
         glGenTextures(1, outIds);
-        char *img = (char *) imgPtr;
-        int format = (int) u32(img, 0x4);
+        Image *img = imgPtr;
+        int format = (int) img->format;
 
         if (format == 6) {
             if (*g_cubemapEnabledFlag != 0) {
                 glBindTexture(0x8513, *outIds);
                 glTexParameteri(0x8513, 0x2800, 0x2601);
                 glTexParameteri(0x8513, 0x2801, 0x2601);
-                int faceH = __aeabi_uidiv((int) u16(img, 0x2), 6);
-                unsigned int w = u16(img, 0x0);
+                int faceH = __aeabi_uidiv((int) img->height, 6);
+                unsigned int w = img->width;
                 const unsigned int faces[6] = {0x8517, 0x8516, 0x8519, 0x8515, 0x851a, 0x8518};
                 int faceBytes = faceH * (int) w;
                 for (int fi = 0; fi < 6; ++fi) {
                     glTexImage2D(faces[fi], 0, 0x1908, (int) w, faceH, 0, 0x1908, 0x1401,
-                                 (char *) pp(img, 0xc) + faceBytes * 4 * fi);
+                                 (unsigned char *) img->data + faceBytes * 4 * fi);
                 }
             }
         } else {
@@ -2219,7 +2223,7 @@ namespace AbyssEngine {
             }
             glTexParameteri(0xde1, 0x2803, wrap);
 
-            if (u8(img, 0x8) == 0) {
+            if (img->hasMipmaps == 0) {
                 if (engine->linearFilterFlag != 0) {
                     glTexParameteri(0xde1, 0x2800, 0x2601);
                     glTexParameteri(0xde1, 0x2801, 0x2601);
@@ -2240,36 +2244,36 @@ namespace AbyssEngine {
                 glTexParameteri(0xde1, 0x2801, 0x2601);
             }
 
-            int w = (int) u16(img, 0x0);
-            int h = (int) u16(img, 0x2);
+            int w = (int) img->width;
+            int h = (int) img->height;
             switch (format) {
                 case 1:
-                    glTexImage2D(0xde1, 0, 0x1909, w, h, 0, 0x1909, 0x1401, pp(img, 0xc));
-                    if (u8(img, 0x8) != 0) glGenerateMipmap(0xde1);
+                    glTexImage2D(0xde1, 0, 0x1909, w, h, 0, 0x1909, 0x1401, img->data);
+                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
                     break;
                 case 2:
-                    glTexImage2D(0xde1, 0, 0x1907, w, h, 0, 0x1907, 0x1401, pp(img, 0xc));
-                    if (u8(img, 0x8) != 0) glGenerateMipmap(0xde1);
+                    glTexImage2D(0xde1, 0, 0x1907, w, h, 0, 0x1907, 0x1401, img->data);
+                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
                     break;
                 case 3:
-                    glTexImage2D(0xde1, 0, 0x1908, w, h, 0, 0x1908, 0x1401, pp(img, 0xc));
-                    if (u8(img, 0x8) != 0) glGenerateMipmap(0xde1);
+                    glTexImage2D(0xde1, 0, 0x1908, w, h, 0, 0x1908, 0x1401, img->data);
+                    if (img->hasMipmaps != 0) glGenerateMipmap(0xde1);
                     break;
                 case 4:
-                    if (u8(img, 0x8) == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c03, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
+                    if (img->hasMipmaps == 0)
+                        glCompressedTexImage2D(0xde1, 0, 0x8c03, w, h, 0, (int) img->dataLen, img->data);
                     else
                         uploadCompressedChain(img, 0x8c03, 1, 0x10);
                     break;
                 case 5:
-                    if (u8(img, 0x8) == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c02, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
+                    if (img->hasMipmaps == 0)
+                        glCompressedTexImage2D(0xde1, 0, 0x8c02, w, h, 0, (int) img->dataLen, img->data);
                     else
                         uploadCompressedChain(img, 0x8c02, 1, 0x10);
                     break;
                 case 7:
-                    if (u8(img, 0x8) == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8c93, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
+                    if (img->hasMipmaps == 0)
+                        glCompressedTexImage2D(0xde1, 0, 0x8c93, w, h, 0, (int) img->dataLen, img->data);
                     else
                         uploadCompressedChain(img, 0x8c93, 0, 0x10);
                     break;
@@ -2279,15 +2283,15 @@ namespace AbyssEngine {
                     unsigned int glFmt = 0x83f0;
                     if (format == 9) glFmt = 0x83f2;
                     if (format == 10) glFmt = 0x83f3;
-                    if (u8(img, 0x8) == 0)
-                        glCompressedTexImage2D(0xde1, 0, glFmt, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
+                    if (img->hasMipmaps == 0)
+                        glCompressedTexImage2D(0xde1, 0, glFmt, w, h, 0, (int) img->dataLen, img->data);
                     else
                         uploadCompressedChain(img, glFmt, 1, 0x10);
                     break;
                 }
                 case 0xb:
-                    if (u8(img, 0x8) == 0)
-                        glCompressedTexImage2D(0xde1, 0, 0x8d64, w, h, 0, (int) u32(img, 0x10), pp(img, 0xc));
+                    if (img->hasMipmaps == 0)
+                        glCompressedTexImage2D(0xde1, 0, 0x8d64, w, h, 0, (int) img->dataLen, img->data);
                     else
                         uploadCompressedChain(img, 0x8d64, 1, 8);
                     break;
@@ -2308,19 +2312,19 @@ namespace AbyssEngine {
             }
             AELabelObject(0x1702, *outIds, path);
         } else {
-            char *tex = (char *) outTex;
-            u8(tex, 0x15) = 1;
-            u8(tex, 0x14) = (format == 6) ? 1 : 0;
+            AELoadedTexture *tex = outTex;
+            tex->valid = 1;
+            tex->isCube = (format == 6) ? 1 : 0;
             if (glGetError() == 0) {
                 AELabelObject(0x1702, *outIds, path);
-                u32(tex, 0x0) = *outIds;
-                u32(tex, 0x18) = u32(img, 0x10);
+                tex->glId = *outIds;
+                tex->byteSize = img->dataLen;
             } else {
-                u32(tex, 0x0) = 0xffffffff;
-                u32(tex, 0x18) = 0;
+                tex->glId = 0xffffffff;
+                tex->byteSize = 0;
                 glDeleteTextures(1, outIds);
             }
-            engine->textureByteCounter += (int) u32(tex, 0x18);
+            engine->textureByteCounter += (int) tex->byteSize;
         }
 
         ImageRelease(&imgPtr);
@@ -2344,17 +2348,17 @@ namespace AbyssEngine {
         if (*slot == 0)
             return;
 
-        void *p = pp(*slot, 0x4);
+        void *p = (*slot)->posCpu;
         if (p != 0)
             operator delete[](p);
-        pp(*slot, 0x4) = 0;
+        (*slot)->posCpu = 0;
 
-        p = pp(*slot, 0x8);
+        p = (*slot)->sizeCpu;
         if (p != 0)
             operator delete[](p);
-        pp(*slot, 0x8) = 0;
+        (*slot)->sizeCpu = 0;
 
-        MeshRelease(engine, (Mesh **) ((char *) *slot + 0x10));
+        MeshRelease(engine, &(*slot)->mesh);
 
         if (*slot != 0)
             operator delete((void *) *slot);
@@ -2365,12 +2369,12 @@ namespace AbyssEngine {
 namespace AbyssEngine {
     int CurveCreate(void **src, unsigned short count, Curve **out) {
         Curve *curve = (Curve *) operator new(8);
-        u32(curve, 0x4) = 0;
+        curve->entries = 0;
         *out = curve;
-        u16(curve, 0x0) = count;
+        curve->count = count;
 
         void *data = operator new[]((unsigned int) count << 2);
-        pp(curve, 0x4) = data;
+        curve->entries = data;
         __aeabi_memcpy4(data, src, (unsigned int) count << 2);
         return 1;
     }
@@ -2489,7 +2493,7 @@ namespace AbyssEngine {
     void MeshRelease(Engine * engine, Mesh * *slot);
 
     static void initMesh(Mesh *m) {
-        for (int i = 0; i < 0x88; ++i) ((char *) m)[i] = 0;
+        __aeabi_memclr4(m, 0x88);
 
         m->boundsRadiusSq = 1.0f;
     }
@@ -2609,8 +2613,6 @@ namespace AbyssEngine {
 
 namespace AbyssEngine {
     int CameraIsSphereinViewFrustum(const Vector &center, float radius, Matrix *extra, Camera *cam) {
-        char *c = (char *) cam;
-
         if (!(radius != 0.0f && *g_Camera_frustumEnabledFlag != 0))
             return 1;
 
@@ -2619,7 +2621,7 @@ namespace AbyssEngine {
         Vector pos, dir, axis;
         Vector camPoint = {0.0f, 0.0f, 0.0f};
 
-        Matrix *srcMatrix = (Matrix *) (c + 0xc);
+        Matrix *srcMatrix = &cam->projection;
         Matrix *dstMatrix;
         if (extra == 0) {
             dstMatrix = &local;
@@ -2640,17 +2642,17 @@ namespace AbyssEngine {
         Vector normAxis = AEMath::VectorNormalize(axis);
         float fwd = AEMath::VectorDot(pos, normAxis);
 
-        if (fwd > f32(c, 0x8) + radius)
+        if (fwd > cam->position[2] + radius)
             return 0;
-        if (fwd < f32(c, 0x4) - radius)
+        if (fwd < cam->position[1] - radius)
             return 0;
 
         axis = AEMath::MatrixGetRight(*dstMatrix);
         normAxis = AEMath::VectorNormalize(axis);
         float right = AEMath::VectorDot(pos, normAxis);
 
-        float rightPad = f32(c, 0x54) * radius;
-        float rightLimit = fwd * f32(c, 0x48) * f32(c, 0x50);
+        float rightPad = cam->frustumInvCosX * radius;
+        float rightLimit = fwd * cam->frustumTanHalfFov * cam->frustumAspect;
         if (right > rightLimit + rightPad)
             return 0;
         if (right < -rightLimit - rightPad)
@@ -2660,8 +2662,8 @@ namespace AbyssEngine {
         normAxis = AEMath::VectorNormalize(axis);
         float up = AEMath::VectorDot(pos, normAxis);
 
-        float upPad = f32(c, 0x58) * radius;
-        float upLimit = fwd * f32(c, 0x48);
+        float upPad = cam->frustumInvCosY * radius;
+        float upLimit = fwd * cam->frustumTanHalfFov;
         if (up > upLimit + upPad)
             return 0;
         if (up < -upLimit - upPad)
@@ -2677,33 +2679,33 @@ namespace AbyssEngine {
     };
 
     long long CurveGetValue(unsigned long long time, Curve *curve) {
-        int *entries = (int *) pp(curve, 0x4);
-        unsigned short count = u16(curve, 0x0);
+        CurveKeyframe **entries = (CurveKeyframe **) curve->entries;
+        unsigned short count = curve->count;
 
         unsigned int qlo = (unsigned int) time;
         unsigned int qhi = (unsigned int) (time >> 32);
 
-        auto keyTimeHi = [&](int kf) -> unsigned int { return *(unsigned int *) (kf + 0xc); };
-        auto keyTimeLo = [&](int kf) -> unsigned int { return *(unsigned int *) (kf + 0x8); };
-        auto keyVal = [&](int kf) -> int { return *(int *) (kf + 0x10); };
+        auto keyTimeHi = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeHi; };
+        auto keyTimeLo = [&](CurveKeyframe *kf) -> unsigned int { return kf->timeLo; };
+        auto keyVal = [&](CurveKeyframe *kf) -> int { return kf->value; };
 
         if (count == 0)
             return 0;
 
-        int first = entries[0];
+        CurveKeyframe *first = entries[0];
         if ((unsigned long long) time <
             (((unsigned long long) keyTimeHi(first) << 32) | keyTimeLo(first))) {
             return keyVal(first);
         }
 
         unsigned int idx = (unsigned int) (unsigned short) (count - 1);
-        int last = entries[idx];
+        CurveKeyframe *last = entries[idx];
         if ((unsigned long long) time >
             (((unsigned long long) keyTimeHi(last) << 32) | keyTimeLo(last))) {
             return keyVal(last);
         }
 
-        int seg = last;
+        CurveKeyframe *seg = last;
         unsigned int segIdx = idx;
         while (segIdx > 0) {
             seg = entries[segIdx];
@@ -2713,7 +2715,7 @@ namespace AbyssEngine {
             --segIdx;
         }
 
-        char tag = *(char *) seg;
+        char tag = (char) seg->tag;
         unsigned long long segStart =
                 ((unsigned long long) keyTimeHi(seg) << 32) | keyTimeLo(seg);
         int v0 = keyVal(seg);
@@ -2722,7 +2724,7 @@ namespace AbyssEngine {
             return v0;
         }
 
-        int nextKf = entries[segIdx + 1];
+        CurveKeyframe *nextKf = entries[segIdx + 1];
         unsigned long long segEnd =
                 ((unsigned long long) keyTimeHi(nextKf) << 32) | keyTimeLo(nextKf);
         int v1 = keyVal(nextKf);
@@ -2738,8 +2740,8 @@ namespace AbyssEngine {
             return (int) ((unsigned int) (d >> 12)) + v0;
         }
 
-        int c0 = *(int *) (seg + 0x14);
-        int c1 = *(int *) (seg + 0x18);
+        int c0 = seg->c0;
+        int c1 = seg->c1;
         unsigned long long t2_64 = (unsigned long long) t * t;
         unsigned int t2 = (unsigned int) (t2_64 >> 12);
         unsigned long long t3_64 = (unsigned long long) t2 * t;

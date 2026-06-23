@@ -2,8 +2,6 @@
 #define GOF2_GAMETEXT_H
 #include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-
 #include "game/core/String.h"
 
 class GameText {
@@ -40,8 +38,8 @@ public:
     void setLanguage(short stringCount, int langId);
 
     inline void setLanguage_i(int langId) { setLanguage(langId); }
-};
 
-extern GameText *gGameText;
+    static GameText *gGameText;
+};
 
 #endif

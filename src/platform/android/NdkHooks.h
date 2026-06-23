@@ -3,7 +3,6 @@
 
 #include <jni.h>
 
-extern "C" {
 int setBaughtCredits(int amount);
 
 void checkFirstCreditPackBoughtWriteAction();
@@ -45,6 +44,5 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass clazz,
                                       jobjectArray descriptions,
                                       jobjectArray currencies,
                                       jobjectArray prices);
-}
 
 #endif

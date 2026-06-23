@@ -4,24 +4,8 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
-    __attribute__ ((visibility
-    (
-
-
-    "hidden"
-    )
-    )
-    )
-    extern int g_shaderIndexSrc;
-    __attribute__ ((visibility
-    (
-
-
-    "hidden"
-    )
-    )
-    )
-    extern int g_shaderIndexDst;
+    static int g_shaderIndexSrc;
+    static int g_shaderIndexDst;
 
     VertexColorAlphaTextureShader::VertexColorAlphaTextureShader() {
         g_shaderIndexDst = g_shaderIndexSrc;

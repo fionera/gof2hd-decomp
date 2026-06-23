@@ -1,5 +1,7 @@
 #include "game/ship/PlayerGasCloud.h"
 
+#include <cstddef>
+
 #include "engine/core/AERandom.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
@@ -21,28 +23,48 @@ namespace AbyssEngine {
     }
 }
 
-extern PaintCanvas **g_pgc_canvas;
-extern void *g_pgc_itemList;
-extern PaintCanvas **g_pgc_canvasRoot;
-extern AbyssEngine::AERandom **g_pgc_rng;
-extern PaintCanvas **g_pgc_canvas2;
-extern PaintCanvas **g_pgcu_canvasRoot;
-extern void *g_pgcu_itemDefs;
-extern FModSound *g_pgcu_pickupSound;
-extern void *g_pgcu_campaign;
+// Minimal model of the campaign/save-state handle. Only the byte accessed by
+// this translation unit is named; the surrounding bytes are reserved padding so
+// the named field lands at its real offset.
+struct PgcCampaign {
+    char reserved0[0x2d];
+    char rescueMissionFlag; // offset 0x2d
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(PgcCampaign, rescueMissionFlag) == 0x2d,
+              "PgcCampaign.rescueMissionFlag must be at 0x2d");
+#endif
 
-extern float g_pgc_countScale;
-extern float g_pgc_attrDiv;
-extern float g_pgc_spread;
-extern float g_pgc_lifeDiv;
-extern float g_pgcu_velScale;
-extern float g_pgcu_catchDist;
-extern int g_pgcu_minTimer;
-extern int g_pgcu_resetTimer;
-extern float g_pgcu_fadeLo;
-extern float g_pgcu_fadeAdd;
-extern float g_pgcu_fadeDiv;
-extern float g_pgcu_growDiv;
+// These globals are referenced only by this translation unit. They are defined
+// here as file-static handles into the live engine state. (extern eliminated;
+// linkage/parity to the original cross-TU definitions is intentionally dropped.)
+static PaintCanvas **g_pgc_canvas = nullptr;
+// g_pgc_itemList: indirection chain to the live Array<Item*> of cargo items.
+//   *g_pgc_itemList   -> Array<Item*>**
+//   **g_pgc_itemList  -> Array<Item*>*  (the table)
+static Array<Item *> ***g_pgc_itemList = nullptr;
+static PaintCanvas **g_pgc_canvasRoot = nullptr;
+static AbyssEngine::AERandom **g_pgc_rng = nullptr;
+static PaintCanvas **g_pgc_canvas2 = nullptr;
+static PaintCanvas **g_pgcu_canvasRoot = nullptr;
+// g_pgcu_itemDefs: *g_pgcu_itemDefs -> Array<Item*>* (the item-definition table).
+static Array<Item *> **g_pgcu_itemDefs = nullptr;
+static FModSound *g_pgcu_pickupSound = nullptr;
+// g_pgcu_campaign: *g_pgcu_campaign -> PgcCampaign* (the campaign/save handle).
+static PgcCampaign **g_pgcu_campaign = nullptr;
+
+static float g_pgc_countScale = 0;
+static float g_pgc_attrDiv = 0;
+static float g_pgc_spread = 0;
+static float g_pgc_lifeDiv = 0;
+static float g_pgcu_velScale = 0;
+static float g_pgcu_catchDist = 0;
+static int g_pgcu_minTimer = 0;
+static int g_pgcu_resetTimer = 0;
+static float g_pgcu_fadeLo = 0;
+static float g_pgcu_fadeAdd = 0;
+static float g_pgcu_fadeDiv = 0;
+static float g_pgcu_growDiv = 0;
 
 PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/,
                                AEGeometry *geometry, const Vector &position)
@@ -180,8 +202,8 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
     float t = 1.5f - dist / radius;
     float countBase = t * g_pgc_countScale;
 
-    void *itemTable = *(void **) ((char *) *(void **) g_pgc_itemList);
-    Item *item = *(Item **) ((char *) *(void **) ((char *) itemTable + 4) + itemIndex * 4);
+    Array<Item *> *itemTable = **g_pgc_itemList;
+    Item *item = (*itemTable)[itemIndex];
     int attr = item->getAttribute(0);
     float attrF = (float) attr / g_pgc_attrDiv;
     float spread = t * g_pgc_spread;
@@ -230,7 +252,7 @@ void PlayerGasCloud::update(int dt) {
     if (this->exploded == 0 || this->settled != 0 || arr == 0) {
         AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                 (*g_pgcu_canvasRoot)->TransformGetTransform(
-                    *(unsigned int *) ((char *) this->modelGeometry + 0xc));
+                    this->modelGeometry->transform);
         t->Update(1, (bool) dt);
         return;
     }
@@ -267,7 +289,7 @@ void PlayerGasCloud::update(int dt) {
             if (p2->isInTurretMode() != 0 &&
                 (*this->sparkTimers)[i] >= g_pgcu_minTimer) {
                 (*this->sparkTimers)[i] = g_pgcu_resetTimer;
-                Ship *ship = gStatus->getShip();
+                Ship *ship = Status::gStatus->getShip();
                 int itemId = this->itemId;
                 if (ship->getFreeSpace() < 1) {
                     if (this->level->getPlayer() != 0) {
@@ -278,26 +300,26 @@ void PlayerGasCloud::update(int dt) {
                         hud->catchCargo(this->itemId, false, true, false, true, false, 0);
                     }
                 } else {
-                    Item *def = *(Item **) ((char *) *(void **) ((char *) *(void **) g_pgcu_itemDefs + 4) + itemId * 4);
+                    Item *def = (*(*g_pgcu_itemDefs))[itemId];
                     def->makeItem();
                     if (this->level->getPlayer() != 0) {
                         PlayerEgo *ego = (PlayerEgo *) (intptr_t) this->level->getPlayer();
                         Hud *hud = (Hud *) (intptr_t) ego->getHUD();
                         hud->catchCargo(this->itemId, true, false, false, false, false, 0);
 
-                        char *camp = (char *) *(void **) g_pgcu_campaign;
-                        if (camp[0x2d] == 0 &&
-                            gStatus->getCurrentCampaignMission() > 0x8e) {
-                            Mission *mission = gStatus->getMission();
+                        PgcCampaign *camp = *g_pgcu_campaign;
+                        if (camp->rescueMissionFlag == 0 &&
+                            Status::gStatus->getCurrentCampaignMission() > 0x8e) {
+                            Mission *mission = Status::gStatus->getMission();
                             if (mission->isEmpty() != 0 && this->itemId == 0xcc) {
-                                camp[0x2d] = 1;
+                                camp->rescueMissionFlag = 1;
                                 this->level->createRadioMessage(0x1a, 0);
                             }
                         }
                     }
                     g_pgcu_pickupSound->stop(0x8d0);
                     g_pgcu_pickupSound->play(0x8d0, 0, 0, 0.0f);
-                    Ship *ship2 = gStatus->getShip();
+                    Ship *ship2 = Status::gStatus->getShip();
                     ship2->addCargo(def);
                 }
                 (*this->sparkScale)[i] = 0.0f;
@@ -318,7 +340,7 @@ void PlayerGasCloud::update(int dt) {
             }
             AbyssEngine::Transform *t = (AbyssEngine::Transform *)
                     (*g_pgcu_canvasRoot)->TransformGetTransform(
-                        *(unsigned int *) ((char *) geom + 0xc));
+                        geom->transform);
             t->Update(1, (bool) dt);
         }
 
@@ -328,7 +350,7 @@ void PlayerGasCloud::update(int dt) {
                       this->elapsedSinceExplosion >= 2000;
         bool steered = false;
         if (homing) {
-            Ship *ship = gStatus->getShip();
+            Ship *ship = Status::gStatus->getShip();
             if (ship->getFirstEquipmentOfSort(0x23) != 0) {
                 Vector dir = turretPos - shardPos;
                 Vector dn;
@@ -336,7 +358,7 @@ void PlayerGasCloud::update(int dt) {
                 *(*this->sparkVelocities)[i] = dn;
                 moveGeom = (*this->sparkGeometries)[i];
 
-                Ship *ship2 = gStatus->getShip();
+                Ship *ship2 = Status::gStatus->getShip();
                 Item *eq = ship2->getFirstEquipmentOfSort(0x23);
                 int attr = eq->getAttribute(0);
                 float step = (float) (attr * dt);

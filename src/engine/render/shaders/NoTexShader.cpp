@@ -3,7 +3,7 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" int NoTexShader_ShaderIndex;
+static int NoTexShader_ShaderIndex;
 
 namespace AbyssEngine {
     void NoTexShader::SetInActive() {

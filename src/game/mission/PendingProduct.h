@@ -3,8 +3,6 @@
 #include "BluePrint.h"
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 class BluePrint;
 
 

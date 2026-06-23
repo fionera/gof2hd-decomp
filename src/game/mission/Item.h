@@ -138,6 +138,8 @@ public:
     static void combineDuplicates(Array<Item*> *items);
 
     static Array<Item*> *mixItems(Array<Item*> *items, Array<Item*> *stationItems);
+
+    static Array<Item *> *g_items;
 };
 
 typedef Array<int> IntArray;

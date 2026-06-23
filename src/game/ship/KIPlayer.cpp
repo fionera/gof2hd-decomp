@@ -14,19 +14,27 @@
 
 using AbyssEngine::Matrix;
 
-extern "C" void FModSound_resumeEvent(void *player, int channel);
+void FModSound_resumeEvent(void *player, int channel);
 
-extern "C" void FModSound_pauseEvent(void *player);
+void FModSound_pauseEvent(void *player);
 
-extern "C" void FModSound_stopEvent(void *player);
+void FModSound_stopEvent(void *player);
 
-extern "C" void FModSound_playEvent(void *player, int event, int flags);
+void FModSound_playEvent(void *player, int event, int flags);
 
-extern "C" void **gCanvasPtr;
-extern void *const gAERandom __attribute__((visibility("hidden")));
-extern void *const gItemDb   __attribute__((visibility("hidden")));
-extern "C" unsigned KIPlayer_initA;
-extern "C" unsigned KIPlayer_initB;
+static void **gCanvasPtr = nullptr;
+static void *const gAERandom = nullptr;
+static void *const gItemDb = nullptr;
+static unsigned KIPlayer_initA = 0;
+static unsigned KIPlayer_initB = 0;
+
+// Global item database handle layout. gItemDb points at a small descriptor
+// whose second pointer-sized slot holds the base of a contiguous table of
+// Item* prototypes (stored as 32-bit values), indexed by item id.
+struct ItemDb {
+    void *field_0;
+    Item **prototypes; // table of Item* prototypes, indexed by item id
+};
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
                    float x, float y, float z, bool active) {
@@ -61,7 +69,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     bool haveChild = (geom != 0) && (geom->baseTransform != 0);
     if (geom != 0 && haveChild) {
         this->parentGeometry = geom;
-        AEGeometry *child = new AEGeometry((PaintCanvas *) gCanvas);
+        AEGeometry *child = new AEGeometry((PaintCanvas *) PaintCanvas::gCanvas);
         this->geometry = child;
         child->addChild(this->parentGeometry->transform);
         this->parentGeometry->altTransform = this->geometry->transform;
@@ -431,7 +439,7 @@ void KIPlayer::captureCrate(Hud *hud) {
         if ((unsigned) (this->state - 3) >= 2)
             amount = ((AbyssEngine::AERandom *) (*(void **) gAERandom))->nextInt();
 
-        Status *status = gStatus;
+        Status *status = Status::gStatus;
 
         int free1 = status->getShip()->getFreeSpace();
         int amt = amount;
@@ -447,13 +455,13 @@ void KIPlayer::captureCrate(Hud *hud) {
 
         int itemId = (*this->cargo)[i];
 
-        int infoPtr = *(int *) (*(char **) (*(char **) gItemDb + 4) + itemId * 4);
-        Item *item = ((Item *) (intptr_t) infoPtr)->makeItem();
+        ItemDb *db = *(ItemDb **) gItemDb;
+        Item *item = db->prototypes[itemId]->makeItem();
         (*this->cargo)[i + 1] = (*this->cargo)[i + 1] - amount;
         if (item == 0)
             return;
 
-        if (*((char *) this->player + 0x5d) != 0)
+        if (this->player->carriesFriendCargoFlag != 0)
             this->level->stealFriendCargo();
 
         if (this->stealFlag == 0)
@@ -502,12 +510,12 @@ void KIPlayer::captureCrate(Hud *hud) {
         if (special) {
             this->lostMissionCrateToEgo = 1;
         } else if (this->shipGroup == 9) {
-            Status *st = gStatus;
+            Status *st = Status::gStatus;
             st->field_cc = item->getAmount() + st->field_cc;
         } else {
             int idx = item->getIndex();
             if (idx >= 0x84 && idx < 0x9a) {
-                Status *st = gStatus;
+                Status *st = Status::gStatus;
                 (*st->field_ac)[idx - 0x84] = true;
             }
         }
@@ -567,7 +575,7 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
         AEGeometry *grp = this->geometry;
         this->parentGeometry = geom;
         if (grp == 0) {
-            grp = new AEGeometry((PaintCanvas *) gCanvas);
+            grp = new AEGeometry((PaintCanvas *) PaintCanvas::gCanvas);
             this->geometry = grp;
         }
         grp->addChild(this->parentGeometry->transform);

@@ -1,5 +1,5 @@
 #include "game/mission/Achievements.h"
-Achievements *gAchievements = nullptr;
+Achievements *Achievements::gAchievements = nullptr;
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
@@ -100,7 +100,7 @@ void Achievements::incKills() {
     this->kills += 1;
 }
 
-extern const int gAchievementValues[] __attribute__((visibility("hidden")));
+static const int gAchievementValues[135] = {0};
 
 int Achievements::getValue(int index, int sub) {
     const int *row = gAchievementValues + index * 3;
@@ -139,7 +139,7 @@ void Achievements::countMedals() {
     this->gotAllMedals_ = (total == 0x24);
 }
 
-extern const int gCFN_req[] __attribute__((visibility("hidden")));
+static const int gCFN_req[135] = {0};
 
 void Achievements::checkForNewMedal(PlayerEgo *ego) {
     (void) ego;
@@ -181,7 +181,8 @@ void Achievements::applyNewMedals() {
     }
 }
 
-extern Status *const* gAchStatusHolder __attribute__((visibility("hidden")));
+static Status *gAchStatus = nullptr;
+static Status *const* gAchStatusHolder = &gAchStatus;
 
 void Achievements::initCheckEquipmentAndWeapons() {
     Status *status = *gAchStatusHolder;

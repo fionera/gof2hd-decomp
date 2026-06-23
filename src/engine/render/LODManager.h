@@ -2,8 +2,6 @@
 #define GOF2_LODMANAGER_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/AEGeometry.h"
 
 #include "engine/math/AEMath.h"
@@ -24,7 +22,7 @@ void RemoveTouches();
 
 Touch GetTouch(int index);
 
-extern "C" void ndk_resetNativeItemInformationList();
+void ndk_resetNativeItemInformationList();
 
 class LODManager {
 public:

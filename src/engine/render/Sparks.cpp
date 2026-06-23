@@ -1,17 +1,16 @@
 #include "engine/render/Sparks.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/core/AERandom.h"
 
-namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(void *rng, int bound);
-    }
+static int Sparks_nextInt(void *rng, int bound) {
+    return ((AbyssEngine::AERandom *) rng)->nextInt(bound);
 }
 
 
-extern void **g_Sparks_canvas_ctor;
+static void **g_Sparks_canvas_ctor = (void **) &PaintCanvas::gCanvas;
 
-extern void **g_Sparks_random_ctor;
+static void **g_Sparks_random_ctor = (void **) &AERandom::gRandom;
 
 Sparks::Sparks(int kind) {
     uint32_t count = 5;
@@ -39,7 +38,7 @@ Sparks::Sparks(int kind) {
         void **rng = g_Sparks_random_ctor;
         for (uint32_t i = 0; i < n; i++) {
             ((PaintCanvas *) *canvas)->SpriteSystemSetSize(this->spriteSystem, (uint16_t) i, 1);
-            int value = AbyssEngine::AERandom::nextInt(*rng, 0x1f4);
+            int value = Sparks_nextInt(*rng, 0x1f4);
             this->lifetimeThresholds[i] = value;
             n = this->count;
             this->totalThreshold = value + this->totalThreshold;
@@ -53,7 +52,7 @@ Sparks::Sparks(int kind) {
 }
 
 
-extern void **g_Sparks_canvas_translate;
+static void **g_Sparks_canvas_translate = (void **) &PaintCanvas::gCanvas;
 
 void Sparks::translate(Vector const &v) {
     void **canvas = g_Sparks_canvas_translate;
@@ -76,7 +75,7 @@ bool Sparks::isRocket() {
 }
 
 
-extern void **g_Sparks_canvas_update;
+static void **g_Sparks_canvas_update = (void **) &PaintCanvas::gCanvas;
 
 void Sparks::update(int step) {
     if (this->active == 0)
@@ -115,13 +114,13 @@ void Sparks::update(int step) {
 }
 
 
-extern void **g_Sparks_canvas_explode_rocket;
+static void **g_Sparks_canvas_explode_rocket = (void **) &PaintCanvas::gCanvas;
 
-extern void **g_Sparks_canvas_explode_single;
+static void **g_Sparks_canvas_explode_single = (void **) &PaintCanvas::gCanvas;
 
-extern void **g_Sparks_random_explode;
+static void **g_Sparks_random_explode = (void **) &AERandom::gRandom;
 
-extern int (*g_Sparks_nextInt_explode)(void *rng, int bound);
+static int (*g_Sparks_nextInt_explode)(void *rng, int bound) = Sparks_nextInt;
 
 void Sparks::explode(int x, int y, int z) {
     int x0 = x;
@@ -155,7 +154,7 @@ void Sparks::explode(int x, int y, int z) {
 }
 
 
-extern void **g_Sparks_canvas_render;
+static void **g_Sparks_canvas_render = (void **) &PaintCanvas::gCanvas;
 
 void Sparks::render() {
     Matrix matrix;

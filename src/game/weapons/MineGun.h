@@ -2,7 +2,6 @@
 #define GOF2_MINEGUN_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "game/ship/PlayerEgo.h"
 
 #include "game/weapons/ObjectGun.h"

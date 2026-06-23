@@ -1,6 +1,8 @@
 #include "game/world/SystemPathFinder.h"
 #include "engine/render/LODManager.h"
 
+static Status **volatile g_SystemPathFinder_status = nullptr;
+
 SystemPathFinder::SystemPathFinder() {
 }
 

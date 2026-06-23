@@ -1,5 +1,5 @@
 #include "engine/core/AERandom.h"
-AbyssEngine::AERandom *gRandom = nullptr;
+AbyssEngine::AERandom *AERandom::gRandom = nullptr;
 #include <ctime>
 
 namespace AbyssEngine {

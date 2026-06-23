@@ -2,7 +2,6 @@
 #define GOF2_RECORDHANDLER_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "GameRecord.h"
 #include "Mission.h"
 #include "engine/render/Engine.h"

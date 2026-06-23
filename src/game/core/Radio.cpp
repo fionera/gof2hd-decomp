@@ -10,48 +10,27 @@
 #include "game/ship/Agent.h"
 #include "game/core/Globals.h"
 
-extern "C" String *_ZN8GameText7getTextEi(GameText *self, int key)
-asm("_ZN8GameText7getTextEi");
-
 void Globals_drawLines(void *globals, String *font, Array<String *> *lines,
                        int x, int y);
 
-extern "C"
-Array<Wanted *> **g_Radio_wantedRoot;
-extern "C"
-ImageFactory **g_Radio_imageFactoryCreate;
-extern "C"
-ImageFactory **g_Radio_imageFactoryLoad;
-extern "C"
-int *g_Radio_imagePartTable[];
-extern "C"
-GameText **g_Radio_gameText;
-extern "C"
-String **g_Radio_fontNormal;
-extern "C"
-String **g_Radio_fontWide;
-extern "C"
-Layout **g_Radio_layoutForText;
-extern "C"
-void **g_Radio_globals;
-extern "C"
-char g_Radio_agentName[];
-extern "C"
-Layout **g_Radio_layout;
-extern "C"
-int **g_Radio_screenWidth;
-extern "C"
-FModSound **g_Radio_drawSound;
-extern "C"
-Layout **g_Radio_drawLayout;
-extern "C"
-Array<Wanted *> **g_Radio_drawWantedRoot;
-extern "C"
-GameText **g_Radio_drawGameText;
-extern "C"
-ImageFactory **g_Radio_drawImageFactory;
-extern "C"
-void **g_Radio_drawGlobals;
+static Array<Wanted *> **g_Radio_wantedRoot;
+static ImageFactory **g_Radio_imageFactoryCreate;
+static ImageFactory **g_Radio_imageFactoryLoad;
+static int * g_Radio_imagePartTable[0x3f];
+static GameText **g_Radio_gameText;
+static String **g_Radio_fontNormal;
+static String **g_Radio_fontWide;
+static Layout **g_Radio_layoutForText;
+static void **g_Radio_globals;
+static char g_Radio_agentName[1];
+static Layout **g_Radio_layout;
+static int **g_Radio_screenWidth;
+static FModSound **g_Radio_drawSound;
+static Layout **g_Radio_drawLayout;
+static Array<Wanted *> **g_Radio_drawWantedRoot;
+static GameText **g_Radio_drawGameText;
+static ImageFactory **g_Radio_drawImageFactory;
+static void **g_Radio_drawGlobals;
 
 static String radio_string_from_cstr(const char *c) {
     String r;
@@ -184,7 +163,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script) {
         this->textLines = new Array<String *>();
 
         int textId = message->textID;
-        String text = *_ZN8GameText7getTextEi(*g_Radio_gameText, textId);
+        String text = *(*g_Radio_gameText)->getText(textId);
 
         String **fontHolder = g_Radio_fontWide;
         if (imageId != 0x38)
@@ -227,7 +206,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
         this->soundPending = 0;
     }
 
-    gCanvas->SetColor(0xffffffffu);
+    PaintCanvas::gCanvas->SetColor(0xffffffffu);
     int imageId = this->currentMessage->imageID;
     Layout *layout = *g_Radio_drawLayout;
     layout->setDrawColor(-0xd1);
@@ -246,7 +225,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
         String title = wanted->getName();
         layout->drawBox(7, x, y, width, boxHeight, title, 0u);
     } else {
-        String title = *_ZN8GameText7getTextEi(*g_Radio_drawGameText, imageId + 0x63d);
+        String title = *(*g_Radio_drawGameText)->getText(imageId + 0x63d);
         layout->drawBox(7, x, y, width, boxHeight, title, 0u);
     }
 

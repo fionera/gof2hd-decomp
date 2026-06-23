@@ -6,13 +6,11 @@
 #include <GLES2/gl2.h>
 
 
-extern ApplicationManager *g_ApplicationManager;
-
 extern "C" {
 float sinf(float x);
-
-extern float PulseShader_timeScale;
 }
+
+static float PulseShader_timeScale = 0.0f;
 
 namespace AbyssEngine {
     PulseShader::PulseShader() {
@@ -74,7 +72,7 @@ namespace AbyssEngine {
             if (this->u9Loc >= 0)
                 glUniform4fv(this->u9Loc, 1, engine->materialSpecular);
 
-            long long t = g_ApplicationManager->GetCurrentTimeMillis();
+            long long t = ApplicationManager::gAppManager->GetCurrentTimeMillis();
             float v = sinf((float) t / PulseShader_timeScale);
             glUniform1f(this->u4Loc, v + 2.0f);
             this->dirty = 0;

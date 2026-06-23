@@ -1,6 +1,8 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/PaintCanvas.h"
 
+static PaintCanvas **g_MarqueeImage_canvas = &PaintCanvas::gCanvas;
+
 MarqueeImage::~MarqueeImage() {
 }
 

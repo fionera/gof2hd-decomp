@@ -43,11 +43,12 @@ namespace AbyssEngine {
     };
 }
 
-extern "C" char *g_Portraits_ipadLargeFlag;
-extern "C" char *g_Portraits_ipad1440Flag;
-extern "C" char *g_Portraits_ipadFlagA;
-extern "C" char *g_Portraits_ipadFlagB;
-extern "C" char *g_Portraits_ipadFlagC;
+static char g_Portraits_zeroFlag = 0;
+static char *g_Portraits_ipadLargeFlag = &g_Portraits_zeroFlag;
+static char *g_Portraits_ipad1440Flag = &g_Portraits_zeroFlag;
+static char *g_Portraits_ipadFlagA = &g_Portraits_zeroFlag;
+static char *g_Portraits_ipadFlagB = &g_Portraits_zeroFlag;
+static char *g_Portraits_ipadFlagC = &g_Portraits_zeroFlag;
 
 __attribute__ ((always_inline))
 

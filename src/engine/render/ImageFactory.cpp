@@ -12,49 +12,31 @@ namespace AbyssEngine {
 
 typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
 
-extern "C"
-GetTextFn *g_reload_getText;
-extern "C"
-unsigned *g_reload_canvas;
-extern "C"
-unsigned *g_drawChar_canvas;
-extern "C"
-unsigned *g_IF_drawShip_canvas;
-extern "C"
-unsigned *g_drawItem_canvas;
-extern "C"
-int *g_IF_idTable;
-extern "C"
-unsigned *g_IF_drawItem4_canvas;
-extern "C"
-char *g_ctor_flagA;
-extern "C"
-char *g_ctor_flagB;
-extern "C"
-int *g_ctor_dst;
-extern int g_ctor_src[] __attribute__((visibility("hidden")));
+static GetTextFn *g_reload_getText;
+static unsigned *g_reload_canvas;
+static unsigned *g_drawChar_canvas;
+static unsigned *g_IF_drawShip_canvas;
+static unsigned *g_drawItem_canvas;
+static int *g_IF_idTable;
+static unsigned *g_IF_drawItem4_canvas;
+static char *g_ctor_flagA;
+static char *g_ctor_flagB;
+static int *g_ctor_dst;
+static int *g_ctor_src;
 
-extern void *const gCreateChar2Rng1 __attribute__((visibility("hidden")));
-extern int gCreateChar2Table __attribute__((visibility("hidden")));
-extern void *const gCreateChar2Rng2 __attribute__((visibility("hidden")));
-extern void *const gCreateCharRng __attribute__((visibility("hidden")));
+static void *gCreateChar2Rng1;
+static int gCreateChar2Table;
+static void *gCreateChar2Rng2;
+static void *gCreateCharRng;
 
-extern "C"
-unsigned *g_IF_li_canvas;
-extern "C"
-char *g_IF_flagA;
-extern "C"
-char *g_IF_flagB;
-extern "C"
-int g_IF_posTableA[];
-extern "C"
-int g_IF_posTableB[];
-extern "C"
-int *g_IF_posTableC;
-extern "C"
-char *g_IF_flagC;
-extern "C"
-int *g_IF_posTableD;
+static unsigned *g_IF_li_canvas;
+static char *g_IF_flagA;
+static char *g_IF_flagB;
+static int *g_IF_posTableA;
+static int *g_IF_posTableB;
+static int *g_IF_posTableC;
+static char *g_IF_flagC;
+static int *g_IF_posTableD;
 
 int ImageFactory::getItemImageId(int itemId) {
     int base = 0xef0;
@@ -153,7 +135,9 @@ void *ImageFactory::loadImage(int row, int col, int frameBase) {
             ->Image2DCreate((unsigned short) ((short) id + (short) frameBase), image);
 
     int *posBase;
-    int rowCol = row * 0x20 + col * 8;
+    // Each (row,col) cell occupies two consecutive ints (px,py); rows have a
+    // stride of 8 ints and columns a stride of 2 ints.
+    int cell = row * 8 + col * 2;
     if (*g_IF_flagA != 0) {
         posBase = g_IF_posTableA;
     } else if (*g_IF_flagB != 0) {
@@ -164,8 +148,8 @@ void *ImageFactory::loadImage(int row, int col, int frameBase) {
             posBase = g_IF_posTableD;
     }
 
-    int px = *(int *) ((char *) posBase + rowCol);
-    int py = *(int *) ((char *) posBase + rowCol + 4);
+    int px = posBase[cell];
+    int py = posBase[cell + 1];
     return new ImagePart(image, px, py);
 }
 
@@ -216,7 +200,8 @@ int *ImageFactory::createChar(bool isMale, int race) {
     if (row == 5) row = 0;
     int *desc = new int[5];
     desc[0] = row;
-    int *partCounts = (int *) ((char *) table + row * 16);
+    // gCreateChar2Table is a contiguous run of rows, each holding 4 part counts.
+    int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
         desc[i + 1] = AbyssEngine::AERandom::nextInt(*(void **) gCreateChar2Rng2, partCounts[i]);
     return desc;

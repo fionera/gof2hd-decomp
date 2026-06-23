@@ -2,7 +2,6 @@
 #define GOF2_CARGOBAY_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "ListItem.h"
 #include "TouchButton.h"
 #include "game/mission/Item.h"

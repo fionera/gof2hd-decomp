@@ -2,16 +2,18 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
+#include "engine/core/ApplicationManager.h"
+#include "engine/render/PaintCanvas.h"
 #include <GLES2/gl2.h>
 
-extern "C" unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine * engine);
-extern "C" unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine * engine);
+unsigned int AbyssEngine_Engine_GetDisplayWidth(::Engine * engine);
+unsigned int AbyssEngine_Engine_GetDisplayHeight(::Engine * engine);
 
-extern "C" void AbyssEngine_Engine_SetWorldViewMatrix(::Engine *engine,
-                                                      const uint32_t *matrix);
+void AbyssEngine_Engine_SetWorldViewMatrix(::Engine *engine,
+                                           const uint32_t *matrix);
 
-extern "C" void AbyssEngine_Engine_DrawQuad(::Engine *engine, int x, int y, int width,
-                                            int height);
+void AbyssEngine_Engine_DrawQuad(::Engine *engine, int x, int y, int width,
+                                 int height);
 
 namespace AbyssEngine {
     PostBWShader::PostBWShader() {
@@ -92,7 +94,7 @@ namespace AbyssEngine {
 
         int width;
         int height;
-        if (*(int *) ((char *) *(void **) (engine->field_0x30) + 0x30) == 2) {
+        if (engine->appManager->paintCanvas->gameOrientation == 2) {
             width = AbyssEngine_Engine_GetDisplayWidth(engine);
             height = AbyssEngine_Engine_GetDisplayHeight(engine);
         } else {
@@ -105,9 +107,9 @@ namespace AbyssEngine {
         glEnableVertexAttribArray(this->aTexCoord);
         glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
         glVertexAttribPointer(this->aPosition, 3, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 0x4));
+                              engine->quadMesh->positions);
         glVertexAttribPointer(this->aTexCoord, 2, 0x1406, 0, 0,
-                              *(void **) (engine->field_0x380 + 0x8));
+                              engine->quadMesh->texCoords);
 
         glClear(0x4000);
         AbyssEngine_Engine_DrawQuad(engine, 0, 0, AbyssEngine_Engine_GetDisplayWidth(engine),

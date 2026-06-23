@@ -2,7 +2,6 @@
 #define GOF2_HANGARLIST_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/core/GameText.h"
 #include "game/mission/BluePrint.h"
 #include "game/mission/Item.h"
@@ -17,10 +16,6 @@ class ListItem;
 class Ship;
 class Status;
 
-
-extern Status *g_HangarList_status;
-extern GameText **g_HangarList_gameText;
-extern Array<Item *> *g_HangarList_items;
 
 class HangarList {
 public:

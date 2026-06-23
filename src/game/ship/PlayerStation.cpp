@@ -12,10 +12,8 @@
 #include "game/world/Station.h"
 #include "engine/render/PaintCanvas.h"
 
-extern PaintCanvas **g_PaintCanvas;
-
 static inline PaintCanvas *paintCanvas() {
-    return *g_PaintCanvas;
+    return PaintCanvas::gCanvas;
 }
 
 typedef Array<BoundingVolume *> BoundingVolumeList;
@@ -106,7 +104,7 @@ void PlayerStation::update(int delta) {
         return;
     }
 
-    if (gStatus->inAlienOrbit()) {
+    if (Status::gStatus->inAlienOrbit()) {
         return;
     }
 
@@ -147,7 +145,7 @@ PlayerStation::PlayerStation(Station *station)
     this->stationIndex = stationIndex;
 
     PaintCanvas *canvas = paintCanvas();
-    Status *status = gStatus;
+    Status *status = Status::gStatus;
 
     Array<int> *collision;
     {

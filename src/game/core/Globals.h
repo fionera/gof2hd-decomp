@@ -2,7 +2,6 @@
 #define GOF2_GLOBALS_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/core/ApplicationManager.h"
 #include "engine/math/BoundingVolume.h"
 #include "engine/render/AEGeometry.h"
@@ -14,6 +13,8 @@ class AEGeometry;
 class Agent;
 class BoundingVolume;
 class Station;
+class Status;
+class FModSound;
 namespace AbyssEngine { 
     class ApplicationManager;
     class Engine;
@@ -151,13 +152,65 @@ public:
     static unsigned char iPadAssetsWithLowerRes;
     static unsigned char enterSpaceLounge;
     static int switch_to_target_setting;
-};
 
-extern Globals *gGlobals;
-extern Layout *gLayout;
-extern void *gFont;
-extern int gScreenWidth;
-extern int gScreenHeight;
-extern AbyssEngine::ApplicationManager *gAppManager;
+    static Status *status;
+    static unsigned char options[100];
+    static FModSound *sound;
+    static int logoIsShown;
+    static int isInMainMenu;
+
+    static char *cItemListID_00;
+    static char *cItemListID_01;
+    static char *cItemListID_02;
+    static char *cItemListID_03;
+    static char *cItemListID_04;
+    static char *cItemListID_05;
+    static char *cItemListID_06;
+    static char *cItemListID_07;
+    static char *cItemListID_08;
+    static char *cItemListID_09;
+    static char *cItemListID_10;
+    static char *cItemListID_11;
+    static char *cItemListID_12;
+    static char *cItemListID_13;
+    static char *cItemListID_14;
+    static char *cItemListID_15;
+    static char *cItemListID_16;
+    static char *cItemListID_17;
+    static char *cItemListID_18;
+    static char *cItemListID_19;
+    static char *cItemListID_20;
+    static char *cItemListID_21;
+    static char *cItemListID_22;
+    static char *cItemListID_23;
+    static char *cItemListID_24;
+    static char *cItemListName_00;
+    static char *cItemListName_01;
+    static char *cItemListName_02;
+    static char *cItemListName_03;
+    static char *cItemListName_04;
+    static char *cItemListDescription_00;
+    static char *cItemListDescription_01;
+    static char *cItemListDescription_02;
+    static char *cItemListDescription_03;
+    static char *cItemListDescription_04;
+    static char *cItemListCurrency_00;
+    static char *cItemListCurrency_01;
+    static char *cItemListCurrency_02;
+    static char *cItemListCurrency_03;
+    static char *cItemListCurrency_04;
+    static char *cItemListPrice_00;
+    static char *cItemListPrice_01;
+    static char *cItemListPrice_02;
+    static char *cItemListPrice_03;
+    static char *cItemListPrice_04;
+
+    static Globals *gGlobals;
+    static Layout *gLayout;
+    static void *gFont;
+    static int gScreenWidth;
+    static int gScreenHeight;
+};
+// ApplicationManager::gAppManager is declared in engine/core/ApplicationManager.h (included above)
 
 #endif

@@ -3,10 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" bool _ZN11AbyssEngine6Engine10fogEnabledE;
-
 namespace AbyssEngine {
-    static inline bool EngineFogEnabled() { return _ZN11AbyssEngine6Engine10fogEnabledE; }
+    static inline bool EngineFogEnabled() { return Engine::fogEnabled; }
 
     int TextureVtxColorShader::ShaderIndex;
 

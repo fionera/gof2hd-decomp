@@ -15,15 +15,15 @@ namespace AbyssEngine {
 
 AbyssEngine::Transform *PlayerAsteroidTransformGetTransform(void *canvas, uint32_t handle);
 
-extern void *g_playerAsteroidCanvas;
-extern Level *g_playerAsteroidLevel;
-extern int g_playerAsteroidRandom;
-extern Vector g_playerAsteroidCenter;
-extern int g_playerAsteroidCenterLength;
+static void *g_playerAsteroidCanvas = nullptr;
+static Level *g_playerAsteroidLevel = nullptr;
+static int g_playerAsteroidRandom = 0;
+static Vector g_playerAsteroidCenter;
+static int g_playerAsteroidCenterLength = 0;
 
-extern const char *g_playerAsteroidQualityNames[];
-extern const char g_playerAsteroidQualityDefault[];
-extern const char g_playerAsteroidQualityFour[];
+static const char *g_playerAsteroidQualityNames[3] = {"", "", ""};
+static const char g_playerAsteroidQualityDefault[1] = {0};
+static const char g_playerAsteroidQualityFour[1] = {0};
 
 void PlayerAsteroid::setAsteroidIndex(int asteroidIndex) {
     this->asteroidIndex = asteroidIndex;

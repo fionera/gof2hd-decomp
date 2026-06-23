@@ -73,8 +73,8 @@ public:
     void setMedals(int *src, int count);
 
     void updateCredits(int value);
-};
 
-extern Achievements *gAchievements;
+    static Achievements *gAchievements;
+};
 
 #endif

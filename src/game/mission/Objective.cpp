@@ -75,7 +75,7 @@ unsigned int Objective::achieved(int value) {
         case 2: {
             Waypoint *last =
                     ((Route *) (intptr_t) this->level->getPlayerRoute())->getLastWaypoint();
-            result = *(uint8_t *) ((char *) last + 0x130) != 0;
+            result = last->state != 0;
             break;
         }
         case 3:
@@ -197,11 +197,11 @@ unsigned int Objective::achieved(int value) {
     return result;
 }
 
-extern "C" void Objective_ctor_akw(int o, int type, int value, int calcValue, Level *level) {
+void Objective_ctor_akw(int o, int type, int value, int calcValue, Level *level) {
     new((void *) (intptr_t) o) Objective(type, value, calcValue, level);
 }
 
-extern "C" void *Objective_dtor(Objective *o) {
+void *Objective_dtor(Objective *o) {
     o->~Objective();
     return o;
 }

@@ -5,12 +5,10 @@
 #include "game/world/Station.h"
 #include "game/core/String.h"
 
-extern Array<Item *> *g_items;
-
 int BluePrint::getAutoCompletionPrice() {
     if (itemIndex == 0xd2)
         return getIngredientsValue() + 0x1e8480;
-    int maxPrice = (*g_items)[itemIndex]->getMaxPrice();
+    int maxPrice = (*Item::g_items)[itemIndex]->getMaxPrice();
     return (int) ((float) (batchMultiplier * maxPrice) * 1.25f);
 }
 
@@ -66,7 +64,7 @@ void BluePrint::unlock() {
 
 void BluePrint::reset() {
     productionCount += 1;
-    gStatus->incGoodsProduced(1);
+    Status::gStatus->incGoodsProduced(1);
     Array<int> *ql = getQuantityList();
     for (uint32_t i = 0; i < ingredientCounters->size(); i++)
         (*ingredientCounters)[i] = (*ql)[i];
@@ -90,11 +88,11 @@ int BluePrint::getTotalAmount(int item) {
 }
 
 Array<int> *BluePrint::getIngredientList() {
-    return (Array<int> *) (*g_items)[itemIndex]->getIngredients();
+    return (Array<int> *) (*Item::g_items)[itemIndex]->getIngredients();
 }
 
 Array<int> *BluePrint::getQuantityList() {
-    return (Array<int> *) (*g_items)[itemIndex]->getQuantities();
+    return (Array<int> *) (*Item::g_items)[itemIndex]->getQuantities();
 }
 
 int BluePrint::getIngredientsValue() {
@@ -102,7 +100,7 @@ int BluePrint::getIngredientsValue() {
     int total = 0;
     if (il != nullptr) {
         for (uint32_t i = 0; i < il->size(); i++) {
-            int price = (*g_items)[(*il)[i]]->getSinglePrice();
+            int price = (*Item::g_items)[(*il)[i]]->getSinglePrice();
             total += (*ingredientCounters)[i] * price;
         }
     }
@@ -111,7 +109,7 @@ int BluePrint::getIngredientsValue() {
 
 BluePrint::BluePrint(int item) {
     itemIndex = item;
-    Item *it = (*g_items)[item];
+    Item *it = (*Item::g_items)[item];
     int type = it->getType();
     stationIndex = -1;
     batchMultiplier = (type == 1) ? 10 : 1;
@@ -148,11 +146,11 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         spentValue += item->getSinglePrice() * amount;
         if (station >= 0 && stationIndex < 0) {
             stationIndex = station;
-            Station *current = gStatus->getStation();
+            Station *current = Status::gStatus->getStation();
             if (current->getIndex() == station) {
                 stationName = current->getName();
             } else {
-                Station *st = (Station *) (intptr_t) gGalaxy->getStation(station);
+                Station *st = (Station *) (intptr_t) Galaxy::gGalaxy->getStation(station);
                 stationName = st->getName();
                 if (st != nullptr)
                     delete st;

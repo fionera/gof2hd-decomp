@@ -1,12 +1,14 @@
 #include "game/ship/PlayerJunk.h"
 #include "game/ship/Player.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/weapons/Radar.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/world/Level.h"
 #include "engine/render/ParticleSystemManager.h"
 
 
-extern FModSound *g_PJ_sound;
+static FModSound *g_PJ_sound = nullptr;
 
 namespace AbyssEngine {
     namespace AERandom {
@@ -14,7 +16,7 @@ namespace AbyssEngine {
     }
 }
 
-extern void *g_PJ_random;
+static void *g_PJ_random = nullptr;
 
 PlayerJunk::PlayerJunk(int type, Player *player, AEGeometry *geometry,
                        float x, float y, float z)
@@ -61,10 +63,10 @@ void PlayerJunk::update(int elapsed) {
             } else {
                 this->player->setActive(false);
 
-                void *playerObj = (void *) this->level->getPlayer();
-                void **targetSlot = (void **) ((char *) *(void **) ((char *) playerObj + 0x14) + 0x1c);
-                if (*targetSlot == this)
-                    *targetSlot = nullptr;
+                PlayerEgo *playerObj = this->level->getPlayer();
+                Radar *radar = (Radar *) playerObj->field_0x14;
+                if (radar->field_0x1c == this)
+                    radar->field_0x1c = nullptr;
             }
 
             Vector position;
@@ -77,10 +79,8 @@ void PlayerJunk::update(int elapsed) {
             zero.z = 0.0f;
 
             Level *level = this->level;
-            int psManager = *(int *) ((char *) level + 0x74);
-            Vector *emitter = *(Vector **) ((char *) level + 0x34);
-            ((ParticleSystemManager *) psManager)->emitManual(
-                (int) (intptr_t) emitter, position, 0, zero, 0.0f);
+            level->field_74->emitManual(
+                level->field_34, position, 0, zero, 0.0f);
         }
     }
 

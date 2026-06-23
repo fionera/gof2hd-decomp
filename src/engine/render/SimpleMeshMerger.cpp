@@ -4,11 +4,11 @@
 #include "engine/math/AEMath.h"
 #include "engine/render/PaintCanvas.h"
 
-extern "C" uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
+uint16_t aeabi_uidiv16(uint16_t a, uint16_t b);
 
-extern "C" void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
+void AEMath_MatrixTransformVector(Vector *out, const Vector *v);
 
-extern "C" void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
+void AEMath_MatrixRotateVector(Vector *out, const Vector *v);
 
 SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
                                    Array<Matrix> transforms,

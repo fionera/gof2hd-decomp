@@ -2,8 +2,6 @@
 #define GOF2_PARTICLESETTINGS_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include <type_traits>
 
 class ParticleSettings {

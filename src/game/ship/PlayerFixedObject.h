@@ -2,7 +2,6 @@
 #define GOF2_PLAYERFIXEDOBJECT_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "game/mission/Explosion.h"
 
 #include "game/ship/KIPlayer.h"

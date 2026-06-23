@@ -2,7 +2,6 @@
 #define GOF2_LODMESHMERGER_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
 #include "PaintCanvas.h"
 
 #include "engine/math/Matrix.h"

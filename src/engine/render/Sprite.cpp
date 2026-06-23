@@ -3,11 +3,11 @@
 #include "engine/render/PaintCanvas.h"
 
 
-extern PaintCanvas **g_Sprite_canvas;
+static PaintCanvas **g_Sprite_canvas = &PaintCanvas::gCanvas;
 
-extern PaintCanvas **g_Sprite_draw_image_canvas;
+static PaintCanvas **g_Sprite_draw_image_canvas = &PaintCanvas::gCanvas;
 
-extern PaintCanvas **g_Sprite_draw_region_canvas;
+static PaintCanvas **g_Sprite_draw_region_canvas = &PaintCanvas::gCanvas;
 
 void Sprite::setPosition(int x, int y) {
     this->posX = x;

@@ -2,8 +2,6 @@
 #define GOF2_PLAYER_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Vector.h"
 
 #include "engine/math/Matrix.h"
@@ -16,14 +14,32 @@ namespace FMOD { class Event; }
 class Player {
 public:
     Array<Array<Gun *> *> *guns;
-    float transform[15];
+    union {
+        float transform[15];
+        AbyssEngine::AEMath::Matrix transformMatrix;
+    };
     int32_t radius;
-    uint16_t destroyed;
-    uint8_t pad_46[0x0e];
+    union {
+        uint16_t destroyed;
+        struct {
+            uint8_t destroyedByte;
+            uint8_t spawnedFlag;
+        };
+    };
+    uint8_t pad_46[2];
+    int32_t mirrorPosX;
+    int32_t mirrorPosY;
+    int32_t mirrorPosZ;
     uint16_t field_54;
     uint8_t pad_56[2];
     int32_t field_58;
-    uint16_t enemyFlags;
+    union {
+        uint16_t enemyFlags;
+        struct {
+            uint8_t enemyFlagsLo;
+            uint8_t carriesFriendCargoFlag;
+        };
+    };
     uint8_t field_5e;
     uint8_t pad_5f;
     float flShake;
@@ -31,15 +47,24 @@ public:
     uint8_t armorHit;
     uint8_t hullHit;
     uint8_t gammaHit;
-    uint16_t empDisabled;
+    union {
+        uint16_t empDisabled;
+        uint8_t empDisabledByte;
+    };
     uint8_t pad_6a[2];
     int32_t damageDoneByPlayer;
     uint8_t playShootSoundFlag;
     uint8_t pad_71[3];
     Array<Player *> *enemies;
     int32_t hitpoints;
-    int32_t empPoints;
-    int32_t maxEmpPoints;
+    union {
+        int32_t empPoints;
+        float empPointsF;
+    };
+    union {
+        int32_t maxEmpPoints;
+        float maxEmpPointsF;
+    };
     int32_t maxHitpoints;
     float shieldHP;
     int32_t armorHP;

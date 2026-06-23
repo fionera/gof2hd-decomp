@@ -15,26 +15,26 @@
 #include "game/core/String.h"
 
 
-extern GameText **g_playerWormHole_text;
+static GameText **g_playerWormHole_text = nullptr;
 
-extern AbyssEngine::PaintCanvas **g_playerWormHole_canvas;
+static AbyssEngine::PaintCanvas **g_playerWormHole_canvas = nullptr;
 
-extern AbyssEngine::PaintCanvas **g_playerWormHole_update_canvas;
+static AbyssEngine::PaintCanvas **g_playerWormHole_update_canvas = nullptr;
 
-extern Status **g_playerWormHole_update_status;
+static Status **g_playerWormHole_update_status = nullptr;
 
-extern void **g_playerWormHole_update_random;
+static void **g_playerWormHole_update_random = nullptr;
 
 typedef int (*RandomNextIntFn)(void *random, int limit);
 
 typedef PlayerEgo *(*GetPlayerFn)(Level *level);
 
 
-extern RandomNextIntFn g_playerWormHole_update_randomAlien;
+static RandomNextIntFn g_playerWormHole_update_randomAlien = nullptr;
 
-extern RandomNextIntFn g_playerWormHole_update_randomNormal;
+static RandomNextIntFn g_playerWormHole_update_randomNormal = nullptr;
 
-extern GetPlayerFn g_playerWormHole_update_getPlayer;
+static GetPlayerFn g_playerWormHole_update_getPlayer = nullptr;
 
 static inline int wormholeSign(int value) {
     return value == 0 ? 1 : -1;

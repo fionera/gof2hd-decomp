@@ -2,7 +2,6 @@
 #define GOF2_TARGETFOLLOWCAMERA_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/AEGeometry.h"
 

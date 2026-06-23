@@ -20,14 +20,14 @@ namespace {
     };
 }
 
-extern "C" void liw_set_buildShipPreview(void *self, void *item, void *layout);
+void liw_set_buildShipPreview(void *self, void *item, void *layout);
 
-extern "C" void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);
+void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);
 
-extern "C" void _liw_render_tail(void *c, int a, int h, void *sp);
+void _liw_render_tail(void *c, int a, int h, void *sp);
 
 
-extern int **g_liw_screen;
+static int **g_liw_screen = nullptr;
 
 void ListItemWindow::OnTouchBegin(int x, int y) {
     this->scrollWindow->OnTouchBegin(x, y);
@@ -76,9 +76,9 @@ void ListItemWindow::OnTouchEnd(int x, int y) {
 }
 
 
-extern PaintCanvas **g_liw_r_canvas;
+static PaintCanvas **g_liw_r_canvas = nullptr;
 
-extern void **g_liw_r_obj;
+static void **g_liw_r_obj = nullptr;
 
 void ListItemWindow::render() {
     if (!this->shows3DShipFlag)
@@ -105,22 +105,22 @@ void ListItemWindow::render() {
 }
 
 
-extern char **g_liw_s_fullscreen;
+static char **g_liw_s_fullscreen = nullptr;
 
-extern char **g_liw_s_modeFlag;
+static char **g_liw_s_modeFlag = nullptr;
 
-extern char **g_liw_s_altFlag;
+static char **g_liw_s_altFlag = nullptr;
 
-extern int *g_liw_s_screenW;
+static int *g_liw_s_screenW = nullptr;
 
-extern int *g_liw_s_screenH;
+static int *g_liw_s_screenH = nullptr;
 
-extern Layout **g_liw_s_layoutHolder;
+static Layout **g_liw_s_layoutHolder = nullptr;
 
-extern const float g_liw_s_wFull;
-extern const float g_liw_s_wAlt;
-extern const float g_liw_s_wMode;
-extern const unsigned int g_liw_s_baseAngle;
+static const float g_liw_s_wFull = 0.0f;
+static const float g_liw_s_wAlt = 0.0f;
+static const float g_liw_s_wMode = 0.0f;
+static const unsigned int g_liw_s_baseAngle = 0u;
 
 void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
                          unsigned p4, unsigned p5, bool p6) {
@@ -252,25 +252,25 @@ ListItemWindow::~ListItemWindow() {
 }
 
 
-extern char *g_liw_d_maskFlag;
+static char *g_liw_d_maskFlag = nullptr;
 
-extern void **g_liw_d_canvas;
+static void **g_liw_d_canvas = nullptr;
 
-extern Layout **g_liw_d_layout;
+static Layout **g_liw_d_layout = nullptr;
 
-extern int *g_liw_d_headerId;
+static int *g_liw_d_headerId = nullptr;
 
-extern GameText **g_liw_d_gameText;
+static GameText **g_liw_d_gameText = nullptr;
 
-extern ImageFactory **g_liw_d_imageFactory;
+static ImageFactory **g_liw_d_imageFactory = nullptr;
 
-extern void **g_liw_d_itemDB;
+static void **g_liw_d_itemDB = nullptr;
 
-extern String **g_liw_d_arrowL;
+static String **g_liw_d_arrowL = nullptr;
 
-extern String **g_liw_d_arrowR;
+static String **g_liw_d_arrowR = nullptr;
 
-extern int *g_liw_d_scrollLimit;
+static int *g_liw_d_scrollLimit = nullptr;
 
 void ListItemWindow::draw() {
     Layout *layout = *g_liw_d_layout;
@@ -322,13 +322,11 @@ void ListItemWindow::draw() {
 
             ImageFactory *fac = *g_liw_d_imageFactory;
             int shipIdx = li->ship->getIndex();
-            char *L = (char *) layout;
             fac->drawShip(shipIdx, this->x + layout->buttonInsetX + layout->field_0x2c,
-                          ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - i32(L, 0x2c8) /
-                           2) + i32(L, 0x124));
+                          ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) - layout->field_0x2c8 /
+                           2) + layout->field_0x124);
         }
     } else {
-        char *L = (char *) layout;
         int boxX = this->x, boxY = this->y, w = this->width;
         int c0c = layout->field_0xc, c20 = layout->field_0x20, c28 = layout->buttonInsetX, c2c = layout->field_0x2c;
         int color = layout->field_0x5c;
@@ -361,8 +359,8 @@ void ListItemWindow::draw() {
         int type = itemPtr->getType();
         fac->drawItem(idx, type,
                       layout->buttonInsetX + this->x + layout->field_0x2c,
-                      i32(L, 0x124) + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) -
-                                       i32(L, 0x2c8) / 2));
+                      layout->field_0x124 + ((this->y + layout->field_0xc + layout->field_0x20 + layout->field_0x5c / 2) -
+                                       layout->field_0x2c8 / 2));
     }
 
     Array<String *> *rows = this->labels;
@@ -458,13 +456,13 @@ void ListItemWindow::draw() {
 
 void MatrixSetRotation(void *m, float x, float y, float z);
 
-extern "C" void MatrixSetScaling(void *m, float x, float y, float z);
+void MatrixSetScaling(void *m, float x, float y, float z);
 
 
-extern uint32_t *g_liw_u_tf;
+static uint32_t *g_liw_u_tf = nullptr;
 
-extern const float *g_liw_u_angleTable;
-extern const float g_liw_u_angleScale;
+static const float *g_liw_u_angleTable = nullptr;
+static const float g_liw_u_angleScale = 0.0f;
 
 void ListItemWindow::update(int frameTime) {
     this->scrollWindow->update(frameTime);
@@ -507,9 +505,9 @@ void ListItemWindow::update(int frameTime) {
 }
 
 
-extern void ***g_liw_a;
+static void ***g_liw_a = nullptr;
 
-extern void ***g_liw_b;
+static void ***g_liw_b = nullptr;
 
 ListItemWindow::ListItemWindow() {
     void **a = *g_liw_a;

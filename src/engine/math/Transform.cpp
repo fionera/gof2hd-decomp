@@ -2,8 +2,9 @@
 #include "engine/core/KeyFrame.h"
 #include "engine/render/Mesh.h"
 
-extern int *g_transform_insert_counter;
-extern bool g_transform_matrix_flag;
+static int g_transform_insert_count = 0;
+static int *g_transform_insert_counter = &g_transform_insert_count;
+static bool g_transform_matrix_flag = false;
 
 namespace AbyssEngine {
     void Transform::SetCurrentAnimationTime(longlong value) {
@@ -15,14 +16,12 @@ namespace AbyssEngine {
         if (first < 0 || (int) this->keyFrames.size() <= first) {
             start = 0;
         } else {
-            char *keyFrame = (char *) this->keyFrames[first];
-            start = *(longlong *) (keyFrame + 0x50);
+            start = this->keyFrames[first]->timestamp;
         }
 
         longlong end;
         if (last >= 0 && last <= (int) this->keyFrames.size()) {
-            char *keyFrame = (char *) this->keyFrames[last];
-            end = *(longlong *) (keyFrame + 0x50);
+            end = this->keyFrames[last]->timestamp;
         } else {
             end = 0;
         }
@@ -54,8 +53,7 @@ namespace AbyssEngine {
 
     void Transform::PauseAnimationWithKeyFrame(int index) {
         if (index >= 0 && index < (int) this->keyFrames.size()) {
-            char *keyFrame = (char *) this->keyFrames[index];
-            longlong time = *(longlong *) (keyFrame + 0x50);
+            longlong time = this->keyFrames[index]->timestamp;
             this->currentTime = time;
             InternUpdate(time, false);
         }
@@ -102,8 +100,7 @@ namespace AbyssEngine {
 
         size_t count = this->keyFrames.size();
         if (count != 0) {
-            char *keyFrame = (char *) this->keyFrames[count - 1];
-            longlong keyTime = *(longlong *) (keyFrame + 0x50);
+            longlong keyTime = this->keyFrames[count - 1]->timestamp;
             if (*length < keyTime) {
                 *length = keyTime;
             }
@@ -161,112 +158,92 @@ namespace AbyssEngine {
     }
 
     void Transform::UpdateKeyFrames(KeyFrame *keyFrame, int index) {
-        char *key = (char *) keyFrame;
+        KeyFrame *key = keyFrame;
 
         Array<KeyFrame *> &items = this->keyFrames;
         int i = 0;
         while (i + 1 < index) {
-            char *next = (char *) items[i + 1];
-            char *prev = (char *) items[i];
-            longlong keyTime = *(longlong *) (key + 0x50);
-            float a = (float) (keyTime - *(longlong *) (next + 0x50));
-            float b = (float) (keyTime - *(longlong *) (prev + 0x50));
+            KeyFrame *next = items[i + 1];
+            KeyFrame *prev = items[i];
+            longlong keyTime = key->timestamp;
+            float a = (float) (keyTime - next->timestamp);
+            float b = (float) (keyTime - prev->timestamp);
             float t = 1.0f - a / b;
-            uint flags0 = *(uint *) (key + 0x58);
-            uint flags1 = *(uint *) (key + 0x5c);
-            uint next0 = *(uint *) (next + 0x58);
-            uint next1 = *(uint *) (next + 0x5c);
+            uint flags0 = key->channelFlags;
+            uint flags1 = key->channelFlagsHi;
+            uint next0 = next->channelFlags;
+            uint next1 = next->channelFlagsHi;
 
             if ((flags0 & 0x40) && !(next0 & 0x40))
-                *(float *) (next + 0x18) = lerp_float(
-                    *(float *) (prev + 0x18), *(float *) (key + 0x18), t);
+                next->rotation.x = lerp_float(prev->rotation.x, key->rotation.x, t);
             if ((flags0 & 0x80) && !(next0 & 0x80))
-                *(float *) (next + 0x1c) = lerp_float(
-                    *(float *) (prev + 0x1c), *(float *) (key + 0x1c), t);
+                next->rotation.y = lerp_float(prev->rotation.y, key->rotation.y, t);
             if ((flags0 & 0x100) && !(next0 & 0x100))
-                *(float *) (next + 0x20) = lerp_float(
-                    *(float *) (prev + 0x20), *(float *) (key + 0x20), t);
+                next->rotation.z = lerp_float(prev->rotation.z, key->rotation.z, t);
             if ((flags0 & 0x1) && !(next0 & 0x1))
-                *(float *) (next + 0x00) = lerp_float(
-                    *(float *) (prev + 0x00), *(float *) (key + 0x00), t);
+                next->translation.x = lerp_float(prev->translation.x, key->translation.x, t);
             if ((flags0 & 0x2) && !(next0 & 0x2))
-                *(float *) (next + 0x04) = lerp_float(
-                    *(float *) (prev + 0x04), *(float *) (key + 0x04), t);
+                next->translation.y = lerp_float(prev->translation.y, key->translation.y, t);
             if ((flags0 & 0x4) && !(next0 & 0x4))
-                *(float *) (next + 0x08) = lerp_float(
-                    *(float *) (prev + 0x08), *(float *) (key + 0x08), t);
+                next->translation.z = lerp_float(prev->translation.z, key->translation.z, t);
             if ((flags0 & 0x8) && !(next0 & 0x8))
-                *(float *) (next + 0x0c) = lerp_float(
-                    *(float *) (prev + 0x0c), *(float *) (key + 0x0c), t);
+                next->scale.x = lerp_float(prev->scale.x, key->scale.x, t);
             if ((flags0 & 0x10) && !(next0 & 0x10))
-                *(float *) (next + 0x10) = lerp_float(
-                    *(float *) (prev + 0x10), *(float *) (key + 0x10), t);
+                next->scale.y = lerp_float(prev->scale.y, key->scale.y, t);
             if ((flags0 & 0x20) && !(next0 & 0x20))
-                *(float *) (next + 0x14) = lerp_float(
-                    *(float *) (prev + 0x14), *(float *) (key + 0x14), t);
+                next->scale.z = lerp_float(prev->scale.z, key->scale.z, t);
             if ((flags0 & 0x200) && !(next0 & 0x200))
-                *(float *) (next + 0x48) = lerp_float(
-                    *(float *) (prev + 0x48), *(float *) (key + 0x48), t);
+                next->alpha = lerp_float(prev->alpha, key->alpha, t);
             if ((flags0 & 0x10000) && !(next0 & 0x10000))
-                *(float *) (next + 0x3c) = lerp_float(
-                    *(float *) (prev + 0x3c), *(float *) (key + 0x3c), t);
+                next->localRotation.x = lerp_float(prev->localRotation.x, key->localRotation.x, t);
             if ((flags0 & 0x20000) && !(next0 & 0x20000))
-                *(float *) (next + 0x40) = lerp_float(
-                    *(float *) (prev + 0x40), *(float *) (key + 0x40), t);
+                next->localRotation.y = lerp_float(prev->localRotation.y, key->localRotation.y, t);
             if ((flags0 & 0x40000) && !(next0 & 0x40000))
-                *(float *) (next + 0x44) = lerp_float(
-                    *(float *) (prev + 0x44), *(float *) (key + 0x44), t);
+                next->localRotation.z = lerp_float(prev->localRotation.z, key->localRotation.z, t);
             if ((flags0 & 0x400) && !(next0 & 0x400))
-                *(float *) (next + 0x24) = lerp_float(
-                    *(float *) (prev + 0x24), *(float *) (key + 0x24), t);
+                next->localTranslation.x = lerp_float(prev->localTranslation.x, key->localTranslation.x, t);
             if ((flags0 & 0x800) && !(next0 & 0x800))
-                *(float *) (next + 0x28) = lerp_float(
-                    *(float *) (prev + 0x28), *(float *) (key + 0x28), t);
+                next->localTranslation.y = lerp_float(prev->localTranslation.y, key->localTranslation.y, t);
             if ((flags0 & 0x1000) && !(next0 & 0x1000))
-                *(float *) (next + 0x2c) = lerp_float(
-                    *(float *) (prev + 0x2c), *(float *) (key + 0x2c), t);
+                next->localTranslation.z = lerp_float(prev->localTranslation.z, key->localTranslation.z, t);
             if ((flags0 & 0x2000) && !(next0 & 0x2000))
-                *(float *) (next + 0x30) = lerp_float(
-                    *(float *) (prev + 0x30), *(float *) (key + 0x30), t);
+                next->localScale.x = lerp_float(prev->localScale.x, key->localScale.x, t);
             if ((flags0 & 0x4000) && !(next0 & 0x4000))
-                *(float *) (next + 0x34) = lerp_float(
-                    *(float *) (prev + 0x34), *(float *) (key + 0x34), t);
+                next->localScale.y = lerp_float(prev->localScale.y, key->localScale.y, t);
             if ((flags0 & 0x8000) && !(next0 & 0x8000))
-                *(float *) (next + 0x38) = lerp_float(
-                    *(float *) (prev + 0x38), *(float *) (key + 0x38), t);
-            *(uint *) (next + 0x58) = next0 | flags0;
-            *(uint *) (next + 0x5c) = next1 | flags1;
+                next->localScale.z = lerp_float(prev->localScale.z, key->localScale.z, t);
+            next->channelFlags = next0 | flags0;
+            next->channelFlagsHi = next1 | flags1;
             ++i;
         }
 
         uint count = (uint) this->keyFrames.size();
-        while ((uint)++index < count
-        )
+        while ((uint)++index < count)
         {
-            char *dst = (char *) items[index];
-            uint flags0 = *(uint *) (key + 0x58);
-            if ((flags0 & 0x40) && !(*(uint *) (dst + 0x58) & 0x40)) *(int *) (dst + 0x18) = *(int *) (key + 0x18);
-            if ((flags0 & 0x80) && !(*(uint *) (dst + 0x58) & 0x80)) *(int *) (dst + 0x1c) = *(int *) (key + 0x1c);
-            if ((flags0 & 0x100) && !(*(uint *) (dst + 0x58) & 0x100)) *(int *) (dst + 0x20) = *(int *) (key + 0x20);
-            if ((flags0 & 0x1) && !(*(uint *) (dst + 0x58) & 0x1)) *(int *) (dst + 0x00) = *(int *) (key + 0x00);
-            if ((flags0 & 0x2) && !(*(uint *) (dst + 0x58) & 0x2)) *(int *) (dst + 0x04) = *(int *) (key + 0x04);
-            if ((flags0 & 0x4) && !(*(uint *) (dst + 0x58) & 0x4)) *(int *) (dst + 0x08) = *(int *) (key + 0x08);
-            if ((flags0 & 0x8) && !(*(uint *) (dst + 0x58) & 0x8)) *(int *) (dst + 0x0c) = *(int *) (key + 0x0c);
-            if ((flags0 & 0x10) && !(*(uint *) (dst + 0x58) & 0x10)) *(int *) (dst + 0x10) = *(int *) (key + 0x10);
-            if ((flags0 & 0x20) && !(*(uint *) (dst + 0x58) & 0x20)) *(int *) (dst + 0x14) = *(int *) (key + 0x14);
-            if ((flags0 & 0x200) && !(*(uint *) (dst + 0x58) & 0x200)) *(int *) (dst + 0x48) = *(int *) (key + 0x48);
-            if ((flags0 & 0x10000) && !(*(uint *) (dst + 0x58) & 0x10000))
-                *(int *) (dst + 0x3c) = *(int *) (key + 0x3c);
-            if ((flags0 & 0x20000) && !(*(uint *) (dst + 0x58) & 0x20000))
-                *(int *) (dst + 0x40) = *(int *) (key + 0x40);
-            if ((flags0 & 0x40000) && !(*(uint *) (dst + 0x58) & 0x40000))
-                *(int *) (dst + 0x44) = *(int *) (key + 0x44);
-            if ((flags0 & 0x400) && !(*(uint *) (dst + 0x58) & 0x400)) *(int *) (dst + 0x24) = *(int *) (key + 0x24);
-            if ((flags0 & 0x800) && !(*(uint *) (dst + 0x58) & 0x800)) *(int *) (dst + 0x28) = *(int *) (key + 0x28);
-            if ((flags0 & 0x1000) && !(*(uint *) (dst + 0x58) & 0x1000)) *(int *) (dst + 0x2c) = *(int *) (key + 0x2c);
-            if ((flags0 & 0x2000) && !(*(uint *) (dst + 0x58) & 0x2000)) *(int *) (dst + 0x30) = *(int *) (key + 0x30);
-            if ((flags0 & 0x4000) && !(*(uint *) (dst + 0x58) & 0x4000)) *(int *) (dst + 0x34) = *(int *) (key + 0x34);
-            if ((flags0 & 0x8000) && !(*(uint *) (dst + 0x58) & 0x8000)) *(int *) (dst + 0x38) = *(int *) (key + 0x38);
+            KeyFrame *dst = items[index];
+            uint flags0 = key->channelFlags;
+            if ((flags0 & 0x40) && !(dst->channelFlags & 0x40)) dst->rotation.x = key->rotation.x;
+            if ((flags0 & 0x80) && !(dst->channelFlags & 0x80)) dst->rotation.y = key->rotation.y;
+            if ((flags0 & 0x100) && !(dst->channelFlags & 0x100)) dst->rotation.z = key->rotation.z;
+            if ((flags0 & 0x1) && !(dst->channelFlags & 0x1)) dst->translation.x = key->translation.x;
+            if ((flags0 & 0x2) && !(dst->channelFlags & 0x2)) dst->translation.y = key->translation.y;
+            if ((flags0 & 0x4) && !(dst->channelFlags & 0x4)) dst->translation.z = key->translation.z;
+            if ((flags0 & 0x8) && !(dst->channelFlags & 0x8)) dst->scale.x = key->scale.x;
+            if ((flags0 & 0x10) && !(dst->channelFlags & 0x10)) dst->scale.y = key->scale.y;
+            if ((flags0 & 0x20) && !(dst->channelFlags & 0x20)) dst->scale.z = key->scale.z;
+            if ((flags0 & 0x200) && !(dst->channelFlags & 0x200)) dst->alpha = key->alpha;
+            if ((flags0 & 0x10000) && !(dst->channelFlags & 0x10000))
+                dst->localRotation.x = key->localRotation.x;
+            if ((flags0 & 0x20000) && !(dst->channelFlags & 0x20000))
+                dst->localRotation.y = key->localRotation.y;
+            if ((flags0 & 0x40000) && !(dst->channelFlags & 0x40000))
+                dst->localRotation.z = key->localRotation.z;
+            if ((flags0 & 0x400) && !(dst->channelFlags & 0x400)) dst->localTranslation.x = key->localTranslation.x;
+            if ((flags0 & 0x800) && !(dst->channelFlags & 0x800)) dst->localTranslation.y = key->localTranslation.y;
+            if ((flags0 & 0x1000) && !(dst->channelFlags & 0x1000)) dst->localTranslation.z = key->localTranslation.z;
+            if ((flags0 & 0x2000) && !(dst->channelFlags & 0x2000)) dst->localScale.x = key->localScale.x;
+            if ((flags0 & 0x4000) && !(dst->channelFlags & 0x4000)) dst->localScale.y = key->localScale.y;
+            if ((flags0 & 0x8000) && !(dst->channelFlags & 0x8000)) dst->localScale.z = key->localScale.z;
         }
     }
 
@@ -455,13 +432,13 @@ namespace AbyssEngine {
             if (current < time) current = time;
 
             Array<KeyFrame *> &items = this->keyFrames;
-            char *last = (char *) items[items.size() - 1];
-            if (*(longlong *) (last + 0x50) < current) {
-                current = *(longlong *) (last + 0x50);
+            KeyFrame *last = items[items.size() - 1];
+            if (last->timestamp < current) {
+                current = last->timestamp;
             }
 
             int index = 0;
-            while (*(longlong *) ((char *) items[index] + 0x50) < current) {
+            while (items[index]->timestamp < current) {
                 ++index;
             }
             this->currentKeyFrameIndex = index;
@@ -474,43 +451,38 @@ namespace AbyssEngine {
                     this->localMatrix.m[5] = 1.0f;
                 }
             } else if (current == 0) {
-                char *key = (char *) items[index];
-                this->rotation.Set(*(float *) (key + 0x18), *(float *) (key + 0x1c), *(float *) (key + 0x20));
-                this->translation = *(AEMath::Vector *) (key + 0x00);
-                this->scale = *(AEMath::Vector *) (key + 0x0c);
-                this->alpha = *(float *) (key + 0x48);
-                this->localRotation.Set(*(float *) (key + 0x3c), *(float *) (key + 0x40), *(float *) (key + 0x44));
-                this->localTranslation = *(AEMath::Vector *) (key + 0x24);
-                this->localScale = *(AEMath::Vector *) (key + 0x30);
+                KeyFrame *key = items[index];
+                this->rotation.Set(key->rotation.x, key->rotation.y, key->rotation.z);
+                this->translation = key->translation;
+                this->scale = key->scale;
+                this->alpha = key->alpha;
+                this->localRotation.Set(key->localRotation.x, key->localRotation.y, key->localRotation.z);
+                this->localTranslation = key->localTranslation;
+                this->localScale = key->localScale;
             } else {
-                char *prev = (char *) items[index - 1];
-                char *next = (char *) items[index];
-                float t = (float) (current - *(longlong *) (prev + 0x50)) /
-                          (float) (*(longlong *) (next + 0x50) - *(longlong *) (prev + 0x50));
+                KeyFrame *prev = items[index - 1];
+                KeyFrame *next = items[index];
+                float t = (float) (current - prev->timestamp) /
+                          (float) (next->timestamp - prev->timestamp);
 
                 Quaternion qa;
-                qa.Set(*(float *) (prev + 0x18), *(float *) (prev + 0x1c), *(float *) (prev + 0x20));
+                qa.Set(prev->rotation.x, prev->rotation.y, prev->rotation.z);
                 Quaternion qb;
-                qb.Set(*(float *) (next + 0x18), *(float *) (next + 0x1c), *(float *) (next + 0x20));
+                qb.Set(next->rotation.x, next->rotation.y, next->rotation.z);
                 this->rotation.Lerp(qa, qb, t);
 
-                this->translation = AEMath::VectorLerp(
-                    *(AEMath::Vector *) (prev + 0x00), *(AEMath::Vector *) (next + 0x00), t);
-                this->scale = AEMath::VectorLerp(
-                    *(AEMath::Vector *) (prev + 0x0c), *(AEMath::Vector *) (next + 0x0c), t);
-                this->alpha = *(float *) (prev + 0x48) +
-                              t * (*(float *) (next + 0x48) - *(float *) (prev + 0x48));
+                this->translation = AEMath::VectorLerp(prev->translation, next->translation, t);
+                this->scale = AEMath::VectorLerp(prev->scale, next->scale, t);
+                this->alpha = prev->alpha + t * (next->alpha - prev->alpha);
 
                 Quaternion qc;
-                qc.Set(*(float *) (prev + 0x3c), *(float *) (prev + 0x40), *(float *) (prev + 0x44));
+                qc.Set(prev->localRotation.x, prev->localRotation.y, prev->localRotation.z);
                 Quaternion qd;
-                qd.Set(*(float *) (next + 0x3c), *(float *) (next + 0x40), *(float *) (next + 0x44));
+                qd.Set(next->localRotation.x, next->localRotation.y, next->localRotation.z);
                 this->localRotation.Lerp(qc, qd, t);
 
-                this->localTranslation = AEMath::VectorLerp(
-                    *(AEMath::Vector *) (prev + 0x24), *(AEMath::Vector *) (next + 0x24), t);
-                this->localScale = AEMath::VectorLerp(
-                    *(AEMath::Vector *) (prev + 0x30), *(AEMath::Vector *) (next + 0x30), t);
+                this->localTranslation = AEMath::VectorLerp(prev->localTranslation, next->localTranslation, t);
+                this->localScale = AEMath::VectorLerp(prev->localScale, next->localScale, t);
             }
 
             uint a = (uint) clamp_positive_byte(this->alpha);
@@ -547,7 +519,11 @@ namespace AbyssEngine {
                 if (mesh != 0 && mesh->animation != 0) {
                     (mesh->animation)->InternUpdate(time, updateBounds);
                 }
-                childSphere = *(AEMath::BSphere *) &mesh->boundsCenterX;
+                childSphere.center.x = mesh->boundsCenterX;
+                childSphere.center.y = mesh->boundsCenterY;
+                childSphere.center.z = mesh->boundsCenterZ;
+                childSphere.radius = mesh->boundsRadius;
+                childSphere.radius2 = mesh->boundsRadiusSq;
                 this->bounds().Merge(childSphere);
             }
 
@@ -564,16 +540,16 @@ namespace AbyssEngine {
                                 const AEMath::Vector &c, const AEMath::Vector &d,
                                 const AEMath::Vector &e, const AEMath::Vector &f,
                                 int time) {
-        char *keyFrame = (char *) new KeyFrame();
-        *(AEMath::Vector *) (keyFrame + 0x18) = b;
-        *(AEMath::Vector *) (keyFrame + 0x00) = c;
-        *(AEMath::Vector *) (keyFrame + 0x0c) = a;
-        *(AEMath::Vector *) (keyFrame + 0x3c) = e;
-        *(AEMath::Vector *) (keyFrame + 0x24) = f;
-        *(AEMath::Vector *) (keyFrame + 0x30) = d;
+        KeyFrame *keyFrame = new KeyFrame();
+        keyFrame->rotation = b;
+        keyFrame->translation = c;
+        keyFrame->scale = a;
+        keyFrame->localRotation = e;
+        keyFrame->localTranslation = f;
+        keyFrame->localScale = d;
         longlong timestamp = time;
-        *(longlong *) (keyFrame + 0x50) = timestamp;
-        this->keyFrames.push_back((KeyFrame *) keyFrame);
+        keyFrame->timestamp = timestamp;
+        this->keyFrames.push_back(keyFrame);
         if (this->animationLength < timestamp) {
             this->animationLength = timestamp;
         }
@@ -581,76 +557,74 @@ namespace AbyssEngine {
 
     static float kAngleDivisor = 57.295780f;
 
-    static void copy_vec(char *dst, const char *src) {
-        *(AEMath::Vector *) dst = *(const AEMath::Vector *) src;
+    static void copy_vec(AEMath::Vector &dst, const AEMath::Vector &src) {
+        dst = src;
     }
 
     static inline __attribute__ ((always_inline))
 
-    void lerp_vec(char *dst, const char *from, const char *to, float t) {
-        AEMath::Vector value = AEMath::VectorLerp(*(const AEMath::Vector *) from,
-                                                  *(const AEMath::Vector *) to, t);
-        *(AEMath::Vector *) dst = value;
+    void lerp_vec(AEMath::Vector &dst, const AEMath::Vector &from, const AEMath::Vector &to, float t) {
+        dst = AEMath::VectorLerp(from, to, t);
     }
 
     static inline __attribute__ ((always_inline))
 
-    void apply_value_new(Transform *owner, char *key, const float *values, longlong flags) {
+    void apply_value_new(Transform *owner, KeyFrame *key, const float *values, longlong flags) {
         if (flags == 0x10) {
-            *(float *) (key + 0x10) = values[0];
+            key->scale.y = values[0];
             if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
         } else if (flags == 0x20) {
-            *(float *) (key + 0x14) = values[0];
+            key->scale.z = values[0];
             if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
         } else if (flags == 0x38) {
-            *(float *) (key + 0x0c) = values[0];
-            *(float *) (key + 0x10) = values[1];
-            *(float *) (key + 0x14) = values[2];
+            key->scale.x = values[0];
+            key->scale.y = values[1];
+            key->scale.z = values[2];
             float max = values[1] < values[0] ? values[0] : values[1];
             if (values[2] > max) max = values[2];
             if (owner->boundingRadius2 < max) owner->boundingRadius2 = max;
         } else if (flags == 0x40) {
-            *(float *) (key + 0x18) = values[0];
+            key->rotation.x = values[0];
         } else if (flags == 0x80) {
-            *(float *) (key + 0x1c) = values[0];
+            key->rotation.y = values[0];
         } else if (flags == 0x100) {
-            *(float *) (key + 0x20) = values[0];
+            key->rotation.z = values[0];
         } else if (flags == 0x1c0) {
-            *(float *) (key + 0x18) = values[0];
-            *(float *) (key + 0x1c) = values[1];
-            *(float *) (key + 0x20) = values[2];
+            key->rotation.x = values[0];
+            key->rotation.y = values[1];
+            key->rotation.z = values[2];
         } else if (flags == 0x200) {
-            *(float *) (key + 0x48) = values[0] / kAngleDivisor;
+            key->alpha = values[0] / kAngleDivisor;
         } else if (flags == 0x400) {
-            *(float *) (key + 0x24) = -values[0];
+            key->localTranslation.x = -values[0];
         } else if (flags == 0x800) {
-            *(float *) (key + 0x28) = values[0];
+            key->localTranslation.y = values[0];
         } else if (flags == 0x1000) {
-            *(float *) (key + 0x2c) = values[0];
+            key->localTranslation.z = values[0];
         } else if (flags == 0x1c00) {
-            *(float *) (key + 0x24) = values[0];
-            *(float *) (key + 0x28) = values[1];
-            *(float *) (key + 0x2c) = values[2];
+            key->localTranslation.x = values[0];
+            key->localTranslation.y = values[1];
+            key->localTranslation.z = values[2];
         } else if (flags == 0x2000) {
-            *(float *) (key + 0x30) = values[0];
+            key->localScale.x = values[0];
         } else if (flags == 0x4000) {
-            *(float *) (key + 0x34) = values[0];
+            key->localScale.y = values[0];
         } else if (flags == 0x8000) {
-            *(float *) (key + 0x38) = values[0];
+            key->localScale.z = values[0];
         } else if (flags == 0xe000) {
-            *(float *) (key + 0x30) = values[0];
-            *(float *) (key + 0x34) = values[1];
-            *(float *) (key + 0x38) = values[2];
+            key->localScale.x = values[0];
+            key->localScale.y = values[1];
+            key->localScale.z = values[2];
         } else if (flags == 0x10000) {
-            *(float *) (key + 0x3c) = values[0];
+            key->localRotation.x = values[0];
         } else if (flags == 0x20000) {
-            *(float *) (key + 0x40) = values[0];
+            key->localRotation.y = values[0];
         } else if (flags == 0x40000) {
-            *(float *) (key + 0x44) = values[0];
+            key->localRotation.z = values[0];
         } else if (flags == 0x70000) {
-            *(float *) (key + 0x3c) = values[0];
-            *(float *) (key + 0x40) = values[1];
-            *(float *) (key + 0x44) = values[2];
+            key->localRotation.x = values[0];
+            key->localRotation.y = values[1];
+            key->localRotation.z = values[2];
         }
     }
 
@@ -664,14 +638,14 @@ namespace AbyssEngine {
 
         uint index = 0;
         while (index < this->keyFrames.size()) {
-            char *existing = (char *) this->keyFrames[index];
-            longlong existingTime = *(longlong *) (existing + 0x50);
+            KeyFrame *existing = this->keyFrames[index];
+            longlong existingTime = existing->timestamp;
             if (existingTime >= timestamp) {
                 if (existingTime == timestamp) {
-                    *(uint *) (existing + 0x58) |= (uint) flags;
-                    *(uint *) (existing + 0x5c) |= (uint)((ulonglong) flags >> 32);
+                    existing->channelFlags |= (uint) flags;
+                    existing->channelFlagsHi |= (uint)((ulonglong) flags >> 32);
                     apply_value_new(this, existing, values, flags);
-                    UpdateKeyFrames((KeyFrame *) existing, index);
+                    UpdateKeyFrames(existing, index);
                     return;
                 }
                 break;
@@ -679,104 +653,103 @@ namespace AbyssEngine {
             ++index;
         }
 
-        char *key = (char *) new KeyFrame();
-        *(longlong *) (key + 0x50) = timestamp;
-        InsertKeyFrame((KeyFrame *) key, index);
+        KeyFrame *key = new KeyFrame();
+        key->timestamp = timestamp;
+        InsertKeyFrame(key, index);
 
         if (index != 0) {
             Array<KeyFrame *> &items = this->keyFrames;
-            char *prev = (char *) items[index - 1];
+            KeyFrame *prev = items[index - 1];
             if (index < this->keyFrames.size() - 1) {
-                char *next = (char *) items[index + 1];
-                float t = (float) (timestamp - *(longlong *) (prev + 0x50)) /
-                          (float) (*(longlong *) (next + 0x50) - *(longlong *) (prev + 0x50));
-                lerp_vec(key + 0x00, prev + 0x00, next + 0x00, t);
-                lerp_vec(key + 0x0c, prev + 0x0c, next + 0x0c, t);
-                lerp_vec(key + 0x18, prev + 0x18, next + 0x18, t);
-                *(float *) (key + 0x48) = *(float *) (prev + 0x48) +
-                                          t * (*(float *) (next + 0x48) - *(float *) (prev + 0x48));
-                lerp_vec(key + 0x24, prev + 0x24, next + 0x24, t);
-                lerp_vec(key + 0x30, prev + 0x30, next + 0x30, t);
-                lerp_vec(key + 0x3c, prev + 0x3c, next + 0x3c, t);
+                KeyFrame *next = items[index + 1];
+                float t = (float) (timestamp - prev->timestamp) /
+                          (float) (next->timestamp - prev->timestamp);
+                lerp_vec(key->translation, prev->translation, next->translation, t);
+                lerp_vec(key->scale, prev->scale, next->scale, t);
+                lerp_vec(key->rotation, prev->rotation, next->rotation, t);
+                key->alpha = prev->alpha + t * (next->alpha - prev->alpha);
+                lerp_vec(key->localTranslation, prev->localTranslation, next->localTranslation, t);
+                lerp_vec(key->localScale, prev->localScale, next->localScale, t);
+                lerp_vec(key->localRotation, prev->localRotation, next->localRotation, t);
             } else {
-                copy_vec(key + 0x00, prev + 0x00);
-                copy_vec(key + 0x0c, prev + 0x0c);
-                copy_vec(key + 0x18, prev + 0x18);
-                *(int *) (key + 0x48) = *(int *) (prev + 0x48);
-                copy_vec(key + 0x24, prev + 0x24);
-                copy_vec(key + 0x30, prev + 0x30);
-                copy_vec(key + 0x3c, prev + 0x3c);
+                copy_vec(key->translation, prev->translation);
+                copy_vec(key->scale, prev->scale);
+                copy_vec(key->rotation, prev->rotation);
+                key->alpha = prev->alpha;
+                copy_vec(key->localTranslation, prev->localTranslation);
+                copy_vec(key->localScale, prev->localScale);
+                copy_vec(key->localRotation, prev->localRotation);
             }
-            *(uint *) (key + 0x58) |= *(uint *) (prev + 0x58);
-            *(uint *) (key + 0x5c) |= *(uint *) (prev + 0x5c);
+            key->channelFlags |= prev->channelFlags;
+            key->channelFlagsHi |= prev->channelFlagsHi;
         }
 
-        *(uint *) (key + 0x58) |= (uint) flags;
-        *(uint *) (key + 0x5c) |= (uint)((ulonglong) flags >> 32);
+        key->channelFlags |= (uint) flags;
+        key->channelFlagsHi |= (uint)((ulonglong) flags >> 32);
         apply_value_new(this, key, values, flags);
-        UpdateKeyFrames((KeyFrame *) key, index);
+        UpdateKeyFrames(key, index);
     }
 
     static float old_angle_divisor = 57.295780f;
 
     static inline __attribute__ ((always_inline))
 
-    void apply_value_old(Transform *owner, char *key, const float *values, longlong flags) {
+    void apply_value_old(Transform *owner, KeyFrame *key, const float *values, longlong flags) {
         if (flags == 0x10) {
-            *(float *) (key + 0x10) = values[0];
+            key->scale.y = values[0];
             if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
         } else if (flags == 0x20) {
-            *(float *) (key + 0x14) = values[0];
+            key->scale.z = values[0];
             if (owner->boundingRadius2 < values[0]) owner->boundingRadius2 = values[0];
         } else if (flags == 0x38) {
-            *(float *) (key + 0x0c) = values[0];
-            *(float *) (key + 0x10) = values[1];
-            *(float *) (key + 0x14) = values[2];
+            key->scale.x = values[0];
+            key->scale.y = values[1];
+            key->scale.z = values[2];
             float max = values[1] < values[0] ? values[0] : values[1];
             if (values[2] > max) max = values[2];
             if (owner->boundingRadius2 < max) owner->boundingRadius2 = max;
         } else if (flags == 0x40) {
-            *(float *) (key + 0x18) = values[0];
+            key->rotation.x = values[0];
         } else if (flags == 0x80) {
-            *(float *) (key + 0x1c) = values[0];
+            key->rotation.y = values[0];
         } else if (flags == 0x100) {
-            *(float *) (key + 0x20) = values[0];
+            key->rotation.z = values[0];
         } else if (flags == 0x1c0) {
-            *(float *) (key + 0x18) = values[0];
-            *(float *) (key + 0x1c) = values[1];
-            *(float *) (key + 0x20) = values[2];
+            key->rotation.x = values[0];
+            key->rotation.y = values[1];
+            key->rotation.z = values[2];
         } else if (flags == 0x200) {
-            *(float *) (key + 0x48) = values[0] / old_angle_divisor;
+            key->alpha = values[0] / old_angle_divisor;
         } else if (flags == 0x400) {
-            *(float *) (key + 0x24) = -values[0];
+            key->localTranslation.x = -values[0];
         } else if (flags == 0x800) {
-            *(float *) (key + 0x28) = values[0];
+            key->localTranslation.y = values[0];
         } else if (flags == 0x1000) {
-            *(float *) (key + 0x2c) = values[0];
+            key->localTranslation.z = values[0];
         } else if (flags == 0x1c00) {
-            *(float *) (key + 0x24) = -values[0];
-            *(float *) (key + 0x28) = values[1];
-            *(float *) (key + 0x2c) = values[2];
+            key->localTranslation.x = -values[0];
+            key->localTranslation.y = values[1];
+            key->localTranslation.z = values[2];
         } else if (flags == 0x2000) {
-            *(float *) (key + 0x30) = values[0];
+            key->localScale.x = values[0];
         } else if (flags == 0x4000) {
-            *(float *) (key + 0x34) = -values[0];
+            key->localScale.y = -values[0];
         } else if (flags == 0x8000) {
-            *(float *) (key + 0x38) = values[0];
+            key->localScale.z = values[0];
         } else if (flags == 0xe000) {
-            *(float *) (key + 0x30) = values[0];
-            *(float *) (key + 0x34) = -values[1];
-            *(float *) (key + 0x38) = values[2];
+            key->localScale.x = values[0];
+            key->localScale.y = -values[1];
+            key->localScale.z = values[2];
         } else if (flags == 0x10000) {
-            *(float *) (key + 0x3c) = values[0];
+            key->localRotation.x = values[0];
         } else if (flags == 0x20000) {
-            *(float *) (key + 0x40) = values[0];
+            key->localRotation.y = values[0];
         } else if (flags == 0x40000) {
-            *(float *) (key + 0x44) = values[0];
+            key->localRotation.z = values[0];
         } else if (flags == 0x70000) {
-            *(float *) (key + 0x3c) = values[0];
-            *(float *) (key + 0x40) = values[1];
-            *(float *) (key + 0x44) = values[2];
+            key->localRotation.x = values[0];
+            key->localRotation.y = values[1];
+            key->localRotation.z = values[2];
         }
     }
 
@@ -790,55 +763,60 @@ namespace AbyssEngine {
 
         uint index = 0;
         while (index < this->keyFrames.size() &&
-               *(longlong *) ((char *) this->keyFrames[index] + 0x50) < timestamp) {
+               this->keyFrames[index]->timestamp < timestamp) {
             ++index;
         }
 
-        char *key = (char *) new KeyFrame();
+        KeyFrame *key = new KeyFrame();
         if (index != 0) {
-            char *prev = (char *) this->keyFrames[index - 1];
-            *(AEMath::Vector *) (key + 0x00) = *(AEMath::Vector *) (prev + 0x00);
-            *(AEMath::Vector *) (key + 0x0c) = *(AEMath::Vector *) (prev + 0x0c);
-            *(AEMath::Vector *) (key + 0x18) = *(AEMath::Vector *) (prev + 0x18);
-            *(longlong *) (key + 0x50) = *(longlong *) (prev + 0x50);
-            *(longlong *) (key + 0x58) = *(longlong *) (prev + 0x58);
+            KeyFrame *prev = this->keyFrames[index - 1];
+            key->translation = prev->translation;
+            key->scale = prev->scale;
+            key->rotation = prev->rotation;
+            key->timestamp = prev->timestamp;
+            key->channelFlags = prev->channelFlags;
+            key->channelFlagsHi = prev->channelFlagsHi;
         }
 
-        *(longlong *) (key + 0x50) = timestamp;
-        *(uint *) (key + 0x58) |= (uint) flags;
-        *(uint *) (key + 0x5c) |= (uint)((ulonglong) flags >> 32);
+        key->timestamp = timestamp;
+        key->channelFlags |= (uint) flags;
+        key->channelFlagsHi |= (uint)((ulonglong) flags >> 32);
         apply_value_old(this, key, values, flags);
 
         if (this->keyFrames.size() == 0) {
-            this->keyFrames.push_back((KeyFrame *) key);
+            this->keyFrames.push_back(key);
         } else if (index == this->keyFrames.size()) {
-            char *last = (char *) this->keyFrames[this->keyFrames.size() - 1];
-            uint mask = *(uint *) (key + 0x58);
-            for (int off = 0; off <= 0x48; off += 4) {
-                if ((mask & (1u << (off / 4))) == 0) {
-                    *(int *) (key + off) = *(int *) (last + off);
+            KeyFrame *last = this->keyFrames[this->keyFrames.size() - 1];
+            uint mask = key->channelFlags;
+            // Inherit any unset channel (one bit per 4-byte float field 0x00..0x48)
+            // from the previous last frame so the appended frame is fully defined.
+            float *keyFields = &key->translation.x;
+            const float *lastFields = &last->translation.x;
+            for (int field = 0; field <= 0x48 / 4; ++field) {
+                if ((mask & (1u << field)) == 0) {
+                    keyFields[field] = lastFields[field];
                 }
             }
-            this->keyFrames.push_back((KeyFrame *) key);
+            this->keyFrames.push_back(key);
         } else {
-            char *existing = (char *) this->keyFrames[index];
-            if (*(longlong *) (existing + 0x50) == timestamp) {
-                *(uint *) (existing + 0x58) |= *(uint *) (key + 0x58);
-                *(uint *) (existing + 0x5c) |= *(uint *) (key + 0x5c);
+            KeyFrame *existing = this->keyFrames[index];
+            if (existing->timestamp == timestamp) {
+                existing->channelFlags |= key->channelFlags;
+                existing->channelFlagsHi |= key->channelFlagsHi;
                 apply_value_old(this, existing, values, flags);
-                UpdateKeyFrames((KeyFrame *) existing, index);
-                delete (KeyFrame *) key;
+                UpdateKeyFrames(existing, index);
+                delete key;
                 return;
             }
-            InsertKeyFrame((KeyFrame *) key, index);
-            UpdateKeyFrames((KeyFrame *) key, index);
+            InsertKeyFrame(key, index);
+            UpdateKeyFrames(key, index);
         }
     }
 
     int Transform::InCameraVF(AEMath::Matrix *matrix, Camera *camera) {
         if (camera == 0 || this->vfcEnabled == false ||
             (this->meshes.size() == 1 &&
-             *(uint16_t *) ((char *) this->meshes[0] + 2) == 0)) {
+             this->meshes[0]->vertexCount == 0)) {
             return 1;
         }
 

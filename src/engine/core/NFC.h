@@ -17,13 +17,13 @@ static inline void *nfc_get_static_method(void *env, void *cls, const char *name
     return ((NFC_GetStaticMethodFn) nfc_jni_slot(env, 0x1c4))(env, cls, name, sig);
 }
 
-extern "C" void NFC_CallStaticVoidMethod(void *env, void *cls, void *method);
+void NFC_CallStaticVoidMethod(void *env, void *cls, void *method);
 
-extern "C" int NFC_CallStaticBooleanMethod(void *env, void *cls, void *method);
+int NFC_CallStaticBooleanMethod(void *env, void *cls, void *method);
 
-extern "C" int NFC_CallStaticIntMethod(void *env, void *cls, void *method);
+int NFC_CallStaticIntMethod(void *env, void *cls, void *method);
 
-extern "C" void NFC_DeleteLocalRef(void *env);
+void NFC_DeleteLocalRef(void *env);
 
 class NFC {
 public:
@@ -74,6 +74,8 @@ public:
     int getWidth();
 
     int getHeight();
+
+    static int g_android_back_button_pressed;
 };
 
 bool IsDialogVisible(int);

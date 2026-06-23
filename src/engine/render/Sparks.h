@@ -2,8 +2,6 @@
 #define GOF2_SPARKS_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Vector.h"
 
 #include "engine/math/AEMath.h"

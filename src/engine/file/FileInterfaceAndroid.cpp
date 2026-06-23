@@ -1,20 +1,46 @@
 #include "engine/file/FileInterfaceAndroid.h"
 #include "game/core/String.h"
 
+#include <jni.h>
+
 #include <cstdio>
 #include <new>
 
-extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
+unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 
-extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
+void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
+
+// The opaque void* JNI handles used below are JNIEnv pointers: a pointer to a
+// pointer to the JNINativeInterface function table.  Convert each raw offset
+// load into a named function-table member access.  The byte offsets used by the
+// decompiler match the standard JNINativeInterface layout (32-bit pointers):
+//   0x7c=GetObjectClass 0x84=GetMethodID 0x2c0=NewByteArray
+//   0x320=GetByteArrayRegion 0x340=SetByteArrayRegion
+//   0x3c=ExceptionOccurred 0x40=ExceptionDescribe 0x44=ExceptionClear
+//   0x5c=DeleteLocalRef
+static inline const JNINativeInterface *JniTable(void *env) {
+    return *reinterpret_cast<const JNINativeInterface *const *>(env);
+}
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(JNINativeInterface, GetObjectClass) == 0x7c, "JNI layout");
+static_assert(offsetof(JNINativeInterface, GetMethodID) == 0x84, "JNI layout");
+static_assert(offsetof(JNINativeInterface, NewByteArray) == 0x2c0, "JNI layout");
+static_assert(offsetof(JNINativeInterface, GetByteArrayRegion) == 0x320, "JNI layout");
+static_assert(offsetof(JNINativeInterface, SetByteArrayRegion) == 0x340, "JNI layout");
+static_assert(offsetof(JNINativeInterface, ExceptionOccurred) == 0x3c, "JNI layout");
+static_assert(offsetof(JNINativeInterface, ExceptionDescribe) == 0x40, "JNI layout");
+static_assert(offsetof(JNINativeInterface, ExceptionClear) == 0x44, "JNI layout");
+static_assert(offsetof(JNINativeInterface, DeleteLocalRef) == 0x5c, "JNI layout");
+#endif
 
 static inline const unsigned short *GetAEWChar(const String &s) {
     return reinterpret_cast<const unsigned short *>(s.text());
 }
 
-extern int *gFIAInstCount __attribute__((visibility("hidden")));
+static int *gFIAInstCount = nullptr;
 
-extern const char kDirPreFix[] __attribute__((visibility("hidden")));
+static const char kDirPreFix[] = "";
 
 String FileInterfaceAndroid::GetDirPreFix() {
     return String(kDirPreFix);
@@ -36,23 +62,19 @@ FileInterfaceAndroid::FileInterfaceAndroid(FILE *f, bool append) {
     ++*gFIAInstCount;
 }
 
-typedef void *(*jni_getclass)(void *env);
+static void **gJniEnvObj = nullptr;
 
-typedef void *(*jni_getmethod)(void *env, void *cls, const char *name, const char *sig);
+static void **gMidA_read = nullptr;
+static const char *gNmA_read = nullptr;
+static const char *gSgA_read = nullptr;
+static void **gMidA_write = nullptr;
+static const char *gNmA_write = nullptr;
+static const char *gSgA_write = nullptr;
 
-extern void **gJniEnvObj __attribute__((visibility("hidden")));
-
-extern void **gMidA_read __attribute__((visibility("hidden")));
-extern const char *gNmA_read __attribute__((visibility("hidden")));
-extern const char *gSgA_read __attribute__((visibility("hidden")));
-extern void **gMidA_write __attribute__((visibility("hidden")));
-extern const char *gNmA_write __attribute__((visibility("hidden")));
-extern const char *gSgA_write __attribute__((visibility("hidden")));
-
-extern void **gMidB_read __attribute__((visibility("hidden")));
-extern void **gMidB_write __attribute__((visibility("hidden")));
-extern const char *gNmB __attribute__((visibility("hidden")));
-extern const char *gSgB __attribute__((visibility("hidden")));
+static void **gMidB_read = nullptr;
+static void **gMidB_write = nullptr;
+static const char *gNmB = nullptr;
+static const char *gSgB = nullptr;
 
 FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
     void *env = *gJniEnvObj;
@@ -62,20 +84,22 @@ FileInterfaceAndroid::FileInterfaceAndroid(jobject stream, bool reading) {
     this->modeFlag = reading;
     ++*gFIAInstCount;
 
-    void *cls = (*(jni_getclass *) ((char *) *(void **) env + 0x7c))(env);
+    JNIEnv *jenv = reinterpret_cast<JNIEnv *>(env);
+    const JNINativeInterface *jni = JniTable(env);
+    jobject cls = jni->GetObjectClass(jenv, stream);
 
     void **selB;
     if (reading) {
         if (*gMidA_read == 0)
-            *gMidA_read = (*(jni_getmethod *) ((char *) *(void **) env + 0x84))(env, cls, gNmA_read, gSgA_read);
+            *gMidA_read = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmA_read, gSgA_read);
         selB = gMidB_read;
     } else {
         if (*gMidA_write == 0)
-            *gMidA_write = (*(jni_getmethod *) ((char *) *(void **) env + 0x84))(env, cls, gNmA_write, gSgA_write);
+            *gMidA_write = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmA_write, gSgA_write);
         selB = gMidB_write;
     }
     if (*selB == 0)
-        *selB = (*(jni_getmethod *) ((char *) *(void **) env + 0x84))(env, cls, gNmB, gSgB);
+        *selB = jni->GetMethodID(jenv, reinterpret_cast<jclass>(cls), gNmB, gSgB);
 }
 
 FileInterfaceAndroid::FileInterfaceAndroid(zip_file *zf, bool append, int start, int p4, int p5) {
@@ -98,9 +122,9 @@ FileInterfaceAndroid::~FileInterfaceAndroid() {
         this->enabled = 0;
 }
 
-extern void *gJniEnv __attribute__((visibility("hidden")));
-extern void *gModeWrite __attribute__((visibility("hidden")));
-extern void *gModeAppend __attribute__((visibility("hidden")));
+static void *gJniEnv = nullptr;
+static void *gModeWrite = nullptr;
+static void *gModeAppend = nullptr;
 
 void FileInterfaceAndroid::Close() {
     if (this->file != 0) {
@@ -145,20 +169,8 @@ void FileInterfaceAndroid::SetAppRootDir(void *p) {
         this->appRootDir = p;
 }
 
-typedef void *(*fn_i)(void *env, unsigned int n);
-
-typedef void (*fn_getregion)(void *env, void *arr, int start, unsigned int len, void *buf);
-
-typedef void (*fn_setregion)(void *env, void *arr, int start, unsigned int len, const void *buf);
-
-typedef int (*fn_check)(void *env);
-
-typedef void (*fn_void)(void *env);
-
-typedef void (*fn_del)(void *env, void *arr);
-
-extern void **gEnvR __attribute__((visibility("hidden")));
-extern void *gReadMidArg __attribute__((visibility("hidden")));
+static void **gEnvR = nullptr;
+static void *gReadMidArg = nullptr;
 
 uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
     if (this->zipFile != 0)
@@ -170,25 +182,20 @@ uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
 
     void *r9 = *gEnvR;
     void *env = *(void **) r9;
-    void *table = *(void **) env;
-    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(env, n);
+    JNIEnv *jenv = reinterpret_cast<JNIEnv *>(env);
+    jbyteArray arr = JniTable(env)->NewByteArray(jenv, (jsize) n);
     unsigned int got = JNI_CallIntMethod(*(void **) r9, this->jniStream, *(void **) gReadMidArg, arr);
 
     bool ok;
-    table = *(void **) (*(void **) r9);
-    if ((*(fn_check *) ((char *) table + 0x3c))(*(void **) r9) == 0 && got == n) {
-        env = *(void **) r9;
-        table = *(void **) env;
-        (*(fn_getregion *) ((char *) table + 0x320))(env, arr, 0, n, buf);
+    if (JniTable(env)->ExceptionOccurred(jenv) == 0 && got == n) {
+        JniTable(env)->GetByteArrayRegion(jenv, arr, 0, (jsize) n, (jbyte *) buf);
         ok = true;
     } else {
-        table = *(void **) (*(void **) r9);
-        (*(fn_void *) ((char *) table + 0x40))(*(void **) r9);
-        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9);
+        JniTable(env)->ExceptionDescribe(jenv);
+        JniTable(env)->ExceptionClear(jenv);
         ok = false;
     }
-    table = *(void **) (*(void **) r9);
-    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr);
+    JniTable(env)->DeleteLocalRef(jenv, arr);
     return ok;
 }
 
@@ -213,8 +220,8 @@ uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
     return delta == 0;
 }
 
-extern void **gEnvW __attribute__((visibility("hidden")));
-extern void *gWriteMidArg __attribute__((visibility("hidden")));
+static void **gEnvW = nullptr;
+static void *gWriteMidArg = nullptr;
 
 uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
     if (this->file != 0)
@@ -224,18 +231,14 @@ uint32_t FileInterfaceAndroid::Write(uint32_t n, const void *buf) {
 
     void *r9 = *gEnvW;
     void *envObj = *(void **) r9;
-    void *table = *(void **) envObj;
-    void *arr = (*(fn_i *) ((char *) table + 0x2c0))(envObj, n);
-    envObj = *(void **) r9;
-    table = *(void **) envObj;
-    (*(fn_setregion *) ((char *) table + 0x340))(envObj, arr, 0, n, buf);
+    JNIEnv *jenv = reinterpret_cast<JNIEnv *>(envObj);
+    jbyteArray arr = JniTable(envObj)->NewByteArray(jenv, (jsize) n);
+    JniTable(envObj)->SetByteArrayRegion(jenv, arr, 0, (jsize) n, (const jbyte *) buf);
     JNI_CallVoidMethod(envObj, this->jniStream, *(void **) gWriteMidArg, arr);
-    table = *(void **) (*(void **) r9);
-    bool ok = (*(fn_check *) ((char *) table + 0x3c))(*(void **) r9) == 0;
+    bool ok = JniTable(envObj)->ExceptionOccurred(jenv) == 0;
     if (!ok)
-        (*(fn_void *) ((char *) (*(void **) (*(void **) r9)) + 0x44))(*(void **) r9);
-    table = *(void **) (*(void **) r9);
-    (*(fn_del *) ((char *) table + 0x5c))(*(void **) r9, arr);
+        JniTable(envObj)->ExceptionClear(jenv);
+    JniTable(envObj)->DeleteLocalRef(jenv, arr);
     return ok;
 }
 
@@ -248,7 +251,7 @@ char *FileInterfaceAndroid::Output(char *line) {
 }
 
 uint32_t FileInterfaceAndroid::FileDelete(String name) {
-    String *src = *reinterpret_cast<String **>(reinterpret_cast<char *>(&name) + 4);
+    String *src = *reinterpret_cast<String **>(&name.data);
     String discard(*src, false);
     return 0;
 }
@@ -267,11 +270,11 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 void FileInterfaceAndroid::ResetSaveDirectory() {
 }
 
-extern void **gZipMain __attribute__((visibility("hidden")));
-extern void **gZipPatch __attribute__((visibility("hidden")));
-extern const char *gZipPrefixA __attribute__((visibility("hidden")));
-extern const char *gZipPrefixB __attribute__((visibility("hidden")));
-extern const char *gModeRb __attribute__((visibility("hidden")));
+void **FileInterfaceAndroid::gZipMain = nullptr;
+void **FileInterfaceAndroid::gZipPatch = nullptr;
+static const char *gZipPrefixA = nullptr;
+static const char *gZipPrefixB = nullptr;
+static const char *gModeRb = nullptr;
 
 uint32_t FileInterfaceAndroid::FileExist(String name) {
     String a(gZipPrefixA);
@@ -280,7 +283,7 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     b.addAssign_str(&name);
 
     void *z1 = zip_fopen((struct zip *) *gZipMain, a.GetAEChar(), 0);
-    void *z2 = zip_fopen((struct zip *) *gZipPatch, b.GetAEChar(), 0);
+    void *z2 = zip_fopen((struct zip *) *FileInterfaceAndroid::gZipPatch, b.GetAEChar(), 0);
 
     bool exists;
     if (z1 != 0) {
@@ -303,13 +306,23 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     return exists;
 }
 
-extern void **gZipMainR __attribute__((visibility("hidden")));
-extern void **gZipPatchR __attribute__((visibility("hidden")));
-extern const char *gPrefixSlash __attribute__((visibility("hidden")));
-extern const char *gPrefixPlain __attribute__((visibility("hidden")));
-extern const char *gOpenReadFmt __attribute__((visibility("hidden")));
-extern char *gStderrBase __attribute__((visibility("hidden")));
-extern const char *gModeRbR __attribute__((visibility("hidden")));
+static void **gZipMainR = nullptr;
+static void **gZipPatchR = nullptr;
+static const char *gPrefixSlash = nullptr;
+static const char *gPrefixPlain = nullptr;
+static const char *gOpenReadFmt = nullptr;
+static char *gStderrBase = nullptr;
+
+// gStderrBase points to a pointer to the Android I/O state block; the stderr
+// FILE* lives at byte offset 0xa8 within that block.  Model it as a named field.
+struct AndroidIoState {
+    char pad_00[0xa8];
+    FILE *stderrFile;
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(AndroidIoState, stderrFile) == 0xa8, "AndroidIoState layout");
+#endif
+static const char *gModeRbR = nullptr;
 
 void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p5, unsigned int p6) {
     const unsigned short *w = GetAEWChar(name);
@@ -327,7 +340,8 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     wide2.ctor_wchar(body, false);
     b.addAssign_str(&wide2);
 
-    fprintf((FILE *) ((char *) *(void **) gStderrBase + 0xa8), gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
+    AndroidIoState *ioState = *reinterpret_cast<AndroidIoState **>(gStderrBase);
+    fprintf(ioState->stderrFile, gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
 
     zip_file *z1 = zip_fopen((struct zip *) *gZipMainR, a.GetAEChar(), 0);
     zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen((struct zip *) *gZipPatchR, b.GetAEChar(), 0) : 0;
@@ -347,7 +361,7 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
     return result;
 }
 
-extern const char *gModeWb __attribute__((visibility("hidden")));
+static const char *gModeWb = nullptr;
 
 void *FileInterfaceAndroid::OpenWrite(String name, int, bool, unsigned int) {
     const unsigned short *w = GetAEWChar(name);
@@ -373,16 +387,16 @@ char *loge(char *message) {
     return message;
 }
 
-extern "C" void FileInterfaceAndroid_ctor(void *self) {
+void FileInterfaceAndroid_ctor(void *self) {
     new(self) FileInterfaceAndroid();
 }
 
-extern "C" void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self) {
+void *FileInterfaceAndroid_completeDtor(FileInterfaceAndroid *self) {
     if (self)
         self->~FileInterfaceAndroid();
     return self;
 }
 
-extern "C" void FileInterfaceAndroid_deletingDtor(FileInterfaceAndroid *self) {
+void FileInterfaceAndroid_deletingDtor(FileInterfaceAndroid *self) {
     delete self;
 }

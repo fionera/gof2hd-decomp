@@ -83,10 +83,10 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" void CheatHandler_ctor(void *cheats, void *keys) {
+void CheatHandler_ctor(void *cheats, void *keys) {
     new(cheats) AbyssEngine::CheatHandler((AbyssEngine::KeyCode *) keys);
 }
 
-extern "C" void CheatHandler_dtor(void *cheats) {
+void CheatHandler_dtor(void *cheats) {
     ((AbyssEngine::CheatHandler *) cheats)->~CheatHandler();
 }

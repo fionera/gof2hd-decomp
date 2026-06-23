@@ -8,37 +8,37 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
 
-extern "C" float MiningGame_sqrt(void *globals, float value);
+float MiningGame_sqrt(void *globals, float value);
 
-extern "C" void MiningGame_FModSound_setParamValue(void *sound, int index, int param, float value);
+void MiningGame_FModSound_setParamValue(void *sound, int index, int param, float value);
 
-extern "C" void MiningGame_FModSound_play(void *sound, int id, void *a, void *b, void *c);
+void MiningGame_FModSound_play(void *sound, int id, void *a, void *b, void *c);
 
-extern "C" void MiningGame_FModSound_stop(void *sound, int id);
+void MiningGame_FModSound_stop(void *sound, int id);
 
-extern "C" int MiningGame_Achievements_hasMedal(void *achievements, int medal, int value);
+int MiningGame_Achievements_hasMedal(void *achievements, int medal, int value);
 
-extern "C" int MiningGame_Achievements_getValue(void *achievements, int medal, int value);
+int MiningGame_Achievements_getValue(void *achievements, int medal, int value);
 
-extern "C" void MiningGame_Hud_hudEventMedal(void *hud, int medal, int value);
+void MiningGame_Hud_hudEventMedal(void *hud, int medal, int value);
 
-extern "C" void *MiningGame_Status_getShip(void *status);
+void *MiningGame_Status_getShip(void *status);
 
-extern "C" void *MiningGame_Ship_getFirstEquipmentOfSort(void *ship, int sort);
+void *MiningGame_Ship_getFirstEquipmentOfSort(void *ship, int sort);
 
-extern "C" int MiningGame_Item_getAttribute(void *item, int attribute);
+int MiningGame_Item_getAttribute(void *item, int attribute);
 
-extern "C" int MiningGame_Status_getCurrentCampaignMission(void *status);
+int MiningGame_Status_getCurrentCampaignMission(void *status);
 
-extern "C" float MiningGame_Layout_getPulseValue(void *layout, float value);
+float MiningGame_Layout_getPulseValue(void *layout, float value);
 
-extern "C" void *MiningGame_Status_getShip_render(void *status);
+void *MiningGame_Status_getShip_render(void *status);
 
-extern "C" int MiningGame_Ship_getFreeSpace(void *ship);
+int MiningGame_Ship_getFreeSpace(void *ship);
 
-extern "C" int MiningGame_Status_getCurrentCampaignMission_render(void *status);
+int MiningGame_Status_getCurrentCampaignMission_render(void *status);
 
-extern "C" String *MiningGame_GameText_getText(void *gameText, int id);
+String *MiningGame_GameText_getText(void *gameText, int id);
 
 static inline float &F(void *p, unsigned off) { return *(float *) ((char *) p + off); }
 
@@ -51,11 +51,11 @@ int MiningGame::getAsteroidType() {
 }
 
 
-extern void **g_MiningGame_sqrt;
+static void **g_MiningGame_sqrt = nullptr;
 
-extern void **g_MiningGame_layout;
+static void **g_MiningGame_layout = nullptr;
 
-extern int *g_MiningGame_layerSizes;
+static int *g_MiningGame_layerSizes = nullptr;
 
 bool MiningGame::isInCurrentLayer() {
     float dx = this->posX - (float) this->centerX;
@@ -106,22 +106,22 @@ MiningGame::~MiningGame() {
 }
 
 
-extern void **g_MiningGame_random;
+static void **g_MiningGame_random = nullptr;
 
-extern int (*g_MiningGame_randomNext)(void *random, int limit);
+static int (*g_MiningGame_randomNext)(void *random, int limit) = nullptr;
 
 
-extern void **g_MiningGame_layoutUpdate;
+static void **g_MiningGame_layoutUpdate = nullptr;
 
-extern float *g_MiningGame_layerSpeedUpdate;
+static float *g_MiningGame_layerSpeedUpdate = nullptr;
 
-extern void **g_MiningGame_sound;
+static void **g_MiningGame_sound = nullptr;
 
-extern void **g_MiningGame_statusUpdate;
+static void **g_MiningGame_statusUpdate = nullptr;
 
-extern void **g_MiningGame_achievements;
+static void **g_MiningGame_achievements = nullptr;
 
-extern void **g_MiningGame_statusMedal;
+static void **g_MiningGame_statusMedal = nullptr;
 
 int MiningGame::update(int delta) {
     int pulse = this->promptPulseTimer + delta;
@@ -255,17 +255,17 @@ int MiningGame::update(int delta) {
 }
 
 
-extern void **g_MiningGame_layoutCtor;
+static void **g_MiningGame_layoutCtor = nullptr;
 
-extern void **g_MiningGame_statusCtor;
+static void **g_MiningGame_statusCtor = nullptr;
 
-extern void **g_MiningGame_canvasCtor;
+static void **g_MiningGame_canvasCtor = nullptr;
 
-extern int *g_MiningGame_screenW;
+static int *g_MiningGame_screenW = nullptr;
 
-extern int *g_MiningGame_screenH;
+static int *g_MiningGame_screenH = nullptr;
 
-extern float *g_MiningGame_layerSpeed;
+static float *g_MiningGame_layerSpeed = nullptr;
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
     int imageId[2];
@@ -387,26 +387,26 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
 }
 
 
-extern void **g_MiningGame_canvasRender;
+static void **g_MiningGame_canvasRender = nullptr;
 
-extern int *g_MiningGame_layerTableRender;
+static int *g_MiningGame_layerTableRender = nullptr;
 
-extern void **g_MiningGame_layoutRender;
+static void **g_MiningGame_layoutRender = nullptr;
 
-extern void (*g_MiningGame_drawLayer)(void *canvas, int image, int x, int y,
+static void (*g_MiningGame_drawLayer)(void *canvas, int image, int x, int y,
                                       int w, int h, int anchor, int tile,
-                                      int frame);
+                                      int frame) = nullptr;
 
 
-extern void **g_MiningGame_statusRender;
+static void **g_MiningGame_statusRender = nullptr;
 
-extern char g_MiningGame_oreSuffix[];
+static char g_MiningGame_oreSuffix[1] = {};
 
-extern void **g_MiningGame_fontString;
+static void **g_MiningGame_fontString = nullptr;
 
-extern void **g_MiningGame_gameText;
+static void **g_MiningGame_gameText = nullptr;
 
-extern int *g_MiningGame_screenWRender;
+static int *g_MiningGame_screenWRender = nullptr;
 
 void MiningGame::render2D() {
     String amountStorage;
@@ -531,11 +531,11 @@ void MiningGame::render2D() {
     oreText->clear();
 }
 
-extern "C" void *MiningGame_new(int quality, int seed, void *hud) {
+void *MiningGame_new(int quality, int seed, void *hud) {
     return new MiningGame(quality, seed, (Hud *) hud);
 }
 
-extern "C" void *MiningGame_dtor(void *mg) {
+void *MiningGame_dtor(void *mg) {
     if (mg) ((MiningGame *) mg)->~MiningGame();
     return mg;
 }

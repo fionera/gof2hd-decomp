@@ -4,13 +4,12 @@ namespace AbyssEngine {
     KeyFrame::KeyFrame() {
         const AEMath::Vector one = {1.0f, 1.0f, 1.0f};
 
-        timestampLo = 0;
-        timestampHi = 0;
+        timestamp = 0;
         __builtin_memset(this, 0, 0x48);
         scale = one;
         localScale = one;
-        field_0x58 = 0;
-        field_0x5c = 0;
+        channelFlags = 0;
+        channelFlagsHi = 0;
         alpha = 1.0f;
     }
 }

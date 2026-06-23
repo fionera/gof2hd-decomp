@@ -211,10 +211,12 @@ namespace AbyssEngine {
         void VibrateEnable(bool enable);
 
         void VibrateSupported();
+
+        static ApplicationManager *gAppManager;
     };
 }
 
-extern AbyssEngine::ApplicationManager *gAppManager;
+using ::AbyssEngine::ApplicationManager;
 
 Engine *GetEngine();
 

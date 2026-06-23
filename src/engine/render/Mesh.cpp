@@ -14,7 +14,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern unsigned char *g_hasNormalsFlag;
+    static unsigned char *g_hasNormalsFlag = nullptr;
 
     Mesh::Mesh(Mesh *src) {
         Mesh * self = this;
@@ -93,7 +93,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxA;
+    static float *g_maxA = nullptr;
     __attribute__ ((visibility
     (
 
@@ -102,7 +102,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxB;
+    static float *g_maxB = nullptr;
     __attribute__ ((visibility
     (
 
@@ -111,7 +111,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxC;
+    static float *g_maxC = nullptr;
     __attribute__ ((visibility
     (
 
@@ -120,7 +120,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxD;
+    static float *g_maxD = nullptr;
     __attribute__ ((visibility
     (
 
@@ -129,7 +129,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxE;
+    static float *g_maxE = nullptr;
     __attribute__ ((visibility
     (
 
@@ -138,7 +138,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxF;
+    static float *g_maxF = nullptr;
     __attribute__ ((visibility
     (
 
@@ -147,7 +147,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxG;
+    static float *g_maxG = nullptr;
     __attribute__ ((visibility
     (
 
@@ -156,7 +156,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_maxH;
+    static float *g_maxH = nullptr;
     __attribute__ ((visibility
     (
 
@@ -165,7 +165,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float *g_animRate;
+    static float *g_animRate = nullptr;
     __attribute__ ((visibility
     (
 
@@ -174,7 +174,7 @@ namespace AbyssEngine {
     )
     )
     )
-    extern float g_uvDiv, g_uvMulA, g_uvDivB;
+    static float g_uvDiv = 0.0f, g_uvMulA = 0.0f, g_uvDivB = 0.0f;
 
     namespace {
         inline void bumpMax(float *slot, float v) {

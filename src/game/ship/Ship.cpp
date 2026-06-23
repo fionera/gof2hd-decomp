@@ -4,10 +4,52 @@
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
-extern int **gShipDataRoot  __attribute__((visibility("hidden")));
-extern int *gRaceTable      __attribute__((visibility("hidden")));
-extern int *gDifficultyPtr  __attribute__((visibility("hidden")));
-extern int *gShopRoot;
+// These untyped ship-data / shop globals are referenced only from this
+// translation unit, so they are kept as file-local definitions (parity loss
+// accepted: the original linked them as shared symbols).
+static int **gShipDataRoot = nullptr;
+static int *gRaceTable      = nullptr;
+static int *gDifficultyPtr  = nullptr;
+static int *gShopRoot       = nullptr;
+
+namespace {
+
+// Named models for the untyped ship-data / shop globals. These mirror the exact
+// byte offsets observed in the original 32-bit binary (see Ship::adjustPrice /
+// Ship::priceDecline / Ship::getFirstEquipmentOfSort in the reference build).
+
+// A single ship-data record. Only the fields touched here are named; the rest of
+// the record is left as opaque storage so the offsets stay byte-faithful.
+struct ShipDataEntry {
+    int category;            // 0x00 : race/category index into gRaceTable
+    unsigned char _pad04[0x14 - 0x04];
+    int basePrice;           // 0x14 : base price (interpreted as float for math)
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(ShipDataEntry, category) == 0x00, "");
+static_assert(offsetof(ShipDataEntry, basePrice) == 0x14, "");
+#endif
+
+// The object reached via *gShipDataRoot. At offset 4 it holds the entry table.
+struct ShipDataObj {
+    int _field00;            // 0x00
+    ShipDataEntry **table;   // 0x04 : array of entry pointers, indexed by ship index
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(ShipDataObj, table) == 0x04, "");
+#endif
+
+// The object reached via gShopRoot index 1 (the second pointer slot). At
+// offset 0x17c it holds the integrated-cloak equipment item pointer.
+struct ShopEntry {
+    unsigned char _pad000[0x17c];
+    Item *cloakItem;         // 0x17c
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(ShopEntry, cloakItem) == 0x17c, "");
+#endif
+
+} // namespace
 
 Ship::Ship(int index, int baseHP, int baseLoad, int value,
            int slot0, int slot1, int slot2, int slot3, float handling) {
@@ -119,9 +161,8 @@ void Ship::setCargo(Array<Item *> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = (int *) gStatus;
-    if (world[0xdc / 4] < freeSpace) {
-        world[0xdc / 4] = freeSpace;
+    if (Status::gStatus->field_dc < freeSpace) {
+        Status::gStatus->field_dc = freeSpace;
     }
 }
 
@@ -133,9 +174,8 @@ void Ship::replaceCargo(Array<Item *> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    int *world = (int *) gStatus;
-    if (world[0xdc / 4] < freeSpace) {
-        world[0xdc / 4] = freeSpace;
+    if (Status::gStatus->field_dc < freeSpace) {
+        Status::gStatus->field_dc = freeSpace;
     }
 }
 
@@ -214,9 +254,8 @@ int Ship::getFreeSpace() {
 void Ship::changeLoad(int delta) {
     this->currentLoad += delta;
     int freeSpace = (this->baseLoad - this->currentLoad) + this->cargoPlus;
-    int *world = (int *) gStatus;
-    if (world[0xdc / 4] < freeSpace) {
-        world[0xdc / 4] = freeSpace;
+    if (Status::gStatus->field_dc < freeSpace) {
+        Status::gStatus->field_dc = freeSpace;
     }
 }
 
@@ -310,8 +349,8 @@ Item *Ship::getFirstEquipmentOfSort(int sort) {
             }
         }
         if (sort == 0x15 && (this->index == 0x31 || this->index == 0x2c)) {
-            int *q = gShopRoot;
-            return *(Item **) (*(int *) ((char *) q + 4) + 0x17c);
+            ShopEntry *shop = ((ShopEntry **) gShopRoot)[1];
+            return shop->cloakItem;
         }
     }
     return 0;
@@ -509,8 +548,8 @@ void Ship::refreshValue() {
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
-    if (gStatus != 0 && gStatus->getStanding() != 0) {
-        ((Standing *) ((void *) (intptr_t) gStatus->getStanding()))->setPlayerSignatureRace(-1);
+    if (Status::gStatus != 0 && Status::gStatus->getStanding() != 0) {
+        ((Standing *) ((void *) (intptr_t) Status::gStatus->getStanding()))->setPlayerSignatureRace(-1);
     }
     this->value = this->price;
 
@@ -593,8 +632,8 @@ void Ship::refreshValue() {
                 case 0x1d: {
                     int idx = cur->getIndex();
                     this->signatureRace = idx - 0xbd;
-                    if (gStatus != 0 && gStatus->getStanding() != 0) {
-                        ((Standing *) ((void *) (intptr_t) gStatus->getStanding()))->setPlayerSignatureRace(
+                    if (Status::gStatus != 0 && Status::gStatus->getStanding() != 0) {
+                        ((Standing *) ((void *) (intptr_t) Status::gStatus->getStanding()))->setPlayerSignatureRace(
                             this->signatureRace);
                     }
                     break;
@@ -637,23 +676,21 @@ void Ship::refreshValue() {
 }
 
 void Ship::adjustPrice() {
-    if (gStatus->getStation() != 0 && this->price > 0) {
-        int *root = (int *) gShipDataRoot;
-        int *table = *(int **) (*(int *) root + 4);
-        int *entry = *(int **) ((char *) table + this->index * 4);
-        int cat = *entry;
-        SolarSystem *system = (SolarSystem *) (intptr_t) gStatus->getSystem();
+    if (Status::gStatus->getStation() != 0 && this->price > 0) {
+        ShipDataObj *root = *(ShipDataObj **) gShipDataRoot;
+        ShipDataEntry *entry = root->table[this->index];
+        int cat = entry->category;
+        SolarSystem *system = (SolarSystem *) (intptr_t) Status::gStatus->getSystem();
         int race = system->getRace();
-        int *table2 = *(int **) (*(int *) root + 4);
-        int *entry2 = *(int **) ((char *) table2 + this->index * 4);
-        float base = (float) entry2[0x14 / 4];
+        ShipDataEntry *entry2 = root->table[this->index];
+        float base = (float) entry2->basePrice;
         float bonus = 0.1f;
         if (gRaceTable[cat] == race) {
             bonus = base * 0.3f;
         }
         float acc = bonus + base;
         float diff = 0.1f;
-        int dv = *(int *) gDifficultyPtr;
+        int dv = *gDifficultyPtr;
         if (dv != 0) {
             diff = base * (float) dv * 0.7f;
         }
@@ -662,10 +699,9 @@ void Ship::adjustPrice() {
 }
 
 void Ship::priceDecline() {
-    int *q = *gShipDataRoot;
-    int *table = *(int **) ((char *) q + 4);
-    int *entry = (int *) table[this->index];
-    this->price = (int) ((float) entry[0x14 / 4] / 1.25f);
+    ShipDataObj *root = *(ShipDataObj **) gShipDataRoot;
+    ShipDataEntry *entry = root->table[this->index];
+    this->price = (int) ((float) entry->basePrice / 1.25f);
 }
 
 Ship *Ship::makeShip(int price) {

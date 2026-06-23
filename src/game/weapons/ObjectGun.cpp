@@ -1,5 +1,7 @@
 #include "game/weapons/ObjectGun.h"
 
+#include <cstddef>
+
 #include "game/world/Level.h"
 #include "engine/math/Transform.h"
 #include "game/mission/Explosion.h"
@@ -9,13 +11,23 @@
 #include "engine/render/AEGeometry.h"
 
 
-template<class T>
-static inline T &F(void *p, int off) { return *(T *) ((char *) p + off); }
-
 struct MeshId {
     uint16_t id;
     uint16_t pad;
 };
+
+// View used by the ego-orientation branch of render(): in the shipped binary the
+// player object stores an orientation Matrix starting at byte 0x40 (the same
+// storage Player.h names `radius`/`destroyed`/...). Model it with named fields so
+// the access is a struct member rather than raw pointer arithmetic.
+struct EgoPlayerView {
+    char header[0x40];
+    Matrix orientation;        // at 0x40
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(EgoPlayerView, orientation) == 0x40,
+              "EgoPlayerView.orientation must sit at 0x40");
+#endif
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -23,7 +35,7 @@ namespace AbyssEngine {
     }
 }
 
-extern "C" void *g_PaintCanvas;
+static void *g_PaintCanvas = nullptr;
 
 void TransformRemoveMesh(void *canvas, uint32_t transform, uint16_t mesh);
 
@@ -57,16 +69,16 @@ void VectorNormalize(Vector *out, const Vector *in);
 
 void VectorCross(Vector *out, const Vector *a, const Vector *b);
 
-extern "C" void ObjectGun_setEnemies_impl(void *items);
+void ObjectGun_setEnemies_impl(void *items);
 
-extern "C" void *g_ObjectGunScaleFlag;
-extern "C" void *g_ObjectGunRenderScaleFlag;
-extern "C" MeshId g_ObjectGunGeometryIds[];
-extern "C" int g_ObjectGunPlayerGunIds[];
+static void *g_ObjectGunScaleFlag = nullptr;
+static void *g_ObjectGunRenderScaleFlag = nullptr;
+static MeshId g_ObjectGunGeometryIds[256] = {};
+static int g_ObjectGunPlayerGunIds[256] = {};
 
-extern "C" uint32_t (*g_TransformGetObject)(void *canvas, uint32_t mesh);
+static uint32_t (*g_TransformGetObject)(void *canvas, uint32_t mesh) = nullptr;
 
-extern "C" void (*g_TransformSetState)(uint32_t object, int state, int value);
+static void (*g_TransformSetState)(uint32_t object, int state, int value) = nullptr;
 
 ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Level *level) {
     this->dir.x = 0.0f;
@@ -212,7 +224,7 @@ void ObjectGun::update(int dt) {
             if (owner != nullptr) {
                 KIPlayer *ki = owner->getKIPlayer();
 
-                if (ki != nullptr && F<uint8_t>(ki, 0x3f) != 0) {
+                if (ki != nullptr && ki->field_0x3f_b != 0) {
                     this->hasGeometry = 1;
                     this->geometry = new AEGeometry(
                         (uint16_t) g_ObjectGunGeometryIds[this->gun->itemIndex].id,
@@ -241,11 +253,15 @@ void ObjectGun::update(int dt) {
         }
 
         gun = this->gun;
-        void *matrixSource = player;
+        // The matrix source is a Player object: for the player's own gun it is the
+        // PlayerEgo's wrapped Player (first pointer field), otherwise the gun owner.
+        Player *matrixPlayer;
         if (gun->isPlayerGun() == 0)
-            matrixSource = (char *) &gun->owner;
+            matrixPlayer = gun->owner;
+        else
+            matrixPlayer = (Player *) ((PlayerEgo *) player)->player;
 
-        memcpy(&playerMatrix, (char *) F<void *>(matrixSource, 0x0) + 0x4, 0x3c);
+        memcpy(&playerMatrix, matrixPlayer->transform, 0x3c);
 
         offsets.x = gun->offset.x;
         offsets.y = gun->offset.y;
@@ -315,12 +331,11 @@ after_geometry:
     gun = this->gun;
     this->wasFiring = gun->delayActive;
     if (gun->weaponType == ITEM_SORT_SCATTER_GUN) {
-        int positionOffset = 0;
         for (uint32_t i = 0; i < gun->count; ++i) {
             if (gun->hitFlags[i] != 0) {
                 Explosion *explosion = this->explosions->data()[i];
                 if (this->explosionReady[i] != 0) {
-                    explosion->start(*(Vector *) ((char *) gun->hitPositions + positionOffset), zero);
+                    explosion->start(((Vector *) gun->hitPositions)[i], zero);
                     this->explosionReady[i] = 0;
                 }
                 explosion->update(dt, static_cast<TargetFollowCamera *>(nullptr));
@@ -332,7 +347,6 @@ after_geometry:
                     explosion->reset();
                 }
             }
-            positionOffset += 0xc;
             gun = this->gun;
         }
     }
@@ -386,12 +400,11 @@ void ObjectGun::render() {
         }
 
         uint32_t inactive = 0;
-        int offset = 0;
         for (uint32_t i = 0; i < gun->count; ++i) {
-            Vector *gunPos = (Vector *) ((char *) gun->positions + offset);
+            Vector *gunPos = &((Vector *) gun->positions)[i];
             if (gunPos->x != -1000.0f) {
                 MatrixSetTranslation(&local, gunPos->x, gunPos->y, gunPos->z);
-                ::VectorNormalize((Vector *) &local, (Vector *) ((char *) gun->velocities + offset));
+                ::VectorNormalize((Vector *) &local, &((Vector *) gun->velocities)[i]);
                 this->dir = *(const Vector *) &local;
 
                 if (this->visible != 0) {
@@ -418,7 +431,7 @@ void ObjectGun::render() {
                     this->orientation.m[6] = -muzzle.y;
                     this->orientation.m[10] = -muzzle.z;
 
-                    int scale = ((int *) gun->lifetimes)[i];
+                    int scale = gun->lifetimes[i];
                     if (scale < 1000) {
                         float fscale = (float) scale / 750.0f;
                         MatrixSetScaling(&local, fscale, fscale, fscale);
@@ -433,7 +446,7 @@ void ObjectGun::render() {
                         base.y = 1.0f;
                         base.z = 0.0f;
                     } else {
-                        base = *(const Vector *) ((char *) gun->upVectors + offset);
+                        base = ((const Vector *) gun->upVectors)[i];
                     }
                     this->up = base;
                     VectorCross(&side, &this->up, &this->dir);
@@ -451,7 +464,7 @@ void ObjectGun::render() {
                     this->orientation.m[9] = this->up.z;
                     this->orientation.m[10] = this->dir.z;
 
-                    int scale = ((int *) gun->lifetimes)[i];
+                    int scale = gun->lifetimes[i];
                     if (scale < 1000) {
                         float fscale = (float) scale / 750.0f;
                         MatrixSetScaling(&local, fscale, fscale, fscale);
@@ -462,18 +475,19 @@ void ObjectGun::render() {
                     }
                 } else {
                     Player *player = (Player *) (uint64_t) this->level->getPlayer();
+                    EgoPlayerView *playerView = (EgoPlayerView *) player;
                     identity(&local);
 
-                    MatrixSetRotation(&scaleMatrix, F<float>(player, 0x7c), F<float>(player, 0x80), 0.0f);
-                    AbyssEngine::AEMath::MatrixMultiply(*(Matrix *) ((char *) player + 0x40), local);
-                    this->orientation = *(const Matrix *) ((char *) player + 0x40);
+                    MatrixSetRotation(&scaleMatrix, player->empPointsF, player->maxEmpPointsF, 0.0f);
+                    AbyssEngine::AEMath::MatrixMultiply(playerView->orientation, local);
+                    this->orientation = playerView->orientation;
                     MatrixSetTranslation(&scaleMatrix, gunPos->x, gunPos->y, gunPos->z);
                     MatrixGetDir(&dir, &scaleMatrix);
                     ::VectorNormalize(&muzzle, &dir);
                     muzzle *= gun->field_0x50;
-                    *(Vector *) ((char *) gun->velocities + offset) = muzzle;
-                    F<float>(player, 0x7c) = 0.0f;
-                    F<float>(player, 0x80) = 0.0f;
+                    ((Vector *) gun->velocities)[i] = muzzle;
+                    player->empPointsF = 0.0f;
+                    player->maxEmpPointsF = 0.0f;
                     MatrixSetRotation(&scaleMatrix, this->rollAngle, 0.0f, 0.0f);
                     TransformSetLocal(*(void **) g_PaintCanvas, this->secondaryTransform, &scaleMatrix);
                 }
@@ -501,7 +515,6 @@ void ObjectGun::render() {
             } else {
                 ++inactive;
             }
-            offset += 0xc;
             gun = this->gun;
         }
         if (gun->directionCount <= (int) inactive)

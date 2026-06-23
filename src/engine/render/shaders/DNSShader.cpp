@@ -4,8 +4,8 @@
 #include "game/core/String.h"
 #include <GLES2/gl2.h>
 
-extern "C" float DNSShader_g0;
-extern "C" float DNSShader_g1;
+static float DNSShader_g0;
+static float DNSShader_g1;
 
 namespace AbyssEngine {
     DNSShader::DNSShader() {

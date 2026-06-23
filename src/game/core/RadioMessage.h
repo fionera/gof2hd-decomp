@@ -2,7 +2,6 @@
 #define GOF2_RADIOMESSAGE_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "game/mission/Objective.h"
 
 class LevelScript;

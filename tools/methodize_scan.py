@@ -3,8 +3,8 @@
 # C++ instance methods, build the conversion registry, and report scope. Read-only (no edits).
 import glob, re, os, json, collections
 ROOT="/Users/fionera/Downloads/GalaxyOnFire2/gof2-decomp"; os.chdir(ROOT)
-CLASSES={os.path.basename(f)[:-4] for f in glob.glob("src/*.cpp")}
-CLASSES|={os.path.basename(f)[:-2] for f in glob.glob("include/gof2/*.h")}
+CLASSES={os.path.basename(f)[:-4] for f in glob.glob("src/**/*.cpp", recursive=True)}
+CLASSES|={os.path.basename(f)[:-2] for f in glob.glob("src/**/*.h", recursive=True)}
 
 # A definition signature (single line up to the param close-paren), optionally `extern "C"`.
 # Groups: ret (return type incl. trailing * / spaces), sym (Class_method), params, term ({ or ; possibly on next line)
@@ -28,7 +28,7 @@ defs_seen=collections.Counter()
 edge_first_not_class=0; edge_static=0
 multiline_flag=0
 
-for f in glob.glob("src/*.cpp"):
+for f in glob.glob("src/**/*.cpp", recursive=True):
     txt=open(f,errors='ignore').read()
     for m in SIG.finditer(txt):
         sym=m.group('sym'); ret=(m.group('ret')+' '+m.group('stars')).strip()
@@ -52,7 +52,7 @@ for f in glob.glob("src/*.cpp"):
             edge_first_not_class+=1
 
 # call-site counts: occurrences of `sym(` minus its definition(s)
-calltxt="".join(open(f,errors='ignore').read() for f in glob.glob("src/*.cpp"))
+calltxt="".join(open(f,errors='ignore').read() for f in glob.glob("src/**/*.cpp", recursive=True))
 callcounts={}
 for sym in registry:
     callcounts[sym]=len(re.findall(r'\b%s\s*\('%re.escape(sym), calltxt))

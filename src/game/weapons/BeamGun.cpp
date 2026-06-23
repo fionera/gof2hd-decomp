@@ -3,6 +3,7 @@
 #include "game/world/LevelScript.h"
 #include "engine/math/Transform.h"
 #include "game/weapons/Gun.h"
+#include "game/ship/Player.h"
 #include "game/ship/PlayerEgo.h"
 #include "engine/render/AEGeometry.h"
 
@@ -24,15 +25,15 @@ void MatrixRotateVector(Vector *out, const Matrix *matrix, const Vector *vector)
 void MatrixGetDir(Vector *out, const Matrix *matrix);
 
 
-extern void **BeamGun_canvas;
+static void **BeamGun_canvas = nullptr;
 
-extern int32_t BeamGun_secondaryMeshes[];
-
-
-extern void (*BeamGun_enemiesHandler_slot)(void *);
+static int32_t BeamGun_secondaryMeshes[256] = {};
 
 
-extern void (*BeamGun_enemyHandler_slot)(void *);
+static void (*BeamGun_enemiesHandler_slot)(void *) = nullptr;
+
+
+static void (*BeamGun_enemyHandler_slot)(void *) = nullptr;
 
 BeamGun::BeamGun(int owner, Gun *gun, int meshKind, Level *level) {
     int type = meshKind;
@@ -169,7 +170,7 @@ void BeamGun::update(int elapsed) {
             transformed = gun->offset;
             transformed.z = gun->offset.z + -100.0f;
 
-            MatrixRotateVector(&rotated, (Matrix *) ((char *) player->player + 4), &transformed);
+            MatrixRotateVector(&rotated, (Matrix *) ((Player *) player->player)->transform, &transformed);
             *(Vector *) &playerMatrix = *(Vector *) &playerMatrix + rotated;
             this->secondaryGeometry->setPosition(*(Vector *) &playerMatrix);
 
@@ -177,7 +178,7 @@ void BeamGun::update(int elapsed) {
             Transform *t = BeamGun_canvasTransform(canvas, secondary->transform);
             t->Update((long long) elapsed, false);
 
-            MatrixGetDir(&rotated, (Matrix *) ((char *) player->player + 4));
+            MatrixGetDir(&rotated, (Matrix *) ((Player *) player->player)->transform);
             back.x = 0.0f;
             back.y = 1.0f;
             back.z = 0.0f;
@@ -198,6 +199,22 @@ void BeamGun::setEnemies(Array<Player *> *enemies) {
     BeamGun_enemiesHandler_slot(enemies->data());
 }
 
+// The enemy handler receives the opaque module-side enemy handle stored at
+// byte offset 8 of the Player object (overlapping Player::transform[1]); the
+// engine treats that slot as a pointer when registering the enemy. Model the
+// reinterpretation with a named field rather than raw index arithmetic.
+namespace {
+    struct PlayerEnemyHandleView {
+        void *pad_0;             // Player::guns
+        void *pad_4;            // Player::transform[0]
+        void *enemyHandle;     // Player::transform[1] reused as enemy handle
+    };
+#if __SIZEOF_POINTER__ == 4
+    static_assert(__builtin_offsetof(PlayerEnemyHandleView, enemyHandle) == 8,
+                  "enemy handle must sit at Player byte offset 8");
+#endif
+}
+
 void BeamGun::setEnemy(Player *enemy) {
-    BeamGun_enemyHandler_slot(((void **) enemy)[2]);
+    BeamGun_enemyHandler_slot(reinterpret_cast<PlayerEnemyHandleView *>(enemy)->enemyHandle);
 }

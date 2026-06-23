@@ -11,7 +11,7 @@ int HackingGame::getDockingIndex() {
 }
 
 
-extern FModSound **g_HackingGame_sound_left;
+static FModSound **g_HackingGame_sound_left = nullptr;
 
 void HackingGame::rotateLeftCW(bool sound) {
     if (this->wonTimer != 0)
@@ -54,7 +54,7 @@ int HackingGame::gameWon() {
 }
 
 
-extern FModSound **g_HackingGame_sound_right;
+static FModSound **g_HackingGame_sound_right = nullptr;
 
 void HackingGame::rotateRightCW(bool sound) {
     if (this->wonTimer != 0)
@@ -100,7 +100,7 @@ void HackingGame::rotateRightCW(int *state) {
 typedef void (*ImageCreateFn)(void *canvas, uint16_t image, uint32_t *out);
 
 
-extern ImageCreateFn g_HackingGame_ctor_imageCreate;
+static ImageCreateFn g_HackingGame_ctor_imageCreate = nullptr;
 
 HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount, int dockingIndex) {
     this->type = type;
@@ -110,19 +110,19 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
     int base = scaledType * 4;
     for (int i = 0; i != 6; ++i) {
         unsigned int handle;
-        gCanvas->Image2DCreate((uint16_t)(i + 0x1f4a), handle);
+        PaintCanvas::gCanvas->Image2DCreate((uint16_t)(i + 0x1f4a), handle);
         this->tileImages[base + i] = handle;
-        gCanvas->Image2DCreate((uint16_t)(i + 0x1f50), handle);
+        PaintCanvas::gCanvas->Image2DCreate((uint16_t)(i + 0x1f50), handle);
         this->tileImages[base + 6 + i] = handle;
     }
 
     ImageCreateFn create = g_HackingGame_ctor_imageCreate;
-    create(gCanvas, 0x1f48, (uint32_t *) &this->bottomImage);
-    create(gCanvas, 0x1f49, (uint32_t *) &this->topImage);
-    create(gCanvas, 0x1f47, (uint32_t *) &this->mainImage);
-    create(gCanvas, 0x1f46, (uint32_t *) &this->arrowActive);
-    create(gCanvas, 0x1f44, (uint32_t *) &this->arrowIdle);
-    create(gCanvas, 0x1f45, (uint32_t *) &this->markImage);
+    create(PaintCanvas::gCanvas, 0x1f48, (uint32_t *) &this->bottomImage);
+    create(PaintCanvas::gCanvas, 0x1f49, (uint32_t *) &this->topImage);
+    create(PaintCanvas::gCanvas, 0x1f47, (uint32_t *) &this->mainImage);
+    create(PaintCanvas::gCanvas, 0x1f46, (uint32_t *) &this->arrowActive);
+    create(PaintCanvas::gCanvas, 0x1f44, (uint32_t *) &this->arrowIdle);
+    create(PaintCanvas::gCanvas, 0x1f45, (uint32_t *) &this->markImage);
 
     this->difficulty = savedCanvas;
     this->rewardItem = savedRewardItem;
@@ -134,15 +134,15 @@ HackingGame::HackingGame(int type, int canvas, int rewardItem, int rewardAmount,
 typedef int (*ImageMeasureFn)(void *canvas, int image);
 
 
-extern int *g_HackingGame_render_screen_w_a;
+static int *g_HackingGame_render_screen_w_a = nullptr;
 
-extern int *g_HackingGame_render_screen_w_b;
+static int *g_HackingGame_render_screen_w_b = nullptr;
 
-extern int *g_HackingGame_render_screen_h;
+static int *g_HackingGame_render_screen_h = nullptr;
 
-extern ImageMeasureFn g_HackingGame_render_height_fn;
+static ImageMeasureFn g_HackingGame_render_height_fn = nullptr;
 
-extern void **g_HackingGame_render_layout;
+static void **g_HackingGame_render_layout = nullptr;
 
 static inline int half_i(int value) {
     return value / 2;
@@ -155,7 +155,7 @@ static inline int layoutOffset(void *layout, uint32_t off) {
 void HackingGame::render2D() {
     int delta[13];
 
-    gCanvas->SetColor((unsigned) (-1));
+    PaintCanvas::gCanvas->SetColor((unsigned) (-1));
 
     bool solved = true;
     for (unsigned i = 0; i <= 5; ++i) {
@@ -167,8 +167,8 @@ void HackingGame::render2D() {
 
     int typeOffset = this->type * 12;
     int baseImage = this->tileImages[typeOffset];
-    int tileW = gCanvas->GetImage2DWidth((unsigned) (baseImage));
-    int tileH = gCanvas->GetImage2DHeight((unsigned) (baseImage));
+    int tileW = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (baseImage));
+    int tileH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (baseImage));
 
     for (int i = 0; i != 6; ++i) {
         delta[i * 2] = 0;
@@ -199,35 +199,35 @@ void HackingGame::render2D() {
     } else {
         int image = this->mainImage;
         int screenW = *g_HackingGame_render_screen_w_a;
-        int width = gCanvas->GetImage2DWidth((unsigned) (image));
-        int height = gCanvas->GetImage2DHeight((unsigned) (image));
-        gCanvas->DrawImage2D((unsigned) image, half_i(screenW) - half_i(width),
+        int width = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (image));
+        int height = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (image));
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) image, half_i(screenW) - half_i(width),
                              half_i(*g_HackingGame_render_screen_h) - half_i(height));
     }
 
     {
         int topImage = this->topImage;
         int screenW = *g_HackingGame_render_screen_w_b;
-        int topWidth = gCanvas->GetImage2DWidth((unsigned) (topImage));
+        int topWidth = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (topImage));
         ImageMeasureFn measure = g_HackingGame_render_height_fn;
         int screenH = *g_HackingGame_render_screen_h;
-        int titleH = measure(gCanvas, this->mainImage);
-        int topH = measure(gCanvas, this->topImage);
+        int titleH = measure(PaintCanvas::gCanvas, this->mainImage);
+        int topH = measure(PaintCanvas::gCanvas, this->topImage);
         void **layout = g_HackingGame_render_layout;
 
-        gCanvas->DrawImage2D((unsigned) topImage, half_i(screenW) - topWidth,
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) topImage, half_i(screenW) - topWidth,
                              half_i(screenH) - half_i(titleH) - topH + layoutOffset(*layout, 0x30c));
-        gCanvas->DrawImage2D((unsigned) (topImage), half_i(screenW),
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) (topImage), half_i(screenW),
                              half_i(screenH) - half_i(titleH) - topH + layoutOffset(*layout, 0x30c),
                              (unsigned char) (true));
 
         if (!solved) {
             int bottomImage = this->bottomImage;
-            int bottomW = gCanvas->GetImage2DWidth((unsigned) (bottomImage));
-            int bottomH = gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
-            gCanvas->DrawImage2D((unsigned) bottomImage, half_i(screenW) - bottomW,
+            int bottomW = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (bottomImage));
+            int bottomH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) bottomImage, half_i(screenW) - bottomW,
                                  half_i(bottomH) + half_i(screenH) + layoutOffset(*layout, 0x314));
-            gCanvas->DrawImage2D((unsigned) bottomImage, half_i(screenW),
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) bottomImage, half_i(screenW),
                                  half_i(bottomH) + half_i(screenH) + layoutOffset(*layout, 0x314),
                                  (unsigned char) true);
         }
@@ -242,26 +242,26 @@ void HackingGame::render2D() {
             unsigned col = i - row * 3;
             int y = (int) (((float) half_i(screenW) - oneAndHalf) + (float) (tileW * col) +
                            (float) delta[i * 2]);
-            int imageH = gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
-            gCanvas->DrawImage2D((unsigned) image, y,
+            int imageH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) image, y,
                                  row * tileH + half_i(*g_HackingGame_render_screen_h) - half_i(imageH) +
                                  delta[i * 2 + 1] + layoutOffset(*layout, 0x310));
         }
 
         int leftArrow = this->rotatingLeft ? this->arrowActive : this->arrowIdle;
-        int arrowW = gCanvas->GetImage2DWidth((unsigned) (leftArrow));
-        int arrowTitleH = gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
-        int arrowH = gCanvas->GetImage2DHeight((unsigned) (leftArrow));
-        gCanvas->DrawImage2D((unsigned) leftArrow,
+        int arrowW = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (leftArrow));
+        int arrowTitleH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
+        int arrowH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (leftArrow));
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) leftArrow,
                              half_i(screenW) - half_i(tileW) - half_i(arrowW),
                              half_i(*g_HackingGame_render_screen_h) - half_i(tileH) -
                              half_i(arrowTitleH) - half_i(arrowH) + layoutOffset(*layout, 0x310));
 
         int rightArrow = this->rotatingRight ? this->arrowActive : this->arrowIdle;
-        arrowW = gCanvas->GetImage2DWidth((unsigned) (rightArrow));
-        arrowTitleH = gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
-        arrowH = gCanvas->GetImage2DHeight((unsigned) (rightArrow));
-        gCanvas->DrawImage2D((unsigned) rightArrow,
+        arrowW = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (rightArrow));
+        arrowTitleH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
+        arrowH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (rightArrow));
+        PaintCanvas::gCanvas->DrawImage2D((unsigned) rightArrow,
                              half_i(screenW) + half_i(tileW) - half_i(arrowW),
                              half_i(*g_HackingGame_render_screen_h) - half_i(tileH) -
                              half_i(arrowTitleH) - half_i(arrowH) + layoutOffset(*layout, 0x310));
@@ -272,22 +272,22 @@ void HackingGame::render2D() {
                 unsigned col = i - row * 3;
                 int stateIndex = this->target[i];
                 int image = this->tileImages[typeOffset + stateIndex];
-                int imageH = gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
+                int imageH = PaintCanvas::gCanvas->GetImage2DHeight((unsigned) (this->mainImage));
                 int y = (int) (((float) half_i(screenW) - oneAndHalf) + (float) (tileW * col));
-                gCanvas->DrawImage2D((unsigned) image, y,
+                PaintCanvas::gCanvas->DrawImage2D((unsigned) image, y,
                                      row * tileH + half_i(*g_HackingGame_render_screen_h) + half_i(imageH) +
                                      layoutOffset(*layout, 0x318));
             }
 
             int mark = this->markImage;
-            int markW = gCanvas->GetImage2DWidth((unsigned) (mark));
-            int titleH2 = measure(gCanvas, this->mainImage);
-            int markH = measure(gCanvas, mark);
-            gCanvas->DrawImage2D((unsigned) mark,
+            int markW = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (mark));
+            int titleH2 = measure(PaintCanvas::gCanvas, this->mainImage);
+            int markH = measure(PaintCanvas::gCanvas, mark);
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) mark,
                                  half_i(screenW) - half_i(tileW) - half_i(markW),
                                  half_i(*g_HackingGame_render_screen_h) + half_i(tileH) +
                                  half_i(titleH2) - half_i(markH) + layoutOffset(*layout, 0x318));
-            gCanvas->DrawImage2D((unsigned) mark,
+            PaintCanvas::gCanvas->DrawImage2D((unsigned) mark,
                                  half_i(screenW) + half_i(tileW) - half_i(markW),
                                  half_i(*g_HackingGame_render_screen_h) + half_i(tileH) +
                                  half_i(titleH2) - half_i(markH) + layoutOffset(*layout, 0x318));
@@ -311,20 +311,20 @@ void HackingGame::reInit() {
     } else if (type == 2) {
         for (int i = 0; i != 4; ++i)
             this->target[i] = i;
-        this->target[4] = gRandom->nextInt(4);
-        this->target[5] = gRandom->nextInt(4);
+        this->target[4] = AERandom::gRandom->nextInt(4);
+        this->target[5] = AERandom::gRandom->nextInt(4);
     } else if (type == 3) {
         for (int i = 0; i != 5; ++i)
             this->target[i] = i;
-        this->target[5] = gRandom->nextInt(5);
+        this->target[5] = AERandom::gRandom->nextInt(5);
     } else {
         for (int i = 0; i != 6; ++i)
             this->target[i] = i;
     }
 
     for (int i = 0x28; i != 0; --i) {
-        int a = gRandom->nextInt(6);
-        int b = gRandom->nextInt(6);
+        int a = AERandom::gRandom->nextInt(6);
+        int b = AERandom::gRandom->nextInt(6);
         int value = this->target[a];
         this->target[a] = this->target[b];
         this->target[b] = value;
@@ -337,7 +337,7 @@ void HackingGame::reInit() {
     }
 
     for (unsigned i = 0; (int) i < this->difficulty * 2; ++i) {
-        int count = gRandom->nextInt(2);
+        int count = AERandom::gRandom->nextInt(2);
         for (int j = 0; j <= count; ++j) {
             if ((i & 1) == 0)
                 rotateRightCW(false);
@@ -422,7 +422,7 @@ int HackingGame::solvableInNSteps(int steps, int depth, int leftCount, int right
 }
 
 
-extern FModSound **g_HackingGame_update_sound;
+static FModSound **g_HackingGame_update_sound = nullptr;
 
 int HackingGame::update(int dt) {
     if (this->rotatingLeft || this->rotatingRight) {

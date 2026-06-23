@@ -2,8 +2,6 @@
 #define GOF2_IAPPLICATIONMODULE_H
 #include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-
 namespace AbyssEngine {
     class ApplicationManager;
     class PaintCanvas;

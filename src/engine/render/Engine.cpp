@@ -5,7 +5,7 @@
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-Engine *gEngine = nullptr;
+Engine *Engine::gEngine = nullptr;
 
 bool AbyssEngine::Engine::vboSupported = false;
 bool AbyssEngine::Engine::clampTextures = false;
@@ -14,11 +14,13 @@ float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
 unsigned int AbyssEngine::Engine::countryCode = 0;
 bool AbyssEngine::Engine::EnablePostEffect = false;
+bool AbyssEngine::Engine::fogEnabled = false;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
 #include "game/core/String.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/Material.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/ShaderBaseStruct.h"
 #include <arm_neon.h>
@@ -65,28 +67,28 @@ extern "C" void glLightModelfv(unsigned int pname, const void *params);
 
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
 
-extern "C" void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
-extern "C" void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
-extern "C" void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
+void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
+void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
+void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
 
-extern "C" void ShaderUpdateRimColor();
+void ShaderUpdateRimColor();
 
-extern "C" void ShaderUpdateMaterialColor();
+void ShaderUpdateMaterialColor();
 
-extern "C" void FileInterfaceAndroid_ctor(void *self);
+void FileInterfaceAndroid_ctor(void *self);
 
-extern "C" void ShaderCtor_0(void *);
+void ShaderCtor_0(void *);
 
-extern "C" void ShaderCtor_1(void *);
+void ShaderCtor_1(void *);
 
-extern "C" void ShaderCtor_2(void *);
+void ShaderCtor_2(void *);
 
-extern "C" void ShaderCtor_3(void *);
+void ShaderCtor_3(void *);
 
-extern "C" void ShaderCtor_4(void *);
+void ShaderCtor_4(void *);
 
-extern "C" String *g_Engine_vendorString;
-extern "C" String *g_Engine_rendererString;
+static String *g_Engine_vendorString = nullptr;
+static String *g_Engine_rendererString = nullptr;
 
 namespace {
     int g_Engine_useShaders;
@@ -113,6 +115,21 @@ namespace {
     int g_Engine_postEffectFlag;
     int g_Engine_postEffectCounter;
     int g_Engine_postEffectPending;
+
+    // Layout of a PaintCanvas texture-table entry (pointed to by
+    // PaintCanvas::field_0x14[index]). Only the fields touched here are named;
+    // the gap preserves the original byte offsets.
+    struct TextureEntry {
+        uint32_t glTexture;      // 0x00 GL texture id
+        unsigned char pad_04[0x10 - 0x04];
+        float texEnv;            // 0x10 GL_TEXTURE_ENV blend value
+        unsigned char isCube;    // 0x14 0 => GL_TEXTURE_2D, else cube map
+    };
+#if __SIZEOF_POINTER__ == 4
+    static_assert(__builtin_offsetof(TextureEntry, glTexture) == 0x00, "TextureEntry::glTexture");
+    static_assert(__builtin_offsetof(TextureEntry, texEnv) == 0x10, "TextureEntry::texEnv");
+    static_assert(__builtin_offsetof(TextureEntry, isCube) == 0x14, "TextureEntry::isCube");
+#endif
 }
 
 void MeshRelease(Engine *self, void *meshSlot);
@@ -540,7 +557,7 @@ void Engine::RenderMesh(Mesh *mesh) {
         bool tex = ((uint32_t) mesh->vertexFormat << 30) < 0;
 
         if (tex && (mesh->material == 0 ||
-                    *(int *) ((char *) mesh->material + 4) == -1)) {
+                    ((Material *) mesh->material)->textures[1] == -1)) {
             glTexCoordPointer(2, 0x1406, 0, mesh->texCoords);
         }
         this->AEClientState(0x8078, tex);
@@ -562,7 +579,7 @@ void Engine::RenderMesh(Mesh *mesh) {
         }
 
         if (tex && mesh->material != 0 &&
-            *(int *) ((char *) mesh->material + 4) != -1) {
+            ((Material *) mesh->material)->textures[1] != -1) {
             this->AEClientState(0x8078, false);
         }
     } else {
@@ -722,24 +739,24 @@ void Engine::SetTextureSlot(uint32_t textureIndex, uint32_t slot) {
     }
     uint32_t *bound = (uint32_t *) &this->boundTextures[slot];
 
-    void *textureEntry = *(void **) (manager->field_0x14 + textureIndex);
-    uint32_t texture = **(uint32_t **) (&textureEntry);
+    TextureEntry *textureEntry = (TextureEntry *) manager->field_0x14[textureIndex];
+    uint32_t texture = textureEntry->glTexture;
     if (*bound == texture) {
         return;
     }
     glActiveTexture(slot + 0x84c0);
-    float env = *(float *) ((char *) textureEntry + 0x10);
+    float env = textureEntry->texEnv;
     if (g_Engine_texEnv != env) {
         g_Engine_texEnv = env;
         if (g_Engine_useShaders == 0) {
             glTexEnvf(0x8500, 0x8501, env);
-            textureEntry = *(void **) (manager->field_0x14 + textureIndex);
+            textureEntry = (TextureEntry *) manager->field_0x14[textureIndex];
         } else if (g_Engine_texEnvDirty != 0) {
             g_Engine_texEnvDirty = 0;
         }
     }
 
-    glBindTexture(*(uint8_t *) ((char *) textureEntry + 0x14) == 0 ? 0xde1 : 0x8513, texture);
+    glBindTexture(textureEntry->isCube == 0 ? 0xde1 : 0x8513, texture);
     *bound = texture;
 }
 
@@ -1518,7 +1535,7 @@ void Engine::GlEnable(unsigned int cap, bool enable) {
     this->glEnableFlags = flags;
 }
 
-extern "C" void _ZN11AbyssEngine6Engine11LightEnableEb(Engine *self, bool enabled);
+void _ZN11AbyssEngine6Engine11LightEnableEb(Engine *self, bool enabled);
 
 void Engine::LightEnable(bool enabled) {
     _ZN11AbyssEngine6Engine11LightEnableEb(this, enabled);

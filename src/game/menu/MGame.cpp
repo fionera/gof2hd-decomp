@@ -44,13 +44,12 @@
 class Music;
 class Cfg;
 
-extern PaintCanvas *gCanvas;
 
-extern "C" int FModSound_tryToStopMusicForBGMusic();
+int FModSound_tryToStopMusicForBGMusic();
 
-extern "C" void Music_resume(Music *m, int one, int v);
+void Music_resume(Music *m, int one, int v);
 
-extern "C" Vector *TFC_getCamOffset(TargetFollowCamera * c);
+Vector *TFC_getCamOffset(TargetFollowCamera * c);
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -66,26 +65,26 @@ static inline float AEMath_VectorLength(Vector *v) {
     return AbyssEngine::AEMath::VectorLength(*v);
 }
 
-extern "C" void *MGame_opnew(unsigned sz);
+void *MGame_opnew(unsigned sz);
 
 void TFC_setFastForwardMode(TargetFollowCamera *c, int v);
 
-extern "C" void applyThrust(MGame *self, int y);
+void applyThrust(MGame *self, int y);
 
 uint8_t TFC_isInLookAtMode(TargetFollowCamera * c);
 
 void TFC_setLookAtCam(TargetFollowCamera *c, int v);
 
-extern "C" void Cam_setCinematic(TargetFollowCamera *c, int on);
+void Cam_setCinematic(TargetFollowCamera *c, int on);
 
-extern "C" void FModSound_restoreState();
+void FModSound_restoreState();
 
-extern "C" void DialogueWindow_ctor(...);
+void DialogueWindow_ctor(...);
 
 void TFC_enableFirstPersonCam(TargetFollowCamera *c, int on);
 
 
-extern int *g_maneuverScale;
+static int *g_maneuverScale;
 
 void MGame::maneuverTouchEnd(int a, int b, void *p) {
     MGame *self = this;
@@ -106,9 +105,9 @@ void MGame::maneuverTouchEnd(int a, int b, void *p) {
 }
 
 
-extern Music **g_music;
+static Music **g_music;
 
-extern Cfg **g_cfg;
+static Cfg **g_cfg;
 
 void MGame::OnResume() {
     Music **mp = g_music;
@@ -118,7 +117,6 @@ void MGame::OnResume() {
 }
 
 
-extern int *g_maneuverScale;
 
 void MGame::maneuverTouchMove(int a, int b, void *p) {
     (void) a;
@@ -166,14 +164,14 @@ void MGame::pause() {
 
 void MGame::OnRender3D() {
     if (this->active == 0) return;
-    gCanvas->ClearBuffer(0);
+    PaintCanvas::gCanvas->ClearBuffer(0);
 
     uint8_t inMenuLevel = this->pauseOpen;
     uint8_t flag15e = this->freeCamMode;
 
     if (inMenuLevel == 0) {
         this->level->renderBG(0);
-        gCanvas->Begin3d();
+        PaintCanvas::gCanvas->Begin3d();
         int arg = (flag15e == 0) ? this->deltaTime : 0;
         this->level->render(arg);
         int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
@@ -181,72 +179,72 @@ void MGame::OnRender3D() {
         if (this->jumpFlash != 0)
             ((AEGeometry *) (this->player))->render();
         this->levelScript->render3D();
-        return gCanvas->End3d();
+        return PaintCanvas::gCanvas->End3d();
     }
 
     if (flag15e != 0) {
         this->level->renderBG(0);
-        gCanvas->Begin3d();
+        PaintCanvas::gCanvas->Begin3d();
         this->level->render(this->deltaTime);
         int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
         this->player->render(egoFlag);
         if (this->jumpFlash != 0)
             ((AEGeometry *) (this->player))->render();
         this->levelScript->render3D();
-        return gCanvas->End3d();
+        return PaintCanvas::gCanvas->End3d();
     }
 
     if (this->menuTouchOpen != 0) {
-        gCanvas->Begin3d();
+        PaintCanvas::gCanvas->Begin3d();
         this->menuWindow->render3D();
-        return gCanvas->End3d();
+        return PaintCanvas::gCanvas->End3d();
     }
 
     if (this->starMapOpen != 0) {
-        gCanvas->Begin3d();
+        PaintCanvas::gCanvas->Begin3d();
         this->starMap->render();
-        return gCanvas->End3d();
+        return PaintCanvas::gCanvas->End3d();
     }
 
     this->level->renderBG(0);
-    gCanvas->Begin3d();
+    PaintCanvas::gCanvas->Begin3d();
     this->level->render(0);
     int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
     this->player->render(egoFlag);
     if (this->jumpFlash != 0)
         ((AEGeometry *) (this->player))->render();
     this->levelScript->render3D();
-    return gCanvas->End3d();
+    return PaintCanvas::gCanvas->End3d();
 }
 
 void TFC_setActive(TargetFollowCamera *c, int v);
 
 float TFC_useTargetsUpVector(TargetFollowCamera *c, int v);
 
-extern "C" void FModSound_setProp(int snd, int id);
+void FModSound_setProp(int snd, int id);
 
-extern "C" void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
+void TFC_setPosition(TargetFollowCamera *c, float x, float y, float z);
 
 
-extern int *g_jsSound;
+static int *g_jsSound;
 
-extern int g_jsHudFlag;
+static int g_jsHudFlag;
 
-extern int g_jsFovDefault;
+static int g_jsFovDefault;
 
-extern int g_jsFovAlienA;
+static int g_jsFovAlienA;
 
-extern int g_jsFovAlienB;
+static int g_jsFovAlienB;
 
-extern int g_jsPostEffect;
+static int g_jsPostEffect;
 
-extern int g_jsOffsetX;
+static int g_jsOffsetX;
 
-extern int g_jsOffsetY;
+static int g_jsOffsetY;
 
-extern int g_jsOffsetZ;
+static int g_jsOffsetZ;
 
-extern int g_jsOffsetZ2;
+static int g_jsOffsetZ2;
 
 void MGame::startJumpScene() {
     ((Player *) (this->player->player))->setVulnerable(0);
@@ -271,11 +269,11 @@ void MGame::startJumpScene() {
     this->field_0x110 = 0;
     this->field_0x5c = 0;
 
-    PaintCanvas *pc = gCanvas;
+    PaintCanvas *pc = PaintCanvas::gCanvas;
     unsigned cam = this->cameraId;
     float fov = *(float *) &g_jsFovDefault;
-    if (gStatus->inAlienOrbit() != 0) {
-        int cm = gStatus->getCurrentCampaignMission();
+    if (Status::gStatus->inAlienOrbit() != 0) {
+        int cm = Status::gStatus->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *) &g_jsFovAlienB : *(float *) &g_jsFovAlienA;
     }
     pc->CameraSetPerspective(cam, fov, *(float *) &g_jsHudFlag, 0);
@@ -293,11 +291,8 @@ void MGame::startJumpScene() {
     float camX, camY, camZ;
     if (this->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = this->level->getLandmarks();
-        void *obj = (void *) (*lm)[0];
-        void *vt = *(void **) obj;
-        float vtmp[4];
-        (*(void (**)(void *, void *)) ((char *) vt + 0x28))(obj, vtmp);
-        *(Vector *) ((Vector *) ((char *) &this->egoJumpPosX)) = *(const Vector *) ((Vector *) vtmp);
+        KIPlayer *obj = (*lm)[0];
+        this->egoJumpPos = obj->getPosition();
         float nz = (float) this->egoJumpPosZ + *(float *) &g_jsOffsetZ;
         this->egoJumpPosZ = (int) nz;
         if (this->player->geometry != nullptr) {
@@ -315,14 +310,14 @@ void MGame::startJumpScene() {
     } else {
         this->player->resetMovement();
         this->player->setComputerControlled(1);
-        AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, gCanvas, false);
+        AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, PaintCanvas::gCanvas, false);
         this->jumpFlash = geo;
-        int tr = (int) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
+        int tr = (int) (long) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
         ((AbyssEngine::Transform *) (tr))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
 
         float pos[4];
         ((PlayerEgo *) (pos))->getPosition();
-        Vector *dst = (Vector *) ((char *) &this->egoJumpPosX);
+        Vector *dst = &this->egoJumpPos;
         *(Vector *) (dst) = *(const Vector *) ((Vector *) pos);
 
         float dir[4];
@@ -343,8 +338,9 @@ void MGame::startJumpScene() {
         off[1] = (float) g_jsOffsetY;
         off[2] = (float) g_jsOffsetX;
         *(Vector *) ((Vector *) off) = *(const Vector *) ((Vector *) off);
-        *(Vector *) ((char *) this->player->player + 4) = AbyssEngine::AEMath::MatrixRotateVector(
-            *(const AbyssEngine::Matrix *) (off), *(const Vector *) ((Vector *) ((char *) this->player->player + 4)));
+        Vector *playerTransformPos = reinterpret_cast<Vector *>(((Player *) this->player->player)->transform);
+        *playerTransformPos = AbyssEngine::AEMath::MatrixRotateVector(
+            *(const AbyssEngine::Matrix *) (off), *playerTransformPos);
         *(Vector *) ((Vector *) off) = *(const Vector *) ((Vector *) off);
         *(Vector *) (dst) += *(const Vector *) ((Vector *) off);
 
@@ -454,21 +450,21 @@ firstPerson: {
 }
 
 
-extern int *g_fcb_guard;
+static int *g_fcb_guard;
 
 void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
     int id = (int) (intptr_t) idPtr;
     char buf[12];
     float fy = (float) y;
     float fx = (float) x;
-    int slot;
+    Vector *fingerSlot;
     if (this->touch0Id == 0) {
         if (this->touch1Id == 0) this->menuTime = 0;
         *(volatile float *) (buf + 4) = fy;
         *(volatile float *) (buf + 0) = fx;
         *(volatile int *) (buf + 8) = 0;
         this->touch0Id = id;
-        slot = 0xa4;
+        fingerSlot = &this->freeCamFinger1;
     } else {
         if (this->menuTime >= 1000) goto tail;
         this->flCameraRoll = 0;
@@ -476,11 +472,11 @@ void MGame::freeCamTouchBegin(int x, int y, void *idPtr) {
         *(volatile float *) (buf + 4) = fy;
         *(volatile float *) (buf + 0) = fx;
         this->flCameraRoll = len;
-        slot = 0xb0;
+        fingerSlot = &this->freeCamFinger0;
         this->touch1Id = id;
     }
 
-    *(Vector *) ((char *) &this->freeCamFinger1X + (slot - 0xa4)) = *(const Vector *) (buf);
+    *fingerSlot = *(const Vector *) (buf);
 tail:
     this->dragLastX = x;
     this->dragLastY = y;
@@ -492,7 +488,7 @@ tail:
 }
 
 
-extern GameText **g_gameText;
+static GameText **g_gameText;
 
 void MGame::useCloak() {
     void (::PlayerEgo::*pmf)() = &::PlayerEgo::toggleCloaking;
@@ -501,7 +497,7 @@ void MGame::useCloak() {
     if (toggleCloaking((::PlayerEgo *) (this->player)) != 0) return;
     if (this->choiceWindow == 0)
         this->choiceWindow = new ChoiceWindow();
-    Item *eq = ((Ship *) (gStatus->getShip()))->getFirstEquipmentOfSort(0x15);
+    Item *eq = ((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x15);
     int attr = eq == 0 ? 0 : ((Item *) (eq))->getAttribute(0x26);
     ChoiceWindow *cw = this->choiceWindow;
     void *txt = ((GameText *) (*g_gameText))->getText(0x247);
@@ -519,25 +515,25 @@ void MGame::useCloak() {
 }
 
 
-extern int **g_goWormText;
+static int **g_goWormText;
 
-extern int **g_goDeathText;
+static int **g_goDeathText;
 
-extern DialogueWindow **g_goDlgA;
+static DialogueWindow **g_goDlgA;
 
-extern int **g_goStatusA;
+static int **g_goStatusA;
 
-extern int **g_goStatusB;
+static int **g_goStatusB;
 
-extern int **g_goStatusC;
+static int **g_goStatusC;
 
-extern int **g_goStatusD;
+static int **g_goStatusD;
 
-extern int **g_goRecHandler;
+static int **g_goRecHandler;
 
-extern int **g_goRecId;
+static int **g_goRecId;
 
-extern int **g_goSnd;
+static int **g_goSnd;
 
 void MGame::gameOverCheck() {
     if (this->player->getHitpoints() <= 0) {
@@ -564,9 +560,9 @@ void MGame::gameOverCheck() {
         }
 
         if (this->gameOverActive != 0) {
-            if (gStatus->getMission() != 0 &&
-                ((Mission *) (gStatus->getMission()))->isCampaignMission() != 0) {
-                int cm = gStatus->getCurrentCampaignMission();
+            if (Status::gStatus->getMission() != 0 &&
+                ((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0) {
+                int cm = Status::gStatus->getCurrentCampaignMission();
                 int *sa = *g_goStatusA;
                 int v;
                 if (cm == *sa) {
@@ -595,7 +591,7 @@ void MGame::gameOverCheck() {
             Level *lvl = this->level;
             if (lvl != 0) this->dialogueWindow->setLevel(lvl);
         }
-        this->dialogueWindow->set(gStatus->getMission(), 2, -1);
+        this->dialogueWindow->set(Status::gStatus->getMission(), 2, -1);
         this->cutsceneActive = 1;
         ((MGame *) (this))->pauseSounds();
         this->pauseOpen = 1;
@@ -612,7 +608,7 @@ void MGame::gameOverCheck() {
             bool done = !((long long) (unsigned) sc[0] - ((long long) sc[3] << 32 | (unsigned) sc[2]) < 0);
             bool survival = false;
             if (!done) {
-                int cm = gStatus->getCurrentCampaignMission();
+                int cm = Status::gStatus->getCurrentCampaignMission();
                 if (cm != 0x2a) {
                     Objective *obj = this->level->objectivesA;
                     survival = (obj == 0) || (((Objective *) (obj))->isSurvivalObjective() != 0);
@@ -628,7 +624,7 @@ void MGame::gameOverCheck() {
                         Level *lvl = this->level;
                         if (lvl != 0) this->dialogueWindow->setLevel(lvl);
                     }
-                    this->dialogueWindow->set(gStatus->getMission(), 2, -1);
+                    this->dialogueWindow->set(Status::gStatus->getMission(), 2, -1);
                     this->pauseOpen = 0x101;
                     ((MGame *) (this))->pauseSounds();
                 }
@@ -644,14 +640,27 @@ void MGame::gameOverCheck() {
     }
 }
 
-extern "C" int ApplicationManager_GetApplicationData();
+int ApplicationManager_GetApplicationData();
+
+// Application-data block returned (as int handle) by ApplicationManager_GetApplicationData();
+// bytes at +5 / +0xc gate touch input while modal/transition is active.
+struct MGameAppData {
+    uint8_t _pad0[5];
+    uint8_t modalActive;   // offset 0x05
+    uint8_t _pad6[6];
+    uint8_t transitionActive; // offset 0x0c
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(MGameAppData, modalActive) == 5, "MGameAppData::modalActive @ 5");
+static_assert(offsetof(MGameAppData, transitionActive) == 0xc, "MGameAppData::transitionActive @ 0xc");
+#endif
 
 
-extern Layout ***g_tbStarLayout;
+static Layout ***g_tbStarLayout;
 
-extern int **g_tbRecordTrack;
+static int **g_tbRecordTrack;
 
-extern int **g_tbMenuTrack;
+static int **g_tbMenuTrack;
 
 void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
     MGame *self = this;
@@ -661,18 +670,18 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
 
     if (self->pauseOpen == 0) {
         if (self->gameOverActive != 0 && self->loadingTime >= 4000) {
-            int cm = gStatus->getCurrentCampaignMission();
+            int cm = Status::gStatus->getCurrentCampaignMission();
             if (cm == 0x9e) {
                 self->active = 0;
                 return self->applicationManager->SetCurrentApplicationModule(2);
             }
             if (self->gameRecord != 0) {
                 ((GameRecord *) (self->gameRecord))->load();
-                gGlobals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
+                Globals::gGlobals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
                 return self->applicationManager->SetCurrentApplicationModule(5);
             }
-            gGlobals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
+            Globals::gGlobals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->active = 0;
             self->applicationManager->SetCurrentApplicationModule(5);
             return;
@@ -698,9 +707,9 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             return;
         }
         if (self->menuTouchOpen != 0) {
-            int ad = ApplicationManager_GetApplicationData();
-            if (*(uint8_t *) ((char *) ad + 5) != 0) return;
-            if (*(uint8_t *) ((char *) ad + 0xc) != 0) return;
+            MGameAppData *ad = (MGameAppData *) (intptr_t) ApplicationManager_GetApplicationData();
+            if (ad->modalActive != 0) return;
+            if (ad->transitionActive != 0) return;
             self->menuWindow->OnTouchBegin(p1, p2, touchId);
             if (self->freeCamMode == 0) return;
             if (self->menuWindow->isShowingMessage() != 0) return;
@@ -739,11 +748,11 @@ void MGame::OnUpdate() {
 }
 
 
-extern RecordHandler **g_record;
+static RecordHandler **g_record;
 
-extern FModSound **g_fmod;
+static FModSound **g_fmod;
 
-extern "C" void Level_onSuspend(...);
+void Level_onSuspend(...);
 
 void MGame::OnSuspend() {
     if (*g_record != 0) ((RecordHandler *) (*g_record))->saveOptions();
@@ -770,26 +779,26 @@ void MGame::OnSuspend() {
     return Level_onSuspend(this->hud);
 }
 
-extern "C" int Station_getIndex(Station * s);
+int Station_getIndex(Station * s);
 
 
-extern int *g_deAutoFlag;
+static int *g_deAutoFlag;
 
-extern int g_dePostEffect;
+static int g_dePostEffect;
 
-extern int g_deTextA;
+static int g_deTextA;
 
-extern int g_deLitA0;
+static int g_deLitA0;
 
-extern int g_deLitA1;
+static int g_deLitA1;
 
-extern int g_deTextB;
+static int g_deTextB;
 
-extern int g_deLitB0;
+static int g_deLitB0;
 
-extern int g_deLitB1;
+static int g_deLitB1;
 
-extern int **g_deAlienFlag;
+static int **g_deAlienFlag;
 
 void MGame::dockEvent(int p1, int p2) {
     (void) p1;
@@ -800,14 +809,14 @@ void MGame::dockEvent(int p1, int p2) {
     ((PlayerEgo *) (pos))->getPosition();
     this->touchesStation = this->level->collideStation(*(Vector *) pos);
 
-    Status *status = (Status *) (void *) &gStatus;
-    Mission *m = gStatus->getMission();
+    Status *status = (Status *) (void *) &Status::gStatus;
+    Mission *m = Status::gStatus->getMission();
     bool special = ((Mission *) (m))->isEmpty() != 0 ||
-                   ((Mission *) (gStatus->getMission()))->getType() == 0xb ||
-                   ((Mission *) (gStatus->getMission()))->getType() == 0 ||
-                   ((Mission *) (gStatus->getMission()))->getType() == 0xbd ||
-                   ((Mission *) (gStatus->getMission()))->getType() == 0xab ||
-                   ((Mission *) (gStatus->getMission()))->getType() == 0xac;
+                   ((Mission *) (Status::gStatus->getMission()))->getType() == 0xb ||
+                   ((Mission *) (Status::gStatus->getMission()))->getType() == 0 ||
+                   ((Mission *) (Status::gStatus->getMission()))->getType() == 0xbd ||
+                   ((Mission *) (Status::gStatus->getMission()))->getType() == 0xab ||
+                   ((Mission *) (Status::gStatus->getMission()))->getType() == 0xac;
 
     if (!special) {
         if ((this->touchesStation != 0 || this->touchesStream != 0) &&
@@ -831,12 +840,12 @@ void MGame::dockEvent(int p1, int p2) {
         if (this->touchesStream != 0) {
             {
                 Player *pl = (Player *) this->player->player;
-                gStatus->field_64 = pl->getHitpoints();
-                gStatus->field_5c = pl->getShieldHP();
-                gStatus->field_60 = pl->getArmorHP();
-                gStatus->field_68 = pl->getGammaHP();
+                Status::gStatus->field_64 = pl->getHitpoints();
+                Status::gStatus->field_5c = pl->getShieldHP();
+                Status::gStatus->field_60 = pl->getArmorHP();
+                Status::gStatus->field_68 = pl->getGammaHP();
             }
-            gStatus->field_f4 = this->player->getCurrentSecondaryWeaponIndex();
+            Status::gStatus->field_f4 = this->player->getCurrentSecondaryWeaponIndex();
             int autop = this->player->isAutoPilot();
             int *autoFlag = g_deAutoFlag;
             if (*autoFlag == 0 || autop == 0) {
@@ -879,7 +888,7 @@ void MGame::dockEvent(int p1, int p2) {
                 }
                 {
                     void *txt = ((GameText *) (*g_gameText))->getText(g_deTextB);
-                    String name = ((Station *) (gStatus->getStation()))->getName();
+                    String name = ((Station *) (Status::gStatus->getStation()))->getName();
                     String sPrefix, sSuffix, t1, t2, t3, result;
                     sPrefix.ctor_char((const char *) (intptr_t) g_deLitB0, false);
                     t1 = *(String *) txt + sPrefix;
@@ -901,7 +910,7 @@ void MGame::dockEvent(int p1, int p2) {
                 }
                 {
                     void *txt = ((GameText *) (*g_gameText))->getText(g_deTextA);
-                    String name = ((Station *) (gStatus->getStation()))->getName();
+                    String name = ((Station *) (Status::gStatus->getStation()))->getName();
                     String sPrefix, sSuffix, t1, t2, t3, result;
                     sPrefix.ctor_char((const char *) (intptr_t) g_deLitA0, false);
                     t1 = *(String *) txt + sPrefix;
@@ -931,26 +940,26 @@ void MGame::dockEvent(int p1, int p2) {
         }
     }
 
-    int cm = gStatus->getCurrentCampaignMission();
-    if (cm > 0x30 && gStatus->getCurrentCampaignMission() < 0x37) {
-        if (Station_getIndex(gStatus->getStation()) != 0x4a) {
+    int cm = Status::gStatus->getCurrentCampaignMission();
+    if (cm > 0x30 && Status::gStatus->getCurrentCampaignMission() < 0x37) {
+        if (Station_getIndex(Status::gStatus->getStation()) != 0x4a) {
             this->hud->hudEvent(0x15, this->player, 0);
 
             return;
         }
     }
     if (this->player->goingToStation() != 0 &&
-        gStatus->inAlienOrbit() == 0 &&
+        Status::gStatus->inAlienOrbit() == 0 &&
         ((Status *) (*(Station **) status))->inEmptyOrbit() == 0) {
-        gAchievements->checkForNewMedal(this->player);
+        Achievements::gAchievements->checkForNewMedal(this->player);
         **g_deAlienFlag = 0;
 
         {
             Player *pl = (Player *) this->player->player;
-            gStatus->field_64 = pl->getHitpoints();
-            gStatus->field_5c = pl->getShieldHP();
-            gStatus->field_60 = pl->getArmorHP();
-            gStatus->field_68 = pl->getGammaHP();
+            Status::gStatus->field_64 = pl->getHitpoints();
+            Status::gStatus->field_5c = pl->getShieldHP();
+            Status::gStatus->field_60 = pl->getArmorHP();
+            Status::gStatus->field_68 = pl->getGammaHP();
         }
         this->applicationManager->SetCurrentApplicationModule(5);
         this->active = 0;
@@ -996,21 +1005,21 @@ void MGame::freeCamTouchEnd(int p1, int p2, void *idPtr) {
 }
 
 
-extern int **g_kdJumpDst;
+static int **g_kdJumpDst;
 
-extern int **g_kdVolText;
+static int **g_kdVolText;
 
-extern int **g_kdAlienDst;
+static int **g_kdAlienDst;
 
-extern int g_kdPostEffect;
+static int g_kdPostEffect;
 
 void MGame::UseKhadorDrive() {
     if (this->player->isChargingDrive() != 0) return;
 
-    Mission *m = gStatus->getMission();
+    Mission *m = Status::gStatus->getMission();
     bool special =
             ((Mission *) (m))->isEmpty() != 0 ||
-            gStatus->getCurrentCampaignMission() == 0x4e ||
+            Status::gStatus->getCurrentCampaignMission() == 0x4e ||
             ((Mission *) (m))->getType() == 0xb ||
             ((Mission *) (m))->getType() == 0 ||
             ((Mission *) (m))->getType() == 0xbd ||
@@ -1019,10 +1028,10 @@ void MGame::UseKhadorDrive() {
             ((Mission *) (m))->getType() == 0xac;
 
     if (!special) {
-        if (gStatus->getCurrentCampaignMission() == 0x41 && gStatus->inAlienOrbit() == 0) {
-            int idx = Station_getIndex(gStatus->getStation());
-            gStatus->getCampaignMission();
-            if (idx == ((Mission *) ((Mission *) gStatus->getCampaignMission()))->getTargetStation())
+        if (Status::gStatus->getCurrentCampaignMission() == 0x41 && Status::gStatus->inAlienOrbit() == 0) {
+            int idx = Station_getIndex(Status::gStatus->getStation());
+            Status::gStatus->getCampaignMission();
+            if (idx == ((Mission *) ((Mission *) Status::gStatus->getCampaignMission()))->getTargetStation())
                 special = true;
         }
     }
@@ -1033,18 +1042,18 @@ void MGame::UseKhadorDrive() {
     }
 
     this->player->resetGunDelay();
-    if (gStatus->getCurrentCampaignMission() == 0x4e) {
-        **g_kdJumpDst = (int) (intptr_t) gStatus->playerStation;
+    if (Status::gStatus->getCurrentCampaignMission() == 0x4e) {
+        **g_kdJumpDst = (int) (intptr_t) Status::gStatus->playerStation;
         this->usingJumpDrive = 1;
         ((MGame *) (this))->startChargingJumpDrive();
         this->pauseOpen = 0;
         ((MGame *) (this))->resumeSounds();
         this->hudMenuOpen = 0;
         this->hud->closeHudMenu();
-        return gStatus->nextCampaignMission(true);
+        return Status::gStatus->nextCampaignMission(true);
     }
 
-    if (gStatus->inAlienOrbit() == 0) {
+    if (Status::gStatus->inAlienOrbit() == 0) {
         if (this->player->hasVolatileGoods() != 0) {
             void *txt = ((GameText *) (**g_kdVolText))->getText(0);
             this->choiceWindow->set(*(String *) txt);
@@ -1066,7 +1075,7 @@ void MGame::UseKhadorDrive() {
         this->starMap->initLights();
         this->usingJumpDrive = 1;
         this->starMap->setJumpMapMode(1, 1);
-        if (gStatus->inAlienOrbit() == 0)
+        if (Status::gStatus->inAlienOrbit() == 0)
             this->starMap->askForJumpIntoAlienWorld();
         this->pauseOpen = 1;
         this->starMapOpen = 1;
@@ -1075,10 +1084,10 @@ void MGame::UseKhadorDrive() {
         return this->hud->closeHudMenu();
     }
 
-    if (gStatus->getCurrentCampaignMission() == 0x50)
-        gStatus->field_84 = 100;
-    int station = ((Galaxy *) (*(int *) gGalaxy))->getStation(
-        gStatus->getCurrentCampaignMission() /* index: arg lost in decomp */);
+    if (Status::gStatus->getCurrentCampaignMission() == 0x50)
+        Status::gStatus->field_84 = 100;
+    int station = ((Galaxy *) (*(int *) Galaxy::gGalaxy))->getStation(
+        Status::gStatus->getCurrentCampaignMission() /* index: arg lost in decomp */);
     **g_kdAlienDst = station;
     this->usingJumpDrive = 1;
     ((MGame *) (this))->startChargingJumpDrive();
@@ -1089,25 +1098,36 @@ void MGame::UseKhadorDrive() {
 }
 
 
-extern int g_initParticleFlag;
+static int g_initParticleFlag;
 
-extern int *g_initEngineSnd;
+// g_initParticleFlag holds a pointer (as int) to a small particle-system global;
+// byte at +0xf is a "particles enabled" flag. Modeled here for named access.
+struct ParticleSystemGlobal {
+    uint8_t _pad0[0xf];
+    uint8_t particlesEnabled;  // offset 0xf
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(ParticleSystemGlobal, particlesEnabled) == 0xf,
+              "ParticleSystemGlobal::particlesEnabled @ 0xf");
+#endif
 
-extern int *g_initMusicArmed;
+static int *g_initEngineSnd;
 
-extern int *g_initMusicTrack;
+static int *g_initMusicArmed;
 
-extern int **g_initFmod;
+static int *g_initMusicTrack;
 
-extern unsigned g_initPostEffect;
+static int **g_initFmod;
 
-extern int g_initStationMask;
+static unsigned g_initPostEffect;
 
-extern String **g_initInfoFont;
+static int g_initStationMask;
 
-extern int g_initInfoTextKey;
+static String **g_initInfoFont;
 
-extern int *g_initInfoWidth;
+static int g_initInfoTextKey;
+
+static int *g_initInfoWidth;
 
 int MGame::OnInitialize() {
     MGame *self = this;
@@ -1117,65 +1137,65 @@ int MGame::OnInitialize() {
 
     if (level == 0) {
         unsigned texSel;
-        if (gStatus->inAlienOrbit() == 0) {
-            gStatus->getSystem();
+        if (Status::gStatus->inAlienOrbit() == 0) {
+            Status::gStatus->getSystem();
             int ti = ((SolarSystem *) (0))->getTextureIndex();
             texSel = (ti + 0x2efe) & 0xffff;
         } else {
             texSel = 0x2f08;
         }
-        gCanvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, (void *) 0, texSel, false);
-        gCanvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
+        PaintCanvas::gCanvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, (void *) 0, texSel, false);
+        PaintCanvas::gCanvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
 
         {
-            gGlobals->startNewSoundResourceList();
+            Globals::gGlobals->startNewSoundResourceList();
             static const int kCommon[] = {
                 0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
                 0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
             };
             for (int id: kCommon)
-                gGlobals->addSoundResourceToList(id);
+                Globals::gGlobals->addSoundResourceToList(id);
 
-            if (gStatus->getWingmen() != 0)
-                gGlobals->addSoundResourceToList(0x30);
+            if (Status::gStatus->getWingmen() != 0)
+                Globals::gGlobals->addSoundResourceToList(0x30);
 
-            gGlobals->addSoundResourceToList(0x3e);
-            gGlobals->addSoundResourceToList(0x3d);
-            gGlobals->addSoundResourceToList(0x24);
+            Globals::gGlobals->addSoundResourceToList(0x3e);
+            Globals::gGlobals->addSoundResourceToList(0x3d);
+            Globals::gGlobals->addSoundResourceToList(0x24);
 
-            if (gStatus->getCurrentCampaignMission() < 2) {
-                gGlobals->addSoundResourceToList(0x9c);
-                gGlobals->addSoundResourceToList(0x9d);
+            if (Status::gStatus->getCurrentCampaignMission() < 2) {
+                Globals::gGlobals->addSoundResourceToList(0x9c);
+                Globals::gGlobals->addSoundResourceToList(0x9d);
             }
 
-            if (gStatus->inAlienOrbit() == 0) {
-                gStatus->getSystem();
+            if (Status::gStatus->inAlienOrbit() == 0) {
+                Status::gStatus->getSystem();
                 if (((SolarSystem *) (0))->currentOrbitHasWarpGate())
-                    gGlobals->addSoundResourceToList(0x1f);
+                    Globals::gGlobals->addSoundResourceToList(0x1f);
             }
 
-            int cm = gStatus->getCurrentCampaignMission();
+            int cm = Status::gStatus->getCurrentCampaignMission();
             if (cm == 0) {
-                gGlobals->addSoundResourceToList(0x8f);
-                gGlobals->addSoundResourceToList(0x9d);
-                gGlobals->addSoundResourceToList(0x9e);
-                gGlobals->addSoundResourceToList(0xa1);
-                gGlobals->addSoundResourceToList(0xa0);
-                gGlobals->addSoundResourceToList(0x9f);
+                Globals::gGlobals->addSoundResourceToList(0x8f);
+                Globals::gGlobals->addSoundResourceToList(0x9d);
+                Globals::gGlobals->addSoundResourceToList(0x9e);
+                Globals::gGlobals->addSoundResourceToList(0xa1);
+                Globals::gGlobals->addSoundResourceToList(0xa0);
+                Globals::gGlobals->addSoundResourceToList(0x9f);
             } else if (cm == 0xe) {
-                gGlobals->addSoundResourceToList(0xf);
+                Globals::gGlobals->addSoundResourceToList(0xf);
             } else if (cm == 0x18) {
-                gGlobals->addSoundResourceToList(0x22);
+                Globals::gGlobals->addSoundResourceToList(0x22);
             } else if (cm == 0x1d) {
-                gGlobals->addSoundResourceToList(0xe);
+                Globals::gGlobals->addSoundResourceToList(0xe);
             } else if (cm == 0x29) {
-                gGlobals->addSoundResourceToList(0x9b);
-                gGlobals->addSoundResourceToList(0x99);
-                gGlobals->addSoundResourceToList(0x9a);
+                Globals::gGlobals->addSoundResourceToList(0x9b);
+                Globals::gGlobals->addSoundResourceToList(0x99);
+                Globals::gGlobals->addSoundResourceToList(0x9a);
             }
         }
 
-        gStatus->checkForLevelUp();
+        Status::gStatus->checkForLevelUp();
         level = new Level(3);
         self->level = level;
     }
@@ -1191,32 +1211,32 @@ int MGame::OnInitialize() {
     {
         Player *pl = (Player *) self->player->player;
 
-        if (gStatus->field_64 >= 0) pl->setHitpoints(gStatus->field_64);
-        if (gStatus->field_5c >= 0) pl->setShieldHP(gStatus->field_5c);
-        if (gStatus->field_60 >= 0) pl->setArmorHP(gStatus->field_60);
-        if (gStatus->field_68 >= 0) pl->setGammaHP(gStatus->field_68);
+        if (Status::gStatus->field_64 >= 0) pl->setHitpoints(Status::gStatus->field_64);
+        if (Status::gStatus->field_5c >= 0) pl->setShieldHP(Status::gStatus->field_5c);
+        if (Status::gStatus->field_60 >= 0) pl->setArmorHP(Status::gStatus->field_60);
+        if (Status::gStatus->field_68 >= 0) pl->setGammaHP(Status::gStatus->field_68);
 
         self->player->resetLastHP();
 
-        if (gStatus->getCurrentCampaignMission() != 0x5f) {
-            Ship *ship = gStatus->getShip();
-            gStatus->field_64 = ship->getMaxHP();
-            gStatus->field_5c = ship->getMaxShieldHP();
-            gStatus->field_60 = ship->getMaxArmorHP();
-            gStatus->field_68 = 100;
+        if (Status::gStatus->getCurrentCampaignMission() != 0x5f) {
+            Ship *ship = Status::gStatus->getShip();
+            Status::gStatus->field_64 = ship->getMaxHP();
+            Status::gStatus->field_5c = ship->getMaxShieldHP();
+            Status::gStatus->field_60 = ship->getMaxArmorHP();
+            Status::gStatus->field_68 = 100;
 
-            int stIdx = ((Station *) (gStatus->getStation()))->getIndex();
-            int cm = gStatus->getCurrentCampaignMission();
-            if ((float) gStatus->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
+            int stIdx = ((Station *) (Status::gStatus->getStation()))->getIndex();
+            int cm = Status::gStatus->getCurrentCampaignMission();
+            if ((float) Status::gStatus->getGammaRayDamagePerSecond(stIdx, cm) == 0.0f)
                 pl->setGammaHP(100);
         }
     }
     self->player->resetLastHP();
 
-    if (gStatus->getCurrentCampaignMission() != 0x5f) {
+    if (Status::gStatus->getCurrentCampaignMission() != 0x5f) {
     }
-    if (gStatus->inAlienOrbit() == 0)
-        gStatus->field_84 = Station_getIndex(gStatus->getStation());
+    if (Status::gStatus->inAlienOrbit() == 0)
+        Status::gStatus->field_84 = Station_getIndex(Status::gStatus->getStation());
 
     unsigned t = self->applicationManager->GetCurrentTimeMillis();
     self->field_0x1ac = 0;
@@ -1227,35 +1247,35 @@ int MGame::OnInitialize() {
     self->lastTimeHigh = 0;
 
     if (static_cast<Radar *>(self->player->field_0x14)->hasScanner() != 0)
-        gStatus->field_11c = 0;
-    gStatus->field_12c = 0;
-    gStatus->field_134 = 0;
-    gStatus->field_13c = 0;
-    gStatus->field_144 = 0;
+        Status::gStatus->field_11c = 0;
+    Status::gStatus->field_12c = 0;
+    Status::gStatus->field_134 = 0;
+    Status::gStatus->field_13c = 0;
+    Status::gStatus->field_144 = 0;
 
-    Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &gStatus)))->getShip()))->getFirstEquipmentOfSort(0x15);
+    Item *eq = ((Ship *) (((Status *) ((Status *) *((int *) &Status::gStatus)))->getShip()))->getFirstEquipmentOfSort(0x15);
     if (eq != 0) {
         self->cloakAttributeMax = ((Item *) (eq))->getAttribute(0x26);
         self->cloakAttribute = ((Item *) (eq))->getAttribute(0x26);
         self->hud->setTimeExtender(1, 0, 1, 0);
     }
 
-    if (gStatus->dlc1Won() != 0 && gStatus->inAlienOrbit() != 0 &&
-        gStatus->getCurrentCampaignMission() < 0x93) {
+    if (Status::gStatus->dlc1Won() != 0 && Status::gStatus->inAlienOrbit() != 0 &&
+        Status::gStatus->getCurrentCampaignMission() < 0x93) {
         if (self->player != 0 && self->radio != 0)
             self->player->radioRef = self->radio;
         self->level->createRadioMessage(8, 0);
     }
 
-    if (gStatus->inBlackMarketSystem() == 0) {
-        gStatus->field_110 = 0;
+    if (Status::gStatus->inBlackMarketSystem() == 0) {
+        Status::gStatus->field_110 = 0;
     } else {
         if (self->player != 0 && self->radio != 0)
             self->player->radioRef = self->radio;
-        if (*(uint8_t *) ((char *) gStatus + 0x110) == 0) {
+        if (Status::gStatus->field_110 == 0) {
             int id;
             Level *lvl;
-            if (gStatus->field_0x111 == 0) {
+            if (Status::gStatus->field_0x111 == 0) {
                 Array<KIPlayer *> *enemies = self->level->getEnemies();
                 if (enemies != nullptr) {
                     int n = (int) enemies->size();
@@ -1286,16 +1306,16 @@ int MGame::OnInitialize() {
     }
 
     {
-        if (gStatus->inAlienOrbit() == 0 && gStatus->getCurrentCampaignMission() == 0x7d) {
-            int stIdx = ((Station *) (gStatus->getStation()))->getIndex();
-            if (gStatus->isFreighterMissionStation(stIdx) != 0) {
-                Mission *m = gStatus->getMission();
+        if (Status::gStatus->inAlienOrbit() == 0 && Status::gStatus->getCurrentCampaignMission() == 0x7d) {
+            int stIdx = ((Station *) (Status::gStatus->getStation()))->getIndex();
+            if (Status::gStatus->isFreighterMissionStation(stIdx) != 0) {
+                Mission *m = Status::gStatus->getMission();
                 int statusVal = ((Mission *) (m))->getStatusValue();
-                int bit = gStatus->getFreighterMissionStationBit(
-                    ((Station *) (gStatus->getStation()))->getIndex());
+                int bit = Status::gStatus->getFreighterMissionStationBit(
+                    ((Station *) (Status::gStatus->getStation()))->getIndex());
                 if ((statusVal & (1 << (bit & 0xff))) == 0) {
-                    int bit2 = gStatus->getFreighterMissionStationBit(
-                        ((Station *) (gStatus->getStation()))->getIndex());
+                    int bit2 = Status::gStatus->getFreighterMissionStationBit(
+                        ((Station *) (Status::gStatus->getStation()))->getIndex());
                     ((Mission *) (m))->setStatusValue(statusVal | (1 << (bit2 & 0xff)));
                     if (self->player != 0 && self->radio != 0)
                         self->player->radioRef = self->radio;
@@ -1304,10 +1324,10 @@ int MGame::OnInitialize() {
             }
         }
 
-        Array<Item *> *secondary = gStatus->getShip()->getEquipment(1);
+        Array<Item *> *secondary = Status::gStatus->getShip()->getEquipment(1);
         if (secondary != 0) {
-            int savedId = gStatus->field_f4;
-            if (gStatus->getShip()->hasEquipment(savedId, 1) == 0) {
+            int savedId = Status::gStatus->field_f4;
+            if (Status::gStatus->getShip()->hasEquipment(savedId, 1) == 0) {
                 Item *first = secondary->empty() ? 0 : (*secondary)[0];
                 if (first != 0) {
                     self->player->setCurrentSecondaryWeaponIndex(((Item *) (first))->getIndex());
@@ -1327,9 +1347,10 @@ int MGame::OnInitialize() {
         }
 
         self->field_0xc8 = 0;
-        bool renderParticles = *(uint8_t *) ((char *) (intptr_t) g_initParticleFlag + 0xf) != 0;
+        bool renderParticles =
+            ((ParticleSystemGlobal *) (intptr_t) g_initParticleFlag)->particlesEnabled != 0;
         if (!renderParticles) {
-            if (gStatus->getCurrentCampaignMission() > 1) {
+            if (Status::gStatus->getCurrentCampaignMission() > 1) {
                 Vec3 p = self->player->getPosition();
                 (void) p;
                 ((FModSound *) (*g_fmod))->play(*g_initEngineSnd,
@@ -1350,36 +1371,36 @@ int MGame::OnInitialize() {
         ((StarSystem *) (0))->initLight();
         self->level->enableParticleEffects(true, renderParticles);
 
-        gStatus->getShip();
-        float fireRate = (float) gStatus->getShip()->getFireRateFactor();
+        Status::gStatus->getShip();
+        float fireRate = (float) Status::gStatus->getShip()->getFireRateFactor();
         if (1.0f - fireRate >= 0.0f)
             self->player->pitchAllPrimaryGuns(1.0f - fireRate);
 
-        if (gStatus->inAlienOrbit() == 0) {
-            int idx = ((Station *) (gStatus->getStation()))->getIndex();
+        if (Status::gStatus->inAlienOrbit() == 0) {
+            int idx = ((Station *) (Status::gStatus->getStation()))->getIndex();
             bool visit;
             unsigned off = (unsigned) (idx - 0x6d);
             if (off < 0x1a) {
                 if ((g_initStationMask & (1 << (off & 0xff))) == 0)
-                    visit = (off != 2) || (gStatus->getCurrentCampaignMission() < 0x5e);
+                    visit = (off != 2) || (Status::gStatus->getCurrentCampaignMission() < 0x5e);
                 else
                     visit = true;
             } else {
                 visit = ((unsigned) (idx - 0x66) <= 2);
             }
             if (visit)
-                ((Station *) (gStatus->getStation()))->visit();
+                ((Station *) (Status::gStatus->getStation()))->visit();
         }
 
         if (*g_initMusicArmed != -1)
-            gGlobals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
+            Globals::gGlobals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
         *g_initMusicArmed = -1;
         ((FModSound *) (*g_initFmod))->setDownPitch(false);
 
         Engine *eng = (Engine *) self->applicationManager->GetEngine();
         ((Engine *) (eng))->SetPostEffect(g_initPostEffect, false);
 
-        if (gStatus->getCurrentCampaignMission() == 0x9e) {
+        if (Status::gStatus->getCurrentCampaignMission() == 0x9e) {
             Array<KIPlayer *> *enemies = self->level->getEnemies();
             if (enemies != nullptr) {
                 KIPlayer *first = (*enemies)[0];
@@ -1393,7 +1414,7 @@ int MGame::OnInitialize() {
         self->missionInfoLines = new Array<AbyssEngine::String *>();
         String *font = *g_initInfoFont;
         String *text = (String *) ((GameText *) (*g_gameText))->getText(g_initInfoTextKey);
-        gGlobals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
+        Globals::gGlobals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
                                *text, *g_initInfoWidth, self->missionInfoLines);
         self->active = 1;
     }
@@ -1403,11 +1424,11 @@ int MGame::OnInitialize() {
 void TFC_zoomTarget(void *cam, float z);
 
 
-extern float g_fcRotScale;
+static float g_fcRotScale;
 
-extern float g_fcZoomMax;
+static float g_fcZoomMax;
 
-extern float g_fcZoomMin;
+static float g_fcZoomMin;
 
 void MGame::freeCamTouchMove(int x, int y, void *touchId) {
     int ty = (int) (intptr_t) touchId;
@@ -1436,22 +1457,21 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
             v[0] = (float) x;
             v[1] = (float) ty;
             v[2] = 0;
-            *(Vector *) ((Vector *) ((char *) &this->freeCamFinger0X)) = *(const Vector *) ((Vector *) v);
+            this->freeCamFinger0 = *(const Vector *) ((Vector *) v);
         } else if (t1 == 0) {
             float v[4];
             v[0] = (float) x;
             v[1] = (float) ty;
             v[2] = 0;
-            *(Vector *) ((Vector *) ((char *) &this->freeCamFinger1X)) = *(const Vector *) ((Vector *) v);
+            this->freeCamFinger1 = *(const Vector *) ((Vector *) v);
         }
 
         return;
     }
 
-    Vector *base = (Vector *) ((char *) &this->freeCamFinger1X);
+    Vector *base = &this->freeCamFinger1;
     float tmp[4];
-    *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) ((Vector *) ((char *) &this->
-                                       freeCamFinger0X));
+    *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) (&this->freeCamFinger0);
     float oldLen = AbyssEngine::AEMath::VectorLength(*(const Vector *) ((Vector *) tmp));
     float newLen = oldLen;
 
@@ -1470,7 +1490,7 @@ void MGame::freeCamTouchMove(int x, int y, void *touchId) {
         v[2] = 0;
         *(Vector *) ((Vector *) tmp) = *(const Vector *) (base) - *(const Vector *) ((Vector *) v);
         newLen = AbyssEngine::AEMath::VectorLength(*(const Vector *) ((Vector *) tmp));
-        *(Vector *) ((Vector *) ((char *) &this->freeCamFinger0X)) = *(const Vector *) ((Vector *) v);
+        this->freeCamFinger0 = *(const Vector *) ((Vector *) v);
     }
 
     float zoom = this->flCameraRoll + (newLen - oldLen) * g_fcRotScale;
@@ -1510,54 +1530,54 @@ void MGame::OnTouchEnd(int p1, int p2, void *touchId) {
 }
 
 
-extern uint8_t **g_scFlag;
+static uint8_t **g_scFlag;
 
-extern "C" void *Objective_dtor(Objective * o);
+void *Objective_dtor(Objective * o);
 
-extern "C" void Status_replaceHash(String * out, Status * self, String * haystack,
+void Status_replaceHash(String * out, Status * self, String * haystack,
                                    String * needle, String * repl);
 
-extern int g_scFollowTextKey;
+static int g_scFollowTextKey;
 
-extern int g_scFollowHashLit;
+static int g_scFollowHashLit;
 
 void MGame::successCheck() {
     bool timed = !(this->elapsedTimeHigh < (int) (this->elapsedTime < 0x1389));
     if (timed || this->jumpDriveActive != 0) {
-        if (((Mission *) ((Mission *) gStatus->getCampaignMission()))->getType() != 0xaa) goto done;
+        if (((Mission *) ((Mission *) Status::gStatus->getCampaignMission()))->getType() != 0xaa) goto done;
     }
 
     {
-        int *status = ((int *) &gStatus);
+        int *status = ((int *) &Status::gStatus);
         Mission *mc = ((Status *) (*status))->missionCompleted(0, 0, 0);
         int obj = this->level->checkObjective(0);
         if (mc == 0 && obj == 0) goto done;
     }
 
-    if (((Mission *) (gStatus->getMission()))->getType() == 5) goto deliverFollowup;
-    if (((Mission *) (gStatus->getMission()))->getType() == 3) goto deliverFollowup;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 5) goto deliverFollowup;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 3) goto deliverFollowup;
 
     {
-        int *status = ((int *) &gStatus);
-        if (((Mission *) (gStatus->getMission()))->isCampaignMission() == 0)
+        int *status = ((int *) &Status::gStatus);
+        if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() == 0)
             ((Status *) (status))->incMissionCount();
 
-        if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0) {
+        if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0) {
             bool hasSuccess = false;
-            if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0) {
-                int cm = gStatus->getCurrentCampaignMission();
+            if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0) {
+                int cm = Status::gStatus->getCurrentCampaignMission();
                 if (DialogueWindow::hasSuccessDialogue(cm) != 0)
                     hasSuccess = true;
             }
             if (!hasSuccess) {
-                int cm = gStatus->getCurrentCampaignMission();
-                if (cm > 0x2d && ((Mission *) (gStatus->getMission()))->isCampaignMission() != 0) {
-                    int cm2 = gStatus->getCurrentCampaignMission();
+                int cm = Status::gStatus->getCurrentCampaignMission();
+                if (cm > 0x2d && ((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0) {
+                    int cm2 = Status::gStatus->getCurrentCampaignMission();
                     if (DialogueWindow::hasSuccessDialogue(cm2) == 0) {
                         ((Status *) (*status))->nextCampaignMission(true);
                         this->level->removeObjectives();
                         ((Status *) (status))->setMission(
-                            (Mission *) gStatus->getCampaignMission() /* mission: arg lost in decomp */);
+                            (Mission *) Status::gStatus->getCampaignMission() /* mission: arg lost in decomp */);
                     }
                 }
                 goto done;
@@ -1573,12 +1593,12 @@ void MGame::successCheck() {
                 Level *lvl = this->level;
                 if (lvl != 0) this->dialogueWindow->setLevel(lvl);
             }
-            this->dialogueWindow->set(gStatus->getMission(), 1, -1);
+            this->dialogueWindow->set(Status::gStatus->getMission(), 1, -1);
             this->pauseOpen = 0x101;
             ((MGame *) (this))->pauseSounds();
 
-            int cm = gStatus->getCurrentCampaignMission();
-            if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x26) {
+            int cm = Status::gStatus->getCurrentCampaignMission();
+            if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x26) {
                 Array<KIPlayer *> *enemies = this->level->getEnemies();
                 unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
@@ -1588,7 +1608,7 @@ void MGame::successCheck() {
                         ((PlayerFixedObject *) (e))->setMoving(1);
                     }
                 }
-            } else if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x38) {
+            } else if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x38) {
                 StarSystem *ss = (StarSystem *) (intptr_t) this->level->getStarSystem();
                 ((StarSystem *) (ss))->getPlanets();
                 int pts[3] = {0, 0, 0};
@@ -1603,7 +1623,7 @@ void MGame::successCheck() {
                     }
                 }
                 delete route;
-            } else if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
+            } else if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x3f) {
                 Array<KIPlayer *> *enemies = this->level->getEnemies();
                 unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
@@ -1611,7 +1631,7 @@ void MGame::successCheck() {
                     if (e->shipGroup == 8)
                         ((Player *) ((Player *) e->player))->removeAllGuns();
                 }
-            } else if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x49) {
+            } else if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0 && cm == 0x49) {
                 Array<KIPlayer *> *enemies = this->level->getEnemies();
                 unsigned n = enemies->size();
                 for (unsigned i = 0; i < n; i++) {
@@ -1622,8 +1642,8 @@ void MGame::successCheck() {
                     }
                 }
             } else {
-                if (Station_getIndex(gStatus->getStation()) == 0x70 &&
-                    gStatus->getCurrentCampaignMission() == 0x8f)
+                if (Station_getIndex(Status::gStatus->getStation()) == 0x70 &&
+                    Status::gStatus->getCurrentCampaignMission() == 0x8f)
                     **g_scFlag = 1;
             }
             goto done;
@@ -1640,9 +1660,9 @@ void MGame::successCheck() {
             if (lvl != 0) this->dialogueWindow->setLevel(lvl);
         }
 
-        intptr_t m = gStatus->getCurrentCampaignMission() == 0
-                         ? (intptr_t) gStatus->getMission()
-                         : (intptr_t) gStatus->getCurrentCampaignMission();
+        intptr_t m = Status::gStatus->getCurrentCampaignMission() == 0
+                         ? (intptr_t) Status::gStatus->getMission()
+                         : (intptr_t) Status::gStatus->getCurrentCampaignMission();
         this->dialogueWindow->set((Mission *) m, 1, -1);
         this->pauseOpen = 0x101;
         ((MGame *) (this))->pauseSounds();
@@ -1662,7 +1682,7 @@ deliverFollowup:
         if (lvl != 0) this->dialogueWindow->setLevel(lvl);
     }
     {
-        Status *status = gStatus;
+        Status *status = Status::gStatus;
 
         Mission *cm = (Mission *) (intptr_t) status->getCampaignMission();
         Agent *agent = ((Mission *) ((Mission *) (intptr_t) status->getCampaignMission()))->getAgent();
@@ -1677,7 +1697,7 @@ deliverFollowup:
         TFC_enableFirstPersonCam(this->camera, 0);
         this->player->hideShipForFirstPersonCameraView(false);
 
-        *(uint8_t *) ((char *) this + 0x239) = 1;
+        this->needsRedraw = 1;
 
         ((Mission *) ((Mission *) (intptr_t) status->getCampaignMission()))->setStatusValue(0);
         ((Mission *) ((Mission *) (intptr_t) status->getCampaignMission()))->setWon(false);
@@ -1729,7 +1749,6 @@ MGame::~MGame() {
 }
 
 
-extern FModSound **g_fmod;
 
 void MGame::resumeSounds() {
     ((FModSound *) (*g_fmod))->resumeAll();
@@ -1741,25 +1760,25 @@ void MGame::resumeSounds() {
 }
 
 
-extern int *g_jumpFlag;
+static int *g_jumpFlag;
 
-extern int **g_alienAmt;
+static int **g_alienAmt;
 
-extern int **g_jumpCost;
+static int **g_jumpCost;
 
-extern int **g_alienCost;
+static int **g_alienCost;
 
 void MGame::startChargingJumpDrive() {
     if (this->usingJumpDrive == 0) return;
     int needed = 1;
-    if (((Ship *) (gStatus->getShip()))->hasCargo(0x7a, 1) == 0) {
+    if (((Ship *) (Status::gStatus->getShip()))->hasCargo(0x7a, 1) == 0) {
         ChoiceWindow *w = this->choiceWindow;
         if (w == 0) {
             w = (ChoiceWindow *) MGame_opnew(0x5c);
             new(w) ChoiceWindow();
             this->choiceWindow = w;
         }
-        void *txt = ((GameText *) (*(int *) gStatus))->getText(0x243);
+        void *txt = ((GameText *) (*(int *) Status::gStatus))->getText(0x243);
         ((ChoiceWindow *) (w))->set(*(String *) txt);
         this->pauseOpen = 1;
         this->choiceWindowOpen = 1;
@@ -1767,17 +1786,17 @@ void MGame::startChargingJumpDrive() {
         **g_jumpCost = 0;
         return;
     }
-    int hc = gStatus->hardCoreMode();
+    int hc = Status::gStatus->hardCoreMode();
     int *jf = g_jumpFlag;
     if (hc != 0) needed = 2;
     int cost;
-    if (*jf == (int) (intptr_t) gStatus->playerStation) {
+    if (*jf == (int) (intptr_t) Status::gStatus->playerStation) {
         cost = needed << 1;
     } else {
         cost = **g_alienAmt;
-        if (gStatus->inAlienOrbit() != 0) cost = needed;
+        if (Status::gStatus->inAlienOrbit() != 0) cost = needed;
     }
-    ((Ship *) (gStatus->getShip()))->getCargo(0x7a);
+    ((Ship *) (Status::gStatus->getShip()))->getCargo(0x7a);
     if (((Item *) (0))->getAmount() < cost) {
         ChoiceWindow *w = this->choiceWindow;
         if (w == 0) {
@@ -1785,8 +1804,8 @@ void MGame::startChargingJumpDrive() {
             new(w) ChoiceWindow();
             this->choiceWindow = w;
         }
-        int hc2 = gStatus->hardCoreMode();
-        void *txt = ((GameText *) (*(int *) gStatus))->getText(hc2 != 0 ? 0x243 : 0x244);
+        int hc2 = Status::gStatus->hardCoreMode();
+        void *txt = ((GameText *) (*(int *) Status::gStatus))->getText(hc2 != 0 ? 0x243 : 0x244);
         ((ChoiceWindow *) (w))->set(*(String *) txt);
         this->pauseOpen = 1;
         this->choiceWindowOpen = 1;
@@ -1795,15 +1814,14 @@ void MGame::startChargingJumpDrive() {
         return;
     }
     this->player->startJumpDrive();
-    if (*jf != (int) (intptr_t) gStatus->playerStation) {
-        if (gStatus->inAlienOrbit() == 0) needed = **g_alienCost;
+    if (*jf != (int) (intptr_t) Status::gStatus->playerStation) {
+        if (Status::gStatus->inAlienOrbit() == 0) needed = **g_alienCost;
     }
     this->hud->hudEvent(0x1e, this->player, needed);
-    ((Ship *) (gStatus->getShip()))->removeCargo(0x7a, needed);
+    ((Ship *) (Status::gStatus->getShip()))->removeCargo(0x7a, needed);
 }
 
 
-extern FModSound **g_fmod;
 
 void MGame::pauseSounds() {
     this->pauseSnapshot = this->pauseOpen;
@@ -1816,32 +1834,32 @@ void MGame::pauseSounds() {
     }
 }
 
-extern "C" void Radio_ctor(Radio *r);
+void Radio_ctor(Radio *r);
 
-extern "C" void *TargetFollowCamera_dtor(void *c);
+void *TargetFollowCamera_dtor(void *c);
 
-extern "C" void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
+void TargetFollowCamera_ctor(TargetFollowCamera *c, int cam, int target,
                                         int a, int b, int d, int e, int f, int g);
 
-extern "C" void Radar_ctor(Radar * r, Level * l);
+void Radar_ctor(Radar * r, Level * l);
 
-extern int g_resAspectA;
+static int g_resAspectA;
 
-extern int g_resAspectB;
+static int g_resAspectB;
 
-extern int g_resAspectC;
+static int g_resAspectC;
 
-extern int g_fovDefault;
+static int g_fovDefault;
 
-extern int g_fovOrbitHigh;
+static int g_fovOrbitHigh;
 
-extern int g_fovOrbitLow;
+static int g_fovOrbitLow;
 
-extern int g_resInitB;
+static int g_resInitB;
 
-extern int **g_resShipTune;
+static int **g_resShipTune;
 
-extern uint8_t **g_resPauseSrc;
+static uint8_t **g_resPauseSrc;
 
 void MGame::reset() {
     this->flCameraRoll = 0;
@@ -1872,13 +1890,13 @@ void MGame::reset() {
     this->radio = radio;
     ((Radio *) (radio))->setMessages((Array<RadioMessage *> *) this->level->getMessages());
 
-    PaintCanvas *pc = gCanvas;
+    PaintCanvas *pc = PaintCanvas::gCanvas;
     pc->CameraCreate(this->cameraId);
-    unsigned cam = (unsigned) (uintptr_t) gCanvas;
+    unsigned cam = (unsigned) (uintptr_t) PaintCanvas::gCanvas;
 
     float fov = *(float *) &g_fovDefault;
-    if (gStatus->inAlienOrbit() != 0) {
-        int cm = gStatus->getCurrentCampaignMission();
+    if (Status::gStatus->inAlienOrbit() != 0) {
+        int cm = Status::gStatus->getCurrentCampaignMission();
         fov = (cm < 0x50) ? *(float *) &g_fovOrbitLow : *(float *) &g_fovOrbitHigh;
     }
     pc->CameraSetPerspective(cam, fov, 0, 0);
@@ -1899,8 +1917,8 @@ void MGame::reset() {
     Radar_ctor(radar, this->level);
     this->radar = radar;
 
-    if (gStatus->getMission() != 0)
-        this->campaignMission = (uint8_t)((Mission *) (gStatus->getMission()))->isCampaignMission();
+    if (Status::gStatus->getMission() != 0)
+        this->campaignMission = (uint8_t)((Mission *) (Status::gStatus->getMission()))->isCampaignMission();
 
     LevelScript *script = new LevelScript(this->level, this->hud,
                                           this->radar, this->camera);
@@ -1953,24 +1971,45 @@ void MGame::reset() {
     this->lastTimeHigh = 0;
     this->field_0x1dd = **g_resPauseSrc;
 
-    void *s = (void *) gStatus;
-    F<int>(s, 0x184) = 0;
-    F<int>(s, 0x188) = 1;
-    F<int>(s, 0x18c) = 1;
+    Status::gStatus->field_0x184 = 0;
+    Status::gStatus->field_0x188 = 1;
+    Status::gStatus->field_0x18c = 1;
 }
 
-extern "C" void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager * appMgr);
+void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager * appMgr);
 
-extern "C" double *MGame_accelCtxValue();
+double *MGame_accelCtxValue();
 
 
-extern int g_accelTune;
+static int g_accelTune;
+
+// g_accelTune holds a pointer (as int) to the accelerometer-tuning config.
+struct AccelTune {
+    uint8_t _pad0[0x10];
+    char invertSign;     // offset 0x10
+    uint8_t _pad11[0xb];
+    float refValue;      // offset 0x1c
+    float baseValue;     // offset 0x20
+};
+// Accelerometer-context value buffer returned by MGame_accelCtxValue();
+// double at +0x10 is the third component.
+struct AccelCtxValue {
+    double _v0;          // offset 0x00
+    double _v1;          // offset 0x08
+    double comp2;        // offset 0x10
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(AccelTune, invertSign) == 0x10, "AccelTune::invertSign @ 0x10");
+static_assert(offsetof(AccelTune, refValue) == 0x1c, "AccelTune::refValue @ 0x1c");
+static_assert(offsetof(AccelTune, baseValue) == 0x20, "AccelTune::baseValue @ 0x20");
+static_assert(offsetof(AccelCtxValue, comp2) == 0x10, "AccelCtxValue::comp2 @ 0x10");
+#endif
 
 void MGame::handleAccelerometer() {
     Engine *eng = (Engine *) this->applicationManager->GetEngine();
     double *acc = ((Engine *) (eng))->GetAccelValue();
 
-    float yaw = (float) (*(double *) ((char *) acc + 8) * 2.5);
+    float yaw = (float) (acc[1] * 2.5);
     float steer = 1.0f;
     if (yaw <= 1.0f) {
         steer = -1.0f;
@@ -1995,34 +2034,34 @@ afterYaw: {
         double *v1 = MGame_accelCtxValue();
         double d0 = *v1;
         MGame_accelCtxBegin(appMgr);
-        int c2 = (int) (long) MGame_accelCtxValue();
+        AccelCtxValue *c2 = (AccelCtxValue *) MGame_accelCtxValue();
 
         float base = (float) d0;
-        int tune = g_accelTune;
-        double dz = *(double *) ((char *) c2 + 0x10);
-        float ref = *(float *) ((char *) tune + 0x1c);
-        char sign = *(char *) ((char *) tune + 0x10);
+        AccelTune *tune = (AccelTune *) (intptr_t) g_accelTune;
+        double dz = c2->comp2;
+        float ref = tune->refValue;
+        char sign = tune->invertSign;
 
         MGame_accelCtxBegin(appMgr);
-        int c3 = (int) (long) MGame_accelCtxValue();
+        AccelCtxValue *c3 = (AccelCtxValue *) MGame_accelCtxValue();
 
         float a, b;
         if (sign == 0) {
             float t = base;
-            if (*(double *) ((char *) c3 + 0x10) > 0.0) {
+            if (c3->comp2 > 0.0) {
                 t = 1.0f;
                 if (base <= 1.0f) t = (1.0f - base) + 1.0f;
             }
             a = ref - t;
-            b = *(float *) ((char *) tune + 0x20) - (float) dz;
+            b = tune->baseValue - (float) dz;
         } else {
             float t = base;
-            if (*(double *) ((char *) c3 + 0x10) > 0.0) {
+            if (c3->comp2 > 0.0) {
                 t = 1.0f;
                 if (base <= 1.0f) t = (1.0f - base) + 1.0f;
             }
             a = t - ref;
-            b = (float) dz - *(float *) ((char *) tune + 0x20);
+            b = (float) dz - tune->baseValue;
         }
 
         float a3 = a * 3.0f;
@@ -2051,11 +2090,11 @@ afterYaw: {
 }
 
 
-extern int **g_tmShipTune;
+static int **g_tmShipTune;
 
-extern int **g_tmStarMap;
+static int **g_tmStarMap;
 
-extern int **g_tmAppData;
+static int **g_tmAppData;
 
 void MGame::OnTouchMove(int p1, int y, void *touch) {
     MGame *self = this;
@@ -2138,16 +2177,16 @@ void MGame::OnTouchMove(int p1, int y, void *touch) {
         return;
     }
     if (self->menuTouchOpen != 0) {
-        int ad = **g_tmAppData;
-        if (*(uint8_t *) ((char *) ad + 5) == 0 && *(uint8_t *) ((char *) ad + 0xc) == 0)
+        MGameAppData *ad = (MGameAppData *) (intptr_t) **g_tmAppData;
+        if (ad->modalActive == 0 && ad->transitionActive == 0)
             self->menuWindow->OnTouchMove(p1, y, touch);
     }
 }
 
 
-extern uint8_t *g_cinFlagA;
+static uint8_t *g_cinFlagA;
 
-extern uint8_t **g_cinFlagB;
+static uint8_t **g_cinFlagB;
 
 void MGame::setCinematicMode(bool on) {
     MGame *self = this;
@@ -2172,39 +2211,41 @@ void MGame::setCinematicMode(bool on) {
 
 void TFC_translate(void *cam, int x, int y, int z);
 
-extern "C" void *TFC_getPosition(void *cam);
+void *TFC_getPosition(void *cam);
 
 
-extern int g_ujZNear;
+static int g_ujZNear;
 
-extern int g_ujZSound;
+static int g_ujZSound;
 
-extern int g_ujSpeed;
+static int g_ujSpeed;
 
-extern int *g_ujSound;
+static int *g_ujSound;
 
-extern int g_ujPos0;
+static int g_ujPos0;
 
-extern int g_ujPos1;
+static int g_ujPos1;
 
-extern int g_ujPos2;
+static int g_ujPos2;
 
-extern int **g_ujStation;
+static int **g_ujStation;
 
-extern uint8_t **g_ujFlagA;
+static uint8_t **g_ujFlagA;
 
-extern uint8_t **g_ujFlagB;
+static uint8_t **g_ujFlagB;
 
-extern int **g_ujFlagC;
+static int **g_ujFlagC;
 
 void MGame::updateJumpScene() {
     MGame *self = this;
     bool fadeOut = true;
 
     if (self->usingJumpDrive != 0 && self->jumpFlash != 0) {
-        int tr = (int) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
-        int prog = *(int *) ((char *) tr + 0x114);
-        int over = (*(unsigned *) ((char *) tr + 0x110) > 0x6a4);
+        AbyssEngine::Transform *tr =
+            (AbyssEngine::Transform *) (intptr_t) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+        long long ct = tr->currentTime;
+        int prog = (int) ((unsigned long long) ct >> 32);
+        int over = ((unsigned) ct > 0x6a4);
         if ((0 - over) - prog < 0) goto camMove;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
@@ -2219,34 +2260,34 @@ void MGame::updateJumpScene() {
 
 camMove: {
         int speed = self->deltaTime;
-        void *ego = self->player->player;
+        Player *ego = (Player *) self->player->player;
         float mtx[4];
-        *(Vector *) ((Vector *) ((char *) ego + 4)) = AbyssEngine::AEMath::MatrixRotateVector(
-            *(const AbyssEngine::Matrix *) (mtx), *(const Vector *) ((Vector *) ((char *) ego + 4)));
-        *(Vector *) ((Vector *) ((char *) &self->egoJumpPosX)) = *(const Vector *) ((Vector *) mtx);
+        Vector *egoTransformPos = reinterpret_cast<Vector *>(ego->transform);
+        *egoTransformPos = AbyssEngine::AEMath::MatrixRotateVector(
+            *(const AbyssEngine::Matrix *) (mtx), *egoTransformPos);
+        self->egoJumpPos = *(const Vector *) ((Vector *) mtx);
         TFC_translate(self->camera, 0, 0, 0);
         (void) speed;
         if (self->usingJumpDrive != 0) {
             self->jumpFlash->getPosition();
         } else {
             Array<KIPlayer *> *lm = self->level->getLandmarks();
-            void *obj = (void *) (*lm)[1];
-            void *vt = *(void **) obj;
-            (*(void (**)(void *, void *)) ((char *) vt + 0x28))(obj, mtx);
+            KIPlayer *obj = (*lm)[1];
+            *(Vector *) ((Vector *) mtx) = obj->getPosition();
         }
-        *(Vector *) ((Vector *) ((char *) &self->egoJumpPosX)) = *(const Vector *) ((Vector *) mtx);
+        self->egoJumpPos = *(const Vector *) ((Vector *) mtx);
         fadeOut = false;
     }
 
 afterCam:
     if (self->usingJumpDrive != 0) {
-        unsigned tr = (unsigned) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
+        unsigned tr = (unsigned) (long) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
         ((AbyssEngine::Transform *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
     }
 
-    void *camPos = TFC_getPosition(self->camera);
+    Vector *camPos = (Vector *) TFC_getPosition(self->camera);
     float threshold = (float) self->egoJumpPosZ + *(float *) &g_ujZNear;
-    if (*(float *) ((char *) camPos + 8) < threshold && self->usingJumpDrive == 0) {
+    if (camPos->z < threshold && self->usingJumpDrive == 0) {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
         ((PlayerJumpgate *) ((int) (intptr_t)(*lm)[1]))->activate();
         float p[4];
@@ -2271,8 +2312,9 @@ afterCam:
 
     bool ended;
     if (self->usingJumpDrive != 0) {
-        int tr = (int) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
-        ended = *(uint8_t *) ((char *) tr + 0xed) != 0;
+        AbyssEngine::Transform *tr =
+            (AbyssEngine::Transform *) (intptr_t) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+        ended = tr->animating != 0;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
         ended = ((PlayerJumpgate *) ((int) (intptr_t)(*lm)[1]))->animationEnded() != 0;
@@ -2280,17 +2322,15 @@ afterCam:
     if (!ended) goto done;
 
     {
-        if (gStatus->getCurrentCampaignMission() == 0x2a && gStatus->inAlienOrbit() != 0) {
+        if (Status::gStatus->getCurrentCampaignMission() == 0x2a && Status::gStatus->inAlienOrbit() != 0) {
             self->levelScript->setEvent(6);
             self->player->setSpeed(0.0f);
             Array<KIPlayer *> *lm = self->level->getLandmarks();
-            int *node = (int *) (*lm)[3];
-            (*(void (**)(int *, int, int, int)) ((char *) *node + 0x48))(node, g_ujPos0, g_ujPos1, g_ujPos2);
+            KIPlayer *node = (*lm)[3];
+            node->setPosition(*(float *) &g_ujPos0, *(float *) &g_ujPos1, *(float *) &g_ujPos2);
             lm = self->level->getLandmarks();
-            void *node2 = (void *) (*lm)[3];
-            float mtx[4];
-            (*(void (**)(void *, void *)) ((char *) *(void **) node2 + 0x28))(node2, mtx);
-            *(Vector *) ((Vector *) ((char *) &self->egoJumpPosX)) = *(const Vector *) ((Vector *) mtx);
+            KIPlayer *node2 = (*lm)[3];
+            self->egoJumpPos = node2->getPosition();
             if (self->player->geometry != nullptr) {
                 Vector pos = self->player->getPosition();
                 ((AEGeometry *) (self->player->geometry))->setPosition(pos);
@@ -2301,22 +2341,22 @@ afterCam:
             ((PlayerEgo *) (p))->resetChargingDrive();
         } else {
             int **stationPtr = g_ujStation;
-            ((Status *) ((Station *) gStatus))->departStation((Station *) *stationPtr);
+            ((Status *) ((Station *) Status::gStatus))->departStation((Station *) *stationPtr);
             self->level->setInitStreamOut();
             if (self->usingJumpDrive == 0)
-                ((Status *) ((Station *) gStatus))->jumpgateUsed();
-            if (((Station *) ((Station *) *stationPtr))->equals(gStatus->playerStation) != 0) {
+                ((Status *) ((Station *) Status::gStatus))->jumpgateUsed();
+            if (((Station *) ((Station *) *stationPtr))->equals(Status::gStatus->playerStation) != 0) {
                 **g_ujFlagA = 1;
                 **g_ujFlagB = 1;
-                ((Status *) ((Station *) gStatus))->setStation(
+                ((Status *) ((Station *) Status::gStatus))->setStation(
                     (Station *) *stationPtr /* station: arg lost in decomp */);
             }
             *stationPtr = 0;
-            gStatus->field_64 = ((Player *) (self->player->player))->getHitpoints();
-            gStatus->field_5c = ((Player *) (self->player->player))->getShieldHP();
-            gStatus->field_60 = ((Player *) (self->player->player))->getArmorHP();
-            gStatus->field_68 = ((Player *) (self->player->player))->getGammaHP();
-            gStatus->field_f4 = self->player->getCurrentSecondaryWeaponIndex();
+            Status::gStatus->field_64 = ((Player *) (self->player->player))->getHitpoints();
+            Status::gStatus->field_5c = ((Player *) (self->player->player))->getShieldHP();
+            Status::gStatus->field_60 = ((Player *) (self->player->player))->getArmorHP();
+            Status::gStatus->field_68 = ((Player *) (self->player->player))->getGammaHP();
+            Status::gStatus->field_f4 = self->player->getCurrentSecondaryWeaponIndex();
             **g_ujFlagC = 1;
             self->active = 0;
             self->applicationManager->SetCurrentApplicationModule(5);
@@ -2328,7 +2368,7 @@ done:
 }
 
 
-extern int g_mgameInitVal;
+static int g_mgameInitVal;
 
 MGame::MGame() {
     this->gameOverTitle.ctor();
@@ -2336,14 +2376,21 @@ MGame::MGame() {
     int z = 0;
     int initVal = g_mgameInitVal;
 
-    static const unsigned grpA[] = {0xa4u, 0x13cu, 0x18cu};
-    for (unsigned i = 0; i < 3; i++) {
-        unsigned off = grpA[i];
-        F<int>(this, off + 0) = 0;
-        F<int>(this, off + 4) = 0;
-        F<int>(this, off + 8) = 0;
-        F<int>(this, off + 12) = 0;
-    }
+    // 0xa4 run: freeCamFinger1 (x,y,z) + freeCamFinger0X
+    this->freeCamFinger1X = 0;
+    this->freeCamFinger1Y = 0;
+    this->freeCamFinger1Z = 0;
+    this->freeCamFinger0X = 0;
+    // 0x13c run: flShakeAmpX, flShakeAmpY, field_0x144, flShakePhaseX
+    this->flShakeAmpX = 0;
+    this->flShakeAmpY = 0;
+    this->field_0x144 = 0;
+    this->flShakePhaseX = 0;
+    // 0x18c run
+    this->field_0x18c = 0;
+    this->field_0x190 = 0;
+    this->field_0x194 = 0;
+    this->field_0x198 = 0;
 
     this->elapsedTime = z;
     this->elapsedTimeHigh = z;
@@ -2364,14 +2411,26 @@ MGame::MGame() {
     this->loadingImage = -1;
     this->cameraMode = z;
 
-    static const unsigned grpB[] = {0x30u, 0x20u, 0x80u, 0x70u};
-    for (unsigned i = 0; i < 4; i++) {
-        unsigned off = grpB[i];
-        F<int>(this, off + 0) = 0;
-        F<int>(this, off + 4) = 0;
-        F<int>(this, off + 8) = 0;
-        F<int>(this, off + 12) = 0;
-    }
+    // 0x30 run: frameTime, frameTimeHigh, field_0x38, field_0x3c
+    this->frameTime = 0;
+    this->frameTimeHigh = 0;
+    this->field_0x38 = 0;
+    this->field_0x3c = 0;
+    // 0x20 run: startTime, startTimeHigh, lastTime, lastTimeHigh
+    this->startTime = 0;
+    this->startTimeHigh = 0;
+    this->lastTime = 0;
+    this->lastTimeHigh = 0;
+    // 0x80 run: radar, radio, menuWindow, dialogueWindow
+    this->radar = 0;
+    this->radio = 0;
+    this->menuWindow = 0;
+    this->dialogueWindow = 0;
+    // 0x70 run: field_0x70, hud, level, levelScript
+    this->field_0x70 = 0;
+    this->hud = 0;
+    this->level = 0;
+    this->levelScript = 0;
 
     this->pauseSnapshot = 0;
     this->active = 0;
@@ -2379,7 +2438,7 @@ MGame::MGame() {
     this->hudMenuOpen = 0;
     this->jumpFlash = 0;
     this->camera = 0;
-    F<uint8_t>(this, 0x1e4) = 0;
+    *(uint8_t *) &this->field_0x1e4 = 0;
     this->field_0x1d4 = z;
     this->deltaTime = z;
     this->player = 0;
@@ -2388,7 +2447,7 @@ MGame::MGame() {
     this->campaignMission = 0;
     this->starMap = 0;
     this->choiceWindow = 0;
-    F<uint8_t>(this, 0xc8) = 0;
+    this->_bc8 = 0;
     this->dockChoiceOpen = z;
     this->autopilotMenuOpen = 0;
     this->field_0xc6 = 0;
@@ -2402,20 +2461,30 @@ MGame::MGame() {
     this->field_0x1e0 = z;
 }
 
-extern "C" void *Radar_dtor(void *r);
+void *Radar_dtor(void *r);
 
-extern "C" void *Radio_dtor(...);
+void *Radio_dtor(...);
 
-extern "C" void *DialogueWindow_dtor(...);
+void *DialogueWindow_dtor(...);
 
 
-extern int g_relPostEffect;
+static int g_relPostEffect;
 
-extern int *g_relSoundFlag;
+static int *g_relSoundFlag;
 
-extern int *g_relLayout;
+static int *g_relLayout;
 
-extern int **g_relImgFactory;
+static int **g_relImgFactory;
+
+// The application module returned by GetApplicationModule() owns the active
+// StarMap pointer at offset 0x10.
+struct StarMapModule {
+    uint8_t _pad0[0x10];
+    StarMap *starMap;  // offset 0x10
+};
+#if __SIZEOF_POINTER__ == 4
+static_assert(offsetof(StarMapModule, starMap) == 0x10, "StarMapModule::starMap @ 0x10");
+#endif
 
 void MGame::OnRelease() {
     Engine *eng = (Engine *) this->applicationManager->GetEngine();
@@ -2441,8 +2510,16 @@ void MGame::OnRelease() {
     this->player = 0;
     this->field_0x5c = 0;
 
-    for (unsigned i = 0; i < 4; i++) F<int>(this, 0x30 + i * 4) = 0;
-    for (unsigned i = 0; i < 4; i++) F<int>(this, 0x20 + i * 4) = 0;
+    // 0x30 run: frameTime, frameTimeHigh, field_0x38, field_0x3c
+    this->frameTime = 0;
+    this->frameTimeHigh = 0;
+    this->field_0x38 = 0;
+    this->field_0x3c = 0;
+    // 0x20 run: startTime, startTimeHigh, lastTime, lastTimeHigh
+    this->startTime = 0;
+    this->startTimeHigh = 0;
+    this->lastTime = 0;
+    this->lastTimeHigh = 0;
 
     delete this->jumpFlash;
     this->jumpFlash = 0;
@@ -2461,14 +2538,13 @@ void MGame::OnRelease() {
         ::operator delete(Radio_dtor(this->radio));
     this->radio = 0;
 
-    void *m1 = gAppManager->GetApplicationModule(0);
-    if (*(int *) ((char *) m1 + 0x10) != 0) {
-        void *m2 = gAppManager->GetApplicationModule(0);
-        StarMap *sm = *(StarMap **) ((char *) m2 + 0x10);
-        delete sm;
+    StarMapModule *m1 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+    if (m1->starMap != 0) {
+        StarMapModule *m2 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+        delete m2->starMap;
     }
-    void *m3 = gAppManager->GetApplicationModule(0);
-    *(int *) ((char *) m3 + 0x10) = 0;
+    StarMapModule *m3 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+    m3->starMap = 0;
 
     delete this->menuWindow;
     this->menuWindow = 0;
@@ -2503,10 +2579,10 @@ void MGame::OnRelease() {
         int *p = (int *) 0;
         (void) p;
     }
-    gCanvas->ReleaseAllResources();
+    PaintCanvas::gCanvas->ReleaseAllResources();
 
     int lang = GameText::getLanguage();
-    gGlobals->loadFont(lang);
+    Globals::gGlobals->loadFont(lang);
 
     int *layout = g_relLayout;
     if (*layout != 0) {
@@ -2528,13 +2604,13 @@ void MGame::OnRelease() {
 }
 
 
-extern Layout ***g_r2dHelpLayout;
+static Layout ***g_r2dHelpLayout;
 
-extern int **g_r2dPauseFlag;
+static int **g_r2dPauseFlag;
 
-extern int **g_r2dRewardLayout;
+static int **g_r2dRewardLayout;
 
-extern Layout ***g_r2dFadeLayout;
+static Layout ***g_r2dFadeLayout;
 
 void MGame::OnRender2D() {
     MGame * self = this;
@@ -2542,7 +2618,7 @@ void MGame::OnRender2D() {
         return;
     }
 
-    gCanvas->Begin2d();
+    PaintCanvas::gCanvas->Begin2d();
 
     if (self->pauseOpen != 0 && self->menuTouchOpen != 0) {
         bool drawSS = true;
@@ -2563,7 +2639,7 @@ void MGame::OnRender2D() {
         v[2] = 0;
         Engine *eng = (Engine *) self->applicationManager->GetEngine();
         *(Vector *) &eng->field_0x3cc = *(const Vector *) (v);
-        gCanvas->End2d();
+        PaintCanvas::gCanvas->End2d();
 
         return;
     }
@@ -2588,7 +2664,7 @@ void MGame::OnRender2D() {
             if (**g_r2dPauseFlag == 0)
                 self->hud->drawPauseButton();
 
-            if (((Mission *) ((Mission *) gStatus->getCampaignMission()))->getType() == 0xaa) {
+            if (((Mission *) ((Mission *) Status::gStatus->getCampaignMission()))->getType() == 0xaa) {
                 if (self->levelScript->getEvent() == 0)
                     self->hud->drawOrbitInformation();
                 {
@@ -2601,7 +2677,7 @@ void MGame::OnRender2D() {
                 self->field_0x110 = 0;
                 self->pauseOpen = 0;
             } else if (self->jumpActive != 0 || self->jumpDriveActive != 0) {
-                int cm = gStatus->getCurrentCampaignMission();
+                int cm = Status::gStatus->getCurrentCampaignMission();
                 if (cm > 7 && (uint8_t) self->levelScript->m_nFlags == 0 &&
                     self->jumpDriveActive == 0 &&
                     self->player->isDockingToPlanet() == 0 &&
@@ -2649,33 +2725,33 @@ void MGame::OnRender2D() {
                 if (self->field_0xca != 0)
                     self->hud->drawMenu(0);
             } else if (!(self->elapsedTimeHigh < (int) (self->elapsedTime < 0xbb9))) {
-                gCanvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
-                gCanvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
+                PaintCanvas::gCanvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
+                PaintCanvas::gCanvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
             }
             ((Layout *) (**g_r2dFadeLayout))->drawFade();
         }
     }
 
-    gCanvas->End2d();
+    PaintCanvas::gCanvas->End2d();
 }
 
 void MGame::dialogueEvent() {
     if (this->levelScript->startSequenceOver() == 0) return;
-    if (DialogueWindow::hasBriefingDialogue(gStatus->getCurrentCampaignMission()) == 0) {
-        if (((Mission *) (gStatus->getMission()))->isCampaignMission() != 0) return;
+    if (DialogueWindow::hasBriefingDialogue(Status::gStatus->getCurrentCampaignMission()) == 0) {
+        if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() != 0) return;
     }
-    if (((Mission *) (gStatus->getMission()))->isEmpty() != 0) return;
-    if (((Mission *) (gStatus->getMission()))->getType() == 8) return;
-    if (((Mission *) (gStatus->getMission()))->getType() == 0xa6) return;
-    if (((Mission *) (gStatus->getMission()))->getType() == 0) return;
-    if (((Mission *) (gStatus->getMission()))->getType() == 0xb7) return;
-    if (((Mission *) (gStatus->getMission()))->isVisible() == 0) return;
-    if (((Mission *) (gStatus->getMission()))->isCampaignMission() == 0) {
-        if (((Mission *) (gStatus->getMission()))->getType() == 0xb) return;
+    if (((Mission *) (Status::gStatus->getMission()))->isEmpty() != 0) return;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 8) return;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 0xa6) return;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 0) return;
+    if (((Mission *) (Status::gStatus->getMission()))->getType() == 0xb7) return;
+    if (((Mission *) (Status::gStatus->getMission()))->isVisible() == 0) return;
+    if (((Mission *) (Status::gStatus->getMission()))->isCampaignMission() == 0) {
+        if (((Mission *) (Status::gStatus->getMission()))->getType() == 0xb) return;
     }
     if (this->dialogueWindow == 0) {
         DialogueWindow *w = (DialogueWindow *) MGame_opnew(0x74);
-        DialogueWindow_ctor(w, gStatus->getMission(), this->level, 0);
+        DialogueWindow_ctor(w, Status::gStatus->getMission(), this->level, 0);
         this->dialogueWindow = w;
     }
     this->player->setTurretMode(0);
@@ -2696,8 +2772,8 @@ int MGame::nextCamId(int cur) {
     int id = cur + 1;
     if (id == 2) id = cur + 2;
     if (id == 1) {
-        if (((Ship *) (gStatus->getShip()))->getFirstEquipmentOfSort(8) != 0 ||
-            ((Ship *) (gStatus->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
+        if (((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(8) != 0 ||
+            ((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
             id = this->player->hasAutoTurret() == 0 ? 1 : 2;
         } else {
             id = 2;
@@ -2706,8 +2782,8 @@ int MGame::nextCamId(int cur) {
     if (id == 2) id = 3;
     if (id >= 4) {
         if (this->player->isDockedToDockingPoint() == 0) return 0;
-        if (((Ship *) (gStatus->getShip()))->getFirstEquipmentOfSort(8) == 0 &&
-            ((Ship *) (gStatus->getShip()))->getFirstEquipmentOfSort(0x23) == 0) {
+        if (((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(8) == 0 &&
+            ((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x23) == 0) {
             return 3;
         }
         id = this->player->hasAutoTurret() != 0 ? 3 : 1;
@@ -2717,13 +2793,13 @@ int MGame::nextCamId(int cur) {
 
 static void *g_accelEngine = 0;
 
-extern "C" void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager *appMgr) {
+void *MGame_accelCtxBegin(AbyssEngine::ApplicationManager *appMgr) {
     g_accelEngine = appMgr->GetEngine();
     return g_accelEngine;
 }
 
-extern "C" double *MGame_accelCtxValue() {
+double *MGame_accelCtxValue() {
     return ((Engine *) g_accelEngine)->GetAccelValue();
 }
 
-extern "C" void *MGame_opnew(unsigned sz) { return ::operator new(sz); }
+void *MGame_opnew(unsigned sz) { return ::operator new(sz); }

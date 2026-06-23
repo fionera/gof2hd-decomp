@@ -44,7 +44,7 @@ bool Standing::isEnemyWithAnyone() {
     return ((unsigned) (b + 0x46) > 0x8c) || ((unsigned) (a + 0x46) > 0x8c);
 }
 
-extern const uint32_t Standing_enemyRaceTable[4];
+static const uint32_t Standing_enemyRaceTable[4] = {1, 0, 3, 2};
 
 uint32_t Standing::getEnemyRace(int idx) {
     if ((unsigned) idx < 4)
@@ -118,7 +118,7 @@ bool Standing::isEnemy(int race) {
 }
 
 void Standing::applyDelict(int kind, int severity) {
-    int hc = gStatus->hardCoreMode();
+    int hc = Status::gStatus->hardCoreMode();
     int delta = severity << hc;
     switch (kind) {
         case 0:
@@ -138,10 +138,10 @@ void Standing::applyDelict(int kind, int severity) {
     }
 }
 
-extern const int g_apk_raceTable[4];
+static const int g_apk_raceTable[4] = {1, 0, 3, 2};
 
 void Standing::applyKill(int kind) {
-    Status *status = gStatus;
+    Status *status = Status::gStatus;
     unsigned sysRace;
     if (status->inAlienOrbit() != 0) {
         sysRace = 9;

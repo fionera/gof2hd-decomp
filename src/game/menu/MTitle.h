@@ -2,8 +2,6 @@
 #define GOF2_MTITLE_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/core/IApplicationModule.h"
 
 class MTitle : public IApplicationModule {

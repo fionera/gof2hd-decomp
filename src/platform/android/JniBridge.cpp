@@ -26,25 +26,17 @@
 #include "game/menu/MTitle.h"
 #include "platform/android/NdkHooks.h"
 #include "engine/input/VirtualInput.h"
-
-extern "C" void ndk_resetNativeItemInformationList();
+#include "engine/core/NFC.h"
+#include "engine/render/LODManager.h"
 
 static JavaVM *g_pVM;
 
-extern "C" JNIEnv *g_pEnv;
-JNIEnv *g_pEnv;
+static JNIEnv *g_pEnv;
 static jobject g_pClass;
-extern "C" jobject g_pActivity;
-jobject g_pActivity;
+static jobject g_pActivity;
 
-extern "C" char *g_apkPath;
-char *g_apkPath;
-extern "C" char *g_zipPath;
-char *g_zipPath;
-
-extern "C" AbyssEngine::Engine **g_pEngine;
-
-extern "C" int g_android_back_button_pressed;
+static char *g_apkPath;
+static char *g_zipPath;
 
 static bool g_slowMotion;
 static bool g_speedUp;
@@ -52,78 +44,26 @@ static bool g_speedUp;
 static float g_gamepadAxisX;
 static float g_gamepadAxisY;
 
-void AppMgr_SetExitCallback(ApplicationManager * self, void(*cb)())
-asm
-(
+void ndk_checkPlaytimeAndSpendOfferwallCredits();
 
+void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+                       int width, int height);
 
-"_ZN11AbyssEngine18ApplicationManager15SetExitCallbackEPFvvE"
-);
+void ndk23_setRootDirectory(const char *path);
 
-void AppMgr_OnTouchBegin(ApplicationManager *self, int x, int y, void *touch)
-asm("_ZN11AbyssEngine18ApplicationManager12OnTouchBeginEiiPv");
+void ndk23_setZipDirectory(const char *path);
 
-void AppMgr_OnTouchMove(ApplicationManager *self, int x, int y, void *touch)
-asm("_ZN11AbyssEngine18ApplicationManager11OnTouchMoveEiiPv");
+void ndk23_renderstep(int width, int height);
 
-void AppMgr_OnTouchEnd(ApplicationManager *self, int x, int y, void *touch)
-asm("_ZN11AbyssEngine18ApplicationManager10OnTouchEndEiiPv");
+int ndk23_getExitFlag();
 
-void AppMgr_OnTouchEnd(ApplicationManager * self)
-asm
-(
+int ndk23_getScreenshotFlag();
 
+void ndk23_resetScreenshotFlag();
 
-"_ZN11AbyssEngine18ApplicationManager10OnTouchEndEv"
-);
+void ndk23_setCountryCode(unsigned int code);
 
-void AppMgr_OnUpdate(ApplicationManager *self, long long now)
-asm("_ZN11AbyssEngine18ApplicationManager8OnUpdateEx");
-
-char *AppMgr_GetApplicationData(ApplicationManager * self)
-asm
-(
-
-
-"_ZN11AbyssEngine18ApplicationManager18GetApplicationDataEv"
-);
-
-int gof2_GetTouchCount() asm("_Z13GetTouchCountv");
-
-void gof2_GetTouch(int touch) asm("_Z8GetTouchi");
-
-void gof2_RemoveTouches() asm("_Z13RemoveTouchesv");
-
-void gof2_keyPressed(AbyssEngine::Engine *engine, int key)
-asm("_Z10keyPressedPN11AbyssEngine6EngineEi");
-
-void gof2_keyReleased(AbyssEngine::Engine *engine, int key)
-asm("_Z11keyReleasedPN11AbyssEngine6EngineEi");
-
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits();
-
-extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
-                                  int width, int height);
-
-extern "C" void ndk23_setRootDirectory(const char *path);
-
-extern "C" void ndk23_setZipDirectory(const char *path);
-
-extern "C" void ndk23_renderstep(int width, int height);
-
-extern "C" int ndk23_getExitFlag();
-
-extern "C" int ndk23_getScreenshotFlag();
-
-extern "C" void ndk23_resetScreenshotFlag();
-
-extern "C" void ndk23_sendingPauseSignal();
-
-extern "C" void ndk23_sendingResumeSignal();
-
-extern "C" void ndk23_setCountryCode(unsigned int code);
-
-extern "C" void ndk23_handleAcceleration(float x, float y, float z);
+void ndk23_handleAcceleration(float x, float y, float z);
 
 static int gRealWidth;
 static int gRealHeight;
@@ -137,16 +77,12 @@ static unsigned int countryCode;
 
 static int gb_android_offerwallCreditAmount;
 
-extern "C" AbyssEngine::Engine **g_pEngine;
-AbyssEngine::Engine **g_pEngine;
+AbyssEngine::Engine **AbyssEngine::Engine::g_pEngine;
+static AbyssEngine::Engine **&g_pEngine = AbyssEngine::Engine::g_pEngine;
 
-extern Status *Globals_status asm("_ZN7Globals6statusE");
-
-extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath);
+int loadAPKAndZip(const char *apkPath, const char *patchPath);
 
 void OnCreateApplication(AbyssEngine::Engine * engine);
-
-extern "C" void ndk_autosave();
 
 void OnCreateApplication(AbyssEngine::Engine *engine) {
     using AbyssEngine::Engine;
@@ -218,19 +154,19 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     BuildResourceList(engine);
 
-    gAppManager = engine->appManager;
-    gCanvas = engine->appManager->paintCanvas;
-    gScreenWidth = gCanvas->GetWidth();
-    gScreenHeight = gCanvas->GetHeight();
+    ApplicationManager::gAppManager = engine->appManager;
+    PaintCanvas::gCanvas = engine->appManager->paintCanvas;
+    Globals::gScreenWidth = PaintCanvas::gCanvas->GetWidth();
+    Globals::gScreenHeight = PaintCanvas::gCanvas->GetHeight();
 
     GameText *text = new GameText();
-    gGameText = text;
+    GameText::gGameText = text;
     text->setLanguage(static_cast<short>(Engine::countryCode), 3401);
     data->globals->loadFont(GameText::getLanguage());
     data->globals->init(engine->appManager, engine);
 
     engine->appManager->SetApplicationData(data);
-    engine->appManager->SetLoadingCallback(&loadingScreen, gFont);
+    engine->appManager->SetLoadingCallback(&loadingScreen, Globals::gFont);
 
     engine->appManager->RegisterApplicationModule(
         2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
@@ -246,10 +182,10 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
     engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
 
-    gLayout->initTip();
-    gStatus->resetGame();
+    Globals::gLayout->initTip();
+    Status::gStatus->resetGame();
     AbyssEngine::Engine::vfc = true;
-    gRandom->reset();
+    AERandom::gRandom->reset();
     engine->appManager->SetCurrentApplicationModule(0);
     AbyssEngine::Engine::clampTextures = false;
 
@@ -263,36 +199,36 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     AbyssEngine::Engine::lodBiasDiffuse = -1.3f;
 }
 
-extern "C" void ndk23_setRootDirectory(const char *path) {
+void ndk23_setRootDirectory(const char *path) {
     rootDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
     std::strcpy(rootDirectory, path);
 }
 
-extern "C" void ndk23_setZipDirectory(const char *path) {
+void ndk23_setZipDirectory(const char *path) {
     ZIPDirectory = static_cast<char *>(std::malloc(std::strlen(path) + 1));
     std::strcpy(ZIPDirectory, path);
 }
 
-extern "C" void ndk23_setCountryCode(unsigned int code) {
+void ndk23_setCountryCode(unsigned int code) {
     countryCode = (code > 15) ? 0u : code;
 }
 
-extern "C" int ndk23_getExitFlag() {
+int ndk23_getExitFlag() {
     return forceExit;
 }
 
-extern "C" int ndk23_getScreenshotFlag() {
+int ndk23_getScreenshotFlag() {
     return 0;
 }
 
-extern "C" void ndk23_resetScreenshotFlag() {
+void ndk23_resetScreenshotFlag() {
 }
 
-extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() {
-    if (Globals_status->getPlayingTime() >= 1) {
+void ndk_checkPlaytimeAndSpendOfferwallCredits() {
+    if (Globals::status->getPlayingTime() >= 1) {
         int amount = gb_android_offerwallCreditAmount;
         if (amount > 0) {
-            Globals_status->changeCredits(amount);
+            Globals::status->changeCredits(amount);
             ndk_autosave();
             gb_android_offerwallCreditAmount = 0;
         }
@@ -301,8 +237,8 @@ extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() {
 
 double gAccelFilterState[6];
 
-extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
-                                  int width, int height) {
+void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
+                       int width, int height) {
     glViewport(0, 0, width, height);
 
     for (int i = 0; i < 6; ++i)
@@ -327,7 +263,7 @@ extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
 
 static int rotateAccelValues;
 
-extern "C" void ndk23_handleAcceleration(float x, float y, float z) {
+void ndk23_handleAcceleration(float x, float y, float z) {
     double tiltA, tiltB;
     if (rotateAccelValues != 0) {
         tiltA = -x;
@@ -478,40 +414,39 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer
     ndk23_handleAcceleration(-x, y, z);
 }
 
-extern "C" void ExitFunction();
+void ExitFunction();
 
-extern "C" void ndk23_newrender(long long now) {
+void ndk23_newrender(long long now) {
     ApplicationManager *manager = (*g_pEngine)->appManager;
-    AppMgr_SetExitCallback(manager, &ExitFunction);
+    manager->SetExitCallback(&ExitFunction);
 
-    int touchCount = gof2_GetTouchCount();
+    int touchCount = GetTouchCount();
     for (int i = 0; i < touchCount; ++i) {
-        int rec[4];
-        gof2_GetTouch(reinterpret_cast<int>(rec));
-        void *touch = reinterpret_cast<void *>(rec[0]);
-        int phase = rec[1];
-        int x = rec[2];
-        int y = rec[3];
+        Touch rec = GetTouch(i);
+        void *touch = reinterpret_cast<void *>(rec.x);
+        int phase = rec.y;
+        int x = rec.id;
+        int y = rec.action;
         if (phase == 2) {
-            AppMgr_OnTouchMove(manager, x, y, touch);
+            manager->OnTouchMove(x, y, touch);
         } else if (phase == 1) {
-            AppMgr_OnTouchEnd(manager, x, y, touch);
-            AppMgr_OnTouchEnd(manager);
+            manager->OnTouchEnd(x, y, touch);
+            manager->OnTouchEnd();
         } else if (phase == 0) {
-            AppMgr_OnTouchBegin(manager, x, y, touch);
+            manager->OnTouchBegin(x, y, touch);
         }
     }
 
-    if (g_android_back_button_pressed != 0) {
-        gof2_keyPressed(*g_pEngine, 0x35);
-        gof2_keyReleased(*g_pEngine, 0x35);
-        g_android_back_button_pressed = 0;
+    if (NFC::g_android_back_button_pressed != 0) {
+        keyPressed(*g_pEngine, 0x35);
+        keyReleased(*g_pEngine, 0x35);
+        NFC::g_android_back_button_pressed = 0;
     }
 
-    gof2_RemoveTouches();
-    AppMgr_OnUpdate(manager, now);
+    RemoveTouches();
+    manager->OnUpdate(now);
 
-    char *appData = AppMgr_GetApplicationData(manager);
+    char *appData = static_cast<char *>(manager->GetApplicationData());
     if (appData[0x3d] != 0) {
         appData[0x40] = 1;
         appData[0x3d] = 0;
@@ -534,27 +469,27 @@ extern "C" void ndk23_newrender(long long now) {
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
-                                          float x, float y) {
+void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
+                               float x, float y) {
     ApplicationManager *manager = (*g_pEngine)->appManager;
     int px = static_cast<int>(x);
     int py = static_cast<int>(y);
     if (phase == 2) {
-        AppMgr_OnTouchMove(manager, px, py, touch);
+        manager->OnTouchMove(px, py, touch);
     } else if (phase == 1) {
-        AppMgr_OnTouchEnd(manager, px, py, touch);
-        AppMgr_OnTouchEnd(manager);
+        manager->OnTouchEnd(px, py, touch);
+        manager->OnTouchEnd();
     } else if (phase == 0) {
-        AppMgr_OnTouchBegin(manager, px, py, touch);
+        manager->OnTouchBegin(px, py, touch);
     }
 }
 
-extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase,
-                                             float x, float y) {
+void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phase,
+                                  float x, float y) {
     ndk23_handleTouchPadEvent(clazz, touch, phase, x, y);
 }
 
-extern "C" void ndk23_ndkDone() {
+void ndk23_ndkDone() {
     AbyssEngine::Engine *engine = *g_pEngine;
     if (engine != nullptr) {
         engine->Release();
@@ -783,9 +718,9 @@ extern "C" void Java_net_fishlabs_tapjoy_ToJNI_spentAmountOfCredits(
     ndk_checkPlaytimeAndSpendOfferwallCredits();
 }
 
-extern "C" int loadAPK(const char *path);
+int loadAPK(const char *path);
 
-extern "C" void ndk23_Init(const char *apkPath, int width, int height) {
+void ndk23_Init(const char *apkPath, int width, int height) {
     glViewport(0, 0, width, height);
 
     for (int i = 0; i < 6; ++i)
@@ -808,20 +743,20 @@ extern "C" void ndk23_Init(const char *apkPath, int width, int height) {
     engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }
 
-extern "C" void ndk23_resize(int width, int height) {
+void ndk23_resize(int width, int height) {
     glViewport(0, 0, width, height);
 
     gRealHeight = height;
     gRealWidth = width;
 
-    simulateTouch(gEngine);
+    simulateTouch(Engine::gEngine);
 }
 
-extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) {
+void ndk23_setDisplayHeightAndWidth(int height, int width) {
     (void) height;
     (void) width;
 }
 
-extern "C" int ndk23_getCurrentFiredStatus() {
+int ndk23_getCurrentFiredStatus() {
     return 0;
 }

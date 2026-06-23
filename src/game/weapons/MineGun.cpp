@@ -10,7 +10,7 @@
 #include "engine/math/Transform.h"
 
 
-extern "C" void *g_PaintCanvas;
+static void *g_PaintCanvas = nullptr;
 
 MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     : ObjectGun(param, gun, mesh, 0, level) {

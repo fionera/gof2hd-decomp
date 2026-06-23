@@ -3,8 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" unsigned char g_TextureAlphaTestShader_useAlphaProgram;
-extern "C" unsigned char g_TextureAlphaTestShader_programIndex;
+static unsigned char g_TextureAlphaTestShader_useAlphaProgram = 0;
+static unsigned char g_TextureAlphaTestShader_programIndex = 0;
 
 namespace AbyssEngine {
     int TextureAlphaTestShader::ShaderIndex;

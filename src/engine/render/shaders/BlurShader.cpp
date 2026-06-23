@@ -2,14 +2,16 @@
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
+#include "engine/render/PaintCanvas.h"
+#include "engine/core/ApplicationManager.h"
 #include <GLES2/gl2.h>
 
-extern "C" unsigned int Engine_GetDisplayWidth(::Engine * engine);
-extern "C" unsigned int Engine_GetDisplayHeight(::Engine * engine);
+unsigned int Engine_GetDisplayWidth(::Engine * engine);
+unsigned int Engine_GetDisplayHeight(::Engine * engine);
 
-extern "C" void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
+void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 
-extern "C" void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
+void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
     BlurShader::BlurShader() {
@@ -67,7 +69,7 @@ namespace AbyssEngine {
             glBindFramebuffer(0x8d40, engine->field_0x40c);
             int width;
             int height;
-            if (*(int *) ((char *) engine->field_0x30 + 0x30) == 2) {
+            if (engine->appManager->paintCanvas->gameOrientation == 2) {
                 width = Engine_GetDisplayWidth(engine);
                 height = Engine_GetDisplayHeight(engine);
             } else {
@@ -95,7 +97,7 @@ namespace AbyssEngine {
         if (texelLocation >= 0) {
             float width;
             int other;
-            if (*(int *) ((char *) engine->field_0x30 + 0x30) == 2) {
+            if (engine->appManager->paintCanvas->gameOrientation == 2) {
                 width = (float) Engine_GetDisplayWidth(engine);
                 other = Engine_GetDisplayHeight(engine);
             } else {
@@ -122,11 +124,11 @@ namespace AbyssEngine {
         }
         if (position >= 0) {
             glVertexAttribPointer(position, 3, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 4));
+                                  engine->quadMesh->positions);
         }
         if (texCoord >= 0) {
             glVertexAttribPointer(texCoord, 2, 0x1406, 0, 0,
-                                  *(void **) (engine->field_0x380 + 8));
+                                  engine->quadMesh->texCoords);
         }
 
         glClear(0x4000);
@@ -160,7 +162,7 @@ namespace AbyssEngine {
         if (texelLocation >= 0) {
             float width;
             float height;
-            if (*(int *) ((char *) engine->field_0x30 + 0x30) == 2) {
+            if (engine->appManager->paintCanvas->gameOrientation == 2) {
                 width = (float) Engine_GetDisplayWidth(engine);
                 height = (float) Engine_GetDisplayHeight(engine);
             } else {

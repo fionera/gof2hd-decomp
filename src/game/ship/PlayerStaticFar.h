@@ -6,8 +6,6 @@
 
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "game/ship/PlayerStatic.h"
 
 #include "engine/math/Vector.h"

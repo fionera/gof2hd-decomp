@@ -23,9 +23,11 @@ namespace AbyssEngine {
         int nextInt();
 
         int nextInt(int bound);
+
+        static AERandom *gRandom;
     };
 }
 
-extern AbyssEngine::AERandom *gRandom;
+using ::AbyssEngine::AERandom;
 
 #endif

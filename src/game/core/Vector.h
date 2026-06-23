@@ -2,6 +2,4 @@
 #define GOF2_VECTOR_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #endif

@@ -132,14 +132,14 @@ namespace AbyssEngine {
             uint32_t handle;
             if (AEFile::OpenRead(vertexPath, &handle) != 0) {
                 uint32_t vertexSize = AEFile::GetFileSize(handle);
-                char *vertexSource = (char *) operator new[](vertexSize + 1);
+                char *vertexSource = new char[vertexSize + 1];
                 AEFile::Read(vertexSize, vertexSource, handle);
                 AEFile::Close(handle);
                 vertexSource[vertexSize] = 0;
 
                 if (AEFile::OpenRead(fragmentPath, &handle) != 0) {
                     uint32_t fragmentSize = AEFile::GetFileSize(handle);
-                    char *fragmentSource = (char *) operator new[](fragmentSize + 1);
+                    char *fragmentSource = new char[fragmentSize + 1];
                     AEFile::Read(fragmentSize, fragmentSource, handle);
                     AEFile::Close(handle);
                     fragmentSource[fragmentSize] = 0;

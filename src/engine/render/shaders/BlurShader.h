@@ -2,8 +2,6 @@
 #define GOF2_BLURSHADER_H
 #include "engine/core/Array.h"
 #include "../../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/ShaderBaseStruct.h"
 
 #include "engine/math/Vector.h"

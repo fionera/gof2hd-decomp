@@ -2,8 +2,6 @@
 #define GOF2_CUTSCENE_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Vector.h"
 
 

@@ -2,7 +2,6 @@
 #define GOF2_PLAYERFIGHTER_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/math/EaseInOutMatrix.h"
 
 #include "engine/math/Matrix.h"

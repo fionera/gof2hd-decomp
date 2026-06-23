@@ -3,11 +3,12 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" float *const gBumpFloatA;
-extern "C" float *const gBumpFloatB;
-extern "C" uint8_t *const gBumpFlag;
-
-extern "C" float *Vector_cast_to_float(AbyssEngine::AEMath::Vector * self);
+static float gBumpFloatAStorage = 0.0f;
+static float gBumpFloatBStorage = 0.0f;
+static uint8_t gBumpFlagStorage = 0;
+static float *const gBumpFloatA = &gBumpFloatAStorage;
+static float *const gBumpFloatB = &gBumpFloatBStorage;
+static uint8_t *const gBumpFlag = &gBumpFlagStorage;
 
 namespace AbyssEngine {
     BumpShader::BumpShader() {
@@ -85,7 +86,7 @@ namespace AbyssEngine {
             if (this->u15Loc >= 0)
                 glUniform3fv(this->u15Loc, 1, (const float *) &ctx->rimColor);
             if (this->u18Loc >= 0) {
-                float *v = Vector_cast_to_float(&ctx->fogColor);
+                float *v = reinterpret_cast<float *>(&ctx->fogColor);
                 glUniform3fv(this->u18Loc, 1, v);
             }
             if (this->u20Loc >= 0)

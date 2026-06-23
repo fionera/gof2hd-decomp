@@ -2,8 +2,6 @@
 #define GOF2_PLAYERGASCLOUD_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "game/ship/KIPlayer.h"
 
 #include "engine/math/Vector.h"

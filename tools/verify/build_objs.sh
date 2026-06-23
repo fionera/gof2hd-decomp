@@ -59,10 +59,16 @@ compile_one() {
   case "$src" in
     src/runtime/*) extra="-faligned-allocation -isystem ${NDK:-/opt/android-ndk-r18b}/sources/cxx-stl/llvm-libc++abi/src" ;;
   esac
-  if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS $extra -MMD -MF "$dep" -c "$src" -o "$obj" >"$log" 2>&1; then
-    rm -f "$log"
-    return 0
-  fi
+  # Retry transient failures (OrbStack/orbcc hiccups under parallel load drop TUs and cause
+  # false "absent" symbols). A real compile error prints `error:` -> fail fast, don't waste retries.
+  local attempt
+  for attempt in 1 2 3; do
+    if "$HERE/orbcc" $GOF2_MATCH_CXXFLAGS $extra -MMD -MF "$dep" -c "$src" -o "$obj" >"$log" 2>&1; then
+      rm -f "$log"
+      return 0
+    fi
+    grep -q 'error:' "$log" && break   # genuine compile error, not a transient
+  done
   rm -f "$obj"
   return 1
 }

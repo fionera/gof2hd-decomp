@@ -2,7 +2,6 @@
 #define GOF2_PLAYEREGO_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "TargetFollowCamera.h"
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"
@@ -40,25 +39,51 @@ typedef AbyssEngine::AEMath::Vector Vec3;
 class PlayerEgo {
 public:
     void *player;
-    AEGeometry *field_0x4;
-    AEGeometry *geometry;
-    Level *level;
-    LevelScript *levelScript;
-    void *field_0x14;
-    Radio *radioRef;
-    int field_0x1c;
-    int field_0x20;
-    uint8_t freeze;
-    uint8_t inWormhole;
-    void *turretGeometry;
-    void *field_0x2c;
-    void *field_0x30;
-    void *gunYawGeo;
-    void *gunMuzzleRoot;
-    void *gunExtraGeo;
-    float maneuverParam;
-    float field_0x80;
-    int targetFollowCamera;
+
+    // Bytes 0x4..0x40 hold the ship transform Matrix (sizeof 0x3c) in the
+    // binary; the same storage is also accessed as the named pointer fields
+    // below. Expose both via an anonymous union without reordering.
+    //
+    // The outer union additionally exposes `rocketReturnMatrix`, a Matrix that
+    // begins at byte 0x10 (0xC into this storage region) and runs 0x3c bytes to
+    // 0x4c. During rocket-control hand-off the ship transform is copied into
+    // that slot via a single bulk Matrix store, which overruns the inner union
+    // into maneuverParam/field_0x80/targetFollowCamera. Modeling it as a named
+    // member keeps the store as plain member access.
+    union {
+        struct {
+            union {
+                AbyssEngine::AEMath::Matrix transform;
+
+                struct {
+                    AEGeometry *field_0x4;
+                    AEGeometry *geometry;
+                    Level *level;
+                    LevelScript *levelScript;
+                    void *field_0x14;
+                    Radio *radioRef;
+                    int field_0x1c;
+                    int field_0x20;
+                    uint8_t freeze;
+                    uint8_t inWormhole;
+                    void *turretGeometry;
+                    void *field_0x2c;
+                    void *field_0x30;
+                    void *gunYawGeo;
+                    void *gunMuzzleRoot;
+                    void *gunExtraGeo;
+                };
+            };
+            float maneuverParam;
+            float field_0x80;
+            int targetFollowCamera;
+        };
+
+        struct {
+            char _rocketReturnMatrixPad[0xC];
+            AbyssEngine::AEMath::Matrix rocketReturnMatrix;
+        };
+    };
     void *explosion;
     void *explosion2;
     int field_0xac;
@@ -550,4 +575,12 @@ public:
 
     int updateManeuver();
 };
+
+#if __SIZEOF_POINTER__ == 4
+static_assert(__builtin_offsetof(PlayerEgo, transform) == 0x4, "PlayerEgo::transform offset");
+static_assert(__builtin_offsetof(PlayerEgo, rocketReturnMatrix) == 0x10, "PlayerEgo::rocketReturnMatrix offset");
+static_assert(__builtin_offsetof(PlayerEgo, maneuverParam) == 0x40, "PlayerEgo::maneuverParam offset");
+static_assert(__builtin_offsetof(PlayerEgo, targetFollowCamera) == 0x48, "PlayerEgo::targetFollowCamera offset");
+#endif
+
 #endif

@@ -2,7 +2,6 @@
 #define GOF2_BLUEPRINT_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "Item.h"
 
 #include "game/core/String.h"

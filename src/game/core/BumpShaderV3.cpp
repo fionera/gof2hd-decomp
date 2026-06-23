@@ -1,5 +1,6 @@
 #include "game/core/BumpShaderV3.h"
 #include "engine/render/Engine.h"
+#include "engine/render/Material.h"
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
@@ -99,7 +100,7 @@ namespace AbyssEngine {
                 glUniform3fv(this->uRimColor, 1, (float *) &engine->rimColor);
             if (this->uIsGlowMat >= 0) {
                 float w = 0.85f;
-                if (*(int *) ((char *) mesh->field_0x30 + 0x24) != 0)
+                if (static_cast<Material *>(mesh->material)->addData != nullptr)
                     w = 1.0f;
                 glUniform1f(this->uIsGlowMat, w);
             }

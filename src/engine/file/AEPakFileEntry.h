@@ -2,7 +2,6 @@
 #define GOF2_AEPAKFILEENTRY_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
 #include "FileInterface.h"
 #include "game/core/String.h"
 #include "AELowLevelFile.h"

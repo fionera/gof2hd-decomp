@@ -15,12 +15,13 @@
 #include "game/ui/TouchButton.h"
 #include "game/world/Wanted.h"
 #include "game/core/String.h"
+#include "game/menu/ModStation.h"
 
-extern Layout **g_WantedWindow_move_layout;
-extern int *g_WantedWindow_move_screen_h;
-extern int *g_WantedWindow_move_screen_w_a;
-extern int *g_WantedWindow_move_force;
-extern int *g_WantedWindow_move_screen_w_b;
+static Layout **g_WantedWindow_move_layout = nullptr;
+static int *g_WantedWindow_move_screen_h = nullptr;
+static int *g_WantedWindow_move_screen_w_a = nullptr;
+static int *g_WantedWindow_move_force = nullptr;
+static int *g_WantedWindow_move_screen_w_b = nullptr;
 
 int WantedWindow::OnTouchMove(int x, int y) {
     if (this->showingMap != 0) {
@@ -107,7 +108,7 @@ void WantedWindow::update(int dt) {
     }
 }
 
-extern Layout **g_WantedWindow_touch_layout;
+static Layout **g_WantedWindow_touch_layout = nullptr;
 
 int WantedWindow::OnTouchBegin(int x, int y) {
     if (this->showingMap != 0) {
@@ -156,7 +157,7 @@ float WantedWindow::getRelativeScrollStartPos() {
     return -(float) pos / (float) this->contentHeight;
 }
 
-extern Layout **g_WantedWindow_hit_layout;
+static Layout **g_WantedWindow_hit_layout = nullptr;
 
 uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     if (x >= this->windowX + (this->windowWidth >> 1)) {
@@ -177,16 +178,16 @@ uint32_t WantedWindow::getWantedAtPosition(int x, int y) {
     return (uint32_t) idx;
 }
 
-extern uint8_t *g_WantedWindow_end_fullscreen;
-extern uint8_t *g_WantedWindow_end_tablet;
-extern uint8_t *g_WantedWindow_end_small;
-extern int *g_WantedWindow_end_screen_w;
-extern int *g_WantedWindow_end_screen_h;
-extern int *g_WantedWindow_end_window_h;
-extern int *g_WantedWindow_end_window_w;
-extern Layout **g_WantedWindow_end_layout_a;
-extern Layout **g_WantedWindow_end_layout_b;
-extern GameText **g_WantedWindow_end_text;
+static uint8_t *g_WantedWindow_end_fullscreen = nullptr;
+static uint8_t *g_WantedWindow_end_tablet = nullptr;
+static uint8_t *g_WantedWindow_end_small = nullptr;
+static int *g_WantedWindow_end_screen_w = nullptr;
+static int *g_WantedWindow_end_screen_h = nullptr;
+static int *g_WantedWindow_end_window_h = nullptr;
+static int *g_WantedWindow_end_window_w = nullptr;
+static Layout **g_WantedWindow_end_layout_a = nullptr;
+static Layout **g_WantedWindow_end_layout_b = nullptr;
+static GameText **g_WantedWindow_end_text = nullptr;
 
 void WantedWindow::OnTouchEnd(int x, int y) {
     if (this->showingMap != 0) {
@@ -259,12 +260,12 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     }
 
     if (openMap) {
-        ApplicationManager *app = gAppManager;
-        void *module = app->GetApplicationModule(5);
-        this->starMap = *(StarMap **) ((char *) module + 0x10);
+        ApplicationManager *app = ApplicationManager::gAppManager;
+        ModStation *module = (ModStation *) app->GetApplicationModule(5);
+        this->starMap = module->starMap;
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         int lastSeen = wanted->getLastSeen();
-        int stationIndex = gGalaxy->getStation(lastSeen);
+        int stationIndex = Galaxy::gGalaxy->getStation(lastSeen);
         Station *station = (Station *) (long) stationIndex;
         delete this->mission;
         this->mission = nullptr;
@@ -275,8 +276,8 @@ void WantedWindow::OnTouchEnd(int x, int y) {
         StarMap *map = this->starMap;
         if (map == nullptr) {
             map = new StarMap(true, mission, false, -1);
-            *(StarMap **) ((char *) app->GetApplicationModule(5) + 0x10) = map;
-            map = *(StarMap **) ((char *) app->GetApplicationModule(5) + 0x10);
+            ((ModStation *) app->GetApplicationModule(5))->starMap = map;
+            map = ((ModStation *) app->GetApplicationModule(5))->starMap;
             this->starMap = map;
         } else {
             map->init(true, mission, false, -1);
@@ -300,10 +301,10 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     }
 }
 
-extern Layout **g_WantedWindow_draw_layout;
-extern unsigned int *g_WantedWindow_draw_font;
-extern GameText **g_WantedWindow_draw_text;
-extern ImageFactory **g_WantedWindow_draw_factory;
+static Layout **g_WantedWindow_draw_layout = nullptr;
+static unsigned int *g_WantedWindow_draw_font = nullptr;
+static GameText **g_WantedWindow_draw_text = nullptr;
+static ImageFactory **g_WantedWindow_draw_factory = nullptr;
 
 void WantedWindow::draw() {
     if (this->showingMap != 0) {
@@ -312,7 +313,7 @@ void WantedWindow::draw() {
     }
 
     Layout *layout = *g_WantedWindow_draw_layout;
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     unsigned int font = *g_WantedWindow_draw_font;
 
     canvas->EnableClip(this->windowX,
@@ -356,9 +357,9 @@ void WantedWindow::draw() {
                            layout->field_0x44,
                            textY, false);
 
-        int campaign = gStatus->getCurrentCampaignMission();
+        int campaign = Status::gStatus->getCurrentCampaignMission();
         if ((i == 0 && campaign == 0x80) ||
-            (i == 1 && gStatus->getCurrentCampaignMission() == 0x82)) {
+            (i == 1 && Status::gStatus->getCurrentCampaignMission() == 0x82)) {
             String marked = wanted->getName();
             marked += String(" *", false);
             int textW = canvas->GetTextWidth(font, marked);
@@ -446,15 +447,15 @@ void WantedWindow::draw() {
     layout->drawFooter();
 }
 
-extern Layout **g_WantedWindow_init_layout;
-extern uint8_t *g_WantedWindow_init_fullscreen;
-extern uint8_t *g_WantedWindow_init_tablet;
-extern uint8_t *g_WantedWindow_init_small;
-extern int *g_WantedWindow_init_screen_w;
-extern int *g_WantedWindow_init_screen_h;
-extern int *g_WantedWindow_init_window_w;
-extern int *g_WantedWindow_init_window_h;
-extern GameText **g_WantedWindow_init_text;
+static Layout **g_WantedWindow_init_layout = nullptr;
+static uint8_t *g_WantedWindow_init_fullscreen = nullptr;
+static uint8_t *g_WantedWindow_init_tablet = nullptr;
+static uint8_t *g_WantedWindow_init_small = nullptr;
+static int *g_WantedWindow_init_screen_w = nullptr;
+static int *g_WantedWindow_init_screen_h = nullptr;
+static int *g_WantedWindow_init_window_w = nullptr;
+static int *g_WantedWindow_init_window_h = nullptr;
+static GameText **g_WantedWindow_init_text = nullptr;
 
 int WantedWindow::init() {
     this->scrollOffset = 0;
@@ -464,7 +465,7 @@ int WantedWindow::init() {
 
     this->wantedList = new Array<Wanted *>();
 
-    Status *status = gStatus;
+    Status *status = Status::gStatus;
     Array<Wanted *> *allWanted = status->getWanted();
     Layout *layout = *g_WantedWindow_init_layout;
 
@@ -597,13 +598,13 @@ int WantedWindow::init() {
     return 1;
 }
 
-extern unsigned int *g_WantedWindow_ctor_font;
+static unsigned int *g_WantedWindow_ctor_font = nullptr;
 
 WantedWindow::WantedWindow() {
     this->detailButton = nullptr;
     this->starMap = nullptr;
     this->imageParts = nullptr;
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     int h = canvas->GetTextHeight(*g_WantedWindow_ctor_font);
     this->wantedList = nullptr;
     this->mission = nullptr;
@@ -675,9 +676,9 @@ float WantedWindow::getRelativeScrollHeight() {
     return (float) num / (float) content;
 }
 
-extern ImageFactory **g_WantedWindow_select_factory;
-extern GameText **g_WantedWindow_select_text_a;
-extern Layout **g_WantedWindow_select_layout;
+static ImageFactory **g_WantedWindow_select_factory = nullptr;
+static GameText **g_WantedWindow_select_text_a = nullptr;
+static Layout **g_WantedWindow_select_layout = nullptr;
 
 void WantedWindow::selectWanted(int idx) {
     delete this->imageParts;
@@ -692,7 +693,7 @@ void WantedWindow::selectWanted(int idx) {
     this->nameText = wanted->getName();
 
     if (wanted->isActive() != 0) {
-        Galaxy *galaxy = gGalaxy;
+        Galaxy *galaxy = Galaxy::gGalaxy;
         Station *last = (Station *) (long) galaxy->getStation(wanted->getLastSeen());
         Station *travel = (Station *) (long) galaxy->getStation(wanted->getTravelsTo());
         Station *current = (Station *) (long) galaxy->getStation(wanted->getCurrentLocation());

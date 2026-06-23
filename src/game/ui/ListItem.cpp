@@ -7,8 +7,6 @@
 #include "game/ship/Agent.h"
 #include "game/ship/Ship.h"
 
-extern Status *status;
-
 bool ListItem::isMission() {
     return this->mission != 0;
 }
@@ -26,7 +24,7 @@ ListItem::ListItem(BluePrint *bp) {
 int ListItem::checkSort() {
     if (this->item == 0)
         return 0;
-    Ship *ship = status->getShip();
+    Ship *ship = Status::gStatus->getShip();
     int sort = this->item->getSort();
     return ship->slotAvailable(sort);
 }
@@ -72,7 +70,7 @@ ListItem::ListItem(Ship *s) {
 int ListItem::checkSlot() {
     int r = 0;
     if (this->item != 0) {
-        Ship *ship = status->getShip();
+        Ship *ship = Status::gStatus->getShip();
         int type = this->item->getType();
         if (ship->getFreeSlots(type) > 0)
             r = 1;
@@ -159,7 +157,7 @@ bool ListItem::checkCredits() {
     } else {
         price = this->ship->getPrice();
     }
-    return price <= status->getCredits();
+    return price <= Status::gStatus->getCredits();
 }
 
 ListItem::ListItem(AbyssEngine::String *p1, bool b) {

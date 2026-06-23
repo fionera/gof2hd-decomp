@@ -2,8 +2,6 @@
 #define GOF2_IMAGEFACTORY_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/Sprite.h"
 
 class ImagePart;

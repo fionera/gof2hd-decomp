@@ -2,7 +2,6 @@
 #define GOF2_FMODSOUND_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/math/Vector.h"
 #include "fmod_event.hpp"
 

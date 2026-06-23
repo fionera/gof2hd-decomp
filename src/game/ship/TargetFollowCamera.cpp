@@ -11,22 +11,22 @@ namespace AbyssEngine {
     }
 }
 
-extern unsigned g_currentCamera;
-extern void *g_cameraRng;
+static unsigned g_currentCamera = 0;
+static void *g_cameraRng = nullptr;
 
-extern int AERandom(void *rng, int bound);
+int AERandom(void *rng, int bound);
 
-extern const double g_TFC_seedHandlingA;
-extern const double g_TFC_seedHandlingB;
-extern const float g_TFC_shakeMax;
-extern const float g_TFC_rumbleScale;
-extern const float g_TFC_shakeScale;
+static const double g_TFC_seedHandlingA = 0.005;
+static const double g_TFC_seedHandlingB = 0.006;
+static const float g_TFC_shakeMax = 0.0f;
+static const float g_TFC_rumbleScale = 1.0f;
+static const float g_TFC_shakeScale = 1.0f;
 
-extern const double g_TFC_dampA[9];
-extern const double g_TFC_dampB[9];
-extern const double g_TFC_dampC[9];
-extern const double g_TFC_dampD[9];
-extern const double g_TFC_dampE[9];
+static const double g_TFC_dampA[9] = {0};
+static const double g_TFC_dampB[9] = {0};
+static const double g_TFC_dampC[9] = {0};
+static const double g_TFC_dampD[9] = {0};
+static const double g_TFC_dampE[9] = {0};
 
 static inline float bitsToFloat(uint32_t u) {
     float f;
@@ -253,7 +253,7 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
 void TargetFollowCamera::update(int dt) {
     if (this->fixed != 0) {
         *getPosition() = MatrixGetPosition(this->localMatrix);
-        gCanvas->CameraSetLocal(g_currentCamera, this->localMatrix);
+        PaintCanvas::gCanvas->CameraSetLocal(g_currentCamera, this->localMatrix);
         if (this->target != 0) {
             Matrix m = this->target->getMatrix();
             *getUp() = MatrixGetUp(m);
@@ -394,6 +394,6 @@ void TargetFollowCamera::update(int dt) {
     Matrix rollMat;
     MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);
     MatrixMultiply(look, rollMat);
-    gCanvas->CameraSetLocal(g_currentCamera, look);
+    PaintCanvas::gCanvas->CameraSetLocal(g_currentCamera, look);
     this->localMatrix = look;
 }

@@ -2,7 +2,6 @@
 #define GOF2_ROUTE_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "Waypoint.h"
 
 #include "engine/math/Vector.h"

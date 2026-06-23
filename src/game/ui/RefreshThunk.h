@@ -3,7 +3,6 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "game/ui/TouchButton.h"
-#include "fieldaccess.h"
 #include "game/ui/ModuleTransitionThunk.h"
 
 struct RefreshThunk {

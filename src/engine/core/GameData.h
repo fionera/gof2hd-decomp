@@ -2,8 +2,6 @@
 #define GOF2_GAMEDATA_H
 #include "engine/core/Array.h"
 #include "AEString.h"
-#include "fieldaccess.h"
-
 class Globals;
 namespace AbyssEngine { class Engine; }
 

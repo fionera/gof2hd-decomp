@@ -1,718 +1,572 @@
 {
-"LODManager_addObject_tail": {
-"class": "LODManager",
-"method": "addObject_tail",
-"ret": "void",
-"params_after_self": [
-"AEGeometry *g",
-"Array<AEGeometry*> *objects"
-],
-"self_name": "self"
-},
-"CutScene_update_tail": {
-"class": "CutScene",
-"method": "update_tail",
+"DialogueWindow_ctor_ou": {
+"class": "DialogueWindow",
+"method": "ctor_ou",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "dw",
+"file": "DialogueWindow.cpp"
 },
-"CutScene_render2D_tail": {
-"class": "CutScene",
-"method": "render2D_tail",
+"DialogueWindow_ctor_mission_ou": {
+"class": "DialogueWindow",
+"method": "ctor_mission_ou",
+"ret": "void",
+"params_after_self": [
+"void *mission",
+"int level",
+"int kind"
+],
+"self_name": "dw",
+"file": "DialogueWindow.cpp"
+},
+"DialogueWindow_ctor_msg_ou": {
+"class": "DialogueWindow",
+"method": "ctor_msg_ou",
+"ret": "void",
+"params_after_self": [
+"int titleStr",
+"int bodyStr",
+"int *parts"
+],
+"self_name": "dw",
+"file": "DialogueWindow.cpp"
+},
+"DialogueWindow_dtor_ote": {
+"class": "DialogueWindow",
+"method": "dtor_ote",
+"ret": "void",
+"params_after_self": [],
+"self_name": "dw",
+"file": "DialogueWindow.cpp"
+},
+"Radar_ctor": {
+"class": "Radar",
+"method": "ctor",
 "ret": "void",
 "params_after_self": [
 "Level *level"
 ],
-"self_name": "self"
+"self_name": "r",
+"file": "Radar.cpp"
 },
-"CutScene_renderBG_tail": {
-"class": "CutScene",
-"method": "renderBG_tail",
-"ret": "void",
-"params_after_self": [
-"Level *level",
-"uint32_t t"
-],
-"self_name": "self"
-},
-"CutScene_processAux": {
-"class": "CutScene",
-"method": "processAux",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Player_awake": {
-"class": "Player",
-"method": "awake",
-"ret": "void",
-"params_after_self": [
-"bool active"
-],
-"self_name": "self"
-},
-"Player_setDead": {
-"class": "Player",
-"method": "setDead",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Player_addGun": {
-"class": "Player",
-"method": "addGun",
-"ret": "void",
-"params_after_self": [
-"Array<Gun *> *gunsIn",
-"int slot"
-],
-"self_name": "self"
-},
-"AEGeometry_positionChanged": {
-"class": "AEGeometry",
-"method": "positionChanged",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"KIPlayer_setAutoPilot": {
-"class": "KIPlayer",
-"method": "setAutoPilot",
-"ret": "void",
-"params_after_self": [
-"KIPlayer *target"
-],
-"self_name": "self"
-},
-"ListItem_ctor_Slot": {
-"class": "ListItem",
-"method": "ctor_Slot",
-"ret": "void",
-"params_after_self": [
-"int slot"
-],
-"self_name": "self"
-},
-"ListItem_ctor_TextButton": {
-"class": "ListItem",
-"method": "ctor_TextButton",
-"ret": "void",
-"params_after_self": [
-"const void *text",
-"bool enabled",
-"int action"
-],
-"self_name": "self"
-},
-"ListItem_ctor_ListItem": {
-"class": "ListItem",
-"method": "ctor_ListItem",
-"ret": "void",
-"params_after_self": [
-"ListItem *src"
-],
-"self_name": "self"
-},
-"Camera_shake": {
-"class": "Camera",
-"method": "shake",
-"ret": "void",
-"params_after_self": [
-"float dx",
-"float dy",
-"float dz"
-],
-"self_name": "self"
-},
-"Status_getCampaignMissionPtr": {
-"class": "Status",
-"method": "getCampaignMissionPtr",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Level_render2D_call": {
-"class": "Level",
-"method": "render2D_call",
-"ret": "void",
-"params_after_self": [
-"int starSystem"
-],
-"self_name": "self"
-},
-"Level_render_tail": {
-"class": "Level",
-"method": "render_tail",
-"ret": "void",
-"params_after_self": [
-"int starSystem"
-],
-"self_name": "self"
-},
-"Level_checkGameOver_call": {
-"class": "Level",
-"method": "checkGameOver_call",
-"ret": "void",
-"params_after_self": [
-"int objective"
-],
-"self_name": "self"
-},
-"Level_checkObjective_call": {
-"class": "Level",
-"method": "checkObjective_call",
-"ret": "void",
-"params_after_self": [
-"int objective"
-],
-"self_name": "self"
-},
-"Level_enableMovingStars_call": {
-"class": "Level",
-"method": "enableMovingStars_call",
-"ret": "void",
-"params_after_self": [
-"int mgr",
-"int index",
-"bool enable"
-],
-"self_name": "self"
-},
-"Level_enableFog_call": {
-"class": "Level",
-"method": "enableFog_call",
-"ret": "void",
-"params_after_self": [
-"int mgr",
-"int sys",
-"bool enable"
-],
-"self_name": "self"
-},
-"Level_wanted_action": {
-"class": "Level",
-"method": "wanted_action",
-"ret": "void",
-"params_after_self": [
-"int code",
-"int arg"
-],
-"self_name": "self"
-},
-"Level_pirateStationAction_tail": {
-"class": "Level",
-"method": "pirateStationAction_tail",
-"ret": "void",
-"params_after_self": [
-"int code",
-"int arg"
-],
-"self_name": "self"
-},
-"Level_friendTurnedEnemy_action": {
-"class": "Level",
-"method": "friendTurnedEnemy_action",
-"ret": "void",
-"params_after_self": [
-"int code",
-"int arg"
-],
-"self_name": "self"
-},
-"Level_alarmAllFriends_tail": {
-"class": "Level",
-"method": "alarmAllFriends_tail",
-"ret": "void",
-"params_after_self": [
-"Station *station",
-"int flag"
-],
-"self_name": "self"
-},
-"Level_almostKillWanted_tail": {
-"class": "Level",
-"method": "almostKillWanted_tail",
-"ret": "void",
-"params_after_self": [
-"int wanted",
-"int active"
-],
-"self_name": "self"
-},
-"Level_wingmanDied_all": {
-"class": "Level",
-"method": "wingmanDied_all",
-"ret": "void",
-"params_after_self": [
-"Status *status",
-"int zero"
-],
-"self_name": "self"
-},
-"Level_wingmanDied_one": {
-"class": "Level",
-"method": "wingmanDied_one",
-"ret": "void",
-"params_after_self": [
-"String *name",
-"unsigned int *list"
-],
-"self_name": "self"
-},
-"Level_createStaticObject_call": {
-"class": "Level",
-"method": "createStaticObject_call",
-"ret": "void",
-"params_after_self": [
-"int wp",
-"int type",
-"int jitter"
-],
-"self_name": "self"
-},
-"StarMap_touch_end": {
-"class": "StarMap",
-"method": "touch_end",
-"ret": "void",
-"params_after_self": [
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"Layout_drawWindow": {
-"class": "Layout",
-"method": "drawWindow",
-"ret": "void",
-"params_after_self": [
-"void *title",
-"int x",
-"int y",
-"int w",
-"int h"
-],
-"self_name": "self"
-},
-"Layout_drawMask": {
-"class": "Layout",
-"method": "drawMask",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Layout_drawBGBorderImpl": {
-"class": "Layout",
-"method": "drawBGBorderImpl",
-"ret": "void",
-"params_after_self": [
-"unsigned corner",
-"unsigned edge",
-"int x",
-"int y",
-"int w",
-"int h",
-"int inset",
-"int pad"
-],
-"self_name": "self"
-},
-"PlayerFighter_setShipGroup_base": {
-"class": "PlayerFighter",
-"method": "setShipGroup_base",
-"ret": "void",
-"params_after_self": [
-"AEGeometry *geom",
-"int group",
-"bool flag"
-],
-"self_name": "self"
-},
-"PlayerFighter_awake_tail": {
-"class": "PlayerFighter",
-"method": "awake_tail",
-"ret": "void",
-"params_after_self": [
-"int geom",
-"int on"
-],
-"self_name": "self"
-},
-"PlayerFighter_base_dtor": {
-"class": "PlayerFighter",
-"method": "base_dtor",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"PlayerFighter_setMissionCrate_tail": {
-"class": "PlayerFighter",
-"method": "setMissionCrate_tail",
-"ret": "void",
-"params_after_self": [
-"int slot",
-"Array<int> *loot"
-],
-"self_name": "self"
-},
-"PlayerFighter_setBV_add": {
-"class": "PlayerFighter",
-"method": "setBV_add",
-"ret": "void",
-"params_after_self": [
-"BoundingVolume *bv",
-"Array<BoundingVolume *> *volumes"
-],
-"self_name": "self"
-},
-"PlayerFighter_setExhaustVisible_apply": {
-"class": "PlayerFighter",
-"method": "setExhaustVisible_apply",
-"ret": "void",
-"params_after_self": [
-"unsigned int transform",
-"bool visible"
-],
-"self_name": "self"
-},
-"PlayerFighter_render_tail": {
-"class": "PlayerFighter",
-"method": "render_tail",
-"ret": "void",
-"params_after_self": [
-"int geom"
-],
-"self_name": "self"
-},
-"Item_addAmount": {
-"class": "Item",
-"method": "addAmount",
-"ret": "void",
-"params_after_self": [
-"int delta"
-],
-"self_name": "self"
-},
-"PlayerStaticFar_render_tail": {
-"class": "PlayerStaticFar",
-"method": "render_tail",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"ImageFactory_reload_tail": {
-"class": "ImageFactory",
-"method": "reload_tail",
-"ret": "void",
-"params_after_self": [
-"unsigned canvas",
-"int id",
-"void *out"
-],
-"self_name": "self"
-},
-"ImageFactory_drawChar_tail": {
-"class": "ImageFactory",
-"method": "drawChar_tail",
-"ret": "void",
-"params_after_self": [
-"unsigned canvas",
-"int handle",
-"int x",
-"int y"
-],
-"self_name": "self"
-},
-"BoundingVolume_setVolume_tail": {
-"class": "BoundingVolume",
-"method": "setVolume_tail",
-"ret": "void",
-"params_after_self": [
-"Array<BoundingVolume *> *arr"
-],
-"self_name": "self"
-},
-"BoundingVolume_setArr": {
-"class": "BoundingVolume",
-"method": "setArr",
-"ret": "void",
-"params_after_self": [
-"Array<BoundingVolume *> *arr"
-],
-"self_name": "self"
-},
-"Wanted_base_dtor": {
-"class": "Wanted",
-"method": "base_dtor",
-"ret": "void",
-"params_after_self": [],
-"self_name": "self"
-},
-"Transform_setExhaustVisible": {
-"class": "Transform",
-"method": "setExhaustVisible",
-"ret": "void",
-"params_after_self": [
-"bool visible"
-],
-"self_name": "self"
-},
-"PendingProduct_make": {
-"class": "PendingProduct",
-"method": "make",
-"ret": "void",
-"params_after_self": [
-"int blueprintIndex",
-"const String *stationName",
-"int stationIndex",
-"int quantity"
-],
-"self_name": "self"
-},
-"StarSystem_renderSunStreak_tail": {
-"class": "StarSystem",
-"method": "renderSunStreak_tail",
-"ret": "void",
-"params_after_self": [
-"void *geom"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_setText2": {
-"class": "ScrollTouchBox",
-"method": "setText2",
-"ret": "void",
-"params_after_self": [
-"AbyssEngine::String *text",
-"int font"
-],
-"self_name": "self"
-},
-"ScrollTouchBox_setTextColor": {
-"class": "ScrollTouchBox",
-"method": "setTextColor",
-"ret": "void",
-"params_after_self": [
-"AbyssEngine::String *text",
-"int color"
-],
-"self_name": "self"
-},
-"HangarWindow_buildMissionOffer": {
-"class": "HangarWindow",
-"method": "buildMissionOffer",
-"ret": "void",
-"params_after_self": [
-"int touch",
-"int coord"
-],
-"self_name": "self"
-},
-"TractorBeam_dtor": {
-"class": "TractorBeam",
+"Radar_dtor": {
+"class": "Radar",
 "method": "dtor",
+"ret": "void *",
+"params_after_self": [],
+"self_name": "r",
+"file": "Radar.cpp"
+},
+"Objective_dtor": {
+"class": "Objective",
+"method": "dtor",
+"ret": "void *",
+"params_after_self": [],
+"self_name": "o",
+"file": "Objective.cpp"
+},
+"Explosion_ctor": {
+"class": "Explosion",
+"method": "ctor",
+"ret": "void",
+"params_after_self": [
+"int type"
+],
+"self_name": "self",
+"file": "Explosion.cpp"
+},
+"Explosion_dtor": {
+"class": "Explosion",
+"method": "dtor",
+"ret": "void *",
+"params_after_self": [],
+"self_name": "self",
+"file": "Explosion.cpp"
+},
+"ModStation_enterStation_oi": {
+"class": "ModStation",
+"method": "enterStation_oi",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"SolarSystem_getStations_i": {
-"class": "SolarSystem",
-"method": "getStations_i",
+"ModStation_enterStation_ote": {
+"class": "ModStation",
+"method": "enterStation_ote",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"SolarSystem_warpGateLookup": {
-"class": "SolarSystem",
-"method": "warpGateLookup",
-"ret": "void",
-"params_after_self": [
-"int idx"
-],
-"self_name": "self"
-},
-"SolarSystem_baseStringDtor": {
-"class": "SolarSystem",
-"method": "baseStringDtor",
-"ret": "void",
-"params_after_self": [
-"void *strField"
-],
-"self_name": "self"
-},
-"PlayerTurret_renderBase": {
-"class": "PlayerTurret",
-"method": "renderBase",
+"ModStation_resetLight_oi": {
+"class": "ModStation",
+"method": "resetLight_oi",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"Mission_dtor_finish": {
-"class": "Mission",
-"method": "dtor_finish",
+"ModStation_resetLight_ote": {
+"class": "ModStation",
+"method": "resetLight_ote",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"Mission_ctor_akw": {
-"class": "Mission",
-"method": "ctor_akw",
-"ret": "void",
-"params_after_self": [
-"int type",
-"int goods",
-"int station"
-],
-"self_name": "self"
-},
-"Mission_ctorEmpty": {
-"class": "Mission",
-"method": "ctorEmpty",
-"ret": "void",
-"params_after_self": [
-"int type",
-"int reward",
-"int targetStation"
-],
-"self_name": "self"
-},
-"Mission_ctorFull": {
-"class": "Mission",
-"method": "ctorFull",
-"ret": "void",
-"params_after_self": [
-"int type",
-"const void *clientName",
-"int *img",
-"int clientRace",
-"int reward",
-"int targetStation",
-"int difficulty"
-],
-"self_name": "self"
-},
-"Mission_setCampaign_akw": {
-"class": "Mission",
-"method": "setCampaign_akw",
-"ret": "void",
-"params_after_self": [
-"int flag"
-],
-"self_name": "self"
-},
-"Mission_setWon_akw": {
-"class": "Mission",
-"method": "setWon_akw",
-"ret": "void",
-"params_after_self": [
-"int flag"
-],
-"self_name": "self"
-},
-"SentryGun_fire_tail": {
-"class": "SentryGun",
-"method": "fire_tail",
-"ret": "void",
-"params_after_self": [
-"void *obj",
-"int flag"
-],
-"self_name": "self"
-},
-"DialogueWindow_hasBriefingDialogue": {
-"class": "DialogueWindow",
-"method": "hasBriefingDialogue",
-"ret": "void",
-"params_after_self": [
-"int id"
-],
-"self_name": "self"
-},
-"DialogueWindow_hasSuccessDialogue": {
-"class": "DialogueWindow",
-"method": "hasSuccessDialogue",
-"ret": "void",
-"params_after_self": [
-"int id"
-],
-"self_name": "self"
-},
-"ScrollTouchWindow_scroll": {
-"class": "ScrollTouchWindow",
-"method": "scroll",
-"ret": "void",
-"params_after_self": [
-"int amount"
-],
-"self_name": "self"
-},
-"Ship_ctor_full": {
-"class": "Ship",
-"method": "ctor_full",
-"ret": "void",
-"params_after_self": [
-"int index",
-"int baseHP",
-"int baseLoad",
-"int value",
-"int slot0",
-"int slot1",
-"int slot2",
-"int slot3",
-"float handling"
-],
-"self_name": "self"
-},
-"Ship_addCargo2": {
-"class": "Ship",
-"method": "addCargo2",
-"ret": "void",
-"params_after_self": [
-"Array<Item*> *items"
-],
-"self_name": "self"
-},
-"Ship_setEquipment1": {
-"class": "Ship",
-"method": "setEquipment1",
-"ret": "void",
-"params_after_self": [
-"Item *item"
-],
-"self_name": "self"
-},
-"Ship_removeCargo3": {
-"class": "Ship",
-"method": "removeCargo3",
-"ret": "void",
-"params_after_self": [
-"int index",
-"int amount"
-],
-"self_name": "self"
-},
-"Ship_hasCloakNeg": {
-"class": "Ship",
-"method": "hasCloakNeg",
+"ModStation_okp_showLocked": {
+"class": "ModStation",
+"method": "okp_showLocked",
 "ret": "void",
 "params_after_self": [],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"Galaxy_setSystemVisited": {
-"class": "Galaxy",
-"method": "setSystemVisited",
+"ModStation_okp_toggleHelp": {
+"class": "ModStation",
+"method": "okp_toggleHelp",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ch_showWantedHint": {
+"class": "ModStation",
+"method": "ch_showWantedHint",
 "ret": "void",
 "params_after_self": [
-"int systemId"
+"int wantedFieldOff"
 ],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
 },
-"Agent_finishWingman": {
-"class": "Agent",
-"method": "finishWingman",
+"ModStation_ch_showTextHint": {
+"class": "ModStation",
+"method": "ch_showTextHint",
 "ret": "void",
 "params_after_self": [
-"void *consumedArray"
+"int textIdSlot"
 ],
-"self_name": "self"
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ch_showWingmanDialogue": {
+"class": "ModStation",
+"method": "ch_showWingmanDialogue",
+"ret": "void",
+"params_after_self": [
+"int kind"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_cacheButtonPositions": {
+"class": "ModStation",
+"method": "ote_cacheButtonPositions",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_showDockingFeeChoice": {
+"class": "ModStation",
+"method": "ote_showDockingFeeChoice",
+"ret": "void",
+"params_after_self": [
+"int credits"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_showRewardChoice": {
+"class": "ModStation",
+"method": "ote_showRewardChoice",
+"ret": "void",
+"params_after_self": [
+"int credits"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_startRadioCutscene": {
+"class": "ModStation",
+"method": "ote_startRadioCutscene",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_kickIdleCamera": {
+"class": "ModStation",
+"method": "ote_kickIdleCamera",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_updateIdleCamera": {
+"class": "ModStation",
+"method": "ou_updateIdleCamera",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_updateRadioReveal": {
+"class": "ModStation",
+"method": "ou_updateRadioReveal",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_animateHangarShip": {
+"class": "ModStation",
+"method": "ou_animateHangarShip",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_updateHangarLight": {
+"class": "ModStation",
+"method": "ou_updateHangarLight",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_r2d_drawStationHud": {
+"class": "ModStation",
+"method": "r2d_drawStationHud",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_setupHangarCamera": {
+"class": "ModStation",
+"method": "oi_setupHangarCamera",
+"ret": "void",
+"params_after_self": [
+"int race"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_showDockingFeeChoice": {
+"class": "ModStation",
+"method": "oi_showDockingFeeChoice",
+"ret": "int",
+"params_after_self": [
+"int standing",
+"int credits"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_showPirateDialogue": {
+"class": "ModStation",
+"method": "oi_showPirateDialogue",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_showWantedActivated": {
+"class": "ModStation",
+"method": "oi_showWantedActivated",
+"ret": "void",
+"params_after_self": [
+"int count"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_showRewardMission": {
+"class": "ModStation",
+"method": "oi_showRewardMission",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_buildNewsTicker": {
+"class": "ModStation",
+"method": "oi_buildNewsTicker",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_buildDlcMenu": {
+"class": "ModStation",
+"method": "oi_buildDlcMenu",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_msc_buildCameraTween": {
+"class": "ModStation",
+"method": "msc_buildCameraTween",
+"ret": "AbyssEngine::EaseInOutMatrix *",
+"params_after_self": [
+"int race"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_msc_buildCameraTweenImpl": {
+"class": "ModStation",
+"method": "msc_buildCameraTweenImpl",
+"ret": "AbyssEngine::EaseInOutMatrix *",
+"params_after_self": [
+"int race"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_setupHangarCameraImpl": {
+"class": "ModStation",
+"method": "oi_setupHangarCameraImpl",
+"ret": "void",
+"params_after_self": [
+"int race"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_dockingFeeImpl": {
+"class": "ModStation",
+"method": "oi_dockingFeeImpl",
+"ret": "int",
+"params_after_self": [
+"int standing",
+"int credits"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_pirateDialogueImpl": {
+"class": "ModStation",
+"method": "oi_pirateDialogueImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_wantedActivatedImpl": {
+"class": "ModStation",
+"method": "oi_wantedActivatedImpl",
+"ret": "void",
+"params_after_self": [
+"int count"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_rewardMissionImpl": {
+"class": "ModStation",
+"method": "oi_rewardMissionImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_newsTickerImpl": {
+"class": "ModStation",
+"method": "oi_newsTickerImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_oi_dlcMenuImpl": {
+"class": "ModStation",
+"method": "oi_dlcMenuImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_idleCameraImpl": {
+"class": "ModStation",
+"method": "ou_idleCameraImpl",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_radioRevealImpl": {
+"class": "ModStation",
+"method": "ou_radioRevealImpl",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_hangarShipImpl": {
+"class": "ModStation",
+"method": "ou_hangarShipImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ou_hangarLightImpl": {
+"class": "ModStation",
+"method": "ou_hangarLightImpl",
+"ret": "void",
+"params_after_self": [
+"int elapsed"
+],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_r2d_drawHudImpl": {
+"class": "ModStation",
+"method": "r2d_drawHudImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_cacheButtonsImpl": {
+"class": "ModStation",
+"method": "ote_cacheButtonsImpl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_buildRadioCutscene": {
+"class": "ModStation",
+"method": "ote_buildRadioCutscene",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"ModStation_ote_idleCamWobble": {
+"class": "ModStation",
+"method": "ote_idleCamWobble",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "ModStation.cpp"
+},
+"PlayerEgo_resetGunDelay_f": {
+"class": "PlayerEgo",
+"method": "resetGunDelay_f",
+"ret": "float",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_addGun_ext": {
+"class": "PlayerEgo",
+"method": "addGun_ext",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_addGun2_ext": {
+"class": "PlayerEgo",
+"method": "addGun2_ext",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_explode_ext": {
+"class": "PlayerEgo",
+"method": "explode_ext",
+"ret": "void",
+"params_after_self": [
+"int /*zero*/"
+],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_turnHorizontal_neg": {
+"class": "PlayerEgo",
+"method": "turnHorizontal_neg",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_turnHorizontal_pos": {
+"class": "PlayerEgo",
+"method": "turnHorizontal_pos",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_turnVertical_pos": {
+"class": "PlayerEgo",
+"method": "turnVertical_pos",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_dockToStream_ext": {
+"class": "PlayerEgo",
+"method": "dockToStream_ext",
+"ret": "void",
+"params_after_self": [
+"int /*zero*/"
+],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_setRocketControl_ext": {
+"class": "PlayerEgo",
+"method": "setRocketControl_ext",
+"ret": "void",
+"params_after_self": [
+"int /*zero*/"
+],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"PlayerEgo_stopMining_impl": {
+"class": "PlayerEgo",
+"method": "stopMining_impl",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "PlayerEgo.cpp"
+},
+"FileInterfaceAndroid_completeDtor": {
+"class": "FileInterfaceAndroid",
+"method": "completeDtor",
+"ret": "void *",
+"params_after_self": [],
+"self_name": "self",
+"file": "FileInterfaceAndroid.cpp"
+},
+"FileInterfaceAndroid_deletingDtor": {
+"class": "FileInterfaceAndroid",
+"method": "deletingDtor",
+"ret": "void",
+"params_after_self": [],
+"self_name": "self",
+"file": "FileInterfaceAndroid.cpp"
 }
 }

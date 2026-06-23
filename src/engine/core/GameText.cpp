@@ -1,10 +1,12 @@
 #include "engine/core/GameText.h"
-GameText *gGameText = nullptr;
+GameText *GameText::gGameText = nullptr;
 #include "engine/file/AEFile.h"
 
 
-extern short *g_GameText_language;
-extern unsigned short *g_GameText_langReset;
+static short g_GameText_language_storage = 0;
+static short *g_GameText_language = &g_GameText_language_storage;
+static unsigned short g_GameText_langReset_storage = 0;
+static unsigned short *g_GameText_langReset = &g_GameText_langReset_storage;
 
 void GameText::release() {
     if (this->textTable == nullptr)
@@ -19,7 +21,7 @@ int GameText::getLanguage() {
     return *g_GameText_language;
 }
 
-extern const char gRegionCodeStr[];
+static const char gRegionCodeStr[] = "";
 
 String GameText::getRegionCode() {
     return String(gRegionCodeStr);
@@ -36,11 +38,12 @@ void GameText::setSubstituteArray(int *pairs, unsigned count) {
     }
 }
 
-extern unsigned short *g_langCode;
+static unsigned short g_langCode_storage = 0;
+static unsigned short *g_langCode = &g_langCode_storage;
 
-extern const char *gLangPaths[17];
-extern const char gLangPathDefault[];
-extern const char gLangPathEnglish[];
+static const char *gLangPaths[17] = {0};
+static const char gLangPathDefault[] = "";
+static const char gLangPathEnglish[] = "";
 
 void GameText::setLanguage(short stringCount, int langId) {
     if ((unsigned int) *g_langCode == ((unsigned int) langId & 0xffff))
@@ -126,7 +129,7 @@ GameText::~GameText() {
     this->textTable = nullptr;
 }
 
-extern unsigned gArabicTable[];
+static unsigned gArabicTable[0x29 * 5] = {0};
 
 int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
     unsigned short i = 0;
@@ -145,7 +148,7 @@ int GameText::isNonArabicString(const unsigned short *str, unsigned int count) {
     return 0;
 }
 
-extern const char gInitLangStr[];
+static const char gInitLangStr[] = "";
 
 GameText::GameText() {
     this->fallbackText.ctor();
@@ -155,9 +158,9 @@ GameText::GameText() {
     String tmp(gInitLangStr);
 }
 
-extern const unsigned int gArabForms[];
-extern const unsigned int gLamAlef[];
-extern const unsigned int gLamAlefForms[];
+static const unsigned int gArabForms[(0x334 / 20) * 5] = {0};
+static const unsigned int gLamAlef[10 * 4] = {0};
+static const unsigned int gLamAlefForms[0x29 * 5] = {0};
 
 static inline bool isJoiner(unsigned short c) {
     return c >= 0x600 && c != 0x60c && c != 0x61f;
@@ -255,10 +258,10 @@ void GameText::setLanguage(int langId) {
     this->setLanguage(static_cast<short>(0), langId);
 }
 
-extern const char gLang5000Primary[];
-extern const char gLang5000Fallback[];
-extern const char gLang5001Primary[];
-extern const char gLang5001Fallback[];
+static const char gLang5000Primary[] = "";
+static const char gLang5000Fallback[] = "";
+static const char gLang5001Primary[] = "";
+static const char gLang5001Fallback[] = "";
 
 AbyssEngine::String *GameText::getText(int key) {
     if (key == 5000) {

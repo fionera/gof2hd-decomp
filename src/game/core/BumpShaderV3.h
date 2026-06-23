@@ -2,8 +2,6 @@
 #define GOF2_BUMPSHADERV3_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/ShaderBaseStruct.h"
 
 namespace AbyssEngine { 

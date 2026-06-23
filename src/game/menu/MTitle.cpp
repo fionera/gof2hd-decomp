@@ -7,11 +7,9 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/Globals.h"
 
-extern PaintCanvas *gCanvas;
-
-extern Layout *g_currentLayout;
-extern ImageFactory *g_imageFactory;
-extern FModSound *g_sound;
+static Layout *g_currentLayout = nullptr;
+static ImageFactory *g_imageFactory = nullptr;
+static FModSound *g_sound = nullptr;
 
 MTitle::MTitle() {
     this->renderPriority = 100;
@@ -22,7 +20,7 @@ MTitle::~MTitle() {
 }
 
 int MTitle::OnInitialize() {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     canvas->Image2DCreate(7000, this->logoImage);
     canvas->Image2DCreate(0x1b59, this->logoImage2);
 
@@ -35,9 +33,9 @@ int MTitle::OnInitialize() {
 }
 
 void MTitle::OnRelease() {
-    gCanvas->ReleaseAllResources();
+    PaintCanvas::gCanvas->ReleaseAllResources();
 
-    gGlobals->loadFont(GameText::getLanguage());
+    Globals::gGlobals->loadFont(GameText::getLanguage());
 
     if (g_currentLayout != 0) {
         g_currentLayout->reload();
@@ -61,7 +59,7 @@ void MTitle::OnUpdate() {
 }
 
 void MTitle::OnRender2D() {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     canvas->Begin2d();
     canvas->SetColor((unsigned int) -1);
 
@@ -104,7 +102,7 @@ void MTitle::OnRender2D() {
 }
 
 void MTitle::OnRender3D() {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     canvas->ClearBuffer(0xff);
     canvas->Begin3d();
 }

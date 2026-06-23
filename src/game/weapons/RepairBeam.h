@@ -2,7 +2,6 @@
 #define GOF2_REPAIRBEAM_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "Radar.h"
 
 #include "engine/math/Vector.h"

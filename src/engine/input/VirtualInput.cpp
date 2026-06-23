@@ -63,7 +63,7 @@ namespace {
     int g_zoomRequest;
 
     inline bool inFlightModule() {
-        return gAppManager->currentModuleId == 2;
+        return ApplicationManager::gAppManager->currentModuleId == 2;
     }
 
     int g_pointerEmulationEnabled;
@@ -140,7 +140,7 @@ namespace {
     unsigned char g_simTouchActive;
 }
 
-extern "C" unsigned int F(unsigned int value) {
+unsigned int F(unsigned int value) {
     const unsigned int *table = *g_hashTable;
     const unsigned int *col0 = table;
     const unsigned int *col1 = table + 0x100;
@@ -255,7 +255,7 @@ int IsSubMenuActive(int player) {
     if (*g_touchWindowFocus != -1)
         return true;
 
-    return gAppManager->currentModuleId == 5 ? 1 : 0;
+    return ApplicationManager::gAppManager->currentModuleId == 5 ? 1 : 0;
 }
 
 void keyReleased(AbyssEngine::Engine *engine, int key) {
@@ -350,7 +350,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
     if (progress != 9 || module->comboProgress != 9)
         module->comboProgress = progress;
 
-    const int currentModule = static_cast<int>(gAppManager->currentModuleId);
+    const int currentModule = static_cast<int>(ApplicationManager::gAppManager->currentModuleId);
     int matchedIndex = -1;
 
     for (int pass = 2; pass >= 0; --pass) {
@@ -401,7 +401,7 @@ matched:
         } else if (GetKeyState(const_cast<char *>("Decelerate")) != 0) {
             *g_accelHeld = 0;
             *g_decelHeld = 1;
-        } else if (gAppManager->engine == nullptr) {
+        } else if (ApplicationManager::gAppManager->engine == nullptr) {
             *g_accelHeld = 0;
             *g_decelHeld = 0;
         }
@@ -461,7 +461,7 @@ bool keyIsPressed() {
 namespace {
     inline bool currentModuleIs(int id) {
         return reinterpret_cast<std::intptr_t>(
-                   gAppManager->GetCurrentApplicationModule()) == id;
+                   ApplicationManager::gAppManager->GetCurrentApplicationModule()) == id;
     }
 
     inline bool noBlockingOverlay() {
@@ -578,7 +578,7 @@ namespace {
 }
 
 void simulateTouch(AbyssEngine::Engine *engine) {
-    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(gAppManager) + 0xbc) != 0)
+    if (*reinterpret_cast<int *>(reinterpret_cast<char *>(ApplicationManager::gAppManager) + 0xbc) != 0)
         AbyssEngine::Engine::EnablePostEffect = !AbyssEngine::Engine::EnablePostEffect;
 
     if (g_simEdgesInit == 0) {
@@ -719,7 +719,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         g_stick.easedY = g_stick.savedY;
     }
 
-    if (reinterpret_cast<std::intptr_t>(gAppManager->GetCurrentApplicationModule()) == 2) {
+    if (reinterpret_cast<std::intptr_t>(ApplicationManager::gAppManager->GetCurrentApplicationModule()) == 2) {
         const float dim = VectorSignedToFloat(Globals::smallButton_dim, 0);
         const float cy = VectorSignedToFloat(Globals::touch_stick_y, 0);
         const float cx = VectorSignedToFloat(Globals::touch_stick_x, 0);

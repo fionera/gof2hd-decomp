@@ -3,7 +3,6 @@
 #include <cstdint>
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "Gun.h"
 
 class Player;

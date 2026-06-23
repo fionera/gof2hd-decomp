@@ -3,8 +3,8 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-extern "C" void *SandboxShader_registerSrc;
-extern "C" void **SandboxShader_registerDst;
+static void *SandboxShader_registerSrc = nullptr;
+static void **SandboxShader_registerDst = &SandboxShader_registerSrc;
 
 namespace AbyssEngine {
     void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine) {

@@ -452,9 +452,11 @@ namespace AbyssEngine {
 
         void GetScreenPosition(Matrix &m, const Vector &worldPos,
                                Vector &outVec);
+
+        static PaintCanvas *gCanvas;
     };
 }
 
-extern AbyssEngine::PaintCanvas *gCanvas;
+using ::AbyssEngine::PaintCanvas;
 
 #endif

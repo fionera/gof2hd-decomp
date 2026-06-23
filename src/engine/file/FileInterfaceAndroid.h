@@ -5,8 +5,6 @@
 
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/file/AEFile.h"
 
 using AbyssEngine::String;
@@ -15,6 +13,9 @@ typedef struct _jobject *jobject;
 
 class FileInterfaceAndroid : public FileInterface {
 public:
+    static void **gZipMain;
+    static void **gZipPatch;
+
     void *file;
     void *zipFile;
     void *jniStream;

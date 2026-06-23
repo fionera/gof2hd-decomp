@@ -6,6 +6,12 @@
 #include "engine/math/Vector.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Material.h"
+#include "engine/render/ImageFont.h"
+#include "engine/render/SpriteSystem.h"
+#include "engine/render/Curve.h"
+#include "engine/render/Image.h"
+#include "engine/render/Image2D.h"
+#include "engine/render/AELoadedTexture.h"
 
 #include "engine/math/AEMath.h"
 
@@ -29,8 +35,9 @@ namespace AbyssEngine {
     struct ESMatrix {
         float m[4][4];
     };
-}
 
-static inline int16_t &s16(void *self, uint32_t off) { return *(int16_t *) ((char *) self + off); }
+    // ImageFont / SpriteSystem / Curve / Image / Image2D / AELoadedTexture
+    // are each defined in their own header (included above).
+}
 
 #endif

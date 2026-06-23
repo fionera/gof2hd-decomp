@@ -3,7 +3,7 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 
-extern "C" int BumpShaderV2_ShaderIndex;
+static int BumpShaderV2_ShaderIndex = 0;
 
 namespace AbyssEngine {
     BumpShaderV2::BumpShaderV2() {

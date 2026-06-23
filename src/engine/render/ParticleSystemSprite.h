@@ -3,8 +3,6 @@
 #include "engine/core/Array.h"
 #include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/IParticleSystem.h"
 #include "engine/render/ParticleSettings.h"
 

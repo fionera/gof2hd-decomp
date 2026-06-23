@@ -2,8 +2,6 @@
 #define GOF2_STANDING_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 class Standing {
 public:
     int *standings;

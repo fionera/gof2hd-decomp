@@ -6,13 +6,13 @@
 #include "game/ship/KIPlayer.h"
 
 namespace AbyssEngine {
-    extern PaintCanvas *gPaintCanvas;
+    static PaintCanvas *gPaintCanvas = nullptr;
 
-    extern PaintCanvas **gRadarCanvasForDraw;
-    extern void *gRadarMissionSlot;
-    extern PaintCanvas **gRadarCanvasSlot;
-    extern void *gRadarLayoutSlot;
-    extern uint8_t *gRadarDrawCurrentLockFlag;
+    static PaintCanvas **gRadarCanvasForDraw = nullptr;
+    static void *gRadarMissionSlot = nullptr;
+    static PaintCanvas **gRadarCanvasSlot = nullptr;
+    static void *gRadarLayoutSlot = nullptr;
+    static uint8_t *gRadarDrawCurrentLockFlag = nullptr;
 }
 
 using ::AbyssEngine::gPaintCanvas;
@@ -22,11 +22,11 @@ using ::AbyssEngine::gRadarCanvasSlot;
 using ::AbyssEngine::gRadarLayoutSlot;
 using ::AbyssEngine::gRadarDrawCurrentLockFlag;
 
-extern "C" int Radar_GetMissionState(void *mission);
+int Radar_GetMissionState(void *mission);
 
-extern "C" int Radar_GetMissionType(void *mission);
+int Radar_GetMissionType(void *mission);
 
-extern void *Radar_GetSystemStations();
+void *Radar_GetSystemStations();
 
 static inline int layout_i32(void *layout, unsigned off) {
     return *reinterpret_cast<int *>(static_cast<char *>(layout) + off);
@@ -286,11 +286,11 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
     }
 }
 
-extern "C" void Radar_ctor(Radar *r, Level *level) {
+void Radar_ctor(Radar *r, Level *level) {
     new(r) Radar(level);
 }
 
-extern "C" void *Radar_dtor(Radar *r) {
+void *Radar_dtor(Radar *r) {
     r->~Radar();
     return r;
 }

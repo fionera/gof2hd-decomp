@@ -9,52 +9,52 @@
 #include "engine/render/IParticleSystem.h"
 #include "engine/render/PaintCanvas.h"
 
-extern "C" void _psm_ArrayReleaseSprites(void *arr);
+void _psm_ArrayReleaseSprites(void *arr);
 
-extern "C" void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
+void _psm_ReleaseSpriteSystemResource(void *canvas, unsigned res);
 
-extern "C" void _psm_renderMeshes(void *self);
+void _psm_renderMeshes(void *self);
 
-extern "C" void _psm_renderSpritesExt(void *self);
+void _psm_renderSpritesExt(void *self);
 
-extern "C" void _psm_releaseSprites(void *self);
+void _psm_releaseSprites(void *self);
 
-extern "C" void _psm_constructAfterCamera(void *self);
+void _psm_constructAfterCamera(void *self);
 
-extern "C" void _ips_emitManual(void *sys, float x, float y, float z);
+void _ips_emitManual(void *sys, float x, float y, float z);
 
-extern "C" void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+void _psm_spriteRender4(void *canvas, unsigned a, unsigned b, unsigned c);
 
-extern "C" void _psm_spriteRender2(void *canvas, unsigned a);
+void _psm_spriteRender2(void *canvas, unsigned a);
 
-extern "C" void _psm_arraySpriteCtor(void *arr);
+void _psm_arraySpriteCtor(void *arr);
 
-extern "C" void _psm_arraySpriteDtor(void *arr);
+void _psm_arraySpriteDtor(void *arr);
 
-extern "C" void _ips_enableUpdate(void *sys, bool enable);
+void _ips_enableUpdate(void *sys, bool enable);
 
-extern "C" short _ips_getParticleCount16(void *sys);
+short _ips_getParticleCount16(void *sys);
 
-extern "C" int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
+int _psm_addSpriteSystem(void *self, const void *matrix, unsigned int set, bool flag);
 
-extern "C" int _psm_firstUpdate(void *self, int a, int b, int c);
+int _psm_firstUpdate(void *self, int a, int b, int c);
 
-extern "C" void _ips_reset(void *sys);
+void _ips_reset(void *sys);
 
-extern "C" void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
+void _psm_meshRender4(void *canvas, unsigned a, unsigned b, unsigned c);
 
-extern "C" void _psm_meshRender2(void *canvas, unsigned a);
+void _psm_meshRender2(void *canvas, unsigned a);
 
-extern "C" void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                              bool b4, bool b5);
+void *_psmesh_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+                   bool b4, bool b5);
 
-extern "C" void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
-                           bool b4, bool b5);
+void *_pss_ctor(void *self, void *canvas, const void *matrix, const void *sets,
+                bool b4, bool b5);
 
-extern "C" int _ips_getParticleCount(void *sys);
+int _ips_getParticleCount(void *sys);
 
 
-extern char *g_activeParticleSet;
+static char *g_activeParticleSet = nullptr;
 
 __attribute__ ((always_inline))
 

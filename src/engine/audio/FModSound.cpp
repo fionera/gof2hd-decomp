@@ -3,7 +3,6 @@
 
 #include <cstring>
 
-extern "C" {
 void FMOD_setLanguage(void *system, uint32_t lang);
 
 int FMOD_Event_stop(FMOD::Event *event, int immediate);
@@ -81,11 +80,10 @@ void FMOD_EventCategory_setVolume(void *category, float volume);
 void FMOD_EventCategory_stopAllEvents(void *category);
 
 int FMOD_EventCategory_getInfo(void *category, int *index, char **name);
-}
 
-extern "C" void **gPauseProp;
-extern void **g_fmodPropName;
-extern "C" float FModSound_defaultPitch;
+static void **gPauseProp = nullptr;
+static void **g_fmodPropName = nullptr;
+static float FModSound_defaultPitch = 0.0f;
 
 void FModSound::setAudioLanguage(int p1) {
     static const uint32_t langTable[2] = {0, 1};

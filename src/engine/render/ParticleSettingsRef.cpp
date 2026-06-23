@@ -1,9 +1,9 @@
 #include "engine/render/ParticleSettingsRef.h"
 #include "engine/render/ParticleSettings.h"
 
-extern ParticleSettings *g_PSR_settingsA;
-extern ParticleSettings *g_PSR_settingsB;
-extern int g_PSR_counter;
+static ParticleSettings *g_PSR_settingsA = nullptr;
+static ParticleSettings *g_PSR_settingsB = nullptr;
+static int g_PSR_counter = 0;
 
 void ParticleSettingsRef::initialize() {
     g_PSR_settingsA->init();

@@ -23,14 +23,14 @@ uint8_t ChoiceWindow::hasChoice() {
     return this->hasButtons;
 }
 
-extern int *g_ChoiceWindow_screenWidth;
+static int *g_ChoiceWindow_screenWidth = nullptr;
 
 void ChoiceWindow::setWidth(int width) {
     this->width = width;
     this->x = *g_ChoiceWindow_screenWidth / 2 - width / 2;
 }
 
-extern GameText **g_ChoiceWindow_gameText_146954;
+static GameText **g_ChoiceWindow_gameText_146954 = nullptr;
 
 void ChoiceWindow::set(String const &a, String const &b) {
     GameText *gameText = *g_ChoiceWindow_gameText_146954;
@@ -40,14 +40,14 @@ void ChoiceWindow::set(String const &a, String const &b) {
     set(*title, a, false, *left, *center, b, -1, -1);
 }
 
-extern GameText **g_ChoiceWindow_gameText_146d5c;
+static GameText **g_ChoiceWindow_gameText_146d5c = nullptr;
 
 void ChoiceWindow::set(String const &text, bool flag) {
     String *title = (*g_ChoiceWindow_gameText_146d5c)->getText(0x186);
     set(*title, text, flag);
 }
 
-extern GameText **g_ChoiceWindow_gameText_1468f4;
+static GameText **g_ChoiceWindow_gameText_1468f4 = nullptr;
 
 void ChoiceWindow::set(String const &title, String const &message, bool flag) {
     GameText *gameText = *g_ChoiceWindow_gameText_1468f4;
@@ -70,7 +70,7 @@ int ChoiceWindow::OnTouchEnd(int x, int y) {
     return -1;
 }
 
-extern GameText **g_ChoiceWindow_gameText_1468c8;
+static GameText **g_ChoiceWindow_gameText_1468c8 = nullptr;
 
 void ChoiceWindow::set(String const &text) {
     String *title = (*g_ChoiceWindow_gameText_1468c8)->getText(0x186);
@@ -109,8 +109,8 @@ ChoiceWindow::~ChoiceWindow() {
     this->scrollWindow = nullptr;
 }
 
-extern Layout **g_ChoiceWindow_layout_146dc4;
-extern int *g_ChoiceWindow_screenHeight_146dc4;
+static Layout **g_ChoiceWindow_layout_146dc4 = nullptr;
+static int *g_ChoiceWindow_screenHeight_146dc4 = nullptr;
 
 void ChoiceWindow::setHeight(int height) {
     Layout *layout = *g_ChoiceWindow_layout_146dc4;
@@ -140,17 +140,17 @@ void ChoiceWindow::setHeight(int height) {
                         this->y + this->height - this->padding, 0x21);
 }
 
-extern GameText **g_ChoiceWindow_gameText_146e8c;
-extern char g_ChoiceWindow_medalImagesLow_146e8c[];
-extern char g_ChoiceWindow_medalImagesHigh_146e8c[];
-extern char g_ChoiceWindow_medalImages_146e8c[];
+static GameText **g_ChoiceWindow_gameText_146e8c = nullptr;
+static uint32_t g_ChoiceWindow_medalImagesLow_146e8c[64];
+static uint32_t g_ChoiceWindow_medalImagesHigh_146e8c[64];
+static uint32_t g_ChoiceWindow_medalImages_146e8c[64];
 
 void ChoiceWindow::setMedal(int medal, int count) {
     GameText *gameText = *g_ChoiceWindow_gameText_146e8c;
     this->medalText = *gameText->getText(medal + 0x5e3);
 
     String pattern = *gameText->getText(medal + 0x610);
-    int value = gAchievements->getValue(medal, count);
+    int value = Achievements::gAchievements->getValue(medal, count);
     String number;
     {
         int v = value;
@@ -166,23 +166,23 @@ void ChoiceWindow::setMedal(int medal, int count) {
         while (n--) number.push_back((char16_t) (unsigned char) buf[n]);
     }
 
-    String finalText = gStatus->replaceHash(pattern, number);
+    String finalText = Status::gStatus->replaceHash(pattern, number);
 
     set(*gameText->getText(0x161), finalText, false);
     this->scrollWindow->setTextCentered(true);
 
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     unsigned int medalImageHandle;
     if (count < 0x24) {
-        canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesLow_146e8c, count * 4),
+        canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImagesLow_146e8c[count],
                               medalImageHandle);
     } else {
-        canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImagesHigh_146e8c, count * 4),
+        canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImagesHigh_146e8c[count],
                               medalImageHandle);
     }
     this->medalImage = medalImageHandle;
     unsigned int medalBgImageHandle;
-    canvas->Image2DCreate(F<unsigned short>(g_ChoiceWindow_medalImages_146e8c, medal * 4),
+    canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImages_146e8c[medal],
                           medalBgImageHandle);
     this->medalBgImage = medalBgImageHandle;
 
@@ -191,17 +191,17 @@ void ChoiceWindow::setMedal(int medal, int count) {
     this->buttonsVisible = 1;
 }
 
-extern void **g_ChoiceWindow_config_1467ec;
-extern int *g_ChoiceWindow_screenWidth_1467ec;
+static Layout **g_ChoiceWindow_config_1467ec = nullptr;
+static int *g_ChoiceWindow_screenWidth_1467ec = nullptr;
 
 ChoiceWindow::ChoiceWindow() {
-    void *config = *g_ChoiceWindow_config_1467ec;
-    int width = F<int>(config, 0x264);
+    Layout *config = *g_ChoiceWindow_config_1467ec;
+    int width = config->field_0x264;
     this->width = width;
-    this->padding = F<int>(config, 0x268);
-    this->padding2 = F<int>(config, 0x26c);
-    this->padding3 = F<int>(config, 0x270);
-    this->padding4 = F<int>(config, 0x274);
+    this->padding = config->field_0x268;
+    this->padding2 = config->field_0x26c;
+    this->padding3 = config->field_0x270;
+    this->padding4 = config->field_0x274;
 
     int screenWidth = *g_ChoiceWindow_screenWidth_1467ec;
     this->leftButton = nullptr;
@@ -214,13 +214,13 @@ ChoiceWindow::ChoiceWindow() {
     this->x = screenWidth / 2 - width / 2;
 }
 
-extern GameText **g_ChoiceWindow_gameText_1469b0;
-extern void **g_ChoiceWindow_defaultConfig_1469b0;
-extern int *g_ChoiceWindow_screenWidth_1469b0;
-extern FModSound **g_ChoiceWindow_sound_1469b0;
-extern Layout **g_ChoiceWindow_layout_1469b0;
-extern void **g_ChoiceWindow_lineFont_1469b0;
-extern int *g_ChoiceWindow_screenHeight_1469b0;
+static GameText **g_ChoiceWindow_gameText_1469b0 = nullptr;
+static Layout **g_ChoiceWindow_defaultConfig_1469b0 = nullptr;
+static int *g_ChoiceWindow_screenWidth_1469b0 = nullptr;
+static FModSound **g_ChoiceWindow_sound_1469b0 = nullptr;
+static Layout **g_ChoiceWindow_layout_1469b0 = nullptr;
+static void **g_ChoiceWindow_lineFont_1469b0 = nullptr;
+static int *g_ChoiceWindow_screenHeight_1469b0 = nullptr;
 
 void ChoiceWindow::set(String const &title, String const &message, bool hasButtons,
                        String const &left, String const &right, String const &single,
@@ -233,7 +233,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
         defaultButtons = gameText->getText(0x87)->Compare_str((String *) &right) == 0;
 
     if (width == -1)
-        width = F<int>(*g_ChoiceWindow_defaultConfig_1469b0, 0x264);
+        width = (*g_ChoiceWindow_defaultConfig_1469b0)->field_0x264;
     if (!defaultButtons)
         width = (int) ((float) width * 0.85f);
 
@@ -248,7 +248,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     Array<String *> *lines = new Array<String *>();
 
     Layout *layout = *g_ChoiceWindow_layout_1469b0;
-    gGlobals->getLineArray(
+    Globals::gGlobals->getLineArray(
         static_cast<unsigned int>(reinterpret_cast<std::size_t>(*g_ChoiceWindow_lineFont_1469b0)),
         message,
         (this->width - layout->field_0x4c * 2) - layout->field_0x48,
@@ -309,10 +309,10 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     this->buttonsVisible = 1;
 }
 
-extern Layout **g_ChoiceWindow_layout_147068_a;
-extern Layout **g_ChoiceWindow_layout_147068_b;
-extern Layout **g_ChoiceWindow_layout_147068_c;
-extern int *g_ChoiceWindow_screenHeight_147068;
+static Layout **g_ChoiceWindow_layout_147068_a = nullptr;
+static Layout **g_ChoiceWindow_layout_147068_b = nullptr;
+static Layout **g_ChoiceWindow_layout_147068_c = nullptr;
+static int *g_ChoiceWindow_screenHeight_147068 = nullptr;
 
 void ChoiceWindow::setMiscButton(String const &text) {
     Layout *layout;
@@ -348,17 +348,17 @@ void ChoiceWindow::setMiscButton(String const &text) {
         *g_ChoiceWindow_screenHeight_147068 / 2 - this->height / 2 + layout->field_0x8);
 }
 
-extern Layout **g_ChoiceWindow_layout_1471bc;
-extern char g_ChoiceWindow_medalColorsLow_1471bc[];
-extern char g_ChoiceWindow_medalColorsHigh_1471bc[];
-extern char g_ChoiceWindow_creditValues_1471bc[];
-extern void **g_ChoiceWindow_font_1471bc_a;
-extern void **g_ChoiceWindow_font_1471bc_b;
-extern void *g_ChoiceWindow_posTargetA_1471bc;
-extern void *g_ChoiceWindow_posTargetB_1471bc;
-extern void *g_ChoiceWindow_posTargetC_1471bc;
-extern void *g_ChoiceWindow_posTargetD_1471bc;
-extern int *g_ChoiceWindow_dirtyFlag_1471bc;
+static Layout **g_ChoiceWindow_layout_1471bc = nullptr;
+static int g_ChoiceWindow_medalColorsLow_1471bc[64];
+static int g_ChoiceWindow_medalColorsHigh_1471bc[64];
+static int g_ChoiceWindow_creditValues_1471bc[64];
+static void **g_ChoiceWindow_font_1471bc_a = nullptr;
+static void **g_ChoiceWindow_font_1471bc_b = nullptr;
+static void *g_ChoiceWindow_posTargetA_1471bc = nullptr;
+static void *g_ChoiceWindow_posTargetB_1471bc = nullptr;
+static void *g_ChoiceWindow_posTargetC_1471bc = nullptr;
+static void *g_ChoiceWindow_posTargetD_1471bc = nullptr;
+static int *g_ChoiceWindow_dirtyFlag_1471bc = nullptr;
 
 void ChoiceWindow::draw() {
     Vector pos;
@@ -368,7 +368,7 @@ void ChoiceWindow::draw() {
 
     layout->drawBox(7, this->x, this->y, this->width, this->height, this->title, 1u);
 
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
     canvas->SetColor(0xffffffff);
 
     if (this->medalImage != -1) {
@@ -377,18 +377,18 @@ void ChoiceWindow::draw() {
                             this->y + this->padding2 + 1, (unsigned char) 0x11);
         int color;
         if (this->count < 0x24)
-            color = F<int>(g_ChoiceWindow_medalColorsLow_1471bc, this->count * 4);
+            color = g_ChoiceWindow_medalColorsLow_1471bc[this->count];
         else
-            color = F<int>(g_ChoiceWindow_medalColorsHigh_1471bc, this->count * 4);
+            color = g_ChoiceWindow_medalColorsHigh_1471bc[this->count];
         canvas->SetColor(color);
         canvas->DrawImage2D(this->medalBgImage,
                             this->x + (this->width >> 1),
                             this->y + this->padding2, (unsigned char) 0x11);
 
-        if (gStatus->hardCoreMode() == 0 &&
-            gAchievements->isEliteMedal(this->medal) == 0) {
+        if (Status::gStatus->hardCoreMode() == 0 &&
+            Achievements::gAchievements->isEliteMedal(this->medal) == 0) {
             String creditsText = Layout::formatCredits(
-                F<int>(g_ChoiceWindow_creditValues_1471bc, this->count * 4));
+                g_ChoiceWindow_creditValues_1471bc[this->count]);
 
             void *font = *g_ChoiceWindow_font_1471bc_a;
             int textWidth = canvas->GetTextWidth((unsigned int) (unsigned long) font, creditsText);

@@ -2,8 +2,7 @@
 #include "engine/core/GameText.h"
 #include <string>
 
-extern "C" {
-int atoi(const char *s);
+#include <cstdlib>
 
 void String_printImpl(const char *s);
 
@@ -12,7 +11,6 @@ uint16_t *String_computeFloatString(float v, int base, int *outExp, int *outNeg)
 void String_concat(String * out, String * a, String * b);
 
 void String_assign_op(String * self, String * src);
-}
 
 String::~String() {
     if (this->data)

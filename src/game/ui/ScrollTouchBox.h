@@ -2,8 +2,6 @@
 #define GOF2_SCROLLTOUCHBOX_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 class ScrollTouchBox {
 public:
     Array<String *> *lines;

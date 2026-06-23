@@ -52,8 +52,8 @@ Station::~Station() {
         items = nullptr;
     }
     if (agents != nullptr) {
-        Mission *campaign = reinterpret_cast<Mission *>(gStatus->getCampaignMission());
-        Mission *freelance = gStatus->getFreelanceMission();
+        Mission *campaign = reinterpret_cast<Mission *>(Status::gStatus->getCampaignMission());
+        Mission *freelance = Status::gStatus->getFreelanceMission();
         Agent *campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
         Agent *freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
         for (Agent *a: *agents) {
@@ -200,19 +200,19 @@ uint8_t Station::hasAttackedFriends() {
 }
 
 bool Station::isAttackedByAliens() {
-    return index == *(int *) ((char *) gStatus + 0x80);
+    return index == Status::gStatus->field_80;
 }
 
 uint8_t Station::isDiscovered() {
-    return gGalaxy->getVisited()[index];
+    return Galaxy::gGalaxy->getVisited()[index];
 }
 
 void Station::visit() {
     if (isDiscovered())
         return;
     visited = 1;
-    gStatus->visitStation();
-    gGalaxy->visitStation(index);
+    Status::gStatus->visitStation();
+    Galaxy::gGalaxy->visitStation(index);
 }
 
 uint32_t Station::getHiddenBlueprintIndex() {
@@ -232,12 +232,11 @@ uint32_t Station::getPirateStationIndex() {
 }
 
 uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
-    char *base = (char *) gStatus;
     for (uint32_t i = 0; i < 5; i++) {
         if (kHiddenBlueprints[i] == index) {
             if (ignoreFound)
                 return 1;
-            char *flags = *(char **) (*(char **) (base + 0x58) + 4);
+            bool *flags = Status::gStatus->field_58->data_;
             if (flags[i] == 0)
                 return 1;
         }
@@ -246,10 +245,9 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
 }
 
 uint32_t Station::stationHasPirateBase() {
-    char *base = (char *) gStatus;
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
-            char *flags = *(char **) (*(char **) (base + 0x4c) + 4);
+            bool *flags = Status::gStatus->field_4c->data_;
             if (flags[i] == 0)
                 return 1;
         }

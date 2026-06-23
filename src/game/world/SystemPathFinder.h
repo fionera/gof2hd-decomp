@@ -2,8 +2,6 @@
 #define GOF2_SYSTEMPATHFINDER_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/core/Node.h"
 #include "game/world/SolarSystem.h"
 #include "game/mission/Status.h"
@@ -12,10 +10,6 @@ class Node;
 class SolarSystem;
 class Status;
 
-
-extern "C"
-Status **volatile
-g_SystemPathFinder_status;
 
 class SystemPathFinder {
 public:

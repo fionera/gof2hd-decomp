@@ -3,8 +3,6 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "game/ui/TouchButton.h"
-#include "fieldaccess.h"
-
 struct ModuleTransitionThunk {
     union {
         void (*transitionFn)(void *app, int mode);

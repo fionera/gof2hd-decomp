@@ -2,8 +2,6 @@
 #define GOF2_RADAR_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Matrix.h"
 #include "game/ship/KIPlayer.h"
 

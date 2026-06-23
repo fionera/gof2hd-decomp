@@ -1,5 +1,180 @@
 #include "game/core/Globals.h"
-Globals *gGlobals = nullptr;
+#include <cstdint>
+
+// Named models for the untyped handles that Globals.cpp touches by raw byte
+// offset. These structs reconstruct the field layout of opaque engine/game
+// blobs (the video/options settings record, the per-frame mission counter
+// object, the campaign zero-init object, the line-height metrics record, ...)
+// so the call sites can use named members instead of pointer arithmetic.
+//
+// Layout is byte-exact for the 32-bit MATCH build; the static_asserts below
+// pin every accessed offset. Multi-byte fields that genuinely overlap in the
+// original packed blob are expressed through unions so each named view keeps
+// its exact offset.
+namespace {
+
+#pragma pack(push, 1)
+
+// The global video / audio / control settings record.  Accessed via the
+// `settings` handle in Globals::Globals() and Globals::init().
+struct GameSettingsRecord {
+    union { float colorR; int32_t colorRBits; }; // 0x00
+    union { float colorG; int32_t colorGBits; }; // 0x04
+    union { float colorB; int32_t colorBBits; }; // 0x08
+    union {                   // 0x0c .. 0x13 packed volume / flag region (8 bytes)
+        uint8_t  _region[8];
+        struct {
+            uint8_t  musicVolume;   // 0x0c
+            uint8_t  sfxVolume;     // 0x0d
+            uint8_t  ambientVolume; // 0x0e
+            int16_t  flagAt0f;      // 0x0f (overlaps flagAt10's low byte)
+        };
+        struct {
+            int16_t  volumePair;    // 0x0c (overlaps music/sfx volume)
+            uint8_t  _pad0e;        // 0x0e
+            uint8_t  _pad0f;        // 0x0f
+            int16_t  flagAt10;      // 0x10 (overlaps flagAt0f high byte)
+        };
+        struct {
+            uint8_t  _pad0c[5];     // 0x0c .. 0x10
+            uint8_t  flagAt11;      // 0x11
+        };
+    };
+    float    glowR;           // 0x14
+    float    glowG;           // 0x18
+    float    tintR;           // 0x1c
+    float    tintG;           // 0x20
+    float    tintB;           // 0x24
+    float    brightness;      // 0x28
+    float    contrast;        // 0x2c
+    uint8_t  enableFlag30;    // 0x30
+    int32_t  intAt31;         // 0x31
+    int32_t  intAt35;         // 0x35
+    uint8_t  flagAt39;        // 0x39
+    uint8_t  _pad3a;          // 0x3a
+    int32_t  intAt3b;         // 0x3b
+    uint8_t  flagAt3f;        // 0x3f
+    int16_t  shortAt40;       // 0x40
+    uint8_t  _pad42[2];       // 0x42
+    float    qualityLevel;    // 0x44
+    int32_t  intAt48;         // 0x48
+    int16_t  shortAt4c;       // 0x4c
+    uint8_t  flagAt4e;        // 0x4e
+    uint8_t  _pad4f;          // 0x4f
+    int32_t  intAt50;         // 0x50
+    int32_t  resWidth;        // 0x54
+    int32_t  resHeight;       // 0x58
+    uint8_t  _pad5c[4];       // 0x5c
+    int16_t  shortAt60;       // 0x60
+};
+
+// Object zero-initialised in Globals::init() through the `obj` handle: a run
+// of twelve int slots followed by four unaligned int writes that overlap the
+// tail of the run (the original blob is packed).
+struct InitZeroObject {
+    union {
+        int32_t  slots[12];   // 0x00 .. 0x2f
+        struct {
+            uint8_t  _lead[0x2b];
+            int32_t  tailAt2b; // 0x2b
+            int32_t  tailAt2f; // 0x2f
+            int32_t  tailAt33; // 0x33
+            int32_t  tailAt37; // 0x37
+        };
+    };
+};
+
+// Small per-frame mission/work object reached through the `busy` handle in
+// Globals::getAgentMissionText(); only the recursion-guard counter at 0xd0 is
+// touched here.
+struct AgentBusyObject {
+    uint8_t  _pad[0xd0];      // 0x00
+    int32_t  guardCounter;    // 0xd0
+};
+
+// Line metrics record reached through the `lineHeight` handle in the
+// Globals::drawLines() family: the advance between rows lives at +4.
+struct LineMetrics {
+    int32_t  field0;          // 0x00
+    int32_t  lineHeight;      // 0x04
+};
+
+// Object reached through gSCS_obj* / gSCF_obj* in setCoordsSteer/setCoordsFire;
+// the steer path writes its computed value at +0x54, the fire path at +0x58.
+struct CoordsObject {
+    uint8_t  _pad[0x54];      // 0x00
+    int32_t  steerValue;      // 0x54
+    int32_t  fireValue;       // 0x58
+};
+
+// Object reached through the `secondary` handle in Globals::Globals(): two
+// leading int slots plus a flag byte at 0x13.
+struct CtorSecondaryObject {
+    int32_t  slot0;           // 0x00
+    int32_t  slot1;           // 0x04
+    uint8_t  _pad08[0x0b];    // 0x08
+    uint8_t  flagAt13;        // 0x13
+};
+
+// Object reached through gI_g3822 in Globals::init(): only a leading flag byte
+// is cleared.
+struct InitFlagByte {
+    uint8_t  flag;            // 0x00
+};
+
+#pragma pack(pop)
+
+#if __SIZEOF_POINTER__ == 4
+#include <cstddef>
+static_assert(offsetof(GameSettingsRecord, colorR) == 0x00, "colorR");
+static_assert(offsetof(GameSettingsRecord, colorG) == 0x04, "colorG");
+static_assert(offsetof(GameSettingsRecord, colorB) == 0x08, "colorB");
+static_assert(offsetof(GameSettingsRecord, musicVolume) == 0x0c, "musicVolume");
+static_assert(offsetof(GameSettingsRecord, sfxVolume) == 0x0d, "sfxVolume");
+static_assert(offsetof(GameSettingsRecord, ambientVolume) == 0x0e, "ambientVolume");
+static_assert(offsetof(GameSettingsRecord, volumePair) == 0x0c, "volumePair");
+static_assert(offsetof(GameSettingsRecord, flagAt0f) == 0x0f, "flagAt0f");
+static_assert(offsetof(GameSettingsRecord, flagAt10) == 0x10, "flagAt10");
+static_assert(offsetof(GameSettingsRecord, flagAt11) == 0x11, "flagAt11");
+static_assert(offsetof(GameSettingsRecord, glowR) == 0x14, "glowR");
+static_assert(offsetof(GameSettingsRecord, glowG) == 0x18, "glowG");
+static_assert(offsetof(GameSettingsRecord, tintR) == 0x1c, "tintR");
+static_assert(offsetof(GameSettingsRecord, tintG) == 0x20, "tintG");
+static_assert(offsetof(GameSettingsRecord, tintB) == 0x24, "tintB");
+static_assert(offsetof(GameSettingsRecord, brightness) == 0x28, "brightness");
+static_assert(offsetof(GameSettingsRecord, contrast) == 0x2c, "contrast");
+static_assert(offsetof(GameSettingsRecord, enableFlag30) == 0x30, "enableFlag30");
+static_assert(offsetof(GameSettingsRecord, intAt31) == 0x31, "intAt31");
+static_assert(offsetof(GameSettingsRecord, intAt35) == 0x35, "intAt35");
+static_assert(offsetof(GameSettingsRecord, flagAt39) == 0x39, "flagAt39");
+static_assert(offsetof(GameSettingsRecord, intAt3b) == 0x3b, "intAt3b");
+static_assert(offsetof(GameSettingsRecord, flagAt3f) == 0x3f, "flagAt3f");
+static_assert(offsetof(GameSettingsRecord, shortAt40) == 0x40, "shortAt40");
+static_assert(offsetof(GameSettingsRecord, qualityLevel) == 0x44, "qualityLevel");
+static_assert(offsetof(GameSettingsRecord, intAt48) == 0x48, "intAt48");
+static_assert(offsetof(GameSettingsRecord, shortAt4c) == 0x4c, "shortAt4c");
+static_assert(offsetof(GameSettingsRecord, flagAt4e) == 0x4e, "flagAt4e");
+static_assert(offsetof(GameSettingsRecord, intAt50) == 0x50, "intAt50");
+static_assert(offsetof(GameSettingsRecord, resWidth) == 0x54, "resWidth");
+static_assert(offsetof(GameSettingsRecord, resHeight) == 0x58, "resHeight");
+static_assert(offsetof(GameSettingsRecord, shortAt60) == 0x60, "shortAt60");
+
+static_assert(offsetof(InitZeroObject, tailAt2b) == 0x2b, "tailAt2b");
+static_assert(offsetof(InitZeroObject, tailAt2f) == 0x2f, "tailAt2f");
+static_assert(offsetof(InitZeroObject, tailAt33) == 0x33, "tailAt33");
+static_assert(offsetof(InitZeroObject, tailAt37) == 0x37, "tailAt37");
+
+static_assert(offsetof(AgentBusyObject, guardCounter) == 0xd0, "guardCounter");
+static_assert(offsetof(LineMetrics, lineHeight) == 0x04, "lineHeight");
+static_assert(offsetof(CoordsObject, steerValue) == 0x54, "steerValue");
+static_assert(offsetof(CoordsObject, fireValue) == 0x58, "fireValue");
+static_assert(offsetof(CtorSecondaryObject, slot1) == 0x04, "slot1");
+static_assert(offsetof(CtorSecondaryObject, flagAt13) == 0x13, "flagAt13");
+#endif
+
+} // anonymous namespace
+
+Globals *Globals::gGlobals = nullptr;
 
 int Globals::is_dialogue_window_visible = 0;
 int Globals::is_choice_window_visible = 0;
@@ -33,16 +208,66 @@ unsigned char Globals::iPadAssetsWithLowerRes = 0;
 unsigned char Globals::enterSpaceLounge = 0;
 int Globals::switch_to_target_setting = 0;
 
-Layout *gLayout = nullptr;
-void *gFont = nullptr;
-int gScreenWidth = 0;
-int gScreenHeight = 0;
-AbyssEngine::ApplicationManager *gAppManager = nullptr;
+Status *Globals::status = nullptr;
+unsigned char Globals::options[100] = {};
+FModSound *Globals::sound = nullptr;
+int Globals::logoIsShown = 0;
+int Globals::isInMainMenu = 0;
+
+char *Globals::cItemListID_00 = nullptr;
+char *Globals::cItemListID_01 = nullptr;
+char *Globals::cItemListID_02 = nullptr;
+char *Globals::cItemListID_03 = nullptr;
+char *Globals::cItemListID_04 = nullptr;
+char *Globals::cItemListID_05 = nullptr;
+char *Globals::cItemListID_06 = nullptr;
+char *Globals::cItemListID_07 = nullptr;
+char *Globals::cItemListID_08 = nullptr;
+char *Globals::cItemListID_09 = nullptr;
+char *Globals::cItemListID_10 = nullptr;
+char *Globals::cItemListID_11 = nullptr;
+char *Globals::cItemListID_12 = nullptr;
+char *Globals::cItemListID_13 = nullptr;
+char *Globals::cItemListID_14 = nullptr;
+char *Globals::cItemListID_15 = nullptr;
+char *Globals::cItemListID_16 = nullptr;
+char *Globals::cItemListID_17 = nullptr;
+char *Globals::cItemListID_18 = nullptr;
+char *Globals::cItemListID_19 = nullptr;
+char *Globals::cItemListID_20 = nullptr;
+char *Globals::cItemListID_21 = nullptr;
+char *Globals::cItemListID_22 = nullptr;
+char *Globals::cItemListID_23 = nullptr;
+char *Globals::cItemListID_24 = nullptr;
+char *Globals::cItemListName_00 = nullptr;
+char *Globals::cItemListName_01 = nullptr;
+char *Globals::cItemListName_02 = nullptr;
+char *Globals::cItemListName_03 = nullptr;
+char *Globals::cItemListName_04 = nullptr;
+char *Globals::cItemListDescription_00 = nullptr;
+char *Globals::cItemListDescription_01 = nullptr;
+char *Globals::cItemListDescription_02 = nullptr;
+char *Globals::cItemListDescription_03 = nullptr;
+char *Globals::cItemListDescription_04 = nullptr;
+char *Globals::cItemListCurrency_00 = nullptr;
+char *Globals::cItemListCurrency_01 = nullptr;
+char *Globals::cItemListCurrency_02 = nullptr;
+char *Globals::cItemListCurrency_03 = nullptr;
+char *Globals::cItemListCurrency_04 = nullptr;
+char *Globals::cItemListPrice_00 = nullptr;
+char *Globals::cItemListPrice_01 = nullptr;
+char *Globals::cItemListPrice_02 = nullptr;
+char *Globals::cItemListPrice_03 = nullptr;
+char *Globals::cItemListPrice_04 = nullptr;
+
+Layout *Globals::gLayout = nullptr;
+void *Globals::gFont = nullptr;
+int Globals::gScreenWidth = 0;
+int Globals::gScreenHeight = 0;
+AbyssEngine::ApplicationManager *ApplicationManager::gAppManager = nullptr;
 #include "engine/render/Mesh.h"
 #include "game/ship/Ship.h"
 #include "engine/render/PaintCanvas.h"
-
-extern PaintCanvas *gCanvas;
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 
@@ -62,75 +287,74 @@ extern PaintCanvas *gCanvas;
 #include "game/world/SolarSystem.h"
 #include "game/core/String.h"
 
-extern "C" float VectorSignedToFloat(int v, int mode);
+float VectorSignedToFloat(int v, int mode);
 
-extern "C" float VectorUnsignedToFloat(unsigned v, int mode);
+float VectorUnsignedToFloat(unsigned v, int mode);
 
 uint32_t nextInt_71aa4(AbyssEngine::AERandom * self);
 
 int nextInt_71ad0(AbyssEngine::AERandom *self, int bound);
 
-extern "C" int idiv(int a, int b);
+int idiv(int a, int b);
 
 void MatrixSetTranslation(void *m, float x, float y, float z);
 
-extern "C" int AERandom_nextIntB(int rng, int bound);
+int AERandom_nextIntB(int rng, int bound);
 
-extern "C" void FileRead_ctor(void *self);
+void FileRead_ctor(void *self);
 
-extern "C" void *FileRead_dtor(void *self);
+void *FileRead_dtor(void *self);
 
-extern "C" float VectorScale(void *vec, float scalar);
+float VectorScale(void *vec, float scalar);
 
-extern "C" void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
+void BoundingSphere_ctor(void *self, float cx, float cy, float cz, float r);
 
-extern "C" void *Galaxy_dtor(void *g);
+void *Galaxy_dtor(void *g);
 
-extern "C" void *Status_dtor(void *s);
+void *Status_dtor(void *s);
 
-extern "C" void *AERandom_dtor(void *r);
+void *AERandom_dtor(void *r);
 
-extern "C" void *Layout_dtor(void *l);
+void *Layout_dtor(void *l);
 
-extern "C" void *Generator_dtor(void *g);
+void *Generator_dtor(void *g);
 
-extern "C" void *FModSound_dtor(void *s);
+void *FModSound_dtor(void *s);
 
-extern "C" void *Achievements_dtor(void *a);
+void *Achievements_dtor(void *a);
 
-extern "C" void *ImageFactory_dtor(void *f);
+void *ImageFactory_dtor(void *f);
 
-extern "C" void Mission_ctor(void *m);
+void Mission_ctor(void *m);
 
-extern "C" void Galaxy_ctor(void *g);
+void Galaxy_ctor(void *g);
 
-extern "C" void Achievements_ctor(void *a);
+void Achievements_ctor(void *a);
 
-extern "C" void Status_ctor(void *s);
+void Status_ctor(void *s);
 
-extern "C" void FileRead_ctor(void *f);
+void FileRead_ctor(void *f);
 
-extern "C" void *FileRead_dtor(void *f);
+void *FileRead_dtor(void *f);
 
-extern "C" void AERandom_ctor(void *r);
+void AERandom_ctor(void *r);
 
-extern "C" void Generator_ctor(void *g);
+void Generator_ctor(void *g);
 
-extern "C" void FModSound_ctor(void *s);
+void FModSound_ctor(void *s);
 
-extern "C" int FModSound_tryToStopMusicForBGMusic();
+int FModSound_tryToStopMusicForBGMusic();
 
 void ParticleSettingsRef_initialize();
 
-extern "C" int Station_getIndex(int station);
+int Station_getIndex(int station);
 
-extern "C"
-Status **g_status;
+static Status **g_status;
 
-extern void *const gLB_dest __attribute__((visibility("hidden")));
+static void *const gLB_dest = nullptr;
 
 void Globals::reportLeaderboards() {
-    int kills = gStatus->getKills();
+    int kills = Status::gStatus->getKills();
     *(int *) gLB_dest = kills;
 }
 
@@ -144,15 +368,25 @@ typedef int v4si __attribute__((vector_size (16)
 );
 struct __attribute__ ((packed)) Q16 { v4si v; };
 
-extern void *const gHints __attribute__((visibility("hidden")));
+static void *const gHints = nullptr;
+
+struct __attribute__((packed)) HintsBuffer {
+    union {
+        Q16 quad[4]; // 16-byte SIMD-aligned views at 0x00/0x10/0x20/0x30
+        struct {
+            uint8_t _pad2b[0x2b];
+            Q16     quadAt2b; // unaligned 16-byte store overlapping quad[2]/quad[3]
+        };
+    };
+};
 
 void Globals::resetHints() {
-    char *p = (char *) gHints;
+    HintsBuffer *hints = (HintsBuffer *) gHints;
     const v4si z = {0, 0, 0, 0};
-    ((Q16 *) (p + 0x00))->v = z;
-    ((Q16 *) (p + 0x2b))->v = z;
-    ((Q16 *) (p + 0x20))->v = z;
-    ((Q16 *) (p + 0x10))->v = z;
+    hints->quad[0].v = z;    // 0x00
+    hints->quadAt2b.v = z;   // 0x2b
+    hints->quad[2].v = z;    // 0x20
+    hints->quad[1].v = z;    // 0x10
 }
 
 void Globals::startNewSoundResourceList() {
@@ -167,7 +401,7 @@ void Globals::startNewSoundResourceList() {
     ArrayAdd<int>(0x7b, *this->soundResources);
 }
 
-extern void *const gItemNameGameText __attribute__((visibility("hidden")));
+static void *const gItemNameGameText = nullptr;
 
 String Globals::getItemName(int item) {
     String *src = (String *) ((GameText *) (*(void **) gItemNameGameText))->getText(item + 0x4fa);
@@ -185,8 +419,8 @@ float Globals::sqrt(float x) {
     return __builtin_sqrtf(x);
 }
 
-extern void *const gDrinks_a __attribute__((visibility("hidden")));
-extern void *const gDrinks_rng __attribute__((visibility("hidden")));
+static void *const gDrinks_a = nullptr;
+static void *const gDrinks_rng = nullptr;
 
 void Globals::getRandomSystemForDrinks() {
     int slot = *(int *) gDrinks_a;
@@ -223,7 +457,7 @@ struct FileRead {
     Array<String *> *loadNamesBinary(int32_t type, bool first, bool second);
 };
 
-extern void *const gStationRng __attribute__((visibility("hidden")));
+static void *const gStationRng = nullptr;
 
 Station *Globals::getRandomStation() {
     FileRead *f = (FileRead *) ::operator new(1);
@@ -241,7 +475,7 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
 void Globals::reportSupernovaChallengeScore() {
 }
 
-extern const char gGLA_newline[] __attribute__((visibility("hidden")));
+static const char gGLA_newline[] = "";
 
 void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
                            Array<String *> *out) {
@@ -298,16 +532,16 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     }
 }
 
-extern void *const gLTS2_guardHolder __attribute__((visibility("hidden")));
-extern const char gLTS2_secTens[] __attribute__((visibility("hidden")));
-extern const char gLTS2_secEmpty[] __attribute__((visibility("hidden")));
-extern const char gLTS2_minTens[] __attribute__((visibility("hidden")));
-extern const char gLTS2_minEmpty[] __attribute__((visibility("hidden")));
-extern const char gLTS2_zeroPrefix[] __attribute__((visibility("hidden")));
-extern const char gLTS2_hrTens[] __attribute__((visibility("hidden")));
-extern const char gLTS2_hrEmpty[] __attribute__((visibility("hidden")));
-extern const char gLTS2_sep1[] __attribute__((visibility("hidden")));
-extern const char gLTS2_sep2[] __attribute__((visibility("hidden")));
+static void *const gLTS2_guardHolder = nullptr;
+static const char gLTS2_secTens[] = "";
+static const char gLTS2_secEmpty[] = "";
+static const char gLTS2_minTens[] = "";
+static const char gLTS2_minEmpty[] = "";
+static const char gLTS2_zeroPrefix[] = "";
+static const char gLTS2_hrTens[] = "";
+static const char gLTS2_hrEmpty[] = "";
+static const char gLTS2_sep1[] = "";
+static const char gLTS2_sep2[] = "";
 
 void Globals::longToTimeString(long long ms, String &out) {
     long long secQ = ms / 1000;
@@ -355,10 +589,10 @@ void Globals::longToTimeString(long long ms, String &out) {
     return;
 }
 
-extern void *const gGBS_guardHolder __attribute__((visibility("hidden")));
-extern void *const gGBS_strPtr __attribute__((visibility("hidden")));
-extern void *const gGBS_canvas __attribute__((visibility("hidden")));
-extern const char gGBS_prefix[] __attribute__((visibility("hidden")));
+static void *const gGBS_guardHolder = nullptr;
+static void *const gGBS_strPtr = nullptr;
+static void *const gGBS_canvas = nullptr;
+static const char gGBS_prefix[] = "";
 
 String Globals::getBoundedString(const String &text, int width) {
     int *guardP = *(int **) gGBS_guardHolder;
@@ -377,7 +611,7 @@ String Globals::getBoundedString(const String &text, int width) {
         int font = (int) (long) *strPtr;
         String tmpText;
         tmpText.ctor_copy(const_cast<String *>(&text), false);
-        gGlobals->getLine((unsigned) font, tmpText, width - 3, line);
+        Globals::gGlobals->getLine((unsigned) font, tmpText, width - 3, line);
 
         String prefix;
         prefix.ctor_char(gGBS_prefix, false);
@@ -389,37 +623,38 @@ String Globals::getBoundedString(const String &text, int width) {
     return result;
 }
 
-extern const float gSCS_f86f8 __attribute__((visibility("hidden")));
-extern const float gSCS_f86fc __attribute__((visibility("hidden")));
-extern const float gSCS_f8700 __attribute__((visibility("hidden")));
-extern const float gSCS_f8704 __attribute__((visibility("hidden")));
-extern const float gSCS_f8708 __attribute__((visibility("hidden")));
-extern const float gSCS_f870c __attribute__((visibility("hidden")));
-extern const float gSCS_f8710 __attribute__((visibility("hidden")));
-extern const float gSCS_f8714 __attribute__((visibility("hidden")));
-extern const float gSCS_f8718 __attribute__((visibility("hidden")));
-extern const float gSCS_f871c __attribute__((visibility("hidden")));
-extern const float gSCS_f8720 __attribute__((visibility("hidden")));
-extern const float gSCS_f8724 __attribute__((visibility("hidden")));
-extern const float gSCS_f8728 __attribute__((visibility("hidden")));
-extern const float gSCS_f872c __attribute__((visibility("hidden")));
-extern const float gSCS_f8730 __attribute__((visibility("hidden")));
+static const float gSCS_f86f8 = 0;
+static const float gSCS_f86fc = 0;
+static const float gSCS_f8700 = 0;
+static const float gSCS_f8704 = 0;
+static const float gSCS_f8708 = 0;
+static const float gSCS_f870c = 0;
+static const float gSCS_f8710 = 0;
+static const float gSCS_f8714 = 0;
+static const float gSCS_f8718 = 0;
+static const float gSCS_f871c = 0;
+static const float gSCS_f8720 = 0;
+static const float gSCS_f8724 = 0;
+static const float gSCS_f8728 = 0;
+static const float gSCS_f872c = 0;
+static const float gSCS_f8730 = 0;
 
-extern void *const gSCS_screenH __attribute__((visibility("hidden")));
-extern void *const gSCS_isPhone __attribute__((visibility("hidden")));
-extern void *const gSCS_flagB __attribute__((visibility("hidden")));
-extern void *const gSCS_objA __attribute__((visibility("hidden")));
-extern void *const gSCS_objB __attribute__((visibility("hidden")));
-extern void *const gSCS_flagC __attribute__((visibility("hidden")));
-extern void *const gSCS_flagD __attribute__((visibility("hidden")));
-extern void *const gSCS_objC __attribute__((visibility("hidden")));
-extern void *const gSCS_flagE __attribute__((visibility("hidden")));
-extern void *const gSCS_flagF __attribute__((visibility("hidden")));
-extern void *const gSCS_flagG __attribute__((visibility("hidden")));
-extern void *const gSCS_flagH __attribute__((visibility("hidden")));
+static void *const gSCS_screenH = nullptr;
+static void *const gSCS_isPhone = nullptr;
+static void *const gSCS_flagB = nullptr;
+static void *const gSCS_objA = nullptr;
+static void *const gSCS_objB = nullptr;
+static void *const gSCS_flagC = nullptr;
+static void *const gSCS_flagD = nullptr;
+static void *const gSCS_objC = nullptr;
+static void *const gSCS_flagE = nullptr;
+static void *const gSCS_flagF = nullptr;
+static void *const gSCS_flagG = nullptr;
+static void *const gSCS_flagH = nullptr;
 
 static inline char rdflag(void *const g) { return **(char **) &g; }
 static inline int *rdobj(void *const g) { return *(int **) &g; }
+static inline CoordsObject *rdcoords(void *const g) { return *(CoordsObject **) &g; }
 
 void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
                              unsigned short &o5, unsigned short &o6, unsigned short &o7,
@@ -444,7 +679,7 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
     if (thresh < fp1) {
         iv = (int) fp1;
         uv = (unsigned short) iv;
-        rdobj(gSCS_objB)[0x54 / 4] = (int) fp1;
+        rdcoords(gSCS_objB)->steerValue = (int) fp1;
         char flag8;
         if (isPhone == 0) {
             flag8 = rdflag(gSCS_flagC);
@@ -470,13 +705,13 @@ void Globals::setCoordsSteer(int p1, int p2, int p3, int p4,
         if (isPhone == 0) {
             char flag = rdflag(gSCS_flagD);
             iv = (flag == 0) ? 0x96 : 0x12c;
-            rdobj(gSCS_objC)[0x54 / 4] = iv;
+            rdcoords(gSCS_objC)->steerValue = iv;
             char flag8 = (flag == 0) ? 0 : 1;
             (void) flag8;
             goto label8508;
         }
         uv = 0xd2;
-        rdobj(gSCS_objA)[0x54 / 4] = 0xd2;
+        rdcoords(gSCS_objA)->steerValue = 0xd2;
     }
 
 common: {
@@ -568,10 +803,10 @@ label8556: {
     }
 }
 
-extern void *const gGAMT_guard __attribute__((visibility("hidden")));
-extern const char gGAMT_noAgent[] __attribute__((visibility("hidden")));
-extern void *const gGAMT_busyObj __attribute__((visibility("hidden")));
-extern void *const gGAMT_modText __attribute__((visibility("hidden")));
+static void *const gGAMT_guard = nullptr;
+static const char gGAMT_noAgent[] = "";
+static void *const gGAMT_busyObj = nullptr;
+static void *const gGAMT_modText = nullptr;
 
 static inline __attribute__ ((always_inline))
 
@@ -593,29 +828,30 @@ String Globals::getAgentMissionText(Agent *agent) {
     if (agent->isGenericAgent() == 0) {
         int event = agent->getEvent();
         if (event < 1 && agent->hasAcceptedOffer() == 0) {
-            int *busy = *(int **) gGAMT_busyObj;
+            AgentBusyObject **busySlot = *(AgentBusyObject ***) gGAMT_busyObj;
+            AgentBusyObject *busy = *busySlot;
 
-            *(int *) (*busy + 0xd0) += 1;
+            busy->guardCounter += 1;
             int offer = agent->getOffer();
 
             if (offer == 8) {
-                int ship = (int) (long) gStatus->getShip();
+                int ship = (int) (long) Status::gStatus->getShip();
                 int price = ((Ship *) (ship))->getPrice();
                 int pct = agent->getModPricePercentage();
                 agent->setSellItemPrice(idiv(price * pct, 100));
-                ship = (int) (long) gStatus->getShip();
+                ship = (int) (long) Status::gStatus->getShip();
                 int modIdx = agent->getSellModIndex();
                 if (((Ship *) (ship))->hasModInstalled(modIdx) != 0) {
                     void *t = ((GameText *) ((void *) (long) **(int **) gGAMT_modText))->getText(modIdx);
                     (void) t;
-                    *(int *) (*busy + 0xd0) -= 1;
+                    busy->guardCounter -= 1;
                     result.ctor_copy(&acc, false);
                     return result;
                 }
             }
 
             buildAgentMissionText(&acc, agent, offer);
-            *(int *) (*busy + 0xd0) -= 1;
+            busy->guardCounter -= 1;
         } else {
             buildAgentMissionText(&acc, agent, -1);
         }
@@ -627,19 +863,19 @@ String Globals::getAgentMissionText(Agent *agent) {
     return result;
 }
 
-extern void *const gIAP_guardHolder __attribute__((visibility("hidden")));
-extern const char gIAP_prefixA[] __attribute__((visibility("hidden")));
-extern const char gIAP_prefixB[] __attribute__((visibility("hidden")));
-extern const char gIAP_id50[] __attribute__((visibility("hidden")));
-extern const char gIAP_id0[] __attribute__((visibility("hidden")));
-extern const char gIAP_id1[] __attribute__((visibility("hidden")));
-extern const char gIAP_id2[] __attribute__((visibility("hidden")));
-extern const char gIAP_id3[] __attribute__((visibility("hidden")));
-extern const char gIAP_id4[] __attribute__((visibility("hidden")));
-extern const char gIAP_id51[] __attribute__((visibility("hidden")));
-extern const char gIAP_id52[] __attribute__((visibility("hidden")));
-extern const char gIAP_id53[] __attribute__((visibility("hidden")));
-extern const char gIAP_id54[] __attribute__((visibility("hidden")));
+static void *const gIAP_guardHolder = nullptr;
+static const char gIAP_prefixA[] = "";
+static const char gIAP_prefixB[] = "";
+static const char gIAP_id50[] = "";
+static const char gIAP_id0[] = "";
+static const char gIAP_id1[] = "";
+static const char gIAP_id2[] = "";
+static const char gIAP_id3[] = "";
+static const char gIAP_id4[] = "";
+static const char gIAP_id51[] = "";
+static const char gIAP_id52[] = "";
+static const char gIAP_id53[] = "";
+static const char gIAP_id54[] = "";
 
 int Globals::getInAppPurchaseArrayIndex(int productCode, Array<String *> *list) {
     int *guardP = *(int **) gIAP_guardHolder;
@@ -719,12 +955,12 @@ String Globals::getKeyBindingReplaceString(int key) {
     return result;
 }
 
-extern void *const gLTS_guardHolder __attribute__((visibility("hidden")));
-extern const char gLTS_minTens[] __attribute__((visibility("hidden")));
-extern const char gLTS_minEmpty[] __attribute__((visibility("hidden")));
-extern const char gLTS_hrTens[] __attribute__((visibility("hidden")));
-extern const char gLTS_hrEmpty[] __attribute__((visibility("hidden")));
-extern const char gLTS_sep[] __attribute__((visibility("hidden")));
+static void *const gLTS_guardHolder = nullptr;
+static const char gLTS_minTens[] = "";
+static const char gLTS_minEmpty[] = "";
+static const char gLTS_hrTens[] = "";
+static const char gLTS_hrEmpty[] = "";
+static const char gLTS_sep[] = "";
 
 void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
     long long q = ms / 0xea60;
@@ -754,14 +990,14 @@ void Globals::longToTimeStringNoSeconds(long long ms, String &out) {
     return;
 }
 
-extern const unsigned short gGSG_resTable[] __attribute__((visibility("hidden")));
-extern const unsigned short gGSG_meshTable[] __attribute__((visibility("hidden")));
-extern const short gGSG_extraTable[] __attribute__((visibility("hidden")));
-extern const unsigned gGSG_lodTable[] __attribute__((visibility("hidden")));
-extern const unsigned gGSG_childTable[] __attribute__((visibility("hidden")));
+static const unsigned short gGSG_resTable[1] = {};
+static const unsigned short gGSG_meshTable[1] = {};
+static const short gGSG_extraTable[1] = {};
+static const unsigned gGSG_lodTable[1] = {};
+static const unsigned gGSG_childTable[1] = {};
 
 AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
-    PaintCanvas *canvas = gCanvas;
+    PaintCanvas *canvas = PaintCanvas::gCanvas;
 
     if (kind == 0xf) {
         AEGeometry *geom;
@@ -959,9 +1195,9 @@ AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
     }
 }
 
-extern void *const gREF_rng1 __attribute__((visibility("hidden")));
-extern void *const gREF_rng2 __attribute__((visibility("hidden")));
-extern const int gREF_table __attribute__((visibility("hidden")));
+static void *const gREF_rng1 = nullptr;
+static void *const gREF_rng2 = nullptr;
+static const int gREF_table = 0;
 
 unsigned Globals::getRandomEnemyFighter(int kind) {
     (void) this;
@@ -974,7 +1210,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     }
     unsigned r;
     if (t == 1) {
-        if (gStatus->dlc1Won() == 0) {
+        if (Status::gStatus->dlc1Won() == 0) {
             r = 9;
         } else {
             int n = AERandom_nextIntB(*(int *) gREF_rng1, 0x64);
@@ -1003,13 +1239,13 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     return r;
 }
 
-extern void *const gDL2_canvas __attribute__((visibility("hidden")));
-extern void *const gDL2_lineHeight __attribute__((visibility("hidden")));
+static void *const gDL2_canvas = nullptr;
+static void *const gDL2_lineHeight = nullptr;
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         unsigned int rightX, bool centered) {
     int *cv = (int *) gDL2_canvas;
-    int **lh = (int **) gDL2_lineHeight;
+    LineMetrics **lh = (LineMetrics **) gDL2_lineHeight;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -1018,12 +1254,12 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
             dx = (int) rightX - w;
         }
         ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *) ((char *) *lh + 4);
+        yacc += (*lh)->lineHeight;
     }
 }
 
-extern void *const gCBB_counter __attribute__((visibility("hidden")));
-extern void *const gCBB_canvas __attribute__((visibility("hidden")));
+static void *const gCBB_counter = nullptr;
+static void *const gCBB_canvas = nullptr;
 
 unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, float u1, float v1,
                                       int width) {
@@ -1079,10 +1315,10 @@ unsigned int Globals::createBillBoard(int p1, int height, float u0, float v0, fl
     return meshOut;
 }
 
-extern "C" void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1,
+void BoundingAAB_ctor(void *self, float x0, float y0, float z0, float x1, float y1,
                                  float z1);
 
-extern void *const gGWC_guardHolder __attribute__((visibility("hidden")));
+static void *const gGWC_guardHolder = nullptr;
 
 Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) {
     int *guardP = *(int **) gGWC_guardHolder;
@@ -1156,42 +1392,42 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
     return outArr;
 }
 
-extern int **const gGC_p_f31f6 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f31fc __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3200 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3204 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3208 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f320e __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3216 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f322a __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3242 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f324a __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3252 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f325a __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3262 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f326a __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3272 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f327a __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3288 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f32bc __attribute__((visibility("hidden")));
-extern char **const gGC_p_f32ec __attribute__((visibility("hidden")));
-extern char **const gGC_p_f32f4 __attribute__((visibility("hidden")));
-extern char **const gGC_p_f3300 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f330c __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3316 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f3366 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3368 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3372 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f337c __attribute__((visibility("hidden")));
-extern int **const gGC_p_f337e __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3388 __attribute__((visibility("hidden")));
-extern int **const gGC_p_f3390 __attribute__((visibility("hidden")));
-extern void **const gGC_p_f339e __attribute__((visibility("hidden")));
+static int **const gGC_p_f31f6 = nullptr;
+static void **const gGC_p_f31fc = nullptr;
+static void **const gGC_p_f3200 = nullptr;
+static void **const gGC_p_f3204 = nullptr;
+static void **const gGC_p_f3208 = nullptr;
+static void **const gGC_p_f320e = nullptr;
+static void **const gGC_p_f3216 = nullptr;
+static int **const gGC_p_f322a = nullptr;
+static int **const gGC_p_f3242 = nullptr;
+static int **const gGC_p_f324a = nullptr;
+static int **const gGC_p_f3252 = nullptr;
+static int **const gGC_p_f325a = nullptr;
+static int **const gGC_p_f3262 = nullptr;
+static int **const gGC_p_f326a = nullptr;
+static int **const gGC_p_f3272 = nullptr;
+static int **const gGC_p_f327a = nullptr;
+static int **const gGC_p_f3288 = nullptr;
+static void **const gGC_p_f32bc = nullptr;
+static char **const gGC_p_f32ec = nullptr;
+static char **const gGC_p_f32f4 = nullptr;
+static char **const gGC_p_f3300 = nullptr;
+static void **const gGC_p_f330c = nullptr;
+static void **const gGC_p_f3316 = nullptr;
+static void **const gGC_p_f3366 = nullptr;
+static int **const gGC_p_f3368 = nullptr;
+static int **const gGC_p_f3372 = nullptr;
+static void **const gGC_p_f337c = nullptr;
+static int **const gGC_p_f337e = nullptr;
+static int **const gGC_p_f3388 = nullptr;
+static int **const gGC_p_f3390 = nullptr;
+static void **const gGC_p_f339e = nullptr;
 
 Globals::Globals() {
     Globals * self = this;
-    void *settings = *gGC_p_f320e;
-    int *secondary = (int *) *gGC_p_f32bc;
+    GameSettingsRecord *settings = (GameSettingsRecord *) *gGC_p_f320e;
+    CtorSecondaryObject *secondary = (CtorSecondaryObject *) *gGC_p_f32bc;
     void *p5 = *gGC_p_f3216;
     void *p7 = *gGC_p_f3200;
     void *p9 = *gGC_p_f3208;
@@ -1213,38 +1449,36 @@ Globals::Globals() {
 
     *(int *) self = 0;
 
-    char *s = (char *) settings;
+    settings->colorR = 0.5f;
+    settings->colorG = 0.5f;
+    settings->colorB = 0.5f;
+    settings->volumePair = 0x101;
+    settings->flagAt10 = 0;
 
-    *(float *) (s + 0x00) = 0.5f;
-    *(float *) (s + 0x04) = 0.5f;
-    *(float *) (s + 0x08) = 0.5f;
-    *(short *) (s + 0x0c) = 0x101;
-    *(short *) (s + 0x10) = 0;
+    settings->glowR = 0.5f;
+    settings->glowG = 0.5f;
 
-    *(float *) (s + 0x14) = 0.5f;
-    *(float *) (s + 0x18) = 0.5f;
+    settings->tintR = 0.6f;
+    settings->tintG = 0.6f;
+    settings->tintB = 0.5f;
+    settings->brightness = 1.0f;
+    settings->contrast = 0.5f;
+    settings->ambientVolume = 1;
+    settings->enableFlag30 = 1;
+    settings->shortAt40 = 0;
+    settings->intAt50 = 0;
+    settings->flagAt39 = 0;
+    settings->intAt35 = 0;
+    settings->intAt31 = 0;
+    secondary->slot1 = 0;
+    secondary->flagAt13 = 0;
 
-    *(float *) (s + 0x1c) = 0.6f;
-    *(float *) (s + 0x20) = 0.6f;
-    *(float *) (s + 0x24) = 0.5f;
-    *(float *) (s + 0x28) = 1.0f;
-    *(float *) (s + 0x2c) = 0.5f;
-    *(unsigned char *) (s + 0x0e) = 1;
-    *(unsigned char *) (s + 0x30) = 1;
-    *(short *) (s + 0x40) = 0;
-    *(int *) (s + 0x50) = 0;
-    *(unsigned char *) (s + 0x39) = 0;
-    *(int *) (s + 0x35) = 0;
-    *(int *) (s + 0x31) = 0;
-    secondary[1] = 0;
-    *(unsigned char *) ((char *) secondary + 0x13) = 0;
-
-    *(unsigned char *) (s + 0x3f) = 0;
-    *(int *) (s + 0x3b) = 0;
-    *(unsigned char *) (s + 0x4e) = 0;
-    *(short *) (s + 0x4c) = 0;
-    *(int *) (s + 0x48) = 0;
-    *secondary = 0;
+    settings->flagAt3f = 0;
+    settings->intAt3b = 0;
+    settings->flagAt4e = 0;
+    settings->shortAt4c = 0;
+    settings->intAt48 = 0;
+    secondary->slot0 = 0;
 
     **gGC_p_f32ec = 0;
     **gGC_p_f32f4 = 0;
@@ -1257,16 +1491,16 @@ Globals::Globals() {
     void *p7b = *gGC_p_f330c;
     void *p5b = *gGC_p_f3316;
 
-    float fv = *(float *) (s + 0x44);
+    float fv = settings->qualityLevel;
     int v54 = 0x247;
     if (1.0f <= fv) v54 = 0x33e;
     if (fv <= 0.0f) v54 = 0x19f;
-    *(int *) (s + 0x54) = v54;
+    settings->resWidth = v54;
 
     int v58 = 0x201;
     if (1.0f <= fv) v58 = 0x2da;
     if (fv <= 0.0f) v58 = 0x16d;
-    *(int *) (s + 0x58) = v58;
+    settings->resHeight = v58;
 
     int *p11b = (int *) *gGC_p_f3366;
     **gGC_p_f3368 = 0;
@@ -1276,7 +1510,7 @@ Globals::Globals() {
     **gGC_p_f3388 = 0;
     **gGC_p_f3390 = 0;
     *(int *) p9b = 0;
-    *(short *) (s + 0x60) = 0x100;
+    settings->shortAt60 = 0x100;
     *p11b = 0;
     void *p8b = *gGC_p_f339e;
     *(int *) p5b = 0;
@@ -1285,20 +1519,20 @@ Globals::Globals() {
     self->soundResources = 0;
 }
 
-extern void **const gG_recordHandler __attribute__((visibility("hidden")));
-extern void **const gG_galaxy __attribute__((visibility("hidden")));
-extern void **const gG_status __attribute__((visibility("hidden")));
-extern void **const gG_gameText __attribute__((visibility("hidden")));
-extern void **const gG_random __attribute__((visibility("hidden")));
-extern void **const gG_layout __attribute__((visibility("hidden")));
-extern void **const gG_generator __attribute__((visibility("hidden")));
-extern void **const gG_polyObj __attribute__((visibility("hidden")));
-extern void **const gG_fmod __attribute__((visibility("hidden")));
-extern void **const gG_items __attribute__((visibility("hidden")));
-extern void **const gG_ships __attribute__((visibility("hidden")));
-extern void **const gG_achievements __attribute__((visibility("hidden")));
-extern void **const gG_imageFactory __attribute__((visibility("hidden")));
-extern int **const gG_tail __attribute__((visibility("hidden")));
+static void **const gG_recordHandler = nullptr;
+static void **const gG_galaxy = nullptr;
+static void **const gG_status = nullptr;
+static void **const gG_gameText = nullptr;
+static void **const gG_random = nullptr;
+static void **const gG_layout = nullptr;
+static void **const gG_generator = nullptr;
+static void **const gG_polyObj = nullptr;
+static void **const gG_fmod = nullptr;
+static void **const gG_items = nullptr;
+static void **const gG_ships = nullptr;
+static void **const gG_achievements = nullptr;
+static void **const gG_imageFactory = nullptr;
+static int **const gG_tail = nullptr;
 
 struct PolymorphicSingleton {
     virtual ~PolymorphicSingleton() {
@@ -1398,13 +1632,13 @@ Globals::~Globals() {
     **gG_tail = 0;
 }
 
-extern void *const gDL_canvas __attribute__((visibility("hidden")));
-extern void *const gDL_lineHeight __attribute__((visibility("hidden")));
+static void *const gDL_canvas = nullptr;
+static void *const gDL_lineHeight = nullptr;
 
 void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, int startY,
                         bool centered) {
     int *cv = (int *) gDL_canvas;
-    int **lh = (int **) gDL_lineHeight;
+    LineMetrics **lh = (LineMetrics **) gDL_lineHeight;
     int yacc = startY;
     int dx = 0;
     for (unsigned i = 0; i < lines->size(); i++) {
@@ -1413,63 +1647,64 @@ void Globals::drawLines(unsigned int font, Array<String *> *lines, int baseX, in
             dx = -(w >> 1);
         }
         ((PaintCanvas *) (long) *cv)->DrawString(font, *(*lines)[i], dx + baseX, yacc, false);
-        yacc += *(int *) ((char *) *lh + 4);
+        yacc += (*lh)->lineHeight;
     }
 }
 
-extern const float gSCF_b90 __attribute__((visibility("hidden")));
-extern const float gSCF_b10 __attribute__((visibility("hidden")));
-extern const float gSCF_b14 __attribute__((visibility("hidden")));
-extern const float gSCF_b7c __attribute__((visibility("hidden")));
-extern const float gSCF_b80 __attribute__((visibility("hidden")));
-extern const float gSCF_b84 __attribute__((visibility("hidden")));
-extern const float gSCF_b88 __attribute__((visibility("hidden")));
-extern const float gSCF_b8c __attribute__((visibility("hidden")));
-extern const float gSCF_b94 __attribute__((visibility("hidden")));
-extern const float gSCF_b98 __attribute__((visibility("hidden")));
-extern const float gSCF_b9c __attribute__((visibility("hidden")));
-extern const float gSCF_ba0 __attribute__((visibility("hidden")));
-extern const float gSCF_ba4 __attribute__((visibility("hidden")));
-extern const float gSCF_ba8 __attribute__((visibility("hidden")));
-extern const float gSCF_bac __attribute__((visibility("hidden")));
-extern const float gSCF_bb0 __attribute__((visibility("hidden")));
-extern const float gSCF_bb4 __attribute__((visibility("hidden")));
-extern const float gSCF_bb8 __attribute__((visibility("hidden")));
-extern const float gSCF_bbc __attribute__((visibility("hidden")));
-extern const float gSCF_bc0 __attribute__((visibility("hidden")));
-extern const float gSCF_bc4 __attribute__((visibility("hidden")));
-extern const float gSCF_bc8 __attribute__((visibility("hidden")));
-extern const float gSCF_bcc __attribute__((visibility("hidden")));
-extern const float gSCF_bd0 __attribute__((visibility("hidden")));
-extern const float gSCF_bd4 __attribute__((visibility("hidden")));
-extern const float gSCF_bd8 __attribute__((visibility("hidden")));
-extern const float gSCF_bdc __attribute__((visibility("hidden")));
-extern const float gSCF_be0 __attribute__((visibility("hidden")));
-extern const float gSCF_be4 __attribute__((visibility("hidden")));
-extern const float gSCF_be8 __attribute__((visibility("hidden")));
-extern const float gSCF_bec __attribute__((visibility("hidden")));
-extern const float gSCF_bf0 __attribute__((visibility("hidden")));
+static const float gSCF_b90 = 0;
+static const float gSCF_b10 = 0;
+static const float gSCF_b14 = 0;
+static const float gSCF_b7c = 0;
+static const float gSCF_b80 = 0;
+static const float gSCF_b84 = 0;
+static const float gSCF_b88 = 0;
+static const float gSCF_b8c = 0;
+static const float gSCF_b94 = 0;
+static const float gSCF_b98 = 0;
+static const float gSCF_b9c = 0;
+static const float gSCF_ba0 = 0;
+static const float gSCF_ba4 = 0;
+static const float gSCF_ba8 = 0;
+static const float gSCF_bac = 0;
+static const float gSCF_bb0 = 0;
+static const float gSCF_bb4 = 0;
+static const float gSCF_bb8 = 0;
+static const float gSCF_bbc = 0;
+static const float gSCF_bc0 = 0;
+static const float gSCF_bc4 = 0;
+static const float gSCF_bc8 = 0;
+static const float gSCF_bcc = 0;
+static const float gSCF_bd0 = 0;
+static const float gSCF_bd4 = 0;
+static const float gSCF_bd8 = 0;
+static const float gSCF_bdc = 0;
+static const float gSCF_be0 = 0;
+static const float gSCF_be4 = 0;
+static const float gSCF_be8 = 0;
+static const float gSCF_bec = 0;
+static const float gSCF_bf0 = 0;
 
-extern void *const gSCF_isPhone __attribute__((visibility("hidden")));
-extern void *const gSCF_flagB __attribute__((visibility("hidden")));
-extern void *const gSCF_screenW __attribute__((visibility("hidden")));
-extern void *const gSCF_flagC __attribute__((visibility("hidden")));
-extern void *const gSCF_screenW2 __attribute__((visibility("hidden")));
-extern void *const gSCF_objA __attribute__((visibility("hidden")));
-extern void *const gSCF_flagD __attribute__((visibility("hidden")));
-extern void *const gSCF_objB __attribute__((visibility("hidden")));
-extern void *const gSCF_flagE __attribute__((visibility("hidden")));
-extern void *const gSCF_flagF __attribute__((visibility("hidden")));
-extern void *const gSCF_screenW3 __attribute__((visibility("hidden")));
-extern void *const gSCF_objC __attribute__((visibility("hidden")));
-extern void *const gSCF_flagG __attribute__((visibility("hidden")));
-extern void *const gSCF_flagH __attribute__((visibility("hidden")));
-extern void *const gSCF_flagI __attribute__((visibility("hidden")));
-extern void *const gSCF_flagJ __attribute__((visibility("hidden")));
+static void *const gSCF_isPhone = nullptr;
+static void *const gSCF_flagB = nullptr;
+static void *const gSCF_screenW = nullptr;
+static void *const gSCF_flagC = nullptr;
+static void *const gSCF_screenW2 = nullptr;
+static void *const gSCF_objA = nullptr;
+static void *const gSCF_flagD = nullptr;
+static void *const gSCF_objB = nullptr;
+static void *const gSCF_flagE = nullptr;
+static void *const gSCF_flagF = nullptr;
+static void *const gSCF_screenW3 = nullptr;
+static void *const gSCF_objC = nullptr;
+static void *const gSCF_flagG = nullptr;
+static void *const gSCF_flagH = nullptr;
+static void *const gSCF_flagI = nullptr;
+static void *const gSCF_flagJ = nullptr;
 
 static inline char rf(void *const g) { return **(char **) &g; }
 static inline int rint(void *const g) { return **(int **) &g; }
 static inline int *robj(void *const g) { return *(int **) &g; }
+static inline CoordsObject *rcoords(void *const g) { return *(CoordsObject **) &g; }
 
 static inline unsigned short clampU(float v) {
     return (unsigned short) ((0.0f < v) ? (short) (int) v : 0);
@@ -1520,7 +1755,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
         }
         wField = VectorSignedToFloat(rint(gSCF_screenW3) - p2, 0);
         iv = (int) fp1b;
-        robj(gSCF_objC)[0x58 / 4] = (int) fp1b;
+        rcoords(gSCF_objC)->fireValue = (int) fp1b;
         adj13 = gSCF_b90;
         if (isPhone == 0) {
             char flag6 = rf(gSCF_flagG);
@@ -1531,12 +1766,12 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
             char flag6 = rf(gSCF_flagD);
             iv = (flag6 == 0) ? 0x96 : 0x12c;
-            robj(gSCF_objB)[0x58 / 4] = iv;
+            rcoords(gSCF_objB)->fireValue = iv;
             adj13 = (flag6 == 0) ? gSCF_b98 : gSCF_b94;
         } else {
             iv = 0xd2;
             wField = VectorSignedToFloat(rint(gSCF_screenW2) - p2, 0);
-            robj(gSCF_objA)[0x58 / 4] = 0xd2;
+            rcoords(gSCF_objA)->fireValue = 0xd2;
         }
     }
 
@@ -1604,10 +1839,10 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
     o15 = clampU(t15 + VectorUnsignedToFloat(o7, 0));
 }
 
-extern void *const gRR_arg __attribute__((visibility("hidden")));
+static void *const gRR_arg = nullptr;
 
 void Globals::releaseResources() {
-    gCanvas->ReleaseAllResources();
+    PaintCanvas::gCanvas->ReleaseAllResources();
 
     PaintCanvas *secondaryCanvas = *(PaintCanvas **) gRR_arg;
     if (secondaryCanvas != nullptr) {
@@ -1615,28 +1850,28 @@ void Globals::releaseResources() {
     }
 }
 
-extern void *const gLF_canvas9 __attribute__((visibility("hidden")));
-extern void *const gLF_font9 __attribute__((visibility("hidden")));
-extern void *const gLF_canvas10 __attribute__((visibility("hidden")));
-extern void *const gLF_font10 __attribute__((visibility("hidden")));
-extern void *const gLF_canvas11 __attribute__((visibility("hidden")));
-extern void *const gLF_font11 __attribute__((visibility("hidden")));
-extern void *const gLF_canvas14 __attribute__((visibility("hidden")));
-extern void *const gLF_font14 __attribute__((visibility("hidden")));
-extern void *const gLF_canvasD __attribute__((visibility("hidden")));
-extern void *const gLF_font15 __attribute__((visibility("hidden")));
-extern void *const gLF_fontDef __attribute__((visibility("hidden")));
-extern void *const gLF_canvasMain __attribute__((visibility("hidden")));
-extern void *const gLF_fontMain __attribute__((visibility("hidden")));
-extern void *const gLF_fontExtra __attribute__((visibility("hidden")));
+static void *const gLF_canvas9 = nullptr;
+static void *const gLF_font9 = nullptr;
+static void *const gLF_canvas10 = nullptr;
+static void *const gLF_font10 = nullptr;
+static void *const gLF_canvas11 = nullptr;
+static void *const gLF_font11 = nullptr;
+static void *const gLF_canvas14 = nullptr;
+static void *const gLF_font14 = nullptr;
+static void *const gLF_canvasD = nullptr;
+static void *const gLF_font15 = nullptr;
+static void *const gLF_fontDef = nullptr;
+static void *const gLF_canvasMain = nullptr;
+static void *const gLF_fontMain = nullptr;
+static void *const gLF_fontExtra = nullptr;
 
-extern void *const gLF_flagA __attribute__((visibility("hidden")));
-extern void *const gLF_flagB __attribute__((visibility("hidden")));
-extern void *const gLF_flagC __attribute__((visibility("hidden")));
-extern void *const gLF_flagD __attribute__((visibility("hidden")));
-extern void *const gLF_flagE __attribute__((visibility("hidden")));
-extern void *const gLF_flagF __attribute__((visibility("hidden")));
-extern void *const gLF_flagG __attribute__((visibility("hidden")));
+static void *const gLF_flagA = nullptr;
+static void *const gLF_flagB = nullptr;
+static void *const gLF_flagC = nullptr;
+static void *const gLF_flagD = nullptr;
+static void *const gLF_flagE = nullptr;
+static void *const gLF_flagF = nullptr;
+static void *const gLF_flagG = nullptr;
 
 static inline char flag(void *const g) { return **(char **) &g; }
 
@@ -1719,7 +1954,7 @@ epilogue: {
         unsigned *mainFont = *(unsigned **) gLF_fontMain;
         int cv = *mainCanvas;
 
-        *(unsigned char *) (cv + 0x1c) = isMainFontPersian;
+        ((PaintCanvas *) (long) cv)->field_0x1c = isMainFontPersian;
         ((PaintCanvas *) (long) cv)->FontCreate((unsigned short) 0x51e, *mainFont, false);
         ((PaintCanvas *) (long) *mainCanvas)->FontSetSpacing(*mainFont, 0);
         unsigned *extra = *(unsigned **) gLF_fontExtra;
@@ -1729,35 +1964,35 @@ epilogue: {
     }
 }
 
-extern int **const gI_mission __attribute__((visibility("hidden")));
-extern void **const gI_settings __attribute__((visibility("hidden")));
-extern int **const gI_flagFFFF __attribute__((visibility("hidden")));
-extern int **const gI_langSettingSlot __attribute__((visibility("hidden")));
+static int **const gI_mission = nullptr;
+static void **const gI_settings = nullptr;
+static int **const gI_flagFFFF = nullptr;
+static int **const gI_langSettingSlot = nullptr;
 
-extern char **const gI_langFlag __attribute__((visibility("hidden")));
-extern char **const gI_zeroByte __attribute__((visibility("hidden")));
-extern void ***const gI_galaxy __attribute__((visibility("hidden")));
-extern void ***const gI_achieve __attribute__((visibility("hidden")));
-extern void ***const gI_status __attribute__((visibility("hidden")));
-extern void ***const gI_imgFac __attribute__((visibility("hidden")));
-extern int ***const gI_items __attribute__((visibility("hidden")));
-extern int ***const gI_ships __attribute__((visibility("hidden")));
-extern int **const gI_engineSlot __attribute__((visibility("hidden")));
-extern void ***const gI_appMgr __attribute__((visibility("hidden")));
-extern void ***const gI_ctxSlot __attribute__((visibility("hidden")));
-extern void ***const gI_random __attribute__((visibility("hidden")));
-extern void ***const gI_generator __attribute__((visibility("hidden")));
-extern void ***const gI_recHandler __attribute__((visibility("hidden")));
-extern void ***const gI_fmod __attribute__((visibility("hidden")));
-extern void **const gI_setMusVol __attribute__((visibility("hidden")));
-extern void **const gI_setSfxVol __attribute__((visibility("hidden")));
-extern int ***const gI_g381c __attribute__((visibility("hidden")));
-extern char **const gI_g381a __attribute__((visibility("hidden")));
-extern int ***const gI_g381e __attribute__((visibility("hidden")));
-extern int **const gI_g3822 __attribute__((visibility("hidden")));
-extern char ***const gI_g3824 __attribute__((visibility("hidden")));
-extern char **const gI_g383a __attribute__((visibility("hidden")));
-extern void ***const gI_layout __attribute__((visibility("hidden")));
+static char **const gI_langFlag = nullptr;
+static char **const gI_zeroByte = nullptr;
+static void ***const gI_galaxy = nullptr;
+static void ***const gI_achieve = nullptr;
+static void ***const gI_status = nullptr;
+static void ***const gI_imgFac = nullptr;
+static int ***const gI_items = nullptr;
+static int ***const gI_ships = nullptr;
+static int **const gI_engineSlot = nullptr;
+static void ***const gI_appMgr = nullptr;
+static void ***const gI_ctxSlot = nullptr;
+static void ***const gI_random = nullptr;
+static void ***const gI_generator = nullptr;
+static void ***const gI_recHandler = nullptr;
+static void ***const gI_fmod = nullptr;
+static void **const gI_setMusVol = nullptr;
+static void **const gI_setSfxVol = nullptr;
+static int ***const gI_g381c = nullptr;
+static char **const gI_g381a = nullptr;
+static int ***const gI_g381e = nullptr;
+static int **const gI_g3822 = nullptr;
+static char ***const gI_g3824 = nullptr;
+static char **const gI_g383a = nullptr;
+static void ***const gI_layout = nullptr;
 
 typedef void (*VolFn)(void *snd, int channel, int value);
 
@@ -1770,36 +2005,34 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
         *missionSlot = (int) (long) m;
     }
 
-    int *settings = (int *) *gI_settings;
+    GameSettingsRecord *settings = (GameSettingsRecord *) *gI_settings;
     int *flagFFFF = (int *) *gI_flagFFFF;
     int *langSettingSlot = (int *) *gI_langSettingSlot;
     char *langFlag = *gI_langFlag;
     char *zeroByte = *gI_zeroByte;
 
-    char *s = (char *) settings;
-
-    *(unsigned char *) (s + 0x11) = 1;
-    *(unsigned char *) (s + 0x30) = 1;
-    *(float *) (s + 0x00) = 0.5f;
-    *(float *) (s + 0x04) = 0.5f;
-    *(float *) (s + 0x08) = 0.5f;
-    *(float *) (s + 0x24) = 0.5f;
-    *(float *) (s + 0x28) = 1.0f;
+    settings->flagAt11 = 1;
+    settings->enableFlag30 = 1;
+    settings->colorR = 0.5f;
+    settings->colorG = 0.5f;
+    settings->colorB = 0.5f;
+    settings->tintB = 0.5f;
+    settings->brightness = 1.0f;
     *zeroByte = 0;
     char lang = *langFlag;
-    *(short *) (s + 0x0f) = 0x101;
+    settings->flagAt0f = 0x101;
     *flagFFFF = -1;
     *langSettingSlot = (lang == 0) ? 6 : 0xc;
 
     void *galaxy = ::operator new(8);
     Galaxy_ctor(galaxy);
-    gGalaxy = (Galaxy *) galaxy;
+    Galaxy::gGalaxy = (Galaxy *) galaxy;
     void *ach = ::operator new(0x28);
     Achievements_ctor(ach);
-    gAchievements = (Achievements *) ach;
+    Achievements::gAchievements = (Achievements *) ach;
     void *status = ::operator new(0x1f0);
     Status_ctor(status);
-    gStatus = (Status *) status;
+    Status::gStatus = (Status *) status;
     ImageFactory *imgFac = new ImageFactory();
     **gI_imgFac = imgFac;
 
@@ -1813,13 +2046,13 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     if (*engineSlot == 0) {
         *engineSlot = *reinterpret_cast<int *>(app);
     }
-    gAppManager = app;
+    ApplicationManager::gAppManager = app;
     app->VibrateEnable(0);
 
     void *rng = ::operator new(8);
     AERandom_ctor(rng);
     **gI_ctxSlot = this;
-    gRandom = (AbyssEngine::AERandom *) rng;
+    AERandom::gRandom = (AbyssEngine::AERandom *) rng;
 
     void *gen = ::operator new(1);
     Generator_ctor(gen);
@@ -1828,7 +2061,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     RecordHandler *rh = new RecordHandler();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
-    gStatus->resetGame();
+    Status::gStatus->resetGame();
     ((RecordHandler *) (*rhSlotP))->loadOptions();
 
     void *fmod = ::operator new(0x243c);
@@ -1838,38 +2071,39 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     ((FModSound *) (fmod))->init();
 
     VolFn setMus = (VolFn) *gI_setMusVol;
-    setMus(*fmodSlotP, 1, *(unsigned char *) (s + 0xd));
-    setMus(*fmodSlotP, 2, *(unsigned char *) (s + 0xc));
-    setMus(*fmodSlotP, 3, *(unsigned char *) (s + 0xe));
+    setMus(*fmodSlotP, 1, settings->sfxVolume);
+    setMus(*fmodSlotP, 2, settings->musicVolume);
+    setMus(*fmodSlotP, 3, settings->ambientVolume);
     VolFn setSfx = (VolFn) *gI_setSfxVol;
-    setSfx(*fmodSlotP, 1, settings[0]);
-    setSfx(*fmodSlotP, 2, settings[1]);
-    setSfx(*fmodSlotP, 3, settings[2]);
+    setSfx(*fmodSlotP, 1, settings->colorRBits);
+    setSfx(*fmodSlotP, 2, settings->colorGBits);
+    setSfx(*fmodSlotP, 3, settings->colorBBits);
 
     if (FModSound_tryToStopMusicForBGMusic() != 0) {
-        *(unsigned char *) (s + 0xd) = 0;
+        settings->sfxVolume = 0;
     }
 
     **gI_g381c = 0;
     **gI_g381a = 1;
-    int *obj = (int *) *gI_g381e;
-    obj[0] = 0;
-    obj[1] = 0;
-    obj[2] = 0;
-    obj[3] = 0;
-    obj[4] = 0;
-    obj[5] = 0;
-    obj[6] = 0;
-    obj[7] = 0;
-    obj[8] = 0;
-    obj[9] = 0;
-    obj[10] = 0;
-    obj[11] = 0;
-    *(int *) ((char *) obj + 0x2b) = 0;
-    *(int *) ((char *) obj + 0x2f) = 0;
-    *(int *) ((char *) obj + 0x33) = 0;
-    *(int *) ((char *) obj + 0x37) = 0;
-    *(char *) *(int **) gI_g3822 = 0;
+    InitZeroObject *obj = (InitZeroObject *) *gI_g381e;
+    obj->slots[0] = 0;
+    obj->slots[1] = 0;
+    obj->slots[2] = 0;
+    obj->slots[3] = 0;
+    obj->slots[4] = 0;
+    obj->slots[5] = 0;
+    obj->slots[6] = 0;
+    obj->slots[7] = 0;
+    obj->slots[8] = 0;
+    obj->slots[9] = 0;
+    obj->slots[10] = 0;
+    obj->slots[11] = 0;
+    obj->tailAt2b = 0;
+    obj->tailAt2f = 0;
+    obj->tailAt33 = 0;
+    obj->tailAt37 = 0;
+    InitFlagByte *flagByteObj = *(InitFlagByte **) gI_g3822;
+    flagByteObj->flag = 0;
     **gI_g3824 = 0;
     **gI_g383a = 0;
 
@@ -1883,12 +2117,12 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     return (int) (long) arr;
 }
 
-extern void *const gPM_snd0 __attribute__((visibility("hidden")));
-extern void *const gPM_snd1 __attribute__((visibility("hidden")));
-extern void *const gPM_snd2 __attribute__((visibility("hidden")));
-extern void *const gPM_sndStatus __attribute__((visibility("hidden")));
-extern const int gPM_table0 __attribute__((visibility("hidden")));
-extern const int gPM_table1 __attribute__((visibility("hidden")));
+static void *const gPM_snd0 = nullptr;
+static void *const gPM_snd1 = nullptr;
+static void *const gPM_snd2 = nullptr;
+static void *const gPM_sndStatus = nullptr;
+static const int gPM_table0 = 0;
+static const int gPM_table1 = 0;
 
 void Globals::playMusicAndFadeOutCurrent(int mode) {
     int snd;
@@ -1905,38 +2139,38 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     }
     if (mode == 1) {
         int *statSnd = *(int **) gPM_sndStatus;
-        if (gStatus->inAlienOrbit() != 0) {
+        if (Status::gStatus->inAlienOrbit() != 0) {
             int *sndP = *(int **) gPM_snd1;
             ((FModSound *) (*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
-            int m = gStatus->getCurrentCampaignMission();
-            if (m > 0x92 && gStatus->getCurrentCampaignMission() < 0x9a) {
+            int m = Status::gStatus->getCurrentCampaignMission();
+            if (m > 0x92 && Status::gStatus->getCurrentCampaignMission() < 0x9a) {
                 track = 0x91;
             }
             ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
             return;
         }
-        ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+        ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
         int *sndP = *(int **) gPM_snd1;
         ((FModSound *) (*sndP))->stop(0);
-        if (Station_getIndex((int) (long) gStatus->getStation()) == 0x6c) {
+        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x6c) {
             ((FModSound *) (*sndP))->play(0x92, 0, 0, (float) vol);
             return;
         }
-        if (Station_getIndex((int) (long) gStatus->getStation()) == 0x65) {
+        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x65) {
             ((FModSound *) (*sndP))->play(0x93, 0, 0, (float) vol);
             return;
         }
-        if (gStatus->inSupernovaSystem() != 0) {
-            if (gStatus->getCurrentCampaignMission() == 0x59) {
+        if (Status::gStatus->inSupernovaSystem() != 0) {
+            if (Status::gStatus->getCurrentCampaignMission() == 0x59) {
                 ((FModSound *) (*sndP))->play(0x8be, 0, 0, (float) vol);
                 return;
             }
-            if (gStatus->getMission() != 0 && ((Mission *) (long) gStatus->getMission())->isEmpty() == 0) {
-                int tgt = ((Mission *) (long) gStatus->getMission())->getTargetStation();
-                if (tgt == Station_getIndex((int) (long) gStatus->getStation())) {
-                    int cm = gStatus->getCurrentCampaignMission();
+            if (Status::gStatus->getMission() != 0 && ((Mission *) (long) Status::gStatus->getMission())->isEmpty() == 0) {
+                int tgt = ((Mission *) (long) Status::gStatus->getMission())->getTargetStation();
+                if (tgt == Station_getIndex((int) (long) Status::gStatus->getStation())) {
+                    int cm = Status::gStatus->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
                     ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
                     return;
@@ -1945,18 +2179,18 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             ((FModSound *) (*sndP))->play(0x94, 0, 0, (float) vol);
             return;
         }
-        if (gStatus->inDeepScienceOrbit() != 0) {
+        if (Status::gStatus->inDeepScienceOrbit() != 0) {
             ((FModSound *) (*sndP))->play(0x98, 0, 0, (float) vol);
             return;
         }
-        if (Station_getIndex((int) (long) gStatus->getStation()) == 0x78 &&
-            (gStatus->getCurrentCampaignMission() == 0x7e ||
-             gStatus->getCurrentCampaignMission() == 0x85)) {
+        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x78 &&
+            (Status::gStatus->getCurrentCampaignMission() == 0x7e ||
+             Status::gStatus->getCurrentCampaignMission() == 0x85)) {
             ((FModSound *) (*sndP))->play(0x8bf, 0, 0, (float) vol);
             return;
         }
         const int *table = &gPM_table1;
-        track = table[((SolarSystem *) (long) gStatus->getSystem())->getRace()];
+        track = table[((SolarSystem *) (long) Status::gStatus->getSystem())->getRace()];
         ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
         return;
     }
@@ -1964,21 +2198,21 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
         return;
     }
 
-    int race = ((SolarSystem *) (long) gStatus->getSystem())->getRace();
+    int race = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
     int *sndP = *(int **) gPM_snd0;
     ((FModSound *) (*sndP))->stop(0);
-    if (Station_getIndex((int) (long) gStatus->getStation()) == 0x6c) {
+    if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x6c) {
         ((FModSound *) (*sndP))->play(0x84, 0, 0, (float) vol);
         return;
     }
-    if (Station_getIndex((int) (long) gStatus->getStation()) == 0x65) {
+    if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x65) {
         ((FModSound *) (*sndP))->play(0x83, 0, 0, (float) vol);
         return;
     }
-    int idx = Station_getIndex((int) (long) gStatus->getStation());
-    if (idx == 10 || Station_getIndex((int) (long) gStatus->getStation()) == 100) {
-        if (Station_getIndex((int) (long) gStatus->getStation()) == 10 &&
-            gStatus->getCurrentCampaignMission() == 0x9f) {
+    int idx = Station_getIndex((int) (long) Status::gStatus->getStation());
+    if (idx == 10 || Station_getIndex((int) (long) Status::gStatus->getStation()) == 100) {
+        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 10 &&
+            Status::gStatus->getCurrentCampaignMission() == 0x9f) {
             ((FModSound *) (*sndP))->play(0x90, 0, 0, (float) vol);
             return;
         }
@@ -1990,7 +2224,7 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
 }
 
-extern const int gGDS_pairTable[] __attribute__((visibility("hidden")));
+static const int gGDS_pairTable[1] = {};
 
 static inline __attribute__ ((always_inline))
 
@@ -2028,7 +2262,7 @@ int Globals::getDialogueSoundId(int code, Agent *agent) {
     return dialogueDispatch(category, code, male);
 }
 
-extern void *const gPlanetRng __attribute__((visibility("hidden")));
+static void *const gPlanetRng = nullptr;
 
 String Globals::getRandomPlanetName() {
     FileRead *f = (FileRead *) ::operator new(1);
@@ -2041,12 +2275,12 @@ String Globals::getRandomPlanetName() {
     return name;
 }
 
-extern void *const gGRN_guardHolder __attribute__((visibility("hidden")));
-extern const char gGRN_noFirst[] __attribute__((visibility("hidden")));
-extern void *const gGRN_rng1 __attribute__((visibility("hidden")));
-extern const char gGRN_noLast[] __attribute__((visibility("hidden")));
-extern void *const gGRN_rng2 __attribute__((visibility("hidden")));
-extern const char gGRN_space[] __attribute__((visibility("hidden")));
+static void *const gGRN_guardHolder = nullptr;
+static const char gGRN_noFirst[] = "";
+static void *const gGRN_rng1 = nullptr;
+static const char gGRN_noLast[] = "";
+static void *const gGRN_rng2 = nullptr;
+static const char gGRN_space[] = "";
 
 String Globals::getRandomName(int kind, bool both) {
     int *guardP = *(int **) gGRN_guardHolder;
@@ -2096,8 +2330,8 @@ String Globals::getRandomName(int kind, bool both) {
     return result;
 }
 
-extern void *const gGL_canvas __attribute__((visibility("hidden")));
-extern const char gGL_empty[] __attribute__((visibility("hidden")));
+static void *const gGL_canvas = nullptr;
+static const char gGL_empty[] = "";
 
 void Globals::getLine(unsigned font, String text, int maxWidth, String *out) {
     int lang = GameText::getLanguage();

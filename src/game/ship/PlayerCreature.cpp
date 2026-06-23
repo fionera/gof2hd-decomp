@@ -6,13 +6,15 @@
 #include "game/ship/KIPlayer.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerJunk.h"
+#include "game/ship/PlayerEgo.h"
+#include "game/weapons/Radar.h"
 
 
-extern int PlayerCreature_weightTable[];
-extern int PlayerCreature_rageTable[];
-extern int PlayerCreature_enduranceTable[];
-extern int *PlayerCreature_randomMax;
-extern FModSound **PlayerCreature_sound;
+static int PlayerCreature_weightTable[16] = {};
+static int PlayerCreature_rageTable[16] = {};
+static int PlayerCreature_enduranceTable[16] = {};
+static int *PlayerCreature_randomMax = nullptr;
+static FModSound **PlayerCreature_sound = nullptr;
 
 void PlayerJunk_render(PlayerJunk * self);
 
@@ -168,10 +170,12 @@ void PlayerCreature::update(int elapsed) {
             this->player->setActive(false);
 
             Level *level = this->level;
-            void *player = (void *) (intptr_t) level->getPlayer();
-            if (*(PlayerCreature **) ((char *) (*(void **) ((char *) player + 0x14)) + 0x1c) == this) {
-                player = (void *) (intptr_t) level->getPlayer();
-                *(PlayerCreature **) ((char *) (*(void **) ((char *) player + 0x14)) + 0x1c) = nullptr;
+            PlayerEgo *ego = level->getPlayer();
+            Radar *radar = (Radar *) ego->field_0x14;
+            if (radar->field_0x1c == (void *) this) {
+                ego = level->getPlayer();
+                radar = (Radar *) ego->field_0x14;
+                radar->field_0x1c = nullptr;
             }
 
             Vector zero;

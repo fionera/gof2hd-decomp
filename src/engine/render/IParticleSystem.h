@@ -2,8 +2,6 @@
 #define GOF2_IPARTICLESYSTEM_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 #include "engine/render/ParticleSettings.h"
@@ -17,7 +15,7 @@ namespace AbyssEngine {
 }
 using ::AbyssEngine::PaintCanvas;
 
-extern "C" void AERandom_dtor(void *self);
+void AERandom_dtor(void *self);
 
 class IParticleSystem {
 public:

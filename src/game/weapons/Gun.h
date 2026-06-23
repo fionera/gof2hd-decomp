@@ -2,7 +2,6 @@
 #define GOF2_GUN_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/render/Sparks.h"
 
 #include "game/ItemSort.h"
@@ -75,7 +74,7 @@ public:
 
     uint8_t field_0xa8;
     uint8_t delayActive;
-    char *wobbleOffsets;
+    Array<int> *wobbleOffsets;
     float field_0xb0;
     Array<Player *> *enemies;
     Sparks *impact;

@@ -2,7 +2,6 @@
 #define GOF2_HANGARWINDOW_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "game/core/HangarList.h"
 #include "game/mission/Item.h"
 

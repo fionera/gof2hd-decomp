@@ -2,7 +2,6 @@
 #define GOF2_GALAXY_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "SolarSystem.h"
 #include "Station.h"
 
@@ -42,8 +41,8 @@ public:
 
     uint8_t *visited;
     Array<SolarSystem *> *systems;
-};
 
-extern Galaxy *gGalaxy;
+    static Galaxy *gGalaxy;
+};
 
 #endif

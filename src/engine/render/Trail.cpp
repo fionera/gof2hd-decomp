@@ -3,6 +3,17 @@
 
 namespace AEMath = AbyssEngine::AEMath;
 
+static AbyssEngine::PaintCanvas **gTrailCanvasRender = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasType1 = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasType2 = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasType3 = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasTypeDefault = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasType5 = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasType8 = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasCtor = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasUpdate = nullptr;
+static AbyssEngine::PaintCanvas **gTrailCanvasSetWidth = nullptr;
+
 void Trail::update(const Vector &a, const Vector &b) {
     update(a.x, a.y, a.z, b.x, b.y, b.z);
 }

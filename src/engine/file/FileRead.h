@@ -2,8 +2,6 @@
 #define GOF2_FILEREAD_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/file/AEFile.h"
 #include "engine/math/Vector.h"
 #include "game/world/NewsItem.h"

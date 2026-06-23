@@ -2,8 +2,6 @@
 #define GOF2_ENERGYSHIELD_H
 #include "engine/core/Array.h"
 #include "../../core/AEString.h"
-#include "fieldaccess.h"
-
 #include "engine/render/ShaderBaseStruct.h"
 
 namespace AbyssEngine { 
@@ -45,10 +43,6 @@ namespace AbyssEngine {
 
         void SetInActive() override;
     };
-}
-
-extern "C" {
-extern char EnergyShield_vtable[];
 }
 
 #endif

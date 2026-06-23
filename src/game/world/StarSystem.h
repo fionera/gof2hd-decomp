@@ -2,7 +2,6 @@
 #define GOF2_STARSYSTEM_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 #include "engine/render/LensFlare.h"
 #include "game/ship/KIPlayer.h"
 

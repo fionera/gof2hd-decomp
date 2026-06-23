@@ -35,10 +35,10 @@ void ScrollTouchWindow::OnTouchBegin(int x, int y) {
     this->scrollBox->OnTouchBegin(x, y);
 }
 
-extern Layout **g_STW_canvas_draw;
-extern Layout **g_STW_layout_draw_plain;
-extern Layout **g_STW_layout_draw_window;
-extern Layout **g_STW_layout_draw_scrollbar;
+static Layout **g_STW_canvas_draw = nullptr;
+static Layout **g_STW_layout_draw_plain = nullptr;
+static Layout **g_STW_layout_draw_window = nullptr;
+static Layout **g_STW_layout_draw_scrollbar = nullptr;
 
 void ScrollTouchWindow::draw() {
     PaintCanvas **canvasHolder = reinterpret_cast<PaintCanvas **>(g_STW_canvas_draw);
@@ -82,8 +82,8 @@ void ScrollTouchWindow::draw() {
     (*canvasHolder)->SetColor((unsigned int) color);
 }
 
-extern Layout **g_STW_layout_drawTextBG;
-extern const char g_STW_empty_drawTextBG[];
+static Layout **g_STW_layout_drawTextBG = nullptr;
+static const char g_STW_empty_drawTextBG[] = "";
 
 void ScrollTouchWindow::drawTextBG() {
     Layout *layout = *g_STW_layout_drawTextBG;
@@ -111,7 +111,7 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
     this->title = title;
 }
 
-extern Layout **g_STW_layout_174128;
+static Layout **g_STW_layout_174128 = nullptr;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h, bool hasFrame) {
     this->x = x;
@@ -142,7 +142,7 @@ void ScrollTouchWindow::setText(AbyssEngine::String title, AbyssEngine::String t
     this->title = title;
 }
 
-extern Layout **g_STW_layout_1741c0;
+static Layout **g_STW_layout_1741c0 = nullptr;
 
 ScrollTouchWindow::ScrollTouchWindow(int x, int y, int w, int h) {
     this->x = x;

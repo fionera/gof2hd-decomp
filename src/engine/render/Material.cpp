@@ -1,13 +1,10 @@
 #include "engine/render/Material.h"
 
+static float Material_defaultVectorX = 0.0f;
+
 namespace AbyssEngine {
     Material::Material() {
         this->blendMode = 0;
-        this->arr_2c = new Array<Matrix>();
-        this->arr_38 = new Array<Matrix>();
-        this->meshes = new Array<Mesh *>();
-        this->arr_50 = new Array<uint32_t>();
-        this->arr_5c = new Array<Matrix>();
 
         this->ambientColor.x = Material_defaultVectorX;
         this->ambientColor.y = 0;
@@ -22,12 +19,6 @@ namespace AbyssEngine {
     }
 
     Material::Material(Material *other) {
-        this->arr_2c = new Array<Matrix>();
-        this->arr_38 = new Array<Matrix>();
-        this->meshes = new Array<Mesh *>();
-        this->arr_50 = new Array<uint32_t>();
-        this->arr_5c = new Array<Matrix>();
-
         this->ambientColor.x = 0;
         this->ambientColor.y = 0;
         this->ambientColor.z = 0;
@@ -48,10 +39,8 @@ namespace AbyssEngine {
     }
 
     Material::~Material() {
-        delete this->arr_5c;
-        delete this->arr_50;
-        delete this->meshes;
-        delete this->arr_38;
-        delete this->arr_2c;
+        // Inline Array members are destroyed automatically in reverse
+        // declaration order (arr_5c, arr_50, meshes, arr_38, arr_2c),
+        // matching the original Material::~Material.
     }
 }

@@ -9,22 +9,22 @@
 #include "game/core/String.h"
 #include "engine/render/PaintCanvas.h"
 
-extern PaintCanvas **g_NewsTicker_draw_canvas;
-extern int **g_NewsTicker_draw_fontHeight;
-extern int *g_NewsTicker_draw_screenHeight;
-extern void **g_NewsTicker_draw_font;
-extern int *g_NewsTicker_touchMove_screenWidth;
-extern int **g_NewsTicker_getHeight_font;
-extern int *g_NewsTicker_getHeight_screen;
-extern const char g_NewsTicker_ctor_empty[];
-extern AbyssEngine::AERandom **g_NewsTicker_ctor_random;
-extern Status **g_NewsTicker_ctor_status;
-extern GameText **g_NewsTicker_ctor_text;
-extern const char g_NewsTicker_ctor_separator[];
-extern void **g_NewsTicker_ctor_font;
-extern PaintCanvas **g_NewsTicker_ctor_canvas;
-extern int **g_NewsTicker_touchBegin_font;
-extern int *g_NewsTicker_touchBegin_screen;
+static PaintCanvas **g_NewsTicker_draw_canvas = nullptr;
+static int **g_NewsTicker_draw_fontHeight = nullptr;
+static int *g_NewsTicker_draw_screenHeight = nullptr;
+static void **g_NewsTicker_draw_font = nullptr;
+static int *g_NewsTicker_touchMove_screenWidth = nullptr;
+static int **g_NewsTicker_getHeight_font = nullptr;
+static int *g_NewsTicker_getHeight_screen = nullptr;
+static const char g_NewsTicker_ctor_empty[1] = {0};
+static AbyssEngine::AERandom **g_NewsTicker_ctor_random = nullptr;
+static Status **g_NewsTicker_ctor_status = nullptr;
+static GameText **g_NewsTicker_ctor_text = nullptr;
+static const char g_NewsTicker_ctor_separator[1] = {0};
+static void **g_NewsTicker_ctor_font = nullptr;
+static PaintCanvas **g_NewsTicker_ctor_canvas = nullptr;
+static int **g_NewsTicker_touchBegin_font = nullptr;
+static int *g_NewsTicker_touchBegin_screen = nullptr;
 
 NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     this->tickerText.ctor();
@@ -227,7 +227,7 @@ String NewsTicker::replaceTokens(String text) {
     return text;
 }
 
-extern "C" void *NewsTicker_dtor(void *p) {
+void *NewsTicker_dtor(void *p) {
     if (p) ((NewsTicker *) p)->~NewsTicker();
     return p;
 }

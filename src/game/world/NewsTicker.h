@@ -2,8 +2,6 @@
 #define GOF2_NEWSTICKER_H
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
-
 class NewsTicker {
 public:
     float scrollOffset;
