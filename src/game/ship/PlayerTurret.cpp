@@ -418,7 +418,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     this->helperGeometry = new AEGeometry(gCanvas);
     AbyssEngine::Transform *helperTransform =
             (AbyssEngine::Transform *) gCanvas->TransformGetTransform(this->helperGeometry->transform);
-    helperTransform->field_0x58 = 0;
+    helperTransform->flags = 0;
 
     this->setPosition(Vector{x, y, z});
 

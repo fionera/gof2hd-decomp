@@ -5,6 +5,12 @@
 
 #include "game/ship/PlayerStaticFar.h"
 
+#include "engine/math/Vector.h"
+
+
+class AEGeometry;
+
+
 class PlayerWormHole : public PlayerStaticFar {
 public:
 

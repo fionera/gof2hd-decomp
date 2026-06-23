@@ -7,6 +7,18 @@
 #include "engine/math/Matrix.h"
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/AEMath.h"
+#include "engine/math/Vector.h"
+
+
+class Player;
+
+
+class Hud;
+class KIPlayer;
+class Level;
+
+
 class Radar {
 public:
     void *level;

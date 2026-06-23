@@ -1,4 +1,5 @@
 #include "game/world/NewsTicker.h"
+#include "engine/core/AbyssEngine.h"
 #include "game/world/SolarSystem.h"
 #include "game/world/NewsItem.h"
 #include "game/mission/Status.h"

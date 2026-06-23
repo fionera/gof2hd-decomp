@@ -4,7 +4,14 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 
+namespace AbyssEngine {
+    class ApplicationManager;
+    class PaintCanvas;
+}
 
+namespace AbyssEngine {
+    class IApplicationModule;
+}
 using ::AbyssEngine::ApplicationManager;
 
 
@@ -39,14 +46,11 @@ namespace AbyssEngine {
         virtual void OnTouchEnd(int, int) {
         }
 
-        virtual void OnTouchBegin(int, int, void *) {
-        }
+        virtual void OnTouchBegin(int x, int y, void *data);
 
-        virtual void OnTouchMove(int, int, void *) {
-        }
+        virtual void OnTouchMove(int x, int y, void *data);
 
-        virtual void OnTouchEnd(int, int, void *) {
-        }
+        virtual void OnTouchEnd(int x, int y, void *data);
 
         virtual void OnUpdate() {
         }
@@ -57,11 +61,9 @@ namespace AbyssEngine {
         virtual void OnRender2D() {
         }
 
-        virtual void OnSuspend() {
-        }
+        virtual void OnSuspend();
 
-        virtual void OnResume() {
-        }
+        virtual void OnResume();
 
         virtual int ShowLoadingScreen() { return 0; }
 

@@ -1,4 +1,6 @@
 #include "game/ship/PlayerFighter.h"
+#include "engine/core/AERandom.h"
+#include "engine/render/PaintCanvas.h"
 #include "game/mission/Mission.h"
 #include "engine/render/AEGeometry.h"
 #include "game/mission/Generator.h"
@@ -14,24 +16,6 @@
 #include "engine/math/EaseInOutMatrix.h"
 
 
-namespace AbyssEngine {
-    class PaintCanvas {
-    public:
-        void *TransformGetTransform(unsigned int index);
-
-        void *TransformGetLocal(unsigned int index);
-
-        void TransformSetLocal(unsigned int index, const AbyssEngine::AEMath::Matrix &matrix);
-
-        void MeshCloneMaterial(unsigned int index, unsigned int *out);
-
-        void *MeshGetPointer(unsigned int index);
-
-        void *MaterialGetMaterial(unsigned int index);
-
-        void MeshChangeMaterial(unsigned int meshIndex, unsigned int matIndex);
-    };
-}
 
 extern PaintCanvas *gCanvas;
 
@@ -821,7 +805,7 @@ void PlayerFighter::push(int dt) {
             lo = this->deltaTime;
             hi = this->deltaTimeHi;
         }
-        float speed = __aeabi_l2f(((long long) hi << 32) | (unsigned) lo);
+        float speed = (float) (((long long) hi << 32) | (unsigned) lo);
         void *geom = (void *) (intptr_t) this->geometry;
         float ftotal2 = VectorSignedToFloat(this->pushDuration, 0);
 
@@ -905,7 +889,7 @@ void PlayerFighter::handleCloaking() {
             this->field_0x13c = 1;
             if (matId == 0xffffffff) {
                 gCanvas->MeshCloneMaterial(*(unsigned *) (this->subGeometry + 0x1c),
-                                           &this->cloakMaterial);
+                                           this->cloakMaterial);
                 int mp = (int) (long) gCanvas->MeshGetPointer(
                     *(unsigned *) (this->subGeometry + 0x1c));
                 matId = this->cloakMaterial;

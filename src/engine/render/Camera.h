@@ -4,6 +4,9 @@
 
 #include "engine/math/Matrix.h"
 
+#include "engine/math/AEMath.h"
+
+
 namespace AbyssEngine {
     class Camera {
     public:

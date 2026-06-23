@@ -1,16 +1,26 @@
 #ifndef GOF2_PARTICLESYSTEMSPRITE_H
 #define GOF2_PARTICLESYSTEMSPRITE_H
 #include "engine/core/Array.h"
+#include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 
 #include "engine/render/IParticleSystem.h"
 #include "engine/render/ParticleSettings.h"
 
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
+
+
 namespace AbyssEngine {
-    enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
+#ifndef GOF2_ENUM_BlendMode
+#define GOF2_ENUM_BlendMode
+#endif
 }
 
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 using AbyssEngine::BlendMode;
 

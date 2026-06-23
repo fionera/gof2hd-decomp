@@ -5,6 +5,8 @@
 #include "fieldaccess.h"
 
 namespace AbyssEngine {
+    class Transform;
+
     class Mesh {
     public:
         union {

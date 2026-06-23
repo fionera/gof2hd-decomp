@@ -3,8 +3,15 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "KIPlayer.h"
-#include "game/weapons/Gun.h"
+
+#include "engine/math/Vector.h"
+
+#include "engine/math/Matrix.h"
+
+class Gun;
+class KIPlayer;
+namespace FMOD { class Event; }
+
 
 class Player {
 public:

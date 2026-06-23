@@ -6,24 +6,12 @@
 #include "ScrollTouchWindow.h"
 #include "TouchButton.h"
 
-struct ChoiceWindowButtonPosCache {
-    void *field_0x0;
-    int field_0x4;
 
-    union {
-        int field_0x8;
-        int rightButtonPosX;
-        int rightButtonPosY;
-        int singleButtonPosX;
-        int singleButtonPosY;
-    };
+#include "game/ui/ChoiceWindowButtonPosCache.h"
+class ScrollTouchWindow;
+class TouchButton;
 
-    union {
-        int field_0xc;
-        int leftButtonPosX;
-        int leftButtonPosY;
-    };
-};
+
 
 class ChoiceWindow {
 public:

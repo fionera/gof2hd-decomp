@@ -6,7 +6,15 @@
 
 #include "engine/render/ShaderBaseStruct.h"
 
+namespace AbyssEngine { 
+    class Mesh;
+ }
 
+
+
+namespace AbyssEngine {
+    class Engine;
+}
 using ::AbyssEngine::Engine;
 
 namespace AbyssEngine {

@@ -1,4 +1,5 @@
 #include "game/world/LevelScript.h"
+#include "game/core/RadioMessage.h"
 #include "game/ship/Player.h"
 #include "game/mission/Explosion.h"
 #include "game/ship/KIPlayer.h"

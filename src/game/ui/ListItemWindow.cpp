@@ -11,6 +11,15 @@
 #include "game/ui/ListItem.h"
 #include "engine/render/PaintCanvas.h"
 
+namespace {
+    // The item registry behind *g_liw_d_itemDB; overlays Array<Item*> ({count@0, data@4}),
+    // so db->itemTable[idx] reads the same data_ slot as (*g_items)[idx].
+    struct ItemDatabase {
+        unsigned int count;
+        Item **itemTable;
+    };
+}
+
 extern "C" void liw_set_buildShipPreview(void *self, void *item, void *layout);
 
 extern "C" void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool param6);

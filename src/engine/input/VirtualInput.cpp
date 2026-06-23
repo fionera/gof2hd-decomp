@@ -14,6 +14,8 @@
 #include <cstring>
 #include <initializer_list>
 
+using AbyssEngine::AEMath::VectorSignedToFloat;
+
 namespace {
     struct VirtualKey {
         char name[0x14];

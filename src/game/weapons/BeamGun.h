@@ -7,6 +7,15 @@
 #include "Gun.h"
 #include "game/world/Level.h"
 
+#include "engine/math/Vector.h"
+
+class Player;
+
+class AEGeometry;
+class Gun;
+class Level;
+
+
 class BeamGun {
 public:
     int32_t field_0x4;

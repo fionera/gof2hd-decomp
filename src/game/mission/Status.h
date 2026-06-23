@@ -12,6 +12,16 @@
 #include "game/world/Station.h"
 #include "game/world/Wanted.h"
 
+class Agent;
+class BluePrint;
+class Mission;
+class PendingProduct;
+class Ship;
+class Standing;
+class Station;
+class Wanted;
+
+
 using AbyssEngine::String;
 
 class Status {

@@ -7,6 +7,16 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+
+class Player;
+
+class AEGeometry;
+class Explosion;
+class KIPlayer;
+class Level;
+
+
 class PlayerTurret : public KIPlayer {
 public:
 

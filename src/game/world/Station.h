@@ -3,9 +3,13 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "game/mission/Item.h"
 #include "game/ship/Agent.h"
 #include "game/ship/Ship.h"
+
+class Agent;
+class Item;
+class Ship;
+
 
 class Station {
 public:

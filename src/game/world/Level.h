@@ -7,7 +7,6 @@
 
 #include "game/world/Route.h"
 #include "game/world/Waypoint.h"
-#include "game/core/RadioMessage.h"
 #include "game/ship/KIPlayer.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/ship/PlayerFixedObject.h"
@@ -20,6 +19,27 @@
 #include "engine/render/LODManager.h"
 #include "engine/render/LodMeshMerger.h"
 #include "engine/math/BoundingVolume.h"
+
+#include "engine/math/Vector.h"
+
+
+
+#include "game/world/RadioStageEntry.h"
+class AEGeometry;
+class BoundingVolume;
+class Gun;
+class KIPlayer;
+class LODManager;
+class LodMeshMerger;
+class ObjectGun;
+class Objective;
+class ParticleSystemManager;
+class PlayerEgo;
+class PlayerFixedObject;
+class Route;
+class StarSystem;
+class Waypoint;
+
 
 class Level {
 public:
@@ -343,9 +363,5 @@ public:
     void crm_dispatch(int egoComm, void *queue);
 };
 
-struct RadioStageEntry {
-    int radioStageEntry;
-    int textID;
-};
 
 #endif

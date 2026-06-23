@@ -28,6 +28,6 @@ GOF2_MATCH_CXXFLAGS="\
 -isystem ${NDK}/sysroot/usr/include/arm-linux-androideabi \
 -D__ANDROID_API__=${GOF2_MATCH_API} \
 -Wno-int-to-pointer-cast -Wno-int-to-void-pointer-cast \
--Isrc"
+-Isrc -Ithird_party/fmod/inc -Ithird_party/gl -Ithird_party/jni -Ithird_party/libzip"
 
 export GOF2_MATCH_CXXFLAGS

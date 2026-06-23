@@ -21,29 +21,7 @@
 #include "game/mission/Status.h"
 #include "game/ui/TouchButton.h"
 
-namespace AbyssEngine {
-    struct PaintCanvas {
-        void SetColor(unsigned int color);
-
-        void SetColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-
-        void FillRectangle(int x, int y, int w, int h);
-
-        void DrawRectangle(int x, int y, int w, int h);
-
-        int GetTextWidth(unsigned int index, void *str);
-
-        void DrawString(unsigned int index, void *str, int x, int y, bool b);
-
-        unsigned int CameraGetCurrent();
-
-        void *CameraGetLocal(unsigned int index);
-
-        void CameraSetLocal(unsigned int index, const AbyssEngine::AEMath::Matrix &matrix);
-
-        void *GetScreenPosition(AbyssEngine::AEMath::Vector *a, AbyssEngine::AEMath::Vector *b);
-    };
-}
+#include "engine/render/PaintCanvas.h"
 
 extern "C" int pc_GetWidth(PaintCanvas * self);
 extern "C" int pc_GetHeight(PaintCanvas * self);
@@ -443,7 +421,7 @@ void SpaceLounge::OnTouchEnd(int x, int y) {
                 ((PaintCanvas *) camera)->CameraSetLocal((unsigned int) (long) camera,
                                                          *(const AbyssEngine::AEMath::Matrix *) current);
                 if (this->cameraEase != 0) {
-                    this->cameraEase->SetRange(*(AEMath::Matrix *) matrix, *(AEMath::Matrix *) matrix);
+                    this->cameraEase->SetRange(*(AbyssEngine::AEMath::Matrix *) matrix, *(AbyssEngine::AEMath::Matrix *) matrix);
                 }
                 this->introDone = 1;
                 this->headBobPhase = 0;
@@ -735,13 +713,13 @@ void SpaceLounge::updateScreenPositions() {
         ((void (*)(void *, void *)) project)(screen, target);
         *(Vector *) (pos) = *(const Vector *) (target) - *(const Vector *) (halfRight);
         ((void (*)(void *, void *)) project)(screen, pos);
-        ((PaintCanvas *) canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *) canvas,
-                                                    (AbyssEngine::AEMath::Vector *) screen);
+        ((PaintCanvas *) canvas)->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
+                                                    *(AbyssEngine::AEMath::Vector *) screen);
 
         *(Vector *) (pos) = *(const Vector *) (target) + *(const Vector *) (halfRight);
         ((void (*)(void *, void *)) project)(screen, pos);
-        ((PaintCanvas *) canvas)->GetScreenPosition((AbyssEngine::AEMath::Vector *) canvas,
-                                                    (AbyssEngine::AEMath::Vector *) screen);
+        ((PaintCanvas *) canvas)->GetScreenPosition(*(AbyssEngine::AEMath::Vector *) canvas,
+                                                    *(AbyssEngine::AEMath::Vector *) screen);
 
         current = (void *) (long) ((PaintCanvas *) canvas)->CameraGetCurrent();
         local = ((PaintCanvas *) canvas)->CameraGetLocal((unsigned int) (long) canvas);
@@ -831,7 +809,7 @@ void SpaceLounge::drawLounge() {
             }
 
             void *font = *(void **) *(void **) &SpaceLounge_lounge_font_slot;
-            int textWidth = ((PaintCanvas *) canvas)->GetTextWidth((unsigned int) (long) canvas, font);
+            int textWidth = ((PaintCanvas *) canvas)->GetTextWidth((unsigned int) (long) canvas, *(String *) font);
             int boxX = cx - pad;
             int boxY = y - pad;
             int width = pad * 2 + textWidth;
@@ -841,14 +819,14 @@ void SpaceLounge::drawLounge() {
 
             s3 = ((Agent *) (agent))->isKnown() == 0 ? "?" : "";
             s4 = s3 + s0;
-            ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, &s4, cx, y + layoutMetric(layout, 0x2c0),
+            ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, s4, cx, y + layoutMetric(layout, 0x2c0),
                                                  false);
 
             if (((Agent *) (agent))->isKnown() != 0) {
                 s5 = " ";
                 s6 = s5 + s0;
-                int nameWidth = ((PaintCanvas *) canvas)->GetTextWidth((unsigned int) (long) canvas, font);
-                ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, &s1, cx + nameWidth,
+                int nameWidth = ((PaintCanvas *) canvas)->GetTextWidth((unsigned int) (long) canvas, *(String *) font);
+                ((PaintCanvas *) canvas)->DrawString((unsigned int) (long) font, s1, cx + nameWidth,
                                                      y + layoutMetric(layout, 0x2c0), false);
             }
         }
@@ -994,7 +972,7 @@ int SpaceLounge::init() {
     ((PaintCanvas *) camera)->CameraSetLocal((unsigned int) (long) camera,
                                              *(const AbyssEngine::AEMath::Matrix *) current);
     if (this->cameraEase != 0) {
-        this->cameraEase->SetRange(*(AEMath::Matrix *) matrix, *(AEMath::Matrix *) matrix);
+        this->cameraEase->SetRange(*(AbyssEngine::AEMath::Matrix *) matrix, *(AbyssEngine::AEMath::Matrix *) matrix);
     }
     this->introDone = 1;
     this->headBobPhase = 0;

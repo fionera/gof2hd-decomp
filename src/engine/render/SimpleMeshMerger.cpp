@@ -23,20 +23,20 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
     for (uint32_t i = 0; i < meshIds.size(); i++) {
         uint32_t localId;
         canvas->MeshCreate(meshIds.data()[i], localId, false);
-        this->meshes[i] = (Mesh *) canvas->MeshGetPointer(localId);
-        Mesh *m = this->meshes[i];
+        this->meshes[i] = (AbyssEngine::Mesh *) canvas->MeshGetPointer(localId);
+        AbyssEngine::Mesh *m = this->meshes[i];
         totalV = (int16_t)(totalV + m->vertexCount);
         totalI = (int16_t)(totalI + aeabi_uidiv16(m->indexCount, 3));
     }
 
-    Mesh *m0 = this->meshes[0];
+    AbyssEngine::Mesh *m0 = this->meshes[0];
     canvas->MeshCreate((uint16_t) totalV, (uint16_t) totalI, (signed char) m0->vertexFormat,
                        flags, this->mergedMeshId);
 
     int16_t vtxBase = 0;
     int16_t triBase = 0;
     for (uint32_t i = 0; i < meshIds.size(); i++) {
-        Mesh *m = this->meshes[i];
+        AbyssEngine::Mesh *m = this->meshes[i];
         Matrix *xf = &transforms.data()[i];
         int uvOff = 0;
         int colOff = 0;

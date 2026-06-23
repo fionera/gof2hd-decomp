@@ -11,7 +11,7 @@ KW={'if','for','while','switch','return','else','do','catch','sizeof','operator'
 # free-function DEFINITIONS we own (name has no ::, has a body)
 DEFD=re.compile(r'^[ \t]*(?:extern\s+"C"\s+)?(?:[A-Za-z_][\w:<>]*[\s\*&]+)+([A-Za-z_]\w*)\s*\([^;{]*\)\s*\{', re.M)
 owned=set()
-for f in glob.glob("src/*.cpp"):
+for f in glob.glob("src/**/*.cpp", recursive=True):
     for m in DEFD.finditer(open(f,errors='ignore').read()):
         if m.group(1) not in KW: owned.add(m.group(1))
 
@@ -27,8 +27,7 @@ def deextern(t):
         return m.group(0)
     return LINE.sub(repl, t)
 
-files=glob.glob("src/*.cpp")+[h for h in glob.glob("include/gof2/*.h")
-                              if os.path.basename(h) not in {"common.h","math.h","fwd.h"}]
+files=glob.glob("src/**/*.cpp", recursive=True)+glob.glob("src/**/*.h", recursive=True)
 nun=0
 for f in files:
     t=open(f,errors='ignore').read(); o=t

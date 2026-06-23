@@ -2,7 +2,6 @@
 
 #define GOF2_ENUM_BlendMode
 #include "engine/render/PaintCanvas.h"
-#include "externs.h"
 
 
 extern "C" void _pss_base_ctor(ParticleSystemSprite *self, PaintCanvas *canvas, const Matrix *matrix,
@@ -20,6 +19,8 @@ extern "C" void ParticleSystem_updateAreaExitParticleImpl(ParticleSystemSprite *
 extern "C" float VectorSignedToFloat(int v, uint8_t mode);
 
 extern "C" float VectorUnsignedToFloat(uint32_t v, uint8_t mode);
+
+extern "C" void *g_PaintCanvas;
 
 extern "C" char *g_particleSetBase;
 

@@ -4,6 +4,9 @@
 #include "../../engine/core/AEString.h"
 #include "game/world/Level.h"
 
+class Level;
+
+
 class AutoPilotList {
 public:
     int selected;

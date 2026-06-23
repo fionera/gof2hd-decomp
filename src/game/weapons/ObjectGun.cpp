@@ -290,20 +290,20 @@ void ObjectGun::update(int dt) {
 
         if (gun->field_0xa4 != 0) {
             if (weapon == 0xb5) {
-                offsets.x = F<uint8_t>(gun, 0xa6) != 0 ? -1.5f : 1.5f;
+                offsets.x = gun->field_0xa6 != 0 ? -1.5f : 1.5f;
             } else {
                 float left = weapon == 0x30 ? 20.0f : 15.0f;
                 float right = weapon == 0x30 ? -20.0f : -15.0f;
                 offsets.x = left - gun->offset.x;
-                if (F<uint8_t>(gun, 0xa6) != 0)
+                if (gun->field_0xa6 != 0)
                     offsets.x = gun->offset.x + right;
             }
         }
-        if (F<uint8_t>(gun, 0xa5) != 0) {
+        if (gun->field_0xa5 != 0) {
             if (weapon == 0xe0) {
-                offsets.y = F<uint8_t>(gun, 0xa7) == 0 ? 13.0f : -13.0f;
+                offsets.y = gun->field_0xa7 == 0 ? 13.0f : -13.0f;
             } else if (weapon == 0xb5) {
-                offsets.y = F<uint8_t>(gun, 0xa7) == 0 ? 2.5f : -2.5f;
+                offsets.y = gun->field_0xa7 == 0 ? 2.5f : -2.5f;
             }
         }
         MatrixRotateVector(&cameraMatrix, &workMatrix, &offsets);

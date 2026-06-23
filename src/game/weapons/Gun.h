@@ -6,7 +6,17 @@
 #include "engine/render/Sparks.h"
 
 #include "game/ItemSort.h"
-#include "game/ship/Player.h"
+
+#include "engine/math/Vector.h"
+
+#include "engine/math/Matrix.h"
+
+
+class Player;
+
+class Level;
+class Sparks;
+
 
 class Gun {
 public:
@@ -52,7 +62,17 @@ public:
     int field_0x94;
     int field_0x98;
     int fireIndex;
-    int field_0xa4;
+
+    union {
+        int field_0xa4;
+        struct {
+            uint8_t field_0xa4_b0;
+            uint8_t field_0xa5;
+            uint8_t field_0xa6;
+            uint8_t field_0xa7;
+        };
+    };
+
     uint8_t field_0xa8;
     uint8_t delayActive;
     char *wobbleOffsets;

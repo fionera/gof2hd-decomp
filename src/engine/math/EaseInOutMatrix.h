@@ -6,6 +6,9 @@
 #include "Quaternion.h"
 #include "engine/math/AEMath.h"
 
+#include "engine/math/Vector.h"
+
+
 namespace AbyssEngine {
     class EaseInOutMatrix {
     public:

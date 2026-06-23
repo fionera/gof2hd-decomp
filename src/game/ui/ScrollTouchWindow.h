@@ -5,6 +5,9 @@
 #include "fieldaccess.h"
 #include "ScrollTouchBox.h"
 
+class ScrollTouchBox;
+
+
 class ScrollTouchWindow {
 public:
     ScrollTouchBox *scrollBox;

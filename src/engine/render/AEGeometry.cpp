@@ -1,13 +1,7 @@
 #include "engine/render/AEGeometry.h"
 #include "engine/render/LodMeshMerger.h"
+#include "engine/math/Transform.h"
 
-
-namespace AbyssEngine {
-    class Transform {
-    public:
-        void SetCurrentAnimationTime(long long value);
-    };
-}
 
 extern "C" void _ae_geom_render(uint32_t canvas, uint32_t tf, int z);
 

@@ -6,7 +6,26 @@
 
 #include "engine/core/IApplicationModule.h"
 
+class Radar;
 
+
+class AEGeometry;
+class ChoiceWindow;
+class DialogueWindow;
+class Hud;
+class Level;
+class LevelScript;
+class MenuTouchWindow;
+class PlayerEgo;
+class Radio;
+class StarMap;
+class TargetFollowCamera;
+
+
+
+namespace AbyssEngine {
+    class ApplicationManager;
+}
 using ::AbyssEngine::ApplicationManager;
 
 class MGame : public IApplicationModule {

@@ -6,6 +6,8 @@
 #include "game/ship/PlayerEgo.h"
 #include "engine/render/AEGeometry.h"
 
+using ::AbyssEngine::Transform;
+
 
 namespace AbyssEngine {
     namespace AEMath {

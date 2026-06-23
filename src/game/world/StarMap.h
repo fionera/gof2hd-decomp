@@ -10,6 +10,21 @@
 #include "game/ui/ChoiceWindow.h"
 #include "game/ui/TouchButton.h"
 
+#include "engine/math/Vector.h"
+
+class SystemPathFinder;
+
+class AEGeometry;
+class ChoiceWindow;
+class Mission;
+class SolarSystem;
+class Station;
+class TouchButton;
+namespace AbyssEngine { 
+    class EaseInOut;
+ }
+
+
 class StarMap {
 public:
     uint8_t exitRequested;

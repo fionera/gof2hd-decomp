@@ -5,23 +5,14 @@
 #include "game/ui/TouchButton.h"
 #include "fieldaccess.h"
 
-struct ModuleTransitionThunk {
-    union {
-        void (*transitionFn)(void *app, int mode);
 
-        void (*transitionFn3)(void *app, int a, int b);
+#include "game/ui/ModuleTransitionThunk.h"
 
-        void *field_0x0;
-    };
-};
+#include "game/ui/RefreshThunk.h"
+class TouchButton;
 
-struct RefreshThunk {
-    union {
-        void (*refreshFn)();
 
-        void *field_0x0;
-    };
-};
+
 
 class MenuTouchWindow {
 public:

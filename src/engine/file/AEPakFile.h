@@ -3,6 +3,9 @@
 #include "AELowLevelFile.h"
 #include "FileInterface.h"
 
+class FileInterface;
+
+
 // A read-only window into a .pak archive entry. Reads are clamped to the entry's
 // size limit; writes are unsupported.
 class AEPakFile : public AELowLevelFile {

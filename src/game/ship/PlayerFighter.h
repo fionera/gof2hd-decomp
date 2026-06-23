@@ -10,6 +10,22 @@
 #include "game/mission/Explosion.h"
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+
+class Player;
+
+class AEGeometry;
+class BoundingVolume;
+class Explosion;
+class KIPlayer;
+class Level;
+class Route;
+class Trail;
+namespace AbyssEngine { 
+    class EaseInOutMatrix;
+ }
+
+
 
 class PlayerFighter : public KIPlayer {
 public:

@@ -8,6 +8,17 @@
 #include "engine/math/Vector.h"
 #include "engine/render/AEGeometry.h"
 
+#include "engine/math/AEMath.h"
+
+
+class Radar;
+
+
+class AEGeometry;
+class Hud;
+class Level;
+
+
 class RepairBeam {
 public:
     int shipIndex;

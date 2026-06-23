@@ -4,6 +4,9 @@
 
 #include "game/ship/PlayerEgo.h"
 
+class PlayerEgo;
+
+
 class Achievements {
 public:
     int *medals;

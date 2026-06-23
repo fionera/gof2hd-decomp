@@ -1,4 +1,6 @@
 #include "game/menu/MGame.h"
+#include "game/core/Radio.h"
+#include "game/core/RadioMessage.h"
 #include "game/core/Globals.h"
 #include "game/ship/PlayerFighter.h"
 #include "game/ship/Ship.h"
@@ -38,6 +40,9 @@
 #include "game/mission/Status.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/weapons/Radar.h"
+
+class Music;
+class Cfg;
 
 extern PaintCanvas *gCanvas;
 
@@ -313,7 +318,7 @@ void MGame::startJumpScene() {
         AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, gCanvas, false);
         this->jumpFlash = geo;
         int tr = (int) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
-        ((Transform *) (tr))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
+        ((AbyssEngine::Transform *) (tr))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
 
         float pos[4];
         ((PlayerEgo *) (pos))->getPosition();
@@ -1221,7 +1226,7 @@ int MGame::OnInitialize() {
     self->lastTime = t & 0xffff;
     self->lastTimeHigh = 0;
 
-    if (Radar::hasScanner() != 0)
+    if (static_cast<Radar *>(self->player->field_0x14)->hasScanner() != 0)
         gStatus->field_11c = 0;
     gStatus->field_12c = 0;
     gStatus->field_134 = 0;
@@ -2236,7 +2241,7 @@ camMove: {
 afterCam:
     if (self->usingJumpDrive != 0) {
         unsigned tr = (unsigned) (long) gCanvas->TransformGetTransform((unsigned) (uintptr_t) gCanvas);
-        ((TransformFull *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
+        ((AbyssEngine::Transform *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
     }
 
     void *camPos = TFC_getPosition(self->camera);
@@ -2618,7 +2623,7 @@ void MGame::OnRender2D() {
                     self->starMapOpen == 0 &&
                     (self->player->isHacking() == 0 ||
                      self->menuTouchOpen != 0))
-                    self->radar->draw((void *) (self->player), (Hud *) (self->hud),
+                    self->radar->draw((Player *) (self->player), (Hud *) (self->hud),
                                       (int) (intptr_t)(self->level));
                 if (self->cutsceneActive == 0) {
                     ((MGame *) (self))->nextCamId(self->cameraMode);

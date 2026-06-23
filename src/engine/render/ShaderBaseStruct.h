@@ -4,6 +4,17 @@
 #include "FBOContainer.h"
 #include "../core/AEString.h"
 #include "Mesh.h"
+#include "engine/math/Vector.h"
+
+#include "engine/math/AEMath.h"
+
+
+namespace AbyssEngine { 
+    class Engine;
+    class FBOContainer;
+    class Mesh;
+ }
+
 
 namespace AbyssEngine {
     class ShaderBaseStruct {
@@ -27,7 +38,7 @@ namespace AbyssEngine {
 
         virtual void SetInActive() = 0;
 
-        virtual void RenderEffect(FBOContainer *source, ::Engine *engine);
+        virtual void RenderEffect(FBOContainer *source, Engine *engine);
 
         virtual void RenderEffect(FBOContainer *source, FBOContainer *&target, AbyssEngine::Engine *engine);
 

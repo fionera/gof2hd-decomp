@@ -7,7 +7,15 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
+namespace AbyssEngine { 
+    class Mesh;
+ }
 
+
+
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 
 class MeshMerger {

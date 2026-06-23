@@ -11,15 +11,14 @@
 #include "AENormalFile.h"
 #include "AEPakFile.h"
 
+
+#include "engine/file/AEPakFileEntry.h"
+class AELowLevelFile;
+class FileInterface;
+
+
 using String = AbyssEngine::String;
 
-struct AEPakFileEntry {
-    uint32_t crc;
-    String name;
-    uint32_t offset;
-    uint32_t packedSize;
-    uint32_t size;
-};
 
 void *OpenAppend(unsigned short *name, int size, bool append, unsigned int mode);
 

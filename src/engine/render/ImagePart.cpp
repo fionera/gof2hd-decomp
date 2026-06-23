@@ -1,4 +1,5 @@
 #include "engine/render/ImagePart.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
 extern "C"

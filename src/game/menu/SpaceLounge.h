@@ -16,6 +16,24 @@
 #include "game/ui/TouchButton.h"
 #include "game/world/StarMap.h"
 
+#include "engine/math/AEMath.h"
+#include "engine/math/Matrix.h"
+
+
+class Agent;
+class ChoiceWindow;
+class CutScene;
+class ImagePart;
+class ListItemWindow;
+class ScrollTouchWindow;
+class StarMap;
+class TouchButton;
+namespace AbyssEngine { 
+    class EaseInOut;
+    class EaseInOutMatrix;
+ }
+
+
 class SpaceLounge {
 public:
     StarMap *starMap;

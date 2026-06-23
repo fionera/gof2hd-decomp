@@ -1031,7 +1031,7 @@ void Layout::drawTip() {
 
         int lineCount = (int) this->tipLines->size();
         int y = (dimW >> 1) + 0x3f - ((lineCount * mA[4 / 4]) >> 1);
-        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines(reinterpret_cast<unsigned>(*(void **) g_dtLinesA),
+        reinterpret_cast<Globals *>(*g_dtLinesB)->drawLines((unsigned) (uintptr_t) *(void **) g_dtLinesA,
                                                             this->tipLines,
                                                             dimH >> 1, y);
     }

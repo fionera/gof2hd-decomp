@@ -1,4 +1,7 @@
 #include "game/world/StarMap.h"
+#include "game/world/SystemPathFinder.h"
+#include "game/world/Level.h"
+#include "engine/file/FileRead.h"
 #include "game/ship/Ship.h"
 #include "engine/core/AERandom.h"
 #include "game/world/Galaxy.h"
@@ -7,24 +10,10 @@
 #include "engine/math/EaseInOut.h"
 #include "engine/audio/FModSound.h"
 
-class FileRead {
-public:
-    void *loadStationsBinary();
-};
 
 #include "game/mission/Item.h"
 
-class Level {
-public:
-    static void setInitStreamOut();
-};
 
-class SystemPathFinder {
-public:
-    int getJumpDistance(Array<SolarSystem *> *systems, int from, int to);
-
-    Array<int> *getSystemPath(Array<SolarSystem *> *systems, int from, int to);
-};
 
 #include "engine/math/Transform.h"
 #include "engine/render/PaintCanvas.h"

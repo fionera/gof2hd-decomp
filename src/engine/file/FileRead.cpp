@@ -1,4 +1,6 @@
 #include "engine/file/FileRead.h"
+
+#include "engine/core/AbyssEngine.h"
 #include "engine/core/AERandom.h"
 #include "engine/math/AEMath.h"
 #include "game/mission/Item.h"
@@ -11,6 +13,8 @@
 #include "game/world/Wanted.h"
 #include "game/mission/Mission.h"
 #include "engine/core/Array.h"
+
+using AbyssEngine::Vector;
 
 FileRead::FileRead() {
 }
@@ -166,7 +170,7 @@ Array<SpacePoint *> *FileRead::loadSpacePoints(int32_t id, int32_t group) {
             Matrix matrix;
             MatrixIdentity(matrix);
             Matrix rotation =
-                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale, ROTATION_ORDER_XZY);
+                    MatrixSetRotation(matrix, rx * angleScale, rz * angleScale, ry * rollScale, AbyssEngine::AEMath::ROTATION_ORDER_XZY);
             Vector direction = MatrixGetDir(rotation);
 
             uint32_t selected = 0;
@@ -820,15 +824,15 @@ Array<Item *> *FileRead::loadItemsBinary() {
             uint32_t count0 = 0;
             uint32_t count1 = 0;
             uint32_t count2 = 0;
-            IntArray *a0;
-            IntArray *a1;
-            IntArray *a2;
+            Array<int> *a0;
+            Array<int> *a1;
+            Array<int> *a2;
 
             AEFile::ReadSwitched((int32_t &) count0, handle);
             if ((int32_t) count0 < 1) {
                 a0 = 0;
             } else {
-                a0 = new IntArray();
+                a0 = new Array<int>();
                 ArraySetLength<int32_t>(count0, *a0);
                 for (int32_t j = 0; j < (int32_t) count0; j++) {
                     AEFile::ReadSwitched(a0->data()[j], handle);
@@ -839,7 +843,7 @@ Array<Item *> *FileRead::loadItemsBinary() {
             if ((int32_t) count1 < 1) {
                 a1 = 0;
             } else {
-                a1 = new IntArray();
+                a1 = new Array<int>();
                 ArraySetLength<int32_t>(count1, *a1);
                 for (int32_t j = 0; j < (int32_t) count1; j++) {
                     AEFile::ReadSwitched(a1->data()[j], handle);
@@ -850,7 +854,7 @@ Array<Item *> *FileRead::loadItemsBinary() {
             if ((int32_t) count2 < 1) {
                 a2 = 0;
             } else {
-                a2 = new IntArray();
+                a2 = new Array<int>();
                 ArraySetLength<int32_t>(count2, *a2);
                 for (int32_t j = 0; j < (int32_t) count2; j++) {
                     AEFile::ReadSwitched(a2->data()[j], handle);

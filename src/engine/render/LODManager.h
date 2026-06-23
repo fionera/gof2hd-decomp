@@ -6,12 +6,15 @@
 
 #include "engine/render/AEGeometry.h"
 
-struct Touch {
-    int x;
-    int y;
-    int id;
-    int action;
-};
+#include "engine/math/AEMath.h"
+#include "engine/math/Vector.h"
+
+
+
+#include "engine/render/Touch.h"
+class AEGeometry;
+
+
 
 void AddTouch(int x, int y, int id, int action);
 

@@ -8,17 +8,21 @@
 #include "game/mission/Item.h"
 #include "game/ship/PlayerEgo.h"
 
-struct HudEventDisplay {
-    unsigned char pad_0x0[0x1e0];
-    float eventBannerDisplayScale;
-    int eventBannerDisplayBase;
-};
 
-struct CargoBay {
-    unsigned char pad_0x0[0x54];
-    int cargoCurrent;
-    int cargoMax;
-};
+#include "game/ui/HudEventDisplay.h"
+
+#include "game/ui/CargoBay.h"
+class Radar;
+
+
+class Item;
+class Level;
+class ListItem;
+class PlayerEgo;
+class TouchButton;
+
+
+
 
 class Hud {
 public:

@@ -4,6 +4,10 @@
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
 
+class CutScene;
+class MenuTouchWindow;
+
+
 class ModMainMenu {
 public:
     int paintCanvas;

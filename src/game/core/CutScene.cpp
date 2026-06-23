@@ -17,6 +17,9 @@
 #include "game/ship/Ship.h"
 
 
+using AbyssEngine::AERandom;
+using AbyssEngine::AnimationMode;
+
 extern PaintCanvas *gCanvas;
 
 extern float CutScene_proc_tx0, CutScene_proc_tz0;

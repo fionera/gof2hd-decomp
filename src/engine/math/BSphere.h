@@ -1,21 +1,23 @@
 #ifndef GOF2_BSPHERE_H
 #define GOF2_BSPHERE_H
-#include <cstdint>
+#include "engine/math/Vector.h"
 
 namespace AbyssEngine {
+    class Transform;
+
     namespace AEMath {
-        class BSphere {
-        public:
-            float cx, cy, cz;
+        struct BSphere {
+            Vector center;
             float radius;
-            float maxRadius;
+            float radius2;
 
             BSphere &operator=(const BSphere &other);
 
-            void Merge(const Transform &t);
-
             void Merge(const BSphere &other);
+
+            void Merge(const Transform &t);
         };
     }
 }
+
 #endif

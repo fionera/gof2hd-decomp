@@ -10,26 +10,10 @@
 #include "engine/core/ApplicationManager.h"
 #include "engine/render/Engine.h"
 #include "game/ship/PlayerStatic.h"
+#include "engine/render/LensFlare.h"
 
 
 extern PaintCanvas *gCanvas;
-
-class LensFlare {
-public:
-    float intensity;
-    PaintCanvas *canvas;
-    int width;
-    int height;
-    uint32_t *images;
-
-    explicit LensFlare(PaintCanvas *canvas);
-
-    ~LensFlare();
-
-    void render2D(float srcX, float srcY, float alpha, int colorIndex);
-
-    void update(int);
-};
 
 namespace AbyssEngine {
     namespace AEMath {

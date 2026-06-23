@@ -70,7 +70,7 @@ int PlayerWormHole::open() {
     return (int) (intptr_t) this;
 }
 
-PlayerWormHole::Vector PlayerWormHole::getPosition() {
+Vector PlayerWormHole::getPosition() {
     Vector result = {(float) this->positionX, (float) this->positionY, (float) this->positionZ};
     return result;
 }

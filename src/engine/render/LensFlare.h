@@ -5,6 +5,9 @@
 #include "fieldaccess.h"
 
 
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 
 extern "C" {

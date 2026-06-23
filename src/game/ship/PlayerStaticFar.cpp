@@ -25,7 +25,7 @@ PlayerStaticFar::PlayerStaticFar(int playerId, AEGeometry *geometry, float x, fl
 
 PlayerStaticFar::~PlayerStaticFar() = default;
 
-PlayerStaticFar::Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
+Vector PlayerStaticFar::getProjectionVector(const Vector &value) {
     if (this->boundingVolumes != nullptr) {
         return (*this->boundingVolumes)[0]->getProjectionVector(value);
     }
@@ -36,7 +36,7 @@ void PlayerStaticFar::render() {
     this->geometry->render();
 }
 
-PlayerStaticFar::Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
+Vector PlayerStaticFar::projectCollisionOnSurface(const Vector &value) {
     if (this->boundingVolumes != nullptr) {
         Vector out;
         reinterpret_cast<BoundingVolume *>(&out)
@@ -50,7 +50,7 @@ int PlayerStaticFar::outerCollide(float x, float y, float z) {
     return this->collide(x, y, z);
 }
 
-PlayerStaticFar::Vector PlayerStaticFar::getInitPosition(Vector /*value*/) {
+Vector PlayerStaticFar::getInitPosition(Vector /*value*/) {
     return this->initPosition;
 }
 

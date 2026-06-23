@@ -10,6 +10,13 @@
 #include "TouchButton.h"
 #include "engine/render/PaintCanvas.h"
 
+class ChoiceWindow;
+class TouchButton;
+
+
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 
 class Layout {
@@ -21,7 +28,11 @@ public:
 
     uint8_t _pad_0x1[3];
     int field_0x4;
-    int windowTopInset;
+
+    union {
+        int field_0x8;
+        int windowTopInset;
+    };
 
     union {
         int field_0xc;
@@ -33,8 +44,16 @@ public:
         int field_0x10_rightMargin;
     };
 
-    int field_0x14;
-    int field_0x18;
+    union {
+        int field_0x14;
+        int footerTextInset;
+    };
+
+    union {
+        int field_0x18;
+        int headerTitleY;
+    };
+
     int field_0x1c;
 
     union {
@@ -201,21 +220,49 @@ public:
     int field_0x2fc;
     int field_0x300;
     int field_0x304;
-    int field_0x308;
+    union {
+        int field_0x308;
+        int choiceWindowTitleHeight;
+    };
+
     int field_0x30c;
     int field_0x310;
     int field_0x314;
     int field_0x318;
-    int field_0x31c;
-    int field_0x320;
+
+    union {
+        int field_0x31c;
+        int helpWindowX;
+    };
+
+    union {
+        int field_0x320;
+        int helpWindowY;
+    };
+
     unsigned bgPatternImage;
-    int field_0x328;
-    unsigned titleBarImage;
-    int field_0x330;
+
+    union {
+        int field_0x328;
+        int headerPatternImage;
+    };
+
+    union {
+        unsigned titleBarImage;
+        unsigned headerIconImage;
+    };
+
+    union {
+        int field_0x330;
+        int headerCapImage;
+    };
     unsigned footerImageLeft;
-    unsigned footerFillImage;
+    union {
+        unsigned footerFillImage;
+        unsigned field_0x338;
+    };
     int footerImageRight;
-    uint8_t _pad_0x340[4];
+    unsigned field_0x340;
     unsigned footerPatternImage;
     unsigned field_0x348;
     unsigned field_0x34c;
@@ -229,8 +276,12 @@ public:
     unsigned field_0x36c;
     unsigned field_0x370;
     int scrollBarImage;
-    unsigned field_0x378;
-    uint8_t _pad_0x37c[4];
+
+    union {
+        unsigned field_0x378;
+        unsigned scrollBarFillImage;
+    };
+    unsigned field_0x37c;
     unsigned field_0x380;
     int field_0x384;
     unsigned field_0x388;
@@ -240,9 +291,18 @@ public:
     int tipBoxImage;
     unsigned field_0x39c;
     int field_0x3a0;
-    unsigned rewardIconImage;
+
+    union {
+        unsigned rewardIconImage;
+        unsigned field_0x3a4;
+    };
     int field_0x3a8;
-    int field_0x3ac;
+
+    union {
+        int field_0x3ac;
+        int textBaselineAdjust;
+    };
+
     unsigned drawColor;
     TouchButton *backButton;
     TouchButton *secondaryButton;
@@ -258,21 +318,65 @@ public:
     int field_0x3d8;
     uint8_t field_0x3dc;
     uint8_t _pad_0x3dd[3];
-    int field_0x3e0;
-    int field_0x3e4;
-    int field_0x3e8;
-    int field_0x3ec;
-    int field_0x3f0;
-    int field_0x3f4;
-    int field_0x3f8;
-    int field_0x3fc;
+    union {
+        int field_0x3e0;
+        int scrollBarInset;
+    };
+
+    union {
+        int field_0x3e4;
+        int scrollBarHandle;
+    };
+
+    union {
+        int field_0x3e8;
+        int rewardBoxWidth;
+    };
+
+    union {
+        int field_0x3ec;
+        int rewardBoxHeight;
+    };
+
+    union {
+        int field_0x3f0;
+        int rewardBoxX;
+    };
+
+    union {
+        int field_0x3f4;
+        int rewardBoxY;
+    };
+
+    union {
+        int field_0x3f8;
+        int rewardBoxY2;
+    };
+
+    union {
+        int field_0x3fc;
+        int footerButtonOffset;
+    };
     uint8_t fading;
     uint8_t fadeOut;
     uint8_t _pad_0x402[2];
     unsigned fadeColor;
-    int fadeProgress;
-    int fadeDuration;
-    uint8_t fillScreen;
+
+    union {
+        struct {
+            int fadeProgress;
+            int fadeDuration;
+            uint8_t fillScreen;
+        };
+        struct {
+            uint8_t _skip_0x408[1];
+            int field_0x409;
+        };
+        struct {
+            uint8_t _skip_0x40d[5];
+            int field_0x40d;
+        };
+    };
 
     Layout();
 

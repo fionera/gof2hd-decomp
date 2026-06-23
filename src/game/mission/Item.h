@@ -1,39 +1,12 @@
 #ifndef GOF2_ITEM_H
 #define GOF2_ITEM_H
 #include "engine/core/Array.h"
-#include "../../engine/core/AEString.h"
-#include "fieldaccess.h"
 
-typedef Array<Item *> ItemArray;
 
-typedef Array<int> IntArray;
+#include "game/mission/ItemTable.h"
+class Station;
 
-struct ItemTable {
-    void *field_0x0;
-    void *field_0x4;
-    void *field_0x8;
-    void *field_0xc;
-    void *field_0x10;
-    void *field_0x14;
-    void *field_0x18;
-    void *field_0x1c;
-    void *field_0x20;
-    void *field_0x24;
-    void *field_0x28;
-    void *field_0x2c;
-    void *field_0x30;
-    void *field_0x34;
-    void *field_0x38;
-    void *field_0x3c;
-    void *field_0x40;
-    void *field_0x44;
-    void *itemTableEntry0x12;
-};
 
-struct ItemDatabase {
-    unsigned int field_0x0;
-    Item **itemTable;
-};
 
 class Item {
 public:
@@ -47,16 +20,16 @@ public:
     int occurence;
     int minPrice;
     int maxPrice;
-    IntArray *ingredients;
-    IntArray *quantities;
-    IntArray *attributes;
+    Array<int> *ingredients;
+    Array<int> *quantities;
+    Array<int> *attributes;
     int amount;
     int stationAmount;
     int blueprintAmount;
     int missingIngredients;
     bool unsaleable;
 
-    Item(IntArray *ingredients, IntArray *quantities, IntArray *attributes);
+    Item(Array<int> *ingredients, Array<int> *quantities, Array<int> *attributes);
 
     ~Item();
 
@@ -118,11 +91,11 @@ public:
 
     void changeBlueprintAmount(int delta);
 
-    IntArray *getIngredients();
+    Array<int> *getIngredients();
 
-    IntArray *getQuantities();
+    Array<int> *getQuantities();
 
-    IntArray *getAttributes();
+    Array<int> *getAttributes();
 
     int getAttribute(int attribute);
 
@@ -150,21 +123,24 @@ public:
 
     bool isUnsaleable();
 
-    static bool isInList(int index, int amount, ItemArray *items);
+    static bool isInList(int index, int amount, Array<Item*> *items);
 
-    static bool isInList(int index, ItemArray *items);
+    static bool isInList(int index, Array<Item*> *items);
 
-    static bool isInList(Item *item, ItemArray *items);
+    static bool isInList(Item *item, Array<Item*> *items);
 
-    static void fabricate(Item *item, ItemArray *items, int amount);
+    static void fabricate(Item *item, Array<Item*> *items, int amount);
 
-    static ItemArray *combineItems(ItemArray *items, ItemArray *stationItems);
+    static Array<Item*> *combineItems(Array<Item*> *items, Array<Item*> *stationItems);
 
-    static ItemArray *extractItems(ItemArray *items, bool station);
+    static Array<Item*> *extractItems(Array<Item*> *items, bool station);
 
-    static void combineDuplicates(ItemArray *items);
+    static void combineDuplicates(Array<Item*> *items);
 
-    static ItemArray *mixItems(ItemArray *items, ItemArray *stationItems);
+    static Array<Item*> *mixItems(Array<Item*> *items, Array<Item*> *stationItems);
 };
+
+typedef Array<int> IntArray;
+typedef Array<Item*> ItemArray;
 
 #endif

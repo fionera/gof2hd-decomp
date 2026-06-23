@@ -7,6 +7,13 @@
 
 #include "game/weapons/ObjectGun.h"
 
+class AEGeometry;
+class Explosion;
+class Gun;
+class Level;
+class PlayerEgo;
+
+
 class MineGun : public ObjectGun {
 public:
     PlayerEgo *player;

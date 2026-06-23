@@ -7,6 +7,12 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+
+
+class Route;
+
+
 class Waypoint : public KIPlayer {
 public:
     int32_t x;

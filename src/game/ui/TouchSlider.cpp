@@ -1,4 +1,5 @@
 #include "game/ui/TouchSlider.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
 void TouchSlider::setPosition(int x, int y) {

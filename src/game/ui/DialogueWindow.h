@@ -10,12 +10,17 @@
 #include "game/mission/Mission.h"
 #include "game/world/Level.h"
 
-struct DialogueWindowGermanTextTable {
-    int maleRaceRow;
-    int field_0x4[17];
-    int femaleVariantBase;
-    int field_0x4c[1];
-};
+
+#include "game/ui/DialogueWindowGermanTextTable.h"
+class Agent;
+class ChoiceWindow;
+class ImagePart;
+class Level;
+class Mission;
+class ScrollTouchWindow;
+class TouchButton;
+
+
 
 class DialogueWindow {
 public:

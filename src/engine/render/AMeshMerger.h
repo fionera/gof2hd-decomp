@@ -4,6 +4,11 @@
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 
+namespace AbyssEngine { 
+    class Mesh;
+ }
+
+
 
 void AMeshMerger_drawMeshes(void *canvas, uint32_t transformId, uint32_t flags);
 

@@ -10,6 +10,14 @@
 #include "game/ship/Ship.h"
 #include "game/ui/ListItem.h"
 
+class BluePrint;
+class GameText;
+class Item;
+class ListItem;
+class Ship;
+class Status;
+
+
 extern Status *g_HangarList_status;
 extern GameText **g_HangarList_gameText;
 extern Array<Item *> *g_HangarList_items;

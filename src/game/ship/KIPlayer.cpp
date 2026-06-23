@@ -22,7 +22,6 @@ extern "C" void FModSound_stopEvent(void *player);
 
 extern "C" void FModSound_playEvent(void *player, int event, int flags);
 
-extern "C" void *gCanvas;
 extern "C" void **gCanvasPtr;
 extern void *const gAERandom __attribute__((visibility("hidden")));
 extern void *const gItemDb   __attribute__((visibility("hidden")));
@@ -229,7 +228,7 @@ void KIPlayer::translate(const Vector &v) {
 
 Vector KIPlayer::getPosition() {
     Vector v;
-    AbyssEngine::AEMath::MatrixGetPosition(&v, this->player->transform);
+    v = AbyssEngine::AEMath::MatrixGetPosition(*(const Matrix *) this->player->transform);
     return v;
 }
 

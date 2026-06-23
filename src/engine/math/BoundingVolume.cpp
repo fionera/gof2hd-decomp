@@ -2,6 +2,7 @@
 #include "engine/math/AEMath.h"
 
 namespace AEMath = AbyssEngine::AEMath;
+using Vector = AbyssEngine::AEMath::Vector;
 
 BoundingVolume::~BoundingVolume() {
     if (children != nullptr) {
@@ -29,7 +30,7 @@ int BoundingVolume::outerCollide(float, float, float) {
     return 0;
 }
 
-BoundingVolume::Vector BoundingVolume::getCollisionNormal(const Vector &position) {
+Vector BoundingVolume::getCollisionNormal(const Vector &position) {
     (void) position;
     Vector out;
     out.x = 0.0f;
@@ -99,7 +100,7 @@ void BoundingVolume::update(float x, float y, float z) {
     centerZ = z;
 }
 
-BoundingVolume::Vector BoundingVolume::getProjectionVector(const Vector &v) {
+Vector BoundingVolume::getProjectionVector(const Vector &v) {
     Vector center;
     center.x = centerX;
     center.y = centerY;

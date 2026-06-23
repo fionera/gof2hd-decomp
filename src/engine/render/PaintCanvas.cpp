@@ -1,6 +1,15 @@
 #include "engine/render/PaintCanvas.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/Material.h"
 #include "engine/core/Array.h"
+#include "engine/core/Node.h"
+#include "engine/math/Transform.h"
+
+namespace AbyssEngine {
+    class SpriteSystem;
+    class ImageFont;
+}
+
 PaintCanvas *gCanvas = nullptr;
 
 namespace {
@@ -920,12 +929,12 @@ void *PaintCanvas::CameraGetLocal(unsigned int index) {
 }
 
 void PaintCanvas::DrawTextLines(unsigned int font,
-                                AbyssEngine::Array<AbyssEngine::String *> *arr, int x, int y) {
+                                Array<AbyssEngine::String *> *arr, int x, int y) {
     this->DrawTextLines(font, arr, x, y, 0u, false);
 }
 
 void PaintCanvas::DrawTextLines(unsigned int font,
-                                AbyssEngine::Array<AbyssEngine::String *> *arr, int x, int y, bool center) {
+                                Array<AbyssEngine::String *> *arr, int x, int y, bool center) {
     int xoff = 0;
     for (unsigned int i = 0; i < arr->size(); i++) {
         if (center) {
@@ -1140,7 +1149,7 @@ void PaintCanvas::MaterialChange(unsigned int index,
 }
 
 void PaintCanvas::DrawTextLines(unsigned int font,
-                                AbyssEngine::Array<AbyssEngine::String *> *arr, int x, int y, unsigned int p5,
+                                Array<AbyssEngine::String *> *arr, int x, int y, unsigned int p5,
                                 bool flag) {
     int xoff = 0;
     for (unsigned int i = 0; i < arr->size(); i++) {
@@ -1957,7 +1966,7 @@ void PaintCanvas::TransformCreate(unsigned short resId, unsigned int &out) {
     }
     char *info = *(char **) (res + 0xc);
     char *tf = (char *) paintcanvas_ext_tfc_new_transform();
-    ArrayAdd<::Transform *>((::Transform *) tf, *reinterpret_cast<Array<::Transform *> *>(&this->transformCount));
+    ArrayAdd<Transform *>((Transform *) tf, *reinterpret_cast<Array<Transform *> *>(&this->transformCount));
     unsigned int idx = this->transformCount - 1;
     *(unsigned int *) (res + 8) = idx;
     out = idx;
@@ -2001,13 +2010,13 @@ void PaintCanvas::End2d() {
     }
 }
 
-void PaintCanvas::MeshChangeMaterialIntern(::Transform *transform, AbyssEngine::Material *material) {
+void PaintCanvas::MeshChangeMaterialIntern(Transform *transform, AbyssEngine::Material *material) {
     if (transform && material) {
-        for (unsigned int i = 0; i < transform->field_0x3c; ++i) {
-            this->MeshChangeMaterialIntern(transform->field_0x40[i], material);
+        for (unsigned int i = 0; i < transform->meshes.size(); ++i) {
+            this->MeshChangeMaterialIntern(transform->meshes[i], material);
         }
-        for (unsigned int i = 0; i < transform->field_0x4c; ++i) {
-            this->MeshChangeMaterialIntern(transform->field_0x50[i], material);
+        for (unsigned int i = 0; i < transform->children.size(); ++i) {
+            this->MeshChangeMaterialIntern(transform->children[i], material);
         }
     }
 }
@@ -2481,7 +2490,7 @@ void PaintCanvas::TransformAddChild(unsigned int parent, unsigned int child) {
         char **arr = this->transforms;
         char *p = arr[parent];
         char *c = arr[child];
-        ArrayAdd<::Transform *>((::Transform *) c, *reinterpret_cast<Array<::Transform *> *>(p + 0x4c));
+        ArrayAdd<Transform *>((Transform *) c, *reinterpret_cast<Array<Transform *> *>(p + 0x4c));
         char **arr2 = this->transforms;
         char *p2 = arr2[parent];
         char *c2 = arr2[child];
@@ -2567,7 +2576,7 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
         unsigned int mat = 0xffffffff;
         paintcanvas_ext_ss2_matcreate(this, matResId, &mat);
         if (mat <= this->materialCount) {
-            AbyssEngine::Node *node = *(AbyssEngine::Node **) ((char *) ss + 0x10);
+            ::Node *node = *(::Node **) ((char *) ss + 0x10);
             node->field_0x30 =
                     *(unsigned int *) ((char *) this->materials + mat * 4);
         }
@@ -3244,7 +3253,7 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
     this->colorB = 1.0f;
     this->colorA = 1.0f;
     this->field_0x1c = 1;
-    engine->field_0xfc = 1;
+    engine->shaderModeFlag = 1;
 
     paintcanvas_ext_meshcreate5(engine, 400, 200, 0x1b, &this->quad2dMesh);
 
@@ -3370,22 +3379,22 @@ void PaintCanvas::Suspend() {
 extern "C" void paintcanvas_ext_dt_drawmesh(void *self, void *mesh, void *m, void *m2,
                                             unsigned int flag, void *m3);
 
-void PaintCanvas::DrawTransform(::Transform *tf, const AbyssEngine::AEMath::Matrix &m2,
+void PaintCanvas::DrawTransform(Transform *tf, const AbyssEngine::AEMath::Matrix &m2,
                                 AbyssEngine::AEMath::Matrix &m3) {
     char buf[60];
-    if (tf && tf->field_0xec) {
+    if (tf && tf->visible) {
         paintcanvas_ext_mtx_mul(buf, &m2, tf);
-        if (tf->field_0x11c != 0) {
-            paintcanvas_ext_mtx_muleq(buf, tf->field_0x5c);
+        if (tf->keyFrames.size() != 0) {
+            paintcanvas_ext_mtx_muleq(buf, tf->rotationMatrix);
         }
-        for (unsigned int i = 0; i < tf->field_0x3c; i++) {
-            paintcanvas_ext_dt_drawmesh(this, tf->field_0x40[i], buf, &m3, tf->field_0x48, tf->field_0x98);
+        for (unsigned int i = 0; i < tf->meshes.size(); i++) {
+            paintcanvas_ext_dt_drawmesh(this, tf->meshes[i], buf, &m3, tf->id, tf->localMatrix);
         }
-        for (unsigned int i = 0; i < tf->field_0x4c; i++) {
+        for (unsigned int i = 0; i < tf->children.size(); i++) {
             if (this->currentCamera < this->cameraCount &&
-                paintcanvas_ext_dt_incamvf(tf->field_0x50[i], buf,
+                paintcanvas_ext_dt_incamvf(tf->children[i], buf,
                                            (this->cameras)[this->currentCamera])) {
-                paintcanvas_ext_dt_drawtransform_rec(this, tf->field_0x50[i], buf, &m3);
+                paintcanvas_ext_dt_drawtransform_rec(this, tf->children[i], buf, &m3);
             } else {
                 this->culledCount += 1;
             }
@@ -3769,7 +3778,7 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     unsigned int meshColor = color;
 
     if (mesh->animation != 0) {
-        ::Transform *resTf = mesh->animation;
+        Transform *resTf = mesh->animation;
         float a[16], b[16];
         memset(a, 0, sizeof(a));
         a[0] = 1.0f;
@@ -3792,7 +3801,7 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
         float resLocal[16];
         paintcanvas_ext_dm_getpos(posM);
         paintcanvas_ext_dm_settrans_vec(resLocal, pivotM);
-        paintcanvas_ext_dm_memcpy(resLocal, resTf->field_0x5c, 0x3c);
+        paintcanvas_ext_dm_memcpy(resLocal, resTf->rotationMatrix, 0x3c);
 
         float s1[16], s2[16], s3[16];
         paintcanvas_ext_dm_mtx_mul(s1, worldMatrix, pivotM);
@@ -3801,8 +3810,8 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
         paintcanvas_ext_dm_mtx_mul(posM, s3, a);
         paintcanvas_ext_dm_mtx_assign(&worldM, posM);
 
-        unsigned int resColor = resTf->field_0x48;
-        paintcanvas_ext_dm_mtx_assign(&uvM, resTf->field_0x98);
+        unsigned int resColor = resTf->id;
+        paintcanvas_ext_dm_mtx_assign(&uvM, resTf->localMatrix);
         meshColor = mulColors(resColor, color);
     }
 
@@ -3859,17 +3868,17 @@ void PaintCanvas::DrawMesh(AbyssEngine::Mesh *mesh, AbyssEngine::AEMath::Matrix 
     }
 
     if (mesh->animation != 0) {
-        ::Transform *res = mesh->animation;
-        unsigned int n = res->field_0x3c;
+        Transform *res = mesh->animation;
+        unsigned int n = res->meshes.size();
         while ((int) (--n) >= 0) {
-            this->DrawMesh(res->field_0x40[n], worldM, viewMatrix, color, uvM);
+            this->DrawMesh(res->meshes[n], worldM, viewMatrix, color, uvM);
         }
-        for (unsigned int i = 0; i < res->field_0x4c; i++) {
+        for (unsigned int i = 0; i < res->children.size(); i++) {
             if (this->currentCamera < this->cameraCount) {
                 void *cam = ((void **) this->cameras)[this->currentCamera];
-                ::Transform *tf = res->field_0x50[i];
+                Transform *tf = res->children[i];
                 if (paintcanvas_ext_dm_incamvf(tf, &worldMatrix, cam)) {
-                    this->DrawTransform(res->field_0x50[i], worldM, viewMatrix);
+                    this->DrawTransform(res->children[i], worldM, viewMatrix);
                 }
             }
         }
@@ -4516,7 +4525,7 @@ void PaintCanvas::ReleaseAllResources() {
 
 extern const unsigned int g_tg2d_defval_7b590;
 
-PaintCanvas::PickedTextureRegion
+AbyssEngine::PickedTextureRegion
 PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int x, int y, int z,
                                                int w) {
     PickedTextureRegion result;
@@ -4536,7 +4545,7 @@ PaintCanvas::TransformGet2DPickedTextureRegion(unsigned int transformIndex, int 
         paintcanvas_ext_tg2d_invtransformvec(matbuf, vecbuf);
         paintcanvas_ext_tg2d_vec_assign(vin, matbuf);
         result = this->TransformGet2DPickedTextureRegion(
-            reinterpret_cast<::Transform *>(tf), x, (int) vin[0], (int) vin[1], 0);
+            reinterpret_cast<Transform *>(tf), x, (int) vin[0], (int) vin[1], 0);
     } else {
         result.u = *(const float *) &g_tg2d_defval_7b590;
         result.v = *(const float *) &g_tg2d_defval_7b590;
@@ -4613,8 +4622,8 @@ void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
 
 extern const unsigned int g_tg2di_neg1_8b588;
 
-PaintCanvas::PickedTextureRegion
-PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, int y, int z, int w) {
+AbyssEngine::PickedTextureRegion
+PaintCanvas::TransformGet2DPickedTextureRegion(Transform *transform, int x, int y, int z, int w) {
     PickedTextureRegion result;
     char *tf = reinterpret_cast<char *>(transform);
     int shift = w;
@@ -4653,7 +4662,7 @@ PaintCanvas::TransformGet2DPickedTextureRegion(::Transform *transform, int x, in
         paintcanvas_ext_tg2di_invtransformvec(matbuf, vecbuf);
         paintcanvas_ext_tg2di_vec_assign(vin, matbuf);
         result = this->TransformGet2DPickedTextureRegion(
-            reinterpret_cast<::Transform *>(child), x, (int) vin[0], (int) vin[1], 0);
+            reinterpret_cast<Transform *>(child), x, (int) vin[0], (int) vin[1], 0);
         i++;
         if (result.u != -1.0f && result.v != -1.0f) {
             return result;
@@ -4839,30 +4848,30 @@ void PaintCanvas::DrawString(unsigned int index, const AbyssEngine::String &str,
     }
 }
 
-int PaintCanvas::TransformGetTriCount(::Transform *transform) {
+int PaintCanvas::TransformGetTriCount(Transform *transform) {
     if (!transform) {
         return 0;
     }
     int total = 0;
-    unsigned int n1 = transform->field_0x3c;
+    unsigned int n1 = transform->meshes.size();
     for (unsigned int i = 0; i != n1; ++i) {
-        total += this->MeshGetTriCount(transform->field_0x40[i]);
+        total += this->MeshGetTriCount(transform->meshes[i]);
     }
-    unsigned int n2 = transform->field_0x4c;
+    unsigned int n2 = transform->children.size();
     for (unsigned int i = 0; i != n2; ++i) {
-        total += this->TransformGetTriCount(transform->field_0x50[i]);
+        total += this->TransformGetTriCount(transform->children[i]);
     }
     return total;
 }
 
-void PaintCanvas::MeshChangeShaderAnimValue(::Transform *transform, float value, unsigned int mode) {
+void PaintCanvas::MeshChangeShaderAnimValue(Transform *transform, float value, unsigned int mode) {
     if (transform) {
-        for (unsigned int i = 0; i < transform->field_0x3c; ++i) {
-            void *m = transform->field_0x40[i];
+        for (unsigned int i = 0; i < transform->meshes.size(); ++i) {
+            void *m = transform->meshes[i];
             paintcanvas_ext_mesh_shaderanim(this, m, value, mode);
         }
-        for (unsigned int i = 0; i < transform->field_0x4c; ++i) {
-            void *c = transform->field_0x50[i];
+        for (unsigned int i = 0; i < transform->children.size(); ++i) {
+            void *c = transform->children[i];
             paintcanvas_ext_transform_shaderanim(this, c, value, mode);
         }
     }

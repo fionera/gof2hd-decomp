@@ -75,7 +75,7 @@ namespace AbyssEngine {
                 glUniform4fv(this->u9Loc, 1, engine->materialSpecular);
 
             long long t = g_ApplicationManager->GetCurrentTimeMillis();
-            float v = sinf(__aeabi_l2f(t) / PulseShader_timeScale);
+            float v = sinf((float) t / PulseShader_timeScale);
             glUniform1f(this->u4Loc, v + 2.0f);
             this->dirty = 0;
         }

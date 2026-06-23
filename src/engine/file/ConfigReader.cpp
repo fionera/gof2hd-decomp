@@ -64,7 +64,7 @@ namespace AbyssEngine {
 
             StringTrim(line);
 
-            int32_t commentIndex = StringIndexOf(line, StringFromAscii("
+            int32_t commentIndex = StringIndexOf(line, StringFromAscii("//"));
             if (commentIndex != -1) {
                 line = StringSubString(line, 0, commentIndex);
                 StringTrim(line);

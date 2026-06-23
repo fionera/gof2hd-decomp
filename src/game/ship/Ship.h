@@ -6,6 +6,9 @@
 
 #include "game/mission/Item.h"
 
+class Item;
+
+
 class Ship {
 public:
     Ship(int index, int baseHP, int baseLoad, int value,

@@ -10,6 +10,10 @@
 #include "engine/render/Mesh.h"
 
 
+namespace AbyssEngine {
+    class PaintCanvas;
+    class Mesh;
+}
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Mesh;
 

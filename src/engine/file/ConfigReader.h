@@ -1,11 +1,16 @@
 #ifndef GOF2_CONFIGREADER_H
 #define GOF2_CONFIGREADER_H
 #include "engine/core/Array.h"
+#include "engine/file/TokenStruct.h"
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 
 #include "engine/file/AEFile.h"
-#include "engine/render/Engine.h"
+
+namespace AbyssEngine {
+    class Engine;
+ }
+
 
 namespace AbyssEngine {
 #define GOF2_CFG_INLINE __attribute__((always_inline)) inline
@@ -50,14 +55,6 @@ namespace AbyssEngine {
     }
 
 #undef GOF2_CFG_INLINE
-
-    typedef void (*ConfigTokenReadFunction)(ConfigReader *, void *);
-
-    struct TokenStruct {
-        String name;
-        ConfigTokenReadFunction read;
-        void *context;
-    };
 
     class ConfigReader {
     public:

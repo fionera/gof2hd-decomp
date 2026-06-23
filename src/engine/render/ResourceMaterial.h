@@ -2,9 +2,9 @@
 #define GOF2_RESOURCEMATERIAL_H
 
 #include <cstdint>
+#include "engine/render/RenderEnums.h"
 
 namespace AbyssEngine {
-    enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
 
     class ResourceMaterial {
     public:

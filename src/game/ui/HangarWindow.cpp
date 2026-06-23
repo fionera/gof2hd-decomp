@@ -17,6 +17,7 @@
 #include "game/mission/PendingProduct.h"
 #include "game/ship/Ship.h"
 #include "engine/core/NFC.h"
+#include "engine/core/GameText.h"
 
 extern PaintCanvas *gCanvas;
 
@@ -252,19 +253,19 @@ void HangarWindow::render() {
                         String boxText;
                         if (tab == 0 && ((ListItem *) li)->field_0x3c >= 0) {
                             ((Layout *) (layout))->drawBox(10, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                           layout->field_0x70, &boxText);
+                                                           layout->field_0x70, boxText);
                         } else {
                             ((Layout *) (layout))->drawBox(4, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                           layout->field_0x70, &boxText);
+                                                           layout->field_0x70, boxText);
                         }
                     } else if (tab != 0 || ((ListItem *) li)->field_0x3c < 0) {
                         String boxText;
                         ((Layout *) (layout))->drawBox(3, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                       layout->field_0x70, &boxText);
+                                                       layout->field_0x70, boxText);
                     } else {
                         String boxText;
                         ((Layout *) (layout))->drawBox(9, this->hintOffsetX + layout->field_0x28, y, topY,
-                                                       layout->field_0x70, &boxText);
+                                                       layout->field_0x70, boxText);
                     }
 
                     ((PaintCanvas *) canvas)->SetColor(0xffffffffu);
@@ -346,7 +347,7 @@ void HangarWindow::render() {
                                 head = num + sfx;
                             }
                             String full;
-                            full = head + *(String *) ((GameText *) (*g_hw_itemNameBase))->getText();
+                            full = head + *(String *) gGameText->getText(*g_hw_itemNameBase);
                             int pidx = ((ListItem *) li)->pendingProduct->blueprintIndex;
                             int type = ((Item *) ((*(void * *) (
                                 (char *) ((*(void * *) ((char *) (*g_hw_globals) + (0x4)))) + (pidx)))))->getType();
@@ -365,7 +366,7 @@ void HangarWindow::render() {
                             ((String *) &txt)->ctor_copy((String *) ((ListItem *) li)->name, false);
                             ((Layout *) (layout))->drawBox(0, this->hintOffsetX + layout->field_0x28,
                                                            (y + layout->field_0x70) - layout->field_0x1c, topY,
-                                                           layout->field_0x1c, &txt);
+                                                           layout->field_0x1c, txt);
                         }
                     } else {
                         ((Item *) ((ListItem *) li)->item)->getIndex();
@@ -428,7 +429,7 @@ void HangarWindow::render() {
     (*btns)[(0x2c) >> 2]->setAlwaysPressed(g_hw_optionFlags[0x4e] == 0);
     {
         String credits = Layout::formatCredits(gStatus->getCredits());
-        (*btns)[(0x2c) >> 2]->setText(&credits);
+        (*btns)[(0x2c) >> 2]->setText(credits);
     }
     (*btns)[(0x2c) >> 2]->draw();
 
@@ -462,7 +463,7 @@ void HangarWindow::render() {
                 void *b = (*btns)[(slot) >> 2];
                 ((TouchButton *) (b))->setVisible(true);
                 String t;
-                ((TouchButton *) (b))->setText(&t);
+                ((TouchButton *) (b))->setText(t);
                 ((TouchButton *) (b))->setPosition(*g_hw_screenWidth / 2, 0, 0x14);
                 ((TouchButton *) (b))->draw();
             }
@@ -497,8 +498,8 @@ void HangarWindow::render() {
                                 (float) this->gridSpacingY * -0.5f +
                                 (float) ((int) rowOff * (this->gridSpacingY + this->gridButtonHeight)));
                 ((TouchButton *) (b))->setPosition(x, yy, 'D');
-                ((TouchButton *) (b))->replaceTextKeepSize(&label);
-                ((TouchButton *) (b))->setSplitText(&split);
+                ((TouchButton *) (b))->replaceTextKeepSize(label);
+                ((TouchButton *) (b))->setSplitText(split);
                 ((TouchButton *) (b))->draw();
 
                 ((PaintCanvas *) canvas)->DrawImage2D((unsigned) (*(int *) ((char *) (this->tabIcons) + (i * 4))), x,
@@ -567,7 +568,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
 
             Array<TouchButton *> *tabs = self->tabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++) {
-                if (((TouchButton *) (tabs->data()[i]))->OnTouchEnd(touch) != 0) {
+                if (((TouchButton *) (tabs->data()[i]))->OnTouchEnd(touch, coord) != 0) {
                     self->setSellMode(true);
                     self->selectedItem = 0;
                     self->hangarList->setCurrentTab(0, i != 0);
@@ -598,7 +599,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 return;
             }
 
-            if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch) != 0) {
+            if ((*self->buttons)[(0x5c) >> 2]->OnTouchEnd(touch, coord) != 0) {
                 self->bluePrint->getAutoCompletionPrice();
                 String line, priceStr, fmt, msg;
                 priceStr = Layout::formatCredits(0);
@@ -611,7 +612,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             if (self->currentItemIsHighlighted() != 0) {
                 Array<TouchButton *> *btns = self->buttons;
                 for (unsigned int i = 0; i < btns->size(); i++) {
-                    if (((TouchButton *) (btns->data()[i]))->OnTouchEnd(touch) != 0) {
+                    if (((TouchButton *) (btns->data()[i]))->OnTouchEnd(touch, coord) != 0) {
                         if ((i & 0x7fffffff) < 0xc)
                             return;
                     }
@@ -621,16 +622,16 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             if (((Layout *) (layout))->helpPressed() != 0) {
                 String help;
                 if (self->viewMode == 1) {
-                    ((Layout *) (layout))->initHelpWindow(&help);
+                    ((Layout *) (layout))->initHelpWindow(help);
                 } else {
                     unsigned int t = self->hangarList->getCurrentTab();
                     if (t <= 4) {
-                        ((Layout *) (layout))->initHelpWindow(&help);
+                        ((Layout *) (layout))->initHelpWindow(help);
                     }
                 }
             }
 
-            if ((*self->buttons)[(0x2c) >> 2]->OnTouchEnd(touch) != 0) {
+            if ((*self->buttons)[(0x2c) >> 2]->OnTouchEnd(touch, coord) != 0) {
                 g_hw_optionFlags[0x4e] = 1;
                 (*g_hw_recordHandler)->saveOptions();
                 self->showCreditsBuyWindow();
@@ -678,7 +679,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                 String line, priceStr, fmt, msg, suffix, combined;
                 priceStr = Layout::formatCredits(gStatus->getCredits());
                 Status_replaceHash(&msg, globals, &line, &priceStr);
-                ((GameText *) (*g_hw_notEnoughTextId))->getText();
+                gGameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
                 ((String *) &msg)->addAssign_str(&combined);
                 self->dialog->set(*(String *) &msg, true);
@@ -738,7 +739,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
             void *appData = AppManager_GetApplicationData();
             RecordHandler *rh = *g_hw_recordHandler;
             for (unsigned int i = 0; i != 5; i++) {
-                if ((*self->buttons)[(i * 4 + 0x48) >> 2]->OnTouchEnd(touch) != 0) {
+                if ((*self->buttons)[(i * 4 + 0x48) >> 2]->OnTouchEnd(touch, coord) != 0) {
                     switch (i) {
                         case 0:
                             ((RecordHandler *) (rh))->recordStoreWrite(0);
@@ -852,7 +853,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     ((ListItem *) self->selectedItem)->ship->getPrice();
                     priceStr = Layout::formatCredits(gStatus->getCredits());
                     Status_replaceHash(&msg, globals, &line, &priceStr);
-                    ((GameText *) (*g_hw_sellShipTextId))->getText();
+                    gGameText->getText(*g_hw_sellShipTextId);
                     combined = suffix + suffix;
                     ((String *) &msg)->addAssign_str(&combined);
                     self->dialog->set(*(String *) &msg, true);
@@ -915,7 +916,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
         if (r != 0) {
             Array<TouchButton *> *btns = self->buttons;
             for (unsigned int i = 0; i < 5; i++) {
-                if ((*btns)[(i * 4 + 0x30) >> 2]->OnTouchEnd(touch) != 0) {
+                if ((*btns)[(i * 4 + 0x30) >> 2]->OnTouchEnd(touch, coord) != 0) {
                     switch (i) {
                         case 0: NFC().iap_buy_credits_300_000();
                             break;
@@ -930,7 +931,7 @@ void HangarWindow::OnTouchEnd(int touch, int coord) {
                     }
                 }
             }
-            if ((*btns)[(0x44) >> 2]->OnTouchEnd(touch) != 0) {
+            if ((*btns)[(0x44) >> 2]->OnTouchEnd(touch, coord) != 0) {
                 bool show = true;
                 if (g_hw_optionFlags[0x4a] && g_hw_optionFlags[0x49] &&
                     g_hw_optionFlags[0x4d] && g_hw_optionFlags[0x4c])
@@ -1151,16 +1152,16 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
     HangarWindow *self = this;
     self->holdTime = 0;
     self->repeatTimer = 0;
-    unsigned char handled = (unsigned char) (*g_hw_layout)->OnTouchBegin(touch);
+    unsigned char handled = (unsigned char) (*g_hw_layout)->OnTouchBegin(touch, coord);
 
     if (self->dialogActive != 0) {
         if (self->buyCreditsActive != 0) {
             for (int i = 0xc; i != 0x11; i++)
-                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch);
-            (*self->buttons)[(0x44) >> 2]->OnTouchBegin(touch);
+                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch, coord);
+            (*self->buttons)[(0x44) >> 2]->OnTouchBegin(touch, coord);
         } else if (self->freeCreditsActive != 0) {
             for (int i = 0x12; i != 0x17; i++)
-                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch);
+                (*self->buttons)[(i * 4) >> 2]->OnTouchBegin(touch, coord);
         }
         self->dialog->OnTouchBegin(touch, coord);
         return;
@@ -1235,13 +1236,13 @@ void HangarWindow::OnTouchBegin(int touch, int coord) {
 
     Array<TouchButton *> *tabs = self->tabButtons;
     for (unsigned int i = 0; i < tabs->size(); i++)
-        handled |= (unsigned char) ((TouchButton *) (tabs->data()[i]))->OnTouchBegin(touch);
+        handled |= (unsigned char) ((TouchButton *) (tabs->data()[i]))->OnTouchBegin(touch, coord);
 
     Array<TouchButton *> *buttons = self->buttons;
     for (unsigned int i = 0; i < buttons->size(); i++) {
         TouchButton *btn = buttons->data()[i];
         if (btn != 0)
-            btn->OnTouchBegin(touch);
+            btn->OnTouchBegin(touch, coord);
     }
 
     if (self->autoEquipPending != 0 && self->hangarList->getCurrentTab() == 1) {
@@ -1281,10 +1282,10 @@ void HangarWindow::showCreditsBuyWindow() {
     String a, b, yes, no;
 
     if (this->listModeFlag == 0) {
-        void *body = ((GameText *) (*g_hw_buyTextId))->getText();
+        void *body = gGameText->getText(*g_hw_buyTextId);
         ((ChoiceWindow *) (win))->set(*(String const *) &a, *(String const *) &b);
     } else {
-        void *body = ((GameText *) (*g_hw_buyTextId2))->getText();
+        void *body = gGameText->getText(*g_hw_buyTextId2);
         ((ChoiceWindow *) (win))->set(*(String const *) &a, *(String const *) &b);
 
         int h;
@@ -1374,7 +1375,7 @@ void HangarWindow::setSellMode(bool buy) {
             if (((ListItem *) (item))->isItem() != 0 && ((Item *) (item->field_0x10))->getType() != 4) {
                 void *flags = *g_hw_itemFlags;
                 if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
-                    ((GameText *) (*g_hw_sellTextId1))->getText();
+                    gGameText->getText(*g_hw_sellTextId1);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     (*(uint8_t *) ((char *) (flags) + (0x1e))) = 1;
                     self->dialogActive = 1;
@@ -1385,7 +1386,7 @@ void HangarWindow::setSellMode(bool buy) {
         } else {
             void *flags = *g_hw_itemFlags;
             if ((*(uint8_t *) ((char *) (flags) + (0x1d))) == 0) {
-                ((GameText *) (*g_hw_sellTextId2))->getText();
+                gGameText->getText(*g_hw_sellTextId2);
                 self->dialog->set(g_HangarWindow_emptyDialogText);
                 (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
                 self->dialogActive = 1;
@@ -1503,15 +1504,15 @@ void HangarWindow::setSellMode(bool buy) {
         void *text;
         if (idx == 0xd2 || self->bluePrint->getIndex() == 0xdf) {
             if (((SolarSystem *) ((void *) (long) gStatus->getSystem()))->getRoutes() != 0) {
-                text = ((GameText *) (*g_hw_sellTextId2))->getText();
+                text = gGameText->getText(*g_hw_sellTextId2);
                 flag = true;
             } else {
                 self->routeWarningPending = 1;
-                text = ((GameText *) (*g_hw_routesTextId))->getText();
+                text = gGameText->getText(*g_hw_routesTextId);
                 flag = false;
             }
         } else {
-            text = ((GameText *) (*g_hw_sellTextId2))->getText();
+            text = gGameText->getText(*g_hw_sellTextId2);
             flag = true;
         }
         self->dialog->set(*(String *) text, flag);
@@ -1576,7 +1577,7 @@ void HangarWindow::selectItem(ListItem *item) {
             if (was == 0) {
                 void *flags = *g_hw_itemFlags;
                 if ((*(uint8_t *) ((char *) (flags) + (0x1d))) == 0) {
-                    ((GameText *) (*g_hw_sellMsgTextId1))->getText();
+                    gGameText->getText(*g_hw_sellMsgTextId1);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     (*(uint8_t *) ((char *) (flags) + (0x1d))) = 1;
                     self->dialogActive = 1;
@@ -1589,7 +1590,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 if (((ListItem *) (item))->isItem() != 0 && ((Item *) (li->field_0x10))->getType() != 4) {
                     void *flags = *g_hw_itemFlags;
                     if ((*(uint8_t *) ((char *) (flags) + (0x1e))) == 0) {
-                        ((GameText *) (*g_hw_sellMsgTextId2))->getText();
+                        gGameText->getText(*g_hw_sellMsgTextId2);
                         self->dialog->set(g_HangarWindow_emptyDialogText);
                         (*(uint8_t *) ((char *) (flags) + (0x1e))) = 1;
                         self->dialogActive = 1;
@@ -1632,7 +1633,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 ((ListItem *) (item))->getPrice() - gStatus->getCredits() - gStatus->getShip()->getPrice());
             ((String *) &line)->ctor_copy(&priceStr, false);
             Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
-            ((GameText *) (*g_hw_notEnoughTextId))->getText();
+            gGameText->getText(*g_hw_notEnoughTextId);
             combined = suffix + suffix;
             ((String *) &msg)->addAssign_str(&combined);
             self->dialog->set(*(String *) &msg, true);
@@ -1644,7 +1645,7 @@ void HangarWindow::selectItem(ListItem *item) {
         if (globals->field_0x34 < 1) {
             if (gStatus->getCurrentCampaignMission() == 0x4d &&
                 gStatus->getShip()->getIndex() == 0x25) {
-                ((GameText *) (*g_hw_unsaleableTextId))->getText();
+                gGameText->getText(*g_hw_unsaleableTextId);
                 self->dialog->set(g_HangarWindow_emptyDialogText);
                 self->dialogActive = 1;
                 return;
@@ -1653,16 +1654,16 @@ void HangarWindow::selectItem(ListItem *item) {
             int b = ((Ship *) (li->ship))->getIndex();
             if (a != b) {
                 self->shipSwapPending = 1;
-                ((GameText *) (*g_hw_sellMsgTextId2))->getText();
-                self->dialog->set(*(String *) ((GameText *) (*g_hw_sellMsgTextId2))->getText(), true);
+                gGameText->getText(*g_hw_sellMsgTextId2);
+                self->dialog->set(*(String *) gGameText->getText(*g_hw_sellMsgTextId2), true);
                 self->dialogActive = 1;
                 return;
             }
-            ((GameText *) (*g_hw_buyBaseTextId))->getText();
+            gGameText->getText(*g_hw_buyBaseTextId);
             self->dialog->set(g_HangarWindow_emptyDialogText);
             self->dialogActive = 1;
         } else {
-            ((GameText *) (*g_hw_buyBaseTextId))->getText();
+            gGameText->getText(*g_hw_buyBaseTextId);
             self->dialog->set(g_HangarWindow_emptyDialogText);
             self->dialogActive = 1;
         }
@@ -1682,7 +1683,7 @@ void HangarWindow::selectItem(ListItem *item) {
 
     void *flags0 = *g_hw_itemFlags;
     if ((*(uint8_t *) ((char *) (flags0) + (0x1f))) == 0 && ((ListItem *) (item))->isSlot() != 0) {
-        ((GameText *) (*g_hw_slotMsgTextId))->getText();
+        gGameText->getText(*g_hw_slotMsgTextId);
         self->dialog->set(g_HangarWindow_emptyDialogText);
         (*(uint8_t *) ((char *) (flags0) + (0x1f))) = 1;
         self->dialogActive = 1;
@@ -1695,7 +1696,7 @@ void HangarWindow::selectItem(ListItem *item) {
     Item *curItem = cur->item;
     if (curItem != nullptr) {
         if (curItem->isUnsaleable() != 0) {
-            ((GameText *) (*g_hw_unsaleableTextId))->getText();
+            gGameText->getText(*g_hw_unsaleableTextId);
             self->dialog->set(g_HangarWindow_emptyDialogText);
             self->dialogActive = 1;
             return;
@@ -1713,7 +1714,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 int maxPax = gStatus->getShip()->getMaxPassengers();
                 int used = ((Item *) (curItem))->getAttribute(0);
                 if (maxPax - used < globals->field_0x34) {
-                    ((GameText *) (*g_hw_unsaleableTextId))->getText();
+                    gGameText->getText(*g_hw_unsaleableTextId);
                     self->dialog->set(g_HangarWindow_emptyDialogText);
                     self->dialogActive = 1;
                     return;
@@ -1789,7 +1790,7 @@ void HangarWindow::transaction(bool buy) {
 
     if (tab < 2) {
         if (((Item *) (cur))->isUnsaleable() != 0) {
-            this->dialog->set(*(String *) ((GameText *) (*g_hw_unsaleableTextId))->getText());
+            this->dialog->set(*(String *) gGameText->getText(*g_hw_unsaleableTextId));
             this->buyMode = 0;
             this->dialogActive = 1;
             return;
@@ -1820,7 +1821,7 @@ void HangarWindow::transaction(bool buy) {
                 priceStr = Layout::formatCredits(((Item *) (cur))->getSinglePrice());
                 ((String *) &line)->ctor_copy(&priceStr, false);
                 Status_replaceHash(&msg, globals, &line, &priceStr, &fmt);
-                ((GameText *) (*g_hw_notEnoughTextId))->getText();
+                gGameText->getText(*g_hw_notEnoughTextId);
                 combined = suffix + suffix;
                 ((String *) &msg)->addAssign_str(&combined);
                 this->dialog->set(*(String *) &msg, true);
@@ -1921,16 +1922,16 @@ extern int *g_hw_screenWidth;
 
 unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
     Layout *layout = *g_hw_layout;
-    ((Layout *) (layout))->OnTouchMove(touch);
+    ((Layout *) (layout))->OnTouchMove(touch, coord);
 
     if (this->dialogActive != 0) {
         if (this->buyCreditsActive != 0) {
             for (int i = 0xc; i != 0x11; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch);
-            (*this->buttons)[(0x44) >> 2]->OnTouchMove(touch);
+                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
+            (*this->buttons)[(0x44) >> 2]->OnTouchMove(touch, coord);
         } else if (this->freeCreditsActive != 0) {
             for (int i = 0x12; i != 0x17; i++)
-                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch);
+                (*this->buttons)[(i * 4) >> 2]->OnTouchMove(touch, coord);
         }
         this->dialog->OnTouchMove(touch, coord);
         return 0;
@@ -1965,7 +1966,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
             this->repeatTimer = 0;
             Array<TouchButton *> *buttons = this->buttons;
             for (unsigned int i = 0; i < buttons->size(); i++)
-                buttons->data()[i]->OnTouchMove(touch);
+                buttons->data()[i]->OnTouchMove(touch, coord);
             this->setSellMode(true);
             this->sellConfirmPending = 0;
             this->selectedItem = 0;
@@ -1976,7 +1977,7 @@ unsigned int HangarWindow::OnTouchMove(int touch, int coord) {
 
     Array<TouchButton *> *tabs = this->tabButtons;
     for (unsigned int i = 0; i < tabs->size(); i++)
-        ((TouchButton *) (tabs->data()[i]))->OnTouchMove(touch);
+        ((TouchButton *) (tabs->data()[i]))->OnTouchMove(touch, coord);
     return 0;
 }
 
@@ -2049,7 +2050,7 @@ void HangarWindow::showFreeCreditsWindow() {
 
     void *win = this->dialog;
     String title, title2, yes, no;
-    void *body = ((GameText *) (*g_hw_freeCreditsTextId))->getText();
+    void *body = gGameText->getText(*g_hw_freeCreditsTextId);
     ((ChoiceWindow *) (win))->set(*(String const *) &title, *(String const *) &title2);
 
     int rowH = (*this->buttons)[(0x48) >> 2]->getHeight();
@@ -2057,7 +2058,7 @@ void HangarWindow::showFreeCreditsWindow() {
 
     int maxW = 0;
     for (int i = 5; i != 0; i--) {
-        AbyssEngine::String *t = ((GameText *) (*g_hw_freeCreditsTextId))->getText();
+        AbyssEngine::String *t = gGameText->getText(*g_hw_freeCreditsTextId);
         int w = gCanvas->GetTextWidth(0, *t);
         if (maxW < w)
             maxW = w;
@@ -2126,21 +2127,21 @@ void HangarWindow::initialize() {
     Layout *layout = *g_hw_layout;
 
     void *b0 = ::operator new(200);
-    TouchButton_ctor_text(b0, ((GameText *) (*g_hw_helpTextId))->getText(), 3,
-                          scrW - Layout_getHelpButtonOffset(), 0, 0x12);
+    TouchButton_ctor_text(b0, gGameText->getText(*g_hw_helpTextId), 3,
+                          scrW - layout->getHelpButtonOffset(), 0, 0x12);
     (*self->tabButtons)[(8) >> 2] = (TouchButton *) (b0);
 
     void *b1 = ::operator new(200);
     int w0 = ((TouchButton *) (b0))->getWidth();
-    TouchButton_ctor_text(b1, ((GameText *) (*g_hw_helpTextId))->getText(), 3,
-                          (scrW - Layout_getHelpButtonOffset() - w0) + layout->field_0x38, 0, 0x12);
+    TouchButton_ctor_text(b1, gGameText->getText(*g_hw_helpTextId), 3,
+                          (scrW - layout->getHelpButtonOffset() - w0) + layout->field_0x38, 0, 0x12);
     (*self->tabButtons)[(4) >> 2] = (TouchButton *) (b1);
 
     void *b2 = ::operator new(200);
     int w0b = ((TouchButton *) (b0))->getWidth();
     int w1b = ((TouchButton *) (b1))->getWidth();
-    TouchButton_ctor_text(b2, ((GameText *) (*g_hw_helpTextId))->getText(), 3,
-                          (scrW - Layout_getHelpButtonOffset() - w0b - w1b) + layout->field_0x38 * 2,
+    TouchButton_ctor_text(b2, gGameText->getText(*g_hw_helpTextId), 3,
+                          (scrW - layout->getHelpButtonOffset() - w0b - w1b) + layout->field_0x38 * 2,
                           0, 0x12);
     (*self->tabButtons)[(0) >> 2] = (TouchButton *) (b2);
     self->listModeFlag = *g_hw_listModeFlag;
@@ -2182,10 +2183,10 @@ void HangarWindow::initialize() {
         gStatus->getStation()->getIndex();
 
     void *e1 = ::operator new(200);
-    TouchButton_ctor_text(e1, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
+    TouchButton_ctor_text(e1, gGameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
     (*self->buttons)[(4) >> 2] = (TouchButton *) (e1);
     void *e2 = ::operator new(200);
-    TouchButton_ctor_text(e2, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
+    TouchButton_ctor_text(e2, gGameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
     (*self->buttons)[(8) >> 2] = (TouchButton *) (e2);
 
     img = 0xffffffff;
@@ -2201,13 +2202,13 @@ void HangarWindow::initialize() {
     (*self->buttons)[(0x10) >> 2] = (TouchButton *) (e4);
 
     void *e5 = ::operator new(200);
-    TouchButton_ctor_text2(e5, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0, self->buttonHeight, 0x11);
+    TouchButton_ctor_text2(e5, gGameText->getText(*g_hw_helpTextId), 7, 0, 0, self->buttonHeight, 0x11);
     (*self->buttons)[(0x14) >> 2] = (TouchButton *) (e5);
     void *e6 = ::operator new(200);
-    TouchButton_ctor_text2(e6, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0, self->buttonHeight, 0x11);
+    TouchButton_ctor_text2(e6, gGameText->getText(*g_hw_helpTextId), 7, 0, 0, self->buttonHeight, 0x11);
     (*self->buttons)[(0x18) >> 2] = (TouchButton *) (e6);
     void *e7 = ::operator new(200);
-    TouchButton_ctor_text(e7, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0, 0x11);
+    TouchButton_ctor_text(e7, gGameText->getText(*g_hw_helpTextId), 7, 0, 0, 0x11);
     (*self->buttons)[(0x1c) >> 2] = (TouchButton *) (e7);
 
     {
@@ -2224,7 +2225,7 @@ void HangarWindow::initialize() {
     }
     {
         void *e10 = ::operator new(200);
-        TouchButton_ctor_img((void *) e10, ((GameText *) (*g_hw_helpTextId))->getText(), 7, 0, 0,
+        TouchButton_ctor_img((void *) e10, gGameText->getText(*g_hw_helpTextId), 7, 0, 0,
                              layout->field_0x50, 0x11, 4);
         (*self->buttons)[(0x28) >> 2] = (TouchButton *) (e10);
     }
@@ -2233,7 +2234,7 @@ void HangarWindow::initialize() {
         void *e11 = ::operator new(200);
         credits = Layout::formatCredits(gStatus->getCredits());
         TouchButton_ctor_img((void *) e11, &credits, 0xb, *g_hw_screenWidth, *g_hw_screenHeight,
-                             Layout_getFooterTransitionWidth(), 0x22, 4);
+                             layout->getFooterTransitionWidth(), 0x22, 4);
         (*self->buttons)[(0x2c) >> 2] = (TouchButton *) (e11);
     }
 
@@ -2410,7 +2411,7 @@ void HangarWindow::initialize() {
     if (gStatus->getCurrentCampaignMission() > 0xd) {
         uint8_t *introFlag = g_hw_introHintFlag;
         if (introFlag[0x4e] == 0) {
-            ((GameText *) (*g_hw_helpTextId))->getText();
+            gGameText->getText(*g_hw_helpTextId);
             self->dialog->set(g_HangarWindow_emptyDialogText);
             introFlag[0x4e] = 1;
             (*g_hw_recordHandler)->saveOptions();

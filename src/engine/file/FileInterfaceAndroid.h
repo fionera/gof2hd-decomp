@@ -1,6 +1,7 @@
 #ifndef GOF2_FILEINTERFACEANDROID_H
 #define GOF2_FILEINTERFACEANDROID_H
 #include <cstdio>
+#include <zip.h>
 
 #include "engine/core/Array.h"
 #include "../core/AEString.h"

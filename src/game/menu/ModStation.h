@@ -7,6 +7,15 @@
 #include "game/world/NewsTicker.h"
 #include "game/world/StarMap.h"
 
+class CutScene;
+class DialogueWindow;
+class NewsTicker;
+class StarMap;
+namespace AbyssEngine { 
+    class EaseInOutMatrix;
+ }
+
+
 class ModStation {
 public:
     unsigned fadeColor;

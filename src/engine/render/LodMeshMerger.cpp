@@ -222,7 +222,7 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
         int o = 0;
         for (uint32_t i = 0; i < vcount; i++) {
             *(Vector *) ((char *) out->positions + o) =
-                    AEMath::MatrixTransformVector(m, *(Vector *) ((char *) src->positions + o));
+                    AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) ((char *) src->positions + o));
             o += 0xc;
             vcount = src->vertexCount;
         }
@@ -233,8 +233,8 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
         out->normals = new char[vcount * 0xc];
         int o = 0;
         for (uint32_t i = 0; i < vcount; i++) {
-            Vector rot = AEMath::MatrixRotateVector(m, *(Vector *) ((char *) src->normals + o));
-            *(Vector *) ((char *) out->normals + o) = AEMath::VectorNormalize(rot);
+            Vector rot = AbyssEngine::AEMath::MatrixRotateVector(m, *(Vector *) ((char *) src->normals + o));
+            *(Vector *) ((char *) out->normals + o) = AbyssEngine::AEMath::VectorNormalize(rot);
             o += 0xc;
             vcount = src->vertexCount;
         }
@@ -242,8 +242,8 @@ void *LodMeshMerger::transformMesh(Mesh *src, const Matrix &m) {
 
     float r = src->boundsRadius;
     Vector ext = {r, r, r};
-    Vector tExt = AEMath::MatrixTransformVector(m, ext);
-    Vector center = AEMath::MatrixTransformVector(m, *(Vector *) &src->boundsCenterX);
+    Vector tExt = AbyssEngine::AEMath::MatrixTransformVector(m, ext);
+    Vector center = AbyssEngine::AEMath::MatrixTransformVector(m, *(Vector *) &src->boundsCenterX);
 
     float ax = tExt.x < 0.0f ? -tExt.x : tExt.x;
     float ay = tExt.y < 0.0f ? -tExt.y : tExt.y;

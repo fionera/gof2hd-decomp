@@ -1,4 +1,5 @@
 #include "engine/render/Sparks.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
 namespace AbyssEngine {

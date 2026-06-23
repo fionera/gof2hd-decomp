@@ -5,6 +5,11 @@
 #include "fieldaccess.h"
 #include "Waypoint.h"
 
+#include "engine/math/Vector.h"
+class KIPlayer;
+class Waypoint;
+
+
 class Route {
 public:
     int32_t currentIndex;

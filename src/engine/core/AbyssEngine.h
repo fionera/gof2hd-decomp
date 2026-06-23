@@ -7,6 +7,15 @@
 #include "engine/render/Engine.h"
 #include "engine/render/Material.h"
 
+#include "engine/math/AEMath.h"
+
+
+namespace AbyssEngine {
+    class Engine;
+    class Material;
+    class PaintCanvas;
+}
+
 using ::AbyssEngine::Engine;
 using ::AbyssEngine::Material;
 using ::AbyssEngine::PaintCanvas;

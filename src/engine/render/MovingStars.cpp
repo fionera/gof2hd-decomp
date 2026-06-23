@@ -191,7 +191,7 @@ void MovingStars::update(int param1, Matrix m, bool flag, float param19) {
             spawn.y = VectorSignedToFloat(r1 - 9000, 0);
             spawn.z = MovingStars_kZSpawn;
             *(Vector *) localMatrix =
-                    AEMath::MatrixTransformVector(*(const Matrix *) localMatrix, spawn);
+                    AbyssEngine::AEMath::MatrixTransformVector(*(const Matrix *) localMatrix, spawn);
             spawn = *(const Vector *) localMatrix;
             MovingStars_TransformSetLocal(canvas, (void *) this->transformHandles[i]);
             MovingStars_TransformGetLocal(canvas, 0);

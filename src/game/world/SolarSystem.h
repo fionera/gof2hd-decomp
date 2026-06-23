@@ -5,6 +5,9 @@
 #include "fieldaccess.h"
 #include "Station.h"
 
+class Station;
+
+
 class SolarSystem {
 public:
     int starR;

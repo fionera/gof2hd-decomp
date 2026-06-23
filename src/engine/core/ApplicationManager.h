@@ -10,6 +10,20 @@
 #include "engine/render/PaintCanvas.h"
 #include "game/core/CheatHandler.h"
 
+namespace AbyssEngine { 
+    class AESoundRessource;
+    class CheatHandler;
+    class ConfigReader;
+    class IApplicationModule;
+    class KeyCode;
+    struct AESoundInfo;
+ }
+
+
+namespace AbyssEngine {
+    class PaintCanvas;
+    class Engine;
+}
 using ::AbyssEngine::PaintCanvas;
 using ::AbyssEngine::Engine;
 

@@ -11,17 +11,17 @@ namespace AbyssEngine {
         Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
 
         BSphere &BSphere::operator=(const BSphere &other) {
-            this->cx = other.cx;
-            this->cy = other.cy;
-            this->cz = other.cz;
+            this->center.x = other.center.x;
+            this->center.y = other.center.y;
+            this->center.z = other.center.z;
             this->radius = other.radius;
-            this->maxRadius = other.maxRadius;
+            this->radius2 = other.radius2;
             return *this;
         }
 
         void BSphere::Merge(const BSphere &other) {
-            if (this->maxRadius < other.maxRadius)
-                this->maxRadius = other.maxRadius;
+            if (this->radius2 < other.radius2)
+                this->radius2 = other.radius2;
 
             if (other.radius == 0.0f)
                 return;
@@ -31,9 +31,9 @@ namespace AbyssEngine {
                 return;
             }
 
-            float dx = other.cx - this->cx;
-            float dy = other.cy - this->cy;
-            float dz = other.cz - this->cz;
+            float dx = other.center.x - this->center.x;
+            float dy = other.center.y - this->center.y;
+            float dz = other.center.z - this->center.z;
             float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
 
             float r1 = this->radius;
@@ -50,17 +50,17 @@ namespace AbyssEngine {
                 return;
 
             if (dist - r2 < -r1) {
-                this->cx = other.cx;
-                this->cy = other.cy;
-                this->cz = other.cz;
+                this->center.x = other.center.x;
+                this->center.y = other.center.y;
+                this->center.z = other.center.z;
                 this->radius = r2;
                 return;
             }
 
             float t = (((dist + r2) - r1) * 0.5f) / dist;
-            this->cx = this->cx + dx * t;
-            this->cy = this->cy + dy * t;
-            this->cz = this->cz + dz * t;
+            this->center.x = this->center.x + dx * t;
+            this->center.y = this->center.y + dy * t;
+            this->center.z = this->center.z + dz * t;
             this->radius = (dist + r1 + r2) * 0.5f;
         }
 
@@ -82,11 +82,11 @@ namespace AbyssEngine {
             if (ay > az) az = ay;
 
             BSphere world;
-            world.cx = center.x;
-            world.cy = center.y;
-            world.cz = center.z;
+            world.center.x = center.x;
+            world.center.y = center.y;
+            world.center.z = center.z;
             world.radius = az;
-            world.maxRadius = 1.0f;
+            world.radius2 = 1.0f;
             Merge(world);
         }
     }

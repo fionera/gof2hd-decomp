@@ -3,20 +3,14 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
+#include "game/core/CheatCode.h"
 
 namespace AbyssEngine {
-    struct CheatCode {
-        Array<uint16_t> *keys;
-        int32_t value;
-        uint32_t pos;
+    class KeyCode;
+ }
 
-        CheatCode();
 
-        ~CheatCode();
-
-        bool Update(uint16_t key);
-    };
-
+namespace AbyssEngine {
     typedef void (*CheatFunc)(int, void *);
 
     class CheatHandler {

@@ -3,6 +3,10 @@
 #include "engine/math/Vector.h"
 #include "game/core/String.h"
 
+#include "engine/core/AEString.h"
+#include "engine/math/AEMath.h"
+
+
 class TouchButton {
 public:
     int field_0x0;

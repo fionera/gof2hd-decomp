@@ -10,6 +10,16 @@
 #include "game/ui/Layout.h"
 #include "game/world/Station.h"
 
+class AEGeometry;
+class Agent;
+class BoundingVolume;
+class Station;
+namespace AbyssEngine { 
+    class ApplicationManager;
+    class Engine;
+ }
+
+
 
 class Globals {
 public:

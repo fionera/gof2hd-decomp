@@ -6,6 +6,11 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+class AEGeometry;
+class ParticleSystemManager;
+
+
 class PlayerGasCloud : public KIPlayer {
 public:
     Vector center;

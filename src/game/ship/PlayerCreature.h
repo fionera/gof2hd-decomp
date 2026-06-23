@@ -7,6 +7,15 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Matrix.h"
+
+
+class Player;
+
+
+class AEGeometry;
+
+
 class PlayerCreature : public KIPlayer {
 public:
     AEGeometry *renderGeometry;

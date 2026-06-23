@@ -3,6 +3,9 @@
 #include "AELowLevelFile.h"
 #include "FileInterface.h"
 
+class FileInterface;
+
+
 // A plain file opened through the platform FileInterface; every operation is
 // forwarded straight to the underlying interface.
 class AENormalFile : public AELowLevelFile {

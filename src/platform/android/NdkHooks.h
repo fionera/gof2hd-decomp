@@ -1,7 +1,7 @@
 #ifndef GOF2_NDKHOOKS_H
 #define GOF2_NDKHOOKS_H
 
-#include <../jni.h>
+#include <jni.h>
 
 extern "C" {
 int setBaughtCredits(int amount);

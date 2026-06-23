@@ -12,6 +12,14 @@
 #include "game/world/StarMap.h"
 #include "game/world/Wanted.h"
 
+class ImagePart;
+class Mission;
+class ScrollTouchWindow;
+class StarMap;
+class TouchButton;
+class Wanted;
+
+
 class WantedWindow {
 public:
     uint32_t lastButtonHit;

@@ -6,6 +6,11 @@
 #include "game/ship/PlayerStaticFar.h"
 #include "game/world/Station.h"
 
+#include "engine/math/Vector.h"
+class AEGeometry;
+class Station;
+
+
 class PlayerStation : public PlayerStaticFar {
 public:
 

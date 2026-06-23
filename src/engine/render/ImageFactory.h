@@ -6,6 +6,10 @@
 
 #include "engine/render/Sprite.h"
 
+class ImagePart;
+class Sprite;
+
+
 class ImageFactory {
 public:
     Sprite *sprite;

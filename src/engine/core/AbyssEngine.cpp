@@ -1,5 +1,4 @@
 #include "engine/core/AbyssEngine.h"
-#include "externs.h"
 #include "engine/file/AEFile.h"
 #include "engine/core/GameText.h"
 #include "engine/file/FileInterfaceAndroid.h"
@@ -9,13 +8,39 @@
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
 #include "engine/render/PaintCanvas.h"
+#include "engine/render/FBOContainer.h"
+#include "engine/math/Quaternion.h"
 #include <GLES2/gl2.h>
 #include <cstdlib>
+#include <cmath>
+
+namespace AbyssEngine {
+    class ImageFont;
+    class SpriteSystem;
+    class Curve;
+    class Image;
+    class AELoadedTexture;
+
+    Engine *AE_getInitGLThis();
+    int AE_getInitGLWidth();
+    int AE_getInitGLHeight();
+    void AE_AEMath_matMul(AEMath::Matrix *out, const AEMath::Matrix *rhs);
+    void AE_SpriteSystem_pushMatrix(unsigned int m0, unsigned int m1, unsigned int m2, unsigned int m3,
+                                    unsigned int m4, unsigned int m5, unsigned int m6, unsigned int m7,
+                                    unsigned int m8, unsigned int m9, unsigned int m10, unsigned int m11,
+                                    unsigned int m12, unsigned int m13, unsigned int m14, int dst);
+}
 
 extern "C" {
 void *__aeabi_memcpy(void *dst, const void *src, size_t n);
+void *__aeabi_memcpy4(void *dst, const void *src, size_t n);
+void *__aeabi_memclr(void *dst, size_t n);
+void *__aeabi_memclr4(void *dst, size_t n);
 
 int __aeabi_uidiv(int num, int den);
+long long __aeabi_uldivmod(unsigned int numLo, unsigned int numHi,
+                           unsigned int denLo, unsigned int denHi);
+long long __aeabi_f2lz(float value);
 }
 
 namespace {
@@ -35,6 +60,22 @@ namespace {
         ((T *) a->data)[a->count] = item;
         a->count = a->capacity;
     }
+
+    char *g_Camera_frustumEnabledFlag;
+    char *g_Engine_fboEnabledFlag;
+    char *g_Engine_shaderModeFlag;
+    char *g_GameText_arabicEnabledFlag;
+    char *g_MeshIntersect_flipVFlag;
+    char *g_Mesh_extraArraysFlag;
+    char *g_Mesh_keepCpuCopyFlag;
+    char *g_Mesh_shaderPathFlag;
+    char *g_Mesh_tangentDelFlag;
+    char *g_Mesh_tangentEnabledFlag;
+    int *g_Mesh_vboByteCounter;
+    char *g_Mesh_vboEnabledFlag;
+    char *g_SpriteSystem_tangentFlag;
+    char *g_SpriteSystem_uvFlipFlag;
+    void *g_MeshRelease_freeFn;
 
     template<class T>
     inline void ArrayAddCachedRaw(T item, void *arrayHeader) {
@@ -202,7 +243,7 @@ namespace AbyssEngine {
         ((PaintCanvas *) *(void **) self->paintCanvas)->Initialize(false);
 
         self->maxTextureSize = 0;
-        glGetIntegerv(0xd33, &self->maxTextureSize);
+        glGetIntegerv(0xd33, reinterpret_cast<GLint *>(&self->maxTextureSize));
 
         if (*shaderFlag != 0 && *g_Engine_fboEnabledFlag != 0) {
             FBOContainer *fbo = new FBOContainer(self, String(""));
@@ -1103,7 +1144,6 @@ namespace AbyssEngine {
             TransformRelease(engine, &(*slot)->animation);
 
             typedef void (*FreeFn)(Engine *, Mesh **);
-            extern void *g_MeshRelease_freeFn;
             ((FreeFn) g_MeshRelease_freeFn)(engine, slot);
         }
     }

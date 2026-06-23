@@ -2,28 +2,36 @@
 #define GOF2_ENGINE_H
 #include "engine/core/Array.h"
 #include "../core/AEString.h"
-#include "ShaderBaseStruct.h"
-#include "engine/core/AbyssEngine.h"
-#include "engine/core/ApplicationManager.h"
 #include "engine/math/Vector.h"
 #include "engine/math/Matrix.h"
 
+#include "engine/math/AEMath.h"
+
+
+#include "engine/render/DeviceInfo.h"
+#include "engine/render/LightColor.h"
+namespace AbyssEngine { 
+    class FBOContainer;
+    class Mesh;
+    class ShaderBaseStruct;
+ }
+
+
+namespace AbyssEngine {
+    class Engine;
+    class ApplicationManager;
+    enum LandscapeMode : int;
+}
+
 using ::AbyssEngine::ApplicationManager;
+
+typedef void DestroyCallback(AbyssEngine::Engine *);
+
+typedef void InitializeCallback(AbyssEngine::Engine *);
 
 void glError();
 
-struct DeviceInfo {
-    uint32_t width;
-    uint32_t height;
-    uint8_t isPad;
-};
 
-struct LightColor {
-    float r;
-    float g;
-    float b;
-    float a;
-};
 
 namespace AbyssEngine {
     class Engine {
@@ -116,12 +124,26 @@ namespace AbyssEngine {
             };
         };
 
-        float flLightDiffuseR, flLightDiffuseG, flLightDiffuseB;
-        uint8_t _pad0x234[20];
-        float flLightSpecularR, flLightSpecularG, flLightSpecularB;
-        uint8_t _pad0x254[16];
-        float flLightDiffuseA;
-        uint8_t _pad0x268[32];
+        union {
+            LightColor lightDiffuse;
+
+            struct {
+                float flLightDiffuseR, flLightDiffuseG, flLightDiffuseB, flLightDiffuseA;
+            };
+        };
+        uint8_t _pad0x238[16];
+
+        union {
+            LightColor lightSpecular;
+
+            struct {
+                float flLightSpecularR, flLightSpecularG, flLightSpecularB, flLightSpecularA;
+            };
+        };
+        uint8_t _pad0x258[16];
+
+        LightColor lightAmbient;
+        uint8_t _pad0x278[16];
 
         union {
             float sceneAmbient[4];
@@ -536,10 +558,6 @@ namespace AbyssEngine {
         static bool EnablePostEffect;
     };
 }
-
-typedef void DestroyCallback(AbyssEngine::Engine *);
-
-typedef void InitializeCallback(AbyssEngine::Engine *);
 
 extern AbyssEngine::Engine *gEngine;
 

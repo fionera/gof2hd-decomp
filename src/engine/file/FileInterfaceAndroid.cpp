@@ -4,15 +4,9 @@
 #include <cstdio>
 #include <new>
 
-extern "C" unsigned int zip_fread(void *zf, void *buf, unsigned int n);
-
 extern "C" unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 
 extern "C" void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
-
-extern "C" zip_file *zip_fopen(void *za, const char *name, int flags);
-
-extern "C" int zip_fclose(void *zf);
 
 static inline const unsigned short *GetAEWChar(const String &s) {
     return reinterpret_cast<const unsigned short *>(s.text());
@@ -114,7 +108,7 @@ void FileInterfaceAndroid::Close() {
         this->file = 0;
     }
     if (this->zipFile != 0) {
-        zip_fclose(this->zipFile);
+        zip_fclose((zip_file *) this->zipFile);
         this->zipFile = 0;
     }
     void *m = this->jniStream;
@@ -168,7 +162,7 @@ extern void *gReadMidArg __attribute__((visibility("hidden")));
 
 uint32_t FileInterfaceAndroid::Read(uint32_t n, void *buf) {
     if (this->zipFile != 0)
-        return zip_fread(this->zipFile, buf, n) == n;
+        return zip_fread((zip_file *) this->zipFile, buf, n) == n;
     if (this->file != 0)
         return fread(buf, 1, n, (FILE *) this->file) == n;
     if (this->jniStream == 0)
@@ -207,7 +201,7 @@ uint32_t FileInterfaceAndroid::Seek(uint32_t n) {
         void *tmp = malloc(n);
         if (tmp == 0)
             return false;
-        unsigned int got = zip_fread(zf, tmp, n);
+        unsigned int got = zip_fread((zip_file *) zf, tmp, n);
         free(tmp);
         delta = got - n;
     } else {
@@ -285,15 +279,15 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     String b(gZipPrefixB);
     b.addAssign_str(&name);
 
-    void *z1 = zip_fopen(*gZipMain, a.GetAEChar(), 0);
-    void *z2 = zip_fopen(*gZipPatch, b.GetAEChar(), 0);
+    void *z1 = zip_fopen((struct zip *) *gZipMain, a.GetAEChar(), 0);
+    void *z2 = zip_fopen((struct zip *) *gZipPatch, b.GetAEChar(), 0);
 
     bool exists;
     if (z1 != 0) {
-        zip_fclose(z1);
+        zip_fclose((zip_file *) z1);
         exists = true;
     } else if (z2 != 0) {
-        zip_fclose(z2);
+        zip_fclose((zip_file *) z2);
         exists = true;
     } else {
         String dir((const char *) this->appRootDir);
@@ -335,8 +329,8 @@ void *FileInterfaceAndroid::OpenRead(String name, int p2, bool p3, int p4, int p
 
     fprintf((FILE *) ((char *) *(void **) gStderrBase + 0xa8), gOpenReadFmt, b.GetAEChar(), p3, p4, p5, p6, p2);
 
-    zip_file *z1 = zip_fopen(*gZipMainR, a.GetAEChar(), 0);
-    zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen(*gZipPatchR, b.GetAEChar(), 0) : 0;
+    zip_file *z1 = zip_fopen((struct zip *) *gZipMainR, a.GetAEChar(), 0);
+    zip_file *z2 = (*gZipPatchR != 0) ? zip_fopen((struct zip *) *gZipPatchR, b.GetAEChar(), 0) : 0;
 
     FileInterfaceAndroid * result = 0;
     if (z1 != 0) {

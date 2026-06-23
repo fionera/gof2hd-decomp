@@ -623,7 +623,7 @@ void StatusWindow::draw() {
                                                      layout->field_0x4c * -2, this->boxWidth,
                             layout->field_0x4c * 2 + lineH * lines, lbl, 0);
 
-            static_cast<Globals *>(*g_swd_globals)->drawLines(reinterpret_cast<unsigned>(font), this->detailLines,
+            static_cast<Globals *>(*g_swd_globals)->drawLines((unsigned) (uintptr_t) font, this->detailLines,
                                                               layout->field_0x4c + layout->buttonInsetX,
                                                               (char) screenH);
         }

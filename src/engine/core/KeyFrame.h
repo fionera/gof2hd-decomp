@@ -4,6 +4,9 @@
 #include "engine/core/Array.h"
 #include "engine/math/Vector.h"
 
+#include "engine/math/AEMath.h"
+
+
 namespace AbyssEngine {
     class KeyFrame {
     public:

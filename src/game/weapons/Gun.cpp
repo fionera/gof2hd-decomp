@@ -3,6 +3,10 @@
 #include "game/mission/Item.h"
 #include "engine/render/Sparks.h"
 #include "engine/render/AEGeometry.h"
+#include "engine/core/Array.h"
+#include "engine/math/Vector.h"
+
+typedef Array<Vector> VecArray;
 
 
 extern "C" void Gun_VecArray_ctor(void *a);

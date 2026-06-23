@@ -6,6 +6,11 @@
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/AEGeometry.h"
 
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
+class AEGeometry;
+
+
 using AbyssEngine::Matrix;
 using AbyssEngine::Vector;
 

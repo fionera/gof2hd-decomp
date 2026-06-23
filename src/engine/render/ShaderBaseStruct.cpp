@@ -1,4 +1,5 @@
 #include "engine/render/ShaderBaseStruct.h"
+#include "engine/core/AbyssEngine.h"
 #include "game/core/String.h"
 #include "engine/file/AEFile.h"
 #include <GLES2/gl2.h>
@@ -82,7 +83,7 @@ namespace AbyssEngine {
                         int logLength = 0;
                         glGetProgramiv(program, 0x8b84, &logLength);
                         if (logLength >= 2) {
-                            void *log = malloc(logLength);
+                            char *log = (char *) malloc(logLength);
                             glGetProgramInfoLog(program, logLength, 0, log);
                             free(log);
                         }
@@ -109,7 +110,7 @@ namespace AbyssEngine {
                 int logLength = 0;
                 glGetShaderiv(shader, 0x8b84, &logLength);
                 if (logLength >= 2) {
-                    void *log = malloc(logLength);
+                    char *log = (char *) malloc(logLength);
                     glGetShaderInfoLog(shader, logLength, 0, log);
                     free(log);
                 }

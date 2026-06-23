@@ -2,6 +2,12 @@
 #define GOF2_PLAYERJUNK_H
 #include "game/ship/KIPlayer.h"
 
+class Player;
+
+
+class AEGeometry;
+
+
 class PlayerJunk : public KIPlayer {
 public:
     PlayerJunk(int type, Player *player, AEGeometry *geometry, float x, float y, float z);

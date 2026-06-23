@@ -9,6 +9,14 @@
 #include "engine/render/ImagePart.h"
 #include "game/world/StarMap.h"
 
+class ChoiceWindow;
+class ImagePart;
+class ScrollTouchWindow;
+class StarMap;
+class TouchButton;
+class WantedWindow;
+
+
 class MissionsWindow {
 public:
     ScrollTouchWindow *m_pCampaignWindow;

@@ -6,6 +6,9 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
+#include "engine/math/AEMath.h"
+
+
 namespace AbyssEngine {
     class Mesh;
 
@@ -35,6 +38,9 @@ namespace AbyssEngine {
     };
 }
 
+namespace AbyssEngine {
+    class Material;
+}
 using ::AbyssEngine::Material;
 
 extern "C" float Material_defaultVectorX;

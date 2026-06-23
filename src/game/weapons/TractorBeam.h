@@ -5,6 +5,15 @@
 #include "fieldaccess.h"
 #include "game/ship/KIPlayer.h"
 
+class Radar;
+
+
+class AEGeometry;
+class Hud;
+class KIPlayer;
+class Level;
+
+
 class TractorBeam {
 public:
     float dirX;

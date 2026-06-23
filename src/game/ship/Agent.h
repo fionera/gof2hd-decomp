@@ -5,11 +5,12 @@
 #include "fieldaccess.h"
 
 #include "game/core/String.h"
-#include "game/mission/Mission.h"
 
-struct Triple {
-    int a, b, c;
-};
+
+#include "game/ship/Triple.h"
+class Mission;
+
+
 
 class Agent {
 public:

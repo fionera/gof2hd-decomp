@@ -4,6 +4,9 @@
 #include "Vector.h"
 #include "engine/math/BoundingVolume.h"
 
+#include "engine/math/AEMath.h"
+
+
 class BoundingSphere : public BoundingVolume {
 public:
     float radius;

@@ -4,6 +4,9 @@
 #include "AEString.h"
 #include "fieldaccess.h"
 
+class Globals;
+namespace AbyssEngine { class Engine; }
+
 class GameData {
 public:
     Globals *globals;

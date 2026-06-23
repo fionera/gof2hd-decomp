@@ -8,23 +8,8 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/mission/Status.h"
 #include "engine/render/PaintCanvas.h"
-
-struct Radar {
-    void *level;
-    void *field_0x4;
-    void *field_0x8;
-    void *lockedAsteroid;
-    int field_0x10;
-    int field_0x14;
-    int field_0x18;
-    void *field_0x1c;
-};
-
-struct Player {
-    int getHitpoints();
-
-    unsigned char isActive();
-};
+#include "game/weapons/Radar.h"
+#include "game/ship/Player.h"
 
 extern PaintCanvas *gCanvasRoot;
 extern FModSound *gPullSound;

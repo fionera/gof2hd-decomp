@@ -10,6 +10,14 @@
 
 #include "game/ship/PlayerStatic.h"
 
+#include "engine/math/Vector.h"
+
+class Player;
+
+class AEGeometry;
+class BoundingVolume;
+
+
 class PlayerStaticFar : public PlayerStatic {
 public:
 

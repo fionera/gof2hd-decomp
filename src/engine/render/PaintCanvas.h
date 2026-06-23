@@ -1,86 +1,41 @@
 #ifndef GOF2_PAINTCANVAS_H
 #define GOF2_PAINTCANVAS_H
 #include "engine/core/Array.h"
+#include "engine/render/PickedTextureRegion.h"
+#include "engine/render/RenderEnums.h"
 #include "../core/AEString.h"
 #include "engine/render/Engine.h"
 #include "engine/render/Mesh.h"
 #include "engine/core/Node.h"
+#include "engine/math/Transform.h"
+
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
+
+#include "engine/math/AEMath.h"
 
 namespace AbyssEngine {
-    enum FogMode { FogMode_dummy = 0, FogMode_1 = 1, FogMode_linear = 0x2601 };
-    enum BlendMode { BlendMode_dummy = 0, BlendMode_1 = 1, BlendMode_2 = 2, BlendMode_8 = 8, BlendMode_0x15 = 0x15 };
-    enum ResourceType { ResourceType_dummy };
-    enum LandscapeMode { LandscapeMode_dummy = 0, LandscapeMode_1 = 1, LandscapeMode_2 = 2, LandscapeMode_3 = 3 };
+    class Engine;
+    class Mesh;
+    class Transform;
+ }
+
+
+namespace AbyssEngine {
+    class Material;
+    class Image;
+    class Image2D;
+    struct Resource;
+
+#ifndef GOF2_ENUM_BlendMode
+#define GOF2_ENUM_BlendMode
+#endif
 }
 
 namespace AbyssEngine {
-    namespace AEMath {
-        struct BSphere {
-            Vector center;
-            float radius;
-            float radius2;
-        };
+    using AEMath::Matrix;
+    using AEMath::Vector;
 
-        Matrix MatrixIdentity(Matrix & matrix);
-
-        Matrix MatrixSetTranslation(Matrix &matrix, float x, float y, float z);
-
-        Matrix MatrixSetScaling(Matrix &matrix, float x, float y, float z);
-
-        Matrix MatrixSetRotation(Matrix &matrix, float x, float y, float z);
-
-        Matrix MatrixGetInverse(const Matrix &matrix);
-
-        void MatrixMultiply(Matrix &lhs, const Matrix &rhs);
-
-        void MatrixGetGL(const Matrix &matrix, float *out);
-
-        Vector MatrixTransformVector(const Matrix &matrix, const Vector &vector);
-
-        Vector MatrixRotateVector(const Matrix &matrix, const Vector &vector);
-
-        float VectorDot(const Vector &lhs, const Vector &rhs);
-
-        Vector VectorCross(const Vector &lhs, const Vector &rhs);
-
-        float VectorLength(const Vector &value);
-
-        float Sqrtf(float value);
-
-        float Sinf(float value);
-
-        float Cosf(float value);
-
-        float ACosf(float value);
-
-        float ATanf(float value);
-
-        float Absf(float value);
-    }
-}
-
-namespace AbyssEngine {
-    struct Transform {
-        char pad_0x0[0x3c];
-        unsigned int field_0x3c;
-        Mesh **field_0x40;
-        char pad_0x44[0x48 - 0x44];
-        unsigned int field_0x48;
-        unsigned int field_0x4c;
-        Transform **field_0x50;
-        char pad_0x58[0x5c - 0x58];
-        char field_0x5c[0x3c];
-        char field_0x98[0x3c];
-        char pad_0xec[0xec - (0x98 + 0x3c)];
-        unsigned char field_0xec;
-        char pad_0x11c[0x11c - (0xec + 1)];
-        unsigned int field_0x11c;
-    };
-}
-
-using AbyssEngine::Transform;
-
-namespace AbyssEngine {
     class PaintCanvas {
     public:
         union {
@@ -91,6 +46,9 @@ namespace AbyssEngine {
         int culledCount;
         char *quad2dMesh;
         int field_0xc;
+        unsigned int field_0x10;
+        char **field_0x14;
+        unsigned int field_0x18;
         unsigned char field_0x1c;
         unsigned int cubeTextureCount;
         char **cubeTextures;
@@ -317,10 +275,6 @@ namespace AbyssEngine {
 
         int CameraIsPointinViewFrustum(const Vector &point);
 
-        struct PickedTextureRegion {
-            float u;
-            float v;
-        };
 
         void TransformCreate(unsigned int &out);
 

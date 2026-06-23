@@ -9,18 +9,33 @@
 #include "engine/render/AEGeometry.h"
 #include "game/weapons/Radar.h"
 #include "game/weapons/RepairBeam.h"
-#include "game/world/Level.h"
+
+#include "engine/math/AEMath.h"
+
+
+
+#include "game/ship/ExplosionEmitterHolder.h"
+
+#include "game/ship/MiningInputFlags.h"
+class Player;
+class Radar;
+
+
+class AEGeometry;
+class Gun;
+class Hud;
+class KIPlayer;
+class Level;
+class LevelScript;
+class Radio;
+class RepairBeam;
+class Route;
+class TargetFollowCamera;
+
 
 typedef AbyssEngine::AEMath::Vector Vec3;
 
-struct ExplosionEmitterHolder {
-    int emitterFirstId;
-};
 
-struct MiningInputFlags {
-    uint8_t field_0x00[0x10];
-    uint8_t invertAxisFlag;
-};
 
 class PlayerEgo {
 public:

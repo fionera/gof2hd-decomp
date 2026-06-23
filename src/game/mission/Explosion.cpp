@@ -8,6 +8,7 @@
 
 
 using AbyssEngine::Matrix;
+using AbyssEngine::Transform;
 
 void MatrixSetRotation(Matrix *out, Matrix *base, int zero1, int zero2, float angle);
 
@@ -25,8 +26,10 @@ void MatrixGetDir(Vector *out, const Matrix *matrix);
 
 void MatrixGetLookAt(Matrix *out, const Vector *position, const Vector *target, const Vector *up);
 
-extern int Explosion_paintCanvas;
-extern void *Explosion_random;
+namespace {
+int Explosion_paintCanvas;
+void *Explosion_random;
+}
 
 static inline PaintCanvas *explosionCanvas() {
     return (PaintCanvas *) (intptr_t) Explosion_paintCanvas;

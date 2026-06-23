@@ -8,6 +8,11 @@
 #include "game/world/SolarSystem.h"
 #include "game/mission/Status.h"
 
+class Node;
+class SolarSystem;
+class Status;
+
+
 extern "C"
 Status **volatile
 g_SystemPathFinder_status;

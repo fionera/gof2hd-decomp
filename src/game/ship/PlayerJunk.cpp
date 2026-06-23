@@ -1,15 +1,10 @@
 #include "game/ship/PlayerJunk.h"
+#include "game/ship/Player.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/world/Level.h"
 #include "engine/render/ParticleSystemManager.h"
 
-class Player {
-public:
-    int getHitpoints();
-
-    void setActive(bool value);
-};
 
 extern FModSound *g_PJ_sound;
 

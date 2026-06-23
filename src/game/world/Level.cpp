@@ -2,7 +2,6 @@
 #include "game/mission/Mission.h"
 #include "game/ship/Ship.h"
 #include "engine/render/AEGeometry.h"
-#include "externs.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/mission/Achievements.h"
 #include "game/ui/Hud.h"
@@ -866,7 +865,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->setPlayerGun(1);
             if ((idx == 0x30 || idx == 0xe0 || idx == 0xb5)) {
                 gun->field_0xa4 = 1;
-                if (idx == 0xe0) F<uint8_t>(gun, 0xa5) = 1;
+                if (idx == 0xe0) gun->field_0xa5 = 1;
             }
             obj = (ObjectGun *) ::operator new(0xb0);
             int *tbl = (kind == ITEM_SORT_PLASMA_COLLECTOR) ? g_cg_objTable23 : g_cg_objTable8;

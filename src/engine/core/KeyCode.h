@@ -2,6 +2,9 @@
 #define GOF2_KEYCODE_H
 #include "game/core/String.h"
 
+#include "engine/core/AEString.h"
+
+
 namespace AbyssEngine {
     class KeyCode {
     public:

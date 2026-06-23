@@ -7,12 +7,13 @@
 #include "engine/render/Sprite.h"
 #include "game/ui/Hud.h"
 
-struct MiningHostObject {
-    uint8_t field_0x0[0x37];
-    uint8_t miningActiveFlag;
-    uint8_t field_0x38[0x124 - 0x38];
-    int miningResultSlot;
-};
+
+#include "game/menu/MiningHostObject.h"
+class Hud;
+class MarqueeImage;
+class Sprite;
+
+
 
 static_assert(offsetof(MiningHostObject, miningActiveFlag) == 0x37,
               "MiningHostObject::miningActiveFlag must stay at +0x37");

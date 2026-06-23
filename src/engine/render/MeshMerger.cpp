@@ -375,7 +375,7 @@ void *MeshMerger::transformMesh(Mesh *mesh, const Matrix &m) {
         for (uint32_t k = 0; k < nv; k++) {
             Vector rot;
             AEMath_MatrixRotateVector(&rot, (const Vector *) &m);
-            *(Vector *) (buf + off) = AEMath::VectorNormalize(rot);
+            *(Vector *) (buf + off) = AbyssEngine::AEMath::VectorNormalize(rot);
             off += 0xc;
             nv = mesh->vertexCount;
         }

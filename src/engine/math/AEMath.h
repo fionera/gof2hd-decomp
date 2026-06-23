@@ -1,5 +1,6 @@
 #ifndef GOF2_AEMATH_H
 #define GOF2_AEMATH_H
+#include "Matrix.h"
 #include "Vector.h"
 
 namespace AbyssEngine {
@@ -139,6 +140,9 @@ namespace AbyssEngine {
             return static_cast<float>(value);
         }
     }
+
+    using AEMath::Vector;
+    using AEMath::Matrix;
 
     static_assert(sizeof(AEMath::Vector) == 0x0c, "AEMath::Vector size");
     static_assert(__builtin_offsetof(AEMath::Vector, x) == 0x00, "AEMath::Vector::x offset");

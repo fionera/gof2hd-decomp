@@ -7,6 +7,12 @@
 #include "engine/render/AEGeometry.h"
 #include "game/ship/TargetFollowCamera.h"
 
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
+class AEGeometry;
+class TargetFollowCamera;
+
+
 class Explosion {
 public:
     int type;

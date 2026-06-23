@@ -6,6 +6,9 @@
 #include "engine/math/Vector.h"
 #include "fmod_event.hpp"
 
+#include "engine/math/AEMath.h"
+
+
 using AbyssEngine::AEMath::Vector;
 
 class FModSound {

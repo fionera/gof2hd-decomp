@@ -11,6 +11,19 @@
 #include "game/world/SpacePoint.h"
 #include "game/world/Wanted.h"
 
+#include "engine/math/AEMath.h"
+
+
+class Agent;
+class Item;
+class NewsItem;
+class Ship;
+class SolarSystem;
+class SpacePoint;
+class Station;
+class Wanted;
+
+
 class FileRead {
 public:
     FileRead();

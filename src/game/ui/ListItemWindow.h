@@ -9,6 +9,14 @@
 #include "engine/math/Matrix.h"
 #include "engine/render/AEGeometry.h"
 
+#include "engine/math/AEMath.h"
+
+
+class AEGeometry;
+class ListItem;
+class ScrollTouchWindow;
+
+
 class ListItemWindow {
 public:
     Array<AbyssEngine::String *> *labels;

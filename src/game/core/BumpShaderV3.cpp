@@ -3,7 +3,10 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-#include "externs.h"
+namespace {
+    float *g_bsv3_floatA;
+    float *g_bsv3_floatB;
+}
 
 namespace AbyssEngine {
     int BumpShaderV3::ShaderIndex;

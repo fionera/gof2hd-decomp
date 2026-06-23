@@ -5,6 +5,9 @@
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
 
+class BluePrint;
+
+
 class PendingProduct {
 public:
     String stationName;

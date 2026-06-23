@@ -1,6 +1,8 @@
 #include "game/weapons/Radar.h"
 #include "engine/render/PaintCanvas.h"
 
+#include <cmath>
+
 #include "game/ship/KIPlayer.h"
 
 namespace AbyssEngine {
@@ -12,6 +14,13 @@ namespace AbyssEngine {
     extern void *gRadarLayoutSlot;
     extern uint8_t *gRadarDrawCurrentLockFlag;
 }
+
+using ::AbyssEngine::gPaintCanvas;
+using ::AbyssEngine::gRadarCanvasForDraw;
+using ::AbyssEngine::gRadarMissionSlot;
+using ::AbyssEngine::gRadarCanvasSlot;
+using ::AbyssEngine::gRadarLayoutSlot;
+using ::AbyssEngine::gRadarDrawCurrentLockFlag;
 
 extern "C" int Radar_GetMissionState(void *mission);
 

@@ -3,10 +3,15 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "RadioMessage.h"
 #include "engine/render/ImagePart.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/world/LevelScript.h"
+
+class ImagePart;
+class LevelScript;
+class PlayerEgo;
+class RadioMessage;
+
 
 class Radio {
 public:

@@ -3,6 +3,9 @@
 #include "Matrix.h"
 #include "Vector.h"
 
+#include "engine/math/AEMath.h"
+
+
 namespace AbyssEngine {
     class Quaternion {
     public:

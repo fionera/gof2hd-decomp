@@ -3,7 +3,6 @@
 #include "engine/core/AERandom.h"
 #include "game/ship/TargetFollowCamera.h"
 #include "engine/render/PaintCanvas.h"
-#include "externs.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/menu/HackingGame.h"
@@ -20,41 +19,10 @@
 #include "game/world/Waypoint.h"
 #include "engine/render/Engine.h"
 
-class Radar {
-public:
-    void *level;
-
-    union {
-        KIPlayer *lockedEnemy;
-        void *dockTargetPtr;
-    };
-
-    union {
-        void *field_0x8;
-        void *dockNavPtr;
-    };
-
-    unsigned char pad_0x0c_to_0x70[0x70 - 0x0c];
-    unsigned char hasReservation;
-    unsigned char pad_0x71_to_0x8c[0x8c - 0x71];
-    unsigned char reservationDirty;
-
-    void unlockAsteroid();
-
-    bool isPlasmaInRange();
-};
-
 #include "game/mission/Status.h"
 #include "engine/math/Transform.h"
 #include "engine/core/ApplicationManager.h"
 #include "game/mission/Explosion.h"
-
-class Hud {
-public:
-    void hudEvent(int eventId, void *ego, int arg);
-
-    void setHackingGameActive(bool value);
-};
 
 #include "game/ship/KIPlayer.h"
 
@@ -72,6 +40,15 @@ namespace AbyssEngine {
     namespace AEMath {
         Matrix operator*(const Matrix &lhs, const Matrix &rhs);
     }
+}
+
+namespace {
+    void *g_boost_fmod;
+    void *g_FMod_singleton;
+    void *g_setRotation_transform;
+    void *g_dockToPlanet_fmod;
+    void *g_rotate_transform;
+    void *g_stopBoost_obj;
 }
 
 #define I(p, off) (*(int *)((char *)(p) + (off)))

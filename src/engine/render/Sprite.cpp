@@ -1,4 +1,5 @@
 #include "engine/render/Sprite.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
 

@@ -48,7 +48,7 @@ void LODManager::forceUpdate(int dt, bool useParent) {
 
     uint32_t cam = CameraGetCurrent(canvas);
     Matrix *m = CameraGetLocal(canvas, cam);
-    this->cameraPos = AEMath::MatrixGetPosition(*m);
+    this->cameraPos = AbyssEngine::AEMath::MatrixGetPosition(*m);
 
     for (uint32_t i = 0; i < this->objects->size(); i++) {
         AEGeometry *g = (*this->objects)[i];

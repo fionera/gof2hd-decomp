@@ -9,6 +9,14 @@
 #include "game/ship/Agent.h"
 #include "game/ship/Ship.h"
 
+class Agent;
+class BluePrint;
+class Item;
+class Mission;
+class PendingProduct;
+class Ship;
+
+
 class ListItem {
 public:
     Array<AbyssEngine::String *> *lines;

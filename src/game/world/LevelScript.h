@@ -3,8 +3,20 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "Level.h"
 #include "game/ship/TargetFollowCamera.h"
+
+#include "engine/math/Matrix.h"
+
+
+class Radar;
+
+
+class AEGeometry;
+class Explosion;
+class Hud;
+class Level;
+class TargetFollowCamera;
+
 
 class LevelScript {
 public:

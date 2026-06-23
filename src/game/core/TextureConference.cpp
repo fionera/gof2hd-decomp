@@ -29,7 +29,7 @@ namespace AbyssEngine {
         glUniformMatrix4fv(this->uMvpMatrix, 1, 0, engine->worldViewProjMatrix);
 
         if (this->dirty != 0) {
-            glUniform4fv(this->uOffset, 1, &engine->field_0xd0);
+            glUniform4fv(this->uOffset, 1, engine->glColor);
             this->dirty = 0;
         }
 

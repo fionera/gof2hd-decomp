@@ -7,6 +7,18 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+
+#include "engine/math/AEMath.h"
+
+
+class Player;
+
+class AEGeometry;
+class BoundingVolume;
+class Explosion;
+
+
 typedef AbyssEngine::AEMath::Vector V3;
 
 class PlayerFixedObject : public KIPlayer {

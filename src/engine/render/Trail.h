@@ -4,7 +4,17 @@
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 
+#include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
 
+#include "engine/math/AEMath.h"
+
+
+
+
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 
 class Trail {

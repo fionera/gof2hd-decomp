@@ -6,7 +6,37 @@ ApplicationManager *gAppManager = nullptr;
 #include "engine/render/Engine.h"
 #include "game/core/CheatHandler.h"
 #include "engine/render/PaintCanvas.h"
-#include "externs.h"
+
+namespace {
+    // Trial/performance-test counters (SetCurrentApplicationModule)
+    int g_perfPending;
+    uint64_t g_perfCounter;
+    uint64_t g_perfLimit;
+    int g_perfExpired;
+
+    // Debug touch-corner state machine (OnTouchStart)
+    int g_touchMode;
+    int g_touchToggle;
+    int g_touchValue;
+    float g_touchFloat;
+    int g_touchDown;
+
+    // Tilt-to-orientation debounce timers (CheckForOrientationChange)
+    int g_orientationLeft;
+    int g_orientationRight;
+    int g_orientationFlat;
+    int g_orientationUpsideDown;
+    int g_orientationInactive;
+
+    // Performance-test accumulators (EnablePerformanceTest)
+    int64_t g_perfElapsed;
+    int64_t g_perfActionCount;
+    int64_t g_perfLimitValue;
+    int64_t g_perfTotal;
+    int64_t g_perfFrame;
+    int g_perfEnabled;
+    int g_perfPendingFlag;
+}
 
 extern PaintCanvas *gCanvas;
 extern "C" int pc_GetWidth(PaintCanvas * self);
@@ -255,7 +285,7 @@ void ApplicationManager::OnUpdate(long long now) {
                 void (**vtable)(void *) = *(void (***)(void *)) module;
                 vtable[0x30 / 4](module);
                 Engine *engine = this->engine;
-                engine->field_0x68 = 0;
+                engine->triangleCountA = 0;
                 engine->field_0x58 = 0;
                 this->paintCanvas->culledCount = 0;
                 vtable[0x34 / 4](module);

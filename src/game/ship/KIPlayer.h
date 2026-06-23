@@ -8,11 +8,18 @@
 
 #include "engine/math/Vector.h"
 #include "engine/render/AEGeometry.h"
-#include "game/ui/Hud.h"
 #include "game/weapons/Gun.h"
-#include "game/world/Level.h"
-#include "game/world/Route.h"
-#include "game/world/SpacePoint.h"
+
+class Player;
+
+
+class AEGeometry;
+class Gun;
+class Hud;
+class Level;
+class Route;
+class SpacePoint;
+
 
 class KIPlayer {
 public:
@@ -253,8 +260,7 @@ public:
 
     virtual void setLevel(Level *lvl);
 
-    void addGun(Gun *gun, int slot) {
-    }
+    void addGun(Gun *gun, int slot);
 
     void addGun(Array<Gun *> *guns, int slot);
 

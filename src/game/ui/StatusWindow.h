@@ -6,6 +6,10 @@
 #include "TouchButton.h"
 #include "engine/render/ImagePart.h"
 
+class ImagePart;
+class TouchButton;
+
+
 typedef AbyssEngine::String String;
 
 class StatusWindow {

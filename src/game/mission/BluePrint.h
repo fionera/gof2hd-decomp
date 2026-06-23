@@ -7,6 +7,9 @@
 
 #include "game/core/String.h"
 
+class Item;
+
+
 class BluePrint {
 public:
     Array<int> *ingredientCounters;

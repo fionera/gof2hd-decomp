@@ -9,6 +9,11 @@
 
 #include "game/ship/KIPlayer.h"
 
+#include "engine/math/Vector.h"
+class AEGeometry;
+class Explosion;
+
+
 class PlayerAsteroid : public KIPlayer {
 public:
 

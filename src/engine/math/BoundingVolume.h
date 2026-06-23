@@ -4,6 +4,9 @@
 #include "Vector.h"
 #include "engine/core/Array.h"
 
+#include "engine/math/AEMath.h"
+
+
 class BoundingVolume {
 public:
     Array<BoundingVolume *> *children;

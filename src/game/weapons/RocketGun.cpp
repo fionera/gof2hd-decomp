@@ -5,24 +5,9 @@
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Gun.h"
 #include "game/ship/Player.h"
+#include "game/weapons/Radar.h"
+#include "engine/render/PaintCanvas.h"
 
-
-class Radar {
-public:
-    void *level;
-    void *field_0x4;
-};
-
-namespace AbyssEngine {
-    class PaintCanvas {
-    public:
-        void TransformAddChild(unsigned int parent, unsigned int child);
-
-        Matrix *TransformGetLocal(unsigned int index);
-
-        void TransformSetLocal(unsigned int index, const Matrix &matrix);
-    };
-}
 
 extern PaintCanvas *g_paintCanvas;
 
@@ -184,13 +169,13 @@ non_special:
 
     if (gunType == 0xe8) {
         ParticleSystemManager *manager = (ParticleSystemManager *) F<int>(radarLevel, 0x9c);
-        Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
+        Matrix *local = (Matrix *) g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
         this->particleSystem = system;
         manager->enableSystemEmit(system, 0);
     } else {
         ParticleSystemManager *manager = (ParticleSystemManager *) F<int>(radarLevel, 0x84);
-        Matrix *local = g_paintCanvas->TransformGetLocal(this->transform);
+        Matrix *local = (Matrix *) g_paintCanvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
         this->particleSystem = system;
         manager->enableSystemEmit(system, 0);
@@ -227,7 +212,7 @@ fallback:
     if (this->radar == nullptr)
         return;
     {
-        void *contact = this->radar->field_0x4;
+        void *contact = this->radar->lockedEnemy;
         if (contact == nullptr)
             return;
         if (F<uint8_t>(contact, 0x76) == 0 || F<uint8_t>(contact, 0x74) != 0)
@@ -235,7 +220,7 @@ fallback:
         Level *radarLevel = (Level *) this->radar->level;
         if (((PlayerEgo *) (long) radarLevel->getPlayer())->isInFreeLookMode() != 0)
             return;
-        enemy = (Player *) F<void *>(this->radar->field_0x4, 0x4);
+        enemy = (Player *) F<void *>(this->radar->lockedEnemy, 0x4);
     }
 
 have_enemy:

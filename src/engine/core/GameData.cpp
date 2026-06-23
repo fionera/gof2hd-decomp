@@ -1,17 +1,11 @@
 #include "engine/core/GameData.h"
+#include "engine/core/ApplicationManager.h"
 #include "game/core/Globals.h"
 
 GameData::GameData() {
 }
 
 GameData::~GameData() {
-}
-
-namespace AbyssEngine {
-    class ApplicationManager {
-    public:
-        void *GetApplicationData();
-    };
 }
 
 void OnDestroyApplication(AbyssEngine::Engine *engine) {

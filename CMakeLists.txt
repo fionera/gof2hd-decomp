@@ -63,3 +63,6 @@ target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/
 
 # ---- FMOD Ex 4.44.07 (audio) ------------------------------------------------------------------
 target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmod/inc")
+
+# libzip 0.9.3 (asset/APK archive access)
+target_include_directories(gof2 PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/third_party/libzip")

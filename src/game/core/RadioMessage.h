@@ -3,8 +3,13 @@
 #include "engine/core/Array.h"
 #include "../../engine/core/AEString.h"
 #include "fieldaccess.h"
-#include "Radio.h"
 #include "game/mission/Objective.h"
+
+class LevelScript;
+class Objective;
+class PlayerEgo;
+class Radio;
+
 
 class RadioMessage {
 public:

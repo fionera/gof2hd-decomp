@@ -1,4 +1,6 @@
 #include "engine/math/Matrix.h"
+#include "engine/math/Vector.h"
+#include "engine/math/Quaternion.h"
 
 namespace AbyssEngine {
     namespace AEMath {

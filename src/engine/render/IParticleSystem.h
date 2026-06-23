@@ -8,7 +8,13 @@
 #include "engine/math/Vector.h"
 #include "engine/render/ParticleSettings.h"
 
+#include "engine/math/AEMath.h"
 
+
+
+namespace AbyssEngine {
+    class PaintCanvas;
+}
 using ::AbyssEngine::PaintCanvas;
 
 extern "C" void AERandom_dtor(void *self);

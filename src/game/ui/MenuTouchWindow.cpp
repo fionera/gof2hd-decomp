@@ -1,4 +1,5 @@
 #include "game/ui/MenuTouchWindow.h"
+#include "engine/core/AbyssEngine.h"
 #include "game/ui/TouchSlider.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Engine.h"

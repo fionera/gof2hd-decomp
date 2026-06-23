@@ -7,6 +7,9 @@
 #include "engine/math/Matrix.h"
 #include "engine/math/Vector.h"
 
+#include "engine/math/AEMath.h"
+
+
 class MovingStars {
 public:
     uint32_t *billboardIds;

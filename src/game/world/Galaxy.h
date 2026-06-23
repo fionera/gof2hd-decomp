@@ -6,6 +6,10 @@
 #include "SolarSystem.h"
 #include "Station.h"
 
+class SolarSystem;
+class Station;
+
+
 class Galaxy {
 public:
     Galaxy();

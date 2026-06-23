@@ -8,72 +8,20 @@
 
 #include "game/ui/ChoiceWindow.h"
 #include "game/ui/ListItemWindow.h"
+#include "game/ui/Layout.h"
 
-struct Blk16 {
-    int a, b, c, d;
-};
 
-struct Layout {
-    uint8_t field_0x0;
-    int field_0x4;
-    int field_0x8;
-    int field_0xc;
-    int field_0x10;
-    int field_0x14;
-    int field_0x18;
-    int field_0x1c;
-    int field_0x20;
-    int field_0x24;
-    int field_0x28;
-    int field_0x2c;
-    int field_0x30;
-    int field_0x34;
-    int field_0x38;
-    int field_0x3c;
-    int field_0x40;
-    int field_0x44;
-    int field_0x48;
-    int field_0x4c;
-    int field_0x50;
-    int field_0x54;
-    int field_0x58;
-    int field_0x5c;
-    int field_0x60;
-    int field_0x64;
-    int field_0x70;
-    int field_0x84;
-    int field_0x114;
-    int field_0x264;
-    int field_0x2cc;
+#include "game/ui/Blk16.h"
+class BluePrint;
+class ChoiceWindow;
+class HangarList;
+class Item;
+class ListItem;
+class ListItemWindow;
+class Ship;
+class TouchButton;
 
-    void drawBG();
 
-    void drawBox(int style, int x, int y, int h, int w, void *text);
-
-    void drawHeader(String title);
-
-    void drawFooter();
-
-    void drawScrollBar(int x, int y, int trackH, int pos, int range);
-
-    int OnTouchBegin(int coord);
-
-    int OnTouchEnd(int touch, int coord);
-
-    int OnTouchMove(int coord);
-
-    unsigned char helpPressed();
-
-    static String formatCredits(int n);
-
-    void initHelpWindow(void *text);
-
-    void resetWindowDimensions();
-};
-
-int Layout_getHelpButtonOffset();
-
-int Layout_getFooterTransitionWidth();
 
 class HangarWindow {
 public:

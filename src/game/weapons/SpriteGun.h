@@ -6,6 +6,12 @@
 #include "fieldaccess.h"
 #include "Gun.h"
 
+class Player;
+
+
+class Gun;
+
+
 class SpriteGun {
 public:
     int32_t field_0x4;

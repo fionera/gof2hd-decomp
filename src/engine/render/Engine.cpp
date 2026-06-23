@@ -1,7 +1,7 @@
 
 
-#include "externs.h"
 #include <GLES2/gl2.h>
+#include "engine/core/AbyssEngine.h"
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
@@ -65,9 +65,9 @@ extern "C" void glLightModelfv(unsigned int pname, const void *params);
 
 extern "C" void glLightfv(unsigned int light, unsigned int pname, const void *params);
 
-extern "C" void FBOContainer_ActivateRender2Texture(FBOContainer * self);
-extern "C" void FBOContainer_ActivateTexture(FBOContainer * self);
-extern "C" void FBOContainer_DeactivateRender2Texture(FBOContainer * self);
+extern "C" void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
+extern "C" void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
+extern "C" void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
 
 extern "C" void ShaderUpdateRimColor();
 
@@ -87,6 +87,33 @@ extern "C" void ShaderCtor_4(void *);
 
 extern "C" String *g_Engine_vendorString;
 extern "C" String *g_Engine_rendererString;
+
+namespace {
+    int g_Engine_useShaders;
+    int g_Engine_supportsFBO;
+
+    int g_Engine_defaultShader;
+    int g_Engine_altShader;
+    int g_Engine_lineShader;
+    int g_Engine_cloakShader;
+    int g_Engine_currentShader;
+    int g_Engine_activeShader;
+    int g_Engine_shaderDrew;
+    int g_Engine_shaderDirty;
+
+    int g_Engine_shaderPostA;
+    int g_Engine_shaderPostB;
+    int g_Engine_shaderPostC;
+
+    float g_Engine_texEnv;
+    int g_Engine_texEnvDirty;
+
+    uint32_t g_Engine_postEffectBW;
+    uint32_t g_Engine_postEffectBlur;
+    int g_Engine_postEffectFlag;
+    int g_Engine_postEffectCounter;
+    int g_Engine_postEffectPending;
+}
 
 void MeshRelease(Engine *self, void *meshSlot);
 
@@ -390,7 +417,7 @@ void Engine::ShaderUpdate() {
 }
 
 bool Engine::IsExtensionSupported(const char *extension) {
-    const char *extensions = glGetString(0x1f03);
+    const char *extensions = (const char *) glGetString(0x1f03);
 
     uint32_t allLength = 0;
     while (extensions[allLength] != 0) {
@@ -502,7 +529,7 @@ void Engine::LightSetLightDirection(float x, float y, float z, unsigned int ligh
     return;
 }
 
-void Engine::RenderMesh(MeshFull *mesh) {
+void Engine::RenderMesh(Mesh *mesh) {
     if (mesh == 0 || mesh->indexCount == 0) {
         goto done;
     }
@@ -571,7 +598,7 @@ void Engine::DrawQuad(int x, int y, int width, int height) {
     float right = (float) (x + width);
     float bottom = (float) (height + y);
 
-    MeshFull *mesh = this->quadMesh;
+    Mesh *mesh = this->quadMesh;
     float *positions = (float *) mesh->positions;
     positions[0] = fx;
     positions[1] = fy;
@@ -662,9 +689,9 @@ void Engine::AfterGLInit() {
     indices[1] = 1;
     indices[2] = 0x30002;
 
-    String vendor(glGetString(0x1f00));
+    String vendor((const char *) glGetString(0x1f00));
     g_Engine_vendorString->assign(&vendor);
-    String renderer(glGetString(0x1f01));
+    String renderer((const char *) glGetString(0x1f01));
     g_Engine_rendererString->assign(&renderer);
 }
 
@@ -767,7 +794,7 @@ void Engine::DrawLine2D(float *verts, int count, bool strip) {
     return glDrawArrays(mode, 0, count);
 }
 
-void Engine::ShaderSetActive(int shaderIndex, MeshFull *mesh) {
+void Engine::ShaderSetActive(int shaderIndex, Mesh *mesh) {
     while (shaderIndex == -1) {
         shaderIndex = g_Engine_defaultShader;
         if ((((uint32_t) mesh->vertexFormat) << 30) >= 0) {
@@ -1009,7 +1036,7 @@ int Engine::InitGL(bool shaders, int width, int height) {
     this->AfterGLInit();
     this->appManager->paintCanvas->Initialize(false);
     this->depthBits = 0;
-    glGetIntegerv(0xd33, &this->depthBits);
+    glGetIntegerv(0xd33, (GLint *) &this->depthBits);
 
     if (g_Engine_useShaders != 0 && g_Engine_supportsFBO != 0) {
         FBOContainer *fbo = new FBOContainer(this, String("refract"));

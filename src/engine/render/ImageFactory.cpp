@@ -1,4 +1,5 @@
 #include "engine/render/ImageFactory.h"
+#include "engine/core/AbyssEngine.h"
 #include "engine/render/ImagePart.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Sprite.h"

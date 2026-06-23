@@ -1,6 +1,9 @@
 #ifndef GALAXYONFIRE2_FILEINTERFACE_H
 #define GALAXYONFIRE2_FILEINTERFACE_H
 
+
+#include "engine/core/AEString.h"
+
 class FileInterface {
 public:
     uint8_t enabled;

@@ -1,4 +1,5 @@
 #include "game/mission/Objective.h"
+#include "game/core/RadioMessage.h"
 #include "game/world/Level.h"
 #include "game/world/Route.h"
 #include "game/world/Waypoint.h"

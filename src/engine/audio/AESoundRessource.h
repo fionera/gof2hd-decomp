@@ -4,45 +4,11 @@
 #include "../core/AEString.h"
 #include "fieldaccess.h"
 
+#include "engine/audio/AESoundInfo.h"
+#include "engine/audio/AESoundInterface.h"
 namespace AbyssEngine {
-    struct AESoundInfo {
-        int id;
-        const char *name;
-        int type;
-    };
-
-    class AESoundInterface {
-    public:
-        virtual void load(const char *name);
-
-        virtual void suspend();
-
-        virtual void play();
-
-        virtual void play(float volume);
-
-        virtual void playLooping();
-
-        virtual void pause();
-
-        virtual void resume();
-
-        virtual void stop();
-
-        virtual int isPlaying();
-
-        virtual void setType(int type);
-
-        virtual void setVolume(int volume);
-
-        virtual void setSoundVolume(int volume);
-
-        virtual void setMusicVolume(int volume);
-
-        virtual void release();
-
-        virtual int isLoaded();
-    };
+    
+    
 
     class AESoundRessource {
     public:
