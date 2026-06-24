@@ -487,12 +487,8 @@ void Player::addEnemies(Array<Player *> *enemies) {
         return;
     }
     Array<Player *> *tmp = new Array<Player *>();
-    for (unsigned int i = 0; i < this->enemies->size(); i++) {
-        ArrayAdd(this->enemies->data()[i], *tmp);
-    }
-    for (unsigned int i = 0; i < enemies->size(); i++) {
-        ArrayAdd(enemies->data()[i], *tmp);
-    }
+    ArrayAdd(*this->enemies, *tmp);
+    ArrayAdd(*enemies, *tmp);
     ((Player *) (this))->setEnemies(tmp);
     delete tmp;
 }

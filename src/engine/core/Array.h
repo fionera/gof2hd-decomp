@@ -107,6 +107,11 @@ void ArrayAdd(const T *src, unsigned int count, Array<T> &a) {
 }
 
 template<class T>
+void ArrayAdd(const Array<T> &src, Array<T> &a) {
+    ArrayAdd(src.data_, src.size_, a);
+}
+
+template<class T>
 void ArraySet(const T *src, unsigned int count, Array<T> &a) {
     T *p;
     if (a.capacity_ == count) {

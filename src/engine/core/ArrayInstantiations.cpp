@@ -40,3 +40,4 @@ template void ArrayAdd<bool>(bool, Array<bool> &);
 template void ArrayAdd<float>(float, Array<float> &);
 template void ArrayAdd<unsigned char>(const unsigned char *, unsigned int, Array<unsigned char> &);
 template void ArrayAdd<Player *>(Player *const *, unsigned int, Array<Player *> &);
+template void ArrayAdd<Player *>(const Array<Player *> &, Array<Player *> &);
