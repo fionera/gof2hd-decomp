@@ -414,7 +414,11 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer
     ndk23_handleAcceleration(-x, y, z);
 }
 
-void ExitFunction();
+// Exit callback registered with the engine; signals the platform exit flag.
+// C linkage: the original exports it as the unmangled symbol `ExitFunction`.
+extern "C" void ExitFunction() {
+    forceExit = -1;
+}
 
 extern "C" void ndk23_newrender(long long now) {
     ApplicationManager *manager = (*g_pEngine)->appManager;
