@@ -51,6 +51,12 @@ int stackX;
 int stackY;
 int wheelStack;
 
+// JNI-facing input/state globals (read/written from the Java side by symbol
+// name; the original's C++ does not reference them either -- no relocation).
+int currentstate;
+int stateChanged;
+int sound_off;
+
 namespace {
     VirtualKey *const g_arrowKeys = keys;
 
