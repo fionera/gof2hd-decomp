@@ -1,4 +1,5 @@
 #include "engine/render/ImageFactory.h"
+#include "game/core/Globals.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/ImagePart.h"
 #include "engine/render/PaintCanvas.h"
@@ -19,10 +20,55 @@ static unsigned *g_IF_drawShip_canvas;
 static unsigned *g_drawItem_canvas;
 static int *g_IF_idTable;
 static unsigned *g_IF_drawItem4_canvas;
-static char *g_ctor_flagA;
-static char *g_ctor_flagB;
-static int *g_ctor_dst;
-static int *g_ctor_src;
+// Image atlas offset tables (104 ints / 416 bytes each), recovered from the
+// original binary. IMAGE_OFFSETS is the active table; the ctor copies the
+// device-appropriate IPAD variant into it.
+int IMAGE_OFFSETS[104];
+int IMAGE_OFFSETS_IPAD[104] = {
+    16, 75, 16, 43, 32, 125, 16, 0,
+    16, 86, 16, 41, 32, 125, 16, 0,
+    16, 74, 16, 40, 32, 125, 16, 0,
+    32, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 16, 28, 32, 125, 16, 0,
+    16, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 16, 72, 16, 0, 16, 0,
+    16, 65, 16, 35, 32, 125, 16, 0,
+    16, -33, 32, -33, 32, 0, 16, -125,
+    32, 125, 32, 0, 32, 0, 32, 0,
+    16, 76, 16, 43, 32, 125, 16, 0,
+    16, 0, 16, 0, 16, 0, 16, 0,
+    32, 125, 32, 0, 32, 0, 32, 0,
+};
+int IMAGE_OFFSETS_IPAD_HD[104] = {
+    16, 84, 16, 48, 32, 141, 16, 0,
+    16, 96, 16, 45, 32, 141, 16, 0,
+    16, 82, 16, 44, 32, 141, 16, 0,
+    32, -36, 32, -36, 32, 0, 16, -141,
+    32, 141, 16, 31, 32, 141, 16, 0,
+    16, -36, 32, -36, 32, 0, 16, -141,
+    32, 141, 16, 80, 16, 0, 16, 0,
+    16, 72, 16, 39, 32, 141, 16, 0,
+    16, -36, 32, -36, 32, 0, 16, -141,
+    32, 141, 32, 0, 32, 0, 32, 0,
+    16, 85, 16, 48, 32, 141, 16, 0,
+    32, 141, 32, 0, 32, 0, 32, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+};
+int IMAGE_OFFSETS_IPAD_LARGE[104] = {
+    16, 120, 16, 68, 32, 200, 16, 0,
+    16, 137, 16, 65, 32, 200, 16, 0,
+    16, 118, 16, 64, 32, 200, 16, 0,
+    32, -52, 32, -52, 32, 0, 16, -200,
+    32, 200, 16, 44, 32, 200, 16, 0,
+    16, -52, 32, -52, 32, 0, 16, -200,
+    32, 200, 16, 115, 16, 0, 16, 0,
+    16, 104, 16, 56, 32, 200, 16, 0,
+    16, -52, 32, -52, 32, 0, 16, -200,
+    32, 200, 32, 0, 32, 0, 32, 0,
+    16, 121, 16, 68, 32, 200, 16, 0,
+    16, 0, 16, 0, 16, 0, 16, 0,
+    32, 200, 32, 0, 32, 0, 32, 0,
+};
 
 static void *gCreateChar2Rng1;
 static int gCreateChar2Table;
@@ -51,21 +97,14 @@ ImageFactory::~ImageFactory() {
 
 ImageFactory::ImageFactory() {
     this->sprite = nullptr;
-    if ((*g_ctor_flagA | *g_ctor_flagB) != 0) {
-        int *dst = g_ctor_dst;
-        int *src = g_ctor_src;
-        for (int r = 0; r != 0xd; ++r) {
-            int *d = dst;
-            int *s = src;
-            for (int c = 0; c != 4; ++c) {
-                for (int k = 0; k != 2; ++k)
-                    d[k] = s[k];
-                s += 2;
-                d += 2;
-            }
-            dst += 8;
-            src += 8;
-        }
+    if (Globals::iPad != 0) {
+        const int *src = IMAGE_OFFSETS_IPAD;
+        if (Globals::iPadHD != 0)
+            src = IMAGE_OFFSETS_IPAD_HD;
+        else if (Globals::iPadLarge != 0)
+            src = IMAGE_OFFSETS_IPAD_LARGE;
+        for (int i = 0; i < 104; ++i)
+            IMAGE_OFFSETS[i] = src[i];
     }
     this->reload();
 }
