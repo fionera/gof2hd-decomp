@@ -336,30 +336,30 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setZIPPath(
     }
 }
 
-static char *g_rootDir;
-static char *g_zipDir;
+char *dataDirectory;
+char *zipDirectory;
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories(
     JNIEnv *env, jclass /*clazz*/, jstring rootDir, jstring zipDir) {
     jboolean isCopy;
     const char *utf = env->GetStringUTFChars(rootDir, &isCopy);
-    g_rootDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
-    g_zipDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    dataDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    zipDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
     if (isCopy) {
-        std::strcpy(g_rootDir, utf);
-        std::strcpy(g_zipDir, utf);
-        ndk23_setRootDirectory(g_rootDir);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "rootDir: %s", g_rootDir);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", g_zipDir);
+        std::strcpy(dataDirectory, utf);
+        std::strcpy(zipDirectory, utf);
+        ndk23_setRootDirectory(dataDirectory);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "rootDir: %s", dataDirectory);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", zipDirectory);
         env->ReleaseStringUTFChars(rootDir, utf);
     }
 
     utf = env->GetStringUTFChars(zipDir, &isCopy);
-    g_zipDir = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    zipDirectory = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
     if (isCopy) {
-        std::strcpy(g_zipDir, utf);
-        ndk23_setZipDirectory(g_zipDir);
-        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", g_zipDir);
+        std::strcpy(zipDirectory, utf);
+        ndk23_setZipDirectory(zipDirectory);
+        __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", zipDirectory);
         env->ReleaseStringUTFChars(zipDir, utf);
     }
 }
