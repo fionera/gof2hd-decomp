@@ -75,11 +75,13 @@ public:
 
     int getHeight();
 
-    static int g_android_back_button_pressed;
-
     // Static data members present in the original binary (defined for symbol parity).
     static void *interface_path;
 };
+
+// The original exports this as a plain global (symbol `g_android_back_button_pressed`),
+// set by the Android back-button JNI hook.
+extern int g_android_back_button_pressed;
 
 bool IsDialogVisible(int);
 

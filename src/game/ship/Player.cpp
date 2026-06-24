@@ -1296,7 +1296,7 @@ Vector *Player::update(int dt, bool doSound) {
         ((Player *) (self))->updateDamageRate();
     }
 
-    AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(Engine::gEngine);
+    AudioStateView *flagObj = reinterpret_cast<AudioStateView *>(gEngine);
     if (flagObj->soundEnabledFlag == 0 || doSound == 0 || self->enginePositionVec == (void *) (__INTPTR_TYPE__) -1) {
         if (self->engineSoundPlaying != 0) {
             self->StopEngineSound();

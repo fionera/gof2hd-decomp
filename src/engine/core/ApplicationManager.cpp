@@ -137,7 +137,7 @@ ApplicationManager::ApplicationManager(Engine *engine) {
 
     this->paintCanvas = new PaintCanvas(engine);
     PaintCanvas::gCanvas = this->paintCanvas;
-    Engine::gEngine = engine;
+    gEngine = engine;
 
     this->soundResource = new AESoundRessource();
     this->cheatsEnabled = false;

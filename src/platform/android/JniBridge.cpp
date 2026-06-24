@@ -437,10 +437,10 @@ extern "C" void ndk23_newrender(long long now) {
         }
     }
 
-    if (NFC::g_android_back_button_pressed != 0) {
+    if (g_android_back_button_pressed != 0) {
         keyPressed(*g_pEngine, 0x35);
         keyReleased(*g_pEngine, 0x35);
-        NFC::g_android_back_button_pressed = 0;
+        g_android_back_button_pressed = 0;
     }
 
     RemoveTouches();
@@ -749,7 +749,7 @@ extern "C" void ndk23_resize(int width, int height) {
     gRealHeight = height;
     gRealWidth = width;
 
-    simulateTouch(Engine::gEngine);
+    simulateTouch(gEngine);
 }
 
 extern "C" void ndk23_setDisplayHeightAndWidth(int height, int width) {

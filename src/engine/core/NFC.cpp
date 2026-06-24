@@ -254,7 +254,7 @@ static bool isStarMapVisible;
 static int subMenuIndex;
 static int topMenuIndex;
 static int menu_touch_window_type;
-int NFC::g_android_back_button_pressed = 0;
+int g_android_back_button_pressed = 0;
 
 bool IsDialogVisible(int) {
     return is_dialogue_window_visible != 0 || is_choice_window_visible != 0;
@@ -319,7 +319,7 @@ int GetUseJoystick() {
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed() {
-    NFC::g_android_back_button_pressed = 1;
+    g_android_back_button_pressed = 1;
 }
 
 // Static data members present in the original binary (defined for symbol parity).

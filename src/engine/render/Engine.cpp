@@ -6,7 +6,7 @@
 #include "engine/math/AEMath.h"
 #include "engine/render/FBOContainer.h"
 #include "engine/render/Engine.h"
-Engine *Engine::gEngine = nullptr;
+AbyssEngine::Engine *gEngine = nullptr;
 
 bool AbyssEngine::Engine::vboSupported = false;
 bool AbyssEngine::Engine::clampTextures = false;

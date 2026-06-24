@@ -571,8 +571,6 @@ namespace AbyssEngine {
 
         static Engine **g_pEngine;
 
-        static Engine *gEngine;
-
         // Static data members present in the original binary (defined for symbol parity).
         static unsigned char EnableGlow;
         static int ImageCount;
@@ -605,5 +603,9 @@ namespace AbyssEngine {
 }
 
 using ::AbyssEngine::Engine;
+
+// The active engine singleton. The original exports this as a plain global
+// pointer (symbol `gEngine`), not a class member.
+extern AbyssEngine::Engine *gEngine;
 
 #endif

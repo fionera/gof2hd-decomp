@@ -1147,7 +1147,7 @@ void StarMap::initStarSystem() {
         (*stationPositions)[i] = p;
     }
 
-    Engine::gEngine->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
+    gEngine->LightSetLightDirection(0.0f, 0.0f, 1.0f, 1);
     if (this->planetGeom != 0) {
         delete this->planetGeom;
     }

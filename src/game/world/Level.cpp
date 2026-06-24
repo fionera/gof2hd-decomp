@@ -4229,7 +4229,7 @@ void Level::renderBG(int t) {
     }
 
     if (this->supernovaFlareActive != 0 &&
-        1.0f <= Engine::gEngine->explosionTimeline) {
+        1.0f <= gEngine->explosionTimeline) {
         ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
         ((PaintCanvas *) (long) (canvas))->CameraGetLocal(((PaintCanvas *) (long) (canvas))->CameraGetCurrent());
         (*sky = AbyssEngine::AEMath::MatrixGetInverse(*sky));
@@ -4241,13 +4241,13 @@ void Level::renderBG(int t) {
         ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
         const AbyssEngine::AEMath::Matrix *eng =
                 (const AbyssEngine::AEMath::Matrix *) PaintCanvas::gCanvas->engine;
-        Engine::gEngine->SetModelMatrix(*eng);
+        gEngine->SetModelMatrix(*eng);
         ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (unsigned) this->supernovaFlareTexture, 0);
         ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_8);
         ((Engine *) PaintCanvas::gCanvas->engine)->LightSetLight(0x4000);
-        Engine::gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
+        gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
         ((PaintCanvas *) (long) (canvas))->DrawMesh((unsigned int) (unsigned) this->supernovaFlareMesh);
-        Engine::gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
+        gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
         ((Engine *) PaintCanvas::gCanvas->engine)->LightEnable(false);
     }
 
