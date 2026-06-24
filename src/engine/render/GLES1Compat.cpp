@@ -27,5 +27,13 @@ void glNormalPointer(GLenum, GLsizei, const GLvoid *) {}
 void glColorPointer(GLint, GLenum, GLsizei, const GLvoid *) {}
 void glEnableClientState(GLenum) {}
 void glDisableClientState(GLenum) {}
+void glAlphaFunc(GLenum, GLclampf) {}
+void glClientActiveTexture(GLenum) {}
+void glFogf(GLenum, GLfloat) {}
+void glFogfv(GLenum, const GLfloat *) {}
+void glHint(GLenum, GLenum) {}
+void glMultMatrixf(const GLfloat *) {}
+void glShadeModel(GLenum) {}
+void glTexEnvi(GLenum, GLenum, GLint) {}
 
 }
