@@ -70,6 +70,7 @@ int gRealHeight;
 
 char *rootDirectory;
 char *ZIPDirectory;
+char *flstat_rootPath;
 
 int forceExit;
 
@@ -348,6 +349,7 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_SetDirectories(
     if (isCopy) {
         std::strcpy(dataDirectory, utf);
         std::strcpy(zipDirectory, utf);
+        flstat_rootPath = dataDirectory;
         ndk23_setRootDirectory(dataDirectory);
         __android_log_print(ANDROID_LOG_ERROR, "gof2", "rootDir: %s", dataDirectory);
         __android_log_print(ANDROID_LOG_ERROR, "gof2", "zipDir: %s", zipDirectory);
