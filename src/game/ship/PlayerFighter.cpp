@@ -1007,5 +1007,5 @@ void PlayerFighter::revive() {
     }
 }
 
-
-
+// Static data members present in the original binary (defined for symbol parity).
+int PlayerFighter::stationRouteAliens;

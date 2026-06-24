@@ -574,6 +574,11 @@ public:
     void update(int dt, Radar *radar, Hud *hud, Radio *radio, LevelScript *script, int arg5, bool arg6, int arg7);
 
     int updateManeuver();
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static AbyssEngine::AEMath::Vector crosshairPos;
+    static AbyssEngine::AEMath::Vector crosshairShootPos;
+    static AbyssEngine::AEMath::Vector vec_up;
 };
 
 #if __SIZEOF_POINTER__ == 4

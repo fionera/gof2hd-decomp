@@ -744,3 +744,6 @@ String &String::operator+=(const long long &v) {
     *this += tmp;
     return *this;
 }
+
+// Static data member present in the original binary (defined for symbol parity).
+char16_t AbyssEngine::String::termChar;

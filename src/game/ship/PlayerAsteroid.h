@@ -87,5 +87,12 @@ private:
     int &pushDuration() { return *reinterpret_cast<int *>(reinterpret_cast<char *>(&this->field_0x104) + 4); }
     Vector &pushDirection() { return *reinterpret_cast<Vector *>(&this->field_0x10c); }
     Vector &pushSpin() { return *reinterpret_cast<Vector *>(&this->field_0x118); }
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static AbyssEngine::AEMath::Vector tmp_vector2;
+    static AbyssEngine::AEMath::Vector asteroidCenter;
+    static float asteroidDistance;
+    static AbyssEngine::AEMath::Vector pos;
+    static float emitTime;
 };
 #endif

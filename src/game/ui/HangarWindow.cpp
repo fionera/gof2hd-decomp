@@ -2431,3 +2431,6 @@ bool HangarWindow::isInitialized() {
 ListItem *HangarWindow::getCurrentItem() {
     return reinterpret_cast<ListItem *>(this->progressBarBorderImage);
 }
+
+// Static data members present in the original binary (defined for symbol parity).
+int HangarWindow::lastTab;

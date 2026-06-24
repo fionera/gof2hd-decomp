@@ -79,6 +79,17 @@ public:
     void SetSaveDirectory(String dir) override;
 
     String GetDirPreFix() override;
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static void *methodRead;
+    static int fileCounter;
+    static void *methodWrite;
+    static void *methodCloseRead;
+    static void *methodFileExist;
+    static void *methodCloseWrite;
+    static void *env;
+    static void *clazz;
+    static void *context;
 };
 
 char *logi(char *message);

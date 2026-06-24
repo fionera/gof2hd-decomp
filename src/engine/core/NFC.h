@@ -76,6 +76,9 @@ public:
     int getHeight();
 
     static int g_android_back_button_pressed;
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static void *interface_path;
 };
 
 bool IsDialogVisible(int);

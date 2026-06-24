@@ -1,4 +1,9 @@
 #include "game/world/Level.h"
+
+float Level::r;
+float Level::g;
+float Level::b;
+
 #include "game/mission/Mission.h"
 #include "game/ship/Ship.h"
 #include "engine/render/AEGeometry.h"
@@ -4303,3 +4308,19 @@ static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
     float back = (float) (2000 + (int) (i / 2) * 2500);
     ((KIPlayer *) kiSlot)->setPosition(p.x + side, p.y, p.z - back);
 }
+
+// Static data members present in the original binary (defined for symbol parity).
+unsigned char Level::doInstantJump;
+void *Level::programmedStation;
+unsigned char Level::comingFromAlienWorld;
+unsigned char Level::initStreamOutPosition;
+int Level::energyCellsForNextJump;
+int Level::lastMissionFreighterHitpoints;
+unsigned char Level::initStreamOutPositionAfterCutscene;
+float Level::i_a;
+float Level::i_b;
+float Level::i_g;
+float Level::i_r;
+float Level::b_min;
+float Level::g_min;
+float Level::r_min;

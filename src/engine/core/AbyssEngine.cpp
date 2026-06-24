@@ -49,6 +49,35 @@ namespace AbyssEngine {
 
     int currentUsedShaderIndex;
 
+    // Namespace-scope globals present in the original binary (defined for symbol parity).
+    float currentFps;
+    float debugTouch[4];
+    int fpsCounter;
+    int SwapCounter;
+    unsigned char firstRender;
+    int loadTexture;
+    float currentLODBias;
+    int CubeMapSetIndex;
+    int debugModusIndex;
+    unsigned char firstRenderGlow;
+    unsigned char performanceTest;
+    long long performanceTime;
+    float timeBetweenFrames;
+    unsigned char BiasErrorOutputFlag;
+    unsigned char performanceTestEnded;
+    float orientationChangeTimer;
+    long long performanceFrameCounter;
+    long long performanceModulSwitches;
+    long long performanceOverallModulSwitches;
+    int lauf;
+    float i_fov;
+    float i_zFar;
+    float i_zNear;
+    float fpsTimer;
+    int loadMesh;
+    long long triDrawn;
+    unsigned char ShaderSet;
+
     Engine *AE_getInitGLThis();
     int AE_getInitGLWidth();
     int AE_getInitGLHeight();

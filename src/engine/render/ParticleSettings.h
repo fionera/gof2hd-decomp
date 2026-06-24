@@ -70,5 +70,9 @@ public:
     void multiplyAll(float scale);
 
     void Interpolate(ParticleSet a, ParticleSet b, float t, ParticleSet out);
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static int particleMultiply;
+    static int pCounter;
 };
 #endif

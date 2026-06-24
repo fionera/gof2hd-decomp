@@ -136,5 +136,11 @@ public:
     static void SetSaveDirectory(String path);
 
     static void ResetSaveDirectory();
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static void *fileInterface;
+    static void *pakFileEntryList;
+    static void *file;
+    static void *appRoot;
 };
 #endif

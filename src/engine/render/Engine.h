@@ -21,6 +21,8 @@ namespace AbyssEngine {
     class Engine;
     class ApplicationManager;
     enum LandscapeMode : int;
+
+    extern bool PostEffectFlag;
 }
 
 using ::AbyssEngine::ApplicationManager;
@@ -563,11 +565,42 @@ namespace AbyssEngine {
 
         static bool EnablePostEffect;
 
+        static bool CheckForOrientationChange;
+
         static bool fogEnabled;
 
         static Engine **g_pEngine;
 
         static Engine *gEngine;
+
+        // Static data members present in the original binary (defined for symbol parity).
+        static unsigned char EnableGlow;
+        static int ImageCount;
+        static int switchGlow;
+        static int SwapCounter;
+        static int switchBloom;
+        static unsigned char enableShader;
+        static unsigned char EnableRefract;
+        static void *LodDistShader;
+        static unsigned char DisableRefract;
+        static int AnisotropyValue;
+        static unsigned char KeepRawMeshData;
+        static unsigned char backupSaveGames;
+        static int MultiSampleValue;
+        static unsigned char UseAdvancedShader;
+        static unsigned char enableReverseFlag;
+        static int tv_h;
+        static int tv_w;
+        static AbyssEngine::AEMath::Vector vendor;
+        static unsigned char DrawFBO;
+        static int vboSize;
+        static unsigned char DEBUGKEY;
+        static unsigned char TVEnable;
+        static float farPlane;
+        static AbyssEngine::AEMath::Vector renderer;
+        static AbyssEngine::AEMath::Vector tv_modes;
+        static unsigned char WireFrame;
+        static float nearPlane;
     };
 }
 

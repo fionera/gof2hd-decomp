@@ -186,6 +186,10 @@ public:
 
     static void setInitStreamOut();
 
+    static float r;
+    static float g;
+    static float b;
+
     int init();
 
     void createSpace();
@@ -361,6 +365,22 @@ public:
     void incNumDeliveredPassengers(int delta);
 
     void crm_dispatch(int egoComm, void *queue);
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static unsigned char doInstantJump;
+    static void *programmedStation;
+    static unsigned char comingFromAlienWorld;
+    static unsigned char initStreamOutPosition;
+    static int energyCellsForNextJump;
+    static int lastMissionFreighterHitpoints;
+    static unsigned char initStreamOutPositionAfterCutscene;
+    static float i_a;
+    static float i_b;
+    static float i_g;
+    static float i_r;
+    static float b_min;
+    static float g_min;
+    static float r_min;
 };
 
 #if __SIZEOF_POINTER__ == 4

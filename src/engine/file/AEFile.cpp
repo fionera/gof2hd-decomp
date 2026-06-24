@@ -641,3 +641,9 @@ uint32_t AEFile::crc32_ccitt(const String &text) {
     }
     return crc;
 }
+
+// Static data members present in the original binary (defined for symbol parity).
+void *AEFile::fileInterface;
+void *AEFile::pakFileEntryList;
+void *AEFile::file;
+void *AEFile::appRoot;

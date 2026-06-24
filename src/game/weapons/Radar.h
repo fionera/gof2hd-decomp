@@ -127,6 +127,9 @@ public:
     void drawCurrentLock(Hud *hud);
 
     void calcDistance(float p0, float a, float b, float c, float d, float e);
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static unsigned char drawTarget;
 };
 
 #endif

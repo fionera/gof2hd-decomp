@@ -1417,3 +1417,7 @@ bool Hud::drawTitleImage(bool visible) {
     return visible;
 }
 
+// Static data members present in the original binary (defined for symbol parity).
+int Hud::RADAR_WIDTH;
+int Hud::RADAR_HEIGHT;
+int Hud::wingmanCommand;

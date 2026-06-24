@@ -286,6 +286,11 @@ public:
     void updateSecondaryWeaponString();
 
     bool drawTitleImage(bool visible);
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static int RADAR_WIDTH;
+    static int RADAR_HEIGHT;
+    static int wingmanCommand;
 };
 
 static_assert(__builtin_offsetof(HudEventDisplay, eventBannerDisplayScale) == 0x1e0,

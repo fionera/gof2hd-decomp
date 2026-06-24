@@ -12,6 +12,8 @@
 #include "game/ship/PlayerStatic.h"
 #include "engine/render/LensFlare.h"
 
+int StarSystem::orbitPlanetIndex;
+
 
 namespace AbyssEngine {
     namespace AEMath {
@@ -649,4 +651,3 @@ void StarSystem::render() {
         }
     }
 }
-

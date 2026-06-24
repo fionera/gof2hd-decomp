@@ -386,3 +386,14 @@ char *logi(char *message) {
 char *loge(char *message) {
     return message;
 }
+
+// Static data members present in the original binary (defined for symbol parity).
+void *FileInterfaceAndroid::methodRead;
+int FileInterfaceAndroid::fileCounter;
+void *FileInterfaceAndroid::methodWrite;
+void *FileInterfaceAndroid::methodCloseRead;
+void *FileInterfaceAndroid::methodFileExist;
+void *FileInterfaceAndroid::methodCloseWrite;
+void *FileInterfaceAndroid::env;
+void *FileInterfaceAndroid::clazz;
+void *FileInterfaceAndroid::context;

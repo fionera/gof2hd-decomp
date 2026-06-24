@@ -15,7 +15,9 @@ float AbyssEngine::Engine::lodBiasDiffuse = 0.0f;
 float AbyssEngine::Engine::lodBiasNormal = 0.0f;
 unsigned int AbyssEngine::Engine::countryCode = 0;
 bool AbyssEngine::Engine::EnablePostEffect = false;
+bool AbyssEngine::Engine::CheckForOrientationChange;
 bool AbyssEngine::Engine::fogEnabled = false;
+bool AbyssEngine::PostEffectFlag;
 #include "engine/core/ApplicationManager.h"
 #include "engine/core/NFC.h"
 #include "engine/file/AEFile.h"
@@ -1524,3 +1526,32 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     }
     return ShaderUpdateMaterialColor();
 }
+
+// Static data members present in the original binary (defined for symbol parity).
+unsigned char AbyssEngine::Engine::EnableGlow;
+int AbyssEngine::Engine::ImageCount;
+int AbyssEngine::Engine::switchGlow;
+int AbyssEngine::Engine::SwapCounter;
+int AbyssEngine::Engine::switchBloom;
+unsigned char AbyssEngine::Engine::enableShader;
+unsigned char AbyssEngine::Engine::EnableRefract;
+void *AbyssEngine::Engine::LodDistShader;
+unsigned char AbyssEngine::Engine::DisableRefract;
+int AbyssEngine::Engine::AnisotropyValue;
+unsigned char AbyssEngine::Engine::KeepRawMeshData;
+unsigned char AbyssEngine::Engine::backupSaveGames;
+int AbyssEngine::Engine::MultiSampleValue;
+unsigned char AbyssEngine::Engine::UseAdvancedShader;
+unsigned char AbyssEngine::Engine::enableReverseFlag;
+int AbyssEngine::Engine::tv_h;
+int AbyssEngine::Engine::tv_w;
+AbyssEngine::AEMath::Vector AbyssEngine::Engine::vendor;
+unsigned char AbyssEngine::Engine::DrawFBO;
+int AbyssEngine::Engine::vboSize;
+unsigned char AbyssEngine::Engine::DEBUGKEY;
+unsigned char AbyssEngine::Engine::TVEnable;
+float AbyssEngine::Engine::farPlane;
+AbyssEngine::AEMath::Vector AbyssEngine::Engine::renderer;
+AbyssEngine::AEMath::Vector AbyssEngine::Engine::tv_modes;
+unsigned char AbyssEngine::Engine::WireFrame;
+float AbyssEngine::Engine::nearPlane;

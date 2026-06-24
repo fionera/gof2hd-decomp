@@ -40,6 +40,9 @@ public:
     inline void setLanguage_i(int langId) { setLanguage(langId); }
 
     static GameText *gGameText;
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static unsigned short currentLang;
 };
 
 #endif

@@ -130,5 +130,8 @@ public:
     void setCampaignMission(bool flag);
 
     bool isOutsideMission();
+
+    // Static data members present in the original binary (defined for symbol parity).
+    static void *empty;
 };
 #endif

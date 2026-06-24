@@ -33,6 +33,8 @@ public:
     float planetScale;
     float planetRingScaleOffset;
 
+    static int orbitPlanetIndex;
+
     StarSystem(int mode);
 
     ~StarSystem();
@@ -68,5 +70,6 @@ public:
     void switchSunForSupernovaReversal();
 
     void updateSupernova(int dt);
+
 };
 #endif

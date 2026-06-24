@@ -2959,3 +2959,7 @@ void PlayerEgo::toggleCloaking() {
     }
 }
 
+// Static data members present in the original binary (defined for symbol parity).
+AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
+AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
+AbyssEngine::AEMath::Vector PlayerEgo::vec_up;
