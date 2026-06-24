@@ -408,7 +408,7 @@ void Level::killWanted(int /*param*/) {
     }
 }
 
-Array<ObjectGun *> *Level::getEnemyGuns() {
+Array<AbstractGun *> *Level::getEnemyGuns() {
     return enemyGuns;
 }
 
@@ -439,19 +439,19 @@ Route *Level::getEnemyRoute() {
     return enemyRoute;
 }
 
-Array<ObjectGun *> *Level::getPlayerGuns() {
+Array<AbstractGun *> *Level::getPlayerGuns() {
     return playerGuns;
 }
 
 void Level::renderPause(long long /*ctx*/) {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
-            (*this->playerGuns)[i]->render();
+            ((ObjectGun *) (*this->playerGuns)[i])->render();
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            (*this->enemyGuns)[i]->render();
+            ((ObjectGun *) (*this->enemyGuns)[i])->render();
         }
     }
     if (this->enemies != nullptr) {
@@ -557,12 +557,12 @@ static inline void actorPreRender(KIPlayer *o, int ctx) {
 void Level::render(int ctx) {
     if (this->playerGuns != nullptr) {
         for (unsigned int i = 0; i < this->playerGuns->size(); i = i + 1) {
-            (*this->playerGuns)[i]->render();
+            ((ObjectGun *) (*this->playerGuns)[i])->render();
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned int i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            (*this->enemyGuns)[i]->render();
+            ((ObjectGun *) (*this->enemyGuns)[i])->render();
         }
     }
     if (this->enemies != nullptr) {
@@ -954,9 +954,9 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
 
     gun->setLevel(this);
     if (this->playerGuns == nullptr) {
-        this->playerGuns = new Array<ObjectGun *>();
+        this->playerGuns = new Array<AbstractGun *>();
     }
-    ArrayAdd(obj, *(this->playerGuns));
+    ArrayAdd((AbstractGun *) obj, *(this->playerGuns));
     return gun;
 }
 
@@ -1983,12 +1983,12 @@ void Level::update(long long /*time*/, bool param) {
 
     if (this->playerGuns != nullptr) {
         for (unsigned i = 0; i < this->playerGuns->size(); i = i + 1) {
-            (*this->playerGuns)[i]->update(dt);
+            ((ObjectGun *) (*this->playerGuns)[i])->update(dt);
         }
     }
     if (this->enemyGuns != nullptr) {
         for (unsigned i = 0; i < this->enemyGuns->size(); i = i + 1) {
-            (*this->enemyGuns)[i]->update(dt);
+            ((ObjectGun *) (*this->enemyGuns)[i])->update(dt);
         }
     }
 
@@ -3306,7 +3306,7 @@ void Level::assignGuns() {
         }
     }
 
-    this->enemyGuns = new Array<ObjectGun *>();
+    this->enemyGuns = new Array<AbstractGun *>();
     ArraySetLength(slots, *(this->enemyGuns));
 
     int baseDmg = (basePower == 0) ? 3 : (basePower + 2);
@@ -3536,7 +3536,7 @@ void Level::assignGuns() {
                 gun2->setIndex(0x1f);
                 RocketGun *r2 = (RocketGun *) ::operator new(0xe8);
                 new(r2) RocketGun(gun2->itemIndex, gun2, 0x37a0, 0, 0, gun2->weaponType, false, this);
-                ArrayAdd((ObjectGun *) r2, *(this->enemyGuns));
+                ArrayAdd((AbstractGun *) r2, *(this->enemyGuns));
                 ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun2, 0);
                 Globals::gGlobals->addSoundResourceToList(0x54);
             }
@@ -3554,7 +3554,7 @@ void Level::assignGuns() {
                 RocketGun *r3 = (RocketGun *) ::operator new(0xe8);
                 new(r3) RocketGun(gun3->itemIndex, gun3, 0x37a0, 0, 0, gun3->weaponType,
                                   gun3->weaponType == ITEM_SORT_MISSILE, this);
-                ArrayAdd((ObjectGun *) r3, *(this->enemyGuns));
+                ArrayAdd((AbstractGun *) r3, *(this->enemyGuns));
                 gun3->field_0x50 = 8.0f;
                 gun3->initialLifetime = 10000;
                 gun3->fireDelay = 3000;

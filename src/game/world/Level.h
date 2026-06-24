@@ -31,6 +31,7 @@ class KIPlayer;
 class LODManager;
 class LodMeshMerger;
 class ObjectGun;
+class AbstractGun;
 class Objective;
 class ParticleSystemManager;
 class PlayerEgo;
@@ -102,8 +103,8 @@ public:
     Waypoint *asteroidWaypoint;
     int field_dc;
     int field_e0;
-    Array<ObjectGun *> *playerGuns;
-    Array<ObjectGun *> *enemyGuns;
+    Array<AbstractGun *> *playerGuns;
+    Array<AbstractGun *> *enemyGuns;
     StarSystem *starSystem;
     PlayerEgo *player;
     Array<KIPlayer *> *gasClouds;
@@ -321,9 +322,9 @@ public:
 
     void removeObjectives();
 
-    Array<ObjectGun *> *getPlayerGuns();
+    Array<AbstractGun *> *getPlayerGuns();
 
-    Array<ObjectGun *> *getEnemyGuns();
+    Array<AbstractGun *> *getEnemyGuns();
 
     int checkGameOver(int param);
 
