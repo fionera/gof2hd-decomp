@@ -46,6 +46,11 @@ constexpr int kVirtualKeyCount = 48;
 // Exported global (the original's `keys`): the table of virtual key states.
 VirtualKey keys[kVirtualKeyCount];
 
+// Cross-TU exported pointer/wheel emulation state (original's globals).
+int stackX;
+int stackY;
+int wheelStack;
+
 namespace {
     VirtualKey *const g_arrowKeys = keys;
 
@@ -57,7 +62,6 @@ namespace {
 
     constexpr double kWheelDecay = 0.78;
 
-    int g_wheelAccumA;
     int g_wheelAccumB;
     int g_wheelAccumC;
 
@@ -70,9 +74,7 @@ namespace {
     int g_pointerEmulationEnabled;
     int g_pointerCaptured;
     int g_pointerX;
-    int g_pointerY;
     int g_pointerBaseY;
-    int g_pointerCaptureX;
 
     constexpr int kTouchWindowBase = 0x578;
 
@@ -161,16 +163,16 @@ void MouseInput(int dx, int dy) {
         return;
 
     if (g_pointerCaptured) {
-        g_pointerCaptureX = dx;
+        stackX = dx;
     } else {
         g_pointerX += dx;
         dy += g_pointerBaseY;
     }
-    g_pointerY = dy;
+    stackY = dy;
 }
 
 void LowerMouseWheel() {
-    for (int *accum: {&g_wheelAccumA, &g_wheelAccumB, &g_wheelAccumC}) {
+    for (int *accum: {&wheelStack, &g_wheelAccumB, &g_wheelAccumC}) {
         if (*accum > 0) {
             int scaled = static_cast<int>(static_cast<double>(*accum) * kWheelDecay);
             *accum = scaled < 0 ? 0 : scaled;
@@ -188,7 +190,7 @@ void MouseWheel(float delta, float residual) {
     if (delta > 4.0f && inFlightModule())
         g_zoomRequest = -1;
 
-    g_wheelAccumA = static_cast<int>(static_cast<float>(g_wheelAccumA) + delta + residual);
+    wheelStack = static_cast<int>(static_cast<float>(wheelStack) + delta + residual);
 }
 
 void keyReleasedWithDelay(AbyssEngine::Engine * /*engine*/, int key) {
@@ -614,15 +616,15 @@ void simulateTouch(AbyssEngine::Engine *engine) {
     if ((Globals::is_choice_window_visible | Globals::is_menu_visible |
          Globals::is_dialogue_window_visible) == 0) {
         float steer = bitsToFloat(Globals::rotateShipInStation) +
-                      VectorSignedToFloat(g_wheelAccumA, 0);
-        g_wheelAccumA = static_cast<int>(VectorSignedToFloat(g_wheelAccumA, 0) * 0.9f);
+                      VectorSignedToFloat(wheelStack, 0);
+        wheelStack = static_cast<int>(VectorSignedToFloat(wheelStack, 0) * 0.9f);
         if (steer > 40.0f)
             steer = 40.0f;
         else if (steer < -40.0f)
             steer = -40.0f;
         Globals::rotateShipInStation = floatToBits(steer);
     } else {
-        g_wheelAccumA = 0;
+        wheelStack = 0;
         Globals::rotateShipInStation = floatToBits(0.0f);
     }
 
@@ -648,7 +650,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
             g_stick.easedX = 1.0f;
         }
 
-        int py = g_pointerY;
+        int py = stackY;
         int stepY = 0;
         if (py < 0) { g_stick.easedY = 0.0f; } else if (py != 0) {
             stepY = 1;
@@ -661,7 +663,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         }
         if (stepY != 0 || (py - stepY) < 0) {
             int dy = py - stepY;
-            g_pointerY = dy - (dy >> 31);
+            stackY = dy - (dy >> 31);
         }
 
         if (g_stick.easedX > 1.0f) g_stick.easedX = 1.0f;
@@ -701,7 +703,7 @@ void simulateTouch(AbyssEngine::Engine *engine) {
         float mag = std::max(std::fabs(g_stick.easedY), magX);
 
         float nx = std::max(std::min(VectorSignedToFloat(g_pointerX, 0) / mag, 1.0f), -1.0f);
-        float ny = std::max(std::min(VectorSignedToFloat(g_pointerY, 0) / (mag * 0.5f), 1.0f), -1.0f);
+        float ny = std::max(std::min(VectorSignedToFloat(stackY, 0) / (mag * 0.5f), 1.0f), -1.0f);
 
         float ex = easeAxis(nx);
         float ey = easeAxis(ny);
@@ -753,6 +755,6 @@ void simulateTouch(AbyssEngine::Engine *engine) {
 
     if (g_pointerCaptured == 0) {
         g_pointerX = static_cast<int>(VectorSignedToFloat(g_pointerX, 0) * 0.96f);
-        g_pointerY = static_cast<int>(VectorSignedToFloat(g_pointerY, 0) * 0.96f);
+        stackY = static_cast<int>(VectorSignedToFloat(stackY, 0) * 0.96f);
     }
 }
