@@ -22,7 +22,6 @@
 
 #include <jni.h>
 #include <openssl/sha.h>
-#include <openssl/crypto.h>
 #include <cstdint>
 #include <cstddef>
 
@@ -2473,7 +2472,14 @@ bool RecordHandler::checkHash(unsigned int fd) {
             SHA256_Update(c, *RH_ch_key, 0x10);
             SHA256_Final(md, c);
 
-            result = (CRYPTO_memcmp(md, &data[(int) len - 0x20], 0x20) == 0) ? 1 : 0;
+            unsigned i = 0;
+
+            while (i < 0x20) {
+                unsigned char want = data[(int) len + i - 0x20];
+                if (md[i] != want) break;
+                i++;
+            }
+            result = (i > 0x1f) ? 1 : 0;
             delete[] md;
             delete[] c;
         }
