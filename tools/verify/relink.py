@@ -32,6 +32,10 @@ NEEDED = ["log", "GLESv2", "GLESv1_CM", "EGL", "android", "m", "dl", "c"]
 # type_info, __cxa_*, terminate/unexpected/new_handler). Linked as an archive so
 # only the objects our code references are pulled in (matching the original subset).
 CXX_RUNTIME = [NDK + "/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a"]
+# Vendored OpenSSL 1.0.2 libcrypto subset (SHA-224/256, CRYPTO_memcmp, OPENSSL_cleanse,
+# ARMv7/ARMv8 cpuid probes) -- the game statically linked these from libcrypto.
+# Built by third_party/openssl/build.sh. Linked as an archive (only referenced objects pulled).
+CRYPTO_LIB = [os.path.join(ROOT, "third_party", "openssl", "libcrypto_gof2.a")]
 # objects that duplicate a C++ TU and pull in undefined C-name globals
 DROP = {"recovered_a3cc4.o"}
 
@@ -47,6 +51,7 @@ def link(objs):
     for n in NEEDED:
         cmd += ["-l", n]
     cmd += objs
+    cmd += [p for p in CRYPTO_LIB if os.path.exists(p)]
     cmd += CXX_RUNTIME
     cmd += [os.path.join(LIBDIR, "crtend_so.o"), "-o", OUT]
     return orb(*cmd)

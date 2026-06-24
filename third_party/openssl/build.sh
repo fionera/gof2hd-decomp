@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Build the OpenSSL 1.0.2 libcrypto subset the game statically linked, for armeabi-v7a
+# with the NDK r18b clang. Produces third_party/openssl/libcrypto_gof2.a, which
+# tools/verify/relink.py links into libgof2hdaa.so to satisfy the SHA-224/256,
+# CRYPTO_memcmp, OPENSSL_cleanse and ARMv7/ARMv8 cpuid-probe symbols.
+#
+# Version: OpenSSL 1.0.2u  (the 1.0.2 series is identified by the ARMv8 crypto
+# probes _armv8_sha256_probe/_armv8_aes_probe + OPENSSL_instrument_bus2 present in
+# the original .so; no version string is embedded since it was statically linked).
+#
+# Runs inside OrbStack (the NDK toolchain is Linux-only), same as tools/verify/orbcc.
+# Requires the source tree at third_party/openssl/openssl-1.0.2u (fetched below if absent).
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+SRC="$HERE/openssl-1.0.2u"
+VER=openssl-1.0.2u
+
+if [ ! -d "$SRC" ]; then
+  echo "[openssl] fetching $VER source ..."
+  curl -sL -o "$HERE/$VER.tar.gz" "https://www.openssl.org/source/$VER.tar.gz"
+  tar xzf "$HERE/$VER.tar.gz" -C "$HERE/"
+  rm -f "$HERE/$VER.tar.gz"
+fi
+
+orb -m "${GOF2_ORB_MACHINE:-ubuntu}" bash -c '
+set -e
+cd "'"$SRC"'"
+NDK=/opt/android-ndk-r18b; TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
+SYSROOT=$NDK/platforms/android-16/arch-arm
+# Configure once (generates opensslconf.h / buildinf.h); ignore if already done.
+[ -f Makefile ] || ./Configure android-armv7 no-shared >/dev/null 2>&1
+CC="$TC/clang --target=armv7a-linux-androideabi16 -mfpu=neon -mfloat-abi=softfp \
+  --sysroot=$SYSROOT -isystem $NDK/sysroot/usr/include \
+  -isystem $NDK/sysroot/usr/include/arm-linux-androideabi \
+  -O3 -fPIC -Wno-everything -I. -Icrypto -Iinclude -Icrypto/sha"
+OBJ=$(mktemp -d)
+# .S cpuid probes assemble only in ARM mode (the OpenSSL asm is ARM, not Thumb).
+$CC -marm  -c crypto/armv4cpuid.S -o $OBJ/armv4cpuid.o
+# Self-contained C SHA-256 (the perlasm SHA transform uses adrl, unsupported by the
+# clang integrated assembler; the C transform yields the same symbols).
+$CC -mthumb -c crypto/sha/sha256.c -o $OBJ/sha256.o
+$CC -mthumb -c crypto/cryptlib.c   -o $OBJ/cryptlib.o   # CRYPTO_memcmp
+$CC -mthumb -c crypto/armcap.c     -o $OBJ/armcap.o     # OPENSSL_cpuid_setup
+$TC/llvm-ar rcs "'"$HERE"'/libcrypto_gof2.a" \
+  $OBJ/armv4cpuid.o $OBJ/sha256.o $OBJ/cryptlib.o $OBJ/armcap.o
+rm -rf $OBJ
+'
+echo "[openssl] wrote third_party/openssl/libcrypto_gof2.a"
