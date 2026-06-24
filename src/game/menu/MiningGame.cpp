@@ -8,6 +8,19 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
 
+// Mining-game parallax layer tables, recovered from the original binary.
+float LAYER_SPEEDS[7] = {5.0f, 8.0f, 12.0f, 17.0f, 23.0f, 30.0f, 38.0f};
+int LAYER_DIAMETERS[49] = {
+    250, 210, 170, 140, 110, 80, 50,
+    250, 210, 170, 140, 110, 80, 0,
+    250, 200, 150, 100, 70, 0, 0,
+    250, 170, 120, 80, 0, 0, 0,
+    250, 160, 80, 0, 0, 0, 0,
+    250, 120, 0, 0, 0, 0, 0,
+    250, 0, 0, 0, 0, 0, 0,
+};
+
+
 float MiningGame_sqrt(void *globals, float value);
 
 void MiningGame_FModSound_setParamValue(void *sound, int index, int param, float value);
@@ -55,7 +68,6 @@ static void **g_MiningGame_sqrt = nullptr;
 
 static void **g_MiningGame_layout = nullptr;
 
-static int *g_MiningGame_layerSizes = nullptr;
 
 bool MiningGame::isInCurrentLayer() {
     float dx = this->posX - (float) this->centerX;
@@ -63,7 +75,7 @@ bool MiningGame::isInCurrentLayer() {
     void **sqrtHolder = g_MiningGame_sqrt;
     int current = this->currentLayer;
     int layer = this->targetLayer;
-    int *row = g_MiningGame_layerSizes + (7 - layer) * 7;
+    int *row = LAYER_DIAMETERS + (7 - layer) * 7;
     Layout *layout = (Layout *) *g_MiningGame_layout;
     void *globals = *sqrtHolder;
     int size = row[current];
@@ -113,7 +125,6 @@ static int (*g_MiningGame_randomNext)(void *random, int limit) = nullptr;
 
 static void **g_MiningGame_layoutUpdate = nullptr;
 
-static float *g_MiningGame_layerSpeedUpdate = nullptr;
 
 static void **g_MiningGame_sound = nullptr;
 
@@ -171,7 +182,7 @@ int MiningGame::update(int delta) {
     this->leftMarquee->update(delta);
     this->rightMarquee->update(delta);
 
-    float *layerSpeed = g_MiningGame_layerSpeedUpdate;
+    float *layerSpeed = LAYER_SPEEDS;
     void **soundHolder = g_MiningGame_sound;
     MiningGame_FModSound_setParamValue(*soundHolder, 0, 1,
                                        ((layerSpeed[this->currentLayer] - 5.0f) / 33.0f) * 3.0f);
@@ -265,7 +276,6 @@ static int *g_MiningGame_screenW = nullptr;
 
 static int *g_MiningGame_screenH = nullptr;
 
-static float *g_MiningGame_layerSpeed = nullptr;
 
 MiningGame::MiningGame(int layer, int station, Hud *hud) {
     int imageId[2];
@@ -379,7 +389,7 @@ MiningGame::MiningGame(int layer, int station, Hud *hud) {
     MarqueeImage *oreMarquee =
             new MarqueeImage(0x4e4, canvas->GetImage2DWidth(this->oreLabelImageId) - 8, 0, 0, F(layout, 0xdc));
     this->oreMarquee = oreMarquee;
-    oreMarquee->speed = layout->animSpeedScale * g_MiningGame_layerSpeed[this->currentLayer];
+    oreMarquee->speed = layout->animSpeedScale * LAYER_SPEEDS[this->currentLayer];
 
     this->promptPulseTimer = 0;
     this->textAlpha = 1.0f;
