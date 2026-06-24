@@ -432,7 +432,7 @@ uint8_t Level::friendCargoWasStolen() {
 }
 
 Array<void *> *Level::getMessages() {
-    return messages;
+    return (Array<void *> *) messages;
 }
 
 Route *Level::getEnemyRoute() {
@@ -717,7 +717,7 @@ Level::~Level() {
         landmarks = nullptr;
     }
     if (messages) {
-        for (void *e: *messages) delete (RadioMessage *) e;
+        for (RadioMessage *e: *messages) delete e;
         delete messages;
         messages = nullptr;
     }
@@ -1027,12 +1027,12 @@ void Level::createRadioMessage(int type, int sub) {
 
     if (this->messages != nullptr) {
         if (this->messages) {
-            for (void *e: *this->messages) delete (RadioMessage *) e;
+            for (RadioMessage *e: *this->messages) delete e;
             delete this->messages;
             this->messages = nullptr;
         }
     }
-    this->messages = new Array<void *>();
+    this->messages = new Array<RadioMessage *>();
 
     int speaker;
     if (r2 == 0) speaker = 0x40;
@@ -1129,7 +1129,7 @@ void Level::createRadioMessage(int type, int sub) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 int kind = (k == 0) ? 5 : 6;
                 new(m) RadioMessage(tbl[k].textID, arg, kind, delay);
-                ArrayAdd((void *) m, *(this->messages));
+                ArrayAdd(m, *(this->messages));
             }
             builtInline = true;
             break;
@@ -1138,10 +1138,10 @@ void Level::createRadioMessage(int type, int sub) {
             RadioMessage *m = (RadioMessage *) ::operator new(0x28);
             AbyssEngine::AERandom *rng = AERandom::gRandom;
             new(m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
-            ArrayAdd((void *) m, *(this->messages));
+            ArrayAdd(m, *(this->messages));
             m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(rng->nextInt() + 0xafa, 0, 6, 0);
-            ArrayAdd((void *) m, *(this->messages));
+            ArrayAdd(m, *(this->messages));
             builtInline = true;
             break;
         }
@@ -1166,10 +1166,10 @@ void Level::createRadioMessage(int type, int sub) {
         case 0x1b: {
             RadioMessage *m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(r2 * 2 + 0xc60, 6, 5, 0x5dc);
-            ArrayAdd((void *) m, *(this->messages));
+            ArrayAdd(m, *(this->messages));
             m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(r2 * 2 + 0xc61, 0, 6, 0);
-            ArrayAdd((void *) m, *(this->messages));
+            ArrayAdd(m, *(this->messages));
             builtInline = true;
             break;
         }
@@ -1190,7 +1190,7 @@ void Level::createRadioMessage(int type, int sub) {
     if (aborted) {
         if (this->messages != nullptr)
             if (this->messages) {
-                for (void *e: *this->messages) delete (RadioMessage *) e;
+                for (RadioMessage *e: *this->messages) delete e;
                 delete this->messages;
                 this->messages = nullptr;
             }
@@ -1202,7 +1202,7 @@ void Level::createRadioMessage(int type, int sub) {
     if (!builtInline) {
         RadioMessage *m = (RadioMessage *) ::operator new(0x28);
         new(m) RadioMessage(id, speaker, 5, extraDelay);
-        ArrayAdd((void *) m, *(this->messages));
+        ArrayAdd(m, *(this->messages));
     }
 
     PlayerEgo *ego = this->player;
@@ -2298,7 +2298,7 @@ void Level::createRadioMessages(int set) {
                 {0x69e, 0, 6, 0x13}, {0x69f, 0, 6, 0x14}, {0x6a0, 0xf, 6, 0x15},
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(0x17, *(this->messages));
             for (unsigned i = 0; i < 0x17; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2311,7 +2311,7 @@ void Level::createRadioMessages(int set) {
         case 1: {
             static const RMSpec t[] = {{0x6a1, 2, 5, 10000}, {0x6a2, 2, 6, 0}, {0x6a3, 2, 6, 1}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2324,7 +2324,7 @@ void Level::createRadioMessages(int set) {
         case 7: {
             static const RMSpec t[] = {{0x6dc, 2, 0x10, 0}, {0x6dd, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2340,7 +2340,7 @@ void Level::createRadioMessages(int set) {
                 {0x731, 1, 6, 2}, {0x732, 0, 6, 3}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2356,7 +2356,7 @@ void Level::createRadioMessages(int set) {
                 {0x75c, 0xe, 8, 0}, {0x75d, 0xe, 0x15, 0}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2372,7 +2372,7 @@ void Level::createRadioMessages(int set) {
                 {0x780, 6, 0x16, 3}, {0x781, 6, 6, 3}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2385,7 +2385,7 @@ void Level::createRadioMessages(int set) {
         case 0x19: {
             static const RMSpec t[] = {{0x785, 0, 5, 20000}, {0x786, 6, 6, 0}, {0x787, 0, 6, 1}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2398,7 +2398,7 @@ void Level::createRadioMessages(int set) {
         case 0x26: {
             static const RMSpec t[] = {{0x7ed, 0x15, 5, 15000}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2414,7 +2414,7 @@ void Level::createRadioMessages(int set) {
                 {0x7fe, 0, 6, 3}, {0x7ff, 7, 0xc, 0}, {0x800, 0, 0x18, 0}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(7, *(this->messages));
             for (unsigned i = 0; i < 7; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2431,7 +2431,7 @@ void Level::createRadioMessages(int set) {
                 {0x80f, 0, 1, 0}, {0x810, 0, 6, 6}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(8, *(this->messages));
             for (unsigned i = 0; i < 8; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2444,7 +2444,7 @@ void Level::createRadioMessages(int set) {
         case 0x31: {
             static const RMSpec t[] = {{0x848, 0, 5, 8000}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2457,7 +2457,7 @@ void Level::createRadioMessages(int set) {
         case 0x32: {
             static const RMSpec t[] = {{0x849, 0x3f, 5, 8000}, {0x84a, 0, 6, 0}, {0x84b, 0x3f, 6, 1}, {0x84c, 0, 6, 2}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2470,7 +2470,7 @@ void Level::createRadioMessages(int set) {
         case 0x33: {
             static const RMSpec t[] = {{0x84d, 0x3f, 5, 8000}, {0x84e, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2483,7 +2483,7 @@ void Level::createRadioMessages(int set) {
         case 0x34: {
             static const RMSpec t[] = {{0x84f, 0x3f, 5, 8000}, {0x850, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2496,7 +2496,7 @@ void Level::createRadioMessages(int set) {
         case 0x36: {
             static const RMSpec t[] = {{0x851, 0, 5, 8000}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2509,7 +2509,7 @@ void Level::createRadioMessages(int set) {
         case 0x37: {
             static const RMSpec t[] = {{0x85a, 0, 5, 8000}, {0x85b, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2525,7 +2525,7 @@ void Level::createRadioMessages(int set) {
                 {0x86d, 0, 0x14, 3}, {0x86e, 0, 6, 3}, {0x86f, 0x1b, 0x1c, 0}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(6, *(this->messages));
             for (unsigned i = 0; i < 6; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2541,7 +2541,7 @@ void Level::createRadioMessages(int set) {
                 {0x8b8, 0, 6, 3}, {0x8b9, 0x1e, 0x14, 5}, {0x8ba, 0, 6, 5}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(7, *(this->messages));
             for (unsigned i = 0; i < 7; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2554,7 +2554,7 @@ void Level::createRadioMessages(int set) {
         case 0x41: {
             static const RMSpec t[] = {{0x8cb, 0, 5, 12000}, {0x8cc, 0x14, 6, 0}, {0x8cd, 0, 6, 1}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2572,7 +2572,7 @@ void Level::createRadioMessages(int set) {
                 {0x8fa, 0x1f, 6, 10}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(0xc, *(this->messages));
             for (unsigned i = 0; i < 0xc; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2585,7 +2585,7 @@ void Level::createRadioMessages(int set) {
         case 0x45: {
             static const RMSpec t[] = {{0x90e, 0, 5, 8000}, {0x90f, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2598,7 +2598,7 @@ void Level::createRadioMessages(int set) {
         case 0x46: {
             static const RMSpec t[] = {{0x910, 0, 5, 8000}, {0x911, 0, 6, 0}, {0x912, 0x22, 6, 1}, {0x913, 0, 6, 2}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2615,7 +2615,7 @@ void Level::createRadioMessages(int set) {
                 {0x932, 0, 6, 6}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(8, *(this->messages));
             for (unsigned i = 0; i < 8; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2628,7 +2628,7 @@ void Level::createRadioMessages(int set) {
         case 0x77: {
             static const RMSpec t[] = {{0xab9, 0x11, 0x1b, 1}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2641,7 +2641,7 @@ void Level::createRadioMessages(int set) {
         case 0x78: {
             static const RMSpec t[] = {{0xac5, 0, 5, 0x5dc}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2654,7 +2654,7 @@ void Level::createRadioMessages(int set) {
         case 0x83: {
             static const RMSpec t[] = {{0xb2b, 0, 0x1b, 2}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2667,7 +2667,7 @@ void Level::createRadioMessages(int set) {
         case 0x85: {
             static const RMSpec t[] = {{0xb33, 0x11, 0x1b, 1}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2683,7 +2683,7 @@ void Level::createRadioMessages(int set) {
                 {0xb46, 0, 0x1b, 3}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2699,7 +2699,7 @@ void Level::createRadioMessages(int set) {
                 {0xb52, 0, 6, 2}, {0xb53, 0x32, 6, 3}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2715,7 +2715,7 @@ void Level::createRadioMessages(int set) {
                 {0xb9b, 0x27, 6, 2}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2728,7 +2728,7 @@ void Level::createRadioMessages(int set) {
         case 0x91: {
             static const RMSpec t[] = {{0xb9c, 0, 5, 7000}, {0xb9d, 0x27, 6, 0}, {0xb9e, 0x27, 0x1b, 5}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2741,7 +2741,7 @@ void Level::createRadioMessages(int set) {
         case 0x93: {
             static const RMSpec t[] = {{0xbac, 0, 5, 7000}, {0xbad, 0, 6, 0}};
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
@@ -2757,7 +2757,7 @@ void Level::createRadioMessages(int set) {
                 {0x971, 0, 6, 2}, {0x972, 6, 6, 3}
             };
             {
-            this->messages = new Array<void *>();
+            this->messages = new Array<RadioMessage *>();
             ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);

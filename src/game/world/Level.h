@@ -35,6 +35,7 @@ class Objective;
 class ParticleSystemManager;
 class PlayerEgo;
 class PlayerFixedObject;
+class RadioMessage;
 class Route;
 class StarSystem;
 class Waypoint;
@@ -113,7 +114,7 @@ public:
     Route *playerRoute;
     Route *friendRoute;
     Route *enemyRoute;
-    Array<void *> *messages;
+    Array<RadioMessage *> *messages;
     int enemiesLeft;
     int friendsLeft;
     int field_120;
