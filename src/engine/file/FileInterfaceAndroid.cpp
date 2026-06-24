@@ -270,8 +270,12 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 void FileInterfaceAndroid::ResetSaveDirectory() {
 }
 
-void **FileInterfaceAndroid::gZipMain = nullptr;
-void **FileInterfaceAndroid::gZipPatch = nullptr;
+// The opened zip archives (apk / patch). The original exports these as the bare
+// symbols APKArchive / ZIPArchive; gZipMain/gZipPatch point at them.
+void *APKArchive = nullptr;
+void *ZIPArchive = nullptr;
+void **FileInterfaceAndroid::gZipMain = &APKArchive;
+void **FileInterfaceAndroid::gZipPatch = &ZIPArchive;
 static const char *gZipPrefixA = nullptr;
 static const char *gZipPrefixB = nullptr;
 static const char *gModeRb = nullptr;
@@ -306,8 +310,8 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     return exists;
 }
 
-static void **gZipMainR = nullptr;
-static void **gZipPatchR = nullptr;
+static void **gZipMainR = &APKArchive;
+static void **gZipPatchR = &ZIPArchive;
 static const char *gPrefixSlash = nullptr;
 static const char *gPrefixPlain = nullptr;
 static const char *gOpenReadFmt = nullptr;
