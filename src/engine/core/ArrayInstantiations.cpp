@@ -41,3 +41,21 @@ template void ArrayAdd<float>(float, Array<float> &);
 template void ArrayAdd<unsigned char>(const unsigned char *, unsigned int, Array<unsigned char> &);
 template void ArrayAdd<Player *>(Player *const *, unsigned int, Array<Player *> &);
 template void ArrayAdd<Player *>(const Array<Player *> &, Array<Player *> &);
+
+// ctor/dtor for the pointer/heap-element arrays that our code only ever
+// heap-allocates (so -Oz folds the in-place construction). The original emits
+// these out-of-line; instantiate them explicitly (standard C++, no hack).
+class GameRecord;
+namespace AbyssEngine { class KeyCode; class String; }
+template Array<GameRecord *>::~Array();
+template Array<TouchSlider *>::Array();
+template Array<TouchSlider *>::~Array();
+template Array<PendingProduct *>::~Array();
+template Array<BluePrint *>::Array();
+template Array<BluePrint *>::~Array();
+template Array<AbyssEngine::KeyCode *>::Array();
+template Array<AbyssEngine::KeyCode *>::~Array();
+template Array<Array<ImagePart *> *>::Array();
+template Array<Array<AbyssEngine::String *> *>::Array();
+template Array<Array<AbyssEngine::String *> *>::~Array();
+template Array<bool>::~Array();

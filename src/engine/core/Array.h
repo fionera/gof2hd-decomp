@@ -18,18 +18,9 @@ public:
 
     unsigned int capacity_;
 
-    Array() {
-        T *p = static_cast<T *>(::operator new[](sizeof(T)));
-        *p = T();
-        size_ = 0;
-        data_ = p;
-        capacity_ = 1;
-    }
+    Array();
 
-    ~Array() {
-        if (data_) ::operator delete[](data_);
-        data_ = nullptr;
-    }
+    ~Array();
 
     Array(const Array &o) {
         capacity_ = o.capacity_ ? o.capacity_ : 1;
@@ -89,6 +80,24 @@ public:
     void shrink_to_fit() {
     }
 };
+
+// Defined out-of-class (non-inline) so the ctor/dtor are emitted as real
+// functions called out-of-line -- matching the original, where `new Array<T>()`
+// is `operator new(0xc); Array<T>::Array(this)` with an out-of-line ctor call.
+template<class T>
+Array<T>::Array() {
+    T *p = static_cast<T *>(::operator new[](sizeof(T)));
+    *p = T();
+    size_ = 0;
+    data_ = p;
+    capacity_ = 1;
+}
+
+template<class T>
+Array<T>::~Array() {
+    if (data_) ::operator delete[](data_);
+    data_ = nullptr;
+}
 
 template<class T>
 void ArrayAdd(T item, Array<T> &a) {
