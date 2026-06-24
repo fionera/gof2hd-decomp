@@ -14,6 +14,7 @@
 #include "game/ui/ListItem.h"
 #include "game/ship/Player.h"
 
+template void ArrayReleaseArrays<signed char *>(Array<signed char *> &);
 template void ArrayRemove<Node *>(Node *, Array<Node *> &);
 template void ArrayRemove<Agent *>(Agent *, Array<Agent *> &);
 

@@ -348,9 +348,9 @@ void RecordHandler::convertSDVersionSaves() {
         n = *cnt;
     }
 
-    for (signed char *e: *a0) delete[] e;
+    ArrayReleaseArrays(*a0);
     ArrayRemoveAll(*a0);
-    for (signed char *e: *a1) delete[] e;
+    ArrayReleaseArrays(*a1);
     ArrayRemoveAll(*a1);
     delete a0;
     delete a1;
@@ -518,9 +518,9 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
         }
     }
 
-    for (signed char *e: *a0) delete[] e;
+    ArrayReleaseArrays(*a0);
     ArrayRemoveAll(*a0);
-    for (signed char *e: *a1) delete[] e;
+    ArrayReleaseArrays(*a1);
     ArrayRemoveAll(*a1);
     delete a0;
     delete a1;

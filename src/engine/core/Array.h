@@ -182,6 +182,16 @@ void ArrayReleaseClasses(Array<T> &a) {
 }
 
 template<class T>
+void ArrayReleaseArrays(Array<T> &a) {
+    for (unsigned int i = 0; i < a.capacity_; ++i) {
+        if (a.data_[i]) ::operator delete[](a.data_[i]);
+        a.data_[i] = nullptr;
+    }
+    if (a.data_) ::operator delete[](a.data_);
+    a.data_ = nullptr;
+}
+
+template<class T>
 void ArrayAddCached(T item, Array<T> &a) {
     if (a.size_ >= a.capacity_) {
         unsigned int oldCap = a.capacity_;
