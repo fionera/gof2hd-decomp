@@ -273,12 +273,12 @@ void *RecordHandler::readAllRecords() {
 
 
 void *RecordHandler::readAllPreviewRecords() {
-    Array<void *> *arr = new Array<void *>();
+    Array<GameRecord *> *arr = new Array<GameRecord *>();
     int *cnt = g_RH_recordCount;
     ArraySetLength(*cnt, *arr);
     for (int i = 0; i < *cnt; i++) {
         void *r = this->recordStoreReadPreview(i);
-        (*arr)[i] = r;
+        (*arr)[i] = (GameRecord *) r;
     }
     return arr;
 }
