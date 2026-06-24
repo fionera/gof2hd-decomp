@@ -74,7 +74,7 @@ PlayerJumpgate::PlayerJumpgate(int playerId, AEGeometry *geometry, float x, floa
 
     if (visible) {
         this->boundingVolumes = new Array<BoundingVolume *>();
-        this->boundingVolumes->resize(1);
+        ArraySetLength(1, *(this->boundingVolumes));
 
         Status *status = *g_Status;
         int radius;

@@ -112,7 +112,7 @@ namespace AbyssEngine {
             for (KeyFrame *kf: this->keyFrames) {
                 delete kf;
             }
-            this->keyFrames.clear();
+            ArrayRemoveAll(this->keyFrames);
         }
     }
 
@@ -295,7 +295,7 @@ namespace AbyssEngine {
     }
 
     void Transform::InsertKeyFrame(KeyFrame *keyFrame, int index) {
-        this->keyFrames.push_back((KeyFrame *) 0);
+        ArrayAdd((KeyFrame *) 0, this->keyFrames);
         int count = (int) this->keyFrames.size();
         int from = count - 2;
         int to = count - 1;
@@ -350,12 +350,12 @@ namespace AbyssEngine {
 
             for (uint i = 0; i < other->meshes.size(); ++i) {
                 Mesh *mesh = new Mesh(other->meshes[i]);
-                this->meshes.push_back(mesh);
+                ArrayAdd(mesh, this->meshes);
             }
             this->keyFrames = other->keyFrames;
             for (uint i = 0; i < other->children.size(); ++i) {
                 Transform * child = new Transform(other->children[i]);
-                this->children.push_back(child);
+                ArrayAdd(child, this->children);
             }
             this->bounds() = other->bounds();
             this->visible = true;
@@ -555,7 +555,7 @@ namespace AbyssEngine {
         keyFrame->localScale = d;
         longlong timestamp = time;
         keyFrame->timestamp = timestamp;
-        this->keyFrames.push_back(keyFrame);
+        ArrayAdd(keyFrame, this->keyFrames);
         if (this->animationLength < timestamp) {
             this->animationLength = timestamp;
         }
@@ -827,7 +827,7 @@ namespace AbyssEngine {
         }
 
         if (this->keyFrames.size() == 0) {
-            this->keyFrames.push_back(key);
+            ArrayAdd(key, this->keyFrames);
         } else if (index == this->keyFrames.size()) {
             KeyFrame *last = this->keyFrames[this->keyFrames.size() - 1];
             uint mask = key->channelFlags;
@@ -840,7 +840,7 @@ namespace AbyssEngine {
                     keyFields[field] = lastFields[field];
                 }
             }
-            this->keyFrames.push_back(key);
+            ArrayAdd(key, this->keyFrames);
         } else {
             KeyFrame *existing = this->keyFrames[index];
             if (existing->timestamp == timestamp) {

@@ -275,7 +275,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     this->scrollWindow->setText(title, message);
 
     for (String *line: *lines) delete line;
-    lines->clear();
+    ArrayRemoveAll(*lines);
     delete lines;
 
     delete this->leftButton;

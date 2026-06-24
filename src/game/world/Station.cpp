@@ -41,13 +41,13 @@ Station::Station(String name, int index, int systemIndex, int techLevel, int tex
 Station::~Station() {
     if (ships != nullptr) {
         for (Ship *s: *ships) delete s;
-        ships->clear();
+        ArrayRemoveAll(*ships);
         delete ships;
         ships = nullptr;
     }
     if (items != nullptr) {
         for (Item *it: *items) delete it;
-        items->clear();
+        ArrayRemoveAll(*items);
         delete items;
         items = nullptr;
     }
@@ -91,7 +91,7 @@ void Station::addItem(Item *item) {
             }
         }
     }
-    items->push_back(item);
+    ArrayAdd(item, *items);
 }
 
 void Station::addShip(Ship *ship) {
@@ -103,7 +103,7 @@ void Station::addShip(Ship *ship) {
                 return;
         }
     }
-    ships->push_back(ship);
+    ArrayAdd(ship, *ships);
 }
 
 void Station::removeShip(Ship *ship) {
@@ -115,7 +115,7 @@ void Station::removeShip(Ship *ship) {
 void Station::removeShips() {
     if (ships != nullptr) {
         for (Ship *s: *ships) delete s;
-        ships->clear();
+        ArrayRemoveAll(*ships);
         delete ships;
     }
     ships = nullptr;
@@ -156,7 +156,7 @@ void Station::setItems(Array<Item *> *items, bool deep) {
     } else {
         Array<Item *> *copy = new Array<Item *>();
         this->items = copy;
-        copy->resize(items->size());
+        ArraySetLength(items->size(), *copy);
         for (uint32_t i = 0; i < items->size(); i++)
             (*copy)[i] = (*items)[i]->clone();
     }
@@ -165,7 +165,7 @@ void Station::setItems(Array<Item *> *items, bool deep) {
 void Station::setShips(Array<Ship *> *ships, bool deep) {
     if (this->ships != nullptr) {
         for (Ship *s: *this->ships) delete s;
-        this->ships->clear();
+        ArrayRemoveAll(*(this->ships));
         delete this->ships;
     }
     this->ships = nullptr;
@@ -174,7 +174,7 @@ void Station::setShips(Array<Ship *> *ships, bool deep) {
     } else {
         Array<Ship *> *copy = new Array<Ship *>();
         this->ships = copy;
-        copy->resize(ships->size());
+        ArraySetLength(ships->size(), *copy);
         for (uint32_t i = 0; i < ships->size(); i++)
             (*copy)[i] = (*ships)[i]->clone();
     }
@@ -185,7 +185,7 @@ void Station::setAgents(Array<Agent *> *agents) {
         return;
     if (this->agents != nullptr) {
         for (Agent *a: *this->agents) delete a;
-        this->agents->clear();
+        ArrayRemoveAll(*(this->agents));
         delete this->agents;
     }
     this->agents = agents;

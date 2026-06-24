@@ -90,7 +90,7 @@ CutScene::~CutScene() {
     if (this->geometries != nullptr) {
         for (AEGeometry *e: *this->geometries)
             delete e;
-        this->geometries->clear();
+        ArrayRemoveAll(*(this->geometries));
         delete this->geometries;
     }
     this->geometries = nullptr;
@@ -692,7 +692,7 @@ void CutScene::checkForTurret() {
         if (slot != nullptr) {
             for (Vector *v: *slot)
                 delete v;
-            slot->clear();
+            ArrayRemoveAll(*slot);
             delete (*positions)[i];
             (*positions)[i] = nullptr;
         }

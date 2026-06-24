@@ -164,13 +164,13 @@ MissionsWindow::MissionsWindow() {
 MissionsWindow::~MissionsWindow() {
     if (this->m_pAgentImageParts) {
         for (ImagePart *e: *this->m_pAgentImageParts) delete e;
-        this->m_pAgentImageParts->clear();
+        ArrayRemoveAll(*(this->m_pAgentImageParts));
         delete this->m_pAgentImageParts;
     }
     this->m_pAgentImageParts = nullptr;
     if (this->m_pTabButtons) {
         for (TouchButton *e: *this->m_pTabButtons) delete e;
-        this->m_pTabButtons->clear();
+        ArrayRemoveAll(*(this->m_pTabButtons));
         delete this->m_pTabButtons;
     }
     this->m_pTabButtons = nullptr;
@@ -217,7 +217,7 @@ int MissionsWindow::init() {
 
     Array<TouchButton *> *tabs = new Array<TouchButton *>();
     this->m_pTabButtons = tabs;
-    tabs->resize(2);
+    ArraySetLength(2, *tabs);
 
     TouchButton *tab1 = (TouchButton *) ::operator new(sizeof(TouchButton));
     String *t0 = g_mw_gameText->getText(titleId);
@@ -239,7 +239,7 @@ int MissionsWindow::init() {
 
     if (this->m_pAgentImageParts) {
         for (ImagePart *e: *this->m_pAgentImageParts) delete e;
-        this->m_pAgentImageParts->clear();
+        ArrayRemoveAll(*(this->m_pAgentImageParts));
         delete this->m_pAgentImageParts;
     }
     this->m_pAgentImageParts = nullptr;

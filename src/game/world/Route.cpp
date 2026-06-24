@@ -148,7 +148,7 @@ Route *Route::clone() {
             for (uint32_t k = 0; k < times->size(); k++)
                 timesCopy[k] = (*times)[k];
             Array<KIPlayer *> *targetsArr = new Array<KIPlayer *>();
-            targetsArr->resize(this->dockingTargets->size());
+            ArraySetLength(this->dockingTargets->size(), *targetsArr);
             for (uint32_t k = 0; k < this->dockingTargets->size(); k++)
                 (*targetsArr)[k] = (*this->dockingTargets)[k];
             Route *r = new Route(coords, targetsArr, timesCopy, (int) this->waypoints->size() * 3);
@@ -214,10 +214,10 @@ Route::Route(int *coords, int count) {
     this->dockingTargets = new Array<KIPlayer *>();
     this->dockingTimes = new Array<int>();
     uint32_t n = count / 3;
-    this->dockingTargets->resize(n);
-    this->dockingTimes->resize(n);
+    ArraySetLength(n, *(this->dockingTargets));
+    ArraySetLength(n, *(this->dockingTimes));
     for (int i = 0; i < count; i += 3)
-        this->waypoints->push_back(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this));
+        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
 }
 
 Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
@@ -227,16 +227,16 @@ Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
     this->dockingTargets = targets;
     this->dockingTimes = new Array<int>();
     for (int i = 0; i < count; i += 3)
-        this->dockingTimes->push_back(times[i / 3]);
+        ArrayAdd(times[i / 3], *(this->dockingTimes));
     for (int i = 0; i < count; i += 3)
-        this->waypoints->push_back(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this));
+        ArrayAdd(new Waypoint(coords[i], coords[i + 1], coords[i + 2], this), *(this->waypoints));
 }
 
 Route::~Route() {
     if (this->waypoints != nullptr) {
         for (Waypoint *wp: *this->waypoints)
             delete wp;
-        this->waypoints->clear();
+        ArrayRemoveAll(*(this->waypoints));
         delete this->waypoints;
     }
     this->waypoints = nullptr;

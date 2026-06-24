@@ -34,7 +34,7 @@ void GameText::setSubstituteArray(int *pairs, unsigned count) {
     }
     for (; count != 0; --count) {
         int v = *pairs++;
-        this->substitutes.push_back(v);
+        ArrayAdd(v, this->substitutes);
     }
 }
 

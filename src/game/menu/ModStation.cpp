@@ -556,7 +556,7 @@ void ModStation::checkMedals() {
 
     Array<int *> *arr = new Array<int *>();
     *(Array<int *> **)&this->medalArray = arr;
-    arr->resize(this->medalCount);
+    ArraySetLength(this->medalCount, *arr);
     int j = 0;
     this->medalCount = 0;
     for (int i = 0; i != 0x2d; i++) {

@@ -168,13 +168,13 @@ HangarWindow::~HangarWindow() {
     this->dialog = nullptr;
     if (this->tabButtons != nullptr) {
         for (TouchButton *b: *this->tabButtons) delete b;
-        this->tabButtons->clear();
+        ArrayRemoveAll(*(this->tabButtons));
         delete this->tabButtons;
     }
     this->tabButtons = nullptr;
     if (this->buttons != nullptr) {
         for (TouchButton *b: *this->buttons) delete b;
-        this->buttons->clear();
+        ArrayRemoveAll(*(this->buttons));
         delete this->buttons;
     }
     this->active = 0;
@@ -1142,13 +1142,13 @@ void HangarWindow::demountItem(Item *item, int slot) {
         }
     }
     if (!merged)
-        this->itemList->push_back(made);
+        ArrayAdd(made, *(this->itemList));
 
     Status::gStatus->getShip()->setCargo(Item::extractItems(this->itemList, true));
 
     if (this->itemList != 0) {
         for (Item *it: *this->itemList) delete it;
-        this->itemList->clear();
+        ArrayRemoveAll(*(this->itemList));
         delete this->itemList;
     }
     this->itemList = 0;
@@ -1407,7 +1407,7 @@ void HangarWindow::setSellMode(bool buy) {
         Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
         if (self->itemList != 0) {
             for (Item *it: *self->itemList) delete it;
-            self->itemList->clear();
+            ArrayRemoveAll(*(self->itemList));
             delete self->itemList;
         }
         self->itemList = 0;
@@ -1450,7 +1450,7 @@ void HangarWindow::setSellMode(bool buy) {
                 self->bluePrint->getQuantity();
                 void *made = ((Item *) ((void *) (uintptr_t) idx))->makeItem();
                 Status::gStatus->getShip()->addCargo((Item *) made);
-                self->itemList->push_back((Item *) made);
+                ArrayAdd((Item *) made, *(self->itemList));
                 self->hangarList->setCurrentTab(0, true);
                 self->refreshCurrentContentHeight();
             } else {
@@ -1607,7 +1607,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
                 if (self->itemList != 0) {
                     for (Item *it: *self->itemList) delete it;
-                    self->itemList->clear();
+                    ArrayRemoveAll(*(self->itemList));
                     delete self->itemList;
                 }
                 self->itemList = 0;
@@ -2093,7 +2093,7 @@ void HangarWindow::initialize() {
                (Array<BluePrint *> *) (long) ((Status *) (*g_hw_globals))->getBluePrints());
 
     self->tabButtons = new Array<TouchButton *>();
-    self->tabButtons->resize(3);
+    ArraySetLength(3, *(self->tabButtons));
 
     int scrW = *g_hw_screenWidth;
     Layout *layout = *g_hw_layout;
@@ -2142,7 +2142,7 @@ void HangarWindow::initialize() {
     PaintCanvas::gCanvas->Image2DCreate((unsigned short) (0x544), self->pendingIconImage);
 
     self->buttons = new Array<TouchButton *>();
-    self->buttons->resize(0x18);
+    ArraySetLength(0x18, *(self->buttons));
 
     unsigned int img;
     img = 0xffffffff;

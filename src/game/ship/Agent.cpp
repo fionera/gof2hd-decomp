@@ -110,7 +110,7 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
     delete this->wingmanNames;
 
     this->wingmanNames = new Array<AbyssEngine::String *>();
-    this->wingmanNames->push_back(new String(this->name));
+    ArrayAdd(new String(this->name), *(this->wingmanNames));
     this->wingmanCount = 0;
     if (param == nullptr)
         return;
@@ -120,14 +120,14 @@ void Agent::setWingmanFriendNames(Array<AbyssEngine::String *> *param) {
         if (w0 != nullptr) {
             this->wingmanCount = 1;
             this->wingman1 = w0;
-            this->wingmanNames->push_back(w0);
+            ArrayAdd(w0, *(this->wingmanNames));
         }
         if (param->size() >= 2) {
             String *w1 = (*param)[1];
             if (w1 != nullptr) {
                 this->wingman2 = w1;
                 this->wingmanCount += 1;
-                this->wingmanNames->push_back(w1);
+                ArrayAdd(w1, *(this->wingmanNames));
             }
         }
     }

@@ -125,7 +125,7 @@ LodMeshMerger::LodMeshMerger(int rows_, int cols_, PaintCanvas *canvas_, uint16_
       lodLevels(nullptr),
       cols(cols_),
       dirty(0) {
-    sourceMeshes.resize((uint32_t)(cols * rows));
+    ArraySetLength((uint32_t)(cols * rows), sourceMeshes);
 
     uint32_t n = (uint32_t) rows;
     transformedMeshes = new void *[n * cols]();
@@ -294,6 +294,6 @@ LodMeshMerger::~LodMeshMerger() {
     delete[] transforms;
     transforms = nullptr;
 
-    sourceMeshes.clear();
+    ArrayRemoveAll(sourceMeshes);
     sourceMeshes.shrink_to_fit();
 }

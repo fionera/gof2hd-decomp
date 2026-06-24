@@ -2781,7 +2781,7 @@ void PlayerEgo::setShip(int race, int group) {
                 Globals::gGlobals->addSoundResourceToList(0x8db);
             else if (((Item *) (it))->getIndex() == 0xdf)
                 Globals::gGlobals->addSoundResourceToList(0x8dc);
-            this->repairBeams->push_back(rb);
+            ArrayAdd(rb, *(this->repairBeams));
         }
     }
 

@@ -23,28 +23,28 @@ static unsigned char *g_StatusWindow_btnFlag = nullptr;
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
         for (TouchButton *e: *this->tabButtons) delete e;
-        this->tabButtons->clear();
+        ArrayRemoveAll(*(this->tabButtons));
         delete this->tabButtons;
     }
     this->tabButtons = 0;
 
     if (this->medalButtons != 0) {
         for (TouchButton *e: *this->medalButtons) delete e;
-        this->medalButtons->clear();
+        ArrayRemoveAll(*(this->medalButtons));
         delete this->medalButtons;
     }
     this->medalButtons = 0;
 
     if (this->imageParts != 0) {
         for (ImagePart *e: *this->imageParts) delete e;
-        this->imageParts->clear();
+        ArrayRemoveAll(*(this->imageParts));
         delete this->imageParts;
     }
     this->imageParts = 0;
 
     if (this->detailLines != 0) {
         for (String *e: *this->detailLines) delete e;
-        this->detailLines->clear();
+        ArrayRemoveAll(*(this->detailLines));
         delete this->detailLines;
     }
     this->detailLines = 0;
@@ -139,7 +139,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
 
                     if (this->detailLines != 0) {
                         for (String *e: *this->detailLines) delete e;
-                        this->detailLines->clear();
+                        ArrayRemoveAll(*(this->detailLines));
                         delete this->detailLines;
                     }
                     this->detailLines = new Array<String *>();
@@ -635,7 +635,7 @@ static int g_sw_screenH = 0;
 
 StatusWindow::StatusWindow() {
     this->tabButtons = new Array<TouchButton *>();
-    this->tabButtons->resize(2);
+    ArraySetLength(2, *(this->tabButtons));
 
     Layout *layout = *g_sw_layout;
     int layoutW = *(int *) *(void **) g_sw_layoutW;
@@ -662,7 +662,7 @@ StatusWindow::StatusWindow() {
 
     this->medalButtons = new Array<TouchButton *>();
     this->medalCount = 0x2d;
-    this->medalButtons->resize(0x2d);
+    ArraySetLength(0x2d, *(this->medalButtons));
 
     int *medalIds = Achievements::gAchievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {

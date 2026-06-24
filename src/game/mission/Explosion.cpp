@@ -91,7 +91,7 @@ Explosion::~Explosion() {
         for (AEGeometry *e: *streaks) {
             delete e;
         }
-        streaks->clear();
+        ArrayRemoveAll(*streaks);
         delete streaks;
     }
     this->fireStreaks = 0;
@@ -596,7 +596,7 @@ void Explosion::addFireStreaks() {
     this->fireStreaks = new Array<AEGeometry *>();
 
     int length = explosionRandom()->nextInt(7) + 3;
-    this->fireStreaks->resize(length);
+    ArraySetLength(length, *(this->fireStreaks));
 
     PaintCanvas *canvas = explosionCanvas();
 

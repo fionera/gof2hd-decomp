@@ -21,7 +21,7 @@ int SystemPathFinder::contains(Array<Node *> *nodes, Node *node) {
 Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
     Array<Node *> *closed = new Array<Node *>;
     Array<Node *> *open = new Array<Node *>;
-    open->push_back(start);
+    ArrayAdd(start, *open);
     start->parent = nullptr;
 
     while (!open->empty()) {
@@ -31,7 +31,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
             return constructPath(goal);
         }
 
-        closed->push_back(current);
+        ArrayAdd(current, *closed);
         Array<Node *> *neighbours = current->children;
         for (uint32_t i = 0; i < neighbours->size(); ++i) {
             Node *next = neighbours->data()[i];
@@ -41,7 +41,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
             }
 
             next->parent = current;
-            open->push_back(next);
+            ArrayAdd(next, *open);
         }
     }
 
@@ -62,11 +62,11 @@ int SystemPathFinder::getJumpDistance(Array<SolarSystem *> *systems, int from,
 Array<Node *> *SystemPathFinder::constructPath(Node *node) {
     Array<Node *> *backwards = new Array<Node *>;
     for (; node->parent != nullptr; node = node->parent) {
-        backwards->push_back(node);
+        ArrayAdd(node, *backwards);
     }
 
     Array<Node *> *path = new Array<Node *>;
-    path->resize(backwards->size());
+    ArraySetLength(backwards->size(), *path);
 
     uint32_t count = (uint32_t) backwards->size();
     for (uint32_t out = 0; out < count; ++out) {
@@ -81,7 +81,7 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
                                             int from, int to) {
     int start = from;
     Array<Node *> *nodes = new Array<Node *>;
-    nodes->resize(systems->size());
+    ArraySetLength(systems->size(), *nodes);
 
     for (uint32_t i = 0; i < systems->size(); ++i) {
         nodes->data()[i] = new Node((int) i);
@@ -103,8 +103,7 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
             int targetIndex = systems->data()[routeIndex]->getIndex();
             if (visibilities->size() > (uint32_t) targetIndex &&
                 visibilities->data()[targetIndex] != 0) {
-                nodes->data()[s]->children->push_back(
-                    nodes->data()[routeIndex]);
+                ArrayAdd(nodes->data()[routeIndex], *nodes->data()[s]->children);
             }
         }
     }
@@ -115,7 +114,7 @@ Array<int> *SystemPathFinder::getSystemPath(Array<SolarSystem *> *systems,
     if (nodePath != nullptr) {
         if (!nodePath->empty()) {
             path = new Array<int>;
-            path->resize(nodePath->size() + 1);
+            ArraySetLength(nodePath->size() + 1, *path);
             int *out = path->data();
             out[0] = start;
             for (uint32_t i = 0; i + 1 < path->size(); ++i) {

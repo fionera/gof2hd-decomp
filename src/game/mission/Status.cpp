@@ -448,17 +448,17 @@ Status::Status() {
     field_90 = new Array<int>();
     field_54 = new Array<bool>();
     field_58 = new Array<bool>();
-    missions->resize(2);
-    stationStack->resize(3);
-    systemVisibilities->resize(0x22);
-    field_94->resize(0xb);
-    field_98->resize(0xb);
-    field_ac->resize(0x16);
-    field_b4->resize(0x22);
-    field_4c->resize(4);
-    field_50->resize(0xf);
-    field_54->resize(0xe9);
-    field_58->resize(5);
+    ArraySetLength(2, *missions);
+    ArraySetLength(3, *stationStack);
+    ArraySetLength(0x22, *systemVisibilities);
+    ArraySetLength(0xb, *field_94);
+    ArraySetLength(0xb, *field_98);
+    ArraySetLength(0x16, *field_ac);
+    ArraySetLength(0x22, *field_b4);
+    ArraySetLength(4, *field_4c);
+    ArraySetLength(0xf, *field_50);
+    ArraySetLength(0xe9, *field_54);
+    ArraySetLength(5, *field_58);
     stationsVisited = 0;
     currentCampaignMission = 0;
     passengers = 0;
@@ -749,7 +749,7 @@ void Status::resetGame() {
     }
     for (int q = 0; q < 4; q = q + 1) {
         *off4[q] = new Array<int>();
-        (*off4[q])->resize(0xe9);
+        ArraySetLength(0xe9, *(*off4[q]));
     }
     {
         Array<int> &d40 = *this->field_0x40;
@@ -766,12 +766,12 @@ void Status::resetGame() {
 
     delete this->field_4c;
     this->field_4c = new Array<bool>();
-    this->field_4c->resize(4);
+    ArraySetLength(4, *(this->field_4c));
     for (int j = 0; j != 4; j = j + 1) (*this->field_4c)[j] = 0;
 
     delete this->field_58;
     this->field_58 = new Array<bool>();
-    this->field_58->resize(5);
+    ArraySetLength(5, *(this->field_58));
     for (int j = 0; j != 5; j = j + 1) (*this->field_58)[j] = 0;
 
     Array<SolarSystem *> *systems = gal->getSystems();
@@ -794,7 +794,7 @@ void Status::resetGame() {
     this->bluePrints = 0;
     if (bpCount != 0) {
         this->bluePrints = new Array<BluePrint *>();
-        this->bluePrints->resize(bpCount);
+        ArraySetLength(bpCount, *(this->bluePrints));
         int idx = 0;
         for (unsigned k = 0; k < items->size(); k = k + 1) {
             if ((*items)[k]->getIngredients() != 0) {
@@ -1002,7 +1002,7 @@ void Status::addPendingProduct(BluePrint *bp) {
         }
     }
     PendingProduct *pp = new PendingProduct(bp);
-    pendingProducts->push_back(pp);
+    ArrayAdd(pp, *pendingProducts);
 }
 
 static int g_emptyOrbitMask = 0;
@@ -1257,7 +1257,7 @@ void Status::nextCampaignMission(bool advance) {
             return;
         }
     }
-    missions->push_back(tailMission);
+    ArrayAdd(tailMission, *missions);
 }
 
 void Status::setStation(Station *s) {
@@ -1281,14 +1281,14 @@ void Status::setStation(Station *s) {
     Array<String *> *names = new Array<String *>();
     planetNames = (int32_t)(intptr_t)
     names;
-    names->resize(list->size());
+    ArraySetLength(list->size(), *names);
     if (planetTextures != 0) {
         delete (Array<int> *) (intptr_t) planetTextures;
     }
     Array<int> *texs = new Array<int>();
     planetTextures = (int32_t)(intptr_t)
     texs;
-    texs->resize(list->size());
+    ArraySetLength(list->size(), *texs);
     Array<Station *> *stations = (Array<Station *> *) asSystem(system)->getStations();
     for (unsigned i = 0; i < stations->size(); i = i + 1) {
         Station *cur = 0;
@@ -1794,7 +1794,7 @@ void Status::setWingmen(Array<String *> *list) {
     Array<String *> *cur = (Array<String *> *) (intptr_t) wingmen;
     if (cur != 0) {
         for (auto *e: *cur) delete e;
-        cur->clear();
+        ArrayRemoveAll(*cur);
     }
     if (list == 0) {
         wingmen = 0;
@@ -1804,7 +1804,7 @@ void Status::setWingmen(Array<String *> *list) {
         Array<String *> *na = new Array<String *>();
         wingmen = (int32_t)(intptr_t)
         na;
-        na->resize(list->size());
+        ArraySetLength(list->size(), *na);
         for (unsigned i = 0; i < list->size(); i = i + 1) {
             String *s = new String();
             s->copy((*list)[i], false);

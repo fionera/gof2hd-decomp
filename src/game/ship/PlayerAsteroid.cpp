@@ -131,11 +131,11 @@ void PlayerAsteroid::update(int delta) {
                 } else if (quality == 7) {
                     item += 0xb;
                 }
-                this->loot()->push_back(item);
+                ArrayAdd(item, *this->loot());
                 int count = 1;
                 if (quality != 7)
                     count = AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) + 1;
-                this->loot()->push_back(count);
+                ArrayAdd(count, *this->loot());
                 this->createCrate(this->asteroidIndex == 0xa4 ? 2 : 1);
             } else {
                 this->dropsLoot() = 0;

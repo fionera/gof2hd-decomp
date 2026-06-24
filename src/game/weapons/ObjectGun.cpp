@@ -123,7 +123,7 @@ ObjectGun::ObjectGun(int /*unused*/, Gun *gun, int mesh, uint32_t /*param*/, Lev
         this->scaleZ = 0.7f;
     } else if (type == 0x19) {
         this->explosions = new Array<Explosion *>();
-        this->explosions->resize(gun->count);
+        ArraySetLength(gun->count, *(this->explosions));
         this->explosionReady = new uint8_t[this->explosions->size()];
 
         for (uint32_t i = 0; i < this->explosions->size(); ++i) {
@@ -169,7 +169,7 @@ ObjectGun::~ObjectGun() {
     if (this->explosions != nullptr) {
         for (Explosion *e: *this->explosions)
             delete e;
-        this->explosions->clear();
+        ArrayRemoveAll(*(this->explosions));
         delete this->explosions;
         this->explosions = nullptr;
     }

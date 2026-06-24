@@ -952,7 +952,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
     if (this->playerGuns == nullptr) {
         this->playerGuns = new Array<ObjectGun *>();
     }
-    this->playerGuns->push_back(obj);
+    ArrayAdd(obj, *(this->playerGuns));
     return gun;
 }
 
@@ -1007,7 +1007,7 @@ void Level::createSpace() {
     }
 
     this->landmarks = new Array<KIPlayer *>();
-    this->landmarks->resize(4);
+    ArraySetLength(4, *(this->landmarks));
 }
 
 void Level::createRadioMessage(int type, int sub) {
@@ -1124,7 +1124,7 @@ void Level::createRadioMessage(int type, int sub) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 int kind = (k == 0) ? 5 : 6;
                 new(m) RadioMessage(tbl[k].textID, arg, kind, delay);
-                this->messages->push_back(m);
+                ArrayAdd((void *) m, *(this->messages));
             }
             builtInline = true;
             break;
@@ -1133,10 +1133,10 @@ void Level::createRadioMessage(int type, int sub) {
             RadioMessage *m = (RadioMessage *) ::operator new(0x28);
             AbyssEngine::AERandom *rng = AERandom::gRandom;
             new(m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
-            this->messages->push_back(m);
+            ArrayAdd((void *) m, *(this->messages));
             m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(rng->nextInt() + 0xafa, 0, 6, 0);
-            this->messages->push_back(m);
+            ArrayAdd((void *) m, *(this->messages));
             builtInline = true;
             break;
         }
@@ -1161,10 +1161,10 @@ void Level::createRadioMessage(int type, int sub) {
         case 0x1b: {
             RadioMessage *m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(r2 * 2 + 0xc60, 6, 5, 0x5dc);
-            this->messages->push_back(m);
+            ArrayAdd((void *) m, *(this->messages));
             m = (RadioMessage *) ::operator new(0x28);
             new(m) RadioMessage(r2 * 2 + 0xc61, 0, 6, 0);
-            this->messages->push_back(m);
+            ArrayAdd((void *) m, *(this->messages));
             builtInline = true;
             break;
         }
@@ -1197,7 +1197,7 @@ void Level::createRadioMessage(int type, int sub) {
     if (!builtInline) {
         RadioMessage *m = (RadioMessage *) ::operator new(0x28);
         new(m) RadioMessage(id, speaker, 5, extraDelay);
-        this->messages->push_back(m);
+        ArrayAdd((void *) m, *(this->messages));
     }
 
     PlayerEgo *ego = this->player;
@@ -1413,7 +1413,7 @@ void Level::createFighterTurrets() {
                 *(PlayerTurret **) &ki->field_0x10 = t;
                 t->shipGroup = (kind == 0x2d) ? 8 : 0;
                 t->noTargetFlag = 1;
-                this->enemies->push_back((KIPlayer *) t);
+                ArrayAdd((KIPlayer *) t, *(this->enemies));
             }
         }
     }
@@ -1478,7 +1478,7 @@ void Level::createMission() {
         if (campA == 0x44) count = 2;
 
         this->enemies = new Array<KIPlayer *>();
-        this->enemies->resize(count);
+        ArraySetLength(count, *(this->enemies));
 
         Globals *globals = Globals::gGlobals;
         for (unsigned i = 0; i < count; i = i + 1) {
@@ -1518,7 +1518,7 @@ void Level::createAsteroids() {
     ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->setSeed((long long) seed);
 
     int countRoll = ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->nextInt(0x28);
-    this->asteroids->resize((unsigned) (countRoll + 0x28));
+    ArraySetLength((unsigned) (countRoll + 0x28), *(this->asteroids));
 
     int rx = ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->nextInt(100000);
     int ry = ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->nextInt(100000);
@@ -1721,7 +1721,7 @@ void Level::createCampaignMission() {
 
     if (idx == 0) {
         this->enemies = new Array<KIPlayer *>();
-        this->enemies->resize(3);
+        ArraySetLength(3, *(this->enemies));
         float c = g_ccm_pos0;
         for (unsigned i = 0; i < this->enemies->size(); i = i + 1) {
             int type = (i == 1) ? 0x17 : 2;
@@ -1903,7 +1903,7 @@ void Level::createSentryGuns() {
     int ship = (int) (intptr_t) Status::gStatus->getShip();
     if (((Ship *) (ship))->getFirstEquipmentOfSort(0x27) != 0) {
         field_b0 = new Array<KIPlayer *>();
-        field_b0->resize(9);
+        ArraySetLength(9, *field_b0);
         if (enemies == nullptr) {
             enemies = new Array<KIPlayer *>();
         }
@@ -1916,7 +1916,7 @@ void Level::createSentryGuns() {
             k->player->setAlwaysFriend(1);
             k->player->setMaxHitpoints(100);
             k->setPosition((float) color, (float) color, (float) color);
-            enemies->push_back(k);
+            ArrayAdd(k, *enemies);
         }
     }
 }
@@ -2046,7 +2046,7 @@ void Level::connectPlayers() {
 
     if (this->enemies != nullptr && this->player != nullptr) {
         Array<Player *> arr;
-        arr.resize(this->enemies->size());
+        ArraySetLength(this->enemies->size(), arr);
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (*this->enemies)[j]->player;
         ((Player *) this->player->player)->setEnemies(&arr);
@@ -2054,14 +2054,14 @@ void Level::connectPlayers() {
 
     if (this->asteroids != nullptr && this->player != nullptr) {
         Array<Player *> arr;
-        arr.resize(this->asteroids->size());
+        ArraySetLength(this->asteroids->size(), arr);
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (*this->asteroids)[j]->player;
         ((Player *) this->player->player)->addEnemies(&arr);
     }
     if (this->gasClouds != nullptr && this->player != nullptr) {
         Array<Player *> arr;
-        arr.resize(this->gasClouds->size());
+        ArraySetLength(this->gasClouds->size(), arr);
         for (unsigned j = 0; j < arr.size(); j = j + 1)
             arr[j] = (*this->gasClouds)[j]->player;
         ((Player *) this->player->player)->addEnemies(&arr);
@@ -2112,7 +2112,7 @@ void Level::connectPlayers() {
         Array<Player *> arr;
         if (this->player != nullptr)
             count = count + 1;
-        arr.resize(count);
+        ArraySetLength(count, arr);
 
         Mission *m = (Mission *) Status::gStatus->getMission();
         int mtype = ((Mission *) Status::gStatus->getMission())->getType();
@@ -2199,7 +2199,7 @@ void Level::connectPlayers() {
                     }
                 }
             } else {
-                arr.resize(1);
+                ArraySetLength(1, arr);
             }
             arr[arr.size() - 1] = (Player *) this->player->player;
         }
@@ -2294,7 +2294,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(0x17);
+            ArraySetLength(0x17, *(this->messages));
             for (unsigned i = 0; i < 0x17; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2307,7 +2307,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x6a1, 2, 5, 10000}, {0x6a2, 2, 6, 0}, {0x6a3, 2, 6, 1}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(3);
+            ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2320,7 +2320,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x6dc, 2, 0x10, 0}, {0x6dd, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2336,7 +2336,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(5);
+            ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2352,7 +2352,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(5);
+            ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2368,7 +2368,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(5);
+            ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2381,7 +2381,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x785, 0, 5, 20000}, {0x786, 6, 6, 0}, {0x787, 0, 6, 1}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(3);
+            ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2394,7 +2394,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x7ed, 0x15, 5, 15000}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2410,7 +2410,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(7);
+            ArraySetLength(7, *(this->messages));
             for (unsigned i = 0; i < 7; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2427,7 +2427,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(8);
+            ArraySetLength(8, *(this->messages));
             for (unsigned i = 0; i < 8; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2440,7 +2440,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x848, 0, 5, 8000}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2453,7 +2453,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x849, 0x3f, 5, 8000}, {0x84a, 0, 6, 0}, {0x84b, 0x3f, 6, 1}, {0x84c, 0, 6, 2}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(4);
+            ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2466,7 +2466,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x84d, 0x3f, 5, 8000}, {0x84e, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2479,7 +2479,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x84f, 0x3f, 5, 8000}, {0x850, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2492,7 +2492,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x851, 0, 5, 8000}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2505,7 +2505,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x85a, 0, 5, 8000}, {0x85b, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2521,7 +2521,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(6);
+            ArraySetLength(6, *(this->messages));
             for (unsigned i = 0; i < 6; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2537,7 +2537,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(7);
+            ArraySetLength(7, *(this->messages));
             for (unsigned i = 0; i < 7; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2550,7 +2550,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x8cb, 0, 5, 12000}, {0x8cc, 0x14, 6, 0}, {0x8cd, 0, 6, 1}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(3);
+            ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2568,7 +2568,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(0xc);
+            ArraySetLength(0xc, *(this->messages));
             for (unsigned i = 0; i < 0xc; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2581,7 +2581,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x90e, 0, 5, 8000}, {0x90f, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2594,7 +2594,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0x910, 0, 5, 8000}, {0x911, 0, 6, 0}, {0x912, 0x22, 6, 1}, {0x913, 0, 6, 2}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(4);
+            ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2611,7 +2611,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(8);
+            ArraySetLength(8, *(this->messages));
             for (unsigned i = 0; i < 8; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2624,7 +2624,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xab9, 0x11, 0x1b, 1}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2637,7 +2637,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xac5, 0, 5, 0x5dc}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2650,7 +2650,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xb2b, 0, 0x1b, 2}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2663,7 +2663,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xb33, 0x11, 0x1b, 1}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(1);
+            ArraySetLength(1, *(this->messages));
             for (unsigned i = 0; i < 1; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2679,7 +2679,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(4);
+            ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2695,7 +2695,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(5);
+            ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2711,7 +2711,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(4);
+            ArraySetLength(4, *(this->messages));
             for (unsigned i = 0; i < 4; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2724,7 +2724,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xb9c, 0, 5, 7000}, {0xb9d, 0x27, 6, 0}, {0xb9e, 0x27, 0x1b, 5}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(3);
+            ArraySetLength(3, *(this->messages));
             for (unsigned i = 0; i < 3; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2737,7 +2737,7 @@ void Level::createRadioMessages(int set) {
             static const RMSpec t[] = {{0xbac, 0, 5, 7000}, {0xbad, 0, 6, 0}};
             {
             this->messages = new Array<void *>();
-            this->messages->resize(2);
+            ArraySetLength(2, *(this->messages));
             for (unsigned i = 0; i < 2; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2753,7 +2753,7 @@ void Level::createRadioMessages(int set) {
             };
             {
             this->messages = new Array<void *>();
-            this->messages->resize(5);
+            ArraySetLength(5, *(this->messages));
             for (unsigned i = 0; i < 5; i = i + 1) {
                 RadioMessage *m = (RadioMessage *) ::operator new(0x28);
                 new(m) RadioMessage(t[i].id, t[i].speaker, t[i].kind, t[i].delay);
@@ -2838,12 +2838,12 @@ void Level::createPlayer() {
     this->player->geometry->setRotation(rot);
 
     Array<Array<Gun *> *> *buckets = new Array<Array<Gun *> *>();
-    buckets->resize(3);
+    ArraySetLength(3, *buckets);
     for (int t = 0; t < 3; t++) {
         if (slots[t] > 0) {
             Array<Gun *> *b = new Array<Gun *>();
             (*buckets)[t] = b;
-            b->resize(slots[t]);
+            ArraySetLength(slots[t], *b);
         }
     }
 
@@ -2856,7 +2856,7 @@ void Level::createPlayer() {
             this->field_a4 = new Array<AEGeometry *>();
             for (unsigned k = 0; k < (*wpos)[3]->size(); k += 2) {
                 AEGeometry *g = new AEGeometry(PaintCanvas::gCanvas);
-                this->field_a4->push_back(g);
+                ArrayAdd(g, *(this->field_a4));
                 g->setPosition(*(*(*wpos)[3])[k]);
                 g->setScaling(*(*(*wpos)[3])[k + 1]);
             }
@@ -3047,7 +3047,7 @@ void Level::createStaticObjects() {
                 if (this->enemies == nullptr) {
                     this->enemies = new Array<KIPlayer *>();
                 }
-                this->enemies->push_back(o);
+                ArrayAdd(o, *(this->enemies));
                 if (o->cargo != 0)
                     delete (Array<void *> *) o->cargo;
                 o->cargo = 0;
@@ -3076,7 +3076,7 @@ void Level::createStaticObjects() {
             if (this->enemies == nullptr) {
                 this->enemies = new Array<KIPlayer *>();
             }
-            this->enemies->push_back(o);
+            ArrayAdd(o, *(this->enemies));
         }
     }
 }
@@ -3126,7 +3126,7 @@ void *Level::getBoundingVolume(int /*unused*/, AEGeometry *kind) {
     if (coll != 0) {
         unsigned n = *(unsigned *) coll[1];
         Array<BoundingVolume *> *arr = new Array<BoundingVolume *>();
-        arr->resize(n);
+        ArraySetLength(n, *arr);
         result = arr;
 
         int cursor = 1;
@@ -3306,7 +3306,7 @@ void Level::assignGuns() {
     }
 
     this->enemyGuns = new Array<ObjectGun *>();
-    this->enemyGuns->resize(slots);
+    ArraySetLength(slots, *(this->enemyGuns));
 
     int baseDmg = (basePower == 0) ? 3 : (basePower + 2);
     if (camp == 4) baseDmg = 1;
@@ -3535,7 +3535,7 @@ void Level::assignGuns() {
                 gun2->setIndex(0x1f);
                 RocketGun *r2 = (RocketGun *) ::operator new(0xe8);
                 new(r2) RocketGun(gun2->itemIndex, gun2, 0x37a0, 0, 0, gun2->weaponType, false, this);
-                this->enemyGuns->push_back((ObjectGun *) r2);
+                ArrayAdd((ObjectGun *) r2, *(this->enemyGuns));
                 ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun2, 0);
                 Globals::gGlobals->addSoundResourceToList(0x54);
             }
@@ -3553,7 +3553,7 @@ void Level::assignGuns() {
                 RocketGun *r3 = (RocketGun *) ::operator new(0xe8);
                 new(r3) RocketGun(gun3->itemIndex, gun3, 0x37a0, 0, 0, gun3->weaponType,
                                   gun3->weaponType == ITEM_SORT_MISSILE, this);
-                this->enemyGuns->push_back((ObjectGun *) r3);
+                ArrayAdd((ObjectGun *) r3, *(this->enemyGuns));
                 gun3->field_0x50 = 8.0f;
                 gun3->initialLifetime = 10000;
                 gun3->fireDelay = 3000;
@@ -3618,7 +3618,7 @@ void Level::createGasClouds() {
 
     float countF = (float) (boss ? 3.0f : 0.0f) + ((float) prob[1] / 1.0f) * (float) (roll + 4);
     int count = (countF > 0.0f) ? (int) countF : 0;
-    this->gasClouds->resize((unsigned) count);
+    ArraySetLength((unsigned) count, *(this->gasClouds));
 
     void *canvas = (void *) PaintCanvas::gCanvas;
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
@@ -3747,7 +3747,7 @@ void Level::initParticleSystems() {
     if (this->player != nullptr) {
         if (this->field_a4 != nullptr) {
             this->field_a8 = new Array<int>();
-            this->field_a8->resize(this->field_a4->size());
+            ArraySetLength(this->field_a4->size(), *(this->field_a8));
         }
 
         PaintCanvas *canvas = PaintCanvas::gCanvas;
@@ -3896,7 +3896,7 @@ void Level::createWingmen() {
 
     Array<KIPlayer *> *arr = new Array<KIPlayer *>();
     unsigned *wm = (unsigned *) Status::gStatus->getWingmen();
-    arr->resize(*wm);
+    ArraySetLength(*wm, *arr);
 
     unsigned n = arr->size();
     for (unsigned i = 0; i < n; i = i + 1) {
@@ -3928,7 +3928,7 @@ void Level::createWingmen() {
         this->enemies = arr;
     } else {
         for (unsigned i = 0; i < n; i = i + 1) {
-            this->enemies->push_back((*arr)[i]);
+            ArrayAdd((*arr)[i], *(this->enemies));
             n = arr->size();
         }
         delete arr;
@@ -3957,12 +3957,12 @@ void Level::createScene() {
             new((void *) g) AEGeometry((uint16_t) 0x37d0, (PaintCanvas *) canvas, 0);
             PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
-            this->enemies->push_back((KIPlayer *) p);
+            ArrayAdd((KIPlayer *) p, *(this->enemies));
             g = (AEGeometry *) ::operator new(0xc0);
             new((void *) g) AEGeometry((uint16_t) 0x37d1, (PaintCanvas *) canvas, 0);
             p = (PlayerStatic *) ::operator new(0x130);
             new(p) PlayerStatic(-1, g, 0.0f, 0.0f, 0.0f);
-            this->enemies->push_back((KIPlayer *) p);
+            ArrayAdd((KIPlayer *) p, *(this->enemies));
         }
         return;
     }
@@ -3978,11 +3978,11 @@ void Level::createScene() {
 
         if (agents == 0) {
             this->enemies = new Array<KIPlayer *>();
-            this->enemies->resize(3);
+            ArraySetLength(3, *(this->enemies));
         } else {
             int nAgents = *agents;
             this->enemies = new Array<KIPlayer *>();
-            this->enemies->resize(nAgents * 3 + crew);
+            ArraySetLength(nAgents * 3 + crew, *(this->enemies));
             for (int j = 0; j != 7; j = j + 1) taken[j] = 0;
 
             for (int a = 0; a < nAgents; a = a + 1) {
@@ -4043,7 +4043,7 @@ void Level::createScene() {
         }
 
         this->enemies = new Array<KIPlayer *>();
-        this->enemies->resize(1);
+        ArraySetLength(1, *(this->enemies));
 
         (int) (intptr_t) Status::gStatus->getShip();
         int shipIdx = ((Ship *) (int) (intptr_t) Status::gStatus->getShip())->getIndex();
@@ -4078,7 +4078,7 @@ void Level::createScene() {
                     }
                 }();
             }
-            this->enemies->push_back((KIPlayer *) p);
+            ArrayAdd((KIPlayer *) p, *(this->enemies));
         }
 
         Station *st2 = (Station *) Status::gStatus->getStation();
@@ -4122,7 +4122,7 @@ void Level::createScene() {
             k->player->setAlwaysFriend(1);
             k->setToSleep();
             ((PlayerFighter *) k)->setExhaustVisible(false);
-            this->enemies->push_back(k);
+            ArrayAdd(k, *(this->enemies));
         }
     }
 }

@@ -130,20 +130,20 @@ void *String::Split(String sep) {
             if (pos < idx) {
                 String *piece = new String();
                 *piece = this->SubString(pos, idx);
-                arr->push_back(piece);
+                ArrayAdd(piece, *arr);
             }
             pos = (unsigned int) sep.length + idx;
         }
         if (pos != 0 && pos < (unsigned int) this->length) {
             String *piece = new String();
             *piece = this->SubString(pos, (unsigned int) this->length);
-            arr->push_back(piece);
+            ArrayAdd(piece, *arr);
         }
 
         if (arr->size() != 0)
             return arr;
 
-        arr->clear();
+        ArrayRemoveAll(*arr);
         delete arr;
     }
     return 0;
@@ -459,7 +459,7 @@ void String::SplitTags(String tag) {
         if (pos <= idx) {
             String *piece = new String();
             *piece = this->SubString(pos, idx);
-            arr->push_back(piece);
+            ArrayAdd(piece, *arr);
 
             unsigned int afterTag = (unsigned int) tag.length + idx;
             String closer;
@@ -470,7 +470,7 @@ void String::SplitTags(String tag) {
 
             String *piece2 = new String();
             *piece2 = this->SubString(afterTag, (unsigned int) endPos);
-            arr->push_back(piece2);
+            ArrayAdd(piece2, *arr);
         }
         pos = endPos + 1;
     }
@@ -478,11 +478,11 @@ void String::SplitTags(String tag) {
     if (pos != 0 && pos < (unsigned int) this->length) {
         String *piece = new String();
         *piece = this->SubString(pos, (unsigned int) this->length);
-        arr->push_back(piece);
+        ArrayAdd(piece, *arr);
     }
 
     if (arr->size() == 0) {
-        arr->clear();
+        ArrayRemoveAll(*arr);
         delete arr;
     }
 done:

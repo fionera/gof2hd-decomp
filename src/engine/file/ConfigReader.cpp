@@ -53,7 +53,7 @@ namespace AbyssEngine {
         token->name = name;
         token->read = read;
         token->context = context;
-        tokens.push_back(token);
+        ArrayAdd(token, tokens);
     }
 
     String ConfigReader::GetNewLine() {

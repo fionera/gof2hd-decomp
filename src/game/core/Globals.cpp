@@ -391,7 +391,7 @@ void Globals::resetHints() {
 
 void Globals::startNewSoundResourceList() {
     if (this->soundResources != nullptr) {
-        this->soundResources->clear();
+        ArrayRemoveAll(*(this->soundResources));
         delete this->soundResources;
     }
     this->soundResources = nullptr;
@@ -501,7 +501,7 @@ void Globals::getLineArray(unsigned int font, const String &text, int maxWidth,
     { String *_s = line; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
     ::operator delete(line);
 
-    out->resize(count);
+    ArraySetLength(count, *out);
     for (unsigned i = 0; i < count; i++) {
         String *s = static_cast<String *>(::operator new(sizeof(String)));
         { String *_s = s; if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
@@ -1429,7 +1429,7 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
         float c[3] = {0, 0, 0};
 
         outArr = new Array<BoundingVolume *>();
-        outArr->resize((unsigned) count);
+        ArraySetLength((unsigned) count, *outArr);
 
         int pos = 1;
         for (int i = 0; i < count; i++) {
@@ -1477,7 +1477,7 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
             (*outArr)[i] = reinterpret_cast<BoundingVolume *>(bound);
         }
 
-        data->clear();
+        ArrayRemoveAll(*data);
         delete data;
     }
 
@@ -1685,7 +1685,7 @@ Globals::~Globals() {
     if (*itemSlot != 0) {
         Array<Item *> *items = (Array<Item *> *) *itemSlot;
         for (Item *e: *items) delete e;
-        items->clear();
+        ArrayRemoveAll(*items);
         delete items;
     }
     *itemSlot = 0;
@@ -1693,7 +1693,7 @@ Globals::~Globals() {
     if (*shipSlot != 0) {
         Array<Ship *> *ships = (Array<Ship *> *) *shipSlot;
         for (Ship *e: *ships) delete e;
-        ships->clear();
+        ArrayRemoveAll(*ships);
         delete ships;
     }
     *shipSlot = 0;
@@ -1717,7 +1717,7 @@ Globals::~Globals() {
     *ifSlot = 0;
 
     if (this->soundResources != 0) {
-        this->soundResources->clear();
+        ArrayRemoveAll(*(this->soundResources));
         delete this->soundResources;
     }
     this->soundResources = 0;
@@ -2600,12 +2600,12 @@ String Globals::getRandomName(int kind, bool both) {
 
     if (first != 0) {
         for (String *e: *first) delete e;
-        first->clear();
+        ArrayRemoveAll(*first);
         delete first;
     }
     if (last != 0) {
         for (String *e: *last) delete e;
-        last->clear();
+        ArrayRemoveAll(*last);
         delete last;
     }
     ::operator delete(FileRead_dtor(fr));

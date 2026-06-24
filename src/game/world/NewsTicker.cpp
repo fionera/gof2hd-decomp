@@ -46,7 +46,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
         NewsItem *item = (*allItems)[i];
         if (item->field_0x10 > 0 && item->field_0x10 <= level && level <= item->field_0x14) {
             if (((uint8_t *) item->data)[faction] != 0) {
-                items->push_back((NewsItem *) item->clone());
+                ArrayAdd((NewsItem *) item->clone(), *items);
             }
         }
     }
@@ -81,7 +81,7 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
             *lastShown = now;
             status->field_174 = item->id;
         }
-        items->push_back((NewsItem *) item->clone());
+        ArrayAdd((NewsItem *) item->clone(), *items);
         item->field_0x18 = 1;
         ++added;
     }
@@ -120,10 +120,10 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     this->scrollOffset = (float) width;
 
     for (NewsItem *e: *items) delete e;
-    items->clear();
+    ArrayRemoveAll(*items);
     delete items;
     for (NewsItem *e: *allItems) delete e;
-    allItems->clear();
+    ArrayRemoveAll(*allItems);
     delete allItems;
 }
 

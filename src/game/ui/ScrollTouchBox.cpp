@@ -26,7 +26,7 @@ ScrollTouchBox::~ScrollTouchBox() {
     if (this->lines != 0) {
         for (String *line: *this->lines)
             delete line;
-        this->lines->clear();
+        ArrayRemoveAll(*(this->lines));
         delete this->lines;
         this->lines = 0;
     }
@@ -225,7 +225,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     if (this->lines != 0) {
         for (String *line: *this->lines)
             delete line;
-        this->lines->clear();
+        ArrayRemoveAll(*(this->lines));
         delete this->lines;
         this->lines = 0;
     }
@@ -249,7 +249,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
         if (curLines != 0) {
             for (String *line: *curLines)
                 delete line;
-            curLines->clear();
+            ArrayRemoveAll(*curLines);
             delete curLines;
             this->lines = 0;
         }
@@ -261,7 +261,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
         static_cast<Globals *>(*globals)->getLineArray(fontArg, text, lineWidth, lineArray);
 
         String *empty = new String(g_ScrollTouchBox_empty_135600, false);
-        this->lines->push_back(empty);
+        ArrayAdd(empty, *(this->lines));
         Array<String *> *finalLines = this->lines;
         FontMetrics *finalFont = *fontHolder;
         int finalCount = (int) finalLines->size();

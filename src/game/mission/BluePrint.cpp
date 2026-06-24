@@ -117,7 +117,7 @@ BluePrint::BluePrint(int item) {
     ingredientCounters = nullptr;
     if (it->getIngredients() != nullptr) {
         ingredientCounters = new Array<int>();
-        ingredientCounters->resize(it->getIngredients()->size());
+        ArraySetLength(it->getIngredients()->size(), *ingredientCounters);
         for (uint32_t i = 0; i < ingredientCounters->size(); i++)
             (*ingredientCounters)[i] = (*quantities)[i];
     }

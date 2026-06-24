@@ -248,8 +248,8 @@ void PlayerTurret::update(int delta) {
         int random = AbyssEngine::AERandom::nextInt(g_turretRandom, 100);
         if (random < 0) {
             this->cargo = new Array<int>();
-            this->cargo->push_back(99);
-            this->cargo->push_back(AbyssEngine::AERandom::nextInt(g_turretRandom, 10) + 1);
+            ArrayAdd(99, *(this->cargo));
+            ArrayAdd(AbyssEngine::AERandom::nextInt(g_turretRandom, 10) + 1, *(this->cargo));
             this->createCrate(3);
         } else {
             Player *levelPlayer = (Player *) (intptr_t) this->level->getPlayer();

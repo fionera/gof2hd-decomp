@@ -477,10 +477,10 @@ int WantedWindow::init() {
             if (race != 0 || status->getCurrentCampaignMission() < 0x80) {
                 race = ((SolarSystem *) (long) status->getSystem())->getRace();
                 if (race == 0 && status->getCurrentCampaignMission() >= 0xa2) {
-                    this->wantedList->push_back(wanted);
+                    ArrayAdd(wanted, *(this->wantedList));
                 }
             } else {
-                this->wantedList->push_back(wanted);
+                ArrayAdd(wanted, *(this->wantedList));
             }
         }
     }
@@ -549,7 +549,7 @@ int WantedWindow::init() {
 
     Array<TouchButton *> *buttons = new Array<TouchButton *>();
     this->buttons = buttons;
-    buttons->resize(2);
+    ArraySetLength(2, *buttons);
 
     GameText *text = *g_WantedWindow_init_text;
     {
@@ -620,14 +620,14 @@ WantedWindow::WantedWindow() {
 WantedWindow::~WantedWindow() {
     if (this->imageParts != nullptr) {
         for (ImagePart *part: *this->imageParts) delete part;
-        this->imageParts->clear();
+        ArrayRemoveAll(*(this->imageParts));
         delete this->imageParts;
     }
     this->imageParts = nullptr;
 
     if (this->buttons != nullptr) {
         for (TouchButton *btn: *this->buttons) delete btn;
-        this->buttons->clear();
+        ArrayRemoveAll(*(this->buttons));
         delete this->buttons;
     }
     this->buttons = nullptr;

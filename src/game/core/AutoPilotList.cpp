@@ -33,7 +33,7 @@ static const char kApLit2[] = "";
 
 AutoPilotList::AutoPilotList(Level *level) {
     this->entries = new Array<String *>();
-    this->entries->resize(5);
+    ArraySetLength(5, *(this->entries));
     this->count = 0;
 
     if (**g_APL_apFlag != 0) {
@@ -96,7 +96,7 @@ AutoPilotList::~AutoPilotList() {
     if (this->entries != nullptr) {
         for (String *s: *this->entries)
             delete s;
-        this->entries->clear();
+        ArrayRemoveAll(*(this->entries));
     }
     delete this->entries;
     this->entries = nullptr;

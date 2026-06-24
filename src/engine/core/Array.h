@@ -63,37 +63,6 @@ public:
     T &back() { return data_[size_ - 1]; }
     T &at(unsigned int i) { return data_[i]; }
 
-    void push_back(T item) {
-        capacity_ = size_ + 1;
-        data_ = static_cast<T *>(realloc(data_, capacity_ * sizeof(T)));
-        data_[size_] = item;
-        size_ = capacity_;
-    }
-
-    void resize(unsigned int n) {
-        T *p;
-        unsigned int c;
-        if (capacity_ == n) {
-            p = data_;
-            c = n;
-        } else {
-            c = n ? n : 1;
-            capacity_ = c;
-            p = static_cast<T *>(realloc(data_, c * sizeof(T)));
-            c = capacity_;
-            data_ = p;
-        }
-        memset(p, 0, c * sizeof(T));
-        size_ = n;
-    }
-
-    void clear() {
-        capacity_ = 1;
-        size_ = 0;
-        data_ = static_cast<T *>(realloc(data_, sizeof(T)));
-        memset(data_, 0, capacity_ * sizeof(T));
-    }
-
     void pop_back() { if (size_) --size_; }
 
     void erase(T *pos) {
@@ -103,7 +72,7 @@ public:
 
     void insert(T *pos, T item) {
         unsigned int idx = static_cast<unsigned int>(pos - data_);
-        push_back(item);
+        ArrayAdd(item, *this);
         for (unsigned int i = size_ - 1; i > idx; --i) data_[i] = data_[i - 1];
         data_[idx] = item;
     }
@@ -157,10 +126,30 @@ void ArraySet(const Array<T> &src, Array<T> &a) {
 }
 
 template<class T>
-void ArraySetLength(unsigned int n, Array<T> &a) { a.resize(n); }
+void ArraySetLength(unsigned int n, Array<T> &a) {
+    T *p;
+    unsigned int c;
+    if (a.capacity_ == n) {
+        p = a.data_;
+        c = n;
+    } else {
+        c = n ? n : 1;
+        a.capacity_ = c;
+        p = static_cast<T *>(realloc(a.data_, c * sizeof(T)));
+        c = a.capacity_;
+        a.data_ = p;
+    }
+    memset(p, 0, c * sizeof(T));
+    a.size_ = n;
+}
 
 template<class T>
-void ArrayRemoveAll(Array<T> &a) { a.clear(); }
+void ArrayRemoveAll(Array<T> &a) {
+    a.capacity_ = 1;
+    a.size_ = 0;
+    a.data_ = static_cast<T *>(realloc(a.data_, sizeof(T)));
+    memset(a.data_, 0, a.capacity_ * sizeof(T));
+}
 
 template<class T>
 void ArrayRemove(T item, Array<T> &a) {

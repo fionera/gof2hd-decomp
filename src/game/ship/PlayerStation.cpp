@@ -315,7 +315,7 @@ PlayerStation::PlayerStation(Station *station)
         uint32_t count = (uint32_t) data[0];
         BoundingVolumeList *volumes = new BoundingVolumeList();
         this->boundingVolumes = volumes;
-        volumes->resize(count);
+        ArraySetLength(count, *volumes);
         int cursor = 1;
         for (uint32_t i = 0; i < count; ++i) {
             data = collision->data();
@@ -344,7 +344,7 @@ PlayerStation::PlayerStation(Station *station)
             }
             cursor = next;
         }
-        collision->clear();
+        ArrayRemoveAll(*collision);
         delete collision;
     }
 

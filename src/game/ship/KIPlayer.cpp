@@ -169,7 +169,7 @@ KIPlayer::~KIPlayer() {
 
     if (this->spacePoints != 0) {
         for (SpacePoint *e: *this->spacePoints) delete e;
-        this->spacePoints->clear();
+        ArrayRemoveAll(*(this->spacePoints));
         delete this->spacePoints;
         this->spacePoints = 0;
     }

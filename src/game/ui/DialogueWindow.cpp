@@ -82,7 +82,7 @@ bool DialogueWindow::hasLevel() {
 DialogueWindow::~DialogueWindow() {
     if (this->faceParts != 0) {
         for (ImagePart *part: *this->faceParts) delete part;
-        this->faceParts->clear();
+        ArrayRemoveAll(*(this->faceParts));
         delete this->faceParts;
         this->faceParts = 0;
     }
@@ -204,7 +204,7 @@ void DialogueWindow::loadContent() {
 
     if (this->faceParts != 0) {
         for (ImagePart *part: *this->faceParts) delete part;
-        this->faceParts->clear();
+        ArrayRemoveAll(*(this->faceParts));
         delete this->faceParts;
         this->faceParts = 0;
     }

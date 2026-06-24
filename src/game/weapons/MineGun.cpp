@@ -19,7 +19,7 @@ MineGun::MineGun(Gun *gun, int mesh, int param, int unused, Level *level)
     this->field_0xc8 = 0;
 
     this->explosions = new Array<Explosion *>();
-    this->explosions->resize(gun->count);
+    ArraySetLength(gun->count, *(this->explosions));
 
     this->readyFlags = new uint8_t[this->explosions->size()];
     for (uint32_t i = 0; i < this->explosions->size(); ++i) {
@@ -43,7 +43,7 @@ MineGun::~MineGun() {
         for (Explosion *explosion: *this->explosions) {
             delete explosion;
         }
-        this->explosions->clear();
+        ArrayRemoveAll(*(this->explosions));
         delete this->explosions;
         this->explosions = nullptr;
     }

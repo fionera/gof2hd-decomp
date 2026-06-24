@@ -598,14 +598,14 @@ PlayerFixedObject::~PlayerFixedObject() {
     Array<BoundingVolume *> *bvB = self->boundingVolumes;
     if (bvB != 0) {
         for (auto *e: *bvB) delete e;
-        bvB->clear();
+        ArrayRemoveAll(*bvB);
         delete bvB;
     }
     self->boundingVolumes = 0;
     Array<BoundingVolume *> *bvA = self->wreckCollision;
     if (bvA != 0) {
         for (auto *e: *bvA) delete e;
-        bvA->clear();
+        ArrayRemoveAll(*bvA);
         delete bvA;
     }
     self->wreckCollision = 0;

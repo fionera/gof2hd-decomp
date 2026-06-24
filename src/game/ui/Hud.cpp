@@ -147,7 +147,7 @@ void Hud::releaseAllKeys() {
 void Hud::closeHudMenu() {
     if (this->menuButtons != 0) {
         for (TouchButton *b: *this->menuButtons) delete b;
-        this->menuButtons->clear();
+        ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
         this->menuButtons = 0;
     }
@@ -924,7 +924,7 @@ int Hud::init() {
     this->hackingGameActive = 0;
 
     this->keyArray = new Array<void *>();
-    this->keyArray->resize(0x19);
+    ArraySetLength(0x19, *(this->keyArray));
     this->elementBits = new int[0x19];
     for (int i = 0; i != 0x19; i++) {
         (*this->keyArray)[i] = 0;
@@ -1341,7 +1341,7 @@ static void **g_Hud_imFlagB = nullptr;
 void Hud::initHudMenu(int menuType, Level *lvl) {
     if (this->menuButtons != 0) {
         for (TouchButton *b: *this->menuButtons) delete b;
-        this->menuButtons->clear();
+        ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
         this->menuButtons = 0;
     }
@@ -1404,7 +1404,7 @@ Hud::~Hud() {
 
     if (this->menuButtons != 0) {
         for (TouchButton *b: *this->menuButtons) delete b;
-        this->menuButtons->clear();
+        ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
     }
     this->menuButtons = 0;

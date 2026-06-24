@@ -318,7 +318,7 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
     }
 
     ItemArray *stationCopy = new ItemArray();
-    stationCopy->resize(stationItems->size());
+    ArraySetLength(stationItems->size(), *stationCopy);
     for (uint32_t i = 0; i < stationItems->size(); i++) {
         (*stationCopy)[i] = (*stationItems)[i];
     }
@@ -341,7 +341,7 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
     ItemArray *result = items;
     if (static_cast<int>(remaining) > 0) {
         ItemArray *unmatched = new ItemArray();
-        unmatched->resize(remaining);
+        ArraySetLength(remaining, *unmatched);
         uint32_t unmatchedIndex = 0;
         for (uint32_t i = 0; i < stationCopy->size(); i++) {
             Item * item = (*stationCopy)[i];
@@ -351,7 +351,7 @@ ItemArray *Item::combineItems(ItemArray *items, ItemArray *stationItems) {
         }
 
         result = new ItemArray();
-        result->resize(items->size() + unmatched->size());
+        ArraySetLength(items->size() + unmatched->size(), *result);
         uint32_t itemCount = static_cast<uint32_t>(items->size());
         for (uint32_t i = 0; i < itemCount; i++) {
             (*result)[i] = (*items)[i];
@@ -380,7 +380,7 @@ void Item::fabricate(Item *item, ItemArray *items, int amount) {
     }
 
     ItemArray *made = new ItemArray();
-    made->push_back(item->makeItem(amount));
+    ArrayAdd(item->makeItem(amount), *made);
     for (Item * element
 
 
@@ -388,7 +388,7 @@ void Item::fabricate(Item *item, ItemArray *items, int amount) {
     *items
     )
     {
-        made->push_back(element);
+        ArrayAdd(element, *made);
     }
 }
 
@@ -402,7 +402,7 @@ ItemArray *Item::extractItems(ItemArray *items, bool station) {
         Item * item = (*items)[i];
         int amount = station ? item->amount : item->stationAmount;
         if (amount > 0) {
-            extracted->push_back(item->makeItem());
+            ArrayAdd(item->makeItem(), *extracted);
         }
     }
 
@@ -444,7 +444,7 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
     int stationCount = stationItems ? static_cast<int>(stationItems->size()) : 0;
 
     ItemArray *mixed = new ItemArray();
-    mixed->resize(stationCount + itemCount);
+    ArraySetLength(stationCount + itemCount, *mixed);
 
     if (static_cast<int>(itemCount) >= 1 && stationCount == 0) {
         for (uint32_t i = 0; i < items->size(); i++) {
@@ -487,7 +487,7 @@ ItemArray *Item::mixItems(ItemArray *items, ItemArray *stationItems) {
         }
 
         ItemArray *trimmed = new ItemArray();
-        trimmed->resize(itemCount);
+        ArraySetLength(itemCount, *trimmed);
         for (uint32_t i = 0; i < itemCount; i++) {
             (*trimmed)[i] = (*mixed)[i];
         }

@@ -118,7 +118,7 @@ PlayerFighter::~PlayerFighter() {
 
     if (this->boundingVolumes != 0) {
         for (auto *e: *this->boundingVolumes) delete e;
-        this->boundingVolumes->clear();
+        ArrayRemoveAll(*(this->boundingVolumes));
         delete this->boundingVolumes;
     }
     this->boundingVolumes = 0;
@@ -557,7 +557,7 @@ void PlayerFighter::setMissionCrate(bool on) {
         int mission = (int) (intptr_t) Status::gStatus->getMission();
         int type = ((Mission *) (mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
-        this->lootList->push_back(item);
+        ArrayAdd(item, *(this->lootList));
 
         ArrayAdd<int>(1, *this->lootList);
     }

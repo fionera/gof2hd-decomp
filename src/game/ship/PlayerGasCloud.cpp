@@ -116,7 +116,7 @@ PlayerGasCloud::~PlayerGasCloud() {
     if (this->sparkGeometries != 0) {
         for (AEGeometry *g: *this->sparkGeometries)
             delete g;
-        this->sparkGeometries->clear();
+        ArrayRemoveAll(*(this->sparkGeometries));
         delete this->sparkGeometries;
         this->sparkGeometries = 0;
     }
@@ -124,7 +124,7 @@ PlayerGasCloud::~PlayerGasCloud() {
     if (this->sparkVelocities != 0) {
         for (Vector *v: *this->sparkVelocities)
             delete v;
-        this->sparkVelocities->clear();
+        ArrayRemoveAll(*(this->sparkVelocities));
         delete this->sparkVelocities;
         this->sparkVelocities = 0;
     }
@@ -233,14 +233,14 @@ void PlayerGasCloud::explode(int itemIndex, Vector src, float radius) {
         float life = ((float) rng->next(200) / lifeDiv) * 3.0f + 3.0f;
         int timer = rng->next(14000);
 
-        this->sparkLife->push_back(life * 7.0f);
-        this->sparkLifeMin->push_back(life);
-        this->sparkTimers->push_back(timer + 8000);
+        ArrayAdd(life * 7.0f, *(this->sparkLife));
+        ArrayAdd(life, *(this->sparkLifeMin));
+        ArrayAdd(timer + 8000, *(this->sparkTimers));
 
-        this->sparkVelocities->push_back(new Vector(dn));
-        this->sparkGeometries->push_back(shard);
-        this->sparkInSight->push_back(false);
-        this->sparkScale->push_back(1.0f);
+        ArrayAdd(new Vector(dn), *(this->sparkVelocities));
+        ArrayAdd(shard, *(this->sparkGeometries));
+        ArrayAdd(false, *(this->sparkInSight));
+        ArrayAdd(1.0f, *(this->sparkScale));
     }
 }
 

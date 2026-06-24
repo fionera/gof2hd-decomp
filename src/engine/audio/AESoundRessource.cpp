@@ -33,7 +33,7 @@ namespace AbyssEngine {
     void AESoundRessource::SetSound(const AESoundInfo *info, int count) {
         this->numSounds = count;
         this->soundInfoTable = info;
-        this->sounds->resize(count);
+        ArraySetLength(count, *(this->sounds));
         for (uint32_t i = 0; i < this->sounds->size(); ++i) {
             (*this->sounds)[i] = nullptr;
         }

@@ -16,7 +16,7 @@ SimpleMeshMerger::SimpleMeshMerger(const Array<unsigned short> &meshIds,
     this->mergeFactor = (short) flags;
     this->canvas = canvas;
     this->matrixCount = (int) transforms.size();
-    this->meshes.resize(meshIds.size());
+    ArraySetLength(meshIds.size(), this->meshes);
 
     int16_t totalV = 0;
     int16_t totalI = 0;

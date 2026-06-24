@@ -180,8 +180,8 @@ ApplicationManager::~ApplicationManager() {
         }
         (*this->modules)[i] = 0;
     }
-    this->modules->clear();
-    this->moduleIds->clear();
+    ArrayRemoveAll(*(this->modules));
+    ArrayRemoveAll(*(this->moduleIds));
 
     delete this->paintCanvas;
     this->paintCanvas = 0;
@@ -684,8 +684,8 @@ void ApplicationManager::CheckForOrientationChange() {
 }
 
 void ApplicationManager::ConfigRegisterAction(long long value, long long key) {
-    this->actionTable->push_back(value);
-    this->actionTable->push_back(key);
+    ArrayAdd(value, *(this->actionTable));
+    ArrayAdd(key, *(this->actionTable));
 }
 
 void *ApplicationManager::ConfigGetKeysForAction(long long action) {
@@ -704,7 +704,7 @@ void *ApplicationManager::ConfigGetKeysForAction(long long action) {
             unsigned int keyIndex = action_entries(this->actionTable)[index / 2].keyIndex;
             AbyssEngine::KeyCode *entries = key_entries(this->keyMappingTable);
             String *string = new String(entries[keyIndex].name);
-            result->push_back(string);
+            ArrayAdd(string, *result);
         }
     }
     return result;
@@ -949,8 +949,8 @@ void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
 void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
     if (module != 0) {
         module->SetApplicationManager(this);
-        this->modules->push_back(module);
-        this->moduleIds->push_back(id);
+        ArrayAdd((void *) module, *(this->modules));
+        ArrayAdd(id, *(this->moduleIds));
     }
 }
 

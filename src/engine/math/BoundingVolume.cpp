@@ -9,7 +9,7 @@ BoundingVolume::~BoundingVolume() {
         for (BoundingVolume *child: *children) {
             delete child;
         }
-        children->clear();
+        ArrayRemoveAll(*children);
         delete children;
     }
     children = nullptr;
@@ -41,7 +41,7 @@ Vector BoundingVolume::getCollisionNormal(const Vector &position) {
 
 void BoundingVolume::setVolume(BoundingVolume *src) {
     children = new Array<BoundingVolume *>();
-    children->push_back(src);
+    ArrayAdd(src, *children);
 }
 
 void BoundingVolume::setVolumes(Array<BoundingVolume *> *arr) {

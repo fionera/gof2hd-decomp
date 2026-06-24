@@ -165,14 +165,14 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
 
     if (this->labels != 0) {
         for (String *str: *this->labels) delete str;
-        this->labels->clear();
+        ArrayRemoveAll(*(this->labels));
         delete this->labels;
     }
     this->labels = 0;
 
     if (this->values != 0) {
         for (String *str: *this->values) delete str;
-        this->values->clear();
+        ArrayRemoveAll(*(this->values));
         delete this->values;
     }
     this->values = 0;
@@ -227,23 +227,23 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
 ListItemWindow::~ListItemWindow() {
     if (this->labels) {
         for (String *str: *this->labels) delete str;
-        this->labels->clear();
+        ArrayRemoveAll(*(this->labels));
         delete this->labels;
         this->labels = 0;
     }
     if (this->values) {
         for (String *str: *this->values) delete str;
-        this->values->clear();
+        ArrayRemoveAll(*(this->values));
         delete this->values;
         this->values = 0;
     }
     if (this->statsCur) {
-        this->statsCur->clear();
+        ArrayRemoveAll(*(this->statsCur));
         delete this->statsCur;
         this->statsCur = 0;
     }
     if (this->statsPrev) {
-        this->statsPrev->clear();
+        ArrayRemoveAll(*(this->statsPrev));
         delete this->statsPrev;
         this->statsPrev = 0;
     }

@@ -159,7 +159,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
 
         result = new Array<Agent *>();
-        result->resize(count);
+        ArraySetLength(count, *result);
 
         uint32_t out = 0;
         for (uint32_t i = 0; i < existing->size(); ++i) {
@@ -187,7 +187,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         if (((Station *) (intptr_t) status->field_14c)
                             ->hasShip(shipId) == 0) {
                             if (status->getShip()->getIndex() != shipId) {
-                                choices->push_back(shipId);
+                                ArrayAdd(shipId, *choices);
                             }
                         }
                     }
@@ -587,7 +587,7 @@ Agent *Generator::createAgent(Station *station) {
         uint32_t count = random->nextInt();
         Array<AbyssEngine::String *> *friendNames =
                 new Array<AbyssEngine::String *>();
-        friendNames->resize(count);
+        ArraySetLength(count, *friendNames);
         for (int i = 0; i < (int) count; ++i) {
             AbyssEngine::String *friendName = new AbyssEngine::String(
                 Globals::gGlobals->getRandomName(agent->getRace(), true));
@@ -654,7 +654,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             Ship *base = allShips->data()[i];
             if (base->hasJumpDriveIntegrated() && base->getIndex() != 0x25) {
                 Ship *ship = base->makeShip(-1);
-                result->push_back(ship);
+                ArrayAdd(ship, *result);
                 Ship *added = result->data()[result->size() - 1];
                 added->setRace(g_Generator_shipRaces[i]);
                 added->adjustPrice();
@@ -668,7 +668,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         for (int i = 0; i != 0x32; ++i) {
             if (g_Generator_shipRaces[i] == 8) {
                 Ship *ship = allShips->data()[i]->makeShip(-1);
-                result->push_back(ship);
+                ArrayAdd(ship, *result);
                 Ship *added = result->data()[result->size() - 1];
                 added->setRace(8);
                 added->adjustPrice();
@@ -683,7 +683,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                     void *w = *(void **) ((char *) wanted->data() + offsets[i]);
                     if (((Wanted *) w)->isTerminated()) {
                         Ship *ship = allShips->data()[ships[i]]->makeShip(-1);
-                        result->push_back(ship);
+                        ArrayAdd(ship, *result);
                         Ship *added = result->data()[result->size() - 1];
                         added->setRace(8);
                         added->adjustPrice();
@@ -712,7 +712,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     }
 
     Array<Ship *> *result = new Array<Ship *>();
-    result->resize(count);
+    ArraySetLength(count, *result);
 
     int forcedShip = gold ? 8 : 10;
     for (int i = 0; i < count; ++i) {
@@ -755,7 +755,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     if (race == 0) {
         if (AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x3e]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(3);
             added->adjustPrice();
@@ -765,7 +765,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         raceFlag = 1;
         if (AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x3f]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
@@ -773,7 +773,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     } else if (race == 2 &&
                AERandom::gRandom->nextInt() == 0) {
         Ship *ship = allShips->data()[0x3d]->makeShip(-1);
-        result->push_back(ship);
+        ArrayAdd(ship, *result);
         Ship *added = result->data()[result->size() - 1];
         added->setRace(1);
         added->adjustPrice();
@@ -782,14 +782,14 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     if (g_Generator_shipFlags[0x35] && status->dlc1Won() && raceFlag) {
         if (AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x27]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
         }
         if (AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x29]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
@@ -800,7 +800,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         if (raceFlag &&
             AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x36]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
@@ -810,7 +810,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
             (status->hardCoreMode() ||
              Achievements::gAchievements->gotAllSupernovaMedals())) {
             Ship *ship = allShips->data()[0x2c]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
@@ -818,7 +818,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         if (station->getIndex() == 0x78 &&
             status->getCurrentCampaignMission() > 0x9e) {
             Ship *ship = allShips->data()[0x31]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(1);
             added->adjustPrice();
@@ -826,7 +826,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         if (terranBonus &&
             AERandom::gRandom->nextInt() == 0) {
             Ship *ship = allShips->data()[0x33]->makeShip(-1);
-            result->push_back(ship);
+            ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
             added->setRace(0);
             added->adjustPrice();
@@ -836,7 +836,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     if (station->getSystem() == 0x11 &&
         AERandom::gRandom->nextInt() == 0) {
         Ship *ship = allShips->data()[0x2a]->makeShip(-1);
-        result->push_back(ship);
+        ArrayAdd(ship, *result);
         Ship *added = result->data()[result->size() - 1];
         added->setRace(1);
         added->adjustPrice();
@@ -844,7 +844,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     if (station->getSystem() == 0x11 &&
         AERandom::gRandom->nextInt() == 0) {
         Ship *ship = allShips->data()[0x2b]->makeShip(-1);
-        result->push_back(ship);
+        ArrayAdd(ship, *result);
         Ship *added = result->data()[result->size() - 1];
         added->setRace(2);
         added->adjustPrice();
@@ -852,7 +852,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
     if (station->getSystem() == 0x11 &&
         AERandom::gRandom->nextInt() == 0) {
         Ship *ship = allShips->data()[0x34]->makeShip(-1);
-        result->push_back(ship);
+        ArrayAdd(ship, *result);
         Ship *added = result->data()[result->size() - 1];
         added->setRace(0);
         added->adjustPrice();
@@ -885,7 +885,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     if (stationIndex == 0x4e &&
         status->getCurrentCampaignMission() < 7) {
         Array<Item *> *items = new Array<Item *>();
-        items->resize(3);
+        ArraySetLength(3, *items);
         Array<Item *> *all = *g_Generator_allItems;
         ItemFactory makeIntro = g_Generator_introFactory;
         items->data()[0] = makeIntro(all->data()[0], 1, 0);
@@ -916,7 +916,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
     if (status->getCurrentCampaignMission() == 0x8b &&
         station->getSystem() == 0x19) {
-        result->push_back(allItems->data()[0xbe]->makeItem());
+        ArrayAdd(allItems->data()[0xbe]->makeItem(), *result);
     }
 
     if (stationId == 0x7e) {
@@ -926,7 +926,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
             amount = AERandom::gRandom->nextInt() + 1;
         }
         item->setAmount(amount);
-        result->push_back(item);
+        ArrayAdd(item, *result);
     }
 
     AbyssEngine::AERandom *random = AERandom::gRandom;
@@ -1097,7 +1097,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
 
         Item *newItem = item->makeItem();
         newItem->setAmount(amount);
-        result->push_back(newItem);
+        ArrayAdd(newItem, *result);
     }
 
     return result;
@@ -1111,8 +1111,8 @@ g_Generator_typeChances[8];
 Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (itemIndex >= 0) {
         Array<int> *result = new Array<int>();
-        result->push_back(itemIndex);
-        result->push_back(amount);
+        ArrayAdd(itemIndex, *result);
+        ArrayAdd(amount, *result);
         return result;
     }
 
@@ -1131,7 +1131,7 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
     if (pairCount == 0) {
         length = 2;
     }
-    result->resize(length);
+    ArraySetLength(length, *result);
 
     for (uint32_t out = 0; out < result->size(); out += 2) {
         bool found = false;

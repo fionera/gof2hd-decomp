@@ -132,7 +132,7 @@ int Player::getShieldHP() {
 void Player::removeAllGuns() {
     if (this->guns != 0) {
         for (Array<Gun *> *slot: *this->guns) delete slot;
-        this->guns->clear();
+        ArrayRemoveAll(*(this->guns));
         delete this->guns;
     }
     this->guns = 0;
@@ -489,10 +489,10 @@ void Player::addEnemies(Array<Player *> *enemies) {
     }
     Array<Player *> *tmp = new Array<Player *>();
     for (unsigned int i = 0; i < this->enemies->size(); i++) {
-        tmp->push_back(this->enemies->data()[i]);
+        ArrayAdd(this->enemies->data()[i], *tmp);
     }
     for (unsigned int i = 0; i < enemies->size(); i++) {
-        tmp->push_back(enemies->data()[i]);
+        ArrayAdd(enemies->data()[i], *tmp);
     }
     ((Player *) (this))->setEnemies(tmp);
     delete tmp;
@@ -532,28 +532,28 @@ Player::Player(int radius, int hitpoints, int numPrimary, int numSecondary, int 
 
     Array<Array<Gun *> *> *gunArr = new Array<Array<Gun *> *>();
     self->guns = gunArr;
-    gunArr->resize(3);
+    ArraySetLength(3, *gunArr);
 
     if (numPrimary < 1) {
         self->guns->data()[0] = 0;
     } else {
         Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[0] = a;
-        self->guns->data()[0]->resize(numPrimary);
+        ArraySetLength(numPrimary, *self->guns->data()[0]);
     }
     if (numSecondary < 1) {
         self->guns->data()[1] = 0;
     } else {
         Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[1] = a;
-        self->guns->data()[1]->resize(numSecondary);
+        ArraySetLength(numSecondary, *self->guns->data()[1]);
     }
     if (numTertiary < 1) {
         self->guns->data()[2] = 0;
     } else {
         Array<Gun *> *a = new Array<Gun *>();
         self->guns->data()[2] = a;
-        self->guns->data()[2]->resize(numTertiary);
+        ArraySetLength(numTertiary, *self->guns->data()[2]);
     }
 
     self->playShootSoundFlag = 1;
@@ -727,7 +727,7 @@ void Player::addGun(Array<Gun *> *gunsIn, int slot) {
             Array<Gun *> *arr = new Array<Gun *>();
             this->guns->data()[slot] = arr;
             for (unsigned int i = 0; i < gunsIn->size(); i++) {
-                this->guns->data()[slot]->push_back(gunsIn->data()[i]);
+                ArrayAdd(gunsIn->data()[i], *this->guns->data()[slot]);
             }
         }
         if (this->playShootSoundFlag) {
@@ -759,7 +759,7 @@ Player::~Player() {
             Array<Gun *> *slot = guns->data()[i];
             if (slot != 0) {
                 for (Gun *gun: *slot) delete gun;
-                slot->clear();
+                ArrayRemoveAll(*slot);
                 Array<Gun *> *s2 = this->guns->data()[i];
                 if (s2 == 0) {
                     this->guns->data()[i] = 0;
@@ -771,7 +771,7 @@ Player::~Player() {
             }
         }
         for (Array<Gun *> *slot: *guns) delete slot;
-        guns->clear();
+        ArrayRemoveAll(*guns);
         delete this->guns;
         this->guns = 0;
     }
@@ -845,7 +845,7 @@ void Player::addGun(Gun *gun, int slot) {
         if ((unsigned int) slot < 4) {
             Array<Gun *> *arr = new Array<Gun *>();
             this->guns->data()[slot] = arr;
-            this->guns->data()[slot]->push_back(gun);
+            ArrayAdd(gun, *this->guns->data()[slot]);
         }
         if (this->playShootSoundFlag) {
             this->calcWeaponSounds(this->playShootSoundId);
@@ -936,7 +936,7 @@ void Player::setEnemies(Array<Player *> *enemies) {
         Array<Player *> *copy = new Array<Player *>();
         this->enemies = copy;
         for (unsigned int i = 0; i < enemies->size(); i++) {
-            copy->push_back(enemies->data()[i]);
+            ArrayAdd(enemies->data()[i], *copy);
         }
     }
     Array<Array<Gun *> *> *guns = this->guns;
@@ -1198,7 +1198,7 @@ LAB_3488: {
 
 void Player::setEnemy(Player *enemy) {
     Array<Player *> *tmp = new Array<Player *>();
-    tmp->push_back(enemy);
+    ArrayAdd(enemy, *tmp);
     ((Player *) (this))->setEnemies(tmp);
     delete tmp;
 }
@@ -1211,10 +1211,10 @@ void Player::addEnemy(Player *enemy) {
     Array<Player *> *tmp = new Array<Player *>();
     if (this->enemies->size() != 0) {
         for (unsigned int i = 0; i < this->enemies->size(); i++) {
-            tmp->push_back(this->enemies->data()[i]);
+            ArrayAdd(this->enemies->data()[i], *tmp);
         }
     }
-    tmp->push_back(enemy);
+    ArrayAdd(enemy, *tmp);
     ((Player *) (this))->setEnemies(tmp);
     delete tmp;
 }

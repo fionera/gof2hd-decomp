@@ -2579,7 +2579,7 @@ void MGame::OnRelease() {
     if (this->missionInfoLines != 0) {
         for (AbyssEngine::String *line: *this->missionInfoLines)
             delete line;
-        this->missionInfoLines->clear();
+        ArrayRemoveAll(*(this->missionInfoLines));
         delete this->missionInfoLines;
     }
     this->missionInfoLines = 0;

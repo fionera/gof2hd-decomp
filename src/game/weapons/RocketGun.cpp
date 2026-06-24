@@ -109,9 +109,9 @@ void RocketGun::setRadar(Radar *radar) {
         this->trailTimers = new Array<int>();
 
         uint32_t count = this->gun->count;
-        this->trailMatrices->resize(count);
-        this->trailSystems->resize(count);
-        this->trailTimers->resize(count);
+        ArraySetLength(count, *(this->trailMatrices));
+        ArraySetLength(count, *(this->trailSystems));
+        ArraySetLength(count, *(this->trailTimers));
 
         ParticleSettings::ParticleSet defaultType = ParticleSettings::ParticleSet_0x1c;
         if (mode == 2)
@@ -149,9 +149,9 @@ non_special:
         this->trailSystems = new Array<int>();
         this->trailTimers = new Array<int>();
 
-        this->trailMatrices->resize(this->gun->count);
-        this->trailSystems->resize(this->gun->count);
-        this->trailTimers->resize(this->gun->count);
+        ArraySetLength(this->gun->count, *(this->trailMatrices));
+        ArraySetLength(this->gun->count, *(this->trailSystems));
+        ArraySetLength(this->gun->count, *(this->trailTimers));
 
         for (uint32_t i = 0; i < this->gun->count; i++) {
             ParticleSystemManager *manager = radarLevel->field_80;

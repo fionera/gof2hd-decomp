@@ -645,7 +645,7 @@ Engine::~Engine() {
     for (uint32_t i = 0; i < this->shaders->size(); ++i) {
         delete (*this->shaders)[i];
     }
-    this->shaders->clear();
+    ArrayRemoveAll(*(this->shaders));
 
     delete this->postEffectFBO;
     this->postEffectFBO = 0;
@@ -690,8 +690,8 @@ void Engine::ShaderRegister(ShaderBaseStruct *shader) {
         char *text = name.GetAEChar();
 
         shader->Init(this);
-        this->shaders->push_back(shader);
-        this->triangleCounts->push_back(0);
+        ArrayAdd(shader, *(this->shaders));
+        ArrayAdd(0, *(this->triangleCounts));
         ::operator delete(text);
     }
 }

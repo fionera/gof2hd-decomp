@@ -59,7 +59,7 @@ Radio::~Radio() {
     if (this->imageParts != 0) {
         for (ImagePart *e: *this->imageParts)
             delete e;
-        this->imageParts->clear();
+        ArrayRemoveAll(*(this->imageParts));
         delete this->imageParts;
     }
     this->imageParts = 0;
@@ -70,7 +70,7 @@ Radio::~Radio() {
     if (this->textLines != 0) {
         for (String *e: *this->textLines)
             delete e;
-        this->textLines->clear();
+        ArrayRemoveAll(*(this->textLines));
         delete this->textLines;
     }
     this->textLines = 0;
@@ -157,7 +157,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script) {
         if (this->textLines != 0) {
             for (String *e: *this->textLines)
                 delete e;
-            this->textLines->clear();
+            ArrayRemoveAll(*(this->textLines));
             delete this->textLines;
         }
         this->textLines = new Array<String *>();

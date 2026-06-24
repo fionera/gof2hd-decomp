@@ -51,7 +51,7 @@ void AEFile::Release() {
         for (AELowLevelFile *file: *g_AEFile_openFiles) {
             delete file;
         }
-        g_AEFile_openFiles->clear();
+        ArrayRemoveAll(*g_AEFile_openFiles);
         delete g_AEFile_openFiles;
         g_AEFile_openFiles = nullptr;
     }

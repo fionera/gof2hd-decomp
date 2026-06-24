@@ -304,7 +304,7 @@ StarSystem::StarSystem(int mode) {
 
     if (this->abstractSystem != 0) {
         this->planetsArray = new Array<AEGeometry *>();
-        this->planetsArray->resize(2);
+        ArraySetLength(2, *(this->planetsArray));
 
         AEGeometry *sun = new AEGeometry((uint16_t) 0x1a70, PaintCanvas::gCanvas, false);
         (*this->planetsArray)[0] = sun;
@@ -324,12 +324,12 @@ StarSystem::StarSystem(int mode) {
         planet->moveForward(0x447a0000);
 
         this->texturesArray = new Array<uint32_t>();
-        this->texturesArray->resize(2);
+        ArraySetLength(2, *(this->texturesArray));
         PaintCanvas::gCanvas->TextureCreate((uint16_t) 0x2739, (*this->texturesArray)[0], false);
         PaintCanvas::gCanvas->TextureCreate((uint16_t) 0x2719, (*this->texturesArray)[1], false);
 
         this->positionsArray = new Array<Vector>();
-        this->positionsArray->resize(2);
+        ArraySetLength(2, *(this->positionsArray));
         (*this->positionsArray)[0] = sun->getPosition();
         (*this->positionsArray)[1] = planet->getPosition();
 
@@ -346,10 +346,10 @@ StarSystem::StarSystem(int mode) {
     void *stationArray = (void *) (intptr_t) reader.loadStationsBinary();
 
     this->texturesArray = new Array<uint32_t>();
-    this->texturesArray->resize(flat_count(stationArray) + 1);
+    ArraySetLength(flat_count(stationArray) + 1, *(this->texturesArray));
 
     this->stationIdxArray = new Array<int>();
-    this->stationIdxArray->resize(flat_count(stations));
+    ArraySetLength(flat_count(stations), *(this->stationIdxArray));
 
     int mission = status->getCurrentCampaignMission();
     if ((mission == 0x59 && this->supernovaSystem != 0) ||
@@ -405,10 +405,10 @@ StarSystem::StarSystem(int mode) {
                                  *static_cast<Array<unsigned int> *>(this->playerTargets));
 
     this->planetsArray = new Array<AEGeometry *>();
-    this->planetsArray->resize(count + 1);
+    ArraySetLength(count + 1, *(this->planetsArray));
 
     this->positionsArray = new Array<Vector>();
-    this->positionsArray->resize(count + 1);
+    ArraySetLength(count + 1, *(this->positionsArray));
 
     AERandom::gRandom->setSeed((long long) status->getStation()->getIndex() * 300);
 

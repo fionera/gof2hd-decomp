@@ -103,7 +103,7 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
         (*this->geometries)[i] = new AEGeometry(geoId, canvas, false);
 
     this->targetIds = new Array<int>();
-    this->targetIds->resize(count);
+    ArraySetLength(count, *(this->targetIds));
     this->timer = 0x9c4;
     for (unsigned k = 0; k < this->targetIds->size(); ++k)
         (*this->targetIds)[k] = -1;

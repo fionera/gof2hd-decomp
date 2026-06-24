@@ -627,7 +627,7 @@ void StarMap::update(int dt) {
                 delete[] this->stationDistances;
                 this->stationDistances = (int *) 0;
                 if (this->usedFlags != 0) {
-                    this->usedFlags->clear();
+                    ArrayRemoveAll(*(this->usedFlags));
                     delete this->usedFlags;
                     this->usedFlags = 0;
                 }
@@ -790,8 +790,8 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->systemGeoms = systemsGeom;
     Array<Vector *> *systemPositions = new Array<Vector *>();
     this->systemPositions = systemPositions;
-    systemsGeom->resize(0x22);
-    systemPositions->resize(0x22);
+    ArraySetLength(0x22, *systemsGeom);
+    ArraySetLength(0x22, *systemPositions);
 
     for (uint32_t i = 0; i < systemsGeom->size(); i++) {
         SolarSystem *sys = this->systems->data()[i];
@@ -888,7 +888,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                     this->selectedSystem = (int) i;
                     if (this->stations != 0) {
                         for (Station *s: *this->stations) delete s;
-                        this->stations->clear();
+                        ArrayRemoveAll(*(this->stations));
                         delete this->stations;
                         this->stations = (Array<Station *> *) 0;
                     }
@@ -1064,7 +1064,7 @@ void StarMap::initStarSystem() {
 
     Array<Station *> *stations = new Array<Station *>();
     this->stations = stations;
-    stations->resize(count);
+    ArraySetLength(count, *stations);
     void *reader = operator new(1);
     FileRead_ctor(reader);
     this->stations = (Array<Station *> *) ((FileRead *) (reader))->loadStationsBinary();
@@ -1077,14 +1077,14 @@ void StarMap::initStarSystem() {
 
     Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
     this->stationGeoms = stationGeoms;
-    stationGeoms->resize(count + 1);
+    ArraySetLength(count + 1, *stationGeoms);
 
     AEGeometry *root = new AEGeometry(PaintCanvas::gCanvas);
     this->starSystemRoot = root;
 
     Array<uint8_t> *used = new Array<uint8_t>();
     this->usedFlags = used;
-    used->resize(stationGeoms->size());
+    ArraySetLength(stationGeoms->size(), *used);
     for (uint32_t i = 0; i < used->size(); i++) {
         (*used)[i] = 0;
     }
@@ -1115,7 +1115,7 @@ void StarMap::initStarSystem() {
 
     Array<AEGeometry *> *rings = new Array<AEGeometry *>();
     this->ringGeoms = rings;
-    rings->resize(count);
+    ArraySetLength(count, *rings);
     for (uint32_t i = 0; i < rings->size(); i++) {
         AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, PaintCanvas::gCanvas, false);
         (*rings)[i] = ring;
@@ -1141,7 +1141,7 @@ void StarMap::initStarSystem() {
     }
     Array<Vector *> *stationPositions = new Array<Vector *>();
     this->stationPositions = stationPositions;
-    stationPositions->resize(this->stations->size());
+    ArraySetLength(this->stations->size(), *stationPositions);
     for (uint32_t i = 0; i < stationPositions->size(); i++) {
         Vector *p = new Vector{0.0f, 0.0f, 0.0f};
         (*stationPositions)[i] = p;
@@ -1390,7 +1390,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         Array<Station *> *stations = this->stations;
         if (stations != 0) {
             for (Station *s: *stations) delete s;
-            stations->clear();
+            ArrayRemoveAll(*stations);
             delete stations;
             this->stations = (Array<Station *> *) 0;
         }
