@@ -74,7 +74,7 @@ char *flstat_rootPath;
 
 int forceExit;
 
-static unsigned int countryCode;
+unsigned int hrwhs_country_code;
 
 int gb_android_offerwallCreditAmount;
 
@@ -162,7 +162,7 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     GameText *text = new GameText();
     GameText::gGameText = text;
-    text->setLanguage(static_cast<short>(Engine::countryCode), 3401);
+    text->setLanguage(static_cast<short>(hrwhs_country_code), 3401);
     data->globals->loadFont(GameText::getLanguage());
     data->globals->init(engine->appManager, engine);
 
@@ -211,7 +211,7 @@ extern "C" void ndk23_setZipDirectory(const char *path) {
 }
 
 extern "C" void ndk23_setCountryCode(unsigned int code) {
-    countryCode = (code > 15) ? 0u : code;
+    hrwhs_country_code = (code > 15) ? 0u : code;
 }
 
 extern "C" int ndk23_getExitFlag() {
