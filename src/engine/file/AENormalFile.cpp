@@ -4,6 +4,10 @@ AENormalFile::AENormalFile(FileInterface *file)
     : file(file) {
 }
 
+AENormalFile::~AENormalFile() {
+    Release();
+}
+
 uint32_t AENormalFile::Read(uint32_t bytes, void *buffer) {
     if (file != nullptr) {
         return file->Read(bytes, buffer);

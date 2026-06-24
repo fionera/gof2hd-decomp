@@ -14,7 +14,7 @@ public:
 
     AENormalFile(FileInterface *file);
 
-    ~AENormalFile() override { Release(); }
+    ~AENormalFile() override;
 
     uint32_t Write(uint32_t bytes, void *buffer) override;
 

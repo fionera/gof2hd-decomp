@@ -7,6 +7,10 @@ AEPakFile::AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset
       position(0) {
 }
 
+AEPakFile::~AEPakFile() {
+    Release();
+}
+
 uint32_t AEPakFile::Read(uint32_t bytes, void *buffer) {
     FileInterface *file;
     if (bytes != 0 && (file = fileInterface) != nullptr) {

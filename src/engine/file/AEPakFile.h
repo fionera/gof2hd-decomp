@@ -17,7 +17,7 @@ public:
 
     AEPakFile(FileInterface *fileInterface, int sizeLimit, int baseOffset);
 
-    ~AEPakFile() override { Release(); }
+    ~AEPakFile() override;
 
     uint32_t Write(uint32_t bytes, void *buffer) override;
 
