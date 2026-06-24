@@ -16,37 +16,38 @@
 
 using AbyssEngine::AEMath::VectorSignedToFloat;
 
-namespace {
-    struct VirtualKey {
-        char name[0x14];
-        int pressed;
-        int keyCode;
-        int altCode1;
-        int altCode2;
-        int altCode3;
-        int hasTouch;
-        int field_0x2c;
-        int baseX;
-        int baseY;
-        int offsetX;
-        int offsetY;
+struct VirtualKey {
+    char name[0x14];
+    int pressed;
+    int keyCode;
+    int altCode1;
+    int altCode2;
+    int altCode3;
+    int hasTouch;
+    int field_0x2c;
+    int baseX;
+    int baseY;
+    int offsetX;
+    int offsetY;
 
-        union {
-            void *touch;
-            int touchWindowHandle;
-        };
-
-        int field_0x44;
-        int field_0x48;
-        int action;
-        int field_0x50;
-        int field_0x54;
+    union {
+        void *touch;
+        int touchWindowHandle;
     };
 
-    constexpr int kVirtualKeyCount = 48;
-    VirtualKey g_virtualKeys[kVirtualKeyCount];
+    int field_0x44;
+    int field_0x48;
+    int action;
+    int field_0x50;
+    int field_0x54;
+};
 
-    VirtualKey *const g_arrowKeys = g_virtualKeys;
+constexpr int kVirtualKeyCount = 48;
+// Exported global (the original's `keys`): the table of virtual key states.
+VirtualKey keys[kVirtualKeyCount];
+
+namespace {
+    VirtualKey *const g_arrowKeys = keys;
 
     int g_actionKeyState;
 
@@ -204,7 +205,7 @@ void SendStoredKeyUpEvents(AbyssEngine::Engine *engine) {
 
 void keyEventReleased(AbyssEngine::Engine *engine, char *name) {
     for (int i = 0; i < kVirtualKeyCount; ++i) {
-        VirtualKey &key = g_virtualKeys[i];
+        VirtualKey &key = keys[i];
         if (std::strcmp(key.name, name) == 0)
             keyReleased(engine, key.keyCode);
     }
@@ -212,7 +213,7 @@ void keyEventReleased(AbyssEngine::Engine *engine, char *name) {
 
 void keyEventPressed(AbyssEngine::Engine *engine, char *name) {
     for (int i = 0; i < kVirtualKeyCount; ++i) {
-        VirtualKey &key = g_virtualKeys[i];
+        VirtualKey &key = keys[i];
         if (std::strcmp(key.name, name) == 0)
             keyPressed(engine, key.keyCode);
     }
@@ -222,7 +223,7 @@ void SetKeyCode(const char *name, int slot, int code) {
     if (name == nullptr)
         return;
 
-    for (VirtualKey &key: g_virtualKeys) {
+    for (VirtualKey &key: keys) {
         if (std::strcmp(key.name, name) != 0)
             continue;
         switch (slot) {
@@ -239,7 +240,7 @@ void SetKeyCode(const char *name, int slot, int code) {
 }
 
 int IsSubMenuActive(int player) {
-    const int handle = g_virtualKeys[player].touchWindowHandle;
+    const int handle = keys[player].touchWindowHandle;
     if (handle <= kTouchWindowBase)
         return false;
 
@@ -270,7 +271,7 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
     int releasedIndex = -1;
 
     for (int i = 0; i < kVirtualKeyCount; ++i) {
-        VirtualKey &vk = g_virtualKeys[i];
+        VirtualKey &vk = keys[i];
         if (vk.keyCode != key && vk.altCode1 != key && vk.altCode2 != key &&
             vk.altCode3 != key)
             continue;
@@ -295,16 +296,16 @@ void keyReleased(AbyssEngine::Engine *engine, int key) {
 
     switch (releasedIndex) {
         case 0:
-            g_steeringX.axis1 = (g_virtualKeys[1].pressed == 0) ? kAxisCenter : kAxisStep;
+            g_steeringX.axis1 = (keys[1].pressed == 0) ? kAxisCenter : kAxisStep;
             break;
         case 1:
-            g_steeringX.axis1 = (g_virtualKeys[0].pressed == 0) ? kAxisCenter : -kAxisStep;
+            g_steeringX.axis1 = (keys[0].pressed == 0) ? kAxisCenter : -kAxisStep;
             break;
         case 2:
-            g_steeringY.axis2 = (g_virtualKeys[3].pressed == 0) ? kAxisCenter : -kAxisStep;
+            g_steeringY.axis2 = (keys[3].pressed == 0) ? kAxisCenter : -kAxisStep;
             break;
         case 3:
-            g_steeringY.axis2 = (g_virtualKeys[2].pressed == 0) ? kAxisCenter : kAxisStep;
+            g_steeringY.axis2 = (keys[2].pressed == 0) ? kAxisCenter : kAxisStep;
             break;
         case 6:
         case 7:
@@ -355,7 +356,7 @@ void keyPressed(AbyssEngine::Engine *engine, int key) {
 
     for (int pass = 2; pass >= 0; --pass) {
         for (int i = 0; i < kVirtualKeyCount; ++i) {
-            VirtualKey &vk = g_virtualKeys[i];
+            VirtualKey &vk = keys[i];
             if (vk.field_0x50 != pass)
                 continue;
             if (vk.keyCode != key && vk.altCode1 != key && vk.altCode2 != key &&
@@ -437,13 +438,13 @@ matched:
 int GetKeyState(int index) {
     if (static_cast<unsigned int>(index) > kVirtualKeyCount - 1)
         return 0;
-    return g_virtualKeys[index].pressed;
+    return keys[index].pressed;
 }
 
 int GetKeyState(char *name) {
     for (int i = 0; i < kVirtualKeyCount; ++i) {
-        if (std::strcmp(g_virtualKeys[i].name, name) == 0 &&
-            g_virtualKeys[i].pressed != 0)
+        if (std::strcmp(keys[i].name, name) == 0 &&
+            keys[i].pressed != 0)
             return 1;
     }
     return 0;
@@ -563,7 +564,7 @@ namespace {
         return v;
     }
 
-    inline bool keyHeld(int index) { return g_virtualKeys[index].pressed != 0; }
+    inline bool keyHeld(int index) { return keys[index].pressed != 0; }
 
     inline float easeAxis(float t) {
         float eased;
