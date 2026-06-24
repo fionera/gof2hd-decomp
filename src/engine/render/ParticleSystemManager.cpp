@@ -62,7 +62,6 @@ ParticleSystemManager::ParticleSystemManager(
     this->cameraSet = cameraSet;
     this->canvas = canvas;
 
-    _psm_arraySpriteCtor(&this->spriteSystemCount);
     this->spriteUvId = 0xffff;
     this->spriteTextureId = spriteTex;
     this->spriteBlendMode = 0;
@@ -84,7 +83,6 @@ ParticleSystemManager::ParticleSystemManager(
     this->cameraSet = cameraSet;
     this->canvas = canvas;
 
-    _psm_arraySpriteCtor(&this->spriteSystemCount);
     this->spriteUvId = spriteTex;
     this->spriteTextureId = 0xffff;
     this->spriteBlendMode = spriteBlend;
@@ -106,8 +104,8 @@ void ParticleSystemManager::update(long long dt) {
     int accum = this->accumulatedDt + d;
     this->accumulatedDt = accum;
 
-    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems;
-    for (unsigned i = 0; i < this->spriteSystemCount; i++) {
+    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems.data_;
+    for (unsigned i = 0; i < this->spriteSystems.count; i++) {
         IParticleSystem *p = sprites[i];
         if (p != nullptr) {
             p->update(d);
@@ -147,8 +145,8 @@ void ParticleSystemManager::update(long long dt) {
 }
 
 void ParticleSystemManager::reset() {
-    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems;
-    for (unsigned i = 0; i < this->spriteSystemCount; i++) {
+    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems.data_;
+    for (unsigned i = 0; i < this->spriteSystems.count; i++) {
         IParticleSystem *p = sprites[i];
         if (p != nullptr)
             _ips_reset(p);
@@ -162,7 +160,7 @@ void ParticleSystemManager::reset() {
 }
 
 void ParticleSystemManager::releaseSprites() {
-    _psm_ArrayReleaseSprites(&this->spriteSystemCount);
+    _psm_ArrayReleaseSprites(&this->spriteSystems);
     if (this->spriteSystemId != 0xffffffff) {
         _psm_ReleaseSpriteSystemResource(this->canvas, this->spriteSystemId);
         this->spriteSystemId = 0xffffffff;
@@ -203,7 +201,7 @@ void ParticleSystemManager::setParticleSetByIndex(int handle, unsigned char setI
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -223,7 +221,7 @@ void ParticleSystemManager::enableSystemRender(int handle, bool enable) {
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -270,7 +268,7 @@ unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AE
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -295,7 +293,7 @@ unsigned long long ParticleSystemManager::emitManual(int handle, AbyssEngine::AE
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -325,7 +323,7 @@ void ParticleSystemManager::systemSetMatrix(int handle, AbyssEngine::AEMath::Mat
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -345,7 +343,7 @@ void ParticleSystemManager::setParticleSetBySet(int handle, ParticleSettings::Pa
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -365,7 +363,7 @@ void ParticleSystemManager::enableSystemUpdate(int handle, bool enable) {
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -375,7 +373,7 @@ void ParticleSystemManager::enableSystemUpdate(int handle, bool enable) {
 }
 
 void ParticleSystemManager::initSprites() {
-    if (this->spriteSystemCount == 0)
+    if (this->spriteSystems.count == 0)
         return;
 
     this->spriteSystemId = 0xffffffff;
@@ -402,8 +400,8 @@ void ParticleSystemManager::initSprites() {
     float w = *(float *) (g_activeParticleSet + 0x94);
     canvas->SpriteSystemSetAllUv(this->spriteSystemId, u, 0.0f, w, 0.0f);
 
-    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems;
-    for (unsigned i = 0; i < this->spriteSystemCount; ++i) {
+    IParticleSystem **sprites = (IParticleSystem **) this->spriteSystems.data_;
+    for (unsigned i = 0; i < this->spriteSystems.count; ++i) {
         IParticleSystem *sys = sprites[i];
         sys->init(this->spriteSystemId, (uint16_t) offset);
         offset += _ips_getParticleCount16(sprites[i]);
@@ -416,7 +414,7 @@ int ParticleSystemManager::addSpriteSystem(AbyssEngine::AEMath::Matrix const *ma
     _pss_ctor(sys, this->canvas, matrix, &sets, flag, this->spriteUsesExtra != 0);
     ArrayAdd<ParticleSystemSprite *>(static_cast<ParticleSystemSprite *>(sys), spriteArray());
     this->spriteParticleCount += _ips_getParticleCount(sys);
-    return this->spriteSystemCount - 1;
+    return this->spriteSystems.count - 1;
 }
 
 void ParticleSystemManager::initMesh() {
@@ -467,7 +465,7 @@ void ParticleSystemManager::enableSystemEmit(int handle, bool enable) {
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -499,7 +497,7 @@ void ParticleSystemManager::resetSystem(int handle) {
             arr = reinterpret_cast<IParticleSystem **>(this->meshSystems);
             idx = handle & 0x3fffffff;
         } else {
-            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems);
+            arr = reinterpret_cast<IParticleSystem **>(this->spriteSystems.data_);
             idx = handle;
         }
         sys = arr[idx];
@@ -521,5 +519,4 @@ void ParticleSystemManager::renderPost3d() {
 ParticleSystemManager::~ParticleSystemManager() {
     release();
     meshArray().~Array();
-    _psm_arraySpriteDtor(&this->spriteSystemCount);
 }

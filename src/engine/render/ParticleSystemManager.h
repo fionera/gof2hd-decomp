@@ -39,9 +39,7 @@ public:
     int32_t accumulatedDt;
     uint8_t enabled;
 
-    uint32_t spriteSystemCount;
-    void *spriteSystems;
-    uint32_t spriteSystemCapacity;
+    ::Array<ParticleSystemSprite *> spriteSystems;
     int16_t spriteTextureId;
     int16_t spriteUvId;
     uint32_t spriteBlendMode;
@@ -128,7 +126,7 @@ public:
 
 private:
     Array<ParticleSystemSprite *> &spriteArray() {
-        return *reinterpret_cast<Array<ParticleSystemSprite *> *>(&spriteSystemCount);
+        return spriteSystems;
     }
 
     Array<ParticleSystemMesh *> &meshArray() {
