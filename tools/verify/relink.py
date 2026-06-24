@@ -36,6 +36,12 @@ CXX_RUNTIME = [NDK + "/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a/libc++abi.a"
 # ARMv7/ARMv8 cpuid probes) -- the game statically linked these from libcrypto.
 # Built by third_party/openssl/build.sh. Linked as an archive (only referenced objects pulled).
 CRYPTO_LIB = [os.path.join(ROOT, "third_party", "openssl", "libcrypto_gof2.a")]
+# Vendored zlib 1.2.7 + libzip 0.9.3 subsets -- the game statically linked these to
+# read its APK/.zip asset archives (deflate/inflate/crc32 + zip_open/zip_fread/...).
+# Built by third_party/zlib/build.sh and third_party/libzip/build.sh. libzip references
+# zlib, so libzip must precede zlib on the link line. Archives -> only referenced objects.
+EXTRA_LIBS = [os.path.join(ROOT, "third_party", "libzip", "libzip_gof2.a"),
+              os.path.join(ROOT, "third_party", "zlib", "libz_gof2.a")]
 # objects that duplicate a C++ TU and pull in undefined C-name globals
 DROP = {"recovered_a3cc4.o"}
 
@@ -52,6 +58,12 @@ def link(objs):
         cmd += ["-l", n]
     cmd += objs
     cmd += [p for p in CRYPTO_LIB if os.path.exists(p)]
+    # The original .so exports every zlib/libzip symbol (the whole library was linked,
+    # not just the members our decompiled code happens to reference). --whole-archive
+    # pulls all objects so the full public+internal symbol set is defined and exported.
+    extra = [p for p in EXTRA_LIBS if os.path.exists(p)]
+    if extra:
+        cmd += ["--whole-archive", *extra, "--no-whole-archive"]
     cmd += CXX_RUNTIME
     cmd += [os.path.join(LIBDIR, "crtend_so.o"), "-o", OUT]
     return orb(*cmd)
