@@ -5,6 +5,8 @@
 #include "engine/render/Mesh.h"
 
 namespace AbyssEngine {
+    int TextureConference::ShaderIndex;
+
     TextureConference::TextureConference() {
         ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"TextureConference";

@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class VertexColorAlphaTextureShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int attrib1;
         int attrib2;
         int attrib3;

@@ -19,6 +19,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class GlowPPShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         unsigned int copyProgram;
         int copyAttribPosition;
         int copyUniformWorldView;

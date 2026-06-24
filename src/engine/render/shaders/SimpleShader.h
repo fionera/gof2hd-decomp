@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class SimpleShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int uWorldMatrix;
         int uColor;

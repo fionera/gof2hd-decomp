@@ -3,9 +3,9 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static int NoTexShader_ShaderIndex;
-
 namespace AbyssEngine {
+    int NoTexShader::ShaderIndex;
+
     void NoTexShader::SetInActive() {
         glDisableVertexAttribArray(this->aPosition);
     }
@@ -44,7 +44,7 @@ namespace AbyssEngine {
     }
 
     NoTexShader::NoTexShader() {
-        NoTexShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        NoTexShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"NoTexShader";
     }
 }

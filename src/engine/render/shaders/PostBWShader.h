@@ -19,6 +19,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class PostBWShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int uMvpMatrix;
         int aTexCoord;

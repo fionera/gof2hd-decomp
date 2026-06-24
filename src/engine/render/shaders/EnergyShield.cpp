@@ -4,6 +4,8 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int EnergyShield::ShaderIndex;
+
     void EnergyShield::UpdateMeshData(Mesh *mesh, Engine *engine) {
         ::Engine *host = (::Engine *) engine;
         if (this->uM1 >= 0)

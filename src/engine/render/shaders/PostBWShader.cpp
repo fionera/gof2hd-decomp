@@ -17,7 +17,10 @@ void AbyssEngine_Engine_DrawQuad(::Engine *engine, int x, int y, int width,
                                  int height);
 
 namespace AbyssEngine {
+    int PostBWShader::ShaderIndex;
+
     PostBWShader::PostBWShader() {
+        PostBWShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"PostBWShader";
     }
 

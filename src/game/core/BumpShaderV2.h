@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BumpShaderV2 : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int aNormal;
         int aTexCoord;

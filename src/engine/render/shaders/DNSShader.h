@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class DNSShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPositionLoc;
         int aNormalLoc;
         int aTangentLoc;

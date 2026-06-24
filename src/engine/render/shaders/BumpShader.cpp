@@ -11,7 +11,10 @@ static float *const gBumpFloatB = &gBumpFloatBStorage;
 static uint8_t *const gBumpFlag = &gBumpFlagStorage;
 
 namespace AbyssEngine {
+    int BumpShader::ShaderIndex;
+
     BumpShader::BumpShader() {
+        BumpShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"BumpShader";
     }
 

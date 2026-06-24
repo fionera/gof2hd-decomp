@@ -19,6 +19,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BloomShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         unsigned int downSampleProgram;
         int downSampleAttribPosition;
         int downSampleUniformWorldMatrix;

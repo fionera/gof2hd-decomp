@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class SpecCubeAlphaMapping : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int attrA0;
         int attrA1;
         int attrA2;

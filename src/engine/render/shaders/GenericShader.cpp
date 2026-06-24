@@ -7,6 +7,8 @@ static void *GenericShader_registerSrc = nullptr;
 static void **GenericShader_registerDst = nullptr;
 
 namespace AbyssEngine {
+    int GenericShader::ShaderIndex;
+
     void GenericShader::Init(Engine *) {
         this->program = this->ES2LoadProgram("GenericShader.vsh", "GenericShader.fsh");
 
@@ -113,6 +115,7 @@ namespace AbyssEngine {
     }
 
     GenericShader::GenericShader() {
+        GenericShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         *GenericShader_registerDst = GenericShader_registerSrc;
         this->name = u"GenericShader";
     }

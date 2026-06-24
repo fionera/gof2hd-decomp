@@ -4,6 +4,8 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int GlowShader::ShaderIndex;
+
     GlowShader::GlowShader() {
         GlowShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"GlowShader";

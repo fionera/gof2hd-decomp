@@ -15,6 +15,8 @@ void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
+    int GlowPPShader::ShaderIndex;
+
     void GlowPPShader::SetInActive() {
         glDisableVertexAttribArray(this->meshAttribPosition);
         glDisableVertexAttribArray(this->meshAttribTexCoord);
@@ -255,6 +257,7 @@ namespace AbyssEngine {
     }
 
     GlowPPShader::GlowPPShader() {
+        GlowPPShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"GlowPPShader";
     }
 

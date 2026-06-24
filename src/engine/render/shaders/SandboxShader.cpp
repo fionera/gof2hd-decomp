@@ -7,6 +7,8 @@ static void *SandboxShader_registerSrc = nullptr;
 static void **SandboxShader_registerDst = &SandboxShader_registerSrc;
 
 namespace AbyssEngine {
+    int SandboxShader::ShaderIndex;
+
     void SandboxShader::UpdateMeshData(Mesh *meshArg, Engine *engine) {
         AbyssEngine::Mesh *mesh = meshArg;
 
@@ -79,6 +81,7 @@ namespace AbyssEngine {
     }
 
     SandboxShader::SandboxShader() {
+        SandboxShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         *SandboxShader_registerDst = SandboxShader_registerSrc;
         this->name = u"SandboxShader";
     }

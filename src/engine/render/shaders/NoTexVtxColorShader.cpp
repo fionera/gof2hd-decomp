@@ -3,9 +3,9 @@
 #include "engine/render/Mesh.h"
 #include <GLES2/gl2.h>
 
-static int32_t NoTexVtxColorShader_ShaderIndex = 0;
-
 namespace AbyssEngine {
+    int NoTexVtxColorShader::ShaderIndex;
+
     void NoTexVtxColorShader::SetInActive() {
         glDisableVertexAttribArray(aPosition);
         glDisableVertexAttribArray(aColor);
@@ -24,7 +24,7 @@ namespace AbyssEngine {
     }
 
     NoTexVtxColorShader::NoTexVtxColorShader() {
-        NoTexVtxColorShader_ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
+        NoTexVtxColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"NoTexVtxColorShader";
     }
 

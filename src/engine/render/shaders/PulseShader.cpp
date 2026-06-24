@@ -13,7 +13,10 @@ float sinf(float x);
 static float PulseShader_timeScale = 0.0f;
 
 namespace AbyssEngine {
+    int PulseShader::ShaderIndex;
+
     PulseShader::PulseShader() {
+        PulseShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"PulseShader";
     }
 

@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int SpecCubeAlphaMapping::ShaderIndex;
+
     SpecCubeAlphaMapping::SpecCubeAlphaMapping() {
+        SpecCubeAlphaMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"SpecCubeAlphaMapping";
     }
 

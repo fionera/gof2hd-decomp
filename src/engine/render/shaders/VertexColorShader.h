@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class VertexColorShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int aTexCoord;
         int aNormal;

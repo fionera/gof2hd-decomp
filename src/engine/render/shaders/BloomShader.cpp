@@ -19,6 +19,8 @@ void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
+    int BloomShader::ShaderIndex;
+
     void BloomShader::Init(Engine *) {
         const char *vertex = "BloomShader.vsh";
         const char *positionName = "a_position";
@@ -74,6 +76,7 @@ namespace AbyssEngine {
     }
 
     BloomShader::BloomShader() {
+        BloomShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"BloomShader";
     }
 

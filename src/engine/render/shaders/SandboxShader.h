@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class SandboxShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int attrPosition;
         int attrNormal;
         int attrTangent;

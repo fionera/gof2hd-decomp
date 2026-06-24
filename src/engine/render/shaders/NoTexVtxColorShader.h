@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class NoTexVtxColorShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int aColor;
         int uMvpMatrix;

@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int CubeNormalMapping::ShaderIndex;
+
     CubeNormalMapping::CubeNormalMapping() {
+        CubeNormalMapping::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         String tmp;
         tmp = u"CubeNormalMapping";
         this->name = tmp;

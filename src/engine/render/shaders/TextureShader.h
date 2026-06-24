@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class TextureShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         uint32_t programExt;
         int positionAttrib[2];
         int texcoordAttrib[2];

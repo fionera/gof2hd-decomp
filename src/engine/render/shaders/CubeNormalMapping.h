@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class CubeNormalMapping : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int attribA0;
         int attribA1;
         int attribA2;

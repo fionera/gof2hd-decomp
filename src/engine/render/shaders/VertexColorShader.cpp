@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int VertexColorShader::ShaderIndex;
+
     VertexColorShader::VertexColorShader() {
+        VertexColorShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"VertexColorShader";
     }
 

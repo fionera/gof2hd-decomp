@@ -8,7 +8,10 @@ static float DNSShader_g0;
 static float DNSShader_g1;
 
 namespace AbyssEngine {
+    int DNSShader::ShaderIndex;
+
     DNSShader::DNSShader() {
+        DNSShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"DNSShader";
     }
 

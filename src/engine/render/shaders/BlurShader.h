@@ -22,6 +22,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class BlurShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int aPosition;
         int uMvpMatrix;
         int aTexCoord;

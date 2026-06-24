@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int GenericShader1::ShaderIndex;
+
     GenericShader1::GenericShader1() {
+        GenericShader1::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"GenericShader1";
     }
 

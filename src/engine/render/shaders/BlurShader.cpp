@@ -14,7 +14,10 @@ void Engine_DrawQuad(::Engine *engine, int x, int y, int width, int height);
 void Engine_SetWorldViewMatrix(::Engine *engine, const uint32_t *matrix);
 
 namespace AbyssEngine {
+    int BlurShader::ShaderIndex;
+
     BlurShader::BlurShader() {
+        BlurShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"BlurShader";
         this->strength = -4.051786824441422e-28f;
         this->blurScale = 2.0f;

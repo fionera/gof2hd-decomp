@@ -47,6 +47,8 @@ namespace AbyssEngine {
     // ImageFont, SpriteSystem, Curve, Image, AELoadedTexture are defined in
     // AbyssEngine.h (layouts recovered from the original disassembly).
 
+    int currentUsedShaderIndex;
+
     Engine *AE_getInitGLThis();
     int AE_getInitGLWidth();
     int AE_getInitGLHeight();

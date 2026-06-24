@@ -4,10 +4,13 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int VertexColorAlphaTextureShader::ShaderIndex;
+
     static int g_shaderIndexSrc;
     static int g_shaderIndexDst;
 
     VertexColorAlphaTextureShader::VertexColorAlphaTextureShader() {
+        VertexColorAlphaTextureShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         g_shaderIndexDst = g_shaderIndexSrc;
         this->name = u"VCATShader";
     }

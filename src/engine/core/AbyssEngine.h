@@ -36,6 +36,8 @@ namespace AbyssEngine {
         float m[4][4];
     };
 
+    extern int currentUsedShaderIndex;
+
     // ImageFont / SpriteSystem / Curve / Image / Image2D / AELoadedTexture
     // are each defined in their own header (included above).
 }

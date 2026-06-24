@@ -7,7 +7,10 @@ static uint8_t g_TextureShader_hasSecondProgram = 0;
 static uint8_t g_TextureShader_activeSlot = 0;
 
 namespace AbyssEngine {
+    int TextureShader::ShaderIndex;
+
     TextureShader::TextureShader() {
+        TextureShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"TextureShader";
     }
 

@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int GreenShader::ShaderIndex;
+
     GreenShader::GreenShader() {
+        GreenShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"GreenShader";
     }
 

@@ -18,6 +18,8 @@ using ::AbyssEngine::Engine;
 namespace AbyssEngine {
     class PulseShader : public ShaderBaseStruct {
     public:
+        static int ShaderIndex;
+
         int a0Loc;
         int a1Loc;
         int a2Loc;

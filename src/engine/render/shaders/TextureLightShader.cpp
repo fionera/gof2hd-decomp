@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int TextureLightShader::ShaderIndex;
+
     TextureLightShader::TextureLightShader() {
+        TextureLightShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"TextureLightShader";
     }
 

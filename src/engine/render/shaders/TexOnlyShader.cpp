@@ -4,7 +4,10 @@
 #include <GLES2/gl2.h>
 
 namespace AbyssEngine {
+    int TexOnlyShader::ShaderIndex;
+
     TexOnlyShader::TexOnlyShader() {
+        TexOnlyShader::ShaderIndex = ShaderBaseStruct::shaderIndexIntern;
         this->name = u"TexOnlyShader";
     }
 
