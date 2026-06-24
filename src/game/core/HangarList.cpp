@@ -60,8 +60,7 @@ void HangarList::release() {
         for (uint32_t i = 0; i < tabs->size(); ++i) {
             Array<ListItem *> *items = (*tabs)[i];
             if (items != nullptr) {
-                for (ListItem *e: *items) delete e;
-                ArrayRemoveAll(*items);
+                ArrayReleaseClasses(*items);
                 delete items;
             }
             (*tabs)[i] = nullptr;
@@ -96,8 +95,7 @@ ListItem *HangarList::getCurrentItemAt(int index) {
 void HangarList::initBlueprintTab(Array<BluePrint *> *blueprints) {
     Array<ListItem *> *old = (*this->tabs)[2];
     if (old != nullptr) {
-        for (ListItem *e: *old) delete e;
-        ArrayRemoveAll(*old);
+        ArrayReleaseClasses(*old);
         delete old;
     }
     (*this->tabs)[2] = nullptr;
@@ -196,8 +194,7 @@ void HangarList::fillIngredientsList(BluePrint *blueprint, bool flag) {
 void HangarList::fillBuyList(ListItem *item) {
     Array<ListItem *> *old = (*this->tabs)[3];
     if (old != nullptr) {
-        for (ListItem *e: *old) delete e;
-        ArrayRemoveAll(*old);
+        ArrayReleaseClasses(*old);
         delete old;
     }
     (*this->tabs)[3] = nullptr;
@@ -281,8 +278,7 @@ void HangarList::fillBuyList(ListItem *item) {
 void HangarList::initShipTab(Ship *ship) {
     Array<ListItem *> *old = (*this->tabs)[0];
     if (old != nullptr) {
-        for (ListItem *e: *old) delete e;
-        ArrayRemoveAll(*old);
+        ArrayReleaseClasses(*old);
         delete old;
     }
     (*this->tabs)[0] = nullptr;
@@ -378,8 +374,7 @@ void HangarList::initShopTab(Array<Item *> *shopItems, Array<Ship *> *ships) {
 
     Array<ListItem *> *old = (*this->tabs)[1];
     if (old != nullptr) {
-        for (ListItem *e: *old) delete e;
-        ArrayRemoveAll(*old);
+        ArrayReleaseClasses(*old);
         delete old;
     }
     (*this->tabs)[1] = nullptr;

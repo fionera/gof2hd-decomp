@@ -758,8 +758,7 @@ Player::~Player() {
         for (unsigned int i = 0; i < guns->size(); i++) {
             Array<Gun *> *slot = guns->data()[i];
             if (slot != 0) {
-                for (Gun *gun: *slot) delete gun;
-                ArrayRemoveAll(*slot);
+                ArrayReleaseClasses(*slot);
                 Array<Gun *> *s2 = this->guns->data()[i];
                 if (s2 == 0) {
                     this->guns->data()[i] = 0;
@@ -770,8 +769,7 @@ Player::~Player() {
                 guns = this->guns;
             }
         }
-        for (Array<Gun *> *slot: *guns) delete slot;
-        ArrayRemoveAll(*guns);
+        ArrayReleaseClasses(*guns);
         delete this->guns;
         this->guns = 0;
     }

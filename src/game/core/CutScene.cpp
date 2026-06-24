@@ -690,9 +690,7 @@ void CutScene::checkForTurret() {
     for (unsigned int i = 0; i < positions->size(); i++) {
         Array<Vector *> *slot = (*positions)[i];
         if (slot != nullptr) {
-            for (Vector *v: *slot)
-                delete v;
-            ArrayRemoveAll(*slot);
+            ArrayReleaseClasses(*slot);
             delete (*positions)[i];
             (*positions)[i] = nullptr;
         }

@@ -247,9 +247,7 @@ void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     if (contentHeight > boxHeight) {
         this->width = this->textWidth - fontObj->wrapMargin;
         if (curLines != 0) {
-            for (String *line: *curLines)
-                delete line;
-            ArrayRemoveAll(*curLines);
+            ArrayReleaseClasses(*curLines);
             delete curLines;
             this->lines = 0;
         }

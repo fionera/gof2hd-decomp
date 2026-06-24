@@ -1793,8 +1793,7 @@ void Status::moveWanted() {
 void Status::setWingmen(Array<String *> *list) {
     Array<String *> *cur = (Array<String *> *) (intptr_t) wingmen;
     if (cur != 0) {
-        for (auto *e: *cur) delete e;
-        ArrayRemoveAll(*cur);
+        ArrayReleaseClasses(*cur);
     }
     if (list == 0) {
         wingmen = 0;

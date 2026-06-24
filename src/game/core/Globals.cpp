@@ -1783,16 +1783,14 @@ Globals::~Globals() {
     void **itemSlot = gG_items;
     if (*itemSlot != 0) {
         Array<Item *> *items = (Array<Item *> *) *itemSlot;
-        for (Item *e: *items) delete e;
-        ArrayRemoveAll(*items);
+        ArrayReleaseClasses(*items);
         delete items;
     }
     *itemSlot = 0;
     void **shipSlot = gG_ships;
     if (*shipSlot != 0) {
         Array<Ship *> *ships = (Array<Ship *> *) *shipSlot;
-        for (Ship *e: *ships) delete e;
-        ArrayRemoveAll(*ships);
+        ArrayReleaseClasses(*ships);
         delete ships;
     }
     *shipSlot = 0;
@@ -2698,13 +2696,11 @@ String Globals::getRandomName(int kind, bool both) {
     }
 
     if (first != 0) {
-        for (String *e: *first) delete e;
-        ArrayRemoveAll(*first);
+        ArrayReleaseClasses(*first);
         delete first;
     }
     if (last != 0) {
-        for (String *e: *last) delete e;
-        ArrayRemoveAll(*last);
+        ArrayReleaseClasses(*last);
         delete last;
     }
     ::operator delete(FileRead_dtor(fr));

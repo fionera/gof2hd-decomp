@@ -119,11 +119,9 @@ NewsTicker::NewsTicker(int x, int y, int width, int faction, int level) {
     this->touched = 0;
     this->scrollOffset = (float) width;
 
-    for (NewsItem *e: *items) delete e;
-    ArrayRemoveAll(*items);
+    ArrayReleaseClasses(*items);
     delete items;
-    for (NewsItem *e: *allItems) delete e;
-    ArrayRemoveAll(*allItems);
+    ArrayReleaseClasses(*allItems);
     delete allItems;
 }
 

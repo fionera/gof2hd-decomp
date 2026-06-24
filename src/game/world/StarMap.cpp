@@ -1389,8 +1389,7 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         this->lastSelectedSystem = this->selectedSystem;
         Array<Station *> *stations = this->stations;
         if (stations != 0) {
-            for (Station *s: *stations) delete s;
-            ArrayRemoveAll(*stations);
+            ArrayReleaseClasses(*stations);
             delete stations;
             this->stations = (Array<Station *> *) 0;
         }

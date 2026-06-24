@@ -40,14 +40,12 @@ Station::Station(String name, int index, int systemIndex, int techLevel, int tex
 
 Station::~Station() {
     if (ships != nullptr) {
-        for (Ship *s: *ships) delete s;
-        ArrayRemoveAll(*ships);
+        ArrayReleaseClasses(*ships);
         delete ships;
         ships = nullptr;
     }
     if (items != nullptr) {
-        for (Item *it: *items) delete it;
-        ArrayRemoveAll(*items);
+        ArrayReleaseClasses(*items);
         delete items;
         items = nullptr;
     }
@@ -114,8 +112,7 @@ void Station::removeShip(Ship *ship) {
 
 void Station::removeShips() {
     if (ships != nullptr) {
-        for (Ship *s: *ships) delete s;
-        ArrayRemoveAll(*ships);
+        ArrayReleaseClasses(*ships);
         delete ships;
     }
     ships = nullptr;
