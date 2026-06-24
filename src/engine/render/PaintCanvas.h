@@ -72,8 +72,7 @@ namespace AbyssEngine {
         unsigned int cameraCount;
         void **cameras;
         unsigned int currentCamera;
-        unsigned int materialCount;
-        void **materials;
+        ::Array<AbyssEngine::Material *> materials;
         unsigned int spriteSystemCount;
         char **spriteSystems;
         unsigned int glowMeshes_count;

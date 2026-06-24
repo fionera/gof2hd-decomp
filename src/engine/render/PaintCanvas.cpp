@@ -1491,8 +1491,8 @@ void PaintCanvas::RemoveAllMatsForGlow() {
 
 void PaintCanvas::MaterialChange(unsigned int index,
                                  AbyssEngine::BlendMode param3, unsigned int param4) {
-    if (index < this->materialCount) {
-        PCMaterialView *mat = (PCMaterialView *) (this->materials)[index];
+    if (index < this->materials.count) {
+        PCMaterialView *mat = (PCMaterialView *) (this->materials.data_)[index];
         mat->flags0 = param3;
         mat->textureSlots[0] = param4;
     }
@@ -1559,8 +1559,8 @@ int PaintCanvas::GetTextWidth(unsigned int index, const AbyssEngine::String &str
 }
 
 void *PaintCanvas::MaterialGetMaterial(unsigned int index) {
-    if (index < this->materialCount) {
-        return (this->materials)[index];
+    if (index < this->materials.count) {
+        return (this->materials.data_)[index];
     }
     return 0;
 }
@@ -1601,7 +1601,7 @@ void PaintCanvas::MeshChangeResourceMaterial(unsigned int meshIndex, unsigned sh
         int idx = ((PCResourceView *) r)->handle;
         if (idx + 1 != 0) {
             void *mesh = (this->meshes)[meshIndex];
-            void *mat = (this->materials)[idx];
+            void *mat = (this->materials.data_)[idx];
             return paintcanvas_ext_change_mat(this, mesh, mat);
         }
     }
@@ -2709,10 +2709,10 @@ void PaintCanvas::DrawLine(int x0, int y0, int x1i, int y1i) {
 }
 
 void PaintCanvas::MeshChangeMaterial(unsigned int meshIndex, unsigned short matIndex) {
-    if (matIndex < this->materialCount &&
+    if (matIndex < this->materials.count &&
         meshIndex < this->meshCount) {
         void *mesh = (this->meshes)[meshIndex];
-        void *mat = (this->materials)[matIndex];
+        void *mat = (this->materials.data_)[matIndex];
         return paintcanvas_ext_change_mat(this, mesh, mat);
     }
 }
@@ -2739,8 +2739,8 @@ void PaintCanvas::MeshCloneMaterial(unsigned int index, unsigned int &out) {
         char *obj = (char *) paintcanvas_ext_alloc(0x74);
         PCMeshView *mesh = (PCMeshView *) (this->meshes)[index];
         paintcanvas_ext_material_clone(obj, mesh->material);
-        paintcanvas_ext_material_add(obj, &this->materialCount);
-        result = (int) this->materialCount - 1;
+        paintcanvas_ext_material_add(obj, &this->materials);
+        result = (int) this->materials.count - 1;
     } else {
         result = -1;
     }
@@ -2834,8 +2834,8 @@ void PaintCanvas::MaterialResourceChangeTexture(unsigned int resId,
         char *r = paintcanvas_ext_find_res(this, resId);
         if (r) {
             unsigned int matIdx = (unsigned int) ((PCResourceView *) r)->handle;
-            if (matIdx + 1 != 0 && matIdx < this->materialCount) {
-                PCMaterialView *mat = (PCMaterialView *) (this->materials)[matIdx];
+            if (matIdx + 1 != 0 && matIdx < this->materials.count) {
+                PCMaterialView *mat = (PCMaterialView *) (this->materials.data_)[matIdx];
                 mat->textureSlots[slot] = texture;
             }
         }
@@ -2932,10 +2932,10 @@ void PaintCanvas::SpriteSystemCreate(unsigned short resId, bool flag,
     if (ok == 1) {
         unsigned int mat = 0xffffffff;
         paintcanvas_ext_ss2_matcreate(this, matResId, &mat);
-        if (mat <= this->materialCount) {
+        if (mat <= this->materials.count) {
             ::Node *node = ((PCSpriteSystemView2 *) ss)->node;
             node->field_0x30 =
-                    (unsigned int) (uintptr_t) this->materials[mat];
+                    (unsigned int) (uintptr_t) this->materials.data_[mat];
         }
         unsigned int i;
         for (i = 0; i < this->spriteSystemCount; i++) {
@@ -3054,8 +3054,8 @@ void PaintCanvas::MaterialCreate(unsigned int &out, AbyssEngine::BlendMode mode,
     PCMaterialView *mat = (PCMaterialView *) obj;
     mat->textureSlots[0] = textures;
     mat->flags0 = mode;
-    paintcanvas_ext_material_add(obj, &this->materialCount);
-    out = this->materialCount - 1;
+    paintcanvas_ext_material_add(obj, &this->materials);
+    out = this->materials.count - 1;
 }
 
 
@@ -3417,7 +3417,7 @@ PaintCanvas::~PaintCanvas() {
         a->capacity = 0;
     }
     {
-        PCArrayHeader *a = (PCArrayHeader *) &this->materialCount;
+        PCArrayHeader *a = (PCArrayHeader *) &this->materials;
         ::operator delete(a->data);
         a->data = nullptr;
         a->count = 0;
@@ -3621,7 +3621,7 @@ int PaintCanvas::ResourceLoaded(unsigned int index, AbyssEngine::ResourceType ty
             count = this->transformCount;
             break;
         case 6:
-            count = this->materialCount;
+            count = this->materials.count;
             break;
         default:
             return 0;
@@ -3707,7 +3707,6 @@ PaintCanvas::PaintCanvas(AbyssEngine::Engine *engine) {
     PCArrayCtor(&this->imageCount);
     PCArrayCtor(&this->transformCount);
     PCArrayCtor(&this->cameraCount);
-    PCArrayCtor(&this->materialCount);
     PCArrayCtor(&this->spriteSystemCount);
     PCArrayCtor(&this->glowMeshes_count);
     PCArrayCtor(&this->glowMatA_count);
@@ -4226,8 +4225,8 @@ void PaintCanvas::MeshCreate(unsigned short vertexCount, unsigned short triangle
     int ok = paintcanvas_ext_mc_meshcreate(this->engine, vertexCount, triangleCount,
                                            meshType, &mesh);
     if (ok == 1) {
-        if (0xfffffffe < this->materialCount) {
-            void *m = this->materials[-4];
+        if (0xfffffffe < this->materials.count) {
+            void *m = this->materials.data_[-4];
             if (mesh) {
                 ((AbyssEngine::Mesh *) mesh)->field_0x30 = m;
             }
@@ -4646,8 +4645,8 @@ void PaintCanvas::MeshCreate(unsigned short resId, unsigned int &out,
         unsigned int mat = 0xffffffff;
         paintcanvas_ext_mc2_matcreate(this, info->matResId, &mat);
         void *matptr = 0;
-        if (0xfffffffe < this->materialCount) {
-            matptr = this->materials[-4];
+        if (0xfffffffe < this->materials.count) {
+            matptr = this->materials.data_[-4];
         }
         void *mesh = 0;
         int ok = paintcanvas_ext_mc2_meshfromfile(this->engine,
@@ -4992,14 +4991,14 @@ void PaintCanvas::ReleaseAllResources() {
     PCArrayRemoveAll(&this->cameraCount);
     this->currentCamera = -1;
 
-    for (unsigned int i = 0; i < this->materialCount; i++) {
-        void *mat = ((void **) this->materials)[i];
+    for (unsigned int i = 0; i < this->materials.count; i++) {
+        void *mat = ((void **) this->materials.data_)[i];
         if (mat != 0) {
             paintcanvas_ext_rar_op_delete(paintcanvas_ext_rar_material_dtor(mat));
-            ((void **) this->materials)[i] = 0;
+            ((void **) this->materials.data_)[i] = 0;
         }
     }
-    PCArrayRemoveAll(&this->materialCount);
+    PCArrayRemoveAll(&this->materials);
 
     for (unsigned int i = 0; i < this->spriteSystemCount; i++) {
         if (((void **) this->spriteSystems)[i] != 0) {
@@ -5101,8 +5100,8 @@ void PaintCanvas::MaterialCreate(unsigned short resId, unsigned int &out) {
         mat->flags1 = info->flags1;
         mat->flags2 = info->flags2;
         paintcanvas_ext_matc_vec_assign(mat->vec, info->vec);
-        PCArrayAdd<AbyssEngine::Material *>((AbyssEngine::Material *) mat, &this->materialCount);
-        idx = this->materialCount - 1;
+        PCArrayAdd<AbyssEngine::Material *>((AbyssEngine::Material *) mat, &this->materials);
+        idx = this->materials.count - 1;
         res->handle = (int) idx;
     }
     out = idx;
