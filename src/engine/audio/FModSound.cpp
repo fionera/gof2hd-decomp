@@ -81,8 +81,8 @@ void FMOD_EventCategory_stopAllEvents(void *category);
 
 int FMOD_EventCategory_getInfo(void *category, int *index, char **name);
 
-static void **gPauseProp = nullptr;
-static void **g_fmodPropName = nullptr;
+char *property_name_pause = (char *) "pause";
+char *property_name_purge = (char *) "purge";
 static float FModSound_defaultPitch = 0.0f;
 
 void FModSound::setAudioLanguage(int p1) {
@@ -239,7 +239,7 @@ int FModSound::getEventPauseLength(int idx) {
     if (this->initialized != 0 && this->system != 0 && this->categoryEnabled[0] != 0) {
         FMOD::Event *h = this->events[idx];
         if (h != 0)
-            FMOD_Event_getProperty(h, *gPauseProp, &out, 1);
+            FMOD_Event_getProperty(h, property_name_pause, &out, 1);
     }
     return out;
 }
@@ -334,7 +334,7 @@ void FModSound::play(int idx, Vector *pos, Vector *vel, float pitch) {
         }
 
         int got = 0;
-        if (FMOD_Event_getProperty(slot, *g_fmodPropName, &got) == 0 &&
+        if (FMOD_Event_getProperty(slot, property_name_purge, &got) == 0 &&
             this->currentMusicEvent == 1) {
             for (unsigned int i = 0; i <= 4; i++) {
                 if (this->fxSlots[i] == -1) {
