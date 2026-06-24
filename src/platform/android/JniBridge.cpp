@@ -78,6 +78,12 @@ unsigned int hrwhs_country_code;
 
 int gb_android_offerwallCreditAmount;
 
+// JNI-facing accelerometer ring index (read/written from Java by symbol name).
+int AccIndex;
+
+// Entry callback pointer written by ndk23_Init / ndk23_InitWithZip.
+void *ndkEntrance;
+
 AbyssEngine::Engine **AbyssEngine::Engine::g_pEngine;
 static AbyssEngine::Engine **&g_pEngine = AbyssEngine::Engine::g_pEngine;
 
