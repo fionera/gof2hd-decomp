@@ -1641,8 +1641,7 @@ PlayerEgo::~PlayerEgo() noexcept(false) {
     }
     this->easeMatrix = 0;
     if (Array<RepairBeam *> *beams = this->repairBeams) {
-        for (RepairBeam *beam: *beams)
-            delete beam;
+        ArrayReleaseClasses(*beams);
         delete beams;
     }
     this->repairBeams = 0;

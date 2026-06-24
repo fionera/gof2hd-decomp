@@ -240,17 +240,17 @@ Status::~Status() {
     }
     mission = 0;
     if (agents != 0) {
-        for (auto *e: *agents) delete e;
+        ArrayReleaseClasses(*agents);
         delete agents;
     }
     agents = 0;
     if (stationStack != 0) {
-        for (auto *e: *stationStack) delete e;
+        ArrayReleaseClasses(*stationStack);
         delete stationStack;
     }
     stationStack = 0;
     if (wanted != 0) {
-        for (auto *e: *wanted) delete e;
+        ArrayReleaseClasses(*wanted);
         delete wanted;
     }
     wanted = 0;
@@ -660,7 +660,7 @@ void Status::resetGame() {
     }
     if (this->wingmen != 0) {
         Array<String *> *wm = (Array<String *> *) (intptr_t) this->wingmen;
-        for (auto *e: *wm) delete e;
+        ArrayReleaseClasses(*wm);
         delete wm;
     }
 
@@ -982,7 +982,7 @@ int Status::activateNewWanted() {
         delete pf;
     }
     if (systems != 0) {
-        for (auto *e: *systems) delete e;
+        ArrayReleaseClasses(*systems);
         delete systems;
     }
     return activated;
@@ -1275,7 +1275,7 @@ void Status::setStation(Station *s) {
     Array<Station *> *list = (Array<Station *> *) (intptr_t) fr.loadStationsBinary();
     if (planetNames != 0) {
         Array<String *> *pn = (Array<String *> *) (intptr_t) planetNames;
-        for (auto *e: *pn) delete e;
+        ArrayReleaseClasses(*pn);
         delete pn;
     }
     Array<String *> *names = new Array<String *>();
@@ -1311,7 +1311,7 @@ void Status::setStation(Station *s) {
         (*names)[i] = nm;
         (*texs)[i] = cur->getTextureIndex();
     }
-    for (auto *e: *list) delete e;
+    ArrayReleaseClasses(*list);
     delete list;
 }
 
@@ -1782,7 +1782,7 @@ void Status::moveWanted() {
     }
 
     if (systemsTable != 0) {
-        for (auto *e: *systemsTable) delete e;
+        ArrayReleaseClasses(*systemsTable);
         delete systemsTable;
     }
     if (pf != 0) {

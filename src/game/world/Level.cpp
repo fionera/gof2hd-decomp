@@ -678,7 +678,7 @@ Level::~Level() {
     delete field_9c;
     field_9c = nullptr;
     if (field_a4) {
-        for (auto *e: *field_a4) delete e;
+        ArrayReleaseClasses(*field_a4);
         delete field_a4;
         field_a4 = nullptr;
     }
@@ -687,32 +687,32 @@ Level::~Level() {
         field_a8 = nullptr;
     }
     if (playerGuns) {
-        for (auto *e: *playerGuns) delete e;
+        ArrayReleaseClasses(*playerGuns);
         delete playerGuns;
         playerGuns = nullptr;
     }
     if (enemyGuns) {
-        for (auto *e: *enemyGuns) delete e;
+        ArrayReleaseClasses(*enemyGuns);
         delete enemyGuns;
         enemyGuns = nullptr;
     }
     if (enemies) {
-        for (auto *e: *enemies) delete e;
+        ArrayReleaseClasses(*enemies);
         delete enemies;
         enemies = nullptr;
     }
     if (asteroids) {
-        for (auto *e: *asteroids) delete e;
+        ArrayReleaseClasses(*asteroids);
         delete asteroids;
         asteroids = nullptr;
     }
     if (gasClouds) {
-        for (auto *e: *gasClouds) delete e;
+        ArrayReleaseClasses(*gasClouds);
         delete gasClouds;
         gasClouds = nullptr;
     }
     if (landmarks) {
-        for (auto *e: *landmarks) delete e;
+        ArrayReleaseClasses(*landmarks);
         delete landmarks;
         landmarks = nullptr;
     }
@@ -722,7 +722,7 @@ Level::~Level() {
         messages = nullptr;
     }
     if (field_104) {
-        for (auto *e: *field_104) delete e;
+        ArrayReleaseClasses(*field_104);
         delete field_104;
         field_104 = nullptr;
     }
