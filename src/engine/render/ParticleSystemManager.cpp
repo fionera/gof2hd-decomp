@@ -7,6 +7,7 @@
 
 #include "engine/render/ParticleSystemManager.h"
 #include "engine/render/IParticleSystem.h"
+#include "engine/render/ParticleSystemSprite.h"
 #include "engine/render/PaintCanvas.h"
 
 void _psm_ArrayReleaseSprites(void *arr);
@@ -160,7 +161,7 @@ void ParticleSystemManager::reset() {
 }
 
 void ParticleSystemManager::releaseSprites() {
-    _psm_ArrayReleaseSprites(&this->spriteSystems);
+    ArrayReleaseClasses(this->spriteSystems);
     if (this->spriteSystemId != 0xffffffff) {
         _psm_ReleaseSpriteSystemResource(this->canvas, this->spriteSystemId);
         this->spriteSystemId = 0xffffffff;
