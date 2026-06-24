@@ -27,6 +27,24 @@ void liw_set_fillRows(void *self, void *item, void *layout, int isShip, bool par
 void _liw_render_tail(void *c, int a, int h, void *sp);
 
 
+// Per-attribute unit suffixes appended to item stat values in set() (read by
+// the original's ListItemWindow::set; recovered from the binary's data table).
+char *LISTITEMWINDOW_UNITS[62] = {
+    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "",
+    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "",
+    (char *) "",     (char *) "ms", (char *) "m",    (char *) "km/h", (char *) "m",
+    (char *) "",     (char *) "",   (char *) "",     (char *) "",     (char *) "ms",
+    (char *) "",     (char *) "%",  (char *) "%",    (char *) "",     (char *) "ms",
+    (char *) "%",    (char *) "ms", (char *) "ms",   (char *) "%",    (char *) "ms",
+    (char *) "",     (char *) "",   (char *) "%",    (char *) "%",    (char *) "",
+    (char *) "ms",   (char *) "ms", (char *) "ms",   (char *) "",     (char *) "%",
+    (char *) "%",    (char *) "ms", (char *) "ms",   (char *) "ms",   (char *) "m",
+    (char *) "",     (char *) "%",  (char *) "m",    (char *) "t",    (char *) "km/h",
+    (char *) "%",    (char *) "m",  (char *) "%",    (char *) "m",    (char *) "%",
+    (char *) "",     (char *) "%",  (char *) "",     (char *) "",     (char *) "t",
+    (char *) "",     (char *) "",
+};
+
 static int **g_liw_screen = nullptr;
 
 void ListItemWindow::OnTouchBegin(int x, int y) {
