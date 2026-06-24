@@ -26,6 +26,10 @@ namespace AbyssEngine {
     class Image;
     class Image2D;
     struct Resource;
+    class SpriteSystem;
+    class Camera;
+    class ImageFont;
+    class AELoadedTexture;
 
 #ifndef GOF2_ENUM_BlendMode
 #define GOF2_ENUM_BlendMode
@@ -50,8 +54,7 @@ namespace AbyssEngine {
         char **field_0x14;
         unsigned int field_0x18;
         unsigned char field_0x1c;
-        unsigned int cubeTextureCount;
-        char **cubeTextures;
+        ::Array<AbyssEngine::AELoadedTexture *> cubeTextures;
         char *mask2dImage;
         unsigned int meshCount;
         char **meshes;
@@ -61,20 +64,15 @@ namespace AbyssEngine {
         Matrix projOrthoMatrix;
         Matrix worldViewMatrix;
         Matrix identityMatrix;
-        unsigned int resourceCount;
-        char **resources;
-        unsigned int fontCount;
-        void **fonts;
-        unsigned int imageCount;
-        char **images;
+        ::Array<AbyssEngine::Resource *> resources;
+        ::Array<AbyssEngine::ImageFont *> fonts;
+        ::Array<AbyssEngine::Image2D *> images;
         unsigned int transformCount;
         char **transforms;
-        unsigned int cameraCount;
-        void **cameras;
+        ::Array<AbyssEngine::Camera *> cameras;
         unsigned int currentCamera;
         ::Array<AbyssEngine::Material *> materials;
-        unsigned int spriteSystemCount;
-        char **spriteSystems;
+        ::Array<AbyssEngine::SpriteSystem *> spriteSystems;
         unsigned int glowMeshes_count;
         void *glowMeshes_data;
         unsigned int glowMeshes_cap;
