@@ -114,17 +114,13 @@ PlayerGasCloud::PlayerGasCloud(int itemId, ParticleSystemManager * /*particles*/
 
 PlayerGasCloud::~PlayerGasCloud() {
     if (this->sparkGeometries != 0) {
-        for (AEGeometry *g: *this->sparkGeometries)
-            delete g;
-        ArrayRemoveAll(*(this->sparkGeometries));
+        ArrayReleaseClasses(*this->sparkGeometries); ArrayRemoveAll(*(this->sparkGeometries));
         delete this->sparkGeometries;
         this->sparkGeometries = 0;
     }
 
     if (this->sparkVelocities != 0) {
-        for (Vector *v: *this->sparkVelocities)
-            delete v;
-        ArrayRemoveAll(*(this->sparkVelocities));
+        ArrayReleaseClasses(*this->sparkVelocities); ArrayRemoveAll(*(this->sparkVelocities));
         delete this->sparkVelocities;
         this->sparkVelocities = 0;
     }

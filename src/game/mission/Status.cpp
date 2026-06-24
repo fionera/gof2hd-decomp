@@ -788,8 +788,7 @@ void Status::resetGame() {
     }
 
     if (this->bluePrints != 0) {
-        for (auto *e: *this->bluePrints) delete e;
-        delete this->bluePrints;
+        ArrayReleaseClasses(*this->bluePrints); delete this->bluePrints;
     }
     this->bluePrints = 0;
     if (bpCount != 0) {
@@ -805,8 +804,7 @@ void Status::resetGame() {
     }
 
     if (this->pendingProducts != 0) {
-        for (auto *e: *this->pendingProducts) delete e;
-        delete this->pendingProducts;
+        ArrayReleaseClasses(*this->pendingProducts); delete this->pendingProducts;
     }
     this->pendingProducts = 0;
 

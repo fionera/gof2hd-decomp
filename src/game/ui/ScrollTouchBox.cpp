@@ -24,9 +24,7 @@ float ScrollTouchBox::getRelativeScrollStartPos() {
 
 ScrollTouchBox::~ScrollTouchBox() {
     if (this->lines != 0) {
-        for (String *line: *this->lines)
-            delete line;
-        ArrayRemoveAll(*(this->lines));
+        ArrayReleaseClasses(*this->lines); ArrayRemoveAll(*(this->lines));
         delete this->lines;
         this->lines = 0;
     }
@@ -223,9 +221,7 @@ static char g_ScrollTouchBox_empty_135600[1] = {0};
 
 void ScrollTouchBox::setText(AbyssEngine::String text, int font) {
     if (this->lines != 0) {
-        for (String *line: *this->lines)
-            delete line;
-        ArrayRemoveAll(*(this->lines));
+        ArrayReleaseClasses(*this->lines); ArrayRemoveAll(*(this->lines));
         delete this->lines;
         this->lines = 0;
     }

@@ -183,14 +183,12 @@ void StarMap::setStart(int start, int target) {
 
 StarMap::~StarMap() {
     if (this->systemPositions != 0) {
-        for (Vector *v: *this->systemPositions) delete v;
-        delete this->systemPositions;
+        ArrayReleaseClasses(*this->systemPositions); delete this->systemPositions;
         this->systemPositions = 0;
     }
 
     if (this->stationPositions != 0) {
-        for (Vector *v: *this->stationPositions) delete v;
-        delete this->stationPositions;
+        ArrayReleaseClasses(*this->stationPositions); delete this->stationPositions;
         this->stationPositions = 0;
     }
 
@@ -613,13 +611,11 @@ void StarMap::update(int dt) {
             absf_update(this->scratchVector.z - this->easeZ->GetMaxValue()) <= 1.0f) {
             if (this->transitionIn == 0) {
                 if (this->stationGeoms != 0) {
-                    for (AEGeometry *g: *this->stationGeoms) delete g;
-                    delete this->stationGeoms;
+                    ArrayReleaseClasses(*this->stationGeoms); delete this->stationGeoms;
                     this->stationGeoms = 0;
                 }
                 if (this->ringGeoms != 0) {
-                    for (AEGeometry *g: *this->ringGeoms) delete g;
-                    delete this->ringGeoms;
+                    ArrayReleaseClasses(*this->ringGeoms); delete this->ringGeoms;
                     this->ringGeoms = 0;
                 }
                 delete[] this->stationAngles;
@@ -887,8 +883,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                     absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
                     this->selectedSystem = (int) i;
                     if (this->stations != 0) {
-                        for (Station *s: *this->stations) delete s;
-                        ArrayRemoveAll(*(this->stations));
+                        ArrayReleaseClasses(*this->stations); ArrayRemoveAll(*(this->stations));
                         delete this->stations;
                         this->stations = (Array<Station *> *) 0;
                     }
@@ -1135,8 +1130,7 @@ void StarMap::initStarSystem() {
     PaintCanvas::gCanvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
 
     if (this->stationPositions != 0) {
-        for (Vector *v: *this->stationPositions) delete v;
-        delete this->stationPositions;
+        ArrayReleaseClasses(*this->stationPositions); delete this->stationPositions;
         this->stationPositions = 0;
     }
     Array<Vector *> *stationPositions = new Array<Vector *>();

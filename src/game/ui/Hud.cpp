@@ -146,8 +146,7 @@ void Hud::releaseAllKeys() {
 
 void Hud::closeHudMenu() {
     if (this->menuButtons != 0) {
-        for (TouchButton *b: *this->menuButtons) delete b;
-        ArrayRemoveAll(*(this->menuButtons));
+        ArrayReleaseClasses(*this->menuButtons); ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
         this->menuButtons = 0;
     }
@@ -1340,8 +1339,7 @@ static void **g_Hud_imFlagB = nullptr;
 
 void Hud::initHudMenu(int menuType, Level *lvl) {
     if (this->menuButtons != 0) {
-        for (TouchButton *b: *this->menuButtons) delete b;
-        ArrayRemoveAll(*(this->menuButtons));
+        ArrayReleaseClasses(*this->menuButtons); ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
         this->menuButtons = 0;
     }
@@ -1403,8 +1401,7 @@ Hud::~Hud() {
     this->eventQueue = 0;
 
     if (this->menuButtons != 0) {
-        for (TouchButton *b: *this->menuButtons) delete b;
-        ArrayRemoveAll(*(this->menuButtons));
+        ArrayReleaseClasses(*this->menuButtons); ArrayRemoveAll(*(this->menuButtons));
         delete this->menuButtons;
     }
     this->menuButtons = 0;

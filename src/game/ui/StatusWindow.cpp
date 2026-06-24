@@ -22,29 +22,25 @@ static unsigned char *g_StatusWindow_btnFlag = nullptr;
 
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
-        for (TouchButton *e: *this->tabButtons) delete e;
-        ArrayRemoveAll(*(this->tabButtons));
+        ArrayReleaseClasses(*this->tabButtons); ArrayRemoveAll(*(this->tabButtons));
         delete this->tabButtons;
     }
     this->tabButtons = 0;
 
     if (this->medalButtons != 0) {
-        for (TouchButton *e: *this->medalButtons) delete e;
-        ArrayRemoveAll(*(this->medalButtons));
+        ArrayReleaseClasses(*this->medalButtons); ArrayRemoveAll(*(this->medalButtons));
         delete this->medalButtons;
     }
     this->medalButtons = 0;
 
     if (this->imageParts != 0) {
-        for (ImagePart *e: *this->imageParts) delete e;
-        ArrayRemoveAll(*(this->imageParts));
+        ArrayReleaseClasses(*this->imageParts); ArrayRemoveAll(*(this->imageParts));
         delete this->imageParts;
     }
     this->imageParts = 0;
 
     if (this->detailLines != 0) {
-        for (String *e: *this->detailLines) delete e;
-        ArrayRemoveAll(*(this->detailLines));
+        ArrayReleaseClasses(*this->detailLines); ArrayRemoveAll(*(this->detailLines));
         delete this->detailLines;
     }
     this->detailLines = 0;
@@ -138,8 +134,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     this->selectedMedal = i;
 
                     if (this->detailLines != 0) {
-                        for (String *e: *this->detailLines) delete e;
-                        ArrayRemoveAll(*(this->detailLines));
+                        ArrayReleaseClasses(*this->detailLines); ArrayRemoveAll(*(this->detailLines));
                         delete this->detailLines;
                     }
                     this->detailLines = new Array<String *>();

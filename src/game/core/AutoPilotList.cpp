@@ -94,9 +94,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
 AutoPilotList::~AutoPilotList() {
     if (this->entries != nullptr) {
-        for (String *s: *this->entries)
-            delete s;
-        ArrayRemoveAll(*(this->entries));
+        ArrayReleaseClasses(*this->entries); ArrayRemoveAll(*(this->entries));
     }
     delete this->entries;
     this->entries = nullptr;

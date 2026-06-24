@@ -163,14 +163,12 @@ MissionsWindow::MissionsWindow() {
 
 MissionsWindow::~MissionsWindow() {
     if (this->m_pAgentImageParts) {
-        for (ImagePart *e: *this->m_pAgentImageParts) delete e;
-        ArrayRemoveAll(*(this->m_pAgentImageParts));
+        ArrayReleaseClasses(*this->m_pAgentImageParts); ArrayRemoveAll(*(this->m_pAgentImageParts));
         delete this->m_pAgentImageParts;
     }
     this->m_pAgentImageParts = nullptr;
     if (this->m_pTabButtons) {
-        for (TouchButton *e: *this->m_pTabButtons) delete e;
-        ArrayRemoveAll(*(this->m_pTabButtons));
+        ArrayReleaseClasses(*this->m_pTabButtons); ArrayRemoveAll(*(this->m_pTabButtons));
         delete this->m_pTabButtons;
     }
     this->m_pTabButtons = nullptr;
@@ -238,8 +236,7 @@ int MissionsWindow::init() {
     L->setWindowDimensions(this->m_x, this->m_y, this->m_width, this->m_height);
 
     if (this->m_pAgentImageParts) {
-        for (ImagePart *e: *this->m_pAgentImageParts) delete e;
-        ArrayRemoveAll(*(this->m_pAgentImageParts));
+        ArrayReleaseClasses(*this->m_pAgentImageParts); ArrayRemoveAll(*(this->m_pAgentImageParts));
         delete this->m_pAgentImageParts;
     }
     this->m_pAgentImageParts = nullptr;

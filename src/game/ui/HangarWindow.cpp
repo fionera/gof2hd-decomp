@@ -167,14 +167,12 @@ HangarWindow::~HangarWindow() {
     delete this->dialog;
     this->dialog = nullptr;
     if (this->tabButtons != nullptr) {
-        for (TouchButton *b: *this->tabButtons) delete b;
-        ArrayRemoveAll(*(this->tabButtons));
+        ArrayReleaseClasses(*this->tabButtons); ArrayRemoveAll(*(this->tabButtons));
         delete this->tabButtons;
     }
     this->tabButtons = nullptr;
     if (this->buttons != nullptr) {
-        for (TouchButton *b: *this->buttons) delete b;
-        ArrayRemoveAll(*(this->buttons));
+        ArrayReleaseClasses(*this->buttons); ArrayRemoveAll(*(this->buttons));
         delete this->buttons;
     }
     this->active = 0;
@@ -1147,8 +1145,7 @@ void HangarWindow::demountItem(Item *item, int slot) {
     Status::gStatus->getShip()->setCargo(Item::extractItems(this->itemList, true));
 
     if (this->itemList != 0) {
-        for (Item *it: *this->itemList) delete it;
-        ArrayRemoveAll(*(this->itemList));
+        ArrayReleaseClasses(*this->itemList); ArrayRemoveAll(*(this->itemList));
         delete this->itemList;
     }
     this->itemList = 0;
@@ -1406,8 +1403,7 @@ void HangarWindow::setSellMode(bool buy) {
         Status::gStatus->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
         Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
         if (self->itemList != 0) {
-            for (Item *it: *self->itemList) delete it;
-            ArrayRemoveAll(*(self->itemList));
+            ArrayReleaseClasses(*self->itemList); ArrayRemoveAll(*(self->itemList));
             delete self->itemList;
         }
         self->itemList = 0;
@@ -1606,8 +1602,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 Status::gStatus->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
                 Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
                 if (self->itemList != 0) {
-                    for (Item *it: *self->itemList) delete it;
-                    ArrayRemoveAll(*(self->itemList));
+                    ArrayReleaseClasses(*self->itemList); ArrayRemoveAll(*(self->itemList));
                     delete self->itemList;
                 }
                 self->itemList = 0;

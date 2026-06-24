@@ -167,9 +167,7 @@ ObjectGun::~ObjectGun() {
     this->geometry = nullptr;
 
     if (this->explosions != nullptr) {
-        for (Explosion *e: *this->explosions)
-            delete e;
-        ArrayRemoveAll(*(this->explosions));
+        ArrayReleaseClasses(*this->explosions); ArrayRemoveAll(*(this->explosions));
         delete this->explosions;
         this->explosions = nullptr;
     }

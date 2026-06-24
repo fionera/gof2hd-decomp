@@ -57,9 +57,7 @@ Radio::Radio() {
 
 Radio::~Radio() {
     if (this->imageParts != 0) {
-        for (ImagePart *e: *this->imageParts)
-            delete e;
-        ArrayRemoveAll(*(this->imageParts));
+        ArrayReleaseClasses(*this->imageParts); ArrayRemoveAll(*(this->imageParts));
         delete this->imageParts;
     }
     this->imageParts = 0;
@@ -68,9 +66,7 @@ Radio::~Radio() {
     this->imagePartBuffer = 0;
 
     if (this->textLines != 0) {
-        for (String *e: *this->textLines)
-            delete e;
-        ArrayRemoveAll(*(this->textLines));
+        ArrayReleaseClasses(*this->textLines); ArrayRemoveAll(*(this->textLines));
         delete this->textLines;
     }
     this->textLines = 0;
@@ -155,9 +151,7 @@ void Radio::update(long time, PlayerEgo *ego, LevelScript *script) {
         this->imageParts = (*g_Radio_imageFactoryLoad)->loadChar(parts);
 
         if (this->textLines != 0) {
-            for (String *e: *this->textLines)
-                delete e;
-            ArrayRemoveAll(*(this->textLines));
+            ArrayReleaseClasses(*this->textLines); ArrayRemoveAll(*(this->textLines));
             delete this->textLines;
         }
         this->textLines = new Array<String *>();

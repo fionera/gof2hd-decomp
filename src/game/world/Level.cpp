@@ -717,8 +717,7 @@ Level::~Level() {
         landmarks = nullptr;
     }
     if (messages) {
-        for (RadioMessage *e: *messages) delete e;
-        delete messages;
+        ArrayReleaseClasses(*messages); delete messages;
         messages = nullptr;
     }
     if (field_104) {
@@ -1027,8 +1026,7 @@ void Level::createRadioMessage(int type, int sub) {
 
     if (this->messages != nullptr) {
         if (this->messages) {
-            for (RadioMessage *e: *this->messages) delete e;
-            delete this->messages;
+            ArrayReleaseClasses(*this->messages); delete this->messages;
             this->messages = nullptr;
         }
     }
@@ -1190,8 +1188,7 @@ void Level::createRadioMessage(int type, int sub) {
     if (aborted) {
         if (this->messages != nullptr)
             if (this->messages) {
-                for (RadioMessage *e: *this->messages) delete e;
-                delete this->messages;
+                ArrayReleaseClasses(*this->messages); delete this->messages;
                 this->messages = nullptr;
             }
         PlayerEgo *ego = this->player;
@@ -3282,8 +3279,7 @@ void Level::almostKillWanted(int index) {
 void Level::assignGuns() {
     if (this->enemyGuns != nullptr) {
         if (this->enemyGuns) {
-            for (auto *e: *this->enemyGuns) delete e;
-            delete this->enemyGuns;
+            ArrayReleaseClasses(*this->enemyGuns); delete this->enemyGuns;
             this->enemyGuns = nullptr;
         }
     }
@@ -3944,8 +3940,7 @@ void Level::createWingmen() {
 void Level::createScene() {
     if (this->enemies != nullptr) {
         if (this->enemies) {
-            for (auto *e: *this->enemies) delete e;
-            delete this->enemies;
+            ArrayReleaseClasses(*this->enemies); delete this->enemies;
             this->enemies = nullptr;
         }
     }

@@ -131,8 +131,7 @@ int Player::getShieldHP() {
 
 void Player::removeAllGuns() {
     if (this->guns != 0) {
-        for (Array<Gun *> *slot: *this->guns) delete slot;
-        ArrayRemoveAll(*(this->guns));
+        ArrayReleaseClasses(*this->guns); ArrayRemoveAll(*(this->guns));
         delete this->guns;
     }
     this->guns = 0;

@@ -81,8 +81,7 @@ bool DialogueWindow::hasLevel() {
 
 DialogueWindow::~DialogueWindow() {
     if (this->faceParts != 0) {
-        for (ImagePart *part: *this->faceParts) delete part;
-        ArrayRemoveAll(*(this->faceParts));
+        ArrayReleaseClasses(*this->faceParts); ArrayRemoveAll(*(this->faceParts));
         delete this->faceParts;
         this->faceParts = 0;
     }
@@ -203,8 +202,7 @@ void DialogueWindow::loadContent() {
     this->nextButton->setPressProgress(0);
 
     if (this->faceParts != 0) {
-        for (ImagePart *part: *this->faceParts) delete part;
-        ArrayRemoveAll(*(this->faceParts));
+        ArrayReleaseClasses(*this->faceParts); ArrayRemoveAll(*(this->faceParts));
         delete this->faceParts;
         this->faceParts = 0;
     }

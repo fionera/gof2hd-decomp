@@ -116,9 +116,7 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
 
 RepairBeam::~RepairBeam() {
     if (this->geometries != nullptr) {
-        for (AEGeometry *geo: *this->geometries)
-            delete geo;
-        delete this->geometries;
+        ArrayReleaseClasses(*this->geometries); delete this->geometries;
         this->geometries = nullptr;
     }
     delete this->targetIds;

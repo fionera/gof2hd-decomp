@@ -324,8 +324,7 @@ static int **g_tipMetric = nullptr;
 
 void Layout::initTip() {
     if (this->tipLines != nullptr) {
-        for (String *line: *this->tipLines) delete line;
-        ArrayRemoveAll(*(this->tipLines));
+        ArrayReleaseClasses(*this->tipLines); ArrayRemoveAll(*(this->tipLines));
         delete this->tipLines;
         this->tipLines = nullptr;
     }
