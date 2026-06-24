@@ -39,10 +39,12 @@ $CC -marm  -c crypto/armv4cpuid.S -o $OBJ/armv4cpuid.o
 # Self-contained C SHA-256 (the perlasm SHA transform uses adrl, unsupported by the
 # clang integrated assembler; the C transform yields the same symbols).
 $CC -mthumb -c crypto/sha/sha256.c -o $OBJ/sha256.o
-$CC -mthumb -c crypto/cryptlib.c   -o $OBJ/cryptlib.o   # CRYPTO_memcmp
+# CRYPTO_memcmp only (isolated TU so the archive does not also pull cryptlib.c
+# other ~35 CRYPTO_*/OPENSSL_* symbols the original does not export).
+$CC -mthumb -c "'"$HERE"'/crypto_memcmp.c" -o $OBJ/crypto_memcmp.o
 $CC -mthumb -c crypto/armcap.c     -o $OBJ/armcap.o     # OPENSSL_cpuid_setup
 $TC/llvm-ar rcs "'"$HERE"'/libcrypto_gof2.a" \
-  $OBJ/armv4cpuid.o $OBJ/sha256.o $OBJ/cryptlib.o $OBJ/armcap.o
+  $OBJ/armv4cpuid.o $OBJ/sha256.o $OBJ/crypto_memcmp.o $OBJ/armcap.o
 rm -rf $OBJ
 '
 echo "[openssl] wrote third_party/openssl/libcrypto_gof2.a"
