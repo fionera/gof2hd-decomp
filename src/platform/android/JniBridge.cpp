@@ -546,67 +546,72 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC5(
     ndk_iapBoughtPremium(4, 1);
 }
 
-static jint *g_achievementIds;
-static jint *g_leaderboardScores;
-static jint *g_linkGameGP;
-static jint *g_showAchievements;
-static jint *g_showLeaderboards;
+// Google Play game-services state, exported as plain globals (the original's
+// exact storage: achievements is int[3], leaderboard scores int[8], the rest
+// scalar ints). link_game_gp is read by GetLinkGameGP; gp_is_linked is the
+// separate flag set by SetGPIsLinked.
+int g_android_current_achievements[3];
+int g_android_leaderboard_scores[8];
+int g_android_link_game_gp;
+int g_android_gp_is_linked;
+int g_android_show_achievements;
+int g_android_show_leaderboards;
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetAchievementId(
     JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
-    return g_achievementIds[index];
+    return g_android_current_achievements[index];
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLeaderboardScore(
     JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
-    return g_leaderboardScores[index];
+    return g_android_leaderboard_scores[index];
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLeaderboardScore(
     JNIEnv * /*env*/, jclass /*clazz*/, jint index) {
-    g_leaderboardScores[index] = 0;
+    g_android_leaderboard_scores[index] = 0;
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetAchievements(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    g_achievementIds[0] = 0;
-    g_achievementIds[1] = 0;
-    g_achievementIds[2] = 0;
+    g_android_current_achievements[0] = 0;
+    g_android_current_achievements[1] = 0;
+    g_android_current_achievements[2] = 0;
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowAchievements(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return *g_showAchievements;
+    return g_android_show_achievements;
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowAchievements(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    *g_showAchievements = 0;
+    g_android_show_achievements = 0;
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetLinkGameGP(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return *g_linkGameGP;
+    return g_android_link_game_gp;
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetLinkGameGP(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    *g_linkGameGP = 0;
+    g_android_link_game_gp = 0;
 }
 
 extern "C" jint Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_GetShowLeaderboards(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    return *g_showLeaderboards;
+    return g_android_show_leaderboards;
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_ResetShowLeaderboards(
     JNIEnv * /*env*/, jclass /*clazz*/) {
-    *g_showLeaderboards = 0;
+    g_android_show_leaderboards = 0;
 }
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetGPIsLinked(
     JNIEnv * /*env*/, jclass /*clazz*/, jint linked) {
-    *g_linkGameGP = linked;
+    g_android_gp_is_linked = linked;
 }
 
 extern "C" jboolean Java_net_fishlabs_gof2hdallandroid2012_ToJNI_getDLC3BOUGHT(
