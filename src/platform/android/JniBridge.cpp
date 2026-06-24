@@ -35,8 +35,8 @@ JNIEnv *g_pEnv;
 jobject g_pClass;
 jobject g_pActivity;
 
-static char *g_apkPath;
-static char *g_zipPath;
+char *ndk_APK_Path;
+char *ndk_ZIP_Path;
 
 static bool g_slowMotion;
 static bool g_speedUp;
@@ -318,9 +318,9 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setAPKPath(
     JNIEnv *env, jclass /*clazz*/, jstring path) {
     jboolean isCopy;
     const char *utf = env->GetStringUTFChars(path, &isCopy);
-    g_apkPath = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    ndk_APK_Path = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
     if (isCopy) {
-        std::strcpy(g_apkPath, utf);
+        std::strcpy(ndk_APK_Path, utf);
         env->ReleaseStringUTFChars(path, utf);
     }
 }
@@ -329,9 +329,9 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_setZIPPath(
     JNIEnv *env, jclass /*clazz*/, jstring path) {
     jboolean isCopy;
     const char *utf = env->GetStringUTFChars(path, &isCopy);
-    g_zipPath = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
+    ndk_ZIP_Path = static_cast<char *>(std::malloc(std::strlen(utf) + 1));
     if (isCopy) {
-        std::strcpy(g_zipPath, utf);
+        std::strcpy(ndk_ZIP_Path, utf);
         env->ReleaseStringUTFChars(path, utf);
     }
 }
@@ -370,7 +370,7 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_STARTUP(
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_initialize(
     JNIEnv * /*env*/, jclass /*clazz*/, jint width, jint height) {
-    ndk23_InitWithZip(g_apkPath, g_zipPath, width, height);
+    ndk23_InitWithZip(ndk_APK_Path, ndk_ZIP_Path, width, height);
     ndk23_renderstep(width, height);
 }
 
