@@ -1,8 +1,8 @@
 #include "game/core/String.h"
 #include "engine/core/GameText.h"
-#include <string>
 
 #include <cstdlib>
+#include <cstring>
 
 void String_printImpl(const char *s);
 
@@ -29,37 +29,22 @@ char *String::GetAEChar() const {
 }
 
 void String::ReplaceString(String find, String repl) {
-    if (this->length == 0 || find.length == 0)
+    if (this->data == nullptr || this->length == 0 || find.length == 0)
         return;
 
-    std::u16string acc;
+    String acc;
     unsigned int pos = 0;
     int idx;
     while ((idx = (int) ((String *) (this))->IndexOf(pos, find)) != -1) {
-        acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int) idx - pos);
-        if (repl.length)
-            acc.append(reinterpret_cast<const char16_t *>(repl.data), (unsigned int) repl.length);
+        acc += this->SubString(pos, (unsigned int) idx) + repl;
         pos = (unsigned int) find.length + idx;
     }
 
     if (pos != 0 && pos < (unsigned int) this->length)
-        acc.append(reinterpret_cast<const char16_t *>(this->data) + pos, (unsigned int) this->length - pos);
+        acc += this->SubString(pos, (unsigned int) this->length);
 
-    if (!acc.empty())
-        {
-            const unsigned short *_src = reinterpret_cast<const unsigned short *>(acc.data());
-            int _n = (int) acc.size();
-            if (this->data) delete[] this->data;
-            this->data = nullptr;
-            this->length = 0;
-            if (_src && _n >= 0) {
-                unsigned short *_nd = new unsigned short[_n + 1];
-                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-                _nd[_n] = 0;
-                this->data = _nd;
-                this->length = _n;
-            }
-        }
+    if (acc.length != 0)
+        this->Set(acc.data);
 }
 
 void String::ReplaceChar(char from, char to) {
@@ -181,25 +166,16 @@ void String::Set(long long v) {
         mag /= 10;
     } while (mag != 0);
 
-    std::u16string out;
+    int total = n + (neg ? 1 : 0);
+    unsigned short *out = (unsigned short *) ::operator new[]((total + 1) * 2);
+    int w = 0;
     if (neg)
-        out.push_back(u'-');
+        out[w++] = (unsigned short) u'-';
     for (int i = n - 1; i >= 0; i--)
-        out.push_back(tmp[i]);
-    {
-        const unsigned short *_src = reinterpret_cast<const unsigned short *>(out.data());
-        int _n = (int) out.size();
-        if (this->data) delete[] this->data;
-        this->data = nullptr;
-        this->length = 0;
-        if (_src && _n >= 0) {
-            unsigned short *_nd = new unsigned short[_n + 1];
-            for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-            _nd[_n] = 0;
-            this->data = _nd;
-            this->length = _n;
-        }
-    }
+        out[w++] = (unsigned short) tmp[i];
+    out[w] = 0;
+    this->Set(out);
+    ::operator delete[](out);
 }
 
 int String::StrLen(const char *s) {
@@ -312,21 +288,12 @@ void String::Trim() {
         end--;
     }
     if (start < end) {
-        std::u16string sub(reinterpret_cast<const char16_t *>(this->data) + start, end - start);
-        {
-            const unsigned short *_src = reinterpret_cast<const unsigned short *>(sub.data());
-            int _n = (int) sub.size();
-            if (this->data) delete[] this->data;
-            this->data = nullptr;
-            this->length = 0;
-            if (_src && _n >= 0) {
-                unsigned short *_nd = new unsigned short[_n + 1];
-                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-                _nd[_n] = 0;
-                this->data = _nd;
-                this->length = _n;
-            }
-        }
+        int sublen = end - start;
+        unsigned short *sub = (unsigned short *) ::operator new[]((sublen + 1) * 2);
+        memcpy(sub, this->data + start, (size_t) sublen * 2);
+        sub[sublen] = 0;
+        this->Set(sub);
+        ::operator delete[](sub);
     } else {
         if (this->data) delete[] this->data;
         this->data = nullptr;
@@ -429,25 +396,9 @@ void String::SplitTags(String tag) {
         return;
 
     {
-        std::u16string wrapped;
-        wrapped.push_back(u'<');
-        if (tag.length)
-            wrapped.append(reinterpret_cast<const char16_t *>(tag.data), (unsigned int) tag.length);
-        wrapped.push_back(u'>');
-        {
-            const unsigned short *_src = reinterpret_cast<const unsigned short *>(wrapped.data());
-            int _n = (int) wrapped.size();
-            if (tag.data) delete[] tag.data;
-            tag.data = nullptr;
-            tag.length = 0;
-            if (_src && _n >= 0) {
-                unsigned short *_nd = new unsigned short[_n + 1];
-                for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-                _nd[_n] = 0;
-                tag.data = _nd;
-                tag.length = _n;
-            }
-        }
+        String open(kOpen, false);
+        String close(kClose, false);
+        tag = open + tag + close;
     }
 
     Array<String *> *arr = new Array<String *>();
@@ -499,49 +450,47 @@ void String::Set(float v) {
     int neg = 0;
     uint16_t *digitsW = String_computeFloatString(v, 10, &exp, &neg);
 
-    std::u16string acc;
+    int digitCount = String::StrLen((const unsigned short *) digitsW);
+
+    /* Upper bound on the result length: leading "0." plus up to -exp zeros,
+       the digits, a possible '.' separator, and a possible leading 'E' sign. */
+    int leadingZeros = (exp < 1 && exp < 0) ? -exp : 0;
+    int cap = 2 + leadingZeros + digitCount + 1 + 1;
+    unsigned short *acc = (unsigned short *) ::operator new[]((cap + 1) * 2);
+    int len = 0;
 
     if (exp < 1) {
         for (const char *p = kZeroDot; *p; p++)
-            acc.push_back((char16_t) (unsigned char) *p);
+            acc[len++] = (unsigned short) (unsigned char) *p;
         for (int i = 0; exp < i; i--)
             for (const char *p = kZero; *p; p++)
-                acc.push_back((char16_t) (unsigned char) *p);
+                acc[len++] = (unsigned short) (unsigned char) *p;
     }
 
     for (const uint16_t *p = digitsW; *p != 0; p++)
-        acc.push_back((char16_t) *p);
+        acc[len++] = (unsigned short) *p;
 
-    if (exp > 0 && (unsigned int) exp <= acc.size()) {
-        std::u16string head = acc.substr(0, (unsigned int) exp);
-        std::u16string tail = acc.substr((unsigned int) exp);
-        for (const char *p = kDot; *p; p++)
-            head.push_back((char16_t) (unsigned char) *p);
-        acc = head + tail;
+    if (exp > 0 && exp <= len) {
+        /* Insert '.' after the first `exp` code units. */
+        for (int i = len; i > exp; i--)
+            acc[i] = acc[i - 1];
+        acc[exp] = (unsigned short) (unsigned char) kDot[0];
+        len++;
     }
 
     if (neg != 0) {
-        std::u16string sign;
-        for (const char *p = kExp; *p; p++)
-            sign.push_back((char16_t) (unsigned char) *p);
-        acc = sign + acc;
+        /* Prepend the 'E' (exponent/sign marker). */
+        for (int i = len; i > 0; i--)
+            acc[i] = acc[i - 1];
+        acc[0] = (unsigned short) (unsigned char) kExp[0];
+        len++;
     }
 
+    acc[len] = 0;
+
     delete[] digitsW;
-    {
-        const unsigned short *_src = reinterpret_cast<const unsigned short *>(acc.data());
-        int _n = (int) acc.size();
-        if (this->data) delete[] this->data;
-        this->data = nullptr;
-        this->length = 0;
-        if (_src && _n >= 0) {
-            unsigned short *_nd = new unsigned short[_n + 1];
-            for (int _i = 0; _i < _n; _i++) _nd[_i] = _src[_i];
-            _nd[_n] = 0;
-            this->data = _nd;
-            this->length = _n;
-        }
-    }
+    this->Set(acc);
+    ::operator delete[](acc);
 }
 
 int String::StrLen(const unsigned short *s) {
