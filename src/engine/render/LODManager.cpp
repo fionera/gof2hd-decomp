@@ -5,9 +5,9 @@
 
 #include <cstdlib>
 
-static int curTouchSize = 0;
-static int maxTouchSize = 0;
-static Touch *touches = nullptr;
+int curTouchSize = 0;
+int maxTouchSize = 0;
+Touch *touches = nullptr;
 
 uint32_t CameraGetCurrent(void *canvas);
 

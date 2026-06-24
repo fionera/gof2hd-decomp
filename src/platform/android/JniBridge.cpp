@@ -29,11 +29,11 @@
 #include "engine/core/NFC.h"
 #include "engine/render/LODManager.h"
 
-static JavaVM *g_pVM;
+JavaVM *g_pVM;
 
-static JNIEnv *g_pEnv;
-static jobject g_pClass;
-static jobject g_pActivity;
+JNIEnv *g_pEnv;
+jobject g_pClass;
+jobject g_pActivity;
 
 static char *g_apkPath;
 static char *g_zipPath;
@@ -65,17 +65,17 @@ extern "C" void ndk23_setCountryCode(unsigned int code);
 
 extern "C" void ndk23_handleAcceleration(float x, float y, float z);
 
-static int gRealWidth;
-static int gRealHeight;
+int gRealWidth;
+int gRealHeight;
 
-static char *rootDirectory;
-static char *ZIPDirectory;
+char *rootDirectory;
+char *ZIPDirectory;
 
-static int forceExit;
+int forceExit;
 
 static unsigned int countryCode;
 
-static int gb_android_offerwallCreditAmount;
+int gb_android_offerwallCreditAmount;
 
 AbyssEngine::Engine **AbyssEngine::Engine::g_pEngine;
 static AbyssEngine::Engine **&g_pEngine = AbyssEngine::Engine::g_pEngine;
@@ -261,7 +261,7 @@ extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
     engine->appManager->paintCanvas->SetGameOrientation(AbyssEngine::LandscapeMode_2);
 }
 
-static int rotateAccelValues;
+int rotateAccelValues;
 
 extern "C" void ndk23_handleAcceleration(float x, float y, float z) {
     double tiltA, tiltB;

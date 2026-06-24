@@ -15,17 +15,17 @@
 
 using AbyssEngine::Engine;
 
-static int gi_iap_buy_dlc1_pressed;
-static int gi_iap_buy_dlc2_pressed;
-static int gi_iap_buy_dlc3_pressed;
-static int gi_iap_buy_dlc4_pressed;
-static int gi_iap_buy_dlc5_pressed;
+int gi_iap_buy_dlc1_pressed;
+int gi_iap_buy_dlc2_pressed;
+int gi_iap_buy_dlc3_pressed;
+int gi_iap_buy_dlc4_pressed;
+int gi_iap_buy_dlc5_pressed;
 
-static int gi_iap_buy_credit_pack1_pressed;
-static int gi_iap_buy_credit_pack2_pressed;
-static int gi_iap_buy_credit_pack3_pressed;
-static int gi_iap_buy_credit_pack4_pressed;
-static int gi_iap_buy_credit_pack5_pressed;
+int gi_iap_buy_credit_pack1_pressed;
+int gi_iap_buy_credit_pack2_pressed;
+int gi_iap_buy_credit_pack3_pressed;
+int gi_iap_buy_credit_pack4_pressed;
+int gi_iap_buy_credit_pack5_pressed;
 
 extern "C" {
 

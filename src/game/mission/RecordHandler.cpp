@@ -107,7 +107,7 @@ static_assert(sizeof(OptionsBuffer) == 0x63, "OptionsBuffer size");
 #endif
 } // anonymous namespace
 
-static const char *g_android_origami_super_club = nullptr;
+const char *g_android_origami_super_club = nullptr;
 
 extern "C" void Java_net_fishlabs_gof2hdallandroid2012_GOF2HD2012_SetOrigamiSuperClub(
     JNIEnv *env, jobject /*thiz*/, jstring value) {
