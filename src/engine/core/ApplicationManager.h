@@ -52,7 +52,7 @@ namespace AbyssEngine {
         ConfigReader *configReader;
         int state;
         int savedState;
-        Array<void *> *modules;
+        Array<IApplicationModule *> *modules;
         Array<unsigned int> *moduleIds;
         unsigned int currentModuleId;
         void *pendingModule;

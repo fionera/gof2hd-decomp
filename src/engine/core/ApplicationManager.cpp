@@ -121,7 +121,7 @@ namespace {
 }
 
 ApplicationManager::ApplicationManager(Engine *engine) {
-    this->modules = new Array<void *>();
+    this->modules = new Array<IApplicationModule *>();
     this->moduleIds = new Array<unsigned int>();
     this->actionTable = new Array<long long>();
 
@@ -949,7 +949,7 @@ void ApplicationManager::SoundSet(const AESoundInfo *info, int count) {
 void ApplicationManager::RegisterApplicationModule(unsigned int id, IApplicationModule *module) {
     if (module != 0) {
         module->SetApplicationManager(this);
-        ArrayAdd((void *) module, *(this->modules));
+        ArrayAdd(module, *(this->modules));
         ArrayAdd(id, *(this->moduleIds));
     }
 }
