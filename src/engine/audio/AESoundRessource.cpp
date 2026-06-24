@@ -1,4 +1,5 @@
 #include "engine/audio/AESoundRessource.h"
+#include "engine/audio/AESound.h"
 
 static const char defaultSoundName[] = "";
 
@@ -60,11 +61,11 @@ namespace AbyssEngine {
         if (index != -1) {
             AESoundInterface *sound = (*this->sounds)[index];
             if (sound == nullptr) {
-                sound = new AESoundInterface();
+                sound = new AESound();
                 (*this->sounds)[index] = sound;
             }
-            sound->load(info.name);
-            sound->setType(info.type);
+            sound->loadSound(info.name);
+            sound->setGain(info.type);
         }
     }
 
@@ -78,7 +79,7 @@ namespace AbyssEngine {
         this->getSoundInfo(id, info, index);
         if (index != -1) {
             if ((*this->sounds)[index] == nullptr) {
-                (*this->sounds)[index] = new AESoundInterface();
+                (*this->sounds)[index] = new AESound();
             }
         }
     }
@@ -89,7 +90,7 @@ namespace AbyssEngine {
         this->getSoundInfo(id, info, index);
         if (index != -1) {
             AESoundInterface *sound = (*this->sounds)[index];
-            if (sound->isLoaded() == 0) {
+            if (sound->loaded() == 0) {
                 this->init(id);
             }
             sound = (*this->sounds)[index];
@@ -110,7 +111,7 @@ namespace AbyssEngine {
         if (index != -1) {
             AESoundInterface *sound = (*this->sounds)[index];
             if (sound != nullptr && sound->isPlaying() == 0) {
-                sound->playLooping();
+                sound->playLoop();
             }
         }
     }
@@ -134,7 +135,7 @@ namespace AbyssEngine {
         if (index != -1) {
             AESoundInterface *sound = (*this->sounds)[index];
             if (sound != nullptr && sound->isPlaying() == 0) {
-                sound->playLooping();
+                sound->playLoop();
             }
         }
     }
@@ -207,7 +208,7 @@ namespace AbyssEngine {
         for (uint32_t i = 0; i < this->sounds->size(); ++i) {
             AESoundInterface *sound = (*this->sounds)[i];
             if (sound != nullptr) {
-                sound->suspend();
+                sound->unloadSound();
             }
         }
     }

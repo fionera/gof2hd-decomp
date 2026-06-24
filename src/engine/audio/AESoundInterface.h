@@ -7,35 +7,35 @@
 namespace AbyssEngine {
 class AESoundInterface {
     public:
-        virtual void load(const char *name);
+        virtual char *loadSound(const char *name) = 0;
 
-        virtual void suspend();
+        virtual void unloadSound() = 0;
 
-        virtual void play();
+        virtual void play() = 0;
 
-        virtual void play(float volume);
+        virtual void play(float volume) = 0;
 
-        virtual void playLooping();
+        virtual void playLoop() = 0;
 
-        virtual void pause();
+        virtual void pause() = 0;
 
-        virtual void resume();
+        virtual void resume() = 0;
 
-        virtual void stop();
+        virtual void stop() = 0;
 
-        virtual int isPlaying();
+        virtual int isPlaying() = 0;
 
-        virtual void setType(int type);
+        virtual int loaded() = 0;
 
-        virtual void setVolume(int volume);
+        virtual void setGain(int gain) = 0;
 
-        virtual void setSoundVolume(int volume);
+        virtual void setVolume(int volume) = 0;
 
-        virtual void setMusicVolume(int volume);
+        virtual void setSoundVolume(int volume) = 0;
 
-        virtual void release();
+        virtual void setMusicVolume(int volume) = 0;
 
-        virtual int isLoaded();
+        virtual void release() = 0;
     };
 }
 #endif

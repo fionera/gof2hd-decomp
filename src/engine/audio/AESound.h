@@ -1,38 +1,40 @@
 #ifndef GOF2_AESOUND_H
 #define GOF2_AESOUND_H
+#include "engine/audio/AESoundInterface.h"
 
 namespace AbyssEngine {
-    class AESound {
+    // Concrete AESoundInterface implementation.
+    class AESound : public AESoundInterface {
     public:
-        char *loadSound(const char *name);
+        char *loadSound(const char *name) override;
 
-        void unloadSound();
+        void unloadSound() override;
 
-        void play();
+        void play() override;
 
-        void play(float volume);
+        void play(float volume) override;
 
-        void playLoop();
+        void playLoop() override;
 
-        void pause();
+        void pause() override;
 
-        void resume();
+        void resume() override;
 
-        void stop();
+        void stop() override;
 
-        int isPlaying();
+        int isPlaying() override;
 
-        int loaded();
+        int loaded() override;
 
-        void setGain(int gain);
+        void setGain(int gain) override;
 
-        void setVolume(int volume);
+        void setVolume(int volume) override;
 
-        void setSoundVolume(int volume);
+        void setSoundVolume(int volume) override;
 
-        void setMusicVolume(int volume);
+        void setMusicVolume(int volume) override;
 
-        void release();
+        void release() override;
     };
 }
 
