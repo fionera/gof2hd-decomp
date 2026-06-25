@@ -66,8 +66,17 @@ include("${CMAKE_SOURCE_DIR}/third_party/match_libs.cmake")
 # symbol set). Undefined app-provided imports (FMOD, ...) stay unresolved, as in the original.
 set(_so "${CMAKE_BINARY_DIR}/libgof2hdaa.so")
 set(_libdir "${GOF2_NDK_CRT_LIBDIR}")
+# match_link.py links (pass 1), then re-links localizing the dynamic symbols the
+# original does NOT export -- redundant constructor/destructor aliases (C1/D1 that
+# share an address with the kept C2/D2) plus an internal JNI table + a vendored
+# string. Those names stay DEFINED in the binary (internal refs already bound at
+# static-link time); only the duplicate/internal exports leave .dynsym, matching the
+# original's export table exactly. See tools/match_link.py.
 add_custom_command(OUTPUT "${_so}"
-    COMMAND ${GOF2_NDK_GOLD}
+    COMMAND python3 ${CMAKE_SOURCE_DIR}/tools/match_link.py
+            --gold ${GOF2_NDK_GOLD}
+            --symdiff ${CMAKE_SOURCE_DIR}/tools/symdiff.py
+            --out "${_so}" --
             -shared -soname libgof2hdaa.so --build-id
             --unresolved-symbols=ignore-all --allow-multiple-definition
             ${_libdir}/crtbegin_so.o -L ${_libdir}
@@ -77,7 +86,6 @@ add_custom_command(OUTPUT "${_so}"
             --whole-archive ${_libzip_out} ${_zlib_out} --no-whole-archive
             ${GOF2_NDK_LIBCXXABI_A}
             ${_libdir}/crtend_so.o
-            -o "${_so}"
     # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
     # artifact, so depending on the target alone does not re-link when a member object changes,
     # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
