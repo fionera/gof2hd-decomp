@@ -1,6 +1,5 @@
 #include "game/weapons/AbstractGun.h"
 
-int AbstractGun::isRocketGun() { return 0; }
-int AbstractGun::isBombGun() { return 0; }
-int AbstractGun::isMineGun() { return 0; }
-int AbstractGun::isAutoTurret() { return 0; }
+// AbstractGun's virtuals are defined inline in the header (no key function here),
+// matching the original: no _ZTV11AbstractGun is emitted for the abstract base
+// (only the 7 concrete derived guns get vtables).
