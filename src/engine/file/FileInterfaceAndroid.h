@@ -11,10 +11,11 @@ using AbyssEngine::String;
 
 typedef struct _jobject *jobject;
 
+extern void *APKArchive;
+extern void *ZIPArchive;
+
 class FileInterfaceAndroid : public FileInterface {
 public:
-    static void **gZipMain;
-    static void **gZipPatch;
 
     void *file;
     void *zipFile;

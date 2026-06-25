@@ -274,8 +274,6 @@ void FileInterfaceAndroid::ResetSaveDirectory() {
 // symbols APKArchive / ZIPArchive; gZipMain/gZipPatch point at them.
 void *APKArchive = nullptr;
 void *ZIPArchive = nullptr;
-void **FileInterfaceAndroid::gZipMain = &APKArchive;
-void **FileInterfaceAndroid::gZipPatch = &ZIPArchive;
 static const char *gZipPrefixA = nullptr;
 static const char *gZipPrefixB = nullptr;
 static const char *gModeRb = nullptr;
@@ -286,8 +284,8 @@ uint32_t FileInterfaceAndroid::FileExist(String name) {
     String b(gZipPrefixB);
     b += name;
 
-    void *z1 = zip_fopen((struct zip *) *gZipMain, a.GetAEChar(), 0);
-    void *z2 = zip_fopen((struct zip *) *FileInterfaceAndroid::gZipPatch, b.GetAEChar(), 0);
+    void *z1 = zip_fopen((struct zip *) APKArchive, a.GetAEChar(), 0);
+    void *z2 = zip_fopen((struct zip *) ZIPArchive, b.GetAEChar(), 0);
 
     bool exists;
     if (z1 != 0) {
