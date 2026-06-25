@@ -48,10 +48,7 @@ void AEFile::SetInterface(FileInterface *fileInterface) {
 
 void AEFile::Release() {
     if (g_AEFile_openFiles != nullptr) {
-        for (AELowLevelFile *file: *g_AEFile_openFiles) {
-            delete file;
-        }
-        ArrayRemoveAll(*g_AEFile_openFiles);
+        ArrayReleaseClasses(*g_AEFile_openFiles);   // original: ArrayReleaseClasses<AELowLevelFile*>, then ~Array + delete
         delete g_AEFile_openFiles;
         g_AEFile_openFiles = nullptr;
     }

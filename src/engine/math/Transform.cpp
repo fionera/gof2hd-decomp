@@ -109,10 +109,7 @@ namespace AbyssEngine {
 
     Transform::~Transform() {
         if (this->keyFramesShared == false) {
-            for (KeyFrame *kf: this->keyFrames) {
-                delete kf;
-            }
-            ArrayRemoveAll(this->keyFrames);
+            ArrayReleaseClasses(this->keyFrames);   // original: ArrayReleaseClasses<KeyFrame*>
         }
     }
 

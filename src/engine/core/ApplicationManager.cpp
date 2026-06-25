@@ -180,8 +180,8 @@ ApplicationManager::~ApplicationManager() {
         }
         (*this->modules)[i] = 0;
     }
-    ArrayRemoveAll(*(this->modules));
-    ArrayRemoveAll(*(this->moduleIds));
+    ArrayRelease(*(this->modules));    // original: ArrayRelease<IApplicationModule*> (elements destroyed via vtable above)
+    ArrayRemoveAll(*(this->moduleIds));   // original keeps ArrayRemoveAll<unsigned int> here (matched)
 
     delete this->paintCanvas;
     this->paintCanvas = 0;

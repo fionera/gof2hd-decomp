@@ -1159,7 +1159,6 @@ SpaceLounge::~SpaceLounge() {
                 }
                 (*grid)[i] = 0;
             }
-            ArrayRemoveAll(*grid);
             delete grid;
         }
     }

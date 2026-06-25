@@ -65,7 +65,6 @@ void HangarList::release() {
             }
             (*tabs)[i] = nullptr;
         }
-        ArrayRemoveAll(*tabs);
         delete tabs;
     }
     this->tabs = nullptr;

@@ -644,10 +644,7 @@ Engine::~Engine() {
     this->fileInterface = 0;
 
     AEFile::Release();
-    for (uint32_t i = 0; i < this->shaders->size(); ++i) {
-        delete (*this->shaders)[i];
-    }
-    ArrayRemoveAll(*(this->shaders));
+    ArrayReleaseClasses(*this->shaders);   // original: ArrayReleaseClasses<ShaderBaseStruct*>
 
     delete this->postEffectFBO;
     this->postEffectFBO = 0;

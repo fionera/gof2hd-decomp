@@ -349,9 +349,7 @@ void RecordHandler::convertSDVersionSaves() {
     }
 
     ArrayReleaseArrays(*a0);
-    ArrayRemoveAll(*a0);
     ArrayReleaseArrays(*a1);
-    ArrayRemoveAll(*a1);
     delete a0;
     delete a1;
     delete[] sizes0;
@@ -519,9 +517,7 @@ void RecordHandler::changeSaveDirectoryToBackupDirectory() {
     }
 
     ArrayReleaseArrays(*a0);
-    ArrayRemoveAll(*a0);
     ArrayReleaseArrays(*a1);
-    ArrayRemoveAll(*a1);
     delete a0;
     delete a1;
     delete[] sizes0;
