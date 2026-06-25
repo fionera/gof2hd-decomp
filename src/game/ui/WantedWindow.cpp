@@ -261,12 +261,12 @@ void WantedWindow::OnTouchEnd(int x, int y) {
     }
 
     if (openMap) {
-        ApplicationManager *app = ApplicationManager::gAppManager;
+        ApplicationManager *app = Globals::appManager;
         ModStation *module = (ModStation *) app->GetApplicationModule(5);
         this->starMap = module->starMap;
         Wanted *wanted = (*this->wantedList)[this->selectedWanted];
         int lastSeen = wanted->getLastSeen();
-        int stationIndex = Galaxy::gGalaxy->getStation(lastSeen);
+        int stationIndex = Globals::galaxy->getStation(lastSeen);
         Station *station = (Station *) (long) stationIndex;
         delete this->mission;
         this->mission = nullptr;
@@ -314,7 +314,7 @@ void WantedWindow::draw() {
     }
 
     Layout *layout = *g_WantedWindow_draw_layout;
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     unsigned int font = *g_WantedWindow_draw_font;
 
     canvas->EnableClip(this->windowX,
@@ -605,7 +605,7 @@ WantedWindow::WantedWindow() {
     this->detailButton = nullptr;
     this->starMap = nullptr;
     this->imageParts = nullptr;
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     int h = canvas->GetTextHeight(*g_WantedWindow_ctor_font);
     this->wantedList = nullptr;
     this->mission = nullptr;
@@ -692,7 +692,7 @@ void WantedWindow::selectWanted(int idx) {
     this->nameText = wanted->getName();
 
     if (wanted->isActive() != 0) {
-        Galaxy *galaxy = Galaxy::gGalaxy;
+        Galaxy *galaxy = Globals::galaxy;
         Station *last = (Station *) (long) galaxy->getStation(wanted->getLastSeen());
         Station *travel = (Station *) (long) galaxy->getStation(wanted->getTravelsTo());
         Station *current = (Station *) (long) galaxy->getStation(wanted->getCurrentLocation());

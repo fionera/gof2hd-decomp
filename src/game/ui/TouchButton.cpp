@@ -1,4 +1,5 @@
 #include "game/ui/TouchButton.h"
+#include "game/core/Globals.h"
 #include "engine/audio/FModSound.h"
 #include "game/mission/Achievements.h"
 #include "game/ui/Layout.h"
@@ -76,7 +77,7 @@ void TouchButton::replaceTextKeepSize(String const &text) {
     this->text = text;
     if (this->kind == 10) {
         int w = this->width;
-        int tw = PaintCanvas::gCanvas->GetTextWidth(this->fontId, this->text);
+        int tw = Globals::Canvas->GetTextWidth(this->fontId, this->text);
         this->textOffsetX = w / 2 - tw / 2;
     }
 }
@@ -173,7 +174,7 @@ static const char g_TB_emptyStr[] = "";
 
 int TouchButton::init(String const &text, unsigned int kind, int achId, int achStage, int width, int d_unused, int x,
                       int y, unsigned char flags0, unsigned char flags1) {
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
 
     this->kind = (int) kind;
     this->visible = 1;
@@ -205,7 +206,7 @@ int TouchButton::init(String const &text, unsigned int kind, int achId, int achS
 
     switch (kind) {
         case 4: {
-            void *ach = Achievements::gAchievements;
+            void *ach = Globals::achievements;
             int elite = (((Achievements *) (ach))->isEliteMedal(achId) != 0) ? 1 : 0;
             this->iconTexId = TB_iconTexId(elite, achStage);
             ((PaintCanvas *) (canvas))->Image2DCreate(TB_iconImgId(elite, achStage), this->iconImage);
@@ -444,7 +445,7 @@ static unsigned int *g_TB_defSpacing = nullptr;
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, int d,
                          unsigned char flags0, unsigned char flags1) {
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 
@@ -460,17 +461,17 @@ static String **g_TB_d_unitStr = nullptr;
 static unsigned int g_TB_d_frameMask = 0;
 
 void TouchButton::draw() {
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
     unsigned int savedColor = ((PaintCanvas *) (canvas))->GetColor();
 
     if (this->visible == 0)
         return;
 
     if (this->halfTransparent != 0) {
-        PaintCanvas::gCanvas->SetColor(0xffffff2f);
+        Globals::Canvas->SetColor(0xffffff2f);
         (*g_TB_d_layoutA)->setDrawColor(-0xd1);
     } else {
-        PaintCanvas::gCanvas->SetColor(0xffffffff);
+        Globals::Canvas->SetColor(0xffffffff);
     }
 
     short savedSpacing = (short) ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
@@ -491,15 +492,15 @@ void TouchButton::draw() {
     } else if (kind == 4) {
         ((PaintCanvas *) (canvas))->DrawImage2D(this->iconImage, this->x, this->y);
         if (this->iconSmall != -1) {
-            PaintCanvas::gCanvas->SetColor(0xffffffff);
+            Globals::Canvas->SetColor(0xffffffff);
             ((PaintCanvas *) (canvas))->DrawImage2D(this->iconSmall, this->x + (this->width >> 1),
                                                     (this->y + (this->height >> 1)) - 1, (unsigned char) 0x11,
                                                     (unsigned char) 0x44);
-            PaintCanvas::gCanvas->SetColor(0xffffffff);
+            Globals::Canvas->SetColor(0xffffffff);
             if (this->touched != 0 || this->alwaysPressed != 0)
                 ((PaintCanvas *) (canvas))->DrawImage2D(this->iconOverlay, this->x, this->y);
         }
-        PaintCanvas::gCanvas->SetColor(0xffffffff);
+        Globals::Canvas->SetColor(0xffffffff);
         ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
                                                this->y + this->textOffsetY, false);
     } else {
@@ -535,7 +536,7 @@ void TouchButton::draw() {
 
         float prog = this->pressProgress;
         if (prog > 0.0f) {
-            PaintCanvas::gCanvas->SetColor(0xffffffff);
+            Globals::Canvas->SetColor(0xffffffff);
             layoutC->setDrawColor(-0x80);
             int span = this->leftWidth;
             int total = this->rightWidth + this->midStretch + span;
@@ -566,10 +567,10 @@ void TouchButton::draw() {
 
         unsigned int lblColor = (unsigned int) this->textColor;
         if (this->halfTransparent != 0)
-            PaintCanvas::gCanvas->SetColor((unsigned char) (lblColor >> 16), (unsigned char) (lblColor >> 8),
+            Globals::Canvas->SetColor((unsigned char) (lblColor >> 16), (unsigned char) (lblColor >> 8),
                               (unsigned char) lblColor, (unsigned char) (lblColor >> 24));
         else
-            PaintCanvas::gCanvas->SetColor(0xffffffff);
+            Globals::Canvas->SetColor(0xffffffff);
 
         if (this->subId == -1) {
             ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->text, this->x + this->textOffsetX,
@@ -595,19 +596,19 @@ void TouchButton::draw() {
             }
 
             if (this->numberText.size() != 0) {
-                PaintCanvas::gCanvas->SetColor(0xffffffff);
+                Globals::Canvas->SetColor(0xffffffff);
                 String *u = *g_TB_d_unitStr;
                 int tw = ((PaintCanvas *) (canvas))->GetTextWidth(this->fontId, *u);
                 ((PaintCanvas *) (canvas))->DrawString(this->fontId, this->numberText, (this->leftWidth + this->x) - tw,
                                                        this->y + this->textOffsetY, false);
-                PaintCanvas::gCanvas->SetColor(0xffffffff);
+                Globals::Canvas->SetColor(0xffffffff);
             }
 
             if (this->adornImage != -1) {
-                PaintCanvas::gCanvas->SetColor(0xffffffff);
+                Globals::Canvas->SetColor(0xffffffff);
                 ((PaintCanvas *) (canvas))->DrawImage2D(this->adornImage, (this->x + this->width + 6) - this->leftWidth,
                                                         this->y + 1, (unsigned char) 0x11, (unsigned char) 0x14);
-                PaintCanvas::gCanvas->SetColor(0xffffffff);
+                Globals::Canvas->SetColor(0xffffffff);
             }
         } else if (this->kind != 0x13) {
             icon = base;
@@ -621,22 +622,22 @@ void TouchButton::draw() {
 
     (*g_TB_d_layoutEnd)->setDrawColor(-1);
     ((PaintCanvas *) (canvas))->FontSetSpacing(this->fontId, savedSpacing);
-    PaintCanvas::gCanvas->SetColor(savedColor);
+    Globals::Canvas->SetColor(savedColor);
 }
 
 static int **g_TB_c1 = nullptr;
 
 TouchButton::TouchButton(String const &text, int type, int x, int y, int p5, unsigned char p6, unsigned char p7) {
     this->fontId = (uint32_t) * *g_TB_c1;
-    this->fontSpacing = PaintCanvas::gCanvas->FontGetSpacing(this->fontId);
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
     init(text, (unsigned int) type, x, y, p5, 0, 0, 0, p6, p7);
 }
 
 void TouchButton::setText(String const &text) {
     this->text = text;
-    int w = PaintCanvas::gCanvas->GetTextWidth(this->fontId, this->text);
+    int w = Globals::Canvas->GetTextWidth(this->fontId, this->text);
     if (this->subId != -1)
-        w = PaintCanvas::gCanvas->GetImage2DWidth(0);
+        w = Globals::Canvas->GetImage2DWidth(0);
     int a94 = this->leftWidth;
     int x;
     if (this->requestedWidth < 1)
@@ -667,14 +668,14 @@ void TouchButton::setText(String const &text) {
     this->textOffsetX = x;
 height:
     int h = this->height;
-    int th = PaintCanvas::gCanvas->GetTextHeight(this->fontId);
+    int th = Globals::Canvas->GetTextHeight(this->fontId);
     th = (h - th) / 2;
     this->textOffsetY = th;
     if (this->kind == 3)
         this->textOffsetY = th + 2;
     if (this->subId != -1) {
         h = this->height;
-        int ih = PaintCanvas::gCanvas->GetImage2DHeight(0);
+        int ih = Globals::Canvas->GetImage2DHeight(0);
         this->textOffsetY = (h - ih) / 2;
         if (this->kind == 1)
             this->textOffsetX = this->textOffsetX + 3;
@@ -692,7 +693,7 @@ bool TouchButton::touchedInside(int px, int py) {
     int h;
     int top;
     if (this->kind == 3) {
-        int v = *reinterpret_cast<int *>(&PaintCanvas::gCanvas->engine);
+        int v = *reinterpret_cast<int *>(&Globals::Canvas->engine);
         if (xm1 + v > px)
             return false;
         if (this->width + ((x + 1) - v) <= px)
@@ -718,7 +719,7 @@ bool TouchButton::touchedInside(int px, int py) {
 
 TouchButton::TouchButton(unsigned int kind, unsigned int image,
                          int a, int b, int c, unsigned char flag) {
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
     this->image = image;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
@@ -729,7 +730,7 @@ TouchButton::TouchButton(unsigned int kind, unsigned int image,
 
 TouchButton::TouchButton(String const &text, int x, int y, int p4, unsigned char p5) {
     this->fontId = (uint32_t) * *g_TB_c1;
-    this->fontSpacing = PaintCanvas::gCanvas->FontGetSpacing(this->fontId);
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
     init(text, 0xffffffff, 4, x, y, p4, 0, 0, p5, 0x44);
 }
 
@@ -740,7 +741,7 @@ TouchButton::TouchButton(String const &text,
     this->fontSpacing = kerning;
     this->fontId = spacing;
 
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
     short prev = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
     ((PaintCanvas *) (canvas))->FontSetSpacing(spacing, (short) kerning);
 
@@ -751,12 +752,12 @@ TouchButton::TouchButton(String const &text,
 
 TouchButton::TouchButton(int x, int y, String const &text, int p4, int p5, unsigned char p6) {
     this->fontId = (uint32_t) * *g_TB_c1;
-    this->fontSpacing = PaintCanvas::gCanvas->FontGetSpacing(this->fontId);
+    this->fontSpacing = Globals::Canvas->FontGetSpacing(this->fontId);
     init(text, 0xffffffff, 4, x, y, p4, p5, 0, p6, 0x44);
 }
 
 TouchButton::TouchButton(unsigned int kind, int a, int b, int c, unsigned char flag) {
-    void *canvas = PaintCanvas::gCanvas;
+    void *canvas = Globals::Canvas;
     this->fontId = *g_TB_defSpacing;
     this->fontSpacing = ((PaintCanvas *) (canvas))->FontGetSpacing(this->fontId);
 

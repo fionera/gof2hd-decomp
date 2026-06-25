@@ -39,7 +39,7 @@ static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagB) == 0x37,
               "CampaignMissionFlags flagB offset");
 #endif
 
-// PaintCanvas::gCanvas is declared `extern` in engine/render/PaintCanvas.h (already included).
+// Globals::Canvas is declared `extern` in engine/render/PaintCanvas.h (already included).
 
 // These per-screen globals appear only in this translation unit. The original
 // build shared them via extern decls; here they are file-static definitions.
@@ -145,7 +145,7 @@ uint8_t MissionsWindow::hangarNeedsUpdate() {
 }
 
 MissionsWindow::MissionsWindow() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     this->m_pAcceptButton = nullptr;
     this->m_pRejectButton = nullptr;
     this->m_pMapButton = nullptr;
@@ -298,7 +298,7 @@ int MissionsWindow::init() {
         String b(text);
         this->m_pCampaignWindow->setText(a, b);
     } else {
-        bool useGold = Achievements::gAchievements->gotAllGoldMedals() != 0 &&
+        bool useGold = Globals::achievements->gotAllGoldMedals() != 0 &&
                        ((Ship *) (Globals::status->getShip()))->getIndex() != 8;
         String a("", false);
         String *t = g_mw_gameText->getText(titleId);
@@ -362,7 +362,7 @@ int MissionsWindow::init() {
                 (((this->m_y - L->field_0x2c) + this->m_height) - L->field_0x10) - L->field_0x24,
                 btnY, '!', 4);
 
-            if (ApplicationManager_GetCurrentApplicationModule(ApplicationManager::gAppManager) == 5) {
+            if (ApplicationManager_GetCurrentApplicationModule(Globals::appManager) == 5) {
                 String *t2 = g_mw_gameText->getText(titleId);
                 this->m_pMapButton = new TouchButton(
                     *t2, 0, this->m_x + btnY + (this->m_width >> 1) + L->field_0x2c * 2,
@@ -397,7 +397,7 @@ void MissionsWindow::draw() {
         return;
     }
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     Layout *L = *g_mwd_layout;
     void *color = *(void **) g_mwd_color;
     void *font = *(void **) g_mwd_font;
@@ -556,7 +556,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
         this->m_pFreelanceWindow->OnTouchEnd(y, z);
 
         if (this->m_pAcceptButton && this->m_pAcceptButton->OnTouchEnd(y, z) != 0) {
-            ApplicationManager *appMgr = ApplicationManager::gAppManager;
+            ApplicationManager *appMgr = Globals::appManager;
             ModStation *mod = (ModStation *) appMgr->GetApplicationModule(5);
             StarMap *map = mod->starMap;
             this->m_pStarMap = map;
@@ -582,7 +582,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
                 this->m_choiceActive = 1;
             }
             if (this->m_pRejectButton && this->m_pRejectButton->OnTouchEnd(y, z) != 0) {
-                ApplicationManager *appMgr = ApplicationManager::gAppManager;
+                ApplicationManager *appMgr = Globals::appManager;
                 ModStation *mod = (ModStation *) appMgr->GetApplicationModule(5);
                 StarMap *map = mod->starMap;
                 this->m_pStarMap = map;

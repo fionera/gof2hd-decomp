@@ -76,7 +76,7 @@ CutScene::~CutScene() {
     delete this->level;
     this->level = nullptr;
 
-    PaintCanvas::gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_dummy);
 
     delete this->geom28;
     this->geom28 = nullptr;
@@ -109,7 +109,7 @@ void CutScene::update(int /*delta*/) {
 
 void CutScene::render3D() {
     if (this->level != nullptr) {
-        uint32_t t = (uint32_t) ApplicationManager::gAppManager->GetElapsedTimeMillis();
+        uint32_t t = (uint32_t) Globals::appManager->GetElapsedTimeMillis();
         this->frameDelta = t;
         this->level->update((long long) (int) t, 0u);
         this->level->render(this->frameDelta);
@@ -134,7 +134,7 @@ void CutScene::process(int /*delta*/) {
     if (this->initialized == 0)
         return;
 
-    unsigned int now = (unsigned int) ApplicationManager::gAppManager->GetCurrentTimeMillis();
+    unsigned int now = (unsigned int) Globals::appManager->GetCurrentTimeMillis();
     unsigned int prev = this->prevTimeLo;
     unsigned int dt = now - prev;
 
@@ -150,7 +150,7 @@ void CutScene::process(int /*delta*/) {
     if (this->followCamera != nullptr)
         this->followCamera->update((int) this->frameDelta);
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (this->mode == 2) {
         float ft = VectorSignedToFloat((int) this->frameDelta, 0);
@@ -380,7 +380,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
     AEGeometry *oldGeom = (*enemies)[0]->geometry;
     if (oldGeom != nullptr) {
         if (this->turretGeom != nullptr) {
-            PaintCanvas *canvas = PaintCanvas::gCanvas;
+            PaintCanvas *canvas = Globals::Canvas;
             Array<KIPlayer *> *en2 = this->level->getEnemies();
             AEGeometry *lead = (*en2)[0]->geometry;
             canvas->TransformRemoveChild(lead->childTransform, this->turretGeom->childTransform);
@@ -427,7 +427,7 @@ void CutScene::initialize() {
     this->level->initParticleSystems();
 
     char localMatrix[0x3c];
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (this->mode == 2) {
         canvas->CameraCreate(this->cameraId74);
@@ -517,7 +517,7 @@ void CutScene::initialize() {
     this->animTimer80 = 0;
     this->fogTimer84 = 0;
 
-    unsigned int now = (unsigned int) ApplicationManager::gAppManager->GetCurrentTimeMillis();
+    unsigned int now = (unsigned int) Globals::appManager->GetCurrentTimeMillis();
     this->initialized = 1;
     this->renderAtTimeLo = now & 0xffff;
     this->renderAtTimeHi = 0;
@@ -526,7 +526,7 @@ void CutScene::initialize() {
 }
 
 void CutScene::resetCamera() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (this->mode == 0x17) {
         if (((SolarSystem *) (long) Globals::status->getSystem())->getRace() == 1) {
@@ -563,7 +563,7 @@ public:
 };
 
 void CutScene::checkForTurret() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (this->turretGeom != nullptr) {
         Array<KIPlayer *> *enemies = this->level->getEnemies();

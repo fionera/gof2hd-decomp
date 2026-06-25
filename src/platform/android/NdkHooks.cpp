@@ -104,7 +104,7 @@ void ndk23_sendingPauseSignal() {
         return;
     Globals::sound->pauseAll();
 
-    static_cast<IApplicationModule *>(ApplicationManager::gAppManager->currentModule)->OnSuspend();
+    static_cast<IApplicationModule *>(Globals::appManager->currentModule)->OnSuspend();
 }
 
 void ndk23_sendingResumeSignal() {
@@ -123,7 +123,7 @@ void ndk_autosave() {
 int ndk_getCurrentApplicationModule() {
     if (*Engine::g_pEngine == nullptr)
         return -1;
-    return static_cast<int>(ApplicationManager::gAppManager->currentModuleId);
+    return static_cast<int>(Globals::appManager->currentModuleId);
 }
 
 int ndk_getLogoShown() {

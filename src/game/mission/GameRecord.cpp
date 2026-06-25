@@ -225,7 +225,7 @@ void GameRecord::load() {
     Status *st;
 
     Globals::status->resetGame();
-    Galaxy::gGalaxy->setVisited((bool *) this->data, this->field_0x04);
+    Globals::galaxy->setVisited((bool *) this->data, this->field_0x04);
     Globals::status->setLastXP(this->field_0x24);
     Globals::status->setCredits(this->field_0x08);
     Globals::status->setRating(this->field_0x0c);
@@ -412,9 +412,9 @@ stationStackLoaded:
     st->field_e4 = this->field_0xbc;
     st->field_e8 = this->field_0xc0;
     st->field_ec = this->field_0xc4;
-    Achievements::gAchievements->init();
+    Globals::achievements->init();
     if ((int *) this->field_0x60 != (int *) 0x0) {
-        Achievements::gAchievements->setMedals((int *) this->field_0x60, this->field_0x64);
+        Globals::achievements->setMedals((int *) this->field_0x60, this->field_0x64);
     }
     Globals::status->setShip((Ship *) this->field_0x130);
     if (Globals::status->dlc1Won() != 0) {
@@ -456,15 +456,15 @@ afterDlcUnsaleable:
                 (((blueprint->getIndex() == 0xdf ||
                    (bluePrintArray->data_[i]->getIndex() == 0xd2)) &&
                   (bluePrintArray->data_[i]->isEmpty() == 0)))) {
-                station = (Station *) Galaxy::gGalaxy->getStation(
+                station = (Station *) Globals::galaxy->getStation(
                     (int) bluePrintArray->data_[i]->getStationIndex());
                 if (station != (Station *) 0x0) {
                     int sysIndex = Station_getSystem(station);
-                    SolarSystem *sys = (SolarSystem *) Galaxy::gGalaxy->getSystem(sysIndex);
+                    SolarSystem *sys = (SolarSystem *) Globals::galaxy->getSystem(sysIndex);
                     if (sys->getRoutes() == (void *) 0x0) {
                         ((BluePrint *) bluePrintArray->data_[i])->stationIndex = 10;
                         delete station;
-                        station = (Station *) Galaxy::gGalaxy->getStation(
+                        station = (Station *) Globals::galaxy->getStation(
                             (int) bluePrintArray->data_[i]->getStationIndex());
                         bluePrintArray->data_[i]->stationName =
                                 ((Station *) (station))->getName();

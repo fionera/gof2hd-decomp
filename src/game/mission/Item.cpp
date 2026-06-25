@@ -7,7 +7,6 @@
 
 static Status *&status = Globals::status;
 
-Array<Item *> *Item::g_items = nullptr;
 
 int Item::getAttribute(int attribute) {
     int *data = attributes->data();

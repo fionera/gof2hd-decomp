@@ -249,7 +249,7 @@ int Globals::gScreenWidth = 0;
 int Globals::gScreenHeight = 0;
 
 // Static data members present in the original binary (defined for symbol parity).
-void *Globals::appManager;
+AbyssEngine::ApplicationManager *Globals::appManager;
 unsigned char Globals::gameLoaded;
 unsigned char Globals::gameSaving;
 float Globals::sec_fire_x;
@@ -262,7 +262,7 @@ int Globals::mouseDeltaX;
 int Globals::mouseDeltaY;
 int Globals::mouse_wheel;
 void *Globals::recordSlots;
-void *Globals::achievements;
+Achievements *Globals::achievements;
 void *Globals::imageFactory;
 int Globals::mouse_wheelX;
 int Globals::mouse_wheelY;
@@ -328,13 +328,13 @@ void *Globals::font;
 unsigned char Globals::keys[1020];
 void *Globals::bankZ;
 unsigned char Globals::hints[59];
-void *Globals::items;
+Array<Item *> *Globals::items;
 void *Globals::ships;
-void *Globals::Canvas;
+AbyssEngine::PaintCanvas *Globals::Canvas;
 float Globals::fire_x;
 float Globals::fire_y;
 float Globals::fire_z;
-void *Globals::galaxy;
+Galaxy *Globals::galaxy;
 void *Globals::layout;
 float Globals::boost_x;
 float Globals::boost_y;
@@ -343,10 +343,9 @@ void *Globals::globals;
 float Globals::pause_x;
 float Globals::pause_y;
 float Globals::pause_z;
-void *Globals::gameText;
+GameText *Globals::gameText;
 void *Globals::fontAlien;
 void *Globals::generator;
-AbyssEngine::ApplicationManager *ApplicationManager::gAppManager = nullptr;
 #include "engine/render/Mesh.h"
 #include "game/ship/Ship.h"
 #include "engine/render/PaintCanvas.h"
@@ -1170,7 +1169,7 @@ static const unsigned gGSG_lodTable[1] = {};
 static const unsigned gGSG_childTable[1] = {};
 
 AEGeometry *Globals::getShipGroup(int kind, int variant, bool wireframe) {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     if (kind == 0xf) {
         AEGeometry *geom;
@@ -2013,7 +2012,7 @@ void Globals::setCoordsFire(int p1, int p2, unsigned p3, unsigned p4,
 static void *const gRR_arg = nullptr;
 
 void Globals::releaseResources() {
-    PaintCanvas::gCanvas->ReleaseAllResources();
+    Globals::Canvas->ReleaseAllResources();
 
     PaintCanvas *secondaryCanvas = *(PaintCanvas **) gRR_arg;
     if (secondaryCanvas != nullptr) {
@@ -2197,10 +2196,10 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
 
     void *galaxy = ::operator new(8);
     Galaxy_ctor(galaxy);
-    Galaxy::gGalaxy = (Galaxy *) galaxy;
+    Globals::galaxy = (Galaxy *) galaxy;
     void *ach = ::operator new(0x28);
     Achievements_ctor(ach);
-    Achievements::gAchievements = (Achievements *) ach;
+    Globals::achievements = (Achievements *) ach;
     void *status = ::operator new(0x1f0);
     Status_ctor(status);
     Globals::status = (Status *) status;
@@ -2217,7 +2216,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     if (*engineSlot == 0) {
         *engineSlot = *reinterpret_cast<int *>(app);
     }
-    ApplicationManager::gAppManager = app;
+    Globals::appManager = app;
     app->VibrateEnable(0);
 
     void *rng = ::operator new(8);

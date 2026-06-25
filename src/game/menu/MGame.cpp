@@ -156,14 +156,14 @@ void MGame::pause() {
 
 void MGame::OnRender3D() {
     if (this->active == 0) return;
-    PaintCanvas::gCanvas->ClearBuffer(0);
+    Globals::Canvas->ClearBuffer(0);
 
     uint8_t inMenuLevel = this->pauseOpen;
     uint8_t flag15e = this->freeCamMode;
 
     if (inMenuLevel == 0) {
         this->level->renderBG(0);
-        PaintCanvas::gCanvas->Begin3d();
+        Globals::Canvas->Begin3d();
         int arg = (flag15e == 0) ? this->deltaTime : 0;
         this->level->render(arg);
         int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
@@ -171,42 +171,42 @@ void MGame::OnRender3D() {
         if (this->jumpFlash != 0)
             ((AEGeometry *) (this->player))->render();
         this->levelScript->render3D();
-        return PaintCanvas::gCanvas->End3d();
+        return Globals::Canvas->End3d();
     }
 
     if (flag15e != 0) {
         this->level->renderBG(0);
-        PaintCanvas::gCanvas->Begin3d();
+        Globals::Canvas->Begin3d();
         this->level->render(this->deltaTime);
         int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
         this->player->render(egoFlag);
         if (this->jumpFlash != 0)
             ((AEGeometry *) (this->player))->render();
         this->levelScript->render3D();
-        return PaintCanvas::gCanvas->End3d();
+        return Globals::Canvas->End3d();
     }
 
     if (this->menuTouchOpen != 0) {
-        PaintCanvas::gCanvas->Begin3d();
+        Globals::Canvas->Begin3d();
         this->menuWindow->render3D();
-        return PaintCanvas::gCanvas->End3d();
+        return Globals::Canvas->End3d();
     }
 
     if (this->starMapOpen != 0) {
-        PaintCanvas::gCanvas->Begin3d();
+        Globals::Canvas->Begin3d();
         this->starMap->render();
-        return PaintCanvas::gCanvas->End3d();
+        return Globals::Canvas->End3d();
     }
 
     this->level->renderBG(0);
-    PaintCanvas::gCanvas->Begin3d();
+    Globals::Canvas->Begin3d();
     this->level->render(0);
     int egoFlag = (this->jumpActive != 0) ? 0 : (this->jumpDriveActive == 0);
     this->player->render(egoFlag);
     if (this->jumpFlash != 0)
         ((AEGeometry *) (this->player))->render();
     this->levelScript->render3D();
-    return PaintCanvas::gCanvas->End3d();
+    return Globals::Canvas->End3d();
 }
 
 void TFC_setActive(TargetFollowCamera *c, int v);
@@ -261,7 +261,7 @@ void MGame::startJumpScene() {
     this->field_0x110 = 0;
     this->field_0x5c = 0;
 
-    PaintCanvas *pc = PaintCanvas::gCanvas;
+    PaintCanvas *pc = Globals::Canvas;
     unsigned cam = this->cameraId;
     float fov = *(float *) &g_jsFovDefault;
     if (Globals::status->inAlienOrbit() != 0) {
@@ -302,9 +302,9 @@ void MGame::startJumpScene() {
     } else {
         this->player->resetMovement();
         this->player->setComputerControlled(1);
-        AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, PaintCanvas::gCanvas, false);
+        AEGeometry *geo = new AEGeometry((uint16_t) 0x3ab2, Globals::Canvas, false);
         this->jumpFlash = geo;
-        int tr = (int) (long) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+        int tr = (int) (long) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
         ((AbyssEngine::Transform *) (tr))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
 
         float pos[4];
@@ -943,7 +943,7 @@ void MGame::dockEvent(int p1, int p2) {
     if (this->player->goingToStation() != 0 &&
         Globals::status->inAlienOrbit() == 0 &&
         ((Status *) (*(Station **) status))->inEmptyOrbit() == 0) {
-        Achievements::gAchievements->checkForNewMedal(this->player);
+        Globals::achievements->checkForNewMedal(this->player);
         **g_deAlienFlag = 0;
 
         {
@@ -1078,7 +1078,7 @@ void MGame::UseKhadorDrive() {
 
     if (Globals::status->getCurrentCampaignMission() == 0x50)
         Globals::status->field_84 = 100;
-    int station = ((Galaxy *) (*(int *) Galaxy::gGalaxy))->getStation(
+    int station = ((Galaxy *) (*(int *) Globals::galaxy))->getStation(
         Globals::status->getCurrentCampaignMission() /* index: arg lost in decomp */);
     **g_kdAlienDst = station;
     this->usingJumpDrive = 1;
@@ -1136,8 +1136,8 @@ int MGame::OnInitialize() {
         } else {
             texSel = 0x2f08;
         }
-        PaintCanvas::gCanvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, (void *) 0, texSel, false);
-        PaintCanvas::gCanvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
+        Globals::Canvas->TextureCreate((unsigned short) (unsigned) (intptr_t) self->paintCanvas, 0, (void *) 0, texSel, false);
+        Globals::Canvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
 
         {
             Globals::gGlobals->startNewSoundResourceList();
@@ -1876,9 +1876,9 @@ void MGame::reset() {
     this->radio = radio;
     ((Radio *) (radio))->setMessages((Array<RadioMessage *> *) this->level->getMessages());
 
-    PaintCanvas *pc = PaintCanvas::gCanvas;
+    PaintCanvas *pc = Globals::Canvas;
     pc->CameraCreate(this->cameraId);
-    unsigned cam = (unsigned) (uintptr_t) PaintCanvas::gCanvas;
+    unsigned cam = (unsigned) (uintptr_t) Globals::Canvas;
 
     float fov = *(float *) &g_fovDefault;
     if (Globals::status->inAlienOrbit() != 0) {
@@ -2229,7 +2229,7 @@ void MGame::updateJumpScene() {
 
     if (self->usingJumpDrive != 0 && self->jumpFlash != 0) {
         AbyssEngine::Transform *tr =
-            (AbyssEngine::Transform *) (intptr_t) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+            (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
         long long ct = tr->currentTime;
         int prog = (int) ((unsigned long long) ct >> 32);
         int over = ((unsigned) ct > 0x6a4);
@@ -2268,7 +2268,7 @@ camMove: {
 
 afterCam:
     if (self->usingJumpDrive != 0) {
-        unsigned tr = (unsigned) (long) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+        unsigned tr = (unsigned) (long) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
         ((AbyssEngine::Transform *) (tr))->Update(self->deltaTime, false /* updateBounds: arg lost in decomp */);
     }
 
@@ -2300,7 +2300,7 @@ afterCam:
     bool ended;
     if (self->usingJumpDrive != 0) {
         AbyssEngine::Transform *tr =
-            (AbyssEngine::Transform *) (intptr_t) PaintCanvas::gCanvas->TransformGetTransform((unsigned) (uintptr_t) PaintCanvas::gCanvas);
+            (AbyssEngine::Transform *) (intptr_t) Globals::Canvas->TransformGetTransform((unsigned) (uintptr_t) Globals::Canvas);
         ended = tr->animating != 0;
     } else {
         Array<KIPlayer *> *lm = self->level->getLandmarks();
@@ -2523,12 +2523,12 @@ void MGame::OnRelease() {
         ::operator delete(Radio_dtor(this->radio));
     this->radio = 0;
 
-    StarMapModule *m1 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+    StarMapModule *m1 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
     if (m1->starMap != 0) {
-        StarMapModule *m2 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+        StarMapModule *m2 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
         delete m2->starMap;
     }
-    StarMapModule *m3 = (StarMapModule *) ApplicationManager::gAppManager->GetApplicationModule(0);
+    StarMapModule *m3 = (StarMapModule *) Globals::appManager->GetApplicationModule(0);
     m3->starMap = 0;
 
     delete this->menuWindow;
@@ -2564,7 +2564,7 @@ void MGame::OnRelease() {
         int *p = (int *) 0;
         (void) p;
     }
-    PaintCanvas::gCanvas->ReleaseAllResources();
+    Globals::Canvas->ReleaseAllResources();
 
     int lang = GameText::getLanguage();
     Globals::gGlobals->loadFont(lang);
@@ -2601,7 +2601,7 @@ void MGame::OnRender2D() {
         return;
     }
 
-    PaintCanvas::gCanvas->Begin2d();
+    Globals::Canvas->Begin2d();
 
     if (self->pauseOpen != 0 && self->menuTouchOpen != 0) {
         bool drawSS = true;
@@ -2622,7 +2622,7 @@ void MGame::OnRender2D() {
         v[2] = 0;
         Engine *eng = (Engine *) self->applicationManager->GetEngine();
         *(Vector *) &eng->field_0x3cc = *(const Vector *) (v);
-        PaintCanvas::gCanvas->End2d();
+        Globals::Canvas->End2d();
 
         return;
     }
@@ -2708,14 +2708,14 @@ void MGame::OnRender2D() {
                 if (self->field_0xca != 0)
                     self->hud->drawMenu(0);
             } else if (!(self->elapsedTimeHigh < (int) (self->elapsedTime < 0xbb9))) {
-                PaintCanvas::gCanvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
-                PaintCanvas::gCanvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
+                Globals::Canvas->SetColor((unsigned) (intptr_t) self->paintCanvas);
+                Globals::Canvas->DrawImage2D((unsigned) self->loadingImage, 0, 0, (unsigned char) 'D');
             }
             ((Layout *) (**g_r2dFadeLayout))->drawFade();
         }
     }
 
-    PaintCanvas::gCanvas->End2d();
+    Globals::Canvas->End2d();
 }
 
 void MGame::dialogueEvent() {

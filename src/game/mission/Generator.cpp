@@ -207,7 +207,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
         }
 
         Array<SolarSystem *> *systems =
-                Galaxy::gGalaxy->getSystems();
+                Globals::galaxy->getSystems();
         if (status->getCurrentCampaignMission() == 0x17 &&
             station->getIndex() == 10) {
             AbyssEngine::String name = Globals::gGlobals->getRandomName(0, true);
@@ -437,7 +437,7 @@ Mission *Generator::createMission(Agent *agent,
                 for (uint32_t i = 0; i < systems->size(); ++i) {
                     if (systems->data()[i]->stationIsInSystem(targetStation)) {
                         int *prob =
-                                (int *) Galaxy::gGalaxy
+                                (int *) Globals::galaxy
                                 ->getAsteroidProbabilities(status->getStation());
                         itemId = prob[random->nextInt() * 2];
                         break;
@@ -458,9 +458,9 @@ Mission *Generator::createMission(Agent *agent,
     SolarSystem *from =
             systems->data()[status->getStation()->getSystem()];
     SolarSystem *to = systems->data()
-    [((Station *) (intptr_t) Galaxy::gGalaxy
+    [((Station *) (intptr_t) Globals::galaxy
         ->getStation(targetStation))->getSystem()];
-    int distance = (int) Galaxy::gGalaxy->distance(to, from);
+    int distance = (int) Globals::galaxy->distance(to, from);
     float reward = ((float) distance / 1000.0f + 1.0f) *
                    (float) ((int) (((float) difficulty / 10.0f) * 1400.0f) +
                             1500);
@@ -696,7 +696,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
 
     int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
     bool gold = station->getIndex() == 10 &&
-                Achievements::gAchievements->gotAllGoldMedals();
+                Globals::achievements->gotAllGoldMedals();
     int stationIndex = station->getIndex();
     int count;
     if (gold) {
@@ -808,7 +808,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         if (station->getIndex() == 0x78 &&
             status->getCurrentCampaignMission() > 0x9e &&
             (status->hardCoreMode() ||
-             Achievements::gAchievements->gotAllSupernovaMedals())) {
+             Globals::achievements->gotAllSupernovaMedals())) {
             Ship *ship = allShips->data()[0x2c]->makeShip(-1);
             ArrayAdd(ship, *result);
             Ship *added = result->data()[result->size() - 1];
@@ -903,7 +903,7 @@ Array<Item *> *Generator::getItemBuyList(Station *station) {
     Array<Item *> *result = new Array<Item *>();
 
     Array<Item *> *allItems = *g_Generator_allItems;
-    Galaxy *galaxy = Galaxy::gGalaxy;
+    Galaxy *galaxy = Globals::galaxy;
     Array<SolarSystem *> *systems = galaxy->getSystems();
     int stationTec = station->getTecLevel();
     int minTec = stationTec / 2;

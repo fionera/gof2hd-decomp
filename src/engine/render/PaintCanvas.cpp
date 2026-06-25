@@ -383,7 +383,6 @@ static_assert(offsetof(PCRegionView, height) == 0x1c, "region h");
 
 } // anonymous namespace
 
-PaintCanvas *PaintCanvas::gCanvas = nullptr;
 
 namespace {
     struct PCArrayHeader {

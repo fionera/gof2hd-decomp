@@ -1,5 +1,4 @@
 #include "game/mission/Achievements.h"
-Achievements *Achievements::gAchievements = nullptr;
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"

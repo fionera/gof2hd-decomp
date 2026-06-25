@@ -74,7 +74,6 @@ public:
 
     void updateCredits(int value);
 
-    static Achievements *gAchievements;
 };
 
 #endif

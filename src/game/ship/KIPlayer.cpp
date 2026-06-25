@@ -70,7 +70,7 @@ KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,
     bool haveChild = (geom != 0) && (geom->baseTransform != 0);
     if (geom != 0 && haveChild) {
         this->parentGeometry = geom;
-        AEGeometry *child = new AEGeometry((PaintCanvas *) PaintCanvas::gCanvas);
+        AEGeometry *child = new AEGeometry((PaintCanvas *) Globals::Canvas);
         this->geometry = child;
         child->addChild(this->parentGeometry->transform);
         this->parentGeometry->altTransform = this->geometry->transform;
@@ -575,7 +575,7 @@ void KIPlayer::setShipGroup(AEGeometry *geom, int group, bool flag) {
         AEGeometry *grp = this->geometry;
         this->parentGeometry = geom;
         if (grp == 0) {
-            grp = new AEGeometry((PaintCanvas *) PaintCanvas::gCanvas);
+            grp = new AEGeometry((PaintCanvas *) Globals::Canvas);
             this->geometry = grp;
         }
         grp->addChild(this->parentGeometry->transform);

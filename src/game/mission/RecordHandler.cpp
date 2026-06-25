@@ -1311,7 +1311,7 @@ void RecordHandler::recordStoreWrite(int slot) {
     unsigned int fd;
     AEFile::OpenWrite(path, &fd);
 
-    uint8_t *visited = Galaxy::gGalaxy->getVisited();
+    uint8_t *visited = Globals::galaxy->getVisited();
     AEFile_WriteInt(0x87, fd);
     for (unsigned i = 0; i < 0x87; i++) {
         AEFile_WriteBool(visited[i] != 0, fd);
@@ -1392,7 +1392,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteInt(status->field_e8, fd);
         AEFile_WriteInt(status->field_ec, fd);
 
-        int *medals = Achievements::gAchievements->getMedals();
+        int *medals = Globals::achievements->getMedals();
         AEFile_WriteInt(0x2d, fd);
         for (unsigned i = 0; i < 0x2d; i++) {
             AEFile_WriteInt(medals[i], fd);

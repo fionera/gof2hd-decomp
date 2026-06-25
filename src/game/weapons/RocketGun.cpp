@@ -1,4 +1,5 @@
 #include "game/weapons/RocketGun.h"
+#include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "game/world/Level.h"
 #include "engine/render/ParticleSystemManager.h"
@@ -78,8 +79,8 @@ RocketGun::RocketGun(int meshVariantId, Gun *gun, int mesh, int /*unused4*/,
         uint16_t meshId = 0x37aa;
         if (meshVariantId == 0x37a7)
             meshId = 0x37a8;
-        AEGeometry geom(meshId, PaintCanvas::gCanvas, false);
-        PaintCanvas::gCanvas->TransformAddChild(this->transform, geom.transform);
+        AEGeometry geom(meshId, Globals::Canvas, false);
+        Globals::Canvas->TransformAddChild(this->transform, geom.transform);
     }
 }
 
@@ -165,13 +166,13 @@ non_special:
 
     if (gunType == 0xe8) {
         ParticleSystemManager *manager = radarLevel->field_9c;
-        Matrix *local = (Matrix *) PaintCanvas::gCanvas->TransformGetLocal(this->transform);
+        Matrix *local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0x2f, false);
         this->particleSystem = system;
         manager->enableSystemEmit(system, 0);
     } else {
         ParticleSystemManager *manager = radarLevel->particleRenderBoolPtr;
-        Matrix *local = (Matrix *) PaintCanvas::gCanvas->TransformGetLocal(this->transform);
+        Matrix *local = (Matrix *) Globals::Canvas->TransformGetLocal(this->transform);
         int system = manager->addSystem(local, ParticleSettings::ParticleSet_0xc, false);
         this->particleSystem = system;
         manager->enableSystemEmit(system, 0);
@@ -289,7 +290,7 @@ void RocketGun::update(int elapsed) {
         this->fadeTimer = 0;
         gun->hitSmall = 0;
 
-        void *local = PaintCanvas::gCanvas->TransformGetLocal(this->transform);
+        void *local = Globals::Canvas->TransformGetLocal(this->transform);
         int shot = gun->fireIndex;
         Vector *positions = (Vector *) gun->positions;
         MatrixSetTranslation(matrix, positions[shot].x, positions[shot].y, positions[shot].z);
@@ -297,7 +298,7 @@ void RocketGun::update(int elapsed) {
         Vector *velocities = (Vector *) gun->velocities;
         gunVec = velocities[shot];
 
-        local = PaintCanvas::gCanvas->TransformGetLocal(this->transform);
+        local = Globals::Canvas->TransformGetLocal(this->transform);
         memcpy(&matrix, local, 0x3c);
         axis.x = 0.0f;
         axis.y = 1.0f;
@@ -319,7 +320,7 @@ void RocketGun::update(int elapsed) {
         matrix.m[8] = dir.z;
         matrix.m[9] = axis.z;
         matrix.m[10] = gunVec.z;
-        PaintCanvas::gCanvas->TransformSetLocal(this->transform, matrix);
+        Globals::Canvas->TransformSetLocal(this->transform, matrix);
 
         if (this->trailMatrices == nullptr) {
             int kind = this->rocketKind;

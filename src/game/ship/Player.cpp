@@ -692,10 +692,10 @@ void Player::damageEmp(int amount, bool flag) {
             if ((unsigned int) Globals::status->field_134 > 0x7fffffff) {
                 Globals::status->field_134 = 0;
             }
-            if (Achievements::gAchievements->hasMedal(0x2a, 1) == 0) {
+            if (Globals::achievements->hasMedal(0x2a, 1) == 0) {
                 int cnt = Globals::status->field_134 + 1;
                 Globals::status->field_134 = cnt;
-                if (Achievements::gAchievements->getValue(0x2a, 1) <= cnt) {
+                if (Globals::achievements->getValue(0x2a, 1) <= cnt) {
                     void *ego = (void *) (__INTPTR_TYPE__) ((Level *) (self->kiPlayer->level))->getPlayer();
                     void *hud = (void *) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getHUD();
                     ((Hud *) (hud))->hudEventMedal(0x2a, 100);
@@ -1466,7 +1466,7 @@ Array<Player *> *Player::getEnemies() {
 void Player::PlayEngineSound(int unused, Vector *vec) {
     (void) unused;
     this->enginePositionVec = vec;
-    if (reinterpret_cast<AudioStateView *>(ApplicationManager::gAppManager)->soundEnabledFlag != 0) {
+    if (reinterpret_cast<AudioStateView *>(Globals::appManager)->soundEnabledFlag != 0) {
         float pos[12];
         MatrixGetPosition(pos, this->transform);
         FMOD::Event *ev = ((FModSound *) gFModSoundPtr[0])->updateEvent3DAttributes(

@@ -135,17 +135,17 @@ uint8_t StarMap::missionChanged() {
 }
 
 void StarMap::render() {
-    PaintCanvas::gCanvas->SetColor((unsigned int) (0xffffffffu));
+    Globals::Canvas->SetColor((unsigned int) (0xffffffffu));
     void (*renderGeometry)(void *) = g_StarMap_render_geometry;
     renderGeometry(this->bgLayer0);
     renderGeometry(this->bgLayer1);
     renderGeometry(this->bgLayer2);
     renderGeometry(this->systemRoot);
-    PaintCanvas::gCanvas->End3d();
-    PaintCanvas::gCanvas->Begin3d();
+    Globals::Canvas->End3d();
+    Globals::Canvas->Begin3d();
     if (this->starSystemRoot != 0) {
-        PaintCanvas::gCanvas->SetTexture((unsigned int) (this->planetTexture), (unsigned int) (0xffffffffu));
-        PaintCanvas::gCanvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
+        Globals::Canvas->SetTexture((unsigned int) (this->planetTexture), (unsigned int) (0xffffffffu));
+        Globals::Canvas->SetBlendMode(AbyssEngine::BlendMode_dummy);
         this->planetGeom->render();
         this->starSystemRoot->render();
     }
@@ -241,7 +241,7 @@ void StarMap::draw() {
     }
 
     if (mode != 3 || this->transitionIn != 0 || this->transitionOut != 0) {
-        PaintCanvas::gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
+        Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
                           (unsigned char) (this->alpha));
         Array<Vector *> *positions = this->systemPositions;
         for (uint32_t i = 0; i < positions->size(); i++) {
@@ -253,7 +253,7 @@ void StarMap::draw() {
                     if (to < positions->size()) {
                         this->scratchVector2 = *positions->data()[to];
                         if (this->scratchVector.z >= 0.0f || this->scratchVector2.z >= 0.0f) {
-                            PaintCanvas::gCanvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
+                            Globals::Canvas->DrawLine((int) this->scratchVector.x, (int) this->scratchVector.y,
                                               (int) this->scratchVector2.x, (int) this->scratchVector2.y);
                         }
                     }
@@ -273,15 +273,15 @@ void StarMap::draw() {
     if (this->starSystemRoot != 0 && this->stations != 0) {
         SolarSystem *system = this->systems->data()[this->selectedSystem];
         if (system->hasNoOwner() == 0) {
-            PaintCanvas::gCanvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
+            Globals::Canvas->SetColor((unsigned char) (0xff), (unsigned char) (0xff), (unsigned char) (0xff),
                               (unsigned char) (this->alpha ^ 0xff));
             Layout *drawLayout = (Layout *) *g_StarMap_draw_layout;
-            PaintCanvas::gCanvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
+            Globals::Canvas->DrawImage2D((unsigned int) (this->systemNameImage), drawLayout->field_0x2c_rowHeight,
                                  drawLayout->field_0xc_leftMargin +
                                  drawLayout->field_0x2c_rowHeight, (unsigned char) (0));
             ((SolarSystem *) (&tmp))->getName();
-            PaintCanvas::gCanvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
-                                PaintCanvas::gCanvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
+            Globals::Canvas->DrawString((unsigned int) (long) (*g_StarMap_draw_font), tmp,
+                                Globals::Canvas->GetImage2DWidth((unsigned int) (this->systemNameImage)) +
                                 drawLayout->field_0x2c_rowHeight * 2,
                                 drawLayout->field_0xc_leftMargin +
                                 drawLayout->field_0x2c_rowHeight + 2, false);
@@ -367,7 +367,7 @@ void StarMap::depart(bool jump) {
         no_jump:
             *g_StarMap_depart_flag_b = 0;
         }
-        Achievements::gAchievements->resetNewMedals();
+        Globals::achievements->resetNewMedals();
     }
 
 cleanup: {
@@ -384,7 +384,7 @@ cleanup: {
     ((FModSound *) (*g_StarMap_depart_sound))->stop(0x66);
     *g_StarMap_depart_modstation_flag = 1;
 
-    ApplicationManager::gAppManager->SetCurrentApplicationModule(2);
+    Globals::appManager->SetCurrentApplicationModule(2);
 }
 
 static inline float absf_end(float v) {
@@ -420,7 +420,7 @@ int StarMap::OnTouchEnd(int x, int y) {
             this->pad_0xa8_a == 0 && this->autoMode == 0) {
             this->alienJumpPending = 0;
             this->exitRequested = 1;
-            PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
             return 0;
         }
         if (this->pad_0xa8_a == 0 && this->mode == 3) {
@@ -435,7 +435,7 @@ int StarMap::OnTouchEnd(int x, int y) {
                 return 0;
             }
             this->exitRequested = 1;
-            PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+            Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
         }
         return 0;
     }
@@ -457,7 +457,7 @@ int StarMap::OnTouchEnd(int x, int y) {
             return 0;
         }
 
-        PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (this->prevCamera));
+        Globals::Canvas->CameraSetCurrent((unsigned int) (this->prevCamera));
         ((FModSound *) (*g_StarMap_end_sound))->stop(0x66);
         return 1;
     }
@@ -493,7 +493,7 @@ int StarMap::OnTouchEnd(int x, int y) {
                 ((AEGeometry *) (&p))->getPosition();
                 this->scratchVector = p;
                 this->scratchVector.z += 20.0f;
-                MatrixGetPosition(&p, PaintCanvas::gCanvas->CameraGetLocal(PaintCanvas::gCanvas->CameraGetCurrent()));
+                MatrixGetPosition(&p, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()));
                 this->scratchVector2 = p;
                 this->easeX->SetRange(this->scratchVector2.x, this->scratchVector.x);
                 this->easeY->SetRange(this->scratchVector2.y, this->scratchVector.y);
@@ -526,7 +526,7 @@ int StarMap::OnTouchEnd(int x, int y) {
 }
 
 void StarMap::initLights() {
-    void *engine = ApplicationManager::gAppManager->GetEngine();
+    void *engine = Globals::appManager->GetEngine();
     ((Engine *) (engine))->LightSetMaterialColorAmbient(0.5f, 0.5f, 0.5f);
     ((Engine *) (engine))->LightEnable(true);
 }
@@ -544,7 +544,7 @@ void StarMap::update(int dt) {
         Array<Vector *> *positions = this->systemPositions;
         for (uint32_t i = 0; i < positions->size(); i++) {
             ((AEGeometry *) (&tmp))->getPosition();
-            int visible = PaintCanvas::gCanvas->GetScreenPosition(tmp, *positions->data()[i]);
+            int visible = Globals::Canvas->GetScreenPosition(tmp, *positions->data()[i]);
             positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
         }
     }
@@ -553,7 +553,7 @@ void StarMap::update(int dt) {
         if (positions != 0) {
             for (uint32_t i = 0; i < positions->size(); i++) {
                 ((AEGeometry *) (&tmp))->getPosition();
-                int visible = PaintCanvas::gCanvas->GetScreenPosition(tmp, *positions->data()[i]);
+                int visible = Globals::Canvas->GetScreenPosition(tmp, *positions->data()[i]);
                 positions->data()[i]->z = visible != 0 ? 1.0f : -1.0f;
             }
         }
@@ -575,7 +575,7 @@ void StarMap::update(int dt) {
             ((AEGeometry *) (&tmp))->getPosition();
             this->markerGeom->setPosition(tmp);
         }
-        PaintCanvas *canvas = PaintCanvas::gCanvas;
+        PaintCanvas *canvas = Globals::Canvas;
         ((PaintCanvas *) (long) (canvas))->CameraGetCurrent();
         MatrixGetPosition(
             &tmp, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
@@ -600,7 +600,7 @@ void StarMap::update(int dt) {
         tmp.y = EaseInOut_GetCurrentValue(this->easeY);
         tmp.z = EaseInOut_GetCurrentValue(this->easeZ);
         this->scratchVector = tmp;
-        PaintCanvas *canvas = PaintCanvas::gCanvas;
+        PaintCanvas *canvas = Globals::Canvas;
         __builtin_memcpy(
             &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
                 ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
@@ -707,7 +707,7 @@ void StarMap::update(int dt) {
                 this->panY = (int) ((float) this->panY + vy);
             }
         }
-        PaintCanvas *canvas = PaintCanvas::gCanvas;
+        PaintCanvas *canvas = Globals::Canvas;
         __builtin_memcpy(
             &matrix, ((PaintCanvas *) (long) (canvas))->CameraGetLocal(
                 ((PaintCanvas *) (long) (canvas))->CameraGetCurrent()), 0x3c);
@@ -775,11 +775,11 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->velocityY = 0.0f;
 
     this->iconBuffer = new int[5];
-    this->systems = (Array<SolarSystem *> *) Galaxy::gGalaxy->getSystems();
+    this->systems = (Array<SolarSystem *> *) Globals::galaxy->getSystems();
     this->field_0x10 = 500;
     this->field_0x14 = 500;
 
-    AEGeometry *root = new AEGeometry(PaintCanvas::gCanvas);
+    AEGeometry *root = new AEGeometry(Globals::Canvas);
     this->systemRoot = root;
 
     Array<AEGeometry *> *systemsGeom = new Array<AEGeometry *>();
@@ -796,7 +796,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         if (i == 0x1b && Globals::status->getCurrentCampaignMission() > 0x9d) {
             image = 0x469b;
         }
-        AEGeometry *geom = new AEGeometry(image, PaintCanvas::gCanvas, false);
+        AEGeometry *geom = new AEGeometry(image, Globals::Canvas, false);
         systemsGeom->data()[i] = geom;
         geom->setScaling(1.0f);
         float px = (float) ((int) (((100 - sys->getX()) / 100.0f) * 20000.0f) - 10000);
@@ -814,12 +814,12 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     this->choiceVisible = 0;
     if (Globals::status->getCurrentCampaignMission() > 0x1f &&
         Globals::status->field_7c >= 0) {
-        AEGeometry *marker = new AEGeometry((uint16_t) 0x4262, PaintCanvas::gCanvas, false);
+        AEGeometry *marker = new AEGeometry((uint16_t) 0x4262, Globals::Canvas, false);
         this->markerGeom = marker;
         Vector p;
         ((AEGeometry *) (&p))->getPosition();
         marker->setPosition(p);
-        ((AbyssEngine::Transform *) (PaintCanvas::gCanvas->TransformGetTransform(0)))->SetAnimationState(
+        ((AbyssEngine::Transform *) (Globals::Canvas->TransformGetTransform(0)))->SetAnimationState(
             (AbyssEngine::AnimationMode) 2, 0);
         marker->setRotation(0.0f, 0.0f, 0.0f);
     }
@@ -977,9 +977,9 @@ void StarMap::OnTouchMove(int x, int y) {
             this->selectedSystem = -1;
             this->jumpCost = 0;
         }
-        PaintCanvas::gCanvas->CameraGetCurrent();
-        __builtin_memcpy(&matrix, PaintCanvas::gCanvas->CameraGetLocal(PaintCanvas::gCanvas->CameraGetCurrent()), 0x3c);
-        PaintCanvas::gCanvas->CameraSetLocal(PaintCanvas::gCanvas->CameraGetCurrent(), *(const AbyssEngine::AEMath::Matrix *) (&matrix));
+        Globals::Canvas->CameraGetCurrent();
+        __builtin_memcpy(&matrix, Globals::Canvas->CameraGetLocal(Globals::Canvas->CameraGetCurrent()), 0x3c);
+        Globals::Canvas->CameraSetLocal(Globals::Canvas->CameraGetCurrent(), *(const AbyssEngine::AEMath::Matrix *) (&matrix));
         return;
     }
 
@@ -1011,8 +1011,8 @@ void StarMap::OnTouchMove(int x, int y) {
 }
 
 void StarMap::drawKey() {
-    uint32_t canvas = (uint32_t)(uintptr_t)PaintCanvas::gCanvas;
-    int imageWidth = PaintCanvas::gCanvas->GetImage2DWidth((unsigned int) (this->keyImageDiscovered));
+    uint32_t canvas = (uint32_t)(uintptr_t)Globals::Canvas;
+    int imageWidth = Globals::Canvas->GetImage2DWidth((unsigned int) (this->keyImageDiscovered));
     void *layout = *g_StarMap_drawKey_layout;
     int screenW = *g_StarMap_drawKey_screenW;
     int screenH = *g_StarMap_drawKey_screenH;
@@ -1074,7 +1074,7 @@ void StarMap::initStarSystem() {
     this->stationGeoms = stationGeoms;
     ArraySetLength(count + 1, *stationGeoms);
 
-    AEGeometry *root = new AEGeometry(PaintCanvas::gCanvas);
+    AEGeometry *root = new AEGeometry(Globals::Canvas);
     this->starSystemRoot = root;
 
     Array<bool> *used = new Array<bool>();
@@ -1087,7 +1087,7 @@ void StarMap::initStarSystem() {
     for (uint32_t i = 1; i < stationGeoms->size(); i++) {
         uint32_t stationIndex = i - 1;
         int tex = Station_getTextureIndex(this->stations->data()[stationIndex]);
-        AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), PaintCanvas::gCanvas, false);
+        AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), Globals::Canvas, false);
         stationGeoms->data()[i] = geom;
         this->stationAngles[stationIndex] =
                 AERandom::gRandom->nextInt(used->size()) *
@@ -1112,7 +1112,7 @@ void StarMap::initStarSystem() {
     this->ringGeoms = rings;
     ArraySetLength(count, *rings);
     for (uint32_t i = 0; i < rings->size(); i++) {
-        AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, PaintCanvas::gCanvas, false);
+        AEGeometry *ring = new AEGeometry((uint16_t) 0x1a7b, Globals::Canvas, false);
         (*rings)[i] = ring;
         root->addChild(ring->transform);
         float scale = (float) (this->stationDistances[i] << 1) * 0.001f;
@@ -1127,7 +1127,7 @@ void StarMap::initStarSystem() {
     this->yaw = 4096.0f;
     this->pitch = 0.0f;
     this->selectedStation = -1;
-    PaintCanvas::gCanvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
+    Globals::Canvas->Image2DCreate((unsigned short) ((uint16_t)(0x4500 + system->getRace())), this->systemNameImage);
 
     if (this->stationPositions != 0) {
         ArrayReleaseClasses(*this->stationPositions); delete this->stationPositions;
@@ -1151,8 +1151,8 @@ void StarMap::initStarSystem() {
     if (this->selectedSystem == 0x1b) {
         texture = 0x2734;
     }
-    PaintCanvas::gCanvas->TextureCreate((unsigned short) (texture), nullptr, nullptr, this->planetTexture, false);
-    AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, PaintCanvas::gCanvas, false);
+    Globals::Canvas->TextureCreate((unsigned short) (texture), nullptr, nullptr, this->planetTexture, false);
+    AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
     this->planetGeom = planet;
     planet->setPosition(selected);
     planet->setRotation(0.0f, 0.0f, 0.0f);
@@ -1175,7 +1175,7 @@ void StarMap::drawOnScreenInfo(int index, bool stationMode) {
         return;
     }
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->SetColor((unsigned int) (0xffffffffu));
     int *icons = this->iconBuffer;
     for (int i = 0; i != 5; i++) {
@@ -1304,8 +1304,8 @@ int StarMap::init(bool jumpMapMode, Mission *mission, bool param3, int param4) {
     Matrix matrix;
     Vector pos;
 
-    uint32_t canvas = (uint32_t)(uintptr_t)PaintCanvas::gCanvas;
-    PaintCanvas::gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    uint32_t canvas = (uint32_t)(uintptr_t)Globals::Canvas;
+    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_dummy);
     this->autoMode = (uint8_t) param3;
     this->pad_0xa8_a = (uint8_t) jumpMapMode;
     this->pulseSystem = param4;

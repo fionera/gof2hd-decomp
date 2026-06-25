@@ -90,7 +90,7 @@ void ModMainMenu::OnRelease() {
         delete this->touchWindow;
     this->touchWindow = nullptr;
 
-    PaintCanvas::gCanvas->ReleaseAllResources();
+    Globals::Canvas->ReleaseAllResources();
 
     Globals::gGlobals->loadFont(GameText::getLanguage());
 
@@ -117,11 +117,11 @@ void ModMainMenu::OnResume() {
 }
 
 void ModMainMenu::OnRender3D() {
-    PaintCanvas::gCanvas->ClearBuffer(0);
+    Globals::Canvas->ClearBuffer(0);
     this->cutScene->renderBG();
-    PaintCanvas::gCanvas->Begin3d();
+    Globals::Canvas->Begin3d();
     this->cutScene->render3D();
-    PaintCanvas::gCanvas->End3d();
+    Globals::Canvas->End3d();
 }
 
 void ModMainMenu::OnTouchMove(int x, int y, void *touch) {
@@ -186,29 +186,29 @@ void ModMainMenu::OnRender2D() {
         (void) color;
         ((PaintCanvas *) (long) this->paintCanvas)->SetColor((unsigned int) this->paintCanvas);
 
-        PaintCanvas::gCanvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
+        Globals::Canvas->DrawImage2D((unsigned int) this->logoImage, 0, 0, (unsigned char) 'D');
 
         if (this->fadeTimer >= 0x0f3c) {
-            int canvas = (int) (intptr_t) PaintCanvas::gCanvas;
+            int canvas = (int) (intptr_t) Globals::Canvas;
             float pulse = AbyssEngine::AEMath::Sinf(
-                (float) ApplicationManager::gAppManager->GetSystemTimeMillis() * 0.003f);
+                (float) Globals::appManager->GetSystemTimeMillis() * 0.003f);
             float signedPulse = pulse > 0.0f ? pulse : -pulse;
             int alpha = (unsigned int) (signedPulse * 255.0f);
             (void) alpha;
-            PaintCanvas::gCanvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
+            Globals::Canvas->SetColor((unsigned char) canvas, 0xff, 0xff, 0xff);
 
             AbyssEngine::String **stringHolder = g_ModMainMenu_r2d_string;
             int *textIdHolder = g_ModMainMenu_r2d_textId;
-            int drawCanvas = (int) (intptr_t) PaintCanvas::gCanvas;
+            int drawCanvas = (int) (intptr_t) Globals::Canvas;
             AbyssEngine::String *drawStr = *stringHolder;
             int text = (int) (long) ((GameText *) (*textIdHolder))->getText(0xc7);
 
             int screenW = *g_ModMainMenu_r2d_screenW;
-            int textWidth = PaintCanvas::gCanvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
+            int textWidth = Globals::Canvas->GetTextWidth((unsigned int) drawCanvas, *drawStr);
 
             int screenH = *g_ModMainMenu_r2d_screenH;
-            int imageHeight = PaintCanvas::gCanvas->GetImage2DHeight((unsigned int) (intptr_t) PaintCanvas::gCanvas);
-            PaintCanvas::gCanvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
+            int imageHeight = Globals::Canvas->GetImage2DHeight((unsigned int) (intptr_t) Globals::Canvas);
+            Globals::Canvas->DrawString((unsigned int) drawCanvas, *drawStr, text,
                                 (screenW >> 1) - (textWidth >> 1),
                                 (bool) ((char) (screenH >> 1) + (char) (imageHeight >> 1) + '\n'));
         }
@@ -231,7 +231,7 @@ void ModMainMenu::OnInitialize() {
         Globals::status->resetGame();
         AERandom::gRandom->reset();
 
-        int station = Galaxy::gGalaxy->getStation(AERandom::gRandom->nextInt(100));
+        int station = Globals::galaxy->getStation(AERandom::gRandom->nextInt(100));
         Globals::status->setStation((Station *) (intptr_t) station);
 
         CutScene *cutscene = new CutScene(2);
@@ -306,7 +306,7 @@ music: {
 
 state80:
     unsigned int logoImageHandle;
-    PaintCanvas::gCanvas->Image2DCreate(0x1b5a, logoImageHandle);
+    Globals::Canvas->Image2DCreate(0x1b5a, logoImageHandle);
     this->logoImage = logoImageHandle;
     this->logoActive = 1;
     this->fadeTimer = 0;

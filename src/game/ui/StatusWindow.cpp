@@ -70,7 +70,7 @@ int StatusWindow::OnTouchMove(int x, int y) {
             (*this->tabButtons)[i]->OnTouchMove(x, y);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = Achievements::gAchievements;
+        Achievements *ach = Globals::achievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
@@ -124,7 +124,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
     if (this->activeTab == 1) {
         for (int i = 0; i < this->medalCount; i++) {
             if ((*this->medalButtons)[i]->OnTouchEnd(x, y) != 0) {
-                Achievements *ach = Achievements::gAchievements;
+                Achievements *ach = Globals::achievements;
                 int *medals = ach->getMedals();
                 int elite = ach->isEliteMedal(i);
                 if (elite != 0 || medals[i] != 0) {
@@ -190,7 +190,7 @@ int StatusWindow::OnTouchBegin(int x, int y) {
             (*this->tabButtons)[i]->OnTouchBegin(x, y);
     }
     if (this->activeTab == 1) {
-        Achievements *ach = Achievements::gAchievements;
+        Achievements *ach = Globals::achievements;
         int *medals = ach->getMedals();
         for (int i = 0; i < this->medalCount; ++i) {
             if (medals[i] != 0 || ach->isEliteMedal(i) != 0)
@@ -254,7 +254,7 @@ void StatusWindow::update(int frameTime) {
 static GameText **g_swh_gameText = nullptr;
 
 String StatusWindow::getMedalHintText(int medalIndex) {
-    int *medals = Achievements::gAchievements->getMedals();
+    int *medals = Globals::achievements->getMedals();
     int state = medals[medalIndex];
 
     String out;
@@ -367,7 +367,7 @@ void StatusWindow::reInit() {
     int a2 = Achievements_isUnlocked(Achievements_get(), 2);
     int a3 = Achievements_isUnlocked(Achievements_get(), 3);
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
 
     int id = 0x493;
     if (a1) id = 0x494;
@@ -406,7 +406,7 @@ static int *g_swd_textId = nullptr;
 static GameText **g_swd_gameText = nullptr;
 
 void StatusWindow::draw() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     Layout *layout = *g_swd_layout;
     void *font = *(void **) g_swd_font;
     char *land = g_swd_landscape;
@@ -659,7 +659,7 @@ StatusWindow::StatusWindow() {
     this->medalCount = 0x2d;
     ArraySetLength(0x2d, *(this->medalButtons));
 
-    int *medalIds = Achievements::gAchievements->getMedals();
+    int *medalIds = Globals::achievements->getMedals();
     for (int i = 0; i < this->medalCount; i++) {
         int medal = medalIds[i];
         String *txt = ((GameText *) *(void **) g_sw_gameTextDef)->getText(0x5e3 + i);
@@ -669,7 +669,7 @@ StatusWindow::StatusWindow() {
 
     this->reInit();
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->Image2DCreate((unsigned short) 0x48e, this->standingEmblemImage);
     canvas->Image2DCreate((unsigned short) 0x48f, this->standingBarImage);
     canvas->Image2DCreate((unsigned short) 0x48d, this->standingFrameImage);

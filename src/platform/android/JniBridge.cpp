@@ -161,13 +161,13 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     BuildResourceList(engine);
 
-    ApplicationManager::gAppManager = engine->appManager;
-    PaintCanvas::gCanvas = engine->appManager->paintCanvas;
-    Globals::gScreenWidth = PaintCanvas::gCanvas->GetWidth();
-    Globals::gScreenHeight = PaintCanvas::gCanvas->GetHeight();
+    Globals::appManager = engine->appManager;
+    Globals::Canvas = engine->appManager->paintCanvas;
+    Globals::gScreenWidth = Globals::Canvas->GetWidth();
+    Globals::gScreenHeight = Globals::Canvas->GetHeight();
 
     GameText *text = new GameText();
-    GameText::gGameText = text;
+    Globals::gameText = text;
     text->setLanguage(static_cast<short>(hrwhs_country_code), 3401);
     data->globals->loadFont(GameText::getLanguage());
     data->globals->init(engine->appManager, engine);

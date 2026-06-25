@@ -15,9 +15,15 @@ class BoundingVolume;
 class Station;
 class Status;
 class FModSound;
-namespace AbyssEngine { 
+class Galaxy;
+class Achievements;
+class Item;
+class GameText;
+template<class T> class Array;
+namespace AbyssEngine {
     class ApplicationManager;
     class Engine;
+    class PaintCanvas;
  }
 
 
@@ -197,7 +203,7 @@ public:
     static int gScreenHeight;
 
     // Static data members present in the original binary (defined for symbol parity).
-    static void *appManager;
+    static AbyssEngine::ApplicationManager *appManager;
     static unsigned char gameLoaded;
     static unsigned char gameSaving;
     static float sec_fire_x;
@@ -210,7 +216,7 @@ public:
     static int mouseDeltaY;
     static int mouse_wheel;
     static void *recordSlots;
-    static void *achievements;
+    static Achievements *achievements;
     static void *imageFactory;
     static int mouse_wheelX;
     static int mouse_wheelY;
@@ -276,13 +282,13 @@ public:
     static unsigned char keys[1020];
     static void *bankZ;
     static unsigned char hints[59];
-    static void *items;
+    static Array<Item *> *items;
     static void *ships;
-    static void *Canvas;
+    static AbyssEngine::PaintCanvas *Canvas;
     static float fire_x;
     static float fire_y;
     static float fire_z;
-    static void *galaxy;
+    static Galaxy *galaxy;
     static void *layout;
     static float boost_x;
     static float boost_y;
@@ -291,10 +297,10 @@ public:
     static float pause_x;
     static float pause_y;
     static float pause_z;
-    static void *gameText;
+    static GameText *gameText;
     static void *fontAlien;
     static void *generator;
 };
-// ApplicationManager::gAppManager is declared in engine/core/ApplicationManager.h (included above)
+// Globals::appManager is declared in engine/core/ApplicationManager.h (included above)
 
 #endif

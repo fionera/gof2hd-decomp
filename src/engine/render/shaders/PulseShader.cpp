@@ -1,4 +1,5 @@
 #include "engine/render/shaders/PulseShader.h"
+#include "game/core/Globals.h"
 #include "game/core/String.h"
 #include "engine/render/Mesh.h"
 #include "engine/render/Engine.h"
@@ -75,7 +76,7 @@ namespace AbyssEngine {
             if (this->u9Loc >= 0)
                 glUniform4fv(this->u9Loc, 1, engine->materialSpecular);
 
-            long long t = ApplicationManager::gAppManager->GetCurrentTimeMillis();
+            long long t = Globals::appManager->GetCurrentTimeMillis();
             float v = sinf((float) t / PulseShader_timeScale);
             glUniform1f(this->u4Loc, v + 2.0f);
             this->dirty = 0;

@@ -1,13 +1,14 @@
 #include "engine/render/Sprite.h"
+#include "game/core/Globals.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 
 
-static PaintCanvas **g_Sprite_canvas = &PaintCanvas::gCanvas;
+static PaintCanvas **g_Sprite_canvas = &Globals::Canvas;
 
-static PaintCanvas **g_Sprite_draw_image_canvas = &PaintCanvas::gCanvas;
+static PaintCanvas **g_Sprite_draw_image_canvas = &Globals::Canvas;
 
-static PaintCanvas **g_Sprite_draw_region_canvas = &PaintCanvas::gCanvas;
+static PaintCanvas **g_Sprite_draw_region_canvas = &Globals::Canvas;
 
 void Sprite::setPosition(int x, int y) {
     this->posX = x;

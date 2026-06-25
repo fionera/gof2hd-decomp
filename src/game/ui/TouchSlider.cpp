@@ -1,4 +1,5 @@
 #include "game/ui/TouchSlider.h"
+#include "game/core/Globals.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 #include <cstddef>
@@ -26,7 +27,7 @@ void TouchSlider::setPosition(int x, int y) {
 }
 
 
-static PaintCanvas **g_TouchSlider_canvas = &PaintCanvas::gCanvas;
+static PaintCanvas **g_TouchSlider_canvas = &Globals::Canvas;
 
 static void *g_TouchSlider_app_storage = nullptr;
 static void **g_TouchSlider_app = &g_TouchSlider_app_storage;

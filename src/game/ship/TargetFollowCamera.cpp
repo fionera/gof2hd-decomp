@@ -1,4 +1,5 @@
 #include "game/ship/TargetFollowCamera.h"
+#include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
 
@@ -253,7 +254,7 @@ void TargetFollowCamera::aproximateCooefficientsForAproximationOfDampingFunktion
 void TargetFollowCamera::update(int dt) {
     if (this->fixed != 0) {
         *getPosition() = MatrixGetPosition(this->localMatrix);
-        PaintCanvas::gCanvas->CameraSetLocal(g_currentCamera, this->localMatrix);
+        Globals::Canvas->CameraSetLocal(g_currentCamera, this->localMatrix);
         if (this->target != 0) {
             Matrix m = this->target->getMatrix();
             *getUp() = MatrixGetUp(m);
@@ -394,6 +395,6 @@ void TargetFollowCamera::update(int dt) {
     Matrix rollMat;
     MatrixSetRotation(rollMat, this->rollAngle, 0.0f, 0.0f);
     MatrixMultiply(look, rollMat);
-    PaintCanvas::gCanvas->CameraSetLocal(g_currentCamera, look);
+    Globals::Canvas->CameraSetLocal(g_currentCamera, look);
     this->localMatrix = look;
 }

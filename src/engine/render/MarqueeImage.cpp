@@ -1,7 +1,8 @@
 #include "engine/render/MarqueeImage.h"
+#include "game/core/Globals.h"
 #include "engine/render/PaintCanvas.h"
 
-static PaintCanvas **g_MarqueeImage_canvas = &PaintCanvas::gCanvas;
+static PaintCanvas **g_MarqueeImage_canvas = &Globals::Canvas;
 
 MarqueeImage::~MarqueeImage() {
 }

@@ -200,7 +200,7 @@ bool Station::isAttackedByAliens() {
 }
 
 uint8_t Station::isDiscovered() {
-    return Galaxy::gGalaxy->getVisited()[index];
+    return Globals::galaxy->getVisited()[index];
 }
 
 void Station::visit() {
@@ -208,7 +208,7 @@ void Station::visit() {
         return;
     visited = 1;
     Globals::status->visitStation();
-    Galaxy::gGalaxy->visitStation(index);
+    Globals::galaxy->visitStation(index);
 }
 
 uint32_t Station::getHiddenBlueprintIndex() {

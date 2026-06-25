@@ -150,7 +150,7 @@ void ChoiceWindow::setMedal(int medal, int count) {
     this->medalText = *gameText->getText(medal + 0x5e3);
 
     String pattern = *gameText->getText(medal + 0x610);
-    int value = Achievements::gAchievements->getValue(medal, count);
+    int value = Globals::achievements->getValue(medal, count);
     String number;
     {
         int v = value;
@@ -171,7 +171,7 @@ void ChoiceWindow::setMedal(int medal, int count) {
     set(*gameText->getText(0x161), finalText, false);
     this->scrollWindow->setTextCentered(true);
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     unsigned int medalImageHandle;
     if (count < 0x24) {
         canvas->Image2DCreate((unsigned short) g_ChoiceWindow_medalImagesLow_146e8c[count],
@@ -367,7 +367,7 @@ void ChoiceWindow::draw() {
 
     layout->drawBox(7, this->x, this->y, this->width, this->height, this->title, 1u);
 
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->SetColor(0xffffffff);
 
     if (this->medalImage != -1) {
@@ -385,7 +385,7 @@ void ChoiceWindow::draw() {
                             this->y + this->padding2, (unsigned char) 0x11);
 
         if (Globals::status->hardCoreMode() == 0 &&
-            Achievements::gAchievements->isEliteMedal(this->medal) == 0) {
+            Globals::achievements->isEliteMedal(this->medal) == 0) {
             String creditsText = Layout::formatCredits(
                 g_ChoiceWindow_creditValues_1471bc[this->count]);
 

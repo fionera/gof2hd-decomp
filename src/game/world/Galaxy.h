@@ -42,7 +42,6 @@ public:
     uint8_t *visited;
     Array<SolarSystem *> *systems;
 
-    static Galaxy *gGalaxy;
 };
 
 #endif

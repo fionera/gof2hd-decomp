@@ -1,5 +1,4 @@
 #include "engine/core/GameText.h"
-GameText *GameText::gGameText = nullptr;
 #include "engine/file/AEFile.h"
 
 

@@ -1,5 +1,5 @@
 #include "engine/core/ApplicationManager.h"
-ApplicationManager *ApplicationManager::gAppManager = nullptr;
+#include "game/core/Globals.h"
 #include "engine/audio/AESoundRessource.h"
 #include "engine/core/IApplicationModule.h"
 #include "engine/file/ConfigReader.h"
@@ -136,7 +136,7 @@ ApplicationManager::ApplicationManager(Engine *engine) {
     this->engine = engine;
 
     this->paintCanvas = new PaintCanvas(engine);
-    PaintCanvas::gCanvas = this->paintCanvas;
+    Globals::Canvas = this->paintCanvas;
     gEngine = engine;
 
     this->soundResource = new AESoundRessource();

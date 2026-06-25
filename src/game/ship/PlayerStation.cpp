@@ -14,7 +14,7 @@
 #include "engine/render/PaintCanvas.h"
 
 static inline PaintCanvas *paintCanvas() {
-    return PaintCanvas::gCanvas;
+    return Globals::Canvas;
 }
 
 typedef Array<BoundingVolume *> BoundingVolumeList;

@@ -141,9 +141,9 @@ void Layout::drawFooterNoBackButton() {
     int stationMode = 0;
     int showBack = 0;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
-    int wRight = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageLeft);
+    Globals::Canvas->SetColor(this->drawColor);
+    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
@@ -172,7 +172,7 @@ void Layout::drawFooterNoBackButton() {
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
-        PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
+        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
     sLoad.Set((long long) (status->getShip())->getCurrentLoad());
@@ -188,7 +188,7 @@ void Layout::drawFooterNoBackButton() {
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     String credStr = Layout::formatCredits(status->getCredits());
 
@@ -213,9 +213,9 @@ void Layout::drawFooter() {
     int stationMode = 0;
     int showBack = 1;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
-    int wRight = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageLeft);
+    Globals::Canvas->SetColor(this->drawColor);
+    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
@@ -244,7 +244,7 @@ void Layout::drawFooter() {
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
-        PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
+        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
     sLoad.Set((long long) (status->getShip())->getCurrentLoad());
@@ -260,7 +260,7 @@ void Layout::drawFooter() {
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     String credStr = Layout::formatCredits(status->getCredits());
 
@@ -334,7 +334,7 @@ void Layout::initTip() {
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
     AERandom::gRandom->nextInt();
-    String *str = GameText::gGameText->getText(textId);
+    String *str = Globals::gameText->getText(textId);
 
     this->tipLines = arr;
     int *m = *g_tipMetric;
@@ -352,7 +352,7 @@ static int *g_efScreenW = nullptr;
 static int **g_efMetric = nullptr;
 
 void Layout::drawEmptyFooter(bool showBack) {
-    PaintCanvas *pc = PaintCanvas::gCanvas;
+    PaintCanvas *pc = Globals::Canvas;
     unsigned color = *g_efColor;
     pc->SetColor(color);
     int w = pc->GetImage2DWidth(color);
@@ -536,11 +536,11 @@ static PaintCanvas **g_bgCanvas = nullptr;
 
 void Layout::drawBGPattern(unsigned img, int x, int y, int w, int h) {
     PaintCanvas *pc = *g_bgCanvas;
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
-    int iw = PaintCanvas::gCanvas->GetImage2DWidth(img);
+    Globals::Canvas->SetColor(this->drawColor);
+    int iw = Globals::Canvas->GetImage2DWidth(img);
     int cols = w / iw;
     int fullW = cols * iw;
-    int ih = PaintCanvas::gCanvas->GetImage2DHeight(img);
+    int ih = Globals::Canvas->GetImage2DHeight(img);
     int rows = h / ih;
     int fullH = rows * ih;
 
@@ -675,10 +675,10 @@ static int g_bbFlipR = 0;
 
 void Layout::drawBGBorder(unsigned corner, unsigned edge, int x, int y, int w, int h, int inset, int pad) {
     PaintCanvas *pc = *g_bbCanvas;
-    int cw = PaintCanvas::gCanvas->GetImage2DWidth(corner);
-    int ch = PaintCanvas::gCanvas->GetImage2DHeight(corner);
-    int ew = PaintCanvas::gCanvas->GetImage2DWidth(edge);
-    int eh = PaintCanvas::gCanvas->GetImage2DHeight(edge);
+    int cw = Globals::Canvas->GetImage2DWidth(corner);
+    int ch = Globals::Canvas->GetImage2DHeight(corner);
+    int ew = Globals::Canvas->GetImage2DWidth(edge);
+    int eh = Globals::Canvas->GetImage2DHeight(edge);
 
     pc->DrawImage2D(corner, inset + x, inset + y);
     int rightX = ((w + x) - cw) - inset;
@@ -733,15 +733,15 @@ static int **g_sbMetric = nullptr;
 
 void Layout::drawScrollBar(int x, int y, int trackH, int pos, int range) {
     PaintCanvas *pc = *g_sbCanvas;
-    int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->scrollBarImage);
-    int ih = PaintCanvas::gCanvas->GetImage2DHeight(this->scrollBarImage);
+    int iw = Globals::Canvas->GetImage2DWidth(this->scrollBarImage);
+    int ih = Globals::Canvas->GetImage2DHeight(this->scrollBarImage);
 
-    PaintCanvas::gCanvas->SetColor(g_sbColor0);
-    PaintCanvas::gCanvas->SetColor(g_sbColor1);
+    Globals::Canvas->SetColor(g_sbColor0);
+    Globals::Canvas->SetColor(g_sbColor1);
 
     int inset = this->scrollBarInset;
     pc->DrawRectangle(x, inset + y, (*g_sbMetric)[0x48 / 4], trackH - inset * 2);
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     int thumb = range - 1;
     if (thumb <= ih * 2) thumb = ih * 2;
@@ -787,16 +787,16 @@ uint8_t Layout::drawFade() {
         unsigned color = this->fadeColor;
         if (t > 0.0f)
             color += (int) (t * 255.0f);
-        PaintCanvas::gCanvas->SetColor(color);
+        Globals::Canvas->SetColor(color);
         (*g_dfCanvasA)->FillRectangle(0, 0, **g_dfDimA, 0);
-        PaintCanvas::gCanvas->SetColor(saved);
+        Globals::Canvas->SetColor(saved);
     }
     if (this->fillScreen != 0) {
         PaintCanvas *pc = *g_dfCanvasB;
         unsigned saved = pc->GetColor();
-        PaintCanvas::gCanvas->SetColor(0xff);
+        Globals::Canvas->SetColor(0xff);
         (*g_dfCanvasB)->FillRectangle(0, 0, **g_dfDimB, 0);
-        PaintCanvas::gCanvas->SetColor(saved);
+        Globals::Canvas->SetColor(saved);
     }
     return this->fading;
 }
@@ -835,11 +835,11 @@ static void **g_dbFont7 = nullptr;
 void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigned char flags) {
     PaintCanvas *pc = *g_dbCanvas;
     unsigned saved = pc->GetColor();
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     switch (style) {
         case 0: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x348);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x348);
             pc->DrawImage2D(this->field_0x348, x, y);
             this->drawBGPattern(this->field_0x34c, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x348, (w + x) - iw, y, (unsigned char) (0x01));
@@ -860,7 +860,7 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             break;
         }
         case 1: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x350);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x350);
             pc->DrawImage2D(this->field_0x350, x, y);
             this->drawBGPattern(this->field_0x354, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x350, (w + x) - iw, y, (unsigned char) (0x01));
@@ -884,26 +884,26 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             this->drawBGPattern(this->bgPatternImage, x, y, w, h);
             break;
         case 3: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x358);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x358);
             pc->DrawImage2D(this->field_0x358, x, y);
             this->drawBGPattern(this->field_0x35c, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x358, (w + x) - iw, y, (unsigned char) (0x01));
             break;
         }
         case 4: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x36c);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x36c);
             pc->DrawImage2D(this->field_0x36c, x, y);
             this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x36c, (w + x) - iw, y, (unsigned char) (0x01));
             break;
         }
         case 5: {
-            int ch = PaintCanvas::gCanvas->GetImage2DHeight(this->field_0x380);
+            int ch = Globals::Canvas->GetImage2DHeight(this->field_0x380);
             this->drawBGBorder(this->field_0x380, this->field_0x384, x, y, w, ch, 0, 0);
             break;
         }
         case 6: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x388);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x388);
             pc->DrawImage2D(this->field_0x388, x, y);
             this->drawBGPattern(this->field_0x38c, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x388, (w + x) - iw, y, (unsigned char) (0x01));
@@ -927,10 +927,10 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             int *mt = *g_dbMetric7;
             int hdr = mt[8 / 4];
             this->drawBGPattern(this->bgPatternImage, x, hdr + y, w, h - hdr);
-            int ih = PaintCanvas::gCanvas->GetImage2DHeight(this->field_0x394);
+            int ih = Globals::Canvas->GetImage2DHeight(this->field_0x394);
             this->drawBGBorder(this->field_0x390, this->field_0x394, x, hdr + y, w, h - hdr, -ih, -ih);
             if (text.size() == 0) break;
-            PaintCanvas::gCanvas->SetColor(0xffffffff);
+            Globals::Canvas->SetColor(0xffffffff);
             pc->DrawImage2D(this->headerIconImage, x, y);
             int ty = (y + (mt[8 / 4] / 2) + 1) - this->textBaselineAdjust;
             pc->DrawString((unsigned) (unsigned long) (*g_dbFont7), text,
@@ -938,19 +938,19 @@ void Layout::drawBox(int style, int x, int y, int w, int h, String text, unsigne
             break;
         }
         case 8: {
-            int ch = PaintCanvas::gCanvas->GetImage2DHeight(this->field_0x39c);
+            int ch = Globals::Canvas->GetImage2DHeight(this->field_0x39c);
             this->drawBGBorder(this->field_0x39c, this->field_0x3a0, x, y, w, ch, 0, 0);
             break;
         }
         case 9: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x360);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x360);
             pc->DrawImage2D(this->field_0x360, x, y);
             this->drawBGPattern(this->field_0x364, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x360, (w + x) - iw, y, (unsigned char) (0x01));
             break;
         }
         case 10: {
-            int iw = PaintCanvas::gCanvas->GetImage2DWidth(this->field_0x368);
+            int iw = Globals::Canvas->GetImage2DWidth(this->field_0x368);
             pc->DrawImage2D(this->field_0x368, x, y);
             this->drawBGPattern(this->field_0x370, iw + x, y, w + iw * -2, h);
             pc->DrawImage2D(this->field_0x368, (w + x) - iw, y, (unsigned char) (0x01));
@@ -981,11 +981,11 @@ void Layout::drawWindow(String title, int x, int y, int w, int h, bool drawBG) {
         int top = (*g_dwBorderTop)[8 / 4];
         this->drawBGPattern(this->bgPatternImage, x, top + y, w, h - top);
     }
-    PaintCanvas::gCanvas->SetColor(*(unsigned *) g_dwCanvas);
+    Globals::Canvas->SetColor(*(unsigned *) g_dwCanvas);
     int *m = *g_dwMetric;
     int top = m[8 / 4];
     pc->DrawRectangle(x, top + y, w, h - top);
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
     pc->DrawImage2D(this->headerIconImage, x, 0);
     if (title.size() != 0 && title.Compare_char(g_dwCmpLit) == 0) {
         int *mm = *g_dwMetric;
@@ -1014,7 +1014,7 @@ static unsigned *g_dtLinesB = nullptr;
 
 void Layout::drawTip() {
     if (this->tipLines != nullptr) {
-        PaintCanvas::gCanvas->SetColor(*g_dtColor);
+        Globals::Canvas->SetColor(*g_dtColor);
         int *mA = *g_dtMetricA;
         int dimW = *g_dtDimW;
         int dimH = *g_dtDimH;
@@ -1023,7 +1023,7 @@ void Layout::drawTip() {
         String box(g_dtBoxLit);
         this->drawBox(5, (dimH >> 1) - (boxW >> 1), (dimW >> 1) + 0xd, boxW, 100, box, 0u);
 
-        PaintCanvas::gCanvas->DrawImage2D(this->tipBoxImage,
+        Globals::Canvas->DrawImage2D(this->tipBoxImage,
                              dimH >> 1, (dimW >> 1) + 0x3f, (unsigned char) (0x11));
 
         int lineCount = (int) this->tipLines->size();
@@ -1050,7 +1050,7 @@ void Layout::initHelpWindow(String text) {
     if (this->choiceWindow == nullptr)
         this->choiceWindow = new ChoiceWindow();
     (*gFmodHelp)->play(0x7e, 0, 0, 0);
-    String *title = GameText::gGameText->getText(0x187);
+    String *title = Globals::gameText->getText(0x187);
     this->choiceWindow->set(*title, text);
     this->choiceWindowOpen = 1;
     this->helpPressedFlag = 0;
@@ -1176,7 +1176,7 @@ void Layout::reload() {
     canvas->Image2DCreate(static_cast<unsigned short>(0x50d), reinterpret_cast<unsigned int &>(this->field_0x39c));
 
     TouchButton *bBack = (TouchButton *) ::operator new(sizeof(TouchButton));
-    String *txt = GameText::gGameText->getText(*g_rlBackText);
+    String *txt = Globals::gameText->getText(*g_rlBackText);
     int sh = *g_rlScreenH;
     TouchButton_ctorStr(bBack, txt, 2, this->buttonInsetX, sh - 3, '!');
     this->backButton = bBack;
@@ -1186,7 +1186,7 @@ void Layout::reload() {
     (*g_rlCanvas)->Image2DCreate(0x535, img535);
     TouchButton *b2 = (TouchButton *) ::operator new(sizeof(TouchButton));
     if (img535 == 0xffffffff) {
-        String *t = GameText::gGameText->getText(*g_rlBackText);
+        String *t = Globals::gameText->getText(*g_rlBackText);
         TouchButton_ctorStr(b2, t, 2, this->buttonInsetX,
                             *g_rlScreenH - this->footerButtonOffset, '!');
     } else {
@@ -1228,9 +1228,9 @@ void Layout::drawFooterStation() {
     int stationMode = 1;
     int showBack = 0;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
-    int wRight = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageLeft);
+    Globals::Canvas->SetColor(this->drawColor);
+    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
@@ -1259,7 +1259,7 @@ void Layout::drawFooterStation() {
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
-        PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
+        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
     sLoad.Set((long long) (status->getShip())->getCurrentLoad());
@@ -1275,7 +1275,7 @@ void Layout::drawFooterStation() {
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     String credStr = Layout::formatCredits(status->getCredits());
 
@@ -1304,7 +1304,7 @@ static int **g_dhMetric = nullptr;
 static void ***g_dhFont = nullptr;
 
 void Layout::drawHeader(String title, bool transition) {
-    PaintCanvas *pc = PaintCanvas::gCanvas;
+    PaintCanvas *pc = Globals::Canvas;
     unsigned img = *g_dhColor;
     pc->SetColor(this->drawColor);
     int iw = pc->GetImage2DWidth(img);
@@ -1350,7 +1350,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         PaintCanvas *pc = *g_mrCanvas;
         unsigned saved = pc->GetColor();
         unsigned origColor = this->drawColor;
-        PaintCanvas::gCanvas->SetColor(0xffffffff);
+        Globals::Canvas->SetColor(0xffffffff);
 
         int t = this->rewardMessageTimer;
         float a;
@@ -1362,7 +1362,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
             a = 1.0f;
         }
         unsigned col = (unsigned) ((int) (a * 256.0f)) - 0x100;
-        PaintCanvas::gCanvas->SetColor(col);
+        Globals::Canvas->SetColor(col);
 
         unsigned newColor = pc->GetColor();
         int boxW = this->rewardBoxWidth;
@@ -1384,7 +1384,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         int sh = *g_mrDimB;
         pc->DrawImage2D(this->field_0x3a4, sh >> 1, (char) boxX, (unsigned char) (0x11));
 
-        String *txt = GameText::gGameText->getText(*g_mrTextId);
+        String *txt = Globals::gameText->getText(*g_mrTextId);
         String line(*txt);
 
         sh = *g_mrDimB;
@@ -1400,7 +1400,7 @@ void Layout::drawMissionRewardMessage(bool transition) {
         tw = pc->GetTextWidth((unsigned) (unsigned long) (font), line);
         pc->DrawString((unsigned) (unsigned long) (font), line, (sh >> 1) - (tw >> 1),
                        this->rewardBoxY2 + boxX, false);
-        PaintCanvas::gCanvas->SetColor(saved);
+        Globals::Canvas->SetColor(saved);
         this->drawColor = origColor;
     }
 }
@@ -1428,9 +1428,9 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     int stationMode = stationMode_;
     int showBack = showBack_;
     PaintCanvas *pc = *g_dfCanvas;
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
-    int wRight = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageRight);
-    int wLeft = PaintCanvas::gCanvas->GetImage2DWidth(this->footerImageLeft);
+    Globals::Canvas->SetColor(this->drawColor);
+    int wRight = Globals::Canvas->GetImage2DWidth(this->footerImageRight);
+    int wLeft = Globals::Canvas->GetImage2DWidth(this->footerImageLeft);
 
     pc->DrawImage2D(this->footerImageLeft, this->windowX,
                     this->windowY + this->windowHeight, (unsigned char) (0x11));
@@ -1459,7 +1459,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
-        PaintCanvas::gCanvas->SetColor(*(unsigned *) &g_dfWarnColor);
+        Globals::Canvas->SetColor(*(unsigned *) &g_dfWarnColor);
 
     String sLoad;
     sLoad.Set((long long) (status->getShip())->getCurrentLoad());
@@ -1475,7 +1475,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
         pc->DrawString((unsigned) (unsigned long) (font), loadStr, (x + w / 2) - tw / 2,
                        (this->windowHeight + this->windowY) - this->footerTextInset, false);
     }
-    PaintCanvas::gCanvas->SetColor(this->drawColor);
+    Globals::Canvas->SetColor(this->drawColor);
 
     String credStr = Layout::formatCredits(status->getCredits());
 
@@ -1497,7 +1497,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
 }
 
 void Layout::drawMask(int x, int y, int w, int h) {
-    PaintCanvas *pc = PaintCanvas::gCanvas;
+    PaintCanvas *pc = Globals::Canvas;
     unsigned saved = pc->GetColor();
     pc->SetColor(this->drawColor);
     pc->FillRectangle(x, y, w, h);

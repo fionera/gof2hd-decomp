@@ -200,7 +200,7 @@ void Radio::draw(int64_t time, PlayerEgo *ego, LevelScript *script) {
         this->soundPending = 0;
     }
 
-    PaintCanvas::gCanvas->SetColor(0xffffffffu);
+    Globals::Canvas->SetColor(0xffffffffu);
     int imageId = this->currentMessage->imageID;
     Layout *layout = *g_Radio_drawLayout;
     layout->setDrawColor(-0xd1);

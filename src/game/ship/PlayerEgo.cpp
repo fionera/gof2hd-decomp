@@ -1123,7 +1123,7 @@ void PlayerEgo::checkForTurret() {
         barrel = 0x1a73;
     }
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
+    void *canvas = (void *) Globals::Canvas;
 
     void *baseGeo = (void *) new AEGeometry((uint16_t) base, (PaintCanvas *) canvas, false);
     this->gunBaseGeo = baseGeo;
@@ -1152,13 +1152,13 @@ void PlayerEgo::checkForTurret() {
         void *g = (void *) new AEGeometry((uint16_t)(unsigned short)extra2, (PaintCanvas *) canvas, false);
         this->gunExtraGeo = g;
         ((AEGeometry *) (this->gunYawGeo))->addChild((uint32_t)(uintptr_t)g);
-        void *tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) PaintCanvas::gCanvas));
+        void *tf = Globals::Canvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
         ((AbyssEngine::Transform *) (tf))->SetVisible(this->gunExtraVisible != 0);
     }
 
-    void *tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) PaintCanvas::gCanvas));
+    void *tf = Globals::Canvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
     ((AbyssEngine::Transform *) tf)->boundingRadius = g_PE_cft_transformVal;
-    tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) PaintCanvas::gCanvas));
+    tf = Globals::Canvas->TransformGetTransform((unsigned int) ((unsigned int) (unsigned long) Globals::Canvas));
     ((AbyssEngine::Transform *) (tf))->SetAnimationState((AbyssEngine::AnimationMode) 2, (void *) 0);
 
     ((AEGeometry *) (this->gunBaseGeo))->setPosition(*(Vector *) &this->dockArrowImage);
@@ -1467,13 +1467,13 @@ void PlayerEgo::setLevel(Level *level) {
 
 void PlayerEgo::setDockingCamera() {
     if (this->dockCameraNode == 0) {
-        PaintCanvas::gCanvas->CameraCreate(this->turretCamera);
-        unsigned int cam = (unsigned int) (unsigned long) PaintCanvas::gCanvas;
+        Globals::Canvas->CameraCreate(this->turretCamera);
+        unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
 
         float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_dc_fovAlien : g_PE_dc_fovNormal;
-        PaintCanvas::gCanvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_dc_fovAlien);
+        Globals::Canvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_dc_fovAlien);
 
-        void *node = (void *) new AEGeometry(PaintCanvas::gCanvas);
+        void *node = (void *) new AEGeometry(Globals::Canvas);
         this->dockCameraNode = node;
         ((AEGeometry *) node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
 
@@ -1483,12 +1483,12 @@ void PlayerEgo::setDockingCamera() {
         }
         ((AEGeometry *) (this->dockCameraNode))->translate(this->turretOffsetVec);
 
-        void *mid = (void *) new AEGeometry(PaintCanvas::gCanvas);
+        void *mid = (void *) new AEGeometry(Globals::Canvas);
         this->dockCameraMid = mid;
         ((AEGeometry *) (mid))->translate(*(Vector *) &((AEGeometry *) mid)->transform);
         ((AEGeometry *) (this->dockCameraNode))->addChild((uint32_t)((AEGeometry *) this->dockCameraMid)->transform);
 
-        void *leaf = (void *) new AEGeometry(PaintCanvas::gCanvas);
+        void *leaf = (void *) new AEGeometry(Globals::Canvas);
         this->dockCameraLeaf = leaf;
         ((AEGeometry *) (this->dockCameraNode))->addChild((uint32_t)((AEGeometry *) this->dockCameraNode)->transform);
     }
@@ -1497,7 +1497,7 @@ void PlayerEgo::setDockingCamera() {
     void *leaf = this->dockCameraLeaf;
     ((AEGeometry *) leaf)->setMatrix(((AEGeometry *) (this->geometry))->getMatrix());
 
-    PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (this->turretCamera));
+    Globals::Canvas->CameraSetCurrent((unsigned int) (this->turretCamera));
 }
 
 
@@ -2070,7 +2070,7 @@ void PlayerEgo::stopMining() {
 void PlayerEgo::setTurretMode(bool enable) {
     if (this->turretMode == 0 || ((void *&) this->miningGame) != 0 || this->autoTurretEquipped != 0) {
         if (((void *&) this->rocketControlGun) != 0) {
-            PaintCanvas::gCanvas->CameraSetCurrent(
+            Globals::Canvas->CameraSetCurrent(
                 (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
             ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
         }
@@ -2080,29 +2080,29 @@ void PlayerEgo::setTurretMode(bool enable) {
     this->turretActive = (unsigned char) enable;
     if (enable == 0) {
         ((PlayerEgo *) (this))->stopShooting(0);
-        PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
+        Globals::Canvas->CameraSetCurrent((unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
         ((LevelScript *) (this->level))->resetCamera(((LevelScript *) this->level)->m_pLevel);
     } else {
         if (((void *&) this->rocketControlGun) != 0)
             return;
         if (this->dockCameraNode == 0) {
-            PaintCanvas::gCanvas->CameraCreate(this->turretCamera);
-            unsigned int cam = (unsigned int) (unsigned long) PaintCanvas::gCanvas;
+            Globals::Canvas->CameraCreate(this->turretCamera);
+            unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
             float fov = (PE_status()->inAlienOrbit() != 0) ? g_PE_tm_fovAlien : g_PE_tm_fovNormal;
-            PaintCanvas::gCanvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_tm_fovAlien);
+            Globals::Canvas->CameraSetPerspective((unsigned int) (cam), fov, 0.0f, g_PE_tm_fovAlien);
 
-            void *node = (void *) new AEGeometry(PaintCanvas::gCanvas);
+            void *node = (void *) new AEGeometry(Globals::Canvas);
             this->dockCameraNode = node;
             ((AEGeometry *) node)->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
             ((AEGeometry *) (node))->translate(this->turretOffsetVec);
 
-            void *mid = (void *) new AEGeometry(PaintCanvas::gCanvas);
+            void *mid = (void *) new AEGeometry(Globals::Canvas);
             this->dockCameraMid = mid;
             ((AEGeometry *) (mid))->translate(*(Vector *) &((AEGeometry *) mid)->transform);
             ((AEGeometry *) (this->dockCameraNode))->
                     addChild((uint32_t)((AEGeometry *) this->dockCameraMid)->transform);
 
-            void *leaf = (void *) new AEGeometry(PaintCanvas::gCanvas);
+            void *leaf = (void *) new AEGeometry(Globals::Canvas);
             this->dockCameraLeaf = leaf;
             ((AEGeometry *) (this->dockCameraNode))->addChild(
                 (uint32_t)((AEGeometry *) this->dockCameraNode)->transform);
@@ -2113,12 +2113,12 @@ void PlayerEgo::setTurretMode(bool enable) {
         ((AEGeometry *) (this->dockCameraLeaf))->setPosition(this->dockOffsetVec);
         void *leaf = this->dockCameraLeaf;
         ((AEGeometry *) leaf)->setMatrix(((AEGeometry *) (this->geometry))->getMatrix());
-        PaintCanvas::gCanvas->CameraSetCurrent((unsigned int) (this->turretCamera));
+        Globals::Canvas->CameraSetCurrent((unsigned int) (this->turretCamera));
         ((Player *) (this->player))->stopShooting(0);
     }
 
     if (this->field_0x30 != 0) {
-        void *tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) (PaintCanvas::gCanvas->selfHandle));
+        void *tf = Globals::Canvas->TransformGetTransform((unsigned int) (Globals::Canvas->selfHandle));
         ((AbyssEngine::Transform *) (tf))->SetVisible(enable != 0);
         int v = (enable != 0);
         if (enable == 0)
@@ -2196,7 +2196,7 @@ void PlayerEgo::dockToDockingPoint(KIPlayer *kip, Radar *radar) {
 
             ((PlayerEgo *) (this))->setTurretMode(0);
             this->field_0x1a1 = 0;
-            PaintCanvas::gCanvas->CameraSetCurrent(
+            Globals::Canvas->CameraSetCurrent(
                 (unsigned int) (((TargetFollowCamera *) (intptr_t) this->targetFollowCamera)->id));
             ((LevelScript *) (this->levelScript))->resetCamera(this->levelScript->m_pLevel);
             PlayEngineSound_(this);
@@ -2296,8 +2296,8 @@ void PlayerEgo::draw(bool allowHud) {
     if (!aligned)
         Mat_assign(&m, ((AEGeometry *) (this->geometry))->getMatrix());
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
-    PaintCanvas::gCanvas->SetColor((unsigned int) (0xffffffff));
+    void *canvas = (void *) Globals::Canvas;
+    Globals::Canvas->SetColor((unsigned int) (0xffffffff));
 
     if (this->turretActive != 0
         && ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x23) != 0) {
@@ -2498,8 +2498,8 @@ void PlayerEgo::drawThrottle() {
     if (frac > 1.0f)
         frac = 1.0f;
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
-    PaintCanvas::gCanvas->SetColor((unsigned int) (0xffffff00 | (unsigned int) (int) (frac * 255.0f) - 0x100));
+    void *canvas = (void *) Globals::Canvas;
+    Globals::Canvas->SetColor((unsigned int) (0xffffff00 | (unsigned int) (int) (frac * 255.0f) - 0x100));
 
     int img = this->hpGaugeImage;
     int w = ((PaintCanvas *) (long) (canvas))->GetImage2DWidth((unsigned int) (img));
@@ -2522,7 +2522,7 @@ void PlayerEgo::drawThrottle() {
     ((PaintCanvas *) (long) (canvas))->DrawString((unsigned int) (long) (canvas), *pctStr, (int) (long) (pct),
                                                   (int) ((anchor[0] - (float) (tw / 2)) - 1.0f),
                                                   (bool) (int) (anchor[1] + (float) th / g_PE_t_textDiv));
-    PaintCanvas::gCanvas->SetColor((unsigned int) (0xffffffff));
+    Globals::Canvas->SetColor((unsigned int) (0xffffffff));
 
     { String *_s = ((String *) (pct)); if (_s->data) delete[] _s->data; _s->data = nullptr; _s->length = 0; }
 }
@@ -2542,7 +2542,7 @@ void PlayerEgo::setAutoPilot(KIPlayer *kip) {
         return;
     }
     if (kip->field_0x72 != 0) this->goingToWaypointFlag = 1;
-    void *eng = ApplicationManager::gAppManager->GetEngine();
+    void *eng = Globals::appManager->GetEngine();
     ((AbyssEngine::Engine *) eng)->autoPilotEngaged = 0;
     ((int &) this->thrust) = 0x3f800000;
 }
@@ -2632,16 +2632,16 @@ void PlayerEgo::handleTurretView(int dt) {
         Mat_assign(look, lookAt);
     }
 
-    unsigned int cam = (unsigned int) (unsigned long) PaintCanvas::gCanvas;
-    PaintCanvas::gCanvas->CameraSetLocal((unsigned int) (cam),
+    unsigned int cam = (unsigned int) (unsigned long) Globals::Canvas;
+    Globals::Canvas->CameraSetLocal((unsigned int) (cam),
                             *(const AbyssEngine::AEMath::Matrix *) &this->turretCamera);
 
     this->pitchAccumDir = 0;
     this->yawAccumDir = 0;
     ((PlayerEgo *) (this))->roll(this->shakeIntensity);
 
-    unsigned int hull = (unsigned int) (long) PaintCanvas::gCanvas->TransformGetLocal((unsigned int) (this->geometry->transform));
-    unsigned int ret = (unsigned int) (long) PaintCanvas::gCanvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
+    unsigned int hull = (unsigned int) (long) Globals::Canvas->TransformGetLocal((unsigned int) (this->geometry->transform));
+    unsigned int ret = (unsigned int) (long) Globals::Canvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *) (unsigned long) hull, (void *) (unsigned long) ret);
     Mat_assign(((Player *) this->player)->transform, tmp);
@@ -2714,7 +2714,7 @@ void PlayerEgo::handleShip(int dt) {
     snd->setParamValue((FMOD::Event *) (long) ((Player *) (this->player))->GetEngineEvent(), 1,
                        ((float &) this->rollAccum) * g_PE_hs_throttleBias + 0.5f);
 
-    unsigned int tf = PaintCanvas::gCanvas->selfHandle;
+    unsigned int tf = Globals::Canvas->selfHandle;
 
     PE_handleShip_orient(this, dt, tf);
 
@@ -2725,8 +2725,8 @@ void PlayerEgo::handleShip(int dt) {
     ((int &) this->yawAccumD) = 0;
     ((int &) this->rollAccum) = 0;
 
-    unsigned int hull = (unsigned int) (long) PaintCanvas::gCanvas->TransformGetLocal((unsigned int) (this->geometry->transform));
-    unsigned int ret = (unsigned int) (long) PaintCanvas::gCanvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
+    unsigned int hull = (unsigned int) (long) Globals::Canvas->TransformGetLocal((unsigned int) (this->geometry->transform));
+    unsigned int ret = (unsigned int) (long) Globals::Canvas->TransformGetLocal((unsigned int) (this->field_0x4->transform));
     unsigned char tmp[0x30];
     Mat_mul(tmp, (void *) (unsigned long) hull, (void *) (unsigned long) ret);
     Mat_assign(((Player *) this->player)->transform, tmp);
@@ -2749,12 +2749,12 @@ void PlayerEgo::setShip(int race, int group) {
     AEGeometry *grp = Globals::gGlobals->getShipGroup(race, group, true);
     this->field_0x4 = grp;
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
+    void *canvas = (void *) Globals::Canvas;
     AbyssEngine::Mesh *mesh = ((PaintCanvas *) (long) (canvas))->MeshGetPointer(
         (unsigned int) (((AEGeometry *) grp)->meshId));
     this->field_0x394 = ((PE_MaterialBlock *) mesh->materialBlock)->materialList;
 
-    void *hull = (void *) new AEGeometry(PaintCanvas::gCanvas);
+    void *hull = (void *) new AEGeometry(Globals::Canvas);
     this->geometry = (AEGeometry *) hull;
     ((AEGeometry *) (hull))->addChild((uint32_t) this->field_0x4->transform);
 
@@ -2786,24 +2786,24 @@ void PlayerEgo::setShip(int race, int group) {
 
     if (((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b) != 0
         && ((Ship *) (PE_status()->getShip()))->hasEmergencySystem() != 0) {
-        void *geo = (void *) new AEGeometry((uint16_t) 0x3826, PaintCanvas::gCanvas, false);
+        void *geo = (void *) new AEGeometry((uint16_t) 0x3826, Globals::Canvas, false);
         ((void *&) this->field_0xac) = geo;
         ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x1b);
         this->emergencyVal1 = ((Item *) ((void *) ((Ship *) (PE_status()->getShip()))->getFirstEquipmentOfSort(0x29)))->
                 getAttribute(0);
-        void *tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
+        void *tf = Globals::Canvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
         Vec_assign(&this->emergencyVec, &((AbyssEngine::Transform *) tf)->boundingCenter);
-        tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
+        tf = Globals::Canvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
         this->emergencyVal2 = ((AbyssEngine::Transform *) tf)->boundingRadius / g_PE_ss_emDiv + g_PE_ss_emBias;
     }
 
     if (PE_status()->inSupernovaSystem() != 0 || PE_status()->inSupernovaOrbit() != 0) {
-        void *tf = PaintCanvas::gCanvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
+        void *tf = Globals::Canvas->TransformGetTransform((unsigned int) (this->field_0x4->transform));
         ((float &) this->gunExtraGeo) = ((AbyssEngine::Transform *) tf)->boundingRadius * 1.75f;
     }
 
     if (this->cloak != 0) {
-        AbyssEngine::Mesh *mesh = PaintCanvas::gCanvas->MeshGetPointer(
+        AbyssEngine::Mesh *mesh = Globals::Canvas->MeshGetPointer(
             (unsigned int) this->field_0x4->meshId);
         if (mesh != 0)
             Vec_assign(&this->cloakMaterial1, &mesh->localOffset);
@@ -2894,7 +2894,7 @@ void PlayerEgo::toggleCloaking() {
         return;
 
     ((FModSound *) (*g_PE_tc_sound))->play(0x1e, (Vector *) 0, (Vector *) 0, 0);
-    void *canvas = (void *) PaintCanvas::gCanvas;
+    void *canvas = (void *) Globals::Canvas;
     ((Player *) this->player)->field_5e = 1;
     this->cloakCharge = 0;
     this->cloaked = 1;

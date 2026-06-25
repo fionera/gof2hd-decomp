@@ -201,7 +201,7 @@ void PlayerTurret::handleRotation(int delta, AEGeometry *mainGeometry, AEGeometr
     if (ready) {
         this->player->shoot(0, delta, delta >> 31, 0);
         AbyssEngine::Transform *transform =
-                (AbyssEngine::Transform *) PaintCanvas::gCanvas->TransformGetTransform(turretGeometry->transform);
+                (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(turretGeometry->transform);
         transform->Update(delta, delta >> 31);
     }
 }
@@ -389,28 +389,28 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
     this->hostOffset = Vector{0.0f, 0.0f, 0.0f};
     this->turretRange = 50000;
 
-    this->baseGeometry = new AEGeometry((uint16_t) mesh, PaintCanvas::gCanvas, false);
+    this->baseGeometry = new AEGeometry((uint16_t) mesh, Globals::Canvas, false);
 
     if (mesh == 0x381b) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x381c, PaintCanvas::gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x381c, Globals::Canvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a76) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a77, PaintCanvas::gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a77, Globals::Canvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     } else if (mesh == 0x1a74) {
-        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a75, PaintCanvas::gCanvas, false);
+        AEGeometry *turret = new AEGeometry((uint16_t) 0x1a75, Globals::Canvas, false);
         this->turretGeometry = turret;
         turret->setRotationOrder(AbyssEngine::AEMath::ROTATION_ORDER_YXZ);
         turret->setPosition(Vector{0.0f, 0.0f, 0.0f});
     }
 
-    this->helperGeometry = new AEGeometry(PaintCanvas::gCanvas);
+    this->helperGeometry = new AEGeometry(Globals::Canvas);
     AbyssEngine::Transform *helperTransform =
-            (AbyssEngine::Transform *) PaintCanvas::gCanvas->TransformGetTransform(this->helperGeometry->transform);
+            (AbyssEngine::Transform *) Globals::Canvas->TransformGetTransform(this->helperGeometry->transform);
     helperTransform->flags = 0;
 
     this->setPosition(Vector{x, y, z});
@@ -430,7 +430,7 @@ PlayerTurret::PlayerTurret(int mesh, Player *player, AEGeometry *geometry, float
         if (mesh == 0x49c0) {
             childMesh = 0x49c6;
         }
-        AEGeometry *child = new AEGeometry(childMesh, PaintCanvas::gCanvas, false);
+        AEGeometry *child = new AEGeometry(childMesh, Globals::Canvas, false);
         geometry->addChild(child->transform);
         delete child;
         geometry->setScaling(0.5f);

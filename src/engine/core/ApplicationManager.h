@@ -212,7 +212,6 @@ namespace AbyssEngine {
 
         void VibrateSupported();
 
-        static ApplicationManager *gAppManager;
     };
 }
 

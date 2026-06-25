@@ -166,7 +166,7 @@ void ModStation::enterStation() {
         (Globals::status->*depart)(Globals::status->getStation());
     }
     ((Station *) (Globals::status->getStation()))->visit();
-    Achievements::gAchievements->applyNewMedals();
+    Globals::achievements->applyNewMedals();
 
     Ship * (*getShip)(Status *) = g_ModStation_es_getShip;
     Item *e10 = ((Ship *) (getShip(Globals::status)))->getFirstEquipmentOfSort(10);
@@ -200,12 +200,12 @@ static int *g_ModStation_ach_b = 0;
 static int *g_ModStation_ach_c = 0;
 
 void ModStation::addAchievement(int medalId, int kind) {
-    if (Achievements::gAchievements->isEliteMedal(medalId) != 0)
+    if (Globals::achievements->isEliteMedal(medalId) != 0)
         return;
     if ((unsigned) (kind - 1) < 2) {
-        if (Achievements::gAchievements->getValue(medalId, 3) != -1)
+        if (Globals::achievements->getValue(medalId, 3) != -1)
             *g_ModStation_ach_a = medalId * 3;
-        if (kind == 1 && Achievements::gAchievements->getValue(medalId, 2) != -1)
+        if (kind == 1 && Globals::achievements->getValue(medalId, 2) != -1)
             g_ModStation_ach_b[1] = medalId * 3 + 1;
     }
     g_ModStation_ach_c[2] = (medalId * 3 + 3) - kind;
@@ -493,9 +493,9 @@ ModStation::ModStation() {
     }
     this->cameraTween = cam;
 
-    unsigned camHandle = *(unsigned *) PaintCanvas::gCanvas;
-    AbyssEngine::Matrix *cur = (AbyssEngine::Matrix *) PaintCanvas::gCanvas->CameraGetCurrent();
-    PaintCanvas::gCanvas->CameraSetLocal(camHandle, *cur);
+    unsigned camHandle = *(unsigned *) Globals::Canvas;
+    AbyssEngine::Matrix *cur = (AbyssEngine::Matrix *) Globals::Canvas->CameraGetCurrent();
+    Globals::Canvas->CameraSetLocal(camHandle, *cur);
 
     this->easeX = new AbyssEngine::EaseInOut();
     this->easeY = new AbyssEngine::EaseInOut();
@@ -542,7 +542,7 @@ void ModStation::checkMedals() {
     if (Globals::status->getCurrentCampaignMission() == 1)
         ((ModStation *) ((ModStation *) 1))->addAchievement(0, 1);
     this->medalArray = 0;
-    int *medals = Achievements::gAchievements->getNewMedals();
+    int *medals = Globals::achievements->getNewMedals();
     int count = 0;
     this->medalCount = 0;
     for (int i = 0; i != 0x2d; i++) {
@@ -584,7 +584,7 @@ void ModStation::checkMedals() {
 void ModStation::OnRender3D() {
     if (this->stationActive == 0)
         return;
-    PaintCanvas::gCanvas->ClearBuffer((unsigned int) (long) PaintCanvas::gCanvas);
+    Globals::Canvas->ClearBuffer((unsigned int) (long) Globals::Canvas);
 
     uint8_t *p65 = &this->subWindowFlags.bytes[1];
     if (this->cutScene == 0 || this->subWindowFlags.bytes[2] != 0 || this->subWindowFlags.bytes[0] != 0 ||
@@ -598,7 +598,7 @@ void ModStation::OnRender3D() {
     } else {
         ((CutScene *) (this->cutScene))->renderBG();
     }
-    PaintCanvas::gCanvas->Begin3d();
+    Globals::Canvas->Begin3d();
     if (*p65 != 0)
         ((SpaceLounge *) (this->spaceLounge))->OnRender3D();
     else if (this->subWindowFlags.bytes[3] != 0)
@@ -607,7 +607,7 @@ void ModStation::OnRender3D() {
         ((MissionsWindow *) (this->m_pDialogueWindow))->render3D();
     else if (this->subWindowFlags.bytes[2] == 0 && this->cutScene != 0)
         ((CutScene *) (this->cutScene))->render3D();
-    ((PaintCanvas *) PaintCanvas::gCanvas)->End3d();
+    ((PaintCanvas *) Globals::Canvas)->End3d();
 }
 
 
@@ -1141,8 +1141,8 @@ void ModStation::resetIdleCamForHangar() {
         this->easeZ = new AbyssEngine::EaseInOut(this->camKeyZ,
                                                                         this->camKeyZ);
 
-    PaintCanvas::gCanvas->CameraGetCurrent();
-    void *loc = PaintCanvas::gCanvas->CameraGetLocal((unsigned int) (long) PaintCanvas::gCanvas);
+    Globals::Canvas->CameraGetCurrent();
+    void *loc = Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
 
     AEMath_MatrixSetTranslation(matrix, this->camKeyX, this->camKeyY,
                                 this->camKeyZ);
@@ -1160,8 +1160,8 @@ void ModStation::resetIdleCamForHangar() {
         }
     }
 
-    PaintCanvas::gCanvas->CameraGetCurrent();
-    void *loc2 = PaintCanvas::gCanvas->CameraGetLocal((unsigned int) (long) PaintCanvas::gCanvas);
+    Globals::Canvas->CameraGetCurrent();
+    void *loc2 = Globals::Canvas->CameraGetLocal((unsigned int) (long) Globals::Canvas);
     AEMath_MatrixSetRotation(matrix, loc2, g_ModStation_ric_rotX[race], g_ModStation_ric_rotY[race], 0, 2);
     (void) loc;
 }
@@ -1381,7 +1381,7 @@ void ModStation::OnRelease() {
         (*soundHolder)->disableReverb();
         (*soundHolder)->stopAllSoundFXEvents();
     }
-    PaintCanvas::gCanvas->FogEnable(0, AbyssEngine::FogMode_dummy);
+    Globals::Canvas->FogEnable(0, AbyssEngine::FogMode_dummy);
 
     if (this->buttonRow != 0) {
         ArrayReleaseClasses_TouchButton(this->buttonRow);
@@ -1440,7 +1440,7 @@ void ModStation::OnRelease() {
         ms_op_delete(ChoiceWindow_dtor(this->choiceWindow));
     this->choiceWindow = 0;
 
-    PaintCanvas::gCanvas->ReleaseAllResources();
+    Globals::Canvas->ReleaseAllResources();
     Globals::gGlobals->loadFont(GameText::getLanguage());
 
     Layout **reloadHolder = g_ModStation_or_reload;
@@ -2428,10 +2428,10 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
         if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown() != 0) {
             (unsigned char &) this->stationActive = 0;
             Globals::status->nextCampaignMission(true);
-            unsigned int mod = *(unsigned int *) ApplicationManager::gAppManager;
+            unsigned int mod = *(unsigned int *) Globals::appManager;
             *(int *) *g_ModStation_tb_clear = 0;
 
-            ApplicationManager::gAppManager->SetCurrentApplicationModule(mod);
+            Globals::appManager->SetCurrentApplicationModule(mod);
             this->m_nStarMapWindowOpen.bytes[0] = 0;
         }
         return;
@@ -2533,8 +2533,8 @@ void *ModStation_r2d_layout();
 void Layout_drawCredits_r2d(void *layout);
 
 void ModStation::OnRender2D() {
-    PaintCanvas::gCanvas->Begin2d();
-    PaintCanvas::gCanvas->SetColor(this->fadeColor);
+    Globals::Canvas->Begin2d();
+    Globals::Canvas->SetColor(this->fadeColor);
 
     if (this->stationActive == 0) {
         return;
@@ -2573,7 +2573,7 @@ void ModStation::OnRender2D() {
     if ((*help)->choiceWindowOpen != 0)
         Layout_drawHelpWindow_r2d((Layout *) *help);
 
-    PaintCanvas::gCanvas->End2d();
+    Globals::Canvas->End2d();
 
     if ((*help)->choiceWindowOpen == 0) {
         if (this->subWindowFlags.bytes[2] != 0) {
@@ -2583,7 +2583,7 @@ void ModStation::OnRender2D() {
             SpaceLounge_draw3DShip_r2d();
     }
 
-    PaintCanvas::gCanvas->SwapBuffer();
+    Globals::Canvas->SwapBuffer();
 }
 
 

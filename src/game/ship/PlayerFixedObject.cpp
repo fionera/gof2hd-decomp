@@ -203,7 +203,7 @@ void PlayerFixedObject::update(int dt) {
                 k2 = self->kind;
             }
             if (k2 != 0x4220) {
-                void *t = PaintCanvas::gCanvas->TransformGetTransform(
+                void *t = Globals::Canvas->TransformGetTransform(
                     ((AEGeometry *) self->geometry)->transform);
                 ((AbyssEngine::Transform *) (t))->Update((long long) dt, true);
             }
@@ -234,7 +234,7 @@ afterMotion:
         void *expl;
         if (wreck != 0) {
             wreck->setMatrix(((AEGeometry *) (self->geometry))->getMatrix());
-            void *t = PaintCanvas::gCanvas->TransformGetTransform(wreck->transform);
+            void *t = Globals::Canvas->TransformGetTransform(wreck->transform);
             ((AbyssEngine::Transform *) (t))->SetAnimationState((AbyssEngine::AnimationMode) 1, 0);
             if (self->faction == 3 && self->moving != 0 &&
                 (int) ((AEGeometry *) self->geometry)->parentTransform != -1) {
@@ -284,14 +284,14 @@ afterMotion:
                 PfoEgoCounters *egoObj = (PfoEgoCounters *) *g_pfo_egoA;
 
                 egoObj->destroyedEnemyCount = egoObj->destroyedEnemyCount + 1;
-                if (Achievements::gAchievements->hasMedal(0x27, 1) == 0) {
+                if (Globals::achievements->hasMedal(0x27, 1) == 0) {
                     float cur = (float) egoObj->destroyedEnemyCount;
-                    float val = (float) Achievements::gAchievements->getValue(0x27, 1);
+                    float val = (float) Globals::achievements->getValue(0x27, 1);
                     if ((int) (cur / val) < 2) {
                         void *ego = (void *) (intptr_t)((Level *) self->level)->getPlayer();
                         void *hud = (void *) (__INTPTR_TYPE__) ((PlayerEgo *) (ego))->getHUD();
                         cur = (float) egoObj->destroyedEnemyCount;
-                        val = (float) Achievements::gAchievements->getValue(0x27, 1);
+                        val = (float) Globals::achievements->getValue(0x27, 1);
                         ((Hud *) (hud))->hudEventMedal(0x27, (int) ((cur / val) * 100.0f));
                     }
                 }
@@ -324,10 +324,10 @@ afterMotion:
             }
         }
         self->finished = 0;
-        void *t = PaintCanvas::gCanvas->TransformGetTransform(
+        void *t = Globals::Canvas->TransformGetTransform(
             self->wreckGeometry->transform);
         ((AbyssEngine::Transform *) (t))->Update((long long) dt, true);
-        t = PaintCanvas::gCanvas->TransformGetTransform(
+        t = Globals::Canvas->TransformGetTransform(
             self->wreckGeometry->transform);
         if (((AbyssEngine::Transform *) t)->animating == 0) {
             Level *lod = (Level *) self->level;
@@ -411,8 +411,8 @@ afterMotion:
                 }
                 self->wreckMaterial = mat;
                 unsigned int matOut;
-                PaintCanvas::gCanvas->MaterialCreate(mat, matOut);
-                PaintCanvas::gCanvas->MeshChangeMaterial(
+                Globals::Canvas->MaterialCreate(mat, matOut);
+                Globals::Canvas->MeshChangeMaterial(
                     self->wreckGeometry->meshId,
                     matOut);
             }
@@ -482,7 +482,7 @@ afterMotion:
 void PlayerFixedObject::setExhaustVisible(bool v) {
     AEGeometry *geom = (AEGeometry *) this->geometry;
     if (geom != 0 && (int) geom->childTransform != -1) {
-        return ((AbyssEngine::Transform *) (PaintCanvas::gCanvas->TransformGetTransform(geom->transform)))->SetVisible(v);
+        return ((AbyssEngine::Transform *) (Globals::Canvas->TransformGetTransform(geom->transform)))->SetVisible(v);
     }
 }
 
@@ -545,9 +545,9 @@ void PlayerFixedObject::reset() {
 
 void PlayerFixedObject::setWreckedMeshId(int meshId) {
     this->wreckMeshId = (uint16_t) meshId;
-    AEGeometry *geom = new AEGeometry((uint16_t) meshId, PaintCanvas::gCanvas, true);
+    AEGeometry *geom = new AEGeometry((uint16_t) meshId, Globals::Canvas, true);
     this->wreckGeometry = geom;
-    void *t = PaintCanvas::gCanvas->TransformGetTransform(geom->transform);
+    void *t = Globals::Canvas->TransformGetTransform(geom->transform);
     *(int *) &((AbyssEngine::Transform *) t)->boundingRadius = 0x48f42400;
 
     int kind = this->kind;
@@ -805,7 +805,7 @@ void PlayerFixedObject::setDeadButSelectable() {
     if (geom != 0) delete (AEGeometry *) geom;
     AEGeometry *newGeom = this->wreckGeometry;
     this->geometry = newGeom;
-    void *t = PaintCanvas::gCanvas->TransformGetTransform(newGeom->transform);
+    void *t = Globals::Canvas->TransformGetTransform(newGeom->transform);
     ((AbyssEngine::Transform *) (t))->SetAnimationRangeInTime(((AbyssEngine::Transform *) t)->animationLength, 0);
 }
 

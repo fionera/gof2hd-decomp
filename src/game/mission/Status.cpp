@@ -514,7 +514,7 @@ int Status::getFreighterMissionStationBit(int station) {
 static int **g_ccpPriceMod = nullptr;
 
 void Status::calcCargoPrices() {
-    Galaxy *gal = Galaxy::gGalaxy;
+    Galaxy *gal = Globals::galaxy;
     Array<SolarSystem *> *systems = gal->getSystems();
     AbyssEngine::AERandom *rng = AERandom::gRandom;
     const float kPriceScale = 100.0f;
@@ -694,7 +694,7 @@ void Status::resetGame() {
     }
 
     Globals::gGlobals->resetHints();
-    Galaxy *gal = Galaxy::gGalaxy;
+    Galaxy *gal = Globals::galaxy;
     gal->reset();
 
     for (unsigned j = 0; j < this->field_50->size(); j = j + 1)
@@ -737,7 +737,7 @@ void Status::resetGame() {
     this->field_f4 = -1;
     this->field_f8 = 1;
 
-    Achievements::gAchievements->init();
+    Globals::achievements->init();
 
     Array<int> **off4[4] = {
         &this->field_0x40, &this->field_0x3c,
@@ -1264,7 +1264,7 @@ void Status::setStation(Station *s) {
         return;
     }
     station = s;
-    Galaxy *gal = Galaxy::gGalaxy;
+    Galaxy *gal = Globals::galaxy;
     system = gal->getSystem(s->getSystem());
     if (system == 0) {
         return;
@@ -1449,7 +1449,7 @@ void Status::departStation(Station *dest) {
                             field_7c = sys;
                         } while ((*systemVisibilities)[sys] == 0);
                     } while (sys == 10 || sys == 0xf);
-                    SolarSystem *ss = Galaxy::gGalaxy->getSystems()->at(field_7c);
+                    SolarSystem *ss = Globals::galaxy->getSystems()->at(field_7c);
                     Array<int> *sids = (Array<int> *) ss->getStations();
                     int n = rng->nextInt(sids->size());
                     field_80 = (*sids)[n];

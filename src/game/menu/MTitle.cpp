@@ -20,7 +20,7 @@ MTitle::~MTitle() {
 }
 
 int MTitle::OnInitialize() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->Image2DCreate(7000, this->logoImage);
     canvas->Image2DCreate(0x1b59, this->logoImage2);
 
@@ -33,7 +33,7 @@ int MTitle::OnInitialize() {
 }
 
 void MTitle::OnRelease() {
-    PaintCanvas::gCanvas->ReleaseAllResources();
+    Globals::Canvas->ReleaseAllResources();
 
     Globals::gGlobals->loadFont(GameText::getLanguage());
 
@@ -59,7 +59,7 @@ void MTitle::OnUpdate() {
 }
 
 void MTitle::OnRender2D() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->Begin2d();
     canvas->SetColor((unsigned int) -1);
 
@@ -102,7 +102,7 @@ void MTitle::OnRender2D() {
 }
 
 void MTitle::OnRender3D() {
-    PaintCanvas *canvas = PaintCanvas::gCanvas;
+    PaintCanvas *canvas = Globals::Canvas;
     canvas->ClearBuffer(0xff);
     canvas->Begin3d();
 }

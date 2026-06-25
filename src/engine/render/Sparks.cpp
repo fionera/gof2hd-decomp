@@ -1,4 +1,5 @@
 #include "engine/render/Sparks.h"
+#include "game/core/Globals.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/AERandom.h"
@@ -8,7 +9,7 @@ static int Sparks_nextInt(void *rng, int bound) {
 }
 
 
-static void **g_Sparks_canvas_ctor = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_ctor = (void **) &Globals::Canvas;
 
 static void **g_Sparks_random_ctor = (void **) &AERandom::gRandom;
 
@@ -52,7 +53,7 @@ Sparks::Sparks(int kind) {
 }
 
 
-static void **g_Sparks_canvas_translate = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_translate = (void **) &Globals::Canvas;
 
 void Sparks::translate(Vector const &v) {
     void **canvas = g_Sparks_canvas_translate;
@@ -75,7 +76,7 @@ bool Sparks::isRocket() {
 }
 
 
-static void **g_Sparks_canvas_update = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_update = (void **) &Globals::Canvas;
 
 void Sparks::update(int step) {
     if (this->active == 0)
@@ -114,9 +115,9 @@ void Sparks::update(int step) {
 }
 
 
-static void **g_Sparks_canvas_explode_rocket = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_explode_rocket = (void **) &Globals::Canvas;
 
-static void **g_Sparks_canvas_explode_single = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_explode_single = (void **) &Globals::Canvas;
 
 static void **g_Sparks_random_explode = (void **) &AERandom::gRandom;
 
@@ -154,7 +155,7 @@ void Sparks::explode(int x, int y, int z) {
 }
 
 
-static void **g_Sparks_canvas_render = (void **) &PaintCanvas::gCanvas;
+static void **g_Sparks_canvas_render = (void **) &Globals::Canvas;
 
 void Sparks::render() {
     Matrix matrix;

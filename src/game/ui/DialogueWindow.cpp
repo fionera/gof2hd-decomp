@@ -596,7 +596,7 @@ static int g_dw_drawReadyFlag_storage = 0;
 static int *g_dw_drawReadyFlag = &g_dw_drawReadyFlag_storage;
 
 void DialogueWindow::draw() {
-    PaintCanvas::gCanvas->SetColor((unsigned int) -1);
+    Globals::Canvas->SetColor((unsigned int) -1);
     Layout *layout = *g_dw_layoutDraw;
     layout->drawMask();
     String title;

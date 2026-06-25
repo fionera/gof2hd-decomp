@@ -10,7 +10,7 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-// PaintCanvas::gCanvas is declared in PaintCanvas.h (included above).
+// Globals::Canvas is declared in PaintCanvas.h (included above).
 
 static int **g_APL_apFlag = nullptr;
 
@@ -80,7 +80,7 @@ AutoPilotList::AutoPilotList(Level *level) {
     void *font = *g_APL_font;
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         if ((*this->entries)[i] != nullptr) {
-            int w = PaintCanvas::gCanvas->GetTextWidth(
+            int w = Globals::Canvas->GetTextWidth(
                         (unsigned int) (uintptr_t) font, *(*this->entries)[i]) + 0x13;
             if (this->width < w)
                 this->width = w;
@@ -154,7 +154,7 @@ void AutoPilotList::draw() {
     for (uint32_t i = 0; i < this->entries->size(); i++) {
         String *text = (*this->entries)[i];
         if (text != nullptr) {
-            PaintCanvas::gCanvas->DrawString(
+            Globals::Canvas->DrawString(
                 (unsigned int) (uintptr_t) * g_APL_font_draw, *text,
                 this->x, drawn * 0xf + this->y + 0x12, false);
             drawn++;

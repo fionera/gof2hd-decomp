@@ -371,10 +371,10 @@ void Level::enableParticleEffects(bool emit, bool render) {
 
 void Level::switchSkyboxForIntro() {
     unsigned int skyboxMeshHandle;
-    PaintCanvas::gCanvas->MeshCreate((unsigned short) (0x4591), skyboxMeshHandle, false);
+    Globals::Canvas->MeshCreate((unsigned short) (0x4591), skyboxMeshHandle, false);
     skyboxMesh = skyboxMeshHandle;
     unsigned int skyboxTexHandle;
-    PaintCanvas::gCanvas->TextureCreate((unsigned short) (0x275a), nullptr, nullptr, skyboxTexHandle, false);
+    Globals::Canvas->TextureCreate((unsigned short) (0x275a), nullptr, nullptr, skyboxTexHandle, false);
     field_198 = skyboxTexHandle;
     if (this->asteroids != nullptr) {
         for (unsigned int i = 0; i < this->asteroids->size(); i = i + 1) {
@@ -386,11 +386,11 @@ void Level::switchSkyboxForIntro() {
 void Level::switchSkyboxForSupernovaReversal() {
     int tex = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
     unsigned int skyboxMeshHandle;
-    PaintCanvas::gCanvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), skyboxMeshHandle, false);
+    Globals::Canvas->MeshCreate((unsigned short) ((unsigned short) (tex + 0x4588)), skyboxMeshHandle, false);
     skyboxMesh = skyboxMeshHandle;
     int tex2 = ((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex();
     unsigned int skyboxTexHandle;
-    PaintCanvas::gCanvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), nullptr, nullptr, skyboxTexHandle,
+    Globals::Canvas->TextureCreate((unsigned short) ((unsigned short) (tex2 + 0x2751)), nullptr, nullptr, skyboxTexHandle,
                            false);
     field_198 = skyboxTexHandle;
     skyboxTexture = -1;
@@ -968,30 +968,30 @@ void Level::createSpace() {
             Globals::status->getSystem();
             int sysVariant = (((SolarSystem *) Globals::status->getSystem())->getIndex() % 3);
             unsigned int field08Handle;
-            PaintCanvas::gCanvas->MeshCreate((unsigned short) (sysVariant + 0x45ba), field08Handle, false);
+            Globals::Canvas->MeshCreate((unsigned short) (sysVariant + 0x45ba), field08Handle, false);
             this->field_08 = field08Handle;
             Globals::status->getSystem();
             sysVariant = (((SolarSystem *) Globals::status->getSystem())->getIndex() % 3);
-            PaintCanvas::gCanvas->TextureCreate((unsigned short) ((sysVariant + 0x2766) & 0xffff), nullptr, nullptr,
+            Globals::Canvas->TextureCreate((unsigned short) ((sysVariant + 0x2766) & 0xffff), nullptr, nullptr,
                                    g_level_texOutScratch, false);
 
             Globals::status->getSystem();
             if (0xf < ((SolarSystem *) Globals::status->getSystem())->getTextureIndex()) {
-                Engine *eng = (Engine *) ApplicationManager::gAppManager->GetEngine();
+                Engine *eng = (Engine *) Globals::appManager->GetEngine();
                 if (eng->IsPostEffectActivated() != false) {
-                    AbyssEngine::Mesh *mp = PaintCanvas::gCanvas->MeshGetPointer((unsigned int) *(unsigned *) &this->skyboxMesh);
+                    AbyssEngine::Mesh *mp = Globals::Canvas->MeshGetPointer((unsigned int) *(unsigned *) &this->skyboxMesh);
                     mp->meshPostEffectFlag = 0;
                 }
             }
         } else {
             unsigned int field08Handle;
-            PaintCanvas::gCanvas->MeshCreate((unsigned short) 0x45bc, field08Handle, false);
+            Globals::Canvas->MeshCreate((unsigned short) 0x45bc, field08Handle, false);
             this->field_08 = field08Handle;
-            PaintCanvas::gCanvas->TextureCreate((unsigned short) 0x2768, nullptr, nullptr, g_level_texOutScratch, false);
+            Globals::Canvas->TextureCreate((unsigned short) 0x2768, nullptr, nullptr, g_level_texOutScratch, false);
             unsigned int skyboxMeshHandle;
-            PaintCanvas::gCanvas->MeshCreate((unsigned short) 0x4592, skyboxMeshHandle, false);
+            Globals::Canvas->MeshCreate((unsigned short) 0x4592, skyboxMeshHandle, false);
             this->skyboxMesh = skyboxMeshHandle;
-            PaintCanvas::gCanvas->TextureCreate((unsigned short) 0x275b, nullptr, nullptr, g_level_texOutScratch, false);
+            Globals::Canvas->TextureCreate((unsigned short) 0x275b, nullptr, nullptr, g_level_texOutScratch, false);
         }
 
         this->skyRotX = 0.0f;
@@ -1510,7 +1510,7 @@ void Level::createAsteroids() {
 
     this->asteroids = new Array<KIPlayer *>();
 
-    Galaxy *gal = Galaxy::gGalaxy;
+    Galaxy *gal = Globals::galaxy;
     Station *st = (Station *) Globals::status->getStation();
     int *prob = (int *) gal->getAsteroidProbabilities(st);
 
@@ -1600,7 +1600,7 @@ void Level::createAsteroids() {
     int density = ((AbyssEngine::AERandom *) (intptr_t) * rngObj)->nextInt() + 2;
     int alien2 = Globals::status->inAlienOrbit();
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
+    void *canvas = (void *) Globals::Canvas;
     int kind = 0x9a;
     int probCursor = 0;
 
@@ -2043,7 +2043,7 @@ void Level::update(long long /*time*/, bool param) {
 }
 
 void Level::connectPlayers() {
-    if (ApplicationManager::gAppManager->currentModuleId == 5)
+    if (Globals::appManager->currentModuleId == 5)
         return;
 
     if (this->enemies != nullptr && this->player != nullptr) {
@@ -2234,7 +2234,7 @@ void Level::enemyDied(int r1, bool r2arg) {
         return;
 
     if ((static_cast<Radar *>(this->player->field_0x14))->hasScanner() == 0) {
-        Achievements **achA = &Achievements::gAchievements;
+        Achievements **achA = &Globals::achievements;
         if (((Achievements *) (*achA))->hasMedal(0x28, 1) == 0) {
             Status *st = *statusHolder;
             int v = st->field_11c;
@@ -2258,7 +2258,7 @@ void Level::enemyDied(int r1, bool r2arg) {
 
     if (this->player != nullptr &&
         this->player->emergencySystemActive() != 0) {
-        Achievements **achB = &Achievements::gAchievements;
+        Achievements **achB = &Globals::achievements;
         if (((Achievements *) (*achB))->hasMedal(0x2b, 1) == 0) {
             Status *st = *statusHolder;
             int v = st->field_13c + 1;
@@ -2857,7 +2857,7 @@ void Level::createPlayer() {
         if ((*wpos)[3] != nullptr) {
             this->field_a4 = new Array<AEGeometry *>();
             for (unsigned k = 0; k < (*wpos)[3]->size(); k += 2) {
-                AEGeometry *g = new AEGeometry(PaintCanvas::gCanvas);
+                AEGeometry *g = new AEGeometry(Globals::Canvas);
                 ArrayAdd(g, *(this->field_a4));
                 g->setPosition(*(*(*wpos)[3])[k]);
                 g->setScaling(*(*(*wpos)[3])[k + 1]);
@@ -3043,7 +3043,7 @@ void Level::createStaticObjects() {
 
                 Vector up = {0.0f, 1.0f, 0.0f};
                 geo->setDirection(dir, up);
-                String *txt = GameText::gGameText->getText(**g_cso_textA);
+                String *txt = Globals::gameText->getText(**g_cso_textA);
                 o->name = *txt;
                 o->player->setAlwaysFriend(1);
                 if (this->enemies == nullptr) {
@@ -3066,7 +3066,7 @@ void Level::createStaticObjects() {
             ((PlayerFixedObject *) o)->setPosition(0, 0, 0);
             ((PlayerFixedObject *) o)->setMoving(0);
             o->field_0x70 = 1;
-            String *txt = GameText::gGameText->getText(**g_cso_textB);
+            String *txt = Globals::gameText->getText(**g_cso_textB);
             String name;
             name.Set((txt)->data);
             ((PlayerFixedObject *) o)->setName(name);
@@ -3591,7 +3591,7 @@ void Level::assignGuns() {
 }
 
 void Level::createGasClouds() {
-    Galaxy *gal = Galaxy::gGalaxy;
+    Galaxy *gal = Globals::galaxy;
     Station *st = (Station *) Globals::status->getStation();
     int *prob = (int *) gal->getPlasmaProbabilities(st);
 
@@ -3621,7 +3621,7 @@ void Level::createGasClouds() {
     int count = (countF > 0.0f) ? (int) countF : 0;
     ArraySetLength((unsigned) count, *(this->gasClouds));
 
-    void *canvas = (void *) PaintCanvas::gCanvas;
+    void *canvas = (void *) Globals::Canvas;
     for (unsigned i = 0; i < this->gasClouds->size(); i = i + 1) {
         int kind = *prob;
         Vector pos;
@@ -3751,7 +3751,7 @@ void Level::initParticleSystems() {
             ArraySetLength(this->field_a4->size(), *(this->field_a8));
         }
 
-        PaintCanvas *canvas = PaintCanvas::gCanvas;
+        PaintCanvas *canvas = Globals::Canvas;
         canvas->CameraGetCurrent();
         Matrix *local = CameraGetLocal(canvas, canvas->CameraGetCurrent());
         int sys = (this->skybox2Mesh)->addSystem(local, ParticleSettings::ParticleSet_4, false);
@@ -3952,7 +3952,7 @@ void Level::createScene() {
         Globals::status->setMission((Mission *) Globals::status->wanted);
         createMission();
         if (Globals::status->getCurrentCampaignMission() == 0x2b) {
-            void *canvas = (void *) PaintCanvas::gCanvas;
+            void *canvas = (void *) Globals::Canvas;
             AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
             new((void *) g) AEGeometry((uint16_t) 0x37d0, (PaintCanvas *) canvas, 0);
             PlayerStatic *p = (PlayerStatic *) ::operator new(0x130);
@@ -3974,7 +3974,7 @@ void Level::createScene() {
         Station *st = (Station *) Globals::status->getStation();
         int *agents = (int *) ((Station *) st)->getAgents();
         char taken[7];
-        void *canvas = (void *) PaintCanvas::gCanvas;
+        void *canvas = (void *) Globals::Canvas;
 
         if (agents == 0) {
             this->enemies = new Array<KIPlayer *>();
@@ -4058,7 +4058,7 @@ void Level::createScene() {
         ((KIPlayer *) (intptr_t) actor)->setToSleep();
         ((KIPlayer *) (intptr_t) actor)->player->setAlwaysFriend(1);
 
-        void *canvas = (void *) PaintCanvas::gCanvas;
+        void *canvas = (void *) Globals::Canvas;
         for (unsigned u = 0; u < 4; u = u + 1) {
             AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
             new((void *) g) AEGeometry((uint16_t)(unsigned)(0x3800 + u), (PaintCanvas *) canvas, 0);
@@ -4128,7 +4128,7 @@ void Level::createScene() {
 }
 
 void Level::renderBG(int t) {
-    uintptr_t canvas = (uintptr_t) PaintCanvas::gCanvas;
+    uintptr_t canvas = (uintptr_t) Globals::Canvas;
 
     ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
     ((PaintCanvas *) (long) (canvas))->BeginBG();
@@ -4235,15 +4235,15 @@ void Level::renderBG(int t) {
         ((PaintCanvas *) (long) (canvas))->SetWorldViewMatrix(this->skyMatrix);
         ((PaintCanvas *) (long) (canvas))->SetColor(0xffffffffu);
         const AbyssEngine::AEMath::Matrix *eng =
-                (const AbyssEngine::AEMath::Matrix *) PaintCanvas::gCanvas->engine;
+                (const AbyssEngine::AEMath::Matrix *) Globals::Canvas->engine;
         gEngine->SetModelMatrix(*eng);
         ((PaintCanvas *) (long) (canvas))->SetTexture((unsigned int) (unsigned) this->supernovaFlareTexture, 0);
         ((PaintCanvas *) (long) (canvas))->SetBlendMode(AbyssEngine::BlendMode_8);
-        ((Engine *) PaintCanvas::gCanvas->engine)->LightSetLight(0x4000);
-        gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
+        ((Engine *) Globals::Canvas->engine)->LightSetLight(0x4000);
+        gEngine->GlEnable((unsigned) (uintptr_t) Globals::Canvas->engine, 0);
         ((PaintCanvas *) (long) (canvas))->DrawMesh((unsigned int) (unsigned) this->supernovaFlareMesh);
-        gEngine->GlEnable((unsigned) (uintptr_t) PaintCanvas::gCanvas->engine, 0);
-        ((Engine *) PaintCanvas::gCanvas->engine)->LightEnable(false);
+        gEngine->GlEnable((unsigned) (uintptr_t) Globals::Canvas->engine, 0);
+        ((Engine *) Globals::Canvas->engine)->LightEnable(false);
     }
 
     ((PaintCanvas *) (long) (canvas))->EndBG();
