@@ -242,8 +242,6 @@ char *Globals::cItemListPrice_02 = nullptr;
 char *Globals::cItemListPrice_03 = nullptr;
 char *Globals::cItemListPrice_04 = nullptr;
 
-int Globals::gScreenWidth = 0;
-int Globals::gScreenHeight = 0;
 
 // Static data members present in the original binary (defined for symbol parity).
 AbyssEngine::ApplicationManager *Globals::appManager;

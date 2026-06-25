@@ -163,8 +163,8 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
 
     Globals::appManager = engine->appManager;
     Globals::Canvas = engine->appManager->paintCanvas;
-    Globals::gScreenWidth = Globals::Canvas->GetWidth();
-    Globals::gScreenHeight = Globals::Canvas->GetHeight();
+    Globals::w = Globals::Canvas->GetWidth();
+    Globals::h = Globals::Canvas->GetHeight();
 
     GameText *text = new GameText();
     Globals::gameText = text;

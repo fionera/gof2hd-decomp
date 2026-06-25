@@ -24,7 +24,7 @@ namespace AbyssEngine {
     class ApplicationManager;
     class Engine;
     class PaintCanvas;
- }
+}
 
 
 
@@ -196,8 +196,6 @@ public:
     static char *cItemListPrice_03;
     static char *cItemListPrice_04;
 
-    static int gScreenWidth;
-    static int gScreenHeight;
 
     // Static data members present in the original binary (defined for symbol parity).
     static AbyssEngine::ApplicationManager *appManager;
