@@ -75,7 +75,7 @@ public:
     uint8_t isGalaxyMode;
     AEGeometry *markerGeom;
     int *iconBuffer;
-    Array<uint8_t> *usedFlags;
+    Array<bool> *usedFlags;   // original: Array<bool> asteroidUsed (not uint8_t)
     int32_t targetSystem;
     uint8_t showKey;
     int32_t keyBoxWidth;

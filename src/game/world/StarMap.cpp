@@ -1076,11 +1076,11 @@ void StarMap::initStarSystem() {
     AEGeometry *root = new AEGeometry(PaintCanvas::gCanvas);
     this->starSystemRoot = root;
 
-    Array<uint8_t> *used = new Array<uint8_t>();
+    Array<bool> *used = new Array<bool>();
     this->usedFlags = used;
     ArraySetLength(stationGeoms->size(), *used);
     for (uint32_t i = 0; i < used->size(); i++) {
-        (*used)[i] = 0;
+        (*used)[i] = false;
     }
 
     for (uint32_t i = 1; i < stationGeoms->size(); i++) {
