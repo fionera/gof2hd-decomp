@@ -85,6 +85,29 @@ def load_thumb(path):
     return t
 
 
+def load_symbols_from_so(so_path):
+    """Derive (addr2names, addrs, thumb) straight from the original .so's .dynsym --
+    the authoritative reference binary, no generated TSV needed. ARM encodes Thumb in
+    the symbol value's low bit; clear it for the address and record it as `thumb`."""
+    from elftools.elf.elffile import ELFFile
+    addr2names, thumb = {}, {}
+    with open(so_path, "rb") as f:
+        elf = ELFFile(f)
+        dynsym = elf.get_section_by_name(".dynsym")
+        if dynsym is None:
+            raise RuntimeError(".dynsym not found in " + so_path)
+        for sym in dynsym.iter_symbols():
+            if sym["st_info"]["type"] != "STT_FUNC":
+                continue
+            val = sym["st_value"]
+            if val == 0 or not sym.name:
+                continue  # undefined / unnamed
+            addr = val & ~1
+            addr2names.setdefault(addr, []).append(sym.name)
+            thumb[sym.name] = bool(val & 1)
+    return addr2names, sorted(addr2names), thumb
+
+
 def nm_text_symbols(nm_tool, obj):
     """Mangled names this object *defines* as code. Includes weak/vague-linkage
     symbols (W/V) — templates and inline functions like ArrayAdd<T> are weak, and
@@ -112,9 +135,13 @@ def main():
     ap.add_argument("--keep-asm", action="store_true")
     args = ap.parse_args()
 
-    addr2names, addrs = load_symbols(args.symbols)
+    # Prefer the authoritative .so .dynsym; the pre-generated TSVs are optional/legacy.
+    if os.path.exists(args.symbols):
+        addr2names, addrs = load_symbols(args.symbols)
+        thumb = load_thumb(args.thumb_map) if os.path.exists(args.thumb_map) else {}
+    else:
+        addr2names, addrs, thumb = load_symbols_from_so(args.so)
     name2addr = {n: a for a, ns in addr2names.items() for n in ns}
-    thumb = load_thumb(args.thumb_map)
     text_addr, text_off, text_size = find_text_section(args.so)
     text_end = text_addr + text_size
     so = open(args.so, "rb").read()

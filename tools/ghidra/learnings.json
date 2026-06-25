@@ -1,0 +1,23 @@
+{
+  "_comment": "Curated structural learnings from the decomp/symbol-parity campaign, applied by apply_source.py as plate comments. `types` keys are Ghidra data-type names; `symbols` keys are mangled names resolved via Ghidra's symbol table. These are the human insights that raw DWARF types don't carry. Keep editable.",
+
+  "types": {
+    "Matrix": "AEMath::Matrix = 0x3c (15 floats), NOT 0x40. Row-major 3x4; row 4 is implicit {0,0,0,1}. Proof: Transform ctor lays Matrix@0x0 then Array<Mesh*>@0x3c then Matrix@0x5c (0x3c apart); MatrixGetGL@0x90fc4 reads 12 floats and synthesizes the 4th row.",
+    "Transform": "size 0x180. Layout: 0x00 worldMatrix(Matrix), 0x3c meshes(Array<Mesh*>), 0x48 id(int), 0x4c children(Array<Transform*>), 0x58 flags, 0x5c rotationMatrix(Matrix), 0x98 localMatrix(Matrix), 0xd4 boundingCenter(Vector). Validated against the symbol-identical match build.",
+    "Vector": "AEMath::Vector = 12 bytes {float x,y,z}. (Vector4/position uses a 16-byte form in some structs.)",
+    "Quaternion": "AEMath::Quaternion = 16 bytes {float x,y,z,w}.",
+    "Array<int>": "Array<T> = 0xc: {uint size (alias count) @0; T* data (alias wantedListData) @4; uint capacity @8}. Ctor allocates 1 dummy element, size=0. Cleanup is type-specific: ArrayRelease<T> for primitives, ArrayReleaseClasses<T> for owned object-pointers (deletes the pointed-to objects). The decompiler's 'ArrayRemoveAll(arr); delete arr;' is SPURIOUS -- reallocating right before freeing; the original never does it."
+  },
+
+  "symbols": {
+    "_ZN14BoundingVolumeD2Ev": "NON-virtual destructor (the vtable has no D0/deleting-dtor slot, only D1/D2 called directly). BoundingVolume/AAB/Sphere are still polymorphic via collide/outerCollide/update/projectCollisionOnSurface -- just not the dtor.",
+    "_ZTI11AbstractGun": "Abstract base: the original exports _ZTI (typeinfo, referenced by the concrete guns' RTTI) but NO _ZTV (vtable) and no D0 -- AbstractGun is never instantiated. Its trivial virtuals (isRocketGun/...) are inline so no out-of-line key function homes a vtable.",
+    "_ZTIN11AbyssEngine18IApplicationModuleE": "Abstract interface: original exports _ZTI/_ZTS but NO _ZTV and no dtor -- never instantiated; the 5 non-pure virtuals (OnTouchBegin(3-arg)/OnSuspend/OnResume...) are inline so no key function homes the vtable.",
+    "APKArchive": "Real main-APK zip handle (void*, file-scope global). FileInterfaceAndroid::gZipMain is a GOT-indirection slot = &APKArchive; code dereferences *gZipMain == APKArchive. Use APKArchive directly.",
+    "ZIPArchive": "Real patch/OBB zip handle. FileInterfaceAndroid::gZipPatch is the GOT slot = &ZIPArchive.",
+    "gEngine": "The AbyssEngine::Engine* singleton (set by JniBridge). Engine::g_pEngine is a GOT-indirection slot for this global; *g_pEngine == gEngine.",
+    "_ZN11AbyssEngine8AERandom7nextIntEi": "AERandom is a CLASS; nextInt(int bound) is an INSTANCE method (this=the RNG). NOT a namespace free function nextInt(void*,int) -- that form is a decompiler artifact.",
+    "_ZN11AbyssEngine15ResourceTextureC2EPKcf": "C1 (complete-object ctor) and C2 (base ctor) are byte-identical and ALIAS the same address (e.g. C1==C2 @ 0xba168) for simple classes; same for D1==D2. The original keeps only C2/D2 in .dynsym and localizes the redundant C1/D1 names (link-time version-script `local:`). In Ghidra both names sit at one address.",
+    "_ZN7Globals6statusE": "Singletons live as MEMBERS of class Globals -- Globals::status/galaxy/items/appManager/achievements/gameText/Canvas/font/layout/globals/rnd/w/h -- NOT as per-class statics (Status::gStatus etc. are decompiler artifacts)."
+  }
+}
