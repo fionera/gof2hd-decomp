@@ -26,7 +26,7 @@ Array<Node *> *SystemPathFinder::search(Node *start, Node *goal) {
 
     while (!open->empty()) {
         Node *current = open->data()[0];
-        open->erase(open->begin());
+        ArrayRemove(current, *open);   // original: ArrayRemove<Node*>, not iterator erase(begin)
         if (current == goal) {
             return constructPath(goal);
         }

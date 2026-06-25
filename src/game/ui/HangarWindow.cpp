@@ -1876,7 +1876,7 @@ void HangarWindow::mountItem(Item *item) {
                 int change;
                 if (cur->getStationAmount() == 0) {
                     if (type == 1 || item->getAmount() == 1) {
-                        this->itemList->erase(std::find(this->itemList->begin(), this->itemList->end(), cur));
+                        ArrayRemove(cur, *this->itemList);   // original: ArrayRemove<Item*>, not iterator erase
                         break;
                     }
                     change = -1;

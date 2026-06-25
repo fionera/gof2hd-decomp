@@ -2459,7 +2459,7 @@ bool RecordHandler::checkHash(unsigned int fd) {
         unsigned char *buf = new unsigned char[(unsigned) sz];
         AEFile::Read((unsigned) sz, (signed char *) buf, fd);
         Array<unsigned char> *arr = new Array<unsigned char>();
-        arr->insert(arr->end(), buf, buf + (unsigned) sz);
+        ArrayAdd(buf, (unsigned) sz, *arr);   // original: ArrayAdd<uchar>(buf, sz, this) -- not iterator insert
         delete[] buf;
 
         unsigned len = arr->size();
