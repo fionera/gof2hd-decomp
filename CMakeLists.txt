@@ -9,24 +9,62 @@ project(GalaxyOnFire2 LANGUAGES CXX)
 # (objdiff can't read ARMv7), and prints a per-function match-% table. Tune GOF2_MATCH_OPT (and the
 # flags in tools/verify/match_flags.sh) and re-run to chase byte-exactness.
 if(GOF2_MATCH)
+    # Compile every TU with the NDK r18b toolchain into a TRACKED object library.
+    # Ninja owns the source->object mapping, so deleting a .cpp removes its object
+    # from the link automatically -- the stale-orphan class of bug that the old
+    # glob-based build_objs.sh + relink-by-glob suffered is now impossible.
+    file(GLOB_RECURSE _match_srcs CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+    # Superseded recovered platform TUs that no longer compile -- their symbols are
+    # provided by the C++ reimplementations (ApkLoader.cpp / FileInterfaceAndroid.cpp /
+    # JniBridge.cpp / BlowfishSubkeyFile.cpp). Excluded to keep the build green.
+    list(FILTER _match_srcs EXCLUDE REGEX
+         "/platform/(recovered_a462c|recovered_7a41c|recovered_128188|jni_bridge)\\.cpp$")
+    add_library(gof2_match OBJECT ${_match_srcs})
+    set_target_properties(gof2_match PROPERTIES POSITION_INDEPENDENT_CODE OFF)  # -fpic already in CMAKE_CXX_FLAGS
+
+    # src/runtime/* are thin wrappers over the NDK libc++abi runtime sources; they
+    # need the libc++abi private src/ on the include path + C++17 aligned-new so the
+    # objects byte-match what the original linked from libc++abi.
+    file(GLOB _match_runtime CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/runtime/*.cpp")
+    if(_match_runtime)
+        set(_ndk "$ENV{NDK}")
+        if(NOT _ndk)
+            set(_ndk "/opt/android-ndk-r18b")
+        endif()
+        set_source_files_properties(${_match_runtime} PROPERTIES COMPILE_OPTIONS
+            "-faligned-allocation;-isystem;${_ndk}/sources/cxx-stl/llvm-libc++abi/src")
+    endif()
+
+    # Authoritative, tracked object list consumed by relink.py -- NO globbing of the
+    # build tree, so a stale orphan object can never sneak into the link.
+    file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/match_objects.txt"
+         CONTENT "$<TARGET_OBJECTS:gof2_match>")
+
     set(_verify_py "${CMAKE_SOURCE_DIR}/tools/verify/verify.py")
-    set(_verify_dir "${CMAKE_BINARY_DIR}/verify")
-    # --fail-on-wrong-type makes the target fail the build if any function is implemented under a
-    # different (wrong) signature than the original .so (report.json missing_wrong_type > 0); the
-    # full diff table still prints first. Keeps the 0-wrong-signature invariant from regressing.
+    set(_relink_py "${CMAKE_SOURCE_DIR}/tools/verify/relink.py")
+    set(_symdiff_py "${CMAKE_SOURCE_DIR}/tools/symdiff.py")
+
+    # Per-function ASM validation vs the original .so (objects built by gof2_match).
     add_custom_target(verify
         COMMAND ${CMAKE_COMMAND} -E env "GOF2_MATCH_OPT=${GOF2_MATCH_OPT}"
-                python3 ${_verify_py} --build-dir ${_verify_dir} --fail-on-wrong-type
+                python3 ${_verify_py} --build-dir ${CMAKE_BINARY_DIR}/verify --no-build --fail-on-wrong-type
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
         COMMENT "Validating ARM build vs original .so (opt=${GOF2_MATCH_OPT})")
+    add_dependencies(verify gof2_match)
     # Single-function side-by-side diff:  FN=<mangled> cmake --build ... --target verify-fn
-    # verify.py reads the symbol from the FN environment variable (passed through
-    # to the build at run time).
     add_custom_target(verify-fn
         COMMAND ${CMAKE_COMMAND} -E env "GOF2_MATCH_OPT=${GOF2_MATCH_OPT}"
-                python3 ${_verify_py} --build-dir ${_verify_dir} --no-build --show
+                python3 ${_verify_py} --build-dir ${CMAKE_BINARY_DIR}/verify --no-build --show
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
         COMMENT "Diffing one function (set FN=<mangled symbol>)")
+    add_dependencies(verify-fn gof2_match)
+    # Whole-.so symbol parity: link the tracked objects, then diff vs the original.
+    add_custom_target(relink
+        COMMAND python3 ${_relink_py}
+        COMMAND python3 ${_symdiff_py}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} USES_TERMINAL
+        COMMENT "Linking libgof2hdaa.so from tracked objects + symbol diff")
+    add_dependencies(relink gof2_match)
     return()  # native library/host targets below are not part of the matching build
 endif()
 

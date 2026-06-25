@@ -27,7 +27,12 @@ sys.path.insert(0, HERE)
 import asmdiff       # noqa: E402
 import delink as delinker  # noqa: E402  (local delink() below shadows the module name)
 
-DEFAULT_BUILD = os.path.join(REPO, "cmake-build-match", "verify")
+# The CMake binary dir holds the tracked object list (match_objects.txt) + the
+# compiled objects (CMakeFiles/gof2_match.dir/). Analysis artifacts (report.json,
+# missing.txt, the delinked target/ objects) live under its verify/ subdir, which
+# the wave-pipeline tools (scope_filter/dispatch_worklist/...) also read.
+MATCH_BIN = os.path.join(REPO, "cmake-build-match")
+DEFAULT_BUILD = os.path.join(MATCH_BIN, "verify")
 
 
 def run(cmd, **kw):
@@ -43,13 +48,24 @@ def delink(base_o, target_o):
 
 
 def find_base_objects(build_dir):
-    base_root = os.path.join(build_dir, "base")
+    """(unit, object) pairs from CMake's tracked object list (match_objects.txt),
+    where unit is the source path relative to src/ without extension. Reading the
+    tracked list (not walking the build tree) means deleted sources never linger as
+    stale objects in the diff."""
+    objlist = os.path.join(MATCH_BIN, "match_objects.txt")
     objs = []
-    for dirpath, _, files in os.walk(base_root):
-        for f in files:
-            if f.endswith(".o"):
-                p = os.path.join(dirpath, f)
-                objs.append((os.path.relpath(p, base_root)[:-2], p))  # (unit, path)
+    if not os.path.exists(objlist):
+        return objs
+    with open(objlist) as fh:
+        raw = fh.read().strip()
+    for tok in raw.replace("\n", ";").split(";"):
+        tok = tok.strip()
+        if not tok:
+            continue
+        p = tok if os.path.isabs(tok) else os.path.join(build_dir, tok)
+        m = re.search(r"gof2_match\.dir/(?:\./)?src/(.*)\.cpp\.o(?:bj)?$", p)
+        if m and os.path.exists(p):
+            objs.append((m.group(1), p))  # (unit, path)
     return sorted(objs)
 
 
@@ -216,7 +232,8 @@ def main():
     args = ap.parse_args()
 
     if not args.no_build and not args.show:
-        run(["bash", os.path.join(HERE, "build_objs.sh"), args.build_dir])
+        # CMake/Ninja compiles the tracked object library (no stale orphans).
+        run(["cmake", "--build", MATCH_BIN, "--target", "gof2_match"])
 
     if args.show is not None:
         sym = args.show or os.environ.get("FN", "")

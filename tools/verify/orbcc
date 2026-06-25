@@ -3,8 +3,8 @@
 # `ubuntu` machine. OrbStack mirrors the macOS filesystem 1:1, so all path
 # arguments (sources, -I, -o, --sysroot) pass through unchanged.
 #
-# Used as CMAKE_CXX_COMPILER by cmake/orbstack-ndk-arm.toolchain.cmake and by
-# tools/verify/build_objs.sh. Override the machine with GOF2_ORB_MACHINE.
+# Used as CMAKE_CXX_COMPILER by cmake/orbstack-ndk-arm.toolchain.cmake (the match
+# preset compiles through it). Override the machine with GOF2_ORB_MACHINE.
 set -euo pipefail
 MACHINE="${GOF2_ORB_MACHINE:-ubuntu}"
 NDK="${NDK:-/opt/android-ndk-r18b}"

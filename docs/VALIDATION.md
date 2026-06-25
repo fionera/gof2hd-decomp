@@ -96,8 +96,9 @@ report -> cmake-build-match/verify/report.json
 ## Tuning compiler flags
 
 The canonical flag set is `tools/verify/match_flags.sh` (the *one* source of truth,
-read by both `build_objs.sh` and the report driver). The biggest knob is the
-optimization level:
+read by the CMake match toolchain — `cmake/orbstack-ndk-arm.toolchain.cmake` turns
+it into `CMAKE_CXX_FLAGS` — and by `relink.py`'s `-fPIC` rebuilds). The biggest knob
+is the optimization level:
 
 ```bash
 # A/B test opt levels — re-run picks up changed flags and rebuilds:
@@ -122,7 +123,8 @@ uses NEON), `-D__ANDROID_API__=21` (needed for libc++ `<cmath>` to compile),
 |------|------|
 | `tools/verify/setup.sh` | one-time OrbStack provisioning (NDK r18b + binutils) |
 | `tools/verify/match_flags.sh` | canonical matching compiler flags (`GOF2_MATCH_OPT`) |
-| `tools/verify/build_objs.sh` | resilient per-TU ARM compile → `verify/base/*.o` |
+| `CMakeLists.txt` (`gof2_match`) | CMake OBJECT library — compiles every TU via the toolchain; emits the tracked `match_objects.txt` (no stale orphans) |
+| `tools/verify/relink.py` | link the tracked objects + vendored archives → `libgof2hdaa.so` |
 | `tools/verify/delink.py` | extract original functions from the `.so` → `verify/target/*.o` |
 | `tools/verify/asmdiff.py` | objdump-based normalize + per-symbol match |
 | `tools/verify/verify.py` | orchestrator: table + `report.json`; `--show` one function |

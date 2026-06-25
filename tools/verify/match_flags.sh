@@ -1,5 +1,6 @@
-# Canonical compiler flags for the matching ARM build (sourced by build_objs.sh
-# and read by cmake/orbstack-ndk-arm.toolchain.cmake — keep this the ONE source).
+# Canonical compiler flags for the matching ARM build. Read by
+# cmake/orbstack-ndk-arm.toolchain.cmake (CMAKE_CXX_FLAGS) and by relink.py's
+# -fPIC rebuilds — keep this the ONE source.
 #
 # Toolchain: Android NDK r18b, clang 7.0.2, armeabi-v7a, libc++ (from the .so's
 # .comment). These are the STARTING POINT for byte-matching; tune per the verify
