@@ -6,19 +6,6 @@ namespace AbyssEngine {
         this->applicationManager = manager;
         this->paintCanvas = static_cast<PaintCanvas *>(manager->paintCanvas);
     }
-
-    void IApplicationModule::OnTouchBegin(int x, int y, void *data) {
-    }
-
-    void IApplicationModule::OnTouchMove(int x, int y, void *data) {
-    }
-
-    void IApplicationModule::OnTouchEnd(int x, int y, void *data) {
-    }
-
-    void IApplicationModule::OnSuspend() {
-    }
-
-    void IApplicationModule::OnResume() {
-    }
+    // OnTouchBegin/Move/End(3-arg), OnSuspend, OnResume are inline in the header
+    // so no key function homes IApplicationModule's vtable here (matches original).
 }
