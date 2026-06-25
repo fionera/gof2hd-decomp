@@ -434,7 +434,7 @@ IParticleSystem::IParticleSystem(PaintCanvas *canvas, Matrix const *matrix,
     this->particleSets = new Array<ParticleSettings::ParticleSet>();
     this->mirror = mirror;
     this->alphaFade = alphaFade;
-    *this->particleSets = sets;
+    ArraySet(sets, *this->particleSets);   // original: ArraySet<ParticleSet>, not operator=
 
     this->currentParticle = 0;
     this->field_0x54 = -1;
