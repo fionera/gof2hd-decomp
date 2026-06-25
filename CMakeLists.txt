@@ -78,7 +78,10 @@ add_custom_command(OUTPUT "${_so}"
             ${GOF2_NDK_LIBCXXABI_A}
             ${_libdir}/crtend_so.o
             -o "${_so}"
-    DEPENDS gof2 gof2_libs
+    # Depend on the object FILES (not just the gof2 target): an OBJECT library produces no single
+    # artifact, so depending on the target alone does not re-link when a member object changes,
+    # leaving a stale .so. Listing the objects makes the link re-run whenever any one of them does.
+    DEPENDS gof2 gof2_libs $<TARGET_OBJECTS:gof2>
     COMMENT "Linking libgof2hdaa.so (gold) from gof2 objects + vendored archives"
     COMMAND_EXPAND_LISTS VERBATIM)
 

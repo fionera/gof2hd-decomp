@@ -159,31 +159,16 @@ public:
     static int logoIsShown;
     static int isInMainMenu;
 
+    // Only 00-04 are real Globals members (the original exports _ZN7Globals14cItemListID_0[0-4]E and
+    // they are used cross-TU in NdkHooks). The original does NOT export 05-24: a class static member
+    // of an exported class always has external linkage, so 05-24 cannot be Globals members -- they
+    // are file-scope statics in LODManager.cpp (their only user). The decompiler extrapolated the
+    // member pattern from the 5 exported names; corrected here.
     static char *cItemListID_00;
     static char *cItemListID_01;
     static char *cItemListID_02;
     static char *cItemListID_03;
     static char *cItemListID_04;
-    static char *cItemListID_05;
-    static char *cItemListID_06;
-    static char *cItemListID_07;
-    static char *cItemListID_08;
-    static char *cItemListID_09;
-    static char *cItemListID_10;
-    static char *cItemListID_11;
-    static char *cItemListID_12;
-    static char *cItemListID_13;
-    static char *cItemListID_14;
-    static char *cItemListID_15;
-    static char *cItemListID_16;
-    static char *cItemListID_17;
-    static char *cItemListID_18;
-    static char *cItemListID_19;
-    static char *cItemListID_20;
-    static char *cItemListID_21;
-    static char *cItemListID_22;
-    static char *cItemListID_23;
-    static char *cItemListID_24;
     static char *cItemListName_00;
     static char *cItemListName_01;
     static char *cItemListName_02;

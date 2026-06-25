@@ -70,13 +70,26 @@ def find_base_objects(build_dir):
 
 def _diff_unit(unit, base_o, target_root, only_re):
     """Delink + diff one base object. Returns (rows, skip, our_syms) where skip is None or a
-    short reason string and our_syms is the set of mangled symbols this object defines (used,
+    short reason string and our_syms is the set of symbols this object defines (used,
     independently of whether they matched, to spot originals we implement under a different
     signature). Per-unit work is independent (each writes only its own target_o), so it is safe
     to run concurrently. Failures are returned, not printed, so they can be summarised after the
     table instead of interleaving with it."""
     target_o = os.path.join(target_root, unit + ".o")
     os.makedirs(os.path.dirname(target_o), exist_ok=True)
+    # Defined symbols come from nm (the authoritative symbol table), NOT the objdump disassembly:
+    # objdump -d prints a block under only ONE name when the compiler emits a weak symbol as an
+    # alias sharing an address with a sibling (e.g. the Array<T> ctor/dtor instantiations), so
+    # harvesting from the disassembly under-counts and mislabels those defined functions as
+    # "missing". nm lists every defined name -- every one, C or C++: the original's function set
+    # includes C-name functions (JNI Java_*, ...), so filtering to _Z would falsely report those we
+    # implement as missing. It also runs regardless of whether the diff below succeeds, so a unit
+    # that can't be delinked still contributes its symbols (no false "missing").
+    nm_tool = os.environ.get("GOF2_NDK_NM", "arm-linux-androideabi-nm")
+    try:
+        our_syms = set(delinker.nm_text_symbols(nm_tool, base_o))
+    except subprocess.CalledProcessError:
+        our_syms = set()
     # A timed-out unit is retried once (the retry almost always clears) before it is skipped, so a
     # transient hiccup doesn't silently drop the unit's functions from the report and make the
     # totals vary run-to-run.
@@ -87,12 +100,11 @@ def _diff_unit(unit, base_o, target_root, only_re):
             bf = asmdiff.disassemble(base_o)
             break
         except subprocess.CalledProcessError:
-            return [], "no delinkable target", set()
+            return [], "no delinkable target", our_syms
         except subprocess.TimeoutExpired:
             if attempt == 1:
                 continue
-            return [], "objdump hung twice", set()
-    our_syms = {s for s in bf if s.startswith("_Z")}
+            return [], "objdump hung twice", our_syms
     out = []
     for r in asmdiff.compare(tf, bf):
         if only_re and not only_re.search(r["symbol"]):
