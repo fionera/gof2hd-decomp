@@ -58,29 +58,6 @@ def orb(*cmd):
     return subprocess.run(["orb", "-m", MACHINE, *cmd], capture_output=True, text=True)
 
 
-# Reconstruct the original .so's export map (linker version script). The original
-# was built with export control (it exposes exactly its 5370 ABI symbols, not
-# every symbol its objects define -- the standard way an Android .so fixes its ABI
-# while keeping internal singletons/instantiations/lib members usable but unexported).
-# We can't replicate that per-symbol without __attribute__((visibility)) (banned),
-# so we reproduce the same build-time export control via --version-script, with the
-# export set sourced from the original binary itself ("use ghidra as source"). This
-# touches no source code -- only the link configuration.
-VERSION_MAP = os.path.join(MATCH_DIR, "exports.map")
-
-
-def gen_version_script():
-    sys.path.insert(0, os.path.join(ROOT, "tools"))
-    import symdiff
-    exported = sorted(symdiff.read_defined_dynsyms(symdiff.ORIG))
-    with open(VERSION_MAP, "w") as fh:
-        fh.write("{\n  global:\n")
-        for s in exported:
-            fh.write(f"    {s};\n")
-        fh.write("  local:\n    *;\n};\n")
-    return len(exported)
-
-
 def read_object_list():
     """Read CMake's tracked object list (match_objects.txt). Paths are absolute or
     relative to the match build dir. Returns existing object paths only."""
@@ -102,7 +79,6 @@ def read_object_list():
 def link(objs):
     cmd = [GOLD, "-shared", "-soname", SONAME, "--build-id",
            "--unresolved-symbols=ignore-all", "--allow-multiple-definition",
-           "--version-script", VERSION_MAP,
            os.path.join(LIBDIR, "crtbegin_so.o"), "-L", LIBDIR]
     for n in NEEDED:
         cmd += ["-l", n]
@@ -129,8 +105,6 @@ def main():
     if not objs:
         print("[relink] BLOCKED: object list empty. Run: cmake --build cmake-build-match --target gof2_match")
         return 2
-    n_exp = gen_version_script()
-    print(f"[relink] export map: {n_exp} symbols (reconstructed from the original .so)")
     # First attempt; if gold reports objects needing -fPIC, rebuild those -fPIC and retry.
     for attempt in range(3):
         r = link(objs)
