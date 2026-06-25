@@ -16,7 +16,7 @@ namespace AbyssEngine {
                 delete c;
                 codes->data()[i] = 0;
             }
-            ArrayReleaseClasses(*codes);
+            ArrayRemoveAll<CheatCode *>(*codes);
             delete codes;
             codes = 0;
         }
