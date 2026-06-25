@@ -84,8 +84,6 @@ int AccIndex;
 // Entry callback pointer written by ndk23_Init / ndk23_InitWithZip.
 void *ndkEntrance;
 
-AbyssEngine::Engine **AbyssEngine::Engine::g_pEngine;
-static AbyssEngine::Engine **&g_pEngine = AbyssEngine::Engine::g_pEngine;
 
 extern "C" int loadAPKAndZip(const char *apkPath, const char *patchPath);
 
@@ -257,7 +255,7 @@ extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
     loadAPKAndZip(apkPath, zipPath);
 
     AbyssEngine::Engine *engine = new AbyssEngine::Engine();
-    *g_pEngine = engine;
+    gEngine = engine;
     engine->str_0x3c = String("2.0.16", false);
 
     if (rootDirectory != nullptr)
@@ -280,7 +278,7 @@ extern "C" void ndk23_handleAcceleration(float x, float y, float z) {
         tiltB = x;
     }
 
-    AbyssEngine::Engine *engine = *g_pEngine;
+    AbyssEngine::Engine *engine = gEngine;
     if (engine == nullptr)
         return;
 
@@ -429,7 +427,7 @@ extern "C" void ExitFunction() {
 }
 
 extern "C" void ndk23_newrender(long long now) {
-    ApplicationManager *manager = (*g_pEngine)->appManager;
+    ApplicationManager *manager = (gEngine)->appManager;
     manager->SetExitCallback(&ExitFunction);
 
     int touchCount = GetTouchCount();
@@ -450,8 +448,8 @@ extern "C" void ndk23_newrender(long long now) {
     }
 
     if (g_android_back_button_pressed != 0) {
-        keyPressed(*g_pEngine, 0x35);
-        keyReleased(*g_pEngine, 0x35);
+        keyPressed(gEngine, 0x35);
+        keyReleased(gEngine, 0x35);
         g_android_back_button_pressed = 0;
     }
 
@@ -483,7 +481,7 @@ extern "C" void ndk23_newrender(long long now) {
 
 extern "C" void ndk23_handleTouchPadEvent(jclass /*clazz*/, void *touch, int phase,
                                float x, float y) {
-    ApplicationManager *manager = (*g_pEngine)->appManager;
+    ApplicationManager *manager = (gEngine)->appManager;
     int px = static_cast<int>(x);
     int py = static_cast<int>(y);
     if (phase == 2) {
@@ -502,11 +500,11 @@ extern "C" void ndk23_handleTouchScreenEvent(jclass clazz, void *touch, int phas
 }
 
 extern "C" void ndk23_ndkDone() {
-    AbyssEngine::Engine *engine = *g_pEngine;
+    AbyssEngine::Engine *engine = gEngine;
     if (engine != nullptr) {
         engine->Release();
         delete engine;
-        *g_pEngine = nullptr;
+        gEngine = nullptr;
     }
 }
 
@@ -749,7 +747,7 @@ extern "C" void ndk23_Init(const char *apkPath, int width, int height) {
     loadAPK(apkPath);
 
     AbyssEngine::Engine *engine = new AbyssEngine::Engine();
-    *g_pEngine = engine;
+    gEngine = engine;
     engine->str_0x3c = String("2.0.16", false);
 
     if (rootDirectory != nullptr)
