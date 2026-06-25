@@ -2577,7 +2577,7 @@ void MGame::OnRelease() {
     }
 
     if (this->missionInfoLines != 0) {
-        ArrayReleaseClasses(*this->missionInfoLines); ArrayRemoveAll(*(this->missionInfoLines));
+        ArrayReleaseClasses(*this->missionInfoLines);
         delete this->missionInfoLines;
     }
     this->missionInfoLines = 0;

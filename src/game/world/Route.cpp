@@ -234,7 +234,7 @@ Route::Route(int *coords, Array<KIPlayer *> *targets, int *times, int count) {
 
 Route::~Route() {
     if (this->waypoints != nullptr) {
-        ArrayReleaseClasses(*this->waypoints); ArrayRemoveAll(*(this->waypoints));
+        ArrayReleaseClasses(*this->waypoints);
         delete this->waypoints;
     }
     this->waypoints = nullptr;

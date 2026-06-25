@@ -168,7 +168,7 @@ KIPlayer::~KIPlayer() {
     this->cargo = 0;
 
     if (this->spacePoints != 0) {
-        ArrayReleaseClasses(*this->spacePoints); ArrayRemoveAll(*(this->spacePoints));
+        ArrayReleaseClasses(*this->spacePoints);
         delete this->spacePoints;
         this->spacePoints = 0;
     }

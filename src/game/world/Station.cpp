@@ -161,7 +161,7 @@ void Station::setItems(Array<Item *> *items, bool deep) {
 
 void Station::setShips(Array<Ship *> *ships, bool deep) {
     if (this->ships != nullptr) {
-        ArrayReleaseClasses(*this->ships); ArrayRemoveAll(*(this->ships));
+        ArrayReleaseClasses(*this->ships);
         delete this->ships;
     }
     this->ships = nullptr;
@@ -180,7 +180,7 @@ void Station::setAgents(Array<Agent *> *agents) {
     if (this->agents == agents)
         return;
     if (this->agents != nullptr) {
-        ArrayReleaseClasses(*this->agents); ArrayRemoveAll(*(this->agents));
+        ArrayReleaseClasses(*this->agents);
         delete this->agents;
     }
     this->agents = agents;

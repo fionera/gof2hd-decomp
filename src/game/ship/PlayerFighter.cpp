@@ -117,7 +117,7 @@ PlayerFighter::~PlayerFighter() {
     this->route = 0;
 
     if (this->boundingVolumes != 0) {
-        ArrayReleaseClasses(*this->boundingVolumes); ArrayRemoveAll(*(this->boundingVolumes));
+        ArrayReleaseClasses(*this->boundingVolumes);
         delete this->boundingVolumes;
     }
     this->boundingVolumes = 0;

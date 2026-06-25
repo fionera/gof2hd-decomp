@@ -22,25 +22,25 @@ static unsigned char *g_StatusWindow_btnFlag = nullptr;
 
 StatusWindow::~StatusWindow() {
     if (this->tabButtons != 0) {
-        ArrayReleaseClasses(*this->tabButtons); ArrayRemoveAll(*(this->tabButtons));
+        ArrayReleaseClasses(*this->tabButtons);
         delete this->tabButtons;
     }
     this->tabButtons = 0;
 
     if (this->medalButtons != 0) {
-        ArrayReleaseClasses(*this->medalButtons); ArrayRemoveAll(*(this->medalButtons));
+        ArrayReleaseClasses(*this->medalButtons);
         delete this->medalButtons;
     }
     this->medalButtons = 0;
 
     if (this->imageParts != 0) {
-        ArrayReleaseClasses(*this->imageParts); ArrayRemoveAll(*(this->imageParts));
+        ArrayReleaseClasses(*this->imageParts);
         delete this->imageParts;
     }
     this->imageParts = 0;
 
     if (this->detailLines != 0) {
-        ArrayReleaseClasses(*this->detailLines); ArrayRemoveAll(*(this->detailLines));
+        ArrayReleaseClasses(*this->detailLines);
         delete this->detailLines;
     }
     this->detailLines = 0;
@@ -134,7 +134,7 @@ void StatusWindow::OnTouchEnd(int x, int y) {
                     this->selectedMedal = i;
 
                     if (this->detailLines != 0) {
-                        ArrayReleaseClasses(*this->detailLines); ArrayRemoveAll(*(this->detailLines));
+                        ArrayReleaseClasses(*this->detailLines);
                         delete this->detailLines;
                     }
                     this->detailLines = new Array<String *>();

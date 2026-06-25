@@ -88,7 +88,7 @@ CutScene::~CutScene() {
     this->geom34 = nullptr;
 
     if (this->geometries != nullptr) {
-        ArrayReleaseClasses(*this->geometries); ArrayRemoveAll(*(this->geometries));
+        ArrayReleaseClasses(*this->geometries);
         delete this->geometries;
     }
     this->geometries = nullptr;

@@ -182,13 +182,13 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
     layout->setWindowDimensions(x, y, h, w);
 
     if (this->labels != 0) {
-        ArrayReleaseClasses(*this->labels); ArrayRemoveAll(*(this->labels));
+        ArrayReleaseClasses(*this->labels);
         delete this->labels;
     }
     this->labels = 0;
 
     if (this->values != 0) {
-        ArrayReleaseClasses(*this->values); ArrayRemoveAll(*(this->values));
+        ArrayReleaseClasses(*this->values);
         delete this->values;
     }
     this->values = 0;
@@ -242,12 +242,12 @@ void ListItemWindow::set(ListItem *item, unsigned p2, unsigned p3,
 
 ListItemWindow::~ListItemWindow() {
     if (this->labels) {
-        ArrayReleaseClasses(*this->labels); ArrayRemoveAll(*(this->labels));
+        ArrayReleaseClasses(*this->labels);
         delete this->labels;
         this->labels = 0;
     }
     if (this->values) {
-        ArrayReleaseClasses(*this->values); ArrayRemoveAll(*(this->values));
+        ArrayReleaseClasses(*this->values);
         delete this->values;
         this->values = 0;
     }

@@ -94,7 +94,7 @@ AutoPilotList::AutoPilotList(Level *level) {
 
 AutoPilotList::~AutoPilotList() {
     if (this->entries != nullptr) {
-        ArrayReleaseClasses(*this->entries); ArrayRemoveAll(*(this->entries));
+        ArrayReleaseClasses(*this->entries);
     }
     delete this->entries;
     this->entries = nullptr;

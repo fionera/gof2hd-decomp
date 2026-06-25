@@ -883,7 +883,7 @@ uint32_t StarMap::OnTouchBegin(int x, int y) {
                     absf_local(this->scratchVector.y - fy) < (float) this->hitRadius) {
                     this->selectedSystem = (int) i;
                     if (this->stations != 0) {
-                        ArrayReleaseClasses(*this->stations); ArrayRemoveAll(*(this->stations));
+                        ArrayReleaseClasses(*this->stations);
                         delete this->stations;
                         this->stations = (Array<Station *> *) 0;
                     }

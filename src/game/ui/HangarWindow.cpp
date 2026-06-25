@@ -167,12 +167,12 @@ HangarWindow::~HangarWindow() {
     delete this->dialog;
     this->dialog = nullptr;
     if (this->tabButtons != nullptr) {
-        ArrayReleaseClasses(*this->tabButtons); ArrayRemoveAll(*(this->tabButtons));
+        ArrayReleaseClasses(*this->tabButtons);
         delete this->tabButtons;
     }
     this->tabButtons = nullptr;
     if (this->buttons != nullptr) {
-        ArrayReleaseClasses(*this->buttons); ArrayRemoveAll(*(this->buttons));
+        ArrayReleaseClasses(*this->buttons);
         delete this->buttons;
     }
     this->active = 0;
@@ -1145,7 +1145,7 @@ void HangarWindow::demountItem(Item *item, int slot) {
     Status::gStatus->getShip()->setCargo(Item::extractItems(this->itemList, true));
 
     if (this->itemList != 0) {
-        ArrayReleaseClasses(*this->itemList); ArrayRemoveAll(*(this->itemList));
+        ArrayReleaseClasses(*this->itemList);
         delete this->itemList;
     }
     this->itemList = 0;
@@ -1403,7 +1403,7 @@ void HangarWindow::setSellMode(bool buy) {
         Status::gStatus->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
         Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
         if (self->itemList != 0) {
-            ArrayReleaseClasses(*self->itemList); ArrayRemoveAll(*(self->itemList));
+            ArrayReleaseClasses(*self->itemList);
             delete self->itemList;
         }
         self->itemList = 0;
@@ -1602,7 +1602,7 @@ void HangarWindow::selectItem(ListItem *item) {
                 Status::gStatus->getShip()->setCargo(Item::extractItems((ItemArray *) (self->itemList), true));
                 Status::gStatus->getStation()->setItems(Item::extractItems(self->itemList, false), false);
                 if (self->itemList != 0) {
-                    ArrayReleaseClasses(*self->itemList); ArrayRemoveAll(*(self->itemList));
+                    ArrayReleaseClasses(*self->itemList);
                     delete self->itemList;
                 }
                 self->itemList = 0;

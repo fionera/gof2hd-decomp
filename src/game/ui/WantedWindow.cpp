@@ -619,13 +619,13 @@ WantedWindow::WantedWindow() {
 
 WantedWindow::~WantedWindow() {
     if (this->imageParts != nullptr) {
-        ArrayReleaseClasses(*this->imageParts); ArrayRemoveAll(*(this->imageParts));
+        ArrayReleaseClasses(*this->imageParts);
         delete this->imageParts;
     }
     this->imageParts = nullptr;
 
     if (this->buttons != nullptr) {
-        ArrayReleaseClasses(*this->buttons); ArrayRemoveAll(*(this->buttons));
+        ArrayReleaseClasses(*this->buttons);
         delete this->buttons;
     }
     this->buttons = nullptr;
