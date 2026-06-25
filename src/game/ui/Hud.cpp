@@ -434,7 +434,7 @@ found:
     int dx = (int) a - (int) this->reticleX;
     int dy = (int) b - (int) this->reticleY;
     float f = (float) (dy * dy + dx * dx);
-    float r = Globals::gGlobals->sqrt(f);
+    float r = Globals::globals->sqrt(f);
     int denom = this->analogStickRadius;
     int len = (int) r;
     if (denom < len) {

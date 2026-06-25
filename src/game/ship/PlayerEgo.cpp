@@ -2746,7 +2746,7 @@ void PlayerEgo::stopBoost() {
 
 
 void PlayerEgo::setShip(int race, int group) {
-    AEGeometry *grp = Globals::gGlobals->getShipGroup(race, group, true);
+    AEGeometry *grp = Globals::globals->getShipGroup(race, group, true);
     this->field_0x4 = grp;
 
     void *canvas = (void *) Globals::Canvas;
@@ -2764,8 +2764,8 @@ void PlayerEgo::setShip(int race, int group) {
         int kind = (idx < 0x48) ? idx - 0x44 : 3;
         void *tb = TractorBeam_new(this->geometry, kind);
         this->tractorBeam = tb;
-        Globals::gGlobals->addSoundResourceToList(0x0);
-        Globals::gGlobals->addSoundResourceToList(0x4);
+        Globals::globals->addSoundResourceToList(0x0);
+        Globals::globals->addSoundResourceToList(0x4);
     }
 
     for (unsigned i = 0; i < 2; i++) {
@@ -2777,9 +2777,9 @@ void PlayerEgo::setShip(int race, int group) {
             RepairBeam *rb = new RepairBeam(((Item *) (it))->getIndex(), ((Item *) (it))->getSort());
             int idx = ((Item *) (it))->getIndex();
             if (idx == 0xde)
-                Globals::gGlobals->addSoundResourceToList(0x8db);
+                Globals::globals->addSoundResourceToList(0x8db);
             else if (((Item *) (it))->getIndex() == 0xdf)
-                Globals::gGlobals->addSoundResourceToList(0x8dc);
+                Globals::globals->addSoundResourceToList(0x8dc);
             ArrayAdd(rb, *(this->repairBeams));
         }
     }

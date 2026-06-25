@@ -248,7 +248,7 @@ void ChoiceWindow::set(String const &title, String const &message, bool hasButto
     Array<String *> *lines = new Array<String *>();
 
     Layout *layout = *g_ChoiceWindow_layout_1469b0;
-    Globals::gGlobals->getLineArray(
+    Globals::globals->getLineArray(
         static_cast<unsigned int>(reinterpret_cast<std::size_t>(*g_ChoiceWindow_lineFont_1469b0)),
         message,
         (this->width - layout->field_0x4c * 2) - layout->field_0x48,

@@ -92,7 +92,7 @@ void ModMainMenu::OnRelease() {
 
     Globals::Canvas->ReleaseAllResources();
 
-    Globals::gGlobals->loadFont(GameText::getLanguage());
+    Globals::globals->loadFont(GameText::getLanguage());
 
     void **reload = g_ModMainMenu_releaseReload;
     if (*reload != nullptr) {
@@ -297,7 +297,7 @@ state30:
 music: {
         int *musicSlot = g_ModMainMenu_initMusicSlot;
         if (*musicSlot != -1)
-            Globals::gGlobals->playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
+            Globals::globals->playMusicAndFadeOutCurrent(*g_ModMainMenu_initMusic);
         *musicSlot = -1;
     }
     this->initialized = 1;

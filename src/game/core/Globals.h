@@ -196,9 +196,6 @@ public:
     static char *cItemListPrice_03;
     static char *cItemListPrice_04;
 
-    static Globals *gGlobals;
-    static Layout *gLayout;
-    static void *gFont;
     static int gScreenWidth;
     static int gScreenHeight;
 
@@ -289,11 +286,11 @@ public:
     static float fire_y;
     static float fire_z;
     static Galaxy *galaxy;
-    static void *layout;
+    static Layout *layout;
     static float boost_x;
     static float boost_y;
     static float boost_z;
-    static void *globals;
+    static Globals *globals;
     static float pause_x;
     static float pause_y;
     static float pause_z;

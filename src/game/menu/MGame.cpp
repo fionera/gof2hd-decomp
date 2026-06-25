@@ -669,11 +669,11 @@ void MGame::OnTouchBegin(int p1, int p2, void *touchId) {
             }
             if (self->gameRecord != 0) {
                 ((GameRecord *) (self->gameRecord))->load();
-                Globals::gGlobals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
+                Globals::globals->playMusicAndFadeOutCurrent(**g_tbRecordTrack);
                 self->active = 0;
                 return self->applicationManager->SetCurrentApplicationModule(5);
             }
-            Globals::gGlobals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
+            Globals::globals->playMusicAndFadeOutCurrent(**g_tbMenuTrack);
             self->active = 0;
             self->applicationManager->SetCurrentApplicationModule(5);
             return;
@@ -1140,50 +1140,50 @@ int MGame::OnInitialize() {
         Globals::Canvas->ChangeCubeTexture((unsigned) (intptr_t) self->paintCanvas);
 
         {
-            Globals::gGlobals->startNewSoundResourceList();
+            Globals::globals->startNewSoundResourceList();
             static const int kCommon[] = {
                 0x66, 0x68, 0x69, 0x6a, 0x6b, 0x67, 0x7e, 0x05, 0x18, 0x15,
                 0x12, 0x13, 0x14, 0x1c, 0x1d, 0x1b, 0x25, 0x1a, 0x2e, 0x2f,
             };
             for (int id: kCommon)
-                Globals::gGlobals->addSoundResourceToList(id);
+                Globals::globals->addSoundResourceToList(id);
 
             if (Globals::status->getWingmen() != 0)
-                Globals::gGlobals->addSoundResourceToList(0x30);
+                Globals::globals->addSoundResourceToList(0x30);
 
-            Globals::gGlobals->addSoundResourceToList(0x3e);
-            Globals::gGlobals->addSoundResourceToList(0x3d);
-            Globals::gGlobals->addSoundResourceToList(0x24);
+            Globals::globals->addSoundResourceToList(0x3e);
+            Globals::globals->addSoundResourceToList(0x3d);
+            Globals::globals->addSoundResourceToList(0x24);
 
             if (Globals::status->getCurrentCampaignMission() < 2) {
-                Globals::gGlobals->addSoundResourceToList(0x9c);
-                Globals::gGlobals->addSoundResourceToList(0x9d);
+                Globals::globals->addSoundResourceToList(0x9c);
+                Globals::globals->addSoundResourceToList(0x9d);
             }
 
             if (Globals::status->inAlienOrbit() == 0) {
                 Globals::status->getSystem();
                 if (((SolarSystem *) (0))->currentOrbitHasWarpGate())
-                    Globals::gGlobals->addSoundResourceToList(0x1f);
+                    Globals::globals->addSoundResourceToList(0x1f);
             }
 
             int cm = Globals::status->getCurrentCampaignMission();
             if (cm == 0) {
-                Globals::gGlobals->addSoundResourceToList(0x8f);
-                Globals::gGlobals->addSoundResourceToList(0x9d);
-                Globals::gGlobals->addSoundResourceToList(0x9e);
-                Globals::gGlobals->addSoundResourceToList(0xa1);
-                Globals::gGlobals->addSoundResourceToList(0xa0);
-                Globals::gGlobals->addSoundResourceToList(0x9f);
+                Globals::globals->addSoundResourceToList(0x8f);
+                Globals::globals->addSoundResourceToList(0x9d);
+                Globals::globals->addSoundResourceToList(0x9e);
+                Globals::globals->addSoundResourceToList(0xa1);
+                Globals::globals->addSoundResourceToList(0xa0);
+                Globals::globals->addSoundResourceToList(0x9f);
             } else if (cm == 0xe) {
-                Globals::gGlobals->addSoundResourceToList(0xf);
+                Globals::globals->addSoundResourceToList(0xf);
             } else if (cm == 0x18) {
-                Globals::gGlobals->addSoundResourceToList(0x22);
+                Globals::globals->addSoundResourceToList(0x22);
             } else if (cm == 0x1d) {
-                Globals::gGlobals->addSoundResourceToList(0xe);
+                Globals::globals->addSoundResourceToList(0xe);
             } else if (cm == 0x29) {
-                Globals::gGlobals->addSoundResourceToList(0x9b);
-                Globals::gGlobals->addSoundResourceToList(0x99);
-                Globals::gGlobals->addSoundResourceToList(0x9a);
+                Globals::globals->addSoundResourceToList(0x9b);
+                Globals::globals->addSoundResourceToList(0x99);
+                Globals::globals->addSoundResourceToList(0x9a);
             }
         }
 
@@ -1385,7 +1385,7 @@ int MGame::OnInitialize() {
         }
 
         if (*g_initMusicArmed != -1)
-            Globals::gGlobals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
+            Globals::globals->playMusicAndFadeOutCurrent(*g_initMusicTrack);
         *g_initMusicArmed = -1;
         ((FModSound *) (*g_initFmod))->setDownPitch(false);
 
@@ -1406,7 +1406,7 @@ int MGame::OnInitialize() {
         self->missionInfoLines = new Array<AbyssEngine::String *>();
         String *font = *g_initInfoFont;
         String *text = (String *) ((GameText *) (*g_gameText))->getText(g_initInfoTextKey);
-        Globals::gGlobals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
+        Globals::globals->getLineArray(static_cast<unsigned int>(reinterpret_cast<std::size_t>(font)),
                                *text, *g_initInfoWidth, self->missionInfoLines);
         self->active = 1;
     }
@@ -2567,7 +2567,7 @@ void MGame::OnRelease() {
     Globals::Canvas->ReleaseAllResources();
 
     int lang = GameText::getLanguage();
-    Globals::gGlobals->loadFont(lang);
+    Globals::globals->loadFont(lang);
 
     int *layout = g_relLayout;
     if (*layout != 0) {

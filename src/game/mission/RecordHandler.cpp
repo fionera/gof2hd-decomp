@@ -194,7 +194,7 @@ void loadingScreen(AbyssEngine::PaintCanvas *canvas, int progress, void *resourc
     unsigned int resId = *static_cast<unsigned int *>(resourceHolder);
     if (GameText::getLanguage() == 9 ||
         !canvas->ResourceLoaded(resId, static_cast<AbyssEngine::ResourceType>(1))) {
-        Globals::gGlobals->loadFont(GameText::getLanguage());
+        Globals::globals->loadFont(GameText::getLanguage());
         *static_cast<unsigned int *>(resourceHolder) = resId;
     }
 
@@ -843,7 +843,7 @@ void RecordHandler::loadOptions() {
             if (-1 < langVal) {
                 if (langVal == 9) langVal = 0;
                 ((GameText *) ((short) **(int **) g_LO_textObj))->setLanguage_i(langVal);
-                Globals::gGlobals->loadFont(**(int **) g_LO_fontKind);
+                Globals::globals->loadFont(**(int **) g_LO_fontKind);
             }
 
             int *fmodSlot = g_LO_fmodSlot;

@@ -564,11 +564,11 @@ void PlayerFixedObject::setWreckedMeshId(int meshId) {
     } else {
         sel = this->wreckType;
         if (sel < 0) return;
-        this->wreckCollision = Globals::gGlobals->getWreckCollision(sel, this->wreckGeometry);
+        this->wreckCollision = Globals::globals->getWreckCollision(sel, this->wreckGeometry);
         return;
     }
     this->wreckType = sel;
-    this->wreckCollision = Globals::gGlobals->getWreckCollision(sel, this->wreckGeometry);
+    this->wreckCollision = Globals::globals->getWreckCollision(sel, this->wreckGeometry);
 }
 
 V3 PlayerFixedObject::getProjectionVector(const Vector &vec) {

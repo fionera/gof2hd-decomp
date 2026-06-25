@@ -693,7 +693,7 @@ void Status::resetGame() {
         }
     }
 
-    Globals::gGlobals->resetHints();
+    Globals::globals->resetHints();
     Galaxy *gal = Globals::galaxy;
     gal->reset();
 
@@ -918,7 +918,7 @@ int Status::activateNewWanted() {
         Array<int> *path;
         int fromSys, toSys;
         do {
-            Station *a = Globals::gGlobals->getRandomStation();
+            Station *a = Globals::globals->getRandomStation();
             unsigned asys = a->getSystem();
             Array<bool> *vis = slot->systemVisibilities;
             while (true) {
@@ -933,10 +933,10 @@ int Status::activateNewWanted() {
                 if (a != 0) {
                     delete a;
                 }
-                a = Globals::gGlobals->getRandomStation();
+                a = Globals::globals->getRandomStation();
                 asys = a->getSystem();
             }
-            Station *b = Globals::gGlobals->getRandomStation();
+            Station *b = Globals::globals->getRandomStation();
             unsigned bsys = b->getSystem();
             while (true) {
                 bool ok2 = false;
@@ -950,7 +950,7 @@ int Status::activateNewWanted() {
                 if (b != 0) {
                     delete b;
                 }
-                b = Globals::gGlobals->getRandomStation();
+                b = Globals::globals->getRandomStation();
                 bsys = b->getSystem();
             }
             cur->setLastSeen(a->getIndex());
@@ -1729,9 +1729,9 @@ void Status::moveWanted() {
             pf = new SystemPathFinder();
         }
 
-        Station *fromSt = Globals::gGlobals->getRandomStation();
+        Station *fromSt = Globals::globals->getRandomStation();
         int fromSys = fromSt->getSystem();
-        Station *toSt = Globals::gGlobals->getRandomStation();
+        Station *toSt = Globals::globals->getRandomStation();
         int toSys = toSt->getSystem();
 
         Array<int> *path = 0;
@@ -1747,7 +1747,7 @@ void Status::moveWanted() {
             }
             w->setLastSeen(w->getCurrentLocation());
             if (toSt != 0) delete toSt;
-            toSt = Globals::gGlobals->getRandomStation();
+            toSt = Globals::globals->getRandomStation();
             toSys = toSt->getSystem();
             for (;;) {
                 path = pf->getSystemPath(systemsTable, fromSys, toSys);
@@ -1763,7 +1763,7 @@ void Status::moveWanted() {
                     break;
                 }
                 if (toSt != 0) delete toSt;
-                toSt = Globals::gGlobals->getRandomStation();
+                toSt = Globals::globals->getRandomStation();
                 toSys = toSt->getSystem();
             }
         } else if (fromSys == toSys) {

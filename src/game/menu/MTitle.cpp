@@ -35,7 +35,7 @@ int MTitle::OnInitialize() {
 void MTitle::OnRelease() {
     Globals::Canvas->ReleaseAllResources();
 
-    Globals::gGlobals->loadFont(GameText::getLanguage());
+    Globals::globals->loadFont(GameText::getLanguage());
 
     if (g_currentLayout != 0) {
         g_currentLayout->reload();

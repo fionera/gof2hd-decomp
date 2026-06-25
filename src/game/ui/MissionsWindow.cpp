@@ -319,7 +319,7 @@ int MissionsWindow::init() {
             - L->field_0x30, false);
 
         Mission *fm = Globals::status->getFreelanceMission();
-        String text = Globals::gGlobals->getAgentMissionText(fm->getAgent());
+        String text = Globals::globals->getAgentMissionText(fm->getAgent());
         void *key = Globals::status;
         String body(text);
         int rew = fm->getReward();

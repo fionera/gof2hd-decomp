@@ -518,7 +518,7 @@ static int *g_ModStation_cm_credit2 = 0;
 static void **g_ModStation_cm_lead = 0;
 
 void ModStation::checkMedals() {
-    Globals::gGlobals->reportLeaderboards();
+    Globals::globals->reportLeaderboards();
 
     if (this->modalFlags.bytes[2] != 0 || this->m_nStarMapWindowOpen.bytes[3] != 0) {
         int idx = this->medalIndex + 1;
@@ -847,7 +847,7 @@ void ModStation::OnUpdate() {
         if (appData->purchaseReady != 0 && appData->purchaseList != 0 &&
             *appData->purchaseList != 0 &&
             (unsigned) (appData->purchaseId - 0x32) < 5) {
-            int idx = Globals::gGlobals->getInAppPurchaseArrayIndex(appData->purchaseId,
+            int idx = Globals::globals->getInAppPurchaseArrayIndex(appData->purchaseId,
                                                            appData->iapArray);
             if (-1 < (intptr_t) (*appData->iapArray)[idx]) {
                 Status_changeCredits_ou(*status);
@@ -1441,7 +1441,7 @@ void ModStation::OnRelease() {
     this->choiceWindow = 0;
 
     Globals::Canvas->ReleaseAllResources();
-    Globals::gGlobals->loadFont(GameText::getLanguage());
+    Globals::globals->loadFont(GameText::getLanguage());
 
     Layout **reloadHolder = g_ModStation_or_reload;
     if (*reloadHolder != 0) {
@@ -3236,7 +3236,7 @@ void ModStation::OnInitialize() {
 
         int *music = g_oi_musicId;
         if (*music != -1)
-            Globals::gGlobals->playMusicAndFadeOutCurrent(**(int **) g_oi_sound);
+            Globals::globals->playMusicAndFadeOutCurrent(**(int **) g_oi_sound);
         *music = -1;
         this->stationActive = 1;
         this->state = 100;

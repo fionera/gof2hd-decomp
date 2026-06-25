@@ -173,7 +173,7 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     data->globals->init(engine->appManager, engine);
 
     engine->appManager->SetApplicationData(data);
-    engine->appManager->SetLoadingCallback(&loadingScreen, Globals::gFont);
+    engine->appManager->SetLoadingCallback(&loadingScreen, Globals::font);
 
     engine->appManager->RegisterApplicationModule(
         2, reinterpret_cast<AbyssEngine::IApplicationModule *>(new MGame()));
@@ -189,7 +189,7 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->CheatAddCode(AbyssEngine::String("448366639", false), 1);
     engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
 
-    Globals::gLayout->initTip();
+    Globals::layout->initTip();
     Globals::status->resetGame();
     AbyssEngine::Engine::vfc = true;
     AERandom::gRandom->reset();

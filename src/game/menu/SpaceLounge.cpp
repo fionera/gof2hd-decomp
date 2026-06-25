@@ -492,7 +492,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
         }
     }
 
-    missionText = Globals::gGlobals->getAgentMissionText(static_cast<Agent *>(agent));
+    missionText = Globals::globals->getAgentMissionText(static_cast<Agent *>(agent));
 
     bool checkSpecialText = true;
     int soundId;

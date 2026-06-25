@@ -895,7 +895,7 @@ void Player::calcWeaponSounds(int count) {
             if ((int) n <= idx) break;
             if (order[idx] >= 0) {
                 this->guns->data()[0]->data()[idx]->field_0x89 = 1;
-                Globals::gGlobals->addSoundResourceToList(*sound);
+                Globals::globals->addSoundResourceToList(*sound);
                 count--;
             }
             idx++;
@@ -913,7 +913,7 @@ void Player::calcWeaponSounds(int count) {
                 int sid = g_cws_sound3[g->itemIndex];
                 g->field_0x89 = 1;
                 (void) sid;
-                Globals::gGlobals->addSoundResourceToList(*g_cws_sound2);
+                Globals::globals->addSoundResourceToList(*g_cws_sound2);
                 return;
             }
         }

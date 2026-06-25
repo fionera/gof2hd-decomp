@@ -210,7 +210,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                 Globals::galaxy->getSystems();
         if (status->getCurrentCampaignMission() == 0x17 &&
             station->getIndex() == 10) {
-            AbyssEngine::String name = Globals::gGlobals->getRandomName(0, true);
+            AbyssEngine::String name = Globals::globals->getRandomName(0, true);
             Agent *agent = new Agent(-1, name, station->getIndex(),
                                      status->getSystem(), 0, 1, -1, -1, -1, -1);
             agent->setOffer(2);
@@ -244,7 +244,7 @@ Array<Agent *> *Generator::createAgents(Station *station) {
                         if (agent->isGenericAgent() && agent->getOffer() != 7) {
                             result->data()[i] = nullptr;
                             AbyssEngine::String name =
-                                    Globals::gGlobals->getRandomName(race, true);
+                                    Globals::globals->getRandomName(race, true);
                             agent = new Agent(-1, name, station->getIndex(),
                                               status->getSystem(), race, 1, -1,
                                               -1, -1, -1);
@@ -508,7 +508,7 @@ Mission *Generator::createMission(Agent *agent,
     if (type == 8) {
         costs = (int) ((float) costs * 0.5f);
     } else if (type == 6) {
-        AbyssEngine::String targetName = Globals::gGlobals->getRandomName(0, true);
+        AbyssEngine::String targetName = Globals::globals->getRandomName(0, true);
         mission->setTargetName(targetName);
     }
     int costRem = costs % 50;
@@ -577,7 +577,7 @@ Agent *Generator::createAgent(Station *station) {
         }
     }
 
-    AbyssEngine::String name = Globals::gGlobals->getRandomName(race, male != 0);
+    AbyssEngine::String name = Globals::globals->getRandomName(race, male != 0);
     Agent *agent = new Agent(-1, name, station->getIndex(), status->getSystem(),
                              race, male, -1, -1, -1, -1);
     agent->setOffer(offer);
@@ -590,7 +590,7 @@ Agent *Generator::createAgent(Station *station) {
         ArraySetLength(count, *friendNames);
         for (int i = 0; i < (int) count; ++i) {
             AbyssEngine::String *friendName = new AbyssEngine::String(
-                Globals::gGlobals->getRandomName(agent->getRace(), true));
+                Globals::globals->getRandomName(agent->getRace(), true));
             friendNames->data()[i] = friendName;
         }
         agent->setWingmanFriendNames(friendNames);
@@ -723,7 +723,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
         while (!unique) {
             if (!forced && (stationIndex != 0x4e || !first)) {
                 shipIndex =
-                        Globals::gGlobals->getRandomEnemyFighter(race);
+                        Globals::globals->getRandomEnemyFighter(race);
             }
             if (count > 1 &&
                 AERandom::gRandom->nextInt() < 0x16) {
@@ -733,7 +733,7 @@ Array<Ship *> *Generator::getShipBuyList(Station *station) {
                     if (enemyRace == race || enemyRace == 4) {
                         enemyRace = 8;
                     }
-                    shipIndex = Globals::gGlobals->getRandomEnemyFighter(enemyRace);
+                    shipIndex = Globals::globals->getRandomEnemyFighter(enemyRace);
                 }
             }
             unique = true;

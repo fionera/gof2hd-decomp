@@ -865,7 +865,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             obj = (ObjectGun *) ::operator new(0xe8);
             new(obj) RocketGun(owner, gun, g_cg_rocketTable[idx], 0, 0, kind,
                                (kind == ITEM_SORT_CLUSTER_MISSILE || kind == ITEM_SORT_MISSILE) ? 1 : 0, this);
-            Globals::gGlobals->addSoundResourceToList(**g_cg_rocketSnd);
+            Globals::globals->addSoundResourceToList(**g_cg_rocketSnd);
             break;
         }
         case ITEM_SORT_EMP_BOMB:
@@ -881,7 +881,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             obj = (ObjectGun *) ::operator new(300);
             new(obj) BombGun(gun, g_cg_bombTable[idx], 1, kind, attr == 1 ? 1 : 0,
                              this);
-            Globals::gGlobals->addSoundResourceToList(*g_cg_bombSnd);
+            Globals::globals->addSoundResourceToList(*g_cg_bombSnd);
             break;
         }
         case ITEM_SORT_TURRET:
@@ -912,7 +912,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->setPlayerGun(1);
             obj = (ObjectGun *) ::operator new(0xd4);
             new(obj) MineGun(gun, g_cg_mineTable[idx], 1, ITEM_SORT_MINE, this);
-            Globals::gGlobals->addSoundResourceToList(*g_cg_mineSnd);
+            Globals::globals->addSoundResourceToList(*g_cg_mineSnd);
             break;
         }
         case ITEM_SORT_SENTRY_GUN: {
@@ -923,7 +923,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->setPlayerGun(1);
             obj = (ObjectGun *) ::operator new(0xb4);
             new(obj) SentryGun(gun, g_cg_sentryTable[idx], 1, ITEM_SORT_SENTRY_GUN, this);
-            Globals::gGlobals->addSoundResourceToList(*g_cg_mineSnd);
+            Globals::globals->addSoundResourceToList(*g_cg_mineSnd);
             break;
         }
         case ITEM_SORT_SHOCK_BLAST: {
@@ -934,7 +934,7 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
             gun->setPlayerGun(1);
             obj = (ObjectGun *) ::operator new(300);
             new(obj) BombGun(gun, g_cg_bombTable2a[idx], 1, ITEM_SORT_SHOCK_BLAST, 0, this);
-            Globals::gGlobals->addSoundResourceToList(*g_cg_bombSnd);
+            Globals::globals->addSoundResourceToList(*g_cg_bombSnd);
             break;
         }
         default:
@@ -943,12 +943,12 @@ Gun *Level::createGun(int idx, int owner, int kind, int hp, int dmg, int rate, i
     }
 
     switch (idx) {
-        case 0x29: Globals::gGlobals->addSoundResourceToList(**g_cg_snd29);
-        case 0x2a: Globals::gGlobals->addSoundResourceToList(**g_cg_snd2a);
-        case 0x2b: Globals::gGlobals->addSoundResourceToList(**g_cg_snd2b);
-        case 0x2c: Globals::gGlobals->addSoundResourceToList(**g_cg_snd2c);
-        case 0x2d: Globals::gGlobals->addSoundResourceToList(**g_cg_snd2d);
-        case 0x2e: Globals::gGlobals->addSoundResourceToList(**g_cg_snd2e);
+        case 0x29: Globals::globals->addSoundResourceToList(**g_cg_snd29);
+        case 0x2a: Globals::globals->addSoundResourceToList(**g_cg_snd2a);
+        case 0x2b: Globals::globals->addSoundResourceToList(**g_cg_snd2b);
+        case 0x2c: Globals::globals->addSoundResourceToList(**g_cg_snd2c);
+        case 0x2d: Globals::globals->addSoundResourceToList(**g_cg_snd2d);
+        case 0x2e: Globals::globals->addSoundResourceToList(**g_cg_snd2e);
         default: break;
     }
 
@@ -1482,7 +1482,7 @@ void Level::createMission() {
         this->enemies = new Array<KIPlayer *>();
         ArraySetLength(count, *(this->enemies));
 
-        Globals *globals = Globals::gGlobals;
+        Globals *globals = Globals::globals;
         for (unsigned i = 0; i < count; i = i + 1) {
             int fighter = (int) globals->getRandomEnemyFighter(9);
             int ship = (int) (intptr_t) this->createShip(9, 0, fighter, (Waypoint *) (intptr_t) 0, 1, 0);
@@ -3216,7 +3216,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         PlayerFighter *pf = (PlayerFighter *) ::operator new(0x2f0);
         new(pf) PlayerFighter(type, race, pl, 0, fx, fy, fz, 0);
         obj = (PlayerFixedObject *) pf;
-        AEGeometry *gg = Globals::gGlobals->getShipGroup(type, race, group);
+        AEGeometry *gg = Globals::globals->getShipGroup(type, race, group);
         obj->setShipGroup(gg, type, hostile != 0);
         if (this->missionPtr != 1 && this->missionPtr != 0x17) {
             AEGeometry *g = obj->parentGeometry;
@@ -3238,7 +3238,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         void *bv = nullptr;
         obj->setWreckedMeshId(wreck);
         obj->setBV((BoundingVolume *) bv);
-        AEGeometry *gg = Globals::gGlobals->getShipGroup(type, race, 0);
+        AEGeometry *gg = Globals::globals->getShipGroup(type, race, 0);
         obj->setShipGroup(gg, type, false);
         this->lodManager->addObject(obj->geometry);
         *(unsigned char *) &obj->field_0x40 = 1;
@@ -3521,7 +3521,7 @@ void Level::assignGuns() {
             }
             ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun, 0);
 
-            Globals::gGlobals
+            Globals::globals
                     ->addSoundResourceToList((*this->enemies)[i]->shipGroup == 9 ? 0x3e : 0x3d);
 
             KIPlayer *shipNow = (*this->enemies)[i];
@@ -3538,7 +3538,7 @@ void Level::assignGuns() {
                 new(r2) RocketGun(gun2->itemIndex, gun2, 0x37a0, 0, 0, gun2->weaponType, false, this);
                 ArrayAdd((AbstractGun *) r2, *(this->enemyGuns));
                 ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun2, 0);
-                Globals::gGlobals->addSoundResourceToList(0x54);
+                Globals::globals->addSoundResourceToList(0x54);
             }
 
             if ((unsigned) (camp2 - 0x9d) < 2 && ((KIPlayer *) (*this->enemies)[i])->shipGroupFlag == 0x31) {
@@ -3560,7 +3560,7 @@ void Level::assignGuns() {
                 gun3->fireDelay = 3000;
                 gun3->damage = gun3->damage << 2;
                 ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun3, 0);
-                Globals::gGlobals->addSoundResourceToList(0x54);
+                Globals::globals->addSoundResourceToList(0x54);
             }
 
             outIdx = outIdx + 1;
@@ -3584,7 +3584,7 @@ void Level::assignGuns() {
             gun->empDamage = attr;
             ((KIPlayer *) (*this->enemies)[i])->addGun((Gun *) gun, 0);
 
-            Globals::gGlobals->addSoundResourceToList(0x4a);
+            Globals::globals->addSoundResourceToList(0x4a);
             outIdx = outIdx + 1;
         }
     }
@@ -3904,7 +3904,7 @@ void Level::createWingmen() {
         int seed = **g_cwm_seedSrc;
         Globals::status->getWingmen();
         ((AbyssEngine::AERandom *) (intptr_t) seed)->setSeed((long long) seed);
-        int fighter = (int) Globals::gGlobals->getRandomEnemyFighter(Globals::status->field_0x30);
+        int fighter = (int) Globals::globals->getRandomEnemyFighter(Globals::status->field_0x30);
         int ship = (int) (intptr_t) createShip(5, 0, fighter, 0, 1, 0);
         (*arr)[i] = (KIPlayer *) (intptr_t) ship;
 
@@ -4100,7 +4100,7 @@ void Level::createScene() {
                 spawnRace = rng->nextInt();
                 if (rng->nextInt() < 0x1e) spawnRace = 8;
             }
-            int fighter = (int) Globals::gGlobals->getRandomEnemyFighter(spawnRace);
+            int fighter = (int) Globals::globals->getRandomEnemyFighter(spawnRace);
             Station *st3 = (Station *) Globals::status->getStation();
             if (((Station *) st3)->getIndex() == 100) {
                 int pick = rng->nextInt();

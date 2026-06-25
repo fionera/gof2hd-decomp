@@ -282,7 +282,7 @@ void DialogueWindow::loadContent() {
     }
 
     Agent *agent = mission == 0 ? (Agent *) 0 : mission->getAgent();
-    int soundId = Globals::gGlobals->getDialogueSoundId(textId, agent);
+    int soundId = Globals::globals->getDialogueSoundId(textId, agent);
     this->voiceSound = soundId;
     if (soundId >= 0) {
         sound->play(soundId, 0, 0, 0);

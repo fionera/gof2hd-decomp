@@ -389,7 +389,7 @@ void CutScene::replacePlayerShip(int /*a*/, int b) {
         char matrix[0x3c];
         memcpy(matrix, &oldGeom->getMatrix(), 0x3c);
 
-        AEGeometry *grp = Globals::gGlobals->getShipGroup(b, 0, false);
+        AEGeometry *grp = Globals::globals->getShipGroup(b, 0, false);
 
         Array<KIPlayer *> *en3 = this->level->getEnemies();
         (*en3)[0]->geometry = grp;

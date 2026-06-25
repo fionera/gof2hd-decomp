@@ -175,7 +175,6 @@ static_assert(offsetof(CtorSecondaryObject, flagAt13) == 0x13, "flagAt13");
 
 } // anonymous namespace
 
-Globals *Globals::gGlobals = nullptr;
 
 int Globals::is_dialogue_window_visible = 0;
 int Globals::is_choice_window_visible = 0;
@@ -243,8 +242,6 @@ char *Globals::cItemListPrice_02 = nullptr;
 char *Globals::cItemListPrice_03 = nullptr;
 char *Globals::cItemListPrice_04 = nullptr;
 
-Layout *Globals::gLayout = nullptr;
-void *Globals::gFont = nullptr;
 int Globals::gScreenWidth = 0;
 int Globals::gScreenHeight = 0;
 
@@ -335,11 +332,11 @@ float Globals::fire_x;
 float Globals::fire_y;
 float Globals::fire_z;
 Galaxy *Globals::galaxy;
-void *Globals::layout;
+Layout *Globals::layout;
 float Globals::boost_x;
 float Globals::boost_y;
 float Globals::boost_z;
-void *Globals::globals;
+Globals *Globals::globals;
 float Globals::pause_x;
 float Globals::pause_y;
 float Globals::pause_z;
@@ -691,7 +688,7 @@ String Globals::getBoundedString(const String &text, int width) {
         int font = (int) (long) *strPtr;
         String tmpText;
         tmpText.Set((const_cast<String *>(&text))->data);
-        Globals::gGlobals->getLine((unsigned) font, tmpText, width - 3, line);
+        Globals::globals->getLine((unsigned) font, tmpText, width - 3, line);
 
         String prefix;
         prefix.ctor_char(gGBS_prefix, false);
