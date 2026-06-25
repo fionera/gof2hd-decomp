@@ -242,7 +242,7 @@ extern "C" void ndk_checkPlaytimeAndSpendOfferwallCredits() {
     }
 }
 
-double gAccelFilterState[6];
+static double gAccelFilterState[6];
 
 extern "C" void ndk23_InitWithZip(const char *apkPath, const char *zipPath,
                        int width, int height) {

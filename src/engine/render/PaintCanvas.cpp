@@ -1566,7 +1566,7 @@ void *PaintCanvas::MaterialGetMaterial(unsigned int index) {
 }
 
 
-char *paintcanvas_g_bg_flag;
+static char *paintcanvas_g_bg_flag;
 
 void PaintCanvas::EndBG() {
     *paintcanvas_g_bg_flag = this->bgFlagSaved;

@@ -36,14 +36,14 @@ static int *g_ModMainMenu_suspendObj;
 
 static int *g_ModMainMenu_touchEndFlag;
 
-AbyssEngine::String **g_ModMainMenu_r2d_string;
+static AbyssEngine::String **g_ModMainMenu_r2d_string;
 static int *g_ModMainMenu_r2d_textId;
 static int *g_ModMainMenu_r2d_screenW;
 static int *g_ModMainMenu_r2d_screenH;
 
 static void **g_ModMainMenu_initSoundRes;
 
-void (*g_ModMainMenu_initAddSound)(void *, int);
+static void (*g_ModMainMenu_initAddSound)(void *, int);
 
 static void *g_ModMainMenu_initOptions;
 static void **g_ModMainMenu_initRecord;
