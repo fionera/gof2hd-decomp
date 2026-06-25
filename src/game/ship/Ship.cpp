@@ -1,4 +1,5 @@
 #include "game/ship/Ship.h"
+#include "game/core/Globals.h"
 #include "game/world/Standing.h"
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
@@ -161,8 +162,8 @@ void Ship::setCargo(Array<Item *> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    if (Status::gStatus->field_dc < freeSpace) {
-        Status::gStatus->field_dc = freeSpace;
+    if (Globals::status->field_dc < freeSpace) {
+        Globals::status->field_dc = freeSpace;
     }
 }
 
@@ -174,8 +175,8 @@ void Ship::replaceCargo(Array<Item *> *cargo) {
     }
     refreshValue();
     int freeSpace = (this->baseLoad + this->cargoPlus) - this->currentLoad;
-    if (Status::gStatus->field_dc < freeSpace) {
-        Status::gStatus->field_dc = freeSpace;
+    if (Globals::status->field_dc < freeSpace) {
+        Globals::status->field_dc = freeSpace;
     }
 }
 
@@ -254,8 +255,8 @@ int Ship::getFreeSpace() {
 void Ship::changeLoad(int delta) {
     this->currentLoad += delta;
     int freeSpace = (this->baseLoad - this->currentLoad) + this->cargoPlus;
-    if (Status::gStatus->field_dc < freeSpace) {
-        Status::gStatus->field_dc = freeSpace;
+    if (Globals::status->field_dc < freeSpace) {
+        Globals::status->field_dc = freeSpace;
     }
 }
 
@@ -548,8 +549,8 @@ void Ship::refreshValue() {
     this->boostSpeed = 0;
     this->boostDelay = 0;
     this->boostTime = 0;
-    if (Status::gStatus != 0 && Status::gStatus->getStanding() != 0) {
-        ((Standing *) ((void *) (intptr_t) Status::gStatus->getStanding()))->setPlayerSignatureRace(-1);
+    if (Globals::status != 0 && Globals::status->getStanding() != 0) {
+        ((Standing *) ((void *) (intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(-1);
     }
     this->value = this->price;
 
@@ -632,8 +633,8 @@ void Ship::refreshValue() {
                 case 0x1d: {
                     int idx = cur->getIndex();
                     this->signatureRace = idx - 0xbd;
-                    if (Status::gStatus != 0 && Status::gStatus->getStanding() != 0) {
-                        ((Standing *) ((void *) (intptr_t) Status::gStatus->getStanding()))->setPlayerSignatureRace(
+                    if (Globals::status != 0 && Globals::status->getStanding() != 0) {
+                        ((Standing *) ((void *) (intptr_t) Globals::status->getStanding()))->setPlayerSignatureRace(
                             this->signatureRace);
                     }
                     break;
@@ -676,11 +677,11 @@ void Ship::refreshValue() {
 }
 
 void Ship::adjustPrice() {
-    if (Status::gStatus->getStation() != 0 && this->price > 0) {
+    if (Globals::status->getStation() != 0 && this->price > 0) {
         ShipDataObj *root = *(ShipDataObj **) gShipDataRoot;
         ShipDataEntry *entry = root->table[this->index];
         int cat = entry->category;
-        SolarSystem *system = (SolarSystem *) (intptr_t) Status::gStatus->getSystem();
+        SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
         int race = system->getRace();
         ShipDataEntry *entry2 = root->table[this->index];
         float base = (float) entry2->basePrice;

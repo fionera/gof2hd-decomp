@@ -1,10 +1,11 @@
 #include "game/mission/Item.h"
+#include "game/core/Globals.h"
 #include "game/mission/Status.h"
 #include "game/ship/Ship.h"
 #include "game/world/Station.h"
 #include "engine/render/LODManager.h"
 
-static Status *&status = Status::gStatus;
+static Status *&status = Globals::status;
 
 Array<Item *> *Item::g_items = nullptr;
 

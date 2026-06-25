@@ -98,7 +98,7 @@ int MissionsWindow::OnTouchMove(int p1, int p2) {
     } else if (this->m_starMapActive) {
         this->m_pStarMap->OnTouchMove(p1, p2);
     } else {
-        if (Status::gStatus->wantedBoardAccessible()) {
+        if (Globals::status->wantedBoardAccessible()) {
             Array<TouchButton *> *arr = this->m_pTabButtons;
             for (unsigned i = 0; i < arr->size(); i++)
                 (*arr)[i]->OnTouchMove(p1, p2);
@@ -121,7 +121,7 @@ int MissionsWindow::OnTouchBegin(int p1, int p2) {
     } else if (this->m_starMapActive) {
         this->m_pStarMap->OnTouchBegin(p1, p2);
     } else {
-        if (Status::gStatus->wantedBoardAccessible()) {
+        if (Globals::status->wantedBoardAccessible()) {
             Array<TouchButton *> *arr = this->m_pTabButtons;
             for (unsigned i = 0; i < arr->size(); i++)
                 (*arr)[i]->OnTouchBegin(p1, p2);
@@ -256,7 +256,7 @@ int MissionsWindow::init() {
     this->m_choiceActive = 0;
 
     int topY = L->field_0xc + this->m_y + L->field_0x20 + L->field_0x5c + L->field_0x2c;
-    int reserve = (Status::gStatus->gameWon() == 0) ? L->field_0x30 : 0;
+    int reserve = (Globals::status->gameWon() == 0) ? L->field_0x30 : 0;
     this->m_pCampaignWindow = new ScrollTouchWindow(
         L->buttonInsetX + this->m_x, topY,
         (this->m_width >> 1) - (L->field_0x2c + L->buttonInsetX),
@@ -264,17 +264,17 @@ int MissionsWindow::init() {
         + L->field_0x2c * -2, false);
 
     CampaignMissionFlags *campFlags = *(CampaignMissionFlags **) g_mwi_campaign;
-    bool campShow = (Status::gStatus->gameWon() == 0) ||
+    bool campShow = (Globals::status->gameWon() == 0) ||
                     (campFlags->campaignVisibleFlagB != 0 ||
                      campFlags->campaignVisibleFlagA != 0);
     if (campShow) {
         String text("", false);
-        if (Status::gStatus->getCurrentCampaignMission() < 0xa4) {
+        if (Globals::status->getCurrentCampaignMission() < 0xa4) {
             String *t = g_mw_gameText->getText(titleId);
             text = *t;
         }
-        void *key = Status::gStatus;
-        Mission *cm = (Mission *) ((void *) (intptr_t) Status::gStatus->getCampaignMission());
+        void *key = Globals::status;
+        Mission *cm = (Mission *) ((void *) (intptr_t) Globals::status->getCampaignMission());
         int type = cm->getType();
         bool production = (type == 0xa7) || (cm->getType() == 0xae);
         String suffix("", false);
@@ -299,7 +299,7 @@ int MissionsWindow::init() {
         this->m_pCampaignWindow->setText(a, b);
     } else {
         bool useGold = Achievements::gAchievements->gotAllGoldMedals() != 0 &&
-                       ((Ship *) (Status::gStatus->getShip()))->getIndex() != 8;
+                       ((Ship *) (Globals::status->getShip()))->getIndex() != 8;
         String a("", false);
         String *t = g_mw_gameText->getText(titleId);
         String b(*t);
@@ -307,7 +307,7 @@ int MissionsWindow::init() {
         (void) useGold;
     }
 
-    int fmEmpty = Status::gStatus->getFreelanceMission()->isEmpty();
+    int fmEmpty = Globals::status->getFreelanceMission()->isEmpty();
     int half = this->m_width >> 1;
     int pad = L->field_0x2c;
     int rx = this->m_x + half + pad;
@@ -318,9 +318,9 @@ int MissionsWindow::init() {
             (((((this->m_y - ry) + this->m_height) - L->field_0x10) - L->field_0x24) - L->field_0x4c)
             - L->field_0x30, false);
 
-        Mission *fm = Status::gStatus->getFreelanceMission();
+        Mission *fm = Globals::status->getFreelanceMission();
         String text = Globals::gGlobals->getAgentMissionText(fm->getAgent());
-        void *key = Status::gStatus;
+        void *key = Globals::status;
         String body(text);
         int rew = fm->getReward();
         int bonus = fm->getBonus();
@@ -346,16 +346,16 @@ int MissionsWindow::init() {
         this->m_pFreelanceWindow->setText(a, b);
     }
 
-    if (Status::gStatus->inAlienOrbit() == 0) {
+    if (Globals::status->inAlienOrbit() == 0) {
         int btnY = ((this->m_width >> 1) >> 1) - L->buttonInsetX;
-        if (Status::gStatus->gameWon() == 0) {
+        if (Globals::status->gameWon() == 0) {
             String *t = g_mw_gameText->getText(titleId);
             this->m_pAcceptButton = new TouchButton(
                 *t, 0, L->buttonInsetX + this->m_x,
                 (((this->m_y + this->m_height) - L->field_0x10) - L->field_0x24) - L->field_0x2c,
                 btnY, '!', 4);
         }
-        if (Status::gStatus->getFreelanceMission()->isEmpty() == 0) {
+        if (Globals::status->getFreelanceMission()->isEmpty() == 0) {
             String *t = g_mw_gameText->getText(titleId);
             this->m_pRejectButton = new TouchButton(
                 *t, 0, this->m_x + (this->m_width >> 1) + L->field_0x2c,
@@ -377,7 +377,7 @@ int MissionsWindow::init() {
     this->m_mode = 0;
     this->m_hangarNeedsUpdate = 0;
 
-    if (Status::gStatus->wantedBoardAccessible() != 0) {
+    if (Globals::status->wantedBoardAccessible() != 0) {
         if (this->m_pWantedWindow == nullptr)
             this->m_pWantedWindow = new WantedWindow();
         else
@@ -411,7 +411,7 @@ void MissionsWindow::draw() {
         L->drawHeader(header);
     }
 
-    if (Status::gStatus->wantedBoardAccessible() != 0) {
+    if (Globals::status->wantedBoardAccessible() != 0) {
         Array<TouchButton *> *tabs = this->m_pTabButtons;
         for (unsigned int i = 0; i < tabs->size(); i++)
             (*tabs)[i]->draw();
@@ -459,7 +459,7 @@ void MissionsWindow::draw() {
                    ((oh - (c + p2c * 2 + p20 + p5c)) - p10) - p24, box, (unsigned) (uintptr_t) canvas);
     }
 
-    Mission *fm = Status::gStatus->getFreelanceMission();
+    Mission *fm = Globals::status->getFreelanceMission();
     if (fm != nullptr && fm->isEmpty() == 0 && this->m_pAgentImageParts != nullptr) {
         (*g_mwd_imageFactory)->drawChar(
             this->m_pAgentImageParts, ox + (ow >> 1) + L->field_0x2c,
@@ -512,7 +512,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             return;
         }
         if (r == 0) {
-            Status *st = Status::gStatus;
+            Status *st = Globals::status;
             Mission *fm = st->getFreelanceMission();
             int type = fm->getType();
             bool clearCargo = (type == 0) || (fm->getType() == 3) || (fm->getType() == 5);
@@ -545,7 +545,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
     }
 
     if (this->m_starMapActive == 0) {
-        if (Status::gStatus->wantedBoardAccessible() != 0) {
+        if (Globals::status->wantedBoardAccessible() != 0) {
             Array<TouchButton *> *tabs = this->m_pTabButtons;
             for (unsigned int i = 0; i < tabs->size(); i++) {
                 if ((*tabs)[i]->OnTouchEnd(y, z) != 0)
@@ -562,7 +562,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
             this->m_pStarMap = map;
             if (map == nullptr) {
                 StarMap *m = new StarMap(true,
-                                         (Mission *) (void *) (intptr_t) Status::gStatus->getCampaignMission(),
+                                         (Mission *) (void *) (intptr_t) Globals::status->getCampaignMission(),
                                          false, -1);
                 ModStation *mod2 = (ModStation *) appMgr->GetApplicationModule(5);
                 mod2->starMap = m;
@@ -570,7 +570,7 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
                 this->m_pStarMap = mod3->starMap;
             } else {
                 this->m_pStarMap->init(true,
-                                       (Mission *) (void *) (intptr_t) Status::gStatus->getCampaignMission(),
+                                       (Mission *) (void *) (intptr_t) Globals::status->getCampaignMission(),
                                        false, -1);
             }
             this->m_starMapActive = 1;
@@ -588,13 +588,13 @@ void MissionsWindow::OnTouchEnd(int y, int z) {
                 this->m_pStarMap = map;
                 if (map == nullptr) {
                     StarMap *m = new StarMap(true,
-                                             Status::gStatus->getFreelanceMission(), false, -1);
+                                             Globals::status->getFreelanceMission(), false, -1);
                     ModStation *mod2 = (ModStation *) appMgr->GetApplicationModule(5);
                     mod2->starMap = m;
                     this->m_pStarMap = m;
                 } else {
                     this->m_pStarMap->init(true,
-                                           Status::gStatus->getFreelanceMission(), false, -1);
+                                           Globals::status->getFreelanceMission(), false, -1);
                 }
                 this->m_starMapActive = 1;
                 (*g_mwt_resetLayout)->resetWindowDimensions();
@@ -659,22 +659,22 @@ void MissionsWindow::update(int dt) {
     this->m_pCampaignWindow->update(dt);
     this->m_pFreelanceWindow->update(dt);
 
-    Mission *cm = (Mission *) ((void *) (intptr_t) Status::gStatus->getCampaignMission());
+    Mission *cm = (Mission *) ((void *) (intptr_t) Globals::status->getCampaignMission());
     int type = cm->getType();
     bool relevant = (type == 0xa7) || (cm->getType() == 0xae);
 
     if (relevant) {
         CampaignMissionFlags *camp = *(CampaignMissionFlags **) g_mw_campaign;
-        bool show = (Status::gStatus->gameWon() == 0) ||
+        bool show = (Globals::status->gameWon() == 0) ||
                     (camp->campaignVisibleFlagB != 0 || camp->campaignVisibleFlagA != 0);
         if (show) {
             String text("", false);
-            if (Status::gStatus->getCurrentCampaignMission() < 0xa4) {
+            if (Globals::status->getCurrentCampaignMission() < 0xa4) {
                 String *titleTxt = g_mw_gameText->getText(
-                    g_mw_titleTable[Status::gStatus->getCurrentCampaignMission()]);
+                    g_mw_titleTable[Globals::status->getCurrentCampaignMission()]);
                 text = *titleTxt;
 
-                void *key = Status::gStatus;
+                void *key = Globals::status;
                 String hdr(text);
                 int need = cm->getProductionGoodAmount();
                 int have = cm->getStatusValue();

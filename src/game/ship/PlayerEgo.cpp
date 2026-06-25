@@ -172,7 +172,7 @@ static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "mi
 #endif
 
 
-static inline Status *PE_status() { return Status::gStatus; }
+static inline Status *PE_status() { return Globals::status; }
 
 
 
@@ -823,9 +823,9 @@ unsigned char PlayerEgo::isChargingCloak() {
 
 bool PlayerEgo::isDockedToMiningPlant() {
     if (this->dockedFlag != 0 && this->dockingPointIndex == 1) {
-        if (((Mission *) (Status::gStatus->getMission()))->isEmpty() != 0
-            && Status::gStatus->inAlienOrbit() == 0) {
-            return Station_getIndex(Status::gStatus->getStation()) == 0x67;
+        if (((Mission *) (Globals::status->getMission()))->isEmpty() != 0
+            && Globals::status->inAlienOrbit() == 0) {
+            return Station_getIndex(Globals::status->getStation()) == 0x67;
         }
     }
     return false;
@@ -948,8 +948,8 @@ int PlayerEgo::tryToStartEmergencySystem() {
     ((Player *) (this->player))->setHitpoints(1);
     this->emergencySystemTimer = this->emergencyVal1;
     ((Player *) (this->player))->setVulnerable(0);
-    void *s1 = Status::gStatus->getShip();
-    Item *eq = ((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x1b);
+    void *s1 = Globals::status->getShip();
+    Item *eq = ((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x1b);
     ((Ship *) (s1))->removeEquipment(eq);
     ((FModSound *) (*(void **) g_emerg_fmod))->play(0x45b, (Vector *) 0, (Vector *) 0, 1.0f);
     return 1;
@@ -1224,11 +1224,11 @@ void PlayerEgo::setRotation(float rx, float ry, float rz) {
 
 void PlayerEgo::StopEngineSound() {
     if (this->dockedFlag == 0 || this->dockingPointIndex != 1) {
-        if (((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x26) != 0
-            && Status::gStatus->inAlienOrbit() == 0) {
-            int idx = Station_getIndex(Status::gStatus->getStation());
-            int cm = Status::gStatus->getCurrentCampaignMission();
-            float g = Status::gStatus->getGammaRayDamagePerSecond(idx, cm);
+        if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
+            && Globals::status->inAlienOrbit() == 0) {
+            int idx = Station_getIndex(Globals::status->getStation());
+            int cm = Globals::status->getCurrentCampaignMission();
+            float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
             if (0.0f < g && this->engineSoundId != -1) {
                 ((FModSound *) (*(void **) g_engine_fmod))->play((int) (intptr_t)((void *&) this->engineSoundId),
                                                                  (Vector *) 0, (Vector *) 0, g);
@@ -1451,7 +1451,7 @@ void PlayerEgo::setLevel(Level *level) {
     void *sys = (void *) ((ParticleSystemManager *) (src))->addSystem(gm, ParticleSettings::ParticleSet_9, 0);
     this->currentSystem = (int) (intptr_t) sys;
     ((ParticleSystemManager *) (this->level->field_74))->enableSystemEmit((int) (intptr_t) sys, 0);
-    if (Status::gStatus->getCurrentCampaignMission() > 1) return;
+    if (Globals::status->getCurrentCampaignMission() > 1) return;
     void *src2 = (void *) (intptr_t) this->level->particleEmitBoolPtr;
     Matrix *gm2 = &((AEGeometry *) this->geometry)->getMatrix();
     void *sys2 = (void *) ((ParticleSystemManager *) (src2))->addSystem(gm2, ParticleSettings::ParticleSet_0xf, 0);
@@ -1699,11 +1699,11 @@ PlayerEgo::PlayerEgo(Player *player) {
 
 
 void PlayerEgo::PlayEngineSound() {
-    if (((Ship *) (Status::gStatus->getShip()))->getFirstEquipmentOfSort(0x26) != 0
-        && Status::gStatus->inAlienOrbit() == 0) {
-        int idx = Station_getIndex(Status::gStatus->getStation());
-        int cm = Status::gStatus->getCurrentCampaignMission();
-        float g = Status::gStatus->getGammaRayDamagePerSecond(idx, cm);
+    if (((Ship *) (Globals::status->getShip()))->getFirstEquipmentOfSort(0x26) != 0
+        && Globals::status->inAlienOrbit() == 0) {
+        int idx = Station_getIndex(Globals::status->getStation());
+        int cm = Globals::status->getCurrentCampaignMission();
+        float g = Globals::status->getGammaRayDamagePerSecond(idx, cm);
         if (0.0f < g && this->engineSoundId != -1) {
             ((FModSound *) (*(void **) g_engine_fmod))->play((int) (intptr_t)((void *&) this->engineSoundId),
                                                              (Vector *) 0, (Vector *) 0, g);

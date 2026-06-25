@@ -1,4 +1,5 @@
 #include "game/mission/BluePrint.h"
+#include "game/core/Globals.h"
 #include "game/world/Galaxy.h"
 #include "game/mission/Item.h"
 #include "game/mission/Status.h"
@@ -64,7 +65,7 @@ void BluePrint::unlock() {
 
 void BluePrint::reset() {
     productionCount += 1;
-    Status::gStatus->incGoodsProduced(1);
+    Globals::status->incGoodsProduced(1);
     Array<int> *ql = getQuantityList();
     for (uint32_t i = 0; i < ingredientCounters->size(); i++)
         (*ingredientCounters)[i] = (*ql)[i];
@@ -146,7 +147,7 @@ void BluePrint::addItem(Item *item, int amount, int station) {
         spentValue += item->getSinglePrice() * amount;
         if (station >= 0 && stationIndex < 0) {
             stationIndex = station;
-            Station *current = Status::gStatus->getStation();
+            Station *current = Globals::status->getStation();
             if (current->getIndex() == station) {
                 stationName = current->getName();
             } else {

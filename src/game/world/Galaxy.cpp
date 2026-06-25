@@ -82,7 +82,7 @@ float Galaxy::distance(SolarSystem *a, SolarSystem *b) {
 }
 
 void *Galaxy::getPlasmaProbabilities(Station *station) {
-    int alien = Status::gStatus->inAlienOrbit() ? 1 : 0;
+    int alien = Globals::status->inAlienOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
     Array<Item *> *itemTable = Item::g_items;
 
@@ -159,8 +159,8 @@ void *Galaxy::getPlasmaProbabilities(Station *station) {
 }
 
 void *Galaxy::getAsteroidProbabilities(Station *station) {
-    int alien = Status::gStatus->inAlienOrbit() ? 1 : 0;
-    int supernova = Status::gStatus->inSupernovaOrbit() ? 1 : 0;
+    int alien = Globals::status->inAlienOrbit() ? 1 : 0;
+    int supernova = Globals::status->inSupernovaOrbit() ? 1 : 0;
     Array<SolarSystem *> *systems = alien == 0 ? this->systems : 0;
     Array<Item *> *itemTable = Item::g_items;
 
@@ -232,7 +232,7 @@ void *Galaxy::getAsteroidProbabilities(Station *station) {
     for (int j = 0; j < 22; j += 2) {
         out[j] = ids[j / 2];
         out[j + 1] = probs[j / 2];
-        if (supernova != 0 && Status::gStatus->getCurrentCampaignMission() > 0x59)
+        if (supernova != 0 && Globals::status->getCurrentCampaignMission() > 0x59)
             out[j] = 0xd9;
     }
 
@@ -243,7 +243,7 @@ void *Galaxy::getAsteroidProbabilities(Station *station) {
 
 int Galaxy::getStation(int index) {
     if (index < 0)
-        return (int) (intptr_t) Status::gStatus->playerStation;
+        return (int) (intptr_t) Globals::status->playerStation;
 
     FileRead loader;
     return loader.loadStation(index);

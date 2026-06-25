@@ -1,4 +1,5 @@
 #include "game/ship/PlayerTurret.h"
+#include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/world/Level.h"
@@ -283,11 +284,11 @@ void PlayerTurret::update(int delta) {
     if ((faction & 0xfffffffeU) == 8) {
         player->enemyFlags = 1;
     } else {
-        Standing *standing = (Standing *) (intptr_t) Status::gStatus->getStanding();
+        Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
         bool enemy = standing->isEnemy(faction);
         bool friendly = false;
         if ((faction & 0xfffffffeU) != 8) {
-            friendly = ((Standing *) (intptr_t) Status::gStatus->getStanding())->isFriend(faction);
+            friendly = ((Standing *) (intptr_t) Globals::status->getStanding())->isFriend(faction);
         }
         player->enemyFlags = (uint16_t)((friendly ? 0x100 : 0) | (enemy ? 1 : 0));
     }

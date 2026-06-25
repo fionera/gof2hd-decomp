@@ -1,4 +1,5 @@
 #include "game/ship/KIPlayer.h"
+#include "game/core/Globals.h"
 #include "engine/core/AERandom.h"
 #include "game/mission/Item.h"
 #include "game/world/Level.h"
@@ -438,7 +439,7 @@ void KIPlayer::captureCrate(Hud *hud) {
         if ((unsigned) (this->state - 3) >= 2)
             amount = ((AbyssEngine::AERandom *) (*(void **) gAERandom))->nextInt();
 
-        Status *status = Status::gStatus;
+        Status *status = Globals::status;
 
         int free1 = status->getShip()->getFreeSpace();
         int amt = amount;
@@ -509,12 +510,12 @@ void KIPlayer::captureCrate(Hud *hud) {
         if (special) {
             this->lostMissionCrateToEgo = 1;
         } else if (this->shipGroup == 9) {
-            Status *st = Status::gStatus;
+            Status *st = Globals::status;
             st->field_cc = item->getAmount() + st->field_cc;
         } else {
             int idx = item->getIndex();
             if (idx >= 0x84 && idx < 0x9a) {
-                Status *st = Status::gStatus;
+                Status *st = Globals::status;
                 (*st->field_ac)[idx - 0x84] = true;
             }
         }

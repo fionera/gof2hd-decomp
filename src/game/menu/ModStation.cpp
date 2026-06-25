@@ -145,7 +145,7 @@ void *ScrollTouchBox_dtor(void *p);
 
 
 void ModStation::autosave() {
-    if (Status::gStatus->getPlayingTime() - 1LL < 0)
+    if (Globals::status->getPlayingTime() - 1LL < 0)
         return;
     RecordHandler *rh = new RecordHandler();
     rh->recordStoreWrite(0);
@@ -163,16 +163,16 @@ void ModStation::enterStation() {
     {
         void(Status:: * depart)(Station *) =
                 reinterpret_cast<void (Status::*)(Station *)>(&Status::departStation);
-        (Status::gStatus->*depart)(Status::gStatus->getStation());
+        (Globals::status->*depart)(Globals::status->getStation());
     }
-    ((Station *) (Status::gStatus->getStation()))->visit();
+    ((Station *) (Globals::status->getStation()))->visit();
     Achievements::gAchievements->applyNewMedals();
 
     Ship * (*getShip)(Status *) = g_ModStation_es_getShip;
-    Item *e10 = ((Ship *) (getShip(Status::gStatus)))->getFirstEquipmentOfSort(10);
-    Item *e9 = ((Ship *) (getShip(Status::gStatus)))->getFirstEquipmentOfSort(9);
-    int shipIdx = ((Ship *) (getShip(Status::gStatus)))->getIndex();
-    Status::gStatus->field_150 = shipIdx;
+    Item *e10 = ((Ship *) (getShip(Globals::status)))->getFirstEquipmentOfSort(10);
+    Item *e9 = ((Ship *) (getShip(Globals::status)))->getFirstEquipmentOfSort(9);
+    int shipIdx = ((Ship *) (getShip(Globals::status)))->getIndex();
+    Globals::status->field_150 = shipIdx;
 
     int v;
     if (e10 == 0) {
@@ -180,16 +180,16 @@ void ModStation::enterStation() {
     } else {
         v = ((Item *) (e10))->getIndex();
     }
-    Status::gStatus->field_154 = v;
+    Globals::status->field_154 = v;
 
     if (e9 == 0) {
         v = -1;
     } else {
         v = ((Item *) (e9))->getIndex();
     }
-    Status::gStatus->field_158 = v;
-    Status::gStatus->field_124 = 0;
-    Status::gStatus->field_11c = 0;
+    Globals::status->field_158 = v;
+    Globals::status->field_124 = 0;
+    Globals::status->field_11c = 0;
 }
 
 
@@ -531,15 +531,15 @@ void ModStation::checkMedals() {
         int *medal = (*medalArr)[idx];
         ((ChoiceWindow *) (this->medalChoiceWindow))->setMedal(medal[0], medal[1]);
         int delta = *g_ModStation_cm_credit2;
-        if (Status::gStatus->hardCoreMode() == 0)
-            Status::gStatus->changeCredits(delta);
+        if (Globals::status->hardCoreMode() == 0)
+            Globals::status->changeCredits(delta);
         int *p = (*medalArr)[this->medalIndex];
         this->addAchievement(p[0], p[1]);
         return;
     }
 
     int delta = *g_ModStation_cm_credit1;
-    if (Status::gStatus->getCurrentCampaignMission() == 1)
+    if (Globals::status->getCurrentCampaignMission() == 1)
         ((ModStation *) ((ModStation *) 1))->addAchievement(0, 1);
     this->medalArray = 0;
     int *medals = Achievements::gAchievements->getNewMedals();
@@ -575,8 +575,8 @@ void ModStation::checkMedals() {
     this->medalChoiceWindow = cw;
     int *medal = (*arr)[0];
     cw->setMedal(medal[0], medal[1]);
-    if (Status::gStatus->hardCoreMode() == 0)
-        Status::gStatus->changeCredits(delta);
+    if (Globals::status->hardCoreMode() == 0)
+        Globals::status->changeCredits(delta);
     int *p = (*arr)[0];
     this->addAchievement(p[0], p[1]);
 }
@@ -1148,15 +1148,15 @@ void ModStation::resetIdleCamForHangar() {
                                 this->camKeyZ);
 
     int race;
-    Station *st = Status::gStatus->getStation();
+    Station *st = Globals::status->getStation();
     if (Station_getIndex(st) == 0x65) {
         race = 8;
     } else {
-        st = Status::gStatus->getStation();
+        st = Globals::status->getStation();
         if (Station_getIndex(st) == 100) {
             race = 7;
         } else {
-            race = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
+            race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
         }
     }
 
@@ -2427,7 +2427,7 @@ void ModStation::OnTouchBegin(int x, int y, void *touch) {
     if (flag != 0) {
         if (((Radio *) (intptr_t) this->activeMission)->lastMessageShown() != 0) {
             (unsigned char &) this->stationActive = 0;
-            Status::gStatus->nextCampaignMission(true);
+            Globals::status->nextCampaignMission(true);
             unsigned int mod = *(unsigned int *) ApplicationManager::gAppManager;
             *(int *) *g_ModStation_tb_clear = 0;
 

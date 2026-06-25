@@ -1,4 +1,5 @@
 #include "game/ui/WantedWindow.h"
+#include "game/core/Globals.h"
 #include "game/world/Galaxy.h"
 #include "game/ui/ScrollTouchWindow.h"
 #include "game/world/StarMap.h"
@@ -357,9 +358,9 @@ void WantedWindow::draw() {
                            layout->field_0x44,
                            textY, false);
 
-        int campaign = Status::gStatus->getCurrentCampaignMission();
+        int campaign = Globals::status->getCurrentCampaignMission();
         if ((i == 0 && campaign == 0x80) ||
-            (i == 1 && Status::gStatus->getCurrentCampaignMission() == 0x82)) {
+            (i == 1 && Globals::status->getCurrentCampaignMission() == 0x82)) {
             String marked = wanted->getName();
             marked += String(" *", false);
             int textW = canvas->GetTextWidth(font, marked);
@@ -465,7 +466,7 @@ int WantedWindow::init() {
 
     this->wantedList = new Array<Wanted *>();
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     Array<Wanted *> *allWanted = status->getWanted();
     Layout *layout = *g_WantedWindow_init_layout;
 

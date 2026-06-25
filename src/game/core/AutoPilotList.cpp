@@ -1,4 +1,5 @@
 #include "game/core/AutoPilotList.h"
+#include "game/core/Globals.h"
 #include "engine/core/GameText.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/ui/Layout.h"
@@ -44,14 +45,14 @@ AutoPilotList::AutoPilotList(Level *level) {
         this->count++;
     }
 
-    if (((SolarSystem *) Status::gStatus->getSystem())->currentOrbitHasWarpGate() != 0) {
+    if (((SolarSystem *) Globals::status->getSystem())->currentOrbitHasWarpGate() != 0) {
         String *s = new String;
         s->Set(((*g_APL_gametext)->getText(0x223))->data);
         (*this->entries)[1] = s;
         this->count++;
     }
 
-    if (Status::gStatus->inEmptyOrbit() == 0) {
+    if (Globals::status->inEmptyOrbit() == 0) {
         String c = ((Station *) (&c))->getName();
         String b(kApLit2);
         String a = b + c;

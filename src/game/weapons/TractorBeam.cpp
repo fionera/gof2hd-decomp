@@ -1,4 +1,5 @@
 #include "game/weapons/TractorBeam.h"
+#include "game/core/Globals.h"
 #include "game/ship/Ship.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
@@ -72,7 +73,7 @@ void TractorBeam::update(int frameTime, Radar *radar, Level *level, Hud *hud) {
     this->dirZ = working.z;
     float dist = VectorLength(working);
 
-    int shipIndex = Status::gStatus->getShip()->getIndex();
+    int shipIndex = Globals::status->getShip()->getIndex();
     Vector offset = {0.0f, 0.0f, 0.0f};
     if (shipIndex == 0x2c) {
         offset = player->GetDirVector() * 0.5f;

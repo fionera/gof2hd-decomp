@@ -190,7 +190,7 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     engine->appManager->CheatAddCode(AbyssEngine::String("373352623", false), 2);
 
     Globals::gLayout->initTip();
-    Status::gStatus->resetGame();
+    Globals::status->resetGame();
     AbyssEngine::Engine::vfc = true;
     AERandom::gRandom->reset();
     engine->appManager->SetCurrentApplicationModule(0);

@@ -41,7 +41,7 @@ g_Generator_stationBlockList[0x34];
 
 int Generator::generateStationIndex(Array<SolarSystem *> *systems, int station) {
     AbyssEngine::AERandom *random = AERandom::gRandom;
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     bool accepted = false;
     int selected = 0;
 
@@ -129,7 +129,7 @@ static ImageFactory **volatile
 g_Generator_enemyImages;
 
 Array<Agent *> *Generator::createAgents(Station *station) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     AbyssEngine::AERandom *random = AERandom::gRandom;
 
     Array<Agent *> *result = nullptr;
@@ -292,7 +292,7 @@ g_Generator_targetNames;
 
 Mission *Generator::createMission(Agent *agent,
                                   Array<SolarSystem *> *systems) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     AbyssEngine::AERandom *random = AERandom::gRandom;
 
     int agentStation = agent->getStation();
@@ -539,7 +539,7 @@ static Array<Item *> **volatile
 g_Generator_agentItems;
 
 Agent *Generator::createAgent(Station *station) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     AbyssEngine::AERandom *random = AERandom::gRandom;
 
     int race = ((SolarSystem *) (intptr_t) status->getSystem())->getRace();
@@ -638,7 +638,7 @@ static void **volatile
 g_Generator_wantedList;
 
 Array<Ship *> *Generator::getShipBuyList(Station *station) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     if ((station->getSystem() == 0xf &&
          status->getCurrentCampaignMission() < 0x10) ||
         station->getIndex() == 0x65 || station->getIndex() == 0x6c ||
@@ -879,7 +879,7 @@ static int volatile
 g_Generator_blockedItems[9];
 
 Array<Item *> *Generator::getItemBuyList(Station *station) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     int stationIndex = station->getIndex();
 
     if (stationIndex == 0x4e &&
@@ -1176,9 +1176,9 @@ Array<int> *Generator::getLootList(int itemIndex, int amount) {
         result->data()[out | 1] = count + 1;
     }
 
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     if (ship->hasJumpDrive() != 0) {
-        ship = Status::gStatus->getShip();
+        ship = Globals::status->getShip();
         if (ship->hasCargo(0x7a, 1) == 0 &&
             AERandom::gRandom->nextInt() < 10) {
             result->data()[0] = 0x7a;

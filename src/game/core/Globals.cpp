@@ -437,7 +437,7 @@ static Status **g_status;
 static void *const gLB_dest = nullptr;
 
 void Globals::reportLeaderboards() {
-    int kills = Status::gStatus->getKills();
+    int kills = Globals::status->getKills();
     *(int *) gLB_dest = kills;
 }
 
@@ -912,11 +912,11 @@ String Globals::getAgentMissionText(Agent *agent) {
             int offer = agent->getOffer();
 
             if (offer == 8) {
-                int ship = (int) (long) Status::gStatus->getShip();
+                int ship = (int) (long) Globals::status->getShip();
                 int price = ((Ship *) (ship))->getPrice();
                 int pct = agent->getModPricePercentage();
                 agent->setSellItemPrice(idiv(price * pct, 100));
-                ship = (int) (long) Status::gStatus->getShip();
+                ship = (int) (long) Globals::status->getShip();
                 int modIdx = agent->getSellModIndex();
                 if (((Ship *) (ship))->hasModInstalled(modIdx) != 0) {
                     void *t = ((GameText *) ((void *) (long) **(int **) gGAMT_modText))->getText(modIdx);
@@ -1383,7 +1383,7 @@ unsigned Globals::getRandomEnemyFighter(int kind) {
     }
     unsigned r;
     if (t == 1) {
-        if (Status::gStatus->dlc1Won() == 0) {
+        if (Globals::status->dlc1Won() == 0) {
             r = 9;
         } else {
             int n = AERandom_nextIntB(*(int *) gREF_rng1, 0x64);
@@ -2203,7 +2203,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     Achievements::gAchievements = (Achievements *) ach;
     void *status = ::operator new(0x1f0);
     Status_ctor(status);
-    Status::gStatus = (Status *) status;
+    Globals::status = (Status *) status;
     ImageFactory *imgFac = new ImageFactory();
     **gI_imgFac = imgFac;
 
@@ -2232,7 +2232,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     RecordHandler *rh = new RecordHandler();
     void **rhSlotP = *gI_recHandler;
     *rhSlotP = rh;
-    Status::gStatus->resetGame();
+    Globals::status->resetGame();
     ((RecordHandler *) (*rhSlotP))->loadOptions();
 
     void *fmod = ::operator new(0x243c);
@@ -2310,38 +2310,38 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
     }
     if (mode == 1) {
         int *statSnd = *(int **) gPM_sndStatus;
-        if (Status::gStatus->inAlienOrbit() != 0) {
+        if (Globals::status->inAlienOrbit() != 0) {
             int *sndP = *(int **) gPM_snd1;
             ((FModSound *) (*sndP))->stop(0);
             snd = *sndP;
             track = 0x88;
-            int m = Status::gStatus->getCurrentCampaignMission();
-            if (m > 0x92 && Status::gStatus->getCurrentCampaignMission() < 0x9a) {
+            int m = Globals::status->getCurrentCampaignMission();
+            if (m > 0x92 && Globals::status->getCurrentCampaignMission() < 0x9a) {
                 track = 0x91;
             }
             ((FModSound *) (snd))->play(track, 0, 0, (float) vol);
             return;
         }
-        ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
+        ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
         int *sndP = *(int **) gPM_snd1;
         ((FModSound *) (*sndP))->stop(0);
-        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x6c) {
+        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
             ((FModSound *) (*sndP))->play(0x92, 0, 0, (float) vol);
             return;
         }
-        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x65) {
+        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
             ((FModSound *) (*sndP))->play(0x93, 0, 0, (float) vol);
             return;
         }
-        if (Status::gStatus->inSupernovaSystem() != 0) {
-            if (Status::gStatus->getCurrentCampaignMission() == 0x59) {
+        if (Globals::status->inSupernovaSystem() != 0) {
+            if (Globals::status->getCurrentCampaignMission() == 0x59) {
                 ((FModSound *) (*sndP))->play(0x8be, 0, 0, (float) vol);
                 return;
             }
-            if (Status::gStatus->getMission() != 0 && ((Mission *) (long) Status::gStatus->getMission())->isEmpty() == 0) {
-                int tgt = ((Mission *) (long) Status::gStatus->getMission())->getTargetStation();
-                if (tgt == Station_getIndex((int) (long) Status::gStatus->getStation())) {
-                    int cm = Status::gStatus->getCurrentCampaignMission();
+            if (Globals::status->getMission() != 0 && ((Mission *) (long) Globals::status->getMission())->isEmpty() == 0) {
+                int tgt = ((Mission *) (long) Globals::status->getMission())->getTargetStation();
+                if (tgt == Station_getIndex((int) (long) Globals::status->getStation())) {
+                    int cm = Globals::status->getCurrentCampaignMission();
                     track = cm < 0x6a ? 0x8c1 : 0x8c2;
                     ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
                     return;
@@ -2350,18 +2350,18 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
             ((FModSound *) (*sndP))->play(0x94, 0, 0, (float) vol);
             return;
         }
-        if (Status::gStatus->inDeepScienceOrbit() != 0) {
+        if (Globals::status->inDeepScienceOrbit() != 0) {
             ((FModSound *) (*sndP))->play(0x98, 0, 0, (float) vol);
             return;
         }
-        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x78 &&
-            (Status::gStatus->getCurrentCampaignMission() == 0x7e ||
-             Status::gStatus->getCurrentCampaignMission() == 0x85)) {
+        if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x78 &&
+            (Globals::status->getCurrentCampaignMission() == 0x7e ||
+             Globals::status->getCurrentCampaignMission() == 0x85)) {
             ((FModSound *) (*sndP))->play(0x8bf, 0, 0, (float) vol);
             return;
         }
         const int *table = &gPM_table1;
-        track = table[((SolarSystem *) (long) Status::gStatus->getSystem())->getRace()];
+        track = table[((SolarSystem *) (long) Globals::status->getSystem())->getRace()];
         ((FModSound *) (*sndP))->play(track, 0, 0, (float) vol);
         return;
     }
@@ -2369,21 +2369,21 @@ void Globals::playMusicAndFadeOutCurrent(int mode) {
         return;
     }
 
-    int race = ((SolarSystem *) (long) Status::gStatus->getSystem())->getRace();
+    int race = ((SolarSystem *) (long) Globals::status->getSystem())->getRace();
     int *sndP = *(int **) gPM_snd0;
     ((FModSound *) (*sndP))->stop(0);
-    if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x6c) {
+    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x6c) {
         ((FModSound *) (*sndP))->play(0x84, 0, 0, (float) vol);
         return;
     }
-    if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 0x65) {
+    if (Station_getIndex((int) (long) Globals::status->getStation()) == 0x65) {
         ((FModSound *) (*sndP))->play(0x83, 0, 0, (float) vol);
         return;
     }
-    int idx = Station_getIndex((int) (long) Status::gStatus->getStation());
-    if (idx == 10 || Station_getIndex((int) (long) Status::gStatus->getStation()) == 100) {
-        if (Station_getIndex((int) (long) Status::gStatus->getStation()) == 10 &&
-            Status::gStatus->getCurrentCampaignMission() == 0x9f) {
+    int idx = Station_getIndex((int) (long) Globals::status->getStation());
+    if (idx == 10 || Station_getIndex((int) (long) Globals::status->getStation()) == 100) {
+        if (Station_getIndex((int) (long) Globals::status->getStation()) == 10 &&
+            Globals::status->getCurrentCampaignMission() == 0x9f) {
             ((FModSound *) (*sndP))->play(0x90, 0, 0, (float) vol);
             return;
         }

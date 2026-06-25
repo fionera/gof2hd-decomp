@@ -79,7 +79,7 @@ int Layout::OnTouchBegin(int x, int y) {
 float Sinf(float);
 
 float Layout::getPulseValue(float speed) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     float a = Sinf((float) status->getPlayingTime() * speed);
     float b = Sinf((float) status->getPlayingTime() * speed);
     return a > 0.0f ? b : -b;
@@ -168,7 +168,7 @@ void Layout::drawFooterNoBackButton() {
     else if (showBack)
         this->backButton->draw();
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
@@ -240,7 +240,7 @@ void Layout::drawFooter() {
     else if (showBack)
         this->backButton->draw();
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
@@ -1255,7 +1255,7 @@ void Layout::drawFooterStation() {
     else if (showBack)
         this->backButton->draw();
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)
@@ -1455,7 +1455,7 @@ void Layout::drawFooter(bool stationMode_, bool showBack_) {
     else if (showBack)
         this->backButton->draw();
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     int load = status->getShip()->getCurrentLoad();
     int maxLoad = status->getShip()->getMaxLoad();
     if (maxLoad < load)

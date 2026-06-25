@@ -1,4 +1,5 @@
 #include "game/mission/Mission.h"
+#include "game/core/Globals.h"
 #include "game/world/Galaxy.h"
 #include "game/world/SolarSystem.h"
 #include "game/mission/Status.h"
@@ -131,7 +132,7 @@ void Mission::calcDistance() {
     Galaxy *g = Galaxy::gGalaxy;
     Station *st = (Station *) (long) g->getStation(this->targetStation);
     Array<SolarSystem *> *sys = g->getSystems();
-    SolarSystem *a = (*sys)[Status::gStatus->getStation()->getSystem()];
+    SolarSystem *a = (*sys)[Globals::status->getStation()->getSystem()];
     SolarSystem *b = (*sys)[st->getSystem()];
     this->distance = (int) g->distance(a, b);
     delete st;

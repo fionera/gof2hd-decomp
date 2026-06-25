@@ -152,14 +152,14 @@ void PlayerFixedObject::update(int dt) {
         reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = 1;
         enemyFlag = 0;
     } else {
-        int st = Status::gStatus->getStanding();
+        int st = Globals::status->getStanding();
         unsigned char e = ((Standing *) ((void *) (long) st))->isEnemy(self->faction);
         player = (Player *) self->player;
         reinterpret_cast<uint8_t *>(&player->enemyFlags)[0] = e;
         if ((self->faction & 0xfffffffe) == 8) {
             enemyFlag = 0;
         } else {
-            void *st2 = (void *) (long) Status::gStatus->getStanding();
+            void *st2 = (void *) (long) Globals::status->getStanding();
             enemyFlag = ((Standing *) (st2))->isFriend(self->faction);
             player = (Player *) self->player;
         }
@@ -194,12 +194,12 @@ void PlayerFixedObject::update(int dt) {
         if (doMove) doMove = (self->moving != 0);
         if (doMove) self->moveForward(dt);
 
-        int cm = Status::gStatus->getCurrentCampaignMission();
+        int cm = Globals::status->getCurrentCampaignMission();
         int k2 = self->kind;
         bool skip = (cm == 0x5b && k2 == 0x494e);
         if (!skip) {
             if (k2 == 0x494a) {
-                if (Status::gStatus->getCurrentCampaignMission() == 0x91) goto afterMotion;
+                if (Globals::status->getCurrentCampaignMission() == 0x91) goto afterMotion;
                 k2 = self->kind;
             }
             if (k2 != 0x4220) {
@@ -700,14 +700,14 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
         self->name = tmp;
     }
 
-    void *mission = Status::gStatus->getMission();
+    void *mission = Globals::status->getMission();
     int campaign = ((Mission *) (mission))->isCampaignMission();
     bool special = false;
     if (campaign != 0) {
-        int cm = Status::gStatus->getCurrentCampaignMission();
+        int cm = Globals::status->getCurrentCampaignMission();
         if (cm == 0x28) special = true;
         else {
-            cm = Status::gStatus->getCurrentCampaignMission();
+            cm = Globals::status->getCurrentCampaignMission();
             if (cm == 0x29) special = true;
         }
     }
@@ -721,7 +721,7 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
         Generator *gen = new Generator();
         if (kind == 0x37a3) {
             self->field_0x41 = 1;
-            void *station = Status::gStatus->getStation();
+            void *station = Globals::status->getStation();
             int sidx = ((Station *) station)->getIndex();
             for (uint32_t i = 0; i < 4; i++) {
                 if (g_pfo_stationIdx[i] == sidx) {

@@ -1,4 +1,5 @@
 #include "game/ship/PlayerGasCloud.h"
+#include "game/core/Globals.h"
 
 #include <cstddef>
 
@@ -285,7 +286,7 @@ void PlayerGasCloud::update(int dt) {
             if (p2->isInTurretMode() != 0 &&
                 (*this->sparkTimers)[i] >= g_pgcu_minTimer) {
                 (*this->sparkTimers)[i] = g_pgcu_resetTimer;
-                Ship *ship = Status::gStatus->getShip();
+                Ship *ship = Globals::status->getShip();
                 int itemId = this->itemId;
                 if (ship->getFreeSpace() < 1) {
                     if (this->level->getPlayer() != 0) {
@@ -305,8 +306,8 @@ void PlayerGasCloud::update(int dt) {
 
                         PgcCampaign *camp = *g_pgcu_campaign;
                         if (camp->rescueMissionFlag == 0 &&
-                            Status::gStatus->getCurrentCampaignMission() > 0x8e) {
-                            Mission *mission = Status::gStatus->getMission();
+                            Globals::status->getCurrentCampaignMission() > 0x8e) {
+                            Mission *mission = Globals::status->getMission();
                             if (mission->isEmpty() != 0 && this->itemId == 0xcc) {
                                 camp->rescueMissionFlag = 1;
                                 this->level->createRadioMessage(0x1a, 0);
@@ -315,7 +316,7 @@ void PlayerGasCloud::update(int dt) {
                     }
                     g_pgcu_pickupSound->stop(0x8d0);
                     g_pgcu_pickupSound->play(0x8d0, 0, 0, 0.0f);
-                    Ship *ship2 = Status::gStatus->getShip();
+                    Ship *ship2 = Globals::status->getShip();
                     ship2->addCargo(def);
                 }
                 (*this->sparkScale)[i] = 0.0f;
@@ -346,7 +347,7 @@ void PlayerGasCloud::update(int dt) {
                       this->elapsedSinceExplosion >= 2000;
         bool steered = false;
         if (homing) {
-            Ship *ship = Status::gStatus->getShip();
+            Ship *ship = Globals::status->getShip();
             if (ship->getFirstEquipmentOfSort(0x23) != 0) {
                 Vector dir = turretPos - shardPos;
                 Vector dn;
@@ -354,7 +355,7 @@ void PlayerGasCloud::update(int dt) {
                 *(*this->sparkVelocities)[i] = dn;
                 moveGeom = (*this->sparkGeometries)[i];
 
-                Ship *ship2 = Status::gStatus->getShip();
+                Ship *ship2 = Globals::status->getShip();
                 Item *eq = ship2->getFirstEquipmentOfSort(0x23);
                 int attr = eq->getAttribute(0);
                 float step = (float) (attr * dt);

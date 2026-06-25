@@ -166,7 +166,7 @@ void ChoiceWindow::setMedal(int medal, int count) {
         while (n--) { int _nl = number.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < number.length; _i++) _nd[_i] = number.data[_i]; _nd[number.length] = (unsigned short) ((char16_t) (unsigned char) buf[n]); _nd[_nl] = 0; if (number.data) delete[] number.data; number.data = _nd; number.length = _nl; }
     }
 
-    String finalText = Status::gStatus->replaceHash(pattern, number);
+    String finalText = Globals::status->replaceHash(pattern, number);
 
     set(*gameText->getText(0x161), finalText, false);
     this->scrollWindow->setTextCentered(true);
@@ -384,7 +384,7 @@ void ChoiceWindow::draw() {
                             this->x + (this->width >> 1),
                             this->y + this->padding2, (unsigned char) 0x11);
 
-        if (Status::gStatus->hardCoreMode() == 0 &&
+        if (Globals::status->hardCoreMode() == 0 &&
             Achievements::gAchievements->isEliteMedal(this->medal) == 0) {
             String creditsText = Layout::formatCredits(
                 g_ChoiceWindow_creditValues_1471bc[this->count]);

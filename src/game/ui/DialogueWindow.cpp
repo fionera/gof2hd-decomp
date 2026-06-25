@@ -59,7 +59,7 @@ int DialogueWindow::length() {
     if (this->kind == 0 && this->mission != 0 &&
         this->mission->getTargetStation() == 0x6c) {
         int result = 6;
-        if (Status::gStatus->field_114 == 2) result = 0x12;
+        if (Globals::status->field_114 == 2) result = 0x12;
         return result;
     }
     return 1;
@@ -165,7 +165,7 @@ void DialogueWindow::set(Mission *mission, int kind, int campaign) {
 
     this->page = 0;
     if (campaign == -1) {
-        campaign = Status::gStatus->getCurrentCampaignMission();
+        campaign = Globals::status->getCurrentCampaignMission();
     }
     this->campaignMission = campaign;
     this->loadContent();
@@ -250,7 +250,7 @@ void DialogueWindow::loadContent() {
         this->bodyText = *(gameText->getText(textId));
 
         if (kind == 1) {
-            int standing = Status::gStatus->getStanding();
+            int standing = Globals::status->getStanding();
             ((Standing *) (intptr_t) standing)->applyMissionCompleted(mission->getClientRace());
         }
         if (mission->getTargetStation() == 0x6c && kind == 0) {
@@ -347,7 +347,7 @@ int DialogueWindow::OnTouchEnd(int x, int y) {
         }
         if (r != 0) return 0;
         this->choiceActive = 0;
-        if (Status::gStatus->getCurrentCampaignMission() == 0x0f) {
+        if (Globals::status->getCurrentCampaignMission() == 0x0f) {
             FModSound *sound = *g_dw_soundChoice;
             sound->play(0xa2, 0, 0, 0);
             sound->stop(sound->currentMusicEvent);

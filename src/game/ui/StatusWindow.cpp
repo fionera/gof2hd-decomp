@@ -270,7 +270,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpB = tmpA + *hdr;
             out += tmpB;
 
-            Status *base = Status::gStatus;
+            Status *base = Globals::status;
             Array<bool> *list = base->field_94;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -286,7 +286,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpB = tmpA + *hdr;
             out += tmpB;
 
-            Status *base = Status::gStatus;
+            Status *base = Globals::status;
             Array<bool> *list = base->field_98;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -302,7 +302,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpB = tmpA + *hdr;
             out += tmpB;
 
-            Status *base = Status::gStatus;
+            Status *base = Globals::status;
             Array<bool> *list = base->field_ac;
             for (unsigned int i = 0; i < list->size(); i++) {
                 if ((*list)[i] == 0) {
@@ -318,7 +318,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpB = tmpA + *hdr;
             out += tmpB;
 
-            Status *root = Status::gStatus;
+            Status *root = Globals::status;
             for (unsigned int i = 0; i < 0xd; i++) {
                 BluePrint *bp = (*root->bluePrints)[i];
                 if (bp->locked == 0) {
@@ -335,7 +335,7 @@ String StatusWindow::getMedalHintText(int medalIndex) {
             tmpB = tmpA + *hdr;
             out += tmpB;
 
-            Status *root = Status::gStatus;
+            Status *root = Globals::status;
             for (unsigned int i = 0; i < 0xd; i++) {
                 BluePrint *bp = (*root->bluePrints)[i];
                 if (bp->productionCount == 0) {
@@ -466,7 +466,7 @@ void StatusWindow::draw() {
         lbl.ctor_char("", false);
         layout->drawBox(5, x0, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
         (*g_swd_imageFactory)->drawChar(this->imageParts, layout->field_0x4c + x0, y, false);
-        String credTmp = Layout::formatCredits(Status::gStatus->getCredits());
+        String credTmp = Layout::formatCredits(Globals::status->getCredits());
         creditStr = credTmp;
         int tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
@@ -475,7 +475,7 @@ void StatusWindow::draw() {
         String *lt = (*g_swd_gameText)->getText(*g_swd_textId);
         lvlPrefix.ctor_char(" ", false);
         lvlText = *lt;
-        int lvl = Status::gStatus->getLevel();
+        int lvl = Globals::status->getLevel();
         lvlFull = lvlText;
         lvlFull += lvl;
         creditStr = lvlFull;
@@ -483,23 +483,23 @@ void StatusWindow::draw() {
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         String timeStr;
-        (*g_swd_globals)->longToTimeStringNoSeconds(Status::gStatus->getPlayingTime(), timeStr);
+        (*g_swd_globals)->longToTimeStringNoSeconds(Globals::status->getPlayingTime(), timeStr);
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, creditStr);
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, (((boxW >> 1) - pad) - x0) - tw, y, false);
 
         lbl.ctor_char("", false);
         layout->drawBox(5, (boxW >> 1) + x0 + pad, y, (boxW >> 1) - pad, layout->field_0x2d8, lbl, 0);
-        (*g_swd_imageFactory)->drawShip(Status::gStatus->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
-        String *shipNameTxt = (*g_swd_gameText)->getText(Status::gStatus->getShip()->getIndex());
+        (*g_swd_imageFactory)->drawShip(Globals::status->getShip()->getIndex(), x0 + (boxW >> 1) + pad * 2, y);
+        String *shipNameTxt = (*g_swd_gameText)->getText(Globals::status->getShip()->getIndex());
         canvas->DrawString((unsigned) (uintptr_t) font, *shipNameTxt,
                            x0 + (boxW >> 1) + pad * 3 + layout->field_0x2cc, y, false);
 
         String frac, fracStr, pct;
-        int firePow = Status::gStatus->getShip()->getFirePower();
+        int firePow = Globals::status->getShip()->getFirePower();
         float firePowF = *(float *) &firePow;
         frac.Set((long long) (int) ((firePowF - (float) (int) firePowF) * 100.0f));
         fracStr = frac.SubString(0, 2);
-        int fp2 = Status::gStatus->getShip()->getFirePower();
+        int fp2 = Globals::status->getShip()->getFirePower();
         pct.ctor_char("%", false);
         String fpFull = (fp2 + pct) + fracStr;
         creditStr = fpFull;
@@ -507,12 +507,12 @@ void StatusWindow::draw() {
         canvas->DrawString((unsigned) (uintptr_t) font, creditStr, ((y + x0) - pad) - tw, y, false);
 
         String hpStr;
-        hpStr.Set((long long) (Status::gStatus->getShip())->getCombinedHP());
+        hpStr.Set((long long) (Globals::status->getShip())->getCombinedHP());
         tw = canvas->GetTextWidth((unsigned) (uintptr_t) font, hpStr);
         canvas->DrawString((unsigned) (uintptr_t) font, hpStr, ((y + x0) - pad) - tw, y, false);
 
         int standingX0 = x0 + (boxW >> 2);
-        Standing *standing = (Standing *) (intptr_t) Status::gStatus->getStanding();
+        Standing *standing = (Standing *) (intptr_t) Globals::status->getStanding();
         float rate = standing->getStandingRate(0);
         canvas->DrawImage2D(this->standingEmblemImage, standingX0, y, (unsigned char) '\x11');
         canvas->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
@@ -523,7 +523,7 @@ void StatusWindow::draw() {
                             y, (unsigned char) '\x11');
 
         int standingX1 = (boxW - ((boxW - pad * 2) >> 2)) + pad * 2;
-        Standing *standing2 = (Standing *) (intptr_t) Status::gStatus->getStanding();
+        Standing *standing2 = (Standing *) (intptr_t) Globals::status->getStanding();
         float rate2 = standing2->getStandingRate(1);
         canvas->DrawImage2D(this->standingEmblemImage, standingX1, y, (unsigned char) '\x11');
         canvas->DrawRegion2D(this->standingBarImage, this->standingBarWidth, 0,
@@ -533,7 +533,7 @@ void StatusWindow::draw() {
                             (int) ((float) standingX1 - rate2 * (float) this->standingBarWidth),
                             y, (unsigned char) '\x11');
 
-        Status *st = Status::gStatus;
+        Status *st = Globals::status;
         String rowStr;
         int rowX = layout->field_0x4c + x0;
         for (unsigned r = 0; r < 6; r++) {

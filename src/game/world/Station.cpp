@@ -1,4 +1,5 @@
 #include "game/world/Station.h"
+#include "game/core/Globals.h"
 #include "game/ship/Ship.h"
 #include "game/world/Galaxy.h"
 #include "game/mission/Mission.h"
@@ -50,8 +51,8 @@ Station::~Station() {
         items = nullptr;
     }
     if (agents != nullptr) {
-        Mission *campaign = reinterpret_cast<Mission *>(Status::gStatus->getCampaignMission());
-        Mission *freelance = Status::gStatus->getFreelanceMission();
+        Mission *campaign = reinterpret_cast<Mission *>(Globals::status->getCampaignMission());
+        Mission *freelance = Globals::status->getFreelanceMission();
         Agent *campaignAgent = campaign != nullptr ? campaign->getAgent() : nullptr;
         Agent *freelanceAgent = freelance != nullptr ? freelance->getAgent() : nullptr;
         for (Agent *a: *agents) {
@@ -195,7 +196,7 @@ uint8_t Station::hasAttackedFriends() {
 }
 
 bool Station::isAttackedByAliens() {
-    return index == Status::gStatus->field_80;
+    return index == Globals::status->field_80;
 }
 
 uint8_t Station::isDiscovered() {
@@ -206,7 +207,7 @@ void Station::visit() {
     if (isDiscovered())
         return;
     visited = 1;
-    Status::gStatus->visitStation();
+    Globals::status->visitStation();
     Galaxy::gGalaxy->visitStation(index);
 }
 
@@ -231,7 +232,7 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
         if (kHiddenBlueprints[i] == index) {
             if (ignoreFound)
                 return 1;
-            bool *flags = Status::gStatus->field_58->data_;
+            bool *flags = Globals::status->field_58->data_;
             if (flags[i] == 0)
                 return 1;
         }
@@ -242,7 +243,7 @@ uint32_t Station::stationHasHiddenBlueprint(bool ignoreFound) {
 uint32_t Station::stationHasPirateBase() {
     for (uint32_t i = 0; i < 4; i++) {
         if (kPirateStations[i] == index) {
-            bool *flags = Status::gStatus->field_4c->data_;
+            bool *flags = Globals::status->field_4c->data_;
             if (flags[i] == 0)
                 return 1;
         }

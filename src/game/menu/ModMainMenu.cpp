@@ -228,11 +228,11 @@ void ModMainMenu::OnInitialize() {
         addSound(*soundRes, 0x13);
         addSound(*soundRes, 0x14);
 
-        Status::gStatus->resetGame();
+        Globals::status->resetGame();
         AERandom::gRandom->reset();
 
         int station = Galaxy::gGalaxy->getStation(AERandom::gRandom->nextInt(100));
-        Status::gStatus->setStation((Station *) (intptr_t) station);
+        Globals::status->setStation((Station *) (intptr_t) station);
 
         CutScene *cutscene = new CutScene(2);
         this->cutScene = cutscene;
@@ -240,10 +240,10 @@ void ModMainMenu::OnInitialize() {
 
         int canvas = this->paintCanvas;
         int texture;
-        if (Status::gStatus->inAlienOrbit() != 0) {
+        if (Globals::status->inAlienOrbit() != 0) {
             texture = 0x2f08;
         } else {
-            texture = (((SolarSystem *) (intptr_t) Status::gStatus->getSystem())->getTextureIndex() +
+            texture = (((SolarSystem *) (intptr_t) Globals::status->getSystem())->getTextureIndex() +
                        0x2efe) &
                       0xffff;
         }
@@ -276,7 +276,7 @@ void ModMainMenu::OnInitialize() {
             ((RecordHandler *) (*recordHolder))->saveOptions();
         }
 
-        Status::gStatus->setPlayingTime(0);
+        Globals::status->setPlayingTime(0);
         MenuTouchWindow *window = new MenuTouchWindow(0);
         this->touchWindow = window;
         if (this->hasSavedGame != 0) {

@@ -1,4 +1,5 @@
 #include "game/ship/PlayerFighter.h"
+#include "game/core/Globals.h"
 #include "engine/core/AERandom.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/render/Mesh.h"
@@ -325,7 +326,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     ((Route *) ((void *) (long) *shared))->setLoop(0);
     self->routeClone = 0;
 
-    if (Status::gStatus->getCurrentCampaignMission() != 0x29) {
+    if (Globals::status->getCurrentCampaignMission() != 0x29) {
         if (wingmanCmd == 9) {
             self->routeClone = ((Route *) ((void *) (long) *shared))->clone();
         } else {
@@ -342,7 +343,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
         delete g;
     }
 
-    self->field_0x128 = (Status::gStatus->inAlienOrbit() != 0) ? 100000 : 50000;
+    self->field_0x128 = (Globals::status->inAlienOrbit() != 0) ? 100000 : 50000;
 
     Explosion *exp = new Explosion(0);
     self->explosion = exp;
@@ -356,7 +357,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     self->engineTrailSystem = -1;
 
     int fov;
-    if (Status::gStatus->getCurrentCampaignMission() == 1) {
+    if (Globals::status->getCurrentCampaignMission() == 1) {
         fov = -1;
     } else {
         fov = (self->field_0xdc == 0) ? 0x2e : 0x30;
@@ -423,7 +424,7 @@ void PlayerFighter::update(int dt) {
         } else if (((KIPlayer *) (this))->isWingMan() != 0) {
             enemy = 0;
         } else {
-            enemy = (unsigned char) ((Standing *) (Status::gStatus->getStanding()))->isEnemy(this->wingmanCommand);
+            enemy = (unsigned char) ((Standing *) (Globals::status->getStanding()))->isEnemy(this->wingmanCommand);
         }
         ((Player *) (intptr_t) this->player)->enemyFlagsLo = enemy;
     }
@@ -553,7 +554,7 @@ void PlayerFighter::setMissionCrate(bool on) {
     this->isMissionCrate = on;
     if (on) {
         this->lootList = new Array<int>();
-        int mission = (int) (intptr_t) Status::gStatus->getMission();
+        int mission = (int) (intptr_t) Globals::status->getMission();
         int type = ((Mission *) (mission))->getType();
         int item = (type == 5) ? 0x74 : 0x75;
         ArrayAdd(item, *(this->lootList));

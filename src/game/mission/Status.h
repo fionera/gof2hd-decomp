@@ -460,7 +460,6 @@ public:
 
     int getFreighterMissionStationBit(int station);
 
-    static Status *gStatus;
 };
 #pragma pack(pop)
 

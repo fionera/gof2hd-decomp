@@ -1,4 +1,5 @@
 #include "game/world/StarSystem.h"
+#include "game/core/Globals.h"
 #include "engine/math/Transform.h"
 #include "engine/render/PaintCanvas.h"
 #include "engine/core/AERandom.h"
@@ -132,7 +133,7 @@ void StarSystem::initLight() {
     Engine *engine = (Engine *) ApplicationManager::gAppManager->GetEngine();
     engine->field_0x32c = 2;
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     uint32_t baseIndex;
     bool normalSystem;
     if (this->abstractSystem == 0) {
@@ -296,7 +297,7 @@ StarSystem::StarSystem(int mode) {
     this->playerTargets = nullptr;
     this->planetsArray = nullptr;
 
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     this->abstractSystem = status->getSystem() == 0;
     this->supernovaSystem = (uint8_t) status->inSupernovaSystem();
 
@@ -387,7 +388,7 @@ StarSystem::StarSystem(int mode) {
         } else {
             PaintCanvas::gCanvas->TextureCreate(g_StarSystem_ctor_stationTextures[stationTex],
                                    (*this->texturesArray)[i], false);
-            if (Status::gStatus->orbitHasPlanetRing(station->getIndex()) != 0) {
+            if (Globals::status->orbitHasPlanetRing(station->getIndex()) != 0) {
                 this->planetRing = new AEGeometry((uint16_t) 0x1a70, PaintCanvas::gCanvas, false);
                 PaintCanvas::gCanvas->TextureCreate((uint16_t) 0x7198,
                                        this->planetRingTexture, false);
@@ -529,7 +530,7 @@ void StarSystem::switchSunForSupernovaIntro() {
     setTransformMode(getTransform(PaintCanvas::gCanvas, sun->transform), 3, 0);
     setTransformMode(getTransform(PaintCanvas::gCanvas, sun->transform), 1, 0);
 
-    SolarSystem *system = (SolarSystem *) (intptr_t) Status::gStatus->getSystem();
+    SolarSystem *system = (SolarSystem *) (intptr_t) Globals::status->getSystem();
     this->tintColor = g_StarSystem_intro_colors[system->getIndex()];
 }
 
@@ -613,7 +614,7 @@ void StarSystem::render() {
             uint32_t stationIndex = *g_StarSystem_render_station_index;
             bool selected = (i - 1) == stationIndex;
             if (selected && this->abstractSystem == 0 &&
-                Status::gStatus->inPlanetRingOrbit() == 0) {
+                Globals::status->inPlanetRingOrbit() == 0) {
                 float ring = cameraPos.z / 65536.0f;
                 float clamped = ring < 0.0f ? ring : 0.0f;
                 if (clamped < -1.0f) {

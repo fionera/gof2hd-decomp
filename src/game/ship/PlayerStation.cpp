@@ -1,4 +1,5 @@
 #include "game/ship/PlayerStation.h"
+#include "game/core/Globals.h"
 
 #include "game/world/SolarSystem.h"
 #include "engine/render/AEGeometry.h"
@@ -104,7 +105,7 @@ void PlayerStation::update(int delta) {
         return;
     }
 
-    if (Status::gStatus->inAlienOrbit()) {
+    if (Globals::status->inAlienOrbit()) {
         return;
     }
 
@@ -145,7 +146,7 @@ PlayerStation::PlayerStation(Station *station)
     this->stationIndex = stationIndex;
 
     PaintCanvas *canvas = paintCanvas();
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
 
     Array<int> *collision;
     {

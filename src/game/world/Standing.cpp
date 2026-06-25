@@ -1,4 +1,5 @@
 #include "game/world/Standing.h"
+#include "game/core/Globals.h"
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
@@ -118,7 +119,7 @@ bool Standing::isEnemy(int race) {
 }
 
 void Standing::applyDelict(int kind, int severity) {
-    int hc = Status::gStatus->hardCoreMode();
+    int hc = Globals::status->hardCoreMode();
     int delta = severity << hc;
     switch (kind) {
         case 0:
@@ -141,7 +142,7 @@ void Standing::applyDelict(int kind, int severity) {
 static const int g_apk_raceTable[4] = {1, 0, 3, 2};
 
 void Standing::applyKill(int kind) {
-    Status *status = Status::gStatus;
+    Status *status = Globals::status;
     unsigned sysRace;
     if (status->inAlienOrbit() != 0) {
         sysRace = 9;

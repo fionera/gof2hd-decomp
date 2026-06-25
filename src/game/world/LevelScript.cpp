@@ -1,4 +1,5 @@
 #include "game/world/LevelScript.h"
+#include "game/core/Globals.h"
 #include "game/core/RadioMessage.h"
 #include "game/ship/Player.h"
 #include "game/mission/Explosion.h"
@@ -93,7 +94,7 @@ void LevelScript::resetCamera(Level *level) {
 }
 
 void LevelScript::skipSequence() {
-    if (field_0x24 > 0 && Status::gStatus->getCurrentCampaignMission() > 0) {
+    if (field_0x24 > 0 && Globals::status->getCurrentCampaignMission() > 0) {
         field_0x24 = 0x1b59;
         void *player = (void *) m_pLevel->getPlayer();
         (void) player; /* virtual Player flag setter — resolved via vtable */
@@ -110,12 +111,12 @@ void LevelScript::setAutoPilotToProgrammedStation() {
     }
 
     Station *programmed = gProgrammedStation;
-    if (Status::gStatus->getStation()->equals(programmed)) {
+    if (Globals::status->getStation()->equals(programmed)) {
         gProgrammedStation = 0;
         return;
     }
 
-    SolarSystem *system = (SolarSystem *) Status::gStatus->getSystem();
+    SolarSystem *system = (SolarSystem *) Globals::status->getSystem();
     void *player;
     void *target;
 
@@ -168,7 +169,7 @@ LevelScript::~LevelScript() {
 }
 
 uint32_t LevelScript::canSkipCutsceneNow() {
-    int mission = Status::gStatus->getCurrentCampaignMission();
+    int mission = Globals::status->getCurrentCampaignMission();
     if (mission == 0x9a) {
         if (!((uint32_t)(m_nState - 1) < 9)) {
             return 0;
@@ -191,7 +192,7 @@ void LevelScript::resetStartSequenceOver() {
 void LevelScript::skipCutscene() {
     StackVector position;
 
-    int mission = Status::gStatus->getCurrentCampaignMission();
+    int mission = Globals::status->getCurrentCampaignMission();
     if (mission == 0x9a) {
         if ((uint32_t)(m_nState - 1) < 9) {
             m_nState = 9;
@@ -264,7 +265,7 @@ void LevelScript::process(int delta) {
     level->getMessages();
     level->getPlayer();
     level->getMessages();
-    int mission = Status::gStatus->getCurrentCampaignMission();
+    int mission = Globals::status->getCurrentCampaignMission();
 
     if (mission != 0) {
         float frameDelta = (float) delta * 0.001f;
@@ -333,7 +334,7 @@ LevelScript::LevelScript(Level *level, Hud *hud, Radar *radar, TargetFollowCamer
     player = (void *) level->getPlayer();
     ((PlayerEgo *) player)->setCollide(false);
 
-    if (Status::gStatus->getCurrentCampaignMission() == 0) {
+    if (Globals::status->getCurrentCampaignMission() == 0) {
         m_nScriptTimerA = 0;
         m_nScriptCounterA = 0;
         m_bStartSequenceOver = 1;

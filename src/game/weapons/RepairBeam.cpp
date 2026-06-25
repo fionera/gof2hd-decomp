@@ -1,4 +1,5 @@
 #include "game/weapons/RepairBeam.h"
+#include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/render/PaintCanvas.h"
 #include "game/ship/Ship.h"
@@ -90,7 +91,7 @@ RepairBeam::RepairBeam(int shipIndex, int sort) {
     this->beamPosition.y = 0;
     this->beamPosition.z = 0;
 
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     Item *equip = ship->getFirstEquipmentOfSort(sort);
     int count = equip->getAttribute(/*RepairBeamCount*/ 0x37);
 

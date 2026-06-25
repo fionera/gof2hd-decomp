@@ -216,7 +216,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     // --- radar / orbit marker ---
     {
-        Status *st = Status::gStatus;
+        Status *st = Globals::status;
         bool show = false;
         if (st->inAlienOrbit() == 0) {
             show = true;
@@ -313,7 +313,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
     if (this->quickMenuOpen != 0)
         drawMenu(0);
 
-    if (Status::gStatus != nullptr && Status::gStatus->inSupernovaSystem() != 0)
+    if (Globals::status != nullptr && Globals::status->inSupernovaSystem() != 0)
         drawChallengeModeScore(0);
 
     drawPauseButton();
@@ -372,13 +372,13 @@ static const char g_Hud_oiSep[1] = {0};
 static const unsigned char g_Hud_secColors[4 * 0xc] = {0};
 
 void Hud::drawOrbitInformation() {
-    if (Status::gStatus->inAlienOrbit() != 0) return;
+    if (Globals::status->inAlienOrbit() != 0) return;
 
     int *layout = (int *) *g_Hud_oiLayout;
     PaintCanvas::gCanvas->SetColor((unsigned) (-1));
     int x = PaintCanvas::gCanvas->GetImage2DWidth((unsigned) (0)) + layout[0x87];
 
-    if (((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->hasNoOwner() == 0)
+    if (((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->hasNoOwner() == 0)
         PaintCanvas::gCanvas->DrawImage2D((unsigned) this->factionLogoImage, 3, 0);
 
     void *font = *g_Hud_oiFont;
@@ -391,11 +391,11 @@ void Hud::drawOrbitInformation() {
     }
     PaintCanvas::gCanvas->SetColor((unsigned) (-1));
 
-    if (Status::gStatus->getCurrentCampaignMission() <= 0xf) return;
+    if (Globals::status->getCurrentCampaignMission() <= 0xf) return;
 
-    void *sys = ((void *) (long) Status::gStatus->getSystem());
+    void *sys = ((void *) (long) Globals::status->getSystem());
     int sec = ((SolarSystem *) (sys))->getSecurityLevel();
-    int idx = ((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->getIndex();
+    int idx = ((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->getIndex();
     int *status = (int *) *g_Hud_oiStatus;
     if (idx == 0x1a && status[0x45] > 1) sec = 3;
 
@@ -563,7 +563,7 @@ void Hud::catchCargo(int itemId, int count, bool single, bool missionDelivery, b
         void *tmpl = *g_Hud_ccTemplate;
         char a40[12];
         ((String *) (a40))->Set(((String *) (dst))->data);
-        int type = Status::gStatus->getMission()->getType();
+        int type = Globals::status->getMission()->getType();
         void *typeTxt = gt->getText(type == 3 ? 0x56e : 0x56f);
         char a4c[12];
         ((String *) (a4c))->Set(((String *) (typeTxt))->data);
@@ -721,7 +721,7 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
 
     updateSecondaryWeaponString();
 
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
     this->equipmentArray = equip;
 
@@ -737,7 +737,7 @@ void Hud::setCurrentSecondaryWeapon(Item *item) {
     unsigned char empty;
     if (hasSecondary) {
         empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
+    } else if (ship->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
         empty = (unsigned char) (ship->hasCloak() == 0);
     } else {
         empty = 0;
@@ -931,8 +931,8 @@ int Hud::init() {
     }
     this->touchFlags = 0;
 
-    if (Status::gStatus->inAlienOrbit() == 0) {
-        int race = ((SolarSystem *) (((void *) (long) Status::gStatus->getSystem())))->getRace();
+    if (Globals::status->inAlienOrbit() == 0) {
+        int race = ((SolarSystem *) (((void *) (long) Globals::status->getSystem())))->getRace();
         Image2DCreate(PaintCanvas::gCanvas, g_Hud_raceBadge[race], &this->factionLogoImage);
     }
 
@@ -968,7 +968,7 @@ void Hud::drawPauseButton() {
 }
 
 Hud *Hud::checkIfQuickMenuIsEmpty() {
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     Array<Item *> *equip = ship->getEquipment(1);
     this->equipmentArray = equip;
 
@@ -984,7 +984,7 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
     }
     if (hasSecondary) {
         empty = 0;
-    } else if (ship->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
+    } else if (ship->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
         empty = (unsigned char) ship->hasCloak();
     } else {
         empty = 0;
@@ -993,7 +993,7 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
 
     updateSecondaryWeaponString();
     {
-        Ship *ship2 = Status::gStatus->getShip();
+        Ship *ship2 = Globals::status->getShip();
         Array<Item *> *equip2 = ship2->getEquipment(1);
         this->equipmentArray = equip2;
 
@@ -1009,7 +1009,7 @@ Hud *Hud::checkIfQuickMenuIsEmpty() {
         unsigned char empty2;
         if (hasSecondary2) {
             empty2 = 0;
-        } else if (ship2->hasJumpDrive() == 0 && Status::gStatus->getWingmen() == 0) {
+        } else if (ship2->hasJumpDrive() == 0 && Globals::status->getWingmen() == 0) {
             empty2 = (unsigned char) (ship2->hasCloak() == 0);
         } else {
             empty2 = 0;
@@ -1060,7 +1060,7 @@ void Hud::drawMenu(int unused) {
 
     if (this->menuLevel != 0) return;
 
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     if (!ship->hasCloak() && ship->hasJumpDrive() == 0) return;
 
     char prefix[12], num[12], label[12];
@@ -1347,7 +1347,7 @@ void Hud::initHudMenu(int menuType, Level *lvl) {
     this->menuButtons = new Array<TouchButton *>();
 
     delete this->equipmentArray;
-    this->equipmentArray = Status::gStatus->getShip()->getEquipment(1);
+    this->equipmentArray = Globals::status->getShip()->getEquipment(1);
     updateSecondaryWeaponString();
 
     this->menuOriginX = 0;

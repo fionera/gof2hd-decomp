@@ -1,4 +1,5 @@
 #include "game/ui/ListItem.h"
+#include "game/core/Globals.h"
 #include "game/mission/BluePrint.h"
 #include "game/mission/Item.h"
 #include "game/mission/Mission.h"
@@ -24,7 +25,7 @@ ListItem::ListItem(BluePrint *bp) {
 int ListItem::checkSort() {
     if (this->item == 0)
         return 0;
-    Ship *ship = Status::gStatus->getShip();
+    Ship *ship = Globals::status->getShip();
     int sort = this->item->getSort();
     return ship->slotAvailable(sort);
 }
@@ -70,7 +71,7 @@ ListItem::ListItem(Ship *s) {
 int ListItem::checkSlot() {
     int r = 0;
     if (this->item != 0) {
-        Ship *ship = Status::gStatus->getShip();
+        Ship *ship = Globals::status->getShip();
         int type = this->item->getType();
         if (ship->getFreeSlots(type) > 0)
             r = 1;
@@ -157,7 +158,7 @@ bool ListItem::checkCredits() {
     } else {
         price = this->ship->getPrice();
     }
-    return price <= Status::gStatus->getCredits();
+    return price <= Globals::status->getCredits();
 }
 
 ListItem::ListItem(AbyssEngine::String *p1, bool b) {

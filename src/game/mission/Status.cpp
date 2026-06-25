@@ -1,5 +1,5 @@
 #include "game/mission/Status.h"
-Status *Status::gStatus = nullptr;
+#include "game/core/Globals.h"
 #include "game/mission/PendingProduct.h"
 #include "game/core/GameSettings.h"
 #include "engine/core/AERandom.h"
@@ -319,7 +319,7 @@ bool Status::inDeepScienceOrbit() {
 }
 
 int Status::wantedBoardAccessible() {
-    Status *st = Status::gStatus;
+    Status *st = Globals::status;
     Array<Wanted *> *w = st->wanted;
     for (unsigned i = 0; i < w->size(); i = i + 1) {
         int race = asSystem(st->system)->getRace();
@@ -826,7 +826,7 @@ void Status::resetGame() {
     setCampaignMission(new Mission(4, 0, 0x4e));
 
     this->mission = (*this->missions)[0];
-    setShip(Status::gStatus->ship->makeShip(-1));
+    setShip(Globals::status->ship->makeShip(-1));
     this->ship->priceDecline();
     setStation((Station *) (intptr_t) gal->getStation(0));
     this->ship->setCargo(0);
@@ -842,7 +842,7 @@ void Status::resetGame() {
     addCargo(shipObj, makeItemB(srcShip[0x3b]), 1);
     addCargo(shipObj, makeItemB(srcShip[0x52]), 2);
     addCargo(shipObj, makeItemB(srcShip[0x49]), 3);
-    addCargo((int) (intptr_t) Status::gStatus->ship,
+    addCargo((int) (intptr_t) Globals::status->ship,
              (int) (intptr_t)((Item *) (intptr_t) srcShip[0x24])->makeItem(), 0);
 
     if (srec->blackMarketUnlockedFlag != 0)
@@ -860,7 +860,7 @@ void Status::resetGame() {
 static int g_anwSysMask = 0;
 
 int Status::activateNewWanted() {
-    Status * slot = Status::gStatus;
+    Status * slot = Globals::status;
     Array<Wanted *> *w = slot->wanted;
     if (w == 0) {
         return 0;
@@ -1392,7 +1392,7 @@ void Status::departStation(Station *dest) {
         field_74 = (int) (playingTime >> 32);
     }
 
-    Status * st = Status::gStatus;
+    Status * st = Globals::status;
     this->mission = 0;
     for (unsigned i = 0; i < missions->size(); i = i + 1) {
         Mission *mi = (*missions)[i];
@@ -1591,7 +1591,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                 break;
             }
             case 0xa8: {
-                Status * s = Status::gStatus;
+                Status * s = Globals::status;
                 if (m->getStatusValue() <= s->field_178) {
                     m->setWon(true);
                     s->field_178 = 0;
@@ -1620,12 +1620,12 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
                     int idx = m->getProductionGoodIndex();
                     int amt = m->getProductionGoodAmount();
                     if (Item::isInList(idx, amt, ship->getCargo())) return m;
-                    if (!Status::gStatus->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
+                    if (!Globals::status->ship->hasEquipment(m->getProductionGoodIndex(), 1)) return m;
                 }
                 break;
             case 0xb8:
                 if (m->getStatusValue() == 0) {
-                    Status * s = Status::gStatus;
+                    Status * s = Globals::status;
                     if (s->currentCampaignMission != 0x5c || s->inAlienOrbit() ||
                         s->station->getIndex() != 0x71) {
                         m->setWon(true);
@@ -1646,7 +1646,7 @@ Mission *Status::missionCompleted(bool atStation, bool docked, long long extra) 
             default:
 
                 if (type == 8) {
-                    if (m->isCampaignMission() && Status::gStatus->currentCampaignMission == 0x8f && !docked) {
+                    if (m->isCampaignMission() && Globals::status->currentCampaignMission == 0x8f && !docked) {
                         if (station->getIndex() == m->getTargetStation() && pendingProducts != 0) {
                             for (unsigned j = 0; j < pendingProducts->size(); j = j + 1) {
                                 PendingProduct *pp = (*pendingProducts)[j];

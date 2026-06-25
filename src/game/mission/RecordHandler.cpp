@@ -602,8 +602,8 @@ void RecordHandler::recordStoreWritePreview(int slot) {
         AEFile::FileDelete(path);
     AEFile::OpenWrite(path, &fd);
 
-    AEFile_Write_i64(Status::gStatus->getPlayingTime(), fd);
-    AEFile_Write_i32(Status::gStatus->getCredits(), fd);
+    AEFile_Write_i64(Globals::status->getPlayingTime(), fd);
+    AEFile_Write_i32(Globals::status->getCredits(), fd);
 
     num = ((Station *) (&num))->getName();
     AEFile_Write_str(&num, fd, true);
@@ -611,11 +611,11 @@ void RecordHandler::recordStoreWritePreview(int slot) {
     num = ((SolarSystem *) (&num))->getName();
     AEFile_Write_str(&num, fd, true);
 
-    AEFile_Write_i32(Status::gStatus->getCurrentCampaignMission(), fd);
-    AEFile_Write_i32(Status::gStatus->getLevel(), fd);
+    AEFile_Write_i32(Globals::status->getCurrentCampaignMission(), fd);
+    AEFile_Write_i32(Globals::status->getLevel(), fd);
     AEFile_Write_f32(reinterpret_cast<RankHolder *>(*reinterpret_cast<void **>(g_RH_wp_float))->rankBits, fd);
 
-    AEFile_Write_i32(((Ship *) (Status::gStatus->getShip()))->getIndex(), fd);
+    AEFile_Write_i32(((Ship *) (Globals::status->getShip()))->getIndex(), fd);
     AEFile::Close(fd);
 }
 
@@ -1317,26 +1317,26 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteBool(visited[i] != 0, fd);
     }
 
-    AEFile_WriteInt(Status::gStatus->getCredits(), fd);
-    AEFile_WriteInt(Status::gStatus->getRating(), fd);
-    AEFile_WriteLong(Status::gStatus->getPlayingTime(), fd);
-    AEFile_WriteInt(Status::gStatus->getKills(), fd);
-    AEFile_WriteInt(Status::gStatus->getMissionCount(), fd);
-    AEFile_WriteInt(Status::gStatus->getLevel(), fd);
-    AEFile_WriteInt(Status::gStatus->getLastXP(), fd);
-    AEFile_WriteInt(Status::gStatus->getGoodsProduced(), fd);
-    AEFile_WriteInt(Status::gStatus->getStationsVisited(), fd);
-    AEFile_WriteInt(Status::gStatus->getCurrentCampaignMission(), fd);
-    this->writeMission(Status::gStatus->getFreelanceMission(), fd);
-    this->writeMission(reinterpret_cast<Mission *>(Status::gStatus->getCampaignMission()), fd);
-    AEFile_WriteInt(Status::gStatus->getJumpgateUsed(), fd);
-    AEFile_WriteInt(Status::gStatus->getCapturedCrates(), fd);
-    AEFile_WriteInt(Status::gStatus->getBoughtEquipment(), fd);
-    AEFile_WriteInt(Status::gStatus->getPirateKills(), fd);
-    AEFile_WriteInt(Status::gStatus->field_80, fd);
+    AEFile_WriteInt(Globals::status->getCredits(), fd);
+    AEFile_WriteInt(Globals::status->getRating(), fd);
+    AEFile_WriteLong(Globals::status->getPlayingTime(), fd);
+    AEFile_WriteInt(Globals::status->getKills(), fd);
+    AEFile_WriteInt(Globals::status->getMissionCount(), fd);
+    AEFile_WriteInt(Globals::status->getLevel(), fd);
+    AEFile_WriteInt(Globals::status->getLastXP(), fd);
+    AEFile_WriteInt(Globals::status->getGoodsProduced(), fd);
+    AEFile_WriteInt(Globals::status->getStationsVisited(), fd);
+    AEFile_WriteInt(Globals::status->getCurrentCampaignMission(), fd);
+    this->writeMission(Globals::status->getFreelanceMission(), fd);
+    this->writeMission(reinterpret_cast<Mission *>(Globals::status->getCampaignMission()), fd);
+    AEFile_WriteInt(Globals::status->getJumpgateUsed(), fd);
+    AEFile_WriteInt(Globals::status->getCapturedCrates(), fd);
+    AEFile_WriteInt(Globals::status->getBoughtEquipment(), fd);
+    AEFile_WriteInt(Globals::status->getPirateKills(), fd);
+    AEFile_WriteInt(Globals::status->field_80, fd);
 
     {
-        Status *status = Status::gStatus;
+        Status *status = Globals::status;
         OptFlagsBlob *flags = reinterpret_cast<OptFlagsBlob *>(g_RSW_optFlags);
         UiFlagsBlob *ui = reinterpret_cast<UiFlagsBlob *>(g_RSW_uiFlags);
 
@@ -2090,7 +2090,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                 AEFile_ReadInt(&bpN, fd);
                 ArraySetLength(bpN, *bpArr);
                 for (unsigned i = 0; i < bpArr->size(); i++) {
-                    Array<BluePrint *> *liveBps = Status::gStatus->bluePrints;
+                    Array<BluePrint *> *liveBps = Globals::status->bluePrints;
                     int liveIdx = (*liveBps)[i]->getIndex();
                     BluePrint *bp = new BluePrint(liveIdx);
                     (*bpArr)[i] = bp;
