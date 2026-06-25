@@ -1,4 +1,5 @@
 #include "game/ship/PlayerAsteroid.h"
+#include "engine/core/AERandom.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/math/AEMath.h"
 #include "game/world/Level.h"
@@ -8,9 +9,6 @@
 #include "engine/math/Transform.h"
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(int rng, int bound);
-    }
 }
 
 AbyssEngine::Transform *PlayerAsteroidTransformGetTransform(void *canvas, uint32_t handle);
@@ -116,9 +114,9 @@ void PlayerAsteroid::update(int delta) {
             int quality = this->quality;
             bool spawn = true;
             if (quality == 7) {
-                spawn = AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) < 4;
+                spawn = ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(100) < 4;
             } else if (quality > 6 ||
-                       AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) > 0x13) {
+                       ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(100) > 0x13) {
                 spawn = false;
             }
 
@@ -134,7 +132,7 @@ void PlayerAsteroid::update(int delta) {
                 ArrayAdd(item, *this->loot());
                 int count = 1;
                 if (quality != 7)
-                    count = AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) + 1;
+                    count = ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(3) + 1;
                 ArrayAdd(count, *this->loot());
                 this->createCrate(this->asteroidIndex == 0xa4 ? 2 : 1);
             } else {
@@ -270,9 +268,9 @@ void PlayerAsteroid::initPush(const Vector &target, int duration) {
     this->pushDirection() = VectorNormalize(directionSource);
 
     Vector randomVector = {
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 200) - 100),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(200) - 100),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(200) - 100),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(200) - 100),
     };
     this->pushSpin() = VectorNormalize(randomVector) * 0.01f;
 }
@@ -306,16 +304,16 @@ PlayerAsteroid::PlayerAsteroid(int playerId, AEGeometry *geometry, int explosion
     this->setPosition(position);
 
     this->geometry->setRotation(
-        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
-        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f,
-        (float) AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 100) * 0.01f * 6.2831855f);
+        (float) ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(100) * 0.01f * 6.2831855f,
+        (float) ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(100) * 0.01f * 6.2831855f,
+        (float) ((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(100) * 0.01f * 6.2831855f);
 
     this->secondaryGeometry() = nullptr;
     this->rotationEnabled = 1;
     Vector axis = {
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
-        (float) (AbyssEngine::AERandom::nextInt(g_playerAsteroidRandom, 3) - 1),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(3) - 1),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(3) - 1),
+        (float) (((AbyssEngine::AERandom *)(g_playerAsteroidRandom))->nextInt(3) - 1),
     };
     this->spin = axis;
 

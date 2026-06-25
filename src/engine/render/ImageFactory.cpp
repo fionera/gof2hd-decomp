@@ -1,4 +1,5 @@
 #include "engine/render/ImageFactory.h"
+#include "engine/core/AERandom.h"
 #include "game/core/Globals.h"
 #include "engine/core/AbyssEngine.h"
 #include "engine/render/ImagePart.h"
@@ -6,9 +7,6 @@
 #include "engine/render/Sprite.h"
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(void *random, int limit);
-    }
 }
 
 typedef void (*GetTextFn)(unsigned canvas, int id, void *out);
@@ -223,13 +221,13 @@ Array<ImagePart *> *ImageFactory::loadChar(int *desc) {
 }
 
 void ImageFactory::createChar(int race) {
-    int sexRoll = AbyssEngine::AERandom::nextInt(*(void **) gCreateCharRng, 2);
+    int sexRoll = ((AbyssEngine::AERandom *)(*(void **) gCreateCharRng))->nextInt(2);
     this->createChar(sexRoll == 0, race);
 }
 
 int *ImageFactory::createChar(bool isMale, int race) {
     if (race == 3) {
-        int reroll = AbyssEngine::AERandom::nextInt(*(void **) gCreateChar2Rng1, 4);
+        int reroll = ((AbyssEngine::AERandom *)(*(void **) gCreateChar2Rng1))->nextInt(4);
         race = (reroll != 0) ? 2 : 0;
     }
     int row = race;
@@ -242,7 +240,7 @@ int *ImageFactory::createChar(bool isMale, int race) {
     // gCreateChar2Table is a contiguous run of rows, each holding 4 part counts.
     int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
-        desc[i + 1] = AbyssEngine::AERandom::nextInt(*(void **) gCreateChar2Rng2, partCounts[i]);
+        desc[i + 1] = ((AbyssEngine::AERandom *)(*(void **) gCreateChar2Rng2))->nextInt(partCounts[i]);
     return desc;
 }
 

@@ -1,4 +1,5 @@
 #include "game/ship/PlayerCreature.h"
+#include "engine/core/AERandom.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
 #include "game/world/Level.h"
@@ -27,9 +28,6 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(int rng, int bound);
-    }
 }
 
 void *ParticleSystemManager_emitManual_v(
@@ -143,8 +141,8 @@ void PlayerCreature::update(int elapsed) {
         } else {
             int half = elapsed >> 1;
             float negativeHalf = (float) half * -0.5f;
-            int first = AbyssEngine::AERandom::nextInt(*PlayerCreature_randomMax, half);
-            int second = AbyssEngine::AERandom::nextInt(*PlayerCreature_randomMax, half);
+            int first = ((AbyssEngine::AERandom *)(*PlayerCreature_randomMax))->nextInt(half);
+            int second = ((AbyssEngine::AERandom *)(*PlayerCreature_randomMax))->nextInt(half);
             float xAngle = ((negativeHalf + (float) first) * 0.000244140625f) * 2.0f * 3.1415927f;
             float zAngle = ((negativeHalf + (float) second) * 0.000244140625f) * 2.0f * 3.1415927f;
             AbyssEngine::AEMath::MatrixSetRotation(this->rageMatrix, xAngle, zAngle, 0.0f);

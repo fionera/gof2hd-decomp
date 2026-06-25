@@ -211,7 +211,7 @@ void CutScene::process(int /*delta*/) {
             }
             if (this->fogTimer84 > 3000) {
                 this->fogTimer84 = 0;
-                AERandom *rng = AERandom::gRandom;
+                AERandom *rng = Globals::rnd;
                 for (unsigned int i = 0; i < n; i++) {
                     if (rng->nextInt() < 0x14) {
                         AbyssEngine::Transform *t = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -286,7 +286,7 @@ void CutScene::process(int /*delta*/) {
                     this->animTimer7c = acc;
                     if (acc > 20000) {
                         this->animTimer7c = 0;
-                        if (AERandom::gRandom->nextInt() < 100) {
+                        if (Globals::rnd->nextInt() < 100) {
                             AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                             a->SetAnimationState((AnimationMode) 3, nullptr);
                             a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -301,7 +301,7 @@ void CutScene::process(int /*delta*/) {
                     this->animTimer80 = acc;
                     if (acc > 22000) {
                         this->animTimer80 = 0;
-                        if (AERandom::gRandom->nextInt() < 100) {
+                        if (Globals::rnd->nextInt() < 100) {
                             AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                             a->SetAnimationState((AnimationMode) 3, nullptr);
                             canvas->TransformGetTransform(0);
@@ -331,7 +331,7 @@ void CutScene::process(int /*delta*/) {
                 this->animTimer80 = acc80;
                 if (acc7c > 1000 && this->geom28 != nullptr) {
                     this->animTimer7c = 0;
-                    if (AERandom::gRandom->nextInt() < 0x28) {
+                    if (Globals::rnd->nextInt() < 0x28) {
                         AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                         a->SetAnimationState((AnimationMode) 3, nullptr);
                         a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
@@ -341,7 +341,7 @@ void CutScene::process(int /*delta*/) {
                 }
                 if (acc80 > 2000) {
                     this->animTimer80 = 0;
-                    if (AERandom::gRandom->nextInt() < 0x1e) {
+                    if (Globals::rnd->nextInt() < 0x1e) {
                         AbyssEngine::Transform *a = (AbyssEngine::Transform *) canvas->TransformGetTransform(0);
                         a->SetAnimationState((AnimationMode) 3, nullptr);
                         canvas->TransformGetTransform(0);
@@ -436,7 +436,7 @@ void CutScene::initialize() {
         char tmp[0x3c];
         memcpy(tmp, canvas->CameraGetLocal(0), 0x3c);
 
-        AERandom *rng = AERandom::gRandom;
+        AERandom *rng = Globals::rnd;
         int rx = rng->nextInt();
         int ry = rng->nextInt();
         float tx = VectorSignedToFloat(rx - 20000, 0);

@@ -516,7 +516,7 @@ static int **g_ccpPriceMod = nullptr;
 void Status::calcCargoPrices() {
     Galaxy *gal = Globals::galaxy;
     Array<SolarSystem *> *systems = gal->getSystems();
-    AbyssEngine::AERandom *rng = AERandom::gRandom;
+    AbyssEngine::AERandom *rng = Globals::rnd;
     const float kPriceScale = 100.0f;
     const float kJitter = 0.02f;
 
@@ -965,7 +965,7 @@ int Status::activateNewWanted() {
             }
             path = pf->getSystemPath(systems, fromSys, toSys);
         } while (path == 0 || (unsigned) (*path)[0] < lo || hi < (unsigned) (*path)[0]);
-        AbyssEngine::AERandom *rnd = AERandom::gRandom;
+        AbyssEngine::AERandom *rnd = Globals::rnd;
         int pick = (*path)[rnd->nextInt(path->size())];
         SolarSystem *dst = (*systems)[pick];
         Array<int> *dstStations = (Array<int> *) dst->getStations();
@@ -1441,7 +1441,7 @@ void Status::departStation(Station *dest) {
             if (!same) {
                 if (field_8c + 1 >= 10) {
                     field_8c = 0;
-                    AbyssEngine::AERandom *rng = AERandom::gRandom;
+                    AbyssEngine::AERandom *rng = Globals::rnd;
                     int sys;
                     do {
                         do {

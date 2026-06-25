@@ -1205,9 +1205,9 @@ void PlayerEgo::shake(int amount) {
         range = 1;
     int span = range << 1;
 
-    float dx = (float) (AERandom::gRandom->next(span) - range);
-    float dy = (float) (AERandom::gRandom->next(span) - range);
-    float dz = (float) (AERandom::gRandom->next(span) - range);
+    float dx = (float) (Globals::rnd->next(span) - range);
+    float dy = (float) (Globals::rnd->next(span) - range);
+    float dz = (float) (Globals::rnd->next(span) - range);
     ((AEGeometry *) (cam))->translate(dx, dy, dz);
 }
 

@@ -24,7 +24,6 @@ namespace AbyssEngine {
 
         int nextInt(int bound);
 
-        static AERandom *gRandom;
     };
 }
 

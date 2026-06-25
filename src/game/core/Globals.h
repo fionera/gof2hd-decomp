@@ -24,6 +24,7 @@ namespace AbyssEngine {
     class ApplicationManager;
     class Engine;
     class PaintCanvas;
+    class AERandom;
 }
 
 
@@ -272,7 +273,7 @@ public:
     static int secondaryWeaponsProbChange;
     static int lastCampaignMissionFailCount;
     static unsigned char startLiteVersionWithMoreCredits;
-    static void *rnd;
+    static AbyssEngine::AERandom *rnd;
     static void *font;
     static unsigned char keys[1020];
     static void *bankZ;

@@ -11,7 +11,7 @@ static int Sparks_nextInt(void *rng, int bound) {
 
 static void **g_Sparks_canvas_ctor = (void **) &Globals::Canvas;
 
-static void **g_Sparks_random_ctor = (void **) &AERandom::gRandom;
+static void **g_Sparks_random_ctor = (void **) &Globals::rnd;
 
 Sparks::Sparks(int kind) {
     uint32_t count = 5;
@@ -119,7 +119,7 @@ static void **g_Sparks_canvas_explode_rocket = (void **) &Globals::Canvas;
 
 static void **g_Sparks_canvas_explode_single = (void **) &Globals::Canvas;
 
-static void **g_Sparks_random_explode = (void **) &AERandom::gRandom;
+static void **g_Sparks_random_explode = (void **) &Globals::rnd;
 
 static int (*g_Sparks_nextInt_explode)(void *rng, int bound) = Sparks_nextInt;
 

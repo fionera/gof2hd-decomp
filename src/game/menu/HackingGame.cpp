@@ -312,20 +312,20 @@ void HackingGame::reInit() {
     } else if (type == 2) {
         for (int i = 0; i != 4; ++i)
             this->target[i] = i;
-        this->target[4] = AERandom::gRandom->nextInt(4);
-        this->target[5] = AERandom::gRandom->nextInt(4);
+        this->target[4] = Globals::rnd->nextInt(4);
+        this->target[5] = Globals::rnd->nextInt(4);
     } else if (type == 3) {
         for (int i = 0; i != 5; ++i)
             this->target[i] = i;
-        this->target[5] = AERandom::gRandom->nextInt(5);
+        this->target[5] = Globals::rnd->nextInt(5);
     } else {
         for (int i = 0; i != 6; ++i)
             this->target[i] = i;
     }
 
     for (int i = 0x28; i != 0; --i) {
-        int a = AERandom::gRandom->nextInt(6);
-        int b = AERandom::gRandom->nextInt(6);
+        int a = Globals::rnd->nextInt(6);
+        int b = Globals::rnd->nextInt(6);
         int value = this->target[a];
         this->target[a] = this->target[b];
         this->target[b] = value;
@@ -338,7 +338,7 @@ void HackingGame::reInit() {
     }
 
     for (unsigned i = 0; (int) i < this->difficulty * 2; ++i) {
-        int count = AERandom::gRandom->nextInt(2);
+        int count = Globals::rnd->nextInt(2);
         for (int j = 0; j <= count; ++j) {
             if ((i & 1) == 0)
                 rotateRightCW(false);

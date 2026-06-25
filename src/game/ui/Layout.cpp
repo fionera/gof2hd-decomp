@@ -333,7 +333,7 @@ void Layout::initTip() {
     unsigned color = *g_tipColor;
     int textId = **g_tipTextId;
     PaintCanvas *canvas = **g_tipCanvas;
-    AERandom::gRandom->nextInt();
+    Globals::rnd->nextInt();
     String *str = Globals::gameText->getText(textId);
 
     this->tipLines = arr;

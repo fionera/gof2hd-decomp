@@ -190,7 +190,7 @@ void OnCreateApplication(AbyssEngine::Engine *engine) {
     Globals::layout->initTip();
     Globals::status->resetGame();
     AbyssEngine::Engine::vfc = true;
-    AERandom::gRandom->reset();
+    Globals::rnd->reset();
     engine->appManager->SetCurrentApplicationModule(0);
     AbyssEngine::Engine::clampTextures = false;
 

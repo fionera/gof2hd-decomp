@@ -1,5 +1,6 @@
 
 #include "game/menu/SpaceLounge.h"
+#include "engine/core/AERandom.h"
 #include "game/world/SolarSystem.h"
 #include "engine/render/AEGeometry.h"
 #include "game/ui/ChoiceWindow.h"
@@ -56,9 +57,6 @@ static void *SpaceLounge_touch_camera_slot;
 static int SpaceLounge_touch_race_vectors[64];
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(void *random, int limit);
-    }
 }
 
 static int *SpaceLounge_getSoundId_missionText;
@@ -499,40 +497,40 @@ int SpaceLounge::getSoundId(Agent *agent) {
     switch (offer) {
         case 0:
             if (missionType == 0 || missionType == 0xb) {
-                soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer0_11, 4) + 0x301;
+                soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer0_11))->nextInt(4) + 0x301;
             } else if (missionType == 0xc) {
-                soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer0_else, 4) + 0x2fa;
+                soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer0_else))->nextInt(4) + 0x2fa;
             } else {
                 void *random = *(void **) &SpaceLounge_getSoundId_offer0_else;
-                int first = AbyssEngine::AERandom::nextInt(random, 2);
+                int first = ((AbyssEngine::AERandom *)(random))->nextInt(2);
                 if (first == 0) {
-                    soundId = AbyssEngine::AERandom::nextInt(random, 4) + 0x31f;
+                    soundId = ((AbyssEngine::AERandom *)(random))->nextInt(4) + 0x31f;
                 } else {
-                    soundId = AbyssEngine::AERandom::nextInt(random, 4) + 0x309;
+                    soundId = ((AbyssEngine::AERandom *)(random))->nextInt(4) + 0x309;
                 }
             }
             break;
         case 1:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer1, 2) + 0x30d;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer1))->nextInt(2) + 0x30d;
             break;
         case 2:
         case 3:
         case 8:
         case 9:
         case 10:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer2358910, 2) + 0x2f7;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer2358910))->nextInt(2) + 0x2f7;
             break;
         case 4:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer4, 2) + 0x2fe;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer4))->nextInt(2) + 0x2fe;
             break;
         case 5:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer5, 4) + 0x31b;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer5))->nextInt(4) + 0x31b;
             break;
         case 6:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer6, 4) + 0x323;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer6))->nextInt(4) + 0x323;
             break;
         case 7:
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer7, 4) + 0x305;
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer7))->nextInt(4) + 0x305;
             break;
         default:
             soundId = -1;
@@ -541,15 +539,15 @@ int SpaceLounge::getSoundId(Agent *agent) {
 
     if (offer != 1) {
         checkSpecialText = false;
-        if (AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_chance, 100) < 30) {
-            soundId = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_offer1, 2) + 0x30d;
+        if (((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_chance))->nextInt(100) < 30) {
+            soundId = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_offer1))->nextInt(2) + 0x30d;
             checkSpecialText = true;
         }
     }
 
     int dummy = 0;
     if (((Agent *) (agent))->hasAcceptedOffer() != 0) {
-        dummy = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_accepted, 2);
+        dummy = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_accepted))->nextInt(2);
         soundId = dummy + 0x30d;
     }
 
@@ -569,7 +567,7 @@ int SpaceLounge::getSoundId(Agent *agent) {
                 }
             }
         }
-        dummy = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_getSoundId_specialRandom, 2);
+        dummy = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_getSoundId_specialRandom))->nextInt(2);
         soundId = dummy + 0x314;
     }
 
@@ -1287,7 +1285,7 @@ void SpaceLounge::update(int dt) {
             current = ((PaintCanvas *) camera)->CameraGetLocal((unsigned int) (long) camera);
             (void) current;
             this->cameraAnimating = 1;
-            int amount = AbyssEngine::AERandom::nextInt(*(void **) &SpaceLounge_update_random_slot, 10);
+            int amount = ((AbyssEngine::AERandom *)(*(void **) &SpaceLounge_update_random_slot))->nextInt(10);
             this->headBobReverse = 0;
             if (this->headEase == 0) {
                 this->headEase = new AbyssEngine::EaseInOut(0.0f, (float) amount);
@@ -1305,11 +1303,11 @@ void SpaceLounge::update(int dt) {
             int amount = this->headBobSteps;
             if (distance < 0.25f) {
                 void *random = *(void **) &SpaceLounge_update_random_slot;
-                amount = AbyssEngine::AERandom::nextInt(random, 10);
+                amount = ((AbyssEngine::AERandom *)(random))->nextInt(10);
                 float next = (float) (5 - amount);
                 this->headBobReverse = value > next;
                 this->headEase->SetRange(value, next);
-                this->headBobSteps = AbyssEngine::AERandom::nextInt(random, 4) + 1;
+                this->headBobSteps = ((AbyssEngine::AERandom *)(random))->nextInt(4) + 1;
                 amount = this->headBobSteps;
             }
             if (this->headBobReverse != 0) {

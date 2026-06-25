@@ -1,4 +1,5 @@
 #include "game/ship/PlayerJunk.h"
+#include "engine/core/AERandom.h"
 #include "game/ship/Player.h"
 #include "game/ship/PlayerEgo.h"
 #include "game/weapons/Radar.h"
@@ -11,9 +12,6 @@
 static FModSound *g_PJ_sound = nullptr;
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(void *rng, int bound);
-    }
 }
 
 static void *g_PJ_random = nullptr;
@@ -54,11 +52,11 @@ void PlayerJunk::update(int elapsed) {
             this->level->junkDied();
             this->state = 3;
             g_PJ_sound->play(0x16, nullptr, nullptr, 0.0f);
-            if (AbyssEngine::AERandom::nextInt(g_PJ_random, 100) < 10) {
+            if (((AbyssEngine::AERandom *)(g_PJ_random))->nextInt(100) < 10) {
                 this->hasCargo = 1;
                 this->cargo = new Array<int>();
                 ArrayAdd(99, *this->cargo);
-                ArrayAdd(AbyssEngine::AERandom::nextInt(g_PJ_random, 10) + 1, *this->cargo);
+                ArrayAdd(((AbyssEngine::AERandom *)(g_PJ_random))->nextInt(10) + 1, *this->cargo);
                 this->createCrate(3);
             } else {
                 this->player->setActive(false);

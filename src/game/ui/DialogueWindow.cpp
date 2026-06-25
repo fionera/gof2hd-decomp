@@ -242,7 +242,7 @@ void DialogueWindow::loadContent() {
             if (GameText::getLanguage() == 1 && agent != 0) {
                 textId = this->pickGermanGenericTextBecauseWeSaved100EurosWithThat(kind, agent);
             } else {
-                textId = 0x188 + AERandom::gRandom->nextInt(5);
+                textId = 0x188 + Globals::rnd->nextInt(5);
             }
         } else {
             textId = 0x20f;
@@ -550,13 +550,13 @@ int DialogueWindow::pickGermanGenericTextBecauseWeSaved100EurosWithThat(int kind
     int index;
     DialogueWindowGermanTextTable *texts;
     if (kind == 2) {
-        index = AERandom::gRandom->nextInt(2);
+        index = Globals::rnd->nextInt(2);
         texts = (DialogueWindowGermanTextTable *) g_dw_germanSuccessTexts;
     } else if (kind != 0) {
-        index = AERandom::gRandom->nextInt(2);
+        index = Globals::rnd->nextInt(2);
         texts = (DialogueWindowGermanTextTable *) g_dw_germanOtherTexts;
     } else {
-        index = AERandom::gRandom->nextInt(2);
+        index = Globals::rnd->nextInt(2);
         texts = (DialogueWindowGermanTextTable *) g_dw_germanBriefingTexts;
     }
 

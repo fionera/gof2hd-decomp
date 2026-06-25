@@ -809,7 +809,7 @@ StarMap::StarMap(bool jumpMapMode, Mission *mission, bool param3, int param4) {
         systemPositions->data()[i] = pos;
     }
 
-    AERandom::gRandom->reset();
+    Globals::rnd->reset();
     this->markerGeom = (AEGeometry *) 0;
     this->choiceVisible = 0;
     if (Globals::status->getCurrentCampaignMission() > 0x1f &&
@@ -1068,7 +1068,7 @@ void StarMap::initStarSystem() {
     this->stationAngles = new int[count];
     this->stationDistances = new int[count];
     this->centeredStation = -1;
-    AERandom::gRandom->setSeed((long long) system->getIndex() * 1000);
+    Globals::rnd->setSeed((long long) system->getIndex() * 1000);
 
     Array<AEGeometry *> *stationGeoms = new Array<AEGeometry *>();
     this->stationGeoms = stationGeoms;
@@ -1090,10 +1090,10 @@ void StarMap::initStarSystem() {
         AEGeometry *geom = new AEGeometry((uint16_t)(tex + 0x4704), Globals::Canvas, false);
         stationGeoms->data()[i] = geom;
         this->stationAngles[stationIndex] =
-                AERandom::gRandom->nextInt(used->size()) *
+                Globals::rnd->nextInt(used->size()) *
                 (0x10000 / (int) used->size());
         int dist = (i == 1) ? 0x1900 : this->stationDistances[i - 2];
-        dist += AERandom::gRandom->nextInt(0x15e0) + 0x640;
+        dist += Globals::rnd->nextInt(0x15e0) + 0x640;
         this->stationDistances[stationIndex] = dist;
         Vector pos = {0.0f, 0.0f, (float) dist};
         geom->translate(pos);

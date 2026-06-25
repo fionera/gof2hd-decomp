@@ -1,4 +1,5 @@
 #include "game/weapons/Gun.h"
+#include "engine/core/AERandom.h"
 #include <cstdint>
 #include "game/ship/Player.h"
 #include "game/mission/Item.h"
@@ -151,9 +152,6 @@ void Gun::removeAllEnemies() {
 }
 
 namespace AbyssEngine {
-    namespace AERandom {
-        int nextInt(int rng);
-    }
 
     namespace Transform {
         void SetAnimationState(unsigned tf, int a, int b);
@@ -196,7 +194,7 @@ void Gun::setIndex(int index) {
         for (unsigned i = 0; i < count; i = i + 1) {
             AEGeometry *geom = new AEGeometry((uint16_t) g, (PaintCanvas *) *canvasHolder, false);
             this->geometries[i] = geom->transform;
-            int r = AbyssEngine::AERandom::nextInt(*rngHolder);
+            int r = ((AbyssEngine::AERandom *)(*rngHolder))->nextInt();
             this->randomFlags[i] = (r == 0);
             unsigned tf = AbyssEngine::PaintCanvas::TransformGetTransform(*canvasHolder);
             AbyssEngine::Transform::SetAnimationState(tf, 0, 0);

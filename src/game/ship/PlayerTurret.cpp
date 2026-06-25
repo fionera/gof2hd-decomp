@@ -1,4 +1,5 @@
 #include "game/ship/PlayerTurret.h"
+#include "engine/core/AERandom.h"
 #include "game/core/Globals.h"
 #include "engine/render/AEGeometry.h"
 #include "engine/audio/FModSound.h"
@@ -34,9 +35,6 @@ namespace AbyssEngine {
         Matrix operator*(const Matrix &, const Matrix &);
     }
 
-    namespace AERandom {
-        int nextInt(int rng, int max);
-    }
 }
 
 static FModSound **g_turretSound = nullptr;
@@ -246,11 +244,11 @@ void PlayerTurret::update(int delta) {
         manager->enableSystemEmit(this->particleSystemId, true);
         this->explosion->start(this->cachedPosition, zero);
 
-        int random = AbyssEngine::AERandom::nextInt(g_turretRandom, 100);
+        int random = ((AbyssEngine::AERandom *)(g_turretRandom))->nextInt(100);
         if (random < 0) {
             this->cargo = new Array<int>();
             ArrayAdd(99, *(this->cargo));
-            ArrayAdd(AbyssEngine::AERandom::nextInt(g_turretRandom, 10) + 1, *(this->cargo));
+            ArrayAdd(((AbyssEngine::AERandom *)(g_turretRandom))->nextInt(10) + 1, *(this->cargo));
             this->createCrate(3);
         } else {
             Player *levelPlayer = (Player *) (intptr_t) this->level->getPlayer();

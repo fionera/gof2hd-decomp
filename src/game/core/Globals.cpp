@@ -318,7 +318,7 @@ int Globals::lastCampaignMissionFailed;
 int Globals::secondaryWeaponsProbChange;
 int Globals::lastCampaignMissionFailCount;
 unsigned char Globals::startLiteVersionWithMoreCredits;
-void *Globals::rnd;
+AbyssEngine::AERandom *Globals::rnd;
 void *Globals::font;
 unsigned char Globals::keys[1020];
 void *Globals::bankZ;
@@ -2217,7 +2217,7 @@ int Globals::init(AbyssEngine::ApplicationManager *app, AbyssEngine::Engine *eng
     void *rng = ::operator new(8);
     AERandom_ctor(rng);
     **gI_ctxSlot = this;
-    AERandom::gRandom = (AbyssEngine::AERandom *) rng;
+    Globals::rnd = (AbyssEngine::AERandom *) rng;
 
     void *gen = ::operator new(1);
     Generator_ctor(gen);

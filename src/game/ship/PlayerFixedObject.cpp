@@ -736,14 +736,14 @@ PlayerFixedObject::PlayerFixedObject(int kind, int param2, Player *player, AEGeo
                 if (kind != 0x498e && kind != second) {
                     for (int idx = 1; (uint32_t)(idx - 1) < self->lootList->size(); idx += 2) {
                         if (kind == 0xe) {
-                            int r = AERandom::gRandom->nextInt();
+                            int r = Globals::rnd->nextInt();
                             int &cell = (*self->lootList)[idx];
                             cell = cell * (r + 5);
                         } else {
-                            int r = AERandom::gRandom->nextInt();
+                            int r = Globals::rnd->nextInt();
                             int &base = (*self->lootList)[idx];
                             base = base * (r + 2);
-                            int r2 = AERandom::gRandom->nextInt();
+                            int r2 = Globals::rnd->nextInt();
                             int &cell = (*self->lootList)[idx];
                             if (cell < r2 + 8) cell = r2 + 8;
                         }

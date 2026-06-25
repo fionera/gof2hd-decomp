@@ -748,14 +748,14 @@ Route *Level::createRoute(int count) {
     int *pts = new int[n];
     int *p = pts + 1;
     for (int i = -1; i + 1 < (int) n; i = i + 3) {
-        int sign = (AERandom::gRandom->nextInt(2) == 0) ? 1 : -1;
-        p[-1] = (AERandom::gRandom->nextInt(30000) + 50000) * sign;
-        p[0] = AERandom::gRandom->nextInt(20000) - 10000;
+        int sign = (Globals::rnd->nextInt(2) == 0) ? 1 : -1;
+        p[-1] = (Globals::rnd->nextInt(30000) + 50000) * sign;
+        p[0] = Globals::rnd->nextInt(20000) - 10000;
         if (i == -1) {
-            pts[2] = AERandom::gRandom->nextInt() + 50000;
+            pts[2] = Globals::rnd->nextInt() + 50000;
         } else {
             int prev = p[-2];
-            p[1] = AERandom::gRandom->nextInt() + prev + 50000;
+            p[1] = Globals::rnd->nextInt() + prev + 50000;
         }
         p = p + 3;
     }
@@ -1063,16 +1063,16 @@ void Level::createRadioMessage(int type, int sub) {
                 break;
             }
             int base = (type == 0) ? 0x1aa : 0x1ad;
-            id = AERandom::gRandom->nextInt() + base;
+            id = Globals::rnd->nextInt() + base;
             break;
         }
         case 3:
             this->field_1b0 = 1;
-            id = AERandom::gRandom->nextInt() + 0x1b3;
+            id = Globals::rnd->nextInt() + 0x1b3;
             break;
         case 4:
             this->field_68 = 1;
-            id = AERandom::gRandom->nextInt() + 0x1b6;
+            id = Globals::rnd->nextInt() + 0x1b6;
             break;
         case 5: id = 0x1bb;
             extraDelay = 0;
@@ -1080,16 +1080,16 @@ void Level::createRadioMessage(int type, int sub) {
         case 6: id = 0x1bc;
             extraDelay = 0;
             break;
-        case 9: id = AERandom::gRandom->nextInt() + 0x1c1;
+        case 9: id = Globals::rnd->nextInt() + 0x1c1;
             break;
-        case 10: id = AERandom::gRandom->nextInt() + 0x1c3;
+        case 10: id = Globals::rnd->nextInt() + 0x1c3;
             break;
-        case 0xb: id = AERandom::gRandom->nextInt() + 0x1c5;
+        case 0xb: id = Globals::rnd->nextInt() + 0x1c5;
             break;
         case 0xc: id = 0x1c5;
             extraDelay = 0;
             break;
-        case 0xd: id = AERandom::gRandom->nextInt() + 0x1c7;
+        case 0xd: id = Globals::rnd->nextInt() + 0x1c7;
             break;
         case 0xe: {
             int *st = (int *) Globals::status->field_90;
@@ -1115,7 +1115,7 @@ void Level::createRadioMessage(int type, int sub) {
             break;
         }
         case 8: {
-            int stage = AERandom::gRandom->nextInt();
+            int stage = Globals::rnd->nextInt();
             int off = 0;
             for (int k = 0; k < stage; k = k + 1)
                 off = off + g_crm_counts8[k];
@@ -1134,7 +1134,7 @@ void Level::createRadioMessage(int type, int sub) {
         }
         case 0x13: {
             RadioMessage *m = (RadioMessage *) ::operator new(0x28);
-            AbyssEngine::AERandom *rng = AERandom::gRandom;
+            AbyssEngine::AERandom *rng = Globals::rnd;
             new(m) RadioMessage(rng->nextInt() + 0xaf4, 0, 5, 0x5dc);
             ArrayAdd(m, *(this->messages));
             m = (RadioMessage *) ::operator new(0x28);
@@ -1180,7 +1180,7 @@ void Level::createRadioMessage(int type, int sub) {
         default:
             if (type == 7 || type == 0xc || type == 0xe) {
             } else {
-                id = AERandom::gRandom->nextInt() + 0x1bd;
+                id = Globals::rnd->nextInt() + 0x1bd;
             }
             break;
     }
@@ -1466,7 +1466,7 @@ void Level::createMission() {
 
     if (Globals::status->inAlienOrbit() != 0) {
         int lvl = Globals::status->getLevel();
-        AbyssEngine::AERandom *rng = AERandom::gRandom;
+        AbyssEngine::AERandom *rng = Globals::rnd;
         int roll = rng->nextInt();
         float base = (float) lvl * 0.5f - 1.0f;
         unsigned count = 2;
@@ -1498,7 +1498,7 @@ void Level::createMission() {
 }
 
 void Level::createAsteroids() {
-    int *rngObj = (int *) &AERandom::gRandom;
+    int *rngObj = (int *) &Globals::rnd;
 
     int colBase;
     if (Globals::status->inAlienOrbit() == 0) {
@@ -3093,14 +3093,14 @@ int Level::createStaticObject(Waypoint *wp, int type, bool jitter) {
         z = wp->z;
     }
     if (jitter) {
-        AbyssEngine::AERandom *rng = AERandom::gRandom;
+        AbyssEngine::AERandom *rng = Globals::rnd;
         x = x + rng->nextInt(20000) - 10000;
         y = y + rng->nextInt(20000) - 10000;
         z = z + rng->nextInt(20000) - 10000;
     }
 
     if (type == 0x4215) {
-        int r = AERandom::gRandom->nextInt();
+        int r = Globals::rnd->nextInt();
         type = (r == 0) ? 0x4215 : (r == 1) ? 0x4216 : 0x4217;
     }
 
@@ -3170,7 +3170,7 @@ PlayerFixedObject *Level::createShip(int race, int shipClass, int type, Waypoint
         y = wp->y;
         z = wp->z;
     }
-    AbyssEngine::AERandom *rng = AERandom::gRandom;
+    AbyssEngine::AERandom *rng = Globals::rnd;
     int jx = rng->nextInt(40000);
     int jy = rng->nextInt(40000);
     int jz = rng->nextInt(40000);
@@ -3614,7 +3614,7 @@ void Level::createGasClouds() {
         boss = ((Station *) s2)->getIndex() == 0x4f;
     }
 
-    AbyssEngine::AERandom *rng = AERandom::gRandom;
+    AbyssEngine::AERandom *rng = Globals::rnd;
     int roll = rng->nextInt();
 
     float countF = (float) (boss ? 3.0f : 0.0f) + ((float) prob[1] / 1.0f) * (float) (roll + 4);
@@ -3652,7 +3652,7 @@ void Level::updateMissionOrbit(int dt) {
                     for (unsigned i = 4; i < this->enemies->size(); i = i + 1) {
                         int *ki = (int *) (*this->enemies)[i];
                         if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0) {
-                            AbyssEngine::AERandom *rng = AERandom::gRandom;
+                            AbyssEngine::AERandom *rng = Globals::rnd;
                             Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
                             int span = 0 ? 40000 : 120000;
                             float ox = (float) (rng->nextInt() % span - span / 2);
@@ -3678,7 +3678,7 @@ void Level::updateMissionOrbit(int dt) {
                         int *ki = (int *) (*this->enemies)[i];
                         if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0 &&
                             ((KIPlayer *) ki)->shipGroupFlag != 0x33) {
-                            AbyssEngine::AERandom *rng = AERandom::gRandom;
+                            AbyssEngine::AERandom *rng = Globals::rnd;
                             Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
                             int span = 1 ? 40000 : 120000;
                             float ox = (float) (rng->nextInt() % span - span / 2);
@@ -3713,7 +3713,7 @@ void Level::updateMissionOrbit(int dt) {
                     for (unsigned i = 0; i + 1 < count; i = i + 1) {
                         int *ki = (int *) (*this->enemies)[i];
                         if (((KIPlayer *) ki)->isDead() != 0 && ((KIPlayer *) ki)->player->isActive() == 0) {
-                            AbyssEngine::AERandom *rng = AERandom::gRandom;
+                            AbyssEngine::AERandom *rng = Globals::rnd;
                             Vector p = (this->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : this->player->getPosition());
                             int span = 0 ? 40000 : 120000;
                             float ox = (float) (rng->nextInt() % span - span / 2);
@@ -3996,7 +3996,7 @@ void Level::createScene() {
                     }
                 }
                 int seat;
-                do { seat = AERandom::gRandom->nextInt(); } while (taken[seat] != 0);
+                do { seat = Globals::rnd->nextInt(); } while (taken[seat] != 0);
                 taken[seat] = 1;
 
                 AEGeometry *g = (AEGeometry *) ::operator new(0xc0);
@@ -4084,7 +4084,7 @@ void Level::createScene() {
         Station *st2 = (Station *) Globals::status->getStation();
         bool fromStationShips = (((Station *) st2)->getIndex() == 0x6c) &&
                                 (Globals::status->field_114 == 3);
-        AbyssEngine::AERandom *rng = AERandom::gRandom;
+        AbyssEngine::AERandom *rng = Globals::rnd;
         int spawnCount = rng->nextInt();
         if (fromStationShips) {
             unsigned *ships = (unsigned *) ((Station *) Globals::status->getStation())->getShips();
@@ -4207,7 +4207,7 @@ void Level::renderBG(int t) {
         int xf2 = (int) (long) ((PaintCanvas *) (long) (canvas))->TransformGetTransform(0);
         ((AbyssEngine::Transform *) (intptr_t) xf2)->Update((int64_t)(int)t, true);
         if (*(int *) (xf + 0x110) < before) {
-            AbyssEngine::AERandom *rng = AERandom::gRandom;
+            AbyssEngine::AERandom *rng = Globals::rnd;
             const float toAngle = (1.0f / 65536.0f) * 6.2831855f;
             float ax = (float) rng->nextInt(0x10000) * toAngle;
             float ay = (float) rng->nextInt(0x10000) * toAngle;
@@ -4261,7 +4261,7 @@ static inline void levelWingmanDiedOne(String *name, unsigned int *list) {
 }
 
 static inline void levelSpawnFar(Level *self, int *kiPlayer) {
-    AbyssEngine::AERandom *rng = AERandom::gRandom;
+    AbyssEngine::AERandom *rng = Globals::rnd;
     Vector p = (self->player == 0 ? Vector{0.0f, 0.0f, 0.0f} : self->player->getPosition());
     float ox = (float) (rng->nextInt() % 120000 - 60000);
     float oy = (float) (rng->nextInt() % 80000 - 40000);
@@ -4270,7 +4270,7 @@ static inline void levelSpawnFar(Level *self, int *kiPlayer) {
 }
 
 static inline void levelPlaceAlien(Level *self, int *kiPlayer, int alienInOrbit) {
-    AbyssEngine::AERandom *rng = AERandom::gRandom;
+    AbyssEngine::AERandom *rng = Globals::rnd;
     Vector base;
     base.x = base.y = base.z = 0.0f;
     if (alienInOrbit)

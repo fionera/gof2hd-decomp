@@ -320,7 +320,7 @@ StarSystem::StarSystem(int mode) {
 
         AEGeometry *planet = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
         (*this->planetsArray)[1] = planet;
-        int rnd = AERandom::gRandom->nextInt(0x4e20);
+        int rnd = Globals::rnd->nextInt(0x4e20);
         float scale = (float) (rnd + 0x4e20) * 0.001f;
         planet->setScaling(Vector{scale, scale, scale});
         planet->setRotation(Vector{0.0f, 90.0f, 0.0f});
@@ -413,9 +413,9 @@ StarSystem::StarSystem(int mode) {
     this->positionsArray = new Array<Vector>();
     ArraySetLength(count + 1, *(this->positionsArray));
 
-    AERandom::gRandom->setSeed((long long) status->getStation()->getIndex() * 300);
+    Globals::rnd->setSeed((long long) status->getStation()->getIndex() * 300);
 
-    int sunSlot = AERandom::gRandom->nextInt(14);
+    int sunSlot = Globals::rnd->nextInt(14);
     PlayerStatic **targets = (PlayerStatic **) flat_data(this->playerTargets);
     for (uint32_t i = 0; i < this->planetsArray->size(); ++i) {
         AEGeometry *geom = new AEGeometry((uint16_t) 0x1a70, Globals::Canvas, false);
@@ -439,9 +439,9 @@ StarSystem::StarSystem(int mode) {
         } else {
             PlayerStatic *player = new PlayerStatic(0, geom, 0.0f, 0.0f, 0.0f);
             targets[i - 1] = player;
-            int slot = AERandom::gRandom->nextInt(11) + 7;
+            int slot = Globals::rnd->nextInt(11) + 7;
             usedSlots[slot * 4] = 1;
-            int dist = AERandom::gRandom->nextInt(0x4e20) + 0x4e20;
+            int dist = Globals::rnd->nextInt(0x4e20) + 0x4e20;
             if (status->getCurrentCampaignMission() == 0) {
                 dist = (int) ((float) dist * 0.5f);
             }
@@ -462,7 +462,7 @@ StarSystem::StarSystem(int mode) {
         (*this->positionsArray)[i] = geom->getPosition();
     }
 
-    AERandom::gRandom->reset();
+    Globals::rnd->reset();
     initLight();
 }
 

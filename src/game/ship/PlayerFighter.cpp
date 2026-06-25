@@ -221,7 +221,7 @@ PlayerFighter::PlayerFighter(int faction, int wingmanCmd, Player *player, AEGeom
     AEMath_Matrix_ctor(&self->easeBaseMatrix);
     AEMath_Matrix_ctor(&self->rollMatrix);
 
-    int rng = (int) (intptr_t) AERandom::gRandom;
+    int rng = (int) (intptr_t) Globals::rnd;
 
     float wp[27];
     int r;
@@ -543,7 +543,7 @@ void PlayerFighter::cloak(int dur, bool b) {
     if (dur > 0) {
         v = (unsigned) dur;
     } else {
-        v = PF_nextInt((int) (intptr_t) AERandom::gRandom) + 5000;
+        v = PF_nextInt((int) (intptr_t) Globals::rnd) + 5000;
     }
     this->cloakActive = 1;
     this->cloakDuration = v + 4000;
@@ -677,7 +677,7 @@ void PlayerFighter::initPush(const Vector &target, int radius) {
     this->pushNormal = *(Vector *) norm;
 
     RngFn rng = (RngFn) gIP_rngFn;
-    int rngObj = (int) (intptr_t) AERandom::gRandom;
+    int rngObj = (int) (intptr_t) Globals::rnd;
     float rx = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
     float ry = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
     float rz = VectorSignedToFloat(rng(rngObj, 200) - 100, 0);
@@ -952,7 +952,7 @@ void PlayerFighter::handleCloaking() {
         }
     }
 
-    if (this->field_0x1e0 != 0 && PF_nextInt((int) (intptr_t) AERandom::gRandom) < 0x32) {
+    if (this->field_0x1e0 != 0 && PF_nextInt((int) (intptr_t) Globals::rnd) < 0x32) {
         PF_cloakStart(this);
         return;
     }
@@ -960,7 +960,7 @@ void PlayerFighter::handleCloaking() {
     this->cloakCooldown = acc;
     if (8000 < acc) {
         this->cloakCooldown = 0;
-        if (PF_nextInt((int) (intptr_t) AERandom::gRandom) < 0x1e) {
+        if (PF_nextInt((int) (intptr_t) Globals::rnd) < 0x1e) {
             PF_cloakStart(this);
         }
     }

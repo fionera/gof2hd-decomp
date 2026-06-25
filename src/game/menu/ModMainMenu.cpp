@@ -229,9 +229,9 @@ void ModMainMenu::OnInitialize() {
         addSound(*soundRes, 0x14);
 
         Globals::status->resetGame();
-        AERandom::gRandom->reset();
+        Globals::rnd->reset();
 
-        int station = Globals::galaxy->getStation(AERandom::gRandom->nextInt(100));
+        int station = Globals::galaxy->getStation(Globals::rnd->nextInt(100));
         Globals::status->setStation((Station *) (intptr_t) station);
 
         CutScene *cutscene = new CutScene(2);
