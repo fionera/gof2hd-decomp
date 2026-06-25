@@ -48,7 +48,7 @@ void AEFile::SetInterface(FileInterface *fileInterface) {
 
 void AEFile::Release() {
     if (g_AEFile_openFiles != nullptr) {
-        ArrayReleaseClasses(*g_AEFile_openFiles);   // original: ArrayReleaseClasses<AELowLevelFile*>, then ~Array + delete
+        ArrayReleaseClasses(*g_AEFile_openFiles);
         delete g_AEFile_openFiles;
         g_AEFile_openFiles = nullptr;
     }
@@ -639,7 +639,7 @@ uint32_t AEFile::crc32_ccitt(const String &text) {
     return crc;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 void *AEFile::fileInterface;
 void *AEFile::pakFileEntryList;
 void *AEFile::file;

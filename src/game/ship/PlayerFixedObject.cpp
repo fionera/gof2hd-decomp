@@ -109,22 +109,22 @@ static void **g_pfo_egoA = nullptr;
 
 static const int g_pfo_dmgVal = 0;
 
-// Minimal models of two untyped runtime handles referenced via *g_pfo_*.
-// Only the accessed fields are named; the leading padding preserves the
-// byte offsets used by the original code.
 
-// Object behind *g_pfo_audioFlag: a settings/audio block whose byte at 0xf
-// gates positional explosion audio.
+
+
+
+
+
 struct PfoAudioSettings {
     char _pad0[0xf];
-    char positionalAudioEnabled; // 0xf
+    char positionalAudioEnabled;
 };
 
-// Object behind *g_pfo_egoA: the active ego/campaign block whose int at 0x118
-// is the "destroyed type-0xe enemies" kill counter (achievement 0x27).
+
+
 struct PfoEgoCounters {
     char _pad0[0x118];
-    int destroyedEnemyCount; // 0x118
+    int destroyedEnemyCount;
 };
 
 #if __SIZEOF_POINTER__ == 4

@@ -5,16 +5,16 @@
 namespace AbyssEngine {
     class Mesh;
 
-    // Engine-internal resource struct. Layout recovered from the original
-    // ARM disassembly (offsets verified against the 32-bit match build).
-    struct SpriteSystem {     // size 0x14
-        uint16_t count;       // 0x00
-        uint16_t pad0x2;      // 0x02
-        float *posCpu;        // 0x04: count * vec3
-        int16_t *sizeCpu;     // 0x08
-        uint8_t sharedSize;   // 0x0c
-        uint8_t pad0xd[3];    // 0x0d
-        Mesh *mesh;           // 0x10
+
+
+    struct SpriteSystem {
+        uint16_t count;
+        uint16_t pad0x2;
+        float *posCpu;
+        int16_t *sizeCpu;
+        uint8_t sharedSize;
+        uint8_t pad0xd[3];
+        Mesh *mesh;
     };
 }
 

@@ -40,7 +40,7 @@ public:
     inline void setLanguage_i(int langId) { setLanguage(langId); }
 
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static unsigned short currentLang;
 };
 

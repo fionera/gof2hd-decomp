@@ -10,14 +10,14 @@ unsigned int JNI_CallIntMethod(void *env, void *m, void *arg0, void *arg1);
 
 void JNI_CallVoidMethod(void *env, void *m, void *arg, ...);
 
-// The opaque void* JNI handles used below are JNIEnv pointers: a pointer to a
-// pointer to the JNINativeInterface function table.  Convert each raw offset
-// load into a named function-table member access.  The byte offsets used by the
-// decompiler match the standard JNINativeInterface layout (32-bit pointers):
-//   0x7c=GetObjectClass 0x84=GetMethodID 0x2c0=NewByteArray
-//   0x320=GetByteArrayRegion 0x340=SetByteArrayRegion
-//   0x3c=ExceptionOccurred 0x40=ExceptionDescribe 0x44=ExceptionClear
-//   0x5c=DeleteLocalRef
+
+
+
+
+
+
+
+
 static inline const JNINativeInterface *JniTable(void *env) {
     return *reinterpret_cast<const JNINativeInterface *const *>(env);
 }
@@ -270,8 +270,8 @@ void FileInterfaceAndroid::SetSaveDirectory(String) {
 void FileInterfaceAndroid::ResetSaveDirectory() {
 }
 
-// The opened zip archives (apk / patch). The original exports these as the bare
-// symbols APKArchive / ZIPArchive; gZipMain/gZipPatch point at them.
+
+
 void *APKArchive = nullptr;
 void *ZIPArchive = nullptr;
 static const char *gZipPrefixA = nullptr;
@@ -315,8 +315,8 @@ static const char *gPrefixPlain = nullptr;
 static const char *gOpenReadFmt = nullptr;
 static char *gStderrBase = nullptr;
 
-// gStderrBase points to a pointer to the Android I/O state block; the stderr
-// FILE* lives at byte offset 0xa8 within that block.  Model it as a named field.
+
+
 struct AndroidIoState {
     char pad_00[0xa8];
     FILE *stderrFile;
@@ -389,7 +389,7 @@ char *loge(char *message) {
     return message;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 void *FileInterfaceAndroid::methodRead;
 int FileInterfaceAndroid::fileCounter;
 void *FileInterfaceAndroid::methodWrite;

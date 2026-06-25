@@ -18,17 +18,17 @@
 
 namespace {
 
-// A single keyframe record (heap-allocated; the Curve::entries array holds
-// one pointer per keyframe). Layout recovered from the original ARM
-// disassembly of CurveGetValue / CurveRelease.
-struct CurveKeyframe {    // size >= 0x1c
-    uint8_t  tag;         // 0x00: 1=step, 2=linear, 3=hermite
-    uint8_t  pad0x1[7];   // 0x01
-    uint32_t timeLo;      // 0x08: keyframe time, low 32 bits
-    uint32_t timeHi;      // 0x0c: keyframe time, high 32 bits
-    int32_t  value;       // 0x10
-    int32_t  c0;          // 0x14: hermite tangent in
-    int32_t  c1;          // 0x18: hermite tangent out
+
+
+
+struct CurveKeyframe {
+    uint8_t  tag;
+    uint8_t  pad0x1[7];
+    uint32_t timeLo;
+    uint32_t timeHi;
+    int32_t  value;
+    int32_t  c0;
+    int32_t  c1;
 };
 
 #if __SIZEOF_POINTER__ == 4
@@ -41,15 +41,15 @@ static_assert(offsetof(CurveKeyframe, c0) == 0x14, "CurveKeyframe.c0");
 static_assert(offsetof(CurveKeyframe, c1) == 0x18, "CurveKeyframe.c1");
 #endif
 
-} // anonymous namespace
+}
 
 namespace AbyssEngine {
-    // ImageFont, SpriteSystem, Curve, Image, AELoadedTexture are defined in
-    // AbyssEngine.h (layouts recovered from the original disassembly).
+
+
 
     int currentUsedShaderIndex;
 
-    // Namespace-scope globals present in the original binary (defined for symbol parity).
+
     float currentFps;
     float debugTouch[4];
     int fpsCounter;
@@ -538,8 +538,8 @@ namespace AbyssEngine {
     }
 }
 
-// ES 1.x fixed-function client-array entry points (no-op stubs in the binary);
-// not declared by <GLES2/gl2.h>.
+
+
 extern "C" {
 void glVertexPointer(int size, unsigned int type, int stride, const void *ptr);
 
@@ -2146,8 +2146,8 @@ namespace AbyssEngine {
 }
 
 namespace AbyssEngine {
-    // ES 1.x fixed-function texture-environment entry point (no-op stub in the
-    // binary); not declared by <GLES2/gl2.h>.
+
+
     extern "C" {
     void glTexEnvi(unsigned int t, unsigned int p, int v);
     }

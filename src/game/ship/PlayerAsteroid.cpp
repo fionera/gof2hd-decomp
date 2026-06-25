@@ -330,7 +330,7 @@ PlayerAsteroid::~PlayerAsteroid() {
     }
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 AbyssEngine::AEMath::Vector PlayerAsteroid::tmp_vector2;
 AbyssEngine::AEMath::Vector PlayerAsteroid::asteroidCenter;
 float PlayerAsteroid::asteroidDistance;

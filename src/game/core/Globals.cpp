@@ -2,125 +2,125 @@
 #include <arm_neon.h>
 #include <cstdint>
 
-// Named models for the untyped handles that Globals.cpp touches by raw byte
-// offset. These structs reconstruct the field layout of opaque engine/game
-// blobs (the video/options settings record, the per-frame mission counter
-// object, the campaign zero-init object, the line-height metrics record, ...)
-// so the call sites can use named members instead of pointer arithmetic.
-//
-// Layout is byte-exact for the 32-bit MATCH build; the static_asserts below
-// pin every accessed offset. Multi-byte fields that genuinely overlap in the
-// original packed blob are expressed through unions so each named view keeps
-// its exact offset.
+
+
+
+
+
+
+
+
+
+
 namespace {
 
 #pragma pack(push, 1)
 
-// The global video / audio / control settings record.  Accessed via the
-// `settings` handle in Globals::Globals() and Globals::init().
+
+
 struct GameSettingsRecord {
-    union { float colorR; int32_t colorRBits; }; // 0x00
-    union { float colorG; int32_t colorGBits; }; // 0x04
-    union { float colorB; int32_t colorBBits; }; // 0x08
-    union {                   // 0x0c .. 0x13 packed volume / flag region (8 bytes)
+    union { float colorR; int32_t colorRBits; };
+    union { float colorG; int32_t colorGBits; };
+    union { float colorB; int32_t colorBBits; };
+    union {
         uint8_t  _region[8];
         struct {
-            uint8_t  musicVolume;   // 0x0c
-            uint8_t  sfxVolume;     // 0x0d
-            uint8_t  ambientVolume; // 0x0e
-            int16_t  flagAt0f;      // 0x0f (overlaps flagAt10's low byte)
+            uint8_t  musicVolume;
+            uint8_t  sfxVolume;
+            uint8_t  ambientVolume;
+            int16_t  flagAt0f;
         };
         struct {
-            int16_t  volumePair;    // 0x0c (overlaps music/sfx volume)
-            uint8_t  _pad0e;        // 0x0e
-            uint8_t  _pad0f;        // 0x0f
-            int16_t  flagAt10;      // 0x10 (overlaps flagAt0f high byte)
+            int16_t  volumePair;
+            uint8_t  _pad0e;
+            uint8_t  _pad0f;
+            int16_t  flagAt10;
         };
         struct {
-            uint8_t  _pad0c[5];     // 0x0c .. 0x10
-            uint8_t  flagAt11;      // 0x11
+            uint8_t  _pad0c[5];
+            uint8_t  flagAt11;
         };
     };
-    float    glowR;           // 0x14
-    float    glowG;           // 0x18
-    float    tintR;           // 0x1c
-    float    tintG;           // 0x20
-    float    tintB;           // 0x24
-    float    brightness;      // 0x28
-    float    contrast;        // 0x2c
-    uint8_t  enableFlag30;    // 0x30
-    int32_t  intAt31;         // 0x31
-    int32_t  intAt35;         // 0x35
-    uint8_t  flagAt39;        // 0x39
-    uint8_t  _pad3a;          // 0x3a
-    int32_t  intAt3b;         // 0x3b
-    uint8_t  flagAt3f;        // 0x3f
-    int16_t  shortAt40;       // 0x40
-    uint8_t  _pad42[2];       // 0x42
-    float    qualityLevel;    // 0x44
-    int32_t  intAt48;         // 0x48
-    int16_t  shortAt4c;       // 0x4c
-    uint8_t  flagAt4e;        // 0x4e
-    uint8_t  _pad4f;          // 0x4f
-    int32_t  intAt50;         // 0x50
-    int32_t  resWidth;        // 0x54
-    int32_t  resHeight;       // 0x58
-    uint8_t  _pad5c[4];       // 0x5c
-    int16_t  shortAt60;       // 0x60
+    float    glowR;
+    float    glowG;
+    float    tintR;
+    float    tintG;
+    float    tintB;
+    float    brightness;
+    float    contrast;
+    uint8_t  enableFlag30;
+    int32_t  intAt31;
+    int32_t  intAt35;
+    uint8_t  flagAt39;
+    uint8_t  _pad3a;
+    int32_t  intAt3b;
+    uint8_t  flagAt3f;
+    int16_t  shortAt40;
+    uint8_t  _pad42[2];
+    float    qualityLevel;
+    int32_t  intAt48;
+    int16_t  shortAt4c;
+    uint8_t  flagAt4e;
+    uint8_t  _pad4f;
+    int32_t  intAt50;
+    int32_t  resWidth;
+    int32_t  resHeight;
+    uint8_t  _pad5c[4];
+    int16_t  shortAt60;
 };
 
-// Object zero-initialised in Globals::init() through the `obj` handle: a run
-// of twelve int slots followed by four unaligned int writes that overlap the
-// tail of the run (the original blob is packed).
+
+
+
 struct InitZeroObject {
     union {
-        int32_t  slots[12];   // 0x00 .. 0x2f
+        int32_t  slots[12];
         struct {
             uint8_t  _lead[0x2b];
-            int32_t  tailAt2b; // 0x2b
-            int32_t  tailAt2f; // 0x2f
-            int32_t  tailAt33; // 0x33
-            int32_t  tailAt37; // 0x37
+            int32_t  tailAt2b;
+            int32_t  tailAt2f;
+            int32_t  tailAt33;
+            int32_t  tailAt37;
         };
     };
 };
 
-// Small per-frame mission/work object reached through the `busy` handle in
-// Globals::getAgentMissionText(); only the recursion-guard counter at 0xd0 is
-// touched here.
+
+
+
 struct AgentBusyObject {
-    uint8_t  _pad[0xd0];      // 0x00
-    int32_t  guardCounter;    // 0xd0
+    uint8_t  _pad[0xd0];
+    int32_t  guardCounter;
 };
 
-// Line metrics record reached through the `lineHeight` handle in the
-// Globals::drawLines() family: the advance between rows lives at +4.
+
+
 struct LineMetrics {
-    int32_t  field0;          // 0x00
-    int32_t  lineHeight;      // 0x04
+    int32_t  field0;
+    int32_t  lineHeight;
 };
 
-// Object reached through gSCS_obj* / gSCF_obj* in setCoordsSteer/setCoordsFire;
-// the steer path writes its computed value at +0x54, the fire path at +0x58.
+
+
 struct CoordsObject {
-    uint8_t  _pad[0x54];      // 0x00
-    int32_t  steerValue;      // 0x54
-    int32_t  fireValue;       // 0x58
+    uint8_t  _pad[0x54];
+    int32_t  steerValue;
+    int32_t  fireValue;
 };
 
-// Object reached through the `secondary` handle in Globals::Globals(): two
-// leading int slots plus a flag byte at 0x13.
+
+
 struct CtorSecondaryObject {
-    int32_t  slot0;           // 0x00
-    int32_t  slot1;           // 0x04
-    uint8_t  _pad08[0x0b];    // 0x08
-    uint8_t  flagAt13;        // 0x13
+    int32_t  slot0;
+    int32_t  slot1;
+    uint8_t  _pad08[0x0b];
+    uint8_t  flagAt13;
 };
 
-// Object reached through gI_g3822 in Globals::init(): only a leading flag byte
-// is cleared.
+
+
 struct InitFlagByte {
-    uint8_t  flag;            // 0x00
+    uint8_t  flag;
 };
 
 #pragma pack(pop)
@@ -173,7 +173,7 @@ static_assert(offsetof(CtorSecondaryObject, slot1) == 0x04, "slot1");
 static_assert(offsetof(CtorSecondaryObject, flagAt13) == 0x13, "flagAt13");
 #endif
 
-} // anonymous namespace
+}
 
 
 int Globals::is_dialogue_window_visible = 0;
@@ -219,8 +219,8 @@ char *Globals::cItemListID_01 = nullptr;
 char *Globals::cItemListID_02 = nullptr;
 char *Globals::cItemListID_03 = nullptr;
 char *Globals::cItemListID_04 = nullptr;
-// cItemListID_05..24 are file-scope statics in LODManager.cpp (the original does not export them
-// and they are single-TU). See the note in Globals.h.
+
+
 char *Globals::cItemListName_00 = nullptr;
 char *Globals::cItemListName_01 = nullptr;
 char *Globals::cItemListName_02 = nullptr;
@@ -243,7 +243,7 @@ char *Globals::cItemListPrice_03 = nullptr;
 char *Globals::cItemListPrice_04 = nullptr;
 
 
-// Static data members present in the original binary (defined for symbol parity).
+
 AbyssEngine::ApplicationManager *Globals::appManager;
 unsigned char Globals::gameLoaded;
 unsigned char Globals::gameSaving;
@@ -444,10 +444,10 @@ struct Q16 { int32x4_t v; };
 
 struct HintsBuffer {
     union {
-        Q16 quad[4]; // 16-byte SIMD-aligned views at 0x00/0x10/0x20/0x30
+        Q16 quad[4];
         struct {
             uint8_t _pad2b[0x2b];
-            Q16     quadAt2b; // unaligned 16-byte store overlapping quad[2]/quad[3]
+            Q16     quadAt2b;
         };
     };
 };
@@ -458,10 +458,10 @@ static void *const gHints = nullptr;
 void Globals::resetHints() {
     HintsBuffer *hints = (HintsBuffer *) gHints;
     const int32x4_t z = vdupq_n_s32(0);
-    hints->quad[0].v = z;    // 0x00
-    hints->quadAt2b.v = z;   // 0x2b
-    hints->quad[2].v = z;    // 0x20
-    hints->quad[1].v = z;    // 0x10
+    hints->quad[0].v = z;
+    hints->quadAt2b.v = z;
+    hints->quad[2].v = z;
+    hints->quad[1].v = z;
 }
 
 void Globals::startNewSoundResourceList() {

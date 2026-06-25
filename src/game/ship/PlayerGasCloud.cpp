@@ -24,34 +24,34 @@ namespace AbyssEngine {
     }
 }
 
-// Minimal model of the campaign/save-state handle. Only the byte accessed by
-// this translation unit is named; the surrounding bytes are reserved padding so
-// the named field lands at its real offset.
+
+
+
 struct PgcCampaign {
     char reserved0[0x2d];
-    char rescueMissionFlag; // offset 0x2d
+    char rescueMissionFlag;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(PgcCampaign, rescueMissionFlag) == 0x2d,
               "PgcCampaign.rescueMissionFlag must be at 0x2d");
 #endif
 
-// These globals are referenced only by this translation unit. They are defined
-// here as file-static handles into the live engine state. (extern eliminated;
-// linkage/parity to the original cross-TU definitions is intentionally dropped.)
+
+
+
 static PaintCanvas **g_pgc_canvas = nullptr;
-// g_pgc_itemList: indirection chain to the live Array<Item*> of cargo items.
-//   *g_pgc_itemList   -> Array<Item*>**
-//   **g_pgc_itemList  -> Array<Item*>*  (the table)
+
+
+
 static Array<Item *> ***g_pgc_itemList = nullptr;
 static PaintCanvas **g_pgc_canvasRoot = nullptr;
 static AbyssEngine::AERandom **g_pgc_rng = nullptr;
 static PaintCanvas **g_pgc_canvas2 = nullptr;
 static PaintCanvas **g_pgcu_canvasRoot = nullptr;
-// g_pgcu_itemDefs: *g_pgcu_itemDefs -> Array<Item*>* (the item-definition table).
+
 static Array<Item *> **g_pgcu_itemDefs = nullptr;
 static FModSound *g_pgcu_pickupSound = nullptr;
-// g_pgcu_campaign: *g_pgcu_campaign -> PgcCampaign* (the campaign/save handle).
+
 static PgcCampaign **g_pgcu_campaign = nullptr;
 
 static float g_pgc_countScale = 0;

@@ -335,5 +335,5 @@ void GameText::ReadLangFile(unsigned int file, int count) {
     AEFile::Close(file);
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 unsigned short GameText::currentLang;

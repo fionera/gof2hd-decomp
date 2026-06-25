@@ -62,8 +62,8 @@ namespace AbyssEngine {
     }
 
     void DrawFBOShader::RenderEffect(FBOContainer *fbo, Engine *engine) {
-        // engine->projMatrix is a float[16]; the original built the FBO ortho
-        // matrix here via NEON stores into projMatrix[0..15] (engine+0x384).
+
+
         float *projMatrix = engine->projMatrix;
 
         uint32x4_t zero = vdupq_n_u32(0);
@@ -78,13 +78,13 @@ namespace AbyssEngine {
 
         uint64x2_t tail = {0x000000003f800000ULL, 0x3f8000003f800000ULL};
 
-        projMatrix[10] = -0.05f;            // was 0xbd4ccccd at engine+0x3ac
-        projMatrix[15] = 1.0f;              // was 0x3f800000 at engine+0x3c0
-        projMatrix[12] = -1.0f;             // was 0xbf800000 at engine+0x3b4
-        projMatrix[13] = 1.0f;              // was 0x3f800000 at engine+0x3b8
+        projMatrix[10] = -0.05f;
+        projMatrix[15] = 1.0f;
+        projMatrix[12] = -1.0f;
+        projMatrix[13] = 1.0f;
         projMatrix[5] = -(two / (float) height);
 
-        uint32_t one = 0x3f800000;  // 1.0f bit pattern, for the local matrix below
+        uint32_t one = 0x3f800000;
         uint32_t matrix[16];
         vst1q_u32(matrix + 4, zero);
         vst1q_u64((uint64_t *) (matrix + 6), vreinterpretq_u64_u32(zero));

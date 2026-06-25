@@ -92,7 +92,7 @@ public:
 
     SpaceLounge();
 
-    ~SpaceLounge();   // original: SpaceLounge is non-polymorphic (no vtable/typeinfo); module dispatch is via a manual fn-ptr table, not C++ virtuals
+    ~SpaceLounge();
 
     void OnRender3D();
 

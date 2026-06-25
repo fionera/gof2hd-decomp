@@ -19,7 +19,7 @@ public:
 
     BoundingVolume(float cx, float cy, float cz, float ex, float ey, float ez);
 
-    ~BoundingVolume();   // original: NON-virtual dtor (vtable has no D0/dtor slot; only D1/D2, called directly)
+    ~BoundingVolume();
 
     virtual int collide(float x, float y, float z);
 

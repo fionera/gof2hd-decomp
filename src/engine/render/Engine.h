@@ -108,11 +108,11 @@ namespace AbyssEngine {
 
         int packedColor;
         uint8_t _pad0xe4[24];
-        unsigned char shaderModeFlag;  // 0xfc
-        unsigned char statsBucketFlag; // 0xfd
+        unsigned char shaderModeFlag;
+        unsigned char statsBucketFlag;
         union {
-            uint16_t field_0xfd;       // 0xfe (kept name/offset for cross-file users)
-            unsigned char statsEnabled; // 0xfe (low byte)
+            uint16_t field_0xfd;
+            unsigned char statsEnabled;
         };
         uint32_t field_0x100;
         float worldViewProjMatrix[16];
@@ -570,7 +570,7 @@ namespace AbyssEngine {
         static bool fogEnabled;
 
 
-        // Static data members present in the original binary (defined for symbol parity).
+
         static unsigned char EnableGlow;
         static int ImageCount;
         static int switchGlow;
@@ -603,8 +603,8 @@ namespace AbyssEngine {
 
 using ::AbyssEngine::Engine;
 
-// The active engine singleton. The original exports this as a plain global
-// pointer (symbol `gEngine`), not a class member.
+
+
 extern AbyssEngine::Engine *gEngine;
 
 #endif

@@ -4,10 +4,10 @@
 #include "engine/render/PaintCanvas.h"
 #include <cstddef>
 
-// The TouchSlider constructor reads the global touch-padding configuration from
-// the application handle stored in g_TouchSlider_app. That handle is an untyped
-// pointer (no concrete engine class binds this offset), so we model only the one
-// field this code touches: an int "touchPadding" living at byte offset 0x7c.
+
+
+
+
 struct TouchSliderAppConfig {
     char _reserved[0x7c];
     int touchPadding;

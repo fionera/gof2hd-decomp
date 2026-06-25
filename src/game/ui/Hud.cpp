@@ -194,7 +194,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     PaintCanvas *canvas = Globals::Canvas;
 
-    // --- reticle and lock brackets ---
+
     canvas->DrawImage2D((unsigned) this->reticleImage, this->field_0x42c, 0);
     {
         unsigned char flags = this->touchFlags;
@@ -214,7 +214,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         canvas->DrawImage2D((unsigned) img, bx, by, '\x11');
     }
 
-    // --- radar / orbit marker ---
+
     {
         Status *st = Globals::status;
         bool show = false;
@@ -232,7 +232,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         }
     }
 
-    // --- shield/armor bars ---
+
     {
         PlayerEgo *e = ego;
         Player *player = *(Player **) ego;
@@ -273,7 +273,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
         }
     }
 
-    // --- secondary weapon panel ---
+
     {
         Level *lvl = *g_Hud_level;
         PlayerEgo *player = (PlayerEgo *) (lvl ? (void *) (long) lvl->getPlayer() : (void *) 0);
@@ -304,7 +304,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     drawOrbitInformation();
 
-    // --- mission banner ---
+
     canvas->SetColor((unsigned) 0xffffffffu);
     canvas->DrawImage2D((unsigned) this->missionBannerImage, this->field_0x438, 0);
 
@@ -318,7 +318,7 @@ void Hud::draw(long long t0, long long t1, PlayerEgo *ego, bool letterbox, unsig
 
     drawPauseButton();
 
-    // --- message ---
+
     if (this->messageActive != 0) {
         canvas->SetColor((unsigned char) 0xff, 0xff, 0xff, 0xff);
         void *font = *g_Hud_font;
@@ -1414,7 +1414,7 @@ bool Hud::drawTitleImage(bool visible) {
     return visible;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 int Hud::RADAR_WIDTH;
 int Hud::RADAR_HEIGHT;
 int Hud::wingmanCommand;

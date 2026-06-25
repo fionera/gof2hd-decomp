@@ -322,5 +322,5 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_BackButtonPressed()
     g_android_back_button_pressed = 1;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 void *NFC::interface_path;

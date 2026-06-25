@@ -13,332 +13,332 @@ namespace AbyssEngine {
     class ImageFont;
 }
 
-// Byte-faithful "view" structs for the otherwise-untyped engine handles that
-// PaintCanvas manipulates by raw pointer offset.  Each struct lays out exactly
-// the fields PaintCanvas touches at their real byte offsets; padding members
-// fill the gaps so offsets stay correct in the 32-bit MATCH build.
-//
-// These are pure overlays: PaintCanvas casts an opaque handle (void*/char*)
-// to one of these and uses named members instead of pointer arithmetic.
+
+
+
+
+
+
+
 namespace {
 
-// ---------------------------------------------------------------------------
-// Image2D handle (entries of PaintCanvas::images).
-//   +0x00 void*    backing mesh object (vertex/uv/index buffers)
-//   +0x04 uint32   texture id (also reinterpreted as region-record pointer)
-//   +0x08 uint16   region: u origin denominator source
-//   +0x0a uint16   region: inverse-width source
-//   +0x0c uint16   region: u0
-//   +0x0e uint16   region: v0
-//   +0x10 uint16   width
-//   +0x12 uint16   height
-//   +0x14 uint8    restore flag
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 struct PCImage2DView {
-    void *mesh;          // +0x00
+    void *mesh;
     union {
-        uint32_t textureId; // +0x04
-        void *regionPtr;    // +0x04 (same word reinterpreted as a region record)
+        uint32_t textureId;
+        void *regionPtr;
     };
-    uint16_t regionA;    // +0x08
-    uint16_t regionB;    // +0x0a
-    uint16_t u0;         // +0x0c
-    uint16_t v0;         // +0x0e
-    uint16_t width;      // +0x10
-    uint16_t height;     // +0x12
-    uint8_t restoreFlag; // +0x14
+    uint16_t regionA;
+    uint16_t regionB;
+    uint16_t u0;
+    uint16_t v0;
+    uint16_t width;
+    uint16_t height;
+    uint8_t restoreFlag;
 };
 
-// Region record reached via PCImage2DView::textureId reinterpreted as a pointer
-// (i.e. *(char**)(img+4)).  Floats at +0x0c (width) and +0x1c (height).
+
+
 struct PCRegionView {
     uint8_t pad0[0x0c];
-    float width;   // +0x0c
+    float width;
     uint8_t pad1[0x1c - 0x10];
-    float height;  // +0x1c
+    float height;
 };
 
-// ---------------------------------------------------------------------------
-// Mesh handle (entries of PaintCanvas::meshes) for the raw-offset call sites.
-//   +0x00 void*    first sub-object (drawable)
-//   +0x02 uint16   vertex count
-//   +0x04 char*    position buffer (vec3 per vertex)
-//   +0x08 char*    uv buffer (vec2 per vertex)
-//   +0x0c char*    color buffer (vec4 per vertex)
-//   +0x10 char*    normal buffer (vec3 per vertex)
-//   +0x14 char*    tangent buffer (vec3 per vertex)
-//   +0x18 char*    bitangent buffer (vec3 per vertex)
-//   +0x28 uint16   index count
-//   +0x2a uint16   triangle capacity
-//   +0x2c char*    index/blend buffer
-//   +0x30 void*    material
-//   +0x34 void*    material resource
-//   +0x7c int      tri-count contribution
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #pragma pack(push, 1)
 struct PCMeshView {
     union {
-        void *sub0;          // +0x00 (drawable; read as *(void**)mesh)
+        void *sub0;
         struct {
-            uint16_t _half0; // +0x00
-            uint16_t vertexCount; // +0x02
+            uint16_t _half0;
+            uint16_t vertexCount;
         };
     };
-    char *positions;   // +0x04
-    char *uvs;         // +0x08
-    char *colors;      // +0x0c
-    char *normals;     // +0x10
-    char *tangents;    // +0x14
-    char *bitangents;  // +0x18
+    char *positions;
+    char *uvs;
+    char *colors;
+    char *normals;
+    char *tangents;
+    char *bitangents;
     uint8_t pad1c[0x28 - 0x1c];
-    uint16_t indexCount;  // +0x28
-    uint16_t triCapacity; // +0x2a
-    char *indexBuffer; // +0x2c
-    void *material;    // +0x30
-    void *materialRes; // +0x34
+    uint16_t indexCount;
+    uint16_t triCapacity;
+    char *indexBuffer;
+    void *material;
+    void *materialRes;
     uint8_t pad38[0x3c - 0x38];
-    uint8_t bounds3c;  // +0x3c (bounding-sphere block; address taken)
+    uint8_t bounds3c;
     uint8_t pad3d[0x7c - 0x3d];
-    int triCountContribution; // +0x7c
+    int triCountContribution;
 };
 #pragma pack(pop)
 
-// ---------------------------------------------------------------------------
-// SpriteSystem handle (entries of PaintCanvas::spriteSystems).
-//   +0x00 int16    sprite count (low 16 bits read as uint16/short)
-//   +0x04 char*    position buffer (vec3 per sprite)
-//   +0x08 char*    size buffer (int16 per sprite)
-//   +0x0c uint8    uniform-size flag
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
 struct PCSpriteSystemView {
-    int16_t count;     // +0x00
+    int16_t count;
     uint8_t pad02[0x04 - 0x02];
-    char *positions;   // +0x04
-    char *sizes;       // +0x08
-    uint8_t uniformSize; // +0x0c
+    char *positions;
+    char *sizes;
+    uint8_t uniformSize;
 };
 
-// SpriteSystem object: the scene node it owns lives at +0x10.
+
 struct PCSpriteSystemView2 {
     uint8_t pad00[0x10];
-    ::Node *node;      // +0x10
+    ::Node *node;
 };
 
-// ---------------------------------------------------------------------------
-// Resource record (entries of PaintCanvas::resources).
-//   +0x00 uint16   id
-//   +0x04 int      type
-//   +0x08 int      handle / created index (-1 / 0xffffffff = none)
-//   +0x0c void*    payload (info record / created object)
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
 struct PCResourceView {
-    uint16_t id;       // +0x00
+    uint16_t id;
     uint8_t pad02[0x04 - 0x02];
-    int type;          // +0x04
-    int handle;        // +0x08
-    void *payload;     // +0x0c
+    int type;
+    int handle;
+    void *payload;
 };
 
-// Material-resource info record (payload of a material resource).
-//   +0x00 uint16[8] texture resource ids
-//   +0x10 uint32    flags 0
-//   +0x14 uint32    flags 1
-//   +0x18 uint32    flags 2
-//   +0x1c float[3]  vector (assigned wholesale)
+
+
+
+
+
+
 struct PCMaterialInfoView {
-    uint16_t textureIds[8]; // +0x00 .. +0x0e
-    uint32_t flags0;        // +0x10
-    uint32_t flags1;        // +0x14
-    uint32_t flags2;        // +0x18
-    float vec[3];           // +0x1c
+    uint16_t textureIds[8];
+    uint32_t flags0;
+    uint32_t flags1;
+    uint32_t flags2;
+    float vec[3];
 };
 
-// Mesh-resource info record (payload of a mesh resource).
-//   +0x00 char*    file path
-//   +0x04 uint16   material resource id
+
+
+
 struct PCMeshInfoView {
-    char *path;        // +0x00
-    uint16_t matResId; // +0x04
+    char *path;
+    uint16_t matResId;
 };
 
-// Texture-resource info record (payload of a texture resource).
-//   +0x00 char*    file path
-//   +0x04 uint32   loader parameter
+
+
+
 struct PCTexInfoView {
-    char *path;        // +0x00
-    uint32_t param;    // +0x04
+    char *path;
+    uint32_t param;
 };
 
-// ---------------------------------------------------------------------------
-// Material handle (entries of PaintCanvas::materials) for raw-offset sites.
-//   +0x00 uint32   texture id slot 0 (slots are 4 bytes each, indices 0..7)
-//   +0x04 uint16   material id field used by resource material edits
-//   +0x08 uint32   blend mode (used by MaterialChange as mat[8])
-//   +0x20 uint32   flags 0
-//   +0x24 uint32   flags 1
-//   +0x28 uint32   flags 2
-//   +0x68 ...       vector field assigned in MaterialCreate
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 struct PCMaterialView {
-    uint32_t textureSlots[8]; // +0x00 .. +0x1c
-    uint32_t flags0;          // +0x20
-    uint32_t flags1;          // +0x24
-    uint32_t flags2;          // +0x28
+    uint32_t textureSlots[8];
+    uint32_t flags0;
+    uint32_t flags1;
+    uint32_t flags2;
     uint8_t pad2c[0x68 - 0x2c];
-    float vec[3];             // +0x68
+    float vec[3];
 };
 
-// Material id lives at +0x04, overlapping textureSlots[1]; expose a helper view.
+
 struct PCMaterialIdView {
     uint8_t pad00[0x04];
-    uint16_t materialId; // +0x04
+    uint16_t materialId;
 };
 
-// ---------------------------------------------------------------------------
-// Camera handle (entries of PaintCanvas::cameras).
-//   +0x00 uint32   apply param 0 (cam[0])
-//   +0x04 float    near-ish clip / param 1 (cam[1])
-//   +0x08 float    param 2 (cam[2])
-//   +0x0c float[15] local matrix
-//   +0x18 float    eye x
-//   +0x28 float    eye y
-//   +0x38 float    eye z
-//   +0x48 float    factor used in projection (also factor1)
-//   +0x4c float    factor used in projection
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 struct PCCameraView {
-    uint32_t param0;   // +0x00
-    float param1;      // +0x04
-    float param2;      // +0x08
-    float localMatrix[15]; // +0x0c .. +0x44 (15 floats = 0x3c bytes)
-    float factor48;    // +0x48
-    float factor4c;    // +0x4c
+    uint32_t param0;
+    float param1;
+    float param2;
+    float localMatrix[15];
+    float factor48;
+    float factor4c;
 };
-// The first three 4-byte camera words are also consumed as raw uint params by
-// the camera-apply / set-perspective externs.
+
+
 struct PCCameraParamsView {
-    uint32_t raw[3];   // +0x00 .. +0x08
+    uint32_t raw[3];
 };
-// Eye fields overlap localMatrix; expose via a separate view.
+
 struct PCCameraEyeView {
     uint8_t pad00[0x18];
-    float eyeX;        // +0x18
+    float eyeX;
     uint8_t pad1c[0x28 - 0x1c];
-    float eyeY;        // +0x28
+    float eyeY;
     uint8_t pad2c[0x38 - 0x2c];
-    float eyeZ;        // +0x38
+    float eyeZ;
 };
 
-// ---------------------------------------------------------------------------
-// Transform info record (payload of a transform resource) used by
-// TransformCreate(resId,...).
-//   +0x3c uint16   child-mesh id count
-//   +0x40 char*    child-mesh id array (uint16 each)
-//   +0x44 uint16   child-transform id count
-//   +0x48 char*    child-transform id array (uint16 each)
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 struct PCTransformInfoView {
     uint8_t pad00[0x3c];
-    uint16_t childMeshCount;  // +0x3c
+    uint16_t childMeshCount;
     uint8_t pad3e[0x40 - 0x3e];
-    char *childMeshIds;       // +0x40
-    uint16_t childTfCount;    // +0x44
+    char *childMeshIds;
+    uint16_t childTfCount;
     uint8_t pad46[0x48 - 0x46];
-    char *childTfIds;         // +0x48
+    char *childTfIds;
 };
 
-// ---------------------------------------------------------------------------
-// Transform object (entries of PaintCanvas::transforms) for raw-offset sites.
-//   +0x3c .. Array<Mesh*>   mesh array (count at +0x3c, data at +0x40)
-//   +0x48 uint32   color
-//   +0x4c .. Array<...>     child array (count at +0x4c, data at +0x50)
-//   +0xd4 ...       bounding-sphere block
-//   +0xec uint8    visible flag
-//   +0xf8 int64    animation length
-//   +0x100 int64   animation start
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
 #pragma pack(push, 1)
 struct PCTransformView {
     uint8_t pad00[0x3c];
-    uint32_t meshCount; // +0x3c
-    void **meshData;    // +0x40
-    uint32_t meshCap;   // +0x44 (array capacity word)
-    uint32_t color;     // +0x48
-    uint32_t childCount;// +0x4c
-    void **childData;   // +0x50
+    uint32_t meshCount;
+    void **meshData;
+    uint32_t meshCap;
+    uint32_t color;
+    uint32_t childCount;
+    void **childData;
     uint8_t pad54[0xd4 - 0x54];
-    uint8_t bsphere;    // +0xd4 (bounding-sphere block; address taken)
+    uint8_t bsphere;
     uint8_t padd5[0xec - 0xd5];
-    uint8_t visible;    // +0xec
+    uint8_t visible;
     uint8_t paded[0xf8 - 0xed];
-    int64_t animLength; // +0xf8
-    int64_t animStart;  // +0x100
+    int64_t animLength;
+    int64_t animStart;
 };
 #pragma pack(pop)
 
-// ---------------------------------------------------------------------------
-// Cube-texture record (entries of PaintCanvas::cubeTextures).
-//   +0x00 int      gl texture id (-1 = unloaded)
-//   +0x04 ...      AEString path field (passed by address)
-//   +0x10 float    creation scale
-//   +0x14 uint8    restore flag
-//   +0x18 int      memory-accounting size
-// ---------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 struct PCCubeTexView {
-    int glTexId;       // +0x00
-    char pathField[0x10 - 0x04]; // AEString path lives here (+0x04)
-    float scale;       // +0x10
-    uint8_t restoreFlag; // +0x14
+    int glTexId;
+    char pathField[0x10 - 0x04];
+    float scale;
+    uint8_t restoreFlag;
     uint8_t pad15[0x18 - 0x15];
-    int memSize;       // +0x18
+    int memSize;
 };
 
-// ---------------------------------------------------------------------------
-// Font handle (entries of PaintCanvas::fonts) for raw-offset sites.
-//   +0x00 uint16   ascent/height key
-//   +0x08 void*    texture/atlas pointer (also read as uint texture id)
-// ---------------------------------------------------------------------------
+
+
+
+
+
 struct PCFontView {
-    uint16_t key;      // +0x00
+    uint16_t key;
     uint8_t pad02[0x08 - 0x02];
-    void *atlas;       // +0x08
+    void *atlas;
 };
 
-// ---------------------------------------------------------------------------
-// Gravity sample returned by the *_getgrav externs.
-//   +0x08 double    angle value
-// ---------------------------------------------------------------------------
+
+
+
+
 struct PCGravView {
     uint8_t pad00[0x08];
-    double angle;      // +0x08
+    double angle;
 };
 
-// ---------------------------------------------------------------------------
-// AEString-like length record used in GetLineArray scratch buffers.
-//   +0x08 int       length
-// ---------------------------------------------------------------------------
+
+
+
+
 struct PCStrLenView {
     uint8_t pad00[0x08];
-    int length;        // +0x08
+    int length;
 };
 
-// ---------------------------------------------------------------------------
-// Split-tags array record returned by paintcanvas_ext_dsc_splittags.
-//   +0x00 uint32   count
-//   +0x04 char**   data
-// ---------------------------------------------------------------------------
+
+
+
+
+
 struct PCSplitArrayView {
-    uint32_t count;    // +0x00
-    char **data;       // +0x04
+    uint32_t count;
+    char **data;
 };
 
-// ---------------------------------------------------------------------------
-// String part record (entries of PCSplitArrayView::data).
-//   +0x08 int       length
-// ---------------------------------------------------------------------------
+
+
+
+
 struct PCStrPartView {
     uint8_t pad00[0x08];
-    int length;        // +0x08
+    int length;
 };
 
 #if __SIZEOF_POINTER__ == 4
@@ -381,7 +381,7 @@ static_assert(offsetof(PCGravView, angle) == 0x08, "grav angle");
 static_assert(offsetof(PCRegionView, height) == 0x1c, "region h");
 #endif
 
-} // anonymous namespace
+}
 
 
 namespace {

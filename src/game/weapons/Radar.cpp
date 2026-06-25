@@ -286,5 +286,5 @@ void Radar::calcDistance(float, float a, float b, float c, float d, float e) {
     }
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 unsigned char Radar::drawTarget;

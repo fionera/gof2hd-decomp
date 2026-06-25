@@ -47,6 +47,6 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass clazz,
                                       jobjectArray currencies,
                                       jobjectArray prices);
 
-} // extern "C"
+}
 
 #endif

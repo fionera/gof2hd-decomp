@@ -634,13 +634,13 @@ void MGame::gameOverCheck() {
 
 int ApplicationManager_GetApplicationData();
 
-// Application-data block returned (as int handle) by ApplicationManager_GetApplicationData();
-// bytes at +5 / +0xc gate touch input while modal/transition is active.
+
+
 struct MGameAppData {
     uint8_t _pad0[5];
-    uint8_t modalActive;   // offset 0x05
+    uint8_t modalActive;
     uint8_t _pad6[6];
-    uint8_t transitionActive; // offset 0x0c
+    uint8_t transitionActive;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(MGameAppData, modalActive) == 5, "MGameAppData::modalActive @ 5");
@@ -1092,11 +1092,11 @@ void MGame::UseKhadorDrive() {
 
 static int g_initParticleFlag;
 
-// g_initParticleFlag holds a pointer (as int) to a small particle-system global;
-// byte at +0xf is a "particles enabled" flag. Modeled here for named access.
+
+
 struct ParticleSystemGlobal {
     uint8_t _pad0[0xf];
-    uint8_t particlesEnabled;  // offset 0xf
+    uint8_t particlesEnabled;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(ParticleSystemGlobal, particlesEnabled) == 0xf,
@@ -1963,20 +1963,20 @@ void MGame::reset() {
 
 static int g_accelTune;
 
-// g_accelTune holds a pointer (as int) to the accelerometer-tuning config.
+
 struct AccelTune {
     uint8_t _pad0[0x10];
-    char invertSign;     // offset 0x10
+    char invertSign;
     uint8_t _pad11[0xb];
-    float refValue;      // offset 0x1c
-    float baseValue;     // offset 0x20
+    float refValue;
+    float baseValue;
 };
-// Accelerometer-context value buffer returned by MGame_accelCtxValue();
-// double at +0x10 is the third component.
+
+
 struct AccelCtxValue {
-    double _v0;          // offset 0x00
-    double _v1;          // offset 0x08
-    double comp2;        // offset 0x10
+    double _v0;
+    double _v1;
+    double comp2;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(AccelTune, invertSign) == 0x10, "AccelTune::invertSign @ 0x10");
@@ -2363,17 +2363,17 @@ MGame::MGame() {
     int z = 0;
     int initVal = g_mgameInitVal;
 
-    // 0xa4 run: freeCamFinger1 (x,y,z) + freeCamFinger0X
+
     this->freeCamFinger1X = 0;
     this->freeCamFinger1Y = 0;
     this->freeCamFinger1Z = 0;
     this->freeCamFinger0X = 0;
-    // 0x13c run: flShakeAmpX, flShakeAmpY, field_0x144, flShakePhaseX
+
     this->flShakeAmpX = 0;
     this->flShakeAmpY = 0;
     this->field_0x144 = 0;
     this->flShakePhaseX = 0;
-    // 0x18c run
+
     this->field_0x18c = 0;
     this->field_0x190 = 0;
     this->field_0x194 = 0;
@@ -2398,22 +2398,22 @@ MGame::MGame() {
     this->loadingImage = -1;
     this->cameraMode = z;
 
-    // 0x30 run: frameTime, frameTimeHigh, field_0x38, field_0x3c
+
     this->frameTime = 0;
     this->frameTimeHigh = 0;
     this->field_0x38 = 0;
     this->field_0x3c = 0;
-    // 0x20 run: startTime, startTimeHigh, lastTime, lastTimeHigh
+
     this->startTime = 0;
     this->startTimeHigh = 0;
     this->lastTime = 0;
     this->lastTimeHigh = 0;
-    // 0x80 run: radar, radio, menuWindow, dialogueWindow
+
     this->radar = 0;
     this->radio = 0;
     this->menuWindow = 0;
     this->dialogueWindow = 0;
-    // 0x70 run: field_0x70, hud, level, levelScript
+
     this->field_0x70 = 0;
     this->hud = 0;
     this->level = 0;
@@ -2461,11 +2461,11 @@ static int *g_relLayout;
 
 static int **g_relImgFactory;
 
-// The application module returned by GetApplicationModule() owns the active
-// StarMap pointer at offset 0x10.
+
+
 struct StarMapModule {
     uint8_t _pad0[0x10];
-    StarMap *starMap;  // offset 0x10
+    StarMap *starMap;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(StarMapModule, starMap) == 0x10, "StarMapModule::starMap @ 0x10");
@@ -2495,12 +2495,12 @@ void MGame::OnRelease() {
     this->player = 0;
     this->field_0x5c = 0;
 
-    // 0x30 run: frameTime, frameTimeHigh, field_0x38, field_0x3c
+
     this->frameTime = 0;
     this->frameTimeHigh = 0;
     this->field_0x38 = 0;
     this->field_0x3c = 0;
-    // 0x20 run: startTime, startTimeHigh, lastTime, lastTimeHigh
+
     this->startTime = 0;
     this->startTimeHigh = 0;
     this->lastTime = 0;

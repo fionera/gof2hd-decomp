@@ -151,57 +151,57 @@ long Station_getIndex(...);
 
 long Station_getSystem(...);
 
-// The player-ego object lives behind a global pointer slot at 0x220290.
-// GameRecord::load() restores a packed block of its fields from the save record.
-// This overlay names exactly the byte offsets that load() touches (0x08..0x3a);
-// the leading 8 bytes (vtable/owner ptrs) are left as opaque padding.
+
+
+
+
 struct PlayerEgoSaveBlock {
-    uint8_t  _pad_0x00[0x8];    // 0x00
-    uint32_t restored_0x08;     // 0x08
-    uint32_t restored_0x0c;     // 0x0c
-    uint32_t restored_0x10;     // 0x10
-    uint32_t restored_0x14;     // 0x14
-    uint32_t restored_0x18;     // 0x18
-    uint32_t restored_0x1c;     // 0x1c
-    uint32_t restored_0x20;     // 0x20
-    uint32_t restored_0x24;     // 0x24
-    uint8_t  flag_0x28;         // 0x28
-    uint8_t  flag_0x29;         // 0x29
-    uint8_t  flag_0x2a;         // 0x2a
-    uint8_t  flag_0x2b;         // 0x2b
-    uint8_t  flag_0x2c;         // 0x2c
-    uint8_t  flag_0x2d;         // 0x2d
-    uint8_t  flag_0x2e;         // 0x2e
-    uint8_t  flag_0x2f;         // 0x2f
-    uint8_t  flag_0x30;         // 0x30
-    uint8_t  flag_0x31;         // 0x31
-    uint8_t  flag_0x32;         // 0x32
-    uint8_t  flag_0x33;         // 0x33
-    uint8_t  flag_0x34;         // 0x34
-    uint8_t  flag_0x35;         // 0x35
-    uint8_t  flag_0x36;         // 0x36
-    uint8_t  flag_0x37;         // 0x37
-    uint8_t  flag_0x38;         // 0x38
-    uint8_t  flag_0x39;         // 0x39
-    uint8_t  flag_0x3a;         // 0x3a
+    uint8_t  _pad_0x00[0x8];
+    uint32_t restored_0x08;
+    uint32_t restored_0x0c;
+    uint32_t restored_0x10;
+    uint32_t restored_0x14;
+    uint32_t restored_0x18;
+    uint32_t restored_0x1c;
+    uint32_t restored_0x20;
+    uint32_t restored_0x24;
+    uint8_t  flag_0x28;
+    uint8_t  flag_0x29;
+    uint8_t  flag_0x2a;
+    uint8_t  flag_0x2b;
+    uint8_t  flag_0x2c;
+    uint8_t  flag_0x2d;
+    uint8_t  flag_0x2e;
+    uint8_t  flag_0x2f;
+    uint8_t  flag_0x30;
+    uint8_t  flag_0x31;
+    uint8_t  flag_0x32;
+    uint8_t  flag_0x33;
+    uint8_t  flag_0x34;
+    uint8_t  flag_0x35;
+    uint8_t  flag_0x36;
+    uint8_t  flag_0x37;
+    uint8_t  flag_0x38;
+    uint8_t  flag_0x39;
+    uint8_t  flag_0x3a;
 };
 static PlayerEgoSaveBlock *const *const kPlayerEgoSlot =
         (PlayerEgoSaveBlock *const *const) 0x220290;
-// A separate global slot at 0x2202bc holds a pointer to a controller object whose
-// first field is the active campaign Mission pointer (read into Status). The slot is
-// dereferenced twice: load the controller, then load its Mission* at offset 0.
+
+
+
 static Mission *const *const *const kCampaignMissionSlot =
         (Mission *const *const *const) 0x2202bc;
 
-// The mission-flags object behind the global slot at 0x22016c. Only three of its
-// fields are touched by load(): two read-only DLC/version flags and a writable
-// scalar; model them at their exact byte offsets so access is by name.
+
+
+
 struct MissionFlags {
-    uint8_t  _pad_0x00[0x2c];   // 0x00
-    uint32_t field_0x2c;        // 0x2c  (written from rec[0x47])
-    uint8_t  _pad_0x30[0x5];    // 0x30
-    uint8_t  dlcSkyboxFlag;     // 0x35  (read)
-    uint8_t  versionGuardFlag;  // 0x36  (read)
+    uint8_t  _pad_0x00[0x2c];
+    uint32_t field_0x2c;
+    uint8_t  _pad_0x30[0x5];
+    uint8_t  dlcSkyboxFlag;
+    uint8_t  versionGuardFlag;
 };
 static MissionFlags *const *const kMissionFlagsSlot = (MissionFlags *const *const) 0x22016c;
 
@@ -380,7 +380,7 @@ stationStackLoaded:
         scalar = 3;
     }
     st->field_114 = scalar;
-    // qword copy: Status 0x9c..0xa8 <- record 0x74..0x83 (rec[0x1d..0x20])
+
     st->field_9c = this->field_0x74;
     st->field_a0 = this->field_0x78;
     st->field_a4 = this->field_0x7c;
@@ -401,7 +401,7 @@ stationStackLoaded:
     scalar = this->field_0x9c;
     st->field_c0 = this->field_0x98;
     st->field_c4 = scalar;
-    // qword copies: Status 0xc8..0xe7 <- record 0xa0..0xbf (rec[0x28..0x2f])
+
     st->field_c8 = this->field_0xa0;
     st->field_cc = this->field_0xa4;
     st->field_d0 = this->field_0xa8;
@@ -541,7 +541,7 @@ afterDlcUnsaleable:
     }
 
     PlayerEgoSaveBlock *ego = *kPlayerEgoSlot;
-    // qword copies: ego 0x08..0x17 <- record 0xe4..0xf3 (rec[0x39..0x3c])
+
     ego->restored_0x08 = this->field_0xe4;
     ego->restored_0x0c = this->field_0xe8;
     ego->restored_0x10 = this->field_0xec;
@@ -551,7 +551,7 @@ afterDlcUnsaleable:
     scalar = this->field_0xcc;
     st->field_0x100 = this->field_0xc8;
     st->field_0x104 = scalar;
-    // qword copies: ego 0x18..0x27 <- record 0xf4..0x103 (rec[0x3d..0x40])
+
     ego->restored_0x18 = this->field_0xf4;
     ego->restored_0x1c = this->field_0xf8;
     ego->restored_0x20 = this->field_0xfc;

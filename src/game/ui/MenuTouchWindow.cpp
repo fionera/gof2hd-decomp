@@ -15,24 +15,24 @@
 
 static PaintCanvas *g_PaintCanvas = nullptr;
 
-// Minimal byte-faithful model of the untyped handle returned by
-// _mtw_AppMgr_GetApplicationData(). Only the fields this translation unit
-// touches are named; the rest is padding to keep offsets exact.
+
+
+
 struct MtwAppData {
     uint8_t pad_0x0[5];
-    uint8_t screenshotResultFlag;   // 0x5
+    uint8_t screenshotResultFlag;
     uint8_t pad_0x6[2];
-    int storeResultCode;            // 0x8
-    uint8_t storeInitFlag;          // 0xc
+    int storeResultCode;
+    uint8_t storeInitFlag;
     uint8_t pad_0xd[0x30];
-    uint8_t dlcMenuRequestFlag;     // 0x3d
+    uint8_t dlcMenuRequestFlag;
     uint8_t pad_0x3e[2];
-    uint8_t purchaseReadyFlag;      // 0x40
-    uint8_t purchaseResultFlag;     // 0x41
-    uint8_t purchaseErrorFlag;      // 0x42
+    uint8_t purchaseReadyFlag;
+    uint8_t purchaseResultFlag;
+    uint8_t purchaseErrorFlag;
     uint8_t pad_0x43[5];
-    unsigned int purchaseCode;      // 0x48
-    uint8_t dlcMenuAckFlag;         // 0x4c
+    unsigned int purchaseCode;
+    uint8_t dlcMenuAckFlag;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(MtwAppData, screenshotResultFlag) == 0x5, "appdata 0x5");

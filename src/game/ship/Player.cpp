@@ -36,8 +36,8 @@ static unsigned int g_shoot_mask = 0;
 static void **g_update_sound = nullptr;
 static float **g_update_speed = nullptr;
 
-// Wingman/slave link record referenced by KIPlayer::field_0x10: a small
-// linkage struct whose +4 slot holds the linked Player.
+
+
 struct SlaveLink {
     int field_0x0;
     Player *player;
@@ -46,11 +46,11 @@ struct SlaveLink {
 static_assert(__builtin_offsetof(SlaveLink, player) == 4, "SlaveLink.player must be at +4");
 #endif
 
-// Overlay view of the global audio-state object (the engine / application
-// manager) whose byte at +0xf gates positional 3D sound updates.
+
+
 struct AudioStateView {
     char pad_0[0xf];
-    char soundEnabledFlag;  // +0xf
+    char soundEnabledFlag;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(AudioStateView, soundEnabledFlag) == 0xf,
@@ -1499,5 +1499,5 @@ void Player::StopEngineSound() {
     }
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 void *Player::velocity;

@@ -21,7 +21,7 @@
 
 
 void AEMath_Matrix_ctor(void *m);
-// Globals::Canvas is declared extern in engine/render/PaintCanvas.h (included above).
+
 
 int AERandom_nextInt_nobound(int rng);
 
@@ -1007,5 +1007,5 @@ void PlayerFighter::revive() {
     }
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 int PlayerFighter::stationRouteAliens;

@@ -10,40 +10,40 @@
 #include <cstddef>
 
 namespace {
-    // Module vtable, modelled with named slots at the exact original byte
-    // offsets (32-bit: one slot = 4 bytes). Modules are stored as untyped
-    // void* whose first word points at this table.
+
+
+
     struct ModuleVTable {
-        void (*slot0)();                                                    // 0x00
-        void (*destroy)(void *self);                                        // 0x04 idx1
-        int (*showLoading)(void *self);                                     // 0x08 idx2
-        void (*release)(void *self);                                        // 0x0c idx3
+        void (*slot0)();
+        void (*destroy)(void *self);
+        int (*showLoading)(void *self);
+        void (*release)(void *self);
         void (*onKeyPress)(void *self, void *self2, unsigned int, unsigned int,
-                           unsigned int, unsigned int);                     // 0x10 idx4
+                           unsigned int, unsigned int);
         void (*onKeyRelease)(void *self, void *self2, unsigned int, unsigned int,
-                             unsigned int, unsigned int);                   // 0x14 idx5
-        void (*onTouchBegin2)(void *self, int x, int y);                   // 0x18 idx6
-        void (*onTouchMove2)(void *self, int x, int y);                    // 0x1c idx7
-        void (*onTouchEnd2)(void *self, int x, int y);                     // 0x20 idx8
-        void (*onTouchBegin3)(void *self, int x, int y, void *data);       // 0x24 idx9
-        void (*onTouchMove3)(void *self, int x, int y, void *data);        // 0x28 idx10
-        void (*onTouchEnd3)(void *self, int x, int y, void *data);         // 0x2c idx11
-        void (*onRender3D)(void *self);                                     // 0x30 idx12
-        void (*onRender2D)(void *self);                                     // 0x34 idx13
-        void (*onUpdate)(void *self);                                       // 0x38 idx14
-        void (*onSuspend)(void *self);                                      // 0x3c idx15
-        void (*onResume)(void *self);                                       // 0x40 idx16
+                             unsigned int, unsigned int);
+        void (*onTouchBegin2)(void *self, int x, int y);
+        void (*onTouchMove2)(void *self, int x, int y);
+        void (*onTouchEnd2)(void *self, int x, int y);
+        void (*onTouchBegin3)(void *self, int x, int y, void *data);
+        void (*onTouchMove3)(void *self, int x, int y, void *data);
+        void (*onTouchEnd3)(void *self, int x, int y, void *data);
+        void (*onRender3D)(void *self);
+        void (*onRender2D)(void *self);
+        void (*onUpdate)(void *self);
+        void (*onSuspend)(void *self);
+        void (*onResume)(void *self);
     };
 
     inline ModuleVTable *module_vtable(void *module) {
         return *reinterpret_cast<ModuleVTable **>(module);
     }
 
-    // Header that precedes the KeyCode[] run in keyMappingTable. The stored
-    // pointer points just past this header (at the first KeyCode).
+
+
     struct KeyMappingHeader {
-        unsigned int capacity;   // -8
-        unsigned int count;      // -4
+        unsigned int capacity;
+        unsigned int count;
     };
 
     inline AbyssEngine::KeyCode *key_entries(char *keyMappingTable) {
@@ -55,14 +55,14 @@ namespace {
                                                     sizeof(KeyMappingHeader));
     }
 
-    // One action-table entry occupies two consecutive Array<long long> slots
-    // (0x10 bytes): action bitmask (low/high), the key index it maps from, and
-    // a flags word.
+
+
+
     struct ActionEntry {
-        unsigned int actionLow;   // +0x00
-        unsigned int actionHigh;  // +0x04
-        unsigned int keyIndex;    // +0x08
-        int flags;                // +0x0c
+        unsigned int actionLow;
+        unsigned int actionHigh;
+        unsigned int keyIndex;
+        int flags;
     };
 
     inline ActionEntry *action_entries(Array<long long> *table) {
@@ -90,27 +90,27 @@ static_assert(sizeof(ActionEntry) == 0x10, "action entry size");
 #endif
 
 namespace {
-    // Trial/performance-test counters (SetCurrentApplicationModule)
+
     int g_perfPending;
     uint64_t g_perfCounter;
     uint64_t g_perfLimit;
     int g_perfExpired;
 
-    // Debug touch-corner state machine (OnTouchStart)
+
     int g_touchMode;
     int g_touchToggle;
     int g_touchValue;
     float g_touchFloat;
     int g_touchDown;
 
-    // Tilt-to-orientation debounce timers (CheckForOrientationChange)
+
     int g_orientationLeft;
     int g_orientationRight;
     int g_orientationFlat;
     int g_orientationUpsideDown;
     int g_orientationInactive;
 
-    // Performance-test accumulators (EnablePerformanceTest)
+
     int64_t g_perfElapsed;
     int64_t g_perfActionCount;
     int64_t g_perfLimitValue;
@@ -180,8 +180,8 @@ ApplicationManager::~ApplicationManager() {
         }
         (*this->modules)[i] = 0;
     }
-    ArrayRelease(*(this->modules));    // original: ArrayRelease<IApplicationModule*> (elements destroyed via vtable above)
-    ArrayRemoveAll(*(this->moduleIds));   // original keeps ArrayRemoveAll<unsigned int> here (matched)
+    ArrayRelease(*(this->modules));
+    ArrayRemoveAll(*(this->moduleIds));
 
     delete this->paintCanvas;
     this->paintCanvas = 0;

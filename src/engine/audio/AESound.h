@@ -3,7 +3,7 @@
 #include "engine/audio/AESoundInterface.h"
 
 namespace AbyssEngine {
-    // Concrete AESoundInterface implementation.
+
     class AESound : public AESoundInterface {
     public:
         char *loadSound(const char *name) override;

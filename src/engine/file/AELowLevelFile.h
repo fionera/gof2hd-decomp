@@ -11,9 +11,9 @@
 #include "engine/file/AELowLevelHeldFile.h"
 using String = AbyssEngine::String;
 
-// Abstract base for an open file handle. The two concrete implementations are
-// AENormalFile (a plain file served by the platform FileInterface) and AEPakFile
-// (a slice of a .pak archive). AEFile owns these polymorphically.
+
+
+
 class AELowLevelFile {
 public:
     virtual ~AELowLevelFile() {

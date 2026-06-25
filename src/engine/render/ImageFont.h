@@ -5,16 +5,16 @@
 namespace AbyssEngine {
     class Mesh;
 
-    // Engine-internal resource struct. Layout recovered from the original
-    // ARM disassembly (offsets verified against the 32-bit match build).
-    struct ImageFont {        // size 0x14
-        uint16_t glyphCount;  // 0x00
-        uint16_t pad0x2;      // 0x02
-        uint16_t *codes;      // 0x04: glyphCount unicode code points
-        void *field_0x8;      // 0x08
-        Mesh **glyphMeshes;   // 0x0c: glyphCount Mesh* entries
-        int16_t spacing;      // 0x10
-        int16_t yOffset;      // 0x12
+
+
+    struct ImageFont {
+        uint16_t glyphCount;
+        uint16_t pad0x2;
+        uint16_t *codes;
+        void *field_0x8;
+        Mesh **glyphMeshes;
+        int16_t spacing;
+        int16_t yOffset;
     };
 }
 

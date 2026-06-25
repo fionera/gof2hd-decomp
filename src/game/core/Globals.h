@@ -166,11 +166,11 @@ public:
     static int logoIsShown;
     static int isInMainMenu;
 
-    // Only 00-04 are real Globals members (the original exports _ZN7Globals14cItemListID_0[0-4]E and
-    // they are used cross-TU in NdkHooks). The original does NOT export 05-24: a class static member
-    // of an exported class always has external linkage, so 05-24 cannot be Globals members -- they
-    // are file-scope statics in LODManager.cpp (their only user). The decompiler extrapolated the
-    // member pattern from the 5 exported names; corrected here.
+
+
+
+
+
     static char *cItemListID_00;
     static char *cItemListID_01;
     static char *cItemListID_02;
@@ -198,7 +198,7 @@ public:
     static char *cItemListPrice_04;
 
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static AbyssEngine::ApplicationManager *appManager;
     static unsigned char gameLoaded;
     static unsigned char gameSaving;
@@ -297,6 +297,6 @@ public:
     static void *fontAlien;
     static void *generator;
 };
-// Globals::appManager is declared in engine/core/ApplicationManager.h (included above)
+
 
 #endif

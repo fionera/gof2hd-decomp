@@ -15,10 +15,10 @@ Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
 static PaintCanvas **g_LOD_canvas = nullptr;
 
-// cItemListID_05..24: file-scope statics (internal linkage), matching the original, which exports
-// only cItemListID_00..04 (real Globals members, used cross-TU in NdkHooks). These 20 are used only
-// here; a class static member of an exported class would have external linkage and be exported, so
-// they cannot be Globals members. ndk_resetNativeItemInformationList (below) is their only user.
+
+
+
+
 static char *cItemListID_05 = nullptr, *cItemListID_06 = nullptr, *cItemListID_07 = nullptr,
             *cItemListID_08 = nullptr, *cItemListID_09 = nullptr, *cItemListID_10 = nullptr,
             *cItemListID_11 = nullptr, *cItemListID_12 = nullptr, *cItemListID_13 = nullptr,
@@ -27,13 +27,13 @@ static char *cItemListID_05 = nullptr, *cItemListID_06 = nullptr, *cItemListID_0
             *cItemListID_20 = nullptr, *cItemListID_21 = nullptr, *cItemListID_22 = nullptr,
             *cItemListID_23 = nullptr, *cItemListID_24 = nullptr;
 
-// g_LOD_settings is an untyped engine settings handle. The only field accessed
-// here is a float LOD distance factor at byte offset 0x28. Model it with a
-// minimal struct carrying named members at the accessed offsets so the access
-// can be expressed as a named struct-member read instead of pointer arithmetic.
+
+
+
+
 struct LODSettings {
     unsigned char reserved_0x00[0x28];
-    float distanceFactor; // 0x28
+    float distanceFactor;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(LODSettings, distanceFactor) == 0x28,

@@ -8,36 +8,36 @@
 #include "engine/core/Array.h"
 #include "engine/math/Vector.h"
 
-// Minimal byte-faithful models for the untyped game-module handles that Gun.cpp
-// reaches into. Each field sits at exactly the byte offset the original
-// pointer-arithmetic accessed; padding members keep the layout exact so the
-// named-member access compiles to the same load/store in the 32-bit MATCH build.
+
+
+
+
 namespace {
 
-// Pointed to by the global item/status registry (gSI_items, gIG_status).
+
 struct GunItemRegistry {
-    int32_t field_0x0;          // 0x00
-    int32_t *itemTable;         // 0x04 -> table of Item* values (stored as int)
+    int32_t field_0x0;
+    int32_t *itemTable;
     uint8_t pad_0x08[0xc8 - 0x08];
-    int32_t nukeDetonations;    // 0xc8 (incremented when a nuke ignites)
+    int32_t nukeDetonations;
 };
 
-// Pointed to by the per-frame update globals (gUP_globals).
+
 struct GunUpdateGlobals {
     uint8_t pad_0x00[0x12c];
-    int32_t field_0x12c;        // 0x12c
+    int32_t field_0x12c;
 };
 
-// The Level handle (Gun::level is stored as an int address).
+
 struct GunLevelHandle {
     uint8_t pad_0x00[0x69];
-    uint8_t field_0x69;         // 0x69 (cleared when an EMP/nuke ignites)
+    uint8_t field_0x69;
 };
 
-// A PaintCanvas transform handle (returned by TransformGetTransform).
+
 struct GunTransformHandle {
     uint8_t pad_0x00[0xed];
-    uint8_t visible_0xed;       // 0xed (non-zero when the transform is drawable)
+    uint8_t visible_0xed;
 };
 
 #if __SIZEOF_POINTER__ == 4
@@ -53,7 +53,7 @@ static_assert(__builtin_offsetof(GunTransformHandle, visible_0xed) == 0xed,
               "GunTransformHandle::visible_0xed offset");
 #endif
 
-} // anonymous namespace
+}
 
 typedef Array<Vector> VecArray;
 

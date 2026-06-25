@@ -52,4 +52,4 @@ public:
     virtual void ResetSaveDirectory() = 0;
 };
 
-#endif //GALAXYONFIRE2_FILEINTERFACE_H
+#endif

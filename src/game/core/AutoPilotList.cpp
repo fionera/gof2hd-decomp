@@ -10,7 +10,7 @@
 #include "game/world/SolarSystem.h"
 #include "game/world/Station.h"
 
-// Globals::Canvas is declared in PaintCanvas.h (included above).
+
 
 static int **g_APL_apFlag = nullptr;
 

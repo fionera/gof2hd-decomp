@@ -158,7 +158,7 @@ namespace AbyssEngine {
 
         static uint16_t *getWCharFromUtf8(char *utf8, int len);
 
-        // Static data member present in the original binary (defined for symbol parity).
+
         static char16_t termChar;
     };
 

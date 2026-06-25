@@ -306,7 +306,7 @@ public:
 
     void StopEngineSound();
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static void *velocity;
 };
 

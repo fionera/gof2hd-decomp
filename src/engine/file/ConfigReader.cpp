@@ -85,7 +85,7 @@ namespace AbyssEngine {
             }
 
             String commentNeedle;
-            for (const char *p = "//"; p && *p; ++p)
+            for (const char *p = "
                 { int _nl = commentNeedle.length + 1; unsigned short *_nd = new unsigned short[_nl + 1]; for (int _i = 0; _i < commentNeedle.length; _i++) _nd[_i] = commentNeedle.data[_i]; _nd[commentNeedle.length] = (unsigned short) (static_cast<char16_t>(static_cast<unsigned char>(*p))); _nd[_nl] = 0; if (commentNeedle.data) delete[] commentNeedle.data; commentNeedle.data = _nd; commentNeedle.length = _nl; }
             unsigned int commentPos = line.IndexOf(commentNeedle);
             int32_t commentIndex = commentPos == 0xffffffffu ? -1 : static_cast<int32_t>(commentPos);

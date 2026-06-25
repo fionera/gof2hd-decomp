@@ -47,46 +47,46 @@ struct StatusWindow {
     int OnTouchMove(int x, int y);
 };
 
-// ---- Models for untyped runtime handles touched via byte offsets ----
 
-// First bytes of a HangarWindow object (only the +0 dirty flag is poked here).
+
+
 struct HangarWindowHead {
-    char shipChanged;         // 0x00  set when the player's ship was swapped
+    char shipChanged;
 };
 
-// ApplicationManager application-data block (returned as an int handle).
+
 struct AppData {
-    char pad00[0xd];          // 0x00
-    char hideRadio;           // 0x0d
-    char pad0e[0x41 - 0x0e];  // 0x0e
-    char purchaseReady;       // 0x41
-    char restoreNotice;       // 0x42
-    char pad43[0x48 - 0x43];  // 0x43
-    int  purchaseId;          // 0x48
-    char pad4c[0x58 - 0x4c];  // 0x4c
-    int *purchaseList;        // 0x58  (int* run; [0]=count)
-    char pad5c[0x60 - 0x5c];  // 0x5c
-    Array<String *> *iapArray; // 0x60
+    char pad00[0xd];
+    char hideRadio;
+    char pad0e[0x41 - 0x0e];
+    char purchaseReady;
+    char restoreNotice;
+    char pad43[0x48 - 0x43];
+    int  purchaseId;
+    char pad4c[0x58 - 0x4c];
+    int *purchaseList;
+    char pad5c[0x60 - 0x5c];
+    Array<String *> *iapArray;
 };
 
-// Hint/medal record: a run of per-hint "shown" flag bytes.
+
 struct HintRecord {
-    char flags[0x40];         // byte flags indexed by hint id (0x1a,0x1b,0x33..0x36,0x34,0x3a,...)
+    char flags[0x40];
 };
 
-// Record reached via **g_oi_textRoot; only the +0x2ec "no-routes hint shown" flag is read.
+
 struct TextRootRecord {
-    char pad000[0x2ec];       // 0x000
-    char noRoutesHintShown;   // 0x2ec
+    char pad000[0x2ec];
+    char noRoutesHintShown;
 };
 
-// Settings block: per-message "already shown" flag bytes.
+
 struct SettingsBlock {
-    char pad00[0x2b];         // 0x00
-    char wantedActivatedShown; // 0x2b
-    char pad2c[0x38 - 0x2c];  // 0x2c
-    char gameWonShown;        // 0x38
-    char dlc1WonShown;        // 0x39
+    char pad00[0x2b];
+    char wantedActivatedShown;
+    char pad2c[0x38 - 0x2c];
+    char gameWonShown;
+    char dlc1WonShown;
 };
 
 #if __SIZEOF_POINTER__ == 4
@@ -3184,8 +3184,8 @@ void ModStation::OnInitialize() {
         NewsTicker_build_oiImpl(this);
         next = 0x28;
     } else if (state == 0x50) {
-        this->m_nStarMapWindowOpen.halfwords[1] = 0;   // upper half of 0x5c..0x5f word
-        this->subWindowFlags.halfwords[0] = 0;          // lower half of 0x60..0x63 word (was 32-bit write @+2)
+        this->m_nStarMapWindowOpen.halfwords[1] = 0;
+        this->subWindowFlags.halfwords[0] = 0;
         this->screenFlags.bytes[2] = 0;
         this->screenFlags.halfword = 0;
         this->modalFlags.word = 0;

@@ -179,7 +179,7 @@ public:
 
     static void render3D_thunk(ListItemWindow *listItemWindow);
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static int lastTab;
 };
 #endif

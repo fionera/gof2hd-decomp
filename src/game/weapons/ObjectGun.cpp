@@ -16,13 +16,13 @@ struct MeshId {
     uint16_t pad;
 };
 
-// View used by the ego-orientation branch of render(): in the shipped binary the
-// player object stores an orientation Matrix starting at byte 0x40 (the same
-// storage Player.h names `radius`/`destroyed`/...). Model it with named fields so
-// the access is a struct member rather than raw pointer arithmetic.
+
+
+
+
 struct EgoPlayerView {
     char header[0x40];
-    Matrix orientation;        // at 0x40
+    Matrix orientation;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(EgoPlayerView, orientation) == 0x40,
@@ -251,8 +251,8 @@ void ObjectGun::update(int dt) {
         }
 
         gun = this->gun;
-        // The matrix source is a Player object: for the player's own gun it is the
-        // PlayerEgo's wrapped Player (first pointer field), otherwise the gun owner.
+
+
         Player *matrixPlayer;
         if (gun->isPlayerGun() == 0)
             matrixPlayer = gun->owner;

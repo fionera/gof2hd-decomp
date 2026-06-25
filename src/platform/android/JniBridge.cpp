@@ -78,10 +78,10 @@ unsigned int hrwhs_country_code;
 
 int gb_android_offerwallCreditAmount;
 
-// JNI-facing accelerometer ring index (read/written from Java by symbol name).
+
 int AccIndex;
 
-// Entry callback pointer written by ndk23_Init / ndk23_InitWithZip.
+
 void *ndkEntrance;
 
 
@@ -420,8 +420,8 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_handleAccelerometer
     ndk23_handleAcceleration(-x, y, z);
 }
 
-// Exit callback registered with the engine; signals the platform exit flag.
-// C linkage: the original exports it as the unmangled symbol `ExitFunction`.
+
+
 extern "C" void ExitFunction() {
     forceExit = -1;
 }
@@ -556,10 +556,10 @@ extern "C" void Java_net_fishlabs_gof2hdallandroid2012_ToJNI_correctBoughtDLC5(
     ndk_iapBoughtPremium(4, 1);
 }
 
-// Google Play game-services state, exported as plain globals (the original's
-// exact storage: achievements is int[3], leaderboard scores int[8], the rest
-// scalar ints). link_game_gp is read by GetLinkGameGP; gp_is_linked is the
-// separate flag set by SetGPIsLinked.
+
+
+
+
 int g_android_current_achievements[3];
 int g_android_leaderboard_scores[8];
 int g_android_link_game_gp;

@@ -232,4 +232,4 @@ void ndk_setNativeItemInformationList(JNIEnv *env, jclass /*clazz*/,
             env->ReleaseStringUTFChars(elems[col][row], utf[col][row]);
 }
 
-} // extern "C"
+}

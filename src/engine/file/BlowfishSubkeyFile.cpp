@@ -2,22 +2,22 @@
 
 #include <cstdio>
 
-// Blowfish substitution boxes: 4 boxes of 256 32-bit entries (4096 bytes, .bss).
-// Emitted as the bare C-linkage symbol "S" to match the original binary.
+
+
 extern "C" unsigned int S[4][256];
 unsigned int S[4][256];
 
-// Blowfish P-array: 18 32-bit subkeys (72 bytes, .bss).
-// Emitted as the bare C-linkage symbol "P" to match the original binary.
+
+
 extern "C" unsigned int P[18];
 unsigned int P[18];
 
-// The subkey file ("Blowfish.dat") handle; the original exports it as the bare
-// symbol "SubkeyFile". opensubkeyfile() opens it; InitializeBlowfish() reads it.
+
+
 extern "C" std::FILE *SubkeyFile;
 std::FILE *SubkeyFile = nullptr;
 
-// Blowfish Feistel function (defined alongside the input code).
+
 extern "C" unsigned int F(unsigned int value);
 
 extern "C" int opensubkeyfile() {
@@ -59,7 +59,7 @@ extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
         return;
     }
 
-    // Load the precomputed P-array and S-boxes from the subkey file.
+
     for (unsigned int i = 0; i < 18; ++i) {
         if (std::fread(&P[i], 4, 1, SubkeyFile) != 1)
             return;
@@ -72,7 +72,7 @@ extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
     }
     std::fclose(SubkeyFile);
 
-    // XOR the P-array with the (cyclically repeated) key.
+
     short k = 0;
     for (int i = 0; i != 18; ++i) {
         unsigned int data = 0;
@@ -86,8 +86,8 @@ extern "C" void InitializeBlowfish(unsigned char *key, int keylen) {
         P[i] ^= data;
     }
 
-    // Run the key schedule: encrypt the all-zero block repeatedly, filling the
-    // P-array and then each S-box two words at a time.
+
+
     unsigned int dl = 0;
     unsigned int dr = 0;
     for (int i = 0; i < 18; i += 2) {

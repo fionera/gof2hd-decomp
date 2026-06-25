@@ -40,16 +40,16 @@ class PlayerEgo {
 public:
     void *player;
 
-    // Bytes 0x4..0x40 hold the ship transform Matrix (sizeof 0x3c) in the
-    // binary; the same storage is also accessed as the named pointer fields
-    // below. Expose both via an anonymous union without reordering.
-    //
-    // The outer union additionally exposes `rocketReturnMatrix`, a Matrix that
-    // begins at byte 0x10 (0xC into this storage region) and runs 0x3c bytes to
-    // 0x4c. During rocket-control hand-off the ship transform is copied into
-    // that slot via a single bulk Matrix store, which overruns the inner union
-    // into maneuverParam/field_0x80/targetFollowCamera. Modeling it as a named
-    // member keeps the store as plain member access.
+
+
+
+
+
+
+
+
+
+
     union {
         struct {
             union {
@@ -575,7 +575,7 @@ public:
 
     int updateManeuver();
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static AbyssEngine::AEMath::Vector crosshairPos;
     static AbyssEngine::AEMath::Vector crosshairShootPos;
     static AbyssEngine::AEMath::Vector vec_up;

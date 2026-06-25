@@ -3,16 +3,16 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-    // Engine-internal resource struct. Layout recovered from the original
-    // ARM disassembly (offsets verified against the 32-bit match build).
-    struct Image {            // size 0x14
-        uint16_t width;       // 0x00
-        uint16_t height;      // 0x02
-        uint32_t format;      // 0x04
-        uint8_t hasMipmaps;   // 0x08
-        uint8_t pad0x9[3];    // 0x09
-        void *data;           // 0x0c
-        uint32_t dataLen;     // 0x10
+
+
+    struct Image {
+        uint16_t width;
+        uint16_t height;
+        uint32_t format;
+        uint8_t hasMipmaps;
+        uint8_t pad0x9[3];
+        void *data;
+        uint32_t dataLen;
     };
 }
 

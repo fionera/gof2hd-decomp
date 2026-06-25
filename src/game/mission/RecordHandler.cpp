@@ -26,73 +26,73 @@
 #include <cstdint>
 #include <cstddef>
 
-// Byte-faithful view of the in-memory options/settings blob that loadOptions,
-// saveOptions and loadResolutionValue (de)serialise field by field. Unlike the
-// alignment-padded OptionsRecord, every member here sits at exactly the byte
-// offset its name encodes (pack(1)), so the raw `s + 0xNN` accesses become
-// named member access without any offset drift.
+
+
+
+
+
 namespace {
 #pragma pack(push, 1)
 struct OptionsBuffer {
-    int32_t  i32_0x00;       // 0x00
-    int32_t  i32_0x04;       // 0x04
-    union {                  // 0x08  volume read as float, saved as raw bits
+    int32_t  i32_0x00;
+    int32_t  i32_0x04;
+    union {
         float   volumeSfx;
         int32_t volumeSfxBits;
     };
-    uint8_t  byte_0x0c;      // 0x0c
-    uint8_t  byte_0x0d;      // 0x0d
-    uint8_t  byte_0x0e;      // 0x0e
-    uint8_t  pad_0x0f;       // 0x0f
-    uint8_t  byte_0x10;      // 0x10
-    uint8_t  byte_0x11;      // 0x11
-    uint8_t  pad_0x12[2];    // 0x12..0x13
-    int32_t  i32_0x14;       // 0x14
-    int32_t  i32_0x18;       // 0x18
-    int32_t  i32_0x1c;       // 0x1c
-    union {                  // 0x20
+    uint8_t  byte_0x0c;
+    uint8_t  byte_0x0d;
+    uint8_t  byte_0x0e;
+    uint8_t  pad_0x0f;
+    uint8_t  byte_0x10;
+    uint8_t  byte_0x11;
+    uint8_t  pad_0x12[2];
+    int32_t  i32_0x14;
+    int32_t  i32_0x18;
+    int32_t  i32_0x1c;
+    union {
         float   volumeMusic;
         int32_t volumeMusicBits;
     };
-    int32_t  i32_0x24;       // 0x24
-    int32_t  i32_0x28;       // 0x28
-    uint8_t  pad_0x2c[6];    // 0x2c..0x31
-    uint8_t  byte_0x32;      // 0x32
-    uint8_t  byte_0x33;      // 0x33
-    uint8_t  byte_0x34;      // 0x34
-    uint8_t  byte_0x35;      // 0x35
-    uint8_t  byte_0x36;      // 0x36
-    uint8_t  byte_0x37;      // 0x37
-    uint8_t  byte_0x38;      // 0x38
-    uint8_t  pad_0x39;       // 0x39
-    uint8_t  byte_0x3a;      // 0x3a
-    uint8_t  byte_0x3b;      // 0x3b
-    uint8_t  byte_0x3c;      // 0x3c
-    uint8_t  byte_0x3d;      // 0x3d
-    uint8_t  byte_0x3e;      // 0x3e
-    uint8_t  byte_0x3f;      // 0x3f
-    uint8_t  byte_0x40;      // 0x40
-    uint8_t  byte_0x41;      // 0x41
-    uint8_t  pad_0x42[2];    // 0x42..0x43
-    union {                  // 0x44
+    int32_t  i32_0x24;
+    int32_t  i32_0x28;
+    uint8_t  pad_0x2c[6];
+    uint8_t  byte_0x32;
+    uint8_t  byte_0x33;
+    uint8_t  byte_0x34;
+    uint8_t  byte_0x35;
+    uint8_t  byte_0x36;
+    uint8_t  byte_0x37;
+    uint8_t  byte_0x38;
+    uint8_t  pad_0x39;
+    uint8_t  byte_0x3a;
+    uint8_t  byte_0x3b;
+    uint8_t  byte_0x3c;
+    uint8_t  byte_0x3d;
+    uint8_t  byte_0x3e;
+    uint8_t  byte_0x3f;
+    uint8_t  byte_0x40;
+    uint8_t  byte_0x41;
+    uint8_t  pad_0x42[2];
+    union {
         float   volumeAmbient;
         int32_t volumeAmbientBits;
     };
-    uint8_t  byte_0x48;      // 0x48
-    uint8_t  byte_0x49;      // 0x49
-    uint8_t  byte_0x4a;      // 0x4a
-    uint8_t  byte_0x4b;      // 0x4b
-    uint8_t  byte_0x4c;      // 0x4c
-    uint8_t  byte_0x4d;      // 0x4d
-    uint8_t  byte_0x4e;      // 0x4e
-    uint8_t  pad_0x4f;       // 0x4f
-    int32_t  i32_0x50;       // 0x50
-    int32_t  i32_0x54;       // 0x54
-    int32_t  i32_0x58;       // 0x58
-    uint8_t  pad_0x5c[4];    // 0x5c..0x5f
-    uint8_t  byte_0x60;      // 0x60
-    uint8_t  byte_0x61;      // 0x61
-    uint8_t  byte_0x62;      // 0x62
+    uint8_t  byte_0x48;
+    uint8_t  byte_0x49;
+    uint8_t  byte_0x4a;
+    uint8_t  byte_0x4b;
+    uint8_t  byte_0x4c;
+    uint8_t  byte_0x4d;
+    uint8_t  byte_0x4e;
+    uint8_t  pad_0x4f;
+    int32_t  i32_0x50;
+    int32_t  i32_0x54;
+    int32_t  i32_0x58;
+    uint8_t  pad_0x5c[4];
+    uint8_t  byte_0x60;
+    uint8_t  byte_0x61;
+    uint8_t  byte_0x62;
 };
 #pragma pack(pop)
 
@@ -106,7 +106,7 @@ static_assert(offsetof(OptionsBuffer, i32_0x50) == 0x50, "OptionsBuffer.i32_0x50
 static_assert(offsetof(OptionsBuffer, byte_0x62) == 0x62, "OptionsBuffer.byte_0x62");
 static_assert(sizeof(OptionsBuffer) == 0x63, "OptionsBuffer size");
 #endif
-} // anonymous namespace
+}
 
 const char *g_android_origami_super_club = nullptr;
 
@@ -583,11 +583,11 @@ void RecordHandler::writeByteArrayAsOptionsFile(signed char *buf, int n) {
 
 static int *g_RH_wp_float = nullptr;
 
-// g_RH_wp_float points at a slot holding a pointer to an object whose float
-// field at +0x2c (the player's current rank) is serialised into the preview.
+
+
 struct RankHolder {
     uint8_t  _pad[0x2c];
-    int32_t  rankBits;   // 0x2c (float stored as raw bits, written via WriteFloat)
+    int32_t  rankBits;
 };
 
 void RecordHandler::recordStoreWritePreview(int slot) {
@@ -1288,15 +1288,15 @@ static void *g_RSW_uiFlags = nullptr;
 
 static int g_RSW_modVersion = 0;
 
-// Untyped global flag blobs serialised one byte at a time by recordStoreWrite.
-// Modelled as packed byte arrays so each `flags + 0xNN` / `ui + 0xNN` access
-// becomes a named indexed member.
+
+
+
 #pragma pack(push, 1)
 struct OptFlagsBlob {
-    uint8_t flag[0x3b];   // bytes 0x00..0x3a are referenced
+    uint8_t flag[0x3b];
 };
 struct UiFlagsBlob {
-    uint8_t flag[0x38];   // bytes up to 0x37 are referenced
+    uint8_t flag[0x38];
 };
 #pragma pack(pop)
 
@@ -1380,7 +1380,7 @@ void RecordHandler::recordStoreWrite(int slot) {
         AEFile_WriteInt(status->field_b8, fd);
         AEFile_WriteLong(status->field_c8_q, fd);
 
-        // field_c8..field_ec: contiguous run of nine int32 status fields.
+
         AEFile_WriteInt(status->field_c8, fd);
         AEFile_WriteInt(status->field_cc, fd);
         AEFile_WriteInt(status->field_d0, fd);
@@ -1529,7 +1529,7 @@ void RecordHandler::recordStoreWrite(int slot) {
 
             AEFile_WriteInt(status->field_0x30, fd);
             AEFile_WriteInt(5, fd);
-            // field_0x28 holds a pointer to a 5-int run.
+
             int *wingmenStats = reinterpret_cast<int *>((intptr_t) status->field_0x28);
             for (unsigned i = 0; i < 5; i++) {
                 AEFile_WriteInt(wingmenStats[i], fd);
@@ -1929,7 +1929,7 @@ void *RecordHandler::recordStoreRead(int slot) {
 
                 AEFile_ReadInt(&rec->field_0x90, fd);
                 AEFile_ReadLong(&rec->field_0x98, fd);
-                // 0xa0..0xc4: contiguous int32 run.
+
                 AEFile_ReadInt(&rec->field_0xa0, fd);
                 AEFile_ReadInt(&rec->field_0xa4, fd);
                 AEFile_ReadInt(&rec->field_0xa8, fd);
@@ -2194,7 +2194,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                 for (unsigned i = 0; i < agents->size(); i++)
                     (*agents)[i] = (Agent *) this->readAgent(fd);
 
-                // Dense byte-accessed region 0xe4..0x100 (spans several fields).
+
                 uint8_t *recBytes = reinterpret_cast<uint8_t *>(rec);
                 for (int off = 0xe4; off <= 0x100; off++) AEFile_ReadByte(&recBytes[off], fd);
                 AEFile_ReadFloat(&rec->rank, fd);
@@ -2398,7 +2398,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                             (*wArr)[i] = (Wanted *) this->readWanted(fd);
                     }
 
-                    // 0x1a4..0x1b0: contiguous int32 run.
+
                     AEFile_ReadInt(&rec->field_0x1a4, fd);
                     AEFile_ReadInt(&rec->field_0x1a8, fd);
                     AEFile_ReadInt(&rec->field_0x1ac, fd);
@@ -2429,7 +2429,7 @@ void *RecordHandler::recordStoreRead(int slot) {
                     AEFile_ReadByte(&rec->field_0x109, fd);
                     AEFile_ReadByte(&rec->field_0x11a, fd);
                     AEFile_ReadInt(&rec->field_0xe0, fd);
-                    // Dense byte-accessed region 0x10d..0x114.
+
                     uint8_t *recBytes2 = reinterpret_cast<uint8_t *>(rec);
                     for (int off = 0x10d; off <= 0x114; off++) AEFile_ReadByte(&recBytes2[off], fd);
                 }
@@ -2455,7 +2455,7 @@ bool RecordHandler::checkHash(unsigned int fd) {
         unsigned char *buf = new unsigned char[(unsigned) sz];
         AEFile::Read((unsigned) sz, (signed char *) buf, fd);
         Array<unsigned char> *arr = new Array<unsigned char>();
-        ArrayAdd(buf, (unsigned) sz, *arr);   // original: ArrayAdd<uchar>(buf, sz, this) -- not iterator insert
+        ArrayAdd(buf, (unsigned) sz, *arr);
         delete[] buf;
 
         unsigned len = arr->size();

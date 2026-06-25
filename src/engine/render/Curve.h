@@ -3,12 +3,12 @@
 #include <cstdint>
 
 namespace AbyssEngine {
-    // Engine-internal resource struct. Layout recovered from the original
-    // ARM disassembly (offsets verified against the 32-bit match build).
-    struct Curve {            // size 0x08
-        uint16_t count;       // 0x00
-        uint16_t pad0x2;      // 0x02
-        void *entries;        // 0x04: count keyframe pointers
+
+
+    struct Curve {
+        uint16_t count;
+        uint16_t pad0x2;
+        void *entries;
     };
 }
 

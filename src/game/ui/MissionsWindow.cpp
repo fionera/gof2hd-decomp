@@ -21,16 +21,16 @@
 #include "game/menu/ModStation.h"
 #include <cstddef>
 
-// Campaign-mission visibility flags. The campaign-mission handle behind
-// g_mwi_campaign / g_mw_campaign is a Mission object whose byte-addressable
-// visibility flags live at offsets 0x35 and 0x37 (inside the 0x34 flag word).
-// Model them with a named overlay so the access is a struct member, not raw
-// pointer arithmetic.
+
+
+
+
+
 struct CampaignMissionFlags {
     char pad00[0x35];
-    char campaignVisibleFlagA; // 0x35
+    char campaignVisibleFlagA;
     char pad36;
-    char campaignVisibleFlagB; // 0x37
+    char campaignVisibleFlagB;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagA) == 0x35,
@@ -39,11 +39,11 @@ static_assert(offsetof(CampaignMissionFlags, campaignVisibleFlagB) == 0x37,
               "CampaignMissionFlags flagB offset");
 #endif
 
-// Globals::Canvas is declared `extern` in engine/render/PaintCanvas.h (already included).
 
-// These per-screen globals appear only in this translation unit. The original
-// build shared them via extern decls; here they are file-static definitions.
-// Parity loss accepted (criterion 7: drive extern toward 0).
+
+
+
+
 static GameText *g_mw_gameText = nullptr;
 
 static Layout **g_mw_m_layout = nullptr;
@@ -78,8 +78,8 @@ static void *g_mw_campaign = nullptr;
 static int *g_mw_textBase = nullptr;
 static int *g_mw_titleTable = nullptr;
 
-// Our own C-ified shims; demoted from extern "C" to plain C++ decls
-// (mangling change accepted).
+
+
 void Status_replaceHash(void *out, void *key, void *a, void *b, void *c);
 
 int ApplicationManager_GetCurrentApplicationModule(void *appMgr);

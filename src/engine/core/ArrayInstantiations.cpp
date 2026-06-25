@@ -1,7 +1,7 @@
-// Explicit instantiations of the Array<T> free templates our code calls but -Oz
-// inlines + DCEs at their single call sites. The original emits these out-of-line;
-// explicit instantiation is the standard C++ mechanism to reproduce that. Every
-// one is a genuinely-used function -- instantiation control, not orphan/hack.
+
+
+
+
 #include "engine/core/Array.h"
 #include "engine/core/Node.h"
 #include "game/ship/Agent.h"
@@ -42,9 +42,9 @@ template void ArrayAdd<unsigned char>(const unsigned char *, unsigned int, Array
 template void ArrayAdd<Player *>(Player *const *, unsigned int, Array<Player *> &);
 template void ArrayAdd<Player *>(const Array<Player *> &, Array<Player *> &);
 
-// ctor/dtor for the pointer/heap-element arrays that our code only ever
-// heap-allocates (so -Oz folds the in-place construction). The original emits
-// these out-of-line; instantiate them explicitly (standard C++, no hack).
+
+
+
 class GameRecord;
 namespace AbyssEngine { class KeyCode; class String; }
 template Array<GameRecord *>::~Array();

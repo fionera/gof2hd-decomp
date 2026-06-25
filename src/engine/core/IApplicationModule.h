@@ -39,9 +39,9 @@ namespace AbyssEngine {
 
         virtual void OnTouchEnd(int, int) = 0;
 
-        // Defined inline so there is no out-of-line key function: the abstract
-        // base's vtable (and its D0/D1) are not homed here, matching the original
-        // (which exports these methods + _ZTI but no _ZTV / no dtor).
+
+
+
         virtual void OnTouchBegin(int x, int y, void *data) {}
 
         virtual void OnTouchMove(int x, int y, void *data) {}

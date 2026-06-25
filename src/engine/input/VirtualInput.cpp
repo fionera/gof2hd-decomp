@@ -43,16 +43,16 @@ struct VirtualKey {
 };
 
 constexpr int kVirtualKeyCount = 48;
-// Exported global (the original's `keys`): the table of virtual key states.
+
 VirtualKey keys[kVirtualKeyCount];
 
-// Cross-TU exported pointer/wheel emulation state (original's globals).
+
 int stackX;
 int stackY;
 int wheelStack;
 
-// JNI-facing input/state globals (read/written from the Java side by symbol
-// name; the original's C++ does not reference them either -- no relocation).
+
+
 int currentstate;
 int stateChanged;
 int sound_off;

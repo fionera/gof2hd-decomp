@@ -624,7 +624,7 @@ void StarMap::update(int dt) {
                 delete[] this->stationDistances;
                 this->stationDistances = (int *) 0;
                 if (this->usedFlags != 0) {
-                    delete this->usedFlags;   // primitive array: ~Array frees the buffer; original has no ArrayRelease<uchar>
+                    delete this->usedFlags;
                     this->usedFlags = 0;
                 }
                 delete this->starSystemRoot;

@@ -137,7 +137,7 @@ public:
 
     static void ResetSaveDirectory();
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static void *fileInterface;
     static void *pakFileEntryList;
     static void *file;

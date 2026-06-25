@@ -285,5 +285,5 @@ void Mission::setDifficulty(int difficulty) {
     this->reward = difficulty;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 void *Mission::empty;

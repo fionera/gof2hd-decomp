@@ -134,15 +134,15 @@ namespace {
     static int *g_PE_tc_sound = nullptr;
 }
 
-// Local 4-wide row-major matrix buffer used to build a transform on the stack.
-// 0x30 bytes; the named diagonal members live at offsets 0x0/0x14/0x28.
+
+
 struct PE_MatrixBuf {
-    float m00;        // 0x00
-    float pad0[4];    // 0x04..0x13
-    float m11;        // 0x14
-    float pad1[4];    // 0x18..0x27
-    float m22;        // 0x28
-    float pad2[1];    // 0x2c
+    float m00;
+    float pad0[4];
+    float m11;
+    float pad1[4];
+    float m22;
+    float pad2[1];
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(sizeof(PE_MatrixBuf) == 0x30, "PE_MatrixBuf size");
@@ -151,21 +151,21 @@ static_assert(__builtin_offsetof(PE_MatrixBuf, m11) == 0x14, "m11");
 static_assert(__builtin_offsetof(PE_MatrixBuf, m22) == 0x28, "m22");
 #endif
 
-// Mesh material block: only the pointer at offset 0x20 is referenced here.
+
 struct PE_MaterialBlock {
-    char pad0[0x20];      // 0x00..0x1f
-    void *materialList;   // 0x20
+    char pad0[0x20];
+    void *materialList;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(PE_MaterialBlock, materialList) == 0x20, "materialList");
 #endif
 
-// PlayerAsteroid mining-target view: the int flag at object offset 0x44 is
-// cleared when mining starts. asteroidTarget points at the base; the original
-// code addressed it as (base + 4) + 0x40.
+
+
+
 struct PE_AsteroidMineTarget {
-    char pad0[0x44];   // 0x00..0x43
-    int miningFlag;    // 0x44
+    char pad0[0x44];
+    int miningFlag;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(__builtin_offsetof(PE_AsteroidMineTarget, miningFlag) == 0x44, "miningFlag");
@@ -2958,7 +2958,7 @@ void PlayerEgo::toggleCloaking() {
     }
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairPos;
 AbyssEngine::AEMath::Vector PlayerEgo::crosshairShootPos;
 AbyssEngine::AEMath::Vector PlayerEgo::vec_up;

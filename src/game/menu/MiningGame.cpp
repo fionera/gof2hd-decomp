@@ -8,7 +8,7 @@
 #include "engine/render/MarqueeImage.h"
 #include "engine/render/Sprite.h"
 
-// Mining-game parallax layer tables, recovered from the original binary.
+
 float LAYER_SPEEDS[7] = {5.0f, 8.0f, 12.0f, 17.0f, 23.0f, 30.0f, 38.0f};
 int LAYER_DIAMETERS[49] = {
     250, 210, 170, 140, 110, 80, 50,

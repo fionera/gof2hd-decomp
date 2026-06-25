@@ -211,7 +211,7 @@ public:
 
     void update(int dt) override;
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static int stationRouteAliens;
 };
 #endif

@@ -1255,8 +1255,8 @@ void Status::nextCampaignMission(bool advance) {
             return;
         }
     }
-    // missions is pre-sized (ArraySetLength(2,...)); the original has no ArrayAdd<Mission*>
-    // fallback -- if no free slot it drops, so no grow-by-append here.
+
+
 }
 
 void Status::setStation(Station *s) {

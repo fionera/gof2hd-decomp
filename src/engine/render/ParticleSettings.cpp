@@ -689,6 +689,6 @@ void ParticleSettings::Interpolate(ParticleSet a, ParticleSet b, float t, Partic
     asFloat(po.velDir) = omt * asFloat(pa.velDir) + asFloat(pb.velDir) * t;
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 int ParticleSettings::particleMultiply;
 int ParticleSettings::pCounter;

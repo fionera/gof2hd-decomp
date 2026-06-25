@@ -109,7 +109,7 @@ namespace AbyssEngine {
 
     Transform::~Transform() {
         if (this->keyFramesShared == false) {
-            ArrayReleaseClasses(this->keyFrames);   // original: ArrayReleaseClasses<KeyFrame*>
+            ArrayReleaseClasses(this->keyFrames);
         }
     }
 
@@ -349,7 +349,7 @@ namespace AbyssEngine {
                 Mesh *mesh = new Mesh(other->meshes[i]);
                 ArrayAdd(mesh, this->meshes);
             }
-            ArraySet(other->keyFrames, this->keyFrames);   // original: ArraySet<KeyFrame*>, not operator=
+            ArraySet(other->keyFrames, this->keyFrames);
             for (uint i = 0; i < other->children.size(); ++i) {
                 Transform * child = new Transform(other->children[i]);
                 ArrayAdd(child, this->children);
@@ -828,8 +828,8 @@ namespace AbyssEngine {
         } else if (index == this->keyFrames.size()) {
             KeyFrame *last = this->keyFrames[this->keyFrames.size() - 1];
             uint mask = key->channelFlags;
-            // Inherit any unset channel (one bit per 4-byte float field 0x00..0x48)
-            // from the previous last frame so the appended frame is fully defined.
+
+
             float *keyFields = &key->translation.x;
             const float *lastFields = &last->translation.x;
             for (int field = 0; field <= 0x48 / 4; ++field) {

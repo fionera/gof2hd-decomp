@@ -29,12 +29,12 @@ static void *const gItemDb = nullptr;
 static unsigned KIPlayer_initA = 0;
 static unsigned KIPlayer_initB = 0;
 
-// Global item database handle layout. gItemDb points at a small descriptor
-// whose second pointer-sized slot holds the base of a contiguous table of
-// Item* prototypes (stored as 32-bit values), indexed by item id.
+
+
+
 struct ItemDb {
     void *field_0;
-    Item **prototypes; // table of Item* prototypes, indexed by item id
+    Item **prototypes;
 };
 
 KIPlayer::KIPlayer(int faction, int group, Player *player, AEGeometry *geom,

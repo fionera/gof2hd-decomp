@@ -5,9 +5,9 @@
 #include "game/mission/Status.h"
 #include "game/world/SolarSystem.h"
 
-// These untyped ship-data / shop globals are referenced only from this
-// translation unit, so they are kept as file-local definitions (parity loss
-// accepted: the original linked them as shared symbols).
+
+
+
 static int **gShipDataRoot = nullptr;
 static int *gRaceTable      = nullptr;
 static int *gDifficultyPtr  = nullptr;
@@ -15,42 +15,42 @@ static int *gShopRoot       = nullptr;
 
 namespace {
 
-// Named models for the untyped ship-data / shop globals. These mirror the exact
-// byte offsets observed in the original 32-bit binary (see Ship::adjustPrice /
-// Ship::priceDecline / Ship::getFirstEquipmentOfSort in the reference build).
 
-// A single ship-data record. Only the fields touched here are named; the rest of
-// the record is left as opaque storage so the offsets stay byte-faithful.
+
+
+
+
+
 struct ShipDataEntry {
-    int category;            // 0x00 : race/category index into gRaceTable
+    int category;
     unsigned char _pad04[0x14 - 0x04];
-    int basePrice;           // 0x14 : base price (interpreted as float for math)
+    int basePrice;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(ShipDataEntry, category) == 0x00, "");
 static_assert(offsetof(ShipDataEntry, basePrice) == 0x14, "");
 #endif
 
-// The object reached via *gShipDataRoot. At offset 4 it holds the entry table.
+
 struct ShipDataObj {
-    int _field00;            // 0x00
-    ShipDataEntry **table;   // 0x04 : array of entry pointers, indexed by ship index
+    int _field00;
+    ShipDataEntry **table;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(ShipDataObj, table) == 0x04, "");
 #endif
 
-// The object reached via gShopRoot index 1 (the second pointer slot). At
-// offset 0x17c it holds the integrated-cloak equipment item pointer.
+
+
 struct ShopEntry {
     unsigned char _pad000[0x17c];
-    Item *cloakItem;         // 0x17c
+    Item *cloakItem;
 };
 #if __SIZEOF_POINTER__ == 4
 static_assert(offsetof(ShopEntry, cloakItem) == 0x17c, "");
 #endif
 
-} // namespace
+}
 
 Ship::Ship(int index, int baseHP, int baseLoad, int value,
            int slot0, int slot1, int slot2, int slot3, float handling) {

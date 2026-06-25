@@ -6,7 +6,7 @@ using Vector = AbyssEngine::AEMath::Vector;
 
 BoundingVolume::~BoundingVolume() {
     if (children != nullptr) {
-        ArrayReleaseClasses(*children);   // original: ArrayReleaseClasses<BoundingVolume*>, then ~Array + delete
+        ArrayReleaseClasses(*children);
         delete children;
     }
     children = nullptr;

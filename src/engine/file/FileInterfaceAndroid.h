@@ -81,7 +81,7 @@ public:
 
     String GetDirPreFix() override;
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static void *methodRead;
     static int fileCounter;
     static void *methodWrite;

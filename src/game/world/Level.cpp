@@ -82,7 +82,7 @@ static_assert(offsetof(struct EngineColorTable, engineColorEntry0) == 0x1254,
 static_assert(offsetof(struct EngineColorTable, entries) == 0x1254,
               "entries must live at table offset 0x1254");
 
-} // anonymous namespace
+}
 
 Matrix *CameraGetLocal(void *canvas, uint32_t index);
 
@@ -4304,7 +4304,7 @@ static inline void levelPlaceWingman(Level *self, int *kiSlot, unsigned i) {
     ((KIPlayer *) kiSlot)->setPosition(p.x + side, p.y, p.z - back);
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 unsigned char Level::doInstantJump;
 void *Level::programmedStation;
 unsigned char Level::comingFromAlienWorld;

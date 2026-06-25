@@ -265,7 +265,7 @@ public:
 };
 #pragma pack(pop)
 
-#if __SIZEOF_POINTER__ == 4  // live in 32-bit MATCH build (was #ifdef GOF2_MATCH, which is never defined)
+#if __SIZEOF_POINTER__ == 4
 #include <cstddef>
 static_assert(offsetof(MGame, loadProgress) == 12, "MGame::loadProgress @ 12");
 static_assert(offsetof(MGame, deltaTime) == 64, "MGame::deltaTime @ 64");

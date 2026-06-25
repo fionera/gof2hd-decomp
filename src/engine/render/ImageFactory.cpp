@@ -18,9 +18,9 @@ static unsigned *g_IF_drawShip_canvas;
 static unsigned *g_drawItem_canvas;
 static int *g_IF_idTable;
 static unsigned *g_IF_drawItem4_canvas;
-// Image atlas offset tables (104 ints / 416 bytes each), recovered from the
-// original binary. IMAGE_OFFSETS is the active table; the ctor copies the
-// device-appropriate IPAD variant into it.
+
+
+
 int IMAGE_OFFSETS[104];
 int IMAGE_OFFSETS_IPAD[104] = {
     16, 75, 16, 43, 32, 125, 16, 0,
@@ -172,8 +172,8 @@ void *ImageFactory::loadImage(int row, int col, int frameBase) {
             ->Image2DCreate((unsigned short) ((short) id + (short) frameBase), image);
 
     int *posBase;
-    // Each (row,col) cell occupies two consecutive ints (px,py); rows have a
-    // stride of 8 ints and columns a stride of 2 ints.
+
+
     int cell = row * 8 + col * 2;
     if (*g_IF_flagA != 0) {
         posBase = g_IF_posTableA;
@@ -237,7 +237,7 @@ int *ImageFactory::createChar(bool isMale, int race) {
     if (row == 5) row = 0;
     int *desc = new int[5];
     desc[0] = row;
-    // gCreateChar2Table is a contiguous run of rows, each holding 4 part counts.
+
     int *partCounts = &table[row * 4];
     for (int i = 0; i != 4; ++i)
         desc[i + 1] = ((AbyssEngine::AERandom *)(*(void **) gCreateChar2Rng2))->nextInt(partCounts[i]);

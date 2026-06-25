@@ -19,14 +19,14 @@ namespace AbyssEngine {
         float alpha;
         uint32_t field_0x4c;
         union {
-            int64_t timestamp;             // 0x50 (spans timestampLo/timestampHi)
+            int64_t timestamp;
             struct {
-                uint32_t timestampLo;      // 0x50
-                uint32_t timestampHi;      // 0x54
+                uint32_t timestampLo;
+                uint32_t timestampHi;
             };
         };
-        uint32_t channelFlags;             // 0x58 (channel-present bitmask, low dword)
-        uint32_t channelFlagsHi;           // 0x5c (channel-present bitmask, high dword)
+        uint32_t channelFlags;
+        uint32_t channelFlagsHi;
 
         KeyFrame();
     };

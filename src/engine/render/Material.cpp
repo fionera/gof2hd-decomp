@@ -39,8 +39,8 @@ namespace AbyssEngine {
     }
 
     Material::~Material() {
-        // Inline Array members are destroyed automatically in reverse
-        // declaration order (arr_5c, arr_50, meshes, arr_38, arr_2c),
-        // matching the original Material::~Material.
+
+
+
     }
 }

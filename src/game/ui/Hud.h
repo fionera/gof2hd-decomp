@@ -287,7 +287,7 @@ public:
 
     bool drawTitleImage(bool visible);
 
-    // Static data members present in the original binary (defined for symbol parity).
+
     static int RADAR_WIDTH;
     static int RADAR_HEIGHT;
     static int wingmanCommand;

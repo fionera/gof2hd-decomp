@@ -19,7 +19,7 @@
 #include "engine/core/NFC.h"
 #include "engine/core/GameText.h"
 
-// Globals::Canvas is declared in engine/render/PaintCanvas.h (included above).
+
 
 static const String g_HangarWindow_emptyDialogText;
 
@@ -48,8 +48,8 @@ void TouchButton_ctor_img2(void *btn, void *imgA, void *imgB, int a, int b, int 
 
 void TouchButton_getPosition(void *btn, float *x, float *y);
 
-// File-local globals. Defined once here as file-statics; only referenced
-// within this translation unit.
+
+
 static void **g_hw_globals;
 static Layout **g_hw_layout;
 static int *g_hw_screenWidth;
@@ -97,7 +97,7 @@ static uint8_t *g_hw_listModeFlag;
 static float g_hw_posScale;
 static int *g_hw_openCounter;
 
-// File-local string/data symbols.
+
 static const char hw_rnd_empty[1] = "", hw_rnd_a[1] = "", hw_rnd_b[1] = "",
         hw_rnd_c[1] = "", hw_rnd_d[1] = "", hw_rnd_e[1] = "", hw_rnd_x[1] = "";
 static const char hw_buy_yes[1] = "", hw_buy_no[1] = "", hw_buy_icon[1] = "";
@@ -1876,7 +1876,7 @@ void HangarWindow::mountItem(Item *item) {
                 int change;
                 if (cur->getStationAmount() == 0) {
                     if (type == 1 || item->getAmount() == 1) {
-                        ArrayRemove(cur, *this->itemList);   // original: ArrayRemove<Item*>, not iterator erase
+                        ArrayRemove(cur, *this->itemList);
                         break;
                     }
                     change = -1;
@@ -2427,5 +2427,5 @@ ListItem *HangarWindow::getCurrentItem() {
     return reinterpret_cast<ListItem *>(this->progressBarBorderImage);
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 int HangarWindow::lastTab;

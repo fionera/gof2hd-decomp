@@ -38,7 +38,7 @@ namespace AbyssEngine {
 
     extern int currentUsedShaderIndex;
 
-    // Namespace-scope globals present in the original binary (defined for symbol parity).
+
     extern float currentFps;
     extern float debugTouch[4];
     extern int fpsCounter;
@@ -67,8 +67,8 @@ namespace AbyssEngine {
     extern long long triDrawn;
     extern unsigned char ShaderSet;
 
-    // ImageFont / SpriteSystem / Curve / Image / Image2D / AELoadedTexture
-    // are each defined in their own header (included above).
+
+
 }
 
 #endif

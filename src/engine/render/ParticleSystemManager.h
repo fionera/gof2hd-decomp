@@ -32,7 +32,7 @@ class ParticleSystemManager {
 public:
     union {
         uint16_t flags;
-        uint8_t flagsLow;   // low byte; some callers write only this byte
+        uint8_t flagsLow;
     };
     void *canvas;
     int32_t cameraSet;

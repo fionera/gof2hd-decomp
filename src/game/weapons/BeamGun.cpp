@@ -199,15 +199,15 @@ void BeamGun::setEnemies(Array<Player *> *enemies) {
     BeamGun_enemiesHandler_slot(enemies->data());
 }
 
-// The enemy handler receives the opaque module-side enemy handle stored at
-// byte offset 8 of the Player object (overlapping Player::transform[1]); the
-// engine treats that slot as a pointer when registering the enemy. Model the
-// reinterpretation with a named field rather than raw index arithmetic.
+
+
+
+
 namespace {
     struct PlayerEnemyHandleView {
-        void *pad_0;             // Player::guns
-        void *pad_4;            // Player::transform[0]
-        void *enemyHandle;     // Player::transform[1] reused as enemy handle
+        void *pad_0;
+        void *pad_4;
+        void *enemyHandle;
     };
 #if __SIZEOF_POINTER__ == 4
     static_assert(__builtin_offsetof(PlayerEnemyHandleView, enemyHandle) == 8,

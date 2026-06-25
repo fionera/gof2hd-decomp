@@ -31,11 +31,11 @@ bool AbyssEngine::PostEffectFlag;
 #include <cstdarg>
 #include <cstring>
 
-// OpenGL ES 1.x fixed-function entry points. The binary provides these as
-// internal no-op stubs (they are NOT imported from the GL driver), so they are
-// absent from <GLES2/gl2.h> and are declared locally. All ES 2.0 functions used
-// here (glColorMask, glDepthFunc, glGetString, glDrawElements, glDrawArrays,
-// glGetIntegerv, glLineWidth, glCullFace, glGetError, ...) come from gl.h.
+
+
+
+
+
 void FBOContainer_ActivateRender2Texture(AbyssEngine::FBOContainer * self);
 void FBOContainer_ActivateTexture(AbyssEngine::FBOContainer * self);
 void FBOContainer_DeactivateRender2Texture(AbyssEngine::FBOContainer * self);
@@ -83,14 +83,14 @@ namespace {
     int g_Engine_postEffectCounter;
     int g_Engine_postEffectPending;
 
-    // Layout of a PaintCanvas texture-table entry (pointed to by
-    // PaintCanvas::field_0x14[index]). Only the fields touched here are named;
-    // the gap preserves the original byte offsets.
+
+
+
     struct TextureEntry {
-        uint32_t glTexture;      // 0x00 GL texture id
+        uint32_t glTexture;
         unsigned char pad_04[0x10 - 0x04];
-        float texEnv;            // 0x10 GL_TEXTURE_ENV blend value
-        unsigned char isCube;    // 0x14 0 => GL_TEXTURE_2D, else cube map
+        float texEnv;
+        unsigned char isCube;
     };
 #if __SIZEOF_POINTER__ == 4
     static_assert(__builtin_offsetof(TextureEntry, glTexture) == 0x00, "TextureEntry::glTexture");
@@ -644,7 +644,7 @@ Engine::~Engine() {
     this->fileInterface = 0;
 
     AEFile::Release();
-    ArrayReleaseClasses(*this->shaders);   // original: ArrayReleaseClasses<ShaderBaseStruct*>
+    ArrayReleaseClasses(*this->shaders);
 
     delete this->postEffectFBO;
     this->postEffectFBO = 0;
@@ -1524,7 +1524,7 @@ void Engine::LightSetMaterialColorAmbient(float red, float green, float blue) {
     return ShaderUpdateMaterialColor();
 }
 
-// Static data members present in the original binary (defined for symbol parity).
+
 unsigned char AbyssEngine::Engine::EnableGlow;
 int AbyssEngine::Engine::ImageCount;
 int AbyssEngine::Engine::switchGlow;
