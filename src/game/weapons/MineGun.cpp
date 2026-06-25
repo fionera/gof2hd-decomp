@@ -43,7 +43,7 @@ MineGun::~MineGun() {
         for (Explosion *explosion: *this->explosions) {
             delete explosion;
         }
-        ArrayRemoveAll(*(this->explosions));
+        ArrayReleaseClasses(*(this->explosions));
         delete this->explosions;
         this->explosions = nullptr;
     }

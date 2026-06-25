@@ -472,7 +472,7 @@ void Globals::resetHints() {
 
 void Globals::startNewSoundResourceList() {
     if (this->soundResources != nullptr) {
-        ArrayRemoveAll(*(this->soundResources));
+        ArrayRelease(*(this->soundResources));
         delete this->soundResources;
     }
     this->soundResources = nullptr;
@@ -1796,7 +1796,7 @@ Globals::~Globals() {
     *ifSlot = 0;
 
     if (this->soundResources != 0) {
-        ArrayRemoveAll(*(this->soundResources));
+        ArrayRelease(*(this->soundResources));
         delete this->soundResources;
     }
     this->soundResources = 0;

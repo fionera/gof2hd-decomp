@@ -623,7 +623,7 @@ void StarMap::update(int dt) {
                 delete[] this->stationDistances;
                 this->stationDistances = (int *) 0;
                 if (this->usedFlags != 0) {
-                    ArrayRemoveAll(*(this->usedFlags));
+                    ArrayRelease(*(this->usedFlags));
                     delete this->usedFlags;
                     this->usedFlags = 0;
                 }

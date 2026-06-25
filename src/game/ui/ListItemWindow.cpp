@@ -252,12 +252,12 @@ ListItemWindow::~ListItemWindow() {
         this->values = 0;
     }
     if (this->statsCur) {
-        ArrayRemoveAll(*(this->statsCur));
+        ArrayRelease(*(this->statsCur));
         delete this->statsCur;
         this->statsCur = 0;
     }
     if (this->statsPrev) {
-        ArrayRemoveAll(*(this->statsPrev));
+        ArrayRelease(*(this->statsPrev));
         delete this->statsPrev;
         this->statsPrev = 0;
     }
