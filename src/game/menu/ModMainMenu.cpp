@@ -25,34 +25,34 @@ namespace AbyssEngine {
     }
 }
 
-void **g_ModMainMenu_releaseReload;
-void **g_ModMainMenu_releaseImageFactory;
-void **g_ModMainMenu_releaseSound;
+static void **g_ModMainMenu_releaseReload;
+static void **g_ModMainMenu_releaseImageFactory;
+static void **g_ModMainMenu_releaseSound;
 
-int *g_ModMainMenu_resumeObj;
-int *g_ModMainMenu_resumeArg;
+static int *g_ModMainMenu_resumeObj;
+static int *g_ModMainMenu_resumeArg;
 
-int *g_ModMainMenu_suspendObj;
+static int *g_ModMainMenu_suspendObj;
 
-int *g_ModMainMenu_touchEndFlag;
+static int *g_ModMainMenu_touchEndFlag;
 
 AbyssEngine::String **g_ModMainMenu_r2d_string;
-int *g_ModMainMenu_r2d_textId;
-int *g_ModMainMenu_r2d_screenW;
-int *g_ModMainMenu_r2d_screenH;
+static int *g_ModMainMenu_r2d_textId;
+static int *g_ModMainMenu_r2d_screenW;
+static int *g_ModMainMenu_r2d_screenH;
 
-void **g_ModMainMenu_initSoundRes;
+static void **g_ModMainMenu_initSoundRes;
 
 void (*g_ModMainMenu_initAddSound)(void *, int);
 
-void *g_ModMainMenu_initOptions;
-void **g_ModMainMenu_initRecord;
-int *g_ModMainMenu_initTouchFlag;
-int *g_ModMainMenu_initMusicSlot;
-int *g_ModMainMenu_initMusic;
+static void *g_ModMainMenu_initOptions;
+static void **g_ModMainMenu_initRecord;
+static int *g_ModMainMenu_initTouchFlag;
+static int *g_ModMainMenu_initMusicSlot;
+static int *g_ModMainMenu_initMusic;
 
-void **g_ModMainMenu_updateLayout;
-void **g_ModMainMenu_updateListener;
+static void **g_ModMainMenu_updateLayout;
+static void **g_ModMainMenu_updateListener;
 
 ModMainMenu::ModMainMenu() {
     this->initialized = 0;
