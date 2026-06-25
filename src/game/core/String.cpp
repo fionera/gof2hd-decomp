@@ -128,7 +128,7 @@ void *String::Split(String sep) {
         if (arr->size() != 0)
             return arr;
 
-        ArrayRemoveAll(*arr);
+        ArrayReleaseClasses(*arr);
         delete arr;
     }
     return 0;
@@ -433,7 +433,7 @@ void String::SplitTags(String tag) {
     }
 
     if (arr->size() == 0) {
-        ArrayRemoveAll(*arr);
+        ArrayReleaseClasses(*arr);
         delete arr;
     }
 done:

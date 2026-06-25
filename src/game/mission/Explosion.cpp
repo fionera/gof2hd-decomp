@@ -91,7 +91,7 @@ Explosion::~Explosion() {
         for (AEGeometry *e: *streaks) {
             delete e;
         }
-        ArrayRemoveAll(*streaks);
+        ArrayReleaseClasses(*streaks);
         delete streaks;
     }
     this->fireStreaks = 0;

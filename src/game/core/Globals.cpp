@@ -1558,7 +1558,7 @@ Array<BoundingVolume *> *Globals::getWreckCollision(int kind, AEGeometry *geom) 
             (*outArr)[i] = reinterpret_cast<BoundingVolume *>(bound);
         }
 
-        ArrayRemoveAll(*data);
+        ArrayRelease(*data);
         delete data;
     }
 

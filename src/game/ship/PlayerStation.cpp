@@ -344,7 +344,7 @@ PlayerStation::PlayerStation(Station *station)
             }
             cursor = next;
         }
-        ArrayRemoveAll(*collision);
+        ArrayRelease(*collision);
         delete collision;
     }
 

@@ -941,7 +941,7 @@ int SpaceLounge::init() {
 
     if (this->buttons != 0) {
         Array<TouchButton *> *oldButtons = this->buttons;
-        ArrayRemoveAll(*oldButtons);
+        ArrayReleaseClasses(*oldButtons);
         delete oldButtons;
     }
     Array<TouchButton *> *buttons = new Array<TouchButton *>();
@@ -1128,7 +1128,7 @@ SpaceLounge::~SpaceLounge() {
     {
         Array<String *> *strings = this->agentTexts;
         if (strings != 0) {
-            ArrayRemoveAll(*strings);
+            ArrayReleaseClasses(*strings);
             delete strings;
         }
     }
@@ -1137,7 +1137,7 @@ SpaceLounge::~SpaceLounge() {
     {
         Array<TouchButton *> *buttons = this->buttons;
         if (buttons != 0) {
-            ArrayRemoveAll(*buttons);
+            ArrayReleaseClasses(*buttons);
             delete buttons;
         }
     }
@@ -1154,7 +1154,7 @@ SpaceLounge::~SpaceLounge() {
             for (unsigned i = 0; i < grid->size(); ++i) {
                 Array<ImagePart *> *inner = (*grid)[i];
                 if (inner != 0) {
-                    ArrayRemoveAll(*inner);
+                    ArrayReleaseClasses(*inner);
                     delete inner;
                 }
                 (*grid)[i] = 0;
@@ -1168,7 +1168,7 @@ SpaceLounge::~SpaceLounge() {
     {
         Array<Vector *> *rects = this->agentRects;
         if (rects != 0) {
-            ArrayRemoveAll(*rects);
+            ArrayReleaseClasses(*rects);
             delete rects;
         }
     }
