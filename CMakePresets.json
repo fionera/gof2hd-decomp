@@ -3,34 +3,16 @@
   "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
   "configurePresets": [
     {
-      "name": "debug",
-      "displayName": "Debug",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "release",
-      "displayName": "Release",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/cmake-build-release",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
-    {
-      "name": "match",
-      "displayName": "Match (ARM ASM validation via OrbStack)",
+      "name": "default",
+      "displayName": "Match (ARM ASM validation, native NDK r18b)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/cmake-build-match",
-      "toolchainFile": "${sourceDir}/cmake/orbstack-ndk-arm.toolchain.cmake",
       "cacheVariables": { "GOF2_MATCH_OPT": "-Oz" }
     }
   ],
   "buildPresets": [
-    { "name": "debug", "configurePreset": "debug" },
-    { "name": "release", "configurePreset": "release" },
-    { "name": "verify", "configurePreset": "match", "targets": ["verify"] }
+    { "name": "build", "configurePreset": "default", "targets": ["gof2"] },
+    { "name": "verify", "configurePreset": "default", "targets": ["verify"] },
+    { "name": "relink", "configurePreset": "default", "targets": ["relink"] }
   ]
 }

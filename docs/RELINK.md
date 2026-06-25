@@ -22,9 +22,9 @@ this environment — extract them (or the full NDK) to resolve symbols for a rea
 1. **Coverage**: every `.text` function recovered and matched (the long grind).
 2. **Link order**: object/section order must match the original (driven by the original Makefile/
    ndk-build module order). Derive from the address order of functions in the target.
-3. **Compiler/STL**: build all TUs with the verified flags (`-target armv7-none-linux-androideabi16
-   -march=armv7-a -mthumb -Oz -fpic -frtti`, libc++), matching per-TU options where they differ.
-   (`-Oz`, not `-O2` — see the toolchain-archaeology finding in `DECOMP_NOTES.md`.)
+3. **Compiler/STL**: build all TUs with the verified flags (`-target armv7-none-linux-androideabi21
+   -march=armv7-a -mthumb -Oz -fPIC -frtti`, libc++), matching per-TU options where they differ.
+   (`-Oz`, not `-O2`; `-fPIC`, not `-fpic` — the original .so has no `R_ARM_REL32`/`TEXTREL`.)
 4. **Linker**: the target was linked with **GNU gold 1.12** (`.note.gnu.gold-version`), *not* lld.
    `make link` currently uses NDK `lld` for the scaffold, which differs from gold in section/segment
    layout, padding, and emits no `.note.gnu.gold-version` — so a **byte-identical** relink needs the

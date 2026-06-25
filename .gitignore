@@ -13,3 +13,10 @@ __pycache__/
 *.pyc
 .verify-spike/
 cmake-build-match/
+
+# vendored match-lib source trees + build artifacts (downloaded/built by third_party/build_match_lib.cmake)
+third_party/openssl/openssl-*/
+third_party/zlib/zlib-*/
+third_party/libzip/libzip-*/
+third_party/**/_obj_gof2/
+third_party/**/*_gof2.a

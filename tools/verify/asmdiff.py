@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Disassemble two ARM objects with arm-linux-gnueabihf-objdump and compare them
-function-by-function. Used by verify.py.
+"""Disassemble two ARM objects with the NDK's arm-linux-androideabi-objdump and
+compare them function-by-function. Used by verify.py.
 
 objdiff cannot read this binary (its ARM disassembler caps at ARMv6K; the game is
 ARMv7-A Thumb-2 + VFP/NEON), so we disassemble with GNU objdump — which fully
@@ -18,7 +18,9 @@ import re
 import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_OBJDUMP = os.path.join(HERE, "orbobjdump")
+# The NDK r18b GNU objdump (fully supports ARMv7 Thumb-2 + VFP/NEON), resolved by CMake
+# (DownloadNDK.cmake) and passed via env.
+DEFAULT_OBJDUMP = os.environ.get("GOF2_NDK_OBJDUMP", "arm-linux-androideabi-objdump")
 
 _BRANCH = re.compile(r"^(b|bl|blx|bx|cb|cbz|cbnz|beq|bne|bcs|bhs|bcc|blo|bmi|bpl|"
                      r"bvs|bvc|bhi|bls|bge|blt|bgt|ble|bal)(\.[wn])?$")

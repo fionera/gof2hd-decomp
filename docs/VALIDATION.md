@@ -8,33 +8,31 @@ development.
 ## TL;DR
 
 ```bash
-# one-time: provision the OrbStack ubuntu machine (NDK r18b + ARM binutils)
-bash tools/verify/setup.sh
-
-# configure the matching build and run the report
-cmake --preset match
+# configure the matching build and run the report (first configure downloads NDK r18b)
+cmake --preset default
 cmake --build cmake-build-match --target verify
 
 # inspect one function (side-by-side disassembly diff)
 cmake --build cmake-build-match --target verify-fn -- FN=_Z8ArrayAddIP14AEPakFileEntryEvT_R5ArrayIS2_E
 ```
 
-Normal development is unchanged: `cmake --preset debug` still uses local Apple
-clang and never touches OrbStack.
+CMake downloads NDK r18b itself (`cmake/DownloadNDK.cmake`) and runs its clang +
+GNU binutils **natively** — on Apple Silicon the `darwin-x86_64` toolchain runs
+under Rosetta 2 (`softwareupdate --install-rosetta`). No OrbStack needed.
 
 ## Why this exists / how it works
 
 The original `libgof2hdaa.so` is ARMv7-A Thumb-2 + VFP/NEON, built with **NDK
 r18b clang 7.0.2** for `armeabi-v7a`. We validate against it like this:
 
-1. **Compile** each `src/*.cpp` with the *matching* toolchain. That toolchain only
-   runs on Linux, so it lives in the **OrbStack `ubuntu`** machine and is invoked
-   through `tools/verify/orbcc` (OrbStack mirrors the macOS filesystem 1:1, so
-   objects land back under the repo). The per-TU build is **resilient** — a TU that
-   doesn't compile yet is skipped and reported, never aborting the run.
+1. **Compile** each `src/*.cpp` with the *matching* toolchain. CMake compiles the
+   `gof2` OBJECT library directly with the downloaded NDK clang (run natively under
+   Rosetta), so Ninja tracks the source→object mapping and a deleted source can
+   never leave a stale orphan in the link. The per-TU build is **resilient** — a TU
+   that doesn't compile yet is skipped and reported, never aborting the run.
 2. **Delink** the matching originals out of the stripped, fully-linked `.so` into a
    relocatable ARM `.o` carrying the real mangled symbol names (`delink.py`).
-3. **Diff**: disassemble both sides with `arm-linux-gnueabihf-objdump`, truncate to
+3. **Diff**: disassemble both sides with the NDK's `arm-linux-androideabi-objdump`, truncate to
    each symbol's real size, normalize away post-link absolute addresses, and
    compute a per-function fuzzy match plus a byte-exact flag (`asmdiff.py`).
 4. **Auto-discovery**: any mangled symbol present in *both* our object and the
@@ -95,41 +93,40 @@ report -> cmake-build-match/verify/report.json
 
 ## Tuning compiler flags
 
-The canonical flag set is `tools/verify/match_flags.sh` (the *one* source of truth,
-read by the CMake match toolchain — `cmake/orbstack-ndk-arm.toolchain.cmake` turns
-it into `CMAKE_CXX_FLAGS` — and by `relink.py`'s `-fPIC` rebuilds). The biggest knob
-is the optimization level:
+The canonical flag set lives in `cmake/toolchain.cmake` (the *one* source of truth —
+it sets `CMAKE_CXX_FLAGS` for the single `-fPIC` `gof2` object library used by both
+verify and relink). The biggest knob is the optimization level:
 
 ```bash
 # A/B test opt levels — re-run picks up changed flags and rebuilds:
-cmake --preset match -DGOF2_MATCH_OPT=-O2
+cmake --preset default -DGOF2_MATCH_OPT=-O2
 cmake --build cmake-build-match --target verify
 ```
 
-`GOF2_MATCH_OPT` flows through to the build via the `match` preset. Other flags
-(fpu, stack protector, API level, exceptions/rtti) live in `match_flags.sh`; edit
-there and re-run `verify`. Known facts already baked in: `-mfpu=neon` (the original
+`GOF2_MATCH_OPT` flows through to the build via the `default` preset. Other flags
+(fpu, stack protector, API level, exceptions/rtti) live in `cmake/toolchain.cmake`;
+edit there and re-run `verify`. Known facts already baked in: `-mfpu=neon` (the original
 uses NEON), `-D__ANDROID_API__=21` (needed for libc++ `<cmath>` to compile),
-`-mthumb`, `-frtti`, **`-DGOF2_MATCH=1`** (selects the real `Array<T>` over the dev-build
-`std::vector` alias, see common.h).
+`-mthumb`, `-frtti`, **`-fPIC`** (the original .so has no `R_ARM_REL32`/`TEXTREL` and accesses
+globals GOT-indirect — that is `-fPIC` codegen, not `-fpic`).
 
 > **`-Oz` vs `-O2` — settled: `-Oz`.** A clean A/B on equal coverage (2326 functions compared in
 > both) gave `-Oz` 468 byte-exact / 66.1% avg vs `-O2` 444 / 54.9%; 24 functions match only at
-> `-Oz` and none only at `-O2`. The original was built `-Oz`. (`match_flags.sh` defaults to it.)
+> `-Oz` and none only at `-O2`. The original was built `-Oz`. (`toolchain.cmake` defaults to it.)
 
 ## Files
 
 | Path | Role |
 |------|------|
-| `tools/verify/setup.sh` | one-time OrbStack provisioning (NDK r18b + binutils) |
-| `tools/verify/match_flags.sh` | canonical matching compiler flags (`GOF2_MATCH_OPT`) |
-| `CMakeLists.txt` (`gof2_match`) | CMake OBJECT library — compiles every TU via the toolchain; emits the tracked `match_objects.txt` (no stale orphans) |
-| `tools/verify/relink.py` | link the tracked objects + vendored archives → `libgof2hdaa.so` |
+| `cmake/DownloadNDK.cmake` | downloads NDK r18b + resolves clang/binutils tool paths |
+| `cmake/toolchain.cmake` | the project toolchain (auto-applied) + canonical compile flags (`GOF2_MATCH_OPT`) |
+| `CMakeLists.txt` (`gof2`) | CMake OBJECT library — compiles every TU via the toolchain; emits the tracked `match_objects.txt` (no stale orphans) |
+| `third_party/match_libs.cmake` + `build_match_lib.cmake` | build the vendored libcrypto/zlib/libzip subsets with the NDK clang |
+| `CMakeLists.txt` (`relink` target) | link the `gof2` objects + vendored archives → `libgof2hdaa.so` via NDK gold |
+| `tools/symdiff.py` | whole-`.so` dynamic-symbol parity diff (the `relink` gate) |
 | `tools/verify/delink.py` | extract original functions from the `.so` → `verify/target/*.o` |
 | `tools/verify/asmdiff.py` | objdump-based normalize + per-symbol match |
 | `tools/verify/verify.py` | orchestrator: table + `report.json`; `--show` one function |
-| `tools/verify/orb{cc,as,nm,objdump}` | run NDK clang / ARM binutils in OrbStack |
-| `cmake/orbstack-ndk-arm.toolchain.cmake` | the `match` preset's toolchain |
 
 Inputs (read-only): `_work/bins/android_2.0.16_libgof2hdaa.so`,
 `_work/symbols/android_2.0.16.symbols.tsv`, `_work/symbols/android_thumb_map.tsv`.
@@ -139,13 +136,10 @@ Inputs (read-only): `_work/bins/android_2.0.16_libgof2hdaa.so`,
 Auto-discovery matches functions by **exact mangled name**, so anything whose signature mangles
 differently than the original is invisible (not wrong — just not compared):
 
-- **`Array<T>` vs `std::vector` — RESOLVED.** The match build (`-DGOF2_MATCH`) now uses a faithful
-  hand-written `Array<T>` (global template, layout `{size@0,data@4,capacity@8}`, realloc-based
-  growth — bodies transcribed from the Android binary; see common.h). This mangles as `5ArrayI...`
-  like the original (so the previously-invisible container functions now compare) **and** matches
-  the original's element-access / iteration codegen. Switching from the `std::vector` alias moved
-  the report from ~724 → 910 linked-exact and ~2327 → 2474 compared. The macOS dev build keeps the
-  `std::vector` alias (the `#else` branch in common.h) for natural 64-bit development.
+- **`Array<T>` — faithful hand-written container.** `src/engine/core/Array.h` is a single
+  hand-written `Array<T>` template (layout `{size@0,data@4,capacity@8}`, realloc-based growth —
+  bodies transcribed from the Android binary). It mangles as `5ArrayI...` like the original (so the
+  container functions compare) **and** matches the original's element-access / iteration codegen.
 - TUs that don't compile under the ARM toolchain yet are skipped (see the build summary); their
   functions simply aren't compared until they build. (Currently only `MGame.cpp` — a pre-existing
   `expected statement` parse error, unrelated to containers.)
@@ -160,6 +154,7 @@ python3 tools/verify/verify.py --show <mangled-symbol>
 ```
 
 Both the build and the diff fan out across `GOF2_VERIFY_JOBS` workers (default 8). The per-object
-delink/objdump calls have a 90s timeout (`asmdiff.DISASM_TIMEOUT`): if an OrbStack call wedges, that
-one unit is skipped with a warning instead of hanging the whole run. If you kill a run mid-diff,
-check for an orphaned `arm-linux-gnueabihf-objdump` under `orb` and `kill` it.
+delink/objdump calls have a 90s timeout (`asmdiff.DISASM_TIMEOUT`): if a call wedges, that one unit
+is skipped with a warning instead of hanging the whole run. (Run via the CMake `verify` target so
+the `GOF2_NDK_*` tool paths are exported; a bare `python3 tools/verify/verify.py` needs them in the
+environment.)

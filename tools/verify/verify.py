@@ -2,9 +2,9 @@
 """Function-level ASM validation: compare our ARM build output against the original
 libgof2hdaa.so, function by function, and print a match-% report.
 
-Pipeline (all ARM tooling runs in OrbStack; objdiff can't read ARMv7 so we use
-arm-linux-gnueabihf-objdump directly):
-  1. compile each src/*.cpp with the matching NDK r18b toolchain  (build_objs.sh)
+Pipeline (the NDK r18b binutils run natively under Rosetta; objdiff can't read ARMv7
+so we use the NDK's arm-linux-androideabi-objdump directly):
+  1. CMake compiles each src/*.cpp with the NDK r18b toolchain (the gof2 target)
   2. for each base .o, delink the matching originals out of the .so   (delink.py)
   3. disassemble both, normalize, fuzzy-match per symbol             (asmdiff.py)
   4. print a table sorted worst-first + write report.json
@@ -28,9 +28,8 @@ import asmdiff       # noqa: E402
 import delink as delinker  # noqa: E402  (local delink() below shadows the module name)
 
 # The CMake binary dir holds the tracked object list (match_objects.txt) + the
-# compiled objects (CMakeFiles/gof2_match.dir/). Analysis artifacts (report.json,
-# missing.txt, the delinked target/ objects) live under its verify/ subdir, which
-# the wave-pipeline tools (scope_filter/dispatch_worklist/...) also read.
+# compiled objects (CMakeFiles/gof2.dir/). Analysis artifacts (report.json,
+# missing.txt, the delinked target/ objects) live under its verify/ subdir.
 MATCH_BIN = os.path.join(REPO, "cmake-build-match")
 DEFAULT_BUILD = os.path.join(MATCH_BIN, "verify")
 
@@ -63,7 +62,7 @@ def find_base_objects(build_dir):
         if not tok:
             continue
         p = tok if os.path.isabs(tok) else os.path.join(build_dir, tok)
-        m = re.search(r"gof2_match\.dir/(?:\./)?src/(.*)\.cpp\.o(?:bj)?$", p)
+        m = re.search(r"gof2\.dir/(?:\./)?src/(.*)\.cpp\.o(?:bj)?$", p)
         if m and os.path.exists(p):
             objs.append((m.group(1), p))  # (unit, path)
     return sorted(objs)
@@ -78,9 +77,9 @@ def _diff_unit(unit, base_o, target_root, only_re):
     table instead of interleaving with it."""
     target_o = os.path.join(target_root, unit + ".o")
     os.makedirs(os.path.dirname(target_o), exist_ok=True)
-    # OrbStack calls wedge transiently; a timed-out unit is retried once (the retry almost always
-    # clears) before it is skipped, so a transient wedge doesn't silently drop the unit's functions
-    # from the report and make the totals vary run-to-run.
+    # A timed-out unit is retried once (the retry almost always clears) before it is skipped, so a
+    # transient hiccup doesn't silently drop the unit's functions from the report and make the
+    # totals vary run-to-run.
     for attempt in (1, 2):
         try:
             delink(base_o, target_o)
@@ -233,7 +232,7 @@ def main():
 
     if not args.no_build and not args.show:
         # CMake/Ninja compiles the tracked object library (no stale orphans).
-        run(["cmake", "--build", MATCH_BIN, "--target", "gof2_match"])
+        run(["cmake", "--build", MATCH_BIN, "--target", "gof2"])
 
     if args.show is not None:
         sym = args.show or os.environ.get("FN", "")

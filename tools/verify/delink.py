@@ -7,7 +7,7 @@ For one base object (our compiled TU), we:
   2. intersect them with the .so symbol table (address per mangled name),
   3. copy each function's raw bytes out of the .so (file_offset == ELF vaddr in .text),
   4. emit an assembly stub (.thumb_func/.arm + label(s) + .byte ...) and assemble it
-     with arm-linux-gnueabihf-as into the target .o.
+     with the NDK arm-linux-androideabi-as into the target .o.
 
 The target .o has the *same* mangled symbol names as our base .o, so objdiff matches
 functions by name. Post-link the original has no relocations (calls/literal-pool loads
@@ -17,7 +17,9 @@ opcode/register/immediate mismatches, not branch addresses.
 Usage:
   delink.py --base <base.o> --out <target.o> [--names a,b,c]
             [--so ...] [--symbols ...] [--thumb-map ...]
-            [--nm tools/verify/orbnm] [--as tools/verify/orbas] [--keep-asm]
+            [--nm <arm-nm>] [--as <arm-as>] [--keep-asm]
+
+The arm nm/as default to the NDK binutils resolved by CMake (GOF2_NDK_NM / GOF2_NDK_AS).
 """
 import argparse
 import os
@@ -104,8 +106,9 @@ def main():
     ap.add_argument("--so", default=DEFAULT_SO)
     ap.add_argument("--symbols", default=DEFAULT_SYMS)
     ap.add_argument("--thumb-map", default=DEFAULT_THUMB)
-    ap.add_argument("--nm", default=os.path.join(HERE, "orbnm"))
-    ap.add_argument("--as", dest="as_tool", default=os.path.join(HERE, "orbas"))
+    ap.add_argument("--nm", default=os.environ.get("GOF2_NDK_NM", "arm-linux-androideabi-nm"))
+    ap.add_argument("--as", dest="as_tool",
+                    default=os.environ.get("GOF2_NDK_AS", "arm-linux-androideabi-as"))
     ap.add_argument("--keep-asm", action="store_true")
     args = ap.parse_args()
 
@@ -182,8 +185,7 @@ def main():
     with open(asm_path, "w") as f:
         f.write("\n".join(lines))
 
-    subprocess.check_call([args.as_tool, "-march=armv7-a", "-mfpu=vfpv3",
-                           asm_path, "-o", args.out])
+    subprocess.check_call([args.as_tool, "-march=armv7-a", "-mfpu=vfpv3", asm_path, "-o", args.out])
     if not args.keep_asm:
         os.remove(asm_path)
 
